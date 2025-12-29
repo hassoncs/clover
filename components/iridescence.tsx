@@ -100,7 +100,7 @@ export default function Iridescence({
   }, [clock, width, height]);
 
   return (
-    <Canvas style={{ flex: 1 }}>
+    <Canvas className="flex-1">
       <Fill>
         <Shader source={source} uniforms={uniforms} />
       </Fill>

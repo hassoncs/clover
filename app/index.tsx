@@ -1,29 +1,17 @@
 import React from "react";
 import { ActivityIndicator, Text, View } from "react-native";
-import { AsyncSkia } from "../components/async-skia";
-
-const Iridescence = React.lazy(() => import("../components/iridescence"));
+import { WithSkiaWeb } from "@shopify/react-native-skia/lib/module/web";
 
 export default function Page() {
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <View
-        style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
-      >
-        <React.Suspense fallback={<ActivityIndicator />}>
-          <AsyncSkia />
-          <Iridescence />
-        </React.Suspense>
+    <View className="flex-1 items-center justify-center">
+      <View className="absolute inset-0">
+        <WithSkiaWeb
+          getComponent={() => import("../components/iridescence")}
+          fallback={<ActivityIndicator />}
+        />
       </View>
-      <Text
-        style={{
-          fontSize: 32,
-          fontWeight: "bold",
-          fontStyle: "italic",
-        }}
-      >
-        Welcome to Expo
-      </Text>
+      <Text className="text-3xl font-bold italic">Welcome to Expo</Text>
     </View>
   );
 }
