@@ -15,7 +15,7 @@
     "verify:ios": "pnpm run doctor && pnpm run pods && pnpm run ios",
     "verify:android": "pnpm run doctor && pnpm run android",
     "postinstall": "mkdir -p public && cp $(node -p \"require.resolve('canvaskit-wasm/bin/full/canvaskit.wasm', { paths: [require.resolve('@shopify/react-native-skia')] })\") public/canvaskit.wasm",
-    "deploy": "npx expo export -p web && npx eas-cli@latest deploy"
+    "deploy": "npx expo export -p web && npx wrangler pages deploy dist/ --project-name=skia-canvas-wasm-deploy-test"
   },
   "dependencies": {
     "@shopify/react-native-skia": "2.2.12",

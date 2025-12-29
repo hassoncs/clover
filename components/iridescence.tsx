@@ -10,6 +10,34 @@ import {
 import { useDerivedValue } from "react-native-reanimated";
 import { useWindowDimensions } from "react-native";
 
+// Check global CanvasKit availability at module load time
+console.log(
+  "[Iridescence] Module loading - checking global CanvasKit availability..."
+);
+console.log("[Iridescence] typeof global:", typeof global);
+console.log("[Iridescence] typeof globalThis:", typeof globalThis);
+console.log("[Iridescence] typeof window:", typeof window);
+if (typeof global !== "undefined") {
+  console.log("[Iridescence] global.CanvasKit:", global.CanvasKit);
+}
+if (typeof globalThis !== "undefined") {
+  console.log("[Iridescence] globalThis.CanvasKit:", globalThis.CanvasKit);
+}
+if (typeof window !== "undefined") {
+  console.log("[Iridescence] window.CanvasKit:", window.CanvasKit);
+}
+
+console.log("[Iridescence] Module loading - checking Skia availability...");
+console.log("[Iridescence] Skia object:", Skia);
+console.log("[Iridescence] Skia.RuntimeEffect:", Skia?.RuntimeEffect);
+if (!Skia || !Skia.RuntimeEffect) {
+  console.error(
+    "[Iridescence] ERROR: Skia is not available when module loads!"
+  );
+} else {
+  console.log("[Iridescence] Skia is available, creating shader...");
+}
+
 const source = Skia.RuntimeEffect.Make(`
 uniform vec3 uResolution;
 uniform float uTime;
@@ -39,6 +67,8 @@ vec4 main(vec2 fragCoord) {
 }
 `);
 
+console.log("[Iridescence] Shader created successfully");
+
 export default function Iridescence({
   color = [1, 1, 1],
   speed = 1.0,
@@ -51,6 +81,7 @@ export default function Iridescence({
   width?: number;
   height?: number;
 }) {
+  console.log("[Iridescence] Component rendering");
   const clock = useClock();
 
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();

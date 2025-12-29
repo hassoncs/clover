@@ -1,7 +1,12 @@
 // Helper to ensure Skia loads or throws inside of React Suspense on web.
 import React from "react";
 
+
 import { LoadSkiaWeb } from "@shopify/react-native-skia/lib/module/web";
+
+import * as Skia from "@shopify/react-native-skia";
+console.log("🚀 ~ Skia:", Skia);
+
 
 function wrapPromise<T>(promise: Promise<T>) {
   let status: "pending" | "success" | "error" = "pending";
@@ -35,7 +40,20 @@ const promiseMap = new Map();
 const getSuspendingPromise = () => {
   const id = "skia";
   if (!promiseMap.has(id)) {
-    const loader = wrapPromise(LoadSkiaWeb());
+    const loadPromise = LoadSkiaWeb().then((skia) => {
+      // Ensure CanvasKit is available on all global scopes for lazy-loaded bundles
+      if (typeof global !== "undefined" && global.CanvasKit) {
+        if (typeof globalThis !== "undefined") {
+          globalThis.CanvasKit = global.CanvasKit;
+        }
+        if (typeof window !== "undefined") {
+          window.CanvasKit = global.CanvasKit;
+        }
+        console.log("[AsyncSkia] CanvasKit set on all global scopes");
+      }
+      return skia;
+    });
+    const loader = wrapPromise(loadPromise);
     promiseMap.set(id, loader);
     return loader.read();
   }

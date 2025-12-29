@@ -1,0 +1,5 @@
+name = "skia-canvas-wasm-deploy-test"
+compatibility_date = "2025-12-01"
+
+pages_build_output_dir = "dist"
+
