@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "scheme": "skia",
+    "web": {
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "name": "skia-canvas-wasm-deploy-test",
+    "slug": "skia-canvas-wasm-deploy-test"
+  }
+}
