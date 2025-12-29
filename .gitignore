@@ -5,11 +5,25 @@ node_modules/
 
 # Expo
 .expo/
+.expo-shared/
 dist/
 web-build/
 expo-env.d.ts
 
-# Native
+# Native build outputs and caches (regenerated locally)
+# iOS
+ios/Pods/
+ios/build/
+**/xcuserdata/
+**/*.xcuserstate
+DerivedData/
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+
+# Native signing and provisioning
 *.orig.*
 *.jks
 *.p8
