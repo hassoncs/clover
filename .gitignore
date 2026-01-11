@@ -50,3 +50,6 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+# Turbo
+.turbo

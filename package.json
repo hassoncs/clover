@@ -1,43 +1,27 @@
 {
-  "name": "skia-canvas-wasm-deploy-test",
-  "main": "expo-router/entry",
-  "scripts": {
-    "start": "expo start",
-    "web": "expo start --web",
-    "ios": "expo run:ios",
-    "android": "expo run:android",
-    "doctor": "expo doctor",
-    "clean:js": "rimraf node_modules .expo .expo-shared dist web-build",
-    "clean:ios": "rimraf ios/Pods ios/build ~/Library/Developer/Xcode/DerivedData",
-    "clean:android": "rimraf android/.gradle android/build android/app/build",
-    "clean": "pnpm run clean:js && pnpm run clean:ios && pnpm run clean:android",
-    "pods": "cd ios && pod install",
-    "verify:ios": "pnpm run doctor && pnpm run pods && pnpm run ios",
-    "verify:android": "pnpm run doctor && pnpm run android",
-    "postinstall": "mkdir -p public && cp $(node -p \"require.resolve('canvaskit-wasm/bin/full/canvaskit.wasm', { paths: [require.resolve('@shopify/react-native-skia')] })\") public/canvaskit.wasm",
-    "deploy": "npx expo export -p web && npx wrangler pages deploy dist/ --project-name=skia-canvas-wasm-deploy-test"
-  },
-  "dependencies": {
-    "@shopify/react-native-skia": "2.2.12",
-    "expo": "^54.0.1",
-    "expo-linking": "^8.0.8",
-    "expo-router": "~6.0.0",
-    "nativewind": "^4.2.1",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "react-native": "0.81.4",
-    "react-native-reanimated": "^4.1.6",
-    "react-native-safe-area-context": "^5.6.1",
-    "react-native-screens": "~4.16.0",
-    "react-native-web": "^0.21.0",
-    "react-native-worklets": "^0.5.1"
-  },
+  "name": "skia-canvas-wasm-deploy-test-monorepo",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "app"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "start": "turbo run start",
+    "web": "turbo run web",
+    "ios": "turbo run ios",
+    "android": "turbo run android",
+    "clean": "turbo run clean",
+    "deploy": "turbo run deploy",
+    "lint": "turbo run lint"
+  },
   "devDependencies": {
-    "@types/react": "~19.1.17",
-    "rimraf": "^6.0.0",
-    "tailwindcss": "3.4.17",
-    "typescript": "~5.9.3"
+    "turbo": "^2.3.0"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=9.0.0"
   }
 }
