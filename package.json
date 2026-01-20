@@ -7,21 +7,30 @@
   ],
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
-    "start": "turbo run start",
-    "web": "turbo run web",
-    "ios": "turbo run ios",
-    "android": "turbo run android",
+    "dev": "devmux ensure metro",
+    "start": "devmux ensure metro",
+    "web": "devmux ensure metro && echo 'Open http://localhost:8085'",
+    "ios": "devmux ensure metro && cd app && npx expo run:ios --port 8085",
+    "android": "devmux ensure metro && cd app && npx expo run:android --port 8085",
     "clean": "turbo run clean",
     "deploy": "turbo run deploy",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "svc:ensure": "devmux ensure",
+    "svc:status": "devmux status",
+    "svc:stop": "devmux stop"
   },
   "devDependencies": {
+    "@chriscode/devmux": "link:/Users/hassoncs/Workspaces/Personal/devmux/devmux-cli",
     "turbo": "^2.3.0"
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {
     "node": ">=18.0.0",
     "pnpm": ">=9.0.0"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "react-native-box2d@0.2.5": "patches/react-native-box2d@0.2.5.patch"
+    }
   }
 }
