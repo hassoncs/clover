@@ -722,3 +722,25 @@ index 40bf20cd83b18ecf10c06f1a13711d3030fe8fdb..19c01ce1e97616360ed5675aded77e7a
  public:
      /**
       * Default constructor
+diff --git a/src/Box2d.ts b/src/Box2d.ts
+index 1234567890abcdef..fedcba0987654321 100644
+--- a/src/Box2d.ts
++++ b/src/Box2d.ts
+@@ -10,6 +10,7 @@ import type {
+ // global func declaration for JSI functions
+ declare global {
+   function nativeCallSyncHook(): unknown;
++  var RN$Bridgeless: boolean | undefined;
+ 
+   var Box2dApi:
+     | undefined
+@@ -59,7 +60,8 @@ if (global.Box2dApi == null) {
+   }
+ 
+   // Check if we are running on-device (JSI)
+-  if (global.nativeCallSyncHook == null || Box2dModule.install == null) {
++  // In bridgeless mode (New Architecture), nativeCallSyncHook may not exist but JSI is available
++  if ((global.nativeCallSyncHook == null && !global.RN$Bridgeless) || Box2dModule.install == null) {
+     throw new Error(
+       'Failed to install react-native-box2d: React Native is not running on-device. Box2d can only be used when synchronous method invocations (JSI) are possible. If you are using a remote debugger (e.g. Chrome), switch to an on-device debugger (e.g. Flipper) instead.'
+     );

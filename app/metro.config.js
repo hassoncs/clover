@@ -2,8 +2,21 @@ const path = require("path");
 const { getDefaultConfig } = require("expo/metro-config");
 const { withNativeWind } = require("nativewind/metro");
 
+// Monorepo root (parent of app/)
+const projectRoot = __dirname;
+const monorepoRoot = path.resolve(projectRoot, "..");
+
 // Get base config
 const baseConfig = getDefaultConfig(__dirname);
+
+// Watch the monorepo root for changes (pnpm stores packages in root node_modules/.pnpm)
+baseConfig.watchFolders = [monorepoRoot];
+
+// Tell Metro where to find node_modules
+baseConfig.resolver.nodeModulesPaths = [
+  path.resolve(projectRoot, "node_modules"),
+  path.resolve(monorepoRoot, "node_modules"),
+];
 
 // Force CommonJS resolution to avoid import.meta errors where possible
 baseConfig.resolver.unstable_conditionNames = ["require", "import", "react-native"];

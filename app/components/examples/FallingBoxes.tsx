@@ -43,6 +43,7 @@ export default function FallingBoxes() {
   const bodiesRef = useRef<b2Body[]>([]);
   const [boxes, setBoxes] = useState<BoxState[]>([]);
   const [isReady, setIsReady] = useState(false);
+  const frameCountRef = useRef(0);
 
   useEffect(() => {
     const setupPhysics = async () => {
@@ -106,9 +107,11 @@ export default function FallingBoxes() {
 
         bodiesRef.current = newBodies;
         setBoxes(initialBoxes);
+        console.log('[FallingBoxes] Physics initialized, bodies:', newBodies.length);
+        console.log('[FallingBoxes] Initial positions:', initialBoxes.map(b => `(${b.x.toFixed(1)}, ${b.y.toFixed(1)})`).join(', '));
         setIsReady(true);
       } catch (error) {
-        console.error("Failed to initialize Box2D:", error);
+        console.error("[FallingBoxes] Failed to initialize Box2D:", error);
       }
     };
 
@@ -120,31 +123,39 @@ export default function FallingBoxes() {
     };
   }, []);
 
-  useFrameCallback((frameInfo) => {
-    if (!worldRef.current || !isReady) return;
-
-    const dt = frameInfo.timeSincePreviousFrame
-      ? frameInfo.timeSincePreviousFrame / 1000
-      : 1 / 60;
-
-    const clampedDt = Math.min(dt, 1 / 30);
-    worldRef.current.Step(clampedDt, 8, 3);
-
-    const updatedBoxes = bodiesRef.current.map((body, i) => {
-      const pos = body.GetPosition();
-      const angle = body.GetAngle();
-      return {
-        x: pos.x * PIXELS_PER_METER,
-        y: pos.y * PIXELS_PER_METER,
-        angle,
-        width: BOX_SIZE * PIXELS_PER_METER,
-        height: BOX_SIZE * PIXELS_PER_METER,
-        color: COLORS[i % COLORS.length],
-      };
-    });
-
-    setBoxes(updatedBoxes);
-  }, true);
+  useEffect(() => {
+    if (!isReady || !worldRef.current) return;
+    
+    console.log('[FallingBoxes] Starting physics loop');
+    
+    const interval = setInterval(() => {
+      if (!worldRef.current) return;
+      
+      worldRef.current.Step(1/60, 8, 3);
+      
+      const updatedBoxes = bodiesRef.current.map((body, i) => {
+        const pos = body.GetPosition();
+        const angle = body.GetAngle();
+        return {
+          x: pos.x * PIXELS_PER_METER,
+          y: pos.y * PIXELS_PER_METER,
+          angle,
+          width: BOX_SIZE * PIXELS_PER_METER,
+          height: BOX_SIZE * PIXELS_PER_METER,
+          color: COLORS[i % COLORS.length],
+        };
+      });
+      
+      if (bodiesRef.current.length > 0) {
+        const pos = bodiesRef.current[0].GetPosition();
+        console.log(`[FallingBoxes] Body0 physics: (${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}) -> screen: (${(pos.x * PIXELS_PER_METER).toFixed(0)}, ${(pos.y * PIXELS_PER_METER).toFixed(0)})`);
+      }
+      
+      setBoxes(updatedBoxes);
+    }, 16); // ~60fps
+    
+    return () => clearInterval(interval);
+  }, [isReady]);
 
   return (
     <Canvas ref={canvasRef} style={{ flex: 1 }}>
