@@ -2,10 +2,15 @@
   "version": 1,
   "project": "skia-physics",
   "services": {
-    "metro": {
+    "ios": {
       "cwd": "app",
-      "command": "npx expo start --port 8085",
-      "health": { "type": "port", "port": 8085 }
+      "command": "npx expo run:ios",
+      "health": { "type": "port", "port": 8081 }
+    },
+    "web": {
+      "cwd": "app",
+      "command": "npx expo start --web",
+      "health": { "type": "port", "port": 8081 }
     }
   }
 }

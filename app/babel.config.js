@@ -5,8 +5,9 @@ module.exports = function (api) {
       'babel-preset-expo',
       'nativewind/babel',
     ],
-    // Note: react-native-reanimated/plugin is auto-configured by Expo's preset
-    // DO NOT add it manually - doing so causes conflicts on iOS
+    plugins: [
+      'react-native-reanimated/plugin',
+    ],
   };
 };
 
