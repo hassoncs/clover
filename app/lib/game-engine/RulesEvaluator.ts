@@ -16,6 +16,7 @@ export interface RuleContext {
   elapsed: number;
   collisions: CollisionInfo[];
   events: Map<string, unknown>;
+  screenBounds?: { minX: number; maxX: number; minY: number; maxY: number };
 }
 
 export class RulesEvaluator {
@@ -239,8 +240,18 @@ export class RulesEvaluator {
         if (!this.winCondition.tag) return false;
         return context.entityManager.getEntitiesByTag(this.winCondition.tag).length === 0;
 
-      case 'reach_entity':
-        return false;
+      case 'reach_entity': {
+        if (!this.winCondition.entityId) return false;
+        const targetEntity = context.entityManager.getEntity(this.winCondition.entityId);
+        if (!targetEntity) return false;
+        const playerEntities = context.entityManager.getEntitiesByTag('player');
+        if (playerEntities.length === 0) return false;
+        const player = playerEntities[0];
+        const dx = player.transform.x - targetEntity.transform.x;
+        const dy = player.transform.y - targetEntity.transform.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        return distance < 1.0;
+      }
 
       case 'custom':
         return false;
@@ -272,8 +283,24 @@ export class RulesEvaluator {
       case 'lives_zero':
         return this.lives <= 0;
 
-      case 'entity_exits_screen':
+      case 'entity_exits_screen': {
+        if (!context.screenBounds) return false;
+        const { minX, maxX, minY, maxY } = context.screenBounds;
+        const entitiesToCheck = this.loseCondition.tag
+          ? context.entityManager.getEntitiesByTag(this.loseCondition.tag)
+          : this.loseCondition.entityId
+            ? [context.entityManager.getEntity(this.loseCondition.entityId)].filter(Boolean)
+            : context.entityManager.getEntitiesByTag('player');
+        
+        for (const entity of entitiesToCheck) {
+          if (!entity) continue;
+          const { x, y } = entity.transform;
+          if (x < minX || x > maxX || y < minY || y > maxY) {
+            return true;
+          }
+        }
         return false;
+      }
 
       case 'custom':
         return false;
@@ -312,7 +339,7 @@ export class RulesEvaluator {
         }
         return false;
 
-      case 'entity_count':
+      case 'entity_count': {
         const count = context.entityManager.getEntityCountByTag(trigger.tag);
         switch (trigger.comparison) {
           case 'gte':
@@ -325,6 +352,7 @@ export class RulesEvaluator {
             return count === 0;
         }
         return false;
+      }
 
       case 'event':
         return context.events.has(trigger.eventName);
@@ -361,11 +389,12 @@ export class RulesEvaluator {
           }
           return true;
 
-        case 'entity_count':
+        case 'entity_count': {
           const count = context.entityManager.getEntityCountByTag(condition.tag);
           if (condition.min !== undefined && count < condition.min) return false;
           if (condition.max !== undefined && count > condition.max) return false;
           return true;
+        }
 
         case 'random':
           return Math.random() < condition.probability;
@@ -396,7 +425,7 @@ export class RulesEvaluator {
           }
           break;
 
-        case 'game_state':
+        case 'game_state': {
           const mappedState = this.mapActionState(action.state);
           if (mappedState) {
             if (action.delay) {
@@ -406,6 +435,7 @@ export class RulesEvaluator {
             }
           }
           break;
+        }
 
         case 'spawn':
           this.executeSpawnAction(action, context);
@@ -423,6 +453,7 @@ export class RulesEvaluator {
           break;
 
         case 'modify':
+          this.executeModifyAction(action, context);
           break;
       }
     }
@@ -451,13 +482,14 @@ export class RulesEvaluator {
             action.position.bounds.minY +
             Math.random() * (action.position.bounds.maxY - action.position.bounds.minY);
           break;
-        case 'at_entity':
+        case 'at_entity': {
           const entity = context.entityManager.getEntity(action.position.entityId);
           if (entity) {
             x = entity.transform.x;
             y = entity.transform.y;
           }
           break;
+        }
         case 'at_collision':
           if (context.collisions.length > 0) {
             x = context.collisions[0].entityA.transform.x;
@@ -492,13 +524,14 @@ export class RulesEvaluator {
         context.entityManager.destroyEntity(action.target.entityId);
         break;
 
-      case 'by_tag':
+      case 'by_tag': {
         const entities = context.entityManager.getEntitiesByTag(action.target.tag);
         const count = action.target.count ?? entities.length;
         for (let i = 0; i < Math.min(count, entities.length); i++) {
           context.entityManager.destroyEntity(entities[i].id);
         }
         break;
+      }
 
       case 'collision_entities':
         if (context.collisions.length > 0) {
@@ -509,6 +542,65 @@ export class RulesEvaluator {
 
       case 'all':
         context.entityManager.clearAll();
+        break;
+    }
+  }
+
+  private executeModifyAction(
+    action: Extract<RuleAction, { type: 'modify' }>,
+    context: RuleContext
+  ): void {
+    const entities: RuntimeEntity[] = [];
+
+    switch (action.target.type) {
+      case 'by_id': {
+        const entity = context.entityManager.getEntity(action.target.entityId);
+        if (entity) entities.push(entity);
+        break;
+      }
+      case 'by_tag': {
+        entities.push(...context.entityManager.getEntitiesByTag(action.target.tag));
+        break;
+      }
+    }
+
+    for (const entity of entities) {
+      this.applyPropertyModification(entity, action.property, action.operation, action.value);
+    }
+  }
+
+  private applyPropertyModification(
+    entity: RuntimeEntity,
+    property: string,
+    operation: 'set' | 'add' | 'multiply',
+    value: number
+  ): void {
+    const parts = property.split('.');
+    let target: Record<string, unknown> = entity as unknown as Record<string, unknown>;
+
+    for (let i = 0; i < parts.length - 1; i++) {
+      const part = parts[i];
+      if (typeof target[part] === 'object' && target[part] !== null) {
+        target = target[part] as Record<string, unknown>;
+      } else {
+        return;
+      }
+    }
+
+    const finalProp = parts[parts.length - 1];
+    const currentValue = target[finalProp];
+
+    if (typeof currentValue !== 'number') return;
+
+    switch (operation) {
+      case 'set':
+        target[finalProp] = value;
+        break;
+      case 'add':
+        target[finalProp] = currentValue + value;
+        break;
+      case 'multiply':
+        target[finalProp] = currentValue * value;
         break;
     }
   }
