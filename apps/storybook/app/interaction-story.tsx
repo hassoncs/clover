@@ -1,0 +1,14 @@
+import { Text, View } from 'react-native';
+import { Canvas } from '@shopify/react-native-skia';
+import { Interaction } from '@clover/physics';
+
+export default function InteractionStory() {
+  return (
+    <View style={{ flex: 1 }}>
+      <Text className="text-lg font-bold mb-4 text-center text-primary">
+        Physics Interaction Component
+      </Text>
+      <Interaction />
+    </View>
+  );
+}

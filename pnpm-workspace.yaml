@@ -4,5 +4,6 @@ packages:
   - 'landing'
   - 'shared'
   - 'packages/*'
+  - 'apps/storybook'
 
 nodeLinker: hoisted

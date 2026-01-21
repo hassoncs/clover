@@ -1,65 +1,188 @@
-# Project Architecture & Agents Guide
+# Project Guide
 
-## Overview
-This project demonstrates high-performance 2D physics in React Native using **Skia** (rendering) and **Rapier** (physics).
-It supports **Web (WASM)**, **iOS**, and **Android** (JSI).
+> **Entry point for AI agents and developers**
+>
+> This project has two main components:
+> 1. **Physics Engine**: Box2D + Skia rendering for React Native (iOS, Android, Web)
+> 2. **Game Maker**: AI-powered game generation from natural language prompts
+
+---
+
+## Quick Start
+
+```bash
+# Start development servers
+pnpm dev              # Start API + Metro
+pnpm svc:status       # Check service status
+
+# Run on device
+pnpm ios              # iOS simulator
+pnpm android          # Android emulator
+
+# Build & Test
+pnpm build            # Build all packages
+pnpm test             # Run tests
+pnpm tsc --noEmit     # Type check
+```
+
+---
+
+## Documentation
+
+All documentation lives in `docs/` with a component-first structure:
+
+| Index | Description |
+|-------|-------------|
+| **[docs/INDEX.md](../docs/INDEX.md)** | Global documentation hub |
+| **[docs/physics-engine/INDEX.md](../docs/physics-engine/INDEX.md)** | Physics engine (Box2D, Skia, adapters) |
+| **[docs/game-maker/INDEX.md](../docs/game-maker/INDEX.md)** | AI game generation, entities, behaviors |
+
+### Most-Used References
+
+| Document | Description |
+|----------|-------------|
+| [Physics2D API](../docs/physics-engine/reference/physics2d-api.md) | Complete Physics2D interface |
+| [Entity System](../docs/game-maker/reference/entity-system.md) | Game entity structure |
+| [Behavior System](../docs/game-maker/reference/behavior-system.md) | Game logic behaviors |
+| [Box2D Coverage](../docs/physics-engine/reference/box2d-api-coverage.md) | Which Box2D features are exposed |
+| [Troubleshooting](../docs/shared/troubleshooting/) | Common issues and fixes |
+
+### Writing Documentation
+
+See **[.opencode/skills/documentation.md](../.opencode/skills/documentation.md)** for:
+- Documentation taxonomy and structure
+- Naming conventions
+- Placement rules
+- When to update vs create new docs
+
+---
+
+## Architecture at a Glance
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      React Components                        │
+│  (FallingBoxes, GameRuntime, Interaction, etc.)             │
+└─────────────────────┬───────────────────────────────────────┘
+                      │
+┌─────────────────────▼───────────────────────────────────────┐
+│                    Physics2D Interface                       │
+│  lib/physics2d/Physics2D.ts (unified API contract)          │
+└─────────────────────┬───────────────────────────────────────┘
+                      │
+         ┌───────────┴───────────┐
+         │                       │
+┌────────▼────────┐    ┌────────▼────────┐
+│   Native (JSI)   │    │   Web (WASM)    │
+│ react-native-    │    │  box2d-wasm +   │
+│   box2d          │    │  Polyfills      │
+└──────────────────┘    └─────────────────┘
+```
+
+**Full architecture docs**: [physics-engine/architecture/](../docs/physics-engine/architecture/) | [game-maker/architecture/](../docs/game-maker/architecture/)
+
+---
+
+## Key Directories
+
+| Path | Purpose |
+|------|---------|
+| `lib/physics2d/` | **Physics2D API** - Use this for new physics code |
+| `lib/physics/` | **Legacy raw Box2D** - Some examples still use this |
+| `lib/game-runtime/` | **Game engine** - Entity manager, behaviors, rules |
+| `components/examples/` | Physics demo components |
+| `app/examples/` | Expo Router pages for demos |
+| `docs/` | All documentation (see structure above) |
+
+---
 
 ## Tech Stack
-- **Framework**: Expo SDK 54 (Managed)
-- **Rendering**: `@shopify/react-native-skia`
-- **Physics**: 
-  - Native: `react-native-box2d` (JSI)
-  - Web: `box2d-wasm` (WASM) via Monkey-Patched Adapter
-- **Animation/Loop**: `react-native-reanimated` (useFrameCallback)
-- **Styling**: NativeWind (Tailwind)
 
-## Key Patterns
+| Layer | Technology |
+|-------|------------|
+| **Framework** | Expo SDK 54 |
+| **Rendering** | `@shopify/react-native-skia` |
+| **Physics (Native)** | `react-native-box2d` (JSI) |
+| **Physics (Web)** | `box2d-wasm` (WASM) |
+| **Styling** | NativeWind (Tailwind) |
+| **API** | Hono + tRPC on Cloudflare Workers |
+| **Database** | Cloudflare D1 |
+| **AI** | OpenRouter (GPT-4o) + Scenario.com |
 
-### 1. Web Compatibility (CRITICAL)
-- **Skia Loading**: ALL Skia components MUST be lazy-loaded using the custom `<WithSkia />` component (wraps `WithSkiaWeb` with `locateFile` fix).
-- **Physics Loading**: Use `lib/physics/index.web.ts` and `lib/physics/index.native.ts` extensions. Avoid `index.ts` to prevent Metro resolution ambiguity.
-- **WASM Paths**: `metro.config.js` is customized to force `box2d-wasm` to use UMD build (fixes `import.meta` errors).
+---
 
-### 2. Physics Loop
-- Use `useFrameCallback(callback, true)` from Reanimated.
-- **Auto-start**: The second argument `true` is required for the loop to start immediately.
-- **Guard Clause**: Inside the loop, check `if (!worldRef.current) return;`.
-- **Flow**:
-  1. `useFrameCallback` triggers every frame.
-  2. `world.step()` advances physics.
-  3. Read positions from Box2D bodies.
-  4. Update React State or SharedValues.
-
-### 3. Box2D API Unification (JSI vs WASM)
-The `Physics.web.ts` adapter **Monkey Patches** `box2d-wasm` classes to match the JSI API:
-- `b2Vec2`: Added `.x` and `.y` getters/setters (WASM uses `get_x()`).
-- `b2CircleShape`: Aliased `SetRadius` to `set_m_radius`.
-- `b2Body`: Polyfilled `CreateFixture2(shape, density)` which is a JSI convenience method.
-
-ALWAYS implement new physics features by checking both APIs and adding patches to `Physics.web.ts` if needed.
-
-## Unified Physics API
-
-This project uses a custom adapter pattern to support both Native (JSI) and Web (WASM) physics with a single API.
-
-- **`app/lib/physics/index.native.ts`**: Native entry point.
-- **`app/lib/physics/index.web.ts`**: Web entry point.
-- **`app/lib/physics/types.ts`**: Shared TypeScript interfaces.
-- **`app/lib/physics/Physics.native.ts`**: Wraps `react-native-box2d`.
-- **`app/lib/physics/Physics.web.ts`**: Wraps `box2d-wasm` + Polyfills.
-
-### Usage
+## Physics2D Quick Reference
 
 ```typescript
-import { initPhysics } from "@/physics";
+import { createPhysics2D, vec2 } from '@/lib/physics2d';
 
-// Inside React Component
-useEffect(() => {
-  const setup = async () => {
-    const Box2D = await initPhysics(); // Awaits WASM on web, resolves instantly on native
-    const world = Box2D.b2World(Box2D.b2Vec2(0, 9.8));
-    // ... use Box2D normally
-  };
-  setup();
-}, []);
+// Setup
+const physics = await createPhysics2D();
+physics.createWorld(vec2(0, 9.8));
+
+// Create body
+const bodyId = physics.createBody({
+  type: 'dynamic',
+  position: vec2(5, 2),
+});
+
+// Add shape
+physics.addFixture(bodyId, {
+  shape: { type: 'circle', radius: 0.5 },
+  density: 1.0,
+  friction: 0.3,
+  restitution: 0.5,
+});
+
+// Physics loop
+physics.step(deltaTime, 8, 3);
+
+// Get transform
+const { position, angle } = physics.getTransform(bodyId);
 ```
+
+**Full API reference**: [docs/physics-engine/reference/physics2d-api.md](../docs/physics-engine/reference/physics2d-api.md)
+
+---
+
+## Web Compatibility (CRITICAL)
+
+### Skia Loading
+ALL Skia components MUST be lazy-loaded:
+
+```typescript
+import { WithSkia } from "@/components/WithSkia";
+
+export default function MyPage() {
+  return (
+    <WithSkia fallback={<Text>Loading...</Text>}>
+      {() => import("@/components/MySkiaComponent").then(m => <m.default />)}
+    </WithSkia>
+  );
+}
+```
+
+### Physics Platform Extensions
+Use `.web.ts` and `.native.ts` extensions for platform-specific code.
+
+---
+
+## Debugging Quick Tips
+
+| Issue | Check |
+|-------|-------|
+| Body not moving | `type: 'dynamic'` and `density > 0` |
+| Passing through objects | Enable `bullet: true` on fast bodies |
+| Jittery physics | Reduce `maxDeltaTime` or use fixed timestep |
+| No collision | Check `categoryBits` and `maskBits` |
+| Web WASM errors | Check metro.config.js box2d-wasm resolution |
+
+**Full troubleshooting**: [docs/physics-engine/troubleshooting/](../docs/physics-engine/troubleshooting/)
+
+---
+
+## Related Documentation
+
+- **[Documentation Skill](../.opencode/skills/documentation.md)** - How to write docs for this project
+- **[Waypoint Architecture](../docs/shared/reference/waypoint-architecture.md)** - Infrastructure patterns
+- **[Game Templates](../docs/game-maker/templates/)** - 10 pre-built game patterns

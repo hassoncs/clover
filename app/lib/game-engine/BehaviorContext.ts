@@ -14,6 +14,7 @@ export interface InputState {
     startWorldY: number;
     currentWorldX: number;
     currentWorldY: number;
+    targetEntityId?: string;
   };
   dragEnd?: {
     velocityX: number;

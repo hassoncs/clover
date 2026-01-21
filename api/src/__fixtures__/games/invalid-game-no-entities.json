@@ -1,0 +1,12 @@
+{
+  "metadata": {
+    "id": "invalid-game",
+    "title": "Invalid Game",
+    "version": "1.0.0"
+  },
+  "world": {
+    "gravity": { "x": 0, "y": 10 },
+    "pixelsPerMeter": 50
+  },
+  "entities": []
+}

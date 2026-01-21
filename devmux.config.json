@@ -5,12 +5,12 @@
     "api": {
       "cwd": ".",
       "command": "CLOUDFLARE_INCLUDE_PROCESS_ENV=true npx hush run -t api-workers -- pnpm --filter @clover/api dev",
-      "health": { "type": "port", "port": 8787 }
+      "health": { "type": "port", "port": 8789 }
     },
     "metro": {
       "cwd": "app",
-      "command": "npx hush run -t app -- npx expo start --dev-client --port 8081",
-      "health": { "type": "port", "port": 8081 },
+      "command": "npx hush run -t app -- npx expo start --dev-client --port 8085",
+      "health": { "type": "port", "port": 8085 },
       "dependsOn": ["api"]
     }
   }

@@ -4,7 +4,7 @@ const { withNativeWind } = require("nativewind/metro");
 
 const projectRoot = __dirname;
 const monorepoRoot = path.resolve(projectRoot, "..");
-const packagesDir = path.resolve(monorepoRoot, "packages");
+const box2dRoot = path.resolve(monorepoRoot, "../react-native-box2d");
 
 const baseConfig = getDefaultConfig(__dirname);
 
@@ -12,12 +12,17 @@ baseConfig.server = {
   port: 8085,
 };
 
-baseConfig.watchFolders = [monorepoRoot, packagesDir];
+baseConfig.watchFolders = [monorepoRoot, box2dRoot];
 
 baseConfig.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, "node_modules"),
   path.resolve(monorepoRoot, "node_modules"),
+  path.resolve(box2dRoot, "node_modules"),
 ];
+
+baseConfig.resolver.extraNodeModules = {
+  "react-native-box2d": box2dRoot,
+};
 
 // Force CommonJS resolution to avoid import.meta errors where possible
 baseConfig.resolver.unstable_conditionNames = ["require", "import", "react-native"];

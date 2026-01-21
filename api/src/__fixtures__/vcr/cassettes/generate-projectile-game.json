@@ -1,0 +1,49 @@
+{
+  "metadata": {
+    "recordedAt": "2026-01-21T00:00:00.000Z",
+    "model": "openai/gpt-4o",
+    "baseURL": "https://openrouter.ai/api/v1",
+    "prompt": "A game where I launch balls at stacked blocks"
+  },
+  "request": {
+    "method": "POST",
+    "url": "https://openrouter.ai/api/v1/chat/completions"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "id": "gen-test-123",
+      "object": "chat.completion",
+      "created": 1705795200,
+      "model": "openai/gpt-4o",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": null,
+            "tool_calls": [
+              {
+                "id": "call_123",
+                "type": "function",
+                "function": {
+                  "name": "json",
+                  "arguments": "{\"metadata\":{\"id\":\"block-breaker-001\",\"title\":\"Block Breaker\",\"description\":\"Launch balls to knock down stacked blocks\",\"version\":\"1.0.0\"},\"world\":{\"gravity\":{\"x\":0,\"y\":10},\"pixelsPerMeter\":50,\"bounds\":{\"width\":15,\"height\":12}},\"templates\":{\"ball\":{\"id\":\"ball\",\"tags\":[\"projectile\"],\"physics\":{\"bodyType\":\"dynamic\",\"shape\":\"circle\",\"radius\":0.3,\"density\":1.0,\"friction\":0.3,\"restitution\":0.6},\"sprite\":{\"type\":\"circle\",\"radius\":0.3,\"fill\":\"#FF5722\"},\"behaviors\":[{\"type\":\"destroy_on_collision\",\"withTags\":[\"ground\"],\"delay\":2000}]}},\"entities\":[{\"id\":\"launcher\",\"tags\":[\"player\"],\"transform\":{\"x\":2,\"y\":9},\"physics\":{\"bodyType\":\"static\",\"shape\":\"box\",\"width\":1,\"height\":1,\"density\":1,\"friction\":0.5,\"restitution\":0},\"sprite\":{\"type\":\"rect\",\"width\":1,\"height\":1,\"fill\":\"#4CAF50\"},\"behaviors\":[{\"type\":\"control\",\"controlType\":\"drag_to_aim\"},{\"type\":\"spawn_on_event\",\"event\":\"release\",\"entityTemplate\":\"ball\",\"maxCount\":5}]},{\"id\":\"block-1\",\"tags\":[\"target\"],\"transform\":{\"x\":10,\"y\":8},\"physics\":{\"bodyType\":\"dynamic\",\"shape\":\"box\",\"width\":0.8,\"height\":0.8,\"density\":0.5,\"friction\":0.5,\"restitution\":0.2},\"sprite\":{\"type\":\"rect\",\"width\":0.8,\"height\":0.8,\"fill\":\"#F44336\"},\"behaviors\":[{\"type\":\"destroy_on_collision\",\"withTags\":[\"projectile\"]},{\"type\":\"score_on_collision\",\"withTags\":[\"projectile\"],\"points\":100}]},{\"id\":\"block-2\",\"tags\":[\"target\"],\"transform\":{\"x\":10,\"y\":7},\"physics\":{\"bodyType\":\"dynamic\",\"shape\":\"box\",\"width\":0.8,\"height\":0.8,\"density\":0.5,\"friction\":0.5,\"restitution\":0.2},\"sprite\":{\"type\":\"rect\",\"width\":0.8,\"height\":0.8,\"fill\":\"#F44336\"},\"behaviors\":[{\"type\":\"destroy_on_collision\",\"withTags\":[\"projectile\"]},{\"type\":\"score_on_collision\",\"withTags\":[\"projectile\"],\"points\":100}]},{\"id\":\"block-3\",\"tags\":[\"target\"],\"transform\":{\"x\":11,\"y\":8},\"physics\":{\"bodyType\":\"dynamic\",\"shape\":\"box\",\"width\":0.8,\"height\":0.8,\"density\":0.5,\"friction\":0.5,\"restitution\":0.2},\"sprite\":{\"type\":\"rect\",\"width\":0.8,\"height\":0.8,\"fill\":\"#F44336\"},\"behaviors\":[{\"type\":\"destroy_on_collision\",\"withTags\":[\"projectile\"]},{\"type\":\"score_on_collision\",\"withTags\":[\"projectile\"],\"points\":100}]},{\"id\":\"ground\",\"tags\":[\"ground\"],\"transform\":{\"x\":7.5,\"y\":11},\"physics\":{\"bodyType\":\"static\",\"shape\":\"box\",\"width\":15,\"height\":1,\"density\":1,\"friction\":0.8,\"restitution\":0},\"sprite\":{\"type\":\"rect\",\"width\":15,\"height\":1,\"fill\":\"#795548\"}}],\"rules\":[],\"winCondition\":{\"type\":\"destroy_all\",\"tag\":\"target\"},\"loseCondition\":{\"type\":\"lives_zero\"},\"initialState\":{\"score\":0,\"lives\":5}}"
+                }
+              }
+            ]
+          },
+          "finish_reason": "tool_calls"
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 1500,
+        "completion_tokens": 800,
+        "total_tokens": 2300
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "metadata": {
+    "id": "bad-physics-game",
+    "title": "Bad Physics Game",
+    "version": "1.0.0"
+  },
+  "world": {
+    "gravity": { "x": 0, "y": 10 },
+    "pixelsPerMeter": 50
+  },
+  "entities": [
+    {
+      "id": "bad-entity",
+      "transform": { "x": 5, "y": 5 },
+      "physics": {
+        "bodyType": "invalid_type",
+        "shape": "invalid_shape",
+        "density": -5,
+        "friction": 2.5,
+        "restitution": -1
+      },
+      "sprite": {
+        "type": "rect",
+        "width": 1,
+        "height": 1,
+        "fill": "#FF0000"
+      }
+    }
+  ]
+}

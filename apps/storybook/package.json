@@ -1,0 +1,51 @@
+{
+  "name": "@clover/storybook",
+  "version": "1.0.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start --port 8082",
+    "dev": "expo start --port 8082",
+    "dev:web": "expo start --web --port 8082",
+    "storybook": "STORYBOOK_ENABLED=true storybook dev -p 6006 --port 6006",
+    "build-storybook": "STORYBOOK_ENABLED=true storybook build",
+    "storybook:device": "STORYBOOK_ENABLED=true expo start --port 8082",
+    "android": "expo run:android --port 8082",
+    "ios": "expo run:ios --port 8082"
+  },
+  "dependencies": {
+    "@clover/physics": "workspace:*",
+    "@clover/theme": "workspace:*",
+    "@clover/ui": "workspace:*",
+    "@expo/vector-icons": "^14.0.0",
+    "@storybook/test": "8.6.15",
+    "expo": "~54.0.1",
+    "expo-linking": "~8.0.8",
+    "expo-router": "~6.0.0",
+    "nativewind": "^4.2.1",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-native": "0.81.4",
+    "react-native-css-interop": "0.2.1",
+    "react-native-safe-area-context": "5.6.1",
+    "react-native-screens": "~4.16.0",
+    "react-native-web": "~0.21.2"
+  },
+  "devDependencies": {
+    "@storybook/addon-essentials": "^8.0.0",
+    "@storybook/addon-interactions": "^8.0.0",
+    "@storybook/react": "^8.0.0",
+    "@storybook/react-native": "^8.0.0",
+    "@storybook/react-webpack5": "8.6.15",
+    "@types/react": "~19.1.17",
+    "autoprefixer": "^10.4.23",
+    "css-loader": "^7.1.2",
+    "postcss": "^8.5.6",
+    "postcss-loader": "^8.2.0",
+    "storybook": "^8.0.0",
+    "style-loader": "^4.0.0",
+    "tailwindcss": "3.4.17",
+    "ts-loader": "^9.5.4",
+    "typescript": "~5.9.3"
+  }
+}

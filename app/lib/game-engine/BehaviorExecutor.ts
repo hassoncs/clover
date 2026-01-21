@@ -12,6 +12,7 @@ type BehaviorPhase = 'input' | 'timer' | 'movement' | 'visual' | 'post_physics';
 
 const BEHAVIOR_PHASES: Record<BehaviorType, BehaviorPhase> = {
   control: 'input',
+  draggable: 'input',
   timer: 'timer',
   move: 'movement',
   follow: 'movement',
@@ -84,9 +85,9 @@ export class BehaviorExecutor {
 export function createBehaviorExecutor(): BehaviorExecutor {
   const executor = new BehaviorExecutor();
 
-  // Register all built-in handlers
   registerMovementHandlers(executor);
   registerControlHandlers(executor);
+  registerInputHandlers(executor);
   registerTimerHandlers(executor);
   registerCollisionHandlers(executor);
   registerVisualHandlers(executor);
@@ -276,6 +277,40 @@ function registerMovementHandlers(executor: BehaviorExecutor): void {
       const forceY = (dy / dist) * forceMagnitude;
 
       ctx.physics.applyForceToCenter(target.bodyId, { x: forceX, y: forceY });
+    }
+  });
+}
+
+function registerInputHandlers(executor: BehaviorExecutor): void {
+  executor.registerHandler('draggable', (behavior, ctx, runtime) => {
+    const draggable = behavior as import('@clover/shared').DraggableBehavior;
+    if (!ctx.entity.bodyId) return;
+
+    const stiffness = draggable.stiffness ?? 50;
+    const damping = draggable.damping ?? 5;
+
+    const isDragging = runtime.state.isDragging as boolean | undefined;
+    const dragTargetEntityId = ctx.input.drag?.targetEntityId as string | undefined;
+
+    if (ctx.input.drag && dragTargetEntityId === ctx.entity.id) {
+      if (!isDragging) {
+        runtime.state.isDragging = true;
+      }
+
+      const targetX = ctx.input.drag.currentWorldX;
+      const targetY = ctx.input.drag.currentWorldY;
+      const position = ctx.entity.transform;
+      const velocity = ctx.physics.getLinearVelocity(ctx.entity.bodyId);
+
+      const dx = targetX - position.x;
+      const dy = targetY - position.y;
+
+      const forceX = dx * stiffness - velocity.x * damping;
+      const forceY = dy * stiffness - velocity.y * damping;
+
+      ctx.physics.applyForceToCenter(ctx.entity.bodyId, { x: forceX, y: forceY });
+    } else if (isDragging) {
+      runtime.state.isDragging = false;
     }
   });
 }

@@ -33,13 +33,15 @@ export interface CameraTransform {
 export class CameraSystem {
   private config: CameraConfig;
   private viewport: ViewportSize;
+  private pixelsPerMeter: number;
   private shakeTimeRemaining = 0;
   private shakeOffsetX = 0;
   private shakeOffsetY = 0;
 
-  constructor(config: CameraConfig, viewport: ViewportSize) {
+  constructor(config: CameraConfig, viewport: ViewportSize, pixelsPerMeter: number = 50) {
     this.config = { ...config };
     this.viewport = { ...viewport };
+    this.pixelsPerMeter = pixelsPerMeter;
   }
 
   updateViewport(viewport: ViewportSize): void {
@@ -115,9 +117,12 @@ export class CameraSystem {
     const worldX = this.config.position.x + this.shakeOffsetX;
     const worldY = this.config.position.y + this.shakeOffsetY;
     
+    // Convert world position to pixels and apply zoom
+    // Entity positions are already converted to pixels by renderers (entity.x * pixelsPerMeter)
+    // So camera translation needs to offset from screen center by (worldPos * pixelsPerMeter * zoom)
     return {
-      translateX: centerX - worldX * this.config.zoom,
-      translateY: centerY - worldY * this.config.zoom,
+      translateX: centerX - worldX * this.pixelsPerMeter * this.config.zoom,
+      translateY: centerY - worldY * this.pixelsPerMeter * this.config.zoom,
       scaleX: this.config.zoom,
       scaleY: this.config.zoom,
       rotation: this.config.rotation ?? 0,
@@ -127,17 +132,19 @@ export class CameraSystem {
   screenToWorld(screenX: number, screenY: number): Vec2 {
     const transform = this.getWorldToScreenTransform();
     
-    const worldX = (screenX - transform.translateX) / transform.scaleX;
-    const worldY = (screenY - transform.translateY) / transform.scaleY;
+    const pixelX = (screenX - transform.translateX) / transform.scaleX;
+    const pixelY = (screenY - transform.translateY) / transform.scaleY;
     
-    return { x: worldX, y: worldY };
+    return { x: pixelX / this.pixelsPerMeter, y: pixelY / this.pixelsPerMeter };
   }
 
   worldToScreen(worldX: number, worldY: number): { x: number; y: number } {
     const transform = this.getWorldToScreenTransform();
     
-    const screenX = worldX * transform.scaleX + transform.translateX;
-    const screenY = worldY * transform.scaleY + transform.translateY;
+    const pixelX = worldX * this.pixelsPerMeter;
+    const pixelY = worldY * this.pixelsPerMeter;
+    const screenX = pixelX * transform.scaleX + transform.translateX;
+    const screenY = pixelY * transform.scaleY + transform.translateY;
     
     return { x: screenX, y: screenY };
   }

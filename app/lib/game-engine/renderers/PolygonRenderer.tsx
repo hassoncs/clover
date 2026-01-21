@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Path, Group, Shadow, Skia, BlendColor } from '@shopify/react-native-skia';
 import type { PolygonSpriteComponent } from '@clover/shared';
 import type { RuntimeEntity } from '../types';
@@ -29,7 +30,10 @@ export function PolygonRenderer({ entity, sprite, pixelsPerMeter }: PolygonRende
   const x = transform.x * pixelsPerMeter;
   const y = transform.y * pixelsPerMeter;
 
-  const path = createPolygonPath(sprite.vertices, pixelsPerMeter);
+  const path = useMemo(
+    () => createPolygonPath(sprite.vertices, pixelsPerMeter),
+    [sprite.vertices, pixelsPerMeter]
+  );
   if (!path) return null;
 
   return (

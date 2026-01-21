@@ -1,0 +1,110 @@
+import type { GameDefinition } from "@clover/shared";
+
+export const bouncingBallsGame: GameDefinition = {
+  metadata: {
+    id: "test-bouncing-balls",
+    title: "Bouncing Balls",
+    description: "Tests restitution (bounciness) with balls of varying bounce factors",
+    version: "1.0.0",
+  },
+  world: {
+    gravity: { x: 0, y: 9.8 },
+    pixelsPerMeter: 50,
+    bounds: { width: 20, height: 12 },
+  },
+  camera: { type: "fixed", zoom: 1 },
+  ui: {
+    showScore: false,
+    showLives: false,
+    showTimer: false,
+    backgroundColor: "#1e293b",
+  },
+  templates: {
+    ground: {
+      id: "ground",
+      sprite: { type: "rect", width: 18, height: 0.5, color: "#374151" },
+      physics: {
+        bodyType: "static",
+        shape: "box",
+        width: 18,
+        height: 0.5,
+        density: 1,
+        friction: 0.5,
+        restitution: 1,
+      },
+    },
+    wallLeft: {
+      id: "wallLeft",
+      sprite: { type: "rect", width: 0.3, height: 10, color: "#374151" },
+      physics: {
+        bodyType: "static",
+        shape: "box",
+        width: 0.3,
+        height: 10,
+        density: 1,
+        friction: 0.5,
+        restitution: 1,
+      },
+    },
+    wallRight: {
+      id: "wallRight",
+      sprite: { type: "rect", width: 0.3, height: 10, color: "#374151" },
+      physics: {
+        bodyType: "static",
+        shape: "box",
+        width: 0.3,
+        height: 10,
+        density: 1,
+        friction: 0.5,
+        restitution: 1,
+      },
+    },
+  },
+  entities: [
+    { id: "ground", name: "Ground", template: "ground", transform: { x: 10, y: 11, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "wall-left", name: "Left Wall", template: "wallLeft", transform: { x: 1, y: 6, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "wall-right", name: "Right Wall", template: "wallRight", transform: { x: 19, y: 6, angle: 0, scaleX: 1, scaleY: 1 } },
+    {
+      id: "ball-no-bounce",
+      name: "No Bounce (0.0)",
+      transform: { x: 3, y: 2, angle: 0, scaleX: 1, scaleY: 1 },
+      sprite: { type: "circle", radius: 0.5, color: "#EF4444" },
+      physics: { bodyType: "dynamic", shape: "circle", radius: 0.5, density: 1, friction: 0.3, restitution: 0 },
+    },
+    {
+      id: "ball-low-bounce",
+      name: "Low Bounce (0.3)",
+      transform: { x: 6, y: 2, angle: 0, scaleX: 1, scaleY: 1 },
+      sprite: { type: "circle", radius: 0.5, color: "#F97316" },
+      physics: { bodyType: "dynamic", shape: "circle", radius: 0.5, density: 1, friction: 0.3, restitution: 0.3 },
+    },
+    {
+      id: "ball-med-bounce",
+      name: "Medium Bounce (0.5)",
+      transform: { x: 9, y: 2, angle: 0, scaleX: 1, scaleY: 1 },
+      sprite: { type: "circle", radius: 0.5, color: "#FBBF24" },
+      physics: { bodyType: "dynamic", shape: "circle", radius: 0.5, density: 1, friction: 0.3, restitution: 0.5 },
+    },
+    {
+      id: "ball-high-bounce",
+      name: "High Bounce (0.8)",
+      transform: { x: 12, y: 2, angle: 0, scaleX: 1, scaleY: 1 },
+      sprite: { type: "circle", radius: 0.5, color: "#22C55E" },
+      physics: { bodyType: "dynamic", shape: "circle", radius: 0.5, density: 1, friction: 0.3, restitution: 0.8 },
+    },
+    {
+      id: "ball-super-bounce",
+      name: "Super Bounce (1.0)",
+      transform: { x: 15, y: 2, angle: 0, scaleX: 1, scaleY: 1 },
+      sprite: { type: "circle", radius: 0.5, color: "#3B82F6" },
+      physics: { bodyType: "dynamic", shape: "circle", radius: 0.5, density: 1, friction: 0.3, restitution: 1.0 },
+    },
+    {
+      id: "ball-hyper-bounce",
+      name: "Hyper Bounce (1.2)",
+      transform: { x: 18, y: 2, angle: 0, scaleX: 1, scaleY: 1 },
+      sprite: { type: "circle", radius: 0.5, color: "#A855F7" },
+      physics: { bodyType: "dynamic", shape: "circle", radius: 0.5, density: 1, friction: 0.3, restitution: 1.2 },
+    },
+  ],
+};

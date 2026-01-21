@@ -5,7 +5,7 @@ main = "src/index.ts"
 workers_dev = true
 
 [dev]
-port = 8787
+port = 8789
 
 [[d1_databases]]
 binding = "DB"

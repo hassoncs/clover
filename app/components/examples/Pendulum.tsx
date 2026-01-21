@@ -1,184 +1,234 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
-import { Dimensions } from "react-native";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { View, StyleSheet } from "react-native";
 import {
   Canvas,
   Circle,
-  Line,
   useCanvasRef,
   Fill,
-  vec,
   Group,
   Rect,
 } from "@shopify/react-native-skia";
-import { initPhysics, b2Body, b2World, Box2DAPI } from "../../lib/physics";
-import { useSimplePhysicsLoop } from "../../lib/physics2d";
+import {
+  createPhysics2D,
+  useSimplePhysicsLoop,
+  useForceDrag,
+  type Physics2D,
+  type BodyId,
+  vec2,
+} from "../../lib/physics2d";
+import { ViewportRoot, useViewport } from "../../lib/viewport";
 
 const PIXELS_PER_METER = 50;
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
-const ANCHOR_X = SCREEN_WIDTH / 2 / PIXELS_PER_METER;
-const ANCHOR_Y = 3; // Lower anchor point
+
+const ANCHOR_Y = 3;
 const ARM_LENGTH = 2.5;
 const ARM_WIDTH = 0.3;
 
-interface BodyPos {
+interface ArmState {
+  id: BodyId;
   x: number;
   y: number;
   angle: number;
 }
 
-interface PendulumState {
-  b1: BodyPos;
-  b2: BodyPos;
-}
-
-export default function Pendulum() {
+function PendulumCanvas() {
   const canvasRef = useCanvasRef();
-  const worldRef = useRef<b2World | null>(null);
-  const body1Ref = useRef<b2Body | null>(null);
-  const body2Ref = useRef<b2Body | null>(null);
-  const box2dApiRef = useRef<Box2DAPI | null>(null);
-  
-  const [state, setState] = useState<PendulumState>({
-    b1: { x: 0, y: 0, angle: 0 },
-    b2: { x: 0, y: 0, angle: 0 },
-  });
+  const physicsRef = useRef<Physics2D | null>(null);
+  const arm1IdRef = useRef<BodyId | null>(null);
+  const arm2IdRef = useRef<BodyId | null>(null);
+
+  const [arm1, setArm1] = useState<ArmState | null>(null);
+  const [arm2, setArm2] = useState<ArmState | null>(null);
   const [isReady, setIsReady] = useState(false);
 
+  const vp = useViewport();
+
+  const dragHandlers = useForceDrag(physicsRef, {
+    pixelsPerMeter: PIXELS_PER_METER,
+    stiffness: 50,
+    damping: 5,
+  });
+
   useEffect(() => {
+    if (!vp.isReady) return;
+
+    const anchorX = vp.world.center.x;
+
     const setupPhysics = async () => {
-      try {
-        const Box2d = await initPhysics();
-        box2dApiRef.current = Box2d;
-
-        const gravity = Box2d.b2Vec2(0, 9.8);
-        const world = Box2d.b2World(gravity);
-        worldRef.current = world;
-
-        // 1. Static Anchor Body
-        const anchorDef = Box2d.b2BodyDef();
-        anchorDef.position = Box2d.b2Vec2(ANCHOR_X, ANCHOR_Y);
-        const anchorBody = world.CreateBody(anchorDef);
-        
-        // 2. First Arm Body
-        const b1Def = Box2d.b2BodyDef();
-        b1Def.type = 2; // Dynamic
-        b1Def.position = Box2d.b2Vec2(ANCHOR_X + ARM_LENGTH/2, ANCHOR_Y);
-        const body1 = world.CreateBody(b1Def);
-        body1Ref.current = body1;
-
-        const armShape = Box2d.b2PolygonShape();
-        armShape.SetAsBox(ARM_LENGTH / 2, ARM_WIDTH / 2);
-        
-        const fixtureDef = Box2d.b2FixtureDef();
-        fixtureDef.shape = armShape;
-        fixtureDef.density = 1;
-        fixtureDef.friction = 0.2;
-        body1.CreateFixture(fixtureDef);
-
-        // 3. Joint 1 (Anchor -> Body1)
-        const jd1 = Box2d.b2RevoluteJointDef();
-        // Initialize at anchor position
-        jd1.Initialize(anchorBody, body1, Box2d.b2Vec2(ANCHOR_X, ANCHOR_Y));
-        world.CreateJoint(jd1);
-
-        // 4. Second Arm Body
-        const b2Def = Box2d.b2BodyDef();
-        b2Def.type = 2; // Dynamic
-        b2Def.position = Box2d.b2Vec2(ANCHOR_X + ARM_LENGTH + ARM_LENGTH/2, ANCHOR_Y);
-        const body2 = world.CreateBody(b2Def);
-        body2Ref.current = body2;
-
-        const arm2Shape = Box2d.b2PolygonShape();
-        arm2Shape.SetAsBox(ARM_LENGTH / 2, ARM_WIDTH / 2);
-        
-        const fixture2Def = Box2d.b2FixtureDef();
-        fixture2Def.shape = arm2Shape;
-        fixture2Def.density = 1;
-        body2.CreateFixture(fixture2Def);
-
-        // 5. Joint 2 (Body1 -> Body2)
-        const jd2 = Box2d.b2RevoluteJointDef();
-        // Initialize at end of first arm
-        const jointPos = Box2d.b2Vec2(ANCHOR_X + ARM_LENGTH, ANCHOR_Y);
-        jd2.Initialize(body1, body2, jointPos);
-        world.CreateJoint(jd2);
-
-        // Initial Velocity for chaos
-        body1.SetLinearVelocity(Box2d.b2Vec2(0, 0));
-        body2.SetLinearVelocity(Box2d.b2Vec2(0, 0));
-        // Give it a kick by setting transforms rotated
-        body1.SetTransform(Box2d.b2Vec2(ANCHOR_X + Math.sin(1)*ARM_LENGTH/2, ANCHOR_Y + Math.cos(1)*ARM_LENGTH/2), 1);
-        
-        setIsReady(true);
-      } catch (error) {
-        console.error("Failed to initialize Box2D:", error);
+      if (physicsRef.current) {
+        physicsRef.current.destroyWorld();
       }
+
+      const physics = await createPhysics2D();
+      physics.createWorld(vec2(0, 9.8));
+      physicsRef.current = physics;
+
+      const anchorId = physics.createBody({
+        type: "static",
+        position: vec2(anchorX, ANCHOR_Y),
+      });
+
+      const arm1Id = physics.createBody({
+        type: "dynamic",
+        position: vec2(anchorX + ARM_LENGTH / 2, ANCHOR_Y),
+      });
+      physics.addFixture(arm1Id, {
+        shape: { type: "box", halfWidth: ARM_LENGTH / 2, halfHeight: ARM_WIDTH / 2 },
+        density: 1,
+        friction: 0.2,
+      });
+      arm1IdRef.current = arm1Id;
+
+      physics.createRevoluteJoint({
+        type: "revolute",
+        bodyA: anchorId,
+        bodyB: arm1Id,
+        anchor: vec2(anchorX, ANCHOR_Y),
+      });
+
+      const arm2Id = physics.createBody({
+        type: "dynamic",
+        position: vec2(anchorX + ARM_LENGTH + ARM_LENGTH / 2, ANCHOR_Y),
+      });
+      physics.addFixture(arm2Id, {
+        shape: { type: "box", halfWidth: ARM_LENGTH / 2, halfHeight: ARM_WIDTH / 2 },
+        density: 1,
+        friction: 0.2,
+      });
+      arm2IdRef.current = arm2Id;
+
+      physics.createRevoluteJoint({
+        type: "revolute",
+        bodyA: arm1Id,
+        bodyB: arm2Id,
+        anchor: vec2(anchorX + ARM_LENGTH, ANCHOR_Y),
+      });
+
+      const initialAngle = 1;
+      physics.setTransform(arm1Id, {
+        position: vec2(
+          anchorX + Math.sin(initialAngle) * ARM_LENGTH / 2,
+          ANCHOR_Y + Math.cos(initialAngle) * ARM_LENGTH / 2
+        ),
+        angle: initialAngle,
+      });
+
+      setIsReady(true);
     };
 
     setupPhysics();
 
     return () => {
-      worldRef.current = null;
-      body1Ref.current = null;
-      body2Ref.current = null;
-      box2dApiRef.current = null;
+      if (physicsRef.current) {
+        physicsRef.current.destroyWorld();
+        physicsRef.current = null;
+      }
+      arm1IdRef.current = null;
+      arm2IdRef.current = null;
+      setIsReady(false);
     };
-  }, []);
+  }, [vp.world.center.x, vp.isReady]);
 
   const stepPhysics = useCallback((dt: number) => {
-    if (!worldRef.current || !body1Ref.current || !body2Ref.current) return;
+    const physics = physicsRef.current;
+    if (!physics || !arm1IdRef.current || !arm2IdRef.current) return;
 
-    worldRef.current.Step(dt, 8, 3);
+    dragHandlers.applyDragForces();
+    physics.step(dt, 8, 3);
 
-    const b1 = body1Ref.current;
-    const b2 = body2Ref.current;
-    const pos1 = b1.GetPosition();
-    const pos2 = b2.GetPosition();
-
-    setState({
-      b1: { x: pos1.x * PIXELS_PER_METER, y: pos1.y * PIXELS_PER_METER, angle: b1.GetAngle() },
-      b2: { x: pos2.x * PIXELS_PER_METER, y: pos2.y * PIXELS_PER_METER, angle: b2.GetAngle() },
+    const transform1 = physics.getTransform(arm1IdRef.current);
+    setArm1({
+      id: arm1IdRef.current,
+      x: transform1.position.x * PIXELS_PER_METER,
+      y: transform1.position.y * PIXELS_PER_METER,
+      angle: transform1.angle,
     });
-  }, []);
+
+    const transform2 = physics.getTransform(arm2IdRef.current);
+    setArm2({
+      id: arm2IdRef.current,
+      x: transform2.position.x * PIXELS_PER_METER,
+      y: transform2.position.y * PIXELS_PER_METER,
+      angle: transform2.angle,
+    });
+  }, [dragHandlers]);
 
   useSimplePhysicsLoop(stepPhysics, isReady);
 
-  const anchorScreenX = ANCHOR_X * PIXELS_PER_METER;
+  if (!vp.isReady) return null;
+
+  const anchorScreenX = vp.center.x;
   const anchorScreenY = ANCHOR_Y * PIXELS_PER_METER;
-  const armW = ARM_LENGTH * PIXELS_PER_METER;
-  const armH = ARM_WIDTH * PIXELS_PER_METER;
+  const armWidthPx = ARM_LENGTH * PIXELS_PER_METER;
+  const armHeightPx = ARM_WIDTH * PIXELS_PER_METER;
 
   return (
-    <Canvas ref={canvasRef} style={{ flex: 1 }}>
-      <Fill color="#1a1a2e" />
+    <View
+      style={styles.container}
+      onStartShouldSetResponder={() => true}
+      onResponderGrant={dragHandlers.onTouchStart}
+      onResponderMove={dragHandlers.onTouchMove}
+      onResponderRelease={dragHandlers.onTouchEnd}
+      onResponderTerminate={dragHandlers.onTouchEnd}
+    >
+      <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
+        <Fill color="#1a1a2e" />
 
-      {/* Anchor */}
-      <Circle cx={anchorScreenX} cy={anchorScreenY} r={8} color="#666" />
+        <Circle cx={anchorScreenX} cy={anchorScreenY} r={8} color="#666" />
 
-      {/* Arm 1 */}
-      <Group
-        transform={[
-          { translateX: state.b1.x },
-          { translateY: state.b1.y },
-          { rotate: state.b1.angle },
-        ]}
-      >
-        <Rect x={-armW/2} y={-armH/2} width={armW} height={armH} color="#FF6B6B" />
-      </Group>
+        {arm1 && (
+          <Group
+            transform={[
+              { translateX: arm1.x },
+              { translateY: arm1.y },
+              { rotate: arm1.angle },
+            ]}
+          >
+            <Rect
+              x={-armWidthPx / 2}
+              y={-armHeightPx / 2}
+              width={armWidthPx}
+              height={armHeightPx}
+              color="#FF6B6B"
+            />
+          </Group>
+        )}
 
-      {/* Arm 2 */}
-      <Group
-        transform={[
-          { translateX: state.b2.x },
-          { translateY: state.b2.y },
-          { rotate: state.b2.angle },
-        ]}
-      >
-        <Rect x={-armW/2} y={-armH/2} width={armW} height={armH} color="#4ECDC4" />
-      </Group>
+        {arm2 && (
+          <Group
+            transform={[
+              { translateX: arm2.x },
+              { translateY: arm2.y },
+              { rotate: arm2.angle },
+            ]}
+          >
+            <Rect
+              x={-armWidthPx / 2}
+              y={-armHeightPx / 2}
+              width={armWidthPx}
+              height={armHeightPx}
+              color="#4ECDC4"
+            />
+          </Group>
+        )}
+      </Canvas>
+    </View>
+  );
+}
 
-      {/* Joint 1 Visualization */}
-      {/* We can calculate joint positions if needed, but the visual overlap covers it */}
-    </Canvas>
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  canvas: {
+    flex: 1,
+  },
+});
+
+export default function Pendulum() {
+  return (
+    <ViewportRoot pixelsPerMeter={PIXELS_PER_METER}>
+      <PendulumCanvas />
+    </ViewportRoot>
   );
 }

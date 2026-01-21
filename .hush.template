@@ -32,8 +32,21 @@ PROD__EXPO_PUBLIC_API_URL=https://clover-api.YOUR_DOMAIN.workers.dev
 PROD__APP_URL=https://app.clover.app
 
 # =============================================================================
-# FUTURE: AI Provider Keys (when implementing game generation)
+# AI Provider Keys (for game generation)
 # =============================================================================
 
+# Choose ONE of these providers (OpenRouter recommended for flexibility)
+OPENROUTER_API_KEY=
 # ANTHROPIC_API_KEY=
 # OPENAI_API_KEY=
+
+# Optional: Override default model
+# AI_PROVIDER=openrouter
+# AI_MODEL=openai/gpt-4o
+
+# =============================================================================
+# Scenario.com (for AI sprite generation)
+# =============================================================================
+
+# SCENARIO_API_KEY=
+# SCENARIO_SECRET_API_KEY=

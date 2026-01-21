@@ -16,7 +16,8 @@ export type BehaviorType =
   | 'oscillate'
   | 'gravity_zone'
   | 'magnetic'
-  | 'health';
+  | 'health'
+  | 'draggable';
 
 export type MoveDirection =
   | 'left'
@@ -180,6 +181,16 @@ export interface HealthBehavior extends BaseBehavior {
   invulnerabilityTime?: number;
 }
 
+export interface DraggableBehavior extends BaseBehavior {
+  type: 'draggable';
+  /** Stiffness of the drag force (higher = snappier response) */
+  stiffness?: number;
+  /** Damping of the drag force (higher = less oscillation) */
+  damping?: number;
+  /** Only allow dragging if touch starts on this entity */
+  requireDirectHit?: boolean;
+}
+
 export type Behavior =
   | MoveBehavior
   | RotateBehavior
@@ -196,4 +207,5 @@ export type Behavior =
   | FollowBehavior
   | BounceBehavior
   | MagneticBehavior
-  | HealthBehavior;
+  | HealthBehavior
+  | DraggableBehavior;

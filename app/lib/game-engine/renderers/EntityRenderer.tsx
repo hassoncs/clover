@@ -10,7 +10,10 @@ interface EntityRendererProps {
 }
 
 export function EntityRenderer({ entity, pixelsPerMeter }: EntityRendererProps) {
+  console.log('[EntityRenderer] Rendering entity:', entity.id, 'visible:', entity.visible, 'sprite:', entity.sprite?.type);
+  
   if (!entity.visible || !entity.sprite) {
+    console.log('[EntityRenderer] Skipping entity (not visible or no sprite):', entity.id);
     return null;
   }
 

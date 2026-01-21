@@ -90,6 +90,18 @@ export const initPhysics = async (): Promise<Box2DAPI> => {
     };
   }
 
+  // Polyfill b2MouseJoint SetTarget
+  const b2MouseJoint = box2dInstance.b2MouseJoint;
+  if (b2MouseJoint && !b2MouseJoint.prototype.SetTarget) {
+    if (b2MouseJoint.prototype.set_m_targetA) {
+      b2MouseJoint.prototype.SetTarget = b2MouseJoint.prototype.set_m_targetA;
+    } else if (b2MouseJoint.prototype.SetTargetA) {
+      b2MouseJoint.prototype.SetTarget = b2MouseJoint.prototype.SetTargetA;
+    }
+  }
+
+  const { getPointer } = box2dInstance;
+  
   return {
     b2Vec2: (x: number, y: number) => new b2Vec2(x, y),
     b2World: (gravity: b2Vec2) => new b2World(gravity),
@@ -100,5 +112,43 @@ export const initPhysics = async (): Promise<Box2DAPI> => {
     b2RevoluteJointDef: () => new b2RevoluteJointDef(),
     b2DistanceJointDef: () => new b2DistanceJointDef(),
     b2MouseJointDef: () => new b2MouseJointDef(),
+    
+    castToMouseJoint: (joint: any) => {
+      const b2MouseJoint = box2dInstance.b2MouseJoint;
+      if (!b2MouseJoint) {
+        console.warn('[Physics.web] b2MouseJoint class not available');
+        return joint;
+      }
+      
+      const ptr = getPointer(joint);
+      if (ptr && wrapPointer) {
+        const wrapped = wrapPointer(ptr, b2MouseJoint);
+        console.log('[Physics.web] castToMouseJoint - ptr:', ptr, 'hasSetTarget:', typeof wrapped.SetTarget);
+        return wrapped;
+      }
+      
+      console.warn('[Physics.web] castToMouseJoint fallback - no getPointer/wrapPointer');
+      return joint;
+    },
+    
+    verifyMouseJoint: (joint: any, testX: number, testY: number): boolean => {
+      try {
+        const testTarget = new b2Vec2(testX, testY);
+        joint.SetTarget(testTarget);
+        
+        const retrieved = joint.GetTarget();
+        const rx = retrieved.get_x ? retrieved.get_x() : retrieved.x;
+        const ry = retrieved.get_y ? retrieved.get_y() : retrieved.y;
+        
+        box2dInstance.destroy(testTarget);
+        
+        const works = Math.abs(rx - testX) < 0.01 && Math.abs(ry - testY) < 0.01;
+        console.log('[Physics.web] verifyMouseJoint - SetTarget works:', works, 'got:', rx, ry, 'expected:', testX, testY);
+        return works;
+      } catch (e) {
+        console.error('[Physics.web] verifyMouseJoint failed:', e);
+        return false;
+      }
+    },
   };
 };

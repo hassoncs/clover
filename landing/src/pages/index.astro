@@ -1,0 +1,46 @@
+---
+import { Button, Text, Box } from '@clover/ui';
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Clover Landing</title>
+	</head>
+	<body class="bg-background text-text-primary min-h-screen flex flex-col items-center justify-center p-8">
+		<h1 class="text-4xl font-bold text-primary mb-8">Clover Landing Page</h1>
+		
+		<div class="grid gap-8 w-full max-w-md">
+			<div class="p-6 border border-border rounded-lg bg-surface shadow-sm">
+				<h2 class="text-xl font-semibold mb-4">React Native Web Components</h2>
+				<p class="mb-4 text-text-secondary">
+					These components are imported from <code class="bg-gray-100 px-1 rounded">@clover/ui</code>
+					and rendered using React Native Web.
+				</p>
+				
+				<div class="flex flex-col gap-4">
+					<!-- Client-only because they use React Native context/runtime -->
+					<Button client:only="react" variant="default" label="Primary Button" />
+					<Button client:only="react" variant="destructive" label="Destructive Action" />
+					<Button client:only="react" variant="outline" label="Outline Button" />
+				</div>
+			</div>
+
+			<div class="p-6 border border-border rounded-lg bg-surface shadow-sm">
+				<h2 class="text-xl font-semibold mb-4">Shared Theme Tokens</h2>
+				<div class="flex gap-2 mb-4">
+					<div class="w-10 h-10 rounded bg-primary"></div>
+					<div class="w-10 h-10 rounded bg-secondary"></div>
+					<div class="w-10 h-10 rounded bg-success"></div>
+					<div class="w-10 h-10 rounded bg-error"></div>
+				</div>
+				<p class="text-sm text-text-tertiary">
+					Colors are strictly enforced via the shared Tailwind preset.
+				</p>
+			</div>
+		</div>
+	</body>
+</html>

@@ -2,6 +2,7 @@ import { env } from 'cloudflare:test';
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 import { appRouter } from '../router';
 import { type Context } from '../context';
+import validProjectileGame from '../../__fixtures__/games/valid-projectile-game.json';
 
 const schema = `
 -- Users table (synced from Supabase Auth)
@@ -58,6 +59,23 @@ CREATE INDEX IF NOT EXISTS idx_assets_user_id ON assets(user_id);
 CREATE INDEX IF NOT EXISTS idx_assets_install_id ON assets(install_id);
 CREATE INDEX IF NOT EXISTS idx_assets_entity_type ON assets(entity_type);
 `;
+
+describe('Health Endpoint', () => {
+  it('should return health status', async () => {
+    const ctx = {
+      env: env,
+      installId: null,
+      authToken: null,
+    } as any;
+    const caller = appRouter.createCaller(ctx);
+
+    const result = await caller.health();
+
+    expect(result.status).toBe('ok');
+    expect(result.timestamp).toBeDefined();
+    expect(typeof result.timestamp).toBe('number');
+  });
+});
 
 describe('Games Router', () => {
   let ctx: Context;
@@ -149,5 +167,230 @@ describe('Games Router', () => {
     
     await expect(caller.games.get({ id: newGame.id }))
       .rejects.toThrow('Game not found');
+  });
+
+  describe('analyze route', () => {
+    it('should analyze a projectile game prompt', async () => {
+      const caller = appRouter.createCaller(ctx);
+      
+      const result = await caller.games.analyze({
+        prompt: 'A game where I launch balls at stacked blocks',
+      });
+
+      expect(result.intent).toBeDefined();
+      expect(result.intent.gameType).toBe('projectile');
+      expect(result.confidence).toBeGreaterThan(0);
+    });
+
+    it('should analyze a platformer prompt', async () => {
+      const caller = appRouter.createCaller(ctx);
+      
+      const result = await caller.games.analyze({
+        prompt: 'A game where a cat jumps between platforms',
+      });
+
+      expect(result.intent.gameType).toBe('platformer');
+    });
+
+    it('should detect theme from prompt', async () => {
+      const caller = appRouter.createCaller(ctx);
+      
+      const result = await caller.games.analyze({
+        prompt: 'A space game with rockets and aliens',
+      });
+
+      expect(result.intent.theme).toBe('space');
+    });
+  });
+
+  describe('validate route', () => {
+    it('should validate a correct game definition', async () => {
+      const caller = appRouter.createCaller(ctx);
+      
+      const result = await caller.games.validate({
+        gameDefinition: JSON.stringify(validProjectileGame),
+      });
+
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should return errors for invalid JSON', async () => {
+      const caller = appRouter.createCaller(ctx);
+      
+      const result = await caller.games.validate({
+        gameDefinition: 'not valid json {{{',
+      });
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.code === 'INVALID_JSON')).toBe(true);
+    });
+
+    it('should return errors for game with no entities', async () => {
+      const caller = appRouter.createCaller(ctx);
+      
+      const result = await caller.games.validate({
+        gameDefinition: JSON.stringify({
+          metadata: { id: 'test' },
+          world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
+          entities: [],
+        }),
+      });
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some(e => e.code === 'NO_ENTITIES')).toBe(true);
+    });
+
+    it('should return warnings for game missing win condition', async () => {
+      const caller = appRouter.createCaller(ctx);
+      
+      const result = await caller.games.validate({
+        gameDefinition: JSON.stringify({
+          metadata: { id: 'test', title: 'Test' },
+          world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
+          entities: [{
+            id: 'player',
+            transform: { x: 0, y: 0 },
+            physics: { bodyType: 'dynamic', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0.5 },
+            sprite: { type: 'rect', width: 1, height: 1, fill: '#FF0000' },
+            behaviors: [{ type: 'control', controlType: 'tap_to_jump' }],
+          }],
+        }),
+      });
+
+      expect(result.warnings.some(w => w.code === 'NO_WIN_CONDITION')).toBe(true);
+    });
+
+    it('should include summary in response', async () => {
+      const caller = appRouter.createCaller(ctx);
+      
+      const result = await caller.games.validate({
+        gameDefinition: JSON.stringify(validProjectileGame),
+      });
+
+      expect(result.summary).toBeDefined();
+      expect(typeof result.summary).toBe('string');
+    });
+  });
+
+  describe('listByInstall route', () => {
+    it('should list games by install ID for anonymous users', async () => {
+      const installId = 'anon-install-' + Date.now();
+      const anonCtx = {
+        env: env,
+        installId,
+        authToken: null,
+      } as Context;
+      const caller = appRouter.createCaller(anonCtx);
+
+      const game1 = await caller.games.create({
+        title: 'Anon Game 1',
+        definition: '{}',
+      });
+      const game2 = await caller.games.create({
+        title: 'Anon Game 2',
+        definition: '{}',
+      });
+
+      const games = await caller.games.listByInstall();
+      expect(games.length).toBeGreaterThanOrEqual(2);
+      expect(games.some(g => g.id === game1.id)).toBe(true);
+      expect(games.some(g => g.id === game2.id)).toBe(true);
+    });
+
+    it('should not return games from different install IDs', async () => {
+      const installId1 = 'install-1-' + Date.now();
+      const installId2 = 'install-2-' + Date.now();
+
+      const ctx1 = { env: env, installId: installId1, authToken: null } as Context;
+      const ctx2 = { env: env, installId: installId2, authToken: null } as Context;
+
+      const caller1 = appRouter.createCaller(ctx1);
+      const caller2 = appRouter.createCaller(ctx2);
+
+      await caller1.games.create({ title: 'Install 1 Game', definition: '{}' });
+      const games2 = await caller2.games.listByInstall();
+
+      expect(games2.every(g => g.title !== 'Install 1 Game')).toBe(true);
+    });
+  });
+
+  describe('incrementPlayCount route', () => {
+    it('should increment play count for a game', async () => {
+      const caller = appRouter.createCaller(ctx);
+
+      const game = await caller.games.create({
+        title: 'Play Count Game',
+        definition: '{}',
+        isPublic: true,
+      });
+
+      const initialGame = await caller.games.get({ id: game.id });
+      expect(initialGame.playCount).toBe(0);
+
+      await caller.games.incrementPlayCount({ id: game.id });
+      await caller.games.incrementPlayCount({ id: game.id });
+      await caller.games.incrementPlayCount({ id: game.id });
+
+      const updatedGame = await caller.games.get({ id: game.id });
+      expect(updatedGame.playCount).toBe(3);
+    });
+  });
+
+  describe('listPublic route', () => {
+    it('should list only public games', async () => {
+      const caller = appRouter.createCaller(ctx);
+
+      const publicGame = await caller.games.create({
+        title: 'Public Game ' + Date.now(),
+        definition: '{}',
+        isPublic: true,
+      });
+
+      await caller.games.create({
+        title: 'Private Game ' + Date.now(),
+        definition: '{}',
+        isPublic: false,
+      });
+
+      const publicGames = await caller.games.listPublic();
+      expect(publicGames.some(g => g.id === publicGame.id)).toBe(true);
+      expect(publicGames.every(g => g.isPublic === true)).toBe(true);
+    });
+
+    it('should support pagination', async () => {
+      const caller = appRouter.createCaller(ctx);
+
+      const games = await caller.games.listPublic({ limit: 5, offset: 0 });
+      expect(games.length).toBeLessThanOrEqual(5);
+    });
+
+    it('should order by play count descending', async () => {
+      const caller = appRouter.createCaller(ctx);
+
+      const game1 = await caller.games.create({
+        title: 'Low Play Game',
+        definition: '{}',
+        isPublic: true,
+      });
+
+      const game2 = await caller.games.create({
+        title: 'High Play Game',
+        definition: '{}',
+        isPublic: true,
+      });
+
+      await caller.games.incrementPlayCount({ id: game2.id });
+      await caller.games.incrementPlayCount({ id: game2.id });
+      await caller.games.incrementPlayCount({ id: game2.id });
+
+      const publicGames = await caller.games.listPublic();
+      const game1Index = publicGames.findIndex(g => g.id === game1.id);
+      const game2Index = publicGames.findIndex(g => g.id === game2.id);
+
+      if (game1Index !== -1 && game2Index !== -1) {
+        expect(game2Index).toBeLessThan(game1Index);
+      }
+    });
   });
 });

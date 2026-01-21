@@ -1,0 +1,129 @@
+{
+  "timestamp": "2026-01-21T16:22:30.241Z",
+  "summary": {
+    "totalPassed": 9,
+    "totalFailed": 2,
+    "totalDuration": 286690
+  },
+  "suites": [
+    {
+      "name": "Model Generation",
+      "totalDuration": 286690,
+      "results": [
+        {
+          "testName": "Model: Pixel art character (static)",
+          "model": "model_retrodiffusion-plus",
+          "success": true,
+          "duration": 29304,
+          "outputPath": "/Users/hassoncs/Workspaces/Personal/skia-physics-test/api/src/ai/__tests__/output/scenario-visual-tests/character-pixel-static-2026-01-21T16-18-12-855Z.png",
+          "dimensions": {
+            "width": 256,
+            "height": 256
+          }
+        },
+        {
+          "testName": "Model: Pixel art character (animated walk cycle)",
+          "model": "model_retrodiffusion-animation",
+          "success": true,
+          "duration": 45718,
+          "outputPath": "/Users/hassoncs/Workspaces/Personal/skia-physics-test/api/src/ai/__tests__/output/scenario-visual-tests/character-pixel-animated-2026-01-21T16-18-58-574Z.gif",
+          "dimensions": {
+            "width": 384,
+            "height": 64
+          }
+        },
+        {
+          "testName": "Model: Cartoon character (static)",
+          "model": "model_c8zak5M1VGboxeMd8kJBr2fn",
+          "success": true,
+          "duration": 28824,
+          "outputPath": "/Users/hassoncs/Workspaces/Personal/skia-physics-test/api/src/ai/__tests__/output/scenario-visual-tests/character-cartoon-static-2026-01-21T16-19-27-398Z.jpg",
+          "dimensions": {
+            "width": 512,
+            "height": 512
+          }
+        },
+        {
+          "testName": "Model: Pixel art enemy (static)",
+          "model": "model_retrodiffusion-plus",
+          "success": true,
+          "duration": 25541,
+          "outputPath": "/Users/hassoncs/Workspaces/Personal/skia-physics-test/api/src/ai/__tests__/output/scenario-visual-tests/enemy-pixel-static-2026-01-21T16-19-52-939Z.png",
+          "dimensions": {
+            "width": 256,
+            "height": 256
+          }
+        },
+        {
+          "testName": "Model: Pixel art item (static)",
+          "model": "model_retrodiffusion-plus",
+          "success": true,
+          "duration": 32007,
+          "outputPath": "/Users/hassoncs/Workspaces/Personal/skia-physics-test/api/src/ai/__tests__/output/scenario-visual-tests/item-pixel-static-2026-01-21T16-20-24-945Z.png",
+          "dimensions": {
+            "width": 64,
+            "height": 64
+          }
+        },
+        {
+          "testName": "Model: 3D style item icon",
+          "model": "model_7v2vV6NRvm8i8jJm6DWHf6DM",
+          "success": true,
+          "duration": 12430,
+          "outputPath": "/Users/hassoncs/Workspaces/Personal/skia-physics-test/api/src/ai/__tests__/output/scenario-visual-tests/item-3d-static-2026-01-21T16-20-37-376Z.jpg",
+          "dimensions": {
+            "width": 256,
+            "height": 256
+          }
+        },
+        {
+          "testName": "Model: Pixel art tileable platform",
+          "model": "model_retrodiffusion-tile",
+          "success": true,
+          "duration": 66988,
+          "outputPath": "/Users/hassoncs/Workspaces/Personal/skia-physics-test/api/src/ai/__tests__/output/scenario-visual-tests/platform-pixel-static-2026-01-21T16-21-44-364Z.png",
+          "dimensions": {
+            "width": 256,
+            "height": 256
+          }
+        },
+        {
+          "testName": "Model: Pixel art background",
+          "model": "model_uM7q4Ms6Y5X2PXie6oA9ygRa",
+          "success": true,
+          "duration": 35460,
+          "outputPath": "/Users/hassoncs/Workspaces/Personal/skia-physics-test/api/src/ai/__tests__/output/scenario-visual-tests/background-pixel-static-2026-01-21T16-22-19-825Z.jpg",
+          "dimensions": {
+            "width": 512,
+            "height": 256
+          }
+        },
+        {
+          "testName": "Model: Cartoon background",
+          "model": "model_hHuMquQ1QvEGHS1w7tGuYXud",
+          "success": true,
+          "duration": 9652,
+          "outputPath": "/Users/hassoncs/Workspaces/Personal/skia-physics-test/api/src/ai/__tests__/output/scenario-visual-tests/background-cartoon-static-2026-01-21T16-22-29-476Z.jpg",
+          "dimensions": {
+            "width": 1024,
+            "height": 512
+          }
+        },
+        {
+          "testName": "Model: Pixel art UI element",
+          "model": "model_mcYj5uGzXteUw6tKapsaDgBP",
+          "success": false,
+          "duration": 360,
+          "error": "Scenario API error: HTTP 400"
+        },
+        {
+          "testName": "Model: Flat UI element",
+          "model": "model_mcYj5uGzXteUw6tKapsaDgBP",
+          "success": false,
+          "duration": 404,
+          "error": "Scenario API error: HTTP 400"
+        }
+      ]
+    }
+  ]
+}

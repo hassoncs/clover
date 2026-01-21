@@ -76,6 +76,10 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - ExpoSecureStore (15.0.8):
+    - ExpoModulesCore
+  - ExpoWebBrowser (15.0.10):
+    - ExpoModulesCore
   - fast_float (8.0.0)
   - FBLazyVector (0.81.4)
   - fmt (11.0.2)
@@ -1828,6 +1832,34 @@ PODS:
     - react-native-box2d/Box2dHeaders (= 0.2.5)
   - react-native-box2d/Box2dHeaders (0.2.5):
     - React-Core
+  - react-native-get-random-values (2.0.0):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - react-native-safe-area-context (5.6.2):
     - boost
     - DoubleConversion
@@ -2450,6 +2482,34 @@ PODS:
     - React-perflogger (= 0.81.4)
     - React-utils (= 0.81.4)
     - SocketRocket
+  - RNCAsyncStorage (2.2.0):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - RNReanimated (4.2.1):
     - boost
     - DoubleConversion
@@ -2705,6 +2765,8 @@ DEPENDENCIES:
   - "ExpoKeepAwake (from `../../node_modules/.pnpm/expo-keep-awake@15.0.8_expo@54.0.31_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-router@_opcmuwptuolbaxq4xdlcyddbuy/node_modules/expo-keep-awake/ios`)"
   - "ExpoLinking (from `../../node_modules/.pnpm/expo-linking@8.0.11_expo@54.0.31_react-native@0.81.4_@babel+core@7.28.6_@react-native-communi_rjxqhyd7jbeasbrecicghnedda/node_modules/expo-linking/ios`)"
   - "ExpoModulesCore (from `../../node_modules/.pnpm/expo-modules-core@3.0.29_react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6_cqbde3g43sazd5fytoxivzriwe/node_modules/expo-modules-core`)"
+  - "ExpoSecureStore (from `../../node_modules/.pnpm/expo-secure-store@15.0.8_expo@54.0.31_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-route_wknlkcls5yytnai5be3qh6sqne/node_modules/expo-secure-store/ios`)"
+  - "ExpoWebBrowser (from `../../node_modules/.pnpm/expo-web-browser@15.0.10_expo@54.0.31_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-route_skfndkd2jqzdeth34switbhvbm/node_modules/expo-web-browser/ios`)"
   - "fast_float (from `../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6.4.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/third-party-podspecs/fast_float.podspec`)"
   - "FBLazyVector (from `../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6.4.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/Libraries/FBLazyVector`)"
   - "fmt (from `../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6.4.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/third-party-podspecs/fmt.podspec`)"
@@ -2744,7 +2806,8 @@ DEPENDENCIES:
   - "React-logger (from `../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6.4.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon/logger`)"
   - "React-Mapbuffer (from `../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6.4.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon`)"
   - "React-microtasksnativemodule (from `../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6.4.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)"
-  - react-native-box2d (from `../../packages/react-native-box2d`)
+  - react-native-box2d (from `../../../react-native-box2d`)
+  - "react-native-get-random-values (from `../../node_modules/.pnpm/react-native-get-random-values@2.0.0_react-native@0.81.4_@babel+core@7.28.6_@react-native-com_dvbrleqe5m4ln2ivmt43stzi3i/node_modules/react-native-get-random-values`)"
   - "react-native-safe-area-context (from `../../node_modules/.pnpm/react-native-safe-area-context@5.6.2_react-native@0.81.4_@babel+core@7.28.6_@react-native-com_dlz6aoufxsl5klahbvhfg6tjf4/node_modules/react-native-safe-area-context`)"
   - "react-native-skia (from `../../node_modules/.pnpm/@shopify+react-native-skia@2.4.14_react-native-reanimated@4.2.1_react-native-worklets@0.7.0_@_ha6z4snslgb5atfkwx7c3mvbyu/node_modules/@shopify/react-native-skia`)"
   - "React-NativeModulesApple (from `../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6.4.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)"
@@ -2777,6 +2840,7 @@ DEPENDENCIES:
   - ReactAppDependencyProvider (from `build/generated/ios`)
   - ReactCodegen (from `build/generated/ios`)
   - "ReactCommon/turbomodule/core (from `../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6.4.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon`)"
+  - "RNCAsyncStorage (from `../../node_modules/.pnpm/@react-native-async-storage+async-storage@2.2.0_react-native@0.81.4_@babel+core@7.28.6_@react_pjticoacz6eukeqtatkb35gyju/node_modules/@react-native-async-storage/async-storage`)"
   - "RNReanimated (from `../../node_modules/.pnpm/react-native-reanimated@4.2.1_react-native-worklets@0.7.0_@babel+core@7.28.6_react-native@0.8_4h23qzycenwn6ho53ne2a7uhsq/node_modules/react-native-reanimated`)"
   - "RNScreens (from `../../node_modules/.pnpm/react-native-screens@4.16.0_react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cl_wreyuhfl4d56h2366sdrwds3am/node_modules/react-native-screens`)"
   - "RNWorklets (from `../../node_modules/.pnpm/react-native-worklets@0.7.0_@babel+core@7.28.6_react-native@0.81.4_@babel+core@7.28.6_@react-_sjkama337iftxlbx2tkt7oedoe/node_modules/react-native-worklets`)"
@@ -2810,6 +2874,10 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/.pnpm/expo-linking@8.0.11_expo@54.0.31_react-native@0.81.4_@babel+core@7.28.6_@react-native-communi_rjxqhyd7jbeasbrecicghnedda/node_modules/expo-linking/ios"
   ExpoModulesCore:
     :path: "../../node_modules/.pnpm/expo-modules-core@3.0.29_react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6_cqbde3g43sazd5fytoxivzriwe/node_modules/expo-modules-core"
+  ExpoSecureStore:
+    :path: "../../node_modules/.pnpm/expo-secure-store@15.0.8_expo@54.0.31_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-route_wknlkcls5yytnai5be3qh6sqne/node_modules/expo-secure-store/ios"
+  ExpoWebBrowser:
+    :path: "../../node_modules/.pnpm/expo-web-browser@15.0.10_expo@54.0.31_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-route_skfndkd2jqzdeth34switbhvbm/node_modules/expo-web-browser/ios"
   fast_float:
     :podspec: "../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6.4.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/third-party-podspecs/fast_float.podspec"
   FBLazyVector:
@@ -2888,7 +2956,9 @@ EXTERNAL SOURCES:
   React-microtasksnativemodule:
     :path: "../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6.4.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
   react-native-box2d:
-    :path: "../../packages/react-native-box2d"
+    :path: "../../../react-native-box2d"
+  react-native-get-random-values:
+    :path: "../../node_modules/.pnpm/react-native-get-random-values@2.0.0_react-native@0.81.4_@babel+core@7.28.6_@react-native-com_dvbrleqe5m4ln2ivmt43stzi3i/node_modules/react-native-get-random-values"
   react-native-safe-area-context:
     :path: "../../node_modules/.pnpm/react-native-safe-area-context@5.6.2_react-native@0.81.4_@babel+core@7.28.6_@react-native-com_dlz6aoufxsl5klahbvhfg6tjf4/node_modules/react-native-safe-area-context"
   react-native-skia:
@@ -2953,6 +3023,8 @@ EXTERNAL SOURCES:
     :path: build/generated/ios
   ReactCommon:
     :path: "../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6.4.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon"
+  RNCAsyncStorage:
+    :path: "../../node_modules/.pnpm/@react-native-async-storage+async-storage@2.2.0_react-native@0.81.4_@babel+core@7.28.6_@react_pjticoacz6eukeqtatkb35gyju/node_modules/@react-native-async-storage/async-storage"
   RNReanimated:
     :path: "../../node_modules/.pnpm/react-native-reanimated@4.2.1_react-native-worklets@0.7.0_@babel+core@7.28.6_react-native@0.8_4h23qzycenwn6ho53ne2a7uhsq/node_modules/react-native-reanimated"
   RNScreens:
@@ -2974,6 +3046,8 @@ SPEC CHECKSUMS:
   ExpoKeepAwake: 55f75eca6499bb9e4231ebad6f3e9cb8f99c0296
   ExpoLinking: 8f0aaf69aa56f832913030503b6263dc6f647f37
   ExpoModulesCore: d86dab8a6c8f1184f9b0b0503ace93919882aa15
+  ExpoSecureStore: d32f751874a2ceb5aaeebeb3578e165c1ba2b24a
+  ExpoWebBrowser: 17b064c621789e41d4816c95c93f429b84971f52
   fast_float: b32c788ed9c6a8c584d114d0047beda9664e7cc6
   FBLazyVector: 941bef1c8eeabd9fe1f501e30a5220beee913886
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
@@ -3013,6 +3087,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 9d2434a42701d6144ca18f0ca1c4507808ca7696
   React-microtasksnativemodule: 75b6604b667d297292345302cc5bfb6b6aeccc1b
   react-native-box2d: afdb44930327195568f7b4b33fa4e378ccbc50de
+  react-native-get-random-values: e2acf4070fe4b7325705a05af047449637a27a21
   react-native-safe-area-context: c00143b4823773bba23f2f19f85663ae89ceb460
   react-native-skia: b60d0b9d9aea330baef956b7f015d0af2b42076d
   React-NativeModulesApple: 879fbdc5dcff7136abceb7880fe8a2022a1bd7c3
@@ -3045,6 +3120,7 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: 433ddfb4536948630aadd5bd925aff8a632d2fe3
   ReactCodegen: 90081693a8f3629c32d28ec8b6b35f25b8c35442
   ReactCommon: 394c6b92765cf6d211c2c3f7f6bc601dffb316a6
+  RNCAsyncStorage: 29f0230e1a25f36c20b05f65e2eb8958d6526e82
   RNReanimated: f3e688a0d877ca47fc8a81fadfbdc3c2733e3e8e
   RNScreens: 0bbf16c074ae6bb1058a7bf2d1ae017f4306797c
   RNWorklets: c7364a50f58167d10ac1466562065e66aa1d9f49

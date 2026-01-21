@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Dimensions } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { View, StyleSheet } from "react-native";
 import {
   Canvas,
   Rect,
@@ -8,161 +8,233 @@ import {
   Fill,
   Group,
 } from "@shopify/react-native-skia";
-
-import { initPhysics, b2Body, b2World, Box2DAPI } from "../../lib/physics";
-import { useSimplePhysicsLoop } from "../../lib/physics2d";
+import {
+  createPhysics2D,
+  useSimplePhysicsLoop,
+  useForceDrag,
+  type Physics2D,
+  type BodyId,
+  vec2,
+} from "../../lib/physics2d";
+import { ViewportRoot, useViewport } from "../../lib/viewport";
 
 const PIXELS_PER_METER = 50;
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
-const GROUND_Y = SCREEN_HEIGHT / PIXELS_PER_METER - 1;
 
-interface BodyState {
+const DOMINO_WIDTH = 0.2;
+const DOMINO_HEIGHT = 1.0;
+const DOMINO_COUNT = 15;
+const DOMINO_SPACING = 0.8;
+
+const BALL_RADIUS = 0.5;
+const BALL_INITIAL_VELOCITY = 5;
+
+interface DominoState {
+  id: BodyId;
   x: number;
   y: number;
   angle: number;
-  width?: number;
-  height?: number;
-  radius?: number;
-  color: string;
 }
 
-export default function Dominoes() {
+interface BallState {
+  id: BodyId;
+  x: number;
+  y: number;
+}
+
+function DominoesCanvas() {
   const canvasRef = useCanvasRef();
-  const worldRef = useRef<b2World | null>(null);
-  const bodiesRef = useRef<b2Body[]>([]);
-  const [dominoes, setDominoes] = useState<BodyState[]>([]);
-  const [ball, setBall] = useState<BodyState | null>(null);
+  const physicsRef = useRef<Physics2D | null>(null);
+  const dominoIdsRef = useRef<BodyId[]>([]);
+  const ballIdRef = useRef<BodyId | null>(null);
+
+  const [dominoes, setDominoes] = useState<DominoState[]>([]);
+  const [ball, setBall] = useState<BallState | null>(null);
   const [isReady, setIsReady] = useState(false);
 
+  const vp = useViewport();
+
+  const dragHandlers = useForceDrag(physicsRef, {
+    pixelsPerMeter: PIXELS_PER_METER,
+    stiffness: 50,
+    damping: 5,
+  });
+
   useEffect(() => {
+    if (!vp.isReady) return;
+
+    const worldWidth = vp.world.size.width;
+    const worldHeight = vp.world.size.height;
+    const groundY = worldHeight - 1;
+
     const setupPhysics = async () => {
-      try {
-        const Box2d = await initPhysics();
-        const gravity = Box2d.b2Vec2(0, 9.8);
-        const world = Box2d.b2World(gravity);
-        worldRef.current = world;
-
-        // Ground
-        const groundDef = Box2d.b2BodyDef();
-        groundDef.position = Box2d.b2Vec2(0, GROUND_Y);
-        const ground = world.CreateBody(groundDef);
-        const groundShape = Box2d.b2PolygonShape();
-        groundShape.SetAsBox(50, 1);
-        ground.CreateFixture2(groundShape, 0);
-
-        // Dominoes
-        const dWidth = 0.2;
-        const dHeight = 1.0;
-        const dShape = Box2d.b2PolygonShape();
-        dShape.SetAsBox(dWidth/2, dHeight/2);
-        
-        const dFixture = Box2d.b2FixtureDef();
-        dFixture.shape = dShape;
-        dFixture.density = 5;
-        dFixture.friction = 0.5;
-        dFixture.restitution = 0.1;
-
-        const domBodies: b2Body[] = [];
-        const domStates: BodyState[] = [];
-
-        for(let i=0; i<15; i++) {
-            const bd = Box2d.b2BodyDef();
-            bd.type = 2;
-            bd.position = Box2d.b2Vec2(3 + i * 0.8, GROUND_Y - dHeight/2);
-            const body = world.CreateBody(bd);
-            body.CreateFixture(dFixture);
-            domBodies.push(body);
-            domStates.push({
-                x: 0, y: 0, angle: 0,
-                width: dWidth * PIXELS_PER_METER,
-                height: dHeight * PIXELS_PER_METER,
-                color: "#e67e22"
-            });
-        }
-        bodiesRef.current = domBodies;
-        setDominoes(domStates);
-
-        // Wrecking Ball
-        const ballDef = Box2d.b2BodyDef();
-        ballDef.type = 2;
-        ballDef.position = Box2d.b2Vec2(1, GROUND_Y - 2);
-        const ballBody = world.CreateBody(ballDef);
-        
-        const ballShape = Box2d.b2CircleShape();
-        ballShape.SetRadius(0.5);
-        
-        const ballFixture = Box2d.b2FixtureDef();
-        ballFixture.shape = ballShape;
-        ballFixture.density = 20; // Heavy
-        ballFixture.restitution = 0.2;
-        ballBody.CreateFixture(ballFixture);
-
-        // Initial velocity to hit dominoes
-        ballBody.SetLinearVelocity(Box2d.b2Vec2(5, 0));
-        
-        (worldRef as any).ball = ballBody;
-        setBall({ x: 0, y: 0, angle: 0, radius: 0.5 * PIXELS_PER_METER, color: "#2c3e50" });
-
-        setIsReady(true);
-      } catch (error) {
-        console.error(error);
+      if (physicsRef.current) {
+        physicsRef.current.destroyWorld();
       }
+
+      const physics = await createPhysics2D();
+      physics.createWorld(vec2(0, 9.8));
+      physicsRef.current = physics;
+
+      const groundId = physics.createBody({
+        type: "static",
+        position: vec2(worldWidth / 2, groundY + 0.5),
+      });
+      physics.addFixture(groundId, {
+        shape: { type: "box", halfWidth: worldWidth / 2, halfHeight: 0.5 },
+        density: 0,
+        friction: 0.6,
+      });
+
+      const newDominoIds: BodyId[] = [];
+      for (let i = 0; i < DOMINO_COUNT; i++) {
+        const x = 3 + i * DOMINO_SPACING;
+        const y = groundY - DOMINO_HEIGHT / 2;
+
+        const bodyId = physics.createBody({
+          type: "dynamic",
+          position: vec2(x, y),
+        });
+
+        physics.addFixture(bodyId, {
+          shape: { type: "box", halfWidth: DOMINO_WIDTH / 2, halfHeight: DOMINO_HEIGHT / 2 },
+          density: 5,
+          friction: 0.5,
+          restitution: 0.1,
+        });
+
+        newDominoIds.push(bodyId);
+      }
+      dominoIdsRef.current = newDominoIds;
+
+      const ballStartX = 1;
+      const ballStartY = groundY - 2;
+
+      const ballId = physics.createBody({
+        type: "dynamic",
+        position: vec2(ballStartX, ballStartY),
+      });
+      physics.addFixture(ballId, {
+        shape: { type: "circle", radius: BALL_RADIUS },
+        density: 20,
+        friction: 0.3,
+        restitution: 0.2,
+      });
+      physics.setLinearVelocity(ballId, vec2(BALL_INITIAL_VELOCITY, 0));
+      ballIdRef.current = ballId;
+
+      setIsReady(true);
     };
 
     setupPhysics();
-    return () => { worldRef.current = null; bodiesRef.current = []; };
-  }, []);
 
-  const stepCallback = useCallback((dt: number) => {
-    if (!worldRef.current) return;
-    worldRef.current.Step(dt, 8, 3);
+    return () => {
+      if (physicsRef.current) {
+        physicsRef.current.destroyWorld();
+        physicsRef.current = null;
+      }
+      dominoIdsRef.current = [];
+      ballIdRef.current = null;
+      setIsReady(false);
+    };
+  }, [vp.world.size.width, vp.world.size.height, vp.isReady]);
 
-    const newDoms = bodiesRef.current.map((b, i) => {
-      const p = b.GetPosition();
+  const stepPhysics = useCallback((dt: number) => {
+    const physics = physicsRef.current;
+    if (!physics) return;
+
+    dragHandlers.applyDragForces();
+    physics.step(dt, 8, 3);
+
+    const updatedDominoes = dominoIdsRef.current.map((id) => {
+      const transform = physics.getTransform(id);
       return {
-        x: p.x * PIXELS_PER_METER,
-        y: p.y * PIXELS_PER_METER,
-        angle: b.GetAngle(),
-        width: 0.2 * PIXELS_PER_METER,
-        height: 1.0 * PIXELS_PER_METER,
-        color: "#e67e22"
+        id,
+        x: transform.position.x * PIXELS_PER_METER,
+        y: transform.position.y * PIXELS_PER_METER,
+        angle: transform.angle,
       };
     });
-    setDominoes(newDoms);
+    setDominoes(updatedDominoes);
 
-    const b = (worldRef.current as any).ball as b2Body;
-    if (b) {
-      const p = b.GetPosition();
+    if (ballIdRef.current) {
+      const ballTransform = physics.getTransform(ballIdRef.current);
       setBall({
-        x: p.x * PIXELS_PER_METER,
-        y: p.y * PIXELS_PER_METER,
-        angle: b.GetAngle(),
-        radius: 0.5 * PIXELS_PER_METER,
-        color: "#2c3e50"
+        id: ballIdRef.current,
+        x: ballTransform.position.x * PIXELS_PER_METER,
+        y: ballTransform.position.y * PIXELS_PER_METER,
       });
     }
-  }, []);
+  }, [dragHandlers]);
 
-  useSimplePhysicsLoop(stepCallback, isReady);
+  useSimplePhysicsLoop(stepPhysics, isReady);
+
+  if (!vp.isReady) return null;
+
+  const groundY = vp.world.size.height - 1;
+  const dominoWidthPx = DOMINO_WIDTH * PIXELS_PER_METER;
+  const dominoHeightPx = DOMINO_HEIGHT * PIXELS_PER_METER;
+  const ballRadiusPx = BALL_RADIUS * PIXELS_PER_METER;
 
   return (
-    <Canvas ref={canvasRef} style={{ flex: 1 }}>
-      <Fill color="#1a1a2e" />
-      
-      {/* Floor */}
-      <Rect x={0} y={GROUND_Y * PIXELS_PER_METER} width={SCREEN_WIDTH} height={50} color="#7f8c8d" />
+    <View
+      style={styles.container}
+      onStartShouldSetResponder={() => true}
+      onResponderGrant={dragHandlers.onTouchStart}
+      onResponderMove={dragHandlers.onTouchMove}
+      onResponderRelease={dragHandlers.onTouchEnd}
+      onResponderTerminate={dragHandlers.onTouchEnd}
+    >
+      <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
+        <Fill color="#1a1a2e" />
 
-      {dominoes.map((d, i) => (
-        <Group key={i} transform={[{ translateX: d.x }, { translateY: d.y }, { rotate: d.angle }]}>
-            <Rect x={-(d.width!)/2} y={-(d.height!)/2} width={d.width!} height={d.height!} color={d.color} />
-        </Group>
-      ))}
+        <Rect
+          x={0}
+          y={groundY * PIXELS_PER_METER}
+          width={vp.size.width}
+          height={PIXELS_PER_METER}
+          color="#7f8c8d"
+        />
 
-      {ball && (
-        <Group transform={[{ translateX: ball.x }, { translateY: ball.y }, { rotate: ball.angle }]}>
-            <Circle cx={0} cy={0} r={ball.radius!} color={ball.color} />
-        </Group>
-      )}
-    </Canvas>
+        {dominoes.map((d) => (
+          <Group
+            key={`domino-${d.id.value}`}
+            transform={[
+              { translateX: d.x },
+              { translateY: d.y },
+              { rotate: d.angle },
+            ]}
+          >
+            <Rect
+              x={-dominoWidthPx / 2}
+              y={-dominoHeightPx / 2}
+              width={dominoWidthPx}
+              height={dominoHeightPx}
+              color="#e67e22"
+            />
+          </Group>
+        ))}
+
+        {ball && (
+          <Circle cx={ball.x} cy={ball.y} r={ballRadiusPx} color="#2c3e50" />
+        )}
+      </Canvas>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  canvas: {
+    flex: 1,
+  },
+});
+
+export default function Dominoes() {
+  return (
+    <ViewportRoot pixelsPerMeter={PIXELS_PER_METER}>
+      <DominoesCanvas />
+    </ViewportRoot>
   );
 }

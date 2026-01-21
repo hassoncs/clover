@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Dimensions } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { View, StyleSheet } from "react-native";
 import {
   Canvas,
   Rect,
@@ -8,137 +8,237 @@ import {
   Fill,
   Group,
 } from "@shopify/react-native-skia";
-import { initPhysics, b2Body, b2World, Box2DAPI } from "../../lib/physics";
-import { useSimplePhysicsLoop } from "../../lib/physics2d";
+import {
+  createPhysics2D,
+  useSimplePhysicsLoop,
+  useForceDrag,
+  type Physics2D,
+  type BodyId,
+  vec2,
+} from "../../lib/physics2d";
+import { ViewportRoot, useViewport } from "../../lib/viewport";
 
 const PIXELS_PER_METER = 50;
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
-const GROUND_Y = SCREEN_HEIGHT / PIXELS_PER_METER;
 
-interface BodyState {
+const PARTICLE_COUNT = 150;
+const PARTICLE_RADIUS = 0.15;
+const FUNNEL_WALL_LENGTH = 10;
+const FUNNEL_ANGLE = 0.5;
+
+interface ParticleState {
+  id: BodyId;
   x: number;
   y: number;
-  angle: number;
-  radius: number;
   color: string;
 }
 
-export default function Avalanche() {
+function generateParticleColor(): string {
+  const hue = Math.random() * 60 + 180;
+  return `hsl(${hue}, 80%, 60%)`;
+}
+
+function AvalancheCanvas() {
   const canvasRef = useCanvasRef();
-  const worldRef = useRef<b2World | null>(null);
-  const bodiesRef = useRef<b2Body[]>([]);
-  const [particles, setParticles] = useState<BodyState[]>([]);
+  const physicsRef = useRef<Physics2D | null>(null);
+  const particleIdsRef = useRef<BodyId[]>([]);
+
+  const [particles, setParticles] = useState<ParticleState[]>([]);
   const [isReady, setIsReady] = useState(false);
 
+  const vp = useViewport();
+
+  const dragHandlers = useForceDrag(physicsRef, {
+    pixelsPerMeter: PIXELS_PER_METER,
+    stiffness: 50,
+    damping: 5,
+  });
+
   useEffect(() => {
+    if (!vp.isReady) return;
+
+    const worldWidth = vp.world.size.width;
+    const worldHeight = vp.world.size.height;
+    const funnelY = worldHeight - 5;
+
     const setupPhysics = async () => {
-      try {
-        const Box2d = await initPhysics();
-        const gravity = Box2d.b2Vec2(0, 9.8);
-        const world = Box2d.b2World(gravity);
-        worldRef.current = world;
-
-        // Funnel / Ground
-        const groundBodyDef = Box2d.b2BodyDef();
-        groundBodyDef.position = Box2d.b2Vec2(0, 0);
-        const ground = world.CreateBody(groundBodyDef);
-
-        const leftWall = Box2d.b2PolygonShape();
-        leftWall.SetAsBox(10, 1);
-        const leftFixture = Box2d.b2FixtureDef();
-        leftFixture.shape = leftWall;
-        
-        const w1Def = Box2d.b2BodyDef();
-        w1Def.position = Box2d.b2Vec2(SCREEN_WIDTH/PIXELS_PER_METER * 0.2, GROUND_Y - 5);
-        w1Def.angle = 0.5;
-        const w1 = world.CreateBody(w1Def);
-        w1.CreateFixture(leftFixture);
-
-        const w2Def = Box2d.b2BodyDef();
-        w2Def.position = Box2d.b2Vec2(SCREEN_WIDTH/PIXELS_PER_METER * 0.8, GROUND_Y - 5);
-        w2Def.angle = -0.5;
-        const w2 = world.CreateBody(w2Def);
-        w2.CreateFixture(leftFixture);
-
-        const pShape = Box2d.b2CircleShape();
-        const pRadius = 0.15;
-        pShape.SetRadius(pRadius);
-        
-        const pFixture = Box2d.b2FixtureDef();
-        pFixture.shape = pShape;
-        pFixture.density = 1;
-        pFixture.friction = 0.1;
-        pFixture.restitution = 0.5;
-
-        const newBodies: b2Body[] = [];
-        const newParticles: BodyState[] = [];
-
-        // 150 Particles
-        for(let i=0; i<150; i++) {
-            const bd = Box2d.b2BodyDef();
-            bd.type = 2;
-            bd.position = Box2d.b2Vec2(
-                SCREEN_WIDTH/PIXELS_PER_METER/2 + (Math.random()-0.5)*2,
-                -5 - i * 0.5
-            );
-            const b = world.CreateBody(bd);
-            b.CreateFixture(pFixture);
-            newBodies.push(b);
-            newParticles.push({
-                x: 0, y: 0, angle: 0,
-                radius: pRadius * PIXELS_PER_METER,
-                color: `hsl(${Math.random()*60 + 180}, 80%, 60%)` // Blue/Cyan
-            });
-        }
-
-        bodiesRef.current = newBodies;
-        setParticles(newParticles);
-        setIsReady(true);
-      } catch (error) {
-        console.error(error);
+      if (physicsRef.current) {
+        physicsRef.current.destroyWorld();
       }
+
+      const physics = await createPhysics2D();
+      physics.createWorld(vec2(0, 9.8));
+      physicsRef.current = physics;
+
+      const leftWallId = physics.createBody({
+        type: "static",
+        position: vec2(worldWidth * 0.2, funnelY),
+        angle: FUNNEL_ANGLE,
+      });
+      physics.addFixture(leftWallId, {
+        shape: { type: "box", halfWidth: FUNNEL_WALL_LENGTH, halfHeight: 1 },
+        density: 0,
+        friction: 0.3,
+      });
+
+      const rightWallId = physics.createBody({
+        type: "static",
+        position: vec2(worldWidth * 0.8, funnelY),
+        angle: -FUNNEL_ANGLE,
+      });
+      physics.addFixture(rightWallId, {
+        shape: { type: "box", halfWidth: FUNNEL_WALL_LENGTH, halfHeight: 1 },
+        density: 0,
+        friction: 0.3,
+      });
+
+      const newParticleIds: BodyId[] = [];
+      const initialParticles: ParticleState[] = [];
+
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        const x = worldWidth / 2 + (Math.random() - 0.5) * 2;
+        const y = -5 - i * 0.5;
+        const color = generateParticleColor();
+
+        const particleId = physics.createBody({
+          type: "dynamic",
+          position: vec2(x, y),
+        });
+
+        physics.addFixture(particleId, {
+          shape: { type: "circle", radius: PARTICLE_RADIUS },
+          density: 1,
+          friction: 0.1,
+          restitution: 0.5,
+        });
+
+        newParticleIds.push(particleId);
+        initialParticles.push({
+          id: particleId,
+          x: 0,
+          y: 0,
+          color,
+        });
+      }
+
+      particleIdsRef.current = newParticleIds;
+      setParticles(initialParticles);
+      setIsReady(true);
     };
 
     setupPhysics();
-    return () => { worldRef.current = null; bodiesRef.current = []; };
-  }, []);
 
-  const stepCallback = useCallback((dt: number) => {
-    if (!worldRef.current) return;
-    worldRef.current.Step(dt, 8, 3);
+    return () => {
+      if (physicsRef.current) {
+        physicsRef.current.destroyWorld();
+        physicsRef.current = null;
+      }
+      particleIdsRef.current = [];
+      setIsReady(false);
+    };
+  }, [vp.world.size.width, vp.world.size.height, vp.isReady]);
 
-    setParticles(prev => 
-      bodiesRef.current.map((b, i) => {
-        const p = b.GetPosition();
+  const stepPhysics = useCallback((dt: number) => {
+    const physics = physicsRef.current;
+    if (!physics) return;
+
+    dragHandlers.applyDragForces();
+    physics.step(dt, 8, 3);
+
+    setParticles((prev) =>
+      prev.map((particle, i) => {
+        const id = particleIdsRef.current[i];
+        if (!id) return particle;
+        const transform = physics.getTransform(id);
         return {
-          ...prev[i],
-          x: p.x * PIXELS_PER_METER,
-          y: p.y * PIXELS_PER_METER,
-          angle: b.GetAngle()
+          ...particle,
+          x: transform.position.x * PIXELS_PER_METER,
+          y: transform.position.y * PIXELS_PER_METER,
         };
       })
     );
-  }, []);
+  }, [dragHandlers]);
 
-  useSimplePhysicsLoop(stepCallback, isReady);
+  useSimplePhysicsLoop(stepPhysics, isReady);
+
+  if (!vp.isReady) return null;
+
+  const worldHeight = vp.world.size.height;
+  const funnelY = (worldHeight - 5) * PIXELS_PER_METER;
+  const funnelWallWidthPx = FUNNEL_WALL_LENGTH * PIXELS_PER_METER;
+  const funnelWallHeightPx = 1 * PIXELS_PER_METER;
+  const particleRadiusPx = PARTICLE_RADIUS * PIXELS_PER_METER;
 
   return (
-    <Canvas ref={canvasRef} style={{ flex: 1 }}>
-      <Fill color="#1a1a2e" />
-      
-      {/* Funnel Walls (Visual) */}
-      <Group transform={[{ translateX: SCREEN_WIDTH * 0.2 }, { translateY: (GROUND_Y - 5) * PIXELS_PER_METER }, { rotate: 0.5 }]}>
-        <Rect x={-10*PIXELS_PER_METER} y={-1*PIXELS_PER_METER} width={20*PIXELS_PER_METER} height={2*PIXELS_PER_METER} color="#7f8c8d" />
-      </Group>
-      <Group transform={[{ translateX: SCREEN_WIDTH * 0.8 }, { translateY: (GROUND_Y - 5) * PIXELS_PER_METER }, { rotate: -0.5 }]}>
-        <Rect x={-10*PIXELS_PER_METER} y={-1*PIXELS_PER_METER} width={20*PIXELS_PER_METER} height={2*PIXELS_PER_METER} color="#7f8c8d" />
-      </Group>
+    <View
+      style={styles.container}
+      onStartShouldSetResponder={() => true}
+      onResponderGrant={dragHandlers.onTouchStart}
+      onResponderMove={dragHandlers.onTouchMove}
+      onResponderRelease={dragHandlers.onTouchEnd}
+      onResponderTerminate={dragHandlers.onTouchEnd}
+    >
+      <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
+        <Fill color="#1a1a2e" />
 
-      {particles.map((p, i) => (
-        <Group key={i} transform={[{ translateX: p.x }, { translateY: p.y }, { rotate: p.angle }]}>
-            <Circle cx={0} cy={0} r={p.radius} color={p.color} />
+        <Group
+          transform={[
+            { translateX: vp.size.width * 0.2 },
+            { translateY: funnelY },
+            { rotate: FUNNEL_ANGLE },
+          ]}
+        >
+          <Rect
+            x={-funnelWallWidthPx}
+            y={-funnelWallHeightPx}
+            width={funnelWallWidthPx * 2}
+            height={funnelWallHeightPx * 2}
+            color="#7f8c8d"
+          />
         </Group>
-      ))}
-    </Canvas>
+
+        <Group
+          transform={[
+            { translateX: vp.size.width * 0.8 },
+            { translateY: funnelY },
+            { rotate: -FUNNEL_ANGLE },
+          ]}
+        >
+          <Rect
+            x={-funnelWallWidthPx}
+            y={-funnelWallHeightPx}
+            width={funnelWallWidthPx * 2}
+            height={funnelWallHeightPx * 2}
+            color="#7f8c8d"
+          />
+        </Group>
+
+        {particles.map((p) => (
+          <Circle
+            key={`particle-${p.id.value}`}
+            cx={p.x}
+            cy={p.y}
+            r={particleRadiusPx}
+            color={p.color}
+          />
+        ))}
+      </Canvas>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  canvas: {
+    flex: 1,
+  },
+});
+
+export default function Avalanche() {
+  return (
+    <ViewportRoot pixelsPerMeter={PIXELS_PER_METER}>
+      <AvalancheCanvas />
+    </ViewportRoot>
   );
 }

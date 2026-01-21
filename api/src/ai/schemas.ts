@@ -439,8 +439,8 @@ export const UIConfigSchema = z.object({
 export const GameMetadataSchema = z.object({
   id: z.string(),
   title: z.string(),
-  description: z.string().optional(),
-  author: z.string().optional(),
+  description: z.string().default(''),
+  author: z.string().default(''),
   version: z.string().default('1.0.0'),
 });
 

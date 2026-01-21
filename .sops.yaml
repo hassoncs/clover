@@ -1,0 +1,8 @@
+creation_rules:
+  - path_regex: \.hush$
+    age: age1t3uyjjdzgr8rg0y56x8mncyyemhk5kxjv670fxuc35dzata5vpuslgunj5
+  - path_regex: \.hush\..*
+    age: age1t3uyjjdzgr8rg0y56x8mncyyemhk5kxjv670fxuc35dzata5vpuslgunj5
+  # Catch-all for hush temp files
+  - path_regex: .*
+    age: age1t3uyjjdzgr8rg0y56x8mncyyemhk5kxjv670fxuc35dzata5vpuslgunj5

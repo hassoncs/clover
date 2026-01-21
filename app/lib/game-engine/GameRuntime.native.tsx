@@ -13,7 +13,7 @@ import type { RuntimeEntity } from './types';
 import type { BehaviorContext, InputState, GameState, CollisionInfo } from './BehaviorContext';
 import { CameraSystem, type CameraConfig } from './CameraSystem';
 
-interface GameRuntimeProps {
+export interface GameRuntimeProps {
   definition: GameDefinition;
   onGameEnd?: (state: 'won' | 'lost') => void;
   onScoreChange?: (score: number) => void;
@@ -33,6 +33,7 @@ export function GameRuntime({
   const elapsedRef = useRef(0);
   const inputRef = useRef<InputState>({});
   const collisionsRef = useRef<CollisionInfo[]>([]);
+  const viewportRef = useRef({ width: 0, height: 0 });
 
   const [isReady, setIsReady] = useState(false);
   const [entities, setEntities] = useState<RuntimeEntity[]>([]);
@@ -47,24 +48,36 @@ export function GameRuntime({
   useEffect(() => {
     const setup = async () => {
       try {
+        console.log('[GameRuntime] Starting setup...');
         const physics = await createPhysics2D();
+        console.log('[GameRuntime] Physics initialized:', !!physics);
         physicsRef.current = physics;
 
         const loader = new GameLoader({ physics });
         loaderRef.current = loader;
 
         const game = loader.load(definition);
+        console.log('[GameRuntime] Game loaded, entities:', game.entityManager.getVisibleEntities().length);
+        console.log('[GameRuntime] Entity IDs:', game.entityManager.getVisibleEntities().map(e => e.id));
         gameRef.current = game;
 
+        const worldWidth = definition.world.bounds?.width ?? 20;
+        const worldHeight = definition.world.bounds?.height ?? 12;
         const cameraConfig: CameraConfig = {
-          position: { x: 0, y: 0 },
+          position: { x: worldWidth / 2, y: worldHeight / 2 },
           zoom: definition.camera?.zoom ?? 1,
           followTarget: definition.camera?.followTarget,
           followSmoothing: 0.1,
           bounds: definition.camera?.bounds,
         };
+        console.log('[GameRuntime] Camera position set to world center:', { x: worldWidth / 2, y: worldHeight / 2 });
         
-        const camera = new CameraSystem(cameraConfig, { width: 800, height: 600 });
+        const initialViewport = viewportRef.current.width > 0 
+          ? viewportRef.current 
+          : { width: 800, height: 600 };
+        const pixelsPerMeter = definition.world.pixelsPerMeter ?? 50;
+        console.log('[GameRuntime] Creating camera with viewport:', initialViewport, 'pixelsPerMeter:', pixelsPerMeter);
+        const camera = new CameraSystem(cameraConfig, initialViewport, pixelsPerMeter);
         cameraRef.current = camera;
 
         game.rulesEvaluator.setCallbacks({
@@ -83,11 +96,15 @@ export function GameRuntime({
           },
         });
 
-        setEntities(game.entityManager.getVisibleEntities());
+        const visibleEntities = game.entityManager.getVisibleEntities();
+        console.log('[GameRuntime] Setting entities, count:', visibleEntities.length);
+        console.log('[GameRuntime] First entity:', visibleEntities[0]);
+        setEntities(visibleEntities);
         setGameState((s) => ({ ...s, state: 'ready' }));
         setIsReady(true);
+        console.log('[GameRuntime] Setup complete, isReady: true');
       } catch (error) {
-        console.error('Failed to initialize game:', error);
+        console.error('[GameRuntime] Failed to initialize game:', error);
       }
     };
 
@@ -108,7 +125,10 @@ export function GameRuntime({
     const physics = physicsRef.current;
     const game = gameRef.current;
     const camera = cameraRef.current;
-    if (!physics || !game || !camera) return;
+    if (!physics || !game || !camera) {
+      console.log('[GameRuntime] stepGame skipped - missing:', { physics: !!physics, game: !!game, camera: !!camera });
+      return;
+    }
 
     if (game.rulesEvaluator.getGameState() !== 'playing') return;
 
@@ -201,6 +221,8 @@ export function GameRuntime({
 
   const handleLayout = useCallback((event: { nativeEvent: { layout: { width: number; height: number } } }) => {
     const { width, height } = event.nativeEvent.layout;
+    console.log('[GameRuntime] onLayout fired, viewport:', { width, height });
+    viewportRef.current = { width, height };
     setViewportSize({ width, height });
     cameraRef.current?.updateViewport({ width, height });
   }, []);
@@ -228,10 +250,12 @@ export function GameRuntime({
   
   const cameraTransform = cameraRef.current?.getWorldToScreenTransform();
   const matrix = cameraTransform ? [
-    cameraTransform.scaleX, 0, 0,
-    0, cameraTransform.scaleY, 0,
-    cameraTransform.translateX, cameraTransform.translateY, 1,
+    cameraTransform.scaleX, 0, cameraTransform.translateX,
+    0, cameraTransform.scaleY, cameraTransform.translateY,
+    0, 0, 1,
   ] : undefined;
+
+  console.log('[GameRuntime] Render - entities:', entities.length, 'matrix:', matrix, 'viewportSize:', viewportSize, 'gameState:', gameState.state);
 
   return (
     <View style={styles.container} onLayout={handleLayout}>
@@ -261,6 +285,32 @@ export function GameRuntime({
           {definition.ui?.showLives && (
             <Text style={styles.livesText}>Lives: {gameState.lives}</Text>
           )}
+          {gameState.state === 'playing' && (
+            <TouchableOpacity
+              style={styles.pauseButton}
+              onPress={() => gameRef.current?.rulesEvaluator.pause()}
+            >
+              <Text style={styles.pauseButtonText}>⏸</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+
+      {gameState.state === 'paused' && (
+        <View style={styles.overlay}>
+          <Text style={styles.overlayTitle}>Paused</Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => gameRef.current?.rulesEvaluator.resume()}
+          >
+            <Text style={styles.buttonText}>Resume</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: '#888', marginTop: 12 }]}
+            onPress={handleRestart}
+          >
+            <Text style={styles.buttonText}>Restart</Text>
+          </TouchableOpacity>
         </View>
       )}
 
@@ -326,6 +376,18 @@ const styles = StyleSheet.create({
     textShadowColor: '#000',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
+  },
+  pauseButton: {
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pauseButtonText: {
+    color: '#fff',
+    fontSize: 20,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,

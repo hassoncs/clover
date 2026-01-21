@@ -132,8 +132,10 @@ export interface Box2DAPI {
   b2CircleShape: () => b2CircleShape;
   b2FixtureDef: () => b2FixtureDef;
   
-  // Joints
   b2RevoluteJointDef: () => b2RevoluteJointDef;
   b2DistanceJointDef: () => b2DistanceJointDef;
   b2MouseJointDef: () => b2MouseJointDef;
+  
+  castToMouseJoint?: (joint: b2Joint) => b2MouseJoint;
+  verifyMouseJoint?: (joint: b2MouseJoint, testX: number, testY: number) => boolean;
 }
