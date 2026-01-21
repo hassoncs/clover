@@ -86,8 +86,11 @@ function DominoesCanvas() {
       });
 
       const newDominoIds: BodyId[] = [];
+      const dominoRowWidth = DOMINO_COUNT * DOMINO_SPACING;
+      const dominoStartX = (worldWidth - dominoRowWidth) / 2 + DOMINO_SPACING / 2;
+
       for (let i = 0; i < DOMINO_COUNT; i++) {
-        const x = 3 + i * DOMINO_SPACING;
+        const x = dominoStartX + i * DOMINO_SPACING;
         const y = groundY - DOMINO_HEIGHT / 2;
 
         const bodyId = physics.createBody({
@@ -106,7 +109,7 @@ function DominoesCanvas() {
       }
       dominoIdsRef.current = newDominoIds;
 
-      const ballStartX = 1;
+      const ballStartX = dominoStartX - 2;
       const ballStartY = groundY - 2;
 
       const ballId = physics.createBody({

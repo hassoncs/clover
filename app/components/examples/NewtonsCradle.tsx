@@ -79,8 +79,9 @@ function NewtonsCradleCanvas() {
         newAnchorXs.push(anchorX);
 
         const isFirstBall = i === 0;
-        const ballX = isFirstBall ? anchorX - 2 : anchorX;
-        const ballY = isFirstBall ? ANCHOR_Y + STRING_LENGTH - 1 : ANCHOR_Y + STRING_LENGTH;
+        const swingAngle = isFirstBall ? -Math.PI / 4 : 0;
+        const ballX = anchorX + STRING_LENGTH * Math.sin(swingAngle);
+        const ballY = ANCHOR_Y + STRING_LENGTH * Math.cos(swingAngle);
 
         const ballId = physics.createBody({
           type: "dynamic",

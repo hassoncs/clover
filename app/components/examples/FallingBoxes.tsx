@@ -105,12 +105,19 @@ function FallingBoxesCanvas() {
         const newBodyIds: BodyId[] = [];
         const initialBoxes: BoxState[] = [];
 
+        const columns = 4;
+        const columnSpacing = 1.5;
+        const gridWidth = columns * columnSpacing;
+        const gridStartX = (worldWidth - gridWidth) / 2 + columnSpacing / 2;
+
         for (let i = 0; i < 8; i++) {
+          const column = i % columns;
+          const row = Math.floor(i / columns);
           const bodyId = physics.createBody({
             type: "dynamic",
             position: vec2(
-              1 + (i % 4) * 1.5 + Math.random() * 0.5,
-              1 + Math.floor(i / 4) * 1.5
+              gridStartX + column * columnSpacing + Math.random() * 0.5,
+              1 + row * columnSpacing
             ),
             angle: Math.random() * 0.5 - 0.25,
           });
