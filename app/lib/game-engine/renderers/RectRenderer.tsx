@@ -1,4 +1,4 @@
-import { Rect, Group, Shadow } from '@shopify/react-native-skia';
+import { Rect, Group, Shadow, BlendColor } from '@shopify/react-native-skia';
 import type { RectSpriteComponent } from '@clover/shared';
 import type { RuntimeEntity } from '../types';
 
@@ -41,6 +41,9 @@ export function RectRenderer({ entity, sprite, pixelsPerMeter }: RectRendererPro
             blur={sprite.shadow.blur}
             color={sprite.shadow.color}
           />
+        )}
+        {sprite.tint && (
+          <BlendColor color={sprite.tint} mode="multiply" />
         )}
       </Rect>
       {sprite.strokeColor && sprite.strokeWidth && (

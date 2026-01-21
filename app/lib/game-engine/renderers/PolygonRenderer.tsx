@@ -1,4 +1,4 @@
-import { Path, Group, Shadow, Skia } from '@shopify/react-native-skia';
+import { Path, Group, Shadow, Skia, BlendColor } from '@shopify/react-native-skia';
 import type { PolygonSpriteComponent } from '@clover/shared';
 import type { RuntimeEntity } from '../types';
 
@@ -52,6 +52,9 @@ export function PolygonRenderer({ entity, sprite, pixelsPerMeter }: PolygonRende
             blur={sprite.shadow.blur}
             color={sprite.shadow.color}
           />
+        )}
+        {sprite.tint && (
+          <BlendColor color={sprite.tint} mode="multiply" />
         )}
       </Path>
       {sprite.strokeColor && sprite.strokeWidth && (

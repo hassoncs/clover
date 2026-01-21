@@ -16,6 +16,7 @@ export interface BaseSpriteComponent {
   strokeWidth?: number;
   opacity?: number;
   shadow?: ShadowEffect;
+  tint?: string;
 }
 
 export interface RectSpriteComponent extends BaseSpriteComponent {

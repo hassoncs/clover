@@ -1,4 +1,4 @@
-import { Image, Group, useImage } from '@shopify/react-native-skia';
+import { Image, Group, useImage, BlendColor } from '@shopify/react-native-skia';
 import type { ImageSpriteComponent } from '@clover/shared';
 import type { RuntimeEntity } from '../types';
 
@@ -38,7 +38,11 @@ export function ImageRenderer({ entity, sprite, pixelsPerMeter }: ImageRendererP
         width={width}
         height={height}
         fit="contain"
-      />
+      >
+        {sprite.tint && (
+          <BlendColor color={sprite.tint} mode="multiply" />
+        )}
+      </Image>
     </Group>
   );
 }

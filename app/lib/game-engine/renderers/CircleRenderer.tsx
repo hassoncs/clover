@@ -1,4 +1,4 @@
-import { Circle, Group, Shadow } from '@shopify/react-native-skia';
+import { Circle, Group, Shadow, BlendColor } from '@shopify/react-native-skia';
 import type { CircleSpriteComponent } from '@clover/shared';
 import type { RuntimeEntity } from '../types';
 
@@ -34,6 +34,9 @@ export function CircleRenderer({ entity, sprite, pixelsPerMeter }: CircleRendere
             blur={sprite.shadow.blur}
             color={sprite.shadow.color}
           />
+        )}
+        {sprite.tint && (
+          <BlendColor color={sprite.tint} mode="multiply" />
         )}
       </Circle>
       {sprite.strokeColor && sprite.strokeWidth && (
