@@ -202,6 +202,79 @@ function registerMovementHandlers(executor: BehaviorExecutor): void {
       ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: vx, y: vy });
     }
   });
+
+  executor.registerHandler('bounce', (behavior, ctx) => {
+    const bounce = behavior as import('@clover/shared').BounceBehavior;
+    if (!ctx.entity.bodyId) return;
+
+    const vel = ctx.physics.getLinearVelocity(ctx.entity.bodyId);
+    const pos = ctx.entity.transform;
+    let newVx = vel.x;
+    let newVy = vel.y;
+
+    if ((pos.x <= bounce.bounds.minX && vel.x < 0) || (pos.x >= bounce.bounds.maxX && vel.x > 0)) {
+      newVx = -vel.x;
+    }
+    if ((pos.y <= bounce.bounds.minY && vel.y < 0) || (pos.y >= bounce.bounds.maxY && vel.y > 0)) {
+      newVy = -vel.y;
+    }
+
+    if (newVx !== vel.x || newVy !== vel.y) {
+      ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: newVx, y: newVy });
+    }
+  });
+
+  executor.registerHandler('gravity_zone', (behavior, ctx) => {
+    const zone = behavior as import('@clover/shared').GravityZoneBehavior;
+    
+    const entities = ctx.entityManager.getActiveEntities();
+    for (const target of entities) {
+      if (target.id === ctx.entity.id) continue;
+      if (!target.bodyId) continue;
+      if (zone.affectsTags && !zone.affectsTags.some(tag => target.tags.includes(tag))) continue;
+
+      const dx = ctx.entity.transform.x - target.transform.x;
+      const dy = ctx.entity.transform.y - target.transform.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist > zone.radius || dist < 0.01) continue;
+
+      let force = { x: zone.gravity.x, y: zone.gravity.y };
+
+      if (zone.falloff && zone.falloff !== 'none') {
+        const factor = zone.falloff === 'linear' 
+          ? 1 - (dist / zone.radius)
+          : Math.pow(1 - (dist / zone.radius), 2);
+        force = { x: force.x * factor, y: force.y * factor };
+      }
+
+      ctx.physics.applyForceToCenter(target.bodyId, force);
+    }
+  });
+
+  executor.registerHandler('magnetic', (behavior, ctx) => {
+    const magnetic = behavior as import('@clover/shared').MagneticBehavior;
+    
+    const entities = ctx.entityManager.getActiveEntities();
+    for (const target of entities) {
+      if (target.id === ctx.entity.id) continue;
+      if (!target.bodyId) continue;
+      if (magnetic.attractsTags && !magnetic.attractsTags.some(tag => target.tags.includes(tag))) continue;
+
+      const dx = ctx.entity.transform.x - target.transform.x;
+      const dy = ctx.entity.transform.y - target.transform.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist > magnetic.radius || dist < 0.01) continue;
+
+      const direction = magnetic.repels ? -1 : 1;
+      const forceMagnitude = (magnetic.strength * direction) / Math.max(dist * dist, 0.1);
+      const forceX = (dx / dist) * forceMagnitude;
+      const forceY = (dy / dist) * forceMagnitude;
+
+      ctx.physics.applyForceToCenter(target.bodyId, { x: forceX, y: forceY });
+    }
+  });
 }
 
 function registerControlHandlers(executor: BehaviorExecutor): void {
@@ -381,13 +454,14 @@ function registerCollisionHandlers(executor: BehaviorExecutor): void {
       case 'tap':
         if (ctx.input.tap) shouldSpawn = true;
         break;
-      case 'timer':
+      case 'timer': {
         const lastSpawn = (runtime.state.lastSpawn as number) ?? 0;
         if (ctx.elapsed >= lastSpawn + (spawn.interval ?? 1)) {
           shouldSpawn = true;
           runtime.state.lastSpawn = ctx.elapsed;
         }
         break;
+      }
       case 'collision':
         for (const collision of ctx.collisions) {
           if (collision.entityA.id !== ctx.entity.id && collision.entityB.id !== ctx.entity.id) {
