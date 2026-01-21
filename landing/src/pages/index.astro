@@ -1,46 +1,118 @@
 ---
-import { Button, Text, Box } from '@clover/ui';
+import { Button } from '@clover/ui';
 ---
 
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Clover Landing</title>
-	</head>
-	<body class="bg-background text-text-primary min-h-screen flex flex-col items-center justify-center p-8">
-		<h1 class="text-4xl font-bold text-primary mb-8">Clover Landing Page</h1>
-		
-		<div class="grid gap-8 w-full max-w-md">
-			<div class="p-6 border border-border rounded-lg bg-surface shadow-sm">
-				<h2 class="text-xl font-semibold mb-4">React Native Web Components</h2>
-				<p class="mb-4 text-text-secondary">
-					These components are imported from <code class="bg-gray-100 px-1 rounded">@clover/ui</code>
-					and rendered using React Native Web.
-				</p>
-				
-				<div class="flex flex-col gap-4">
-					<!-- Client-only because they use React Native context/runtime -->
-					<Button client:only="react" variant="default" label="Primary Button" />
-					<Button client:only="react" variant="destructive" label="Destructive Action" />
-					<Button client:only="react" variant="outline" label="Outline Button" />
-				</div>
-			</div>
+<head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Clover Game Maker | Create Games with AI</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Turn your ideas into playable games in seconds with Clover, the AI-powered game maker for kids. No coding required. Fun, easy, and creative!" />
+    <meta name="keywords" content="ai game maker, kids coding, game creation, educational games, stem, creative toys" />
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Clover Game Maker | Create Games with AI" />
+    <meta property="og:description" content="AI-powered game creation for kids ages 6-14. Describe a game, and our AI builds it in under 30 seconds. No code, just fun!" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://clovergamemaker.com" />
+    <!-- <meta property="og:image" content="/og-image.jpg" /> -->
 
-			<div class="p-6 border border-border rounded-lg bg-surface shadow-sm">
-				<h2 class="text-xl font-semibold mb-4">Shared Theme Tokens</h2>
-				<div class="flex gap-2 mb-4">
-					<div class="w-10 h-10 rounded bg-primary"></div>
-					<div class="w-10 h-10 rounded bg-secondary"></div>
-					<div class="w-10 h-10 rounded bg-success"></div>
-					<div class="w-10 h-10 rounded bg-error"></div>
-				</div>
-				<p class="text-sm text-text-tertiary">
-					Colors are strictly enforced via the shared Tailwind preset.
-				</p>
-			</div>
-		</div>
-	</body>
+</head>
+<body class="bg-background text-text-primary font-sans">
+    <div class="w-full max-w-5xl mx-auto px-6 md:px-8">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center py-6">
+            <h1 class="text-2xl font-bold text-primary">Clover 🍀</h1>
+            <Button client:only="react" variant="outline" label="Get Early Access" />
+        </header>
+
+        <!-- Hero Section -->
+        <main class="py-16 md:py-24 text-center">
+            <h2 class="text-4xl md:text-6xl font-extrabold text-text-primary mb-4 leading-tight">
+                Dream a Game.
+                <br />
+                <span class="text-primary">Make it in Seconds.</span>
+            </h2>
+            <p class="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto mb-8">
+                With Clover, your child can create playable 2D physics games just by describing them. No code, just pure imagination.
+            </p>
+            <Button client:only="react" size="lg" label="Start Creating for Free" />
+        </main>
+
+        <!-- Features Section -->
+        <section class="py-16 md:py-24">
+            <div class="grid md:grid-cols-3 gap-8 text-center">
+                <div class="bg-surface p-8 rounded-lg border border-border">
+                    <span class="text-4xl mb-4">🤖</span>
+                    <h3 class="text-xl font-bold mb-2">AI-Powered Creation</h3>
+                    <p class="text-text-secondary">Just tell Clover what you want! "A bouncy castle game with falling stars" becomes a reality in under 30 seconds.</p>
+                </div>
+                <div class="bg-surface p-8 rounded-lg border border-border">
+                    <span class="text-4xl mb-4">✨</span>
+                    <h3 class="text-xl font-bold mb-2">Zero Coding Needed</h3>
+                    <p class="text-text-secondary">Perfect for kids ages 6-14. We handle the code so they can focus on creativity and fun.</p>
+                </div>
+                <div class="bg-surface p-8 rounded-lg border border-border">
+                    <span class="text-4xl mb-4">🎮</span>
+                    <h3 class="text-xl font-bold mb-2">Instantly Play & Share</h3>
+                    <p class="text-text-secondary">Play your creations right away and share them with friends and family for endless fun.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section class="py-16 md:py-24">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">How It Works in 3 Steps</h2>
+            <div class="grid md:grid-cols-3 gap-8 md:gap-12 relative">
+                <!-- Step 1 -->
+                <div class="text-center">
+                    <div class="relative mb-4">
+                        <div class="w-16 h-16 bg-primary/20 text-primary rounded-full flex items-center justify-center text-2xl font-bold mx-auto">1</div>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Describe Your Game</h3>
+                    <p class="text-text-secondary">Type out your wackiest game idea. The more creative, the better!</p>
+                </div>
+                <!-- Step 2 -->
+                <div class="text-center">
+                    <div class="relative mb-4">
+                        <div class="w-16 h-16 bg-primary/20 text-primary rounded-full flex items-center justify-center text-2xl font-bold mx-auto">2</div>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Watch the AI Build</h3>
+                    <p class="text-text-secondary">Our Clover AI brings your words to life, generating art, physics, and gameplay.</p>
+                </div>
+                <!-- Step 3 -->
+                <div class="text-center">
+                    <div class="relative mb-4">
+                        <div class="w-16 h-16 bg-primary/20 text-primary rounded-full flex items-center justify-center text-2xl font-bold mx-auto">3</div>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Play and Tweak</h3>
+                    <p class="text-text-secondary">Jump right into your new game! Change the prompt to tweak it and make it perfect.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="bg-surface border border-border rounded-lg my-16 md:my-24">
+            <div class="py-12 px-8 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Ready to Create?</h2>
+                <p class="text-text-secondary mb-8 max-w-xl mx-auto">Join our early access list and be the first to build worlds with the magic of AI.</p>
+                <Button client:only="react" variant="default" size="lg" label="Get Started Now" />
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center py-12">
+            <div class="flex justify-center gap-4 mb-8">
+                <div class="bg-secondary text-text-primary h-12 w-36 rounded-lg flex items-center justify-center text-sm font-medium">Coming to App Store</div>
+                <div class="bg-secondary text-text-primary h-12 w-36 rounded-lg flex items-center justify-center text-sm font-medium">Coming to Google Play</div>
+            </div>
+            <p class="text-text-secondary text-sm">&copy; {new Date().getFullYear()} Clover Game Maker. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
 </html>
