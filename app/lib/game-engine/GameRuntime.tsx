@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { Canvas, Fill } from '@shopify/react-native-skia';
+import { Canvas, Fill, Group } from '@shopify/react-native-skia';
 import type { GameDefinition } from '@clover/shared';
 import {
   createPhysics2D,
@@ -11,6 +11,7 @@ import { GameLoader, type LoadedGame } from './GameLoader';
 import { EntityRenderer } from './renderers';
 import type { RuntimeEntity } from './types';
 import type { BehaviorContext, InputState, GameState, CollisionInfo } from './BehaviorContext';
+import { CameraSystem, type CameraConfig } from './CameraSystem';
 
 interface GameRuntimeProps {
   definition: GameDefinition;
@@ -28,6 +29,7 @@ export function GameRuntime({
   const physicsRef = useRef<Physics2D | null>(null);
   const gameRef = useRef<LoadedGame | null>(null);
   const loaderRef = useRef<GameLoader | null>(null);
+  const cameraRef = useRef<CameraSystem | null>(null);
   const elapsedRef = useRef(0);
   const inputRef = useRef<InputState>({});
   const collisionsRef = useRef<CollisionInfo[]>([]);
@@ -40,6 +42,7 @@ export function GameRuntime({
     time: 0,
     state: 'loading',
   });
+  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     const setup = async () => {
@@ -52,6 +55,17 @@ export function GameRuntime({
 
         const game = loader.load(definition);
         gameRef.current = game;
+
+        const cameraConfig: CameraConfig = {
+          position: { x: 0, y: 0 },
+          zoom: definition.camera?.zoom ?? 1,
+          followTarget: definition.camera?.followTarget,
+          followSmoothing: 0.1,
+          bounds: definition.camera?.bounds,
+        };
+        
+        const camera = new CameraSystem(cameraConfig, { width: 800, height: 600 });
+        cameraRef.current = camera;
 
         game.rulesEvaluator.setCallbacks({
           onScoreChange: (score) => {
@@ -86,19 +100,23 @@ export function GameRuntime({
       physicsRef.current = null;
       gameRef.current = null;
       loaderRef.current = null;
+      cameraRef.current = null;
     };
   }, [definition, onGameEnd, onScoreChange]);
 
   const stepGame = useCallback((dt: number) => {
     const physics = physicsRef.current;
     const game = gameRef.current;
-    if (!physics || !game) return;
+    const camera = cameraRef.current;
+    if (!physics || !game || !camera) return;
 
     if (game.rulesEvaluator.getGameState() !== 'playing') return;
 
     physics.step(dt, 8, 3);
 
     game.entityManager.syncTransformsFromPhysics();
+
+    camera.update(dt, (id) => game.entityManager.getEntity(id));
 
     elapsedRef.current += dt;
 
@@ -153,10 +171,14 @@ export function GameRuntime({
   }, []);
 
   const handleRestart = useCallback(() => {
-    if (gameRef.current && loaderRef.current) {
+    if (gameRef.current && loaderRef.current && cameraRef.current) {
       const newGame = loaderRef.current.reload(gameRef.current);
       gameRef.current = newGame;
       elapsedRef.current = 0;
+      
+      cameraRef.current.setPosition({ x: 0, y: 0 });
+      cameraRef.current.setZoom(definition.camera?.zoom ?? 1);
+      
       newGame.rulesEvaluator.setCallbacks({
         onScoreChange: (score) => {
           setGameState((s) => ({ ...s, score }));
@@ -175,19 +197,27 @@ export function GameRuntime({
       setEntities(newGame.entityManager.getVisibleEntities());
       setGameState({ score: 0, lives: 3, time: 0, state: 'ready' });
     }
-  }, [onGameEnd, onScoreChange]);
+  }, [onGameEnd, onScoreChange, definition.camera?.zoom]);
+
+  const handleLayout = useCallback((event: { nativeEvent: { layout: { width: number; height: number } } }) => {
+    const { width, height } = event.nativeEvent.layout;
+    setViewportSize({ width, height });
+    cameraRef.current?.updateViewport({ width, height });
+  }, []);
 
   const handleTap = useCallback(
     (event: { nativeEvent: { locationX: number; locationY: number } }) => {
-      const game = gameRef.current;
-      if (!game) return;
+      const camera = cameraRef.current;
+      if (!camera) return;
 
       const { locationX: x, locationY: y } = event.nativeEvent;
+      const worldPos = camera.screenToWorld(x, y);
+      
       inputRef.current.tap = {
         x,
         y,
-        worldX: x / game.pixelsPerMeter,
-        worldY: y / game.pixelsPerMeter,
+        worldX: worldPos.x,
+        worldY: worldPos.y,
       };
     },
     []
@@ -195,18 +225,27 @@ export function GameRuntime({
 
   const pixelsPerMeter = gameRef.current?.pixelsPerMeter ?? 50;
   const backgroundColor = definition.ui?.backgroundColor ?? '#87CEEB';
+  
+  const cameraTransform = cameraRef.current?.getWorldToScreenTransform();
+  const matrix = cameraTransform ? [
+    cameraTransform.scaleX, 0, 0,
+    0, cameraTransform.scaleY, 0,
+    cameraTransform.translateX, cameraTransform.translateY, 1,
+  ] : undefined;
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} onLayout={handleLayout}>
       <Canvas style={styles.canvas} onTouchEnd={handleTap}>
         <Fill color={backgroundColor} />
-        {entities.map((entity) => (
-          <EntityRenderer
-            key={entity.id}
-            entity={entity}
-            pixelsPerMeter={pixelsPerMeter}
-          />
-        ))}
+        <Group matrix={matrix}>
+          {entities.map((entity) => (
+            <EntityRenderer
+              key={entity.id}
+              entity={entity}
+              pixelsPerMeter={pixelsPerMeter}
+            />
+          ))}
+        </Group>
       </Canvas>
 
       {showHUD && (
