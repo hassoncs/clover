@@ -77,3 +77,7 @@ app/research/
 results_*.json
 plan.json
 *_readme.md
+
+# Test outputs
+test-results/
+**/__tests__/output/
