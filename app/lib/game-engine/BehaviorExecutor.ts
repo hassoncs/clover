@@ -18,12 +18,15 @@ const BEHAVIOR_PHASES: Record<BehaviorType, BehaviorPhase> = {
   bounce: 'movement',
   oscillate: 'movement',
   rotate: 'visual',
+  rotate_toward: 'visual',
   animate: 'visual',
   spawn_on_event: 'post_physics',
   destroy_on_collision: 'post_physics',
   score_on_collision: 'post_physics',
+  score_on_destroy: 'post_physics',
   gravity_zone: 'movement',
   magnetic: 'movement',
+  health: 'post_physics',
 };
 
 const PHASE_ORDER: BehaviorPhase[] = ['input', 'timer', 'movement', 'visual', 'post_physics'];
@@ -436,6 +439,52 @@ function registerCollisionHandlers(executor: BehaviorExecutor): void {
     }
   });
 
+  executor.registerHandler('score_on_destroy', (behavior, ctx, runtime) => {
+    const score = behavior as import('@clover/shared').ScoreOnDestroyBehavior;
+    
+    if (runtime.state.isBeingDestroyed) {
+      ctx.addScore(score.points);
+    }
+  });
+
+  executor.registerHandler('health', (behavior, ctx, runtime) => {
+    const health = behavior as import('@clover/shared').HealthBehavior;
+    
+    if (runtime.state.currentHealth === undefined) {
+      runtime.state.currentHealth = health.currentHealth ?? health.maxHealth;
+    }
+    
+    const lastHitTime = (runtime.state.lastHitTime as number) ?? 0;
+    const invulnerable = health.invulnerabilityTime && 
+                        (ctx.elapsed - lastHitTime) < health.invulnerabilityTime;
+    
+    if (!invulnerable && health.damageFromTags) {
+      for (const collision of ctx.collisions) {
+        const other =
+          collision.entityA.id === ctx.entity.id ? collision.entityB : collision.entityA;
+        
+        if (collision.entityA.id !== ctx.entity.id && collision.entityB.id !== ctx.entity.id) {
+          continue;
+        }
+        
+        const matchesTags = health.damageFromTags.some((tag) => other.tags.includes(tag));
+        if (!matchesTags) continue;
+        
+        const damage = health.damagePerHit ?? 1;
+        runtime.state.currentHealth = (runtime.state.currentHealth as number) - damage;
+        runtime.state.lastHitTime = ctx.elapsed;
+        
+        if ((runtime.state.currentHealth as number) <= 0) {
+          if (health.destroyOnDeath !== false) {
+            runtime.state.isBeingDestroyed = true;
+            ctx.destroyEntity(ctx.entity.id);
+          }
+        }
+        break;
+      }
+    }
+  });
+
   executor.registerHandler('spawn_on_event', (behavior, ctx, runtime) => {
     const spawn = behavior as import('@clover/shared').SpawnOnEventBehavior;
 
@@ -525,6 +574,29 @@ function registerVisualHandlers(executor: BehaviorExecutor): void {
 
     if (rotate.affectsPhysics && ctx.entity.bodyId) {
       ctx.physics.setAngularVelocity(ctx.entity.bodyId, rotate.speed * direction);
+    }
+  });
+
+  executor.registerHandler('rotate_toward', (behavior, ctx) => {
+    const rotateTo = behavior as import('@clover/shared').RotateTowardBehavior;
+    
+    const target = ctx.entityManager.getEntity(rotateTo.target);
+    if (!target) return;
+
+    const dx = target.transform.x - ctx.entity.transform.x;
+    const dy = target.transform.y - ctx.entity.transform.y;
+    
+    const targetAngle = Math.atan2(dy, dx) + (rotateTo.offset ?? 0);
+    
+    if (rotateTo.speed) {
+      const angleDiff = targetAngle - ctx.entity.transform.angle;
+      const normalizedDiff = Math.atan2(Math.sin(angleDiff), Math.cos(angleDiff));
+      const maxRotation = rotateTo.speed * ctx.dt;
+      const rotation = Math.max(-maxRotation, Math.min(maxRotation, normalizedDiff));
+      
+      ctx.entity.transform.angle += rotation;
+    } else {
+      ctx.entity.transform.angle = targetAngle;
     }
   });
 
