@@ -79,6 +79,23 @@ const config: StorybookConfig = {
       },
     });
 
+    config.module.rules.push({
+      test: /\.(js|jsx)$/,
+      include: [
+        /node_modules\/@expo\/vector-icons/,
+        /node_modules\/react-native-vector-icons/,
+      ],
+      use: {
+        loader: 'babel-loader',
+        options: {
+          presets: [
+            ['@babel/preset-env', { targets: { browsers: ['last 2 versions'] } }],
+            ['@babel/preset-react', { runtime: 'automatic' }],
+          ],
+        },
+      },
+    });
+
     config.resolve = config.resolve || {};
     config.resolve.extensions = ['.web.tsx', '.web.ts', '.tsx', '.ts', '.web.js', '.js', '.jsx', ...(config.resolve.extensions || [])];
     

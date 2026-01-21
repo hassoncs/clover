@@ -3,21 +3,22 @@ import React from 'react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { View } from 'react-native';
 import type { SortableListProps } from './types';
 
 function SortableItem<T>({ id, item, index, renderItem }: { id: string; item: T; index: number; renderItem: SortableListProps<T>['renderItem'] }) {
-  const { attributes, listeners, setNodeRef, transform, transition, active } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
-  const style = {
+  const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
+    cursor: isDragging ? 'grabbing' : 'grab',
+    touchAction: 'none',
   };
 
   return (
-    <View ref={setNodeRef} style={style}>
-      {renderItem({ item, index, drag: () => ({...listeners, ...attributes}), isActive: !!active })}
-    </View>
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
+      {renderItem({ item, index, drag: () => {}, isActive: isDragging })}
+    </div>
   );
 }
 

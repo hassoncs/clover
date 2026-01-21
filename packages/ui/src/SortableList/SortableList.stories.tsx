@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { SortableList } from './index';
 import { View, Text, StyleSheet } from 'react-native';
 import { useState } from 'react';
-import { Feather } from '@expo/vector-icons';
 
 const meta: Meta<typeof SortableList> = {
   title: 'UI/SortableList',
@@ -46,7 +45,7 @@ const SortableListWrapper = () => {
       renderItem={({ item, drag, isActive }) => (
         <View style={[styles.item, isActive && styles.activeItem, { backgroundColor: item.color }]}>
           <View onTouchStart={drag} style={styles.dragHandle}>
-            <Feather name="menu" size={24} color="white" />
+            <Text style={styles.dragIcon}>☰</Text>
           </View>
           <Text style={styles.text}>{item.label}</Text>
         </View>
@@ -75,6 +74,10 @@ const styles = StyleSheet.create({
   dragHandle: {
     marginRight: 16,
     padding: 8,
+  },
+  dragIcon: {
+    fontSize: 24,
+    color: 'white',
   },
   text: {
     color: 'white',
