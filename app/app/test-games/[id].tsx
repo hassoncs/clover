@@ -3,12 +3,12 @@ import { View, Text, Pressable, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { WithSkia } from "@/components/WithSkia";
-import { getTestGame } from "@/lib/test-games/demoGames";
+import { TESTGAMES_BY_ID, loadTestGame, type TestGameId } from "@/lib/registry/generated/testGames";
 
 export default function TestGameRunScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const entry = useMemo(() => (id ? getTestGame(id) : undefined), [id]);
+  const entry = useMemo(() => (id && id in TESTGAMES_BY_ID ? TESTGAMES_BY_ID[id as TestGameId] : undefined), [id]);
 
   const [runtimeKey, setRuntimeKey] = useState(0);
 
@@ -34,7 +34,7 @@ export default function TestGameRunScreen() {
             <Text className="text-white font-semibold">← Back</Text>
           </Pressable>
           <Text className="text-white font-bold text-lg flex-1 text-center" numberOfLines={1}>
-            {entry.title}
+            {entry.meta.title}
           </Text>
           <Pressable className="py-2 px-4 bg-black/50 rounded-lg" onPress={handleReset}>
             <Text className="text-white font-semibold">Reset</Text>
@@ -44,11 +44,14 @@ export default function TestGameRunScreen() {
 
       <WithSkia
         getComponent={() =>
-          import("@/lib/game-engine/GameRuntime.native").then((mod) => ({
+          Promise.all([
+            import("@/lib/game-engine/GameRuntime.native"),
+            loadTestGame(entry.id),
+          ]).then(([mod, definition]) => ({
             default: () => (
               <mod.GameRuntime
                 key={runtimeKey}
-                definition={entry.definition}
+                definition={definition}
                 showHUD={false}
               />
             ),

@@ -4,16 +4,16 @@ import { WithSkia } from "../../components/WithSkia";
 import type { ExampleMeta } from "../../lib/registry/types";
 
 export const metadata: ExampleMeta = {
-  title: "Dominoes",
-  description: "Stacking stability and chain reaction.",
+  title: "Rope Swing",
+  description: "Dynamic distance joints for spider-man style swinging.",
 };
 
-export default function Example() {
+export default function RopeSwingExample() {
   return (
     <View style={{ flex: 1, backgroundColor: "#1a1a2e" }}>
-      <Stack.Screen options={{ title: "Dominoes" }} />
+      <Stack.Screen options={{ title: "Rope Swing" }} />
       <WithSkia
-        getComponent={() => import("../../components/examples/Dominoes")}
+        getComponent={() => import("../../components/examples/RopeSwing")}
       />
     </View>
   );

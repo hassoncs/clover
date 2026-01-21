@@ -1,6 +1,12 @@
 import type { GameDefinition } from "@clover/shared";
+import type { TestGameMeta } from "@/lib/registry/types";
 
-export const pendulumSwingGame: GameDefinition = {
+export const metadata: TestGameMeta = {
+  title: "Pendulum Swing",
+  description: "Tests pendulum-like physics with swinging balls and chain effects",
+};
+
+const game: GameDefinition = {
   metadata: {
     id: "test-pendulum-swing",
     title: "Pendulum Swing",
@@ -132,3 +138,5 @@ export const pendulumSwingGame: GameDefinition = {
     },
   ],
 };
+
+export default game;

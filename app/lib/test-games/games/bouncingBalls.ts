@@ -1,6 +1,12 @@
 import type { GameDefinition } from "@clover/shared";
+import type { TestGameMeta } from "@/lib/registry/types";
 
-export const bouncingBallsGame: GameDefinition = {
+export const metadata: TestGameMeta = {
+  title: "Bouncing Balls",
+  description: "Tests restitution (bounciness) with balls of varying bounce factors",
+};
+
+const game: GameDefinition = {
   metadata: {
     id: "test-bouncing-balls",
     title: "Bouncing Balls",
@@ -108,3 +114,5 @@ export const bouncingBallsGame: GameDefinition = {
     },
   ],
 };
+
+export default game;

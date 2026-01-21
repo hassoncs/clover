@@ -1,11 +1,17 @@
 import type { GameDefinition } from "@clover/shared";
+import type { TestGameMeta } from "@/lib/registry/types";
+
+export const metadata: TestGameMeta = {
+  title: "Domino Chain",
+  description: "Chain reaction physics - dominoes falling in sequence",
+};
 
 const dominoPositions: Array<{ x: number; y: number; angle: number }> = [];
 for (let i = 0; i < 15; i++) {
   dominoPositions.push({ x: 3 + i * 0.8, y: 9.5, angle: 0 });
 }
 
-export const dominoChainGame: GameDefinition = {
+const game: GameDefinition = {
   metadata: {
     id: "test-domino-chain",
     title: "Domino Chain",
@@ -89,3 +95,5 @@ export const dominoChainGame: GameDefinition = {
     },
   ],
 };
+
+export default game;

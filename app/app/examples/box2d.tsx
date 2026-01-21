@@ -1,6 +1,12 @@
 import { View } from "react-native";
 import { Stack } from "expo-router";
 import { WithSkia } from "../../components/WithSkia";
+import type { ExampleMeta } from "../../lib/registry/types";
+
+export const metadata: ExampleMeta = {
+  title: "Falling Boxes (Box2D)",
+  description: "Basic rigid bodies and colliders falling under gravity.",
+};
 
 export default function Box2DExample() {
   return (

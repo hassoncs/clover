@@ -1,6 +1,12 @@
 import { View } from "react-native";
 import { Stack } from "expo-router";
 import { WithSkia } from "../../components/WithSkia";
+import type { ExampleMeta } from "../../lib/registry/types";
+
+export const metadata: ExampleMeta = {
+  title: "Avalanche",
+  description: "Stress test with 150+ bodies.",
+};
 
 export default function Example() {
   return (

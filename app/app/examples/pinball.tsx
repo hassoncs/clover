@@ -4,17 +4,19 @@ import { WithSkia } from "../../components/WithSkia";
 import type { ExampleMeta } from "../../lib/registry/types";
 
 export const metadata: ExampleMeta = {
-  title: "Dominoes",
-  description: "Stacking stability and chain reaction.",
+  title: "Pinball Table",
+  description: "High restitution, kinematic flippers, and collision scoring.",
 };
 
-export default function Example() {
+export default function PinballExample() {
   return (
     <View style={{ flex: 1, backgroundColor: "#1a1a2e" }}>
-      <Stack.Screen options={{ title: "Dominoes" }} />
+      <Stack.Screen options={{ title: "Pinball Table" }} />
       <WithSkia
-        getComponent={() => import("../../components/examples/Dominoes")}
+        getComponent={() => import("../../components/examples/Pinball")}
       />
     </View>
   );
 }
+// test comment
+// test

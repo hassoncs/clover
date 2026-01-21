@@ -1,6 +1,12 @@
 import { View } from "react-native";
 import { Stack } from "expo-router";
 import { WithSkia } from "../../components/WithSkia";
+import type { ExampleMeta } from "../../lib/registry/types";
+
+export const metadata: ExampleMeta = {
+  title: "Interaction",
+  description: "Touch to spawn and move objects.",
+};
 
 export default function InteractionExample() {
   return (

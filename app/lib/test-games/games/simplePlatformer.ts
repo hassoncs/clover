@@ -1,6 +1,12 @@
 import type { GameDefinition } from "@clover/shared";
+import type { TestGameMeta } from "@/lib/registry/types";
 
-export const simplePlatformerGame: GameDefinition = {
+export const metadata: TestGameMeta = {
+  title: "Simple Platformer",
+  description: "Jump between platforms, collect coins - tests player physics and platforms",
+};
+
+const game: GameDefinition = {
   metadata: {
     id: "test-simple-platformer",
     title: "Simple Platformer",
@@ -119,3 +125,5 @@ export const simplePlatformerGame: GameDefinition = {
     { id: "goal", name: "Goal Flag", template: "goal", transform: { x: 23.5, y: 7.5, angle: 0, scaleX: 1, scaleY: 1 } },
   ],
 };
+
+export default game;

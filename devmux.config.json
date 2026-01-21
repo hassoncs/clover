@@ -9,9 +9,14 @@
     },
     "metro": {
       "cwd": "app",
-      "command": "npx hush run -t app -- npx expo start --dev-client --port 8085",
+      "command": "node scripts/generate-registry.mjs && npx hush run -t app -- npx expo start --dev-client --port 8085",
       "health": { "type": "port", "port": 8085 },
       "dependsOn": ["api"]
+    },
+    "storybook": {
+      "cwd": "apps/storybook",
+      "command": "npx hush run -t app -- pnpm storybook",
+      "health": { "type": "port", "port": 6006 }
     }
   }
 }

@@ -1,6 +1,12 @@
 import type { GameDefinition } from "@clover/shared";
+import type { TestGameMeta } from "@/lib/registry/types";
 
-export const pinballLiteGame: GameDefinition = {
+export const metadata: TestGameMeta = {
+  title: "Pinball Lite",
+  description: "Pinball table with bumpers, flippers, and bouncy physics",
+};
+
+const game: GameDefinition = {
   metadata: {
     id: "test-pinball-lite",
     title: "Pinball Lite",
@@ -120,3 +126,5 @@ export const pinballLiteGame: GameDefinition = {
     { id: "ball-3", name: "Ball 3", template: "pinball", transform: { x: 7, y: 1.5, angle: 0, scaleX: 1, scaleY: 1 } },
   ],
 };
+
+export default game;

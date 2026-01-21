@@ -1,6 +1,12 @@
 import type { GameDefinition } from "@clover/shared";
+import type { TestGameMeta } from "@/lib/registry/types";
 
-export const bumperArenaGame: GameDefinition = {
+export const metadata: TestGameMeta = {
+  title: "Bumper Arena",
+  description: "Top-down arena with no gravity - tests kinematic bodies and collisions",
+};
+
+const game: GameDefinition = {
   metadata: {
     id: "test-bumper-arena",
     title: "Bumper Arena",
@@ -118,3 +124,5 @@ export const bumperArenaGame: GameDefinition = {
     { id: "enemy-3", name: "Enemy 3", template: "enemyBot", transform: { x: 7, y: 5, angle: 0, scaleX: 1, scaleY: 1 } },
   ],
 };
+
+export default game;

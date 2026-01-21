@@ -1,6 +1,12 @@
 import type { GameDefinition } from "@clover/shared";
+import type { TestGameMeta } from "@/lib/registry/types";
 
-export const breakoutBouncerGame: GameDefinition = {
+export const metadata: TestGameMeta = {
+  title: "Breakout Bouncer",
+  description: "Classic brick-breaker: ball bounces off paddle to destroy bricks",
+};
+
+const game: GameDefinition = {
   metadata: {
     id: "test-breakout-bouncer",
     title: "Breakout Bouncer",
@@ -169,3 +175,5 @@ export const breakoutBouncerGame: GameDefinition = {
     { id: "brick-4-9", name: "Brick 4-9", template: "brickBlue", transform: { x: 12.7, y: 4.1, angle: 0, scaleX: 1, scaleY: 1 } },
   ],
 };
+
+export default game;

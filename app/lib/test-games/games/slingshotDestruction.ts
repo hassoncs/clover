@@ -1,6 +1,12 @@
 import type { GameDefinition } from "@clover/shared";
+import type { TestGameMeta } from "@/lib/registry/types";
 
-export const slingshotDestructionGame: GameDefinition = {
+export const metadata: TestGameMeta = {
+  title: "Slingshot Destruction",
+  description: "Angry Birds-style physics - projectiles vs tower structures",
+};
+
+const game: GameDefinition = {
   metadata: {
     id: "test-slingshot-destruction",
     title: "Slingshot Destruction",
@@ -118,3 +124,5 @@ export const slingshotDestructionGame: GameDefinition = {
     { id: "target-3", name: "Target 3", template: "target", transform: { x: 20, y: 6.1, angle: 0, scaleX: 1, scaleY: 1 } },
   ],
 };
+
+export default game;

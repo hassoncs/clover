@@ -1,6 +1,12 @@
 import type { GameDefinition } from "@clover/shared";
+import type { TestGameMeta } from "@/lib/registry/types";
 
-export const physicsStackerGame: GameDefinition = {
+export const metadata: TestGameMeta = {
+  title: "Physics Stacker",
+  description: "Stack blocks as high as possible - tests balance and friction",
+};
+
+const game: GameDefinition = {
   metadata: {
     id: "test-physics-stacker",
     title: "Physics Stacker",
@@ -104,3 +110,5 @@ export const physicsStackerGame: GameDefinition = {
     { id: "falling-4", name: "Falling 4", template: "blockTall", transform: { x: 8, y: 2, angle: -0.15, scaleX: 1, scaleY: 1 } },
   ],
 };
+
+export default game;

@@ -1,6 +1,12 @@
 import { View } from "react-native";
 import { Stack } from "expo-router";
 import { WithSkia } from "../../components/WithSkia";
+import type { ExampleMeta } from "../../lib/registry/types";
+
+export const metadata: ExampleMeta = {
+  title: "Newton's Cradle",
+  description: "Restitution and momentum conservation.",
+};
 
 export default function Example() {
   return (

@@ -9,7 +9,7 @@
     "clean": "turbo run clean",
     "lint": "turbo run lint",
     "deploy": "turbo run deploy",
-    "storybook": "turbo run storybook",
+    "storybook": "devmux ensure storybook",
     "storybook:build": "turbo run storybook:build", 
     "storybook:device": "turbo run storybook:device",
     "dev": "devmux ensure metro",
@@ -27,7 +27,10 @@
     "hush:decrypt": "hush decrypt",
     "hush:encrypt": "hush encrypt",
     "hush:edit": "hush edit",
-    "hush:status": "hush status"
+    "hush:status": "hush status",
+    "registry": "node app/scripts/generate-registry.mjs",
+    "registry:check": "node app/scripts/generate-registry.mjs --check",
+    "registry:watch": "node app/scripts/generate-registry.mjs --watch"
   },
   "devDependencies": {
     "@chriscode/devmux": "link:/Users/hassoncs/Workspaces/Personal/devmux/devmux-cli",
@@ -36,7 +39,7 @@
     "turbo": "^2.3.0"
   },
   "simple-git-hooks": {
-    "pre-commit": "pnpm hush check --only-changed"
+    "pre-commit": "./scripts/pre-commit.sh"
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {

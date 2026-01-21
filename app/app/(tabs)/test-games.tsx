@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, FlatList, Pressable } from "react-native";
-import { TEST_GAMES } from "@/lib/test-games/demoGames";
+import { TESTGAMES } from "@/lib/registry/generated/testGames";
 
 export default function TestGamesTab() {
   const router = useRouter();
@@ -9,7 +9,7 @@ export default function TestGamesTab() {
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={["bottom"]}>
       <FlatList
-        data={TEST_GAMES}
+        data={TESTGAMES}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16 }}
         ListHeaderComponent={
@@ -24,8 +24,10 @@ export default function TestGamesTab() {
               router.push({ pathname: "/test-games/[id]", params: { id: item.id } })
             }
           >
-            <Text className="text-lg font-semibold text-gray-800">{item.title}</Text>
-            <Text className="text-gray-500 mt-1">{item.description}</Text>
+            <Text className="text-lg font-semibold text-gray-800">{item.meta.title}</Text>
+            {item.meta.description && (
+              <Text className="text-gray-500 mt-1">{item.meta.description}</Text>
+            )}
           </Pressable>
         )}
       />

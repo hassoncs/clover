@@ -1,6 +1,12 @@
 import type { GameDefinition } from "@clover/shared";
+import type { TestGameMeta } from "@/lib/registry/types";
 
-export const fallingObjectsGame: GameDefinition = {
+export const metadata: TestGameMeta = {
+  title: "Falling Objects",
+  description: "Tests gravity physics with various shapes falling and colliding",
+};
+
+const game: GameDefinition = {
   metadata: {
     id: "test-falling-objects",
     title: "Falling Objects",
@@ -150,3 +156,5 @@ export const fallingObjectsGame: GameDefinition = {
     { id: "ball-5", name: "Ball 5", template: "heavyBall", transform: { x: 16, y: 0.5, angle: 0, scaleX: 1, scaleY: 1 } },
   ],
 };
+
+export default game;
