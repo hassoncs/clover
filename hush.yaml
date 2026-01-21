@@ -1,0 +1,43 @@
+version: 2
+project: clover
+
+sources:
+  shared: .hush
+  development: .hush.development
+  production: .hush.production
+
+targets:
+  - name: root
+    path: .
+    format: dotenv
+
+  - name: app
+    path: ./app
+    format: dotenv
+    include:
+      - EXPO_PUBLIC_*
+      - EXPO_TOKEN
+
+  - name: api
+    path: .
+    format: dotenv
+    exclude:
+      - EXPO_PUBLIC_*
+
+  - name: api-workers
+    path: ./api
+    format: wrangler
+    filename: .dev.vars
+    exclude:
+      - EXPO_PUBLIC_*
+      - FASTLANE_*
+      - ASC_*
+      - MATCH_*
+      - PILOT_*
+
+  - name: landing
+    path: ./landing
+    format: wrangler
+    filename: .dev.vars
+    include:
+      - EXPO_PUBLIC_SUPABASE_*

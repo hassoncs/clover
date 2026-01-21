@@ -7,17 +7,14 @@ workers_dev = true
 [dev]
 port = 8787
 
-# TODO: Create D1 database with: wrangler d1 create clover-db
-# Then update database_id below
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "clover-db"
-# database_id = "YOUR_D1_DATABASE_ID"
+[[d1_databases]]
+binding = "DB"
+database_name = "clover-db"
+database_id = "2f549a62-08dc-41fb-8222-a211b6cdff3d"
 
-# TODO: Create R2 bucket with: wrangler r2 bucket create clover-assets
-# [[r2_buckets]]
-# binding = "ASSETS"
-# bucket_name = "clover-assets"
+[[r2_buckets]]
+binding = "ASSETS"
+bucket_name = "clover-assets"
 
 # TODO: Configure custom domain
 # [[routes]]

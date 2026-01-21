@@ -1,20 +1,28 @@
-import type { D1Database, R2Bucket } from '@cloudflare/workers-types';
-import type { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
+import type { Context as HonoContext } from "hono";
+
+type D1Database = import("@cloudflare/workers-types").D1Database;
+type R2Bucket = import("@cloudflare/workers-types").R2Bucket;
 
 export interface Env {
-  // D1 Database (uncomment when created)
-  // DB: D1Database;
-  
-  // R2 Storage (uncomment when created)
-  // ASSETS: R2Bucket;
-  
-  // Supabase Auth
+  DB: D1Database;
+  ASSETS: R2Bucket;
+
   SUPABASE_URL: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
   SUPABASE_ANON_KEY: string;
-  
-  // App URL for redirects
+
   APP_URL: string;
+
+  AI_PROVIDER?: string;
+  OPENAI_API_KEY?: string;
+  OPENROUTER_API_KEY?: string;
+  ANTHROPIC_API_KEY?: string;
+  AI_MODEL?: string;
+  AI_BASE_URL?: string;
+
+  SCENARIO_API_KEY?: string;
+  SCENARIO_SECRET_API_KEY?: string;
+  SCENARIO_API_URL?: string;
 }
 
 export interface User {
@@ -25,21 +33,29 @@ export interface User {
 
 export interface Context {
   env: Env;
-  headers: Headers;
-  user?: User | null;
-  installId?: string;
+  installId: string | null;
+  authToken: string | null;
+  [key: string]: unknown;
+}
+
+export interface AuthenticatedContext extends Context {
+  user: User;
+  [key: string]: unknown;
 }
 
 export async function createContext(
-  opts: FetchCreateContextFnOptions,
-  env: Env
+  _opts: { req: Request; resHeaders: Headers },
+  honoContext: HonoContext<{ Bindings: Env }>
 ): Promise<Context> {
-  const headers = opts.req.headers;
-  const installId = headers.get('X-Install-Id') || undefined;
-  
+  const installId = honoContext.req.header("X-Install-Id") ?? null;
+  const authHeader = honoContext.req.header("Authorization");
+  const authToken = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : null;
+
   return {
-    env,
-    headers,
+    env: honoContext.env,
     installId,
+    authToken,
   };
 }

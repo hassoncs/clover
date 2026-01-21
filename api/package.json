@@ -14,10 +14,14 @@
     "test:run": "vitest run"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.17",
+    "@ai-sdk/openai": "^3.0.13",
+    "@ai-sdk/provider": "^3.0.4",
+    "@clover/shared": "workspace:*",
     "@hono/trpc-server": "^0.3.4",
     "@supabase/supabase-js": "^2.90.1",
-    "@trpc/server": "^11.8.1",
-    "@clover/shared": "workspace:*",
+    "@trpc/server": "11.8.1",
+    "ai": "^6.0.42",
     "drizzle-orm": "^0.38.3",
     "hono": "^4.11.4",
     "superjson": "^2.2.6",

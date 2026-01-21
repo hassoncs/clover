@@ -45,6 +45,18 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env
+
+# Hush secrets (NEVER commit plaintext secrets)
+.hush
+.hush.development
+.hush.production
+.dev.vars
+api/.dev.vars
+landing/.dev.vars
+
+# Wrangler local state
+**/.wrangler/
 
 # typescript
 *.tsbuildinfo

@@ -1,28 +1,39 @@
 {
-  "name": "skia-canvas-wasm-deploy-test-monorepo",
+  "name": "clover-monorepo",
   "version": "1.0.0",
   "private": true,
-  "workspaces": [
-    "app"
-  ],
   "scripts": {
+    "prepare": "simple-git-hooks",
     "build": "turbo run build",
-    "ios": "devmux ensure ios",
-    "ios:device": "cd app && npx expo run:ios --configuration Release --device",
-    "web": "devmux ensure web",
-    "android": "cd app && npx expo run:android",
-    "android:device": "cd app && npx expo run:android --variant release --device",
+    "test": "turbo run test",
     "clean": "turbo run clean",
-    "deploy": "turbo run deploy",
     "lint": "turbo run lint",
+    "deploy": "turbo run deploy",
+    "dev": "devmux ensure metro",
+    "dev:api": "devmux ensure api",
+    "ios": "devmux ensure metro && npx hush run -- pnpm --filter clover ios",
+    "ios:device": "devmux ensure metro && npx hush run -- pnpm --filter clover ios:device",
+    "android": "devmux ensure metro && npx hush run -- pnpm --filter clover android",
+    "android:device": "cd app && npx expo run:android --variant release --device",
+    "svc:ensure": "devmux ensure",
     "svc:status": "devmux status",
-    "svc:stop": "devmux stop all --force",
-    "svc:attach:ios": "devmux attach ios",
-    "svc:attach:web": "devmux attach web"
+    "svc:attach": "devmux attach",
+    "svc:stop": "devmux stop",
+    "svc:restart": "devmux stop api && devmux ensure api",
+    "hush": "hush",
+    "hush:decrypt": "hush decrypt",
+    "hush:encrypt": "hush encrypt",
+    "hush:edit": "hush edit",
+    "hush:status": "hush status"
   },
   "devDependencies": {
     "@chriscode/devmux": "link:/Users/hassoncs/Workspaces/Personal/devmux/devmux-cli",
+    "@chriscode/hush": "^5.0.1",
+    "simple-git-hooks": "^2.11.1",
     "turbo": "^2.3.0"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm hush check --only-changed"
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {

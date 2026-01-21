@@ -1,0 +1,39 @@
+# Clover Secrets Template
+# Copy this to .hush and fill in values, then run: pnpm hush:encrypt
+# Use DEV__ prefix for development-only values
+# Use PROD__ prefix for production-only values
+# No prefix = shared across all environments
+
+# =============================================================================
+# SHARED (all environments)
+# =============================================================================
+
+# Supabase - https://supabase.com/dashboard/project/YOUR_PROJECT/settings/api
+EXPO_PUBLIC_SUPABASE_URL=
+EXPO_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+
+# App URL (for auth redirects)
+APP_URL=
+
+# =============================================================================
+# DEVELOPMENT ONLY (DEV__ prefix)
+# =============================================================================
+
+DEV__EXPO_PUBLIC_API_URL=http://localhost:8787
+DEV__APP_URL=http://localhost:8081
+
+# =============================================================================
+# PRODUCTION ONLY (PROD__ prefix)
+# =============================================================================
+
+PROD__EXPO_PUBLIC_API_URL=https://clover-api.YOUR_DOMAIN.workers.dev
+PROD__APP_URL=https://app.clover.app
+
+# =============================================================================
+# FUTURE: AI Provider Keys (when implementing game generation)
+# =============================================================================
+
+# ANTHROPIC_API_KEY=
+# OPENAI_API_KEY=

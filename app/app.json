@@ -1,16 +1,20 @@
 {
   "expo": {
-    "scheme": "skia",
+    "scheme": "clover",
     "web": {
       "output": "static"
     },
     "plugins": [
       "expo-router"
     ],
-    "name": "skia-canvas-wasm-deploy-test",
-    "slug": "skia-canvas-wasm-deploy-test",
+    "name": "Clover",
+    "slug": "clover",
+    "description": "AI-powered 2D game maker for kids",
     "ios": {
-      "bundleIdentifier": "com.skia.physics.test"
+      "bundleIdentifier": "com.clover.app"
+    },
+    "android": {
+      "package": "com.clover.app"
     }
   }
 }

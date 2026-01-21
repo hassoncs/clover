@@ -21,9 +21,13 @@ app.use('*', cors({
 app.get('/health', (c) => c.json({ status: 'ok', timestamp: Date.now() }));
 
 // tRPC handler
-app.use('/trpc/*', trpcServer({
-  router: appRouter,
-  createContext: (opts) => createContext(opts, opts.env),
-}));
+app.use(
+  '/trpc/*',
+  trpcServer({
+    router: appRouter,
+    endpoint: '/trpc',
+    createContext,
+  })
+);
 
 export default app;
