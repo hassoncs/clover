@@ -1,32 +1,13 @@
-import React, { useMemo, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+
+import React from 'react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { View } from 'react-native';
 import type { SortableListProps } from './types';
 
-function SortableItem<T>({ id, item, index, renderItem, activeItem }: {
-  id: string;
-  item: T;
-  index: number;
-  renderItem: SortableListProps<T>['renderItem'];
-  activeItem: string | null;
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+function SortableItem<T>({ id, item, index, renderItem }: { id: string; item: T; index: number; renderItem: SortableListProps<T>['renderItem'] }) {
+  const { attributes, listeners, setNodeRef, transform, transition, active } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -35,15 +16,13 @@ function SortableItem<T>({ id, item, index, renderItem, activeItem }: {
 
   return (
     <View ref={setNodeRef} style={style}>
-      {renderItem({ item, index, drag: () => ({...listeners, ...attributes}), isActive: activeItem === id })}
+      {renderItem({ item, index, drag: () => ({...listeners, ...attributes}), isActive: !!active })}
     </View>
   );
 }
 
-function SortableListWeb<T>(props: SortableListProps<T>) {
-  const { data, keyExtractor, renderItem, onReorder, contentContainerStyle } = props;
-  const [activeItem, setActiveItem] = useState<string | null>(null);
-
+export default function SortableListWeb<T>(props: SortableListProps<T>) {
+  const { data, keyExtractor, renderItem, onReorder } = props;
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -51,43 +30,24 @@ function SortableListWeb<T>(props: SortableListProps<T>) {
     })
   );
 
-  const itemKeys = useMemo(() => data.map(keyExtractor), [data, keyExtractor]);
-
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    setActiveItem(null);
 
     if (over && active.id !== over.id) {
-      const oldIndex = itemKeys.indexOf(active.id as string);
-      const newIndex = itemKeys.indexOf(over.id as string);
-      onReorder(oldIndex, newIndex);
+      const oldIndex = data.findIndex((item) => keyExtractor(item) === active.id);
+      const newIndex = data.findIndex((item) => keyExtractor(item) === over.id);
+      const newData = arrayMove(data, oldIndex, newIndex);
+      onReorder(newData);
     }
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={({ active }) => setActiveItem(active.id as string)}
-      onDragEnd={handleDragEnd}
-      onDragCancel={() => setActiveItem(null)}
-    >
-      <SortableContext items={itemKeys} strategy={verticalListSortingStrategy}>
-        <View style={contentContainerStyle}>
-          {data.map((item, index) => (
-            <SortableItem
-              key={itemKeys[index]}
-              id={itemKeys[index]}
-              item={item}
-              index={index}
-              renderItem={renderItem}
-              activeItem={activeItem}
-            />
-          ))}
-        </View>
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <SortableContext items={data.map(keyExtractor)} strategy={verticalListSortingStrategy}>
+        {data.map((item, index) => (
+          <SortableItem key={keyExtractor(item)} id={keyExtractor(item)} item={item} index={index} renderItem={renderItem} />
+        ))}
       </SortableContext>
     </DndContext>
   );
 }
-
-export default SortableListWeb;

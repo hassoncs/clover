@@ -193,27 +193,17 @@ function ParallaxCanvas() {
   }, []);
 
 
-  const moveLayer = useCallback((fromIndex: number, toIndex: number) => {
-    if (toIndex < 0 || toIndex >= layers.length) {
-      return;
-    }
-    setLayers(prev => {
-      const newLayers = [...prev];
-      const [movedLayer] = newLayers.splice(fromIndex, 1);
-      newLayers.splice(toIndex, 0, movedLayer);
-
-      const count = newLayers.length;
-      return newLayers.map((l, i) => ({
-        ...l,
-        zIndex: count - 1 - i
-      }));
-    });
-  }, [layers.length]);
+  const onReorder = useCallback((newLayers: EditableLayer[]) => {
+    setLayers(newLayers.map((l, i) => ({
+      ...l,
+      zIndex: newLayers.length - 1 - i,
+    })));
+  }, []);
 
   const renderLayerItem = useCallback(({ item, index, drag, isActive }: { item: EditableLayer; index: number; drag: () => any; isActive: boolean }) => (
     <View style={[styles.compactLayerItem, isActive && styles.activeLayerItem]}>
       <View style={styles.compactLayerHeader}>
-        <View {...drag()} style={styles.dragHandle}>
+        <View {...(Platform.OS === 'web' ? drag() : {})} style={styles.dragHandle}>
           <Feather name="menu" size={16} color="#fff" />
         </View>
         <Switch 
@@ -248,7 +238,7 @@ function ParallaxCanvas() {
         </View>
       )}
     </View>
-  ), [layers, toggleLayer, updateParallaxFactor, moveLayer]);
+  ), [layers, toggleLayer, updateParallaxFactor]);
 
   if (!vp.isReady) return null;
 
@@ -331,7 +321,7 @@ function ParallaxCanvas() {
             <SortableList
               data={layers}
               keyExtractor={(item) => item.id}
-              onReorder={moveLayer}
+              onReorder={onReorder}
               renderItem={renderLayerItem}
               itemHeight={74}
             />
