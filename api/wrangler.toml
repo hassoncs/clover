@@ -1,0 +1,30 @@
+name = "clover-api"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+main = "src/index.ts"
+workers_dev = true
+
+[dev]
+port = 8787
+
+# TODO: Create D1 database with: wrangler d1 create clover-db
+# Then update database_id below
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "clover-db"
+# database_id = "YOUR_D1_DATABASE_ID"
+
+# TODO: Create R2 bucket with: wrangler r2 bucket create clover-assets
+# [[r2_buckets]]
+# binding = "ASSETS"
+# bucket_name = "clover-assets"
+
+# TODO: Configure custom domain
+# [[routes]]
+# pattern = "api.clover.app"
+# custom_domain = true
+# zone_name = "clover.app"
+
+[[rules]]
+type = "CompiledWasm"
+globs = ["**/*.wasm"]

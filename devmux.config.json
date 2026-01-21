@@ -1,16 +1,17 @@
 {
   "version": 1,
-  "project": "skia-physics",
+  "project": "clover",
   "services": {
-    "ios": {
-      "cwd": "app",
-      "command": "npx expo run:ios",
-      "health": { "type": "port", "port": 8081 }
+    "api": {
+      "cwd": ".",
+      "command": "CLOUDFLARE_INCLUDE_PROCESS_ENV=true npx hush run -t api-workers -- pnpm --filter @clover/api dev",
+      "health": { "type": "port", "port": 8787 }
     },
-    "web": {
+    "metro": {
       "cwd": "app",
-      "command": "npx expo start --web",
-      "health": { "type": "port", "port": 8081 }
+      "command": "npx hush run -t app -- npx expo start --dev-client --port 8081",
+      "health": { "type": "port", "port": 8081 },
+      "dependsOn": ["api"]
     }
   }
 }

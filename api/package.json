@@ -1,0 +1,33 @@
+{
+  "name": "@clover/api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "start": "wrangler dev",
+    "release": "wrangler deploy --minify",
+    "db:push": "npx wrangler d1 execute clover-db --file=./schema.sql --local",
+    "db:push:remote": "npx wrangler d1 execute clover-db --file=./schema.sql --remote",
+    "db:reset": "rm -rf .wrangler/state/v3/d1 && pnpm db:push",
+    "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
+  "dependencies": {
+    "@hono/trpc-server": "^0.3.4",
+    "@supabase/supabase-js": "^2.90.1",
+    "@trpc/server": "^11.8.1",
+    "@clover/shared": "workspace:*",
+    "drizzle-orm": "^0.38.3",
+    "hono": "^4.11.4",
+    "superjson": "^2.2.6",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.12.3",
+    "@cloudflare/workers-types": "^4.20240512.0",
+    "typescript": "^5.4.5",
+    "vitest": "^2.1.9",
+    "wrangler": "^4.59.2"
+  }
+}
