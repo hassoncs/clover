@@ -163,9 +163,9 @@ importers:
       react-native-screens:
         specifier: ~4.16.0
         version: 4.16.0(react-native@0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
-      react-native-sortables:
-        specifier: ^1.9.4
-        version: 1.9.4(react-native-gesture-handler@2.30.0(react-native@0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native-reanimated@4.2.1(react-native-worklets@0.7.0(@babel/core@7.28.6)(react-native@0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      react-native-sortable-list:
+        specifier: ^0.0.25
+        version: 0.0.25
       react-native-web:
         specifier: ^0.21.0
         version: 0.21.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -6708,6 +6708,9 @@ packages:
     resolution: {integrity: sha512-NxNv/kLguCA7p3jE8oL2aEBsrJWgAakBpgmgK6lpPWV+WuOmY6r2/zbAVnP+T8bQlA0nzHXSJSJW0Hq7ylaD2Q==}
     engines: {node: '>= 6'}
 
+  prop-types@15.8.1:
+    resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
+
   property-information@7.1.0:
     resolution: {integrity: sha512-TwEZ+X+yCJmYfL7TPUOcvBZ4QfoT5YenQiJuX//0th53DE6w0xxLEtfK3iyryQFddXuvkIk51EEgrJQ0WJkOmQ==}
 
@@ -6820,11 +6823,6 @@ packages:
     peerDependencies:
       react-native: '>=0.81'
 
-  react-native-haptic-feedback@2.3.3:
-    resolution: {integrity: sha512-svS4D5PxfNv8o68m9ahWfwje5NqukM3qLS48+WTdhbDkNUkOhP9rDfDSRHzlhk4zq+ISjyw95EhLeh8NkKX5vQ==}
-    peerDependencies:
-      react-native: '>=0.60.0'
-
   react-native-is-edge-to-edge@1.2.1:
     resolution: {integrity: sha512-FLbPWl/MyYQWz+KwqOZsSyj2JmLKglHatd3xLZWskXOpRaio4LfEDEz8E/A6uD8QoTHW6Aobw1jbEwK7KMgR7Q==}
     peerDependencies:
@@ -6856,13 +6854,8 @@ packages:
       react: '*'
       react-native: '*'
 
-  react-native-sortables@1.9.4:
-    resolution: {integrity: sha512-a6hxT+gl14HA5Sm8UiLXJqF8KMEQVa+mUJd75OnzoVsmrxUDtjAatlMdV0kI9qTQDT/ZSFLPRmdUhOR762IA4g==}
-    peerDependencies:
-      react: '*'
-      react-native: '*'
-      react-native-gesture-handler: '>=2.0.0'
-      react-native-reanimated: '>=3.0.0'
+  react-native-sortable-list@0.0.25:
+    resolution: {integrity: sha512-51hqk+4wx2N1Ii1nsXfNUI84XrCwM4y7M64O4hQMtDn5v6RO5gmRO80ueK0DcZH77Yz0iU5Y9Drrbf8r0DxvqQ==}
 
   react-native-svg@15.15.1:
     resolution: {integrity: sha512-ZUD1xwc3Hwo4cOmOLumjJVoc7lEf9oQFlHnLmgccLC19fNm6LVEdtB+Cnip6gEi0PG3wfvVzskViEtrySQP8Fw==}
@@ -16071,6 +16064,12 @@ snapshots:
       kleur: 3.0.3
       sisteransi: 1.0.5
 
+  prop-types@15.8.1:
+    dependencies:
+      loose-envify: 1.4.0
+      object-assign: 4.1.1
+      react-is: 16.13.1
+
   property-information@7.1.0: {}
 
   pump@3.0.3:
@@ -16230,11 +16229,6 @@ snapshots:
       fast-base64-decode: 1.0.0
       react-native: 0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0)
 
-  react-native-haptic-feedback@2.3.3(react-native@0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0)):
-    dependencies:
-      react-native: 0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0)
-    optional: true
-
   react-native-is-edge-to-edge@1.2.1(react-native@0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
     dependencies:
       react: 19.1.0
@@ -16266,14 +16260,9 @@ snapshots:
       react-native-is-edge-to-edge: 1.2.1(react-native@0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       warn-once: 0.1.1
 
-  react-native-sortables@1.9.4(react-native-gesture-handler@2.30.0(react-native@0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native-reanimated@4.2.1(react-native-worklets@0.7.0(@babel/core@7.28.6)(react-native@0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
+  react-native-sortable-list@0.0.25:
     dependencies:
-      react: 19.1.0
-      react-native: 0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0)
-      react-native-gesture-handler: 2.30.0(react-native@0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
-      react-native-reanimated: 4.2.1(react-native-worklets@0.7.0(@babel/core@7.28.6)(react-native@0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
-    optionalDependencies:
-      react-native-haptic-feedback: 2.3.3(react-native@0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0))
+      prop-types: 15.8.1
 
   react-native-svg@15.15.1(react-native@0.81.4(@babel/core@7.28.6)(@react-native-community/cli@6.4.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
     dependencies:
