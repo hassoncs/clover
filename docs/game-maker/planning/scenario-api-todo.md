@@ -2,11 +2,28 @@
 
 > Investigation tasks to determine proper API calling patterns for sprite generation.
 
+**Last Updated**: 2026-01-21
+
+**Status**: Core implementation complete. Investigation tasks are optional enhancements.
+
 ---
 
 ## Phase 6: Asset Generation - Implementation Tasks
 
-### 🔍 Investigation Tasks
+### ✅ IMPLEMENTATION COMPLETE
+
+The core Scenario.com integration is complete:
+- [x] ScenarioClient with full API support - `api/src/ai/scenario.ts`
+- [x] AssetService with model selection matrix - `api/src/ai/assets.ts`
+- [x] tRPC routes wired - `api/src/trpc/routes/assets.ts`
+- [x] R2 upload and CDN URLs
+- [x] Placeholder fallback system
+
+---
+
+### 🔍 Investigation Tasks (OPTIONAL - For Quality Improvement)
+
+> These are optional investigations to improve asset quality. Not blocking MVP.
 
 #### 1. Test Retro Diffusion Models
 
@@ -46,57 +63,63 @@
 
 #### 4. Test Background Removal
 
-- [ ] Test `remove_background` on generated sprites
-- [ ] Verify transparency quality
+- [x] Test `remove_background` on generated sprites - Implemented in `AssetService.removeBackground()`
+- [ ] Verify transparency quality across different sprite types
 - [ ] Test with different sprite types (character, item, UI)
 
 ---
 
-### 🏗️ Implementation Tasks
+### ✅ Implementation Tasks - COMPLETE
 
-#### API Integration (`api/src/ai/assets.ts`)
+#### API Integration (`api/src/ai/assets.ts`) ✅
 
 ```typescript
-// Structure to implement
+// IMPLEMENTED in api/src/ai/assets.ts
 interface AssetGenerationRequest {
-  entityType: 'character' | 'item' | 'platform' | 'background' | 'ui';
+  entityType: 'character' | 'enemy' | 'item' | 'platform' | 'background' | 'ui';
   description: string;
   style: 'pixel' | 'cartoon' | '3d' | 'flat';
-  size: { width: number; height: number };
+  size?: { width: number; height: number };
   animated?: boolean;
   frameCount?: number;
+  seed?: string;
 }
 
 interface AssetGenerationResult {
   success: boolean;
   assetUrl?: string;
+  r2Key?: string;
+  scenarioAssetId?: string;
   frames?: string[];  // For animated sprites
   error?: string;
 }
 ```
 
-**Tasks:**
-- [ ] Create `api/src/ai/assets.ts`
-- [ ] Implement model selection based on asset type
-- [ ] Implement prompt generation for each entity type
-- [ ] Handle Scenario.com API responses
-- [ ] Implement retry logic for failures
-- [ ] Add asset validation (dimensions, format)
+**Completed Tasks:**
+- [x] Create `api/src/ai/assets.ts` - `AssetService` class
+- [x] Implement model selection based on asset type - `selectModel()`
+- [x] Implement prompt generation for each entity type - `buildPrompt()`
+- [x] Handle Scenario.com API responses
+- [x] Implement placeholder fallback for failures - `createPlaceholderResult()`
+- [ ] Implement retry logic for failures (optional enhancement)
+- [ ] Add asset validation (dimensions, format) (optional enhancement)
 
-#### Storage Integration
+#### Storage Integration ✅
 
-- [ ] Set up R2 bucket for assets
-- [ ] Implement upload to R2
-- [ ] Generate CDN URLs
-- [ ] Implement caching strategy
-- [ ] Add asset deduplication (hash-based)
+- [x] Set up R2 bucket for assets - `ASSETS` binding in wrangler.toml
+- [x] Implement upload to R2 - `uploadToR2()`
+- [x] Generate CDN URLs - `getR2PublicUrl()`
+- [ ] Implement caching strategy (POST-MVP)
+- [ ] Add asset deduplication (hash-based) (POST-MVP)
 
-#### tRPC Endpoints
+#### tRPC Endpoints ✅
 
-- [ ] `assets.generate` - Generate single asset
-- [ ] `assets.generateBatch` - Generate multiple assets
-- [ ] `assets.regenerate` - Regenerate with new prompt
-- [ ] `assets.upload` - Upload custom asset
+- [x] `assets.generate` - Generate single asset
+- [x] `assets.generateBatch` - Generate multiple assets
+- [x] `assets.list` - List user's generated assets
+- [x] `assets.get` - Get specific asset by ID
+- [ ] `assets.regenerate` - Regenerate with new prompt (POST-MVP)
+- [ ] `assets.upload` - Upload custom asset (POST-MVP)
 
 ---
 

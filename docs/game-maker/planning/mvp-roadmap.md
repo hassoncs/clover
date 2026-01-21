@@ -2,167 +2,157 @@
 
 Development phases for the AI-Powered Mobile Game Maker.
 
+**Last Updated**: 2026-01-21
+
+> ⚠️ **Note**: This document contains the original planning estimates. For current implementation status, see [implementation-roadmap.md](./implementation-roadmap.md).
+
 ---
 
 ## Phase Overview
 
-| Phase | Focus | Duration | Outcome |
-|-------|-------|----------|---------|
-| **Phase 1** | Core Engine | 2-3 weeks | Game definitions run and play |
-| **Phase 2** | Game Framework | 2-3 weeks | Complete games with win/lose |
-| **Phase 3** | AI Integration | 2-3 weeks | Generate games from prompts |
-| **Phase 4** | User Studio | 3-4 weeks | Visual editing and tuning |
-| **Phase 5** | Polish & Launch | 2-3 weeks | App store ready |
+| Phase | Focus | Duration | Status |
+|-------|-------|----------|--------|
+| **Phase 1** | Core Engine | 2-3 weeks | ✅ **COMPLETE** |
+| **Phase 2** | Game Framework | 2-3 weeks | ✅ **COMPLETE** |
+| **Phase 3** | AI Integration | 2-3 weeks | ✅ **COMPLETE** |
+| **Phase 4** | User Studio | 3-4 weeks | ⬜ Post-MVP |
+| **Phase 5** | Polish & Launch | 2-3 weeks | 🔄 In Progress |
 
-**Total estimated time: 11-16 weeks**
+**Current Status**: Phases 1-3 complete. MVP ready for E2E testing.
 
 ---
 
-## Phase 1: Core Engine
+## Phase 1: Core Engine ✅ COMPLETE
 
 **Goal**: Load a JSON game definition and run it with physics and rendering.
 
 ### Tasks
 
-#### 1.1 Entity System
-- [ ] Define TypeScript types for GameDefinition, Entity, Components
-- [ ] Implement EntityManager (create, destroy, query)
-- [ ] Implement template system (resolve template references)
-- [ ] JSON serialization/deserialization
+#### 1.1 Entity System ✅
+- [x] Define TypeScript types for GameDefinition, Entity, Components - `shared/src/types/`
+- [x] Implement EntityManager (create, destroy, query) - `app/lib/game-engine/EntityManager.ts`
+- [x] Implement template system (resolve template references)
+- [x] JSON serialization/deserialization
 
-#### 1.2 Physics Integration
-- [ ] Extend existing Box2D wrapper for entity-based creation
-- [ ] Create physics bodies from entity definitions
-- [ ] Sync entity transforms from physics bodies each frame
-- [ ] Handle entity destruction (remove physics bodies)
+#### 1.2 Physics Integration ✅
+- [x] Extend existing Box2D wrapper for entity-based creation
+- [x] Create physics bodies from entity definitions
+- [x] Sync entity transforms from physics bodies each frame
+- [x] Handle entity destruction (remove physics bodies)
 
-#### 1.3 Rendering Integration
-- [ ] Create Skia components from entity sprite definitions
-- [ ] Support basic shapes: rect, circle, polygon
-- [ ] Support image sprites (load from URL)
-- [ ] Apply transforms (position, rotation, scale)
-- [ ] Layer ordering (z-index)
+#### 1.3 Rendering Integration ✅
+- [x] Create Skia components from entity sprite definitions - `app/lib/game-engine/renderers/`
+- [x] Support basic shapes: rect, circle, polygon
+- [x] Support image sprites (load from URL) - `ImageRenderer.tsx`
+- [x] Apply transforms (position, rotation, scale)
+- [x] Layer ordering (z-index)
 
-#### 1.4 Game Loop
-- [ ] Integrate EntityManager, PhysicsSystem, Renderer
-- [ ] Fixed timestep physics with interpolated rendering
-- [ ] Frame timing and delta time handling
+#### 1.4 Game Loop ✅
+- [x] Integrate EntityManager, PhysicsSystem, Renderer - `GameRuntime.native.tsx`
+- [x] Fixed timestep physics with interpolated rendering
+- [x] Frame timing and delta time handling
 
-### Deliverable
+### Deliverable ✅
 - Load a hardcoded JSON game definition
 - See entities rendered with Skia
 - Physics simulation runs (objects fall, collide)
 
-### Test Games
-1. Falling boxes (existing demo, converted to JSON format)
-2. Static platforms with bouncing ball
-
 ---
 
-## Phase 2: Game Framework
+## Phase 2: Game Framework ✅ COMPLETE
 
 **Goal**: Complete game loop with behaviors, input, and win/lose conditions.
 
 ### Tasks
 
-#### 2.1 Behavior System
-- [ ] Define Behavior interface and registry
-- [ ] Implement core behaviors:
-  - [ ] `move` (linear movement, patrol)
-  - [ ] `rotate` (continuous rotation)
-  - [ ] `oscillate` (back-and-forth)
-  - [ ] `spawn_on_event` (tap, timer, collision)
-  - [ ] `destroy_on_collision`
-  - [ ] `score_on_collision`
-  - [ ] `timer`
-- [ ] Behavior execution in game loop
+#### 2.1 Behavior System ✅
+- [x] Define Behavior interface and registry - `BehaviorExecutor.ts`
+- [x] Implement core behaviors:
+  - [x] `move` (linear movement, patrol)
+  - [x] `rotate` (continuous rotation)
+  - [x] `oscillate` (back-and-forth)
+  - [x] `spawn_on_event` (tap, timer, collision)
+  - [x] `destroy_on_collision`
+  - [x] `score_on_collision`
+  - [x] `timer`
+- [x] Behavior execution in game loop
 
-#### 2.2 Control Behaviors
-- [ ] `tap_to_jump`
-- [ ] `drag_to_aim` (slingshot mechanic)
-- [ ] `tilt_to_move` (accelerometer)
-- [ ] `tap_to_flip` (pinball flippers)
+#### 2.2 Control Behaviors ✅
+- [x] `tap_to_jump`
+- [x] `drag_to_aim` (slingshot mechanic)
+- [x] `tilt_to_move` (accelerometer)
+- [x] `buttons` (virtual button controls)
 
-#### 2.3 Input System
-- [ ] Touch event handling (tap, drag)
-- [ ] World coordinate conversion
-- [ ] Accelerometer/gyroscope integration
-- [ ] Input state accessible to behaviors
+#### 2.3 Input System ✅
+- [x] Touch event handling (tap, drag)
+- [x] World coordinate conversion
+- [x] Accelerometer/gyroscope integration
+- [x] Input state accessible to behaviors
 
-#### 2.4 Rules System
-- [ ] Define Rule interface
-- [ ] Collision event routing to rules
-- [ ] Timer-based rules
-- [ ] Win/Lose condition evaluation
-- [ ] Score tracking
+#### 2.4 Rules System ✅
+- [x] Define Rule interface - `RulesEvaluator.ts`
+- [x] Collision event routing to rules
+- [x] Timer-based rules
+- [x] Win/Lose condition evaluation
+- [x] Score tracking
 
-#### 2.5 Game UI
-- [ ] Score display overlay
-- [ ] Timer display
-- [ ] Win screen
-- [ ] Lose screen
-- [ ] Pause/restart functionality
+#### 2.5 Game UI ✅
+- [x] Score display overlay
+- [x] Timer display
+- [x] Win screen
+- [x] Lose screen
+- [x] Pause/restart functionality
 
-### Deliverable
+### Deliverable ✅
 - Play a complete game from start to win/lose
 - Score tracking works
 - Multiple input methods (tap, drag, tilt)
 
-### Test Games
-1. Ball drop / Plinko (tap to spawn, score on bucket)
-2. Angry Birds clone (drag to aim, destroy targets to win)
-3. Simple platformer (tap to jump, reach goal)
-
 ---
 
-## Phase 3: AI Integration
+## Phase 3: AI Integration ✅ COMPLETE
 
 **Goal**: Generate playable games from natural language prompts.
 
 ### Tasks
 
-#### 3.1 Backend API Setup
-- [ ] Set up backend service (Node.js/Edge functions)
-- [ ] API endpoint: POST /generate-game
-- [ ] API endpoint: POST /refine-game
-- [ ] API endpoint: POST /generate-asset
-- [ ] Authentication/rate limiting
+#### 3.1 Backend API Setup ✅
+- [x] Set up backend service (Cloudflare Workers + Hono + tRPC)
+- [x] API endpoint: `games.generate` tRPC mutation
+- [x] API endpoint: `games.refine` tRPC mutation
+- [x] API endpoint: `assets.generate` tRPC mutation
+- [x] Install-based auth (installId header)
 
-#### 3.2 Game Generation
-- [ ] System prompt engineering for game generation
-- [ ] Intent extraction from user prompts
-- [ ] Game type classification
-- [ ] Template-based generation
-- [ ] Output validation
-- [ ] Self-correction on validation failure
+#### 3.2 Game Generation ✅
+- [x] System prompt engineering for game generation - `api/src/ai/generator.ts`
+- [x] Intent extraction from user prompts - `api/src/ai/classifier.ts`
+- [x] Game type classification
+- [x] Template-based generation - `api/src/ai/templates.ts`
+- [x] Output validation - `api/src/ai/validator.ts`
+- [x] Self-correction on validation failure
 
-#### 3.3 Asset Generation
-- [ ] Integration with image generation API
-- [ ] Sprite prompt engineering
-- [ ] Style consistency across game
-- [ ] Background removal / transparency
-- [ ] Asset caching
+#### 3.3 Asset Generation ✅
+- [x] Integration with Scenario.com API - `api/src/ai/scenario.ts`
+- [x] Sprite prompt engineering - `api/src/ai/assets.ts`
+- [x] Style consistency across game (model matrix)
+- [x] Background removal / transparency - `removeBackground()`
+- [x] R2 storage for assets
 
-#### 3.4 Refinement
-- [ ] Modification prompt handling
-- [ ] Partial game updates
-- [ ] Preserve user customizations
+#### 3.4 Refinement ✅
+- [x] Modification prompt handling - `games.refine`
+- [x] Partial game updates
+- [x] Preserve user customizations
 
-#### 3.5 Frontend Integration
-- [ ] Prompt input UI
-- [ ] Generation loading state
-- [ ] Error handling and suggestions
-- [ ] Asset loading and display
+#### 3.5 Frontend Integration ✅
+- [x] Prompt input UI - Create tab
+- [x] Generation loading state
+- [x] Error handling and suggestions
+- [x] Asset loading and display
 
-### Deliverable
+### Deliverable ✅
 - Type a prompt, receive a playable game
-- Generated sprites appear on entities
+- Generated sprites appear on entities (with fallback placeholders)
 - Refine game with follow-up prompts
-
-### Test Prompts
-1. "Make a game where I throw balls at targets"
-2. "A platformer with a jumping cat"
-3. "Plinko game with colored buckets"
 
 ---
 

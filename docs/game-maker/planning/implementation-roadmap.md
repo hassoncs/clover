@@ -15,54 +15,62 @@
 |-------|--------|----------|
 | Phase 0: Infrastructure | **90% Complete** | D1 + API done, Auth needs E2E test |
 | Phase 1: Entity System | **95% Complete** | EntityManager, renderers, physics mapping done |
-| Phase 2: Behavior System | **85% Complete** | Most behaviors implemented |
-| Phase 3: Rules Engine | **90% Complete** | Rules, win/lose conditions done |
+| Phase 2: Behavior System | **95% Complete** | All core behaviors implemented ✅ |
+| Phase 3: Rules Engine | **95% Complete** | Rules, win/lose conditions done ✅ |
 | Phase 4: Game Runtime | **95% Complete** | Runtime + CameraSystem + Pause done |
-| Phase 5: AI Generation | **100% Complete** | All backend + API routes wired |
-| Phase 6: Asset Generation | **100% Complete** | Scenario client + tRPC routes wired |
+| Phase 5: AI Generation | **100% Complete** | All backend + API routes wired ✅ |
+| Phase 6: Asset Generation | **100% Complete** | Scenario client + tRPC routes wired ✅ |
 | Phase 7: Visual Editor | Not Started | 0% (Post-MVP) |
 | Phase 8: Sound & Polish | Not Started | 0% (Post-MVP) |
-| Phase 9: User Experience | **80% Complete** | MVP screens implemented |
+| Phase 9: User Experience | **85% Complete** | MVP screens implemented |
 | Phase 10: Launch Prep | Not Started | 0% (Post-MVP) |
 
-### MVP Status: READY FOR TESTING
+### MVP Status: READY FOR E2E TESTING
 
-The core MVP flow is now implemented:
+**Last Updated**: 2026-01-21
+
+The core MVP flow is implemented:
 1. ✅ User enters prompt in Create tab
 2. ✅ AI generates game via tRPC `games.generate`
 3. ✅ User can preview generated game
 4. ✅ User can save to library
 5. ✅ User can play saved games from Library tab
 
+**Blocking Items for Launch**:
+- [ ] Configure Supabase auth (HUMAN TASK - requires account setup)
+- [ ] Set API keys in production (HUMAN TASK - OPENROUTER_API_KEY, SCENARIO_API_KEY)
+- [ ] E2E testing on real devices (HUMAN TASK)
+
 ---
 
 ## Immediate Next Steps (Priority Order) - MVP Focus
 
-**The engine and AI backend are ~85% complete. What's missing is the USER INTERFACE.**
+**The engine and AI backend are ~95% complete. Focus is on E2E testing and polish.**
 
-### 1. Wire Up AI Generation API Routes (HIGH PRIORITY)
-- [ ] Add `games.generate` tRPC mutation (uses existing `api/src/ai/generator.ts`)
-- [ ] Add `games.refine` tRPC mutation (uses existing `refineGame` function)
-- [ ] Add `assets.generate` tRPC mutation (uses existing `api/src/ai/assets.ts`)
-- [ ] Test API endpoints with curl/Postman
+### 1. AI Generation API Routes - ✅ COMPLETE
+- [x] Add `games.generate` tRPC mutation (uses existing `api/src/ai/generator.ts`)
+- [x] Add `games.refine` tRPC mutation (uses existing `refineGame` function)
+- [x] Add `assets.generate` tRPC mutation (uses existing `api/src/ai/assets.ts`)
+- [x] Add `assets.generateBatch` tRPC mutation
+- [ ] Test API endpoints with curl/Postman (HUMAN: requires API keys)
 
-### 2. Create MVP User Interface (HIGH PRIORITY)
-- [ ] Create tab-based navigation: Create | Library | Settings
-- [ ] CreateGameScreen: prompt input with AI generation
-- [ ] MyGamesScreen: list saved games from D1
-- [ ] PlayGameScreen: wrapper around GameRuntime
-- [ ] SettingsScreen: API key configuration (dev only)
+### 2. MVP User Interface - ✅ COMPLETE
+- [x] Create tab-based navigation: Create | Library | Demos
+- [x] CreateGameScreen: prompt input with AI generation
+- [x] MyGamesScreen: list saved games from D1
+- [x] PlayGameScreen: wrapper around GameRuntime
+- [ ] SettingsScreen: API key configuration (dev only) - POST-MVP
 
 ### 3. Complete Game Runtime Polish (MEDIUM PRIORITY)
 - [x] HUD: pause button
-- [ ] Game over: share button  
-- [ ] Input: gesture detection (tap, drag, pinch)
+- [ ] Game over: share button (POST-MVP)
+- [ ] Input: gesture detection (multi-touch, pinch-to-zoom)
 - [ ] GameRuntime: error state handling
 
-### 4. End-to-End MVP Validation
-- [ ] Test full flow: prompt → generate → play → save
+### 4. End-to-End MVP Validation (HUMAN TASKS)
+- [ ] Test full flow: prompt → generate → play → save (requires API keys)
 - [ ] Verify games persist and reload correctly
-- [ ] Test on iOS simulator + web
+- [ ] Test on iOS simulator + web + real device
 
 ### ALREADY COMPLETED (DO NOT REDO):
 - [x] `api/src/ai/classifier.ts` - Game type classification
@@ -72,6 +80,8 @@ The core MVP flow is now implemented:
 - [x] `api/src/ai/scenario.ts` - Scenario.com client for image generation
 - [x] `api/src/ai/assets.ts` - Asset generation service with R2 upload
 - [x] CameraSystem.ts - position/zoom, follow-target, bounds clamping, shake effect
+- [x] `api/src/trpc/routes/games.ts` - Full games router with generate/refine
+- [x] `api/src/trpc/routes/assets.ts` - Full assets router with generate/generateBatch
 
 ---
 
@@ -154,28 +164,32 @@ The core MVP flow is now implemented:
 
 ---
 
-### Phase 2: Behavior System [85% COMPLETE]
+### Phase 2: Behavior System [95% COMPLETE] ✅
 
 #### 2.1 Behavior Framework [COMPLETE]
 - [x] BehaviorExecutor with execution phases
 - [x] BehaviorContext with full game access
 - [x] Enable/disable support
 
-#### 2.2 Movement Behaviors [90% COMPLETE]
+#### 2.2 Movement Behaviors [100% COMPLETE] ✅
 - [x] move (linear velocity)
 - [x] move_patrol (back-and-forth)
 - [x] follow (homing)
 - [x] oscillate (sine wave)
 - [x] rotate (continuous)
-- [ ] rotate_toward (face target)
+- [x] rotate_toward (face target) - `BehaviorExecutor.ts:615`
+- [x] bounce (boundary bounce)
+- [x] gravity_zone (area gravity effects)
+- [x] magnetic (attract/repel)
 
-#### 2.3 Input/Control Behaviors [80% COMPLETE]
+#### 2.3 Input/Control Behaviors [90% COMPLETE]
 - [x] tap_to_jump
 - [x] drag_to_aim (slingshot)
 - [x] tilt_to_move (accelerometer)
 - [x] virtual_buttons
-- [ ] virtual_dpad
-- [ ] Touch zones
+- [x] draggable (drag entities with physics)
+- [ ] virtual_dpad (POST-MVP)
+- [ ] Touch zones (POST-MVP)
 
 #### 2.4 Event/Lifecycle Behaviors [COMPLETE]
 - [x] spawn_on_event
@@ -183,11 +197,11 @@ The core MVP flow is now implemented:
 - [x] timer (timed destruction/callbacks)
 - [x] animate (frame animation)
 
-#### 2.5 Scoring Behaviors [60% COMPLETE]
+#### 2.5 Scoring/Combat Behaviors [100% COMPLETE] ✅
 - [x] score_on_collision
-- [ ] score_on_destroy
-- [ ] health (damage/death)
-- [ ] Combo multipliers
+- [x] score_on_destroy - `BehaviorExecutor.ts:477`
+- [x] health (damage/death with invulnerability) - `BehaviorExecutor.ts:485`
+- [ ] Combo multipliers (POST-MVP)
 
 ---
 
@@ -263,25 +277,29 @@ The core MVP flow is now implemented:
 
 ---
 
-### Phase 5: AI Generation Pipeline [85% COMPLETE]
+### Phase 5: AI Generation Pipeline [100% COMPLETE] ✅
 
 - [x] Prompt classification (game type, mechanic, theme) - `api/src/ai/classifier.ts`
 - [x] Base templates (projectile, stacker, platformer, vehicle, falling_objects) - `api/src/ai/templates.ts`
 - [x] LLM integration (OpenAI/Anthropic/OpenRouter) - `api/src/ai/generator.ts`
 - [x] Validation & self-correction loop - `api/src/ai/validator.ts`
-- [ ] Wire up `games.generate` tRPC mutation
-- [ ] Wire up `games.refine` tRPC mutation
+- [x] Wire up `games.generate` tRPC mutation - `api/src/trpc/routes/games.ts:269`
+- [x] Wire up `games.refine` tRPC mutation - `api/src/trpc/routes/games.ts:348`
+- [x] Wire up `games.analyze` (prompt analysis) - `api/src/trpc/routes/games.ts:397`
+- [x] Wire up `games.validate` (definition validation) - `api/src/trpc/routes/games.ts:409`
 
 ---
 
-### Phase 6: Asset Generation [75% COMPLETE]
+### Phase 6: Asset Generation [100% COMPLETE] ✅
 
 - [x] Scenario.com integration (pixel art, backgrounds, UI) - `api/src/ai/scenario.ts`
 - [x] Style consistency across assets (model matrix per entity type) - `api/src/ai/assets.ts`
 - [x] R2 storage for generated assets - `AssetService.uploadToR2()`
 - [x] Placeholder system with async replacement - `createPlaceholderResult()`
-- [ ] Wire up `assets.generate` tRPC mutation
-- [ ] Integration with game generation pipeline
+- [x] Wire up `assets.generate` tRPC mutation - `api/src/trpc/routes/assets.ts:44`
+- [x] Wire up `assets.generateBatch` tRPC mutation - `api/src/trpc/routes/assets.ts:125`
+- [x] Wire up `assets.list` and `assets.get` - `api/src/trpc/routes/assets.ts:182,228`
+- [ ] Integration with game generation pipeline (auto-generate assets during game gen) - POST-MVP
 
 ---
 
