@@ -10,7 +10,7 @@
     "name": "skia-canvas-wasm-deploy-test",
     "slug": "skia-canvas-wasm-deploy-test",
     "ios": {
-      "bundleIdentifier": "com.anonymous.skia-canvas-wasm-deploy-test"
+      "bundleIdentifier": "com.skia.physics.test"
     }
   }
 }
