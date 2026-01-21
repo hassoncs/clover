@@ -147,6 +147,13 @@ export class Box2DAdapter implements Physics2D {
     fixtureDef.restitution = def.restitution ?? 0;
     (fixtureDef as any).isSensor = def.isSensor ?? false;
     
+    if (def.categoryBits !== undefined || def.maskBits !== undefined) {
+      const filter = (fixtureDef as any).filter || {};
+      filter.categoryBits = def.categoryBits ?? 0x0001;
+      filter.maskBits = def.maskBits ?? 0xFFFF;
+      (fixtureDef as any).filter = filter;
+    }
+    
     const fixture = record.body.CreateFixture(fixtureDef);
     const colliderId = this.nextColliderId++;
     
