@@ -53,3 +53,15 @@ app-example
 
 # Turbo
 .turbo
+
+# Temporary research/development directories
+temp/
+temp_*/
+tmp/
+*_repo/
+app/research/
+
+# Research artifacts
+results_*.json
+plan.json
+*_readme.md
