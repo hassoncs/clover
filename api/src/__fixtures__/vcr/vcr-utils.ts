@@ -46,7 +46,7 @@ export function loadCassette(cassette: Cassette): void {
     })
     .reply(
       cassette.response.status,
-      cassette.response.body,
+      cassette.response.body as object,
       { headers: cassette.response.headers }
     );
 }
@@ -57,7 +57,7 @@ export function loadCassettes(cassettes: Cassette[]): void {
   }
 }
 
-export function mockOpenRouterResponse(responseBody: unknown): void {
+export function mockOpenRouterResponse(responseBody: object): void {
   fetchMock
     .get('https://openrouter.ai')
     .intercept({
@@ -69,7 +69,7 @@ export function mockOpenRouterResponse(responseBody: unknown): void {
     });
 }
 
-export function mockScenarioResponse(responseBody: unknown): void {
+export function mockScenarioResponse(responseBody: object): void {
   fetchMock
     .get('https://api.cloud.scenario.com')
     .intercept({

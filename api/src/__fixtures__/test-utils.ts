@@ -1,6 +1,9 @@
-import { env } from 'cloudflare:test';
+import { env as cloudflareEnv } from 'cloudflare:test';
 import { appRouter } from '../trpc/router';
-import type { Context, AuthenticatedContext, User } from '../trpc/context';
+import type { Context, AuthenticatedContext, User, Env } from '../trpc/context';
+
+// Cast the cloudflare test env to our Env type
+const env = cloudflareEnv as Env;
 
 export const TEST_SCHEMA = `
 -- Users table (synced from Supabase Auth)
