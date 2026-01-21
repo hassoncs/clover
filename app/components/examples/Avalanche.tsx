@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Dimensions } from "react-native";
 import {
   Canvas,
@@ -8,8 +8,8 @@ import {
   Fill,
   Group,
 } from "@shopify/react-native-skia";
-import { useFrameCallback } from "react-native-reanimated";
 import { initPhysics, b2Body, b2World, Box2DAPI } from "../../lib/physics";
+import { useSimplePhysicsLoop } from "../../lib/physics2d";
 
 const PIXELS_PER_METER = 50;
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -103,21 +103,24 @@ export default function Avalanche() {
     return () => { worldRef.current = null; bodiesRef.current = []; };
   }, []);
 
-  useFrameCallback(() => {
-    if (!worldRef.current || !isReady) return;
-    worldRef.current.Step(1 / 60, 8, 3);
+  const stepCallback = useCallback((dt: number) => {
+    if (!worldRef.current) return;
+    worldRef.current.Step(dt, 8, 3);
 
-    const updated = bodiesRef.current.map((b, i) => {
+    setParticles(prev => 
+      bodiesRef.current.map((b, i) => {
         const p = b.GetPosition();
         return {
-            ...particles[i],
-            x: p.x * PIXELS_PER_METER,
-            y: p.y * PIXELS_PER_METER,
-            angle: b.GetAngle()
+          ...prev[i],
+          x: p.x * PIXELS_PER_METER,
+          y: p.y * PIXELS_PER_METER,
+          angle: b.GetAngle()
         };
-    });
-    setParticles(updated);
-  }, true);
+      })
+    );
+  }, []);
+
+  useSimplePhysicsLoop(stepCallback, isReady);
 
   return (
     <Canvas ref={canvasRef} style={{ flex: 1 }}>

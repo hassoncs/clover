@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Dimensions } from "react-native";
 import {
   Canvas,
@@ -8,8 +8,8 @@ import {
   Fill,
   Group,
 } from "@shopify/react-native-skia";
-import { useFrameCallback } from "react-native-reanimated";
 import { initPhysics, b2Body, b2World, Box2DAPI } from "../../lib/physics";
+import { useSimplePhysicsLoop } from "../../lib/physics2d";
 
 const PIXELS_PER_METER = 50;
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -141,9 +141,9 @@ export default function Car() {
     return () => { worldRef.current = null; bodiesRef.current = []; };
   }, []);
 
-  useFrameCallback(() => {
-    if (!worldRef.current || !isReady) return;
-    worldRef.current.Step(1 / 60, 8, 3);
+  const stepPhysics = useCallback((dt: number) => {
+    if (!worldRef.current || bodiesRef.current.length < 3) return;
+    worldRef.current.Step(dt, 8, 3);
 
     const b0 = bodiesRef.current[0];
     const p0 = b0.GetPosition();
@@ -167,8 +167,9 @@ export default function Car() {
         };
     });
     setWheels(newWheels);
+  }, []);
 
-  }, true);
+  useSimplePhysicsLoop(stepPhysics, isReady);
 
   return (
     <Canvas ref={canvasRef} style={{ flex: 1 }}>

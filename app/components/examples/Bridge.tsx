@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Dimensions } from "react-native";
 import {
   Canvas,
@@ -8,8 +8,8 @@ import {
   Fill,
   Group,
 } from "@shopify/react-native-skia";
-import { useFrameCallback } from "react-native-reanimated";
 import { initPhysics, b2Body, b2World, Box2DAPI } from "../../lib/physics";
+import { useSimplePhysicsLoop } from "../../lib/physics2d";
 
 const PIXELS_PER_METER = 50;
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -122,9 +122,7 @@ export default function Bridge() {
             });
         }
         
-        // Append boxes to tracking (separate state for clarity but logic is same)
-        // Actually I'll track them separately
-        (worldRef as any).boxes = newBoxes; // Hacky storage
+        bodiesRef.current = [...segmentBodies, ...newBoxes];
         setBoxes(boxStates);
 
         setIsReady(true);
@@ -137,34 +135,35 @@ export default function Bridge() {
     return () => { worldRef.current = null; bodiesRef.current = []; };
   }, []);
 
-  useFrameCallback(() => {
-    if (!worldRef.current || !isReady) return;
-    worldRef.current.Step(1 / 60, 8, 3);
+  const stepCallback = useCallback((dt: number) => {
+    if (!worldRef.current) return;
+    worldRef.current.Step(dt, 8, 3);
 
-    const newSegments = bodiesRef.current.map((b, i) => {
-        const p = b.GetPosition();
-        return {
-            ...segments[i],
-            x: p.x * PIXELS_PER_METER,
-            y: p.y * PIXELS_PER_METER,
-            angle: b.GetAngle()
-        };
-    });
-    setSegments(newSegments);
+    const segmentBodies = bodiesRef.current.slice(0, SEGMENTS);
+    const boxBodies = bodiesRef.current.slice(SEGMENTS);
 
-    const physicsBoxes = (worldRef.current as any).boxes as b2Body[] || [];
-    const newBoxes = physicsBoxes.map((b, i) => {
-        const p = b.GetPosition();
-        return {
-            ...boxes[i],
-            x: p.x * PIXELS_PER_METER,
-            y: p.y * PIXELS_PER_METER,
-            angle: b.GetAngle()
-        };
-    });
-    setBoxes(newBoxes);
+    setSegments(prev => segmentBodies.map((b, i) => {
+      const p = b.GetPosition();
+      return {
+        ...prev[i],
+        x: p.x * PIXELS_PER_METER,
+        y: p.y * PIXELS_PER_METER,
+        angle: b.GetAngle()
+      };
+    }));
 
-  }, true);
+    setBoxes(prev => boxBodies.map((b, i) => {
+      const p = b.GetPosition();
+      return {
+        ...prev[i],
+        x: p.x * PIXELS_PER_METER,
+        y: p.y * PIXELS_PER_METER,
+        angle: b.GetAngle()
+      };
+    }));
+  }, []);
+
+  useSimplePhysicsLoop(stepCallback, isReady);
 
   return (
     <Canvas ref={canvasRef} style={{ flex: 1 }}>

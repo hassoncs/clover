@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Dimensions } from "react-native";
 import {
   Canvas,
@@ -10,8 +10,8 @@ import {
   Group,
   Rect,
 } from "@shopify/react-native-skia";
-import { useFrameCallback } from "react-native-reanimated";
 import { initPhysics, b2Body, b2World, Box2DAPI } from "../../lib/physics";
+import { useSimplePhysicsLoop } from "../../lib/physics2d";
 
 const PIXELS_PER_METER = 50;
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -125,10 +125,10 @@ export default function Pendulum() {
     };
   }, []);
 
-  useFrameCallback(() => {
-    if (!worldRef.current || !body1Ref.current || !body2Ref.current || !isReady) return;
+  const stepPhysics = useCallback((dt: number) => {
+    if (!worldRef.current || !body1Ref.current || !body2Ref.current) return;
 
-    worldRef.current.Step(1 / 60, 8, 3);
+    worldRef.current.Step(dt, 8, 3);
 
     const b1 = body1Ref.current;
     const b2 = body2Ref.current;
@@ -139,7 +139,9 @@ export default function Pendulum() {
       b1: { x: pos1.x * PIXELS_PER_METER, y: pos1.y * PIXELS_PER_METER, angle: b1.GetAngle() },
       b2: { x: pos2.x * PIXELS_PER_METER, y: pos2.y * PIXELS_PER_METER, angle: b2.GetAngle() },
     });
-  }, true);
+  }, []);
+
+  useSimplePhysicsLoop(stepPhysics, isReady);
 
   const anchorScreenX = ANCHOR_X * PIXELS_PER_METER;
   const anchorScreenY = ANCHOR_Y * PIXELS_PER_METER;

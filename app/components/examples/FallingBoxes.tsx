@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Dimensions } from "react-native";
 import {
   Canvas,
@@ -7,17 +7,23 @@ import {
   Group,
   Fill,
 } from "@shopify/react-native-skia";
-import { useFrameCallback } from "react-native-reanimated";
-import { initPhysics, b2Body, b2World } from "../../lib/physics";
+import {
+  createPhysics2D,
+  useSimplePhysicsLoop,
+  type Physics2D,
+  type BodyId,
+  vec2,
+} from "../../lib/physics2d";
 
 const PIXELS_PER_METER = 50;
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const WORLD_WIDTH = SCREEN_WIDTH / PIXELS_PER_METER;
 const WORLD_HEIGHT = SCREEN_HEIGHT / PIXELS_PER_METER;
 const BOX_SIZE = 0.8;
-const GROUND_HEIGHT = 3; // Increased to ensure visibility
+const GROUND_HEIGHT = 3;
 
 interface BoxState {
+  id: BodyId;
   x: number;
   y: number;
   angle: number;
@@ -37,125 +43,107 @@ const COLORS = [
   "#F7DC6F",
 ];
 
-export default function FallingBoxes() {
+export default function FallingBoxesV2() {
   const canvasRef = useCanvasRef();
-  const worldRef = useRef<b2World | null>(null);
-  const bodiesRef = useRef<b2Body[]>([]);
+  const physicsRef = useRef<Physics2D | null>(null);
+  const bodyIdsRef = useRef<BodyId[]>([]);
   const [boxes, setBoxes] = useState<BoxState[]>([]);
   const [isReady, setIsReady] = useState(false);
-  const frameCountRef = useRef(0);
 
   useEffect(() => {
     const setupPhysics = async () => {
       try {
-        const Box2d = await initPhysics();
+        const physics = await createPhysics2D();
+        physics.createWorld(vec2(0, 9.8));
+        physicsRef.current = physics;
 
-        const gravity = Box2d.b2Vec2(0, 9.8);
-        const world = Box2d.b2World(gravity);
-        worldRef.current = world;
+        const groundId = physics.createBody({
+          type: 'static',
+          position: vec2(WORLD_WIDTH / 2, WORLD_HEIGHT - GROUND_HEIGHT / 2),
+        });
+        physics.addFixture(groundId, {
+          shape: { type: 'box', halfWidth: WORLD_WIDTH / 2, halfHeight: GROUND_HEIGHT / 2 },
+          density: 0,
+          friction: 0.6,
+        });
 
-        const groundDef = Box2d.b2BodyDef();
-        groundDef.type = 0;
-        groundDef.position = Box2d.b2Vec2(WORLD_WIDTH / 2, WORLD_HEIGHT - GROUND_HEIGHT / 2);
-        const groundBody = world.CreateBody(groundDef);
-
-        const groundShape = Box2d.b2PolygonShape();
-        groundShape.SetAsBox(WORLD_WIDTH / 2, GROUND_HEIGHT / 2);
-
-        const groundFixture = Box2d.b2FixtureDef();
-        groundFixture.shape = groundShape;
-        groundFixture.density = 0;
-        groundFixture.friction = 0.6;
-        groundBody.CreateFixture(groundFixture);
-
-        const newBodies: b2Body[] = [];
+        const newBodyIds: BodyId[] = [];
         const initialBoxes: BoxState[] = [];
 
         for (let i = 0; i < 8; i++) {
-          const bodyDef = Box2d.b2BodyDef();
-          bodyDef.type = 2;
-          bodyDef.position = Box2d.b2Vec2(
-            1 + (i % 4) * 1.5 + Math.random() * 0.5,
-            1 + Math.floor(i / 4) * 1.5
-          );
-          bodyDef.angle = Math.random() * 0.5 - 0.25;
+          const bodyId = physics.createBody({
+            type: 'dynamic',
+            position: vec2(
+              1 + (i % 4) * 1.5 + Math.random() * 0.5,
+              1 + Math.floor(i / 4) * 1.5
+            ),
+            angle: Math.random() * 0.5 - 0.25,
+          });
 
-          const body = world.CreateBody(bodyDef);
+          physics.addFixture(bodyId, {
+            shape: { type: 'box', halfWidth: BOX_SIZE / 2, halfHeight: BOX_SIZE / 2 },
+            density: 1.0,
+            friction: 0.3,
+            restitution: 0.2,
+          });
 
-          const boxShape = Box2d.b2PolygonShape();
-          boxShape.SetAsBox(BOX_SIZE / 2, BOX_SIZE / 2);
+          newBodyIds.push(bodyId);
 
-          const fixtureDef = Box2d.b2FixtureDef();
-          fixtureDef.shape = boxShape;
-          fixtureDef.density = 1.0;
-          fixtureDef.friction = 0.3;
-          fixtureDef.restitution = 0.2;
-          body.CreateFixture(fixtureDef);
-
-          newBodies.push(body);
-          
-          const pos = body.GetPosition();
+          const transform = physics.getTransform(bodyId);
           initialBoxes.push({
-            x: pos.x * PIXELS_PER_METER,
-            y: pos.y * PIXELS_PER_METER,
-            angle: body.GetAngle(),
+            id: bodyId,
+            x: transform.position.x * PIXELS_PER_METER,
+            y: transform.position.y * PIXELS_PER_METER,
+            angle: transform.angle,
             width: BOX_SIZE * PIXELS_PER_METER,
             height: BOX_SIZE * PIXELS_PER_METER,
             color: COLORS[i % COLORS.length],
           });
         }
 
-        bodiesRef.current = newBodies;
+        bodyIdsRef.current = newBodyIds;
         setBoxes(initialBoxes);
-        console.log('[FallingBoxes] Physics initialized, bodies:', newBodies.length);
-        console.log('[FallingBoxes] Initial positions:', initialBoxes.map(b => `(${b.x.toFixed(1)}, ${b.y.toFixed(1)})`).join(', '));
         setIsReady(true);
       } catch (error) {
-        console.error("[FallingBoxes] Failed to initialize Box2D:", error);
+        console.error("Failed to initialize Physics2D:", error);
       }
     };
 
     setupPhysics();
 
     return () => {
-      worldRef.current = null;
-      bodiesRef.current = [];
+      if (physicsRef.current) {
+        physicsRef.current.destroyWorld();
+        physicsRef.current = null;
+      }
+      bodyIdsRef.current = [];
     };
   }, []);
 
-  useEffect(() => {
-    if (!isReady || !worldRef.current) return;
-    
-    console.log('[FallingBoxes] Starting physics loop');
-    
-    const interval = setInterval(() => {
-      if (!worldRef.current) return;
-      
-      worldRef.current.Step(1/60, 8, 3);
-      
-      const updatedBoxes = bodiesRef.current.map((body, i) => {
-        const pos = body.GetPosition();
-        const angle = body.GetAngle();
-        return {
-          x: pos.x * PIXELS_PER_METER,
-          y: pos.y * PIXELS_PER_METER,
-          angle,
-          width: BOX_SIZE * PIXELS_PER_METER,
-          height: BOX_SIZE * PIXELS_PER_METER,
-          color: COLORS[i % COLORS.length],
-        };
-      });
-      
-      if (bodiesRef.current.length > 0) {
-        const pos = bodiesRef.current[0].GetPosition();
-        console.log(`[FallingBoxes] Body0 physics: (${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}) -> screen: (${(pos.x * PIXELS_PER_METER).toFixed(0)}, ${(pos.y * PIXELS_PER_METER).toFixed(0)})`);
-      }
-      
-      setBoxes(updatedBoxes);
-    }, 16); // ~60fps
-    
-    return () => clearInterval(interval);
-  }, [isReady]);
+  // Physics step - uses vsync-aligned timing via useSimplePhysicsLoop
+  const stepPhysics = useCallback((dt: number) => {
+    if (!physicsRef.current) return;
+
+    physicsRef.current.step(dt, 8, 3);
+
+    const updatedBoxes = bodyIdsRef.current.map((bodyId, i) => {
+      const transform = physicsRef.current!.getTransform(bodyId);
+      return {
+        id: bodyId,
+        x: transform.position.x * PIXELS_PER_METER,
+        y: transform.position.y * PIXELS_PER_METER,
+        angle: transform.angle,
+        width: BOX_SIZE * PIXELS_PER_METER,
+        height: BOX_SIZE * PIXELS_PER_METER,
+        color: COLORS[i % COLORS.length],
+      };
+    });
+
+    setBoxes(updatedBoxes);
+  }, []);
+
+  // Use the physics loop hook - handles useFrameCallback + runOnJS internally
+  useSimplePhysicsLoop(stepPhysics, isReady);
 
   return (
     <Canvas ref={canvasRef} style={{ flex: 1 }}>
@@ -169,9 +157,9 @@ export default function FallingBoxes() {
         color="#2d3436"
       />
 
-      {boxes.map((box, index) => (
+      {boxes.map((box) => (
         <Group
-          key={`box-${index}`}
+          key={`box-${box.id.value}`}
           transform={[
             { translateX: box.x },
             { translateY: box.y },

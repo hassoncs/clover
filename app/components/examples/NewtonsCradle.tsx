@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Dimensions } from "react-native";
 import {
   Canvas,
@@ -9,8 +9,8 @@ import {
   vec,
   Group,
 } from "@shopify/react-native-skia";
-import { useFrameCallback } from "react-native-reanimated";
 import { initPhysics, b2Body, b2World, Box2DAPI } from "../../lib/physics";
+import { useSimplePhysicsLoop } from "../../lib/physics2d";
 
 const PIXELS_PER_METER = 50;
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -72,17 +72,14 @@ export default function NewtonsCradle() {
             const body = world.CreateBody(bd);
             body.CreateFixture(ballFixture);
             body.SetLinearDamping(0);
-            body.SetAngularDamping(0);
 
             // Distance Joint
             const jd = Box2d.b2DistanceJointDef();
             jd.Initialize(anchorBody, body, Box2d.b2Vec2(bx, ANCHOR_Y), body.GetPosition());
             // jd.length should be auto-set by Initialize
             jd.collideConnected = false;
-            // High frequency for rigid rod behavior or 0 for spring? 
-            // Box2D DistanceJoint: frequencyHz = 0 is rigid.
-            jd.frequencyHz = 0;
-            jd.dampingRatio = 0;
+            jd.stiffness = 0;
+            jd.damping = 0;
             
             world.CreateJoint(jd);
 
@@ -104,20 +101,22 @@ export default function NewtonsCradle() {
     return () => { worldRef.current = null; bodiesRef.current = []; };
   }, []);
 
-  useFrameCallback(() => {
-    if (!worldRef.current || !isReady) return;
-    worldRef.current.Step(1 / 60, 8, 3);
+  const stepCallback = useCallback((dt: number) => {
+    if (!worldRef.current) return;
+    worldRef.current.Step(dt, 8, 3);
 
     const updated = bodiesRef.current.map((b, i) => {
-        const p = b.GetPosition();
-        return {
-            x: p.x * PIXELS_PER_METER,
-            y: p.y * PIXELS_PER_METER,
-            anchorX: balls[i].anchorX
-        };
+      const p = b.GetPosition();
+      return {
+        x: p.x * PIXELS_PER_METER,
+        y: p.y * PIXELS_PER_METER,
+        anchorX: balls[i]?.anchorX ?? 0
+      };
     });
     setBalls(updated);
-  }, true);
+  }, [balls]);
+
+  useSimplePhysicsLoop(stepCallback, isReady);
 
   const anchorY = ANCHOR_Y * PIXELS_PER_METER;
 

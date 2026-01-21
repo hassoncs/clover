@@ -7,8 +7,14 @@ import {
   useCanvasRef,
   Fill,
 } from "@shopify/react-native-skia";
-import { useFrameCallback } from "react-native-reanimated";
-import { initPhysics, b2Body, b2World, Box2DAPI } from "../../lib/physics";
+
+import {
+  createPhysics2D,
+  type Physics2D,
+  type BodyId,
+  vec2,
+  useSimplePhysicsLoop,
+} from "../../lib/physics2d";
 
 const PIXELS_PER_METER = 50;
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -18,6 +24,7 @@ const GROUND_HEIGHT = 0.5;
 const MAX_BODIES = 50;
 
 interface BodyState {
+  id: BodyId;
   x: number;
   y: number;
   radius: number;
@@ -37,139 +44,127 @@ const COLORS = [
   "#FD79A8",
 ];
 
-export default function Interaction() {
+export default function InteractionV2() {
   const canvasRef = useCanvasRef();
-  const worldRef = useRef<b2World | null>(null);
-  const bodiesRef = useRef<b2Body[]>([]);
-  const box2dApiRef = useRef<Box2DAPI | null>(null);
+  const physicsRef = useRef<Physics2D | null>(null);
+  const bodyIdsRef = useRef<{ id: BodyId; radius: number; color: string }[]>([]);
   const [bodies, setBodies] = useState<BodyState[]>([]);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const setupPhysics = async () => {
       try {
-        const Box2d = await initPhysics();
-        box2dApiRef.current = Box2d;
+        const physics = await createPhysics2D();
+        physics.createWorld(vec2(0, 9.8));
+        physicsRef.current = physics;
 
-        const gravity = Box2d.b2Vec2(0, 9.8);
-        const world = Box2d.b2World(gravity);
-        worldRef.current = world;
+        const groundId = physics.createBody({
+          type: 'static',
+          position: vec2(WORLD_WIDTH / 2, WORLD_HEIGHT - GROUND_HEIGHT / 2),
+        });
+        physics.addFixture(groundId, {
+          shape: { type: 'box', halfWidth: WORLD_WIDTH / 2, halfHeight: GROUND_HEIGHT / 2 },
+          density: 0,
+          friction: 0.6,
+        });
 
-        const groundDef = Box2d.b2BodyDef();
-        groundDef.type = 0;
-        groundDef.position = Box2d.b2Vec2(WORLD_WIDTH / 2, WORLD_HEIGHT - GROUND_HEIGHT / 2);
-        const groundBody = world.CreateBody(groundDef);
+        const leftWallId = physics.createBody({
+          type: 'static',
+          position: vec2(-0.5, WORLD_HEIGHT / 2),
+        });
+        physics.addFixture(leftWallId, {
+          shape: { type: 'box', halfWidth: 0.5, halfHeight: WORLD_HEIGHT / 2 },
+          density: 0,
+        });
 
-        const groundShape = Box2d.b2PolygonShape();
-        groundShape.SetAsBox(WORLD_WIDTH / 2, GROUND_HEIGHT / 2);
-
-        const groundFixture = Box2d.b2FixtureDef();
-        groundFixture.shape = groundShape;
-        groundFixture.density = 0;
-        groundFixture.friction = 0.6;
-        groundBody.CreateFixture(groundFixture);
-
-        const leftWallDef = Box2d.b2BodyDef();
-        leftWallDef.type = 0;
-        leftWallDef.position = Box2d.b2Vec2(-0.5, WORLD_HEIGHT / 2);
-        const leftWall = world.CreateBody(leftWallDef);
-        const leftWallShape = Box2d.b2PolygonShape();
-        leftWallShape.SetAsBox(0.5, WORLD_HEIGHT / 2);
-        leftWall.CreateFixture2(leftWallShape, 0);
-
-        const rightWallDef = Box2d.b2BodyDef();
-        rightWallDef.type = 0;
-        rightWallDef.position = Box2d.b2Vec2(WORLD_WIDTH + 0.5, WORLD_HEIGHT / 2);
-        const rightWall = world.CreateBody(rightWallDef);
-        const rightWallShape = Box2d.b2PolygonShape();
-        rightWallShape.SetAsBox(0.5, WORLD_HEIGHT / 2);
-        rightWall.CreateFixture2(rightWallShape, 0);
+        const rightWallId = physics.createBody({
+          type: 'static',
+          position: vec2(WORLD_WIDTH + 0.5, WORLD_HEIGHT / 2),
+        });
+        physics.addFixture(rightWallId, {
+          shape: { type: 'box', halfWidth: 0.5, halfHeight: WORLD_HEIGHT / 2 },
+          density: 0,
+        });
 
         setIsReady(true);
       } catch (error) {
-        console.error("Failed to initialize Box2D:", error);
+        console.error("Failed to initialize Physics2D:", error);
       }
     };
 
     setupPhysics();
 
     return () => {
-      worldRef.current = null;
-      bodiesRef.current = [];
-      box2dApiRef.current = null;
+      if (physicsRef.current) {
+        physicsRef.current.destroyWorld();
+        physicsRef.current = null;
+      }
+      bodyIdsRef.current = [];
     };
   }, []);
 
   const spawnBall = useCallback((screenX: number, screenY: number) => {
-    if (!worldRef.current || !box2dApiRef.current) return;
+    if (!physicsRef.current) return;
 
-    const Box2d = box2dApiRef.current;
-    const world = worldRef.current;
+    const physics = physicsRef.current;
 
-    if (bodiesRef.current.length >= MAX_BODIES) {
-      const oldBody = bodiesRef.current.shift();
-      if (oldBody) {
-        world.DestroyBody(oldBody);
+    if (bodyIdsRef.current.length >= MAX_BODIES) {
+      const oldest = bodyIdsRef.current.shift();
+      if (oldest) {
+        physics.destroyBody(oldest.id);
       }
     }
 
     const worldX = screenX / PIXELS_PER_METER;
     const worldY = screenY / PIXELS_PER_METER;
     const radius = 0.3 + Math.random() * 0.4;
+    const color = COLORS[Math.floor(Math.random() * COLORS.length)];
 
-    const bodyDef = Box2d.b2BodyDef();
-    bodyDef.type = 2;
-    bodyDef.position = Box2d.b2Vec2(worldX, worldY);
+    const bodyId = physics.createBody({
+      type: 'dynamic',
+      position: vec2(worldX, worldY),
+    });
 
-    const body = world.CreateBody(bodyDef);
+    physics.addFixture(bodyId, {
+      shape: { type: 'circle', radius },
+      density: 1.0,
+      friction: 0.3,
+      restitution: 0.5,
+    });
 
-    const shape = Box2d.b2CircleShape();
-    shape.SetRadius(radius);
-
-    const fixtureDef = Box2d.b2FixtureDef();
-    fixtureDef.shape = shape;
-    fixtureDef.density = 1.0;
-    fixtureDef.friction = 0.3;
-    fixtureDef.restitution = 0.5;
-    body.CreateFixture(fixtureDef);
-
-    (body as any)._radius = radius;
-    (body as any)._color = COLORS[Math.floor(Math.random() * COLORS.length)];
-
-    bodiesRef.current.push(body);
+    bodyIdsRef.current.push({ id: bodyId, radius, color });
   }, []);
 
   const handleTouch = useCallback((event: GestureResponderEvent) => {
-    console.log("Touch event detected!", event.nativeEvent);
     const { locationX, locationY } = event.nativeEvent;
     spawnBall(locationX, locationY);
   }, [spawnBall]);
 
-  useFrameCallback(() => {
-    if (!worldRef.current || !isReady) return;
+  const stepPhysics = useCallback((dt: number) => {
+    if (!physicsRef.current) return;
 
-    worldRef.current.Step(1 / 60, 8, 3);
+    physicsRef.current.step(dt, 8, 3);
 
-    const updatedBodies = bodiesRef.current.map((body) => {
-      const pos = body.GetPosition();
+    const updatedBodies = bodyIdsRef.current.map((record) => {
+      const transform = physicsRef.current!.getTransform(record.id);
       return {
-        x: pos.x * PIXELS_PER_METER,
-        y: pos.y * PIXELS_PER_METER,
-        radius: ((body as any)._radius || 0.5) * PIXELS_PER_METER,
-        color: (body as any)._color || "#FF6B6B",
+        id: record.id,
+        x: transform.position.x * PIXELS_PER_METER,
+        y: transform.position.y * PIXELS_PER_METER,
+        radius: record.radius * PIXELS_PER_METER,
+        color: record.color,
       };
     });
 
     setBodies(updatedBodies);
-  }, true);
+  }, []);
+
+  useSimplePhysicsLoop(stepPhysics, isReady);
 
   return (
     <View
       style={{ flex: 1 }}
-      onStartShouldSetResponder={() => {
-        console.log("onStartShouldSetResponder called");
-        return true;
-      }}
+      onStartShouldSetResponder={() => true}
       onResponderGrant={handleTouch}
       onResponderMove={handleTouch}
     >
@@ -188,9 +183,9 @@ export default function Interaction() {
           color="#2d3436"
         />
 
-        {bodies.map((body, index) => (
+        {bodies.map((body) => (
           <Circle
-            key={`ball-${index}`}
+            key={`ball-${body.id.value}`}
             cx={body.x}
             cy={body.y}
             r={body.radius}
