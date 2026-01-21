@@ -8,6 +8,12 @@ import type {
 } from '@clover/shared';
 import type { RuntimeEntity, RuntimeBehavior, EntityManagerOptions } from './types';
 
+interface PooledEntitySlot {
+  id: string;
+  generation: number;
+  entity: RuntimeEntity | null;
+}
+
 function generateId(): string {
   return `entity_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
@@ -16,6 +22,10 @@ export class EntityManager {
   private entities = new Map<string, RuntimeEntity>();
   private templates = new Map<string, EntityTemplate>();
   private physics: Physics2D;
+  
+  private entityPool: PooledEntitySlot[] = [];
+  private freeSlots: number[] = [];
+  private nextGeneration = 1;
 
   constructor(physics: Physics2D, options: EntityManagerOptions = {}) {
     this.physics = physics;
@@ -35,7 +45,7 @@ export class EntityManager {
   }
 
   createEntity(definition: GameEntity): RuntimeEntity {
-    const id = definition.id || generateId();
+    const id = definition.id || this.getPooledEntityId();
 
     if (this.entities.has(id)) {
       throw new Error(`Entity with id "${id}" already exists`);
@@ -50,6 +60,31 @@ export class EntityManager {
 
     this.entities.set(id, runtime);
     return runtime;
+  }
+
+  private getPooledEntityId(): string {
+    let slotIndex: number;
+    
+    if (this.freeSlots.length > 0) {
+      slotIndex = this.freeSlots.pop()!;
+      const slot = this.entityPool[slotIndex];
+      slot.generation = this.nextGeneration++;
+      slot.entity = null;
+      return slot.id;
+    } else {
+      slotIndex = this.entityPool.length;
+      const id = `pooled_${slotIndex}_${this.nextGeneration}`;
+      this.entityPool.push({
+        id,
+        generation: this.nextGeneration++,
+        entity: null,
+      });
+      return id;
+    }
+  }
+
+  private getSlotIndex(id: string): number {
+    return this.entityPool.findIndex(slot => slot.id === id);
   }
 
   private resolveTemplate(definition: GameEntity): GameEntity {
@@ -162,7 +197,29 @@ export class EntityManager {
       this.physics.destroyBody(entity.bodyId);
     }
 
+    this.resetEntityForPooling(entity);
     this.entities.delete(id);
+    this.returnEntityToPool(id);
+  }
+
+  private resetEntityForPooling(entity: RuntimeEntity): void {
+    entity.transform = { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 };
+    entity.sprite = undefined;
+    entity.physics = undefined;
+    entity.behaviors = [];
+    entity.tags = [];
+    entity.layer = 0;
+    entity.visible = true;
+    entity.active = true;
+    entity.bodyId = null;
+    entity.colliderId = null;
+  }
+
+  private returnEntityToPool(id: string): void {
+    const slotIndex = this.getSlotIndex(id);
+    if (slotIndex >= 0) {
+      this.freeSlots.push(slotIndex);
+    }
   }
 
   getEntity(id: string): RuntimeEntity | undefined {
@@ -205,12 +262,16 @@ export class EntityManager {
   }
 
   loadEntities(entities: GameEntity[]): void {
-    entities.forEach((e) => this.createEntity(e));
+    entities.forEach((e) => {
+      this.createEntity(e);
+    });
   }
 
   clearAll(): void {
     const ids = Array.from(this.entities.keys());
-    ids.forEach((id) => this.destroyEntity(id));
+    ids.forEach((id) => {
+      this.destroyEntity(id);
+    });
   }
 
   getEntityByBodyId(bodyId: { value: number }): RuntimeEntity | undefined {
@@ -229,5 +290,19 @@ export class EntityManager {
 
   getEntityCountByTag(tag: string): number {
     return this.getEntitiesByTag(tag).length;
+  }
+
+  getEntitiesInAABB(min: { x: number; y: number }, max: { x: number; y: number }): RuntimeEntity[] {
+    const bodyIds = this.physics.queryAABB(min, max);
+    
+    const entities: RuntimeEntity[] = [];
+    for (const bodyId of bodyIds) {
+      const entity = this.getEntityByBodyId(bodyId);
+      if (entity) {
+        entities.push(entity);
+      }
+    }
+    
+    return entities;
   }
 }
