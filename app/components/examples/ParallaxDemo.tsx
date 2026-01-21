@@ -1,7 +1,7 @@
 import { useCallback, useState, useRef, useEffect } from "react";
 import { View, StyleSheet, Text, TouchableOpacity, Platform, Switch } from "react-native";
 import { Canvas, useCanvasRef } from "@shopify/react-native-skia";
-import { SortableList } from "../ui/SortableList";
+import { SortableList } from "@clover/ui";
 import { Feather } from '@expo/vector-icons';
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {

@@ -13,11 +13,18 @@
   },
   "dependencies": {
     "@clover/theme": "workspace:*",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@expo/vector-icons": "^14.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "nativewind": "^4.2.1",
     "react": "19.1.0",
     "react-native": "0.81.4",
+    "react-native-gesture-handler": "^2.30.0",
+    "react-native-reanimated": "^4.1.6",
+    "react-native-sortables": "^1.9.4",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
