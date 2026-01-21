@@ -28,7 +28,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>skia</string>
-          <string>com.anonymous.skia-canvas-wasm-deploy-test</string>
+          <string>com.skia.physics.test</string>
         </array>
       </dict>
     </array>

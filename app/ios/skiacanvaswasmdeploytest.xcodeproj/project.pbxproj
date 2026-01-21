@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0E29EE1A6A0B538E3E35CDE3 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B546433E9B8805EBA6060448 /* PrivacyInfo.xcprivacy */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		16C0969329C4950737DECB80 /* libPods-skiacanvaswasmdeploytest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 228DD0CF2B6731F6AAA0CA7E /* libPods-skiacanvaswasmdeploytest.a */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		AE8937BD4A36154F32ADAD01 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DD91D6E3728F7099F686F05 /* ExpoModulesProvider.swift */; };
-		B824FA43AA837C68E5BF58D6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D7B0AC638D43883CDACEAABC /* PrivacyInfo.xcprivacy */; };
+		616A04900647B192BF2933FD /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53017FF2A2E12D47C6EE53D /* ExpoModulesProvider.swift */; };
+		8B42FE526869A9A70FECF37C /* libPods-skiacanvaswasmdeploytest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 69ADB863DFF75A87D1562350 /* libPods-skiacanvaswasmdeploytest.a */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
@@ -20,13 +20,13 @@
 		13B07F961A680F5B00A75B9A /* skiacanvaswasmdeploytest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = skiacanvaswasmdeploytest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = skiacanvaswasmdeploytest/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = skiacanvaswasmdeploytest/Info.plist; sourceTree = "<group>"; };
-		228DD0CF2B6731F6AAA0CA7E /* libPods-skiacanvaswasmdeploytest.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-skiacanvaswasmdeploytest.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		5DD91D6E3728F7099F686F05 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-skiacanvaswasmdeploytest/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		9B99927A571FBE8DD562EADC /* Pods-skiacanvaswasmdeploytest.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-skiacanvaswasmdeploytest.release.xcconfig"; path = "Target Support Files/Pods-skiacanvaswasmdeploytest/Pods-skiacanvaswasmdeploytest.release.xcconfig"; sourceTree = "<group>"; };
+		69ADB863DFF75A87D1562350 /* libPods-skiacanvaswasmdeploytest.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-skiacanvaswasmdeploytest.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		848D4B1318A0227482E4BCED /* Pods-skiacanvaswasmdeploytest.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-skiacanvaswasmdeploytest.release.xcconfig"; path = "Target Support Files/Pods-skiacanvaswasmdeploytest/Pods-skiacanvaswasmdeploytest.release.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = skiacanvaswasmdeploytest/SplashScreen.storyboard; sourceTree = "<group>"; };
+		B53017FF2A2E12D47C6EE53D /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-skiacanvaswasmdeploytest/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		B546433E9B8805EBA6060448 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = skiacanvaswasmdeploytest/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		B9D73579F7E7679198935523 /* Pods-skiacanvaswasmdeploytest.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-skiacanvaswasmdeploytest.debug.xcconfig"; path = "Target Support Files/Pods-skiacanvaswasmdeploytest/Pods-skiacanvaswasmdeploytest.debug.xcconfig"; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		D7B0AC638D43883CDACEAABC /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = skiacanvaswasmdeploytest/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		E842FADB3A995E1B3298167B /* Pods-skiacanvaswasmdeploytest.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-skiacanvaswasmdeploytest.debug.xcconfig"; path = "Target Support Files/Pods-skiacanvaswasmdeploytest/Pods-skiacanvaswasmdeploytest.debug.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = skiacanvaswasmdeploytest/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* skiacanvaswasmdeploytest-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "skiacanvaswasmdeploytest-Bridging-Header.h"; path = "skiacanvaswasmdeploytest/skiacanvaswasmdeploytest-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				16C0969329C4950737DECB80 /* libPods-skiacanvaswasmdeploytest.a in Frameworks */,
+				8B42FE526869A9A70FECF37C /* libPods-skiacanvaswasmdeploytest.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,26 +53,36 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				D7B0AC638D43883CDACEAABC /* PrivacyInfo.xcprivacy */,
+				B546433E9B8805EBA6060448 /* PrivacyInfo.xcprivacy */,
 			);
 			name = skiacanvaswasmdeploytest;
+			sourceTree = "<group>";
+		};
+		189C38D2EDD1F93277D594DC /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				C365CF87ADE41012AAA57068 /* skiacanvaswasmdeploytest */,
+			);
+			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
+		298D817D5365BE33C29A16EA /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				B9D73579F7E7679198935523 /* Pods-skiacanvaswasmdeploytest.debug.xcconfig */,
+				848D4B1318A0227482E4BCED /* Pods-skiacanvaswasmdeploytest.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				228DD0CF2B6731F6AAA0CA7E /* libPods-skiacanvaswasmdeploytest.a */,
+				69ADB863DFF75A87D1562350 /* libPods-skiacanvaswasmdeploytest.a */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		6FB60A9F6A2C97DE59B2D5F0 /* skiacanvaswasmdeploytest */ = {
-			isa = PBXGroup;
-			children = (
-				5DD91D6E3728F7099F686F05 /* ExpoModulesProvider.swift */,
-			);
-			name = skiacanvaswasmdeploytest;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -89,8 +99,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				9FAA0FA65BF52C5BC7E8D059 /* Pods */,
-				F3CDA52E0DD5F98D3F8949FB /* ExpoModulesProviders */,
+				298D817D5365BE33C29A16EA /* Pods */,
+				189C38D2EDD1F93277D594DC /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -105,16 +115,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		9FAA0FA65BF52C5BC7E8D059 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				E842FADB3A995E1B3298167B /* Pods-skiacanvaswasmdeploytest.debug.xcconfig */,
-				9B99927A571FBE8DD562EADC /* Pods-skiacanvaswasmdeploytest.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -124,12 +124,12 @@
 			path = skiacanvaswasmdeploytest/Supporting;
 			sourceTree = "<group>";
 		};
-		F3CDA52E0DD5F98D3F8949FB /* ExpoModulesProviders */ = {
+		C365CF87ADE41012AAA57068 /* skiacanvaswasmdeploytest */ = {
 			isa = PBXGroup;
 			children = (
-				6FB60A9F6A2C97DE59B2D5F0 /* skiacanvaswasmdeploytest */,
+				B53017FF2A2E12D47C6EE53D /* ExpoModulesProvider.swift */,
 			);
-			name = ExpoModulesProviders;
+			name = skiacanvaswasmdeploytest;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,13 +140,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "skiacanvaswasmdeploytest" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				44EF69DB330BA3205A758E9B /* [Expo] Configure project */,
+				205EDA5341C34053368369D6 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				61341C0095F902F0BC6AC38A /* [CP] Embed Pods Frameworks */,
+				B53A9BDA420C1BFA6E0FEB94 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -167,6 +167,8 @@
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1250;
+						DevelopmentTeam = "24T4GAP365";
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -196,7 +198,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				B824FA43AA837C68E5BF58D6 /* PrivacyInfo.xcprivacy in Resources */,
+				0E29EE1A6A0B538E3E35CDE3 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -242,7 +244,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		44EF69DB330BA3205A758E9B /* [Expo] Configure project */ = {
+		205EDA5341C34053368369D6 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -266,28 +268,6 @@
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-skiacanvaswasmdeploytest/expo-configure-project.sh\"\n";
 		};
-		61341C0095F902F0BC6AC38A /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-skiacanvaswasmdeploytest/Pods-skiacanvaswasmdeploytest-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-skiacanvaswasmdeploytest/Pods-skiacanvaswasmdeploytest-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -298,20 +278,44 @@
 				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/EXConstants.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/ExpoConstants_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoFileSystem/ExpoFileSystem_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/RCT-Folly/RCT-Folly_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/React-Core_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-cxxreact/React-cxxreact_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/boost/boost_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/glog/glog_privacy.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXConstants.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoConstants_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoFileSystem_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RCT-Folly_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-Core_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-cxxreact_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/boost_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/glog_privacy.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-skiacanvaswasmdeploytest/Pods-skiacanvaswasmdeploytest-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B53A9BDA420C1BFA6E0FEB94 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-skiacanvaswasmdeploytest/Pods-skiacanvaswasmdeploytest-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-skiacanvaswasmdeploytest/Pods-skiacanvaswasmdeploytest-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -322,7 +326,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				AE8937BD4A36154F32ADAD01 /* ExpoModulesProvider.swift in Sources */,
+				616A04900647B192BF2933FD /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -331,7 +335,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E842FADB3A995E1B3298167B /* Pods-skiacanvaswasmdeploytest.debug.xcconfig */;
+			baseConfigurationReference = B9D73579F7E7679198935523 /* Pods-skiacanvaswasmdeploytest.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -355,19 +359,22 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.anonymous.skia-canvas-wasm-deploy-test";
+				PRODUCT_BUNDLE_IDENTIFIER = com.skia.physics.test;
 				PRODUCT_NAME = skiacanvaswasmdeploytest;
 				SWIFT_OBJC_BRIDGING_HEADER = "skiacanvaswasmdeploytest/skiacanvaswasmdeploytest-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				VERSIONING_SYSTEM = "apple-generic";
+				DEVELOPMENT_TEAM = "24T4GAP365";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Debug;
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9B99927A571FBE8DD562EADC /* Pods-skiacanvaswasmdeploytest.release.xcconfig */;
+			baseConfigurationReference = 848D4B1318A0227482E4BCED /* Pods-skiacanvaswasmdeploytest.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -386,12 +393,15 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.anonymous.skia-canvas-wasm-deploy-test";
+				PRODUCT_BUNDLE_IDENTIFIER = com.skia.physics.test;
 				PRODUCT_NAME = skiacanvaswasmdeploytest;
 				SWIFT_OBJC_BRIDGING_HEADER = "skiacanvaswasmdeploytest/skiacanvaswasmdeploytest-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				VERSIONING_SYSTEM = "apple-generic";
+				DEVELOPMENT_TEAM = "24T4GAP365";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Release;
 		};
@@ -450,7 +460,7 @@
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6.4.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
@@ -505,7 +515,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = NO;
-				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6.4.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				USE_HERMES = true;
