@@ -7,8 +7,8 @@ export const tailwindPreset = {
   theme: {
     extend: {
       colors: {
-        primary: tokens.colors.primary,
-        secondary: tokens.colors.secondary,
+        primary: { ...tokens.colors.primary, DEFAULT: tokens.semantic.colors.primary },
+        secondary: { ...tokens.colors.secondary, DEFAULT: tokens.semantic.colors.secondary },
         white: tokens.colors.white,
         black: tokens.colors.black,
         transparent: tokens.colors.transparent,
@@ -16,6 +16,13 @@ export const tailwindPreset = {
         warning: tokens.colors.warning,
         error: tokens.colors.error,
         info: tokens.colors.info,
+        destructive: { DEFAULT: tokens.colors.error, foreground: tokens.colors.white },
+        muted: { DEFAULT: tokens.colors.secondary[100], foreground: tokens.colors.secondary[500] },
+        accent: { DEFAULT: tokens.colors.secondary[100], foreground: tokens.colors.secondary[900] },
+        popover: { DEFAULT: tokens.colors.white, foreground: tokens.colors.black },
+        card: { DEFAULT: tokens.colors.white, foreground: tokens.colors.black },
+        input: tokens.semantic.colors.border,
+        ring: tokens.semantic.colors.primary,
         surface: tokens.semantic.colors.surface,
         background: tokens.semantic.colors.background,
         border: tokens.semantic.colors.border,

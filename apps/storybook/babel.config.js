@@ -11,9 +11,9 @@ module.exports = function(api) {
         {
           root: ['./'],
           alias: {
-            '@clover/ui': './packages/ui/src',
-            '@clover/physics': './packages/physics/src',
-            '@clover/theme': './packages/theme/src',
+            '@clover/ui': '../../packages/ui/src',
+            '@clover/physics': '../../packages/physics/src',
+            '@clover/theme': '../../packages/theme/src',
           },
         },
       ],

@@ -2510,6 +2510,34 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - RNGestureHandler (2.30.0):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - RNReanimated (4.2.1):
     - boost
     - DoubleConversion
@@ -2761,7 +2789,7 @@ DEPENDENCIES:
   - "ExpoAsset (from `../../node_modules/.pnpm/expo-asset@12.0.12_expo@54.0.31_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-router@6.0._gif6kguxw7upx5c72emfmnbd2q/node_modules/expo-asset/ios`)"
   - "ExpoFileSystem (from `../../node_modules/.pnpm/expo-file-system@19.0.21_expo@54.0.31_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-route_wu4wlkhbiiavi2icbzrnctgjtq/node_modules/expo-file-system/ios`)"
   - "ExpoFont (from `../../node_modules/.pnpm/expo-font@14.0.10_expo@54.0.31_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-router@6.0.2_a32nblvwiseekv4wnyrui2paje/node_modules/expo-font/ios`)"
-  - "ExpoHead (from `../../node_modules/.pnpm/expo-router@6.0.21_@expo+metro-runtime@6.1.2_@types+react@19.1.17_expo-constants@18.0.13_expo_uhq4rmhmsiixudkyb25jilojnm/node_modules/expo-router/ios`)"
+  - "ExpoHead (from `../../node_modules/.pnpm/expo-router@6.0.21_@expo+metro-runtime@6.1.2_@types+react-dom@18.3.7_@types+react@19.1.17__@t_trqdhmoslnsh6ny5xxxbxxrieq/node_modules/expo-router/ios`)"
   - "ExpoKeepAwake (from `../../node_modules/.pnpm/expo-keep-awake@15.0.8_expo@54.0.31_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-router@_opcmuwptuolbaxq4xdlcyddbuy/node_modules/expo-keep-awake/ios`)"
   - "ExpoLinking (from `../../node_modules/.pnpm/expo-linking@8.0.11_expo@54.0.31_react-native@0.81.4_@babel+core@7.28.6_@react-native-communi_rjxqhyd7jbeasbrecicghnedda/node_modules/expo-linking/ios`)"
   - "ExpoModulesCore (from `../../node_modules/.pnpm/expo-modules-core@3.0.29_react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6_cqbde3g43sazd5fytoxivzriwe/node_modules/expo-modules-core`)"
@@ -2841,6 +2869,7 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios`)
   - "ReactCommon/turbomodule/core (from `../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6.4.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon`)"
   - "RNCAsyncStorage (from `../../node_modules/.pnpm/@react-native-async-storage+async-storage@2.2.0_react-native@0.81.4_@babel+core@7.28.6_@react_pjticoacz6eukeqtatkb35gyju/node_modules/@react-native-async-storage/async-storage`)"
+  - "RNGestureHandler (from `../../node_modules/.pnpm/react-native-gesture-handler@2.30.0_react-native@0.81.4_@babel+core@7.28.6_@react-native-comm_4flknd5iqa3yk3unmfaxenac7u/node_modules/react-native-gesture-handler`)"
   - "RNReanimated (from `../../node_modules/.pnpm/react-native-reanimated@4.2.1_react-native-worklets@0.7.0_@babel+core@7.28.6_react-native@0.8_4h23qzycenwn6ho53ne2a7uhsq/node_modules/react-native-reanimated`)"
   - "RNScreens (from `../../node_modules/.pnpm/react-native-screens@4.16.0_react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cl_wreyuhfl4d56h2366sdrwds3am/node_modules/react-native-screens`)"
   - "RNWorklets (from `../../node_modules/.pnpm/react-native-worklets@0.7.0_@babel+core@7.28.6_react-native@0.81.4_@babel+core@7.28.6_@react-_sjkama337iftxlbx2tkt7oedoe/node_modules/react-native-worklets`)"
@@ -2867,7 +2896,7 @@ EXTERNAL SOURCES:
   ExpoFont:
     :path: "../../node_modules/.pnpm/expo-font@14.0.10_expo@54.0.31_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-router@6.0.2_a32nblvwiseekv4wnyrui2paje/node_modules/expo-font/ios"
   ExpoHead:
-    :path: "../../node_modules/.pnpm/expo-router@6.0.21_@expo+metro-runtime@6.1.2_@types+react@19.1.17_expo-constants@18.0.13_expo_uhq4rmhmsiixudkyb25jilojnm/node_modules/expo-router/ios"
+    :path: "../../node_modules/.pnpm/expo-router@6.0.21_@expo+metro-runtime@6.1.2_@types+react-dom@18.3.7_@types+react@19.1.17__@t_trqdhmoslnsh6ny5xxxbxxrieq/node_modules/expo-router/ios"
   ExpoKeepAwake:
     :path: "../../node_modules/.pnpm/expo-keep-awake@15.0.8_expo@54.0.31_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-router@_opcmuwptuolbaxq4xdlcyddbuy/node_modules/expo-keep-awake/ios"
   ExpoLinking:
@@ -3025,6 +3054,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6.4.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon"
   RNCAsyncStorage:
     :path: "../../node_modules/.pnpm/@react-native-async-storage+async-storage@2.2.0_react-native@0.81.4_@babel+core@7.28.6_@react_pjticoacz6eukeqtatkb35gyju/node_modules/@react-native-async-storage/async-storage"
+  RNGestureHandler:
+    :path: "../../node_modules/.pnpm/react-native-gesture-handler@2.30.0_react-native@0.81.4_@babel+core@7.28.6_@react-native-comm_4flknd5iqa3yk3unmfaxenac7u/node_modules/react-native-gesture-handler"
   RNReanimated:
     :path: "../../node_modules/.pnpm/react-native-reanimated@4.2.1_react-native-worklets@0.7.0_@babel+core@7.28.6_react-native@0.8_4h23qzycenwn6ho53ne2a7uhsq/node_modules/react-native-reanimated"
   RNScreens:
@@ -3121,6 +3152,7 @@ SPEC CHECKSUMS:
   ReactCodegen: 90081693a8f3629c32d28ec8b6b35f25b8c35442
   ReactCommon: 394c6b92765cf6d211c2c3f7f6bc601dffb316a6
   RNCAsyncStorage: 29f0230e1a25f36c20b05f65e2eb8958d6526e82
+  RNGestureHandler: e37bdb684df1ac17c7e1d8f71a3311b2793c186b
   RNReanimated: f3e688a0d877ca47fc8a81fadfbdc3c2733e3e8e
   RNScreens: 0bbf16c074ae6bb1058a7bf2d1ae017f4306797c
   RNWorklets: c7364a50f58167d10ac1466562065e66aa1d9f49

@@ -10,7 +10,7 @@
     "lint": "turbo run lint",
     "deploy": "turbo run deploy",
     "storybook": "devmux ensure storybook",
-    "storybook:build": "turbo run storybook:build", 
+    "storybook:build": "turbo run storybook:build",
     "storybook:device": "turbo run storybook:device",
     "dev": "devmux ensure metro",
     "dev:api": "devmux ensure api",
@@ -46,6 +46,10 @@
     "node": ">=18.0.0",
     "pnpm": ">=9.0.0"
   },
-  "pnpm": {
+  "pnpm": {},
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2"
   }
 }
