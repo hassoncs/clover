@@ -3,17 +3,20 @@ import type { Vec2, Bounds } from './common';
 export type BehaviorType =
   | 'move'
   | 'rotate'
+  | 'rotate_toward'
   | 'follow'
   | 'bounce'
   | 'control'
   | 'spawn_on_event'
   | 'destroy_on_collision'
   | 'score_on_collision'
+  | 'score_on_destroy'
   | 'timer'
   | 'animate'
   | 'oscillate'
   | 'gravity_zone'
-  | 'magnetic';
+  | 'magnetic'
+  | 'health';
 
 export type MoveDirection =
   | 'left'
@@ -155,17 +158,42 @@ export interface MagneticBehavior extends BaseBehavior {
   repels?: boolean;
 }
 
+export interface RotateTowardBehavior extends BaseBehavior {
+  type: 'rotate_toward';
+  target: string;
+  speed?: number;
+  offset?: number;
+}
+
+export interface ScoreOnDestroyBehavior extends BaseBehavior {
+  type: 'score_on_destroy';
+  points: number;
+}
+
+export interface HealthBehavior extends BaseBehavior {
+  type: 'health';
+  maxHealth: number;
+  currentHealth?: number;
+  damageFromTags?: string[];
+  damagePerHit?: number;
+  destroyOnDeath?: boolean;
+  invulnerabilityTime?: number;
+}
+
 export type Behavior =
   | MoveBehavior
   | RotateBehavior
+  | RotateTowardBehavior
   | ControlBehavior
   | SpawnOnEventBehavior
   | DestroyOnCollisionBehavior
   | ScoreOnCollisionBehavior
+  | ScoreOnDestroyBehavior
   | TimerBehavior
   | OscillateBehavior
   | GravityZoneBehavior
   | AnimateBehavior
   | FollowBehavior
   | BounceBehavior
-  | MagneticBehavior;
+  | MagneticBehavior
+  | HealthBehavior;
