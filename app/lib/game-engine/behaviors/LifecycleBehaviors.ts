@@ -88,7 +88,11 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
           break;
       }
 
-      const newEntity = ctx.spawnEntity(spawn.entityTemplate, x, y);
+      const templateId = Array.isArray(spawn.entityTemplate)
+        ? spawn.entityTemplate[Math.floor(Math.random() * spawn.entityTemplate.length)]
+        : spawn.entityTemplate;
+
+      const newEntity = ctx.spawnEntity(templateId, x, y);
       if (newEntity && spawn.initialVelocity && newEntity.bodyId) {
         const velocity = ctx.resolveVec2(spawn.initialVelocity);
         ctx.physics.setLinearVelocity(newEntity.bodyId, velocity);

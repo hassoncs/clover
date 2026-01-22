@@ -183,7 +183,7 @@ export type DestroyTarget =
 
 export interface SpawnAction {
   type: 'spawn';
-  template: string;
+  template: string | string[];
   position: SpawnPosition;
   count?: number;
   spread?: number;

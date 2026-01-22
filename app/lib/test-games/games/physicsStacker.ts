@@ -65,7 +65,7 @@ const game: GameDefinition = {
       },
       behaviors: [
         { type: "oscillate", axis: "x", amplitude: 4, frequency: 0.3 },
-        { type: "spawn_on_event", event: "tap", entityTemplate: "blockWide", spawnPosition: "at_self", maxSpawns: 50, spawnEffect: "sparks" },
+        { type: "spawn_on_event", event: "tap", entityTemplate: ["blockWide", "blockMedium", "blockSmall", "blockTall"], spawnPosition: "at_self", maxSpawns: 50, spawnEffect: "sparks" },
       ],
     },
     blockWide: {

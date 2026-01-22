@@ -44,12 +44,16 @@ export class SpawnActionExecutor implements ActionExecutor<SpawnAction> {
         y += (Math.random() - 0.5) * action.spread * 2;
       }
 
-      const template = context.entityManager.getTemplate(action.template);
+      const templateId = Array.isArray(action.template)
+        ? action.template[Math.floor(Math.random() * action.template.length)]
+        : action.template;
+
+      const template = context.entityManager.getTemplate(templateId);
       if (template) {
         context.entityManager.createEntity({
           id: `spawned_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
           name: template.id,
-          template: action.template,
+          template: templateId,
           transform: { x, y, angle: 0, scaleX: 1, scaleY: 1 },
         });
       }

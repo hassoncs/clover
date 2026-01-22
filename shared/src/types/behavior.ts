@@ -60,7 +60,7 @@ export interface RotateBehavior extends BaseBehavior {
 export interface SpawnOnEventBehavior extends BaseBehavior {
   type: 'spawn_on_event';
   event: SpawnEvent;
-  entityTemplate: string;
+  entityTemplate: string | string[];
   spawnPosition: BehaviorSpawnPosition;
   offset?: Vec2;
   bounds?: Bounds;

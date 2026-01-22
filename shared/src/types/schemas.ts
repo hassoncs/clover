@@ -124,7 +124,7 @@ export const RotateBehaviorSchema = BaseBehaviorSchema.extend({
 export const SpawnOnEventBehaviorSchema = BaseBehaviorSchema.extend({
   type: z.literal('spawn_on_event'),
   event: z.enum(['tap', 'timer', 'collision', 'destroy', 'start']),
-  entityTemplate: z.string(),
+  entityTemplate: z.union([z.string(), z.array(z.string())]),
   spawnPosition: z.enum(['at_self', 'at_touch', 'random_in_bounds', 'offset']),
   offset: Vec2ValueSchema.optional(),
   bounds: BoundsSchema.optional(),
@@ -317,7 +317,7 @@ export const DestroyTargetSchema = z.discriminatedUnion('type', [
 
 export const SpawnActionSchema = z.object({
   type: z.literal('spawn'),
-  template: z.string(),
+  template: z.union([z.string(), z.array(z.string())]),
   position: SpawnPositionSchema,
   count: z.number().positive().optional(),
   spread: z.number().optional(),

@@ -135,6 +135,30 @@ const BUILTIN_FUNCTIONS: Record<string, BuiltinFunction> = {
     throw new Error('rand() takes 0 or 2 arguments');
   },
 
+  randomInt: (args, ctx) => {
+    assertArgCount('randomInt', args, 2);
+    const min = Math.floor(asNumber(args[0]));
+    const max = Math.floor(asNumber(args[1]));
+    return min + Math.floor(ctx.random() * (max - min + 1));
+  },
+
+  choose: (args, ctx) => {
+    if (args.length === 0) {
+      throw new Error('choose() requires at least one argument');
+    }
+    const index = Math.floor(ctx.random() * args.length);
+    return args[index];
+  },
+
+  entityCount: (args, ctx) => {
+    assertArgCount('entityCount', args, 1);
+    const tag = String(args[0]);
+    if (!ctx.entityManager) {
+      return 0;
+    }
+    return ctx.entityManager.getEntitiesByTag(tag).length;
+  },
+
   length: (args) => {
     assertArgCount('length', args, 1);
     const v = args[0];

@@ -150,6 +150,10 @@ export interface EntityContext {
   [key: string]: unknown;
 }
 
+export interface EntityManagerLike {
+  getEntitiesByTag(tag: string): { id: string; transform: { x: number; y: number } }[];
+}
+
 export interface EvalContext {
   score: number;
   lives: number;
@@ -163,6 +167,8 @@ export interface EvalContext {
   variables: Record<string, ExpressionValueType>;
 
   random: () => number;
+
+  entityManager?: EntityManagerLike;
 }
 
 export interface CompiledExpression<T extends ExpressionValueType = ExpressionValueType> {
