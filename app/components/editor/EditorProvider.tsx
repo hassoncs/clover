@@ -60,7 +60,8 @@ type EditorStateAction =
   | { type: "DELETE_ENTITY"; entityId: string }
   | { type: "DUPLICATE_ENTITY"; entityId: string }
   | { type: "ADD_ENTITY"; entity: GameEntity }
-  | { type: "ADD_ENTITY_FROM_TEMPLATE"; templateId: string; x: number; y: number };
+  | { type: "ADD_ENTITY_FROM_TEMPLATE"; templateId: string; x: number; y: number }
+  | { type: "UPDATE_ENTITY_PROPERTY"; entityId: string; path: string; value: unknown };
 
 const MAX_HISTORY = 50;
 
@@ -322,6 +323,48 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
       };
     }
 
+    case "UPDATE_ENTITY_PROPERTY": {
+      const newDocument = { ...state.document };
+      const entityIndex = newDocument.entities.findIndex((e) => e.id === action.entityId);
+      if (entityIndex === -1) return state;
+      
+      const entity = JSON.parse(JSON.stringify(newDocument.entities[entityIndex])) as GameEntity;
+      const pathParts = action.path.split(".");
+      let target: Record<string, unknown> = entity as unknown as Record<string, unknown>;
+      
+      for (let i = 0; i < pathParts.length - 1; i++) {
+        const part = pathParts[i];
+        if (!(part in target) || target[part] === null || target[part] === undefined) {
+          target[part] = {};
+        }
+        target = target[part] as Record<string, unknown>;
+      }
+      
+      const lastPart = pathParts[pathParts.length - 1];
+      const oldValue = target[lastPart];
+      target[lastPart] = action.value;
+      
+      newDocument.entities = [...newDocument.entities];
+      newDocument.entities[entityIndex] = entity;
+      
+      return {
+        ...state,
+        document: newDocument,
+        isDirty: true,
+        undoStack: [
+          ...state.undoStack,
+          {
+            type: "UPDATE_ENTITY_PROPERTY",
+            entityId: action.entityId,
+            path: action.path,
+            from: oldValue,
+            to: action.value,
+          },
+        ].slice(-MAX_HISTORY),
+        redoStack: [],
+      };
+    }
+
     default:
       return state;
   }
@@ -356,6 +399,7 @@ interface EditorContextValue {
   duplicateEntity: (id: string) => void;
   addEntity: (entity: GameEntity) => void;
   addEntityFromTemplate: (templateId: string, x: number, y: number) => void;
+  updateEntityProperty: (id: string, path: string, value: unknown) => void;
 
   undo: () => void;
   redo: () => void;
@@ -444,6 +488,10 @@ export function EditorProvider({
     dispatch({ type: "ADD_ENTITY_FROM_TEMPLATE", templateId, x, y });
   }, []);
 
+  const updateEntityProperty = useCallback((id: string, path: string, value: unknown) => {
+    dispatch({ type: "UPDATE_ENTITY_PROPERTY", entityId: id, path, value });
+  }, []);
+
   const undo = useCallback(() => {
     dispatch({ type: "UNDO" });
   }, []);
@@ -486,6 +534,7 @@ export function EditorProvider({
       duplicateEntity,
       addEntity,
       addEntityFromTemplate,
+      updateEntityProperty,
 
       undo,
       redo,
@@ -509,6 +558,7 @@ export function EditorProvider({
       duplicateEntity,
       addEntity,
       addEntityFromTemplate,
+      updateEntityProperty,
       undo,
       redo,
       setCamera,
