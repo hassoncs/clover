@@ -118,6 +118,7 @@ export class EntityManager {
     return {
       id,
       name: resolved.name,
+      template: resolved.template,
       transform: { ...resolved.transform },
       sprite: resolved.sprite,
       physics: resolved.physics,
@@ -204,6 +205,7 @@ export class EntityManager {
 
   private resetEntityForPooling(entity: RuntimeEntity): void {
     entity.transform = { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 };
+    entity.template = undefined;
     entity.sprite = undefined;
     entity.physics = undefined;
     entity.behaviors = [];

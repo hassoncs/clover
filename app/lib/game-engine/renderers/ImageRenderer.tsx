@@ -2,9 +2,14 @@ import { Image, Group, useImage, BlendColor } from '@shopify/react-native-skia';
 import type { ImageSpriteComponent } from '@slopcade/shared';
 import type { RuntimeEntity } from '../types';
 
+interface ExtendedImageSprite extends ImageSpriteComponent {
+  offsetX?: number;
+  offsetY?: number;
+}
+
 interface ImageRendererProps {
   entity: RuntimeEntity;
-  sprite: ImageSpriteComponent;
+  sprite: ExtendedImageSprite;
   pixelsPerMeter: number;
 }
 
@@ -18,6 +23,9 @@ export function ImageRenderer({ entity, sprite, pixelsPerMeter }: ImageRendererP
   const height = sprite.imageHeight * pixelsPerMeter;
   const x = transform.x * pixelsPerMeter;
   const y = transform.y * pixelsPerMeter;
+  
+  const offsetX = (sprite.offsetX ?? 0) * pixelsPerMeter;
+  const offsetY = (sprite.offsetY ?? 0) * pixelsPerMeter;
 
   return (
     <Group
@@ -33,8 +41,8 @@ export function ImageRenderer({ entity, sprite, pixelsPerMeter }: ImageRendererP
     >
       <Image
         image={image}
-        x={-width / 2}
-        y={-height / 2}
+        x={-width / 2 + offsetX}
+        y={-height / 2 + offsetY}
         width={width}
         height={height}
         fit="contain"

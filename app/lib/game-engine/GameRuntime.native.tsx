@@ -8,7 +8,8 @@ import {
   type GestureResponderEvent,
 } from "react-native";
 import { Canvas, Fill, Group } from "@shopify/react-native-skia";
-import type { GameDefinition } from "@slopcade/shared";
+import type { GameDefinition, ParallaxConfig } from "@slopcade/shared";
+import { ParallaxBackground, type ParallaxBackgroundConfig } from "./renderers/ParallaxBackground";
 import {
   createPhysics2D,
   useSimplePhysicsLoop,
@@ -105,6 +106,7 @@ export function GameRuntime({
 
         collisionUnsubRef.current = physics.onCollisionBegin(
           (event: CollisionEvent) => {
+            console.log('[GameRuntime] onCollisionBegin received - bodyA:', event.bodyA.value, 'bodyB:', event.bodyB.value);
             const entityA = game.entityManager
               .getActiveEntities()
               .find((e) => e.bodyId?.value === event.bodyA.value);
@@ -112,6 +114,7 @@ export function GameRuntime({
               .getActiveEntities()
               .find((e) => e.bodyId?.value === event.bodyB.value);
 
+            console.log('[GameRuntime] Found entities - A:', entityA?.id, 'B:', entityB?.id);
             if (entityA && entityB) {
               const impulse = event.contacts.reduce(
                 (sum, c) => sum + c.normalImpulse,
@@ -125,6 +128,7 @@ export function GameRuntime({
                 normal,
                 impulse,
               });
+              console.log('[GameRuntime] Collision recorded between', entityA.id, 'and', entityB.id);
             }
           },
         );
@@ -513,7 +517,23 @@ export function GameRuntime({
       ]
     : undefined;
 
-  // console.log('[GameRuntime] Render - entities:', entities.length, 'matrix:', matrix, 'viewportSize:', viewportSize, 'gameState:', gameState.state);
+  const cameraPosition = cameraRef.current?.getPosition() ?? { x: 0, y: 0 };
+  const cameraZoom = cameraRef.current?.getZoom() ?? 1;
+
+  const parallaxBgConfig: ParallaxBackgroundConfig | null = 
+    definition.parallaxConfig?.enabled && definition.parallaxConfig.layers.length > 0
+      ? {
+          layers: definition.parallaxConfig.layers
+            .filter((l) => l.visible !== false && l.imageUrl)
+            .map((l) => ({
+              imageUrl: l.imageUrl!,
+              depth: l.depth,
+              parallaxFactor: l.parallaxFactor,
+              zIndex: ['sky', 'far', 'mid', 'near'].indexOf(l.depth),
+              visible: l.visible ?? true,
+            })),
+        }
+      : null;
 
   return (
     <View style={styles.container} onLayout={handleLayout}>
@@ -527,6 +547,17 @@ export function GameRuntime({
       >
         <Canvas style={styles.canvas}>
           <Fill color={backgroundColor} />
+          {parallaxBgConfig && viewportSize.width > 0 && (
+            <ParallaxBackground
+              config={parallaxBgConfig}
+              cameraX={cameraPosition.x}
+              cameraY={cameraPosition.y}
+              cameraZoom={cameraZoom}
+              viewportWidth={viewportSize.width}
+              viewportHeight={viewportSize.height}
+              pixelsPerMeter={pixelsPerMeter}
+            />
+          )}
           <Group matrix={matrix}>
             {entities.map((entity) => (
               <EntityRenderer

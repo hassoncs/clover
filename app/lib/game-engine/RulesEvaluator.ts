@@ -5,6 +5,9 @@ import type {
   RuleTrigger,
   RuleCondition,
   RuleAction,
+  ComputedValueSystem,
+  EvalContext,
+  Value,
 } from '@slopcade/shared';
 import type { EntityManager } from './EntityManager';
 import type { RuntimeEntity } from './types';
@@ -17,6 +20,8 @@ export interface RuleContext {
   collisions: CollisionInfo[];
   events: Map<string, unknown>;
   screenBounds?: { minX: number; maxX: number; minY: number; maxY: number };
+  computedValues?: ComputedValueSystem;
+  evalContext?: EvalContext;
 }
 
 export class RulesEvaluator {
@@ -47,6 +52,10 @@ export class RulesEvaluator {
 
   setLoseCondition(condition: LoseCondition | undefined): void {
     this.loseCondition = condition ?? null;
+  }
+
+  setInitialLives(lives: number): void {
+    this.lives = lives;
   }
 
   setCallbacks(callbacks: {
@@ -405,25 +414,34 @@ export class RulesEvaluator {
     });
   }
 
+  private resolveNumber(value: Value<number>, context: RuleContext): number {
+    if (context.computedValues && context.evalContext) {
+      return context.computedValues.resolveNumber(value, context.evalContext);
+    }
+    return typeof value === 'number' ? value : 0;
+  }
+
   private executeActions(actions: RuleAction[], context: RuleContext): void {
     for (const action of actions) {
       switch (action.type) {
-        case 'score':
+        case 'score': {
+          const value = this.resolveNumber(action.value, context);
           switch (action.operation) {
             case 'add':
-              this.addScore(action.value);
+              this.addScore(value);
               break;
             case 'subtract':
-              this.addScore(-action.value);
+              this.addScore(-value);
               break;
             case 'set':
-              this.setScore(action.value);
+              this.setScore(value);
               break;
             case 'multiply':
-              this.setScore(this.score * action.value);
+              this.setScore(this.score * value);
               break;
           }
           break;
+        }
 
         case 'game_state': {
           const mappedState = this.mapActionState(action.state);
@@ -455,7 +473,27 @@ export class RulesEvaluator {
         case 'modify':
           this.executeModifyAction(action, context);
           break;
+          
+        case 'lives':
+          this.executeLivesAction(action, context);
+          break;
       }
+    }
+  }
+  
+  private executeLivesAction(action: Extract<RuleAction, { type: 'lives' }>, context: RuleContext): void {
+    const value = this.resolveNumber(action.value, context);
+    switch (action.operation) {
+      case 'add':
+        this.addLives(value);
+        break;
+      case 'subtract':
+        this.addLives(-value);
+        break;
+      case 'set':
+        this.lives = value;
+        this.onLivesChange?.(this.lives);
+        break;
     }
   }
 
@@ -564,8 +602,9 @@ export class RulesEvaluator {
       }
     }
 
+    const value = this.resolveNumber(action.value, context);
     for (const entity of entities) {
-      this.applyPropertyModification(entity, action.property, action.operation, action.value);
+      this.applyPropertyModification(entity, action.property, action.operation, value);
     }
   }
 

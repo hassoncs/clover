@@ -11,6 +11,7 @@ import type {
 export interface RuntimeEntity {
   id: string;
   name: string;
+  template?: string;
   transform: TransformComponent;
   sprite?: SpriteComponent;
   physics?: PhysicsComponent;

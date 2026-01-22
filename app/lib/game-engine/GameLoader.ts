@@ -40,6 +40,9 @@ export class GameLoader {
     rulesEvaluator.loadRules(definition.rules ?? []);
     rulesEvaluator.setWinCondition(definition.winCondition);
     rulesEvaluator.setLoseCondition(definition.loseCondition);
+    if (definition.initialLives !== undefined) {
+      rulesEvaluator.setInitialLives(definition.initialLives);
+    }
 
     const behaviorExecutor = createBehaviorExecutor();
 

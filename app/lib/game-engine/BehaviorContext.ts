@@ -2,6 +2,12 @@ import type { Physics2D } from '../physics2d/Physics2D';
 import type { Vec2 } from '../physics2d/types';
 import type { RuntimeEntity } from './types';
 import type { EntityManager } from './EntityManager';
+import type {
+  ComputedValueSystem,
+  EvalContext,
+  Value,
+  Vec2 as ExprVec2,
+} from '@slopcade/shared';
 
 export interface InputState {
   tap?: { x: number; y: number; worldX: number; worldY: number };
@@ -58,9 +64,15 @@ export interface BehaviorContext {
   collisions: CollisionInfo[];
   pixelsPerMeter: number;
 
+  computedValues: ComputedValueSystem;
+  evalContext: EvalContext;
+
   addScore(points: number): void;
   setGameState(state: GameState['state']): void;
   spawnEntity(templateId: string, x: number, y: number): RuntimeEntity | null;
   destroyEntity(entityId: string): void;
   triggerEvent(eventName: string, data?: Record<string, unknown>): void;
+
+  resolveNumber(value: Value<number>): number;
+  resolveVec2(value: Value<ExprVec2>): ExprVec2;
 }
