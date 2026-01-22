@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useRef, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import {
@@ -10,12 +9,10 @@ import {
   Group,
 } from "@shopify/react-native-skia";
 import {
-  createPhysics2D,
-  useSimplePhysicsLoop,
-  useForceDrag,
-  type Physics2D,
-  type BodyId,
+  usePhysicsExample,
   vec2,
+  type Physics2D,
+  type BodyRecord,
 } from "../../lib/physics2d";
 import { ViewportRoot, useViewport } from "../../lib/viewport";
 
@@ -30,62 +27,28 @@ const WHEEL_RADIUS = 0.6;
 const MOTOR_SPEED = 5;
 const MAX_MOTOR_TORQUE = 100;
 
-interface TerrainState {
-  id: BodyId;
-  x: number;
-  y: number;
-}
-
-interface ChassisState {
-  id: BodyId;
-  x: number;
-  y: number;
-  angle: number;
-}
-
-interface WheelState {
-  id: BodyId;
-  x: number;
-  y: number;
-  angle: number;
+interface EntityData {
+  type: 'terrain' | 'chassis' | 'wheel';
+  size?: number;
+  width?: number;
+  height?: number;
+  radius?: number;
+  color: string;
 }
 
 function CarCanvas() {
   const canvasRef = useCanvasRef();
-  const physicsRef = useRef<Physics2D | null>(null);
-  const terrainIdsRef = useRef<BodyId[]>([]);
-  const chassisIdRef = useRef<BodyId | null>(null);
-  const wheelIdsRef = useRef<BodyId[]>([]);
-
-  const [terrain, setTerrain] = useState<TerrainState[]>([]);
-  const [chassis, setChassis] = useState<ChassisState | null>(null);
-  const [wheels, setWheels] = useState<WheelState[]>([]);
-  const [isReady, setIsReady] = useState(false);
-
   const vp = useViewport();
 
-  const dragHandlers = useForceDrag(physicsRef, {
+  const { transforms, gesture, isReady } = usePhysicsExample<EntityData>({
     pixelsPerMeter: PIXELS_PER_METER,
-    stiffness: 50,
-    damping: 5,
-  });
-
-  useEffect(() => {
-    if (!vp.isReady) return;
-
-    const worldHeight = vp.world.size.height;
-
-    const setupPhysics = async () => {
-      if (physicsRef.current) {
-        physicsRef.current.destroyWorld();
-      }
-
-      const physics = await createPhysics2D();
-      physics.createWorld(vec2(0, 9.8));
-      physicsRef.current = physics;
-
-      const newTerrainIds: BodyId[] = [];
-      const terrainStates: TerrainState[] = [];
+    enabled: vp.isReady,
+    drag: 'force',
+    dragStiffness: 50,
+    dragDamping: 5,
+    onInit: (physics: Physics2D): BodyRecord<EntityData>[] => {
+      const worldHeight = vp.world.size.height;
+      const bodies: BodyRecord<EntityData>[] = [];
 
       for (let i = 0; i < TERRAIN_SEGMENT_COUNT; i++) {
         const x = i * TERRAIN_BOX_SIZE;
@@ -102,15 +65,15 @@ function CarCanvas() {
           friction: 0.8,
         });
 
-        newTerrainIds.push(terrainId);
-        terrainStates.push({
+        bodies.push({
           id: terrainId,
-          x: x * PIXELS_PER_METER,
-          y: y * PIXELS_PER_METER,
+          data: {
+            type: 'terrain',
+            size: TERRAIN_BOX_SIZE * PIXELS_PER_METER,
+            color: '#27ae60',
+          },
         });
       }
-      terrainIdsRef.current = newTerrainIds;
-      setTerrain(terrainStates);
 
       const chassisId = physics.createBody({
         type: "dynamic",
@@ -121,7 +84,16 @@ function CarCanvas() {
         density: 1,
         friction: 0.3,
       });
-      chassisIdRef.current = chassisId;
+
+      bodies.push({
+        id: chassisId,
+        data: {
+          type: 'chassis',
+          width: CHASSIS_WIDTH * PIXELS_PER_METER,
+          height: CHASSIS_HEIGHT * PIXELS_PER_METER,
+          color: '#2980b9',
+        },
+      });
 
       const backWheelId = physics.createBody({
         type: "dynamic",
@@ -143,7 +115,23 @@ function CarCanvas() {
         friction: 0.9,
       });
 
-      wheelIdsRef.current = [backWheelId, frontWheelId];
+      bodies.push({
+        id: backWheelId,
+        data: {
+          type: 'wheel',
+          radius: WHEEL_RADIUS * PIXELS_PER_METER,
+          color: '#34495e',
+        },
+      });
+
+      bodies.push({
+        id: frontWheelId,
+        data: {
+          type: 'wheel',
+          radius: WHEEL_RADIUS * PIXELS_PER_METER,
+          color: '#34495e',
+        },
+      });
 
       physics.createRevoluteJoint({
         type: "revolute",
@@ -165,61 +153,18 @@ function CarCanvas() {
         maxMotorTorque: MAX_MOTOR_TORQUE,
       });
 
-      setIsReady(true);
-    };
+      return bodies;
+    },
+  });
 
-    setupPhysics();
+  if (!vp.isReady || !isReady) return null;
 
-    return () => {
-      if (physicsRef.current) {
-        physicsRef.current.destroyWorld();
-        physicsRef.current = null;
-      }
-      terrainIdsRef.current = [];
-      chassisIdRef.current = null;
-      wheelIdsRef.current = [];
-      setIsReady(false);
-    };
-  }, [vp.world.size.height, vp.isReady]);
-
-  const stepPhysics = useCallback((dt: number) => {
-    const physics = physicsRef.current;
-    if (!physics || !chassisIdRef.current) return;
-
-    dragHandlers.applyDragForces();
-    physics.step(dt, 8, 3);
-
-    const chassisTransform = physics.getTransform(chassisIdRef.current);
-    setChassis({
-      id: chassisIdRef.current,
-      x: chassisTransform.position.x * PIXELS_PER_METER,
-      y: chassisTransform.position.y * PIXELS_PER_METER,
-      angle: chassisTransform.angle,
-    });
-
-    const updatedWheels = wheelIdsRef.current.map((id) => {
-      const transform = physics.getTransform(id);
-      return {
-        id,
-        x: transform.position.x * PIXELS_PER_METER,
-        y: transform.position.y * PIXELS_PER_METER,
-        angle: transform.angle,
-      };
-    });
-    setWheels(updatedWheels);
-  }, [dragHandlers]);
-
-  useSimplePhysicsLoop(stepPhysics, isReady);
-
-  if (!vp.isReady) return null;
-
-  const terrainBoxPx = TERRAIN_BOX_SIZE * PIXELS_PER_METER;
-  const chassisWidthPx = CHASSIS_WIDTH * PIXELS_PER_METER;
-  const chassisHeightPx = CHASSIS_HEIGHT * PIXELS_PER_METER;
-  const wheelRadiusPx = WHEEL_RADIUS * PIXELS_PER_METER;
+  const terrain = transforms.filter(t => t.data.type === 'terrain');
+  const chassis = transforms.find(t => t.data.type === 'chassis');
+  const wheels = transforms.filter(t => t.data.type === 'wheel');
 
   return (
-    <GestureDetector gesture={dragHandlers.gesture}>
+    <GestureDetector gesture={gesture}>
       <View style={styles.container}>
         <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
           <Fill color="#1a1a2e" />
@@ -227,11 +172,11 @@ function CarCanvas() {
           {terrain.map((t) => (
             <Rect
               key={`terrain-${t.id.value}`}
-              x={t.x - terrainBoxPx / 2}
-              y={t.y - terrainBoxPx / 2}
-              width={terrainBoxPx}
-              height={terrainBoxPx}
-              color="#27ae60"
+              x={t.x - t.data.size! / 2}
+              y={t.y - t.data.size! / 2}
+              width={t.data.size!}
+              height={t.data.size!}
+              color={t.data.color}
             />
           ))}
 
@@ -242,13 +187,14 @@ function CarCanvas() {
                 { translateY: chassis.y },
                 { rotate: chassis.angle },
               ]}
+              origin={{ x: 0, y: 0 }}
             >
               <Rect
-                x={-chassisWidthPx / 2}
-                y={-chassisHeightPx / 2}
-                width={chassisWidthPx}
-                height={chassisHeightPx}
-                color="#2980b9"
+                x={-chassis.data.width! / 2}
+                y={-chassis.data.height! / 2}
+                width={chassis.data.width!}
+                height={chassis.data.height!}
+                color={chassis.data.color}
               />
             </Group>
           )}
@@ -261,9 +207,10 @@ function CarCanvas() {
                 { translateY: w.y },
                 { rotate: w.angle },
               ]}
+              origin={{ x: 0, y: 0 }}
             >
-              <Circle cx={0} cy={0} r={wheelRadiusPx} color="#34495e" />
-              <Rect x={0} y={-2} width={wheelRadiusPx} height={4} color="#bdc3c7" />
+              <Circle cx={0} cy={0} r={w.data.radius!} color={w.data.color} />
+              <Rect x={0} y={-2} width={w.data.radius!} height={4} color="#bdc3c7" />
             </Group>
           ))}
         </Canvas>
