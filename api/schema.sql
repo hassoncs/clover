@@ -1,5 +1,5 @@
 -- Clover D1 Database Schema
--- Run with: pnpm --filter @clover/api db:push
+-- Run with: pnpm --filter @slopcade/api db:push
 
 -- Users table (synced from Supabase Auth)
 CREATE TABLE IF NOT EXISTS users (

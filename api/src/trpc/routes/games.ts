@@ -67,7 +67,7 @@ export const gamesRouter = router({
     return result.results.map(toClientGame);
   }),
 
-  get: publicProcedure
+  get: installedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
       const result = await ctx.env.DB.prepare(
@@ -80,7 +80,10 @@ export const gamesRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
       }
 
-      if (!result.is_public && result.user_id !== (ctx as any).user?.id) {
+      const userId = (ctx as any).user?.id ?? null;
+      const isOwner = result.user_id === userId || result.install_id === ctx.installId;
+      
+      if (!result.is_public && !isOwner) {
         throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
       }
 

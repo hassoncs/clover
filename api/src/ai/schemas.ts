@@ -444,6 +444,50 @@ export const GameMetadataSchema = z.object({
   version: z.string().default('1.0.0'),
 });
 
+export const AssetSourceSchema = z.enum(['generated', 'uploaded', 'none']);
+
+export const AssetConfigSchema = z.object({
+  imageUrl: z.string().optional(),
+  source: AssetSourceSchema.optional(),
+  scale: z.number().optional(),
+  offsetX: z.number().optional(),
+  offsetY: z.number().optional(),
+  animations: z.record(z.string(), z.object({
+    frames: z.array(z.string()),
+    fps: z.number().positive(),
+    loop: z.boolean().optional(),
+  })).optional(),
+});
+
+export const SpriteStyleSchema = z.enum(['pixel', 'cartoon', '3d', 'flat']);
+
+export const AssetPackSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  style: SpriteStyleSchema.optional(),
+  assets: z.record(z.string(), AssetConfigSchema),
+});
+
+export const ParallaxDepthSchema = z.enum(['sky', 'far', 'mid', 'near']);
+
+export const ParallaxLayerSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  imageUrl: z.string().optional(),
+  depth: ParallaxDepthSchema,
+  parallaxFactor: z.number().min(0).max(1),
+  scale: z.number().optional(),
+  offsetX: z.number().optional(),
+  offsetY: z.number().optional(),
+  visible: z.boolean().optional(),
+});
+
+export const ParallaxConfigSchema = z.object({
+  enabled: z.boolean(),
+  layers: z.array(ParallaxLayerSchema),
+});
+
 export const GameDefinitionSchema = z.object({
   metadata: GameMetadataSchema,
   world: WorldConfigSchema,
@@ -454,6 +498,9 @@ export const GameDefinitionSchema = z.object({
   rules: z.array(GameRuleSchema).optional(),
   winCondition: WinConditionSchema.optional(),
   loseCondition: LoseConditionSchema.optional(),
+  assetPacks: z.record(z.string(), AssetPackSchema).optional(),
+  activeAssetPackId: z.string().optional(),
+  parallaxConfig: ParallaxConfigSchema.optional(),
 });
 
 export type GameDefinitionGenerated = z.infer<typeof GameDefinitionSchema>;

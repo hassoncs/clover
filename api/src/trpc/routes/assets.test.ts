@@ -179,4 +179,111 @@ describe('Assets Router', () => {
       ).rejects.toThrow('Asset not found');
     });
   });
+
+  describe('deletePack route', () => {
+    let gameId: string;
+    let installId: string;
+
+    beforeEach(async () => {
+      gameId = crypto.randomUUID();
+      installId = 'delete-pack-test-' + Date.now();
+
+      const gameDefinition = {
+        metadata: { id: gameId, title: 'Test Game', version: '1.0.0' },
+        world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
+        templates: {},
+        entities: [],
+        assetPacks: {
+          'pack-1': {
+            id: 'pack-1',
+            name: 'Test Pack 1',
+            assets: {},
+          },
+          'pack-2': {
+            id: 'pack-2',
+            name: 'Test Pack 2',
+            assets: {},
+          },
+        },
+        activeAssetPackId: 'pack-1',
+      };
+
+      await env.DB.prepare(
+        `INSERT INTO games (id, user_id, install_id, title, definition, play_count, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(
+        gameId,
+        null,
+        installId,
+        'Test Game',
+        JSON.stringify(gameDefinition),
+        0,
+        Date.now(),
+        Date.now()
+      ).run();
+    });
+
+    it('should delete an asset pack from game', async () => {
+      const ctx = createInstalledContext(installId);
+      const caller = appRouter.createCaller(ctx);
+
+      const result = await caller.assets.deletePack({
+        gameId,
+        packId: 'pack-2',
+      });
+
+      expect(result.success).toBe(true);
+
+      const gameRow = await env.DB.prepare('SELECT definition FROM games WHERE id = ?')
+        .bind(gameId)
+        .first<{ definition: string }>();
+      
+      const updatedDef = JSON.parse(gameRow!.definition);
+      expect(updatedDef.assetPacks['pack-2']).toBeUndefined();
+      expect(updatedDef.assetPacks['pack-1']).toBeDefined();
+    });
+
+    it('should clear activeAssetPackId when deleting active pack', async () => {
+      const ctx = createInstalledContext(installId);
+      const caller = appRouter.createCaller(ctx);
+
+      const result = await caller.assets.deletePack({
+        gameId,
+        packId: 'pack-1',
+      });
+
+      expect(result.success).toBe(true);
+
+      const gameRow = await env.DB.prepare('SELECT definition FROM games WHERE id = ?')
+        .bind(gameId)
+        .first<{ definition: string }>();
+      
+      const updatedDef = JSON.parse(gameRow!.definition);
+      expect(updatedDef.activeAssetPackId).toBeUndefined();
+    });
+
+    it('should throw NOT_FOUND for non-existent game', async () => {
+      const ctx = createInstalledContext(installId);
+      const caller = appRouter.createCaller(ctx);
+
+      await expect(
+        caller.assets.deletePack({
+          gameId: '00000000-0000-0000-0000-000000000000',
+          packId: 'pack-1',
+        })
+      ).rejects.toThrow('Game not found');
+    });
+
+    it('should throw NOT_FOUND for non-existent pack', async () => {
+      const ctx = createInstalledContext(installId);
+      const caller = appRouter.createCaller(ctx);
+
+      await expect(
+        caller.assets.deletePack({
+          gameId,
+          packId: 'non-existent-pack',
+        })
+      ).rejects.toThrow('Asset pack not found');
+    });
+  });
 });

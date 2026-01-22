@@ -23,6 +23,8 @@ export interface Env {
   SCENARIO_API_KEY?: string;
   SCENARIO_SECRET_API_KEY?: string;
   SCENARIO_API_URL?: string;
+
+  ASSET_HOST?: string;
 }
 
 export interface User {

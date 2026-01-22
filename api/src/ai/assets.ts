@@ -243,7 +243,9 @@ export class AssetService {
   }
 
   private getR2PublicUrl(r2Key: string): string {
-    return `https://assets.clover.app/${r2Key}`;
+    const baseUrl = this.env.ASSET_HOST ?? 'https://assets.clover.app';
+    const cleanBase = baseUrl.replace(/\/$/, '');
+    return `${cleanBase}/${r2Key}`;
   }
 
   private createPlaceholderResult(

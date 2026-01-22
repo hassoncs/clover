@@ -1,4 +1,4 @@
-name = "clover-api"
+name = "slopcade-api"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 main = "src/index.ts"
@@ -9,18 +9,19 @@ port = 8789
 
 [[d1_databases]]
 binding = "DB"
-database_name = "clover-db"
+database_name = "slopcade-db"
 database_id = "2f549a62-08dc-41fb-8222-a211b6cdff3d"
 
 [[r2_buckets]]
 binding = "ASSETS"
-bucket_name = "clover-assets"
+bucket_name = "slopcade-assets"
+preview_bucket_name = "slopcade-assets-dev"
 
 # TODO: Configure custom domain
 # [[routes]]
-# pattern = "api.clover.app"
+# pattern = "api.slopcade.app"
 # custom_domain = true
-# zone_name = "clover.app"
+# zone_name = "slopcade.app"
 
 [[rules]]
 type = "CompiledWasm"

@@ -459,9 +459,9 @@ function validateEntities(
   );
 
   if (!hasControlBehavior) {
-    warnings.push({
+    errors.push({
       code: 'NO_PLAYER_CONTROL',
-      message: 'No entity has a control behavior - game may not be interactive',
+      message: 'Game must have at least one entity with a control behavior. See docs/game-maker/reference/playability-contract.md for requirements.',
       path: 'entities',
     });
   }
@@ -503,14 +503,14 @@ function validateRule(
     const allTags = new Set<string>();
 
     game.entities?.forEach((entity) => {
-      entity.tags?.forEach((tag) => allTags.add(tag));
+      entity.tags?.forEach((tag) => { allTags.add(tag); });
       if (entity.template && game.templates?.[entity.template]?.tags) {
-        game.templates[entity.template].tags?.forEach((tag) => allTags.add(tag));
+        game.templates[entity.template].tags?.forEach((tag) => { allTags.add(tag); });
       }
     });
 
     Object.values(game.templates || {}).forEach((template) => {
-      template.tags?.forEach((tag) => allTags.add(tag));
+      template.tags?.forEach((tag) => { allTags.add(tag); });
     });
 
     if (collisionTrigger.entityATag && !allTags.has(collisionTrigger.entityATag)) {
@@ -548,20 +548,113 @@ function validateWinLoseConditions(
   errors: ValidationError[],
   warnings: ValidationWarning[]
 ): void {
+  const VALID_WIN_TYPES = ['score', 'destroy_all', 'survive_time', 'reach_entity', 'collect_all', 'custom'];
+  const VALID_LOSE_TYPES = ['entity_destroyed', 'entity_exits_screen', 'time_up', 'score_below', 'lives_zero', 'custom'];
+
   if (!game.winCondition) {
-    warnings.push({
-      code: 'NO_WIN_CONDITION',
-      message: 'Game has no win condition - it may never end',
+    errors.push({
+      code: 'MISSING_WIN_CONDITION',
+      message: 'Game must have a win condition. See docs/game-maker/reference/playability-contract.md for requirements.',
       path: 'winCondition',
     });
+  } else {
+    if (!VALID_WIN_TYPES.includes(game.winCondition.type)) {
+      errors.push({
+        code: 'INVALID_WIN_CONDITION_TYPE',
+        message: `Invalid win condition type: ${game.winCondition.type}. Valid types: ${VALID_WIN_TYPES.join(', ')}`,
+        path: 'winCondition.type',
+      });
+    }
+
+    if (game.winCondition.type === 'score' && (!game.winCondition.score || game.winCondition.score <= 0)) {
+      errors.push({
+        code: 'INVALID_WIN_SCORE',
+        message: 'Score-based win condition must have a positive score target',
+        path: 'winCondition.score',
+      });
+    }
+
+    if (game.winCondition.type === 'survive_time' && (!game.winCondition.time || game.winCondition.time <= 0)) {
+      errors.push({
+        code: 'INVALID_WIN_TIME',
+        message: 'Survive time win condition must have a positive time value',
+        path: 'winCondition.time',
+      });
+    }
+
+    if (game.winCondition.type === 'destroy_all' && !game.winCondition.tag) {
+      errors.push({
+        code: 'MISSING_WIN_TAG',
+        message: 'destroy_all win condition must specify a tag',
+        path: 'winCondition.tag',
+      });
+    }
+
+    if (game.winCondition.type === 'collect_all' && !game.winCondition.tag) {
+      errors.push({
+        code: 'MISSING_WIN_TAG',
+        message: 'collect_all win condition must specify a tag',
+        path: 'winCondition.tag',
+      });
+    }
+
+    if (game.winCondition.type === 'reach_entity' && !game.winCondition.tag && !game.winCondition.entityId) {
+      errors.push({
+        code: 'MISSING_WIN_TARGET',
+        message: 'reach_entity win condition must specify a tag or entityId',
+        path: 'winCondition',
+      });
+    }
   }
 
   if (!game.loseCondition) {
-    warnings.push({
-      code: 'NO_LOSE_CONDITION',
-      message: 'Game has no lose condition',
+    errors.push({
+      code: 'MISSING_LOSE_CONDITION',
+      message: 'Game must have a lose condition. See docs/game-maker/reference/playability-contract.md for requirements.',
       path: 'loseCondition',
     });
+  } else {
+    if (!VALID_LOSE_TYPES.includes(game.loseCondition.type)) {
+      errors.push({
+        code: 'INVALID_LOSE_CONDITION_TYPE',
+        message: `Invalid lose condition type: ${game.loseCondition.type}. Valid types: ${VALID_LOSE_TYPES.join(', ')}`,
+        path: 'loseCondition.type',
+      });
+    }
+
+    if (game.loseCondition.type === 'time_up' && (!game.loseCondition.time || game.loseCondition.time <= 0)) {
+      errors.push({
+        code: 'INVALID_LOSE_TIME',
+        message: 'Time up lose condition must have a positive time value',
+        path: 'loseCondition.time',
+      });
+    }
+
+    if (game.loseCondition.type === 'lives_zero') {
+      if (!game.initialLives || game.initialLives <= 0) {
+        errors.push({
+          code: 'MISSING_INITIAL_LIVES',
+          message: 'lives_zero lose condition requires initialLives > 0',
+          path: 'initialLives',
+        });
+      }
+    }
+
+    if (game.loseCondition.type === 'entity_destroyed' && !game.loseCondition.tag && !game.loseCondition.entityId) {
+      errors.push({
+        code: 'MISSING_LOSE_TARGET',
+        message: 'entity_destroyed lose condition must specify a tag or entityId',
+        path: 'loseCondition',
+      });
+    }
+
+    if (game.loseCondition.type === 'entity_exits_screen' && !game.loseCondition.tag && !game.loseCondition.entityId) {
+      errors.push({
+        code: 'MISSING_LOSE_TARGET',
+        message: 'entity_exits_screen lose condition must specify a tag or entityId',
+        path: 'loseCondition',
+      });
+    }
   }
 
   if (game.winCondition?.type === 'destroy_all' && game.winCondition.tag) {
@@ -573,7 +666,24 @@ function validateWinLoseConditions(
     );
 
     if (!hasTaggedEntity) {
-      warnings.push({
+      errors.push({
+        code: 'WIN_CONDITION_TAG_NOT_FOUND',
+        message: `Win condition references tag "${game.winCondition.tag}" but no entities have it`,
+        path: 'winCondition.tag',
+      });
+    }
+  }
+
+  if (game.winCondition?.type === 'collect_all' && game.winCondition.tag) {
+    const hasTaggedEntity = game.entities?.some(
+      (entity) =>
+        entity.tags?.includes(game.winCondition!.tag!) ||
+        (entity.template &&
+          game.templates?.[entity.template]?.tags?.includes(game.winCondition!.tag!))
+    );
+
+    if (!hasTaggedEntity) {
+      errors.push({
         code: 'WIN_CONDITION_TAG_NOT_FOUND',
         message: `Win condition references tag "${game.winCondition.tag}" but no entities have it`,
         path: 'winCondition.tag',
@@ -590,7 +700,24 @@ function validateWinLoseConditions(
     );
 
     if (!hasTaggedEntity) {
-      warnings.push({
+      errors.push({
+        code: 'LOSE_CONDITION_TAG_NOT_FOUND',
+        message: `Lose condition references tag "${game.loseCondition.tag}" but no entities have it`,
+        path: 'loseCondition.tag',
+      });
+    }
+  }
+
+  if (game.loseCondition?.type === 'entity_exits_screen' && game.loseCondition.tag) {
+    const hasTaggedEntity = game.entities?.some(
+      (entity) =>
+        entity.tags?.includes(game.loseCondition!.tag!) ||
+        (entity.template &&
+          game.templates?.[entity.template]?.tags?.includes(game.loseCondition!.tag!))
+    );
+
+    if (!hasTaggedEntity) {
+      errors.push({
         code: 'LOSE_CONDITION_TAG_NOT_FOUND',
         message: `Lose condition references tag "${game.loseCondition.tag}" but no entities have it`,
         path: 'loseCondition.tag',
@@ -638,12 +765,12 @@ export function getValidationSummary(result: ValidationResult): string {
 
   if (!result.valid) {
     parts.push(`${result.errors.length} error(s):`);
-    result.errors.forEach((e) => parts.push(`  - ${e.message}`));
+    result.errors.forEach((e) => { parts.push(`  - ${e.message}`); });
   }
 
   if (result.warnings.length > 0) {
     parts.push(`${result.warnings.length} warning(s):`);
-    result.warnings.forEach((w) => parts.push(`  - ${w.message}`));
+    result.warnings.forEach((w) => { parts.push(`  - ${w.message}`); });
   }
 
   return parts.join('\n');
