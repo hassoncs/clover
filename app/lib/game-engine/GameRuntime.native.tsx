@@ -8,7 +8,10 @@ import {
   type GestureResponderEvent,
 } from "react-native";
 import { Canvas, Fill, Group } from "@shopify/react-native-skia";
-import type { GameDefinition, ParallaxConfig } from "@slopcade/shared";
+import type { GameDefinition, ParallaxConfig, EvalContext, ParticleEmitterType } from "@slopcade/shared";
+import { createComputedValueSystem } from "@slopcade/shared";
+import { createParticleEffectManager, type ParticleEffectManager } from "./ParticleEffectManager";
+import { ParticleSystemRenderer } from "../particles/ParticleRenderer";
 import { ParallaxBackground, type ParallaxBackgroundConfig } from "./renderers/ParallaxBackground";
 import {
   createPhysics2D,
@@ -58,9 +61,13 @@ export function GameRuntime({
   const cameraRef = useRef<CameraSystem | null>(null);
   const viewportSystemRef = useRef<ViewportSystem | null>(null);
   const elapsedRef = useRef(0);
+  const frameIdRef = useRef(0);
   const collisionsRef = useRef<CollisionInfo[]>([]);
   const collisionUnsubRef = useRef<Unsubscribe | null>(null);
   const screenSizeRef = useRef({ width: 0, height: 0 });
+  const computedValuesRef = useRef(createComputedValueSystem());
+  const particleManagerRef = useRef<ParticleEffectManager>(createParticleEffectManager());
+  const [particleEffects, setParticleEffects] = useState<Array<{ particles: any[]; config: any }>>([]);
 
   const {
     inputRef,
@@ -104,6 +111,7 @@ export function GameRuntime({
     activePackId && definition.assetPacks
       ? definition.assetPacks[activePackId]?.assets
       : undefined;
+  const allAssetPacks = definition.assetPacks;
 
   useEffect(() => {
     const setup = async () => {
@@ -214,7 +222,7 @@ export function GameRuntime({
       return;
     }
 
-    if (game.rulesEvaluator.getGameState() !== "playing") return;
+    if (game.rulesEvaluator.getGameStateValue() !== "playing") return;
 
     physics.step(dt, 8, 3);
 
@@ -223,12 +231,39 @@ export function GameRuntime({
     camera.update(dt, (id) => game.entityManager.getEntity(id));
 
     elapsedRef.current += dt;
+    frameIdRef.current += 1;
 
-    const behaviorContext: Omit<BehaviorContext, "entity"> = {
+    const fullGameState = game.rulesEvaluator.getFullState();
+    const computedValues = computedValuesRef.current;
+    
+    const createEvalContext = (entity?: RuntimeEntity): EvalContext => {
+      const velocity = entity?.bodyId ? physics.getLinearVelocity(entity.bodyId) : { x: 0, y: 0 };
+      return {
+        score: fullGameState.score,
+        lives: fullGameState.lives,
+        time: elapsedRef.current,
+        wave: 1,
+        dt,
+        frameId: frameIdRef.current,
+        variables: {},
+        random: Math.random,
+        self: entity ? {
+          id: entity.id,
+          transform: entity.transform,
+          velocity,
+          health: 100,
+          maxHealth: 100,
+        } : undefined,
+      };
+    };
+
+    const baseEvalContext = createEvalContext();
+
+    const behaviorContext: Omit<BehaviorContext, "entity" | "resolveNumber" | "resolveVec2"> = {
       dt,
       elapsed: elapsedRef.current,
       input: inputRef.current,
-      gameState: game.rulesEvaluator.getFullState(),
+      gameState: fullGameState,
       entityManager: game.entityManager,
       physics,
       collisions: collisionsRef.current,
@@ -253,11 +288,15 @@ export function GameRuntime({
       destroyEntity: (id) => game.entityManager.destroyEntity(id),
       triggerEvent: (name, data) =>
         game.rulesEvaluator.triggerEvent(name, data),
+      triggerParticleEffect: (type: ParticleEmitterType, x: number, y: number) => {
+        const worldX = x * game.pixelsPerMeter;
+        const worldY = y * game.pixelsPerMeter;
+        particleManagerRef.current.triggerEffect(type, worldX, worldY);
+      },
       
-      computedValues: {} as any,
-      evalContext: {} as any,
-      resolveNumber: (value) => typeof value === 'number' ? value : 0,
-      resolveVec2: (value) => (value && typeof value === 'object' && 'x' in value && !('type' in value)) ? value as any : { x: 0, y: 0 },
+      computedValues,
+      evalContext: baseEvalContext,
+      createEvalContextForEntity: createEvalContext,
     };
 
     if (collisionsRef.current.length > 0) {
@@ -273,10 +312,22 @@ export function GameRuntime({
       behaviorContext,
     );
 
-    game.rulesEvaluator.update(dt, game.entityManager, collisionsRef.current);
+    game.rulesEvaluator.update(
+      dt,
+      game.entityManager,
+      collisionsRef.current,
+      inputRef.current,
+      {},
+      physics,
+      computedValues,
+      baseEvalContext
+    );
 
     inputRef.current = {};
     collisionsRef.current = [];
+
+    particleManagerRef.current.update(dt);
+    setParticleEffects(particleManagerRef.current.getAllActiveParticles());
 
     setEntities([...game.entityManager.getVisibleEntities()]);
     setGameState((s) => ({ ...s, time: elapsedRef.current }));
@@ -312,6 +363,8 @@ export function GameRuntime({
           }
         },
       });
+      particleManagerRef.current.clear();
+      setParticleEffects([]);
       setEntities(newGame.entityManager.getVisibleEntities());
       setGameState({ score: 0, lives: 3, time: 0, state: "ready" });
     }
@@ -365,15 +418,9 @@ export function GameRuntime({
   const cameraTransform = cameraRef.current?.getWorldToScreenTransform();
   const matrix = cameraTransform
     ? [
-        cameraTransform.scaleX,
-        0,
-        cameraTransform.translateX,
-        0,
-        cameraTransform.scaleY,
-        cameraTransform.translateY,
-        0,
-        0,
-        1,
+        cameraTransform.scaleX, 0, 0,
+        0, cameraTransform.scaleY, 0,
+        cameraTransform.translateX, cameraTransform.translateY, 1,
       ]
     : undefined;
 
@@ -438,6 +485,15 @@ export function GameRuntime({
                   renderMode={renderMode}
                   showDebugOverlays={showDebugOverlays}
                   assetOverrides={assetOverrides}
+                  allAssetPacks={allAssetPacks}
+                />
+              ))}
+              {particleEffects.map((effect, index) => (
+                <ParticleSystemRenderer
+                  key={`particles-${index}`}
+                  particles={effect.particles}
+                  renderStyle={effect.config.renderStyle}
+                  blendMode={effect.config.blendMode}
                 />
               ))}
             </Group>

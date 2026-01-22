@@ -7,7 +7,10 @@ import type {
   EvalContext,
   Value,
   Vec2 as ExprVec2,
+  ParticleEmitterType,
 } from '@slopcade/shared';
+
+export type CreateEvalContextForEntity = (entity?: RuntimeEntity) => EvalContext;
 
 export interface InputState {
   tap?: { x: number; y: number; worldX: number; worldY: number };
@@ -76,12 +79,14 @@ export interface BehaviorContext {
 
   computedValues: ComputedValueSystem;
   evalContext: EvalContext;
+  createEvalContextForEntity: CreateEvalContextForEntity;
 
   addScore(points: number): void;
   setGameState(state: GameState['state']): void;
   spawnEntity(templateId: string, x: number, y: number): RuntimeEntity | null;
   destroyEntity(entityId: string): void;
   triggerEvent(eventName: string, data?: Record<string, unknown>): void;
+  triggerParticleEffect(type: ParticleEmitterType, x: number, y: number): void;
 
   resolveNumber(value: Value<number>): number;
   resolveVec2(value: Value<ExprVec2>): ExprVec2;

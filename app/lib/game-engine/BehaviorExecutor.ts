@@ -40,7 +40,7 @@ export class BehaviorExecutor {
     this.handlers.set(type, handler);
   }
 
-  executeAll(entities: RuntimeEntity[], context: Omit<BehaviorContext, 'entity'>): void {
+  executeAll(entities: RuntimeEntity[], context: Omit<BehaviorContext, 'entity' | 'resolveNumber' | 'resolveVec2'>): void {
     for (const phase of PHASE_ORDER) {
       for (const entity of entities) {
         if (!entity.active) continue;
@@ -52,9 +52,16 @@ export class BehaviorExecutor {
   private executePhase(
     entity: RuntimeEntity,
     phase: BehaviorPhase,
-    baseContext: Omit<BehaviorContext, 'entity'>
+    baseContext: Omit<BehaviorContext, 'entity' | 'resolveNumber' | 'resolveVec2'>
   ): void {
-    const context: BehaviorContext = { ...baseContext, entity };
+    const entityEvalContext = baseContext.createEvalContextForEntity(entity);
+    const context: BehaviorContext = {
+      ...baseContext,
+      entity,
+      evalContext: entityEvalContext,
+      resolveNumber: (value) => baseContext.computedValues.resolveNumber(value, entityEvalContext),
+      resolveVec2: (value) => baseContext.computedValues.resolveVec2(value, entityEvalContext),
+    };
 
     for (const runtimeBehavior of entity.behaviors) {
       if (!runtimeBehavior.enabled) continue;
@@ -72,13 +79,21 @@ export class BehaviorExecutor {
   executeSingle(
     entity: RuntimeEntity,
     behavior: RuntimeBehavior,
-    context: Omit<BehaviorContext, 'entity'>
+    baseContext: Omit<BehaviorContext, 'entity' | 'resolveNumber' | 'resolveVec2'>
   ): void {
     if (!behavior.enabled) return;
 
     const handler = this.handlers.get(behavior.definition.type);
     if (handler) {
-      handler(behavior.definition, { ...context, entity }, behavior);
+      const entityEvalContext = baseContext.createEvalContextForEntity(entity);
+      const context: BehaviorContext = {
+        ...baseContext,
+        entity,
+        evalContext: entityEvalContext,
+        resolveNumber: (value) => baseContext.computedValues.resolveNumber(value, entityEvalContext),
+        resolveVec2: (value) => baseContext.computedValues.resolveVec2(value, entityEvalContext),
+      };
+      handler(behavior.definition, context, behavior);
     }
   }
 }
