@@ -1,4 +1,4 @@
-import { tokens } from '@clover/theme';
+import { tokens } from '@slopcade/theme';
 
 export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(' ');

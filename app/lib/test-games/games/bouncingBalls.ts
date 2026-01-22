@@ -1,16 +1,17 @@
-import type { GameDefinition } from "@clover/shared";
+import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
 export const metadata: TestGameMeta = {
   title: "Bouncing Balls",
-  description: "Tests restitution (bounciness) with balls of varying bounce factors",
+  description: "Tap to spawn balls with varying bounciness - reach 500 points!",
 };
 
 const game: GameDefinition = {
   metadata: {
     id: "test-bouncing-balls",
     title: "Bouncing Balls",
-    description: "Tests restitution (bounciness) with balls of varying bounce factors",
+    description: "Tap to spawn balls with varying bounciness - reach 500 points!",
+    instructions: "Drag the spawner, tap to drop balls. Score 500 points before time runs out!",
     version: "1.0.0",
   },
   world: {
@@ -20,14 +21,24 @@ const game: GameDefinition = {
   },
   camera: { type: "fixed", zoom: 1 },
   ui: {
-    showScore: false,
+    showScore: true,
     showLives: false,
-    showTimer: false,
+    showTimer: true,
+    timerCountdown: true,
     backgroundColor: "#1e293b",
+  },
+  winCondition: {
+    type: "score",
+    score: 500,
+  },
+  loseCondition: {
+    type: "time_up",
+    time: 60,
   },
   templates: {
     ground: {
       id: "ground",
+      tags: ["ground", "target"],
       sprite: { type: "rect", width: 18, height: 0.5, color: "#374151" },
       physics: {
         bodyType: "static",
@@ -38,9 +49,13 @@ const game: GameDefinition = {
         friction: 0.5,
         restitution: 1,
       },
+      behaviors: [
+        { type: "score_on_collision", withTags: ["ball"], points: 10 },
+      ],
     },
     wallLeft: {
       id: "wallLeft",
+      tags: ["wall"],
       sprite: { type: "rect", width: 0.3, height: 10, color: "#374151" },
       physics: {
         bodyType: "static",
@@ -54,6 +69,7 @@ const game: GameDefinition = {
     },
     wallRight: {
       id: "wallRight",
+      tags: ["wall"],
       sprite: { type: "rect", width: 0.3, height: 10, color: "#374151" },
       physics: {
         bodyType: "static",
@@ -65,53 +81,40 @@ const game: GameDefinition = {
         restitution: 1,
       },
     },
+    ballSpawner: {
+      id: "ballSpawner",
+      tags: ["spawner"],
+      sprite: { type: "rect", width: 2, height: 0.3, color: "#666666" },
+      physics: {
+        bodyType: "kinematic",
+        shape: "box",
+        width: 2,
+        height: 0.3,
+        density: 0,
+        friction: 0,
+        restitution: 0,
+        isSensor: true,
+      },
+      behaviors: [
+        { type: "control", controlType: "drag_to_move" },
+        { type: "spawn_on_event", event: "tap", entityTemplate: "bouncyBall", spawnPosition: "at_self" },
+      ],
+    },
+    bouncyBall: {
+      id: "bouncyBall",
+      tags: ["ball"],
+      sprite: { type: "circle", radius: 0.5, color: "#3B82F6" },
+      physics: { bodyType: "dynamic", shape: "circle", radius: 0.5, density: 1, friction: 0.3, restitution: 1.0 },
+      behaviors: [
+        { type: "timer", duration: 10, action: "destroy" },
+      ],
+    },
   },
   entities: [
     { id: "ground", name: "Ground", template: "ground", transform: { x: 10, y: 11, angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "wall-left", name: "Left Wall", template: "wallLeft", transform: { x: 1, y: 6, angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "wall-right", name: "Right Wall", template: "wallRight", transform: { x: 19, y: 6, angle: 0, scaleX: 1, scaleY: 1 } },
-    {
-      id: "ball-no-bounce",
-      name: "No Bounce (0.0)",
-      transform: { x: 3, y: 2, angle: 0, scaleX: 1, scaleY: 1 },
-      sprite: { type: "circle", radius: 0.5, color: "#EF4444" },
-      physics: { bodyType: "dynamic", shape: "circle", radius: 0.5, density: 1, friction: 0.3, restitution: 0 },
-    },
-    {
-      id: "ball-low-bounce",
-      name: "Low Bounce (0.3)",
-      transform: { x: 6, y: 2, angle: 0, scaleX: 1, scaleY: 1 },
-      sprite: { type: "circle", radius: 0.5, color: "#F97316" },
-      physics: { bodyType: "dynamic", shape: "circle", radius: 0.5, density: 1, friction: 0.3, restitution: 0.3 },
-    },
-    {
-      id: "ball-med-bounce",
-      name: "Medium Bounce (0.5)",
-      transform: { x: 9, y: 2, angle: 0, scaleX: 1, scaleY: 1 },
-      sprite: { type: "circle", radius: 0.5, color: "#FBBF24" },
-      physics: { bodyType: "dynamic", shape: "circle", radius: 0.5, density: 1, friction: 0.3, restitution: 0.5 },
-    },
-    {
-      id: "ball-high-bounce",
-      name: "High Bounce (0.8)",
-      transform: { x: 12, y: 2, angle: 0, scaleX: 1, scaleY: 1 },
-      sprite: { type: "circle", radius: 0.5, color: "#22C55E" },
-      physics: { bodyType: "dynamic", shape: "circle", radius: 0.5, density: 1, friction: 0.3, restitution: 0.8 },
-    },
-    {
-      id: "ball-super-bounce",
-      name: "Super Bounce (1.0)",
-      transform: { x: 15, y: 2, angle: 0, scaleX: 1, scaleY: 1 },
-      sprite: { type: "circle", radius: 0.5, color: "#3B82F6" },
-      physics: { bodyType: "dynamic", shape: "circle", radius: 0.5, density: 1, friction: 0.3, restitution: 1.0 },
-    },
-    {
-      id: "ball-hyper-bounce",
-      name: "Hyper Bounce (1.2)",
-      transform: { x: 18, y: 2, angle: 0, scaleX: 1, scaleY: 1 },
-      sprite: { type: "circle", radius: 0.5, color: "#A855F7" },
-      physics: { bodyType: "dynamic", shape: "circle", radius: 0.5, density: 1, friction: 0.3, restitution: 1.2 },
-    },
+    { id: "spawner", name: "Ball Spawner", template: "ballSpawner", transform: { x: 10, y: 2, angle: 0, scaleX: 1, scaleY: 1 } },
   ],
 };
 

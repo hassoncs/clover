@@ -6,3 +6,5 @@ export * from './entity';
 export * from './rules';
 export * from './GameDefinition';
 export * from './schemas';
+export * from './effects';
+export * from './particles';

@@ -1,4 +1,4 @@
-import type { Behavior, BehaviorType } from '@clover/shared';
+import type { Behavior, BehaviorType } from '@slopcade/shared';
 import type { RuntimeEntity, RuntimeBehavior } from './types';
 import type { BehaviorContext } from './BehaviorContext';
 
@@ -97,7 +97,7 @@ export function createBehaviorExecutor(): BehaviorExecutor {
 
 function registerMovementHandlers(executor: BehaviorExecutor): void {
   executor.registerHandler('move', (behavior, ctx, runtime) => {
-    const move = behavior as import('@clover/shared').MoveBehavior;
+    const move = behavior as import('@slopcade/shared').MoveBehavior;
     if (!ctx.entity.bodyId) return;
 
     let vx = 0;
@@ -155,7 +155,7 @@ function registerMovementHandlers(executor: BehaviorExecutor): void {
   });
 
   executor.registerHandler('oscillate', (behavior, ctx, runtime) => {
-    const osc = behavior as import('@clover/shared').OscillateBehavior;
+    const osc = behavior as import('@slopcade/shared').OscillateBehavior;
     if (!ctx.entity.bodyId) return;
 
     const phase = (osc.phase ?? 0) * Math.PI * 2;
@@ -187,7 +187,7 @@ function registerMovementHandlers(executor: BehaviorExecutor): void {
   });
 
   executor.registerHandler('follow', (behavior, ctx) => {
-    const follow = behavior as import('@clover/shared').FollowBehavior;
+    const follow = behavior as import('@slopcade/shared').FollowBehavior;
     if (!ctx.entity.bodyId) return;
 
     const target = ctx.entityManager.getEntity(follow.target);
@@ -208,7 +208,7 @@ function registerMovementHandlers(executor: BehaviorExecutor): void {
   });
 
   executor.registerHandler('bounce', (behavior, ctx) => {
-    const bounce = behavior as import('@clover/shared').BounceBehavior;
+    const bounce = behavior as import('@slopcade/shared').BounceBehavior;
     if (!ctx.entity.bodyId) return;
 
     const vel = ctx.physics.getLinearVelocity(ctx.entity.bodyId);
@@ -229,7 +229,7 @@ function registerMovementHandlers(executor: BehaviorExecutor): void {
   });
 
   executor.registerHandler('gravity_zone', (behavior, ctx) => {
-    const zone = behavior as import('@clover/shared').GravityZoneBehavior;
+    const zone = behavior as import('@slopcade/shared').GravityZoneBehavior;
     
     const entities = ctx.entityManager.getActiveEntities();
     for (const target of entities) {
@@ -257,7 +257,7 @@ function registerMovementHandlers(executor: BehaviorExecutor): void {
   });
 
   executor.registerHandler('magnetic', (behavior, ctx) => {
-    const magnetic = behavior as import('@clover/shared').MagneticBehavior;
+    const magnetic = behavior as import('@slopcade/shared').MagneticBehavior;
     
     const entities = ctx.entityManager.getActiveEntities();
     for (const target of entities) {
@@ -283,7 +283,7 @@ function registerMovementHandlers(executor: BehaviorExecutor): void {
 
 function registerInputHandlers(executor: BehaviorExecutor): void {
   executor.registerHandler('draggable', (behavior, ctx, runtime) => {
-    const draggable = behavior as import('@clover/shared').DraggableBehavior;
+    const draggable = behavior as import('@slopcade/shared').DraggableBehavior;
     if (!ctx.entity.bodyId) return;
 
     const stiffness = draggable.stiffness ?? 50;
@@ -317,7 +317,7 @@ function registerInputHandlers(executor: BehaviorExecutor): void {
 
 function registerControlHandlers(executor: BehaviorExecutor): void {
   executor.registerHandler('control', (behavior, ctx, runtime) => {
-    const control = behavior as import('@clover/shared').ControlBehavior;
+    const control = behavior as import('@slopcade/shared').ControlBehavior;
     if (!ctx.entity.bodyId) return;
 
     const cooldownEnd = (runtime.state.cooldownEnd as number) ?? 0;
@@ -384,7 +384,7 @@ function registerControlHandlers(executor: BehaviorExecutor): void {
 
 function registerTimerHandlers(executor: BehaviorExecutor): void {
   executor.registerHandler('timer', (behavior, ctx, runtime) => {
-    const timer = behavior as import('@clover/shared').TimerBehavior;
+    const timer = behavior as import('@slopcade/shared').TimerBehavior;
 
     const lastFire = (runtime.state.lastFire as number) ?? 0;
     const nextFire = lastFire + timer.duration;
@@ -423,7 +423,7 @@ function registerTimerHandlers(executor: BehaviorExecutor): void {
 
 function registerCollisionHandlers(executor: BehaviorExecutor): void {
   executor.registerHandler('destroy_on_collision', (behavior, ctx) => {
-    const destroy = behavior as import('@clover/shared').DestroyOnCollisionBehavior;
+    const destroy = behavior as import('@slopcade/shared').DestroyOnCollisionBehavior;
 
     for (const collision of ctx.collisions) {
       const other =
@@ -449,7 +449,7 @@ function registerCollisionHandlers(executor: BehaviorExecutor): void {
   });
 
   executor.registerHandler('score_on_collision', (behavior, ctx, runtime) => {
-    const score = behavior as import('@clover/shared').ScoreOnCollisionBehavior;
+    const score = behavior as import('@slopcade/shared').ScoreOnCollisionBehavior;
 
     const scored = (runtime.state.scoredEntities as Set<string>) ?? new Set<string>();
     if (runtime.state.scoredEntities === undefined) {
@@ -475,7 +475,7 @@ function registerCollisionHandlers(executor: BehaviorExecutor): void {
   });
 
   executor.registerHandler('score_on_destroy', (behavior, ctx, runtime) => {
-    const score = behavior as import('@clover/shared').ScoreOnDestroyBehavior;
+    const score = behavior as import('@slopcade/shared').ScoreOnDestroyBehavior;
     
     if (runtime.state.isBeingDestroyed) {
       ctx.addScore(score.points);
@@ -483,7 +483,7 @@ function registerCollisionHandlers(executor: BehaviorExecutor): void {
   });
 
   executor.registerHandler('health', (behavior, ctx, runtime) => {
-    const health = behavior as import('@clover/shared').HealthBehavior;
+    const health = behavior as import('@slopcade/shared').HealthBehavior;
     
     if (runtime.state.currentHealth === undefined) {
       runtime.state.currentHealth = health.currentHealth ?? health.maxHealth;
@@ -521,7 +521,7 @@ function registerCollisionHandlers(executor: BehaviorExecutor): void {
   });
 
   executor.registerHandler('spawn_on_event', (behavior, ctx, runtime) => {
-    const spawn = behavior as import('@clover/shared').SpawnOnEventBehavior;
+    const spawn = behavior as import('@slopcade/shared').SpawnOnEventBehavior;
 
     const spawned = (runtime.state.spawnCount as number) ?? 0;
     if (spawn.maxSpawns !== undefined && spawned >= spawn.maxSpawns) return;
@@ -600,7 +600,7 @@ function registerCollisionHandlers(executor: BehaviorExecutor): void {
 
 function registerVisualHandlers(executor: BehaviorExecutor): void {
   executor.registerHandler('rotate', (behavior, ctx) => {
-    const rotate = behavior as import('@clover/shared').RotateBehavior;
+    const rotate = behavior as import('@slopcade/shared').RotateBehavior;
 
     const direction = rotate.direction === 'clockwise' ? 1 : -1;
     const deltaAngle = rotate.speed * ctx.dt * direction;
@@ -613,7 +613,7 @@ function registerVisualHandlers(executor: BehaviorExecutor): void {
   });
 
   executor.registerHandler('rotate_toward', (behavior, ctx) => {
-    const rotateTo = behavior as import('@clover/shared').RotateTowardBehavior;
+    const rotateTo = behavior as import('@slopcade/shared').RotateTowardBehavior;
     
     const target = ctx.entityManager.getEntity(rotateTo.target);
     if (!target) return;
@@ -636,7 +636,7 @@ function registerVisualHandlers(executor: BehaviorExecutor): void {
   });
 
   executor.registerHandler('animate', (behavior, ctx, runtime) => {
-    const animate = behavior as import('@clover/shared').AnimateBehavior;
+    const animate = behavior as import('@slopcade/shared').AnimateBehavior;
 
     if (animate.frames.length === 0) return;
 

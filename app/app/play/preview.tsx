@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { View, Text, Pressable, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { GameDefinition } from "@clover/shared";
+import type { GameDefinition } from "@slopcade/shared";
 import { WithSkia } from "../../components/WithSkia";
 
 export default function PreviewScreen() {

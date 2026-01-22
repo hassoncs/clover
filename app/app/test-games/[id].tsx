@@ -28,15 +28,15 @@ export default function TestGameRunScreen() {
 
   return (
     <View className="flex-1 bg-gray-900">
-      <SafeAreaView className="absolute top-0 left-0 right-0 z-10" edges={["top"]}>
-        <View className="flex-row items-center justify-between px-4 py-2">
-          <Pressable className="py-2 px-4 bg-black/50 rounded-lg" onPress={handleBack}>
+      <SafeAreaView className="absolute top-0 left-0 right-0 z-10 bg-black/30" edges={["top"]}>
+        <View className="flex-row items-center justify-between px-4 py-3 pb-4">
+          <Pressable className="py-3 px-4 bg-black/60 rounded-lg" onPress={handleBack}>
             <Text className="text-white font-semibold">← Back</Text>
           </Pressable>
-          <Text className="text-white font-bold text-lg flex-1 text-center" numberOfLines={1}>
+          <Text className="text-white font-bold text-lg flex-1 text-center mx-2" numberOfLines={1}>
             {entry.meta.title}
           </Text>
-          <Pressable className="py-2 px-4 bg-black/50 rounded-lg" onPress={handleReset}>
+          <Pressable className="py-3 px-4 bg-black/60 rounded-lg" onPress={handleReset}>
             <Text className="text-white font-semibold">Reset</Text>
           </Pressable>
         </View>
@@ -52,7 +52,8 @@ export default function TestGameRunScreen() {
               <mod.GameRuntime
                 key={runtimeKey}
                 definition={definition}
-                showHUD={false}
+                showHUD={true}
+                onBackToMenu={handleBack}
               />
             ),
           }))

@@ -1,16 +1,17 @@
-import type { GameDefinition } from "@clover/shared";
+import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
 export const metadata: TestGameMeta = {
   title: "Slingshot Destruction",
-  description: "Angry Birds-style physics - projectiles vs tower structures",
+  description: "Angry Birds-style physics - destroy all targets with limited shots",
 };
 
 const game: GameDefinition = {
   metadata: {
     id: "test-slingshot-destruction",
     title: "Slingshot Destruction",
-    description: "Angry Birds-style physics - projectiles vs tower structures",
+    description: "Angry Birds-style physics - destroy all targets with limited shots",
+    instructions: "Drag back on the ball to aim, release to launch. Destroy all green targets!",
     version: "1.0.0",
   },
   world: {
@@ -20,14 +21,23 @@ const game: GameDefinition = {
   },
   camera: { type: "fixed", zoom: 1 },
   ui: {
-    showScore: false,
-    showLives: false,
+    showScore: true,
+    showLives: true,
     showTimer: false,
     backgroundColor: "#1a1a2e",
   },
+  winCondition: {
+    type: "destroy_all",
+    tag: "target",
+  },
+  loseCondition: {
+    type: "lives_zero",
+  },
+  initialLives: 3,
   templates: {
     projectile: {
       id: "projectile",
+      tags: ["projectile"],
       sprite: { type: "circle", radius: 0.4, color: "#FF6B6B" },
       physics: {
         bodyType: "dynamic",
@@ -37,9 +47,13 @@ const game: GameDefinition = {
         friction: 0.3,
         restitution: 0.3,
       },
+      behaviors: [
+        { type: "control", controlType: "drag_to_aim", force: 20, aimLine: true, maxPullDistance: 3 },
+      ],
     },
     woodBlock: {
       id: "woodBlock",
+      tags: ["structure", "wood"],
       sprite: { type: "rect", width: 1, height: 0.3, color: "#8B4513" },
       physics: {
         bodyType: "dynamic",
@@ -50,9 +64,14 @@ const game: GameDefinition = {
         friction: 0.6,
         restitution: 0.1,
       },
+      behaviors: [
+        { type: "destroy_on_collision", withTags: ["projectile"], effect: "explode", minImpactVelocity: 5 },
+        { type: "score_on_collision", withTags: ["projectile"], points: 50 },
+      ],
     },
     stoneBlock: {
       id: "stoneBlock",
+      tags: ["structure", "stone"],
       sprite: { type: "rect", width: 1, height: 0.3, color: "#708090" },
       physics: {
         bodyType: "dynamic",
@@ -63,9 +82,13 @@ const game: GameDefinition = {
         friction: 0.6,
         restitution: 0.1,
       },
+      behaviors: [
+        { type: "score_on_collision", withTags: ["projectile"], points: 25 },
+      ],
     },
     tallWood: {
       id: "tallWood",
+      tags: ["structure", "wood"],
       sprite: { type: "rect", width: 0.3, height: 1.2, color: "#A0522D" },
       physics: {
         bodyType: "dynamic",
@@ -76,9 +99,14 @@ const game: GameDefinition = {
         friction: 0.6,
         restitution: 0.1,
       },
+      behaviors: [
+        { type: "destroy_on_collision", withTags: ["projectile"], effect: "explode", minImpactVelocity: 6 },
+        { type: "score_on_collision", withTags: ["projectile"], points: 50 },
+      ],
     },
     target: {
       id: "target",
+      tags: ["target"],
       sprite: { type: "circle", radius: 0.5, color: "#90EE90" },
       physics: {
         bodyType: "dynamic",
@@ -88,9 +116,14 @@ const game: GameDefinition = {
         friction: 0.5,
         restitution: 0.2,
       },
+      behaviors: [
+        { type: "destroy_on_collision", withTags: ["projectile"], effect: "explode" },
+        { type: "score_on_collision", withTags: ["projectile"], points: 500 },
+      ],
     },
     ground: {
       id: "ground",
+      tags: ["ground"],
       sprite: { type: "rect", width: 25, height: 1, color: "#2d3436" },
       physics: {
         bodyType: "static",
@@ -105,9 +138,7 @@ const game: GameDefinition = {
   },
   entities: [
     { id: "ground", name: "Ground", template: "ground", transform: { x: 12.5, y: 11, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "proj-1", name: "Projectile 1", template: "projectile", transform: { x: 2, y: 9.5, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "proj-2", name: "Projectile 2", template: "projectile", transform: { x: 1, y: 9.5, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "proj-3", name: "Projectile 3", template: "projectile", transform: { x: 0.5, y: 8.5, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "projectile", name: "Projectile", template: "projectile", transform: { x: 2, y: 9.5, angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "tall-1", name: "Tall Wood 1", template: "tallWood", transform: { x: 14, y: 9.65, angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "tall-2", name: "Tall Wood 2", template: "tallWood", transform: { x: 16, y: 9.65, angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "wood-1", name: "Wood Block 1", template: "woodBlock", transform: { x: 15, y: 8.85, angle: 0, scaleX: 1, scaleY: 1 } },

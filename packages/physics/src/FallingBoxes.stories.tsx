@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { FallingBoxes } from '@clover/physics';
+import { FallingBoxes } from '@slopcade/physics';
 
 const meta: Meta<typeof FallingBoxes> = {
   title: 'Physics/FallingBoxes',

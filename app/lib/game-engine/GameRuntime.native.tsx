@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Canvas, Fill, Group } from '@shopify/react-native-skia';
-import type { GameDefinition } from '@clover/shared';
+import type { GameDefinition } from '@slopcade/shared';
 import {
   createPhysics2D,
   useSimplePhysicsLoop,
@@ -17,6 +17,7 @@ export interface GameRuntimeProps {
   definition: GameDefinition;
   onGameEnd?: (state: 'won' | 'lost') => void;
   onScoreChange?: (score: number) => void;
+  onBackToMenu?: () => void;
   showHUD?: boolean;
 }
 
@@ -24,6 +25,7 @@ export function GameRuntime({
   definition,
   onGameEnd,
   onScoreChange,
+  onBackToMenu,
   showHUD = true,
 }: GameRuntimeProps) {
   const physicsRef = useRef<Physics2D | null>(null);
@@ -317,6 +319,9 @@ export function GameRuntime({
       {gameState.state === 'ready' && (
         <View style={styles.overlay}>
           <Text style={styles.overlayTitle}>{definition.metadata.title}</Text>
+          {definition.metadata.instructions && (
+            <Text style={styles.instructions}>{definition.metadata.instructions}</Text>
+          )}
           <TouchableOpacity style={styles.button} onPress={handleStart}>
             <Text style={styles.buttonText}>Play</Text>
           </TouchableOpacity>
@@ -326,12 +331,20 @@ export function GameRuntime({
       {(gameState.state === 'won' || gameState.state === 'lost') && (
         <View style={styles.overlay}>
           <Text style={styles.overlayTitle}>
-            {gameState.state === 'won' ? 'You Win!' : 'Game Over'}
+            {gameState.state === 'won' ? '🎉 You Win!' : '💀 Game Over'}
           </Text>
           <Text style={styles.finalScore}>Final Score: {gameState.score}</Text>
           <TouchableOpacity style={styles.button} onPress={handleRestart}>
             <Text style={styles.buttonText}>Play Again</Text>
           </TouchableOpacity>
+          {onBackToMenu && (
+            <TouchableOpacity
+              style={[styles.button, styles.secondaryButton]}
+              onPress={onBackToMenu}
+            >
+              <Text style={styles.buttonText}>Back to Menu</Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
     </View>
@@ -347,7 +360,7 @@ const styles = StyleSheet.create({
   },
   hud: {
     position: 'absolute',
-    top: 50,
+    top: 100,
     left: 20,
     right: 20,
     flexDirection: 'row',
@@ -399,7 +412,15 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 36,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 12,
+  },
+  instructions: {
+    color: '#ccc',
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 24,
+    paddingHorizontal: 30,
+    lineHeight: 24,
   },
   finalScore: {
     color: '#fff',
@@ -411,6 +432,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
     paddingVertical: 15,
     borderRadius: 10,
+  },
+  secondaryButton: {
+    backgroundColor: '#666',
+    marginTop: 12,
   },
   buttonText: {
     color: '#fff',

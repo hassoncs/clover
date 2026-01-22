@@ -1,16 +1,17 @@
-import type { GameDefinition } from "@clover/shared";
+import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
 export const metadata: TestGameMeta = {
   title: "Physics Stacker",
-  description: "Stack blocks as high as possible - tests balance and friction",
+  description: "Tap to drop blocks, reach 1000 points before a block falls off!",
 };
 
 const game: GameDefinition = {
   metadata: {
     id: "test-physics-stacker",
     title: "Physics Stacker",
-    description: "Stack blocks as high as possible - tests balance and friction",
+    description: "Tap to drop blocks, reach 1000 points before a block falls off!",
+    instructions: "Tap to drop a block from the moving dropper. Stack to 1000 points!",
     version: "1.0.0",
   },
   world: {
@@ -20,14 +21,23 @@ const game: GameDefinition = {
   },
   camera: { type: "fixed", zoom: 1 },
   ui: {
-    showScore: false,
+    showScore: true,
     showLives: false,
     showTimer: false,
     backgroundColor: "#FFE4E1",
   },
+  winCondition: {
+    type: "score",
+    score: 1000,
+  },
+  loseCondition: {
+    type: "entity_exits_screen",
+    tag: "block",
+  },
   templates: {
     foundation: {
       id: "foundation",
+      tags: ["ground"],
       sprite: { type: "rect", width: 4, height: 0.6, color: "#8B4513" },
       physics: {
         bodyType: "static",
@@ -39,8 +49,28 @@ const game: GameDefinition = {
         restitution: 0,
       },
     },
+    dropper: {
+      id: "dropper",
+      tags: ["dropper"],
+      sprite: { type: "rect", width: 2, height: 0.3, color: "#666666" },
+      physics: {
+        bodyType: "kinematic",
+        shape: "box",
+        width: 2,
+        height: 0.3,
+        density: 0,
+        friction: 0,
+        restitution: 0,
+        isSensor: true,
+      },
+      behaviors: [
+        { type: "oscillate", axis: "x", amplitude: 4, frequency: 0.3 },
+        { type: "spawn_on_event", event: "tap", entityTemplate: "blockWide", spawnPosition: "at_self", maxSpawns: 50 },
+      ],
+    },
     blockWide: {
       id: "blockWide",
+      tags: ["block"],
       sprite: { type: "rect", width: 1.8, height: 0.6, color: "#FF69B4" },
       physics: {
         bodyType: "dynamic",
@@ -51,9 +81,13 @@ const game: GameDefinition = {
         friction: 0.8,
         restitution: 0.1,
       },
+      behaviors: [
+        { type: "score_on_collision", withTags: ["block", "ground"], points: 50, once: true },
+      ],
     },
     blockMedium: {
       id: "blockMedium",
+      tags: ["block"],
       sprite: { type: "rect", width: 1.4, height: 0.6, color: "#FF1493" },
       physics: {
         bodyType: "dynamic",
@@ -64,9 +98,13 @@ const game: GameDefinition = {
         friction: 0.8,
         restitution: 0.1,
       },
+      behaviors: [
+        { type: "score_on_collision", withTags: ["block", "ground"], points: 75, once: true },
+      ],
     },
     blockSmall: {
       id: "blockSmall",
+      tags: ["block"],
       sprite: { type: "rect", width: 1.0, height: 0.6, color: "#DB7093" },
       physics: {
         bodyType: "dynamic",
@@ -77,9 +115,13 @@ const game: GameDefinition = {
         friction: 0.8,
         restitution: 0.1,
       },
+      behaviors: [
+        { type: "score_on_collision", withTags: ["block", "ground"], points: 100, once: true },
+      ],
     },
     blockTall: {
       id: "blockTall",
+      tags: ["block"],
       sprite: { type: "rect", width: 0.6, height: 1.2, color: "#C71585" },
       physics: {
         bodyType: "dynamic",
@@ -90,24 +132,14 @@ const game: GameDefinition = {
         friction: 0.8,
         restitution: 0.1,
       },
+      behaviors: [
+        { type: "score_on_collision", withTags: ["block", "ground"], points: 150, once: true },
+      ],
     },
   },
   entities: [
     { id: "foundation", name: "Foundation", template: "foundation", transform: { x: 7, y: 16, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "block-1", name: "Block 1", template: "blockWide", transform: { x: 7, y: 15.1, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "block-2", name: "Block 2", template: "blockWide", transform: { x: 7, y: 14.4, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "block-3", name: "Block 3", template: "blockMedium", transform: { x: 7, y: 13.7, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "block-4", name: "Block 4", template: "blockMedium", transform: { x: 7.1, y: 13, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "block-5", name: "Block 5", template: "blockSmall", transform: { x: 6.9, y: 12.3, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "block-6", name: "Block 6", template: "blockSmall", transform: { x: 7.1, y: 11.6, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "block-7", name: "Block 7", template: "blockTall", transform: { x: 6.5, y: 10.5, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "block-8", name: "Block 8", template: "blockTall", transform: { x: 7.5, y: 10.5, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "block-9", name: "Block 9", template: "blockSmall", transform: { x: 7, y: 9.5, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "block-10", name: "Block 10", template: "blockMedium", transform: { x: 7, y: 8.8, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "falling-1", name: "Falling 1", template: "blockWide", transform: { x: 4, y: 2, angle: 0.1, scaleX: 1, scaleY: 1 } },
-    { id: "falling-2", name: "Falling 2", template: "blockMedium", transform: { x: 10, y: 3, angle: -0.1, scaleX: 1, scaleY: 1 } },
-    { id: "falling-3", name: "Falling 3", template: "blockSmall", transform: { x: 6, y: 1, angle: 0.2, scaleX: 1, scaleY: 1 } },
-    { id: "falling-4", name: "Falling 4", template: "blockTall", transform: { x: 8, y: 2, angle: -0.15, scaleX: 1, scaleY: 1 } },
+    { id: "dropper", name: "Block Dropper", template: "dropper", transform: { x: 7, y: 2, angle: 0, scaleX: 1, scaleY: 1 } },
   ],
 };
 

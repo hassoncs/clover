@@ -1,16 +1,17 @@
-import type { GameDefinition } from "@clover/shared";
+import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
 export const metadata: TestGameMeta = {
   title: "Simple Platformer",
-  description: "Jump between platforms, collect coins - tests player physics and platforms",
+  description: "Jump between platforms, collect coins, reach the goal flag",
 };
 
 const game: GameDefinition = {
   metadata: {
     id: "test-simple-platformer",
     title: "Simple Platformer",
-    description: "Jump between platforms, collect coins - tests player physics and platforms",
+    description: "Jump between platforms, collect coins, reach the goal flag",
+    instructions: "Tap to jump, tilt to move. Collect coins and reach the green flag!",
     version: "1.0.0",
   },
   world: {
@@ -20,14 +21,23 @@ const game: GameDefinition = {
   },
   camera: { type: "fixed", zoom: 1 },
   ui: {
-    showScore: false,
+    showScore: true,
     showLives: false,
     showTimer: false,
     backgroundColor: "#87CEEB",
   },
+  winCondition: {
+    type: "reach_entity",
+    tag: "goal",
+  },
+  loseCondition: {
+    type: "entity_destroyed",
+    tag: "player",
+  },
   templates: {
     player: {
       id: "player",
+      tags: ["player"],
       sprite: { type: "rect", width: 0.7, height: 1, color: "#4ECDC4" },
       physics: {
         bodyType: "dynamic",
@@ -37,10 +47,17 @@ const game: GameDefinition = {
         density: 1,
         friction: 0.3,
         restitution: 0,
+        fixedRotation: true,
       },
+      behaviors: [
+        { type: "control", controlType: "tap_to_jump", force: 8 },
+        { type: "control", controlType: "tilt_to_move", force: 5, maxSpeed: 6 },
+        { type: "destroy_on_collision", withTags: ["enemy", "hazard"], effect: "fade" },
+      ],
     },
     platform: {
       id: "platform",
+      tags: ["platform", "ground"],
       sprite: { type: "rect", width: 3, height: 0.5, color: "#FFFFFF" },
       physics: {
         bodyType: "static",
@@ -54,6 +71,7 @@ const game: GameDefinition = {
     },
     smallPlatform: {
       id: "smallPlatform",
+      tags: ["platform"],
       sprite: { type: "rect", width: 2, height: 0.4, color: "#E0E0E0" },
       physics: {
         bodyType: "static",
@@ -67,6 +85,7 @@ const game: GameDefinition = {
     },
     coin: {
       id: "coin",
+      tags: ["collectible", "coin"],
       sprite: { type: "circle", radius: 0.3, color: "#FFD700" },
       physics: {
         bodyType: "static",
@@ -75,10 +94,16 @@ const game: GameDefinition = {
         density: 0,
         friction: 0,
         restitution: 0,
+        isSensor: true,
       },
+      behaviors: [
+        { type: "score_on_collision", withTags: ["player"], points: 100, once: true, showPopup: true },
+        { type: "destroy_on_collision", withTags: ["player"], effect: "fade" },
+      ],
     },
     enemy: {
       id: "enemy",
+      tags: ["enemy"],
       sprite: { type: "circle", radius: 0.4, color: "#e74c3c" },
       physics: {
         bodyType: "kinematic",
@@ -88,9 +113,13 @@ const game: GameDefinition = {
         friction: 0,
         restitution: 0,
       },
+      behaviors: [
+        { type: "oscillate", axis: "x", amplitude: 1.5, frequency: 0.5 },
+      ],
     },
     goal: {
       id: "goal",
+      tags: ["goal"],
       sprite: { type: "rect", width: 0.5, height: 2, color: "#27ae60" },
       physics: {
         bodyType: "static",
@@ -100,11 +129,28 @@ const game: GameDefinition = {
         density: 0,
         friction: 0,
         restitution: 0,
+        isSensor: true,
+      },
+    },
+    deathZone: {
+      id: "deathZone",
+      tags: ["hazard"],
+      sprite: { type: "rect", width: 30, height: 1, color: "#FF000022" },
+      physics: {
+        bodyType: "static",
+        shape: "box",
+        width: 30,
+        height: 1,
+        density: 0,
+        friction: 0,
+        restitution: 0,
+        isSensor: true,
       },
     },
   },
   entities: [
     { id: "player", name: "Player", template: "player", transform: { x: 2, y: 11, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "death-zone", name: "Death Zone", template: "deathZone", transform: { x: 12.5, y: 15.5, angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "ground", name: "Ground", template: "platform", transform: { x: 3, y: 13, angle: 0, scaleX: 2, scaleY: 1 } },
     { id: "plat-1", name: "Platform 1", template: "platform", transform: { x: 7, y: 11, angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "plat-2", name: "Platform 2", template: "smallPlatform", transform: { x: 11, y: 9, angle: 0, scaleX: 1, scaleY: 1 } },

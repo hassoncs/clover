@@ -1,4 +1,5 @@
 import type { Vec2 } from './common';
+import type { EffectChain } from './effects';
 
 export type SpriteType = 'rect' | 'circle' | 'polygon' | 'image';
 
@@ -17,6 +18,7 @@ export interface BaseSpriteComponent {
   opacity?: number;
   shadow?: ShadowEffect;
   tint?: string;
+  effects?: EffectChain;
 }
 
 export interface RectSpriteComponent extends BaseSpriteComponent {

@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc/client";
-import type { GameDefinition } from "@clover/shared";
+import type { GameDefinition } from "@slopcade/shared";
 
 const EXAMPLE_PROMPTS = [
   "A game where I launch balls at targets",

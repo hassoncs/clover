@@ -1,9 +1,9 @@
-import type { GameDefinition } from "@clover/shared";
+import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
 export const metadata: TestGameMeta = {
   title: "Domino Chain",
-  description: "Chain reaction physics - dominoes falling in sequence",
+  description: "Tap to launch the ball and knock down all dominoes!",
 };
 
 const dominoPositions: Array<{ x: number; y: number; angle: number }> = [];
@@ -15,7 +15,8 @@ const game: GameDefinition = {
   metadata: {
     id: "test-domino-chain",
     title: "Domino Chain",
-    description: "Chain reaction physics - dominoes falling in sequence",
+    description: "Tap to launch the ball and knock down all dominoes!",
+    instructions: "Drag back on the red ball to aim, release to launch. Knock down all dominoes!",
     version: "1.0.0",
   },
   world: {
@@ -25,14 +26,23 @@ const game: GameDefinition = {
   },
   camera: { type: "fixed", zoom: 1 },
   ui: {
-    showScore: false,
-    showLives: false,
+    showScore: true,
+    showLives: true,
     showTimer: false,
     backgroundColor: "#1e293b",
   },
+  winCondition: {
+    type: "destroy_all",
+    tag: "domino",
+  },
+  loseCondition: {
+    type: "lives_zero",
+  },
+  initialLives: 3,
   templates: {
     domino: {
       id: "domino",
+      tags: ["domino", "target"],
       sprite: { type: "rect", width: 0.2, height: 1, color: "#FBBF24" },
       physics: {
         bodyType: "dynamic",
@@ -43,9 +53,13 @@ const game: GameDefinition = {
         friction: 0.6,
         restitution: 0.1,
       },
+      behaviors: [
+        { type: "score_on_collision", withTags: ["pusher", "domino"], points: 50, once: true },
+      ],
     },
     ground: {
       id: "ground",
+      tags: ["ground"],
       sprite: { type: "rect", width: 18, height: 0.5, color: "#374151" },
       physics: {
         bodyType: "static",
@@ -59,6 +73,7 @@ const game: GameDefinition = {
     },
     pusher: {
       id: "pusher",
+      tags: ["pusher", "projectile"],
       sprite: { type: "circle", radius: 0.5, color: "#EF4444" },
       physics: {
         bodyType: "dynamic",
@@ -68,6 +83,26 @@ const game: GameDefinition = {
         friction: 0.3,
         restitution: 0.2,
       },
+      behaviors: [
+        { type: "control", controlType: "drag_to_aim", force: 15, aimLine: true, maxPullDistance: 4 },
+      ],
+    },
+    targetBall: {
+      id: "targetBall",
+      tags: ["target", "bonus"],
+      sprite: { type: "circle", radius: 0.6, color: "#10B981" },
+      physics: {
+        bodyType: "dynamic",
+        shape: "circle",
+        radius: 0.6,
+        density: 1,
+        friction: 0.3,
+        restitution: 0.5,
+      },
+      behaviors: [
+        { type: "score_on_collision", withTags: ["pusher", "domino"], points: 200, once: true },
+        { type: "destroy_on_collision", withTags: ["pusher"], effect: "fade" },
+      ],
     },
   },
   entities: [
@@ -82,16 +117,21 @@ const game: GameDefinition = {
     {
       id: "ramp",
       name: "Ramp",
+      tags: ["ground"],
       transform: { x: 1.5, y: 6, angle: Math.PI / 6, scaleX: 1, scaleY: 1 },
       sprite: { type: "rect", width: 4, height: 0.3, color: "#6B7280" },
       physics: { bodyType: "static", shape: "box", width: 4, height: 0.3, density: 0, friction: 0.4, restitution: 0.1 },
     },
+    { id: "target-ball", name: "Bonus Ball", template: "targetBall", transform: { x: 18, y: 9.5, angle: 0, scaleX: 1, scaleY: 1 } },
+  ],
+  rules: [
     {
-      id: "target-ball",
-      name: "Target Ball",
-      transform: { x: 18, y: 9.5, angle: 0, scaleX: 1, scaleY: 1 },
-      sprite: { type: "circle", radius: 0.6, color: "#10B981" },
-      physics: { bodyType: "dynamic", shape: "circle", radius: 0.6, density: 1, friction: 0.3, restitution: 0.5 },
+      id: "domino_fell",
+      name: "Domino hit ground hard",
+      trigger: { type: "collision", entityATag: "domino", entityBTag: "ground" },
+      actions: [
+        { type: "destroy", target: { type: "by_tag", tag: "domino", count: 1 } },
+      ],
     },
   ],
 };

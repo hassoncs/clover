@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "../global.css";
 
 if (typeof window !== "undefined" && typeof global === "undefined") {
@@ -7,7 +8,8 @@ if (typeof window !== "undefined" && typeof global === "undefined") {
 
 export default function RootLayout() {
   return (
-    <Stack>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen
@@ -48,5 +50,6 @@ export default function RootLayout() {
       <Stack.Screen name="examples/top_down_asteroids" options={{ title: "Top-Down Asteroids" }} />
       <Stack.Screen name="examples/destructible_tower" options={{ title: "Destructible Tower" }} />
     </Stack>
+    </GestureHandlerRootView>
   );
 }

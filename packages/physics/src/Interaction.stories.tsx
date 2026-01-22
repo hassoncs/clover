@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Interaction } from '@clover/physics';
+import { Interaction } from '@slopcade/physics';
 
 const meta: Meta<typeof Interaction> = {
   title: 'Physics/Interaction',

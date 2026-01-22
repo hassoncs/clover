@@ -36,6 +36,7 @@ export interface GameMetadata {
   id: string;
   title: string;
   description?: string;
+  instructions?: string;
   author?: string;
   version: string;
   createdAt?: number;
@@ -53,6 +54,8 @@ export interface GameDefinition {
   rules?: GameRule[];
   winCondition?: WinCondition;
   loseCondition?: LoseCondition;
+  initialLives?: number;
+  initialScore?: number;
 }
 
 export const DEFAULT_WORLD_CONFIG: WorldConfig = {
