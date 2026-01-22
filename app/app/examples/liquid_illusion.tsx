@@ -1,6 +1,4 @@
-import { View } from "react-native";
-import { Stack } from "expo-router";
-import { WithSkia } from "../../components/WithSkia";
+import { SkiaExample } from "../../components/SkiaExample";
 import type { ExampleMeta } from "../../lib/registry/types";
 
 export const metadata: ExampleMeta = {
@@ -10,11 +8,9 @@ export const metadata: ExampleMeta = {
 
 export default function LiquidIllusionExample() {
   return (
-    <View style={{ flex: 1, backgroundColor: "#1a1a2e" }}>
-      <Stack.Screen options={{ title: "Liquid Illusion" }} />
-      <WithSkia
-        getComponent={() => import("../../components/examples/LiquidIllusion")}
-      />
-    </View>
+    <SkiaExample
+      title="Liquid Illusion"
+      getComponent={() => import("../../components/examples/LiquidIllusion")}
+    />
   );
 }

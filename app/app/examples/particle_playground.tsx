@@ -2,15 +2,15 @@ import { SkiaExample } from "../../components/SkiaExample";
 import type { ExampleMeta } from "../../lib/registry/types";
 
 export const metadata: ExampleMeta = {
-  title: "Bridge",
-  description: "Chain of bodies connected by joints.",
+  title: 'Particle Playground',
+  description: 'Interactive particle system with 10 presets and live controls',
 };
 
 export default function Example() {
   return (
     <SkiaExample
-      title="Bridge"
-      getComponent={() => import("../../components/examples/Bridge")}
+      title="Particle Playground"
+      getComponent={() => import("../../components/examples/ParticlePlayground")}
     />
   );
 }

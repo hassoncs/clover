@@ -2,15 +2,15 @@ import { SkiaExample } from "../../components/SkiaExample";
 import type { ExampleMeta } from "../../lib/registry/types";
 
 export const metadata: ExampleMeta = {
-  title: "Bridge",
-  description: "Chain of bodies connected by joints.",
+  title: 'Effects Gallery',
+  description: 'Interactive showcase of shader effects with live parameter controls',
 };
 
 export default function Example() {
   return (
     <SkiaExample
-      title="Bridge"
-      getComponent={() => import("../../components/examples/Bridge")}
+      title="Effects Gallery"
+      getComponent={() => import("../../components/examples/EffectsGallery")}
     />
   );
 }
