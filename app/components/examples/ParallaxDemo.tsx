@@ -1,8 +1,6 @@
 import { useCallback, useState, useRef, useEffect } from "react";
-import { View, StyleSheet, Text, TouchableOpacity, Platform, Switch } from "react-native";
+import { View, StyleSheet, Text, TouchableOpacity, Platform, Switch, ScrollView } from "react-native";
 import { Canvas, useCanvasRef } from "@shopify/react-native-skia";
-import { SortableList } from "@slopcade/ui";
-import { Feather } from '@expo/vector-icons';
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   ParallaxBackground,
@@ -190,25 +188,15 @@ function ParallaxCanvas() {
   }, []);
 
 
-  const onReorder = useCallback((newLayers: EditableLayer[]) => {
-    setLayers(newLayers.map((l, i) => ({
-      ...l,
-      zIndex: newLayers.length - 1 - i,
-    })));
-  }, []);
-
-  const renderLayerItem = useCallback(({ item, index, drag, isActive }: { item: EditableLayer; index: number; drag: () => any; isActive: boolean }) => (
-    <View style={[styles.compactLayerItem, isActive && styles.activeLayerItem]}>
+  const renderLayerItem = (item: EditableLayer, index: number) => (
+    <View key={item.id} style={styles.compactLayerItem}>
       <View style={styles.compactLayerHeader}>
-        <View {...(Platform.OS === 'web' ? drag() : {})} style={styles.dragHandle}>
-          <Feather name="menu" size={16} color="#fff" />
-        </View>
         <Switch 
           value={item.visible} 
           onValueChange={() => toggleLayer(index)}
           trackColor={{ false: "#767577", true: "#e94560" }}
           thumbColor={item.visible ? "#ffffff" : "#f4f3f4"}
-          style={Platform.OS === 'web' ? { transform: 'scale(0.8)' } : { transform: [{ scaleX: 0.7 }, { scaleY: 0.7 }] }}
+          style={Platform.OS === 'web' ? { transform: 'scale(0.8)' } as any : { transform: [{ scaleX: 0.7 }, { scaleY: 0.7 }] }}
         />
         <Text style={styles.layerNameCompact} numberOfLines={1}>
           {item.depth}
@@ -235,7 +223,7 @@ function ParallaxCanvas() {
         </View>
       )}
     </View>
-  ), [toggleLayer, updateParallaxFactor]);
+  );
 
   if (!vp.isReady) return null;
 
@@ -315,13 +303,9 @@ function ParallaxCanvas() {
 
           <View style={styles.panelList}>
             <Text style={styles.panelLabel}>Layers</Text>
-            <SortableList
-              data={layers}
-              keyExtractor={(item) => item.id}
-              onReorder={onReorder}
-              renderItem={renderLayerItem}
-              itemHeight={74}
-            />
+            <ScrollView style={{ flex: 1 }}>
+              {layers.map((layer, index) => renderLayerItem(layer, index))}
+            </ScrollView>
           </View>
         </View>
       </View>
