@@ -55,6 +55,7 @@ const game: GameDefinition = {
       },
       behaviors: [
         { type: "score_on_collision", withTags: ["pusher", "domino"], points: 50, once: true },
+        { type: "destroy_on_collision", withTags: ["ground"], effect: "fade" },
       ],
     },
     ground: {
@@ -123,16 +124,6 @@ const game: GameDefinition = {
       physics: { bodyType: "static", shape: "box", width: 4, height: 0.3, density: 0, friction: 0.4, restitution: 0.1 },
     },
     { id: "target-ball", name: "Bonus Ball", template: "targetBall", transform: { x: 18, y: 9.5, angle: 0, scaleX: 1, scaleY: 1 } },
-  ],
-  rules: [
-    {
-      id: "domino_fell",
-      name: "Domino hit ground hard",
-      trigger: { type: "collision", entityATag: "domino", entityBTag: "ground" },
-      actions: [
-        { type: "destroy", target: { type: "by_tag", tag: "domino", count: 1 } },
-      ],
-    },
   ],
 };
 

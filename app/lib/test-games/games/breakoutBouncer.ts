@@ -47,6 +47,8 @@ const game: GameDefinition = {
         friction: 0,
         restitution: 1,
         linearDamping: 0,
+        initialVelocity: { x: 3, y: -6 },
+        bullet: true,
       },
     },
     paddle: {
@@ -155,12 +157,12 @@ const game: GameDefinition = {
     drain: {
       id: "drain",
       tags: ["drain"],
-      sprite: { type: "rect", width: 14, height: 0.5, color: "#FF000033" },
+      sprite: { type: "rect", width: 14, height: 2, color: "#FF000033" },
       physics: {
         bodyType: "static",
         shape: "box",
         width: 14,
-        height: 0.5,
+        height: 2,
         density: 0,
         friction: 0,
         restitution: 0,
@@ -181,7 +183,7 @@ const game: GameDefinition = {
       physics: { bodyType: "static", shape: "box", width: 14, height: 0.3, density: 0, friction: 0, restitution: 1 },
     },
     // Drain zone at bottom (loses a life when ball enters)
-    { id: "drain", name: "Drain Zone", template: "drain", transform: { x: 7, y: 20.25, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "drain", name: "Drain Zone", template: "drain", transform: { x: 7, y: 21, angle: 0, scaleX: 1, scaleY: 1 } },
     // Paddle
     { id: "paddle", name: "Paddle", template: "paddle", transform: { x: 7, y: 18, angle: 0, scaleX: 1, scaleY: 1 } },
     // Ball with initial velocity
@@ -235,10 +237,12 @@ const game: GameDefinition = {
   rules: [
     {
       id: "ball_drain",
-      name: "Ball falls through drain",
+      name: "Ball falls through drain - lose a life and respawn",
       trigger: { type: "collision", entityATag: "ball", entityBTag: "drain" },
       actions: [
+        { type: "lives", operation: "subtract", value: 1 },
         { type: "destroy", target: { type: "by_tag", tag: "ball" } },
+        { type: "spawn", template: "ball", position: { type: "fixed", x: 7, y: 15 } },
       ],
     },
   ],

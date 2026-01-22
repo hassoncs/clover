@@ -100,21 +100,22 @@ function registerMovementHandlers(executor: BehaviorExecutor): void {
     const move = behavior as import('@slopcade/shared').MoveBehavior;
     if (!ctx.entity.bodyId) return;
 
+    const speed = ctx.resolveNumber(move.speed);
     let vx = 0;
     let vy = 0;
 
     switch (move.direction) {
       case 'left':
-        vx = -move.speed;
+        vx = -speed;
         break;
       case 'right':
-        vx = move.speed;
+        vx = speed;
         break;
       case 'up':
-        vy = -move.speed;
+        vy = -speed;
         break;
       case 'down':
-        vy = move.speed;
+        vy = speed;
         break;
       case 'toward_target':
       case 'away_from_target':
@@ -126,8 +127,8 @@ function registerMovementHandlers(executor: BehaviorExecutor): void {
             const dist = Math.sqrt(dx * dx + dy * dy);
             if (dist > 0.01) {
               const dir = move.direction === 'toward_target' ? 1 : -1;
-              vx = (dx / dist) * move.speed * dir;
-              vy = (dy / dist) * move.speed * dir;
+              vx = (dx / dist) * speed * dir;
+              vy = (dy / dist) * speed * dir;
             }
           }
         }
@@ -158,9 +159,12 @@ function registerMovementHandlers(executor: BehaviorExecutor): void {
     const osc = behavior as import('@slopcade/shared').OscillateBehavior;
     if (!ctx.entity.bodyId) return;
 
-    const phase = (osc.phase ?? 0) * Math.PI * 2;
-    const t = ctx.elapsed * osc.frequency * Math.PI * 2 + phase;
-    const offset = Math.sin(t) * osc.amplitude;
+    const amplitude = ctx.resolveNumber(osc.amplitude);
+    const frequency = ctx.resolveNumber(osc.frequency);
+    const phaseValue = osc.phase !== undefined ? ctx.resolveNumber(osc.phase) : 0;
+    const phase = phaseValue * Math.PI * 2;
+    const t = ctx.elapsed * frequency * Math.PI * 2 + phase;
+    const offset = Math.sin(t) * amplitude;
 
     const baseX = (runtime.state.baseX as number) ?? ctx.entity.transform.x;
     const baseY = (runtime.state.baseY as number) ?? ctx.entity.transform.y;
@@ -197,12 +201,16 @@ function registerMovementHandlers(executor: BehaviorExecutor): void {
     const dy = target.transform.y - ctx.entity.transform.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
-    if (follow.minDistance !== undefined && dist < follow.minDistance) return;
-    if (follow.maxDistance !== undefined && dist > follow.maxDistance) return;
+    const minDist = follow.minDistance !== undefined ? ctx.resolveNumber(follow.minDistance) : undefined;
+    const maxDist = follow.maxDistance !== undefined ? ctx.resolveNumber(follow.maxDistance) : undefined;
+
+    if (minDist !== undefined && dist < minDist) return;
+    if (maxDist !== undefined && dist > maxDist) return;
 
     if (dist > 0.01) {
-      const vx = (dx / dist) * follow.speed;
-      const vy = (dy / dist) * follow.speed;
+      const speed = ctx.resolveNumber(follow.speed);
+      const vx = (dx / dist) * speed;
+      const vy = (dy / dist) * speed;
       ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: vx, y: vy });
     }
   });
@@ -231,6 +239,9 @@ function registerMovementHandlers(executor: BehaviorExecutor): void {
   executor.registerHandler('gravity_zone', (behavior, ctx) => {
     const zone = behavior as import('@slopcade/shared').GravityZoneBehavior;
     
+    const radius = ctx.resolveNumber(zone.radius);
+    const gravity = ctx.resolveVec2(zone.gravity);
+    
     const entities = ctx.entityManager.getActiveEntities();
     for (const target of entities) {
       if (target.id === ctx.entity.id) continue;
@@ -241,14 +252,14 @@ function registerMovementHandlers(executor: BehaviorExecutor): void {
       const dy = ctx.entity.transform.y - target.transform.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist > zone.radius || dist < 0.01) continue;
+      if (dist > radius || dist < 0.01) continue;
 
-      let force = { x: zone.gravity.x, y: zone.gravity.y };
+      let force = { x: gravity.x, y: gravity.y };
 
       if (zone.falloff && zone.falloff !== 'none') {
         const factor = zone.falloff === 'linear' 
-          ? 1 - (dist / zone.radius)
-          : Math.pow(1 - (dist / zone.radius), 2);
+          ? 1 - (dist / radius)
+          : Math.pow(1 - (dist / radius), 2);
         force = { x: force.x * factor, y: force.y * factor };
       }
 
@@ -258,6 +269,9 @@ function registerMovementHandlers(executor: BehaviorExecutor): void {
 
   executor.registerHandler('magnetic', (behavior, ctx) => {
     const magnetic = behavior as import('@slopcade/shared').MagneticBehavior;
+    
+    const strength = ctx.resolveNumber(magnetic.strength);
+    const radius = ctx.resolveNumber(magnetic.radius);
     
     const entities = ctx.entityManager.getActiveEntities();
     for (const target of entities) {
@@ -269,10 +283,10 @@ function registerMovementHandlers(executor: BehaviorExecutor): void {
       const dy = ctx.entity.transform.y - target.transform.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist > magnetic.radius || dist < 0.01) continue;
+      if (dist > radius || dist < 0.01) continue;
 
       const direction = magnetic.repels ? -1 : 1;
-      const forceMagnitude = (magnetic.strength * direction) / Math.max(dist * dist, 0.1);
+      const forceMagnitude = (strength * direction) / Math.max(dist * dist, 0.1);
       const forceX = (dx / dist) * forceMagnitude;
       const forceY = (dy / dist) * forceMagnitude;
 
@@ -323,29 +337,33 @@ function registerControlHandlers(executor: BehaviorExecutor): void {
     const cooldownEnd = (runtime.state.cooldownEnd as number) ?? 0;
     if (ctx.elapsed < cooldownEnd) return;
 
+    const resolveForce = () => control.force !== undefined ? ctx.resolveNumber(control.force) : 10;
+    const resolveCooldown = () => control.cooldown !== undefined ? ctx.resolveNumber(control.cooldown) : 0.1;
+    const resolveMaxSpeed = () => control.maxSpeed !== undefined ? ctx.resolveNumber(control.maxSpeed) : 10;
+
     switch (control.controlType) {
       case 'tap_to_jump':
         if (ctx.input.tap) {
-          const force = control.force ?? 10;
+          const force = resolveForce();
           ctx.physics.applyImpulseToCenter(ctx.entity.bodyId, { x: 0, y: -force });
-          runtime.state.cooldownEnd = ctx.elapsed + (control.cooldown ?? 0.1);
+          runtime.state.cooldownEnd = ctx.elapsed + resolveCooldown();
         }
         break;
 
       case 'drag_to_aim':
         if (ctx.input.dragEnd) {
-          const force = control.force ?? 10;
+          const force = resolveForce();
           const vx = -ctx.input.dragEnd.worldVelocityX * force;
           const vy = -ctx.input.dragEnd.worldVelocityY * force;
           ctx.physics.applyImpulseToCenter(ctx.entity.bodyId, { x: vx, y: vy });
-          runtime.state.cooldownEnd = ctx.elapsed + (control.cooldown ?? 0.5);
+          runtime.state.cooldownEnd = ctx.elapsed + (control.cooldown !== undefined ? ctx.resolveNumber(control.cooldown) : 0.5);
         }
         break;
 
       case 'tilt_to_move':
         if (ctx.input.tilt) {
-          const force = control.force ?? 5;
-          const maxSpeed = control.maxSpeed ?? 10;
+          const force = control.force !== undefined ? ctx.resolveNumber(control.force) : 5;
+          const maxSpeed = resolveMaxSpeed();
           const vel = ctx.physics.getLinearVelocity(ctx.entity.bodyId);
 
           let fx = ctx.input.tilt.x * force;
@@ -360,7 +378,7 @@ function registerControlHandlers(executor: BehaviorExecutor): void {
 
       case 'buttons':
         if (ctx.input.buttons) {
-          const force = control.force ?? 5;
+          const force = control.force !== undefined ? ctx.resolveNumber(control.force) : 5;
           let fx = 0;
           let fy = 0;
 
@@ -369,8 +387,8 @@ function registerControlHandlers(executor: BehaviorExecutor): void {
           if (ctx.input.buttons.up) fy -= force;
           if (ctx.input.buttons.down) fy += force;
           if (ctx.input.buttons.jump) {
-            ctx.physics.applyImpulseToCenter(ctx.entity.bodyId, { x: 0, y: -(control.force ?? 10) });
-            runtime.state.cooldownEnd = ctx.elapsed + (control.cooldown ?? 0.2);
+            ctx.physics.applyImpulseToCenter(ctx.entity.bodyId, { x: 0, y: -resolveForce() });
+            runtime.state.cooldownEnd = ctx.elapsed + (control.cooldown !== undefined ? ctx.resolveNumber(control.cooldown) : 0.2);
           }
 
           if (fx !== 0 || fy !== 0) {
@@ -378,6 +396,36 @@ function registerControlHandlers(executor: BehaviorExecutor): void {
           }
         }
         break;
+
+      case 'drag_to_move': {
+        const stiffness = control.force !== undefined ? ctx.resolveNumber(control.force) : 30;
+        const damping = control.maxSpeed !== undefined ? ctx.resolveNumber(control.maxSpeed) : 8;
+        const maxSpeed = 15;
+        
+        const currentVel = ctx.physics.getLinearVelocity(ctx.entity.bodyId);
+        let targetForceX = 0;
+
+        if (ctx.input.drag) {
+          const entityX = ctx.entity.transform.x;
+          const touchX = ctx.input.drag.currentWorldX;
+          const dx = touchX - entityX;
+          targetForceX = dx * stiffness - currentVel.x * damping;
+        } else if (ctx.input.buttons) {
+          const buttonSpeed = 8;
+          let targetVelX = 0;
+          if (ctx.input.buttons.left) targetVelX = -buttonSpeed;
+          if (ctx.input.buttons.right) targetVelX = buttonSpeed;
+          targetForceX = (targetVelX - currentVel.x) * stiffness;
+        } else {
+          targetForceX = -currentVel.x * damping;
+        }
+
+        let newVelX = currentVel.x + targetForceX * ctx.dt;
+        newVelX = Math.max(-maxSpeed, Math.min(maxSpeed, newVelX));
+        
+        ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: newVelX, y: 0 });
+        break;
+      }
     }
   });
 }
@@ -386,8 +434,14 @@ function registerTimerHandlers(executor: BehaviorExecutor): void {
   executor.registerHandler('timer', (behavior, ctx, runtime) => {
     const timer = behavior as import('@slopcade/shared').TimerBehavior;
 
-    const lastFire = (runtime.state.lastFire as number) ?? 0;
-    const nextFire = lastFire + timer.duration;
+    // Initialize lastFire on first run to current time
+    if (runtime.state.lastFire === undefined) {
+      runtime.state.lastFire = ctx.elapsed;
+    }
+
+    const duration = ctx.resolveNumber(timer.duration);
+    const lastFire = (runtime.state.lastFire as number);
+    const nextFire = lastFire + duration;
 
     if (ctx.elapsed >= nextFire) {
       runtime.state.lastFire = ctx.elapsed;
@@ -434,10 +488,15 @@ function registerCollisionHandlers(executor: BehaviorExecutor): void {
       }
 
       const matchesTags = destroy.withTags.some((tag) => other.tags.includes(tag));
-      if (!matchesTags) continue;
-
-      if (destroy.minImpactVelocity !== undefined && collision.impulse < destroy.minImpactVelocity) {
+      if (!matchesTags) {
         continue;
+      }
+
+      if (destroy.minImpactVelocity !== undefined) {
+        const minVelocity = ctx.resolveNumber(destroy.minImpactVelocity);
+        if (collision.impulse < minVelocity) {
+          continue;
+        }
       }
 
       ctx.destroyEntity(ctx.entity.id);
@@ -469,7 +528,8 @@ function registerCollisionHandlers(executor: BehaviorExecutor): void {
 
       if (score.once && scored.has(other.id)) continue;
 
-      ctx.addScore(score.points);
+      const points = ctx.resolveNumber(score.points);
+      ctx.addScore(points);
       scored.add(other.id);
     }
   });
@@ -524,7 +584,10 @@ function registerCollisionHandlers(executor: BehaviorExecutor): void {
     const spawn = behavior as import('@slopcade/shared').SpawnOnEventBehavior;
 
     const spawned = (runtime.state.spawnCount as number) ?? 0;
-    if (spawn.maxSpawns !== undefined && spawned >= spawn.maxSpawns) return;
+    if (spawn.maxSpawns !== undefined) {
+      const maxSpawns = ctx.resolveNumber(spawn.maxSpawns);
+      if (spawned >= maxSpawns) return;
+    }
 
     let shouldSpawn = false;
 
@@ -539,8 +602,9 @@ function registerCollisionHandlers(executor: BehaviorExecutor): void {
         if (ctx.input.tap) shouldSpawn = true;
         break;
       case 'timer': {
+        const interval = spawn.interval !== undefined ? ctx.resolveNumber(spawn.interval) : 1;
         const lastSpawn = (runtime.state.lastSpawn as number) ?? 0;
-        if (ctx.elapsed >= lastSpawn + (spawn.interval ?? 1)) {
+        if (ctx.elapsed >= lastSpawn + interval) {
           shouldSpawn = true;
           runtime.state.lastSpawn = ctx.elapsed;
         }
@@ -576,8 +640,9 @@ function registerCollisionHandlers(executor: BehaviorExecutor): void {
           break;
         case 'offset':
           if (spawn.offset) {
-            x += spawn.offset.x;
-            y += spawn.offset.y;
+            const offset = ctx.resolveVec2(spawn.offset);
+            x += offset.x;
+            y += offset.y;
           }
           break;
         case 'random_in_bounds':
@@ -590,7 +655,8 @@ function registerCollisionHandlers(executor: BehaviorExecutor): void {
 
       const newEntity = ctx.spawnEntity(spawn.entityTemplate, x, y);
       if (newEntity && spawn.initialVelocity && newEntity.bodyId) {
-        ctx.physics.setLinearVelocity(newEntity.bodyId, spawn.initialVelocity);
+        const velocity = ctx.resolveVec2(spawn.initialVelocity);
+        ctx.physics.setLinearVelocity(newEntity.bodyId, velocity);
       }
 
       runtime.state.spawnCount = spawned + 1;
@@ -602,13 +668,14 @@ function registerVisualHandlers(executor: BehaviorExecutor): void {
   executor.registerHandler('rotate', (behavior, ctx) => {
     const rotate = behavior as import('@slopcade/shared').RotateBehavior;
 
+    const speed = ctx.resolveNumber(rotate.speed);
     const direction = rotate.direction === 'clockwise' ? 1 : -1;
-    const deltaAngle = rotate.speed * ctx.dt * direction;
+    const deltaAngle = speed * ctx.dt * direction;
 
     ctx.entity.transform.angle += deltaAngle;
 
     if (rotate.affectsPhysics && ctx.entity.bodyId) {
-      ctx.physics.setAngularVelocity(ctx.entity.bodyId, rotate.speed * direction);
+      ctx.physics.setAngularVelocity(ctx.entity.bodyId, speed * direction);
     }
   });
 
@@ -640,9 +707,10 @@ function registerVisualHandlers(executor: BehaviorExecutor): void {
 
     if (animate.frames.length === 0) return;
 
+    const fps = ctx.resolveNumber(animate.fps);
     const frameIndex = (runtime.state.frameIndex as number) ?? 0;
     const lastFrameTime = (runtime.state.lastFrameTime as number) ?? 0;
-    const frameDuration = 1 / animate.fps;
+    const frameDuration = 1 / fps;
 
     if (ctx.elapsed >= lastFrameTime + frameDuration) {
       let nextIndex = frameIndex + 1;

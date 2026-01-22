@@ -1,24 +1,41 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { Canvas, Fill, Group } from '@shopify/react-native-skia';
-import type { GameDefinition } from '@slopcade/shared';
+import { useEffect, useRef, useState, useCallback } from "react";
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  Platform,
+  type GestureResponderEvent,
+} from "react-native";
+import { Canvas, Fill, Group } from "@shopify/react-native-skia";
+import type { GameDefinition } from "@slopcade/shared";
 import {
   createPhysics2D,
   useSimplePhysicsLoop,
   type Physics2D,
-} from '../physics2d';
-import { GameLoader, type LoadedGame } from './GameLoader';
-import { EntityRenderer } from './renderers';
-import type { RuntimeEntity } from './types';
-import type { BehaviorContext, InputState, GameState, CollisionInfo } from './BehaviorContext';
-import { CameraSystem, type CameraConfig } from './CameraSystem';
+  type CollisionEvent,
+  type Unsubscribe,
+} from "../physics2d";
+import { GameLoader, type LoadedGame } from "./GameLoader";
+import { EntityRenderer } from "./renderers";
+import type { RuntimeEntity } from "./types";
+import type {
+  BehaviorContext,
+  InputState,
+  GameState,
+  CollisionInfo,
+} from "./BehaviorContext";
+import { CameraSystem, type CameraConfig } from "./CameraSystem";
 
 export interface GameRuntimeProps {
   definition: GameDefinition;
-  onGameEnd?: (state: 'won' | 'lost') => void;
+  onGameEnd?: (state: "won" | "lost") => void;
   onScoreChange?: (score: number) => void;
   onBackToMenu?: () => void;
   showHUD?: boolean;
+  renderMode?: "default" | "primitive";
+  showDebugOverlays?: boolean;
+  activeAssetPackId?: string;
 }
 
 export function GameRuntime({
@@ -27,6 +44,9 @@ export function GameRuntime({
   onScoreChange,
   onBackToMenu,
   showHUD = true,
+  renderMode = "default",
+  showDebugOverlays = false,
+  activeAssetPackId,
 }: GameRuntimeProps) {
   const physicsRef = useRef<Physics2D | null>(null);
   const gameRef = useRef<LoadedGame | null>(null);
@@ -35,7 +55,23 @@ export function GameRuntime({
   const elapsedRef = useRef(0);
   const inputRef = useRef<InputState>({});
   const collisionsRef = useRef<CollisionInfo[]>([]);
+  const collisionUnsubRef = useRef<Unsubscribe | null>(null);
   const viewportRef = useRef({ width: 0, height: 0 });
+  const dragStartRef = useRef<{
+    x: number;
+    y: number;
+    worldX: number;
+    worldY: number;
+    targetEntityId?: string;
+  } | null>(null);
+  const buttonsRef = useRef({
+    left: false,
+    right: false,
+    up: false,
+    down: false,
+    jump: false,
+    action: false,
+  });
 
   const [isReady, setIsReady] = useState(false);
   const [entities, setEntities] = useState<RuntimeEntity[]>([]);
@@ -43,25 +79,55 @@ export function GameRuntime({
     score: 0,
     lives: 3,
     time: 0,
-    state: 'loading',
+    state: "loading",
   });
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
+
+  const activePackId = activeAssetPackId ?? definition.activeAssetPackId;
+  const assetOverrides =
+    activePackId && definition.assetPacks
+      ? definition.assetPacks[activePackId]?.assets
+      : undefined;
 
   useEffect(() => {
     const setup = async () => {
       try {
-        console.log('[GameRuntime] Starting setup...');
+        console.log("[GameRuntime] Starting setup...");
         const physics = await createPhysics2D();
-        console.log('[GameRuntime] Physics initialized:', !!physics);
+        console.log("[GameRuntime] Physics initialized:", !!physics);
         physicsRef.current = physics;
 
         const loader = new GameLoader({ physics });
         loaderRef.current = loader;
 
         const game = loader.load(definition);
-        console.log('[GameRuntime] Game loaded, entities:', game.entityManager.getVisibleEntities().length);
-        console.log('[GameRuntime] Entity IDs:', game.entityManager.getVisibleEntities().map(e => e.id));
         gameRef.current = game;
+
+        collisionUnsubRef.current = physics.onCollisionBegin(
+          (event: CollisionEvent) => {
+            const entityA = game.entityManager
+              .getActiveEntities()
+              .find((e) => e.bodyId?.value === event.bodyA.value);
+            const entityB = game.entityManager
+              .getActiveEntities()
+              .find((e) => e.bodyId?.value === event.bodyB.value);
+
+            if (entityA && entityB) {
+              const impulse = event.contacts.reduce(
+                (sum, c) => sum + c.normalImpulse,
+                0,
+              );
+              const normal = event.contacts[0]?.normal ?? { x: 0, y: 0 };
+
+              collisionsRef.current.push({
+                entityA,
+                entityB,
+                normal,
+                impulse,
+              });
+            }
+          },
+        );
 
         const worldWidth = definition.world.bounds?.width ?? 20;
         const worldHeight = definition.world.bounds?.height ?? 12;
@@ -72,14 +138,16 @@ export function GameRuntime({
           followSmoothing: 0.1,
           bounds: definition.camera?.bounds,
         };
-        console.log('[GameRuntime] Camera position set to world center:', { x: worldWidth / 2, y: worldHeight / 2 });
-        
-        const initialViewport = viewportRef.current.width > 0 
-          ? viewportRef.current 
-          : { width: 800, height: 600 };
+        const initialViewport =
+          viewportRef.current.width > 0
+            ? viewportRef.current
+            : { width: 800, height: 600 };
         const pixelsPerMeter = definition.world.pixelsPerMeter ?? 50;
-        console.log('[GameRuntime] Creating camera with viewport:', initialViewport, 'pixelsPerMeter:', pixelsPerMeter);
-        const camera = new CameraSystem(cameraConfig, initialViewport, pixelsPerMeter);
+        const camera = new CameraSystem(
+          cameraConfig,
+          initialViewport,
+          pixelsPerMeter,
+        );
         cameraRef.current = camera;
 
         game.rulesEvaluator.setCallbacks({
@@ -92,27 +160,26 @@ export function GameRuntime({
           },
           onGameStateChange: (state) => {
             setGameState((s) => ({ ...s, state }));
-            if (state === 'won' || state === 'lost') {
+            if (state === "won" || state === "lost") {
               onGameEnd?.(state);
             }
           },
         });
 
         const visibleEntities = game.entityManager.getVisibleEntities();
-        console.log('[GameRuntime] Setting entities, count:', visibleEntities.length);
-        console.log('[GameRuntime] First entity:', visibleEntities[0]);
         setEntities(visibleEntities);
-        setGameState((s) => ({ ...s, state: 'ready' }));
+        setGameState((s) => ({ ...s, state: "ready" }));
         setIsReady(true);
-        console.log('[GameRuntime] Setup complete, isReady: true');
       } catch (error) {
-        console.error('[GameRuntime] Failed to initialize game:', error);
+        console.error("[GameRuntime] Failed to initialize game:", error);
       }
     };
 
     setup();
 
     return () => {
+      collisionUnsubRef.current?.();
+      collisionUnsubRef.current = null;
       if (gameRef.current && loaderRef.current) {
         loaderRef.current.unload(gameRef.current);
       }
@@ -128,11 +195,10 @@ export function GameRuntime({
     const game = gameRef.current;
     const camera = cameraRef.current;
     if (!physics || !game || !camera) {
-      console.log('[GameRuntime] stepGame skipped - missing:', { physics: !!physics, game: !!game, camera: !!camera });
       return;
     }
 
-    if (game.rulesEvaluator.getGameState() !== 'playing') return;
+    if (game.rulesEvaluator.getGameState() !== "playing") return;
 
     physics.step(dt, 8, 3);
 
@@ -142,7 +208,7 @@ export function GameRuntime({
 
     elapsedRef.current += dt;
 
-    const behaviorContext: Omit<BehaviorContext, 'entity'> = {
+    const behaviorContext: Omit<BehaviorContext, "entity"> = {
       dt,
       elapsed: elapsedRef.current,
       input: inputRef.current,
@@ -153,10 +219,10 @@ export function GameRuntime({
       pixelsPerMeter: game.pixelsPerMeter,
       addScore: (points) => game.rulesEvaluator.addScore(points),
       setGameState: (state) => {
-        if (state === 'won') game.rulesEvaluator['setGameState']('won');
-        else if (state === 'lost') game.rulesEvaluator['setGameState']('lost');
-        else if (state === 'paused') game.rulesEvaluator.pause();
-        else if (state === 'playing') game.rulesEvaluator.resume();
+        if (state === "won") game.rulesEvaluator["setGameState"]("won");
+        else if (state === "lost") game.rulesEvaluator["setGameState"]("lost");
+        else if (state === "paused") game.rulesEvaluator.pause();
+        else if (state === "playing") game.rulesEvaluator.resume();
       },
       spawnEntity: (templateId, x, y) => {
         const template = game.entityManager.getTemplate(templateId);
@@ -169,12 +235,26 @@ export function GameRuntime({
         });
       },
       destroyEntity: (id) => game.entityManager.destroyEntity(id),
-      triggerEvent: (name, data) => game.rulesEvaluator.triggerEvent(name, data),
+      triggerEvent: (name, data) =>
+        game.rulesEvaluator.triggerEvent(name, data),
+      
+      computedValues: {} as any,
+      evalContext: {} as any,
+      resolveNumber: (value) => typeof value === 'number' ? value : 0,
+      resolveVec2: (value) => (value && typeof value === 'object' && 'x' in value && !('type' in value)) ? value as any : { x: 0, y: 0 },
     };
+
+    if (collisionsRef.current.length > 0) {
+      console.log(
+        "[GameRuntime] stepGame - passing",
+        collisionsRef.current.length,
+        "collisions to behaviors",
+      );
+    }
 
     game.behaviorExecutor.executeAll(
       game.entityManager.getActiveEntities(),
-      behaviorContext
+      behaviorContext,
     );
 
     game.rulesEvaluator.update(dt, game.entityManager, collisionsRef.current);
@@ -186,7 +266,7 @@ export function GameRuntime({
     setGameState((s) => ({ ...s, time: elapsedRef.current }));
   }, []);
 
-  useSimplePhysicsLoop(stepGame, isReady && gameState.state === 'playing');
+  useSimplePhysicsLoop(stepGame, isReady && gameState.state === "playing");
 
   const handleStart = useCallback(() => {
     gameRef.current?.rulesEvaluator.start();
@@ -197,10 +277,10 @@ export function GameRuntime({
       const newGame = loaderRef.current.reload(gameRef.current);
       gameRef.current = newGame;
       elapsedRef.current = 0;
-      
+
       cameraRef.current.setPosition({ x: 0, y: 0 });
       cameraRef.current.setZoom(definition.camera?.zoom ?? 1);
-      
+
       newGame.rulesEvaluator.setCallbacks({
         onScoreChange: (score) => {
           setGameState((s) => ({ ...s, score }));
@@ -211,23 +291,26 @@ export function GameRuntime({
         },
         onGameStateChange: (state) => {
           setGameState((s) => ({ ...s, state }));
-          if (state === 'won' || state === 'lost') {
+          if (state === "won" || state === "lost") {
             onGameEnd?.(state);
           }
         },
       });
       setEntities(newGame.entityManager.getVisibleEntities());
-      setGameState({ score: 0, lives: 3, time: 0, state: 'ready' });
+      setGameState({ score: 0, lives: 3, time: 0, state: "ready" });
     }
   }, [onGameEnd, onScoreChange, definition.camera?.zoom]);
 
-  const handleLayout = useCallback((event: { nativeEvent: { layout: { width: number; height: number } } }) => {
-    const { width, height } = event.nativeEvent.layout;
-    console.log('[GameRuntime] onLayout fired, viewport:', { width, height });
-    viewportRef.current = { width, height };
-    setViewportSize({ width, height });
-    cameraRef.current?.updateViewport({ width, height });
-  }, []);
+  const handleLayout = useCallback(
+    (event: { nativeEvent: { layout: { width: number; height: number } } }) => {
+      const { width, height } = event.nativeEvent.layout;
+      console.log("[GameRuntime] onLayout fired, viewport:", { width, height });
+      viewportRef.current = { width, height };
+      setViewportSize({ width, height });
+      cameraRef.current?.updateViewport({ width, height });
+    },
+    [],
+  );
 
   const handleTap = useCallback(
     (event: { nativeEvent: { locationX: number; locationY: number } }) => {
@@ -236,7 +319,7 @@ export function GameRuntime({
 
       const { locationX: x, locationY: y } = event.nativeEvent;
       const worldPos = camera.screenToWorld(x, y);
-      
+
       inputRef.current.tap = {
         x,
         y,
@@ -244,35 +327,220 @@ export function GameRuntime({
         worldY: worldPos.y,
       };
     },
-    []
+    [],
   );
 
-  const pixelsPerMeter = gameRef.current?.pixelsPerMeter ?? 50;
-  const backgroundColor = definition.ui?.backgroundColor ?? '#87CEEB';
-  
-  const cameraTransform = cameraRef.current?.getWorldToScreenTransform();
-  const matrix = cameraTransform ? [
-    cameraTransform.scaleX, 0, cameraTransform.translateX,
-    0, cameraTransform.scaleY, cameraTransform.translateY,
-    0, 0, 1,
-  ] : undefined;
+  const handleTouchStart = useCallback((event: GestureResponderEvent) => {
+    const camera = cameraRef.current;
+    const game = gameRef.current;
+    if (!camera || !game) return;
 
-  console.log('[GameRuntime] Render - entities:', entities.length, 'matrix:', matrix, 'viewportSize:', viewportSize, 'gameState:', gameState.state);
+    const { locationX: x, locationY: y } = event.nativeEvent;
+    const worldPos = camera.screenToWorld(x, y);
+
+    const physics = physicsRef.current;
+    let targetEntityId: string | undefined;
+    if (physics) {
+      const bodyId = physics.queryPoint(worldPos);
+      if (bodyId) {
+        const entity = game.entityManager
+          .getActiveEntities()
+          .find((e) => e.bodyId === bodyId);
+        if (entity) {
+          targetEntityId = entity.id;
+        }
+      }
+    }
+
+    dragStartRef.current = {
+      x,
+      y,
+      worldX: worldPos.x,
+      worldY: worldPos.y,
+      targetEntityId,
+    };
+
+    inputRef.current.drag = {
+      startX: x,
+      startY: y,
+      currentX: x,
+      currentY: y,
+      startWorldX: worldPos.x,
+      startWorldY: worldPos.y,
+      currentWorldX: worldPos.x,
+      currentWorldY: worldPos.y,
+      targetEntityId,
+    };
+  }, []);
+
+  const handleTouchMove = useCallback((event: GestureResponderEvent) => {
+    const camera = cameraRef.current;
+    const dragStart = dragStartRef.current;
+    if (!camera || !dragStart) return;
+
+    const { locationX: x, locationY: y } = event.nativeEvent;
+    const worldPos = camera.screenToWorld(x, y);
+
+    inputRef.current.drag = {
+      startX: dragStart.x,
+      startY: dragStart.y,
+      currentX: x,
+      currentY: y,
+      startWorldX: dragStart.worldX,
+      startWorldY: dragStart.worldY,
+      currentWorldX: worldPos.x,
+      currentWorldY: worldPos.y,
+      targetEntityId: dragStart.targetEntityId,
+    };
+  }, []);
+
+  const handleTouchEnd = useCallback((event: GestureResponderEvent) => {
+    const camera = cameraRef.current;
+    const dragStart = dragStartRef.current;
+    if (!camera) return;
+
+    const { locationX: x, locationY: y } = event.nativeEvent;
+    const worldPos = camera.screenToWorld(x, y);
+
+    inputRef.current.tap = {
+      x,
+      y,
+      worldX: worldPos.x,
+      worldY: worldPos.y,
+    };
+
+    if (dragStart) {
+      const dx = worldPos.x - dragStart.worldX;
+      const dy = worldPos.y - dragStart.worldY;
+      const VELOCITY_SCALE = 0.1;
+      inputRef.current.dragEnd = {
+        velocityX: (x - dragStart.x) * VELOCITY_SCALE,
+        velocityY: (y - dragStart.y) * VELOCITY_SCALE,
+        worldVelocityX: dx * VELOCITY_SCALE,
+        worldVelocityY: dy * VELOCITY_SCALE,
+      };
+    }
+
+    dragStartRef.current = null;
+    inputRef.current.drag = undefined;
+  }, []);
+
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case "ArrowLeft":
+        case "a":
+        case "A":
+          buttonsRef.current.left = true;
+          break;
+        case "ArrowRight":
+        case "d":
+        case "D":
+          buttonsRef.current.right = true;
+          break;
+        case "ArrowUp":
+        case "w":
+        case "W":
+          buttonsRef.current.up = true;
+          break;
+        case "ArrowDown":
+        case "s":
+        case "S":
+          buttonsRef.current.down = true;
+          break;
+        case " ":
+          buttonsRef.current.jump = true;
+          break;
+      }
+      inputRef.current.buttons = { ...buttonsRef.current };
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case "ArrowLeft":
+        case "a":
+        case "A":
+          buttonsRef.current.left = false;
+          break;
+        case "ArrowRight":
+        case "d":
+        case "D":
+          buttonsRef.current.right = false;
+          break;
+        case "ArrowUp":
+        case "w":
+        case "W":
+          buttonsRef.current.up = false;
+          break;
+        case "ArrowDown":
+        case "s":
+        case "S":
+          buttonsRef.current.down = false;
+          break;
+        case " ":
+          buttonsRef.current.jump = false;
+          break;
+      }
+      inputRef.current.buttons = { ...buttonsRef.current };
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
+
+  const pixelsPerMeter = gameRef.current?.pixelsPerMeter ?? 50;
+  const backgroundColor = definition.ui?.backgroundColor ?? "#87CEEB";
+
+  const cameraTransform = cameraRef.current?.getWorldToScreenTransform();
+  const matrix = cameraTransform
+    ? [
+        cameraTransform.scaleX,
+        0,
+        cameraTransform.translateX,
+        0,
+        cameraTransform.scaleY,
+        cameraTransform.translateY,
+        0,
+        0,
+        1,
+      ]
+    : undefined;
+
+  // console.log('[GameRuntime] Render - entities:', entities.length, 'matrix:', matrix, 'viewportSize:', viewportSize, 'gameState:', gameState.state);
 
   return (
     <View style={styles.container} onLayout={handleLayout}>
-      <Canvas style={styles.canvas} onTouchEnd={handleTap}>
-        <Fill color={backgroundColor} />
-        <Group matrix={matrix}>
-          {entities.map((entity) => (
-            <EntityRenderer
-              key={entity.id}
-              entity={entity}
-              pixelsPerMeter={pixelsPerMeter}
-            />
-          ))}
-        </Group>
-      </Canvas>
+      <View
+        style={StyleSheet.absoluteFill}
+        onStartShouldSetResponder={() => true}
+        onMoveShouldSetResponder={() => true}
+        onResponderGrant={handleTouchStart}
+        onResponderMove={handleTouchMove}
+        onResponderRelease={handleTouchEnd}
+      >
+        <Canvas style={styles.canvas}>
+          <Fill color={backgroundColor} />
+          <Group matrix={matrix}>
+            {entities.map((entity) => (
+              <EntityRenderer
+                key={entity.id}
+                entity={entity}
+                pixelsPerMeter={pixelsPerMeter}
+                renderMode={renderMode}
+                showDebugOverlays={showDebugOverlays}
+                assetOverrides={assetOverrides}
+              />
+            ))}
+          </Group>
+        </Canvas>
+      </View>
 
       {showHUD && (
         <View style={styles.hud}>
@@ -287,7 +555,7 @@ export function GameRuntime({
           {definition.ui?.showLives && (
             <Text style={styles.livesText}>Lives: {gameState.lives}</Text>
           )}
-          {gameState.state === 'playing' && (
+          {gameState.state === "playing" && (
             <TouchableOpacity
               style={styles.pauseButton}
               onPress={() => gameRef.current?.rulesEvaluator.pause()}
@@ -298,7 +566,7 @@ export function GameRuntime({
         </View>
       )}
 
-      {gameState.state === 'paused' && (
+      {gameState.state === "paused" && (
         <View style={styles.overlay}>
           <Text style={styles.overlayTitle}>Paused</Text>
           <TouchableOpacity
@@ -308,7 +576,7 @@ export function GameRuntime({
             <Text style={styles.buttonText}>Resume</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: '#888', marginTop: 12 }]}
+            style={[styles.button, { backgroundColor: "#888", marginTop: 12 }]}
             onPress={handleRestart}
           >
             <Text style={styles.buttonText}>Restart</Text>
@@ -316,11 +584,13 @@ export function GameRuntime({
         </View>
       )}
 
-      {gameState.state === 'ready' && (
+      {gameState.state === "ready" && (
         <View style={styles.overlay}>
           <Text style={styles.overlayTitle}>{definition.metadata.title}</Text>
           {definition.metadata.instructions && (
-            <Text style={styles.instructions}>{definition.metadata.instructions}</Text>
+            <Text style={styles.instructions}>
+              {definition.metadata.instructions}
+            </Text>
           )}
           <TouchableOpacity style={styles.button} onPress={handleStart}>
             <Text style={styles.buttonText}>Play</Text>
@@ -328,10 +598,10 @@ export function GameRuntime({
         </View>
       )}
 
-      {(gameState.state === 'won' || gameState.state === 'lost') && (
+      {(gameState.state === "won" || gameState.state === "lost") && (
         <View style={styles.overlay}>
           <Text style={styles.overlayTitle}>
-            {gameState.state === 'won' ? '🎉 You Win!' : '💀 Game Over'}
+            {gameState.state === "won" ? "🎉 You Win!" : "💀 Game Over"}
           </Text>
           <Text style={styles.finalScore}>Final Score: {gameState.score}</Text>
           <TouchableOpacity style={styles.button} onPress={handleRestart}>
@@ -359,87 +629,87 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   hud: {
-    position: 'absolute',
+    position: "absolute",
     top: 100,
     left: 20,
     right: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   scoreText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 20,
-    fontWeight: 'bold',
-    textShadowColor: '#000',
+    fontWeight: "bold",
+    textShadowColor: "#000",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
   timerText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 20,
-    fontWeight: 'bold',
-    textShadowColor: '#000',
+    fontWeight: "bold",
+    textShadowColor: "#000",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
   livesText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 20,
-    fontWeight: 'bold',
-    textShadowColor: '#000',
+    fontWeight: "bold",
+    textShadowColor: "#000",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
   pauseButton: {
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: "rgba(0,0,0,0.5)",
     width: 44,
     height: 44,
     borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   pauseButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 20,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0,0,0,0.7)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   overlayTitle: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 36,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 12,
   },
   instructions: {
-    color: '#ccc',
+    color: "#ccc",
     fontSize: 18,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 24,
     paddingHorizontal: 30,
     lineHeight: 24,
   },
   finalScore: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 24,
     marginBottom: 30,
   },
   button: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
     paddingHorizontal: 40,
     paddingVertical: 15,
     borderRadius: 10,
   },
   secondaryButton: {
-    backgroundColor: '#666',
+    backgroundColor: "#666",
     marginTop: 12,
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
