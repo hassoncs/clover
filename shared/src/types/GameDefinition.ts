@@ -44,6 +44,48 @@ export interface GameMetadata {
   thumbnailUrl?: string;
 }
 
+export type AssetSource = 'generated' | 'uploaded' | 'none';
+
+export interface AssetConfig {
+  imageUrl?: string;
+  source?: AssetSource;
+  scale?: number;
+  offsetX?: number;
+  offsetY?: number;
+  animations?: Record<string, {
+    frames: string[];
+    fps: number;
+    loop?: boolean;
+  }>;
+}
+
+export interface AssetPack {
+  id: string;
+  name: string;
+  description?: string;
+  style?: 'pixel' | 'cartoon' | '3d' | 'flat';
+  assets: Record<string, AssetConfig>;
+}
+
+export type ParallaxDepth = 'sky' | 'far' | 'mid' | 'near';
+
+export interface ParallaxLayer {
+  id: string;
+  name: string;
+  imageUrl?: string;
+  depth: ParallaxDepth;
+  parallaxFactor: number;
+  scale?: number;
+  offsetX?: number;
+  offsetY?: number;
+  visible?: boolean;
+}
+
+export interface ParallaxConfig {
+  enabled: boolean;
+  layers: ParallaxLayer[];
+}
+
 export interface GameDefinition {
   metadata: GameMetadata;
   world: WorldConfig;
@@ -56,6 +98,9 @@ export interface GameDefinition {
   loseCondition?: LoseCondition;
   initialLives?: number;
   initialScore?: number;
+  assetPacks?: Record<string, AssetPack>;
+  activeAssetPackId?: string;
+  parallaxConfig?: ParallaxConfig;
 }
 
 export const DEFAULT_WORLD_CONFIG: WorldConfig = {

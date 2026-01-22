@@ -146,6 +146,12 @@ export interface ModifyAction {
   value: number;
 }
 
+export interface LivesAction {
+  type: 'lives';
+  operation: 'add' | 'subtract' | 'set';
+  value: number;
+}
+
 export type RuleAction =
   | SpawnAction
   | DestroyAction
@@ -153,7 +159,8 @@ export type RuleAction =
   | GameStateAction
   | SoundAction
   | EventAction
-  | ModifyAction;
+  | ModifyAction
+  | LivesAction;
 
 export interface GameRule {
   id: string;
