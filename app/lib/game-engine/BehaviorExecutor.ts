@@ -300,6 +300,7 @@ function registerInputHandlers(executor: BehaviorExecutor): void {
     const draggable = behavior as import('@slopcade/shared').DraggableBehavior;
     if (!ctx.entity.bodyId) return;
 
+    const mode = draggable.mode ?? 'force';
     const stiffness = draggable.stiffness ?? 50;
     const damping = draggable.damping ?? 5;
 
@@ -314,17 +315,30 @@ function registerInputHandlers(executor: BehaviorExecutor): void {
       const targetX = ctx.input.drag.currentWorldX;
       const targetY = ctx.input.drag.currentWorldY;
       const position = ctx.entity.transform;
-      const velocity = ctx.physics.getLinearVelocity(ctx.entity.bodyId);
 
-      const dx = targetX - position.x;
-      const dy = targetY - position.y;
-
-      const forceX = dx * stiffness - velocity.x * damping;
-      const forceY = dy * stiffness - velocity.y * damping;
-
-      ctx.physics.applyForceToCenter(ctx.entity.bodyId, { x: forceX, y: forceY });
+      if (mode === 'kinematic') {
+        const dx = targetX - position.x;
+        const dy = targetY - position.y;
+        const velocityX = ctx.dt > 0 ? dx / ctx.dt : 0;
+        const velocityY = ctx.dt > 0 ? dy / ctx.dt : 0;
+        ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: velocityX, y: velocityY });
+        ctx.physics.setTransform(ctx.entity.bodyId, {
+          position: { x: targetX, y: targetY },
+          angle: ctx.entity.transform.angle,
+        });
+      } else {
+        const velocity = ctx.physics.getLinearVelocity(ctx.entity.bodyId);
+        const dx = targetX - position.x;
+        const dy = targetY - position.y;
+        const forceX = dx * stiffness - velocity.x * damping;
+        const forceY = dy * stiffness - velocity.y * damping;
+        ctx.physics.applyForceToCenter(ctx.entity.bodyId, { x: forceX, y: forceY });
+      }
     } else if (isDragging) {
       runtime.state.isDragging = false;
+      if (mode === 'kinematic') {
+        ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: 0, y: 0 });
+      }
     }
   });
 }

@@ -12,6 +12,7 @@ import {
   createPhysics2D,
   useSimplePhysicsLoop,
   useForceDrag,
+  useKinematicDrag,
   type Physics2D,
   type BodyId,
   vec2,
@@ -52,60 +53,32 @@ function MagnetPlaygroundCanvas() {
   });
   const [metalObjects, setMetalObjects] = useState<MetalObjectState[]>([]);
   const [isReady, setIsReady] = useState(false);
-  const dragTargetRef = useRef<{ x: number; y: number } | null>(null);
 
   const vp = useViewport();
 
-  const shouldStartDrag = useCallback((bodyId: BodyId) => {
+  const shouldStartForceDrag = useCallback((bodyId: BodyId) => {
     return bodyId.value !== magnetIdRef.current?.value;
   }, []);
 
-  const dragHandlers = useForceDrag(physicsRef, {
+  const shouldStartKinematicDrag = useCallback((bodyId: BodyId) => {
+    return bodyId.value === magnetIdRef.current?.value;
+  }, []);
+
+  const metalDrag = useForceDrag(physicsRef, {
     pixelsPerMeter: PIXELS_PER_METER,
     stiffness: 50,
     damping: 5,
-    shouldStartDrag,
+    shouldStartDrag: shouldStartForceDrag,
   });
 
-  const magnetGestureStable = useMemo(() => {
-    let isDraggingMagnet = false;
-    return Gesture.Pan()
-      .runOnJS(true)
-      .onStart((event) => {
-         const physics = physicsRef.current;
-         if (!physics || !magnetIdRef.current) return;
-         
-         const worldX = event.x / PIXELS_PER_METER;
-         const worldY = event.y / PIXELS_PER_METER;
-         
-         const magnetPos = physics.getTransform(magnetIdRef.current).position;
-         const dx = worldX - magnetPos.x;
-         const dy = worldY - magnetPos.y;
-         const dist = Math.sqrt(dx * dx + dy * dy);
-         
-         if (dist < 2) {
-           isDraggingMagnet = true;
-           dragTargetRef.current = { x: worldX, y: worldY };
-         } else {
-           isDraggingMagnet = false;
-         }
-      })
-      .onUpdate((event) => {
-        if (isDraggingMagnet) {
-           const worldX = event.x / PIXELS_PER_METER;
-           const worldY = event.y / PIXELS_PER_METER;
-           dragTargetRef.current = { x: worldX, y: worldY };
-        }
-      })
-      .onEnd(() => {
-        isDraggingMagnet = false;
-        dragTargetRef.current = null;
-      });
-  }, []);
+  const magnetDrag = useKinematicDrag(physicsRef, {
+    pixelsPerMeter: PIXELS_PER_METER,
+    shouldStartDrag: shouldStartKinematicDrag,
+  });
 
   const composedGesture = useMemo(
-    () => Gesture.Simultaneous(dragHandlers.gesture, magnetGestureStable),
-    [dragHandlers.gesture, magnetGestureStable]
+    () => Gesture.Simultaneous(metalDrag.gesture, magnetDrag.gesture),
+    [metalDrag.gesture, magnetDrag.gesture]
   );
 
   const togglePolarity = useCallback(() => {
@@ -129,9 +102,7 @@ function MagnetPlaygroundCanvas() {
       const distSq = dx * dx + dy * dy;
       const dist = Math.sqrt(distSq);
 
-      // Only apply force within range
       if (dist > 0.5 && dist < 6) {
-        // Inverse square law with cutoff
         const forceMag = strength / (distSq + 1);
         const forceX = (dx / dist) * forceMag;
         const forceY = (dy / dist) * forceMag;
@@ -156,7 +127,6 @@ function MagnetPlaygroundCanvas() {
       physics.createWorld(vec2(0, 9.8));
       physicsRef.current = physics;
 
-      // Create magnet (controlled object)
       const magnetId = physics.createBody({
         type: "kinematic",
         position: vec2(worldWidth / 2, worldHeight / 2),
@@ -169,7 +139,6 @@ function MagnetPlaygroundCanvas() {
       magnetIdRef.current = magnetId;
       setMagnet({ x: worldWidth / 2, y: worldHeight / 2, polarity: "attract" });
 
-      // Create metal objects
       const newMetalIds: BodyId[] = [];
       const newMetalObjects: MetalObjectState[] = [];
 
@@ -205,7 +174,6 @@ function MagnetPlaygroundCanvas() {
       metalIdsRef.current = newMetalIds;
       setMetalObjects(newMetalObjects);
 
-      // Create container walls
       const wallPositions = [
         { x: worldWidth / 2, y: worldHeight - 1, w: worldWidth, h: 1 },
         { x: 1, y: worldHeight / 2, w: 1, h: worldHeight },
@@ -245,19 +213,12 @@ function MagnetPlaygroundCanvas() {
     const physics = physicsRef.current;
     if (!physics || !magnetIdRef.current) return;
 
-    dragHandlers.applyDragForces();
-
-    const dragTarget = dragTargetRef.current;
-    if (dragTarget) {
-      physics.setTransform(magnetIdRef.current, {
-        position: vec2(dragTarget.x, dragTarget.y),
-        angle: 0,
-      });
-    }
-
+    metalDrag.applyDragForces();
     applyMagneticForces(physics);
 
     physics.step(dt, 8, 3);
+
+    magnetDrag.applyDragStep(dt);
 
     const magnetTransform = physics.getTransform(magnetIdRef.current);
     setMagnet((prev) => ({
@@ -276,7 +237,7 @@ function MagnetPlaygroundCanvas() {
       };
     });
     setMetalObjects(updatedMetals);
-  }, [dragHandlers, applyMagneticForces]);
+  }, [metalDrag, magnetDrag, applyMagneticForces]);
 
   useSimplePhysicsLoop(stepPhysics, isReady);
 
@@ -306,7 +267,6 @@ function MagnetPlaygroundCanvas() {
           <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
             <Fill color="#1a1a2e" />
 
-            {/* Magnet force field indicator */}
             <Circle
               cx={magnet.x}
               cy={magnet.y}
@@ -314,7 +274,6 @@ function MagnetPlaygroundCanvas() {
               color={`${magnetRingColor}30`}
             />
 
-            {/* Magnet */}
             <Circle
               cx={magnet.x}
               cy={magnet.y}
@@ -328,7 +287,6 @@ function MagnetPlaygroundCanvas() {
               color="#ffffff30"
             />
 
-            {/* Metal objects */}
             {metalObjects.map((metal) => (
               <Group
                 key={`metal-${metal.id.value}`}

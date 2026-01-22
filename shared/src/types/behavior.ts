@@ -181,11 +181,15 @@ export interface HealthBehavior extends BaseBehavior {
   invulnerabilityTime?: number;
 }
 
+export type DragMode = 'force' | 'kinematic';
+
 export interface DraggableBehavior extends BaseBehavior {
   type: 'draggable';
-  /** Stiffness of the drag force (higher = snappier response) */
+  /** Drag mode: 'force' applies physics forces, 'kinematic' moves directly with cursor */
+  mode?: DragMode;
+  /** Stiffness of the drag force (higher = snappier response) - only used in 'force' mode */
   stiffness?: number;
-  /** Damping of the drag force (higher = less oscillation) */
+  /** Damping of the drag force (higher = less oscillation) - only used in 'force' mode */
   damping?: number;
   /** Only allow dragging if touch starts on this entity */
   requireDirectHit?: boolean;
