@@ -108,12 +108,14 @@ Roadmaps and feature plans (temporal - will be archived when implemented).
 
 | Document | Description | Status |
 |----------|-------------|--------|
+| [CURRENT WORK](planning/CURRENT_WORK.md) | Quick pickup for current focus | **active** |
 | [Implementation Roadmap](planning/implementation-roadmap.md) | Full development status tracker | active |
 | [MVP Roadmap](planning/mvp-roadmap.md) | Development phases to launch | active |
-| [Asset Integration Plan](planning/asset-integration-plan.md) | Connecting AI assets to game gen | active |
+| [Editor Redesign](planning/editor-redesign/INDEX.md) | Mobile-first editor UI | **75% complete** |
+| [Asset Integration Plan](planning/asset-integration-plan.md) | Connecting AI assets to game gen | **implemented** |
 | [Infrastructure Plan](planning/infrastructure-plan.md) | Physics/graphics on React Native | implemented |
 | [Physics2D Implementation](planning/physics2d-implementation-plan.md) | Physics2D foundation plan | implemented |
-| [Scenario API TODO](planning/scenario-api-todo.md) | Model testing tasks | active |
+| [Scenario API TODO](planning/scenario-api-todo.md) | Model testing tasks | implemented |
 
 ---
 
