@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import {
@@ -10,12 +10,10 @@ import {
   Group,
 } from "@shopify/react-native-skia";
 import {
-  createPhysics2D,
-  useSimplePhysicsLoop,
-  useForceDrag,
-  type Physics2D,
-  type BodyId,
+  usePhysicsExample,
   vec2,
+  type Physics2D,
+  type BodyRecord,
 } from "../../lib/physics2d";
 import { ViewportRoot, useViewport } from "../../lib/viewport";
 
@@ -28,56 +26,33 @@ const BRIDGE_Y = 5;
 const BOX_SIZE = 1;
 const BOX_COUNT = 5;
 
-interface SegmentState {
-  id: BodyId;
-  x: number;
-  y: number;
-  angle: number;
-}
-
-interface BoxState {
-  id: BodyId;
-  x: number;
-  y: number;
-  angle: number;
+interface EntityData {
+  type: 'segment' | 'box';
+  width?: number;
+  height?: number;
+  size?: number;
+  color: string;
 }
 
 function BridgeCanvas() {
   const canvasRef = useCanvasRef();
-  const physicsRef = useRef<Physics2D | null>(null);
-  const segmentIdsRef = useRef<BodyId[]>([]);
-  const boxIdsRef = useRef<BodyId[]>([]);
-
-  const [segments, setSegments] = useState<SegmentState[]>([]);
-  const [boxes, setBoxes] = useState<BoxState[]>([]);
-  const [isReady, setIsReady] = useState(false);
+  const vp = useViewport();
   const [bridgeWidth, setBridgeWidth] = useState(0);
 
-  const vp = useViewport();
-
-  const dragHandlers = useForceDrag(physicsRef, {
+  const { transforms, gesture, isReady } = usePhysicsExample<EntityData>({
     pixelsPerMeter: PIXELS_PER_METER,
-    stiffness: 50,
-    damping: 5,
-  });
+    enabled: vp.isReady,
+    drag: 'force',
+    dragStiffness: 50,
+    dragDamping: 5,
+    onInit: (physics: Physics2D): BodyRecord<EntityData>[] => {
+      const worldWidth = vp.world.size.width;
+      const computedBridgeWidth = worldWidth - 2;
+      const segmentWidth = computedBridgeWidth / SEGMENT_COUNT;
 
-  useEffect(() => {
-    if (!vp.isReady) return;
+      setBridgeWidth(computedBridgeWidth);
 
-    const worldWidth = vp.world.size.width;
-    const computedBridgeWidth = worldWidth - 2;
-    const segmentWidth = computedBridgeWidth / SEGMENT_COUNT;
-
-    setBridgeWidth(computedBridgeWidth);
-
-    const setupPhysics = async () => {
-      if (physicsRef.current) {
-        physicsRef.current.destroyWorld();
-      }
-
-      const physics = await createPhysics2D();
-      physics.createWorld(vec2(0, 9.8));
-      physicsRef.current = physics;
+      const bodies: BodyRecord<EntityData>[] = [];
 
       const leftAnchorId = physics.createBody({
         type: "static",
@@ -90,7 +65,6 @@ function BridgeCanvas() {
       });
 
       let prevBodyId = leftAnchorId;
-      const newSegmentIds: BodyId[] = [];
 
       for (let i = 0; i < SEGMENT_COUNT; i++) {
         const x = 1 + segmentWidth * (i + 0.5);
@@ -112,8 +86,17 @@ function BridgeCanvas() {
           anchor: vec2(1 + segmentWidth * i, BRIDGE_Y),
         });
 
+        bodies.push({
+          id: bodyId,
+          data: {
+            type: 'segment',
+            width: segmentWidth * PIXELS_PER_METER,
+            height: SEGMENT_HEIGHT * PIXELS_PER_METER,
+            color: '#8B4513',
+          },
+        });
+
         prevBodyId = bodyId;
-        newSegmentIds.push(bodyId);
       }
 
       physics.createRevoluteJoint({
@@ -123,9 +106,6 @@ function BridgeCanvas() {
         anchor: vec2(1 + computedBridgeWidth, BRIDGE_Y),
       });
 
-      segmentIdsRef.current = newSegmentIds;
-
-      const newBoxIds: BodyId[] = [];
       for (let i = 0; i < BOX_COUNT; i++) {
         const x = 1 + computedBridgeWidth / 2 + (Math.random() - 0.5);
         const y = 1 - i * 1.5;
@@ -141,70 +121,30 @@ function BridgeCanvas() {
           friction: 0.3,
         });
 
-        newBoxIds.push(boxId);
+        bodies.push({
+          id: boxId,
+          data: {
+            type: 'box',
+            size: BOX_SIZE * PIXELS_PER_METER,
+            color: '#e74c3c',
+          },
+        });
       }
-      boxIdsRef.current = newBoxIds;
 
-      setIsReady(true);
-    };
+      return bodies;
+    },
+  });
 
-    setupPhysics();
+  if (!vp.isReady || !isReady) return null;
 
-    return () => {
-      if (physicsRef.current) {
-        physicsRef.current.destroyWorld();
-        physicsRef.current = null;
-      }
-      segmentIdsRef.current = [];
-      boxIdsRef.current = [];
-      setIsReady(false);
-    };
-  }, [vp.world.size.width, vp.world.size.height, vp.isReady]);
-
-  const stepPhysics = useCallback((dt: number) => {
-    const physics = physicsRef.current;
-    if (!physics) return;
-
-    dragHandlers.applyDragForces();
-    physics.step(dt, 8, 3);
-
-    const updatedSegments = segmentIdsRef.current.map((id) => {
-      const transform = physics.getTransform(id);
-      return {
-        id,
-        x: transform.position.x * PIXELS_PER_METER,
-        y: transform.position.y * PIXELS_PER_METER,
-        angle: transform.angle,
-      };
-    });
-    setSegments(updatedSegments);
-
-    const updatedBoxes = boxIdsRef.current.map((id) => {
-      const transform = physics.getTransform(id);
-      return {
-        id,
-        x: transform.position.x * PIXELS_PER_METER,
-        y: transform.position.y * PIXELS_PER_METER,
-        angle: transform.angle,
-      };
-    });
-    setBoxes(updatedBoxes);
-  }, [dragHandlers]);
-
-  useSimplePhysicsLoop(stepPhysics, isReady);
-
-  if (!vp.isReady) return null;
-
-  const segmentWidth = bridgeWidth / SEGMENT_COUNT;
-  const segmentWidthPx = segmentWidth * PIXELS_PER_METER;
-  const segmentHeightPx = SEGMENT_HEIGHT * PIXELS_PER_METER;
-  const boxSizePx = BOX_SIZE * PIXELS_PER_METER;
+  const segments = transforms.filter(t => t.data.type === 'segment');
+  const boxes = transforms.filter(t => t.data.type === 'box');
   const anchorY = BRIDGE_Y * PIXELS_PER_METER;
   const leftAnchorX = 1 * PIXELS_PER_METER;
   const rightAnchorX = (1 + bridgeWidth) * PIXELS_PER_METER;
 
   return (
-    <GestureDetector gesture={dragHandlers.gesture}>
+    <GestureDetector gesture={gesture}>
       <View style={styles.container}>
         <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
           <Fill color="#1a1a2e" />
@@ -217,13 +157,14 @@ function BridgeCanvas() {
                 { translateY: s.y },
                 { rotate: s.angle },
               ]}
+              origin={{ x: 0, y: 0 }}
             >
               <Rect
-                x={-segmentWidthPx / 2}
-                y={-segmentHeightPx / 2}
-                width={segmentWidthPx}
-                height={segmentHeightPx}
-                color="#8B4513"
+                x={-s.data.width! / 2}
+                y={-s.data.height! / 2}
+                width={s.data.width!}
+                height={s.data.height!}
+                color={s.data.color}
               />
             </Group>
           ))}
@@ -236,13 +177,14 @@ function BridgeCanvas() {
                 { translateY: b.y },
                 { rotate: b.angle },
               ]}
+              origin={{ x: 0, y: 0 }}
             >
               <Rect
-                x={-boxSizePx / 2}
-                y={-boxSizePx / 2}
-                width={boxSizePx}
-                height={boxSizePx}
-                color="#e74c3c"
+                x={-b.data.size! / 2}
+                y={-b.data.size! / 2}
+                width={b.data.size!}
+                height={b.data.size!}
+                color={b.data.color}
               />
             </Group>
           ))}
