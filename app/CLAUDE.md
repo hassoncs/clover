@@ -43,37 +43,38 @@ pnpm run verify:ios    # Full iOS verification (doctor + pods + build)
 
 ### Skia Component Loading (CRITICAL)
 
-React Native Skia components that use `Skia.RuntimeEffect.Make()` at module level **must** be lazy-loaded using `<WithSkiaWeb />` to ensure CanvasKit WASM is initialized before the component module executes.
+React Native Skia components **must** be lazy-loaded using `<WithSkiaWeb />` to ensure CanvasKit WASM is initialized before the component module executes.
 
-**Correct pattern in `app/` pages:**
+> **Full documentation:** [Skia Import Guard System](../docs/shared/planning/skia-import-guard-system.md)
+
+**The Golden Rules:**
+
+1. **NEVER** import from `@shopify/react-native-skia` at top-level in regular files
+2. **NEVER** export Skia components from barrel files (`index.ts`)
+3. **ALWAYS** use dynamic `import()` inside `WithSkia` wrapper
+
+**Correct pattern:**
 
 ```tsx
-import { WithSkiaWeb } from "@shopify/react-native-skia/lib/module/web";
-
-export default function Page() {
-  return (
-    <WithSkiaWeb
-      getComponent={() => import("../components/skia-component")}
-      fallback={<ActivityIndicator />}
-    />
-  );
-}
+// In a page or container
+<WithSkia
+  getComponent={() => import("../components/MySkiaComponent")}
+  fallback={<ActivityIndicator />}
+/>
 ```
 
-**Component file location requirements:**
-- Skia components MUST be outside `app/` directory (e.g., `components/`)
-- This is required for Expo Router's code-splitting to work with `WithSkiaWeb`
-
-**Why this works:**
-1. `<WithSkiaWeb />` loads CanvasKit WASM first
-2. Waits for Skia initialization
-3. Only then imports the component via `getComponent()`
-4. Ensures module-level `Skia.RuntimeEffect.Make()` has access to initialized Skia
-
 **Do NOT:**
-- Use `React.lazy()` directly for Skia components
-- Place Skia components inside `app/` directory
-- Import Skia components directly without `<WithSkiaWeb />`
+
+```tsx
+// WRONG: Top-level import crashes web before WASM initializes
+import { Canvas } from "@shopify/react-native-skia";
+
+// WRONG: Barrel export pulls in Skia transitively
+// In index.ts:
+export { MySkiaComponent } from "./MySkiaComponent";
+```
+
+**Why this matters:** Barrel exports are especially dangerous. If `index.ts` exports a Skia component, importing *anything* from that barrel may pull in Skia before WASM is ready, crashing the web app.
 
 ### Deployment Configuration
 

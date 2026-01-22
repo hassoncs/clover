@@ -39,6 +39,13 @@ Quick-lookup documentation for tools and configurations.
 | [Metro Port Configuration](shared/reference/metro-port-configuration.md) | Custom Metro port setup |
 | [Template Features](shared/reference/template-features.md) | Skia + NativeWind template features |
 
+### Planning
+Roadmaps and feature plans.
+
+| Document | Description |
+|----------|-------------|
+| [Skia Import Guard System](shared/planning/skia-import-guard-system.md) | Preventing Skia/WASM initialization crashes |
+
 ### Troubleshooting
 Known issues and their solutions.
 

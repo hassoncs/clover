@@ -5,13 +5,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { trpc } from "@/lib/trpc/client";
 import type { GameDefinition } from "@slopcade/shared";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import {
-  EditorProvider,
-  EditorTopBar,
-  BottomDock,
-  StageContainer,
-  BottomSheetHost,
-} from "@/components/editor";
+import { EditorProvider } from "@/components/editor/EditorProvider";
+import { EditorTopBar } from "@/components/editor/EditorTopBar";
+import { BottomDock } from "@/components/editor/BottomDock";
+import { StageContainer } from "@/components/editor/StageContainer";
+import { BottomSheetHost } from "@/components/editor/BottomSheetHost";
 
 export default function EditorScreen() {
   const router = useRouter();
