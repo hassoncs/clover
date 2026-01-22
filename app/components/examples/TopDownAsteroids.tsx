@@ -4,7 +4,8 @@ import {
   Canvas,
   Rect,
   Circle,
-  Polygon,
+  Path,
+  Skia,
   useCanvasRef,
   Fill,
   Group,
@@ -19,6 +20,17 @@ import {
 import { ViewportRoot, useViewport } from "../../lib/viewport";
 
 const PIXELS_PER_METER = 50;
+
+function createPolygonPath(points: { x: number; y: number }[]) {
+  if (points.length < 3) return null;
+  const path = Skia.Path.Make();
+  path.moveTo(points[0].x, points[0].y);
+  for (let i = 1; i < points.length; i++) {
+    path.lineTo(points[i].x, points[i].y);
+  }
+  path.close();
+  return path;
+}
 
 const SHIP_SIZE = 0.5;
 const ASTEROID_COUNT = 8;
@@ -65,7 +77,7 @@ function TopDownAsteroidsCanvas() {
 
   const vp = useViewport();
 
-  const generateAsteroidVertices = (size: number): { x: number; y: number }[] => {
+  const generateAsteroidVertices = useCallback((size: number): { x: number; y: number }[] => {
     const vertices: { x: number; y: number }[] = [];
     const numVertices = 8 + Math.floor(Math.random() * 4);
     for (let i = 0; i < numVertices; i++) {
@@ -77,7 +89,7 @@ function TopDownAsteroidsCanvas() {
       });
     }
     return vertices;
-  };
+  }, []);
 
   const handleKeyDown = useCallback((event: any) => {
     if (event.key === "ArrowUp" || event.key === "w") {
@@ -185,7 +197,7 @@ function TopDownAsteroidsCanvas() {
       const newAsteroids: AsteroidState[] = [];
 
       for (let i = 0; i < ASTEROID_COUNT; i++) {
-        let x, y;
+        let x: number, y: number;
         do {
           x = Math.random() * worldWidth;
           y = Math.random() * worldHeight;
@@ -248,7 +260,7 @@ function TopDownAsteroidsCanvas() {
       asteroidIdsRef.current = [];
       setIsReady(false);
     };
-  }, [vp.world.size.width, vp.world.size.height, vp.isReady, handleKeyDown, handleKeyUp]);
+  }, [vp.world.size.width, vp.world.size.height, vp.isReady, handleKeyDown, handleKeyUp, generateAsteroidVertices]);
 
   const stepPhysics = useCallback((dt: number) => {
     const physics = physicsRef.current;
@@ -301,32 +313,32 @@ function TopDownAsteroidsCanvas() {
                 { rotate: ship.angle },
               ]}
             >
-              <Polygon
-                points={[
+              <Path
+                path={createPolygonPath([
                   { x: 0, y: -SHIP_SIZE * PIXELS_PER_METER },
                   { x: -SHIP_SIZE * 0.7 * PIXELS_PER_METER, y: SHIP_SIZE * 0.7 * PIXELS_PER_METER },
                   { x: SHIP_SIZE * 0.7 * PIXELS_PER_METER, y: SHIP_SIZE * 0.7 * PIXELS_PER_METER },
-                ]}
+                ])!}
                 color="#00ff00"
               />
             </Group>
           )}
 
           {/* Asteroids */}
-          {asteroids.map((asteroid, index) => (
+          {asteroids.map((asteroid) => (
             <Group
-              key={`asteroid-${index}`}
+              key={`asteroid-${asteroid.id}`}
               transform={[
                 { translateX: asteroid.x },
                 { translateY: asteroid.y },
                 { rotate: asteroid.angle },
               ]}
             >
-              <Polygon
-                points={asteroid.vertices.map((v) => ({
+              <Path
+                path={createPolygonPath(asteroid.vertices.map((v) => ({
                   x: v.x * PIXELS_PER_METER,
                   y: v.y * PIXELS_PER_METER,
-                }))}
+                })))!}
                 color="#888888"
               />
             </Group>

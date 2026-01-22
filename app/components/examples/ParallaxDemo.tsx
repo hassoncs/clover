@@ -1,7 +1,7 @@
-import { useCallback, useState, useRef, useEffect } from "react";
+import { useCallback, useState, useRef, useEffect, useMemo } from "react";
 import { View, StyleSheet, Text, TouchableOpacity, Platform, Switch, ScrollView } from "react-native";
 import { Canvas, useCanvasRef } from "@shopify/react-native-skia";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { GestureHandlerRootView, GestureDetector, Gesture } from "react-native-gesture-handler";
 import {
   ParallaxBackground,
   createParallaxConfig,
@@ -137,27 +137,19 @@ function ParallaxCanvas() {
     };
   }, [isAutoScrolling]);
 
-  const handleTouchStart = useCallback((event: any) => {
-    const touch = event.nativeEvent;
-    lastTouchRef.current = { x: touch.pageX, y: touch.pageY };
-    setIsAutoScrolling(false);
-  }, []);
-
-  const handleTouchMove = useCallback((event: any) => {
-    if (!lastTouchRef.current) return;
-    
-    const touch = event.nativeEvent;
-    const deltaX = (touch.pageX - lastTouchRef.current.x) / PIXELS_PER_METER;
-    const deltaY = (touch.pageY - lastTouchRef.current.y) / PIXELS_PER_METER;
-    
-    setCameraX(prev => prev - deltaX);
-    setCameraY(prev => prev - deltaY);
-    
-    lastTouchRef.current = { x: touch.pageX, y: touch.pageY };
-  }, []);
-
-  const handleTouchEnd = useCallback(() => {
-    lastTouchRef.current = null;
+  const panGesture = useMemo(() => {
+    return Gesture.Pan()
+      .runOnJS(true)
+      .onStart(() => {
+        setIsAutoScrolling(false);
+      })
+      .onUpdate((e) => {
+        const deltaX = e.changeX / PIXELS_PER_METER;
+        const deltaY = e.changeY / PIXELS_PER_METER;
+        
+        setCameraX(prev => prev - deltaX);
+        setCameraY(prev => prev - deltaY);
+      });
   }, []);
 
   const handleZoomIn = useCallback(() => {
@@ -254,25 +246,22 @@ function ParallaxCanvas() {
       </View>
 
       {/* Canvas */}
-      <View
-        style={styles.canvasContainer}
-        onStartShouldSetResponder={() => true}
-        onResponderGrant={handleTouchStart}
-        onResponderMove={handleTouchMove}
-        onResponderRelease={handleTouchEnd}
-        onResponderTerminate={handleTouchEnd}
-      >
-        <Canvas ref={canvasRef} style={styles.canvas}>
-          <ParallaxBackground
-            config={activeConfig}
-            cameraX={cameraX}
-            cameraY={cameraY}
-            cameraZoom={cameraZoom}
-            viewportWidth={vp.size.width}
-            viewportHeight={vp.size.height}
-            pixelsPerMeter={PIXELS_PER_METER}
-          />
-        </Canvas>
+      <View style={styles.canvasContainer}>
+        <GestureDetector gesture={panGesture}>
+          <View style={{ flex: 1 }}>
+            <Canvas ref={canvasRef} style={styles.canvas}>
+              <ParallaxBackground
+                config={activeConfig}
+                cameraX={cameraX}
+                cameraY={cameraY}
+                cameraZoom={cameraZoom}
+                viewportWidth={vp.size.width}
+                viewportHeight={vp.size.height}
+                pixelsPerMeter={PIXELS_PER_METER}
+              />
+            </Canvas>
+          </View>
+        </GestureDetector>
 
         <View style={styles.overlay}>
           <Text style={styles.overlayText}>

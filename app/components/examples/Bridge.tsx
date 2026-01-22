@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { View, StyleSheet } from "react-native";
+import { GestureDetector } from "react-native-gesture-handler";
 import {
   Canvas,
   Rect,
@@ -203,59 +204,54 @@ function BridgeCanvas() {
   const rightAnchorX = (1 + bridgeWidth) * PIXELS_PER_METER;
 
   return (
-    <View
-      style={styles.container}
-      onStartShouldSetResponder={() => true}
-      onResponderGrant={dragHandlers.onTouchStart}
-      onResponderMove={dragHandlers.onTouchMove}
-      onResponderRelease={dragHandlers.onTouchEnd}
-      onResponderTerminate={dragHandlers.onTouchEnd}
-    >
-      <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
-        <Fill color="#1a1a2e" />
+    <GestureDetector gesture={dragHandlers.gesture}>
+      <View style={styles.container}>
+        <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
+          <Fill color="#1a1a2e" />
 
-        {segments.map((s) => (
-          <Group
-            key={`segment-${s.id.value}`}
-            transform={[
-              { translateX: s.x },
-              { translateY: s.y },
-              { rotate: s.angle },
-            ]}
-          >
-            <Rect
-              x={-segmentWidthPx / 2}
-              y={-segmentHeightPx / 2}
-              width={segmentWidthPx}
-              height={segmentHeightPx}
-              color="#8B4513"
-            />
-          </Group>
-        ))}
+          {segments.map((s) => (
+            <Group
+              key={`segment-${s.id.value}`}
+              transform={[
+                { translateX: s.x },
+                { translateY: s.y },
+                { rotate: s.angle },
+              ]}
+            >
+              <Rect
+                x={-segmentWidthPx / 2}
+                y={-segmentHeightPx / 2}
+                width={segmentWidthPx}
+                height={segmentHeightPx}
+                color="#8B4513"
+              />
+            </Group>
+          ))}
 
-        {boxes.map((b) => (
-          <Group
-            key={`box-${b.id.value}`}
-            transform={[
-              { translateX: b.x },
-              { translateY: b.y },
-              { rotate: b.angle },
-            ]}
-          >
-            <Rect
-              x={-boxSizePx / 2}
-              y={-boxSizePx / 2}
-              width={boxSizePx}
-              height={boxSizePx}
-              color="#e74c3c"
-            />
-          </Group>
-        ))}
+          {boxes.map((b) => (
+            <Group
+              key={`box-${b.id.value}`}
+              transform={[
+                { translateX: b.x },
+                { translateY: b.y },
+                { rotate: b.angle },
+              ]}
+            >
+              <Rect
+                x={-boxSizePx / 2}
+                y={-boxSizePx / 2}
+                width={boxSizePx}
+                height={boxSizePx}
+                color="#e74c3c"
+              />
+            </Group>
+          ))}
 
-        <Circle cx={leftAnchorX} cy={anchorY} r={5} color="#fff" />
-        <Circle cx={rightAnchorX} cy={anchorY} r={5} color="#fff" />
-      </Canvas>
-    </View>
+          <Circle cx={leftAnchorX} cy={anchorY} r={5} color="#fff" />
+          <Circle cx={rightAnchorX} cy={anchorY} r={5} color="#fff" />
+        </Canvas>
+      </View>
+    </GestureDetector>
   );
 }
 

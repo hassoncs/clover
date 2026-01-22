@@ -78,6 +78,291 @@ export class Box2DAdapter implements Physics2D {
     if (!this.box2d) throw new Error('Box2D not initialized');
     const g = this.box2d.b2Vec2(gravity.x, gravity.y);
     this.world = this.box2d.b2World(g);
+    
+    this.setupContactListener();
+  }
+  
+  private setupContactListener(): void {
+    if (!this.box2d || !this.world) return;
+    
+    const box2d = this.box2d as any;
+    const world = this.world as any;
+    const self = this;
+    
+    const isWasm = typeof box2d.wrapPointer === 'function';
+    const isNative = typeof box2d.JSContactListener === 'function' && !isWasm;
+    
+    if (isNative) {
+      this.setupNativeContactListener();
+      return;
+    }
+    
+    if (!box2d.JSContactListener || !box2d.wrapPointer || !box2d.b2Contact) {
+      return;
+    }
+    
+    const contactListener = Object.assign(new box2d.JSContactListener(), {
+      BeginContact(contactPtr: number) {
+        const contact = box2d.wrapPointer(contactPtr, box2d.b2Contact);
+        const fixtureA = contact.GetFixtureA();
+        const fixtureB = contact.GetFixtureB();
+        
+        if (!fixtureA || !fixtureB) return;
+        
+        const bodyA = fixtureA.GetBody();
+        const bodyB = fixtureB.GetBody();
+        
+        if (!bodyA || !bodyB) return;
+        
+        let bodyIdA = self.box2dBodyToId.get(bodyA);
+        let bodyIdB = self.box2dBodyToId.get(bodyB);
+        
+        // Fallback to UserData if WeakMap lookup fails
+        if (bodyIdA === undefined && typeof (bodyA as any).GetUserData === 'function') {
+          const userData = (bodyA as any).GetUserData();
+          if (typeof userData === 'number') bodyIdA = userData;
+        }
+        if (bodyIdB === undefined && typeof (bodyB as any).GetUserData === 'function') {
+          const userData = (bodyB as any).GetUserData();
+          if (typeof userData === 'number') bodyIdB = userData;
+        }
+        
+        if (bodyIdA === undefined || bodyIdB === undefined) return;
+        
+        const isSensorA = fixtureA.IsSensor();
+        const isSensorB = fixtureB.IsSensor();
+        
+        if (isSensorA || isSensorB) {
+          const sensorFixture = isSensorA ? fixtureA : fixtureB;
+          const otherBody = isSensorA ? bodyB : bodyA;
+          const otherFixture = isSensorA ? fixtureB : fixtureA;
+          const otherBodyId = isSensorA ? bodyIdB : bodyIdA;
+          
+          const sensorColliderId = self.findColliderIdByFixture(sensorFixture);
+          const otherColliderId = self.findColliderIdByFixture(otherFixture);
+          
+          if (sensorColliderId && otherColliderId) {
+            const event: SensorEvent = {
+              sensor: sensorColliderId,
+              otherBody: createBodyId(otherBodyId),
+              otherCollider: otherColliderId,
+            };
+            for (const cb of self.sensorBeginCallbacks) {
+              cb(event);
+            }
+          }
+        } else {
+          const event: CollisionEvent = {
+            bodyA: createBodyId(bodyIdA),
+            bodyB: createBodyId(bodyIdB),
+            colliderA: self.findColliderIdByFixture(fixtureA) ?? createColliderId(0),
+            colliderB: self.findColliderIdByFixture(fixtureB) ?? createColliderId(0),
+            contacts: [],
+          };
+          
+          for (const cb of self.collisionBeginCallbacks) {
+            cb(event);
+          }
+        }
+      },
+      
+      EndContact(contactPtr: number) {
+        const contact = box2d.wrapPointer(contactPtr, box2d.b2Contact);
+        const fixtureA = contact.GetFixtureA();
+        const fixtureB = contact.GetFixtureB();
+        
+        if (!fixtureA || !fixtureB) return;
+        
+        const bodyA = fixtureA.GetBody();
+        const bodyB = fixtureB.GetBody();
+        
+        if (!bodyA || !bodyB) return;
+        
+        let bodyIdA = self.box2dBodyToId.get(bodyA);
+        let bodyIdB = self.box2dBodyToId.get(bodyB);
+        
+        // Fallback to UserData if WeakMap lookup fails
+        if (bodyIdA === undefined && typeof (bodyA as any).GetUserData === 'function') {
+          const userData = (bodyA as any).GetUserData();
+          if (typeof userData === 'number') bodyIdA = userData;
+        }
+        if (bodyIdB === undefined && typeof (bodyB as any).GetUserData === 'function') {
+          const userData = (bodyB as any).GetUserData();
+          if (typeof userData === 'number') bodyIdB = userData;
+        }
+        
+        if (bodyIdA === undefined || bodyIdB === undefined) return;
+        
+        const isSensorA = fixtureA.IsSensor();
+        const isSensorB = fixtureB.IsSensor();
+        
+        if (isSensorA || isSensorB) {
+          const sensorFixture = isSensorA ? fixtureA : fixtureB;
+          const otherBody = isSensorA ? bodyB : bodyA;
+          const otherFixture = isSensorA ? fixtureB : fixtureA;
+          const otherBodyId = isSensorA ? bodyIdB : bodyIdA;
+          
+          const sensorColliderId = self.findColliderIdByFixture(sensorFixture);
+          const otherColliderId = self.findColliderIdByFixture(otherFixture);
+          
+          if (sensorColliderId && otherColliderId) {
+            const event: SensorEvent = {
+              sensor: sensorColliderId,
+              otherBody: createBodyId(otherBodyId),
+              otherCollider: otherColliderId,
+            };
+            for (const cb of self.sensorEndCallbacks) {
+              cb(event);
+            }
+          }
+        } else {
+          const event: CollisionEvent = {
+            bodyA: createBodyId(bodyIdA),
+            bodyB: createBodyId(bodyIdB),
+            colliderA: self.findColliderIdByFixture(fixtureA) ?? createColliderId(0),
+            colliderB: self.findColliderIdByFixture(fixtureB) ?? createColliderId(0),
+            contacts: [],
+          };
+          
+          for (const cb of self.collisionEndCallbacks) {
+            cb(event);
+          }
+        }
+      },
+      
+      PreSolve(_contactPtr: number, _oldManifoldPtr: number) {},
+      PostSolve(_contactPtr: number, _impulsePtr: number) {},
+    });
+    
+    this.world.SetContactListener(contactListener);
+  }
+  
+  private setupNativeContactListener(): void {
+    if (!this.box2d || !this.world) return;
+    
+    const box2d = this.box2d as any;
+    const world = this.world as any;
+    const self = this;
+    
+    const listener = box2d.JSContactListener();
+    
+    listener.BeginContact = (contact: any) => {
+      const fixtureA = contact.GetFixtureA();
+      const fixtureB = contact.GetFixtureB();
+      
+      if (!fixtureA || !fixtureB) return;
+      
+      const bodyA = fixtureA.GetBody();
+      const bodyB = fixtureB.GetBody();
+      
+      if (!bodyA || !bodyB) return;
+      
+      const bodyIdA = bodyA.GetUserData();
+      const bodyIdB = bodyB.GetUserData();
+      
+      if (!bodyIdA || !bodyIdB) return;
+      
+      const isSensorA = fixtureA.IsSensor();
+      const isSensorB = fixtureB.IsSensor();
+      
+      if (isSensorA || isSensorB) {
+        const sensorFixture = isSensorA ? fixtureA : fixtureB;
+        const otherFixture = isSensorA ? fixtureB : fixtureA;
+        const otherBodyId = isSensorA ? bodyIdB : bodyIdA;
+        
+        const sensorColliderId = self.findColliderIdByFixture(sensorFixture);
+        const otherColliderId = self.findColliderIdByFixture(otherFixture);
+        
+        if (sensorColliderId && otherColliderId) {
+          const event: SensorEvent = {
+            sensor: sensorColliderId,
+            otherBody: createBodyId(otherBodyId),
+            otherCollider: otherColliderId,
+          };
+          for (const cb of self.sensorBeginCallbacks) {
+            cb(event);
+          }
+        }
+      } else {
+        const event: CollisionEvent = {
+          bodyA: createBodyId(bodyIdA),
+          bodyB: createBodyId(bodyIdB),
+          colliderA: self.findColliderIdByFixture(fixtureA) ?? createColliderId(0),
+          colliderB: self.findColliderIdByFixture(fixtureB) ?? createColliderId(0),
+          contacts: [],
+        };
+        
+        for (const cb of self.collisionBeginCallbacks) {
+          cb(event);
+        }
+      }
+    };
+    
+    listener.EndContact = (contact: any) => {
+      const fixtureA = contact.GetFixtureA();
+      const fixtureB = contact.GetFixtureB();
+      
+      if (!fixtureA || !fixtureB) return;
+      
+      const bodyA = fixtureA.GetBody();
+      const bodyB = fixtureB.GetBody();
+      
+      if (!bodyA || !bodyB) return;
+      
+      const bodyIdA = bodyA.GetUserData();
+      const bodyIdB = bodyB.GetUserData();
+      
+      if (!bodyIdA || !bodyIdB) return;
+      
+      const isSensorA = fixtureA.IsSensor();
+      const isSensorB = fixtureB.IsSensor();
+      
+      if (isSensorA || isSensorB) {
+        const sensorFixture = isSensorA ? fixtureA : fixtureB;
+        const otherFixture = isSensorA ? fixtureB : fixtureA;
+        const otherBodyId = isSensorA ? bodyIdB : bodyIdA;
+        
+        const sensorColliderId = self.findColliderIdByFixture(sensorFixture);
+        const otherColliderId = self.findColliderIdByFixture(otherFixture);
+        
+        if (sensorColliderId && otherColliderId) {
+          const event: SensorEvent = {
+            sensor: sensorColliderId,
+            otherBody: createBodyId(otherBodyId),
+            otherCollider: otherColliderId,
+          };
+          for (const cb of self.sensorEndCallbacks) {
+            cb(event);
+          }
+        }
+      } else {
+        const event: CollisionEvent = {
+          bodyA: createBodyId(bodyIdA),
+          bodyB: createBodyId(bodyIdB),
+          colliderA: self.findColliderIdByFixture(fixtureA) ?? createColliderId(0),
+          colliderB: self.findColliderIdByFixture(fixtureB) ?? createColliderId(0),
+          contacts: [],
+        };
+        
+        for (const cb of self.collisionEndCallbacks) {
+          cb(event);
+        }
+      }
+    };
+    
+    listener.PreSolve = () => {};
+    listener.PostSolve = () => {};
+    
+    world.SetContactListener(listener);
+  }
+  
+  private findColliderIdByFixture(fixture: any): ColliderId | null {
+    for (const [id, record] of this.colliders) {
+      if (record.fixture === fixture) {
+        return createColliderId(id);
+      }
+    }
+    return null;
   }
 
   destroyWorld(): void {
@@ -158,6 +443,10 @@ export class Box2DAdapter implements Physics2D {
     
     const body = this.world.CreateBody(bodyDef);
     const id = this.nextBodyId++;
+    
+    if (typeof (body as any).SetUserData === 'function') {
+      (body as any).SetUserData(id);
+    }
     
     this.bodies.set(id, {
       body,
@@ -432,9 +721,6 @@ export class Box2DAdapter implements Physics2D {
     const body = bodyRecord.body as any;
     if (typeof body.SetAwake === 'function') body.SetAwake(true);
     
-    const mass = typeof body.GetMass === 'function' ? body.GetMass() : 'unknown';
-    console.log('[Box2DAdapter] Body mass:', mass);
-    
     const jointDef = this.box2d.b2MouseJointDef() as any;
     const target = this.box2d.b2Vec2(def.target.x, def.target.y);
     
@@ -449,8 +735,6 @@ export class Box2DAdapter implements Physics2D {
       this.setJointDefProperty(jointDef, 'dampingRatio', def.damping);
     }
     
-    console.log('[Box2DAdapter] MouseJoint def - maxForce:', def.maxForce, 'stiffness:', def.stiffness, 'damping:', def.damping);
-    
     const genericJoint = this.world.CreateJoint(jointDef);
     const id = this.nextJointId++;
     
@@ -461,7 +745,6 @@ export class Box2DAdapter implements Physics2D {
     let setTargetWorks = false;
     if (this.box2d.verifyMouseJoint) {
       setTargetWorks = this.box2d.verifyMouseJoint(mouseJoint as any, def.target.x + 0.001, def.target.y);
-      console.log('[Box2DAdapter] MouseJoint SetTarget verification:', setTargetWorks ? 'WORKING' : 'BROKEN - will use force fallback');
     }
     
     this.joints.set(id, { 
@@ -536,7 +819,9 @@ export class Box2DAdapter implements Physics2D {
 
   queryPoint(point: Vec2): BodyId | null {
     for (const [id, record] of this.bodies) {
-      const bodyType = (record.body as any).GetType?.() ?? 0;
+      const body = record.body as any;
+      const bodyType = typeof body.GetType === 'function' ? body.GetType() : 0;
+      
       if (bodyType === 0) continue;
       
       const pos = record.body.GetPosition();
@@ -555,6 +840,7 @@ export class Box2DAdapter implements Physics2D {
         }
       }
     }
+    
     return null;
   }
 
@@ -702,5 +988,48 @@ export class Box2DAdapter implements Physics2D {
       }
     }
     return results;
+  }
+
+  debugDumpAllBodies(): void {
+    console.log('[Box2DAdapter] ========== DEBUG DUMP ALL BODIES ==========');
+    console.log(`[Box2DAdapter] Total bodies in map: ${this.bodies.size}`);
+    
+    for (const [id, record] of this.bodies) {
+      const body = record.body as any;
+      
+      const methods = {
+        GetType: typeof body.GetType,
+        GetPosition: typeof body.GetPosition,
+        GetAngle: typeof body.GetAngle,
+        GetLinearVelocity: typeof body.GetLinearVelocity,
+      };
+      
+      console.log(`[Box2DAdapter] Body ${id} methods:`, JSON.stringify(methods));
+      
+      if (typeof body.GetType === 'function') {
+        try {
+          const bodyType = body.GetType();
+          console.log(`[Box2DAdapter] Body ${id} GetType() = ${bodyType}`);
+        } catch (e) {
+          console.log(`[Box2DAdapter] Body ${id} GetType() ERROR:`, e);
+        }
+      }
+      
+      if (typeof body.GetPosition === 'function') {
+        try {
+          const pos = body.GetPosition();
+          console.log(`[Box2DAdapter] Body ${id} GetPosition() = { x: ${pos?.x}, y: ${pos?.y} }`);
+        } catch (e) {
+          console.log(`[Box2DAdapter] Body ${id} GetPosition() ERROR:`, e);
+        }
+      }
+      
+      console.log(`[Box2DAdapter] Body ${id} fixtures: ${record.fixtures.size}`);
+      for (const [fixId, fixRecord] of record.fixtures) {
+        console.log(`[Box2DAdapter]   Fixture ${fixId}: shape=${fixRecord.shape.type}, isSensor=${fixRecord.isSensor}`);
+      }
+    }
+    
+    console.log('[Box2DAdapter] ========== END DEBUG DUMP ==========');
   }
 }

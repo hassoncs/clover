@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { View, StyleSheet } from "react-native";
+import { GestureDetector } from "react-native-gesture-handler";
 import {
   Canvas,
   Rect,
@@ -179,49 +180,44 @@ function DominoesCanvas() {
   const ballRadiusPx = BALL_RADIUS * PIXELS_PER_METER;
 
   return (
-    <View
-      style={styles.container}
-      onStartShouldSetResponder={() => true}
-      onResponderGrant={dragHandlers.onTouchStart}
-      onResponderMove={dragHandlers.onTouchMove}
-      onResponderRelease={dragHandlers.onTouchEnd}
-      onResponderTerminate={dragHandlers.onTouchEnd}
-    >
-      <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
-        <Fill color="#1a1a2e" />
+    <GestureDetector gesture={dragHandlers.gesture}>
+      <View style={styles.container}>
+        <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
+          <Fill color="#1a1a2e" />
 
-        <Rect
-          x={0}
-          y={groundY * PIXELS_PER_METER}
-          width={vp.size.width}
-          height={PIXELS_PER_METER}
-          color="#7f8c8d"
-        />
+          <Rect
+            x={0}
+            y={groundY * PIXELS_PER_METER}
+            width={vp.size.width}
+            height={PIXELS_PER_METER}
+            color="#7f8c8d"
+          />
 
-        {dominoes.map((d) => (
-          <Group
-            key={`domino-${d.id.value}`}
-            transform={[
-              { translateX: d.x },
-              { translateY: d.y },
-              { rotate: d.angle },
-            ]}
-          >
-            <Rect
-              x={-dominoWidthPx / 2}
-              y={-dominoHeightPx / 2}
-              width={dominoWidthPx}
-              height={dominoHeightPx}
-              color="#e67e22"
-            />
-          </Group>
-        ))}
+          {dominoes.map((d) => (
+            <Group
+              key={`domino-${d.id.value}`}
+              transform={[
+                { translateX: d.x },
+                { translateY: d.y },
+                { rotate: d.angle },
+              ]}
+            >
+              <Rect
+                x={-dominoWidthPx / 2}
+                y={-dominoHeightPx / 2}
+                width={dominoWidthPx}
+                height={dominoHeightPx}
+                color="#e67e22"
+              />
+            </Group>
+          ))}
 
-        {ball && (
-          <Circle cx={ball.x} cy={ball.y} r={ballRadiusPx} color="#2c3e50" />
-        )}
-      </Canvas>
-    </View>
+          {ball && (
+            <Circle cx={ball.x} cy={ball.y} r={ballRadiusPx} color="#2c3e50" />
+          )}
+        </Canvas>
+      </View>
+    </GestureDetector>
   );
 }
 

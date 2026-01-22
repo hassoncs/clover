@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { View, StyleSheet } from "react-native";
+import { GestureDetector } from "react-native-gesture-handler";
 import {
   Canvas,
   Circle,
@@ -163,56 +164,51 @@ function PendulumCanvas() {
   const armHeightPx = ARM_WIDTH * PIXELS_PER_METER;
 
   return (
-    <View
-      style={styles.container}
-      onStartShouldSetResponder={() => true}
-      onResponderGrant={dragHandlers.onTouchStart}
-      onResponderMove={dragHandlers.onTouchMove}
-      onResponderRelease={dragHandlers.onTouchEnd}
-      onResponderTerminate={dragHandlers.onTouchEnd}
-    >
-      <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
-        <Fill color="#1a1a2e" />
+    <GestureDetector gesture={dragHandlers.gesture}>
+      <View style={styles.container}>
+        <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
+          <Fill color="#1a1a2e" />
 
-        <Circle cx={anchorScreenX} cy={anchorScreenY} r={8} color="#666" />
+          <Circle cx={anchorScreenX} cy={anchorScreenY} r={8} color="#666" />
 
-        {arm1 && (
-          <Group
-            transform={[
-              { translateX: arm1.x },
-              { translateY: arm1.y },
-              { rotate: arm1.angle },
-            ]}
-          >
-            <Rect
-              x={-armWidthPx / 2}
-              y={-armHeightPx / 2}
-              width={armWidthPx}
-              height={armHeightPx}
-              color="#FF6B6B"
-            />
-          </Group>
-        )}
+          {arm1 && (
+            <Group
+              transform={[
+                { translateX: arm1.x },
+                { translateY: arm1.y },
+                { rotate: arm1.angle },
+              ]}
+            >
+              <Rect
+                x={-armWidthPx / 2}
+                y={-armHeightPx / 2}
+                width={armWidthPx}
+                height={armHeightPx}
+                color="#FF6B6B"
+              />
+            </Group>
+          )}
 
-        {arm2 && (
-          <Group
-            transform={[
-              { translateX: arm2.x },
-              { translateY: arm2.y },
-              { rotate: arm2.angle },
-            ]}
-          >
-            <Rect
-              x={-armWidthPx / 2}
-              y={-armHeightPx / 2}
-              width={armWidthPx}
-              height={armHeightPx}
-              color="#4ECDC4"
-            />
-          </Group>
-        )}
-      </Canvas>
-    </View>
+          {arm2 && (
+            <Group
+              transform={[
+                { translateX: arm2.x },
+                { translateY: arm2.y },
+                { rotate: arm2.angle },
+              ]}
+            >
+              <Rect
+                x={-armWidthPx / 2}
+                y={-armHeightPx / 2}
+                width={armWidthPx}
+                height={armHeightPx}
+                color="#4ECDC4"
+              />
+            </Group>
+          )}
+        </Canvas>
+      </View>
+    </GestureDetector>
   );
 }
 

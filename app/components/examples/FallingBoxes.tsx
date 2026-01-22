@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { View, StyleSheet } from "react-native";
+import { GestureDetector } from "react-native-gesture-handler";
 import {
   Canvas,
   Rect,
@@ -196,46 +197,41 @@ function FallingBoxesCanvas() {
   const groundY = vp.size.height - GROUND_HEIGHT * PIXELS_PER_METER;
 
   return (
-    <View
-      style={styles.container}
-      onStartShouldSetResponder={() => true}
-      onResponderGrant={dragHandlers.onTouchStart}
-      onResponderMove={dragHandlers.onTouchMove}
-      onResponderRelease={dragHandlers.onTouchEnd}
-      onResponderTerminate={dragHandlers.onTouchEnd}
-    >
-      <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
-        <Fill color="#1a1a2e" />
+    <GestureDetector gesture={dragHandlers.gesture}>
+      <View style={styles.container}>
+        <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
+          <Fill color="#1a1a2e" />
 
-        <Rect
-          x={0}
-          y={groundY}
-          width={vp.size.width}
-          height={GROUND_HEIGHT * PIXELS_PER_METER}
-          color="#2d3436"
-        />
+          <Rect
+            x={0}
+            y={groundY}
+            width={vp.size.width}
+            height={GROUND_HEIGHT * PIXELS_PER_METER}
+            color="#2d3436"
+          />
 
-        {boxes.map((box) => (
-          <Group
-            key={`box-${box.id.value}`}
-            transform={[
-              { translateX: box.x },
-              { translateY: box.y },
-              { rotate: box.angle },
-            ]}
-            origin={{ x: 0, y: 0 }}
-          >
-            <Rect
-              x={-box.width / 2}
-              y={-box.height / 2}
-              width={box.width}
-              height={box.height}
-              color={box.isDragging ? "#ffffff" : box.color}
-            />
-          </Group>
-        ))}
-      </Canvas>
-    </View>
+          {boxes.map((box) => (
+            <Group
+              key={`box-${box.id.value}`}
+              transform={[
+                { translateX: box.x },
+                { translateY: box.y },
+                { rotate: box.angle },
+              ]}
+              origin={{ x: 0, y: 0 }}
+            >
+              <Rect
+                x={-box.width / 2}
+                y={-box.height / 2}
+                width={box.width}
+                height={box.height}
+                color={box.isDragging ? "#ffffff" : box.color}
+              />
+            </Group>
+          ))}
+        </Canvas>
+      </View>
+    </GestureDetector>
   );
 }
 

@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { GestureDetector, Gesture } from "react-native-gesture-handler";
 import {
   Canvas,
   Rect,
@@ -63,95 +64,95 @@ function SlingshotCanvas() {
 
   const vp = useViewport();
 
-  const handleTouchStart = useCallback((event: any) => {
-    const { locationX, locationY } = event.nativeEvent;
-    const worldX = locationX / PIXELS_PER_METER;
-    const worldY = locationY / PIXELS_PER_METER;
+  const gesture = useMemo(() => {
+    return Gesture.Pan()
+      .runOnJS(true)
+      .onStart((event) => {
+        const worldX = event.x / PIXELS_PER_METER;
+        const worldY = event.y / PIXELS_PER_METER;
 
-    // Check if touching near slingshot
-    const dx = worldX - SLINGSHOT_POS.x;
-    const dy = worldY - SLINGSHOT_POS.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
+        // Check if touching near slingshot
+        const dx = worldX - SLINGSHOT_POS.x;
+        const dy = worldY - SLINGSHOT_POS.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
 
-    if (dist < 1.5 && ballIdRef.current) {
-      const physics = physicsRef.current;
-      if (!physics) return;
+        if (dist < 1.5 && ballIdRef.current) {
+          const physics = physicsRef.current;
+          if (!physics) return;
 
-      // Stop the ball if it's moving
-      physics.setLinearVelocity(ballIdRef.current, vec2(0, 0));
-      physics.setAngularVelocity(ballIdRef.current, 0);
+          // Stop the ball if it's moving
+          physics.setLinearVelocity(ballIdRef.current, vec2(0, 0));
+          physics.setAngularVelocity(ballIdRef.current, 0);
 
-      dragStateRef.current = {
-        ballId: ballIdRef.current,
-        anchorX: SLINGSHOT_POS.x,
-        anchorY: SLINGSHOT_POS.y,
-        currentX: worldX,
-        currentY: worldY,
-      };
-    }
-  }, []);
+          dragStateRef.current = {
+            ballId: ballIdRef.current,
+            anchorX: SLINGSHOT_POS.x,
+            anchorY: SLINGSHOT_POS.y,
+            currentX: worldX,
+            currentY: worldY,
+          };
+        }
+      })
+      .onUpdate((event) => {
+        if (!dragStateRef.current) return;
 
-  const handleTouchMove = useCallback((event: any) => {
-    if (!dragStateRef.current) return;
+        const worldX = event.x / PIXELS_PER_METER;
+        const worldY = event.y / PIXELS_PER_METER;
 
-    const { locationX, locationY } = event.nativeEvent;
-    const worldX = locationX / PIXELS_PER_METER;
-    const worldY = locationY / PIXELS_PER_METER;
+        const { anchorX, anchorY } = dragStateRef.current;
+        let dx = worldX - anchorX;
+        let dy = worldY - anchorY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
 
-    const { anchorX, anchorY } = dragStateRef.current;
-    let dx = worldX - anchorX;
-    let dy = worldY - anchorY;
-    const dist = Math.sqrt(dx * dx + dy * dy);
+        // Clamp to max pull distance
+        if (dist > MAX_PULL_DISTANCE) {
+          dx = (dx / dist) * MAX_PULL_DISTANCE;
+          dy = (dy / dist) * MAX_PULL_DISTANCE;
+        }
 
-    // Clamp to max pull distance
-    if (dist > MAX_PULL_DISTANCE) {
-      dx = (dx / dist) * MAX_PULL_DISTANCE;
-      dy = (dy / dist) * MAX_PULL_DISTANCE;
-    }
+        dragStateRef.current = {
+          ...dragStateRef.current,
+          currentX: anchorX + dx,
+          currentY: anchorY + dy,
+        };
+      })
+      .onEnd(() => {
+        if (!dragStateRef.current || !ballIdRef.current) {
+          dragStateRef.current = null;
+          return;
+        }
 
-    dragStateRef.current = {
-      ...dragStateRef.current,
-      currentX: anchorX + dx,
-      currentY: anchorY + dy,
-    };
-  }, []);
+        const physics = physicsRef.current;
+        if (!physics) return;
 
-  const handleTouchEnd = useCallback(() => {
-    if (!dragStateRef.current || !ballIdRef.current) {
-      dragStateRef.current = null;
-      return;
-    }
+        const { anchorX, anchorY, currentX, currentY } = dragStateRef.current;
 
-    const physics = physicsRef.current;
-    if (!physics) return;
+        // Calculate launch vector
+        const dx = anchorX - currentX;
+        const dy = anchorY - currentY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
 
-    const { anchorX, anchorY, currentX, currentY } = dragStateRef.current;
+        if (dist > 0.2) {
+          // Apply impulse in opposite direction of pull
+          const impulseX = dx * LAUNCH_IMPULSE_MULTIPLIER;
+          const impulseY = dy * LAUNCH_IMPULSE_MULTIPLIER;
+          physics.applyImpulseToCenter(ballIdRef.current, vec2(impulseX, impulseY));
+          setShots(s => s + 1);
+        }
 
-    // Calculate launch vector
-    const dx = anchorX - currentX;
-    const dy = anchorY - currentY;
-    const dist = Math.sqrt(dx * dx + dy * dy);
+        // Reset ball position if needed
+        const ballTransform = physics.getTransform(ballIdRef.current);
+        if (ballTransform.position.y > vp.world.size.height + 5 || 
+            ballTransform.position.x > vp.world.size.width + 5 ||
+            ballTransform.position.x < -5) {
+          physics.setTransform(ballIdRef.current, {
+            position: vec2(SLINGSHOT_POS.x, SLINGSHOT_POS.y),
+            angle: 0,
+          });
+        }
 
-    if (dist > 0.2) {
-      // Apply impulse in opposite direction of pull
-      const impulseX = dx * LAUNCH_IMPULSE_MULTIPLIER;
-      const impulseY = dy * LAUNCH_IMPULSE_MULTIPLIER;
-      physics.applyImpulseToCenter(ballIdRef.current, vec2(impulseX, impulseY));
-      setShots(s => s + 1);
-    }
-
-    // Reset ball position if needed
-    const ballTransform = physics.getTransform(ballIdRef.current);
-    if (ballTransform.position.y > vp.world.size.height + 5 || 
-        ballTransform.position.x > vp.world.size.width + 5 ||
-        ballTransform.position.x < -5) {
-      physics.setTransform(ballIdRef.current, {
-        position: vec2(SLINGSHOT_POS.x, SLINGSHOT_POS.y),
-        angle: 0,
+        dragStateRef.current = null;
       });
-    }
-
-    dragStateRef.current = null;
   }, [vp.world.size.width, vp.world.size.height]);
 
   const createTargets = useCallback((physics: Physics2D, centerX: number) => {
@@ -337,16 +338,11 @@ function SlingshotCanvas() {
         </TouchableOpacity>
       </View>
       
-      <View
-        style={styles.canvasContainer}
-        onStartShouldSetResponder={() => true}
-        onResponderGrant={handleTouchStart}
-        onResponderMove={handleTouchMove}
-        onResponderRelease={handleTouchEnd}
-        onResponderTerminate={handleTouchEnd}
-      >
-        <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
-          <Fill color="#1a1a2e" />
+      <View style={styles.canvasContainer}>
+        <GestureDetector gesture={gesture}>
+          <View style={{ flex: 1 }}>
+            <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
+              <Fill color="#1a1a2e" />
 
           {/* Ground */}
           <Rect
@@ -407,6 +403,8 @@ function SlingshotCanvas() {
             />
           ))}
         </Canvas>
+          </View>
+        </GestureDetector>
       </View>
     </View>
   );

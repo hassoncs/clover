@@ -1,5 +1,5 @@
-import { useCallback, useRef } from 'react';
-import type { GestureResponderEvent } from 'react-native';
+import { useCallback, useRef, useMemo } from 'react';
+import { Gesture } from 'react-native-gesture-handler';
 import type { Physics2D } from './Physics2D';
 import type { BodyId, Vec2 } from './types';
 
@@ -11,6 +11,7 @@ export interface ForceDragOptions {
   onDragMove?: (bodyId: BodyId, worldPoint: Vec2) => void;
   onDragEnd?: (bodyId: BodyId) => void;
   onEmptyTap?: (worldPoint: Vec2) => void;
+  shouldStartDrag?: (bodyId: BodyId) => boolean;
 }
 
 export interface ForceDragState {
@@ -20,9 +21,7 @@ export interface ForceDragState {
 }
 
 export interface ForceDragHandlers {
-  onTouchStart: (event: GestureResponderEvent) => void;
-  onTouchMove: (event: GestureResponderEvent) => void;
-  onTouchEnd: (event: GestureResponderEvent) => void;
+  gesture: ReturnType<typeof Gesture.Pan>;
   applyDragForces: () => void;
   isDragging: () => boolean;
   getDraggedBody: () => BodyId | null;
@@ -41,6 +40,7 @@ export function useForceDrag(
     onDragMove,
     onDragEnd,
     onEmptyTap,
+    shouldStartDrag,
   } = options;
 
   const dragStateRef = useRef<ForceDragState | null>(null);
@@ -52,48 +52,56 @@ export function useForceDrag(
     };
   }, [pixelsPerMeter]);
 
-  const onTouchStart = useCallback((event: GestureResponderEvent) => {
-    const physics = physicsRef.current;
-    if (!physics) return;
+  const gesture = useMemo(() => {
+    return Gesture.Pan()
+      .runOnJS(true)
+      .onStart((event) => {
+        const physics = physicsRef.current;
+        if (!physics) return;
 
-    const { locationX, locationY } = event.nativeEvent;
-    const worldPoint = screenToWorld(locationX, locationY);
+        const worldPoint = screenToWorld(event.x, event.y);
+        const bodyId = physics.queryPoint(worldPoint);
+        
+        if (bodyId) {
+          if (shouldStartDrag && !shouldStartDrag(bodyId)) {
+            return;
+          }
 
-    const bodyId = physics.queryPoint(worldPoint);
-    
-    if (bodyId) {
-      dragStateRef.current = {
-        bodyId,
-        targetWorldX: worldPoint.x,
-        targetWorldY: worldPoint.y,
-      };
-      onDragStart?.(bodyId, worldPoint);
-    } else {
-      onEmptyTap?.(worldPoint);
-    }
-  }, [physicsRef, screenToWorld, onDragStart, onEmptyTap]);
+          dragStateRef.current = {
+            bodyId,
+            targetWorldX: worldPoint.x,
+            targetWorldY: worldPoint.y,
+          };
+          onDragStart?.(bodyId, worldPoint);
+        } else {
+          onEmptyTap?.(worldPoint);
+        }
+      })
+      .onUpdate((event) => {
+        const dragState = dragStateRef.current;
+        if (!dragState) return;
 
-  const onTouchMove = useCallback((event: GestureResponderEvent) => {
-    const dragState = dragStateRef.current;
-    if (!dragState) return;
+        const worldPoint = screenToWorld(event.x, event.y);
+        dragState.targetWorldX = worldPoint.x;
+        dragState.targetWorldY = worldPoint.y;
+        
+        onDragMove?.(dragState.bodyId, worldPoint);
+      })
+      .onEnd(() => {
+        const dragState = dragStateRef.current;
+        if (!dragState) return;
 
-    const { locationX, locationY } = event.nativeEvent;
-    const worldPoint = screenToWorld(locationX, locationY);
-
-    dragState.targetWorldX = worldPoint.x;
-    dragState.targetWorldY = worldPoint.y;
-    
-    onDragMove?.(dragState.bodyId, worldPoint);
-  }, [screenToWorld, onDragMove]);
-
-  const onTouchEnd = useCallback((_event: GestureResponderEvent) => {
-    const dragState = dragStateRef.current;
-    if (!dragState) return;
-
-    const bodyId = dragState.bodyId;
-    dragStateRef.current = null;
-    onDragEnd?.(bodyId);
-  }, [onDragEnd]);
+        const bodyId = dragState.bodyId;
+        dragStateRef.current = null;
+        onDragEnd?.(bodyId);
+      })
+      .onFinalize(() => {
+        // Ensure cleanup happens even if cancelled
+        if (dragStateRef.current) {
+          dragStateRef.current = null;
+        }
+      });
+  }, [physicsRef, screenToWorld, onDragStart, onDragMove, onDragEnd, onEmptyTap, shouldStartDrag]);
 
   const applyDragForces = useCallback(() => {
     const physics = physicsRef.current;
@@ -127,9 +135,7 @@ export function useForceDrag(
   }, []);
 
   return {
-    onTouchStart,
-    onTouchMove,
-    onTouchEnd,
+    gesture,
     applyDragForces,
     isDragging,
     getDraggedBody,

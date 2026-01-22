@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { View, StyleSheet } from "react-native";
+import { GestureDetector } from "react-native-gesture-handler";
 import {
   Canvas,
   Circle,
@@ -161,47 +162,42 @@ function NewtonsCradleCanvas() {
   const ballRadiusPx = BALL_RADIUS * PIXELS_PER_METER;
 
   return (
-    <View
-      style={styles.container}
-      onStartShouldSetResponder={() => true}
-      onResponderGrant={dragHandlers.onTouchStart}
-      onResponderMove={dragHandlers.onTouchMove}
-      onResponderRelease={dragHandlers.onTouchEnd}
-      onResponderTerminate={dragHandlers.onTouchEnd}
-    >
-      <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
-        <Fill color="#1a1a2e" />
+    <GestureDetector gesture={dragHandlers.gesture}>
+      <View style={styles.container}>
+        <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
+          <Fill color="#1a1a2e" />
 
-        {balls.length > 0 && (
-          <Line
-            p1={vec(balls[0].anchorX, anchorY)}
-            p2={vec(balls[balls.length - 1].anchorX, anchorY)}
-            color="#bdc3c7"
-            strokeWidth={4}
-          />
-        )}
+          {balls.length > 0 && (
+            <Line
+              p1={vec(balls[0].anchorX, anchorY)}
+              p2={vec(balls[balls.length - 1].anchorX, anchorY)}
+              color="#bdc3c7"
+              strokeWidth={4}
+            />
+          )}
 
-        {balls.map((b) => (
-          <Line
-            key={`string-${b.id.value}`}
-            p1={vec(b.anchorX, anchorY)}
-            p2={vec(b.x, b.y)}
-            color="#bdc3c7"
-            strokeWidth={2}
-          />
-        ))}
+          {balls.map((b) => (
+            <Line
+              key={`string-${b.id.value}`}
+              p1={vec(b.anchorX, anchorY)}
+              p2={vec(b.x, b.y)}
+              color="#bdc3c7"
+              strokeWidth={2}
+            />
+          ))}
 
-        {balls.map((b) => (
-          <Circle
-            key={`ball-${b.id.value}`}
-            cx={b.x}
-            cy={b.y}
-            r={ballRadiusPx}
-            color="#e74c3c"
-          />
-        ))}
-      </Canvas>
-    </View>
+          {balls.map((b) => (
+            <Circle
+              key={`ball-${b.id.value}`}
+              cx={b.x}
+              cy={b.y}
+              r={ballRadiusPx}
+              color="#e74c3c"
+            />
+          ))}
+        </Canvas>
+      </View>
+    </GestureDetector>
   );
 }
 

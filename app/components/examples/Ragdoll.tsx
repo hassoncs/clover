@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { GestureDetector } from "react-native-gesture-handler";
 import {
   Canvas,
   Rect,
@@ -532,56 +533,53 @@ function RagdollCanvas() {
         <Text style={styles.instructions}>Drag limbs to throw the ragdoll!</Text>
       </View>
       
-      <View
-        style={styles.canvasContainer}
-        onStartShouldSetResponder={() => true}
-        onResponderGrant={dragHandlers.onTouchStart}
-        onResponderMove={dragHandlers.onTouchMove}
-        onResponderRelease={dragHandlers.onTouchEnd}
-        onResponderTerminate={dragHandlers.onTouchEnd}
-      >
-        <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
-          <Fill color="#1a1a2e" />
+      <View style={styles.canvasContainer}>
+        <GestureDetector gesture={dragHandlers.gesture}>
+          <View style={{ flex: 1 }}>
+            <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
+              <Fill color="#1a1a2e" />
 
-          {/* Ground */}
-          <Rect
-            x={0}
-            y={groundY * PIXELS_PER_METER}
-            width={vp.size.width}
-            height={PIXELS_PER_METER}
-            color="#2d3436"
-          />
+              {/* Ground */}
+              <Rect
+                x={0}
+                y={groundY * PIXELS_PER_METER}
+                width={vp.size.width}
+                height={PIXELS_PER_METER}
+                color="#2d3436"
+              />
 
-          {/* Body parts */}
-          {bodyParts.map((part) => (
-            <Group
-              key={`part-${part.id.value}`}
-              transform={[
-                { translateX: part.x },
-                { translateY: part.y },
-                { rotate: part.angle },
-              ]}
-              origin={{ x: 0, y: 0 }}
-            >
-              {part.type === "circle" ? (
-                <Circle
-                  cx={0}
-                  cy={0}
-                  r={part.width / 2}
-                  color={part.color}
-                />
-              ) : (
-                <Rect
-                  x={-part.width / 2}
-                  y={-part.height / 2}
-                  width={part.width}
-                  height={part.height}
-                  color={part.color}
-                />
-              )}
-            </Group>
-          ))}
-        </Canvas>
+              {/* Body parts */}
+              {bodyParts.map((part) => (
+                <Group
+                  key={`part-${part.id.value}`}
+                  transform={[
+                    { translateX: part.x },
+                    { translateY: part.y },
+                    { rotate: part.angle },
+                  ]}
+                  origin={{ x: 0, y: 0 }}
+                >
+                  {part.type === "circle" ? (
+                    <Circle
+                      cx={0}
+                      cy={0}
+                      r={part.width / 2}
+                      color={part.color}
+                    />
+                  ) : (
+                    <Rect
+                      x={-part.width / 2}
+                      y={-part.height / 2}
+                      width={part.width}
+                      height={part.height}
+                      color={part.color}
+                    />
+                  )}
+                </Group>
+              ))}
+            </Canvas>
+          </View>
+        </GestureDetector>
       </View>
     </View>
   );

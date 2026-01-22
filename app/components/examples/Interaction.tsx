@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { View, StyleSheet } from "react-native";
+import { GestureDetector } from "react-native-gesture-handler";
 import {
   Canvas,
   Circle,
@@ -83,6 +84,7 @@ function InteractionCanvas() {
     const worldWidth = vp.world.size.width;
     const worldHeight = vp.world.size.height;
     const groundY = worldHeight * 0.75;
+    let isMounted = true;
 
     const setupPhysics = async () => {
       try {
@@ -91,6 +93,8 @@ function InteractionCanvas() {
         }
 
         const physics = await createPhysics2D();
+        if (!isMounted) return;
+
         physics.createWorld(vec2(0, 9.8));
         physicsRef.current = physics;
 
@@ -144,7 +148,6 @@ function InteractionCanvas() {
         }
 
         setIsReady(true);
-        console.log('[Interaction] Physics initialized, bodies created:', bodyIdsRef.current.length);
       } catch (error) {
         console.error("Failed to initialize Physics2D:", error);
       }
@@ -153,6 +156,7 @@ function InteractionCanvas() {
     setupPhysics();
 
     return () => {
+      isMounted = false;
       if (physicsRef.current) {
         physicsRef.current.destroyWorld();
         physicsRef.current = null;
@@ -199,6 +203,7 @@ function InteractionCanvas() {
     damping: 5,
     onDragStart: (bodyId, worldPoint) => {
       console.log('[Interaction] Starting force-based drag for body', bodyId.value);
+      // We set debug info here, but note that lastTouchX/Y will be approximate from worldPoint
       setDebug(prev => ({
         ...prev,
         lastWorldX: worldPoint.x,
@@ -207,6 +212,15 @@ function InteractionCanvas() {
         isDragging: true,
         error: null,
       }));
+      setTouchPoint({ x: worldPoint.x * PIXELS_PER_METER, y: worldPoint.y * PIXELS_PER_METER });
+    },
+    onDragMove: (bodyId, worldPoint) => {
+       setTouchPoint({ x: worldPoint.x * PIXELS_PER_METER, y: worldPoint.y * PIXELS_PER_METER });
+       setDebug(prev => ({
+        ...prev,
+        lastWorldX: worldPoint.x,
+        lastWorldY: worldPoint.y,
+       }));
     },
     onDragEnd: () => {
       setTouchPoint(null);
@@ -220,29 +234,9 @@ function InteractionCanvas() {
     onEmptyTap: (worldPoint) => {
       console.log('[Interaction] No hit, spawning ball');
       spawnBall(worldPoint.x, worldPoint.y);
+      setTouchPoint({ x: worldPoint.x * PIXELS_PER_METER, y: worldPoint.y * PIXELS_PER_METER });
     },
   });
-
-  const handleTouchStart = useCallback((event: any) => {
-    const { locationX, locationY } = event.nativeEvent;
-    setTouchPoint({ x: locationX, y: locationY });
-    setDebug(prev => ({
-      ...prev,
-      lastTouchX: locationX,
-      lastTouchY: locationY,
-    }));
-    dragHandlers.onTouchStart(event);
-  }, [dragHandlers]);
-
-  const handleTouchMove = useCallback((event: any) => {
-    const { locationX, locationY } = event.nativeEvent;
-    setTouchPoint({ x: locationX, y: locationY });
-    dragHandlers.onTouchMove(event);
-  }, [dragHandlers]);
-
-  const handleTouchEnd = useCallback((event: any) => {
-    dragHandlers.onTouchEnd(event);
-  }, [dragHandlers]);
 
   const stepPhysics = useCallback((dt: number) => {
     const physics = physicsRef.current;
@@ -288,82 +282,78 @@ function InteractionCanvas() {
   const groundY = vp.size.height * 0.75;
 
   return (
-    <View
-      style={styles.container}
-      onStartShouldSetResponder={() => true}
-      onResponderGrant={handleTouchStart}
-      onResponderMove={handleTouchMove}
-      onResponderRelease={handleTouchEnd}
-      onResponderTerminate={handleTouchEnd}
-    >
-      <Canvas
-        ref={canvasRef}
-        style={styles.canvas}
-        pointerEvents="none"
-      >
-        <Fill color="#1a1a2e" />
+    <GestureDetector gesture={dragHandlers.gesture}>
+      <View style={styles.container}>
+        <Canvas
+          ref={canvasRef}
+          style={styles.canvas}
+          pointerEvents="none"
+        >
+          <Fill color="#1a1a2e" />
 
-        <Rect
-          x={0}
-          y={groundY - GROUND_HEIGHT * PIXELS_PER_METER / 2}
-          width={vp.size.width}
-          height={GROUND_HEIGHT * PIXELS_PER_METER}
-          color="#2d3436"
-        />
-
-        {touchPoint && (
-          <>
-            <Circle
-              cx={touchPoint.x}
-              cy={touchPoint.y}
-              r={20}
-              color="#ff000040"
-            />
-            <Circle
-              cx={touchPoint.x}
-              cy={touchPoint.y}
-              r={5}
-              color="#ff0000"
-            />
-          </>
-        )}
-
-        {dragLine && (
-          <>
-            <Line
-              p1={vec(dragLine.bodyX, dragLine.bodyY)}
-              p2={vec(dragLine.targetX, dragLine.targetY)}
-              color="#00ff00"
-              style="stroke"
-              strokeWidth={4}
-            />
-            <Circle
-              cx={dragLine.targetX}
-              cy={dragLine.targetY}
-              r={10}
-              color="#00ff00"
-            />
-          </>
-        )}
-
-        {bodies.map((body) => (
-          <Circle
-            key={`ball-${body.id.value}`}
-            cx={body.x}
-            cy={body.y}
-            r={body.radius}
-            color={body.isDragging ? "#00ff00" : body.color}
+          <Rect
+            x={0}
+            y={groundY - GROUND_HEIGHT * PIXELS_PER_METER / 2}
+            width={vp.size.width}
+            height={GROUND_HEIGHT * PIXELS_PER_METER}
+            color="#2d3436"
           />
-        ))}
 
-        <Rect x={10} y={10} width={300} height={120} color="#00000080" />
-        <Text x={15} y={30} text={`Touch: ${debug.lastTouchX.toFixed(0)}, ${debug.lastTouchY.toFixed(0)}`} color="white" font={null} />
-        <Text x={15} y={50} text={`World: ${debug.lastWorldX.toFixed(2)}, ${debug.lastWorldY.toFixed(2)}`} color="white" font={null} />
-        <Text x={15} y={70} text={`Hit Body: ${debug.hitBodyId ?? 'none'}`} color={debug.hitBodyId ? '#00ff00' : '#ff0000'} font={null} />
-        <Text x={15} y={90} text={`Dragging: ${debug.isDragging}`} color="white" font={null} />
-        <Text x={15} y={110} text={`Bodies: ${bodies.length} | Error: ${debug.error ?? 'none'}`} color={debug.error ? '#ff0000' : 'white'} font={null} />
-      </Canvas>
-    </View>
+          {touchPoint && (
+            <>
+              <Circle
+                cx={touchPoint.x}
+                cy={touchPoint.y}
+                r={20}
+                color="#ff000040"
+              />
+              <Circle
+                cx={touchPoint.x}
+                cy={touchPoint.y}
+                r={5}
+                color="#ff0000"
+              />
+            </>
+          )}
+
+          {dragLine && (
+            <>
+              <Line
+                p1={vec(dragLine.bodyX, dragLine.bodyY)}
+                p2={vec(dragLine.targetX, dragLine.targetY)}
+                color="#00ff00"
+                style="stroke"
+                strokeWidth={4}
+              />
+              <Circle
+                cx={dragLine.targetX}
+                cy={dragLine.targetY}
+                r={10}
+                color="#00ff00"
+              />
+            </>
+          )}
+
+          {bodies.map((body) => (
+            <Circle
+              key={`ball-${body.id.value}`}
+              cx={body.x}
+              cy={body.y}
+              r={body.radius}
+              color={body.isDragging ? "#00ff00" : body.color}
+            />
+          ))}
+
+          <Rect x={10} y={10} width={300} height={120} color="#00000080" />
+          <Text x={15} y={30} text={`Touch: ${debug.lastTouchX.toFixed(0)}, ${debug.lastTouchY.toFixed(0)}`} color="white" font={null} />
+          <Text x={15} y={50} text={`World: ${debug.lastWorldX.toFixed(2)}, ${debug.lastWorldY.toFixed(2)}`} color="white" font={null} />
+          <Text x={15} y={70} text={`Hit Body: ${debug.hitBodyId ?? 'none'}`} color={debug.hitBodyId ? '#00ff00' : '#ff0000'} font={null} />
+          <Text x={15} y={90} text={`Dragging: ${debug.isDragging}`} color="white" font={null} />
+          <Text x={15} y={110} text={`Bodies: ${bodies.length} | Error: ${debug.error ?? 'none'}`} color={debug.error ? '#ff0000' : 'white'} font={null} />
+          <Text x={15} y={130} text={`DEBUG: Query at ${debug.lastWorldX.toFixed(2)}, ${debug.lastWorldY.toFixed(2)} -> ${debug.hitBodyId ?? 'null'}`} color="magenta" font={null} />
+        </Canvas>
+      </View>
+    </GestureDetector>
   );
 }
 

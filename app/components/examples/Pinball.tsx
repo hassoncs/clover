@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { GestureDetector } from "react-native-gesture-handler";
 import {
   Canvas,
   Rect,
@@ -410,74 +411,71 @@ function PinballCanvas() {
         </View>
       </View>
       
-      <View
-        style={styles.canvasContainer}
-        onStartShouldSetResponder={() => true}
-        onResponderGrant={dragHandlers.onTouchStart}
-        onResponderMove={dragHandlers.onTouchMove}
-        onResponderRelease={dragHandlers.onTouchEnd}
-        onResponderTerminate={dragHandlers.onTouchEnd}
-      >
-        <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
-          <Fill color="#1a1a2e" />
+      <View style={styles.canvasContainer}>
+        <GestureDetector gesture={dragHandlers.gesture}>
+          <View style={{ flex: 1 }}>
+            <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
+              <Fill color="#1a1a2e" />
 
-          {/* Bumpers */}
-          {bumpers.map((bumper, index) => (
-            <Circle
-              key={`bumper-${index}`}
-              cx={bumper.x}
-              cy={bumper.y}
-              r={BUMPER_RADIUS * PIXELS_PER_METER}
-              color={bumper.isHit ? "#ffffff" : "#e74c3c"}
-            />
-          ))}
+              {/* Bumpers */}
+              {bumpers.map((bumper, index) => (
+                <Circle
+                  key={`bumper-${index}`}
+                  cx={bumper.x}
+                  cy={bumper.y}
+                  r={BUMPER_RADIUS * PIXELS_PER_METER}
+                  color={bumper.isHit ? "#ffffff" : "#e74c3c"}
+                />
+              ))}
 
-          {/* Ball */}
-          {ball && (
-            <Circle
-              cx={ball.x}
-              cy={ball.y}
-              r={BALL_RADIUS * PIXELS_PER_METER}
-              color="#ecf0f1"
-            />
-          )}
+              {/* Ball */}
+              {ball && (
+                <Circle
+                  cx={ball.x}
+                  cy={ball.y}
+                  r={BALL_RADIUS * PIXELS_PER_METER}
+                  color="#ecf0f1"
+                />
+              )}
 
-          {/* Left flipper */}
-          <Group
-            transform={[
-              { translateX: (worldWidth * 0.35) * PIXELS_PER_METER },
-              { translateY: (worldWidth - 3) * PIXELS_PER_METER },
-              { rotate: flippers.leftAngle },
-            ]}
-            origin={{ x: -FLIPPER_LENGTH / 2 + 0.2, y: 0 }}
-          >
-            <Rect
-              x={-FLIPPER_LENGTH / 2}
-              y={-FLIPPER_WIDTH / 2}
-              width={FLIPPER_LENGTH * PIXELS_PER_METER}
-              height={FLIPPER_WIDTH * PIXELS_PER_METER}
-              color="#f39c12"
-            />
-          </Group>
+              {/* Left flipper */}
+              <Group
+                transform={[
+                  { translateX: (worldWidth * 0.35) * PIXELS_PER_METER },
+                  { translateY: (worldWidth - 3) * PIXELS_PER_METER },
+                  { rotate: flippers.leftAngle },
+                ]}
+                origin={{ x: -FLIPPER_LENGTH / 2 + 0.2, y: 0 }}
+              >
+                <Rect
+                  x={-FLIPPER_LENGTH / 2}
+                  y={-FLIPPER_WIDTH / 2}
+                  width={FLIPPER_LENGTH * PIXELS_PER_METER}
+                  height={FLIPPER_WIDTH * PIXELS_PER_METER}
+                  color="#f39c12"
+                />
+              </Group>
 
-          {/* Right flipper */}
-          <Group
-            transform={[
-              { translateX: (worldWidth * 0.65) * PIXELS_PER_METER },
-              { translateY: (worldWidth - 3) * PIXELS_PER_METER },
-              { rotate: flippers.rightAngle },
-            ]}
-            origin={{ x: FLIPPER_LENGTH / 2 - 0.2, y: 0 }}
-          >
-            <Rect
-              x={-FLIPPER_LENGTH / 2}
-              y={-FLIPPER_WIDTH / 2}
-              width={FLIPPER_LENGTH * PIXELS_PER_METER}
-              height={FLIPPER_WIDTH * PIXELS_PER_METER}
-              color="#f39c12"
-            />
-          </Group>
-        </Canvas>
+              {/* Right flipper */}
+              <Group
+                transform={[
+                  { translateX: (worldWidth * 0.65) * PIXELS_PER_METER },
+                  { translateY: (worldWidth - 3) * PIXELS_PER_METER },
+                  { rotate: flippers.rightAngle },
+                ]}
+                origin={{ x: FLIPPER_LENGTH / 2 - 0.2, y: 0 }}
+              >
+                <Rect
+                  x={-FLIPPER_LENGTH / 2}
+                  y={-FLIPPER_WIDTH / 2}
+                  width={FLIPPER_LENGTH * PIXELS_PER_METER}
+                  height={FLIPPER_WIDTH * PIXELS_PER_METER}
+                  color="#f39c12"
+                />
+              </Group>
+            </Canvas>
+          </View>
+        </GestureDetector>
       </View>
     </View>
   );

@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { GestureDetector, Gesture } from "react-native-gesture-handler";
 import {
   Canvas,
   Rect,
@@ -71,6 +72,17 @@ function RopeSwingCanvas() {
     pixelsPerMeter: PIXELS_PER_METER,
     stiffness: 50,
     damping: 5,
+    shouldStartDrag: (bodyId) => {
+        // Don't drag if we hit an anchor point (handled by rope gesture)
+        // Check if bodyId is in anchorIdsRef
+        return !anchorIdsRef.current.some(id => id.value === bodyId.value);
+    },
+    onDragEnd: () => {
+        // Auto-release rope when releasing touch while swinging
+        if (isSwinging) {
+            releaseRope();
+        }
+    }
   });
 
   const attachRope = useCallback((anchorIndex: number) => {
@@ -112,39 +124,39 @@ function RopeSwingCanvas() {
     setCurrentRope(null);
   }, []);
 
-  const handleTouchEnd = useCallback((event: any) => {
-    dragHandlers.onTouchEnd(event);
-    
-    // Auto-release rope when releasing touch while swinging
-    if (isSwinging) {
-      releaseRope();
-    }
-  }, [dragHandlers, isSwinging, releaseRope]);
+  const ropeGesture = useMemo(() => {
+    return Gesture.Pan()
+        .runOnJS(true)
+        .onStart((e) => {
+            const worldX = e.x / PIXELS_PER_METER;
+            const worldY = e.y / PIXELS_PER_METER;
 
-  const handleTouchStart = useCallback((event: any) => {
-    const { locationX, locationY } = event.nativeEvent;
-    const worldX = locationX / PIXELS_PER_METER;
-    const worldY = locationY / PIXELS_PER_METER;
+            // Find closest anchor point
+            let closestIndex = -1;
+            let closestDist = Infinity;
+            
+            for (let i = 0; i < anchorPoints.length; i++) {
+                const anchor = anchorPoints[i];
+                const dist = Math.sqrt(Math.pow(worldX - anchor.x, 2) + Math.pow(worldY - anchor.y, 2));
+                if (dist < closestDist && dist < 5) {
+                    closestDist = dist;
+                    closestIndex = i;
+                }
+            }
 
-    // Find closest anchor point
-    let closestIndex = -1;
-    let closestDist = Infinity;
-    
-    for (let i = 0; i < anchorPoints.length; i++) {
-      const anchor = anchorPoints[i];
-      const dist = Math.sqrt(Math.pow(worldX - anchor.x, 2) + Math.pow(worldY - anchor.y, 2));
-      if (dist < closestDist && dist < 5) {
-        closestDist = dist;
-        closestIndex = i;
-      }
-    }
+            if (closestIndex >= 0) {
+                attachRope(closestIndex);
+            }
+        })
+        .onEnd(() => {
+             if (isSwinging) {
+                releaseRope();
+             }
+        });
+  }, [anchorPoints, attachRope, isSwinging, releaseRope]);
 
-    if (closestIndex >= 0) {
-      attachRope(closestIndex);
-    } else {
-      dragHandlers.onTouchStart(event);
-    }
-  }, [anchorPoints, attachRope, dragHandlers]);
+  // Combine gestures
+  const composedGesture = Gesture.Simultaneous(dragHandlers.gesture, ropeGesture);
 
   useEffect(() => {
     if (!vp.isReady) return;
@@ -287,76 +299,73 @@ function RopeSwingCanvas() {
         </Text>
       </View>
       
-      <View
-        style={styles.canvasContainer}
-        onStartShouldSetResponder={() => true}
-        onResponderGrant={handleTouchStart}
-        onResponderMove={dragHandlers.onTouchMove}
-        onResponderRelease={handleTouchEnd}
-        onResponderTerminate={handleTouchEnd}
-      >
-        <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
-          <Fill color="#1a1a2e" />
+      <View style={styles.canvasContainer}>
+        <GestureDetector gesture={composedGesture}>
+          <View style={{ flex: 1 }}>
+            <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
+              <Fill color="#1a1a2e" />
 
-          {/* Ground */}
-          <Rect
-            x={0}
-            y={groundY * PIXELS_PER_METER}
-            width={vp.size.width}
-            height={PIXELS_PER_METER}
-            color="#2d3436"
-          />
+              {/* Ground */}
+              <Rect
+                x={0}
+                y={groundY * PIXELS_PER_METER}
+                width={vp.size.width}
+                height={PIXELS_PER_METER}
+                color="#2d3436"
+              />
 
-          {/* Anchor points */}
-          {anchorPoints.map((anchor, index) => (
-            <Circle
-              key={`anchor-${index}`}
-              cx={anchor.x * PIXELS_PER_METER}
-              cy={anchor.y * PIXELS_PER_METER}
-              r={ANCHOR_POINT_RADIUS * PIXELS_PER_METER}
-              color={currentRope?.anchorIndex === index ? "#00ff00" : "#f1c40f"}
-            />
-          ))}
+              {/* Anchor points */}
+              {anchorPoints.map((anchor, index) => (
+                <Circle
+                  key={`anchor-${index}`}
+                  cx={anchor.x * PIXELS_PER_METER}
+                  cy={anchor.y * PIXELS_PER_METER}
+                  r={ANCHOR_POINT_RADIUS * PIXELS_PER_METER}
+                  color={currentRope?.anchorIndex === index ? "#00ff00" : "#f1c40f"}
+                />
+              ))}
 
-          {/* Rope line */}
-          {currentRope && (
-            <Line
-              p1={vec(
-                anchorPoints[currentRope.anchorIndex].x * PIXELS_PER_METER,
-                anchorPoints[currentRope.anchorIndex].y * PIXELS_PER_METER
+              {/* Rope line */}
+              {currentRope && (
+                <Line
+                  p1={vec(
+                    anchorPoints[currentRope.anchorIndex].x * PIXELS_PER_METER,
+                    anchorPoints[currentRope.anchorIndex].y * PIXELS_PER_METER
+                  )}
+                  p2={vec(currentRope.playerX, currentRope.playerY)}
+                  color="#ffffff"
+                  style="stroke"
+                  strokeWidth={2}
+                />
               )}
-              p2={vec(currentRope.playerX, currentRope.playerY)}
-              color="#ffffff"
-              style="stroke"
-              strokeWidth={2}
-            />
-          )}
 
-          {/* Player */}
-          {player && (
-            <Group
-              transform={[
-                { translateX: player.x },
-                { translateY: player.y },
-                { rotate: player.angle },
-              ]}
-            >
-              <Circle
-                cx={0}
-                cy={0}
-                r={PLAYER_RADIUS * PIXELS_PER_METER}
-                color="#e74c3c"
-              />
-              {/* Direction indicator */}
-              <Circle
-                cx={PLAYER_RADIUS * PIXELS_PER_METER * 0.5}
-                cy={0}
-                r={PLAYER_RADIUS * PIXELS_PER_METER * 0.2}
-                color="#ffffff"
-              />
-            </Group>
-          )}
-        </Canvas>
+              {/* Player */}
+              {player && (
+                <Group
+                  transform={[
+                    { translateX: player.x },
+                    { translateY: player.y },
+                    { rotate: player.angle },
+                  ]}
+                >
+                  <Circle
+                    cx={0}
+                    cy={0}
+                    r={PLAYER_RADIUS * PIXELS_PER_METER}
+                    color="#e74c3c"
+                  />
+                  {/* Direction indicator */}
+                  <Circle
+                    cx={PLAYER_RADIUS * PIXELS_PER_METER * 0.5}
+                    cy={0}
+                    r={PLAYER_RADIUS * PIXELS_PER_METER * 0.2}
+                    color="#ffffff"
+                  />
+                </Group>
+              )}
+            </Canvas>
+          </View>
+        </GestureDetector>
       </View>
     </View>
   );

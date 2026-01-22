@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { GestureDetector } from "react-native-gesture-handler";
 import {
   Canvas,
   Rect,
@@ -60,6 +61,9 @@ function DestructibleTowerCanvas() {
     pixelsPerMeter: PIXELS_PER_METER,
     stiffness: 50,
     damping: 5,
+    onEmptyTap: (worldPoint) => {
+      launchProjectile(worldPoint.x, worldPoint.y);
+    }
   });
 
   const destroyBlock = useCallback((physics: Physics2D, blockId: BodyId) => {
@@ -197,25 +201,6 @@ function DestructibleTowerCanvas() {
     });
   }, [vp.world.size.width, vp.world.size.height]);
 
-  // Handle tap on canvas to launch projectile
-  const handleCanvasTap = useCallback((event: any) => {
-    const location = event.nativeEvent;
-    if (!location) return;
-
-    // Convert screen coordinates to world coordinates
-    const canvasRect = event.currentTarget.getBoundingClientRect
-      ? event.currentTarget.getBoundingClientRect()
-      : { left: 0, top: 0, width: vp.size.width, height: vp.size.height };
-    
-    const clickX = location.pageX - canvasRect.left;
-    const clickY = location.pageY - canvasRect.top;
-    
-    // Convert to physics world coordinates
-    const worldX = clickX / PIXELS_PER_METER;
-    const worldY = clickY / PIXELS_PER_METER;
-    
-    launchProjectile(worldX, worldY);
-  }, [launchProjectile, vp.size]);
 
   const resetTower = useCallback(() => {
     const physics = physicsRef.current;
@@ -355,63 +340,58 @@ function DestructibleTowerCanvas() {
         </TouchableOpacity>
       </View>
       
-      <TouchableOpacity
-        style={styles.canvasContainer}
-        onPress={handleCanvasTap}
-        onStartShouldSetResponder={() => true}
-        onResponderGrant={dragHandlers.onTouchStart}
-        onResponderMove={dragHandlers.onTouchMove}
-        onResponderRelease={dragHandlers.onTouchEnd}
-        onResponderTerminate={dragHandlers.onTouchEnd}
-        activeOpacity={0.9}
-      >
-        <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
-          <Fill color="#1a1a2e" />
+      <View style={styles.canvasContainer}>
+        <GestureDetector gesture={dragHandlers.gesture}>
+          <View style={{ flex: 1 }}>
+            <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
+              <Fill color="#1a1a2e" />
 
-          {/* Ground */}
-          <Rect
-            x={0}
-            y={(worldHeight - 1) * PIXELS_PER_METER}
-            width={vp.size.width}
-            height={PIXELS_PER_METER}
-            color="#2d3436"
-          />
+              {/* Ground */}
+              <Rect
+                x={0}
+                y={(worldHeight - 1) * PIXELS_PER_METER}
+                width={vp.size.width}
+                height={PIXELS_PER_METER}
+                color="#2d3436"
+              />
 
-          {/* Blocks */}
-          {blocks.map((block, index) => {
-            if (activeBlocksRef.current.get(block.id.value) === false) return null;
-            
-            return (
-              <Group
-                key={`block-${index}`}
-                transform={[
-                  { translateX: block.x },
-                  { translateY: block.y },
-                  { rotate: block.angle },
-                ]}
-              >
-                <Rect
-                  x={-BLOCK_SIZE * PIXELS_PER_METER / 2}
-                  y={-BLOCK_SIZE * PIXELS_PER_METER / 2}
-                  width={BLOCK_SIZE * PIXELS_PER_METER}
-                  height={BLOCK_SIZE * PIXELS_PER_METER}
-                  color={block.color}
+              {/* Blocks */}
+              {blocks.map((block, index) => {
+                if (activeBlocksRef.current.get(block.id.value) === false) return null;
+                
+                return (
+                  <Group
+                    key={`block-${block.id.value}`}
+                    transform={[
+                      { translateX: block.x },
+                      { translateY: block.y },
+                      { rotate: block.angle },
+                    ]}
+                  >
+                    <Rect
+                      x={-BLOCK_SIZE * PIXELS_PER_METER / 2}
+                      y={-BLOCK_SIZE * PIXELS_PER_METER / 2}
+                      width={BLOCK_SIZE * PIXELS_PER_METER}
+                      height={BLOCK_SIZE * PIXELS_PER_METER}
+                      color={block.color}
+                    />
+                  </Group>
+                );
+              })}
+
+              {/* Projectile */}
+              {projectile && (
+                <Circle
+                  cx={projectile.x}
+                  cy={projectile.y}
+                  r={PROJECTILE_RADIUS * PIXELS_PER_METER}
+                  color="#ffffff"
                 />
-              </Group>
-            );
-          })}
-
-          {/* Projectile */}
-          {projectile && (
-            <Circle
-              cx={projectile.x}
-              cy={projectile.y}
-              r={PROJECTILE_RADIUS * PIXELS_PER_METER}
-              color="#ffffff"
-            />
-          )}
-        </Canvas>
-      </TouchableOpacity>
+              )}
+            </Canvas>
+          </View>
+        </GestureDetector>
+      </View>
     </View>
   );
 }

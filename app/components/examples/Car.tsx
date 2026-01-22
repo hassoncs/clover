@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { View, StyleSheet } from "react-native";
+import { GestureDetector } from "react-native-gesture-handler";
 import {
   Canvas,
   Rect,
@@ -218,61 +219,56 @@ function CarCanvas() {
   const wheelRadiusPx = WHEEL_RADIUS * PIXELS_PER_METER;
 
   return (
-    <View
-      style={styles.container}
-      onStartShouldSetResponder={() => true}
-      onResponderGrant={dragHandlers.onTouchStart}
-      onResponderMove={dragHandlers.onTouchMove}
-      onResponderRelease={dragHandlers.onTouchEnd}
-      onResponderTerminate={dragHandlers.onTouchEnd}
-    >
-      <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
-        <Fill color="#1a1a2e" />
+    <GestureDetector gesture={dragHandlers.gesture}>
+      <View style={styles.container}>
+        <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
+          <Fill color="#1a1a2e" />
 
-        {terrain.map((t) => (
-          <Rect
-            key={`terrain-${t.id.value}`}
-            x={t.x - terrainBoxPx / 2}
-            y={t.y - terrainBoxPx / 2}
-            width={terrainBoxPx}
-            height={terrainBoxPx}
-            color="#27ae60"
-          />
-        ))}
-
-        {chassis && (
-          <Group
-            transform={[
-              { translateX: chassis.x },
-              { translateY: chassis.y },
-              { rotate: chassis.angle },
-            ]}
-          >
+          {terrain.map((t) => (
             <Rect
-              x={-chassisWidthPx / 2}
-              y={-chassisHeightPx / 2}
-              width={chassisWidthPx}
-              height={chassisHeightPx}
-              color="#2980b9"
+              key={`terrain-${t.id.value}`}
+              x={t.x - terrainBoxPx / 2}
+              y={t.y - terrainBoxPx / 2}
+              width={terrainBoxPx}
+              height={terrainBoxPx}
+              color="#27ae60"
             />
-          </Group>
-        )}
+          ))}
 
-        {wheels.map((w) => (
-          <Group
-            key={`wheel-${w.id.value}`}
-            transform={[
-              { translateX: w.x },
-              { translateY: w.y },
-              { rotate: w.angle },
-            ]}
-          >
-            <Circle cx={0} cy={0} r={wheelRadiusPx} color="#34495e" />
-            <Rect x={0} y={-2} width={wheelRadiusPx} height={4} color="#bdc3c7" />
-          </Group>
-        ))}
-      </Canvas>
-    </View>
+          {chassis && (
+            <Group
+              transform={[
+                { translateX: chassis.x },
+                { translateY: chassis.y },
+                { rotate: chassis.angle },
+              ]}
+            >
+              <Rect
+                x={-chassisWidthPx / 2}
+                y={-chassisHeightPx / 2}
+                width={chassisWidthPx}
+                height={chassisHeightPx}
+                color="#2980b9"
+              />
+            </Group>
+          )}
+
+          {wheels.map((w) => (
+            <Group
+              key={`wheel-${w.id.value}`}
+              transform={[
+                { translateX: w.x },
+                { translateY: w.y },
+                { rotate: w.angle },
+              ]}
+            >
+              <Circle cx={0} cy={0} r={wheelRadiusPx} color="#34495e" />
+              <Rect x={0} y={-2} width={wheelRadiusPx} height={4} color="#bdc3c7" />
+            </Group>
+          ))}
+        </Canvas>
+      </View>
+    </GestureDetector>
   );
 }
 

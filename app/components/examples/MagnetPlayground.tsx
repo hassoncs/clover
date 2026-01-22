@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { GestureDetector, Gesture } from "react-native-gesture-handler";
 import {
   Canvas,
-  Rect,
   Circle,
   useCanvasRef,
   Fill,
@@ -52,15 +52,61 @@ function MagnetPlaygroundCanvas() {
   });
   const [metalObjects, setMetalObjects] = useState<MetalObjectState[]>([]);
   const [isReady, setIsReady] = useState(false);
-  const [dragTarget, setDragTarget] = useState<{ x: number; y: number } | null>(null);
+  const dragTargetRef = useRef<{ x: number; y: number } | null>(null);
 
   const vp = useViewport();
+
+  const shouldStartDrag = useCallback((bodyId: BodyId) => {
+    return bodyId.value !== magnetIdRef.current?.value;
+  }, []);
 
   const dragHandlers = useForceDrag(physicsRef, {
     pixelsPerMeter: PIXELS_PER_METER,
     stiffness: 50,
     damping: 5,
+    shouldStartDrag,
   });
+
+  const magnetGestureStable = useMemo(() => {
+    let isDraggingMagnet = false;
+    return Gesture.Pan()
+      .runOnJS(true)
+      .onStart((event) => {
+         const physics = physicsRef.current;
+         if (!physics || !magnetIdRef.current) return;
+         
+         const worldX = event.x / PIXELS_PER_METER;
+         const worldY = event.y / PIXELS_PER_METER;
+         
+         const magnetPos = physics.getTransform(magnetIdRef.current).position;
+         const dx = worldX - magnetPos.x;
+         const dy = worldY - magnetPos.y;
+         const dist = Math.sqrt(dx * dx + dy * dy);
+         
+         if (dist < 2) {
+           isDraggingMagnet = true;
+           dragTargetRef.current = { x: worldX, y: worldY };
+         } else {
+           isDraggingMagnet = false;
+         }
+      })
+      .onUpdate((event) => {
+        if (isDraggingMagnet) {
+           const worldX = event.x / PIXELS_PER_METER;
+           const worldY = event.y / PIXELS_PER_METER;
+           dragTargetRef.current = { x: worldX, y: worldY };
+        }
+      })
+      .onEnd(() => {
+        isDraggingMagnet = false;
+        dragTargetRef.current = null;
+      });
+  }, []);
+
+  const composedGesture = useMemo(
+    () => Gesture.Simultaneous(dragHandlers.gesture, magnetGestureStable),
+    [dragHandlers.gesture, magnetGestureStable]
+  );
 
   const togglePolarity = useCallback(() => {
     setMagnet((prev) => ({
@@ -94,43 +140,6 @@ function MagnetPlaygroundCanvas() {
       }
     }
   }, [magnet.polarity]);
-
-  const handleTouchStart = useCallback((event: any) => {
-    const { locationX, locationY } = event.nativeEvent;
-    const worldX = locationX / PIXELS_PER_METER;
-    const worldY = locationY / PIXELS_PER_METER;
-
-    // Check if touching near magnet
-    const physics = physicsRef.current;
-    if (!physics || !magnetIdRef.current) return;
-
-    const magnetPos = physics.getTransform(magnetIdRef.current).position;
-    const dx = worldX - magnetPos.x;
-    const dy = worldY - magnetPos.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-
-    if (dist < 2) {
-      setDragTarget({ x: worldX, y: worldY });
-    } else {
-      dragHandlers.onTouchStart(event);
-    }
-  }, [dragHandlers]);
-
-  const handleTouchMove = useCallback((event: any) => {
-    if (dragTarget) {
-      const { locationX, locationY } = event.nativeEvent;
-      const worldX = locationX / PIXELS_PER_METER;
-      const worldY = locationY / PIXELS_PER_METER;
-      setDragTarget({ x: worldX, y: worldY });
-    } else {
-      dragHandlers.onTouchMove(event);
-    }
-  }, [dragTarget, dragHandlers]);
-
-  const handleTouchEnd = useCallback(() => {
-    setDragTarget(null);
-    dragHandlers.onTouchEnd({} as any);
-  }, [dragHandlers]);
 
   useEffect(() => {
     if (!vp.isReady) return;
@@ -238,7 +247,7 @@ function MagnetPlaygroundCanvas() {
 
     dragHandlers.applyDragForces();
 
-    // Move magnet if dragging
+    const dragTarget = dragTargetRef.current;
     if (dragTarget) {
       physics.setTransform(magnetIdRef.current, {
         position: vec2(dragTarget.x, dragTarget.y),
@@ -246,7 +255,6 @@ function MagnetPlaygroundCanvas() {
       });
     }
 
-    // Apply magnetic forces
     applyMagneticForces(physics);
 
     physics.step(dt, 8, 3);
@@ -268,7 +276,7 @@ function MagnetPlaygroundCanvas() {
       };
     });
     setMetalObjects(updatedMetals);
-  }, [dragHandlers, dragTarget, applyMagneticForces]);
+  }, [dragHandlers, applyMagneticForces]);
 
   useSimplePhysicsLoop(stepPhysics, isReady);
 
@@ -293,65 +301,60 @@ function MagnetPlaygroundCanvas() {
         </TouchableOpacity>
       </View>
       
-      <View
-        style={styles.canvasContainer}
-        onStartShouldSetResponder={() => true}
-        onResponderGrant={handleTouchStart}
-        onResponderMove={handleTouchMove}
-        onResponderRelease={handleTouchEnd}
-        onResponderTerminate={handleTouchEnd}
-      >
-        <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
-          <Fill color="#1a1a2e" />
+      <GestureDetector gesture={composedGesture}>
+        <View style={styles.canvasContainer}>
+          <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
+            <Fill color="#1a1a2e" />
 
-          {/* Magnet force field indicator */}
-          <Circle
-            cx={magnet.x}
-            cy={magnet.y}
-            r={MAGNET_RADIUS * PIXELS_PER_METER * 2}
-            color={`${magnetRingColor}30`}
-          />
+            {/* Magnet force field indicator */}
+            <Circle
+              cx={magnet.x}
+              cy={magnet.y}
+              r={MAGNET_RADIUS * PIXELS_PER_METER * 2}
+              color={`${magnetRingColor}30`}
+            />
 
-          {/* Magnet */}
-          <Circle
-            cx={magnet.x}
-            cy={magnet.y}
-            r={MAGNET_RADIUS * PIXELS_PER_METER}
-            color={magnetColor}
-          />
-          <Circle
-            cx={magnet.x}
-            cy={magnet.y}
-            r={MAGNET_RADIUS * PIXELS_PER_METER * 0.7}
-            color="#ffffff30"
-          />
+            {/* Magnet */}
+            <Circle
+              cx={magnet.x}
+              cy={magnet.y}
+              r={MAGNET_RADIUS * PIXELS_PER_METER}
+              color={magnetColor}
+            />
+            <Circle
+              cx={magnet.x}
+              cy={magnet.y}
+              r={MAGNET_RADIUS * PIXELS_PER_METER * 0.7}
+              color="#ffffff30"
+            />
 
-          {/* Metal objects */}
-          {metalObjects.map((metal) => (
-            <Group
-              key={`metal-${metal.id.value}`}
-              transform={[
-                { translateX: metal.x },
-                { translateY: metal.y },
-                { rotate: metal.angle },
-              ]}
-            >
-              <Circle
-                cx={0}
-                cy={0}
-                r={METAL_RADIUS * PIXELS_PER_METER}
-                color="#bdc3c7"
-              />
-              <Circle
-                cx={METAL_RADIUS * PIXELS_PER_METER * 0.3}
-                cy={-METAL_RADIUS * PIXELS_PER_METER * 0.3}
-                r={METAL_RADIUS * PIXELS_PER_METER * 0.25}
-                color="#ffffff50"
-              />
+            {/* Metal objects */}
+            {metalObjects.map((metal) => (
+              <Group
+                key={`metal-${metal.id.value}`}
+                transform={[
+                  { translateX: metal.x },
+                  { translateY: metal.y },
+                  { rotate: metal.angle },
+                ]}
+              >
+                <Circle
+                  cx={0}
+                  cy={0}
+                  r={METAL_RADIUS * PIXELS_PER_METER}
+                  color="#bdc3c7"
+                />
+                <Circle
+                  cx={METAL_RADIUS * PIXELS_PER_METER * 0.3}
+                  cy={-METAL_RADIUS * PIXELS_PER_METER * 0.3}
+                  r={METAL_RADIUS * PIXELS_PER_METER * 0.25}
+                  color="#ffffff50"
+                />
             </Group>
           ))}
-        </Canvas>
-      </View>
+          </Canvas>
+        </View>
+      </GestureDetector>
     </View>
   );
 }

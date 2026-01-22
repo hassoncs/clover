@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { GestureDetector } from "react-native-gesture-handler";
 import {
   Canvas,
   Rect,
@@ -268,39 +269,36 @@ function LiquidIllusionCanvas() {
         </TouchableOpacity>
       </View>
       
-      <View
-        style={styles.canvasContainer}
-        onStartShouldSetResponder={() => true}
-        onResponderGrant={dragHandlers.onTouchStart}
-        onResponderMove={dragHandlers.onTouchMove}
-        onResponderRelease={dragHandlers.onTouchEnd}
-        onResponderTerminate={dragHandlers.onTouchEnd}
-      >
-        <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
-          <Fill color="#1a1a2e" />
+      <View style={styles.canvasContainer}>
+        <GestureDetector gesture={dragHandlers.gesture}>
+          <View style={{ flex: 1 }}>
+            <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
+              <Fill color="#1a1a2e" />
 
-          {/* Container */}
-          <Rect
-            x={containerLeft * PIXELS_PER_METER}
-            y={(containerBottom - CONTAINER_HEIGHT) * PIXELS_PER_METER}
-            width={CONTAINER_WIDTH * PIXELS_PER_METER}
-            height={CONTAINER_HEIGHT * PIXELS_PER_METER}
-            color="#2d343630"
-            style="stroke"
-            strokeWidth={4}
-          />
+              {/* Container */}
+              <Rect
+                x={containerLeft * PIXELS_PER_METER}
+                y={(containerBottom - CONTAINER_HEIGHT) * PIXELS_PER_METER}
+                width={CONTAINER_WIDTH * PIXELS_PER_METER}
+                height={CONTAINER_HEIGHT * PIXELS_PER_METER}
+                color="#2d343630"
+                style="stroke"
+                strokeWidth={4}
+              />
 
-          {/* Particles */}
-          {particles.map((particle) => (
-            <Circle
-              key={`particle-${particle.id.value}`}
-              cx={particle.x}
-              cy={particle.y}
-              r={PARTICLE_RADIUS * PIXELS_PER_METER}
-              color={particle.color}
-            />
-          ))}
-        </Canvas>
+              {/* Particles */}
+              {particles.map((particle) => (
+                <Circle
+                  key={`particle-${particle.id.value}`}
+                  cx={particle.x}
+                  cy={particle.y}
+                  r={PARTICLE_RADIUS * PIXELS_PER_METER}
+                  color={particle.color}
+                />
+              ))}
+            </Canvas>
+          </View>
+        </GestureDetector>
       </View>
     </View>
   );

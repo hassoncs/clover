@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { View, StyleSheet } from "react-native";
+import { GestureDetector } from "react-native-gesture-handler";
 import {
   Canvas,
   Rect,
@@ -169,60 +170,55 @@ function AvalancheCanvas() {
   const particleRadiusPx = PARTICLE_RADIUS * PIXELS_PER_METER;
 
   return (
-    <View
-      style={styles.container}
-      onStartShouldSetResponder={() => true}
-      onResponderGrant={dragHandlers.onTouchStart}
-      onResponderMove={dragHandlers.onTouchMove}
-      onResponderRelease={dragHandlers.onTouchEnd}
-      onResponderTerminate={dragHandlers.onTouchEnd}
-    >
-      <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
-        <Fill color="#1a1a2e" />
+    <GestureDetector gesture={dragHandlers.gesture}>
+      <View style={styles.container}>
+        <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
+          <Fill color="#1a1a2e" />
 
-        <Group
-          transform={[
-            { translateX: vp.size.width * 0.2 },
-            { translateY: funnelY },
-            { rotate: FUNNEL_ANGLE },
-          ]}
-        >
-          <Rect
-            x={-funnelWallWidthPx}
-            y={-funnelWallHeightPx}
-            width={funnelWallWidthPx * 2}
-            height={funnelWallHeightPx * 2}
-            color="#7f8c8d"
-          />
-        </Group>
+          <Group
+            transform={[
+              { translateX: vp.size.width * 0.2 },
+              { translateY: funnelY },
+              { rotate: FUNNEL_ANGLE },
+            ]}
+          >
+            <Rect
+              x={-funnelWallWidthPx}
+              y={-funnelWallHeightPx}
+              width={funnelWallWidthPx * 2}
+              height={funnelWallHeightPx * 2}
+              color="#7f8c8d"
+            />
+          </Group>
 
-        <Group
-          transform={[
-            { translateX: vp.size.width * 0.8 },
-            { translateY: funnelY },
-            { rotate: -FUNNEL_ANGLE },
-          ]}
-        >
-          <Rect
-            x={-funnelWallWidthPx}
-            y={-funnelWallHeightPx}
-            width={funnelWallWidthPx * 2}
-            height={funnelWallHeightPx * 2}
-            color="#7f8c8d"
-          />
-        </Group>
+          <Group
+            transform={[
+              { translateX: vp.size.width * 0.8 },
+              { translateY: funnelY },
+              { rotate: -FUNNEL_ANGLE },
+            ]}
+          >
+            <Rect
+              x={-funnelWallWidthPx}
+              y={-funnelWallHeightPx}
+              width={funnelWallWidthPx * 2}
+              height={funnelWallHeightPx * 2}
+              color="#7f8c8d"
+            />
+          </Group>
 
-        {particles.map((p) => (
-          <Circle
-            key={`particle-${p.id.value}`}
-            cx={p.x}
-            cy={p.y}
-            r={particleRadiusPx}
-            color={p.color}
-          />
-        ))}
-      </Canvas>
-    </View>
+          {particles.map((p) => (
+            <Circle
+              key={`particle-${p.id.value}`}
+              cx={p.x}
+              cy={p.y}
+              r={particleRadiusPx}
+              color={p.color}
+            />
+          ))}
+        </Canvas>
+      </View>
+    </GestureDetector>
   );
 }
 
