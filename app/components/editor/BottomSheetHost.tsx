@@ -1,4 +1,4 @@
-import { useRef, useMemo, useCallback } from "react";
+import { useRef, useMemo, useCallback, useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { useEditor, type EditorTab } from "./EditorProvider";
@@ -6,6 +6,7 @@ import { LayersPanel } from "./panels/LayersPanel";
 import { PropertiesPanel } from "./panels/PropertiesPanel";
 import { DebugPanel } from "./panels/DebugPanel";
 import { AssetsPanel } from "./panels/AssetsPanel";
+import { AIGenerateModal } from "./AIGenerateModal";
 
 const TABS: { id: EditorTab; label: string }[] = [
   { id: "assets", label: "Assets" },
@@ -25,6 +26,7 @@ export function BottomSheetHost() {
   } = useEditor();
 
   const sheetRef = useRef<BottomSheet>(null);
+  const [aiModalVisible, setAiModalVisible] = useState(false);
 
   const snapPoints = useMemo(() => ["12%", "50%", "90%"], []);
 
@@ -80,11 +82,18 @@ export function BottomSheetHost() {
       </View>
 
       <BottomSheetScrollView style={styles.content}>
-        {activeTab === "assets" && <AssetsPanel />}
+        {activeTab === "assets" && (
+          <AssetsPanel onOpenAIModal={() => setAiModalVisible(true)} />
+        )}
         {activeTab === "properties" && <PropertiesPanel />}
         {activeTab === "layers" && <LayersPanel />}
         {activeTab === "debug" && <DebugPanel />}
       </BottomSheetScrollView>
+
+      <AIGenerateModal
+        visible={aiModalVisible}
+        onClose={() => setAiModalVisible(false)}
+      />
     </BottomSheet>
   );
 }

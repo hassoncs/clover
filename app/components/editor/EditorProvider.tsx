@@ -58,7 +58,9 @@ type EditorStateAction =
   | { type: "SCALE_ENTITY"; entityId: string; scale: number }
   | { type: "ROTATE_ENTITY"; entityId: string; angle: number }
   | { type: "DELETE_ENTITY"; entityId: string }
-  | { type: "DUPLICATE_ENTITY"; entityId: string };
+  | { type: "DUPLICATE_ENTITY"; entityId: string }
+  | { type: "ADD_ENTITY"; entity: GameEntity }
+  | { type: "ADD_ENTITY_FROM_TEMPLATE"; templateId: string; x: number; y: number };
 
 const MAX_HISTORY = 50;
 
@@ -256,6 +258,70 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
       };
     }
 
+    case "ADD_ENTITY": {
+      const newDocument = { ...state.document };
+      newDocument.entities = [...newDocument.entities, action.entity];
+      
+      return {
+        ...state,
+        document: newDocument,
+        isDirty: true,
+        selectedEntityId: action.entity.id,
+        undoStack: [
+          ...state.undoStack,
+          {
+            type: "ADD_ENTITY",
+            entityId: action.entity.id,
+            entity: action.entity,
+          },
+        ].slice(-MAX_HISTORY),
+        redoStack: [],
+      };
+    }
+
+    case "ADD_ENTITY_FROM_TEMPLATE": {
+      const template = state.document.templates[action.templateId];
+      if (!template) return state;
+      
+      const newId = `${action.templateId}_${Date.now()}`;
+      const newEntity: GameEntity = {
+        id: newId,
+        name: action.templateId,
+        template: action.templateId,
+        transform: {
+          x: action.x,
+          y: action.y,
+          angle: 0,
+          scaleX: 1,
+          scaleY: 1,
+        },
+        sprite: template.sprite,
+        physics: template.physics,
+        behaviors: template.behaviors,
+        tags: template.tags,
+        layer: template.layer,
+      };
+      
+      const newDocument = { ...state.document };
+      newDocument.entities = [...newDocument.entities, newEntity];
+      
+      return {
+        ...state,
+        document: newDocument,
+        isDirty: true,
+        selectedEntityId: newId,
+        undoStack: [
+          ...state.undoStack,
+          {
+            type: "ADD_ENTITY",
+            entityId: newId,
+            entity: newEntity,
+          },
+        ].slice(-MAX_HISTORY),
+        redoStack: [],
+      };
+    }
+
     default:
       return state;
   }
@@ -288,6 +354,8 @@ interface EditorContextValue {
   rotateEntity: (id: string, angle: number) => void;
   deleteEntity: (id: string) => void;
   duplicateEntity: (id: string) => void;
+  addEntity: (entity: GameEntity) => void;
+  addEntityFromTemplate: (templateId: string, x: number, y: number) => void;
 
   undo: () => void;
   redo: () => void;
@@ -368,6 +436,14 @@ export function EditorProvider({
     dispatch({ type: "DUPLICATE_ENTITY", entityId: id });
   }, []);
 
+  const addEntity = useCallback((entity: GameEntity) => {
+    dispatch({ type: "ADD_ENTITY", entity });
+  }, []);
+
+  const addEntityFromTemplate = useCallback((templateId: string, x: number, y: number) => {
+    dispatch({ type: "ADD_ENTITY_FROM_TEMPLATE", templateId, x, y });
+  }, []);
+
   const undo = useCallback(() => {
     dispatch({ type: "UNDO" });
   }, []);
@@ -408,6 +484,8 @@ export function EditorProvider({
       rotateEntity,
       deleteEntity,
       duplicateEntity,
+      addEntity,
+      addEntityFromTemplate,
 
       undo,
       redo,
@@ -429,6 +507,8 @@ export function EditorProvider({
       rotateEntity,
       deleteEntity,
       duplicateEntity,
+      addEntity,
+      addEntityFromTemplate,
       undo,
       redo,
       setCamera,

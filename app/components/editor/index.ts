@@ -14,6 +14,7 @@ export { StageContainer } from "./StageContainer";
 export { InteractionLayer } from "./InteractionLayer";
 export { SelectionOverlay } from "./SelectionOverlay";
 export { BottomSheetHost } from "./BottomSheetHost";
+export { AIGenerateModal } from "./AIGenerateModal";
 
 export { LayersPanel } from "./panels/LayersPanel";
 export { PropertiesPanel } from "./panels/PropertiesPanel";

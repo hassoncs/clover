@@ -1,17 +1,22 @@
 import { View, Text, Pressable, TextInput, StyleSheet, ScrollView } from "react-native";
 import { useState } from "react";
 import { useEditor } from "../EditorProvider";
+import type { GameEntity } from "@slopcade/shared";
 
 const CATEGORIES = ["All", "Characters", "Props", "Backgrounds", "Effects"];
 
 const BASIC_SHAPES = [
-  { id: "box", icon: "⬜", label: "Box" },
-  { id: "circle", icon: "⚪", label: "Circle" },
-  { id: "triangle", icon: "🔺", label: "Triangle" },
+  { id: "box", icon: "⬜", label: "Box", physicsShape: "box" as const, spriteType: "rect" as const },
+  { id: "circle", icon: "⚪", label: "Circle", physicsShape: "circle" as const, spriteType: "circle" as const },
+  { id: "triangle", icon: "🔺", label: "Triangle", physicsShape: "polygon" as const, spriteType: "polygon" as const },
 ];
 
-export function AssetsPanel() {
-  const { document } = useEditor();
+interface AssetsPanelProps {
+  onOpenAIModal?: () => void;
+}
+
+export function AssetsPanel({ onOpenAIModal }: AssetsPanelProps) {
+  const { document, addEntity, addEntityFromTemplate, setSheetSnapPoint } = useEditor();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
@@ -27,6 +32,52 @@ export function AssetsPanel() {
     }
     return true;
   });
+
+  const handleAddFromTemplate = (templateId: string) => {
+    const centerX = 10;
+    const centerY = 6;
+    addEntityFromTemplate(templateId, centerX, centerY);
+    setSheetSnapPoint(0);
+  };
+
+  const handleAddBasicShape = (shape: typeof BASIC_SHAPES[number]) => {
+    const centerX = 10;
+    const centerY = 6;
+    const newId = `${shape.id}_${Date.now()}`;
+    const color = shape.physicsShape === "circle" ? "#3B82F6" : "#10B981";
+    
+    let newEntity: GameEntity;
+    
+    if (shape.physicsShape === "circle") {
+      newEntity = {
+        id: newId,
+        name: shape.label,
+        transform: { x: centerX, y: centerY, angle: 0, scaleX: 1, scaleY: 1 },
+        sprite: { type: "circle", radius: 0.5, color },
+        physics: { shape: "circle", bodyType: "dynamic", radius: 0.5, density: 1, friction: 0.3, restitution: 0.5 },
+      };
+    } else if (shape.physicsShape === "polygon") {
+      const vertices = [{ x: 0, y: -0.5 }, { x: 0.5, y: 0.5 }, { x: -0.5, y: 0.5 }];
+      newEntity = {
+        id: newId,
+        name: shape.label,
+        transform: { x: centerX, y: centerY, angle: 0, scaleX: 1, scaleY: 1 },
+        sprite: { type: "polygon", vertices, color },
+        physics: { shape: "polygon", bodyType: "dynamic", vertices, density: 1, friction: 0.3, restitution: 0.5 },
+      };
+    } else {
+      newEntity = {
+        id: newId,
+        name: shape.label,
+        transform: { x: centerX, y: centerY, angle: 0, scaleX: 1, scaleY: 1 },
+        sprite: { type: "rect", width: 1, height: 1, color },
+        physics: { shape: "box", bodyType: "dynamic", width: 1, height: 1, density: 1, friction: 0.3, restitution: 0.5 },
+      };
+    }
+    
+    addEntity(newEntity);
+    setSheetSnapPoint(0);
+  };
 
   return (
     <View style={styles.container}>
@@ -67,7 +118,11 @@ export function AssetsPanel() {
           <Text style={styles.sectionTitle}>FROM THIS GAME</Text>
           <View style={styles.assetGrid}>
             {filteredAssets.map((asset) => (
-              <Pressable key={asset.id} style={styles.assetCard}>
+              <Pressable 
+                key={asset.id} 
+                style={styles.assetCard}
+                onPress={() => handleAddFromTemplate(asset.id)}
+              >
                 <View style={styles.assetIcon}>
                   <Text style={styles.assetIconText}>
                     {asset.template.physics?.shape === "circle" ? "⚪" : "⬜"}
@@ -86,7 +141,11 @@ export function AssetsPanel() {
         <Text style={styles.sectionTitle}>BASIC SHAPES</Text>
         <View style={styles.assetGrid}>
           {BASIC_SHAPES.map((shape) => (
-            <Pressable key={shape.id} style={styles.assetCard}>
+            <Pressable 
+              key={shape.id} 
+              style={styles.assetCard}
+              onPress={() => handleAddBasicShape(shape)}
+            >
               <View style={styles.assetIcon}>
                 <Text style={styles.assetIconText}>{shape.icon}</Text>
               </View>
@@ -96,7 +155,7 @@ export function AssetsPanel() {
         </View>
       </View>
 
-      <Pressable style={styles.generateButton}>
+      <Pressable style={styles.generateButton} onPress={onOpenAIModal}>
         <Text style={styles.generateButtonText}>Generate with AI</Text>
       </Pressable>
     </View>
