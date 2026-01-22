@@ -26,8 +26,10 @@ export const trpc = createTRPCClient<AppRouter>({
     httpLink({
       url: `${getApiUrl()}/trpc`,
       async headers() {
+        const installId = await getInstallIdAsync();
+        console.log('[tRPC] Setting headers with installId:', installId);
         const headers: Record<string, string> = {
-          "X-Install-Id": await getInstallIdAsync(),
+          "X-Install-Id": installId,
         };
 
         const token = await getAuthToken();
@@ -35,7 +37,24 @@ export const trpc = createTRPCClient<AppRouter>({
           headers["Authorization"] = `Bearer ${token}`;
         }
 
+        console.log('[tRPC] Headers:', headers);
+        console.log('[tRPC] API URL:', `${getApiUrl()}/trpc`);
         return headers;
+      },
+      fetch(url, options) {
+        console.log('[tRPC] Fetching:', url);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+          console.error('[tRPC] Request timeout after 10s');
+          controller.abort();
+        }, 10000);
+
+        return fetch(url, {
+          ...options,
+          signal: controller.signal,
+        }).finally(() => {
+          clearTimeout(timeoutId);
+        });
       },
     }),
   ],

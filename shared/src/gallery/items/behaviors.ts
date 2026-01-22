@@ -88,19 +88,6 @@ const BEHAVIOR_DEFINITIONS: BehaviorDefinition[] = [
     defaultParams: { axis: 'x', amplitude: 50, frequency: 1, phase: 0 },
   },
   {
-    type: 'control',
-    title: 'Control',
-    description: 'Player input controls for the entity',
-    category: 'control',
-    params: [
-      { key: 'controlType', type: 'select', displayName: 'Control Type', options: ['tap_to_jump', 'tap_to_shoot', 'tap_to_flip', 'drag_to_aim', 'drag_to_move', 'tilt_to_move', 'tilt_gravity', 'buttons'], defaultValue: 'tap_to_jump' },
-      { key: 'force', type: 'number', displayName: 'Force', min: 0, max: 1000, step: 50, defaultValue: 300 },
-      { key: 'cooldown', type: 'number', displayName: 'Cooldown (s)', min: 0, max: 5, step: 0.1, defaultValue: 0 },
-      { key: 'maxSpeed', type: 'number', displayName: 'Max Speed', min: 0, max: 500, step: 10, defaultValue: 200 },
-    ],
-    defaultParams: { controlType: 'tap_to_jump', force: 300, cooldown: 0, maxSpeed: 200 },
-  },
-  {
     type: 'destroy_on_collision',
     title: 'Destroy on Collision',
     description: 'Destroys entity when colliding with tagged entities',

@@ -49,9 +49,7 @@ const game: GameDefinition = {
         friction: 0.5,
         restitution: 0.3,
       },
-      behaviors: [
-        { type: "control", controlType: "drag_to_move" },
-      ],
+      behaviors: [],
     },
     ground: {
       id: "ground",
@@ -197,6 +195,14 @@ const game: GameDefinition = {
     },
   ],
   rules: [
+    {
+      id: "move_player",
+      name: "Drag Player",
+      trigger: { type: "drag", phase: "move" },
+      actions: [
+        { type: "move", target: { type: "by_tag", tag: "player" }, direction: "toward_touch_x", speed: 20 },
+      ],
+    },
     {
       id: "player_hit_bad",
       name: "Player hit by hazard",

@@ -123,22 +123,22 @@ describe('classifyPrompt', () => {
   describe('control type detection', () => {
     it('should detect drag_to_aim for slingshot games', () => {
       const result = classifyPrompt('Drag and aim to launch projectiles');
-      expect(result.controlType).toBe('drag_to_aim');
+      expect(result.controlIntent).toBe('drag_to_aim');
     });
 
     it('should detect tap_to_jump for jumping games', () => {
       const result = classifyPrompt('Tap to make the character jump');
-      expect(result.controlType).toBe('tap_to_jump');
+      expect(result.controlIntent).toBe('tap_to_jump');
     });
 
     it('should detect tilt_to_move for tilting games', () => {
       const result = classifyPrompt('Tilt the phone to steer');
-      expect(result.controlType).toBe('tilt_to_move');
+      expect(result.controlIntent).toBe('tilt_to_move');
     });
 
     it('should detect drag_to_move for swipe games', () => {
       const result = classifyPrompt('Swipe to move the basket');
-      expect(result.controlType).toBe('drag_to_move');
+      expect(result.controlIntent).toBe('drag_to_move');
     });
   });
 

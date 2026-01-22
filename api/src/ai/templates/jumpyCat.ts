@@ -1,0 +1,255 @@
+import type { GameDefinition } from '../../../../shared/src/types/GameDefinition';
+
+export const JUMPY_CAT_TEMPLATE: GameDefinition = {
+  metadata: {
+    id: 'template-jumpy-cat',
+    title: 'Jumpy Cat',
+    description: 'Jump between platforms and collect items',
+    version: '1.0.0',
+  },
+  world: {
+    gravity: { x: 0, y: 15 },
+    pixelsPerMeter: 50,
+    bounds: { width: 10, height: 16 },
+  },
+  camera: {
+    type: 'follow',
+    followTarget: 'player',
+    zoom: 1,
+    bounds: { minX: 0, maxX: 10, minY: 0, maxY: 100 },
+  },
+  ui: {
+    showScore: true,
+    showLives: true,
+    scorePosition: 'top-left',
+    backgroundColor: '#87CEEB',
+  },
+  templates: {
+    player: {
+      id: 'player',
+      sprite: {
+        type: 'rect',
+        width: 0.8,
+        height: 0.8,
+        color: '#FF9933',
+      },
+      physics: {
+        bodyType: 'dynamic',
+        shape: 'box',
+        width: 0.8,
+        height: 0.8,
+        density: 1.0,
+        friction: 0.3,
+        restitution: 0,
+        fixedRotation: true,
+      },
+      behaviors: [],
+      tags: ['player'],
+    },
+    platform: {
+      id: 'platform',
+      sprite: {
+        type: 'rect',
+        width: 2,
+        height: 0.4,
+        color: '#228B22',
+      },
+      physics: {
+        bodyType: 'static',
+        shape: 'box',
+        width: 2,
+        height: 0.4,
+        density: 1,
+        friction: 0.8,
+        restitution: 0,
+      },
+      tags: ['platform', 'ground'],
+    },
+    collectible: {
+      id: 'collectible',
+      sprite: {
+        type: 'circle',
+        radius: 0.3,
+        color: '#FFD700',
+      },
+      physics: {
+        bodyType: 'static',
+        shape: 'circle',
+        radius: 0.3,
+        density: 1,
+        friction: 0,
+        restitution: 0,
+        isSensor: true,
+      },
+      behaviors: [
+        {
+          type: 'rotate',
+          speed: 2,
+          direction: 'clockwise',
+        },
+        {
+          type: 'score_on_collision',
+          withTags: ['player'],
+          points: 10,
+          once: true,
+          showPopup: true,
+        },
+        {
+          type: 'destroy_on_collision',
+          withTags: ['player'],
+          effect: 'fade',
+        },
+      ],
+      tags: ['collectible', 'coin'],
+    },
+    enemy: {
+      id: 'enemy',
+      sprite: {
+        type: 'circle',
+        radius: 0.4,
+        color: '#FF0000',
+      },
+      physics: {
+        bodyType: 'kinematic',
+        shape: 'circle',
+        radius: 0.4,
+        density: 1,
+        friction: 0,
+        restitution: 0,
+      },
+      behaviors: [
+        {
+          type: 'oscillate',
+          axis: 'x',
+          amplitude: 1.5,
+          frequency: 0.5,
+        },
+      ],
+      tags: ['enemy'],
+    },
+  },
+  entities: [
+    {
+      id: 'player',
+      name: 'Player Cat',
+      template: 'player',
+      transform: { x: 5, y: 14, angle: 0, scaleX: 1, scaleY: 1 },
+    },
+    {
+      id: 'ground',
+      name: 'Ground',
+      template: 'platform',
+      transform: { x: 5, y: 15.2, angle: 0, scaleX: 5, scaleY: 1 },
+    },
+    {
+      id: 'platform-1',
+      name: 'Platform 1',
+      template: 'platform',
+      transform: { x: 3, y: 12, angle: 0, scaleX: 1, scaleY: 1 },
+    },
+    {
+      id: 'platform-2',
+      name: 'Platform 2',
+      template: 'platform',
+      transform: { x: 7, y: 10, angle: 0, scaleX: 1, scaleY: 1 },
+    },
+    {
+      id: 'platform-3',
+      name: 'Platform 3',
+      template: 'platform',
+      transform: { x: 4, y: 8, angle: 0, scaleX: 1, scaleY: 1 },
+    },
+    {
+      id: 'platform-4',
+      name: 'Platform 4',
+      template: 'platform',
+      transform: { x: 6, y: 6, angle: 0, scaleX: 1, scaleY: 1 },
+    },
+    {
+      id: 'platform-goal',
+      name: 'Goal Platform',
+      template: 'platform',
+      transform: { x: 5, y: 4, angle: 0, scaleX: 1.5, scaleY: 1 },
+      sprite: {
+        type: 'rect',
+        width: 3,
+        height: 0.4,
+        color: '#FFD700',
+      },
+      tags: ['platform', 'goal'],
+    },
+    {
+      id: 'coin-1',
+      name: 'Coin 1',
+      template: 'collectible',
+      transform: { x: 3, y: 11, angle: 0, scaleX: 1, scaleY: 1 },
+    },
+    {
+      id: 'coin-2',
+      name: 'Coin 2',
+      template: 'collectible',
+      transform: { x: 7, y: 9, angle: 0, scaleX: 1, scaleY: 1 },
+    },
+    {
+      id: 'coin-3',
+      name: 'Coin 3',
+      template: 'collectible',
+      transform: { x: 4, y: 7, angle: 0, scaleX: 1, scaleY: 1 },
+    },
+    {
+      id: 'enemy-1',
+      name: 'Enemy 1',
+      template: 'enemy',
+      transform: { x: 5, y: 5.5, angle: 0, scaleX: 1, scaleY: 1 },
+    },
+  ],
+  rules: [
+    {
+      id: 'player-jump',
+      name: 'Jump on tap',
+      trigger: { type: 'tap' },
+      conditions: [{ type: 'on_ground', value: true }],
+      actions: [
+        {
+          type: 'apply_impulse',
+          target: { type: 'by_tag', tag: 'player' },
+          y: -12,
+        },
+      ],
+      cooldown: 0.1,
+    },
+    {
+      id: 'player-move',
+      name: 'Tilt to move',
+      trigger: { type: 'tilt', threshold: 0.1 },
+      actions: [
+        {
+          type: 'move',
+          target: { type: 'by_tag', tag: 'player' },
+          direction: 'tilt_direction',
+          speed: 6,
+        },
+      ],
+    },
+    {
+      id: 'player-hit-enemy',
+      name: 'Player hit by enemy',
+      trigger: { type: 'collision', entityATag: 'player', entityBTag: 'enemy' },
+      actions: [{ type: 'game_state', state: 'lose', delay: 0.5 }],
+    },
+    {
+      id: 'player-reached-goal',
+      name: 'Player reached goal',
+      trigger: { type: 'collision', entityATag: 'player', entityBTag: 'goal' },
+      actions: [{ type: 'game_state', state: 'win', delay: 0.5 }],
+    },
+  ],
+  winCondition: {
+    type: 'reach_entity',
+    entityId: 'platform-goal',
+  },
+  loseCondition: {
+    type: 'entity_destroyed',
+    tag: 'player',
+  },
+};

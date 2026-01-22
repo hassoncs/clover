@@ -64,9 +64,7 @@ const game: GameDefinition = {
         friction: 0,
         restitution: 1,
       },
-      behaviors: [
-        { type: "control", controlType: "drag_to_move" },
-      ],
+      behaviors: [],
     },
     brickRed: {
       id: "brickRed",
@@ -235,6 +233,14 @@ const game: GameDefinition = {
         { type: "lives", operation: "subtract", value: 1 },
         { type: "destroy", target: { type: "by_tag", tag: "ball" } },
         { type: "spawn", template: "ball", position: { type: "fixed", x: 5, y: 15 } },
+      ],
+    },
+    {
+      id: "paddle_move",
+      name: "Drag paddle",
+      trigger: { type: "drag", phase: "move" },
+      actions: [
+        { type: "move", target: { type: "by_tag", tag: "paddle" }, direction: "toward_touch_x", speed: 20 },
       ],
     },
   ],

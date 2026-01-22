@@ -59,18 +59,7 @@
         "height": 1,
         "fill": "#4CAF50"
       },
-      "behaviors": [
-        {
-          "type": "control",
-          "controlType": "drag_to_aim"
-        },
-        {
-          "type": "spawn_on_event",
-          "event": "release",
-          "entityTemplate": "ball",
-          "maxCount": 5
-        }
-      ]
+      "behaviors": []
     },
     {
       "id": "target-1",
@@ -155,7 +144,15 @@
       }
     }
   ],
-  "rules": [],
+  "rules": [
+    {
+      "id": "launch",
+      "trigger": { "type": "drag", "phase": "end", "target": "launcher" },
+      "actions": [
+        { "type": "spawn", "template": "ball", "position": { "type": "at_entity", "entityId": "launcher" } }
+      ]
+    }
+  ],
   "winCondition": {
     "type": "destroy_all",
     "tag": "target"

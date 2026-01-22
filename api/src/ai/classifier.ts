@@ -1,6 +1,15 @@
 import type { GameType } from './templates';
-import type { ControlType } from '../../../shared/src/types/behavior';
 import type { WinConditionType, LoseConditionType } from '../../../shared/src/types/rules';
+
+export type ControlIntent =
+  | 'tap_to_jump'
+  | 'tap_to_shoot'
+  | 'tap_to_flip'
+  | 'drag_to_aim'
+  | 'drag_to_move'
+  | 'tilt_to_move'
+  | 'tilt_gravity'
+  | 'buttons';
 
 export interface GameIntent {
   gameType: GameType;
@@ -9,7 +18,7 @@ export interface GameIntent {
   targetAction: string;
   winConditionType: WinConditionType;
   loseConditionType: LoseConditionType;
-  controlType: ControlType;
+  controlIntent: ControlIntent;
   difficulty: 'easy' | 'medium' | 'hard';
   specialRequests: string[];
 }
@@ -216,10 +225,10 @@ export function classifyPrompt(prompt: string): GameIntent {
     'projectile'
   );
 
-  const controlType = findBestMatch<ControlType>(
+  const controlIntent = findBestMatch<ControlIntent>(
     prompt,
     CONTROL_TYPE_KEYWORDS,
-    getDefaultControlType(gameType)
+    getDefaultControlIntent(gameType)
   );
 
   const winConditionType = findBestMatch<WinConditionType>(
@@ -241,14 +250,14 @@ export function classifyPrompt(prompt: string): GameIntent {
     targetAction: extractTargetAction(prompt, gameType),
     winConditionType,
     loseConditionType,
-    controlType,
+    controlIntent,
     difficulty: extractDifficulty(prompt),
     specialRequests: extractSpecialRequests(prompt),
   };
 }
 
-function getDefaultControlType(gameType: GameType): ControlType {
-  const defaults: Record<GameType, ControlType> = {
+function getDefaultControlIntent(gameType: GameType): ControlIntent {
+  const defaults: Record<GameType, ControlIntent> = {
     projectile: 'drag_to_aim',
     platformer: 'tap_to_jump',
     stacking: 'tap_to_shoot',

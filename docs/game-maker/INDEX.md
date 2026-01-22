@@ -78,6 +78,7 @@ System design and component relationships.
 | [System Architecture](architecture/system-overview.md) | Frontend, backend, runtime engine |
 | [2D/3D Strategy](architecture/2d-3d-strategy.md) | Supporting both 2D and 3D physics |
 | [Asset Integration Design](architecture/asset-integration-design.md) | Two-phase asset generation pipeline |
+| [Viewport & Camera System](architecture/viewport-and-camera-system.md) | Fixed aspect ratio, letterboxing, camera types (85% done) |
 
 ---
 
@@ -112,6 +113,7 @@ Roadmaps and feature plans (temporal - will be archived when implemented).
 | [Implementation Roadmap](planning/implementation-roadmap.md) | Full development status tracker | active |
 | [MVP Roadmap](planning/mvp-roadmap.md) | Development phases to launch | active |
 | [Editor Redesign](planning/editor-redesign/INDEX.md) | Mobile-first editor UI | **75% complete** |
+| [Viewport & Camera](architecture/viewport-and-camera-system.md) | Fixed aspect ratio + camera types | **85% complete** |
 | [Asset Integration Plan](planning/asset-integration-plan.md) | Connecting AI assets to game gen | **implemented** |
 | [Infrastructure Plan](planning/infrastructure-plan.md) | Physics/graphics on React Native | implemented |
 | [Physics2D Implementation](planning/physics2d-implementation-plan.md) | Physics2D foundation plan | implemented |

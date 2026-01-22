@@ -121,19 +121,6 @@ export const RotateBehaviorSchema = BaseBehaviorSchema.extend({
   affectsPhysics: z.boolean().optional(),
 });
 
-export const ControlBehaviorSchema = BaseBehaviorSchema.extend({
-  type: z.literal('control'),
-  controlType: z.enum([
-    'tap_to_jump', 'tap_to_shoot', 'tap_to_flip',
-    'drag_to_aim', 'drag_to_move', 'tilt_to_move', 'tilt_gravity', 'buttons'
-  ]),
-  force: NumberValueSchema.optional(),
-  cooldown: NonNegativeNumberValueSchema.optional(),
-  maxSpeed: PositiveNumberValueSchema.optional(),
-  aimLine: z.boolean().optional(),
-  maxPullDistance: PositiveNumberValueSchema.optional(),
-});
-
 export const SpawnOnEventBehaviorSchema = BaseBehaviorSchema.extend({
   type: z.literal('spawn_on_event'),
   event: z.enum(['tap', 'timer', 'collision', 'destroy', 'start']),
@@ -221,7 +208,6 @@ export const MagneticBehaviorSchema = BaseBehaviorSchema.extend({
 export const BehaviorSchema = z.discriminatedUnion('type', [
   MoveBehaviorSchema,
   RotateBehaviorSchema,
-  ControlBehaviorSchema,
   SpawnOnEventBehaviorSchema,
   DestroyOnCollisionBehaviorSchema,
   ScoreOnCollisionBehaviorSchema,
@@ -462,15 +448,49 @@ export const WorldConfigSchema = z.object({
 });
 
 export const CameraConfigSchema = z.object({
-  type: z.enum(['fixed', 'follow']),
+  type: z.enum(['fixed', 'follow', 'follow-x', 'follow-y', 'auto-scroll']),
   followTarget: z.string().optional(),
   zoom: z.number().positive().optional(),
+  minZoom: z.number().positive().optional(),
+  maxZoom: z.number().positive().optional(),
+  followSmoothing: z.number().min(0).max(1).optional(),
+  followOffset: Vec2Schema.optional(),
+  deadZone: z.object({
+    width: z.number().positive(),
+    height: z.number().positive(),
+  }).optional(),
+  lookAhead: z.object({
+    enabled: z.boolean(),
+    distance: z.number().positive(),
+    smoothing: z.number().min(0).max(1).optional(),
+    mode: z.enum(['velocity', 'facing', 'input']).optional(),
+  }).optional(),
   bounds: z.object({
     minX: z.number(),
     maxX: z.number(),
     minY: z.number(),
     maxY: z.number(),
   }).optional(),
+  autoScroll: z.object({
+    direction: Vec2Schema,
+    speed: z.number().positive(),
+    acceleration: z.number().optional(),
+  }).optional(),
+  shake: z.object({
+    decay: z.number().positive().optional(),
+    maxOffset: z.number().positive().optional(),
+    maxRotation: z.number().optional(),
+  }).optional(),
+});
+
+export const PresentationConfigSchema = z.object({
+  aspectRatio: z.union([
+    z.object({ width: z.number().positive(), height: z.number().positive() }),
+    z.number().positive(),
+  ]).optional(),
+  fit: z.enum(['contain', 'cover']).optional(),
+  letterboxColor: z.string().optional(),
+  orientation: z.enum(['portrait', 'landscape', 'any']).optional(),
 });
 
 export const UIConfigSchema = z.object({
@@ -537,9 +557,69 @@ export const ParallaxConfigSchema = z.object({
   layers: z.array(ParallaxLayerSchema),
 });
 
+export const TileCollisionSchema = z.union([
+  z.literal('none'),
+  z.literal('full'),
+  z.literal('platform'),
+  z.object({
+    polygon: z.array(Vec2Schema),
+  }),
+]);
+
+export const TileAnimationSchema = z.object({
+  frames: z.array(z.number()),
+  fps: z.number().positive(),
+  loop: z.boolean().optional(),
+});
+
+export const TileMetadataSchema = z.object({
+  name: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  collision: TileCollisionSchema.optional(),
+  animation: TileAnimationSchema.optional(),
+});
+
+export const TileSheetSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  imageUrl: z.string(),
+  tileWidth: z.number().positive(),
+  tileHeight: z.number().positive(),
+  columns: z.number().positive(),
+  rows: z.number().positive(),
+  spacing: z.number().optional(),
+  margin: z.number().optional(),
+  tiles: z.record(z.number(), TileMetadataSchema).optional(),
+  source: AssetSourceSchema.optional(),
+  style: SpriteStyleSchema.optional(),
+});
+
+export const TileLayerTypeSchema = z.enum(['background', 'collision', 'foreground', 'decoration']);
+
+export const TileLayerSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: TileLayerTypeSchema,
+  visible: z.boolean(),
+  opacity: z.number().min(0).max(1),
+  data: z.array(z.number()),
+  parallaxFactor: z.number().optional(),
+  zIndex: z.number().optional(),
+});
+
+export const TileMapSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  tileSheetId: z.string(),
+  width: z.number().positive(),
+  height: z.number().positive(),
+  layers: z.array(TileLayerSchema),
+});
+
 export const GameDefinitionSchema = z.object({
   metadata: GameMetadataSchema,
   world: WorldConfigSchema,
+  presentation: PresentationConfigSchema.optional(),
   camera: CameraConfigSchema.optional(),
   ui: UIConfigSchema.optional(),
   variables: GameVariablesSchema.optional(),
@@ -551,6 +631,8 @@ export const GameDefinitionSchema = z.object({
   assetPacks: z.record(z.string(), AssetPackSchema).optional(),
   activeAssetPackId: z.string().optional(),
   parallaxConfig: ParallaxConfigSchema.optional(),
+  tileSheets: z.array(TileSheetSchema).optional(),
+  tileMaps: z.array(TileMapSchema).optional(),
 });
 
 export type GameDefinitionInput = z.infer<typeof GameDefinitionSchema>;

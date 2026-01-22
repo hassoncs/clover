@@ -65,7 +65,7 @@ Given a user's game description, generate a complete GameDefinition that can be 
 
 1. **Keep it simple**: 5-15 entities maximum
 2. **Use clear entity names and IDs**: lowercase with hyphens (e.g., "player-cat", "platform-1")
-3. **Include at least one interactive element**: Player must have a control behavior
+3. **Include at least one interactive element**: Player must have input Rules (e.g., tap, drag, tilt)
 4. **Set reasonable physics values**:
    - density: 0.5-2.0 (1.0 is normal)
    - friction: 0.1-0.9 (0.5 is normal)
@@ -78,14 +78,14 @@ Given a user's game description, generate a complete GameDefinition that can be 
 ## Common Patterns
 
 **Projectile Game** (Angry Birds style):
-- Launcher entity with drag_to_aim control
+- Launcher entity with Rule: drag -> apply_impulse
 - spawn_on_event to create projectiles
 - Targets with destroy_on_collision and score_on_collision
 - Win: destroy_all targets
 - Lose: lives_zero (limited projectiles)
 
 **Platformer** (Jumpy Cat style):
-- Player with tap_to_jump and tilt_to_move controls
+- Player with Rules: tap -> apply_impulse (jump), tilt -> move
 - Static platforms at various heights
 - Collectibles with score_on_collision and destroy_on_collision
 - Goal platform to reach
@@ -93,18 +93,19 @@ Given a user's game description, generate a complete GameDefinition that can be 
 - Lose: entity_destroyed player
 
 **Falling Objects** (Catch game):
-- Catcher entity with drag_to_move control
+- Catcher entity with Rule: drag -> move (toward_touch)
 - Spawner with spawn_on_event (timer) to create falling items
 - Good items give points, bad items lose points
 - Win: survive_time or reach score
 - Lose: score_below 0
 
 **Stacking** (Tower building):
-- Moving spawner with oscillate and tap_to_shoot to drop blocks
+- Moving spawner with oscillate and Rule: tap -> spawn block
 - Blocks stack on ground/each other
 - Death zones on sides
 - Win: reach score
 - Lose: block falls off
+
 
 ## World Coordinates
 
@@ -171,12 +172,13 @@ Detected game type: ${intent.gameType}
 Theme: ${intent.theme}
 Player action: ${intent.playerAction}
 Goal: ${intent.targetAction}
-Control type: ${intent.controlType}
+Control style: ${intent.controlIntent}
 Difficulty: ${intent.difficulty}
 ${intent.specialRequests.length > 0 ? `Special requests: ${intent.specialRequests.join(', ')}` : ''}
 
-Generate a complete, playable game definition.`;
+Generate a complete, playable game definition using Rules for all inputs (NO legacy control behaviors).`;
 }
+
 
 function buildRefinementPrompt(currentGame: GameDefinition, request: string): string {
   return `Current Game:

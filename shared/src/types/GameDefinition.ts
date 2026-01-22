@@ -1,6 +1,7 @@
 import type { Vec2 } from './common';
 import type { GameEntity, EntityTemplate } from './entity';
 import type { GameRule, WinCondition, LoseCondition } from './rules';
+import type { TileSheet, TileMap } from './tilemap';
 
 export interface WorldConfig {
   gravity: Vec2;
@@ -11,16 +12,57 @@ export interface WorldConfig {
   };
 }
 
+export type CameraType = 'fixed' | 'follow' | 'follow-x' | 'follow-y' | 'auto-scroll';
+
+export interface CameraDeadZone {
+  width: number;
+  height: number;
+}
+
+export interface CameraLookAhead {
+  enabled: boolean;
+  distance: number;
+  smoothing?: number;
+  mode?: 'velocity' | 'facing' | 'input';
+}
+
+export interface CameraAutoScroll {
+  direction: Vec2;
+  speed: number;
+  acceleration?: number;
+}
+
+export interface CameraShakeConfig {
+  decay?: number;
+  maxOffset?: number;
+  maxRotation?: number;
+}
+
 export interface CameraConfig {
-  type: 'fixed' | 'follow';
+  type: CameraType;
   followTarget?: string;
   zoom?: number;
+  minZoom?: number;
+  maxZoom?: number;
+  followSmoothing?: number;
+  followOffset?: Vec2;
+  deadZone?: CameraDeadZone;
+  lookAhead?: CameraLookAhead;
   bounds?: {
     minX: number;
     maxX: number;
     minY: number;
     maxY: number;
   };
+  autoScroll?: CameraAutoScroll;
+  shake?: CameraShakeConfig;
+}
+
+export interface PresentationConfig {
+  aspectRatio?: { width: number; height: number } | number;
+  fit?: 'contain' | 'cover';
+  letterboxColor?: string;
+  orientation?: 'portrait' | 'landscape' | 'any';
 }
 
 export interface UIConfig {
@@ -89,6 +131,7 @@ export interface ParallaxConfig {
 export interface GameDefinition {
   metadata: GameMetadata;
   world: WorldConfig;
+  presentation?: PresentationConfig;
   camera?: CameraConfig;
   ui?: UIConfig;
   templates: Record<string, EntityTemplate>;
@@ -101,6 +144,8 @@ export interface GameDefinition {
   assetPacks?: Record<string, AssetPack>;
   activeAssetPackId?: string;
   parallaxConfig?: ParallaxConfig;
+  tileSheets?: TileSheet[];
+  tileMaps?: TileMap[];
 }
 
 export const DEFAULT_WORLD_CONFIG: WorldConfig = {

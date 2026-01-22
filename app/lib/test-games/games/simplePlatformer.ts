@@ -50,8 +50,6 @@ const game: GameDefinition = {
         fixedRotation: true,
       },
       behaviors: [
-        { type: "control", controlType: "tap_to_jump", force: 8 },
-        { type: "control", controlType: "tilt_to_move", force: 5, maxSpeed: 6 },
         { type: "destroy_on_collision", withTags: ["enemy", "hazard"], effect: "fade" },
       ],
     },
@@ -169,6 +167,21 @@ const game: GameDefinition = {
     { id: "enemy-1", name: "Enemy 1", template: "enemy", transform: { x: 12, y: 8.2, angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "enemy-2", name: "Enemy 2", template: "enemy", transform: { x: 19, y: 7.2, angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "goal", name: "Goal Flag", template: "goal", transform: { x: 23.5, y: 7.5, angle: 0, scaleX: 1, scaleY: 1 } },
+  ],
+  rules: [
+    {
+      id: "jump",
+      name: "Jump",
+      trigger: { type: "tap" },
+      conditions: [{ type: "on_ground", value: true }],
+      actions: [{ type: "apply_impulse", target: { type: "by_tag", tag: "player" }, y: -8 }],
+    },
+    {
+      id: "move",
+      name: "Tilt Move",
+      trigger: { type: "tilt", threshold: 0.1 },
+      actions: [{ type: "move", target: { type: "by_tag", tag: "player" }, direction: "tilt_direction", speed: 6 }],
+    },
   ],
 };
 

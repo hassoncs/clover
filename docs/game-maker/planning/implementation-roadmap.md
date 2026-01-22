@@ -28,10 +28,12 @@
 | Phase 11: Player Controls   | Not Started       | 0% (Post-MVP) - [Plan](./player-control-system.md) |
 | Phase 12: Sound Generation  | Not Started       | 0% (MVP+1) - [Plan](./sound-generation-system.md) |
 | Phase 13: Offline-First     | Not Started       | 0% (MVP+1) - [Plan](./offline-first-architecture.md) |
+| **Phase 14: Viewport & Camera** | **85% Complete** | Core system done, polish pending - [Plan](../architecture/viewport-and-camera-system.md) |
+| Phase 15: Tile System       | Not Started       | 0% (MVP+1) - [Plan](./tile-system.md) |
 
 ### MVP Status: VISUAL EDITOR CORE COMPLETE - READY FOR TESTING
 
-**Last Updated**: 2026-01-22 (Editor Redesign Phases 1-6 complete)
+**Last Updated**: 2026-01-22 (Viewport & Camera System 85% complete)
 
 The core MVP flow is implemented:
 
@@ -520,6 +522,121 @@ The mobile-first editor redesign is substantially complete (Phases 1-6 of 8).
 1. **Quick Win**: Ship bundled sound pack first (immediate value, no API costs)
 2. **Premium Feature**: AI sound generation as enhancement (opt-in, user-triggered)
 3. **Hybrid Approach**: Use bundled sounds as fallback if AI generation fails
+
+---
+
+### Phase 14: Viewport & Camera System [85% COMPLETE] - MVP+1
+
+> **Full Plan**: [../architecture/viewport-and-camera-system.md](../architecture/viewport-and-camera-system.md)
+
+**Goal**: Fixed aspect ratio viewport with letterboxing and comprehensive camera system for consistent cross-platform gameplay.
+
+**Problem**: Currently, different screen sizes show different amounts of the game world, making physics feel inconsistent across devices. Games need a fixed "design viewport" that scales uniformly.
+
+#### 14.1 Viewport System [COMPLETE] ✅
+- [x] `ViewportSystem` class - computes viewport rect from screen size
+- [x] `ViewportContext` - React context for viewport info
+- [x] Letterboxing layout (View-based, not Canvas clipping)
+- [x] Input coordinate transformation through viewport
+- [x] `presentation` schema block (aspectRatio, fit, letterboxColor, orientation)
+- [x] Exports from game-engine index
+
+**Key Files**:
+- `app/lib/game-engine/ViewportSystem.ts` - Core viewport calculations
+- `app/lib/game-engine/ViewportContext.tsx` - React context provider
+- `app/lib/game-engine/GameRuntime.native.tsx` - Letterboxing layout integration
+- `app/lib/game-engine/hooks/useGameInput.ts` - Viewport-aware input handling
+
+#### 14.2 Camera System Enhancement [90% COMPLETE] ✅
+- [x] Camera types: `fixed`, `follow`, `follow-x`, `follow-y`, `auto-scroll`
+- [x] Dead zones (camera-window behavior)
+- [x] Look-ahead (velocity-based offset)
+- [x] Auto-scroll with acceleration
+- [x] Camera shake (trauma-based system)
+- [x] Bounds clamping
+- [x] Factory method `CameraSystem.fromGameConfig()`
+- [ ] `manual` camera type (pan/zoom with inertia) - POST-MVP
+- [ ] `region` camera type (per-area configs) - POST-MVP
+
+**Key Files**:
+- `app/lib/game-engine/CameraSystem.ts` - Full camera implementation
+- `shared/src/types/schemas.ts` - Enhanced CameraConfigSchema
+- `api/src/ai/schemas.ts` - API schema sync
+
+#### 14.3 Schema Updates [COMPLETE] ✅
+- [x] `PresentationConfigSchema` in shared types
+- [x] `PresentationConfigSchema` in API schemas
+- [x] Enhanced `CameraConfigSchema` with all new features
+- [x] Backward compatible (existing games work without changes)
+
+#### 14.4 Polish & Integration [PENDING]
+- [ ] Platform snapping for platformer cameras
+- [ ] Camera transitions (smooth config changes)
+- [ ] AI prompt updates for camera configuration
+- [ ] Test games for each camera type
+- [ ] Documentation updates
+
+**Camera Types by Game**:
+| Game Type | Camera | Status |
+|-----------|--------|--------|
+| Puzzle | `fixed` | ✅ Done |
+| Platformer | `follow` | ✅ Done (dead zone, look-ahead) |
+| Side-scroller | `follow-x` | ✅ Done |
+| Vertical climber | `follow-y` | ✅ Done |
+| Endless Runner | `auto-scroll` | ✅ Done |
+| Sandbox | `manual` | ❌ Not started |
+| Metroidvania | `region` | ❌ Not started |
+
+**Remaining Work** (estimated 4-6 hours):
+- Platform snapping: 2h
+- AI prompt updates: 2h
+- Test games: 2h
+
+---
+
+### Phase 15: Tile System [0% COMPLETE] - MVP+1
+
+> **Full Plan**: [tile-system.md](./tile-system.md)
+
+**Goal**: Efficient grid-based rendering for backgrounds, platforms, and game worlds using tile sheets and tile maps.
+
+**Problem**: Currently, all visual elements are rendered as individual sprites, which is inefficient for grid-based content like platformer levels, top-down maps, and repeating backgrounds. The AI already generates "tileable" assets, but there's no system to leverage them efficiently.
+
+**Key Components**:
+- [ ] TileSheet asset type (sprite grids with metadata)
+- [ ] TileMap definition (layers, collision, parallax)
+- [ ] TileMapRenderer using Skia's `Atlas` for batch rendering
+- [ ] Tile map editor UI (paint tool, layer management)
+- [ ] Collision body generation from tile data
+- [ ] AI tile sheet generation (extend Scenario.com integration)
+- [ ] AI tile map generation from prompts
+- [ ] tRPC routes (`tiles.generateSheet`, `tiles.generateMap`, `tiles.updateTile`)
+
+**Why MVP+1**: Unlocks platformers and top-down games with efficient rendering. Current individual sprite approach works but doesn't scale well for large grid-based levels.
+
+**Benefits**:
+- 🚀 Render 1000+ tiles in a single draw call with `Atlas`
+- 🎮 Unlock platformer, top-down, and puzzle game types
+- 🤖 Leverage existing tileable asset generation
+- ✂️ One sprite sheet vs. hundreds of individual images
+
+**Dependencies**:
+- `@shopify/react-native-skia` Atlas component (already available)
+- Scenario.com tile generation model (already using `model_retrodiffusion-tile`)
+- R2 bucket for tile sheet images (already exists)
+
+**Estimated Timeline**: 1-2 weeks
+- Phase 1 (Asset Types & Schema): 1-2 days
+- Phase 2 (Rendering): 2-3 days
+- Phase 3 (Editor): 3-4 days
+- Phase 4 (AI Integration): 2-3 days
+- Phase 5 (Polish & Testing): 1-2 days
+
+**Implementation Strategy**:
+1. **Asset Types First**: Add TileSheet and TileMap types to GameDefinition schema
+2. **Rendering**: Implement TileMapRenderer with Atlas for batch rendering
+3. **Simple Editor**: Paint-style interface with layer management
+4. **AI Last**: Extend asset generation to create tile sheets and maps from prompts
 
 ---
 

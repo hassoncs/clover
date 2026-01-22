@@ -8,10 +8,13 @@ export {
 } from './GameLoader';
 export { GameRuntime } from './GameRuntime';
 export { CameraSystem } from './CameraSystem';
+export { ViewportSystem } from './ViewportSystem';
+export { ViewportProvider, useViewport } from './ViewportContext';
 export type { BehaviorHandler } from './BehaviorExecutor';
 export type { RuleContext } from './RulesEvaluator';
 export type { LoadedGame, GameLoaderOptions } from './GameLoader';
 export type { CameraConfig, ViewportSize, CameraTransform } from './CameraSystem';
+export type { ViewportRect, ViewportConfig } from './ViewportSystem';
 export * from './BehaviorContext';
 export * from './types';
 export * from './renderers';

@@ -14,6 +14,8 @@
     "storybook:device": "turbo run storybook:device",
     "dev": "devmux ensure metro",
     "dev:api": "devmux ensure api",
+    "dev:web": "devmux ensure web",
+    "web": "devmux ensure web",
     "ios": "devmux ensure metro && npx hush run -- pnpm --filter slopcade ios",
     "ios:device": "devmux ensure metro && npx hush run -- pnpm --filter slopcade ios:device",
     "android": "devmux ensure metro && npx hush run -- pnpm --filter slopcade android",

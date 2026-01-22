@@ -6,7 +6,6 @@ export type BehaviorType =
   | 'rotate_toward'
   | 'follow'
   | 'bounce'
-  | 'control'
   | 'spawn_on_event'
   | 'destroy_on_collision'
   | 'score_on_collision'
@@ -26,16 +25,6 @@ export type MoveDirection =
   | 'down'
   | 'toward_target'
   | 'away_from_target';
-
-export type ControlType =
-  | 'tap_to_jump'
-  | 'tap_to_shoot'
-  | 'tap_to_flip'
-  | 'drag_to_aim'
-  | 'drag_to_move'
-  | 'tilt_to_move'
-  | 'tilt_gravity'
-  | 'buttons';
 
 export type SpawnEvent = 'tap' | 'timer' | 'collision' | 'destroy' | 'start';
 export type BehaviorSpawnPosition = 'at_self' | 'at_touch' | 'random_in_bounds' | 'offset';
@@ -63,16 +52,6 @@ export interface RotateBehavior extends BaseBehavior {
   speed: number;
   direction: 'clockwise' | 'counterclockwise';
   affectsPhysics?: boolean;
-}
-
-export interface ControlBehavior extends BaseBehavior {
-  type: 'control';
-  controlType: ControlType;
-  force?: number;
-  cooldown?: number;
-  maxSpeed?: number;
-  aimLine?: boolean;
-  maxPullDistance?: number;
 }
 
 export interface SpawnOnEventBehavior extends BaseBehavior {
@@ -199,7 +178,6 @@ export type Behavior =
   | MoveBehavior
   | RotateBehavior
   | RotateTowardBehavior
-  | ControlBehavior
   | SpawnOnEventBehavior
   | DestroyOnCollisionBehavior
   | ScoreOnCollisionBehavior

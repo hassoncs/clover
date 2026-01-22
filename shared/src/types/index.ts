@@ -8,3 +8,4 @@ export * from './GameDefinition';
 export * from './schemas';
 export * from './effects';
 export * from './particles';
+export * from './tilemap';

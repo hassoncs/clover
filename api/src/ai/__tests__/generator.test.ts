@@ -10,7 +10,7 @@ describe('generateGame integration (using fixtures)', () => {
       const intent = classifyPrompt('A game where I launch balls at stacked blocks');
       
       expect(intent.gameType).toBe('projectile');
-      expect(intent.controlType).toBe('drag_to_aim');
+      expect(intent.controlIntent).toBe('drag_to_aim');
       expect(intent.winConditionType).toBe('destroy_all');
     });
 
@@ -29,7 +29,11 @@ describe('generateGame integration (using fixtures)', () => {
       
       const game = validProjectileGame as unknown as GameDefinition;
       expect(game.winCondition?.type).toBe('destroy_all');
-      expect(game.entities.some(e => e.behaviors?.some(b => b.type === 'control'))).toBe(true);
+      
+      const hasInputRule = game.rules?.some(r => 
+        ['drag', 'tap', 'tilt', 'button', 'swipe'].includes(r.trigger.type)
+      );
+      expect(hasInputRule).toBe(true);
       
       const validation = validateGameDefinition(game);
       expect(validation.valid).toBe(true);
@@ -50,12 +54,20 @@ describe('generateGame integration (using fixtures)', () => {
       expect(game.world.pixelsPerMeter).toBe(50);
     });
 
-    it('should have player-controlled entity', () => {
-      const playerEntity = game.entities.find(e => 
-        e.behaviors?.some(b => b.type === 'control')
+    it('should have player-controlled entity or rule', () => {
+      const hasInputRule = game.rules?.some(r => 
+        ['drag', 'tap', 'tilt', 'button', 'swipe'].includes(r.trigger.type)
       );
-      expect(playerEntity).toBeDefined();
-      expect(playerEntity!.tags).toContain('player');
+      
+      if (!hasInputRule) {
+        const playerEntity = game.entities.find(e => 
+          e.behaviors?.some(b => (b.type as string) === 'control')
+        );
+        expect(playerEntity).toBeDefined();
+        expect(playerEntity!.tags).toContain('player');
+      } else {
+        expect(hasInputRule).toBe(true);
+      }
     });
 
     it('should have target entities', () => {

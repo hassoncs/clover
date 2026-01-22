@@ -53,12 +53,17 @@ export default function MakerScreen() {
     if (showRefresh) setIsRefreshing(true);
     else setIsLoadingGames(true);
 
+    console.log('[Maker] Starting fetchGames...');
     try {
+      console.log('[Maker] Calling trpc.games.listByInstall.query()...');
       const result = await trpc.games.listByInstall.query();
+      console.log('[Maker] Got result:', result);
       setMyGames(result);
-    } catch {
+    } catch (err) {
+      console.error('[Maker] Error fetching games:', err);
       setMyGames([]);
     } finally {
+      console.log('[Maker] Finally block - setting loading to false');
       setIsLoadingGames(false);
       setIsRefreshing(false);
     }

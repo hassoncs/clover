@@ -47,9 +47,7 @@ const game: GameDefinition = {
         friction: 0.3,
         restitution: 0.3,
       },
-      behaviors: [
-        { type: "control", controlType: "drag_to_aim", force: 20, aimLine: true, maxPullDistance: 3 },
-      ],
+      behaviors: [],
     },
     woodBlock: {
       id: "woodBlock",
@@ -153,6 +151,16 @@ const game: GameDefinition = {
     { id: "stone-2", name: "Stone Block 2", template: "stoneBlock", transform: { x: 20, y: 6.85, angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "target-2", name: "Target 2", template: "target", transform: { x: 20, y: 9.1, angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "target-3", name: "Target 3", template: "target", transform: { x: 20, y: 6.1, angle: 0, scaleX: 1, scaleY: 1 } },
+  ],
+  rules: [
+    {
+      id: "launch",
+      name: "Launch",
+      trigger: { type: "drag", phase: "end", target: "projectile" },
+      actions: [
+        { type: "apply_impulse", target: { type: "by_id", entityId: "projectile" }, direction: "drag_direction", force: 20 },
+      ],
+    },
   ],
 };
 

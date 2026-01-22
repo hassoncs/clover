@@ -84,9 +84,7 @@ const game: GameDefinition = {
         friction: 0.3,
         restitution: 0.2,
       },
-      behaviors: [
-        { type: "control", controlType: "drag_to_aim", force: 15, aimLine: true, maxPullDistance: 4 },
-      ],
+      behaviors: [],
     },
     targetBall: {
       id: "targetBall",
@@ -124,6 +122,16 @@ const game: GameDefinition = {
       physics: { bodyType: "static", shape: "box", width: 4, height: 0.3, density: 0, friction: 0.4, restitution: 0.1 },
     },
     { id: "target-ball", name: "Bonus Ball", template: "targetBall", transform: { x: 18, y: 9.5, angle: 0, scaleX: 1, scaleY: 1 } },
+  ],
+  rules: [
+    {
+      id: "launch_ball",
+      name: "Launch ball",
+      trigger: { type: "drag", phase: "end", target: "pusher" },
+      actions: [
+        { type: "apply_impulse", target: { type: "by_id", entityId: "pusher" }, direction: "drag_direction", force: 15 },
+      ],
+    },
   ],
 };
 

@@ -1,4 +1,5 @@
 import type { Bounds, Vec2 } from './common';
+import type { Value } from '../expressions/types';
 
 export type RuleTriggerType =
   | 'collision'
@@ -6,7 +7,13 @@ export type RuleTriggerType =
   | 'score'
   | 'entity_count'
   | 'event'
-  | 'frame';
+  | 'frame'
+  | 'tap'
+  | 'drag'
+  | 'tilt'
+  | 'button'
+  | 'swipe'
+  | 'gameStart';
 
 export interface CollisionTrigger {
   type: 'collision';
@@ -42,13 +49,51 @@ export interface FrameTrigger {
   type: 'frame';
 }
 
+export interface TapTrigger {
+  type: 'tap';
+  target?: 'screen' | 'self' | string;
+}
+
+export interface DragTrigger {
+  type: 'drag';
+  phase: 'start' | 'move' | 'end';
+  target?: 'screen' | 'self' | string;
+}
+
+export interface TiltTrigger {
+  type: 'tilt';
+  axis?: 'x' | 'y' | 'both';
+  threshold?: number;
+}
+
+export interface ButtonTrigger {
+  type: 'button';
+  button: 'left' | 'right' | 'up' | 'down' | 'jump' | 'action' | 'any';
+  state: 'pressed' | 'released' | 'held';
+}
+
+export interface SwipeTrigger {
+  type: 'swipe';
+  direction: 'left' | 'right' | 'up' | 'down' | 'any';
+}
+
+export interface GameStartTrigger {
+  type: 'gameStart';
+}
+
 export type RuleTrigger =
   | CollisionTrigger
   | TimerTrigger
   | ScoreTrigger
   | EntityCountTrigger
   | EventTrigger
-  | FrameTrigger;
+  | FrameTrigger
+  | TapTrigger
+  | DragTrigger
+  | TiltTrigger
+  | ButtonTrigger
+  | SwipeTrigger
+  | GameStartTrigger;
 
 export interface ScoreCondition {
   type: 'score';
@@ -80,12 +125,47 @@ export interface RandomCondition {
   probability: number;
 }
 
+export interface OnGroundCondition {
+  type: 'on_ground';
+  value: boolean;
+}
+
+export interface TouchingCondition {
+  type: 'touching';
+  tag: string;
+  negated?: boolean;
+}
+
+export interface VelocityCondition {
+  type: 'velocity';
+  axis: 'x' | 'y';
+  comparison: 'gt' | 'lt' | 'eq' | 'gte' | 'lte';
+  value: number;
+}
+
+export interface CooldownReadyCondition {
+  type: 'cooldown_ready';
+  cooldownId: string;
+}
+
+export interface VariableCondition {
+  type: 'variable';
+  name: string;
+  comparison: 'eq' | 'gt' | 'lt' | 'gte' | 'lte' | 'neq';
+  value: number | string | boolean;
+}
+
 export type RuleCondition =
   | ScoreCondition
   | TimeCondition
   | EntityExistsCondition
   | EntityCountCondition
-  | RandomCondition;
+  | RandomCondition
+  | OnGroundCondition
+  | TouchingCondition
+  | VelocityCondition
+  | CooldownReadyCondition
+  | VariableCondition;
 
 export type SpawnPositionType = 'fixed' | 'random' | 'at_entity' | 'at_collision';
 
@@ -152,6 +232,59 @@ export interface LivesAction {
   value: number;
 }
 
+export type EntityTarget =
+  | { type: 'self' }
+  | { type: 'by_id'; entityId: string }
+  | { type: 'by_tag'; tag: string }
+  | { type: 'touched' }
+  | { type: 'player' }
+  | { type: 'other' };
+
+export interface ApplyImpulseAction {
+  type: 'apply_impulse';
+  target: EntityTarget;
+  x?: Value<number>;
+  y?: Value<number>;
+  direction?: 'up' | 'down' | 'left' | 'right' | 'drag_direction' | 'tilt_direction';
+  force?: Value<number>;
+}
+
+export interface ApplyForceAction {
+  type: 'apply_force';
+  target: EntityTarget;
+  x?: Value<number>;
+  y?: Value<number>;
+  direction?: 'drag_direction' | 'tilt_direction' | 'toward_touch';
+  force?: Value<number>;
+}
+
+export interface SetVelocityAction {
+  type: 'set_velocity';
+  target: EntityTarget;
+  x?: Value<number>;
+  y?: Value<number>;
+}
+
+export interface MoveAction {
+  type: 'move';
+  target: EntityTarget;
+  direction: 'left' | 'right' | 'up' | 'down' | 'tilt_direction' | 'toward_touch' | 'toward_touch_x' | 'toward_touch_y';
+  speed: Value<number>;
+}
+
+export interface SetVariableAction {
+  type: 'set_variable';
+  name: string;
+  operation: 'set' | 'add' | 'subtract' | 'multiply' | 'toggle';
+  value: Value<number | string | boolean>;
+}
+
+export interface StartCooldownAction {
+  type: 'start_cooldown';
+  cooldownId: string;
+  duration: Value<number>;
+}
+
 export type RuleAction =
   | SpawnAction
   | DestroyAction
@@ -160,7 +293,13 @@ export type RuleAction =
   | SoundAction
   | EventAction
   | ModifyAction
-  | LivesAction;
+  | LivesAction
+  | ApplyImpulseAction
+  | ApplyForceAction
+  | SetVelocityAction
+  | MoveAction
+  | SetVariableAction
+  | StartCooldownAction;
 
 export interface GameRule {
   id: string;

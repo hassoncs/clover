@@ -96,7 +96,6 @@ const game: GameDefinition = {
         isSensor: true,
       },
       behaviors: [
-        { type: "control", controlType: "drag_to_move" },
         { type: "spawn_on_event", event: "tap", entityTemplate: "bouncyBall", spawnPosition: "at_self" },
       ],
     },
@@ -115,6 +114,16 @@ const game: GameDefinition = {
     { id: "wall-left", name: "Left Wall", template: "wallLeft", transform: { x: 1, y: 6, angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "wall-right", name: "Right Wall", template: "wallRight", transform: { x: 19, y: 6, angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "spawner", name: "Ball Spawner", template: "ballSpawner", transform: { x: 10, y: 2, angle: 0, scaleX: 1, scaleY: 1 } },
+  ],
+  rules: [
+    {
+      id: "move_spawner",
+      name: "Drag Spawner",
+      trigger: { type: "drag", phase: "move" },
+      actions: [
+        { type: "move", target: { type: "by_tag", tag: "spawner" }, direction: "toward_touch_x", speed: 20 },
+      ],
+    },
   ],
 };
 

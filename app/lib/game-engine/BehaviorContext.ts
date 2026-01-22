@@ -39,6 +39,16 @@ export interface InputState {
   };
 }
 
+export interface InputEvents {
+  tap?: { x: number; y: number; worldX: number; worldY: number; targetEntityId?: string };
+  dragStart?: { x: number; y: number; worldX: number; worldY: number; targetEntityId?: string };
+  dragEnd?: { velocityX: number; velocityY: number; worldVelocityX: number; worldVelocityY: number };
+  swipe?: { direction: 'left' | 'right' | 'up' | 'down' };
+  buttonPressed?: Set<string>;
+  buttonReleased?: Set<string>;
+  gameStarted?: boolean;
+}
+
 export interface GameState {
   score: number;
   lives: number;

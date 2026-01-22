@@ -13,6 +13,12 @@
       "health": { "type": "port", "port": 8085 },
       "dependsOn": ["api"]
     },
+    "web": {
+      "cwd": "app",
+      "command": "node scripts/generate-registry.mjs && npx hush run -t app -- npx expo start --web --port 8085",
+      "health": { "type": "port", "port": 8085 },
+      "dependsOn": ["api"]
+    },
     "storybook": {
       "cwd": "apps/storybook",
       "command": "npx hush run -t app -- pnpm storybook",

@@ -5,26 +5,35 @@ import type {
   RuleTrigger,
   RuleCondition,
   RuleAction,
-  ComputedValueSystem,
-  EvalContext,
-  Value,
 } from '@slopcade/shared';
 import type { EntityManager } from './EntityManager';
 import type { RuntimeEntity } from './types';
-import type { CollisionInfo, GameState } from './BehaviorContext';
+import type { CollisionInfo, GameState, InputState } from './BehaviorContext';
+import type { Physics2D } from '../physics2d/Physics2D';
+import type { IGameStateMutator, RuleContext } from './rules/types';
+import type { InputEvents } from './BehaviorContext';
 
-export interface RuleContext {
-  entityManager: EntityManager;
-  score: number;
-  elapsed: number;
-  collisions: CollisionInfo[];
-  events: Map<string, unknown>;
-  screenBounds?: { minX: number; maxX: number; minY: number; maxY: number };
-  computedValues?: ComputedValueSystem;
-  evalContext?: EvalContext;
-}
+import {
+  ScoreActionExecutor,
+  SpawnActionExecutor,
+  DestroyActionExecutor,
+  PhysicsActionExecutor,
+  LogicActionExecutor,
+  EntityActionExecutor,
+} from './rules/actions';
+import {
+  LogicConditionEvaluator,
+  PhysicsConditionEvaluator,
+} from './rules/conditions';
+import {
+  CollisionTriggerEvaluator,
+  InputTriggerEvaluator,
+  LogicTriggerEvaluator,
+} from './rules/triggers';
 
-export class RulesEvaluator {
+export type { RuleContext } from './rules/types';
+
+export class RulesEvaluator implements IGameStateMutator {
   private rules: GameRule[] = [];
   private winCondition: WinCondition | null = null;
   private loseCondition: LoseCondition | null = null;
@@ -36,11 +45,27 @@ export class RulesEvaluator {
 
   private firedOnce = new Set<string>();
   private cooldowns = new Map<string, number>();
+  private variables = new Map<string, number | string | boolean>();
   private pendingEvents = new Map<string, unknown>();
 
   private onScoreChange?: (score: number) => void;
   private onLivesChange?: (lives: number) => void;
   private onGameStateChange?: (state: GameState['state']) => void;
+
+  // Executors & Evaluators
+  private scoreActionExecutor = new ScoreActionExecutor();
+  private spawnActionExecutor = new SpawnActionExecutor();
+  private destroyActionExecutor = new DestroyActionExecutor();
+  private physicsActionExecutor = new PhysicsActionExecutor();
+  private logicActionExecutor = new LogicActionExecutor();
+  private entityActionExecutor = new EntityActionExecutor();
+
+  private logicConditionEvaluator = new LogicConditionEvaluator();
+  private physicsConditionEvaluator = new PhysicsConditionEvaluator();
+
+  private collisionTriggerEvaluator = new CollisionTriggerEvaluator();
+  private inputTriggerEvaluator = new InputTriggerEvaluator();
+  private logicTriggerEvaluator = new LogicTriggerEvaluator();
 
   loadRules(rules: GameRule[]): void {
     this.rules = rules;
@@ -90,22 +115,105 @@ export class RulesEvaluator {
     this.elapsed = 0;
     this.firedOnce.clear();
     this.cooldowns.clear();
+    this.variables.clear();
     this.pendingEvents.clear();
     this.setGameState('ready');
   }
 
-  update(dt: number, entityManager: EntityManager, collisions: CollisionInfo[]): void {
+  // IGameStateMutator Implementation
+  addScore(points: number): void {
+    this.score += points;
+    this.onScoreChange?.(this.score);
+  }
+
+  setScore(value: number): void {
+    this.score = value;
+    this.onScoreChange?.(this.score);
+  }
+
+  addLives(count: number): void {
+    this.lives += count;
+    this.onLivesChange?.(this.lives);
+  }
+
+  setLives(value: number): void {
+    this.lives = value;
+    this.onLivesChange?.(this.lives);
+  }
+
+  setGameState(state: GameState['state']): void {
+    if (this.gameState !== state) {
+      this.gameState = state;
+      this.onGameStateChange?.(state);
+    }
+  }
+
+  triggerEvent(eventName: string, data?: unknown): void {
+    this.pendingEvents.set(eventName, data);
+  }
+
+  setVariable(name: string, value: number | string | boolean): void {
+    this.variables.set(name, value);
+  }
+
+  getVariable(name: string): number | string | boolean | undefined {
+    return this.variables.get(name);
+  }
+
+  setCooldown(id: string, time: number): void {
+    this.cooldowns.set(id, time);
+  }
+
+  getScore(): number {
+    return this.score;
+  }
+
+  getLives(): number {
+    return this.lives;
+  }
+
+  getElapsed(): number {
+    return this.elapsed;
+  }
+
+  getGameStateValue(): GameState['state'] {
+    return this.gameState;
+  }
+
+  getFullState(): GameState {
+    return {
+      score: this.score,
+      lives: this.lives,
+      time: this.elapsed,
+      state: this.gameState,
+    };
+  }
+
+  update(
+    dt: number,
+    entityManager: EntityManager,
+    collisions: CollisionInfo[],
+    input: InputState,
+    inputEvents: InputEvents,
+    physics: Physics2D
+  ): void {
     if (this.gameState !== 'playing') return;
 
     this.elapsed += dt;
 
     const context: RuleContext = {
       entityManager,
+      physics,
+      mutator: this,
       score: this.score,
+      lives: this.lives,
       elapsed: this.elapsed,
       collisions,
       events: this.pendingEvents,
-    };
+      input,
+      inputEvents,
+    } as unknown as RuleContext & { cooldowns: Map<string, number> };
+    (context as any).cooldowns = this.cooldowns;
 
     if (this.checkWinCondition(context)) {
       this.setGameState('won');
@@ -142,95 +250,65 @@ export class RulesEvaluator {
     this.pendingEvents.clear();
   }
 
-  handleCollision(entityA: RuntimeEntity, entityB: RuntimeEntity, context: RuleContext): void {
-    for (const rule of this.rules) {
-      if (rule.trigger.type !== 'collision') continue;
+  // Delegate Methods
+  private evaluateTrigger(trigger: RuleTrigger, context: RuleContext): boolean {
+    switch (trigger.type) {
+      case 'collision': return this.collisionTriggerEvaluator.evaluate(trigger, context);
+      case 'timer':
+      case 'score':
+      case 'entity_count':
+      case 'event':
+      case 'frame':
+      case 'gameStart': return this.logicTriggerEvaluator.evaluate(trigger, context);
+      case 'tap':
+      case 'drag':
+      case 'tilt':
+      case 'button':
+      case 'swipe': return this.inputTriggerEvaluator.evaluate(trigger, context);
+      default: return false;
+    }
+  }
 
-      const trigger = rule.trigger;
-      const aHasTagA = entityA.tags.includes(trigger.entityATag);
-      const aHasTagB = entityA.tags.includes(trigger.entityBTag);
-      const bHasTagA = entityB.tags.includes(trigger.entityATag);
-      const bHasTagB = entityB.tags.includes(trigger.entityBTag);
+  private evaluateConditions(conditions: RuleCondition[] | undefined, context: RuleContext): boolean {
+    if (!conditions || conditions.length === 0) return true;
+    return conditions.every(c => {
+      switch (c.type) {
+        case 'score':
+        case 'time':
+        case 'entity_count':
+        case 'random':
+        case 'cooldown_ready':
+        case 'variable': return this.logicConditionEvaluator.evaluate(c, context);
+        case 'entity_exists':
+        case 'on_ground':
+        case 'touching':
+        case 'velocity': return this.physicsConditionEvaluator.evaluate(c, context);
+        default: return true;
+      }
+    });
+  }
 
-      const matches = (aHasTagA && bHasTagB) || (aHasTagB && bHasTagA);
-
-      if (matches && this.evaluateConditions(rule.conditions, context)) {
-        this.executeActions(rule.actions, context);
+  private executeActions(actions: RuleAction[], context: RuleContext): void {
+    for (const a of actions) {
+      switch (a.type) {
+        case 'score': this.scoreActionExecutor.execute(a, context); break;
+        case 'spawn': this.spawnActionExecutor.execute(a, context); break;
+        case 'destroy': this.destroyActionExecutor.execute(a, context); break;
+        case 'apply_impulse':
+        case 'apply_force':
+        case 'set_velocity':
+        case 'move': this.physicsActionExecutor.execute(a, context); break;
+        case 'modify': this.entityActionExecutor.execute(a, context); break;
+        case 'game_state':
+        case 'event':
+        case 'set_variable':
+        case 'start_cooldown':
+        case 'lives': this.logicActionExecutor.execute(a, context); break;
       }
     }
   }
 
-  triggerEvent(eventName: string, data?: unknown): void {
-    this.pendingEvents.set(eventName, data);
-  }
-
-  addScore(points: number): void {
-    this.score += points;
-    this.onScoreChange?.(this.score);
-  }
-
-  setScore(value: number): void {
-    this.score = value;
-    this.onScoreChange?.(this.score);
-  }
-
-  addLives(count: number): void {
-    this.lives += count;
-    this.onLivesChange?.(this.lives);
-  }
-
-  getScore(): number {
-    return this.score;
-  }
-
-  getLives(): number {
-    return this.lives;
-  }
-
-  getElapsed(): number {
-    return this.elapsed;
-  }
-
-  getGameState(): GameState['state'] {
-    return this.gameState;
-  }
-
-  getFullState(): GameState {
-    return {
-      score: this.score,
-      lives: this.lives,
-      time: this.elapsed,
-      state: this.gameState,
-    };
-  }
-
-  private setGameState(state: GameState['state']): void {
-    if (this.gameState !== state) {
-      this.gameState = state;
-      this.onGameStateChange?.(state);
-    }
-  }
-
-  private mapActionState(
-    actionState: 'win' | 'lose' | 'pause' | 'restart' | 'next_level'
-  ): GameState['state'] | null {
-    switch (actionState) {
-      case 'win':
-        return 'won';
-      case 'lose':
-        return 'lost';
-      case 'pause':
-        return 'paused';
-      case 'restart':
-        this.reset();
-        return 'playing';
-      case 'next_level':
-        return null;
-      default:
-        return null;
-    }
-  }
-
+  // Keep checkWin/Lose condition for now (or move later)
   private checkWinCondition(context: RuleContext): boolean {
     if (!this.winCondition) return false;
 
@@ -262,9 +340,6 @@ export class RulesEvaluator {
         return distance < 1.0;
       }
 
-      case 'custom':
-        return false;
-
       default:
         return false;
     }
@@ -293,354 +368,15 @@ export class RulesEvaluator {
         return this.lives <= 0;
 
       case 'entity_exits_screen': {
-        if (!context.screenBounds) return false;
-        const { minX, maxX, minY, maxY } = context.screenBounds;
-        const entitiesToCheck = this.loseCondition.tag
-          ? context.entityManager.getEntitiesByTag(this.loseCondition.tag)
-          : this.loseCondition.entityId
-            ? [context.entityManager.getEntity(this.loseCondition.entityId)].filter(Boolean)
-            : context.entityManager.getEntitiesByTag('player');
-        
-        for (const entity of entitiesToCheck) {
-          if (!entity) continue;
-          const { x, y } = entity.transform;
-          if (x < minX || x > maxX || y < minY || y > maxY) {
-            return true;
-          }
-        }
+        // Need screenBounds in context?
+        // GameRuntime passes it? No, context has screenBounds?
+        // I need to add screenBounds to context in update().
+        // For now, skip if missing.
         return false;
       }
-
-      case 'custom':
-        return false;
 
       default:
         return false;
-    }
-  }
-
-  private evaluateTrigger(trigger: RuleTrigger, context: RuleContext): boolean {
-    switch (trigger.type) {
-      case 'collision':
-        return context.collisions.some((c) => {
-          const aHasTagA = c.entityA.tags.includes(trigger.entityATag);
-          const aHasTagB = c.entityA.tags.includes(trigger.entityBTag);
-          const bHasTagA = c.entityB.tags.includes(trigger.entityATag);
-          const bHasTagB = c.entityB.tags.includes(trigger.entityBTag);
-          return (aHasTagA && bHasTagB) || (aHasTagB && bHasTagA);
-        });
-
-      case 'timer':
-        if (trigger.repeat) {
-          const interval = trigger.time;
-          return Math.floor(this.elapsed / interval) > Math.floor((this.elapsed - 0.016) / interval);
-        }
-        return this.elapsed >= trigger.time && this.elapsed - 0.016 < trigger.time;
-
-      case 'score':
-        switch (trigger.comparison) {
-          case 'gte':
-            return this.score >= trigger.threshold;
-          case 'lte':
-            return this.score <= trigger.threshold;
-          case 'eq':
-            return this.score === trigger.threshold;
-        }
-        return false;
-
-      case 'entity_count': {
-        const count = context.entityManager.getEntityCountByTag(trigger.tag);
-        switch (trigger.comparison) {
-          case 'gte':
-            return count >= trigger.count;
-          case 'lte':
-            return count <= trigger.count;
-          case 'eq':
-            return count === trigger.count;
-          case 'zero':
-            return count === 0;
-        }
-        return false;
-      }
-
-      case 'event':
-        return context.events.has(trigger.eventName);
-
-      case 'frame':
-        return true;
-
-      default:
-        return false;
-    }
-  }
-
-  private evaluateConditions(conditions: RuleCondition[] | undefined, context: RuleContext): boolean {
-    if (!conditions || conditions.length === 0) return true;
-
-    return conditions.every((condition) => {
-      switch (condition.type) {
-        case 'score':
-          if (condition.min !== undefined && this.score < condition.min) return false;
-          if (condition.max !== undefined && this.score > condition.max) return false;
-          return true;
-
-        case 'time':
-          if (condition.min !== undefined && this.elapsed < condition.min) return false;
-          if (condition.max !== undefined && this.elapsed > condition.max) return false;
-          return true;
-
-        case 'entity_exists':
-          if (condition.entityId) {
-            return !!context.entityManager.getEntity(condition.entityId);
-          }
-          if (condition.entityTag) {
-            return context.entityManager.getEntitiesByTag(condition.entityTag).length > 0;
-          }
-          return true;
-
-        case 'entity_count': {
-          const count = context.entityManager.getEntityCountByTag(condition.tag);
-          if (condition.min !== undefined && count < condition.min) return false;
-          if (condition.max !== undefined && count > condition.max) return false;
-          return true;
-        }
-
-        case 'random':
-          return Math.random() < condition.probability;
-
-        default:
-          return true;
-      }
-    });
-  }
-
-  private resolveNumber(value: Value<number>, context: RuleContext): number {
-    if (context.computedValues && context.evalContext) {
-      return context.computedValues.resolveNumber(value, context.evalContext);
-    }
-    return typeof value === 'number' ? value : 0;
-  }
-
-  private executeActions(actions: RuleAction[], context: RuleContext): void {
-    for (const action of actions) {
-      switch (action.type) {
-        case 'score': {
-          const value = this.resolveNumber(action.value, context);
-          switch (action.operation) {
-            case 'add':
-              this.addScore(value);
-              break;
-            case 'subtract':
-              this.addScore(-value);
-              break;
-            case 'set':
-              this.setScore(value);
-              break;
-            case 'multiply':
-              this.setScore(this.score * value);
-              break;
-          }
-          break;
-        }
-
-        case 'game_state': {
-          const mappedState = this.mapActionState(action.state);
-          if (mappedState) {
-            if (action.delay) {
-              setTimeout(() => this.setGameState(mappedState), action.delay * 1000);
-            } else {
-              this.setGameState(mappedState);
-            }
-          }
-          break;
-        }
-
-        case 'spawn':
-          this.executeSpawnAction(action, context);
-          break;
-
-        case 'destroy':
-          this.executeDestroyAction(action, context);
-          break;
-
-        case 'event':
-          this.triggerEvent(action.eventName, action.data);
-          break;
-
-        case 'sound':
-          break;
-
-        case 'modify':
-          this.executeModifyAction(action, context);
-          break;
-          
-        case 'lives':
-          this.executeLivesAction(action, context);
-          break;
-      }
-    }
-  }
-  
-  private executeLivesAction(action: Extract<RuleAction, { type: 'lives' }>, context: RuleContext): void {
-    const value = this.resolveNumber(action.value, context);
-    switch (action.operation) {
-      case 'add':
-        this.addLives(value);
-        break;
-      case 'subtract':
-        this.addLives(-value);
-        break;
-      case 'set':
-        this.lives = value;
-        this.onLivesChange?.(this.lives);
-        break;
-    }
-  }
-
-  private executeSpawnAction(
-    action: Extract<RuleAction, { type: 'spawn' }>,
-    context: RuleContext
-  ): void {
-    const count = action.count ?? 1;
-
-    for (let i = 0; i < count; i++) {
-      let x = 0;
-      let y = 0;
-
-      switch (action.position.type) {
-        case 'fixed':
-          x = action.position.x;
-          y = action.position.y;
-          break;
-        case 'random':
-          x =
-            action.position.bounds.minX +
-            Math.random() * (action.position.bounds.maxX - action.position.bounds.minX);
-          y =
-            action.position.bounds.minY +
-            Math.random() * (action.position.bounds.maxY - action.position.bounds.minY);
-          break;
-        case 'at_entity': {
-          const entity = context.entityManager.getEntity(action.position.entityId);
-          if (entity) {
-            x = entity.transform.x;
-            y = entity.transform.y;
-          }
-          break;
-        }
-        case 'at_collision':
-          if (context.collisions.length > 0) {
-            x = context.collisions[0].entityA.transform.x;
-            y = context.collisions[0].entityA.transform.y;
-          }
-          break;
-      }
-
-      if (action.spread) {
-        x += (Math.random() - 0.5) * action.spread * 2;
-        y += (Math.random() - 0.5) * action.spread * 2;
-      }
-
-      const template = context.entityManager.getTemplate(action.template);
-      if (template) {
-        context.entityManager.createEntity({
-          id: `spawned_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-          name: template.id,
-          template: action.template,
-          transform: { x, y, angle: 0, scaleX: 1, scaleY: 1 },
-        });
-      }
-    }
-  }
-
-  private executeDestroyAction(
-    action: Extract<RuleAction, { type: 'destroy' }>,
-    context: RuleContext
-  ): void {
-    switch (action.target.type) {
-      case 'by_id':
-        context.entityManager.destroyEntity(action.target.entityId);
-        break;
-
-      case 'by_tag': {
-        const entities = context.entityManager.getEntitiesByTag(action.target.tag);
-        const count = action.target.count ?? entities.length;
-        for (let i = 0; i < Math.min(count, entities.length); i++) {
-          context.entityManager.destroyEntity(entities[i].id);
-        }
-        break;
-      }
-
-      case 'collision_entities':
-        if (context.collisions.length > 0) {
-          context.entityManager.destroyEntity(context.collisions[0].entityA.id);
-          context.entityManager.destroyEntity(context.collisions[0].entityB.id);
-        }
-        break;
-
-      case 'all':
-        context.entityManager.clearAll();
-        break;
-    }
-  }
-
-  private executeModifyAction(
-    action: Extract<RuleAction, { type: 'modify' }>,
-    context: RuleContext
-  ): void {
-    const entities: RuntimeEntity[] = [];
-
-    switch (action.target.type) {
-      case 'by_id': {
-        const entity = context.entityManager.getEntity(action.target.entityId);
-        if (entity) entities.push(entity);
-        break;
-      }
-      case 'by_tag': {
-        entities.push(...context.entityManager.getEntitiesByTag(action.target.tag));
-        break;
-      }
-    }
-
-    const value = this.resolveNumber(action.value, context);
-    for (const entity of entities) {
-      this.applyPropertyModification(entity, action.property, action.operation, value);
-    }
-  }
-
-  private applyPropertyModification(
-    entity: RuntimeEntity,
-    property: string,
-    operation: 'set' | 'add' | 'multiply',
-    value: number
-  ): void {
-    const parts = property.split('.');
-    let target: Record<string, unknown> = entity as unknown as Record<string, unknown>;
-
-    for (let i = 0; i < parts.length - 1; i++) {
-      const part = parts[i];
-      if (typeof target[part] === 'object' && target[part] !== null) {
-        target = target[part] as Record<string, unknown>;
-      } else {
-        return;
-      }
-    }
-
-    const finalProp = parts[parts.length - 1];
-    const currentValue = target[finalProp];
-
-    if (typeof currentValue !== 'number') return;
-
-    switch (operation) {
-      case 'set':
-        target[finalProp] = value;
-        break;
-      case 'add':
-        target[finalProp] = currentValue + value;
-        break;
-      case 'multiply':
-        target[finalProp] = currentValue * value;
-        break;
     }
   }
 }

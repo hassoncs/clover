@@ -24,28 +24,20 @@ export interface ValidationWarning {
 const VALID_BEHAVIOR_TYPES: BehaviorType[] = [
   'move',
   'rotate',
+  'rotate_toward',
   'follow',
   'bounce',
-  'control',
   'spawn_on_event',
   'destroy_on_collision',
   'score_on_collision',
+  'score_on_destroy',
   'timer',
   'animate',
   'oscillate',
   'gravity_zone',
   'magnetic',
-];
-
-const VALID_CONTROL_TYPES = [
-  'tap_to_jump',
-  'tap_to_shoot',
-  'tap_to_flip',
-  'drag_to_aim',
-  'drag_to_move',
-  'tilt_to_move',
-  'tilt_gravity',
-  'buttons',
+  'health',
+  'draggable',
 ];
 
 const VALID_BODY_TYPES = ['static', 'dynamic', 'kinematic'];
@@ -287,17 +279,6 @@ function validateBehavior(
     return;
   }
 
-  if (behavior.type === 'control') {
-    const controlBehavior = behavior as { controlType?: string };
-    if (!VALID_CONTROL_TYPES.includes(controlBehavior.controlType || '')) {
-      errors.push({
-        code: 'INVALID_CONTROL_TYPE',
-        message: `Entity ${entityId} has invalid controlType: ${controlBehavior.controlType}`,
-        path: `entities.${entityId}.behaviors[${index}].controlType`,
-      });
-    }
-  }
-
   if (behavior.type === 'spawn_on_event') {
     const spawnBehavior = behavior as { entityTemplate?: string };
     if (!spawnBehavior.entityTemplate) {
@@ -451,18 +432,27 @@ function validateEntities(
     validateEntity(entity, game.templates || {}, errors, warnings);
   }
 
-  const hasControlBehavior = game.entities.some(
-    (entity) =>
-      entity.behaviors?.some((b) => b.type === 'control') ||
-      (entity.template &&
-        game.templates?.[entity.template]?.behaviors?.some((b) => b.type === 'control'))
+  const hasInputRule = game.rules?.some(
+    (rule) =>
+      rule.trigger.type === 'tap' ||
+      rule.trigger.type === 'drag' ||
+      rule.trigger.type === 'tilt' ||
+      rule.trigger.type === 'button' ||
+      rule.trigger.type === 'swipe'
   );
 
-  if (!hasControlBehavior) {
+  const hasLegacyDraggable = game.entities.some(
+    (entity) =>
+      entity.behaviors?.some((b) => b.type === 'draggable') ||
+      (entity.template &&
+        game.templates?.[entity.template]?.behaviors?.some((b) => b.type === 'draggable'))
+  );
+
+  if (!hasInputRule && !hasLegacyDraggable) {
     errors.push({
       code: 'NO_PLAYER_CONTROL',
-      message: 'Game must have at least one entity with a control behavior. See docs/game-maker/reference/playability-contract.md for requirements.',
-      path: 'entities',
+      message: 'Game must have at least one Rule with an input trigger (tap, drag, tilt, button, swipe) or a draggable behavior.',
+      path: 'rules',
     });
   }
 }

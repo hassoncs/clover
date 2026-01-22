@@ -49,9 +49,7 @@ const game: GameDefinition = {
         restitution: 0.8,
         linearDamping: 0.5,
       },
-      behaviors: [
-        { type: "control", controlType: "tilt_to_move", force: 8, maxSpeed: 10 },
-      ],
+      behaviors: [],
     },
     enemyBot: {
       id: "enemyBot",
@@ -187,6 +185,14 @@ const game: GameDefinition = {
       trigger: { type: "collision", entityATag: "enemy", entityBTag: "boundary" },
       actions: [
         { type: "destroy", target: { type: "collision_entities" } },
+      ],
+    },
+    {
+      id: "player_move",
+      name: "Tilt to move",
+      trigger: { type: "tilt", threshold: 0.1 },
+      actions: [
+        { type: "apply_force", target: { type: "by_tag", tag: "player" }, direction: "tilt_direction", force: 8 },
       ],
     },
   ],

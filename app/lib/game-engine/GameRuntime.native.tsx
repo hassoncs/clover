@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import {
   StyleSheet,
   View,
@@ -19,6 +19,8 @@ import {
 } from "../physics2d";
 import { GameLoader, type LoadedGame } from "./GameLoader";
 import { EntityRenderer } from "./renderers";
+import { DebugInputOverlay } from "./renderers/DebugInputOverlay";
+import { useGameInput } from "./hooks/useGameInput";
 import type { RuntimeEntity } from "./types";
 import type {
   BehaviorContext,
@@ -27,6 +29,7 @@ import type {
   CollisionInfo,
 } from "./BehaviorContext";
 import { CameraSystem, type CameraConfig } from "./CameraSystem";
+import { ViewportSystem, type ViewportRect } from "./ViewportSystem";
 
 export interface GameRuntimeProps {
   definition: GameDefinition;
@@ -53,25 +56,23 @@ export function GameRuntime({
   const gameRef = useRef<LoadedGame | null>(null);
   const loaderRef = useRef<GameLoader | null>(null);
   const cameraRef = useRef<CameraSystem | null>(null);
+  const viewportSystemRef = useRef<ViewportSystem | null>(null);
   const elapsedRef = useRef(0);
-  const inputRef = useRef<InputState>({});
   const collisionsRef = useRef<CollisionInfo[]>([]);
   const collisionUnsubRef = useRef<Unsubscribe | null>(null);
-  const viewportRef = useRef({ width: 0, height: 0 });
-  const dragStartRef = useRef<{
-    x: number;
-    y: number;
-    worldX: number;
-    worldY: number;
-    targetEntityId?: string;
-  } | null>(null);
-  const buttonsRef = useRef({
-    left: false,
-    right: false,
-    up: false,
-    down: false,
-    jump: false,
-    action: false,
+  const screenSizeRef = useRef({ width: 0, height: 0 });
+
+  const {
+    inputRef,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+  } = useGameInput({
+    cameraRef,
+    gameRef,
+    physicsRef,
+    viewportSystemRef,
+    showDebugOverlays,
   });
 
   const [isReady, setIsReady] = useState(false);
@@ -82,7 +83,21 @@ export function GameRuntime({
     time: 0,
     state: "loading",
   });
-  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
+  const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
+  const [viewportRect, setViewportRect] = useState<ViewportRect>({ x: 0, y: 0, width: 0, height: 0, scale: 1 });
+
+  const viewportSystem = useMemo(() => {
+    const presentationConfig = definition.presentation;
+    return new ViewportSystem(definition.world.bounds, {
+      aspectRatio: presentationConfig?.aspectRatio,
+      fit: presentationConfig?.fit,
+      letterboxColor: presentationConfig?.letterboxColor ?? definition.ui?.backgroundColor,
+    });
+  }, [definition.presentation, definition.world.bounds, definition.ui?.backgroundColor]);
+
+  useEffect(() => {
+    viewportSystemRef.current = viewportSystem;
+  }, [viewportSystem]);
 
   const activePackId = activeAssetPackId ?? definition.activeAssetPackId;
   const assetOverrides =
@@ -133,22 +148,16 @@ export function GameRuntime({
           },
         );
 
-        const worldWidth = definition.world.bounds?.width ?? 20;
-        const worldHeight = definition.world.bounds?.height ?? 12;
-        const cameraConfig: CameraConfig = {
-          position: { x: worldWidth / 2, y: worldHeight / 2 },
-          zoom: definition.camera?.zoom ?? 1,
-          followTarget: definition.camera?.followTarget,
-          followSmoothing: 0.1,
-          bounds: definition.camera?.bounds,
-        };
         const initialViewport =
-          viewportRef.current.width > 0
-            ? viewportRef.current
+          screenSizeRef.current.width > 0
+            ? { width: viewportRect.width || 800, height: viewportRect.height || 600 }
             : { width: 800, height: 600 };
-        const pixelsPerMeter = definition.world.pixelsPerMeter ?? 50;
-        const camera = new CameraSystem(
-          cameraConfig,
+        const pixelsPerMeter = viewportRect.scale > 0 
+          ? viewportRect.scale 
+          : (definition.world.pixelsPerMeter ?? 50);
+        const camera = CameraSystem.fromGameConfig(
+          definition.camera,
+          definition.world.bounds,
           initialViewport,
           pixelsPerMeter,
         );
@@ -192,7 +201,10 @@ export function GameRuntime({
       loaderRef.current = null;
       cameraRef.current = null;
     };
-  }, [definition, onGameEnd, onScoreChange]);
+  }, [definition, onGameEnd, onScoreChange]); // handleTouchStart/End depend on this scope, or we rely on ref freshness. 
+  // Actually, handleTouchStart uses refs mostly, but let's check.
+  // It uses `showDebugOverlays` which is a prop.
+  // So we should add it.
 
   const stepGame = useCallback((dt: number) => {
     const physics = physicsRef.current;
@@ -268,7 +280,7 @@ export function GameRuntime({
 
     setEntities([...game.entityManager.getVisibleEntities()]);
     setGameState((s) => ({ ...s, time: elapsedRef.current }));
-  }, []);
+  }, [inputRef]);
 
   useSimplePhysicsLoop(stepGame, isReady && gameState.state === "playing");
 
@@ -308,10 +320,21 @@ export function GameRuntime({
   const handleLayout = useCallback(
     (event: { nativeEvent: { layout: { width: number; height: number } } }) => {
       const { width, height } = event.nativeEvent.layout;
-      console.log("[GameRuntime] onLayout fired, viewport:", { width, height });
-      viewportRef.current = { width, height };
-      setViewportSize({ width, height });
-      cameraRef.current?.updateViewport({ width, height });
+      console.log("[GameRuntime] onLayout fired, screen:", { width, height });
+      screenSizeRef.current = { width, height };
+      setScreenSize({ width, height });
+      
+      if (viewportSystemRef.current) {
+        viewportSystemRef.current.updateScreenSize({ width, height });
+        const newViewportRect = viewportSystemRef.current.getViewportRect();
+        setViewportRect(newViewportRect);
+        
+        cameraRef.current?.updateViewport({ 
+          width: newViewportRect.width, 
+          height: newViewportRect.height 
+        });
+        cameraRef.current?.updatePixelsPerMeter(newViewportRect.scale);
+      }
     },
     [],
   );
@@ -331,176 +354,13 @@ export function GameRuntime({
         worldY: worldPos.y,
       };
     },
-    [],
+    [inputRef],
   );
 
-  const handleTouchStart = useCallback((event: GestureResponderEvent) => {
-    const camera = cameraRef.current;
-    const game = gameRef.current;
-    if (!camera || !game) return;
+  const pixelsPerMeter = viewportRect.scale > 0 ? viewportRect.scale : (gameRef.current?.pixelsPerMeter ?? 50);
 
-    const { locationX: x, locationY: y } = event.nativeEvent;
-    const worldPos = camera.screenToWorld(x, y);
-
-    const physics = physicsRef.current;
-    let targetEntityId: string | undefined;
-    if (physics) {
-      const bodyId = physics.queryPoint(worldPos);
-      if (bodyId) {
-        const entity = game.entityManager
-          .getActiveEntities()
-          .find((e) => e.bodyId === bodyId);
-        if (entity) {
-          targetEntityId = entity.id;
-        }
-      }
-    }
-
-    dragStartRef.current = {
-      x,
-      y,
-      worldX: worldPos.x,
-      worldY: worldPos.y,
-      targetEntityId,
-    };
-
-    inputRef.current.drag = {
-      startX: x,
-      startY: y,
-      currentX: x,
-      currentY: y,
-      startWorldX: worldPos.x,
-      startWorldY: worldPos.y,
-      currentWorldX: worldPos.x,
-      currentWorldY: worldPos.y,
-      targetEntityId,
-    };
-  }, []);
-
-  const handleTouchMove = useCallback((event: GestureResponderEvent) => {
-    const camera = cameraRef.current;
-    const dragStart = dragStartRef.current;
-    if (!camera || !dragStart) return;
-
-    const { locationX: x, locationY: y } = event.nativeEvent;
-    const worldPos = camera.screenToWorld(x, y);
-
-    inputRef.current.drag = {
-      startX: dragStart.x,
-      startY: dragStart.y,
-      currentX: x,
-      currentY: y,
-      startWorldX: dragStart.worldX,
-      startWorldY: dragStart.worldY,
-      currentWorldX: worldPos.x,
-      currentWorldY: worldPos.y,
-      targetEntityId: dragStart.targetEntityId,
-    };
-  }, []);
-
-  const handleTouchEnd = useCallback((event: GestureResponderEvent) => {
-    const camera = cameraRef.current;
-    const dragStart = dragStartRef.current;
-    if (!camera) return;
-
-    const { locationX: x, locationY: y } = event.nativeEvent;
-    const worldPos = camera.screenToWorld(x, y);
-
-    inputRef.current.tap = {
-      x,
-      y,
-      worldX: worldPos.x,
-      worldY: worldPos.y,
-    };
-
-    if (dragStart) {
-      const dx = worldPos.x - dragStart.worldX;
-      const dy = worldPos.y - dragStart.worldY;
-      const VELOCITY_SCALE = 0.1;
-      inputRef.current.dragEnd = {
-        velocityX: (x - dragStart.x) * VELOCITY_SCALE,
-        velocityY: (y - dragStart.y) * VELOCITY_SCALE,
-        worldVelocityX: dx * VELOCITY_SCALE,
-        worldVelocityY: dy * VELOCITY_SCALE,
-      };
-    }
-
-    dragStartRef.current = null;
-    inputRef.current.drag = undefined;
-  }, []);
-
-  useEffect(() => {
-    if (Platform.OS !== "web") return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      switch (e.key) {
-        case "ArrowLeft":
-        case "a":
-        case "A":
-          buttonsRef.current.left = true;
-          break;
-        case "ArrowRight":
-        case "d":
-        case "D":
-          buttonsRef.current.right = true;
-          break;
-        case "ArrowUp":
-        case "w":
-        case "W":
-          buttonsRef.current.up = true;
-          break;
-        case "ArrowDown":
-        case "s":
-        case "S":
-          buttonsRef.current.down = true;
-          break;
-        case " ":
-          buttonsRef.current.jump = true;
-          break;
-      }
-      inputRef.current.buttons = { ...buttonsRef.current };
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      switch (e.key) {
-        case "ArrowLeft":
-        case "a":
-        case "A":
-          buttonsRef.current.left = false;
-          break;
-        case "ArrowRight":
-        case "d":
-        case "D":
-          buttonsRef.current.right = false;
-          break;
-        case "ArrowUp":
-        case "w":
-        case "W":
-          buttonsRef.current.up = false;
-          break;
-        case "ArrowDown":
-        case "s":
-        case "S":
-          buttonsRef.current.down = false;
-          break;
-        case " ":
-          buttonsRef.current.jump = false;
-          break;
-      }
-      inputRef.current.buttons = { ...buttonsRef.current };
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-    };
-  }, []);
-
-  const pixelsPerMeter = gameRef.current?.pixelsPerMeter ?? 50;
   const backgroundColor = definition.ui?.backgroundColor ?? "#87CEEB";
+  const letterboxColor = definition.presentation?.letterboxColor ?? "#000000";
 
   const cameraTransform = cameraRef.current?.getWorldToScreenTransform();
   const matrix = cameraTransform
@@ -535,46 +395,72 @@ export function GameRuntime({
         }
       : null;
 
-  return (
-    <View style={styles.container} onLayout={handleLayout}>
-      <View
-        style={StyleSheet.absoluteFill}
-        onStartShouldSetResponder={() => true}
-        onMoveShouldSetResponder={() => true}
-        onResponderGrant={handleTouchStart}
-        onResponderMove={handleTouchMove}
-        onResponderRelease={handleTouchEnd}
-      >
-        <Canvas style={styles.canvas}>
-          <Fill color={backgroundColor} />
-          {parallaxBgConfig && viewportSize.width > 0 && (
-            <ParallaxBackground
-              config={parallaxBgConfig}
-              cameraX={cameraPosition.x}
-              cameraY={cameraPosition.y}
-              cameraZoom={cameraZoom}
-              viewportWidth={viewportSize.width}
-              viewportHeight={viewportSize.height}
-              pixelsPerMeter={pixelsPerMeter}
-            />
-          )}
-          <Group matrix={matrix}>
-            {entities.map((entity) => (
-              <EntityRenderer
-                key={entity.id}
-                entity={entity}
-                pixelsPerMeter={pixelsPerMeter}
-                renderMode={renderMode}
-                showDebugOverlays={showDebugOverlays}
-                assetOverrides={assetOverrides}
-              />
-            ))}
-          </Group>
-        </Canvas>
-      </View>
+  const hasViewport = viewportRect.width > 0 && viewportRect.height > 0;
 
-      {showHUD && (
-        <View style={styles.hud}>
+  return (
+    <View style={[styles.container, { backgroundColor: letterboxColor }]} onLayout={handleLayout}>
+      {hasViewport && (
+        <View
+          style={[
+            styles.viewportContainer,
+            {
+              left: viewportRect.x,
+              top: viewportRect.y,
+              width: viewportRect.width,
+              height: viewportRect.height,
+            },
+          ]}
+          onStartShouldSetResponder={() => true}
+          onMoveShouldSetResponder={() => true}
+          onResponderGrant={handleTouchStart}
+          onResponderMove={handleTouchMove}
+          onResponderRelease={handleTouchEnd}
+        >
+          <Canvas style={styles.canvas}>
+            <Fill color={backgroundColor} />
+            {parallaxBgConfig && (
+              <ParallaxBackground
+                config={parallaxBgConfig}
+                cameraX={cameraPosition.x}
+                cameraY={cameraPosition.y}
+                cameraZoom={cameraZoom}
+                viewportWidth={viewportRect.width}
+                viewportHeight={viewportRect.height}
+                pixelsPerMeter={pixelsPerMeter}
+              />
+            )}
+            <Group matrix={matrix}>
+              {entities.map((entity) => (
+                <EntityRenderer
+                  key={entity.id}
+                  entity={entity}
+                  pixelsPerMeter={pixelsPerMeter}
+                  renderMode={renderMode}
+                  showDebugOverlays={showDebugOverlays}
+                  assetOverrides={assetOverrides}
+                />
+              ))}
+            </Group>
+            {showDebugOverlays && (
+              <DebugInputOverlay
+                input={inputRef}
+                width={viewportRect.width}
+                height={viewportRect.height}
+              />
+            )}
+          </Canvas>
+        </View>
+      )}
+
+      {showHUD && hasViewport && (
+        <View style={[
+          styles.hud,
+          {
+            left: viewportRect.x + 20,
+            top: viewportRect.y + 40,
+            right: screenSize.width - viewportRect.x - viewportRect.width + 20,
+          }
+        ]}>
           {definition.ui?.showScore !== false && (
             <Text style={styles.scoreText}>Score: {gameState.score}</Text>
           )}
@@ -656,14 +542,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  viewportContainer: {
+    position: "absolute",
+    overflow: "hidden",
+  },
   canvas: {
     flex: 1,
   },
   hud: {
     position: "absolute",
-    top: 100,
-    left: 20,
-    right: 20,
     flexDirection: "row",
     justifyContent: "space-between",
   },

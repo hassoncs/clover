@@ -124,9 +124,7 @@ const game: GameDefinition = {
         friction: 0.5,
         restitution: 0.3,
       },
-      behaviors: [
-        { type: "control", controlType: "tap_to_flip", force: 50 },
-      ],
+      behaviors: [],
     },
     drain: {
       id: "drain",
@@ -186,6 +184,14 @@ const game: GameDefinition = {
     { id: "ball", name: "Ball", template: "pinball", transform: { x: 5, y: 2, angle: 0, scaleX: 1, scaleY: 1 } },
   ],
   rules: [
+    {
+      id: "flip_flippers",
+      name: "Flip Flippers",
+      trigger: { type: "tap" },
+      actions: [
+        { type: "apply_impulse", target: { type: "by_tag", tag: "flipper" }, y: -50 },
+      ],
+    },
     {
       id: "ball_drain",
       name: "Ball drains",

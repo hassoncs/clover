@@ -48,7 +48,6 @@ const game: GameDefinition = {
         restitution: 0.2,
       },
       behaviors: [
-        { type: "control", controlType: "tap_to_jump", force: 6 },
         { type: "destroy_on_collision", withTags: ["spikes"], effect: "fade" },
       ],
     },
@@ -185,6 +184,14 @@ const game: GameDefinition = {
     },
   ],
   rules: [
+    {
+      id: "jump",
+      name: "Tap to Jump",
+      trigger: { type: "tap" },
+      actions: [
+        { type: "apply_impulse", target: { type: "by_tag", tag: "player" }, y: -6 },
+      ],
+    },
     {
       id: "player_dies",
       name: "Player hits spikes",
