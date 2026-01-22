@@ -4,11 +4,13 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { trpc } from "@/lib/trpc/client";
 import type { GameDefinition } from "@slopcade/shared";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   EditorProvider,
   EditorTopBar,
   BottomDock,
   StageContainer,
+  BottomSheetHost,
 } from "@/components/editor";
 
 export default function EditorScreen() {
@@ -77,12 +79,15 @@ export default function EditorScreen() {
   }
 
   return (
-    <View className="flex-1 bg-gray-900">
-      <EditorProvider gameId={id ?? "preview"} initialDefinition={gameDefinition}>
-        <EditorTopBar />
-        <StageContainer />
-        <BottomDock />
-      </EditorProvider>
-    </View>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <View className="flex-1 bg-gray-900">
+        <EditorProvider gameId={id ?? "preview"} initialDefinition={gameDefinition}>
+          <EditorTopBar />
+          <StageContainer />
+          <BottomDock />
+          <BottomSheetHost />
+        </EditorProvider>
+      </View>
+    </GestureHandlerRootView>
   );
 }

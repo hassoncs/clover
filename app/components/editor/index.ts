@@ -13,3 +13,9 @@ export { BottomDock } from "./BottomDock";
 export { StageContainer } from "./StageContainer";
 export { InteractionLayer } from "./InteractionLayer";
 export { SelectionOverlay } from "./SelectionOverlay";
+export { BottomSheetHost } from "./BottomSheetHost";
+
+export { LayersPanel } from "./panels/LayersPanel";
+export { PropertiesPanel } from "./panels/PropertiesPanel";
+export { DebugPanel } from "./panels/DebugPanel";
+export { AssetsPanel } from "./panels/AssetsPanel";
