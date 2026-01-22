@@ -1,5 +1,5 @@
 import { Text, View } from 'react-native';
-import { Button } from '@clover/ui';
+import { Button } from '@slopcade/ui';
 
 export default function Index() {
   return (

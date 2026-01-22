@@ -17,9 +17,9 @@ config.resolver.nodeModulesPaths = [
 ];
 
 config.resolver.alias = {
-  '@clover/ui': path.resolve(__dirname, '../../packages/ui/src'),
-  '@clover/physics': path.resolve(__dirname, '../../packages/physics/src'),
-  '@clover/theme': path.resolve(__dirname, '../../packages/theme/src'),
+  '@slopcade/ui': path.resolve(__dirname, '../../packages/ui/src'),
+  '@slopcade/physics': path.resolve(__dirname, '../../packages/physics/src'),
+  '@slopcade/theme': path.resolve(__dirname, '../../packages/theme/src'),
 };
 
 module.exports = config;

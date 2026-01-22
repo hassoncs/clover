@@ -12,8 +12,8 @@
   "dependencies": {
     "@astrojs/react": "^3.0.0",
     "@astrojs/tailwind": "^5.0.0",
-    "@clover/theme": "workspace:*",
-    "@clover/ui": "workspace:*",
+    "@slopcade/theme": "workspace:*",
+    "@slopcade/ui": "workspace:*",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "astro": "^4.0.0",

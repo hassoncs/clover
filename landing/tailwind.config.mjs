@@ -1,4 +1,4 @@
-import { tailwindPreset } from '@clover/theme/tailwind';
+import { tailwindPreset } from '@slopcade/theme/tailwind';
 
 /** @type {import('tailwindcss').Config} */
 export default {

@@ -1,5 +1,5 @@
 {
-  "name": "@clover/storybook",
+  "name": "@slopcade/storybook",
   "version": "1.0.0",
   "private": true,
   "main": "expo-router/entry",
@@ -14,9 +14,10 @@
     "ios": "expo run:ios --port 8082"
   },
   "dependencies": {
-    "@clover/physics": "workspace:*",
-    "@clover/theme": "workspace:*",
-    "@clover/ui": "workspace:*",
+    "@slopcade/physics": "workspace:*",
+    "@slopcade/shared": "workspace:*",
+    "@slopcade/theme": "workspace:*",
+    "@slopcade/ui": "workspace:*",
     "@expo/vector-icons": "^14.0.0",
     "@storybook/test": "8.6.15",
     "expo": "~54.0.1",

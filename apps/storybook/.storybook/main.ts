@@ -102,9 +102,10 @@ const config: StorybookConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       'react-native$': 'react-native-web',
-      '@clover/ui': path.resolve(__dirname, '../../../packages/ui/src'),
-      '@clover/theme': path.resolve(__dirname, '../../../packages/theme/src'),
-      '@clover/physics': path.resolve(__dirname, '../../../packages/physics/src'),
+      '@slopcade/ui': path.resolve(__dirname, '../../../packages/ui/src'),
+      '@slopcade/theme': path.resolve(__dirname, '../../../packages/theme/src'),
+      '@slopcade/physics': path.resolve(__dirname, '../../../packages/physics/src'),
+      '@slopcade/shared': path.resolve(__dirname, '../../../shared/src'),
     };
 
     return config;

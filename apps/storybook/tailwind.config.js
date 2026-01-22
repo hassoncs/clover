@@ -1,4 +1,4 @@
-const { tailwindPreset } = require('@clover/theme/tailwind');
+const { tailwindPreset } = require('@slopcade/theme/tailwind');
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
