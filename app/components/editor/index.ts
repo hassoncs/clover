@@ -11,3 +11,5 @@ export type {
 export { EditorTopBar } from "./EditorTopBar";
 export { BottomDock } from "./BottomDock";
 export { StageContainer } from "./StageContainer";
+export { InteractionLayer } from "./InteractionLayer";
+export { SelectionOverlay } from "./SelectionOverlay";

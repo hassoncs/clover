@@ -1,11 +1,14 @@
-import { View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
 import { useEditor } from "./EditorProvider";
 import { WithSkia } from "@/components/WithSkia";
+import { InteractionLayer } from "./InteractionLayer";
 
 export function StageContainer() {
   const { mode, document } = useEditor();
 
   const activePackId = document.activeAssetPackId;
+  const worldBounds = document.world.bounds ?? { width: 20, height: 12 };
+  const pixelsPerMeter = document.world.pixelsPerMeter ?? 50;
 
   return (
     <View className="flex-1 bg-gray-800">
@@ -29,6 +32,15 @@ export function StageContainer() {
           </View>
         }
       />
+
+      {mode === "edit" && (
+        <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+          <InteractionLayer
+            pixelsPerMeter={pixelsPerMeter}
+            worldBounds={worldBounds}
+          />
+        </View>
+      )}
     </View>
   );
 }
