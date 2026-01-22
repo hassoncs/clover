@@ -30,6 +30,7 @@ const BEHAVIOR_PHASES: Record<BehaviorType, BehaviorPhase> = {
   gravity_zone: 'movement',
   magnetic: 'movement',
   health: 'post_physics',
+  attach_to: 'movement',
 };
 
 const PHASE_ORDER: BehaviorPhase[] = ['input', 'timer', 'movement', 'visual', 'post_physics'];

@@ -159,6 +159,68 @@ const BUILTIN_FUNCTIONS: Record<string, BuiltinFunction> = {
     return ctx.entityManager.getEntitiesByTag(tag).length;
   },
 
+  entityExists: (args, ctx) => {
+    assertArgCount('entityExists', args, 1);
+    const tag = String(args[0]);
+    if (!ctx.entityManager) {
+      return false;
+    }
+    return ctx.entityManager.getEntitiesByTag(tag).length > 0;
+  },
+
+  highestY: (args, ctx) => {
+    assertArgCount('highestY', args, 1);
+    const tag = String(args[0]);
+    if (!ctx.entityManager) {
+      return 0;
+    }
+    const entities = ctx.entityManager.getEntitiesByTag(tag);
+    if (entities.length === 0) {
+      return 0;
+    }
+    return Math.min(...entities.map((e) => e.transform.y));
+  },
+
+  lowestY: (args, ctx) => {
+    assertArgCount('lowestY', args, 1);
+    const tag = String(args[0]);
+    if (!ctx.entityManager) {
+      return 0;
+    }
+    const entities = ctx.entityManager.getEntitiesByTag(tag);
+    if (entities.length === 0) {
+      return 0;
+    }
+    return Math.max(...entities.map((e) => e.transform.y));
+  },
+
+  nearestEntity: (args, ctx) => {
+    if (args.length < 2) {
+      throw new Error('nearestEntity(tag, position) requires 2 arguments');
+    }
+    const tag = String(args[0]);
+    const pos = asVec2(args[1]);
+    if (!ctx.entityManager) {
+      return { x: 0, y: 0 };
+    }
+    const entities = ctx.entityManager.getEntitiesByTag(tag);
+    if (entities.length === 0) {
+      return { x: 0, y: 0 };
+    }
+    let nearest = entities[0];
+    let minDist = Infinity;
+    for (const e of entities) {
+      const dx = e.transform.x - pos.x;
+      const dy = e.transform.y - pos.y;
+      const dist = dx * dx + dy * dy;
+      if (dist < minDist) {
+        minDist = dist;
+        nearest = e;
+      }
+    }
+    return { x: nearest.transform.x, y: nearest.transform.y };
+  },
+
   length: (args) => {
     assertArgCount('length', args, 1);
     const v = args[0];

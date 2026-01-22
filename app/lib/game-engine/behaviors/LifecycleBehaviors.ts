@@ -10,6 +10,7 @@ import type {
   MagneticBehavior,
   HealthBehavior,
   ParticleEmitterBehavior,
+  AttachToBehavior,
 } from '@slopcade/shared';
 import type { BehaviorContext } from '../BehaviorContext';
 import type { BehaviorExecutor } from '../BehaviorExecutor';
@@ -373,5 +374,58 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
     
     runtime.state.lastX = x;
     runtime.state.lastY = y;
+  });
+
+  executor.registerHandler('attach_to', (behavior, ctx, runtime) => {
+    const attach = behavior as AttachToBehavior;
+
+    const parents = ctx.entityManager.getEntitiesByTag(attach.parentTag);
+    if (parents.length === 0) return;
+
+    const parent = parents[0];
+
+    const parentTemplate = parent.template
+      ? ctx.entityManager.getTemplate(parent.template)
+      : undefined;
+
+    let offsetX = 0;
+    let offsetY = 0;
+    let slotLayer: number | undefined;
+
+    if (parentTemplate?.slots && attach.slotName in parentTemplate.slots) {
+      const slot = parentTemplate.slots[attach.slotName];
+      offsetX = slot.x;
+      offsetY = slot.y;
+      slotLayer = slot.layer;
+    }
+
+    if (attach.inheritRotation && parent.transform.angle !== 0) {
+      const cos = Math.cos(parent.transform.angle);
+      const sin = Math.sin(parent.transform.angle);
+      const rotatedX = offsetX * cos - offsetY * sin;
+      const rotatedY = offsetX * sin + offsetY * cos;
+      offsetX = rotatedX;
+      offsetY = rotatedY;
+    }
+
+    ctx.entity.transform.x = parent.transform.x + offsetX;
+    ctx.entity.transform.y = parent.transform.y + offsetY;
+
+    if (attach.inheritRotation) {
+      ctx.entity.transform.angle = parent.transform.angle;
+    }
+
+    if (slotLayer !== undefined) {
+      ctx.entity.layer = parent.layer + slotLayer;
+    }
+
+    if (ctx.entity.bodyId) {
+      ctx.physics.setTransform(ctx.entity.bodyId, {
+        position: { x: ctx.entity.transform.x, y: ctx.entity.transform.y },
+        angle: ctx.entity.transform.angle,
+      });
+    }
+
+    runtime.state.parentId = parent.id;
   });
 }

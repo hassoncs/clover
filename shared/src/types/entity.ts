@@ -33,6 +33,12 @@ export interface GameEntity {
   assetPackId?: string;
 }
 
+export interface SlotDefinition {
+  x: number;
+  y: number;
+  layer?: number;
+}
+
 export interface EntityTemplate {
   id: string;
   sprite?: SpriteComponent;
@@ -40,4 +46,5 @@ export interface EntityTemplate {
   behaviors?: Behavior[];
   tags?: string[];
   layer?: number;
+  slots?: Record<string, SlotDefinition>;
 }

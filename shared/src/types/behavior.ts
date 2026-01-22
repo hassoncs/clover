@@ -19,7 +19,8 @@ export type BehaviorType =
   | 'magnetic'
   | 'health'
   | 'draggable'
-  | 'particle_emitter';
+  | 'particle_emitter'
+  | 'attach_to';
 
 export type MoveDirection =
   | 'left'
@@ -185,6 +186,13 @@ export interface ParticleEmitterBehavior extends BaseBehavior {
   emitWhile?: 'always' | 'moving' | 'enabled';
 }
 
+export interface AttachToBehavior extends BaseBehavior {
+  type: 'attach_to';
+  parentTag: string;
+  slotName: string;
+  inheritRotation?: boolean;
+}
+
 export type Behavior =
   | MoveBehavior
   | RotateBehavior
@@ -202,4 +210,5 @@ export type Behavior =
   | MagneticBehavior
   | HealthBehavior
   | DraggableBehavior
-  | ParticleEmitterBehavior;
+  | ParticleEmitterBehavior
+  | AttachToBehavior;

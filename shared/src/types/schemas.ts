@@ -205,6 +205,13 @@ export const MagneticBehaviorSchema = BaseBehaviorSchema.extend({
   repels: z.boolean().optional(),
 });
 
+export const AttachToBehaviorSchema = BaseBehaviorSchema.extend({
+  type: z.literal('attach_to'),
+  parentTag: z.string(),
+  slotName: z.string(),
+  inheritRotation: z.boolean().optional(),
+});
+
 export const BehaviorSchema = z.discriminatedUnion('type', [
   MoveBehaviorSchema,
   RotateBehaviorSchema,
@@ -218,6 +225,7 @@ export const BehaviorSchema = z.discriminatedUnion('type', [
   FollowBehaviorSchema,
   BounceBehaviorSchema,
   MagneticBehaviorSchema,
+  AttachToBehaviorSchema,
 ]);
 
 export const CollisionTriggerSchema = z.object({
@@ -415,6 +423,12 @@ export const TransformComponentSchema = z.object({
   scaleY: z.number(),
 });
 
+export const SlotDefinitionSchema = z.object({
+  x: z.number(),
+  y: z.number(),
+  layer: z.number().optional(),
+});
+
 export const EntityTemplateSchema = z.object({
   id: z.string(),
   sprite: SpriteComponentSchema.optional(),
@@ -422,6 +436,7 @@ export const EntityTemplateSchema = z.object({
   behaviors: z.array(BehaviorSchema).optional(),
   tags: z.array(z.string()).optional(),
   layer: z.number().optional(),
+  slots: z.record(z.string(), SlotDefinitionSchema).optional(),
 });
 
 export const GameEntitySchema = z.object({
