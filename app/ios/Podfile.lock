@@ -2834,7 +2834,7 @@ DEPENDENCIES:
   - "React-logger (from `../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6.4.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon/logger`)"
   - "React-Mapbuffer (from `../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6.4.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon`)"
   - "React-microtasksnativemodule (from `../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6.4.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)"
-  - react-native-box2d (from `../../../react-native-box2d`)
+  - react-native-box2d (from `../../../../react-native-box2d`)
   - "react-native-get-random-values (from `../../node_modules/.pnpm/react-native-get-random-values@2.0.0_react-native@0.81.4_@babel+core@7.28.6_@react-native-com_dvbrleqe5m4ln2ivmt43stzi3i/node_modules/react-native-get-random-values`)"
   - "react-native-safe-area-context (from `../../node_modules/.pnpm/react-native-safe-area-context@5.6.2_react-native@0.81.4_@babel+core@7.28.6_@react-native-com_dlz6aoufxsl5klahbvhfg6tjf4/node_modules/react-native-safe-area-context`)"
   - "react-native-skia (from `../../node_modules/.pnpm/@shopify+react-native-skia@2.4.14_react-native-reanimated@4.2.1_react-native-worklets@0.7.0_@_ha6z4snslgb5atfkwx7c3mvbyu/node_modules/@shopify/react-native-skia`)"
@@ -2985,7 +2985,7 @@ EXTERNAL SOURCES:
   React-microtasksnativemodule:
     :path: "../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.28.6_@react-native-community+cli@6.4.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
   react-native-box2d:
-    :path: "../../../react-native-box2d"
+    :path: "../../../../react-native-box2d"
   react-native-get-random-values:
     :path: "../../node_modules/.pnpm/react-native-get-random-values@2.0.0_react-native@0.81.4_@babel+core@7.28.6_@react-native-com_dvbrleqe5m4ln2ivmt43stzi3i/node_modules/react-native-get-random-values"
   react-native-safe-area-context:
