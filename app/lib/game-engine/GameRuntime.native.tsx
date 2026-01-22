@@ -102,9 +102,7 @@ export function GameRuntime({
     });
   }, [definition.presentation, definition.world.bounds, definition.ui?.backgroundColor]);
 
-  useEffect(() => {
-    viewportSystemRef.current = viewportSystem;
-  }, [viewportSystem]);
+  viewportSystemRef.current = viewportSystem;
 
   const activePackId = activeAssetPackId ?? definition.activeAssetPackId;
   const assetOverrides =
@@ -156,20 +154,21 @@ export function GameRuntime({
           },
         );
 
-        const initialViewport =
-          screenSizeRef.current.width > 0
-            ? { width: viewportRect.width || 800, height: viewportRect.height || 600 }
-            : { width: 800, height: 600 };
-        const pixelsPerMeter = viewportRect.scale > 0 
-          ? viewportRect.scale 
-          : (definition.world.pixelsPerMeter ?? 50);
         const camera = CameraSystem.fromGameConfig(
           definition.camera,
           definition.world.bounds,
-          initialViewport,
-          pixelsPerMeter,
+          { width: 800, height: 600 },
+          definition.world.pixelsPerMeter ?? 50,
         );
         cameraRef.current = camera;
+        
+        if (screenSizeRef.current.width > 0 && viewportSystemRef.current) {
+          viewportSystemRef.current.updateScreenSize(screenSizeRef.current);
+          const currentViewport = viewportSystemRef.current.getViewportRect();
+          camera.updateViewport({ width: currentViewport.width, height: currentViewport.height });
+          camera.updatePixelsPerMeter(currentViewport.scale);
+          setViewportRect(currentViewport);
+        }
 
         game.rulesEvaluator.setCallbacks({
           onScoreChange: (score) => {

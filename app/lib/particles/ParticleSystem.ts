@@ -50,11 +50,11 @@ export function updateParticles(
     pool.spawnAccumulator -= 1;
   }
   
-  if (config.burst && pool.burstCooldown <= 0) {
+  if (config.burst && pool.burstCooldown === 0) {
     for (let i = 0; i < config.burst.count && pool.activeCount < config.maxParticles; i++) {
       spawnParticle(pool, config, emitterX, emitterY);
     }
-    pool.burstCooldown = config.burst.cooldown;
+    pool.burstCooldown = config.burst.cooldown > 0 ? config.burst.cooldown : -1;
   }
   
   if (pool.burstCooldown > 0) {
