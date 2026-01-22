@@ -5,7 +5,7 @@ import type {
   RuleTrigger,
   RuleCondition,
   RuleAction,
-} from '@clover/shared';
+} from '@slopcade/shared';
 import type { EntityManager } from './EntityManager';
 import type { RuntimeEntity } from './types';
 import type { CollisionInfo, GameState } from './BehaviorContext';

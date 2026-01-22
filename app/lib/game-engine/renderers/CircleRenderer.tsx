@@ -1,5 +1,5 @@
 import { Circle, Group, Shadow, BlendColor } from '@shopify/react-native-skia';
-import type { CircleSpriteComponent } from '@clover/shared';
+import type { CircleSpriteComponent } from '@slopcade/shared';
 import type { RuntimeEntity } from '../types';
 
 interface CircleRendererProps {

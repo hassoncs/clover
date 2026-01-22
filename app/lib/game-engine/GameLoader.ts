@@ -1,4 +1,4 @@
-import type { GameDefinition, GameEntity } from '@clover/shared';
+import type { GameDefinition, GameEntity } from '@slopcade/shared';
 import type { Physics2D } from '../physics2d/Physics2D';
 import { EntityManager } from './EntityManager';
 import { RulesEvaluator } from './RulesEvaluator';

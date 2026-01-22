@@ -7,7 +7,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
-    <string>skia-canvas-wasm-deploy-test</string>
+    <string>Slopcade</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -27,8 +27,8 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>skia</string>
-          <string>com.skia.physics.test</string>
+          <string>slopcade</string>
+          <string>me.ch5.slopcade.app</string>
         </array>
       </dict>
     </array>

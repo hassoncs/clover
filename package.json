@@ -1,5 +1,5 @@
 {
-  "name": "clover-monorepo",
+  "name": "slopcade-monorepo",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -14,9 +14,9 @@
     "storybook:device": "turbo run storybook:device",
     "dev": "devmux ensure metro",
     "dev:api": "devmux ensure api",
-    "ios": "devmux ensure metro && npx hush run -- pnpm --filter clover ios",
-    "ios:device": "devmux ensure metro && npx hush run -- pnpm --filter clover ios:device",
-    "android": "devmux ensure metro && npx hush run -- pnpm --filter clover android",
+    "ios": "devmux ensure metro && npx hush run -- pnpm --filter slopcade ios",
+    "ios:device": "devmux ensure metro && npx hush run -- pnpm --filter slopcade ios:device",
+    "android": "devmux ensure metro && npx hush run -- pnpm --filter slopcade android",
     "android:device": "cd app && npx expo run:android --variant release --device",
     "svc:ensure": "devmux ensure",
     "svc:status": "devmux status",

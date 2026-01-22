@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Path, Group, Shadow, Skia, BlendColor } from '@shopify/react-native-skia';
-import type { PolygonSpriteComponent } from '@clover/shared';
+import type { PolygonSpriteComponent } from '@slopcade/shared';
 import type { RuntimeEntity } from '../types';
 
 interface PolygonRendererProps {

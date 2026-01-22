@@ -1,5 +1,5 @@
 {
-  "name": "@clover/physics",
+  "name": "@slopcade/physics",
   "version": "1.0.0",
   "private": true,
   "main": "./src/index.ts",
@@ -10,7 +10,7 @@
     "./FallingBoxes": "./src/FallingBoxes.tsx"
   },
   "dependencies": {
-    "@clover/shared": "workspace:*",
+    "@slopcade/shared": "workspace:*",
     "@shopify/react-native-skia": "2.4.14",
     "react": "19.1.0",
     "react-native": "0.81.4",

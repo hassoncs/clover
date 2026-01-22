@@ -1,5 +1,5 @@
 import { Image, Group, useImage, BlendColor } from '@shopify/react-native-skia';
-import type { ImageSpriteComponent } from '@clover/shared';
+import type { ImageSpriteComponent } from '@slopcade/shared';
 import type { RuntimeEntity } from '../types';
 
 interface ImageRendererProps {

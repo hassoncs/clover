@@ -1,5 +1,5 @@
 import { Rect, Group, Shadow, BlendColor } from '@shopify/react-native-skia';
-import type { RectSpriteComponent } from '@clover/shared';
+import type { RectSpriteComponent } from '@slopcade/shared';
 import type { RuntimeEntity } from '../types';
 
 interface RectRendererProps {

@@ -6,7 +6,7 @@ import type {
   PhysicsComponent,
   Behavior,
   EntityTemplate,
-} from '@clover/shared';
+} from '@slopcade/shared';
 
 export interface RuntimeEntity {
   id: string;

@@ -1,20 +1,22 @@
 {
   "expo": {
-    "scheme": "clover",
+    "scheme": "slopcade",
+    "icon": "./assets/icon.png",
     "web": {
-      "output": "static"
+      "output": "static",
+      "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-router"
     ],
-    "name": "Clover",
-    "slug": "clover",
+    "name": "Slopcade",
+    "slug": "slopcade",
     "description": "AI-powered 2D game maker for kids",
     "ios": {
-      "bundleIdentifier": "com.clover.app"
+      "bundleIdentifier": "me.ch5.slopcade.app"
     },
     "android": {
-      "package": "com.clover.app"
+      "package": "me.ch5.slopcade.app"
     }
   }
 }

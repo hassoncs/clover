@@ -1,5 +1,5 @@
 {
-  "name": "@clover/shared",
+  "name": "@slopcade/shared",
   "version": "1.0.0",
   "private": true,
   "main": "./src/index.ts",

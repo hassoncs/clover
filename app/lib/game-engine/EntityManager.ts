@@ -5,7 +5,7 @@ import type {
   EntityTemplate,
   PhysicsComponent,
   Behavior,
-} from '@clover/shared';
+} from '@slopcade/shared';
 import type { RuntimeEntity, RuntimeBehavior, EntityManagerOptions } from './types';
 
 interface PooledEntitySlot {

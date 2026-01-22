@@ -1,5 +1,5 @@
 {
-  "name": "@clover/ui",
+  "name": "@slopcade/ui",
   "version": "1.0.0",
   "private": true,
   "main": "./src/index.ts",
@@ -12,7 +12,7 @@
     "./Input": "./src/Input.tsx"
   },
   "dependencies": {
-    "@clover/theme": "workspace:*",
+    "@slopcade/theme": "workspace:*",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
