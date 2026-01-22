@@ -66,6 +66,7 @@ export function GameRuntime({
   const frameIdRef = useRef(0);
   const collisionsRef = useRef<CollisionInfo[]>([]);
   const collisionUnsubRef = useRef<Unsubscribe | null>(null);
+  const sensorUnsubRef = useRef<Unsubscribe | null>(null);
   const screenSizeRef = useRef({ width: 0, height: 0 });
   const computedValuesRef = useRef(createComputedValueSystem());
   const particleManagerRef = useRef<ParticleEffectManager>(createParticleEffectManager());
@@ -129,7 +130,6 @@ export function GameRuntime({
 
         collisionUnsubRef.current = physics.onCollisionBegin(
           (event: CollisionEvent) => {
-            console.log('[GameRuntime] onCollisionBegin received - bodyA:', event.bodyA.value, 'bodyB:', event.bodyB.value);
             const entityA = game.entityManager
               .getActiveEntities()
               .find((e) => e.bodyId?.value === event.bodyA.value);
@@ -137,7 +137,6 @@ export function GameRuntime({
               .getActiveEntities()
               .find((e) => e.bodyId?.value === event.bodyB.value);
 
-            console.log('[GameRuntime] Found entities - A:', entityA?.id, 'B:', entityB?.id);
             if (entityA && entityB) {
               const impulse = event.contacts.reduce(
                 (sum, c) => sum + c.normalImpulse,
@@ -151,10 +150,27 @@ export function GameRuntime({
                 normal,
                 impulse,
               });
-              console.log('[GameRuntime] Collision recorded between', entityA.id, 'and', entityB.id);
             }
           },
         );
+
+        sensorUnsubRef.current = physics.onSensorBegin((event) => {
+          const sensorEntity = game.entityManager
+            .getActiveEntities()
+            .find((e) => e.colliderId?.value === event.sensor.value);
+          const otherEntity = game.entityManager
+            .getActiveEntities()
+            .find((e) => e.bodyId?.value === event.otherBody.value);
+
+          if (sensorEntity && otherEntity) {
+            collisionsRef.current.push({
+              entityA: sensorEntity,
+              entityB: otherEntity,
+              normal: { x: 0, y: 0 },
+              impulse: 0,
+            });
+          }
+        });
 
         const camera = CameraSystem.fromGameConfig(
           definition.camera,
@@ -202,6 +218,8 @@ export function GameRuntime({
     return () => {
       collisionUnsubRef.current?.();
       collisionUnsubRef.current = null;
+      sensorUnsubRef.current?.();
+      sensorUnsubRef.current = null;
       if (gameRef.current && loaderRef.current) {
         loaderRef.current.unload(gameRef.current);
       }
@@ -312,14 +330,6 @@ export function GameRuntime({
       evalContext: baseEvalContext,
       createEvalContextForEntity: createEvalContext,
     };
-
-    if (collisionsRef.current.length > 0) {
-      console.log(
-        "[GameRuntime] stepGame - passing",
-        collisionsRef.current.length,
-        "collisions to behaviors",
-      );
-    }
 
     game.behaviorExecutor.executeAll(
       game.entityManager.getActiveEntities(),

@@ -11,7 +11,7 @@ const game: GameDefinition = {
     id: "test-physics-stacker",
     title: "Physics Stacker",
     description: "Stack blocks as high as you can! Higher stacks = more points!",
-    instructions: "Tap to drop blocks from the moving dropper. Land them on the platform to score. The higher your stack, the more points each block is worth! Reach 1000 points to win - but don't let any blocks fall off!",
+    instructions: "Tap to drop blocks from the moving dropper. Land them on the platform to score. The higher your stack, the more points each block is worth! Reach 1000 points to win. Watch out - falling blocks cost you 100 points, and if your score goes below 0, you lose!",
     version: "1.0.0",
   },
   world: {
@@ -31,8 +31,8 @@ const game: GameDefinition = {
     score: 1000,
   },
   loseCondition: {
-    type: "entity_exits_screen",
-    tag: "block",
+    type: "score_below",
+    score: 0,
   },
   templates: {
     foundation: {
@@ -136,10 +136,37 @@ const game: GameDefinition = {
         { type: "score_on_collision", withTags: ["block", "ground"], points: { expr: "floor(80 * pow(1.3, max(0, 16 - self.transform.y)))" }, once: true },
       ],
     },
+    deathZone: {
+      id: "deathZone",
+      tags: ["death-zone"],
+      sprite: { type: "rect", width: 20, height: 2, color: "transparent" },
+      physics: {
+        bodyType: "static",
+        shape: "box",
+        width: 20,
+        height: 2,
+        density: 0,
+        friction: 0,
+        restitution: 0,
+        isSensor: true,
+      },
+    },
   },
   entities: [
     { id: "foundation", name: "Foundation", template: "foundation", transform: { x: 7, y: 16, angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "dropper", name: "Block Dropper", template: "dropper", transform: { x: 7, y: 2, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "death-zone", name: "Death Zone", template: "deathZone", transform: { x: 7, y: 19, angle: 0, scaleX: 1, scaleY: 1 } },
+  ],
+  rules: [
+    {
+      id: "block-fell-penalty",
+      name: "Penalize fallen blocks",
+      trigger: { type: "collision", entityATag: "block", entityBTag: "death-zone" },
+      actions: [
+        { type: "score", operation: "subtract", value: 100 },
+        { type: "destroy", target: { type: "collision_entities" } },
+      ],
+    },
   ],
 };
 
