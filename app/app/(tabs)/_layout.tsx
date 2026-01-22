@@ -6,6 +6,7 @@ function TabIcon({ name }: { name: string }) {
     lab: "🔬",
     maker: "🎮",
     gallery: "🎨",
+    browse: "🔍",
   };
 
   return (
@@ -56,6 +57,14 @@ export default function TabLayout() {
           title: "Maker",
           tabBarIcon: () => <TabIcon name="maker" />,
           headerTitle: "Game Maker",
+        }}
+      />
+      <Tabs.Screen
+        name="browse"
+        options={{
+          title: "Browse",
+          tabBarIcon: () => <TabIcon name="browse" />,
+          headerTitle: "Discover Games",
         }}
       />
       <Tabs.Screen

@@ -22,6 +22,7 @@ export interface RuntimeEntity {
   active: boolean;
   bodyId: BodyId | null;
   colliderId: ColliderId | null;
+  assetPackId?: string;
 }
 
 export interface RuntimeBehavior {

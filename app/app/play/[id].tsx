@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { View, Text, Pressable, ActivityIndicator, TextInput, Modal, ScrollView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -18,6 +18,7 @@ export default function PlayScreen() {
   const [gameDefinition, setGameDefinition] = useState<GameDefinition | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [runtimeKey, setRuntimeKey] = useState(0);
 
   const [renderMode, setRenderMode] = useState<'default' | 'primitive'>('default');
   const [showOverlays, setShowOverlays] = useState(false);
@@ -28,6 +29,7 @@ export default function PlayScreen() {
   const [regeneratingTemplateId, setRegeneratingTemplateId] = useState<string | undefined>(undefined);
   const [generatingLayer, setGeneratingLayer] = useState<'sky' | 'far' | 'mid' | 'near' | 'all' | undefined>(undefined);
   const [activeAssetPackId, setActiveAssetPackId] = useState<string | undefined>(undefined);
+  const [isForking, setIsForking] = useState(false);
 
   useEffect(() => {
     const loadGame = async () => {
@@ -64,9 +66,26 @@ export default function PlayScreen() {
     console.log(`Game ended: ${state}`);
   }, []);
 
+  const handleRequestRestart = useCallback(() => {
+    setRuntimeKey((k) => k + 1);
+  }, []);
+
   const handleBack = useCallback(() => {
     router.back();
   }, [router]);
+
+  const handleFork = useCallback(async () => {
+    if (!id || id === "preview") return;
+    
+    setIsForking(true);
+    try {
+      const result = await trpc.games.fork.mutate({ id });
+      router.replace(`/editor/${result.id}`);
+    } catch (err) {
+      console.error('Failed to fork game:', err);
+      setIsForking(false);
+    }
+  }, [id, router]);
 
   const toggleDebug = () => {
     if (renderMode === 'default' && !showOverlays) {
@@ -320,12 +339,25 @@ export default function PlayScreen() {
             </Pressable>
 
             {id && id !== "preview" && (
-              <Pressable
-                className="py-2 px-3 bg-indigo-600 rounded-lg"
-                onPress={() => setShowAssetMenu(true)}
-              >
-                <Text className="text-white font-bold text-xs">🎨 Skin</Text>
-              </Pressable>
+              <>
+                <Pressable
+                  className={`py-2 px-3 rounded-lg ${isForking ? 'bg-gray-600' : 'bg-green-600'}`}
+                  onPress={handleFork}
+                  disabled={isForking}
+                >
+                  {isForking ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <Text className="text-white font-bold text-xs">✂️ Fork</Text>
+                  )}
+                </Pressable>
+                <Pressable
+                  className="py-2 px-3 bg-indigo-600 rounded-lg"
+                  onPress={() => setShowAssetMenu(true)}
+                >
+                  <Text className="text-white font-bold text-xs">🎨 Skin</Text>
+                </Pressable>
+              </>
             )}
           </View>
         }
@@ -434,12 +466,14 @@ export default function PlayScreen() {
       </Modal>
 
       <WithSkia
+        key={runtimeKey}
         getComponent={() =>
           import("@/lib/game-engine/GameRuntime.native").then((mod) => ({
             default: () => (
               <mod.GameRuntime
                 definition={gameDefinition!}
                 onGameEnd={handleGameEnd}
+                onRequestRestart={handleRequestRestart}
                 showHUD
                 renderMode={renderMode}
                 showDebugOverlays={showOverlays}

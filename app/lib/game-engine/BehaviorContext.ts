@@ -87,6 +87,9 @@ export interface BehaviorContext {
   destroyEntity(entityId: string): void;
   triggerEvent(eventName: string, data?: Record<string, unknown>): void;
   triggerParticleEffect(type: ParticleEmitterType, x: number, y: number): void;
+  createEntityEmitter(type: ParticleEmitterType, x: number, y: number): string;
+  updateEmitterPosition(emitterId: string, x: number, y: number): void;
+  stopEmitter(emitterId: string): void;
 
   resolveNumber(value: Value<number>): number;
   resolveVec2(value: Value<ExprVec2>): ExprVec2;

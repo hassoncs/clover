@@ -129,6 +129,7 @@ export class EntityManager {
       active: resolved.active !== false,
       bodyId: null,
       colliderId: null,
+      assetPackId: resolved.assetPackId,
     };
   }
 

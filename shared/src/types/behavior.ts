@@ -1,4 +1,6 @@
 import type { Vec2, Bounds } from './common';
+import type { ParticleEmitterType } from './particles';
+import type { Value } from '../expressions/types';
 
 export type BehaviorType =
   | 'move'
@@ -16,7 +18,8 @@ export type BehaviorType =
   | 'gravity_zone'
   | 'magnetic'
   | 'health'
-  | 'draggable';
+  | 'draggable'
+  | 'particle_emitter';
 
 export type MoveDirection =
   | 'left'
@@ -65,6 +68,7 @@ export interface SpawnOnEventBehavior extends BaseBehavior {
   maxSpawns?: number;
   initialVelocity?: Vec2;
   withTags?: string[];
+  spawnEffect?: ParticleEmitterType;
 }
 
 export interface DestroyOnCollisionBehavior extends BaseBehavior {
@@ -78,7 +82,7 @@ export interface DestroyOnCollisionBehavior extends BaseBehavior {
 export interface ScoreOnCollisionBehavior extends BaseBehavior {
   type: 'score_on_collision';
   withTags: string[];
-  points: number;
+  points: Value<number>;
   once?: boolean;
   showPopup?: boolean;
 }
@@ -147,7 +151,7 @@ export interface RotateTowardBehavior extends BaseBehavior {
 
 export interface ScoreOnDestroyBehavior extends BaseBehavior {
   type: 'score_on_destroy';
-  points: number;
+  points: Value<number>;
 }
 
 export interface HealthBehavior extends BaseBehavior {
@@ -174,6 +178,13 @@ export interface DraggableBehavior extends BaseBehavior {
   requireDirectHit?: boolean;
 }
 
+export interface ParticleEmitterBehavior extends BaseBehavior {
+  type: 'particle_emitter';
+  emitterType: ParticleEmitterType;
+  offset?: Vec2;
+  emitWhile?: 'always' | 'moving' | 'enabled';
+}
+
 export type Behavior =
   | MoveBehavior
   | RotateBehavior
@@ -190,4 +201,5 @@ export type Behavior =
   | BounceBehavior
   | MagneticBehavior
   | HealthBehavior
-  | DraggableBehavior;
+  | DraggableBehavior
+  | ParticleEmitterBehavior;

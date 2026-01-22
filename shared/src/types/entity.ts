@@ -30,6 +30,7 @@ export interface GameEntity {
   layer?: number;
   visible?: boolean;
   active?: boolean;
+  assetPackId?: string;
 }
 
 export interface EntityTemplate {

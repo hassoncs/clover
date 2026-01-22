@@ -13,7 +13,7 @@ import type { Physics2D } from "@/lib/physics2d";
 import type { EntityManager } from "@/lib/game-engine/EntityManager";
 
 export type EditorMode = "edit" | "playtest";
-export type EditorTab = "assets" | "properties" | "layers" | "debug";
+export type EditorTab = "gallery" | "assets" | "properties" | "layers" | "debug";
 export type SheetSnapPoint = 0 | 1 | 2;
 
 interface Vec2 {
@@ -381,6 +381,7 @@ export interface GameRuntimeRef {
 }
 
 interface EditorContextValue {
+  gameId: string;
   state: EditorState;
   mode: EditorMode;
   selectedEntityId: string | null;
@@ -433,7 +434,7 @@ export function EditorProvider({
   const initialState: EditorState = {
     mode: "edit",
     selectedEntityId: null,
-    activeTab: "assets",
+    activeTab: "gallery",
     sheetSnapPoint: 0,
     document: initialDefinition,
     isDirty: false,
@@ -516,6 +517,7 @@ export function EditorProvider({
 
   const value: EditorContextValue = useMemo(
     () => ({
+      gameId,
       state,
       mode: state.mode,
       selectedEntityId: state.selectedEntityId,
@@ -550,6 +552,7 @@ export function EditorProvider({
       selectedEntity,
     }),
     [
+      gameId,
       state,
       setMode,
       toggleMode,

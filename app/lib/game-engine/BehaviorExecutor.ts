@@ -22,6 +22,7 @@ const BEHAVIOR_PHASES: Record<BehaviorType, BehaviorPhase> = {
   rotate: 'visual',
   rotate_toward: 'visual',
   animate: 'visual',
+  particle_emitter: 'visual',
   spawn_on_event: 'post_physics',
   destroy_on_collision: 'post_physics',
   score_on_collision: 'post_physics',

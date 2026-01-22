@@ -325,6 +325,18 @@ Development phases for the AI-Powered Mobile Game Maker.
 
 **Why MVP+1**: Immediate user impact, relatively quick implementation. Bundled sounds can ship in 1 week, AI generation adds premium customization.
 
+### Phase 11: Platform Economics & Creator Incentives (Post-MVP)
+> **Full Plan**: [ECONOMY_IMPLEMENTATION_PLAN.md](../plans/ECONOMY_IMPLEMENTATION_PLAN.md)
+
+**Goal**: Implement a sustainable, kid-safe economy that rewards creativity and funds AI costs.
+
+**Core Features**:
+- [ ] **Dual Currency System**: Sparks (Earned) vs Gems (Paid)
+- [ ] **Attribution Genealogy**: Track remix chains and credit original creators
+- [ ] **Global Avatar System**: Custom player identities across games
+- [ ] **Safety Controls**: COPPA-compliant parental dashboard & spending limits
+- [ ] **Monetization**: IAP for Gems, Skin Packs, and Particle Trails
+
 ---
 
 ## Risk Mitigation

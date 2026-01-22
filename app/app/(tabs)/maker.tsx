@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { Link } from "expo-router";
 import { trpc } from "@/lib/trpc/client";
 import { TESTGAMES } from "@/lib/registry/generated/testGames";
 import type { GameDefinition } from "@slopcade/shared";
@@ -27,23 +28,16 @@ interface GameItem {
   updatedAt: string;
 }
 
-const EXAMPLE_PROMPTS = [
-  "A game where I launch balls at targets",
-  "A platformer where a cat collects fish",
-  "A stacking game where I drop blocks",
-  "A game where I catch falling fruit",
-];
-
-type TabId = "projects" | "templates" | "create";
-
 export default function MakerScreen() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<TabId>("projects");
-
   const [myGames, setMyGames] = useState<GameItem[]>([]);
   const [isLoadingGames, setIsLoadingGames] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // New Game modal state
+  const [showNewGameModal, setShowNewGameModal] = useState(false);
+
+  // AI Generation state
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedGame, setGeneratedGame] = useState<GameDefinition | null>(null);
@@ -53,17 +47,12 @@ export default function MakerScreen() {
     if (showRefresh) setIsRefreshing(true);
     else setIsLoadingGames(true);
 
-    console.log('[Maker] Starting fetchGames...');
     try {
-      console.log('[Maker] Calling trpc.games.listByInstall.query()...');
       const result = await trpc.games.listByInstall.query();
-      console.log('[Maker] Got result:', result);
       setMyGames(result);
-    } catch (err) {
-      console.error('[Maker] Error fetching games:', err);
+    } catch {
       setMyGames([]);
     } finally {
-      console.log('[Maker] Finally block - setting loading to false');
       setIsLoadingGames(false);
       setIsRefreshing(false);
     }
@@ -99,6 +88,7 @@ export default function MakerScreen() {
 
   const handlePlayPreview = useCallback(() => {
     if (!generatedGame) return;
+    setShowNewGameModal(false);
     router.push({
       pathname: "/play/preview",
       params: { definition: JSON.stringify(generatedGame) },
@@ -119,7 +109,7 @@ export default function MakerScreen() {
       Alert.alert("Saved!", "Game saved to your projects");
       setGeneratedGame(null);
       setPrompt("");
-      setActiveTab("projects");
+      setShowNewGameModal(false);
       fetchGames();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to save game";
@@ -146,18 +136,10 @@ export default function MakerScreen() {
     ]);
   }, []);
 
-  const TabButton = ({ id, label }: { id: TabId; label: string }) => (
-    <Pressable
-      className={`flex-1 py-3 items-center rounded-lg ${
-        activeTab === id ? "bg-green-600" : "bg-gray-800"
-      }`}
-      onPress={() => setActiveTab(id)}
-    >
-      <Text className={`font-semibold ${activeTab === id ? "text-white" : "text-gray-400"}`}>
-        {label}
-      </Text>
-    </Pressable>
-  );
+  const handleOpenTemplate = useCallback((templateId: string) => {
+    setShowNewGameModal(false);
+    router.push({ pathname: "/test-games/[id]", params: { id: templateId } });
+  }, [router]);
 
   const renderProjects = () => (
     <ScrollView
@@ -185,7 +167,7 @@ export default function MakerScreen() {
             </Text>
             <Pressable
               className="mt-6 py-3 px-6 bg-green-600 rounded-lg"
-              onPress={() => setActiveTab("create")}
+              onPress={() => setShowNewGameModal(true)}
             >
               <Text className="text-white font-semibold">Create Game</Text>
             </Pressable>
@@ -219,142 +201,147 @@ export default function MakerScreen() {
     </ScrollView>
   );
 
-  const renderTemplates = () => (
-    <ScrollView className="flex-1">
-      <View className="p-4">
-        <Text className="text-gray-400 mb-4">
-          {TESTGAMES.length} playable templates with win/lose conditions
-        </Text>
-        {TESTGAMES.map((game) => (
-          <Pressable
-            key={game.id}
-            className="bg-gray-800 p-4 rounded-xl border border-gray-700 mb-3 active:bg-gray-700"
-            onPress={() => router.push({ pathname: "/test-games/[id]", params: { id: game.id } })}
-          >
-            <View className="flex-row items-center">
-              <Text className="text-2xl mr-3">🕹️</Text>
-              <View className="flex-1">
-                <Text className="text-lg font-semibold text-white">{game.meta.title}</Text>
-                {game.meta.description && (
-                  <Text className="text-gray-400 mt-1" numberOfLines={2}>
-                    {game.meta.description}
-                  </Text>
-                )}
-              </View>
-            </View>
-          </Pressable>
-        ))}
-      </View>
-    </ScrollView>
-  );
-
-  const renderCreate = () => (
-    <KeyboardAvoidingView
-      className="flex-1"
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+  const renderNewGameModal = () => (
+    <Modal
+      visible={showNewGameModal}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={() => setShowNewGameModal(false)}
     >
-      <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
-        <View className="p-4">
-          <Text className="text-gray-300 mb-4">
-            Describe the game you want to create:
-          </Text>
-
-          <TextInput
-            className="bg-gray-800 p-4 rounded-xl border border-gray-700 text-base min-h-[100px] text-white"
-            placeholder="E.g., A game where I launch balls at towers..."
-            placeholderTextColor="#666"
-            value={prompt}
-            onChangeText={setPrompt}
-            multiline
-            textAlignVertical="top"
-            editable={!isGenerating}
-          />
-
-          <Pressable
-            className={`mt-4 py-4 rounded-xl items-center ${
-              isGenerating ? "bg-gray-600" : "bg-green-600 active:bg-green-700"
-            }`}
-            onPress={handleGenerate}
-            disabled={isGenerating}
-          >
-            {isGenerating ? (
-              <View className="flex-row items-center">
-                <ActivityIndicator color="white" size="small" />
-                <Text className="text-white font-bold text-lg ml-2">Generating...</Text>
-              </View>
-            ) : (
-              <Text className="text-white font-bold text-lg">Generate Game</Text>
-            )}
+      <SafeAreaView className="flex-1 bg-gray-900">
+        <View className="flex-row justify-between items-center px-4 py-3 border-b border-gray-700">
+          <Text className="text-xl font-bold text-white">Create New Game</Text>
+          <Pressable onPress={() => setShowNewGameModal(false)}>
+            <Text className="text-gray-400 text-lg">✕</Text>
           </Pressable>
-
-          {generateError && (
-            <View className="mt-4 p-4 bg-red-900/50 rounded-xl border border-red-700">
-              <Text className="text-red-300">{generateError}</Text>
-            </View>
-          )}
-
-          {generatedGame && (
-            <View className="mt-6 bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-              <View className="p-4 bg-green-900/30 border-b border-gray-700">
-                <Text className="text-lg font-bold text-white">
-                  {generatedGame.metadata.title}
-                </Text>
-                <Text className="text-gray-300 mt-1">
-                  {generatedGame.metadata.description}
-                </Text>
-              </View>
-
-              <View className="p-4 flex-row">
-                <Pressable
-                  className="flex-1 py-3 bg-blue-600 rounded-lg items-center mr-2 active:bg-blue-700"
-                  onPress={handlePlayPreview}
-                >
-                  <Text className="text-white font-semibold">Play</Text>
-                </Pressable>
-                <Pressable
-                  className="flex-1 py-3 bg-green-600 rounded-lg items-center ml-2 active:bg-green-700"
-                  onPress={handleSaveGame}
-                >
-                  <Text className="text-white font-semibold">Save</Text>
-                </Pressable>
-              </View>
-            </View>
-          )}
-
-          <View className="mt-8">
-            <Text className="text-sm text-gray-500 mb-3 uppercase tracking-wide">
-              Try an example:
-            </Text>
-            {EXAMPLE_PROMPTS.map((example) => (
-              <Pressable
-                key={example}
-                className="py-3 px-4 bg-gray-800 rounded-lg border border-gray-700 mb-2 active:bg-gray-700"
-                onPress={() => {
-                  setPrompt(example);
-                  setGenerateError(null);
-                  setGeneratedGame(null);
-                }}
-              >
-                <Text className="text-gray-300">{example}</Text>
-              </Pressable>
-            ))}
-          </View>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+        <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
+          <View className="p-4">
+            {/* AI Generation Section */}
+            <View className="mb-8">
+              <Text className="text-lg font-semibold text-white mb-3">
+                Generate with AI
+              </Text>
+              <Text className="text-gray-400 mb-3">
+                Describe the game you want to create:
+              </Text>
+
+              <TextInput
+                className="bg-gray-800 p-4 rounded-xl border border-gray-700 text-base min-h-[100px] text-white"
+                placeholder="E.g., A game where I launch balls at towers..."
+                placeholderTextColor="#666"
+                value={prompt}
+                onChangeText={setPrompt}
+                multiline
+                textAlignVertical="top"
+                editable={!isGenerating}
+              />
+
+              <Pressable
+                className={`mt-4 py-4 rounded-xl items-center ${
+                  isGenerating ? "bg-gray-600" : "bg-green-600 active:bg-green-700"
+                }`}
+                onPress={handleGenerate}
+                disabled={isGenerating}
+              >
+                {isGenerating ? (
+                  <View className="flex-row items-center">
+                    <ActivityIndicator color="white" size="small" />
+                    <Text className="text-white font-bold text-lg ml-2">Generating...</Text>
+                  </View>
+                ) : (
+                  <Text className="text-white font-bold text-lg">Generate Game</Text>
+                )}
+              </Pressable>
+
+              {generateError && (
+                <View className="mt-4 p-4 bg-red-900/50 rounded-xl border border-red-700">
+                  <Text className="text-red-300">{generateError}</Text>
+                </View>
+              )}
+
+              {generatedGame && (
+                <View className="mt-6 bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                  <View className="p-4 bg-green-900/30 border-b border-gray-700">
+                    <Text className="text-lg font-bold text-white">
+                      {generatedGame.metadata.title}
+                    </Text>
+                    <Text className="text-gray-300 mt-1">
+                      {generatedGame.metadata.description}
+                    </Text>
+                  </View>
+
+                  <View className="p-4 flex-row">
+                    <Pressable
+                      className="flex-1 py-3 bg-blue-600 rounded-lg items-center mr-2 active:bg-blue-700"
+                      onPress={handlePlayPreview}
+                    >
+                      <Text className="text-white font-semibold">Play</Text>
+                    </Pressable>
+                    <Pressable
+                      className="flex-1 py-3 bg-green-600 rounded-lg items-center ml-2 active:bg-green-700"
+                      onPress={handleSaveGame}
+                    >
+                      <Text className="text-white font-semibold">Save</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              )}
+            </View>
+
+            {/* Templates Section */}
+            <View>
+              <Text className="text-lg font-semibold text-white mb-3">
+                Start from Template
+              </Text>
+              <Text className="text-gray-400 mb-3">
+                Choose a template to get started:
+              </Text>
+
+              {TESTGAMES.map((game) => (
+                <Pressable
+                  key={game.id}
+                  className="bg-gray-800 p-4 rounded-xl border border-gray-700 mb-3 active:bg-gray-700"
+                  onPress={() => handleOpenTemplate(game.id)}
+                >
+                  <View className="flex-row items-center">
+                    <Text className="text-2xl mr-3">🎮</Text>
+                    <View className="flex-1">
+                      <Text className="text-lg font-semibold text-white">
+                        {game.meta.title}
+                      </Text>
+                      {game.meta.description && (
+                        <Text className="text-gray-400 mt-1" numberOfLines={2}>
+                          {game.meta.description}
+                        </Text>
+                      )}
+                    </View>
+                    <Text className="text-gray-500">→</Text>
+                  </View>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </Modal>
   );
 
   return (
     <SafeAreaView className="flex-1 bg-gray-900" edges={["bottom"]}>
-      <View className="px-4 py-3 flex-row gap-2">
-        <TabButton id="projects" label="My Projects" />
-        <TabButton id="templates" label="Templates" />
-        <TabButton id="create" label="Create" />
+      <View className="px-4 py-3 flex-row justify-between items-center">
+        <Text className="text-xl font-bold text-white">Game Maker</Text>
+        <Pressable
+          className="py-2 px-4 bg-green-600 rounded-lg active:bg-green-700"
+          onPress={() => setShowNewGameModal(true)}
+        >
+          <Text className="text-white font-semibold">+ New Game</Text>
+        </Pressable>
       </View>
 
-      {activeTab === "projects" && renderProjects()}
-      {activeTab === "templates" && renderTemplates()}
-      {activeTab === "create" && renderCreate()}
+      {renderProjects()}
+      {renderNewGameModal()}
     </SafeAreaView>
   );
 }

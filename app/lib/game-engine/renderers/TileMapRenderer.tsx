@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { useImage, Atlas, rect as skRect, RSXform } from '@shopify/react-native-skia';
+import { useImage, Atlas, rect as skRect, Skia } from '@shopify/react-native-skia';
 import type { TileMap, TileSheet, TileLayer } from '@slopcade/shared';
-import type { SkRect } from '@shopify/react-native-skia';
+import type { SkRect, SkRSXform } from '@shopify/react-native-skia';
 
 interface TileMapRendererProps {
   tileMap: TileMap;
@@ -22,13 +22,13 @@ export function TileMapRenderer({
 }: TileMapRendererProps) {
   const image = useImage(tileSheet.imageUrl);
 
-  if (!image) return null;
-
   const sortedLayers = useMemo(() => {
     return [...tileMap.layers]
       .filter(layer => layer.visible)
       .sort((a, b) => (a.zIndex ?? 0) - (b.zIndex ?? 0));
   }, [tileMap.layers]);
+
+  if (!image) return null;
 
   return (
     <>
@@ -72,7 +72,7 @@ function TileLayerRenderer({
 }: TileLayerRendererProps) {
   const { sprites, transforms } = useMemo(() => {
     const spriteRects: SkRect[] = [];
-    const tileTransforms: RSXform[] = [];
+    const tileTransforms: SkRSXform[] = [];
     
     const { tileWidth, tileHeight, columns, spacing = 0, margin = 0 } = tileSheet;
     const tileSizeMeters = tileWidth / pixelsPerMeter;
@@ -86,7 +86,7 @@ function TileLayerRenderer({
       
       if (tileIndex < 0) {
         spriteRects.push(skRect(0, 0, 0, 0));
-        tileTransforms.push(RSXform(1, 0, -10000, -10000));
+        tileTransforms.push(Skia.RSXform(1, 0, -10000, -10000));
         continue;
       }
       
@@ -102,7 +102,7 @@ function TileLayerRenderer({
       const worldX = (position.x + tileCol * tileSizeMeters) * pixelsPerMeter + offsetX;
       const worldY = (position.y + tileRow * tileSizeMeters) * pixelsPerMeter + offsetY;
       
-      tileTransforms.push(RSXform(1, 0, worldX, worldY));
+      tileTransforms.push(Skia.RSXform(1, 0, worldX, worldY));
     }
     
     return { sprites: spriteRects, transforms: tileTransforms };

@@ -3,15 +3,15 @@ import type { TestGameMeta } from "@/lib/registry/types";
 
 export const metadata: TestGameMeta = {
   title: "Bouncing Balls",
-  description: "Tap to spawn balls with varying bounciness - reach 500 points!",
+  description: "A physics sandbox where bouncing balls score points when they hit the ground",
 };
 
 const game: GameDefinition = {
   metadata: {
     id: "test-bouncing-balls",
     title: "Bouncing Balls",
-    description: "Tap to spawn balls with varying bounciness - reach 500 points!",
-    instructions: "Drag the spawner, tap to drop balls. Score 500 points before time runs out!",
+    description: "A physics sandbox where bouncing balls score points when they hit the ground",
+    instructions: "HOW TO PLAY: Drag anywhere to move the gray spawner bar left/right. Tap anywhere to drop a bouncy ball. Each ball that hits the ground scores 10 points. Reach 500 points in 60 seconds to win!",
     version: "1.0.0",
   },
   world: {

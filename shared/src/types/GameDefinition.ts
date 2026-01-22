@@ -2,6 +2,7 @@ import type { Vec2 } from './common';
 import type { GameEntity, EntityTemplate } from './entity';
 import type { GameRule, WinCondition, LoseCondition } from './rules';
 import type { TileSheet, TileMap } from './tilemap';
+import type { AssetSystemConfig } from './asset-system';
 
 export interface WorldConfig {
   gravity: Vec2;
@@ -143,6 +144,7 @@ export interface GameDefinition {
   initialScore?: number;
   assetPacks?: Record<string, AssetPack>;
   activeAssetPackId?: string;
+  assetSystem?: AssetSystemConfig;
   parallaxConfig?: ParallaxConfig;
   tileSheets?: TileSheet[];
   tileMaps?: TileMap[];

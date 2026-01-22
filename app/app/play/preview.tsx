@@ -6,6 +6,8 @@ import type { GameDefinition } from "@slopcade/shared";
 import { WithSkia } from "../../components/WithSkia";
 import { FullScreenHeader } from "../../components/FullScreenHeader";
 
+
+
 export default function PreviewScreen() {
   const router = useRouter();
   const { definition: definitionParam } = useLocalSearchParams<{
@@ -14,6 +16,7 @@ export default function PreviewScreen() {
   
   const [gameDefinition, setGameDefinition] = useState<GameDefinition | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [runtimeKey, setRuntimeKey] = useState(0);
 
   useEffect(() => {
     if (definitionParam) {
@@ -30,6 +33,10 @@ export default function PreviewScreen() {
 
   const handleGameEnd = useCallback((state: "won" | "lost") => {
     console.log(`Game ended: ${state}`);
+  }, []);
+
+  const handleRequestRestart = useCallback(() => {
+    setRuntimeKey((k) => k + 1);
   }, []);
 
   const handleBack = useCallback(() => {
@@ -62,12 +69,14 @@ export default function PreviewScreen() {
       />
 
       <WithSkia
+        key={runtimeKey}
         getComponent={() =>
           import("@/lib/game-engine/GameRuntime.native").then((mod) => ({
             default: () => (
               <mod.GameRuntime
                 definition={gameDefinition}
                 onGameEnd={handleGameEnd}
+                onRequestRestart={handleRequestRestart}
                 showHUD
               />
             ),

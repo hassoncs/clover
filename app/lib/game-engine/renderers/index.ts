@@ -11,3 +11,4 @@ export {
   type ParallaxBackgroundProps,
   type ParallaxLayer,
 } from './ParallaxBackground';
+export { TileMapRenderer } from './TileMapRenderer';

@@ -436,6 +436,7 @@ export const GameEntitySchema = z.object({
   layer: z.number().optional(),
   visible: z.boolean().optional(),
   active: z.boolean().optional(),
+  assetPackId: z.string().optional(),
 });
 
 export const WorldConfigSchema = z.object({

@@ -433,4 +433,87 @@ export const gamesRouter = router({
         summary: getValidationSummary(result),
       };
     }),
+
+  fork: installedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.env.DB.prepare(
+        `SELECT * FROM games WHERE id = ? AND deleted_at IS NULL`
+      )
+        .bind(input.id)
+        .first<GameRow>();
+
+      if (!existing) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
+      }
+
+      const userId = (ctx as any).user?.id ?? null;
+      const isOwner = existing.user_id === userId || existing.install_id === ctx.installId;
+      
+      if (!existing.is_public && !isOwner) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Cannot fork private game' });
+      }
+
+      let definition: Record<string, unknown>;
+      try {
+        definition = JSON.parse(existing.definition);
+      } catch {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Invalid game definition',
+        });
+      }
+
+      const newId = crypto.randomUUID();
+      const now = Date.now();
+
+      if (definition.metadata && typeof definition.metadata === 'object') {
+        const metadata = definition.metadata as Record<string, unknown>;
+        metadata.id = newId;
+        metadata.title = `${existing.title} (Fork)`;
+        metadata.createdAt = now;
+        metadata.updatedAt = now;
+        if (existing.user_id || existing.install_id) {
+          metadata.forkedFrom = {
+            gameId: existing.id,
+            title: existing.title,
+          };
+        }
+      }
+
+      const newDefinition = JSON.stringify(definition);
+
+      await ctx.env.DB.prepare(
+        `INSERT INTO games (id, user_id, install_id, title, description, definition, is_public, play_count, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?, ?)`
+      )
+        .bind(
+          newId,
+          userId,
+          ctx.installId,
+          `${existing.title} (Fork)`,
+          existing.description,
+          newDefinition,
+          now,
+          now
+        )
+        .run();
+
+      return {
+        id: newId,
+        userId,
+        title: `${existing.title} (Fork)`,
+        description: existing.description,
+        definition: newDefinition,
+        thumbnailUrl: null,
+        isPublic: false,
+        playCount: 0,
+        createdAt: new Date(now),
+        updatedAt: new Date(now),
+        forkedFrom: {
+          gameId: existing.id,
+          title: existing.title,
+        },
+      };
+    }),
 });

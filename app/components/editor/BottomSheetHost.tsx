@@ -6,10 +6,12 @@ import { LayersPanel } from "./panels/LayersPanel";
 import { PropertiesPanel } from "./panels/PropertiesPanel";
 import { DebugPanel } from "./panels/DebugPanel";
 import { AssetsPanel } from "./panels/AssetsPanel";
+import { AssetGalleryPanel } from "./AssetGallery/AssetGalleryPanel";
 import { AIGenerateModal } from "./AIGenerateModal";
 
 const TABS: { id: EditorTab; label: string }[] = [
-  { id: "assets", label: "Assets" },
+  { id: "gallery", label: "Gallery" },
+  { id: "assets", label: "Add" },
   { id: "properties", label: "Properties" },
   { id: "layers", label: "Layers" },
   { id: "debug", label: "Debug" },
@@ -82,6 +84,13 @@ export function BottomSheetHost() {
       </View>
 
       <BottomSheetScrollView style={styles.content}>
+        {activeTab === "gallery" && (
+          <AssetGalleryPanel
+            onTemplatePress={(templateId) => {
+              console.log("Template pressed:", templateId);
+            }}
+          />
+        )}
         {activeTab === "assets" && (
           <AssetsPanel onOpenAIModal={() => setAiModalVisible(true)} />
         )}

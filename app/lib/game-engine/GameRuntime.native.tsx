@@ -39,6 +39,7 @@ export interface GameRuntimeProps {
   onGameEnd?: (state: "won" | "lost") => void;
   onScoreChange?: (score: number) => void;
   onBackToMenu?: () => void;
+  onRequestRestart?: () => void;
   showHUD?: boolean;
   renderMode?: "default" | "primitive";
   showDebugOverlays?: boolean;
@@ -50,6 +51,7 @@ export function GameRuntime({
   onGameEnd,
   onScoreChange,
   onBackToMenu,
+  onRequestRestart,
   showHUD = true,
   renderMode = "default",
   showDebugOverlays = false,
@@ -292,6 +294,19 @@ export function GameRuntime({
         const worldY = y * game.pixelsPerMeter;
         particleManagerRef.current.triggerEffect(type, worldX, worldY);
       },
+      createEntityEmitter: (type: ParticleEmitterType, x: number, y: number) => {
+        const worldX = x * game.pixelsPerMeter;
+        const worldY = y * game.pixelsPerMeter;
+        return particleManagerRef.current.triggerEffect(type, worldX, worldY, { continuous: true });
+      },
+      updateEmitterPosition: (emitterId: string, x: number, y: number) => {
+        const worldX = x * game.pixelsPerMeter;
+        const worldY = y * game.pixelsPerMeter;
+        particleManagerRef.current.updateEffectPosition(emitterId, worldX, worldY);
+      },
+      stopEmitter: (emitterId: string) => {
+        particleManagerRef.current.stopEffect(emitterId);
+      },
       
       computedValues,
       evalContext: baseEvalContext,
@@ -339,6 +354,11 @@ export function GameRuntime({
   }, []);
 
   const handleRestart = useCallback(() => {
+    if (onRequestRestart) {
+      onRequestRestart();
+      return;
+    }
+    
     if (gameRef.current && loaderRef.current && cameraRef.current) {
       const newGame = loaderRef.current.reload(gameRef.current);
       gameRef.current = newGame;
@@ -367,7 +387,7 @@ export function GameRuntime({
       setEntities(newGame.entityManager.getVisibleEntities());
       setGameState({ score: 0, lives: 3, time: 0, state: "ready" });
     }
-  }, [onGameEnd, onScoreChange, definition.camera?.zoom]);
+  }, [onGameEnd, onScoreChange, onRequestRestart, definition.camera?.zoom]);
 
   const handleLayout = useCallback(
     (event: { nativeEvent: { layout: { width: number; height: number } } }) => {

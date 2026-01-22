@@ -3,7 +3,7 @@ import { RectRenderer } from "./RectRenderer";
 import { CircleRenderer } from "./CircleRenderer";
 import { PolygonRenderer } from "./PolygonRenderer";
 import { ImageRenderer } from "./ImageRenderer";
-import type { SpriteComponent, RectSpriteComponent, CircleSpriteComponent, PolygonSpriteComponent, AssetConfig, ImageSpriteComponent } from "@slopcade/shared";
+import type { SpriteComponent, RectSpriteComponent, CircleSpriteComponent, PolygonSpriteComponent, AssetConfig, AssetPack, ImageSpriteComponent } from "@slopcade/shared";
 
 interface EntityRendererProps {
   entity: RuntimeEntity;
@@ -11,6 +11,7 @@ interface EntityRendererProps {
   renderMode?: 'default' | 'primitive';
   showDebugOverlays?: boolean;
   assetOverrides?: Record<string, AssetConfig>;
+  allAssetPacks?: Record<string, AssetPack>;
 }
 
 function getPrimitiveSprite(entity: RuntimeEntity, originalSprite: SpriteComponent): SpriteComponent {
@@ -162,6 +163,7 @@ export function EntityRenderer({
   renderMode = 'default',
   showDebugOverlays = false,
   assetOverrides,
+  allAssetPacks,
 }: EntityRendererProps) {
   if (!entity.visible || !entity.sprite) {
     if (!showDebugOverlays) return null;
@@ -169,10 +171,20 @@ export function EntityRenderer({
 
   let spriteToRender = entity.sprite;
 
-  if (renderMode !== 'primitive' && entity.template && assetOverrides && assetOverrides[entity.template]) {
-    const overrideSprite = getAssetOverrideSprite(entity, assetOverrides[entity.template]);
-    if (overrideSprite) {
-      spriteToRender = overrideSprite;
+  if (renderMode !== 'primitive' && entity.template) {
+    let assetConfig: AssetConfig | undefined;
+    
+    if (entity.assetPackId && allAssetPacks?.[entity.assetPackId]) {
+      assetConfig = allAssetPacks[entity.assetPackId].assets[entity.template];
+    } else if (assetOverrides?.[entity.template]) {
+      assetConfig = assetOverrides[entity.template];
+    }
+    
+    if (assetConfig) {
+      const overrideSprite = getAssetOverrideSprite(entity, assetConfig);
+      if (overrideSprite) {
+        spriteToRender = overrideSprite;
+      }
     }
   }
 

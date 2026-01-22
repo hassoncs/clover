@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react";
 import { View, ActivityIndicator, StyleSheet } from "react-native";
 import { useEditor } from "./EditorProvider";
 import { WithSkia } from "@/components/WithSkia";
@@ -5,6 +6,11 @@ import { InteractionLayer } from "./InteractionLayer";
 
 export function StageContainer() {
   const { mode, document } = useEditor();
+  const [runtimeKey, setRuntimeKey] = useState(0);
+
+  const handleRequestRestart = useCallback(() => {
+    setRuntimeKey((k) => k + 1);
+  }, []);
 
   const activePackId = document.activeAssetPackId;
   const worldBounds = document.world.bounds ?? { width: 20, height: 12 };
@@ -13,12 +19,14 @@ export function StageContainer() {
   return (
     <View className="flex-1 bg-gray-800">
       <WithSkia
+        key={runtimeKey}
         getComponent={() =>
           import("@/lib/game-engine/GameRuntime.native").then((mod) => ({
             default: () => (
               <mod.GameRuntime
                 definition={document}
                 showHUD={mode === "playtest"}
+                onRequestRestart={handleRequestRestart}
                 renderMode="default"
                 showDebugOverlays={false}
                 activeAssetPackId={activePackId}

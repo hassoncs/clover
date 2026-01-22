@@ -8,7 +8,8 @@ import type {
   AnimateBehavior,
   GravityZoneBehavior,
   MagneticBehavior,
-  HealthBehavior
+  HealthBehavior,
+  ParticleEmitterBehavior,
 } from '@slopcade/shared';
 import type { BehaviorContext } from '../BehaviorContext';
 import type { BehaviorExecutor } from '../BehaviorExecutor';
@@ -93,6 +94,10 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
         ctx.physics.setLinearVelocity(newEntity.bodyId, velocity);
       }
 
+      if (spawn.spawnEffect) {
+        ctx.triggerParticleEffect(spawn.spawnEffect, x, y);
+      }
+
       runtime.state.spawnCount = spawned + 1;
     }
   });
@@ -159,7 +164,8 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
     const score = behavior as ScoreOnDestroyBehavior;
     
     if (runtime.state.isBeingDestroyed) {
-      ctx.addScore(score.points);
+      const points = ctx.resolveNumber(score.points);
+      ctx.addScore(points);
     }
   });
 
@@ -327,5 +333,41 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
         break;
       }
     }
+  });
+
+  executor.registerHandler('particle_emitter', (behavior, ctx, runtime) => {
+    const emitter = behavior as ParticleEmitterBehavior;
+    
+    const offsetX = emitter.offset?.x ?? 0;
+    const offsetY = emitter.offset?.y ?? 0;
+    const x = ctx.entity.transform.x + offsetX;
+    const y = ctx.entity.transform.y + offsetY;
+
+    if (!runtime.state.emitterId) {
+      const shouldEmit = emitter.emitWhile === 'always' || emitter.emitWhile === undefined || emitter.emitWhile === 'enabled';
+      if (shouldEmit) {
+        runtime.state.emitterId = ctx.createEntityEmitter(emitter.emitterType, x, y);
+      }
+    } else {
+      const emitterId = runtime.state.emitterId as string;
+      
+      if (emitter.emitWhile === 'moving') {
+        const lastX = (runtime.state.lastX as number) ?? x;
+        const lastY = (runtime.state.lastY as number) ?? y;
+        const isMoving = Math.abs(x - lastX) > 0.01 || Math.abs(y - lastY) > 0.01;
+        
+        if (!isMoving && runtime.state.emitterId) {
+          ctx.stopEmitter(emitterId);
+          runtime.state.emitterId = undefined;
+        }
+      }
+      
+      if (runtime.state.emitterId) {
+        ctx.updateEmitterPosition(emitterId, x, y);
+      }
+    }
+    
+    runtime.state.lastX = x;
+    runtime.state.lastY = y;
   });
 }

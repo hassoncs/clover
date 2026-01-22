@@ -130,6 +130,7 @@ export default function TestGameRunScreen() {
                   definition={definition}
                   showHUD={true}
                   onBackToMenu={handleBack}
+                  onRequestRestart={handleReset}
                   renderMode={renderMode}
                   showDebugOverlays={showOverlays}
                 />

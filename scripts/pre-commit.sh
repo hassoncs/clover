@@ -10,4 +10,8 @@ if ! node app/scripts/generate-registry.mjs --check 2>/dev/null; then
   echo "Registry files regenerated and staged."
 fi
 
+echo "Running TypeScript type check..."
+cd app && pnpm tsc --noEmit && cd ..
+echo "TypeScript check passed."
+
 pnpm hush check --only-changed

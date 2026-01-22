@@ -5,6 +5,8 @@ import type {
   RuleTrigger,
   RuleCondition,
   RuleAction,
+  ComputedValueSystem,
+  EvalContext,
 } from '@slopcade/shared';
 import type { EntityManager } from './EntityManager';
 import type { RuntimeEntity } from './types';
@@ -195,7 +197,9 @@ export class RulesEvaluator implements IGameStateMutator {
     collisions: CollisionInfo[],
     input: InputState,
     inputEvents: InputEvents,
-    physics: Physics2D
+    physics: Physics2D,
+    computedValues?: ComputedValueSystem,
+    evalContext?: EvalContext
   ): void {
     if (this.gameState !== 'playing') return;
 
@@ -212,6 +216,8 @@ export class RulesEvaluator implements IGameStateMutator {
       events: this.pendingEvents,
       input,
       inputEvents,
+      computedValues,
+      evalContext,
     } as unknown as RuleContext & { cooldowns: Map<string, number> };
     (context as any).cooldowns = this.cooldowns;
 

@@ -3,15 +3,15 @@ import type { TestGameMeta } from "@/lib/registry/types";
 
 export const metadata: TestGameMeta = {
   title: "Physics Stacker",
-  description: "Tap to drop blocks, reach 1000 points before a block falls off!",
+  description: "Stack blocks as high as you can! Higher stacks = more points!",
 };
 
 const game: GameDefinition = {
   metadata: {
     id: "test-physics-stacker",
     title: "Physics Stacker",
-    description: "Tap to drop blocks, reach 1000 points before a block falls off!",
-    instructions: "Tap to drop a block from the moving dropper. Stack to 1000 points!",
+    description: "Stack blocks as high as you can! Higher stacks = more points!",
+    instructions: "Tap to drop blocks from the moving dropper. Land them on the platform to score. The higher your stack, the more points each block is worth! Reach 1000 points to win - but don't let any blocks fall off!",
     version: "1.0.0",
   },
   world: {
@@ -65,7 +65,7 @@ const game: GameDefinition = {
       },
       behaviors: [
         { type: "oscillate", axis: "x", amplitude: 4, frequency: 0.3 },
-        { type: "spawn_on_event", event: "tap", entityTemplate: "blockWide", spawnPosition: "at_self", maxSpawns: 50 },
+        { type: "spawn_on_event", event: "tap", entityTemplate: "blockWide", spawnPosition: "at_self", maxSpawns: 50, spawnEffect: "sparks" },
       ],
     },
     blockWide: {
@@ -82,7 +82,7 @@ const game: GameDefinition = {
         restitution: 0.1,
       },
       behaviors: [
-        { type: "score_on_collision", withTags: ["block", "ground"], points: 50, once: true },
+        { type: "score_on_collision", withTags: ["block", "ground"], points: { expr: "floor(50 * pow(1.3, max(0, 16 - self.transform.y)))" }, once: true },
       ],
     },
     blockMedium: {
@@ -99,7 +99,7 @@ const game: GameDefinition = {
         restitution: 0.1,
       },
       behaviors: [
-        { type: "score_on_collision", withTags: ["block", "ground"], points: 75, once: true },
+        { type: "score_on_collision", withTags: ["block", "ground"], points: { expr: "floor(60 * pow(1.3, max(0, 16 - self.transform.y)))" }, once: true },
       ],
     },
     blockSmall: {
@@ -116,7 +116,7 @@ const game: GameDefinition = {
         restitution: 0.1,
       },
       behaviors: [
-        { type: "score_on_collision", withTags: ["block", "ground"], points: 100, once: true },
+        { type: "score_on_collision", withTags: ["block", "ground"], points: { expr: "floor(70 * pow(1.3, max(0, 16 - self.transform.y)))" }, once: true },
       ],
     },
     blockTall: {
@@ -133,7 +133,7 @@ const game: GameDefinition = {
         restitution: 0.1,
       },
       behaviors: [
-        { type: "score_on_collision", withTags: ["block", "ground"], points: 150, once: true },
+        { type: "score_on_collision", withTags: ["block", "ground"], points: { expr: "floor(80 * pow(1.3, max(0, 16 - self.transform.y)))" }, once: true },
       ],
     },
   },

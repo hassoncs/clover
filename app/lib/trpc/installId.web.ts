@@ -2,7 +2,6 @@ export const INSTALL_ID_KEY = "clover_install_id";
 
 export function getInstallId(): string {
   if (typeof window === "undefined" || typeof localStorage === "undefined") {
-    console.log('[InstallId] window/localStorage undefined, returning server-render');
     return "server-render";
   }
 
@@ -10,9 +9,6 @@ export function getInstallId(): string {
   if (!installId) {
     installId = crypto.randomUUID();
     localStorage.setItem(INSTALL_ID_KEY, installId);
-    console.log('[InstallId] Generated new installId:', installId);
-  } else {
-    console.log('[InstallId] Using existing installId:', installId);
   }
   return installId;
 }
