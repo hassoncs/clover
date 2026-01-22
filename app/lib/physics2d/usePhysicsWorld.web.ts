@@ -11,10 +11,15 @@ export interface UsePhysicsWorldOptions {
   positionIterations?: number;
   maxDeltaTime?: number;
   paused?: boolean;
+  enabled?: boolean;
+  onInit?: (physics: Physics2D) => void | Promise<void>;
+  beforeStep?: (dt: number, physics: Physics2D) => void;
+  afterStep?: (dt: number, physics: Physics2D) => void;
 }
 
 export interface PhysicsWorldState {
   physics: Physics2D | null;
+  physicsRef: React.RefObject<Physics2D | null>;
   isReady: boolean;
   getBodyTransform: (id: BodyId) => Transform;
   toPixels: (meters: number) => number;
@@ -23,13 +28,14 @@ export interface PhysicsWorldState {
   screenToWorld: (screenX: number, screenY: number) => Vec2;
 }
 
-const DEFAULT_OPTIONS: Required<UsePhysicsWorldOptions> = {
+const DEFAULT_OPTIONS = {
   gravity: { x: 0, y: 9.8 },
   pixelsPerMeter: 50,
   velocityIterations: 8,
   positionIterations: 3,
   maxDeltaTime: 1 / 30,
   paused: false,
+  enabled: true,
 };
 
 export function usePhysicsWorld(
@@ -42,17 +48,42 @@ export function usePhysicsWorld(
   const optsRef = useRef(opts);
   optsRef.current = opts;
 
+  const callbacksRef = useRef({
+    onInit: options.onInit,
+    beforeStep: options.beforeStep,
+    afterStep: options.afterStep,
+  });
+  callbacksRef.current = {
+    onInit: options.onInit,
+    beforeStep: options.beforeStep,
+    afterStep: options.afterStep,
+  };
+
   useEffect(() => {
+    if (!optsRef.current.enabled) return;
+
     let mounted = true;
 
     const init = async () => {
       try {
+        if (physicsRef.current) {
+          physicsRef.current.destroyWorld();
+          physicsRef.current = null;
+        }
+
         const physics = await createPhysics2D();
         if (!mounted) return;
 
         physics.createWorld(optsRef.current.gravity);
         physicsRef.current = physics;
-        setIsReady(true);
+
+        if (callbacksRef.current.onInit) {
+          await callbacksRef.current.onInit(physics);
+        }
+
+        if (mounted) {
+          setIsReady(true);
+        }
       } catch (error) {
         console.error('Failed to initialize physics:', error);
       }
@@ -78,11 +109,16 @@ export function usePhysicsWorld(
       : 1 / 60;
 
     const clampedDt = Math.min(dt, optsRef.current.maxDeltaTime);
+
+    callbacksRef.current.beforeStep?.(clampedDt, physicsRef.current);
+
     physicsRef.current.step(
       clampedDt,
       optsRef.current.velocityIterations,
       optsRef.current.positionIterations
     );
+
+    callbacksRef.current.afterStep?.(clampedDt, physicsRef.current);
   }, true);
 
   const toPixels = useCallback((meters: number) => {
@@ -116,6 +152,7 @@ export function usePhysicsWorld(
 
   return {
     physics: physicsRef.current,
+    physicsRef,
     isReady,
     getBodyTransform,
     toPixels,

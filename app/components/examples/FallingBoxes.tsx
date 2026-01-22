@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState, useCallback } from "react";
 import { View, StyleSheet } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import {
@@ -9,12 +8,10 @@ import {
   Fill,
 } from "@shopify/react-native-skia";
 import {
-  createPhysics2D,
-  useSimplePhysicsLoop,
-  useForceDrag,
-  type Physics2D,
-  type BodyId,
+  usePhysicsExample,
   vec2,
+  type Physics2D,
+  type BodyRecord,
 } from "../../lib/physics2d";
 import { ViewportRoot, useViewport } from "../../lib/viewport";
 
@@ -22,15 +19,10 @@ const PIXELS_PER_METER = 50;
 const BOX_SIZE = 0.8;
 const GROUND_HEIGHT = 3;
 
-interface BoxState {
-  id: BodyId;
-  x: number;
-  y: number;
-  angle: number;
+interface BoxData {
   width: number;
   height: number;
   color: string;
-  isDragging: boolean;
 }
 
 const COLORS = [
@@ -46,158 +38,92 @@ const COLORS = [
 
 function FallingBoxesCanvas() {
   const canvasRef = useCanvasRef();
-  const physicsRef = useRef<Physics2D | null>(null);
-  const bodyIdsRef = useRef<BodyId[]>([]);
-  const [boxes, setBoxes] = useState<BoxState[]>([]);
-  const [isReady, setIsReady] = useState(false);
-
   const vp = useViewport();
 
-  const dragHandlers = useForceDrag(physicsRef, {
+  const { transforms, gesture, isReady, isDragging, getDraggedBody } = usePhysicsExample<BoxData>({
     pixelsPerMeter: PIXELS_PER_METER,
-    stiffness: 50,
-    damping: 5,
-  });
+    enabled: vp.isReady,
+    drag: 'force',
+    dragStiffness: 50,
+    dragDamping: 5,
+    onInit: (physics: Physics2D): BodyRecord<BoxData>[] => {
+      const worldWidth = vp.world.size.width;
+      const worldHeight = vp.world.size.height;
 
-  useEffect(() => {
-    if (!vp.isReady) return;
+      const groundId = physics.createBody({
+        type: "static",
+        position: vec2(worldWidth / 2, worldHeight - GROUND_HEIGHT / 2),
+      });
+      physics.addFixture(groundId, {
+        shape: { type: "box", halfWidth: worldWidth / 2, halfHeight: GROUND_HEIGHT / 2 },
+        density: 0,
+        friction: 0.6,
+      });
 
-    const worldWidth = vp.world.size.width;
-    const worldHeight = vp.world.size.height;
+      const leftWallId = physics.createBody({
+        type: "static",
+        position: vec2(-0.5, worldHeight / 2),
+      });
+      physics.addFixture(leftWallId, {
+        shape: { type: "box", halfWidth: 0.5, halfHeight: worldHeight / 2 },
+        density: 0,
+      });
 
-    const setupPhysics = async () => {
-      try {
-        if (physicsRef.current) {
-          physicsRef.current.destroyWorld();
-        }
+      const rightWallId = physics.createBody({
+        type: "static",
+        position: vec2(worldWidth + 0.5, worldHeight / 2),
+      });
+      physics.addFixture(rightWallId, {
+        shape: { type: "box", halfWidth: 0.5, halfHeight: worldHeight / 2 },
+        density: 0,
+      });
 
-        const physics = await createPhysics2D();
-        physics.createWorld(vec2(0, 9.8));
-        physicsRef.current = physics;
+      const bodies: BodyRecord<BoxData>[] = [];
+      const columns = 4;
+      const columnSpacing = 1.5;
+      const gridWidth = columns * columnSpacing;
+      const gridStartX = (worldWidth - gridWidth) / 2 + columnSpacing / 2;
 
-        const groundId = physics.createBody({
-          type: "static",
-          position: vec2(worldWidth / 2, worldHeight - GROUND_HEIGHT / 2),
+      for (let i = 0; i < 8; i++) {
+        const column = i % columns;
+        const row = Math.floor(i / columns);
+        const bodyId = physics.createBody({
+          type: "dynamic",
+          position: vec2(
+            gridStartX + column * columnSpacing + Math.random() * 0.5,
+            1 + row * columnSpacing
+          ),
+          angle: Math.random() * 0.5 - 0.25,
         });
-        physics.addFixture(groundId, {
-          shape: { type: "box", halfWidth: worldWidth / 2, halfHeight: GROUND_HEIGHT / 2 },
-          density: 0,
-          friction: 0.6,
+
+        physics.addFixture(bodyId, {
+          shape: { type: "box", halfWidth: BOX_SIZE / 2, halfHeight: BOX_SIZE / 2 },
+          density: 1.0,
+          friction: 0.3,
+          restitution: 0.2,
         });
 
-        const leftWallId = physics.createBody({
-          type: "static",
-          position: vec2(-0.5, worldHeight / 2),
-        });
-        physics.addFixture(leftWallId, {
-          shape: { type: "box", halfWidth: 0.5, halfHeight: worldHeight / 2 },
-          density: 0,
-        });
-
-        const rightWallId = physics.createBody({
-          type: "static",
-          position: vec2(worldWidth + 0.5, worldHeight / 2),
-        });
-        physics.addFixture(rightWallId, {
-          shape: { type: "box", halfWidth: 0.5, halfHeight: worldHeight / 2 },
-          density: 0,
-        });
-
-        const newBodyIds: BodyId[] = [];
-        const initialBoxes: BoxState[] = [];
-
-        const columns = 4;
-        const columnSpacing = 1.5;
-        const gridWidth = columns * columnSpacing;
-        const gridStartX = (worldWidth - gridWidth) / 2 + columnSpacing / 2;
-
-        for (let i = 0; i < 8; i++) {
-          const column = i % columns;
-          const row = Math.floor(i / columns);
-          const bodyId = physics.createBody({
-            type: "dynamic",
-            position: vec2(
-              gridStartX + column * columnSpacing + Math.random() * 0.5,
-              1 + row * columnSpacing
-            ),
-            angle: Math.random() * 0.5 - 0.25,
-          });
-
-          physics.addFixture(bodyId, {
-            shape: { type: "box", halfWidth: BOX_SIZE / 2, halfHeight: BOX_SIZE / 2 },
-            density: 1.0,
-            friction: 0.3,
-            restitution: 0.2,
-          });
-
-          newBodyIds.push(bodyId);
-
-          const transform = physics.getTransform(bodyId);
-          initialBoxes.push({
-            id: bodyId,
-            x: transform.position.x * PIXELS_PER_METER,
-            y: transform.position.y * PIXELS_PER_METER,
-            angle: transform.angle,
+        bodies.push({
+          id: bodyId,
+          data: {
             width: BOX_SIZE * PIXELS_PER_METER,
             height: BOX_SIZE * PIXELS_PER_METER,
             color: COLORS[i % COLORS.length],
-            isDragging: false,
-          });
-        }
-
-        bodyIdsRef.current = newBodyIds;
-        setBoxes(initialBoxes);
-        setIsReady(true);
-      } catch (error) {
-        console.error("Failed to initialize Physics2D:", error);
+          },
+        });
       }
-    };
 
-    setupPhysics();
+      return bodies;
+    },
+  });
 
-    return () => {
-      if (physicsRef.current) {
-        physicsRef.current.destroyWorld();
-        physicsRef.current = null;
-      }
-      bodyIdsRef.current = [];
-      setIsReady(false);
-    };
-  }, [vp.world.size.width, vp.world.size.height, vp.isReady]);
-
-  const stepPhysics = useCallback((dt: number) => {
-    if (!physicsRef.current) return;
-
-    dragHandlers.applyDragForces();
-    physicsRef.current.step(dt, 8, 3);
-
-    const currentDraggedId = dragHandlers.getDraggedBody()?.value ?? null;
-
-    const updatedBoxes = bodyIdsRef.current.map((bodyId, i) => {
-      const transform = physicsRef.current!.getTransform(bodyId);
-      return {
-        id: bodyId,
-        x: transform.position.x * PIXELS_PER_METER,
-        y: transform.position.y * PIXELS_PER_METER,
-        angle: transform.angle,
-        width: BOX_SIZE * PIXELS_PER_METER,
-        height: BOX_SIZE * PIXELS_PER_METER,
-        color: COLORS[i % COLORS.length],
-        isDragging: bodyId.value === currentDraggedId,
-      };
-    });
-
-    setBoxes(updatedBoxes);
-  }, [dragHandlers]);
-
-  useSimplePhysicsLoop(stepPhysics, isReady);
-
-  if (!vp.isReady) return null;
+  if (!vp.isReady || !isReady) return null;
 
   const groundY = vp.size.height - GROUND_HEIGHT * PIXELS_PER_METER;
+  const currentDraggedId = getDraggedBody()?.value ?? null;
 
   return (
-    <GestureDetector gesture={dragHandlers.gesture}>
+    <GestureDetector gesture={gesture}>
       <View style={styles.container}>
         <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
           <Fill color="#1a1a2e" />
@@ -210,7 +136,7 @@ function FallingBoxesCanvas() {
             color="#2d3436"
           />
 
-          {boxes.map((box) => (
+          {transforms.map((box) => (
             <Group
               key={`box-${box.id.value}`}
               transform={[
@@ -221,11 +147,11 @@ function FallingBoxesCanvas() {
               origin={{ x: 0, y: 0 }}
             >
               <Rect
-                x={-box.width / 2}
-                y={-box.height / 2}
-                width={box.width}
-                height={box.height}
-                color={box.isDragging ? "#ffffff" : box.color}
+                x={-box.data.width / 2}
+                y={-box.data.height / 2}
+                width={box.data.width}
+                height={box.data.height}
+                color={box.id.value === currentDraggedId ? "#ffffff" : box.data.color}
               />
             </Group>
           ))}

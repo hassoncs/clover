@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useRef, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import {
@@ -10,12 +9,10 @@ import {
   vec,
 } from "@shopify/react-native-skia";
 import {
-  createPhysics2D,
-  useSimplePhysicsLoop,
-  useForceDrag,
-  type Physics2D,
-  type BodyId,
+  usePhysicsExample,
   vec2,
+  type Physics2D,
+  type BodyRecord,
 } from "../../lib/physics2d";
 import { ViewportRoot, useViewport } from "../../lib/viewport";
 
@@ -27,43 +24,22 @@ const BALL_RADIUS = 0.5;
 const BALL_COUNT = 5;
 const BALL_SPACING = BALL_RADIUS * 2.01;
 
-interface BallState {
-  id: BodyId;
-  x: number;
-  y: number;
+interface BallData {
   anchorX: number;
 }
 
 function NewtonsCradleCanvas() {
   const canvasRef = useCanvasRef();
-  const physicsRef = useRef<Physics2D | null>(null);
-  const ballIdsRef = useRef<BodyId[]>([]);
-  const anchorXsRef = useRef<number[]>([]);
-
-  const [balls, setBalls] = useState<BallState[]>([]);
-  const [isReady, setIsReady] = useState(false);
-
   const vp = useViewport();
 
-  const dragHandlers = useForceDrag(physicsRef, {
+  const { transforms, gesture, isReady } = usePhysicsExample<BallData>({
     pixelsPerMeter: PIXELS_PER_METER,
-    stiffness: 50,
-    damping: 5,
-  });
-
-  useEffect(() => {
-    if (!vp.isReady) return;
-
-    const worldWidth = vp.world.size.width;
-
-    const setupPhysics = async () => {
-      if (physicsRef.current) {
-        physicsRef.current.destroyWorld();
-      }
-
-      const physics = await createPhysics2D();
-      physics.createWorld(vec2(0, 9.8));
-      physicsRef.current = physics;
+    enabled: vp.isReady,
+    drag: 'force',
+    dragStiffness: 50,
+    dragDamping: 5,
+    onInit: (physics: Physics2D): BodyRecord<BallData>[] => {
+      const worldWidth = vp.world.size.width;
 
       const anchorId = physics.createBody({
         type: "static",
@@ -71,13 +47,10 @@ function NewtonsCradleCanvas() {
       });
 
       const startX = worldWidth / 2 - ((BALL_COUNT - 1) * BALL_SPACING) / 2;
-      const newBallIds: BodyId[] = [];
-      const newAnchorXs: number[] = [];
-      const initialBalls: BallState[] = [];
+      const bodies: BodyRecord<BallData>[] = [];
 
       for (let i = 0; i < BALL_COUNT; i++) {
         const anchorX = startX + i * BALL_SPACING;
-        newAnchorXs.push(anchorX);
 
         const isFirstBall = i === 0;
         const swingAngle = isFirstBall ? -Math.PI / 4 : 0;
@@ -107,86 +80,47 @@ function NewtonsCradleCanvas() {
           damping: 0,
         });
 
-        newBallIds.push(ballId);
-        initialBalls.push({
+        bodies.push({
           id: ballId,
-          x: ballX * PIXELS_PER_METER,
-          y: ballY * PIXELS_PER_METER,
-          anchorX: anchorX * PIXELS_PER_METER,
+          data: { anchorX: anchorX * PIXELS_PER_METER },
         });
       }
 
-      ballIdsRef.current = newBallIds;
-      anchorXsRef.current = newAnchorXs;
-      setBalls(initialBalls);
-      setIsReady(true);
-    };
+      return bodies;
+    },
+  });
 
-    setupPhysics();
-
-    return () => {
-      if (physicsRef.current) {
-        physicsRef.current.destroyWorld();
-        physicsRef.current = null;
-      }
-      ballIdsRef.current = [];
-      anchorXsRef.current = [];
-      setIsReady(false);
-    };
-  }, [vp.world.size.width, vp.isReady]);
-
-  const stepPhysics = useCallback((dt: number) => {
-    const physics = physicsRef.current;
-    if (!physics) return;
-
-    dragHandlers.applyDragForces();
-    physics.step(dt, 8, 3);
-
-    const updatedBalls = ballIdsRef.current.map((id, i) => {
-      const transform = physics.getTransform(id);
-      return {
-        id,
-        x: transform.position.x * PIXELS_PER_METER,
-        y: transform.position.y * PIXELS_PER_METER,
-        anchorX: anchorXsRef.current[i] * PIXELS_PER_METER,
-      };
-    });
-    setBalls(updatedBalls);
-  }, [dragHandlers]);
-
-  useSimplePhysicsLoop(stepPhysics, isReady);
-
-  if (!vp.isReady) return null;
+  if (!vp.isReady || !isReady) return null;
 
   const anchorY = ANCHOR_Y * PIXELS_PER_METER;
   const ballRadiusPx = BALL_RADIUS * PIXELS_PER_METER;
 
   return (
-    <GestureDetector gesture={dragHandlers.gesture}>
+    <GestureDetector gesture={gesture}>
       <View style={styles.container}>
         <Canvas ref={canvasRef} style={styles.canvas} pointerEvents="none">
           <Fill color="#1a1a2e" />
 
-          {balls.length > 0 && (
+          {transforms.length > 0 && (
             <Line
-              p1={vec(balls[0].anchorX, anchorY)}
-              p2={vec(balls[balls.length - 1].anchorX, anchorY)}
+              p1={vec(transforms[0].data.anchorX, anchorY)}
+              p2={vec(transforms[transforms.length - 1].data.anchorX, anchorY)}
               color="#bdc3c7"
               strokeWidth={4}
             />
           )}
 
-          {balls.map((b) => (
+          {transforms.map((b) => (
             <Line
               key={`string-${b.id.value}`}
-              p1={vec(b.anchorX, anchorY)}
+              p1={vec(b.data.anchorX, anchorY)}
               p2={vec(b.x, b.y)}
               color="#bdc3c7"
               strokeWidth={2}
             />
           ))}
 
-          {balls.map((b) => (
+          {transforms.map((b) => (
             <Circle
               key={`ball-${b.id.value}`}
               cx={b.x}
