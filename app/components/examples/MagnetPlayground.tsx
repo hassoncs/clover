@@ -213,12 +213,14 @@ function MagnetPlaygroundCanvas() {
     const physics = physicsRef.current;
     if (!physics || !magnetIdRef.current) return;
 
-    metalDrag.applyDragForces();
+    metalDrag.beforePhysicsStep(dt);
+    magnetDrag.beforePhysicsStep(dt);
     applyMagneticForces(physics);
 
     physics.step(dt, 8, 3);
 
-    magnetDrag.applyDragStep(dt);
+    metalDrag.afterPhysicsStep(dt);
+    magnetDrag.afterPhysicsStep(dt);
 
     const magnetTransform = physics.getTransform(magnetIdRef.current);
     setMagnet((prev) => ({

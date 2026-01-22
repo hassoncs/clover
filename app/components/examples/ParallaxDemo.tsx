@@ -137,15 +137,19 @@ function ParallaxCanvas() {
     };
   }, [isAutoScrolling]);
 
+  const lastTranslationRef = useRef({ x: 0, y: 0 });
+
   const panGesture = useMemo(() => {
     return Gesture.Pan()
       .runOnJS(true)
       .onStart(() => {
         setIsAutoScrolling(false);
+        lastTranslationRef.current = { x: 0, y: 0 };
       })
       .onUpdate((e) => {
-        const deltaX = e.changeX / PIXELS_PER_METER;
-        const deltaY = e.changeY / PIXELS_PER_METER;
+        const deltaX = (e.translationX - lastTranslationRef.current.x) / PIXELS_PER_METER;
+        const deltaY = (e.translationY - lastTranslationRef.current.y) / PIXELS_PER_METER;
+        lastTranslationRef.current = { x: e.translationX, y: e.translationY };
         
         setCameraX(prev => prev - deltaX);
         setCameraY(prev => prev - deltaY);

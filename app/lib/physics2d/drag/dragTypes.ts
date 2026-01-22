@@ -28,8 +28,10 @@ export interface DragController {
   getDraggedBody: () => BodyId | null;
   beginDrag: (bodyId: BodyId, worldPos: Vec2) => void;
   updatePointer: (worldPos: Vec2) => void;
-  endDrag: () => void;
-  cancelDrag: () => void;
+  endDrag: (physics?: DragPhysicsInterface) => void;
+  cancelDrag: (physics?: DragPhysicsInterface) => void;
+  beforePhysicsStep: (physics: DragPhysicsInterface, dt: number) => void;
+  afterPhysicsStep: (physics: DragPhysicsInterface, dt: number) => void;
   applyDragStep: (physics: DragPhysicsInterface, dt: number) => void;
 }
 

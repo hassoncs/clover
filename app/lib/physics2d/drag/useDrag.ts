@@ -19,7 +19,10 @@ export interface UseDragOptions {
 
 export interface UseDragResult {
   gesture: ReturnType<typeof useDragGesture>;
+  beforePhysicsStep: (dt: number) => void;
+  afterPhysicsStep: (dt: number) => void;
   applyDragStep: (dt: number) => void;
+  stepWithDrag: (dt: number, physicsStep: (dt: number) => void) => void;
   isDragging: () => boolean;
   getDraggedBody: () => BodyId | null;
   getController: () => DragController;
@@ -62,11 +65,37 @@ export function useDrag(
     onEmptyTap,
   });
 
+  const beforePhysicsStep = useCallback((dt: number) => {
+    const physics = physicsRef.current;
+    const controller = controllerRef.current;
+    if (!physics || !controller) return;
+    controller.beforePhysicsStep(physics, dt);
+  }, [physicsRef]);
+
+  const afterPhysicsStep = useCallback((dt: number) => {
+    const physics = physicsRef.current;
+    const controller = controllerRef.current;
+    if (!physics || !controller) return;
+    controller.afterPhysicsStep(physics, dt);
+  }, [physicsRef]);
+
   const applyDragStep = useCallback((dt: number) => {
     const physics = physicsRef.current;
     const controller = controllerRef.current;
     if (!physics || !controller) return;
     controller.applyDragStep(physics, dt);
+  }, [physicsRef]);
+
+  const stepWithDrag = useCallback((dt: number, physicsStep: (dt: number) => void) => {
+    const physics = physicsRef.current;
+    const controller = controllerRef.current;
+    if (!physics || !controller) {
+      physicsStep(dt);
+      return;
+    }
+    controller.beforePhysicsStep(physics, dt);
+    physicsStep(dt);
+    controller.afterPhysicsStep(physics, dt);
   }, [physicsRef]);
 
   const isDragging = useCallback(() => {
@@ -83,9 +112,12 @@ export function useDrag(
 
   return useMemo(() => ({
     gesture,
+    beforePhysicsStep,
+    afterPhysicsStep,
     applyDragStep,
+    stepWithDrag,
     isDragging,
     getDraggedBody,
     getController,
-  }), [gesture, applyDragStep, isDragging, getDraggedBody, getController]);
+  }), [gesture, beforePhysicsStep, afterPhysicsStep, applyDragStep, stepWithDrag, isDragging, getDraggedBody, getController]);
 }

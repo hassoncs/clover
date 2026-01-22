@@ -1,17 +1,17 @@
-import { useCallback, useRef, useMemo } from 'react';
-import { Gesture } from 'react-native-gesture-handler';
+import { useMemo, useCallback } from 'react';
+import { useDrag, type UseDragResult } from './drag/useDrag';
 import type { Physics2D } from './Physics2D';
 import type { BodyId, Vec2 } from './types';
 
-export interface ForceDragOptions {
+export interface UseForceDragOptions {
   pixelsPerMeter: number;
   stiffness?: number;
   damping?: number;
-  onDragStart?: (bodyId: BodyId, worldPoint: Vec2) => void;
-  onDragMove?: (bodyId: BodyId, worldPoint: Vec2) => void;
-  onDragEnd?: (bodyId: BodyId) => void;
-  onEmptyTap?: (worldPoint: Vec2) => void;
   shouldStartDrag?: (bodyId: BodyId) => boolean;
+  onDragStart?: (bodyId: BodyId, worldPos: Vec2) => void;
+  onDragMove?: (bodyId: BodyId, worldPos: Vec2) => void;
+  onDragEnd?: (bodyId: BodyId) => void;
+  onEmptyTap?: (worldPos: Vec2) => void;
 }
 
 export interface ForceDragState {
@@ -20,125 +20,35 @@ export interface ForceDragState {
   targetWorldY: number;
 }
 
-export interface ForceDragHandlers {
-  gesture: ReturnType<typeof Gesture.Pan>;
+export interface UseForceDragResult extends UseDragResult {
+  /** @deprecated Use beforePhysicsStep(dt) instead */
   applyDragForces: () => void;
-  isDragging: () => boolean;
-  getDraggedBody: () => BodyId | null;
+  /** @deprecated Use getController().getState() instead */
   getDragState: () => ForceDragState | null;
 }
 
 export function useForceDrag(
   physicsRef: React.RefObject<Physics2D | null>,
-  options: ForceDragOptions
-): ForceDragHandlers {
-  const {
-    pixelsPerMeter,
-    stiffness = 50,
-    damping = 5,
-    onDragStart,
-    onDragMove,
-    onDragEnd,
-    onEmptyTap,
-    shouldStartDrag,
-  } = options;
+  options: UseForceDragOptions
+): UseForceDragResult {
+  const result = useDrag(physicsRef, {
+    mode: 'force',
+    ...options,
+  });
 
-  const dragStateRef = useRef<ForceDragState | null>(null);
-
-  const screenToWorld = useCallback((screenX: number, screenY: number): Vec2 => {
+  const getDragState = useCallback((): ForceDragState | null => {
+    const state = result.getController().getState();
+    if (!state.active || !state.bodyId) return null;
     return {
-      x: screenX / pixelsPerMeter,
-      y: screenY / pixelsPerMeter,
+      bodyId: state.bodyId,
+      targetWorldX: state.currentWorldPos.x,
+      targetWorldY: state.currentWorldPos.y,
     };
-  }, [pixelsPerMeter]);
+  }, [result]);
 
-  const gesture = useMemo(() => {
-    return Gesture.Pan()
-      .runOnJS(true)
-      .onStart((event) => {
-        const physics = physicsRef.current;
-        if (!physics) return;
-
-        const worldPoint = screenToWorld(event.x, event.y);
-        const bodyId = physics.queryPoint(worldPoint);
-        
-        if (bodyId) {
-          if (shouldStartDrag && !shouldStartDrag(bodyId)) {
-            return;
-          }
-
-          dragStateRef.current = {
-            bodyId,
-            targetWorldX: worldPoint.x,
-            targetWorldY: worldPoint.y,
-          };
-          onDragStart?.(bodyId, worldPoint);
-        } else {
-          onEmptyTap?.(worldPoint);
-        }
-      })
-      .onUpdate((event) => {
-        const dragState = dragStateRef.current;
-        if (!dragState) return;
-
-        const worldPoint = screenToWorld(event.x, event.y);
-        dragState.targetWorldX = worldPoint.x;
-        dragState.targetWorldY = worldPoint.y;
-        
-        onDragMove?.(dragState.bodyId, worldPoint);
-      })
-      .onEnd(() => {
-        const dragState = dragStateRef.current;
-        if (!dragState) return;
-
-        const bodyId = dragState.bodyId;
-        dragStateRef.current = null;
-        onDragEnd?.(bodyId);
-      })
-      .onFinalize(() => {
-        // Ensure cleanup happens even if cancelled
-        if (dragStateRef.current) {
-          dragStateRef.current = null;
-        }
-      });
-  }, [physicsRef, screenToWorld, onDragStart, onDragMove, onDragEnd, onEmptyTap, shouldStartDrag]);
-
-  const applyDragForces = useCallback(() => {
-    const physics = physicsRef.current;
-    const dragState = dragStateRef.current;
-    if (!physics || !dragState) return;
-
-    const bodyTransform = physics.getTransform(dragState.bodyId);
-    const bodyPos = bodyTransform.position;
-
-    const dx = dragState.targetWorldX - bodyPos.x;
-    const dy = dragState.targetWorldY - bodyPos.y;
-
-    const velocity = physics.getLinearVelocity(dragState.bodyId);
-
-    const forceX = dx * stiffness - velocity.x * damping;
-    const forceY = dy * stiffness - velocity.y * damping;
-
-    physics.applyForceToCenter(dragState.bodyId, { x: forceX, y: forceY });
-  }, [physicsRef, stiffness, damping]);
-
-  const isDragging = useCallback(() => {
-    return dragStateRef.current !== null;
-  }, []);
-
-  const getDraggedBody = useCallback(() => {
-    return dragStateRef.current?.bodyId ?? null;
-  }, []);
-
-  const getDragState = useCallback(() => {
-    return dragStateRef.current;
-  }, []);
-
-  return {
-    gesture,
-    applyDragForces,
-    isDragging,
-    getDraggedBody,
+  return useMemo(() => ({
+    ...result,
+    applyDragForces: () => result.beforePhysicsStep(0),
     getDragState,
-  };
+  }), [result, getDragState]);
 }
