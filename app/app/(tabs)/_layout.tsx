@@ -1,14 +1,13 @@
 import { Tabs } from "expo-router";
 import { View, Text } from "react-native";
 
-function TabIcon({ name, focused }: { name: string; focused: boolean }) {
+function TabIcon({ name }: { name: string }) {
   const icons: Record<string, string> = {
-    create: "✨",
-    library: "📚",
-    demos: "🔬",
-    "test-games": "🎮",
+    lab: "🔬",
+    maker: "🎮",
+    gallery: "🎨",
   };
-  
+
   return (
     <View className="items-center justify-center">
       <Text className="text-2xl">{icons[name] ?? "•"}</Text>
@@ -23,9 +22,9 @@ export default function TabLayout() {
         tabBarActiveTintColor: "#4CAF50",
         tabBarInactiveTintColor: "#888",
         tabBarStyle: {
-          backgroundColor: "#fff",
+          backgroundColor: "#111",
           borderTopWidth: 1,
-          borderTopColor: "#eee",
+          borderTopColor: "#333",
           height: 85,
           paddingBottom: 30,
           paddingTop: 10,
@@ -35,43 +34,39 @@ export default function TabLayout() {
           fontWeight: "600",
         },
         headerStyle: {
-          backgroundColor: "#fff",
+          backgroundColor: "#111",
         },
+        headerTintColor: "#fff",
         headerTitleStyle: {
           fontWeight: "bold",
         },
       }}
     >
       <Tabs.Screen
-        name="create"
+        name="lab"
         options={{
-          title: "Create",
-          tabBarIcon: ({ focused }) => <TabIcon name="create" focused={focused} />,
-          headerTitle: "Create Game",
+          title: "Lab",
+          tabBarIcon: () => <TabIcon name="lab" />,
+          headerTitle: "Physics Lab",
         }}
       />
       <Tabs.Screen
-        name="library"
+        name="maker"
         options={{
-          title: "Library",
-          tabBarIcon: ({ focused }) => <TabIcon name="library" focused={focused} />,
-          headerTitle: "My Games",
+          title: "Maker",
+          tabBarIcon: () => <TabIcon name="maker" />,
+          headerTitle: "Game Maker",
         }}
       />
       <Tabs.Screen
-        name="demos"
+        name="gallery"
         options={{
-          title: "Examples",
-          tabBarIcon: ({ focused }) => <TabIcon name="demos" focused={focused} />,
-          headerTitle: "Physics Examples",
-        }}
-      />
-      <Tabs.Screen
-        name="test-games"
-        options={{
-          title: "Games",
-          tabBarIcon: ({ focused }) => <TabIcon name="test-games" focused={focused} />,
-          headerTitle: "Games",
+          title: "Gallery",
+          tabBarIcon: () => <TabIcon name="gallery" />,
+          headerTitle: "Engine Gallery",
+          headerStyle: {
+            backgroundColor: "#0a0a0a",
+          },
         }}
       />
     </Tabs>

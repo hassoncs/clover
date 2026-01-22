@@ -1,5 +1,6 @@
 import { Stack } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
 
 if (typeof window !== "undefined" && typeof global === "undefined") {
@@ -9,7 +10,8 @@ if (typeof window !== "undefined" && typeof global === "undefined") {
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <Stack>
+      <SafeAreaProvider>
+        <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen
@@ -49,7 +51,8 @@ export default function RootLayout() {
       <Stack.Screen name="examples/magnet_playground" options={{ title: "Magnet Playground" }} />
       <Stack.Screen name="examples/top_down_asteroids" options={{ title: "Top-Down Asteroids" }} />
       <Stack.Screen name="examples/destructible_tower" options={{ title: "Destructible Tower" }} />
-    </Stack>
+        </Stack>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
