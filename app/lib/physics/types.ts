@@ -10,7 +10,9 @@ export interface b2BodyDef {
   type: number;
 }
 
-export interface b2Shape {}
+export interface b2Shape {
+  _brand?: 'b2Shape';
+}
 
 export interface b2PolygonShape extends b2Shape {
   SetAsBox(hx: number, hy: number): void;
@@ -122,6 +124,17 @@ export interface b2World {
     positionIterations: number
   ) => void;
   RayCast: (callback: b2RayCastCallback, point1: b2Vec2, point2: b2Vec2) => void;
+  SetContactListener: (listener: any) => void;
+}
+
+export interface b2Contact {
+  GetFixtureA(): b2Fixture;
+  GetFixtureB(): b2Fixture;
+}
+
+export interface b2Fixture {
+  GetBody(): b2Body;
+  IsSensor(): boolean;
 }
 
 export interface Box2DAPI {
@@ -138,4 +151,8 @@ export interface Box2DAPI {
   
   castToMouseJoint?: (joint: b2Joint) => b2MouseJoint;
   verifyMouseJoint?: (joint: b2MouseJoint, testX: number, testY: number) => boolean;
+  
+  JSContactListener?: new () => any;
+  b2Contact?: any;
+  wrapPointer?: (ptr: number, type: any) => any;
 }

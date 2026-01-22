@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { GameDefinition } from "@slopcade/shared";
 import { WithSkia } from "../../components/WithSkia";
+import { FullScreenHeader } from "../../components/FullScreenHeader";
 
 export default function PreviewScreen() {
   const router = useRouter();
@@ -51,20 +52,14 @@ export default function PreviewScreen() {
 
   return (
     <View className="flex-1 bg-gray-900">
-      <SafeAreaView className="absolute top-0 left-0 right-0 z-10" edges={["top"]}>
-        <View className="flex-row items-center justify-between px-4 py-2">
-          <Pressable
-            className="py-2 px-4 bg-black/50 rounded-lg"
-            onPress={handleBack}
-          >
-            <Text className="text-white font-semibold">← Back</Text>
-          </Pressable>
+      <FullScreenHeader
+        onBack={handleBack}
+        centerContent={
           <View className="bg-yellow-500/80 px-3 py-1 rounded-full">
             <Text className="text-yellow-900 font-semibold text-sm">PREVIEW</Text>
           </View>
-          <View className="w-20" />
-        </View>
-      </SafeAreaView>
+        }
+      />
 
       <WithSkia
         getComponent={() =>

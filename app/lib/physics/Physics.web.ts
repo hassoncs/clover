@@ -113,6 +113,10 @@ export const initPhysics = async (): Promise<Box2DAPI> => {
     b2DistanceJointDef: () => new b2DistanceJointDef(),
     b2MouseJointDef: () => new b2MouseJointDef(),
     
+    JSContactListener: box2dInstance.JSContactListener,
+    b2Contact: box2dInstance.b2Contact,
+    wrapPointer: box2dInstance.wrapPointer,
+    
     castToMouseJoint: (joint: any) => {
       const b2MouseJoint = box2dInstance.b2MouseJoint;
       if (!b2MouseJoint) {
