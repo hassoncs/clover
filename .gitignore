@@ -33,6 +33,8 @@ android/app/build/
 
 # Metro
 .metro-health-check*
+.metro-cache/
+
 
 # debug
 npm-debug.*

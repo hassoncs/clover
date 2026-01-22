@@ -22,7 +22,7 @@ APP_URL=
 # =============================================================================
 
 DEV__EXPO_PUBLIC_API_URL=http://localhost:8787
-DEV__APP_URL=http://localhost:8081
+DEV__APP_URL=http://localhost:8085
 
 # =============================================================================
 # PRODUCTION ONLY (PROD__ prefix)

@@ -37,7 +37,7 @@ const REGISTRY_CONFIG = [
     importPrefix: '@/lib/test-games/games',
     moduleType: 'data',
     dataType: 'GameDefinition',
-    dataTypeImport: 'import type { GameDefinition } from "@clover/shared";',
+    dataTypeImport: 'import type { GameDefinition } from "@slopcade/shared";',
     extensions: ['.ts'],
     exclude: ['*.test.ts', 'index.ts'],
   },

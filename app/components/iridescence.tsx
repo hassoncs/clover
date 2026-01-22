@@ -65,7 +65,7 @@ vec4 main(vec2 fragCoord) {
   
   return vec4(col, 1.0);
 }
-`);
+`)!;
 
 console.log("[Iridescence] Shader created successfully");
 

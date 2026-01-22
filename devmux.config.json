@@ -1,15 +1,15 @@
 {
   "version": 1,
-  "project": "clover",
+  "project": "slopcade",
   "services": {
     "api": {
       "cwd": ".",
-      "command": "CLOUDFLARE_INCLUDE_PROCESS_ENV=true npx hush run -t api-workers -- pnpm --filter @clover/api dev",
+      "command": "CLOUDFLARE_INCLUDE_PROCESS_ENV=true npx hush run -t api-workers -- pnpm --filter @slopcade/api dev",
       "health": { "type": "port", "port": 8789 }
     },
     "metro": {
       "cwd": "app",
-      "command": "node scripts/generate-registry.mjs && npx hush run -t app -- npx expo start --dev-client --port 8085",
+      "command": "node scripts/generate-registry.mjs && RCT_METRO_PORT=8085 npx hush run -t app -- npx expo start --dev-client --port 8085",
       "health": { "type": "port", "port": 8085 },
       "dependsOn": ["api"]
     },

@@ -1,12 +1,40 @@
 const path = require("path");
+const fs = require("fs");
 const { getDefaultConfig } = require("expo/metro-config");
 const { withNativeWind } = require("nativewind/metro");
 
 const projectRoot = __dirname;
 const monorepoRoot = path.resolve(projectRoot, "..");
-const box2dRoot = path.resolve(monorepoRoot, "../react-native-box2d");
+
+// Resolve box2d path from package.json link (source of truth)
+function getBox2dRoot() {
+  const pkg = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
+  const box2dSpec = pkg.dependencies?.["react-native-box2d"] || "";
+  
+  if (box2dSpec.startsWith("link:")) {
+    const linkPath = box2dSpec.replace("link:", "");
+    // If absolute path, use directly; otherwise resolve relative to projectRoot
+    return path.isAbsolute(linkPath) ? linkPath : path.resolve(projectRoot, linkPath);
+  }
+  
+  // Fallback to node_modules symlink resolution
+  const symlinkPath = path.join(projectRoot, "node_modules", "react-native-box2d");
+  return fs.realpathSync(symlinkPath);
+}
+
+const box2dRoot = getBox2dRoot();
 
 const baseConfig = getDefaultConfig(__dirname);
+
+// Persistent cache configuration
+baseConfig.cacheStores = [
+  new (require("metro-cache").FileStore)({
+    root: path.join(__dirname, ".metro-cache"),
+  }),
+];
+
+// Optimize worker count for cold builds
+baseConfig.maxWorkers = 4;
 
 baseConfig.server = {
   port: 8085,

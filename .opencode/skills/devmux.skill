@@ -1,0 +1,45 @@
+<skill>
+  <name>devmux</name>
+  <description>Orchestrate background services (Storybook, Metro, API) using devmux. Handles starting, stopping, and fixing lock files.</description>
+  <triggers>
+    <trigger>start storybook</trigger>
+    <trigger>run api</trigger>
+    <trigger>check status</trigger>
+    <trigger>devmux</trigger>
+    <trigger>service locked</trigger>
+    <trigger>start service</trigger>
+    <trigger>stop service</trigger>
+  </triggers>
+  <instructions>
+    # Devmux Service Management
+
+    You are operating in a monorepo that uses **devmux** to orchestrate development services.
+    
+    ## Core Rule
+    **NEVER** run `node server.js` or `pnpm start` directly for long-running services.
+    **ALWAYS** use the `devmux` abstraction via `pnpm` scripts.
+
+    ## Workflows
+
+    ### 1. Check Status
+    Run `pnpm svc:status` to see the state of all services (API, Metro, Storybook).
+
+    ### 2. Start a Service
+    Use the high-level `pnpm` script defined in the root `package.json`.
+    - **Storybook**: `pnpm storybook` (runs `devmux ensure storybook`)
+    - **API**: `pnpm dev:api` (runs `devmux ensure api`)
+    - **Metro**: `pnpm dev` (runs `devmux ensure metro`)
+
+    ### 3. Fix "Locked by another process"
+    If `devmux` fails with a lock error (e.g., "storybook failed to start (locked by another process)"):
+    1.  **Identify the Port**: Check `devmux.config.json` or infer from service (Storybook=6006, Metro=8085).
+    2.  **Find the Zombie**: Run `lsof -i :[PORT] -t` (e.g., `lsof -i :6006 -t`).
+    3.  **Kill the Zombie**: Run `kill -9 [PID]`.
+    4.  **Cleanup**: Run `npx devmux stop [service]` to clear any stale state files.
+    5.  **Retry**: Run the start command again.
+
+    ### 4. Interactive Bash vs Devmux
+    - Use `devmux` (via `pnpm` scripts) to **manage** the lifecycle of services.
+    - Use `interactive_bash` only if you explicitly need to interact with a specific tmux session (rare).
+  </instructions>
+</skill>
