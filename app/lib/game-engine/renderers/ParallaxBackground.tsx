@@ -1,14 +1,14 @@
 import { useMemo, useEffect } from 'react';
 import { Group, Image, useImage } from '@shopify/react-native-skia';
 import { useSharedValue, withTiming } from 'react-native-reanimated';
-import type { SkImage } from '@shopify/react-native-skia';
+import type { SkImage, DataSourceParam } from '@shopify/react-native-skia';
 
 /**
  * Parallax layer configuration
  */
 export interface ParallaxLayer {
   /** URL or local path to the layer image */
-  imageUrl: string;
+  imageUrl: string | number | null | undefined;
   /** Depth identifier for this layer */
   depth: 'sky' | 'far' | 'mid' | 'near';
   /** How much this layer moves relative to camera (0 = static, 1 = moves with camera) */
@@ -49,50 +49,7 @@ export interface ParallaxBackgroundProps {
 /**
  * Internal hook to load and cache parallax images
  */
-function useParallaxImages(layers: ParallaxLayer[]): Map<string, SkImage | null> {
-  const imageMap = new Map<string, SkImage | null>();
-  
-  // Load each layer's image
-  // Note: useImage must be called at component top level, so we handle this differently
-  // This is a simplified version - in production, you'd want proper image loading
-  for (const layer of layers) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const image = useImage(layer.imageUrl);
-    imageMap.set(layer.imageUrl, image);
-  }
-  
-  return imageMap;
-}
 
-/**
- * Renders a multi-layer parallax background that responds to camera movement.
- * 
- * Each layer moves at a different speed based on its `parallaxFactor`:
- * - parallaxFactor = 0: Layer stays completely still (sky, distant stars)
- * - parallaxFactor = 0.3: Layer moves slowly (distant mountains)
- * - parallaxFactor = 0.5: Layer moves at medium speed (mid-ground trees)
- * - parallaxFactor = 0.8-1.0: Layer moves fast (foreground elements)
- * 
- * @example
- * ```tsx
- * <ParallaxBackground
- *   config={{
- *     layers: [
- *       { imageUrl: 'sky.png', depth: 'sky', parallaxFactor: 0.1, zIndex: 0 },
- *       { imageUrl: 'mountains.png', depth: 'far', parallaxFactor: 0.3, zIndex: 1 },
- *       { imageUrl: 'trees.png', depth: 'mid', parallaxFactor: 0.5, zIndex: 2 },
- *       { imageUrl: 'foreground.png', depth: 'near', parallaxFactor: 0.8, zIndex: 3 },
- *     ],
- *   }}
- *   cameraX={camera.position.x}
- *   cameraY={camera.position.y}
- *   cameraZoom={camera.zoom}
- *   viewportWidth={800}
- *   viewportHeight={600}
- *   pixelsPerMeter={50}
- * />
- * ```
- */
 export function ParallaxBackground({
   config,
   cameraX,

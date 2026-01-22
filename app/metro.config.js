@@ -38,7 +38,7 @@ const nativeWindResolver = config.resolver.resolveRequest;
 // Custom resolver
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   // Fix box2d-wasm: Force UMD build to avoid "import.meta" errors in Metro
-  if (moduleName === "box2d-wasm") {
+  if (moduleName === "box2d-wasm" && platform === "web") {
     const umdPath = path.resolve(__dirname, "node_modules/box2d-wasm/dist/umd/entry.js");
     return {
       type: "sourceFile",

@@ -11,6 +11,7 @@ import {
   type ParallaxLayer,
   DEFAULT_PARALLAX_FACTORS,
 } from "../../lib/game-engine/renderers/ParallaxBackground";
+import PARALLAX_ASSETS from "../../assets/parallaxRegistry";
 import { ViewportRoot, useViewport } from "../../lib/viewport";
 
 const PIXELS_PER_METER = 50;
@@ -70,14 +71,10 @@ const THEME_LAYERS: Record<ThemeId, Array<{ depth: ParallaxLayer['depth'], suffi
 };
 
 function getThemeConfig(themeId: ThemeId): ParallaxBackgroundConfig {
-  const basePath = Platform.OS === "web" 
-    ? `/parallax-themes/${themeId}-layers`
-    : `file:///parallax-themes/${themeId}-layers`;
-  
   const layerDefs = THEME_LAYERS[themeId] || [];
   
-  const layers: ParallaxLayer[] = layerDefs.map((def, index) => ({
-    imageUrl: `${basePath}/${themeId}-${def.suffix}.png`,
+    const layers: ParallaxLayer[] = layerDefs.map((def, index) => ({
+    imageUrl: PARALLAX_ASSETS[themeId]?.[def.depth],
     depth: def.depth,
     parallaxFactor: DEFAULT_PARALLAX_FACTORS[def.depth],
     zIndex: index,
@@ -238,7 +235,7 @@ function ParallaxCanvas() {
         </View>
       )}
     </View>
-  ), [layers, toggleLayer, updateParallaxFactor]);
+  ), [toggleLayer, updateParallaxFactor]);
 
   if (!vp.isReady) return null;
 

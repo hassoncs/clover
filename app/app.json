@@ -17,6 +17,9 @@
     },
     "android": {
       "package": "me.ch5.slopcade.app"
-    }
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ]
   }
 }
