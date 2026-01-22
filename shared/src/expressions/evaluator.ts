@@ -150,6 +150,34 @@ const BUILTIN_FUNCTIONS: Record<string, BuiltinFunction> = {
     return args[index];
   },
 
+  weightedChoice: (args, ctx) => {
+    if (args.length < 2 || args.length % 2 !== 0) {
+      throw new Error('weightedChoice() requires pairs of (value, weight) arguments');
+    }
+    const pairs: { value: ExpressionValueType; weight: number }[] = [];
+    let totalWeight = 0;
+    for (let i = 0; i < args.length; i += 2) {
+      const value = args[i];
+      const weight = asNumber(args[i + 1]);
+      if (weight < 0) {
+        throw new Error('weightedChoice() weights must be non-negative');
+      }
+      pairs.push({ value, weight });
+      totalWeight += weight;
+    }
+    if (totalWeight === 0) {
+      return pairs[0].value;
+    }
+    let roll = ctx.random() * totalWeight;
+    for (const pair of pairs) {
+      roll -= pair.weight;
+      if (roll <= 0) {
+        return pair.value;
+      }
+    }
+    return pairs[pairs.length - 1].value;
+  },
+
   entityCount: (args, ctx) => {
     assertArgCount('entityCount', args, 1);
     const tag = String(args[0]);
@@ -302,6 +330,53 @@ const BUILTIN_FUNCTIONS: Record<string, BuiltinFunction> = {
     assertArgCount('vec2', args, 2);
     return { x: asNumber(args[0]), y: asNumber(args[1]) };
   },
+
+  list: (args) => {
+    return args.slice();
+  },
+
+  listLength: (args) => {
+    assertArgCount('listLength', args, 1);
+    const list = asList(args[0]);
+    return list.length;
+  },
+
+  listGet: (args) => {
+    assertArgCount('listGet', args, 2);
+    const list = asList(args[0]);
+    const index = Math.floor(asNumber(args[1]));
+    if (index < 0 || index >= list.length) {
+      return 0;
+    }
+    return list[index];
+  },
+
+  listContains: (args) => {
+    assertArgCount('listContains', args, 2);
+    const list = asList(args[0]);
+    const value = args[1];
+    return list.some((item) => item === value);
+  },
+
+  listFirst: (args) => {
+    assertArgCount('listFirst', args, 1);
+    const list = asList(args[0]);
+    return list.length > 0 ? list[0] : 0;
+  },
+
+  listLast: (args) => {
+    assertArgCount('listLast', args, 1);
+    const list = asList(args[0]);
+    return list.length > 0 ? list[list.length - 1] : 0;
+  },
+
+  listRandom: (args, ctx) => {
+    assertArgCount('listRandom', args, 1);
+    const list = asList(args[0]);
+    if (list.length === 0) return 0;
+    const index = Math.floor(ctx.random() * list.length);
+    return list[index];
+  },
 };
 
 function assertArgCount(name: string, args: ExpressionValueType[], expected: number): void {
@@ -324,6 +399,15 @@ function asVec2(value: ExpressionValueType): Vec2 {
   if (isVec2(value)) return value;
   if (typeof value === 'number') return { x: value, y: value };
   throw new Error(`Expected vec2, got ${typeof value}`);
+}
+
+function isList(value: ExpressionValueType): value is ExpressionValueType[] {
+  return Array.isArray(value);
+}
+
+function asList(value: ExpressionValueType): ExpressionValueType[] {
+  if (isList(value)) return value;
+  throw new Error(`Expected list, got ${typeof value}`);
 }
 
 function asBoolean(value: ExpressionValueType): boolean {
@@ -377,15 +461,27 @@ function resolveMemberAccess(obj: ExpressionValueType, property: string): Expres
     }
   }
 
+  if (isList(obj)) {
+    if (property === 'length') {
+      return obj.length;
+    }
+    const index = parseInt(property, 10);
+    if (!isNaN(index) && index >= 0 && index < obj.length) {
+      return obj[index];
+    }
+    throw new Error(`Invalid list property: ${property}`);
+  }
+
   if (typeof obj === 'object' && obj !== null) {
-    const record = obj as Record<string, unknown>;
+    const record = obj as unknown as Record<string, unknown>;
     if (property in record) {
       const value = record[property];
       if (
         typeof value === 'number' ||
         typeof value === 'boolean' ||
         typeof value === 'string' ||
-        isVec2(value as ExpressionValueType)
+        isVec2(value as ExpressionValueType) ||
+        isList(value as ExpressionValueType)
       ) {
         return value as ExpressionValueType;
       }

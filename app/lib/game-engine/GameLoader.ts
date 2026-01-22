@@ -1,5 +1,6 @@
-import type { GameDefinition, GameEntity } from '@slopcade/shared';
+import type { GameDefinition, GameEntity, GameJoint } from '@slopcade/shared';
 import type { Physics2D } from '../physics2d/Physics2D';
+import type { JointId } from '../physics2d/types';
 import { EntityManager } from './EntityManager';
 import { RulesEvaluator } from './RulesEvaluator';
 import { createBehaviorExecutor, BehaviorExecutor } from './BehaviorExecutor';
@@ -10,6 +11,7 @@ export interface LoadedGame {
   rulesEvaluator: RulesEvaluator;
   behaviorExecutor: BehaviorExecutor;
   pixelsPerMeter: number;
+  joints: Map<string, JointId>;
 }
 
 export interface GameLoaderOptions {
@@ -36,6 +38,16 @@ export class GameLoader {
       entityManager.createEntity(entity);
     }
 
+    const joints = new Map<string, JointId>();
+    if (definition.joints) {
+      for (const joint of definition.joints) {
+        const jointId = this.createJoint(joint, entityManager);
+        if (jointId) {
+          joints.set(joint.id, jointId);
+        }
+      }
+    }
+
     const rulesEvaluator = new RulesEvaluator();
     rulesEvaluator.loadRules(definition.rules ?? []);
     rulesEvaluator.setWinCondition(definition.winCondition);
@@ -52,7 +64,77 @@ export class GameLoader {
       rulesEvaluator,
       behaviorExecutor,
       pixelsPerMeter,
+      joints,
     };
+  }
+
+  private createJoint(joint: GameJoint, entityManager: EntityManager): JointId | null {
+    const entityA = entityManager.getEntity(joint.entityA);
+    const entityB = entityManager.getEntity(joint.entityB);
+
+    if (!entityA?.bodyId || !entityB?.bodyId) {
+      console.warn(`Cannot create joint ${joint.id}: entities not found or missing physics bodies`);
+      return null;
+    }
+
+    const baseProps = {
+      bodyA: entityA.bodyId,
+      bodyB: entityB.bodyId,
+      collideConnected: joint.collideConnected,
+    };
+
+    switch (joint.type) {
+      case 'revolute':
+        return this.physics.createRevoluteJoint({
+          ...baseProps,
+          type: 'revolute',
+          anchor: joint.anchor,
+          enableLimit: joint.enableLimit,
+          lowerAngle: joint.lowerAngle,
+          upperAngle: joint.upperAngle,
+          enableMotor: joint.enableMotor,
+          motorSpeed: joint.motorSpeed,
+          maxMotorTorque: joint.maxMotorTorque,
+        });
+
+      case 'distance':
+        return this.physics.createDistanceJoint({
+          ...baseProps,
+          type: 'distance',
+          anchorA: joint.anchorA,
+          anchorB: joint.anchorB,
+          length: joint.length,
+          stiffness: joint.stiffness,
+          damping: joint.damping,
+        });
+
+      case 'weld':
+        return this.physics.createWeldJoint({
+          ...baseProps,
+          type: 'weld',
+          anchor: joint.anchor,
+          stiffness: joint.stiffness,
+          damping: joint.damping,
+        });
+
+      case 'prismatic':
+        return this.physics.createPrismaticJoint({
+          ...baseProps,
+          type: 'prismatic',
+          anchor: joint.anchor,
+          axis: joint.axis,
+          enableLimit: joint.enableLimit,
+          lowerTranslation: joint.lowerTranslation,
+          upperTranslation: joint.upperTranslation,
+          enableMotor: joint.enableMotor,
+          motorSpeed: joint.motorSpeed,
+          maxMotorForce: joint.maxMotorForce,
+        });
+
+      default:
+        console.warn(`Unknown joint type: ${(joint as GameJoint).type}`);
+        return null;
+    }
   }
 
   unload(game: LoadedGame): void {

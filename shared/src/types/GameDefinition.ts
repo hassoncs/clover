@@ -129,6 +129,54 @@ export interface ParallaxConfig {
   layers: ParallaxLayer[];
 }
 
+export interface GameJointBase {
+  id: string;
+  entityA: string;
+  entityB: string;
+  collideConnected?: boolean;
+}
+
+export interface GameRevoluteJoint extends GameJointBase {
+  type: 'revolute';
+  anchor: Vec2;
+  enableLimit?: boolean;
+  lowerAngle?: number;
+  upperAngle?: number;
+  enableMotor?: boolean;
+  motorSpeed?: number;
+  maxMotorTorque?: number;
+}
+
+export interface GameDistanceJoint extends GameJointBase {
+  type: 'distance';
+  anchorA: Vec2;
+  anchorB: Vec2;
+  length?: number;
+  stiffness?: number;
+  damping?: number;
+}
+
+export interface GameWeldJoint extends GameJointBase {
+  type: 'weld';
+  anchor: Vec2;
+  stiffness?: number;
+  damping?: number;
+}
+
+export interface GamePrismaticJoint extends GameJointBase {
+  type: 'prismatic';
+  anchor: Vec2;
+  axis: Vec2;
+  enableLimit?: boolean;
+  lowerTranslation?: number;
+  upperTranslation?: number;
+  enableMotor?: boolean;
+  motorSpeed?: number;
+  maxMotorForce?: number;
+}
+
+export type GameJoint = GameRevoluteJoint | GameDistanceJoint | GameWeldJoint | GamePrismaticJoint;
+
 export interface GameDefinition {
   metadata: GameMetadata;
   world: WorldConfig;
@@ -137,6 +185,7 @@ export interface GameDefinition {
   ui?: UIConfig;
   templates: Record<string, EntityTemplate>;
   entities: GameEntity[];
+  joints?: GameJoint[];
   rules?: GameRule[];
   winCondition?: WinCondition;
   loseCondition?: LoseCondition;

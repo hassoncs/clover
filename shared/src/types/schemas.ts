@@ -301,12 +301,20 @@ export const RandomConditionSchema = z.object({
   probability: z.number().min(0).max(1),
 });
 
+export const ListContainsConditionSchema = z.object({
+  type: z.literal('list_contains'),
+  listName: z.string(),
+  value: ExpressionValueSchema,
+  negated: z.boolean().optional(),
+});
+
 export const RuleConditionSchema = z.discriminatedUnion('type', [
   ScoreConditionSchema,
   TimeConditionSchema,
   EntityExistsConditionSchema,
   EntityCountConditionSchema,
   RandomConditionSchema,
+  ListContainsConditionSchema,
 ]);
 
 export const SpawnPositionSchema = z.discriminatedUnion('type', [
@@ -377,6 +385,24 @@ export const LivesActionSchema = z.object({
   value: NumberValueSchema,
 });
 
+export const PushToListActionSchema = z.object({
+  type: z.literal('push_to_list'),
+  listName: z.string(),
+  value: ExpressionValueSchema,
+});
+
+export const PopFromListActionSchema = z.object({
+  type: z.literal('pop_from_list'),
+  listName: z.string(),
+  position: z.enum(['front', 'back']).optional(),
+  storeIn: z.string().optional(),
+});
+
+export const ShuffleListActionSchema = z.object({
+  type: z.literal('shuffle_list'),
+  listName: z.string(),
+});
+
 export const RuleActionSchema = z.discriminatedUnion('type', [
   SpawnActionSchema,
   DestroyActionSchema,
@@ -386,6 +412,9 @@ export const RuleActionSchema = z.discriminatedUnion('type', [
   EventActionSchema,
   ModifyActionSchema,
   LivesActionSchema,
+  PushToListActionSchema,
+  PopFromListActionSchema,
+  ShuffleListActionSchema,
 ]);
 
 export const GameRuleSchema = z.object({
@@ -632,6 +661,59 @@ export const TileMapSchema = z.object({
   layers: z.array(TileLayerSchema),
 });
 
+const GameJointBaseSchema = z.object({
+  id: z.string(),
+  entityA: z.string(),
+  entityB: z.string(),
+  collideConnected: z.boolean().optional(),
+});
+
+export const GameRevoluteJointSchema = GameJointBaseSchema.extend({
+  type: z.literal('revolute'),
+  anchor: Vec2Schema,
+  enableLimit: z.boolean().optional(),
+  lowerAngle: z.number().optional(),
+  upperAngle: z.number().optional(),
+  enableMotor: z.boolean().optional(),
+  motorSpeed: z.number().optional(),
+  maxMotorTorque: z.number().optional(),
+});
+
+export const GameDistanceJointSchema = GameJointBaseSchema.extend({
+  type: z.literal('distance'),
+  anchorA: Vec2Schema,
+  anchorB: Vec2Schema,
+  length: z.number().positive().optional(),
+  stiffness: z.number().optional(),
+  damping: z.number().optional(),
+});
+
+export const GameWeldJointSchema = GameJointBaseSchema.extend({
+  type: z.literal('weld'),
+  anchor: Vec2Schema,
+  stiffness: z.number().optional(),
+  damping: z.number().optional(),
+});
+
+export const GamePrismaticJointSchema = GameJointBaseSchema.extend({
+  type: z.literal('prismatic'),
+  anchor: Vec2Schema,
+  axis: Vec2Schema,
+  enableLimit: z.boolean().optional(),
+  lowerTranslation: z.number().optional(),
+  upperTranslation: z.number().optional(),
+  enableMotor: z.boolean().optional(),
+  motorSpeed: z.number().optional(),
+  maxMotorForce: z.number().optional(),
+});
+
+export const GameJointSchema = z.discriminatedUnion('type', [
+  GameRevoluteJointSchema,
+  GameDistanceJointSchema,
+  GameWeldJointSchema,
+  GamePrismaticJointSchema,
+]);
+
 export const GameDefinitionSchema = z.object({
   metadata: GameMetadataSchema,
   world: WorldConfigSchema,
@@ -641,6 +723,7 @@ export const GameDefinitionSchema = z.object({
   variables: GameVariablesSchema.optional(),
   templates: z.record(z.string(), EntityTemplateSchema),
   entities: z.array(GameEntitySchema),
+  joints: z.array(GameJointSchema).optional(),
   rules: z.array(GameRuleSchema).optional(),
   winCondition: WinConditionSchema.optional(),
   loseCondition: LoseConditionSchema.optional(),

@@ -155,6 +155,13 @@ export interface VariableCondition {
   value: number | string | boolean;
 }
 
+export interface ListContainsCondition {
+  type: 'list_contains';
+  listName: string;
+  value: Value<number | string | boolean>;
+  negated?: boolean;
+}
+
 export type RuleCondition =
   | ScoreCondition
   | TimeCondition
@@ -165,7 +172,8 @@ export type RuleCondition =
   | TouchingCondition
   | VelocityCondition
   | CooldownReadyCondition
-  | VariableCondition;
+  | VariableCondition
+  | ListContainsCondition;
 
 export type SpawnPositionType = 'fixed' | 'random' | 'at_entity' | 'at_collision';
 
@@ -285,6 +293,24 @@ export interface StartCooldownAction {
   duration: Value<number>;
 }
 
+export interface PushToListAction {
+  type: 'push_to_list';
+  listName: string;
+  value: Value<number | string | boolean>;
+}
+
+export interface PopFromListAction {
+  type: 'pop_from_list';
+  listName: string;
+  position?: 'front' | 'back';
+  storeIn?: string;
+}
+
+export interface ShuffleListAction {
+  type: 'shuffle_list';
+  listName: string;
+}
+
 export type RuleAction =
   | SpawnAction
   | DestroyAction
@@ -299,7 +325,10 @@ export type RuleAction =
   | SetVelocityAction
   | MoveAction
   | SetVariableAction
-  | StartCooldownAction;
+  | StartCooldownAction
+  | PushToListAction
+  | PopFromListAction
+  | ShuffleListAction;
 
 export interface GameRule {
   id: string;

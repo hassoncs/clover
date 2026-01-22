@@ -2,7 +2,7 @@ import type { Vec2 } from '../types/common';
 
 export type { Vec2 };
 
-export type ExpressionValueType = number | boolean | string | Vec2;
+export type ExpressionValueType = number | boolean | string | Vec2 | ExpressionValueType[];
 
 export type TokenType =
   | 'NUMBER'
