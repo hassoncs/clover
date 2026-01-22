@@ -30,6 +30,11 @@ export interface EditorAction {
   path?: string;
 }
 
+interface HistoryEntry {
+  document: GameDefinition;
+  selectedEntityId: string | null;
+}
+
 interface EditorState {
   mode: EditorMode;
   selectedEntityId: string | null;
@@ -37,8 +42,8 @@ interface EditorState {
   sheetSnapPoint: SheetSnapPoint;
   document: GameDefinition;
   isDirty: boolean;
-  undoStack: EditorAction[];
-  redoStack: EditorAction[];
+  undoStack: HistoryEntry[];
+  redoStack: HistoryEntry[];
   cameraPosition: Vec2;
   cameraZoom: number;
 }
@@ -86,24 +91,50 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
       return { ...state, isDirty: action.isDirty };
 
     case "PUSH_UNDO": {
-      const newUndoStack = [...state.undoStack, action.action].slice(-MAX_HISTORY);
+      const entry: HistoryEntry = {
+        document: JSON.parse(JSON.stringify(state.document)),
+        selectedEntityId: state.selectedEntityId,
+      };
+      const newUndoStack = [...state.undoStack, entry].slice(-MAX_HISTORY);
       return { ...state, undoStack: newUndoStack, redoStack: [] };
     }
 
     case "UNDO": {
       if (state.undoStack.length === 0) return state;
-      const lastAction = state.undoStack[state.undoStack.length - 1];
+      const currentEntry: HistoryEntry = {
+        document: JSON.parse(JSON.stringify(state.document)),
+        selectedEntityId: state.selectedEntityId,
+      };
+      const prevEntry = state.undoStack[state.undoStack.length - 1];
       const newUndoStack = state.undoStack.slice(0, -1);
-      const newRedoStack = [...state.redoStack, lastAction];
-      return { ...state, undoStack: newUndoStack, redoStack: newRedoStack };
+      const newRedoStack = [...state.redoStack, currentEntry];
+      return {
+        ...state,
+        document: prevEntry.document,
+        selectedEntityId: prevEntry.selectedEntityId,
+        undoStack: newUndoStack,
+        redoStack: newRedoStack,
+        isDirty: newUndoStack.length > 0,
+      };
     }
 
     case "REDO": {
       if (state.redoStack.length === 0) return state;
-      const lastAction = state.redoStack[state.redoStack.length - 1];
+      const currentEntry: HistoryEntry = {
+        document: JSON.parse(JSON.stringify(state.document)),
+        selectedEntityId: state.selectedEntityId,
+      };
+      const nextEntry = state.redoStack[state.redoStack.length - 1];
       const newRedoStack = state.redoStack.slice(0, -1);
-      const newUndoStack = [...state.undoStack, lastAction];
-      return { ...state, undoStack: newUndoStack, redoStack: newRedoStack };
+      const newUndoStack = [...state.undoStack, currentEntry];
+      return {
+        ...state,
+        document: nextEntry.document,
+        selectedEntityId: nextEntry.selectedEntityId,
+        undoStack: newUndoStack,
+        redoStack: newRedoStack,
+        isDirty: true,
+      };
     }
 
     case "SET_CAMERA":
@@ -118,9 +149,13 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
       const entityIndex = newDocument.entities.findIndex((e) => e.id === action.entityId);
       if (entityIndex === -1) return state;
       
+      const historyEntry: HistoryEntry = {
+        document: JSON.parse(JSON.stringify(state.document)),
+        selectedEntityId: state.selectedEntityId,
+      };
+      
       const entity = { ...newDocument.entities[entityIndex] };
-      const oldTransform = entity.transform;
-      entity.transform = { ...oldTransform, x: action.x, y: action.y };
+      entity.transform = { ...entity.transform, x: action.x, y: action.y };
       newDocument.entities = [...newDocument.entities];
       newDocument.entities[entityIndex] = entity;
       
@@ -128,15 +163,7 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
         ...state,
         document: newDocument,
         isDirty: true,
-        undoStack: [
-          ...state.undoStack,
-          {
-            type: "MOVE_ENTITY",
-            entityId: action.entityId,
-            from: { x: oldTransform.x, y: oldTransform.y },
-            to: { x: action.x, y: action.y },
-          },
-        ].slice(-MAX_HISTORY),
+        undoStack: [...state.undoStack, historyEntry].slice(-MAX_HISTORY),
         redoStack: [],
       };
     }
@@ -146,8 +173,12 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
       const entityIndex = newDocument.entities.findIndex((e) => e.id === action.entityId);
       if (entityIndex === -1) return state;
       
+      const historyEntry: HistoryEntry = {
+        document: JSON.parse(JSON.stringify(state.document)),
+        selectedEntityId: state.selectedEntityId,
+      };
+      
       const entity = { ...newDocument.entities[entityIndex] };
-      const oldScale = entity.transform.scaleX ?? 1;
       entity.transform = { ...entity.transform, scaleX: action.scale, scaleY: action.scale };
       newDocument.entities = [...newDocument.entities];
       newDocument.entities[entityIndex] = entity;
@@ -156,15 +187,7 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
         ...state,
         document: newDocument,
         isDirty: true,
-        undoStack: [
-          ...state.undoStack,
-          {
-            type: "SCALE_ENTITY",
-            entityId: action.entityId,
-            from: oldScale,
-            to: action.scale,
-          },
-        ].slice(-MAX_HISTORY),
+        undoStack: [...state.undoStack, historyEntry].slice(-MAX_HISTORY),
         redoStack: [],
       };
     }
@@ -174,8 +197,12 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
       const entityIndex = newDocument.entities.findIndex((e) => e.id === action.entityId);
       if (entityIndex === -1) return state;
       
+      const historyEntry: HistoryEntry = {
+        document: JSON.parse(JSON.stringify(state.document)),
+        selectedEntityId: state.selectedEntityId,
+      };
+      
       const entity = { ...newDocument.entities[entityIndex] };
-      const oldAngle = entity.transform.angle ?? 0;
       entity.transform = { ...entity.transform, angle: action.angle };
       newDocument.entities = [...newDocument.entities];
       newDocument.entities[entityIndex] = entity;
@@ -184,15 +211,7 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
         ...state,
         document: newDocument,
         isDirty: true,
-        undoStack: [
-          ...state.undoStack,
-          {
-            type: "ROTATE_ENTITY",
-            entityId: action.entityId,
-            from: oldAngle,
-            to: action.angle,
-          },
-        ].slice(-MAX_HISTORY),
+        undoStack: [...state.undoStack, historyEntry].slice(-MAX_HISTORY),
         redoStack: [],
       };
     }
@@ -202,7 +221,11 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
       const entityIndex = newDocument.entities.findIndex((e) => e.id === action.entityId);
       if (entityIndex === -1) return state;
       
-      const deletedEntity = newDocument.entities[entityIndex];
+      const historyEntry: HistoryEntry = {
+        document: JSON.parse(JSON.stringify(state.document)),
+        selectedEntityId: state.selectedEntityId,
+      };
+      
       newDocument.entities = newDocument.entities.filter((e) => e.id !== action.entityId);
       
       return {
@@ -210,14 +233,7 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
         document: newDocument,
         isDirty: true,
         selectedEntityId: state.selectedEntityId === action.entityId ? null : state.selectedEntityId,
-        undoStack: [
-          ...state.undoStack,
-          {
-            type: "DELETE_ENTITY",
-            entityId: action.entityId,
-            entity: deletedEntity,
-          },
-        ].slice(-MAX_HISTORY),
+        undoStack: [...state.undoStack, historyEntry].slice(-MAX_HISTORY),
         redoStack: [],
       };
     }
@@ -226,6 +242,11 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
       const newDocument = { ...state.document };
       const entityIndex = newDocument.entities.findIndex((e) => e.id === action.entityId);
       if (entityIndex === -1) return state;
+      
+      const historyEntry: HistoryEntry = {
+        document: JSON.parse(JSON.stringify(state.document)),
+        selectedEntityId: state.selectedEntityId,
+      };
       
       const originalEntity = newDocument.entities[entityIndex];
       const newId = `${originalEntity.id}_copy_${Date.now()}`;
@@ -247,19 +268,17 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
         document: newDocument,
         isDirty: true,
         selectedEntityId: newId,
-        undoStack: [
-          ...state.undoStack,
-          {
-            type: "ADD_ENTITY",
-            entityId: newId,
-            entity: duplicatedEntity,
-          },
-        ].slice(-MAX_HISTORY),
+        undoStack: [...state.undoStack, historyEntry].slice(-MAX_HISTORY),
         redoStack: [],
       };
     }
 
     case "ADD_ENTITY": {
+      const historyEntry: HistoryEntry = {
+        document: JSON.parse(JSON.stringify(state.document)),
+        selectedEntityId: state.selectedEntityId,
+      };
+      
       const newDocument = { ...state.document };
       newDocument.entities = [...newDocument.entities, action.entity];
       
@@ -268,14 +287,7 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
         document: newDocument,
         isDirty: true,
         selectedEntityId: action.entity.id,
-        undoStack: [
-          ...state.undoStack,
-          {
-            type: "ADD_ENTITY",
-            entityId: action.entity.id,
-            entity: action.entity,
-          },
-        ].slice(-MAX_HISTORY),
+        undoStack: [...state.undoStack, historyEntry].slice(-MAX_HISTORY),
         redoStack: [],
       };
     }
@@ -283,6 +295,11 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
     case "ADD_ENTITY_FROM_TEMPLATE": {
       const template = state.document.templates[action.templateId];
       if (!template) return state;
+      
+      const historyEntry: HistoryEntry = {
+        document: JSON.parse(JSON.stringify(state.document)),
+        selectedEntityId: state.selectedEntityId,
+      };
       
       const newId = `${action.templateId}_${Date.now()}`;
       const newEntity: GameEntity = {
@@ -311,14 +328,7 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
         document: newDocument,
         isDirty: true,
         selectedEntityId: newId,
-        undoStack: [
-          ...state.undoStack,
-          {
-            type: "ADD_ENTITY",
-            entityId: newId,
-            entity: newEntity,
-          },
-        ].slice(-MAX_HISTORY),
+        undoStack: [...state.undoStack, historyEntry].slice(-MAX_HISTORY),
         redoStack: [],
       };
     }
@@ -327,6 +337,11 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
       const newDocument = { ...state.document };
       const entityIndex = newDocument.entities.findIndex((e) => e.id === action.entityId);
       if (entityIndex === -1) return state;
+      
+      const historyEntry: HistoryEntry = {
+        document: JSON.parse(JSON.stringify(state.document)),
+        selectedEntityId: state.selectedEntityId,
+      };
       
       const entity = JSON.parse(JSON.stringify(newDocument.entities[entityIndex])) as GameEntity;
       const pathParts = action.path.split(".");
@@ -341,7 +356,6 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
       }
       
       const lastPart = pathParts[pathParts.length - 1];
-      const oldValue = target[lastPart];
       target[lastPart] = action.value;
       
       newDocument.entities = [...newDocument.entities];
@@ -351,16 +365,7 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
         ...state,
         document: newDocument,
         isDirty: true,
-        undoStack: [
-          ...state.undoStack,
-          {
-            type: "UPDATE_ENTITY_PROPERTY",
-            entityId: action.entityId,
-            path: action.path,
-            from: oldValue,
-            to: action.value,
-          },
-        ].slice(-MAX_HISTORY),
+        undoStack: [...state.undoStack, historyEntry].slice(-MAX_HISTORY),
         redoStack: [],
       };
     }
