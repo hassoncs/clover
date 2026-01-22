@@ -2,8 +2,7 @@
 
 > **Purpose**: Comprehensive technical reference capturing all patterns, configurations, and gotchas discovered in the waypoint-for-ios codebase. This serves as the authoritative source for replicating this architecture in new projects.
 >
-> **Source**: `/Users/hassoncs/Workspaces/Personal/waypoint-for-ios`
-> **Analysis Date**: January 2026
+> **Source**: `/Users/hassoncs/Workspaces/Personal/waypoint-for-ios` > **Analysis Date**: January 2026
 
 ---
 
@@ -26,6 +25,7 @@
 ## 1. Monorepo Structure
 
 ### Directory Layout
+
 ```
 waypoint-for-ios/
 ├── app/                    # Expo/React Native app (iOS, Android, Web)
@@ -100,15 +100,17 @@ waypoint-for-ios/
 ### Package Manager Configuration
 
 **pnpm-workspace.yaml:**
+
 ```yaml
 packages:
-  - 'app'
-  - 'api'
-  - 'shared'
-  - 'landing'
+  - "app"
+  - "api"
+  - "shared"
+  - "landing"
 ```
 
 **Root package.json (key parts):**
+
 ```json
 {
   "name": "waypoint-monorepo",
@@ -247,24 +249,25 @@ targets:
 
 ### Secrets by Target
 
-| Secret | Targets | Purpose |
-|--------|---------|---------|
-| `SUPABASE_URL` | api-workers, app (via template) | Supabase project URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | api-workers | Server-side Supabase auth |
-| `SUPABASE_ANON_KEY` | api-workers, app (via template) | Client auth key |
-| `STRIPE_SECRET_KEY` | api-workers | Stripe API (test/live) |
-| `STRIPE_WEBHOOK_SECRET` | api-workers | Webhook signature |
-| `STRIPE_MONTHLY_PRICE_ID` | api-workers | Subscription price |
-| `STRIPE_YEARLY_PRICE_ID` | api-workers | Subscription price |
-| `R2_ACCOUNT_ID` | api-workers | Cloudflare R2 |
-| `R2_ACCESS_KEY_ID` | api-workers | R2 credentials |
-| `R2_SECRET_ACCESS_KEY` | api-workers | R2 credentials |
-| `APP_URL` | api-workers | Redirect URL (env-specific) |
-| `EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN` | app | Mapbox maps |
+| Secret                            | Targets                         | Purpose                     |
+| --------------------------------- | ------------------------------- | --------------------------- |
+| `SUPABASE_URL`                    | api-workers, app (via template) | Supabase project URL        |
+| `SUPABASE_SERVICE_ROLE_KEY`       | api-workers                     | Server-side Supabase auth   |
+| `SUPABASE_ANON_KEY`               | api-workers, app (via template) | Client auth key             |
+| `STRIPE_SECRET_KEY`               | api-workers                     | Stripe API (test/live)      |
+| `STRIPE_WEBHOOK_SECRET`           | api-workers                     | Webhook signature           |
+| `STRIPE_MONTHLY_PRICE_ID`         | api-workers                     | Subscription price          |
+| `STRIPE_YEARLY_PRICE_ID`          | api-workers                     | Subscription price          |
+| `R2_ACCOUNT_ID`                   | api-workers                     | Cloudflare R2               |
+| `R2_ACCESS_KEY_ID`                | api-workers                     | R2 credentials              |
+| `R2_SECRET_ACCESS_KEY`            | api-workers                     | R2 credentials              |
+| `APP_URL`                         | api-workers                     | Redirect URL (env-specific) |
+| `EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN` | app                             | Mapbox maps                 |
 
 ### Template Expansion Pattern
 
 **app/.env (committed, no secrets):**
+
 ```bash
 # This file is a TEMPLATE - Hush expands ${VAR} references
 EXPO_PUBLIC_SUPABASE_URL=${SUPABASE_URL}
@@ -273,6 +276,7 @@ EXPO_PUBLIC_API_URL=http://localhost:8787
 ```
 
 When running from app directory, Hush:
+
 1. Loads root secrets
 2. Filters by target rules (`include: EXPO_PUBLIC_*`)
 3. Expands template references (`${SUPABASE_URL}` → actual value)
@@ -325,8 +329,8 @@ npx hush push
     },
     "metro": {
       "cwd": "app",
-      "command": "npx hush run -t app -- npx expo start --dev-client --port 8081",
-      "health": { "type": "port", "port": 8081 },
+      "command": "npx hush run -t app -- npx expo start --dev-client --port 8085",
+      "health": { "type": "port", "port": 8085 },
       "dependsOn": ["api"]
     }
   }
@@ -341,10 +345,12 @@ npx hush push
 4. **Health checks**: Port-based health verification
 
 ### tmux Session Names
+
 - API: `omo-waypoint-api`
 - Metro: `omo-waypoint-metro`
 
 ### Viewing Logs
+
 ```bash
 tmux capture-pane -pt omo-waypoint-api -S -50
 tmux capture-pane -pt omo-waypoint-metro -S -50
@@ -397,23 +403,29 @@ globs = ["**/*.wasm"]
 ### Entry Point (api/src/index.ts)
 
 ```typescript
-import { Hono } from 'hono';
-import { cors } from 'hono/cors';
-import { trpcServer } from '@hono/trpc-server';
-import { appRouter } from './trpc/router';
-import { createContext } from './trpc/context';
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { trpcServer } from "@hono/trpc-server";
+import { appRouter } from "./trpc/router";
+import { createContext } from "./trpc/context";
 
 const app = new Hono<{ Bindings: Env }>();
 
-app.use('*', cors({
-  origin: ['http://localhost:8081', 'https://app.waypointforios.com'],
-  credentials: true,
-}));
+app.use(
+  "*",
+  cors({
+    origin: ["http://localhost:8085", "https://app.waypointforios.com"],
+    credentials: true,
+  }),
+);
 
-app.use('/trpc/*', trpcServer({
-  router: appRouter,
-  createContext,
-}));
+app.use(
+  "/trpc/*",
+  trpcServer({
+    router: appRouter,
+    createContext,
+  }),
+);
 
 export default app;
 ```
@@ -421,8 +433,8 @@ export default app;
 ### Context (api/src/trpc/context.ts)
 
 ```typescript
-import type { D1Database, R2Bucket } from '@cloudflare/workers-types';
-import type { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
+import type { D1Database, R2Bucket } from "@cloudflare/workers-types";
+import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 
 export interface Env {
   DB: D1Database;
@@ -447,11 +459,11 @@ export interface Context {
 
 export async function createContext(
   opts: FetchCreateContextFnOptions,
-  env: Env
+  env: Env,
 ): Promise<Context> {
   const headers = opts.req.headers;
-  const installId = headers.get('X-Install-Id') || undefined;
-  
+  const installId = headers.get("X-Install-Id") || undefined;
+
   return {
     env,
     headers,
@@ -463,9 +475,9 @@ export async function createContext(
 ### tRPC Initialization (api/src/trpc/index.ts)
 
 ```typescript
-import { initTRPC, TRPCError } from '@trpc/server';
-import { createClient } from '@supabase/supabase-js';
-import type { Context } from './context';
+import { initTRPC, TRPCError } from "@trpc/server";
+import { createClient } from "@supabase/supabase-js";
+import type { Context } from "./context";
 
 const t = initTRPC.context<Context>().create();
 
@@ -475,49 +487,55 @@ export const publicProcedure = t.procedure;
 // Requires X-Install-Id header (for anonymous tracking)
 export const installedProcedure = publicProcedure.use(async ({ ctx, next }) => {
   if (!ctx.installId) {
-    throw new TRPCError({ code: 'BAD_REQUEST', message: 'X-Install-Id required' });
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "X-Install-Id required",
+    });
   }
   return next({ ctx });
 });
 
 // Requires valid Supabase JWT
 export const protectedProcedure = publicProcedure.use(async ({ ctx, next }) => {
-  const token = ctx.headers.get('Authorization')?.replace('Bearer ', '');
-  
+  const token = ctx.headers.get("Authorization")?.replace("Bearer ", "");
+
   if (!token) {
-    throw new TRPCError({ code: 'UNAUTHORIZED' });
+    throw new TRPCError({ code: "UNAUTHORIZED" });
   }
-  
+
   const supabase = createClient(
     ctx.env.SUPABASE_URL,
-    ctx.env.SUPABASE_SERVICE_ROLE_KEY
+    ctx.env.SUPABASE_SERVICE_ROLE_KEY,
   );
-  
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-  
+
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
+
   if (error || !user) {
-    throw new TRPCError({ code: 'UNAUTHORIZED' });
+    throw new TRPCError({ code: "UNAUTHORIZED" });
   }
-  
+
   // Auto-provision user in D1 if not exists
   const dbUser = await ensureUserExists(ctx.env.DB, user);
-  
+
   return next({ ctx: { ...ctx, user: dbUser } });
 });
 
 async function ensureUserExists(db: D1Database, supabaseUser: any) {
   const existing = await db
-    .prepare('SELECT * FROM users WHERE id = ?')
+    .prepare("SELECT * FROM users WHERE id = ?")
     .bind(supabaseUser.id)
     .first();
-  
+
   if (existing) return existing;
-  
+
   await db
-    .prepare('INSERT INTO users (id, email, created_at) VALUES (?, ?, ?)')
+    .prepare("INSERT INTO users (id, email, created_at) VALUES (?, ?, ?)")
     .bind(supabaseUser.id, supabaseUser.email, Date.now())
     .run();
-  
+
   return { id: supabaseUser.id, email: supabaseUser.email };
 }
 ```
@@ -525,12 +543,12 @@ async function ensureUserExists(db: D1Database, supabaseUser: any) {
 ### Router Aggregation (api/src/trpc/router.ts)
 
 ```typescript
-import { router } from './index';
-import { authRouter } from './routes/auth';
-import { waypointsRouter } from './routes/waypoints';
-import { routesRouter } from './routes/routes';
-import { syncRouter } from './routes/sync';
-import { billingRouter } from './routes/billing';
+import { router } from "./index";
+import { authRouter } from "./routes/auth";
+import { waypointsRouter } from "./routes/waypoints";
+import { routesRouter } from "./routes/routes";
+import { syncRouter } from "./routes/sync";
+import { billingRouter } from "./routes/billing";
 
 export const appRouter = router({
   auth: authRouter,
@@ -674,9 +692,9 @@ await ctx.env.DB.batch(batch);
 ### Supabase Client (app/lib/supabase/client.ts)
 
 ```typescript
-import { createClient } from '@supabase/supabase-js';
-import { env } from '../config/env';
-import { storage } from '../auth/storage';
+import { createClient } from "@supabase/supabase-js";
+import { env } from "../config/env";
+import { storage } from "../auth/storage";
 
 export const supabase = createClient(env.supabaseUrl!, env.supabaseAnonKey!, {
   auth: {
@@ -693,19 +711,20 @@ export const supabase = createClient(env.supabaseUrl!, env.supabaseAnonKey!, {
 iOS Keychain (SecureStore) has a 2KB limit. Supabase sessions can exceed this. Solution: encrypt session in AsyncStorage using a key stored in SecureStore.
 
 **app/lib/auth/storage.native.ts:**
-```typescript
-import * as SecureStore from 'expo-secure-store';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Crypto from 'expo-crypto';
 
-const KEY_NAME = 'supabase_session_key';
+```typescript
+import * as SecureStore from "expo-secure-store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Crypto from "expo-crypto";
+
+const KEY_NAME = "supabase_session_key";
 
 async function getOrCreateKey(): Promise<string> {
   let key = await SecureStore.getItemAsync(KEY_NAME);
   if (!key) {
     key = await Crypto.digestStringAsync(
       Crypto.CryptoDigestAlgorithm.SHA256,
-      Math.random().toString()
+      Math.random().toString(),
     );
     await SecureStore.setItemAsync(KEY_NAME, key);
   }
@@ -729,13 +748,13 @@ export const LargeSecureStore = {
     if (!encrypted) return null;
     return decrypt(encrypted, key);
   },
-  
+
   async setItem(name: string, value: string): Promise<void> {
     const key = await getOrCreateKey();
     const encrypted = await encrypt(value, key);
     await AsyncStorage.setItem(name, encrypted);
   },
-  
+
   async removeItem(name: string): Promise<void> {
     await AsyncStorage.removeItem(name);
   },
@@ -743,11 +762,12 @@ export const LargeSecureStore = {
 ```
 
 **app/lib/auth/storage.ts (platform selector):**
+
 ```typescript
-import { Platform } from 'react-native';
+import { Platform } from "react-native";
 
 export const storage = Platform.select({
-  native: () => require('./storage.native').LargeSecureStore,
+  native: () => require("./storage.native").LargeSecureStore,
   web: () => undefined, // Uses default browser storage
 })!();
 ```
@@ -755,9 +775,9 @@ export const storage = Platform.select({
 ### useSession Hook
 
 ```typescript
-import { useState, useEffect } from 'react';
-import { supabase } from '../supabase/client';
-import type { Session, User } from '@supabase/supabase-js';
+import { useState, useEffect } from "react";
+import { supabase } from "../supabase/client";
+import type { Session, User } from "@supabase/supabase-js";
 
 export function useSession() {
   const [session, setSession] = useState<Session | null>(null);
@@ -773,12 +793,12 @@ export function useSession() {
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-      }
-    );
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
 
     return () => subscription.unsubscribe();
   }, []);
@@ -790,6 +810,7 @@ export function useSession() {
 ### Auth Flow Components
 
 **Login page pattern:**
+
 ```typescript
 // Magic Link
 const { error } = await supabase.auth.signInWithOtp({
@@ -801,7 +822,7 @@ const { error } = await supabase.auth.signInWithOtp({
 
 // Google OAuth
 const { error } = await supabase.auth.signInWithOAuth({
-  provider: 'google',
+  provider: "google",
   options: {
     redirectTo: `${window.location.origin}/auth/callback`,
   },
@@ -809,10 +830,11 @@ const { error } = await supabase.auth.signInWithOAuth({
 ```
 
 **Callback handler (app/app/auth/callback.tsx):**
+
 ```typescript
-import { useEffect } from 'react';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { supabase } from '../../lib/supabase/client';
+import { useEffect } from "react";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { supabase } from "../../lib/supabase/client";
 
 export default function AuthCallback() {
   const router = useRouter();
@@ -824,13 +846,13 @@ export default function AuthCallback() {
       if (params.code) {
         await supabase.auth.exchangeCodeForSession(params.code as string);
       }
-      
+
       // Claim anonymous data if needed
       // ...
-      
-      router.replace('/');
+
+      router.replace("/");
     };
-    
+
     handleCallback();
   }, [params]);
 
@@ -878,23 +900,23 @@ shared/
 
 ```typescript
 // shared/src/schema/waypoints.ts
-import { sqliteTable, text, real, integer } from 'drizzle-orm/sqlite-core';
-import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
-import { z } from 'zod';
+import { sqliteTable, text, real, integer } from "drizzle-orm/sqlite-core";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { z } from "zod";
 
 // Drizzle table definition
-export const waypoints = sqliteTable('waypoints', {
-  id: text('id').primaryKey(),
-  userId: text('user_id'),
-  installId: text('install_id'),
-  name: text('name').notNull(),
-  latitude: real('latitude').notNull(),
-  longitude: real('longitude').notNull(),
-  description: text('description'),
-  syncVersion: integer('sync_version').default(0),
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
-  deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+export const waypoints = sqliteTable("waypoints", {
+  id: text("id").primaryKey(),
+  userId: text("user_id"),
+  installId: text("install_id"),
+  name: text("name").notNull(),
+  latitude: real("latitude").notNull(),
+  longitude: real("longitude").notNull(),
+  description: text("description"),
+  syncVersion: integer("sync_version").default(0),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  deletedAt: integer("deleted_at", { mode: "timestamp" }),
 });
 
 // Zod schemas (auto-generated from Drizzle)
@@ -910,23 +932,32 @@ export type Waypoint = z.infer<typeof selectWaypointSchema>;
 export type NewWaypoint = z.infer<typeof insertWaypointSchema>;
 
 // Client-side type (omits sync fields)
-export type ClientWaypoint = Omit<Waypoint, 'syncVersion' | 'deletedAt'>;
+export type ClientWaypoint = Omit<Waypoint, "syncVersion" | "deletedAt">;
 ```
 
 ### Client Type Pattern
 
 ```typescript
 // shared/src/schema/client.ts
-import type { Waypoint, Route, Vessel } from './index';
+import type { Waypoint, Route, Vessel } from "./index";
 
 // Client types omit backend-only fields
-export type ClientWaypoint = Omit<Waypoint, 'syncVersion' | 'deletedAt' | 'installId'>;
-export type ClientRoute = Omit<Route, 'syncVersion' | 'deletedAt' | 'installId'>;
-export type ClientVessel = Omit<Vessel, 'syncVersion' | 'deletedAt'>;
+export type ClientWaypoint = Omit<
+  Waypoint,
+  "syncVersion" | "deletedAt" | "installId"
+>;
+export type ClientRoute = Omit<
+  Route,
+  "syncVersion" | "deletedAt" | "installId"
+>;
+export type ClientVessel = Omit<Vessel, "syncVersion" | "deletedAt">;
 
 // Input types for creation
-export type WaypointInput = Pick<ClientWaypoint, 'name' | 'latitude' | 'longitude' | 'description'>;
-export type RouteInput = Pick<ClientRoute, 'name' | 'description'>;
+export type WaypointInput = Pick<
+  ClientWaypoint,
+  "name" | "latitude" | "longitude" | "description"
+>;
+export type RouteInput = Pick<ClientRoute, "name" | "description">;
 ```
 
 ---
@@ -967,12 +998,12 @@ export type RouteInput = Pick<ClientRoute, 'name' | 'description'>;
 
 ```javascript
 // app/metro.config.js
-const { getDefaultConfig } = require('expo/metro-config');
-const { withNativeWind } = require('nativewind/metro');
-const path = require('path');
+const { getDefaultConfig } = require("expo/metro-config");
+const { withNativeWind } = require("nativewind/metro");
+const path = require("path");
 
 const projectRoot = __dirname;
-const monorepoRoot = path.resolve(projectRoot, '..');
+const monorepoRoot = path.resolve(projectRoot, "..");
 
 const config = getDefaultConfig(projectRoot);
 
@@ -981,9 +1012,9 @@ config.watchFolders = [monorepoRoot];
 
 // Resolve modules from multiple locations
 config.resolver.nodeModulesPaths = [
-  path.resolve(projectRoot, 'node_modules'),
-  path.resolve(monorepoRoot, 'node_modules'),
-  path.resolve(monorepoRoot, 'shared/node_modules'),
+  path.resolve(projectRoot, "node_modules"),
+  path.resolve(monorepoRoot, "node_modules"),
+  path.resolve(monorepoRoot, "shared/node_modules"),
 ];
 
 // Disable package exports (fixes some resolution issues)
@@ -993,37 +1024,37 @@ config.resolver.unstable_enablePackageExports = false;
 const originalResolveRequest = config.resolver.resolveRequest;
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   // Shim @rnmapbox/maps for web
-  if (platform === 'web' && moduleName === '@rnmapbox/maps') {
+  if (platform === "web" && moduleName === "@rnmapbox/maps") {
     return {
-      filePath: path.resolve(projectRoot, 'lib/map/rnmapbox-web-shim.tsx'),
-      type: 'sourceFile',
+      filePath: path.resolve(projectRoot, "lib/map/rnmapbox-web-shim.tsx"),
+      type: "sourceFile",
     };
   }
-  
+
   // Jotai CJS fix (pnpm virtual store issue)
-  if (moduleName.startsWith('jotai')) {
+  if (moduleName.startsWith("jotai")) {
     const jotaiPath = getJotaiCjsPath(moduleName);
     if (jotaiPath) {
-      return { filePath: jotaiPath, type: 'sourceFile' };
+      return { filePath: jotaiPath, type: "sourceFile" };
     }
   }
-  
+
   return originalResolveRequest(context, moduleName, platform);
 };
 
 // WASM support
-config.resolver.assetExts.push('wasm');
+config.resolver.assetExts.push("wasm");
 
 // Security headers for CanvasKit/Skia
 config.server.enhanceMiddleware = (middleware) => {
   return (req, res, next) => {
-    res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless');
-    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    res.setHeader("Cross-Origin-Embedder-Policy", "credentialless");
+    res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
     return middleware(req, res, next);
   };
 };
 
-module.exports = withNativeWind(config, { input: './global.css' });
+module.exports = withNativeWind(config, { input: "./global.css" });
 ```
 
 ### Babel Config
@@ -1034,8 +1065,8 @@ module.exports = function (api) {
   api.cache(true);
   return {
     presets: [
-      ['babel-preset-expo', { jsxImportSource: 'nativewind' }],
-      'nativewind/babel',
+      ["babel-preset-expo", { jsxImportSource: "nativewind" }],
+      "nativewind/babel",
     ],
     // NOTE: Do NOT manually add react-native-reanimated/plugin
     // It's handled by babel-preset-expo and manual addition causes iOS conflicts
@@ -1070,10 +1101,10 @@ target 'waypoint' do
   post_install do |installer|
     # Mapbox post-install
     $RNMapboxMaps.post_install(installer)
-    
+
     # expo-file-system patch (fixes ExpoAppDelegate reference)
     patch_expo_file_system(installer)
-    
+
     react_native_post_install(installer)
   end
 end
@@ -1088,6 +1119,7 @@ end
 ### Environment Variables Pattern
 
 **app/lib/config/env.ts:**
+
 ```typescript
 // CRITICAL: Metro inlines process.env.EXPO_PUBLIC_* at bundle time
 // Must use DIRECT references - no destructuring, no dynamic access
@@ -1095,7 +1127,7 @@ end
 export const env = {
   supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
   supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
-  apiUrl: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8787',
+  apiUrl: process.env.EXPO_PUBLIC_API_URL || "http://localhost:8787",
   mapboxAccessToken: process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN,
 };
 
@@ -1140,19 +1172,19 @@ landing/
 ```javascript
 // landing/tailwind.config.mjs
 export default {
-  content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],
+  content: ["./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}"],
   theme: {
     extend: {
       colors: {
-        deepOcean: '#0a1628',
-        midnight: '#0f2744',
-        teal: '#0ea5e9',
-        seafoam: '#22d3ee',
-        gold: '#f59e0b',
+        deepOcean: "#0a1628",
+        midnight: "#0f2744",
+        teal: "#0ea5e9",
+        seafoam: "#22d3ee",
+        gold: "#f59e0b",
       },
       animation: {
-        'float': 'float 6s ease-in-out infinite',
-        'glow': 'glow 2s ease-in-out infinite',
+        float: "float 6s ease-in-out infinite",
+        glow: "glow 2s ease-in-out infinite",
       },
     },
   },
@@ -1178,8 +1210,8 @@ zone_name = "waypointforios.com"
 
 ```astro
 <!-- src/components/CallToAction.astro -->
-<form 
-  action="https://formspree.io/f/xqeekkoa" 
+<form
+  action="https://formspree.io/f/xqeekkoa"
   method="POST"
   id="waitlist-form"
 >
@@ -1192,14 +1224,14 @@ zone_name = "waypointforios.com"
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(form);
-    
+
     try {
       const response = await fetch(form.action, {
         method: 'POST',
         body: formData,
         headers: { 'Accept': 'application/json' },
       });
-      
+
       if (response.ok) {
         // Show success state
       } else {
@@ -1239,8 +1271,8 @@ jobs:
           version: 9
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
       - run: pnpm install --frozen-lockfile
       - run: pnpm turbo run typecheck
 
@@ -1252,22 +1284,22 @@ jobs:
       - uses: pnpm/action-setup@v2
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
       - run: pnpm install --frozen-lockfile
-      
+
       # Setup Hush/SOPS
       - name: Setup SOPS
         run: |
           curl -LO https://github.com/getsops/sops/releases/download/v3.8.1/sops-v3.8.1.linux.amd64
           chmod +x sops-v3.8.1.linux.amd64
           sudo mv sops-v3.8.1.linux.amd64 /usr/local/bin/sops
-      
+
       - name: Setup age key
         run: |
           mkdir -p ~/.config/sops/age
           echo "${{ secrets.SOPS_AGE_KEY }}" > ~/.config/sops/age/keys.txt
-      
+
       # Deploy
       - run: npx hush run -t api-workers -e production -- pnpm --filter @waypoint/api release
 
@@ -1279,8 +1311,8 @@ jobs:
       - uses: pnpm/action-setup@v2
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter waypoint-landing build
       - run: npx wrangler pages deploy dist/ --project-name=waypoint-landing
@@ -1294,16 +1326,16 @@ jobs:
       - uses: pnpm/action-setup@v2
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
       - run: pnpm install --frozen-lockfile
-      
+
       # Setup secrets
       - name: Setup age key
         run: |
           mkdir -p ~/.config/sops/age
           echo "${{ secrets.SOPS_AGE_KEY }}" > ~/.config/sops/age/keys.txt
-      
+
       # Build with production env
       - run: cd app && npx hush run -e production -- expo export -p web
       - run: npx wrangler pages deploy dist/ --project-name=waypoint
@@ -1312,12 +1344,12 @@ jobs:
 
 ### Required Secrets
 
-| Secret | Purpose |
-|--------|---------|
-| `CLOUDFLARE_API_TOKEN` | Wrangler authentication |
-| `CLOUDFLARE_ACCOUNT_ID` | Account identifier |
-| `SOPS_AGE_KEY` | Full age private key for decryption |
-| `EXPO_TOKEN` | EAS builds (if using) |
+| Secret                  | Purpose                             |
+| ----------------------- | ----------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | Wrangler authentication             |
+| `CLOUDFLARE_ACCOUNT_ID` | Account identifier                  |
+| `SOPS_AGE_KEY`          | Full age private key for decryption |
+| `EXPO_TOKEN`            | EAS builds (if using)               |
 
 ---
 
@@ -1352,6 +1384,7 @@ const { EXPO_PUBLIC_SUPABASE_URL } = process.env;
 ### 4. Wrangler Version
 
 Must use Wrangler 4.x for process.env support. Check with:
+
 ```bash
 cd api && npx wrangler --version
 ```
@@ -1375,6 +1408,7 @@ D1 is SQLite - store JSON as TEXT columns. No native JSON indexing. For complex 
 ### 9. R2 S3 Compatibility
 
 R2 uses S3-compatible API. For presigned URLs or direct upload, you need:
+
 - `R2_ACCOUNT_ID`
 - `R2_ACCESS_KEY_ID`
 - `R2_SECRET_ACCESS_KEY`
@@ -1382,6 +1416,7 @@ R2 uses S3-compatible API. For presigned URLs or direct upload, you need:
 ### 10. Domain Architecture
 
 Standard pattern:
+
 - `domain.com` → Landing (Astro on Cloudflare Pages)
 - `app.domain.com` → Web app (Expo web on Cloudflare Pages)
 - `api.domain.com` → API (Cloudflare Workers)
@@ -1441,4 +1476,4 @@ landing/* (entire directory)
 
 ---
 
-*Document generated from waypoint-for-ios analysis, January 2026*
+_Document generated from waypoint-for-ios analysis, January 2026_

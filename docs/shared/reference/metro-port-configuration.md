@@ -11,6 +11,7 @@ React Native's Metro bundler port is configured at multiple levels, and **prebui
 ### 1. Build React Native From Source
 
 In `ios/Podfile.properties.json`:
+
 ```json
 {
   "expo.jsEngine": "hermes",
@@ -24,6 +25,7 @@ In `ios/Podfile.properties.json`:
 ### 2. Set RCT_METRO_PORT in Podfile
 
 In `ios/Podfile`, add this line before the `target` block:
+
 ```ruby
 ENV['RCT_METRO_PORT'] = '8085'
 ```
@@ -31,24 +33,30 @@ ENV['RCT_METRO_PORT'] = '8085'
 ### 3. Set Port in metro.config.js
 
 In `metro.config.js`:
+
 ```javascript
 baseConfig.server = {
   port: 8085,
 };
 ```
 
-### 4. Set Port in package.json Scripts
+### 4. Set Port and RCT_METRO_PORT in package.json Scripts
 
-All scripts should use `--port 8085`:
+All native build scripts MUST include `RCT_METRO_PORT=8085` environment variable AND `--port 8085`:
+
 ```json
 {
   "scripts": {
     "start": "expo start --dev-client --port 8085",
-    "ios": "expo run:ios --port 8085",
-    "android": "expo run:android --port 8085"
+    "ios": "RCT_METRO_PORT=8085 expo run:ios --port 8085",
+    "ios:device": "RCT_METRO_PORT=8085 expo run:ios --configuration Release --device --port 8085",
+    "android": "RCT_METRO_PORT=8085 expo run:android --port 8085",
+    "pods": "cd ios && RCT_METRO_PORT=8085 pod install"
   }
 }
 ```
+
+**Important**: The `RCT_METRO_PORT` env var must be set for `pod install` and native build commands, not just `--port`.
 
 ## Building & Running
 
@@ -67,17 +75,18 @@ RCT_METRO_PORT=8085 npx expo run:ios --port 8085
 
 ## What DOESN'T Work (Failed Approaches)
 
-| Approach | Why It Fails |
-|----------|--------------|
-| Only setting `RCT_METRO_PORT` env var | Prebuilt binaries ignore preprocessor definitions |
-| Only setting `server.port` in metro.config.js | Native app still defaults to 8081 |
-| Deep links with correct port | App ignores them and uses hardcoded default |
-| UserDefaults/cache clearing | Doesn't change the binary's default |
-| Changing bundle ID alone | Fresh app still has 8081 hardcoded |
+| Approach                                      | Why It Fails                                      |
+| --------------------------------------------- | ------------------------------------------------- |
+| Only setting `RCT_METRO_PORT` env var         | Prebuilt binaries ignore preprocessor definitions |
+| Only setting `server.port` in metro.config.js | Native app still defaults to 8081                 |
+| Deep links with correct port                  | App ignores them and uses hardcoded default       |
+| UserDefaults/cache clearing                   | Doesn't change the binary's default               |
+| Changing bundle ID alone                      | Fresh app still has 8081 hardcoded                |
 
 ## Trade-offs
 
 Building from source means:
+
 - ✅ Port configuration actually works
 - ✅ Full control over React Native build settings
 - ❌ Longer initial build times (~5-10 min vs ~1-2 min)
@@ -86,6 +95,7 @@ Building from source means:
 ## Verification
 
 After building, check the binary:
+
 ```bash
 strings /path/to/DerivedData/*/Build/Products/Debug-iphonesimulator/*.app/* | grep -E "808[0-9]"
 ```
@@ -97,5 +107,6 @@ You should see `8085` instead of `8081`.
 1. `ios/Podfile.properties.json` - Enable building from source
 2. `ios/Podfile` - Set `RCT_METRO_PORT`
 3. `metro.config.js` - Set `server.port`
-4. `package.json` - All scripts use `--port 8085`
-5. `app.json` - Bundle ID changed to `com.skia.physics.test`
+4. `package.json` - All scripts use `RCT_METRO_PORT=8085` AND `--port 8085`
+5. `devmux.config.json` - Metro service command includes `RCT_METRO_PORT=8085`
+6. `app.json` - Bundle ID changed to `com.skia.physics.test`

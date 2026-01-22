@@ -4,15 +4,15 @@ This document explains how Expo development works in this project, including the
 
 ## Quick Reference
 
-| Goal | Command | What Happens |
-|------|---------|--------------|
-| Start dev server only | `pnpm dev` | Starts Metro via devmux (background tmux) |
-| Run iOS with hot reload | `pnpm ios` | Ensures Metro running → builds & launches dev build |
-| Run Android with hot reload | `pnpm android` | Ensures Metro running → builds & launches dev build |
-| Run Web with hot reload | `pnpm web` | Starts web dev server (separate from Metro) |
-| Check service status | `pnpm svc:status` | Shows if Metro is running |
-| Stop all services | `pnpm svc:stop` | Kills Metro tmux session |
-| Attach to Metro logs | `npx devmux attach metro` | See Metro output in real-time |
+| Goal                        | Command                   | What Happens                                        |
+| --------------------------- | ------------------------- | --------------------------------------------------- |
+| Start dev server only       | `pnpm dev`                | Starts Metro via devmux (background tmux)           |
+| Run iOS with hot reload     | `pnpm ios`                | Ensures Metro running → builds & launches dev build |
+| Run Android with hot reload | `pnpm android`            | Ensures Metro running → builds & launches dev build |
+| Run Web with hot reload     | `pnpm web`                | Starts web dev server (separate from Metro)         |
+| Check service status        | `pnpm svc:status`         | Shows if Metro is running                           |
+| Stop all services           | `pnpm svc:stop`           | Kills Metro tmux session                            |
+| Attach to Metro logs        | `npx devmux attach metro` | See Metro output in real-time                       |
 
 ---
 
@@ -23,6 +23,7 @@ This document explains how Expo development works in this project, including the
 **What it is:** A pre-built app from the App Store that loads your JS code.
 
 **Why we can't use it:** Expo Go only includes Expo's built-in native modules. This project uses:
+
 - `@shopify/react-native-skia` (custom native code)
 - `react-native-box2d` (custom native code)
 - `react-native-reanimated` (needs native setup)
@@ -30,6 +31,7 @@ This document explains how Expo development works in this project, including the
 These require a **Development Build**.
 
 **How to accidentally trigger it:**
+
 - Running `expo start` without `--dev-client` flag
 - Scanning QR code when Expo Go is the default target
 
@@ -38,6 +40,7 @@ These require a **Development Build**.
 **What it is:** Your own native app binary that includes `expo-dev-client` and all your custom native modules.
 
 **How it works:**
+
 ```
 ┌─────────────────┐     HTTP      ┌─────────────────┐
 │  Your App       │ ◄──────────── │  Metro Bundler  │
@@ -47,6 +50,7 @@ These require a **Development Build**.
 ```
 
 **Key points:**
+
 - Built with `expo run:ios` or `expo run:android`
 - Connects to Metro for JS bundles (hot reload works!)
 - Includes ALL your native modules
@@ -57,6 +61,7 @@ These require a **Development Build**.
 **What it is:** Release build with JS embedded (no Metro needed).
 
 **How to create:**
+
 - EAS Build: `eas build --platform ios --profile production`
 - Local test: `expo run:ios --configuration Release`
 
@@ -84,17 +89,18 @@ DevMux manages long-running services in tmux sessions.
 
 ### DevMux Commands
 
-| Command | What It Does |
-|---------|--------------|
-| `devmux ensure metro` | Start Metro if not running (idempotent) |
-| `devmux status` | Show which services are running |
-| `devmux stop` | Stop all services |
-| `devmux stop metro` | Stop just Metro |
+| Command               | What It Does                                         |
+| --------------------- | ---------------------------------------------------- |
+| `devmux ensure metro` | Start Metro if not running (idempotent)              |
+| `devmux status`       | Show which services are running                      |
+| `devmux stop`         | Stop all services                                    |
+| `devmux stop metro`   | Stop just Metro                                      |
 | `devmux attach metro` | Attach to Metro's tmux session (Ctrl+B, D to detach) |
 
 ### How Health Checks Work
 
 DevMux checks if port 8085 is listening to determine if Metro is "healthy". This means:
+
 - ✅ Metro running → port 8085 open → health check passes
 - ❌ Metro not running → port 8085 closed → devmux starts it
 
@@ -146,7 +152,7 @@ cd app && expo start --web
     │
     ▼
 Starts webpack dev server (different from Metro!)
-Opens browser to the web URL (usually localhost:8081 or similar)
+Opens browser to the web URL (usually localhost:8085 or similar)
 ```
 
 ---
@@ -156,11 +162,13 @@ Opens browser to the web URL (usually localhost:8081 or similar)
 ### "Metro is not running" / "Cannot connect to Metro"
 
 **Symptoms:**
+
 - App shows loading screen forever
 - Red error box about connection
 - Hot reload doesn't work
 
 **Diagnosis:**
+
 ```bash
 pnpm svc:status          # Is Metro running?
 curl localhost:8085      # Is the port responding?
@@ -168,6 +176,7 @@ npx devmux attach metro  # Check Metro logs for errors
 ```
 
 **Fixes:**
+
 1. `pnpm svc:stop && pnpm ios` - Restart everything
 2. Check if another process is using port 8085: `lsof -i :8085`
 3. Check Metro logs: `npx devmux attach metro`
@@ -177,6 +186,7 @@ npx devmux attach metro  # Check Metro logs for errors
 **Cause:** Metro started without `--dev-client` flag, or `expo-dev-client` not installed.
 
 **Fixes:**
+
 1. Verify `expo-dev-client` is installed: `cd app && npm ls expo-dev-client`
 2. If not installed: `cd app && npx expo install expo-dev-client`
 3. Rebuild the native app: `cd app && npx expo run:ios`
@@ -185,6 +195,7 @@ npx devmux attach metro  # Check Metro logs for errors
 ### "Hot reload stopped working"
 
 **Possible causes:**
+
 1. Metro crashed - check `npx devmux attach metro`
 2. App disconnected - shake device/Cmd+D → "Reload"
 3. Port mismatch - ensure `--port 8085` is consistent everywhere
@@ -194,6 +205,7 @@ npx devmux attach metro  # Check Metro logs for errors
 **Cause:** Native code changed but app wasn't rebuilt.
 
 **Fix:**
+
 ```bash
 # Full rebuild
 cd app
@@ -217,21 +229,21 @@ cd app && npx expo start --web
 
 ### Root `package.json` Scripts
 
-| Script | Purpose | When to Use |
-|--------|---------|-------------|
-| `pnpm dev` | Start Metro only | Background server for editors/tools |
-| `pnpm ios` | Full iOS dev flow | Daily iOS development |
-| `pnpm android` | Full Android dev flow | Daily Android development |
-| `pnpm web` | Web dev server | Web development |
-| `pnpm svc:status` | Check services | Debugging |
-| `pnpm svc:stop` | Stop all services | Cleanup, troubleshooting |
+| Script            | Purpose               | When to Use                         |
+| ----------------- | --------------------- | ----------------------------------- |
+| `pnpm dev`        | Start Metro only      | Background server for editors/tools |
+| `pnpm ios`        | Full iOS dev flow     | Daily iOS development               |
+| `pnpm android`    | Full Android dev flow | Daily Android development           |
+| `pnpm web`        | Web dev server        | Web development                     |
+| `pnpm svc:status` | Check services        | Debugging                           |
+| `pnpm svc:stop`   | Stop all services     | Cleanup, troubleshooting            |
 
 ### App `package.json` Scripts
 
-| Script | Purpose | Notes |
-|--------|---------|-------|
-| `pnpm start` | Start Metro (in app/) | Use root scripts instead |
-| `pnpm ios` | Build & run iOS (in app/) | Doesn't ensure Metro is running! |
+| Script         | Purpose                       | Notes                            |
+| -------------- | ----------------------------- | -------------------------------- |
+| `pnpm start`   | Start Metro (in app/)         | Use root scripts instead         |
+| `pnpm ios`     | Build & run iOS (in app/)     | Doesn't ensure Metro is running! |
 | `pnpm android` | Build & run Android (in app/) | Doesn't ensure Metro is running! |
 
 **⚠️ Important:** Always use root-level scripts (`pnpm ios` from repo root), not app-level scripts. The root scripts ensure Metro is running first.
@@ -264,11 +276,13 @@ pnpm ios
 This project REQUIRES `expo-dev-client` because we use custom native modules (Skia, Box2D).
 
 **Check if installed:**
+
 ```bash
 cd app && npm ls expo-dev-client
 ```
 
 **Install if missing:**
+
 ```bash
 cd app && npx expo install expo-dev-client
 cd app/ios && pod install  # Re-run pods after installing
@@ -324,23 +338,25 @@ expo start [options]
 ```
 
 **What it does:**
+
 1. Starts Metro bundler (transforms/bundles your JS/TS code)
 2. Starts Expo dev server (handles the dev menu, QR code, etc.)
 3. Waits for a client to connect
 
 **Critical flags:**
 
-| Flag | Effect |
-|------|--------|
-| `--dev-client` | Force development build target. **Use this.** |
-| `--go` | Force Expo Go target. **Never use for this project.** |
-| `--port <n>` | Metro bundler port (default 8081) |
-| `--web` | Also start web dev server |
-| (none) | Auto-detect target. **Unreliable for automation.** |
+| Flag           | Effect                                                |
+| -------------- | ----------------------------------------------------- |
+| `--dev-client` | Force development build target. **Use this.**         |
+| `--go`         | Force Expo Go target. **Never use for this project.** |
+| `--port <n>`   | Metro bundler port (default 8085)                     |
+| `--web`        | Also start web dev server                             |
+| (none)         | Auto-detect target. **Unreliable for automation.**    |
 
 **Why `--dev-client` matters:**
 
 Without it, `expo start` tries to auto-detect whether to target Expo Go or a dev build. This detection can fail or behave differently based on:
+
 - Whether `expo-dev-client` is in package.json
 - Whether native folders exist
 - Interactive vs non-interactive terminal
@@ -356,6 +372,7 @@ expo run:android [options]
 ```
 
 **What it does:**
+
 1. Runs `prebuild` if needed (generates native folders from app.json)
 2. Builds the native app (Xcode/Gradle)
 3. Installs on simulator/device
@@ -364,16 +381,17 @@ expo run:android [options]
 
 **Critical flags:**
 
-| Flag | Effect |
-|------|--------|
-| `--no-bundler` | Don't start/manage Metro. **Use when devmux owns Metro.** |
-| `--port <n>` | Tell the app which port Metro is on |
-| `--configuration Release` | Production build (no Metro needed) |
-| `--device <name>` | Target specific device |
+| Flag                      | Effect                                                    |
+| ------------------------- | --------------------------------------------------------- |
+| `--no-bundler`            | Don't start/manage Metro. **Use when devmux owns Metro.** |
+| `--port <n>`              | Tell the app which port Metro is on                       |
+| `--configuration Release` | Production build (no Metro needed)                        |
+| `--device <name>`         | Target specific device                                    |
 
 **Why `--no-bundler` matters:**
 
 Without it, `expo run:ios` will:
+
 - Check if Metro is already running
 - If not, start its own Metro instance
 - If yes, maybe use the existing one, maybe not (race conditions)
@@ -384,12 +402,12 @@ This creates "who owns Metro?" ambiguity. When devmux is your Metro manager, alw
 
 The `--port` flag means different things:
 
-| Command | What `--port` does |
-|---------|-------------------|
-| `expo start --port 8085` | Metro listens on 8085 |
+| Command                    | What `--port` does               |
+| -------------------------- | -------------------------------- |
+| `expo start --port 8085`   | Metro listens on 8085            |
 | `expo run:ios --port 8085` | Tells the app "Metro is on 8085" |
 
-These MUST match! If Metro runs on 8085 but the app thinks it's on 8081, you get "Cannot connect to Metro".
+These MUST match! If Metro runs on 8085 but the app thinks it's on 8085, you get "Cannot connect to Metro".
 
 ---
 
@@ -405,6 +423,7 @@ DevMux is a tmux-based service manager. When you run `devmux ensure metro`:
 4. Returns success
 
 The Metro process runs **inside tmux**, which means:
+
 - It persists after your terminal closes
 - You can attach to see logs: `devmux attach metro`
 - Ctrl+B, D to detach without killing it
@@ -471,6 +490,7 @@ app/ios/
 - Splash screen not updated
 
 **Rebuild command:**
+
 ```bash
 cd app && npx expo run:ios
 # Or for clean rebuild:
@@ -527,9 +547,9 @@ cd app && npx expo run:ios --no-bundler --port 8085
 ### Mistake 3: Port mismatch
 
 ```bash
-# WRONG - Metro on 8085, but app looks for 8081
+# WRONG - Metro on 8085, but app looks for 8085
 # devmux.config.json: "expo start --dev-client --port 8085"
-cd app && npx expo run:ios  # Defaults to port 8081!
+cd app && npx expo run:ios  # Defaults to port 8085!
 
 # RIGHT - always specify port
 cd app && npx expo run:ios --no-bundler --port 8085
@@ -553,12 +573,12 @@ cd ios && pod install
 
 Web is different from iOS/Android:
 
-| Aspect | iOS/Android | Web |
-|--------|-------------|-----|
-| Bundler | Metro | Webpack (via Metro) |
-| Server command | `expo start --dev-client` | `expo start --web` |
-| Port | Configurable | Often different from Metro port |
-| Native code | Runs natively | Polyfilled or unavailable |
+| Aspect         | iOS/Android               | Web                             |
+| -------------- | ------------------------- | ------------------------------- |
+| Bundler        | Metro                     | Webpack (via Metro)             |
+| Server command | `expo start --dev-client` | `expo start --web`              |
+| Port           | Configurable              | Often different from Metro port |
+| Native code    | Runs natively             | Polyfilled or unavailable       |
 
 **Key difference:** `expo start --web` starts a SEPARATE dev server. The `--port` flag behavior is different for web.
 
@@ -611,12 +631,14 @@ cd app && npx expo doctor
 ```
 
 Common output:
+
 ```
 The following packages should be updated for best compatibility:
   react-native-reanimated@4.2.1 - expected version: ~4.1.1
 ```
 
 Fix with:
+
 ```bash
 cd app && npx expo install --fix
 ```
@@ -630,7 +652,7 @@ For daily development:
 ```bash
 # From repo root
 pnpm ios          # iOS with hot reload
-pnpm android      # Android with hot reload  
+pnpm android      # Android with hot reload
 pnpm web          # Web with hot reload
 
 # To check/manage services

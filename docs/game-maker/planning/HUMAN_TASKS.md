@@ -8,9 +8,9 @@
 
 ## Priority Legend
 
-| Priority | Meaning |
-|----------|---------|
-| 🔴 **P0** | Blocking MVP launch |
+| Priority  | Meaning                 |
+| --------- | ----------------------- |
+| 🔴 **P0** | Blocking MVP launch     |
 | 🟡 **P1** | Required for production |
 | 🟢 **P2** | Nice to have / Post-MVP |
 
@@ -23,13 +23,14 @@
 **Status**: Not configured
 
 **Tasks**:
+
 - [ ] Create Supabase project at https://supabase.com
 - [ ] Enable Email (Magic Link) auth provider
 - [ ] Enable Google OAuth provider
 - [ ] Enable Apple OAuth provider (required for iOS App Store)
 - [ ] Configure redirect URLs:
   - Native: `clover://auth/callback`
-  - Development: `http://localhost:8081/auth/callback`
+  - Development: `http://localhost:8085/auth/callback`
   - Production: `https://your-domain.com/auth/callback`
 - [ ] Copy credentials to `.hush`:
   - `SUPABASE_URL`
@@ -46,6 +47,7 @@
 **Status**: Code implemented, keys required
 
 **Tasks**:
+
 - [ ] Create account at https://openrouter.ai OR https://platform.openai.com
 - [ ] Generate API key
 - [ ] Add to production secrets:
@@ -67,6 +69,7 @@
 **Status**: Code implemented, keys required
 
 **Tasks**:
+
 - [ ] Create account at https://scenario.com
 - [ ] Navigate to API settings
 - [ ] Generate API key pair:
@@ -90,6 +93,7 @@
 **Status**: ✅ D1 database configured
 
 **Verify**:
+
 - [ ] R2 bucket `clover-assets` exists and is public
 - [ ] Custom domain configured for R2 (optional): `assets.clover.app`
 - [ ] Workers secrets are set (see above)
@@ -122,14 +126,14 @@
 
 ### 2.3 Device Testing Matrix
 
-| Platform | Device | Status |
-|----------|--------|--------|
-| iOS | Simulator | [ ] |
-| iOS | Real device | [ ] |
-| Android | Emulator | [ ] |
-| Android | Real device | [ ] |
-| Web | Chrome | [ ] |
-| Web | Safari | [ ] |
+| Platform | Device      | Status |
+| -------- | ----------- | ------ |
+| iOS      | Simulator   | [ ]    |
+| iOS      | Real device | [ ]    |
+| Android  | Emulator    | [ ]    |
+| Android  | Real device | [ ]    |
+| Web      | Chrome      | [ ]    |
+| Web      | Safari      | [ ]    |
 
 ### 2.4 Performance Testing
 
@@ -157,12 +161,14 @@ npx wrangler deploy
 ### 3.2 App Build
 
 **iOS**:
+
 - [ ] Update `app.json` with production bundle ID
 - [ ] Configure Apple Developer account
 - [ ] Generate provisioning profiles
 - [ ] Build: `npx eas build --platform ios`
 
 **Android**:
+
 - [ ] Update `app.json` with production package name
 - [ ] Generate signing key
 - [ ] Build: `npx eas build --platform android`
@@ -170,6 +176,7 @@ npx wrangler deploy
 ### 3.3 Environment Configuration
 
 Production `.hush` should contain:
+
 ```
 SUPABASE_URL=https://xxx.supabase.co
 SUPABASE_ANON_KEY=eyJ...
@@ -229,7 +236,7 @@ For getting MVP running locally with full functionality:
 
 ```
 [ ] 1. Sign up for Supabase → get keys
-[ ] 2. Sign up for OpenRouter → get key  
+[ ] 2. Sign up for OpenRouter → get key
 [ ] 3. Sign up for Scenario.com → get key pair
 [ ] 4. Add to .hush and run `pnpm hush:encrypt`
 [ ] 5. Set Cloudflare secrets: `npx wrangler secret put <KEY>`
@@ -238,4 +245,4 @@ For getting MVP running locally with full functionality:
 
 ---
 
-*This document should be updated as tasks are completed. Check off items using `[x]`.*
+_This document should be updated as tasks are completed. Check off items using `[x]`._

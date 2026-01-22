@@ -282,6 +282,33 @@ Development phases for the AI-Powered Mobile Game Maker.
 - [ ] Sound designer
 - [ ] More physics (soft bodies, fluids)
 
+### Phase 9: Enhanced Player Controls
+> **Full Plan**: [player-control-system.md](./player-control-system.md)
+
+- [ ] Keyboard controls (WASD/Arrows) for web
+- [ ] Virtual DPad + action buttons for mobile
+- [ ] Configurable tap zones (left/right/custom mapping)
+- [ ] Cross-platform input abstraction (InputManager)
+- [ ] AI integration for new control types
+
+### Phase 10: Sound Generation System (MVP+1)
+> **Full Plan**: [sound-generation-system.md](./sound-generation-system.md)
+
+**Goal**: AI-generated sound effects and background music to bring games to life.
+
+**Quick Win** (1 week):
+- [ ] AudioManager + expo-av integration
+- [ ] Bundled sound library (jump, hit, score, win, lose)
+- [ ] Play sounds on behaviors and rules
+
+**AI Enhancement** (1-2 weeks):
+- [ ] ElevenLabs SFX generation API integration
+- [ ] tRPC routes for sound generation
+- [ ] R2 storage for generated audio
+- [ ] AI prompt updates
+
+**Why MVP+1**: Immediate user impact, relatively quick implementation. Bundled sounds can ship in 1 week, AI generation adds premium customization.
+
 ---
 
 ## Risk Mitigation
