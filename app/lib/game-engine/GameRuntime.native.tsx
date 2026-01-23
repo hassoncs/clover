@@ -72,6 +72,11 @@ export function GameRuntime({
   const particleManagerRef = useRef<ParticleEffectManager>(createParticleEffectManager());
   const gameVariablesRef = useRef<Record<string, any>>({});
   const [particleEffects, setParticleEffects] = useState<Array<{ particles: any[]; config: any }>>([]);
+  
+  const entitiesRef = useRef<RuntimeEntity[]>([]);
+  const lastEntityUpdateRef = useRef(0);
+  const lastHudUpdateRef = useRef(0);
+  const lastParticleUpdateRef = useRef(0);
 
   const timeScaleRef = useRef(1.0);
   const timeScaleTargetRef = useRef(1.0);
@@ -429,10 +434,29 @@ export function GameRuntime({
     collisionsRef.current = [];
 
     particleManagerRef.current.update(dt);
-    setParticleEffects(particleManagerRef.current.getAllActiveParticles());
-
-    setEntities([...game.entityManager.getVisibleEntities()]);
-    setGameState((s) => ({ ...s, time: elapsedRef.current }));
+    
+    const now = elapsedRef.current;
+    
+    const visibleEntities = game.entityManager.getVisibleEntities();
+    const entityListChanged = 
+      visibleEntities.length !== entitiesRef.current.length ||
+      visibleEntities.some((e, i) => e.id !== entitiesRef.current[i]?.id);
+    
+    if (entityListChanged || now - lastEntityUpdateRef.current > 0.016) {
+      entitiesRef.current = visibleEntities;
+      lastEntityUpdateRef.current = now;
+      setEntities(visibleEntities);
+    }
+    
+    if (now - lastParticleUpdateRef.current > 0.033) {
+      lastParticleUpdateRef.current = now;
+      setParticleEffects(particleManagerRef.current.getAllActiveParticles());
+    }
+    
+    if (now - lastHudUpdateRef.current > 0.1) {
+      lastHudUpdateRef.current = now;
+      setGameState((s) => ({ ...s, time: elapsedRef.current }));
+    }
   }, [inputRef, setTimeScale]);
 
   useSimplePhysicsLoop(stepGame, isReady && gameState.state === "playing");
@@ -476,7 +500,11 @@ export function GameRuntime({
       });
       particleManagerRef.current.clear();
       setParticleEffects([]);
-      setEntities(newGame.entityManager.getVisibleEntities());
+      entitiesRef.current = newGame.entityManager.getVisibleEntities();
+      lastEntityUpdateRef.current = 0;
+      lastHudUpdateRef.current = 0;
+      lastParticleUpdateRef.current = 0;
+      setEntities(entitiesRef.current);
       const initialVariables = newGame.rulesEvaluator.getVariables();
       setGameState({ score: 0, lives: 3, time: 0, state: "ready", variables: initialVariables });
     }
