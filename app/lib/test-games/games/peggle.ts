@@ -391,6 +391,30 @@ const game: GameDefinition = {
         { type: "set_variable", name: "multiplier", operation: "set", value: 1 },
       ],
     },
+    {
+      id: "proximity_slowmo",
+      name: "Slow time when ball is near orange peg",
+      trigger: { type: "frame" },
+      conditions: [
+        { type: "entity_count", tag: "ball", min: 1 },
+        { type: "expression", expr: "minDistanceToTag('orange-peg', entityPos('ball')) < 0.8" },
+      ],
+      actions: [
+        { type: "set_time_scale", scale: 0.5 },
+      ],
+    },
+    {
+      id: "proximity_normal_speed",
+      name: "Restore normal time when ball is far from orange pegs",
+      trigger: { type: "frame" },
+      conditions: [
+        { type: "entity_count", tag: "ball", min: 1 },
+        { type: "expression", expr: "minDistanceToTag('orange-peg', entityPos('ball')) >= 0.8" },
+      ],
+      actions: [
+        { type: "set_time_scale", scale: 1.0 },
+      ],
+    },
   ],
 };
 

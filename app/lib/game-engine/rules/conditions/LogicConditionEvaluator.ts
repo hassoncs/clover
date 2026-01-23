@@ -1,9 +1,10 @@
 import type { ConditionEvaluator } from './ConditionEvaluator';
-import type { ScoreCondition, TimeCondition, EntityCountCondition, RandomCondition, VariableCondition, CooldownReadyCondition, ListContainsCondition } from '@slopcade/shared';
+import type { ScoreCondition, TimeCondition, EntityCountCondition, RandomCondition, VariableCondition, CooldownReadyCondition, ListContainsCondition, ExpressionCondition } from '@slopcade/shared';
 import type { RuleContext } from '../types';
 import { resolveValue } from '../utils';
+import { evaluate } from '@slopcade/shared';
 
-type LogicCondition = ScoreCondition | TimeCondition | EntityCountCondition | RandomCondition | VariableCondition | CooldownReadyCondition | ListContainsCondition;
+type LogicCondition = ScoreCondition | TimeCondition | EntityCountCondition | RandomCondition | VariableCondition | CooldownReadyCondition | ListContainsCondition | ExpressionCondition;
 
 export class LogicConditionEvaluator implements ConditionEvaluator<LogicCondition> {
   evaluate(condition: LogicCondition, context: RuleContext): boolean {
@@ -59,6 +60,17 @@ export class LogicConditionEvaluator implements ConditionEvaluator<LogicConditio
         const value = resolveValue(condition.value, context);
         const contains = context.mutator.listContains(condition.listName, value);
         return condition.negated ? !contains : contains;
+      }
+
+      case 'expression': {
+        if (!context.evalContext) return false;
+        try {
+          const result = evaluate(condition.expr, context.evalContext);
+          return Boolean(result);
+        } catch (e) {
+          console.warn('[ExpressionCondition] Failed to evaluate:', condition.expr, e);
+          return false;
+        }
       }
 
       default:

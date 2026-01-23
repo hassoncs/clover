@@ -528,6 +528,7 @@ export function GameRuntime({
   const letterboxColor = definition.presentation?.letterboxColor ?? "#000000";
 
   const shakeOffset = cameraRef.current?.getShakeOffset() ?? { x: 0, y: 0 };
+  const zoomEffectScale = cameraRef.current?.getZoomEffectScale() ?? 1;
 
   const cameraPosition = cameraRef.current?.getPosition() ?? { x: 0, y: 0 };
   const cameraZoom = cameraRef.current?.getZoom() ?? 1;
@@ -581,7 +582,17 @@ export function GameRuntime({
                 pixelsPerMeter={pixelsPerMeter}
               />
             )}
-            <Group transform={[{ translateX: shakeOffset.x }, { translateY: shakeOffset.y }]}>
+            <Group 
+              transform={[
+                { translateX: shakeOffset.x }, 
+                { translateY: shakeOffset.y },
+                { translateX: viewportRect.width / 2 },
+                { translateY: viewportRect.height / 2 },
+                { scale: zoomEffectScale },
+                { translateX: -viewportRect.width / 2 },
+                { translateY: -viewportRect.height / 2 },
+              ]}
+            >
               {entities.map((entity) => (
                 <EntityRenderer
                   key={entity.id}

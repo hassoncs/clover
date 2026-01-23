@@ -282,6 +282,44 @@ const BUILTIN_FUNCTIONS: Record<string, BuiltinFunction> = {
     return Math.sqrt(dx * dx + dy * dy);
   },
 
+  minDistanceToTag: (args, ctx) => {
+    if (args.length < 2) {
+      throw new Error('minDistanceToTag(tag, position) requires 2 arguments');
+    }
+    const tag = String(args[0]);
+    const pos = asVec2(args[1]);
+    if (!ctx.entityManager) {
+      return Infinity;
+    }
+    const entities = ctx.entityManager.getEntitiesByTag(tag);
+    if (entities.length === 0) {
+      return Infinity;
+    }
+    let minDist = Infinity;
+    for (const e of entities) {
+      const dx = e.transform.x - pos.x;
+      const dy = e.transform.y - pos.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < minDist) {
+        minDist = dist;
+      }
+    }
+    return minDist;
+  },
+
+  entityPos: (args, ctx) => {
+    assertArgCount('entityPos', args, 1);
+    const tag = String(args[0]);
+    if (!ctx.entityManager) {
+      return { x: 0, y: 0 };
+    }
+    const entities = ctx.entityManager.getEntitiesByTag(tag);
+    if (entities.length === 0) {
+      return { x: 0, y: 0 };
+    }
+    return { x: entities[0].transform.x, y: entities[0].transform.y };
+  },
+
   sign: (args) => {
     assertArgCount('sign', args, 1);
     const n = asNumber(args[0]);

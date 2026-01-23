@@ -67,6 +67,12 @@ export class CameraSystem {
   private shakeOffsetX = 0;
   private shakeOffsetY = 0;
   private lastTargetPosition: Vec2 | null = null;
+  
+  private zoomEffectScale = 1.0;
+  private zoomEffectTarget = 1.0;
+  private zoomEffectDuration = 0;
+  private zoomEffectElapsed = 0;
+  private zoomEffectRestoreDelay = 0;
 
   constructor(config: CameraConfig, viewport: ViewportSize, pixelsPerMeter: number = 50) {
     this.config = { ...config };
@@ -140,6 +146,7 @@ export class CameraSystem {
     
     this.applyBounds();
     this.updateShake(dt);
+    this.updateZoomEffect(dt);
   }
 
   private updateFollow(
@@ -303,6 +310,44 @@ export class CameraSystem {
 
   getShakeOffset(): { x: number; y: number } {
     return { x: this.shakeOffsetX, y: this.shakeOffsetY };
+  }
+
+  private updateZoomEffect(dt: number): void {
+    if (this.zoomEffectDuration <= 0) {
+      return;
+    }
+
+    this.zoomEffectElapsed += dt;
+    const t = Math.min(1, this.zoomEffectElapsed / this.zoomEffectDuration);
+    const eased = t * t * (3 - 2 * t);
+    
+    const startScale = this.zoomEffectScale;
+    const targetScale = this.zoomEffectTarget;
+    this.zoomEffectScale = startScale + (targetScale - startScale) * eased;
+
+    if (t >= 1) {
+      this.zoomEffectScale = this.zoomEffectTarget;
+      
+      if (this.zoomEffectRestoreDelay > 0) {
+        this.zoomEffectTarget = 1.0;
+        this.zoomEffectDuration = 0.3;
+        this.zoomEffectElapsed = -this.zoomEffectRestoreDelay;
+        this.zoomEffectRestoreDelay = 0;
+      } else {
+        this.zoomEffectDuration = 0;
+      }
+    }
+  }
+
+  zoomEffect(scale: number, duration: number, restoreDelay?: number): void {
+    this.zoomEffectTarget = scale;
+    this.zoomEffectDuration = duration;
+    this.zoomEffectElapsed = 0;
+    this.zoomEffectRestoreDelay = restoreDelay ?? 0;
+  }
+
+  getZoomEffectScale(): number {
+    return this.zoomEffectScale;
   }
 
   getWorldToScreenTransform(): CameraTransform {

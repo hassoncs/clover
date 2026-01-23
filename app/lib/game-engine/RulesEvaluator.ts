@@ -397,6 +397,7 @@ export class RulesEvaluator implements IGameStateMutator {
         case 'pop_from_list':
         case 'shuffle_list': this.logicActionExecutor.execute(a, context); break;
         case 'camera_shake':
+        case 'camera_zoom':
         case 'set_time_scale': this.cameraActionExecutor.execute(a, context); break;
       }
     }

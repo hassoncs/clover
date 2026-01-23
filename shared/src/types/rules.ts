@@ -162,6 +162,11 @@ export interface ListContainsCondition {
   negated?: boolean;
 }
 
+export interface ExpressionCondition {
+  type: 'expression';
+  expr: string;
+}
+
 export type RuleCondition =
   | ScoreCondition
   | TimeCondition
@@ -173,7 +178,8 @@ export type RuleCondition =
   | VelocityCondition
   | CooldownReadyCondition
   | VariableCondition
-  | ListContainsCondition;
+  | ListContainsCondition
+  | ExpressionCondition;
 
 export type SpawnPositionType = 'fixed' | 'random' | 'at_entity' | 'at_collision';
 
@@ -324,6 +330,13 @@ export interface CameraShakeAction {
   duration: Value<number>;
 }
 
+export interface CameraZoomAction {
+  type: 'camera_zoom';
+  scale: Value<number>;
+  duration: Value<number>;
+  restoreDelay?: Value<number>;
+}
+
 export interface SetTimeScaleAction {
   type: 'set_time_scale';
   scale: Value<number>;
@@ -350,6 +363,7 @@ export type RuleAction =
   | PopFromListAction
   | ShuffleListAction
   | CameraShakeAction
+  | CameraZoomAction
   | SetTimeScaleAction;
 
 export interface GameRule {
