@@ -107,6 +107,7 @@ export function useAssetGeneration({ gameId, onComplete, onError }: UseAssetGene
     templateIds: string[];
     themePrompt?: string;
     style?: 'pixel' | 'cartoon' | '3d' | 'flat';
+    removeBackground?: boolean;
   }) => {
     if (params.templateIds.length === 0) {
       onError?.('No templates to generate');
@@ -127,6 +128,7 @@ export function useAssetGeneration({ gameId, onComplete, onError }: UseAssetGene
         promptDefaults: {
           themePrompt: params.themePrompt,
           styleOverride: params.style,
+          removeBackground: params.removeBackground,
         },
       });
 

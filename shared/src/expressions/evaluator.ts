@@ -289,10 +289,12 @@ const BUILTIN_FUNCTIONS: Record<string, BuiltinFunction> = {
     const tag = String(args[0]);
     const pos = asVec2(args[1]);
     if (!ctx.entityManager) {
+      console.log('[minDistanceToTag] No entityManager');
       return Infinity;
     }
     const entities = ctx.entityManager.getEntitiesByTag(tag);
     if (entities.length === 0) {
+      console.log('[minDistanceToTag] No entities with tag:', tag);
       return Infinity;
     }
     let minDist = Infinity;
@@ -304,6 +306,7 @@ const BUILTIN_FUNCTIONS: Record<string, BuiltinFunction> = {
         minDist = dist;
       }
     }
+    console.log('[minDistanceToTag] tag:', tag, 'pos:', pos, 'minDist:', minDist.toFixed(2));
     return minDist;
   },
 
@@ -311,13 +314,17 @@ const BUILTIN_FUNCTIONS: Record<string, BuiltinFunction> = {
     assertArgCount('entityPos', args, 1);
     const tag = String(args[0]);
     if (!ctx.entityManager) {
+      console.log('[entityPos] No entityManager');
       return { x: 0, y: 0 };
     }
     const entities = ctx.entityManager.getEntitiesByTag(tag);
     if (entities.length === 0) {
+      console.log('[entityPos] No entities with tag:', tag);
       return { x: 0, y: 0 };
     }
-    return { x: entities[0].transform.x, y: entities[0].transform.y };
+    const result = { x: entities[0].transform.x, y: entities[0].transform.y };
+    console.log('[entityPos] tag:', tag, 'pos:', result);
+    return result;
   },
 
   sign: (args) => {

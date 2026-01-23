@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -43,6 +43,12 @@ export function AssetAlignmentEditor({
     initialPlacement ?? DEFAULT_PLACEMENT
   );
   const [showPhysicsOutline, setShowPhysicsOutline] = useState(true);
+
+  useEffect(() => {
+    if (visible) {
+      setPlacement(initialPlacement ?? DEFAULT_PLACEMENT);
+    }
+  }, [visible, initialPlacement]);
 
   const handleScaleChange = useCallback((value: number) => {
     setPlacement(prev => ({ ...prev, scale: value }));

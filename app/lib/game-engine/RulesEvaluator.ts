@@ -366,7 +366,8 @@ export class RulesEvaluator implements IGameStateMutator {
         case 'random':
         case 'cooldown_ready':
         case 'variable':
-        case 'list_contains': return this.logicConditionEvaluator.evaluate(c, context);
+        case 'list_contains':
+        case 'expression': return this.logicConditionEvaluator.evaluate(c, context);
         case 'entity_exists':
         case 'on_ground':
         case 'touching':

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { ScenarioClient } from '../scenario';
-import { AssetService } from '../assets';
+import { AssetService, buildStructuredPrompt } from '../assets';
 import type { Env } from '../../trpc/context';
 
 const hasCredentials = !!(process.env.SCENARIO_API_KEY && process.env.SCENARIO_SECRET_API_KEY);
@@ -134,14 +134,24 @@ describeWithCredentials('AssetService Integration Tests (Real API)', () => {
     );
   });
 
-  describe('buildPrompt', () => {
+  describe('buildStructuredPrompt', () => {
     it('generates descriptive prompts for each entity type', () => {
       const types: Array<'character' | 'enemy' | 'item' | 'platform' | 'background' | 'ui'> = ['character', 'enemy', 'item', 'platform', 'background', 'ui'];
 
       for (const entityType of types) {
-        const prompt = service.buildPrompt(entityType, 'test description', 'pixel');
+        const prompt = buildStructuredPrompt({
+          templateId: 'test',
+          physicsShape: 'box',
+          physicsWidth: 1,
+          physicsHeight: 1,
+          entityType,
+          visualDescription: 'test description',
+          style: 'pixel',
+          targetWidth: 256,
+          targetHeight: 256,
+        });
         expect(prompt).toContain('test description');
-        expect(prompt.length).toBeGreaterThan(30);
+        expect(prompt.length).toBeGreaterThan(100);
       }
     });
   });

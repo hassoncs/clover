@@ -42,7 +42,16 @@ export class CameraActionExecutor implements ActionExecutor<CameraAction> {
     const duration = resolveNumber(action.duration, context);
     const restoreDelay = action.restoreDelay ? resolveNumber(action.restoreDelay, context) : undefined;
 
-    context.camera.zoomEffect(scale, duration, restoreDelay);
+    let focusWorld: { x: number; y: number } | undefined;
+    if (action.focusTag) {
+      const entities = context.entityManager.getEntitiesByTag(action.focusTag);
+      if (entities.length > 0) {
+        focusWorld = { x: entities[0].transform.x, y: entities[0].transform.y };
+      }
+    }
+
+    console.log('[CameraActionExecutor] Executing camera_zoom:', scale, duration, 'focus:', focusWorld);
+    context.camera.zoomEffect(scale, duration, restoreDelay, focusWorld);
   }
 
   private executeSetTimeScale(action: SetTimeScaleAction, context: RuleContext): void {

@@ -29,7 +29,7 @@
 - [ ] Enable Google OAuth provider
 - [ ] Enable Apple OAuth provider (required for iOS App Store)
 - [ ] Configure redirect URLs:
-  - Native: `clover://auth/callback`
+  - Native: `slopcade://auth/callback`
   - Development: `http://localhost:8085/auth/callback`
   - Production: `https://your-domain.com/auth/callback`
 - [ ] Copy credentials to `.hush`:

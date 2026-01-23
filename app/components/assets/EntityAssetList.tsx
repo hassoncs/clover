@@ -1,5 +1,6 @@
 import { View, Text, Image, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import type { GameDefinition, AssetPack, EntityTemplate } from '@slopcade/shared';
+import { resolveAssetUrl } from '@/lib/config/env';
 
 interface Props {
   gameDefinition: GameDefinition;
@@ -42,7 +43,7 @@ export function EntityAssetList({
             >
               {asset?.imageUrl ? (
                 <Image 
-                  source={{ uri: asset.imageUrl }} 
+                  source={{ uri: resolveAssetUrl(asset.imageUrl) }} 
                   className="w-12 h-12 rounded"
                   resizeMode="contain"
                 />

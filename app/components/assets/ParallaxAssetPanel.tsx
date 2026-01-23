@@ -1,5 +1,6 @@
 import { View, Text, Pressable, Switch, Image, ScrollView, ActivityIndicator } from 'react-native';
 import type { ParallaxConfig } from '@slopcade/shared';
+import { resolveAssetUrl } from '@/lib/config/env';
 
 type ParallaxDepth = 'sky' | 'far' | 'mid' | 'near';
 
@@ -75,7 +76,7 @@ export function ParallaxAssetPanel({
                 >
                   {layer?.imageUrl ? (
                     <Image 
-                      source={{ uri: layer.imageUrl }} 
+                      source={{ uri: resolveAssetUrl(layer.imageUrl) }} 
                       className="w-16 h-10 rounded"
                       resizeMode="cover"
                     />

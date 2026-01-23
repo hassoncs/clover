@@ -108,7 +108,7 @@ The core MVP flow is implemented:
 - [ ] Enable Email (Magic Link) auth provider
 - [ ] Enable Google OAuth provider
 - [ ] Enable Apple OAuth provider (for iOS)
-- [ ] Add redirect URL: `clover://auth/callback` (native)
+- [ ] Add redirect URL: `slopcade://auth/callback` (native)
 - [ ] Add redirect URL: `http://localhost:8085/auth/callback` (dev)
 - [ ] Copy Supabase URL to `.hush`
 - [ ] Copy Supabase Anon Key to `.hush`

@@ -10,12 +10,7 @@ const app = new Hono<{ Bindings: Env }>();
 app.use(
   "*",
   cors({
-    origin: [
-      "http://localhost:8085",
-      "http://localhost:19006",
-      // TODO: Add production URLs
-      // 'https://app.clover.app',
-    ],
+    origin: (origin) => origin, // Allow all origins for development
     credentials: true,
   }),
 );
@@ -23,7 +18,7 @@ app.use(
 // Health check
 app.get("/health", (c) => c.json({ status: "ok", timestamp: Date.now() }));
 
-// Asset proxy for local development (or when public bucket access isn't configured)
+// Asset proxy - serves R2 assets with caching headers
 app.get("/assets/*", async (c) => {
   const key = c.req.path.replace("/assets/", "");
   if (!key) return c.text("Asset key required", 400);
@@ -35,6 +30,7 @@ app.get("/assets/*", async (c) => {
     const headers = new Headers();
     object.writeHttpMetadata(headers);
     headers.set("etag", object.httpEtag);
+    headers.set("Cache-Control", "public, max-age=31536000, immutable");
     
     return new Response(object.body, { headers });
   } catch (e) {

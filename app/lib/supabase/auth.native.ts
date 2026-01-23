@@ -8,11 +8,11 @@ const getWindowOrigin = () => {
   if (typeof window !== "undefined" && window.location && window.location.origin) {
     return window.location.origin;
   }
-  return "https://cloverapp.com";
+  return "https://slopcade.com";
 };
 
 const REDIRECT_URL_WEB = getWindowOrigin() + "/auth/callback";
-const REDIRECT_URL_NATIVE = "clover://auth/callback";
+const REDIRECT_URL_NATIVE = "slopcade://auth/callback";
 
 function getRedirectUrl(): string {
   return Platform.OS === "web" ? REDIRECT_URL_WEB : REDIRECT_URL_NATIVE;

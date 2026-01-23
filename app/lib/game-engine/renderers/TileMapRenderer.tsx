@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useImage, Atlas, rect as skRect, Skia } from '@shopify/react-native-skia';
 import type { TileMap, TileSheet, TileLayer } from '@slopcade/shared';
 import type { SkRect, SkRSXform } from '@shopify/react-native-skia';
+import { resolveAssetUrl } from '@/lib/config/env';
 
 interface TileMapRendererProps {
   tileMap: TileMap;
@@ -20,7 +21,8 @@ export function TileMapRenderer({
   cameraX = 0,
   cameraY = 0,
 }: TileMapRendererProps) {
-  const image = useImage(tileSheet.imageUrl);
+  const resolvedUrl = useMemo(() => resolveAssetUrl(tileSheet.imageUrl), [tileSheet.imageUrl]);
+  const image = useImage(resolvedUrl);
 
   const sortedLayers = useMemo(() => {
     return [...tileMap.layers]

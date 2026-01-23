@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { View, Text, Pressable, ActivityIndicator, ScrollView } from "react-native";
+import { View, Text, Pressable, ActivityIndicator, ScrollView, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc/client";
@@ -99,6 +99,13 @@ export default function GameDetailScreen() {
       }
     } catch (err) {
       console.error("Failed to fork game:", err);
+      Alert.alert(
+        "Fork Failed",
+        "Could not fork the game. \n\n" +
+          "If you are on a physical device, ensure you are on the same Wi-Fi as your computer.\n\n" +
+          "Error: " +
+          (err instanceof Error ? err.message : String(err))
+      );
       setIsForking(false);
     }
   }, [gameInfo, router]);

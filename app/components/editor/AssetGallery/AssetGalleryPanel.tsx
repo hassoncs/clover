@@ -44,6 +44,7 @@ export function AssetGalleryPanel({
 
   const [quickCreateTheme, setQuickCreateTheme] = useState('');
   const [quickCreateStyle, setQuickCreateStyle] = useState<'pixel' | 'cartoon' | '3d' | 'flat'>('pixel');
+  const [removeBackground, setRemoveBackground] = useState(true);
   const [isQuickCreating, setIsQuickCreating] = useState(false);
 
   const templates = useMemo(() => {
@@ -57,12 +58,13 @@ export function AssetGalleryPanel({
   const { data: activePack, isLoading: isLoadingActivePack } = useAssetPackWithEntries(selectedPackId);
 
   const entriesByTemplateId = useMemo(() => {
-    if (!activePack?.entries) return new Map<string, { imageUrl?: string; placement?: AssetPlacement }>();
-    const map = new Map<string, { imageUrl?: string; placement?: AssetPlacement }>();
+    if (!activePack?.entries) return new Map<string, { imageUrl?: string; placement?: AssetPlacement; lastGeneration?: { compiledPrompt?: string; backgroundRemoved?: boolean; createdAt?: number } }>();
+    const map = new Map<string, { imageUrl?: string; placement?: AssetPlacement; lastGeneration?: { compiledPrompt?: string; backgroundRemoved?: boolean; createdAt?: number } }>();
     for (const entry of activePack.entries) {
       map.set(entry.templateId, {
         imageUrl: entry.imageUrl ?? undefined,
         placement: entry.placement,
+        lastGeneration: entry.lastGeneration,
       });
     }
     return map;
@@ -161,13 +163,14 @@ export function AssetGalleryPanel({
         templateIds: templates.map(t => t.id),
         themePrompt: quickCreateTheme.trim() || document.metadata?.description,
         style: quickCreateStyle,
+        removeBackground,
       });
     } catch (error) {
       console.error('[AssetGallery] Quick generate failed:', error);
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to create asset pack');
       setIsQuickCreating(false);
     }
-  }, [isPreviewMode, gameId, templates, quickCreateTheme, quickCreateStyle, createPack, generateAll, document.metadata?.description]);
+  }, [isPreviewMode, gameId, templates, quickCreateTheme, quickCreateStyle, removeBackground, createPack, generateAll, document.metadata?.description]);
 
   const handleGenerateAll = useCallback(() => {
     if (!selectedPackId) {
@@ -290,6 +293,16 @@ export function AssetGalleryPanel({
           </View>
 
           <Pressable
+            style={styles.bgRemoveToggle}
+            onPress={() => setRemoveBackground(prev => !prev)}
+          >
+            <View style={[styles.checkbox, removeBackground && styles.checkboxActive]}>
+              {removeBackground && <Text style={styles.checkmark}>✓</Text>}
+            </View>
+            <Text style={styles.bgRemoveLabel}>Remove backgrounds (cleaner sprites)</Text>
+          </Pressable>
+
+          <Pressable
             style={[
               styles.quickGenerateButton,
               (isQuickCreating || isGenerating) && styles.quickGenerateButtonDisabled,
@@ -397,6 +410,7 @@ export function AssetGalleryPanel({
                 template={template}
                 imageUrl={entryData?.imageUrl}
                 placement={entryData?.placement}
+                lastGeneration={entryData?.lastGeneration}
                 isGenerating={generatingTemplates.has(id)}
                 onPress={() => handleTemplatePress(id)}
               />
@@ -537,6 +551,35 @@ const styles = StyleSheet.create({
   },
   styleChipTextActive: {
     color: '#FFFFFF',
+  },
+  bgRemoveToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingVertical: 8,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#6B7280',
+    marginRight: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxActive: {
+    backgroundColor: '#4F46E5',
+    borderColor: '#4F46E5',
+  },
+  checkmark: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  bgRemoveLabel: {
+    color: '#D1D5DB',
+    fontSize: 14,
   },
   quickGenerateButton: {
     backgroundColor: '#4F46E5',

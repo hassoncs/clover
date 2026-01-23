@@ -4,6 +4,8 @@ import { TRPCError } from '@trpc/server';
 import {
   AssetService,
   getScenarioConfigFromEnv,
+  buildStructuredPrompt,
+  buildStructuredNegativePrompt,
   type EntityType,
   type SpriteStyle,
 } from '../../ai/assets';
@@ -89,7 +91,10 @@ const promptDefaultsSchema = z.object({
   styleOverride: z.string().optional(),
   modelId: z.string().optional(),
   negativePrompt: z.string().optional(),
+  removeBackground: z.boolean().optional(),
 });
+
+
 
 function toClientAsset(row: GameAssetRow) {
   return {
@@ -510,27 +515,32 @@ export const assetSystemRouter = router({
         );
 
         const overrides = input.templateOverrides?.[templateId];
-        const entityPrompt = overrides?.entityPrompt ?? `${templateId} ${entityType}`;
-        const styleOverride = overrides?.styleOverride ?? input.promptDefaults.styleOverride;
+        const styleOverride = (overrides?.styleOverride ?? input.promptDefaults.styleOverride ?? 'pixel') as SpriteStyle;
 
-        const positioningHint = `centered, full ${entityType === 'character' ? 'body' : 'object'} visible, no cropping`;
+        const compiledPrompt = buildStructuredPrompt({
+          templateId,
+          physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
+          physicsWidth: physicsContext.width,
+          physicsHeight: physicsContext.height,
+          physicsRadius: physicsContext.radius,
+          entityType,
+          themePrompt: input.promptDefaults.themePrompt,
+          style: styleOverride,
+          targetWidth: dimensions.width,
+          targetHeight: dimensions.height,
+        });
+
+        const compiledNegativePrompt = buildStructuredNegativePrompt(styleOverride);
 
         const promptComponents = {
           themePrompt: input.promptDefaults.themePrompt,
-          entityPrompt,
+          templateId,
+          entityType,
           styleOverride,
-          negativePrompt: input.promptDefaults.negativePrompt,
-          positioningHint,
+          physicsShape: physicsContext.shape,
+          physicsWidth: physicsContext.width,
+          physicsHeight: physicsContext.height,
         };
-
-        const compiledPrompt = [
-          input.promptDefaults.themePrompt,
-          entityPrompt,
-          `${dimensions.aspectRatio} aspect ratio`,
-          positioningHint,
-          styleOverride,
-          'transparent background, game sprite, clean edges',
-        ].filter(Boolean).join('. ');
 
         const taskId = crypto.randomUUID();
 
@@ -543,7 +553,7 @@ export const assetSystemRouter = router({
           templateId,
           JSON.stringify(promptComponents),
           compiledPrompt,
-          input.promptDefaults.negativePrompt ?? null,
+          compiledNegativePrompt,
           input.promptDefaults.modelId ?? null,
           dimensions.width,
           dimensions.height,
@@ -588,6 +598,9 @@ export const assetSystemRouter = router({
       let successCount = 0;
       let failCount = 0;
 
+      const jobDefaults = jobRow.prompt_defaults_json ? JSON.parse(jobRow.prompt_defaults_json) : {};
+      const shouldRemoveBackground = jobDefaults.removeBackground === true;
+
       for (const task of tasksResult.results) {
         const taskNow = Date.now();
         await ctx.env.DB.prepare(
@@ -595,24 +608,36 @@ export const assetSystemRouter = router({
         ).bind(taskNow, task.id).run();
 
         try {
-          const physicsContext = task.physics_context_json ? JSON.parse(task.physics_context_json) : {};
           const promptComponents = task.prompt_components_json ? JSON.parse(task.prompt_components_json) : {};
+          const entityType = (promptComponents.entityType ?? 'item') as EntityType;
+          const style = (promptComponents.styleOverride ?? 'pixel') as SpriteStyle;
 
-          let entityType: EntityType = 'item';
-          if (promptComponents.entityPrompt?.includes('character') || promptComponents.entityPrompt?.includes('player')) {
-            entityType = 'character';
-          } else if (promptComponents.entityPrompt?.includes('enemy')) {
-            entityType = 'enemy';
-          } else if (promptComponents.entityPrompt?.includes('platform')) {
-            entityType = 'platform';
-          }
-
-          const result = await assetService.generateAsset({
+          let result = await assetService.generateDirect({
+            prompt: task.compiled_prompt ?? '',
+            negativePrompt: task.compiled_negative_prompt ?? buildStructuredNegativePrompt(style),
             entityType,
-            description: task.compiled_prompt ?? '',
-            style: (promptComponents.styleOverride?.includes('pixel') ? 'pixel' : 'cartoon') as SpriteStyle,
-            size: { width: task.target_width ?? 512, height: task.target_height ?? 512 },
+            style,
+            width: task.target_width ?? 512,
+            height: task.target_height ?? 512,
           });
+
+          if (result.success && result.r2Key && shouldRemoveBackground) {
+            console.log(`[processGenerationJob] Removing background for ${task.template_id}`);
+            try {
+              const originalAsset = await ctx.env.ASSETS.get(result.r2Key);
+              if (originalAsset) {
+                const buffer = await originalAsset.arrayBuffer();
+                const bgRemovedResult = await assetService.removeBackground(buffer, entityType);
+                if (bgRemovedResult.success && bgRemovedResult.assetUrl) {
+                  result = bgRemovedResult;
+                } else {
+                  console.warn(`[processGenerationJob] Background removal failed, using original: ${bgRemovedResult.error}`);
+                }
+              }
+            } catch (bgErr) {
+              console.warn(`[processGenerationJob] Background removal error, using original:`, bgErr);
+            }
+          }
 
           if (result.success && result.assetUrl) {
             const assetId = crypto.randomUUID();
@@ -633,6 +658,7 @@ export const assetSystemRouter = router({
                 jobId: input.jobId,
                 taskId: task.id,
                 compiledPrompt: task.compiled_prompt,
+                backgroundRemoved: shouldRemoveBackground,
                 createdAt: assetNow,
               });
 

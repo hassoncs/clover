@@ -1,6 +1,7 @@
 import { Image, Group, useImage, BlendColor } from '@shopify/react-native-skia';
 import type { ImageSpriteComponent } from '@slopcade/shared';
 import type { RuntimeEntity } from '../types';
+import { resolveAssetUrl } from '@/lib/config/env';
 
 interface ExtendedImageSprite extends ImageSpriteComponent {
   offsetX?: number;
@@ -15,7 +16,8 @@ interface ImageRendererProps {
 
 export function ImageRenderer({ entity, sprite, pixelsPerMeter }: ImageRendererProps) {
   const { transform } = entity;
-  const image = useImage(sprite.imageUrl);
+  const resolvedUrl = resolveAssetUrl(sprite.imageUrl);
+  const image = useImage(resolvedUrl);
 
   if (!image) return null;
 

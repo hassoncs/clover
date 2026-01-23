@@ -335,6 +335,7 @@ export interface CameraZoomAction {
   scale: Value<number>;
   duration: Value<number>;
   restoreDelay?: Value<number>;
+  focusTag?: string;
 }
 
 export interface SetTimeScaleAction {

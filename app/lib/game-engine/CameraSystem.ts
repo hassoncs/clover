@@ -70,9 +70,11 @@ export class CameraSystem {
   
   private zoomEffectScale = 1.0;
   private zoomEffectTarget = 1.0;
+  private zoomEffectStart = 1.0;
   private zoomEffectDuration = 0;
   private zoomEffectElapsed = 0;
   private zoomEffectRestoreDelay = 0;
+  private zoomEffectFocusWorld: Vec2 | null = null;
 
   constructor(config: CameraConfig, viewport: ViewportSize, pixelsPerMeter: number = 50) {
     this.config = { ...config };
@@ -321,14 +323,13 @@ export class CameraSystem {
     const t = Math.min(1, this.zoomEffectElapsed / this.zoomEffectDuration);
     const eased = t * t * (3 - 2 * t);
     
-    const startScale = this.zoomEffectScale;
-    const targetScale = this.zoomEffectTarget;
-    this.zoomEffectScale = startScale + (targetScale - startScale) * eased;
+    this.zoomEffectScale = this.zoomEffectStart + (this.zoomEffectTarget - this.zoomEffectStart) * eased;
 
     if (t >= 1) {
       this.zoomEffectScale = this.zoomEffectTarget;
       
       if (this.zoomEffectRestoreDelay > 0) {
+        this.zoomEffectStart = this.zoomEffectScale;
         this.zoomEffectTarget = 1.0;
         this.zoomEffectDuration = 0.3;
         this.zoomEffectElapsed = -this.zoomEffectRestoreDelay;
@@ -339,15 +340,22 @@ export class CameraSystem {
     }
   }
 
-  zoomEffect(scale: number, duration: number, restoreDelay?: number): void {
+  zoomEffect(scale: number, duration: number, restoreDelay?: number, focusWorld?: Vec2): void {
+    console.log('[CameraSystem.zoomEffect] scale:', scale, 'duration:', duration, 'focus:', focusWorld);
+    this.zoomEffectStart = this.zoomEffectScale;
     this.zoomEffectTarget = scale;
     this.zoomEffectDuration = duration;
     this.zoomEffectElapsed = 0;
     this.zoomEffectRestoreDelay = restoreDelay ?? 0;
+    this.zoomEffectFocusWorld = focusWorld ?? null;
   }
 
   getZoomEffectScale(): number {
     return this.zoomEffectScale;
+  }
+
+  getZoomEffectFocus(): Vec2 | null {
+    return this.zoomEffectFocusWorld;
   }
 
   getWorldToScreenTransform(): CameraTransform {

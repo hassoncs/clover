@@ -1,4 +1,9 @@
+import { Platform } from 'react-native';
 import type { PeerId } from '../types';
+import {
+  isNativeBLEPeripheralAvailable,
+  createNativeBLEPeripheralManager,
+} from '../native/BLEPeripheralModule';
 
 export interface SessionInfo {
   gameId: string;
@@ -67,5 +72,12 @@ class BLEPeripheralManagerStub implements BLEPeripheralManager {
 }
 
 export function createBLEPeripheralManager(): BLEPeripheralManager {
+  if (Platform.OS === 'ios' && isNativeBLEPeripheralAvailable()) {
+    return createNativeBLEPeripheralManager();
+  }
   return new BLEPeripheralManagerStub();
+}
+
+export function isBLEPeripheralSupported(): boolean {
+  return Platform.OS === 'ios' && isNativeBLEPeripheralAvailable();
 }

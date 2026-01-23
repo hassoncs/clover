@@ -2,6 +2,7 @@ import { useMemo, useEffect } from 'react';
 import { Group, Image, useImage } from '@shopify/react-native-skia';
 import { useSharedValue, withTiming } from 'react-native-reanimated';
 import type { SkImage, DataSourceParam } from '@shopify/react-native-skia';
+import { resolveAssetUrl } from '@/lib/config/env';
 
 /**
  * Parallax layer configuration
@@ -112,7 +113,11 @@ function ParallaxLayerRenderer({
   viewportHeight,
   pixelsPerMeter,
 }: ParallaxLayerRendererProps) {
-  const image = useImage(layer.imageUrl);
+  const resolvedUrl = useMemo(
+    () => typeof layer.imageUrl === 'string' ? resolveAssetUrl(layer.imageUrl) : layer.imageUrl,
+    [layer.imageUrl]
+  );
+  const image = useImage(resolvedUrl);
   const opacity = useSharedValue(layer.visible ? 1 : 0);
 
   useEffect(() => {

@@ -529,9 +529,17 @@ export function GameRuntime({
 
   const shakeOffset = cameraRef.current?.getShakeOffset() ?? { x: 0, y: 0 };
   const zoomEffectScale = cameraRef.current?.getZoomEffectScale() ?? 1;
+  const zoomEffectFocus = cameraRef.current?.getZoomEffectFocus();
 
   const cameraPosition = cameraRef.current?.getPosition() ?? { x: 0, y: 0 };
   const cameraZoom = cameraRef.current?.getZoom() ?? 1;
+  
+  const zoomFocusScreenX = zoomEffectFocus 
+    ? zoomEffectFocus.x * pixelsPerMeter 
+    : viewportRect.width / 2;
+  const zoomFocusScreenY = zoomEffectFocus 
+    ? zoomEffectFocus.y * pixelsPerMeter 
+    : viewportRect.height / 2;
 
   const parallaxBgConfig: ParallaxBackgroundConfig | null = 
     definition.parallaxConfig?.enabled && definition.parallaxConfig.layers.length > 0
@@ -586,11 +594,11 @@ export function GameRuntime({
               transform={[
                 { translateX: shakeOffset.x }, 
                 { translateY: shakeOffset.y },
-                { translateX: viewportRect.width / 2 },
-                { translateY: viewportRect.height / 2 },
+                { translateX: zoomFocusScreenX },
+                { translateY: zoomFocusScreenY },
                 { scale: zoomEffectScale },
-                { translateX: -viewportRect.width / 2 },
-                { translateY: -viewportRect.height / 2 },
+                { translateX: -zoomFocusScreenX },
+                { translateY: -zoomFocusScreenY },
               ]}
             >
               {entities.map((entity) => (

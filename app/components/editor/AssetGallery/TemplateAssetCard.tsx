@@ -1,15 +1,23 @@
-import { View, Text, Pressable, Image, ActivityIndicator, StyleSheet } from 'react-native';
-import { useState } from 'react';
+import { View, Text, Pressable, Image, ActivityIndicator, StyleSheet, Alert } from 'react-native';
+import { useState, useMemo } from 'react';
 import { PrimitivePreview } from './PrimitivePreview';
 import type { EntityTemplate, AssetPlacement } from '@slopcade/shared';
+import { resolveAssetUrl } from '@/lib/config/env';
 
 type ViewMode = 'primitive' | 'generated';
+
+interface LastGenerationInfo {
+  compiledPrompt?: string;
+  backgroundRemoved?: boolean;
+  createdAt?: number;
+}
 
 interface TemplateAssetCardProps {
   templateId: string;
   template: EntityTemplate;
   imageUrl?: string;
   placement?: AssetPlacement;
+  lastGeneration?: LastGenerationInfo;
   isGenerating?: boolean;
   onPress?: () => void;
 }
@@ -19,13 +27,15 @@ export function TemplateAssetCard({
   template,
   imageUrl,
   placement,
+  lastGeneration,
   isGenerating = false,
   onPress,
 }: TemplateAssetCardProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>(imageUrl ? 'generated' : 'primitive');
+  const resolvedImageUrl = useMemo(() => resolveAssetUrl(imageUrl), [imageUrl]);
+  const [viewMode, setViewMode] = useState<ViewMode>(resolvedImageUrl ? 'generated' : 'primitive');
   const [imageError, setImageError] = useState(false);
 
-  const hasGeneratedAsset = !!imageUrl;
+  const hasGeneratedAsset = !!resolvedImageUrl;
   const showGeneratedView = viewMode === 'generated' && hasGeneratedAsset && !imageError;
 
   const getStatusIndicator = () => {
@@ -40,12 +50,30 @@ export function TemplateAssetCard({
     return '#6B7280';
   };
 
+  const handleShowPrompt = () => {
+    if (!lastGeneration?.compiledPrompt) return;
+    
+    const createdDate = lastGeneration.createdAt 
+      ? new Date(lastGeneration.createdAt).toLocaleString()
+      : 'Unknown';
+    
+    const bgInfo = lastGeneration.backgroundRemoved 
+      ? '\n\nBackground: Removed' 
+      : '';
+    
+    Alert.alert(
+      'Generation Details',
+      `Prompt:\n${lastGeneration.compiledPrompt}\n\nGenerated: ${createdDate}${bgInfo}`,
+      [{ text: 'OK' }]
+    );
+  };
+
   return (
     <Pressable style={styles.card} onPress={onPress}>
       <View style={styles.previewContainer}>
         {showGeneratedView ? (
           <Image
-            source={{ uri: imageUrl }}
+            source={{ uri: resolvedImageUrl }}
             style={styles.generatedImage}
             resizeMode="contain"
             onError={() => setImageError(true)}
@@ -71,9 +99,20 @@ export function TemplateAssetCard({
           <Text style={styles.templateName} numberOfLines={1}>
             {templateId}
           </Text>
-          <Text style={[styles.statusIndicator, { color: getStatusColor() }]}>
-            {getStatusIndicator()}
-          </Text>
+          <View style={styles.headerActions}>
+            {lastGeneration?.compiledPrompt && (
+              <Pressable 
+                style={styles.infoButton} 
+                onPress={handleShowPrompt}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={styles.infoButtonText}>ℹ</Text>
+              </Pressable>
+            )}
+            <Text style={[styles.statusIndicator, { color: getStatusColor() }]}>
+              {getStatusIndicator()}
+            </Text>
+          </View>
         </View>
 
         {hasGeneratedAsset && (
@@ -142,6 +181,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  infoButton: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#4B5563',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoButtonText: {
+    color: '#D1D5DB',
+    fontSize: 10,
   },
   templateName: {
     color: '#FFFFFF',

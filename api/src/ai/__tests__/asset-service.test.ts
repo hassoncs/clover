@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { AssetService, getScenarioConfigFromEnv } from '../assets';
+import { AssetService, getScenarioConfigFromEnv, buildStructuredPrompt, buildStructuredNegativePrompt } from '../assets';
 import type { Env } from '../../trpc/context';
 
 const createMockEnv = (overrides: Partial<Env> = {}): Env => ({
@@ -83,69 +83,128 @@ describe('AssetService', () => {
     });
   });
 
-  describe('buildPrompt', () => {
-    const service = new AssetService(createMockEnv());
+  describe('buildStructuredPrompt', () => {
+    it('describes wide rectangle shape correctly', () => {
+      const prompt = buildStructuredPrompt({
+        templateId: 'platform',
+        physicsShape: 'box',
+        physicsWidth: 8,
+        physicsHeight: 1,
+        entityType: 'platform',
+        style: 'pixel',
+        targetWidth: 512,
+        targetHeight: 64,
+      });
+      expect(prompt).toContain('WIDE');
+      expect(prompt).toContain('HORIZONTAL');
+      expect(prompt).toContain('SHAPE');
+    });
 
-    it('builds character prompt correctly', () => {
-      const prompt = service.buildPrompt('character', 'brave knight', 'pixel');
-      expect(prompt).toContain('brave knight');
-      expect(prompt).toContain('character');
+    it('describes circle shape correctly', () => {
+      const prompt = buildStructuredPrompt({
+        templateId: 'ball',
+        physicsShape: 'circle',
+        physicsRadius: 1,
+        entityType: 'item',
+        style: 'pixel',
+        targetWidth: 256,
+        targetHeight: 256,
+      });
+      expect(prompt).toContain('CIRCULAR');
+      expect(prompt).toContain('round');
+    });
+
+    it('describes square shape correctly', () => {
+      const prompt = buildStructuredPrompt({
+        templateId: 'block',
+        physicsShape: 'box',
+        physicsWidth: 1,
+        physicsHeight: 1,
+        entityType: 'item',
+        style: 'pixel',
+        targetWidth: 256,
+        targetHeight: 256,
+      });
+      expect(prompt).toContain('SQUARE');
+    });
+
+    it('includes theme in subject description', () => {
+      const prompt = buildStructuredPrompt({
+        templateId: 'platform',
+        physicsShape: 'box',
+        physicsWidth: 4,
+        physicsHeight: 1,
+        entityType: 'platform',
+        themePrompt: 'candy land',
+        style: 'cartoon',
+        targetWidth: 512,
+        targetHeight: 128,
+      });
+      expect(prompt).toContain('candy land');
+      expect(prompt).toContain('platform');
+    });
+
+    it('includes pixel style descriptors', () => {
+      const prompt = buildStructuredPrompt({
+        templateId: 'item',
+        physicsShape: 'box',
+        physicsWidth: 1,
+        physicsHeight: 1,
+        entityType: 'item',
+        style: 'pixel',
+        targetWidth: 256,
+        targetHeight: 256,
+      });
+      expect(prompt).toContain('pixel art');
       expect(prompt).toContain('16-bit');
-      expect(prompt).toContain('transparent background');
     });
 
-    it('builds enemy prompt correctly', () => {
-      const prompt = service.buildPrompt('enemy', 'fierce dragon', 'cartoon');
-      expect(prompt).toContain('fierce dragon');
-      expect(prompt).toContain('enemy');
-      expect(prompt).toContain('menacing');
+    it('includes cartoon style descriptors', () => {
+      const prompt = buildStructuredPrompt({
+        templateId: 'character',
+        physicsShape: 'box',
+        physicsWidth: 1,
+        physicsHeight: 2,
+        entityType: 'character',
+        style: 'cartoon',
+        targetWidth: 256,
+        targetHeight: 512,
+      });
       expect(prompt).toContain('cartoon');
+      expect(prompt).toContain('bold');
     });
 
-    it('builds item prompt correctly', () => {
-      const prompt = service.buildPrompt('item', 'gold coin', 'pixel');
-      expect(prompt).toContain('gold coin');
-      expect(prompt).toContain('icon');
-      expect(prompt).toContain('game item');
+    it('includes transparent background requirement', () => {
+      const prompt = buildStructuredPrompt({
+        templateId: 'test',
+        physicsShape: 'box',
+        physicsWidth: 1,
+        physicsHeight: 1,
+        entityType: 'item',
+        style: 'pixel',
+        targetWidth: 256,
+        targetHeight: 256,
+      });
+      expect(prompt).toContain('Transparent background');
+    });
+  });
+
+  describe('buildStructuredNegativePrompt', () => {
+    it('includes base negatives', () => {
+      const negative = buildStructuredNegativePrompt('pixel');
+      expect(negative).toContain('blurry');
+      expect(negative).toContain('cropped');
+      expect(negative).toContain('wrong shape');
     });
 
-    it('builds platform prompt correctly', () => {
-      const prompt = service.buildPrompt('platform', 'grass ground', 'pixel');
-      expect(prompt).toContain('grass ground');
-      expect(prompt).toContain('tile');
-      expect(prompt).toContain('tileable seamless');
+    it('includes pixel-specific negatives', () => {
+      const negative = buildStructuredNegativePrompt('pixel');
+      expect(negative).toContain('anti-aliasing');
     });
 
-    it('builds background prompt correctly', () => {
-      const prompt = service.buildPrompt('background', 'forest scene', 'pixel');
-      expect(prompt).toContain('forest scene');
-      expect(prompt).toContain('parallax-ready');
-    });
-
-    it('builds ui prompt correctly', () => {
-      const prompt = service.buildPrompt('ui', 'health bar', 'flat');
-      expect(prompt).toContain('health bar');
-      expect(prompt).toContain('flat design');
-    });
-
-    it('uses correct style mapping for pixel', () => {
-      const prompt = service.buildPrompt('character', 'test', 'pixel');
-      expect(prompt).toContain('16-bit');
-    });
-
-    it('uses correct style mapping for cartoon', () => {
-      const prompt = service.buildPrompt('character', 'test', 'cartoon');
-      expect(prompt).toContain('cartoon');
-    });
-
-    it('uses correct style mapping for 3d', () => {
-      const prompt = service.buildPrompt('item', 'test', '3d');
-      expect(prompt).toContain('3D rendered');
-    });
-
-    it('uses correct style mapping for flat', () => {
-      const prompt = service.buildPrompt('ui', 'test', 'flat');
-      expect(prompt).toContain('flat design');
+    it('includes cartoon-specific negatives', () => {
+      const negative = buildStructuredNegativePrompt('cartoon');
+      expect(negative).toContain('realistic');
     });
   });
 

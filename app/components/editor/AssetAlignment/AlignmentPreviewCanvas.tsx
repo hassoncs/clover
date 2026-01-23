@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import type { PhysicsComponent } from '@slopcade/shared';
+import { resolveAssetUrl } from '@/lib/config/env';
 
 interface AlignmentPreviewCanvasProps {
   size: number;
@@ -21,6 +22,7 @@ export function AlignmentPreviewCanvas({
   offsetY,
   showPhysicsOutline = true,
 }: AlignmentPreviewCanvasProps) {
+  const resolvedImageUrl = useMemo(() => resolveAssetUrl(imageUrl), [imageUrl]);
   const padding = size * 0.1;
   const availableSize = size - padding * 2;
 
@@ -67,7 +69,7 @@ export function AlignmentPreviewCanvas({
           const isLight = (row + col) % 2 === 0;
           return (
             <View
-              key={i}
+              key={`checker-${row}-${col}`}
               style={[
                 styles.checkerCell,
                 { backgroundColor: isLight ? '#2D3748' : '#1A202C' },
@@ -77,9 +79,9 @@ export function AlignmentPreviewCanvas({
         })}
       </View>
 
-      {imageUrl && (
+      {resolvedImageUrl && (
         <Image
-          source={{ uri: imageUrl }}
+          source={{ uri: resolvedImageUrl }}
           style={[
             styles.image,
             {
