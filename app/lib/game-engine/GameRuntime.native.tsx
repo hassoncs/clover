@@ -44,7 +44,10 @@ export interface GameRuntimeProps {
   renderMode?: "default" | "primitive";
   showDebugOverlays?: boolean;
   activeAssetPackId?: string;
+  enablePerfLogging?: boolean;
 }
+
+const PERF_LOG_INTERVAL = 60;
 
 export function GameRuntime({
   definition,
@@ -56,6 +59,7 @@ export function GameRuntime({
   renderMode = "default",
   showDebugOverlays = false,
   activeAssetPackId,
+  enablePerfLogging = false,
 }: GameRuntimeProps) {
   const physicsRef = useRef<Physics2D | null>(null);
   const gameRef = useRef<LoadedGame | null>(null);
@@ -77,6 +81,15 @@ export function GameRuntime({
   const lastEntityUpdateRef = useRef(0);
   const lastHudUpdateRef = useRef(0);
   const lastParticleUpdateRef = useRef(0);
+  
+  const perfStatsRef = useRef({ 
+    frameCount: 0, 
+    totalPhysicsMs: 0, 
+    totalSyncMs: 0, 
+    totalBehaviorMs: 0,
+    totalRulesMs: 0,
+    totalFrameMs: 0 
+  });
 
   const timeScaleRef = useRef(1.0);
   const timeScaleTargetRef = useRef(1.0);
@@ -313,9 +326,15 @@ export function GameRuntime({
     const dt = rawDt * timeScaleRef.current;
     if (dt <= 0) return;
 
-    physics.step(dt, 8, 3);
+    const frameStart = enablePerfLogging ? performance.now() : 0;
+    
+    physics.step(dt, 6, 2);
+    
+    const afterPhysics = enablePerfLogging ? performance.now() : 0;
 
     game.entityManager.syncTransformsFromPhysics();
+    
+    const afterSync = enablePerfLogging ? performance.now() : 0;
 
     camera.update(dt, (id) => game.entityManager.getEntity(id));
 
@@ -406,6 +425,8 @@ export function GameRuntime({
       game.entityManager.getActiveEntities(),
       behaviorContext,
     );
+    
+    const afterBehavior = enablePerfLogging ? performance.now() : 0;
 
     const inputEvents: import('./BehaviorContext').InputEvents = {};
     if (inputRef.current.tap) {
@@ -429,6 +450,8 @@ export function GameRuntime({
       camera,
       setTimeScale
     );
+    
+    const afterRules = enablePerfLogging ? performance.now() : 0;
 
     inputRef.current = {};
     collisionsRef.current = [];
@@ -457,7 +480,27 @@ export function GameRuntime({
       lastHudUpdateRef.current = now;
       setGameState((s) => ({ ...s, time: elapsedRef.current }));
     }
-  }, [inputRef, setTimeScale]);
+    
+    if (enablePerfLogging) {
+      const frameEnd = performance.now();
+      const stats = perfStatsRef.current;
+      stats.frameCount++;
+      stats.totalPhysicsMs += afterPhysics - frameStart;
+      stats.totalSyncMs += afterSync - afterPhysics;
+      stats.totalBehaviorMs += afterBehavior - afterSync;
+      stats.totalRulesMs += afterRules - afterBehavior;
+      stats.totalFrameMs += frameEnd - frameStart;
+      
+      if (stats.frameCount % PERF_LOG_INTERVAL === 0) {
+        const avgPhysics = (stats.totalPhysicsMs / stats.frameCount).toFixed(2);
+        const avgSync = (stats.totalSyncMs / stats.frameCount).toFixed(2);
+        const avgBehavior = (stats.totalBehaviorMs / stats.frameCount).toFixed(2);
+        const avgRules = (stats.totalRulesMs / stats.frameCount).toFixed(2);
+        const avgFrame = (stats.totalFrameMs / stats.frameCount).toFixed(2);
+        console.log(`[Perf] physics=${avgPhysics}ms sync=${avgSync}ms behavior=${avgBehavior}ms rules=${avgRules}ms total=${avgFrame}ms`);
+      }
+    }
+  }, [inputRef, setTimeScale, enablePerfLogging]);
 
   useJSPhysicsLoop(stepGame, isReady && gameState.state === "playing");
 
