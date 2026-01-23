@@ -15,7 +15,7 @@ import { ParticleSystemRenderer } from "../particles/ParticleRenderer";
 import { ParallaxBackground, type ParallaxBackgroundConfig } from "./renderers/ParallaxBackground";
 import {
   createPhysics2D,
-  useSimplePhysicsLoop,
+  useJSPhysicsLoop,
   type Physics2D,
   type CollisionEvent,
   type Unsubscribe,
@@ -459,7 +459,7 @@ export function GameRuntime({
     }
   }, [inputRef, setTimeScale]);
 
-  useSimplePhysicsLoop(stepGame, isReady && gameState.state === "playing");
+  useJSPhysicsLoop(stepGame, isReady && gameState.state === "playing");
 
   const handleStart = useCallback(() => {
     gameRef.current?.rulesEvaluator.start();

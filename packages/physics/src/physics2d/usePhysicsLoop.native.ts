@@ -126,3 +126,74 @@ export function useSimplePhysicsLoop(
     };
   }, [active, frameCallback]);
 }
+
+/**
+ * A JS-only physics loop using requestAnimationFrame.
+ * 
+ * This avoids the overhead of UI thread -> JS thread crossing via runOnJS.
+ * The trade-off is slightly less precise vsync alignment, but for physics
+ * simulation this is usually acceptable and the reduced thread-crossing
+ * overhead significantly improves battery life.
+ * 
+ * @example
+ * ```tsx
+ * useJSPhysicsLoop((dt) => {
+ *   world.Step(dt, 8, 3);
+ * }, isReady);
+ * ```
+ */
+export function useJSPhysicsLoop(
+  onStep: (deltaTime: number) => void,
+  active: boolean = true,
+  maxDeltaTime: number = 1 / 30
+) {
+  const callbackRef = useRef(onStep);
+  const lastTimeRef = useRef<number | null>(null);
+  const frameIdRef = useRef<number | null>(null);
+  const activeRef = useRef(active);
+  
+  callbackRef.current = onStep;
+  activeRef.current = active;
+
+  useEffect(() => {
+    if (!active) {
+      if (frameIdRef.current !== null) {
+        cancelAnimationFrame(frameIdRef.current);
+        frameIdRef.current = null;
+      }
+      lastTimeRef.current = null;
+      return;
+    }
+
+    const loop = (time: number) => {
+      if (!activeRef.current) {
+        frameIdRef.current = null;
+        return;
+      }
+
+      const lastTime = lastTimeRef.current;
+      lastTimeRef.current = time;
+
+      if (lastTime !== null) {
+        const rawDt = (time - lastTime) / 1000;
+        const deltaTime = Math.min(rawDt, maxDeltaTime);
+        
+        if (deltaTime > 0) {
+          callbackRef.current(deltaTime);
+        }
+      }
+
+      frameIdRef.current = requestAnimationFrame(loop);
+    };
+
+    frameIdRef.current = requestAnimationFrame(loop);
+
+    return () => {
+      if (frameIdRef.current !== null) {
+        cancelAnimationFrame(frameIdRef.current);
+        frameIdRef.current = null;
+      }
+      lastTimeRef.current = null;
+    };
+  }, [active, maxDeltaTime]);
+}
