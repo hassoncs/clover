@@ -73,6 +73,15 @@ export interface EntityCountDisplay {
   color?: string;
 }
 
+export interface VariableDisplay {
+  name: string;
+  label: string;
+  color?: string;
+  format?: string;
+  showWhen?: 'always' | 'not_default';
+  defaultValue?: number | string | boolean;
+}
+
 export interface UIConfig {
   showScore?: boolean;
   showTimer?: boolean;
@@ -82,6 +91,7 @@ export interface UIConfig {
   scorePosition?: 'top-left' | 'top-center' | 'top-right';
   backgroundColor?: string;
   entityCountDisplays?: EntityCountDisplay[];
+  variableDisplays?: VariableDisplay[];
 }
 
 export interface GameMetadata {

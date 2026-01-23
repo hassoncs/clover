@@ -55,6 +55,7 @@ export class GameLoader {
     if (definition.initialLives !== undefined) {
       rulesEvaluator.setInitialLives(definition.initialLives);
     }
+    rulesEvaluator.setInitialVariables(definition.variables as Record<string, number | string | boolean> | undefined);
 
     const behaviorExecutor = createBehaviorExecutor();
 

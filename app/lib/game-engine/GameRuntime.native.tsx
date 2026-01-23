@@ -96,6 +96,7 @@ export function GameRuntime({
     lives: 3,
     time: 0,
     state: "loading",
+    variables: {},
   });
   const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
   const [viewportRect, setViewportRect] = useState<ViewportRect>({ x: 0, y: 0, width: 0, height: 0, scale: 1 });
@@ -218,11 +219,15 @@ export function GameRuntime({
               onGameEnd?.(state);
             }
           },
+          onVariablesChange: (variables) => {
+            setGameState((s) => ({ ...s, variables }));
+          },
         });
 
         const visibleEntities = game.entityManager.getVisibleEntities();
         setEntities(visibleEntities);
-        setGameState((s) => ({ ...s, state: "ready" }));
+        const initialVariables = game.rulesEvaluator.getVariables();
+        setGameState((s) => ({ ...s, state: "ready", variables: initialVariables }));
         setIsReady(true);
       } catch (error) {
         console.error("[GameRuntime] Failed to initialize game:", error);
@@ -472,7 +477,8 @@ export function GameRuntime({
       particleManagerRef.current.clear();
       setParticleEffects([]);
       setEntities(newGame.entityManager.getVisibleEntities());
-      setGameState({ score: 0, lives: 3, time: 0, state: "ready" });
+      const initialVariables = newGame.rulesEvaluator.getVariables();
+      setGameState({ score: 0, lives: 3, time: 0, state: "ready", variables: initialVariables });
     }
   }, [onGameEnd, onScoreChange, onRequestRestart, definition.camera?.zoom]);
 
@@ -521,14 +527,7 @@ export function GameRuntime({
   const backgroundColor = definition.ui?.backgroundColor ?? "#87CEEB";
   const letterboxColor = definition.presentation?.letterboxColor ?? "#000000";
 
-  const cameraTransform = cameraRef.current?.getWorldToScreenTransform();
-  const matrix = cameraTransform
-    ? [
-        cameraTransform.scaleX, 0, 0,
-        0, cameraTransform.scaleY, 0,
-        cameraTransform.translateX, cameraTransform.translateY, 1,
-      ]
-    : undefined;
+  const shakeOffset = cameraRef.current?.getShakeOffset() ?? { x: 0, y: 0 };
 
   const cameraPosition = cameraRef.current?.getPosition() ?? { x: 0, y: 0 };
   const cameraZoom = cameraRef.current?.getZoom() ?? 1;
@@ -582,7 +581,7 @@ export function GameRuntime({
                 pixelsPerMeter={pixelsPerMeter}
               />
             )}
-            <Group matrix={matrix}>
+            <Group transform={[{ translateX: shakeOffset.x }, { translateY: shakeOffset.y }]}>
               {entities.map((entity) => (
                 <EntityRenderer
                   key={entity.id}
@@ -642,6 +641,22 @@ export function GameRuntime({
                 style={[styles.livesText, display.color ? { color: display.color } : undefined]}
               >
                 {display.label}: {count}
+              </Text>
+            );
+          })}
+          {definition.ui?.variableDisplays?.map((display) => {
+            const value = gameState.variables[display.name];
+            const shouldShow = display.showWhen !== 'not_default' || value !== display.defaultValue;
+            if (!shouldShow) return null;
+            const formattedValue = display.format 
+              ? display.format.replace('{value}', String(value))
+              : String(value);
+            return (
+              <Text 
+                key={display.name} 
+                style={[styles.livesText, display.color ? { color: display.color } : undefined]}
+              >
+                {display.label}: {formattedValue}
               </Text>
             );
           })}

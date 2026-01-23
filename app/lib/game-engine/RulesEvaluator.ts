@@ -50,12 +50,14 @@ export class RulesEvaluator implements IGameStateMutator {
   private firedOnce = new Set<string>();
   private cooldowns = new Map<string, number>();
   private variables = new Map<string, number | string | boolean>();
+  private initialVariables = new Map<string, number | string | boolean>();
   private lists = new Map<string, ListValue>();
   private pendingEvents = new Map<string, unknown>();
 
   private onScoreChange?: (score: number) => void;
   private onLivesChange?: (lives: number) => void;
   private onGameStateChange?: (state: GameState['state']) => void;
+  private onVariablesChange?: (variables: Record<string, number | string | boolean>) => void;
 
   // Executors & Evaluators
   private scoreActionExecutor = new ScoreActionExecutor();
@@ -89,14 +91,29 @@ export class RulesEvaluator implements IGameStateMutator {
     this.lives = lives;
   }
 
+  setInitialVariables(variables: Record<string, number | string | boolean> | undefined): void {
+    this.variables.clear();
+    this.initialVariables.clear();
+    if (variables) {
+      for (const [name, value] of Object.entries(variables)) {
+        if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
+          this.variables.set(name, value);
+          this.initialVariables.set(name, value);
+        }
+      }
+    }
+  }
+
   setCallbacks(callbacks: {
     onScoreChange?: (score: number) => void;
     onLivesChange?: (lives: number) => void;
     onGameStateChange?: (state: GameState['state']) => void;
+    onVariablesChange?: (variables: Record<string, number | string | boolean>) => void;
   }): void {
     this.onScoreChange = callbacks.onScoreChange;
     this.onLivesChange = callbacks.onLivesChange;
     this.onGameStateChange = callbacks.onGameStateChange;
+    this.onVariablesChange = callbacks.onVariablesChange;
   }
 
   start(): void {
@@ -122,9 +139,13 @@ export class RulesEvaluator implements IGameStateMutator {
     this.firedOnce.clear();
     this.cooldowns.clear();
     this.variables.clear();
+    for (const [name, value] of this.initialVariables) {
+      this.variables.set(name, value);
+    }
     this.lists.clear();
     this.pendingEvents.clear();
     this.setGameState('ready');
+    this.onVariablesChange?.(this.getVariables());
   }
 
   // IGameStateMutator Implementation
@@ -161,6 +182,11 @@ export class RulesEvaluator implements IGameStateMutator {
 
   setVariable(name: string, value: number | string | boolean): void {
     this.variables.set(name, value);
+    this.onVariablesChange?.(this.getVariables());
+  }
+
+  getVariables(): Record<string, number | string | boolean> {
+    return Object.fromEntries(this.variables);
   }
 
   getVariable(name: string): number | string | boolean | undefined {
@@ -227,6 +253,7 @@ export class RulesEvaluator implements IGameStateMutator {
       lives: this.lives,
       time: this.elapsed,
       state: this.gameState,
+      variables: this.getVariables(),
     };
   }
 
@@ -354,7 +381,8 @@ export class RulesEvaluator implements IGameStateMutator {
       switch (a.type) {
         case 'score': this.scoreActionExecutor.execute(a, context); break;
         case 'spawn': this.spawnActionExecutor.execute(a, context); break;
-        case 'destroy': this.destroyActionExecutor.execute(a, context); break;
+        case 'destroy':
+        case 'destroy_marked': this.destroyActionExecutor.execute(a, context); break;
         case 'apply_impulse':
         case 'apply_force':
         case 'set_velocity':

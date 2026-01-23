@@ -85,6 +85,10 @@ const game: GameDefinition = {
     bounds: { width: WORLD_WIDTH, height: WORLD_HEIGHT },
   },
   camera: { type: "fixed", zoom: 1 },
+  variables: {
+    multiplier: 1,
+    turn: 0,
+  },
   ui: {
     showScore: true,
     showLives: true,
@@ -93,6 +97,10 @@ const game: GameDefinition = {
     backgroundColor: "#0a1628",
     entityCountDisplays: [
       { tag: "orange-peg", label: "Orange Pegs", color: "#F97316" },
+    ],
+    variableDisplays: [
+      { name: "multiplier", label: "Multiplier", color: "#FBBF24", showWhen: "not_default", defaultValue: 1 },
+      { name: "turn", label: "Shot", color: "#94A3B8" },
     ],
   },
   winCondition: {
@@ -163,8 +171,15 @@ const game: GameDefinition = {
         restitution: 0.85,
       },
       behaviors: [
-        { type: "destroy_on_collision", withTags: ["ball"], effect: "fade" },
-        { type: "score_on_collision", withTags: ["ball"], points: 10 },
+        { 
+          type: "destroy_on_collision", 
+          withTags: ["ball"], 
+          effect: "fade",
+          delay: { type: "event", eventName: "turn_end" },
+          markedEffect: "glow",
+          markedColor: "#60A5FA",
+        },
+        { type: "score_on_collision", withTags: ["ball"], points: { expr: "10 * multiplier" } },
       ],
     },
     orangePeg: {
@@ -180,8 +195,15 @@ const game: GameDefinition = {
         restitution: 0.85,
       },
       behaviors: [
-        { type: "destroy_on_collision", withTags: ["ball"], effect: "fade" },
-        { type: "score_on_collision", withTags: ["ball"], points: 100 },
+        { 
+          type: "destroy_on_collision", 
+          withTags: ["ball"], 
+          effect: "fade",
+          delay: { type: "event", eventName: "turn_end" },
+          markedEffect: "glow",
+          markedColor: "#FBBF24",
+        },
+        { type: "score_on_collision", withTags: ["ball"], points: { expr: "100 * multiplier" } },
       ],
     },
     wallVertical: {
@@ -297,13 +319,16 @@ const game: GameDefinition = {
       actions: [
         { type: "spawn", template: "ball", position: { type: "fixed", x: WORLD_WIDTH / 2, y: 1.0 } },
         { type: "apply_impulse", target: { type: "by_tag", tag: "ball" }, direction: "toward_touch", force: 1, sourceEntityId: "cannon" },
+        { type: "set_variable", name: "turn", operation: "add", value: 1 },
       ],
     },
     {
       id: "ball_drain",
-      name: "Ball falls through drain - lose a life",
+      name: "Ball falls through drain - lose a life, destroy marked pegs",
       trigger: { type: "collision", entityATag: "ball", entityBTag: "drain" },
       actions: [
+        { type: "event", eventName: "turn_end" },
+        { type: "destroy_marked", tag: "peg" },
         { type: "lives", operation: "subtract", value: 1 },
         { type: "destroy", target: { type: "by_tag", tag: "ball" } },
       ],
@@ -313,6 +338,8 @@ const game: GameDefinition = {
       name: "Bucket catches ball - free ball bonus!",
       trigger: { type: "collision", entityATag: "ball", entityBTag: "bucket" },
       actions: [
+        { type: "event", eventName: "turn_end" },
+        { type: "destroy_marked", tag: "peg" },
         { type: "score", operation: "add", value: 500 },
         { type: "lives", operation: "add", value: 1 },
         { type: "destroy", target: { type: "by_tag", tag: "ball" } },
@@ -320,19 +347,19 @@ const game: GameDefinition = {
       ],
     },
     {
-      id: "orange_peg_hit_shake",
-      name: "Camera shake on orange peg hit",
-      trigger: { type: "collision", entityATag: "ball", entityBTag: "orange-peg" },
+      id: "blue_peg_hit_shake",
+      name: "Camera shake on blue peg hit",
+      trigger: { type: "collision", entityATag: "ball", entityBTag: "blue-peg" },
       actions: [
-        { type: "camera_shake", intensity: 0.08, duration: 0.15 },
+        { type: "camera_shake", intensity: 0.03, duration: 0.1 },
       ],
     },
     {
-      id: "blue_peg_hit_shake",
-      name: "Subtle camera shake on blue peg hit",
-      trigger: { type: "collision", entityATag: "ball", entityBTag: "blue-peg" },
+      id: "orange_peg_hit_shake",
+      name: "Stronger camera shake on orange peg hit",
+      trigger: { type: "collision", entityATag: "ball", entityBTag: "orange-peg" },
       actions: [
-        { type: "camera_shake", intensity: 0.02, duration: 0.08 },
+        { type: "camera_shake", intensity: 0.08, duration: 0.15 },
       ],
     },
     {
@@ -347,6 +374,22 @@ const game: GameDefinition = {
         { type: "camera_shake", intensity: 0.12, duration: 0.3 },
       ],
       fireOnce: true,
+    },
+    {
+      id: "peg_hit_multiplier",
+      name: "Increment score multiplier on peg hit",
+      trigger: { type: "collision", entityATag: "ball", entityBTag: "peg" },
+      actions: [
+        { type: "set_variable", name: "multiplier", operation: "add", value: 1 },
+      ],
+    },
+    {
+      id: "reset_multiplier",
+      name: "Reset score multiplier at turn end",
+      trigger: { type: "event", eventName: "turn_end" },
+      actions: [
+        { type: "set_variable", name: "multiplier", operation: "set", value: 1 },
+      ],
     },
   ],
 };

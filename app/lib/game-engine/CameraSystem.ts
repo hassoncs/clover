@@ -62,6 +62,8 @@ export class CameraSystem {
   private viewport: ViewportSize;
   private pixelsPerMeter: number;
   private shakeTimeRemaining = 0;
+  private shakeIntensityPixels = 0;
+  private shakeDurationTotal = 0;
   private shakeOffsetX = 0;
   private shakeOffsetY = 0;
   private lastTargetPosition: Vec2 | null = null;
@@ -266,19 +268,32 @@ export class CameraSystem {
       return;
     }
 
-    this.shakeTimeRemaining -= dt;
-    const intensity = this.config.shakeIntensity ?? 0;
-    const progress = this.shakeTimeRemaining / (this.config.shakeDuration ?? 1);
-    const currentIntensity = intensity * progress * progress;
+    this.shakeTimeRemaining = Math.max(0, this.shakeTimeRemaining - dt);
+    
+    const progress = this.shakeDurationTotal > 0 
+      ? this.shakeTimeRemaining / this.shakeDurationTotal 
+      : 0;
+    const currentIntensity = this.shakeIntensityPixels * progress;
 
-    this.shakeOffsetX = (Math.random() - 0.5) * currentIntensity * 2;
-    this.shakeOffsetY = (Math.random() - 0.5) * currentIntensity * 2;
+    this.shakeOffsetX = (Math.random() - 0.5) * 2 * currentIntensity;
+    this.shakeOffsetY = (Math.random() - 0.5) * 2 * currentIntensity;
   }
 
-  shake(intensity: number, duration: number): void {
-    this.config.shakeIntensity = intensity;
-    this.config.shakeDuration = duration;
+  shake(intensityWorldUnits: number, duration: number): void {
+    const maxPixels = 3;
+    
+    if (this.shakeTimeRemaining > 0) {
+      return;
+    }
+    
+    this.shakeIntensityPixels = maxPixels;
+    this.shakeDurationTotal = duration;
     this.shakeTimeRemaining = duration;
+    
+    this.shakeOffsetX = (Math.random() - 0.5) * 2 * maxPixels;
+    this.shakeOffsetY = (Math.random() - 0.5) * 2 * maxPixels;
+    
+    console.log('[CameraSystem.shake] Started with offset:', this.shakeOffsetX, this.shakeOffsetY);
   }
 
   addTrauma(amount: number): void {
@@ -286,16 +301,23 @@ export class CameraSystem {
     this.shake(this.state.trauma * 0.5, 0.3);
   }
 
+  getShakeOffset(): { x: number; y: number } {
+    return { x: this.shakeOffsetX, y: this.shakeOffsetY };
+  }
+
   getWorldToScreenTransform(): CameraTransform {
     const centerX = this.viewport.width / 2;
     const centerY = this.viewport.height / 2;
     
-    const worldX = this.config.position.x + this.shakeOffsetX;
-    const worldY = this.config.position.y + this.shakeOffsetY;
+    const worldX = this.config.position.x;
+    const worldY = this.config.position.y;
+    
+    const translateX = centerX - worldX * this.pixelsPerMeter * this.config.zoom;
+    const translateY = centerY - worldY * this.pixelsPerMeter * this.config.zoom;
     
     return {
-      translateX: centerX - worldX * this.pixelsPerMeter * this.config.zoom,
-      translateY: centerY - worldY * this.pixelsPerMeter * this.config.zoom,
+      translateX,
+      translateY,
       scaleX: this.config.zoom,
       scaleY: this.config.zoom,
       rotation: this.config.rotation ?? 0,

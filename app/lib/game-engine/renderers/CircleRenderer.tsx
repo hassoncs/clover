@@ -14,6 +14,18 @@ export function CircleRenderer({ entity, sprite, pixelsPerMeter }: CircleRendere
   const x = transform.x * pixelsPerMeter;
   const y = transform.y * pixelsPerMeter;
 
+  const isMarked = entity.markedForDestruction;
+  const markedColor = entity.markedColor ?? '#FFFF00';
+  const markedEffect = entity.markedEffect ?? 'glow';
+
+  const effectiveColor = isMarked && markedEffect === 'fade_partial' 
+    ? markedColor 
+    : (sprite.color ?? '#808080');
+
+  const effectiveOpacity = isMarked && markedEffect === 'fade_partial' 
+    ? 0.5 
+    : (sprite.opacity ?? 1);
+
   return (
     <Group
       transform={[
@@ -24,10 +36,18 @@ export function CircleRenderer({ entity, sprite, pixelsPerMeter }: CircleRendere
         { scaleY: transform.scaleY },
       ]}
       origin={{ x: 0, y: 0 }}
-      opacity={sprite.opacity ?? 1}
+      opacity={effectiveOpacity}
     >
-      <Circle cx={0} cy={0} r={radius} color={sprite.color ?? '#808080'}>
-        {sprite.shadow && (
+      <Circle cx={0} cy={0} r={radius} color={effectiveColor}>
+        {isMarked && markedEffect === 'glow' && (
+          <Shadow
+            dx={0}
+            dy={0}
+            blur={radius * 0.8}
+            color={markedColor}
+          />
+        )}
+        {sprite.shadow && !isMarked && (
           <Shadow
             dx={sprite.shadow.offsetX}
             dy={sprite.shadow.offsetY}

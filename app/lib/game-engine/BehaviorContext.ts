@@ -57,6 +57,7 @@ export interface GameState {
   lives: number;
   time: number;
   state: 'loading' | 'ready' | 'playing' | 'paused' | 'won' | 'lost';
+  variables: Record<string, number | string | boolean>;
 }
 
 export interface CollisionInfo {
