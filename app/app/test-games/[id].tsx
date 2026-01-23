@@ -2,7 +2,7 @@ import { useMemo, useState, useCallback, useRef } from "react";
 import { View, Text, Pressable, ActivityIndicator, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { WithSkia } from "@/components/WithSkia";
+import { WithGodot } from "@/components/WithGodot";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
 import { TESTGAMES_BY_ID, loadTestGame, type TestGameId } from "@/lib/registry/generated/testGames";
 import { trpc } from "@/lib/trpc/client";
@@ -14,8 +14,6 @@ export default function TestGameRunScreen() {
   const entry = useMemo(() => (id && id in TESTGAMES_BY_ID ? TESTGAMES_BY_ID[id as TestGameId] : undefined), [id]);
 
   const [runtimeKey, setRuntimeKey] = useState(0);
-  const [renderMode, setRenderMode] = useState<'default' | 'primitive'>('default');
-  const [showOverlays, setShowOverlays] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const loadedDefinitionRef = useRef<GameDefinition | null>(null);
 
@@ -56,19 +54,7 @@ export default function TestGameRunScreen() {
     }
   }, [entry, router]);
 
-  const toggleDebug = () => {
-    if (renderMode === 'default' && !showOverlays) {
-      setShowOverlays(true);
-    } else if (renderMode === 'default' && showOverlays) {
-      setRenderMode('primitive');
-      setShowOverlays(false);
-    } else if (renderMode === 'primitive' && !showOverlays) {
-      setShowOverlays(true);
-    } else {
-      setRenderMode('default');
-      setShowOverlays(false);
-    }
-  };
+
 
   if (!entry) {
     return (
@@ -90,15 +76,6 @@ export default function TestGameRunScreen() {
         rightContent={
           <View className="flex-row gap-2">
             <Pressable
-              className={`py-2 px-3 rounded-lg ${showOverlays || renderMode === 'primitive' ? 'bg-yellow-600' : 'bg-black/60'}`}
-              onPress={toggleDebug}
-            >
-              <Text className="text-white font-bold text-xs">
-                {renderMode === 'primitive' ? 'PRIM' : 'VIS'}
-                {showOverlays ? '+DBG' : ''}
-              </Text>
-            </Pressable>
-            <Pressable
               className={`py-2 px-3 rounded-lg ${isSaving ? 'bg-indigo-800' : 'bg-indigo-600'}`}
               onPress={handleSaveToLibrary}
               disabled={isSaving}
@@ -106,7 +83,7 @@ export default function TestGameRunScreen() {
               {isSaving ? (
                 <ActivityIndicator size="small" color="white" />
               ) : (
-                <Text className="text-white font-bold text-xs">💾 Save</Text>
+                <Text className="text-white font-bold text-xs">Save</Text>
               )}
             </Pressable>
             <Pressable className="py-2 px-4 bg-black/60 rounded-lg" onPress={handleReset}>
@@ -116,23 +93,21 @@ export default function TestGameRunScreen() {
         }
       />
 
-      <WithSkia
+      <WithGodot
         key={runtimeKey}
         getComponent={() =>
           Promise.all([
-            import("@/lib/game-engine/GameRuntime.native"),
+            import("@/lib/game-engine/GameRuntime.godot"),
             loadTestGame(entry.id),
           ]).then(([mod, definition]) => {
             loadedDefinitionRef.current = definition;
             return {
               default: () => (
-                <mod.GameRuntime
+                <mod.GameRuntimeGodot
                   definition={definition}
                   showHUD={true}
                   onBackToMenu={handleBack}
                   onRequestRestart={handleReset}
-                  renderMode={renderMode}
-                  showDebugOverlays={showOverlays}
                 />
               ),
             };

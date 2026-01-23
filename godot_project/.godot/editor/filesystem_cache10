@@ -1,0 +1,10 @@
+72322a848ab928aa5c89f0cb78209805
+::res://::1769188930
+export_presets.cfg::TextFile::-1::1769188389::0::1::::<><><>0<>0<><>::
+icon.svg::CompressedTexture2D::8162193418698039025::1769188378::1769188930::1::::<><><>0<>0<>b60b07e3b7c5c7da747f33a9e77945db<>res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex::
+Main.tscn::PackedScene::-1::1769190161::0::1::::<><><>0<>0<><>::res://scripts/Main.gd
+README.md::TextFile::-1::1769188409::0::1::::<><><>0<>0<><>::
+::res://scenes/::1769188299
+::res://scripts/::1769188930
+GameBridge.gd::GDScript::7400890102577367664::1769192802::0::1::::<>Node<><>0<>0<><>::
+Main.gd::GDScript::4927831078751178685::1769188378::0::1::::<>Node2D<><>0<>0<><>::

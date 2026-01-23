@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { View, ActivityIndicator, StyleSheet } from "react-native";
 import { useEditor } from "./EditorProvider";
-import { WithSkia } from "@/components/WithSkia";
+import { WithGodot } from "@/components/WithGodot";
 import { InteractionLayer } from "./InteractionLayer";
 
 export function StageContainer() {
@@ -18,18 +18,15 @@ export function StageContainer() {
 
   return (
     <View className="flex-1 bg-gray-800">
-      <WithSkia
+      <WithGodot
         key={runtimeKey}
         getComponent={() =>
-          import("@/lib/game-engine/GameRuntime.native").then((mod) => ({
+          import("@/lib/game-engine/GameRuntime.godot").then((mod) => ({
             default: () => (
-              <mod.GameRuntime
+              <mod.GameRuntimeGodot
                 definition={document}
                 showHUD={mode === "playtest"}
                 onRequestRestart={handleRequestRestart}
-                renderMode="default"
-                showDebugOverlays={false}
-                activeAssetPackId={activePackId}
               />
             ),
           }))

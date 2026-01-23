@@ -3,7 +3,7 @@ import { View, Text, Pressable, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { GameDefinition } from "@slopcade/shared";
-import { WithSkia } from "../../components/WithSkia";
+import { WithGodot } from "../../components/WithGodot";
 import { FullScreenHeader } from "../../components/FullScreenHeader";
 
 
@@ -68,12 +68,12 @@ export default function PreviewScreen() {
         }
       />
 
-      <WithSkia
+      <WithGodot
         key={runtimeKey}
         getComponent={() =>
-          import("@/lib/game-engine/GameRuntime.native").then((mod) => ({
+          import("@/lib/game-engine/GameRuntime.godot").then((mod) => ({
             default: () => (
-              <mod.GameRuntime
+              <mod.GameRuntimeGodot
                 definition={gameDefinition}
                 onGameEnd={handleGameEnd}
                 onRequestRestart={handleRequestRestart}

@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { trpc } from "@/lib/trpc/client";
 import type { GameDefinition, AssetPack } from "@slopcade/shared";
-import { WithSkia } from "../../components/WithSkia";
+import { WithGodot } from "../../components/WithGodot";
 import { FullScreenHeader } from "../../components/FullScreenHeader";
 import { EntityAssetList, ParallaxAssetPanel } from "../../components/assets";
 
@@ -19,9 +19,6 @@ export default function PlayScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [runtimeKey, setRuntimeKey] = useState(0);
-
-  const [renderMode, setRenderMode] = useState<'default' | 'primitive'>('default');
-  const [showOverlays, setShowOverlays] = useState(false);
   const [showAssetMenu, setShowAssetMenu] = useState(false);
   const [genPrompt, setGenPrompt] = useState("");
   const [selectedStyle, setSelectedStyle] = useState<'pixel' | 'cartoon' | '3d' | 'flat'>('pixel');
@@ -87,19 +84,7 @@ export default function PlayScreen() {
     }
   }, [id, router]);
 
-  const toggleDebug = () => {
-    if (renderMode === 'default' && !showOverlays) {
-      setShowOverlays(true);
-    } else if (renderMode === 'default' && showOverlays) {
-      setRenderMode('primitive');
-      setShowOverlays(false);
-    } else if (renderMode === 'primitive' && !showOverlays) {
-      setShowOverlays(true);
-    } else {
-      setRenderMode('default');
-      setShowOverlays(false);
-    }
-  };
+
 
   const generateAssets = async () => {
     if (!id || id === "preview" || !gameDefinition) return;
@@ -328,16 +313,6 @@ export default function PlayScreen() {
         title={gameDefinition.metadata.title}
         rightContent={
           <View className="flex-row gap-2">
-            <Pressable
-              className={`py-2 px-3 rounded-lg ${showOverlays || renderMode === 'primitive' ? 'bg-yellow-600' : 'bg-gray-700'}`}
-              onPress={toggleDebug}
-            >
-              <Text className="text-white font-bold text-xs">
-                {renderMode === 'primitive' ? 'PRIM' : 'VIS'}
-                {showOverlays ? '+DBG' : ''}
-              </Text>
-            </Pressable>
-
             {id && id !== "preview" && (
               <>
                 <Pressable
@@ -465,19 +440,16 @@ export default function PlayScreen() {
         </View>
       </Modal>
 
-      <WithSkia
+      <WithGodot
         key={runtimeKey}
         getComponent={() =>
-          import("@/lib/game-engine/GameRuntime.native").then((mod) => ({
+          import("@/lib/game-engine/GameRuntime.godot").then((mod) => ({
             default: () => (
-              <mod.GameRuntime
+              <mod.GameRuntimeGodot
                 definition={gameDefinition!}
                 onGameEnd={handleGameEnd}
                 onRequestRestart={handleRequestRestart}
                 showHUD
-                renderMode={renderMode}
-                showDebugOverlays={showOverlays}
-                activeAssetPackId={activeAssetPackId}
               />
             ),
           }))

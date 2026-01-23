@@ -4,7 +4,6 @@ import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-n
 import type { GalleryItem } from '@slopcade/shared';
 import { GalleryControls } from './GalleryControls';
 import { GalleryExport } from './GalleryExport';
-import { GalleryPreview } from './previews';
 
 type GalleryDetailProps = {
   item: GalleryItem;
@@ -36,8 +35,8 @@ export const GalleryDetail = ({ item }: GalleryDetailProps) => {
       <Text style={styles.title}>{item.title}</Text>
       <Text style={styles.description}>{item.description}</Text>
 
-      <View style={styles.previewContainer}>
-        <GalleryPreview item={item} params={values} width={previewWidth} height={previewHeight} />
+      <View style={[styles.previewContainer, { width: previewWidth, height: previewHeight }]}>
+        <Text style={styles.previewPlaceholder}>Preview not available (Godot migration)</Text>
       </View>
 
       {item.params.length > 0 && (
@@ -71,7 +70,14 @@ const styles = StyleSheet.create({
   },
   previewContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 24,
+    backgroundColor: '#1a1a2e',
+    borderRadius: 8,
+  },
+  previewPlaceholder: {
+    color: '#666',
+    fontSize: 14,
   },
   controlsSection: {
     marginBottom: 24,

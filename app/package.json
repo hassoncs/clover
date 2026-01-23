@@ -21,16 +21,17 @@
     "pods": "cd ios && RCT_METRO_PORT=8085 pod install",
     "verify:ios": "pnpm run doctor && pnpm run pods && pnpm run ios",
     "verify:android": "pnpm run doctor && pnpm run android",
-    "postinstall": "mkdir -p public && cp $(node -p \"require.resolve('canvaskit-wasm/bin/full/canvaskit.wasm', { paths: [require.resolve('@shopify/react-native-skia')] })\") public/canvaskit.wasm && cp node_modules/box2d-wasm/dist/es/Box2D.wasm public/box2d.wasm",
+    "postinstall": "echo 'postinstall complete'",
     "deploy": "npx expo export -p web && npx wrangler pages deploy dist/ --project-name=slopcade",
     "build": "expo export -p web"
   },
   "dependencies": {
+    "@borndotcom/react-native-godot": "^1.0.1",
     "@chriscode/devmux-telemetry": "link:/Users/hassoncs/Workspaces/Personal/devmux/packages/telemetry-client",
     "@gorhom/bottom-sheet": "^5.2.8",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/slider": "^5.1.2",
-    "@shopify/react-native-skia": "2.4.14",
+
     "@slopcade/shared": "workspace:*",
     "@slopcade/theme": "workspace:*",
     "@slopcade/ui": "workspace:*",
@@ -39,7 +40,7 @@
     "@trpc/client": "11.8.1",
     "@trpc/react-query": "^11.8.1",
     "aes-js": "^3.1.2",
-    "box2d-wasm": "^7.0.0",
+
     "expo": "^54.0.1",
     "expo-constants": "^18.0.13",
     "expo-linking": "^8.0.8",
@@ -53,7 +54,7 @@
     "react-dom": "19.1.0",
     "react-native": "0.81.4",
     "react-native-ble-plx": "^3.5.0",
-    "react-native-box2d": "file:../vendor/react-native-box2d",
+
     "react-native-css-interop": "0.2.1",
     "react-native-gesture-handler": "^2.30.0",
     "react-native-get-random-values": "^2.0.0",
