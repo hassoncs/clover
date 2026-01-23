@@ -53,7 +53,7 @@
     "react-dom": "19.1.0",
     "react-native": "0.81.4",
     "react-native-ble-plx": "^3.5.0",
-    "react-native-box2d": "link:../vendor/react-native-box2d",
+    "react-native-box2d": "file:../vendor/react-native-box2d",
     "react-native-css-interop": "0.2.1",
     "react-native-gesture-handler": "^2.30.0",
     "react-native-get-random-values": "^2.0.0",
