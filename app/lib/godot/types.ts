@@ -194,19 +194,19 @@ export interface GodotBridge {
   spawnEntity(templateId: string, x: number, y: number): string;
   destroyEntity(entityId: string): void;
 
-  // Transform queries
-  getEntityTransform(entityId: string): EntityTransform | null;
-  getAllTransforms(): Record<string, EntityTransform>;
+  // Transform queries (async - native requires worklet communication)
+  getEntityTransform(entityId: string): Promise<EntityTransform | null>;
+  getAllTransforms(): Promise<Record<string, EntityTransform>>;
 
   // Transform control
   setTransform(entityId: string, x: number, y: number, angle: number): void;
   setPosition(entityId: string, x: number, y: number): void;
   setRotation(entityId: string, angle: number): void;
 
-  // Velocity control
-  getLinearVelocity(entityId: string): Vec2 | null;
+  // Velocity control (async - native requires worklet communication)
+  getLinearVelocity(entityId: string): Promise<Vec2 | null>;
   setLinearVelocity(entityId: string, velocity: Vec2): void;
-  getAngularVelocity(entityId: string): number | null;
+  getAngularVelocity(entityId: string): Promise<number | null>;
   setAngularVelocity(entityId: string, velocity: number): void;
 
   // Force/impulse
@@ -220,25 +220,24 @@ export interface GodotBridge {
   createPrismaticJoint(def: PrismaticJointDef): number;
   createWeldJoint(def: WeldJointDef): number;
   createMouseJoint(def: MouseJointDef): number;
-  createMouseJointAsync?(def: MouseJointDef): Promise<number>;
+  createMouseJointAsync(def: MouseJointDef): Promise<number>;
   destroyJoint(jointId: number): void;
   setMotorSpeed(jointId: number, speed: number): void;
   setMouseTarget(jointId: number, target: Vec2): void;
 
-  // Physics queries
-  queryPoint(point: Vec2): number | null;
-  queryPointEntity(point: Vec2): string | null;
-  queryPointEntityAsync?(point: Vec2): Promise<string | null>;
-  queryAABB(min: Vec2, max: Vec2): number[];
-  raycast(origin: Vec2, direction: Vec2, maxDistance: number): RaycastHit | null;
+  // Physics queries (async - native requires worklet communication)
+  queryPoint(point: Vec2): Promise<number | null>;
+  queryPointEntity(point: Vec2): Promise<string | null>;
+  queryAABB(min: Vec2, max: Vec2): Promise<number[]>;
+  raycast(origin: Vec2, direction: Vec2, maxDistance: number): Promise<RaycastHit | null>;
 
   // Body management (low-level Physics2D API)
   createBody(def: BodyDef): number;
   addFixture(bodyId: number, def: FixtureDef): number;
   setSensor(colliderId: number, isSensor: boolean): void;
   setUserData(bodyId: number, data: unknown): void;
-  getUserData(bodyId: number): unknown;
-  getAllBodies(): number[];
+  getUserData(bodyId: number): Promise<unknown>;
+  getAllBodies(): Promise<number[]>;
 
   // Events
   onCollision(callback: (event: CollisionEvent) => void): () => void;
@@ -253,6 +252,61 @@ export interface GodotBridge {
   // Dynamic image management
   setEntityImage(entityId: string, url: string, width: number, height: number): void;
   clearTextureCache(url?: string): void;
+
+  // Camera control
+  setCameraTarget(entityId: string | null): void;
+  setCameraPosition(x: number, y: number): void;
+  setCameraZoom(zoom: number): void;
+
+  // Particle effects
+  spawnParticle(type: string, x: number, y: number): void;
+
+  // Audio
+  playSound(resourcePath: string): void;
+
+  // Visual Effects - Sprite Effects
+  applySpriteEffect(entityId: string, effectName: string, params?: Record<string, unknown>): void;
+  updateSpriteEffectParam(entityId: string, paramName: string, value: unknown): void;
+  clearSpriteEffect(entityId: string): void;
+
+  // Visual Effects - Post-Processing
+  setPostEffect(effectName: string, params?: Record<string, unknown>, layer?: string): void;
+  updatePostEffectParam(paramName: string, value: unknown, layer?: string): void;
+  clearPostEffect(layer?: string): void;
+
+  // Visual Effects - Camera Effects
+  screenShake(intensity: number, duration?: number): void;
+  zoomPunch(intensity?: number, duration?: number): void;
+  triggerShockwave(worldX: number, worldY: number, duration?: number): void;
+  flashScreen(color?: [number, number, number, number?], duration?: number): void;
+
+  // Visual Effects - Dynamic Shaders
+  createDynamicShader(shaderId: string, shaderCode: string): void;
+  applyDynamicShader(entityId: string, shaderId: string, params?: Record<string, unknown>): void;
+  applyDynamicPostShader(shaderCode: string, params?: Record<string, unknown>): void;
+
+  // Visual Effects - Particles
+  spawnParticlePreset(presetName: string, worldX: number, worldY: number, params?: Record<string, unknown>): void;
+
+  // Visual Effects - Info
+  getAvailableEffects(): Promise<{
+    sprite: string[];
+    post: string[];
+    particles: string[];
+  }>;
+
+  // UI Buttons (Godot-native TextureButton)
+  createUIButton(
+    buttonId: string,
+    normalImageUrl: string,
+    pressedImageUrl: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ): void;
+  destroyUIButton(buttonId: string): void;
+  onUIButtonEvent(callback: (eventType: 'button_down' | 'button_up' | 'button_pressed', buttonId: string) => void): () => void;
 }
 
 export interface GodotViewProps {

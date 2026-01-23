@@ -62,6 +62,29 @@ declare global {
       onInputEvent: (callback: (type: string, x: number, y: number, entityId: string | null) => void) => void;
       setEntityImage: (entityId: string, url: string, width: number, height: number) => void;
       clearTextureCache: (url: string) => void;
+      setCameraTarget: (entityId: string) => void;
+      setCameraPosition: (x: number, y: number) => void;
+      setCameraZoom: (zoom: number) => void;
+      spawnParticle: (type: string, x: number, y: number) => void;
+      playSound: (resourcePath: string) => void;
+      applySpriteEffect: (entityId: string, effectName: string, paramsJson?: string) => void;
+      updateSpriteEffectParam: (entityId: string, paramName: string, value: unknown) => void;
+      clearSpriteEffect: (entityId: string) => void;
+      setPostEffect: (effectName: string, paramsJson?: string, layer?: string) => void;
+      updatePostEffectParam: (paramName: string, value: unknown, layer?: string) => void;
+      clearPostEffect: (layer?: string) => void;
+      screenShake: (intensity: number, duration?: number) => void;
+      zoomPunch: (intensity?: number, duration?: number) => void;
+      triggerShockwave: (worldX: number, worldY: number, duration?: number) => void;
+      flashScreen: (color?: number[], duration?: number) => void;
+      createDynamicShader: (shaderId: string, shaderCode: string) => void;
+      applyDynamicShader: (entityId: string, shaderId: string, paramsJson?: string) => void;
+      applyDynamicPostShader: (shaderCode: string, paramsJson?: string) => void;
+      spawnParticlePreset: (presetName: string, worldX: number, worldY: number, paramsJson?: string) => void;
+      getAvailableEffects: () => void;
+      createUIButton: (buttonId: string, normalUrl: string, pressedUrl: string, x: number, y: number, width: number, height: number) => void;
+      destroyUIButton: (buttonId: string) => void;
+      onUIButtonEvent: (callback: (eventType: string, buttonId: string) => void) => void;
     };
   }
 }
@@ -72,6 +95,7 @@ export function createWebGodotBridge(): GodotBridge {
   const sensorBeginCallbacks: ((event: SensorEvent) => void)[] = [];
   const sensorEndCallbacks: ((event: SensorEvent) => void)[] = [];
   const inputEventCallbacks: ((type: string, x: number, y: number, entityId: string | null) => void)[] = [];
+  const uiButtonCallbacks: ((eventType: 'button_down' | 'button_up' | 'button_pressed', buttonId: string) => void)[] = [];
 
   const getGodotBridge = (): Window['GodotBridge'] | null => {
     const iframe = document.querySelector('iframe[title="Godot Game Engine"]') as HTMLIFrameElement | null;
@@ -176,12 +200,15 @@ export function createWebGodotBridge(): GodotBridge {
       getGodotBridge()?.destroyEntity(entityId);
     },
 
-    getEntityTransform(entityId: string): EntityTransform | null {
+    async getEntityTransform(entityId: string): Promise<EntityTransform | null> {
       return getGodotBridge()?.getEntityTransform(entityId) ?? null;
     },
 
-    getAllTransforms(): Record<string, EntityTransform> {
-      return getGodotBridge()?.getAllTransforms() ?? {};
+    async getAllTransforms(): Promise<Record<string, EntityTransform>> {
+      const godotBridge = getGodotBridge();
+      if (!godotBridge) return {};
+      godotBridge.getAllTransforms();
+      return (godotBridge._lastResult as Record<string, EntityTransform>) ?? {};
     },
 
     setTransform(entityId: string, x: number, y: number, angle: number) {
@@ -196,7 +223,7 @@ export function createWebGodotBridge(): GodotBridge {
       getGodotBridge()?.setRotation(entityId, angle);
     },
 
-    getLinearVelocity(entityId: string): Vec2 | null {
+    async getLinearVelocity(entityId: string): Promise<Vec2 | null> {
       return getGodotBridge()?.getLinearVelocity(entityId) ?? null;
     },
 
@@ -204,7 +231,7 @@ export function createWebGodotBridge(): GodotBridge {
       getGodotBridge()?.setLinearVelocity(entityId, velocity.x, velocity.y);
     },
 
-    getAngularVelocity(entityId: string): number | null {
+    async getAngularVelocity(entityId: string): Promise<number | null> {
       return getGodotBridge()?.getAngularVelocity(entityId) ?? null;
     },
 
@@ -288,28 +315,23 @@ export function createWebGodotBridge(): GodotBridge {
       getGodotBridge()?.setMouseTarget(jointId, target.x, target.y);
     },
 
-    queryPoint(point: Vec2): number | null {
+    async queryPoint(point: Vec2): Promise<number | null> {
       return getGodotBridge()?.queryPoint(point.x, point.y) ?? null;
     },
 
-    queryPointEntity(point: Vec2): string | null {
+    async queryPointEntity(point: Vec2): Promise<string | null> {
       const godotBridge = getGodotBridge();
       if (!godotBridge) return null;
       godotBridge.queryPointEntity(point.x, point.y);
       const result = godotBridge._lastResult;
-      console.log('[GodotBridge.web] queryPointEntity _lastResult:', result, 'type:', typeof result);
       return (result as string | null) ?? null;
     },
 
-    async queryPointEntityAsync(point: Vec2): Promise<string | null> {
-      return this.queryPointEntity(point);
-    },
-
-    queryAABB(min: Vec2, max: Vec2): number[] {
+    async queryAABB(min: Vec2, max: Vec2): Promise<number[]> {
       return getGodotBridge()?.queryAABB(min.x, min.y, max.x, max.y) ?? [];
     },
 
-    raycast(origin: Vec2, direction: Vec2, maxDistance: number): RaycastHit | null {
+    async raycast(origin: Vec2, direction: Vec2, maxDistance: number): Promise<RaycastHit | null> {
       return getGodotBridge()?.raycast(origin.x, origin.y, direction.x, direction.y, maxDistance) ?? null;
     },
 
@@ -362,11 +384,11 @@ export function createWebGodotBridge(): GodotBridge {
       getGodotBridge()?.setUserData(bodyId, data);
     },
 
-    getUserData(bodyId: number): unknown {
+    async getUserData(bodyId: number): Promise<unknown> {
       return getGodotBridge()?.getUserData(bodyId);
     },
 
-    getAllBodies(): number[] {
+    async getAllBodies(): Promise<number[]> {
       return getGodotBridge()?.getAllBodies() ?? [];
     },
 
@@ -420,6 +442,202 @@ export function createWebGodotBridge(): GodotBridge {
 
     clearTextureCache(url?: string) {
       getGodotBridge()?.clearTextureCache(url ?? '');
+    },
+
+    setCameraTarget(entityId: string | null) {
+      getGodotBridge()?.setCameraTarget(entityId ?? '');
+    },
+
+    setCameraPosition(x: number, y: number) {
+      getGodotBridge()?.setCameraPosition(x, y);
+    },
+
+    setCameraZoom(zoom: number) {
+      getGodotBridge()?.setCameraZoom(zoom);
+    },
+
+    spawnParticle(type: string, x: number, y: number) {
+      getGodotBridge()?.spawnParticle(type, x, y);
+    },
+
+    playSound(resourcePath: string) {
+      getGodotBridge()?.playSound(resourcePath);
+    },
+
+    applySpriteEffect(entityId: string, effectName: string, params?: Record<string, unknown>) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.applySpriteEffect) {
+        godotBridge.applySpriteEffect(entityId, effectName, params ? JSON.stringify(params) : undefined);
+      }
+    },
+
+    updateSpriteEffectParam(entityId: string, paramName: string, value: unknown) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.updateSpriteEffectParam) {
+        godotBridge.updateSpriteEffectParam(entityId, paramName, value);
+      }
+    },
+
+    clearSpriteEffect(entityId: string) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.clearSpriteEffect) {
+        godotBridge.clearSpriteEffect(entityId);
+      }
+    },
+
+    setPostEffect(effectName: string, params?: Record<string, unknown>, layer?: string) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.setPostEffect) {
+        godotBridge.setPostEffect(effectName, params ? JSON.stringify(params) : undefined, layer);
+      }
+    },
+
+    updatePostEffectParam(paramName: string, value: unknown, layer?: string) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.updatePostEffectParam) {
+        godotBridge.updatePostEffectParam(paramName, value, layer);
+      }
+    },
+
+    clearPostEffect(layer?: string) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.clearPostEffect) {
+        godotBridge.clearPostEffect(layer);
+      }
+    },
+
+    screenShake(intensity: number, duration?: number) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.screenShake) {
+        godotBridge.screenShake(intensity, duration);
+      }
+    },
+
+    zoomPunch(intensity?: number, duration?: number) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.zoomPunch) {
+        godotBridge.zoomPunch(intensity, duration);
+      }
+    },
+
+    triggerShockwave(worldX: number, worldY: number, duration?: number) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.triggerShockwave) {
+        godotBridge.triggerShockwave(worldX, worldY, duration);
+      }
+    },
+
+    flashScreen(color?: [number, number, number, number?], duration?: number) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.flashScreen) {
+        const colorArray = color ? [color[0], color[1], color[2], color[3] ?? 1.0] : undefined;
+        godotBridge.flashScreen(colorArray, duration);
+      }
+    },
+
+    createDynamicShader(shaderId: string, shaderCode: string) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.createDynamicShader) {
+        godotBridge.createDynamicShader(shaderId, shaderCode);
+      }
+    },
+
+    applyDynamicShader(entityId: string, shaderId: string, params?: Record<string, unknown>) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.applyDynamicShader) {
+        godotBridge.applyDynamicShader(entityId, shaderId, params ? JSON.stringify(params) : undefined);
+      }
+    },
+
+    applyDynamicPostShader(shaderCode: string, params?: Record<string, unknown>) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.applyDynamicPostShader) {
+        godotBridge.applyDynamicPostShader(shaderCode, params ? JSON.stringify(params) : undefined);
+      }
+    },
+
+    spawnParticlePreset(presetName: string, worldX: number, worldY: number, params?: Record<string, unknown>) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.spawnParticlePreset) {
+        godotBridge.spawnParticlePreset(presetName, worldX, worldY, params ? JSON.stringify(params) : undefined);
+      }
+    },
+
+    async getAvailableEffects(): Promise<{ sprite: string[]; post: string[]; particles: string[] }> {
+      const godotBridge = getGodotBridge();
+      if (!godotBridge?.getAvailableEffects) {
+        return { sprite: [], post: [], particles: [] };
+      }
+      godotBridge.getAvailableEffects();
+      const result = godotBridge._lastResult;
+      if (result && typeof result === 'object') {
+        return result as { sprite: string[]; post: string[]; particles: string[] };
+      }
+      return { sprite: [], post: [], particles: [] };
+    },
+
+    createUIButton(
+      buttonId: string,
+      normalImageUrl: string,
+      pressedImageUrl: string,
+      x: number,
+      y: number,
+      width: number,
+      height: number
+    ) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.createUIButton) {
+        godotBridge.createUIButton(buttonId, normalImageUrl, pressedImageUrl, x, y, width, height);
+      }
+    },
+
+    destroyUIButton(buttonId: string) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.destroyUIButton) {
+        godotBridge.destroyUIButton(buttonId);
+      }
+    },
+
+    onUIButtonEvent(callback: (eventType: 'button_down' | 'button_up' | 'button_pressed', buttonId: string) => void): () => void {
+      uiButtonCallbacks.push(callback);
+      
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.onUIButtonEvent && uiButtonCallbacks.length === 1) {
+        godotBridge.onUIButtonEvent((...args: unknown[]) => {
+          console.log('[GodotBridge.web] UI button callback received:', args);
+          console.log('[GodotBridge.web] args length:', args.length);
+          console.log('[GodotBridge.web] args[0] type:', typeof args[0], 'value:', args[0]);
+          console.log('[GodotBridge.web] args[1] type:', typeof args[1], 'value:', args[1]);
+          
+          // Try both formats - array arg or separate args
+          let eventType: string;
+          let buttonId: string;
+          
+          if (Array.isArray(args[0])) {
+            // Godot might pass args as single array
+            const arr = args[0] as string[];
+            eventType = arr[0];
+            buttonId = arr[1];
+            console.log('[GodotBridge.web] Detected array format');
+          } else {
+            // Normal separate arguments
+            eventType = args[0] as string;
+            buttonId = args[1] as string;
+            console.log('[GodotBridge.web] Detected separate args format');
+          }
+          
+          console.log('[GodotBridge.web] Parsed eventType:', eventType, 'buttonId:', buttonId);
+          
+          for (const cb of uiButtonCallbacks) {
+            cb(eventType as 'button_down' | 'button_up' | 'button_pressed', buttonId);
+          }
+        });
+      }
+      
+      return () => {
+        const index = uiButtonCallbacks.indexOf(callback);
+        if (index >= 0) uiButtonCallbacks.splice(index, 1);
+      };
     },
   };
 
