@@ -12,6 +12,10 @@
     "name": "Slopcade",
     "slug": "slopcade",
     "description": "AI-powered 2D game maker for kids",
+    "updates": {
+      "url": "https://u.expo.dev/bqoepxmdaiggnwjjszsd"
+    },
+    "runtimeVersion": "1.0.0",
     "ios": {
       "bundleIdentifier": "me.ch5.slopcade.app"
     },
@@ -20,6 +24,12 @@
     },
     "assetBundlePatterns": [
       "**/*"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "f43f5d63-7c85-45df-ba8f-78b2a4d8f2aa"
+      }
+    }
   }
 }

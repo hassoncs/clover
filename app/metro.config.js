@@ -6,20 +6,7 @@ const { withNativeWind } = require("nativewind/metro");
 const projectRoot = __dirname;
 const monorepoRoot = path.resolve(projectRoot, "..");
 
-function getBox2dRoot() {
-  const pkg = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
-  const box2dSpec = pkg.dependencies?.["react-native-box2d"] || "";
-  
-  if (box2dSpec.startsWith("link:")) {
-    const linkPath = box2dSpec.replace("link:", "");
-    return path.isAbsolute(linkPath) ? linkPath : path.resolve(projectRoot, linkPath);
-  }
-  
-  const symlinkPath = path.join(projectRoot, "node_modules", "react-native-box2d");
-  return fs.realpathSync(symlinkPath);
-}
-
-const box2dRoot = getBox2dRoot();
+const box2dRoot = path.join(projectRoot, "node_modules/react-native-box2d");
 
 const baseConfig = getDefaultConfig(__dirname);
 
@@ -35,20 +22,14 @@ baseConfig.server = {
   port: 8085,
 };
 
-const box2dWasmRoot = path.resolve(monorepoRoot, "node_modules/box2d-wasm");
-baseConfig.watchFolders = [monorepoRoot, box2dRoot, box2dWasmRoot];
+baseConfig.watchFolders = [monorepoRoot];
 
 baseConfig.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, "node_modules"),
   path.resolve(monorepoRoot, "node_modules"),
-  path.resolve(box2dRoot, "node_modules"),
 ];
 
 baseConfig.resolver.unstable_enableSymlinks = true;
-
-baseConfig.resolver.extraNodeModules = {
-  "react-native-box2d": box2dRoot,
-};
 
 baseConfig.resolver.unstable_conditionNames = ["require", "import", "react-native"];
 baseConfig.resolver.sourceExts = [...(baseConfig.resolver.sourceExts || []), "cjs"];
