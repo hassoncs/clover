@@ -38,6 +38,12 @@ export interface RaycastHit {
   fraction: number;
 }
 
+export interface DynamicShaderResult {
+  success: boolean;
+  shader_id: string;
+  error?: string;
+}
+
 // Sprite types
 export interface RectSprite {
   type: 'rect';
@@ -244,6 +250,7 @@ export interface GodotBridge {
   onEntityDestroyed(callback: (entityId: string) => void): () => void;
   onSensorBegin(callback: (event: SensorEvent) => void): () => void;
   onSensorEnd(callback: (event: SensorEvent) => void): () => void;
+  onTransformSync(callback: (transforms: Record<string, EntityTransform>) => void): () => void;
 
   // Input
   sendInput(type: 'tap' | 'drag_start' | 'drag_move' | 'drag_end', data: { x: number; y: number; entityId?: string }): void;
@@ -281,7 +288,7 @@ export interface GodotBridge {
   flashScreen(color?: [number, number, number, number?], duration?: number): void;
 
   // Visual Effects - Dynamic Shaders
-  createDynamicShader(shaderId: string, shaderCode: string): void;
+  createDynamicShader(shaderId: string, shaderCode: string): Promise<DynamicShaderResult>;
   applyDynamicShader(entityId: string, shaderId: string, params?: Record<string, unknown>): void;
   applyDynamicPostShader(shaderCode: string, params?: Record<string, unknown>): void;
 

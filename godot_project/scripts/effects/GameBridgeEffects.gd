@@ -193,10 +193,12 @@ func _js_flash_screen(args: Array) -> void:
 
 func _js_create_dynamic_shader(args: Array) -> void:
 	if args.size() < 2:
+		_set_last_result({"success": false, "error": "Missing required arguments: shader_id and shader_code"})
 		return
 	var shader_id = str(args[0])
 	var shader_code = str(args[1])
-	create_dynamic_shader(shader_id, shader_code)
+	var result = create_dynamic_shader(shader_id, shader_code)
+	_set_last_result(result)
 
 func _js_apply_dynamic_shader(args: Array) -> void:
 	if args.size() < 2:
@@ -241,6 +243,10 @@ func _parse_params(value) -> Dictionary:
 		if json.parse(value) == OK:
 			return json.data if json.data is Dictionary else {}
 	return {}
+
+func _set_last_result(result: Dictionary) -> void:
+	# Store result for JS to retrieve
+	JavaScriptBridge.eval("window.GodotBridge._lastResult = %s;" % JSON.stringify(result))
 
 # ============================================================
 # PUBLIC API - SPRITE EFFECTS
@@ -320,7 +326,7 @@ func flash_screen(color: Color = Color.WHITE, duration: float = 0.1) -> void:
 # PUBLIC API - DYNAMIC SHADERS
 # ============================================================
 
-func create_dynamic_shader(shader_id: String, shader_code: String) -> bool:
+func create_dynamic_shader(shader_id: String, shader_code: String) -> Dictionary:
 	return effects_manager.create_dynamic_shader(shader_id, shader_code)
 
 func apply_dynamic_shader_to_entity(entity_id: String, shader_id: String, params: Dictionary = {}) -> void:

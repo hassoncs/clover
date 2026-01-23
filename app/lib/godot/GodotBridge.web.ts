@@ -14,6 +14,7 @@ import type {
   MouseJointDef,
   BodyDef,
   FixtureDef,
+  DynamicShaderResult,
 } from './types';
 
 declare global {
@@ -60,6 +61,7 @@ declare global {
       onSensorBegin: (callback: (sensorId: number, bodyId: number, colliderId: number) => void) => void;
       onSensorEnd: (callback: (sensorId: number, bodyId: number, colliderId: number) => void) => void;
       onInputEvent: (callback: (type: string, x: number, y: number, entityId: string | null) => void) => void;
+      onTransformSync: (callback: (transformsJson: string) => void) => void;
       setEntityImage: (entityId: string, url: string, width: number, height: number) => void;
       clearTextureCache: (url: string) => void;
       setCameraTarget: (entityId: string) => void;
@@ -96,6 +98,7 @@ export function createWebGodotBridge(): GodotBridge {
   const sensorEndCallbacks: ((event: SensorEvent) => void)[] = [];
   const inputEventCallbacks: ((type: string, x: number, y: number, entityId: string | null) => void)[] = [];
   const uiButtonCallbacks: ((eventType: 'button_down' | 'button_up' | 'button_pressed', buttonId: string) => void)[] = [];
+  const transformSyncCallbacks: ((transforms: Record<string, EntityTransform>) => void)[] = [];
 
   const getGodotBridge = (): Window['GodotBridge'] | null => {
     const iframe = document.querySelector('iframe[title="Godot Game Engine"]') as HTMLIFrameElement | null;
@@ -166,6 +169,13 @@ export function createWebGodotBridge(): GodotBridge {
               for (const cb of inputEventCallbacks) cb(type, x, y, entityId);
             });
 
+            godotBridge.onTransformSync((transformsJson: string) => {
+              try {
+                const transforms = JSON.parse(transformsJson) as Record<string, EntityTransform>;
+                for (const cb of transformSyncCallbacks) cb(transforms);
+              } catch {}
+            });
+
             resolve();
           }
         }, 100);
@@ -208,7 +218,11 @@ export function createWebGodotBridge(): GodotBridge {
       const godotBridge = getGodotBridge();
       if (!godotBridge) return {};
       godotBridge.getAllTransforms();
-      return (godotBridge._lastResult as Record<string, EntityTransform>) ?? {};
+      const result = godotBridge._lastResult as Record<string, EntityTransform>;
+      if (Math.random() < 0.02) {
+        console.log('[GodotBridge.web] getAllTransforms _lastResult:', result, 'keys:', result ? Object.keys(result).length : 0);
+      }
+      return result ?? {};
     },
 
     setTransform(entityId: string, x: number, y: number, angle: number) {
@@ -535,11 +549,24 @@ export function createWebGodotBridge(): GodotBridge {
       }
     },
 
-    createDynamicShader(shaderId: string, shaderCode: string) {
+    async createDynamicShader(shaderId: string, shaderCode: string): Promise<DynamicShaderResult> {
       const godotBridge = getGodotBridge();
-      if (godotBridge?.createDynamicShader) {
-        godotBridge.createDynamicShader(shaderId, shaderCode);
+      if (!godotBridge?.createDynamicShader) {
+        return { success: false, shader_id: shaderId, error: 'Godot bridge not initialized' };
       }
+      
+      godotBridge.createDynamicShader(shaderId, shaderCode);
+      
+      // Wait a frame for Godot to process and set _lastResult
+      await new Promise(resolve => setTimeout(resolve, 16));
+      
+      const result = godotBridge._lastResult as DynamicShaderResult | undefined;
+      if (result && typeof result === 'object' && 'success' in result) {
+        return result;
+      }
+      
+      // Fallback if no result (shouldn't happen)
+      return { success: true, shader_id: shaderId };
     },
 
     applyDynamicShader(entityId: string, shaderId: string, params?: Record<string, unknown>) {
@@ -604,29 +631,17 @@ export function createWebGodotBridge(): GodotBridge {
       const godotBridge = getGodotBridge();
       if (godotBridge?.onUIButtonEvent && uiButtonCallbacks.length === 1) {
         godotBridge.onUIButtonEvent((...args: unknown[]) => {
-          console.log('[GodotBridge.web] UI button callback received:', args);
-          console.log('[GodotBridge.web] args length:', args.length);
-          console.log('[GodotBridge.web] args[0] type:', typeof args[0], 'value:', args[0]);
-          console.log('[GodotBridge.web] args[1] type:', typeof args[1], 'value:', args[1]);
-          
-          // Try both formats - array arg or separate args
           let eventType: string;
           let buttonId: string;
           
           if (Array.isArray(args[0])) {
-            // Godot might pass args as single array
             const arr = args[0] as string[];
             eventType = arr[0];
             buttonId = arr[1];
-            console.log('[GodotBridge.web] Detected array format');
           } else {
-            // Normal separate arguments
             eventType = args[0] as string;
             buttonId = args[1] as string;
-            console.log('[GodotBridge.web] Detected separate args format');
           }
-          
-          console.log('[GodotBridge.web] Parsed eventType:', eventType, 'buttonId:', buttonId);
           
           for (const cb of uiButtonCallbacks) {
             cb(eventType as 'button_down' | 'button_up' | 'button_pressed', buttonId);

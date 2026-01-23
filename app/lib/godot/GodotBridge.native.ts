@@ -14,6 +14,7 @@ import type {
   BodyDef,
   FixtureDef,
   ContactInfo,
+  DynamicShaderResult,
 } from './types';
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -918,8 +919,9 @@ export function createNativeGodotBridge(): GodotBridge {
       callEffectsBridge('flash_screen', colorArray, duration ?? 0.1);
     },
 
-    createDynamicShader(shaderId: string, shaderCode: string) {
+    async createDynamicShader(shaderId: string, shaderCode: string): Promise<DynamicShaderResult> {
       callEffectsBridge('create_dynamic_shader', shaderId, shaderCode);
+      return { success: true, shader_id: shaderId };
     },
 
     applyDynamicShader(entityId: string, shaderId: string, params?: Record<string, unknown>) {

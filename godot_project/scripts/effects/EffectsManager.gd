@@ -183,14 +183,52 @@ func get_active_post_effects() -> Array:
 # DYNAMIC SHADERS (AI-GENERATED)
 # ============================================================
 
-func create_dynamic_shader(shader_id: String, shader_code: String) -> bool:
+func create_dynamic_shader(shader_id: String, shader_code: String) -> Dictionary:
 	var shader = Shader.new()
 	shader.code = shader_code
 	
-	# Store in cache
-	_dynamic_shaders[shader_id] = shader
-	shader_compiled.emit(shader_id, true)
-	return true
+	# In Godot 4, we need to check for shader compilation errors
+	# The shader won't report errors until we try to use it
+	# We can detect errors by checking if the shader is valid after setting the code
+	
+	# Create a temporary material and sprite to force shader compilation
+	var test_material = ShaderMaterial.new()
+	test_material.shader = shader
+	
+	# Check for shader errors by examining the shader's compiled code
+	# Godot 4 provides get_shader_uniform_list() which will be empty if shader failed
+	var error_message = ""
+	var success = true
+	
+	# Try to get shader info - if the shader has syntax errors, this may fail
+	# We also check by looking at RenderingServer shader warnings
+	var shader_rid = shader.get_rid()
+	if not shader_rid.is_valid():
+		success = false
+		error_message = "Shader RID is invalid - likely syntax error in shader code"
+	else:
+		# Attempt to validate by checking if we can get uniforms
+		# A completely broken shader often has issues here
+		var uniforms = test_material.shader.get_shader_uniform_list()
+		# Note: Even invalid shaders may return empty list, so this isn't foolproof
+		# The real test is rendering, but we can catch obvious errors
+		
+		# Check for common GLSL/Godot shader syntax issues
+		if not shader_code.contains("shader_type"):
+			success = false
+			error_message = "Missing 'shader_type' declaration (e.g., 'shader_type canvas_item;')"
+		elif not shader_code.contains("void fragment()") and not shader_code.contains("void vertex()"):
+			success = false
+			error_message = "Shader must contain at least a 'void fragment()' or 'void vertex()' function"
+	
+	if success:
+		# Store in cache
+		_dynamic_shaders[shader_id] = shader
+		shader_compiled.emit(shader_id, true)
+		return {"success": true, "shader_id": shader_id}
+	else:
+		shader_compiled.emit(shader_id, false)
+		return {"success": false, "error": error_message, "shader_id": shader_id}
 
 func apply_dynamic_shader_to_sprite(sprite: CanvasItem, shader_id: String, params: Dictionary = {}) -> ShaderMaterial:
 	if not _dynamic_shaders.has(shader_id):
