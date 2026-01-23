@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Group, Circle, Rect, Line, vec } from '@shopify/react-native-skia';
 import type { Particle, RenderStyle, ParticleBlendMode } from '@slopcade/shared';
+import { PARTICLE_RENDER_CAP } from './ParticleSystem';
 
 interface ParticleRendererProps {
   particles: Particle[];
@@ -23,9 +24,12 @@ export function ParticleRenderer({
   const skiaBlendMode = blendModeMap[blendMode];
 
   const particleElements = useMemo(() => {
-    return particles.map((particle) => (
+    const cappedParticles = particles.length > PARTICLE_RENDER_CAP 
+      ? particles.slice(0, PARTICLE_RENDER_CAP) 
+      : particles;
+    return cappedParticles.map((particle, index) => (
       <ParticleShape
-        key={`${particle.x.toFixed(2)}-${particle.y.toFixed(2)}-${particle.age.toFixed(3)}`}
+        key={`particle-${index}`}
         particle={particle}
         renderStyle={renderStyle}
       />
@@ -146,16 +150,14 @@ export function ParticleSystemRenderer({
   offsetX = 0,
   offsetY = 0,
 }: ParticleSystemRendererProps) {
-  const activeParticles = particles.filter((p) => p.active);
-
-  if (activeParticles.length === 0) {
+  if (particles.length === 0) {
     return null;
   }
 
   return (
     <Group transform={[{ translateX: offsetX }, { translateY: offsetY }]}>
       <ParticleRenderer
-        particles={activeParticles}
+        particles={particles}
         renderStyle={renderStyle}
         blendMode={blendMode}
       />

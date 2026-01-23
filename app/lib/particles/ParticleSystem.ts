@@ -8,6 +8,8 @@ import type {
   NumberRange,
 } from '@slopcade/shared';
 
+export const PARTICLE_RENDER_CAP = 200;
+
 export function createParticlePool(maxParticles: number): ParticlePoolState {
   const particles: Particle[] = [];
   for (let i = 0; i < maxParticles; i++) {
@@ -278,4 +280,44 @@ export function resetParticles(pool: ParticlePoolState): void {
 
 export function getActiveParticles(pool: ParticlePoolState): Particle[] {
   return pool.particles.filter((p) => p.active);
+}
+
+const MAX_PARTICLES_TO_RENDER = 200;
+
+export function getActiveParticlesOptimized(
+  pool: ParticlePoolState,
+  outArray: Particle[],
+  maxCount: number = MAX_PARTICLES_TO_RENDER
+): number {
+  let count = 0;
+  const particles = pool.particles;
+  const len = particles.length;
+  
+  for (let i = 0; i < len && count < maxCount; i++) {
+    const p = particles[i];
+    if (p.active) {
+      outArray[count] = p;
+      count++;
+    }
+  }
+  
+  return count;
+}
+
+export function forEachActiveParticle(
+  pool: ParticlePoolState,
+  callback: (particle: Particle, index: number) => void,
+  maxCount: number = MAX_PARTICLES_TO_RENDER
+): void {
+  let count = 0;
+  const particles = pool.particles;
+  const len = particles.length;
+  
+  for (let i = 0; i < len && count < maxCount; i++) {
+    const p = particles[i];
+    if (p.active) {
+      callback(p, count);
+      count++;
+    }
+  }
 }
