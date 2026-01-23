@@ -11,10 +11,9 @@ interface UseGameInputProps {
   gameRef: React.RefObject<LoadedGame | null>;
   physicsRef: React.RefObject<Physics2D | null>;
   viewportSystemRef?: React.RefObject<ViewportSystem | null>;
-  showDebugOverlays?: boolean;
 }
 
-export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef, showDebugOverlays }: UseGameInputProps) {
+export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef }: UseGameInputProps) {
   const inputRef = useRef<InputState>({});
   const dragStartRef = useRef<{
     x: number;
@@ -40,9 +39,7 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
 
     const { locationX: x, locationY: y } = event.nativeEvent;
     
-    if (showDebugOverlays) {
-      console.log("[Input] Touch Start:", { x, y });
-    }
+    console.log("[Input] Touch Start:", { x, y });
 
     let worldPos: { x: number; y: number };
     if (viewportSystem) {
@@ -86,7 +83,7 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
       currentWorldY: worldPos.y,
       targetEntityId,
     };
-  }, [showDebugOverlays, cameraRef, gameRef, physicsRef, viewportSystemRef]);
+  }, [cameraRef, gameRef, physicsRef, viewportSystemRef]);
 
   const handleTouchMove = useCallback((event: GestureResponderEvent) => {
     const camera = cameraRef.current;
@@ -126,9 +123,7 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
 
     const { locationX: x, locationY: y } = event.nativeEvent;
     
-    if (showDebugOverlays) {
-      console.log("[Input] Touch End:", { x, y });
-    }
+    console.log("[Input] Touch End:", { x, y });
 
     let worldPos: { x: number; y: number };
     if (viewportSystem) {
@@ -145,6 +140,7 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
       worldX: worldPos.x,
       worldY: worldPos.y,
     };
+    console.log("[Input] Tap set:", inputRef.current.tap);
 
     if (dragStart) {
       const dx = worldPos.x - dragStart.worldX;
@@ -156,17 +152,18 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
         worldVelocityX: dx * VELOCITY_SCALE,
         worldVelocityY: dy * VELOCITY_SCALE,
       };
+      console.log("[Input] DragEnd set:", inputRef.current.dragEnd);
     }
 
     dragStartRef.current = null;
     inputRef.current.drag = undefined;
-  }, [showDebugOverlays, cameraRef, viewportSystemRef]);
+  }, [cameraRef, viewportSystemRef]);
 
   useEffect(() => {
     if (Platform.OS !== "web") return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (showDebugOverlays) console.log("[Input] KeyDown:", e.key);
+      console.log("[Input] KeyDown:", e.key);
       switch (e.key) {
         case "ArrowLeft":
         case "a":
@@ -196,7 +193,7 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (showDebugOverlays) console.log("[Input] KeyUp:", e.key);
+      console.log("[Input] KeyUp:", e.key);
       switch (e.key) {
         case "ArrowLeft":
         case "a":
@@ -232,7 +229,7 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [showDebugOverlays]);
+  }, []);
 
   return {
     inputRef,

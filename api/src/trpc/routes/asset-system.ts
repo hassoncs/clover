@@ -1,4 +1,4 @@
-import { router, publicProcedure, installedProcedure } from '../index';
+import { router, publicProcedure, protectedProcedure } from '../index';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import {
@@ -201,7 +201,7 @@ function getTargetDimensions(physicsShape: string, width?: number, height?: numb
 }
 
 export const assetSystemRouter = router({
-  getAsset: installedProcedure
+  getAsset: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const row = await ctx.env.DB.prepare(
@@ -215,7 +215,7 @@ export const assetSystemRouter = router({
       return toClientAsset(row);
     }),
 
-  listAssets: installedProcedure
+  listAssets: protectedProcedure
     .input(z.object({
       gameId: z.string().optional(),
       limit: z.number().min(1).max(100).default(50),
@@ -237,7 +237,7 @@ export const assetSystemRouter = router({
       return result.results.map(toClientAsset);
     }),
 
-  createAsset: installedProcedure
+  createAsset: protectedProcedure
     .input(z.object({
       ownerGameId: z.string().optional(),
       source: assetSourceSchema,
@@ -257,7 +257,7 @@ export const assetSystemRouter = router({
       return { id, createdAt: now };
     }),
 
-  deleteAsset: installedProcedure
+  deleteAsset: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const now = Date.now();
@@ -267,7 +267,7 @@ export const assetSystemRouter = router({
       return { success: true };
     }),
 
-  getPack: installedProcedure
+  getPack: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const packRow = await ctx.env.DB.prepare(
@@ -296,7 +296,7 @@ export const assetSystemRouter = router({
       };
     }),
 
-  listPacks: installedProcedure
+  listPacks: protectedProcedure
     .input(z.object({ gameId: z.string() }))
     .query(async ({ ctx, input }) => {
       const result = await ctx.env.DB.prepare(
@@ -306,7 +306,7 @@ export const assetSystemRouter = router({
       return result.results.map(toClientPack);
     }),
 
-  createPack: installedProcedure
+  createPack: protectedProcedure
     .input(z.object({
       gameId: z.string(),
       name: z.string().min(1).max(100),
@@ -332,7 +332,7 @@ export const assetSystemRouter = router({
       return { id, createdAt: now };
     }),
 
-  updatePack: installedProcedure
+  updatePack: protectedProcedure
     .input(z.object({
       id: z.string(),
       name: z.string().min(1).max(100).optional(),
@@ -368,7 +368,7 @@ export const assetSystemRouter = router({
       return { success: true };
     }),
 
-  deletePack: installedProcedure
+  deletePack: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const now = Date.now();
@@ -378,7 +378,7 @@ export const assetSystemRouter = router({
       return { success: true };
     }),
 
-  setPackEntry: installedProcedure
+  setPackEntry: protectedProcedure
     .input(z.object({
       packId: z.string(),
       templateId: z.string(),
@@ -400,7 +400,7 @@ export const assetSystemRouter = router({
       return { success: true };
     }),
 
-  updateEntryPlacement: installedProcedure
+  updateEntryPlacement: protectedProcedure
     .input(z.object({
       packId: z.string(),
       templateId: z.string(),
@@ -414,7 +414,7 @@ export const assetSystemRouter = router({
       return { success: true };
     }),
 
-  removePackEntry: installedProcedure
+  removePackEntry: protectedProcedure
     .input(z.object({
       packId: z.string(),
       templateId: z.string(),
@@ -427,7 +427,7 @@ export const assetSystemRouter = router({
       return { success: true };
     }),
 
-  getJob: installedProcedure
+  getJob: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const jobRow = await ctx.env.DB.prepare(
@@ -448,7 +448,7 @@ export const assetSystemRouter = router({
       };
     }),
 
-  createGenerationJob: installedProcedure
+  createGenerationJob: protectedProcedure
     .input(z.object({
       gameId: z.string(),
       packId: z.string().optional(),
@@ -556,7 +556,7 @@ export const assetSystemRouter = router({
       return { jobId, taskCount: input.templateIds.length };
     }),
 
-  processGenerationJob: installedProcedure
+  processGenerationJob: protectedProcedure
     .input(z.object({ jobId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const scenarioConfig = getScenarioConfigFromEnv(ctx.env);
@@ -666,7 +666,7 @@ export const assetSystemRouter = router({
       return { successCount, failCount, status: finalStatus };
     }),
 
-  cancelJob: installedProcedure
+  cancelJob: protectedProcedure
     .input(z.object({ jobId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const now = Date.now();
@@ -681,7 +681,7 @@ export const assetSystemRouter = router({
       return { success: true };
     }),
 
-  retryFailedTasks: installedProcedure
+  retryFailedTasks: protectedProcedure
     .input(z.object({ jobId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.env.DB.prepare(
@@ -695,7 +695,7 @@ export const assetSystemRouter = router({
       return { success: true };
     }),
 
-  setActivePackForGame: installedProcedure
+  setActivePackForGame: protectedProcedure
     .input(z.object({
       gameId: z.string(),
       packId: z.string().nullable(),
@@ -728,13 +728,13 @@ export const assetSystemRouter = router({
       return { success: true };
     }),
 
-  runMigration: installedProcedure
+  runMigration: protectedProcedure
     .mutation(async ({ ctx }) => {
       const result = await migrateAssetPacks(ctx.env.DB);
       return result;
     }),
 
-  rollbackMigration: installedProcedure
+  rollbackMigration: protectedProcedure
     .mutation(async ({ ctx }) => {
       const result = await rollbackMigration(ctx.env.DB);
       return result;

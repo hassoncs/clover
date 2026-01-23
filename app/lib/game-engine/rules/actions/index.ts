@@ -5,3 +5,4 @@ export * from './DestroyActionExecutor';
 export * from './PhysicsActionExecutor';
 export * from './LogicActionExecutor';
 export * from './EntityActionExecutor';
+export * from './CameraActionExecutor';

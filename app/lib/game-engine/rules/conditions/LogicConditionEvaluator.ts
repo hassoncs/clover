@@ -1,19 +1,26 @@
 import type { ConditionEvaluator } from './ConditionEvaluator';
-import type { ScoreCondition, TimeCondition, EntityCountCondition, RandomCondition, VariableCondition, CooldownReadyCondition } from '@slopcade/shared';
+import type { ScoreCondition, TimeCondition, EntityCountCondition, RandomCondition, VariableCondition, CooldownReadyCondition, ListContainsCondition } from '@slopcade/shared';
 import type { RuleContext } from '../types';
+import { resolveValue } from '../utils';
 
-export class LogicConditionEvaluator implements ConditionEvaluator<ScoreCondition | TimeCondition | EntityCountCondition | RandomCondition | VariableCondition | CooldownReadyCondition> {
-  evaluate(condition: ScoreCondition | TimeCondition | EntityCountCondition | RandomCondition | VariableCondition | CooldownReadyCondition, context: RuleContext): boolean {
+type LogicCondition = ScoreCondition | TimeCondition | EntityCountCondition | RandomCondition | VariableCondition | CooldownReadyCondition | ListContainsCondition;
+
+export class LogicConditionEvaluator implements ConditionEvaluator<LogicCondition> {
+  evaluate(condition: LogicCondition, context: RuleContext): boolean {
     switch (condition.type) {
-      case 'score':
-        if (condition.min !== undefined && context.score < condition.min) return false;
-        if (condition.max !== undefined && context.score > condition.max) return false;
+      case 'score': {
+        const currentScore = context.mutator.getScore();
+        if (condition.min !== undefined && currentScore < condition.min) return false;
+        if (condition.max !== undefined && currentScore > condition.max) return false;
         return true;
+      }
 
-      case 'time':
-        if (condition.min !== undefined && context.elapsed < condition.min) return false;
-        if (condition.max !== undefined && context.elapsed > condition.max) return false;
+      case 'time': {
+        const currentElapsed = context.mutator.getElapsed();
+        if (condition.min !== undefined && currentElapsed < condition.min) return false;
+        if (condition.max !== undefined && currentElapsed > condition.max) return false;
         return true;
+      }
 
       case 'entity_count': {
         const count = context.entityManager.getEntityCountByTag(condition.tag);
@@ -46,6 +53,12 @@ export class LogicConditionEvaluator implements ConditionEvaluator<ScoreConditio
              }
          }
          return false;
+      }
+
+      case 'list_contains': {
+        const value = resolveValue(condition.value, context);
+        const contains = context.mutator.listContains(condition.listName, value);
+        return condition.negated ? !contains : contains;
       }
 
       default:

@@ -35,7 +35,6 @@ export interface User {
 
 export interface Context {
   env: Env;
-  installId: string | null;
   authToken: string | null;
   [key: string]: unknown;
 }
@@ -49,7 +48,6 @@ export async function createContext(
   _opts: { req: Request; resHeaders: Headers },
   honoContext: HonoContext<{ Bindings: Env }>
 ): Promise<Context> {
-  const installId = honoContext.req.header("X-Install-Id") ?? null;
   const authHeader = honoContext.req.header("Authorization");
   const authToken = authHeader?.startsWith("Bearer ")
     ? authHeader.slice(7)
@@ -57,7 +55,6 @@ export async function createContext(
 
   return {
     env: honoContext.env,
-    installId,
     authToken,
   };
 }

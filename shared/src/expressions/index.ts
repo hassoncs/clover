@@ -1,7 +1,7 @@
 export * from './types';
 export { tokenize, Tokenizer } from './tokenizer';
 export { parse, Parser } from './parser';
-export { compile, evaluate, createDefaultContext } from './evaluator';
+export { compile, evaluate, createDefaultContext, createSeededRandom } from './evaluator';
 export {
   validateExpression,
   validateAllExpressions,

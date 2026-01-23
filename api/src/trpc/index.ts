@@ -5,27 +5,18 @@ import type { Context, AuthenticatedContext, User } from './context';
 const t = initTRPC.context<Context>().create();
 
 export const router = t.router;
+
+// Public procedures - no auth required (for browsing/playing public games)
 export const publicProcedure = t.procedure;
 
-// Requires X-Install-Id header (for anonymous tracking)
-export const installedProcedure = t.procedure.use(async ({ ctx, next }) => {
-  if (!ctx.installId) {
-    throw new TRPCError({
-      code: 'BAD_REQUEST',
-      message: 'X-Install-Id header is required',
-    });
-  }
-  return next({ ctx: { ...ctx, installId: ctx.installId } });
-});
-
-// Requires valid Supabase JWT
-export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
-  if ((ctx as any).user) {
-    return next({ ctx: ctx as AuthenticatedContext });
-  }
-
+// Helper to validate and extract user from auth token
+async function validateAuthToken(ctx: Context): Promise<User> {
   if (!ctx.authToken) {
-    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Not authenticated' });
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required. Please sign in to continue.' });
+  }
+
+  if (!ctx.env.SUPABASE_URL || !ctx.env.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Supabase client not initialized - check credentials' });
   }
 
   const supabase = createClient(
@@ -39,17 +30,32 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
   } = await supabase.auth.getUser(ctx.authToken);
 
   if (error || !supabaseUser || !supabaseUser.email) {
-    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid token' });
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid or expired session. Please sign in again.' });
   }
 
-  // TODO: Sync user to D1 database when DB is configured
-  const user: User = {
+  return {
     id: supabaseUser.id,
     email: supabaseUser.email,
     displayName: supabaseUser.user_metadata?.full_name,
   };
+}
+
+// Protected procedure - requires valid Supabase JWT
+// Use this for ALL mutations and user-specific queries
+export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
+  // If user already validated (e.g., from middleware), skip re-validation
+  if ((ctx as AuthenticatedContext).user) {
+    return next({ ctx: ctx as AuthenticatedContext });
+  }
+
+  const user = await validateAuthToken(ctx);
 
   return next({
     ctx: { ...ctx, user } as AuthenticatedContext,
   });
 });
+
+// DEPRECATED: installedProcedure is now an alias for protectedProcedure
+// All operations that modify data require authentication
+// Keeping this alias temporarily to minimize code changes during migration
+export const installedProcedure = protectedProcedure;

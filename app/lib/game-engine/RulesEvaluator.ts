@@ -12,8 +12,9 @@ import type { EntityManager } from './EntityManager';
 import type { RuntimeEntity } from './types';
 import type { CollisionInfo, GameState, InputState } from './BehaviorContext';
 import type { Physics2D } from '../physics2d/Physics2D';
-import type { IGameStateMutator, RuleContext } from './rules/types';
+import type { IGameStateMutator, RuleContext, ListValue } from './rules/types';
 import type { InputEvents } from './BehaviorContext';
+import type { CameraSystem } from './CameraSystem';
 
 import {
   ScoreActionExecutor,
@@ -22,6 +23,7 @@ import {
   PhysicsActionExecutor,
   LogicActionExecutor,
   EntityActionExecutor,
+  CameraActionExecutor,
 } from './rules/actions';
 import {
   LogicConditionEvaluator,
@@ -48,6 +50,7 @@ export class RulesEvaluator implements IGameStateMutator {
   private firedOnce = new Set<string>();
   private cooldowns = new Map<string, number>();
   private variables = new Map<string, number | string | boolean>();
+  private lists = new Map<string, ListValue>();
   private pendingEvents = new Map<string, unknown>();
 
   private onScoreChange?: (score: number) => void;
@@ -61,6 +64,7 @@ export class RulesEvaluator implements IGameStateMutator {
   private physicsActionExecutor = new PhysicsActionExecutor();
   private logicActionExecutor = new LogicActionExecutor();
   private entityActionExecutor = new EntityActionExecutor();
+  private cameraActionExecutor = new CameraActionExecutor();
 
   private logicConditionEvaluator = new LogicConditionEvaluator();
   private physicsConditionEvaluator = new PhysicsConditionEvaluator();
@@ -118,6 +122,7 @@ export class RulesEvaluator implements IGameStateMutator {
     this.firedOnce.clear();
     this.cooldowns.clear();
     this.variables.clear();
+    this.lists.clear();
     this.pendingEvents.clear();
     this.setGameState('ready');
   }
@@ -166,6 +171,40 @@ export class RulesEvaluator implements IGameStateMutator {
     this.cooldowns.set(id, time);
   }
 
+  getList(name: string): ListValue | undefined {
+    return this.lists.get(name);
+  }
+
+  setList(name: string, value: ListValue): void {
+    this.lists.set(name, [...value]);
+  }
+
+  pushToList(name: string, value: number | string | boolean): void {
+    const list = this.lists.get(name) ?? [];
+    list.push(value);
+    this.lists.set(name, list);
+  }
+
+  popFromList(name: string, position: 'front' | 'back'): number | string | boolean | undefined {
+    const list = this.lists.get(name);
+    if (!list || list.length === 0) return undefined;
+    return position === 'front' ? list.shift() : list.pop();
+  }
+
+  shuffleList(name: string, random: () => number = Math.random): void {
+    const list = this.lists.get(name);
+    if (!list) return;
+    for (let i = list.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+  }
+
+  listContains(name: string, value: number | string | boolean): boolean {
+    const list = this.lists.get(name);
+    return list ? list.includes(value) : false;
+  }
+
   getScore(): number {
     return this.score;
   }
@@ -199,9 +238,16 @@ export class RulesEvaluator implements IGameStateMutator {
     inputEvents: InputEvents,
     physics: Physics2D,
     computedValues?: ComputedValueSystem,
-    evalContext?: EvalContext
+    evalContext?: EvalContext,
+    camera?: CameraSystem,
+    setTimeScale?: (scale: number, duration?: number) => void
   ): void {
-    if (this.gameState !== 'playing') return;
+    if (this.gameState !== 'playing') {
+      if (inputEvents.tap || inputEvents.dragEnd) {
+        console.log('[Rules] Ignoring input - game state is:', this.gameState);
+      }
+      return;
+    }
 
     this.elapsed += dt;
 
@@ -209,6 +255,8 @@ export class RulesEvaluator implements IGameStateMutator {
       entityManager,
       physics,
       mutator: this,
+      camera,
+      setTimeScale,
       score: this.score,
       lives: this.lives,
       elapsed: this.elapsed,
@@ -238,8 +286,12 @@ export class RulesEvaluator implements IGameStateMutator {
       const cooldownEnd = this.cooldowns.get(rule.id);
       if (cooldownEnd && this.elapsed < cooldownEnd) continue;
 
-      if (this.evaluateTrigger(rule.trigger, context)) {
-        if (this.evaluateConditions(rule.conditions, context)) {
+      const triggerResult = this.evaluateTrigger(rule.trigger, context);
+      if (triggerResult) {
+        console.log('[Rules] Trigger matched for rule:', rule.id, rule.trigger.type);
+        const conditionsResult = this.evaluateConditions(rule.conditions, context);
+        if (conditionsResult) {
+          console.log('[Rules] Conditions passed, executing actions for:', rule.id);
           this.executeActions(rule.actions, context);
 
           if (rule.fireOnce) {
@@ -249,6 +301,8 @@ export class RulesEvaluator implements IGameStateMutator {
           if (rule.cooldown) {
             this.cooldowns.set(rule.id, this.elapsed + rule.cooldown);
           }
+        } else {
+          console.log('[Rules] Conditions FAILED for rule:', rule.id, rule.conditions);
         }
       }
     }
@@ -284,7 +338,8 @@ export class RulesEvaluator implements IGameStateMutator {
         case 'entity_count':
         case 'random':
         case 'cooldown_ready':
-        case 'variable': return this.logicConditionEvaluator.evaluate(c, context);
+        case 'variable':
+        case 'list_contains': return this.logicConditionEvaluator.evaluate(c, context);
         case 'entity_exists':
         case 'on_ground':
         case 'touching':
@@ -309,7 +364,12 @@ export class RulesEvaluator implements IGameStateMutator {
         case 'event':
         case 'set_variable':
         case 'start_cooldown':
-        case 'lives': this.logicActionExecutor.execute(a, context); break;
+        case 'lives':
+        case 'push_to_list':
+        case 'pop_from_list':
+        case 'shuffle_list': this.logicActionExecutor.execute(a, context); break;
+        case 'camera_shake':
+        case 'set_time_scale': this.cameraActionExecutor.execute(a, context); break;
       }
     }
   }

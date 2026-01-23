@@ -35,7 +35,8 @@ baseConfig.server = {
   port: 8085,
 };
 
-baseConfig.watchFolders = [monorepoRoot, box2dRoot];
+const box2dWasmRoot = path.resolve(monorepoRoot, "node_modules/box2d-wasm");
+baseConfig.watchFolders = [monorepoRoot, box2dRoot, box2dWasmRoot];
 
 baseConfig.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, "node_modules"),

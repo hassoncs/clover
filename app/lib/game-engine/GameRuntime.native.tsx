@@ -70,7 +70,12 @@ export function GameRuntime({
   const screenSizeRef = useRef({ width: 0, height: 0 });
   const computedValuesRef = useRef(createComputedValueSystem());
   const particleManagerRef = useRef<ParticleEffectManager>(createParticleEffectManager());
+  const gameVariablesRef = useRef<Record<string, any>>({});
   const [particleEffects, setParticleEffects] = useState<Array<{ particles: any[]; config: any }>>([]);
+
+  const timeScaleRef = useRef(1.0);
+  const timeScaleTargetRef = useRef(1.0);
+  const timeScaleTransitionRef = useRef<{ startScale: number; endScale: number; duration: number; elapsed: number; restoreAfter?: number } | null>(null);
 
   const {
     inputRef,
@@ -82,7 +87,6 @@ export function GameRuntime({
     gameRef,
     physicsRef,
     viewportSystemRef,
-    showDebugOverlays,
   });
 
   const [isReady, setIsReady] = useState(false);
@@ -127,6 +131,18 @@ export function GameRuntime({
 
         const game = loader.load(definition);
         gameRef.current = game;
+
+        if (definition.variables) {
+          const resolvedVars: Record<string, any> = {};
+          for (const [key, value] of Object.entries(definition.variables)) {
+            if (typeof value === 'object' && value !== null && 'expr' in value) {
+              resolvedVars[key] = 0;
+            } else {
+              resolvedVars[key] = value;
+            }
+          }
+          gameVariablesRef.current = resolvedVars;
+        }
 
         collisionUnsubRef.current = physics.onCollisionBegin(
           (event: CollisionEvent) => {
@@ -233,7 +249,26 @@ export function GameRuntime({
   // It uses `showDebugOverlays` which is a prop.
   // So we should add it.
 
-  const stepGame = useCallback((dt: number) => {
+  const setTimeScale = useCallback((scale: number, duration?: number) => {
+    const transition = timeScaleTransitionRef.current;
+    const currentScale = timeScaleRef.current;
+    
+    if (duration && duration > 0) {
+      timeScaleTransitionRef.current = {
+        startScale: currentScale,
+        endScale: scale,
+        duration: 0.2,
+        elapsed: 0,
+        restoreAfter: duration,
+      };
+    } else {
+      timeScaleRef.current = scale;
+      timeScaleTargetRef.current = scale;
+      timeScaleTransitionRef.current = null;
+    }
+  }, []);
+
+  const stepGame = useCallback((rawDt: number) => {
     const physics = physicsRef.current;
     const game = gameRef.current;
     const camera = cameraRef.current;
@@ -242,6 +277,31 @@ export function GameRuntime({
     }
 
     if (game.rulesEvaluator.getGameStateValue() !== "playing") return;
+
+    const transition = timeScaleTransitionRef.current;
+    if (transition) {
+      transition.elapsed += rawDt;
+      const t = Math.min(1, transition.elapsed / transition.duration);
+      const eased = t * t * (3 - 2 * t);
+      timeScaleRef.current = transition.startScale + (transition.endScale - transition.startScale) * eased;
+      
+      if (t >= 1) {
+        timeScaleRef.current = transition.endScale;
+        if (transition.restoreAfter) {
+          timeScaleTransitionRef.current = {
+            startScale: transition.endScale,
+            endScale: 1.0,
+            duration: 0.2,
+            elapsed: -transition.restoreAfter,
+          };
+        } else {
+          timeScaleTransitionRef.current = null;
+        }
+      }
+    }
+
+    const dt = rawDt * timeScaleRef.current;
+    if (dt <= 0) return;
 
     physics.step(dt, 8, 3);
 
@@ -264,8 +324,9 @@ export function GameRuntime({
         wave: 1,
         dt,
         frameId: frameIdRef.current,
-        variables: {},
+        variables: gameVariablesRef.current,
         random: Math.random,
+        entityManager: game.entityManager,
         self: entity ? {
           id: entity.id,
           transform: entity.transform,
@@ -336,15 +397,27 @@ export function GameRuntime({
       behaviorContext,
     );
 
+    const inputEvents: import('./BehaviorContext').InputEvents = {};
+    if (inputRef.current.tap) {
+      inputEvents.tap = inputRef.current.tap;
+      console.log('[GameRuntime] Passing tap to rules:', inputEvents.tap);
+    }
+    if (inputRef.current.dragEnd) {
+      inputEvents.dragEnd = inputRef.current.dragEnd;
+      console.log('[GameRuntime] Passing dragEnd to rules:', inputEvents.dragEnd);
+    }
+
     game.rulesEvaluator.update(
       dt,
       game.entityManager,
       collisionsRef.current,
       inputRef.current,
-      {},
+      inputEvents,
       physics,
       computedValues,
-      baseEvalContext
+      baseEvalContext,
+      camera,
+      setTimeScale
     );
 
     inputRef.current = {};
@@ -355,7 +428,7 @@ export function GameRuntime({
 
     setEntities([...game.entityManager.getVisibleEntities()]);
     setGameState((s) => ({ ...s, time: elapsedRef.current }));
-  }, [inputRef]);
+  }, [inputRef, setTimeScale]);
 
   useSimplePhysicsLoop(stepGame, isReady && gameState.state === "playing");
 
@@ -376,6 +449,10 @@ export function GameRuntime({
 
       cameraRef.current.setPosition({ x: 0, y: 0 });
       cameraRef.current.setZoom(definition.camera?.zoom ?? 1);
+
+      timeScaleRef.current = 1.0;
+      timeScaleTargetRef.current = 1.0;
+      timeScaleTransitionRef.current = null;
 
       newGame.rulesEvaluator.setCallbacks({
         onScoreChange: (score) => {
@@ -555,8 +632,19 @@ export function GameRuntime({
             </Text>
           )}
           {definition.ui?.showLives && (
-            <Text style={styles.livesText}>Lives: {gameState.lives}</Text>
+            <Text style={styles.livesText}>{definition.ui?.livesLabel ?? 'Lives'}: {gameState.lives}</Text>
           )}
+          {definition.ui?.entityCountDisplays?.map((display) => {
+            const count = gameRef.current?.entityManager.getEntitiesByTag(display.tag).length ?? 0;
+            return (
+              <Text 
+                key={display.tag} 
+                style={[styles.livesText, display.color ? { color: display.color } : undefined]}
+              >
+                {display.label}: {count}
+              </Text>
+            );
+          })}
           {gameState.state === "playing" && (
             <TouchableOpacity
               style={styles.pauseButton}

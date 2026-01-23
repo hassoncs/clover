@@ -25,8 +25,8 @@ importers:
         specifier: link:/Users/hassoncs/Workspaces/Personal/devmux/devmux-cli
         version: link:../devmux/devmux-cli
       '@chriscode/hush':
-        specifier: ^5.0.1
-        version: 5.0.2
+        specifier: ^5.0.3
+        version: 5.0.3
       simple-git-hooks:
         specifier: ^2.11.1
         version: 2.13.1
@@ -62,7 +62,7 @@ importers:
         version: 6.0.48(zod@3.25.76)
       drizzle-orm:
         specifier: ^0.38.3
-        version: 0.38.4(@cloudflare/workers-types@4.20260122.0)(@opentelemetry/api@1.9.0)(@types/react@19.1.17)(react@19.1.0)
+        version: 0.38.4(@cloudflare/workers-types@4.20260122.0)(@opentelemetry/api@1.9.0)(@types/react@19.1.17)(react@18.3.1)
       hono:
         specifier: ^4.11.4
         version: 4.11.5
@@ -163,6 +163,9 @@ importers:
       react-native:
         specifier: 0.81.4
         version: 0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0)
+      react-native-ble-plx:
+        specifier: ^3.5.0
+        version: 3.5.0(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       react-native-box2d:
         specifier: link:/Users/hassoncs/Workspaces/react-native-box2d
         version: link:../../../react-native-box2d
@@ -488,10 +491,10 @@ importers:
     dependencies:
       drizzle-orm:
         specifier: ^0.38.3
-        version: 0.38.4(@cloudflare/workers-types@4.20260122.0)(@opentelemetry/api@1.9.0)(@types/react@19.1.17)(react@19.1.0)
+        version: 0.38.4(@cloudflare/workers-types@4.20260122.0)(@opentelemetry/api@1.9.0)(@types/react@19.1.17)(react@18.3.1)
       drizzle-zod:
         specifier: ^0.7.0
-        version: 0.7.1(drizzle-orm@0.38.4(@cloudflare/workers-types@4.20260122.0)(@opentelemetry/api@1.9.0)(@types/react@19.1.17)(react@19.1.0))(zod@3.25.76)
+        version: 0.7.1(drizzle-orm@0.38.4(@cloudflare/workers-types@4.20260122.0)(@opentelemetry/api@1.9.0)(@types/react@19.1.17)(react@18.3.1))(zod@3.25.76)
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -1301,8 +1304,8 @@ packages:
     resolution: {integrity: sha512-0ZrskXVEHSWIqZM/sQZ4EV3jZJXRkio/WCxaqKZP1g//CEWEPSfeZFcms4XeKBCHU0ZKnIkdJeU/kF+eRp5lBg==}
     engines: {node: '>=6.9.0'}
 
-  '@chriscode/hush@5.0.2':
-    resolution: {integrity: sha512-/jQtJh9CbzguSeXaEkX/pCU8UD/DjS3NAxqv4dwsVVobwEvzahtSUPqpZcqfYYk5i2bHlTOG4hDDs7BKuR947A==}
+  '@chriscode/hush@5.0.3':
+    resolution: {integrity: sha512-6dstXdbKsaFvnFtnwQCW+ZpNvzvsw+X0ca/jQuLGaixVzFMreYsvGn2Ed1jU4cCooJPYlRq5rP6+jQypbt/wNA==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -6387,6 +6390,13 @@ packages:
   react-is@19.2.3:
     resolution: {integrity: sha512-qJNJfu81ByyabuG7hPFEbXqNcWSU3+eVus+KJs+0ncpGfMyYdvSmxiJxbWR65lYi1I+/0HBcliO029gc4F+PnA==}
 
+  react-native-ble-plx@3.5.0:
+    resolution: {integrity: sha512-PeSnRswHLwLRVMQkOfDaRICtrGmo94WGKhlSC09XmHlqX2EuYgH+vNJpGcLkd8lyiYpEJyf8wlFAdj9Akliwmw==}
+    engines: {node: '>= 18.0.0'}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+
   react-native-css-interop@0.2.1:
     resolution: {integrity: sha512-B88f5rIymJXmy1sNC/MhTkb3xxBej1KkuAt7TiT9iM7oXz3RM8Bn+7GUrfR02TvSgKm4cg2XiSuLEKYfKwNsjA==}
     engines: {node: '>=18'}
@@ -8750,7 +8760,7 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
 
-  '@chriscode/hush@5.0.2':
+  '@chriscode/hush@5.0.3':
     dependencies:
       picocolors: 1.1.1
       yaml: 2.8.2
@@ -11973,16 +11983,16 @@ snapshots:
 
   dotenv@16.4.7: {}
 
-  drizzle-orm@0.38.4(@cloudflare/workers-types@4.20260122.0)(@opentelemetry/api@1.9.0)(@types/react@19.1.17)(react@19.1.0):
+  drizzle-orm@0.38.4(@cloudflare/workers-types@4.20260122.0)(@opentelemetry/api@1.9.0)(@types/react@19.1.17)(react@18.3.1):
     optionalDependencies:
       '@cloudflare/workers-types': 4.20260122.0
       '@opentelemetry/api': 1.9.0
       '@types/react': 19.1.17
-      react: 19.1.0
+      react: 18.3.1
 
-  drizzle-zod@0.7.1(drizzle-orm@0.38.4(@cloudflare/workers-types@4.20260122.0)(@opentelemetry/api@1.9.0)(@types/react@19.1.17)(react@19.1.0))(zod@3.25.76):
+  drizzle-zod@0.7.1(drizzle-orm@0.38.4(@cloudflare/workers-types@4.20260122.0)(@opentelemetry/api@1.9.0)(@types/react@19.1.17)(react@18.3.1))(zod@3.25.76):
     dependencies:
-      drizzle-orm: 0.38.4(@cloudflare/workers-types@4.20260122.0)(@opentelemetry/api@1.9.0)(@types/react@19.1.17)(react@19.1.0)
+      drizzle-orm: 0.38.4(@cloudflare/workers-types@4.20260122.0)(@opentelemetry/api@1.9.0)(@types/react@19.1.17)(react@18.3.1)
       zod: 3.25.76
 
   dset@3.1.4: {}
@@ -14347,6 +14357,11 @@ snapshots:
   react-is@18.3.1: {}
 
   react-is@19.2.3: {}
+
+  react-native-ble-plx@3.5.0(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+      react-native: 0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0)
 
   react-native-css-interop@0.2.1(react-native-reanimated@4.2.1(react-native-worklets@0.7.2(@babel/core@7.28.6)(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.6.2(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native-svg@15.15.1(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(tailwindcss@3.4.17):
     dependencies:

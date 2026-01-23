@@ -8,6 +8,8 @@ import type {
   EntityTemplate,
 } from '@slopcade/shared';
 
+export type MarkedEffect = 'glow' | 'pulse' | 'fade_partial';
+
 export interface RuntimeEntity {
   id: string;
   name: string;
@@ -23,6 +25,10 @@ export interface RuntimeEntity {
   bodyId: BodyId | null;
   colliderId: ColliderId | null;
   assetPackId?: string;
+  markedForDestruction?: boolean;
+  markedEffect?: MarkedEffect;
+  markedColor?: string;
+  markedAt?: number;
 }
 
 export interface RuntimeBehavior {

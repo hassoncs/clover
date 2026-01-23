@@ -721,13 +721,17 @@ export function evaluate(source: string, ctx: EvalContext): ExpressionValueType 
   return compile(source).evaluate(ctx);
 }
 
-export function createDefaultContext(overrides?: Partial<EvalContext>): EvalContext {
-  let seed = 12345;
-  const seededRandom = () => {
+export function createSeededRandom(initialSeed: number = 12345): () => number {
+  let seed = initialSeed;
+  return () => {
     seed = (seed * 1103515245 + 12345) & 0x7fffffff;
     return seed / 0x7fffffff;
   };
+}
 
+export function createDefaultContext(overrides?: Partial<EvalContext> & { seed?: number }): EvalContext {
+  const { seed = 12345, ...rest } = overrides ?? {};
+  
   return {
     score: 0,
     lives: 3,
@@ -736,7 +740,7 @@ export function createDefaultContext(overrides?: Partial<EvalContext>): EvalCont
     frameId: 0,
     dt: 1 / 60,
     variables: {},
-    random: seededRandom,
-    ...overrides,
+    random: createSeededRandom(seed),
+    ...rest,
   };
 }

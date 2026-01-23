@@ -20,7 +20,8 @@ export type BehaviorType =
   | 'health'
   | 'draggable'
   | 'particle_emitter'
-  | 'attach_to';
+  | 'attach_to'
+  | 'teleport';
 
 export type MoveDirection =
   | 'left'
@@ -72,12 +73,24 @@ export interface SpawnOnEventBehavior extends BaseBehavior {
   spawnEffect?: ParticleEmitterType;
 }
 
+export type MarkedEffect = 'glow' | 'pulse' | 'fade_partial';
+
+export interface DestructionDelay {
+  type: 'time' | 'event' | 'entity_destroyed';
+  time?: number;
+  eventName?: string;
+  entityTag?: string;
+}
+
 export interface DestroyOnCollisionBehavior extends BaseBehavior {
   type: 'destroy_on_collision';
   withTags: string[];
   effect?: DestructionEffect;
   destroyOther?: boolean;
   minImpactVelocity?: number;
+  delay?: DestructionDelay;
+  markedEffect?: MarkedEffect;
+  markedColor?: string;
 }
 
 export interface ScoreOnCollisionBehavior extends BaseBehavior {
@@ -193,6 +206,16 @@ export interface AttachToBehavior extends BaseBehavior {
   inheritRotation?: boolean;
 }
 
+export interface TeleportBehavior extends BaseBehavior {
+  type: 'teleport';
+  destinationEntityId: string;
+  withTags: string[];
+  preserveVelocity?: boolean;
+  velocityMultiplier?: number;
+  exitOffset?: Vec2;
+  cooldown?: number;
+}
+
 export type Behavior =
   | MoveBehavior
   | RotateBehavior
@@ -211,4 +234,5 @@ export type Behavior =
   | HealthBehavior
   | DraggableBehavior
   | ParticleEmitterBehavior
-  | AttachToBehavior;
+  | AttachToBehavior
+  | TeleportBehavior;

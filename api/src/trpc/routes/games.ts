@@ -2,7 +2,6 @@ import {
   router,
   publicProcedure,
   protectedProcedure,
-  installedProcedure,
 } from '../index';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
@@ -19,7 +18,6 @@ import {
 interface GameRow {
   id: string;
   user_id: string | null;
-  install_id: string | null;
   title: string;
   description: string | null;
   definition: string;
@@ -57,17 +55,7 @@ export const gamesRouter = router({
     return result.results.map(toClientGame);
   }),
 
-  listByInstall: installedProcedure.query(async ({ ctx }) => {
-    const result = await ctx.env.DB.prepare(
-      `SELECT * FROM games WHERE install_id = ? AND user_id IS NULL AND deleted_at IS NULL ORDER BY updated_at DESC`
-    )
-      .bind(ctx.installId)
-      .all<GameRow>();
-
-    return result.results.map(toClientGame);
-  }),
-
-  get: installedProcedure
+  getPublic: publicProcedure
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
       const result = await ctx.env.DB.prepare(
@@ -80,8 +68,27 @@ export const gamesRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
       }
 
-      const userId = (ctx as any).user?.id ?? null;
-      const isOwner = result.user_id === userId || result.install_id === ctx.installId;
+      if (!result.is_public) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'This game is private. Sign in to access your games.' });
+      }
+
+      return toClientGame(result);
+    }),
+
+  get: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const result = await ctx.env.DB.prepare(
+        `SELECT * FROM games WHERE id = ? AND deleted_at IS NULL`
+      )
+        .bind(input.id)
+        .first<GameRow>();
+
+      if (!result) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
+      }
+
+      const isOwner = result.user_id === ctx.user.id;
       
       if (!result.is_public && !isOwner) {
         throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
@@ -90,7 +97,7 @@ export const gamesRouter = router({
       return toClientGame(result);
     }),
 
-  create: installedProcedure
+  create: protectedProcedure
     .input(
       z.object({
         title: z.string().min(1).max(100),
@@ -102,16 +109,14 @@ export const gamesRouter = router({
     .mutation(async ({ ctx, input }) => {
       const id = crypto.randomUUID();
       const now = Date.now();
-      const userId = (ctx as any).user?.id ?? null;
 
       await ctx.env.DB.prepare(
-        `INSERT INTO games (id, user_id, install_id, title, description, definition, is_public, play_count, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`
+        `INSERT INTO games (id, user_id, title, description, definition, is_public, play_count, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)`
       )
         .bind(
           id,
-          userId,
-          ctx.installId,
+          ctx.user.id,
           input.title,
           input.description ?? null,
           input.definition,
@@ -123,7 +128,7 @@ export const gamesRouter = router({
 
       return {
         id,
-        userId,
+        userId: ctx.user.id,
         title: input.title,
         description: input.description ?? null,
         definition: input.definition,
@@ -135,7 +140,7 @@ export const gamesRouter = router({
       };
     }),
 
-  update: installedProcedure
+  update: protectedProcedure
     .input(
       z.object({
         id: z.string().uuid(),
@@ -156,13 +161,8 @@ export const gamesRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
       }
 
-      const userId = (ctx as any).user?.id;
-      const canEdit =
-        existing.user_id === userId ||
-        (existing.user_id === null && existing.install_id === ctx.installId);
-
-      if (!canEdit) {
-        throw new TRPCError({ code: 'FORBIDDEN', message: 'Cannot edit' });
+      if (existing.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Cannot edit games you do not own' });
       }
 
       const updates: string[] = [];
@@ -206,7 +206,7 @@ export const gamesRouter = router({
       return { id: input.id, updatedAt: new Date(now) };
     }),
 
-  delete: installedProcedure
+  delete: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
       const existing = await ctx.env.DB.prepare(
@@ -219,13 +219,8 @@ export const gamesRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
       }
 
-      const userId = (ctx as any).user?.id;
-      const canDelete =
-        existing.user_id === userId ||
-        (existing.user_id === null && existing.install_id === ctx.installId);
-
-      if (!canDelete) {
-        throw new TRPCError({ code: 'FORBIDDEN', message: 'Cannot delete' });
+      if (existing.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Cannot delete games you do not own' });
       }
 
       await ctx.env.DB.prepare(`UPDATE games SET deleted_at = ? WHERE id = ?`)
@@ -269,7 +264,7 @@ export const gamesRouter = router({
       return result.results.map(toClientGame);
     }),
 
-  generate: installedProcedure
+  generate: protectedProcedure
     .input(
       z.object({
         prompt: z.string().min(5).max(500),
@@ -303,17 +298,15 @@ export const gamesRouter = router({
       if (input.saveToLibrary) {
         const id = crypto.randomUUID();
         const now = Date.now();
-        const userId = (ctx as any).user?.id ?? null;
         const definition = JSON.stringify(result.game);
 
         await ctx.env.DB.prepare(
-          `INSERT INTO games (id, user_id, install_id, title, description, definition, is_public, play_count, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?, ?)`
+          `INSERT INTO games (id, user_id, title, description, definition, is_public, play_count, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?)`
         )
           .bind(
             id,
-            userId,
-            ctx.installId,
+            ctx.user.id,
             result.game.metadata.title,
             result.game.metadata.description ?? input.prompt,
             definition,
@@ -324,7 +317,7 @@ export const gamesRouter = router({
 
         savedGame = {
           id,
-          userId,
+          userId: ctx.user.id,
           title: result.game.metadata.title,
           description: result.game.metadata.description ?? input.prompt,
           createdAt: new Date(now),
@@ -348,7 +341,7 @@ export const gamesRouter = router({
       };
     }),
 
-  refine: installedProcedure
+  refine: protectedProcedure
     .input(
       z.object({
         gameDefinition: z.string(),
@@ -434,7 +427,7 @@ export const gamesRouter = router({
       };
     }),
 
-  fork: installedProcedure
+  fork: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
       const existing = await ctx.env.DB.prepare(
@@ -447,8 +440,7 @@ export const gamesRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
       }
 
-      const userId = (ctx as any).user?.id ?? null;
-      const isOwner = existing.user_id === userId || existing.install_id === ctx.installId;
+      const isOwner = existing.user_id === ctx.user.id;
       
       if (!existing.is_public && !isOwner) {
         throw new TRPCError({ code: 'FORBIDDEN', message: 'Cannot fork private game' });
@@ -473,7 +465,7 @@ export const gamesRouter = router({
         metadata.title = `${existing.title} (Fork)`;
         metadata.createdAt = now;
         metadata.updatedAt = now;
-        if (existing.user_id || existing.install_id) {
+        if (existing.user_id) {
           metadata.forkedFrom = {
             gameId: existing.id,
             title: existing.title,
@@ -484,13 +476,12 @@ export const gamesRouter = router({
       const newDefinition = JSON.stringify(definition);
 
       await ctx.env.DB.prepare(
-        `INSERT INTO games (id, user_id, install_id, title, description, definition, is_public, play_count, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?, ?)`
+        `INSERT INTO games (id, user_id, title, description, definition, is_public, play_count, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?)`
       )
         .bind(
           newId,
-          userId,
-          ctx.installId,
+          ctx.user.id,
           `${existing.title} (Fork)`,
           existing.description,
           newDefinition,
@@ -501,7 +492,7 @@ export const gamesRouter = router({
 
       return {
         id: newId,
-        userId,
+        userId: ctx.user.id,
         title: `${existing.title} (Fork)`,
         description: existing.description,
         definition: newDefinition,

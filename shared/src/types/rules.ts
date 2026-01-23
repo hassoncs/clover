@@ -202,6 +202,11 @@ export interface DestroyAction {
   target: DestroyTarget;
 }
 
+export interface DestroyMarkedAction {
+  type: 'destroy_marked';
+  tag?: string;
+}
+
 export interface ScoreAction {
   type: 'score';
   operation: 'add' | 'subtract' | 'set' | 'multiply';
@@ -253,8 +258,10 @@ export interface ApplyImpulseAction {
   target: EntityTarget;
   x?: Value<number>;
   y?: Value<number>;
-  direction?: 'up' | 'down' | 'left' | 'right' | 'drag_direction' | 'tilt_direction';
+  direction?: 'up' | 'down' | 'left' | 'right' | 'drag_direction' | 'tilt_direction' | 'toward_touch';
   force?: Value<number>;
+  /** Source entity whose position is used for toward_touch direction calculation */
+  sourceEntityId?: string;
 }
 
 export interface ApplyForceAction {
@@ -311,9 +318,22 @@ export interface ShuffleListAction {
   listName: string;
 }
 
+export interface CameraShakeAction {
+  type: 'camera_shake';
+  intensity: Value<number>;
+  duration: Value<number>;
+}
+
+export interface SetTimeScaleAction {
+  type: 'set_time_scale';
+  scale: Value<number>;
+  duration?: Value<number>;
+}
+
 export type RuleAction =
   | SpawnAction
   | DestroyAction
+  | DestroyMarkedAction
   | ScoreAction
   | GameStateAction
   | SoundAction
@@ -328,7 +348,9 @@ export type RuleAction =
   | StartCooldownAction
   | PushToListAction
   | PopFromListAction
-  | ShuffleListAction;
+  | ShuffleListAction
+  | CameraShakeAction
+  | SetTimeScaleAction;
 
 export interface GameRule {
   id: string;

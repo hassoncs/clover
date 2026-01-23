@@ -1,11 +1,13 @@
 import type { ActionExecutor } from './ActionExecutor';
-import type { GameStateAction, EventAction, SetVariableAction, StartCooldownAction, LivesAction } from '@slopcade/shared';
+import type { GameStateAction, EventAction, SetVariableAction, StartCooldownAction, LivesAction, PushToListAction, PopFromListAction, ShuffleListAction } from '@slopcade/shared';
 import type { RuleContext } from '../types';
 import { resolveNumber, resolveValue } from '../utils';
 import type { GameState } from '../../BehaviorContext';
 
-export class LogicActionExecutor implements ActionExecutor<GameStateAction | EventAction | SetVariableAction | StartCooldownAction | LivesAction> {
-  execute(action: GameStateAction | EventAction | SetVariableAction | StartCooldownAction | LivesAction, context: RuleContext): void {
+type LogicAction = GameStateAction | EventAction | SetVariableAction | StartCooldownAction | LivesAction | PushToListAction | PopFromListAction | ShuffleListAction;
+
+export class LogicActionExecutor implements ActionExecutor<LogicAction> {
+  execute(action: LogicAction, context: RuleContext): void {
     switch (action.type) {
       case 'game_state':
         this.executeGameStateAction(action, context);
@@ -21,6 +23,15 @@ export class LogicActionExecutor implements ActionExecutor<GameStateAction | Eve
         break;
       case 'lives':
         this.executeLivesAction(action, context);
+        break;
+      case 'push_to_list':
+        this.executePushToListAction(action, context);
+        break;
+      case 'pop_from_list':
+        this.executePopFromListAction(action, context);
+        break;
+      case 'shuffle_list':
+        context.mutator.shuffleList(action.listName);
         break;
     }
   }
@@ -84,6 +95,18 @@ export class LogicActionExecutor implements ActionExecutor<GameStateAction | Eve
       case 'set':
         context.mutator.setLives(value);
         break;
+    }
+  }
+
+  private executePushToListAction(action: PushToListAction, context: RuleContext): void {
+    const value = resolveValue(action.value, context);
+    context.mutator.pushToList(action.listName, value);
+  }
+
+  private executePopFromListAction(action: PopFromListAction, context: RuleContext): void {
+    const popped = context.mutator.popFromList(action.listName, action.position ?? 'back');
+    if (action.storeIn && popped !== undefined) {
+      context.mutator.setVariable(action.storeIn, popped);
     }
   }
 

@@ -64,7 +64,6 @@ describe('Health Endpoint', () => {
   it('should return health status', async () => {
     const ctx = {
       env: env,
-      installId: null,
       authToken: null,
     } as any;
     const caller = appRouter.createCaller(ctx);
@@ -98,8 +97,7 @@ describe('Games Router', () => {
   beforeEach(() => {
     ctx = {
       env: env,
-      installId: 'test-install-id',
-      authToken: null,
+      authToken: 'mock-token',
       user: {
         id: 'test-user-id',
         email: 'test@example.com',
@@ -270,48 +268,6 @@ describe('Games Router', () => {
 
       expect(result.summary).toBeDefined();
       expect(typeof result.summary).toBe('string');
-    });
-  });
-
-  describe('listByInstall route', () => {
-    it('should list games by install ID for anonymous users', async () => {
-      const installId = 'anon-install-' + Date.now();
-      const anonCtx = {
-        env: env,
-        installId,
-        authToken: null,
-      } as Context;
-      const caller = appRouter.createCaller(anonCtx);
-
-      const game1 = await caller.games.create({
-        title: 'Anon Game 1',
-        definition: '{}',
-      });
-      const game2 = await caller.games.create({
-        title: 'Anon Game 2',
-        definition: '{}',
-      });
-
-      const games = await caller.games.listByInstall();
-      expect(games.length).toBeGreaterThanOrEqual(2);
-      expect(games.some(g => g.id === game1.id)).toBe(true);
-      expect(games.some(g => g.id === game2.id)).toBe(true);
-    });
-
-    it('should not return games from different install IDs', async () => {
-      const installId1 = 'install-1-' + Date.now();
-      const installId2 = 'install-2-' + Date.now();
-
-      const ctx1 = { env: env, installId: installId1, authToken: null } as Context;
-      const ctx2 = { env: env, installId: installId2, authToken: null } as Context;
-
-      const caller1 = appRouter.createCaller(ctx1);
-      const caller2 = appRouter.createCaller(ctx2);
-
-      await caller1.games.create({ title: 'Install 1 Game', definition: '{}' });
-      const games2 = await caller2.games.listByInstall();
-
-      expect(games2.every(g => g.title !== 'Install 1 Game')).toBe(true);
     });
   });
 

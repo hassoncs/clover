@@ -8,15 +8,13 @@ import {
   ActivityIndicator,
   Alert,
   Modal,
-  KeyboardAvoidingView,
-  Platform,
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Link } from "expo-router";
 import { trpc } from "@/lib/trpc/client";
 import { TESTGAMES } from "@/lib/registry/generated/testGames";
+import { useAuth } from "@/hooks/useAuth";
 import type { GameDefinition } from "@slopcade/shared";
 
 interface GameItem {
@@ -30,25 +28,36 @@ interface GameItem {
 
 export default function MakerScreen() {
   const router = useRouter();
+  const { isAuthenticated, isLoading: isAuthLoading, user, signInWithGoogle, sendMagicLink, signOut } = useAuth();
+  
   const [myGames, setMyGames] = useState<GameItem[]>([]);
   const [isLoadingGames, setIsLoadingGames] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // New Game modal state
   const [showNewGameModal, setShowNewGameModal] = useState(false);
 
-  // AI Generation state
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedGame, setGeneratedGame] = useState<GameDefinition | null>(null);
   const [generateError, setGenerateError] = useState<string | null>(null);
 
+  const [loginEmail, setLoginEmail] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
+
   const fetchGames = useCallback(async (showRefresh = false) => {
+    if (!isAuthenticated) {
+      setMyGames([]);
+      setIsLoadingGames(false);
+      return;
+    }
+
     if (showRefresh) setIsRefreshing(true);
     else setIsLoadingGames(true);
 
     try {
-      const result = await trpc.games.listByInstall.query();
+      const result = await trpc.games.list.query();
       setMyGames(result);
     } catch {
       setMyGames([]);
@@ -56,11 +65,13 @@ export default function MakerScreen() {
       setIsLoadingGames(false);
       setIsRefreshing(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
-    fetchGames();
-  }, [fetchGames]);
+    if (isAuthenticated) {
+      fetchGames();
+    }
+  }, [fetchGames, isAuthenticated]);
 
   const handleGenerate = useCallback(async () => {
     if (!prompt.trim() || prompt.length < 5) {
@@ -141,6 +152,137 @@ export default function MakerScreen() {
     router.push({ pathname: "/test-games/[id]", params: { id: templateId } });
   }, [router]);
 
+  const handleGoogleSignIn = useCallback(async () => {
+    setIsLoggingIn(true);
+    setLoginError(null);
+    try {
+      await signInWithGoogle();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to sign in with Google";
+      setLoginError(message);
+    } finally {
+      setIsLoggingIn(false);
+    }
+  }, [signInWithGoogle]);
+
+  const handleMagicLink = useCallback(async () => {
+    if (!loginEmail.trim() || !loginEmail.includes("@")) {
+      setLoginError("Please enter a valid email address");
+      return;
+    }
+
+    setIsLoggingIn(true);
+    setLoginError(null);
+    try {
+      await sendMagicLink(loginEmail.trim());
+      setMagicLinkSent(true);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to send magic link";
+      setLoginError(message);
+    } finally {
+      setIsLoggingIn(false);
+    }
+  }, [loginEmail, sendMagicLink]);
+
+  const handleSignOut = useCallback(async () => {
+    await signOut();
+    setMyGames([]);
+  }, [signOut]);
+
+  const renderLoginScreen = () => (
+    <ScrollView className="flex-1">
+      <View className="p-6 items-center">
+        <Text className="text-6xl mb-6">🎮</Text>
+        <Text className="text-2xl font-bold text-white text-center mb-2">
+          Game Maker
+        </Text>
+        <Text className="text-gray-400 text-center mb-8">
+          Sign in to create and save your games
+        </Text>
+
+        {magicLinkSent ? (
+          <View className="w-full bg-green-900/30 p-6 rounded-xl border border-green-700 mb-6">
+            <Text className="text-green-300 text-center text-lg font-semibold mb-2">
+              Check your email!
+            </Text>
+            <Text className="text-green-400 text-center">
+              We sent a magic link to {loginEmail}
+            </Text>
+            <Pressable
+              className="mt-4 py-2"
+              onPress={() => {
+                setMagicLinkSent(false);
+                setLoginEmail("");
+              }}
+            >
+              <Text className="text-green-400 text-center underline">
+                Use a different email
+              </Text>
+            </Pressable>
+          </View>
+        ) : (
+          <>
+            <View className="w-full mb-6">
+              <TextInput
+                className="bg-gray-800 p-4 rounded-xl border border-gray-700 text-white text-base mb-3"
+                placeholder="Enter your email"
+                placeholderTextColor="#666"
+                value={loginEmail}
+                onChangeText={setLoginEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                editable={!isLoggingIn}
+              />
+              <Pressable
+                className={`py-4 rounded-xl items-center ${
+                  isLoggingIn ? "bg-gray-600" : "bg-indigo-600 active:bg-indigo-700"
+                }`}
+                onPress={handleMagicLink}
+                disabled={isLoggingIn}
+              >
+                <Text className="text-white font-semibold text-base">
+                  {isLoggingIn ? "Sending..." : "Send Magic Link"}
+                </Text>
+              </Pressable>
+            </View>
+
+            <View className="flex-row items-center w-full mb-6">
+              <View className="flex-1 h-px bg-gray-700" />
+              <Text className="text-gray-500 px-4">or</Text>
+              <View className="flex-1 h-px bg-gray-700" />
+            </View>
+
+            <Pressable
+              className={`w-full py-4 rounded-xl items-center flex-row justify-center ${
+                isLoggingIn ? "bg-gray-600" : "bg-white active:bg-gray-100"
+              }`}
+              onPress={handleGoogleSignIn}
+              disabled={isLoggingIn}
+            >
+              <Text className="text-gray-800 font-semibold text-base">
+                Continue with Google
+              </Text>
+            </Pressable>
+          </>
+        )}
+
+        {loginError && (
+          <View className="w-full mt-4 p-4 bg-red-900/50 rounded-xl border border-red-700">
+            <Text className="text-red-300 text-center">{loginError}</Text>
+          </View>
+        )}
+
+        <View className="mt-8 p-4 bg-gray-800/50 rounded-xl">
+          <Text className="text-gray-400 text-center text-sm">
+            You can browse and play public games without signing in.
+            Sign in to create, save, and manage your own games.
+          </Text>
+        </View>
+      </View>
+    </ScrollView>
+  );
+
   const renderProjects = () => (
     <ScrollView
       className="flex-1"
@@ -181,18 +323,23 @@ export default function MakerScreen() {
               <Pressable
                 key={game.id}
                 className="bg-gray-800 p-4 rounded-xl border border-gray-700 mb-3 active:bg-gray-700"
-                onPress={() => router.push({ pathname: "/play/[id]", params: { id: game.id } })}
+                onPress={() => router.push({ pathname: "/editor/[id]", params: { id: game.id } })}
                 onLongPress={() => handleDeleteGame(game)}
               >
-                <Text className="text-lg font-semibold text-white">{game.title}</Text>
-                {game.description && (
-                  <Text className="text-gray-400 mt-1" numberOfLines={2}>
-                    {game.description}
-                  </Text>
-                )}
-                <Text className="text-xs text-gray-500 mt-2">
-                  Plays: {game.playCount} - {new Date(game.createdAt).toLocaleDateString()}
-                </Text>
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-1">
+                    <Text className="text-lg font-semibold text-white">{game.title}</Text>
+                    {game.description && (
+                      <Text className="text-gray-400 mt-1" numberOfLines={2}>
+                        {game.description}
+                      </Text>
+                    )}
+                    <Text className="text-xs text-gray-500 mt-2">
+                      {game.playCount} plays · {new Date(game.createdAt).toLocaleDateString()}
+                    </Text>
+                  </View>
+                  <Text className="text-gray-500 text-lg ml-2">→</Text>
+                </View>
               </Pressable>
             ))}
           </View>
@@ -328,10 +475,37 @@ export default function MakerScreen() {
     </Modal>
   );
 
+  if (isAuthLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-900 items-center justify-center" edges={["bottom"]}>
+        <ActivityIndicator size="large" color="#4CAF50" />
+        <Text className="text-gray-400 mt-4">Loading...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-900" edges={["bottom"]}>
+        {renderLoginScreen()}
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-gray-900" edges={["bottom"]}>
-      <View className="px-4 py-3 flex-row justify-between items-center">
-        <Text className="text-xl font-bold text-white">Game Maker</Text>
+      <View className="px-4 py-3 flex-row justify-between items-center border-b border-gray-800">
+        <View className="flex-row items-center">
+          <Text className="text-gray-400 text-sm">
+            {user?.email}
+          </Text>
+          <Pressable
+            className="ml-3 py-1 px-2"
+            onPress={handleSignOut}
+          >
+            <Text className="text-red-400 text-sm">Sign Out</Text>
+          </Pressable>
+        </View>
         <Pressable
           className="py-2 px-4 bg-green-600 rounded-lg active:bg-green-700"
           onPress={() => setShowNewGameModal(true)}

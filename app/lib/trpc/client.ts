@@ -2,7 +2,6 @@ import { createTRPCClient, httpLink } from "@trpc/client";
 import type { AppRouter } from "../../../api/src/trpc/router";
 import { supabase } from "../supabase/client";
 import { env } from "../config/env";
-import { getInstallId, getInstallIdAsync } from "./installId";
 
 function getApiUrl(): string {
   return env.apiUrl;
@@ -26,9 +25,7 @@ export const trpc = createTRPCClient<AppRouter>({
     httpLink({
       url: `${getApiUrl()}/trpc`,
       async headers() {
-        const headers: Record<string, string> = {
-          "X-Install-Id": await getInstallIdAsync(),
-        };
+        const headers: Record<string, string> = {};
 
         const token = await getAuthToken();
         if (token) {
@@ -41,4 +38,4 @@ export const trpc = createTRPCClient<AppRouter>({
   ],
 });
 
-export { getInstallId, getInstallIdAsync, getApiUrl };
+export { getApiUrl };

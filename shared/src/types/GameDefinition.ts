@@ -3,6 +3,7 @@ import type { GameEntity, EntityTemplate } from './entity';
 import type { GameRule, WinCondition, LoseCondition } from './rules';
 import type { TileSheet, TileMap } from './tilemap';
 import type { AssetSystemConfig } from './asset-system';
+import type { Value, ExpressionValueType } from '../expressions/types';
 
 export interface WorldConfig {
   gravity: Vec2;
@@ -66,13 +67,21 @@ export interface PresentationConfig {
   orientation?: 'portrait' | 'landscape' | 'any';
 }
 
+export interface EntityCountDisplay {
+  tag: string;
+  label: string;
+  color?: string;
+}
+
 export interface UIConfig {
   showScore?: boolean;
   showTimer?: boolean;
   showLives?: boolean;
+  livesLabel?: string;
   timerCountdown?: boolean;
   scorePosition?: 'top-left' | 'top-center' | 'top-right';
   backgroundColor?: string;
+  entityCountDisplays?: EntityCountDisplay[];
 }
 
 export interface GameMetadata {
@@ -177,12 +186,25 @@ export interface GamePrismaticJoint extends GameJointBase {
 
 export type GameJoint = GameRevoluteJoint | GameDistanceJoint | GameWeldJoint | GamePrismaticJoint;
 
+export type GameVariableValue = number | boolean | string | Vec2 | Value<ExpressionValueType>;
+
+export interface MultiplayerConfig {
+  enabled: boolean;
+  maxPlayers: number;
+  syncMode?: 'host-authoritative' | 'peer-to-peer';
+  inputDelay?: number;
+  snapshotRate?: number;
+  deltaRate?: number;
+  interpolationDelay?: number;
+}
+
 export interface GameDefinition {
   metadata: GameMetadata;
   world: WorldConfig;
   presentation?: PresentationConfig;
   camera?: CameraConfig;
   ui?: UIConfig;
+  variables?: Record<string, GameVariableValue>;
   templates: Record<string, EntityTemplate>;
   entities: GameEntity[];
   joints?: GameJoint[];
@@ -197,6 +219,7 @@ export interface GameDefinition {
   parallaxConfig?: ParallaxConfig;
   tileSheets?: TileSheet[];
   tileMaps?: TileMap[];
+  multiplayer?: MultiplayerConfig;
 }
 
 export const DEFAULT_WORLD_CONFIG: WorldConfig = {

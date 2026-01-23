@@ -5,7 +5,6 @@ import { createTRPCReact } from "@trpc/react-query";
 import type { AppRouter } from "../../../api/src/trpc/router";
 import { supabase } from "../supabase/client";
 import { env } from "../config/env";
-import { getInstallIdAsync } from "./installId";
 
 export const trpcReact = createTRPCReact<AppRouter>();
 
@@ -32,8 +31,8 @@ export function TRPCProvider({ children }: { children: ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 1000 * 60, // 1 minute
-            gcTime: 1000 * 60 * 5, // 5 minutes (formerly cacheTime)
+            staleTime: 1000 * 60,
+            gcTime: 1000 * 60 * 5,
             retry: 1,
             refetchOnWindowFocus: false,
           },
@@ -50,9 +49,7 @@ export function TRPCProvider({ children }: { children: ReactNode }) {
         httpBatchLink({
           url: `${getApiUrl()}/trpc`,
           async headers() {
-            const headers: Record<string, string> = {
-              "X-Install-Id": await getInstallIdAsync(),
-            };
+            const headers: Record<string, string> = {};
 
             const token = await getAuthToken();
             if (token) {

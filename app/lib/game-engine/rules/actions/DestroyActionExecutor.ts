@@ -1,9 +1,16 @@
 import type { ActionExecutor } from './ActionExecutor';
-import type { DestroyAction } from '@slopcade/shared';
+import type { DestroyAction, DestroyMarkedAction } from '@slopcade/shared';
 import type { RuleContext } from '../types';
 
-export class DestroyActionExecutor implements ActionExecutor<DestroyAction> {
-  execute(action: DestroyAction, context: RuleContext): void {
+type DestroyActions = DestroyAction | DestroyMarkedAction;
+
+export class DestroyActionExecutor implements ActionExecutor<DestroyActions> {
+  execute(action: DestroyActions, context: RuleContext): void {
+    if (action.type === 'destroy_marked') {
+      this.executeDestroyMarked(action, context);
+      return;
+    }
+
     switch (action.target.type) {
       case 'by_id':
         context.entityManager.destroyEntity(action.target.entityId);
@@ -28,6 +35,18 @@ export class DestroyActionExecutor implements ActionExecutor<DestroyAction> {
       case 'all':
         context.entityManager.clearAll();
         break;
+    }
+  }
+
+  private executeDestroyMarked(action: DestroyMarkedAction, context: RuleContext): void {
+    const entities = context.entityManager.getActiveEntities();
+    
+    for (const entity of entities) {
+      if (!entity.markedForDestruction) continue;
+      
+      if (action.tag && !entity.tags.includes(action.tag)) continue;
+      
+      context.entityManager.destroyEntity(entity.id);
     }
   }
 }

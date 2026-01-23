@@ -11,6 +11,7 @@ import type {
   HealthBehavior,
   ParticleEmitterBehavior,
   AttachToBehavior,
+  TeleportBehavior,
 } from '@slopcade/shared';
 import type { BehaviorContext } from '../BehaviorContext';
 import type { BehaviorExecutor } from '../BehaviorExecutor';
@@ -107,8 +108,12 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
     }
   });
 
-  executor.registerHandler('destroy_on_collision', (behavior, ctx) => {
+  executor.registerHandler('destroy_on_collision', (behavior, ctx, runtime) => {
     const destroy = behavior as DestroyOnCollisionBehavior;
+
+    if (ctx.entity.markedForDestruction) {
+      return;
+    }
 
     for (const collision of ctx.collisions) {
       const other =
@@ -130,9 +135,23 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
         }
       }
 
-      ctx.destroyEntity(ctx.entity.id);
-      if (destroy.destroyOther) {
-        ctx.destroyEntity(other.id);
+      if (destroy.delay) {
+        ctx.entity.markedForDestruction = true;
+        ctx.entity.markedAt = ctx.elapsed;
+        ctx.entity.markedEffect = destroy.markedEffect;
+        ctx.entity.markedColor = destroy.markedColor;
+        
+        runtime.state.delayType = destroy.delay.type;
+        runtime.state.delayTime = destroy.delay.time;
+        runtime.state.delayEventName = destroy.delay.eventName;
+        runtime.state.delayEntityTag = destroy.delay.entityTag;
+        runtime.state.destroyOther = destroy.destroyOther;
+        runtime.state.otherEntityId = other.id;
+      } else {
+        ctx.destroyEntity(ctx.entity.id);
+        if (destroy.destroyOther) {
+          ctx.destroyEntity(other.id);
+        }
       }
       break;
     }
@@ -427,5 +446,77 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
     }
 
     runtime.state.parentId = parent.id;
+  });
+
+  executor.registerHandler('teleport', (behavior, ctx, runtime) => {
+    const teleport = behavior as TeleportBehavior;
+
+    const cooldowns = (runtime.state.cooldowns as Map<string, number>) ?? new Map<string, number>();
+    if (runtime.state.cooldowns === undefined) {
+      runtime.state.cooldowns = cooldowns;
+    }
+
+    for (const collision of ctx.collisions) {
+      const other =
+        collision.entityA.id === ctx.entity.id ? collision.entityB : collision.entityA;
+
+      if (collision.entityA.id !== ctx.entity.id && collision.entityB.id !== ctx.entity.id) {
+        continue;
+      }
+
+      const matchesTags = teleport.withTags.some((tag) => other.tags.includes(tag));
+      if (!matchesTags) continue;
+
+      const cooldownKey = `${ctx.entity.id}-${other.id}`;
+      const lastTeleport = cooldowns.get(cooldownKey) ?? 0;
+      const cooldownTime = teleport.cooldown ?? 0.5;
+      
+      if (ctx.elapsed < lastTeleport + cooldownTime) {
+        continue;
+      }
+
+      const destination = ctx.entityManager.getEntity(teleport.destinationEntityId);
+      if (!destination) {
+        console.warn(`[Teleport] Destination entity not found: ${teleport.destinationEntityId}`);
+        continue;
+      }
+
+      let exitX = destination.transform.x;
+      let exitY = destination.transform.y;
+
+      if (teleport.exitOffset) {
+        const offset = ctx.resolveVec2(teleport.exitOffset);
+        exitX += offset.x;
+        exitY += offset.y;
+      }
+
+      other.transform.x = exitX;
+      other.transform.y = exitY;
+
+      if (other.bodyId) {
+        ctx.physics.setTransform(other.bodyId, {
+          position: { x: exitX, y: exitY },
+          angle: other.transform.angle,
+        });
+
+        if (teleport.preserveVelocity !== false) {
+          const velocity = ctx.physics.getLinearVelocity(other.bodyId);
+          const multiplier = teleport.velocityMultiplier ?? 1.0;
+          ctx.physics.setLinearVelocity(other.bodyId, {
+            x: velocity.x * multiplier,
+            y: velocity.y * multiplier,
+          });
+        } else {
+          ctx.physics.setLinearVelocity(other.bodyId, { x: 0, y: 0 });
+        }
+      }
+
+      cooldowns.set(cooldownKey, ctx.elapsed);
+      
+      const destCooldownKey = `${teleport.destinationEntityId}-${other.id}`;
+      cooldowns.set(destCooldownKey, ctx.elapsed);
+
+      break;
+    }
   });
 }

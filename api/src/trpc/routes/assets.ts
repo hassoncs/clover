@@ -1,7 +1,7 @@
 import {
   router,
   publicProcedure,
-  installedProcedure,
+  protectedProcedure,
 } from '../index';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
@@ -42,7 +42,7 @@ const entityTypeSchema = z.enum([
 const spriteStyleSchema = z.enum(['pixel', 'cartoon', '3d', 'flat']);
 
 export const assetsRouter = router({
-  generate: installedProcedure
+  generate: protectedProcedure
     .input(
       z.object({
         entityType: entityTypeSchema,
@@ -90,17 +90,14 @@ export const assetsRouter = router({
 
       const id = crypto.randomUUID();
       const now = Date.now();
-      const userId =
-        (ctx as unknown as { user?: { id: string } }).user?.id ?? null;
 
       await ctx.env.DB.prepare(
-        `INSERT INTO assets (id, user_id, install_id, entity_type, description, style, r2_key, scenario_asset_id, width, height, is_animated, frame_count, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO assets (id, user_id, entity_type, description, style, r2_key, scenario_asset_id, width, height, is_animated, frame_count, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
         .bind(
           id,
-          userId,
-          ctx.installId,
+          ctx.user.id,
           input.entityType,
           input.description,
           input.style,
@@ -123,7 +120,7 @@ export const assetsRouter = router({
       };
     }),
 
-  generateBatch: installedProcedure
+  generateBatch: protectedProcedure
     .input(
       z.object({
         assets: z
@@ -180,7 +177,7 @@ export const assetsRouter = router({
       }));
     }),
 
-  list: installedProcedure
+  list: protectedProcedure
     .input(
       z
         .object({
@@ -193,14 +190,12 @@ export const assetsRouter = router({
     .query(async ({ ctx, input }) => {
       const limit = input?.limit ?? 50;
       const offset = input?.offset ?? 0;
-      const userId =
-        (ctx as unknown as { user?: { id: string } }).user?.id ?? null;
       
       const baseUrl = ctx.env.ASSET_HOST ?? 'https://assets.clover.app';
       const cleanBase = baseUrl.replace(/\/$/, '');
 
-      let query = `SELECT * FROM assets WHERE (user_id = ? OR install_id = ?)`;
-      const params: (string | number | null)[] = [userId, ctx.installId];
+      let query = `SELECT * FROM assets WHERE user_id = ?`;
+      const params: (string | number | null)[] = [ctx.user.id];
 
       if (input?.entityType) {
         query += ` AND entity_type = ?`;
@@ -268,7 +263,7 @@ export const assetsRouter = router({
     };
   }),
 
-  generateForGame: installedProcedure
+  generateForGame: protectedProcedure
     .input(
       z.object({
         gameId: z.string().uuid(),
@@ -379,7 +374,7 @@ export const assetsRouter = router({
       };
     }),
 
-  updatePackMetadata: installedProcedure
+  updatePackMetadata: protectedProcedure
     .input(
       z.object({
         gameId: z.string().uuid(),
@@ -428,7 +423,7 @@ export const assetsRouter = router({
       return { success: true, pack };
     }),
 
-  setTemplateAsset: installedProcedure
+  setTemplateAsset: protectedProcedure
     .input(
       z.object({
         gameId: z.string().uuid(),
@@ -492,7 +487,7 @@ export const assetsRouter = router({
       return { success: true, asset };
     }),
 
-  regenerateTemplateAsset: installedProcedure
+  regenerateTemplateAsset: protectedProcedure
     .input(
       z.object({
         gameId: z.string().uuid(),
@@ -584,7 +579,7 @@ export const assetsRouter = router({
       };
     }),
 
-  generateBackgroundLayer: installedProcedure
+  generateBackgroundLayer: protectedProcedure
     .input(
       z.object({
         gameId: z.string().uuid(),
@@ -694,7 +689,7 @@ export const assetsRouter = router({
       };
     }),
 
-  updateParallaxConfig: installedProcedure
+  updateParallaxConfig: protectedProcedure
     .input(
       z.object({
         gameId: z.string().uuid(),
@@ -754,7 +749,7 @@ export const assetsRouter = router({
       return { success: true, parallaxConfig: definition.parallaxConfig };
     }),
 
-  deletePack: installedProcedure
+  deletePack: protectedProcedure
     .input(
       z.object({
         gameId: z.string().uuid(),

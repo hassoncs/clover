@@ -52,6 +52,30 @@ export class PhysicsActionExecutor implements ActionExecutor<ApplyImpulseAction 
               impulseY = context.input.tilt.y * force;
             }
             break;
+          case 'toward_touch':
+            if (context.input.drag || context.inputEvents.tap) {
+              const touchX = context.input.drag?.currentWorldX ?? context.inputEvents.tap?.worldX ?? 0;
+              const touchY = context.input.drag?.currentWorldY ?? context.inputEvents.tap?.worldY ?? 0;
+              
+              let sourceX = entity.transform.x;
+              let sourceY = entity.transform.y;
+              if (action.sourceEntityId) {
+                const sourceEntity = context.entityManager.getEntity(action.sourceEntityId);
+                if (sourceEntity) {
+                  sourceX = sourceEntity.transform.x;
+                  sourceY = sourceEntity.transform.y;
+                }
+              }
+              
+              const dx = touchX - sourceX;
+              const dy = touchY - sourceY;
+              const mag = Math.sqrt(dx * dx + dy * dy);
+              if (mag > 0.001) {
+                impulseX = (dx / mag) * force;
+                impulseY = (dy / mag) * force;
+              }
+            }
+            break;
         }
       }
       context.physics.applyImpulseToCenter(entity.bodyId, { x: impulseX, y: impulseY });

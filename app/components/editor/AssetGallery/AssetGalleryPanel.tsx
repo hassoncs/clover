@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert, TextInput } from 'react-native';
 import { useState, useMemo, useCallback } from 'react';
 import { TemplateAssetCard } from './TemplateAssetCard';
 import { AssetPackSelector } from './AssetPackSelector';
@@ -19,10 +19,19 @@ interface AlignmentEditorState {
   placement?: AssetPlacement;
 }
 
+const STYLE_OPTIONS = [
+  { id: 'pixel' as const, label: 'Pixel', emoji: '🎮' },
+  { id: 'cartoon' as const, label: 'Cartoon', emoji: '🎨' },
+  { id: '3d' as const, label: '3D', emoji: '🧊' },
+  { id: 'flat' as const, label: 'Flat', emoji: '📐' },
+];
+
 export function AssetGalleryPanel({
   onTemplatePress,
 }: AssetGalleryPanelProps) {
   const { gameId, document } = useEditor();
+  const isPreviewMode = gameId === 'preview';
+  
   const [selectedPackId, setSelectedPackId] = useState<string | undefined>(
     document.assetSystem?.activeAssetPackId
   );
@@ -32,6 +41,10 @@ export function AssetGalleryPanel({
     templateId: '',
     template: null,
   });
+
+  const [quickCreateTheme, setQuickCreateTheme] = useState('');
+  const [quickCreateStyle, setQuickCreateStyle] = useState<'pixel' | 'cartoon' | '3d' | 'flat'>('pixel');
+  const [isQuickCreating, setIsQuickCreating] = useState(false);
 
   const templates = useMemo(() => {
     return Object.entries(document.templates).map(([id, template]) => ({
@@ -80,24 +93,81 @@ export function AssetGalleryPanel({
   } = useAssetGeneration({
     gameId,
     onComplete: (result) => {
+      setIsQuickCreating(false);
       Alert.alert(
         'Generation Complete',
         `Generated ${result.successCount} assets${result.failCount > 0 ? `, ${result.failCount} failed` : ''}`
       );
     },
     onError: (error) => {
+      setIsQuickCreating(false);
       Alert.alert('Generation Failed', error);
     },
   });
 
-  const handleCreatePack = useCallback(async (name: string, style?: 'pixel' | 'cartoon' | '3d' | 'flat') => {
+  const handleCreatePack = useCallback(async (params: {
+    name: string;
+    style?: 'pixel' | 'cartoon' | '3d' | 'flat';
+    themePrompt?: string;
+  }) => {
     try {
-      const result = await createPack({ name, style });
+      const result = await createPack(params);
       setSelectedPackId(result.id);
-    } catch (err) {
-      Alert.alert('Error', 'Failed to create asset pack');
+      setPackSelectorVisible(false);
+      return result;
+    } catch (error) {
+      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to create asset pack');
+      throw error;
     }
   }, [createPack]);
+
+  const handleQuickGenerate = useCallback(async () => {
+    console.log('[AssetGallery] handleQuickGenerate called');
+    console.log('[AssetGallery] isPreviewMode:', isPreviewMode);
+    console.log('[AssetGallery] gameId:', gameId);
+    console.log('[AssetGallery] templates.length:', templates.length);
+
+    if (isPreviewMode) {
+      Alert.alert('Save Game First', 'Please save your game before generating assets.');
+      return;
+    }
+
+    if (templates.length === 0) {
+      Alert.alert('No Templates', 'Add some entities to your game first.');
+      return;
+    }
+
+    setIsQuickCreating(true);
+
+    try {
+      const styleName = STYLE_OPTIONS.find(s => s.id === quickCreateStyle)?.label ?? 'Custom';
+      const packName = quickCreateTheme.trim() 
+        ? `${quickCreateTheme.trim().slice(0, 20)} (${styleName})`
+        : `${styleName} Style`;
+
+      console.log('[AssetGallery] Creating pack:', { packName, style: quickCreateStyle, gameId });
+      const pack = await createPack({
+        name: packName,
+        style: quickCreateStyle,
+        themePrompt: quickCreateTheme.trim() || undefined,
+      });
+      console.log('[AssetGallery] Pack created:', pack);
+
+      setSelectedPackId(pack.id);
+
+      console.log('[AssetGallery] Starting generateAll with packId:', pack.id);
+      generateAll({
+        packId: pack.id,
+        templateIds: templates.map(t => t.id),
+        themePrompt: quickCreateTheme.trim() || document.metadata?.description,
+        style: quickCreateStyle,
+      });
+    } catch (error) {
+      console.error('[AssetGallery] Quick generate failed:', error);
+      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to create asset pack');
+      setIsQuickCreating(false);
+    }
+  }, [isPreviewMode, gameId, templates, quickCreateTheme, quickCreateStyle, createPack, generateAll, document.metadata?.description]);
 
   const handleGenerateAll = useCallback(() => {
     if (!selectedPackId) {
@@ -154,6 +224,22 @@ export function AssetGalleryPanel({
   }, [selectedPackId, alignmentEditor.templateId, updatePlacementMutation]);
 
   const isLoading = isLoadingPacks || isLoadingActivePack;
+  const hasNoPacks = !isLoadingPacks && packList.length === 0;
+  const showQuickCreate = hasNoPacks && !isPreviewMode;
+
+  if (isPreviewMode) {
+    return (
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <View style={styles.previewModeContainer}>
+          <Text style={styles.previewModeEmoji}>💾</Text>
+          <Text style={styles.previewModeTitle}>Save Your Game First</Text>
+          <Text style={styles.previewModeText}>
+            To generate AI assets, you need to save your game first. This allows us to store and manage your asset packs.
+          </Text>
+        </View>
+      </ScrollView>
+    );
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -164,77 +250,136 @@ export function AssetGalleryPanel({
         </Text>
       </View>
 
-      <View style={styles.packSelector}>
-        <View style={styles.packSelectorHeader}>
-          <Text style={styles.sectionTitle}>ASSET PACKS</Text>
-          <Pressable
-            style={styles.managePacksButton}
-            onPress={() => setPackSelectorVisible(true)}
-          >
-            <Text style={styles.managePacksButtonText}>
-              {packList.length > 0 ? 'Manage' : '+ Create Pack'}
-            </Text>
-          </Pressable>
-        </View>
-        {isLoadingPacks ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#6366F1" />
-          </View>
-        ) : packList.length > 0 ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.packList}>
-            {packList.map(pack => (
+      {showQuickCreate ? (
+        <View style={styles.quickCreateContainer}>
+          <Text style={styles.quickCreateTitle}>Generate All Assets</Text>
+          <Text style={styles.quickCreateSubtitle}>
+            Describe your game's visual theme and we'll generate sprites for all {templates.length} templates
+          </Text>
+
+          <TextInput
+            style={styles.themeInput}
+            placeholder="e.g., Dark fantasy medieval castle, spooky atmosphere..."
+            placeholderTextColor="#6B7280"
+            value={quickCreateTheme}
+            onChangeText={setQuickCreateTheme}
+            multiline
+            numberOfLines={2}
+            textAlignVertical="top"
+          />
+
+          <View style={styles.styleRow}>
+            {STYLE_OPTIONS.map(style => (
               <Pressable
-                key={pack.id}
+                key={style.id}
                 style={[
-                  styles.packChip,
-                  selectedPackId === pack.id && styles.packChipActive,
+                  styles.styleChip,
+                  quickCreateStyle === style.id && styles.styleChipActive,
                 ]}
-                onPress={() => setSelectedPackId(pack.id)}
+                onPress={() => setQuickCreateStyle(style.id)}
               >
+                <Text style={styles.styleChipEmoji}>{style.emoji}</Text>
                 <Text style={[
-                  styles.packChipText,
-                  selectedPackId === pack.id && styles.packChipTextActive,
+                  styles.styleChipText,
+                  quickCreateStyle === style.id && styles.styleChipTextActive,
                 ]}>
-                  {pack.name}
+                  {style.label}
                 </Text>
               </Pressable>
             ))}
-          </ScrollView>
-        ) : (
-          <View style={styles.noPacksMessage}>
-            <Text style={styles.noPacksText}>
-              No asset packs yet. Create one to start generating assets.
-            </Text>
           </View>
-        )}
-      </View>
 
-      <View style={styles.actionsRow}>
-        <Pressable
-          style={[
-            styles.generateButton,
-            (isGenerating || !selectedPackId) && styles.generateButtonDisabled,
-          ]}
-          onPress={handleGenerateAll}
-          disabled={isGenerating || !selectedPackId}
-        >
-          {isGenerating ? (
-            <View style={styles.generateButtonContent}>
-              <ActivityIndicator size="small" color="#FFFFFF" />
-              <Text style={styles.generateButtonText}>
-                {progress.completed}/{progress.total} Generating...
+          <Pressable
+            style={[
+              styles.quickGenerateButton,
+              (isQuickCreating || isGenerating) && styles.quickGenerateButtonDisabled,
+            ]}
+            onPress={handleQuickGenerate}
+            disabled={isQuickCreating || isGenerating}
+          >
+            {isQuickCreating || isGenerating ? (
+              <View style={styles.generateButtonContent}>
+                <ActivityIndicator size="small" color="#FFFFFF" />
+                <Text style={styles.quickGenerateButtonText}>
+                  {isGenerating ? `${progress.completed}/${progress.total} Generating...` : 'Creating...'}
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.quickGenerateButtonText}>
+                Generate {templates.length} Assets
               </Text>
+            )}
+          </Pressable>
+        </View>
+      ) : (
+        <>
+          <View style={styles.packSelector}>
+            <View style={styles.packSelectorHeader}>
+              <Text style={styles.sectionTitle}>ASSET PACKS</Text>
+              <Pressable
+                style={styles.managePacksButton}
+                onPress={() => setPackSelectorVisible(true)}
+              >
+                <Text style={styles.managePacksButtonText}>
+                  {packList.length > 0 ? 'Manage' : '+ Create Pack'}
+                </Text>
+              </Pressable>
             </View>
-          ) : (
-            <Text style={styles.generateButtonText}>
-              {selectedPackId ? 'Generate All Assets' : 'Select a Pack First'}
-            </Text>
-          )}
-        </Pressable>
-      </View>
+            {isLoadingPacks ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color="#6366F1" />
+              </View>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.packList}>
+                {packList.map(pack => (
+                  <Pressable
+                    key={pack.id}
+                    style={[
+                      styles.packChip,
+                      selectedPackId === pack.id && styles.packChipActive,
+                    ]}
+                    onPress={() => setSelectedPackId(pack.id)}
+                  >
+                    <Text style={[
+                      styles.packChipText,
+                      selectedPackId === pack.id && styles.packChipTextActive,
+                    ]}>
+                      {pack.name}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            )}
+          </View>
+
+          <View style={styles.actionsRow}>
+            <Pressable
+              style={[
+                styles.generateButton,
+                (isGenerating || !selectedPackId) && styles.generateButtonDisabled,
+              ]}
+              onPress={handleGenerateAll}
+              disabled={isGenerating || !selectedPackId}
+            >
+              {isGenerating ? (
+                <View style={styles.generateButtonContent}>
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <Text style={styles.generateButtonText}>
+                    {progress.completed}/{progress.total} Generating...
+                  </Text>
+                </View>
+              ) : (
+                <Text style={styles.generateButtonText}>
+                  {selectedPackId ? 'Regenerate All Assets' : 'Select a Pack First'}
+                </Text>
+              )}
+            </Pressable>
+          </View>
+        </>
+      )}
 
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>TEMPLATES</Text>
+        <Text style={styles.sectionTitle}>TEMPLATES ({templates.length})</Text>
       </View>
 
       {isLoading ? (
@@ -314,6 +459,100 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 4,
   },
+  previewModeContainer: {
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 24,
+  },
+  previewModeEmoji: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  previewModeTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  previewModeText: {
+    color: '#9CA3AF',
+    fontSize: 15,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  quickCreateContainer: {
+    backgroundColor: '#374151',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+  },
+  quickCreateTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  quickCreateSubtitle: {
+    color: '#9CA3AF',
+    fontSize: 14,
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  themeInput: {
+    backgroundColor: '#1F2937',
+    borderRadius: 12,
+    padding: 14,
+    color: '#FFFFFF',
+    fontSize: 15,
+    marginBottom: 16,
+    minHeight: 60,
+  },
+  styleRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 20,
+  },
+  styleChip: {
+    flex: 1,
+    backgroundColor: '#1F2937',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  styleChipActive: {
+    borderColor: '#4F46E5',
+    backgroundColor: '#312E81',
+  },
+  styleChipEmoji: {
+    fontSize: 20,
+    marginBottom: 4,
+  },
+  styleChipText: {
+    color: '#9CA3AF',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  styleChipTextActive: {
+    color: '#FFFFFF',
+  },
+  quickGenerateButton: {
+    backgroundColor: '#4F46E5',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  quickGenerateButtonDisabled: {
+    backgroundColor: '#6366F1',
+    opacity: 0.7,
+  },
+  quickGenerateButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
   packSelector: {
     marginBottom: 16,
   },
@@ -342,16 +581,6 @@ const styles = StyleSheet.create({
   },
   packList: {
     flexDirection: 'row',
-  },
-  noPacksMessage: {
-    backgroundColor: '#374151',
-    borderRadius: 8,
-    padding: 16,
-  },
-  noPacksText: {
-    color: '#9CA3AF',
-    fontSize: 13,
-    textAlign: 'center',
   },
   packChip: {
     backgroundColor: '#374151',

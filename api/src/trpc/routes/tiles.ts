@@ -1,14 +1,14 @@
 import {
   router,
   publicProcedure,
-  installedProcedure,
+  protectedProcedure,
 } from '../index';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { TileSheetSchema, TileMapSchema, SpriteStyleSchema } from '../../ai/schemas';
 
 export const tilesRouter = router({
-  generateSheet: installedProcedure
+  generateSheet: protectedProcedure
     .input(
       z.object({
         prompt: z.string().min(3).max(200),
@@ -25,7 +25,7 @@ export const tilesRouter = router({
       });
     }),
 
-  generateMap: installedProcedure
+  generateMap: protectedProcedure
     .input(
       z.object({
         prompt: z.string().min(3).max(500),
@@ -38,7 +38,7 @@ export const tilesRouter = router({
       });
     }),
 
-  updateTile: installedProcedure
+  updateTile: protectedProcedure
     .input(
       z.object({
         tileMapId: z.string(),

@@ -16,6 +16,12 @@ interface AssetPackInfo {
   deletedAt?: number | null;
 }
 
+interface CreatePackParams {
+  name: string;
+  style?: 'pixel' | 'cartoon' | '3d' | 'flat';
+  themePrompt?: string;
+}
+
 interface AssetPackSelectorProps {
   visible: boolean;
   onClose: () => void;
@@ -23,7 +29,7 @@ interface AssetPackSelectorProps {
   selectedPackId?: string;
   totalTemplates: number;
   onSelectPack: (packId: string) => void;
-  onCreatePack: (name: string, style?: 'pixel' | 'cartoon' | '3d' | 'flat') => void;
+  onCreatePack: (params: CreatePackParams) => void;
   isCreating?: boolean;
 }
 
@@ -47,11 +53,17 @@ export function AssetPackSelector({
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newPackName, setNewPackName] = useState('');
   const [newPackStyle, setNewPackStyle] = useState<'pixel' | 'cartoon' | '3d' | 'flat'>('pixel');
+  const [newPackTheme, setNewPackTheme] = useState('');
 
   const handleCreatePack = () => {
     if (!newPackName.trim()) return;
-    onCreatePack(newPackName.trim(), newPackStyle);
+    onCreatePack({
+      name: newPackName.trim(),
+      style: newPackStyle,
+      themePrompt: newPackTheme.trim() || undefined,
+    });
     setNewPackName('');
+    setNewPackTheme('');
     setShowCreateForm(false);
   };
 
@@ -161,6 +173,21 @@ export function AssetPackSelector({
                     </Pressable>
                   ))}
                 </View>
+
+                <Text style={styles.inputLabel}>Theme Prompt (Optional)</Text>
+                <TextInput
+                  style={styles.themeInput}
+                  placeholder="e.g., Dark fantasy medieval castle, spooky atmosphere..."
+                  placeholderTextColor="#6B7280"
+                  value={newPackTheme}
+                  onChangeText={setNewPackTheme}
+                  multiline
+                  numberOfLines={3}
+                  textAlignVertical="top"
+                />
+                <Text style={styles.themeHint}>
+                  This theme will be applied to all generated assets in this pack
+                </Text>
 
                 <View style={styles.createFormActions}>
                   <Pressable
@@ -382,6 +409,20 @@ const styles = StyleSheet.create({
     padding: 12,
     color: '#FFFFFF',
     fontSize: 14,
+    marginBottom: 16,
+  },
+  themeInput: {
+    backgroundColor: '#1F2937',
+    borderRadius: 8,
+    padding: 12,
+    color: '#FFFFFF',
+    fontSize: 14,
+    marginBottom: 4,
+    minHeight: 80,
+  },
+  themeHint: {
+    color: '#6B7280',
+    fontSize: 11,
     marginBottom: 16,
   },
   styleGrid: {
