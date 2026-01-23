@@ -118,9 +118,6 @@ importers:
       '@react-native-community/slider':
         specifier: ^5.1.2
         version: 5.1.2
-      '@shopify/react-native-skia':
-        specifier: 2.4.14
-        version: 2.4.14(react-native-reanimated@4.2.1(react-native-worklets@0.7.2(@babel/core@7.28.6)(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       '@slopcade/shared':
         specifier: workspace:*
         version: link:../shared
@@ -145,9 +142,6 @@ importers:
       aes-js:
         specifier: ^3.1.2
         version: 3.1.2
-      box2d-wasm:
-        specifier: ^7.0.0
-        version: 7.0.0
       expo:
         specifier: ^54.0.1
         version: 54.0.32(@babel/core@7.28.6)(@expo/metro-runtime@6.1.2)(expo-router@6.0.22)(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -187,9 +181,6 @@ importers:
       react-native-ble-plx:
         specifier: ^3.5.0
         version: 3.5.0(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
-      react-native-box2d:
-        specifier: file:../vendor/react-native-box2d
-        version: file:vendor/react-native-box2d(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       react-native-css-interop:
         specifier: 0.2.1
         version: 0.2.1(react-native-reanimated@4.2.1(react-native-worklets@0.7.2(@babel/core@7.28.6)(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.6.2(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native-svg@15.15.1(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(tailwindcss@3.4.17)
@@ -217,6 +208,9 @@ importers:
       react-native-worklets:
         specifier: ^0.7.0
         version: 0.7.2(@babel/core@7.28.6)(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      react-native-worklets-core:
+        specifier: ^1.6.2
+        version: 1.6.2(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
     devDependencies:
       '@types/aes-js':
         specifier: ^3.1.4
@@ -6469,12 +6463,6 @@ packages:
   react-native-ble-plx@3.5.0:
     resolution: {integrity: sha512-PeSnRswHLwLRVMQkOfDaRICtrGmo94WGKhlSC09XmHlqX2EuYgH+vNJpGcLkd8lyiYpEJyf8wlFAdj9Akliwmw==}
     engines: {node: '>= 18.0.0'}
-    peerDependencies:
-      react: '*'
-      react-native: '*'
-
-  react-native-box2d@file:vendor/react-native-box2d:
-    resolution: {directory: vendor/react-native-box2d, type: directory}
     peerDependencies:
       react: '*'
       react-native: '*'
@@ -14513,11 +14501,6 @@ snapshots:
   react-is@19.2.3: {}
 
   react-native-ble-plx@3.5.0(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
-    dependencies:
-      react: 19.1.0
-      react-native: 0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0)
-
-  react-native-box2d@file:vendor/react-native-box2d(react-native@0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
     dependencies:
       react: 19.1.0
       react-native: 0.81.4(@babel/core@7.28.6)(@types/react@19.1.17)(react@19.1.0)

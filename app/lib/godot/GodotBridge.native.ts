@@ -22,6 +22,10 @@ type GodotModule = typeof import('@borndotcom/react-native-godot');
 let godotModule: GodotModule | null = null;
 let isGodotInitialized = false;
 
+const pendingQueries = new Map<number, (result: string | null) => void>();
+const pendingJoints = new Map<number, (jointId: number) => void>();
+let requestIdCounter = 0;
+
 async function getGodotModule(): Promise<GodotModule> {
   if (!godotModule) {
     godotModule = await import('@borndotcom/react-native-godot');
@@ -36,10 +40,31 @@ function callGameBridge(methodName: string, ...args: unknown[]) {
       const Godot = RTNGodot.API();
       const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge');
       if (gameBridge) {
-        gameBridge.call(methodName, ...args);
+        const method = gameBridge[methodName];
+        if (typeof method === 'function') {
+          method.apply(gameBridge, args);
+        } else {
+          console.log(`[Godot worklet] Method ${methodName} not found on GameBridge`);
+        }
       }
     });
   });
+}
+
+function handleQueryResult(requestId: number, result: string | null) {
+  const resolve = pendingQueries.get(requestId);
+  if (resolve) {
+    pendingQueries.delete(requestId);
+    resolve(result);
+  }
+}
+
+function handleJointCreated(requestId: number, jointId: number) {
+  const resolve = pendingJoints.get(requestId);
+  if (resolve) {
+    pendingJoints.delete(requestId);
+    resolve(jointId);
+  }
 }
 
 export function createNativeGodotBridge(): GodotBridge {
@@ -47,6 +72,7 @@ export function createNativeGodotBridge(): GodotBridge {
   const destroyCallbacks: ((entityId: string) => void)[] = [];
   const sensorBeginCallbacks: ((event: SensorEvent) => void)[] = [];
   const sensorEndCallbacks: ((event: SensorEvent) => void)[] = [];
+  const inputEventCallbacks: ((type: string, x: number, y: number, entityId: string | null) => void)[] = [];
 
   const bridge: GodotBridge = {
     async initialize() {
@@ -54,34 +80,96 @@ export function createNativeGodotBridge(): GodotBridge {
 
       if (isGodotInitialized) return;
 
-      return new Promise<void>((resolve, reject) => {
+      const bundleDir = FileSystem.bundleDirectory ?? '';
+      const pckPath = bundleDir + 'godot/main.pck';
+      console.log('[GodotBridge.native] bundleDirectory:', bundleDir);
+      console.log('[GodotBridge.native] pckPath:', pckPath);
+      
+      FileSystem.getInfoAsync(pckPath).then(info => {
+        console.log('[GodotBridge.native] pck file info:', JSON.stringify(info));
+      }).catch(err => {
+        console.log('[GodotBridge.native] pck file check error:', err);
+      });
+
+      if (Platform.OS === 'android') {
         runOnGodotThread(() => {
           'worklet';
-          try {
-            const args = Platform.OS === 'android'
-              ? [
-                  '--verbose',
-                  '--path', '/main',
-                  '--rendering-driver', 'opengl3',
-                  '--rendering-method', 'gl_compatibility',
-                  '--display-driver', 'embedded',
-                ]
-              : [
-                  '--verbose',
-                  '--main-pack', (FileSystem.bundleDirectory ?? '') + 'godot/main.pck',
-                  '--rendering-driver', 'opengl3',
-                  '--rendering-method', 'gl_compatibility',
-                  '--display-driver', 'embedded',
-                ];
-
-            RTNGodot.createInstance(args);
-            resolve();
-          } catch (err) {
-            reject(err);
-          }
+          RTNGodot.createInstance([
+            '--verbose',
+            '--path', '/main',
+            '--rendering-driver', 'opengl3',
+            '--rendering-method', 'gl_compatibility',
+            '--display-driver', 'embedded',
+          ]);
         });
-      }).then(() => {
-        isGodotInitialized = true;
+      } else {
+        runOnGodotThread(() => {
+          'worklet';
+          RTNGodot.createInstance([
+            '--verbose',
+            '--main-pack', pckPath,
+            '--rendering-driver', 'opengl3',
+            '--rendering-method', 'gl_compatibility',
+            '--display-driver', 'embedded',
+          ]);
+        });
+      }
+
+      return new Promise<void>((resolve, reject) => {
+        let attempts = 0;
+        const maxAttempts = 100;
+        
+        const checkReady = () => {
+          attempts++;
+          
+          runOnGodotThread(() => {
+            'worklet';
+            try {
+              const instance = RTNGodot.getInstance();
+              console.log(`[Godot worklet] getInstance result: ${instance ? 'exists' : 'null'}`);
+              if (instance) {
+                const api = RTNGodot.API();
+                console.log(`[Godot worklet] API result: ${api ? 'exists' : 'null'}`);
+                if (api && api.Engine) {
+                  console.log('[Godot worklet] Engine exists, checking main_loop...');
+                  const mainLoop = api.Engine.get_main_loop();
+                  console.log(`[Godot worklet] main_loop: ${mainLoop ? 'exists' : 'null'}`);
+                  if (mainLoop) {
+                    const root = mainLoop.get_root();
+                    console.log(`[Godot worklet] root: ${root ? 'exists' : 'null'}`);
+                    if (root) {
+                      return true;
+                    }
+                  }
+                }
+              }
+            } catch (e) {
+              console.log(`[Godot worklet] Error: ${e}`);
+              return false;
+            }
+            return false;
+          }).then((ready) => {
+            console.log(`[GodotBridge.native] Check ${attempts}: ready=${ready}`);
+            if (ready) {
+              console.log('[GodotBridge.native] Engine ready!');
+              isGodotInitialized = true;
+              resolve();
+            } else if (attempts >= maxAttempts) {
+              reject(new Error('Godot engine failed to initialize after 10 seconds'));
+            } else {
+              setTimeout(checkReady, 100);
+            }
+          }).catch((err) => {
+            console.log(`[GodotBridge.native] Check ${attempts} error: ${err}`);
+            if (attempts >= maxAttempts) {
+              reject(new Error('Godot engine failed to initialize'));
+            } else {
+              setTimeout(checkReady, 100);
+            }
+          });
+        };
+        
+        setTimeout(checkReady, 1000);
       });
     },
 
@@ -100,6 +188,7 @@ export function createNativeGodotBridge(): GodotBridge {
       destroyCallbacks.length = 0;
       sensorBeginCallbacks.length = 0;
       sensorEndCallbacks.length = 0;
+      inputEventCallbacks.length = 0;
     },
 
     async loadGame(definition: GameDefinition) {
@@ -214,6 +303,7 @@ export function createNativeGodotBridge(): GodotBridge {
     },
 
     createMouseJoint(def: MouseJointDef): number {
+      console.warn('[GodotBridge.native] createMouseJoint: sync API not recommended on native, use createMouseJointAsync');
       const jointId = Date.now();
       callGameBridge('create_mouse_joint',
         def.body,
@@ -224,8 +314,42 @@ export function createNativeGodotBridge(): GodotBridge {
       return jointId;
     },
 
+    async createMouseJointAsync(def: MouseJointDef): Promise<number> {
+      const { RTNGodot, runOnGodotThread } = await getGodotModule();
+      
+      return runOnGodotThread(() => {
+        'worklet';
+        try {
+          const Godot = RTNGodot.API();
+          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge');
+          if (gameBridge) {
+            const jointId = gameBridge.create_mouse_joint(
+              def.body,
+              def.target.x, def.target.y,
+              def.maxForce,
+              def.stiffness ?? 5, def.damping ?? 0.7
+            ) as number;
+            console.log(`[Godot worklet] create_mouse_joint = ${jointId}`);
+            return jointId ?? -1;
+          }
+        } catch (e) {
+          console.log(`[Godot worklet] create_mouse_joint error: ${e}`);
+        }
+        return -1;
+      });
+    },
+
     destroyJoint(jointId: number) {
-      callGameBridge('destroy_joint', jointId);
+      getGodotModule().then(({ RTNGodot, runOnGodotThread }) => {
+        runOnGodotThread(() => {
+          'worklet';
+          const Godot = RTNGodot.API();
+          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge');
+          if (gameBridge) {
+            gameBridge.destroy_joint(jointId);
+          }
+        });
+      });
     },
 
     setMotorSpeed(jointId: number, speed: number) {
@@ -233,11 +357,45 @@ export function createNativeGodotBridge(): GodotBridge {
     },
 
     setMouseTarget(jointId: number, target: Vec2) {
-      callGameBridge('set_mouse_target', jointId, target.x, target.y);
+      getGodotModule().then(({ RTNGodot, runOnGodotThread }) => {
+        runOnGodotThread(() => {
+          'worklet';
+          const Godot = RTNGodot.API();
+          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge');
+          if (gameBridge) {
+            gameBridge.set_mouse_target(jointId, target.x, target.y);
+          }
+        });
+      });
     },
 
     queryPoint(_point: Vec2): number | null {
       return null;
+    },
+
+    queryPointEntity(_point: Vec2): string | null {
+      console.warn('[GodotBridge.native] queryPointEntity: sync API not supported on native, use queryPointEntityAsync');
+      return null;
+    },
+
+    async queryPointEntityAsync(point: Vec2): Promise<string | null> {
+      const { RTNGodot, runOnGodotThread } = await getGodotModule();
+      
+      return runOnGodotThread(() => {
+        'worklet';
+        try {
+          const Godot = RTNGodot.API();
+          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge');
+          if (gameBridge) {
+            const entityId = gameBridge.query_point_entity(point.x, point.y) as string | null;
+            console.log(`[Godot worklet] query_point_entity(${point.x}, ${point.y}) = ${entityId}`);
+            return entityId;
+          }
+        } catch (e) {
+          console.log(`[Godot worklet] query_point_entity error: ${e}`);
+        }
+        return null;
+      });
     },
 
     queryAABB(_min: Vec2, _max: Vec2): number[] {
@@ -343,6 +501,22 @@ export function createNativeGodotBridge(): GodotBridge {
 
     sendInput(type, data) {
       callGameBridge('send_input', type, data.x, data.y, data.entityId ?? '');
+    },
+
+    onInputEvent(callback: (type: string, x: number, y: number, entityId: string | null) => void): () => void {
+      inputEventCallbacks.push(callback);
+      return () => {
+        const index = inputEventCallbacks.indexOf(callback);
+        if (index >= 0) inputEventCallbacks.splice(index, 1);
+      };
+    },
+
+    setEntityImage(entityId: string, url: string, width: number, height: number) {
+      callGameBridge('set_entity_image', entityId, url, width, height);
+    },
+
+    clearTextureCache(url?: string) {
+      callGameBridge('clear_texture_cache', url ?? '');
     },
   };
 

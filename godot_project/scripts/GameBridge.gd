@@ -4,6 +4,8 @@ signal game_loaded(game_data: Dictionary)
 signal entity_spawned(entity_id: String, node: Node2D)
 signal entity_destroyed(entity_id: String)
 signal collision_occurred(entity_a: String, entity_b: String, impulse: float)
+signal query_result(request_id: int, result: Variant)
+signal joint_created(request_id: int, joint_id: int)
 
 var game_data: Dictionary = {}
 var entities: Dictionary = {}
@@ -31,6 +33,11 @@ var joint_counter: int = 0
 var sensors: Dictionary = {}
 var _js_sensor_begin_callback: JavaScriptObject = null
 var _js_sensor_end_callback: JavaScriptObject = null
+var _js_input_event_callback: JavaScriptObject = null
+
+# Collision manifold tracking (for detailed contact info)
+var _active_contacts: Dictionary = {}  # "entityA:entityB" -> last_impulse_time
+const IMPULSE_THRESHOLD: float = 0.01  # Minimum impulse to report
 
 # Body ID tracking for Physics2D compatibility
 var body_id_map: Dictionary = {}  # entity_id -> body_id (int)
@@ -59,6 +66,11 @@ func _setup_js_bridge() -> void:
 		return
 	
 	_js_bridge_obj = JavaScriptBridge.create_object("Object")
+	
+	# Create a result storage object for functions that need to return values
+	# JavaScriptBridge.create_callback() doesn't pass return values back to JS,
+	# so we use this workaround: store the result, then JS reads it
+	_js_bridge_obj["_lastResult"] = null
 	
 	var load_game_cb = JavaScriptBridge.create_callback(_js_load_game)
 	_js_callbacks.append(load_game_cb)
@@ -103,6 +115,10 @@ func _setup_js_bridge() -> void:
 	var input_cb = JavaScriptBridge.create_callback(_js_send_input)
 	_js_callbacks.append(input_cb)
 	_js_bridge_obj["sendInput"] = input_cb
+	
+	var on_input_event_cb = JavaScriptBridge.create_callback(_js_on_input_event)
+	_js_callbacks.append(on_input_event_cb)
+	_js_bridge_obj["onInputEvent"] = on_input_event_cb
 	
 	var on_collision_cb = JavaScriptBridge.create_callback(_js_on_collision)
 	_js_callbacks.append(on_collision_cb)
@@ -175,6 +191,10 @@ func _setup_js_bridge() -> void:
 	_js_callbacks.append(query_point_cb)
 	_js_bridge_obj["queryPoint"] = query_point_cb
 	
+	var query_point_entity_cb = JavaScriptBridge.create_callback(_js_query_point_entity)
+	_js_callbacks.append(query_point_entity_cb)
+	_js_bridge_obj["queryPointEntity"] = query_point_entity_cb
+	
 	var query_aabb_cb = JavaScriptBridge.create_callback(_js_query_aabb)
 	_js_callbacks.append(query_aabb_cb)
 	_js_bridge_obj["queryAABB"] = query_aabb_cb
@@ -216,6 +236,14 @@ func _setup_js_bridge() -> void:
 	var get_all_bodies_cb = JavaScriptBridge.create_callback(_js_get_all_bodies)
 	_js_callbacks.append(get_all_bodies_cb)
 	_js_bridge_obj["getAllBodies"] = get_all_bodies_cb
+	
+	var set_entity_image_cb = JavaScriptBridge.create_callback(_js_set_entity_image)
+	_js_callbacks.append(set_entity_image_cb)
+	_js_bridge_obj["setEntityImage"] = set_entity_image_cb
+	
+	var clear_texture_cache_cb = JavaScriptBridge.create_callback(_js_clear_texture_cache)
+	_js_callbacks.append(clear_texture_cache_cb)
+	_js_bridge_obj["clearTextureCache"] = clear_texture_cache_cb
 	
 	window["GodotBridge"] = _js_bridge_obj
 	print("[GameBridge] JavaScript bridge exposed as window.GodotBridge")
@@ -300,7 +328,38 @@ func _js_apply_force(args: Array) -> void:
 func _js_send_input(args: Array) -> void:
 	if args.size() < 4:
 		return
-	pass
+	var input_type = str(args[0])
+	var x = float(args[1])
+	var y = float(args[2])
+	var provided_entity_id = str(args[3]) if args[3] != null else ""
+	
+	if input_type == "tap":
+		var hit_entity_id: Variant = null
+		
+		var point = Vector2(x, y) * pixels_per_meter
+		var space = get_viewport().find_world_2d().direct_space_state
+		if space:
+			var query = PhysicsPointQueryParameters2D.new()
+			query.position = point
+			query.collision_mask = 0xFFFFFFFF
+			query.collide_with_bodies = true
+			query.collide_with_areas = true
+			
+			var results = space.intersect_point(query, 1)
+			if results.size() > 0:
+				var collider = results[0].collider
+				if collider and collider.name in entities:
+					hit_entity_id = collider.name
+		
+		_notify_js_input_event(input_type, x, y, hit_entity_id)
+
+func _js_on_input_event(args: Array) -> void:
+	if args.size() >= 1:
+		_js_input_event_callback = args[0]
+
+func _notify_js_input_event(input_type: String, x: float, y: float, entity_id: Variant) -> void:
+	if _js_input_event_callback != null:
+		_js_input_event_callback.call("call", null, [input_type, x, y, entity_id])
 
 func _js_on_collision(args: Array) -> void:
 	if args.size() >= 1:
@@ -312,7 +371,75 @@ func _js_on_entity_destroyed(args: Array) -> void:
 
 func _notify_js_collision(entity_a: String, entity_b: String, impulse: float) -> void:
 	if _js_collision_callback != null:
+		# Legacy format for backward compatibility
 		_js_collision_callback.call("call", null, [entity_a, entity_b, impulse])
+
+func _notify_js_collision_detailed(collision_data: Dictionary) -> void:
+	if _js_collision_callback != null:
+		# New detailed format: { entityA, entityB, contacts: [{point, normal, normalImpulse, tangentImpulse}] }
+		var json_str = JSON.stringify(collision_data)
+		_js_collision_callback.call("call", null, [json_str])
+
+func _handle_collision_manifold(body_node: RigidBody2D, state: PhysicsDirectBodyState2D) -> void:
+	var contact_count = state.get_contact_count()
+	if contact_count == 0:
+		return
+	
+	var entity_a = body_node.name
+	if not entities.has(entity_a):
+		return
+	
+	# Group contacts by colliding body
+	var contacts_by_body: Dictionary = {}
+	
+	for i in range(contact_count):
+		var collider = state.get_contact_collider_object(i)
+		if collider == null or not (collider is Node2D):
+			continue
+		
+		var entity_b = collider.name
+		if not entities.has(entity_b):
+			continue
+		
+		# Get contact data
+		var contact_pos = state.get_contact_local_position(i) / pixels_per_meter
+		var contact_normal = state.get_contact_local_normal(i)
+		var impulse_vec = state.get_contact_impulse(i)
+		var normal_impulse = impulse_vec.dot(contact_normal)
+		var tangent = Vector2(-contact_normal.y, contact_normal.x)
+		var tangent_impulse = impulse_vec.dot(tangent)
+		
+		# Only report if impulse is significant (avoid spam for resting contacts)
+		if abs(normal_impulse) < IMPULSE_THRESHOLD and abs(tangent_impulse) < IMPULSE_THRESHOLD:
+			continue
+		
+		if not contacts_by_body.has(entity_b):
+			contacts_by_body[entity_b] = []
+		
+		contacts_by_body[entity_b].append({
+			"point": {"x": contact_pos.x, "y": contact_pos.y},
+			"normal": {"x": contact_normal.x, "y": contact_normal.y},
+			"normalImpulse": normal_impulse / pixels_per_meter,
+			"tangentImpulse": tangent_impulse / pixels_per_meter
+		})
+	
+	# Emit collision events for each colliding body
+	for entity_b in contacts_by_body:
+		var contacts = contacts_by_body[entity_b]
+		
+		# Calculate total impulse for this collision pair
+		var total_impulse = 0.0
+		for contact in contacts:
+			total_impulse += abs(contact["normalImpulse"])
+		
+		var collision_data = {
+			"entityA": entity_a,
+			"entityB": entity_b,
+			"contacts": contacts
+		}
+		
+		_notify_js_collision_detailed(collision_data)
+		collision_occurred.emit(entity_a, entity_b, total_impulse)
 
 func _notify_js_destroy(entity_id: String) -> void:
 	if _js_destroy_callback != null:
@@ -493,6 +620,13 @@ func _create_physics_body(entity_id: String, physics_data: Dictionary, transform
 				var rigid = RigidBody2D.new()
 				rigid.gravity_scale = physics_data.get("gravityScale", 1.0)
 				
+				# Enable contact monitoring for detailed collision data
+				rigid.contact_monitor = true
+				rigid.max_contacts_reported = 4
+				
+				# Attach PhysicsBody script for _integrate_forces callback
+				rigid.set_script(load("res://scripts/PhysicsBody.gd"))
+				
 				# Set physics properties
 				var density = physics_data.get("density", 1.0)
 				var friction = physics_data.get("friction", 0.3)
@@ -531,7 +665,7 @@ func _create_physics_body(entity_id: String, physics_data: Dictionary, transform
 				if physics_data.get("bullet", false):
 					rigid.continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
 				
-				# Connect collision signals
+				# Connect collision signals (kept for backward compatibility)
 				rigid.body_entered.connect(_on_body_entered.bind(entity_id))
 				
 				node = rigid
@@ -733,6 +867,84 @@ func _apply_sprite_scale(sprite: Sprite2D, sprite_data: Dictionary, texture: Tex
 		target_w / texture.get_width(),
 		target_h / texture.get_height()
 	)
+
+func _js_set_entity_image(args: Array) -> void:
+	if args.size() < 4:
+		push_error("[GameBridge] setEntityImage requires 4 args: entity_id, url, width, height")
+		return
+	var entity_id = str(args[0])
+	var url = str(args[1])
+	var width = float(args[2])
+	var height = float(args[3])
+	
+	if not entities.has(entity_id):
+		push_error("[GameBridge] setEntityImage: entity not found: " + entity_id)
+		return
+	
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+	
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+	
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+	
+	var sprite_data = {"width": width, "height": height}
+	
+	if _texture_cache.has(url):
+		var texture = _texture_cache[url]
+		sprite.texture = texture
+		_apply_sprite_scale(sprite, sprite_data, texture)
+		print("[GameBridge] setEntityImage: applied cached texture for ", entity_id)
+		return
+	
+	var http = HTTPRequest.new()
+	add_child(http)
+	
+	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+			push_error("[GameBridge] Failed to download texture: " + url + " (code: " + str(response_code) + ")")
+			return
+		
+		var image = Image.new()
+		var err = image.load_png_from_buffer(body)
+		if err != OK:
+			err = image.load_jpg_from_buffer(body)
+		if err != OK:
+			err = image.load_webp_from_buffer(body)
+		if err != OK:
+			push_error("[GameBridge] Failed to parse image: " + url)
+			return
+		
+		var texture = ImageTexture.create_from_image(image)
+		_texture_cache[url] = texture
+		
+		if is_instance_valid(sprite):
+			sprite.texture = texture
+			_apply_sprite_scale(sprite, sprite_data, texture)
+		
+		print("[GameBridge] setEntityImage: loaded texture for ", entity_id, " from ", url)
+	)
+	
+	var err = http.request(url)
+	if err != OK:
+		push_error("[GameBridge] Failed to start texture download: " + url)
+		http.queue_free()
+
+func _js_clear_texture_cache(args: Array) -> void:
+	if args.size() > 0 and str(args[0]) != "":
+		var url = str(args[0])
+		if _texture_cache.has(url):
+			_texture_cache.erase(url)
+			print("[GameBridge] Cleared texture cache for: ", url)
+	else:
+		_texture_cache.clear()
+		print("[GameBridge] Cleared entire texture cache")
 
 func _on_body_entered(body: Node, entity_id: String) -> void:
 	if body.name in entities:
@@ -987,7 +1199,7 @@ func _js_create_prismatic_joint(args: Array) -> int:
 	var entity_a = str(args[0])
 	var entity_b = str(args[1])
 	var anchor = Vector2(float(args[2]), float(args[3])) * pixels_per_meter
-	var axis = Vector2(float(args[4]), float(args[5])).normalized()
+	var axis_vec = Vector2(float(args[4]), float(args[5])).normalized()
 	
 	if not entities.has(entity_a) or not entities.has(entity_b):
 		return -1
@@ -1000,6 +1212,9 @@ func _js_create_prismatic_joint(args: Array) -> int:
 	joint.node_a = node_a.get_path()
 	joint.node_b = node_b.get_path()
 	
+	# GrooveJoint2D slides along its local Y-axis. Rotate so local Y aligns with axis_vec.
+	joint.rotation = Vector2(0, 1).angle_to(axis_vec)
+	
 	# Set groove length based on limits
 	var lower = 0.0
 	var upper = 100.0  # Default groove length
@@ -1011,6 +1226,24 @@ func _js_create_prismatic_joint(args: Array) -> int:
 	joint.length = upper - lower
 	joint.initial_offset = -lower
 	
+	# Attach PrismaticJointDriver script for motor support
+	joint.set_script(load("res://scripts/PrismaticJointDriver.gd"))
+	
+	# Set motor properties (args 9, 10, 11)
+	var motor_enabled = false
+	var motor_speed = 0.0
+	var max_motor_force = 0.0
+	if args.size() > 9:
+		motor_enabled = bool(args[9])
+	if args.size() > 10:
+		motor_speed = float(args[10]) * pixels_per_meter
+	if args.size() > 11:
+		max_motor_force = float(args[11]) * pixels_per_meter
+	
+	joint.motor_enabled = motor_enabled
+	joint.motor_speed = motor_speed
+	joint.max_motor_force = max_motor_force
+	
 	var main = get_tree().current_scene
 	if main:
 		main.add_child(joint)
@@ -1021,7 +1254,7 @@ func _js_create_prismatic_joint(args: Array) -> int:
 
 func _js_create_weld_joint(args: Array) -> int:
 	# args: [bodyA_id, bodyB_id, anchorX, anchorY, stiffness, damping]
-	# Godot doesn't have weld joint, use very stiff DampedSpringJoint2D
+	# Simulate rigid weld using two PinJoint2Ds offset from each other to prevent rotation
 	if args.size() < 4:
 		return -1
 	
@@ -1035,34 +1268,79 @@ func _js_create_weld_joint(args: Array) -> int:
 	var node_a = entities[entity_a]
 	var node_b = entities[entity_b]
 	
-	# For a weld, we use a very stiff spring with zero rest length
-	var joint = DampedSpringJoint2D.new()
-	joint.position = anchor
-	joint.node_a = node_a.get_path()
-	joint.node_b = node_b.get_path()
-	joint.length = 0.1  # Very small
-	joint.rest_length = 0.1
-	joint.stiffness = 10000.0  # Very stiff
-	joint.damping = 100.0
+	# Validate both are physics bodies that support joints
+	if not (node_a is RigidBody2D or node_a is StaticBody2D or node_a is CharacterBody2D):
+		push_error("[GameBridge] createWeldJoint: node_a is not a physics body")
+		return -1
+	if not (node_b is RigidBody2D or node_b is StaticBody2D or node_b is CharacterBody2D):
+		push_error("[GameBridge] createWeldJoint: node_b is not a physics body")
+		return -1
 	
-	if args.size() > 4:
-		joint.stiffness = float(args[4])
-	if args.size() > 5:
-		joint.damping = float(args[5])
+	# Create a container Node2D to hold both joints (for easy cleanup)
+	var container = Node2D.new()
+	container.name = "WeldJoint_%d" % (joint_counter + 1)
+	
+	# Joint 1: PinJoint2D at the anchor point
+	var joint1 = PinJoint2D.new()
+	joint1.position = anchor
+	joint1.node_a = node_a.get_path()
+	joint1.node_b = node_b.get_path()
+	container.add_child(joint1)
+	
+	# Joint 2: PinJoint2D offset by 10 pixels to prevent rotation
+	var joint2 = PinJoint2D.new()
+	joint2.position = anchor + Vector2(10, 0)
+	joint2.node_a = node_a.get_path()
+	joint2.node_b = node_b.get_path()
+	container.add_child(joint2)
 	
 	var main = get_tree().current_scene
 	if main:
-		main.add_child(joint)
+		main.add_child(container)
 	
 	joint_counter += 1
-	joints[joint_counter] = joint
+	joints[joint_counter] = container
 	return joint_counter
 
-func _js_create_mouse_joint(args: Array) -> int:
+# Synchronous version for native (react-native-godot) - returns joint_id directly
+func create_mouse_joint(entity_id: String, target_x: float, target_y: float, max_force: float, stiffness: float, damping: float) -> int:
+	print("[GameBridge] create_mouse_joint: entity='%s', target=(%s, %s)" % [entity_id, target_x, target_y])
+	
+	if not entities.has(entity_id):
+		print("[GameBridge] create_mouse_joint: entity '%s' not found" % entity_id)
+		return -1
+	
+	joint_counter += 1
+	joints[joint_counter] = {
+		"type": "mouse",
+		"entity_id": entity_id,
+		"target": Vector2(target_x, target_y) * pixels_per_meter,
+		"max_force": max_force,
+		"stiffness": stiffness,
+		"damping": damping
+	}
+	print("[GameBridge] create_mouse_joint: created joint %d for entity '%s'" % [joint_counter, entity_id])
+	return joint_counter
+
+func set_mouse_target(joint_id: int, target_x: float, target_y: float) -> void:
+	if joints.has(joint_id):
+		var joint = joints[joint_id]
+		if joint is Dictionary and joint.get("type") == "mouse":
+			joint["target"] = Vector2(target_x, target_y) * pixels_per_meter
+
+func destroy_joint(joint_id: int) -> void:
+	if joints.has(joint_id):
+		var joint = joints[joint_id]
+		if joint is Node:
+			joint.queue_free()
+		joints.erase(joint_id)
+
+func _js_create_mouse_joint(args: Array) -> void:
 	# args: [body_id, targetX, targetY, maxForce, stiffness, damping]
 	# Mouse joint simulated by applying forces towards target
 	if args.size() < 4:
-		return -1
+		JavaScriptBridge.eval("window.GodotBridge._lastResult = -1;")
+		return
 	
 	var entity_id = str(args[0])
 	var target_x = float(args[1]) * pixels_per_meter
@@ -1070,7 +1348,9 @@ func _js_create_mouse_joint(args: Array) -> int:
 	var max_force = float(args[3])
 	
 	if not entities.has(entity_id):
-		return -1
+		print("[GameBridge] createMouseJoint: entity '%s' not found" % entity_id)
+		JavaScriptBridge.eval("window.GodotBridge._lastResult = -1;")
+		return
 	
 	# Store mouse joint data (we'll apply forces in _physics_process)
 	joint_counter += 1
@@ -1082,7 +1362,8 @@ func _js_create_mouse_joint(args: Array) -> int:
 		"stiffness": float(args[4]) if args.size() > 4 else 5.0,
 		"damping": float(args[5]) if args.size() > 5 else 0.7
 	}
-	return joint_counter
+	print("[GameBridge] createMouseJoint: created joint %d for entity '%s'" % [joint_counter, entity_id])
+	JavaScriptBridge.eval("window.GodotBridge._lastResult = %d;" % joint_counter)
 
 func _js_destroy_joint(args: Array) -> void:
 	if args.size() < 1:
@@ -1138,6 +1419,123 @@ func _js_query_point(args: Array) -> Variant:
 			if body_id_map.has(entity_id):
 				return body_id_map[entity_id]
 	return null
+
+func _js_query_point_entity(args: Array) -> void:
+	# JavaScriptBridge.create_callback() does NOT pass return values to JS!
+	# Use JavaScriptBridge.eval() to set window.GodotBridge._lastResult directly
+	if args.size() < 2:
+		print("[GameBridge] queryPointEntity: not enough args")
+		JavaScriptBridge.eval("window.GodotBridge._lastResult = null;")
+		return
+	var point = Vector2(float(args[0]), float(args[1])) * pixels_per_meter
+	print("[GameBridge] queryPointEntity: world=(%s, %s) -> pixels=(%s, %s)" % [args[0], args[1], point.x, point.y])
+	
+	# Debug: print entity positions
+	for eid in entities:
+		var e = entities[eid]
+		if e is RigidBody2D:
+			var shape_info = "no shape"
+			for child in e.get_children():
+				if child is CollisionShape2D:
+					var s = child.shape
+					if s is RectangleShape2D:
+						shape_info = "rect size=%s" % s.size
+					elif s is CircleShape2D:
+						shape_info = "circle r=%s" % s.radius
+			print("[GameBridge]   entity '%s' at pixels (%s, %s), layer=%s, %s" % [eid, e.position.x, e.position.y, e.collision_layer, shape_info])
+	
+	var space = get_viewport().find_world_2d().direct_space_state
+	if not space:
+		print("[GameBridge] queryPointEntity: no physics space!")
+		JavaScriptBridge.eval("window.GodotBridge._lastResult = null;")
+		return
+	
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = point
+	query.collision_mask = 0xFFFFFFFF
+	query.collide_with_bodies = true
+	query.collide_with_areas = true
+	
+	var results = space.intersect_point(query, 32)
+	print("[GameBridge] queryPointEntity: found %s results" % results.size())
+	for i in range(results.size()):
+		var collider = results[i].collider
+		print("[GameBridge]   result[%s]: %s (name=%s)" % [i, collider, collider.name if collider else "null"])
+	
+	if results.size() > 0:
+		var collider = results[0].collider
+		if collider and collider.name in entities:
+			var entity_name = collider.name
+			print("[GameBridge] queryPointEntity: returning '%s'" % entity_name)
+			var js_code = "console.log('[GDScript eval] Setting _lastResult to: %s'); window.GodotBridge._lastResult = '%s';" % [entity_name, entity_name]
+			print("[GameBridge] Executing JS: %s" % js_code)
+			JavaScriptBridge.eval(js_code)
+			return
+	JavaScriptBridge.eval("console.log('[GDScript eval] Setting _lastResult to null'); window.GodotBridge._lastResult = null;")
+
+# Synchronous version for native (react-native-godot) - returns entity_id directly
+func query_point_entity(x: float, y: float) -> Variant:
+	var point = Vector2(x, y) * pixels_per_meter
+	print("[GameBridge] query_point_entity: world=(%s, %s) -> pixels=(%s, %s)" % [x, y, point.x, point.y])
+	
+	var space = get_viewport().find_world_2d().direct_space_state
+	if not space:
+		print("[GameBridge] query_point_entity: no physics space!")
+		return null
+	
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = point
+	query.collision_mask = 0xFFFFFFFF
+	query.collide_with_bodies = true
+	query.collide_with_areas = true
+	
+	var results = space.intersect_point(query, 32)
+	print("[GameBridge] query_point_entity: found %s results" % results.size())
+	
+	if results.size() > 0:
+		var collider = results[0].collider
+		if collider and collider.name in entities:
+			print("[GameBridge] query_point_entity: returning '%s'" % collider.name)
+			return collider.name
+	return null
+
+func query_point_entity_async(request_id: int, x: float, y: float) -> void:
+	var point = Vector2(x, y) * pixels_per_meter
+	
+	var space = get_viewport().find_world_2d().direct_space_state
+	if not space:
+		emit_signal("query_result", request_id, null)
+		return
+	
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = point
+	query.collision_mask = 0xFFFFFFFF
+	query.collide_with_bodies = true
+	query.collide_with_areas = true
+	
+	var results = space.intersect_point(query, 32)
+	if results.size() > 0:
+		var collider = results[0].collider
+		if collider and collider.name in entities:
+			emit_signal("query_result", request_id, collider.name)
+			return
+	emit_signal("query_result", request_id, null)
+
+func create_mouse_joint_async(request_id: int, entity_id: String, target_x: float, target_y: float, max_force: float, stiffness: float, damping: float) -> void:
+	if not entities.has(entity_id):
+		emit_signal("joint_created", request_id, -1)
+		return
+	
+	joint_counter += 1
+	joints[joint_counter] = {
+		"type": "mouse",
+		"entity_id": entity_id,
+		"target": Vector2(target_x, target_y) * pixels_per_meter,
+		"max_force": max_force,
+		"stiffness": stiffness,
+		"damping": damping
+	}
+	emit_signal("joint_created", request_id, joint_counter)
 
 func _js_query_aabb(args: Array) -> Array:
 	if args.size() < 4:

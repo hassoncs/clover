@@ -11,10 +11,17 @@ export interface EntityTransform {
   angle: number;
 }
 
+export interface ContactInfo {
+  point: Vec2;
+  normal: Vec2;
+  normalImpulse: number;
+  tangentImpulse: number;
+}
+
 export interface CollisionEvent {
   entityA: string;
   entityB: string;
-  impulse: number;
+  contacts: ContactInfo[];
 }
 
 export interface SensorEvent {
@@ -213,12 +220,15 @@ export interface GodotBridge {
   createPrismaticJoint(def: PrismaticJointDef): number;
   createWeldJoint(def: WeldJointDef): number;
   createMouseJoint(def: MouseJointDef): number;
+  createMouseJointAsync?(def: MouseJointDef): Promise<number>;
   destroyJoint(jointId: number): void;
   setMotorSpeed(jointId: number, speed: number): void;
   setMouseTarget(jointId: number, target: Vec2): void;
 
   // Physics queries
   queryPoint(point: Vec2): number | null;
+  queryPointEntity(point: Vec2): string | null;
+  queryPointEntityAsync?(point: Vec2): Promise<string | null>;
   queryAABB(min: Vec2, max: Vec2): number[];
   raycast(origin: Vec2, direction: Vec2, maxDistance: number): RaycastHit | null;
 
@@ -238,6 +248,11 @@ export interface GodotBridge {
 
   // Input
   sendInput(type: 'tap' | 'drag_start' | 'drag_move' | 'drag_end', data: { x: number; y: number; entityId?: string }): void;
+  onInputEvent(callback: (type: string, x: number, y: number, entityId: string | null) => void): () => void;
+
+  // Dynamic image management
+  setEntityImage(entityId: string, url: string, width: number, height: number): void;
+  clearTextureCache(url?: string): void;
 }
 
 export interface GodotViewProps {

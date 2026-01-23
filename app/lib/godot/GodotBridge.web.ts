@@ -2,6 +2,7 @@ import type { GameDefinition } from '@slopcade/shared';
 import type {
   GodotBridge,
   CollisionEvent,
+  ContactInfo,
   SensorEvent,
   EntityTransform,
   Vec2,
@@ -18,6 +19,7 @@ import type {
 declare global {
   interface Window {
     GodotBridge?: {
+      _lastResult: unknown;
       loadGameJson: (json: string) => boolean;
       clearGame: () => void;
       spawnEntity: (templateId: string, x: number, y: number, entityId: string) => void;
@@ -43,6 +45,7 @@ declare global {
       setMotorSpeed: (jointId: number, speed: number) => void;
       setMouseTarget: (jointId: number, x: number, y: number) => void;
       queryPoint: (x: number, y: number) => number | null;
+      queryPointEntity: (x: number, y: number) => void;
       queryAABB: (minX: number, minY: number, maxX: number, maxY: number) => number[];
       raycast: (originX: number, originY: number, dirX: number, dirY: number, maxDist: number) => RaycastHit | null;
       createBody: (...args: (string | number | boolean | unknown)[]) => number;
@@ -52,10 +55,13 @@ declare global {
       getUserData: (bodyId: number) => unknown;
       getAllBodies: () => number[];
       sendInput: (type: string, x: number, y: number, entityId: string) => void;
-      onCollision: (callback: (entityA: string, entityB: string, impulse: number) => void) => void;
+      onCollision: (callback: (dataOrEntityA: string, entityB?: string, impulse?: number) => void) => void;
       onEntityDestroyed: (callback: (entityId: string) => void) => void;
       onSensorBegin: (callback: (sensorId: number, bodyId: number, colliderId: number) => void) => void;
       onSensorEnd: (callback: (sensorId: number, bodyId: number, colliderId: number) => void) => void;
+      onInputEvent: (callback: (type: string, x: number, y: number, entityId: string | null) => void) => void;
+      setEntityImage: (entityId: string, url: string, width: number, height: number) => void;
+      clearTextureCache: (url: string) => void;
     };
   }
 }
@@ -65,6 +71,7 @@ export function createWebGodotBridge(): GodotBridge {
   const destroyCallbacks: ((entityId: string) => void)[] = [];
   const sensorBeginCallbacks: ((event: SensorEvent) => void)[] = [];
   const sensorEndCallbacks: ((event: SensorEvent) => void)[] = [];
+  const inputEventCallbacks: ((type: string, x: number, y: number, entityId: string | null) => void)[] = [];
 
   const getGodotBridge = (): Window['GodotBridge'] | null => {
     const iframe = document.querySelector('iframe[title="Godot Game Engine"]') as HTMLIFrameElement | null;
@@ -85,8 +92,35 @@ export function createWebGodotBridge(): GodotBridge {
             clearInterval(checkReady);
             clearTimeout(timeout);
 
-            godotBridge.onCollision((entityA, entityB, impulse) => {
-              const event: CollisionEvent = { entityA, entityB, impulse };
+            godotBridge.onCollision((dataOrEntityA: string, entityB?: string, impulse?: number) => {
+              let event: CollisionEvent;
+              
+              const isNewJsonFormat = entityB === undefined;
+              if (isNewJsonFormat) {
+                try {
+                  const parsed = JSON.parse(dataOrEntityA);
+                  event = {
+                    entityA: parsed.entityA,
+                    entityB: parsed.entityB,
+                    contacts: parsed.contacts as ContactInfo[],
+                  };
+                } catch {
+                  console.warn('[GodotBridge.web] Failed to parse collision data:', dataOrEntityA);
+                  return;
+                }
+              } else {
+                event = {
+                  entityA: dataOrEntityA,
+                  entityB: entityB,
+                  contacts: [{
+                    point: { x: 0, y: 0 },
+                    normal: { x: 0, y: 1 },
+                    normalImpulse: impulse ?? 0,
+                    tangentImpulse: 0,
+                  }],
+                };
+              }
+              
               for (const cb of collisionCallbacks) cb(event);
             });
 
@@ -104,6 +138,10 @@ export function createWebGodotBridge(): GodotBridge {
               for (const cb of sensorEndCallbacks) cb(event);
             });
 
+            godotBridge.onInputEvent((type, x, y, entityId) => {
+              for (const cb of inputEventCallbacks) cb(type, x, y, entityId);
+            });
+
             resolve();
           }
         }, 100);
@@ -115,6 +153,7 @@ export function createWebGodotBridge(): GodotBridge {
       destroyCallbacks.length = 0;
       sensorBeginCallbacks.length = 0;
       sensorEndCallbacks.length = 0;
+      inputEventCallbacks.length = 0;
     },
 
     async loadGame(definition: GameDefinition) {
@@ -222,12 +261,19 @@ export function createWebGodotBridge(): GodotBridge {
     },
 
     createMouseJoint(def: MouseJointDef): number {
-      return getGodotBridge()?.createMouseJoint(
+      const godotBridge = getGodotBridge();
+      if (!godotBridge) return -1;
+      godotBridge.createMouseJoint(
         def.body,
         def.target.x, def.target.y,
         def.maxForce,
         def.stiffness ?? 5, def.damping ?? 0.7
-      ) ?? -1;
+      );
+      return (godotBridge._lastResult as number) ?? -1;
+    },
+
+    async createMouseJointAsync(def: MouseJointDef): Promise<number> {
+      return this.createMouseJoint(def);
     },
 
     destroyJoint(jointId: number) {
@@ -244,6 +290,19 @@ export function createWebGodotBridge(): GodotBridge {
 
     queryPoint(point: Vec2): number | null {
       return getGodotBridge()?.queryPoint(point.x, point.y) ?? null;
+    },
+
+    queryPointEntity(point: Vec2): string | null {
+      const godotBridge = getGodotBridge();
+      if (!godotBridge) return null;
+      godotBridge.queryPointEntity(point.x, point.y);
+      const result = godotBridge._lastResult;
+      console.log('[GodotBridge.web] queryPointEntity _lastResult:', result, 'type:', typeof result);
+      return (result as string | null) ?? null;
+    },
+
+    async queryPointEntityAsync(point: Vec2): Promise<string | null> {
+      return this.queryPointEntity(point);
     },
 
     queryAABB(min: Vec2, max: Vec2): number[] {
@@ -345,6 +404,22 @@ export function createWebGodotBridge(): GodotBridge {
 
     sendInput(type, data) {
       getGodotBridge()?.sendInput(type, data.x, data.y, data.entityId ?? '');
+    },
+
+    onInputEvent(callback: (type: string, x: number, y: number, entityId: string | null) => void): () => void {
+      inputEventCallbacks.push(callback);
+      return () => {
+        const index = inputEventCallbacks.indexOf(callback);
+        if (index >= 0) inputEventCallbacks.splice(index, 1);
+      };
+    },
+
+    setEntityImage(entityId: string, url: string, width: number, height: number) {
+      getGodotBridge()?.setEntityImage(entityId, url, width, height);
+    },
+
+    clearTextureCache(url?: string) {
+      getGodotBridge()?.clearTextureCache(url ?? '');
     },
   };
 

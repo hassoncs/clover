@@ -22,8 +22,11 @@
     "verify:ios": "pnpm run doctor && pnpm run pods && pnpm run ios",
     "verify:android": "pnpm run doctor && pnpm run android",
     "postinstall": "echo 'postinstall complete'",
-    "deploy": "npx expo export -p web && npx wrangler pages deploy dist/ --project-name=slopcade",
-    "build": "expo export -p web"
+    "deploy": "node ../scripts/export-godot.mjs --once && npx expo export -p web && npx wrangler pages deploy dist/ --project-name=slopcade",
+    "build": "node ../scripts/export-godot.mjs --once && expo export -p web",
+    "godot:export": "node ../scripts/export-godot.mjs --once",
+    "godot:watch": "node ../scripts/export-godot.mjs --watch",
+    "godot:check": "node ../scripts/export-godot.mjs --check"
   },
   "dependencies": {
     "@borndotcom/react-native-godot": "^1.0.1",
@@ -31,7 +34,6 @@
     "@gorhom/bottom-sheet": "^5.2.8",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/slider": "^5.1.2",
-
     "@slopcade/shared": "workspace:*",
     "@slopcade/theme": "workspace:*",
     "@slopcade/ui": "workspace:*",
@@ -40,7 +42,6 @@
     "@trpc/client": "11.8.1",
     "@trpc/react-query": "^11.8.1",
     "aes-js": "^3.1.2",
-
     "expo": "^54.0.1",
     "expo-constants": "^18.0.13",
     "expo-linking": "^8.0.8",
@@ -54,7 +55,6 @@
     "react-dom": "19.1.0",
     "react-native": "0.81.4",
     "react-native-ble-plx": "^3.5.0",
-
     "react-native-css-interop": "0.2.1",
     "react-native-gesture-handler": "^2.30.0",
     "react-native-get-random-values": "^2.0.0",
@@ -63,7 +63,8 @@
     "react-native-screens": "~4.16.0",
     "react-native-sortable-list": "^0.0.25",
     "react-native-web": "^0.21.0",
-    "react-native-worklets": "^0.7.0"
+    "react-native-worklets": "^0.7.0",
+    "react-native-worklets-core": "^1.6.2"
   },
   "private": true,
   "devDependencies": {

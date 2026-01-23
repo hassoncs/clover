@@ -49,12 +49,7 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
         bodyB,
         colliderA: createColliderId(bodyA.value),
         colliderB: createColliderId(bodyB.value),
-        contacts: [{
-          point: { x: 0, y: 0 },
-          normal: { x: 0, y: 1 },
-          normalImpulse: event.impulse,
-          tangentImpulse: 0,
-        }],
+        contacts: event.contacts,
       };
       for (const cb of collisionBeginCallbacks) {
         cb(collisionEvent);
