@@ -82,7 +82,7 @@ const game: GameDefinition = {
         friction: 0,
         restitution: 1,
         linearDamping: 0,
-        initialVelocity: { x: 3, y: -6 },
+        initialVelocity: { x: 3, y: 6 },
         bullet: true,
       },
     },
@@ -288,7 +288,7 @@ const game: GameDefinition = {
       actions: [
         { type: "lives", operation: "subtract", value: 1 },
         { type: "destroy", target: { type: "by_tag", tag: "ball" } },
-        { type: "spawn", template: "ball", position: { type: "fixed", x: cx(5), y: cy(15) } },
+        { type: "spawn", template: "ball", position: { type: "fixed", x: 0, y: 0 } },
       ],
     },
     {
