@@ -41,6 +41,8 @@ export interface SlotDefinition {
 
 export interface EntityTemplate {
   id: string;
+  /** Human-readable description for AI image generation prompts */
+  description?: string;
   sprite?: SpriteComponent;
   physics?: PhysicsComponent;
   behaviors?: Behavior[];

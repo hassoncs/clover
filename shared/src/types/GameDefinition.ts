@@ -104,6 +104,7 @@ export interface GameMetadata {
   createdAt?: number;
   updatedAt?: number;
   thumbnailUrl?: string;
+  titleHeroImageUrl?: string;
 }
 
 export type AssetSource = 'generated' | 'uploaded' | 'none';
@@ -142,6 +143,19 @@ export interface ParallaxLayer {
   offsetY?: number;
   visible?: boolean;
 }
+
+export interface ParallaxBackground {
+  type: 'parallax';
+  layers: ParallaxLayer[];
+}
+
+export interface StaticBackground {
+  type: 'static';
+  imageUrl?: string;
+  color?: string;
+}
+
+export type BackgroundConfig = StaticBackground | ParallaxBackground;
 
 export interface ParallaxConfig {
   enabled: boolean;
@@ -214,6 +228,7 @@ export interface GameDefinition {
   presentation?: PresentationConfig;
   camera?: CameraConfig;
   ui?: UIConfig;
+  background?: BackgroundConfig;
   variables?: Record<string, GameVariableValue>;
   templates: Record<string, EntityTemplate>;
   entities: GameEntity[];
@@ -226,6 +241,7 @@ export interface GameDefinition {
   assetPacks?: Record<string, AssetPack>;
   activeAssetPackId?: string;
   assetSystem?: AssetSystemConfig;
+  /** @deprecated Use background with type: 'parallax' instead */
   parallaxConfig?: ParallaxConfig;
   tileSheets?: TileSheet[];
   tileMaps?: TileMap[];

@@ -2,7 +2,7 @@ import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
 export const metadata: TestGameMeta = {
-  title: "Peggle",
+  title: "Slopeggle",
   description: "Clear all orange pegs by bouncing a ball through the board",
 };
 
@@ -73,8 +73,8 @@ const orangePegEntities = pegLayout
 
 const game: GameDefinition = {
   metadata: {
-    id: "test-peggle",
-    title: "Peggle",
+    id: "test-slopeggle",
+    title: "Slopeggle",
     description: "Clear all orange pegs by bouncing a ball through the board",
     instructions: "Touch and hold to aim the cannon, then release to fire! Clear all 10 orange pegs to win. You have 10 balls.",
     version: "1.0.0",
