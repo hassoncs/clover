@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { View, Text, Pressable, ActivityIndicator, TextInput, Modal, ScrollView } from "react-native";
+import { View, Text, Pressable, ActivityIndicator, TextInput, Modal, ScrollView, Image } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { trpc } from "@/lib/trpc/client";
@@ -9,12 +9,14 @@ import { FullScreenHeader } from "../../components/FullScreenHeader";
 import { EntityAssetList, ParallaxAssetPanel } from "../../components/assets";
 import { AssetLoadingScreen } from "../../components/game";
 import { useGamePreloader } from "@/lib/hooks/useGamePreloader";
+import type { ResolvedPackEntry } from "@/lib/assets";
 
 export default function PlayScreen() {
   const router = useRouter();
-  const { id, definition: definitionParam } = useLocalSearchParams<{
+  const { id, definition: definitionParam, packId } = useLocalSearchParams<{
     id: string;
     definition?: string;
+    packId?: string;
   }>();
   
   const [gameDefinition, setGameDefinition] = useState<GameDefinition | null>(null);
@@ -30,7 +32,60 @@ export default function PlayScreen() {
   const [activeAssetPackId, setActiveAssetPackId] = useState<string | undefined>(undefined);
   const [isForking, setIsForking] = useState(false);
 
-  const { phase, progress, startPreload, skipPreload, reset } = useGamePreloader(gameDefinition);
+  const [resolvedPackEntries, setResolvedPackEntries] = useState<Record<string, ResolvedPackEntry> | undefined>(undefined);
+  const [availablePacks, setAvailablePacks] = useState<{ id: string; name: string; isComplete: boolean }[]>([]);
+  const [isLoadingPack, setIsLoadingPack] = useState(false);
+
+  const { phase, progress, startPreload, skipPreload, reset } = useGamePreloader(gameDefinition, {
+    resolvedPackEntries,
+  });
+
+  useEffect(() => {
+    if (id && id !== "preview") {
+      trpc.assetSystem.getCompatiblePacks.query({ gameId: id })
+        .then(result => {
+          setAvailablePacks(result.packs);
+        })
+        .catch(err => console.error("Failed to fetch compatible packs:", err));
+    }
+  }, [id]);
+
+  useEffect(() => {
+    const loadPack = async () => {
+      if (!id || id === "preview" || !packId) {
+        setResolvedPackEntries(undefined);
+        return;
+      }
+
+      setIsLoadingPack(true);
+      try {
+        const result = await trpc.assetSystem.getResolvedForGame.query({
+          gameId: id,
+          packId,
+        });
+
+        const entries: Record<string, ResolvedPackEntry> = {};
+        Object.entries(result.entriesByTemplateId).forEach(([templateId, entry]) => {
+          if (entry.imageUrl) {
+            entries[templateId] = {
+              imageUrl: entry.imageUrl,
+              placement: entry.placement || undefined,
+            };
+          }
+        });
+
+        setResolvedPackEntries(entries);
+        setActiveAssetPackId(packId);
+      } catch (err) {
+        console.error("Failed to load asset pack:", err);
+        setResolvedPackEntries(undefined);
+      } finally {
+        setIsLoadingPack(false);
+      }
+    };
+
+    loadPack();
+  }, [id, packId]);
 
   useEffect(() => {
     const loadGame = async () => {
@@ -41,12 +96,16 @@ export default function PlayScreen() {
         if (definitionParam) {
           const parsed = JSON.parse(definitionParam) as GameDefinition;
           setGameDefinition(parsed);
-          setActiveAssetPackId(parsed.activeAssetPackId);
+          if (!packId) {
+            setActiveAssetPackId(parsed.activeAssetPackId);
+          }
         } else if (id && id !== "preview") {
           const game = await trpc.games.get.query({ id });
           const parsed = JSON.parse(game.definition) as GameDefinition;
           setGameDefinition(parsed);
-          setActiveAssetPackId(parsed.activeAssetPackId);
+          if (!packId) {
+            setActiveAssetPackId(parsed.activeAssetPackId);
+          }
 
           await trpc.games.incrementPlayCount.mutate({ id });
         } else {
@@ -61,13 +120,13 @@ export default function PlayScreen() {
     };
 
     loadGame();
-  }, [id, definitionParam]);
+  }, [id, definitionParam, packId]);
 
   useEffect(() => {
-    if (gameDefinition && !isLoadingDefinition && phase === 'idle') {
+    if (gameDefinition && !isLoadingDefinition && !isLoadingPack && phase === 'idle') {
       startPreload();
     }
-  }, [gameDefinition, isLoadingDefinition, phase, startPreload]);
+  }, [gameDefinition, isLoadingDefinition, isLoadingPack, phase, startPreload]);
 
   const handleGameEnd = useCallback((state: "won" | "lost") => {
     console.log(`Game ended: ${state}`);
@@ -78,6 +137,19 @@ export default function PlayScreen() {
     setRuntimeKey((k) => k + 1);
     startPreload();
   }, [reset, startPreload]);
+
+  const handlePackSelect = (newPackId: string) => {
+    if (newPackId === activeAssetPackId) return;
+    
+    router.replace({
+      pathname: "/play/[id]",
+      params: { id: id!, packId: newPackId }
+    });
+    
+    reset();
+    setRuntimeKey(k => k + 1);
+    setShowAssetMenu(false);
+  };
 
   const handleBack = useCallback(() => {
     router.back();
@@ -372,6 +444,30 @@ export default function PlayScreen() {
           <View className="bg-gray-800 w-full max-w-sm rounded-xl p-6">
             <Text className="text-white text-xl font-bold mb-4">Generate Asset Pack</Text>
             
+            {availablePacks.length > 0 && (
+              <View className="mb-6">
+                <Text className="text-gray-400 mb-2">Select Asset Pack</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row gap-2">
+                  {availablePacks.map(pack => (
+                    <Pressable
+                      key={pack.id}
+                      className={`p-3 rounded-lg mr-2 border ${
+                        activeAssetPackId === pack.id 
+                          ? 'bg-indigo-600 border-indigo-400' 
+                          : 'bg-gray-700 border-gray-600'
+                      } ${!pack.isComplete ? 'opacity-50' : ''}`}
+                      onPress={() => handlePackSelect(pack.id)}
+                    >
+                      <Text className="text-white font-semibold">{pack.name}</Text>
+                      {!pack.isComplete && (
+                        <Text className="text-xs text-yellow-400 mt-1">Generating...</Text>
+                      )}
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
             <Text className="text-gray-400 mb-2">Theme Prompt</Text>
             <TextInput
               className="bg-gray-700 text-white p-3 rounded-lg mb-4"

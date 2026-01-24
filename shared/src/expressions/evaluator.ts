@@ -327,6 +327,186 @@ const BUILTIN_FUNCTIONS: Record<string, BuiltinFunction> = {
     return result;
   },
 
+  entityScale: (args, ctx) => {
+    assertArgCount('entityScale', args, 1);
+    const idOrTag = String(args[0]);
+    if (!ctx.entityManager) return 1;
+    const entity = ctx.entityManager.getEntity(idOrTag) 
+      ?? ctx.entityManager.getEntitiesByTag(idOrTag)[0];
+    if (!entity) return 1;
+    return entity.transform.scaleX;
+  },
+
+  entityWidth: (args, ctx) => {
+    assertArgCount('entityWidth', args, 1);
+    const idOrTag = String(args[0]);
+    if (!ctx.entityManager) return 0;
+    const entity = ctx.entityManager.getEntity(idOrTag)
+      ?? ctx.entityManager.getEntitiesByTag(idOrTag)[0];
+    if (!entity?.sprite) return 0;
+    const sprite = entity.sprite;
+    if (sprite.type === 'rect' && sprite.width !== undefined) {
+      return sprite.width * entity.transform.scaleX;
+    }
+    if (sprite.type === 'circle' && sprite.radius !== undefined) {
+      return sprite.radius * 2 * entity.transform.scaleX;
+    }
+    return 0;
+  },
+
+  entityHeight: (args, ctx) => {
+    assertArgCount('entityHeight', args, 1);
+    const idOrTag = String(args[0]);
+    if (!ctx.entityManager) return 0;
+    const entity = ctx.entityManager.getEntity(idOrTag)
+      ?? ctx.entityManager.getEntitiesByTag(idOrTag)[0];
+    if (!entity?.sprite) return 0;
+    const sprite = entity.sprite;
+    if (sprite.type === 'rect' && sprite.height !== undefined) {
+      return sprite.height * entity.transform.scaleY;
+    }
+    if (sprite.type === 'circle' && sprite.radius !== undefined) {
+      return sprite.radius * 2 * entity.transform.scaleY;
+    }
+    return 0;
+  },
+
+  entityRadius: (args, ctx) => {
+    assertArgCount('entityRadius', args, 1);
+    const idOrTag = String(args[0]);
+    if (!ctx.entityManager) return 0;
+    const entity = ctx.entityManager.getEntity(idOrTag)
+      ?? ctx.entityManager.getEntitiesByTag(idOrTag)[0];
+    if (!entity?.sprite) return 0;
+    const sprite = entity.sprite;
+    if (sprite.type === 'circle' && sprite.radius !== undefined) {
+      return sprite.radius * entity.transform.scaleX;
+    }
+    if (sprite.type === 'rect' && sprite.width !== undefined && sprite.height !== undefined) {
+      return Math.max(sprite.width, sprite.height) * entity.transform.scaleX / 2;
+    }
+    return 0;
+  },
+
+  entitiesInRadius: (args, ctx) => {
+    if (args.length < 2) {
+      throw new Error('entitiesInRadius(position, radius, [tags]) requires at least 2 arguments');
+    }
+    const pos = asVec2(args[0]);
+    const radius = asNumber(args[1]);
+    const tags = args.length > 2 ? String(args[2]).split(',').map(t => t.trim()) : undefined;
+    
+    if (!ctx.entityManager) return [];
+    
+    const radiusSq = radius * radius;
+    const results: string[] = [];
+    
+    const checkEntities = (entities: { id: string; transform: { x: number; y: number } }[]) => {
+      for (const e of entities) {
+        const dx = e.transform.x - pos.x;
+        const dy = e.transform.y - pos.y;
+        if (dx * dx + dy * dy <= radiusSq) {
+          results.push(e.id);
+        }
+      }
+    };
+    
+    if (tags && tags.length > 0) {
+      for (const tag of tags) {
+        checkEntities(ctx.entityManager.getEntitiesByTag(tag));
+      }
+    } else {
+      checkEntities(ctx.entityManager.getEntitiesByTag('*') ?? []);
+    }
+    
+    return results;
+  },
+
+  countInRadius: (args, ctx) => {
+    if (args.length < 2) {
+      throw new Error('countInRadius(position, radius, [tags]) requires at least 2 arguments');
+    }
+    const pos = asVec2(args[0]);
+    const radius = asNumber(args[1]);
+    const tags = args.length > 2 ? String(args[2]).split(',').map(t => t.trim()) : undefined;
+    
+    if (!ctx.entityManager) return 0;
+    
+    const radiusSq = radius * radius;
+    let count = 0;
+    
+    const checkEntities = (entities: { id: string; transform: { x: number; y: number } }[]) => {
+      for (const e of entities) {
+        const dx = e.transform.x - pos.x;
+        const dy = e.transform.y - pos.y;
+        if (dx * dx + dy * dy <= radiusSq) {
+          count++;
+        }
+      }
+    };
+    
+    if (tags && tags.length > 0) {
+      for (const tag of tags) {
+        checkEntities(ctx.entityManager.getEntitiesByTag(tag));
+      }
+    } else {
+      checkEntities(ctx.entityManager.getEntitiesByTag('*') ?? []);
+    }
+    
+    return count;
+  },
+
+  distanceToNearest: (args, ctx) => {
+    if (args.length < 2) {
+      throw new Error('distanceToNearest(position, tags) requires 2 arguments');
+    }
+    const pos = asVec2(args[0]);
+    const tags = String(args[1]).split(',').map(t => t.trim());
+    
+    if (!ctx.entityManager) return Infinity;
+    
+    let minDist = Infinity;
+    
+    for (const tag of tags) {
+      const entities = ctx.entityManager.getEntitiesByTag(tag);
+      for (const e of entities) {
+        const dx = e.transform.x - pos.x;
+        const dy = e.transform.y - pos.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < minDist) {
+          minDist = dist;
+        }
+      }
+    }
+    
+    return minDist;
+  },
+
+  nearestN: (args, ctx) => {
+    if (args.length < 3) {
+      throw new Error('nearestN(position, tags, count) requires 3 arguments');
+    }
+    const pos = asVec2(args[0]);
+    const tags = String(args[1]).split(',').map(t => t.trim());
+    const count = Math.floor(asNumber(args[2]));
+    
+    if (!ctx.entityManager || count <= 0) return [];
+    
+    const candidates: { id: string; distSq: number }[] = [];
+    
+    for (const tag of tags) {
+      const entities = ctx.entityManager.getEntitiesByTag(tag);
+      for (const e of entities) {
+        const dx = e.transform.x - pos.x;
+        const dy = e.transform.y - pos.y;
+        candidates.push({ id: e.id, distSq: dx * dx + dy * dy });
+      }
+    }
+    
+    candidates.sort((a, b) => a.distSq - b.distSq);
+    return candidates.slice(0, count).map(c => c.id);
+  },
+
   sign: (args) => {
     assertArgCount('sign', args, 1);
     const n = asNumber(args[0]);

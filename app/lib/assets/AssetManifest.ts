@@ -19,10 +19,22 @@ export interface AssetManifest {
   estimatedTotalSizeBytes: number;
 }
 
+export interface ResolvedPackEntry {
+  imageUrl: string;
+  placement?: { scale: number; offsetX: number; offsetY: number };
+}
+
+export interface ExtractManifestOptions {
+  resolvedPackEntries?: Record<string, ResolvedPackEntry>;
+}
+
 const DEFAULT_IMAGE_SIZE_ESTIMATE = 100_000;
 const DEFAULT_SOUND_SIZE_ESTIMATE = 50_000;
 
-export function extractAssetManifest(definition: GameDefinition): AssetManifest {
+export function extractAssetManifest(
+  definition: GameDefinition,
+  options?: ExtractManifestOptions
+): AssetManifest {
   const images: AssetManifestItem[] = [];
   const sounds: AssetManifestItem[] = [];
   const seenUrls = new Set<string>();
@@ -144,20 +156,34 @@ export function extractAssetManifest(definition: GameDefinition): AssetManifest 
   });
 
   // --- Asset Pack Images ---
-
-  const activePackId = definition.activeAssetPackId;
-  if (activePackId && definition.assetPacks?.[activePackId]) {
-    const pack = definition.assetPacks[activePackId];
-    Object.entries(pack.assets).forEach(([templateId, asset]) => {
-      if (asset.imageUrl && asset.source !== 'none') {
+  // Priority: resolvedPackEntries (from DB) > embedded assetPacks > template sprites
+  
+  if (options?.resolvedPackEntries) {
+    Object.entries(options.resolvedPackEntries).forEach(([templateId, entry]) => {
+      if (entry.imageUrl) {
         addImage(
-          asset.imageUrl,
+          entry.imageUrl,
           `pack-${templateId}`,
           templateId,
           'normal'
         );
       }
     });
+  } else {
+    const activePackId = definition.assetSystem?.activeAssetPackId ?? definition.activeAssetPackId;
+    if (activePackId && definition.assetPacks?.[activePackId]) {
+      const pack = definition.assetPacks[activePackId];
+      Object.entries(pack.assets).forEach(([templateId, asset]) => {
+        if (asset.imageUrl && asset.source !== 'none') {
+          addImage(
+            asset.imageUrl,
+            `pack-${templateId}`,
+            templateId,
+            'normal'
+          );
+        }
+      });
+    }
   }
 
   // --- Tile Sheets ---

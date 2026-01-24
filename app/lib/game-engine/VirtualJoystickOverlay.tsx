@@ -5,7 +5,7 @@ import {
   Platform,
   type GestureResponderEvent,
 } from "react-native";
-import * as Haptics from "expo-haptics";
+import * as Haptics from "@/lib/haptics";
 import type { VirtualJoystick } from "@slopcade/shared";
 
 export interface JoystickState {
@@ -68,8 +68,8 @@ export function VirtualJoystickOverlay({
   const [knobOffset, setKnobOffset] = useState({ x: 0, y: 0 });
 
   const triggerHaptic = useCallback(() => {
-    if (enableHaptics && Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (enableHaptics) {
+      Haptics.impactAsync("Light");
     }
   }, [enableHaptics]);
 

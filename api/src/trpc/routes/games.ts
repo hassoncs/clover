@@ -27,6 +27,8 @@ interface GameRow {
   created_at: number;
   updated_at: number;
   deleted_at: number | null;
+  base_game_id: string | null;
+  forked_from_id: string | null;
 }
 
 function toClientGame(row: GameRow) {
@@ -41,6 +43,8 @@ function toClientGame(row: GameRow) {
     playCount: row.play_count,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
+    baseGameId: row.base_game_id,
+    forkedFromId: row.forked_from_id,
   };
 }
 
@@ -111,8 +115,8 @@ export const gamesRouter = router({
       const now = Date.now();
 
       await ctx.env.DB.prepare(
-        `INSERT INTO games (id, user_id, title, description, definition, is_public, play_count, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)`
+        `INSERT INTO games (id, user_id, title, description, definition, is_public, play_count, created_at, updated_at, base_game_id)
+         VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`
       )
         .bind(
           id,
@@ -122,7 +126,8 @@ export const gamesRouter = router({
           input.definition,
           input.isPublic ? 1 : 0,
           now,
-          now
+          now,
+          id
         )
         .run();
 
@@ -137,6 +142,8 @@ export const gamesRouter = router({
         playCount: 0,
         createdAt: new Date(now),
         updatedAt: new Date(now),
+        baseGameId: id,
+        forkedFromId: null,
       };
     }),
 
@@ -301,8 +308,8 @@ export const gamesRouter = router({
         const definition = JSON.stringify(result.game);
 
         await ctx.env.DB.prepare(
-          `INSERT INTO games (id, user_id, title, description, definition, is_public, play_count, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?)`
+          `INSERT INTO games (id, user_id, title, description, definition, is_public, play_count, created_at, updated_at, base_game_id)
+           VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?, ?)`
         )
           .bind(
             id,
@@ -311,7 +318,8 @@ export const gamesRouter = router({
             result.game.metadata.description ?? input.prompt,
             definition,
             now,
-            now
+            now,
+            id
           )
           .run();
 
@@ -475,9 +483,11 @@ export const gamesRouter = router({
 
       const newDefinition = JSON.stringify(definition);
 
+      const parentBaseGameId = existing.base_game_id ?? existing.id;
+
       await ctx.env.DB.prepare(
-        `INSERT INTO games (id, user_id, title, description, definition, is_public, play_count, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?)`
+        `INSERT INTO games (id, user_id, title, description, definition, is_public, play_count, created_at, updated_at, base_game_id, forked_from_id)
+         VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?)`
       )
         .bind(
           newId,
@@ -486,7 +496,9 @@ export const gamesRouter = router({
           existing.description,
           newDefinition,
           now,
-          now
+          now,
+          parentBaseGameId,
+          existing.id
         )
         .run();
 
@@ -501,10 +513,51 @@ export const gamesRouter = router({
         playCount: 0,
         createdAt: new Date(now),
         updatedAt: new Date(now),
+        baseGameId: parentBaseGameId,
+        forkedFromId: existing.id,
         forkedFrom: {
           gameId: existing.id,
           title: existing.title,
         },
+      };
+    }),
+
+  getDetail: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const result = await ctx.env.DB.prepare(
+        `SELECT * FROM games WHERE id = ? AND deleted_at IS NULL`
+      )
+        .bind(input.id)
+        .first<GameRow>();
+
+      if (!result) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
+      }
+
+      const isOwner = result.user_id === ctx.user.id;
+      
+      if (!result.is_public && !isOwner) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+      }
+
+      const baseGameId = result.base_game_id ?? result.id;
+
+      const packsResult = await ctx.env.DB.prepare(
+        `SELECT id, name, description, created_at FROM asset_packs WHERE base_game_id = ? AND deleted_at IS NULL ORDER BY created_at DESC`
+      )
+        .bind(baseGameId)
+        .all<{ id: string; name: string; description: string | null; created_at: number }>();
+
+      return {
+        game: toClientGame(result),
+        baseGameId,
+        packs: packsResult.results.map(p => ({
+          id: p.id,
+          name: p.name,
+          description: p.description,
+          createdAt: p.created_at,
+        })),
       };
     }),
 });

@@ -1,0 +1,5 @@
+- Implemented URL-based asset pack selection in `app/app/play/[id].tsx`.
+- Added `packId` URL parameter support.
+- Integrated `trpc.assetSystem.getResolvedForGame` and `trpc.assetSystem.getCompatiblePacks`.
+- Added pack selector UI to the asset menu.
+- Verified types with `tsc --noEmit`.

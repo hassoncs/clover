@@ -7,7 +7,7 @@ import {
   Pressable,
   type GestureResponderEvent,
 } from "react-native";
-import * as Haptics from "expo-haptics";
+import * as Haptics from "@/lib/haptics";
 import type { VirtualButton, VirtualButtonType } from "@slopcade/shared";
 
 export interface VirtualButtonsOverlayProps {
@@ -58,8 +58,8 @@ export function VirtualButtonsOverlay({
   );
 
   const triggerHaptic = useCallback(() => {
-    if (enableHaptics && Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (enableHaptics) {
+      Haptics.impactAsync("Light");
     }
   }, [enableHaptics]);
 

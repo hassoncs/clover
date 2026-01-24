@@ -246,7 +246,7 @@ export interface ModifyAction {
   target: { type: 'by_id'; entityId: string } | { type: 'by_tag'; tag: string };
   property: string;
   operation: 'set' | 'add' | 'multiply';
-  value: number;
+  value: Value<number>;
 }
 
 export interface LivesAction {
@@ -357,6 +357,16 @@ export interface SetTimeScaleAction {
   duration?: Value<number>;
 }
 
+export interface SetEntitySizeAction {
+  type: 'set_entity_size';
+  target: EntityTarget;
+  scale?: Value<number>;
+  scaleX?: Value<number>;
+  scaleY?: Value<number>;
+  duration?: Value<number>;
+  easing?: 'linear' | 'ease-in' | 'ease-out' | 'ease-in-out';
+}
+
 export type RuleAction =
   | SpawnAction
   | DestroyAction
@@ -379,7 +389,8 @@ export type RuleAction =
   | ShuffleListAction
   | CameraShakeAction
   | CameraZoomAction
-  | SetTimeScaleAction;
+  | SetTimeScaleAction
+  | SetEntitySizeAction;
 
 export interface GameRule {
   id: string;

@@ -25,8 +25,35 @@ export default function GameDetailScreen() {
   const [gameInfo, setGameInfo] = useState<GameInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
   const [isForking, setIsForking] = useState(false);
+
+  const [packsData, setPacksData] = useState<{
+    packs: {
+      id: string;
+      name: string;
+      description: string | null;
+      isComplete: boolean;
+      coveredCount: number;
+      totalTemplates: number;
+    }[];
+  } | null>(null);
+  const [isLoadingPacks, setIsLoadingPacks] = useState(false);
+
+  useEffect(() => {
+    if (gameInfo?.source === "database" && gameInfo.id) {
+      setIsLoadingPacks(true);
+      trpc.assetSystem.getCompatiblePacks.query({ gameId: gameInfo.id })
+        .then((data) => {
+          setPacksData(data);
+        })
+        .catch((err) => {
+          console.error("Failed to load packs:", err);
+        })
+        .finally(() => {
+          setIsLoadingPacks(false);
+        });
+    }
+  }, [gameInfo]);
 
   useEffect(() => {
     const loadGameInfo = async () => {
@@ -113,24 +140,7 @@ export default function GameDetailScreen() {
     }
   }, [gameInfo, router]);
 
-  const handleSaveToLibrary = useCallback(async () => {
-    if (!gameInfo || gameInfo.source !== "template") return;
 
-    setIsSaving(true);
-    try {
-      const definition = await loadTestGame(gameInfo.id as TestGameId);
-      const result = await trpc.games.create.mutate({
-        title: definition.metadata.title,
-        description: definition.metadata.description,
-        definition: JSON.stringify(definition),
-        isPublic: false,
-      });
-      router.push(`/play/${result.id}`);
-    } catch (err) {
-      console.error("Failed to save game:", err);
-      setIsSaving(false);
-    }
-  }, [gameInfo, router]);
 
   if (isLoading) {
     return (
@@ -237,32 +247,68 @@ export default function GameDetailScreen() {
               )}
             </Pressable>
 
-            {gameInfo.source === "template" && (
-              <Pressable
-                className={`py-4 rounded-xl items-center ${
-                  isSaving ? "bg-gray-600" : "bg-indigo-600 active:bg-indigo-700"
-                }`}
-                onPress={handleSaveToLibrary}
-                disabled={isSaving}
-              >
-                {isSaving ? (
-                  <View className="flex-row items-center">
-                    <ActivityIndicator size="small" color="#FFFFFF" />
-                    <Text className="text-white font-bold text-lg ml-2">Saving...</Text>
-                  </View>
-                ) : (
-                  <Text className="text-white font-bold text-lg">💾 Save to Library</Text>
-                )}
-              </Pressable>
-            )}
           </View>
 
           <View className="mt-8 p-4 bg-gray-800/50 rounded-xl">
             <Text className="text-gray-400 text-sm text-center">
-              <Text className="font-semibold">Fork</Text> copies this game to your library and opens the editor.{"\n"}
-              <Text className="font-semibold">Save</Text> adds it to your library for playing with custom assets.
+              <Text className="font-semibold">Fork</Text> copies this game to your library where you can customize assets and edit it.
             </Text>
           </View>
+
+          {gameInfo.source === "database" && (
+            <View className="mt-8 mb-8">
+              <Text className="text-white text-xl font-bold mb-4">Themes</Text>
+              {isLoadingPacks ? (
+                <ActivityIndicator color="#4CAF50" />
+              ) : packsData?.packs && packsData.packs.length > 0 ? (
+                <View className="gap-3">
+                  {packsData.packs.map((pack) => (
+                    <Pressable
+                      key={pack.id}
+                      className="bg-gray-800 p-4 rounded-xl flex-row items-center justify-between active:bg-gray-700"
+                      onPress={() =>
+                        router.push({
+                          pathname: "/play/[id]",
+                          params: { id: gameInfo.id, packId: pack.id },
+                        })
+                      }
+                    >
+                      <View className="flex-1 mr-4">
+                        <View className="flex-row items-center gap-2 mb-1">
+                          <Text className="text-white font-semibold text-lg" numberOfLines={1}>
+                            {pack.name}
+                          </Text>
+                          {pack.isComplete && (
+                            <View className="bg-green-900/50 px-2 py-0.5 rounded text-xs">
+                              <Text className="text-green-400 text-xs font-bold">COMPLETE</Text>
+                            </View>
+                          )}
+                        </View>
+                        <Text className="text-gray-400 text-sm" numberOfLines={2}>
+                          {pack.description || "No description"} • {pack.coveredCount}/{pack.totalTemplates} assets
+                        </Text>
+                      </View>
+                      <View className="bg-blue-600/20 p-2 rounded-full">
+                        <Text className="text-blue-400 font-bold">▶️</Text>
+                      </View>
+                    </Pressable>
+                  ))}
+                </View>
+              ) : (
+                <View className="bg-gray-800/50 p-6 rounded-xl items-center">
+                  <Text className="text-gray-400 mb-3 text-center">
+                    No custom themes created for this game yet.
+                  </Text>
+                  <Pressable
+                    onPress={() => router.push(`/editor/${gameInfo.id}`)}
+                    className="bg-gray-700 px-4 py-2 rounded-lg"
+                  >
+                    <Text className="text-white font-semibold">Open Editor to Create Theme</Text>
+                  </Pressable>
+                </View>
+              )}
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>

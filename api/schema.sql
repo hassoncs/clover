@@ -24,7 +24,10 @@ CREATE TABLE IF NOT EXISTS games (
   play_count INTEGER DEFAULT 0,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
-  deleted_at INTEGER
+  deleted_at INTEGER,
+  -- Lineage tracking for fork/asset pack sharing
+  base_game_id TEXT REFERENCES games(id),  -- Points to root game; self-referential for originals
+  forked_from_id TEXT REFERENCES games(id) -- Immediate parent; NULL for originals
 );
 
 -- Indexes for common queries
@@ -32,6 +35,8 @@ CREATE INDEX IF NOT EXISTS idx_games_user_id ON games(user_id);
 CREATE INDEX IF NOT EXISTS idx_games_install_id ON games(install_id);
 CREATE INDEX IF NOT EXISTS idx_games_is_public ON games(is_public);
 CREATE INDEX IF NOT EXISTS idx_games_created_at ON games(created_at);
+CREATE INDEX IF NOT EXISTS idx_games_base_game ON games(base_game_id);
+CREATE INDEX IF NOT EXISTS idx_games_forked_from ON games(forked_from_id);
 
 -- Assets table (AI-generated sprites stored in R2)
 CREATE TABLE IF NOT EXISTS assets (
@@ -77,19 +82,22 @@ CREATE TABLE IF NOT EXISTS game_assets (
 CREATE INDEX IF NOT EXISTS idx_game_assets_owner ON game_assets(owner_game_id);
 CREATE INDEX IF NOT EXISTS idx_game_assets_source ON game_assets(source);
 
--- Asset packs - Named collections of assets per game
--- Each pack maps template slots to specific assets
+-- Asset packs - Named collections of assets shared across a game family
 CREATE TABLE IF NOT EXISTS asset_packs (
   id TEXT PRIMARY KEY,
-  game_id TEXT NOT NULL REFERENCES games(id),
+  base_game_id TEXT NOT NULL REFERENCES games(id),
+  source_game_id TEXT REFERENCES games(id),
+  creator_user_id TEXT REFERENCES users(id),
   name TEXT NOT NULL,
   description TEXT,
-  prompt_defaults_json TEXT,  -- JSON: { themePrompt, styleOverride, modelId, negativePrompt }
+  prompt_defaults_json TEXT,
+  is_complete INTEGER DEFAULT 0,
   created_at INTEGER NOT NULL,
   deleted_at INTEGER
 );
 
-CREATE INDEX IF NOT EXISTS idx_asset_packs_game ON asset_packs(game_id);
+CREATE INDEX IF NOT EXISTS idx_asset_packs_base_game ON asset_packs(base_game_id);
+CREATE INDEX IF NOT EXISTS idx_asset_packs_creator ON asset_packs(creator_user_id);
 
 -- Asset pack entries - Which asset fills each template slot in a pack
 -- Includes placement data (scale, offset) for aligning with physics bodies

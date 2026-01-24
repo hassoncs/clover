@@ -27,6 +27,7 @@ import { VirtualButtonsOverlay } from "./VirtualButtonsOverlay";
 import { VirtualJoystickOverlay, type JoystickState } from "./VirtualJoystickOverlay";
 import { VirtualDPadOverlay } from "./VirtualDPadOverlay";
 import { useTiltInput } from "./hooks/useTiltInput";
+import { Match3GameSystem, type Match3Config } from "./systems/Match3GameSystem";
 
 export interface GameRuntimeGodotProps {
   definition: GameDefinition;
@@ -56,6 +57,7 @@ export function GameRuntimeGodot({
   const cameraRef = useRef<CameraSystem | null>(null);
   const viewportSystemRef = useRef<ViewportSystem | null>(null);
   const inputEntityManagerRef = useRef<InputEntityManager | null>(null);
+  const match3SystemRef = useRef<Match3GameSystem | null>(null);
   const elapsedRef = useRef(0);
   const frameIdRef = useRef(0);
   const collisionsRef = useRef<CollisionInfo[]>([]);
@@ -168,6 +170,24 @@ export function GameRuntimeGodot({
         const inputEntityManager = new InputEntityManager();
         inputEntityManagerRef.current = inputEntityManager;
 
+        if (definition.match3) {
+          const match3System = new Match3GameSystem(
+            definition.match3 as Match3Config,
+            game.entityManager,
+            {
+              onScoreAdd: (points) => game.rulesEvaluator.addScore(points),
+              onMatchFound: (count, cascade) => {
+                console.log(`[Match3] Match found: ${count} pieces, cascade #${cascade}`);
+              },
+              onBoardReady: () => {
+                console.log('[Match3] Board ready');
+              },
+            }
+          );
+          match3System.setBridge(bridge);
+          match3SystemRef.current = match3System;
+        }
+
         if (definition.variables) {
           const resolvedVars: Record<string, ExpressionValueType> = {};
           for (const [key, value] of Object.entries(definition.variables)) {
@@ -278,6 +298,10 @@ export function GameRuntimeGodot({
         const initialVariables = game.rulesEvaluator.getVariables();
         setGameState((s) => ({ ...s, state: "ready", variables: initialVariables }));
         setIsReady(true);
+
+        if (match3SystemRef.current) {
+          match3SystemRef.current.initialize();
+        }
       } catch (error) {
         console.error("[GameRuntime.godot] Failed to initialize game:", error);
       }
@@ -296,6 +320,8 @@ export function GameRuntimeGodot({
       sensorUnsubRef.current = null;
       inputEventUnsubRef.current?.();
       inputEventUnsubRef.current = null;
+      match3SystemRef.current?.destroy();
+      match3SystemRef.current = null;
       bridgeRef.current?.dispose();
       bridgeRef.current = null;
       physicsRef.current = null;
@@ -406,6 +432,15 @@ export function GameRuntimeGodot({
     const baseEvalContext = createEvalContext();
 
     const inputSnapshot = inputRef.current;
+
+    const match3System = match3SystemRef.current;
+    if (match3System) {
+      const tapInput = inputSnapshot.tap as { worldX: number; worldY: number } | undefined;
+      if (tapInput) {
+        match3System.handleTap(tapInput.worldX, tapInput.worldY);
+      }
+      match3System.update(dt);
+    }
     
     const behaviorContext: Omit<BehaviorContext, "entity" | "resolveNumber" | "resolveVec2"> = {
       dt,

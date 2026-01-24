@@ -5,7 +5,7 @@ import {
   Platform,
   Pressable,
 } from "react-native";
-import * as Haptics from "expo-haptics";
+import * as Haptics from "@/lib/haptics";
 import type { VirtualDPad, DPadDirection } from "@slopcade/shared";
 
 export interface VirtualDPadOverlayProps {
@@ -98,8 +98,8 @@ export function VirtualDPadOverlay({
   ], [dpadCenterX, dpadCenterY, buttonSize]);
 
   const triggerHaptic = useCallback(() => {
-    if (enableHaptics && Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (enableHaptics) {
+      Haptics.impactAsync("Light");
     }
   }, [enableHaptics]);
 

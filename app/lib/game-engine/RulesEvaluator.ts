@@ -27,6 +27,7 @@ import {
   EntityActionExecutor,
   CameraActionExecutor,
   SoundActionExecutor,
+  SetEntitySizeActionExecutor,
 } from './rules/actions';
 import {
   LogicConditionEvaluator,
@@ -71,6 +72,7 @@ export class RulesEvaluator implements IGameStateMutator {
   private entityActionExecutor = new EntityActionExecutor();
   private cameraActionExecutor = new CameraActionExecutor();
   private soundActionExecutor = new SoundActionExecutor();
+  private setEntitySizeActionExecutor = new SetEntitySizeActionExecutor();
 
   private logicConditionEvaluator = new LogicConditionEvaluator();
   private physicsConditionEvaluator = new PhysicsConditionEvaluator();
@@ -412,6 +414,7 @@ export class RulesEvaluator implements IGameStateMutator {
         case 'camera_zoom':
         case 'set_time_scale': this.cameraActionExecutor.execute(a, context); break;
         case 'sound': this.soundActionExecutor.execute(a, context); break;
+        case 'set_entity_size': this.setEntitySizeActionExecutor.execute(a, context); break;
       }
     }
   }

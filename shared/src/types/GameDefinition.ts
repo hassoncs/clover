@@ -296,6 +296,20 @@ export interface InputConfig {
   tilt?: TiltConfig;
 }
 
+export interface Match3Config {
+  gridId: string;
+  rows: number;
+  cols: number;
+  cellSize: number;
+  originX: number;
+  originY: number;
+  pieceTemplates: string[];
+  minMatch?: number;
+  swapDuration?: number;
+  fallDuration?: number;
+  clearDelay?: number;
+}
+
 export interface GameDefinition {
   metadata: GameMetadata;
   world: WorldConfig;
@@ -323,6 +337,7 @@ export interface GameDefinition {
   loadingScreen?: LoadingScreenConfig;
   sounds?: Record<string, SoundAsset>;
   input?: InputConfig;
+  match3?: Match3Config;
 }
 
 export const DEFAULT_WORLD_CONFIG: WorldConfig = {

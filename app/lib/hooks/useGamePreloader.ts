@@ -5,9 +5,14 @@ import {
   AssetPreloader,
   type PreloadProgress,
   type PreloadResult,
+  type ResolvedPackEntry,
 } from '../assets';
 
 export type LoadingPhase = 'idle' | 'loading' | 'ready' | 'skipped' | 'error';
+
+export interface UseGamePreloaderOptions {
+  resolvedPackEntries?: Record<string, ResolvedPackEntry>;
+}
 
 export interface UseGamePreloaderResult {
   phase: LoadingPhase;
@@ -29,7 +34,8 @@ const initialProgress: PreloadProgress = {
 };
 
 export function useGamePreloader(
-  definition: GameDefinition | null
+  definition: GameDefinition | null,
+  options?: UseGamePreloaderOptions
 ): UseGamePreloaderResult {
   const [phase, setPhase] = useState<LoadingPhase>('idle');
   const [progress, setProgress] = useState<PreloadProgress>(initialProgress);
@@ -39,7 +45,9 @@ export function useGamePreloader(
   const startPreload = useCallback(async () => {
     if (!definition) return;
     
-    const manifest = extractAssetManifest(definition);
+    const manifest = extractAssetManifest(definition, {
+      resolvedPackEntries: options?.resolvedPackEntries,
+    });
     
     if (manifest.totalCount === 0) {
       setPhase('ready');
@@ -83,7 +91,7 @@ export function useGamePreloader(
       console.error('Asset preload error:', error);
       setPhase('error');
     }
-  }, [definition]);
+  }, [definition, options?.resolvedPackEntries]);
 
   const skipPreload = useCallback(() => {
     preloaderRef.current?.abort();

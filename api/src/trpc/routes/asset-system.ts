@@ -26,11 +26,18 @@ interface GameAssetRow {
 interface AssetPackRow {
   id: string;
   game_id: string;
+  base_game_id: string | null;
   name: string;
   description: string | null;
   prompt_defaults_json: string | null;
   created_at: number;
   deleted_at: number | null;
+}
+
+interface GameRowForAssets {
+  id: string;
+  base_game_id: string | null;
+  definition: string;
 }
 
 interface AssetPackEntryRow {
@@ -114,6 +121,7 @@ function toClientPack(row: AssetPackRow) {
   return {
     id: row.id,
     gameId: row.game_id,
+    baseGameId: row.base_game_id,
     name: row.name,
     description: row.description,
     promptDefaults: row.prompt_defaults_json ? JSON.parse(row.prompt_defaults_json) : undefined,
@@ -304,9 +312,19 @@ export const assetSystemRouter = router({
   listPacks: protectedProcedure
     .input(z.object({ gameId: z.string() }))
     .query(async ({ ctx, input }) => {
+      const gameRow = await ctx.env.DB.prepare(
+        'SELECT id, base_game_id FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(input.gameId).first<GameRowForAssets>();
+
+      if (!gameRow) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
+      }
+
+      const baseGameId = gameRow.base_game_id ?? gameRow.id;
+
       const result = await ctx.env.DB.prepare(
-        'SELECT * FROM asset_packs WHERE game_id = ? AND deleted_at IS NULL ORDER BY created_at DESC'
-      ).bind(input.gameId).all<AssetPackRow>();
+        'SELECT * FROM asset_packs WHERE base_game_id = ? AND deleted_at IS NULL ORDER BY created_at DESC'
+      ).bind(baseGameId).all<AssetPackRow>();
 
       return result.results.map(toClientPack);
     }),
@@ -319,22 +337,33 @@ export const assetSystemRouter = router({
       promptDefaults: promptDefaultsSchema.optional(),
     }))
     .mutation(async ({ ctx, input }) => {
+      const gameRow = await ctx.env.DB.prepare(
+        'SELECT id, base_game_id FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(input.gameId).first<GameRowForAssets>();
+
+      if (!gameRow) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
+      }
+
+      const baseGameId = gameRow.base_game_id ?? gameRow.id;
+
       const id = crypto.randomUUID();
       const now = Date.now();
 
       await ctx.env.DB.prepare(
-        `INSERT INTO asset_packs (id, game_id, name, description, prompt_defaults_json, created_at)
-         VALUES (?, ?, ?, ?, ?, ?)`
+        `INSERT INTO asset_packs (id, game_id, base_game_id, name, description, prompt_defaults_json, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
       ).bind(
         id,
         input.gameId,
+        baseGameId,
         input.name,
         input.description ?? null,
         input.promptDefaults ? JSON.stringify(input.promptDefaults) : null,
         now
       ).run();
 
-      return { id, createdAt: now };
+      return { id, baseGameId, createdAt: now };
     }),
 
   updatePack: protectedProcedure
@@ -752,6 +781,103 @@ export const assetSystemRouter = router({
       ).bind(JSON.stringify(definition), Date.now(), input.gameId).run();
 
       return { success: true };
+    }),
+
+  getResolvedForGame: protectedProcedure
+    .input(z.object({
+      gameId: z.string(),
+      packId: z.string(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const packRow = await ctx.env.DB.prepare(
+        'SELECT * FROM asset_packs WHERE id = ? AND deleted_at IS NULL'
+      ).bind(input.packId).first<AssetPackRow>();
+
+      if (!packRow) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Asset pack not found' });
+      }
+
+      const entriesResult = await ctx.env.DB.prepare(
+        `SELECT e.template_id, e.placement_json, a.image_url
+         FROM asset_pack_entries e
+         LEFT JOIN game_assets a ON e.asset_id = a.id
+         WHERE e.pack_id = ?`
+      ).bind(input.packId).all<{ template_id: string; placement_json: string | null; image_url: string | null }>();
+
+      const entriesByTemplateId: Record<string, { imageUrl: string | null; placement: { scale: number; offsetX: number; offsetY: number } | null }> = {};
+
+      for (const entry of entriesResult.results) {
+        entriesByTemplateId[entry.template_id] = {
+          imageUrl: entry.image_url,
+          placement: entry.placement_json ? JSON.parse(entry.placement_json) : null,
+        };
+      }
+
+      return {
+        pack: {
+          id: packRow.id,
+          name: packRow.name,
+          description: packRow.description,
+          baseGameId: packRow.base_game_id,
+          createdAt: packRow.created_at,
+        },
+        entriesByTemplateId,
+      };
+    }),
+
+  getCompatiblePacks: protectedProcedure
+    .input(z.object({ gameId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const gameRow = await ctx.env.DB.prepare(
+        'SELECT id, base_game_id, definition FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(input.gameId).first<GameRowForAssets>();
+
+      if (!gameRow) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
+      }
+
+      let definition: { templates?: Record<string, unknown> };
+      try {
+        definition = JSON.parse(gameRow.definition);
+      } catch {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Invalid game definition' });
+      }
+
+      const templateIds = Object.keys(definition.templates ?? {});
+      const baseGameId = gameRow.base_game_id ?? gameRow.id;
+
+      const packsResult = await ctx.env.DB.prepare(
+        'SELECT * FROM asset_packs WHERE base_game_id = ? AND deleted_at IS NULL ORDER BY created_at DESC'
+      ).bind(baseGameId).all<AssetPackRow>();
+
+      const packsWithCompleteness = await Promise.all(
+        packsResult.results.map(async (pack) => {
+          const entriesResult = await ctx.env.DB.prepare(
+            'SELECT template_id FROM asset_pack_entries WHERE pack_id = ?'
+          ).bind(pack.id).all<{ template_id: string }>();
+
+          const coveredTemplates = new Set(entriesResult.results.map(e => e.template_id));
+          const coveredCount = templateIds.filter(t => coveredTemplates.has(t)).length;
+          const isComplete = coveredCount === templateIds.length && templateIds.length > 0;
+
+          return {
+            id: pack.id,
+            name: pack.name,
+            description: pack.description,
+            baseGameId: pack.base_game_id,
+            createdAt: pack.created_at,
+            isComplete,
+            coveredCount,
+            totalTemplates: templateIds.length,
+          };
+        })
+      );
+
+      return {
+        baseGameId,
+        templateIds,
+        packs: packsWithCompleteness,
+      };
     }),
 
   runMigration: protectedProcedure

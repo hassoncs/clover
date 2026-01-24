@@ -7,3 +7,4 @@ export * from './LogicActionExecutor';
 export * from './EntityActionExecutor';
 export * from './CameraActionExecutor';
 export * from './SoundActionExecutor';
+export * from './SetEntitySizeActionExecutor';

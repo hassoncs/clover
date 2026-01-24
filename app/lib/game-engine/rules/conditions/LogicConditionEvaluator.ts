@@ -69,7 +69,6 @@ export class LogicConditionEvaluator implements ConditionEvaluator<LogicConditio
         }
         try {
           const result = evaluate(condition.expr, context.evalContext);
-          console.log('[ExpressionCondition] Evaluated:', condition.expr, '=', result);
           return Boolean(result);
         } catch (e) {
           console.warn('[ExpressionCondition] Failed to evaluate:', condition.expr, e);

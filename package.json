@@ -36,7 +36,12 @@
     "godot": "devmux ensure godot",
     "godot:export": "node scripts/export-godot.mjs --once",
     "godot:watch": "node scripts/export-godot.mjs --watch",
-    "godot:check": "node scripts/export-godot.mjs --check"
+    "godot:check": "node scripts/export-godot.mjs --check",
+    "ship": "node scripts/ship.mjs",
+    "ship:native": "node scripts/ship.mjs native",
+    "ship:update": "node scripts/ship.mjs update",
+    "ship:metadata": "node scripts/ship.mjs metadata",
+    "ship:web": "node scripts/ship.mjs web"
   },
   "devDependencies": {
     "@chriscode/devmux": "link:/Users/hassoncs/Workspaces/Personal/devmux/devmux-cli",
