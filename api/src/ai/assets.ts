@@ -5,6 +5,27 @@ import { ScenarioClient, createScenarioClient } from './scenario';
 const DEBUG_ASSET_GENERATION = process.env.DEBUG_ASSET_GENERATION === 'true';
 const DEBUG_OUTPUT_DIR = 'debug-output';
 
+// Log level utility for production-safe debugging
+const LOG_LEVEL = process.env.LOG_LEVEL || 'INFO';
+const LOG_LEVELS: Record<string, number> = { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 };
+
+export function shouldLog(level: string): boolean {
+  return (LOG_LEVELS[level] ?? 1) >= (LOG_LEVELS[LOG_LEVEL] ?? 1);
+}
+
+export function formatLog(level: string, context: string, message: string): string {
+  return `[AssetGen] [${level}] ${context ? `[${context}] ` : ''}${message}`;
+}
+
+export function assetLog(level: string, context: string, message: string): void {
+  if (shouldLog(level)) {
+    const formatted = formatLog(level, context, message);
+    if (level === 'ERROR') console.error(formatted);
+    else if (level === 'WARN') console.warn(formatted);
+    else console.log(formatted);
+  }
+}
+
 export type EntityType =
   | 'character'
   | 'enemy'
