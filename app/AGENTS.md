@@ -146,6 +146,81 @@ This project uses `DevMux` to manage background services in named `tmux` session
 
 ---
 
+## Asset Generation Pipeline
+
+The project uses a **type-driven asset generation pipeline** for AI-generated game sprites, backgrounds, and title images. Different asset types flow through different pipeline stages.
+
+### Asset Types
+
+| Type | Pipeline | Description |
+|------|----------|-------------|
+| `entity` | silhouette → img2img → removeBg → R2 | Physics-constrained sprites |
+| `background` | txt2img → R2 | Full-frame backgrounds |
+| `title_hero` | txt2img → removeBg → R2 | Game title logos |
+| `parallax` | txt2img → layeredDecompose → R2 | Multi-layer backgrounds |
+
+### CLI Usage
+
+```bash
+# Generate all assets for a game
+npx tsx api/scripts/generate-game-assets.ts slopeggle
+
+# Dry run (preview without API calls)
+npx tsx api/scripts/generate-game-assets.ts slopeggle --dry-run
+
+# Generate single asset
+npx tsx api/scripts/generate-game-assets.ts slopeggle --asset=ball
+
+# Generate only entity sprites
+npx tsx api/scripts/generate-game-assets.ts slopeggle --type=entity
+
+# List available games
+npx tsx api/scripts/generate-game-assets.ts --help
+```
+
+### Adding a New Game
+
+1. Create a config in `api/scripts/game-configs/`:
+```typescript
+// api/scripts/game-configs/my-game.ts
+import type { GameAssetConfig } from '../../src/ai/pipeline/types';
+
+export const myGameConfig: GameAssetConfig = {
+  gameId: 'my-game',
+  gameTitle: 'My Game',
+  theme: 'your visual theme description',
+  style: 'cartoon', // pixel | cartoon | 3d | flat
+  r2Prefix: 'generated/my-game',
+  assets: [
+    { type: 'entity', id: 'player', shape: 'box', width: 1, height: 2, entityType: 'character', description: '...' },
+    { type: 'background', id: 'background', prompt: '...' },
+    { type: 'title_hero', id: 'title_hero', title: 'My Game', themeDescription: '...' },
+  ],
+};
+```
+
+2. Register it in `api/scripts/game-configs/index.ts`
+
+### Debug Output
+
+Every stage saves artifacts to `api/debug-output/{gameId}/{assetId}/`:
+- `silhouette_silhouette.png` - Physics shape mask
+- `build-prompt_prompt.txt` - Full prompts
+- `img2img_generated.png` - Raw AI output
+- `remove-bg_no-bg.png` - Final transparent sprite
+
+### Key Files
+
+| Path | Purpose |
+|------|---------|
+| `api/src/ai/pipeline/` | Pipeline core (types, stages, executor) |
+| `api/src/ai/pipeline/registry.ts` | Asset type → stage mapping |
+| `api/src/ai/pipeline/adapters/` | Platform adapters (Workers vs Node) |
+| `api/scripts/generate-game-assets.ts` | CLI script |
+| `api/scripts/game-configs/` | Per-game asset configurations |
+
+---
+
 ## GodotBridge Quick Reference
 
 ```typescript

@@ -6,6 +6,8 @@ export const metadata: TestGameMeta = {
   description: "Clear all orange pegs by bouncing a ball through the board",
 };
 
+const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle";
+
 const WORLD_WIDTH = 12;
 const WORLD_HEIGHT = 16;
 const PEG_RADIUS = 0.125;
@@ -78,11 +80,16 @@ const game: GameDefinition = {
     description: "Clear all orange pegs by bouncing a ball through the board",
     instructions: "Touch and hold to aim the cannon, then release to fire! Clear all 10 orange pegs to win. You have 10 balls.",
     version: "1.0.0",
+    titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
   },
   world: {
     gravity: { x: 0, y: 5 },
     pixelsPerMeter: 50,
     bounds: { width: WORLD_WIDTH, height: WORLD_HEIGHT },
+  },
+  background: {
+    type: "static",
+    imageUrl: `${ASSET_BASE}/background.png`,
   },
   camera: { type: "fixed", zoom: 1 },
   variables: {
@@ -115,7 +122,7 @@ const game: GameDefinition = {
     ball: {
       id: "ball",
       tags: ["ball"],
-      sprite: { type: "circle", radius: BALL_RADIUS, color: "#FFFFFF" },
+      sprite: { type: "image", imageUrl: `${ASSET_BASE}/ball.png`, imageWidth: BALL_RADIUS * 2, imageHeight: BALL_RADIUS * 2 },
       physics: {
         bodyType: "dynamic",
         shape: "circle",
@@ -129,7 +136,7 @@ const game: GameDefinition = {
     cannon: {
       id: "cannon",
       tags: ["cannon"],
-      sprite: { type: "rect", width: 0.6, height: 0.25, color: "#4A5568" },
+      sprite: { type: "image", imageUrl: `${ASSET_BASE}/cannon.png`, imageWidth: 0.6, imageHeight: 0.25 },
       physics: {
         bodyType: "kinematic",
         shape: "box",
@@ -147,7 +154,7 @@ const game: GameDefinition = {
     cannonBase: {
       id: "cannonBase",
       tags: ["cannon-base"],
-      sprite: { type: "circle", radius: 0.3, color: "#2D3748" },
+      sprite: { type: "image", imageUrl: `${ASSET_BASE}/cannonBase.png`, imageWidth: 0.6, imageHeight: 0.6 },
       physics: {
         bodyType: "static",
         shape: "circle",
@@ -161,7 +168,7 @@ const game: GameDefinition = {
     bluePeg: {
       id: "bluePeg",
       tags: ["peg", "blue-peg"],
-      sprite: { type: "circle", radius: PEG_RADIUS, color: "#3B82F6" },
+      sprite: { type: "image", imageUrl: `${ASSET_BASE}/bluePeg.png`, imageWidth: PEG_RADIUS * 2, imageHeight: PEG_RADIUS * 2 },
       physics: {
         bodyType: "static",
         shape: "circle",
@@ -185,7 +192,7 @@ const game: GameDefinition = {
     orangePeg: {
       id: "orangePeg",
       tags: ["peg", "orange-peg"],
-      sprite: { type: "circle", radius: PEG_RADIUS, color: "#F97316" },
+      sprite: { type: "image", imageUrl: `${ASSET_BASE}/orangePeg.png`, imageWidth: PEG_RADIUS * 2, imageHeight: PEG_RADIUS * 2 },
       physics: {
         bodyType: "static",
         shape: "circle",
@@ -238,7 +245,7 @@ const game: GameDefinition = {
     bucket: {
       id: "bucket",
       tags: ["bucket"],
-      sprite: { type: "rect", width: 1.2, height: 0.35, color: "#22C55E" },
+      sprite: { type: "image", imageUrl: `${ASSET_BASE}/bucket.png`, imageWidth: 1.2, imageHeight: 0.35 },
       physics: {
         bodyType: "kinematic",
         shape: "box",
@@ -256,7 +263,7 @@ const game: GameDefinition = {
     portalA: {
       id: "portalA",
       tags: ["portal"],
-      sprite: { type: "circle", radius: 0.4, color: "#00FFFF" },
+      sprite: { type: "image", imageUrl: `${ASSET_BASE}/portalA.png`, imageWidth: 0.8, imageHeight: 0.8 },
       physics: {
         bodyType: "static",
         shape: "circle",
@@ -273,7 +280,7 @@ const game: GameDefinition = {
     portalB: {
       id: "portalB",
       tags: ["portal"],
-      sprite: { type: "circle", radius: 0.4, color: "#00FFFF" },
+      sprite: { type: "image", imageUrl: `${ASSET_BASE}/portalB.png`, imageWidth: 0.8, imageHeight: 0.8 },
       physics: {
         bodyType: "static",
         shape: "circle",
