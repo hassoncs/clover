@@ -25,6 +25,8 @@ export interface Env {
   SCENARIO_API_URL?: string;
 
   ASSET_HOST?: string;
+
+  DEBUG_ASSET_GENERATION?: string;
 }
 
 export interface User {

@@ -21,6 +21,7 @@ boot_splash/use_filter=false
 [autoload]
 
 GameBridge="*res://scripts/GameBridge.gd"
+GameBridgeEffects="*res://scripts/effects/GameBridgeEffects.gd"
 
 [display]
 

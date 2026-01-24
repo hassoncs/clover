@@ -6,6 +6,7 @@ export class InputTriggerEvaluator implements TriggerEvaluator<TapTrigger | Drag
   evaluate(trigger: TapTrigger | DragTrigger | TiltTrigger | ButtonTrigger | SwipeTrigger, context: RuleContext): boolean {
     switch (trigger.type) {
       case 'tap':
+        console.log('[InputTrigger] Checking tap, inputEvents.tap:', context.inputEvents.tap);
         if (!context.inputEvents.tap) return false;
         if (trigger.target === 'self') {
           return false; // Requires entity context handling in RulesEvaluator integration
@@ -13,6 +14,7 @@ export class InputTriggerEvaluator implements TriggerEvaluator<TapTrigger | Drag
         if (trigger.target && trigger.target !== 'screen') {
           return context.inputEvents.tap.targetEntityId === trigger.target;
         }
+        console.log('[InputTrigger] TAP MATCHED!');
         return true;
 
       case 'drag':

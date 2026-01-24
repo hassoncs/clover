@@ -252,10 +252,11 @@ func _set_last_result(result: Dictionary) -> void:
 # PUBLIC API - SPRITE EFFECTS
 # ============================================================
 
-func apply_sprite_effect(entity_id: String, effect_name: String, params: Dictionary = {}) -> void:
+func apply_sprite_effect(entity_id: String, effect_name: String, params = {}) -> void:
 	var sprite = _get_entity_sprite(entity_id)
 	if sprite:
-		effects_manager.apply_sprite_effect(sprite, effect_name, params)
+		var parsed_params = _parse_params(params)
+		effects_manager.apply_sprite_effect(sprite, effect_name, parsed_params)
 
 func update_sprite_effect_param(entity_id: String, param_name: String, value) -> void:
 	var sprite = _get_entity_sprite(entity_id)
@@ -271,8 +272,9 @@ func clear_sprite_effect(entity_id: String) -> void:
 # PUBLIC API - POST-PROCESSING
 # ============================================================
 
-func set_post_effect(effect_name: String, params: Dictionary = {}, layer: String = "main") -> void:
-	effects_manager.set_post_effect(effect_name, params, layer)
+func set_post_effect(effect_name: String, params = {}, layer: String = "main") -> void:
+	var parsed_params = _parse_params(params)
+	effects_manager.set_post_effect(effect_name, parsed_params, layer)
 
 func update_post_effect_param(param_name: String, value, layer: String = "main") -> void:
 	effects_manager.update_post_effect_param(param_name, value, layer)
@@ -319,7 +321,8 @@ func trigger_shockwave(world_x: float, world_y: float, duration: float = 0.5) ->
 	var world_pos = Vector2(world_x, world_y) * ppm
 	effects_manager.trigger_shockwave(world_pos, duration)
 
-func flash_screen(color: Color = Color.WHITE, duration: float = 0.1) -> void:
+func flash_screen(r: float = 1.0, g: float = 1.0, b: float = 1.0, a: float = 1.0, duration: float = 0.1) -> void:
+	var color = Color(r, g, b, a)
 	effects_manager.flash_screen(color, duration)
 
 # ============================================================
@@ -329,19 +332,21 @@ func flash_screen(color: Color = Color.WHITE, duration: float = 0.1) -> void:
 func create_dynamic_shader(shader_id: String, shader_code: String) -> Dictionary:
 	return effects_manager.create_dynamic_shader(shader_id, shader_code)
 
-func apply_dynamic_shader_to_entity(entity_id: String, shader_id: String, params: Dictionary = {}) -> void:
+func apply_dynamic_shader_to_entity(entity_id: String, shader_id: String, params = {}) -> void:
 	var sprite = _get_entity_sprite(entity_id)
 	if sprite:
-		effects_manager.apply_dynamic_shader_to_sprite(sprite, shader_id, params)
+		var parsed_params = _parse_params(params)
+		effects_manager.apply_dynamic_shader_to_sprite(sprite, shader_id, parsed_params)
 
-func apply_dynamic_post_shader(shader_code: String, params: Dictionary = {}) -> void:
-	effects_manager.apply_dynamic_post_shader(shader_code, params)
+func apply_dynamic_post_shader(shader_code: String, params = {}) -> void:
+	var parsed_params = _parse_params(params)
+	effects_manager.apply_dynamic_post_shader(shader_code, parsed_params)
 
 # ============================================================
 # PUBLIC API - PARTICLES
 # ============================================================
 
-func spawn_particle_preset(preset_name: String, world_x: float, world_y: float, params: Dictionary = {}) -> CPUParticles2D:
+func spawn_particle_preset(preset_name: String, world_x: float, world_y: float, params = {}) -> CPUParticles2D:
 	var ppm = 50.0
 	if _game_bridge:
 		ppm = _game_bridge.pixels_per_meter
@@ -349,10 +354,11 @@ func spawn_particle_preset(preset_name: String, world_x: float, world_y: float, 
 	
 	var preset = particle_factory.get_preset_by_name(preset_name)
 	var parent = get_tree().current_scene
+	var parsed_params = _parse_params(params)
 	
 	print("[GameBridgeEffects] spawn_particle_preset: ppm=", ppm, " position=", position, " preset=", preset, " parent=", parent)
 	
-	var particles = particle_factory.spawn_one_shot(preset, position, parent, params)
+	var particles = particle_factory.spawn_one_shot(preset, position, parent, parsed_params)
 	print("[GameBridgeEffects] Spawned particles: ", particles, " emitting=", particles.emitting if particles else "null")
 	return particles
 

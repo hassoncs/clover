@@ -1,10 +1,12 @@
 import type { ActionExecutor } from './ActionExecutor';
-import type { ApplyImpulseAction, ApplyForceAction, SetVelocityAction, MoveAction } from '@slopcade/shared';
+import type { ApplyImpulseAction, ApplyForceAction, SetVelocityAction, MoveAction, MoveTowardAction } from '@slopcade/shared';
 import type { RuleContext } from '../types';
 import { resolveEntityTarget, resolveNumber } from '../utils';
 
-export class PhysicsActionExecutor implements ActionExecutor<ApplyImpulseAction | ApplyForceAction | SetVelocityAction | MoveAction> {
-  execute(action: ApplyImpulseAction | ApplyForceAction | SetVelocityAction | MoveAction, context: RuleContext): void {
+type PhysicsAction = ApplyImpulseAction | ApplyForceAction | SetVelocityAction | MoveAction | MoveTowardAction;
+
+export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
+  execute(action: PhysicsAction, context: RuleContext): void {
     switch (action.type) {
       case 'apply_impulse':
         this.executeApplyImpulseAction(action, context);
@@ -17,6 +19,9 @@ export class PhysicsActionExecutor implements ActionExecutor<ApplyImpulseAction 
         break;
       case 'move':
         this.executeMoveAction(action, context);
+        break;
+      case 'move_toward':
+        this.executeMoveTowardAction(action, context);
         break;
     }
   }
@@ -196,8 +201,97 @@ export class PhysicsActionExecutor implements ActionExecutor<ApplyImpulseAction 
                       vy = current.y;
                   }
                   break;
+              case 'toward_mouse_x': {
+                  const mouse = context.input.mouse;
+                  if (mouse) {
+                      const pos = entity.transform;
+                      const delta = mouse.worldX - pos.x;
+                      vx = delta * speed;
+                      vy = current.y;
+                  } else {
+                      vx = 0;
+                      vy = current.y;
+                  }
+                  break;
+              }
           }
           context.physics.setLinearVelocity(entity.bodyId, { x: vx, y: vy });
       }
+  }
+
+  private moveTowardDebugCounter = 0;
+
+  private executeMoveTowardAction(action: MoveTowardAction, context: RuleContext): void {
+    const entities = resolveEntityTarget(action.target, context);
+    const towardEntities = resolveEntityTarget(action.towardEntity, context);
+
+    this.moveTowardDebugCounter++;
+    const shouldLog = this.moveTowardDebugCounter % 60 === 0;
+
+    if (towardEntities.length === 0) {
+      if (shouldLog) {
+        console.log('[MoveToward] No toward entities found for:', action.towardEntity);
+      }
+      return;
+    }
+
+    const towardEntity = towardEntities[0];
+    if (!towardEntity.active) {
+      if (shouldLog) {
+        console.log('[MoveToward] Toward entity not active:', towardEntity.id);
+      }
+      return;
+    }
+
+    const targetPos = towardEntity.transform;
+    const speed = resolveNumber(action.speed, context);
+    const maxSpeed = action.maxSpeed ? resolveNumber(action.maxSpeed, context) : null;
+    const axis = action.axis ?? 'both';
+
+    if (shouldLog) {
+      console.log('[MoveToward] Executing:', {
+        targetEntities: entities.length,
+        towardEntity: towardEntity.id,
+        towardPos: { x: targetPos.x.toFixed(2), y: targetPos.y.toFixed(2) },
+        axis,
+        speed,
+      });
+    }
+
+    for (const entity of entities) {
+      if (!entity.bodyId) continue;
+
+      const current = context.physics.getLinearVelocity(entity.bodyId);
+      const pos = entity.transform;
+
+      let vx = current.x;
+      let vy = current.y;
+
+      if (axis === 'x' || axis === 'both') {
+        vx = (targetPos.x - pos.x) * speed;
+      }
+      if (axis === 'y' || axis === 'both') {
+        vy = (targetPos.y - pos.y) * speed;
+      }
+
+      if (maxSpeed !== null) {
+        const magnitude = Math.sqrt(vx * vx + vy * vy);
+        if (magnitude > maxSpeed) {
+          const scale = maxSpeed / magnitude;
+          vx *= scale;
+          vy *= scale;
+        }
+      }
+
+      if (shouldLog) {
+        console.log('[MoveToward] Setting velocity:', {
+          entity: entity.id,
+          entityPos: { x: pos.x.toFixed(2), y: pos.y.toFixed(2) },
+          velocity: { x: vx.toFixed(2), y: vy.toFixed(2) },
+        });
+      }
+
+      context.physics.setLinearVelocity(entity.bodyId, { x: vx, y: vy });
+    }
   }
 }

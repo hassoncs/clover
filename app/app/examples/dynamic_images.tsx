@@ -15,9 +15,9 @@ const WORLD_BOUNDS = { width: 14, height: 18 };
 const PIXELS_PER_METER = 50;
 
 const IMAGE_URLS = [
-  "https://picsum.photos/seed/slopcade1/200/200",
-  "https://picsum.photos/seed/slopcade2/200/200",
-  "https://picsum.photos/seed/slopcade3/200/200",
+  "https://dummyimage.com/200x200/000/fff.png&text=1",
+  "https://dummyimage.com/200x200/ff0/000.png&text=2",
+  "https://dummyimage.com/200x200/00f/fff.png&text=3",
 ];
 
 const GAME_DEFINITION: GameDefinition = {
@@ -147,6 +147,15 @@ export default function DynamicImagesExample() {
       if (!mounted) return;
       addLog("Game loaded successfully!");
       setStatus("ready");
+      
+      const ENTITY_SPAWN_DELAY_MS = 500;
+      setTimeout(() => {
+        if (!mounted) return;
+        addLog("Auto-loading images...");
+        bridge.setEntityImage("box1", IMAGE_URLS[0], 2, 2);
+        bridge.setEntityImage("box2", IMAGE_URLS[1], 2, 2);
+        addLog("Images loaded!");
+      }, ENTITY_SPAWN_DELAY_MS);
     }).catch((err) => {
       if (!mounted) return;
       addLog(`Error: ${err.message}`);

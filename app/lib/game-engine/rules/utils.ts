@@ -7,6 +7,10 @@ export function resolveEntityTarget(target: EntityTarget, context: RuleContext):
     case 'self':
       return context.currentEntity ? [context.currentEntity] : [];
     case 'by_id': {
+      if (target.entityId.startsWith('$') && context.inputEntityManager) {
+        const systemEntity = context.inputEntityManager.getEntity(target.entityId);
+        return systemEntity ? [systemEntity] : [];
+      }
       const entity = context.entityManager.getEntity(target.entityId);
       return entity ? [entity] : [];
     }

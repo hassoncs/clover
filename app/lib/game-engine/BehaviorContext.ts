@@ -40,6 +40,7 @@ export interface InputState {
     jump: boolean;
     action: boolean;
   };
+  mouse?: { x: number; y: number; worldX: number; worldY: number };
 }
 
 export interface InputEvents {
@@ -91,6 +92,7 @@ export interface BehaviorContext {
   createEntityEmitter(type: ParticleEmitterType, x: number, y: number): string;
   updateEmitterPosition(emitterId: string, x: number, y: number): void;
   stopEmitter(emitterId: string): void;
+  playSound(soundId: string): void;
 
   resolveNumber(value: Value<number>): number;
   resolveVec2(value: Value<ExprVec2>): ExprVec2;

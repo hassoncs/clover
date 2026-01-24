@@ -1,92 +1,37 @@
 # Physics Engine Documentation
 
-> **Box2D + Skia rendering for React Native**
+> **LEGACY: Box2D documentation (migrated to Godot)**
 >
-> Cross-platform 2D physics with native performance on iOS/Android and WebAssembly on web.
+> This documentation covers the legacy Box2D physics system. The project has migrated to Godot 4 for physics and rendering.
+> See [Godot Migration](../godot-migration/MIGRATION_PLAN.md) for current architecture.
 
 ---
 
-## Overview
+## Current State
 
-The physics engine provides:
-- **Physics2D interface**: Unified API abstracting Box2D implementations
-- **Platform adapters**: Native JSI (iOS/Android) and WASM (web)
-- **Skia rendering**: Hardware-accelerated graphics via @shopify/react-native-skia
-- **React integration**: Hooks and components for physics-based UIs
+The physics engine has been **migrated to Godot 4**. Key changes:
+- **Rendering**: Godot's built-in renderer (was: Skia)
+- **Physics**: Godot's physics engine (was: Box2D)
+- **Platform support**: Native via react-native-godot, Web via WASM
+
+See [Godot Bridge documentation](../../app/lib/godot/) for the current implementation.
 
 ---
 
-## Guides
+## Legacy Reference (Box2D)
 
-Step-by-step tutorials for common physics tasks.
+These documents describe the previous Box2D implementation, kept for historical reference.
 
 | Document | Description |
 |----------|-------------|
-| _Coming soon_ | Guides will be extracted from AGENTS.md patterns |
-
----
-
-## Reference
-
-API documentation and quick-lookup resources.
-
-| Document | Description |
-|----------|-------------|
-| [Box2D API Coverage](reference/box2d-api-coverage.md) | Which Box2D features are exposed |
-
----
-
-## Architecture
-
-System design and component relationships.
-
-| Document | Description |
-|----------|-------------|
-| _Coming soon_ | Architecture docs to be created |
-
----
-
-## Decisions (ADRs)
-
-Architectural Decision Records explaining key choices.
-
-| Document | Description |
-|----------|-------------|
-| [Box2D Fork Strategy](decisions/box2d-fork-strategy.md) | Why and how we fork react-native-box2d |
-
----
-
-## Troubleshooting
-
-Known issues and solutions.
-
-| Document | Description |
-|----------|-------------|
-| [MouseJoint Investigation](troubleshooting/mousejoint-wasm-issue.md) | SetTarget not working in box2d-wasm |
-
----
-
-## Research
-
-Active investigations and experiments.
-
-| Document | Description | Status |
-|----------|-------------|--------|
-| _None active_ | | |
-
----
-
-## Archive
-
-Historical documents kept for reference.
-
-| Document | Description | Archived |
-|----------|-------------|----------|
-| _None yet_ | | |
+| [Box2D API Coverage](reference/box2d-api-coverage.md) | Which Box2D features were exposed |
+| [Box2D Fork Strategy](decisions/box2d-fork-strategy.md) | Why and how we forked react-native-box2d |
+| [MouseJoint Investigation](troubleshooting/mousejoint-wasm-issue.md) | SetTarget issue in box2d-wasm |
 
 ---
 
 ## Related
 
-- [Game Maker Documentation](../game-maker/INDEX.md) - Uses this physics engine
+- [Godot Migration Plan](../godot-migration/MIGRATION_PLAN.md) - Migration documentation
+- [Game Maker Documentation](../game-maker/INDEX.md) - Uses the physics engine
 - [Global Documentation Index](../INDEX.md)

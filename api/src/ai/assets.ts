@@ -1,6 +1,10 @@
 import type { Env } from '../trpc/context';
 import { ScenarioClient, createScenarioClient } from './scenario';
 
+// Debug mode - set via environment variable
+const DEBUG_ASSET_GENERATION = process.env.DEBUG_ASSET_GENERATION === 'true';
+const DEBUG_OUTPUT_DIR = 'debug-output';
+
 export type EntityType =
   | 'character'
   | 'enemy'
@@ -440,9 +444,40 @@ export function buildStructuredNegativePrompt(style: SpriteStyle): string {
 export class AssetService {
   private client: ScenarioClient | null = null;
   private env: Env;
+  private debugMode: boolean;
 
   constructor(env: Env) {
     this.env = env;
+    this.debugMode = DEBUG_ASSET_GENERATION || env.DEBUG_ASSET_GENERATION === 'true';
+  }
+
+  private async saveDebugFile(filename: string, data: Uint8Array | ArrayBuffer | string): Promise<void> {
+    if (!this.debugMode) return;
+    
+    try {
+      const fs = await import('node:fs/promises');
+      const path = await import('node:path');
+      
+      const debugDir = path.join(process.cwd(), DEBUG_OUTPUT_DIR);
+      await fs.mkdir(debugDir, { recursive: true });
+      
+      const filePath = path.join(debugDir, filename);
+      
+      if (typeof data === 'string') {
+        await fs.writeFile(filePath, data, 'utf-8');
+      } else {
+        const buffer = data instanceof ArrayBuffer ? Buffer.from(data) : Buffer.from(data);
+        await fs.writeFile(filePath, buffer);
+      }
+      
+      console.log(`[AssetService DEBUG] Saved: ${filePath}`);
+    } catch (err) {
+      console.warn(`[AssetService DEBUG] Failed to save ${filename}:`, err);
+    }
+  }
+
+  private generateDebugId(): string {
+    return `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
   }
 
   private getClient(): ScenarioClient {
@@ -481,6 +516,9 @@ export class AssetService {
       height,
     } = request;
 
+    const debugId = this.generateDebugId();
+    const startTime = Date.now();
+
     if (!this.env.SCENARIO_API_KEY || !this.env.SCENARIO_SECRET_API_KEY) {
       return this.createPlaceholderResult(entityType, prompt);
     }
@@ -492,6 +530,9 @@ export class AssetService {
       const silhouetteData = createSilhouettePng(physicsShape, width, height);
 
       console.log(`[AssetService] Creating silhouette for ${width}x${height} (${physicsShape})`);
+
+      // Debug: save silhouette
+      await this.saveDebugFile(`${debugId}_silhouette.png`, silhouetteData);
 
       const arrayBuffer = silhouetteData.buffer.slice(
         silhouetteData.byteOffset,
@@ -519,6 +560,17 @@ export class AssetService {
       const assetId = result.assetIds[0];
       const { buffer, extension } = await client.downloadAsset(assetId);
 
+      // Debug: save result image and metadata
+      await this.saveDebugFile(`${debugId}_result${extension}`, buffer);
+      await this.saveDebugFile(`${debugId}_metadata.json`, JSON.stringify({
+        debugId,
+        timestamp: new Date().toISOString(),
+        durationMs: Date.now() - startTime,
+        request: { prompt: prompt.substring(0, 500), entityType, style, width, height },
+        silhouette: { shape: physicsShape, width, height },
+        result: { scenarioAssetId: assetId, extension },
+      }, null, 2));
+
       const r2Key = await this.uploadToR2(buffer, extension, entityType);
 
       return {
@@ -530,6 +582,16 @@ export class AssetService {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       console.error(`[AssetService] Generation failed: ${errorMessage}`);
+
+      // Debug: save error metadata
+      await this.saveDebugFile(`${debugId}_error.json`, JSON.stringify({
+        debugId,
+        timestamp: new Date().toISOString(),
+        durationMs: Date.now() - startTime,
+        request: { prompt: prompt.substring(0, 500), entityType, style, width, height },
+        error: errorMessage,
+      }, null, 2));
+
       return this.createPlaceholderResult(entityType, prompt, errorMessage);
     }
   }
@@ -557,6 +619,9 @@ export class AssetService {
       style,
     } = params;
 
+    const debugId = this.generateDebugId();
+    const startTime = Date.now();
+
     if (!this.env.SCENARIO_API_KEY || !this.env.SCENARIO_SECRET_API_KEY) {
       return this.createPlaceholderResult(entityType, buildStructuredPrompt(params));
     }
@@ -570,6 +635,9 @@ export class AssetService {
         physicsHeight
       );
 
+      // Debug: save silhouette
+      await this.saveDebugFile(`${debugId}_silhouette.png`, silhouetteData);
+
       const arrayBuffer = silhouetteData.buffer.slice(
         silhouetteData.byteOffset,
         silhouetteData.byteOffset + silhouetteData.byteLength
@@ -578,6 +646,9 @@ export class AssetService {
 
       const prompt = buildStructuredPrompt(params);
       
+      // Debug: save prompt
+      await this.saveDebugFile(`${debugId}_prompt.txt`, prompt);
+
       const result = await client.generateImg2Img({
         prompt,
         image: uploadedAssetId,
@@ -596,6 +667,17 @@ export class AssetService {
       const assetId = result.assetIds[0];
       const { buffer, extension } = await client.downloadAsset(assetId);
 
+      // Debug: save result image and metadata
+      await this.saveDebugFile(`${debugId}_result${extension}`, buffer);
+      await this.saveDebugFile(`${debugId}_metadata.json`, JSON.stringify({
+        debugId,
+        timestamp: new Date().toISOString(),
+        durationMs: Date.now() - startTime,
+        params: { ...params, prompt: undefined },
+        silhouette: { shape: physicsShape, width: physicsWidth, height: physicsHeight },
+        result: { scenarioAssetId: assetId, extension },
+      }, null, 2));
+
       const r2Key = await this.uploadToR2(buffer, extension, entityType);
 
       return {
@@ -607,6 +689,16 @@ export class AssetService {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       console.error(`[AssetService] Silhouette generation failed: ${errorMessage}`);
+
+      // Debug: save error metadata
+      await this.saveDebugFile(`${debugId}_error.json`, JSON.stringify({
+        debugId,
+        timestamp: new Date().toISOString(),
+        durationMs: Date.now() - startTime,
+        params: { ...params },
+        error: errorMessage,
+      }, null, 2));
+
       return this.createPlaceholderResult(entityType, buildStructuredPrompt(params), errorMessage);
     }
   }

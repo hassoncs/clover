@@ -1,6 +1,6 @@
-# Slopcade Godot Spike
+# Slopcade Godot Engine
 
-This is a spike to validate migrating from Skia+Box2D to Godot 4 for physics-based game rendering.
+Godot 4 game engine integration for Slopcade - handles physics and rendering for React Native games.
 
 ## Quick Start
 
@@ -142,23 +142,13 @@ The spike uses the same `GameDefinition` format as the React Native app:
 | `friction` | `PhysicsMaterial.friction` |
 | `restitution` | `PhysicsMaterial.bounce` |
 
-## Success Criteria
+## Features
 
-This spike succeeds if:
-
-- [x] Godot project loads and runs
-- [x] Physics Stacker game definition parses correctly
-- [x] Static platform renders and has collision
-- [x] Dynamic blocks spawn with physics
-- [x] Blocks stack on platform
-- [x] Collision detection works
-- [ ] Web export runs in browser
-- [ ] 60fps with 50+ entities
-
-## Next Steps (If Spike Succeeds)
-
-1. Add behavior system (oscillate, follow, etc.)
-2. Add rules/triggers system
-3. Add WebSocket multiplayer
-4. Add sprite/image loading
-5. Migrate remaining games
+- [x] Godot project loads and runs (native + web)
+- [x] GameDefinition JSON parsing
+- [x] Static/dynamic/kinematic body types
+- [x] Collision detection and events
+- [x] Dynamic image loading
+- [x] Camera control
+- [x] Joint systems (revolute, distance, prismatic, weld, mouse)
+- [x] Physics queries (point, AABB, raycast)

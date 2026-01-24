@@ -243,6 +243,58 @@ const game: GameDefinition = {
         { type: "move", target: { type: "by_tag", tag: "paddle" }, direction: "toward_touch_x", speed: 20 },
       ],
     },
+    {
+      id: "paddle_left",
+      name: "Move paddle left",
+      trigger: { type: "button", button: "left", state: "held" },
+      actions: [
+        { type: "move", target: { type: "by_tag", tag: "paddle" }, direction: "left", speed: 15 },
+      ],
+    },
+    {
+      id: "paddle_right",
+      name: "Move paddle right",
+      trigger: { type: "button", button: "right", state: "held" },
+      actions: [
+        { type: "move", target: { type: "by_tag", tag: "paddle" }, direction: "right", speed: 15 },
+      ],
+    },
+    {
+      id: "tap_left",
+      name: "Tap left side to move left",
+      trigger: { type: "tap" },
+      conditions: [
+        { type: "expression", expr: "input.tap.worldX < 5" }
+      ],
+      actions: [
+        { type: "move", target: { type: "by_tag", tag: "paddle" }, direction: "left", speed: 10 },
+      ],
+    },
+    {
+      id: "tap_right",
+      name: "Tap right side to move right",
+      trigger: { type: "tap" },
+      conditions: [
+        { type: "expression", expr: "input.tap.worldX >= 5" }
+      ],
+      actions: [
+        { type: "move", target: { type: "by_tag", tag: "paddle" }, direction: "right", speed: 10 },
+      ],
+    },
+    {
+      id: "paddle_follow_mouse",
+      name: "Paddle follows mouse position",
+      trigger: { type: "frame" },
+      actions: [
+        {
+          type: "move_toward",
+          target: { type: "by_tag", tag: "paddle" },
+          towardEntity: { type: "by_id", entityId: "$mouse" },
+          axis: "x",
+          speed: 8,
+        },
+      ],
+    },
   ],
 };
 

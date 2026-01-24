@@ -1,4 +1,5 @@
-import type { Physics2D } from '../physics2d/Physics2D';
+import { Platform } from "react-native";
+import type { Physics2D } from "../physics2d/Physics2D";
 import type {
   BodyId,
   ColliderId,
@@ -18,27 +19,60 @@ import type {
   Unsubscribe,
   CollisionEvent,
   SensorEvent,
-} from '../physics2d/types';
-import { createBodyId, createColliderId, createJointId } from '../physics2d/types';
-import type { GodotBridge } from './types';
+} from "../physics2d/types";
+import {
+  createBodyId,
+  createColliderId,
+  createJointId,
+} from "../physics2d/types";
+import type { GodotBridge, EntityTransform } from "./types";
+
+interface CachedBodyState {
+  transform: Transform;
+  linearVelocity: Vec2;
+  angularVelocity: number;
+}
 
 export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
   const bodyIdToEntityId = new Map<number, string>();
   const entityIdToBodyId = new Map<string, BodyId>();
   const colliderIdMap = new Map<number, ColliderId>();
   const jointIdMap = new Map<number, JointId>();
-  
+
   const userDataStore = new Map<number, unknown>();
   const groupStore = new Map<number, string>();
-  
+
+  const cachedStates = new Map<number, CachedBodyState>();
+
   let nextBodyId = 1;
   let nextColliderId = 1;
   let nextJointId = 1;
-  
+
   const collisionBeginCallbacks: CollisionCallback[] = [];
   const collisionEndCallbacks: CollisionCallback[] = [];
   const sensorBeginCallbacks: SensorCallback[] = [];
   const sensorEndCallbacks: SensorCallback[] = [];
+
+  function handleTransformSync(transforms: Record<string, EntityTransform>) {
+    for (const [entityId, transform] of Object.entries(transforms)) {
+      const bodyId = entityIdToBodyId.get(entityId);
+      if (bodyId) {
+        cachedStates.set(bodyId.value, {
+          transform: {
+            position: { x: transform.x, y: transform.y },
+            angle: transform.angle,
+          },
+          linearVelocity: cachedStates.get(bodyId.value)?.linearVelocity ?? {
+            x: 0,
+            y: 0,
+          },
+          angularVelocity: cachedStates.get(bodyId.value)?.angularVelocity ?? 0,
+        });
+      }
+    }
+  }
+
+  bridge.onTransformSync(handleTransformSync);
 
   bridge.onCollision((event) => {
     const bodyA = entityIdToBodyId.get(event.entityA);
@@ -80,8 +114,7 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
   });
 
   const adapter: Physics2D = {
-    createWorld(_gravity: Vec2): void {
-    },
+    createWorld(_gravity: Vec2): void {},
 
     destroyWorld(): void {
       bridge.clearGame();
@@ -93,35 +126,46 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       groupStore.clear();
     },
 
-    step(_dt: number, _velocityIterations?: number, _positionIterations?: number): void {
-    },
+    step(
+      _dt: number,
+      _velocityIterations?: number,
+      _positionIterations?: number,
+    ): void {},
 
     createBody(def: BodyDef): BodyId {
       const bodyId = createBodyId(nextBodyId++);
-      const entityId = `body_${bodyId.value}_${Date.now()}`;
-      
+
+      // Use actual entity ID from userData if available (set by EntityManager)
+      // This ensures we reference the same entity that Godot created via loadGame()
+      const actualEntityId = (def.userData as { entityId?: string })?.entityId;
+      const entityId = actualEntityId ?? `body_${bodyId.value}_${Date.now()}`;
+
       bodyIdToEntityId.set(bodyId.value, entityId);
       entityIdToBodyId.set(entityId, bodyId);
-      
+
       if (def.userData !== undefined) {
         userDataStore.set(bodyId.value, def.userData);
       }
       if (def.group) {
         groupStore.set(bodyId.value, def.group);
       }
-      
-      bridge.createBody({
-        type: def.type,
-        position: def.position,
-        angle: def.angle,
-        linearDamping: def.linearDamping,
-        angularDamping: def.angularDamping,
-        fixedRotation: def.fixedRotation,
-        bullet: def.bullet,
-        userData: def.userData,
-        group: def.group,
-      });
-      
+
+      // Don't call bridge.createBody() if entity already exists in Godot (loaded via loadGame)
+      // The entity was already created by Godot when parsing the game definition
+      if (!actualEntityId) {
+        bridge.createBody({
+          type: def.type,
+          position: def.position,
+          angle: def.angle,
+          linearDamping: def.linearDamping,
+          angularDamping: def.angularDamping,
+          fixedRotation: def.fixedRotation,
+          bullet: def.bullet,
+          userData: def.userData,
+          group: def.group,
+        });
+      }
+
       return bodyId;
     },
 
@@ -139,29 +183,22 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
     addFixture(bodyId: BodyId, def: FixtureDef): ColliderId {
       const colliderId = createColliderId(nextColliderId++);
       colliderIdMap.set(colliderId.value, colliderId);
-      
+
       bridge.addFixture(bodyId.value, def);
-      
+
       return colliderId;
     },
 
-    removeFixture(_id: ColliderId): void {
-    },
+    removeFixture(_id: ColliderId): void {},
 
     setSensor(id: ColliderId, isSensor: boolean): void {
       bridge.setSensor(id.value, isSensor);
     },
 
     getTransform(id: BodyId): Transform {
-      const entityId = bodyIdToEntityId.get(id.value);
-      if (entityId) {
-        const transform = bridge.getEntityTransform(entityId);
-        if (transform) {
-          return {
-            position: { x: transform.x, y: transform.y },
-            angle: transform.angle,
-          };
-        }
+      const cached = cachedStates.get(id.value);
+      if (cached) {
+        return cached.transform;
       }
       return { position: { x: 0, y: 0 }, angle: 0 };
     },
@@ -169,15 +206,19 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
     setTransform(id: BodyId, transform: Transform): void {
       const entityId = bodyIdToEntityId.get(id.value);
       if (entityId) {
-        bridge.setTransform(entityId, transform.position.x, transform.position.y, transform.angle);
+        bridge.setTransform(
+          entityId,
+          transform.position.x,
+          transform.position.y,
+          transform.angle,
+        );
       }
     },
 
     getLinearVelocity(id: BodyId): Vec2 {
-      const entityId = bodyIdToEntityId.get(id.value);
-      if (entityId) {
-        const vel = bridge.getLinearVelocity(entityId);
-        if (vel) return vel;
+      const cached = cachedStates.get(id.value);
+      if (cached) {
+        return cached.linearVelocity;
       }
       return { x: 0, y: 0 };
     },
@@ -186,13 +227,18 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       const entityId = bodyIdToEntityId.get(id.value);
       if (entityId) {
         bridge.setLinearVelocity(entityId, velocity);
+      } else {
+        console.warn(
+          "[GodotPhysicsAdapter] No entityId found for bodyId:",
+          id.value,
+        );
       }
     },
 
     getAngularVelocity(id: BodyId): number {
-      const entityId = bodyIdToEntityId.get(id.value);
-      if (entityId) {
-        return bridge.getAngularVelocity(entityId) ?? 0;
+      const cached = cachedStates.get(id.value);
+      if (cached) {
+        return cached.angularVelocity;
       }
       return 0;
     },
@@ -242,13 +288,13 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
     createRevoluteJoint(def: RevoluteJointDef): JointId {
       const jointId = createJointId(nextJointId++);
       jointIdMap.set(jointId.value, jointId);
-      
+
       const entityA = bodyIdToEntityId.get(def.bodyA.value);
       const entityB = bodyIdToEntityId.get(def.bodyB.value);
-      
+
       if (entityA && entityB) {
         bridge.createRevoluteJoint({
-          type: 'revolute',
+          type: "revolute",
           bodyA: entityA,
           bodyB: entityB,
           anchor: def.anchor,
@@ -260,20 +306,20 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
           maxMotorTorque: def.maxMotorTorque,
         });
       }
-      
+
       return jointId;
     },
 
     createDistanceJoint(def: DistanceJointDef): JointId {
       const jointId = createJointId(nextJointId++);
       jointIdMap.set(jointId.value, jointId);
-      
+
       const entityA = bodyIdToEntityId.get(def.bodyA.value);
       const entityB = bodyIdToEntityId.get(def.bodyB.value);
-      
+
       if (entityA && entityB) {
         bridge.createDistanceJoint({
-          type: 'distance',
+          type: "distance",
           bodyA: entityA,
           bodyB: entityB,
           anchorA: def.anchorA,
@@ -283,20 +329,20 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
           damping: def.damping,
         });
       }
-      
+
       return jointId;
     },
 
     createPrismaticJoint(def: PrismaticJointDef): JointId {
       const jointId = createJointId(nextJointId++);
       jointIdMap.set(jointId.value, jointId);
-      
+
       const entityA = bodyIdToEntityId.get(def.bodyA.value);
       const entityB = bodyIdToEntityId.get(def.bodyB.value);
-      
+
       if (entityA && entityB) {
         bridge.createPrismaticJoint({
-          type: 'prismatic',
+          type: "prismatic",
           bodyA: entityA,
           bodyB: entityB,
           anchor: def.anchor,
@@ -309,19 +355,19 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
           maxMotorForce: def.maxMotorForce,
         });
       }
-      
+
       return jointId;
     },
 
     createMouseJoint(def: MouseJointDef): JointId {
       const jointId = createJointId(nextJointId++);
       jointIdMap.set(jointId.value, jointId);
-      
+
       const entityId = bodyIdToEntityId.get(def.body.value);
-      
+
       if (entityId) {
         bridge.createMouseJoint({
-          type: 'mouse',
+          type: "mouse",
           body: entityId,
           target: def.target,
           maxForce: def.maxForce,
@@ -329,20 +375,20 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
           damping: def.damping,
         });
       }
-      
+
       return jointId;
     },
 
     createWeldJoint(def: WeldJointDef): JointId {
       const jointId = createJointId(nextJointId++);
       jointIdMap.set(jointId.value, jointId);
-      
+
       const entityA = bodyIdToEntityId.get(def.bodyA.value);
       const entityB = bodyIdToEntityId.get(def.bodyB.value);
-      
+
       if (entityA && entityB) {
         bridge.createWeldJoint({
-          type: 'weld',
+          type: "weld",
           bodyA: entityA,
           bodyB: entityB,
           anchor: def.anchor,
@@ -350,7 +396,7 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
           damping: def.damping,
         });
       }
-      
+
       return jointId;
     },
 
@@ -367,29 +413,33 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       bridge.setMouseTarget(id.value, target);
     },
 
-    queryPoint(point: Vec2): BodyId | null {
-      const result = bridge.queryPoint(point);
-      if (result !== null) {
-        return createBodyId(result);
+    queryPoint(_point: Vec2): BodyId | null {
+      if (Platform.OS !== "web") {
+        console.warn(
+          "[GodotPhysicsAdapter] queryPoint is async on native - use queryPointAsync instead",
+        );
       }
       return null;
     },
 
-    queryAABB(min: Vec2, max: Vec2): BodyId[] {
-      const results = bridge.queryAABB(min, max);
-      return results.map(id => createBodyId(id));
+    queryAABB(_min: Vec2, _max: Vec2): BodyId[] {
+      if (Platform.OS !== "web") {
+        console.warn(
+          "[GodotPhysicsAdapter] queryAABB is async on native - use queryAABBAsync instead",
+        );
+      }
+      return [];
     },
 
-    raycast(origin: Vec2, direction: Vec2, maxDistance: number): RaycastHit | null {
-      const result = bridge.raycast(origin, direction, maxDistance);
-      if (result) {
-        return {
-          bodyId: createBodyId(result.bodyId),
-          colliderId: createColliderId(result.colliderId),
-          point: result.point,
-          normal: result.normal,
-          fraction: result.fraction,
-        };
+    raycast(
+      _origin: Vec2,
+      _direction: Vec2,
+      _maxDistance: number,
+    ): RaycastHit | null {
+      if (Platform.OS !== "web") {
+        console.warn(
+          "[GodotPhysicsAdapter] raycast is async on native - use raycastAsync instead",
+        );
       }
       return null;
     },
@@ -440,7 +490,7 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
     },
 
     getAllBodies(): BodyId[] {
-      return Array.from(bodyIdToEntityId.keys()).map(id => createBodyId(id));
+      return Array.from(bodyIdToEntityId.keys()).map((id) => createBodyId(id));
     },
 
     getBodiesInGroup(group: string): BodyId[] {

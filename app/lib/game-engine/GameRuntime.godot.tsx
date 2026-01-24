@@ -4,6 +4,8 @@ import {
   View,
   Text,
   TouchableOpacity,
+  Platform,
+  type GestureResponderEvent,
 } from "react-native";
 import type { GameDefinition, ParticleEmitterType, EvalContext, ExpressionValueType } from "@slopcade/shared";
 import { createComputedValueSystem } from "@slopcade/shared";
@@ -19,6 +21,7 @@ import type {
 } from "./BehaviorContext";
 import { CameraSystem } from "./CameraSystem";
 import { ViewportSystem, type ViewportRect } from "./ViewportSystem";
+import { InputEntityManager, type InputState as InputEntityState } from "./InputEntityManager";
 
 export interface GameRuntimeGodotProps {
   definition: GameDefinition;
@@ -47,17 +50,27 @@ export function GameRuntimeGodot({
   const loaderRef = useRef<GameLoader | null>(null);
   const cameraRef = useRef<CameraSystem | null>(null);
   const viewportSystemRef = useRef<ViewportSystem | null>(null);
+  const inputEntityManagerRef = useRef<InputEntityManager | null>(null);
   const elapsedRef = useRef(0);
   const frameIdRef = useRef(0);
   const collisionsRef = useRef<CollisionInfo[]>([]);
   const collisionUnsubRef = useRef<Unsubscribe | null>(null);
   const sensorUnsubRef = useRef<Unsubscribe | null>(null);
+  const inputEventUnsubRef = useRef<Unsubscribe | null>(null);
   const gameLoopRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastTickRef = useRef(0);
   const screenSizeRef = useRef({ width: 0, height: 0 });
   const computedValuesRef = useRef(createComputedValueSystem());
   const gameVariablesRef = useRef<Record<string, ExpressionValueType>>({});
   const inputRef = useRef<Record<string, unknown>>({});
+  const buttonsRef = useRef<Record<string, boolean>>({
+    left: false,
+    right: false,
+    up: false,
+    down: false,
+    jump: false,
+    action: false,
+  });
 
   const timeScaleRef = useRef(1.0);
   const timeScaleTargetRef = useRef(1.0);
@@ -128,6 +141,9 @@ export function GameRuntimeGodot({
         const game = loader.load(definition);
         gameRef.current = game;
 
+        const inputEntityManager = new InputEntityManager();
+        inputEntityManagerRef.current = inputEntityManager;
+
         if (definition.variables) {
           const resolvedVars: Record<string, ExpressionValueType> = {};
           for (const [key, value] of Object.entries(definition.variables)) {
@@ -181,6 +197,19 @@ export function GameRuntimeGodot({
               normal: { x: 0, y: 0 },
               impulse: 0,
             });
+          }
+        });
+
+        inputEventUnsubRef.current = bridge.onInputEvent((type, x, y, _entityId) => {
+          if (type === "tap") {
+            const ppm = definition.world.pixelsPerMeter ?? 50;
+            const screenX = x * ppm;
+            const screenY = y * ppm;
+            console.log('[GameRuntime] onInputEvent tap received:', { x, y, screenX, screenY });
+            inputRef.current = {
+              ...inputRef.current,
+              tap: { x: screenX, y: screenY, worldX: x, worldY: y },
+            };
           }
         });
 
@@ -238,6 +267,8 @@ export function GameRuntimeGodot({
       collisionUnsubRef.current = null;
       sensorUnsubRef.current?.();
       sensorUnsubRef.current = null;
+      inputEventUnsubRef.current?.();
+      inputEventUnsubRef.current = null;
       bridgeRef.current?.dispose();
       bridgeRef.current = null;
       physicsRef.current = null;
@@ -305,7 +336,29 @@ export function GameRuntimeGodot({
 
     game.entityManager.syncTransformsFromPhysics();
 
+    const inputEntityManager = inputEntityManagerRef.current;
+    if (inputEntityManager) {
+      const currentInput = inputRef.current as Record<string, unknown>;
+      inputEntityManager.syncFromInput({
+        mouse: currentInput.mouse as InputEntityState['mouse'],
+        tap: currentInput.tap as InputEntityState['tap'],
+        drag: currentInput.drag as InputEntityState['drag'],
+      });
+    }
+
     camera.update(dt, (id) => game.entityManager.getEntity(id));
+
+    const cameraPos = camera.getPosition();
+    bridge.setCameraPosition(cameraPos.x, cameraPos.y);
+    
+    // Calculate effective zoom for Godot:
+    // ViewportSystem computes scale = viewportHeight / worldHeightMeters (e.g., 800 / 20 = 40)
+    // Godot uses its own pixels_per_meter from the game definition (default 50)
+    // We need to adjust zoom so Godot renders at the correct scale
+    const viewportScale = viewportSystemRef.current?.getPixelsPerMeter() ?? game.pixelsPerMeter;
+    const godotPixelsPerMeter = game.pixelsPerMeter;
+    const scaleRatio = viewportScale / godotPixelsPerMeter;
+    bridge.setCameraZoom(camera.getZoom() * scaleRatio);
 
     elapsedRef.current += dt;
     frameIdRef.current += 1;
@@ -337,10 +390,13 @@ export function GameRuntimeGodot({
 
     const baseEvalContext = createEvalContext();
 
+    const inputSnapshot = inputRef.current;
+    console.log('[GameRuntime] BEFORE behaviors - inputRef.current.tap:', inputSnapshot.tap, 'keys:', Object.keys(inputSnapshot));
+    
     const behaviorContext: Omit<BehaviorContext, "entity" | "resolveNumber" | "resolveVec2"> = {
       dt,
       elapsed: elapsedRef.current,
-      input: inputRef.current,
+      input: inputSnapshot,
       gameState: fullGameState,
       entityManager: game.entityManager,
       physics,
@@ -366,7 +422,8 @@ export function GameRuntimeGodot({
       destroyEntity: (id) => game.entityManager.destroyEntity(id),
       triggerEvent: (name, data) =>
         game.rulesEvaluator.triggerEvent(name, data),
-      triggerParticleEffect: (_type: ParticleEmitterType, _x: number, _y: number) => {
+      triggerParticleEffect: (type: ParticleEmitterType, x: number, y: number) => {
+        bridge.spawnParticle(type, x, y);
       },
       createEntityEmitter: (_type: ParticleEmitterType, _x: number, _y: number) => {
         return `emitter_${Date.now()}`;
@@ -374,6 +431,9 @@ export function GameRuntimeGodot({
       updateEmitterPosition: (_emitterId: string, _x: number, _y: number) => {
       },
       stopEmitter: (_emitterId: string) => {
+      },
+      playSound: (soundId: string) => {
+        bridge.playSound(soundId);
       },
       computedValues,
       evalContext: baseEvalContext,
@@ -387,8 +447,11 @@ export function GameRuntimeGodot({
 
     const inputEvents: import('./BehaviorContext').InputEvents = {};
     const currentInput = inputRef.current as Record<string, unknown>;
+    const sameObject = inputSnapshot === inputRef.current;
+    console.log('[GameRuntime] AFTER behaviors - currentInput.tap:', currentInput.tap, 'sameObject:', sameObject, 'inputSnapshot.tap:', inputSnapshot.tap);
     if (currentInput.tap) {
       inputEvents.tap = currentInput.tap as { x: number; y: number; worldX: number; worldY: number };
+      console.log('[GameRuntime] inputEvents.tap SET:', inputEvents.tap);
     }
     if (currentInput.dragEnd) {
       inputEvents.dragEnd = currentInput.dragEnd as { velocityX: number; velocityY: number; worldVelocityX: number; worldVelocityY: number };
@@ -404,10 +467,26 @@ export function GameRuntimeGodot({
       computedValues,
       baseEvalContext,
       camera,
-      setTimeScale
+      setTimeScale,
+      inputEntityManager ?? undefined,
+      (soundId: string, _volume?: number) => {
+        bridge.playSound(soundId);
+      }
     );
 
+    const preservedDrag = inputRef.current.drag;
+    const preservedButtons = inputRef.current.buttons;
+    const preservedMouse = inputRef.current.mouse;
     inputRef.current = {};
+    if (preservedDrag && !inputEvents.dragEnd) {
+      inputRef.current.drag = preservedDrag;
+    }
+    if (preservedButtons) {
+      inputRef.current.buttons = preservedButtons;
+    }
+    if (preservedMouse) {
+      inputRef.current.mouse = preservedMouse;
+    }
     collisionsRef.current = [];
 
     setGameState((s) => ({ ...s, time: elapsedRef.current }));
@@ -445,6 +524,176 @@ export function GameRuntimeGodot({
       }
     };
   }, [isReady, gameState.state, stepGame]);
+
+  // Keyboard input handling (web only)
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      let changed = false;
+      switch (e.key) {
+        case "ArrowLeft":
+        case "a":
+        case "A":
+          if (!buttonsRef.current.left) {
+            buttonsRef.current.left = true;
+            changed = true;
+          }
+          break;
+        case "ArrowRight":
+        case "d":
+        case "D":
+          if (!buttonsRef.current.right) {
+            buttonsRef.current.right = true;
+            changed = true;
+          }
+          break;
+        case "ArrowUp":
+        case "w":
+        case "W":
+          if (!buttonsRef.current.up) {
+            buttonsRef.current.up = true;
+            changed = true;
+          }
+          break;
+        case "ArrowDown":
+        case "s":
+        case "S":
+          if (!buttonsRef.current.down) {
+            buttonsRef.current.down = true;
+            changed = true;
+          }
+          break;
+        case " ":
+          if (!buttonsRef.current.jump) {
+            buttonsRef.current.jump = true;
+            changed = true;
+          }
+          break;
+      }
+      if (changed) {
+        inputRef.current.buttons = { ...buttonsRef.current };
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case "ArrowLeft":
+        case "a":
+        case "A":
+          buttonsRef.current.left = false;
+          break;
+        case "ArrowRight":
+        case "d":
+        case "D":
+          buttonsRef.current.right = false;
+          break;
+        case "ArrowUp":
+        case "w":
+        case "W":
+          buttonsRef.current.up = false;
+          break;
+        case "ArrowDown":
+        case "s":
+        case "S":
+          buttonsRef.current.down = false;
+          break;
+        case " ":
+          buttonsRef.current.jump = false;
+          break;
+      }
+      inputRef.current.buttons = { ...buttonsRef.current };
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const container = viewportContainerRef.current;
+      if (!container) return;
+      
+      const rect = (container as unknown as HTMLElement).getBoundingClientRect?.();
+      if (!rect) return;
+
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      if (x < 0 || x > rect.width || y < 0 || y > rect.height) {
+        inputRef.current.mouse = undefined;
+        return;
+      }
+
+      const camera = cameraRef.current;
+      const viewportSystem = viewportSystemRef.current;
+      
+      let world = { x: 0, y: 0 };
+      if (camera && viewportSystem) {
+        world = viewportSystem.viewportToWorld(x, y, camera.getPosition(), camera.getZoom());
+        
+        if (Math.random() < 0.02) {
+          const viewportRect = viewportSystem.getViewportRect();
+          console.log('[handleMouseMove] Debug:', {
+            containerXY: { x: x.toFixed(1), y: y.toFixed(1) },
+            viewportRect: { w: viewportRect.width.toFixed(0), h: viewportRect.height.toFixed(0), scale: viewportRect.scale.toFixed(2) },
+            cameraPos: camera.getPosition(),
+            world: { x: world.x.toFixed(2), y: world.y.toFixed(2) },
+          });
+        }
+      }
+
+      inputRef.current.mouse = { x, y, worldX: world.x, worldY: world.y };
+    };
+
+    const handleMouseLeave = () => {
+      inputRef.current.mouse = undefined;
+    };
+
+    const handleClick = (e: MouseEvent) => {
+      const container = viewportContainerRef.current;
+      if (!container) return;
+      
+      const rect = (container as unknown as HTMLElement).getBoundingClientRect?.();
+      if (!rect) return;
+
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      const camera = cameraRef.current;
+      const viewportSystem = viewportSystemRef.current;
+      
+      let world = { x: 0, y: 0 };
+      if (camera && viewportSystem) {
+        world = viewportSystem.viewportToWorld(x, y, camera.getPosition(), camera.getZoom());
+      }
+      
+      console.log('[CLICK] Mouse clicked:', {
+        clientXY: { x: e.clientX, y: e.clientY },
+        rectTopLeft: { x: rect.left, y: rect.top },
+        containerXY: { x, y },
+        worldXY: world,
+        currentMouseRef: inputRef.current.mouse,
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseleave", handleMouseLeave);
+    window.addEventListener("click", handleClick);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener("click", handleClick);
+    };
+  }, []);
 
   const handleStart = useCallback(() => {
     gameRef.current?.rulesEvaluator.start();
@@ -514,6 +763,94 @@ export function GameRuntimeGodot({
     [],
   );
 
+  const dragStartRef = useRef<{ x: number; y: number; worldX: number; worldY: number } | null>(null);
+  const viewportContainerRef = useRef<View>(null);
+
+  const screenToWorld = useCallback((screenX: number, screenY: number) => {
+    const camera = cameraRef.current;
+    const vs = viewportSystemRef.current;
+    if (!camera) return { x: 0, y: 0 };
+    
+    if (vs) {
+      return vs.viewportToWorld(screenX, screenY, camera.getPosition(), camera.getZoom());
+    }
+    return camera.screenToWorld(screenX, screenY);
+  }, []);
+
+  const handleTouchStart = useCallback((event: GestureResponderEvent) => {
+    const bridge = bridgeRef.current;
+    if (!bridge) return;
+    
+    const { locationX: x, locationY: y } = event.nativeEvent;
+    const world = screenToWorld(x, y);
+    
+    dragStartRef.current = { x, y, worldX: world.x, worldY: world.y };
+    
+    inputRef.current = {
+      ...inputRef.current,
+      drag: {
+        startX: x, startY: y, currentX: x, currentY: y,
+        startWorldX: world.x, startWorldY: world.y,
+        currentWorldX: world.x, currentWorldY: world.y,
+      },
+    };
+    
+    bridge.sendInput('drag_start', { x: world.x, y: world.y });
+  }, [screenToWorld]);
+
+  const handleTouchMove = useCallback((event: GestureResponderEvent) => {
+    const bridge = bridgeRef.current;
+    const dragStart = dragStartRef.current;
+    if (!bridge || !dragStart) return;
+    
+    const { locationX: x, locationY: y } = event.nativeEvent;
+    const world = screenToWorld(x, y);
+    
+    inputRef.current = {
+      ...inputRef.current,
+      drag: {
+        startX: dragStart.x, startY: dragStart.y,
+        currentX: x, currentY: y,
+        startWorldX: dragStart.worldX, startWorldY: dragStart.worldY,
+        currentWorldX: world.x, currentWorldY: world.y,
+      },
+    };
+    
+    bridge.sendInput('drag_move', { x: world.x, y: world.y });
+  }, [screenToWorld]);
+
+  const handleTouchEnd = useCallback((event: GestureResponderEvent) => {
+    const bridge = bridgeRef.current;
+    const dragStart = dragStartRef.current;
+    if (!bridge) return;
+    
+    const { locationX: x, locationY: y } = event.nativeEvent;
+    const world = screenToWorld(x, y);
+    
+    console.log('[GameRuntime] handleTouchEnd - SETTING tap:', { x, y, worldX: world.x, worldY: world.y });
+    inputRef.current = {
+      ...inputRef.current,
+      tap: { x, y, worldX: world.x, worldY: world.y },
+    };
+    console.log('[GameRuntime] handleTouchEnd - inputRef.current now:', inputRef.current);
+    
+    if (dragStart) {
+      const VELOCITY_SCALE = 0.1;
+      inputRef.current.dragEnd = {
+        velocityX: (x - dragStart.x) * VELOCITY_SCALE,
+        velocityY: (y - dragStart.y) * VELOCITY_SCALE,
+        worldVelocityX: (world.x - dragStart.worldX) * VELOCITY_SCALE,
+        worldVelocityY: (world.y - dragStart.worldY) * VELOCITY_SCALE,
+      };
+    }
+    
+    bridge.sendInput('tap', { x: world.x, y: world.y });
+    bridge.sendInput('drag_end', { x: world.x, y: world.y });
+    
+    dragStartRef.current = null;
+    inputRef.current.drag = undefined;
+  }, [screenToWorld]);
+
   const letterboxColor = definition.presentation?.letterboxColor ?? "#000000";
   const hasViewport = viewportRect.width > 0 && viewportRect.height > 0;
 
@@ -521,6 +858,7 @@ export function GameRuntimeGodot({
     <View style={[styles.container, { backgroundColor: letterboxColor }]} onLayout={handleLayout}>
       {hasViewport && (
         <View
+          ref={viewportContainerRef}
           style={[
             styles.viewportContainer,
             {
@@ -530,6 +868,11 @@ export function GameRuntimeGodot({
               height: viewportRect.height,
             },
           ]}
+          onStartShouldSetResponder={() => true}
+          onMoveShouldSetResponder={() => true}
+          onResponderGrant={handleTouchStart}
+          onResponderMove={handleTouchMove}
+          onResponderRelease={handleTouchEnd}
         >
           <GodotView
             style={styles.godotView}

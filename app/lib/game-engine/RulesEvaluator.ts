@@ -9,6 +9,7 @@ import type {
   EvalContext,
 } from '@slopcade/shared';
 import type { EntityManager } from './EntityManager';
+import type { InputEntityManager } from './InputEntityManager';
 import type { RuntimeEntity } from './types';
 import type { CollisionInfo, GameState, InputState } from './BehaviorContext';
 import type { Physics2D } from '../physics2d/Physics2D';
@@ -24,6 +25,7 @@ import {
   LogicActionExecutor,
   EntityActionExecutor,
   CameraActionExecutor,
+  SoundActionExecutor,
 } from './rules/actions';
 import {
   LogicConditionEvaluator,
@@ -67,6 +69,7 @@ export class RulesEvaluator implements IGameStateMutator {
   private logicActionExecutor = new LogicActionExecutor();
   private entityActionExecutor = new EntityActionExecutor();
   private cameraActionExecutor = new CameraActionExecutor();
+  private soundActionExecutor = new SoundActionExecutor();
 
   private logicConditionEvaluator = new LogicConditionEvaluator();
   private physicsConditionEvaluator = new PhysicsConditionEvaluator();
@@ -267,7 +270,9 @@ export class RulesEvaluator implements IGameStateMutator {
     computedValues?: ComputedValueSystem,
     evalContext?: EvalContext,
     camera?: CameraSystem,
-    setTimeScale?: (scale: number, duration?: number) => void
+    setTimeScale?: (scale: number, duration?: number) => void,
+    inputEntityManager?: InputEntityManager,
+    playSound?: (soundId: string, volume?: number) => void
   ): void {
     if (this.gameState !== 'playing') {
       if (inputEvents.tap || inputEvents.dragEnd) {
@@ -280,10 +285,12 @@ export class RulesEvaluator implements IGameStateMutator {
 
     const context: RuleContext = {
       entityManager,
+      inputEntityManager,
       physics,
       mutator: this,
       camera,
       setTimeScale,
+      playSound,
       score: this.score,
       lives: this.lives,
       elapsed: this.elapsed,
@@ -306,6 +313,10 @@ export class RulesEvaluator implements IGameStateMutator {
       return;
     }
 
+    if (context.inputEvents.tap) {
+      console.log('[RulesEvaluator] TAP EVENT DETECTED, evaluating', this.rules.length, 'rules');
+    }
+
     for (const rule of this.rules) {
       if (rule.enabled === false) continue;
       if (rule.fireOnce && this.firedOnce.has(rule.id)) continue;
@@ -315,10 +326,8 @@ export class RulesEvaluator implements IGameStateMutator {
 
       const triggerResult = this.evaluateTrigger(rule.trigger, context);
       if (triggerResult) {
-        console.log('[Rules] Trigger matched for rule:', rule.id, rule.trigger.type);
         const conditionsResult = this.evaluateConditions(rule.conditions, context);
         if (conditionsResult) {
-          console.log('[Rules] Conditions passed, executing actions for:', rule.id);
           this.executeActions(rule.actions, context);
 
           if (rule.fireOnce) {
@@ -328,8 +337,6 @@ export class RulesEvaluator implements IGameStateMutator {
           if (rule.cooldown) {
             this.cooldowns.set(rule.id, this.elapsed + rule.cooldown);
           }
-        } else {
-          console.log('[Rules] Conditions FAILED for rule:', rule.id, rule.conditions);
         }
       }
     }
@@ -387,7 +394,8 @@ export class RulesEvaluator implements IGameStateMutator {
         case 'apply_impulse':
         case 'apply_force':
         case 'set_velocity':
-        case 'move': this.physicsActionExecutor.execute(a, context); break;
+        case 'move':
+        case 'move_toward': this.physicsActionExecutor.execute(a, context); break;
         case 'modify': this.entityActionExecutor.execute(a, context); break;
         case 'game_state':
         case 'event':
@@ -400,6 +408,7 @@ export class RulesEvaluator implements IGameStateMutator {
         case 'camera_shake':
         case 'camera_zoom':
         case 'set_time_scale': this.cameraActionExecutor.execute(a, context); break;
+        case 'sound': this.soundActionExecutor.execute(a, context); break;
       }
     }
   }

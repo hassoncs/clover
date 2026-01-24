@@ -5,7 +5,6 @@ function TabIcon({ name }: { name: string }) {
   const icons: Record<string, string> = {
     lab: "🔬",
     maker: "🎮",
-    gallery: "🎨",
     browse: "🔍",
   };
 
@@ -65,17 +64,6 @@ export default function TabLayout() {
           title: "Browse",
           tabBarIcon: () => <TabIcon name="browse" />,
           headerTitle: "Discover Games",
-        }}
-      />
-      <Tabs.Screen
-        name="gallery"
-        options={{
-          title: "Gallery",
-          tabBarIcon: () => <TabIcon name="gallery" />,
-          headerTitle: "Engine Gallery",
-          headerStyle: {
-            backgroundColor: "#0a0a0a",
-          },
         }}
       />
     </Tabs>

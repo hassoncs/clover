@@ -1,0 +1,94 @@
+[gd_scene load_steps=2 format=3 uid="uid://bvfxshowcase001"]
+
+[ext_resource type="Script" path="res://scripts/VFXShowcase.gd" id="1_showcase"]
+
+[node name="VFXShowcase" type="Node2D"]
+script = ExtResource("1_showcase")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(350, 450)
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 700.0
+offset_bottom = 900.0
+color = Color(0.1, 0.1, 0.15, 1)
+
+[node name="SpriteGrid" type="Node2D" parent="."]
+position = Vector2(100, 150)
+
+[node name="UI" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="Panel" type="Panel" parent="UI"]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 250.0
+offset_bottom = 890.0
+
+[node name="VBox" type="VBoxContainer" parent="UI/Panel"]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 230.0
+offset_bottom = 870.0
+
+[node name="Title" type="Label" parent="UI/Panel/VBox"]
+layout_mode = 2
+text = "VFX Showcase"
+horizontal_alignment = 1
+
+[node name="SpriteEffectsLabel" type="Label" parent="UI/Panel/VBox"]
+layout_mode = 2
+text = "--- Sprite Effects ---"
+horizontal_alignment = 1
+
+[node name="SpriteEffectsList" type="ItemList" parent="UI/Panel/VBox"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+
+[node name="ScreenEffectsLabel" type="Label" parent="UI/Panel/VBox"]
+layout_mode = 2
+text = "--- Screen Effects ---"
+horizontal_alignment = 1
+
+[node name="ScreenEffectsList" type="ItemList" parent="UI/Panel/VBox"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+
+[node name="ParticlesLabel" type="Label" parent="UI/Panel/VBox"]
+layout_mode = 2
+text = "--- Particles ---"
+horizontal_alignment = 1
+
+[node name="ParticlesList" type="ItemList" parent="UI/Panel/VBox"]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+
+[node name="CameraLabel" type="Label" parent="UI/Panel/VBox"]
+layout_mode = 2
+text = "--- Camera Effects ---"
+horizontal_alignment = 1
+
+[node name="CameraButtons" type="HBoxContainer" parent="UI/Panel/VBox"]
+layout_mode = 2
+
+[node name="ShakeBtn" type="Button" parent="UI/Panel/VBox/CameraButtons"]
+layout_mode = 2
+text = "Shake"
+
+[node name="ZoomBtn" type="Button" parent="UI/Panel/VBox/CameraButtons"]
+layout_mode = 2
+text = "Zoom"
+
+[node name="FlashBtn" type="Button" parent="UI/Panel/VBox/CameraButtons"]
+layout_mode = 2
+text = "Flash"
+
+[node name="ClearBtn" type="Button" parent="UI/Panel/VBox"]
+layout_mode = 2
+text = "Clear All Effects"
+
+[node name="Instructions" type="Label" parent="UI/Panel/VBox"]
+layout_mode = 2
+text = "Click sprite to apply effect
+Click empty area for particles"
+horizontal_alignment = 1

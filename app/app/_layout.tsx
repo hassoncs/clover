@@ -77,22 +77,13 @@ export default function RootLayout() {
           presentation: "fullScreenModal",
         }}
       />
-      <Stack.Screen name="examples/box2d" options={{ title: "Box2D Demo" }} />
-      <Stack.Screen name="examples/pendulum" options={{ title: "Pendulum" }} />
-      <Stack.Screen name="examples/interaction" options={{ title: "Interaction" }} />
-      <Stack.Screen name="examples/bridge" options={{ title: "Bridge" }} />
-      <Stack.Screen name="examples/car" options={{ title: "Car" }} />
-      <Stack.Screen name="examples/avalanche" options={{ title: "Avalanche" }} />
-      <Stack.Screen name="examples/newtons_cradle" options={{ title: "Newton's Cradle" }} />
-      <Stack.Screen name="examples/dominoes" options={{ title: "Dominoes" }} />
-      <Stack.Screen name="examples/ragdoll" options={{ title: "Ragdoll Playground" }} />
-      <Stack.Screen name="examples/rope_swing" options={{ title: "Rope Swing" }} />
-      <Stack.Screen name="examples/pinball" options={{ title: "Pinball Table" }} />
-      <Stack.Screen name="examples/liquid_illusion" options={{ title: "Liquid Illusion" }} />
-      <Stack.Screen name="examples/slingshot" options={{ title: "Slingshot" }} />
-      <Stack.Screen name="examples/magnet_playground" options={{ title: "Magnet Playground" }} />
-      <Stack.Screen name="examples/top_down_asteroids" options={{ title: "Top-Down Asteroids" }} />
-      <Stack.Screen name="examples/destructible_tower" options={{ title: "Destructible Tower" }} />
+      <Stack.Screen 
+        name="examples/[id]" 
+        options={{ 
+          headerShown: false,
+          presentation: "fullScreenModal",
+        }} 
+      />
           </Stack>
         </SafeAreaProvider>
       </TRPCProvider>

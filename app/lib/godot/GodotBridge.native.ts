@@ -37,10 +37,15 @@ interface GodotGameBridge {
   create_mouse_joint(body: string, targetX: number, targetY: number, maxForce: number, stiffness: number, damping: number): number;
   destroy_joint(jointId: number): void;
   set_mouse_target(jointId: number, x: number, y: number): void;
-  _js_query_point(args: [number, number]): number | null;
-  _js_query_aabb(args: [number, number, number, number]): number[];
-  _js_raycast(args: [number, number, number, number, number]): RaycastHit | null;
-  poll_events(): string; // Returns JSON string (arrays not supported by react-native-godot)
+  query_point(x: number, y: number): number | null;
+  query_aabb(minX: number, minY: number, maxX: number, maxY: number): string;
+  raycast(originX: number, originY: number, dirX: number, dirY: number, maxDistance: number): string | null;
+  poll_events(): string;
+  set_linear_velocity(entityId: string, vx: number, vy: number): void;
+  set_angular_velocity(entityId: string, velocity: number): void;
+  apply_impulse(entityId: string, ix: number, iy: number): void;
+  apply_force(entityId: string, fx: number, fy: number): void;
+  apply_torque(entityId: string, torque: number): void;
 }
 let godotModule: GodotModule | null = null;
 let isGodotInitialized = false;
@@ -70,7 +75,8 @@ function callGameBridge(methodName: string, ...args: unknown[]) {
       if (gameBridge) {
         const method = gameBridge[methodName];
         if (typeof method === 'function') {
-          method.apply(gameBridge, [args]);
+          // Spread args individually - react-native-godot doesn't support array bindings
+          method.apply(gameBridge, args);
         } else {
           console.log(`[Godot worklet] Method ${methodName} not found on GameBridge`);
         }
@@ -91,7 +97,8 @@ function callEffectsBridge(methodName: string, ...args: unknown[]) {
       if (effectsBridge) {
         const method = effectsBridge[methodName];
         if (typeof method === 'function') {
-          method.apply(effectsBridge, [args]);
+          // Spread args individually - react-native-godot doesn't support array bindings
+          method.apply(effectsBridge, args);
         } else {
           console.log(`[Godot worklet] Method ${methodName} not found on GameBridgeEffects`);
         }
@@ -128,6 +135,7 @@ export function createNativeGodotBridge(): GodotBridge {
   const sensorEndCallbacks: ((event: SensorEvent) => void)[] = [];
   const inputEventCallbacks: ((type: string, x: number, y: number, entityId: string | null) => void)[] = [];
   const uiButtonCallbacks: ((eventType: 'button_down' | 'button_up' | 'button_pressed', buttonId: string) => void)[] = [];
+  const transformSyncCallbacks: ((transforms: Record<string, EntityTransform>) => void)[] = [];
   let eventPollIntervalId: ReturnType<typeof setInterval> | null = null;
 
   async function pollAndDispatchEvents() {
@@ -475,7 +483,17 @@ export function createNativeGodotBridge(): GodotBridge {
     },
 
     setLinearVelocity(entityId: string, velocity: Vec2) {
-      callGameBridge('set_linear_velocity', entityId, velocity.x, velocity.y);
+      getGodotModule().then(({ RTNGodot, runOnGodotThread }) => {
+        if (isDisposing) return;
+        runOnGodotThread(() => {
+          'worklet';
+          const Godot = RTNGodot.API();
+          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
+          if (gameBridge) {
+            gameBridge.set_linear_velocity(entityId, velocity.x, velocity.y);
+          }
+        });
+      });
     },
 
     async getAngularVelocity(entityId: string): Promise<number | null> {
@@ -500,19 +518,59 @@ export function createNativeGodotBridge(): GodotBridge {
     },
 
     setAngularVelocity(entityId: string, velocity: number) {
-      callGameBridge('set_angular_velocity', entityId, velocity);
+      getGodotModule().then(({ RTNGodot, runOnGodotThread }) => {
+        if (isDisposing) return;
+        runOnGodotThread(() => {
+          'worklet';
+          const Godot = RTNGodot.API();
+          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
+          if (gameBridge) {
+            gameBridge.set_angular_velocity(entityId, velocity);
+          }
+        });
+      });
     },
 
     applyImpulse(entityId: string, impulse: Vec2) {
-      callGameBridge('apply_impulse', entityId, impulse.x, impulse.y);
+      getGodotModule().then(({ RTNGodot, runOnGodotThread }) => {
+        if (isDisposing) return;
+        runOnGodotThread(() => {
+          'worklet';
+          const Godot = RTNGodot.API();
+          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
+          if (gameBridge) {
+            gameBridge.apply_impulse(entityId, impulse.x, impulse.y);
+          }
+        });
+      });
     },
 
     applyForce(entityId: string, force: Vec2) {
-      callGameBridge('apply_force', entityId, force.x, force.y);
+      getGodotModule().then(({ RTNGodot, runOnGodotThread }) => {
+        if (isDisposing) return;
+        runOnGodotThread(() => {
+          'worklet';
+          const Godot = RTNGodot.API();
+          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
+          if (gameBridge) {
+            gameBridge.apply_force(entityId, force.x, force.y);
+          }
+        });
+      });
     },
 
     applyTorque(entityId: string, torque: number) {
-      callGameBridge('apply_torque', entityId, torque);
+      getGodotModule().then(({ RTNGodot, runOnGodotThread }) => {
+        if (isDisposing) return;
+        runOnGodotThread(() => {
+          'worklet';
+          const Godot = RTNGodot.API();
+          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
+          if (gameBridge) {
+            gameBridge.apply_torque(entityId, torque);
+          }
+        });
+      });
     },
 
     createRevoluteJoint(def: RevoluteJointDef): number {
@@ -635,7 +693,7 @@ export function createNativeGodotBridge(): GodotBridge {
           const Godot = RTNGodot.API();
           const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
           if (gameBridge) {
-            return gameBridge._js_query_point([point.x, point.y]);
+            return gameBridge.query_point(point.x, point.y);
           }
         } catch (e) {
           console.log(`[Godot worklet] queryPoint error: ${e}`);
@@ -673,7 +731,8 @@ export function createNativeGodotBridge(): GodotBridge {
           const Godot = RTNGodot.API();
           const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
           if (gameBridge) {
-            return gameBridge._js_query_aabb([min.x, min.y, max.x, max.y]) ?? [];
+            const jsonResult = gameBridge.query_aabb(min.x, min.y, max.x, max.y);
+            return jsonResult ? JSON.parse(jsonResult) as number[] : [];
           }
         } catch (e) {
           console.log(`[Godot worklet] queryAABB error: ${e}`);
@@ -691,7 +750,8 @@ export function createNativeGodotBridge(): GodotBridge {
           const Godot = RTNGodot.API();
           const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
           if (gameBridge) {
-            return gameBridge._js_raycast([origin.x, origin.y, direction.x, direction.y, maxDistance]);
+            const jsonResult = gameBridge.raycast(origin.x, origin.y, direction.x, direction.y, maxDistance);
+            return jsonResult ? JSON.parse(jsonResult) as RaycastHit : null;
           }
         } catch (e) {
           console.log(`[Godot worklet] raycast error: ${e}`);
@@ -702,6 +762,7 @@ export function createNativeGodotBridge(): GodotBridge {
 
     createBody(def: BodyDef): number {
       const bodyId = Date.now();
+      const userDataJson = def.userData != null ? JSON.stringify(def.userData) : '';
       callGameBridge('create_body',
         def.type,
         def.position.x, def.position.y,
@@ -710,8 +771,8 @@ export function createNativeGodotBridge(): GodotBridge {
         def.angularDamping ?? 0,
         def.fixedRotation ?? false,
         def.bullet ?? false,
-        def.userData,
-        def.group
+        userDataJson,
+        def.group ?? ''
       );
       return bodyId;
     },
@@ -750,7 +811,8 @@ export function createNativeGodotBridge(): GodotBridge {
     },
 
     setUserData(bodyId: number, data: unknown) {
-      callGameBridge('set_user_data', bodyId, data);
+      const dataJson = data != null ? JSON.stringify(data) : '';
+      callGameBridge('set_user_data', bodyId, dataJson);
     },
 
     async getUserData(bodyId: number): Promise<unknown> {
@@ -821,6 +883,14 @@ export function createNativeGodotBridge(): GodotBridge {
       };
     },
 
+    onTransformSync(callback: (transforms: Record<string, EntityTransform>) => void): () => void {
+      transformSyncCallbacks.push(callback);
+      return () => {
+        const index = transformSyncCallbacks.indexOf(callback);
+        if (index >= 0) transformSyncCallbacks.splice(index, 1);
+      };
+    },
+
     sendInput(type, data) {
       callGameBridge('send_input', type, data.x, data.y, data.entityId ?? '');
     },
@@ -879,7 +949,7 @@ export function createNativeGodotBridge(): GodotBridge {
     },
 
     applySpriteEffect(entityId: string, effectName: string, params?: Record<string, unknown>) {
-      callEffectsBridge('apply_sprite_effect', entityId, effectName, params ?? {});
+      callEffectsBridge('apply_sprite_effect', entityId, effectName, JSON.stringify(params ?? {}));
     },
 
     updateSpriteEffectParam(entityId: string, paramName: string, value: unknown) {
@@ -891,7 +961,7 @@ export function createNativeGodotBridge(): GodotBridge {
     },
 
     setPostEffect(effectName: string, params?: Record<string, unknown>, layer?: string) {
-      callEffectsBridge('set_post_effect', effectName, params ?? {}, layer ?? 'main');
+      callEffectsBridge('set_post_effect', effectName, JSON.stringify(params ?? {}), layer ?? 'main');
     },
 
     updatePostEffectParam(paramName: string, value: unknown, layer?: string) {
@@ -915,8 +985,11 @@ export function createNativeGodotBridge(): GodotBridge {
     },
 
     flashScreen(color?: [number, number, number, number?], duration?: number) {
-      const colorArray = color ? [color[0], color[1], color[2], color[3] ?? 1.0] : [1, 1, 1, 1];
-      callEffectsBridge('flash_screen', colorArray, duration ?? 0.1);
+      const r = color?.[0] ?? 1;
+      const g = color?.[1] ?? 1;
+      const b = color?.[2] ?? 1;
+      const a = color?.[3] ?? 1;
+      callEffectsBridge('flash_screen', r, g, b, a, duration ?? 0.1);
     },
 
     async createDynamicShader(shaderId: string, shaderCode: string): Promise<DynamicShaderResult> {
@@ -925,15 +998,15 @@ export function createNativeGodotBridge(): GodotBridge {
     },
 
     applyDynamicShader(entityId: string, shaderId: string, params?: Record<string, unknown>) {
-      callEffectsBridge('apply_dynamic_shader_to_entity', entityId, shaderId, params ?? {});
+      callEffectsBridge('apply_dynamic_shader_to_entity', entityId, shaderId, JSON.stringify(params ?? {}));
     },
 
     applyDynamicPostShader(shaderCode: string, params?: Record<string, unknown>) {
-      callEffectsBridge('apply_dynamic_post_shader', shaderCode, params ?? {});
+      callEffectsBridge('apply_dynamic_post_shader', shaderCode, JSON.stringify(params ?? {}));
     },
 
     spawnParticlePreset(presetName: string, worldX: number, worldY: number, params?: Record<string, unknown>) {
-      callEffectsBridge('spawn_particle_preset', presetName, worldX, worldY, params ?? {});
+      callEffectsBridge('spawn_particle_preset', presetName, worldX, worldY, JSON.stringify(params ?? {}));
     },
 
     async getAvailableEffects(): Promise<{ sprite: string[]; post: string[]; particles: string[] }> {

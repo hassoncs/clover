@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { View, Text, Pressable, ActivityIndicator, ScrollView, Alert } from "react-native";
+import { View, Text, Pressable, ActivityIndicator, ScrollView, Alert, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc/client";
@@ -12,6 +12,7 @@ interface GameInfo {
   id: string;
   title: string;
   description: string | null;
+  titleHeroImageUrl?: string;
   playCount?: number;
   createdAt?: Date | string;
   source: GameSource;
@@ -37,10 +38,12 @@ export default function GameDetailScreen() {
 
         if (gameSource === "template" && id && id in TESTGAMES_BY_ID) {
           const entry = TESTGAMES_BY_ID[id as TestGameId];
+          const gameDef = await loadTestGame(id as TestGameId);
           setGameInfo({
             id: entry.id,
             title: entry.meta.title,
             description: entry.meta.description ?? null,
+            titleHeroImageUrl: gameDef?.metadata?.titleHeroImageUrl,
             source: "template",
           });
         } else if (gameSource === "database") {
@@ -163,13 +166,24 @@ export default function GameDetailScreen() {
       <ScrollView className="flex-1">
         <View className="p-6">
           <View className="bg-gray-800 rounded-2xl p-6 mb-6">
-            <View className="w-24 h-24 bg-indigo-900/50 rounded-xl items-center justify-center mx-auto mb-4">
-              <Text className="text-5xl">{gameInfo.source === "template" ? "🎮" : "🌟"}</Text>
-            </View>
-
-            <Text className="text-2xl font-bold text-white text-center mb-2">
-              {gameInfo.title}
-            </Text>
+            {gameInfo.titleHeroImageUrl ? (
+              <View className="w-full h-32 rounded-xl overflow-hidden mb-4">
+                <Image
+                  source={{ uri: gameInfo.titleHeroImageUrl }}
+                  className="w-full h-full"
+                  resizeMode="contain"
+                />
+              </View>
+            ) : (
+              <>
+                <View className="w-24 h-24 bg-indigo-900/50 rounded-xl items-center justify-center mx-auto mb-4">
+                  <Text className="text-5xl">{gameInfo.source === "template" ? "🎮" : "🌟"}</Text>
+                </View>
+                <Text className="text-2xl font-bold text-white text-center mb-2">
+                  {gameInfo.title}
+                </Text>
+              </>
+            )}
 
             {gameInfo.description && (
               <Text className="text-gray-400 text-center mb-4">

@@ -289,8 +289,17 @@ export interface SetVelocityAction {
 export interface MoveAction {
   type: 'move';
   target: EntityTarget;
-  direction: 'left' | 'right' | 'up' | 'down' | 'tilt_direction' | 'toward_touch' | 'toward_touch_x' | 'toward_touch_y';
+  direction: 'left' | 'right' | 'up' | 'down' | 'tilt_direction' | 'toward_touch' | 'toward_touch_x' | 'toward_touch_y' | 'toward_mouse_x';
   speed: Value<number>;
+}
+
+export interface MoveTowardAction {
+  type: 'move_toward';
+  target: EntityTarget;
+  towardEntity: EntityTarget;
+  axis?: 'x' | 'y' | 'both';
+  speed: Value<number>;
+  maxSpeed?: Value<number>;
 }
 
 export interface SetVariableAction {
@@ -358,6 +367,7 @@ export type RuleAction =
   | ApplyForceAction
   | SetVelocityAction
   | MoveAction
+  | MoveTowardAction
   | SetVariableAction
   | StartCooldownAction
   | PushToListAction

@@ -218,9 +218,7 @@ export default function DraggableCubesExample() {
       const world = screenToWorldCoords(pageX, pageY, layout);
       addLog(`World coords: (${world.x.toFixed(2)}, ${world.y.toFixed(2)})`);
 
-      const hitEntity = bridge.queryPointEntityAsync
-        ? await bridge.queryPointEntityAsync({ x: world.x, y: world.y })
-        : bridge.queryPointEntity({ x: world.x, y: world.y });
+      const hitEntity = await bridge.queryPointEntity({ x: world.x, y: world.y });
       addLog(`Query result: ${hitEntity ?? "no hit"}`);
 
       setDebugInfo({
@@ -234,23 +232,14 @@ export default function DraggableCubesExample() {
 
       if (hitEntity && hitEntity.startsWith("cube")) {
         addLog(`Creating mouse joint for ${hitEntity}`);
-        const jointId = bridge.createMouseJointAsync
-          ? await bridge.createMouseJointAsync({
-              type: "mouse",
-              body: hitEntity,
-              target: { x: world.x, y: world.y },
-              maxForce: 50000,
-              stiffness: 30,
-              damping: 0.5,
-            })
-          : bridge.createMouseJoint({
-              type: "mouse",
-              body: hitEntity,
-              target: { x: world.x, y: world.y },
-              maxForce: 50000,
-              stiffness: 30,
-              damping: 0.5,
-            });
+        const jointId = await bridge.createMouseJointAsync({
+          type: "mouse",
+          body: hitEntity,
+          target: { x: world.x, y: world.y },
+          maxForce: 50000,
+          stiffness: 30,
+          damping: 0.5,
+        });
         addLog(`Joint created: ${jointId}`);
 
         dragStateRef.current = { entityId: hitEntity, jointId };

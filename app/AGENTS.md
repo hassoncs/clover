@@ -3,7 +3,7 @@
 > **Entry point for AI agents and developers**
 >
 > This project has two main components:
-> 1. **Physics Engine**: Box2D + Skia rendering for React Native (iOS, Android, Web)
+> 1. **Game Engine**: Godot 4 physics and rendering for React Native (iOS, Android, Web)
 > 2. **Game Maker**: AI-powered game generation from natural language prompts
 
 ---
@@ -39,17 +39,15 @@ All documentation lives in `docs/` with a component-first structure:
 | Index | Description |
 |-------|-------------|
 | **[docs/INDEX.md](../docs/INDEX.md)** | Global documentation hub |
-| **[docs/physics-engine/INDEX.md](../docs/physics-engine/INDEX.md)** | Physics engine (Box2D, Skia, adapters) |
+| **[docs/godot-migration/](../docs/godot-migration/)** | Godot migration docs |
 | **[docs/game-maker/INDEX.md](../docs/game-maker/INDEX.md)** | AI game generation, entities, behaviors |
 
 ### Most-Used References
 
 | Document | Description |
 |----------|-------------|
-| [Physics2D API](../docs/physics-engine/reference/physics2d-api.md) | Complete Physics2D interface |
 | [Entity System](../docs/game-maker/reference/entity-system.md) | Game entity structure |
 | [Behavior System](../docs/game-maker/reference/behavior-system.md) | Game logic behaviors |
-| [Box2D Coverage](../docs/physics-engine/reference/box2d-api-coverage.md) | Which Box2D features are exposed |
 | [Registry System](../docs/shared/reference/registry-system.md) | Auto-discovered lazy loading |
 | [Troubleshooting](../docs/shared/troubleshooting/) | Common issues and fixes |
 
@@ -76,24 +74,24 @@ See **[.opencode/skills/documentation.md](../.opencode/skills/documentation.md)*
                       │
 ┌─────────────────────▼───────────────────────────────────────┐
 │                      React Components                        │
-│  (FallingBoxes, GameRuntime, Interaction, etc.)             │
+│  (GameRuntime, Examples, UI)                                │
 └─────────────────────┬───────────────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────────────┐
-│                    Physics2D Interface                       │
-│  lib/physics2d/Physics2D.ts (unified API contract)          │
+│                    GodotBridge (TypeScript)                  │
+│  lib/godot/GodotBridge.native.ts | GodotBridge.web.ts       │
 └─────────────────────┬───────────────────────────────────────┘
                       │
          ┌───────────┴───────────┐
          │                       │
 ┌────────▼────────┐    ┌────────▼────────┐
 │   Native (JSI)   │    │   Web (WASM)    │
-│ react-native-    │    │  box2d-wasm +   │
-│   box2d          │    │  Polyfills      │
+│ react-native-    │    │  Godot WASM +   │
+│   godot          │    │  GameBridge.gd  │
 └──────────────────┘    └─────────────────┘
 ```
 
-**Full architecture docs**: [physics-engine/architecture/](../docs/physics-engine/architecture/) | [game-maker/architecture/](../docs/game-maker/architecture/)
+**Full architecture docs**: [godot-migration/](../docs/godot-migration/) | [game-maker/architecture/](../docs/game-maker/architecture/)
 
 ---
 
@@ -124,13 +122,12 @@ This project uses `DevMux` to manage background services in named `tmux` session
 
 | Path | Purpose |
 |------|---------|
-| `lib/physics2d/` | **Physics2D API** - Use this for new physics code |
-| `lib/physics/` | **Legacy raw Box2D** - Some examples still use this |
-| `lib/game-runtime/` | **Game engine** - Entity manager, behaviors, rules |
+| `lib/godot/` | **Godot Bridge** - TypeScript ↔ Godot communication |
+| `lib/game-engine/` | **Game engine** - Entity manager, behaviors, rules |
 | `lib/registry/` | **Universal Registry** - Auto-discovered lazy loading system |
-| `components/examples/` | Physics demo components |
 | `app/examples/` | Expo Router pages for demos (auto-discovered) |
-| `docs/` | All documentation (see structure above) |
+| `godot_project/` | **Godot project** - GDScript, scenes, physics |
+| `docs/` | All documentation |
 
 ---
 
@@ -139,9 +136,9 @@ This project uses `DevMux` to manage background services in named `tmux` session
 | Layer | Technology |
 |-------|------------|
 | **Framework** | Expo SDK 54 |
-| **Rendering** | `@shopify/react-native-skia` |
-| **Physics (Native)** | `react-native-box2d` (JSI) |
-| **Physics (Web)** | `box2d-wasm` (WASM) |
+| **Rendering/Physics** | Godot 4 (native + WASM) |
+| **Bridge (Native)** | `@borndotcom/react-native-godot` |
+| **Bridge (Web)** | Godot WASM + JavaScriptBridge |
 | **Styling** | NativeWind (Tailwind) |
 | **API** | Hono + tRPC on Cloudflare Workers |
 | **Database** | Cloudflare D1 |
@@ -149,59 +146,47 @@ This project uses `DevMux` to manage background services in named `tmux` session
 
 ---
 
-## Physics2D Quick Reference
+## GodotBridge Quick Reference
 
 ```typescript
-import { createPhysics2D, vec2 } from '@/lib/physics2d';
+import { createGodotBridge, GodotView } from '@/lib/godot';
 
-// Setup
-const physics = await createPhysics2D();
-physics.createWorld(vec2(0, 9.8));
+// Initialize bridge
+const bridge = await createGodotBridge();
+await bridge.initialize();
 
-// Create body
-const bodyId = physics.createBody({
-  type: 'dynamic',
-  position: vec2(5, 2),
-});
+// Load game definition
+await bridge.loadGame(gameDefinition);
 
-// Add shape
-physics.addFixture(bodyId, {
-  shape: { type: 'circle', radius: 0.5 },
-  density: 1.0,
-  friction: 0.3,
-  restitution: 0.5,
-});
+// Spawn entities
+const entityId = bridge.spawnEntity('box', 5, 2);
 
-// Physics loop
-physics.step(deltaTime, 8, 3);
+// Control entities
+bridge.applyImpulse(entityId, { x: 0, y: -10 });
+bridge.setLinearVelocity(entityId, { x: 5, y: 0 });
 
-// Get transform
-const { position, angle } = physics.getTransform(bodyId);
+// Dynamic images
+bridge.setEntityImage(entityId, imageUrl, width, height);
+
+// Cleanup
+bridge.dispose();
 ```
 
-**Full API reference**: [docs/physics-engine/reference/physics2d-api.md](../docs/physics-engine/reference/physics2d-api.md)
+**Full API reference**: See `lib/godot/types.ts` for complete interface
 
 ---
 
-## Web Compatibility (CRITICAL)
+## Platform-Specific Code
 
-### Skia Loading
-ALL Skia components MUST be lazy-loaded:
+Use `.web.ts` and `.native.ts` extensions for platform-specific implementations:
 
-```typescript
-import { WithSkia } from "@/components/WithSkia";
-
-export default function MyPage() {
-  return (
-    <WithSkia fallback={<Text>Loading...</Text>}>
-      {() => import("@/components/MySkiaComponent").then(m => <m.default />)}
-    </WithSkia>
-  );
-}
 ```
-
-### Physics Platform Extensions
-Use `.web.ts` and `.native.ts` extensions for platform-specific code.
+lib/godot/
+├── GodotBridge.native.ts  # iOS/Android implementation
+├── GodotBridge.web.ts     # Web WASM implementation
+├── index.ts               # Unified export
+└── types.ts               # Shared types
+```
 
 ---
 
@@ -254,18 +239,16 @@ const Example = getExampleComponent("pinball"); // TS validates ID!
 
 | Issue | Check |
 |-------|-------|
-| Body not moving | `type: 'dynamic'` and `density > 0` |
+| Entity not moving | `bodyType: 'dynamic'` and `density > 0` |
 | Passing through objects | Enable `bullet: true` on fast bodies |
-| Jittery physics | Reduce `maxDeltaTime` or use fixed timestep |
+| Jittery physics | Reduce timestep or use fixed timestep |
 | No collision | Check `categoryBits` and `maskBits` |
-| Web WASM errors | Check metro.config.js box2d-wasm resolution |
-
-**Full troubleshooting**: [docs/physics-engine/troubleshooting/](../docs/physics-engine/troubleshooting/)
+| Images not updating (native) | Ensure paths don't have `file://` prefix |
 
 ---
 
 ## Related Documentation
 
 - **[Documentation Skill](../.opencode/skills/documentation.md)** - How to write docs for this project
-- **[Waypoint Architecture](../docs/shared/reference/waypoint-architecture.md)** - Infrastructure patterns
-- **[Game Templates](../docs/game-maker/templates/)** - 10 pre-built game patterns
+- **[Godot Project README](../godot_project/README.md)** - Godot-specific documentation
+- **[Game Templates](../docs/game-maker/templates/)** - Pre-built game patterns

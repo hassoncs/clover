@@ -32,12 +32,22 @@ function withGodotAssets(config) {
     
     const shellScript = `
 # Copy Godot assets to app bundle
-GODOT_SRC="$SRCROOT/$PRODUCT_NAME/godot"
+# Primary source: app/godot (always fresh from export script)
+# Fallback: ios/Slopcade/godot (prebuild copy)
+GODOT_PRIMARY="$SRCROOT/../godot"
+GODOT_FALLBACK="$SRCROOT/$PRODUCT_NAME/godot"
 GODOT_DST="$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.app/godot"
-if [ -d "$GODOT_SRC" ]; then
-  mkdir -p "$GODOT_DST"
-  cp -R "$GODOT_SRC/"* "$GODOT_DST/"
-  echo "Copied Godot assets to $GODOT_DST"
+
+mkdir -p "$GODOT_DST"
+
+if [ -f "$GODOT_PRIMARY/main.pck" ]; then
+  cp "$GODOT_PRIMARY/main.pck" "$GODOT_DST/"
+  echo "Copied main.pck from $GODOT_PRIMARY to $GODOT_DST"
+elif [ -f "$GODOT_FALLBACK/main.pck" ]; then
+  cp "$GODOT_FALLBACK/main.pck" "$GODOT_DST/"
+  echo "Copied main.pck from $GODOT_FALLBACK to $GODOT_DST"
+else
+  echo "WARNING: main.pck not found! Run: node scripts/export-godot.mjs --native"
 fi
 `;
     

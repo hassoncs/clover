@@ -32,7 +32,11 @@
     "hush:status": "hush status",
     "registry": "node app/scripts/generate-registry.mjs",
     "registry:check": "node app/scripts/generate-registry.mjs --check",
-    "registry:watch": "node app/scripts/generate-registry.mjs --watch"
+    "registry:watch": "node app/scripts/generate-registry.mjs --watch",
+    "godot": "devmux ensure godot",
+    "godot:export": "node scripts/export-godot.mjs --once",
+    "godot:watch": "node scripts/export-godot.mjs --watch",
+    "godot:check": "node scripts/export-godot.mjs --check"
   },
   "devDependencies": {
     "@chriscode/devmux": "link:/Users/hassoncs/Workspaces/Personal/devmux/devmux-cli",
@@ -56,6 +60,10 @@
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
-    "@dnd-kit/utilities": "^3.2.2"
+    "@dnd-kit/utilities": "^3.2.2",
+    "expo": "~54.0.32",
+    "expo-linking": "^8.0.11",
+    "react": "19.1.0",
+    "react-native": "0.81.5"
   }
 }

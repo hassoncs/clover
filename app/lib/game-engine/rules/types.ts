@@ -1,4 +1,5 @@
 import type { EntityManager } from '../EntityManager';
+import type { InputEntityManager } from '../InputEntityManager';
 import type { CollisionInfo, GameState, InputState, InputEvents } from '../BehaviorContext';
 import type { ComputedValueSystem, EvalContext } from '@slopcade/shared';
 import type { Physics2D } from '../../physics2d/Physics2D';
@@ -31,6 +32,7 @@ export interface IGameStateMutator {
 
 export interface RuleContext {
   entityManager: EntityManager;
+  inputEntityManager?: InputEntityManager;
   physics: Physics2D;
   mutator: IGameStateMutator;
   camera?: CameraSystem;
@@ -48,4 +50,5 @@ export interface RuleContext {
   screenBounds?: { minX: number; maxX: number; minY: number; maxY: number };
   timeScale?: number;
   setTimeScale?: (scale: number, duration?: number) => void;
+  playSound?: (soundId: string, volume?: number) => void;
 }

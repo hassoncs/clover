@@ -1,49 +1,33 @@
 
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import SortableList from 'react-native-sortable-list';
+import Sortable from 'react-native-sortables';
 import type { SortableListProps } from './types';
 
 function SortableListNative<T>(props: SortableListProps<T>) {
-  const { data, keyExtractor, renderItem, onReorder, contentContainerStyle, itemHeight } = props;
-
-  const dataAsObject = React.useMemo(() => data.reduce((acc, item) => {
-    acc[keyExtractor(item)] = item;
-    return acc;
-  }, {} as { [key: string]: T }), [data, keyExtractor]);
-
-  const order = React.useMemo(() => data.map(keyExtractor), [data, keyExtractor]);
-
-  const renderRow = ({ data: item, index, active }: { data: T; index: number; active: boolean }) => {
-    return renderItem({
-      item,
-      index: index ?? 0,
-      drag: () => {},
-      isActive: active,
-    });
-  };
+  const { data, keyExtractor, renderItem, onReorder } = props;
 
   return (
-    <View style={styles.container}>
-      <SortableList
-        data={dataAsObject}
-        order={order}
-        onReleaseRow={(_, newOrder) => {
-          const reorderedData = newOrder.map(key => dataAsObject[key]);
-          onReorder(reorderedData);
-        }}
-        renderRow={renderRow}
-        rowHeight={itemHeight}
-        contentContainerStyle={contentContainerStyle}
-      />
-    </View>
+    <Sortable.Flex
+      gap={0}
+      onDragEnd={({ indexToKey }) => {
+        const reorderedData = indexToKey.map(key => 
+          data.find(item => keyExtractor(item) === key)
+        ).filter((item): item is T => item !== undefined);
+        onReorder(reorderedData);
+      }}
+    >
+      {data.map((item, index) => (
+        <Sortable.Layer key={keyExtractor(item)}>
+          {renderItem({
+            item,
+            index,
+            drag: () => {},
+            isActive: false,
+          })}
+        </Sortable.Layer>
+      ))}
+    </Sortable.Flex>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 
 export default SortableListNative;

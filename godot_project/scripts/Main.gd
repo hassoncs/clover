@@ -169,6 +169,12 @@ func _input(event: InputEvent) -> void:
 	# Spawn block on click/tap
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		_spawn_block()
+		
+		# Notify JS of tap event (for web integration)
+		if OS.has_feature("web"):
+			var mouse_pos = event.position
+			var world_pos = mouse_pos / GameBridge.pixels_per_meter
+			GameBridge.send_input("tap", world_pos.x, world_pos.y)
 
 func _load_game() -> void:
 	debug_label.text = "Loading game..."

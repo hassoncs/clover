@@ -2,17 +2,20 @@ import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
 export const metadata: TestGameMeta = {
-  title: "Physics Stacker",
+  title: "Block Stacker",
   description: "Stack blocks as high as you can! Higher stacks = more points!",
 };
 
+const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/item";
+
 const game: GameDefinition = {
   metadata: {
-    id: "test-physics-stacker",
-    title: "Physics Stacker",
+    id: "block-stacker",
+    title: "Block Stacker",
     description: "Stack blocks as high as you can! Higher stacks = more points!",
     instructions: "Tap to drop blocks from the moving dropper. Land them on the platform to score. The higher your stack, the more points each block is worth! Reach 1000 points to win. Watch out - falling blocks cost you 100 points, and if your score goes below 0, you lose!",
     version: "1.0.0",
+    titleHeroImageUrl: `${ASSET_BASE}/title_hero.jpg`,
   },
   world: {
     gravity: { x: 0, y: 9.8 },
@@ -26,6 +29,10 @@ const game: GameDefinition = {
     showTimer: false,
     backgroundColor: "#FFE4E1",
   },
+  background: {
+    type: "static",
+    imageUrl: `${ASSET_BASE}/background.jpg`,
+  },
   winCondition: {
     type: "score",
     score: 1000,
@@ -38,7 +45,12 @@ const game: GameDefinition = {
     foundation: {
       id: "foundation",
       tags: ["ground"],
-      sprite: { type: "rect", width: 4, height: 0.6, color: "#8B4513" },
+      sprite: {
+        type: "image",
+        imageUrl: `${ASSET_BASE}/foundation.png`,
+        imageWidth: 4,
+        imageHeight: 0.6,
+      },
       physics: {
         bodyType: "static",
         shape: "box",
@@ -52,7 +64,12 @@ const game: GameDefinition = {
     dropper: {
       id: "dropper",
       tags: ["dropper"],
-      sprite: { type: "rect", width: 2, height: 0.3, color: "#666666" },
+      sprite: {
+        type: "image",
+        imageUrl: `${ASSET_BASE}/dropper.png`,
+        imageWidth: 2,
+        imageHeight: 0.3,
+      },
       physics: {
         bodyType: "kinematic",
         shape: "box",
@@ -71,7 +88,12 @@ const game: GameDefinition = {
     blockWide: {
       id: "blockWide",
       tags: ["block"],
-      sprite: { type: "rect", width: 1.8, height: 0.6, color: "#FF69B4" },
+      sprite: {
+        type: "image",
+        imageUrl: `${ASSET_BASE}/blockWide.png`,
+        imageWidth: 1.8,
+        imageHeight: 0.6,
+      },
       physics: {
         bodyType: "dynamic",
         shape: "box",
@@ -88,7 +110,12 @@ const game: GameDefinition = {
     blockMedium: {
       id: "blockMedium",
       tags: ["block"],
-      sprite: { type: "rect", width: 1.4, height: 0.6, color: "#FF1493" },
+      sprite: {
+        type: "image",
+        imageUrl: `${ASSET_BASE}/blockMedium.png`,
+        imageWidth: 1.4,
+        imageHeight: 0.6,
+      },
       physics: {
         bodyType: "dynamic",
         shape: "box",
@@ -105,7 +132,12 @@ const game: GameDefinition = {
     blockSmall: {
       id: "blockSmall",
       tags: ["block"],
-      sprite: { type: "rect", width: 1.0, height: 0.6, color: "#DB7093" },
+      sprite: {
+        type: "image",
+        imageUrl: `${ASSET_BASE}/blockSmall.png`,
+        imageWidth: 1.0,
+        imageHeight: 0.6,
+      },
       physics: {
         bodyType: "dynamic",
         shape: "box",
@@ -122,7 +154,12 @@ const game: GameDefinition = {
     blockTall: {
       id: "blockTall",
       tags: ["block"],
-      sprite: { type: "rect", width: 0.6, height: 1.2, color: "#C71585" },
+      sprite: {
+        type: "image",
+        imageUrl: `${ASSET_BASE}/blockTall.png`,
+        imageWidth: 0.6,
+        imageHeight: 1.2,
+      },
       physics: {
         bodyType: "dynamic",
         shape: "box",
@@ -159,6 +196,12 @@ const game: GameDefinition = {
   ],
   rules: [
     {
+      id: "block-drop-sound",
+      name: "Play thud when dropping block",
+      trigger: { type: "tap" },
+      actions: [{ type: "sound", soundId: "res://sounds/thud.mp3" }],
+    },
+    {
       id: "block-fell-penalty",
       name: "Penalize fallen blocks",
       trigger: { type: "collision", entityATag: "block", entityBTag: "death-zone" },
@@ -166,6 +209,20 @@ const game: GameDefinition = {
         { type: "score", operation: "subtract", value: 100 },
         { type: "destroy", target: { type: "collision_entities" } },
       ],
+    },
+    {
+      id: "block-land-sound",
+      name: "Play thud when block lands",
+      trigger: { type: "collision", entityATag: "block", entityBTag: "ground" },
+      actions: [{ type: "sound", soundId: "res://sounds/thud.mp3" }],
+      cooldown: 0.1,
+    },
+    {
+      id: "block-stack-sound",
+      name: "Play thud when blocks stack",
+      trigger: { type: "collision", entityATag: "block", entityBTag: "block" },
+      actions: [{ type: "sound", soundId: "res://sounds/thud.mp3" }],
+      cooldown: 0.1,
     },
   ],
 };

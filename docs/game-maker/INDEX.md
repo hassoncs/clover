@@ -8,7 +8,7 @@
 
 ## Vision
 
-**Core Premise**: Given a robust graphics engine (Skia) and physics library (Box2D), combined with AI image generation and a well-structured game framework, users can describe a game idea in plain language and receive a playable game within seconds.
+**Core Premise**: Given a robust game engine (Godot 4) with physics and rendering, combined with AI image generation and a well-structured game framework, users can describe a game idea in plain language and receive a playable game within seconds.
 
 ```
 User: "I want a game where I launch a ball at towers and knock them down"
@@ -38,7 +38,7 @@ The Game Maker provides:
 - **Asset Generation**: AI-generated sprites via Scenario.com
 - **10 Game Templates**: Pre-built patterns for common game types
 
-**Tech Stack**: React Native (Expo) + Skia + Box2D (JSI/WASM) + tRPC + Cloudflare D1
+**Tech Stack**: React Native (Expo) + Godot 4 (native/WASM) + tRPC + Cloudflare D1
 
 ---
 
@@ -88,7 +88,7 @@ Architectural Decision Records explaining key choices.
 
 | Document | Description |
 |----------|-------------|
-| [Physics Engine Evaluation](decisions/physics-engine-evaluation.md) | Why Box2D + Skia |
+| [Physics Engine Evaluation](decisions/physics-engine-evaluation.md) | Physics engine selection history |
 | [Behavior Extensions](decisions/behavior-extensions.md) | Power behaviors for complex genres |
 
 ---
