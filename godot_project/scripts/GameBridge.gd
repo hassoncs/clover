@@ -13,6 +13,19 @@ var templates: Dictionary = {}
 var pixels_per_meter: float = 50.0
 var game_root: Node2D = null
 
+# Coordinate conversion helpers (Game uses center-origin with Y+ up, Godot uses Y+ down)
+func game_to_godot_pos(game_pos: Vector2) -> Vector2:
+	return Vector2(game_pos.x * pixels_per_meter, -game_pos.y * pixels_per_meter)
+
+func godot_to_game_pos(godot_pos: Vector2) -> Vector2:
+	return Vector2(godot_pos.x / pixels_per_meter, -godot_pos.y / pixels_per_meter)
+
+func game_to_godot_vec(game_vec: Vector2) -> Vector2:
+	return Vector2(game_vec.x * pixels_per_meter, -game_vec.y * pixels_per_meter)
+
+func godot_to_game_vec(godot_vec: Vector2) -> Vector2:
+	return Vector2(godot_vec.x / pixels_per_meter, -godot_vec.y / pixels_per_meter)
+
 var ws: WebSocketPeer = null
 var ws_url: String = "ws://localhost:8789"
 
@@ -81,7 +94,7 @@ func _input(event: InputEvent) -> void:
 	
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		var mouse_pos = event.position
-		var world_pos = mouse_pos / pixels_per_meter
+		var game_pos = godot_to_game_pos(mouse_pos)
 		
 		# Check for hit entity
 		var hit_entity_id: Variant = null
@@ -99,20 +112,22 @@ func _input(event: InputEvent) -> void:
 					hit_entity_id = collider.name
 		
 		# Also queue for polling API
-		_queue_event("input", {"type": "tap", "x": world_pos.x, "y": world_pos.y, "entityId": hit_entity_id})
+		_queue_event("input", {"type": "tap", "x": game_pos.x, "y": game_pos.y, "entityId": hit_entity_id})
 		
 		# Notify JS callback for web
-		_notify_js_input_event("tap", world_pos.x, world_pos.y, hit_entity_id)
+		_notify_js_input_event("tap", game_pos.x, game_pos.y, hit_entity_id)
 
 func _setup_camera() -> void:
 	var camera_script = load("res://scripts/effects/CameraEffects.gd")
-	print("[GameBridge] _setup_camera: loaded script=", camera_script)
 	camera = Camera2D.new()
 	camera.set_script(camera_script)
 	camera.name = "GameCamera"
 	camera.enabled = true
+	camera.global_position = Vector2.ZERO
 	add_child(camera)
-	print("[GameBridge] _setup_camera: camera=", camera, " has shake=", camera.has_method("shake"), " has zoom_punch=", camera.has_method("zoom_punch"))
+	camera.make_current()
+	if camera.has_method("move_to"):
+		camera._target_position = Vector2.ZERO
 
 func _setup_js_bridge() -> void:
 	if not OS.has_feature("web"):
@@ -368,10 +383,11 @@ func _js_get_entity_transform(args: Array) -> Variant:
 	if not entities.has(entity_id):
 		return null
 	var node = entities[entity_id]
+	var game_pos = godot_to_game_pos(node.position)
 	return {
-		"x": node.position.x / pixels_per_meter,
-		"y": node.position.y / pixels_per_meter,
-		"angle": node.rotation
+		"x": game_pos.x,
+		"y": game_pos.y,
+		"angle": -node.rotation  # Flip angle back to game convention
 	}
 
 func _js_get_all_transforms(_args: Array) -> void:
@@ -386,7 +402,7 @@ func _notify_transform_sync() -> void:
 	if _js_transform_sync_callback != null:
 		var transforms = get_all_transforms()
 		var json_str = JSON.stringify(transforms)
-		_js_transform_sync_callback.call("apply", null, [json_str])
+		_js_transform_sync_callback.call("call", null, json_str)
 
 func _js_set_linear_velocity(args: Array) -> void:
 	if args.size() < 3:
@@ -394,18 +410,21 @@ func _js_set_linear_velocity(args: Array) -> void:
 	var entity_id = str(args[0])
 	if entities.has(entity_id):
 		var node = entities[entity_id]
+		var game_vel = Vector2(float(args[1]), float(args[2]))
+		var godot_vel = game_to_godot_vec(game_vel)
 		if node is RigidBody2D:
-			node.linear_velocity = Vector2(float(args[1]), float(args[2])) * pixels_per_meter
+			node.linear_velocity = godot_vel
 		elif node is CharacterBody2D:
-			node.velocity = Vector2(float(args[1]), float(args[2])) * pixels_per_meter
+			node.velocity = godot_vel
 
 func set_linear_velocity(entity_id: String, vx: float, vy: float) -> void:
 	if entities.has(entity_id):
 		var node = entities[entity_id]
+		var godot_vel = game_to_godot_vec(Vector2(vx, vy))
 		if node is RigidBody2D:
-			node.linear_velocity = Vector2(vx, vy) * pixels_per_meter
+			node.linear_velocity = godot_vel
 		elif node is CharacterBody2D:
-			node.velocity = Vector2(vx, vy) * pixels_per_meter
+			node.velocity = godot_vel
 
 func _js_set_angular_velocity(args: Array) -> void:
 	if args.size() < 2:
@@ -429,13 +448,14 @@ func _js_apply_impulse(args: Array) -> void:
 	if entities.has(entity_id):
 		var node = entities[entity_id]
 		if node is RigidBody2D:
-			node.apply_central_impulse(Vector2(float(args[1]), float(args[2])) * pixels_per_meter)
+			var game_impulse = Vector2(float(args[1]), float(args[2]))
+			node.apply_central_impulse(game_to_godot_vec(game_impulse))
 
 func apply_impulse(entity_id: String, ix: float, iy: float) -> void:
 	if entities.has(entity_id):
 		var node = entities[entity_id]
 		if node is RigidBody2D:
-			node.apply_central_impulse(Vector2(ix, iy) * pixels_per_meter)
+			node.apply_central_impulse(game_to_godot_vec(Vector2(ix, iy)))
 
 func _js_apply_force(args: Array) -> void:
 	if args.size() < 3:
@@ -444,22 +464,23 @@ func _js_apply_force(args: Array) -> void:
 	if entities.has(entity_id):
 		var node = entities[entity_id]
 		if node is RigidBody2D:
-			node.apply_central_force(Vector2(float(args[1]), float(args[2])) * pixels_per_meter)
+			var game_force = Vector2(float(args[1]), float(args[2]))
+			node.apply_central_force(game_to_godot_vec(game_force))
 
 func apply_force(entity_id: String, fx: float, fy: float) -> void:
 	if entities.has(entity_id):
 		var node = entities[entity_id]
 		if node is RigidBody2D:
-			node.apply_central_force(Vector2(fx, fy) * pixels_per_meter)
+			node.apply_central_force(game_to_godot_vec(Vector2(fx, fy)))
 
 func send_input(input_type: String, x: float, y: float, entity_id: String = "") -> void:
 	if input_type == "tap":
 		var hit_entity_id: Variant = null
-		var point = Vector2(x, y) * pixels_per_meter
+		var godot_point = game_to_godot_pos(Vector2(x, y))
 		var space = get_viewport().find_world_2d().direct_space_state
 		if space:
 			var query = PhysicsPointQueryParameters2D.new()
-			query.position = point
+			query.position = godot_point
 			query.collision_mask = 0xFFFFFFFF
 			query.collide_with_bodies = true
 			query.collide_with_areas = true
@@ -482,11 +503,11 @@ func _js_send_input(args: Array) -> void:
 	if input_type == "tap":
 		var hit_entity_id: Variant = null
 		
-		var point = Vector2(x, y) * pixels_per_meter
+		var godot_point = game_to_godot_pos(Vector2(x, y))
 		var space = get_viewport().find_world_2d().direct_space_state
 		if space:
 			var query = PhysicsPointQueryParameters2D.new()
-			query.position = point
+			query.position = godot_point
 			query.collision_mask = 0xFFFFFFFF
 			query.collide_with_bodies = true
 			query.collide_with_areas = true
@@ -512,9 +533,9 @@ func _notify_js_input_event(input_type: String, x: float, y: float, entity_id: V
 			"y": y,
 			"entityId": entity_id
 		}
-		var json_str = JSON.stringify(data)
-		print("[GameBridge] Calling input callback with: ", json_str)
-		_js_input_event_callback.call("apply", null, [json_str])
+		# Pass dictionary directly - Godot will marshal it to a JS Object
+		# Use 'call' to invoke the JS function
+		_js_input_event_callback.call("call", null, data)
 
 func _js_on_collision(args: Array) -> void:
 	if args.size() >= 1:
@@ -527,7 +548,7 @@ func _js_on_entity_destroyed(args: Array) -> void:
 func _notify_js_collision(entity_a: String, entity_b: String, impulse: float) -> void:
 	if _js_collision_callback != null:
 		# Legacy format for backward compatibility
-		_js_collision_callback.call("apply", null, [entity_a, entity_b, impulse])
+		_js_collision_callback.call("call", null, entity_a, entity_b, impulse)
 	else:
 		# Native path: queue event for polling
 		_queue_event("collision", {"entityA": entity_a, "entityB": entity_b, "impulse": impulse})
@@ -542,7 +563,7 @@ func _notify_js_collision_detailed(collision_data: Dictionary) -> void:
 		var total_impulse = 0.0
 		for contact in collision_data.get("contacts", []):
 			total_impulse += abs(contact.get("normalImpulse", 0.0))
-		_js_collision_callback.call("apply", null, [entity_a, entity_b, total_impulse])
+		_js_collision_callback.call("call", null, entity_a, entity_b, total_impulse)
 	else:
 		# Native path: queue event for polling
 		_queue_event("collision_detailed", collision_data)
@@ -568,12 +589,14 @@ func _handle_collision_manifold(body_node: RigidBody2D, state: PhysicsDirectBody
 		if not entities.has(entity_b):
 			continue
 		
-		# Get contact data
-		var contact_pos = state.get_contact_local_position(i) / pixels_per_meter
-		var contact_normal = state.get_contact_local_normal(i)
+		# Get contact data and convert to game coordinates
+		var godot_contact_pos = state.get_contact_local_position(i)
+		var game_contact_pos = godot_to_game_pos(godot_contact_pos)
+		var godot_normal = state.get_contact_local_normal(i)
+		var game_normal = Vector2(godot_normal.x, -godot_normal.y)  # Flip Y for normal
 		var impulse_vec = state.get_contact_impulse(i)
-		var normal_impulse = impulse_vec.dot(contact_normal)
-		var tangent = Vector2(-contact_normal.y, contact_normal.x)
+		var normal_impulse = impulse_vec.dot(godot_normal)
+		var tangent = Vector2(-godot_normal.y, godot_normal.x)
 		var tangent_impulse = impulse_vec.dot(tangent)
 		
 		# Only report if impulse is significant (avoid spam for resting contacts)
@@ -584,8 +607,8 @@ func _handle_collision_manifold(body_node: RigidBody2D, state: PhysicsDirectBody
 			contacts_by_body[entity_b] = []
 		
 		contacts_by_body[entity_b].append({
-			"point": {"x": contact_pos.x, "y": contact_pos.y},
-			"normal": {"x": contact_normal.x, "y": contact_normal.y},
+			"point": {"x": game_contact_pos.x, "y": game_contact_pos.y},
+			"normal": {"x": game_normal.x, "y": game_normal.y},
 			"normalImpulse": normal_impulse / pixels_per_meter,
 			"tangentImpulse": tangent_impulse / pixels_per_meter
 		})
@@ -610,7 +633,7 @@ func _handle_collision_manifold(body_node: RigidBody2D, state: PhysicsDirectBody
 
 func _notify_js_destroy(entity_id: String) -> void:
 	if _js_destroy_callback != null:
-		_js_destroy_callback.call("apply", null, [entity_id])
+		_js_destroy_callback.call("call", null, entity_id)
 	else:
 		# Native path: queue event for polling
 		_queue_event("destroy", {"entityId": entity_id})
@@ -680,8 +703,8 @@ func load_game_json(json_string: String) -> bool:
 func _setup_world(world_data: Dictionary) -> void:
 	pixels_per_meter = world_data.get("pixelsPerMeter", 50.0)
 	
-	var gravity = world_data.get("gravity", {"x": 0, "y": 9.8})
-	var gravity_vec = Vector2(gravity.x, gravity.y) * pixels_per_meter
+	var gravity = world_data.get("gravity", {"x": 0, "y": -9.8})
+	var gravity_vec = game_to_godot_vec(Vector2(gravity.x, gravity.y))
 	
 	PhysicsServer2D.area_set_param(
 		get_viewport().find_world_2d().space,
@@ -721,7 +744,8 @@ func _setup_background(bg_data: Dictionary) -> void:
 	var target_width = bounds.get("width", 20) * pixels_per_meter
 	var target_height = bounds.get("height", 12) * pixels_per_meter
 	
-	_background_sprite.position = Vector2(target_width / 2.0, target_height / 2.0)
+	# Background centered at origin (0,0) in new coordinate system
+	_background_sprite.position = Vector2.ZERO
 	
 	if image_url != "":
 		_download_background_texture(image_url, target_width, target_height)
@@ -780,6 +804,31 @@ func _apply_background_texture(texture: Texture2D, target_width: float, target_h
 	
 	_background_sprite.scale = Vector2(uniform_scale, uniform_scale)
 
+func _center_camera_on_world() -> void:
+	if not camera:
+		return
+	
+	# Get game world size in pixels
+	var world_data = game_data.get("world", {})
+	var bounds = world_data.get("bounds", {})
+	var world_width = bounds.get("width", 20.0) * pixels_per_meter
+	var world_height = bounds.get("height", 12.0) * pixels_per_meter
+	
+	# Position camera so game world is centered in viewport
+	# Camera position = what world coordinate appears at viewport center
+	# We want game center (world_width/2, world_height/2) at viewport center
+	var center_x = world_width / 2.0
+	var center_y = world_height / 2.0
+	
+	var target_pos = Vector2(center_x, center_y)
+	camera.global_position = target_pos
+	
+	# Also update CameraEffects target position to prevent smoothing from fighting us
+	if camera.has_method("move_to"):
+		camera._target_position = target_pos
+	
+	camera_target_id = ""
+
 func _create_entity(entity_data: Dictionary) -> Node2D:
 	var entity_id = entity_data.get("id", "entity_" + str(randi()))
 	var template_id = entity_data.get("template", "")
@@ -813,12 +862,12 @@ func _create_entity(entity_data: Dictionary) -> Node2D:
 		node = Node2D.new()
 		node.name = entity_id
 	
-	# Set transform (convert from meters to pixels)
-	var x = transform_data.get("x", 0) * pixels_per_meter
-	var y = transform_data.get("y", 0) * pixels_per_meter
+	# Set transform (convert from game coords to Godot coords with Y-flip)
+	var game_pos = Vector2(transform_data.get("x", 0), transform_data.get("y", 0))
+	var godot_pos = game_to_godot_pos(game_pos)
 	var angle = transform_data.get("angle", 0)
-	node.position = Vector2(x, y)
-	node.rotation = angle
+	node.position = godot_pos
+	node.rotation = -angle  # Flip angle for Y-up convention
 	
 	# Add sprite visualization
 	if sprite_data:
@@ -924,11 +973,12 @@ func _create_physics_body(entity_id: String, physics_data: Dictionary, transform
 				# Connect collision signals (kept for backward compatibility)
 				rigid.body_entered.connect(_on_body_entered.bind(entity_id))
 				
-				# Apply initial velocity if specified
+				# Apply initial velocity if specified (convert with Y-flip)
 				var initial_vel = physics_data.get("initialVelocity", null)
 				if initial_vel != null:
 					# Store for deferred application (must be applied after body is in scene tree)
-					rigid.set_meta("_initial_velocity", Vector2(initial_vel.get("x", 0), initial_vel.get("y", 0)) * pixels_per_meter)
+					var game_vel = Vector2(initial_vel.get("x", 0), initial_vel.get("y", 0))
+					rigid.set_meta("_initial_velocity", game_to_godot_vec(game_vel))
 				
 				node = rigid
 		
@@ -987,7 +1037,8 @@ func _create_shape(physics_data: Dictionary) -> Shape2D:
 			var vertices = physics_data.get("vertices", [])
 			var points: PackedVector2Array = []
 			for v in vertices:
-				points.append(Vector2(v.x, v.y) * pixels_per_meter)
+				# Vertices are relative to entity center, just scale and flip Y
+				points.append(Vector2(v.x * pixels_per_meter, -v.y * pixels_per_meter))
 			polygon.points = points
 			shape = polygon
 		_:  # box
@@ -1429,10 +1480,11 @@ func get_all_transforms() -> Dictionary:
 	var result = {}
 	for entity_id in entities:
 		var node = entities[entity_id]
+		var game_pos = godot_to_game_pos(node.position)
 		result[entity_id] = {
-			"x": node.position.x / pixels_per_meter,
-			"y": node.position.y / pixels_per_meter,
-			"angle": node.rotation
+			"x": game_pos.x,
+			"y": game_pos.y,
+			"angle": -node.rotation  # Flip angle back to game convention
 		}
 	return result
 
@@ -1476,59 +1528,57 @@ func _js_set_transform(args: Array) -> void:
 	if args.size() < 4:
 		return
 	var entity_id = str(args[0])
-	var x = float(args[1]) * pixels_per_meter
-	var y = float(args[2]) * pixels_per_meter
-	var angle = float(args[3])
+	var game_pos = Vector2(float(args[1]), float(args[2]))
+	var godot_pos = game_to_godot_pos(game_pos)
+	var godot_angle = -float(args[3])  # Flip angle for Y-up convention
 	
 	if entities.has(entity_id):
 		var node = entities[entity_id]
 		if node is CharacterBody2D:
-			node.position = Vector2(x, y)
-			node.rotation = angle
+			node.position = godot_pos
+			node.rotation = godot_angle
 		elif node is RigidBody2D:
 			# For RigidBody2D, we need to use physics server or _integrate_forces
-			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(angle, Vector2(x, y)))
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(godot_angle, godot_pos))
 
 func set_transform(entity_id: String, x: float, y: float, angle: float) -> void:
-	var px = x * pixels_per_meter
-	var py = y * pixels_per_meter
+	var godot_pos = game_to_godot_pos(Vector2(x, y))
+	var godot_angle = -angle  # Flip angle for Y-up convention
 	if entities.has(entity_id):
 		var node = entities[entity_id]
 		if node is CharacterBody2D:
-			node.position = Vector2(px, py)
-			node.rotation = angle
+			node.position = godot_pos
+			node.rotation = godot_angle
 		elif node is RigidBody2D:
-			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(angle, Vector2(px, py)))
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(godot_angle, godot_pos))
 
 func _js_set_position(args: Array) -> void:
 	if args.size() < 3:
 		return
 	var entity_id = str(args[0])
-	var x = float(args[1]) * pixels_per_meter
-	var y = float(args[2]) * pixels_per_meter
+	var godot_pos = game_to_godot_pos(Vector2(float(args[1]), float(args[2])))
 	
 	if entities.has(entity_id):
 		var node = entities[entity_id]
 		if node is CharacterBody2D:
-			node.position = Vector2(x, y)
+			node.position = godot_pos
 		elif node is RigidBody2D:
 			var current_angle = node.rotation
-			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(current_angle, Vector2(x, y)))
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(current_angle, godot_pos))
 		else:
-			node.position = Vector2(x, y)
+			node.position = godot_pos
 
 func set_position(entity_id: String, x: float, y: float) -> void:
-	var px = x * pixels_per_meter
-	var py = y * pixels_per_meter
+	var godot_pos = game_to_godot_pos(Vector2(x, y))
 	if entities.has(entity_id):
 		var node = entities[entity_id]
 		if node is CharacterBody2D:
-			node.position = Vector2(px, py)
+			node.position = godot_pos
 		elif node is RigidBody2D:
 			var current_angle = node.rotation
-			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(current_angle, Vector2(px, py)))
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(current_angle, godot_pos))
 		else:
-			node.position = Vector2(px, py)
+			node.position = godot_pos
 
 func _js_set_rotation(args: Array) -> void:
 	if args.size() < 2:
@@ -1564,8 +1614,8 @@ func _js_get_linear_velocity(args: Array) -> Variant:
 	if entities.has(entity_id):
 		var node = entities[entity_id]
 		if node is RigidBody2D:
-			var vel = node.linear_velocity / pixels_per_meter
-			return {"x": vel.x, "y": vel.y}
+			var game_vel = godot_to_game_vec(node.linear_velocity)
+			return {"x": game_vel.x, "y": game_vel.y}
 	return null
 
 func _js_get_angular_velocity(args: Array) -> Variant:
@@ -1605,8 +1655,7 @@ func _js_create_revolute_joint(args: Array) -> int:
 	
 	var entity_a = str(args[0])
 	var entity_b = str(args[1])
-	var anchor_x = float(args[2]) * pixels_per_meter
-	var anchor_y = float(args[3]) * pixels_per_meter
+	var godot_anchor = game_to_godot_pos(Vector2(float(args[2]), float(args[3])))
 	
 	if not entities.has(entity_a) or not entities.has(entity_b):
 		return -1
@@ -1615,7 +1664,7 @@ func _js_create_revolute_joint(args: Array) -> int:
 	var node_b = entities[entity_b]
 	
 	var joint = PinJoint2D.new()
-	joint.position = Vector2(anchor_x, anchor_y)
+	joint.position = godot_anchor
 	joint.node_a = node_a.get_path()
 	joint.node_b = node_b.get_path()
 	
@@ -1642,8 +1691,8 @@ func _js_create_distance_joint(args: Array) -> int:
 	
 	var entity_a = str(args[0])
 	var entity_b = str(args[1])
-	var anchor_a = Vector2(float(args[2]), float(args[3])) * pixels_per_meter
-	var anchor_b = Vector2(float(args[4]), float(args[5])) * pixels_per_meter
+	var anchor_a = game_to_godot_pos(Vector2(float(args[2]), float(args[3])))
+	var anchor_b = game_to_godot_pos(Vector2(float(args[4]), float(args[5])))
 	
 	if not entities.has(entity_a) or not entities.has(entity_b):
 		return -1
@@ -1685,8 +1734,9 @@ func _js_create_prismatic_joint(args: Array) -> int:
 	
 	var entity_a = str(args[0])
 	var entity_b = str(args[1])
-	var anchor = Vector2(float(args[2]), float(args[3])) * pixels_per_meter
-	var axis_vec = Vector2(float(args[4]), float(args[5])).normalized()
+	var anchor = game_to_godot_pos(Vector2(float(args[2]), float(args[3])))
+	var game_axis = Vector2(float(args[4]), float(args[5]))
+	var axis_vec = Vector2(game_axis.x, -game_axis.y).normalized()  # Flip Y for axis direction
 	
 	if not entities.has(entity_a) or not entities.has(entity_b):
 		return -1
@@ -1747,7 +1797,7 @@ func _js_create_weld_joint(args: Array) -> int:
 	
 	var entity_a = str(args[0])
 	var entity_b = str(args[1])
-	var anchor = Vector2(float(args[2]), float(args[3])) * pixels_per_meter
+	var anchor = game_to_godot_pos(Vector2(float(args[2]), float(args[3])))
 	
 	if not entities.has(entity_a) or not entities.has(entity_b):
 		return -1
@@ -1799,7 +1849,7 @@ func create_mouse_joint(entity_id: String, target_x: float, target_y: float, max
 	joints[joint_counter] = {
 		"type": "mouse",
 		"entity_id": entity_id,
-		"target": Vector2(target_x, target_y) * pixels_per_meter,
+		"target": game_to_godot_pos(Vector2(target_x, target_y)),
 		"max_force": max_force,
 		"stiffness": stiffness,
 		"damping": damping
@@ -1810,7 +1860,7 @@ func set_mouse_target(joint_id: int, target_x: float, target_y: float) -> void:
 	if joints.has(joint_id):
 		var joint = joints[joint_id]
 		if joint is Dictionary and joint.get("type") == "mouse":
-			joint["target"] = Vector2(target_x, target_y) * pixels_per_meter
+			joint["target"] = game_to_godot_pos(Vector2(target_x, target_y))
 
 func destroy_joint(joint_id: int) -> void:
 	if joints.has(joint_id):
@@ -1827,8 +1877,7 @@ func _js_create_mouse_joint(args: Array) -> void:
 		return
 	
 	var entity_id = str(args[0])
-	var target_x = float(args[1]) * pixels_per_meter
-	var target_y = float(args[2]) * pixels_per_meter
+	var godot_target = game_to_godot_pos(Vector2(float(args[1]), float(args[2])))
 	var max_force = float(args[3])
 	
 	if not entities.has(entity_id):
@@ -1840,7 +1889,7 @@ func _js_create_mouse_joint(args: Array) -> void:
 	joints[joint_counter] = {
 		"type": "mouse",
 		"entity_id": entity_id,
-		"target": Vector2(target_x, target_y),
+		"target": godot_target,
 		"max_force": max_force,
 		"stiffness": float(args[4]) if args.size() > 4 else 5.0,
 		"damping": float(args[5]) if args.size() > 5 else 0.7
@@ -1889,12 +1938,11 @@ func _js_set_mouse_target(args: Array) -> void:
 	if args.size() < 3:
 		return
 	var joint_id = int(args[0])
-	var target_x = float(args[1]) * pixels_per_meter
-	var target_y = float(args[2]) * pixels_per_meter
+	var godot_target = game_to_godot_pos(Vector2(float(args[1]), float(args[2])))
 	if joints.has(joint_id):
 		var joint = joints[joint_id]
 		if joint is Dictionary and joint.get("type") == "mouse":
-			joint["target"] = Vector2(target_x, target_y)
+			joint["target"] = godot_target
 
 # =============================================================================
 # PHYSICS QUERIES
@@ -1903,11 +1951,11 @@ func _js_set_mouse_target(args: Array) -> void:
 func _js_query_point(args: Array) -> Variant:
 	if args.size() < 2:
 		return null
-	var point = Vector2(float(args[0]), float(args[1])) * pixels_per_meter
+	var godot_point = game_to_godot_pos(Vector2(float(args[0]), float(args[1])))
 	
 	var space = get_viewport().find_world_2d().direct_space_state
 	var query = PhysicsPointQueryParameters2D.new()
-	query.position = point
+	query.position = godot_point
 	query.collide_with_bodies = true
 	query.collide_with_areas = true
 	
@@ -1926,7 +1974,7 @@ func _js_query_point_entity(args: Array) -> void:
 	if args.size() < 2:
 		JavaScriptBridge.eval("window.GodotBridge._lastResult = null;")
 		return
-	var point = Vector2(float(args[0]), float(args[1])) * pixels_per_meter
+	var point = game_to_godot_pos(Vector2(float(args[0]), float(args[1])))
 	
 	# Debug: print entity positions
 	for eid in entities:
@@ -1967,14 +2015,14 @@ func _js_query_point_entity(args: Array) -> void:
 
 # Synchronous version for native (react-native-godot) - returns entity_id directly
 func query_point_entity(x: float, y: float) -> Variant:
-	var point = Vector2(x, y) * pixels_per_meter
+	var godot_point = game_to_godot_pos(Vector2(x, y))
 	
 	var space = get_viewport().find_world_2d().direct_space_state
 	if not space:
 		return null
 	
 	var query = PhysicsPointQueryParameters2D.new()
-	query.position = point
+	query.position = godot_point
 	query.collision_mask = 0xFFFFFFFF
 	query.collide_with_bodies = true
 	query.collide_with_areas = true
@@ -1988,7 +2036,7 @@ func query_point_entity(x: float, y: float) -> Variant:
 	return null
 
 func query_point_entity_async(request_id: int, x: float, y: float) -> void:
-	var point = Vector2(x, y) * pixels_per_meter
+	var godot_point = game_to_godot_pos(Vector2(x, y))
 	
 	var space = get_viewport().find_world_2d().direct_space_state
 	if not space:
@@ -1996,7 +2044,7 @@ func query_point_entity_async(request_id: int, x: float, y: float) -> void:
 		return
 	
 	var query = PhysicsPointQueryParameters2D.new()
-	query.position = point
+	query.position = godot_point
 	query.collision_mask = 0xFFFFFFFF
 	query.collide_with_bodies = true
 	query.collide_with_areas = true
@@ -2018,7 +2066,7 @@ func create_mouse_joint_async(request_id: int, entity_id: String, target_x: floa
 	joints[joint_counter] = {
 		"type": "mouse",
 		"entity_id": entity_id,
-		"target": Vector2(target_x, target_y) * pixels_per_meter,
+		"target": game_to_godot_pos(Vector2(target_x, target_y)),
 		"max_force": max_force,
 		"stiffness": stiffness,
 		"damping": damping
@@ -2028,20 +2076,24 @@ func create_mouse_joint_async(request_id: int, entity_id: String, target_x: floa
 func _js_query_aabb(args: Array) -> Array:
 	if args.size() < 4:
 		return []
-	var min_x = float(args[0]) * pixels_per_meter
-	var min_y = float(args[1]) * pixels_per_meter
-	var max_x = float(args[2]) * pixels_per_meter
-	var max_y = float(args[3]) * pixels_per_meter
+	# Convert AABB corners from game coords to Godot coords
+	var game_min = Vector2(float(args[0]), float(args[1]))
+	var game_max = Vector2(float(args[2]), float(args[3]))
+	var godot_min = game_to_godot_pos(game_min)
+	var godot_max = game_to_godot_pos(game_max)
+	# After Y-flip, min/max may be swapped
+	var actual_min = Vector2(min(godot_min.x, godot_max.x), min(godot_min.y, godot_max.y))
+	var actual_max = Vector2(max(godot_min.x, godot_max.x), max(godot_min.y, godot_max.y))
 	
 	var space = get_viewport().find_world_2d().direct_space_state
 	
 	# Create a rectangle shape for AABB query
 	var shape = RectangleShape2D.new()
-	shape.size = Vector2(max_x - min_x, max_y - min_y)
+	shape.size = actual_max - actual_min
 	
 	var query = PhysicsShapeQueryParameters2D.new()
 	query.shape = shape
-	query.transform = Transform2D(0, Vector2((min_x + max_x) / 2, (min_y + max_y) / 2))
+	query.transform = Transform2D(0, (actual_min + actual_max) / 2)
 	query.collide_with_bodies = true
 	query.collide_with_areas = true
 	
@@ -2058,16 +2110,15 @@ func _js_query_aabb(args: Array) -> Array:
 func _js_raycast(args: Array) -> Variant:
 	if args.size() < 5:
 		return null
-	var origin = Vector2(float(args[0]), float(args[1])) * pixels_per_meter
-	var dir_x = float(args[2])
-	var dir_y = float(args[3])
+	var godot_origin = game_to_godot_pos(Vector2(float(args[0]), float(args[1])))
+	var game_dir = Vector2(float(args[2]), float(args[3]))
+	var godot_dir = Vector2(game_dir.x, -game_dir.y).normalized()  # Flip Y for direction
 	var max_distance = float(args[4]) * pixels_per_meter
 	
-	var direction = Vector2(dir_x, dir_y).normalized()
-	var end = origin + direction * max_distance
+	var end = godot_origin + godot_dir * max_distance
 	
 	var space = get_viewport().find_world_2d().direct_space_state
-	var query = PhysicsRayQueryParameters2D.create(origin, end)
+	var query = PhysicsRayQueryParameters2D.create(godot_origin, end)
 	query.collide_with_bodies = true
 	query.collide_with_areas = true
 	
@@ -2078,24 +2129,24 @@ func _js_raycast(args: Array) -> Variant:
 			var entity_id = collider.name
 			var body_id = body_id_map.get(entity_id, -1)
 			var collider_id = -1  # TODO: proper collider tracking
-			var hit_point = result.position / pixels_per_meter
-			var normal = result.normal
-			var fraction = origin.distance_to(result.position) / max_distance
+			var game_hit_point = godot_to_game_pos(result.position)
+			var game_normal = Vector2(result.normal.x, -result.normal.y)  # Flip Y for normal
+			var fraction = godot_origin.distance_to(result.position) / max_distance
 			return {
 				"bodyId": body_id,
 				"colliderId": collider_id,
-				"point": {"x": hit_point.x, "y": hit_point.y},
-				"normal": {"x": normal.x, "y": normal.y},
+				"point": {"x": game_hit_point.x, "y": game_hit_point.y},
+				"normal": {"x": game_normal.x, "y": game_normal.y},
 				"fraction": fraction
 			}
 	return null
 
 func query_point(x: float, y: float) -> Variant:
-	var point = Vector2(x, y) * pixels_per_meter
+	var godot_point = game_to_godot_pos(Vector2(x, y))
 	
 	var space = get_viewport().find_world_2d().direct_space_state
 	var query = PhysicsPointQueryParameters2D.new()
-	query.position = point
+	query.position = godot_point
 	query.collide_with_bodies = true
 	query.collide_with_areas = true
 	
@@ -2109,19 +2160,23 @@ func query_point(x: float, y: float) -> Variant:
 	return null
 
 func query_aabb(min_x: float, min_y: float, max_x: float, max_y: float) -> String:
-	var min_px = min_x * pixels_per_meter
-	var min_py = min_y * pixels_per_meter
-	var max_px = max_x * pixels_per_meter
-	var max_py = max_y * pixels_per_meter
+	# Convert AABB corners from game coords to Godot coords
+	var game_min = Vector2(min_x, min_y)
+	var game_max = Vector2(max_x, max_y)
+	var godot_min = game_to_godot_pos(game_min)
+	var godot_max = game_to_godot_pos(game_max)
+	# After Y-flip, min/max may be swapped
+	var actual_min = Vector2(min(godot_min.x, godot_max.x), min(godot_min.y, godot_max.y))
+	var actual_max = Vector2(max(godot_min.x, godot_max.x), max(godot_min.y, godot_max.y))
 	
 	var space = get_viewport().find_world_2d().direct_space_state
 	
 	var shape = RectangleShape2D.new()
-	shape.size = Vector2(max_px - min_px, max_py - min_py)
+	shape.size = actual_max - actual_min
 	
 	var query = PhysicsShapeQueryParameters2D.new()
 	query.shape = shape
-	query.transform = Transform2D(0, Vector2((min_px + max_px) / 2, (min_py + max_py) / 2))
+	query.transform = Transform2D(0, (actual_min + actual_max) / 2)
 	query.collide_with_bodies = true
 	query.collide_with_areas = true
 	
@@ -2136,12 +2191,13 @@ func query_aabb(min_x: float, min_y: float, max_x: float, max_y: float) -> Strin
 	return JSON.stringify(body_ids)
 
 func raycast(origin_x: float, origin_y: float, dir_x: float, dir_y: float, max_distance: float) -> Variant:
-	var origin = Vector2(origin_x, origin_y) * pixels_per_meter
-	var direction = Vector2(dir_x, dir_y).normalized()
-	var end = origin + direction * (max_distance * pixels_per_meter)
+	var godot_origin = game_to_godot_pos(Vector2(origin_x, origin_y))
+	var game_dir = Vector2(dir_x, dir_y)
+	var godot_dir = Vector2(game_dir.x, -game_dir.y).normalized()  # Flip Y for direction
+	var end = godot_origin + godot_dir * (max_distance * pixels_per_meter)
 	
 	var space = get_viewport().find_world_2d().direct_space_state
-	var query = PhysicsRayQueryParameters2D.create(origin, end)
+	var query = PhysicsRayQueryParameters2D.create(godot_origin, end)
 	query.collide_with_bodies = true
 	query.collide_with_areas = true
 	
@@ -2152,14 +2208,14 @@ func raycast(origin_x: float, origin_y: float, dir_x: float, dir_y: float, max_d
 			var entity_id = collider.name
 			var body_id = body_id_map.get(entity_id, -1)
 			var collider_id = -1
-			var hit_point = result.position / pixels_per_meter
-			var normal = result.normal
-			var fraction = origin.distance_to(result.position) / (max_distance * pixels_per_meter)
+			var game_hit_point = godot_to_game_pos(result.position)
+			var game_normal = Vector2(result.normal.x, -result.normal.y)  # Flip Y for normal
+			var fraction = godot_origin.distance_to(result.position) / (max_distance * pixels_per_meter)
 			return JSON.stringify({
 				"bodyId": body_id,
 				"colliderId": collider_id,
-				"point": {"x": hit_point.x, "y": hit_point.y},
-				"normal": {"x": normal.x, "y": normal.y},
+				"point": {"x": game_hit_point.x, "y": game_hit_point.y},
+				"normal": {"x": game_normal.x, "y": game_normal.y},
 				"fraction": fraction
 			})
 	return null
@@ -2179,7 +2235,7 @@ func _js_on_sensor_end(args: Array) -> void:
 func _notify_sensor_begin(sensor_collider_id: int, other_entity: String, other_collider_id: int) -> void:
 	var other_body_id = body_id_map.get(other_entity, -1)
 	if _js_sensor_begin_callback != null:
-		_js_sensor_begin_callback.call("call", null, [sensor_collider_id, other_body_id, other_collider_id])
+		_js_sensor_begin_callback.call("call", null, sensor_collider_id, other_body_id, other_collider_id)
 	else:
 		# Native path: queue event for polling
 		_queue_event("sensor_begin", {"sensorColliderId": sensor_collider_id, "otherBodyId": other_body_id, "otherColliderId": other_collider_id})
@@ -2187,7 +2243,7 @@ func _notify_sensor_begin(sensor_collider_id: int, other_entity: String, other_c
 func _notify_sensor_end(sensor_collider_id: int, other_entity: String, other_collider_id: int) -> void:
 	var other_body_id = body_id_map.get(other_entity, -1)
 	if _js_sensor_end_callback != null:
-		_js_sensor_end_callback.call("call", null, [sensor_collider_id, other_body_id, other_collider_id])
+		_js_sensor_end_callback.call("call", null, sensor_collider_id, other_body_id, other_collider_id)
 	else:
 		# Native path: queue event for polling
 		_queue_event("sensor_end", {"sensorColliderId": sensor_collider_id, "otherBodyId": other_body_id, "otherColliderId": other_collider_id})
@@ -2202,9 +2258,9 @@ func _js_create_body(args: Array) -> int:
 		return -1
 	
 	var body_type = str(args[0])
-	var pos_x = float(args[1]) * pixels_per_meter
-	var pos_y = float(args[2]) * pixels_per_meter
-	var angle = float(args[3]) if args.size() > 3 else 0.0
+	var godot_pos = game_to_godot_pos(Vector2(float(args[1]), float(args[2])))
+	var game_angle = float(args[3]) if args.size() > 3 else 0.0
+	var godot_angle = -game_angle  # Flip angle for Y-up convention
 	
 	var entity_id = "body_" + str(next_body_id)
 	var node: Node2D
@@ -2229,8 +2285,8 @@ func _js_create_body(args: Array) -> int:
 			node = rigid
 	
 	node.name = entity_id
-	node.position = Vector2(pos_x, pos_y)
-	node.rotation = angle
+	node.position = godot_pos
+	node.rotation = godot_angle
 	
 	var main = get_tree().current_scene
 	if main:
@@ -2284,7 +2340,7 @@ func _js_add_fixture(args: Array) -> int:
 			var points: PackedVector2Array = []
 			for i in range(vertex_count):
 				var vx = float(args[3 + i * 2]) * pixels_per_meter
-				var vy = float(args[4 + i * 2]) * pixels_per_meter
+				var vy = -float(args[4 + i * 2]) * pixels_per_meter  # Flip Y for vertices
 				points.append(Vector2(vx, vy))
 			polygon.points = points
 			shape = polygon
@@ -2413,8 +2469,8 @@ func _js_get_user_data(args: Array) -> Variant:
 	return user_data.get(body_id)
 
 func create_body(body_type: String, pos_x: float, pos_y: float, angle: float = 0.0, linear_damping: float = 0.0, angular_damping: float = 0.0, fixed_rotation: bool = false, bullet: bool = false, user_data_json: String = "", group: String = "") -> int:
-	var px = pos_x * pixels_per_meter
-	var py = pos_y * pixels_per_meter
+	var godot_pos = game_to_godot_pos(Vector2(pos_x, pos_y))
+	var godot_angle = -angle  # Flip angle for Y-up convention
 	
 	var entity_id = "body_" + str(next_body_id)
 	var node: Node2D
@@ -2437,8 +2493,8 @@ func create_body(body_type: String, pos_x: float, pos_y: float, angle: float = 0
 			node = rigid
 	
 	node.name = entity_id
-	node.position = Vector2(px, py)
-	node.rotation = angle
+	node.position = godot_pos
+	node.rotation = godot_angle
 	
 	var main = get_tree().current_scene
 	if main:
@@ -2554,10 +2610,9 @@ func _js_set_camera_position(args: Array) -> void:
 	if args.size() < 2:
 		return
 	camera_target_id = ""
-	var x = float(args[0]) * pixels_per_meter
-	var y = float(args[1]) * pixels_per_meter
+	var godot_pos = game_to_godot_pos(Vector2(float(args[0]), float(args[1])))
 	if camera:
-		camera.global_position = Vector2(x, y)
+		camera.global_position = godot_pos
 
 func _js_set_camera_zoom(args: Array) -> void:
 	if args.size() < 1:
@@ -2575,7 +2630,7 @@ func set_camera_target(entity_id: String) -> void:
 func set_camera_position(x: float, y: float) -> void:
 	camera_target_id = ""
 	if camera:
-		camera.global_position = Vector2(x, y) * pixels_per_meter
+		camera.global_position = game_to_godot_pos(Vector2(x, y))
 
 func set_camera_zoom(zoom_level: float) -> void:
 	if camera:
@@ -2591,8 +2646,7 @@ func _js_spawn_particle(args: Array) -> void:
 		return
 	
 	var particle_type = str(args[0])
-	var x = float(args[1]) * pixels_per_meter
-	var y = float(args[2]) * pixels_per_meter
+	var godot_pos = game_to_godot_pos(Vector2(float(args[1]), float(args[2])))
 	
 	var particles: CPUParticles2D = null
 	
@@ -2628,7 +2682,7 @@ func _js_spawn_particle(args: Array) -> void:
 		particles.color = Color.YELLOW
 		particles.lifetime = 0.5
 	
-	particles.position = Vector2(x, y)
+	particles.position = godot_pos
 	particles.one_shot = true
 	particles.emitting = false
 	
@@ -2785,7 +2839,7 @@ func _on_ui_button_pressed(button_id: String) -> void:
 
 func _notify_ui_button_event(event_type: String, button_id: String) -> void:
 	if _js_ui_button_callback != null:
-		_js_ui_button_callback.call("apply", null, [event_type, button_id])
+		_js_ui_button_callback.call("call", null, event_type, button_id)
 	else:
 		# Native path: queue event for polling
 		_queue_event("ui_button", {"eventType": event_type, "buttonId": button_id})

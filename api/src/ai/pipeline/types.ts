@@ -9,7 +9,7 @@
 // ASSET TYPES - The discriminator for pipeline flow
 // =============================================================================
 
-export type AssetType = 'entity' | 'background' | 'title_hero' | 'parallax';
+export type AssetType = 'entity' | 'background' | 'title_hero' | 'parallax' | 'sheet';
 
 // =============================================================================
 // SPRITE STYLES - Visual style for generated assets
@@ -96,7 +96,53 @@ export interface ParallaxSpec {
   height?: number;
 }
 
-export type AssetSpec = EntitySpec | BackgroundSpec | TitleHeroSpec | ParallaxSpec;
+// =============================================================================
+// SHEET TYPES - Asset sheet specifications
+// =============================================================================
+
+export type SheetKind = 'sprite' | 'tile' | 'variation';
+
+export type SheetLayout =
+  | { type: 'grid'; columns: number; rows: number; cellWidth: number; cellHeight: number; spacing?: number; margin?: number; origin?: 'top-left' }
+  | { type: 'strip'; direction: 'horizontal' | 'vertical'; frameCount: number; cellWidth: number; cellHeight: number; spacing?: number; margin?: number }
+  | { type: 'manual' };
+
+export interface SheetPromptConfig {
+  basePrompt: string;
+  commonModifiers?: string[];
+  stylePreset?: string;
+  negativePrompt?: string;
+}
+
+export interface SheetSpecBase {
+  type: 'sheet';
+  id: string;
+  kind: SheetKind;
+  layout: SheetLayout;
+  width?: number;
+  height?: number;
+  promptConfig?: SheetPromptConfig;
+  entryOverrides?: Record<string, string>;
+}
+
+export interface SpriteSheetSpec extends SheetSpecBase {
+  kind: 'sprite';
+  animations: Record<string, { frames: string[]; fps: number; loop?: boolean }>;
+}
+
+export interface TileSheetSpec extends SheetSpecBase {
+  kind: 'tile';
+  tileWidth: number;
+  tileHeight: number;
+  tileOverrides?: Record<number, string>;
+}
+
+export interface VariationSheetSpec extends SheetSpecBase {
+  kind: 'variation';
+  variants: Array<{ key: string; description?: string; promptOverride?: string }>;
+}
+
+export type AssetSpec = EntitySpec | BackgroundSpec | TitleHeroSpec | ParallaxSpec | SpriteSheetSpec | TileSheetSpec | VariationSheetSpec;
 
 // =============================================================================
 // GAME CONFIG - Configuration for generating all assets for a game
@@ -142,6 +188,8 @@ export interface Artifacts {
   r2Keys?: string[];
   /** Public URLs for uploaded assets */
   publicUrls?: string[];
+  sheetGuidePng?: Uint8Array;
+  sheetMetadataJson?: string;
 }
 
 // =============================================================================

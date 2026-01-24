@@ -1,5 +1,7 @@
-import type { AssetSpec, EntitySpec, BackgroundSpec, TitleHeroSpec, ParallaxSpec, SpriteStyle } from './types';
+import type { AssetSpec, EntitySpec, BackgroundSpec, TitleHeroSpec, ParallaxSpec, SpriteStyle, SpriteSheetSpec, TileSheetSpec, VariationSheetSpec, SheetPromptConfig } from './types';
 import { STYLE_DESCRIPTORS } from './types';
+
+type SheetSpec = SpriteSheetSpec | TileSheetSpec | VariationSheetSpec;
 
 function describeShapeSilhouette(shape: 'box' | 'circle', width: number, height: number): string {
   if (shape === 'circle') {
@@ -74,6 +76,66 @@ export function buildParallaxPrompt(spec: ParallaxSpec): string {
   ].join(' ');
 }
 
+function buildSheetPrompt(spec: SheetSpec): string {
+  return 'TODO: implement sheet prompt';
+}
+
+export function buildSheetEntryPrompt(params: {
+  entryId: string;
+  entryPromptOverride?: string;
+  kind: 'sprite' | 'tile' | 'variation';
+  promptConfig?: SheetPromptConfig;
+  theme?: string;
+  style?: SpriteStyle;
+}): string {
+  const { entryPromptOverride, kind, promptConfig, style } = params;
+
+  const basePrompt = entryPromptOverride ?? promptConfig?.basePrompt ?? '';
+
+  const lines: string[] = [];
+
+  if (kind === 'sprite') {
+    lines.push('=== CAMERA/VIEW (CRITICAL) ===');
+    lines.push('FRONT VIEW. Flat 2D. No perspective. Consistent camera and scale.');
+    lines.push('');
+  }
+
+  lines.push('=== OUTPUT FORMAT (CRITICAL) ===');
+  if (kind === 'sprite') {
+    lines.push('SINGLE SPRITE (one cell from a sprite sheet).');
+  } else if (kind === 'tile') {
+    lines.push('SINGLE TILE (one cell from a tile sheet).');
+  } else if (kind === 'variation') {
+    lines.push('SINGLE VARIANT (one cell from a variation sheet).');
+  }
+  lines.push('NO borders, NO grid lines, NO labels, NO text.');
+  lines.push('');
+
+  lines.push('=== SUBJECT ===');
+  lines.push(basePrompt);
+  if (kind === 'variation') {
+    lines.push('Same shape as other variants, different color/style.');
+  }
+  lines.push('');
+
+  lines.push('=== TECHNICAL ===');
+  lines.push('Transparent background (alpha channel).');
+  if (promptConfig?.commonModifiers && promptConfig.commonModifiers.length > 0) {
+    for (const modifier of promptConfig.commonModifiers) {
+      lines.push(modifier);
+    }
+  }
+  if (style) {
+    const styleDesc = STYLE_DESCRIPTORS[style];
+    lines.push(styleDesc.technical);
+  }
+  if (promptConfig?.negativePrompt) {
+    lines.push(`NEGATIVE: ${promptConfig.negativePrompt}`);
+  }
+
+  return lines.join('\n');
+}
+
 export function buildNegativePrompt(style: SpriteStyle): string {
   const base = ['blurry', 'low quality', 'text', 'watermark', 'signature', 'cropped', 'multiple objects'];
   const styleSpecific: Record<SpriteStyle, string[]> = {
@@ -101,6 +163,11 @@ export function buildPromptForSpec(spec: AssetSpec, theme: string, style: Sprite
     case 'parallax':
       prompt = buildParallaxPrompt(spec);
       break;
+    case 'sheet':
+      prompt = buildSheetPrompt(spec);
+      break;
+    default:
+      prompt = '';
   }
 
   return {

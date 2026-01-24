@@ -124,13 +124,9 @@ func _ready() -> void:
 	GameBridge.game_loaded.connect(_on_game_loaded)
 	GameBridge.collision_occurred.connect(_on_collision)
 	
-	debug_label.text = "Slopcade Godot Spike\nPress SPACE to load Physics Stacker\nPress R to reload\nClick/tap to spawn blocks"
+	debug_label.text = ""
 
 func _on_game_loaded(game_data: Dictionary) -> void:
-	debug_label.text = "Game Loaded: " + game_data.get("metadata", {}).get("title", "Unknown")
-	debug_label.text += "\nEntities: " + str(GameBridge.entities.size())
-	debug_label.text += "\nClick/tap to spawn blocks"
-	
 	# Get dropper reference for oscillation
 	dropper_node = GameBridge.get_entity("dropper")
 
@@ -177,12 +173,11 @@ func _input(event: InputEvent) -> void:
 			GameBridge.send_input("tap", world_pos.x, world_pos.y)
 
 func _load_game() -> void:
-	debug_label.text = "Loading game..."
 	score = 0
 	score_label.text = "Score: 0"
 	var success = GameBridge.load_game_json(physics_stacker_json)
 	if not success:
-		debug_label.text = "Failed to load game!"
+		print("Failed to load game!")
 
 func _reload_game() -> void:
 	_load_game()

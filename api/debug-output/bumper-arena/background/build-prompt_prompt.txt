@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+A neon cyber arena floor background. Dark purple and blue tones with glowing grid lines. Circular arena shape visible. Futuristic battle zone atmosphere. No text, no characters, just the environment. High quality game background.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

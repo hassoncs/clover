@@ -1,5 +1,73 @@
-import type { Stage, AssetRun, PipelineAdapters, DebugSink, EntitySpec } from '../types';
+import type {
+  Stage,
+  AssetRun,
+  PipelineAdapters,
+  DebugSink,
+  EntitySpec,
+  SheetLayout,
+  SpriteSheetSpec,
+  TileSheetSpec,
+  VariationSheetSpec,
+} from '../types';
 import { buildPromptForSpec } from '../prompt-builder';
+
+type SheetSpec = SpriteSheetSpec | TileSheetSpec | VariationSheetSpec;
+
+function isSheetSpec(spec: { type: string }): spec is SheetSpec {
+  return spec.type === 'sheet';
+}
+
+function calculateSheetDimensions(layout: SheetLayout): { width: number; height: number } {
+  if (layout.type === 'grid') {
+    const margin = layout.margin ?? 0;
+    const spacing = layout.spacing ?? 0;
+    const width = margin * 2 + layout.columns * layout.cellWidth + (layout.columns - 1) * spacing;
+    const height = margin * 2 + layout.rows * layout.cellHeight + (layout.rows - 1) * spacing;
+    return { width, height };
+  } else if (layout.type === 'strip') {
+    const margin = layout.margin ?? 0;
+    const spacing = layout.spacing ?? 0;
+    if (layout.direction === 'horizontal') {
+      const width = margin * 2 + layout.frameCount * layout.cellWidth + (layout.frameCount - 1) * spacing;
+      const height = margin * 2 + layout.cellHeight;
+      return { width, height };
+    } else {
+      const width = margin * 2 + layout.cellWidth;
+      const height = margin * 2 + layout.frameCount * layout.cellHeight + (layout.frameCount - 1) * spacing;
+      return { width, height };
+    }
+  }
+  return { width: 512, height: 512 };
+}
+
+function getSheetEntries(spec: SheetSpec): Array<{ index: number; x: number; y: number; width: number; height: number; key?: string }> {
+  const layout = spec.layout;
+  const entries: Array<{ index: number; x: number; y: number; width: number; height: number; key?: string }> = [];
+
+  if (layout.type === 'grid') {
+    const margin = layout.margin ?? 0;
+    const spacing = layout.spacing ?? 0;
+    let index = 0;
+    for (let row = 0; row < layout.rows; row++) {
+      for (let col = 0; col < layout.columns; col++) {
+        const x = margin + col * (layout.cellWidth + spacing);
+        const y = margin + row * (layout.cellHeight + spacing);
+        entries.push({ index, x, y, width: layout.cellWidth, height: layout.cellHeight });
+        index++;
+      }
+    }
+  } else if (layout.type === 'strip') {
+    const margin = layout.margin ?? 0;
+    const spacing = layout.spacing ?? 0;
+    for (let i = 0; i < layout.frameCount; i++) {
+      const x = layout.direction === 'horizontal' ? margin + i * (layout.cellWidth + spacing) : margin;
+      const y = layout.direction === 'vertical' ? margin + i * (layout.cellHeight + spacing) : margin;
+      entries.push({ index: i, x, y, width: layout.cellWidth, height: layout.cellHeight });
+    }
+  }
+
+  return entries;
+}
 
 export const silhouetteStage: Stage = {
   id: 'silhouette',
@@ -260,6 +328,113 @@ export const uploadR2Stage: Stage = {
     return {
       ...run,
       artifacts: { ...run.artifacts, r2Keys, publicUrls },
+    };
+  },
+};
+
+export const sheetGuideStage: Stage = {
+  id: 'sheet-guide',
+  name: 'Create Sheet Guide',
+  async run(run: AssetRun, _adapters: PipelineAdapters, debug: DebugSink): Promise<AssetRun> {
+    if (!isSheetSpec(run.spec)) {
+      return run;
+    }
+
+    const spec = run.spec;
+    const { width, height } = calculateSheetDimensions(spec.layout);
+    const entries = getSheetEntries(spec);
+
+    const sharp = (await import('sharp')).default;
+
+    let gridLines = '';
+    for (const entry of entries) {
+      gridLines += `<rect x="${entry.x}" y="${entry.y}" width="${entry.width}" height="${entry.height}" fill="none" stroke="black" stroke-width="1"/>`;
+      const fontSize = Math.min(entry.width, entry.height) / 4;
+      const textX = entry.x + entry.width / 2;
+      const textY = entry.y + entry.height / 2 + fontSize / 3;
+      gridLines += `<text x="${textX}" y="${textY}" font-size="${fontSize}" text-anchor="middle" fill="rgba(0,0,0,0.3)">${entry.index}</text>`;
+    }
+
+    const svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+      <rect width="${width}" height="${height}" fill="white"/>
+      ${gridLines}
+    </svg>`;
+
+    const buffer = await sharp(Buffer.from(svg)).png().toBuffer();
+    const sheetGuidePng = new Uint8Array(buffer);
+
+    await debug({
+      type: 'artifact',
+      runId: run.meta.runId,
+      assetId: run.spec.id,
+      stageId: 'sheet-guide',
+      name: 'sheet-guide.png',
+      contentType: 'image/png',
+      data: sheetGuidePng,
+    });
+
+    return {
+      ...run,
+      artifacts: { ...run.artifacts, sheetGuidePng },
+    };
+  },
+};
+
+export const buildSheetMetadataStage: Stage = {
+  id: 'build-sheet-metadata',
+  name: 'Build Sheet Metadata',
+  async run(run: AssetRun, _adapters: PipelineAdapters, debug: DebugSink): Promise<AssetRun> {
+    if (!isSheetSpec(run.spec)) {
+      return run;
+    }
+
+    const spec = run.spec;
+    const { width, height } = calculateSheetDimensions(spec.layout);
+    const entries = getSheetEntries(spec);
+
+    const metadata: Record<string, unknown> = {
+      id: spec.id,
+      kind: spec.kind,
+      layout: spec.layout,
+      dimensions: { width, height },
+      entries: entries.map(e => ({
+        index: e.index,
+        region: { x: e.x, y: e.y, width: e.width, height: e.height },
+      })),
+    };
+
+    if (spec.promptConfig) {
+      metadata.promptConfig = spec.promptConfig;
+    }
+
+    if (spec.kind === 'sprite') {
+      metadata.animations = (spec as SpriteSheetSpec).animations;
+    } else if (spec.kind === 'tile') {
+      const tileSpec = spec as TileSheetSpec;
+      metadata.tileWidth = tileSpec.tileWidth;
+      metadata.tileHeight = tileSpec.tileHeight;
+      if (tileSpec.tileOverrides) {
+        metadata.tileOverrides = tileSpec.tileOverrides;
+      }
+    } else if (spec.kind === 'variation') {
+      metadata.variants = (spec as VariationSheetSpec).variants;
+    }
+
+    const sheetMetadataJson = JSON.stringify(metadata, null, 2);
+
+    await debug({
+      type: 'artifact',
+      runId: run.meta.runId,
+      assetId: run.spec.id,
+      stageId: 'build-sheet-metadata',
+      name: 'sheet-metadata.json',
+      contentType: 'application/json',
+      data: sheetMetadataJson,
+    });
+
+    return {
+      ...run,
+      artifacts: { ...run.artifacts, sheetMetadataJson },
     };
   },
 };

@@ -222,6 +222,22 @@ export interface MultiplayerConfig {
   interpolationDelay?: number;
 }
 
+export interface LoadingScreenConfig {
+  backgroundImageUrl?: string;
+  progressBarImageUrl?: string;
+  progressBarFillImageUrl?: string;
+  backgroundColor?: string;
+  progressBarColor?: string;
+  textColor?: string;
+}
+
+export interface SoundAsset {
+  url: string;
+  type: 'sfx' | 'music';
+  loop?: boolean;
+  defaultVolume?: number;
+}
+
 export interface GameDefinition {
   metadata: GameMetadata;
   world: WorldConfig;
@@ -246,6 +262,8 @@ export interface GameDefinition {
   tileSheets?: TileSheet[];
   tileMaps?: TileMap[];
   multiplayer?: MultiplayerConfig;
+  loadingScreen?: LoadingScreenConfig;
+  sounds?: Record<string, SoundAsset>;
 }
 
 export const DEFAULT_WORLD_CONFIG: WorldConfig = {

@@ -1,0 +1,62 @@
+import type { GameAssetConfig, EntitySpec, BackgroundSpec, TitleHeroSpec } from '../../src/ai/pipeline/types';
+
+export const bumperArenaConfig: GameAssetConfig = {
+  gameId: 'bumper-arena',
+  gameTitle: 'Bumper Arena',
+  theme: 'neon arena battle, glowing bumper obstacles, cyber arcade aesthetic',
+  style: 'cartoon',
+  r2Prefix: 'generated/bumper-arena',
+  assets: [
+    {
+      type: 'entity',
+      id: 'player',
+      shape: 'circle',
+      width: 1.2,
+      height: 1.2,
+      entityType: 'character',
+      description: 'a teal cyan glowing character orb with bright inner light',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'enemy',
+      shape: 'circle',
+      width: 1.0,
+      height: 1.0,
+      entityType: 'character',
+      description: 'a red-orange glowing enemy orb with menacing appearance',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'bumper',
+      shape: 'circle',
+      width: 1.4,
+      height: 1.4,
+      entityType: 'item',
+      description: 'a purple neon bumper orb with glowing edges that bounces things away',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'spinner',
+      shape: 'box',
+      width: 3,
+      height: 0.3,
+      entityType: 'item',
+      description: 'an orange spinning hazard bar with sharp edges',
+    } as EntitySpec,
+    {
+      type: 'background',
+      id: 'background',
+      prompt: 'A neon cyber arena floor background. Dark purple and blue tones with glowing grid lines. Circular arena shape visible. Futuristic battle zone atmosphere.',
+      width: 1024,
+      height: 1024,
+    } as BackgroundSpec,
+    {
+      type: 'title_hero',
+      id: 'title_hero',
+      title: 'Bumper Arena',
+      themeDescription: 'Neon glow effects, arena battle aesthetic, purple and cyan cyber colors',
+      width: 1024,
+      height: 512,
+    } as TitleHeroSpec,
+  ],
+};

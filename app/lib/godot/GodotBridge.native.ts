@@ -220,6 +220,13 @@ export function createNativeGodotBridge(): GodotBridge {
             }
             break;
           }
+          case 'input': {
+            const data = event.data as { type: string; x: number; y: number; entityId: string | null };
+            for (const cb of inputEventCallbacks) {
+              cb(data.type, data.x, data.y, data.entityId);
+            }
+            break;
+          }
         }
       }
     } catch (e) {

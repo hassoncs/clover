@@ -8,6 +8,8 @@ import {
   removeBackgroundStage,
   layeredDecomposeStage,
   uploadR2Stage,
+  sheetGuideStage,
+  buildSheetMetadataStage,
 } from './stages';
 
 export const pipelineRegistry: Record<AssetType, Stage[]> = {
@@ -34,6 +36,14 @@ export const pipelineRegistry: Record<AssetType, Stage[]> = {
     buildPromptStage,
     txt2imgStage,
     layeredDecomposeStage,
+    uploadR2Stage,
+  ],
+  sheet: [
+    sheetGuideStage,
+    buildPromptStage,
+    uploadToScenarioStage,
+    img2imgStage,
+    buildSheetMetadataStage,
     uploadR2Stage,
   ],
 };

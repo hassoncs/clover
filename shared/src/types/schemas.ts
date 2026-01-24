@@ -620,43 +620,6 @@ export const ParallaxConfigSchema = z.object({
   layers: z.array(ParallaxLayerSchema),
 });
 
-export const TileCollisionSchema = z.union([
-  z.literal('none'),
-  z.literal('full'),
-  z.literal('platform'),
-  z.object({
-    polygon: z.array(Vec2Schema),
-  }),
-]);
-
-export const TileAnimationSchema = z.object({
-  frames: z.array(z.number()),
-  fps: z.number().positive(),
-  loop: z.boolean().optional(),
-});
-
-export const TileMetadataSchema = z.object({
-  name: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  collision: TileCollisionSchema.optional(),
-  animation: TileAnimationSchema.optional(),
-});
-
-export const TileSheetSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  imageUrl: z.string(),
-  tileWidth: z.number().positive(),
-  tileHeight: z.number().positive(),
-  columns: z.number().positive(),
-  rows: z.number().positive(),
-  spacing: z.number().optional(),
-  margin: z.number().optional(),
-  tiles: z.record(z.number(), TileMetadataSchema).optional(),
-  source: AssetSourceSchema.optional(),
-  style: SpriteStyleSchema.optional(),
-});
-
 export const TileLayerTypeSchema = z.enum(['background', 'collision', 'foreground', 'decoration']);
 
 export const TileLayerSchema = z.object({
@@ -730,6 +693,155 @@ export const GameJointSchema = z.discriminatedUnion('type', [
   GameDistanceJointSchema,
   GameWeldJointSchema,
   GamePrismaticJointSchema,
+]);
+
+export const SheetLayoutSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("grid"),
+    columns: z.number().positive(),
+    rows: z.number().positive(),
+    cellWidth: z.number().positive(),
+    cellHeight: z.number().positive(),
+    spacing: z.number().optional(),
+    margin: z.number().optional(),
+    origin: z.literal("top-left").optional(),
+  }),
+  z.object({
+    type: z.literal("strip"),
+    direction: z.enum(["horizontal", "vertical"]),
+    frameCount: z.number().positive(),
+    cellWidth: z.number().positive(),
+    cellHeight: z.number().positive(),
+    spacing: z.number().optional(),
+    margin: z.number().optional(),
+  }),
+  z.object({
+    type: z.literal("manual"),
+  }),
+]);
+
+export const SheetRegionSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("gridIndex"),
+    index: z.number().int().nonnegative(),
+  }),
+  z.object({
+    type: z.literal("rect"),
+    x: z.number().int().nonnegative(),
+    y: z.number().int().nonnegative(),
+    w: z.number().int().positive(),
+    h: z.number().int().positive(),
+  }),
+]);
+
+export const SheetPivotSchema = z.object({
+  x: z.number(),
+  y: z.number(),
+});
+
+export const SheetPromptConfigSchema = z.object({
+  basePrompt: z.string(),
+  commonModifiers: z.array(z.string()).optional(),
+  stylePreset: z.string().optional(),
+  negativePrompt: z.string().optional(),
+});
+
+export const AssetSheetEntrySchema = z.object({
+  id: z.string().min(1),
+  region: SheetRegionSchema,
+  pivot: SheetPivotSchema.optional(),
+  tags: z.array(z.string()).optional(),
+  promptOverride: z.string().optional(),
+});
+
+export const SheetAnimationSchema = z.object({
+  id: z.string().min(1),
+  frames: z.array(z.string()).min(1),
+  fps: z.number().positive(),
+  loop: z.boolean().optional(),
+});
+
+export const SheetTileCollisionSchema = z.union([
+  z.literal("none"),
+  z.literal("full"),
+  z.literal("platform"),
+  z.object({ polygon: z.array(z.object({ x: z.number(), y: z.number() })).min(3) }),
+]);
+
+export const SheetTileAnimationSchema = z.object({
+  frames: z.array(z.number().int().nonnegative()).min(1),
+  fps: z.number().positive(),
+  loop: z.boolean().optional(),
+});
+
+export const SheetTileMetadataSchema = z.object({
+  name: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  collision: SheetTileCollisionSchema.optional(),
+  animation: SheetTileAnimationSchema.optional(),
+  promptOverride: z.string().optional(),
+});
+
+export const TileSheetSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  imageUrl: z.string(),
+  tileWidth: z.number().positive(),
+  tileHeight: z.number().positive(),
+  columns: z.number().positive(),
+  rows: z.number().positive(),
+  spacing: z.number().optional(),
+  margin: z.number().optional(),
+  tiles: z.record(z.number(), SheetTileMetadataSchema).optional(),
+  source: AssetSourceSchema.optional(),
+  style: SpriteStyleSchema.optional(),
+});
+
+export const VariationVariantSchema = z.object({
+  entryId: z.string().min(1),
+  tags: z.array(z.string()).optional(),
+  weight: z.number().positive().optional(),
+  promptOverride: z.string().optional(),
+});
+
+export const VariationGroupSchema = z.object({
+  id: z.string().min(1),
+  variants: z.record(z.string(), VariationVariantSchema),
+});
+
+export const AssetSheetBaseSchema = z.object({
+  id: z.string(),
+  packId: z.string(),
+  source: AssetSourceSchema.optional(),
+  imageAssetId: z.string().optional(),
+  imageUrl: z.string(),
+  imageWidth: z.number().positive(),
+  imageHeight: z.number().positive(),
+  layout: SheetLayoutSchema,
+  entries: z.record(z.string(), AssetSheetEntrySchema),
+  promptConfig: SheetPromptConfigSchema.optional(),
+  createdAt: z.number(),
+  deletedAt: z.number().optional(),
+});
+
+export const AssetSheetSchema = z.discriminatedUnion("kind", [
+  AssetSheetBaseSchema.extend({
+    kind: z.literal("sprite"),
+    animations: z.record(z.string(), SheetAnimationSchema).optional(),
+    defaultAnimationId: z.string().optional(),
+  }),
+  AssetSheetBaseSchema.extend({
+    kind: z.literal("tile"),
+    tileWidth: z.number().positive(),
+    tileHeight: z.number().positive(),
+    tiles: z.record(z.number(), SheetTileMetadataSchema).optional(),
+  }),
+  AssetSheetBaseSchema.extend({
+    kind: z.literal("variation"),
+    groups: z.record(z.string(), VariationGroupSchema),
+    defaultGroupId: z.string().optional(),
+    defaultVariantKey: z.string().optional(),
+  }),
 ]);
 
 export const GameDefinitionSchema = z.object({

@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+A bright blue sky with fluffy white clouds. Classic platformer background with sunny atmosphere. Endless blue sky with soft clouds. Cartoon style. No text, no characters, just the environment. High quality game background.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

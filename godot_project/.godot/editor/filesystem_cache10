@@ -2,7 +2,7 @@
 ::res://::1769216034
 export_presets.cfg::TextFile::-1::1769197259::0::1::::<><><>0<>0<><>::
 icon.svg::CompressedTexture2D::8162193418698039025::1769188378::1769188930::1::::<><><>0<>0<>b60b07e3b7c5c7da747f33a9e77945db<>res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex::
-Main.tscn::PackedScene::-1::1769190161::0::1::::<><><>0<>0<><>::res://scripts/Main.gd
+Main.tscn::PackedScene::-1::1769277483::0::1::::<><><>0<>0<><>::res://scripts/Main.gd
 README.md::TextFile::-1::1769204169::0::1::::<><><>0<>0<><>::
 ::res://docs/::1769205833
 VFX_IMPLEMENTATION_TODO.md::TextFile::-1::1769205833::0::1::::<><><>0<>0<><>::
@@ -10,8 +10,8 @@ VFX_IMPLEMENTATION_TODO.md::TextFile::-1::1769205833::0::1::::<><><>0<>0<><>::
 ::res://scenes/::1769205700
 VFXShowcase.tscn::PackedScene::2855297431937620752::1769205700::0::1::::<><><>0<>0<><>::res://scripts/VFXShowcase.gd
 ::res://scripts/::1769205739
-GameBridge.gd::GDScript::7400890102577367664::1769217703::0::1::::<>Node<><>0<>0<><>::
-Main.gd::GDScript::4927831078751178685::1769217690::0::1::::<>Node2D<><>0<>0<><>::
+GameBridge.gd::GDScript::7400890102577367664::1769279604::0::1::::<>Node<><>0<>0<><>::
+Main.gd::GDScript::4927831078751178685::1769276371::0::1::::<>Node2D<><>0<>0<><>::
 PhysicsBody.gd::GDScript::3101094749307879933::1769200136::0::1::::<>RigidBody2D<><>0<>0<><>::
 PrismaticJointDriver.gd::GDScript::1085538468816056858::1769200386::0::1::::<>GrooveJoint2D<><>0<>0<><>::
 VFXShowcase.gd::GDScript::4087428144712657601::1769205737::0::1::::<>Node2D<><>0<>0<><>::

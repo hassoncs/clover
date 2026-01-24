@@ -229,6 +229,9 @@ export function GameRuntimeGodot({
           setViewportRect(currentViewport);
         }
 
+        // Camera stays at origin (0,0) - Godot owns camera positioning now
+        // We still keep the CameraSystem for screen-to-world coordinate transforms
+
         game.rulesEvaluator.setCallbacks({
           onScoreChange: (score) => {
             setGameState((s) => ({ ...s, score }));
@@ -348,18 +351,6 @@ export function GameRuntimeGodot({
 
     camera.update(dt, (id) => game.entityManager.getEntity(id));
 
-    const cameraPos = camera.getPosition();
-    bridge.setCameraPosition(cameraPos.x, cameraPos.y);
-    
-    // Calculate effective zoom for Godot:
-    // ViewportSystem computes scale = viewportHeight / worldHeightMeters (e.g., 800 / 20 = 40)
-    // Godot uses its own pixels_per_meter from the game definition (default 50)
-    // We need to adjust zoom so Godot renders at the correct scale
-    const viewportScale = viewportSystemRef.current?.getPixelsPerMeter() ?? game.pixelsPerMeter;
-    const godotPixelsPerMeter = game.pixelsPerMeter;
-    const scaleRatio = viewportScale / godotPixelsPerMeter;
-    bridge.setCameraZoom(camera.getZoom() * scaleRatio);
-
     elapsedRef.current += dt;
     frameIdRef.current += 1;
 
@@ -391,7 +382,6 @@ export function GameRuntimeGodot({
     const baseEvalContext = createEvalContext();
 
     const inputSnapshot = inputRef.current;
-    console.log('[GameRuntime] BEFORE behaviors - inputRef.current.tap:', inputSnapshot.tap, 'keys:', Object.keys(inputSnapshot));
     
     const behaviorContext: Omit<BehaviorContext, "entity" | "resolveNumber" | "resolveVec2"> = {
       dt,
@@ -447,8 +437,6 @@ export function GameRuntimeGodot({
 
     const inputEvents: import('./BehaviorContext').InputEvents = {};
     const currentInput = inputRef.current as Record<string, unknown>;
-    const sameObject = inputSnapshot === inputRef.current;
-    console.log('[GameRuntime] AFTER behaviors - currentInput.tap:', currentInput.tap, 'sameObject:', sameObject, 'inputSnapshot.tap:', inputSnapshot.tap);
     if (currentInput.tap) {
       inputEvents.tap = currentInput.tap as { x: number; y: number; worldX: number; worldY: number };
       console.log('[GameRuntime] inputEvents.tap SET:', inputEvents.tap);
@@ -667,6 +655,10 @@ export function GameRuntimeGodot({
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       
+      if (x < 0 || x > rect.width || y < 0 || y > rect.height) {
+        return;
+      }
+      
       const camera = cameraRef.current;
       const viewportSystem = viewportSystemRef.current;
       
@@ -675,13 +667,15 @@ export function GameRuntimeGodot({
         world = viewportSystem.viewportToWorld(x, y, camera.getPosition(), camera.getZoom());
       }
       
-      console.log('[CLICK] Mouse clicked:', {
-        clientXY: { x: e.clientX, y: e.clientY },
-        rectTopLeft: { x: rect.left, y: rect.top },
+      console.log('[CLICK] Mouse clicked - setting tap:', {
         containerXY: { x, y },
         worldXY: world,
-        currentMouseRef: inputRef.current.mouse,
       });
+      
+      inputRef.current = {
+        ...inputRef.current,
+        tap: { x, y, worldX: world.x, worldY: world.y },
+      };
     };
 
     window.addEventListener("mousemove", handleMouseMove);

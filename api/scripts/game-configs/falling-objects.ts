@@ -1,0 +1,62 @@
+import type { GameAssetConfig, EntitySpec, BackgroundSpec, TitleHeroSpec } from '../../src/ai/pipeline/types';
+
+export const fallingObjectsConfig: GameAssetConfig = {
+  gameId: 'falling-objects',
+  gameTitle: 'Falling Objects',
+  theme: 'fun catching game, colorful falling items, arcade action',
+  style: 'cartoon',
+  r2Prefix: 'generated/falling-objects',
+  assets: [
+    {
+      type: 'entity',
+      id: 'player',
+      shape: 'box',
+      width: 1.5,
+      height: 0.5,
+      entityType: 'character',
+      description: 'a teal cyan paddle for catching objects',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'goodBall',
+      shape: 'circle',
+      width: 0.8,
+      height: 0.8,
+      entityType: 'item',
+      description: 'a green ball to catch for points',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'badBox',
+      shape: 'box',
+      width: 0.8,
+      height: 0.8,
+      entityType: 'item',
+      description: 'a red hazardous box to avoid',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'bonusBall',
+      shape: 'circle',
+      width: 1.0,
+      height: 1.0,
+      entityType: 'item',
+      description: 'a golden shiny bonus ball worth extra points',
+    } as EntitySpec,
+    {
+      type: 'background',
+      id: 'background',
+      prompt: 'A fun arcade catching game background. Dark purple-blue space with scattered stars. Playful and exciting atmosphere. Cartoon style.',
+      width: 1024,
+      height: 1024,
+    } as BackgroundSpec,
+    {
+      type: 'title_hero',
+      id: 'title_hero',
+      title: 'Falling Objects',
+      themeDescription: 'Colorful falling items theme, green good red bad, arcade action aesthetic',
+      width: 1024,
+      height: 512,
+    } as TitleHeroSpec,
+  ],
+};

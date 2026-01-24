@@ -1,15 +1,20 @@
 import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
+const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle";
+
 export const metadata: TestGameMeta = {
   title: "Slopeggle",
   description: "Clear all orange pegs by bouncing a ball through the board",
+  titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
 };
-
-const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle";
 
 const WORLD_WIDTH = 12;
 const WORLD_HEIGHT = 16;
+const HALF_W = WORLD_WIDTH / 2;
+const HALF_H = WORLD_HEIGHT / 2;
+const cx = (x: number) => x - HALF_W;
+const cy = (y: number) => HALF_H - y;
 const PEG_RADIUS = 0.125;
 const BALL_RADIUS = 0.15;
 
@@ -61,7 +66,7 @@ const bluePegEntities = pegLayout
     id: `blue-peg-${i}`,
     name: `Blue Peg ${i + 1}`,
     template: "bluePeg",
-    transform: { x: p.x, y: p.y, angle: 0, scaleX: 1, scaleY: 1 },
+    transform: { x: cx(p.x), y: cy(p.y), angle: 0, scaleX: 1, scaleY: 1 },
   }));
 
 const orangePegEntities = pegLayout
@@ -70,7 +75,7 @@ const orangePegEntities = pegLayout
     id: `orange-peg-${i}`,
     name: `Orange Peg ${i + 1}`,
     template: "orangePeg",
-    transform: { x: p.x, y: p.y, angle: 0, scaleX: 1, scaleY: 1 },
+    transform: { x: cx(p.x), y: cy(p.y), angle: 0, scaleX: 1, scaleY: 1 },
   }));
 
 const game: GameDefinition = {
@@ -83,7 +88,7 @@ const game: GameDefinition = {
     titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
   },
   world: {
-    gravity: { x: 0, y: 5 },
+    gravity: { x: 0, y: -5 },
     pixelsPerMeter: 50,
     bounds: { width: WORLD_WIDTH, height: WORLD_HEIGHT },
   },
@@ -296,22 +301,22 @@ const game: GameDefinition = {
     },
   },
   entities: [
-    { id: "wall-left", name: "Left Wall", template: "wallVertical", transform: { x: 0.1, y: WORLD_HEIGHT / 2, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "wall-right", name: "Right Wall", template: "wallVertical", transform: { x: WORLD_WIDTH - 0.1, y: WORLD_HEIGHT / 2, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "wall-left", name: "Left Wall", template: "wallVertical", transform: { x: cx(0.1), y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "wall-right", name: "Right Wall", template: "wallVertical", transform: { x: cx(WORLD_WIDTH - 0.1), y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
     {
       id: "wall-top",
       name: "Top Wall",
       tags: ["wall"],
-      transform: { x: WORLD_WIDTH / 2, y: 0.1, angle: 0, scaleX: 1, scaleY: 1 },
+      transform: { x: 0, y: cy(0.1), angle: 0, scaleX: 1, scaleY: 1 },
       sprite: { type: "rect", width: WORLD_WIDTH, height: 0.2, color: "#1e3a5f" },
       physics: { bodyType: "static", shape: "box", width: WORLD_WIDTH, height: 0.2, density: 0, friction: 0.1, restitution: 0.6 },
     },
-    { id: "drain", name: "Drain Zone", template: "drain", transform: { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT + 0.5, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "bucket", name: "Free Ball Bucket", template: "bucket", transform: { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT - 0.5, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "portal-a", name: "Portal A", template: "portalA", transform: { x: 1.5, y: 7, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "portal-b", name: "Portal B", template: "portalB", transform: { x: WORLD_WIDTH - 1.5, y: 11, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "cannon-base", name: "Cannon Base", template: "cannonBase", transform: { x: WORLD_WIDTH / 2, y: 1.0, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "cannon", name: "Cannon", template: "cannon", transform: { x: WORLD_WIDTH / 2, y: 1.0, angle: Math.PI / 2, scaleX: 1, scaleY: 1 } },
+    { id: "drain", name: "Drain Zone", template: "drain", transform: { x: 0, y: cy(WORLD_HEIGHT + 0.5), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "bucket", name: "Free Ball Bucket", template: "bucket", transform: { x: 0, y: cy(WORLD_HEIGHT - 0.5), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "portal-a", name: "Portal A", template: "portalA", transform: { x: cx(1.5), y: cy(7), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "portal-b", name: "Portal B", template: "portalB", transform: { x: cx(WORLD_WIDTH - 1.5), y: cy(11), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "cannon-base", name: "Cannon Base", template: "cannonBase", transform: { x: 0, y: cy(1.0), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "cannon", name: "Cannon", template: "cannon", transform: { x: 0, y: cy(1.0), angle: Math.PI / 2, scaleX: 1, scaleY: 1 } },
     ...bluePegEntities,
     ...orangePegEntities,
   ],
@@ -324,7 +329,7 @@ const game: GameDefinition = {
         { type: "entity_count", tag: "ball", max: 0 },
       ],
       actions: [
-        { type: "spawn", template: "ball", position: { type: "fixed", x: WORLD_WIDTH / 2, y: 1.0 } },
+        { type: "spawn", template: "ball", position: { type: "fixed", x: 0, y: cy(1.0) } },
         { type: "apply_impulse", target: { type: "by_tag", tag: "ball" }, direction: "toward_touch", force: 1, sourceEntityId: "cannon" },
         { type: "set_variable", name: "turn", operation: "add", value: 1 },
       ],

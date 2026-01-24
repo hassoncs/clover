@@ -1,0 +1,38 @@
+[
+  {
+    "name": "ball",
+    "silhouettePath": "ball-silhouette.png",
+    "prompt": "glowing neon ball, sci-fi arcade style, energy sphere, bright white core with cyan glow, transparent background, game asset",
+    "aspectRatio": "0.5:0.5"
+  },
+  {
+    "name": "paddle",
+    "silhouettePath": "paddle-silhouette.png",
+    "prompt": "futuristic paddle, sci-fi arcade style, neon cyan glowing edges, metallic surface, game asset, transparent background",
+    "aspectRatio": "2:0.4"
+  },
+  {
+    "name": "brick-red",
+    "silhouettePath": "brick-red-silhouette.png",
+    "prompt": "neon brick block, sci-fi arcade style, glowing red/magenta, crystalline structure, game asset, transparent background",
+    "aspectRatio": "1.2:0.5"
+  },
+  {
+    "name": "brick-yellow",
+    "silhouettePath": "brick-yellow-silhouette.png",
+    "prompt": "neon brick block, sci-fi arcade style, glowing yellow/gold, crystalline structure, game asset, transparent background",
+    "aspectRatio": "1.2:0.5"
+  },
+  {
+    "name": "brick-green",
+    "silhouettePath": "brick-green-silhouette.png",
+    "prompt": "neon brick block, sci-fi arcade style, glowing green/lime, crystalline structure, game asset, transparent background",
+    "aspectRatio": "1.2:0.5"
+  },
+  {
+    "name": "brick-blue",
+    "silhouettePath": "brick-blue-silhouette.png",
+    "prompt": "neon brick block, sci-fi arcade style, glowing cyan/blue, crystalline structure, game asset, transparent background",
+    "aspectRatio": "1.2:0.5"
+  }
+]

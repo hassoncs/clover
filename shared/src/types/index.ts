@@ -10,3 +10,4 @@ export * from './effects';
 export * from './particles';
 export * from './tilemap';
 export * from './asset-system';
+export * from './asset-sheet';

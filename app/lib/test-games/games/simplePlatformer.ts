@@ -1,10 +1,20 @@
 import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
+const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/simple-platformer";
+
 export const metadata: TestGameMeta = {
   title: "Simple Platformer",
   description: "Jump between platforms, collect coins, reach the goal flag",
+  titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
 };
+
+const WORLD_WIDTH = 25;
+const WORLD_HEIGHT = 15;
+const HALF_W = WORLD_WIDTH / 2;
+const HALF_H = WORLD_HEIGHT / 2;
+const cx = (x: number) => x - HALF_W;
+const cy = (y: number) => HALF_H - y;
 
 const game: GameDefinition = {
   metadata: {
@@ -15,9 +25,9 @@ const game: GameDefinition = {
     version: "1.0.0",
   },
   world: {
-    gravity: { x: 0, y: 12 },
+    gravity: { x: 0, y: -12 },
     pixelsPerMeter: 50,
-    bounds: { width: 25, height: 15 },
+    bounds: { width: WORLD_WIDTH, height: WORLD_HEIGHT },
   },
   camera: { type: "fixed", zoom: 1 },
   ui: {
@@ -38,7 +48,7 @@ const game: GameDefinition = {
     player: {
       id: "player",
       tags: ["player"],
-      sprite: { type: "rect", width: 0.7, height: 1, color: "#4ECDC4" },
+      sprite: { type: "image", imageUrl: `${ASSET_BASE}/player.png`, imageWidth: 0.7, imageHeight: 1 },
       physics: {
         bodyType: "dynamic",
         shape: "box",
@@ -56,7 +66,7 @@ const game: GameDefinition = {
     platform: {
       id: "platform",
       tags: ["platform", "ground"],
-      sprite: { type: "rect", width: 3, height: 0.5, color: "#FFFFFF" },
+      sprite: { type: "image", imageUrl: `${ASSET_BASE}/platform.png`, imageWidth: 3, imageHeight: 0.5 },
       physics: {
         bodyType: "static",
         shape: "box",
@@ -70,7 +80,7 @@ const game: GameDefinition = {
     smallPlatform: {
       id: "smallPlatform",
       tags: ["platform"],
-      sprite: { type: "rect", width: 2, height: 0.4, color: "#E0E0E0" },
+      sprite: { type: "image", imageUrl: `${ASSET_BASE}/smallPlatform.png`, imageWidth: 2, imageHeight: 0.4 },
       physics: {
         bodyType: "static",
         shape: "box",
@@ -84,7 +94,7 @@ const game: GameDefinition = {
     coin: {
       id: "coin",
       tags: ["collectible", "coin"],
-      sprite: { type: "circle", radius: 0.3, color: "#FFD700" },
+      sprite: { type: "image", imageUrl: `${ASSET_BASE}/coin.png`, imageWidth: 0.6, imageHeight: 0.6 },
       physics: {
         bodyType: "static",
         shape: "circle",
@@ -102,7 +112,7 @@ const game: GameDefinition = {
     enemy: {
       id: "enemy",
       tags: ["enemy"],
-      sprite: { type: "circle", radius: 0.4, color: "#e74c3c" },
+      sprite: { type: "image", imageUrl: `${ASSET_BASE}/enemy.png`, imageWidth: 0.8, imageHeight: 0.8 },
       physics: {
         bodyType: "kinematic",
         shape: "circle",
@@ -118,7 +128,7 @@ const game: GameDefinition = {
     goal: {
       id: "goal",
       tags: ["goal"],
-      sprite: { type: "rect", width: 0.5, height: 2, color: "#27ae60" },
+      sprite: { type: "image", imageUrl: `${ASSET_BASE}/goal.png`, imageWidth: 0.5, imageHeight: 2 },
       physics: {
         bodyType: "static",
         shape: "box",
@@ -147,26 +157,26 @@ const game: GameDefinition = {
     },
   },
   entities: [
-    { id: "player", name: "Player", template: "player", transform: { x: 2, y: 11, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "death-zone", name: "Death Zone", template: "deathZone", transform: { x: 12.5, y: 15.5, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "ground", name: "Ground", template: "platform", transform: { x: 3, y: 13, angle: 0, scaleX: 2, scaleY: 1 } },
-    { id: "plat-1", name: "Platform 1", template: "platform", transform: { x: 7, y: 11, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "plat-2", name: "Platform 2", template: "smallPlatform", transform: { x: 11, y: 9, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "plat-3", name: "Platform 3", template: "platform", transform: { x: 15, y: 10, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "plat-4", name: "Platform 4", template: "smallPlatform", transform: { x: 18, y: 8, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "plat-5", name: "Platform 5", template: "platform", transform: { x: 22, y: 9, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "plat-high-1", name: "High Platform 1", template: "smallPlatform", transform: { x: 9, y: 6, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "plat-high-2", name: "High Platform 2", template: "smallPlatform", transform: { x: 13, y: 5, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "coin-1", name: "Coin 1", template: "coin", transform: { x: 7, y: 10, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "coin-2", name: "Coin 2", template: "coin", transform: { x: 11, y: 8, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "coin-3", name: "Coin 3", template: "coin", transform: { x: 15, y: 9, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "coin-4", name: "Coin 4", template: "coin", transform: { x: 18, y: 7, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "coin-5", name: "Coin 5", template: "coin", transform: { x: 22, y: 8, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "coin-6", name: "Coin 6", template: "coin", transform: { x: 9, y: 5, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "coin-7", name: "Coin 7", template: "coin", transform: { x: 13, y: 4, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "enemy-1", name: "Enemy 1", template: "enemy", transform: { x: 12, y: 8.2, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "enemy-2", name: "Enemy 2", template: "enemy", transform: { x: 19, y: 7.2, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "goal", name: "Goal Flag", template: "goal", transform: { x: 23.5, y: 7.5, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "player", name: "Player", template: "player", transform: { x: cx(2), y: cy(11), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "death-zone", name: "Death Zone", template: "deathZone", transform: { x: cx(12.5), y: cy(15.5), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "ground", name: "Ground", template: "platform", transform: { x: cx(3), y: cy(13), angle: 0, scaleX: 2, scaleY: 1 } },
+    { id: "plat-1", name: "Platform 1", template: "platform", transform: { x: cx(7), y: cy(11), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "plat-2", name: "Platform 2", template: "smallPlatform", transform: { x: cx(11), y: cy(9), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "plat-3", name: "Platform 3", template: "platform", transform: { x: cx(15), y: cy(10), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "plat-4", name: "Platform 4", template: "smallPlatform", transform: { x: cx(18), y: cy(8), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "plat-5", name: "Platform 5", template: "platform", transform: { x: cx(22), y: cy(9), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "plat-high-1", name: "High Platform 1", template: "smallPlatform", transform: { x: cx(9), y: cy(6), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "plat-high-2", name: "High Platform 2", template: "smallPlatform", transform: { x: cx(13), y: cy(5), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "coin-1", name: "Coin 1", template: "coin", transform: { x: cx(7), y: cy(10), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "coin-2", name: "Coin 2", template: "coin", transform: { x: cx(11), y: cy(8), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "coin-3", name: "Coin 3", template: "coin", transform: { x: cx(15), y: cy(9), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "coin-4", name: "Coin 4", template: "coin", transform: { x: cx(18), y: cy(7), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "coin-5", name: "Coin 5", template: "coin", transform: { x: cx(22), y: cy(8), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "coin-6", name: "Coin 6", template: "coin", transform: { x: cx(9), y: cy(5), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "coin-7", name: "Coin 7", template: "coin", transform: { x: cx(13), y: cy(4), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "enemy-1", name: "Enemy 1", template: "enemy", transform: { x: cx(12), y: cy(8.2), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "enemy-2", name: "Enemy 2", template: "enemy", transform: { x: cx(19), y: cy(7.2), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "goal", name: "Goal Flag", template: "goal", transform: { x: cx(23.5), y: cy(7.5), angle: 0, scaleX: 1, scaleY: 1 } },
   ],
   rules: [
     {
@@ -174,7 +184,7 @@ const game: GameDefinition = {
       name: "Jump",
       trigger: { type: "tap" },
       conditions: [{ type: "on_ground", value: true }],
-      actions: [{ type: "apply_impulse", target: { type: "by_tag", tag: "player" }, y: -8 }],
+      actions: [{ type: "apply_impulse", target: { type: "by_tag", tag: "player" }, y: 8 }],
     },
     {
       id: "move",

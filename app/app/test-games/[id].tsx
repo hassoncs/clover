@@ -1,11 +1,13 @@
-import { useMemo, useState, useCallback, useRef } from "react";
+import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { View, Text, Pressable, ActivityIndicator, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { WithGodot } from "@/components/WithGodot";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
+import { AssetLoadingScreen } from "@/components/game";
 import { TESTGAMES_BY_ID, loadTestGame, type TestGameId } from "@/lib/registry/generated/testGames";
 import { trpc } from "@/lib/trpc/client";
+import { useGamePreloader } from "@/lib/hooks/useGamePreloader";
 import type { GameDefinition } from "@slopcade/shared";
 
 export default function TestGameRunScreen() {
@@ -15,10 +17,44 @@ export default function TestGameRunScreen() {
 
   const [runtimeKey, setRuntimeKey] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingDefinition, setIsLoadingDefinition] = useState(true);
+  const [gameDefinition, setGameDefinition] = useState<GameDefinition | null>(null);
   const loadedDefinitionRef = useRef<GameDefinition | null>(null);
 
+  const { phase, progress, startPreload, skipPreload, reset } = useGamePreloader(gameDefinition);
+
+  useEffect(() => {
+    if (!entry) return;
+    
+    const load = async () => {
+      setIsLoadingDefinition(true);
+      try {
+        const definition = await loadTestGame(entry.id);
+        loadedDefinitionRef.current = definition;
+        setGameDefinition(definition);
+      } catch (err) {
+        console.error('Failed to load test game:', err);
+      } finally {
+        setIsLoadingDefinition(false);
+      }
+    };
+    
+    load();
+  }, [entry]);
+
+  useEffect(() => {
+    if (gameDefinition && !isLoadingDefinition && phase === 'idle') {
+      startPreload();
+    }
+  }, [gameDefinition, isLoadingDefinition, phase, startPreload]);
+
   const handleBack = useCallback(() => router.back(), [router]);
-  const handleReset = useCallback(() => setRuntimeKey((k) => k + 1), []);
+  
+  const handleReset = useCallback(() => {
+    reset();
+    setRuntimeKey((k) => k + 1);
+    startPreload();
+  }, [reset, startPreload]);
 
   const handleSaveToLibrary = useCallback(async () => {
     if (!entry || !loadedDefinitionRef.current) {
@@ -54,8 +90,6 @@ export default function TestGameRunScreen() {
     }
   }, [entry, router]);
 
-
-
   if (!entry) {
     return (
       <SafeAreaView className="flex-1 bg-gray-900 items-center justify-center p-6">
@@ -66,6 +100,40 @@ export default function TestGameRunScreen() {
       </SafeAreaView>
     );
   }
+
+  if (isLoadingDefinition) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-900 items-center justify-center">
+        <ActivityIndicator size="large" color="#4CAF50" />
+        <Text className="text-white mt-4">Loading game...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (!gameDefinition) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-900 items-center justify-center p-6">
+        <Text className="text-red-400 text-center text-lg">Failed to load game</Text>
+        <Pressable className="mt-6 py-3 px-6 bg-gray-700 rounded-lg" onPress={handleBack}>
+          <Text className="text-white font-semibold">← Go Back</Text>
+        </Pressable>
+      </SafeAreaView>
+    );
+  }
+
+  if (phase === 'loading') {
+    return (
+      <AssetLoadingScreen
+        gameTitle={gameDefinition.metadata.title}
+        progress={progress}
+        config={gameDefinition.loadingScreen}
+        titleHeroImageUrl={gameDefinition.metadata.titleHeroImageUrl}
+        onSkip={skipPreload}
+      />
+    );
+  }
+
+  const isGameReady = phase === 'ready' || phase === 'skipped';
 
   return (
     <View className="flex-1 bg-gray-900">
@@ -93,32 +161,28 @@ export default function TestGameRunScreen() {
         }
       />
 
-      <WithGodot
-        key={runtimeKey}
-        getComponent={() =>
-          Promise.all([
-            import("@/lib/game-engine/GameRuntime.godot"),
-            loadTestGame(entry.id),
-          ]).then(([mod, definition]) => {
-            loadedDefinitionRef.current = definition;
-            return {
+      {isGameReady && (
+        <WithGodot
+          key={runtimeKey}
+          getComponent={() =>
+            import("@/lib/game-engine/GameRuntime.godot").then((mod) => ({
               default: () => (
                 <mod.GameRuntimeGodot
-                  definition={definition}
+                  definition={gameDefinition}
                   showHUD={true}
                   onBackToMenu={handleBack}
                   onRequestRestart={handleReset}
                 />
               ),
-            };
-          })
-        }
-        fallback={
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color="#4CAF50" />
-          </View>
-        }
-      />
+            }))
+          }
+          fallback={
+            <View className="flex-1 items-center justify-center">
+              <ActivityIndicator size="large" color="#4CAF50" />
+            </View>
+          }
+        />
+      )}
     </View>
   );
 }

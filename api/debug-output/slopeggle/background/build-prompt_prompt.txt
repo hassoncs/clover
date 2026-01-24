@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+A magical arcade game background for a pachinko-style video game. Deep blue cosmic space with stars and nebula. Soft glowing particles and magical sparkles. Neon accents in blue and purple. Dreamy, ethereal atmosphere. No text, no characters, just the environment. High quality game background.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

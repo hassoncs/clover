@@ -33,11 +33,23 @@ export interface ExampleEntry extends RegistryEntryBase {
   meta: ExampleMeta;
 }
 
-/**
- * Test game module metadata.
- * Extends ModuleMeta - title required, everything else optional.
- */
-export interface TestGameMeta extends ModuleMeta {}
+export type GameStatus = "active" | "archived" | "beta";
+export type GameCategory = "arcade" | "puzzle" | "physics-demo" | "action" | "casual";
+export type PlayerCount = 1 | 2 | "1-2" | "1-4";
+
+export interface TestGameMeta extends ModuleMeta {
+  status?: GameStatus;
+  category?: GameCategory;
+  tags?: string[];
+  author?: string;
+  players?: PlayerCount;
+  /** Server-side rating (thumbs up/down ratio) - not set in source files */
+  rating?: number;
+  /** Small thumbnail for game lists */
+  thumbnailUrl?: string;
+  /** Large hero image for game detail screen */
+  titleHeroImageUrl?: string;
+}
 
 export interface TestGameEntry extends RegistryEntryBase {
   meta: TestGameMeta;

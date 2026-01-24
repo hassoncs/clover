@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { View, Text, Pressable, ActivityIndicator, TextInput, Modal, ScrollView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -7,6 +7,8 @@ import type { GameDefinition, AssetPack } from "@slopcade/shared";
 import { WithGodot } from "../../components/WithGodot";
 import { FullScreenHeader } from "../../components/FullScreenHeader";
 import { EntityAssetList, ParallaxAssetPanel } from "../../components/assets";
+import { AssetLoadingScreen } from "../../components/game";
+import { useGamePreloader } from "@/lib/hooks/useGamePreloader";
 
 export default function PlayScreen() {
   const router = useRouter();
@@ -16,7 +18,7 @@ export default function PlayScreen() {
   }>();
   
   const [gameDefinition, setGameDefinition] = useState<GameDefinition | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingDefinition, setIsLoadingDefinition] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [runtimeKey, setRuntimeKey] = useState(0);
   const [showAssetMenu, setShowAssetMenu] = useState(false);
@@ -28,9 +30,11 @@ export default function PlayScreen() {
   const [activeAssetPackId, setActiveAssetPackId] = useState<string | undefined>(undefined);
   const [isForking, setIsForking] = useState(false);
 
+  const { phase, progress, startPreload, skipPreload, reset } = useGamePreloader(gameDefinition);
+
   useEffect(() => {
     const loadGame = async () => {
-      setIsLoading(true);
+      setIsLoadingDefinition(true);
       setError(null);
 
       try {
@@ -52,20 +56,28 @@ export default function PlayScreen() {
         const message = err instanceof Error ? err.message : "Failed to load game";
         setError(message);
       } finally {
-        setIsLoading(false);
+        setIsLoadingDefinition(false);
       }
     };
 
     loadGame();
   }, [id, definitionParam]);
 
+  useEffect(() => {
+    if (gameDefinition && !isLoadingDefinition && phase === 'idle') {
+      startPreload();
+    }
+  }, [gameDefinition, isLoadingDefinition, phase, startPreload]);
+
   const handleGameEnd = useCallback((state: "won" | "lost") => {
     console.log(`Game ended: ${state}`);
   }, []);
 
   const handleRequestRestart = useCallback(() => {
+    reset();
     setRuntimeKey((k) => k + 1);
-  }, []);
+    startPreload();
+  }, [reset, startPreload]);
 
   const handleBack = useCallback(() => {
     router.back();
@@ -83,8 +95,6 @@ export default function PlayScreen() {
       setIsForking(false);
     }
   }, [id, router]);
-
-
 
   const generateAssets = async () => {
     if (!id || id === "preview" || !gameDefinition) return;
@@ -283,7 +293,7 @@ export default function PlayScreen() {
     }
   };
 
-  if (isLoading) {
+  if (isLoadingDefinition) {
     return (
       <SafeAreaView className="flex-1 bg-gray-900 items-center justify-center">
         <ActivityIndicator size="large" color="#4CAF50" />
@@ -305,6 +315,20 @@ export default function PlayScreen() {
       </SafeAreaView>
     );
   }
+
+  if (phase === 'loading') {
+    return (
+      <AssetLoadingScreen
+        gameTitle={gameDefinition.metadata.title}
+        progress={progress}
+        config={gameDefinition.loadingScreen}
+        titleHeroImageUrl={gameDefinition.metadata.titleHeroImageUrl}
+        onSkip={skipPreload}
+      />
+    );
+  }
+
+  const isGameReady = phase === 'ready' || phase === 'skipped';
 
   return (
     <View className="flex-1 bg-gray-900">
@@ -440,26 +464,28 @@ export default function PlayScreen() {
         </View>
       </Modal>
 
-      <WithGodot
-        key={runtimeKey}
-        getComponent={() =>
-          import("@/lib/game-engine/GameRuntime.godot").then((mod) => ({
-            default: () => (
-              <mod.GameRuntimeGodot
-                definition={gameDefinition!}
-                onGameEnd={handleGameEnd}
-                onRequestRestart={handleRequestRestart}
-                showHUD
-              />
-            ),
-          }))
-        }
-        fallback={
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color="#4CAF50" />
-          </View>
-        }
-      />
+      {isGameReady && (
+        <WithGodot
+          key={runtimeKey}
+          getComponent={() =>
+            import("@/lib/game-engine/GameRuntime.godot").then((mod) => ({
+              default: () => (
+                <mod.GameRuntimeGodot
+                  definition={gameDefinition!}
+                  onGameEnd={handleGameEnd}
+                  onRequestRestart={handleRequestRestart}
+                  showHUD
+                />
+              ),
+            }))
+          }
+          fallback={
+            <View className="flex-1 items-center justify-center">
+              <ActivityIndicator size="large" color="#4CAF50" />
+            </View>
+          }
+        />
+      )}
     </View>
   );
 }
