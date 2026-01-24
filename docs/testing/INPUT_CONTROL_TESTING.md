@@ -11,7 +11,7 @@ The paddle has been changed from `kinematic` to `dynamic` to support proper damp
 ```typescript
 physics: {
   bodyType: "dynamic",
-  linearDamping: 15,      // Stops quickly on input release
+  linearDamping: 5,       // Stops on input release (reduced from 15)
   fixedRotation: true,    // Won't spin when ball hits
   density: 1,
   friction: 0,
@@ -102,9 +102,9 @@ In `breakoutBouncer.ts`, only ONE input method should be active at a time for te
 
 | Input Method | Status | Currently Active |
 |--------------|--------|------------------|
-| Keyboard | Implemented | ❌ Commented out |
+| Keyboard | Implemented | ✅ Active (Left/Right Arrow only) |
 | Virtual Tap | Implemented | ❌ Commented out |
-| Mouse Follow | Implemented | ✅ Active |
+| Mouse Follow | Implemented | ❌ Commented out |
 | Drag | Implemented | ❌ Commented out |
 
 ## Known Issues / TODO

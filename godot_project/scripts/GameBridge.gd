@@ -537,9 +537,8 @@ func _notify_js_input_event(input_type: String, x: float, y: float, entity_id: V
 			"y": y,
 			"entityId": entity_id
 		}
-		# Pass dictionary directly - Godot will marshal it to a JS Object
-		# Use 'call' to invoke the JS function
-		_js_input_event_callback.call("call", null, data)
+		var json_str = JSON.stringify(data)
+		_js_input_event_callback.call("call", null, json_str)
 
 func _js_on_collision(args: Array) -> void:
 	if args.size() >= 1:

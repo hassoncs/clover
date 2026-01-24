@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet } from 'react-native';
 import type { GodotViewProps } from './types';
 
@@ -59,6 +59,7 @@ export function GodotViewWeb({ style, onReady, onError }: GodotViewProps) {
         title="Godot Game Engine"
         allow="autoplay; fullscreen"
         sandbox="allow-scripts allow-same-origin allow-pointer-lock"
+        tabIndex={-1}
       />
     </View>
   );
@@ -75,4 +76,5 @@ const iframeStyles: React.CSSProperties = {
   width: '100%',
   height: '100%',
   border: 'none',
+  pointerEvents: 'none',
 };

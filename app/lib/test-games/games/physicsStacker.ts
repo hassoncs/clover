@@ -2,7 +2,7 @@ import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
 const ASSET_BASE =
-  "https://slopcade-api.hassoncs.workers.dev/assets/generated/item";
+  "https://slopcade-api.hassoncs.workers.dev/assets/generated/physics-stacker";
 
 export const metadata: TestGameMeta = {
   title: "Block Stacker",
@@ -251,7 +251,7 @@ const game: GameDefinition = {
       id: "dropper",
       name: "Block Dropper",
       template: "dropper",
-      transform: { x: cx(0), y: cy(2), angle: 0, scaleX: 1, scaleY: 1 },
+      transform: { x: 0, y: cy(2), angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "death-zone",

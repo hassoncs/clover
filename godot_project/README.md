@@ -2,6 +2,12 @@
 
 Godot 4 game engine integration for Slopcade - handles physics and rendering for React Native games.
 
+## Overview
+
+This Godot project is used as a **rendering and physics backend** for Slopcade games. Games are loaded dynamically via the JavaScript bridge from React Native (mobile) or web.
+
+**Note:** Running this project standalone in the Godot editor will show an empty scene. Games must be loaded via the bridge.
+
 ## Quick Start
 
 ### Prerequisites
@@ -19,29 +25,20 @@ Godot 4 game engine integration for Slopcade - handles physics and rendering for
    - Go to Editor > Manage Export Templates
    - Download templates for your Godot version
 
-### Running the Spike
+### Development
 
-#### Option 1: Godot Editor (Recommended for Development)
+Games are defined in TypeScript and loaded dynamically:
+- **Test games:** `app/lib/test-games/games/`
+- **Asset configs:** `api/scripts/game-configs/`
 
+To run games, use the React Native app or web version:
 ```bash
-# Open the project in Godot
-cd godot_project
-godot project.godot
-
-# Press F5 or click Play to run
+pnpm dev      # Start Metro + API
+pnpm web      # Run web version
+pnpm ios      # Run iOS simulator
 ```
 
-#### Option 2: Command Line
-
-```bash
-# Run in editor mode
-godot --path godot_project
-
-# Run the game directly
-godot --path godot_project --main-scene
-```
-
-#### Option 3: Export to Web
+### Export to Web (for embedding)
 
 ```bash
 # Create export directory
@@ -49,41 +46,31 @@ mkdir -p godot_project/export/web
 
 # Export (requires export templates installed)
 godot --headless --path godot_project --export-release "Web" export/web/index.html
-
-# Serve locally
-cd godot_project/export/web
-python3 -m http.server 8080
-# Open http://localhost:8080 in browser
 ```
-
-## How to Use
-
-1. **Press SPACE** to load the Physics Stacker game
-2. **Click/Tap** anywhere to spawn blocks from the dropper
-3. **Press R** to reload the game
 
 ## Architecture
 
 ```
 godot_project/
 ├── project.godot          # Godot project config
-├── Main.tscn              # Root scene
+├── Main.tscn              # Root scene (minimal shell)
 ├── scripts/
-│   ├── Main.gd            # Main controller, input handling
-│   └── GameBridge.gd      # Autoload singleton for game loading
+│   ├── Main.gd            # Scene setup
+│   └── GameBridge.gd      # Autoload singleton - JS bridge
 └── export/
     └── web/               # Web export output
 ```
 
 ### GameBridge Singleton
 
-`GameBridge` is an autoload that provides:
+`GameBridge` is an autoload that provides the JS bridge API:
 
 - `load_game_json(json_string)` - Load a game from JSON
 - `spawn_entity(template_id, x, y)` - Spawn entity from template
 - `destroy_entity(entity_id)` - Remove entity
 - `get_entity(entity_id)` - Get entity node
-- `connect_to_server(url)` - WebSocket connection (optional)
+- `set_linear_velocity(entity_id, vx, vy)` - Set entity velocity
+- `apply_impulse(entity_id, ix, iy)` - Apply impulse
 
 ### Signals
 
@@ -92,41 +79,14 @@ godot_project/
 - `entity_destroyed(entity_id)` - Fired when entity is destroyed
 - `collision_occurred(entity_a, entity_b, impulse)` - Physics collision
 
-## JSON Game Definition Format
+## Coordinate System
 
-The spike uses the same `GameDefinition` format as the React Native app:
+Slopcade uses a **center-origin** coordinate system:
+- Origin (0, 0) is at screen center
+- X+ is right, X- is left
+- Y+ is up, Y- is down
 
-```json
-{
-  "metadata": { "id": "game-id", "title": "Game Title", "version": "1.0.0" },
-  "world": {
-    "gravity": { "x": 0, "y": 9.8 },
-    "pixelsPerMeter": 50,
-    "bounds": { "width": 14, "height": 18 }
-  },
-  "templates": {
-    "box": {
-      "sprite": { "type": "rect", "width": 1, "height": 1, "color": "#FF0000" },
-      "physics": {
-        "bodyType": "dynamic",  // "static" | "dynamic" | "kinematic"
-        "shape": "box",         // "box" | "circle" | "polygon"
-        "width": 1,
-        "height": 1,
-        "density": 1,
-        "friction": 0.3,
-        "restitution": 0.5
-      }
-    }
-  },
-  "entities": [
-    {
-      "id": "box1",
-      "template": "box",
-      "transform": { "x": 5, "y": 2, "angle": 0 }
-    }
-  ]
-}
-```
+Godot uses top-left origin with Y+ down. GameBridge handles conversion automatically via `game_to_godot_pos()` and `godot_to_game_pos()`.
 
 ## Physics Mapping (Box2D → Godot)
 
@@ -134,7 +94,7 @@ The spike uses the same `GameDefinition` format as the React Native app:
 |-------|-------|
 | `type: 'static'` | `StaticBody2D` |
 | `type: 'dynamic'` | `RigidBody2D` |
-| `type: 'kinematic'` | `CharacterBody2D` |
+| `type: 'kinematic'` | `CharacterBody2D` / `Area2D` (if sensor) |
 | `shape: 'box'` | `RectangleShape2D` |
 | `shape: 'circle'` | `CircleShape2D` |
 | `shape: 'polygon'` | `ConvexPolygonShape2D` |
@@ -152,3 +112,4 @@ The spike uses the same `GameDefinition` format as the React Native app:
 - [x] Camera control
 - [x] Joint systems (revolute, distance, prismatic, weld, mouse)
 - [x] Physics queries (point, AABB, raycast)
+- [x] Area2D velocity support for kinematic sensors
