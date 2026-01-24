@@ -21,7 +21,7 @@ const game: GameDefinition = {
     id: "test-simple-platformer",
     title: "Simple Platformer",
     description: "Jump between platforms, collect coins, reach the goal flag",
-    instructions: "Tap to jump, tilt to move. Collect coins and reach the green flag!",
+    instructions: "Use joystick to move, A to jump, B to dash. Collect coins and reach the flag!",
     version: "1.0.0",
   },
   world: {
@@ -30,6 +30,34 @@ const game: GameDefinition = {
     bounds: { width: WORLD_WIDTH, height: WORLD_HEIGHT },
   },
   camera: { type: "fixed", zoom: 1 },
+  input: {
+    virtualJoystick: {
+      id: "move-joystick",
+      size: 100,
+      knobSize: 40,
+      deadZone: 0.15,
+      color: "rgba(255, 255, 255, 0.25)",
+      knobColor: "rgba(255, 255, 255, 0.6)",
+    },
+    virtualButtons: [
+      {
+        id: "jump-btn",
+        button: "jump",
+        label: "A",
+        size: 72,
+        color: "rgba(76, 175, 80, 0.5)",
+        activeColor: "rgba(76, 175, 80, 0.9)",
+      },
+      {
+        id: "dash-btn",
+        button: "action",
+        label: "B",
+        size: 72,
+        color: "rgba(33, 150, 243, 0.5)",
+        activeColor: "rgba(33, 150, 243, 0.9)",
+      },
+    ],
+  },
   ui: {
     showScore: true,
     showLives: false,
@@ -180,17 +208,29 @@ const game: GameDefinition = {
   ],
   rules: [
     {
+      id: "move-left",
+      name: "Move Left",
+      trigger: { type: "button", button: "left", state: "held" },
+      actions: [{ type: "move", target: { type: "by_tag", tag: "player" }, direction: "left", speed: 6 }],
+    },
+    {
+      id: "move-right",
+      name: "Move Right",
+      trigger: { type: "button", button: "right", state: "held" },
+      actions: [{ type: "move", target: { type: "by_tag", tag: "player" }, direction: "right", speed: 6 }],
+    },
+    {
       id: "jump",
-      name: "Jump",
-      trigger: { type: "tap" },
-      conditions: [{ type: "on_ground", value: true }],
+      name: "Jump (A Button)",
+      trigger: { type: "button", button: "jump", state: "pressed" },
       actions: [{ type: "apply_impulse", target: { type: "by_tag", tag: "player" }, y: 8 }],
     },
     {
-      id: "move",
-      name: "Tilt Move",
-      trigger: { type: "tilt", threshold: 0.1 },
-      actions: [{ type: "move", target: { type: "by_tag", tag: "player" }, direction: "tilt_direction", speed: 6 }],
+      id: "dash",
+      name: "Dash (B Button)",
+      trigger: { type: "button", button: "action", state: "pressed" },
+      actions: [{ type: "apply_impulse", target: { type: "by_tag", tag: "player" }, x: 5 }],
+      cooldown: 0.5,
     },
   ],
 };

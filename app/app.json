@@ -8,7 +8,8 @@
     },
     "plugins": [
       "expo-router",
-      "./plugins/withGodotAssets"
+      "./plugins/withGodotAssets",
+      "./plugins/withMetroPort"
     ],
     "name": "Slopcade",
     "slug": "slopcade",

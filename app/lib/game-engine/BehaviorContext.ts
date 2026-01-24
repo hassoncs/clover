@@ -40,6 +40,12 @@ export interface InputState {
     jump: boolean;
     action: boolean;
   };
+  joystick?: {
+    x: number;
+    y: number;
+    magnitude: number;
+    angle: number;
+  };
   mouse?: { x: number; y: number; worldX: number; worldY: number };
 }
 

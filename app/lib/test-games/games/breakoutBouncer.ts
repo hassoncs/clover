@@ -43,6 +43,13 @@ const game: GameDefinition = {
     bounds: { width: WORLD_WIDTH, height: WORLD_HEIGHT },
   },
   camera: { type: "fixed", zoom: 1 },
+  input: {
+    tapZones: [
+      { id: "left-zone", edge: "left", size: 0.5, button: "left" },
+      { id: "right-zone", edge: "right", size: 0.5, button: "right" },
+    ],
+    debugTapZones: true,
+  },
   ui: {
     showScore: true,
     showLives: true,
@@ -75,7 +82,7 @@ const game: GameDefinition = {
         friction: 0,
         restitution: 1,
         linearDamping: 0,
-        initialVelocity: { x: 3, y: 6 },
+        initialVelocity: { x: 3, y: -6 },
         bullet: true,
       },
     },
@@ -271,7 +278,7 @@ const game: GameDefinition = {
       name: "Spawn ball when game starts",
       trigger: { type: "gameStart" },
       actions: [
-        { type: "spawn", template: "ball", position: { type: "fixed", x: cx(5), y: cy(15) } },
+        { type: "spawn", template: "ball", position: { type: "fixed", x: 0, y: 0 } },
       ],
     },
     {
@@ -307,6 +314,32 @@ const game: GameDefinition = {
           target: { type: "by_tag", tag: "paddle" },
           direction: "right",
           speed: 15,
+        },
+      ],
+    },
+    {
+      id: "tap_left",
+      name: "Tap left half of screen to move paddle left",
+      trigger: { type: "tap", xMinPercent: 0, xMaxPercent: 50 },
+      actions: [
+        {
+          type: "move",
+          target: { type: "by_tag", tag: "paddle" },
+          direction: "left",
+          speed: 10,
+        },
+      ],
+    },
+    {
+      id: "tap_right",
+      name: "Tap right half of screen to move paddle right",
+      trigger: { type: "tap", xMinPercent: 50, xMaxPercent: 100 },
+      actions: [
+        {
+          type: "move",
+          target: { type: "by_tag", tag: "paddle" },
+          direction: "right",
+          speed: 10,
         },
       ],
     },

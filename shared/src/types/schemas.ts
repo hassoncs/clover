@@ -844,6 +844,44 @@ export const AssetSheetSchema = z.discriminatedUnion("kind", [
   }),
 ]);
 
+export const TapZoneEdgeSchema = z.enum(['left', 'right', 'top', 'bottom']);
+export const TapZoneButtonSchema = z.enum(['left', 'right', 'up', 'down', 'jump', 'action']);
+
+export const TapZoneSchema = z.object({
+  id: z.string(),
+  edge: TapZoneEdgeSchema,
+  size: z.number().min(0).max(1),
+  button: TapZoneButtonSchema,
+  debugColor: z.string().optional(),
+});
+
+export const VirtualButtonTypeSchema = z.enum(['jump', 'action']);
+
+export const VirtualButtonSchema = z.object({
+  id: z.string(),
+  button: VirtualButtonTypeSchema,
+  label: z.string().optional(),
+  size: z.number().positive().optional(),
+  color: z.string().optional(),
+  activeColor: z.string().optional(),
+});
+
+export const VirtualJoystickSchema = z.object({
+  id: z.string(),
+  size: z.number().positive().optional(),
+  knobSize: z.number().positive().optional(),
+  deadZone: z.number().min(0).max(1).optional(),
+  color: z.string().optional(),
+  knobColor: z.string().optional(),
+});
+
+export const InputConfigSchema = z.object({
+  tapZones: z.array(TapZoneSchema).optional(),
+  debugTapZones: z.boolean().optional(),
+  virtualButtons: z.array(VirtualButtonSchema).optional(),
+  virtualJoystick: VirtualJoystickSchema.optional(),
+});
+
 export const GameDefinitionSchema = z.object({
   metadata: GameMetadataSchema,
   world: WorldConfigSchema,
@@ -862,6 +900,7 @@ export const GameDefinitionSchema = z.object({
   parallaxConfig: ParallaxConfigSchema.optional(),
   tileSheets: z.array(TileSheetSchema).optional(),
   tileMaps: z.array(TileMapSchema).optional(),
+  input: InputConfigSchema.optional(),
 });
 
 export type GameDefinitionInput = z.infer<typeof GameDefinitionSchema>;

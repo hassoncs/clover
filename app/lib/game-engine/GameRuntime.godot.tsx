@@ -7,7 +7,7 @@ import {
   Platform,
   type GestureResponderEvent,
 } from "react-native";
-import type { GameDefinition, ParticleEmitterType, EvalContext, ExpressionValueType } from "@slopcade/shared";
+import type { GameDefinition, ParticleEmitterType, EvalContext, ExpressionValueType, TapZoneButton, VirtualButtonType } from "@slopcade/shared";
 import { createComputedValueSystem } from "@slopcade/shared";
 import { GodotView, createGodotBridge, createGodotPhysicsAdapter } from "../godot";
 import type { GodotBridge } from "../godot/types";
@@ -22,6 +22,9 @@ import type {
 import { CameraSystem } from "./CameraSystem";
 import { ViewportSystem, type ViewportRect } from "./ViewportSystem";
 import { InputEntityManager, type InputState as InputEntityState } from "./InputEntityManager";
+import { TapZoneOverlay } from "./TapZoneOverlay";
+import { VirtualButtonsOverlay } from "./VirtualButtonsOverlay";
+import { VirtualJoystickOverlay, type JoystickState } from "./VirtualJoystickOverlay";
 
 export interface GameRuntimeGodotProps {
   definition: GameDefinition;
@@ -70,6 +73,12 @@ export function GameRuntimeGodot({
     down: false,
     jump: false,
     action: false,
+  });
+  const joystickRef = useRef<JoystickState>({
+    x: 0,
+    y: 0,
+    magnitude: 0,
+    angle: 0,
   });
 
   const timeScaleRef = useRef(1.0);
@@ -846,6 +855,41 @@ export function GameRuntimeGodot({
     inputRef.current.drag = undefined;
   }, [screenToWorld]);
 
+  const handleZonePress = useCallback((button: TapZoneButton, pressed: boolean) => {
+    buttonsRef.current[button] = pressed;
+    inputRef.current.buttons = { ...buttonsRef.current };
+  }, []);
+
+  const handleVirtualButtonPress = useCallback((button: VirtualButtonType, pressed: boolean) => {
+    buttonsRef.current[button] = pressed;
+    inputRef.current.buttons = { ...buttonsRef.current };
+  }, []);
+
+  const handleJoystickMove = useCallback((state: JoystickState) => {
+    joystickRef.current = state;
+
+    const threshold = 0.5;
+    buttonsRef.current.left = state.x < -threshold;
+    buttonsRef.current.right = state.x > threshold;
+    buttonsRef.current.up = state.y < -threshold;
+    buttonsRef.current.down = state.y > threshold;
+
+    inputRef.current.buttons = { ...buttonsRef.current };
+    inputRef.current.joystick = { ...joystickRef.current };
+  }, []);
+
+  const handleJoystickRelease = useCallback(() => {
+    joystickRef.current = { x: 0, y: 0, magnitude: 0, angle: 0 };
+
+    buttonsRef.current.left = false;
+    buttonsRef.current.right = false;
+    buttonsRef.current.up = false;
+    buttonsRef.current.down = false;
+
+    inputRef.current.buttons = { ...buttonsRef.current };
+    inputRef.current.joystick = { ...joystickRef.current };
+  }, []);
+
   const letterboxColor = definition.presentation?.letterboxColor ?? "#000000";
   const hasViewport = viewportRect.width > 0 && viewportRect.height > 0;
 
@@ -875,6 +919,32 @@ export function GameRuntimeGodot({
             onError={handleGodotError}
           />
         </View>
+      )}
+
+      {hasViewport && definition.input?.tapZones && (
+        <TapZoneOverlay
+          zones={definition.input.tapZones}
+          viewportRect={viewportRect}
+          debug={definition.input.debugTapZones}
+          onZonePress={handleZonePress}
+        />
+      )}
+
+      {hasViewport && definition.input?.virtualJoystick && (
+        <VirtualJoystickOverlay
+          config={definition.input.virtualJoystick}
+          viewportRect={viewportRect}
+          onJoystickMove={handleJoystickMove}
+          onJoystickRelease={handleJoystickRelease}
+        />
+      )}
+
+      {hasViewport && definition.input?.virtualButtons && (
+        <VirtualButtonsOverlay
+          buttons={definition.input.virtualButtons}
+          viewportRect={viewportRect}
+          onButtonPress={handleVirtualButtonPress}
+        />
       )}
 
       {showHUD && hasViewport && (

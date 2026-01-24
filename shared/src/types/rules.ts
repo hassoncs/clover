@@ -52,6 +52,10 @@ export interface FrameTrigger {
 export interface TapTrigger {
   type: 'tap';
   target?: 'screen' | 'self' | string;
+  xMin?: number;
+  xMax?: number;
+  xMinPercent?: number;
+  xMaxPercent?: number;
 }
 
 export interface DragTrigger {

@@ -238,6 +238,44 @@ export interface SoundAsset {
   defaultVolume?: number;
 }
 
+export type TapZoneEdge = 'left' | 'right' | 'top' | 'bottom';
+export type TapZoneButton = 'left' | 'right' | 'up' | 'down' | 'jump' | 'action';
+
+export interface TapZone {
+  id: string;
+  edge: TapZoneEdge;
+  size: number;
+  button: TapZoneButton;
+  debugColor?: string;
+}
+
+export type VirtualButtonType = 'jump' | 'action';
+
+export interface VirtualButton {
+  id: string;
+  button: VirtualButtonType;
+  label?: string;
+  size?: number;
+  color?: string;
+  activeColor?: string;
+}
+
+export interface VirtualJoystick {
+  id: string;
+  size?: number;
+  knobSize?: number;
+  deadZone?: number;
+  color?: string;
+  knobColor?: string;
+}
+
+export interface InputConfig {
+  tapZones?: TapZone[];
+  debugTapZones?: boolean;
+  virtualButtons?: VirtualButton[];
+  virtualJoystick?: VirtualJoystick;
+}
+
 export interface GameDefinition {
   metadata: GameMetadata;
   world: WorldConfig;
@@ -264,6 +302,7 @@ export interface GameDefinition {
   multiplayer?: MultiplayerConfig;
   loadingScreen?: LoadingScreenConfig;
   sounds?: Record<string, SoundAsset>;
+  input?: InputConfig;
 }
 
 export const DEFAULT_WORLD_CONFIG: WorldConfig = {

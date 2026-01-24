@@ -24,7 +24,7 @@ export class InputTriggerEvaluator
     context: RuleContext,
   ): boolean {
     switch (trigger.type) {
-      case "tap":
+      case "tap": {
         if (!context.inputEvents.tap) return false;
         if (trigger.target === "self") {
           return false; // Requires entity context handling in RulesEvaluator integration
@@ -32,8 +32,33 @@ export class InputTriggerEvaluator
         if (trigger.target && trigger.target !== "screen") {
           return context.inputEvents.tap.targetEntityId === trigger.target;
         }
+
+        const tapWorldX = context.inputEvents.tap.worldX;
+
+        if (trigger.xMinPercent !== undefined || trigger.xMaxPercent !== undefined) {
+          const viewportBounds = context.camera?.getViewportWorldBounds();
+          if (viewportBounds) {
+            const viewportWidth = viewportBounds.maxX - viewportBounds.minX;
+            const tapPercent = ((tapWorldX - viewportBounds.minX) / viewportWidth) * 100;
+
+            if (trigger.xMinPercent !== undefined && tapPercent < trigger.xMinPercent) {
+              return false;
+            }
+            if (trigger.xMaxPercent !== undefined && tapPercent >= trigger.xMaxPercent) {
+              return false;
+            }
+          }
+        }
+
+        if (trigger.xMin !== undefined && tapWorldX < trigger.xMin) {
+          return false;
+        }
+        if (trigger.xMax !== undefined && tapWorldX >= trigger.xMax) {
+          return false;
+        }
         console.log("[InputTrigger] TAP MATCHED!");
         return true;
+      }
 
       case "drag":
         if (trigger.phase === "start") return !!context.inputEvents.dragStart;
