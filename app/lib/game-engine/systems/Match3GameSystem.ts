@@ -157,15 +157,17 @@ export class Match3GameSystem {
   }
 
   private cellToWorld(row: number, col: number): { x: number; y: number } {
+    // Y+ up convention: row 0 is at the TOP (largest Y), higher rows go DOWN (smaller Y)
+    // originY is now the TOP of the grid (largest Y value)
     return {
       x: this.config.originX + col * this.config.cellSize + this.config.cellSize / 2,
-      y: this.config.originY + row * this.config.cellSize + this.config.cellSize / 2,
+      y: this.config.originY - row * this.config.cellSize - this.config.cellSize / 2,
     };
   }
 
   private worldToCell(worldX: number, worldY: number): { row: number; col: number } | null {
     const col = Math.floor((worldX - this.config.originX) / this.config.cellSize);
-    const row = Math.floor((worldY - this.config.originY) / this.config.cellSize);
+    const row = Math.floor((this.config.originY - worldY) / this.config.cellSize);
     
     if (row < 0 || row >= this.config.rows || col < 0 || col >= this.config.cols) {
       return null;
@@ -178,10 +180,16 @@ export class Match3GameSystem {
     const template = this.config.pieceTemplates[pieceType];
     const pos = this.cellToWorld(row, col);
     const spawnY = aboveBoard 
-      ? this.config.originY - this.config.cellSize 
+      ? this.config.originY + this.config.cellSize 
       : pos.y;
 
-    const entityId = `match3_${row}_${col}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    let entityId: string;
+    
+    if (this.bridge) {
+      entityId = this.bridge.spawnEntity(template, pos.x, spawnY);
+    } else {
+      entityId = `match3_${row}_${col}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    }
     
     this.entityManager.createEntity({
       id: entityId,
@@ -260,7 +268,14 @@ export class Match3GameSystem {
     const pos = this.cellToWorld(row, col);
     
     if (!this.highlightEntityId) {
-      const id = `match3_highlight_${Date.now()}`;
+      let id: string;
+      
+      if (this.bridge) {
+        id = this.bridge.spawnEntity('selection_highlight', pos.x, pos.y);
+      } else {
+        id = `match3_highlight_${Date.now()}`;
+      }
+      
       this.entityManager.createEntity({
         id,
         name: 'Selection Highlight',
@@ -576,6 +591,9 @@ export class Match3GameSystem {
     for (const cell of cellsToClear) {
       const boardCell = this.board[cell.row][cell.col];
       if (boardCell.entityId) {
+        if (this.bridge) {
+          this.bridge.destroyEntity(boardCell.entityId);
+        }
         this.entityManager.destroyEntity(boardCell.entityId);
         boardCell.entityId = null;
         boardCell.pieceType = -1;
@@ -654,12 +672,18 @@ export class Match3GameSystem {
       for (let col = 0; col < this.config.cols; col++) {
         const cell = this.board[row]?.[col];
         if (cell?.entityId) {
+          if (this.bridge) {
+            this.bridge.destroyEntity(cell.entityId);
+          }
           this.entityManager.destroyEntity(cell.entityId);
         }
       }
     }
 
     if (this.highlightEntityId) {
+      if (this.bridge) {
+        this.bridge.destroyEntity(this.highlightEntityId);
+      }
       this.entityManager.destroyEntity(this.highlightEntityId);
     }
   }

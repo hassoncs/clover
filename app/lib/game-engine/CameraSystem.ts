@@ -98,9 +98,16 @@ export class CameraSystem {
     const worldWidth = worldBounds?.width ?? 20;
     const worldHeight = worldBounds?.height ?? 12;
     
+    // For fixed cameras, position at origin (0, 0) to match Godot's default camera position
+    // For follow cameras, start at world center
+    const cameraType = gameCamera?.type ?? 'fixed';
+    const initialPosition = cameraType === 'fixed' 
+      ? { x: 0, y: 0 }
+      : { x: worldWidth / 2, y: worldHeight / 2 };
+    
     const config: CameraConfig = {
-      type: gameCamera?.type ?? 'fixed',
-      position: { x: worldWidth / 2, y: worldHeight / 2 },
+      type: cameraType,
+      position: initialPosition,
       zoom: gameCamera?.zoom ?? 1,
       minZoom: gameCamera?.minZoom,
       maxZoom: gameCamera?.maxZoom,

@@ -1,5 +1,5 @@
 import { View, Text, Pressable, Image, ActivityIndicator, StyleSheet, Alert } from 'react-native';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { PrimitivePreview } from './PrimitivePreview';
 import type { EntityTemplate, AssetPlacement } from '@slopcade/shared';
 import { resolveAssetUrl } from '@/lib/config/env';
@@ -34,6 +34,15 @@ export function TemplateAssetCard({
   const resolvedImageUrl = useMemo(() => resolveAssetUrl(imageUrl), [imageUrl]);
   const [viewMode, setViewMode] = useState<ViewMode>(resolvedImageUrl ? 'generated' : 'primitive');
   const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    if (resolvedImageUrl) {
+      setViewMode('generated');
+      setImageError(false);
+    } else {
+      setViewMode('primitive');
+    }
+  }, [resolvedImageUrl]);
 
   const hasGeneratedAsset = !!resolvedImageUrl;
   const showGeneratedView = viewMode === 'generated' && hasGeneratedAsset && !imageError;
