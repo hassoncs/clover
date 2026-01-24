@@ -15,6 +15,10 @@ Physics-based game engine and AI-powered game maker built with React Native.
 - **Google Cloud Console (OAuth Clients)**: https://console.cloud.google.com/auth/clients?project=slopcade
   - Manages Google OAuth credentials for authentication
 
+### AI Asset Generation
+- **Scenario.com**: Sprite and image generation
+- **ElevenLabs**: Sound effects generation ([docs](docs/shared/reference/sound-generation.md))
+
 ---
 
 ## Documentation

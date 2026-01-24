@@ -10,7 +10,7 @@
 
 | Component | Description | Entry Point |
 |-----------|-------------|-------------|
-| **Physics Engine** | Box2D + Skia rendering, React Native integration | [physics-engine/INDEX.md](physics-engine/INDEX.md) |
+| **Game Engine** | Godot 4 physics and rendering for React Native | [godot-migration/](godot-migration/) |
 | **Game Maker** | AI-powered game generation, entity/behavior systems | [game-maker/INDEX.md](game-maker/INDEX.md) |
 | **Shared** | Cross-cutting guides, tooling, project-wide docs | [shared/](#shared-documentation) |
 
@@ -27,24 +27,18 @@ Step-by-step instructions for common tasks.
 |----------|-------------|
 | [Expo Development Guide](shared/guides/expo-development.md) | Setting up and running the Expo app |
 | [Storybook Setup](shared/guides/storybook-setup.md) | Component development with Storybook |
-| [App Template Guide](shared/guides/app-template-setup.md) | Creating new apps from Waypoint template |
-| [Skia Web Deployment](shared/guides/skia-web-deployment.md) | CanvasKit WASM deployment to Cloudflare |
+| [App Template Guide](shared/guides/app-template-setup.md) | Creating new apps from template |
 
 ### Reference
 Quick-lookup documentation for tools and configurations.
 
 | Document | Description |
 |----------|-------------|
-| [Waypoint Architecture Reference](shared/reference/waypoint-architecture.md) | Full infrastructure patterns from Waypoint |
+| [Waypoint Architecture Reference](shared/reference/waypoint-architecture.md) | Full infrastructure patterns |
 | [Metro Port Configuration](shared/reference/metro-port-configuration.md) | Custom Metro port setup |
-| [Template Features](shared/reference/template-features.md) | Skia + NativeWind template features |
-
-### Planning
-Roadmaps and feature plans.
-
-| Document | Description |
-|----------|-------------|
-| [Skia Import Guard System](shared/planning/skia-import-guard-system.md) | Preventing Skia/WASM initialization crashes |
+| [Registry System](shared/reference/registry-system.md) | Auto-discovered lazy loading |
+| [Platform-Specific Modules](shared/reference/platform-specific-modules.md) | .native.ts/.web.ts patterns |
+| [Sound Generation](shared/reference/sound-generation.md) | ElevenLabs sound effects API |
 
 ### Troubleshooting
 Known issues and their solutions.
@@ -53,17 +47,24 @@ Known issues and their solutions.
 |----------|-------------|
 | [D1 Testing Issues](shared/troubleshooting/d1-testing-setup.md) | Cloudflare D1 test environment setup |
 
-### Decisions (ADRs)
-Architectural Decision Records for project-wide choices.
-
-_None yet_
-
 ### Log
 Temporal status updates and completion notes.
 
 | Document | Description |
 |----------|-------------|
 | [2026-01-21 Scenario Setup Complete](shared/log/2026/2026-01-21-scenario-setup.md) | Scenario.com integration verified |
+
+---
+
+## Godot Migration
+
+Documentation for the Godot 4 game engine integration.
+
+| Document | Description |
+|----------|-------------|
+| [Migration Plan](godot-migration/MIGRATION_PLAN.md) | Full migration roadmap |
+| [Gap Analysis](godot/GAP_ANALYSIS.md) | Feature comparison |
+| [Native Bridge TODO](godot/NATIVE_BRIDGE_TODO.md) | Outstanding native work |
 
 ---
 
