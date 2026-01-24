@@ -45,8 +45,18 @@ OPENROUTER_API_KEY=
 # AI_MODEL=openai/gpt-4o
 
 # =============================================================================
-# Scenario.com (for AI sprite generation)
+# Image Generation Provider
 # =============================================================================
 
+# Provider selection: scenario | runpod | comfyui
+# IMAGE_GENERATION_PROVIDER=comfyui
+
+# Scenario.com (legacy - being phased out)
 # SCENARIO_API_KEY=
 # SCENARIO_SECRET_API_KEY=
+
+# RunPod (for ComfyUI serverless)
+# Get API key from: https://www.runpod.io/console/serverless/user/settings
+# RUNPOD_API_KEY=
+# Endpoint ID from your serverless endpoint (e.g., pd3dqti6qlf5cs)
+# RUNPOD_COMFYUI_ENDPOINT_ID=
