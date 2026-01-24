@@ -275,11 +275,41 @@ Final Asset URL
 
 ---
 
-## Contact/Support
+## Links & Resources
 
+### Our Endpoints
+- **RunPod Endpoint Console**: https://console.runpod.io/serverless/user/endpoint/pd3dqti6qlf5cs?tab=overview
+- **Comfy.org Cloud** (alternative): https://cloud.comfy.org/
+
+### Documentation
 - **RunPod Docs**: https://docs.runpod.io/
 - **ComfyUI Worker Repo**: https://github.com/runpod-workers/worker-comfyui
 - **1038lab RMBG**: https://github.com/1038lab/ComfyUI-RMBG
+
+---
+
+## Billing Notes
+
+### True Serverless (Pay Only When Running)
+
+To get **$0 cost when idle**, set:
+- **Min Workers = 0** (no always-on workers)
+- **Idle Timeout = 5-30 seconds** (how long worker stays warm after job)
+
+Trade-off: Cold starts of 30-120 seconds on first request after idle.
+
+### If Min Workers > 0
+
+You pay 24/7 for that GPU (with 20-30% discount vs on-demand). Example:
+- Min Workers = 1 on L40 → ~$16-28/day idle cost
+
+### Cost Estimates (L40 24GB GPU)
+
+| Scenario | Daily Cost |
+|----------|------------|
+| Min Workers = 0, no requests | **$0** |
+| Min Workers = 1, idle all day | ~$16-28 |
+| Min Workers = 0, 100 images (~30s each) | ~$0.50-1.50 |
 
 ---
 
