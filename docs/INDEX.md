@@ -54,6 +54,14 @@ Temporal status updates and completion notes.
 |----------|-------------|
 | [2026-01-21 Scenario Setup Complete](shared/log/2026/2026-01-21-scenario-setup.md) | Scenario.com integration verified |
 
+### Plans
+Future migration and feature plans.
+
+| Document | Description |
+|----------|-------------|
+| [ComfyUI Migration Architecture](plans/comfyui-migration-architecture.md) | RunPod ComfyUI serverless migration plan |
+| [RunPod Setup Status](plans/runpod-comfyui-setup-status.md) | Deployment checklist (READY, waiting on Scenario credits) |
+
 ---
 
 ## Godot Migration
