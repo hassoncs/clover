@@ -30,6 +30,7 @@
 | Phase 13: Offline-First     | Not Started       | 0% (MVP+1) - [Plan](./offline-first-architecture.md) |
 | **Phase 14: Viewport & Camera** | **85% Complete** | Core system done, polish pending - [Plan](../architecture/viewport-and-camera-system.md) |
 | Phase 15: Tile System       | Not Started       | 0% (MVP+1) - [Plan](./tile-system.md) |
+| **Phase 16: ComfyUI Migration** | **In Progress** | Migrate from Scenario.com to self-hosted - [Plan](../../plans/scenario-to-comfyui-migration.md) |
 
 ### MVP Status: VISUAL EDITOR CORE COMPLETE - READY FOR TESTING
 
