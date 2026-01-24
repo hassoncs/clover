@@ -269,11 +269,31 @@ export interface VirtualJoystick {
   knobColor?: string;
 }
 
+export type DPadDirection = 'up' | 'down' | 'left' | 'right';
+
+export interface VirtualDPad {
+  id: string;
+  size?: number;
+  buttonSize?: number;
+  color?: string;
+  activeColor?: string;
+  showDiagonals?: boolean;
+}
+
+export interface TiltConfig {
+  enabled: boolean;
+  sensitivity?: number;
+  updateInterval?: number;
+}
+
 export interface InputConfig {
   tapZones?: TapZone[];
   debugTapZones?: boolean;
   virtualButtons?: VirtualButton[];
   virtualJoystick?: VirtualJoystick;
+  virtualDPad?: VirtualDPad;
+  enableHaptics?: boolean;
+  tilt?: TiltConfig;
 }
 
 export interface GameDefinition {

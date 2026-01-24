@@ -50,8 +50,16 @@ export class SpawnActionExecutor implements ActionExecutor<SpawnAction> {
 
       const template = context.entityManager.getTemplate(templateId);
       if (template) {
+        let entityId: string;
+
+        if (context.bridge) {
+          entityId = context.bridge.spawnEntity(templateId, x, y);
+        } else {
+          entityId = `spawned_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        }
+
         context.entityManager.createEntity({
-          id: `spawned_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          id: entityId,
           name: template.id,
           template: templateId,
           transform: { x, y, angle: 0, scaleX: 1, scaleY: 1 },

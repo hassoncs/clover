@@ -5,6 +5,7 @@ import {
   Platform,
   type GestureResponderEvent,
 } from "react-native";
+import * as Haptics from "expo-haptics";
 import type { VirtualJoystick } from "@slopcade/shared";
 
 export interface JoystickState {
@@ -19,6 +20,7 @@ export interface VirtualJoystickOverlayProps {
   viewportRect: { x: number; y: number; width: number; height: number };
   onJoystickMove: (state: JoystickState) => void;
   onJoystickRelease: () => void;
+  enableHaptics?: boolean;
 }
 
 const DEFAULT_SIZE = 120;
@@ -60,9 +62,16 @@ export function VirtualJoystickOverlay({
   viewportRect,
   onJoystickMove,
   onJoystickRelease,
+  enableHaptics = true,
 }: VirtualJoystickOverlayProps) {
   const activeTouchIdRef = useRef<number | null>(null);
   const [knobOffset, setKnobOffset] = useState({ x: 0, y: 0 });
+
+  const triggerHaptic = useCallback(() => {
+    if (enableHaptics && Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  }, [enableHaptics]);
 
   const size = config.size ?? DEFAULT_SIZE;
   const knobSize = config.knobSize ?? DEFAULT_KNOB_SIZE;
@@ -109,6 +118,7 @@ export function VirtualJoystickOverlay({
           return;
         }
         activeTouchIdRef.current = touchId;
+        triggerHaptic();
       }
 
       const angle = Math.atan2(dy, dx);
@@ -136,6 +146,7 @@ export function VirtualJoystickOverlay({
       deadZone,
       onJoystickMove,
       onJoystickRelease,
+      triggerHaptic,
     ]
   );
 

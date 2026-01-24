@@ -49,6 +49,11 @@ const game: GameDefinition = {
       { id: "right-zone", edge: "right", size: 0.5, button: "right" },
     ],
     debugTapZones: true,
+    tilt: {
+      enabled: true,
+      sensitivity: 2,
+      updateInterval: 16,
+    },
   },
   ui: {
     showScore: true,
@@ -340,6 +345,34 @@ const game: GameDefinition = {
           target: { type: "by_tag", tag: "paddle" },
           direction: "right",
           speed: 10,
+        },
+      ],
+    },
+    {
+      id: "tilt_left",
+      name: "Tilt device left to move paddle left",
+      trigger: { type: "tilt", axis: "x", threshold: 0.15 },
+      conditions: [{ type: "expression", expr: "input.tilt.x < -0.15" }],
+      actions: [
+        {
+          type: "move",
+          target: { type: "by_tag", tag: "paddle" },
+          direction: "tilt_direction",
+          speed: 12,
+        },
+      ],
+    },
+    {
+      id: "tilt_right",
+      name: "Tilt device right to move paddle right",
+      trigger: { type: "tilt", axis: "x", threshold: 0.15 },
+      conditions: [{ type: "expression", expr: "input.tilt.x > 0.15" }],
+      actions: [
+        {
+          type: "move",
+          target: { type: "by_tag", tag: "paddle" },
+          direction: "tilt_direction",
+          speed: 12,
         },
       ],
     },

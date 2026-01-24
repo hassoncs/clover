@@ -16,6 +16,7 @@ import type { Physics2D } from '../physics2d/Physics2D';
 import type { IGameStateMutator, RuleContext, ListValue } from './rules/types';
 import type { InputEvents } from './BehaviorContext';
 import type { CameraSystem } from './CameraSystem';
+import type { GodotBridge } from '../godot/types';
 
 import {
   ScoreActionExecutor,
@@ -272,7 +273,8 @@ export class RulesEvaluator implements IGameStateMutator {
     camera?: CameraSystem,
     setTimeScale?: (scale: number, duration?: number) => void,
     inputEntityManager?: InputEntityManager,
-    playSound?: (soundId: string, volume?: number) => void
+    playSound?: (soundId: string, volume?: number) => void,
+    bridge?: GodotBridge
   ): void {
     if (this.gameState !== 'playing') {
       if (inputEvents.tap || inputEvents.dragEnd) {
@@ -289,6 +291,7 @@ export class RulesEvaluator implements IGameStateMutator {
       physics,
       mutator: this,
       camera,
+      bridge,
       setTimeScale,
       playSound,
       score: this.score,

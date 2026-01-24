@@ -7,7 +7,7 @@ import {
   Platform,
   type GestureResponderEvent,
 } from "react-native";
-import type { GameDefinition, ParticleEmitterType, EvalContext, ExpressionValueType, TapZoneButton, VirtualButtonType } from "@slopcade/shared";
+import type { GameDefinition, ParticleEmitterType, EvalContext, ExpressionValueType, TapZoneButton, VirtualButtonType, DPadDirection } from "@slopcade/shared";
 import { createComputedValueSystem } from "@slopcade/shared";
 import { GodotView, createGodotBridge, createGodotPhysicsAdapter } from "../godot";
 import type { GodotBridge } from "../godot/types";
@@ -25,6 +25,8 @@ import { InputEntityManager, type InputState as InputEntityState } from "./Input
 import { TapZoneOverlay } from "./TapZoneOverlay";
 import { VirtualButtonsOverlay } from "./VirtualButtonsOverlay";
 import { VirtualJoystickOverlay, type JoystickState } from "./VirtualJoystickOverlay";
+import { VirtualDPadOverlay } from "./VirtualDPadOverlay";
+import { useTiltInput } from "./hooks/useTiltInput";
 
 export interface GameRuntimeGodotProps {
   definition: GameDefinition;
@@ -80,6 +82,19 @@ export function GameRuntimeGodot({
     magnitude: 0,
     angle: 0,
   });
+
+  const handleTiltUpdate = useCallback((tilt: { x: number; y: number }) => {
+    inputRef.current.tilt = tilt;
+  }, []);
+
+  useTiltInput(
+    {
+      enabled: definition.input?.tilt?.enabled ?? false,
+      sensitivity: definition.input?.tilt?.sensitivity,
+      updateInterval: definition.input?.tilt?.updateInterval,
+    },
+    handleTiltUpdate
+  );
 
   const timeScaleRef = useRef(1.0);
   const timeScaleTargetRef = useRef(1.0);
@@ -468,12 +483,14 @@ export function GameRuntimeGodot({
       inputEntityManager ?? undefined,
       (soundId: string, _volume?: number) => {
         bridge.playSound(soundId);
-      }
+      },
+      bridge
     );
 
     const preservedDrag = inputRef.current.drag;
     const preservedButtons = inputRef.current.buttons;
     const preservedMouse = inputRef.current.mouse;
+    const preservedTilt = inputRef.current.tilt;
     inputRef.current = {};
     if (preservedDrag && !inputEvents.dragEnd) {
       inputRef.current.drag = preservedDrag;
@@ -483,6 +500,9 @@ export function GameRuntimeGodot({
     }
     if (preservedMouse) {
       inputRef.current.mouse = preservedMouse;
+    }
+    if (preservedTilt) {
+      inputRef.current.tilt = preservedTilt;
     }
     collisionsRef.current = [];
 
@@ -890,6 +910,11 @@ export function GameRuntimeGodot({
     inputRef.current.joystick = { ...joystickRef.current };
   }, []);
 
+  const handleDPadPress = useCallback((direction: DPadDirection, pressed: boolean) => {
+    buttonsRef.current[direction] = pressed;
+    inputRef.current.buttons = { ...buttonsRef.current };
+  }, []);
+
   const letterboxColor = definition.presentation?.letterboxColor ?? "#000000";
   const hasViewport = viewportRect.width > 0 && viewportRect.height > 0;
 
@@ -936,6 +961,16 @@ export function GameRuntimeGodot({
           viewportRect={viewportRect}
           onJoystickMove={handleJoystickMove}
           onJoystickRelease={handleJoystickRelease}
+          enableHaptics={definition.input.enableHaptics}
+        />
+      )}
+
+      {hasViewport && definition.input?.virtualDPad && (
+        <VirtualDPadOverlay
+          config={definition.input.virtualDPad}
+          viewportRect={viewportRect}
+          onDirectionPress={handleDPadPress}
+          enableHaptics={definition.input.enableHaptics}
         />
       )}
 
@@ -944,6 +979,7 @@ export function GameRuntimeGodot({
           buttons={definition.input.virtualButtons}
           viewportRect={viewportRect}
           onButtonPress={handleVirtualButtonPress}
+          enableHaptics={definition.input.enableHaptics}
         />
       )}
 

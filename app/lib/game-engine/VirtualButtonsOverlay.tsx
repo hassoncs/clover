@@ -7,12 +7,14 @@ import {
   Pressable,
   type GestureResponderEvent,
 } from "react-native";
+import * as Haptics from "expo-haptics";
 import type { VirtualButton, VirtualButtonType } from "@slopcade/shared";
 
 export interface VirtualButtonsOverlayProps {
   buttons: VirtualButton[];
   viewportRect: { x: number; y: number; width: number; height: number };
   onButtonPress: (button: VirtualButtonType, pressed: boolean) => void;
+  enableHaptics?: boolean;
 }
 
 interface ButtonBounds {
@@ -48,11 +50,18 @@ export function VirtualButtonsOverlay({
   buttons,
   viewportRect,
   onButtonPress,
+  enableHaptics = true,
 }: VirtualButtonsOverlayProps) {
   const activeTouchesRef = useRef<Map<number, VirtualButtonType>>(new Map());
   const [activeButtons, setActiveButtons] = useState<Set<VirtualButtonType>>(
     new Set()
   );
+
+  const triggerHaptic = useCallback(() => {
+    if (enableHaptics && Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  }, [enableHaptics]);
 
   const buttonBounds = buttons.map((btn, index): ButtonBounds => {
     const size = btn.size ?? DEFAULT_SIZE;
@@ -132,11 +141,12 @@ export function VirtualButtonsOverlay({
         if (newButton) {
           activeTouchesRef.current.set(touchId, newButton);
           onButtonPress(newButton, true);
+          triggerHaptic();
         }
         updateActiveButtons();
       }
     },
-    [findButtonAtPoint, onButtonPress, updateActiveButtons]
+    [findButtonAtPoint, onButtonPress, updateActiveButtons, triggerHaptic]
   );
 
   const handleWebTouchStart = useCallback(
@@ -246,6 +256,7 @@ export function VirtualButtonsOverlay({
         onPressIn={() => {
           onButtonPress(btn.button, true);
           setActiveButtons((prev) => new Set([...prev, btn.button]));
+          triggerHaptic();
         }}
         onPressOut={() => {
           onButtonPress(btn.button, false);

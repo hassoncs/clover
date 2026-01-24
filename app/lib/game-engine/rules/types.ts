@@ -5,6 +5,7 @@ import type { ComputedValueSystem, EvalContext } from '@slopcade/shared';
 import type { Physics2D } from '../../physics2d/Physics2D';
 import type { RuntimeEntity } from '../types';
 import type { CameraSystem } from '../CameraSystem';
+import type { GodotBridge } from '../../godot/types';
 
 export type ListValue = (number | string | boolean)[];
 
@@ -36,6 +37,7 @@ export interface RuleContext {
   physics: Physics2D;
   mutator: IGameStateMutator;
   camera?: CameraSystem;
+  bridge?: GodotBridge;
   score: number;
   lives: number;
   elapsed: number;

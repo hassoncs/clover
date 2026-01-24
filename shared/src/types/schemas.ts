@@ -875,11 +875,24 @@ export const VirtualJoystickSchema = z.object({
   knobColor: z.string().optional(),
 });
 
+export const DPadDirectionSchema = z.enum(['up', 'down', 'left', 'right']);
+
+export const VirtualDPadSchema = z.object({
+  id: z.string(),
+  size: z.number().positive().optional(),
+  buttonSize: z.number().positive().optional(),
+  color: z.string().optional(),
+  activeColor: z.string().optional(),
+  showDiagonals: z.boolean().optional(),
+});
+
 export const InputConfigSchema = z.object({
   tapZones: z.array(TapZoneSchema).optional(),
   debugTapZones: z.boolean().optional(),
   virtualButtons: z.array(VirtualButtonSchema).optional(),
   virtualJoystick: VirtualJoystickSchema.optional(),
+  virtualDPad: VirtualDPadSchema.optional(),
+  enableHaptics: z.boolean().optional(),
 });
 
 export const GameDefinitionSchema = z.object({

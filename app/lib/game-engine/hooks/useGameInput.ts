@@ -5,15 +5,18 @@ import type { CameraSystem } from "../CameraSystem";
 import type { LoadedGame } from "../GameLoader";
 import type { Physics2D } from "../../physics2d";
 import type { ViewportSystem } from "../ViewportSystem";
+import type { TiltConfig } from "@slopcade/shared";
+import { useTiltInput } from "./useTiltInput";
 
 interface UseGameInputProps {
   cameraRef: React.RefObject<CameraSystem | null>;
   gameRef: React.RefObject<LoadedGame | null>;
   physicsRef: React.RefObject<Physics2D | null>;
   viewportSystemRef?: React.RefObject<ViewportSystem | null>;
+  tiltConfig?: TiltConfig;
 }
 
-export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef }: UseGameInputProps) {
+export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef, tiltConfig }: UseGameInputProps) {
   const inputRef = useRef<InputState>({});
   const dragStartRef = useRef<{
     x: number;
@@ -30,6 +33,19 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
     jump: false,
     action: false,
   });
+
+  const handleTiltUpdate = useCallback((tilt: { x: number; y: number }) => {
+    inputRef.current.tilt = tilt;
+  }, []);
+
+  useTiltInput(
+    {
+      enabled: tiltConfig?.enabled ?? false,
+      sensitivity: tiltConfig?.sensitivity,
+      updateInterval: tiltConfig?.updateInterval,
+    },
+    handleTiltUpdate
+  );
 
   const handleTouchStart = useCallback((event: GestureResponderEvent) => {
     const camera = cameraRef.current;

@@ -31,6 +31,7 @@ const game: GameDefinition = {
   },
   camera: { type: "fixed", zoom: 1 },
   input: {
+    enableHaptics: true,
     virtualJoystick: {
       id: "move-joystick",
       size: 100,
@@ -63,6 +64,9 @@ const game: GameDefinition = {
     showLives: false,
     showTimer: false,
     backgroundColor: "#87CEEB",
+  },
+  variables: {
+    player_facing: 1,
   },
   winCondition: {
     type: "reach_entity",
@@ -211,13 +215,19 @@ const game: GameDefinition = {
       id: "move-left",
       name: "Move Left",
       trigger: { type: "button", button: "left", state: "held" },
-      actions: [{ type: "move", target: { type: "by_tag", tag: "player" }, direction: "left", speed: 6 }],
+      actions: [
+        { type: "move", target: { type: "by_tag", tag: "player" }, direction: "left", speed: 6 },
+        { type: "set_variable", name: "player_facing", value: -1, operation: "set" },
+      ],
     },
     {
       id: "move-right",
       name: "Move Right",
       trigger: { type: "button", button: "right", state: "held" },
-      actions: [{ type: "move", target: { type: "by_tag", tag: "player" }, direction: "right", speed: 6 }],
+      actions: [
+        { type: "move", target: { type: "by_tag", tag: "player" }, direction: "right", speed: 6 },
+        { type: "set_variable", name: "player_facing", value: 1, operation: "set" },
+      ],
     },
     {
       id: "jump",
@@ -226,10 +236,19 @@ const game: GameDefinition = {
       actions: [{ type: "apply_impulse", target: { type: "by_tag", tag: "player" }, y: 8 }],
     },
     {
-      id: "dash",
-      name: "Dash (B Button)",
+      id: "dash-right",
+      name: "Dash Right (B Button)",
       trigger: { type: "button", button: "action", state: "pressed" },
+      conditions: [{ type: "variable", name: "player_facing", comparison: "gte", value: 0 }],
       actions: [{ type: "apply_impulse", target: { type: "by_tag", tag: "player" }, x: 5 }],
+      cooldown: 0.5,
+    },
+    {
+      id: "dash-left",
+      name: "Dash Left (B Button)",
+      trigger: { type: "button", button: "action", state: "pressed" },
+      conditions: [{ type: "variable", name: "player_facing", comparison: "lt", value: 0 }],
+      actions: [{ type: "apply_impulse", target: { type: "by_tag", tag: "player" }, x: -5 }],
       cooldown: 0.5,
     },
   ],
