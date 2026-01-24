@@ -547,10 +547,11 @@ export class AssetService {
     try {
       const client = this.getClient();
 
-      const physicsShape: 'box' | 'circle' = entityType === 'item' ? 'circle' : 'box';
-      const silhouetteData = createSilhouettePng(physicsShape, width, height);
+       const physicsShape: 'box' | 'circle' = entityType === 'item' ? 'circle' : 'box';
+       const silhouetteData = createSilhouettePng(physicsShape, width, height);
 
-      console.log(`[AssetService] Creating silhouette for ${width}x${height} (${physicsShape})`);
+       assetLog('DEBUG', '', `Physics: shape=${physicsShape}, width=${width}, height=${height}`);
+       assetLog('INFO', '', `Silhouette created: 512x512 for ${physicsShape} ${width}x${height}`);
 
       // Debug: save silhouette
       await this.saveDebugFile(`${debugId}_silhouette.png`, silhouetteData);
@@ -559,9 +560,10 @@ export class AssetService {
         silhouetteData.byteOffset,
         silhouetteData.byteOffset + silhouetteData.byteLength
       ) as ArrayBuffer;
-      const uploadedAssetId = await client.uploadAsset(arrayBuffer);
+       const uploadedAssetId = await client.uploadAsset(arrayBuffer);
 
-      console.log(`[AssetService] Generating with silhouette img2img, prompt:\n${prompt.substring(0, 200)}...`);
+       assetLog('INFO', '', `Uploaded silhouette to Scenario: ${uploadedAssetId}`);
+       assetLog('INFO', '', `Starting img2img generation with strength=0.95`);
 
       const result = await client.generateImg2Img({
         prompt,
@@ -571,18 +573,20 @@ export class AssetService {
         guidance: 3.5,
       });
 
-      if (result.assetIds.length === 0) {
-        return {
-          success: false,
-          error: 'No assets generated',
-        };
-      }
+       if (result.assetIds.length === 0) {
+         return {
+           success: false,
+           error: 'No assets generated',
+         };
+       }
 
-      const assetId = result.assetIds[0];
-      const { buffer, extension } = await client.downloadAsset(assetId);
+       const assetId = result.assetIds[0];
+       const { buffer, extension } = await client.downloadAsset(assetId);
 
-      // Debug: save result image and metadata
-      await this.saveDebugFile(`${debugId}_result${extension}`, buffer);
+       assetLog('INFO', '', `Downloaded generated asset: ${assetId}`);
+
+       // Debug: save result image and metadata
+       await this.saveDebugFile(`${debugId}_result${extension}`, buffer);
       await this.saveDebugFile(`${debugId}_metadata.json`, JSON.stringify({
         debugId,
         timestamp: new Date().toISOString(),
@@ -592,17 +596,19 @@ export class AssetService {
         result: { scenarioAssetId: assetId, extension },
       }, null, 2));
 
-      const r2Key = await this.uploadToR2(buffer, extension, entityType);
+       const r2Key = await this.uploadToR2(buffer, extension, entityType);
 
-      return {
-        success: true,
-        assetUrl: this.getR2PublicUrl(r2Key),
-        r2Key,
-        scenarioAssetId: assetId,
-      };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      console.error(`[AssetService] Generation failed: ${errorMessage}`);
+       assetLog('INFO', '', `Uploaded to R2: ${r2Key}`);
+
+       return {
+         success: true,
+         assetUrl: this.getR2PublicUrl(r2Key),
+         r2Key,
+         scenarioAssetId: assetId,
+       };
+     } catch (err) {
+       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+       assetLog('ERROR', '', `Generation failed: ${errorMessage}`);
 
       // Debug: save error metadata
       await this.saveDebugFile(`${debugId}_error.json`, JSON.stringify({
