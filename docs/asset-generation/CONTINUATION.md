@@ -1,6 +1,6 @@
 # Asset Generation System - Continuation
 
-Last updated: 2026-01-22
+Last updated: 2026-01-24
 
 ## Current State
 
@@ -10,20 +10,51 @@ The asset generation pipeline is working end-to-end:
 3. Click "Generate X Assets" creates pack and fires generation
 4. Polling updates progress as each asset completes
 5. Images display in the gallery
+6. **Debug Logging**: A comprehensive logging system is implemented across the pipeline.
 
 ### Key Files
 - `app/components/editor/AssetGallery/AssetGalleryPanel.tsx` - Main UI
 - `app/components/editor/AssetGallery/useAssetGeneration.ts` - Polling hook
 - `app/components/editor/AssetGallery/TemplateAssetCard.tsx` - Asset display card
 - `app/components/editor/AssetAlignment/AssetAlignmentEditor.tsx` - Alignment modal
-- `api/src/trpc/routes/asset-system.ts` - Backend CRUD + generation orchestration
+- `api/src/trpc/routes/asset-system.ts` - Backend CRUD + generation orchestration (with job logging)
 - `api/src/ai/assets.ts` - AssetService with Scenario.com integration
+- `api/src/ai/scenario.ts` - Scenario.com API client with logging
 
 ### Database Tables
 - `asset_packs` - Pack metadata (name, style, theme prompt)
 - `asset_pack_entries` - Links packs to assets per template
 - `game_assets` - Generated images (image_url, dimensions)
 - `generation_jobs` / `generation_tasks` - Job tracking for polling
+
+---
+
+## Debug Logging
+
+The asset generation system includes a multi-layered logging system to track jobs, tasks, and API interactions.
+
+### Configuration
+Logging is controlled by the `LOG_LEVEL` environment variable.
+- **Default**: `INFO`
+- **Options**: `DEBUG`, `INFO`, `WARN`, `ERROR`
+- **Enable Debug Logging**: `export LOG_LEVEL=DEBUG`
+
+### Log Prefixes
+Logs are prefixed to identify the source and context:
+- `[AssetGen]`: General generation logic and orchestration.
+- `[Scenario]`: Scenario.com API client requests, polling, and downloads.
+- `[job:XXXX]`: Correlation ID for a specific generation job (first 8 chars of UUID).
+- `[task:XXXX]`: Correlation ID for a specific asset task within a job (first 8 chars of UUID).
+
+### Troubleshooting Guide
+When debugging a failed generation:
+1. **Check for `[ERROR]`**: Search logs for `[AssetGen] [ERROR]` or `[Scenario] [ERROR]`.
+2. **Trace by Job ID**: Use the `jobId` from the UI/Database to filter logs: `grep "[job:abc12345]"`.
+3. **Verify Silhouette**: Look for `Silhouette created` and `Uploaded silhouette` to ensure the shape generation succeeded.
+4. **Monitor Polling**: `[Scenario] [DEBUG]` logs show the polling attempts and status changes from Scenario.com.
+5. **R2 Upload**: Ensure `Uploaded to R2` appears at the end of a successful task.
+
+For a full example of the log output, see `docs/asset-generation/debug-log-example.txt`.
 
 ---
 
