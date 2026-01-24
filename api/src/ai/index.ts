@@ -43,6 +43,16 @@ export {
 } from './scenario';
 
 export {
+  ComfyUIClient,
+  createComfyUIClient,
+} from './comfyui';
+
+export {
+  RunPodClient,
+  createRunPodClient,
+} from './runpod';
+
+export {
   AssetService,
   getScenarioConfigFromEnv,
   type EntityType,
@@ -56,3 +66,14 @@ export type {
   GenerationParams,
   GenerationResult as ScenarioGenerationResult,
 } from './scenario-types';
+
+export type {
+  ComfyUIConfig,
+  ComfyTxt2ImgParams,
+  ComfyImg2ImgParams,
+} from './comfyui-types';
+
+export type {
+  RunPodConfig,
+  RunPodJobInput,
+} from './runpod-types';

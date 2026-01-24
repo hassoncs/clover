@@ -170,9 +170,17 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
+  const provider = (process.env.IMAGE_GENERATION_PROVIDER as 'scenario' | 'runpod' | 'comfyui') ?? 'scenario';
+  
   const adapters = await createNodeAdapters({
+    provider,
     scenarioApiKey: apiKey!,
     scenarioApiSecret: apiSecret!,
+    runpodApiKey: process.env.RUNPOD_API_KEY,
+    runpodSdxlEndpointId: process.env.RUNPOD_SDXL_ENDPOINT_ID,
+    runpodFluxEndpointId: process.env.RUNPOD_FLUX_ENDPOINT_ID,
+    runpodBgRemovalEndpointId: process.env.RUNPOD_BG_REMOVAL_ENDPOINT_ID,
+    comfyuiEndpoint: process.env.COMFYUI_ENDPOINT,
     r2Bucket: 'slopcade-assets',
     wranglerCwd: path.join(__dirname, '..'),
     publicUrlBase: 'https://slopcade-api.hassoncs.workers.dev/assets',

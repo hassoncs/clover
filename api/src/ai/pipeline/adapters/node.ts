@@ -1,4 +1,6 @@
 import type { PipelineAdapters, ScenarioAdapter, R2Adapter, SilhouetteAdapter, DebugSink, DebugEvent } from '../types';
+import { ComfyUIClient } from '../../comfyui';
+import { RunPodClient } from '../../runpod';
 
 const SCENARIO_API_URL = 'https://api.cloud.scenario.com/v1';
 
@@ -208,18 +210,157 @@ export async function createNodeSilhouetteAdapter(): Promise<SilhouetteAdapter> 
   };
 }
 
-export async function createNodeAdapters(options: {
-  scenarioApiKey: string;
-  scenarioApiSecret: string;
+interface ComfyUIAdapterConfig {
+  endpoint: string;
+  apiKey?: string;
+}
+
+export function createNodeComfyUIAdapter(config: ComfyUIAdapterConfig): ScenarioAdapter {
+  const client = new ComfyUIClient({
+    endpoint: config.endpoint,
+    apiKey: config.apiKey,
+  });
+
+  return {
+    async uploadImage(png: Uint8Array): Promise<string> {
+      return client.uploadImage(png);
+    },
+
+    async txt2img(params): Promise<{ assetId: string }> {
+      return client.txt2img({
+        prompt: params.prompt,
+        negativePrompt: params.negativePrompt,
+        width: params.width ?? 1024,
+        height: params.height ?? 1024,
+      });
+    },
+
+    async img2img(params): Promise<{ assetId: string }> {
+      return client.img2img({
+        image: params.imageAssetId,
+        prompt: params.prompt,
+        strength: params.strength ?? 0.95,
+      });
+    },
+
+    async downloadImage(assetId: string): Promise<{ buffer: Uint8Array; extension: string }> {
+      return client.downloadImage(assetId);
+    },
+
+    async removeBackground(assetId: string): Promise<{ assetId: string }> {
+      return client.removeBackground({ image: assetId });
+    },
+
+    async layeredDecompose(params): Promise<{ assetIds: string[] }> {
+      return client.layeredDecompose({
+        image: params.imageAssetId,
+        layerCount: params.layerCount,
+        description: params.description,
+      });
+    },
+  };
+}
+
+interface RunPodAdapterConfig {
+  apiKey: string;
+  sdxlEndpointId?: string;
+  fluxEndpointId?: string;
+  bgRemovalEndpointId?: string;
+}
+
+export function createNodeRunPodAdapter(config: RunPodAdapterConfig): ScenarioAdapter {
+  const client = new RunPodClient({
+    apiKey: config.apiKey,
+    sdxlEndpointId: config.sdxlEndpointId,
+    fluxEndpointId: config.fluxEndpointId,
+    bgRemovalEndpointId: config.bgRemovalEndpointId,
+  });
+
+  return {
+    async uploadImage(png: Uint8Array): Promise<string> {
+      return client.uploadImage(png);
+    },
+
+    async txt2img(params): Promise<{ assetId: string }> {
+      return client.txt2img({
+        prompt: params.prompt,
+        negativePrompt: params.negativePrompt,
+        width: params.width ?? 1024,
+        height: params.height ?? 1024,
+      });
+    },
+
+    async img2img(params): Promise<{ assetId: string }> {
+      return client.img2img({
+        image: params.imageAssetId,
+        prompt: params.prompt,
+        strength: params.strength ?? 0.95,
+      });
+    },
+
+    async downloadImage(assetId: string): Promise<{ buffer: Uint8Array; extension: string }> {
+      return client.downloadImage(assetId);
+    },
+
+    async removeBackground(assetId: string): Promise<{ assetId: string }> {
+      return client.removeBackground({ image: assetId });
+    },
+
+    layeredDecompose: undefined,
+  };
+}
+
+export type ImageGenerationProvider = 'scenario' | 'runpod' | 'comfyui';
+
+export interface NodeAdaptersOptions {
+  provider?: ImageGenerationProvider;
+  scenarioApiKey?: string;
+  scenarioApiSecret?: string;
+  runpodApiKey?: string;
+  runpodSdxlEndpointId?: string;
+  runpodFluxEndpointId?: string;
+  runpodBgRemovalEndpointId?: string;
+  comfyuiEndpoint?: string;
   r2Bucket: string;
   wranglerCwd: string;
   publicUrlBase: string;
-}): Promise<PipelineAdapters> {
-  return {
-    scenario: createNodeScenarioAdapter({
+}
+
+export async function createNodeAdapters(options: NodeAdaptersOptions): Promise<PipelineAdapters> {
+  const provider = options.provider ?? 'scenario';
+
+  let imageAdapter: ScenarioAdapter;
+
+  if (provider === 'runpod') {
+    if (!options.runpodApiKey) {
+      throw new Error('RUNPOD_API_KEY required when using RunPod provider');
+    }
+    imageAdapter = createNodeRunPodAdapter({
+      apiKey: options.runpodApiKey,
+      sdxlEndpointId: options.runpodSdxlEndpointId,
+      fluxEndpointId: options.runpodFluxEndpointId,
+      bgRemovalEndpointId: options.runpodBgRemovalEndpointId,
+    });
+  } else if (provider === 'comfyui') {
+    if (!options.comfyuiEndpoint) {
+      throw new Error('COMFYUI_ENDPOINT required when using ComfyUI provider');
+    }
+    imageAdapter = createNodeComfyUIAdapter({
+      endpoint: options.comfyuiEndpoint,
+      apiKey: options.runpodApiKey,
+    });
+  } else {
+    if (!options.scenarioApiKey || !options.scenarioApiSecret) {
+      throw new Error('Scenario API credentials required');
+    }
+    imageAdapter = createNodeScenarioAdapter({
       apiKey: options.scenarioApiKey,
       apiSecret: options.scenarioApiSecret,
-    }),
+    });
+  }
+
+  return {
+    scenario: imageAdapter,
     r2: createNodeR2Adapter({
       bucket: options.r2Bucket,
       wranglerCwd: options.wranglerCwd,
