@@ -11,6 +11,24 @@ import {
 } from '../../ai/assets';
 import { migrateAssetPacks, rollbackMigration } from '../../migrations/migrate-asset-packs';
 
+// Log level utility for production-safe debugging
+const LOG_LEVEL = process.env.LOG_LEVEL || 'INFO';
+const LOG_LEVELS: Record<string, number> = { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 };
+
+function shouldLog(level: string): boolean {
+  return (LOG_LEVELS[level] ?? 1) >= (LOG_LEVELS[LOG_LEVEL] ?? 1);
+}
+
+function jobLog(level: string, jobId: string, taskId: string | null, message: string): void {
+  if (shouldLog(level)) {
+    const context = taskId ? `[job:${jobId.slice(0,8)}] [task:${taskId.slice(0,8)}]` : `[job:${jobId.slice(0,8)}]`;
+    const formatted = `[AssetGen] [${level}] ${context} ${message}`;
+    if (level === 'ERROR') console.error(formatted);
+    else if (level === 'WARN') console.warn(formatted);
+    else console.log(formatted);
+  }
+}
+
 interface GameAssetRow {
   id: string;
   owner_game_id: string | null;
@@ -619,18 +637,25 @@ export const assetSystemRouter = router({
         `UPDATE generation_jobs SET status = 'running', started_at = ? WHERE id = ?`
       ).bind(now, input.jobId).run();
 
-      const tasksResult = await ctx.env.DB.prepare(
-        `SELECT * FROM generation_tasks WHERE job_id = ? AND status = 'queued'`
-      ).bind(input.jobId).all<GenerationTaskRow>();
+       const tasksResult = await ctx.env.DB.prepare(
+         `SELECT * FROM generation_tasks WHERE job_id = ? AND status = 'queued'`
+       ).bind(input.jobId).all<GenerationTaskRow>();
 
-      const assetService = new AssetService(ctx.env);
-      let successCount = 0;
-      let failCount = 0;
+       jobLog('INFO', input.jobId, null, `Starting job with ${tasksResult.results.length} tasks`);
 
-      const jobDefaults = jobRow.prompt_defaults_json ? JSON.parse(jobRow.prompt_defaults_json) : {};
-      const shouldRemoveBackground = jobDefaults.removeBackground === true;
+       const assetService = new AssetService(ctx.env);
+       let successCount = 0;
+       let failCount = 0;
 
-      for (const task of tasksResult.results) {
+       const jobDefaults = jobRow.prompt_defaults_json ? JSON.parse(jobRow.prompt_defaults_json) : {};
+       const shouldRemoveBackground = jobDefaults.removeBackground === true;
+
+       for (const task of tasksResult.results) {
+         const promptComponents = task.prompt_components_json ? JSON.parse(task.prompt_components_json) : {};
+         const physicsContext = task.physics_context_json ? JSON.parse(task.physics_context_json) : {};
+         jobLog('DEBUG', input.jobId, task.id, `Processing: ${task.template_id} (${promptComponents.entityType})`);
+         jobLog('DEBUG', input.jobId, task.id, `Physics: shape=${physicsContext.shape}, width=${physicsContext.width}, height=${physicsContext.height}`);
+         jobLog('DEBUG', input.jobId, task.id, `Target dimensions: ${task.target_width}x${task.target_height}`);
         const taskNow = Date.now();
         await ctx.env.DB.prepare(
           `UPDATE generation_tasks SET status = 'running', started_at = ? WHERE id = ?`
@@ -677,11 +702,13 @@ export const assetSystemRouter = router({
                VALUES (?, ?, 'generated', ?, ?, ?, ?)`
             ).bind(assetId, jobRow.game_id, result.assetUrl, task.target_width, task.target_height, assetNow).run();
 
-            await ctx.env.DB.prepare(
-              `UPDATE generation_tasks SET status = 'succeeded', asset_id = ?, finished_at = ? WHERE id = ?`
-            ).bind(assetId, Date.now(), task.id).run();
+             await ctx.env.DB.prepare(
+               `UPDATE generation_tasks SET status = 'succeeded', asset_id = ?, finished_at = ? WHERE id = ?`
+             ).bind(assetId, Date.now(), task.id).run();
 
-            if (jobRow.pack_id) {
+             jobLog('INFO', input.jobId, task.id, `Task succeeded - Asset: ${assetId}`);
+
+             if (jobRow.pack_id) {
               const entryId = crypto.randomUUID();
               const lastGenJson = JSON.stringify({
                 jobId: input.jobId,
@@ -704,21 +731,24 @@ export const assetSystemRouter = router({
           } else {
             throw new Error(result.error ?? 'Generation failed');
           }
-        } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-          await ctx.env.DB.prepare(
-            `UPDATE generation_tasks SET status = 'failed', error_message = ?, finished_at = ? WHERE id = ?`
-          ).bind(errorMessage, Date.now(), task.id).run();
-          failCount++;
-        }
+         } catch (err) {
+           const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+           await ctx.env.DB.prepare(
+             `UPDATE generation_tasks SET status = 'failed', error_message = ?, finished_at = ? WHERE id = ?`
+           ).bind(errorMessage, Date.now(), task.id).run();
+           jobLog('ERROR', input.jobId, task.id, `Task failed: ${errorMessage}`);
+           failCount++;
+         }
       }
 
-      const finalStatus = failCount === 0 ? 'succeeded' : (successCount === 0 ? 'failed' : 'succeeded');
-      await ctx.env.DB.prepare(
-        `UPDATE generation_jobs SET status = ?, finished_at = ? WHERE id = ?`
-      ).bind(finalStatus, Date.now(), input.jobId).run();
+       const finalStatus = failCount === 0 ? 'succeeded' : (successCount === 0 ? 'failed' : 'succeeded');
+       await ctx.env.DB.prepare(
+         `UPDATE generation_jobs SET status = ?, finished_at = ? WHERE id = ?`
+       ).bind(finalStatus, Date.now(), input.jobId).run();
 
-      return { successCount, failCount, status: finalStatus };
+       jobLog('INFO', input.jobId, null, `Job finished: ${successCount} succeeded, ${failCount} failed`);
+
+       return { successCount, failCount, status: finalStatus };
     }),
 
   cancelJob: protectedProcedure
