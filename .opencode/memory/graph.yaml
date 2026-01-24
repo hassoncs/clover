@@ -1,0 +1,247 @@
+version: "2.1.0"
+lastUpdated: "2026-01-24T19:30:00Z"
+
+sources:
+  roadmap:
+    count: 1
+    lastScanned: "2026-01-24T19:30:00Z"
+    location: ".opencode/memory/ROADMAP.md"
+  activeFeatures:
+    count: 4
+    lastScanned: "2026-01-24T19:30:00Z"
+    location: ".opencode/memory/roadmap/active/"
+  completedFeatures:
+    count: 2
+    lastScanned: "2026-01-24T19:30:00Z"
+    location: ".opencode/memory/roadmap/completed/2026-01/"
+  oraclePlans:
+    count: 21
+    lastScanned: "2026-01-24T19:30:00Z"
+    location: ".opencode/memory/roadmap/completed/2026-01/"
+  docs:
+    count: 194
+    lastScanned: "2026-01-24T19:30:00Z"
+    locations:
+      - "docs/"
+      - "app/"
+      - ".opencode/"
+      - "godot_project/"
+
+features:
+  # Master roadmap (comprehensive single document)
+  - id: master-roadmap
+    title: "Slopcade Project Roadmap"
+    status: active
+    source: roadmap
+    sourcePath: .opencode/memory/ROADMAP.md
+    description: "Comprehensive single-source-of-truth roadmap document"
+    createdAt: "2026-01-24"
+    updatedAt: "2026-01-24"
+
+  # Active features (in-progress)
+  - id: asset-generation-pipeline
+    title: "Type-Driven Asset Generation Pipeline"
+    status: active
+    source: roadmap
+    sourcePath: .opencode/memory/roadmap/active/asset-generation-pipeline.md
+    description: "AI-generated game sprites, backgrounds, and title images with physics-aware silhouette generation"
+    progress: "6/7 (86%)"
+    blockers:
+      - ht-002
+
+  - id: ai-game-maker
+    title: "AI-Powered Game Generation"
+    status: active
+    source: roadmap
+    sourcePath: .opencode/memory/roadmap/active/ai-game-maker.md
+    description: "Generate complete playable games from text prompts using OpenRouter GPT-4o"
+    progress: "6/7"
+    blockers:
+      - ht-001
+
+  - id: devmux-orchestration
+    title: "DevMux Service Orchestration"
+    status: active
+    source: roadmap
+    sourcePath: .opencode/memory/roadmap/active/devmux-orchestration.md
+    description: "Unified service management for API, Metro, Storybook with tmux integration"
+    progress: "4/4 (100%)"
+
+  - id: universal-registry
+    title: "Universal Lazy Registry System"
+    status: active
+    source: roadmap
+    sourcePath: .opencode/memory/roadmap/active/universal-registry.md
+    description: "Auto-discovered lazy loading for components, screens, and modules"
+    progress: "4/4 (100%)"
+
+  # Completed features (archived)
+  - id: godot-game-engine
+    title: "Godot 4 Game Engine Integration"
+    status: completed
+    source: roadmap
+    sourcePath: .opencode/memory/roadmap/completed/2026-01/godot-game-engine.md
+    description: "Godot 4 physics and rendering for React Native (iOS, Android, Web)"
+    progress: "5/5 (100%)"
+    completedAt: "2026-01-24"
+
+  - id: storybook-nativewind
+    title: "Storybook + NativeWind Setup"
+    status: completed
+    source: roadmap
+    sourcePath: .opencode/memory/roadmap/completed/2026-01/storybook-nativewind.md
+    description: "Component development environment with Storybook and NativeWind styling"
+    progress: "5/5 (100%)"
+    completedAt: "2026-01-24"
+
+  # Oracle architectural decisions (archived to completed/2026-01/)
+  # 21 plans covering: cross-entity refs, platform modules, drag system,
+  # input-action system, aspect ratio, asset architecture, game primitives,
+  # predictive physics, asset URL solution, and more.
+
+humanTasks:
+  - id: ht-001
+    type: decision-needed
+    priority: medium
+    title: "Implement AI Generation API Call"
+    description: "AIGenerateModal needs actual AI generation API integration. Requires decision on which API to use and integration approach."
+    source: app/components/editor/AIGenerateModal.tsx:46
+    detectedAt: "2026-01-24"
+    
+  - id: ht-002
+    type: decision-needed
+    priority: low
+    title: "Implement Sheet Prompt Builder"
+    description: "buildSheetPrompt function needs implementation for sprite sheet generation. Requires design decisions on layout strategy and prompt engineering."
+    source: api/src/ai/pipeline/prompt-builder.ts:80
+    detectedAt: "2026-01-24"
+
+patterns:
+  - id: pattern-001
+    name: "Platform-Specific Module Pattern"
+    category: architecture
+    description: "Use .web.ts and .native.ts extensions for platform-specific implementations with unified index.ts export"
+    sources:
+      - lib/godot/
+      - packages/physics/src/physics2d/
+    status: active
+    proposedForAgentsMd: true
+    
+  - id: pattern-002
+    name: "Documentation Taxonomy"
+    category: documentation
+    description: "Structured documentation types: guides/, reference/, architecture/, decisions/, troubleshooting/, research/, planning/, templates/, log/, archive/"
+    sources:
+      - docs/INDEX.md
+      - .opencode/skills/documentation.md
+    status: active
+    proposedForAgentsMd: false
+    
+  - id: pattern-003
+    name: "Asset Pipeline Debug Output"
+    category: debugging
+    description: "Save intermediate files for each pipeline stage to api/debug-output/{gameId}/{assetId}/ with manifest.json"
+    sources:
+      - docs/asset-generation-knowledge.md
+      - api/src/ai/pipeline/executor.ts
+    status: active
+    proposedForAgentsMd: true
+
+documentation:
+  # Key documentation files
+  - id: doc-readme
+    title: "Slopcade Project README"
+    category: readme
+    sourcePath: README.md
+    description: "Main project overview with quick start and external services"
+    
+  - id: doc-app-agents
+    title: "App Development Guide"
+    category: config
+    sourcePath: app/AGENTS.md
+    description: "Project-specific agent configuration and development guidelines"
+    
+  - id: doc-opencode-agents
+    title: "OpenCode Agents Configuration"
+    category: config
+    sourcePath: .opencode/AGENTS.md
+    description: "Service management and codebase context for agents"
+    
+  - id: doc-index
+    title: "Documentation Hub"
+    category: index
+    sourcePath: docs/INDEX.md
+    description: "Central documentation index with taxonomy"
+    
+  - id: doc-deployment
+    title: "Deployment Guide"
+    category: guide
+    sourcePath: DEPLOYMENT.md
+    description: "Deployment procedures and configuration"
+    
+  - id: doc-asset-knowledge
+    title: "Asset Generation Knowledge"
+    category: reference
+    sourcePath: docs/asset-generation-knowledge.md
+    description: "Comprehensive asset generation pipeline documentation"
+    
+  - id: doc-asset-pipeline
+    title: "Asset Pipeline Reference"
+    category: reference
+    sourcePath: docs/asset-pipeline.md
+    description: "Asset pipeline architecture and usage"
+
+archived:
+  # Archived documentation
+  - id: archived-skia-legacy
+    title: "Skia Legacy Documentation"
+    category: archived
+    sourcePath: docs/archive/skia-legacy/
+    description: "Legacy Skia import guard system documentation (archived 2026-01-23)"
+    archivedAt: "2026-01-23"
+    reason: "Moved to archive after implementation completed"
+
+observations:
+  - category: structure
+    observation: "Well-organized monorepo with clear separation: app/, api/, packages/, docs/, godot_project/"
+    
+  - category: documentation
+    observation: "Excellent documentation coverage with clear taxonomy (guides, reference, architecture, planning)"
+    
+  - category: plans
+    observation: "21 Oracle consultation plans are architectural decision documents, not implementation checklists"
+    
+  - category: patterns
+    observation: "Strong architectural patterns: platform-specific modules, asset pipeline debug output, documentation taxonomy"
+    
+  - category: external-services
+    observation: "Integrates with Supabase, Scenario.com, ElevenLabs, Google OAuth, OpenRouter"
+    
+  - category: tech-stack
+    observation: "Modern stack: Expo, Godot 4, NativeWind, Cloudflare Workers, tRPC, pnpm workspaces"
+
+recommendations:
+  # Completed actions (2026-01-24)
+  - priority: low
+    recommendation: "Create comprehensive ROADMAP.md"
+    reason: "Single-source-of-truth document consolidating all feature statuses, human tasks, and Oracle decisions"
+    completedAt: "2026-01-24"
+    
+  - priority: low
+    recommendation: "Archive Oracle consultation plans"
+    reason: "21 plans from Jan 22-23, 2026 moved to .opencode/memory/roadmap/completed/2026-01/"
+    completedAt: "2026-01-24"
+    
+  - priority: low
+    recommendation: "Add patterns to AGENTS.md"
+    reason: "Platform-Specific Modules and Asset Pipeline Debug patterns documented"
+    completedAt: "2026-01-24"
+
+  # Remaining actions
+  - priority: medium
+    recommendation: "Review and prioritize human tasks (ht-001: AI Generation API, ht-002: Sheet Prompt Builder)"
+    reason: "ht-001 is medium priority and blocks some editor functionality. ht-002 is low priority but documented."
+    
+  - priority: low
+    recommendation: "Godot integration shows 100% completion - consider creating a completion log entry"
+    reason: "Major milestone achieved, worth documenting in docs/shared/log/2026/"

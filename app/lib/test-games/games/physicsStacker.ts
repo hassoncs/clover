@@ -1,7 +1,8 @@
 import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
-const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/item";
+const ASSET_BASE =
+  "https://slopcade-api.hassoncs.workers.dev/assets/generated/item";
 
 export const metadata: TestGameMeta = {
   title: "Block Stacker",
@@ -20,8 +21,10 @@ const game: GameDefinition = {
   metadata: {
     id: "block-stacker",
     title: "Block Stacker",
-    description: "Stack blocks as high as you can! Higher stacks = more points!",
-    instructions: "Tap to drop blocks from the moving dropper. Land them on the platform to score. The higher your stack, the more points each block is worth! Reach 1000 points to win. Watch out - falling blocks cost you 100 points, and if your score goes below 0, you lose!",
+    description:
+      "Stack blocks as high as you can! Higher stacks = more points!",
+    instructions:
+      "Tap to drop blocks from the moving dropper. Land them on the platform to score. The higher your stack, the more points each block is worth! Reach 1000 points to win. Watch out - falling blocks cost you 100 points, and if your score goes below 0, you lose!",
     version: "1.0.0",
     titleHeroImageUrl: `${ASSET_BASE}/title_hero.jpg`,
   },
@@ -90,7 +93,19 @@ const game: GameDefinition = {
       },
       behaviors: [
         { type: "oscillate", axis: "x", amplitude: 4, frequency: 0.3 },
-        { type: "spawn_on_event", event: "tap", entityTemplate: ["blockWide", "blockMedium", "blockSmall", "blockTall"], spawnPosition: "at_self", maxSpawns: 50, spawnEffect: "sparks" },
+        {
+          type: "spawn_on_event",
+          event: "tap",
+          entityTemplate: [
+            "blockWide",
+            "blockMedium",
+            "blockSmall",
+            "blockTall",
+          ],
+          spawnPosition: "at_self",
+          maxSpawns: 50,
+          spawnEffect: "sparks",
+        },
       ],
     },
     blockWide: {
@@ -112,7 +127,14 @@ const game: GameDefinition = {
         restitution: 0.1,
       },
       behaviors: [
-        { type: "score_on_collision", withTags: ["block", "ground"], points: { expr: "floor(50 * pow(1.3, max(0, self.transform.y + 7)))" }, once: true },
+        {
+          type: "score_on_collision",
+          withTags: ["block", "ground"],
+          points: {
+            expr: "floor(50 * pow(1.3, max(0, self.transform.y + 7)))",
+          },
+          once: true,
+        },
       ],
     },
     blockMedium: {
@@ -134,7 +156,14 @@ const game: GameDefinition = {
         restitution: 0.1,
       },
       behaviors: [
-        { type: "score_on_collision", withTags: ["block", "ground"], points: { expr: "floor(60 * pow(1.3, max(0, self.transform.y + 7)))" }, once: true },
+        {
+          type: "score_on_collision",
+          withTags: ["block", "ground"],
+          points: {
+            expr: "floor(60 * pow(1.3, max(0, self.transform.y + 7)))",
+          },
+          once: true,
+        },
       ],
     },
     blockSmall: {
@@ -156,7 +185,14 @@ const game: GameDefinition = {
         restitution: 0.1,
       },
       behaviors: [
-        { type: "score_on_collision", withTags: ["block", "ground"], points: { expr: "floor(70 * pow(1.3, max(0, self.transform.y + 7)))" }, once: true },
+        {
+          type: "score_on_collision",
+          withTags: ["block", "ground"],
+          points: {
+            expr: "floor(70 * pow(1.3, max(0, self.transform.y + 7)))",
+          },
+          once: true,
+        },
       ],
     },
     blockTall: {
@@ -178,7 +214,14 @@ const game: GameDefinition = {
         restitution: 0.1,
       },
       behaviors: [
-        { type: "score_on_collision", withTags: ["block", "ground"], points: { expr: "floor(80 * pow(1.3, max(0, self.transform.y + 7)))" }, once: true },
+        {
+          type: "score_on_collision",
+          withTags: ["block", "ground"],
+          points: {
+            expr: "floor(80 * pow(1.3, max(0, self.transform.y + 7)))",
+          },
+          once: true,
+        },
       ],
     },
     deathZone: {
@@ -198,9 +241,24 @@ const game: GameDefinition = {
     },
   },
   entities: [
-    { id: "foundation", name: "Foundation", template: "foundation", transform: { x: cx(7), y: cy(16), angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "dropper", name: "Block Dropper", template: "dropper", transform: { x: cx(7), y: cy(2), angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "death-zone", name: "Death Zone", template: "deathZone", transform: { x: cx(7), y: cy(19), angle: 0, scaleX: 1, scaleY: 1 } },
+    {
+      id: "foundation",
+      name: "Foundation",
+      template: "foundation",
+      transform: { x: cx(7), y: cy(16), angle: 0, scaleX: 1, scaleY: 1 },
+    },
+    {
+      id: "dropper",
+      name: "Block Dropper",
+      template: "dropper",
+      transform: { x: cx(0), y: cy(2), angle: 0, scaleX: 1, scaleY: 1 },
+    },
+    {
+      id: "death-zone",
+      name: "Death Zone",
+      template: "deathZone",
+      transform: { x: cx(7), y: cy(19), angle: 0, scaleX: 1, scaleY: 1 },
+    },
   ],
   rules: [
     {
@@ -212,7 +270,11 @@ const game: GameDefinition = {
     {
       id: "block-fell-penalty",
       name: "Penalize fallen blocks",
-      trigger: { type: "collision", entityATag: "block", entityBTag: "death-zone" },
+      trigger: {
+        type: "collision",
+        entityATag: "block",
+        entityBTag: "death-zone",
+      },
       actions: [
         { type: "score", operation: "subtract", value: 100 },
         { type: "destroy", target: { type: "collision_entities" } },

@@ -45,6 +45,7 @@ var joint_counter: int = 0
 
 # Sensor management (Area2D nodes for isSensor entities)
 var sensors: Dictionary = {}
+var sensor_velocities: Dictionary = {}  # entity_id -> Vector2 (Godot coords)
 var _js_sensor_begin_callback: JavaScriptObject = null
 var _js_sensor_end_callback: JavaScriptObject = null
 var _js_input_event_callback: JavaScriptObject = null
@@ -425,6 +426,9 @@ func set_linear_velocity(entity_id: String, vx: float, vy: float) -> void:
 			node.linear_velocity = godot_vel
 		elif node is CharacterBody2D:
 			node.velocity = godot_vel
+		elif node is Area2D:
+			# Area2D doesn't have built-in velocity - track it manually
+			sensor_velocities[entity_id] = godot_vel
 
 func _js_set_angular_velocity(args: Array) -> void:
 	if args.size() < 2:
@@ -1334,6 +1338,7 @@ func destroy_entity(entity_id: String) -> void:
 	if entities.has(entity_id):
 		var node = entities[entity_id]
 		entities.erase(entity_id)
+		sensor_velocities.erase(entity_id)  # Clean up sensor velocity tracking
 		node.queue_free()
 		entity_destroyed.emit(entity_id)
 		_notify_js_destroy(entity_id)
@@ -1503,6 +1508,7 @@ func clear_game() -> void:
 		if is_instance_valid(sensor_node):
 			sensor_node.queue_free()
 	sensors.clear()
+	sensor_velocities.clear()
 	
 	# Clear entities
 	for entity_id in entities:
@@ -2589,6 +2595,14 @@ func _physics_process(delta: float) -> void:
 		var node = entities[entity_id]
 		if node is CharacterBody2D and node.velocity.length() > 0.01:
 			node.move_and_slide()
+	
+	# Process Area2D movement (sensors with velocity)
+	for entity_id in sensor_velocities:
+		if entities.has(entity_id):
+			var node = entities[entity_id]
+			var vel = sensor_velocities[entity_id]
+			if node is Area2D and vel.length() > 0.01:
+				node.position += vel * delta
 	
 	# Process camera follow
 	if camera and camera_target_id != "" and entities.has(camera_target_id):
