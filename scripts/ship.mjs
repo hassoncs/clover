@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
+import { readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
 const args = process.argv.slice(2);
 const mode = args[0];
@@ -14,6 +16,29 @@ function run(cmd, cmdArgs, opts = {}) {
   if (result.status !== 0) {
     process.exit(result.status ?? 1);
   }
+}
+
+function bumpIOSBuildNumber() {
+  const projectPath = join("app", "ios", "Slopcade.xcodeproj", "project.pbxproj");
+  let content = readFileSync(projectPath, "utf8");
+  
+  const match = content.match(/CURRENT_PROJECT_VERSION = (\d+);/);
+  if (!match) {
+    console.error("\x1b[31mCould not find CURRENT_PROJECT_VERSION in project.pbxproj\x1b[0m");
+    process.exit(1);
+  }
+  
+  const currentVersion = parseInt(match[1], 10);
+  const newVersion = currentVersion + 1;
+  
+  content = content.replace(
+    /CURRENT_PROJECT_VERSION = \d+;/g,
+    `CURRENT_PROJECT_VERSION = ${newVersion};`
+  );
+  
+  writeFileSync(projectPath, content);
+  console.log(`\x1b[32m📱 Bumped iOS build number: ${currentVersion} → ${newVersion}\x1b[0m`);
+  return newVersion;
 }
 
 if (!mode || ["help", "--help", "-h"].includes(mode)) {
@@ -39,6 +64,7 @@ const EAS_BIN = "/Users/hassoncs/Library/pnpm/eas";
 switch (mode) {
   case "native":
     console.log("🚀 Starting Native Build & TestFlight Submission...");
+    bumpIOSBuildNumber();
     run(EAS_BIN, ["build", "--platform", "ios", "--profile", "production", "--auto-submit", "--non-interactive"], { cwd: APP_DIR });
     break;
 

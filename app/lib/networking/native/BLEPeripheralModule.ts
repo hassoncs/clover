@@ -17,8 +17,8 @@ interface NativeBLEPeripheral {
   }): Promise<void>;
   startAdvertising(): Promise<void>;
   stopAdvertising(): Promise<void>;
-  sendData(peerId: string, data: string): Promise<void>;
-  broadcastData(data: string): Promise<void>;
+  sendData(peerId: string, data: string): void;
+  broadcastData(data: string): void;
   disconnectPeer(peerId: string): Promise<void>;
   disconnectAll(): Promise<void>;
   destroy(): Promise<void>;
