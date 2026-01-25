@@ -10,7 +10,6 @@ import type {
 } from '@slopcade/shared';
 import type { EntityManager } from './EntityManager';
 import type { InputEntityManager } from './InputEntityManager';
-import type { RuntimeEntity } from './types';
 import type { CollisionInfo, GameState, InputState } from './BehaviorContext';
 import type { Physics2D } from '../physics2d/Physics2D';
 import type { IGameStateMutator, RuleContext, ListValue } from './rules/types';
@@ -37,6 +36,7 @@ import {
   SpatialQueryActionExecutor,
   StateMachineActionExecutor,
   WaveActionExecutor,
+  ActionRegistry,
 } from './rules/actions';
 import {
   LogicConditionEvaluator,
@@ -72,32 +72,58 @@ export class RulesEvaluator implements IGameStateMutator {
   private onGameStateChange?: (state: GameState['state']) => void;
   private onVariablesChange?: (variables: Record<string, number | string | boolean>) => void;
 
-  // Executors & Evaluators
-  private scoreActionExecutor = new ScoreActionExecutor();
-  private spawnActionExecutor = new SpawnActionExecutor();
-  private destroyActionExecutor = new DestroyActionExecutor();
-  private physicsActionExecutor = new PhysicsActionExecutor();
-  private logicActionExecutor = new LogicActionExecutor();
-  private entityActionExecutor = new EntityActionExecutor();
-  private cameraActionExecutor = new CameraActionExecutor();
-  private soundActionExecutor = new SoundActionExecutor();
-  private setEntitySizeActionExecutor = new SetEntitySizeActionExecutor();
-  private comboActionExecutor = new ComboActionExecutor();
-  private checkpointActionExecutor = new CheckpointActionExecutor();
-  private gridActionExecutor = new GridActionExecutor();
-  private inventoryActionExecutor = new InventoryActionExecutor();
-  private pathActionExecutor = new PathActionExecutor();
-  private progressionActionExecutor = new ProgressionActionExecutor();
-  private spatialQueryActionExecutor = new SpatialQueryActionExecutor();
-  private stateMachineActionExecutor = new StateMachineActionExecutor();
-  private waveActionExecutor = new WaveActionExecutor();
+  // Action Registry
+  private actionRegistry: ActionRegistry;
 
+  // Condition & Trigger Evaluators
   private logicConditionEvaluator = new LogicConditionEvaluator();
   private physicsConditionEvaluator = new PhysicsConditionEvaluator();
 
   private collisionTriggerEvaluator = new CollisionTriggerEvaluator();
   private inputTriggerEvaluator = new InputTriggerEvaluator();
   private logicTriggerEvaluator = new LogicTriggerEvaluator();
+
+  constructor() {
+    const scoreActionExecutor = new ScoreActionExecutor();
+    const spawnActionExecutor = new SpawnActionExecutor();
+    const destroyActionExecutor = new DestroyActionExecutor();
+    const physicsActionExecutor = new PhysicsActionExecutor();
+    const logicActionExecutor = new LogicActionExecutor();
+    const entityActionExecutor = new EntityActionExecutor();
+    const cameraActionExecutor = new CameraActionExecutor();
+    const soundActionExecutor = new SoundActionExecutor();
+    const setEntitySizeActionExecutor = new SetEntitySizeActionExecutor();
+    const comboActionExecutor = new ComboActionExecutor();
+    const checkpointActionExecutor = new CheckpointActionExecutor();
+    const gridActionExecutor = new GridActionExecutor();
+    const inventoryActionExecutor = new InventoryActionExecutor();
+    const pathActionExecutor = new PathActionExecutor();
+    const progressionActionExecutor = new ProgressionActionExecutor();
+    const spatialQueryActionExecutor = new SpatialQueryActionExecutor();
+    const stateMachineActionExecutor = new StateMachineActionExecutor();
+    const waveActionExecutor = new WaveActionExecutor();
+
+    this.actionRegistry = new ActionRegistry(
+      scoreActionExecutor,
+      spawnActionExecutor,
+      destroyActionExecutor,
+      physicsActionExecutor,
+      logicActionExecutor,
+      entityActionExecutor,
+      cameraActionExecutor,
+      soundActionExecutor,
+      setEntitySizeActionExecutor,
+      comboActionExecutor,
+      checkpointActionExecutor,
+      gridActionExecutor,
+      inventoryActionExecutor,
+      pathActionExecutor,
+      progressionActionExecutor,
+      spatialQueryActionExecutor,
+      stateMachineActionExecutor,
+      waveActionExecutor
+    );
+  }
 
   loadRules(rules: GameRule[]): void {
     this.rules = rules;
@@ -409,49 +435,7 @@ export class RulesEvaluator implements IGameStateMutator {
 
   private executeActions(actions: RuleAction[], context: RuleContext): void {
     for (const a of actions) {
-      switch (a.type) {
-        case 'score': this.scoreActionExecutor.execute(a, context); break;
-        case 'spawn': this.spawnActionExecutor.execute(a, context); break;
-        case 'destroy':
-        case 'destroy_marked': this.destroyActionExecutor.execute(a, context); break;
-        case 'apply_impulse':
-        case 'apply_force':
-        case 'set_velocity':
-        case 'move':
-        case 'move_toward': this.physicsActionExecutor.execute(a, context); break;
-        case 'modify': this.entityActionExecutor.execute(a, context); break;
-        case 'game_state':
-        case 'event':
-        case 'set_variable':
-        case 'start_cooldown':
-        case 'lives':
-        case 'push_to_list':
-        case 'pop_from_list':
-        case 'shuffle_list': this.logicActionExecutor.execute(a, context); break;
-        case 'camera_shake':
-        case 'camera_zoom':
-        case 'set_time_scale': this.cameraActionExecutor.execute(a, context); break;
-        case 'sound': this.soundActionExecutor.execute(a, context); break;
-        case 'set_entity_size': this.setEntitySizeActionExecutor.execute(a, context); break;
-        case 'combo_increment':
-        case 'combo_reset': this.comboActionExecutor.execute(a, context); break;
-        case 'checkpoint_activate':
-        case 'checkpoint_save':
-        case 'checkpoint_restore': this.checkpointActionExecutor.execute(a, context); break;
-        case 'grid_move':
-        case 'grid_place': this.gridActionExecutor.execute(a, context); break;
-        case 'inventory_add':
-        case 'inventory_remove':
-        case 'resource_modify': this.inventoryActionExecutor.execute(a, context); break;
-        case 'path_start':
-        case 'path_stop': this.pathActionExecutor.execute(a, context); break;
-        case 'progression_add_xp':
-        case 'progression_unlock': this.progressionActionExecutor.execute(a, context); break;
-        case 'target_nearest': this.spatialQueryActionExecutor.execute(a, context); break;
-        case 'state_transition': this.stateMachineActionExecutor.execute(a, context); break;
-        case 'waves_start':
-        case 'waves_next': this.waveActionExecutor.execute(a, context); break;
-      }
+      this.actionRegistry.execute(a, context);
     }
   }
 

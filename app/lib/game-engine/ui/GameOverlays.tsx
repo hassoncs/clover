@@ -1,31 +1,31 @@
-import React from "react";
-import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
-import type { GameState } from "../BehaviorContext";
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import type { GameDefinition, GameState } from '@slopcade/shared';
 
 interface GameOverlaysProps {
+  definition: GameDefinition;
   gameState: GameState;
-  title: string;
-  instructions?: string;
+  onStart: () => void;
   onResume: () => void;
   onRestart: () => void;
-  onStart: () => void;
   onBackToMenu?: () => void;
 }
 
-export const GameOverlays: React.FC<GameOverlaysProps> = ({
+export function GameOverlays({
+  definition,
   gameState,
-  title,
-  instructions,
+  onStart,
   onResume,
   onRestart,
-  onStart,
   onBackToMenu,
-}) => {
+}: GameOverlaysProps) {
   if (gameState.state === "paused") {
     return (
       <View style={styles.overlay}>
         <Text style={styles.overlayTitle}>Paused</Text>
-        <TouchableOpacity style={styles.button} onPress={onResume}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={onResume}
+        >
           <Text style={styles.buttonText}>Resume</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -41,9 +41,11 @@ export const GameOverlays: React.FC<GameOverlaysProps> = ({
   if (gameState.state === "ready") {
     return (
       <View style={styles.overlay}>
-        <Text style={styles.overlayTitle}>{title}</Text>
-        {instructions && (
-          <Text style={styles.instructions}>{instructions}</Text>
+        <Text style={styles.overlayTitle}>{definition.metadata.title}</Text>
+        {definition.metadata.instructions && (
+          <Text style={styles.instructions}>
+            {definition.metadata.instructions}
+          </Text>
         )}
         <TouchableOpacity style={styles.button} onPress={onStart}>
           <Text style={styles.buttonText}>Play</Text>
@@ -75,47 +77,47 @@ export const GameOverlays: React.FC<GameOverlaysProps> = ({
   }
 
   return null;
-};
+}
 
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.7)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   overlayTitle: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 36,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 12,
   },
   instructions: {
-    color: "#ccc",
+    color: '#ccc',
     fontSize: 18,
-    textAlign: "center",
+    textAlign: 'center',
     marginBottom: 24,
     paddingHorizontal: 30,
     lineHeight: 24,
   },
   finalScore: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 24,
     marginBottom: 30,
   },
   button: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: '#4CAF50',
     paddingHorizontal: 40,
     paddingVertical: 15,
     borderRadius: 10,
   },
   secondaryButton: {
-    backgroundColor: "#666",
+    backgroundColor: '#666',
     marginTop: 12,
   },
   buttonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
 });

@@ -1,8 +1,10 @@
-import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert, TextInput } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { TemplateAssetCard } from './TemplateAssetCard';
 import { AssetPackSelector } from './AssetPackSelector';
 import { AssetAlignmentEditor } from '../AssetAlignment/AssetAlignmentEditor';
+import { QuickGenerationForm } from './QuickGenerationForm';
+import { TemplateGrid } from './TemplateGrid';
 import { useAssetGeneration, useCreateAssetPack, useAssetPacks, useAssetPackWithEntries, useUpdatePlacement, useDeleteAssetPack } from './useAssetGeneration';
 import { useEditor, type ResolvedPackEntry } from '../EditorProvider';
 import type { AssetPlacement, EntityTemplate } from '@slopcade/shared';
@@ -308,76 +310,19 @@ export function AssetGalleryPanel({
       </View>
 
       {showQuickCreate ? (
-        <View style={styles.quickCreateContainer}>
-          <Text style={styles.quickCreateTitle}>Generate All Assets</Text>
-          <Text style={styles.quickCreateSubtitle}>
-            Describe your game's visual theme and we'll generate sprites for all {templates.length} templates
-          </Text>
-
-          <TextInput
-            style={styles.themeInput}
-            placeholder="e.g., Dark fantasy medieval castle, spooky atmosphere..."
-            placeholderTextColor="#6B7280"
-            value={quickCreateTheme}
-            onChangeText={setQuickCreateTheme}
-            multiline
-            numberOfLines={2}
-            textAlignVertical="top"
-          />
-
-          <View style={styles.styleRow}>
-            {STYLE_OPTIONS.map(style => (
-              <Pressable
-                key={style.id}
-                style={[
-                  styles.styleChip,
-                  quickCreateStyle === style.id && styles.styleChipActive,
-                ]}
-                onPress={() => setQuickCreateStyle(style.id)}
-              >
-                <Text style={styles.styleChipEmoji}>{style.emoji}</Text>
-                <Text style={[
-                  styles.styleChipText,
-                  quickCreateStyle === style.id && styles.styleChipTextActive,
-                ]}>
-                  {style.label}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-
-          <Pressable
-            style={styles.bgRemoveToggle}
-            onPress={() => setRemoveBackground(prev => !prev)}
-          >
-            <View style={[styles.checkbox, removeBackground && styles.checkboxActive]}>
-              {removeBackground && <Text style={styles.checkmark}>✓</Text>}
-            </View>
-            <Text style={styles.bgRemoveLabel}>Remove backgrounds (cleaner sprites)</Text>
-          </Pressable>
-
-          <Pressable
-            style={[
-              styles.quickGenerateButton,
-              (isQuickCreating || isGenerating) && styles.quickGenerateButtonDisabled,
-            ]}
-            onPress={handleQuickGenerate}
-            disabled={isQuickCreating || isGenerating}
-          >
-            {isQuickCreating || isGenerating ? (
-              <View style={styles.generateButtonContent}>
-                <ActivityIndicator size="small" color="#FFFFFF" />
-                <Text style={styles.quickGenerateButtonText}>
-                  {isGenerating ? `${progress.completed}/${progress.total} Generating...` : 'Creating...'}
-                </Text>
-              </View>
-            ) : (
-              <Text style={styles.quickGenerateButtonText}>
-                Generate {templates.length} Assets
-              </Text>
-            )}
-          </Pressable>
-        </View>
+        <QuickGenerationForm
+          theme={quickCreateTheme}
+          onThemeChange={setQuickCreateTheme}
+          style={quickCreateStyle}
+          onStyleChange={setQuickCreateStyle}
+          removeBackground={removeBackground}
+          onRemoveBackgroundToggle={() => setRemoveBackground(prev => !prev)}
+          templateCount={templates.length}
+          isGenerating={isGenerating}
+          isQuickCreating={isQuickCreating}
+          progress={progress}
+          onGenerate={handleQuickGenerate}
+        />
       ) : (
         <>
           <View style={styles.packSelector}>
@@ -449,38 +394,13 @@ export function AssetGalleryPanel({
         <Text style={styles.sectionTitle}>TEMPLATES ({templates.length})</Text>
       </View>
 
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#6366F1" />
-        </View>
-      ) : (
-        <View style={styles.grid}>
-          {templates.map(({ id, template }) => {
-            const entryData = entriesByTemplateId.get(id);
-            return (
-              <TemplateAssetCard
-                key={id}
-                templateId={id}
-                template={template}
-                imageUrl={entryData?.imageUrl}
-                placement={entryData?.placement}
-                lastGeneration={entryData?.lastGeneration}
-                isGenerating={generatingTemplates.has(id)}
-                onPress={() => handleTemplatePress(id)}
-              />
-            );
-          })}
-        </View>
-      )}
-
-      {templates.length === 0 && (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyStateText}>No templates in this game</Text>
-          <Text style={styles.emptyStateSubtext}>
-            Add entities to your game to see them here
-          </Text>
-        </View>
-      )}
+      <TemplateGrid
+        templates={templates}
+        entriesByTemplateId={entriesByTemplateId}
+        generatingTemplates={generatingTemplates}
+        isLoading={isLoading}
+        onTemplatePress={handleTemplatePress}
+      />
 
       <AssetPackSelector
         visible={packSelectorVisible}
