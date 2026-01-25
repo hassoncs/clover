@@ -34,10 +34,10 @@ The asset generation pipeline is working end-to-end:
 The asset generation system includes a multi-layered logging system to track jobs, tasks, and API interactions.
 
 ### Configuration
-Logging is controlled by the `LOG_LEVEL` environment variable.
-- **Default**: `INFO`
-- **Options**: `DEBUG`, `INFO`, `WARN`, `ERROR`
-- **Enable Debug Logging**: `export LOG_LEVEL=DEBUG`
+Logging is controlled by the `DEBUG_ASSETS` environment variable.
+- **Default**: `normal`
+- **Options**: `verbose`, `normal`, `quiet`
+- **Enable Verbose Logging**: `export DEBUG_ASSETS=verbose`
 
 ### Log Prefixes
 Logs are prefixed to identify the source and context:
@@ -126,10 +126,19 @@ generateAll()
 ```
 
 ### R2 Asset Storage
+- **Path structure**: `generated/{gameId}/{packId}/{assetId}.png`
 - Local dev: Assets stored in `.wrangler/state/v3/r2/slopcade-assets-dev/`
 - Served via `/assets/*` route in `api/src/index.ts`
-- `ASSET_HOST` env var controls URL prefix
+- `ASSET_HOST` env var controls URL prefix for constructing full URLs
+- Database stores R2 keys (not full URLs), URLs constructed at query time
 - For production: Set up public R2 access with custom domain
+
+### URL Resolution
+- Old format (legacy): `/assets/generated/{entityType}/{uuid}.png`
+- New format: `generated/{gameId}/{packId}/{assetId}.png` (R2 key only)
+- API resolves URLs at query time using `ASSET_HOST` + R2 key
+- Legacy URLs (starting with `http`, `https`, `data:`, `res://`) pass through unchanged
+- Utilities: `shared/src/utils/asset-url.ts` - `isLegacyUrl()`, `buildAssetPath()`, `resolveAssetReference()`
 
 ### Secrets (via hush)
 - `SCENARIO_API_KEY` - Scenario.com API key
@@ -164,4 +173,10 @@ cd api && npx wrangler d1 execute slopcade-db --local --command "SELECT * FROM a
 
 # TypeScript check
 cd app && pnpm tsc --noEmit
+
+# Run asset URL migration (dry run)
+pnpm tsx api/scripts/migrate-asset-urls.ts --dry-run
+
+# Run asset URL migration (production)
+pnpm tsx api/scripts/migrate-asset-urls.ts
 ```
