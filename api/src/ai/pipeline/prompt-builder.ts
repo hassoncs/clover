@@ -77,7 +77,79 @@ export function buildParallaxPrompt(spec: ParallaxSpec): string {
 }
 
 function buildSheetPrompt(spec: SheetSpec): string {
-  return 'TODO: implement sheet prompt';
+  const { layout, promptConfig, kind } = spec;
+  
+  const lines: string[] = [];
+
+  // OUTPUT FORMAT section
+  lines.push('=== OUTPUT FORMAT (CRITICAL) ===');
+  if (layout.type === 'grid') {
+    const totalCells = layout.columns * layout.rows;
+    lines.push(`A ${layout.columns}x${layout.rows} GRID of ${totalCells} distinct ${kind === 'sprite' ? 'sprites' : kind === 'tile' ? 'tiles' : 'variants'}.`);
+    lines.push(`Each cell is ${layout.cellWidth}x${layout.cellHeight} pixels.`);
+  } else if (layout.type === 'strip') {
+    lines.push(`A ${layout.direction.toUpperCase()} STRIP of ${layout.frameCount} ${kind === 'sprite' ? 'sprites' : kind === 'tile' ? 'tiles' : 'variants'}.`);
+    lines.push(`Each cell is ${layout.cellWidth}x${layout.cellHeight} pixels.`);
+  }
+  
+  if (kind === 'variation') {
+    lines.push('Variants should be visually distinct but structurally similar.');
+  } else if (kind === 'sprite') {
+    lines.push('Each sprite should be a distinct frame or pose.');
+  } else if (kind === 'tile') {
+    lines.push('Each tile should be a distinct tileable element.');
+  }
+  lines.push('');
+
+  // COMPOSITION section
+  lines.push('=== COMPOSITION ===');
+  lines.push('Each cell contains ONE complete object.');
+  lines.push('Objects should NOT overlap cell boundaries.');
+  lines.push('Consistent scale and positioning across all cells.');
+  lines.push('');
+
+  // SUBJECT section
+  if (promptConfig?.basePrompt) {
+    lines.push('=== SUBJECT ===');
+    lines.push(promptConfig.basePrompt);
+    
+    // Add variant descriptions if available
+    if (spec.kind === 'variation' && spec.variants) {
+      const descriptions = spec.variants
+        .filter(v => v.description)
+        .map(v => v.description)
+        .join(', ');
+      if (descriptions) {
+        lines.push(`Variants: ${descriptions}`);
+      }
+    }
+    lines.push('');
+  }
+
+  // STYLE section
+  if (promptConfig?.stylePreset) {
+    lines.push('=== STYLE ===');
+    const styleDesc = STYLE_DESCRIPTORS[promptConfig.stylePreset as SpriteStyle];
+    if (styleDesc) {
+      lines.push(styleDesc.aesthetic);
+    } else {
+      lines.push(promptConfig.stylePreset);
+    }
+    lines.push('');
+  }
+
+  // TECHNICAL section
+  lines.push('=== TECHNICAL ===');
+  lines.push('Transparent background (alpha channel).');
+  lines.push('NO borders, NO grid lines, NO labels, NO text.');
+  
+  if (promptConfig?.commonModifiers && promptConfig.commonModifiers.length > 0) {
+    for (const modifier of promptConfig.commonModifiers) {
+      lines.push(modifier);
+    }
+  }
+
+  return lines.join('\n');
 }
 
 export function buildSheetEntryPrompt(params: {
