@@ -76,14 +76,9 @@ function callGameBridge(methodName: string, ...args: unknown[]) {
       if (gameBridge) {
         const method = gameBridge[methodName];
         if (typeof method === 'function') {
-          // Wrap in array for methods that expect args Array (like _js_send_input)
-          // Most methods take individual params, but send_input and similar callbacks need array
-          if (methodName === 'send_input') {
-            method.apply(gameBridge, [args]);
-          } else {
-            // Spread args individually for regular methods
-            method.apply(gameBridge, args);
-          }
+          // react-native-godot doesn't support JS Array bindings
+          // All methods must be called with individual args spread out
+          method.apply(gameBridge, args);
         } else {
           console.log(`[Godot worklet] Method ${methodName} not found on GameBridge`);
         }
