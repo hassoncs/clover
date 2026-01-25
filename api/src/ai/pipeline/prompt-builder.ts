@@ -1,7 +1,7 @@
-import type { AssetSpec, EntitySpec, BackgroundSpec, TitleHeroSpec, ParallaxSpec, SpriteStyle, SpriteSheetSpec, TileSheetSpec, VariationSheetSpec, SheetPromptConfig } from './types';
+import type { AssetSpec, EntitySpec, BackgroundSpec, TitleHeroSpec, ParallaxSpec, SpriteStyle, SpriteSheetSpec, TileSheetSpec, VariationSheetSpec, UIComponentSheetSpec, SheetPromptConfig } from './types';
 import { STYLE_DESCRIPTORS } from './types';
 
-type SheetSpec = SpriteSheetSpec | TileSheetSpec | VariationSheetSpec;
+type SheetSpec = SpriteSheetSpec | TileSheetSpec | VariationSheetSpec | UIComponentSheetSpec;
 
 function describeShapeSilhouette(shape: 'box' | 'circle', width: number, height: number): string {
   if (shape === 'circle') {
@@ -105,7 +105,7 @@ function buildSheetPrompt(spec: SheetSpec): string {
 export function buildSheetEntryPrompt(params: {
   entryId: string;
   entryPromptOverride?: string;
-  kind: 'sprite' | 'tile' | 'variation';
+  kind: 'sprite' | 'tile' | 'variation' | 'ui_component';
   promptConfig?: SheetPromptConfig;
   theme?: string;
   style?: SpriteStyle;
@@ -129,6 +129,8 @@ export function buildSheetEntryPrompt(params: {
     lines.push('SINGLE TILE (one cell from a tile sheet).');
   } else if (kind === 'variation') {
     lines.push('SINGLE VARIANT (one cell from a variation sheet).');
+  } else if (kind === 'ui_component') {
+    lines.push('SINGLE UI COMPONENT (one cell from a UI component sheet).');
   }
   lines.push('NO borders, NO grid lines, NO labels, NO text.');
   lines.push('');
@@ -156,6 +158,84 @@ export function buildSheetEntryPrompt(params: {
   }
 
   return lines.join('\n');
+}
+
+// UI Component state descriptions for prompt generation
+const UI_STATE_DESCRIPTIONS: Record<string, string> = {
+  normal: 'Default resting state, clean and neutral appearance',
+  hover: 'Subtle highlight effect, slightly brighter or elevated',
+  pressed: 'Depressed or pushed appearance, darker or inset shadows',
+  disabled: 'Greyed out and visually inactive, low contrast',
+  focus: 'Highlighted border or glow indicating keyboard focus',
+};
+
+export interface UIComponentPromptParams {
+  componentType: string;
+  state: 'normal' | 'hover' | 'pressed' | 'disabled' | 'focus';
+  theme: string;
+  baseResolution?: number;
+}
+
+export function buildUIComponentPrompt(params: UIComponentPromptParams): { prompt: string; negativePrompt: string } {
+  const { componentType, state, theme, baseResolution = 256 } = params;
+  const stateDescription = UI_STATE_DESCRIPTIONS[state] || UI_STATE_DESCRIPTIONS.normal;
+
+  const lines = [
+    '=== CAMERA/VIEW (CRITICAL) ===',
+    'FRONT VIEW. Flat 2D UI element. No 3D perspective or rotation.',
+    'Camera directly facing the component surface.',
+    '',
+    '=== SHAPE (CRITICAL) ===',
+    'Nine-patch UI component background.',
+    'DECORATIVE BORDERS around all edges (fixed when scaled).',
+    'FLAT CENTER REGION (stretches when component is resized).',
+    'Clear visual distinction between border decoration and center area.',
+    '',
+    '=== COMPOSITION ===',
+    `Component fills the ${baseResolution}x${baseResolution} frame.`,
+    'Consistent border width on all four sides.',
+    'Center area is visually distinct from borders.',
+    '',
+    '=== SUBJECT ===',
+    `A ${componentType} background for a video game UI.`,
+    `Theme: ${theme}`,
+    `State: ${state} - ${stateDescription}`,
+    '',
+    '=== STYLE ===',
+    'Clean UI design, professional game interface.',
+    'Stylized to match the theme while remaining functional.',
+    'Decorative but not cluttered.',
+    '',
+    '=== TECHNICAL ===',
+    'Transparent background (alpha channel).',
+    'NO text, NO labels, NO icons inside the component.',
+    'NO grid lines, NO measurement marks.',
+    'Consistent border widths suitable for nine-patch scaling.',
+    'Single UI element only, no duplicates or variations.',
+  ];
+
+  const negativePrompt = [
+    'text',
+    'labels',
+    'icons',
+    'checkmarks',
+    'letters',
+    'numbers',
+    'watermark',
+    'signature',
+    'grid lines',
+    'borders around the component',
+    'multiple elements',
+    '3D perspective',
+    'angled view',
+    'blurry',
+    'low quality',
+  ].join(', ');
+
+  return {
+    prompt: lines.join('\n'),
+    negativePrompt,
+  };
 }
 
 export function buildNegativePrompt(style: SpriteStyle): string {

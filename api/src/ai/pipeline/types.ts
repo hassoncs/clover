@@ -100,7 +100,7 @@ export interface ParallaxSpec {
 // SHEET TYPES - Asset sheet specifications
 // =============================================================================
 
-export type SheetKind = 'sprite' | 'tile' | 'variation';
+export type SheetKind = 'sprite' | 'tile' | 'variation' | 'ui_component';
 
 export type SheetLayout =
   | { type: 'grid'; columns: number; rows: number; cellWidth: number; cellHeight: number; spacing?: number; margin?: number; origin?: 'top-left' }
@@ -142,7 +142,16 @@ export interface VariationSheetSpec extends SheetSpecBase {
   variants: Array<{ key: string; description?: string; promptOverride?: string }>;
 }
 
-export type AssetSpec = EntitySpec | BackgroundSpec | TitleHeroSpec | ParallaxSpec | SpriteSheetSpec | TileSheetSpec | VariationSheetSpec;
+export interface UIComponentSheetSpec extends SheetSpecBase {
+  kind: 'ui_component';
+  componentType: 'button' | 'checkbox' | 'radio' | 'slider' | 'panel' | 'progress_bar' | 'list_item' | 'dropdown' | 'toggle_switch';
+  states: Array<'normal' | 'hover' | 'pressed' | 'disabled' | 'focus'>;
+  ninePatchMargins: { left: number; right: number; top: number; bottom: number };
+  baseResolution?: number;
+  iconStrategy?: 'separate' | 'composite' | 'overlay' | 'none';
+}
+
+export type AssetSpec = EntitySpec | BackgroundSpec | TitleHeroSpec | ParallaxSpec | SpriteSheetSpec | TileSheetSpec | VariationSheetSpec | UIComponentSheetSpec;
 
 // =============================================================================
 // GAME CONFIG - Configuration for generating all assets for a game
@@ -323,4 +332,12 @@ export interface BatchPipelineResult {
   failed: number;
   results: PipelineResult[];
   durationMs: number;
+}
+
+// =============================================================================
+// TYPE GUARDS
+// =============================================================================
+
+export function isUIComponentSpec(spec: AssetSpec): spec is UIComponentSheetSpec {
+  return spec.type === 'sheet' && 'kind' in spec && spec.kind === 'ui_component';
 }
