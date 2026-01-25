@@ -12,7 +12,8 @@ import type { GameDefinition } from "@slopcade/shared";
 
 export default function TestGameRunScreen() {
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, autostart } = useLocalSearchParams<{ id: string; autostart?: string }>();
+  const shouldAutoStart = autostart === "true" || autostart === "1";
   const entry = useMemo(() => (id && id in TESTGAMES_BY_ID ? TESTGAMES_BY_ID[id as TestGameId] : undefined), [id]);
 
   const [runtimeKey, setRuntimeKey] = useState(0);
@@ -172,6 +173,7 @@ export default function TestGameRunScreen() {
                   showHUD={true}
                   onBackToMenu={handleBack}
                   onRequestRestart={handleReset}
+                  autoStart={shouldAutoStart}
                 />
               ),
             }))

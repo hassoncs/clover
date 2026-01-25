@@ -16,6 +16,8 @@ var _event_queue_module: EventQueue = null
 var _glb_loader: GLBLoader = null
 var _viewport_3d: Viewport3D = null
 var _property_collector: PropertyCollector = null
+var _query_system: QuerySystem = null
+var _debug_bridge: DebugBridge = null
 
 # ============================================================================
 # CORE STATE
@@ -114,6 +116,23 @@ func _init_modules() -> void:
 	_viewport_3d.name = "Viewport3D"
 	add_child(_viewport_3d)
 	_property_collector = PropertyCollector.new(self)
+	_query_system = QuerySystem.new()
+	_register_core_query_handlers()
+	
+	_debug_bridge = DebugBridge.new(self, _query_system)
+
+func _register_core_query_handlers() -> void:
+	# Core game queries - always available
+	_query_system.register_handler("getAllTransforms", func(args): return get_all_transforms())
+	_query_system.register_handler("getAllProperties", func(args): return collect_all_properties())
+	_query_system.register_handler("getWorldInfo", func(args): return get_world_info())
+	_query_system.register_handler("getCameraInfo", func(args): return get_camera_info())
+	_query_system.register_handler("getViewportInfo", func(args): return get_viewport_info())
+	_query_system.register_handler("getEntityTransform", func(args):
+		if args.size() > 0:
+			return _get_entity_transform_impl(str(args[0]))
+		return null
+	)
 
 # Handle native input events on web and relay them back to JS
 func _input(event: InputEvent) -> void:
@@ -168,10 +187,11 @@ func _setup_js_bridge() -> void:
 	
 	_js_bridge_obj = JavaScriptBridge.create_object("Object")
 	
-	# Create a result storage object for functions that need to return values
-	# JavaScriptBridge.create_callback() doesn't pass return values back to JS,
-	# so we use this workaround: store the result, then JS reads it
+	# Legacy: _lastResult for backward compatibility (deprecated - use query instead)
 	_js_bridge_obj["_lastResult"] = null
+	
+	# Setup QuerySystem to handle async queries via shared infrastructure
+	_query_system.setup_js_bridge(_js_bridge_obj)
 	
 	var load_game_cb = JavaScriptBridge.create_callback(_js_load_game)
 	_js_callbacks.append(load_game_cb)
@@ -180,6 +200,10 @@ func _setup_js_bridge() -> void:
 	var clear_game_cb = JavaScriptBridge.create_callback(_js_clear_game)
 	_js_callbacks.append(clear_game_cb)
 	_js_bridge_obj["clearGame"] = clear_game_cb
+	
+	var load_scene_cb = JavaScriptBridge.create_callback(_js_load_custom_scene)
+	_js_callbacks.append(load_scene_cb)
+	_js_bridge_obj["loadCustomScene"] = load_scene_cb
 	
 	var spawn_cb = JavaScriptBridge.create_callback(_js_spawn_entity)
 	_js_callbacks.append(spawn_cb)
@@ -431,6 +455,22 @@ func _setup_js_bridge() -> void:
 	_js_callbacks.append(clear_3d_models_cb)
 	_js_bridge_obj["clear_3d_models"] = clear_3d_models_cb
 	
+	var capture_screenshot_cb = JavaScriptBridge.create_callback(_js_capture_screenshot)
+	_js_callbacks.append(capture_screenshot_cb)
+	_js_bridge_obj["captureScreenshot"] = capture_screenshot_cb
+	
+	var get_world_info_cb = JavaScriptBridge.create_callback(_js_get_world_info)
+	_js_callbacks.append(get_world_info_cb)
+	_js_bridge_obj["getWorldInfo"] = get_world_info_cb
+	
+	var get_camera_info_cb = JavaScriptBridge.create_callback(_js_get_camera_info)
+	_js_callbacks.append(get_camera_info_cb)
+	_js_bridge_obj["getCameraInfo"] = get_camera_info_cb
+	
+	var get_viewport_info_cb = JavaScriptBridge.create_callback(_js_get_viewport_info)
+	_js_callbacks.append(get_viewport_info_cb)
+	_js_bridge_obj["getViewportInfo"] = get_viewport_info_cb
+	
 	window["GodotBridge"] = _js_bridge_obj
 
 func _js_load_game(args: Array) -> bool:
@@ -441,6 +481,11 @@ func _js_load_game(args: Array) -> bool:
 
 func _js_clear_game(_args: Array) -> void:
 	clear_game()
+
+func _js_load_custom_scene(args: Array) -> bool:
+	if args.size() < 1:
+		return false
+	return load_custom_scene(str(args[0]))
 
 func _js_spawn_entity(args: Array) -> void:
 	if args.size() < 4:
@@ -467,7 +512,9 @@ func _js_get_entity_transform(args: Array) -> Variant:
 	}
 
 func _js_get_all_transforms(_args: Array) -> void:
+	print("[GameBridge] _js_get_all_transforms called")
 	var transforms = get_all_transforms()
+	print("[GameBridge] get_all_transforms returned ", transforms.size(), " entities")
 	_js_bridge_obj["_lastResult"] = transforms
 
 func _js_get_all_properties(_args: Array) -> void:
@@ -802,6 +849,27 @@ func load_game_json(json_string: String) -> bool:
 	game_loaded.emit(game_data)
 	return true
 
+func load_custom_scene(scene_path: String) -> bool:
+	if not ResourceLoader.exists(scene_path):
+		push_error("[GameBridge] Scene not found: " + scene_path)
+		return false
+	
+	var scene = load(scene_path)
+	if not scene:
+		push_error("[GameBridge] Failed to load scene: " + scene_path)
+		return false
+	
+	if game_root:
+		for child in game_root.get_children():
+			child.queue_free()
+		
+		var instance = scene.instantiate()
+		game_root.add_child(instance)
+		return true
+	else:
+		push_error("[GameBridge] game_root not set")
+		return false
+
 func _setup_world(world_data: Dictionary) -> void:
 	pixels_per_meter = world_data.get("pixelsPerMeter", 50.0)
 	
@@ -988,6 +1056,12 @@ func _create_entity(entity_data: Dictionary) -> Node2D:
 		var initial_vel = node.get_meta("_initial_velocity") as Vector2
 		node.linear_velocity = initial_vel
 		node.remove_meta("_initial_velocity")
+	
+	# Set metadata for selectors
+	if template_id != "":
+		node.set_meta("template", template_id)
+	if merged.has("tags"):
+		node.set_meta("tags", merged.tags if merged.tags is Array else [])
 	
 	entities[entity_id] = node
 	entity_spawned.emit(entity_id, node)
@@ -3292,3 +3366,234 @@ func set_watch_config(config: Dictionary) -> void:
 		_property_collector.set_watch_config(config)
 	else:
 		push_warning("[GameBridge] PropertyCollector not initialized, cannot set watch config")
+
+# =============================================================================
+# DEBUG BRIDGE - Screenshot and Info Methods
+# =============================================================================
+
+var _debug_overlay: CanvasLayer = null
+var _debug_overlay_visible: bool = false
+
+func _js_capture_screenshot(args: Array) -> void:
+	var with_overlays = false
+	var overlay_types: Array = ["bounds", "labels"]
+	
+	if args.size() >= 1:
+		with_overlays = bool(args[0])
+	if args.size() >= 2:
+		var types_json = str(args[1])
+		var parsed = JSON.parse_string(types_json)
+		if parsed is Array:
+			overlay_types = parsed
+	
+	var result = await capture_screenshot(with_overlays, overlay_types)
+	_js_bridge_obj["_lastResult"] = result
+
+func capture_screenshot(with_overlays: bool = false, overlay_types: Array = ["bounds", "labels"]) -> Dictionary:
+	if with_overlays:
+		_draw_debug_overlays(overlay_types)
+	
+	await RenderingServer.frame_post_draw
+	
+	var viewport = get_viewport()
+	var img = viewport.get_texture().get_image()
+	
+	if with_overlays:
+		_clear_debug_overlays()
+	
+	var buffer = img.save_png_to_buffer()
+	var base64 = Marshalls.raw_to_base64(buffer)
+	
+	return {
+		"base64": base64,
+		"width": img.get_width(),
+		"height": img.get_height(),
+		"timestamp": Time.get_ticks_msec(),
+		"frameId": _frame_counter
+	}
+
+func _draw_debug_overlays(overlay_types: Array) -> void:
+	if not _debug_overlay:
+		_debug_overlay = CanvasLayer.new()
+		_debug_overlay.name = "DebugOverlay"
+		_debug_overlay.layer = 100
+		add_child(_debug_overlay)
+	
+	for child in _debug_overlay.get_children():
+		child.queue_free()
+	
+	var draw_node = Control.new()
+	draw_node.set_anchors_preset(Control.PRESET_FULL_RECT)
+	draw_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_debug_overlay.add_child(draw_node)
+	
+	var overlay_script = GDScript.new()
+	overlay_script.source_code = _get_overlay_draw_script(overlay_types)
+	overlay_script.reload()
+	draw_node.set_script(overlay_script)
+	draw_node.set("entities_data", _collect_overlay_data())
+	draw_node.set("pixels_per_meter", pixels_per_meter)
+	draw_node.set("camera_pos", camera.global_position if camera else Vector2.ZERO)
+	draw_node.set("camera_zoom", camera.zoom if camera else Vector2.ONE)
+	
+	_debug_overlay.visible = true
+	_debug_overlay_visible = true
+
+func _get_overlay_draw_script(overlay_types: Array) -> String:
+	var draw_bounds = "bounds" in overlay_types
+	var draw_labels = "labels" in overlay_types
+	var draw_velocities = "velocities" in overlay_types
+	var draw_ids = "ids" in overlay_types
+	
+	return """
+extends Control
+
+var entities_data: Array = []
+var pixels_per_meter: float = 50.0
+var camera_pos: Vector2 = Vector2.ZERO
+var camera_zoom: Vector2 = Vector2.ONE
+
+func _draw():
+	var viewport_center = get_viewport_rect().size / 2
+	
+	for entity in entities_data:
+		var godot_pos = entity.get("godot_pos", Vector2.ZERO)
+		var screen_pos = (godot_pos - camera_pos) * camera_zoom + viewport_center
+		
+		var width = entity.get("width", 1.0) * pixels_per_meter * camera_zoom.x
+		var height = entity.get("height", 1.0) * pixels_per_meter * camera_zoom.y
+		var entity_id = entity.get("id", "")
+		var template = entity.get("template", "")
+		var velocity = entity.get("velocity", Vector2.ZERO)
+		
+		var rect = Rect2(screen_pos.x - width/2, screen_pos.y - height/2, width, height)
+		
+		%s
+		
+		%s
+		
+		%s
+""" % [
+		"draw_rect(rect, Color.CYAN, false, 2.0)" if draw_bounds else "",
+		"""
+		var label = entity_id if %s else template
+		var font = ThemeDB.fallback_font
+		var font_size = 12
+		draw_string(font, Vector2(screen_pos.x - width/2, screen_pos.y - height/2 - 4), label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.YELLOW)
+""" % ("true" if draw_ids else "false") if draw_labels or draw_ids else "",
+		"""
+		if velocity.length() > 0.1:
+			var vel_end = screen_pos + velocity * pixels_per_meter * camera_zoom.x * 0.5
+			draw_line(screen_pos, vel_end, Color.GREEN, 2.0)
+			var angle = velocity.angle()
+			var arrow_size = 8
+			draw_line(vel_end, vel_end - Vector2(cos(angle - 0.5), sin(angle - 0.5)) * arrow_size, Color.GREEN, 2.0)
+			draw_line(vel_end, vel_end - Vector2(cos(angle + 0.5), sin(angle + 0.5)) * arrow_size, Color.GREEN, 2.0)
+""" if draw_velocities else ""
+	]
+
+func _collect_overlay_data() -> Array:
+	var data: Array = []
+	
+	for entity_id in entities:
+		var node = entities[entity_id]
+		if not is_instance_valid(node):
+			continue
+		
+		var entity_data = {
+			"id": entity_id,
+			"godot_pos": node.global_position,
+			"template": "",
+			"width": 1.0,
+			"height": 1.0,
+			"velocity": Vector2.ZERO
+		}
+		
+		if node is RigidBody2D:
+			entity_data["velocity"] = godot_to_game_vec(node.linear_velocity)
+		elif entity_id in sensor_velocities:
+			entity_data["velocity"] = godot_to_game_vec(sensor_velocities[entity_id])
+		
+		for child in node.get_children():
+			if child is CollisionShape2D and child.shape:
+				var shape = child.shape
+				if shape is RectangleShape2D:
+					entity_data["width"] = shape.size.x / pixels_per_meter
+					entity_data["height"] = shape.size.y / pixels_per_meter
+				elif shape is CircleShape2D:
+					var diameter = shape.radius * 2 / pixels_per_meter
+					entity_data["width"] = diameter
+					entity_data["height"] = diameter
+				break
+		
+		data.append(entity_data)
+	
+	return data
+
+func _clear_debug_overlays() -> void:
+	if _debug_overlay:
+		for child in _debug_overlay.get_children():
+			child.queue_free()
+		_debug_overlay.visible = false
+		_debug_overlay_visible = false
+
+func _js_get_world_info(_args: Array) -> void:
+	var result = get_world_info()
+	_js_bridge_obj["_lastResult"] = result
+
+func get_world_info() -> Dictionary:
+	var gravity_vec = godot_to_game_vec(Vector2(0, -1) * PhysicsServer2D.area_get_param(
+		get_viewport().find_world_2d().space,
+		PhysicsServer2D.AREA_PARAM_GRAVITY
+	))
+	
+	var bounds = game_data.get("world", {}).get("bounds", {"width": 20, "height": 12})
+	
+	return {
+		"pixelsPerMeter": pixels_per_meter,
+		"gravity": {"x": gravity_vec.x, "y": gravity_vec.y},
+		"bounds": bounds
+	}
+
+func _js_get_camera_info(_args: Array) -> void:
+	var result = get_camera_info()
+	_js_bridge_obj["_lastResult"] = result
+
+func get_camera_info() -> Dictionary:
+	if not camera:
+		return {"x": 0, "y": 0, "zoom": 1, "target": ""}
+	
+	var game_pos = godot_to_game_pos(camera.global_position)
+	
+	return {
+		"x": game_pos.x,
+		"y": game_pos.y,
+		"zoom": camera.zoom.x,
+		"target": camera_target_id
+	}
+
+func _js_get_viewport_info(_args: Array) -> void:
+	var result = get_viewport_info()
+	_js_bridge_obj["_lastResult"] = result
+
+func get_viewport_info() -> Dictionary:
+	var vp_size = get_viewport().get_visible_rect().size
+	return {
+		"width": int(vp_size.x),
+		"height": int(vp_size.y)
+	}
+
+# =============================================================================
+# CORE QUERY HELPERS
+# =============================================================================
+
+func _get_entity_transform_impl(entity_id: String) -> Variant:
+	if not entities.has(entity_id):
+		return null
+	var node = entities[entity_id]
+	var game_pos = godot_to_game_pos(node.position)
+	return {
+		"x": game_pos.x,
+		"y": game_pos.y,
+		"angle": -node.rotation
+	}

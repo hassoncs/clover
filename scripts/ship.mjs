@@ -20,9 +20,11 @@ function run(cmd, cmdArgs, opts = {}) {
 
 function bumpIOSBuildNumber() {
   const projectPath = join("app", "ios", "Slopcade.xcodeproj", "project.pbxproj");
-  let content = readFileSync(projectPath, "utf8");
+  const plistPath = join("app", "ios", "Slopcade", "Info.plist");
   
-  const match = content.match(/CURRENT_PROJECT_VERSION = (\d+);/);
+  // 1. Update project.pbxproj
+  let projectContent = readFileSync(projectPath, "utf8");
+  const match = projectContent.match(/CURRENT_PROJECT_VERSION = (\d+);/);
   if (!match) {
     console.error("\x1b[31mCould not find CURRENT_PROJECT_VERSION in project.pbxproj\x1b[0m");
     process.exit(1);
@@ -31,12 +33,20 @@ function bumpIOSBuildNumber() {
   const currentVersion = parseInt(match[1], 10);
   const newVersion = currentVersion + 1;
   
-  content = content.replace(
+  projectContent = projectContent.replace(
     /CURRENT_PROJECT_VERSION = \d+;/g,
     `CURRENT_PROJECT_VERSION = ${newVersion};`
   );
+  writeFileSync(projectPath, projectContent);
+
+  // 2. Update Info.plist (EAS often looks here if appVersionSource is not remote)
+  let plistContent = readFileSync(plistPath, "utf8");
+  plistContent = plistContent.replace(
+    /<key>CFBundleVersion<\/key>\s*<string>\d+<\/string>/g,
+    `<key>CFBundleVersion</key>\n    <string>${newVersion}</string>`
+  );
+  writeFileSync(plistPath, plistContent);
   
-  writeFileSync(projectPath, content);
   console.log(`\x1b[32m📱 Bumped iOS build number: ${currentVersion} → ${newVersion}\x1b[0m`);
   return newVersion;
 }

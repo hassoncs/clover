@@ -1,0 +1,44 @@
+{
+  "componentType": "button",
+  "states": {
+    "normal": {
+      "r2Key": "generated/test-ui/button/button/normal.png",
+      "publicUrl": "http://localhost:8787/assets/generated/test-ui/button/button/normal.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256
+      }
+    },
+    "hover": {
+      "r2Key": "generated/test-ui/button/button/hover.png",
+      "publicUrl": "http://localhost:8787/assets/generated/test-ui/button/button/hover.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256
+      }
+    },
+    "pressed": {
+      "r2Key": "generated/test-ui/button/button/pressed.png",
+      "publicUrl": "http://localhost:8787/assets/generated/test-ui/button/button/pressed.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256
+      }
+    }
+  },
+  "ninePatchMargins": {
+    "left": 12,
+    "right": 12,
+    "top": 12,
+    "bottom": 12
+  },
+  "baseResolution": 256,
+  "generatedAt": 1769366158284,
+  "theme": "cyberpunk neon with glowing edges and holographic effects"
+}

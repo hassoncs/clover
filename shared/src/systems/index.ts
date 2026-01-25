@@ -17,10 +17,20 @@
 
 export * from './GameSystemRegistry';
 export * from './types';
-export * from './match3';
 export * from './combo/types';
 export * from './checkpoint/types';
 export * from './grid/types';
+export {
+  type GridConfig,
+  createGridConfig,
+  cellToWorld as gridCellToWorld,
+  worldToCell as gridWorldToCell,
+  isValidCell,
+  isAdjacent as gridIsAdjacent,
+  cellKey,
+  parseCellKey,
+  gridConfigFromMatch3,
+} from './grid/helpers';
 export * from './inventory/types';
 export * from './progression/types';
 export * from './state-machine/types';

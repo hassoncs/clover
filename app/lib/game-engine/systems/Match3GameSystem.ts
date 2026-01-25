@@ -1,6 +1,6 @@
 /**
  * Match-3 Game System Plugin
- * 
+ *
  * This system plugs into the game engine to provide Match-3 mechanics.
  * It reads configuration from GameDefinition.match3 and manages:
  * - Board initialization (spawning piece entities)
@@ -8,25 +8,34 @@
  * - Match detection algorithm
  * - Piece clearing and gravity
  * - Score tracking
- * 
+ *
  * The system uses the standard EntityManager for all entity operations,
  * so rendering and asset swapping work normally.
  */
 
-import type { EntityManager } from '../EntityManager';
-import type { GodotBridge } from '../../godot/types';
-import { selectVariantByIndex, type AssetSheet, type Match3Config } from '@slopcade/shared';
+import type { EntityManager } from "../EntityManager";
+import type { GodotBridge } from "../../godot/types";
+import {
+  selectVariantByIndex,
+  gridCellToWorld,
+  gridWorldToCell,
+  gridIsAdjacent,
+  gridConfigFromMatch3,
+  type AssetSheet,
+  type Match3Config,
+  type GridConfig,
+} from "@slopcade/shared";
 
 export type { Match3Config };
 
-export type Match3Phase = 
-  | 'idle'
-  | 'selected'
-  | 'swapping'
-  | 'checking'
-  | 'clearing'
-  | 'falling'
-  | 'spawning';
+export type Match3Phase =
+  | "idle"
+  | "selected"
+  | "swapping"
+  | "checking"
+  | "clearing"
+  | "falling"
+  | "spawning";
 
 interface BoardCell {
   entityId: string | null;
@@ -54,22 +63,26 @@ export interface Match3Callbacks {
 
 export class Match3GameSystem {
   private config: Match3Config;
+  private gridConfig: GridConfig;
   private entityManager: EntityManager;
   private bridge: GodotBridge | null = null;
   private callbacks: Match3Callbacks;
   private sheetMetadata: AssetSheet | null = null;
 
   private board: BoardCell[][] = [];
-  private phase: Match3Phase = 'idle';
+  private phase: Match3Phase = "idle";
   private selectedCell: { row: number; col: number } | null = null;
-  private swapCells: { a: { row: number; col: number }; b: { row: number; col: number } } | null = null;
+  private swapCells: {
+    a: { row: number; col: number };
+    b: { row: number; col: number };
+  } | null = null;
   private hoverCell: { row: number; col: number } | null = null;
-  
+
   private pendingAnimations: PendingAnimation[] = [];
   private phaseTimer = 0;
   private cascadeCount = 0;
   private totalClearedThisTurn = 0;
-  
+
   private highlightEntityId: string | null = null;
   private hoverEntityId: string | null = null;
 
@@ -81,9 +94,10 @@ export class Match3GameSystem {
   constructor(
     config: Match3Config,
     entityManager: EntityManager,
-    callbacks: Match3Callbacks = {}
+    callbacks: Match3Callbacks = {},
   ) {
     this.config = config;
+    this.gridConfig = gridConfigFromMatch3(config);
     this.entityManager = entityManager;
     this.callbacks = callbacks;
 
@@ -116,7 +130,7 @@ export class Match3GameSystem {
     }
 
     this.fillBoardWithoutMatches();
-    this.phase = 'idle';
+    this.phase = "idle";
     this.callbacks.onBoardReady?.();
   }
 
@@ -125,68 +139,72 @@ export class Match3GameSystem {
       for (let col = 0; col < this.config.cols; col++) {
         let pieceType: number;
         let attempts = 0;
-        
+
         do {
-          pieceType = Math.floor(Math.random() * this.config.pieceTemplates.length);
+          pieceType = Math.floor(
+            Math.random() * this.config.pieceTemplates.length,
+          );
           attempts++;
         } while (attempts < 20 && this.wouldCreateMatch(row, col, pieceType));
-        
+
         this.spawnPieceAt(row, col, pieceType);
       }
     }
   }
 
-  private wouldCreateMatch(row: number, col: number, pieceType: number): boolean {
+  private wouldCreateMatch(
+    row: number,
+    col: number,
+    pieceType: number,
+  ): boolean {
     if (col >= 2) {
       const left1 = this.board[row][col - 1]?.pieceType;
       const left2 = this.board[row][col - 2]?.pieceType;
       if (left1 === pieceType && left2 === pieceType) return true;
     }
-    
+
     if (row >= 2) {
       const up1 = this.board[row - 1]?.[col]?.pieceType;
       const up2 = this.board[row - 2]?.[col]?.pieceType;
       if (up1 === pieceType && up2 === pieceType) return true;
     }
-    
+
     return false;
   }
 
-  private cellToWorld(row: number, col: number): { x: number; y: number } {
-    // Y+ up convention: row 0 is at the TOP (largest Y), higher rows go DOWN (smaller Y)
-    // originY is now the TOP of the grid (largest Y value)
-    return {
-      x: this.config.originX + col * this.config.cellSize + this.config.cellSize / 2,
-      y: this.config.originY - row * this.config.cellSize - this.config.cellSize / 2,
-    };
+  private cellToWorldPos(row: number, col: number): { x: number; y: number } {
+    return gridCellToWorld(this.gridConfig, row, col);
   }
 
-  private worldToCell(worldX: number, worldY: number): { row: number; col: number } | null {
-    const col = Math.floor((worldX - this.config.originX) / this.config.cellSize);
-    const row = Math.floor((this.config.originY - worldY) / this.config.cellSize);
-
-    if (row < 0 || row >= this.config.rows || col < 0 || col >= this.config.cols) {
-      return null;
-    }
-
-    return { row, col };
+  private worldToCellPos(
+    worldX: number,
+    worldY: number,
+  ): { row: number; col: number } | null {
+    return gridWorldToCell(this.gridConfig, worldX, worldY);
   }
 
-  private spawnPieceAt(row: number, col: number, pieceType: number, aboveBoard = false): void {
+  private spawnPieceAt(
+    row: number,
+    col: number,
+    pieceType: number,
+    aboveBoard = false,
+  ): void {
     const template = this.config.pieceTemplates[pieceType];
-    const pos = this.cellToWorld(row, col);
-    const spawnY = aboveBoard 
-      ? this.config.originY + this.config.cellSize 
+    const pos = this.cellToWorldPos(row, col);
+    const spawnY = aboveBoard
+      ? this.config.originY + this.config.cellSize
       : pos.y;
 
     let entityId: string;
-    
+
     if (this.bridge) {
       entityId = this.bridge.spawnEntity(template, pos.x, spawnY);
     } else {
-      entityId = `match3_${row}_${col}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      entityId = `match3_${row}_${col}_${Date.now()}_${Math.random()
+        .toString(36)
+        .slice(2, 6)}`;
     }
-    
+
     this.entityManager.createEntity({
       id: entityId,
       name: `Piece ${row},${col}`,
@@ -198,30 +216,38 @@ export class Match3GameSystem {
         scaleX: 1,
         scaleY: 1,
       },
-      tags: ['match3_piece'],
+      tags: ["match3_piece"],
     });
 
-    if (this.config.variantSheet?.enabled && this.sheetMetadata && this.bridge) {
+    if (
+      this.config.variantSheet?.enabled &&
+      this.sheetMetadata &&
+      this.bridge
+    ) {
       const result = selectVariantByIndex(
         this.sheetMetadata,
-        this.config.variantSheet.groupId ?? 'default',
-        pieceType
+        this.config.variantSheet.groupId ?? "default",
+        pieceType,
       );
       if (result) {
         const templateDef = this.entityManager.getTemplate(template);
         let spriteWidth = 1.0;
         let spriteHeight = 1.0;
-        
+
         if (templateDef?.physics) {
           const physics = templateDef.physics;
-          if (physics.shape === 'circle' && 'radius' in physics) {
+          if (physics.shape === "circle" && "radius" in physics) {
             spriteWidth = spriteHeight = physics.radius * 2;
-          } else if (physics.shape === 'box' && 'width' in physics && 'height' in physics) {
+          } else if (
+            physics.shape === "box" &&
+            "width" in physics &&
+            "height" in physics
+          ) {
             spriteWidth = physics.width;
             spriteHeight = physics.height;
           }
         }
-        
+
         this.bridge.setEntityAtlasRegion(
           entityId,
           this.config.variantSheet.atlasUrl,
@@ -230,7 +256,7 @@ export class Match3GameSystem {
           result.region.w,
           result.region.h,
           spriteWidth,
-          spriteHeight
+          spriteHeight,
         );
       }
     }
@@ -256,29 +282,29 @@ export class Match3GameSystem {
   }
 
   handleTap(worldX: number, worldY: number): void {
-    if (this.phase !== 'idle' && this.phase !== 'selected') {
+    if (this.phase !== "idle" && this.phase !== "selected") {
       return;
     }
 
-    const cell = this.worldToCell(worldX, worldY);
+    const cell = this.worldToCellPos(worldX, worldY);
     if (!cell) return;
 
     const { row, col } = cell;
     const boardCell = this.board[row]?.[col];
     if (!boardCell?.entityId) return;
 
-    if (this.phase === 'idle' || !this.selectedCell) {
+    if (this.phase === "idle" || !this.selectedCell) {
       this.selectedCell = { row, col };
-      this.phase = 'selected';
+      this.phase = "selected";
       this.showHighlight(row, col);
       console.log(`[Match3] Selected piece at ${row},${col}`);
     } else {
       if (this.selectedCell.row === row && this.selectedCell.col === col) {
         this.selectedCell = null;
-        this.phase = 'idle';
+        this.phase = "idle";
         this.hideHighlight();
         console.log(`[Match3] Deselected`);
-      } else if (this.isAdjacent(this.selectedCell, { row, col })) {
+      } else if (gridIsAdjacent(this.selectedCell, { row, col })) {
         this.startSwap(this.selectedCell, { row, col });
       } else {
         this.selectedCell = { row, col };
@@ -289,13 +315,18 @@ export class Match3GameSystem {
   }
 
   handleMouseMove(worldX: number, worldY: number): void {
-    if (this.phase !== 'idle' && this.phase !== 'selected') {
+    if (this.phase !== "idle" && this.phase !== "selected") {
       this.hideHoverHighlight();
       return;
     }
 
-    const cell = this.worldToCell(worldX, worldY);
-    
+    const cell = this.worldToCellPos(worldX, worldY);
+    console.log(
+      "🚀 ~ Match3GameSystem ~ handleMouseMove ~ world:",
+      worldX,
+      worldY,
+    );
+
     if (!cell) {
       this.hideHoverHighlight();
       return;
@@ -303,7 +334,7 @@ export class Match3GameSystem {
 
     const { row, col } = cell;
     const boardCell = this.board[row]?.[col];
-    
+
     if (!boardCell?.entityId) {
       this.hideHoverHighlight();
       return;
@@ -316,21 +347,21 @@ export class Match3GameSystem {
   }
 
   private showHoverHighlight(row: number, col: number): void {
-    const pos = this.cellToWorld(row, col);
-    
+    const pos = this.cellToWorldPos(row, col);
+
     if (!this.hoverEntityId) {
       let id: string;
-      
+
       if (this.bridge) {
-        id = this.bridge.spawnEntity('hover_highlight', pos.x, pos.y);
+        id = this.bridge.spawnEntity("hover_highlight", pos.x, pos.y);
       } else {
         id = `match3_hover_${Date.now()}`;
       }
-      
+
       this.entityManager.createEntity({
         id,
-        name: 'Hover Highlight',
-        template: 'hover_highlight',
+        name: "Hover Highlight",
+        template: "hover_highlight",
         transform: {
           x: pos.x,
           y: pos.y,
@@ -339,7 +370,7 @@ export class Match3GameSystem {
           scaleY: 1,
         },
         layer: 9,
-        tags: ['match3_ui'],
+        tags: ["match3_ui"],
       });
       this.hoverEntityId = id;
     } else {
@@ -368,28 +399,22 @@ export class Match3GameSystem {
     }
   }
 
-  private isAdjacent(a: { row: number; col: number }, b: { row: number; col: number }): boolean {
-    const dr = Math.abs(a.row - b.row);
-    const dc = Math.abs(a.col - b.col);
-    return (dr === 1 && dc === 0) || (dr === 0 && dc === 1);
-  }
-
   private showHighlight(row: number, col: number): void {
-    const pos = this.cellToWorld(row, col);
-    
+    const pos = this.cellToWorldPos(row, col);
+
     if (!this.highlightEntityId) {
       let id: string;
-      
+
       if (this.bridge) {
-        id = this.bridge.spawnEntity('selection_highlight', pos.x, pos.y);
+        id = this.bridge.spawnEntity("selection_highlight", pos.x, pos.y);
       } else {
         id = `match3_highlight_${Date.now()}`;
       }
-      
+
       this.entityManager.createEntity({
         id,
-        name: 'Selection Highlight',
-        template: 'selection_highlight',
+        name: "Selection Highlight",
+        template: "selection_highlight",
         transform: {
           x: pos.x,
           y: pos.y,
@@ -398,7 +423,7 @@ export class Match3GameSystem {
           scaleY: 1,
         },
         layer: 10,
-        tags: ['match3_ui'],
+        tags: ["match3_ui"],
       });
       this.highlightEntityId = id;
     } else {
@@ -427,8 +452,11 @@ export class Match3GameSystem {
     this.hideHoverHighlight();
   }
 
-  private startSwap(a: { row: number; col: number }, b: { row: number; col: number }): void {
-    this.phase = 'swapping';
+  private startSwap(
+    a: { row: number; col: number },
+    b: { row: number; col: number },
+  ): void {
+    this.phase = "swapping";
     this.swapCells = { a, b };
     this.hideHighlight();
     this.selectedCell = null;
@@ -437,8 +465,8 @@ export class Match3GameSystem {
 
     const cellA = this.board[a.row][a.col];
     const cellB = this.board[b.row][b.col];
-    const posA = this.cellToWorld(a.row, a.col);
-    const posB = this.cellToWorld(b.row, b.col);
+    const posA = this.cellToWorldPos(a.row, a.col);
+    const posB = this.cellToWorldPos(b.row, b.col);
 
     if (cellA.entityId) {
       this.pendingAnimations.push({
@@ -464,10 +492,15 @@ export class Match3GameSystem {
       });
     }
 
-    console.log(`[Match3] Starting swap between ${a.row},${a.col} and ${b.row},${b.col}`);
+    console.log(
+      `[Match3] Starting swap between ${a.row},${a.col} and ${b.row},${b.col}`,
+    );
   }
 
-  private performSwap(a: { row: number; col: number }, b: { row: number; col: number }): void {
+  private performSwap(
+    a: { row: number; col: number },
+    b: { row: number; col: number },
+  ): void {
     const cellA = this.board[a.row][a.col];
     const cellB = this.board[b.row][b.col];
 
@@ -479,32 +512,32 @@ export class Match3GameSystem {
     this.updateAnimations(dt);
 
     switch (this.phase) {
-      case 'swapping':
+      case "swapping":
         if (this.pendingAnimations.length === 0) {
           this.finishSwap();
         }
         break;
 
-      case 'checking':
+      case "checking":
         this.checkForMatches();
         break;
 
-      case 'clearing':
+      case "clearing":
         this.phaseTimer -= dt;
         if (this.phaseTimer <= 0) {
           this.performClearing();
         }
         break;
 
-      case 'falling':
+      case "falling":
         if (this.pendingAnimations.length === 0) {
           this.finishFalling();
         }
         break;
 
-      case 'spawning':
+      case "spawning":
         if (this.pendingAnimations.length === 0) {
-          this.phase = 'checking';
+          this.phase = "checking";
         }
         break;
     }
@@ -516,10 +549,10 @@ export class Match3GameSystem {
     for (let i = 0; i < this.pendingAnimations.length; i++) {
       const anim = this.pendingAnimations[i];
       anim.elapsed += dt;
-      
+
       const t = Math.min(1, anim.elapsed / anim.duration);
       const eased = this.easeOutQuad(t);
-      
+
       const x = anim.startX + (anim.targetX - anim.startX) * eased;
       const y = anim.startY + (anim.targetY - anim.startY) * eased;
 
@@ -548,12 +581,12 @@ export class Match3GameSystem {
 
   private finishSwap(): void {
     if (!this.swapCells) {
-      this.phase = 'idle';
+      this.phase = "idle";
       return;
     }
 
     this.performSwap(this.swapCells.a, this.swapCells.b);
-    this.phase = 'checking';
+    this.phase = "checking";
   }
 
   private checkForMatches(): void {
@@ -563,9 +596,15 @@ export class Match3GameSystem {
       if (this.cascadeCount === 0 && this.swapCells) {
         console.log(`[Match3] No matches, reverting swap`);
         this.performSwap(this.swapCells.a, this.swapCells.b);
-        
-        const posA = this.cellToWorld(this.swapCells.a.row, this.swapCells.a.col);
-        const posB = this.cellToWorld(this.swapCells.b.row, this.swapCells.b.col);
+
+        const posA = this.cellToWorldPos(
+          this.swapCells.a.row,
+          this.swapCells.a.col,
+        );
+        const posB = this.cellToWorldPos(
+          this.swapCells.b.row,
+          this.swapCells.b.col,
+        );
         const cellA = this.board[this.swapCells.a.row][this.swapCells.a.col];
         const cellB = this.board[this.swapCells.b.row][this.swapCells.b.col];
 
@@ -591,26 +630,30 @@ export class Match3GameSystem {
             elapsed: 0,
           });
         }
-        
-        this.phase = 'swapping';
+
+        this.phase = "swapping";
         this.swapCells = null;
         return;
       }
 
       this.swapCells = null;
-      this.phase = 'idle';
-      
+      this.phase = "idle";
+
       if (this.cascadeCount > 0) {
-        console.log(`[Match3] Turn complete. Cascades: ${this.cascadeCount}, Total cleared: ${this.totalClearedThisTurn}`);
+        console.log(
+          `[Match3] Turn complete. Cascades: ${this.cascadeCount}, Total cleared: ${this.totalClearedThisTurn}`,
+        );
       }
       return;
     }
 
     this.cascadeCount++;
     const uniqueCells = this.getUniqueCells(matches);
-    
-    console.log(`[Match3] Found ${matches.length} matches (${uniqueCells.length} pieces) - Cascade #${this.cascadeCount}`);
-    
+
+    console.log(
+      `[Match3] Found ${matches.length} matches (${uniqueCells.length} pieces) - Cascade #${this.cascadeCount}`,
+    );
+
     for (const cell of uniqueCells) {
       const boardCell = this.board[cell.row][cell.col];
       if (boardCell.entityId) {
@@ -626,7 +669,7 @@ export class Match3GameSystem {
     this.callbacks.onScoreAdd?.(points);
     this.callbacks.onMatchFound?.(uniqueCells.length, this.cascadeCount);
 
-    this.phase = 'clearing';
+    this.phase = "clearing";
     this.phaseTimer = this.CLEAR_DELAY;
   }
 
@@ -638,7 +681,8 @@ export class Match3GameSystem {
       let runType = this.board[row][0]?.pieceType ?? -1;
 
       for (let col = 1; col <= this.config.cols; col++) {
-        const currentType = col < this.config.cols ? this.board[row][col]?.pieceType ?? -1 : -1;
+        const currentType =
+          col < this.config.cols ? this.board[row][col]?.pieceType ?? -1 : -1;
 
         if (currentType !== runType || col === this.config.cols) {
           if (runType >= 0 && col - runStart >= this.MIN_MATCH) {
@@ -659,7 +703,8 @@ export class Match3GameSystem {
       let runType = this.board[0]?.[col]?.pieceType ?? -1;
 
       for (let row = 1; row <= this.config.rows; row++) {
-        const currentType = row < this.config.rows ? this.board[row]?.[col]?.pieceType ?? -1 : -1;
+        const currentType =
+          row < this.config.rows ? this.board[row]?.[col]?.pieceType ?? -1 : -1;
 
         if (currentType !== runType || row === this.config.rows) {
           if (runType >= 0 && row - runStart >= this.MIN_MATCH) {
@@ -678,7 +723,9 @@ export class Match3GameSystem {
     return matches;
   }
 
-  private getUniqueCells(matches: Array<Array<{ row: number; col: number }>>): Array<{ row: number; col: number }> {
+  private getUniqueCells(
+    matches: Array<Array<{ row: number; col: number }>>,
+  ): Array<{ row: number; col: number }> {
     const seen = new Set<string>();
     const result: Array<{ row: number; col: number }> = [];
 
@@ -698,7 +745,7 @@ export class Match3GameSystem {
   private performClearing(): void {
     const matches = this.findMatches();
     const cellsToClear = this.getUniqueCells(matches);
-    
+
     for (const cell of cellsToClear) {
       const boardCell = this.board[cell.row][cell.col];
       if (boardCell.entityId) {
@@ -713,7 +760,7 @@ export class Match3GameSystem {
     }
 
     this.applyGravity();
-    this.phase = 'falling';
+    this.phase = "falling";
   }
 
   private applyGravity(): void {
@@ -724,8 +771,8 @@ export class Match3GameSystem {
         const cell = this.board[row][col];
         if (cell.pieceType >= 0 && cell.entityId) {
           if (row !== writeRow) {
-            const targetPos = this.cellToWorld(writeRow, col);
-            const currentPos = this.cellToWorld(row, col);
+            const targetPos = this.cellToWorldPos(writeRow, col);
+            const currentPos = this.cellToWorldPos(row, col);
 
             this.pendingAnimations.push({
               entityId: cell.entityId,
@@ -748,18 +795,20 @@ export class Match3GameSystem {
 
   private finishFalling(): void {
     const emptyCells = this.getEmptyCellsAtTop();
-    
+
     if (emptyCells.length === 0) {
-      this.phase = 'checking';
+      this.phase = "checking";
       return;
     }
 
     for (const cell of emptyCells) {
-      const pieceType = Math.floor(Math.random() * this.config.pieceTemplates.length);
+      const pieceType = Math.floor(
+        Math.random() * this.config.pieceTemplates.length,
+      );
       this.spawnPieceAt(cell.row, cell.col, pieceType, true);
     }
 
-    this.phase = 'spawning';
+    this.phase = "spawning";
   }
 
   private getEmptyCellsAtTop(): Array<{ row: number; col: number }> {
@@ -811,6 +860,6 @@ export class Match3GameSystem {
   }
 
   isIdle(): boolean {
-    return this.phase === 'idle' || this.phase === 'selected';
+    return this.phase === "idle" || this.phase === "selected";
   }
 }

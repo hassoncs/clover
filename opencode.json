@@ -5,6 +5,10 @@
       "type": "remote",
       "url": "https://mcp.supabase.com/mcp?project_ref=bqoepxmdaiggnwjjszsd",
       "oauth": {}
+    },
+    "game-inspector": {
+      "type": "local",
+      "command": ["node", "packages/game-inspector-mcp/dist/index.js"]
     }
   }
 }

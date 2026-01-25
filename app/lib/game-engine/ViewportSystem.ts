@@ -216,9 +216,10 @@ export class ViewportSystem {
     const relativeX = worldX - cameraPosition.x;
     const relativeY = worldY - cameraPosition.y;
     
+    // Y-inversion: world Y+ is up, viewport Y+ is down
     return {
       x: relativeX * effectiveScale + width / 2,
-      y: relativeY * effectiveScale + height / 2,
+      y: -relativeY * effectiveScale + height / 2,
     };
   }
 

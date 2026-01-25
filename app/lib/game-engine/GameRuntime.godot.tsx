@@ -7,9 +7,29 @@ import {
   Platform,
   type GestureResponderEvent,
 } from "react-native";
-import type { GameDefinition, ParticleEmitterType, EvalContext, ExpressionValueType, TapZoneButton, VirtualButtonType, DPadDirection, AssetSheet, PropertyWatchSpec } from "@slopcade/shared";
-import { createComputedValueSystem, getAllSystemExpressionFunctions, DependencyAnalyzer, PropertyCache, EntityContextProxy } from "@slopcade/shared";
-import { GodotView, createGodotBridge, createGodotPhysicsAdapter } from "../godot";
+import type {
+  GameDefinition,
+  ParticleEmitterType,
+  EvalContext,
+  ExpressionValueType,
+  TapZoneButton,
+  VirtualButtonType,
+  DPadDirection,
+  AssetSheet,
+  PropertyWatchSpec,
+} from "@slopcade/shared";
+import {
+  createComputedValueSystem,
+  getAllSystemExpressionFunctions,
+  DependencyAnalyzer,
+  PropertyCache,
+  EntityContextProxy,
+} from "@slopcade/shared";
+import {
+  GodotView,
+  createGodotBridge,
+  createGodotPhysicsAdapter,
+} from "../godot";
 import { PropertySyncManager } from "../godot/PropertySyncManager";
 import type { GodotBridge } from "../godot/types";
 import type { Physics2D, CollisionEvent, Unsubscribe } from "../physics2d";
@@ -22,13 +42,22 @@ import type {
 } from "./BehaviorContext";
 import { CameraSystem } from "./CameraSystem";
 import { ViewportSystem, type ViewportRect } from "./ViewportSystem";
-import { InputEntityManager, type InputState as InputEntityState } from "./InputEntityManager";
+import {
+  InputEntityManager,
+  type InputState as InputEntityState,
+} from "./InputEntityManager";
 import { TapZoneOverlay } from "./TapZoneOverlay";
 import { VirtualButtonsOverlay } from "./VirtualButtonsOverlay";
-import { VirtualJoystickOverlay, type JoystickState } from "./VirtualJoystickOverlay";
+import {
+  VirtualJoystickOverlay,
+  type JoystickState,
+} from "./VirtualJoystickOverlay";
 import { VirtualDPadOverlay } from "./VirtualDPadOverlay";
 import { useTiltInput } from "./hooks/useTiltInput";
-import { Match3GameSystem, type Match3Config } from "./systems/Match3GameSystem";
+import {
+  Match3GameSystem,
+  type Match3Config,
+} from "./systems/Match3GameSystem";
 
 export interface GameRuntimeGodotProps {
   definition: GameDefinition;
@@ -38,6 +67,7 @@ export interface GameRuntimeGodotProps {
   onRequestRestart?: () => void;
   showHUD?: boolean;
   enablePerfLogging?: boolean;
+  autoStart?: boolean;
 }
 
 const GAME_LOOP_INTERVAL = 16;
@@ -50,6 +80,7 @@ export function GameRuntimeGodot({
   onRequestRestart,
   showHUD = true,
   enablePerfLogging = false,
+  autoStart = false,
 }: GameRuntimeGodotProps) {
   const bridgeRef = useRef<GodotBridge | null>(null);
   const physicsRef = useRef<Physics2D | null>(null);
@@ -99,17 +130,17 @@ export function GameRuntimeGodot({
       sensitivity: definition.input?.tilt?.sensitivity,
       updateInterval: definition.input?.tilt?.updateInterval,
     },
-    handleTiltUpdate
+    handleTiltUpdate,
   );
 
   const timeScaleRef = useRef(1.0);
   const timeScaleTargetRef = useRef(1.0);
-  const timeScaleTransitionRef = useRef<{ 
-    startScale: number; 
-    endScale: number; 
-    duration: number; 
-    elapsed: number; 
-    restoreAfter?: number 
+  const timeScaleTransitionRef = useRef<{
+    startScale: number;
+    endScale: number;
+    duration: number;
+    elapsed: number;
+    restoreAfter?: number;
   } | null>(null);
 
   const [isReady, setIsReady] = useState(false);
@@ -122,8 +153,12 @@ export function GameRuntimeGodot({
     variables: {},
   });
   const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
-  const [viewportRect, setViewportRect] = useState<ViewportRect>({ 
-    x: 0, y: 0, width: 0, height: 0, scale: 1 
+  const [viewportRect, setViewportRect] = useState<ViewportRect>({
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+    scale: 1,
   });
 
   const viewportSystem = useMemo(() => {
@@ -131,9 +166,14 @@ export function GameRuntimeGodot({
     return new ViewportSystem(definition.world.bounds, {
       aspectRatio: presentationConfig?.aspectRatio,
       fit: presentationConfig?.fit,
-      letterboxColor: presentationConfig?.letterboxColor ?? definition.ui?.backgroundColor,
+      letterboxColor:
+        presentationConfig?.letterboxColor ?? definition.ui?.backgroundColor,
     });
-  }, [definition.presentation, definition.world.bounds, definition.ui?.backgroundColor]);
+  }, [
+    definition.presentation,
+    definition.world.bounds,
+    definition.ui?.backgroundColor,
+  ]);
 
   viewportSystemRef.current = viewportSystem;
 
@@ -152,7 +192,7 @@ export function GameRuntimeGodot({
     const setup = async () => {
       try {
         console.log("[GameRuntime.godot] Starting setup...");
-        
+
         const bridge = await createGodotBridge();
         await bridge.initialize();
         bridgeRef.current = bridge;
@@ -168,18 +208,26 @@ export function GameRuntimeGodot({
         const analyzer = new DependencyAnalyzer(definition);
         const report = analyzer.analyze();
         const watches = analyzer.getWatchSpecs();
-        
+
         if (report.errors.length > 0) {
-          console.warn('[GameRuntime.godot] Property watching validation errors:', report.errors);
+          console.warn(
+            "[GameRuntime.godot] Property watching validation errors:",
+            report.errors,
+          );
         }
         if (report.warnings.length > 0) {
-          console.log('[GameRuntime.godot] Property watching warnings:', report.warnings);
+          console.log(
+            "[GameRuntime.godot] Property watching warnings:",
+            report.warnings,
+          );
         }
-        
-        console.log('[GameRuntime.godot] Property watching:', {
+
+        console.log("[GameRuntime.godot] Property watching:", {
           valid: report.valid,
           watchCount: watches.length,
-          properties: [...new Set(watches.map((w: PropertyWatchSpec) => w.property))],
+          properties: [
+            ...new Set(watches.map((w: PropertyWatchSpec) => w.property)),
+          ],
           stats: report.stats,
         });
 
@@ -187,24 +235,31 @@ export function GameRuntimeGodot({
         const registry = new WatchRegistry();
         registry.addWatches(watches);
         const activeConfig = registry.getActiveConfig();
-        
-        const serializeMapOfSetsToJSON = (map: Map<string, Set<string>>): Record<string, string[]> => {
+
+        const serializeMapOfSetsToJSON = (
+          map: Map<string, Set<string>>,
+        ): Record<string, string[]> => {
           const result: Record<string, string[]> = {};
           for (const [key, set] of map.entries()) {
             result[key] = Array.from(set);
           }
           return result;
         };
-        
+
         const serializableConfig = {
           frameProperties: Array.from(activeConfig.frameProperties),
-          changeProperties: serializeMapOfSetsToJSON(activeConfig.changeProperties),
+          changeProperties: serializeMapOfSetsToJSON(
+            activeConfig.changeProperties,
+          ),
           entityWatches: serializeMapOfSetsToJSON(activeConfig.entityWatches),
           tagWatches: serializeMapOfSetsToJSON(activeConfig.tagWatches),
         };
-        
+
         bridge.setWatchConfig(serializableConfig);
-        console.log('[GameRuntime.godot] Sent watch config to Godot:', serializableConfig);
+        console.log(
+          "[GameRuntime.godot] Sent watch config to Godot:",
+          serializableConfig,
+        );
 
         const propertySync = new PropertySyncManager(propertyCacheRef.current);
         propertySync.start(bridge);
@@ -227,12 +282,14 @@ export function GameRuntimeGodot({
             {
               onScoreAdd: (points) => game.rulesEvaluator.addScore(points),
               onMatchFound: (count, cascade) => {
-                console.log(`[Match3] Match found: ${count} pieces, cascade #${cascade}`);
+                console.log(
+                  `[Match3] Match found: ${count} pieces, cascade #${cascade}`,
+                );
               },
               onBoardReady: () => {
-                console.log('[Match3] Board ready');
+                console.log("[Match3] Board ready");
               },
-            }
+            },
           );
           match3System.setBridge(bridge);
           match3SystemRef.current = match3System;
@@ -241,7 +298,11 @@ export function GameRuntimeGodot({
         if (definition.variables) {
           const resolvedVars: Record<string, ExpressionValueType> = {};
           for (const [key, value] of Object.entries(definition.variables)) {
-            if (typeof value === 'object' && value !== null && 'expr' in value) {
+            if (
+              typeof value === "object" &&
+              value !== null &&
+              "expr" in value
+            ) {
               resolvedVars[key] = 0;
             } else {
               resolvedVars[key] = value as ExpressionValueType;
@@ -294,18 +355,25 @@ export function GameRuntimeGodot({
           }
         });
 
-        inputEventUnsubRef.current = bridge.onInputEvent((type, x, y, _entityId) => {
-          if (type === "tap") {
-            const ppm = definition.world.pixelsPerMeter ?? 50;
-            const screenX = x * ppm;
-            const screenY = y * ppm;
-            console.log('[GameRuntime] onInputEvent tap received:', { x, y, screenX, screenY });
-            inputRef.current = {
-              ...inputRef.current,
-              tap: { x: screenX, y: screenY, worldX: x, worldY: y },
-            };
-          }
-        });
+        inputEventUnsubRef.current = bridge.onInputEvent(
+          (type, x, y, _entityId) => {
+            if (type === "tap") {
+              const ppm = definition.world.pixelsPerMeter ?? 50;
+              const screenX = x * ppm;
+              const screenY = y * ppm;
+              console.log("[GameRuntime] onInputEvent tap received:", {
+                x,
+                y,
+                screenX,
+                screenY,
+              });
+              inputRef.current = {
+                ...inputRef.current,
+                tap: { x: screenX, y: screenY, worldX: x, worldY: y },
+              };
+            }
+          },
+        );
 
         const camera = CameraSystem.fromGameConfig(
           definition.camera,
@@ -318,7 +386,10 @@ export function GameRuntimeGodot({
         if (screenSizeRef.current.width > 0 && viewportSystemRef.current) {
           viewportSystemRef.current.updateScreenSize(screenSizeRef.current);
           const currentViewport = viewportSystemRef.current.getViewportRect();
-          camera.updateViewport({ width: currentViewport.width, height: currentViewport.height });
+          camera.updateViewport({
+            width: currentViewport.width,
+            height: currentViewport.height,
+          });
           camera.updatePixelsPerMeter(currentViewport.scale);
           setViewportRect(currentViewport);
         }
@@ -346,22 +417,34 @@ export function GameRuntimeGodot({
         });
 
         const initialVariables = game.rulesEvaluator.getVariables();
-        setGameState((s) => ({ ...s, state: "ready", variables: initialVariables }));
+        setGameState((s) => ({
+          ...s,
+          state: "ready",
+          variables: initialVariables,
+        }));
         setIsReady(true);
 
-         if (match3SystemRef.current) {
-           const match3Config = definition.match3 as Match3Config;
-           if (match3Config.variantSheet?.enabled && match3Config.variantSheet.metadataUrl) {
-             try {
-               const response = await fetch(match3Config.variantSheet.metadataUrl);
-               const metadata = await response.json();
-               match3SystemRef.current.setSheetMetadata(metadata as AssetSheet);
-             } catch (error) {
-               console.error('[GameRuntime.godot] Failed to load variant sheet metadata:', error);
-             }
-           }
-           match3SystemRef.current.initialize();
-         }
+        if (match3SystemRef.current) {
+          const match3Config = definition.match3 as Match3Config;
+          if (
+            match3Config.variantSheet?.enabled &&
+            match3Config.variantSheet.metadataUrl
+          ) {
+            try {
+              const response = await fetch(
+                match3Config.variantSheet.metadataUrl,
+              );
+              const metadata = await response.json();
+              match3SystemRef.current.setSheetMetadata(metadata as AssetSheet);
+            } catch (error) {
+              console.error(
+                "[GameRuntime.godot] Failed to load variant sheet metadata:",
+                error,
+              );
+            }
+          }
+          match3SystemRef.current.initialize();
+        }
       } catch (error) {
         console.error("[GameRuntime.godot] Failed to initialize game:", error);
       }
@@ -395,7 +478,7 @@ export function GameRuntimeGodot({
 
   const setTimeScale = useCallback((scale: number, duration?: number) => {
     const currentScale = timeScaleRef.current;
-    
+
     if (duration && duration > 0) {
       timeScaleTransitionRef.current = {
         startScale: currentScale,
@@ -411,244 +494,289 @@ export function GameRuntimeGodot({
     }
   }, []);
 
-  const stepGame = useCallback((rawDt: number) => {
-    const physics = physicsRef.current;
-    const game = gameRef.current;
-    const camera = cameraRef.current;
-    const bridge = bridgeRef.current;
-    if (!physics || !game || !camera || !bridge) {
-      return;
-    }
+  const stepGame = useCallback(
+    (rawDt: number) => {
+      const physics = physicsRef.current;
+      const game = gameRef.current;
+      const camera = cameraRef.current;
+      const bridge = bridgeRef.current;
+      if (!physics || !game || !camera || !bridge) {
+        return;
+      }
 
-    if (game.rulesEvaluator.getGameStateValue() !== "playing") return;
+      if (game.rulesEvaluator.getGameStateValue() !== "playing") return;
 
-    const transition = timeScaleTransitionRef.current;
-    if (transition) {
-      transition.elapsed += rawDt;
-      const t = Math.min(1, transition.elapsed / transition.duration);
-      const eased = t * t * (3 - 2 * t);
-      timeScaleRef.current = transition.startScale + (transition.endScale - transition.startScale) * eased;
-      
-      if (t >= 1) {
-        timeScaleRef.current = transition.endScale;
-        if (transition.restoreAfter) {
-          timeScaleTransitionRef.current = {
-            startScale: transition.endScale,
-            endScale: 1.0,
-            duration: 0.2,
-            elapsed: -transition.restoreAfter,
-          };
-        } else {
-          timeScaleTransitionRef.current = null;
+      const transition = timeScaleTransitionRef.current;
+      if (transition) {
+        transition.elapsed += rawDt;
+        const t = Math.min(1, transition.elapsed / transition.duration);
+        const eased = t * t * (3 - 2 * t);
+        timeScaleRef.current =
+          transition.startScale +
+          (transition.endScale - transition.startScale) * eased;
+
+        if (t >= 1) {
+          timeScaleRef.current = transition.endScale;
+          if (transition.restoreAfter) {
+            timeScaleTransitionRef.current = {
+              startScale: transition.endScale,
+              endScale: 1.0,
+              duration: 0.2,
+              elapsed: -transition.restoreAfter,
+            };
+          } else {
+            timeScaleTransitionRef.current = null;
+          }
         }
       }
-    }
 
-    const dt = rawDt * timeScaleRef.current;
-    if (dt <= 0) return;
+      const dt = rawDt * timeScaleRef.current;
+      if (dt <= 0) return;
 
-    const frameStart = enablePerfLogging ? performance.now() : 0;
+      const frameStart = enablePerfLogging ? performance.now() : 0;
 
-    game.entityManager.syncTransformsFromPhysics();
+      game.entityManager.syncTransformsFromPhysics();
 
-    const inputEntityManager = inputEntityManagerRef.current;
-    if (inputEntityManager) {
-      const currentInput = inputRef.current as Record<string, unknown>;
-      inputEntityManager.syncFromInput({
-        mouse: currentInput.mouse as InputEntityState['mouse'],
-        tap: currentInput.tap as InputEntityState['tap'],
-        drag: currentInput.drag as InputEntityState['drag'],
-      });
-    }
-
-    camera.update(dt, (id) => game.entityManager.getEntity(id));
-
-    elapsedRef.current += dt;
-    frameIdRef.current += 1;
-
-    const fullGameState = game.rulesEvaluator.getFullState();
-    const computedValues = computedValuesRef.current;
-
-    const createEvalContext = (entity?: RuntimeEntity): EvalContext => {
-      let selfContext: EvalContext['self'] | undefined;
-      
-      if (entity) {
-        const propertySyncEnabled = propertyCacheRef.current;
-        
-        if (propertySyncEnabled) {
-          const entityProxy = EntityContextProxy.createEntityContext(
-            propertyCacheRef.current,
-            entity.id
-          );
-          
-          const velocity = entity.bodyId ? physics.getLinearVelocity(entity.bodyId) : { x: 0, y: 0 };
-          const transform = (entityProxy.transform as { x: number; y: number; angle: number }) || entity.transform;
-          const syncedVelocity = (entityProxy.velocity as { x: number; y: number }) || velocity;
-          
-          selfContext = {
-            id: entity.id,
-            transform,
-            velocity: syncedVelocity,
-            health: (entityProxy.health as number) ?? 100,
-            maxHealth: (entityProxy.maxHealth as number) ?? 100,
-          };
-        } else {
-          const velocity = entity.bodyId ? physics.getLinearVelocity(entity.bodyId) : { x: 0, y: 0 };
-          selfContext = {
-            id: entity.id,
-            transform: entity.transform,
-            velocity,
-            health: 100,
-            maxHealth: 100,
-          };
-        }
-      }
-      
-      return {
-        score: fullGameState.score,
-        lives: fullGameState.lives,
-        time: elapsedRef.current,
-        wave: 1,
-        dt,
-        frameId: frameIdRef.current,
-        variables: gameVariablesRef.current,
-        random: Math.random,
-        entityManager: game.entityManager,
-        customFunctions: getAllSystemExpressionFunctions(),
-        self: selfContext,
-      };
-    };
-
-    const baseEvalContext = createEvalContext();
-
-    const inputSnapshot = inputRef.current;
-
-    const match3System = match3SystemRef.current;
-    if (match3System) {
-      const tapInput = inputSnapshot.tap as { worldX: number; worldY: number } | undefined;
-      if (tapInput) {
-        match3System.handleTap(tapInput.worldX, tapInput.worldY);
-      }
-      const mouseInput = inputSnapshot.mouse as { worldX: number; worldY: number } | undefined;
-      if (mouseInput) {
-        match3System.handleMouseMove(mouseInput.worldX, mouseInput.worldY);
-      }
-      match3System.update(dt);
-    }
-    
-    const behaviorContext: Omit<BehaviorContext, "entity" | "resolveNumber" | "resolveVec2"> = {
-      dt,
-      elapsed: elapsedRef.current,
-      input: inputSnapshot,
-      gameState: fullGameState,
-      entityManager: game.entityManager,
-      physics,
-      collisions: collisionsRef.current,
-      pixelsPerMeter: game.pixelsPerMeter,
-      addScore: (points) => game.rulesEvaluator.addScore(points),
-      setGameState: (state) => {
-        if (state === "won") game.rulesEvaluator["setGameState"]("won");
-        else if (state === "lost") game.rulesEvaluator["setGameState"]("lost");
-        else if (state === "paused") game.rulesEvaluator.pause();
-        else if (state === "playing") game.rulesEvaluator.resume();
-      },
-      spawnEntity: (templateId, x, y) => {
-        const template = game.entityManager.getTemplate(templateId);
-        if (!template) return null;
-        return game.entityManager.createEntity({
-          id: `spawned_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-          name: templateId,
-          template: templateId,
-          transform: { x, y, angle: 0, scaleX: 1, scaleY: 1 },
+      const inputEntityManager = inputEntityManagerRef.current;
+      if (inputEntityManager) {
+        const currentInput = inputRef.current as Record<string, unknown>;
+        inputEntityManager.syncFromInput({
+          mouse: currentInput.mouse as InputEntityState["mouse"],
+          tap: currentInput.tap as InputEntityState["tap"],
+          drag: currentInput.drag as InputEntityState["drag"],
         });
-      },
-      destroyEntity: (id) => game.entityManager.destroyEntity(id),
-      triggerEvent: (name, data) =>
-        game.rulesEvaluator.triggerEvent(name, data),
-      triggerParticleEffect: (type: ParticleEmitterType, x: number, y: number) => {
-        bridge.spawnParticle(type, x, y);
-      },
-      createEntityEmitter: (_type: ParticleEmitterType, _x: number, _y: number) => {
-        return `emitter_${Date.now()}`;
-      },
-      updateEmitterPosition: (_emitterId: string, _x: number, _y: number) => {
-      },
-      stopEmitter: (_emitterId: string) => {
-      },
-      playSound: (soundId: string) => {
-        bridge.playSound(soundId);
-      },
-      computedValues,
-      evalContext: baseEvalContext,
-      createEvalContextForEntity: createEvalContext,
-    };
-
-    game.behaviorExecutor.executeAll(
-      game.entityManager.getActiveEntities(),
-      behaviorContext,
-    );
-
-    const inputEvents: import('./BehaviorContext').InputEvents = {};
-    const currentInput = inputRef.current as Record<string, unknown>;
-    if (currentInput.tap) {
-      inputEvents.tap = currentInput.tap as { x: number; y: number; worldX: number; worldY: number };
-      console.log('[GameRuntime] inputEvents.tap SET:', inputEvents.tap);
-    }
-    if (currentInput.dragEnd) {
-      inputEvents.dragEnd = currentInput.dragEnd as { velocityX: number; velocityY: number; worldVelocityX: number; worldVelocityY: number };
-    }
-    if (gameJustStartedRef.current) {
-      inputEvents.gameStarted = true;
-      gameJustStartedRef.current = false;
-    }
-
-    game.rulesEvaluator.update(
-      dt,
-      game.entityManager,
-      collisionsRef.current,
-      inputRef.current,
-      inputEvents,
-      physics,
-      computedValues,
-      baseEvalContext,
-      camera,
-      setTimeScale,
-      inputEntityManager ?? undefined,
-      (soundId: string, _volume?: number) => {
-        bridge.playSound(soundId);
-      },
-      bridge
-    );
-
-    const preservedDrag = inputRef.current.drag;
-    const preservedButtons = inputRef.current.buttons;
-    const preservedMouse = inputRef.current.mouse;
-    const preservedTilt = inputRef.current.tilt;
-    inputRef.current = {};
-    if (preservedDrag && !inputEvents.dragEnd) {
-      inputRef.current.drag = preservedDrag;
-    }
-    if (preservedButtons) {
-      inputRef.current.buttons = preservedButtons;
-    }
-    if (preservedMouse) {
-      inputRef.current.mouse = preservedMouse;
-    }
-    if (preservedTilt) {
-      inputRef.current.tilt = preservedTilt;
-    }
-    collisionsRef.current = [];
-
-    setGameState((s) => ({ ...s, time: elapsedRef.current }));
-
-    if (enablePerfLogging) {
-      const frameEnd = performance.now();
-      const frameMs = frameEnd - frameStart;
-      if (frameIdRef.current % 60 === 0) {
-        console.log(`[Perf.godot] frame=${frameMs.toFixed(2)}ms`);
       }
-    }
-  }, [setTimeScale, enablePerfLogging]);
+
+      camera.update(dt, (id) => game.entityManager.getEntity(id));
+
+      elapsedRef.current += dt;
+      frameIdRef.current += 1;
+
+      const fullGameState = game.rulesEvaluator.getFullState();
+      const computedValues = computedValuesRef.current;
+
+      const createEvalContext = (entity?: RuntimeEntity): EvalContext => {
+        let selfContext: EvalContext["self"] | undefined;
+
+        if (entity) {
+          const propertySyncEnabled = propertyCacheRef.current;
+
+          if (propertySyncEnabled) {
+            const entityProxy = EntityContextProxy.createEntityContext(
+              propertyCacheRef.current,
+              entity.id,
+            );
+
+            const velocity = entity.bodyId
+              ? physics.getLinearVelocity(entity.bodyId)
+              : { x: 0, y: 0 };
+            const transform =
+              (entityProxy.transform as {
+                x: number;
+                y: number;
+                angle: number;
+              }) || entity.transform;
+            const syncedVelocity =
+              (entityProxy.velocity as { x: number; y: number }) || velocity;
+
+            selfContext = {
+              id: entity.id,
+              transform,
+              velocity: syncedVelocity,
+              health: (entityProxy.health as number) ?? 100,
+              maxHealth: (entityProxy.maxHealth as number) ?? 100,
+            };
+          } else {
+            const velocity = entity.bodyId
+              ? physics.getLinearVelocity(entity.bodyId)
+              : { x: 0, y: 0 };
+            selfContext = {
+              id: entity.id,
+              transform: entity.transform,
+              velocity,
+              health: 100,
+              maxHealth: 100,
+            };
+          }
+        }
+
+        return {
+          score: fullGameState.score,
+          lives: fullGameState.lives,
+          time: elapsedRef.current,
+          wave: 1,
+          dt,
+          frameId: frameIdRef.current,
+          variables: gameVariablesRef.current,
+          random: Math.random,
+          entityManager: game.entityManager,
+          customFunctions: getAllSystemExpressionFunctions(),
+          self: selfContext,
+        };
+      };
+
+      const baseEvalContext = createEvalContext();
+
+      const inputSnapshot = inputRef.current;
+
+      const match3System = match3SystemRef.current;
+      if (match3System) {
+        const tapInput = inputSnapshot.tap as
+          | { worldX: number; worldY: number }
+          | undefined;
+        if (tapInput) {
+          match3System.handleTap(tapInput.worldX, tapInput.worldY);
+        }
+        const mouseInput = inputSnapshot.mouse as
+          | { worldX: number; worldY: number }
+          | undefined;
+        if (mouseInput) {
+          match3System.handleMouseMove(mouseInput.worldX, mouseInput.worldY);
+        }
+        match3System.update(dt);
+      }
+
+      const behaviorContext: Omit<
+        BehaviorContext,
+        "entity" | "resolveNumber" | "resolveVec2"
+      > = {
+        dt,
+        elapsed: elapsedRef.current,
+        input: inputSnapshot,
+        gameState: fullGameState,
+        entityManager: game.entityManager,
+        physics,
+        collisions: collisionsRef.current,
+        pixelsPerMeter: game.pixelsPerMeter,
+        addScore: (points) => game.rulesEvaluator.addScore(points),
+        setGameState: (state) => {
+          if (state === "won") game.rulesEvaluator["setGameState"]("won");
+          else if (state === "lost")
+            game.rulesEvaluator["setGameState"]("lost");
+          else if (state === "paused") game.rulesEvaluator.pause();
+          else if (state === "playing") game.rulesEvaluator.resume();
+        },
+        spawnEntity: (templateId, x, y) => {
+          const template = game.entityManager.getTemplate(templateId);
+          if (!template) return null;
+          return game.entityManager.createEntity({
+            id: `spawned_${Date.now()}_${Math.random()
+              .toString(36)
+              .slice(2, 6)}`,
+            name: templateId,
+            template: templateId,
+            transform: { x, y, angle: 0, scaleX: 1, scaleY: 1 },
+          });
+        },
+        destroyEntity: (id) => game.entityManager.destroyEntity(id),
+        triggerEvent: (name, data) =>
+          game.rulesEvaluator.triggerEvent(name, data),
+        triggerParticleEffect: (
+          type: ParticleEmitterType,
+          x: number,
+          y: number,
+        ) => {
+          bridge.spawnParticle(type, x, y);
+        },
+        createEntityEmitter: (
+          _type: ParticleEmitterType,
+          _x: number,
+          _y: number,
+        ) => {
+          return `emitter_${Date.now()}`;
+        },
+        updateEmitterPosition: (
+          _emitterId: string,
+          _x: number,
+          _y: number,
+        ) => {},
+        stopEmitter: (_emitterId: string) => {},
+        playSound: (soundId: string) => {
+          bridge.playSound(soundId);
+        },
+        computedValues,
+        evalContext: baseEvalContext,
+        createEvalContextForEntity: createEvalContext,
+      };
+
+      game.behaviorExecutor.executeAll(
+        game.entityManager.getActiveEntities(),
+        behaviorContext,
+      );
+
+      const inputEvents: import("./BehaviorContext").InputEvents = {};
+      const currentInput = inputRef.current as Record<string, unknown>;
+      if (currentInput.tap) {
+        inputEvents.tap = currentInput.tap as {
+          x: number;
+          y: number;
+          worldX: number;
+          worldY: number;
+        };
+        console.log("[GameRuntime] inputEvents.tap SET:", inputEvents.tap);
+      }
+      if (currentInput.dragEnd) {
+        inputEvents.dragEnd = currentInput.dragEnd as {
+          velocityX: number;
+          velocityY: number;
+          worldVelocityX: number;
+          worldVelocityY: number;
+        };
+      }
+      if (gameJustStartedRef.current) {
+        inputEvents.gameStarted = true;
+        gameJustStartedRef.current = false;
+      }
+
+      game.rulesEvaluator.update(
+        dt,
+        game.entityManager,
+        collisionsRef.current,
+        inputRef.current,
+        inputEvents,
+        physics,
+        computedValues,
+        baseEvalContext,
+        camera,
+        setTimeScale,
+        inputEntityManager ?? undefined,
+        (soundId: string, _volume?: number) => {
+          bridge.playSound(soundId);
+        },
+        bridge,
+      );
+
+      const preservedDrag = inputRef.current.drag;
+      const preservedButtons = inputRef.current.buttons;
+      const preservedMouse = inputRef.current.mouse;
+      const preservedTilt = inputRef.current.tilt;
+      inputRef.current = {};
+      if (preservedDrag && !inputEvents.dragEnd) {
+        inputRef.current.drag = preservedDrag;
+      }
+      if (preservedButtons) {
+        inputRef.current.buttons = preservedButtons;
+      }
+      if (preservedMouse) {
+        inputRef.current.mouse = preservedMouse;
+      }
+      if (preservedTilt) {
+        inputRef.current.tilt = preservedTilt;
+      }
+      collisionsRef.current = [];
+
+      setGameState((s) => ({ ...s, time: elapsedRef.current }));
+
+      if (enablePerfLogging) {
+        const frameEnd = performance.now();
+        const frameMs = frameEnd - frameStart;
+        if (frameIdRef.current % 60 === 0) {
+          console.log(`[Perf.godot] frame=${frameMs.toFixed(2)}ms`);
+        }
+      }
+    },
+    [setTimeScale, enablePerfLogging],
+  );
 
   useEffect(() => {
     if (!isReady || gameState.state !== "playing") {
@@ -771,13 +899,15 @@ export function GameRuntimeGodot({
     const handleMouseMove = (e: MouseEvent) => {
       const container = viewportContainerRef.current;
       if (!container) return;
-      
-      const rect = (container as unknown as HTMLElement).getBoundingClientRect?.();
+
+      const rect = (
+        container as unknown as HTMLElement
+      ).getBoundingClientRect?.();
       if (!rect) return;
 
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      
+
       if (x < 0 || x > rect.width || y < 0 || y > rect.height) {
         inputRef.current.mouse = undefined;
         return;
@@ -785,20 +915,15 @@ export function GameRuntimeGodot({
 
       const camera = cameraRef.current;
       const viewportSystem = viewportSystemRef.current;
-      
+
       let world = { x: 0, y: 0 };
       if (camera && viewportSystem) {
-        world = viewportSystem.viewportToWorld(x, y, camera.getPosition(), camera.getZoom());
-        
-        if (Math.random() < 0.02) {
-          const viewportRect = viewportSystem.getViewportRect();
-          console.log('[handleMouseMove] Debug:', {
-            containerXY: { x: x.toFixed(1), y: y.toFixed(1) },
-            viewportRect: { w: viewportRect.width.toFixed(0), h: viewportRect.height.toFixed(0), scale: viewportRect.scale.toFixed(2) },
-            cameraPos: camera.getPosition(),
-            world: { x: world.x.toFixed(2), y: world.y.toFixed(2) },
-          });
-        }
+        world = viewportSystem.viewportToWorld(
+          x,
+          y,
+          camera.getPosition(),
+          camera.getZoom(),
+        );
       }
 
       inputRef.current.mouse = { x, y, worldX: world.x, worldY: world.y };
@@ -811,30 +936,37 @@ export function GameRuntimeGodot({
     const handleClick = (e: MouseEvent) => {
       const container = viewportContainerRef.current;
       if (!container) return;
-      
-      const rect = (container as unknown as HTMLElement).getBoundingClientRect?.();
+
+      const rect = (
+        container as unknown as HTMLElement
+      ).getBoundingClientRect?.();
       if (!rect) return;
 
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      
+
       if (x < 0 || x > rect.width || y < 0 || y > rect.height) {
         return;
       }
-      
+
       const camera = cameraRef.current;
       const viewportSystem = viewportSystemRef.current;
-      
+
       let world = { x: 0, y: 0 };
       if (camera && viewportSystem) {
-        world = viewportSystem.viewportToWorld(x, y, camera.getPosition(), camera.getZoom());
+        world = viewportSystem.viewportToWorld(
+          x,
+          y,
+          camera.getPosition(),
+          camera.getZoom(),
+        );
       }
-      
-      console.log('[CLICK] Mouse clicked - setting tap:', {
+
+      console.log("[CLICK] Mouse clicked - setting tap:", {
         containerXY: { x, y },
         worldXY: world,
       });
-      
+
       inputRef.current = {
         ...inputRef.current,
         tap: { x, y, worldX: world.x, worldY: world.y },
@@ -857,13 +989,24 @@ export function GameRuntimeGodot({
     gameJustStartedRef.current = true;
   }, []);
 
+  useEffect(() => {
+    if (autoStart && gameState.state === "ready" && gameRef.current) {
+      handleStart();
+    }
+  }, [autoStart, gameState.state, handleStart]);
+
   const handleRestart = useCallback(() => {
     if (onRequestRestart) {
       onRequestRestart();
       return;
     }
 
-    if (gameRef.current && loaderRef.current && cameraRef.current && bridgeRef.current) {
+    if (
+      gameRef.current &&
+      loaderRef.current &&
+      cameraRef.current &&
+      bridgeRef.current
+    ) {
       bridgeRef.current.clearGame();
       bridgeRef.current.loadGame(definition);
 
@@ -895,14 +1038,23 @@ export function GameRuntimeGodot({
       });
 
       const initialVariables = newGame.rulesEvaluator.getVariables();
-      setGameState({ score: 0, lives: 3, time: 0, state: "ready", variables: initialVariables });
+      setGameState({
+        score: 0,
+        lives: 3,
+        time: 0,
+        state: "ready",
+        variables: initialVariables,
+      });
     }
   }, [onGameEnd, onScoreChange, onRequestRestart, definition]);
 
   const handleLayout = useCallback(
     (event: { nativeEvent: { layout: { width: number; height: number } } }) => {
       const { width, height } = event.nativeEvent.layout;
-      console.log("[GameRuntime.godot] onLayout fired, screen:", { width, height });
+      console.log("[GameRuntime.godot] onLayout fired, screen:", {
+        width,
+        height,
+      });
       screenSizeRef.current = { width, height };
       setScreenSize({ width, height });
 
@@ -921,103 +1073,145 @@ export function GameRuntimeGodot({
     [],
   );
 
-  const dragStartRef = useRef<{ x: number; y: number; worldX: number; worldY: number } | null>(null);
+  const dragStartRef = useRef<{
+    x: number;
+    y: number;
+    worldX: number;
+    worldY: number;
+  } | null>(null);
   const viewportContainerRef = useRef<View>(null);
 
   const screenToWorld = useCallback((screenX: number, screenY: number) => {
     const camera = cameraRef.current;
     const vs = viewportSystemRef.current;
     if (!camera) return { x: 0, y: 0 };
-    
+
     if (vs) {
-      return vs.viewportToWorld(screenX, screenY, camera.getPosition(), camera.getZoom());
+      return vs.viewportToWorld(
+        screenX,
+        screenY,
+        camera.getPosition(),
+        camera.getZoom(),
+      );
     }
     return camera.screenToWorld(screenX, screenY);
   }, []);
 
-  const handleTouchStart = useCallback((event: GestureResponderEvent) => {
-    const bridge = bridgeRef.current;
-    if (!bridge) return;
-    
-    const { locationX: x, locationY: y } = event.nativeEvent;
-    const world = screenToWorld(x, y);
-    
-    dragStartRef.current = { x, y, worldX: world.x, worldY: world.y };
-    
-    inputRef.current = {
-      ...inputRef.current,
-      drag: {
-        startX: x, startY: y, currentX: x, currentY: y,
-        startWorldX: world.x, startWorldY: world.y,
-        currentWorldX: world.x, currentWorldY: world.y,
-      },
-    };
-    
-    bridge.sendInput('drag_start', { x: world.x, y: world.y });
-  }, [screenToWorld]);
+  const handleTouchStart = useCallback(
+    (event: GestureResponderEvent) => {
+      const bridge = bridgeRef.current;
+      if (!bridge) return;
 
-  const handleTouchMove = useCallback((event: GestureResponderEvent) => {
-    const bridge = bridgeRef.current;
-    const dragStart = dragStartRef.current;
-    if (!bridge || !dragStart) return;
-    
-    const { locationX: x, locationY: y } = event.nativeEvent;
-    const world = screenToWorld(x, y);
-    
-    inputRef.current = {
-      ...inputRef.current,
-      drag: {
-        startX: dragStart.x, startY: dragStart.y,
-        currentX: x, currentY: y,
-        startWorldX: dragStart.worldX, startWorldY: dragStart.worldY,
-        currentWorldX: world.x, currentWorldY: world.y,
-      },
-    };
-    
-    bridge.sendInput('drag_move', { x: world.x, y: world.y });
-  }, [screenToWorld]);
+      const { locationX: x, locationY: y } = event.nativeEvent;
+      const world = screenToWorld(x, y);
 
-  const handleTouchEnd = useCallback((event: GestureResponderEvent) => {
-    const bridge = bridgeRef.current;
-    const dragStart = dragStartRef.current;
-    if (!bridge) return;
-    
-    const { locationX: x, locationY: y } = event.nativeEvent;
-    const world = screenToWorld(x, y);
-    
-    console.log('[GameRuntime] handleTouchEnd - SETTING tap:', { x, y, worldX: world.x, worldY: world.y });
-    inputRef.current = {
-      ...inputRef.current,
-      tap: { x, y, worldX: world.x, worldY: world.y },
-    };
-    console.log('[GameRuntime] handleTouchEnd - inputRef.current now:', inputRef.current);
-    
-    if (dragStart) {
-      const VELOCITY_SCALE = 0.1;
-      inputRef.current.dragEnd = {
-        velocityX: (x - dragStart.x) * VELOCITY_SCALE,
-        velocityY: (y - dragStart.y) * VELOCITY_SCALE,
-        worldVelocityX: (world.x - dragStart.worldX) * VELOCITY_SCALE,
-        worldVelocityY: (world.y - dragStart.worldY) * VELOCITY_SCALE,
+      dragStartRef.current = { x, y, worldX: world.x, worldY: world.y };
+
+      inputRef.current = {
+        ...inputRef.current,
+        drag: {
+          startX: x,
+          startY: y,
+          currentX: x,
+          currentY: y,
+          startWorldX: world.x,
+          startWorldY: world.y,
+          currentWorldX: world.x,
+          currentWorldY: world.y,
+        },
       };
-    }
-    
-    bridge.sendInput('tap', { x: world.x, y: world.y });
-    bridge.sendInput('drag_end', { x: world.x, y: world.y });
-    
-    dragStartRef.current = null;
-    inputRef.current.drag = undefined;
-  }, [screenToWorld]);
 
-  const handleZonePress = useCallback((button: TapZoneButton, pressed: boolean) => {
-    buttonsRef.current[button] = pressed;
-    inputRef.current.buttons = { ...buttonsRef.current };
-  }, []);
+      bridge.sendInput("drag_start", { x: world.x, y: world.y });
+    },
+    [screenToWorld],
+  );
 
-  const handleVirtualButtonPress = useCallback((button: VirtualButtonType, pressed: boolean) => {
-    buttonsRef.current[button] = pressed;
-    inputRef.current.buttons = { ...buttonsRef.current };
-  }, []);
+  const handleTouchMove = useCallback(
+    (event: GestureResponderEvent) => {
+      const bridge = bridgeRef.current;
+      const dragStart = dragStartRef.current;
+      if (!bridge || !dragStart) return;
+
+      const { locationX: x, locationY: y } = event.nativeEvent;
+      const world = screenToWorld(x, y);
+
+      inputRef.current = {
+        ...inputRef.current,
+        drag: {
+          startX: dragStart.x,
+          startY: dragStart.y,
+          currentX: x,
+          currentY: y,
+          startWorldX: dragStart.worldX,
+          startWorldY: dragStart.worldY,
+          currentWorldX: world.x,
+          currentWorldY: world.y,
+        },
+      };
+
+      bridge.sendInput("drag_move", { x: world.x, y: world.y });
+    },
+    [screenToWorld],
+  );
+
+  const handleTouchEnd = useCallback(
+    (event: GestureResponderEvent) => {
+      const bridge = bridgeRef.current;
+      const dragStart = dragStartRef.current;
+      if (!bridge) return;
+
+      const { locationX: x, locationY: y } = event.nativeEvent;
+      const world = screenToWorld(x, y);
+
+      console.log("[GameRuntime] handleTouchEnd - SETTING tap:", {
+        x,
+        y,
+        worldX: world.x,
+        worldY: world.y,
+      });
+      inputRef.current = {
+        ...inputRef.current,
+        tap: { x, y, worldX: world.x, worldY: world.y },
+      };
+      console.log(
+        "[GameRuntime] handleTouchEnd - inputRef.current now:",
+        inputRef.current,
+      );
+
+      if (dragStart) {
+        const VELOCITY_SCALE = 0.1;
+        inputRef.current.dragEnd = {
+          velocityX: (x - dragStart.x) * VELOCITY_SCALE,
+          velocityY: (y - dragStart.y) * VELOCITY_SCALE,
+          worldVelocityX: (world.x - dragStart.worldX) * VELOCITY_SCALE,
+          worldVelocityY: (world.y - dragStart.worldY) * VELOCITY_SCALE,
+        };
+      }
+
+      bridge.sendInput("tap", { x: world.x, y: world.y });
+      bridge.sendInput("drag_end", { x: world.x, y: world.y });
+
+      dragStartRef.current = null;
+      inputRef.current.drag = undefined;
+    },
+    [screenToWorld],
+  );
+
+  const handleZonePress = useCallback(
+    (button: TapZoneButton, pressed: boolean) => {
+      buttonsRef.current[button] = pressed;
+      inputRef.current.buttons = { ...buttonsRef.current };
+    },
+    [],
+  );
+
+  const handleVirtualButtonPress = useCallback(
+    (button: VirtualButtonType, pressed: boolean) => {
+      buttonsRef.current[button] = pressed;
+      inputRef.current.buttons = { ...buttonsRef.current };
+    },
+    [],
+  );
 
   const handleJoystickMove = useCallback((state: JoystickState) => {
     joystickRef.current = state;
@@ -1044,16 +1238,22 @@ export function GameRuntimeGodot({
     inputRef.current.joystick = { ...joystickRef.current };
   }, []);
 
-  const handleDPadPress = useCallback((direction: DPadDirection, pressed: boolean) => {
-    buttonsRef.current[direction] = pressed;
-    inputRef.current.buttons = { ...buttonsRef.current };
-  }, []);
+  const handleDPadPress = useCallback(
+    (direction: DPadDirection, pressed: boolean) => {
+      buttonsRef.current[direction] = pressed;
+      inputRef.current.buttons = { ...buttonsRef.current };
+    },
+    [],
+  );
 
   const letterboxColor = definition.presentation?.letterboxColor ?? "#000000";
   const hasViewport = viewportRect.width > 0 && viewportRect.height > 0;
 
   return (
-    <View style={[styles.container, { backgroundColor: letterboxColor }]} onLayout={handleLayout}>
+    <View
+      style={[styles.container, { backgroundColor: letterboxColor }]}
+      onLayout={handleLayout}
+    >
       {hasViewport && (
         <View
           ref={viewportContainerRef}
@@ -1118,14 +1318,17 @@ export function GameRuntimeGodot({
       )}
 
       {showHUD && hasViewport && (
-        <View style={[
-          styles.hud,
-          {
-            left: viewportRect.x + 20,
-            top: viewportRect.y + 40,
-            right: screenSize.width - viewportRect.x - viewportRect.width + 20,
-          }
-        ]}>
+        <View
+          style={[
+            styles.hud,
+            {
+              left: viewportRect.x + 20,
+              top: viewportRect.y + 40,
+              right:
+                screenSize.width - viewportRect.x - viewportRect.width + 20,
+            },
+          ]}
+        >
           {definition.ui?.showScore !== false && (
             <Text style={styles.scoreText}>Score: {gameState.score}</Text>
           )}
@@ -1135,14 +1338,21 @@ export function GameRuntimeGodot({
             </Text>
           )}
           {definition.ui?.showLives && (
-            <Text style={styles.livesText}>{definition.ui?.livesLabel ?? 'Lives'}: {gameState.lives}</Text>
+            <Text style={styles.livesText}>
+              {definition.ui?.livesLabel ?? "Lives"}: {gameState.lives}
+            </Text>
           )}
           {definition.ui?.entityCountDisplays?.map((display) => {
-            const count = gameRef.current?.entityManager.getEntitiesByTag(display.tag).length ?? 0;
+            const count =
+              gameRef.current?.entityManager.getEntitiesByTag(display.tag)
+                .length ?? 0;
             return (
               <Text
                 key={display.tag}
-                style={[styles.livesText, display.color ? { color: display.color } : undefined]}
+                style={[
+                  styles.livesText,
+                  display.color ? { color: display.color } : undefined,
+                ]}
               >
                 {display.label}: {count}
               </Text>
@@ -1150,15 +1360,20 @@ export function GameRuntimeGodot({
           })}
           {definition.ui?.variableDisplays?.map((display) => {
             const value = gameState.variables[display.name];
-            const shouldShow = display.showWhen !== 'not_default' || value !== display.defaultValue;
+            const shouldShow =
+              display.showWhen !== "not_default" ||
+              value !== display.defaultValue;
             if (!shouldShow) return null;
             const formattedValue = display.format
-              ? display.format.replace('{value}', String(value))
+              ? display.format.replace("{value}", String(value))
               : String(value);
             return (
               <Text
                 key={display.name}
-                style={[styles.livesText, display.color ? { color: display.color } : undefined]}
+                style={[
+                  styles.livesText,
+                  display.color ? { color: display.color } : undefined,
+                ]}
               >
                 {display.label}: {formattedValue}
               </Text>

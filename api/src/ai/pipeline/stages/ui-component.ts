@@ -12,14 +12,16 @@ export const uiBaseStateStage: Stage = {
     }
 
     const spec = run.spec as UIComponentSheetSpec;
-    const resolution = spec.baseResolution ?? 256;
+    const canvasSize = spec.baseResolution ?? 256;
     const marginSize = spec.ninePatchMargins.left;
+    
+    const componentSize = 64;
 
     const silhouettePng = await createNinePatchSilhouette({
-      width: resolution,
-      height: resolution,
+      width: componentSize,
+      height: componentSize,
       marginSize,
-      canvasSize: resolution,
+      canvasSize,
     });
 
     await debug({
@@ -38,7 +40,7 @@ export const uiBaseStateStage: Stage = {
       componentType: spec.componentType,
       state: 'normal',
       theme: run.meta.theme,
-      baseResolution: resolution,
+      baseResolution: canvasSize,
     });
 
     await debug({
@@ -107,7 +109,7 @@ export const uiVariationStatesStage: Stage = {
     }
 
     const spec = run.spec as UIComponentSheetSpec;
-    const resolution = spec.baseResolution ?? 256;
+    const canvasSize = spec.baseResolution ?? 256;
     const stateImages: Record<string, Uint8Array> = { ...run.artifacts.stateImages };
 
     const statesToGenerate = spec.states.filter(s => s !== 'normal');
@@ -119,7 +121,7 @@ export const uiVariationStatesStage: Stage = {
         componentType: spec.componentType,
         state,
         theme: run.meta.theme,
-        baseResolution: resolution,
+        baseResolution: canvasSize,
       });
 
       await debug({
@@ -189,7 +191,7 @@ export const uiUploadR2Stage: Stage = {
     }
 
     const spec = run.spec as UIComponentSheetSpec;
-    const resolution = spec.baseResolution ?? 256;
+    const canvasSize = spec.baseResolution ?? 256;
     const r2Keys: string[] = [];
     const publicUrls: string[] = [];
 
@@ -206,7 +208,7 @@ export const uiUploadR2Stage: Stage = {
       statesMetadata[state] = {
         r2Key,
         publicUrl,
-        region: { x: 0, y: 0, width: resolution, height: resolution },
+        region: { x: 0, y: 0, width: canvasSize, height: canvasSize },
       };
     }
 
@@ -214,7 +216,7 @@ export const uiUploadR2Stage: Stage = {
       componentType: spec.componentType,
       states: statesMetadata,
       ninePatchMargins: spec.ninePatchMargins,
-      baseResolution: resolution,
+      baseResolution: canvasSize,
       generatedAt: Date.now(),
       theme: run.meta.theme,
     };

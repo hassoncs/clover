@@ -1,4 +1,8 @@
-import type { GameDefinition } from "@slopcade/shared";
+import {
+  createGridConfig,
+  gridCellToWorld,
+  type GameDefinition,
+} from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
 export const metadata: TestGameMeta = {
@@ -11,16 +15,12 @@ const GRID_ROWS = 7;
 const CELL_SIZE = 1.2;
 const WORLD_WIDTH = GRID_COLS * CELL_SIZE + 2;
 const WORLD_HEIGHT = GRID_ROWS * CELL_SIZE + 4;
-const GRID_ORIGIN_X = -(GRID_COLS * CELL_SIZE) / 2;
-const GRID_ORIGIN_Y = (GRID_ROWS * CELL_SIZE) / 2;
-
 const CANDY_SIZE = CELL_SIZE * 0.85;
 
-function cellToWorld(row: number, col: number): { x: number; y: number } {
-  return {
-    x: GRID_ORIGIN_X + col * CELL_SIZE + CELL_SIZE / 2,
-    y: GRID_ORIGIN_Y - row * CELL_SIZE - CELL_SIZE / 2,
-  };
+const gridConfig = createGridConfig(GRID_ROWS, GRID_COLS, CELL_SIZE, "center");
+
+function getCellPosition(row: number, col: number): { x: number; y: number } {
+  return gridCellToWorld(gridConfig, row, col);
 }
 
 const game: GameDefinition = {
@@ -28,12 +28,13 @@ const game: GameDefinition = {
     id: "test-candy-crush",
     title: "Candy Crush",
     description: "Match 3 or more candies to clear them!",
-    instructions: "Tap two adjacent candies to swap them. Match 3 or more of the same color to clear!",
+    instructions:
+      "Tap two adjacent candies to swap them. Match 3 or more of the same color to clear!",
     version: "1.0.0",
   },
   background: {
     type: "static",
-    color: "#2d1b4e",
+    color: "#fd1b4e",
   },
   world: {
     gravity: { x: 0, y: 0 },
@@ -61,9 +62,15 @@ const game: GameDefinition = {
     rows: GRID_ROWS,
     cols: GRID_COLS,
     cellSize: CELL_SIZE,
-    originX: GRID_ORIGIN_X,
-    originY: GRID_ORIGIN_Y,
-    pieceTemplates: ["candy_red", "candy_blue", "candy_green", "candy_yellow", "candy_purple"],
+    originX: gridConfig.originX,
+    originY: gridConfig.originY,
+    pieceTemplates: [
+      "candy_red",
+      "candy_blue",
+      "candy_green",
+      "candy_yellow",
+      "candy_purple",
+    ],
     minMatch: 3,
     swapDuration: 0.15,
     fallDuration: 0.1,
@@ -71,8 +78,10 @@ const game: GameDefinition = {
     variantSheet: {
       enabled: true,
       groupId: "default",
-      atlasUrl: "https://slopcade-api.hassoncs.workers.dev/assets/generated/test-gem-variants/gem-variants.png",
-      metadataUrl: "https://slopcade-api.hassoncs.workers.dev/assets/generated/test-gem-variants/gem-variants.json",
+      atlasUrl:
+        "https://slopcade-api.hassoncs.workers.dev/assets/generated/test-gem-variants/gem-variants.png",
+      metadataUrl:
+        "https://slopcade-api.hassoncs.workers.dev/assets/generated/test-gem-variants/gem-variants.json",
       layout: { columns: 4, rows: 2, cellWidth: 64, cellHeight: 64 },
     },
   },
@@ -232,7 +241,7 @@ const game: GameDefinition = {
     ...Array.from({ length: GRID_ROWS * GRID_COLS }, (_, i) => {
       const row = Math.floor(i / GRID_COLS);
       const col = i % GRID_COLS;
-      const pos = cellToWorld(row, col);
+      const pos = getCellPosition(row, col);
       return {
         id: `grid_${row}_${col}`,
         name: `Grid Cell ${row},${col}`,

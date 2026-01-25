@@ -16,11 +16,15 @@ import type {
   FixtureDef,
   DynamicShaderResult,
 } from "./types";
+import { injectGodotDebugBridge } from "./debug";
+import { queryAsync as sharedQueryAsync, setupQueryResolver, getGodotBridge as getSharedGodotBridge, type GodotBridgeBase } from "./query";
 
 declare global {
   interface Window {
     GodotBridge?: {
       _lastResult: unknown;
+      _pendingQueries?: Map<string, (result: unknown) => void>;
+      query: (requestId: string, method: string, argsJson: string) => void;
       loadGameJson: (json: string) => boolean;
       clearGame: () => void;
       spawnEntity: (
@@ -193,9 +197,15 @@ declare global {
       rotate_3d_model: (x: number, y: number, z: number) => void;
       set_3d_camera_distance: (distance: number) => void;
       clear_3d_models: () => void;
+      captureScreenshot: (withOverlays: boolean, overlayTypesJson: string) => void;
+      getWorldInfo: () => void;
+      getCameraInfo: () => void;
+      getViewportInfo: () => void;
     };
   }
 }
+
+
 
 export function createWebGodotBridge(): GodotBridge {
   const collisionCallbacks: ((event: CollisionEvent) => void)[] = [];
@@ -229,8 +239,18 @@ export function createWebGodotBridge(): GodotBridge {
     return window.GodotBridge ?? null;
   };
 
+  const queryAsync = <T>(method: string, args: unknown[] = [], timeoutMs = 5000): Promise<T> => {
+    const bridge = getSharedGodotBridge() as GodotBridgeBase | null;
+    if (!bridge) {
+      return Promise.reject(new Error("Godot bridge not available"));
+    }
+    return sharedQueryAsync<T>(bridge, method, args, { timeoutMs });
+  };
+
   const bridge: GodotBridge = {
     async initialize() {
+      setupQueryResolver();
+      
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(
           () => reject(new Error("Godot WASM load timeout")),
@@ -341,6 +361,18 @@ export function createWebGodotBridge(): GodotBridge {
               } catch {}
             });
 
+            // Auto-inject debug bridge in dev mode or when ?debug=true
+            if (
+              process.env.NODE_ENV === "development" ||
+              (typeof window !== "undefined" &&
+                window.location?.search?.includes("debug=true"))
+            ) {
+              injectGodotDebugBridge();
+              console.log(
+                "[GodotBridge.web] Debug bridge auto-injected (dev mode)",
+              );
+            }
+
             resolve();
           }
         }, 100);
@@ -384,19 +416,19 @@ export function createWebGodotBridge(): GodotBridge {
     },
 
     async getAllTransforms(): Promise<Record<string, EntityTransform>> {
-      const godotBridge = getGodotBridge();
-      if (!godotBridge) return {};
-      godotBridge.getAllTransforms();
-      const result = godotBridge._lastResult as Record<string, EntityTransform>;
-      return result ?? {};
+      try {
+        return await queryAsync<Record<string, EntityTransform>>("getAllTransforms");
+      } catch {
+        return {};
+      }
     },
 
     async getAllProperties(): Promise<PropertySyncPayload> {
-      const godotBridge = getGodotBridge();
-      if (!godotBridge) return { frameId: 0, timestamp: 0, entities: {} };
-      godotBridge.getAllProperties();
-      const result = godotBridge._lastResult as PropertySyncPayload;
-      return result ?? { frameId: 0, timestamp: 0, entities: {} };
+      try {
+        return await queryAsync<PropertySyncPayload>("getAllProperties");
+      } catch {
+        return { frameId: 0, timestamp: 0, entities: {} };
+      }
     },
 
     setTransform(entityId: string, x: number, y: number, angle: number) {

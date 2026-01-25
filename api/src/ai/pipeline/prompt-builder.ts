@@ -177,65 +177,23 @@ export interface UIComponentPromptParams {
 }
 
 export function buildUIComponentPrompt(params: UIComponentPromptParams): { prompt: string; negativePrompt: string } {
-  const { componentType, state, theme, baseResolution = 256 } = params;
-  const stateDescription = UI_STATE_DESCRIPTIONS[state] || UI_STATE_DESCRIPTIONS.normal;
+  const { componentType, state, theme } = params;
 
-  const lines = [
-    '=== CAMERA/VIEW (CRITICAL) ===',
-    'FRONT VIEW. Flat 2D UI element. No 3D perspective or rotation.',
-    'Camera directly facing the component surface.',
-    '',
-    '=== SHAPE (CRITICAL) ===',
-    'Nine-patch UI component background.',
-    'DECORATIVE BORDERS around all edges (fixed when scaled).',
-    'FLAT CENTER REGION (stretches when component is resized).',
-    'Clear visual distinction between border decoration and center area.',
-    '',
-    '=== COMPOSITION ===',
-    `Component fills the ${baseResolution}x${baseResolution} frame.`,
-    'Consistent border width on all four sides.',
-    'Center area is visually distinct from borders.',
-    '',
-    '=== SUBJECT ===',
-    `A ${componentType} background for a video game UI.`,
-    `Theme: ${theme}`,
-    `State: ${state} - ${stateDescription}`,
-    '',
-    '=== STYLE ===',
-    'Clean UI design, professional game interface.',
-    'Stylized to match the theme while remaining functional.',
-    'Decorative but not cluttered.',
-    '',
-    '=== TECHNICAL ===',
-    'Transparent background (alpha channel).',
-    'NO text, NO labels, NO icons inside the component.',
-    'NO grid lines, NO measurement marks.',
-    'Consistent border widths suitable for nine-patch scaling.',
-    'Single UI element only, no duplicates or variations.',
-  ];
-
-  const negativePrompt = [
-    'text',
-    'labels',
-    'icons',
-    'checkmarks',
-    'letters',
-    'numbers',
-    'watermark',
-    'signature',
-    'grid lines',
-    'borders around the component',
-    'multiple elements',
-    '3D perspective',
-    'angled view',
-    'blurry',
-    'low quality',
-  ].join(', ');
-
-  return {
-    prompt: lines.join('\n'),
-    negativePrompt,
+  const stateDescriptions: Record<string, string> = {
+    normal: 'neutral, clean',
+    hover: 'highlighted, slightly brighter',
+    pressed: 'depressed, darker or inset',
+    disabled: 'greyed out, low contrast',
+    focus: 'focused with outline or glow',
   };
+
+  const stateDesc = stateDescriptions[state] || 'default';
+
+  const prompt = `A ${componentType} UI background for a game interface. Theme: ${theme}. State: ${stateDesc}. Front view, flat 2D element with transparent background. Decorative borders and clean center area suitable for nine-patch scaling. Professional game UI style, functional and thematic.`;
+
+  const negativePrompt = 'text, labels, icons, checkmarks, letters, numbers, watermark, signature, grid lines, measurement marks, multiple elements, 3D perspective, angled view, blurry, low quality';
+
+  return { prompt, negativePrompt };
 }
 
 export function buildNegativePrompt(style: SpriteStyle): string {

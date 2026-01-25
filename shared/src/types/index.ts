@@ -11,3 +11,4 @@ export * from './particles';
 export * from './tilemap';
 export * from './asset-system';
 export * from './asset-sheet';
+export * from './godot-bridge';

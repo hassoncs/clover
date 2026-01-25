@@ -1,13 +1,14 @@
-import type { RuntimeEntity } from './types';
+import type { RuntimeEntity } from "./types";
 
 export const SYSTEM_ENTITY_IDS = {
-  MOUSE: '$mouse',
-  TOUCH: '$touch',
-  DRAG: '$drag',
-  DRAG_START: '$dragStart',
+  MOUSE: "$mouse",
+  TOUCH: "$touch",
+  DRAG: "$drag",
+  DRAG_START: "$dragStart",
 } as const;
 
-export type SystemEntityId = (typeof SYSTEM_ENTITY_IDS)[keyof typeof SYSTEM_ENTITY_IDS];
+export type SystemEntityId =
+  (typeof SYSTEM_ENTITY_IDS)[keyof typeof SYSTEM_ENTITY_IDS];
 
 export interface InputState {
   mouse?: {
@@ -50,7 +51,7 @@ export class InputEntityManager {
       name: id,
       transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
       behaviors: [],
-      tags: ['system', 'input'],
+      tags: ["system", "input"],
       layer: 999,
       visible: this.debugMode,
       active: false,
@@ -60,8 +61,6 @@ export class InputEntityManager {
     this.virtualEntities.set(id, entity);
   }
 
-  private debugLogCounter = 0;
-
   syncFromInput(input: InputState): void {
     const mouse = this.virtualEntities.get(SYSTEM_ENTITY_IDS.MOUSE);
     if (mouse) {
@@ -69,15 +68,6 @@ export class InputEntityManager {
         mouse.transform.x = input.mouse.worldX;
         mouse.transform.y = input.mouse.worldY;
         mouse.active = true;
-        
-        this.debugLogCounter++;
-        if (this.debugLogCounter % 60 === 0) {
-          console.log('[InputEntityManager] $mouse synced:', {
-            worldX: input.mouse.worldX.toFixed(2),
-            worldY: input.mouse.worldY.toFixed(2),
-            active: mouse.active,
-          });
-        }
       } else {
         mouse.active = false;
       }
@@ -113,7 +103,7 @@ export class InputEntityManager {
   }
 
   isSystemEntityId(id: string): boolean {
-    return id.startsWith('$');
+    return id.startsWith("$");
   }
 
   getAllEntities(): RuntimeEntity[] {
