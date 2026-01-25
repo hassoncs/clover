@@ -183,18 +183,24 @@ export function GameRuntimeGodot({
           stats: report.stats,
         });
 
-        // Build active watch config and send to Godot
         const { WatchRegistry } = await import("@slopcade/shared");
         const registry = new WatchRegistry();
         registry.addWatches(watches);
         const activeConfig = registry.getActiveConfig();
         
-        // Convert Sets/Maps to plain objects for JSON serialization
+        const serializeMapOfSetsToJSON = (map: Map<string, Set<string>>): Record<string, string[]> => {
+          const result: Record<string, string[]> = {};
+          for (const [key, set] of map.entries()) {
+            result[key] = Array.from(set);
+          }
+          return result;
+        };
+        
         const serializableConfig = {
           frameProperties: Array.from(activeConfig.frameProperties),
-          changeProperties: Object.fromEntries(activeConfig.changeProperties),
-          entityWatches: Object.fromEntries(activeConfig.entityWatches),
-          tagWatches: Object.fromEntries(activeConfig.tagWatches),
+          changeProperties: serializeMapOfSetsToJSON(activeConfig.changeProperties),
+          entityWatches: serializeMapOfSetsToJSON(activeConfig.entityWatches),
+          tagWatches: serializeMapOfSetsToJSON(activeConfig.tagWatches),
         };
         
         bridge.setWatchConfig(serializableConfig);
