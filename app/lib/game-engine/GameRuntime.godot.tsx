@@ -7,9 +7,10 @@ import {
   Platform,
   type GestureResponderEvent,
 } from "react-native";
-import type { GameDefinition, ParticleEmitterType, EvalContext, ExpressionValueType, TapZoneButton, VirtualButtonType, DPadDirection, AssetSheet } from "@slopcade/shared";
-import { createComputedValueSystem, getAllSystemExpressionFunctions } from "@slopcade/shared";
+import type { GameDefinition, ParticleEmitterType, EvalContext, ExpressionValueType, TapZoneButton, VirtualButtonType, DPadDirection, AssetSheet, PropertyWatchSpec } from "@slopcade/shared";
+import { createComputedValueSystem, getAllSystemExpressionFunctions, DependencyAnalyzer, PropertyCache, EntityContextProxy } from "@slopcade/shared";
 import { GodotView, createGodotBridge, createGodotPhysicsAdapter } from "../godot";
+import { PropertySyncManager } from "../godot/PropertySyncManager";
 import type { GodotBridge } from "../godot/types";
 import type { Physics2D, CollisionEvent, Unsubscribe } from "../physics2d";
 import { GameLoader, type LoadedGame } from "./GameLoader";
@@ -58,6 +59,8 @@ export function GameRuntimeGodot({
   const viewportSystemRef = useRef<ViewportSystem | null>(null);
   const inputEntityManagerRef = useRef<InputEntityManager | null>(null);
   const match3SystemRef = useRef<Match3GameSystem | null>(null);
+  const propertyCacheRef = useRef(new PropertyCache());
+  const propertySyncManagerRef = useRef<PropertySyncManager | null>(null);
   const elapsedRef = useRef(0);
   const frameIdRef = useRef(0);
   const collisionsRef = useRef<CollisionInfo[]>([]);
@@ -161,6 +164,46 @@ export function GameRuntimeGodot({
 
         await bridge.loadGame(definition);
         console.log("[GameRuntime.godot] Game loaded into Godot");
+
+        const analyzer = new DependencyAnalyzer(definition);
+        const report = analyzer.analyze();
+        const watches = analyzer.getWatchSpecs();
+        
+        if (report.errors.length > 0) {
+          console.warn('[GameRuntime.godot] Property watching validation errors:', report.errors);
+        }
+        if (report.warnings.length > 0) {
+          console.log('[GameRuntime.godot] Property watching warnings:', report.warnings);
+        }
+        
+        console.log('[GameRuntime.godot] Property watching:', {
+          valid: report.valid,
+          watchCount: watches.length,
+          properties: [...new Set(watches.map((w: PropertyWatchSpec) => w.property))],
+          stats: report.stats,
+        });
+
+        // Build active watch config and send to Godot
+        const { WatchRegistry } = await import("@slopcade/shared");
+        const registry = new WatchRegistry();
+        registry.addWatches(watches);
+        const activeConfig = registry.getActiveConfig();
+        
+        // Convert Sets/Maps to plain objects for JSON serialization
+        const serializableConfig = {
+          frameProperties: Array.from(activeConfig.frameProperties),
+          changeProperties: Object.fromEntries(activeConfig.changeProperties),
+          entityWatches: Object.fromEntries(activeConfig.entityWatches),
+          tagWatches: Object.fromEntries(activeConfig.tagWatches),
+        };
+        
+        bridge.setWatchConfig(serializableConfig);
+        console.log('[GameRuntime.godot] Sent watch config to Godot:', serializableConfig);
+
+        const propertySync = new PropertySyncManager(propertyCacheRef.current);
+        propertySync.start(bridge);
+        propertySyncManagerRef.current = propertySync;
+        console.log("[GameRuntime.godot] Property sync started");
 
         const loader = new GameLoader({ physics });
         loaderRef.current = loader;
@@ -333,6 +376,8 @@ export function GameRuntimeGodot({
       inputEventUnsubRef.current = null;
       match3SystemRef.current?.destroy();
       match3SystemRef.current = null;
+      propertySyncManagerRef.current?.stop();
+      propertySyncManagerRef.current = null;
       bridgeRef.current?.dispose();
       bridgeRef.current = null;
       physicsRef.current = null;
@@ -419,7 +464,40 @@ export function GameRuntimeGodot({
     const computedValues = computedValuesRef.current;
 
     const createEvalContext = (entity?: RuntimeEntity): EvalContext => {
-      const velocity = entity?.bodyId ? physics.getLinearVelocity(entity.bodyId) : { x: 0, y: 0 };
+      let selfContext: EvalContext['self'] | undefined;
+      
+      if (entity) {
+        const propertySyncEnabled = propertyCacheRef.current;
+        
+        if (propertySyncEnabled) {
+          const entityProxy = EntityContextProxy.createEntityContext(
+            propertyCacheRef.current,
+            entity.id
+          );
+          
+          const velocity = entity.bodyId ? physics.getLinearVelocity(entity.bodyId) : { x: 0, y: 0 };
+          const transform = (entityProxy.transform as { x: number; y: number; angle: number }) || entity.transform;
+          const syncedVelocity = (entityProxy.velocity as { x: number; y: number }) || velocity;
+          
+          selfContext = {
+            id: entity.id,
+            transform,
+            velocity: syncedVelocity,
+            health: (entityProxy.health as number) ?? 100,
+            maxHealth: (entityProxy.maxHealth as number) ?? 100,
+          };
+        } else {
+          const velocity = entity.bodyId ? physics.getLinearVelocity(entity.bodyId) : { x: 0, y: 0 };
+          selfContext = {
+            id: entity.id,
+            transform: entity.transform,
+            velocity,
+            health: 100,
+            maxHealth: 100,
+          };
+        }
+      }
+      
       return {
         score: fullGameState.score,
         lives: fullGameState.lives,
@@ -431,13 +509,7 @@ export function GameRuntimeGodot({
         random: Math.random,
         entityManager: game.entityManager,
         customFunctions: getAllSystemExpressionFunctions(),
-        self: entity ? {
-          id: entity.id,
-          transform: entity.transform,
-          velocity,
-          health: 100,
-          maxHealth: 100,
-        } : undefined,
+        self: selfContext,
       };
     };
 

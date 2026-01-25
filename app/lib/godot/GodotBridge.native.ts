@@ -1,4 +1,4 @@
-import type { GameDefinition } from '@slopcade/shared';
+import type { GameDefinition, PropertySyncPayload } from '@slopcade/shared';
 import type {
   GodotBridge,
   CollisionEvent,
@@ -33,6 +33,7 @@ interface GodotGameBridge {
   user_data: Record<number, unknown>;
   body_id_reverse: Record<number, string>;
   get_all_transforms(): Record<string, EntityTransform>;
+  get_all_properties(): PropertySyncPayload;
   query_point_entity(x: number, y: number): string | null;
   create_mouse_joint(body: string, targetX: number, targetY: number, maxForce: number, stiffness: number, damping: number): number;
   destroy_joint(jointId: number): void;
@@ -142,6 +143,7 @@ export function createNativeGodotBridge(): GodotBridge {
   const inputEventCallbacks: ((type: string, x: number, y: number, entityId: string | null) => void)[] = [];
   const uiButtonCallbacks: ((eventType: 'button_down' | 'button_up' | 'button_pressed', buttonId: string) => void)[] = [];
   const transformSyncCallbacks: ((transforms: Record<string, EntityTransform>) => void)[] = [];
+  const propertySyncCallbacks: ((properties: PropertySyncPayload) => void)[] = [];
   let eventPollIntervalId: ReturnType<typeof setInterval> | null = null;
 
   async function pollAndDispatchEvents() {
@@ -230,6 +232,13 @@ export function createNativeGodotBridge(): GodotBridge {
             const data = event.data as { type: string; x: number; y: number; entityId: string | null };
             for (const cb of inputEventCallbacks) {
               cb(data.type, data.x, data.y, data.entityId);
+            }
+            break;
+          }
+          case 'property_sync': {
+            const data = event.data as unknown as PropertySyncPayload;
+            for (const cb of propertySyncCallbacks) {
+              cb(data);
             }
             break;
           }
@@ -455,6 +464,24 @@ export function createNativeGodotBridge(): GodotBridge {
           console.log(`[Godot worklet] getAllTransforms error: ${e}`);
         }
         return {};
+      });
+    },
+
+    async getAllProperties(): Promise<PropertySyncPayload> {
+      const { RTNGodot, runOnGodotThread } = await getGodotModule();
+      
+      return runOnGodotThread(() => {
+        'worklet';
+        try {
+          const Godot = RTNGodot.API();
+          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
+          if (gameBridge?.get_all_properties) {
+            return gameBridge.get_all_properties();
+          }
+        } catch (e) {
+          console.log(`[Godot worklet] getAllProperties error: ${e}`);
+        }
+        return { frameId: 0, timestamp: 0, entities: {} };
       });
     },
 
@@ -904,6 +931,18 @@ export function createNativeGodotBridge(): GodotBridge {
       };
     },
 
+    onPropertySync(callback: (properties: PropertySyncPayload) => void): () => void {
+      propertySyncCallbacks.push(callback);
+      return () => {
+        const index = propertySyncCallbacks.indexOf(callback);
+        if (index >= 0) propertySyncCallbacks.splice(index, 1);
+      };
+    },
+
+    setWatchConfig(config: unknown): void {
+      callGameBridge('set_watch_config', JSON.stringify(config));
+    },
+
     sendInput(type, data) {
       callGameBridge('send_input', type, data.x, data.y, data.entityId ?? '');
     },
@@ -937,16 +976,50 @@ export function createNativeGodotBridge(): GodotBridge {
       }
     },
 
-    setEntityAtlasRegion(
+    async setEntityAtlasRegion(
       entityId: string,
       atlasUrl: string,
-      region: { x: number; y: number; w: number; h: number }
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      width: number,
+      height: number
     ) {
-      callGameBridge('set_entity_atlas_region', entityId, atlasUrl, region);
+      try {
+        const urlHash = atlasUrl.replace(/[^a-zA-Z0-9]/g, '_').slice(-50);
+        const filename = `atlas_${urlHash}.png`;
+        const localPath = `${FileSystem.cacheDirectory}${filename}`;
+        
+        const fileInfo = await FileSystem.getInfoAsync(localPath);
+        
+        let godotPath: string;
+        if (fileInfo.exists) {
+          godotPath = localPath.replace(/^file:\/\//, '');
+        } else {
+          console.log(`[GodotBridge.native] Downloading atlas for ${entityId}: ${atlasUrl}`);
+          const downloadResult = await FileSystem.downloadAsync(atlasUrl, localPath);
+          
+          if (downloadResult.status !== 200) {
+            console.error(`[GodotBridge.native] Failed to download atlas: status=${downloadResult.status}`);
+            return;
+          }
+          godotPath = localPath.replace(/^file:\/\//, '');
+        }
+        
+        console.log(`[GodotBridge.native] Setting atlas region for ${entityId}: ${godotPath}`);
+        callGameBridge('set_entity_atlas_region_from_file', entityId, godotPath, x, y, w, h, width, height);
+      } catch (e) {
+        console.error(`[GodotBridge.native] setEntityAtlasRegion error:`, e);
+      }
     },
 
     clearTextureCache(url?: string) {
       callGameBridge('clear_texture_cache', url ?? '');
+    },
+
+    setDebugShowShapes(show: boolean) {
+      callGameBridge('set_debug_show_shapes', show);
     },
 
     setCameraTarget(entityId: string | null) {

@@ -1,4 +1,4 @@
-import type { GameDefinition } from "@slopcade/shared";
+import type { GameDefinition, PropertySyncPayload } from "@slopcade/shared";
 import type {
   GodotBridge,
   CollisionEvent,
@@ -32,6 +32,9 @@ declare global {
       destroyEntity: (entityId: string) => void;
       getEntityTransform: (entityId: string) => EntityTransform | null;
       getAllTransforms: () => Record<string, EntityTransform>;
+      getAllProperties: () => PropertySyncPayload;
+      onPropertySync: (callback: (propertiesJson: string) => void) => void;
+      setWatchConfig: (configJson: string) => void;
       setTransform: (
         entityId: string,
         x: number,
@@ -112,10 +115,16 @@ declare global {
       setEntityAtlasRegion: (
         entityId: string,
         atlasUrl: string,
-        region: { x: number; y: number; w: number; h: number },
+        x: number,
+        y: number,
+        w: number,
+        h: number,
+        width: number,
+        height: number,
       ) => void;
-      clearTextureCache: (url: string) => void;
-      setCameraTarget: (entityId: string) => void;
+       clearTextureCache: (url: string) => void;
+       setDebugShowShapes: (show: boolean) => void;
+       setCameraTarget: (entityId: string) => void;
       setCameraPosition: (x: number, y: number) => void;
       setCameraZoom: (zoom: number) => void;
       spawnParticle: (type: string, x: number, y: number) => void;
@@ -205,6 +214,9 @@ export function createWebGodotBridge(): GodotBridge {
   ) => void)[] = [];
   const transformSyncCallbacks: ((
     transforms: Record<string, EntityTransform>,
+  ) => void)[] = [];
+  const propertySyncCallbacks: ((
+    properties: PropertySyncPayload,
   ) => void)[] = [];
 
   const getGodotBridge = (): Window["GodotBridge"] | null => {
@@ -322,6 +334,13 @@ export function createWebGodotBridge(): GodotBridge {
               } catch {}
             });
 
+            godotBridge.onPropertySync((propertiesJson: string) => {
+              try {
+                const properties = JSON.parse(propertiesJson) as PropertySyncPayload;
+                for (const cb of propertySyncCallbacks) cb(properties);
+              } catch {}
+            });
+
             resolve();
           }
         }, 100);
@@ -370,6 +389,14 @@ export function createWebGodotBridge(): GodotBridge {
       godotBridge.getAllTransforms();
       const result = godotBridge._lastResult as Record<string, EntityTransform>;
       return result ?? {};
+    },
+
+    async getAllProperties(): Promise<PropertySyncPayload> {
+      const godotBridge = getGodotBridge();
+      if (!godotBridge) return { frameId: 0, timestamp: 0, entities: {} };
+      godotBridge.getAllProperties();
+      const result = godotBridge._lastResult as PropertySyncPayload;
+      return result ?? { frameId: 0, timestamp: 0, entities: {} };
     },
 
     setTransform(entityId: string, x: number, y: number, angle: number) {
@@ -641,6 +668,20 @@ export function createWebGodotBridge(): GodotBridge {
       };
     },
 
+    onPropertySync(
+      callback: (properties: PropertySyncPayload) => void,
+    ): () => void {
+      propertySyncCallbacks.push(callback);
+      return () => {
+        const index = propertySyncCallbacks.indexOf(callback);
+        if (index >= 0) propertySyncCallbacks.splice(index, 1);
+      };
+    },
+
+    setWatchConfig(config: unknown): void {
+      getGodotBridge()?.setWatchConfig(JSON.stringify(config));
+    },
+
     sendInput(type, data) {
       getGodotBridge()?.sendInput(type, data.x, data.y, data.entityId ?? "");
     },
@@ -672,13 +713,22 @@ export function createWebGodotBridge(): GodotBridge {
     setEntityAtlasRegion(
       entityId: string,
       atlasUrl: string,
-      region: { x: number; y: number; w: number; h: number },
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      width: number,
+      height: number,
     ) {
-      getGodotBridge()?.setEntityAtlasRegion(entityId, atlasUrl, region);
+      getGodotBridge()?.setEntityAtlasRegion(entityId, atlasUrl, x, y, w, h, width, height);
     },
 
     clearTextureCache(url?: string) {
       getGodotBridge()?.clearTextureCache(url ?? "");
+    },
+
+    setDebugShowShapes(show: boolean) {
+      getGodotBridge()?.setDebugShowShapes(show);
     },
 
     setCameraTarget(entityId: string | null) {

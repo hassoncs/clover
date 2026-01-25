@@ -12,12 +12,13 @@ test_model.glb::PackedScene::2451084565682209964::1769312314::1769312331::0::::<
 ::res://scenes/::1769312328
 Lab3D.tscn::PackedScene::-1::1769312437::0::1::::<><><>0<>0<><>::res://scripts/Lab3D.gd
 VFXShowcase.tscn::PackedScene::2855297431937620752::1769205700::0::1::::<><><>0<>0<><>::res://scripts/VFXShowcase.gd
-::res://scripts/::1769312924
-GameBridge.gd::GDScript::7400890102577367664::1769314088::0::1::::<>Node<><>0<>0<><>::
+::res://scripts/::1769320944
+GameBridge.gd::GDScript::7400890102577367664::1769325749::0::1::::<>Node<><>0<>0<><>::
 Lab3D.gd::GDScript::2743172060191353031::1769312349::0::1::::<>Node3D<><>0<>0<><>::
 Main.gd::GDScript::4927831078751178685::1769283289::0::1::::<>Node2D<><>0<>0<><>::
 PhysicsBody.gd::GDScript::3101094749307879933::1769200136::0::1::::<>RigidBody2D<><>0<>0<><>::
 PrismaticJointDriver.gd::GDScript::1085538468816056858::1769200386::0::1::::<>GrooveJoint2D<><>0<>0<><>::
+PropertyCollector.gd::GDScript::1095863062503826292::1769325936::0::1::::PropertyCollector<>Node<><>0<>0<><>::
 VFXShowcase.gd::GDScript::4087428144712657601::1769205737::0::1::::<>Node2D<><>0<>0<><>::
 ::res://scripts/3d/::1769313493
 GLBLoader.gd::GDScript::5061860736730575181::1769315663::0::1::::GLBLoader<>RefCounted<><>0<>0<><>::

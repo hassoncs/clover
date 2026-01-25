@@ -200,7 +200,7 @@ export class ViewportSystem {
     
     return {
       x: centeredX / effectiveScale + cameraPosition.x,
-      y: centeredY / effectiveScale + cameraPosition.y,
+      y: -centeredY / effectiveScale + cameraPosition.y,
     };
   }
 

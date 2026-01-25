@@ -15,6 +15,7 @@ signal joint_created(request_id: int, joint_id: int)
 var _event_queue_module: EventQueue = null
 var _glb_loader: GLBLoader = null
 var _viewport_3d: Viewport3D = null
+var _property_collector: PropertyCollector = null
 
 # ============================================================================
 # CORE STATE
@@ -63,6 +64,7 @@ var _js_sensor_begin_callback: JavaScriptObject = null
 var _js_sensor_end_callback: JavaScriptObject = null
 var _js_input_event_callback: JavaScriptObject = null
 var _js_transform_sync_callback: JavaScriptObject = null
+var _js_property_sync_callback: JavaScriptObject = null
 
 # Collision manifold tracking (for detailed contact info)
 var _active_contacts: Dictionary = {}  # "entityA:entityB" -> last_impulse_time
@@ -71,6 +73,9 @@ const IMPULSE_THRESHOLD: float = 0.01  # Minimum impulse to report
 # UI Button management
 var _ui_buttons: Dictionary = {}  # button_id -> TextureButton node
 var _js_ui_button_callback: JavaScriptObject = null
+
+# Debug mode - toggle between showing physics shapes and textures
+var _debug_show_shapes: bool = false
 
 # Body ID tracking for Physics2D compatibility
 var body_id_map: Dictionary = {}  # entity_id -> body_id (int)
@@ -108,6 +113,7 @@ func _init_modules() -> void:
 	_viewport_3d = Viewport3D.new()
 	_viewport_3d.name = "Viewport3D"
 	add_child(_viewport_3d)
+	_property_collector = PropertyCollector.new(self)
 
 # Handle native input events on web and relay them back to JS
 func _input(event: InputEvent) -> void:
@@ -191,9 +197,21 @@ func _setup_js_bridge() -> void:
 	_js_callbacks.append(get_all_cb)
 	_js_bridge_obj["getAllTransforms"] = get_all_cb
 	
+	var get_all_properties_cb = JavaScriptBridge.create_callback(_js_get_all_properties)
+	_js_callbacks.append(get_all_properties_cb)
+	_js_bridge_obj["getAllProperties"] = get_all_properties_cb
+	
 	var on_transform_sync_cb = JavaScriptBridge.create_callback(_js_on_transform_sync)
 	_js_callbacks.append(on_transform_sync_cb)
 	_js_bridge_obj["onTransformSync"] = on_transform_sync_cb
+	
+	var on_property_sync_cb = JavaScriptBridge.create_callback(_js_on_property_sync)
+	_js_callbacks.append(on_property_sync_cb)
+	_js_bridge_obj["onPropertySync"] = on_property_sync_cb
+	
+	var set_watch_config_cb = JavaScriptBridge.create_callback(_js_set_watch_config)
+	_js_callbacks.append(set_watch_config_cb)
+	_js_bridge_obj["setWatchConfig"] = set_watch_config_cb
 	
 	var set_lin_vel_cb = JavaScriptBridge.create_callback(_js_set_linear_velocity)
 	_js_callbacks.append(set_lin_vel_cb)
@@ -348,6 +366,10 @@ func _setup_js_bridge() -> void:
 	_js_callbacks.append(clear_texture_cache_cb)
 	_js_bridge_obj["clearTextureCache"] = clear_texture_cache_cb
 	
+	var set_debug_show_shapes_cb = JavaScriptBridge.create_callback(_js_set_debug_show_shapes)
+	_js_callbacks.append(set_debug_show_shapes_cb)
+	_js_bridge_obj["setDebugShowShapes"] = set_debug_show_shapes_cb
+	
 	var set_camera_target_cb = JavaScriptBridge.create_callback(_js_set_camera_target)
 	_js_callbacks.append(set_camera_target_cb)
 	_js_bridge_obj["setCameraTarget"] = set_camera_target_cb
@@ -448,6 +470,10 @@ func _js_get_all_transforms(_args: Array) -> void:
 	var transforms = get_all_transforms()
 	_js_bridge_obj["_lastResult"] = transforms
 
+func _js_get_all_properties(_args: Array) -> void:
+	var properties = collect_all_properties()
+	_js_bridge_obj["_lastResult"] = properties
+
 func _js_on_transform_sync(args: Array) -> void:
 	if args.size() >= 1:
 		_js_transform_sync_callback = args[0]
@@ -457,6 +483,26 @@ func _notify_transform_sync() -> void:
 		var transforms = get_all_transforms()
 		var json_str = JSON.stringify(transforms)
 		_js_transform_sync_callback.call("call", null, json_str)
+
+func _js_on_property_sync(args: Array) -> void:
+	if args.size() >= 1:
+		_js_property_sync_callback = args[0]
+
+func _js_set_watch_config(args: Array) -> void:
+	if args.size() >= 1:
+		var config_json = str(args[0])
+		var config = JSON.parse_string(config_json)
+		if config:
+			set_watch_config(config)
+
+func _notify_property_sync() -> void:
+	var properties = collect_all_properties()
+	
+	if _js_property_sync_callback != null:
+		var json_str = JSON.stringify(properties)
+		_js_property_sync_callback.call("call", null, json_str)
+	else:
+		_queue_event("property_sync", properties)
 
 func _js_set_linear_velocity(args: Array) -> void:
 	if args.size() < 3:
@@ -1350,6 +1396,23 @@ func _apply_sprite_scale(sprite: Sprite2D, sprite_data: Dictionary, texture: Tex
 	# Apply offset to position the sprite relative to physics body center
 	sprite.position = Vector2(offset_x, offset_y)
 
+func _hide_shape_children(node: Node2D) -> void:
+	"""Hide Polygon2D shape children when a texture sprite is applied.
+	This prevents double-rendering of shapes and textures."""
+	for child in node.get_children():
+		if child is Polygon2D:
+			child.visible = false
+
+func _apply_debug_visibility(node: Node2D) -> void:
+	"""Apply current debug mode visibility to a node's children.
+	When debug mode is ON: show Polygon2D shapes, hide Sprite2D textures.
+	When debug mode is OFF: hide Polygon2D shapes, show Sprite2D textures."""
+	for child in node.get_children():
+		if child is Polygon2D:
+			child.visible = _debug_show_shapes
+		elif child is Sprite2D:
+			child.visible = not _debug_show_shapes
+
 func _js_clear_texture_cache(args: Array) -> void:
 	if args.size() > 0 and str(args[0]) != "":
 		var url = str(args[0])
@@ -1357,6 +1420,21 @@ func _js_clear_texture_cache(args: Array) -> void:
 			_texture_cache.erase(url)
 	else:
 		_texture_cache.clear()
+
+func _js_set_debug_show_shapes(args: Array) -> void:
+	"""Toggle debug mode to show physics shapes or textures.
+	args[0]: boolean - true to show shapes, false to show textures"""
+	if args.size() < 1:
+		push_error("[GameBridge] setDebugShowShapes requires 1 arg: show_shapes (boolean)")
+		return
+	
+	_debug_show_shapes = bool(args[0])
+	
+	# Apply debug visibility to all existing entities
+	for entity_id in entities:
+		var node = entities[entity_id]
+		if node:
+			_apply_debug_visibility(node)
 
 func clear_texture_cache(url: String = "") -> void:
 	if url != "":
@@ -1422,6 +1500,7 @@ func set_entity_image(entity_id: String, url: String, width: float, height: floa
 		var texture = _texture_cache[url]
 		sprite.texture = texture
 		_apply_sprite_scale(sprite, sprite_data, texture)
+		_hide_shape_children(node)
 		return
 	
 	var http = HTTPRequest.new()
@@ -1449,6 +1528,9 @@ func set_entity_image(entity_id: String, url: String, width: float, height: floa
 		if is_instance_valid(sprite):
 			sprite.texture = texture
 			_apply_sprite_scale(sprite, sprite_data, texture)
+			var parent_node = sprite.get_parent()
+			if parent_node:
+				_hide_shape_children(parent_node)
 		
 	)
 	
@@ -1463,7 +1545,7 @@ func _js_set_entity_image(args: Array) -> void:
 		return
 	set_entity_image(str(args[0]), str(args[1]), float(args[2]), float(args[3]))
 
-func set_entity_atlas_region(entity_id: String, atlas_url: String, region_dict: Dictionary) -> void:
+func set_entity_atlas_region(entity_id: String, atlas_url: String, region_dict: Dictionary, sprite_data: Dictionary = {}) -> void:
 	if not entities.has(entity_id):
 		push_error("[GameBridge] set_entity_atlas_region: entity not found: " + entity_id)
 		return
@@ -1481,11 +1563,12 @@ func set_entity_atlas_region(entity_id: String, atlas_url: String, region_dict: 
 		node.add_child(sprite)
 	
 	if _texture_cache.has(atlas_url):
-		_apply_atlas_region(sprite, _texture_cache[atlas_url], region_dict)
+		_apply_atlas_region(sprite, _texture_cache[atlas_url], region_dict, sprite_data)
+		_hide_shape_children(node)
 	else:
-		_download_atlas_texture(sprite, atlas_url, region_dict)
+		_download_atlas_texture(sprite, atlas_url, region_dict, sprite_data)
 
-func _apply_atlas_region(sprite: Sprite2D, texture: Texture2D, region_dict: Dictionary) -> void:
+func _apply_atlas_region(sprite: Sprite2D, texture: Texture2D, region_dict: Dictionary, sprite_data: Dictionary = {}) -> void:
 	var atlas_texture = AtlasTexture.new()
 	atlas_texture.atlas = texture
 	atlas_texture.region = Rect2(
@@ -1495,8 +1578,9 @@ func _apply_atlas_region(sprite: Sprite2D, texture: Texture2D, region_dict: Dict
 		region_dict.get("h", 0)
 	)
 	sprite.texture = atlas_texture
+	_apply_sprite_scale(sprite, sprite_data, atlas_texture)
 
-func _download_atlas_texture(sprite: Sprite2D, url: String, region_dict: Dictionary) -> void:
+func _download_atlas_texture(sprite: Sprite2D, url: String, region_dict: Dictionary, sprite_data: Dictionary = {}) -> void:
 	var http = HTTPRequest.new()
 	add_child(http)
 	
@@ -1520,7 +1604,10 @@ func _download_atlas_texture(sprite: Sprite2D, url: String, region_dict: Diction
 		_texture_cache[url] = texture
 		
 		if is_instance_valid(sprite):
-			_apply_atlas_region(sprite, texture, region_dict)
+			_apply_atlas_region(sprite, texture, region_dict, sprite_data)
+			var node = sprite.get_parent()
+			if node:
+				_hide_shape_children(node)
 	)
 	
 	var err = http.request(url)
@@ -1529,16 +1616,22 @@ func _download_atlas_texture(sprite: Sprite2D, url: String, region_dict: Diction
 		http.queue_free()
 
 func _js_set_entity_atlas_region(args: Array) -> void:
-	if args.size() < 3:
-		push_error("[GameBridge] setEntityAtlasRegion requires 3 args: entity_id, atlas_url, region_dict")
+	if args.size() < 8:
+		push_error("[GameBridge] setEntityAtlasRegion requires 8 args: entity_id, atlas_url, x, y, w, h, width, height")
 		return
 	var entity_id = str(args[0])
 	var atlas_url = str(args[1])
-	var region_dict = args[2] as Dictionary
-	if region_dict == null:
-		push_error("[GameBridge] setEntityAtlasRegion: region_dict must be a Dictionary")
-		return
-	set_entity_atlas_region(entity_id, atlas_url, region_dict)
+	var region_dict = {
+		"x": float(args[2]),
+		"y": float(args[3]),
+		"w": float(args[4]),
+		"h": float(args[5])
+	}
+	var sprite_data = {
+		"width": float(args[6]),
+		"height": float(args[7])
+	}
+	set_entity_atlas_region(entity_id, atlas_url, region_dict, sprite_data)
 
 func set_entity_image_base64(entity_id: String, base64_data: String, width: float, height: float) -> void:
 	
@@ -1607,6 +1700,38 @@ func set_entity_image_from_file(entity_id: String, file_path: String, width: flo
 	sprite.texture = texture
 	var sprite_data = {"width": width, "height": height}
 	_apply_sprite_scale(sprite, sprite_data, texture)
+
+
+func set_entity_atlas_region_from_file(entity_id: String, file_path: String, region_x: float, region_y: float, region_w: float, region_h: float, sprite_width: float, sprite_height: float) -> void:
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_atlas_region_from_file: entity not found: " + entity_id)
+		return
+	
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+	
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+	
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+	
+	var image = Image.new()
+	var err = image.load(file_path)
+	if err != OK:
+		push_error("[GameBridge] set_entity_atlas_region_from_file: failed to load image from " + file_path + " error=" + str(err))
+		return
+	
+	var texture = ImageTexture.create_from_image(image)
+	_texture_cache[file_path] = texture
+	
+	var region_dict = {"x": region_x, "y": region_y, "w": region_w, "h": region_h}
+	var sprite_data = {"width": sprite_width, "height": sprite_height}
+	_apply_atlas_region(sprite, texture, region_dict, sprite_data)
+	_hide_shape_children(node)
 
 
 # Get all entity transforms (for syncing)
@@ -2696,6 +2821,8 @@ func _on_sensor_body_shape_exited(body_rid: RID, body: Node2D, body_shape_index:
 
 var _transform_sync_timer: float = 0.0
 const TRANSFORM_SYNC_INTERVAL: float = 0.033  # ~30fps sync rate
+var _property_sync_timer: float = 0.0
+const PROPERTY_SYNC_INTERVAL: float = 0.016  # 60fps property sync
 
 func _physics_process(delta: float) -> void:
 	# Push transform updates to JS
@@ -2703,6 +2830,12 @@ func _physics_process(delta: float) -> void:
 	if _transform_sync_timer >= TRANSFORM_SYNC_INTERVAL:
 		_transform_sync_timer = 0.0
 		_notify_transform_sync()
+	
+	# Push property updates to JS
+	_property_sync_timer += delta
+	if _property_sync_timer >= PROPERTY_SYNC_INTERVAL:
+		_property_sync_timer = 0.0
+		_notify_property_sync()
 	
 	# Process mouse joints
 	for joint_id in joints:
@@ -3137,3 +3270,25 @@ func _js_set_3d_camera_distance(args: Array) -> void:
 
 func _js_clear_3d_models(_args: Array) -> void:
 	clear_3d_models()
+
+# =============================================================================
+# PROPERTY COLLECTION (for property watching system)
+# =============================================================================
+
+var _frame_counter: int = 0
+
+func collect_all_properties() -> Dictionary:
+	if _property_collector:
+		_frame_counter += 1
+		return _property_collector.collect_properties(_frame_counter)
+	return {
+		"frameId": 0,
+		"timestamp": Time.get_ticks_msec(),
+		"entities": {}
+	}
+
+func set_watch_config(config: Dictionary) -> void:
+	if _property_collector:
+		_property_collector.set_watch_config(config)
+	else:
+		push_warning("[GameBridge] PropertyCollector not initialized, cannot set watch config")

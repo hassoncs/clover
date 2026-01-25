@@ -27,3 +27,4 @@ export {
   type GameState,
   type EvalContextBuilderOptions,
 } from './EvalContextBuilder';
+export * from './property-watching';

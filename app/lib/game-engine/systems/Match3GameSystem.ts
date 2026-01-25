@@ -163,14 +163,12 @@ export class Match3GameSystem {
 
   private worldToCell(worldX: number, worldY: number): { row: number; col: number } | null {
     const col = Math.floor((worldX - this.config.originX) / this.config.cellSize);
-    const gridBottomY = this.config.originY - this.config.rows * this.config.cellSize;
-    const rowFromBottom = Math.floor((worldY - gridBottomY) / this.config.cellSize);
-    const row = this.config.rows - 1 - rowFromBottom;
-    
+    const row = Math.floor((this.config.originY - worldY) / this.config.cellSize);
+
     if (row < 0 || row >= this.config.rows || col < 0 || col >= this.config.cols) {
       return null;
     }
-    
+
     return { row, col };
   }
 
@@ -210,7 +208,30 @@ export class Match3GameSystem {
         pieceType
       );
       if (result) {
-        this.bridge.setEntityAtlasRegion(entityId, this.config.variantSheet.atlasUrl, result.region);
+        const templateDef = this.entityManager.getTemplate(template);
+        let spriteWidth = 1.0;
+        let spriteHeight = 1.0;
+        
+        if (templateDef?.physics) {
+          const physics = templateDef.physics;
+          if (physics.shape === 'circle' && 'radius' in physics) {
+            spriteWidth = spriteHeight = physics.radius * 2;
+          } else if (physics.shape === 'box' && 'width' in physics && 'height' in physics) {
+            spriteWidth = physics.width;
+            spriteHeight = physics.height;
+          }
+        }
+        
+        this.bridge.setEntityAtlasRegion(
+          entityId,
+          this.config.variantSheet.atlasUrl,
+          result.region.x,
+          result.region.y,
+          result.region.w,
+          result.region.h,
+          spriteWidth,
+          spriteHeight
+        );
       }
     }
 

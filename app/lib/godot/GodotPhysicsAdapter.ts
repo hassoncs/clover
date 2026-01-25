@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import type { PropertySyncPayload } from "@slopcade/shared";
 import type { Physics2D } from "../physics2d/Physics2D";
 import type {
   BodyId,
@@ -57,22 +58,49 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
     for (const [entityId, transform] of Object.entries(transforms)) {
       const bodyId = entityIdToBodyId.get(entityId);
       if (bodyId) {
+        const cached = cachedStates.get(bodyId.value);
         cachedStates.set(bodyId.value, {
           transform: {
             position: { x: transform.x, y: transform.y },
             angle: transform.angle,
           },
-          linearVelocity: cachedStates.get(bodyId.value)?.linearVelocity ?? {
-            x: 0,
-            y: 0,
-          },
-          angularVelocity: cachedStates.get(bodyId.value)?.angularVelocity ?? 0,
+          linearVelocity: cached?.linearVelocity ?? { x: 0, y: 0 },
+          angularVelocity: cached?.angularVelocity ?? 0,
         });
       }
     }
   }
 
+  function handlePropertySync(payload: PropertySyncPayload) {
+    for (const [entityId, props] of Object.entries(payload.entities)) {
+      const bodyId = entityIdToBodyId.get(entityId);
+      if (bodyId) {
+        const cached = cachedStates.get(bodyId.value);
+        
+        const vx = props['velocity.x'];
+        const vy = props['velocity.y'];
+        const angVel = props['angularVelocity'];
+        
+        if (vx !== undefined && vy !== undefined) {
+          if (cached) {
+            cached.linearVelocity = { x: vx, y: vy };
+            if (angVel !== undefined) {
+              cached.angularVelocity = angVel;
+            }
+          } else {
+            cachedStates.set(bodyId.value, {
+              transform: { position: { x: 0, y: 0 }, angle: 0 },
+              linearVelocity: { x: vx, y: vy },
+              angularVelocity: angVel ?? 0,
+            });
+          }
+        }
+      }
+    }
+  }
+
   bridge.onTransformSync(handleTransformSync);
+  bridge.onPropertySync(handlePropertySync);
 
   bridge.onCollision((event) => {
     const bodyA = entityIdToBodyId.get(event.entityA);

@@ -1,4 +1,4 @@
-import type { GameDefinition } from '@slopcade/shared';
+import type { GameDefinition, PropertySyncPayload } from '@slopcade/shared';
 
 export interface Vec2 {
   x: number;
@@ -251,19 +251,32 @@ export interface GodotBridge {
   onSensorBegin(callback: (event: SensorEvent) => void): () => void;
   onSensorEnd(callback: (event: SensorEvent) => void): () => void;
   onTransformSync(callback: (transforms: Record<string, EntityTransform>) => void): () => void;
+  
+  // Property sync (for expression evaluation)
+  getAllProperties(): Promise<PropertySyncPayload>;
+  onPropertySync(callback: (properties: PropertySyncPayload) => void): () => void;
+  setWatchConfig(config: unknown): void;
 
   // Input
   sendInput(type: 'tap' | 'drag_start' | 'drag_move' | 'drag_end', data: { x: number; y: number; entityId?: string }): void;
   onInputEvent(callback: (type: string, x: number, y: number, entityId: string | null) => void): () => void;
 
-  // Dynamic image management
-  setEntityImage(entityId: string, url: string, width: number, height: number): void;
-  setEntityAtlasRegion(
-    entityId: string,
-    atlasUrl: string,
-    region: { x: number; y: number; w: number; h: number }
-  ): void;
-  clearTextureCache(url?: string): void;
+   // Dynamic image management
+   setEntityImage(entityId: string, url: string, width: number, height: number): void;
+   setEntityAtlasRegion(
+     entityId: string,
+     atlasUrl: string,
+     x: number,
+     y: number,
+     w: number,
+     h: number,
+     width: number,
+     height: number
+   ): void;
+   clearTextureCache(url?: string): void;
+
+   // Debug mode
+   setDebugShowShapes(show: boolean): void;
 
   // Camera control
   setCameraTarget(entityId: string | null): void;
