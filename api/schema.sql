@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS game_assets (
   width INTEGER,
   height INTEGER,
   content_hash TEXT,
+  metadata_json TEXT,
   created_at INTEGER NOT NULL,
   deleted_at INTEGER
 );
@@ -106,9 +107,10 @@ CREATE TABLE IF NOT EXISTS asset_pack_entries (
   pack_id TEXT NOT NULL REFERENCES asset_packs(id),
   template_id TEXT NOT NULL,
   asset_id TEXT NOT NULL REFERENCES game_assets(id),
+  entry_id TEXT,
   placement_json TEXT,         -- JSON: { scale, offsetX, offsetY, anchor }
   last_generation_json TEXT,   -- JSON: { jobId, taskId, compiledPrompt, createdAt }
-  UNIQUE(pack_id, template_id)
+  UNIQUE(pack_id, template_id, entry_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_asset_pack_entries_pack ON asset_pack_entries(pack_id);
