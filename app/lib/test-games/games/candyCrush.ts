@@ -68,6 +68,12 @@ const game: GameDefinition = {
     swapDuration: 0.15,
     fallDuration: 0.1,
     clearDelay: 0.1,
+    variantSheet: {
+      enabled: false,
+      groupId: "candy",
+      atlasUrl: "",
+      layout: { columns: 4, rows: 2, cellWidth: 64, cellHeight: 64 },
+    },
   },
   templates: {
     candy_red: {
@@ -174,6 +180,26 @@ const game: GameDefinition = {
         shape: "box",
         width: CELL_SIZE * 1.15,
         height: CELL_SIZE * 1.15,
+        density: 0,
+        friction: 0,
+        restitution: 0,
+        isSensor: true,
+      },
+    },
+    hover_highlight: {
+      id: "hover_highlight",
+      tags: ["highlight", "hover"],
+      sprite: {
+        type: "rect",
+        width: CELL_SIZE * 1.1,
+        height: CELL_SIZE * 1.1,
+        color: "#FFFFFF66",
+      },
+      physics: {
+        bodyType: "kinematic",
+        shape: "box",
+        width: CELL_SIZE * 1.1,
+        height: CELL_SIZE * 1.1,
         density: 0,
         friction: 0,
         restitution: 0,

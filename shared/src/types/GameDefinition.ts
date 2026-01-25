@@ -296,6 +296,13 @@ export interface InputConfig {
   tilt?: TiltConfig;
 }
 
+export interface VariantSheetConfig {
+  enabled: boolean;
+  groupId: string;
+  atlasUrl: string;
+  layout: { columns: number; rows: number; cellWidth: number; cellHeight: number };
+}
+
 export interface Match3Config {
   gridId: string;
   rows: number;
@@ -308,6 +315,7 @@ export interface Match3Config {
   swapDuration?: number;
   fallDuration?: number;
   clearDelay?: number;
+  variantSheet?: VariantSheetConfig;
 }
 
 export interface GameDefinition {

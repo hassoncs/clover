@@ -15,20 +15,10 @@
 
 import type { EntityManager } from '../EntityManager';
 import type { GodotBridge } from '../../godot/types';
+import type { AssetSheet, SheetRegion, Match3Config } from '@slopcade/shared';
+import { selectVariant } from '../hooks/useVariantResolution';
 
-export interface Match3Config {
-  gridId: string;
-  rows: number;
-  cols: number;
-  cellSize: number;
-  originX: number;
-  originY: number;
-  pieceTemplates: string[];
-  minMatch?: number;
-  swapDuration?: number;
-  fallDuration?: number;
-  clearDelay?: number;
-}
+export type { Match3Config };
 
 export type Match3Phase = 
   | 'idle'
@@ -68,11 +58,13 @@ export class Match3GameSystem {
   private entityManager: EntityManager;
   private bridge: GodotBridge | null = null;
   private callbacks: Match3Callbacks;
+  private sheetMetadata: AssetSheet | null = null;
 
   private board: BoardCell[][] = [];
   private phase: Match3Phase = 'idle';
   private selectedCell: { row: number; col: number } | null = null;
   private swapCells: { a: { row: number; col: number }; b: { row: number; col: number } } | null = null;
+  private hoverCell: { row: number; col: number } | null = null;
   
   private pendingAnimations: PendingAnimation[] = [];
   private phaseTimer = 0;
@@ -80,6 +72,7 @@ export class Match3GameSystem {
   private totalClearedThisTurn = 0;
   
   private highlightEntityId: string | null = null;
+  private hoverEntityId: string | null = null;
 
   private readonly MIN_MATCH: number;
   private readonly SWAP_DURATION: number;
@@ -103,6 +96,10 @@ export class Match3GameSystem {
 
   setBridge(bridge: GodotBridge): void {
     this.bridge = bridge;
+  }
+
+  setSheetMetadata(metadata: AssetSheet): void {
+    this.sheetMetadata = metadata;
   }
 
   initialize(): void {
@@ -178,6 +175,24 @@ export class Match3GameSystem {
     return { row, col };
   }
 
+  private getRegionRect(region: SheetRegion): { x: number; y: number; w: number; h: number } {
+    if (region.type === 'rect') {
+      return { x: region.x, y: region.y, w: region.w, h: region.h };
+    }
+    const layout = this.config.variantSheet?.layout;
+    if (!layout) {
+      return { x: 0, y: 0, w: 64, h: 64 };
+    }
+    const col = region.index % layout.columns;
+    const row = Math.floor(region.index / layout.columns);
+    return {
+      x: col * layout.cellWidth,
+      y: row * layout.cellHeight,
+      w: layout.cellWidth,
+      h: layout.cellHeight,
+    };
+  }
+
   private spawnPieceAt(row: number, col: number, pieceType: number, aboveBoard = false): void {
     const template = this.config.pieceTemplates[pieceType];
     const pos = this.cellToWorld(row, col);
@@ -206,6 +221,14 @@ export class Match3GameSystem {
       },
       tags: ['match3_piece'],
     });
+
+    if (this.config.variantSheet?.enabled && this.sheetMetadata && this.bridge) {
+      const variant = selectVariant(this.sheetMetadata, this.config.variantSheet.groupId);
+      if (variant) {
+        const region = this.getRegionRect(variant.region);
+        this.bridge.setEntityAtlasRegion(entityId, this.config.variantSheet.atlasUrl, region);
+      }
+    }
 
     this.board[row][col] = {
       entityId,
@@ -256,6 +279,86 @@ export class Match3GameSystem {
         this.selectedCell = { row, col };
         this.showHighlight(row, col);
         console.log(`[Match3] Changed selection to ${row},${col}`);
+      }
+    }
+  }
+
+  handleMouseMove(worldX: number, worldY: number): void {
+    if (this.phase !== 'idle' && this.phase !== 'selected') {
+      this.hideHoverHighlight();
+      return;
+    }
+
+    const cell = this.worldToCell(worldX, worldY);
+    
+    if (!cell) {
+      this.hideHoverHighlight();
+      return;
+    }
+
+    const { row, col } = cell;
+    const boardCell = this.board[row]?.[col];
+    
+    if (!boardCell?.entityId) {
+      this.hideHoverHighlight();
+      return;
+    }
+
+    if (this.hoverCell?.row !== row || this.hoverCell?.col !== col) {
+      this.hoverCell = { row, col };
+      this.showHoverHighlight(row, col);
+    }
+  }
+
+  private showHoverHighlight(row: number, col: number): void {
+    const pos = this.cellToWorld(row, col);
+    
+    if (!this.hoverEntityId) {
+      let id: string;
+      
+      if (this.bridge) {
+        id = this.bridge.spawnEntity('hover_highlight', pos.x, pos.y);
+      } else {
+        id = `match3_hover_${Date.now()}`;
+      }
+      
+      this.entityManager.createEntity({
+        id,
+        name: 'Hover Highlight',
+        template: 'hover_highlight',
+        transform: {
+          x: pos.x,
+          y: pos.y,
+          angle: 0,
+          scaleX: 1,
+          scaleY: 1,
+        },
+        layer: 9,
+        tags: ['match3_ui'],
+      });
+      this.hoverEntityId = id;
+    } else {
+      const entity = this.entityManager.getEntity(this.hoverEntityId);
+      if (entity) {
+        entity.transform.x = pos.x;
+        entity.transform.y = pos.y;
+        if (this.bridge) {
+          this.bridge.setPosition(this.hoverEntityId, pos.x, pos.y);
+        }
+      }
+    }
+  }
+
+  private hideHoverHighlight(): void {
+    this.hoverCell = null;
+    if (this.hoverEntityId) {
+      const entity = this.entityManager.getEntity(this.hoverEntityId);
+      if (entity) {
+        entity.transform.x = -1000;
+        entity.transform.y = -1000;
+        if (this.bridge) {
+          this.bridge.setPosition(this.hoverEntityId, -1000, -1000);
+        }
       }
     }
   }
@@ -316,6 +419,7 @@ export class Match3GameSystem {
         }
       }
     }
+    this.hideHoverHighlight();
   }
 
   private startSwap(a: { row: number; col: number }, b: { row: number; col: number }): void {
@@ -687,6 +791,13 @@ export class Match3GameSystem {
         this.bridge.destroyEntity(this.highlightEntityId);
       }
       this.entityManager.destroyEntity(this.highlightEntityId);
+    }
+
+    if (this.hoverEntityId) {
+      if (this.bridge) {
+        this.bridge.destroyEntity(this.hoverEntityId);
+      }
+      this.entityManager.destroyEntity(this.hoverEntityId);
     }
   }
 
