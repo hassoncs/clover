@@ -7,7 +7,7 @@ import {
   Vec2ValueSchema,
   GameVariablesSchema,
 } from '../expressions/schema-helpers';
-import { AssetSystemConfigSchema } from './asset-system';
+import { AssetSystemConfigSchema, AssetSourceSchema } from './asset-system';
 
 export const Vec2Schema = z.object({
   x: z.number(),
@@ -576,8 +576,6 @@ export const GameMetadataSchema = z.object({
   updatedAt: z.number().optional(),
   thumbnailUrl: z.string().optional(),
 });
-
-export const AssetSourceSchema = z.enum(['generated', 'uploaded', 'none']);
 
 export const AssetConfigSchema = z.object({
   imageUrl: z.string().optional(),

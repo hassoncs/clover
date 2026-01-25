@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { AssetSource } from './GameDefinition';
-import { AssetSourceSchema } from './schemas';
+
+export const AssetSourceSchema = z.enum(['generated', 'uploaded', 'none']);
 
 export type GenerationStatus = 'queued' | 'running' | 'succeeded' | 'failed' | 'canceled';
 
