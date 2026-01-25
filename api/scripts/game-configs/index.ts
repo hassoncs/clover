@@ -12,6 +12,7 @@ import { pinballLiteConfig } from './pinball-lite';
 import { simplePlatformerConfig } from './simple-platformer';
 import { slingshotDestructionConfig } from './slingshot-destruction';
 import { wreckingBallConfig } from './wrecking-ball';
+import { testGemVariantsConfig } from './test-gem-variants';
 
 export const gameConfigs: Record<string, GameAssetConfig> = {
   slopeggle: slopeggleConfig,
@@ -27,6 +28,7 @@ export const gameConfigs: Record<string, GameAssetConfig> = {
   'simple-platformer': simplePlatformerConfig,
   'slingshot-destruction': slingshotDestructionConfig,
   'wrecking-ball': wreckingBallConfig,
+  'test-gem-variants': testGemVariantsConfig,
 };
 
 export function getGameConfig(gameId: string): GameAssetConfig {

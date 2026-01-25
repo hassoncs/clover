@@ -54,7 +54,7 @@ Arguments:
 Options:
   --dry-run            Only show what would be generated, skip API calls
   --asset=ID           Only generate specific asset by ID
-  --type=TYPE          Only generate assets of specific type (entity, background, title_hero, parallax)
+  --type=TYPE          Only generate assets of specific type (entity, background, title_hero, parallax, sheet)
   --debug-dir=PATH     Directory for debug output (default: api/debug-output)
   -h, --help           Show this help message
 
