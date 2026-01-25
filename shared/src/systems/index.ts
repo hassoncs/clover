@@ -28,3 +28,56 @@ export * from './wave/types';
 export * from './path/types';
 export * from './spatial-query/types';
 export * from './dynamic-collider/types';
+
+import { comboSystem } from './combo';
+import { checkpointSystem } from './checkpoint';
+import { gridSystem } from './grid';
+import { inventorySystem } from './inventory';
+import { progressionSystem } from './progression';
+import { stateMachineSystem } from './state-machine';
+import { waveSystem } from './wave';
+import { pathSystem } from './path';
+import { spatialQuerySystem } from './spatial-query';
+import { dynamicColliderSystem } from './dynamic-collider';
+import type { ExpressionFunction } from './types';
+
+export {
+  comboSystem,
+  checkpointSystem,
+  gridSystem,
+  inventorySystem,
+  progressionSystem,
+  stateMachineSystem,
+  waveSystem,
+  pathSystem,
+  spatialQuerySystem,
+  dynamicColliderSystem,
+};
+
+const ALL_SYSTEMS = [
+  comboSystem,
+  checkpointSystem,
+  gridSystem,
+  inventorySystem,
+  progressionSystem,
+  stateMachineSystem,
+  waveSystem,
+  pathSystem,
+  spatialQuerySystem,
+  dynamicColliderSystem,
+];
+
+let cachedFunctions: Record<string, ExpressionFunction> | null = null;
+
+export function getAllSystemExpressionFunctions(): Record<string, ExpressionFunction> {
+  if (cachedFunctions) return cachedFunctions;
+  
+  const functions: Record<string, ExpressionFunction> = {};
+  for (const system of ALL_SYSTEMS) {
+    if (system.expressionFunctions) {
+      Object.assign(functions, system.expressionFunctions);
+    }
+  }
+  cachedFunctions = functions;
+  return functions;
+}

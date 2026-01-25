@@ -223,6 +223,10 @@ export function createWebGodotBridge(): GodotBridge {
               (dataOrEntityA: string, entityB?: string, impulse?: number) => {
                 let event: CollisionEvent;
 
+                if (!dataOrEntityA) {
+                  return;
+                }
+
                 const isNewJsonFormat = entityB === undefined;
                 if (isNewJsonFormat) {
                   try {

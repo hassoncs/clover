@@ -5,7 +5,7 @@ import type { RuleContext } from '../types';
 export class StateMachineActionExecutor implements ActionExecutor<StateTransitionAction> {
   execute(action: StateTransitionAction, context: RuleContext): void {
     const stateKey = '__smStates';
-    let states = context.mutator.getVariable(stateKey) as Record<string, { currentState: string; previousState: string; stateEnteredAt: number; transitionCount: number }> | undefined;
+    let states = context.mutator.getVariable(stateKey) as unknown as Record<string, { currentState: string; previousState: string; stateEnteredAt: number; transitionCount: number }> | undefined;
     if (!states) states = {};
     
     if (!states[action.machineId]) {

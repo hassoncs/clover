@@ -18,7 +18,7 @@ export class PathActionExecutor implements ActionExecutor<PathAction> {
     if (entities.length === 0) return;
 
     const stateKey = '__pathFollowers';
-    let states = context.mutator.getVariable(stateKey) as Record<string, { pathId: string; progress: number; speed: number; active: boolean }> | undefined;
+    let states = context.mutator.getVariable(stateKey) as unknown as Record<string, { pathId: string; progress: number; speed: number; active: boolean }> | undefined;
     if (!states) states = {};
 
     const speed = action.speed ? resolveNumber(action.speed, context) : 2;
@@ -35,7 +35,7 @@ export class PathActionExecutor implements ActionExecutor<PathAction> {
     if (entities.length === 0) return;
 
     const stateKey = '__pathFollowers';
-    let states = context.mutator.getVariable(stateKey) as Record<string, { pathId: string; progress: number; speed: number; active: boolean }> | undefined;
+    let states = context.mutator.getVariable(stateKey) as unknown as Record<string, { pathId: string; progress: number; speed: number; active: boolean }> | undefined;
     if (!states) return;
 
     for (const entity of entities) {

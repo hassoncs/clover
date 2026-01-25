@@ -5,6 +5,16 @@ import { resolveNumber } from '../utils';
 
 type InventoryAction = InventoryAddAction | InventoryRemoveAction | ResourceModifyAction;
 
+interface InventoryStateData {
+  items: Record<string, { count: number }>;
+}
+
+interface ResourceStateData {
+  current: number;
+  max: number;
+  min: number;
+}
+
 export class InventoryActionExecutor implements ActionExecutor<InventoryAction> {
   execute(action: InventoryAction, context: RuleContext): void {
     switch (action.type) {
@@ -16,7 +26,7 @@ export class InventoryActionExecutor implements ActionExecutor<InventoryAction> 
 
   private executeAdd(action: InventoryAddAction, context: RuleContext): void {
     const stateKey = '__invStates';
-    let states = context.mutator.getVariable(stateKey) as Record<string, { items: Record<string, { count: number }> }> | undefined;
+    let states = context.mutator.getVariable(stateKey) as unknown as Record<string, InventoryStateData> | undefined;
     if (!states) states = {};
     if (!states[action.inventoryId]) states[action.inventoryId] = { items: {} };
     
@@ -30,7 +40,7 @@ export class InventoryActionExecutor implements ActionExecutor<InventoryAction> 
 
   private executeRemove(action: InventoryRemoveAction, context: RuleContext): void {
     const stateKey = '__invStates';
-    let states = context.mutator.getVariable(stateKey) as Record<string, { items: Record<string, { count: number }> }> | undefined;
+    let states = context.mutator.getVariable(stateKey) as unknown as Record<string, InventoryStateData> | undefined;
     if (!states) return;
     
     const inv = states[action.inventoryId];
@@ -45,17 +55,19 @@ export class InventoryActionExecutor implements ActionExecutor<InventoryAction> 
 
   private executeResourceModify(action: ResourceModifyAction, context: RuleContext): void {
     const stateKey = '__resStates';
-    let states = context.mutator.getVariable(stateKey) as Record<string, { current: number; max: number; min: number }> | undefined;
+    let states = context.mutator.getVariable(stateKey) as unknown as Record<string, ResourceStateData> | undefined;
     if (!states) states = {};
     if (!states[action.resourceId]) states[action.resourceId] = { current: 0, max: 9999, min: 0 };
     
     const res = states[action.resourceId];
-    const amount = resolveNumber(action.amount, context);
+    const value = resolveNumber(action.value, context);
     
     switch (action.operation) {
-      case 'add': res.current = Math.min(res.max, res.current + amount); break;
-      case 'subtract': res.current = Math.max(res.min, res.current - amount); break;
-      case 'set': res.current = Math.max(res.min, Math.min(res.max, amount)); break;
+      case 'add': res.current = Math.min(res.max, res.current + value); break;
+      case 'subtract': res.current = Math.max(res.min, res.current - value); break;
+      case 'set': res.current = Math.max(res.min, Math.min(res.max, value)); break;
+      case 'fill': res.current = res.max; break;
+      case 'drain': res.current = res.min; break;
     }
     
     context.mutator.setVariable(stateKey, states as unknown as number);

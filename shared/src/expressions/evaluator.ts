@@ -762,7 +762,7 @@ function evaluateNode(node: ASTNode, ctx: EvalContext): ExpressionValueType {
     }
 
     case 'FunctionCall': {
-      const func = BUILTIN_FUNCTIONS[node.name];
+      const func = BUILTIN_FUNCTIONS[node.name] ?? ctx.customFunctions?.[node.name];
       if (!func) {
         throw new Error(`Unknown function: ${node.name}`);
       }

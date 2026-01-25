@@ -5,6 +5,11 @@ import { resolveEntityTarget, resolveNumber } from '../utils';
 
 type GridAction = GridMoveAction | GridPlaceAction;
 
+interface GridStateData {
+  cells: Record<string, string | null>;
+  entityPositions: Record<string, { row: number; col: number }>;
+}
+
 export class GridActionExecutor implements ActionExecutor<GridAction> {
   execute(action: GridAction, context: RuleContext): void {
     switch (action.type) {
@@ -13,17 +18,17 @@ export class GridActionExecutor implements ActionExecutor<GridAction> {
     }
   }
 
-  private getGridState(gridId: string, context: RuleContext): { cells: Record<string, string | null>; entityPositions: Record<string, { row: number; col: number }> } {
+  private getGridState(gridId: string, context: RuleContext): GridStateData {
     const stateKey = '__gridStates';
-    let states = context.mutator.getVariable(stateKey) as Record<string, { cells: Record<string, string | null>; entityPositions: Record<string, { row: number; col: number }> }> | undefined;
+    let states = context.mutator.getVariable(stateKey) as unknown as Record<string, GridStateData> | undefined;
     if (!states) states = {};
     if (!states[gridId]) states[gridId] = { cells: {}, entityPositions: {} };
     return states[gridId];
   }
 
-  private saveGridState(gridId: string, state: { cells: Record<string, string | null>; entityPositions: Record<string, { row: number; col: number }> }, context: RuleContext): void {
+  private saveGridState(gridId: string, state: GridStateData, context: RuleContext): void {
     const stateKey = '__gridStates';
-    let states = context.mutator.getVariable(stateKey) as Record<string, typeof state> | undefined;
+    let states = context.mutator.getVariable(stateKey) as unknown as Record<string, GridStateData> | undefined;
     if (!states) states = {};
     states[gridId] = state;
     context.mutator.setVariable(stateKey, states as unknown as number);
@@ -36,22 +41,25 @@ export class GridActionExecutor implements ActionExecutor<GridAction> {
   }
 
   private executeMove(action: GridMoveAction, context: RuleContext): void {
-    const entities = resolveEntityTarget(action.target, context);
-    if (entities.length === 0) return;
-    const entity = entities[0];
+    const entityId = typeof action.entityId === 'string' 
+      ? action.entityId 
+      : resolveEntityTarget(action.entityId, context)[0]?.id;
+    if (!entityId) return;
+    
+    const entity = context.entityManager.getEntity(entityId);
+    if (!entity) return;
+    
     const state = this.getGridState(action.gridId, context);
-    const pos = state.entityPositions[entity.id] ?? { row: 0, col: 0 };
-    let newRow = pos.row, newCol = pos.col;
-    switch (action.direction) {
-      case 'up': newRow -= 1; break;
-      case 'down': newRow += 1; break;
-      case 'left': newCol -= 1; break;
-      case 'right': newCol += 1; break;
+    const oldPos = state.entityPositions[entityId];
+    const newRow = resolveNumber(action.toRow, context);
+    const newCol = resolveNumber(action.toCol, context);
+    
+    if (oldPos) {
+      delete state.cells[`${oldPos.row},${oldPos.col}`];
     }
-    if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) return;
-    delete state.cells[`${pos.row},${pos.col}`];
-    state.cells[`${newRow},${newCol}`] = entity.id;
-    state.entityPositions[entity.id] = { row: newRow, col: newCol };
+    state.cells[`${newRow},${newCol}`] = entityId;
+    state.entityPositions[entityId] = { row: newRow, col: newCol };
+    
     const worldPos = this.cellToWorld(newRow, newCol);
     entity.transform.x = worldPos.x;
     entity.transform.y = worldPos.y;
@@ -59,14 +67,21 @@ export class GridActionExecutor implements ActionExecutor<GridAction> {
   }
 
   private executePlace(action: GridPlaceAction, context: RuleContext): void {
-    const entities = resolveEntityTarget(action.target, context);
-    if (entities.length === 0) return;
-    const entity = entities[0];
+    const entityId = typeof action.entityId === 'string' 
+      ? action.entityId 
+      : resolveEntityTarget(action.entityId, context)[0]?.id;
+    if (!entityId) return;
+    
+    const entity = context.entityManager.getEntity(entityId);
+    if (!entity) return;
+    
     const state = this.getGridState(action.gridId, context);
     const row = resolveNumber(action.row, context);
     const col = resolveNumber(action.col, context);
-    state.cells[`${row},${col}`] = entity.id;
-    state.entityPositions[entity.id] = { row, col };
+    
+    state.cells[`${row},${col}`] = entityId;
+    state.entityPositions[entityId] = { row, col };
+    
     const worldPos = this.cellToWorld(row, col);
     entity.transform.x = worldPos.x;
     entity.transform.y = worldPos.y;

@@ -8,7 +8,7 @@ import {
   type GestureResponderEvent,
 } from "react-native";
 import type { GameDefinition, ParticleEmitterType, EvalContext, ExpressionValueType, TapZoneButton, VirtualButtonType, DPadDirection } from "@slopcade/shared";
-import { createComputedValueSystem } from "@slopcade/shared";
+import { createComputedValueSystem, getAllSystemExpressionFunctions } from "@slopcade/shared";
 import { GodotView, createGodotBridge, createGodotPhysicsAdapter } from "../godot";
 import type { GodotBridge } from "../godot/types";
 import type { Physics2D, CollisionEvent, Unsubscribe } from "../physics2d";
@@ -419,6 +419,7 @@ export function GameRuntimeGodot({
         variables: gameVariablesRef.current,
         random: Math.random,
         entityManager: game.entityManager,
+        customFunctions: getAllSystemExpressionFunctions(),
         self: entity ? {
           id: entity.id,
           transform: entity.transform,

@@ -449,8 +449,8 @@ export class RulesEvaluator implements IGameStateMutator {
         case 'progression_unlock': this.progressionActionExecutor.execute(a, context); break;
         case 'target_nearest': this.spatialQueryActionExecutor.execute(a, context); break;
         case 'state_transition': this.stateMachineActionExecutor.execute(a, context); break;
-        case 'wave_start':
-        case 'wave_next': this.waveActionExecutor.execute(a, context); break;
+        case 'waves_start':
+        case 'waves_next': this.waveActionExecutor.execute(a, context); break;
       }
     }
   }
