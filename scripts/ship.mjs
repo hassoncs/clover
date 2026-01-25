@@ -39,7 +39,7 @@ const EAS_BIN = "/Users/hassoncs/Library/pnpm/eas";
 switch (mode) {
   case "native":
     console.log("🚀 Starting Native Build & TestFlight Submission...");
-    run(EAS_BIN, ["build", "--platform", "ios", "--profile", "production", "--auto-submit"], { cwd: APP_DIR });
+    run(EAS_BIN, ["build", "--platform", "ios", "--profile", "production", "--auto-submit", "--non-interactive"], { cwd: APP_DIR });
     break;
 
   case "update":

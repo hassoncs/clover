@@ -21,7 +21,7 @@
     "pods": "cd ios && RCT_METRO_PORT=8085 pod install",
     "verify:ios": "pnpm run doctor && pnpm run pods && pnpm run ios",
     "verify:android": "pnpm run doctor && pnpm run android",
-    "postinstall": "echo 'postinstall complete'",
+    "postinstall": "node node_modules/@borndotcom/react-native-godot/scripts/download-prebuilt.js && echo 'postinstall complete'",
     "deploy": "node ../scripts/export-godot.mjs --once && npx expo export -p web && npx wrangler pages deploy dist/ --project-name=slopcade",
     "build": "node ../scripts/export-godot.mjs --once && expo export -p web",
     "godot:export": "node ../scripts/export-godot.mjs --once",
@@ -30,7 +30,6 @@
   },
   "dependencies": {
     "@borndotcom/react-native-godot": "^1.0.1",
-    "@chriscode/devmux-telemetry": "link:/Users/hassoncs/Workspaces/Personal/devmux/packages/telemetry-client",
     "@gorhom/bottom-sheet": "^5.2.8",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/slider": "^5.1.2",

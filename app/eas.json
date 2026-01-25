@@ -4,7 +4,12 @@
     "appVersionSource": "remote"
   },
   "build": {
+    "base": {
+      "node": "20.18.0",
+      "pnpm": "9.0.0"
+    },
     "production": {
+      "extends": "base",
       "channel": "production",
       "distribution": "store",
       "ios": {
