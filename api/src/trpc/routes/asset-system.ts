@@ -941,4 +941,50 @@ export const assetSystemRouter = router({
       const result = await rollbackMigration(ctx.env.DB);
       return result;
     }),
+
+  createSheetGenerationJob: protectedProcedure
+    .input(z.object({
+      gameId: z.string(),
+      packId: z.string(),
+      sheetSpec: z.object({
+        id: z.string(),
+        kind: z.literal('variation'),
+        layout: z.object({
+          type: z.literal('grid'),
+          columns: z.number(),
+          rows: z.number(),
+          cellWidth: z.number(),
+          cellHeight: z.number(),
+        }),
+        promptConfig: z.object({
+          basePrompt: z.string().optional(),
+          negativePrompt: z.string().optional(),
+          stylePreset: z.string().optional(),
+        }).optional(),
+        variants: z.array(z.object({
+          key: z.string(),
+          description: z.string().optional(),
+          promptOverride: z.string().optional(),
+          weight: z.number().optional(),
+        })),
+      }),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { gameId, packId, sheetSpec } = input;
+      const jobId = crypto.randomUUID();
+      const taskId = crypto.randomUUID();
+      const now = Date.now();
+
+      await ctx.env.DB.prepare(`
+        INSERT INTO generation_jobs (id, game_id, pack_id, status, prompt_defaults_json, created_at)
+        VALUES (?, ?, ?, 'queued', ?, ?)
+      `).bind(jobId, gameId, packId, JSON.stringify({ sheetSpec }), now).run();
+
+      await ctx.env.DB.prepare(`
+        INSERT INTO generation_tasks (id, job_id, template_id, status, created_at)
+        VALUES (?, ?, ?, 'queued', ?)
+      `).bind(taskId, jobId, sheetSpec.id, now).run();
+
+      return { jobId };
+    }),
 });
