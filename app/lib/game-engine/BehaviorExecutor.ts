@@ -19,6 +19,7 @@ const BEHAVIOR_PHASES: Record<BehaviorType, BehaviorPhase> = {
   follow: 'movement',
   bounce: 'movement',
   oscillate: 'movement',
+  maintain_speed: 'movement',
   rotate: 'visual',
   rotate_toward: 'visual',
   animate: 'visual',

@@ -300,6 +300,7 @@ export interface VariantSheetConfig {
   enabled: boolean;
   groupId: string;
   atlasUrl: string;
+  metadataUrl?: string;
   layout: { columns: number; rows: number; cellWidth: number; cellHeight: number };
 }
 

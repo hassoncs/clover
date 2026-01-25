@@ -28,7 +28,7 @@ const GAME_DEFINITION: GameDefinition = {
     version: "1.0.0",
   },
   world: {
-    gravity: { x: 0, y: 15 },
+    gravity: { x: 0, y: -15 },
     pixelsPerMeter: PIXELS_PER_METER,
     bounds: WORLD_BOUNDS,
   },
@@ -88,12 +88,12 @@ const GAME_DEFINITION: GameDefinition = {
     },
   },
   entities: [
-    { id: "ground", name: "Ground", template: "ground", transform: { x: 7, y: 17.5, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "wall-left", name: "Left Wall", template: "wall", transform: { x: 0.25, y: 9, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "wall-right", name: "Right Wall", template: "wall", transform: { x: 13.75, y: 9, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "box1", name: "Box 1", template: "box", transform: { x: 5, y: 14, angle: 0.1, scaleX: 1, scaleY: 1 } },
-    { id: "box2", name: "Box 2", template: "box", transform: { x: 9, y: 14, angle: -0.1, scaleX: 1, scaleY: 1 } },
-    { id: "circle1", name: "Circle 1", template: "circle", transform: { x: 7, y: 10, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "ground", name: "Ground", template: "ground", transform: { x: 0, y: -8.5, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "wall-left", name: "Left Wall", template: "wall", transform: { x: -6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "wall-right", name: "Right Wall", template: "wall", transform: { x: 6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "box1", name: "Box 1", template: "box", transform: { x: -2, y: -5, angle: 0.1, scaleX: 1, scaleY: 1 } },
+    { id: "box2", name: "Box 2", template: "box", transform: { x: 2, y: -5, angle: -0.1, scaleX: 1, scaleY: 1 } },
+    { id: "circle1", name: "Circle 1", template: "circle", transform: { x: 0, y: -1, angle: 0, scaleX: 1, scaleY: 1 } },
   ],
   rules: [],
 };

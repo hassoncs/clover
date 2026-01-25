@@ -15,8 +15,7 @@
 
 import type { EntityManager } from '../EntityManager';
 import type { GodotBridge } from '../../godot/types';
-import type { AssetSheet, SheetRegion, Match3Config } from '@slopcade/shared';
-import { selectVariant } from '../hooks/useVariantResolution';
+import { selectVariantByIndex, type AssetSheet, type Match3Config } from '@slopcade/shared';
 
 export type { Match3Config };
 
@@ -175,24 +174,6 @@ export class Match3GameSystem {
     return { row, col };
   }
 
-  private getRegionRect(region: SheetRegion): { x: number; y: number; w: number; h: number } {
-    if (region.type === 'rect') {
-      return { x: region.x, y: region.y, w: region.w, h: region.h };
-    }
-    const layout = this.config.variantSheet?.layout;
-    if (!layout) {
-      return { x: 0, y: 0, w: 64, h: 64 };
-    }
-    const col = region.index % layout.columns;
-    const row = Math.floor(region.index / layout.columns);
-    return {
-      x: col * layout.cellWidth,
-      y: row * layout.cellHeight,
-      w: layout.cellWidth,
-      h: layout.cellHeight,
-    };
-  }
-
   private spawnPieceAt(row: number, col: number, pieceType: number, aboveBoard = false): void {
     const template = this.config.pieceTemplates[pieceType];
     const pos = this.cellToWorld(row, col);
@@ -223,10 +204,13 @@ export class Match3GameSystem {
     });
 
     if (this.config.variantSheet?.enabled && this.sheetMetadata && this.bridge) {
-      const variant = selectVariant(this.sheetMetadata, this.config.variantSheet.groupId);
-      if (variant) {
-        const region = this.getRegionRect(variant.region);
-        this.bridge.setEntityAtlasRegion(entityId, this.config.variantSheet.atlasUrl, region);
+      const result = selectVariantByIndex(
+        this.sheetMetadata,
+        this.config.variantSheet.groupId ?? 'default',
+        pieceType
+      );
+      if (result) {
+        this.bridge.setEntityAtlasRegion(entityId, this.config.variantSheet.atlasUrl, result.region);
       }
     }
 

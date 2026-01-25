@@ -6,7 +6,8 @@ import type {
   OscillateBehavior,
   DraggableBehavior,
   FollowBehavior,
-  BounceBehavior
+  BounceBehavior,
+  MaintainSpeedBehavior
 } from '@slopcade/shared';
 import type { BehaviorContext } from '../BehaviorContext';
 import type { BehaviorExecutor } from '../BehaviorExecutor';
@@ -18,7 +19,7 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
 
     let vx = 0;
     let vy = 0;
-    const speed = b.speed ?? 100;
+    const speed = ctx.resolveNumber(b.speed ?? 100);
     const movementType = b.movementType ?? 'velocity';
 
     switch (b.direction) {
@@ -76,7 +77,7 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
     const b = behavior as RotateBehavior;
     if (!ctx.entity.bodyId) return;
 
-    const speed = b.speed ?? 90;
+    const speed = ctx.resolveNumber(b.speed ?? 90);
     const direction = b.direction ?? 'clockwise';
     const radPerSec = (speed * Math.PI) / 180;
     
@@ -131,7 +132,8 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
     while (diff > Math.PI) diff -= 2 * Math.PI;
     while (diff < -Math.PI) diff += 2 * Math.PI;
     
-    ctx.physics.setAngularVelocity(ctx.entity.bodyId, diff * (b.speed ? b.speed/50 : 5));
+    const speed = ctx.resolveNumber(b.speed ?? 250);
+    ctx.physics.setAngularVelocity(ctx.entity.bodyId, diff * (speed / 50));
   });
 
   executor.registerHandler('oscillate', (behavior, ctx) => {
@@ -141,9 +143,9 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
     // Oscillate needs original position?
     // We can use time-based velocity.
     // v = A * w * cos(w * t + phi)
-    const amplitude = b.amplitude ?? 1;
-    const frequency = b.frequency ?? 1;
-    const phase = ((b.phase ?? 0) * Math.PI) / 180;
+    const amplitude = ctx.resolveNumber(b.amplitude ?? 1);
+    const frequency = ctx.resolveNumber(b.frequency ?? 1);
+    const phase = ctx.resolveNumber(b.phase ?? 0) * Math.PI / 180;
     const w = 2 * Math.PI * frequency;
     
     const v = amplitude * w * Math.cos(w * ctx.elapsed + phase);
@@ -164,8 +166,8 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
     if (!ctx.entity.bodyId) return;
 
     if (ctx.input.drag && ctx.input.drag.targetEntityId === ctx.entity.id) {
-        const stiffness = b.stiffness ?? 0.5;
-        const damping = b.damping ?? 0.5;
+        const stiffness = ctx.resolveNumber(b.stiffness ?? 0.5);
+        const damping = ctx.resolveNumber(b.damping ?? 0.5);
         
         const targetX = ctx.input.drag.currentWorldX;
         const targetY = ctx.input.drag.currentWorldY;
@@ -191,11 +193,11 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
       const dy = target.transform.y - ctx.entity.transform.y;
       const dist = Math.sqrt(dx*dx + dy*dy);
       
-      const minInfo = b.minDistance ?? 0;
-      const maxInfo = b.maxDistance ?? 1000;
+      const minInfo = ctx.resolveNumber(b.minDistance ?? 0);
+      const maxInfo = ctx.resolveNumber(b.maxDistance ?? 1000);
 
       if (dist > minInfo && dist < maxInfo) {
-          const speed = b.speed ?? 5;
+          const speed = ctx.resolveNumber(b.speed ?? 5);
           const vx = (dx / dist) * speed;
           const vy = (dy / dist) * speed;
           ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: vx, y: vy });
@@ -211,9 +213,52 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
       const { x, y } = ctx.entity.transform;
       const vel = ctx.physics.getLinearVelocity(ctx.entity.bodyId);
       
-      if (x < (b.bounds.minX ?? 0) && vel.x < 0) ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: -vel.x, y: vel.y });
-      if (x > (b.bounds.maxX ?? 100) && vel.x > 0) ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: -vel.x, y: vel.y });
-      if (y < (b.bounds.minY ?? 0) && vel.y < 0) ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: vel.x, y: -vel.y });
-      if (y > (b.bounds.maxY ?? 100) && vel.y > 0) ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: vel.x, y: -vel.y });
+      const minX = ctx.resolveNumber(b.bounds.minX ?? 0);
+      const maxX = ctx.resolveNumber(b.bounds.maxX ?? 100);
+      const minY = ctx.resolveNumber(b.bounds.minY ?? 0);
+      const maxY = ctx.resolveNumber(b.bounds.maxY ?? 100);
+      
+      if (x < minX && vel.x < 0) ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: -vel.x, y: vel.y });
+      if (x > maxX && vel.x > 0) ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: -vel.x, y: vel.y });
+      if (y < minY && vel.y < 0) ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: vel.x, y: -vel.y });
+      if (y > maxY && vel.y > 0) ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: vel.x, y: -vel.y });
+  });
+
+  executor.registerHandler('maintain_speed', (behavior, ctx) => {
+    const b = behavior as MaintainSpeedBehavior;
+    if (!ctx.entity.bodyId) {
+      if (ctx.entity.tags.includes('ball')) {
+        console.warn('[maintain_speed] Ball has no bodyId!');
+      }
+      return;
+    }
+
+    const targetSpeed = ctx.resolveNumber(b.speed);
+    const vel = ctx.physics.getLinearVelocity(ctx.entity.bodyId);
+    const currentSpeed = Math.sqrt(vel.x * vel.x + vel.y * vel.y);
+
+    const frameNum = Math.floor(ctx.elapsed * 60);
+    const isBall = ctx.entity.tags.includes('ball');
+    
+    if (frameNum % 60 === 0 && isBall) {
+      const diff = ((currentSpeed - targetSpeed) / targetSpeed * 100).toFixed(1);
+      console.log(`[maintain_speed] frame=${frameNum}, target=${targetSpeed.toFixed(2)}, current=${currentSpeed.toFixed(2)} (${diff}%), vel=(${vel.x.toFixed(2)}, ${vel.y.toFixed(2)}), mode=${b.mode || 'constant'}`);
+    }
+
+    if (b.mode === 'minimum' && currentSpeed >= targetSpeed) {
+      return;
+    }
+
+    if (currentSpeed > 0.01) {
+      const scale = targetSpeed / currentSpeed;
+      const newVel = { x: vel.x * scale, y: vel.y * scale };
+      ctx.physics.setLinearVelocity(ctx.entity.bodyId, newVel);
+      
+      if (frameNum % 60 === 0 && isBall) {
+        console.log(`[maintain_speed] Corrected velocity: scale=${scale.toFixed(3)}, new=(${newVel.x.toFixed(2)}, ${newVel.y.toFixed(2)})`);
+      }
+    } else if (isBall) {
+      console.warn('[maintain_speed] Ball speed too low to maintain!', currentSpeed);
+    }
   });
 }

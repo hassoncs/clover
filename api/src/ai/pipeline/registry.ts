@@ -43,6 +43,7 @@ export const pipelineRegistry: Record<AssetType, Stage[]> = {
     buildPromptStage,
     uploadToScenarioStage,
     img2imgStage,
+    removeBackgroundStage,
     buildSheetMetadataStage,
     uploadR2Stage,
   ],

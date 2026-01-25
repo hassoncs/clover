@@ -48,7 +48,7 @@ const game: GameDefinition = {
       { id: "left-zone", edge: "left", size: 0.5, button: "left" },
       { id: "right-zone", edge: "right", size: 0.5, button: "right" },
     ],
-    debugTapZones: true,
+    debugTapZones: false,
     tilt: {
       enabled: true,
       sensitivity: 2,
@@ -74,10 +74,9 @@ const game: GameDefinition = {
       id: "ball",
       tags: ["ball"],
       sprite: {
-        type: "image",
-        imageUrl: `${ASSET_BASE}/ball.png`,
-        imageWidth: BALL_RADIUS * 2,
-        imageHeight: BALL_RADIUS * 2,
+        type: "circle",
+        radius: BALL_RADIUS,
+        color: "#FF00FF",
       },
       physics: {
         bodyType: "dynamic",
@@ -87,9 +86,15 @@ const game: GameDefinition = {
         friction: 0,
         restitution: 1,
         linearDamping: 0,
-        initialVelocity: { x: 3, y: 6 },
         bullet: true,
       },
+      behaviors: [
+        {
+          type: "maintain_speed",
+          speed: 7,
+          mode: "constant",
+        },
+      ],
     },
     paddle: {
       id: "paddle",
@@ -101,15 +106,13 @@ const game: GameDefinition = {
         imageHeight: PADDLE_HEIGHT,
       },
       physics: {
-        bodyType: "dynamic",
+        bodyType: "kinematic",
         shape: "box",
         width: PADDLE_WIDTH,
         height: PADDLE_HEIGHT,
-        density: 1,
+        density: 0,
         friction: 0,
         restitution: 1,
-        linearDamping: 5,
-        fixedRotation: true,
       },
       behaviors: [],
     },
@@ -248,6 +251,7 @@ const game: GameDefinition = {
     },
     { id: "drain", name: "Drain Zone", template: "drain", transform: { x: cx(5), y: cy(21), angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "paddle", name: "Paddle", template: "paddle", transform: { x: cx(5), y: cy(18), angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "ball", name: "Ball", template: "ball", transform: { x: cx(5), y: cy(17), angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "brick-1-1", name: "Brick 1-1", template: "brickRed", transform: { x: cx(0.8), y: cy(2), angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "brick-1-2", name: "Brick 1-2", template: "brickRed", transform: { x: cx(2.2), y: cy(2), angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "brick-1-3", name: "Brick 1-3", template: "brickRed", transform: { x: cx(3.6), y: cy(2), angle: 0, scaleX: 1, scaleY: 1 } },
@@ -279,13 +283,38 @@ const game: GameDefinition = {
   ],
   rules: [
     {
-      id: "spawn_ball",
-      name: "Spawn ball when game starts",
+      id: "launch_ball_on_start",
+      name: "Launch ball when game starts",
       trigger: { type: "gameStart" },
       actions: [
-        { type: "spawn", template: "ball", position: { type: "fixed", x: 0, y: 5 } },
+        {
+          type: "apply_impulse",
+          target: { type: "by_tag", tag: "ball" },
+          x: 3,
+          y: 6,
+        },
       ],
     },
+    {
+      id: "lock_paddle_y",
+      name: "Lock paddle Y position",
+      trigger: { type: "frame" },
+      actions: [
+        {
+          type: "modify",
+          target: { type: "by_id", entityId: "paddle" },
+          property: "y",
+          operation: "set",
+          value: cy(18),
+        },
+        {
+          type: "set_velocity",
+          target: { type: "by_id", entityId: "paddle" },
+          y: 0,
+        },
+      ],
+    },
+
     {
       id: "ball_drain",
       name: "Ball falls through drain - lose a life and respawn",
@@ -293,7 +322,8 @@ const game: GameDefinition = {
       actions: [
         { type: "lives", operation: "subtract", value: 1 },
         { type: "destroy", target: { type: "by_tag", tag: "ball" } },
-        { type: "spawn", template: "ball", position: { type: "fixed", x: 0, y: 5 } },
+        { type: "spawn", template: "ball", position: { type: "fixed", x: 0, y: -7 } },
+        { type: "apply_impulse", target: { type: "by_tag", tag: "ball" }, x: 3, y: 6 },
       ],
     },
     {

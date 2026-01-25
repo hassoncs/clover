@@ -227,6 +227,17 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       const entityId = bodyIdToEntityId.get(id.value);
       if (entityId) {
         bridge.setLinearVelocity(entityId, velocity);
+        
+        const cached = cachedStates.get(id.value);
+        if (cached) {
+          cached.linearVelocity = velocity;
+        } else {
+          cachedStates.set(id.value, {
+            transform: { position: { x: 0, y: 0 }, angle: 0 },
+            linearVelocity: velocity,
+            angularVelocity: 0,
+          });
+        }
       } else {
         console.warn(
           "[GodotPhysicsAdapter] No entityId found for bodyId:",
@@ -247,6 +258,17 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       const entityId = bodyIdToEntityId.get(id.value);
       if (entityId) {
         bridge.setAngularVelocity(entityId, velocity);
+        
+        const cached = cachedStates.get(id.value);
+        if (cached) {
+          cached.angularVelocity = velocity;
+        } else {
+          cachedStates.set(id.value, {
+            transform: { position: { x: 0, y: 0 }, angle: 0 },
+            linearVelocity: { x: 0, y: 0 },
+            angularVelocity: velocity,
+          });
+        }
       }
     },
 

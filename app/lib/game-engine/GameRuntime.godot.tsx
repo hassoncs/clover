@@ -7,7 +7,7 @@ import {
   Platform,
   type GestureResponderEvent,
 } from "react-native";
-import type { GameDefinition, ParticleEmitterType, EvalContext, ExpressionValueType, TapZoneButton, VirtualButtonType, DPadDirection } from "@slopcade/shared";
+import type { GameDefinition, ParticleEmitterType, EvalContext, ExpressionValueType, TapZoneButton, VirtualButtonType, DPadDirection, AssetSheet } from "@slopcade/shared";
 import { createComputedValueSystem, getAllSystemExpressionFunctions } from "@slopcade/shared";
 import { GodotView, createGodotBridge, createGodotPhysicsAdapter } from "../godot";
 import type { GodotBridge } from "../godot/types";
@@ -84,6 +84,7 @@ export function GameRuntimeGodot({
     magnitude: 0,
     angle: 0,
   });
+  const gameJustStartedRef = useRef(false);
 
   const handleTiltUpdate = useCallback((tilt: { x: number; y: number }) => {
     inputRef.current.tilt = tilt;
@@ -299,9 +300,19 @@ export function GameRuntimeGodot({
         setGameState((s) => ({ ...s, state: "ready", variables: initialVariables }));
         setIsReady(true);
 
-        if (match3SystemRef.current) {
-          match3SystemRef.current.initialize();
-        }
+         if (match3SystemRef.current) {
+           const match3Config = definition.match3 as Match3Config;
+           if (match3Config.variantSheet?.enabled && match3Config.variantSheet.metadataUrl) {
+             try {
+               const response = await fetch(match3Config.variantSheet.metadataUrl);
+               const metadata = await response.json();
+               match3SystemRef.current.setSheetMetadata(metadata as AssetSheet);
+             } catch (error) {
+               console.error('[GameRuntime.godot] Failed to load variant sheet metadata:', error);
+             }
+           }
+           match3SystemRef.current.initialize();
+         }
       } catch (error) {
         console.error("[GameRuntime.godot] Failed to initialize game:", error);
       }
@@ -507,6 +518,10 @@ export function GameRuntimeGodot({
     }
     if (currentInput.dragEnd) {
       inputEvents.dragEnd = currentInput.dragEnd as { velocityX: number; velocityY: number; worldVelocityX: number; worldVelocityY: number };
+    }
+    if (gameJustStartedRef.current) {
+      inputEvents.gameStarted = true;
+      gameJustStartedRef.current = false;
     }
 
     game.rulesEvaluator.update(
@@ -761,6 +776,7 @@ export function GameRuntimeGodot({
 
   const handleStart = useCallback(() => {
     gameRef.current?.rulesEvaluator.start();
+    gameJustStartedRef.current = true;
   }, []);
 
   const handleRestart = useCallback(() => {

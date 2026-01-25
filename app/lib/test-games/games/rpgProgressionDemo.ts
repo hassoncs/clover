@@ -24,7 +24,7 @@ const game: GameDefinition = {
     version: "1.0.0",
   },
   world: {
-    gravity: { x: 0, y: 9.8 },
+    gravity: { x: 0, y: -9.8 },
     pixelsPerMeter: 50,
     bounds: { width: WORLD_WIDTH, height: WORLD_HEIGHT },
   },

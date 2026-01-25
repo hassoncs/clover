@@ -325,6 +325,16 @@ export const uploadR2Stage: Stage = {
       await adapters.r2.put(key, finalImage, { contentType: 'image/png' });
       r2Keys.push(key);
       publicUrls.push(adapters.r2.getPublicUrl(key));
+
+      if (run.artifacts.sheetMetadataJson && run.spec.type === 'sheet') {
+        const metadataKey = `${run.meta.r2Prefix}/${run.spec.id}.json`;
+        const metadataBuffer = new Uint8Array(Buffer.from(run.artifacts.sheetMetadataJson));
+        await adapters.r2.put(metadataKey, metadataBuffer, { 
+          contentType: 'application/json' 
+        });
+        r2Keys.push(metadataKey);
+        publicUrls.push(adapters.r2.getPublicUrl(metadataKey));
+      }
     }
 
     return {
@@ -439,15 +449,38 @@ export const buildSheetMetadataStage: Stage = {
       kind: spec.kind,
       layout: spec.layout,
       dimensions: { width: CANVAS_SIZE, height: CANVAS_SIZE },
-      entries: entries.map(e => ({
-        index: e.index,
-        region: { 
-          x: Math.round(offsetX + e.x * scale), 
-          y: Math.round(offsetY + e.y * scale), 
-          width: Math.round(e.width * scale), 
-          height: Math.round(e.height * scale),
-        },
-      })),
+      entries:
+        spec.kind === 'variation'
+          ? (() => {
+              const variants = (spec as VariationSheetSpec).variants ?? [];
+              const byId: Record<string, unknown> = {};
+
+              for (let i = 0; i < entries.length; i++) {
+                const e = entries[i];
+                const variantKey = variants[i]?.key ?? `variant_${e.index}`;
+
+                byId[variantKey] = {
+                  id: variantKey,
+                  region: {
+                    x: Math.round(offsetX + e.x * scale),
+                    y: Math.round(offsetY + e.y * scale),
+                    w: Math.round(e.width * scale),
+                    h: Math.round(e.height * scale),
+                  },
+                };
+              }
+
+              return byId;
+            })()
+          : entries.map(e => ({
+              index: e.index,
+              region: {
+                x: Math.round(offsetX + e.x * scale),
+                y: Math.round(offsetY + e.y * scale),
+                width: Math.round(e.width * scale),
+                height: Math.round(e.height * scale),
+              },
+            })),
     };
 
     if (spec.promptConfig) {
@@ -464,7 +497,22 @@ export const buildSheetMetadataStage: Stage = {
         metadata.tileOverrides = tileSpec.tileOverrides;
       }
     } else if (spec.kind === 'variation') {
-      metadata.variants = (spec as VariationSheetSpec).variants;
+      const variationSpec = spec as VariationSheetSpec;
+      const variantKeys = (variationSpec.variants ?? []).map(v => v.key);
+      const variantsByKey: Record<string, unknown> = {};
+
+      for (const key of variantKeys) {
+        variantsByKey[key] = { entryId: key };
+      }
+
+      metadata.groups = {
+        default: {
+          id: 'default',
+          variants: variantsByKey,
+          order: variantKeys,
+        },
+      };
+      metadata.defaultGroupId = 'default';
     }
 
     const sheetMetadataJson = JSON.stringify(metadata, null, 2);

@@ -69,9 +69,10 @@ const game: GameDefinition = {
     fallDuration: 0.1,
     clearDelay: 0.1,
     variantSheet: {
-      enabled: false,
-      groupId: "candy",
-      atlasUrl: "",
+      enabled: true,
+      groupId: "default",
+      atlasUrl: "https://slopcade-api.hassoncs.workers.dev/assets/generated/test-gem-variants/gem-variants.png",
+      metadataUrl: "https://slopcade-api.hassoncs.workers.dev/assets/generated/test-gem-variants/gem-variants.json",
       layout: { columns: 4, rows: 2, cellWidth: 64, cellHeight: 64 },
     },
   },

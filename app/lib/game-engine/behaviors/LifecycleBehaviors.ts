@@ -324,13 +324,20 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
   executor.registerHandler('health', (behavior, ctx, runtime) => {
     const health = behavior as HealthBehavior;
     
+    const maxHealth = ctx.resolveNumber(health.maxHealth);
+    
     if (runtime.state.currentHealth === undefined) {
-      runtime.state.currentHealth = health.currentHealth ?? health.maxHealth;
+      runtime.state.currentHealth = health.currentHealth !== undefined 
+        ? ctx.resolveNumber(health.currentHealth)
+        : maxHealth;
     }
     
     const lastHitTime = (runtime.state.lastHitTime as number) ?? 0;
-    const invulnerable = health.invulnerabilityTime && 
-                        (ctx.elapsed - lastHitTime) < health.invulnerabilityTime;
+    const invulnerabilityTime = health.invulnerabilityTime !== undefined 
+      ? ctx.resolveNumber(health.invulnerabilityTime) 
+      : 0;
+    const invulnerable = invulnerabilityTime > 0 && 
+                        (ctx.elapsed - lastHitTime) < invulnerabilityTime;
     
     if (!invulnerable && health.damageFromTags) {
       for (const collision of ctx.collisions) {
@@ -344,7 +351,7 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
         const matchesTags = health.damageFromTags.some((tag) => other.tags.includes(tag));
         if (!matchesTags) continue;
         
-        const damage = health.damagePerHit ?? 1;
+        const damage = ctx.resolveNumber(health.damagePerHit ?? 1);
         runtime.state.currentHealth = (runtime.state.currentHealth as number) - damage;
         runtime.state.lastHitTime = ctx.elapsed;
         
@@ -362,10 +369,9 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
   executor.registerHandler('particle_emitter', (behavior, ctx, runtime) => {
     const emitter = behavior as ParticleEmitterBehavior;
     
-    const offsetX = emitter.offset?.x ?? 0;
-    const offsetY = emitter.offset?.y ?? 0;
-    const x = ctx.entity.transform.x + offsetX;
-    const y = ctx.entity.transform.y + offsetY;
+    const offset = emitter.offset ? ctx.resolveVec2(emitter.offset) : { x: 0, y: 0 };
+    const x = ctx.entity.transform.x + offset.x;
+    const y = ctx.entity.transform.y + offset.y;
 
     if (!runtime.state.emitterId) {
       const shouldEmit = emitter.emitWhile === 'always' || emitter.emitWhile === undefined || emitter.emitWhile === 'enabled';

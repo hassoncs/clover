@@ -21,7 +21,8 @@ export type BehaviorType =
   | 'draggable'
   | 'particle_emitter'
   | 'attach_to'
-  | 'teleport';
+  | 'teleport'
+  | 'maintain_speed';
 
 export type MoveDirection =
   | 'left'
@@ -216,6 +217,12 @@ export interface TeleportBehavior extends BaseBehavior {
   cooldown?: number;
 }
 
+export interface MaintainSpeedBehavior extends BaseBehavior {
+  type: 'maintain_speed';
+  speed: Value<number>;
+  mode?: 'constant' | 'minimum';
+}
+
 export type Behavior =
   | MoveBehavior
   | RotateBehavior
@@ -235,4 +242,5 @@ export type Behavior =
   | DraggableBehavior
   | ParticleEmitterBehavior
   | AttachToBehavior
-  | TeleportBehavior;
+  | TeleportBehavior
+  | MaintainSpeedBehavior;

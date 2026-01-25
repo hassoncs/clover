@@ -1,4 +1,4 @@
-import type { AssetSheet, VariationGroup, VariationVariant, SheetRegion } from '@slopcade/shared';
+import type { AssetSheet, VariationVariant, SheetRegion } from '@slopcade/shared';
 
 /**
  * Weighted random selection from an array of items with optional weight property
@@ -32,7 +32,7 @@ export function selectVariant(
     return null;
   }
 
-  const group = sheetMetadata.groups[groupId];
+  const group = sheetMetadata.groups?.[groupId];
   if (!group) {
     return null;
   }

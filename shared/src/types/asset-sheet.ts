@@ -5,8 +5,6 @@
  * All share: atlas PNG + layout + entries + per-kind semantics + prompt overrides.
  */
 
-import { z } from 'zod';
-
 // =============================================================================
 // SHEET KINDS
 // =============================================================================
@@ -46,9 +44,7 @@ export type SheetLayout =
 // REGION TYPES
 // =============================================================================
 
-export type SheetRegion =
-  | { type: 'gridIndex'; index: number } // 0..(columns*rows-1), row-major
-  | { type: 'rect'; x: number; y: number; w: number; h: number };
+export type SheetRegion = { x: number; y: number; w: number; h: number };
 
 export interface SheetPivot {
   x: number; // pixels relative to the entry rect
@@ -139,6 +135,7 @@ export interface VariationVariant {
 export interface VariationGroup {
   id: string; // usually the semantic "thing": "brick", "peg", "gem"
   variants: Record<string, VariationVariant>;
+  order?: string[];
 }
 
 // =============================================================================
@@ -178,7 +175,7 @@ export type AssetSheet =
     })
   | (AssetSheetBase & {
       kind: 'variation';
-      groups: Record<string, VariationGroup>;
+      groups?: Record<string, VariationGroup>;
       defaultGroupId?: string;
       defaultVariantKey?: string;
     });
@@ -219,37 +216,8 @@ export function calculateSheetDimensions(layout: SheetLayout): { width: number; 
 /**
  * Get the region rect for a given entry
  */
-export function getEntryRegionRect(entry: AssetSheetEntry, layout: SheetLayout): { x: number; y: number; w: number; h: number } | null {
-  if (entry.region.type === 'rect') {
-    return { x: entry.region.x, y: entry.region.y, w: entry.region.w, h: entry.region.h };
-  }
-  
-  if (entry.region.type === 'gridIndex' && layout.type === 'grid') {
-    const margin = layout.margin ?? 0;
-    const spacing = layout.spacing ?? 0;
-    const col = entry.region.index % layout.columns;
-    const row = Math.floor(entry.region.index / layout.columns);
-    const x = margin + col * (layout.cellWidth + spacing);
-    const y = margin + row * (layout.cellHeight + spacing);
-    return { x, y, w: layout.cellWidth, h: layout.cellHeight };
-  }
-  
-  if (entry.region.type === 'gridIndex' && layout.type === 'strip') {
-    const margin = layout.margin ?? 0;
-    const spacing = layout.spacing ?? 0;
-    const index = entry.region.index;
-    if (layout.direction === 'horizontal') {
-      const x = margin + index * (layout.cellWidth + spacing);
-      const y = margin;
-      return { x, y, w: layout.cellWidth, h: layout.cellHeight };
-    } else {
-      const x = margin;
-      const y = margin + index * (layout.cellHeight + spacing);
-      return { x, y, w: layout.cellWidth, h: layout.cellHeight };
-    }
-  }
-  
-  return null;
+export function getEntryRegionRect(entry: AssetSheetEntry, _layout: SheetLayout): SheetRegion {
+  return entry.region;
 }
 
 /**
@@ -278,4 +246,35 @@ export function resolveVariantEntryId(
 ): string | null {
   const variant = group.variants[variantKey];
   return variant?.entryId ?? null;
+}
+
+/**
+ * Select a variant by index (for deterministic Match-3 mapping)
+ * Uses group.order if available, else falls back to sorted keys
+ */
+export function selectVariantByIndex(
+  sheet: AssetSheet,
+  groupId: string,
+  index: number
+): { entryId: string; region: { x: number; y: number; w: number; h: number } } | null {
+  if (sheet.kind !== 'variation' || !sheet.groups) return null;
+
+  const group = sheet.groups[groupId] ?? sheet.groups[sheet.defaultGroupId ?? 'default'];
+  if (!group) return null;
+
+  const variantKeys = group.order ?? Object.keys(group.variants).sort();
+  const variantKey = variantKeys[index];
+  if (!variantKey) return null;
+
+  const variant = group.variants[variantKey];
+  if (!variant) return null;
+
+  const entry = sheet.entries[variant.entryId];
+  if (!entry) return null;
+
+  // Get region rect
+  const rect = getEntryRegionRect(entry, sheet.layout);
+  if (!rect) return null;
+
+  return { entryId: variant.entryId, region: rect };
 }
