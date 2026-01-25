@@ -112,6 +112,7 @@ export interface AssetBindingRef {
 export interface AssetSystemConfig {
   activeAssetPackId?: string;
   entityAssetOverrides?: Record<string, AssetBindingRef>;
+  baseAssetUrl?: string;
 }
 
 export const GenerationStatusSchema = z.enum(['queued', 'running', 'succeeded', 'failed', 'canceled']);
@@ -224,6 +225,7 @@ export const AssetBindingRefSchema = z.object({
 export const AssetSystemConfigSchema = z.object({
   activeAssetPackId: z.string().optional(),
   entityAssetOverrides: z.record(z.string(), AssetBindingRefSchema).optional(),
+  baseAssetUrl: z.string().optional(),
 });
 
 export const DEFAULT_ASSET_PLACEMENT: AssetPlacement = {

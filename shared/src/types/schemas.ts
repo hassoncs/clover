@@ -7,6 +7,7 @@ import {
   Vec2ValueSchema,
   GameVariablesSchema,
 } from '../expressions/schema-helpers';
+import { AssetSystemConfigSchema } from './asset-system';
 
 export const Vec2Schema = z.object({
   x: z.number(),
@@ -910,6 +911,7 @@ export const GameDefinitionSchema = z.object({
   loseCondition: LoseConditionSchema.optional(),
   assetPacks: z.record(z.string(), AssetPackSchema).optional(),
   activeAssetPackId: z.string().optional(),
+  assetSystem: AssetSystemConfigSchema.optional(),
   parallaxConfig: ParallaxConfigSchema.optional(),
   tileSheets: z.array(TileSheetSchema).optional(),
   tileMaps: z.array(TileMapSchema).optional(),
