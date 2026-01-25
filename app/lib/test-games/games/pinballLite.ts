@@ -56,6 +56,7 @@ const game: GameDefinition = {
         density: 2,
         friction: 0.1,
         restitution: 0.6,
+        initialVelocity: { x: 1, y: -3 },
       },
     },
     bumper: {
@@ -126,13 +127,14 @@ const game: GameDefinition = {
       tags: ["flipper"],
       sprite: { type: "image", imageUrl: `${ASSET_BASE}/flipper.png`, imageWidth: 1.5, imageHeight: 0.3 },
       physics: {
-        bodyType: "kinematic",
+        bodyType: "dynamic",
         shape: "box",
         width: 1.5,
         height: 0.3,
-        density: 1,
+        density: 5,
         friction: 0.5,
         restitution: 0.3,
+        fixedRotation: false,
       },
       behaviors: [],
     },
@@ -195,8 +197,24 @@ const game: GameDefinition = {
   ],
   rules: [
     {
-      id: "flip_flippers",
-      name: "Flip Flippers",
+      id: "flip_left",
+      name: "Flip Left Flipper",
+      trigger: { type: "button", button: "left", state: "pressed" },
+      actions: [
+        { type: "apply_impulse", target: { type: "by_id", entityId: "flipper-left" }, y: 50 },
+      ],
+    },
+    {
+      id: "flip_right",
+      name: "Flip Right Flipper",
+      trigger: { type: "button", button: "right", state: "pressed" },
+      actions: [
+        { type: "apply_impulse", target: { type: "by_id", entityId: "flipper-right" }, y: 50 },
+      ],
+    },
+    {
+      id: "flip_flippers_tap",
+      name: "Flip Both Flippers on Tap",
       trigger: { type: "tap" },
       actions: [
         { type: "apply_impulse", target: { type: "by_tag", tag: "flipper" }, y: 50 },
@@ -204,10 +222,12 @@ const game: GameDefinition = {
     },
     {
       id: "ball_drain",
-      name: "Ball drains",
+      name: "Ball drains - lose life and respawn",
       trigger: { type: "collision", entityATag: "ball", entityBTag: "drain" },
       actions: [
+        { type: "lives", operation: "subtract", value: 1 },
         { type: "destroy", target: { type: "by_tag", tag: "ball" } },
+        { type: "spawn", template: "pinball", position: { type: "fixed", x: 0, y: 6 } },
       ],
     },
   ],

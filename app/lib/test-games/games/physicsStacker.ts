@@ -1,8 +1,7 @@
 import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
-const ASSET_BASE =
-  "https://slopcade-api.hassoncs.workers.dev/assets/generated/physics-stacker";
+const ASSET_BASE = "/assets/games/physics-stacker";
 
 export const metadata: TestGameMeta = {
   title: "Block Stacker",

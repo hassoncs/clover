@@ -1,10 +1,10 @@
 import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert, TextInput } from 'react-native';
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { TemplateAssetCard } from './TemplateAssetCard';
 import { AssetPackSelector } from './AssetPackSelector';
 import { AssetAlignmentEditor } from '../AssetAlignment/AssetAlignmentEditor';
-import { useAssetGeneration, useCreateAssetPack, useAssetPacks, useAssetPackWithEntries, useUpdatePlacement } from './useAssetGeneration';
-import { useEditor } from '../EditorProvider';
+import { useAssetGeneration, useCreateAssetPack, useAssetPacks, useAssetPackWithEntries, useUpdatePlacement, useDeleteAssetPack } from './useAssetGeneration';
+import { useEditor, type ResolvedPackEntry } from '../EditorProvider';
 import type { AssetPlacement, EntityTemplate } from '@slopcade/shared';
 
 interface AssetGalleryPanelProps {
@@ -29,7 +29,7 @@ const STYLE_OPTIONS = [
 export function AssetGalleryPanel({
   onTemplatePress,
 }: AssetGalleryPanelProps) {
-  const { gameId, document } = useEditor();
+  const { gameId, document, setActiveAssetPack } = useEditor();
   const isPreviewMode = gameId === 'preview';
   
   const [selectedPackId, setSelectedPackId] = useState<string | undefined>(
@@ -70,6 +70,48 @@ export function AssetGalleryPanel({
     return map;
   }, [activePack?.entries]);
 
+  useEffect(() => {
+    console.log('[AssetGalleryPanel] Pack selection effect triggered', {
+      selectedPackId,
+      isLoadingActivePack,
+      hasEntries: !!activePack?.entries,
+      entryCount: activePack?.entries?.length ?? 0,
+    });
+
+    if (!selectedPackId) {
+      console.log('[AssetGalleryPanel] No pack selected, clearing active pack');
+      setActiveAssetPack(undefined, {});
+      return;
+    }
+
+    if (isLoadingActivePack) {
+      console.log('[AssetGalleryPanel] Still loading pack entries, waiting...');
+      return;
+    }
+
+    if (!activePack?.entries) {
+      console.log('[AssetGalleryPanel] No entries in active pack');
+      return;
+    }
+
+    const resolvedEntries: Record<string, ResolvedPackEntry> = {};
+    for (const entry of activePack.entries) {
+      if (entry.imageUrl) {
+        resolvedEntries[entry.templateId] = {
+          imageUrl: entry.imageUrl,
+          placement: entry.placement ?? undefined,
+        };
+      }
+    }
+
+    console.log('[AssetGalleryPanel] Calling setActiveAssetPack', {
+      packId: selectedPackId,
+      resolvedEntriesCount: Object.keys(resolvedEntries).length,
+    });
+
+    setActiveAssetPack(selectedPackId, resolvedEntries);
+  }, [selectedPackId, isLoadingActivePack, activePack?.entries, setActiveAssetPack]);
+
   const packList = useMemo(() => {
     if (!assetPacks) return [];
     return assetPacks.map(pack => ({
@@ -86,6 +128,7 @@ export function AssetGalleryPanel({
   }, [entriesByTemplateId, templates]);
 
   const { createPack, isCreating: isCreatingPack } = useCreateAssetPack(gameId);
+  const { deletePack, isDeleting: isDeletingPack } = useDeleteAssetPack(gameId);
 
   const {
     isGenerating,
@@ -122,6 +165,17 @@ export function AssetGalleryPanel({
       throw error;
     }
   }, [createPack]);
+
+  const handleDeletePack = useCallback(async (packId: string) => {
+    try {
+      await deletePack(packId);
+      if (selectedPackId === packId) {
+        setSelectedPackId(undefined);
+      }
+    } catch (error) {
+      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to delete asset pack');
+    }
+  }, [deletePack, selectedPackId]);
 
   const handleQuickGenerate = useCallback(async () => {
     console.log('[AssetGallery] handleQuickGenerate called');
@@ -436,7 +490,9 @@ export function AssetGalleryPanel({
         totalTemplates={templates.length}
         onSelectPack={setSelectedPackId}
         onCreatePack={handleCreatePack}
+        onDeletePack={handleDeletePack}
         isCreating={isCreatingPack}
+        isDeleting={isDeletingPack}
       />
 
       <AssetAlignmentEditor

@@ -283,7 +283,7 @@ const game: GameDefinition = {
       name: "Spawn ball when game starts",
       trigger: { type: "gameStart" },
       actions: [
-        { type: "spawn", template: "ball", position: { type: "fixed", x: 0, y: 0 } },
+        { type: "spawn", template: "ball", position: { type: "fixed", x: 0, y: 5 } },
       ],
     },
     {
@@ -293,7 +293,7 @@ const game: GameDefinition = {
       actions: [
         { type: "lives", operation: "subtract", value: 1 },
         { type: "destroy", target: { type: "by_tag", tag: "ball" } },
-        { type: "spawn", template: "ball", position: { type: "fixed", x: 0, y: 0 } },
+        { type: "spawn", template: "ball", position: { type: "fixed", x: 0, y: 5 } },
       ],
     },
     {

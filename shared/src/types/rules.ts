@@ -1,5 +1,15 @@
 import type { Bounds, Vec2 } from './common';
 import type { Value } from '../expressions/types';
+import type { ComboIncrementAction, ComboResetAction } from '../systems/combo/types';
+import type { ActivateCheckpointAction, SaveCheckpointAction, RestoreCheckpointAction } from '../systems/checkpoint/types';
+import type { GridMoveAction, GridPlaceAction } from '../systems/grid/types';
+import type { InventoryAddAction, InventoryRemoveAction, ResourceModifyAction } from '../systems/inventory/types';
+import type { AddXPAction, UnlockAction } from '../systems/progression/types';
+import type { StateTransitionAction } from '../systems/state-machine/types';
+import type { WavesStartAction, WavesNextAction } from '../systems/wave/types';
+import type { PathStartAction, PathStopAction } from '../systems/path/types';
+import type { TargetNearestAction } from '../systems/spatial-query/types';
+import type { SetEntitySizeAction } from '../systems/dynamic-collider/types';
 
 export type RuleTriggerType =
   | 'collision'
@@ -357,16 +367,6 @@ export interface SetTimeScaleAction {
   duration?: Value<number>;
 }
 
-export interface SetEntitySizeAction {
-  type: 'set_entity_size';
-  target: EntityTarget;
-  scale?: Value<number>;
-  scaleX?: Value<number>;
-  scaleY?: Value<number>;
-  duration?: Value<number>;
-  easing?: 'linear' | 'ease-in' | 'ease-out' | 'ease-in-out';
-}
-
 export type RuleAction =
   | SpawnAction
   | DestroyAction
@@ -390,7 +390,25 @@ export type RuleAction =
   | CameraShakeAction
   | CameraZoomAction
   | SetTimeScaleAction
-  | SetEntitySizeAction;
+  | SetEntitySizeAction
+  | ComboIncrementAction
+  | ComboResetAction
+  | ActivateCheckpointAction
+  | SaveCheckpointAction
+  | RestoreCheckpointAction
+  | GridMoveAction
+  | GridPlaceAction
+  | InventoryAddAction
+  | InventoryRemoveAction
+  | ResourceModifyAction
+  | AddXPAction
+  | UnlockAction
+  | StateTransitionAction
+  | WavesStartAction
+  | WavesNextAction
+  | PathStartAction
+  | PathStopAction
+  | TargetNearestAction;
 
 export interface GameRule {
   id: string;

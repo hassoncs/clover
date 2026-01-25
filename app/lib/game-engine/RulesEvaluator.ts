@@ -28,6 +28,15 @@ import {
   CameraActionExecutor,
   SoundActionExecutor,
   SetEntitySizeActionExecutor,
+  ComboActionExecutor,
+  CheckpointActionExecutor,
+  GridActionExecutor,
+  InventoryActionExecutor,
+  PathActionExecutor,
+  ProgressionActionExecutor,
+  SpatialQueryActionExecutor,
+  StateMachineActionExecutor,
+  WaveActionExecutor,
 } from './rules/actions';
 import {
   LogicConditionEvaluator,
@@ -73,6 +82,15 @@ export class RulesEvaluator implements IGameStateMutator {
   private cameraActionExecutor = new CameraActionExecutor();
   private soundActionExecutor = new SoundActionExecutor();
   private setEntitySizeActionExecutor = new SetEntitySizeActionExecutor();
+  private comboActionExecutor = new ComboActionExecutor();
+  private checkpointActionExecutor = new CheckpointActionExecutor();
+  private gridActionExecutor = new GridActionExecutor();
+  private inventoryActionExecutor = new InventoryActionExecutor();
+  private pathActionExecutor = new PathActionExecutor();
+  private progressionActionExecutor = new ProgressionActionExecutor();
+  private spatialQueryActionExecutor = new SpatialQueryActionExecutor();
+  private stateMachineActionExecutor = new StateMachineActionExecutor();
+  private waveActionExecutor = new WaveActionExecutor();
 
   private logicConditionEvaluator = new LogicConditionEvaluator();
   private physicsConditionEvaluator = new PhysicsConditionEvaluator();
@@ -415,6 +433,24 @@ export class RulesEvaluator implements IGameStateMutator {
         case 'set_time_scale': this.cameraActionExecutor.execute(a, context); break;
         case 'sound': this.soundActionExecutor.execute(a, context); break;
         case 'set_entity_size': this.setEntitySizeActionExecutor.execute(a, context); break;
+        case 'combo_increment':
+        case 'combo_reset': this.comboActionExecutor.execute(a, context); break;
+        case 'checkpoint_activate':
+        case 'checkpoint_save':
+        case 'checkpoint_restore': this.checkpointActionExecutor.execute(a, context); break;
+        case 'grid_move':
+        case 'grid_place': this.gridActionExecutor.execute(a, context); break;
+        case 'inventory_add':
+        case 'inventory_remove':
+        case 'resource_modify': this.inventoryActionExecutor.execute(a, context); break;
+        case 'path_start':
+        case 'path_stop': this.pathActionExecutor.execute(a, context); break;
+        case 'progression_add_xp':
+        case 'progression_unlock': this.progressionActionExecutor.execute(a, context); break;
+        case 'target_nearest': this.spatialQueryActionExecutor.execute(a, context); break;
+        case 'state_transition': this.stateMachineActionExecutor.execute(a, context); break;
+        case 'wave_start':
+        case 'wave_next': this.waveActionExecutor.execute(a, context); break;
       }
     }
   }

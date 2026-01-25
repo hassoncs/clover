@@ -12,14 +12,16 @@ export function StageContainer() {
     setRuntimeKey((k) => k + 1);
   }, []);
 
-  const activePackId = document.activeAssetPackId;
+  const activePackId = document.assetSystem?.activeAssetPackId;
   const worldBounds = document.world.bounds ?? { width: 20, height: 12 };
   const pixelsPerMeter = document.world.pixelsPerMeter ?? 50;
+
+  console.log('[StageContainer] Render - activePackId:', activePackId, 'runtimeKey:', runtimeKey);
 
   return (
     <View className="flex-1 bg-gray-800">
       <WithGodot
-        key={runtimeKey}
+        key={`${runtimeKey}-${activePackId ?? 'none'}`}
         getComponent={() =>
           import("@/lib/game-engine/GameRuntime.godot").then((mod) => ({
             default: () => (

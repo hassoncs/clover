@@ -167,7 +167,9 @@ export class Match3GameSystem {
 
   private worldToCell(worldX: number, worldY: number): { row: number; col: number } | null {
     const col = Math.floor((worldX - this.config.originX) / this.config.cellSize);
-    const row = Math.floor((this.config.originY - worldY) / this.config.cellSize);
+    const gridBottomY = this.config.originY - this.config.rows * this.config.cellSize;
+    const rowFromBottom = Math.floor((worldY - gridBottomY) / this.config.cellSize);
+    const row = this.config.rows - 1 - rowFromBottom;
     
     if (row < 0 || row >= this.config.rows || col < 0 || col >= this.config.cols) {
       return null;

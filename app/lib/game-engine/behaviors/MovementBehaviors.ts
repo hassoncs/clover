@@ -98,28 +98,34 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
 
     let targetX = 0;
     let targetY = 0;
+    let hasTarget = false;
 
-    if (b.target === 'touch' && ctx.input.drag) {
-        targetX = ctx.input.drag.currentWorldX;
-        targetY = ctx.input.drag.currentWorldY;
+    if (b.target === 'touch') {
+        if (ctx.input.drag) {
+            targetX = ctx.input.drag.currentWorldX;
+            targetY = ctx.input.drag.currentWorldY;
+            hasTarget = true;
+        } else if (ctx.input.mouse) {
+            targetX = ctx.input.mouse.worldX;
+            targetY = ctx.input.mouse.worldY;
+            hasTarget = true;
+        }
     } else {
         const target = ctx.entityManager.getEntitiesByTag('player')[0];
         if (target) {
             targetX = target.transform.x;
             targetY = target.transform.y;
-        } else {
-            return;
+            hasTarget = true;
         }
     }
+
+    if (!hasTarget) return;
 
     const dx = targetX - ctx.entity.transform.x;
     const dy = targetY - ctx.entity.transform.y;
     let targetAngle = Math.atan2(dy, dx);
     if (b.offset) targetAngle += (b.offset * Math.PI) / 180;
 
-    // Simple snap for now, or use torque
-    // ctx.physics.setTransform(ctx.entity.bodyId, { x: ctx.entity.transform.x, y: ctx.entity.transform.y }, targetAngle);
-    // Better: set angular velocity to reach target angle
     const currentAngle = ctx.entity.transform.angle;
     let diff = targetAngle - currentAngle;
     while (diff > Math.PI) diff -= 2 * Math.PI;

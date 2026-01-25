@@ -234,3 +234,22 @@ export function useUpdatePlacement() {
     },
   });
 }
+
+export function useDeleteAssetPack(gameId: string) {
+  const utils = trpcReact.useUtils();
+  const mutation = trpcReact.assetSystem.deletePack.useMutation({
+    onSuccess: () => {
+      utils.assetSystem.listPacks.invalidate({ gameId });
+    },
+  });
+
+  const deletePack = useCallback(async (packId: string) => {
+    return mutation.mutateAsync({ id: packId });
+  }, [mutation]);
+
+  return {
+    deletePack,
+    isDeleting: mutation.isPending,
+    error: mutation.error?.message ?? null,
+  };
+}

@@ -33,5 +33,3 @@ export interface ComboResetAction {
   type: 'combo_reset';
   comboId: string;
 }
-
-export type ComboAction = ComboIncrementAction | ComboResetAction;
