@@ -7,6 +7,18 @@ signal collision_occurred(entity_a: String, entity_b: String, impulse: float)
 signal query_result(request_id: int, result: Variant)
 signal joint_created(request_id: int, joint_id: int)
 
+# ============================================================================
+# MODULE INSTANCES
+# These modules handle specific domains and receive a reference to this bridge.
+# Modules are defined in scripts/bridge/, scripts/entity/, scripts/physics/, etc.
+# ============================================================================
+var _event_queue_module: EventQueue = null
+var _glb_loader: GLBLoader = null
+var _viewport_3d: Viewport3D = null
+
+# ============================================================================
+# CORE STATE
+# ============================================================================
 var game_data: Dictionary = {}
 var entities: Dictionary = {}
 var templates: Dictionary = {}
@@ -14,6 +26,7 @@ var pixels_per_meter: float = 50.0
 var game_root: Node2D = null
 
 # Coordinate conversion helpers (Game uses center-origin with Y+ up, Godot uses Y+ down)
+# Note: These delegate to CoordinateUtils for consistency with modules
 func game_to_godot_pos(game_pos: Vector2) -> Vector2:
 	return Vector2(game_pos.x * pixels_per_meter, -game_pos.y * pixels_per_meter)
 
@@ -85,8 +98,16 @@ var _event_queue: Array = []
 const MAX_EVENT_QUEUE_SIZE: int = 100
 
 func _ready() -> void:
+	_init_modules()
 	_setup_camera()
 	_setup_js_bridge()
+
+func _init_modules() -> void:
+	_event_queue_module = EventQueue.new()
+	_glb_loader = GLBLoader.new(self)
+	_viewport_3d = Viewport3D.new()
+	_viewport_3d.name = "Viewport3D"
+	add_child(_viewport_3d)
 
 # Handle native input events on web and relay them back to JS
 func _input(event: InputEvent) -> void:
@@ -97,12 +118,12 @@ func _input(event: InputEvent) -> void:
 		var mouse_pos = event.position
 		var game_pos = godot_to_game_pos(mouse_pos)
 		
-		# Check for hit entity
 		var hit_entity_id: Variant = null
 		var space = get_viewport().find_world_2d().direct_space_state
 		if space:
 			var query = PhysicsPointQueryParameters2D.new()
-			query.position = mouse_pos
+			var world_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+			query.position = world_pos
 			query.collision_mask = 0xFFFFFFFF
 			query.collide_with_bodies = true
 			query.collide_with_areas = true
@@ -319,6 +340,10 @@ func _setup_js_bridge() -> void:
 	_js_callbacks.append(set_entity_image_cb)
 	_js_bridge_obj["setEntityImage"] = set_entity_image_cb
 	
+	var set_entity_atlas_region_cb = JavaScriptBridge.create_callback(_js_set_entity_atlas_region)
+	_js_callbacks.append(set_entity_atlas_region_cb)
+	_js_bridge_obj["setEntityAtlasRegion"] = set_entity_atlas_region_cb
+	
 	var clear_texture_cache_cb = JavaScriptBridge.create_callback(_js_clear_texture_cache)
 	_js_callbacks.append(clear_texture_cache_cb)
 	_js_bridge_obj["clearTextureCache"] = clear_texture_cache_cb
@@ -355,6 +380,34 @@ func _setup_js_bridge() -> void:
 	var on_ui_button_event_cb = JavaScriptBridge.create_callback(_js_on_ui_button_event)
 	_js_callbacks.append(on_ui_button_event_cb)
 	_js_bridge_obj["onUIButtonEvent"] = on_ui_button_event_cb
+	
+	var show_3d_model_cb = JavaScriptBridge.create_callback(_js_show_3d_model)
+	_js_callbacks.append(show_3d_model_cb)
+	_js_bridge_obj["show_3d_model"] = show_3d_model_cb
+	
+	var show_3d_model_from_url_cb = JavaScriptBridge.create_callback(_js_show_3d_model_from_url)
+	_js_callbacks.append(show_3d_model_from_url_cb)
+	_js_bridge_obj["show_3d_model_from_url"] = show_3d_model_from_url_cb
+	
+	var set_3d_viewport_position_cb = JavaScriptBridge.create_callback(_js_set_3d_viewport_position)
+	_js_callbacks.append(set_3d_viewport_position_cb)
+	_js_bridge_obj["set_3d_viewport_position"] = set_3d_viewport_position_cb
+	
+	var set_3d_viewport_size_cb = JavaScriptBridge.create_callback(_js_set_3d_viewport_size)
+	_js_callbacks.append(set_3d_viewport_size_cb)
+	_js_bridge_obj["set_3d_viewport_size"] = set_3d_viewport_size_cb
+	
+	var rotate_3d_model_cb = JavaScriptBridge.create_callback(_js_rotate_3d_model)
+	_js_callbacks.append(rotate_3d_model_cb)
+	_js_bridge_obj["rotate_3d_model"] = rotate_3d_model_cb
+	
+	var set_3d_camera_distance_cb = JavaScriptBridge.create_callback(_js_set_3d_camera_distance)
+	_js_callbacks.append(set_3d_camera_distance_cb)
+	_js_bridge_obj["set_3d_camera_distance"] = set_3d_camera_distance_cb
+	
+	var clear_3d_models_cb = JavaScriptBridge.create_callback(_js_clear_3d_models)
+	_js_callbacks.append(clear_3d_models_cb)
+	_js_bridge_obj["clear_3d_models"] = clear_3d_models_cb
 	
 	window["GodotBridge"] = _js_bridge_obj
 
@@ -1409,6 +1462,83 @@ func _js_set_entity_image(args: Array) -> void:
 		push_error("[GameBridge] setEntityImage requires 4 args: entity_id, url, width, height")
 		return
 	set_entity_image(str(args[0]), str(args[1]), float(args[2]), float(args[3]))
+
+func set_entity_atlas_region(entity_id: String, atlas_url: String, region_dict: Dictionary) -> void:
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_atlas_region: entity not found: " + entity_id)
+		return
+	
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+	
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+	
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+	
+	if _texture_cache.has(atlas_url):
+		_apply_atlas_region(sprite, _texture_cache[atlas_url], region_dict)
+	else:
+		_download_atlas_texture(sprite, atlas_url, region_dict)
+
+func _apply_atlas_region(sprite: Sprite2D, texture: Texture2D, region_dict: Dictionary) -> void:
+	var atlas_texture = AtlasTexture.new()
+	atlas_texture.atlas = texture
+	atlas_texture.region = Rect2(
+		region_dict.get("x", 0),
+		region_dict.get("y", 0),
+		region_dict.get("w", 0),
+		region_dict.get("h", 0)
+	)
+	sprite.texture = atlas_texture
+
+func _download_atlas_texture(sprite: Sprite2D, url: String, region_dict: Dictionary) -> void:
+	var http = HTTPRequest.new()
+	add_child(http)
+	
+	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+			push_error("[GameBridge] Failed to download atlas texture: " + url + " (code: " + str(response_code) + ")")
+			return
+		
+		var image = Image.new()
+		var err = image.load_png_from_buffer(body)
+		if err != OK:
+			err = image.load_jpg_from_buffer(body)
+		if err != OK:
+			err = image.load_webp_from_buffer(body)
+		if err != OK:
+			push_error("[GameBridge] Failed to parse atlas image: " + url)
+			return
+		
+		var texture = ImageTexture.create_from_image(image)
+		_texture_cache[url] = texture
+		
+		if is_instance_valid(sprite):
+			_apply_atlas_region(sprite, texture, region_dict)
+	)
+	
+	var err = http.request(url)
+	if err != OK:
+		push_error("[GameBridge] Failed to start atlas texture download: " + url)
+		http.queue_free()
+
+func _js_set_entity_atlas_region(args: Array) -> void:
+	if args.size() < 3:
+		push_error("[GameBridge] setEntityAtlasRegion requires 3 args: entity_id, atlas_url, region_dict")
+		return
+	var entity_id = str(args[0])
+	var atlas_url = str(args[1])
+	var region_dict = args[2] as Dictionary
+	if region_dict == null:
+		push_error("[GameBridge] setEntityAtlasRegion: region_dict must be a Dictionary")
+		return
+	set_entity_atlas_region(entity_id, atlas_url, region_dict)
 
 func set_entity_image_base64(entity_id: String, base64_data: String, width: float, height: float) -> void:
 	
@@ -2895,17 +3025,115 @@ func _create_placeholder_texture(url: String, width: int, height: int) -> ImageT
 
 # =============================================================================
 # EVENT QUEUE FOR NATIVE POLLING
+# Delegates to EventQueue module for cleaner separation
 # =============================================================================
 
 func _queue_event(event_type: String, data: Dictionary) -> void:
-	if _event_queue.size() >= MAX_EVENT_QUEUE_SIZE:
-		_event_queue.pop_front()
-	_event_queue.append({"type": event_type, "data": data})
+	if _event_queue_module:
+		_event_queue_module.queue_event(event_type, data)
+	else:
+		# Fallback for early calls before module init
+		if _event_queue.size() >= MAX_EVENT_QUEUE_SIZE:
+			_event_queue.pop_front()
+		_event_queue.append({"type": event_type, "data": data})
 
 func poll_events() -> String:
-	# Return JSON string instead of Array (react-native-godot doesn't support arrays)
+	if _event_queue_module:
+		return _event_queue_module.poll_events()
+	# Fallback
 	if _event_queue.is_empty():
 		return "[]"
 	var events = _event_queue.duplicate()
 	_event_queue.clear()
 	return JSON.stringify(events)
+
+# =============================================================================
+# 3D MODEL LOADING (GLB/glTF)
+# Delegates to GLBLoader module for 3D model support
+# =============================================================================
+
+func load_glb(path: String, parent: Node3D = null) -> Node3D:
+	if _glb_loader:
+		return _glb_loader.load_glb(path, parent)
+	push_error("[GameBridge] GLBLoader module not initialized")
+	return null
+
+func load_glb_from_buffer(buffer: PackedByteArray, base_path: String = "", parent: Node3D = null) -> Node3D:
+	if _glb_loader:
+		return _glb_loader.load_glb_from_buffer(buffer, base_path, parent)
+	push_error("[GameBridge] GLBLoader module not initialized")
+	return null
+
+func load_glb_async(url: String, parent: Node3D = null, callback: Callable = Callable()) -> void:
+	if _glb_loader:
+		_glb_loader.load_glb_async(url, parent, callback)
+	else:
+		push_error("[GameBridge] GLBLoader module not initialized")
+		if callback.is_valid():
+			callback.call(null)
+
+func show_3d_model(path: String) -> bool:
+	if not _viewport_3d:
+		push_error("[GameBridge] Viewport3D not initialized")
+		return false
+	var model = _viewport_3d.load_glb(path)
+	return model != null
+
+func show_3d_model_from_url(url: String) -> void:
+	if not _viewport_3d:
+		push_error("[GameBridge] Viewport3D not initialized")
+		return
+	_viewport_3d.load_glb_async(url)
+
+func set_3d_viewport_position(x: float, y: float) -> void:
+	if _viewport_3d:
+		_viewport_3d.position = game_to_godot_pos(Vector2(x, y))
+
+func set_3d_viewport_size(width: int, height: int) -> void:
+	if _viewport_3d:
+		_viewport_3d.set_viewport_size(width, height)
+
+func rotate_3d_model(x: float, y: float, z: float) -> void:
+	if _viewport_3d:
+		_viewport_3d.set_model_rotation(Vector3(x, y, z))
+
+func set_3d_camera_distance(distance: float) -> void:
+	if _viewport_3d:
+		_viewport_3d.set_camera_distance(distance)
+
+func clear_3d_models() -> void:
+	if _viewport_3d:
+		_viewport_3d.clear_models()
+
+func _js_show_3d_model(args: Array) -> bool:
+	if args.size() < 1:
+		return false
+	return show_3d_model(str(args[0]))
+
+func _js_show_3d_model_from_url(args: Array) -> void:
+	if args.size() < 1:
+		return
+	show_3d_model_from_url(str(args[0]))
+
+func _js_set_3d_viewport_position(args: Array) -> void:
+	if args.size() < 2:
+		return
+	set_3d_viewport_position(float(args[0]), float(args[1]))
+
+func _js_set_3d_viewport_size(args: Array) -> void:
+	if args.size() < 2:
+		return
+	set_3d_viewport_size(int(args[0]), int(args[1]))
+
+func _js_rotate_3d_model(args: Array) -> void:
+	if args.size() < 3:
+		return
+	rotate_3d_model(float(args[0]), float(args[1]), float(args[2]))
+
+func _js_set_3d_camera_distance(args: Array) -> void:
+	if args.size() < 1:
+		return
+	set_3d_camera_distance(float(args[0]))
+
+func _js_clear_3d_models(_args: Array) -> void:
+	clear_3d_models()

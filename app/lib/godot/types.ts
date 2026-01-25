@@ -258,6 +258,11 @@ export interface GodotBridge {
 
   // Dynamic image management
   setEntityImage(entityId: string, url: string, width: number, height: number): void;
+  setEntityAtlasRegion(
+    entityId: string,
+    atlasUrl: string,
+    region: { x: number; y: number; w: number; h: number }
+  ): void;
   clearTextureCache(url?: string): void;
 
   // Camera control
@@ -314,6 +319,15 @@ export interface GodotBridge {
   ): void;
   destroyUIButton(buttonId: string): void;
   onUIButtonEvent(callback: (eventType: 'button_down' | 'button_up' | 'button_pressed', buttonId: string) => void): () => void;
+
+  // 3D Model Rendering (2.5D)
+  show3DModel(path: string): boolean;
+  show3DModelFromUrl(url: string): void;
+  set3DViewportPosition(x: number, y: number): void;
+  set3DViewportSize(width: number, height: number): void;
+  rotate3DModel(x: number, y: number, z: number): void;
+  set3DCameraDistance(distance: number): void;
+  clear3DModels(): void;
 }
 
 export interface GodotViewProps {

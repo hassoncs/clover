@@ -75,8 +75,14 @@ function callGameBridge(methodName: string, ...args: unknown[]) {
       if (gameBridge) {
         const method = gameBridge[methodName];
         if (typeof method === 'function') {
-          // Spread args individually - react-native-godot doesn't support array bindings
-          method.apply(gameBridge, args);
+          // Wrap in array for methods that expect args Array (like _js_send_input)
+          // Most methods take individual params, but send_input and similar callbacks need array
+          if (methodName === 'send_input') {
+            method.apply(gameBridge, [args]);
+          } else {
+            // Spread args individually for regular methods
+            method.apply(gameBridge, args);
+          }
         } else {
           console.log(`[Godot worklet] Method ${methodName} not found on GameBridge`);
         }
@@ -931,6 +937,14 @@ export function createNativeGodotBridge(): GodotBridge {
       }
     },
 
+    setEntityAtlasRegion(
+      entityId: string,
+      atlasUrl: string,
+      region: { x: number; y: number; w: number; h: number }
+    ) {
+      callGameBridge('set_entity_atlas_region', entityId, atlasUrl, region);
+    },
+
     clearTextureCache(url?: string) {
       callGameBridge('clear_texture_cache', url ?? '');
     },
@@ -1046,6 +1060,35 @@ export function createNativeGodotBridge(): GodotBridge {
         const index = uiButtonCallbacks.indexOf(callback);
         if (index >= 0) uiButtonCallbacks.splice(index, 1);
       };
+    },
+
+    show3DModel(path: string): boolean {
+      callGameBridge('show_3d_model', path);
+      return true;
+    },
+
+    show3DModelFromUrl(url: string): void {
+      callGameBridge('show_3d_model_from_url', url);
+    },
+
+    set3DViewportPosition(x: number, y: number): void {
+      callGameBridge('set_3d_viewport_position', x, y);
+    },
+
+    set3DViewportSize(width: number, height: number): void {
+      callGameBridge('set_3d_viewport_size', width, height);
+    },
+
+    rotate3DModel(x: number, y: number, z: number): void {
+      callGameBridge('rotate_3d_model', x, y, z);
+    },
+
+    set3DCameraDistance(distance: number): void {
+      callGameBridge('set_3d_camera_distance', distance);
+    },
+
+    clear3DModels(): void {
+      callGameBridge('clear_3d_models');
     },
   };
 

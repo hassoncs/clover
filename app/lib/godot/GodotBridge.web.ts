@@ -109,6 +109,11 @@ declare global {
         width: number,
         height: number,
       ) => void;
+      setEntityAtlasRegion: (
+        entityId: string,
+        atlasUrl: string,
+        region: { x: number; y: number; w: number; h: number },
+      ) => void;
       clearTextureCache: (url: string) => void;
       setCameraTarget: (entityId: string) => void;
       setCameraPosition: (x: number, y: number) => void;
@@ -172,6 +177,13 @@ declare global {
       onUIButtonEvent: (
         callback: (eventType: string, buttonId: string) => void,
       ) => void;
+      show_3d_model: (path: string) => boolean;
+      show_3d_model_from_url: (url: string) => void;
+      set_3d_viewport_position: (x: number, y: number) => void;
+      set_3d_viewport_size: (width: number, height: number) => void;
+      rotate_3d_model: (x: number, y: number, z: number) => void;
+      set_3d_camera_distance: (distance: number) => void;
+      clear_3d_models: () => void;
     };
   }
 }
@@ -657,6 +669,14 @@ export function createWebGodotBridge(): GodotBridge {
       getGodotBridge()?.setEntityImage(entityId, url, width, height);
     },
 
+    setEntityAtlasRegion(
+      entityId: string,
+      atlasUrl: string,
+      region: { x: number; y: number; w: number; h: number },
+    ) {
+      getGodotBridge()?.setEntityAtlasRegion(entityId, atlasUrl, region);
+    },
+
     clearTextureCache(url?: string) {
       getGodotBridge()?.clearTextureCache(url ?? "");
     },
@@ -933,6 +953,41 @@ export function createWebGodotBridge(): GodotBridge {
         const index = uiButtonCallbacks.indexOf(callback);
         if (index >= 0) uiButtonCallbacks.splice(index, 1);
       };
+    },
+
+    show3DModel(path: string): boolean {
+      const godotBridge = getGodotBridge();
+      return godotBridge?.show_3d_model?.(path) ?? false;
+    },
+
+    show3DModelFromUrl(url: string): void {
+      const godotBridge = getGodotBridge();
+      godotBridge?.show_3d_model_from_url?.(url);
+    },
+
+    set3DViewportPosition(x: number, y: number): void {
+      const godotBridge = getGodotBridge();
+      godotBridge?.set_3d_viewport_position?.(x, y);
+    },
+
+    set3DViewportSize(width: number, height: number): void {
+      const godotBridge = getGodotBridge();
+      godotBridge?.set_3d_viewport_size?.(width, height);
+    },
+
+    rotate3DModel(x: number, y: number, z: number): void {
+      const godotBridge = getGodotBridge();
+      godotBridge?.rotate_3d_model?.(x, y, z);
+    },
+
+    set3DCameraDistance(distance: number): void {
+      const godotBridge = getGodotBridge();
+      godotBridge?.set_3d_camera_distance?.(distance);
+    },
+
+    clear3DModels(): void {
+      const godotBridge = getGodotBridge();
+      godotBridge?.clear_3d_models?.();
     },
   };
 
