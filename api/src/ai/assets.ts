@@ -1,5 +1,6 @@
 import type { Env } from '../trpc/context';
 import { ScenarioClient, createScenarioClient } from './scenario';
+import { buildAssetPath } from '@slopcade/shared';
 
 // Debug mode - set via environment variable
 const DEBUG_ASSET_GENERATION = process.env.DEBUG_ASSET_GENERATION === 'true';
@@ -48,6 +49,12 @@ export interface StructuredPromptParams {
   style: SpriteStyle;
   targetWidth: number;
   targetHeight: number;
+  context?: AssetContext;
+}
+
+export interface AssetContext {
+  gameId: string;
+  packId: string;
 }
 
 export interface AssetGenerationRequest {
@@ -58,6 +65,7 @@ export interface AssetGenerationRequest {
   animated?: boolean;
   frameCount?: number;
   seed?: string;
+  context?: AssetContext;
 }
 
 export interface DirectGenerationRequest {
@@ -68,6 +76,7 @@ export interface DirectGenerationRequest {
   width: number;
   height: number;
   seed?: string;
+  context?: AssetContext;
 }
 
 export interface AssetGenerationResult {
@@ -535,6 +544,7 @@ export class AssetService {
       style,
       width,
       height,
+      context,
     } = request;
 
     const debugId = this.generateDebugId();
@@ -596,7 +606,7 @@ export class AssetService {
         result: { scenarioAssetId: assetId, extension },
       }, null, 2));
 
-       const r2Key = await this.uploadToR2(buffer, extension, entityType);
+       const r2Key = await this.uploadToR2(buffer, extension, entityType, context);
 
        assetLog('INFO', '', `Uploaded to R2: ${r2Key}`);
 
@@ -634,6 +644,7 @@ export class AssetService {
       style: params.style,
       width: params.targetWidth,
       height: params.targetHeight,
+      context: params.context,
     });
   }
 
@@ -705,7 +716,7 @@ export class AssetService {
         result: { scenarioAssetId: assetId, extension },
       }, null, 2));
 
-      const r2Key = await this.uploadToR2(buffer, extension, entityType);
+      const r2Key = await this.uploadToR2(buffer, extension, entityType, params.context);
 
       return {
         success: true,
@@ -735,6 +746,7 @@ export class AssetService {
       entityType,
       description,
       size,
+      context,
     } = request;
 
     if (!this.env.SCENARIO_API_KEY || !this.env.SCENARIO_SECRET_API_KEY) {
@@ -778,7 +790,7 @@ export class AssetService {
       const assetId = result.assetIds[0];
       const { buffer, extension } = await client.downloadAsset(assetId);
 
-      const r2Key = await this.uploadToR2(buffer, extension, entityType);
+      const r2Key = await this.uploadToR2(buffer, extension, entityType, context);
 
       return {
         success: true,
@@ -801,7 +813,8 @@ export class AssetService {
 
   async removeBackground(
     imageBuffer: ArrayBuffer,
-    entityType: EntityType
+    entityType: EntityType,
+    context?: AssetContext
   ): Promise<AssetGenerationResult> {
     if (!this.env.SCENARIO_API_KEY || !this.env.SCENARIO_SECRET_API_KEY) {
       return {
@@ -821,7 +834,7 @@ export class AssetService {
       });
 
       const { buffer, extension } = await client.downloadAsset(resultAssetId);
-      const r2Key = await this.uploadToR2(buffer, extension, entityType);
+      const r2Key = await this.uploadToR2(buffer, extension, entityType, context);
 
       return {
         success: true,
@@ -841,10 +854,17 @@ export class AssetService {
   private async uploadToR2(
     buffer: ArrayBuffer,
     extension: string,
-    entityType: EntityType
+    entityType: EntityType,
+    context?: AssetContext
   ): Promise<string> {
     const assetId = crypto.randomUUID();
-    const r2Key = `generated/${entityType}/${assetId}${extension}`;
+    
+    let r2Key: string;
+    if (context?.gameId && context?.packId) {
+      r2Key = buildAssetPath(context.gameId, context.packId, assetId);
+    } else {
+      r2Key = `generated/${entityType}/${assetId}${extension}`;
+    }
 
     await this.env.ASSETS.put(r2Key, buffer, {
       httpMetadata: {

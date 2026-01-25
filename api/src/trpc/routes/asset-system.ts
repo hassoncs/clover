@@ -666,6 +666,8 @@ export const assetSystemRouter = router({
           const entityType = (promptComponents.entityType ?? 'item') as EntityType;
           const style = (promptComponents.styleOverride ?? 'pixel') as SpriteStyle;
 
+          const assetContext = jobRow.pack_id ? { gameId: jobRow.game_id, packId: jobRow.pack_id } : undefined;
+          
           let result = await assetService.generateDirect({
             prompt: task.compiled_prompt ?? '',
             negativePrompt: task.compiled_negative_prompt ?? buildStructuredNegativePrompt(style),
@@ -673,6 +675,7 @@ export const assetSystemRouter = router({
             style,
             width: task.target_width ?? 512,
             height: task.target_height ?? 512,
+            context: assetContext,
           });
 
           if (result.success && result.r2Key && shouldRemoveBackground) {
@@ -681,7 +684,7 @@ export const assetSystemRouter = router({
               const originalAsset = await ctx.env.ASSETS.get(result.r2Key);
               if (originalAsset) {
                 const buffer = await originalAsset.arrayBuffer();
-                const bgRemovedResult = await assetService.removeBackground(buffer, entityType);
+                const bgRemovedResult = await assetService.removeBackground(buffer, entityType, assetContext);
                 if (bgRemovedResult.success && bgRemovedResult.assetUrl) {
                   result = bgRemovedResult;
                 } else {

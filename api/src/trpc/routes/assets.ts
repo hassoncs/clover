@@ -551,6 +551,7 @@ export const assetsRouter = router({
         description,
         style: input.style as SpriteStyle,
         size: { width: 512, height: 512 },
+        context: { gameId: input.gameId, packId: input.packId },
       });
 
       if (!result.success || !result.assetUrl) {
