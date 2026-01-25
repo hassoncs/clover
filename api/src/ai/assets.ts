@@ -2,24 +2,30 @@ import type { Env } from '../trpc/context';
 import { ScenarioClient, createScenarioClient } from './scenario';
 import { buildAssetPath } from '@slopcade/shared';
 
-// Debug mode - set via environment variable
 const DEBUG_ASSET_GENERATION = process.env.DEBUG_ASSET_GENERATION === 'true';
 const DEBUG_OUTPUT_DIR = 'debug-output';
 
-// Log level utility for production-safe debugging
-const LOG_LEVEL = process.env.LOG_LEVEL || 'INFO';
-const LOG_LEVELS: Record<string, number> = { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 };
+type DebugAssetsLevel = 'verbose' | 'normal' | 'quiet';
+const DEBUG_ASSETS: DebugAssetsLevel = (process.env.DEBUG_ASSETS as DebugAssetsLevel) || 'normal';
+const LEVEL_PRIORITY: Record<DebugAssetsLevel, number> = { verbose: 0, normal: 1, quiet: 2 };
+const LOG_LEVEL_MAP: Record<string, DebugAssetsLevel> = { 
+  DEBUG: 'verbose', 
+  INFO: 'normal', 
+  WARN: 'quiet', 
+  ERROR: 'quiet' 
+};
 
 export function shouldLog(level: string): boolean {
-  return (LOG_LEVELS[level] ?? 1) >= (LOG_LEVELS[LOG_LEVEL] ?? 1);
+  const requiredLevel = LOG_LEVEL_MAP[level] ?? 'normal';
+  return LEVEL_PRIORITY[requiredLevel] >= LEVEL_PRIORITY[DEBUG_ASSETS];
 }
 
 export function formatLog(level: string, context: string, message: string): string {
-  return `[AssetGen] [${level}] ${context ? `[${context}] ` : ''}${message}`;
+  return `[AssetPipeline] [${level}] ${context ? `[${context}] ` : ''}${message}`;
 }
 
 export function assetLog(level: string, context: string, message: string): void {
-  if (shouldLog(level)) {
+  if (level === 'ERROR' || shouldLog(level)) {
     const formatted = formatLog(level, context, message);
     if (level === 'ERROR') console.error(formatted);
     else if (level === 'WARN') console.warn(formatted);
