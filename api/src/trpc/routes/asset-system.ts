@@ -10,6 +10,7 @@ import {
   type SpriteStyle,
 } from '../../ai/assets';
 import { migrateAssetPacks, rollbackMigration } from '../../migrations/migrate-asset-packs';
+import { isLegacyUrl } from '@slopcade/shared';
 
 // Log level utility for production-safe debugging
 const LOG_LEVEL = process.env.LOG_LEVEL || 'INFO';
@@ -27,6 +28,22 @@ function jobLog(level: string, jobId: string, taskId: string | null, message: st
     else if (level === 'WARN') console.warn(formatted);
     else console.log(formatted);
   }
+}
+
+function resolveStoredAssetUrl(storedValue: string | null, assetHost: string | undefined): string | null {
+  if (!storedValue) return null;
+  
+  if (isLegacyUrl(storedValue)) {
+    if (storedValue.startsWith('http://') || storedValue.startsWith('https://') || 
+        storedValue.startsWith('data:') || storedValue.startsWith('res://')) {
+      return storedValue;
+    }
+    const baseUrl = assetHost || '';
+    return `${baseUrl}${storedValue}`;
+  }
+  
+  const baseUrl = assetHost || '';
+  return `${baseUrl}/assets/${storedValue}`;
 }
 
 interface GameAssetRow {
@@ -320,7 +337,7 @@ export const assetSystemRouter = router({
         ...toClientPack(packRow),
         entries: entriesResult.results.map(row => ({
           ...toClientEntry(row),
-          imageUrl: row.image_url,
+          imageUrl: resolveStoredAssetUrl(row.image_url, ctx.env.ASSET_HOST),
           assetWidth: row.asset_width,
           assetHeight: row.asset_height,
         })),
@@ -696,14 +713,14 @@ export const assetSystemRouter = router({
             }
           }
 
-          if (result.success && result.assetUrl) {
+          if (result.success && result.r2Key) {
             const assetId = crypto.randomUUID();
             const assetNow = Date.now();
 
             await ctx.env.DB.prepare(
               `INSERT INTO game_assets (id, owner_game_id, source, image_url, width, height, created_at)
                VALUES (?, ?, 'generated', ?, ?, ?, ?)`
-            ).bind(assetId, jobRow.game_id, result.assetUrl, task.target_width, task.target_height, assetNow).run();
+            ).bind(assetId, jobRow.game_id, result.r2Key, task.target_width, task.target_height, assetNow).run();
 
              await ctx.env.DB.prepare(
                `UPDATE generation_tasks SET status = 'succeeded', asset_id = ?, finished_at = ? WHERE id = ?`
@@ -841,7 +858,7 @@ export const assetSystemRouter = router({
 
       for (const entry of entriesResult.results) {
         entriesByTemplateId[entry.template_id] = {
-          imageUrl: entry.image_url,
+          imageUrl: resolveStoredAssetUrl(entry.image_url, ctx.env.ASSET_HOST),
           placement: entry.placement_json ? JSON.parse(entry.placement_json) : null,
         };
       }
