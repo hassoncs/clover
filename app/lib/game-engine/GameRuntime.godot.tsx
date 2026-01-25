@@ -440,6 +440,10 @@ export function GameRuntimeGodot({
       if (tapInput) {
         match3System.handleTap(tapInput.worldX, tapInput.worldY);
       }
+      const mouseInput = inputSnapshot.mouse as { worldX: number; worldY: number } | undefined;
+      if (mouseInput) {
+        match3System.handleMouseMove(mouseInput.worldX, mouseInput.worldY);
+      }
       match3System.update(dt);
     }
     

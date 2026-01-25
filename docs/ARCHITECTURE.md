@@ -194,6 +194,7 @@ Rules reference input via triggers:
 
 - `CollisionTrigger` - entity collisions
 - `TimerTrigger` - time-based events
+
 - `EventTrigger` - custom events from behaviors
 
 ---

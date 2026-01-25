@@ -1,0 +1,119 @@
+{
+  "id": "gem-variants",
+  "kind": "variation",
+  "layout": {
+    "type": "grid",
+    "columns": 4,
+    "rows": 2,
+    "cellWidth": 64,
+    "cellHeight": 64
+  },
+  "dimensions": {
+    "width": 512,
+    "height": 512
+  },
+  "entries": [
+    {
+      "index": 0,
+      "region": {
+        "x": 26,
+        "y": 141,
+        "width": 115,
+        "height": 115
+      }
+    },
+    {
+      "index": 1,
+      "region": {
+        "x": 141,
+        "y": 141,
+        "width": 115,
+        "height": 115
+      }
+    },
+    {
+      "index": 2,
+      "region": {
+        "x": 256,
+        "y": 141,
+        "width": 115,
+        "height": 115
+      }
+    },
+    {
+      "index": 3,
+      "region": {
+        "x": 371,
+        "y": 141,
+        "width": 115,
+        "height": 115
+      }
+    },
+    {
+      "index": 4,
+      "region": {
+        "x": 26,
+        "y": 256,
+        "width": 115,
+        "height": 115
+      }
+    },
+    {
+      "index": 5,
+      "region": {
+        "x": 141,
+        "y": 256,
+        "width": 115,
+        "height": 115
+      }
+    },
+    {
+      "index": 6,
+      "region": {
+        "x": 256,
+        "y": 256,
+        "width": 115,
+        "height": 115
+      }
+    },
+    {
+      "index": 7,
+      "region": {
+        "x": 371,
+        "y": 256,
+        "width": 115,
+        "height": 115
+      }
+    }
+  ],
+  "promptConfig": {
+    "basePrompt": "photorealistic brilliant cut gemstone, sparkling facets, light rays, glistening reflections, jewelry quality",
+    "negativePrompt": "borders, grid lines, labels, cartoon, pixel art, flat"
+  },
+  "variants": [
+    {
+      "key": "red",
+      "description": "ruby red gem"
+    },
+    {
+      "key": "blue",
+      "description": "sapphire blue gem"
+    },
+    {
+      "key": "green",
+      "description": "emerald green gem"
+    },
+    {
+      "key": "yellow",
+      "description": "topaz yellow gem"
+    },
+    {
+      "key": "purple",
+      "description": "amethyst purple gem"
+    },
+    {
+      "key": "orange",
+      "description": "citrine orange gem"
+    }
+  ]
+}

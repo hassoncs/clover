@@ -27,6 +27,9 @@ The critical insight: **treat AI as a powerful starting point, not a finished pi
 | `model_scenario-image-slicer` | Image Slicer | Extracting frames from sheets |
 | `model_uM7q4Ms6Y5X2PXie6oA9ygRa` | Environment Sprites 2.0 | Background/environment assets |
 | `model_UVo8dCsJYYdiThdHvBPfWMYG` | Arcade Hero 2.0 | Character sprites |
+| `model_M13DkiFG21xNkHEwKPxLdp8K` | Scenario Pixel Art | [Experimental] High-fidelity pixel art |
+| `model_hFh8M6nQbqGFSKJdP536GXhE` | Fantasy Assets | [Experimental] RPG-style items and icons |
+| `model_EEBngzDJAbd3e8DEq5MHkPeV` | Sci-Fi Environments | [Experimental] Futuristic backgrounds |
 
 ### Retro Diffusion Specifics
 

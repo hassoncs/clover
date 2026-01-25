@@ -27,7 +27,7 @@ const GAME_DEFINITION: GameDefinition = {
     version: "1.0.0",
   },
   world: {
-    gravity: { x: 0, y: 25 },
+    gravity: { x: 0, y: -25 },
     pixelsPerMeter: PIXELS_PER_METER,
     bounds: WORLD_BOUNDS,
   },
@@ -78,12 +78,12 @@ const GAME_DEFINITION: GameDefinition = {
     },
   },
   entities: [
-    { id: "ground", name: "Ground", template: "ground", transform: { x: 7, y: 17.5, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "wall-left", name: "Left Wall", template: "wall", transform: { x: 0.25, y: 9, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "wall-right", name: "Right Wall", template: "wall", transform: { x: 13.75, y: 9, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "cube1", name: "Cube 1", template: "cube", transform: { x: 4, y: 16, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "cube2", name: "Cube 2", template: "cube", transform: { x: 7, y: 16, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "cube3", name: "Cube 3", template: "cube", transform: { x: 10, y: 16, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "ground", name: "Ground", template: "ground", transform: { x: 0, y: -8.5, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "wall-left", name: "Left Wall", template: "wall", transform: { x: -6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "wall-right", name: "Right Wall", template: "wall", transform: { x: 6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "cube1", name: "Cube 1", template: "cube", transform: { x: -3, y: -7, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "cube2", name: "Cube 2", template: "cube", transform: { x: 0, y: -7, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "cube3", name: "Cube 3", template: "cube", transform: { x: 3, y: -7, angle: 0, scaleX: 1, scaleY: 1 } },
   ],
   rules: [],
 };
@@ -127,8 +127,11 @@ function screenToWorldCoords(
   const relativeX = screenX - layout.x;
   const relativeY = screenY - layout.y;
 
-  const worldX = (relativeX - offsetX) / (PIXELS_PER_METER * scale);
-  const worldY = (relativeY - offsetY) / (PIXELS_PER_METER * scale);
+  const viewportX = (relativeX - offsetX) / (PIXELS_PER_METER * scale);
+  const viewportY = (relativeY - offsetY) / (PIXELS_PER_METER * scale);
+
+  const worldX = viewportX - WORLD_BOUNDS.width / 2;
+  const worldY = WORLD_BOUNDS.height / 2 - viewportY;
 
   return { x: worldX, y: worldY };
 }

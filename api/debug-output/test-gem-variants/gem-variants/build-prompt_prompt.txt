@@ -1,0 +1,11 @@
+=== POSITIVE PROMPT ===
+Transform each colored shape into a detailed sprite.
+Keep the EXACT positions and colors from the input image.
+Each shape becomes one sprite matching its color.
+
+photorealistic brilliant cut gemstone, sparkling facets, light rays, glistening reflections, jewelry quality
+
+Transparent background. No borders, no grid lines, no text.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, 2d flat, sketch, drawing

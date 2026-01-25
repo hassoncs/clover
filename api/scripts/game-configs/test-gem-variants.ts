@@ -3,8 +3,8 @@ import type { GameAssetConfig } from '../../src/ai/pipeline/types';
 export const testGemVariantsConfig: GameAssetConfig = {
   gameId: 'test-gem-variants',
   gameTitle: 'Test Gem Variants',
-  theme: 'match-3 puzzle game with shiny gems',
-  style: 'pixel',
+  theme: 'luxury jewelry showcase with brilliant cut gemstones',
+  style: '3d',
   r2Prefix: 'generated/test-gem-variants',
   localOutputDir: 'api/debug-output/test-gem-variants',
   assets: [
@@ -14,8 +14,8 @@ export const testGemVariantsConfig: GameAssetConfig = {
       kind: 'variation',
       layout: { type: 'grid', columns: 4, rows: 2, cellWidth: 64, cellHeight: 64 },
       promptConfig: {
-        basePrompt: 'pixel art gem',
-        negativePrompt: 'borders, grid lines, labels'
+        basePrompt: 'photorealistic brilliant cut gemstone, sparkling facets, light rays, glistening reflections, jewelry quality',
+        negativePrompt: 'borders, grid lines, labels, cartoon, pixel art, flat'
       },
       variants: [
         { key: 'red', description: 'ruby red gem' },

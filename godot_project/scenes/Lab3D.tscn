@@ -1,0 +1,24 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/Lab3D.gd" id="1_lab3d"]
+
+[node name="Lab3D" type="Node3D"]
+script = ExtResource("1_lab3d")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 2, 2)
+projection = 1
+size = 3.0
+near = 0.01
+far = 100.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 5, 5)
+shadow_enabled = true
+
+[node name="AmbientLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+light_color = Color(0.5, 0.5, 0.6, 1)
+light_energy = 0.3
+
+[node name="ModelsRoot" type="Node3D" parent="."]

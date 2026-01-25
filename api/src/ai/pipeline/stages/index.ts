@@ -128,11 +128,13 @@ export const uploadToScenarioStage: Stage = {
   id: 'upload-scenario',
   name: 'Upload to Scenario',
   async run(run: AssetRun, adapters: PipelineAdapters, _debug: DebugSink): Promise<AssetRun> {
-    if (!run.artifacts.silhouettePng) {
-      throw new Error('silhouette stage must run before upload-scenario');
+    // Accept either silhouette (for entities) or sheet guide (for sheets)
+    const imageToUpload = run.artifacts.silhouettePng ?? run.artifacts.sheetGuidePng;
+    if (!imageToUpload) {
+      throw new Error('silhouette or sheet-guide stage must run before upload-scenario');
     }
 
-    const scenarioAssetId = await adapters.scenario.uploadImage(run.artifacts.silhouettePng);
+    const scenarioAssetId = await adapters.scenario.uploadImage(imageToUpload);
 
     return {
       ...run,
@@ -152,7 +154,7 @@ export const img2imgStage: Stage = {
     const result = await adapters.scenario.img2img({
       imageAssetId: run.artifacts.scenarioAssetId,
       prompt: run.artifacts.prompt,
-      strength: 0.95,
+      strength: 0.92,
     });
 
     const { buffer } = await adapters.scenario.downloadImage(result.assetId);
@@ -332,6 +334,30 @@ export const uploadR2Stage: Stage = {
   },
 };
 
+const VARIANT_COLOR_MAP: Record<string, string> = {
+  red: '#FF4444',
+  blue: '#4444FF',
+  green: '#44FF44',
+  yellow: '#FFFF44',
+  purple: '#AA44FF',
+  orange: '#FF8844',
+  pink: '#FF44AA',
+  cyan: '#44FFFF',
+  white: '#FFFFFF',
+  black: '#222222',
+  gold: '#FFD700',
+  silver: '#C0C0C0',
+};
+
+function getColorForVariant(key: string, index: number): string {
+  const lowerKey = key.toLowerCase();
+  if (VARIANT_COLOR_MAP[lowerKey]) {
+    return VARIANT_COLOR_MAP[lowerKey];
+  }
+  const fallbackColors = ['#FF4444', '#4444FF', '#44FF44', '#FFFF44', '#AA44FF', '#FF8844', '#44FFFF', '#FF44AA'];
+  return fallbackColors[index % fallbackColors.length];
+}
+
 export const sheetGuideStage: Stage = {
   id: 'sheet-guide',
   name: 'Create Sheet Guide',
@@ -341,23 +367,34 @@ export const sheetGuideStage: Stage = {
     }
 
     const spec = run.spec;
-    const { width, height } = calculateSheetDimensions(spec.layout);
+    const { width: gridWidth, height: gridHeight } = calculateSheetDimensions(spec.layout);
     const entries = getSheetEntries(spec);
 
     const sharp = (await import('sharp')).default;
 
-    let gridLines = '';
-    for (const entry of entries) {
-      gridLines += `<rect x="${entry.x}" y="${entry.y}" width="${entry.width}" height="${entry.height}" fill="none" stroke="black" stroke-width="1"/>`;
-      const fontSize = Math.min(entry.width, entry.height) / 4;
-      const textX = entry.x + entry.width / 2;
-      const textY = entry.y + entry.height / 2 + fontSize / 3;
-      gridLines += `<text x="${textX}" y="${textY}" font-size="${fontSize}" text-anchor="middle" fill="rgba(0,0,0,0.3)">${entry.index}</text>`;
+    const CANVAS_SIZE = 512;
+    const scale = Math.min(CANVAS_SIZE / gridWidth, CANVAS_SIZE / gridHeight) * 0.9;
+    const offsetX = (CANVAS_SIZE - gridWidth * scale) / 2;
+    const offsetY = (CANVAS_SIZE - gridHeight * scale) / 2;
+
+    let silhouettes = '';
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
+      const centerX = offsetX + (entry.x + entry.width / 2) * scale;
+      const centerY = offsetY + (entry.y + entry.height / 2) * scale;
+      const radius = Math.min(entry.width, entry.height) * scale * 0.4;
+
+      let fillColor = '#888888';
+      if (spec.kind === 'variation' && spec.variants && spec.variants[i]) {
+        fillColor = getColorForVariant(spec.variants[i].key, i);
+      }
+
+      silhouettes += `<circle cx="${centerX}" cy="${centerY}" r="${radius}" fill="${fillColor}"/>`;
     }
 
-    const svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-      <rect width="${width}" height="${height}" fill="white"/>
-      ${gridLines}
+    const svg = `<svg width="${CANVAS_SIZE}" height="${CANVAS_SIZE}" xmlns="http://www.w3.org/2000/svg">
+      <rect width="${CANVAS_SIZE}" height="${CANVAS_SIZE}" fill="white"/>
+      ${silhouettes}
     </svg>`;
 
     const buffer = await sharp(Buffer.from(svg)).png().toBuffer();
@@ -389,17 +426,27 @@ export const buildSheetMetadataStage: Stage = {
     }
 
     const spec = run.spec;
-    const { width, height } = calculateSheetDimensions(spec.layout);
+    const { width: gridWidth, height: gridHeight } = calculateSheetDimensions(spec.layout);
     const entries = getSheetEntries(spec);
+
+    const CANVAS_SIZE = 512;
+    const scale = Math.min(CANVAS_SIZE / gridWidth, CANVAS_SIZE / gridHeight) * 0.9;
+    const offsetX = (CANVAS_SIZE - gridWidth * scale) / 2;
+    const offsetY = (CANVAS_SIZE - gridHeight * scale) / 2;
 
     const metadata: Record<string, unknown> = {
       id: spec.id,
       kind: spec.kind,
       layout: spec.layout,
-      dimensions: { width, height },
+      dimensions: { width: CANVAS_SIZE, height: CANVAS_SIZE },
       entries: entries.map(e => ({
         index: e.index,
-        region: { x: e.x, y: e.y, width: e.width, height: e.height },
+        region: { 
+          x: Math.round(offsetX + e.x * scale), 
+          y: Math.round(offsetY + e.y * scale), 
+          width: Math.round(e.width * scale), 
+          height: Math.round(e.height * scale),
+        },
       })),
     };
 

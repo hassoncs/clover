@@ -41,11 +41,13 @@
     "ship:native": "node scripts/ship.mjs native",
     "ship:update": "node scripts/ship.mjs update",
     "ship:metadata": "node scripts/ship.mjs metadata",
-    "ship:web": "node scripts/ship.mjs web"
+    "ship:web": "node scripts/ship.mjs web",
+    "fix:hermes-dsym": "node scripts/fix-hermes-dsym.mjs"
   },
   "devDependencies": {
     "@chriscode/devmux": "link:/Users/hassoncs/Workspaces/Personal/devmux/devmux-cli",
     "@chriscode/hush": "^5.0.3",
+    "@gltf-transform/cli": "^4.3.0",
     "simple-git-hooks": "^2.11.1",
     "turbo": "^2.3.0"
   },
