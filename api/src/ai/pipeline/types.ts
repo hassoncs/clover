@@ -199,6 +199,12 @@ export interface Artifacts {
   publicUrls?: string[];
   sheetGuidePng?: Uint8Array;
   sheetMetadataJson?: string;
+  /** Base state image for UI components (normal state) */
+  baseStateImage?: Uint8Array;
+  /** All state images for UI components keyed by state name */
+  stateImages?: Record<string, Uint8Array>;
+  /** UI component metadata JSON */
+  uiComponentMetadata?: string;
 }
 
 // =============================================================================
