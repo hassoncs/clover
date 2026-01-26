@@ -1,36 +1,20 @@
 import type { GameAssetConfig } from '../../src/ai/pipeline/types';
-import { slopeggleConfig } from './slopeggle';
-import { physicsStackerConfig } from './physics-stacker';
-import { breakoutBouncerConfig } from './breakout-bouncer';
-import { bouncingBallsConfig } from './bouncing-balls';
-import { bumperArenaConfig } from './bumper-arena';
+import { slopeggleConfig } from './slopeggle/assets.config';
+import { physicsStackerConfig } from './physicsStacker/assets.config';
+import { breakoutBouncerConfig } from './breakoutBouncer/assets.config';
 import { gemCrushConfig } from './gemCrush/assets.config';
-import { dominoChainConfig } from './domino-chain';
-import { fallingObjectsConfig } from './falling-objects';
-import { monsterBuilderConfig } from './monster-builder';
-import { pendulumSwingConfig } from './pendulum-swing';
-import { pinballLiteConfig } from './pinball-lite';
-import { simplePlatformerConfig } from './simple-platformer';
-import { slingshotDestructionConfig } from './slingshot-destruction';
-import { wreckingBallConfig } from './wrecking-ball';
+import { pinballLiteConfig } from './pinballLite/assets.config';
+import { simplePlatformerConfig } from './simplePlatformer/assets.config';
 import { testGemVariantsConfig } from './test-gem-variants';
 
 export const gameConfigs: Record<string, GameAssetConfig> = {
   slopeggle: slopeggleConfig,
-  'physics-stacker': physicsStackerConfig,
-  'breakout-bouncer': breakoutBouncerConfig,
-  'bouncing-balls': bouncingBallsConfig,
-  'bumper-arena': bumperArenaConfig,
-  'gem-crush': gemCrushConfig,
-  'domino-chain': dominoChainConfig,
-  'falling-objects': fallingObjectsConfig,
-  'monster-builder': monsterBuilderConfig,
-  'pendulum-swing': pendulumSwingConfig,
-  'pinball-lite': pinballLiteConfig,
-  'simple-platformer': simplePlatformerConfig,
-  'slingshot-destruction': slingshotDestructionConfig,
-  'wrecking-ball': wreckingBallConfig,
-  'test-gem-variants': testGemVariantsConfig,
+  physicsStacker: physicsStackerConfig,
+  breakoutBouncer: breakoutBouncerConfig,
+  gemCrush: gemCrushConfig,
+  pinballLite: pinballLiteConfig,
+  simplePlatformer: simplePlatformerConfig,
+  testGemVariants: testGemVariantsConfig,
 };
 
 export function getGameConfig(gameId: string): GameAssetConfig {

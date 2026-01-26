@@ -1,4 +1,4 @@
-import type { GameAssetConfig, EntitySpec, BackgroundSpec, TitleHeroSpec } from '../../src/ai/pipeline/types';
+import type { GameAssetConfig, EntitySpec, BackgroundSpec, TitleHeroSpec } from '../../../src/ai/pipeline/types';
 
 export const simplePlatformerConfig: GameAssetConfig = {
   gameId: 'simple-platformer',

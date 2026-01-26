@@ -1,4 +1,4 @@
-import type { GameAssetConfig, EntitySpec, BackgroundSpec, TitleHeroSpec } from '../../src/ai/pipeline/types';
+import type { GameAssetConfig, EntitySpec, BackgroundSpec, TitleHeroSpec } from '../../../src/ai/pipeline/types';
 
 const PEG_RADIUS = 0.125;
 const BALL_RADIUS = 0.15;

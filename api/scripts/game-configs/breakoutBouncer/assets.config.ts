@@ -1,4 +1,4 @@
-import type { GameAssetConfig, EntitySpec, BackgroundSpec, TitleHeroSpec } from '../../src/ai/pipeline/types';
+import type { GameAssetConfig, EntitySpec, BackgroundSpec, TitleHeroSpec } from '../../../src/ai/pipeline/types';
 
 const BALL_RADIUS = 0.25;
 const BRICK_WIDTH = 1.2;

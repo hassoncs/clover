@@ -1939,13 +1939,14 @@ func set_scale_entity(entity_id: String, scale_x: float, scale_y: float) -> void
 			sprite.scale = Vector2(scale_x, scale_y)
 
 func _find_sprite_in_entity(node: Node) -> CanvasItem:
-	# Check if node itself is a sprite
 	if node is Sprite2D or node is AnimatedSprite2D:
 		return node
-	# Search children for sprite
 	for child in node.get_children():
 		if child is Sprite2D or child is AnimatedSprite2D:
 			return child
+		var found = _find_sprite_in_entity(child)
+		if found:
+			return found
 	return null
 
 func _js_get_linear_velocity(args: Array) -> Variant:

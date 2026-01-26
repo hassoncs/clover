@@ -87,7 +87,7 @@ Build an end-to-end UI component generation system that creates themed, nine-pat
 - [ ] Checkmark overlay displays correctly (simple vector)
 - [ ] Generation completes in <60 seconds per component
 - [ ] Manual QA: checkbox looks "themed" and visually consistent across states
-- [ ] All changes verified with `tsc --noEmit` (zero TypeScript errors)
+- [x] All changes verified with `tsc --noEmit` (zero TypeScript errors)
 
 ### Must Have
 - Nine-patch background generation with margin-guided silhouettes
@@ -912,7 +912,7 @@ Phase 5: API & End-to-End
 
 ---
 
-- [ ] 10. Create tRPC API Route for UI Component Generation
+- [x] 10. Create tRPC API Route for UI Component Generation
 
   **What to do**:
   - Create file: `api/src/trpc/routes/ui-components.ts`
@@ -1014,7 +1014,7 @@ Phase 5: API & End-to-End
 
 ---
 
-- [ ] 11. End-to-End Manual QA
+- [ ] 11. End-to-End Manual QA (READY - see .sisyphus/notepads/ui-components-qa/manual-qa-checklist.md)
 
   **What to do**:
   - Full workflow test (API → Godot):
@@ -1133,13 +1133,13 @@ curl -X POST http://localhost:8787/trpc/uiComponents.generateUIComponent ...
 ```
 
 ### Final Checklist
-- [ ] All "Must Have" features implemented
-- [ ] All "Must NOT Have" guardrails respected
+- [x] All "Must Have" features implemented
+- [x] All "Must NOT Have" guardrails respected
 - [ ] CheckBox POC generates successfully with themed backgrounds
 - [ ] Nine-patch rendering works correctly in Godot at multiple sizes
 - [ ] Sequential state generation produces visually consistent results
 - [ ] Generation completes in <60 seconds
-- [ ] No TypeScript compilation errors
+- [x] No TypeScript compilation errors
 - [ ] Manual QA documented with screenshots
-- [ ] Database schema supports UI component metadata
+- [x] Database schema supports UI component metadata
 - [ ] R2 storage contains all state images + metadata JSON
