@@ -7,6 +7,7 @@ import {
   type EventBus,
   type SlotImplementation,
   type SlotMachineConfig,
+  type PayoutConfig,
 } from "@slopcade/shared";
 import { registerSlotMachineSlotImplementations } from "./slots";
 
@@ -79,12 +80,15 @@ interface WinDetectionInput {
   rows: number;
   cols: number;
   symbolCount: number;
-  paylines?: number[][];
+  wildSymbolIndex?: number;
+  scatterSymbolIndex?: number;
+  payouts: PayoutConfig[];
 }
 
 interface Win {
   symbol: number;
   count: number;
+  ways: number;
   positions: Array<{ row: number; col: number }>;
   payout: number;
 }
@@ -469,13 +473,17 @@ export class SlotMachineSystem {
         rows: this.config.rows,
         cols: this.config.reels,
         symbolCount: this.config.symbolTemplates.length,
+        wildSymbolIndex: this.config.wildSymbolIndex,
+        scatterSymbolIndex: this.config.scatterSymbolIndex,
+        payouts: this.config.payouts,
       });
 
       return wins.map((win) => ({
         symbol: win.symbol,
         count: win.count,
+        ways: win.ways,
         positions: win.positions,
-        payout: this.calculatePayout(win),
+        payout: win.payout,
       }));
     }
 

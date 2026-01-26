@@ -1,6 +1,7 @@
 import type {
   SlotContract,
   SlotImplementation,
+  PayoutConfig,
 } from '@slopcade/shared';
 import { getGlobalSlotRegistry } from '@slopcade/shared';
 
@@ -62,17 +63,60 @@ interface WinDetectionInput {
   rows: number;
   cols: number;
   symbolCount: number;
-  paylines?: number[][];
+  wildSymbolIndex?: number;
+  scatterSymbolIndex?: number;
+  payouts: PayoutConfig[];
 }
 
 interface Win {
   symbol: number;
   count: number;
+  ways: number;
   positions: Array<{ row: number; col: number }>;
   payout: number;
 }
 
 type WinDetectionOutput = Win[];
+
+function calculatePayoutForWin(
+  symbol: number,
+  count: number,
+  ways: number,
+  payouts: PayoutConfig[]
+): number {
+  const symbolPayout = payouts.find((p) => p.symbolIndex === symbol);
+  if (!symbolPayout) {
+    return 0;
+  }
+
+  const multiplier = symbolPayout.counts[count];
+  if (multiplier === undefined) {
+    return 0;
+  }
+
+  return multiplier * ways;
+}
+
+function getSymbolCountInColumn(
+  grid: number[][],
+  col: number,
+  targetSymbol: number,
+  wildSymbolIndex?: number
+): { count: number; positions: Array<{ row: number; col: number }> } {
+  const rows = grid.length;
+  let matchCount = 0;
+  const positions: Array<{ row: number; col: number }> = [];
+
+  for (let row = 0; row < rows; row++) {
+    const cellSymbol = grid[row]?.[col];
+    if (cellSymbol === targetSymbol || cellSymbol === wildSymbolIndex) {
+      matchCount++;
+      positions.push({ row, col });
+    }
+  }
+
+  return { count: matchCount, positions };
+}
 
 export const allWaysWinDetection: SlotImplementation<
   WinDetectionInput,
@@ -82,8 +126,51 @@ export const allWaysWinDetection: SlotImplementation<
   version: SYSTEM_VERSION,
   owner: { systemId: SYSTEM_ID, slotName: 'winDetection' },
   compatibleWith: [{ systemId: SYSTEM_ID, range: '^1.0.0' }],
-  run: (_ctx, _input) => {
-    return [];
+  run: (_ctx, input) => {
+    const wins: Win[] = [];
+    const { grid, rows, cols, symbolCount, wildSymbolIndex, scatterSymbolIndex, payouts } = input;
+
+    for (let symbol = 0; symbol < symbolCount; symbol++) {
+      if (symbol === scatterSymbolIndex) {
+        continue;
+      }
+
+      let ways = 1;
+      let positions: Array<{ row: number; col: number }> = [];
+      let consecutiveReels = 0;
+
+      for (let col = 0; col < cols; col++) {
+        const { count, positions: colPositions } = getSymbolCountInColumn(
+          grid,
+          col,
+          symbol,
+          wildSymbolIndex
+        );
+
+        if (count === 0) {
+          break;
+        }
+
+        ways *= count;
+        positions = positions.concat(colPositions);
+        consecutiveReels++;
+      }
+
+      if (consecutiveReels >= 3) {
+        const payout = calculatePayoutForWin(symbol, consecutiveReels, ways, payouts);
+        if (payout > 0) {
+          wins.push({
+            symbol,
+            count: consecutiveReels,
+            ways,
+            positions,
+            payout,
+          });
+        }
+      }
+    }
+
+    return wins;
   },
 };
 
