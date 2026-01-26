@@ -46,10 +46,14 @@ export class InputEntityManager {
   }
 
   private createVirtualEntity(id: string): void {
+    const transform = { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 };
     const entity: RuntimeEntity = {
       id,
       name: id,
-      transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+      children: [],
+      localTransform: { ...transform },
+      worldTransform: { ...transform },
+      transform,
       behaviors: [],
       tags: ["system", "input"],
       tagBits: new Set(),

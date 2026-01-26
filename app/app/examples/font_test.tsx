@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
-import { GameRuntime } from "@/lib/game-engine/GameRuntime.godot";
+import { GameRuntimeGodot } from "@/lib/game-engine/GameRuntime.godot";
 import type { GameDefinition } from "@slopcade/shared";
 import type { ExampleMeta } from "@/lib/registry/types";
 
@@ -24,17 +24,29 @@ export default function FontLab() {
   const [selectedFont, setSelectedFont] = useState(FONT_OPTIONS[0]);
 
   const game: GameDefinition = {
-    id: "font-lab",
-    name: "Font Lab",
+    metadata: {
+      id: "font-lab",
+      title: "Font Lab",
+      description: "Dynamic font loading test",
+      version: "1.0.0",
+    },
     world: {
-      bounds: { min: { x: -5, y: -9 }, max: { x: 5, y: 9 } },
+      bounds: { width: 10, height: 18 },
       gravity: { x: 0, y: -9.8 },
+      pixelsPerMeter: 50,
+    },
+    templates: {
+      text: {
+        id: "text",
+        sprite: { type: "rect", width: 0, height: 0, color: "#FFFFFF" },
+      },
     },
     entities: [
       {
         id: "title",
+        name: "Title",
         template: "text",
-        position: { x: 0, y: 5 },
+        transform: { x: 0, y: 5, angle: 0, scaleX: 1, scaleY: 1 },
         sprite: {
           type: "rect",
           width: 0,
@@ -47,8 +59,9 @@ export default function FontLab() {
       },
       {
         id: "subtitle",
+        name: "Subtitle",
         template: "text",
-        position: { x: 0, y: 2 },
+        transform: { x: 0, y: 2, angle: 0, scaleX: 1, scaleY: 1 },
         sprite: {
           type: "rect",
           width: 0,
@@ -61,8 +74,9 @@ export default function FontLab() {
       },
       {
         id: "status",
+        name: "Status",
         template: "text",
-        position: { x: 0, y: -2 },
+        transform: { x: 0, y: -2, angle: 0, scaleX: 1, scaleY: 1 },
         sprite: {
           type: "rect",
           width: 0,
@@ -78,7 +92,9 @@ export default function FontLab() {
 
   return (
     <View style={styles.container}>
-      <GameRuntime definition={game} style={styles.game} />
+      <View style={styles.game}>
+        <GameRuntimeGodot definition={game} />
+      </View>
       
       <View style={styles.controls}>
         <Text style={styles.label}>Select Font:</Text>

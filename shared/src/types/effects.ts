@@ -278,7 +278,16 @@ export type EffectSpec =
   | MotionBlurEffect
   | RimLightEffect
   | ColorMatrixEffect
-  | BloomEffect;
+  | BloomEffect
+  | NightVisionEffect
+  | SpeedLinesEffect
+  | UnderwaterEffect
+  | HalftoneEffect
+  | OldFilmEffect
+  | ThermalVisionEffect
+  | AsciiEffect
+  | RippleEffect
+  | FogOfWarEffect;
 
 export type EffectChain = EffectSpec[];
 
