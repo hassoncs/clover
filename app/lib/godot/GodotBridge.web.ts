@@ -47,6 +47,7 @@ declare global {
       ) => void;
       setPosition: (entityId: string, x: number, y: number) => void;
       setRotation: (entityId: string, angle: number) => void;
+      setScale: (entityId: string, scaleX: number, scaleY: number) => void;
       getLinearVelocity: (entityId: string) => { x: number; y: number } | null;
       setLinearVelocity: (entityId: string, vx: number, vy: number) => void;
       getAngularVelocity: (entityId: string) => number | null;
@@ -438,6 +439,10 @@ export function createWebGodotBridge(): GodotBridge {
 
     setRotation(entityId: string, angle: number) {
       getGodotBridge()?.setRotation(entityId, angle);
+    },
+
+    setScale(entityId: string, scaleX: number, scaleY: number) {
+      getGodotBridge()?.setScale(entityId, scaleX, scaleY);
     },
 
     async getLinearVelocity(entityId: string): Promise<Vec2 | null> {

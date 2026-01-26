@@ -83,8 +83,9 @@ export class Match3GameSystem {
   private cascadeCount = 0;
   private totalClearedThisTurn = 0;
 
-  private highlightEntityId: string | null = null;
-  private hoverEntityId: string | null = null;
+  private selectedPieceEntityId: string | null = null;
+  private hoveredPieceEntityId: string | null = null;
+  private selectionAnimTime = 0;
 
   private readonly MIN_MATCH: number;
   private readonly SWAP_DURATION: number;
@@ -338,109 +339,82 @@ export class Match3GameSystem {
   }
 
   private showHoverHighlight(row: number, col: number): void {
-    const pos = this.cellToWorldPos(row, col);
+    const boardCell = this.board[row]?.[col];
+    if (!boardCell?.entityId) return;
 
-    if (!this.hoverEntityId) {
-      let id: string;
+    if (this.hoveredPieceEntityId && this.hoveredPieceEntityId !== boardCell.entityId) {
+      this.clearHoverEffect(this.hoveredPieceEntityId);
+    }
 
-      if (this.bridge) {
-        id = this.bridge.spawnEntity("hover_highlight", pos.x, pos.y);
-      } else {
-        id = `match3_hover_${Date.now()}`;
-      }
+    if (boardCell.entityId === this.selectedPieceEntityId) {
+      return;
+    }
 
-      this.entityManager.createEntity({
-        id,
-        name: "Hover Highlight",
-        template: "hover_highlight",
-        transform: {
-          x: pos.x,
-          y: pos.y,
-          angle: 0,
-          scaleX: 1,
-          scaleY: 1,
-        },
-        layer: 9,
-        tags: ["match3_ui"],
+    this.hoveredPieceEntityId = boardCell.entityId;
+
+    if (this.bridge) {
+      this.bridge.applySpriteEffect(boardCell.entityId, "rim_light", {
+        color: [1.0, 1.0, 1.0],
+        width: 2.0,
+        intensity: 0.6,
+        falloff: 0.5,
       });
-      this.hoverEntityId = id;
-    } else {
-      const entity = this.entityManager.getEntity(this.hoverEntityId);
-      if (entity) {
-        entity.transform.x = pos.x;
-        entity.transform.y = pos.y;
-        if (this.bridge) {
-          this.bridge.setPosition(this.hoverEntityId, pos.x, pos.y);
-        }
-      }
     }
   }
 
   private hideHoverHighlight(): void {
     this.hoverCell = null;
-    if (this.hoverEntityId) {
-      const entity = this.entityManager.getEntity(this.hoverEntityId);
-      if (entity) {
-        entity.transform.x = -1000;
-        entity.transform.y = -1000;
-        if (this.bridge) {
-          this.bridge.setPosition(this.hoverEntityId, -1000, -1000);
-        }
-      }
+    if (this.hoveredPieceEntityId) {
+      this.clearHoverEffect(this.hoveredPieceEntityId);
+      this.hoveredPieceEntityId = null;
+    }
+  }
+
+  private clearHoverEffect(entityId: string): void {
+    if (entityId !== this.selectedPieceEntityId && this.bridge) {
+      this.bridge.clearSpriteEffect(entityId);
     }
   }
 
   private showHighlight(row: number, col: number): void {
-    const pos = this.cellToWorldPos(row, col);
+    const boardCell = this.board[row]?.[col];
+    if (!boardCell?.entityId) return;
 
-    if (!this.highlightEntityId) {
-      let id: string;
+    if (this.selectedPieceEntityId && this.selectedPieceEntityId !== boardCell.entityId) {
+      this.clearSelectionEffect(this.selectedPieceEntityId);
+    }
 
-      if (this.bridge) {
-        id = this.bridge.spawnEntity("selection_highlight", pos.x, pos.y);
-      } else {
-        id = `match3_highlight_${Date.now()}`;
-      }
+    if (this.hoveredPieceEntityId === boardCell.entityId) {
+      this.hoveredPieceEntityId = null;
+    }
 
-      this.entityManager.createEntity({
-        id,
-        name: "Selection Highlight",
-        template: "selection_highlight",
-        transform: {
-          x: pos.x,
-          y: pos.y,
-          angle: 0,
-          scaleX: 1,
-          scaleY: 1,
-        },
-        layer: 10,
-        tags: ["match3_ui"],
+    this.selectedPieceEntityId = boardCell.entityId;
+    this.selectionAnimTime = 0;
+
+    if (this.bridge) {
+      this.bridge.applySpriteEffect(boardCell.entityId, "glow", {
+        color: [1.0, 0.9, 0.3],
+        radius: 8.0,
+        intensity: 1.2,
+        pulse: true,
+        pulse_speed: 3.0,
       });
-      this.highlightEntityId = id;
-    } else {
-      const entity = this.entityManager.getEntity(this.highlightEntityId);
-      if (entity) {
-        entity.transform.x = pos.x;
-        entity.transform.y = pos.y;
-        if (this.bridge) {
-          this.bridge.setPosition(this.highlightEntityId, pos.x, pos.y);
-        }
-      }
     }
   }
 
   private hideHighlight(): void {
-    if (this.highlightEntityId) {
-      const entity = this.entityManager.getEntity(this.highlightEntityId);
-      if (entity) {
-        entity.transform.x = -1000;
-        entity.transform.y = -1000;
-        if (this.bridge) {
-          this.bridge.setPosition(this.highlightEntityId, -1000, -1000);
-        }
-      }
+    if (this.selectedPieceEntityId) {
+      this.clearSelectionEffect(this.selectedPieceEntityId);
+      this.selectedPieceEntityId = null;
     }
     this.hideHoverHighlight();
+  }
+
+  private clearSelectionEffect(entityId: string): void {
+    if (this.bridge) {
+      this.bridge.clearSpriteEffect(entityId);
+      this.bridge.setScale(entityId, 1.0, 1.0);
+    }
   }
 
   private startSwap(
@@ -497,6 +471,7 @@ export class Match3GameSystem {
 
   update(dt: number): void {
     this.updateAnimations(dt);
+    this.updateSelectionScale(dt);
 
     switch (this.phase) {
       case "swapping":
@@ -564,6 +539,23 @@ export class Match3GameSystem {
 
   private easeOutQuad(t: number): number {
     return t * (2 - t);
+  }
+
+  private updateSelectionScale(dt: number): void {
+    if (!this.selectedPieceEntityId || !this.bridge) {
+      return;
+    }
+
+    this.selectionAnimTime += dt;
+
+    const PULSE_SPEED = 5.0;
+    const MIN_SCALE = 0.97;
+    const MAX_SCALE = 1.06;
+    const MID_SCALE = (MIN_SCALE + MAX_SCALE) / 2;
+    const AMPLITUDE = (MAX_SCALE - MIN_SCALE) / 2;
+
+    const scale = MID_SCALE + Math.sin(this.selectionAnimTime * PULSE_SPEED) * AMPLITUDE;
+    this.bridge.setScale(this.selectedPieceEntityId, scale, scale);
   }
 
   private finishSwap(): void {
@@ -817,18 +809,14 @@ export class Match3GameSystem {
       }
     }
 
-    if (this.highlightEntityId) {
-      if (this.bridge) {
-        this.bridge.destroyEntity(this.highlightEntityId);
-      }
-      this.entityManager.destroyEntity(this.highlightEntityId);
+    if (this.selectedPieceEntityId) {
+      this.clearSelectionEffect(this.selectedPieceEntityId);
+      this.selectedPieceEntityId = null;
     }
 
-    if (this.hoverEntityId) {
-      if (this.bridge) {
-        this.bridge.destroyEntity(this.hoverEntityId);
-      }
-      this.entityManager.destroyEntity(this.hoverEntityId);
+    if (this.hoveredPieceEntityId) {
+      this.clearHoverEffect(this.hoveredPieceEntityId);
+      this.hoveredPieceEntityId = null;
     }
   }
 

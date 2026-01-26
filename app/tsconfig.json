@@ -16,5 +16,5 @@
     "**/*.tsx",
     "nativewind-env.d.ts"
   ],
-  "exclude": ["../api"]
+  "exclude": ["node_modules"]
 }

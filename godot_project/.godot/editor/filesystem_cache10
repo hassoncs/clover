@@ -21,7 +21,7 @@ VFXShowcase.tscn::PackedScene::2855297431937620752::1769205700::0::1::::<><><>0<
 ::res://scenes/lab/::1769366245
 ui_components_demo.tscn::PackedScene::5962763572750761863::1769366245::0::1::::<><><>0<>0<><>::res://scripts/lab/UIComponentsDemo.gd
 ::res://scripts/::1769385517
-GameBridge.gd::GDScript::7400890102577367664::1769387926::0::1::::<>Node<><>0<>0<><>::
+GameBridge.gd::GDScript::7400890102577367664::1769389138::0::1::::<>Node<><>0<>0<><>::
 Lab3D.gd::GDScript::2743172060191353031::1769312349::0::1::::<>Node3D<><>0<>0<><>::
 Main.gd::GDScript::4927831078751178685::1769366407::0::1::::<>Node2D<><>0<>0<><>::
 PhysicsBody.gd::GDScript::3101094749307879933::1769200136::0::1::::<>RigidBody2D<><>0<>0<><>::
@@ -49,7 +49,7 @@ DebugTime.gd::GDScript::5403663126197881566::1769366513::0::1::::DebugTime<>RefC
 ::res://scripts/effects/::1769205666
 CameraEffects.gd::GDScript::447321319681748157::1769206557::0::1::::<>Camera2D<><>0<>0<><>::
 EffectsManager.gd::GDScript::4900735425724126003::1769209916::0::1::::EffectsManager<>Node<><>0<>0<><>::
-GameBridgeEffects.gd::GDScript::3133696803429672124::1769212909::0::1::::<>Node<><>0<>0<><>::
+GameBridgeEffects.gd::GDScript::3133696803429672124::1769389710::0::1::::<>Node<><>0<>0<><>::
 ParticleFactory.gd::GDScript::1028706586424653901::1769205600::0::1::::ParticleFactory<>Node<><>0<>0<><>::
 ::res://scripts/entity/::1769312560
 EntityManager.gd::GDScript::418805061965814239::1769312558::0::1::::EntityManager<>RefCounted<><>0<>0<><>::

@@ -6,8 +6,8 @@ import {
 import type { TestGameMeta } from "@/lib/registry/types";
 
 export const metadata: TestGameMeta = {
-  title: "Candy Crush",
-  description: "Match 3 or more candies to clear them and score points!",
+  title: "Gem Crush",
+  description: "Match 3 or more gems to clear them and score points!",
 };
 
 const GRID_COLS = 7;
@@ -15,17 +15,17 @@ const GRID_ROWS = 7;
 const CELL_SIZE = 1.2;
 const WORLD_WIDTH = GRID_COLS * CELL_SIZE; // 8.4m to match grid exactly
 const WORLD_HEIGHT = GRID_ROWS * CELL_SIZE; // 8.4m to match grid exactly
-const CANDY_SIZE = CELL_SIZE * 0.85;
+const GEM_SIZE = CELL_SIZE * 0.85;
 
 const gridConfig = createGridConfig(GRID_ROWS, GRID_COLS, CELL_SIZE);
 
 const game: GameDefinition = {
   metadata: {
-    id: "test-candy-crush",
-    title: "Candy Crush",
-    description: "Match 3 or more candies to clear them!",
+    id: "gem-crush",
+    title: "Gem Crush",
+    description: "Match 3 or more gems to clear them!",
     instructions:
-      "Tap two adjacent candies to swap them. Match 3 or more of the same color to clear!",
+      "Tap two adjacent gems to swap them. Match 3 or more of the same color to clear!",
     version: "1.0.0",
   },
   background: {
@@ -54,16 +54,16 @@ const game: GameDefinition = {
     time: 120,
   },
   match3: {
-    gridId: "candy_grid",
+    gridId: "gem_grid",
     rows: GRID_ROWS,
     cols: GRID_COLS,
     cellSize: CELL_SIZE,
     pieceTemplates: [
-      "candy_red",
-      "candy_blue",
-      "candy_green",
-      "candy_yellow",
-      "candy_purple",
+      "gem_red",
+      "gem_blue",
+      "gem_green",
+      "gem_yellow",
+      "gem_purple",
     ],
     minMatch: 3,
     swapDuration: 0.15,
@@ -80,90 +80,90 @@ const game: GameDefinition = {
     },
   },
   templates: {
-    candy_red: {
-      id: "candy_red",
-      tags: ["candy", "candy_red"],
+    gem_red: {
+      id: "gem_red",
+      tags: ["gem", "gem_red"],
       sprite: {
         type: "circle",
-        radius: CANDY_SIZE / 2,
+        radius: GEM_SIZE / 2,
         color: "#FF4444",
       },
       physics: {
         bodyType: "kinematic",
         shape: "circle",
-        radius: CANDY_SIZE / 2,
+        radius: GEM_SIZE / 2,
         density: 0,
         friction: 0,
         restitution: 0,
         isSensor: true,
       },
     },
-    candy_blue: {
-      id: "candy_blue",
-      tags: ["candy", "candy_blue"],
+    gem_blue: {
+      id: "gem_blue",
+      tags: ["gem", "gem_blue"],
       sprite: {
         type: "circle",
-        radius: CANDY_SIZE / 2,
+        radius: GEM_SIZE / 2,
         color: "#4444FF",
       },
       physics: {
         bodyType: "kinematic",
         shape: "circle",
-        radius: CANDY_SIZE / 2,
+        radius: GEM_SIZE / 2,
         density: 0,
         friction: 0,
         restitution: 0,
         isSensor: true,
       },
     },
-    candy_green: {
-      id: "candy_green",
-      tags: ["candy", "candy_green"],
+    gem_green: {
+      id: "gem_green",
+      tags: ["gem", "gem_green"],
       sprite: {
         type: "circle",
-        radius: CANDY_SIZE / 2,
+        radius: GEM_SIZE / 2,
         color: "#44FF44",
       },
       physics: {
         bodyType: "kinematic",
         shape: "circle",
-        radius: CANDY_SIZE / 2,
+        radius: GEM_SIZE / 2,
         density: 0,
         friction: 0,
         restitution: 0,
         isSensor: true,
       },
     },
-    candy_yellow: {
-      id: "candy_yellow",
-      tags: ["candy", "candy_yellow"],
+    gem_yellow: {
+      id: "gem_yellow",
+      tags: ["gem", "gem_yellow"],
       sprite: {
         type: "circle",
-        radius: CANDY_SIZE / 2,
+        radius: GEM_SIZE / 2,
         color: "#FFFF44",
       },
       physics: {
         bodyType: "kinematic",
         shape: "circle",
-        radius: CANDY_SIZE / 2,
+        radius: GEM_SIZE / 2,
         density: 0,
         friction: 0,
         restitution: 0,
         isSensor: true,
       },
     },
-    candy_purple: {
-      id: "candy_purple",
-      tags: ["candy", "candy_purple"],
+    gem_purple: {
+      id: "gem_purple",
+      tags: ["gem", "gem_purple"],
       sprite: {
         type: "circle",
-        radius: CANDY_SIZE / 2,
+        radius: GEM_SIZE / 2,
         color: "#AA44FF",
       },
       physics: {
         bodyType: "kinematic",
         shape: "circle",
-        radius: CANDY_SIZE / 2,
+        radius: GEM_SIZE / 2,
         density: 0,
         friction: 0,
         restitution: 0,

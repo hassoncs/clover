@@ -4,6 +4,7 @@ import { physicsStackerConfig } from './physics-stacker';
 import { breakoutBouncerConfig } from './breakout-bouncer';
 import { bouncingBallsConfig } from './bouncing-balls';
 import { bumperArenaConfig } from './bumper-arena';
+import { gemCrushConfig } from './gemCrush/assets.config';
 import { dominoChainConfig } from './domino-chain';
 import { fallingObjectsConfig } from './falling-objects';
 import { monsterBuilderConfig } from './monster-builder';
@@ -20,6 +21,7 @@ export const gameConfigs: Record<string, GameAssetConfig> = {
   'breakout-bouncer': breakoutBouncerConfig,
   'bouncing-balls': bouncingBallsConfig,
   'bumper-arena': bumperArenaConfig,
+  'gem-crush': gemCrushConfig,
   'domino-chain': dominoChainConfig,
   'falling-objects': fallingObjectsConfig,
   'monster-builder': monsterBuilderConfig,

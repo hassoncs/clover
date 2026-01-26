@@ -1,6 +1,9 @@
 {
   "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/ui-component-generation.md",
   "started_at": "2026-01-25T17:04:11.565Z",
-  "session_ids": ["ses_40a0f71f5ffe1EnazBsGAc7kS3"],
+  "session_ids": [
+    "ses_40a0f71f5ffe1EnazBsGAc7kS3",
+    "ses_40830e4a8ffeD2XiGn8nycGDCU"
+  ],
   "plan_name": "ui-component-generation"
 }

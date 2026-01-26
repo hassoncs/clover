@@ -161,7 +161,6 @@ func _js_clear_post_effect(args: Array) -> void:
 	clear_post_effect(layer)
 
 func _js_screen_shake(args: Array) -> void:
-	print("[GameBridgeEffects] _js_screen_shake called with args: ", args)
 	if args.size() < 1:
 		return
 	var intensity = float(args[0])
@@ -216,15 +215,12 @@ func _js_apply_dynamic_post_shader(args: Array) -> void:
 	apply_dynamic_post_shader(shader_code, params)
 
 func _js_spawn_particle_preset(args: Array) -> void:
-	print("[GameBridgeEffects] _js_spawn_particle_preset called with args: ", args)
 	if args.size() < 3:
-		print("[GameBridgeEffects] Not enough args for spawn_particle_preset")
 		return
 	var preset_name = str(args[0])
 	var x = float(args[1])
 	var y = float(args[2])
 	var params = _parse_params(args[3] if args.size() > 3 else {})
-	print("[GameBridgeEffects] Spawning particle preset: ", preset_name, " at (", x, ", ", y, ")")
 	spawn_particle_preset(preset_name, x, y, params)
 
 func _js_get_available_effects(args: Array) -> void:
@@ -288,31 +284,21 @@ func clear_post_effect(layer: String = "main") -> void:
 
 func screen_shake(intensity: float, duration: float = 0.3) -> void:
 	var camera = _get_camera()
-	print("[GameBridgeEffects] screen_shake: camera=", camera, " intensity=", intensity, " duration=", duration)
 	if camera:
-		print("[GameBridgeEffects] camera has shake:", camera.has_method("shake"), " has add_trauma:", camera.has_method("add_trauma"))
 		if camera.has_method("shake"):
 			camera.shake(intensity, duration)
 		elif camera.has_method("add_trauma"):
 			camera.add_trauma(intensity)
 		else:
-			print("[GameBridgeEffects] Using effects_manager fallback for shake")
 			effects_manager.screen_shake(intensity, duration)
-	else:
-		print("[GameBridgeEffects] No camera found!")
 
 func zoom_punch(intensity: float = 0.1, duration: float = 0.15) -> void:
 	var camera = _get_camera()
-	print("[GameBridgeEffects] zoom_punch: camera=", camera, " intensity=", intensity, " duration=", duration)
 	if camera:
-		print("[GameBridgeEffects] camera has zoom_punch:", camera.has_method("zoom_punch"))
 		if camera.has_method("zoom_punch"):
 			camera.zoom_punch(intensity, duration)
 		else:
-			print("[GameBridgeEffects] Using effects_manager fallback for zoom_punch")
 			effects_manager.zoom_punch(intensity, duration)
-	else:
-		print("[GameBridgeEffects] No camera found for zoom_punch!")
 
 func trigger_shockwave(world_x: float, world_y: float, duration: float = 0.5) -> void:
 	var ppm = 50.0
@@ -356,10 +342,7 @@ func spawn_particle_preset(preset_name: String, world_x: float, world_y: float, 
 	var parent = get_tree().current_scene
 	var parsed_params = _parse_params(params)
 	
-	print("[GameBridgeEffects] spawn_particle_preset: ppm=", ppm, " position=", position, " preset=", preset, " parent=", parent)
-	
 	var particles = particle_factory.spawn_one_shot(preset, position, parent, parsed_params)
-	print("[GameBridgeEffects] Spawned particles: ", particles, " emitting=", particles.emitting if particles else "null")
 	return particles
 
 # ============================================================
@@ -370,26 +353,21 @@ func _get_entity_sprite(entity_id: String) -> CanvasItem:
 	if not _game_bridge:
 		_game_bridge = get_node_or_null("/root/GameBridge")
 	if not _game_bridge:
-		print("[GameBridgeEffects] _get_entity_sprite: GameBridge not found")
 		return null
 	
 	var entity = _game_bridge.get_entity(entity_id)
 	if not entity:
-		print("[GameBridgeEffects] _get_entity_sprite: entity not found: ", entity_id)
 		return null
 	
 	# Look for Sprite2D or Polygon2D child
 	for child in entity.get_children():
 		if child is Sprite2D or child is Polygon2D:
-			print("[GameBridgeEffects] _get_entity_sprite: found ", child.get_class(), " for ", entity_id)
 			return child
 	
 	# Fallback to entity itself if it's a CanvasItem
 	if entity is CanvasItem:
-		print("[GameBridgeEffects] _get_entity_sprite: using entity itself for ", entity_id)
 		return entity
 	
-	print("[GameBridgeEffects] _get_entity_sprite: no sprite found for ", entity_id, " children: ", entity.get_children())
 	return null
 
 func _get_camera() -> Camera2D:

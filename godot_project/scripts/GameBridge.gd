@@ -282,6 +282,10 @@ func _setup_js_bridge() -> void:
 	_js_callbacks.append(set_rotation_cb)
 	_js_bridge_obj["setRotation"] = set_rotation_cb
 	
+	var set_scale_cb = JavaScriptBridge.create_callback(_js_set_scale)
+	_js_callbacks.append(set_scale_cb)
+	_js_bridge_obj["setScale"] = set_scale_cb
+	
 	var get_lin_vel_cb = JavaScriptBridge.create_callback(_js_get_linear_velocity)
 	_js_callbacks.append(get_lin_vel_cb)
 	_js_bridge_obj["getLinearVelocity"] = get_lin_vel_cb
@@ -1917,6 +1921,32 @@ func set_rotation(entity_id: String, angle: float) -> void:
 			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(angle, current_pos))
 		else:
 			node.rotation = angle
+
+func _js_set_scale(args: Array) -> void:
+	if args.size() < 3:
+		return
+	var entity_id = str(args[0])
+	var scale_x = float(args[1])
+	var scale_y = float(args[2])
+	set_scale_entity(entity_id, scale_x, scale_y)
+
+func set_scale_entity(entity_id: String, scale_x: float, scale_y: float) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		# Find the sprite child to scale (scaling physics bodies directly causes issues)
+		var sprite = _find_sprite_in_entity(node)
+		if sprite:
+			sprite.scale = Vector2(scale_x, scale_y)
+
+func _find_sprite_in_entity(node: Node) -> CanvasItem:
+	# Check if node itself is a sprite
+	if node is Sprite2D or node is AnimatedSprite2D:
+		return node
+	# Search children for sprite
+	for child in node.get_children():
+		if child is Sprite2D or child is AnimatedSprite2D:
+			return child
+	return null
 
 func _js_get_linear_velocity(args: Array) -> Variant:
 	if args.size() < 1:

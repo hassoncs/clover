@@ -492,6 +492,10 @@ export function createNativeGodotBridge(): GodotBridge {
       callGameBridge('set_rotation', entityId, angle);
     },
 
+    setScale(entityId: string, scaleX: number, scaleY: number) {
+      callGameBridge('set_scale', entityId, scaleX, scaleY);
+    },
+
     async getLinearVelocity(entityId: string): Promise<Vec2 | null> {
       const { RTNGodot, runOnGodotThread } = await getGodotModule();
       
