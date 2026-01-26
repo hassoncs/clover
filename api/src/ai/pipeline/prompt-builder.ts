@@ -178,6 +178,16 @@ export interface UIComponentPromptParams {
   baseResolution?: number;
 }
 
+const CONTROL_SPECIFIC_FEATURES: Record<string, string> = {
+  button: 'Rectangular button with raised 3D appearance',
+  checkbox: 'Square checkbox container without checkmark symbol',
+  panel: 'Decorative frame with HOLLOW CENTER (transparent inside). Ornate outer border, empty middle for content.',
+  progress_bar: 'Horizontal progress bar track with rounded end caps. Smooth elongated shape.',
+  scroll_bar_h: 'Slim horizontal scrollbar track. Compact horizontal bar design.',
+  scroll_bar_v: 'Slim vertical scrollbar track. Compact vertical bar design.',
+  tab_bar: 'Navigation tab with rounded top corners and flat bottom edge',
+};
+
 export function buildUIComponentPrompt(params: UIComponentPromptParams): { prompt: string; negativePrompt: string } {
   const { componentType, state, theme } = params;
 
@@ -192,8 +202,9 @@ export function buildUIComponentPrompt(params: UIComponentPromptParams): { promp
   };
 
   const stateDesc = stateDescriptions[state] || 'default';
+  const controlFeature = CONTROL_SPECIFIC_FEATURES[componentType] || `${componentType} UI control`;
 
-  const prompt = `A ${componentType} UI background for a game interface. Theme: ${theme}. State: ${stateDesc}. Front view, flat 2D element with transparent background. Decorative borders and clean center area suitable for nine-patch scaling. Professional game UI style, functional and thematic.`;
+  const prompt = `A ${componentType} UI background for a game interface. ${controlFeature}. Theme: ${theme}. State: ${stateDesc}. Front view, flat 2D element with transparent background. Decorative borders and clean center area suitable for nine-patch scaling. Professional game UI style, functional and thematic.`;
 
   const negativePrompt = 'text, labels, icons, checkmarks, letters, numbers, watermark, signature, grid lines, measurement marks, multiple elements, 3D perspective, angled view, blurry, low quality';
 

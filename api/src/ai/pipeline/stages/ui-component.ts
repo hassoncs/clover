@@ -1,7 +1,14 @@
 import type { Stage, AssetRun, PipelineAdapters, DebugSink, UIComponentSheetSpec } from '../types';
 import { isUIComponentSpec } from '../types';
 import { createNinePatchSilhouette } from '../silhouettes/ui-component';
+import { 
+  createPanelSilhouette, 
+  createProgressBarSilhouette, 
+  createScrollBarSilhouette, 
+  createTabBarSilhouette 
+} from '../silhouettes/ui-component-svg';
 import { buildUIComponentPrompt } from '../prompt-builder';
+import { getControlConfig, getControlBaseState } from '../ui-control-config';
 
 export const uiBaseStateStage: Stage = {
   id: 'ui-base-state',
@@ -12,17 +19,66 @@ export const uiBaseStateStage: Stage = {
     }
 
     const spec = run.spec as UIComponentSheetSpec;
-    const canvasSize = spec.baseResolution ?? 256;
+    const config = getControlConfig(spec.componentType);
+    const { width, height } = config.dimensions;
     const marginSize = spec.ninePatchMargins.left;
-    
-    const componentSize = 64;
 
-    const silhouettePng = await createNinePatchSilhouette({
-      width: componentSize,
-      height: componentSize,
-      marginSize,
-      canvasSize,
-    });
+    let silhouettePng: Uint8Array;
+    
+    switch (spec.componentType) {
+      case 'button':
+      case 'checkbox':
+        silhouettePng = await createNinePatchSilhouette({
+          width: 64,
+          height: 64,
+          marginSize,
+          canvasSize: width,
+        });
+        break;
+      
+      case 'panel':
+        silhouettePng = await createPanelSilhouette({
+          width,
+          height,
+          margin: marginSize,
+        });
+        break;
+      
+      case 'progress_bar':
+        silhouettePng = await createProgressBarSilhouette({
+          width,
+          height,
+        });
+        break;
+      
+      case 'scroll_bar_h':
+        silhouettePng = await createScrollBarSilhouette({
+          orientation: 'h',
+        });
+        break;
+      
+      case 'scroll_bar_v':
+        silhouettePng = await createScrollBarSilhouette({
+          orientation: 'v',
+        });
+        break;
+      
+      case 'tab_bar':
+        silhouettePng = await createTabBarSilhouette({
+          width,
+          height,
+        });
+        break;
+      
+      default:
+        silhouettePng = await createNinePatchSilhouette({
+          width: 64,
+          height: 64,
+          marginSize,
+          canvasSize: width,
+        });
+        break;
+    }
 
     await debug({
       type: 'artifact',
@@ -36,11 +92,13 @@ export const uiBaseStateStage: Stage = {
 
     const silhouetteAssetId = await adapters.scenario.uploadImage(silhouettePng);
 
+    const baseState = getControlBaseState(spec.componentType);
+    
     const { prompt, negativePrompt } = buildUIComponentPrompt({
       componentType: spec.componentType,
-      state: 'normal',
+      state: baseState,
       theme: run.meta.theme,
-      baseResolution: canvasSize,
+      baseResolution: width,
     });
 
     await debug({
@@ -109,10 +167,12 @@ export const uiVariationStatesStage: Stage = {
     }
 
     const spec = run.spec as UIComponentSheetSpec;
-    const canvasSize = spec.baseResolution ?? 256;
+    const config = getControlConfig(spec.componentType);
+    const { width } = config.dimensions;
+    const baseState = getControlBaseState(spec.componentType);
     const stateImages: Record<string, Uint8Array> = { ...run.artifacts.stateImages };
 
-    const statesToGenerate = spec.states.filter(s => s !== 'normal');
+    const statesToGenerate = spec.states.filter(s => s !== baseState);
 
     const baseAssetId = await adapters.scenario.uploadImage(run.artifacts.baseStateImage);
 
@@ -121,7 +181,7 @@ export const uiVariationStatesStage: Stage = {
         componentType: spec.componentType,
         state,
         theme: run.meta.theme,
-        baseResolution: canvasSize,
+        baseResolution: width,
       });
 
       await debug({
@@ -191,7 +251,8 @@ export const uiUploadR2Stage: Stage = {
     }
 
     const spec = run.spec as UIComponentSheetSpec;
-    const canvasSize = spec.baseResolution ?? 256;
+    const config = getControlConfig(spec.componentType);
+    const { width, height } = config.dimensions;
     const r2Keys: string[] = [];
     const publicUrls: string[] = [];
 
@@ -208,7 +269,7 @@ export const uiUploadR2Stage: Stage = {
       statesMetadata[state] = {
         r2Key,
         publicUrl,
-        region: { x: 0, y: 0, width: canvasSize, height: canvasSize },
+        region: { x: 0, y: 0, width, height },
       };
     }
 
@@ -216,7 +277,8 @@ export const uiUploadR2Stage: Stage = {
       componentType: spec.componentType,
       states: statesMetadata,
       ninePatchMargins: spec.ninePatchMargins,
-      baseResolution: canvasSize,
+      width,
+      height,
       generatedAt: Date.now(),
       theme: run.meta.theme,
     };
