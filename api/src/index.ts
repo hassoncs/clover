@@ -3,22 +3,20 @@ import { cors } from "hono/cors";
 import { trpcServer } from "@hono/trpc-server";
 import { appRouter } from "./trpc/router";
 import { createContext, type Env } from "./trpc/context";
+import revenuecatWebhookRouter from "./routes/webhooks/revenuecat";
 
 const app = new Hono<{ Bindings: Env }>();
 
-// CORS configuration
 app.use(
   "*",
   cors({
-    origin: (origin) => origin, // Allow all origins for development
+    origin: (origin) => origin,
     credentials: true,
   }),
 );
 
-// Health check
 app.get("/health", (c) => c.json({ status: "ok", timestamp: Date.now() }));
 
-// Asset proxy - serves R2 assets with caching headers
 app.get("/assets/*", async (c) => {
   const key = c.req.path.replace("/assets/", "");
   if (!key) return c.text("Asset key required", 400);
@@ -39,7 +37,8 @@ app.get("/assets/*", async (c) => {
   }
 });
 
-// tRPC handler
+app.route("/webhooks/revenuecat", revenuecatWebhookRouter);
+
 app.use(
   "/trpc/*",
   trpcServer({

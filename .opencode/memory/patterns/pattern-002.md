@@ -1,55 +1,49 @@
-# Documentation Taxonomy
+# pattern-002: Documentation Taxonomy
 
-**Category**: documentation
-**Detected From**: docs/INDEX.md
-**Proposed for AGENTS.md**: No (already documented in .opencode/skills/documentation.md)
+**Category**: documentation  
+**Status**: active  
+**Documented in**: `.opencode/skills/slopcade-documentation.md`
 
 ## Description
 
-Structured documentation types with clear purposes and locations.
+This pattern defines the 3-tier documentation system used across Slopcade:
 
-## Document Types
+1. **Product Documentation** (`docs/`) - User-facing, component-specific, evergreen knowledge
+2. **Project Management** (`.opencode/memory/`) - Roadmaps, tasks, patterns, active work tracking
+3. **Daily Operations** (`docs/TODAY_*.md`) - Temporal daily/weekly work plans
 
-| Type | Purpose | Location | Lifecycle |
-|------|---------|----------|-----------|
-| **guides/** | "How to do X" step-by-step tutorials | Evergreen | Update as needed |
-| **reference/** | APIs, configs, lookup tables | Evergreen | Update as needed |
-| **architecture/** | System design, component relationships | Evergreen | Update as needed |
-| **decisions/** | ADRs - "we chose X because..." | Permanent record | Never delete |
-| **troubleshooting/** | Symptoms → causes → fixes | Evergreen | Update as needed |
-| **research/** | Investigations, experiments | Temporal | Requires closure |
-| **planning/** | Roadmaps, feature plans | Temporal | Archive when done |
-| **templates/** | Reusable patterns, examples | Evergreen catalog | Update as needed |
-| **log/** | Status updates, completion notes | Temporal | Date-prefixed |
-| **archive/** | Historical docs, outdated content | Archived | Permanent |
+### Document Types
 
-## Examples
+| Type | Purpose | Lifecycle |
+|------|---------|-----------|
+| **guides/** | "How to do X" tutorials | Evergreen |
+| **reference/** | APIs, configs, lookups | Evergreen |
+| **architecture/** | System design | Evergreen |
+| **decisions/** | ADRs (permanent) | Never delete |
+| **troubleshooting/** | Problem → solution | Evergreen |
+| **research/** | Investigations | Temporal (requires closure) |
+| **planning/** | Feature roadmaps | Temporal (archive when done) |
+| **templates/** | Reusable patterns | Evergreen |
+| **log/** | Status updates | Temporal (date-prefixed) |
+| **archive/** | Outdated content | Archived |
 
-### Guides
-- `docs/shared/guides/expo-development.md` - Setting up and running the Expo app
-- `docs/shared/guides/storybook-setup.md` - Component development with Storybook
-- `docs/shared/guides/app-template-setup.md` - Creating new apps from template
+## Examples in Codebase
 
-### Reference
-- `docs/shared/reference/waypoint-architecture.md` - Full infrastructure patterns
-- `docs/shared/reference/registry-system.md` - Auto-discovered lazy loading
-- `docs/shared/reference/sound-generation.md` - ElevenLabs sound effects API
+- **Guides**: `docs/shared/guides/expo-development.md`, `docs/game-maker/guides/input-configuration.md`
+- **Reference**: `docs/shared/reference/sound-generation.md`, `docs/asset-generation/reference/`
+- **Log**: `docs/shared/log/2026/2026-01-21-scenario-setup.md`
+- **Planning**: `docs/game-maker/planning/`
 
-### Log
-- `docs/shared/log/2026/2026-01-21-scenario-setup.md` - Scenario.com integration verified
+## Full Documentation
 
-### Plans
-- `docs/plans/comfyui-migration-architecture.md` - RunPod ComfyUI serverless migration plan
-- `docs/plans/runpod-comfyui-setup-status.md` - Deployment checklist
+See `.opencode/skills/slopcade-documentation.md` for:
+- Complete taxonomy rules
+- Placement guidelines
+- Temporal document lifecycle
+- User intent parsing ("add to roadmap", "document this")
+- Workflow examples
 
-## Naming Conventions
+## Related
 
-- **Guides**: `{action}-{subject}.md` (e.g., `expo-development.md`)
-- **Reference**: `{subject}-{type}.md` (e.g., `registry-system.md`)
-- **Log**: `YYYY-MM-DD-{event}.md` (e.g., `2026-01-21-scenario-setup.md`)
-- **Plans**: `{subject}-{type}.md` (e.g., `comfyui-migration-architecture.md`)
-
-## Related Documentation
-
-- [Documentation Skill](../../../.opencode/skills/documentation.md) - Full documentation guidelines
-- [docs/INDEX.md](../../../docs/INDEX.md) - Documentation hub
+- [Documentation Hub](../../../docs/INDEX.md)
+- [Slopcade Documentation Skill](../../skills/slopcade-documentation.md)

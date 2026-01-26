@@ -123,7 +123,7 @@ describe('ComfyUIClient', () => {
 
       expect(workflow['5'].inputs.width).toBe(COMFYUI_DEFAULTS.WIDTH);
       expect(workflow['5'].inputs.height).toBe(COMFYUI_DEFAULTS.HEIGHT);
-      expect(workflow['3'].inputs.steps).toBe(COMFYUI_DEFAULTS.STEPS);
+      expect(workflow['17'].inputs.steps).toBe(COMFYUI_DEFAULTS.STEPS);
     });
 
     it('throws on API error', async () => {
@@ -188,14 +188,14 @@ describe('ComfyUIClient', () => {
       await client.img2img({ image: 'base64data', prompt: 'test' });
 
       const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(callBody.input.workflow['3'].inputs.denoise).toBe(COMFYUI_DEFAULTS.STRENGTH);
+      expect(callBody.input.workflow['17'].inputs.denoise).toBe(COMFYUI_DEFAULTS.STRENGTH);
     });
   });
 
   describe('removeBackground', () => {
     const client = new ComfyUIClient(validConfig);
 
-    it('uses BEN2 model by default', async () => {
+    it('sets input image in workflow', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -207,52 +207,20 @@ describe('ComfyUIClient', () => {
       await client.removeBackground({ image: 'test-image' });
 
       const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(callBody.input.workflow['2'].inputs.model).toBe('BEN2');
+      expect(callBody.input.workflow['1'].inputs.image).toBeDefined();
     });
   });
 
   describe('layeredDecompose', () => {
     const client = new ComfyUIClient(validConfig);
 
-    it('returns multiple asset IDs for layers', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          status: 'COMPLETED',
-          output: {
-            images: [
-              { image: 'bGF5ZXIx', filename: 'layer1.png' },
-              { image: 'bGF5ZXIy', filename: 'layer2.png' },
-              { image: 'bGF5ZXIz', filename: 'layer3.png' },
-            ],
-          },
-        }),
-      });
-
-      const result = await client.layeredDecompose({
-        image: 'test-image',
-        layerCount: 3,
-      });
-
-      expect(result.assetIds).toHaveLength(3);
-      result.assetIds.forEach((id) => {
-        expect(id).toMatch(/^comfy-/);
-      });
-    });
-
-    it('uses default layer count', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          status: 'COMPLETED',
-          output: { images: [{ image: 'dGVzdA==', filename: 'layer.png' }] },
-        }),
-      });
-
-      await client.layeredDecompose({ image: 'test' });
-
-      const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(callBody.input.workflow['2'].inputs.layers_count).toBe(COMFYUI_DEFAULTS.LAYER_COUNT);
+    it('throws not implemented error', async () => {
+      await expect(
+        client.layeredDecompose({
+          image: 'test-image',
+          layerCount: 3,
+        })
+      ).rejects.toThrow('Layered decomposition not yet implemented for ComfyUI serverless');
     });
   });
 });

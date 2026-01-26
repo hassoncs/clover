@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+A stylized game title logo that says "Stack & Match". Bold, playful 3D text with depth and shadows. Enchanted garden aesthetic with glowing gemstones, magical sparkles, mystical forest vibes, fairy tale typography with vine and flower accents, deep greens and magical purples style letters. The text is the main focus, centered in the frame. High quality game logo, professional design. Cartoon style, vibrant colors.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

@@ -311,6 +311,7 @@ export function AssetGalleryPanel({
 
       {showQuickCreate ? (
         <QuickGenerationForm
+          gameId={gameId}
           theme={quickCreateTheme}
           onThemeChange={setQuickCreateTheme}
           style={quickCreateStyle}

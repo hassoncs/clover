@@ -1,0 +1,26 @@
+=== POSITIVE PROMPT ===
+=== CAMERA/VIEW (CRITICAL) ===
+FRONT VIEW. Camera is directly facing the front of the object.
+Flat, 2D perspective. NO 3D rotation, NO angled view.
+
+=== SHAPE (CRITICAL) ===
+EXTREMELY WIDE HORIZONTAL BAR (6.0:1).
+
+=== COMPOSITION ===
+The object FILLS THE ENTIRE FRAME. No empty space around it.
+
+=== SUBJECT ===
+A a subtle translucent placement guide area with zen garden grid pattern, faint bamboo-inspired lines, semi-transparent with soft green tint for a video game.
+Style: peaceful Japanese zen garden, bamboo, cherry blossoms, tranquil meditation
+
+=== STYLE ===
+cartoon style, bold black outlines, vibrant saturated colors
+
+=== TECHNICAL ===
+Transparent background (alpha channel).
+cel-shaded, clean vector-like edges, flat color fills
+Single object only, no duplicates.
+No text, watermarks, or signatures.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

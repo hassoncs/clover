@@ -163,5 +163,6 @@
   "initialState": {
     "score": 0,
     "lives": 5
-  }
+  },
+  "initialLives": 5
 }

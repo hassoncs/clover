@@ -34,6 +34,16 @@ export interface RuntimeEntity {
   id: string;
   name: string;
   template?: string;
+  // Hierarchy tracking
+  /** Parent entity ID (undefined if root entity) */
+  parentId?: string;
+  /** Child entity IDs */
+  children: string[];
+  // Dual transforms for hierarchy
+  /** Transform relative to parent (or world if no parent) */
+  localTransform: TransformComponent;
+  /** Computed world transform (cached) */
+  worldTransform: TransformComponent;
   transform: TransformComponent;
   sprite?: SpriteComponent;
   physics?: PhysicsComponent;

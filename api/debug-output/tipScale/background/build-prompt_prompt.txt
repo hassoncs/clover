@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+A Victorian steampunk workshop interior for a puzzle game. Walls lined with brass pipes, copper tubing, and pressure gauges. Large ornate gears and clockwork mechanisms visible in the background. Warm amber lighting from gas lamps and glowing furnaces. Wooden workbenches with brass instruments and tools. Industrial elegance with rich browns, golden brass, and copper tones. Steam wisps and mechanical atmosphere. No text, no characters, just the environment. High quality game background.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

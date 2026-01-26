@@ -1,6 +1,8 @@
 import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
+import { CostPreview } from '../../economy/CostPreview';
 
 interface QuickGenerationFormProps {
+  gameId?: string;
   theme: string;
   onThemeChange: (theme: string) => void;
   style: 'pixel' | 'cartoon' | '3d' | 'flat';
@@ -22,6 +24,7 @@ const STYLE_OPTIONS = [
 ];
 
 export function QuickGenerationForm({
+  gameId,
   theme,
   onThemeChange,
   style,
@@ -84,6 +87,12 @@ export function QuickGenerationForm({
         </View>
         <Text style={styles.bgRemoveLabel}>Remove backgrounds (cleaner sprites)</Text>
       </Pressable>
+
+      {gameId && (
+        <View style={styles.costPreviewContainer}>
+          <CostPreview gameId={gameId} regenerateAll={true} />
+        </View>
+      )}
 
       <Pressable
         style={[
@@ -196,6 +205,9 @@ const styles = StyleSheet.create({
   bgRemoveLabel: {
     color: '#D1D5DB',
     fontSize: 14,
+  },
+  costPreviewContainer: {
+    marginBottom: 16,
   },
   quickGenerateButton: {
     backgroundColor: '#4F46E5',

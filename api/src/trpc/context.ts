@@ -27,6 +27,8 @@ export interface Env {
   ASSET_HOST?: string;
 
   DEBUG_ASSET_GENERATION?: string;
+
+  REVENUECAT_WEBHOOK_SECRET?: string;
 }
 
 export interface User {

@@ -1,0 +1,68 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Sync IAP products to App Store Connect"
+  lane :sync_iaps do
+    require 'spaceship'
+    require 'yaml'
+
+    UI.message("🔄 Syncing IAP products to App Store Connect...")
+
+    iaps_config = YAML.load_file(File.join(File.dirname(__FILE__), "metadata/iaps.yml"))
+    UI.success("✅ Loaded #{iaps_config['products'].length} products from config")
+
+    UI.message("🔐 Using App Store Connect API Key for authentication...")
+    
+    key_path = File.expand_path("AuthKey_#{ENV['ASC_KEY_ID']}.p8", File.dirname(__FILE__))
+    UI.message("Using key file: #{key_path}")
+    UI.user_error!("Key file not found at #{key_path}") unless File.exist?(key_path)
+    
+    api_key = app_store_connect_api_key(
+      key_id: ENV['ASC_KEY_ID'],
+      issuer_id: ENV['ASC_ISSUER_ID'],
+      key_filepath: key_path,
+      is_key_content_base64: false
+    )
+
+    app = Spaceship::ConnectAPI::App.find("me.ch5.slopcade.app")
+    UI.user_error!("❌ App 'me.ch5.slopcade.app' not found in App Store Connect") unless app
+
+    UI.message("📱 Found app: #{app.name}")
+    UI.success("\n✅ Successfully authenticated with App Store Connect!")
+    UI.success("✅ API Key authentication working!")
+    
+    UI.important("\n⚠️  IAP Creation Not Fully Automated Yet")
+    UI.message("The Spaceship IAP API has limited support in current Fastlane version.")
+    UI.message("You'll need to create these products manually in App Store Connect:")
+    UI.message("")
+    
+    iaps_config['products'].each do |product_def|
+      UI.message("📦 #{product_def['reference_name']}")
+      UI.message("   Product ID: #{product_def['product_id']}")
+      UI.message("   Type: #{product_def['type']}")
+      UI.message("   Price Tier: #{product_def['pricing']['tier']}")
+      UI.message("")
+    end
+    
+    UI.message("Go to: https://appstoreconnect.apple.com")
+    UI.message("Navigate to: Slopcade → Features → In-App Purchases")
+    UI.message("Create each product using the details above.")
+    
+    UI.success("\n✅ Configuration verified! Ready for manual IAP setup.")
+  end
+end

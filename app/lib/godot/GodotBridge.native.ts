@@ -1045,6 +1045,44 @@ export function createNativeGodotBridge(): GodotBridge {
       callGameBridge('clear_texture_cache', url ?? '');
     },
 
+    async preloadTextures(urls: string[], onProgress?: (percent: number, completed: number, failed: number) => void): Promise<{ completed: number; failed: number }> {
+      if (urls.length === 0) {
+        onProgress?.(100, 0, 0);
+        return { completed: 0, failed: 0 };
+      }
+      
+      let completed = 0;
+      let failed = 0;
+      const total = urls.length;
+      
+      for (const url of urls) {
+        try {
+          const urlHash = url.replace(/[^a-zA-Z0-9]/g, '_').slice(-50);
+          const filename = `preload_${urlHash}.png`;
+          const localPath = `${FileSystem.cacheDirectory}${filename}`;
+          
+          const fileInfo = await FileSystem.getInfoAsync(localPath);
+          if (!fileInfo.exists) {
+            const downloadResult = await FileSystem.downloadAsync(url, localPath);
+            if (downloadResult.status !== 200) {
+              failed++;
+            } else {
+              completed++;
+            }
+          } else {
+            completed++;
+          }
+        } catch {
+          failed++;
+        }
+        
+        const percent = Math.round(((completed + failed) / total) * 100);
+        onProgress?.(percent, completed, failed);
+      }
+      
+      return { completed, failed };
+    },
+
     setDebugShowShapes(show: boolean) {
       callGameBridge('set_debug_show_shapes', show);
     },

@@ -1,0 +1,2 @@
+- LSP diagnostics tool appears to cache stale errors for `packages/docs/plugins/game-engine-metadata/index.ts` despite `tsc -p packages/docs/tsconfig.json --noEmit` passing; could require language server restart.
+- Typedoc emits warnings/errors about unknown options during `pnpm -C packages/docs build` but the build still succeeds.

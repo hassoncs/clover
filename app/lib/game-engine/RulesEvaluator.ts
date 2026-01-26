@@ -335,6 +335,9 @@ export class RulesEvaluator implements IGameStateMutator {
     playSound?: (soundId: string, volume?: number) => void,
     bridge?: GodotBridge,
   ): void {
+    if (inputEvents.tap) {
+      console.log("[Rules] TAP event received! Game state:", this.gameState, "tap:", inputEvents.tap);
+    }
     if (this.gameState !== "playing") {
       if (inputEvents.tap || inputEvents.dragEnd) {
         console.log("[Rules] Ignoring input - game state is:", this.gameState);

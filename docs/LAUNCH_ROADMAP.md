@@ -20,7 +20,9 @@ Every template must have: **Win/Lose conditions**, **Polished HUD**, **Themed As
 ---
 
 ## 3. Monetization & Credits (Economy Phase)
-AI generation is the cost driver. The economy gates creation while allowing free play.
+AI generation is the cost driver. The economy gates creation while allowing free play. 
+
+**Detailed Strategy**: See [Gems Economy Strategy](economy/STRATEGY.md) for the long-term design.
 
 ### 3.1 Currency System
 - **Sparks (⚡)**: Soft currency. Earned by playing, daily logins, and remixing.

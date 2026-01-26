@@ -13,8 +13,12 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc/client";
+import { trpcReact } from "@/lib/trpc/react";
 import { TESTGAMES } from "@/lib/registry/generated/testGames";
 import { useAuth } from "@/hooks/useAuth";
+import { CreditBalance } from "@/components/economy/CreditBalance";
+import { CurrencySheet } from "@/components/economy/CurrencySheet";
+import { InviteCodeInput } from "@/components/auth/InviteCodeInput";
 import type { GameDefinition } from "@slopcade/shared";
 
 interface GameItem {
@@ -35,6 +39,8 @@ export default function MakerScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [showNewGameModal, setShowNewGameModal] = useState(false);
+  const [showCurrencySheet, setShowCurrencySheet] = useState(false);
+  const [validatedInviteCode, setValidatedInviteCode] = useState<string | null>(null);
 
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -200,6 +206,17 @@ export default function MakerScreen() {
           Sign in to create and save your games
         </Text>
 
+        <InviteCodeInput onValidated={(code) => setValidatedInviteCode(code)} />
+
+        {!validatedInviteCode && (
+          <View className="w-full bg-gray-800/30 p-4 rounded-xl border border-gray-700">
+            <Text className="text-gray-400 text-center text-sm">
+              🔒 Slopcade is currently invite-only during beta.
+              {'\n'}Enter your invite code above to proceed.
+            </Text>
+          </View>
+        )}
+
         {magicLinkSent ? (
           <View className="w-full bg-green-900/30 p-6 rounded-xl border border-green-700 mb-6">
             <Text className="text-green-300 text-center text-lg font-semibold mb-2">
@@ -236,10 +253,10 @@ export default function MakerScreen() {
               />
               <Pressable
                 className={`py-4 rounded-xl items-center ${
-                  isLoggingIn ? "bg-gray-600" : "bg-indigo-600 active:bg-indigo-700"
+                  isLoggingIn || !validatedInviteCode ? "bg-gray-600" : "bg-indigo-600 active:bg-indigo-700"
                 }`}
                 onPress={handleMagicLink}
-                disabled={isLoggingIn}
+                disabled={isLoggingIn || !validatedInviteCode}
               >
                 <Text className="text-white font-semibold text-base">
                   {isLoggingIn ? "Sending..." : "Send Magic Link"}
@@ -255,10 +272,10 @@ export default function MakerScreen() {
 
             <Pressable
               className={`w-full py-4 rounded-xl items-center flex-row justify-center ${
-                isLoggingIn ? "bg-gray-600" : "bg-white active:bg-gray-100"
+                isLoggingIn || !validatedInviteCode ? "bg-gray-600" : "bg-white active:bg-gray-100"
               }`}
               onPress={handleGoogleSignIn}
-              disabled={isLoggingIn}
+              disabled={isLoggingIn || !validatedInviteCode}
             >
               <Text className="text-gray-800 font-semibold text-base">
                 Continue with Google
@@ -499,6 +516,9 @@ export default function MakerScreen() {
           <Text className="text-gray-400 text-sm">
             {user?.email}
           </Text>
+          <View className="mx-3">
+            <CreditBalance onPress={() => setShowCurrencySheet(true)} />
+          </View>
           <Pressable
             className="ml-3 py-1 px-2"
             onPress={handleSignOut}
@@ -516,6 +536,11 @@ export default function MakerScreen() {
 
       {renderProjects()}
       {renderNewGameModal()}
+      
+      <CurrencySheet 
+        visible={showCurrencySheet}
+        onClose={() => setShowCurrencySheet(false)}
+      />
     </SafeAreaView>
   );
 }

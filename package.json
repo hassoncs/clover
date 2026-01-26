@@ -12,6 +12,9 @@
     "storybook": "devmux ensure storybook",
     "storybook:build": "turbo run storybook:build",
     "storybook:device": "turbo run storybook:device",
+    "docs": "devmux ensure docs",
+    "docs:build": "pnpm --filter @slopcade/docs build",
+    "docs:typedoc": "pnpm --filter @slopcade/docs typedoc",
     "dev": "devmux ensure metro",
     "dev:api": "devmux ensure api",
     "dev:web": "devmux ensure web",
@@ -42,6 +45,7 @@
     "ship:update": "node scripts/ship.mjs update",
     "ship:metadata": "node scripts/ship.mjs metadata",
     "ship:web": "node scripts/ship.mjs web",
+    "ship:iaps": "cd app/ios && hush run -- fastlane sync_iaps",
     "fix:hermes-dsym": "node scripts/fix-hermes-dsym.mjs",
     "generate:ui": "pnpm --filter @slopcade/api generate:ui"
   },
@@ -49,7 +53,10 @@
     "@chriscode/devmux": "link:/Users/hassoncs/Workspaces/Personal/devmux/devmux-cli",
     "@chriscode/hush": "^5.0.3",
     "@gltf-transform/cli": "^4.3.0",
+    "@types/node": "^25.0.10",
+    "chokidar": "^5.0.0",
     "simple-git-hooks": "^2.11.1",
+    "ts-morph": "^27.0.2",
     "turbo": "^2.3.0"
   },
   "simple-git-hooks": {

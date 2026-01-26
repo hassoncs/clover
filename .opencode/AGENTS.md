@@ -13,107 +13,26 @@
 
 ## Roadmap System
 
-The project uses a distributed roadmap managed by the **Chronicler** agent. See `.opencode/memory/` for the complete structure.
+The project uses a distributed roadmap managed by the **Chronicler** agent.
 
-### Directory Structure
+**Full documentation**: `.opencode/skills/slopcade-documentation.md` (load with `/slopcade-documentation`)
+
+### Quick Reference
 
 | Path | Purpose |
 |------|---------|
+| `.opencode/memory/ROADMAP.md` | Master roadmap (single source of truth) |
 | `.opencode/memory/roadmap/active/` | Features currently being built |
 | `.opencode/memory/roadmap/completed/{date}/` | Completed features (archived by date) |
 | `.opencode/memory/human-tasks/` | Blockers requiring human decision |
-| `.opencode/plans/` | Oracle architectural decision documents |
 | `.opencode/memory/graph.yaml` | Master knowledge graph (auto-generated) |
 
-### "Add to Roadmap" Interpretation Guide
+### When User Says "Add to Roadmap"
 
-When user says "add this to the roadmap", use this decision tree:
-
-| Context | Action |
-|---------|--------|
-| New feature/work to track | Create `.opencode/memory/roadmap/active/{name}.md` |
-| Blocker requiring human decision | Create `.opencode/memory/human-tasks/ht-XXX.md` |
-| Architectural decision to record | Create `.opencode/plans/{date}-{topic}-oracle.md` |
-| Completed work | Update status and archive to `roadmap/completed/{date}/` |
-| Checkbox-based task list | Use the **Prometheus** format (see `.opencode/plans/` examples) |
-
-### Document Types
-
-**1. Active Feature** (`.opencode/memory/roadmap/active/{name}.md`):
-```markdown
-# Feature Name
-
-**Status**: Active | **Priority**: High/Medium/Low
-**Started**: YYYY-MM-DD
-
-## Description
-Brief overview of what this feature does.
-
-## Progress
-- [x] Completed task 1
-- [ ] Pending task 2
-- [ ] Blocked task 3 (by ht-XXX)
-
-## Human Tasks
-- ht-XXX: Description (blocks task 3)
-```
-
-**2. Human Task** (`.opencode/memory/human-tasks/ht-XXX.md`):
-```markdown
-# ht-XXX: Task Title
-
-**Priority**: High/Medium/Low
-**Source**: `file:line` or component
-**Status**: Open/In Progress|Resolved
-
-## Issue
-Description of what needs human decision or action.
-
-## Context
-Why this is blocking progress.
-
-## Requirements
-- What needs to be decided/built
-```
-
-**3. Oracle Plan** (`.opencode/plans/{date}-{topic}-oracle.md`):
-```markdown
-# Oracle Consultation: Topic
-
-**Date**: YYYY-MM-DD
-**Status**: completed
-
-## Question
-What architectural decision was needed.
-
-## Analysis
-Options considered and reasoning.
-
-## Decision
-The chosen approach with justification.
-
-## Consequences
-What this enables and any trade-offs.
-```
-
-### Querying the Roadmap
-
-To understand current state:
-```bash
-# Run chronicler bootstrap --deep to regenerate graph.yaml
-# Or manually read:
-cat .opencode/memory/graph.yaml
-ls .opencode/memory/roadmap/active/
-ls .opencode/memory/human-tasks/
-```
-
-### Chronicler Commands
-
-| Command | Action |
-|---------|--------|
-| `/chronicler` or `sync` | Quick scan of plans, update graph.yaml |
-| `/chronicler bootstrap --deep` | Full repo scan, rebuild graph.yaml |
-| `/chronicler audit` | Find inconsistencies, propose cleanup |
+Load the `slopcade-documentation` skill to determine:
+- Active Feature vs Human Task vs Oracle Plan
+- Proper file location and template
+- Cross-referencing and lifecycle management
 
 ---
 

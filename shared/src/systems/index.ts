@@ -31,6 +31,7 @@ export {
   parseCellKey,
   gridConfigFromMatch3,
 } from './grid/helpers';
+export { floodFill, getHexNeighbors, getNeighbors, findConnectedGroups, findLineMatches, type CellPosition, type LineMatch } from './grid/match-utils';
 export * from './inventory/types';
 export * from './progression/types';
 export * from './state-machine/types';

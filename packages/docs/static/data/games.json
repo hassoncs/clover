@@ -1,0 +1,163 @@
+[
+  {
+    "id": "ballSort",
+    "title": "Ball Sort",
+    "description": "Sort colored balls into tubes - each tube should contain only one color",
+    "gameId": "test-ball-sort",
+    "sourcePath": "app/lib/test-games/games/ballSort/game.ts"
+  },
+  {
+    "id": "blockDrop",
+    "title": "Block Drop",
+    "description": "Drop colored blocks into columns. Match adjacent same-colored blocks to merge and score!",
+    "gameId": "test-block-drop",
+    "sourcePath": "app/lib/test-games/games/blockDrop/game.ts"
+  },
+  {
+    "id": "breakoutBouncer",
+    "title": "Breakout Bouncer",
+    "description": "Classic brick-breaker with sci-fi neon assets",
+    "gameId": "test-breakout-bouncer",
+    "sourcePath": "app/lib/test-games/games/breakoutBouncer/game.ts"
+  },
+  {
+    "id": "bubbleShooter",
+    "title": "Bubble Shooter",
+    "description": "Match 3+ bubbles of the same color to pop them and clear the board",
+    "gameId": "test-bubble-shooter",
+    "sourcePath": "app/lib/test-games/games/bubbleShooter/game.ts"
+  },
+  {
+    "id": "comboFighter",
+    "title": "Combo Fighter",
+    "description": "Side-scrolling fighter where consecutive hits build combos. Reach checkpoints to save progress. Player grows with each combo!",
+    "gameId": "test-combo-fighter",
+    "sourcePath": "app/lib/test-games/games/comboFighter/game.ts"
+  },
+  {
+    "id": "connect4",
+    "title": "Connect 4",
+    "description": "Drop discs to connect four in a row",
+    "gameId": "test-connect4",
+    "sourcePath": "app/lib/test-games/games/connect4/game.ts"
+  },
+  {
+    "id": "dominoChain",
+    "title": "Domino Chain",
+    "description": "Place dominoes and watch them fall in a satisfying chain reaction",
+    "gameId": "test-domino-chain",
+    "sourcePath": "app/lib/test-games/games/dominoChain/game.ts"
+  },
+  {
+    "id": "dropPop",
+    "title": "Drop & Pop",
+    "description": "Drop fruits and merge matching pairs into bigger fruits! Inspired by Suika Game.",
+    "gameId": "test-drop-pop",
+    "sourcePath": "app/lib/test-games/games/dropPop/game.ts"
+  },
+  {
+    "id": "dungeonCrawler",
+    "title": "Dungeon Crawler",
+    "description": "Grid-based dungeon exploration with inventory and state transitions",
+    "gameId": "test-dungeon-crawler",
+    "sourcePath": "app/lib/test-games/games/dungeonCrawler/game.ts"
+  },
+  {
+    "id": "flappyBird",
+    "title": "Flappy Bird",
+    "description": "Tap to fly through the pipes without hitting them",
+    "gameId": "test-flappy-bird",
+    "sourcePath": "app/lib/test-games/games/flappyBird/game.ts"
+  },
+  {
+    "id": "game2048",
+    "title": "2048",
+    "description": "Slide tiles to combine matching numbers and reach 2048!",
+    "gameId": "test-game-2048",
+    "sourcePath": "app/lib/test-games/games/game2048/game.ts"
+  },
+  {
+    "id": "gemCrush",
+    "title": "Gem Crush",
+    "description": "Match 3 or more gems to clear them and score points!",
+    "gameId": "gem-crush",
+    "sourcePath": "app/lib/test-games/games/gemCrush/game.ts"
+  },
+  {
+    "id": "iceSlide",
+    "title": "Ice Slide",
+    "description": "Push ice blocks to their goals - they slide until they hit something!",
+    "gameId": "ice-slide",
+    "sourcePath": "app/lib/test-games/games/iceSlide/game.ts"
+  },
+  {
+    "id": "memoryMatch",
+    "title": "Memory Match",
+    "description": "Flip cards to find matching pairs",
+    "gameId": "test-memory-match",
+    "sourcePath": "app/lib/test-games/games/memoryMatch/game.ts"
+  },
+  {
+    "id": "physicsStacker",
+    "title": "Block Stacker",
+    "description": "Stack blocks as high as you can! Higher stacks = more points!",
+    "gameId": "block-stacker",
+    "sourcePath": "app/lib/test-games/games/physicsStacker/game.ts"
+  },
+  {
+    "id": "pinballLite",
+    "title": "Pinball Lite",
+    "description": "Pinball table with bumpers, flippers - reach 5000 points to win!",
+    "gameId": "test-pinball-lite",
+    "sourcePath": "app/lib/test-games/games/pinballLite/game.ts"
+  },
+  {
+    "id": "puyoPuyo",
+    "title": "Puyo Puyo",
+    "description": "Match 4+ same-colored puyos to pop them and create chains!",
+    "gameId": "test-puyo-puyo",
+    "sourcePath": "app/lib/test-games/games/puyoPuyo/game.ts"
+  },
+  {
+    "id": "rpgProgressionDemo",
+    "title": "RPG Progression Demo",
+    "description": "Collect gems for XP and gold coins for resources. Level up to unlock abilities!",
+    "gameId": "test-rpg-progression-demo",
+    "sourcePath": "app/lib/test-games/games/rpgProgressionDemo/game.ts"
+  },
+  {
+    "id": "simplePlatformer",
+    "title": "Simple Platformer",
+    "description": "Jump between platforms, collect coins, reach the goal flag",
+    "gameId": "test-simple-platformer",
+    "sourcePath": "app/lib/test-games/games/simplePlatformer/game.ts"
+  },
+  {
+    "id": "slopeggle",
+    "title": "Slopeggle",
+    "description": "Clear all orange pegs by bouncing a ball through the board",
+    "gameId": "test-slopeggle",
+    "sourcePath": "app/lib/test-games/games/slopeggle/game.ts"
+  },
+  {
+    "id": "stackMatch",
+    "title": "Stack & Match",
+    "description": "Place tiles on a grid to match 3+ adjacent same-color tiles",
+    "gameId": "test-stack-match",
+    "sourcePath": "app/lib/test-games/games/stackMatch/game.ts"
+  },
+  {
+    "id": "tipScale",
+    "title": "Tip the Scale",
+    "description": "Place weights on a seesaw to achieve perfect balance",
+    "gameId": "test-tip-scale",
+    "sourcePath": "app/lib/test-games/games/tipScale/game.ts"
+  },
+  {
+    "id": "towerDefense",
+    "title": "Tower Defense",
+    "description": "Defend your base from waves of enemies. Towers target nearest enemies and fire projectiles. Enemies follow a path to reach your base.",
+    "gameId": "test-tower-defense",
+    "sourcePath": "app/lib/test-games/games/towerDefense/game.ts"
+  }
+]

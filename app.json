@@ -1,5 +1,10 @@
 {
   "ios": {
     "bundleIdentifier": "com.hassoncs.slopcade-monorepo"
+  },
+  "extra": {
+    "eas": {
+      "projectId": "b46ab05e-66dc-4c0a-8357-66b35b96ebde"
+    }
   }
 }

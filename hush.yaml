@@ -41,3 +41,13 @@ targets:
     filename: .dev.vars
     include:
       - EXPO_PUBLIC_SUPABASE_*
+
+  - name: fastlane
+    path: ./app/ios
+    format: dotenv
+    include:
+      - FASTLANE_*
+      - ASC_KEY_ID
+      - ASC_ISSUER_ID
+      - MATCH_*
+      - PILOT_*

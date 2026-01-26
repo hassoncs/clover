@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+A retro 80s arcade game background with synthwave aesthetic. Dark purple and black space with neon grid lines extending to the horizon. Glowing pink and cyan neon signs in the distance. Starfield with colorful nebula. Arcade cabinet silhouettes on the sides. Laser beams and light trails. Vaporwave sunset colors at the horizon. Dark atmosphere with vibrant neon accents. No text, no characters, just the environment. High quality game background.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

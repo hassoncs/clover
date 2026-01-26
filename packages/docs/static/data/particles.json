@@ -1,0 +1,62 @@
+[
+  {
+    "type": "bubbles",
+    "displayName": "Bubbles",
+    "description": "Rising spheres that pop",
+    "icon": "🫧"
+  },
+  {
+    "type": "confetti",
+    "displayName": "Confetti",
+    "description": "Colorful celebration burst",
+    "icon": "🎊"
+  },
+  {
+    "type": "custom",
+    "displayName": "Custom",
+    "description": "Configure your own particle effect",
+    "icon": "⚙️"
+  },
+  {
+    "type": "explosion",
+    "displayName": "Explosion",
+    "description": "Sudden burst of particles outward",
+    "icon": "💥"
+  },
+  {
+    "type": "fire",
+    "displayName": "Fire",
+    "description": "Flickering flames rising upward",
+    "icon": "🔥"
+  },
+  {
+    "type": "magic",
+    "displayName": "Magic",
+    "description": "Sparkly particles that orbit and shimmer",
+    "icon": "🪄"
+  },
+  {
+    "type": "rain",
+    "displayName": "Rain",
+    "description": "Falling droplets from above",
+    "icon": "🌧️"
+  },
+  {
+    "type": "smoke",
+    "displayName": "Smoke",
+    "description": "Billowing clouds that drift and fade",
+    "icon": "💨"
+  },
+  {
+    "type": "snow",
+    "displayName": "Snow",
+    "description": "Gentle snowflakes drifting down",
+    "icon": "❄️"
+  },
+  {
+    "type": "sparks",
+    "displayName": "Sparks",
+    "description": "Quick bright particles that spray out",
+    "icon": "✨"
+  }
+]

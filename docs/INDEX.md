@@ -12,6 +12,7 @@
 |-----------|-------------|-------------|
 | **Game Engine** | Godot 4 physics and rendering for React Native | [godot-migration/](godot-migration/) |
 | **Game Maker** | AI-powered game generation, entity/behavior systems | [game-maker/INDEX.md](game-maker/INDEX.md) |
+| **Economy** | Virtual currency strategy, Sparks/Gems, monetization | [economy/INDEX.md](economy/INDEX.md) |
 | **Shared** | Cross-cutting guides, tooling, project-wide docs | [shared/](#shared-documentation) |
 
 ---

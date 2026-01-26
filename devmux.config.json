@@ -27,6 +27,11 @@
       "cwd": "apps/storybook",
       "command": "npx hush run -t app -- pnpm storybook",
       "health": { "type": "port", "port": 6006 }
+    },
+    "docs": {
+      "cwd": ".",
+      "command": "pnpm --filter @slopcade/docs dev",
+      "health": { "type": "port", "port": 3000 }
     }
   }
 }

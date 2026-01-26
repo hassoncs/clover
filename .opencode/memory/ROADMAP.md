@@ -19,9 +19,70 @@ Slopcade is a physics-based game engine and AI-powered game maker built with Rea
 
 ---
 
+## Today's Focus (2026-01-26)
+
+**Current Sprint**: Launch Preparation & Asset Validation
+
+See detailed plan: [docs/TODAY_2026-01-26.md](../../docs/TODAY_2026-01-26.md)
+
+**Top Priorities**:
+1. Validate new puzzle game assets generated last night
+2. Test native Bluetooth (iOS/Android) for multiplayer viability
+3. Implement gem & spark economy (Apple IAP architecture + server validation)
+4. Production build configuration (hide Labs tab)
+5. Launch UI polish (title screen, splash screen)
+
+---
+
 ## Active Features
 
-### 1. Type-Driven Asset Generation Pipeline
+### 1. Gem & Spark Economy System
+
+**Status**: 🟡 Just Started
+**Priority**: High
+**Started**: 2026-01-26
+
+#### Objective
+Full in-app purchase economy with Gems (hard currency), Sparks (utility currency), and Slopcade Pro subscription for offline capability.
+
+#### Product Specs (Quantity-Based IDs)
+
+| Product | ID | Current Price | Grants |
+|---------|-----|---------------|--------|
+| Slopcade Pro | `slopcade.pro.monthly` | $9.99/mo | 500 Gems + 100 Sparks/mo |
+| Gems 100 | `slopcade.gems.100` | $1.99 | 100 Gems |
+| Gems 300 | `slopcade.gems.300` | $4.99 | 300 Gems |
+| Gems 1500 | `slopcade.gems.1500` | $19.99 | 1500 Gems |
+| Sparks 50 | `slopcade.sparks.50` | $0.99 | 50 Sparks |
+| Sparks 200 | `slopcade.sparks.200` | $2.99 | 200 Sparks |
+| Sparks 1000 | `slopcade.sparks.1000` | $9.99 | 1000 Sparks |
+
+**Design:** IDs encode quantities (permanent), prices live in App Store Connect (changeable).
+
+#### Progress (0/7 phases)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| 1. RevenueCat Setup | ⏳ TODO | Create project, configure products in dashboard |
+| 2. Database Schema | 🚧 In Progress | apple_transactions, user balance columns |
+| 3. Verify Endpoint | ⏳ TODO | /api/iap/verify with Apple JWS validation |
+| 4. Notification Endpoint | ⏳ TODO | /api/iap/notification webhook for Apple Server |
+| 5. StoreKit Integration | ⏳ TODO | RevenueCat SDK in iOS app |
+| 6. UI Components | ⏳ TODO | CreditBalance, purchase screens, Pro badge |
+| 7. Offline Mode | ⏳ TODO | JWT validation + local Godot caching |
+
+#### Implementation Notes
+- **Provider**: RevenueCat (managed IAP across iOS/Android)
+- **Database**: Track balances + purchase history with audit trail
+- **Offline Mode**: Encrypted JWT membership validation + local Godot asset caching
+
+#### Documentation
+- [Product Spec](docs/economy/PRODUCT_SPEC.md)
+- [Launch Roadmap - Section 3](../../docs/LAUNCH_ROADMAP.md)
+
+---
+
+### 2. Type-Driven Asset Generation Pipeline
 
 **Status**: 🟡 86% complete  
 **Priority**: High  
@@ -76,7 +137,7 @@ npx tsx api/scripts/generate-game-assets.ts slopeggle --asset=ball
 
 ---
 
-### 2. AI-Powered Game Generation
+### 3. AI-Powered Game Generation
 
 **Status**: 🟢 Active  
 **Priority**: High  
@@ -115,7 +176,7 @@ Located in `api/src/ai/templates/`:
 
 ---
 
-### 3. DevMux Service Orchestration
+### 4. DevMux Service Orchestration
 
 **Status**: 🟢 Active  
 **Priority**: Medium  
@@ -157,7 +218,7 @@ Managed tmux sessions for long-running development processes (Metro, API, Storyb
 
 ---
 
-### 4. Universal Lazy Registry System
+### 5. Universal Lazy Registry System
 
 **Status**: 🟢 Active  
 **Priority**: Medium  
@@ -225,7 +286,7 @@ pnpm generate:registry:watch  # Watch mode
 
 ---
 
-### 5. Godot 4 Game Engine Integration
+### 6. Godot 4 Game Engine Integration
 
 **Status**: ✅ Complete  
 **Priority**: Completed  
@@ -257,7 +318,7 @@ Godot 4 physics and rendering for React Native (iOS, Android, Web).
 
 ---
 
-### 6. Storybook + NativeWind Setup
+### 7. Storybook + NativeWind Setup
 
 **Status**: ✅ Complete  
 **Priority**: Completed  
@@ -299,6 +360,59 @@ pnpm storybook
 ---
 
 ## Human Tasks (Blockers)
+
+### ht-003: Determine BLE Launch Priority
+
+**Priority**: High  
+**Status**: Open  
+**Source**: `docs/TODAY_2026-01-26.md` Task 2  
+**Created**: 2026-01-26
+
+#### The Problem
+Bluetooth Low Energy (BLE) local multiplayer is a unique social feature, but Android implementation is missing. Need to decide if this blocks App Store launch.
+
+#### Why Human Required
+Strategic decision needed:
+
+1. **Is BLE a launch blocker?**
+   - iOS works, Android shows "not implemented" error
+   - Multi-player is a key differentiator vs other game makers
+   - But: launch can succeed with iOS-only BLE (Android gets it later)
+
+2. **What's the effort?**
+   - Port `BLEPeripheralModule.swift` to Kotlin for Android
+   - Estimated: 3-5 days of native Android dev
+   - Testing: Need multiple Android devices
+
+3. **What's the alternative?**
+   - Launch iOS-only BLE, add "Coming Soon" badge on Android
+   - Defer to Phase 2 post-launch
+   - Focus on core game templates + credit system first
+
+#### Testing Required (Before Decision)
+- [ ] Verify iOS BLE works end-to-end (host + join)
+- [ ] Document exact Android error message
+- [ ] Assess user expectation: is "iOS only" acceptable?
+
+#### Options
+
+| Option | Pros | Cons |
+|--------|------|------|
+| A: Block launch until Android BLE | Feature parity, better UX | Delays launch 1-2 weeks |
+| B: Launch with iOS-only BLE | Faster to market, iOS is premium segment | Feature disparity, potential bad reviews |
+| C: Hide BLE until both platforms ready | No feature disparity | Loses unique social hook at launch |
+
+#### Decision Criteria
+- If >50% of target users are iOS → Option B viable
+- If multiplayer is THE killer feature → Option A required
+- If single-player reskinning is sufficient MVP → Option C safe
+
+#### Related Files
+- `app/lib/bluetooth/BLEPeripheralManager.ts`
+- `ios/slopcade/BLEPeripheralModule.swift`
+- Missing: `android/app/src/main/java/.../BLEPeripheralModule.kt`
+
+---
 
 ### ht-001: Implement AI Generation API Call
 

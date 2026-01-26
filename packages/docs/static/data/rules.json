@@ -1,0 +1,1262 @@
+{
+  "triggers": [
+    {
+      "type": "button",
+      "interfaceName": "ButtonTrigger",
+      "displayName": "Button",
+      "properties": [
+        {
+          "name": "button",
+          "type": "'left' | 'right' | 'up' | 'down' | 'jump' | 'action' | 'any'",
+          "required": true
+        },
+        {
+          "name": "state",
+          "type": "'pressed' | 'released' | 'held'",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "collision",
+      "interfaceName": "CollisionTrigger",
+      "displayName": "Collision",
+      "properties": [
+        {
+          "name": "entityATag",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "entityBTag",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "drag",
+      "interfaceName": "DragTrigger",
+      "displayName": "Drag",
+      "properties": [
+        {
+          "name": "phase",
+          "type": "'start' | 'move' | 'end'",
+          "required": true
+        },
+        {
+          "name": "target",
+          "type": "'screen' | 'self' | string",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "entity_count",
+      "interfaceName": "EntityCountTrigger",
+      "displayName": "Entity Count",
+      "properties": [
+        {
+          "name": "comparison",
+          "type": "'gte' | 'lte' | 'eq' | 'zero'",
+          "required": true
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "interfaceName": "EventTrigger",
+      "displayName": "Event",
+      "properties": [
+        {
+          "name": "eventName",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "interfaceName": "FrameTrigger",
+      "displayName": "Frame",
+      "properties": []
+    },
+    {
+      "type": "gameStart",
+      "interfaceName": "GameStartTrigger",
+      "displayName": "Game Start",
+      "properties": []
+    },
+    {
+      "type": "score",
+      "interfaceName": "ScoreTrigger",
+      "displayName": "Score",
+      "properties": [
+        {
+          "name": "comparison",
+          "type": "'gte' | 'lte' | 'eq'",
+          "required": true
+        },
+        {
+          "name": "threshold",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "swipe",
+      "interfaceName": "SwipeTrigger",
+      "displayName": "Swipe",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "'left' | 'right' | 'up' | 'down' | 'any'",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "tap",
+      "interfaceName": "TapTrigger",
+      "displayName": "Tap",
+      "properties": [
+        {
+          "name": "target",
+          "type": "'screen' | 'self' | string",
+          "required": false
+        },
+        {
+          "name": "xMax",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "xMaxPercent",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "xMin",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "xMinPercent",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "tilt",
+      "interfaceName": "TiltTrigger",
+      "displayName": "Tilt",
+      "properties": [
+        {
+          "name": "axis",
+          "type": "'x' | 'y' | 'both'",
+          "required": false
+        },
+        {
+          "name": "threshold",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "timer",
+      "interfaceName": "TimerTrigger",
+      "displayName": "Timer",
+      "properties": [
+        {
+          "name": "repeat",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "time",
+          "type": "number",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "conditions": [
+    {
+      "type": "cooldown_ready",
+      "interfaceName": "CooldownReadyCondition",
+      "displayName": "Cooldown Ready",
+      "properties": [
+        {
+          "name": "cooldownId",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "entity_count",
+      "interfaceName": "EntityCountCondition",
+      "displayName": "Entity Count",
+      "properties": [
+        {
+          "name": "max",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "min",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "entity_exists",
+      "interfaceName": "EntityExistsCondition",
+      "displayName": "Entity Exists",
+      "properties": [
+        {
+          "name": "entityId",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "entityTag",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "expression",
+      "interfaceName": "ExpressionCondition",
+      "displayName": "Expression",
+      "properties": [
+        {
+          "name": "expr",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "list_contains",
+      "interfaceName": "ListContainsCondition",
+      "displayName": "List Contains",
+      "properties": [
+        {
+          "name": "listName",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "negated",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "Value<number | string | boolean>",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "on_ground",
+      "interfaceName": "OnGroundCondition",
+      "displayName": "On Ground",
+      "properties": [
+        {
+          "name": "value",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "random",
+      "interfaceName": "RandomCondition",
+      "displayName": "Random",
+      "properties": [
+        {
+          "name": "probability",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "score",
+      "interfaceName": "ScoreCondition",
+      "displayName": "Score",
+      "properties": [
+        {
+          "name": "max",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "min",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "state",
+      "interfaceName": "StateCondition",
+      "displayName": "State",
+      "properties": [
+        {
+          "name": "machineId",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "negated",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "time",
+      "interfaceName": "TimeCondition",
+      "displayName": "Time",
+      "properties": [
+        {
+          "name": "max",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "min",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "touching",
+      "interfaceName": "TouchingCondition",
+      "displayName": "Touching",
+      "properties": [
+        {
+          "name": "negated",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "variable",
+      "interfaceName": "VariableCondition",
+      "displayName": "Variable",
+      "properties": [
+        {
+          "name": "comparison",
+          "type": "'eq' | 'gt' | 'lt' | 'gte' | 'lte' | 'neq'",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "number | string | boolean",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "velocity",
+      "interfaceName": "VelocityCondition",
+      "displayName": "Velocity",
+      "properties": [
+        {
+          "name": "axis",
+          "type": "'x' | 'y'",
+          "required": true
+        },
+        {
+          "name": "comparison",
+          "type": "'gt' | 'lt' | 'eq' | 'gte' | 'lte'",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "type": "apply_force",
+      "interfaceName": "ApplyForceAction",
+      "displayName": "Apply Force",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "'drag_direction' | 'tilt_direction' | 'toward_touch'",
+          "required": false
+        },
+        {
+          "name": "force",
+          "type": "Value<number>",
+          "required": false
+        },
+        {
+          "name": "target",
+          "type": "EntityTarget",
+          "required": true
+        },
+        {
+          "name": "x",
+          "type": "Value<number>",
+          "required": false
+        },
+        {
+          "name": "y",
+          "type": "Value<number>",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "apply_impulse",
+      "interfaceName": "ApplyImpulseAction",
+      "displayName": "Apply Impulse",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "'up' | 'down' | 'left' | 'right' | 'drag_direction' | 'tilt_direction' | 'toward_touch'",
+          "required": false
+        },
+        {
+          "name": "force",
+          "type": "Value<number>",
+          "required": false
+        },
+        {
+          "name": "sourceEntityId",
+          "type": "string",
+          "required": false,
+          "description": "Source entity whose position is used for toward_touch direction calculation"
+        },
+        {
+          "name": "target",
+          "type": "EntityTarget",
+          "required": true
+        },
+        {
+          "name": "x",
+          "type": "Value<number>",
+          "required": false
+        },
+        {
+          "name": "y",
+          "type": "Value<number>",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "camera_shake",
+      "interfaceName": "CameraShakeAction",
+      "displayName": "Camera Shake",
+      "properties": [
+        {
+          "name": "duration",
+          "type": "Value<number>",
+          "required": true
+        },
+        {
+          "name": "intensity",
+          "type": "Value<number>",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "camera_zoom",
+      "interfaceName": "CameraZoomAction",
+      "displayName": "Camera Zoom",
+      "properties": [
+        {
+          "name": "duration",
+          "type": "Value<number>",
+          "required": true
+        },
+        {
+          "name": "focusTag",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "restoreDelay",
+          "type": "Value<number>",
+          "required": false
+        },
+        {
+          "name": "scale",
+          "type": "Value<number>",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "checkpoint_activate",
+      "interfaceName": "ActivateCheckpointAction",
+      "displayName": "Activate Checkpoint",
+      "properties": [
+        {
+          "name": "checkpointId",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "checkpoint_restore",
+      "interfaceName": "RestoreCheckpointAction",
+      "displayName": "Restore Checkpoint",
+      "properties": []
+    },
+    {
+      "type": "checkpoint_save",
+      "interfaceName": "SaveCheckpointAction",
+      "displayName": "Save Checkpoint",
+      "properties": []
+    },
+    {
+      "type": "combo_increment",
+      "interfaceName": "ComboIncrementAction",
+      "displayName": "Combo Increment",
+      "properties": [
+        {
+          "name": "amount",
+          "type": "Value<number>",
+          "required": false
+        },
+        {
+          "name": "comboId",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "combo_reset",
+      "interfaceName": "ComboResetAction",
+      "displayName": "Combo Reset",
+      "properties": [
+        {
+          "name": "comboId",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "destroy",
+      "interfaceName": "DestroyAction",
+      "displayName": "Destroy",
+      "properties": [
+        {
+          "name": "target",
+          "type": "DestroyTarget",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "destroy_marked",
+      "interfaceName": "DestroyMarkedAction",
+      "displayName": "Destroy Marked",
+      "properties": [
+        {
+          "name": "tag",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "interfaceName": "EventAction",
+      "displayName": "Event",
+      "properties": [
+        {
+          "name": "data",
+          "type": "Record<string, unknown>",
+          "required": false
+        },
+        {
+          "name": "eventName",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "game_state",
+      "interfaceName": "GameStateAction",
+      "displayName": "Game State",
+      "properties": [
+        {
+          "name": "delay",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "state",
+          "type": "'win' | 'lose' | 'pause' | 'restart' | 'next_level'",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "grid_move",
+      "interfaceName": "GridMoveAction",
+      "displayName": "Grid Move",
+      "properties": [
+        {
+          "name": "animate",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "duration",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "entityId",
+          "type": "string | EntityTarget",
+          "required": true
+        },
+        {
+          "name": "gridId",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "toCol",
+          "type": "Value<number>",
+          "required": true
+        },
+        {
+          "name": "toRow",
+          "type": "Value<number>",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "grid_place",
+      "interfaceName": "GridPlaceAction",
+      "displayName": "Grid Place",
+      "properties": [
+        {
+          "name": "col",
+          "type": "Value<number>",
+          "required": true
+        },
+        {
+          "name": "entityId",
+          "type": "string | EntityTarget",
+          "required": true
+        },
+        {
+          "name": "gridId",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "row",
+          "type": "Value<number>",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "inventory_add",
+      "interfaceName": "InventoryAddAction",
+      "displayName": "Inventory Add",
+      "properties": [
+        {
+          "name": "count",
+          "type": "Value<number>",
+          "required": false
+        },
+        {
+          "name": "data",
+          "type": "Record<string, unknown>",
+          "required": false
+        },
+        {
+          "name": "inventoryId",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "itemId",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "inventory_remove",
+      "interfaceName": "InventoryRemoveAction",
+      "displayName": "Inventory Remove",
+      "properties": [
+        {
+          "name": "count",
+          "type": "Value<number>",
+          "required": false
+        },
+        {
+          "name": "inventoryId",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "itemId",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "lives",
+      "interfaceName": "LivesAction",
+      "displayName": "Lives",
+      "properties": [
+        {
+          "name": "operation",
+          "type": "'add' | 'subtract' | 'set'",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "modify",
+      "interfaceName": "ModifyAction",
+      "displayName": "Modify",
+      "properties": [
+        {
+          "name": "operation",
+          "type": "'set' | 'add' | 'multiply'",
+          "required": true
+        },
+        {
+          "name": "property",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "target",
+          "type": "{ type: 'by_id'; entityId: string } | { type: 'by_tag'; tag: string }",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "Value<number>",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "move",
+      "interfaceName": "MoveAction",
+      "displayName": "Move",
+      "properties": [
+        {
+          "name": "direction",
+          "type": "'left' | 'right' | 'up' | 'down' | 'tilt_direction' | 'toward_touch' | 'toward_touch_x' | 'toward_touch_y' | 'toward_mouse_x'",
+          "required": true
+        },
+        {
+          "name": "speed",
+          "type": "Value<number>",
+          "required": true
+        },
+        {
+          "name": "target",
+          "type": "EntityTarget",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "move_toward",
+      "interfaceName": "MoveTowardAction",
+      "displayName": "Move Toward",
+      "properties": [
+        {
+          "name": "axis",
+          "type": "'x' | 'y' | 'both'",
+          "required": false
+        },
+        {
+          "name": "maxSpeed",
+          "type": "Value<number>",
+          "required": false
+        },
+        {
+          "name": "speed",
+          "type": "Value<number>",
+          "required": true
+        },
+        {
+          "name": "target",
+          "type": "EntityTarget",
+          "required": true
+        },
+        {
+          "name": "towardEntity",
+          "type": "EntityTarget",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "path_start",
+      "interfaceName": "PathStartAction",
+      "displayName": "Path Start",
+      "properties": [
+        {
+          "name": "facing",
+          "type": "'forward' | 'backward' | 'none'",
+          "required": false
+        },
+        {
+          "name": "pathId",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "speed",
+          "type": "Value<number>",
+          "required": true
+        },
+        {
+          "name": "startProgress",
+          "type": "Value<number>",
+          "required": false
+        },
+        {
+          "name": "target",
+          "type": "EntityTarget",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "path_stop",
+      "interfaceName": "PathStopAction",
+      "displayName": "Path Stop",
+      "properties": [
+        {
+          "name": "target",
+          "type": "EntityTarget",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "pop_from_list",
+      "interfaceName": "PopFromListAction",
+      "displayName": "Pop From List",
+      "properties": [
+        {
+          "name": "listName",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "position",
+          "type": "'front' | 'back'",
+          "required": false
+        },
+        {
+          "name": "storeIn",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "progression_add_xp",
+      "interfaceName": "AddXPAction",
+      "displayName": "Add XP",
+      "properties": [
+        {
+          "name": "amount",
+          "type": "Value<number>",
+          "required": true
+        },
+        {
+          "name": "progressionId",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "progression_unlock",
+      "interfaceName": "UnlockAction",
+      "displayName": "Unlock",
+      "properties": [
+        {
+          "name": "unlockId",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "push_to_list",
+      "interfaceName": "PushToListAction",
+      "displayName": "Push To List",
+      "properties": [
+        {
+          "name": "listName",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "Value<number | string | boolean>",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "resource_modify",
+      "interfaceName": "ResourceModifyAction",
+      "displayName": "Resource Modify",
+      "properties": [
+        {
+          "name": "operation",
+          "type": "'add' | 'subtract' | 'set' | 'fill' | 'drain'",
+          "required": true
+        },
+        {
+          "name": "resourceId",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "Value<number>",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "score",
+      "interfaceName": "ScoreAction",
+      "displayName": "Score",
+      "properties": [
+        {
+          "name": "operation",
+          "type": "'add' | 'subtract' | 'set' | 'multiply'",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "set_entity_size",
+      "interfaceName": "SetEntitySizeAction",
+      "displayName": "Set Entity Size",
+      "properties": [
+        {
+          "name": "duration",
+          "type": "Value<number>",
+          "required": false
+        },
+        {
+          "name": "easing",
+          "type": "'linear' | 'ease-in' | 'ease-out' | 'ease-in-out'",
+          "required": false
+        },
+        {
+          "name": "height",
+          "type": "Value<number>",
+          "required": false
+        },
+        {
+          "name": "radius",
+          "type": "Value<number>",
+          "required": false
+        },
+        {
+          "name": "scale",
+          "type": "Value<number>",
+          "required": false
+        },
+        {
+          "name": "target",
+          "type": "EntitySizeTarget",
+          "required": true
+        },
+        {
+          "name": "width",
+          "type": "Value<number>",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "set_time_scale",
+      "interfaceName": "SetTimeScaleAction",
+      "displayName": "Set Time Scale",
+      "properties": [
+        {
+          "name": "duration",
+          "type": "Value<number>",
+          "required": false
+        },
+        {
+          "name": "scale",
+          "type": "Value<number>",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "set_variable",
+      "interfaceName": "SetVariableAction",
+      "displayName": "Set Variable",
+      "properties": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "operation",
+          "type": "'set' | 'add' | 'subtract' | 'multiply' | 'toggle'",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "Value<number | string | boolean>",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "set_velocity",
+      "interfaceName": "SetVelocityAction",
+      "displayName": "Set Velocity",
+      "properties": [
+        {
+          "name": "target",
+          "type": "EntityTarget",
+          "required": true
+        },
+        {
+          "name": "x",
+          "type": "Value<number>",
+          "required": false
+        },
+        {
+          "name": "y",
+          "type": "Value<number>",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "shuffle_list",
+      "interfaceName": "ShuffleListAction",
+      "displayName": "Shuffle List",
+      "properties": [
+        {
+          "name": "listName",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "sound",
+      "interfaceName": "SoundAction",
+      "displayName": "Sound",
+      "properties": [
+        {
+          "name": "soundId",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "volume",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "spawn",
+      "interfaceName": "SpawnAction",
+      "displayName": "Spawn",
+      "properties": [
+        {
+          "name": "count",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "position",
+          "type": "SpawnPosition",
+          "required": true
+        },
+        {
+          "name": "spread",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "template",
+          "type": "string | string[]",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "start_cooldown",
+      "interfaceName": "StartCooldownAction",
+      "displayName": "Start Cooldown",
+      "properties": [
+        {
+          "name": "cooldownId",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "duration",
+          "type": "Value<number>",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "state_transition",
+      "interfaceName": "StateTransitionAction",
+      "displayName": "State Transition",
+      "properties": [
+        {
+          "name": "force",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "machineId",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "toState",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "target_nearest",
+      "interfaceName": "TargetNearestAction",
+      "displayName": "Target Nearest",
+      "properties": [
+        {
+          "name": "maxRadius",
+          "type": "Value<number>",
+          "required": false
+        },
+        {
+          "name": "source",
+          "type": "EntityTarget",
+          "required": true
+        },
+        {
+          "name": "storeIn",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "targetTags",
+          "type": "string[]",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "waves_next",
+      "interfaceName": "WavesNextAction",
+      "displayName": "Waves Next",
+      "properties": [
+        {
+          "name": "waveDefId",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "waves_start",
+      "interfaceName": "WavesStartAction",
+      "displayName": "Waves Start",
+      "properties": [
+        {
+          "name": "waveDefId",
+          "type": "string",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

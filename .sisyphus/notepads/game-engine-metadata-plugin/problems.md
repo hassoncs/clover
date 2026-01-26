@@ -1,0 +1,1 @@
+- Test games directory currently contains 23 `game.ts` files; earlier expectations referenced 22. Decide whether docs should list all 23 or filter to the generated registry list (currently 19).

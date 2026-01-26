@@ -11,6 +11,8 @@ import {
 } from '../../ai/assets';
 import { migrateAssetPacks, rollbackMigration } from '../../migrations/migrate-asset-packs';
 import { isLegacyUrl } from '@slopcade/shared';
+import { WalletService, InsufficientBalanceError } from '../../economy/wallet-service';
+import { RATE_LIMITS, microsToSparks, USER_COSTS } from '../../economy/pricing';
 
 // Log level utility for production-safe debugging
 const LOG_LEVEL = process.env.LOG_LEVEL || 'INFO';
@@ -529,11 +531,58 @@ export const assetSystemRouter = router({
       })).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
+      const walletService = new WalletService(ctx.env.DB);
+
+      const allowed = await walletService.checkRateLimit(
+        ctx.user.id,
+        'generation',
+        RATE_LIMITS.GENERATIONS_PER_HOUR,
+        60 * 60 * 1000
+      );
+      if (!allowed) {
+        throw new TRPCError({
+          code: 'TOO_MANY_REQUESTS',
+          message: `Rate limit exceeded. Max ${RATE_LIMITS.GENERATIONS_PER_HOUR} generations per hour.`,
+        });
+      }
+
+      const estimatedCostMicros = input.templateIds.length * USER_COSTS.ASSET_ENTITY;
+      const jobId = crypto.randomUUID();
+
+      try {
+        await walletService.debit({
+          userId: ctx.user.id,
+          type: 'generation_debit',
+          amountMicros: -estimatedCostMicros,
+          referenceType: 'generation_job',
+          referenceId: jobId,
+          idempotencyKey: `gen_debit_${jobId}`,
+          description: `Asset generation for ${input.templateIds.length} templates`,
+        });
+      } catch (err) {
+        if (err instanceof InsufficientBalanceError) {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: `Insufficient balance. Need ${microsToSparks(estimatedCostMicros)} Sparks.`,
+          });
+        }
+        throw err;
+      }
+
       const gameRow = await ctx.env.DB.prepare(
         'SELECT definition FROM games WHERE id = ? AND deleted_at IS NULL'
       ).bind(input.gameId).first<{ definition: string }>();
 
       if (!gameRow) {
+        await walletService.credit({
+          userId: ctx.user.id,
+          type: 'generation_refund',
+          amountMicros: estimatedCostMicros,
+          referenceType: 'generation_job',
+          referenceId: jobId,
+          idempotencyKey: `gen_refund_${jobId}`,
+          description: `Refund: game not found`,
+        });
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
       }
 
@@ -541,93 +590,114 @@ export const assetSystemRouter = router({
       try {
         definition = JSON.parse(gameRow.definition);
       } catch {
+        await walletService.credit({
+          userId: ctx.user.id,
+          type: 'generation_refund',
+          amountMicros: estimatedCostMicros,
+          referenceType: 'generation_job',
+          referenceId: jobId,
+          idempotencyKey: `gen_refund_${jobId}`,
+          description: `Refund: invalid game definition`,
+        });
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Invalid game definition' });
       }
 
-      const jobId = crypto.randomUUID();
       const now = Date.now();
 
-      await ctx.env.DB.prepare(
-        `INSERT INTO generation_jobs (id, game_id, pack_id, status, prompt_defaults_json, created_at)
-         VALUES (?, ?, ?, 'queued', ?, ?)`
-      ).bind(jobId, input.gameId, input.packId ?? null, JSON.stringify(input.promptDefaults), now).run();
-
-      for (const templateId of input.templateIds) {
-        const template = definition.templates?.[templateId];
-        const physics = template?.physics;
-        const tags = template?.tags ?? [];
-
-        let entityType: EntityType = 'item';
-        if (tags.includes('player') || tags.includes('character')) entityType = 'character';
-        else if (tags.includes('enemy')) entityType = 'enemy';
-        else if (tags.includes('platform') || tags.includes('wall') || tags.includes('ground')) entityType = 'platform';
-        else if (tags.includes('background')) entityType = 'background';
-        else if (tags.includes('ui')) entityType = 'ui';
-
-        const physicsContext = physics ? {
-          shape: physics.shape,
-          width: physics.width,
-          height: physics.height,
-          radius: physics.radius,
-        } : { shape: 'box' as const, width: 1, height: 1 };
-
-        const dimensions = getTargetDimensions(
-          physicsContext.shape,
-          physicsContext.width,
-          physicsContext.height,
-          physicsContext.radius
-        );
-
-        const overrides = input.templateOverrides?.[templateId];
-        const styleOverride = (overrides?.styleOverride ?? input.promptDefaults.styleOverride ?? 'pixel') as SpriteStyle;
-
-        const compiledPrompt = buildStructuredPrompt({
-          templateId,
-          physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
-          physicsWidth: physicsContext.width,
-          physicsHeight: physicsContext.height,
-          physicsRadius: physicsContext.radius,
-          entityType,
-          themePrompt: input.promptDefaults.themePrompt,
-          style: styleOverride,
-          targetWidth: dimensions.width,
-          targetHeight: dimensions.height,
-        });
-
-        const compiledNegativePrompt = buildStructuredNegativePrompt(styleOverride);
-
-        const promptComponents = {
-          themePrompt: input.promptDefaults.themePrompt,
-          templateId,
-          entityType,
-          styleOverride,
-          physicsShape: physicsContext.shape,
-          physicsWidth: physicsContext.width,
-          physicsHeight: physicsContext.height,
-        };
-
-        const taskId = crypto.randomUUID();
-
+      try {
         await ctx.env.DB.prepare(
-          `INSERT INTO generation_tasks (id, job_id, template_id, status, prompt_components_json, compiled_prompt, compiled_negative_prompt, model_id, target_width, target_height, aspect_ratio, physics_context_json, created_at)
-           VALUES (?, ?, ?, 'queued', ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-        ).bind(
-          taskId,
-          jobId,
-          templateId,
-          JSON.stringify(promptComponents),
-          compiledPrompt,
-          compiledNegativePrompt,
-          input.promptDefaults.modelId ?? null,
-          dimensions.width,
-          dimensions.height,
-          dimensions.aspectRatio,
-          JSON.stringify(physicsContext),
-          now
-        ).run();
-      }
+          `INSERT INTO generation_jobs (id, game_id, pack_id, status, prompt_defaults_json, created_at)
+           VALUES (?, ?, ?, 'queued', ?, ?)`
+        ).bind(jobId, input.gameId, input.packId ?? null, JSON.stringify(input.promptDefaults), now).run();
 
-      return { jobId, taskCount: input.templateIds.length };
+        for (const templateId of input.templateIds) {
+          const template = definition.templates?.[templateId];
+          const physics = template?.physics;
+          const tags = template?.tags ?? [];
+
+          let entityType: EntityType = 'item';
+          if (tags.includes('player') || tags.includes('character')) entityType = 'character';
+          else if (tags.includes('enemy')) entityType = 'enemy';
+          else if (tags.includes('platform') || tags.includes('wall') || tags.includes('ground')) entityType = 'platform';
+          else if (tags.includes('background')) entityType = 'background';
+          else if (tags.includes('ui')) entityType = 'ui';
+
+          const physicsContext = physics ? {
+            shape: physics.shape,
+            width: physics.width,
+            height: physics.height,
+            radius: physics.radius,
+          } : { shape: 'box' as const, width: 1, height: 1 };
+
+          const dimensions = getTargetDimensions(
+            physicsContext.shape,
+            physicsContext.width,
+            physicsContext.height,
+            physicsContext.radius
+          );
+
+          const overrides = input.templateOverrides?.[templateId];
+          const styleOverride = (overrides?.styleOverride ?? input.promptDefaults.styleOverride ?? 'pixel') as SpriteStyle;
+
+          const compiledPrompt = buildStructuredPrompt({
+            templateId,
+            physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
+            physicsWidth: physicsContext.width,
+            physicsHeight: physicsContext.height,
+            physicsRadius: physicsContext.radius,
+            entityType,
+            themePrompt: input.promptDefaults.themePrompt,
+            style: styleOverride,
+            targetWidth: dimensions.width,
+            targetHeight: dimensions.height,
+          });
+
+          const compiledNegativePrompt = buildStructuredNegativePrompt(styleOverride);
+
+          const promptComponents = {
+            themePrompt: input.promptDefaults.themePrompt,
+            templateId,
+            entityType,
+            styleOverride,
+            physicsShape: physicsContext.shape,
+            physicsWidth: physicsContext.width,
+            physicsHeight: physicsContext.height,
+          };
+
+          const taskId = crypto.randomUUID();
+
+          await ctx.env.DB.prepare(
+            `INSERT INTO generation_tasks (id, job_id, template_id, status, prompt_components_json, compiled_prompt, compiled_negative_prompt, model_id, target_width, target_height, aspect_ratio, physics_context_json, created_at)
+             VALUES (?, ?, ?, 'queued', ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          ).bind(
+            taskId,
+            jobId,
+            templateId,
+            JSON.stringify(promptComponents),
+            compiledPrompt,
+            compiledNegativePrompt,
+            input.promptDefaults.modelId ?? null,
+            dimensions.width,
+            dimensions.height,
+            dimensions.aspectRatio,
+            JSON.stringify(physicsContext),
+            now
+          ).run();
+        }
+
+        return { jobId, taskCount: input.templateIds.length };
+      } catch (jobCreationError) {
+        await walletService.credit({
+          userId: ctx.user.id,
+          type: 'generation_refund',
+          amountMicros: estimatedCostMicros,
+          referenceType: 'generation_job',
+          referenceId: jobId,
+          idempotencyKey: `gen_refund_${jobId}`,
+          description: `Refund: job creation failed`,
+        });
+        throw jobCreationError;
+      }
     }),
 
   processGenerationJob: protectedProcedure
@@ -722,11 +792,18 @@ export const assetSystemRouter = router({
                VALUES (?, ?, 'generated', ?, ?, ?, ?)`
             ).bind(assetId, jobRow.game_id, result.r2Key, task.target_width, task.target_height, assetNow).run();
 
-             await ctx.env.DB.prepare(
-               `UPDATE generation_tasks SET status = 'succeeded', asset_id = ?, finished_at = ? WHERE id = ?`
-             ).bind(assetId, Date.now(), task.id).run();
+              await ctx.env.DB.prepare(
+                `UPDATE generation_tasks SET status = 'succeeded', asset_id = ?, finished_at = ? WHERE id = ?`
+              ).bind(assetId, Date.now(), task.id).run();
 
-             jobLog('INFO', input.jobId, task.id, `Task succeeded - Asset: ${assetId}`);
+              const costId = crypto.randomUUID();
+              const costMicros = USER_COSTS.ASSET_ENTITY;
+              await ctx.env.DB.prepare(
+                `INSERT INTO operation_costs (id, user_id, operation_type, estimated_cost_micros, charged_cost_micros, reference_type, reference_id, created_at)
+                 VALUES (?, ?, 'scenario_txt2img', ?, ?, 'generation_task', ?, ?)`
+              ).bind(costId, ctx.user.id, costMicros, costMicros, task.id, assetNow).run();
+
+              jobLog('INFO', input.jobId, task.id, `Task succeeded - Asset: ${assetId}`);
 
              if (jobRow.pack_id) {
               const entryId = crypto.randomUUID();

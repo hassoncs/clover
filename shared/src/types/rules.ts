@@ -181,6 +181,13 @@ export interface ExpressionCondition {
   expr: string;
 }
 
+export interface StateCondition {
+  type: 'state';
+  machineId: string;      // ID of the state machine
+  state: string;          // State to check for
+  negated?: boolean;      // If true, condition passes when NOT in this state
+}
+
 export type RuleCondition =
   | ScoreCondition
   | TimeCondition
@@ -193,7 +200,8 @@ export type RuleCondition =
   | CooldownReadyCondition
   | VariableCondition
   | ListContainsCondition
-  | ExpressionCondition;
+  | ExpressionCondition
+  | StateCondition;
 
 export type SpawnPositionType = 'fixed' | 'random' | 'at_entity' | 'at_collision';
 

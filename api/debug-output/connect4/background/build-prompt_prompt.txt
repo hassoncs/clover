@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+A magical deep ocean underwater scene for a Connect 4 game. Deep blue gradient water with shafts of light filtering from above. Colorful coral reef formations in the foreground corners. Bioluminescent jellyfish and small fish swimming in the background. Gentle bubbles rising throughout. Distant silhouettes of underwater mountains and kelp forests. Mysterious and enchanting deep sea atmosphere with rich blues, teals, and purple accents. No text, no characters, just the environment. High quality game background.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

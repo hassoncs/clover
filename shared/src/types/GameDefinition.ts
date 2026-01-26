@@ -4,6 +4,7 @@ import type { GameRule, WinCondition, LoseCondition } from './rules';
 import type { TileSheet, TileMap } from './tilemap';
 import type { AssetSystemConfig } from './asset-system';
 import type { Value, ExpressionValueType } from '../expressions/types';
+import type { StateMachineDefinition } from '../systems/state-machine/types';
 
 export interface WorldConfig {
   gravity: Vec2;
@@ -213,6 +214,70 @@ export type GameJoint = GameRevoluteJoint | GameDistanceJoint | GameWeldJoint | 
 
 export type GameVariableValue = number | boolean | string | Vec2 | Value<ExpressionValueType>;
 
+/**
+ * Variable with tuning metadata for live editing
+ */
+export interface VariableWithTuning {
+  /** Current/default value */
+  value: GameVariableValue;
+  
+  /** Tuning configuration for dev UI (optional) */
+  tuning?: {
+    min: number;
+    max: number;
+    step: number;
+  };
+  
+  /** Category for grouping in UI (optional) */
+  category?: 'physics' | 'gameplay' | 'visuals' | 'economy' | 'ai';
+  
+  /** Human-readable label (optional) */
+  label?: string;
+  
+  /** Tooltip description (optional) */
+  description?: string;
+  
+  /** Show to player in HUD (optional) */
+  display?: boolean;
+}
+
+/**
+ * Union type: either simple value or rich object with metadata
+ */
+export type GameVariable = GameVariableValue | VariableWithTuning;
+
+/**
+ * Type guard for variables with tuning metadata
+ */
+export function isVariableWithTuning(v: GameVariable): v is VariableWithTuning {
+  return typeof v === 'object' && v !== null && 'value' in v && !('x' in v) && !('expr' in v);
+}
+
+/**
+ * Check if a variable has tuning metadata
+ */
+export function isTunable(v: GameVariable): boolean {
+  return isVariableWithTuning(v) && v.tuning !== undefined;
+}
+
+/**
+ * Get the actual value from a GameVariable (handles both formats)
+ */
+export function getValue(v: GameVariable): GameVariableValue {
+  return isVariableWithTuning(v) ? v.value : v;
+}
+
+/**
+ * Get label for a variable (auto-generates from key if not provided)
+ */
+export function getLabel(key: string, v: GameVariable): string {
+  if (isVariableWithTuning(v) && v.label) {
+    return v.label;
+  }
+  // Auto-generate label from key: "jumpForce" → "Jump Force"
+  return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
+}
+
 export interface MultiplayerConfig {
   enabled: boolean;
   maxPlayers: number;
@@ -336,7 +401,7 @@ export interface GameDefinition {
   camera?: CameraConfig;
   ui?: UIConfig;
   background?: BackgroundConfig;
-  variables?: Record<string, GameVariableValue>;
+  variables?: Record<string, GameVariable>;
   templates: Record<string, EntityTemplate>;
   entities: GameEntity[];
   joints?: GameJoint[];
@@ -358,6 +423,11 @@ export interface GameDefinition {
   input?: InputConfig;
   match3?: Match3Config;
   tetris?: TetrisConfig;
+  /**
+   * Game-level state machines for managing game phases, turns, and flow.
+   * Unlike entity-level machines, these have no `owner` field set.
+   */
+  stateMachines?: StateMachineDefinition[];
 }
 
 export const DEFAULT_WORLD_CONFIG: WorldConfig = {

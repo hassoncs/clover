@@ -7,5 +7,8 @@ export default defineWorkersConfig({
         wrangler: { configPath: './wrangler.toml' },
       },
     },
+    resolveNodeCompatibilityIssues: {
+      enabled: true,
+    },
   },
 });

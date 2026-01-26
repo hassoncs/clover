@@ -1,0 +1,3 @@
+- Plugin metadata extraction works best when driven by discriminated unions (e.g. `Behavior`, `RuleTrigger`, `RuleCondition`, `RuleAction`) and literal-structure evaluation for metadata constants.
+- Docusaurus local plugins resolve more reliably when configured with an explicit entry file path (e.g. `path.resolve(__dirname, 'plugins/.../index.ts')`).
+- For fast dev UX, only write JSON when content changes to avoid unnecessary hot reloads.

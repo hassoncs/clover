@@ -18,6 +18,33 @@ export const DEFAULT_TRANSFORM: TransformComponent = {
   scaleY: 1,
 };
 
+/**
+ * Definition for a child entity nested within a parent
+ */
+export interface ChildEntityDefinition {
+  /** Optional - auto-generated as {parentId}_{name} if omitted */
+  id?: string;
+  /** Name of the child entity */
+  name: string;
+  /** Template to instantiate */
+  template: string;
+  /** Transform relative to parent */
+  localTransform: TransformComponent;
+  /** Reference to parent's slot for coordinates (optional) */
+  slot?: string;
+  
+  /** Optional overrides */
+  sprite?: Partial<SpriteComponent>;
+  physics?: Partial<PhysicsComponent>;
+  behaviors?: Behavior[];
+  tags?: string[];
+  visible?: boolean;
+  assetPackId?: string;
+  
+  /** Recursive nesting */
+  children?: ChildEntityDefinition[];
+}
+
 export interface GameEntity {
   id: string;
   name: string;
@@ -33,12 +60,37 @@ export interface GameEntity {
   visible?: boolean;
   active?: boolean;
   assetPackId?: string;
+  /** Nested child entities */
+  children?: ChildEntityDefinition[];
 }
 
 export interface SlotDefinition {
   x: number;
   y: number;
   layer?: number;
+}
+
+/**
+ * Definition for a child entity within a template (prefab pattern)
+ */
+export interface ChildTemplateDefinition {
+  /** Name of the child */
+  name: string;
+  /** Template to instantiate */
+  template: string;
+  /** Transform relative to parent */
+  localTransform: TransformComponent;
+  /** Reference to parent's slot for coordinates (optional) */
+  slot?: string;
+  
+  /** Optional overrides */
+  sprite?: Partial<SpriteComponent>;
+  physics?: Partial<PhysicsComponent>;
+  behaviors?: Behavior[];
+  tags?: string[];
+  
+  /** Recursive nesting */
+  children?: ChildTemplateDefinition[];
 }
 
 export interface EntityTemplate {
@@ -53,4 +105,6 @@ export interface EntityTemplate {
   tags?: string[];
   layer?: number;
   slots?: Record<string, SlotDefinition>;
+  /** Template-level children (part of prefab) */
+  children?: ChildTemplateDefinition[];
 }

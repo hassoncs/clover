@@ -6,6 +6,9 @@ import {
   NonNegativeNumberValueSchema,
   Vec2ValueSchema,
   GameVariablesSchema,
+  TuningConfigSchema,
+  VariableCategorySchema,
+  VariableWithTuningSchema,
 } from '../expressions/schema-helpers';
 import { AssetSystemConfigSchema, AssetSourceSchema } from './asset-system';
 
@@ -459,6 +462,37 @@ export const SlotDefinitionSchema = z.object({
   layer: z.number().optional(),
 });
 
+export const ChildEntityDefinitionSchema: z.ZodType<any> = z.lazy(() =>
+  z.object({
+    id: z.string().optional(),
+    name: z.string(),
+    template: z.string(),
+    localTransform: TransformComponentSchema,
+    slot: z.string().optional(),
+    sprite: SpriteComponentSchema.optional(),
+    physics: PhysicsComponentSchema.optional(),
+    behaviors: z.array(BehaviorSchema).optional(),
+    tags: z.array(z.string()).optional(),
+    visible: z.boolean().optional(),
+    assetPackId: z.string().optional(),
+    children: z.array(ChildEntityDefinitionSchema).optional(),
+  })
+);
+
+export const ChildTemplateDefinitionSchema: z.ZodType<any> = z.lazy(() =>
+  z.object({
+    name: z.string(),
+    template: z.string(),
+    localTransform: TransformComponentSchema,
+    slot: z.string().optional(),
+    sprite: SpriteComponentSchema.optional(),
+    physics: PhysicsComponentSchema.optional(),
+    behaviors: z.array(BehaviorSchema).optional(),
+    tags: z.array(z.string()).optional(),
+    children: z.array(ChildTemplateDefinitionSchema).optional(),
+  })
+);
+
 export const EntityTemplateSchema = z.object({
   id: z.string(),
   sprite: SpriteComponentSchema.optional(),
@@ -467,6 +501,7 @@ export const EntityTemplateSchema = z.object({
   tags: z.array(z.string()).optional(),
   layer: z.number().optional(),
   slots: z.record(z.string(), SlotDefinitionSchema).optional(),
+  children: z.array(ChildTemplateDefinitionSchema).optional(),
 });
 
 export const GameEntitySchema = z.object({
@@ -482,6 +517,7 @@ export const GameEntitySchema = z.object({
   visible: z.boolean().optional(),
   active: z.boolean().optional(),
   assetPackId: z.string().optional(),
+  children: z.array(ChildEntityDefinitionSchema).optional(),
 });
 
 export const WorldConfigSchema = z.object({
@@ -918,3 +954,5 @@ export const GameDefinitionSchema = z.object({
 });
 
 export type GameDefinitionInput = z.infer<typeof GameDefinitionSchema>;
+
+export { TuningConfigSchema, VariableCategorySchema, VariableWithTuningSchema } from '../expressions/schema-helpers';

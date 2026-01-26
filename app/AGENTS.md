@@ -22,6 +22,7 @@
 ```bash
 # Start development servers (DevMux managed)
 pnpm dev              # Starts Metro (port 8085) + API (port 8789) + Godot Watcher
+pnpm docs             # Starts Documentation site (port 3000)
 pnpm storybook        # Starts Storybook (port 6006)
 pnpm svc:status       # Check service status
 
@@ -34,6 +35,11 @@ pnpm build            # Build all packages
 pnpm test             # Run tests
 pnpm tsc --noEmit     # Type check
 
+# Documentation
+pnpm docs             # Start docs site with auto-updating TypeScript
+pnpm docs:build       # Build docs for production
+pnpm docs:typedoc     # Regenerate TypeDoc API reference
+
 # Registry (auto-discovered modules)
 pnpm generate:registry        # Regenerate module registry
 pnpm generate:registry:watch  # Watch mode
@@ -43,6 +49,16 @@ pnpm generate:registry:watch  # Watch mode
 
 ## Documentation
 
+### Interactive Documentation Site
+Start with `pnpm docs` to access the auto-updating documentation site at http://localhost:3000:
+- **5 Interactive Pages**: Behaviors, Effects, Particles, Rules, Examples
+- **7 Comprehensive Guides**: Setup, testing, asset generation, and more
+- **TypeDoc API Reference**: Full TypeScript API documentation
+- **Auto-Updates**: Changes to TypeScript files update in < 3 seconds
+
+See [packages/docs/README.md](../packages/docs/README.md) for detailed documentation system guide.
+
+### Static Documentation
 All documentation lives in `docs/` with a component-first structure:
 
 | Index | Description |

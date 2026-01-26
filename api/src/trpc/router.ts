@@ -5,6 +5,7 @@ import { assetsRouter } from './routes/assets';
 import { tilesRouter } from './routes/tiles';
 import { assetSystemRouter } from './routes/asset-system';
 import { uiComponentsRouter } from './routes/ui-components';
+import { economyRouter } from './routes/economy';
 
 export const appRouter = router({
   games: gamesRouter,
@@ -13,6 +14,7 @@ export const appRouter = router({
   tiles: tilesRouter,
   assetSystem: assetSystemRouter,
   uiComponents: uiComponentsRouter,
+  economy: economyRouter,
 
   health: publicProcedure.query(() => ({
     status: 'ok',

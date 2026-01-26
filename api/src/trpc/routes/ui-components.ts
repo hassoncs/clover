@@ -3,8 +3,6 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import type { UIComponentSheetSpec, AssetRun } from '../../ai/pipeline/types';
 import { getControlConfig } from '../../ai/pipeline/ui-control-config';
-import { createNodeAdapters, createFileDebugSink } from '../../ai/pipeline/adapters/node';
-import { uiBaseStateStage, uiVariationStatesStage, uiUploadR2Stage } from '../../ai/pipeline/stages/ui-component';
 
 const componentTypeSchema = z.enum(['button', 'checkbox', 'radio', 'slider', 'panel', 'progress_bar', 'scroll_bar_h', 'scroll_bar_v', 'tab_bar', 'list_item', 'dropdown', 'toggle_switch']);
 const stateSchema = z.enum(['normal', 'hover', 'pressed', 'disabled', 'focus', 'selected', 'unselected']);
@@ -154,6 +152,9 @@ export const uiComponentsRouter = router({
       outputDir: z.string().optional(),
     }))
     .mutation(async ({ input, ctx }) => {
+      const { createNodeAdapters, createFileDebugSink } = await import('../../ai/pipeline/adapters/node');
+      const { uiBaseStateStage, uiVariationStatesStage, uiUploadR2Stage } = await import('../../ai/pipeline/stages/ui-component');
+
       const gameRow = await ctx.env.DB.prepare(
         'SELECT id, base_game_id FROM games WHERE id = ? AND deleted_at IS NULL'
       ).bind(input.gameId).first<{ id: string; base_game_id: string | null }>();

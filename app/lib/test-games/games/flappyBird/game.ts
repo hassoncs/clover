@@ -16,18 +16,10 @@ const cy = (y: number) => HALF_H - y;
 const BIRD_RADIUS = 0.3;
 const PIPE_WIDTH = 1.2;
 const PIPE_HEIGHT = 6;
-const PIPE_GAP = 3.5;
-const PIPE_SPEED = 3;
+const PIPE_GAP = 3.0;
+const PIPE_SPEED = 15;
 const GROUND_HEIGHT = 1.5;
 const SPAWN_X = cx(WORLD_WIDTH + 2);
-
-const PIPE_POSITIONS = [
-  { bottomY: cy(12), topY: cy(12 - PIPE_GAP - PIPE_HEIGHT), gapY: cy(12 - PIPE_GAP / 2) },
-  { bottomY: cy(10), topY: cy(10 - PIPE_GAP - PIPE_HEIGHT), gapY: cy(10 - PIPE_GAP / 2) },
-  { bottomY: cy(8), topY: cy(8 - PIPE_GAP - PIPE_HEIGHT), gapY: cy(8 - PIPE_GAP / 2) },
-  { bottomY: cy(11), topY: cy(11 - PIPE_GAP - PIPE_HEIGHT), gapY: cy(11 - PIPE_GAP / 2) },
-  { bottomY: cy(9), topY: cy(9 - PIPE_GAP - PIPE_HEIGHT), gapY: cy(9 - PIPE_GAP / 2) },
-];
 
 const game: GameDefinition = {
   metadata: {
@@ -155,32 +147,6 @@ const game: GameDefinition = {
         restitution: 0,
       },
     },
-    ...Object.fromEntries(
-      PIPE_POSITIONS.map((pos, i) => [
-        `pipeSet${i}`,
-        {
-          id: `pipeSet${i}`,
-          tags: ["pipe-set"],
-          sprite: { type: "rect", width: 0.1, height: 0.1, color: "#00000000" },
-          physics: {
-            bodyType: "kinematic",
-            shape: "box",
-            width: 0.1,
-            height: 0.1,
-            density: 0,
-            friction: 0,
-            restitution: 0,
-            isSensor: true,
-          },
-          behaviors: [
-            { type: "spawn_on_event", event: "spawn", entityTemplate: "pipeBottom", spawnPosition: "at_self", offset: { x: 0, y: pos.bottomY - cy(WORLD_HEIGHT / 2) } },
-            { type: "spawn_on_event", event: "spawn", entityTemplate: "pipeTop", spawnPosition: "at_self", offset: { x: 0, y: pos.topY - cy(WORLD_HEIGHT / 2) } },
-            { type: "spawn_on_event", event: "spawn", entityTemplate: "scoreZone", spawnPosition: "at_self", offset: { x: 0, y: pos.gapY - cy(WORLD_HEIGHT / 2) } },
-            { type: "timer", duration: 0.1, action: "destroy" },
-          ],
-        },
-      ])
-    ),
   },
   entities: [
     {
@@ -201,6 +167,24 @@ const game: GameDefinition = {
       template: "ceiling",
       transform: { x: 0, y: cy(0.25), angle: 0, scaleX: 1, scaleY: 1 },
     },
+    {
+      id: "initial_pipe_bottom",
+      name: "Initial Pipe Bottom",
+      template: "pipeBottom",
+      transform: { x: cx(8), y: cy(10) - PIPE_HEIGHT / 2, angle: 0, scaleX: 1, scaleY: 1 },
+    },
+    {
+      id: "initial_pipe_top",
+      name: "Initial Pipe Top",
+      template: "pipeTop",
+      transform: { x: cx(8), y: cy(10 - PIPE_GAP - PIPE_HEIGHT) + PIPE_HEIGHT / 2, angle: 0, scaleX: 1, scaleY: 1 },
+    },
+    {
+      id: "initial_score_zone",
+      name: "Initial Score Zone",
+      template: "scoreZone",
+      transform: { x: cx(8), y: cy(10 - PIPE_GAP / 2), angle: 0, scaleX: 1, scaleY: 1 },
+    },
   ],
   rules: [
     {
@@ -212,14 +196,77 @@ const game: GameDefinition = {
       ],
     },
     {
-      id: "spawn_pipes",
-      name: "Spawn pipe pairs periodically",
-      trigger: { type: "timer", time: 2, repeat: true },
+      id: "spawn_pipes_easy",
+      name: "Spawn easy pipes (score 0-4)",
+      trigger: { type: "timer", time: 2.5, repeat: true },
+      conditions: [
+        { type: "score", max: 4 },
+      ],
       actions: [
         {
           type: "spawn",
-          template: ["pipeSet0", "pipeSet1", "pipeSet2", "pipeSet3", "pipeSet4"],
-          position: { type: "fixed", x: SPAWN_X, y: cy(WORLD_HEIGHT / 2) },
+          template: "pipeBottom",
+          position: { type: "fixed", x: SPAWN_X, y: cy(10) - PIPE_HEIGHT / 2 },
+        },
+        {
+          type: "spawn",
+          template: "pipeTop",
+          position: { type: "fixed", x: SPAWN_X, y: cy(10 - PIPE_GAP - PIPE_HEIGHT) + PIPE_HEIGHT / 2 },
+        },
+        {
+          type: "spawn",
+          template: "scoreZone",
+          position: { type: "fixed", x: SPAWN_X, y: cy(10 - PIPE_GAP / 2) },
+        },
+      ],
+    },
+    {
+      id: "spawn_pipes_medium",
+      name: "Spawn medium pipes (score 5-9)",
+      trigger: { type: "timer", time: 2.5, repeat: true },
+      conditions: [
+        { type: "score", min: 5, max: 9 },
+      ],
+      actions: [
+        {
+          type: "spawn",
+          template: "pipeBottom",
+          position: { type: "fixed", x: SPAWN_X, y: cy(9) - PIPE_HEIGHT / 2 },
+        },
+        {
+          type: "spawn",
+          template: "pipeTop",
+          position: { type: "fixed", x: SPAWN_X, y: cy(9 - 2.6 - PIPE_HEIGHT) + PIPE_HEIGHT / 2 },
+        },
+        {
+          type: "spawn",
+          template: "scoreZone",
+          position: { type: "fixed", x: SPAWN_X, y: cy(9 - 2.6 / 2) },
+        },
+      ],
+    },
+    {
+      id: "spawn_pipes_hard",
+      name: "Spawn hard pipes (score 10+)",
+      trigger: { type: "timer", time: 2.5, repeat: true },
+      conditions: [
+        { type: "score", min: 10 },
+      ],
+      actions: [
+        {
+          type: "spawn",
+          template: "pipeBottom",
+          position: { type: "fixed", x: SPAWN_X, y: cy(8.5) - PIPE_HEIGHT / 2 },
+        },
+        {
+          type: "spawn",
+          template: "pipeTop",
+          position: { type: "fixed", x: SPAWN_X, y: cy(8.5 - 2.2 - PIPE_HEIGHT) + PIPE_HEIGHT / 2 },
+        },
+        {
+          type: "spawn",
+          template: "scoreZone",
+          position: { type: "fixed", x: SPAWN_X, y: cy(8.5 - 2.2 / 2) },
         },
       ],
     },
