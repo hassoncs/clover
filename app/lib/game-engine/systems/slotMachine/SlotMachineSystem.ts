@@ -57,6 +57,17 @@ export interface SlotMachineCallbacks {
   onBonusTrigger?: (bonusType: 'free_spins' | 'pick_bonus') => void;
   onCascadeComplete?: () => void;
   onBoardReady?: () => void;
+  onFreeSpinStart?: (remaining: number) => void;
+  onFreeSpinsComplete?: () => void;
+  onPickReveal?: (index: number, prize: number, isCollect: boolean) => void;
+  onPickBonusComplete?: (totalPrize: number) => void;
+}
+
+export interface PickBonusState {
+  prizes: number[];
+  revealed: boolean[];
+  collectIndex: number;
+  totalPrize: number;
 }
 
 interface SlotWin {
@@ -116,6 +127,7 @@ export class SlotMachineSystem {
   private phase: SlotMachinePhase = "idle";
   private currentBet = 0;
   private freeSpinsRemaining = 0;
+  private pickBonusState: PickBonusState | null = null;
   private pickBonusSelections: number[] = [];
   private phaseTimer = 0;
 
@@ -448,22 +460,61 @@ export class SlotMachineSystem {
       this.totalPayout = totalPayout;
 
       if (this.config.cascading) {
-        this.phase = "cascading";
+        this.winPositions = this.getUniquePositions(wins);
+        this.cascadePhase = 'removing';
+        this.cascadeTimer = this.REMOVE_DURATION;
+        this.phase = 'cascading';
       } else {
-        this.phase = "awarding";
+        this.phase = 'awarding';
         this.phaseTimer = 0.5;
       }
     } else {
       this.currentWins = [];
       this.totalPayout = 0;
 
+      // Check for bonus trigger
       if (this.shouldTriggerBonus()) {
+        // Check if we're already in free spins mode (retrigger case)
+        if (this.phase === 'bonus_free_spins') {
+          this.triggerFreeSpins();
+        }
         this.enterBonusMode();
+      } else if (this.phase === 'bonus_free_spins') {
+        // Returning from a free spin with no win and no retrigger
+        if (this.freeSpinsRemaining > 0) {
+          // Continue free spinning
+          this.freeSpinsRemaining--;
+          this.generateSpinTargets();
+          this.phase = 'spinning';
+          this.startReelAnimations();
+          this.callbacks.onSpinStart?.();
+        } else {
+          // Free spins exhausted
+          this.phase = 'idle';
+          this.callbacks.onFreeSpinsComplete?.();
+        }
       } else {
-        this.phase = "idle";
+        this.phase = 'idle';
         this.callbacks.onSpinComplete?.([], 0);
       }
     }
+  }
+
+  private getUniquePositions(wins: SlotWin[]): Array<{ row: number; col: number }> {
+    const seen = new Set<string>();
+    const result: Array<{ row: number; col: number }> = [];
+
+    for (const win of wins) {
+      for (const pos of win.positions) {
+        const key = `${pos.row},${pos.col}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          result.push(pos);
+        }
+      }
+    }
+
+    return result;
   }
 
   private detectWins(): SlotWin[] {
@@ -561,6 +612,84 @@ export class SlotMachineSystem {
     return scatterCount >= 3;
   }
 
+  private countScatters(): number {
+    if (this.config.scatterSymbolIndex === undefined) {
+      return 0;
+    }
+
+    let count = 0;
+    for (let row = 0; row < this.config.rows; row++) {
+      for (let col = 0; col < this.config.reels; col++) {
+        if (this.grid[row]?.[col] === this.config.scatterSymbolIndex) {
+          count++;
+        }
+      }
+    }
+    return count;
+  }
+
+  private triggerFreeSpins(): void {
+    if (!this.config.freeSpins) return;
+
+    const scatterCount = this.countScatters();
+    if (scatterCount < 3) return;
+
+    const spinsToAward = this.config.freeSpins.scatterCount[scatterCount - 3] ?? 10;
+    this.freeSpinsRemaining += spinsToAward;
+    this.callbacks.onFreeSpinStart?.(this.freeSpinsRemaining);
+  }
+
+  private countBonusSymbols(): number {
+    if (this.config.pickBonus === undefined) {
+      return 0;
+    }
+
+    const bonusTrigger = this.config.pickBonus.trigger;
+    if (bonusTrigger === 'bonus') {
+      if (this.config.scatterSymbolIndex === undefined) {
+        return 0;
+      }
+
+      let count = 0;
+      for (let row = 0; row < this.config.rows; row++) {
+        for (let col = 0; col < this.config.reels; col++) {
+          if (this.grid[row]?.[col] === this.config.scatterSymbolIndex) {
+            count++;
+          }
+        }
+      }
+      return count;
+    }
+
+    return 0;
+  }
+
+  private triggerPickBonus(): void {
+    const config = this.config.pickBonus!;
+    const totalItems = config.gridRows * config.gridCols;
+
+    const prizes: number[] = [];
+    const collectIndex = Math.floor(Math.random() * totalItems);
+
+    for (let i = 0; i < totalItems; i++) {
+      if (i === collectIndex) {
+        prizes.push(-1);
+      } else {
+        prizes.push(Math.floor(Math.random() * 100) + 10);
+      }
+    }
+
+    this.pickBonusState = {
+      prizes,
+      revealed: new Array(totalItems).fill(false),
+      collectIndex,
+      totalPrize: 0,
+    };
+
+    this.phase = "bonus_pick";
+    this.callbacks.onBonusTrigger?.('pick_bonus');
+  }
+
   private enterBonusMode(): void {
     if (this.config.freeSpins) {
       const scatterConfig = this.config.freeSpins.scatterCount;
@@ -605,61 +734,98 @@ export class SlotMachineSystem {
     }
   }
 
-  private cascadeStep = 0;
+  private cascadePhase: 'removing' | 'dropping' | 'spawning' | 'settling' = 'removing';
+  private winPositions: Array<{ row: number; col: number }> = [];
+  private cascadeTimer = 0;
+  private isCascading = false;
+
+  private readonly REMOVE_DURATION = 0.3;
+  private readonly DROP_DURATION = 0.2;
+  private readonly SPAWN_DURATION = 0.1;
+  private readonly SETTLE_DURATION = 0.1;
 
   private updateCascading(dt: number): void {
-    if (this.cascadeStep >= 3) {
-      this.phase = "awarding";
-      this.phaseTimer = 0.5;
-      this.callbacks.onCascadeComplete?.();
-      return;
-    }
+    this.cascadeTimer -= dt;
+    if (this.cascadeTimer > 0) return;
 
-    this.cascadeStep++;
-    this.shiftSymbolsDown();
-    this.fillTopSymbols();
-    this.buildGridFromReels();
+    switch (this.cascadePhase) {
+      case 'removing':
+        this.removeWinningSymbols();
+        this.cascadePhase = 'dropping';
+        this.cascadeTimer = this.DROP_DURATION;
+        break;
 
-    this.phaseTimer -= dt;
-    if (this.phaseTimer <= 0) {
-      this.phaseTimer = 0.1;
+      case 'dropping':
+        this.dropSymbols();
+        this.cascadePhase = 'spawning';
+        this.cascadeTimer = this.SPAWN_DURATION;
+        break;
+
+      case 'spawning':
+        this.spawnNewSymbols();
+        this.cascadePhase = 'settling';
+        this.cascadeTimer = this.SETTLE_DURATION;
+        break;
+
+      case 'settling':
+        this.buildGridFromReels();
+        this.phase = 'evaluating';
+        break;
     }
   }
 
-  private shiftSymbolsDown(): void {
-    for (let col = 0; col < this.config.reels; col++) {
-      let writeRow = this.config.rows - 1;
+  private removeWinningSymbols(): void {
+    for (const pos of this.winPositions) {
+      this.grid[pos.row][pos.col] = -1;
+      this.reels[pos.col].symbols[pos.row] = -1;
+    }
+  }
 
+  private dropSymbols(): void {
+    for (let col = 0; col < this.config.reels; col++) {
+      const column: number[] = [];
       for (let row = this.config.rows - 1; row >= 0; row--) {
-        if (this.grid[row]?.[col] !== -1) {
-          if (row !== writeRow) {
-            this.grid[writeRow][col] = this.grid[row][col];
-            this.grid[row][col] = -1;
-          }
-          writeRow--;
+        if (this.grid[row][col] !== -1) {
+          column.push(this.grid[row][col]);
         }
+      }
+      for (let row = this.config.rows - 1; row >= 0; row--) {
+        const idx = this.config.rows - 1 - row;
+        this.grid[row][col] = column[idx] ?? -1;
+        this.reels[col].symbols[row] = this.grid[row][col];
       }
     }
   }
 
-  private fillTopSymbols(): void {
-    for (let col = 0; col < this.config.reels; col++) {
-      for (let row = 0; row < this.config.rows; row++) {
-        if (this.grid[row]?.[col] === -1) {
-          this.grid[row][col] = this.selectSymbol(col, row);
+  private spawnNewSymbols(): void {
+    for (let row = 0; row < this.config.rows; row++) {
+      for (let col = 0; col < this.config.reels; col++) {
+        if (this.grid[row][col] === -1) {
+          const newSymbol = this.selectSymbol(col, row);
+          this.grid[row][col] = newSymbol;
+          this.reels[col].symbols[row] = newSymbol;
         }
       }
     }
   }
 
   private updateFreeSpins(dt: number): void {
-    this.phaseTimer -= dt;
-    if (this.phaseTimer <= 0) {
-      this.phaseTimer = 0.1;
+    // Check for retrigger during free spins
+    if (this.shouldTriggerBonus()) {
+      this.triggerFreeSpins();
     }
 
-    if (this.freeSpinsRemaining <= 0) {
+    if (this.freeSpinsRemaining > 0) {
+      // Auto-spin: decrement counter and start new spin
+      this.freeSpinsRemaining--;
+      this.generateSpinTargets();
+      this.phase = "spinning";
+      this.startReelAnimations();
+      this.callbacks.onSpinStart?.();
+    } else {
+      // No more free spins, return to idle
       this.phase = "idle";
+      this.callbacks.onFreeSpinsComplete?.();
     }
   }
 
