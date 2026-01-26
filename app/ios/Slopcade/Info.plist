@@ -34,6 +34,8 @@
     </array>
     <key>CFBundleVersion</key>
     <string>8</string>
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false/>
     <key>LSMinimumSystemVersion</key>
     <string>12.0</string>
     <key>LSRequiresIPhoneOS</key>
@@ -45,6 +47,10 @@
       <key>NSAllowsLocalNetworking</key>
       <true/>
     </dict>
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>Slopcade uses Bluetooth to host and join local multiplayer games with nearby players.</string>
+    <key>NSBluetoothPeripheralUsageDescription</key>
+    <string>Slopcade uses Bluetooth to advertise your game session so nearby friends can join.</string>
     <key>NSUserActivityTypes</key>
     <array>
       <string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
@@ -67,6 +73,11 @@
       <string>UIInterfaceOrientationPortraitUpsideDown</string>
       <string>UIInterfaceOrientationLandscapeLeft</string>
       <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    <key>UIBackgroundModes</key>
+    <array>
+      <string>bluetooth-central</string>
+      <string>bluetooth-peripheral</string>
     </array>
     <key>UIUserInterfaceStyle</key>
     <string>Light</string>
