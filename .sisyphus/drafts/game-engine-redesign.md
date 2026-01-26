@@ -236,25 +236,122 @@ conditionalBehaviors: [
 
 **Behavior**: When multiple tags match, **only the highest priority** conditional behavior group activates.
 
-### 2. Effect Cleanup
-**Question**: When tag removed, how do behaviors clean up their effects?
+### 2. Game System Integration Pattern
+**Question**: How should complex game logic integrate with the declarative engine?
 
-**Options**:
-- A) **Auto-cleanup**: BehaviorExecutor tracks active behaviors, calls cleanup automatically
-- B) **Explicit hook**: Each behavior implements `onDeactivate()`
-- C) **Reference counting**: Effects stay until all activators removed
+**User Decision**: **Hybrid Approach**
 
-**User Response Needed**: Which feels most robust?
+**Design**:
+- **System handles imperative logic**: Match detection, grid management, cascade algorithms
+- **System uses standard primitives**: Tags for state, behaviors for visual feedback
+- **Clear interface contract**:
 
-### 3. Performance
-**Question**: Checking tags every frame for every entity - is this fast enough?
+```typescript
+// In GameDefinition
+{
+  metadata: { ... },
+  world: { ... },
+  match3: {  // System-specific config block
+    rows: 8,
+    cols: 8,
+    pieceTemplates: ["gem_red", "gem_blue", "gem_green"],
+    minMatch: 3,
+    gridId: "match3-grid"
+  },
+  templates: {
+    gem_red: {
+      tags: ["match3_piece"],
+      conditionalBehaviors: [
+        {
+          when: { hasTag: "selected" },
+          priority: 2,
+          behaviors: [
+            { type: "scale_oscillate", min: 0.97, max: 1.06, speed: 5 },
+            { type: "sprite_effect", effect: "glow", params: { pulse: true } }
+          ]
+        }
+      ]
+    }
+  }
+}
+```
 
-**Optimizations**:
-- Dirty flag system (only check when tags change)
-- Tag change events (behaviors subscribe to tag changes)
-- Spatial partitioning (only check entities near camera)
+**System Responsibilities**:
+- Board state management (private)
+- Match detection algorithm (private)
+- Tag manipulation (`entityManager.addTag("selected")`) (public API)
+- Spawning/destroying pieces (public API)
 
-**User Response Needed**: Start simple or optimize early?
+**Benefits**:
+- Complex algorithms stay imperative (maintainable, testable)
+- Visual feedback declarative (AI-generatable, tunable)
+- Clear separation: WHEN state changes (system) vs WHAT feedback looks like (conditional behaviors)
+
+### 3. AI Generation Strategy
+**Question**: How much should AI understand about game systems?
+
+**User Decision**: **Tiered Approach** (Start simple, expose depth as needed)
+
+**AI Knowledge Levels**:
+
+**Level 1 - Template User** (80% of games):
+```typescript
+// AI Prompt Context (Simple)
+"For Match-3 games, use the Match3GameSystem template:
+- Set match3.rows and match3.cols (typical: 8x8)
+- Provide 3-6 piece templates
+- Set match3.minMatch (default: 3)
+
+Example:
+{
+  match3: { rows: 8, cols: 8, pieceTemplates: ['candy_red', 'candy_blue', 'candy_green'] }
+}
+"
+```
+
+**Level 2 - System Customizer** (15% of games):
+```typescript
+// AI has access to "Match3 System Spec"
+"Available Match3 options:
+- swapDuration: Animation speed (default: 0.15s)
+- fallDuration: Gravity speed (default: 0.1s)
+- cascadeScoring: true = combo multipliers
+- specialPieces: { '4match': 'row_clear', '5match': 'bomb' }
+
+For advanced Match-3 with power-ups, configure specialPieces."
+```
+
+**Level 3 - System Developer** (5% of games):
+```typescript
+// AI writes custom GameSystem (future)
+"To create a new Tetris system, implement GameSystemDefinition:
+- Register with GameSystemRegistry
+- Provide config schema
+- Handle update() lifecycle
+- Use tags + conditional behaviors for visuals"
+```
+
+**Implementation for AI**:
+```typescript
+// In LLM system prompt
+const GAME_SYSTEMS = {
+  match3: {
+    template: "Match3GameSystem",
+    tier1Config: { rows: "number", cols: "number", pieceTemplates: "string[]" },
+    tier2Docs: "docs/game-systems/match3-advanced.md",  // Optional
+    examples: ["gemCrush", "candyBlast"]
+  },
+  // Future systems
+  tetris: { ... },
+  cards: { ... }
+};
+```
+
+**Benefits**:
+- AI starts with black-box templates (high success rate)
+- Can graduate to customization when needed
+- Prevents AI from generating invalid system configurations
+- Clear error messages: "match3.rows must be between 4 and 12"
 
 ### 4. Scratch-Like Simplicity
 **Question**: How do we expose this to kids?
