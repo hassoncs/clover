@@ -63,6 +63,7 @@ API documentation and system specifications.
 | [Game Rules](reference/game-rules.md) | Triggers, conditions, actions, win/lose |
 | [Game Types](reference/game-types.md) | Catalog of supported game genres |
 | [AI Integration](reference/ai-integration.md) | Prompt → game generation pipeline |
+| [AI Generation: Tier 1](ai-generation/tier-1-templates.md) | Curated templates for AI generation |
 | [Sprite Generation](reference/sprite-generation.md) | AI asset generation with Scenario.com |
 | [Technical Primitives](reference/technical-primitives.md) | Core building blocks for 2D games |
 | [Data Models & Workflows](reference/data-models-and-workflows.md) | Complete data flow from prompt to game |

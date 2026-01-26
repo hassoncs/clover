@@ -50,10 +50,13 @@ func _on_js_query(args: Array) -> void:
 	send_response(request_id, result)
 
 func dispatch(method: String, args: Array) -> Variant:
+	print("[QuerySystem] dispatch: method=%s, args=%s" % [method, str(args)])
 	if _handlers.has(method):
 		var callback: Callable = _handlers[method]
 		if callback.is_valid():
-			return callback.call(args)
+			var result = callback.call(args)
+			print("[QuerySystem] dispatch result: %s" % str(result))
+			return result
 	
 	push_error("[QuerySystem] Unknown query method: %s" % method)
 	return {"error": "Unknown method: %s" % method}

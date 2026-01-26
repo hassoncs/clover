@@ -2,6 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ⚠️ MANDATORY: GODOT AUTOMATION
+
+Godot exports are **AUTOMATICALLY WATCHED AND REBUILT**. 
+- **DO NOT** manually run `pnpm godot:export` or `node scripts/export-godot.mjs --once` unless specifically troubleshooting a CI failure.
+- **NEVER** instruct the user to manually rebuild Godot.
+- The `godot` service in `devmux` handles all `.gd`, `.tscn`, and asset watching.
+
 ## Project Overview
 
 This is a React Native game engine powered by Godot 4 for physics-based game rendering. It uses a bridge pattern to communicate between React Native (UI/logic) and Godot (physics/rendering).
@@ -15,7 +22,7 @@ This is a React Native game engine powered by Godot 4 for physics-based game ren
 ## Development Commands
 
 ```bash
-# Start development server
+# Start development server (Managed by DevMux - starts Godot watcher automatically)
 pnpm dev
 
 # Start native development

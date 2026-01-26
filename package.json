@@ -42,7 +42,8 @@
     "ship:update": "node scripts/ship.mjs update",
     "ship:metadata": "node scripts/ship.mjs metadata",
     "ship:web": "node scripts/ship.mjs web",
-    "fix:hermes-dsym": "node scripts/fix-hermes-dsym.mjs"
+    "fix:hermes-dsym": "node scripts/fix-hermes-dsym.mjs",
+    "generate:ui": "pnpm --filter @slopcade/api generate:ui"
   },
   "devDependencies": {
     "@chriscode/devmux": "link:/Users/hassoncs/Workspaces/Personal/devmux/devmux-cli",

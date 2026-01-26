@@ -6,25 +6,21 @@ import { normalizeGameName, buildGameUrl, ensurePage, waitForDebugBridge } from 
 
 export function registerGameManagementTools(server: McpServer, state: GameInspectorState) {
   server.tool(
-    "game_list",
-    "List all available test games",
+    "list",
+    "List all available test games and examples with their paths",
     {},
     async () => {
+      const games = AVAILABLE_GAMES.map(g => ({ name: g, path: `/test-games/${g}` }));
+      const examples = AVAILABLE_EXAMPLES.map(e => ({ name: e, path: `/examples/${e}` }));
       return {
         content: [
           {
             type: "text" as const,
             text: JSON.stringify(
               {
-                games: AVAILABLE_GAMES,
-                examples: AVAILABLE_EXAMPLES,
-                aliases: {
-                  peggle: "slopeggle",
-                  breakout: "breakoutBouncer",
-                  pinball: "pinballLite",
-                  stacker: "physicsStacker",
-                  platformer: "simplePlatformer",
-                },
+                games,
+                examples,
+                usage: "Pass the 'path' value to 'open' to open that game/example",
               },
               null,
               2
@@ -36,10 +32,10 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
   );
 
   server.tool(
-    "game_open",
-    "Open a test game in the browser and wait for it to be ready",
+    "open",
+    "Open a test game or example in the browser and wait for it to be ready",
     {
-      name: z.string().describe("Game name, example name, or full URL (e.g., 'candyCrush', 'draggable_cubes', 'http://localhost:8085/examples/draggable_cubes')"),
+      name: z.string().describe("Path from game_list (e.g., '/examples/draggable_cubes', '/test-games/candyCrush') or full URL"),
       baseUrl: z.string().optional().describe(`Base URL for the app (default: ${DEFAULT_BASE_URL})`),
       timeout: z.number().optional().describe(`Timeout in ms to wait for game ready (default: ${DEFAULT_TIMEOUT})`),
     },
@@ -52,9 +48,14 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
       let identifier: string;
 
       const isFullUrl = name.startsWith("http://") || name.startsWith("https://");
+      const isPath = name.startsWith("/");
+      
       if (isFullUrl) {
         url = name;
         identifier = new URL(name).pathname.split("/").pop() || name;
+      } else if (isPath) {
+        url = `${baseUrl}${name}`;
+        identifier = name.split("/").pop() || name;
       } else {
         const gameId = normalizeGameName(name);
         const isExampleId = AVAILABLE_EXAMPLES.includes(name as any);
@@ -66,13 +67,17 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
           url = `${baseUrl}/examples/${name}`;
           identifier = name;
         } else {
+          const gamePaths = AVAILABLE_GAMES.map(g => `/test-games/${g}`);
+          const examplePaths = AVAILABLE_EXAMPLES.map(e => `/examples/${e}`);
           return {
             content: [
               {
                 type: "text" as const,
                 text: JSON.stringify({
                   success: false,
-                  error: `Unknown game/example: "${name}". Available games: ${AVAILABLE_GAMES.join(", ")}. Available examples: ${AVAILABLE_EXAMPLES.join(", ")}`,
+                  error: `Unknown game/example: "${name}". Use game_list to see available paths.`,
+                  availableGames: gamePaths,
+                  availableExamples: examplePaths,
                 }),
               },
             ],
@@ -125,7 +130,7 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
   );
 
   server.tool(
-    "game_close",
+    "close",
     "Close the browser and clean up",
     {},
     async () => {

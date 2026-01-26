@@ -15,6 +15,7 @@ export type BehaviorType =
   | 'timer'
   | 'animate'
   | 'oscillate'
+  | 'scale_oscillate'
   | 'gravity_zone'
   | 'magnetic'
   | 'health'
@@ -22,7 +23,8 @@ export type BehaviorType =
   | 'particle_emitter'
   | 'attach_to'
   | 'teleport'
-  | 'maintain_speed';
+  | 'maintain_speed'
+  | 'sprite_effect';
 
 export type MoveDirection =
   | 'left'
@@ -117,6 +119,14 @@ export interface OscillateBehavior extends BaseBehavior {
   axis: 'x' | 'y' | 'both';
   amplitude: number;
   frequency: number;
+  phase?: number;
+}
+
+export interface ScaleOscillateBehavior extends BaseBehavior {
+  type: 'scale_oscillate';
+  min: number;
+  max: number;
+  speed: number;
   phase?: number;
 }
 
@@ -223,6 +233,19 @@ export interface MaintainSpeedBehavior extends BaseBehavior {
   mode?: 'constant' | 'minimum';
 }
 
+export type SpriteEffectType = 'glow' | 'pulse' | 'fade_partial' | 'fade_out' | 'rim_light';
+
+export interface SpriteEffectBehavior extends BaseBehavior {
+  type: 'sprite_effect';
+  effect: SpriteEffectType;
+  params?: {
+    color?: [number, number, number];
+    intensity?: number;
+    duration?: number;
+    pulse?: boolean;
+  };
+}
+
 export type Behavior =
   | MoveBehavior
   | RotateBehavior
@@ -233,6 +256,7 @@ export type Behavior =
   | ScoreOnDestroyBehavior
   | TimerBehavior
   | OscillateBehavior
+  | ScaleOscillateBehavior
   | GravityZoneBehavior
   | AnimateBehavior
   | FollowBehavior
@@ -243,7 +267,8 @@ export type Behavior =
   | ParticleEmitterBehavior
   | AttachToBehavior
   | TeleportBehavior
-  | MaintainSpeedBehavior;
+  | MaintainSpeedBehavior
+  | SpriteEffectBehavior;
 
 /**
  * Condition for when a conditional behavior group should be active.

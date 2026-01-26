@@ -8,6 +8,7 @@ import type {
   Value,
   Vec2 as ExprVec2,
   ParticleEmitterType,
+  SpriteEffectType,
 } from '@slopcade/shared';
 
 export type CreateEvalContextForEntity = (entity?: RuntimeEntity) => EvalContext;
@@ -99,6 +100,9 @@ export interface BehaviorContext {
   updateEmitterPosition(emitterId: string, x: number, y: number): void;
   stopEmitter(emitterId: string): void;
   playSound(soundId: string): void;
+
+  applySpriteEffect(entityId: string, effect: SpriteEffectType, params?: Record<string, unknown>): void;
+  clearSpriteEffect(entityId: string): void;
 
   resolveNumber(value: Value<number>): number;
   resolveVec2(value: Value<ExprVec2>): ExprVec2;

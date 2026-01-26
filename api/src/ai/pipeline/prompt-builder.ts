@@ -167,11 +167,13 @@ const UI_STATE_DESCRIPTIONS: Record<string, string> = {
   pressed: 'Depressed or pushed appearance, darker or inset shadows',
   disabled: 'Greyed out and visually inactive, low contrast',
   focus: 'Highlighted border or glow indicating keyboard focus',
+  selected: 'Active selected state, emphasized and prominent',
+  unselected: 'Inactive unselected state, subdued and neutral',
 };
 
 export interface UIComponentPromptParams {
   componentType: string;
-  state: 'normal' | 'hover' | 'pressed' | 'disabled' | 'focus';
+  state: 'normal' | 'hover' | 'pressed' | 'disabled' | 'focus' | 'selected' | 'unselected';
   theme: string;
   baseResolution?: number;
 }
@@ -185,6 +187,8 @@ export function buildUIComponentPrompt(params: UIComponentPromptParams): { promp
     pressed: 'depressed, darker or inset',
     disabled: 'greyed out, low contrast',
     focus: 'focused with outline or glow',
+    selected: 'active, emphasized',
+    unselected: 'subdued, neutral',
   };
 
   const stateDesc = stateDescriptions[state] || 'default';

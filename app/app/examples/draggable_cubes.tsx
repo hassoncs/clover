@@ -1,10 +1,5 @@
 import { useCallback, useRef, useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  type GestureResponderEvent,
-} from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import type { ExampleMeta } from "@/lib/registry/types";
@@ -94,47 +89,11 @@ interface DragState {
   jointId: number;
 }
 
-interface TouchDebugInfo {
-  screenX: number;
-  screenY: number;
+interface DebugInfo {
   worldX: number;
   worldY: number;
   hitEntity: string | null;
   isDragging: boolean;
-}
-
-interface ContainerLayout {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-function screenToWorldCoords(
-  screenX: number,
-  screenY: number,
-  layout: ContainerLayout
-): { x: number; y: number } {
-  const viewWidth = layout.width;
-  const viewHeight = layout.height;
-
-  const scaleX = viewWidth / (WORLD_BOUNDS.width * PIXELS_PER_METER);
-  const scaleY = viewHeight / (WORLD_BOUNDS.height * PIXELS_PER_METER);
-  const scale = Math.min(scaleX, scaleY);
-
-  const offsetX = (viewWidth - WORLD_BOUNDS.width * PIXELS_PER_METER * scale) / 2;
-  const offsetY = (viewHeight - WORLD_BOUNDS.height * PIXELS_PER_METER * scale) / 2;
-
-  const relativeX = screenX - layout.x;
-  const relativeY = screenY - layout.y;
-
-  const viewportX = (relativeX - offsetX) / (PIXELS_PER_METER * scale);
-  const viewportY = (relativeY - offsetY) / (PIXELS_PER_METER * scale);
-
-  const worldX = viewportX - WORLD_BOUNDS.width / 2;
-  const worldY = WORLD_BOUNDS.height / 2 - viewportY;
-
-  return { x: worldX, y: worldY };
 }
 
 export default function DraggableCubesExample() {
@@ -145,10 +104,7 @@ export default function DraggableCubesExample() {
   const [GodotView, setGodotView] = useState<React.ComponentType<{ style?: object }> | null>(null);
   
   const dragStateRef = useRef<DragState | null>(null);
-  const containerRef = useRef<View>(null);
-  const containerLayoutRef = useRef<ContainerLayout | null>(null);
-  
-  const [debugInfo, setDebugInfo] = useState<TouchDebugInfo | null>(null);
+  const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
 
   const addLog = useCallback((message: string) => {
@@ -206,103 +162,49 @@ export default function DraggableCubesExample() {
     return () => { mounted = false; };
   }, [bridge, GodotView, addLog]);
 
-  const handleTouchStart = useCallback(
-    async (event: GestureResponderEvent) => {
-      if (!bridge || status !== "ready") return;
-      
-      const { pageX, pageY } = event.nativeEvent;
-      const layout = containerLayoutRef.current;
-      if (!layout) {
-        addLog("No layout info available");
-        return;
+  useEffect(() => {
+    if (!bridge || status !== "ready") return;
+
+    const unsubscribe = bridge.onInputEvent(async (type, x, y, entityId) => {
+      addLog(`Input: ${type} at (${x.toFixed(2)}, ${y.toFixed(2)}) entity=${entityId ?? "none"}`);
+
+      if (type === "drag_start") {
+        setDebugInfo({ worldX: x, worldY: y, hitEntity: entityId, isDragging: false });
+
+        if (entityId && entityId.startsWith("cube")) {
+          addLog(`Creating mouse joint for ${entityId}`);
+          const jointId = await bridge.createMouseJointAsync({
+            type: "mouse",
+            body: entityId,
+            target: { x, y },
+            maxForce: 50000,
+            stiffness: 30,
+            damping: 0.5,
+          });
+          addLog(`Joint created: ${jointId}`);
+          dragStateRef.current = { entityId, jointId };
+          setDebugInfo((prev) => prev ? { ...prev, isDragging: true } : null);
+        }
+      } else if (type === "drag_move") {
+        setDebugInfo((prev) => prev ? { ...prev, worldX: x, worldY: y } : null);
+        
+        const dragState = dragStateRef.current;
+        if (dragState) {
+          bridge.setMouseTarget(dragState.jointId, { x, y });
+        }
+      } else if (type === "drag_end") {
+        const dragState = dragStateRef.current;
+        if (dragState) {
+          addLog(`Destroying joint ${dragState.jointId}`);
+          bridge.destroyJoint(dragState.jointId);
+          dragStateRef.current = null;
+        }
+        setDebugInfo(null);
       }
-
-      addLog(`Touch start at screen (${pageX.toFixed(0)}, ${pageY.toFixed(0)})`);
-
-      const world = screenToWorldCoords(pageX, pageY, layout);
-      addLog(`World coords: (${world.x.toFixed(2)}, ${world.y.toFixed(2)})`);
-
-      const hitEntity = await bridge.queryPointEntity({ x: world.x, y: world.y });
-      addLog(`Query result: ${hitEntity ?? "no hit"}`);
-
-      setDebugInfo({
-        screenX: pageX,
-        screenY: pageY,
-        worldX: world.x,
-        worldY: world.y,
-        hitEntity,
-        isDragging: false,
-      });
-
-      if (hitEntity && hitEntity.startsWith("cube")) {
-        addLog(`Creating mouse joint for ${hitEntity}`);
-        const jointId = await bridge.createMouseJointAsync({
-          type: "mouse",
-          body: hitEntity,
-          target: { x: world.x, y: world.y },
-          maxForce: 50000,
-          stiffness: 30,
-          damping: 0.5,
-        });
-        addLog(`Joint created: ${jointId}`);
-
-        dragStateRef.current = { entityId: hitEntity, jointId };
-        setDebugInfo((prev) =>
-          prev ? { ...prev, isDragging: true } : null
-        );
-      }
-    },
-    [bridge, status, addLog]
-  );
-
-  const handleTouchMove = useCallback(
-    (event: GestureResponderEvent) => {
-      if (!bridge || status !== "ready") return;
-      
-      const { pageX, pageY } = event.nativeEvent;
-      const layout = containerLayoutRef.current;
-      if (!layout) return;
-
-      const world = screenToWorldCoords(pageX, pageY, layout);
-
-      setDebugInfo((prev) =>
-        prev
-          ? {
-              ...prev,
-              screenX: pageX,
-              screenY: pageY,
-              worldX: world.x,
-              worldY: world.y,
-            }
-          : null
-      );
-
-      const dragState = dragStateRef.current;
-      if (dragState) {
-        bridge.setMouseTarget(dragState.jointId, { x: world.x, y: world.y });
-      }
-    },
-    [bridge, status]
-  );
-
-  const handleTouchEnd = useCallback(() => {
-    if (!bridge) return;
-    
-    const dragState = dragStateRef.current;
-    if (dragState) {
-      addLog(`Destroying joint ${dragState.jointId}`);
-      bridge.destroyJoint(dragState.jointId);
-      dragStateRef.current = null;
-    }
-    setDebugInfo(null);
-  }, [bridge, addLog]);
-
-  const handleLayout = useCallback(() => {
-    containerRef.current?.measureInWindow((x, y, width, height) => {
-      containerLayoutRef.current = { x, y, width, height };
-      addLog(`Container layout: ${width.toFixed(0)}x${height.toFixed(0)} at (${x.toFixed(0)}, ${y.toFixed(0)})`);
     });
-  }, [addLog]);
+
+    return unsubscribe;
+  }, [bridge, status, addLog]);
 
   if (status === "error") {
     return (
@@ -326,49 +228,14 @@ export default function DraggableCubesExample() {
         }
       />
 
-      <View className="flex-1 bg-gray-900" style={{ pointerEvents: "none" }}>
-        <View
-          ref={containerRef}
-          className="flex-1"
-          onLayout={handleLayout}
-          onStartShouldSetResponder={() => true}
-          onMoveShouldSetResponder={() => true}
-          onResponderTerminationRequest={() => false}
-          onResponderGrant={handleTouchStart}
-          onResponderMove={handleTouchMove}
-          onResponderRelease={handleTouchEnd}
-          onResponderTerminate={handleTouchEnd}
-        >
-          <View className="flex-1" style={{ pointerEvents: "none" }}>
-            {GodotView ? (
-              <GodotView style={{ flex: 1 }} />
-            ) : (
-              <View className="flex-1 items-center justify-center">
-                <Text className="text-white">Loading Godot...</Text>
-              </View>
-            )}
+      <View className="flex-1 bg-gray-900">
+        {GodotView ? (
+          <GodotView style={{ flex: 1 }} />
+        ) : (
+          <View className="flex-1 items-center justify-center">
+            <Text className="text-white">Loading Godot...</Text>
           </View>
-
-          {debugInfo && (
-            <View
-              className="absolute w-8 h-8 rounded-full border-2 items-center justify-center"
-              style={{
-                left: debugInfo.screenX - (containerLayoutRef.current?.x ?? 0) - 16,
-                top: debugInfo.screenY - (containerLayoutRef.current?.y ?? 0) - 16,
-                borderColor: debugInfo.isDragging ? "#4ECDC4" : "#FF6B6B",
-                backgroundColor: debugInfo.isDragging ? "rgba(78, 205, 196, 0.3)" : "rgba(255, 107, 107, 0.3)",
-                pointerEvents: "none",
-              }}
-            >
-              <View
-                className="w-2 h-2 rounded-full"
-                style={{
-                  backgroundColor: debugInfo.isDragging ? "#4ECDC4" : "#FF6B6B",
-                }}
-              />
-            </View>
-          )}
-        </View>
+        )}
       </View>
 
       <View className="bg-black/80 p-3 max-h-48">
@@ -377,7 +244,7 @@ export default function DraggableCubesExample() {
             ? "Initializing..." 
             : debugInfo
               ? `Touch: (${debugInfo.worldX.toFixed(2)}, ${debugInfo.worldY.toFixed(2)}) | Hit: ${debugInfo.hitEntity ?? "none"} | Dragging: ${debugInfo.isDragging}`
-              : "Touch to interact"
+              : "Touch cubes to drag them"
           }
         </Text>
         <View className="border-t border-gray-700 pt-2">

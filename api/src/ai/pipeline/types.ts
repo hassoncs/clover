@@ -144,8 +144,8 @@ export interface VariationSheetSpec extends SheetSpecBase {
 
 export interface UIComponentSheetSpec extends SheetSpecBase {
   kind: 'ui_component';
-  componentType: 'button' | 'checkbox' | 'radio' | 'slider' | 'panel' | 'progress_bar' | 'list_item' | 'dropdown' | 'toggle_switch';
-  states: Array<'normal' | 'hover' | 'pressed' | 'disabled' | 'focus'>;
+  componentType: 'button' | 'checkbox' | 'radio' | 'slider' | 'panel' | 'progress_bar' | 'scroll_bar_h' | 'scroll_bar_v' | 'tab_bar' | 'list_item' | 'dropdown' | 'toggle_switch';
+  states: Array<'normal' | 'hover' | 'pressed' | 'disabled' | 'focus' | 'selected' | 'unselected'>;
   ninePatchMargins: { left: number; right: number; top: number; bottom: number };
   baseResolution?: number;
   iconStrategy?: 'separate' | 'composite' | 'overlay' | 'none';

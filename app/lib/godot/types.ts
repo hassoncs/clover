@@ -232,6 +232,9 @@ export interface GodotBridge {
   setMotorSpeed(jointId: number, speed: number): void;
   setMouseTarget(jointId: number, target: Vec2): void;
 
+  // Coordinate conversion (screen pixels → game world coordinates)
+  screenToWorld(screenX: number, screenY: number): Promise<Vec2>;
+
   // Physics queries (async - native requires worklet communication)
   queryPoint(point: Vec2): Promise<number | null>;
   queryPointEntity(point: Vec2): Promise<string | null>;

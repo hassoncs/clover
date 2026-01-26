@@ -34,6 +34,7 @@ interface GodotGameBridge {
   body_id_reverse: Record<number, string>;
   get_all_transforms(): Record<string, EntityTransform>;
   get_all_properties(): PropertySyncPayload;
+  _screen_to_world_impl(screenX: number, screenY: number): { x: number; y: number };
   query_point_entity(x: number, y: number): string | null;
   create_mouse_joint(body: string, targetX: number, targetY: number, maxForce: number, stiffness: number, damping: number): number;
   destroy_joint(jointId: number): void;
@@ -738,6 +739,25 @@ export function createNativeGodotBridge(): GodotBridge {
           console.log(`[Godot worklet] queryPoint error: ${e}`);
         }
         return null;
+      });
+    },
+
+    async screenToWorld(screenX: number, screenY: number): Promise<Vec2> {
+      const { RTNGodot, runOnGodotThread } = await getGodotModule();
+      
+      return runOnGodotThread(() => {
+        'worklet';
+        try {
+          const Godot = RTNGodot.API();
+          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
+          if (gameBridge && typeof gameBridge._screen_to_world_impl === 'function') {
+            const result = gameBridge._screen_to_world_impl(screenX, screenY) as { x: number; y: number };
+            return result;
+          }
+        } catch (e) {
+          console.log(`[Godot worklet] screenToWorld error: ${e}`);
+        }
+        return { x: 0, y: 0 };
       });
     },
 

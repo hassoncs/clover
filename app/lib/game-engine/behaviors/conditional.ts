@@ -39,9 +39,6 @@ export function evaluateCondition(
     }
   }
 
-  // Skip expr for now - escape hatch for later implementation
-  // if (condition.expr !== undefined) { ... }
-
   return true;
 }
 
@@ -60,7 +57,6 @@ export function recomputeActiveConditionalGroup(entity: RuntimeEntity): number {
     return -1;
   }
 
-  // Create array of [index, priority] pairs for groups that match
   const matchingGroups: Array<{ index: number; priority: number }> = [];
 
   for (let i = 0; i < entity.conditionalBehaviors.length; i++) {
@@ -74,7 +70,6 @@ export function recomputeActiveConditionalGroup(entity: RuntimeEntity): number {
     return -1;
   }
 
-  // Sort by priority descending (higher wins)
   matchingGroups.sort((a, b) => b.priority - a.priority);
 
   return matchingGroups[0].index;

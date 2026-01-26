@@ -8,6 +8,7 @@ import type {
 } from '@slopcade/shared';
 import type { RuntimeEntity, RuntimeBehavior, EntityManagerOptions } from './types';
 import { getGlobalTagRegistry } from '@slopcade/shared';
+import { recomputeActiveConditionalGroup } from './behaviors/conditional';
 
 interface PooledEntitySlot {
   id: string;
@@ -288,13 +289,18 @@ export class EntityManager {
     }
     this.entitiesByTagId.get(tagId)!.add(entityId);
     
+    if (entity.conditionalBehaviors.length > 0) {
+      const oldGroupId = entity.activeConditionalGroupId;
+      const newGroupId = recomputeActiveConditionalGroup(entity);
+      if (oldGroupId !== newGroupId) {
+        entity.pendingLifecycleTransition = { oldGroupId, newGroupId };
+        entity.activeConditionalGroupId = newGroupId;
+      }
+    }
+    
     return true;
   }
 
-  /**
-   * Removes a tag from an entity. Updates both tags array and tagBits set.
-   * Returns true if the tag was removed, false if entity didn't have it.
-   */
   removeTag(entityId: string, tag: string): boolean {
     const entity = this.entities.get(entityId);
     if (!entity) return false;
@@ -308,6 +314,15 @@ export class EntityManager {
     if (tagId !== undefined) {
       entity.tagBits.delete(tagId);
       this.entitiesByTagId.get(tagId)?.delete(entityId);
+    }
+    
+    if (entity.conditionalBehaviors.length > 0) {
+      const oldGroupId = entity.activeConditionalGroupId;
+      const newGroupId = recomputeActiveConditionalGroup(entity);
+      if (oldGroupId !== newGroupId) {
+        entity.pendingLifecycleTransition = { oldGroupId, newGroupId };
+        entity.activeConditionalGroupId = newGroupId;
+      }
     }
     
     return true;

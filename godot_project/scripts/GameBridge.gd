@@ -140,36 +140,58 @@ func _register_core_query_handlers() -> void:
 			return _physics_queries.query_point_entity(float(args[0]), float(args[1]))
 		return null
 	)
+	_query_system.register_handler("screenToWorld", func(args):
+		if args.size() >= 2:
+			return _screen_to_world_impl(float(args[0]), float(args[1]))
+		return null
+	)
 
 # Handle native input events on web and relay them back to JS
+var _is_dragging: bool = false
+var _drag_entity_id: Variant = null
+
 func _input(event: InputEvent) -> void:
 	if not OS.has_feature("web"):
 		return
 	
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		var mouse_pos = event.position
-		var game_pos = godot_to_game_pos(mouse_pos)
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		var screen_pos = event.position
+		var world_pos = get_viewport().get_canvas_transform().affine_inverse() * screen_pos
+		var game_pos = godot_to_game_pos(world_pos)
 		
-		var hit_entity_id: Variant = null
-		var space = get_viewport().find_world_2d().direct_space_state
-		if space:
-			var query = PhysicsPointQueryParameters2D.new()
-			var world_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-			query.position = world_pos
-			query.collision_mask = 0xFFFFFFFF
-			query.collide_with_bodies = true
-			query.collide_with_areas = true
-			var results = space.intersect_point(query, 1)
-			if results.size() > 0:
-				var collider = results[0].collider
-				if collider and collider.name in entities:
-					hit_entity_id = collider.name
+		if event.pressed:
+			var hit_entity_id: Variant = null
+			var space = get_viewport().find_world_2d().direct_space_state
+			if space:
+				var query = PhysicsPointQueryParameters2D.new()
+				query.position = world_pos
+				query.collision_mask = 0xFFFFFFFF
+				query.collide_with_bodies = true
+				query.collide_with_areas = true
+				var results = space.intersect_point(query, 1)
+				if results.size() > 0:
+					var collider = results[0].collider
+					if collider and collider.name in entities:
+						hit_entity_id = collider.name
+			
+			_is_dragging = true
+			_drag_entity_id = hit_entity_id
+			
+			_queue_event("input", {"type": "drag_start", "x": game_pos.x, "y": game_pos.y, "entityId": hit_entity_id})
+			_notify_js_input_event("drag_start", game_pos.x, game_pos.y, hit_entity_id)
+		else:
+			_is_dragging = false
+			_queue_event("input", {"type": "drag_end", "x": game_pos.x, "y": game_pos.y, "entityId": _drag_entity_id})
+			_notify_js_input_event("drag_end", game_pos.x, game_pos.y, _drag_entity_id)
+			_drag_entity_id = null
+	
+	elif event is InputEventMouseMotion and _is_dragging:
+		var screen_pos = event.position
+		var world_pos = get_viewport().get_canvas_transform().affine_inverse() * screen_pos
+		var game_pos = godot_to_game_pos(world_pos)
 		
-		# Also queue for polling API
-		_queue_event("input", {"type": "tap", "x": game_pos.x, "y": game_pos.y, "entityId": hit_entity_id})
-		
-		# Notify JS callback for web
-		_notify_js_input_event("tap", game_pos.x, game_pos.y, hit_entity_id)
+		_queue_event("input", {"type": "drag_move", "x": game_pos.x, "y": game_pos.y, "entityId": _drag_entity_id})
+		_notify_js_input_event("drag_move", game_pos.x, game_pos.y, _drag_entity_id)
 
 func _setup_camera() -> void:
 	var camera_script = load("res://scripts/effects/CameraEffects.gd")
@@ -895,8 +917,6 @@ func _setup_world(world_data: Dictionary) -> void:
 		gravity_vec.normalized()
 	)
 	
-	# Camera zoom is controlled by the game definition, not auto-calculated.
-	# TypeScript ViewportSystem handles fitting the world to the screen.
 	if camera:
 		camera.global_position = Vector2.ZERO
 
@@ -1355,23 +1375,19 @@ func _add_text_sprite(node: Node2D, sprite_data: Dictionary, opacity: float, z_i
 	var font_size = int(sprite_data.get("fontSize", 16) * pixels_per_meter / 50.0)
 	label.add_theme_font_size_override("font_size", font_size)
 	
+	var font_url = sprite_data.get("fontUrl", "")
+	if font_url != "":
+		_queue_font_download(label, font_url)
+	
 	var text_color = Color.from_string(sprite_data.get("color", "#FFFFFF"), Color.WHITE)
-	text_color.a = opacity
-	label.add_theme_color_override("font_color", text_color)
-	
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	
-	label.pivot_offset = label.size / 2
-	label.position = -label.size / 2
-	
+	label.modulate = text_color
+	label.modulate.a = opacity
 	label.z_index = z_index_val
 	node.add_child(label)
 
 func _queue_texture_download(sprite: Sprite2D, url: String, sprite_data: Dictionary) -> void:
 	if _texture_cache.has(url):
 		var texture = _texture_cache[url]
-		sprite.texture = texture
 		_apply_sprite_scale(sprite, sprite_data, texture)
 		return
 	
@@ -1381,7 +1397,7 @@ func _queue_texture_download(sprite: Sprite2D, url: String, sprite_data: Diction
 	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
 		http.queue_free()
 		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
-			push_error("[GameBridge] Failed to download texture: " + url + " (code: " + str(response_code) + ")")
+			push_error("[GameBridge] Failed to download texture: " + url)
 			return
 		
 		var image = Image.new()
@@ -1391,21 +1407,51 @@ func _queue_texture_download(sprite: Sprite2D, url: String, sprite_data: Diction
 		if err != OK:
 			err = image.load_webp_from_buffer(body)
 		if err != OK:
-			push_error("[GameBridge] Failed to parse image: " + url)
+			push_error("[GameBridge] Failed to parse texture: " + url)
 			return
 		
 		var texture = ImageTexture.create_from_image(image)
 		_texture_cache[url] = texture
-		
-		if is_instance_valid(sprite):
-			sprite.texture = texture
-			_apply_sprite_scale(sprite, sprite_data, texture)
-		
+		_apply_sprite_scale(sprite, sprite_data, texture)
 	)
 	
 	var err = http.request(url)
 	if err != OK:
 		push_error("[GameBridge] Failed to start texture download: " + url)
+		http.queue_free()
+
+var _font_cache = {}
+
+func _queue_font_download(label: Label, url: String) -> void:
+	if _font_cache.has(url):
+		label.add_theme_font_override("font", _font_cache[url])
+		return
+	
+	var http = HTTPRequest.new()
+	add_child(http)
+	
+	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+			push_error("[GameBridge] Failed to download font: " + url + " (code: " + str(response_code) + ")")
+			return
+		
+		var font = FontFile.new()
+		font.data = body
+		var err = OK
+		if err != OK:
+			push_error("[GameBridge] Failed to parse font: " + url)
+			return
+		
+		_font_cache[url] = font
+		
+		if is_instance_valid(label):
+			label.add_theme_font_override("font", font)
+	)
+	
+	var err = http.request(url)
+	if err != OK:
+		push_error("[GameBridge] Failed to start font download: " + url)
 		http.queue_free()
 
 func _apply_sprite_scale(sprite: Sprite2D, sprite_data: Dictionary, texture: Texture2D) -> void:
@@ -3605,3 +3651,34 @@ func _get_entity_transform_impl(entity_id: String) -> Variant:
 		"y": game_pos.y,
 		"angle": -node.rotation
 	}
+
+func _screen_to_world_impl(screen_x: float, screen_y: float) -> Dictionary:
+	var screen_pos = Vector2(screen_x, screen_y)
+	var viewport = get_viewport()
+	var viewport_size = viewport.get_visible_rect().size
+	var canvas_transform = viewport.get_canvas_transform()
+	
+	# Debug: print all the relevant info
+	print("[GameBridge] screenToWorld DEBUG:")
+	print("  viewport_size=%s" % viewport_size)
+	print("  canvas_transform.origin=%s" % canvas_transform.origin)
+	print("  canvas_transform.x=%s, y=%s" % [canvas_transform.x, canvas_transform.y])
+	if camera:
+		print("  camera.position=%s, camera.zoom=%s" % [camera.global_position, camera.zoom])
+	
+	# Try the transform
+	var godot_world_pos = canvas_transform.affine_inverse() * screen_pos
+	print("  screen=%s -> godot_world=%s" % [screen_pos, godot_world_pos])
+	
+	# Alternative: manual calculation based on viewport center and camera
+	var viewport_center = viewport_size / 2.0
+	var camera_pos = camera.global_position if camera else Vector2.ZERO
+	var camera_zoom = camera.zoom if camera else Vector2.ONE
+	var manual_world_pos = (screen_pos - viewport_center) / camera_zoom + camera_pos
+	print("  manual calculation: screen=%s -> godot_world=%s" % [screen_pos, manual_world_pos])
+	
+	var game_pos = godot_to_game_pos(godot_world_pos)
+	var manual_game_pos = godot_to_game_pos(manual_world_pos)
+	print("  game_pos (transform)=%s, (manual)=%s" % [game_pos, manual_game_pos])
+	
+	return {"x": game_pos.x, "y": game_pos.y}

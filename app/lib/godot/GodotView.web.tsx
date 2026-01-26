@@ -76,5 +76,6 @@ const iframeStyles: React.CSSProperties = {
   width: '100%',
   height: '100%',
   border: 'none',
-  pointerEvents: 'none',
+  touchAction: 'none',  // Prevent browser gestures, allow Godot to handle input
+  cursor: 'default',
 };

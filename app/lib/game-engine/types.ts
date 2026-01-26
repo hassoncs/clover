@@ -25,6 +25,11 @@ export interface EngineServices {
 
 export type MarkedEffect = 'glow' | 'pulse' | 'fade_partial';
 
+export interface PendingLifecycleTransition {
+  oldGroupId: number;
+  newGroupId: number;
+}
+
 export interface RuntimeEntity {
   id: string;
   name: string;
@@ -40,6 +45,8 @@ export interface RuntimeEntity {
   conditionalBehaviors: ConditionalBehavior[];
   /** Index of the currently active conditional behavior group (-1 if none) */
   activeConditionalGroupId: number;
+  /** Pending lifecycle transition to process in BehaviorExecutor */
+  pendingLifecycleTransition?: PendingLifecycleTransition;
   layer: number;
   visible: boolean;
   active: boolean;

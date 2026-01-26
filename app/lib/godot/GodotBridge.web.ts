@@ -568,6 +568,13 @@ export function createWebGodotBridge(): GodotBridge {
       getGodotBridge()?.setMouseTarget(jointId, target.x, target.y);
     },
 
+    async screenToWorld(screenX: number, screenY: number): Promise<Vec2> {
+      console.log(`[GodotBridge.web] screenToWorld called: (${screenX}, ${screenY})`);
+      const result = await queryAsync<{ x: number; y: number }>("screenToWorld", [screenX, screenY]);
+      console.log(`[GodotBridge.web] screenToWorld result:`, result);
+      return result ?? { x: 0, y: 0 };
+    },
+
     async queryPoint(point: Vec2): Promise<number | null> {
       return getGodotBridge()?.queryPoint(point.x, point.y) ?? null;
     },

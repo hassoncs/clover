@@ -660,6 +660,12 @@ export function GameRuntimeGodot({
         playSound: (soundId: string) => {
           bridge.playSound(soundId);
         },
+        applySpriteEffect: (entityId: string, effect: string, params?: Record<string, unknown>) => {
+          bridge.applySpriteEffect(entityId, effect, params);
+        },
+        clearSpriteEffect: (entityId: string) => {
+          bridge.clearSpriteEffect(entityId);
+        },
         computedValues,
         evalContext: baseEvalContext,
         createEvalContextForEntity: createEvalContext,

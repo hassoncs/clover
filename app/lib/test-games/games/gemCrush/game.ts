@@ -2,6 +2,7 @@ import {
   createGridConfig,
   gridCellToWorld,
   type GameDefinition,
+  type ConditionalBehavior,
 } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
@@ -16,6 +17,29 @@ const CELL_SIZE = 1.2;
 const WORLD_WIDTH = GRID_COLS * CELL_SIZE; // 8.4m to match grid exactly
 const WORLD_HEIGHT = GRID_ROWS * CELL_SIZE; // 8.4m to match grid exactly
 const GEM_SIZE = CELL_SIZE * 0.85;
+
+const gemConditionalBehaviors: ConditionalBehavior[] = [
+  {
+    when: { hasTag: "sys.match3:hovered" },
+    priority: 1,
+    behaviors: [{ type: "sprite_effect", effect: "rim_light" }],
+  },
+  {
+    when: { hasTag: "sys.match3:selected" },
+    priority: 2,
+    behaviors: [
+      { type: "scale_oscillate", min: 0.97, max: 1.06, speed: 5 },
+      { type: "sprite_effect", effect: "glow", params: { pulse: true } },
+    ],
+  },
+  {
+    when: { hasTag: "sys.match3:matched" },
+    priority: 3,
+    behaviors: [
+      { type: "sprite_effect", effect: "fade_out", params: { duration: 0.4 } },
+    ],
+  },
+];
 
 const gridConfig = createGridConfig(GRID_ROWS, GRID_COLS, CELL_SIZE);
 
@@ -97,6 +121,7 @@ const game: GameDefinition = {
         restitution: 0,
         isSensor: true,
       },
+      conditionalBehaviors: gemConditionalBehaviors,
     },
     gem_blue: {
       id: "gem_blue",
@@ -115,6 +140,7 @@ const game: GameDefinition = {
         restitution: 0,
         isSensor: true,
       },
+      conditionalBehaviors: gemConditionalBehaviors,
     },
     gem_green: {
       id: "gem_green",
@@ -133,6 +159,7 @@ const game: GameDefinition = {
         restitution: 0,
         isSensor: true,
       },
+      conditionalBehaviors: gemConditionalBehaviors,
     },
     gem_yellow: {
       id: "gem_yellow",
@@ -151,6 +178,7 @@ const game: GameDefinition = {
         restitution: 0,
         isSensor: true,
       },
+      conditionalBehaviors: gemConditionalBehaviors,
     },
     gem_purple: {
       id: "gem_purple",
@@ -169,6 +197,7 @@ const game: GameDefinition = {
         restitution: 0,
         isSensor: true,
       },
+      conditionalBehaviors: gemConditionalBehaviors,
     },
     selection_highlight: {
       id: "selection_highlight",

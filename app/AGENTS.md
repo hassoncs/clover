@@ -8,11 +8,20 @@
 
 ---
 
+## ⚠️ GODOT AUTOMATION (IMPORTANT)
+
+**GODOT EXPORTS ARE AUTOMATED.**
+- **Automatic Watching**: `scripts/export-godot.mjs` watches `godot_project/` and rebuilds on any change to `.gd`, `.tscn`, `.tres`, `.gdshader`, etc.
+- **DO NOT** manually rebuild or tell others to do so.
+- **Service**: Managed via `devmux` as the `godot` service.
+
+---
+
 ## Quick Start
 
 ```bash
 # Start development servers (DevMux managed)
-pnpm dev              # Starts Metro (port 8085) + API (port 8789)
+pnpm dev              # Starts Metro (port 8085) + API (port 8789) + Godot Watcher
 pnpm storybook        # Starts Storybook (port 6006)
 pnpm svc:status       # Check service status
 
@@ -70,6 +79,7 @@ See **[.opencode/skills/documentation.md](../.opencode/skills/documentation.md)*
 │  - Metro (:8085)                                            │
 │  - API (:8789)                                              │
 │  - Storybook (:6006)                                        │
+│  - Godot Watcher (auto-rebuilds WASM/.pck)                  │
 └─────────────────────┬───────────────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────────────┐
@@ -108,7 +118,7 @@ This project uses `DevMux` to manage background services in named `tmux` session
 
 | Command | Action |
 |---------|--------|
-| `pnpm dev` | Ensures `metro` (:8085) and `api` (:8789) are running. |
+| `pnpm dev` | Ensures `metro` (:8085), `api` (:8789), and `godot` (watcher) are running. |
 | `pnpm storybook` | Ensures `storybook` (:6006) is running. |
 | `pnpm svc:status` | Shows health of all configured services. |
 | `pnpm svc:stop` | Stops all services (kills tmux sessions). |

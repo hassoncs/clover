@@ -7,7 +7,7 @@
  * Usage:
  *   node scripts/export-godot.mjs          # Watch mode (default, web only)
  *   node scripts/export-godot.mjs --watch  # Watch mode (explicit)
- *   node scripts/export-godot.mjs --once   # Single export (web)
+ *   node scripts/export-godot.mjs --once   # Single export (CI/Build only)
  *   node scripts/export-godot.mjs --native # Export .pck for iOS/Android
  *   node scripts/export-godot.mjs --all    # Export both web and native
  *   node scripts/export-godot.mjs --check  # Check if export is current
@@ -43,7 +43,7 @@ const nativeMode = args.includes("--native");
 const allMode = args.includes("--all");
 
 // Directories to watch for changes
-const WATCH_DIRS = ["scripts", "scenes"];
+const WATCH_DIRS = ["scripts", "scenes", "shaders", "particles", "models"];
 const WATCH_EXTENSIONS = [".gd", ".tscn", ".tres", ".gdshader"];
 const WATCH_ROOT_FILES = ["project.godot", "export_presets.cfg"];
 
@@ -184,12 +184,14 @@ function checkExport() {
   const outputTime = getOutputModTime();
 
   if (outputTime === 0) {
-    console.log("Godot export missing - run: node scripts/export-godot.mjs --once");
+    console.log("Godot export missing - this is usually handled automatically by the watcher in 'pnpm dev'.");
+    console.log("To build once manually: node scripts/export-godot.mjs --once");
     process.exit(1);
   }
 
   if (sourceTime > outputTime) {
-    console.log("Godot export out of date - run: node scripts/export-godot.mjs --once");
+    console.log("Godot export out of date - the watcher should be running. Check 'devmux status'.");
+    console.log("To force a manual rebuild: node scripts/export-godot.mjs --once");
     process.exit(1);
   }
 
@@ -207,12 +209,21 @@ function startWatcher(godotPath) {
   let isExporting = false;
 
   function scheduleExport() {
+    log("Event: Change detected, scheduling export...");
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       if (!isExporting) {
         isExporting = true;
-        exportGodot(godotPath);
+        log("Starting export...");
+        const success = exportGodot(godotPath);
         isExporting = false;
+        if (success) {
+          log("Export finished successfully.");
+        } else {
+          log("Export failed.");
+        }
+      } else {
+        log("Export already in progress, skipping...");
       }
     }, 500); // 500ms debounce
   }

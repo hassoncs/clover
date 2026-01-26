@@ -53,6 +53,8 @@ export class InputEntityManager {
       behaviors: [],
       tags: ["system", "input"],
       tagBits: new Set(),
+      conditionalBehaviors: [],
+      activeConditionalGroupId: -1,
       layer: 999,
       visible: this.debugMode,
       active: false,

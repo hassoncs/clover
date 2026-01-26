@@ -30,9 +30,22 @@ func query_point(x: float, y: float) -> Variant:
 
 func query_point_entity(x: float, y: float) -> Variant:
 	var godot_pos = CoordinateUtils.game_to_godot_pos(Vector2(x, y), bridge.pixels_per_meter)
+	var vp_size = bridge.get_viewport().get_visible_rect().size
+	var cam_pos = bridge.camera.global_position if bridge.camera else Vector2.ZERO
+	var cam_zoom = bridge.camera.zoom if bridge.camera else Vector2.ONE
+	print("[PhysicsQueries] query_point_entity: game=(%.2f, %.2f) -> godot=%s" % [x, y, godot_pos])
+	print("[PhysicsQueries] viewport=%s, camera_pos=%s, camera_zoom=%s" % [vp_size, cam_pos, cam_zoom])
+	
 	var space = bridge.get_viewport().find_world_2d().direct_space_state
 	if space == null:
+		print("[PhysicsQueries] ERROR: No physics space!")
 		return null
+	
+	print("[PhysicsQueries] Entities in scene: %s" % [bridge.entities.keys()])
+	for eid in bridge.entities:
+		var node = bridge.entities[eid]
+		if node is RigidBody2D or node is StaticBody2D:
+			print("[PhysicsQueries]   %s at godot_pos=%s" % [eid, node.global_position])
 	
 	var query = PhysicsPointQueryParameters2D.new()
 	query.position = godot_pos
@@ -41,12 +54,17 @@ func query_point_entity(x: float, y: float) -> Variant:
 	query.collide_with_areas = true
 	
 	var results = space.intersect_point(query, 1)
+	print("[PhysicsQueries] Query at %s found %d results" % [godot_pos, results.size()])
+	
 	if results.is_empty():
 		return null
 	
 	var collider = results[0].collider
+	print("[PhysicsQueries] Hit collider: %s (name=%s)" % [collider, collider.name if collider else "null"])
 	if collider and collider.name in bridge.entities:
+		print("[PhysicsQueries] Returning entity: %s" % collider.name)
 		return collider.name
+	print("[PhysicsQueries] Collider not in entities dict")
 	return null
 
 func query_aabb(min_x: float, min_y: float, max_x: float, max_y: float) -> Array:

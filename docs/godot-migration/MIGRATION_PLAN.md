@@ -35,6 +35,13 @@ Godot is **just a runtime** - no game-specific code lives in Godot. The ~15KB PC
 
 All game definitions, behaviors, and rules are generated/processed in TypeScript and sent as JSON.
 
+### Automation
+
+Godot exports are automatically handled during development:
+- **Automatic Rebuilds**: The `scripts/export-godot.mjs` script watches the `godot_project/` directory and automatically rebuilds the Web (WASM) and Native (.pck) exports whenever `.gd`, `.tscn`, `.tres`, or `.gdshader` files are modified.
+- **DevMux Integration**: This watcher is managed as a background service via `devmux`. It starts automatically when you run `pnpm dev`.
+- **Manual Export**: If needed, you can trigger a manual export with `pnpm godot:export`.
+
 ---
 
 ## Phase 1: Core Rendering Primitives
