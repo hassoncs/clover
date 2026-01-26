@@ -12,6 +12,7 @@
 		69783883CC4B924BFED53A50 /* libPods-Slopcade.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 07F12E70F6CBA960CB00B2BF /* libPods-Slopcade.a */; };
 		962EAE896AE8A1D852D75AD4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 3B7B5278037F12A48809634A /* PrivacyInfo.xcprivacy */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
+		BLE0001A1A680F5B00A75B9A /* BLEPeripheralModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = BLE0002A1A680F5B00A75B9A /* BLEPeripheralModule.swift */; };
 		D8C3094775D64C7FBD432829 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED3CED3765532350DF741D08 /* ExpoModulesProvider.swift */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
@@ -21,11 +22,13 @@
 		13B07F961A680F5B00A75B9A /* Slopcade.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Slopcade.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Slopcade/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Slopcade/Info.plist; sourceTree = "<group>"; };
-		3B7B5278037F12A48809634A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Slopcade/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		3B7B5278037F12A48809634A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = Slopcade/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		5486A1686946D7F25853BB7D /* Pods-Slopcade.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Slopcade.debug.xcconfig"; path = "Target Support Files/Pods-Slopcade/Pods-Slopcade.debug.xcconfig"; sourceTree = "<group>"; };
 		572D568815B87C49B4DDB836 /* Pods-Slopcade.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Slopcade.release.xcconfig"; path = "Target Support Files/Pods-Slopcade/Pods-Slopcade.release.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Slopcade/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
+		BLE0002A1A680F5B00A75B9A /* BLEPeripheralModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BLEPeripheralModule.swift; path = Slopcade/BLEPeripheralModule.swift; sourceTree = "<group>"; };
+		BLE0003A1A680F5B00A75B9A /* BLEPeripheralModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = BLEPeripheralModule.m; path = Slopcade/BLEPeripheralModule.m; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED3CED3765532350DF741D08 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Slopcade/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Slopcade/AppDelegate.swift; sourceTree = "<group>"; };
@@ -56,6 +59,8 @@
 			isa = PBXGroup;
 			children = (
 				F11748412D0307B40044C1D9 /* AppDelegate.swift */,
+				BLE0002A1A680F5B00A75B9A /* BLEPeripheralModule.swift */,
+				BLE0003A1A680F5B00A75B9A /* BLEPeripheralModule.m */,
 				F11748442D0722820044C1D9 /* Slopcade-Bridging-Header.h */,
 				BB2F792B24A3F905000567C9 /* Supporting */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
@@ -128,7 +133,6 @@
 				5486A1686946D7F25853BB7D /* Pods-Slopcade.debug.xcconfig */,
 				572D568815B87C49B4DDB836 /* Pods-Slopcade.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -348,6 +352,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BLE0001A1A680F5B00A75B9A /* BLEPeripheralModule.swift in Sources */,
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
 				D8C3094775D64C7FBD432829 /* ExpoModulesProvider.swift in Sources */,
 			);
@@ -387,10 +392,13 @@
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = me.ch5.slopcade.app;
 				PRODUCT_NAME = Slopcade;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "Slopcade/Slopcade-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -421,9 +429,12 @@
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = me.ch5.slopcade.app;
 				PRODUCT_NAME = Slopcade;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "Slopcade/Slopcade-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
