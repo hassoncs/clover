@@ -128,6 +128,7 @@ declare global {
         height: number,
       ) => void;
        clearTextureCache: (url: string) => void;
+       preloadTextures: (urlsJson: string, progressCallback: (percent: number, completed: number, failed: number) => void) => void;
        setDebugShowShapes: (show: boolean) => void;
        setCameraTarget: (entityId: string) => void;
       setCameraPosition: (x: number, y: number) => void;
@@ -772,6 +773,36 @@ export function createWebGodotBridge(): GodotBridge {
 
     clearTextureCache(url?: string) {
       getGodotBridge()?.clearTextureCache(url ?? "");
+    },
+
+    preloadTextures(urls: string[], onProgress?: (percent: number, completed: number, failed: number) => void): Promise<{ completed: number; failed: number }> {
+      return new Promise((resolve) => {
+        const bridge = getGodotBridge();
+        if (!bridge) {
+          resolve({ completed: 0, failed: urls.length });
+          return;
+        }
+        
+        if (urls.length === 0) {
+          onProgress?.(100, 0, 0);
+          resolve({ completed: 0, failed: 0 });
+          return;
+        }
+        
+        const progressCallback = (...args: unknown[]) => {
+          console.log('[GodotBridge.web] preloadTextures callback received:', args);
+          const percent = typeof args[0] === 'number' ? args[0] : Number(args[0]);
+          const completed = typeof args[1] === 'number' ? args[1] : Number(args[1]);
+          const failed = typeof args[2] === 'number' ? args[2] : Number(args[2]);
+          onProgress?.(percent, completed, failed);
+          if (percent >= 100) {
+            resolve({ completed, failed });
+          }
+        };
+        
+        // Pass URLs as JSON string since JS Arrays don't auto-convert to GDScript Arrays
+        bridge.preloadTextures(JSON.stringify(urls), progressCallback);
+      });
     },
 
     setDebugShowShapes(show: boolean) {

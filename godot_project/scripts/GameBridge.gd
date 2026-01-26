@@ -452,6 +452,10 @@ func _setup_js_bridge() -> void:
 	_js_callbacks.append(clear_texture_cache_cb)
 	_js_bridge_obj["clearTextureCache"] = clear_texture_cache_cb
 	
+	var preload_textures_cb = JavaScriptBridge.create_callback(_js_preload_textures)
+	_js_callbacks.append(preload_textures_cb)
+	_js_bridge_obj["preloadTextures"] = preload_textures_cb
+	
 	var set_debug_show_shapes_cb = JavaScriptBridge.create_callback(_js_set_debug_show_shapes)
 	_js_callbacks.append(set_debug_show_shapes_cb)
 	_js_bridge_obj["setDebugShowShapes"] = set_debug_show_shapes_cb
@@ -1540,8 +1544,12 @@ func _add_text_sprite(node: Node2D, sprite_data: Dictionary, opacity: float, z_i
 func _queue_texture_download(sprite: Sprite2D, url: String, sprite_data: Dictionary) -> void:
 	if _texture_cache.has(url):
 		var texture = _texture_cache[url]
+		print("[GameBridge] Using cached texture for: " + url)
+		sprite.texture = texture
 		_apply_sprite_scale(sprite, sprite_data, texture)
 		return
+	
+	print("[GameBridge] Cache MISS - downloading texture: " + url)
 	
 	var http = HTTPRequest.new()
 	add_child(http)
@@ -1564,7 +1572,9 @@ func _queue_texture_download(sprite: Sprite2D, url: String, sprite_data: Diction
 		
 		var texture = ImageTexture.create_from_image(image)
 		_texture_cache[url] = texture
-		_apply_sprite_scale(sprite, sprite_data, texture)
+		if is_instance_valid(sprite):
+			sprite.texture = texture
+			_apply_sprite_scale(sprite, sprite_data, texture)
 	)
 	
 	var err = http.request(url)
@@ -1680,6 +1690,105 @@ func _js_clear_texture_cache(args: Array) -> void:
 			_texture_cache.erase(url)
 	else:
 		_texture_cache.clear()
+
+var _preload_pending_count: int = 0
+var _preload_completed_count: int = 0
+var _preload_failed_count: int = 0
+var _js_preload_progress_callback: JavaScriptObject = null
+
+func _js_preload_textures(args: Array) -> void:
+	if args.size() < 1:
+		push_error("[GameBridge] preloadTextures requires at least 1 arg: urls (JSON string)")
+		return
+	
+	var urls_json = str(args[0])
+	var urls = JSON.parse_string(urls_json)
+	if urls == null or not (urls is Array):
+		push_error("[GameBridge] preloadTextures: failed to parse URLs from JSON")
+		return
+	if urls.size() == 0:
+		if args.size() > 1 and args[1] != null:
+			var cb = args[1]
+			if cb is JavaScriptObject:
+				cb.call("call", null, 100, 0, 0)
+		return
+	
+	# Store callback if provided
+	if args.size() > 1 and args[1] != null:
+		_js_preload_progress_callback = args[1]
+	else:
+		_js_preload_progress_callback = null
+	
+	_preload_pending_count = urls.size()
+	_preload_completed_count = 0
+	_preload_failed_count = 0
+	
+	for url_variant in urls:
+		var url = str(url_variant)
+		if url == "":
+			_on_preload_complete(url, false)
+			continue
+			
+		# Skip if already cached
+		if _texture_cache.has(url):
+			_on_preload_complete(url, true)
+			continue
+		
+		# Download the texture
+		var http = HTTPRequest.new()
+		add_child(http)
+		
+		http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+			http.queue_free()
+			if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+				push_warning("[GameBridge] Failed to preload texture: " + url + " (result: " + str(result) + ", code: " + str(response_code) + ")")
+				_on_preload_complete(url, false)
+				return
+			
+			if body.size() == 0:
+				push_warning("[GameBridge] Empty body for texture: " + url)
+				_on_preload_complete(url, false)
+				return
+			
+			var image = Image.new()
+			var err = image.load_png_from_buffer(body)
+			if err != OK:
+				err = image.load_jpg_from_buffer(body)
+			if err != OK:
+				err = image.load_webp_from_buffer(body)
+			if err != OK:
+				push_warning("[GameBridge] All image formats failed for: " + url + " (size: " + str(body.size()) + ")")
+				_on_preload_complete(url, false)
+				return
+			
+			print("[GameBridge] Preloaded texture: " + url)
+			
+			var texture = ImageTexture.create_from_image(image)
+			_texture_cache[url] = texture
+			_on_preload_complete(url, true)
+		)
+		
+		var err = http.request(url)
+		if err != OK:
+			push_warning("[GameBridge] Failed to start preload request: " + url)
+			http.queue_free()
+			_on_preload_complete(url, false)
+
+func _on_preload_complete(url: String, success: bool) -> void:
+	if success:
+		_preload_completed_count += 1
+	else:
+		_preload_failed_count += 1
+	
+	var total_done = _preload_completed_count + _preload_failed_count
+	var percent = int((float(total_done) / float(_preload_pending_count)) * 100.0)
+	
+	print("[GameBridge] Preload progress: " + str(percent) + "% (" + str(_preload_completed_count) + "/" + str(_preload_pending_count) + ")")
+	
+	if _js_preload_progress_callback != null:
+		_js_preload_progress_callback.call("call", null, percent, _preload_completed_count, _preload_failed_count)
+	else:
+		print("[GameBridge] No progress callback registered!")
 
 func _js_set_debug_show_shapes(args: Array) -> void:
 	"""Toggle debug mode to show physics shapes or textures.

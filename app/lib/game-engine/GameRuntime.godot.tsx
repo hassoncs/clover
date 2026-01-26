@@ -17,6 +17,7 @@ import type {
   DPadDirection,
   AssetSheet,
   PropertyWatchSpec,
+  GameVariable,
 } from "@slopcade/shared";
 import {
   createComputedValueSystem,
@@ -24,6 +25,7 @@ import {
   DependencyAnalyzer,
   PropertyCache,
   EntityContextProxy,
+  getValue,
 } from "@slopcade/shared";
 import {
   GodotView,
@@ -58,6 +60,7 @@ import {
   Match3GameSystem,
   type Match3Config,
 } from "./systems/Match3GameSystem";
+import { TuningPanel, hasTunables } from "@/components/game";
 
 export interface GameRuntimeGodotProps {
   definition: GameDefinition;
@@ -68,6 +71,10 @@ export interface GameRuntimeGodotProps {
   showHUD?: boolean;
   enablePerfLogging?: boolean;
   autoStart?: boolean;
+  preloadTextureUrls?: string[];
+  onPreloadProgress?: (percent: number, completed: number, failed: number) => void;
+  /** Called when Godot is fully initialized and textures are preloaded - safe to show the game */
+  onReady?: () => void;
 }
 
 const GAME_LOOP_INTERVAL = 16;
@@ -81,6 +88,9 @@ export function GameRuntimeGodot({
   showHUD = true,
   enablePerfLogging = false,
   autoStart = false,
+  preloadTextureUrls,
+  onPreloadProgress,
+  onReady,
 }: GameRuntimeGodotProps) {
   const bridgeRef = useRef<GodotBridge | null>(null);
   const physicsRef = useRef<Physics2D | null>(null);
@@ -161,6 +171,103 @@ export function GameRuntimeGodot({
     scale: 1,
   });
 
+  const handleVariableChange = useCallback((key: string, value: number) => {
+    setGameState(prev => ({
+      ...prev,
+      variables: {
+        ...prev.variables,
+        [key]: value,
+      },
+    }));
+  }, []);
+
+  const handleReset = useCallback(() => {
+    const defaults: Record<string, number | string | boolean> = {};
+    for (const [key, variable] of Object.entries(definition.variables || {})) {
+      const value = getValue(variable as GameVariable);
+      if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
+        defaults[key] = value;
+      }
+    }
+    setGameState(prev => ({ ...prev, variables: defaults }));
+  }, [definition.variables]);
+
+  const handleExport = useCallback(() => {
+    const exported = {
+      ...definition,
+      variables: Object.fromEntries(
+        Object.entries(definition.variables || {}).map(([key, variable]) => {
+          const currentValue = gameState.variables[key];
+          return [key, currentValue ?? getValue(variable as GameVariable)];
+        })
+      ),
+    };
+    const json = JSON.stringify(exported, null, 2);
+    console.log('Exported game definition:', json);
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(json);
+    }
+  }, [definition, gameState.variables]);
+
+  const gameId = definition.metadata.title.toLowerCase().replace(/\s+/g, '-');
+  const storageKey = `tuning-overrides-${gameId}`;
+
+  const [savedValues, setSavedValues] = useState<Record<string, number | boolean | string>>(() => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        const stored = window.localStorage.getItem(storageKey);
+        return stored ? JSON.parse(stored) : {};
+      } catch {
+        return {};
+      }
+    }
+    return {};
+  });
+
+  const hasUnsavedChanges = useMemo(() => {
+    const tunableKeys = Object.entries(definition.variables || {})
+      .filter(([_, v]) => {
+        if (typeof v === 'object' && v !== null && 'value' in v && 'tuning' in v) {
+          return true;
+        }
+        return false;
+      })
+      .map(([k]) => k);
+    
+    for (const key of tunableKeys) {
+      const current = gameState.variables[key];
+      const saved = savedValues[key];
+      if (saved !== undefined && current !== saved) {
+        return true;
+      }
+      if (saved === undefined) {
+        const original = getValue(definition.variables![key] as GameVariable);
+        if (current !== original) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }, [gameState.variables, savedValues, definition.variables]);
+
+  const handleSave = useCallback(() => {
+    const tunableOverrides: Record<string, number | boolean | string> = {};
+    for (const [key, variable] of Object.entries(definition.variables || {})) {
+      if (typeof variable === 'object' && variable !== null && 'value' in variable && 'tuning' in variable) {
+        const current = gameState.variables[key];
+        if (current !== undefined) {
+          tunableOverrides[key] = current;
+        }
+      }
+    }
+    
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(storageKey, JSON.stringify(tunableOverrides));
+      setSavedValues(tunableOverrides);
+      console.log(`[Tuning] Saved ${Object.keys(tunableOverrides).length} variable overrides for "${gameId}"`);
+    }
+  }, [definition.variables, gameState.variables, storageKey, gameId]);
+
   const viewportSystem = useMemo(() => {
     const presentationConfig = definition.presentation;
     return new ViewportSystem(definition.world.bounds, {
@@ -193,6 +300,10 @@ export function GameRuntimeGodot({
         const bridge = await createGodotBridge();
         await bridge.initialize();
         bridgeRef.current = bridge;
+
+        if (preloadTextureUrls && preloadTextureUrls.length > 0) {
+          await bridge.preloadTextures(preloadTextureUrls, onPreloadProgress);
+        }
 
         const physics = createGodotPhysicsAdapter(bridge);
         physicsRef.current = physics;
@@ -385,12 +496,27 @@ export function GameRuntimeGodot({
         });
 
         const initialVariables = game.rulesEvaluator.getVariables();
+        
+        let mergedVariables = { ...initialVariables };
+        if (typeof window !== 'undefined' && window.localStorage) {
+          try {
+            const tuningStorageKey = `tuning-overrides-${definition.metadata.title.toLowerCase().replace(/\s+/g, '-')}`;
+            const savedOverrides = window.localStorage.getItem(tuningStorageKey);
+            if (savedOverrides) {
+              const parsed = JSON.parse(savedOverrides);
+              mergedVariables = { ...mergedVariables, ...parsed };
+            }
+          } catch {
+          }
+        }
+        
         setGameState((s) => ({
           ...s,
           state: "ready",
-          variables: initialVariables,
+          variables: mergedVariables,
         }));
         setIsReady(true);
+        onReady?.();
 
         if (match3SystemRef.current) {
           const match3Config = definition.match3 as Match3Config;
@@ -442,7 +568,7 @@ export function GameRuntimeGodot({
       loaderRef.current = null;
       cameraRef.current = null;
     };
-  }, [godotReady, definition, onGameEnd, onScoreChange]);
+  }, [godotReady, definition, onGameEnd, onScoreChange, preloadTextureUrls, onPreloadProgress, onReady]);
 
   const setTimeScale = useCallback((scale: number, duration?: number) => {
     const currentScale = timeScaleRef.current;
@@ -1437,6 +1563,18 @@ export function GameRuntimeGodot({
             </TouchableOpacity>
           )}
         </View>
+      )}
+
+      {__DEV__ && hasTunables(definition.variables as any) && (
+        <TuningPanel
+          variables={definition.variables as any || {}}
+          currentValues={gameState.variables}
+          onVariableChange={handleVariableChange}
+          onReset={handleReset}
+          onExport={handleExport}
+          onSave={handleSave}
+          hasUnsavedChanges={hasUnsavedChanges}
+        />
       )}
     </View>
   );

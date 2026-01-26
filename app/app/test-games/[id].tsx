@@ -1,8 +1,7 @@
 import { useMemo, useState, useCallback, useRef, useEffect } from "react";
-import { View, Text, Pressable, ActivityIndicator, Alert } from "react-native";
+import { View, Text, Pressable, ActivityIndicator, Alert, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { WithGodot } from "@/components/WithGodot";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
 import { AssetLoadingScreen } from "@/components/game";
 import { TESTGAMES_BY_ID, loadTestGame, type TestGameId } from "@/lib/registry/generated/testGames";
@@ -21,8 +20,11 @@ export default function TestGameRunScreen() {
   const [isLoadingDefinition, setIsLoadingDefinition] = useState(true);
   const [gameDefinition, setGameDefinition] = useState<GameDefinition | null>(null);
   const loadedDefinitionRef = useRef<GameDefinition | null>(null);
+  const [godotReady, setGodotReady] = useState(false);
+  const [loadingDismissed, setLoadingDismissed] = useState(false);
+  const loadingOpacity = useRef(new Animated.Value(1)).current;
 
-  const { phase, progress, startPreload, skipPreload, reset } = useGamePreloader(gameDefinition);
+  const { phase, progress, imageUrls, startPreload, skipPreload, reset } = useGamePreloader(gameDefinition);
 
   useEffect(() => {
     if (!entry) return;
@@ -49,13 +51,27 @@ export default function TestGameRunScreen() {
     }
   }, [gameDefinition, isLoadingDefinition, phase, startPreload]);
 
+  const handleGodotReady = useCallback(() => {
+    setGodotReady(true);
+    Animated.timing(loadingOpacity, {
+      toValue: 0,
+      duration: 500,
+      useNativeDriver: true,
+    }).start(() => {
+      setLoadingDismissed(true);
+    });
+  }, [loadingOpacity]);
+
   const handleBack = useCallback(() => router.back(), [router]);
   
   const handleReset = useCallback(() => {
     reset();
+    setGodotReady(false);
+    setLoadingDismissed(false);
+    loadingOpacity.setValue(1);
     setRuntimeKey((k) => k + 1);
     startPreload();
-  }, [reset, startPreload]);
+  }, [reset, startPreload, loadingOpacity]);
 
   const handleSaveToLibrary = useCallback(async () => {
     if (!entry || !loadedDefinitionRef.current) {
@@ -122,19 +138,8 @@ export default function TestGameRunScreen() {
     );
   }
 
-  if (phase === 'loading') {
-    return (
-      <AssetLoadingScreen
-        gameTitle={gameDefinition.metadata.title}
-        progress={progress}
-        config={gameDefinition.loadingScreen}
-        titleHeroImageUrl={gameDefinition.metadata.titleHeroImageUrl}
-        onSkip={skipPreload}
-      />
-    );
-  }
-
-  const isGameReady = phase === 'ready' || phase === 'skipped';
+  const canMountGame = phase === 'ready' || phase === 'skipped';
+  const showLoadingOverlay = !loadingDismissed;
 
   return (
     <View className="flex-1 bg-gray-900">
@@ -162,29 +167,83 @@ export default function TestGameRunScreen() {
         }
       />
 
-      {isGameReady && (
-        <WithGodot
+      {canMountGame && (
+        <GameRuntimeWrapper
           key={runtimeKey}
-          getComponent={() =>
-            import("@/lib/game-engine/GameRuntime.godot").then((mod) => ({
-              default: () => (
-                <mod.GameRuntimeGodot
-                  definition={gameDefinition}
-                  showHUD={true}
-                  onBackToMenu={handleBack}
-                  onRequestRestart={handleReset}
-                  autoStart={shouldAutoStart}
-                />
-              ),
-            }))
-          }
-          fallback={
-            <View className="flex-1 items-center justify-center">
-              <ActivityIndicator size="large" color="#4CAF50" />
-            </View>
-          }
+          definition={gameDefinition}
+          imageUrls={imageUrls}
+          onBackToMenu={handleBack}
+          onRequestRestart={handleReset}
+          autoStart={shouldAutoStart}
+          onReady={handleGodotReady}
         />
       )}
+
+      {showLoadingOverlay && (
+        <Animated.View 
+          style={{ 
+            position: 'absolute', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            zIndex: 20,
+            opacity: loadingOpacity,
+          }}
+          pointerEvents={godotReady ? 'none' : 'auto'}
+        >
+          <AssetLoadingScreen
+            gameTitle={gameDefinition.metadata.title}
+            progress={progress}
+            config={gameDefinition.loadingScreen}
+            titleHeroImageUrl={gameDefinition.metadata.titleHeroImageUrl}
+            onSkip={godotReady ? undefined : skipPreload}
+          />
+        </Animated.View>
+      )}
     </View>
+  );
+}
+
+interface GameRuntimeWrapperProps {
+  definition: GameDefinition;
+  imageUrls: string[];
+  onBackToMenu: () => void;
+  onRequestRestart: () => void;
+  autoStart: boolean;
+  onReady?: () => void;
+}
+
+function GameRuntimeWrapper({ definition, imageUrls, onBackToMenu, onRequestRestart, autoStart, onReady }: GameRuntimeWrapperProps) {
+  const [GameRuntime, setGameRuntime] = useState<React.ComponentType<{
+    definition: GameDefinition;
+    showHUD: boolean;
+    onBackToMenu: () => void;
+    onRequestRestart: () => void;
+    autoStart: boolean;
+    preloadTextureUrls?: string[];
+    onReady?: () => void;
+  }> | null>(null);
+
+  useEffect(() => {
+    import("@/lib/game-engine/GameRuntime.godot").then((mod) => {
+      setGameRuntime(() => mod.GameRuntimeGodot);
+    });
+  }, []);
+
+  if (!GameRuntime) {
+    return null;
+  }
+
+  return (
+    <GameRuntime
+      definition={definition}
+      showHUD={true}
+      onBackToMenu={onBackToMenu}
+      onRequestRestart={onRequestRestart}
+      autoStart={autoStart}
+      preloadTextureUrls={imageUrls}
+      onReady={onReady}
+    />
   );
 }

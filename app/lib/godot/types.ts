@@ -282,6 +282,15 @@ export interface GodotBridge {
      height: number
    ): void;
    clearTextureCache(url?: string): void;
+   
+   /**
+    * Preload textures into Godot's internal texture cache before game starts.
+    * This ensures textures are ready when entities spawn, preventing pop-in.
+    * @param urls Array of image URLs to preload
+    * @param onProgress Optional callback for progress updates (percent, completed, failed)
+    * @returns Promise that resolves when all textures are loaded
+    */
+   preloadTextures(urls: string[], onProgress?: (percent: number, completed: number, failed: number) => void): Promise<{ completed: number; failed: number }>;
 
    // Debug mode
    setDebugShowShapes(show: boolean): void;

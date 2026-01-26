@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
-import { View, Text, Pressable, ActivityIndicator, TextInput, Modal, ScrollView, Image } from "react-native";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { View, Text, Pressable, ActivityIndicator, TextInput, Modal, ScrollView, Image, Animated } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { trpc } from "@/lib/trpc/client";
@@ -35,8 +35,11 @@ export default function PlayScreen() {
   const [resolvedPackEntries, setResolvedPackEntries] = useState<Record<string, ResolvedPackEntry> | undefined>(undefined);
   const [availablePacks, setAvailablePacks] = useState<{ id: string; name: string; isComplete: boolean }[]>([]);
   const [isLoadingPack, setIsLoadingPack] = useState(false);
+  const [godotReady, setGodotReady] = useState(false);
+  const [loadingDismissed, setLoadingDismissed] = useState(false);
+  const loadingOpacity = useRef(new Animated.Value(1)).current;
 
-  const { phase, progress, startPreload, skipPreload, reset } = useGamePreloader(gameDefinition, {
+  const { phase, progress, imageUrls, startPreload, skipPreload, reset } = useGamePreloader(gameDefinition, {
     resolvedPackEntries,
   });
 
@@ -132,11 +135,25 @@ export default function PlayScreen() {
     console.log(`Game ended: ${state}`);
   }, []);
 
+  const handleGodotReady = useCallback(() => {
+    setGodotReady(true);
+    Animated.timing(loadingOpacity, {
+      toValue: 0,
+      duration: 500,
+      useNativeDriver: true,
+    }).start(() => {
+      setLoadingDismissed(true);
+    });
+  }, [loadingOpacity]);
+
   const handleRequestRestart = useCallback(() => {
     reset();
+    setGodotReady(false);
+    setLoadingDismissed(false);
+    loadingOpacity.setValue(1);
     setRuntimeKey((k) => k + 1);
     startPreload();
-  }, [reset, startPreload]);
+  }, [reset, startPreload, loadingOpacity]);
 
   const handlePackSelect = (newPackId: string) => {
     if (newPackId === activeAssetPackId) return;
@@ -388,19 +405,8 @@ export default function PlayScreen() {
     );
   }
 
-  if (phase === 'loading') {
-    return (
-      <AssetLoadingScreen
-        gameTitle={gameDefinition.metadata.title}
-        progress={progress}
-        config={gameDefinition.loadingScreen}
-        titleHeroImageUrl={gameDefinition.metadata.titleHeroImageUrl}
-        onSkip={skipPreload}
-      />
-    );
-  }
-
-  const isGameReady = phase === 'ready' || phase === 'skipped';
+  const canMountGame = phase === 'ready' || phase === 'skipped';
+  const showLoadingOverlay = !loadingDismissed;
 
   return (
     <View className="flex-1 bg-gray-900">
@@ -560,7 +566,7 @@ export default function PlayScreen() {
         </View>
       </Modal>
 
-      {isGameReady && (
+      {canMountGame && (
         <WithGodot
           key={runtimeKey}
           getComponent={() =>
@@ -571,16 +577,37 @@ export default function PlayScreen() {
                   onGameEnd={handleGameEnd}
                   onRequestRestart={handleRequestRestart}
                   showHUD
+                  preloadTextureUrls={imageUrls}
+                  onReady={handleGodotReady}
                 />
               ),
             }))
           }
-          fallback={
-            <View className="flex-1 items-center justify-center">
-              <ActivityIndicator size="large" color="#4CAF50" />
-            </View>
-          }
+          fallback={null}
         />
+      )}
+
+      {showLoadingOverlay && (
+        <Animated.View 
+          style={{ 
+            position: 'absolute', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            zIndex: 20,
+            opacity: loadingOpacity,
+          }}
+          pointerEvents={godotReady ? 'none' : 'auto'}
+        >
+          <AssetLoadingScreen
+            gameTitle={gameDefinition.metadata.title}
+            progress={progress}
+            config={gameDefinition.loadingScreen}
+            titleHeroImageUrl={gameDefinition.metadata.titleHeroImageUrl}
+            onSkip={godotReady ? undefined : skipPreload}
+          />
+        </Animated.View>
       )}
     </View>
   );
