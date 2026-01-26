@@ -13,15 +13,11 @@ export const metadata: TestGameMeta = {
 const GRID_COLS = 7;
 const GRID_ROWS = 7;
 const CELL_SIZE = 1.2;
-const WORLD_WIDTH = GRID_COLS * CELL_SIZE + 2;
-const WORLD_HEIGHT = GRID_ROWS * CELL_SIZE + 4;
+const WORLD_WIDTH = GRID_COLS * CELL_SIZE; // 8.4m to match grid exactly
+const WORLD_HEIGHT = GRID_ROWS * CELL_SIZE; // 8.4m to match grid exactly
 const CANDY_SIZE = CELL_SIZE * 0.85;
 
-const gridConfig = createGridConfig(GRID_ROWS, GRID_COLS, CELL_SIZE, "center");
-
-function getCellPosition(row: number, col: number): { x: number; y: number } {
-  return gridCellToWorld(gridConfig, row, col);
-}
+const gridConfig = createGridConfig(GRID_ROWS, GRID_COLS, CELL_SIZE);
 
 const game: GameDefinition = {
   metadata: {
@@ -62,8 +58,6 @@ const game: GameDefinition = {
     rows: GRID_ROWS,
     cols: GRID_COLS,
     cellSize: CELL_SIZE,
-    originX: gridConfig.originX,
-    originY: gridConfig.originY,
     pieceTemplates: [
       "candy_red",
       "candy_blue",
@@ -241,7 +235,7 @@ const game: GameDefinition = {
     ...Array.from({ length: GRID_ROWS * GRID_COLS }, (_, i) => {
       const row = Math.floor(i / GRID_COLS);
       const col = i % GRID_COLS;
-      const pos = getCellPosition(row, col);
+      const pos = gridCellToWorld(gridConfig, row, col);
       return {
         id: `grid_${row}_${col}`,
         name: `Grid Cell ${row},${col}`,

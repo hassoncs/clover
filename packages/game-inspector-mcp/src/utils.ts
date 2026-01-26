@@ -1,7 +1,7 @@
 import { chromium } from "playwright";
 import type { Browser, Page } from "playwright";
-import type { GameId, GameInspectorState, AVAILABLE_GAMES, WindowWithBridge } from "./types";
-import { DEFAULT_TIMEOUT } from "./types";
+import type { GameId, GameInspectorState, AVAILABLE_GAMES, WindowWithBridge } from "./types.js";
+import { DEFAULT_TIMEOUT } from "./types.js";
 
 export function normalizeGameName(name: string): GameId | null {
   const availableGames = [

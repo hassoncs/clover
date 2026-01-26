@@ -43,6 +43,7 @@ export interface CameraShakeConfig {
 export interface CameraConfig {
   type: CameraType;
   followTarget?: string;
+  viewHeight?: number;
   zoom?: number;
   minZoom?: number;
   maxZoom?: number;
@@ -309,8 +310,6 @@ export interface Match3Config {
   rows: number;
   cols: number;
   cellSize: number;
-  originX: number;
-  originY: number;
   pieceTemplates: string[];
   minMatch?: number;
   swapDuration?: number;

@@ -496,6 +496,7 @@ export const WorldConfigSchema = z.object({
 export const CameraConfigSchema = z.object({
   type: z.enum(['fixed', 'follow', 'follow-x', 'follow-y', 'auto-scroll']),
   followTarget: z.string().optional(),
+  viewHeight: z.number().positive().optional(),
   zoom: z.number().positive().optional(),
   minZoom: z.number().positive().optional(),
   maxZoom: z.number().positive().optional(),

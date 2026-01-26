@@ -7,15 +7,15 @@ import type {
   RuleAction,
   ComputedValueSystem,
   EvalContext,
-} from '@slopcade/shared';
-import type { EntityManager } from './EntityManager';
-import type { InputEntityManager } from './InputEntityManager';
-import type { CollisionInfo, GameState, InputState } from './BehaviorContext';
-import type { Physics2D } from '../physics2d/Physics2D';
-import type { IGameStateMutator, RuleContext, ListValue } from './rules/types';
-import type { InputEvents } from './BehaviorContext';
-import type { CameraSystem } from './CameraSystem';
-import type { GodotBridge } from '../godot/types';
+} from "@slopcade/shared";
+import type { EntityManager } from "./EntityManager";
+import type { InputEntityManager } from "./InputEntityManager";
+import type { CollisionInfo, GameState, InputState } from "./BehaviorContext";
+import type { Physics2D } from "../physics2d/Physics2D";
+import type { IGameStateMutator, RuleContext, ListValue } from "./rules/types";
+import type { InputEvents } from "./BehaviorContext";
+import type { CameraSystem } from "./CameraSystem";
+import type { GodotBridge } from "../godot/types";
 
 import {
   ScoreActionExecutor,
@@ -37,25 +37,25 @@ import {
   StateMachineActionExecutor,
   WaveActionExecutor,
   ActionRegistry,
-} from './rules/actions';
+} from "./rules/actions";
 import {
   LogicConditionEvaluator,
   PhysicsConditionEvaluator,
-} from './rules/conditions';
+} from "./rules/conditions";
 import {
   CollisionTriggerEvaluator,
   InputTriggerEvaluator,
   LogicTriggerEvaluator,
-} from './rules/triggers';
+} from "./rules/triggers";
 
-export type { RuleContext } from './rules/types';
+export type { RuleContext } from "./rules/types";
 
 export class RulesEvaluator implements IGameStateMutator {
   private rules: GameRule[] = [];
   private winCondition: WinCondition | null = null;
   private loseCondition: LoseCondition | null = null;
 
-  private gameState: GameState['state'] = 'ready';
+  private gameState: GameState["state"] = "ready";
   private score = 0;
   private lives = 3;
   private elapsed = 0;
@@ -69,8 +69,10 @@ export class RulesEvaluator implements IGameStateMutator {
 
   private onScoreChange?: (score: number) => void;
   private onLivesChange?: (lives: number) => void;
-  private onGameStateChange?: (state: GameState['state']) => void;
-  private onVariablesChange?: (variables: Record<string, number | string | boolean>) => void;
+  private onGameStateChange?: (state: GameState["state"]) => void;
+  private onVariablesChange?: (
+    variables: Record<string, number | string | boolean>,
+  ) => void;
 
   // Action Registry
   private actionRegistry: ActionRegistry;
@@ -121,7 +123,7 @@ export class RulesEvaluator implements IGameStateMutator {
       progressionActionExecutor,
       spatialQueryActionExecutor,
       stateMachineActionExecutor,
-      waveActionExecutor
+      waveActionExecutor,
     );
   }
 
@@ -141,12 +143,18 @@ export class RulesEvaluator implements IGameStateMutator {
     this.lives = lives;
   }
 
-  setInitialVariables(variables: Record<string, number | string | boolean> | undefined): void {
+  setInitialVariables(
+    variables: Record<string, number | string | boolean> | undefined,
+  ): void {
     this.variables.clear();
     this.initialVariables.clear();
     if (variables) {
       for (const [name, value] of Object.entries(variables)) {
-        if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
+        if (
+          typeof value === "number" ||
+          typeof value === "string" ||
+          typeof value === "boolean"
+        ) {
           this.variables.set(name, value);
           this.initialVariables.set(name, value);
         }
@@ -157,8 +165,10 @@ export class RulesEvaluator implements IGameStateMutator {
   setCallbacks(callbacks: {
     onScoreChange?: (score: number) => void;
     onLivesChange?: (lives: number) => void;
-    onGameStateChange?: (state: GameState['state']) => void;
-    onVariablesChange?: (variables: Record<string, number | string | boolean>) => void;
+    onGameStateChange?: (state: GameState["state"]) => void;
+    onVariablesChange?: (
+      variables: Record<string, number | string | boolean>,
+    ) => void;
   }): void {
     this.onScoreChange = callbacks.onScoreChange;
     this.onLivesChange = callbacks.onLivesChange;
@@ -167,18 +177,18 @@ export class RulesEvaluator implements IGameStateMutator {
   }
 
   start(): void {
-    this.setGameState('playing');
+    this.setGameState("playing");
   }
 
   pause(): void {
-    if (this.gameState === 'playing') {
-      this.setGameState('paused');
+    if (this.gameState === "playing") {
+      this.setGameState("paused");
     }
   }
 
   resume(): void {
-    if (this.gameState === 'paused') {
-      this.setGameState('playing');
+    if (this.gameState === "paused") {
+      this.setGameState("playing");
     }
   }
 
@@ -194,7 +204,7 @@ export class RulesEvaluator implements IGameStateMutator {
     }
     this.lists.clear();
     this.pendingEvents.clear();
-    this.setGameState('ready');
+    this.setGameState("ready");
     this.onVariablesChange?.(this.getVariables());
   }
 
@@ -219,7 +229,7 @@ export class RulesEvaluator implements IGameStateMutator {
     this.onLivesChange?.(this.lives);
   }
 
-  setGameState(state: GameState['state']): void {
+  setGameState(state: GameState["state"]): void {
     if (this.gameState !== state) {
       this.gameState = state;
       this.onGameStateChange?.(state);
@@ -261,10 +271,13 @@ export class RulesEvaluator implements IGameStateMutator {
     this.lists.set(name, list);
   }
 
-  popFromList(name: string, position: 'front' | 'back'): number | string | boolean | undefined {
+  popFromList(
+    name: string,
+    position: "front" | "back",
+  ): number | string | boolean | undefined {
     const list = this.lists.get(name);
     if (!list || list.length === 0) return undefined;
-    return position === 'front' ? list.shift() : list.pop();
+    return position === "front" ? list.shift() : list.pop();
   }
 
   shuffleList(name: string, random: () => number = Math.random): void {
@@ -293,7 +306,7 @@ export class RulesEvaluator implements IGameStateMutator {
     return this.elapsed;
   }
 
-  getGameStateValue(): GameState['state'] {
+  getGameStateValue(): GameState["state"] {
     return this.gameState;
   }
 
@@ -320,11 +333,11 @@ export class RulesEvaluator implements IGameStateMutator {
     setTimeScale?: (scale: number, duration?: number) => void,
     inputEntityManager?: InputEntityManager,
     playSound?: (soundId: string, volume?: number) => void,
-    bridge?: GodotBridge
+    bridge?: GodotBridge,
   ): void {
-    if (this.gameState !== 'playing') {
+    if (this.gameState !== "playing") {
       if (inputEvents.tap || inputEvents.dragEnd) {
-        console.log('[Rules] Ignoring input - game state is:', this.gameState);
+        console.log("[Rules] Ignoring input - game state is:", this.gameState);
       }
       return;
     }
@@ -353,17 +366,13 @@ export class RulesEvaluator implements IGameStateMutator {
     (context as any).cooldowns = this.cooldowns;
 
     if (this.checkWinCondition(context)) {
-      this.setGameState('won');
+      this.setGameState("won");
       return;
     }
 
     if (this.checkLoseCondition(context)) {
-      this.setGameState('lost');
+      this.setGameState("lost");
       return;
-    }
-
-    if (context.inputEvents.tap) {
-      console.log('[RulesEvaluator] TAP EVENT DETECTED, evaluating', this.rules.length, 'rules');
     }
 
     for (const rule of this.rules) {
@@ -375,7 +384,10 @@ export class RulesEvaluator implements IGameStateMutator {
 
       const triggerResult = this.evaluateTrigger(rule.trigger, context);
       if (triggerResult) {
-        const conditionsResult = this.evaluateConditions(rule.conditions, context);
+        const conditionsResult = this.evaluateConditions(
+          rule.conditions,
+          context,
+        );
         if (conditionsResult) {
           this.executeActions(rule.actions, context);
 
@@ -396,39 +408,49 @@ export class RulesEvaluator implements IGameStateMutator {
   // Delegate Methods
   private evaluateTrigger(trigger: RuleTrigger, context: RuleContext): boolean {
     switch (trigger.type) {
-      case 'collision': return this.collisionTriggerEvaluator.evaluate(trigger, context);
-      case 'timer':
-      case 'score':
-      case 'entity_count':
-      case 'event':
-      case 'frame':
-      case 'gameStart': return this.logicTriggerEvaluator.evaluate(trigger, context);
-      case 'tap':
-      case 'drag':
-      case 'tilt':
-      case 'button':
-      case 'swipe': return this.inputTriggerEvaluator.evaluate(trigger, context);
-      default: return false;
+      case "collision":
+        return this.collisionTriggerEvaluator.evaluate(trigger, context);
+      case "timer":
+      case "score":
+      case "entity_count":
+      case "event":
+      case "frame":
+      case "gameStart":
+        return this.logicTriggerEvaluator.evaluate(trigger, context);
+      case "tap":
+      case "drag":
+      case "tilt":
+      case "button":
+      case "swipe":
+        return this.inputTriggerEvaluator.evaluate(trigger, context);
+      default:
+        return false;
     }
   }
 
-  private evaluateConditions(conditions: RuleCondition[] | undefined, context: RuleContext): boolean {
+  private evaluateConditions(
+    conditions: RuleCondition[] | undefined,
+    context: RuleContext,
+  ): boolean {
     if (!conditions || conditions.length === 0) return true;
-    return conditions.every(c => {
+    return conditions.every((c) => {
       switch (c.type) {
-        case 'score':
-        case 'time':
-        case 'entity_count':
-        case 'random':
-        case 'cooldown_ready':
-        case 'variable':
-        case 'list_contains':
-        case 'expression': return this.logicConditionEvaluator.evaluate(c, context);
-        case 'entity_exists':
-        case 'on_ground':
-        case 'touching':
-        case 'velocity': return this.physicsConditionEvaluator.evaluate(c, context);
-        default: return true;
+        case "score":
+        case "time":
+        case "entity_count":
+        case "random":
+        case "cooldown_ready":
+        case "variable":
+        case "list_contains":
+        case "expression":
+          return this.logicConditionEvaluator.evaluate(c, context);
+        case "entity_exists":
+        case "on_ground":
+        case "touching":
+        case "velocity":
+          return this.physicsConditionEvaluator.evaluate(c, context);
+        default:
+          return true;
       }
     });
   }
@@ -444,25 +466,33 @@ export class RulesEvaluator implements IGameStateMutator {
     if (!this.winCondition) return false;
 
     switch (this.winCondition.type) {
-      case 'score':
+      case "score":
         return this.score >= (this.winCondition.score ?? 0);
 
-      case 'destroy_all':
+      case "destroy_all":
         if (!this.winCondition.tag) return false;
-        return context.entityManager.getEntitiesByTag(this.winCondition.tag).length === 0;
+        return (
+          context.entityManager.getEntitiesByTag(this.winCondition.tag)
+            .length === 0
+        );
 
-      case 'survive_time':
+      case "survive_time":
         return this.elapsed >= (this.winCondition.time ?? 0);
 
-      case 'collect_all':
+      case "collect_all":
         if (!this.winCondition.tag) return false;
-        return context.entityManager.getEntitiesByTag(this.winCondition.tag).length === 0;
+        return (
+          context.entityManager.getEntitiesByTag(this.winCondition.tag)
+            .length === 0
+        );
 
-      case 'reach_entity': {
+      case "reach_entity": {
         if (!this.winCondition.entityId) return false;
-        const targetEntity = context.entityManager.getEntity(this.winCondition.entityId);
+        const targetEntity = context.entityManager.getEntity(
+          this.winCondition.entityId,
+        );
         if (!targetEntity) return false;
-        const playerEntities = context.entityManager.getEntitiesByTag('player');
+        const playerEntities = context.entityManager.getEntitiesByTag("player");
         if (playerEntities.length === 0) return false;
         const player = playerEntities[0];
         const dx = player.transform.x - targetEntity.transform.x;
@@ -480,25 +510,28 @@ export class RulesEvaluator implements IGameStateMutator {
     if (!this.loseCondition) return false;
 
     switch (this.loseCondition.type) {
-      case 'entity_destroyed':
+      case "entity_destroyed":
         if (this.loseCondition.entityId) {
           return !context.entityManager.getEntity(this.loseCondition.entityId);
         }
         if (this.loseCondition.tag) {
-          return context.entityManager.getEntitiesByTag(this.loseCondition.tag).length === 0;
+          return (
+            context.entityManager.getEntitiesByTag(this.loseCondition.tag)
+              .length === 0
+          );
         }
         return false;
 
-      case 'time_up':
+      case "time_up":
         return this.elapsed >= (this.loseCondition.time ?? 0);
 
-      case 'score_below':
+      case "score_below":
         return this.score < (this.loseCondition.score ?? 0);
 
-      case 'lives_zero':
+      case "lives_zero":
         return this.lives <= 0;
 
-      case 'entity_exits_screen': {
+      case "entity_exits_screen": {
         // Need screenBounds in context?
         // GameRuntime passes it? No, context has screenBounds?
         // I need to add screenBounds to context in update().

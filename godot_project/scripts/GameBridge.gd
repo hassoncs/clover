@@ -512,9 +512,7 @@ func _js_get_entity_transform(args: Array) -> Variant:
 	}
 
 func _js_get_all_transforms(_args: Array) -> void:
-	print("[GameBridge] _js_get_all_transforms called")
 	var transforms = get_all_transforms()
-	print("[GameBridge] get_all_transforms returned ", transforms.size(), " entities")
 	_js_bridge_obj["_lastResult"] = transforms
 
 func _js_get_all_properties(_args: Array) -> void:
@@ -675,7 +673,6 @@ func _js_on_input_event(args: Array) -> void:
 		_js_input_event_callback = args[0]
 
 func _notify_js_input_event(input_type: String, x: float, y: float, entity_id: Variant) -> void:
-	print("[GameBridge] _notify_js_input_event: type=", input_type, " callback=", _js_input_event_callback)
 	if _js_input_event_callback != null:
 		var data = {
 			"type": input_type,
@@ -886,6 +883,11 @@ func _setup_world(world_data: Dictionary) -> void:
 		PhysicsServer2D.AREA_PARAM_GRAVITY_VECTOR,
 		gravity_vec.normalized()
 	)
+	
+	# Camera zoom is controlled by the game definition, not auto-calculated.
+	# TypeScript ViewportSystem handles fitting the world to the screen.
+	if camera:
+		camera.global_position = Vector2.ZERO
 
 var _background_sprite: Sprite2D = null
 
@@ -973,31 +975,6 @@ func _apply_background_texture(texture: Texture2D, target_width: float, target_h
 	var uniform_scale = max(scale_x, scale_y)
 	
 	_background_sprite.scale = Vector2(uniform_scale, uniform_scale)
-
-func _center_camera_on_world() -> void:
-	if not camera:
-		return
-	
-	# Get game world size in pixels
-	var world_data = game_data.get("world", {})
-	var bounds = world_data.get("bounds", {})
-	var world_width = bounds.get("width", 20.0) * pixels_per_meter
-	var world_height = bounds.get("height", 12.0) * pixels_per_meter
-	
-	# Position camera so game world is centered in viewport
-	# Camera position = what world coordinate appears at viewport center
-	# We want game center (world_width/2, world_height/2) at viewport center
-	var center_x = world_width / 2.0
-	var center_y = world_height / 2.0
-	
-	var target_pos = Vector2(center_x, center_y)
-	camera.global_position = target_pos
-	
-	# Also update CameraEffects target position to prevent smoothing from fighting us
-	if camera.has_method("move_to"):
-		camera._target_position = target_pos
-	
-	camera_target_id = ""
 
 func _create_entity(entity_data: Dictionary) -> Node2D:
 	var entity_id = entity_data.get("id", "entity_" + str(randi()))
@@ -3124,12 +3101,9 @@ func _js_create_ui_button(args: Array) -> void:
 	button.button_up.connect(_on_ui_button_up.bind(button_id))
 	button.pressed.connect(_on_ui_button_pressed.bind(button_id))
 	
-	# Add to a CanvasLayer for UI (screen-space positioning)
 	var ui_layer = _get_or_create_ui_layer()
 	ui_layer.add_child(button)
 	_ui_buttons[button_id] = button
-	
-	print("[GameBridge] Created UI button: ", button_id, " at ", pos_x, ",", pos_y, " size ", btn_width, "x", btn_height)
 
 func _js_destroy_ui_button(args: Array) -> void:
 	if args.size() < 1:
@@ -3138,7 +3112,6 @@ func _js_destroy_ui_button(args: Array) -> void:
 	if _ui_buttons.has(button_id):
 		_ui_buttons[button_id].queue_free()
 		_ui_buttons.erase(button_id)
-		print("[GameBridge] Destroyed UI button: ", button_id)
 
 func create_ui_button(button_id: String, normal_url: String, pressed_url: String, pos_x: float, pos_y: float, btn_width: float, btn_height: float) -> void:
 	if _ui_buttons.has(button_id):
@@ -3176,15 +3149,12 @@ func _js_on_ui_button_event(args: Array) -> void:
 		_js_ui_button_callback = args[0]
 
 func _on_ui_button_down(button_id: String) -> void:
-	print("[GameBridge] UI button down: ", button_id)
 	_notify_ui_button_event("button_down", button_id)
 
 func _on_ui_button_up(button_id: String) -> void:
-	print("[GameBridge] UI button up: ", button_id)
 	_notify_ui_button_event("button_up", button_id)
 
 func _on_ui_button_pressed(button_id: String) -> void:
-	print("[GameBridge] UI button pressed: ", button_id)
 	_notify_ui_button_event("button_pressed", button_id)
 
 func _notify_ui_button_event(event_type: String, button_id: String) -> void:

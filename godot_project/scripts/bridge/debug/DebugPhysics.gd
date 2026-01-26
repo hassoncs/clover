@@ -422,7 +422,10 @@ func _find_entity_id(node: Node) -> String:
 	if node == null:
 		return ""
 	var entities = _game_bridge.entities
-	for entity_id in entities:
-		if entities[entity_id] == node:
-			return entity_id
+	var current = node
+	while current != null:
+		for entity_id in entities:
+			if entities[entity_id] == current:
+				return entity_id
+		current = current.get_parent()
 	return ""

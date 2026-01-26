@@ -217,7 +217,7 @@ func _find_token_end(s: String, start: int) -> int:
 	var i = start
 	while i < s.length():
 		var c = s[i]
-		if not (c.is_valid_identifier() or c == "_" or c == "-"):
+		if not (c.is_valid_identifier() or c == "_" or c == "-" or c.is_valid_int()):
 			break
 		i += 1
 	return i

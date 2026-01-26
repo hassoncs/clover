@@ -329,7 +329,6 @@ export function createWebGodotBridge(): GodotBridge {
             });
 
             godotBridge.onInputEvent((jsonStr: unknown) => {
-              console.log('[GodotBridge.web] onInputEvent received:', jsonStr, 'type:', typeof jsonStr);
               try {
                 const data = JSON.parse(jsonStr as string) as {
                   type: string;
@@ -337,10 +336,8 @@ export function createWebGodotBridge(): GodotBridge {
                   y: number;
                   entityId: string | null;
                 };
-                console.log('[GodotBridge.web] onInputEvent parsed:', data);
                 for (const cb of inputEventCallbacks) cb(data.type, data.x, data.y, data.entityId);
-              } catch (err) {
-                console.warn('[GodotBridge.web] Failed to parse input event data:', jsonStr, err);
+              } catch {
               }
             });
 

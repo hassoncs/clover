@@ -178,7 +178,6 @@ export function GameRuntimeGodot({
   viewportSystemRef.current = viewportSystem;
 
   const handleGodotReady = useCallback(() => {
-    console.log("[GameRuntime.godot] Godot view ready");
     setGodotReady(true);
   }, []);
 
@@ -191,19 +190,14 @@ export function GameRuntimeGodot({
 
     const setup = async () => {
       try {
-        console.log("[GameRuntime.godot] Starting setup...");
-
         const bridge = await createGodotBridge();
         await bridge.initialize();
         bridgeRef.current = bridge;
-        console.log("[GameRuntime.godot] Bridge initialized");
 
         const physics = createGodotPhysicsAdapter(bridge);
         physicsRef.current = physics;
-        console.log("[GameRuntime.godot] Physics adapter created");
 
         await bridge.loadGame(definition);
-        console.log("[GameRuntime.godot] Game loaded into Godot");
 
         const analyzer = new DependencyAnalyzer(definition);
         const report = analyzer.analyze();
@@ -215,21 +209,6 @@ export function GameRuntimeGodot({
             report.errors,
           );
         }
-        if (report.warnings.length > 0) {
-          console.log(
-            "[GameRuntime.godot] Property watching warnings:",
-            report.warnings,
-          );
-        }
-
-        console.log("[GameRuntime.godot] Property watching:", {
-          valid: report.valid,
-          watchCount: watches.length,
-          properties: [
-            ...new Set(watches.map((w: PropertyWatchSpec) => w.property)),
-          ],
-          stats: report.stats,
-        });
 
         const { WatchRegistry } = await import("@slopcade/shared");
         const registry = new WatchRegistry();
@@ -256,15 +235,10 @@ export function GameRuntimeGodot({
         };
 
         bridge.setWatchConfig(serializableConfig);
-        console.log(
-          "[GameRuntime.godot] Sent watch config to Godot:",
-          serializableConfig,
-        );
 
         const propertySync = new PropertySyncManager(propertyCacheRef.current);
         propertySync.start(bridge);
         propertySyncManagerRef.current = propertySync;
-        console.log("[GameRuntime.godot] Property sync started");
 
         const loader = new GameLoader({ physics });
         loaderRef.current = loader;
@@ -281,14 +255,8 @@ export function GameRuntimeGodot({
             game.entityManager,
             {
               onScoreAdd: (points) => game.rulesEvaluator.addScore(points),
-              onMatchFound: (count, cascade) => {
-                console.log(
-                  `[Match3] Match found: ${count} pieces, cascade #${cascade}`,
-                );
-              },
-              onBoardReady: () => {
-                console.log("[Match3] Board ready");
-              },
+              onMatchFound: () => {},
+              onBoardReady: () => {},
             },
           );
           match3System.setBridge(bridge);
@@ -361,12 +329,6 @@ export function GameRuntimeGodot({
               const ppm = definition.world.pixelsPerMeter ?? 50;
               const screenX = x * ppm;
               const screenY = y * ppm;
-              console.log("[GameRuntime] onInputEvent tap received:", {
-                x,
-                y,
-                screenX,
-                screenY,
-              });
               inputRef.current = {
                 ...inputRef.current,
                 tap: { x: screenX, y: screenY, worldX: x, worldY: y },
@@ -392,6 +354,10 @@ export function GameRuntimeGodot({
           });
           camera.updatePixelsPerMeter(currentViewport.scale);
           setViewportRect(currentViewport);
+
+          const godotPixelsPerMeter = definition.world.pixelsPerMeter ?? 50;
+          const godotZoom = currentViewport.scale / godotPixelsPerMeter;
+          bridge.setCameraZoom(godotZoom);
         }
 
         // Camera stays at origin (0,0) - Godot owns camera positioning now
@@ -713,7 +679,7 @@ export function GameRuntimeGodot({
           worldX: number;
           worldY: number;
         };
-        console.log("[GameRuntime] inputEvents.tap SET:", inputEvents.tap);
+        // console.log("[GameRuntime] inputEvents.tap SET:", inputEvents.tap);
       }
       if (currentInput.dragEnd) {
         inputEvents.dragEnd = currentInput.dragEnd as {
@@ -748,7 +714,6 @@ export function GameRuntimeGodot({
 
       const preservedDrag = inputRef.current.drag;
       const preservedButtons = inputRef.current.buttons;
-      const preservedMouse = inputRef.current.mouse;
       const preservedTilt = inputRef.current.tilt;
       inputRef.current = {};
       if (preservedDrag && !inputEvents.dragEnd) {
@@ -756,9 +721,6 @@ export function GameRuntimeGodot({
       }
       if (preservedButtons) {
         inputRef.current.buttons = preservedButtons;
-      }
-      if (preservedMouse) {
-        inputRef.current.mouse = preservedMouse;
       }
       if (preservedTilt) {
         inputRef.current.tilt = preservedTilt;
@@ -905,28 +867,26 @@ export function GameRuntimeGodot({
       ).getBoundingClientRect?.();
       if (!rect) return;
 
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const viewportX = e.clientX - rect.left;
+      const viewportY = e.clientY - rect.top;
 
-      if (x < 0 || x > rect.width || y < 0 || y > rect.height) {
+      if (viewportX < 0 || viewportX > rect.width || viewportY < 0 || viewportY > rect.height) {
         inputRef.current.mouse = undefined;
         return;
       }
 
       const camera = cameraRef.current;
       const viewportSystem = viewportSystemRef.current;
+      if (!camera || !viewportSystem) return;
 
-      let world = { x: 0, y: 0 };
-      if (camera && viewportSystem) {
-        world = viewportSystem.viewportToWorld(
-          x,
-          y,
-          camera.getPosition(),
-          camera.getZoom(),
-        );
-      }
+      const world = viewportSystem.viewportToWorld(
+        viewportX,
+        viewportY,
+        camera.getPosition(),
+        camera.getZoom(),
+      );
 
-      inputRef.current.mouse = { x, y, worldX: world.x, worldY: world.y };
+      inputRef.current.mouse = { x: viewportX, y: viewportY, worldX: world.x, worldY: world.y };
     };
 
     const handleMouseLeave = () => {
@@ -942,34 +902,27 @@ export function GameRuntimeGodot({
       ).getBoundingClientRect?.();
       if (!rect) return;
 
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const viewportX = e.clientX - rect.left;
+      const viewportY = e.clientY - rect.top;
 
-      if (x < 0 || x > rect.width || y < 0 || y > rect.height) {
+      if (viewportX < 0 || viewportX > rect.width || viewportY < 0 || viewportY > rect.height) {
         return;
       }
 
       const camera = cameraRef.current;
       const viewportSystem = viewportSystemRef.current;
+      if (!camera || !viewportSystem) return;
 
-      let world = { x: 0, y: 0 };
-      if (camera && viewportSystem) {
-        world = viewportSystem.viewportToWorld(
-          x,
-          y,
-          camera.getPosition(),
-          camera.getZoom(),
-        );
-      }
-
-      console.log("[CLICK] Mouse clicked - setting tap:", {
-        containerXY: { x, y },
-        worldXY: world,
-      });
+      const world = viewportSystem.viewportToWorld(
+        viewportX,
+        viewportY,
+        camera.getPosition(),
+        camera.getZoom(),
+      );
 
       inputRef.current = {
         ...inputRef.current,
-        tap: { x, y, worldX: world.x, worldY: world.y },
+        tap: { x: viewportX, y: viewportY, worldX: world.x, worldY: world.y },
       };
     };
 
@@ -977,10 +930,50 @@ export function GameRuntimeGodot({
     window.addEventListener("mouseleave", handleMouseLeave);
     window.addEventListener("click", handleClick);
 
+    (window as any).__GAME_RUNTIME__ = {
+      setInput: (type: string, value: any) => {
+        switch (type) {
+          case "mouse":
+            inputRef.current.mouse = value;
+            break;
+          case "tap":
+            inputRef.current.tap = value;
+            break;
+          case "drag":
+            inputRef.current.drag = value;
+            break;
+          case "dragEnd":
+            inputRef.current.dragEnd = value;
+            break;
+        }
+      },
+      getInput: (type: string) => {
+        return (inputRef.current as any)[type];
+      },
+      setButtonState: (button: string, pressed: boolean) => {
+        if (!buttonsRef.current) {
+          buttonsRef.current = {
+            left: false,
+            right: false,
+            up: false,
+            down: false,
+            jump: false,
+            action: false,
+          };
+        }
+        (buttonsRef.current as any)[button] = pressed;
+        inputRef.current.buttons = { ...buttonsRef.current };
+      },
+      clearInput: (type: string) => {
+        (inputRef.current as any)[type] = undefined;
+      },
+    };
+
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseleave", handleMouseLeave);
       window.removeEventListener("click", handleClick);
+      delete (window as any).__GAME_RUNTIME__;
     };
   }, []);
 
@@ -1051,10 +1044,6 @@ export function GameRuntimeGodot({
   const handleLayout = useCallback(
     (event: { nativeEvent: { layout: { width: number; height: number } } }) => {
       const { width, height } = event.nativeEvent.layout;
-      console.log("[GameRuntime.godot] onLayout fired, screen:", {
-        width,
-        height,
-      });
       screenSizeRef.current = { width, height };
       setScreenSize({ width, height });
 
@@ -1068,9 +1057,15 @@ export function GameRuntimeGodot({
           height: newViewportRect.height,
         });
         cameraRef.current?.updatePixelsPerMeter(newViewportRect.scale);
+
+        if (bridgeRef.current) {
+          const godotPixelsPerMeter = definition.world.pixelsPerMeter ?? 50;
+          const godotZoom = newViewportRect.scale / godotPixelsPerMeter;
+          bridgeRef.current.setCameraZoom(godotZoom);
+        }
       }
     },
-    [],
+    [definition.world.pixelsPerMeter],
   );
 
   const dragStartRef = useRef<{
@@ -1163,20 +1158,10 @@ export function GameRuntimeGodot({
       const { locationX: x, locationY: y } = event.nativeEvent;
       const world = screenToWorld(x, y);
 
-      console.log("[GameRuntime] handleTouchEnd - SETTING tap:", {
-        x,
-        y,
-        worldX: world.x,
-        worldY: world.y,
-      });
       inputRef.current = {
         ...inputRef.current,
         tap: { x, y, worldX: world.x, worldY: world.y },
       };
-      console.log(
-        "[GameRuntime] handleTouchEnd - inputRef.current now:",
-        inputRef.current,
-      );
 
       if (dragStart) {
         const VELOCITY_SCALE = 0.1;

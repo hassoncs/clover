@@ -191,9 +191,9 @@ export class Match3GameSystem {
   ): void {
     const template = this.config.pieceTemplates[pieceType];
     const pos = this.cellToWorldPos(row, col);
-    const spawnY = aboveBoard
-      ? this.config.originY + this.config.cellSize
-      : pos.y;
+    const gridHeight = this.gridConfig.rows * this.gridConfig.cellHeight;
+    const topOfGrid = gridHeight / 2;
+    const spawnY = aboveBoard ? topOfGrid + this.config.cellSize : pos.y;
 
     let entityId: string;
 
@@ -297,19 +297,16 @@ export class Match3GameSystem {
       this.selectedCell = { row, col };
       this.phase = "selected";
       this.showHighlight(row, col);
-      console.log(`[Match3] Selected piece at ${row},${col}`);
     } else {
       if (this.selectedCell.row === row && this.selectedCell.col === col) {
         this.selectedCell = null;
         this.phase = "idle";
         this.hideHighlight();
-        console.log(`[Match3] Deselected`);
       } else if (gridIsAdjacent(this.selectedCell, { row, col })) {
         this.startSwap(this.selectedCell, { row, col });
       } else {
         this.selectedCell = { row, col };
         this.showHighlight(row, col);
-        console.log(`[Match3] Changed selection to ${row},${col}`);
       }
     }
   }
@@ -321,12 +318,6 @@ export class Match3GameSystem {
     }
 
     const cell = this.worldToCellPos(worldX, worldY);
-    console.log(
-      "🚀 ~ Match3GameSystem ~ handleMouseMove ~ world:",
-      worldX,
-      worldY,
-    );
-
     if (!cell) {
       this.hideHoverHighlight();
       return;
@@ -491,10 +482,6 @@ export class Match3GameSystem {
         elapsed: 0,
       });
     }
-
-    console.log(
-      `[Match3] Starting swap between ${a.row},${a.col} and ${b.row},${b.col}`,
-    );
   }
 
   private performSwap(
@@ -594,7 +581,6 @@ export class Match3GameSystem {
 
     if (matches.length === 0) {
       if (this.cascadeCount === 0 && this.swapCells) {
-        console.log(`[Match3] No matches, reverting swap`);
         this.performSwap(this.swapCells.a, this.swapCells.b);
 
         const posA = this.cellToWorldPos(
@@ -639,20 +625,11 @@ export class Match3GameSystem {
       this.swapCells = null;
       this.phase = "idle";
 
-      if (this.cascadeCount > 0) {
-        console.log(
-          `[Match3] Turn complete. Cascades: ${this.cascadeCount}, Total cleared: ${this.totalClearedThisTurn}`,
-        );
-      }
       return;
     }
 
     this.cascadeCount++;
     const uniqueCells = this.getUniqueCells(matches);
-
-    console.log(
-      `[Match3] Found ${matches.length} matches (${uniqueCells.length} pieces) - Cascade #${this.cascadeCount}`,
-    );
 
     for (const cell of uniqueCells) {
       const boardCell = this.board[cell.row][cell.col];

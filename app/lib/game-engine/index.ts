@@ -10,7 +10,6 @@ export { GameRuntime } from './GameRuntime';
 export { GameRuntimeGodot } from './GameRuntime.godot';
 export { CameraSystem } from './CameraSystem';
 export { ViewportSystem } from './ViewportSystem';
-export { ViewportProvider, useViewport } from './ViewportContext';
 export {
   createCollisionBodiesFromTileMap,
   destroyTileMapBodies,

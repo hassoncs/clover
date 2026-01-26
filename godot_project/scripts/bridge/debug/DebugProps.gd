@@ -79,8 +79,7 @@ func get_props(entity_id: String, paths: Array, options: Dictionary = {}) -> Dic
 	
 	for path in paths:
 		var value = _get_property(node, entity_id, str(path))
-		if value != null:
-			result.values[path] = value
+		result.values[path] = value
 	
 	return result
 
