@@ -7,3 +7,5 @@ export {
   scatterBonusTrigger,
   tagFeedback,
 } from './slots';
+
+export { SlotMachineSystem, type SlotMachinePhase, type ReelState, type SlotMachineCallbacks, type SlotMachineConfig } from './SlotMachineSystem';
