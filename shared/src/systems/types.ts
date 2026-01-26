@@ -31,6 +31,16 @@ export enum SystemPhase {
   CLEANUP = 5        // Destruction, pooling
 }
 
+export interface SystemProvides {
+  capabilities?: string[];
+  tags?: string[];
+  events?: string[];
+}
+
+export interface SystemRequires {
+  capabilities?: string[];
+}
+
 export interface GameSystemDefinition<
   TConfig = unknown,
   TState = unknown,
@@ -49,6 +59,13 @@ export interface GameSystemDefinition<
   
   actionTypes?: string[];
   behaviorTypes?: string[];
+  
+  /** Capabilities, tags, and events this system provides */
+  provides?: SystemProvides;
+  /** Capabilities this system requires from other systems */
+  requires?: SystemRequires;
+  /** System IDs that conflict with this system */
+  conflicts?: string[];
   
   createState?: (config: TConfig) => TState;
   

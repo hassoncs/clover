@@ -316,6 +316,17 @@ export interface Match3Config {
   fallDuration?: number;
   clearDelay?: number;
   variantSheet?: VariantSheetConfig;
+  matchDetection?: string;
+  scoring?: string;
+}
+
+export interface TetrisConfig {
+  gridId: string;
+  boardWidth: number;
+  boardHeight: number;
+  pieceTemplates: string[];
+  initialDropSpeed?: number;
+  levelSpeedMultiplier?: number;
 }
 
 export interface GameDefinition {
@@ -346,6 +357,7 @@ export interface GameDefinition {
   sounds?: Record<string, SoundAsset>;
   input?: InputConfig;
   match3?: Match3Config;
+  tetris?: TetrisConfig;
 }
 
 export const DEFAULT_WORLD_CONFIG: WorldConfig = {

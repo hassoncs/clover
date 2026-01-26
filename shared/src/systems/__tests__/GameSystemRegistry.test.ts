@@ -117,4 +117,129 @@ describe('GameSystemRegistry', () => {
       expect(registry.getSystemsInExecutionOrder()).toEqual([]);
     });
   });
+
+  describe('validateSystemCompatibility', () => {
+    it('should return valid for compatible systems', () => {
+      const systems = [
+        {
+          id: 'physics',
+          version: { major: 1, minor: 0, patch: 0 },
+          provides: { capabilities: ['physics.2d'] },
+        },
+        {
+          id: 'match3',
+          version: { major: 1, minor: 0, patch: 0 },
+          requires: { capabilities: ['physics.2d'] },
+        },
+      ];
+
+      const result = registry.validateSystemCompatibility(systems);
+      expect(result.valid).toBe(true);
+      expect(result.errors).toEqual([]);
+    });
+
+    it('should detect mutual conflicts between systems', () => {
+      const systems = [
+        {
+          id: 'system-a',
+          version: { major: 1, minor: 0, patch: 0 },
+          conflicts: ['system-b'],
+        },
+        {
+          id: 'system-b',
+          version: { major: 1, minor: 0, patch: 0 },
+        },
+      ];
+
+      const result = registry.validateSystemCompatibility(systems);
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain('Conflict: system-a conflicts with system-b');
+    });
+
+    it('should detect missing required capabilities', () => {
+      const systems = [
+        {
+          id: 'match3',
+          version: { major: 1, minor: 0, patch: 0 },
+          requires: { capabilities: ['physics.2d', 'entity.manager'] },
+        },
+      ];
+
+      const result = registry.validateSystemCompatibility(systems);
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain("Missing capability: match3 requires 'physics.2d'");
+      expect(result.errors).toContain("Missing capability: match3 requires 'entity.manager'");
+    });
+
+    it('should handle systems with no provides/requires/conflicts', () => {
+      const systems = [
+        {
+          id: 'simple-system',
+          version: { major: 1, minor: 0, patch: 0 },
+        },
+      ];
+
+      const result = registry.validateSystemCompatibility(systems);
+      expect(result.valid).toBe(true);
+      expect(result.errors).toEqual([]);
+    });
+
+    it('should detect bidirectional conflicts', () => {
+      const systems = [
+        {
+          id: 'system-a',
+          version: { major: 1, minor: 0, patch: 0 },
+          conflicts: ['system-b'],
+        },
+        {
+          id: 'system-b',
+          version: { major: 1, minor: 0, patch: 0 },
+          conflicts: ['system-a'],
+        },
+      ];
+
+      const result = registry.validateSystemCompatibility(systems);
+      expect(result.valid).toBe(false);
+      expect(result.errors).toHaveLength(2);
+      expect(result.errors).toContain('Conflict: system-a conflicts with system-b');
+      expect(result.errors).toContain('Conflict: system-b conflicts with system-a');
+    });
+
+    it('should allow conflicts with systems not in the list', () => {
+      const systems = [
+        {
+          id: 'system-a',
+          version: { major: 1, minor: 0, patch: 0 },
+          conflicts: ['system-not-present'],
+        },
+      ];
+
+      const result = registry.validateSystemCompatibility(systems);
+      expect(result.valid).toBe(true);
+      expect(result.errors).toEqual([]);
+    });
+
+    it('should detect Match3 and Tetris mutual conflicts', () => {
+      const systems = [
+        {
+          id: 'match3',
+          version: { major: 1, minor: 0, patch: 0 },
+          provides: { capabilities: ['grid.match3'] },
+          conflicts: ['tetris'],
+        },
+        {
+          id: 'tetris',
+          version: { major: 1, minor: 0, patch: 0 },
+          provides: { capabilities: ['grid.tetris'] },
+          conflicts: ['match3'],
+        },
+      ];
+
+      const result = registry.validateSystemCompatibility(systems);
+      expect(result.valid).toBe(false);
+      expect(result.errors).toHaveLength(2);
+      expect(result.errors).toContain('Conflict: match3 conflicts with tetris');
+      expect(result.errors).toContain('Conflict: tetris conflicts with match3');
+    });
+  });
 });

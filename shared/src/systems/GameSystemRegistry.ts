@@ -1,10 +1,14 @@
 import type {
   GameSystemDefinition,
-  SystemManifest,
   SystemCompatibility,
   ExpressionFunction,
 } from './types';
 import { isCompatibleVersion, formatVersion, parseVersion, SystemPhase } from './types';
+
+export interface CapabilityValidationResult {
+  valid: boolean;
+  errors: string[];
+}
 
 export class GameSystemRegistry {
   private systems = new Map<string, GameSystemDefinition>();
@@ -135,6 +139,38 @@ export class GameSystemRegistry {
       manifest[id] = formatVersion(system.version);
     }
     return manifest;
+  }
+
+  validateSystemCompatibility(systems: GameSystemDefinition[]): CapabilityValidationResult {
+    const errors: string[] = [];
+    const systemIds = new Set(systems.map(s => s.id));
+
+    for (const system of systems) {
+      if (system.conflicts) {
+        for (const conflictId of system.conflicts) {
+          if (systemIds.has(conflictId)) {
+            errors.push(`Conflict: ${system.id} conflicts with ${conflictId}`);
+          }
+        }
+      }
+    }
+
+    const providedCapabilities = new Set<string>();
+    for (const system of systems) {
+      for (const cap of system.provides?.capabilities ?? []) {
+        providedCapabilities.add(cap);
+      }
+    }
+
+    for (const system of systems) {
+      for (const required of system.requires?.capabilities ?? []) {
+        if (!providedCapabilities.has(required)) {
+          errors.push(`Missing capability: ${system.id} requires '${required}'`);
+        }
+      }
+    }
+
+    return { valid: errors.length === 0, errors };
   }
 }
 

@@ -42,6 +42,10 @@ const GAME_TYPE_KEYWORDS: KeywordMatch[] = [
   { keywords: ['fruit ninja', 'catch the'], value: 'falling_objects', weight: 12 },
   { keywords: ['rope', 'swing', 'cut', 'pendulum', 'grapple'], value: 'rope_physics', weight: 10 },
   { keywords: ['cut the rope', 'tarzan'], value: 'rope_physics', weight: 15 },
+  { keywords: ['match', 'match-3', 'match3', 'swap', 'gem', 'jewel', 'candy', 'puzzle'], value: 'match3', weight: 10 },
+  { keywords: ['candy crush', 'bejeweled', 'gem matching', 'match three'], value: 'match3', weight: 15 },
+  { keywords: ['tetris', 'falling blocks', 'block puzzle', 'line clear', 'tetromino'], value: 'tetris', weight: 10 },
+  { keywords: ['tetris clone', 'falling tetrominos', 'block stacking'], value: 'tetris', weight: 15 },
 ];
 
 const CONTROL_TYPE_KEYWORDS: KeywordMatch[] = [
@@ -154,6 +158,8 @@ function extractPlayerAction(prompt: string, gameType: GameType): string {
     vehicle: ['drive', 'race', 'steer', 'accelerate', 'brake'],
     falling_objects: ['catch', 'collect', 'dodge', 'move', 'grab'],
     rope_physics: ['swing', 'cut', 'grab', 'release', 'hang'],
+    match3: ['swap', 'match', 'connect', 'slide', 'drag'],
+    tetris: ['rotate', 'move', 'drop', 'hold'],
   };
 
   const normalized = normalizePrompt(prompt);
@@ -176,6 +182,8 @@ function extractTargetAction(prompt: string, gameType: GameType): string {
     vehicle: ['reach finish', 'collect coins', 'avoid obstacles', 'survive'],
     falling_objects: ['catch', 'avoid', 'collect', 'sort'],
     rope_physics: ['deliver', 'reach', 'collect', 'swing to'],
+    match3: ['clear gems', 'reach score', 'clear board', 'match pieces'],
+    tetris: ['clear lines', 'reach score', 'survive'],
   };
 
   const normalized = normalizePrompt(prompt);
@@ -264,6 +272,8 @@ function getDefaultControlIntent(gameType: GameType): ControlIntent {
     vehicle: 'tilt_to_move',
     falling_objects: 'drag_to_move',
     rope_physics: 'tap_to_flip',
+    match3: 'drag_to_move',
+    tetris: 'buttons',
   };
   return defaults[gameType];
 }
@@ -276,6 +286,8 @@ function getDefaultWinCondition(gameType: GameType): WinConditionType {
     vehicle: 'reach_entity',
     falling_objects: 'survive_time',
     rope_physics: 'collect_all',
+    match3: 'score',
+    tetris: 'score',
   };
   return defaults[gameType];
 }
@@ -288,6 +300,8 @@ function getDefaultLoseCondition(gameType: GameType): LoseConditionType {
     vehicle: 'entity_destroyed',
     falling_objects: 'score_below',
     rope_physics: 'entity_destroyed',
+    match3: 'time_up',
+    tetris: 'custom',
   };
   return defaults[gameType];
 }

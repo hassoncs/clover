@@ -106,6 +106,16 @@ Given a user's game description, generate a complete GameDefinition that can be 
 - Win: reach score
 - Lose: block falls off
 
+**Match-3** (Candy Crush style):
+- Use the Match3GameSystem by populating the 'match3' configuration object
+- Set 'match3.rows' and 'match3.cols' between 4 and 12
+- Provide 3 to 6 distinct piece templates in 'match3.pieceTemplates'
+- All pieces must use 'bodyType: kinematic' and 'isSensor: true'
+- Do NOT provide 'matchDetection' or 'scoring' slots; the engine uses default Match-3 logic
+- Use 'sys.match3:selected' and 'sys.match3:matched' tags in conditionalBehaviors for visual feedback
+- Win: reach score
+- Lose: time_up
+
 
 ## World Coordinates
 
@@ -166,7 +176,7 @@ export interface RefinementResult {
 }
 
 function buildGenerationPrompt(prompt: string, intent: GameIntent): string {
-  return `Create a game based on this description: "${prompt}"
+  let basePrompt = `Create a game based on this description: "${prompt}"
 
 Detected game type: ${intent.gameType}
 Theme: ${intent.theme}
@@ -177,6 +187,50 @@ Difficulty: ${intent.difficulty}
 ${intent.specialRequests.length > 0 ? `Special requests: ${intent.specialRequests.join(', ')}` : ''}
 
 Generate a complete, playable game definition using Rules for all inputs (NO legacy control behaviors).`;
+
+  if (intent.gameType === 'match3') {
+    basePrompt += `
+
+IMPORTANT: This is a Match-3 game. You MUST:
+1. Include a 'match3' configuration object with:
+   - gridId: "main_grid"
+   - rows: 4-12 (default 8)
+   - cols: 4-12 (default 8)
+   - cellSize: 0.8-1.5 (default 1.2)
+   - pieceTemplates: array of 3-6 template IDs
+   - minMatch: 3-5 (default 3)
+2. Create 3-6 piece templates with:
+   - tags: ["piece", "<color>"]
+   - physics: { bodyType: "kinematic", isSensor: true }
+   - conditionalBehaviors for visual feedback:
+     - when: { hasTag: "sys.match3:selected" } -> scale_oscillate + glow
+     - when: { hasTag: "sys.match3:matched" } -> fade_out
+3. Set world.gravity to { x: 0, y: 0 } (no gravity for match3)
+4. Do NOT include matchDetection or scoring slots`;
+  }
+
+  if (intent.gameType === 'tetris') {
+    basePrompt += `
+
+IMPORTANT: This is a Tetris game. You MUST:
+1. Include a 'tetris' configuration object with:
+   - gridId: "main_grid"
+   - boardWidth: 10-20 (default 10)
+   - boardHeight: 15-25 (default 20)
+   - initialDropSpeed: 0.1-5 (default 1)
+   - pieceTemplates: array of EXACTLY 7 template IDs (I, O, T, S, Z, J, L)
+2. Create 7 piece templates with:
+   - tags: ["piece", "<color>"]
+   - physics: { bodyType: "kinematic", isSensor: true }
+   - conditionalBehaviors for visual feedback:
+     - when: { hasTag: "sys.tetris:falling" } -> glow
+     - when: { hasTag: "sys.tetris:locked" } -> no effects
+     - when: { hasTag: "sys.tetris:clearing" } -> fade_out
+3. Set world.gravity to { x: 0, y: 0 } (Tetris handles its own gravity)
+4. Do NOT include rotationRule, lineClearing, or pieceSpawner slots`;
+  }
+
+  return basePrompt;
 }
 
 

@@ -38,6 +38,7 @@ export * from './wave/types';
 export * from './path/types';
 export * from './spatial-query/types';
 export * from './dynamic-collider/types';
+export * from './slots';
 
 import { comboSystem } from './combo';
 import { checkpointSystem } from './checkpoint';
