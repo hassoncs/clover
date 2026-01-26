@@ -4,15 +4,61 @@
 
 **Goal**: Design a clean, extensible game engine for an AI-powered children's game maker (ages 6-14) that supports both simple declarative games and complex imperative logic (like Match-3).
 
-**Core Philosophy**: 
-- Systems and pieces that users can "puzzle piece together"
-- AI helps users understand and connect well-tested holistic systems
-- Similar to Scratch for kids - visual, understandable, composable
-- Escape hatch for complex games without mixing concerns
+**Core Philosophy - "Unity Marketplace for Kids"**: 
+- **Like Unity Editor**: Modular component system where everything is swappable
+- **Like Unity Asset Store**: Marketplace of game systems, behaviors, assets, full games
+- **Swap Anything**: Image pack, Match-3 system, entire game template
+- **Generic Foundation**: Entity + Behavior + Rule system is the universal base
+- **Everything Attaches**: All extensions hook into the core entity system
+- **AI-Powered**: AI helps users discover, configure, and combine marketplace items
 
 **Key Problem**: 
 - Current Match-3 implementation mixes visual effects (80 lines of glow/scale code) with game logic
 - Need clean separation: **imperative code manages WHEN state changes, declarative config defines WHAT visual feedback looks like**
+- Systems aren't discoverable or composable yet
+
+## The Unity Marketplace Mental Model
+
+### Unity Asset Store Analogy
+
+| Unity Asset Store Item | Slopcade Equivalent | How It Attaches |
+|------------------------|---------------------|-----------------|
+| **Image Pack** | Asset Pack (sprites, backgrounds) | `template.sprite.imageUrl = "marketplace://fantasy-pack/hero.png"` |
+| **Particle System** | Behavior Plugin (`particle_emitter`) | `behaviors: [{ type: "particle_emitter", effect: "explosion" }]` |
+| **Game System** (Inventory, Dialogue) | GameSystem Plugin (Match3, Tetris) | `gameDefinition.match3 = { ... }` + registers with GameSystemRegistry |
+| **Complete Game Template** | Full GameDefinition JSON | Load entire template, swap assets/systems as needed |
+| **Shader** | Sprite Effect (`sprite_effect` behavior) | `conditionalBehaviors: [{ when: {hasTag: "burning"}, behaviors: [{type: "sprite_effect", effect: "fire"}] }]` |
+| **Audio Pack** | Sound Library | `rules: [{ actions: [{ type: "sound", soundId: "marketplace://retro-sounds/jump.mp3" }] }]` |
+| **Physics Material** | Physics Preset | `physics: { preset: "marketplace://materials/ice" }` → sets friction/restitution |
+
+### The Universal Interface - Everything Extends Entities
+
+**Key Insight**: No matter what you add from the "marketplace", it **always interacts through the entity system**:
+
+```typescript
+// CORE FOUNDATION (never changes)
+interface GameDefinition {
+  metadata: GameMetadata;
+  world: WorldConfig;
+  templates: Record<string, EntityTemplate>;  // ← Universal extension point
+  entities: GameEntity[];                     // ← Universal extension point
+  rules: GameRule[];                          // ← Universal extension point
+  
+  // OPTIONAL SYSTEMS (marketplace add-ons)
+  match3?: Match3Config;      // Adds Match3GameSystem
+  inventory?: InventoryConfig; // Future: Adds InventorySystem
+  dialogue?: DialogueConfig;   // Future: Adds DialogueSystem
+  // ... infinite extensibility
+}
+```
+
+**Every system, no matter how complex, ultimately**:
+1. **Creates entities** (`entityManager.createEntity()`)
+2. **Manages tags** (`entityManager.addTag("selected")`)
+3. **Triggers rules** (`ruleEvaluator.triggerEvent("match_found")`)
+4. **Uses behaviors** (via `conditionalBehaviors` or custom behavior types)
+
+**Nothing bypasses the core**. Systems are **power users** of the entity API, not separate systems.
 
 ## Current Architecture Analysis
 
@@ -353,15 +399,284 @@ const GAME_SYSTEMS = {
 - Prevents AI from generating invalid system configurations
 - Clear error messages: "match3.rows must be between 4 and 12"
 
-### 4. Scratch-Like Simplicity
-**Question**: How do we expose this to kids?
+### 4. AI Ergonomics - Making Generation Reliable
 
-**Ideas**:
-- Visual tag badges on entities (show active tags)
-- "When tagged 'X', do Y" visual programming blocks
-- Template library of common state machines (idle → selected → moving)
+**Core Principle**: **Layer the complexity, provide guard rails**
 
-**User Response Needed**: What's the UI/UX vision?
+#### AI Generation Hierarchy (Easiest → Hardest)
+
+```
+Level 1: PURE DECLARATIVE (95% success rate)
+├─ Entities with standard behaviors
+├─ Rules with standard triggers/actions
+└─ No custom systems
+Example: "Breakout game with paddle and bricks"
+
+Level 2: SYSTEM TEMPLATES (85% success rate)
+├─ Use pre-built systems (match3, endless runner)
+├─ Configure via simple parameters
+└─ Visual customization via conditional behaviors
+Example: "Candy Crush clone with 8x8 grid"
+
+Level 3: CUSTOM SYSTEMS (60% success rate, future)
+├─ AI writes new GameSystemDefinition
+├─ Registers custom behaviors
+└─ Advanced expression functions
+Example: "Card battler with deck building"
+```
+
+#### AI Prompt Strategy
+
+**Current Problem** (ht-001 Human Task):
+- AI doesn't know WHEN to use behaviors vs rules vs systems
+- No clear boundaries on what's possible
+- Validation happens too late (after generation)
+
+**Proposed Solution - Structured Prompts**:
+
+```typescript
+// System Prompt for Game Generator
+const AI_CONTEXT = {
+  // Always available
+  primitives: {
+    entities: "Use for all game objects",
+    behaviors: "20 built-in types for entity logic",
+    rules: "Global game events (scoring, win/lose)",
+    templates: "Reusable entity definitions"
+  },
+  
+  // Use when appropriate
+  systems: {
+    match3: {
+      useWhen: "Grid-based matching games (Candy Crush, Bejeweled)",
+      avoidWhen: "No swapping/matching mechanic",
+      config: { rows: "4-12", cols: "4-12", pieceTemplates: "3-8 types" },
+      visualCustomization: "Use conditionalBehaviors on piece templates"
+    }
+  },
+  
+  // Validation rules
+  constraints: {
+    maxEntities: 200,
+    maxBehaviorsPerEntity: 10,
+    requiredFields: ["metadata.title", "world", "entities"]
+  }
+};
+```
+
+**Generation Flow**:
+1. **Classify Intent**: "Match-3 game" → Use match3 system
+2. **Generate Structure**: Start with system config block
+3. **Add Visual Layer**: Conditional behaviors for state feedback
+4. **Validate Schema**: Zod schemas catch errors early
+5. **Explain Choices**: "I used match3 system because..."
+
+#### Concrete Example - AI Generates Gem Crush
+
+**User Prompt**: "Make a gem matching game like Bejeweled"
+
+**AI Internal Reasoning**:
+```
+1. Intent: Match-3 mechanic detected
+2. System Selection: Use match3 system template
+3. Configuration:
+   - Grid: 8x8 (standard)
+   - Pieces: 6 gem types (good variety)
+   - Min match: 3 (standard)
+4. Visual Design:
+   - Selected gems: glow + scale oscillate
+   - Matched gems: particle burst + fade out
+5. Validation: ✓ All configs valid
+```
+
+**AI Output**:
+```json
+{
+  "metadata": { "title": "Gem Crush" },
+  "match3": {
+    "rows": 8,
+    "cols": 8,
+    "pieceTemplates": ["gem_ruby", "gem_sapphire", "gem_emerald", "gem_topaz", "gem_amethyst", "gem_diamond"],
+    "minMatch": 3
+  },
+  "templates": {
+    "gem_ruby": {
+      "sprite": { "type": "image", "imageUrl": "generated://gem_ruby.png" },
+      "physics": { "bodyType": "dynamic", "shape": "circle", "radius": 0.4 },
+      "conditionalBehaviors": [
+        {
+          "when": { "hasTag": "selected" },
+          "priority": 2,
+          "behaviors": [
+            { "type": "scale_oscillate", "min": 0.95, "max": 1.08, "speed": 4 },
+            { "type": "sprite_effect", "effect": "glow", "params": { "color": [1, 0.2, 0.2], "pulse": true } }
+          ]
+        },
+        {
+          "when": { "hasTag": "matched" },
+          "priority": 3,
+          "behaviors": [
+            { "type": "particle_emitter", "effect": "sparkle_burst", "count": 20 },
+            { "type": "sprite_effect", "effect": "fade_out", "duration": 0.3 }
+          ]
+        }
+      ]
+    }
+  }
+}
+```
+
+**Why This Works**:
+- AI only needs to understand **high-level concepts** ("matching game")
+- System handles **complex algorithms** (match detection, cascades)
+- Conditional behaviors handle **visual polish** (declarative, tunable)
+- Clear **validation** at each step
+- **Explainable**: AI can say why it chose each option
+
+## Marketplace Design Principles
+
+### 1. **Everything is Hot-Swappable**
+
+**Problem**: Currently, changing from simple physics to Match-3 requires rewriting the entire game.
+
+**Solution**: Systems declare their **extension points** and **dependencies**.
+
+```typescript
+// User starts with simple physics game
+const game: GameDefinition = {
+  entities: [
+    { id: "ball", template: "physics_ball" }
+  ]
+};
+
+// SWAP 1: Change asset pack
+game.templates.physics_ball.sprite.imageUrl = "marketplace://cartoon-pack/ball.png";
+// ✅ Works immediately, no code changes
+
+// SWAP 2: Add Match-3 system
+game.match3 = { rows: 8, cols: 8, pieceTemplates: ["gem_red", "gem_blue"] };
+delete game.entities; // Match-3 generates its own grid
+// ✅ Compatible because both use entity foundation
+
+// SWAP 3: Change visual feedback
+game.templates.gem_red.conditionalBehaviors = [
+  { when: { hasTag: "selected" }, behaviors: [{ type: "sprite_effect", effect: "marketplace://neon-glow" }] }
+];
+// ✅ Works because visual feedback is declarative
+```
+
+### 2. **AI as Marketplace Navigator**
+
+**The AI's job isn't to write code—it's to browse the marketplace and configure the right pieces.**
+
+```typescript
+// User: "I want a Match-3 game with pixel art gems"
+
+AI reasoning:
+1. Intent: Match-3 mechanic → Search marketplace for "match3" system
+2. Found: Match3GameSystem v1.0.0 (95% rating, 10k downloads)
+3. Assets: Search marketplace for "pixel art gems"
+4. Found: RetroGemsPack (128x128px, 8 colors, $0 free tier)
+5. Configuration:
+   - match3.rows = 8
+   - match3.cols = 8
+   - match3.pieceTemplates = RetroGemsPack.gems.slice(0, 6)
+6. Visual Polish:
+   - Add "selected" state with marketplace://vfx/pixel-glow
+   - Add "matched" state with marketplace://vfx/pixel-burst
+7. Validation: ✓ All marketplace items compatible
+8. Generate: Complete GameDefinition
+```
+
+**Benefits**:
+- AI doesn't need to understand Match-3 internals
+- Users can **preview marketplace items** before AI generates
+- **Upgrade** any piece later (swap gem pack, change glow effect)
+- **Versioning**: "Use Match3GameSystem v2.0 instead" → one config change
+
+### 3. **Dependency Resolution (Like npm)**
+
+**Problem**: What if systems conflict? What if an asset requires a specific system version?
+
+**Solution**: Marketplace items declare dependencies.
+
+```typescript
+// Marketplace item: "PowerUpExtension for Match3"
+const PowerUpExtension: MarketplaceItem = {
+  id: "match3-power-ups",
+  type: "system_extension",
+  version: "1.0.0",
+  
+  // DEPENDENCY CONTRACT
+  requires: {
+    systems: {
+      match3: "^1.0.0"  // Compatible with Match3 v1.x
+    },
+    behaviors: ["sprite_effect", "particle_emitter"]
+  },
+  
+  // WHAT IT ADDS
+  provides: {
+    behaviors: ["match4_row_clear", "match5_bomb"],
+    templates: ["powerup_row_bomb", "powerup_color_bomb"],
+    tags: ["powerup_active"]
+  },
+  
+  // HOW TO USE
+  install: (gameDefinition) => {
+    // Adds power-up piece templates
+    gameDefinition.templates.powerup_row = { ... };
+    
+    // Adds power-up logic to Match3 config
+    gameDefinition.match3.specialMatches = {
+      "4match": "powerup_row",
+      "5match": "powerup_bomb"
+    };
+  }
+};
+
+// AI checks compatibility before adding
+if (canInstall(PowerUpExtension, game)) {
+  PowerUpExtension.install(game);
+}
+```
+
+### 4. **Versioned Systems Prevent Breaking Changes**
+
+```typescript
+// GameSystemRegistry with versioning
+const registry = new GameSystemRegistry();
+
+registry.register({
+  id: "match3",
+  version: { major: 1, minor: 0, patch: 0 },
+  configSchema: Match3ConfigV1Schema,  // Zod validation
+  // ... system implementation
+});
+
+registry.register({
+  id: "match3",
+  version: { major: 2, minor: 0, patch: 0 },
+  configSchema: Match3ConfigV2Schema,  // Breaking changes OK, new major version
+  migrations: {
+    "1.x": (oldConfig) => migrateV1toV2(oldConfig)  // Auto-upgrade path
+  }
+});
+
+// Game specifies version
+const game: GameDefinition = {
+  systemManifest: {
+    "match3": "1.0.0"  // Lock to v1.x for stability
+  },
+  match3: { ... }
+};
+
+// Validation at load time
+const compatibility = registry.validateManifest(game.systemManifest);
+if (!compatibility.compatible) {
+  throw new Error(`Incompatible systems: ${compatibility.errors}`);
+}
+```
 
 ## Architectural Analysis: What's Missing vs What's Great
 
@@ -403,6 +718,126 @@ const GAME_SYSTEMS = {
 - **Broadcast Messages** = Tags (state changes)
 - **Extensions** = Game Systems (complex logic plugins)
 
+## System Composability - The "Slots" Design Pattern
+
+**Key Insight**: Users should be able to **swap systems like LEGO blocks** without breaking the game.
+
+### Current Problem
+- Match3 is **monolithic** - you can't mix it with other systems
+- No clear **extension points** for customization
+- AI doesn't know **what's swappable**
+
+### Proposed: "Slots" Architecture
+
+Think of each game system as a **slot machine cartridge** with:
+1. **Input Contract**: What it needs from the game
+2. **Output Contract**: What it provides to entities
+3. **Extension Slots**: Where users can customize
+
+#### Example: Match3 System Slots
+
+```typescript
+const Match3System: GameSystemDefinition = {
+  id: "match3",
+  version: { major: 1, minor: 0, patch: 0 },
+  
+  // INPUT CONTRACT - What system needs
+  requires: {
+    gridLayout: "GridConfig",  // Must have a grid
+    pieceTemplates: "EntityTemplate[]",  // Must have piece types
+    entityManager: "EntityManager"  // Access to spawn/destroy
+  },
+  
+  // OUTPUT CONTRACT - What system provides
+  provides: {
+    tags: ["selected", "matched", "falling"],  // States it manages
+    events: ["match_found", "cascade_complete", "no_moves"],  // Events it fires
+    expressionFunctions: {
+      "combo_multiplier": "(cascadeLevel) => cascadeLevel * 50",
+      "match_size_bonus": "(matchSize) => matchSize > 3 ? 200 : 100"
+    }
+  },
+  
+  // EXTENSION SLOTS - Where users customize
+  slots: {
+    matchDetection: {
+      default: "standard_3_match",
+      alternatives: ["diagonal_match", "shape_match", "color_chain"],
+      signature: "(board) => Match[]"
+    },
+    scoreCalculation: {
+      default: "cascade_multiplier",
+      alternatives: ["fixed_score", "combo_bonus"],
+      signature: "(matchCount, cascadeLevel) => number"
+    },
+    visualFeedback: {
+      default: "conditional_behaviors",  // Uses the new system!
+      customizable: true,
+      via: "template.conditionalBehaviors"
+    }
+  }
+};
+```
+
+### How This Helps AI
+
+**AI can now reason about**:
+1. **Compatibility**: "Can I use match3 + physics platformer?" → Check input contracts
+2. **Customization**: "How do I make matches diagonal?" → Check available slots
+3. **Composition**: "What events can I react to?" → Check provided events
+
+**Example AI Logic**:
+```typescript
+// User: "Make a Match-3 game but with special diagonal matches"
+
+AI reasoning:
+1. Use match3 system ✓
+2. Check slots.matchDetection → has "diagonal_match" alternative ✓
+3. Generate config:
+   match3: {
+     matchDetection: "diagonal_match",  // Override default
+     // ... other configs use defaults
+   }
+```
+
+### Registry Pattern for Discoverability
+
+```typescript
+// Game System Registry
+const SYSTEM_REGISTRY = {
+  match3: Match3SystemDefinition,
+  tetris: TetrisSystemDefinition,
+  endless_runner: EndlessRunnerSystemDefinition
+};
+
+// AI can query at generation time
+function canSystemsCoexist(systemA, systemB) {
+  const conflictingTags = intersection(
+    systemA.provides.tags,
+    systemB.provides.tags
+  );
+  return conflictingTags.length === 0;
+}
+
+// Example
+canSystemsCoexist(SYSTEM_REGISTRY.match3, SYSTEM_REGISTRY.physics_platformer)
+  → false (both want to manage entity positions)
+  
+canSystemsCoexist(SYSTEM_REGISTRY.match3, SYSTEM_REGISTRY.particle_effects)
+  → true (non-overlapping concerns)
+```
+
+### Scratch Analogy
+
+| Scratch Concept | Slopcade Equivalent | AI Knows |
+|-----------------|---------------------|----------|
+| **Sprite** | Entity Template | ✓ Always available |
+| **Costume** | Sprite Component | ✓ Swappable assets |
+| **Blocks** | Behaviors | ✓ 20 built-in types |
+| **Broadcast** | Tag + Event System | ✓ New: State management |
+| **Extension** | Game System | ✓ New: Slot-based plugins |
+| **My Blocks** | Custom Behaviors | ⚠️ Future: AI writes custom |
+
 ## Scope Boundaries
 
 ### IN SCOPE (This Redesign)
@@ -441,7 +876,77 @@ const GAME_SYSTEMS = {
 2. Move visual effects from imperative code to conditional behaviors
 3. Update game definition JSON to use new pattern
 
-### Phase 5: Documentation & AI Training
+### Phase 5: System Slots & Registry
+1. Update GameSystemDefinition to include `slots` and contracts
+2. Migrate Match3 to new slot-based pattern
+3. Add system compatibility checker
+
+### Phase 6: AI Prompt Engineering
+1. Create tiered system documentation (Tier 1, 2, 3)
+2. Add system selection logic to game generator
+3. Update validation to check system contracts
+4. Add examples for each system tier
+
+### Phase 7: Documentation & Templates
 1. Update behavior system docs with conditional behaviors
-2. Create examples for AI to learn from
-3. Add to game template library
+2. Create "State Machine Patterns" guide (idle → selected → matched)
+3. Add Match3 refactor as case study
+4. Expand template library with system-based games
+
+## Incremental Migration Path (No Big Bang!)
+
+### Milestone 1: Foundation (Week 1)
+**Goal**: Tag system + conditional behaviors working in isolation
+
+- [ ] Add `EntityManager.addTag()` / `removeTag()` / `hasTag()`
+- [ ] Add `ConditionalBehavior` schema to types
+- [ ] Implement priority-based conditional evaluation in BehaviorExecutor
+- [ ] Create `scale_oscillate` behavior
+- [ ] Create `sprite_effect` behavior
+- [ ] **Test**: Simple entity with "selected" tag triggers glow effect
+
+**Validation**: Can toggle tag, see effect activate/deactivate
+
+### Milestone 2: Match3 Refactor (Week 2)
+**Goal**: Prove the pattern works with real complex system
+
+- [ ] Keep Match3 imperative logic (board, matching, cascades)
+- [ ] **Remove** all visual effect code (showHighlight, updateSelectionScale, etc.)
+- [ ] **Replace** with tag manipulation (`addTag("selected")`, `removeTag("matched")`)
+- [ ] Add conditional behaviors to gem templates
+- [ ] **Test**: Match3 game plays identically but uses new pattern
+
+**Validation**: 80 lines of visual code deleted, works via tags
+
+### Milestone 3: System Registry (Week 3)
+**Goal**: Make Match3 a proper registered plugin
+
+- [ ] Extend `GameSystemDefinition` with `slots` and contracts
+- [ ] Implement Match3 as registered system
+- [ ] Add system lifecycle hooks (onGameLoad, onUpdate, onUnload)
+- [ ] Create system compatibility checker
+- [ ] **Test**: Can enable/disable Match3 system dynamically
+
+**Validation**: GameSystemRegistry.get("match3") returns definition with slots
+
+### Milestone 4: AI Integration (Week 4)
+**Goal**: AI can generate Match3 games reliably
+
+- [ ] Create tiered documentation for Match3 system
+- [ ] Update game generator to detect Match-3 intent
+- [ ] Add Match3 config generation logic
+- [ ] Add system validation to generator
+- [ ] **Test**: "Make a gem matching game" → generates valid Match3 config
+
+**Validation**: >85% success rate on Match-3 generation prompts
+
+### Milestone 5: Second System (Week 5+)
+**Goal**: Prove pattern generalizes
+
+- [ ] Pick next complex game type (Tetris? Card game? Endless runner?)
+- [ ] Implement as GameSystem using same pattern
+- [ ] Add to registry
+- [ ] Update AI generator
+- [ ] **Test**: AI can choose between multiple systems
+
+**Validation**: Two systems coexist, AI picks correct one based on prompt
