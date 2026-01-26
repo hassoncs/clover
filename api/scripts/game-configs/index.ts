@@ -19,6 +19,7 @@ import { connect4Config } from './connect4/assets.config';
 import { bubbleShooterConfig } from './bubbleShooter/assets.config';
 import { game2048Config } from './game2048/assets.config';
 import { puyoPuyoConfig } from './puyoPuyo/assets.config';
+import { slotMachineConfig } from './slotMachine/assets.config';
 
 export const gameConfigs: Record<string, GameAssetConfig> = {
   slopeggle: slopeggleConfig,
@@ -41,6 +42,7 @@ export const gameConfigs: Record<string, GameAssetConfig> = {
   bubbleShooter: bubbleShooterConfig,
   game2048: game2048Config,
   puyoPuyo: puyoPuyoConfig,
+  slotMachine: slotMachineConfig,
 };
 
 export function getGameConfig(gameId: string): GameAssetConfig {
