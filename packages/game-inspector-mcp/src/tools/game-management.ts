@@ -1,8 +1,9 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { GameInspectorState, WindowWithBridge } from "../types.js";
-import { AVAILABLE_GAMES, AVAILABLE_EXAMPLES, DEFAULT_BASE_URL, DEFAULT_TIMEOUT } from "../types.js";
-import { normalizeGameName, buildGameUrl, ensurePage, waitForDebugBridge } from "../utils.js";
+import { DEFAULT_BASE_URL, DEFAULT_TIMEOUT } from "../types.js";
+import { normalizeGameName, buildGameUrl, buildExampleUrl, ensurePage, waitForDebugBridge } from "../utils.js";
+import { getAvailableGames, getAvailableExamples, isValidGame, isValidExample, type GameInfo } from "../registry.js";
 
 export function registerGameManagementTools(server: McpServer, state: GameInspectorState) {
   server.tool(
@@ -10,17 +11,20 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
     "List all available test games and examples with their paths",
     {},
     async () => {
-      const games = AVAILABLE_GAMES.map(g => ({ name: g, path: `/test-games/${g}` }));
-      const examples = AVAILABLE_EXAMPLES.map(e => ({ name: e, path: `/examples/${e}` }));
+      const games = getAvailableGames();
+      const examples = getAvailableExamples();
+      
       return {
         content: [
           {
             type: "text" as const,
             text: JSON.stringify(
               {
-                games,
-                examples,
-                usage: "Pass the 'path' value to 'open' to open that game/example",
+                games: games.map((g: GameInfo) => ({ name: g.id, path: g.path })),
+                examples: examples.map((e: GameInfo) => ({ name: e.id, path: e.path })),
+                totalGames: games.length,
+                totalExamples: examples.length,
+                usage: "Pass the game name or path to 'open' to open that game/example. Examples: 'slopeggle', '/test-games/candyCrush', '/examples/draggable_cubes'",
               },
               null,
               2
@@ -35,7 +39,7 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
     "open",
     "Open a test game or example in the browser and wait for it to be ready",
     {
-      name: z.string().describe("Path from game_list (e.g., '/examples/draggable_cubes', '/test-games/candyCrush') or full URL"),
+      name: z.string().describe("Game name, example name, or full URL (e.g., 'candyCrush', 'draggable_cubes', 'http://localhost:8085/examples/draggable_cubes')"),
       baseUrl: z.string().optional().describe(`Base URL for the app (default: ${DEFAULT_BASE_URL})`),
       timeout: z.number().optional().describe(`Timeout in ms to wait for game ready (default: ${DEFAULT_TIMEOUT})`),
     },
@@ -51,33 +55,53 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
       const isPath = name.startsWith("/");
       
       if (isFullUrl) {
-        url = name;
-        identifier = new URL(name).pathname.split("/").pop() || name;
+        const urlObj = new URL(name);
+        if (!urlObj.searchParams.has("debug")) {
+          urlObj.searchParams.set("debug", "true");
+        }
+        url = urlObj.toString();
+        identifier = urlObj.pathname.split("/").pop() || name;
       } else if (isPath) {
-        url = `${baseUrl}${name}`;
-        identifier = name.split("/").pop() || name;
-      } else {
-        const gameId = normalizeGameName(name);
-        const isExampleId = AVAILABLE_EXAMPLES.includes(name as any);
+        const cleanPath = name.split("?")[0];
+        const pathParts = cleanPath.split("/").filter(Boolean);
+        identifier = pathParts[pathParts.length - 1] || name;
         
-        if (gameId) {
-          url = buildGameUrl(gameId, baseUrl);
-          identifier = gameId;
-        } else if (isExampleId) {
-          url = `${baseUrl}/examples/${name}`;
+        const hasDebug = name.includes("debug=");
+        url = `${baseUrl}${cleanPath}${hasDebug ? "" : (name.includes("?") ? "&debug=true" : "?debug=true")}`;
+        
+        if (pathParts[0] === "test-games") {
+          url += "&autostart=true";
+        }
+      } else {
+        const gameInfo = normalizeGameName(name);
+        
+        if (gameInfo) {
+          if (gameInfo.type === "game") {
+            url = buildGameUrl(gameInfo.id, baseUrl);
+          } else {
+            url = buildExampleUrl(gameInfo.id, baseUrl);
+          }
+          identifier = gameInfo.id;
+        } else if (isValidExample(name)) {
+          url = buildExampleUrl(name, baseUrl);
+          identifier = name;
+        } else if (isValidGame(name)) {
+          url = buildGameUrl(name, baseUrl);
           identifier = name;
         } else {
-          const gamePaths = AVAILABLE_GAMES.map(g => `/test-games/${g}`);
-          const examplePaths = AVAILABLE_EXAMPLES.map(e => `/examples/${e}`);
+          const availableGames = getAvailableGames();
+          const availableExamples = getAvailableExamples();
+          
           return {
             content: [
               {
                 type: "text" as const,
                 text: JSON.stringify({
                   success: false,
-                  error: `Unknown game/example: "${name}". Use game_list to see available paths.`,
-                  availableGames: gamePaths,
-                  availableExamples: examplePaths,
+                  error: `Unknown game/example: "${name}". Use game_list to see available options.`,
+                  hint: "Try one of these game names directly: " + availableGames.slice(0, 5).map((g: GameInfo) => g.id).join(", ") + "...",
+                  totalGames: availableGames.length,
+                  totalExamples: availableExamples.length,
                 }),
               },
             ],
@@ -99,6 +123,7 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
                 success: false,
                 error: "Timeout waiting for GodotDebugBridge to become ready",
                 url,
+                hint: "Make sure the dev server is running (pnpm dev) and the URL is correct",
               }),
             },
           ],

@@ -33,14 +33,17 @@
 **ALWAYS follow this pattern:**
 
 ```typescript
-// 1. Open game
-game_inspector_game_open({name: "slopeggle"})
+// 1. List available games first
+const available = game_inspector_list()
 
-// 2. Query/inspect/manipulate
+// 2. Open a game by its ID
+game_inspector_open({name: "gameIdFromList"})
+
+// 3. Query/inspect/manipulate
 // ... use V2 APIs ...
 
-// 3. Close when done
-game_inspector_game_close()
+// 4. Close when done
+game_inspector_close()
 ```
 
 **CRITICAL**: Always close the browser when finished to free resources.
@@ -675,16 +678,16 @@ X- ←---+--→ X+
 
 ## Available Games
 
-Use `game_inspector_game_list()` to get current list.
+Use `game_inspector_list()` to get the current list of all available games and examples.
 
-**Common games**:
-- `slopeggle` (Peggle-like)
-- `candyCrush` (Match-3)
-- `breakoutBouncer` (Breakout)
-- `pinballLite` (Pinball)
-- `simplePlatformer` (Platformer)
+**Games are dynamically discovered** from the filesystem:
+- Test games: `app/lib/test-games/games/*/game.ts`
+- Lab examples: `app/app/examples/*.tsx`
 
-**Aliases work**: `peggle` → `slopeggle`, `breakout` → `breakoutBouncer`
+**Workflow**:
+1. Call `game_inspector_list()` to see all available games and examples
+2. Use the exact game ID or path from the list to open a game
+3. The list updates automatically when games are added or removed
 
 ---
 
@@ -714,7 +717,9 @@ game_inspector_game_close();
 ### Testing: Verify win condition
 
 ```typescript
-game_inspector_game_open({name: 'slopeggle'});
+// First list games, then pick one
+const available = game_inspector_list();
+game_inspector_open({name: available.games[0].name});
 
 // Subscribe to collision events
 const sub = game_inspector_subscribe({
@@ -722,10 +727,10 @@ const sub = game_inspector_subscribe({
   selector: '#ball'
 });
 
-// Spawn ball in bucket
+// Spawn ball at specific position
 game_inspector_spawn({
   template: 'ball',
-  position: {x: 0, y: -7},  // Bucket position
+  position: {x: 0, y: -7},
   id: 'test-ball'
 });
 
@@ -737,41 +742,41 @@ const events = game_inspector_poll_events({
   subscriptionId: sub.subId
 });
 
-// Verify ball collided with bucket
-const bucketCollision = events.events.find(e => 
-  e.data.entityA === 'test-ball' && e.data.entityB === 'bucket'
+// Verify collision occurred
+const collision = events.events.find(e => 
+  e.data.entityA === 'test-ball'
 );
-// Assert: bucketCollision exists
 
 game_inspector_unsubscribe({subscriptionId: sub.subId});
-game_inspector_game_close();
+game_inspector_close();
 ```
 
 ### QA: Visual regression test
 
 ```typescript
-game_inspector_game_open({name: 'candyCrush'});
+// List and open a game
+const available = game_inspector_list();
+game_inspector_open({name: available.games[0].name});
 
 // Set up specific board state
 game_inspector_pause();
 
-// Clear existing candies
-const candies = game_inspector_query({selector: '.candy'});
-for (const candy of candies.matches) {
-  game_inspector_destroy({entityId: candy.entityId});
+// Query entities by tag/template
+const entities = game_inspector_query({selector: '.targetTag'});
+for (const entity of entities.matches) {
+  game_inspector_destroy({entityId: entity.entityId});
 }
 
 // Spawn test pattern
-game_inspector_spawn({template: 'redCandy', position: {x: 0, y: 0}});
-game_inspector_spawn({template: 'redCandy', position: {x: 1, y: 0}});
-game_inspector_spawn({template: 'redCandy', position: {x: 2, y: 0}});
+game_inspector_spawn({template: 'someTemplate', position: {x: 0, y: 0}});
+game_inspector_spawn({template: 'someTemplate', position: {x: 1, y: 0}});
 
 // Capture screenshot
 game_inspector_screenshot({
-  filename: '/tmp/three-red-candies.png'
+  filename: '/tmp/test-screenshot.png'
 });
 
-game_inspector_game_close();
+game_inspector_close();
 ```
 
 ---
@@ -780,7 +785,8 @@ game_inspector_game_close();
 
 ```typescript
 // For deterministic, repeatable tests
-game_inspector_game_open({name: 'slopeggle'});
+const available = game_inspector_list();
+game_inspector_open({name: available.games[0].name});
 
 // Enable deterministic mode
 game_inspector_set_seed({seed: 42, enableDeterministic: true});
@@ -819,27 +825,29 @@ game_inspector_game_close();
 ```typescript
 import { test, expect } from '@playwright/test';
 
-test('ball hits all pegs', async () => {
-  // Use MCP tools via your test framework
-  const gameState = await game_inspector_game_open({name: 'slopeggle'});
+test('physics collision test', async () => {
+  // List available games, pick one
+  const available = await game_inspector_list();
+  const gameState = await game_inspector_open({name: available.games[0].name});
   
   // Subscribe to collisions
   const sub = await game_inspector_subscribe({eventType: 'collision'});
   
-  // Fire ball
-  await game_inspector_tap({x: 0, y: 7});
+  // Simulate input
+  await game_inspector_simulate_input({type: 'tap', worldX: 0, worldY: 7});
   
-  // Wait for ball to settle
-  const ball = gameState.snapshot.entities.find(e => e.template === 'ball');
-  await game_inspector_wait_stationary({entityId: ball.id, timeout: 10000});
+  // Wait for entity to settle
+  const entity = gameState.snapshot.entities.find(e => e.template === 'ball');
+  if (entity) {
+    await game_inspector_game_wait_stationary({entityId: entity.id, timeout: 10000});
+  }
   
   // Check collision events
   const events = await game_inspector_poll_events({subscriptionId: sub.subId});
-  const pegHits = events.events.filter(e => e.data.entityB.includes('peg'));
   
-  expect(pegHits.length).toBeGreaterThan(0);
+  expect(events.events.length).toBeGreaterThan(0);
   
-  await game_inspector_game_close();
+  await game_inspector_close();
 });
 ```
 

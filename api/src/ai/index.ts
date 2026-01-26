@@ -77,3 +77,32 @@ export type {
   RunPodConfig,
   RunPodJobInput,
 } from './runpod-types';
+
+export {
+  evaluateGame,
+  evaluateGameStructure,
+  runImprovementLoop,
+  quickEvaluate,
+  type EvaluationRequest,
+  type EvaluationConfig,
+  type EvaluationResult,
+  type GameEvaluation,
+  type GameEvaluationDimensions,
+  type GameEvaluationStructural,
+  type ImprovementLoopConfig,
+  type ImprovementLoopResult,
+  type IterationRecord,
+} from './evaluator';
+
+export {
+  runExperiment,
+  formatExperimentReport,
+  BENCHMARK_PROMPTS,
+  type ExperimentConfig,
+  type ExperimentResult,
+  type ExperimentSummary,
+  type RunResult,
+  type ModelConfig,
+  type ModelStats,
+  type PromptStats,
+} from './experiments';

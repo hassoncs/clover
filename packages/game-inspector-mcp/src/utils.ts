@@ -1,38 +1,19 @@
 import { chromium } from "playwright";
 import type { Browser, Page } from "playwright";
-import type { GameId, GameInspectorState, AVAILABLE_GAMES, WindowWithBridge } from "./types.js";
+import type { GameInspectorState, WindowWithBridge } from "./types.js";
 import { DEFAULT_TIMEOUT } from "./types.js";
+import { findByIdOrPath, type GameInfo } from "./registry.js";
 
-export function normalizeGameName(name: string): GameId | null {
-  const availableGames = [
-    "breakoutBouncer",
-    "candyCrush",
-    "comboFighter",
-    "dungeonCrawler",
-    "physicsStacker",
-    "pinballLite",
-    "rpgProgressionDemo",
-    "simplePlatformer",
-    "slopeggle",
-    "towerDefense",
-  ] as const;
-
-  const normalized = name.toLowerCase().replace(/[-_\s]/g, "");
-  for (const game of availableGames) {
-    if (game.toLowerCase() === normalized) {
-      return game;
-    }
-  }
-  if (normalized === "peggle") return "slopeggle";
-  if (normalized === "breakout") return "breakoutBouncer";
-  if (normalized === "pinball") return "pinballLite";
-  if (normalized === "stacker") return "physicsStacker";
-  if (normalized === "platformer") return "simplePlatformer";
-  return null;
+export function normalizeGameName(name: string): GameInfo | null {
+  return findByIdOrPath(name) ?? null;
 }
 
 export function buildGameUrl(gameId: string, baseUrl: string): string {
   return `${baseUrl}/test-games/${gameId}?debug=true&autostart=true`;
+}
+
+export function buildExampleUrl(exampleId: string, baseUrl: string): string {
+  return `${baseUrl}/examples/${exampleId}?debug=true`;
 }
 
 export async function ensureBrowser(state: GameInspectorState): Promise<Browser> {
