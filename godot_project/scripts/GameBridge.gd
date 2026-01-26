@@ -1783,8 +1783,6 @@ func _on_preload_complete(url: String, success: bool) -> void:
 	var total_done = _preload_completed_count + _preload_failed_count
 	var percent = int((float(total_done) / float(_preload_pending_count)) * 100.0)
 	
-	print("[GameBridge] Preload progress: " + str(percent) + "% (" + str(_preload_completed_count) + "/" + str(_preload_pending_count) + ")")
-	
 	if _js_preload_progress_callback != null:
 		_js_preload_progress_callback.call("call", null, percent, _preload_completed_count, _preload_failed_count)
 	else:

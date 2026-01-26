@@ -17,7 +17,12 @@ import type {
   DynamicShaderResult,
 } from "./types";
 import { injectGodotDebugBridge } from "./debug";
-import { queryAsync as sharedQueryAsync, setupQueryResolver, getGodotBridge as getSharedGodotBridge, type GodotBridgeBase } from "./query";
+import {
+  queryAsync as sharedQueryAsync,
+  setupQueryResolver,
+  getGodotBridge as getSharedGodotBridge,
+  type GodotBridgeBase,
+} from "./query";
 
 declare global {
   interface Window {
@@ -107,9 +112,7 @@ declare global {
           colliderId: number,
         ) => void,
       ) => void;
-      onInputEvent: (
-        callback: (jsonStr: string) => void,
-      ) => void;
+      onInputEvent: (callback: (jsonStr: string) => void) => void;
       onTransformSync: (callback: (transformsJson: string) => void) => void;
       setEntityImage: (
         entityId: string,
@@ -127,10 +130,17 @@ declare global {
         width: number,
         height: number,
       ) => void;
-       clearTextureCache: (url: string) => void;
-       preloadTextures: (urlsJson: string, progressCallback: (percent: number, completed: number, failed: number) => void) => void;
-       setDebugShowShapes: (show: boolean) => void;
-       setCameraTarget: (entityId: string) => void;
+      clearTextureCache: (url: string) => void;
+      preloadTextures: (
+        urlsJson: string,
+        progressCallback: (
+          percent: number,
+          completed: number,
+          failed: number,
+        ) => void,
+      ) => void;
+      setDebugShowShapes: (show: boolean) => void;
+      setCameraTarget: (entityId: string) => void;
       setCameraPosition: (x: number, y: number) => void;
       setCameraZoom: (zoom: number) => void;
       spawnParticle: (type: string, x: number, y: number) => void;
@@ -199,7 +209,10 @@ declare global {
       rotate_3d_model: (x: number, y: number, z: number) => void;
       set_3d_camera_distance: (distance: number) => void;
       clear_3d_models: () => void;
-      captureScreenshot: (withOverlays: boolean, overlayTypesJson: string) => void;
+      captureScreenshot: (
+        withOverlays: boolean,
+        overlayTypesJson: string,
+      ) => void;
       getWorldInfo: () => void;
       getCameraInfo: () => void;
       getViewportInfo: () => void;
@@ -208,8 +221,6 @@ declare global {
     };
   }
 }
-
-
 
 export function createWebGodotBridge(): GodotBridge {
   const collisionCallbacks: ((event: CollisionEvent) => void)[] = [];
@@ -229,9 +240,8 @@ export function createWebGodotBridge(): GodotBridge {
   const transformSyncCallbacks: ((
     transforms: Record<string, EntityTransform>,
   ) => void)[] = [];
-  const propertySyncCallbacks: ((
-    properties: PropertySyncPayload,
-  ) => void)[] = [];
+  const propertySyncCallbacks: ((properties: PropertySyncPayload) => void)[] =
+    [];
 
   const getGodotBridge = (): Window["GodotBridge"] | null => {
     const iframe = document.querySelector(
@@ -243,7 +253,11 @@ export function createWebGodotBridge(): GodotBridge {
     return window.GodotBridge ?? null;
   };
 
-  const queryAsync = <T>(method: string, args: unknown[] = [], timeoutMs = 5000): Promise<T> => {
+  const queryAsync = <T>(
+    method: string,
+    args: unknown[] = [],
+    timeoutMs = 5000,
+  ): Promise<T> => {
     const bridge = getSharedGodotBridge() as GodotBridgeBase | null;
     if (!bridge) {
       return Promise.reject(new Error("Godot bridge not available"));
@@ -254,7 +268,7 @@ export function createWebGodotBridge(): GodotBridge {
   const bridge: GodotBridge = {
     async initialize() {
       setupQueryResolver();
-      
+
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(
           () => reject(new Error("Godot WASM load timeout")),
@@ -340,9 +354,9 @@ export function createWebGodotBridge(): GodotBridge {
                   y: number;
                   entityId: string | null;
                 };
-                for (const cb of inputEventCallbacks) cb(data.type, data.x, data.y, data.entityId);
-              } catch {
-              }
+                for (const cb of inputEventCallbacks)
+                  cb(data.type, data.x, data.y, data.entityId);
+              } catch {}
             });
 
             godotBridge.onTransformSync((transformsJson: string) => {
@@ -357,7 +371,9 @@ export function createWebGodotBridge(): GodotBridge {
 
             godotBridge.onPropertySync((propertiesJson: string) => {
               try {
-                const properties = JSON.parse(propertiesJson) as PropertySyncPayload;
+                const properties = JSON.parse(
+                  propertiesJson,
+                ) as PropertySyncPayload;
                 for (const cb of propertySyncCallbacks) cb(properties);
               } catch {}
             });
@@ -426,7 +442,9 @@ export function createWebGodotBridge(): GodotBridge {
 
     async getAllTransforms(): Promise<Record<string, EntityTransform>> {
       try {
-        return await queryAsync<Record<string, EntityTransform>>("getAllTransforms");
+        return await queryAsync<Record<string, EntityTransform>>(
+          "getAllTransforms",
+        );
       } catch {
         return {};
       }
@@ -580,8 +598,13 @@ export function createWebGodotBridge(): GodotBridge {
     },
 
     async screenToWorld(screenX: number, screenY: number): Promise<Vec2> {
-      console.log(`[GodotBridge.web] screenToWorld called: (${screenX}, ${screenY})`);
-      const result = await queryAsync<{ x: number; y: number }>("screenToWorld", [screenX, screenY]);
+      console.log(
+        `[GodotBridge.web] screenToWorld called: (${screenX}, ${screenY})`,
+      );
+      const result = await queryAsync<{ x: number; y: number }>(
+        "screenToWorld",
+        [screenX, screenY],
+      );
       console.log(`[GodotBridge.web] screenToWorld result:`, result);
       return result ?? { x: 0, y: 0 };
     },
@@ -591,7 +614,10 @@ export function createWebGodotBridge(): GodotBridge {
     },
 
     async queryPointEntity(point: Vec2): Promise<string | null> {
-      return await queryAsync<string | null>("queryPointEntity", [point.x, point.y]);
+      return await queryAsync<string | null>("queryPointEntity", [
+        point.x,
+        point.y,
+      ]);
     },
 
     async queryAABB(min: Vec2, max: Vec2): Promise<number[]> {
@@ -768,38 +794,52 @@ export function createWebGodotBridge(): GodotBridge {
       width: number,
       height: number,
     ) {
-      getGodotBridge()?.setEntityAtlasRegion(entityId, atlasUrl, x, y, w, h, width, height);
+      getGodotBridge()?.setEntityAtlasRegion(
+        entityId,
+        atlasUrl,
+        x,
+        y,
+        w,
+        h,
+        width,
+        height,
+      );
     },
 
     clearTextureCache(url?: string) {
       getGodotBridge()?.clearTextureCache(url ?? "");
     },
 
-    preloadTextures(urls: string[], onProgress?: (percent: number, completed: number, failed: number) => void): Promise<{ completed: number; failed: number }> {
+    preloadTextures(
+      urls: string[],
+      onProgress?: (percent: number, completed: number, failed: number) => void,
+    ): Promise<{ completed: number; failed: number }> {
       return new Promise((resolve) => {
         const bridge = getGodotBridge();
         if (!bridge) {
           resolve({ completed: 0, failed: urls.length });
           return;
         }
-        
+
         if (urls.length === 0) {
           onProgress?.(100, 0, 0);
           resolve({ completed: 0, failed: 0 });
           return;
         }
-        
+
         const progressCallback = (...args: unknown[]) => {
-          console.log('[GodotBridge.web] preloadTextures callback received:', args);
-          const percent = typeof args[0] === 'number' ? args[0] : Number(args[0]);
-          const completed = typeof args[1] === 'number' ? args[1] : Number(args[1]);
-          const failed = typeof args[2] === 'number' ? args[2] : Number(args[2]);
+          const percent =
+            typeof args[0] === "number" ? args[0] : Number(args[0]);
+          const completed =
+            typeof args[1] === "number" ? args[1] : Number(args[1]);
+          const failed =
+            typeof args[2] === "number" ? args[2] : Number(args[2]);
           onProgress?.(percent, completed, failed);
           if (percent >= 100) {
             resolve({ completed, failed });
           }
         };
-        
+
         // Pass URLs as JSON string since JS Arrays don't auto-convert to GDScript Arrays
         bridge.preloadTextures(JSON.stringify(urls), progressCallback);
       });
@@ -1091,7 +1131,7 @@ export function createWebGodotBridge(): GodotBridge {
       y: number,
       width: number,
       height: number,
-      labelText: string = ''
+      labelText: string = "",
     ) {
       const godotBridge = getGodotBridge() as any;
       if (godotBridge?.createThemedUIComponent) {
@@ -1103,7 +1143,7 @@ export function createWebGodotBridge(): GodotBridge {
           y,
           width,
           height,
-          labelText
+          labelText,
         );
       }
     },
