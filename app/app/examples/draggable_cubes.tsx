@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import type { ExampleMeta } from "@/lib/registry/types";
 import type { GodotBridge } from "@/lib/godot/types";
 import type { GameDefinition } from "@slopcade/shared";
+import { FullScreenHeader } from "../../components/FullScreenHeader";
 
 export const metadata: ExampleMeta = {
   title: "Draggable Cubes",
@@ -316,25 +317,23 @@ export default function DraggableCubesExample() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-900" edges={["top"]}>
-      <View className="flex-1 bg-gray-900">
-        <View className="flex-row items-center justify-between px-4 py-3 bg-black/50">
-          <Pressable onPress={() => router.back()} className="py-2 px-4 bg-gray-700 rounded-lg">
-            <Text className="text-white font-semibold">← Back</Text>
-          </Pressable>
-          <Text className="text-white text-lg font-bold">Draggable Cubes</Text>
-          <View className="w-20">
-            {status === "loading" && (
-              <Text className="text-yellow-400 text-xs">Loading...</Text>
-            )}
-          </View>
-        </View>
+      <FullScreenHeader
+        title="Draggable Cubes"
+        rightContent={
+          status === "loading" ? (
+            <Text className="text-yellow-400 text-xs">Loading...</Text>
+          ) : null
+        }
+      />
 
+      <View className="flex-1 bg-gray-900" style={{ pointerEvents: "none" }}>
         <View
           ref={containerRef}
           className="flex-1"
           onLayout={handleLayout}
-          onStartShouldSetResponder={() => status === "ready"}
-          onMoveShouldSetResponder={() => status === "ready"}
+          onStartShouldSetResponder={() => true}
+          onMoveShouldSetResponder={() => true}
+          onResponderTerminationRequest={() => false}
           onResponderGrant={handleTouchStart}
           onResponderMove={handleTouchMove}
           onResponderRelease={handleTouchEnd}
@@ -370,23 +369,23 @@ export default function DraggableCubesExample() {
             </View>
           )}
         </View>
+      </View>
 
-        <View className="bg-black/80 p-3 max-h-48">
-          <Text className="text-green-400 font-mono text-xs mb-2">
-            {status === "loading" 
-              ? "Initializing..." 
-              : debugInfo
-                ? `Touch: (${debugInfo.worldX.toFixed(2)}, ${debugInfo.worldY.toFixed(2)}) | Hit: ${debugInfo.hitEntity ?? "none"} | Dragging: ${debugInfo.isDragging}`
-                : "Touch to interact"
-            }
-          </Text>
-          <View className="border-t border-gray-700 pt-2">
-            {logs.map((log, idx) => (
-              <Text key={`log-${idx}-${log.slice(0, 10)}`} className="text-gray-400 font-mono text-xs">
-                {log}
-              </Text>
-            ))}
-          </View>
+      <View className="bg-black/80 p-3 max-h-48">
+        <Text className="text-green-400 font-mono text-xs mb-2">
+          {status === "loading" 
+            ? "Initializing..." 
+            : debugInfo
+              ? `Touch: (${debugInfo.worldX.toFixed(2)}, ${debugInfo.worldY.toFixed(2)}) | Hit: ${debugInfo.hitEntity ?? "none"} | Dragging: ${debugInfo.isDragging}`
+              : "Touch to interact"
+          }
+        </Text>
+        <View className="border-t border-gray-700 pt-2">
+          {logs.map((log, idx) => (
+            <Text key={`log-${idx}-${log.slice(0, 10)}`} className="text-gray-400 font-mono text-xs">
+              {log}
+            </Text>
+          ))}
         </View>
       </View>
     </SafeAreaView>

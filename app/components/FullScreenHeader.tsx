@@ -1,13 +1,15 @@
 import { View, Text, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter, useNavigation } from "expo-router";
 import type { ReactNode } from "react";
 
 interface FullScreenHeaderProps {
-  onBack: () => void;
+  onBack?: () => void;
   title?: string;
   centerContent?: ReactNode;
   rightContent?: ReactNode;
   showBackground?: boolean;
+  fallbackRoute?: string;
 }
 
 export function FullScreenHeader({
@@ -16,8 +18,24 @@ export function FullScreenHeader({
   centerContent,
   rightContent,
   showBackground = false,
+  fallbackRoute = "/lab",
 }: FullScreenHeaderProps) {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const navigation = useNavigation();
+
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      router.back();
+    } else if (onBack) {
+      // If custom onBack provided and no history, try onBack first
+      // (preserves custom behavior for cases that handle it)
+      onBack();
+    } else {
+      // No history and no custom handler, go to fallback
+      router.replace(fallbackRoute as any);
+    }
+  };
 
   return (
     <View
@@ -27,7 +45,7 @@ export function FullScreenHeader({
       <View className="flex-row items-center justify-between px-4 pb-2">
         <Pressable
           className="py-2 px-4 bg-black/50 rounded-lg"
-          onPress={onBack}
+          onPress={handleBack}
         >
           <Text className="text-white font-semibold">← Back</Text>
         </Pressable>

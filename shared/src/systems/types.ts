@@ -18,12 +18,30 @@ export type ExpressionFunction = (
   ctx: EvalContext
 ) => ExpressionValueType;
 
+/**
+ * System execution phases (like Unity's script execution order).
+ * Systems are executed in phase order, then by priority within each phase.
+ */
+export enum SystemPhase {
+  PRE_UPDATE = 0,    // Setup, input buffering
+  GAME_LOGIC = 1,    // Match3, Tetris core loops
+  PHYSICS = 2,       // Physics simulation
+  POST_PHYSICS = 3,  // Physics reactions
+  VISUAL = 4,        // Particle systems, effects
+  CLEANUP = 5        // Destruction, pooling
+}
+
 export interface GameSystemDefinition<
   TConfig = unknown,
   TState = unknown,
 > {
   id: string;
   version: SystemVersion;
+  
+  /** Execution phase for this system (default: GAME_LOGIC) */
+  executionPhase?: SystemPhase;
+  /** Priority within phase - higher = executes first (default: 0) */
+  priority?: number;
   
   configSchema?: z.ZodType<TConfig>;
   

@@ -50,40 +50,36 @@ function useDeepLinkHandler() {
 export default function RootLayout() {
   useDeepLinkHandler();
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1 }} className={Platform.OS === "web" ? "no-select" : ""}>
       <TRPCProvider>
         <SafeAreaProvider>
-          <Stack>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="play/[id]"
-        options={{
-          headerShown: false,
-          presentation: "fullScreenModal",
-        }}
-      />
-      <Stack.Screen
-        name="play/preview"
-        options={{
-          headerShown: false,
-          presentation: "fullScreenModal",
-        }}
-      />
-      <Stack.Screen
-        name="test-games/[id]"
-        options={{
-          headerShown: false,
-          presentation: "fullScreenModal",
-        }}
-      />
-      <Stack.Screen 
-        name="examples/[id]" 
-        options={{ 
-          headerShown: false,
-          presentation: "fullScreenModal",
-        }} 
-      />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen
+              name="play/[id]"
+              options={{
+                presentation: "fullScreenModal",
+              }}
+            />
+            <Stack.Screen
+              name="play/preview"
+              options={{
+                presentation: "fullScreenModal",
+              }}
+            />
+            <Stack.Screen
+              name="test-games/[id]"
+              options={{
+                presentation: "fullScreenModal",
+              }}
+            />
+            <Stack.Screen 
+              name="examples/[id]" 
+              options={{ 
+                presentation: "fullScreenModal",
+              }} 
+            />
           </Stack>
         </SafeAreaProvider>
       </TRPCProvider>

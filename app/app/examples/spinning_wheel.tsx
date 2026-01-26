@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import type { ExampleMeta } from "@/lib/registry/types";
 import type { GodotBridge } from "@/lib/godot/types";
 import type { GameDefinition } from "@slopcade/shared";
+import { FullScreenHeader } from "../../components/FullScreenHeader";
 
 export const metadata: ExampleMeta = {
   title: "Spinning Wheel",
@@ -415,21 +416,22 @@ export default function SpinningWheelExample() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-900" edges={["top"]}>
-      <View className="flex-1 bg-gray-900">
-        <View className="flex-row items-center justify-between px-4 py-3 bg-black/50">
-          <Pressable onPress={() => router.back()} className="py-2 px-4 bg-gray-700 rounded-lg">
-            <Text className="text-white font-semibold">← Back</Text>
-          </Pressable>
-          <Text className="text-white text-lg font-bold">Spinning Wheel</Text>
-          <Pressable
-            onPress={handleReset}
-            className="py-2 px-4 bg-amber-600 rounded-lg"
-            disabled={status !== "ready"}
-          >
-            <Text className="text-white font-semibold">Reset</Text>
-          </Pressable>
-        </View>
+      <FullScreenHeader
+        title="Spinning Wheel"
+        rightContent={
+          <View className="flex-row gap-2">
+            <Pressable
+              onPress={handleReset}
+              className="py-2 px-4 bg-amber-600 rounded-lg"
+              disabled={status !== "ready"}
+            >
+              <Text className="text-white font-semibold">Reset</Text>
+            </Pressable>
+          </View>
+        }
+      />
 
+      <View className="flex-1 bg-gray-900">
         <View
           ref={containerRef}
           className="flex-1"

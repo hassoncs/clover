@@ -4,7 +4,7 @@ import type {
   SystemCompatibility,
   ExpressionFunction,
 } from './types';
-import { isCompatibleVersion, formatVersion, parseVersion } from './types';
+import { isCompatibleVersion, formatVersion, parseVersion, SystemPhase } from './types';
 
 export class GameSystemRegistry {
   private systems = new Map<string, GameSystemDefinition>();
@@ -53,6 +53,46 @@ export class GameSystemRegistry {
 
   getAll(): GameSystemDefinition[] {
     return Array.from(this.systems.values());
+  }
+
+  /**
+   * Returns systems grouped by execution phase, sorted by priority within each phase.
+   * Higher priority systems execute first within their phase.
+   */
+  getSystemsByPhase(): Map<SystemPhase, GameSystemDefinition[]> {
+    const byPhase = new Map<SystemPhase, GameSystemDefinition[]>();
+    
+    for (const phase of Object.values(SystemPhase)) {
+      if (typeof phase === 'number') {
+        byPhase.set(phase, []);
+      }
+    }
+    
+    for (const system of this.systems.values()) {
+      const phase = system.executionPhase ?? SystemPhase.GAME_LOGIC;
+      byPhase.get(phase)!.push(system);
+    }
+    
+    for (const systems of byPhase.values()) {
+      systems.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+    }
+    
+    return byPhase;
+  }
+
+  /**
+   * Returns a flat array of systems in execution order (phase order, then priority).
+   */
+  getSystemsInExecutionOrder(): GameSystemDefinition[] {
+    const result: GameSystemDefinition[] = [];
+    const byPhase = this.getSystemsByPhase();
+    
+    const phases = Array.from(byPhase.keys()).sort((a, b) => a - b);
+    for (const phase of phases) {
+      result.push(...byPhase.get(phase)!);
+    }
+    
+    return result;
   }
 
   getExpressionFunction(name: string): ExpressionFunction | undefined {

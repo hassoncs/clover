@@ -1,6 +1,6 @@
 import type { SpriteComponent } from './sprite';
 import type { PhysicsComponent } from './physics';
-import type { Behavior } from './behavior';
+import type { Behavior, ConditionalBehavior } from './behavior';
 
 export interface TransformComponent {
   x: number;
@@ -26,6 +26,8 @@ export interface GameEntity {
   sprite?: SpriteComponent;
   physics?: PhysicsComponent;
   behaviors?: Behavior[];
+  /** Tag-driven conditional behavior groups (exclusive by priority) */
+  conditionalBehaviors?: ConditionalBehavior[];
   tags?: string[];
   layer?: number;
   visible?: boolean;
@@ -46,6 +48,8 @@ export interface EntityTemplate {
   sprite?: SpriteComponent;
   physics?: PhysicsComponent;
   behaviors?: Behavior[];
+  /** Tag-driven conditional behavior groups (exclusive by priority) */
+  conditionalBehaviors?: ConditionalBehavior[];
   tags?: string[];
   layer?: number;
   slots?: Record<string, SlotDefinition>;

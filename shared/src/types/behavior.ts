@@ -244,3 +244,47 @@ export type Behavior =
   | AttachToBehavior
   | TeleportBehavior
   | MaintainSpeedBehavior;
+
+/**
+ * Condition for when a conditional behavior group should be active.
+ * Tags-first design: hasTag is primary, expressions are escape hatch.
+ */
+export interface ConditionalBehaviorCondition {
+  /** Primary: Entity must have this tag */
+  hasTag?: string;
+  /** Entity must have ANY of these tags */
+  hasAnyTag?: string[];
+  /** Entity must have ALL of these tags */
+  hasAllTags?: string[];
+  /** Entity must NOT have this tag */
+  lacksTag?: string;
+  /** Escape hatch: Expression that evaluates to boolean (e.g., "health < 20") */
+  expr?: string;
+}
+
+/**
+ * A group of behaviors that activate based on tag conditions.
+ * Only ONE conditional behavior group is active at a time (exclusive by priority).
+ * Higher priority wins when multiple conditions match.
+ * 
+ * Example:
+ * ```typescript
+ * conditionalBehaviors: [
+ *   {
+ *     when: { hasTag: "sys.match3:selected" },
+ *     priority: 2,
+ *     behaviors: [
+ *       { type: "scale_oscillate", min: 0.97, max: 1.06, speed: 5 }
+ *     ]
+ *   }
+ * ]
+ * ```
+ */
+export interface ConditionalBehavior {
+  /** Condition that must be met for this group to be active */
+  when: ConditionalBehaviorCondition;
+  /** Priority for exclusive evaluation - higher wins (default: 0) */
+  priority: number;
+  /** Behaviors to execute when this group is active */
+  behaviors: Behavior[];
+}

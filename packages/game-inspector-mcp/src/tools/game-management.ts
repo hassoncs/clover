@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { GameInspectorState, WindowWithBridge } from "../types.js";
-import { AVAILABLE_GAMES, DEFAULT_BASE_URL, DEFAULT_TIMEOUT } from "../types.js";
+import { AVAILABLE_GAMES, AVAILABLE_EXAMPLES, DEFAULT_BASE_URL, DEFAULT_TIMEOUT } from "../types.js";
 import { normalizeGameName, buildGameUrl, ensurePage, waitForDebugBridge } from "../utils.js";
 
 export function registerGameManagementTools(server: McpServer, state: GameInspectorState) {
@@ -17,6 +17,7 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
             text: JSON.stringify(
               {
                 games: AVAILABLE_GAMES,
+                examples: AVAILABLE_EXAMPLES,
                 aliases: {
                   peggle: "slopeggle",
                   breakout: "breakoutBouncer",
@@ -38,7 +39,7 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
     "game_open",
     "Open a test game in the browser and wait for it to be ready",
     {
-      name: z.string().describe("Game name or ID (e.g., 'candyCrush', 'peggle', 'slopeggle')"),
+      name: z.string().describe("Game name, example name, or full URL (e.g., 'candyCrush', 'draggable_cubes', 'http://localhost:8085/examples/draggable_cubes')"),
       baseUrl: z.string().optional().describe(`Base URL for the app (default: ${DEFAULT_BASE_URL})`),
       timeout: z.number().optional().describe(`Timeout in ms to wait for game ready (default: ${DEFAULT_TIMEOUT})`),
     },
@@ -47,22 +48,38 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
       const baseUrl = (args.baseUrl as string | undefined) ?? DEFAULT_BASE_URL;
       const timeout = (args.timeout as number | undefined) ?? DEFAULT_TIMEOUT;
 
-      const gameId = normalizeGameName(name);
-      if (!gameId) {
-        return {
-          content: [
-            {
-              type: "text" as const,
-              text: JSON.stringify({
-                success: false,
-                error: `Unknown game: "${name}". Available games: ${AVAILABLE_GAMES.join(", ")}`,
-              }),
-            },
-          ],
-        };
+      let url: string;
+      let identifier: string;
+
+      const isFullUrl = name.startsWith("http://") || name.startsWith("https://");
+      if (isFullUrl) {
+        url = name;
+        identifier = new URL(name).pathname.split("/").pop() || name;
+      } else {
+        const gameId = normalizeGameName(name);
+        const isExampleId = AVAILABLE_EXAMPLES.includes(name as any);
+        
+        if (gameId) {
+          url = buildGameUrl(gameId, baseUrl);
+          identifier = gameId;
+        } else if (isExampleId) {
+          url = `${baseUrl}/examples/${name}`;
+          identifier = name;
+        } else {
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: JSON.stringify({
+                  success: false,
+                  error: `Unknown game/example: "${name}". Available games: ${AVAILABLE_GAMES.join(", ")}. Available examples: ${AVAILABLE_EXAMPLES.join(", ")}`,
+                }),
+              },
+            ],
+          };
+        }
       }
 
-      const url = buildGameUrl(gameId, baseUrl);
       const page = await ensurePage(state);
 
       await page.goto(url);
@@ -83,7 +100,7 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
         };
       }
 
-      state.currentGameId = gameId;
+      state.currentGameId = identifier;
 
       const snapshot = await page.evaluate(async () => {
         const w = window as unknown as WindowWithBridge;
@@ -97,7 +114,7 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
             type: "text" as const,
             text: JSON.stringify({
               success: true,
-              gameId,
+              identifier,
               url,
               snapshot,
             }),

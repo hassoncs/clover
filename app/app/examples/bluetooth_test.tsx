@@ -13,6 +13,7 @@ import { useRouter } from "expo-router";
 import type { ExampleMeta } from "@/lib/registry/types";
 import type { GodotBridge } from "@/lib/godot/types";
 import type { GameDefinition } from "@slopcade/shared";
+import { FullScreenHeader } from "../../components/FullScreenHeader";
 import { BLETransport } from "@/lib/networking/ble/BLETransport";
 import { isBLEPeripheralSupported } from "@/lib/networking/ble/BLEPeripheralManager";
 import type {
@@ -490,13 +491,10 @@ export default function BluetoothSyncExample() {
   if (mode === "menu") {
     return (
       <SafeAreaView className="flex-1 bg-gray-900" edges={["top", "bottom"]}>
-        <View className="flex-row items-center justify-between px-4 py-3 bg-black/50 border-b border-gray-800">
-          <Pressable onPress={() => router.back()} className="py-2 px-4 bg-gray-700 rounded-lg">
-            <Text className="text-white font-semibold">← Back</Text>
-          </Pressable>
-          <Text className="text-white text-lg font-bold">BLE Sync Demo</Text>
-          <View className="w-20" />
-        </View>
+        <FullScreenHeader
+          onBack={() => router.back()}
+          title="BLE Sync Demo"
+        />
 
         <View className="flex-1 justify-center p-6">
           <Text className="text-white text-center text-xl mb-2">Two-Player Physics</Text>
@@ -532,11 +530,10 @@ export default function BluetoothSyncExample() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-900" edges={["top"]}>
-      <View className="flex-1">
-        <View className="flex-row items-center justify-between px-4 py-2 bg-black/50">
-          <Pressable onPress={handleDisconnect} className="py-1 px-3 bg-red-600 rounded-lg">
-            <Text className="text-white font-semibold text-sm">Leave</Text>
-          </Pressable>
+      <FullScreenHeader
+        onBack={handleDisconnect}
+        title={isHost ? "Host" : "Client"}
+        rightContent={
           <View className="flex-row items-center">
             <View className={`w-2 h-2 rounded-full mr-2 ${
               connectionState === ConnectionState.CONNECTED ? "bg-green-500" :
@@ -544,12 +541,13 @@ export default function BluetoothSyncExample() {
               "bg-gray-500"
             }`} />
             <Text className="text-white text-sm">
-              {isHost ? "Host" : "Client"} • {peers.size} peer{peers.size !== 1 ? "s" : ""}
+              {peers.size} peer{peers.size !== 1 ? "s" : ""}
             </Text>
           </View>
-          <View className="w-16" />
-        </View>
+        }
+      />
 
+      <View className="flex-1">
         <View
           ref={containerRef}
           className="flex-1"

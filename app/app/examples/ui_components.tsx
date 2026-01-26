@@ -1,9 +1,10 @@
 import { useCallback, useState, useEffect, useRef } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import type { ExampleMeta } from "@/lib/registry/types";
 import type { GodotBridge } from "@/lib/godot/types";
+import { FullScreenHeader } from "../../components/FullScreenHeader";
 
 export const metadata: ExampleMeta = {
   title: "Themed UI Components",
@@ -81,9 +82,9 @@ export default function UIComponentsExample() {
         <View style={styles.errorContainer}>
           <Text style={styles.errorTitle}>Error</Text>
           <Text style={styles.errorMessage}>{errorMsg}</Text>
-          <Text style={styles.backButton} onPress={() => router.back()}>
-            ← Back to Examples
-          </Text>
+          <Pressable onPress={() => router.back()} style={styles.backButton}>
+            <Text style={styles.backButtonText}>← Back to Examples</Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -101,12 +102,9 @@ export default function UIComponentsExample() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.backButton} onPress={() => router.back()}>
-          ← Back
-        </Text>
-        <Text style={styles.title}>Themed UI Components</Text>
-      </View>
+      <FullScreenHeader
+        title="Themed UI Components"
+      />
 
       <View style={styles.godotContainer}>
         <GodotView style={styles.godot} />
@@ -146,21 +144,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#0a0a0f",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    gap: 16,
-  },
-  backButton: {
-    color: "#60a5fa",
-    fontSize: 16,
-  },
-  title: {
-    color: "#e0e0e0",
-    fontSize: 20,
-    fontWeight: "600",
   },
   godotContainer: {
     flex: 1,
@@ -223,5 +206,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
     marginBottom: 24,
+  },
+  backButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: "#374151",
+    borderRadius: 8,
+  },
+  backButtonText: {
+    color: "#60a5fa",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

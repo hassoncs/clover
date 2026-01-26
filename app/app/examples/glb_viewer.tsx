@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import type { ExampleMeta } from "@/lib/registry/types";
 import type { GodotBridge } from "@/lib/godot/types";
+import { FullScreenHeader } from "../../components/FullScreenHeader";
 
 export const metadata: ExampleMeta = {
   title: "3D GLB Viewer",
@@ -103,15 +104,14 @@ export default function GLBViewerExample() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-900" edges={["top"]}>
-      <View className="flex-row items-center justify-between px-4 py-3 bg-black/50">
-        <Pressable onPress={() => router.back()} className="py-2 px-4 bg-gray-700 rounded-lg">
-          <Text className="text-white font-semibold">← Back</Text>
-        </Pressable>
-        <Text className="text-white text-lg font-bold">3D GLB Viewer</Text>
-        <View className="w-20">
-          {status === "loading" && <Text className="text-yellow-400 text-xs">Loading...</Text>}
-        </View>
-      </View>
+      <FullScreenHeader
+        title="3D GLB Viewer"
+        rightContent={
+          status === "loading" ? (
+            <Text className="text-yellow-400 text-xs">Loading...</Text>
+          ) : null
+        }
+      />
 
       <View className="flex-1">
         {status === "error" ? (

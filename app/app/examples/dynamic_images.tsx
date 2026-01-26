@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import type { ExampleMeta } from "@/lib/registry/types";
 import type { GodotBridge } from "@/lib/godot/types";
 import type { GameDefinition } from "@slopcade/shared";
+import { FullScreenHeader } from "../../components/FullScreenHeader";
 
 export const metadata: ExampleMeta = {
   title: "Dynamic Images",
@@ -217,19 +218,16 @@ export default function DynamicImagesExample() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-900" edges={["top"]}>
-      <View className="flex-1 bg-gray-900">
-        <View className="flex-row items-center justify-between px-4 py-3 bg-black/50">
-          <Pressable onPress={() => router.back()} className="py-2 px-4 bg-gray-700 rounded-lg">
-            <Text className="text-white font-semibold">← Back</Text>
-          </Pressable>
-          <Text className="text-white text-lg font-bold">Dynamic Images</Text>
-          <View className="w-20">
-            {status === "loading" && (
-              <Text className="text-yellow-400 text-xs">Loading...</Text>
-            )}
-          </View>
-        </View>
+      <FullScreenHeader
+        title="Dynamic Images"
+        rightContent={
+          status === "loading" ? (
+            <Text className="text-yellow-400 text-xs">Loading...</Text>
+          ) : null
+        }
+      />
 
+      <View className="flex-1 bg-gray-900">
         <View className="flex-1">
           {GodotView ? (
             <GodotView style={{ flex: 1 }} />

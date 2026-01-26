@@ -52,6 +52,7 @@ export class InputEntityManager {
       transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
       behaviors: [],
       tags: ["system", "input"],
+      tagBits: new Set(),
       layer: 999,
       visible: this.debugMode,
       active: false,

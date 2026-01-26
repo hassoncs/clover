@@ -7,10 +7,10 @@ README.md::TextFile::-1::1769283353::0::1::::<><><>0<>0<><>::
 ::res://docs/::1769205833
 VFX_IMPLEMENTATION_TODO.md::TextFile::-1::1769205833::0::1::::<><><>0<>0<><>::
 ::res://export/::1769358836
-::res://export/web/::1769369619
-index.apple-touch-icon.png::CompressedTexture2D::3008797173950879524::1769369619::1769360857::1::::<><><>0<>0<>ec5fb2b17cff9624bc7119381b74adf7<>res://.godot/imported/index.apple-touch-icon.png-aebfb1e41ce4a993e231d731c37e24be.ctex::
-index.icon.png::CompressedTexture2D::8567596562072014535::1769369619::1769360857::1::::<><><>0<>0<>ff7ca3caf9ce8c4824fcacd26ff436c1<>res://.godot/imported/index.icon.png-71c9d3338695ba24c45c706011eaad77.ctex::
-index.png::CompressedTexture2D::8308857111999474707::1769369619::1769360857::1::::<><><>0<>0<>3373f616c8fdcb71f46fc0645e048a11<>res://.godot/imported/index.png-c2d8175aa2006ac735a751c5803e019d.ctex::
+::res://export/web/::1769391017
+index.apple-touch-icon.png::CompressedTexture2D::3008797173950879524::1769391017::1769360857::1::::<><><>0<>0<>ec5fb2b17cff9624bc7119381b74adf7<>res://.godot/imported/index.apple-touch-icon.png-aebfb1e41ce4a993e231d731c37e24be.ctex::
+index.icon.png::CompressedTexture2D::8567596562072014535::1769391017::1769360857::1::::<><><>0<>0<>ff7ca3caf9ce8c4824fcacd26ff436c1<>res://.godot/imported/index.icon.png-71c9d3338695ba24c45c706011eaad77.ctex::
+index.png::CompressedTexture2D::8308857111999474707::1769391017::1769360857::1::::<><><>0<>0<>3373f616c8fdcb71f46fc0645e048a11<>res://.godot/imported/index.png-c2d8175aa2006ac735a751c5803e019d.ctex::
 ::res://models/::1769312331
 test_model.glb::PackedScene::2451084565682209964::1769312314::1769312331::0::::<><><>0<>0<>b9b133cf4e800c93b8956f6acbfdee9e<>::
 ::res://particles/::1769205175
@@ -21,7 +21,7 @@ VFXShowcase.tscn::PackedScene::2855297431937620752::1769205700::0::1::::<><><>0<
 ::res://scenes/lab/::1769366245
 ui_components_demo.tscn::PackedScene::5962763572750761863::1769366245::0::1::::<><><>0<>0<><>::res://scripts/lab/UIComponentsDemo.gd
 ::res://scripts/::1769385517
-GameBridge.gd::GDScript::7400890102577367664::1769389817::0::1::::<>Node<><>0<>0<><>::
+GameBridge.gd::GDScript::7400890102577367664::1769391386::0::1::::<>Node<><>0<>0<><>::
 Lab3D.gd::GDScript::2743172060191353031::1769312349::0::1::::<>Node3D<><>0<>0<><>::
 Main.gd::GDScript::4927831078751178685::1769366407::0::1::::<>Node2D<><>0<>0<><>::
 PhysicsBody.gd::GDScript::3101094749307879933::1769200136::0::1::::<>RigidBody2D<><>0<>0<><>::

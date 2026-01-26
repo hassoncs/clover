@@ -6,6 +6,7 @@ import type { ExampleMeta } from "@/lib/registry/types";
 import type { GodotBridge } from "@/lib/godot/types";
 import type { GameDefinition } from "@slopcade/shared";
 import { TextureButton } from "@slopcade/ui";
+import { FullScreenHeader } from "../../components/FullScreenHeader";
 
 export const metadata: ExampleMeta = {
   title: "Texture Button",
@@ -170,12 +171,9 @@ export default function TextureButtonExample() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
-        </Pressable>
-        <Text style={styles.title}>Texture Button Demo</Text>
-      </View>
+      <FullScreenHeader
+        title="Texture Button Demo"
+      />
 
       <View style={styles.content}>
         <View style={styles.demoSection}>
@@ -239,29 +237,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#1a1a2e",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
-  },
-  backButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: "#333",
-    borderRadius: 8,
-    marginRight: 16,
-  },
-  backButtonText: {
-    color: "#fff",
-    fontSize: 14,
-  },
-  title: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "bold",
   },
   content: {
     flex: 1,
@@ -342,5 +317,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
     margin: 20,
+  },
+  backButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: "#333",
+    borderRadius: 8,
+  },
+  backButtonText: {
+    color: "#fff",
+    fontSize: 14,
   },
 });

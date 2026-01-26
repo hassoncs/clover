@@ -18,6 +18,7 @@ var _viewport_3d: Viewport3D = null
 var _property_collector: PropertyCollector = null
 var _query_system: QuerySystem = null
 var _debug_bridge: DebugBridge = null
+var _physics_queries: PhysicsQueries = null
 
 # ============================================================================
 # CORE STATE
@@ -116,6 +117,7 @@ func _init_modules() -> void:
 	_viewport_3d.name = "Viewport3D"
 	add_child(_viewport_3d)
 	_property_collector = PropertyCollector.new(self)
+	_physics_queries = PhysicsQueries.new(self)
 	_query_system = QuerySystem.new()
 	_register_core_query_handlers()
 	
@@ -131,6 +133,11 @@ func _register_core_query_handlers() -> void:
 	_query_system.register_handler("getEntityTransform", func(args):
 		if args.size() > 0:
 			return _get_entity_transform_impl(str(args[0]))
+		return null
+	)
+	_query_system.register_handler("queryPointEntity", func(args):
+		if args.size() >= 2:
+			return _physics_queries.query_point_entity(float(args[0]), float(args[1]))
 		return null
 	)
 

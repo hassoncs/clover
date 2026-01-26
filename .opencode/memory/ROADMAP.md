@@ -7,13 +7,15 @@
 
 ## Executive Summary
 
-Slopcade is a physics-based game engine and AI-powered game maker built with React Native. The project has achieved **major milestones** and is currently focused on **AI integration** and **asset generation**.
+Slopcade is a physics-based game engine and AI-powered game maker built with React Native. The project has achieved **major milestones** and is currently focused on **production launch readiness**.
+
+**LAUNCH TARGET**: [docs/LAUNCH_ROADMAP.md](../../docs/LAUNCH_ROADMAP.md) - *The definitive path to App Store.*
 
 | Status | Count | Description |
 |--------|-------|-------------|
 | 🏆 Completed | 2 | Godot 4 integration, Storybook + NativeWind |
-| 🚧 In Progress | 4 | Asset pipeline (86%), AI game maker, DevMux, Registry |
-| ⏳ Blocked | 2 | ht-001 (AI API), ht-002 (Sheet prompts) |
+| 🚧 In Progress | 5 | Launch Roadmap (New), Asset pipeline (86%), AI game maker, DevMux, Registry |
+| ⏳ Blocked | 4 | ht-001 (AI API), ht-002 (Sheet prompts), ht-003 (BLE Android), ht-004 (Godot Fonts) |
 
 ---
 

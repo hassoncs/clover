@@ -7,6 +7,7 @@ import type {
   Behavior,
 } from '@slopcade/shared';
 import type { RuntimeEntity, RuntimeBehavior, EntityManagerOptions } from './types';
+import { getGlobalTagRegistry } from '@slopcade/shared';
 
 interface PooledEntitySlot {
   id: string;
@@ -26,6 +27,9 @@ export class EntityManager {
   private entityPool: PooledEntitySlot[] = [];
   private freeSlots: number[] = [];
   private nextGeneration = 1;
+  
+  /** Index for O(1) tag queries: tagId -> Set of entityIds */
+  private entitiesByTagId = new Map<number, Set<string>>();
 
   constructor(physics: Physics2D, options: EntityManagerOptions = {}) {
     this.physics = physics;
@@ -108,30 +112,33 @@ export class EntityManager {
     };
   }
 
-  private createRuntimeEntity(id: string, resolved: GameEntity): RuntimeEntity {
-    const behaviors: RuntimeBehavior[] = (resolved.behaviors ?? []).map((b: Behavior) => ({
-      definition: b,
-      enabled: b.enabled !== false,
-      state: {},
-    }));
-
-    return {
-      id,
-      name: resolved.name,
-      template: resolved.template,
-      transform: { ...resolved.transform },
-      sprite: resolved.sprite,
-      physics: resolved.physics,
-      behaviors,
-      tags: resolved.tags ?? [],
-      layer: resolved.layer ?? 0,
-      visible: resolved.visible !== false,
-      active: resolved.active !== false,
-      bodyId: null,
-      colliderId: null,
-      assetPackId: resolved.assetPackId,
-    };
-  }
+    private createRuntimeEntity(id: string, resolved: GameEntity): RuntimeEntity {
+      const behaviors: RuntimeBehavior[] = (resolved.behaviors ?? []).map((b: Behavior) => ({
+        definition: b,
+        enabled: b.enabled !== false,
+        state: {},
+      }));
+  
+      return {
+        id,
+        name: resolved.name,
+        template: resolved.template,
+        transform: { ...resolved.transform },
+        sprite: resolved.sprite,
+        physics: resolved.physics,
+        behaviors,
+        tags: resolved.tags ?? [],
+        tagBits: new Set(),
+        layer: resolved.layer ?? 0,
+        visible: resolved.visible !== false,
+        active: resolved.active !== false,
+        bodyId: null,
+        colliderId: null,
+        assetPackId: resolved.assetPackId,
+        conditionalBehaviors: [],
+        activeConditionalGroupId: -1,
+      };
+    }
 
   private createPhysicsBody(entity: RuntimeEntity, physicsConfig: PhysicsComponent): void {
     const bodyDef: BodyDef = {
@@ -199,24 +206,31 @@ export class EntityManager {
       this.physics.destroyBody(entity.bodyId);
     }
 
+    for (const tagId of entity.tagBits) {
+      this.entitiesByTagId.get(tagId)?.delete(id);
+    }
+
     this.resetEntityForPooling(entity);
     this.entities.delete(id);
     this.returnEntityToPool(id);
   }
 
-  private resetEntityForPooling(entity: RuntimeEntity): void {
-    entity.transform = { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 };
-    entity.template = undefined;
-    entity.sprite = undefined;
-    entity.physics = undefined;
-    entity.behaviors = [];
-    entity.tags = [];
-    entity.layer = 0;
-    entity.visible = true;
-    entity.active = true;
-    entity.bodyId = null;
-    entity.colliderId = null;
-  }
+    private resetEntityForPooling(entity: RuntimeEntity): void {
+      entity.transform = { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 };
+      entity.template = undefined;
+      entity.sprite = undefined;
+      entity.physics = undefined;
+      entity.behaviors = [];
+      entity.tags = [];
+      entity.tagBits.clear();
+      entity.layer = 0;
+      entity.visible = true;
+      entity.active = true;
+      entity.bodyId = null;
+      entity.colliderId = null;
+      entity.conditionalBehaviors = [];
+      entity.activeConditionalGroupId = -1;
+    }
 
   private returnEntityToPool(id: string): void {
     const slotIndex = this.getSlotIndex(id);
@@ -230,13 +244,91 @@ export class EntityManager {
   }
 
   getEntitiesByTag(tag: string): RuntimeEntity[] {
+    const tagId = getGlobalTagRegistry().getId(tag);
+    if (tagId === undefined) {
+      const results: RuntimeEntity[] = [];
+      this.entities.forEach((entity) => {
+        if (entity.tags.includes(tag)) {
+          results.push(entity);
+        }
+      });
+      return results;
+    }
+    
+    const entityIds = this.entitiesByTagId.get(tagId);
+    if (!entityIds) return [];
+    
     const results: RuntimeEntity[] = [];
-    this.entities.forEach((entity) => {
-      if (entity.tags.includes(tag)) {
+    for (const id of entityIds) {
+      const entity = this.entities.get(id);
+      if (entity) {
         results.push(entity);
       }
-    });
+    }
     return results;
+  }
+
+  /**
+   * Adds a tag to an entity. Updates both tags array and tagBits set.
+   * Returns true if the tag was added, false if entity already had it.
+   */
+  addTag(entityId: string, tag: string): boolean {
+    const entity = this.entities.get(entityId);
+    if (!entity) return false;
+    
+    if (entity.tags.includes(tag)) return false;
+    
+    entity.tags.push(tag);
+    
+    const tagId = getGlobalTagRegistry().intern(tag);
+    entity.tagBits.add(tagId);
+    
+    if (!this.entitiesByTagId.has(tagId)) {
+      this.entitiesByTagId.set(tagId, new Set());
+    }
+    this.entitiesByTagId.get(tagId)!.add(entityId);
+    
+    return true;
+  }
+
+  /**
+   * Removes a tag from an entity. Updates both tags array and tagBits set.
+   * Returns true if the tag was removed, false if entity didn't have it.
+   */
+  removeTag(entityId: string, tag: string): boolean {
+    const entity = this.entities.get(entityId);
+    if (!entity) return false;
+    
+    const index = entity.tags.indexOf(tag);
+    if (index === -1) return false;
+    
+    entity.tags.splice(index, 1);
+    
+    const tagId = getGlobalTagRegistry().getId(tag);
+    if (tagId !== undefined) {
+      entity.tagBits.delete(tagId);
+      this.entitiesByTagId.get(tagId)?.delete(entityId);
+    }
+    
+    return true;
+  }
+
+  /**
+   * Checks if an entity has a specific tag.
+   * Uses tagBits for O(1) lookup when possible.
+   */
+  hasTag(entityId: string, tag: string): boolean {
+    const entity = this.entities.get(entityId);
+    if (!entity) return false;
+    
+    // Use tagBits for O(1) lookup if tag is interned
+    const tagId = getGlobalTagRegistry().getId(tag);
+    if (tagId !== undefined) {
+      return entity.tagBits.has(tagId);
+    }
+    
+    // Fallback to string array for non-interned tags
+    return entity.tags.includes(tag);
   }
 
   getAllEntities(): RuntimeEntity[] {
@@ -275,6 +367,7 @@ export class EntityManager {
     ids.forEach((id) => {
       this.destroyEntity(id);
     });
+    this.entitiesByTagId.clear();
   }
 
   getEntityByBodyId(bodyId: { value: number }): RuntimeEntity | undefined {

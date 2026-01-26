@@ -11,6 +11,7 @@ import { useRouter } from "expo-router";
 import type { ExampleMeta } from "@/lib/registry/types";
 import type { GodotBridge } from "@/lib/godot/types";
 import type { GameDefinition } from "@slopcade/shared";
+import { FullScreenHeader } from "../../components/FullScreenHeader";
 
 export const metadata: ExampleMeta = {
   title: "VFX Showcase",
@@ -382,17 +383,16 @@ export default function VFXShowcaseExample() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-900" edges={["top"]}>
-      <View className="flex-1">
-        <View className="flex-row items-center justify-between px-4 py-2 bg-black/50">
-          <Pressable onPress={() => router.back()} className="py-2 px-3 bg-gray-700 rounded">
-            <Text className="text-white font-semibold">← Back</Text>
-          </Pressable>
-          <Text className="text-white text-lg font-bold">VFX Showcase</Text>
-          <View className="w-16">
-            {status === "loading" && <Text className="text-yellow-400 text-xs">Loading...</Text>}
-          </View>
-        </View>
+      <FullScreenHeader
+        title="VFX Showcase"
+        rightContent={
+          status === "loading" ? (
+            <Text className="text-yellow-400 text-xs">Loading...</Text>
+          ) : null
+        }
+      />
 
+      <View className="flex-1">
         <View
           ref={containerRef}
           className="flex-1"

@@ -573,11 +573,7 @@ export function createWebGodotBridge(): GodotBridge {
     },
 
     async queryPointEntity(point: Vec2): Promise<string | null> {
-      const godotBridge = getGodotBridge();
-      if (!godotBridge) return null;
-      godotBridge.queryPointEntity(point.x, point.y);
-      const result = godotBridge._lastResult;
-      return (result as string | null) ?? null;
+      return await queryAsync<string | null>("queryPointEntity", [point.x, point.y]);
     },
 
     async queryAABB(min: Vec2, max: Vec2): Promise<number[]> {
