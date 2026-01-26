@@ -43,6 +43,16 @@ const SPRITE_SHADER_PATHS = {
 # Preloaded post-process shaders
 const POST_SHADER_PATHS = {
 	"vignette": "res://shaders/post_process/vignette.gdshader",
+	"bloom": "res://shaders/post_process/bloom.gdshader",
+	"night_vision": "res://shaders/post_process/night_vision.gdshader",
+	"speed_lines": "res://shaders/post_process/speed_lines.gdshader",
+	"underwater": "res://shaders/post_process/underwater.gdshader",
+	"halftone": "res://shaders/post_process/halftone.gdshader",
+	"old_film": "res://shaders/post_process/old_film.gdshader",
+	"thermal_vision": "res://shaders/post_process/thermal_vision.gdshader",
+	"ascii": "res://shaders/post_process/ascii.gdshader",
+	"ripple": "res://shaders/post_process/ripple.gdshader",
+	"fog_of_war": "res://shaders/post_process/fog_of_war.gdshader",
 	"scanlines": "res://shaders/post_process/scanlines.gdshader",
 	"chromatic_aberration": "res://shaders/post_process/chromatic_aberration.gdshader",
 	"chromatic": "res://shaders/post_process/chromatic_aberration.gdshader",  # Alias
@@ -150,7 +160,20 @@ func set_post_effect(effect_name: String, params: Dictionary = {}, layer_name: S
 	material.shader = _post_shaders[effect_name]
 	
 	for key in params:
-		material.set_shader_parameter(key, _convert_param(params[key]))
+		var val = params[key]
+		# Special handling for texture injection from bridge
+		if typeof(val) == TYPE_STRING and val == "splat_map":
+			# HACK: Retrieve splat texture from GameBridge (parent of parent)
+			# EffectsManager is child of GameBridge in scene tree? No, it's autoload.
+			# We need to find GameBridge singleton or node.
+			var bridge = get_tree().root.find_child("GameBridge", true, false)
+			if bridge:
+				if bridge.has_method("enable_splat_map"):
+					bridge.enable_splat_map()  # Lazy init
+				if bridge.has_method("get_splat_texture"):
+					material.set_shader_parameter(key, bridge.get_splat_texture())
+		else:
+			material.set_shader_parameter(key, _convert_param(val))
 	
 	rect.material = material
 	_active_post_effects[layer_name] = effect_name

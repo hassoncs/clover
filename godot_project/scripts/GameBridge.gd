@@ -77,6 +77,13 @@ const IMPULSE_THRESHOLD: float = 0.01  # Minimum impulse to report
 var _ui_buttons: Dictionary = {}  # button_id -> TextureButton node
 var _js_ui_button_callback: JavaScriptObject = null
 
+# Splat Map System (Lazy-initialized)
+var _splat_enabled: bool = false
+var _splat_viewport: SubViewport = null
+var _splat_canvas: CanvasLayer = null
+var _splat_proxies: Dictionary = {} # entity_id -> SplatProxy node
+const SPLAT_PROXY_SCENE = preload("res://scenes/SplatProxy.tscn")
+
 # Debug mode - toggle between showing physics shapes and textures
 var _debug_show_shapes: bool = false
 
@@ -145,10 +152,15 @@ func _register_core_query_handlers() -> void:
 			return _screen_to_world_impl(float(args[0]), float(args[1]))
 		return null
 	)
+	_query_system.register_handler("getSplatTexture", func(args): return get_splat_texture())
 
 # Handle native input events on web and relay them back to JS
 var _is_dragging: bool = false
 var _drag_entity_id: Variant = null
+var _drag_start_pos: Vector2 = Vector2.ZERO
+var _drag_start_time: float = 0.0
+const TAP_MAX_DISTANCE: float = 10.0  # pixels
+const TAP_MAX_DURATION: float = 0.3  # seconds
 
 func _input(event: InputEvent) -> void:
 	if not OS.has_feature("web"):
@@ -176,13 +188,26 @@ func _input(event: InputEvent) -> void:
 			
 			_is_dragging = true
 			_drag_entity_id = hit_entity_id
+			_drag_start_pos = screen_pos
+			_drag_start_time = Time.get_ticks_msec() / 1000.0
 			
 			_queue_event("input", {"type": "drag_start", "x": game_pos.x, "y": game_pos.y, "entityId": hit_entity_id})
 			_notify_js_input_event("drag_start", game_pos.x, game_pos.y, hit_entity_id)
 		else:
 			_is_dragging = false
-			_queue_event("input", {"type": "drag_end", "x": game_pos.x, "y": game_pos.y, "entityId": _drag_entity_id})
-			_notify_js_input_event("drag_end", game_pos.x, game_pos.y, _drag_entity_id)
+			
+			# Detect tap: short duration + minimal movement
+			var duration = (Time.get_ticks_msec() / 1000.0) - _drag_start_time
+			var distance = screen_pos.distance_to(_drag_start_pos)
+			var is_tap = duration < TAP_MAX_DURATION and distance < TAP_MAX_DISTANCE
+			
+			if is_tap:
+				_queue_event("input", {"type": "tap", "x": game_pos.x, "y": game_pos.y, "entityId": _drag_entity_id})
+				_notify_js_input_event("tap", game_pos.x, game_pos.y, _drag_entity_id)
+			else:
+				_queue_event("input", {"type": "drag_end", "x": game_pos.x, "y": game_pos.y, "entityId": _drag_entity_id})
+				_notify_js_input_event("drag_end", game_pos.x, game_pos.y, _drag_entity_id)
+			
 			_drag_entity_id = null
 	
 	elif event is InputEventMouseMotion and _is_dragging:
@@ -817,7 +842,99 @@ func _notify_js_destroy(entity_id: String) -> void:
 		# Native path: queue event for polling
 		_queue_event("destroy", {"entityId": entity_id})
 
+func _setup_splat_map() -> void:
+	if _splat_enabled:
+		return
+	
+	_splat_viewport = SubViewport.new()
+	_splat_viewport.name = "SplatMap"
+	_splat_viewport.size = Vector2(512, 512) # Low res is fine for splat map
+	_splat_viewport.transparent_bg = false
+	_splat_viewport.render_target_update_mode = SubViewport.UPDATE_WHEN_VISIBLE
+	_splat_viewport.render_target_clear_mode = SubViewport.CLEAR_MODE_ALWAYS
+	add_child(_splat_viewport)
+	
+	_splat_canvas = CanvasLayer.new()
+	_splat_viewport.add_child(_splat_canvas)
+	
+	# Background black (no force)
+	var bg = ColorRect.new()
+	bg.color = Color.BLACK
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_splat_canvas.add_child(bg)
+	
+	_splat_enabled = true
+
+func enable_splat_map() -> void:
+	if not _splat_enabled:
+		_setup_splat_map()
+
+func disable_splat_map() -> void:
+	if _splat_enabled and _splat_viewport:
+		for proxy in _splat_proxies.values():
+			proxy.queue_free()
+		_splat_proxies.clear()
+		_splat_viewport.queue_free()
+		_splat_viewport = null
+		_splat_canvas = null
+		_splat_enabled = false
+
+func get_splat_texture() -> Texture2D:
+	return _splat_viewport.get_texture()
+
 func _process(_delta: float) -> void:
+	# Update splat proxies (only if enabled)
+	if _splat_enabled and _splat_viewport and _splat_canvas:
+		for entity_id in entities:
+			var entity = entities[entity_id]
+			
+			# Skip stationary entities (optimization for 100+ entities)
+			var vel = Vector2.ZERO
+			if entity is RigidBody2D:
+				vel = entity.linear_velocity
+			elif entity is CharacterBody2D:
+				vel = entity.velocity
+			elif sensor_velocities.has(entity_id):
+				vel = sensor_velocities[entity_id]
+			
+			# Cull low-velocity entities (reduce updates)
+			if vel.length_squared() < 0.01 and _splat_proxies.has(entity_id):
+				continue  # Skip update for stationary entities
+			
+			if not _splat_proxies.has(entity_id):
+				var proxy = SPLAT_PROXY_SCENE.instantiate()
+				_splat_canvas.add_child(proxy)
+				_splat_proxies[entity_id] = proxy
+			
+			var proxy = _splat_proxies[entity_id]
+			
+			# Sync position (map game world to viewport)
+			if camera:
+				var screen_pos = entity.get_global_transform_with_canvas().origin
+				# Map screen pos to splat viewport
+				var viewport_size = get_viewport().get_visible_rect().size
+				var uv = screen_pos / viewport_size
+				proxy.position = uv * Vector2(_splat_viewport.size)
+			
+			# Encode Velocity
+			# R = X vel, G = Y vel, B = Presence
+			# Normalize velocity (-20..20 -> 0..1)
+			var r = clamp((vel.x / 40.0) + 0.5, 0.0, 1.0)
+			var g = clamp((-vel.y / 40.0) + 0.5, 0.0, 1.0) # Flip Y for texture space
+			proxy.modulate = Color(r, g, 1.0, 1.0)
+			
+			# Scale proxy based on mass/size if possible, default to fixed size for now
+			proxy.scale = Vector2(0.5, 0.5)
+
+		# Clean up dead proxies
+		var dead_ids = []
+		for id in _splat_proxies:
+			if not entities.has(id):
+				dead_ids.append(id)
+		for id in dead_ids:
+			_splat_proxies[id].queue_free()
+			_splat_proxies.erase(id)
+
 	if ws:
 		ws.poll()
 		var state = ws.get_ready_state()

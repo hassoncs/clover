@@ -16,7 +16,17 @@ export type EffectType =
   | 'blur'
   | 'motionBlur'
   | 'rimLight'
-  | 'colorMatrix';
+  | 'colorMatrix'
+  | 'bloom'
+  | 'nightVision'
+  | 'speedLines'
+  | 'underwater'
+  | 'halftone'
+  | 'oldFilm'
+  | 'thermalVision'
+  | 'ascii'
+  | 'ripple'
+  | 'fogOfWar';
 
 export type EffectBlendMode =
   | 'srcOver'
@@ -171,6 +181,79 @@ export interface RimLightEffect extends EffectBase {
   falloff?: number;
 }
 
+export interface BloomEffect extends EffectBase {
+  type: 'bloom';
+  threshold: number;
+  intensity: number;
+  radius: number;
+}
+
+export interface NightVisionEffect extends EffectBase {
+  type: 'nightVision';
+  intensity: number;
+  noiseStrength: number;
+  scanlineStrength: number;
+  vignetteSize: number;
+}
+
+export interface SpeedLinesEffect extends EffectBase {
+  type: 'speedLines';
+  intensity: number;
+  density: number;
+  speed: number;
+  centerX?: number;
+  centerY?: number;
+}
+
+export interface UnderwaterEffect extends EffectBase {
+  type: 'underwater';
+  intensity: number;
+  waveSpeed: number;
+  waveFrequency: number;
+  waveAmplitude: number;
+  waterTint: string;
+}
+
+export interface HalftoneEffect extends EffectBase {
+  type: 'halftone';
+  intensity: number;
+  dotSize: number;
+  contrast: number;
+}
+
+export interface OldFilmEffect extends EffectBase {
+  type: 'oldFilm';
+  sepiaStrength: number;
+  scratchStrength: number;
+  noiseStrength: number;
+  vignetteSize: number;
+}
+
+export interface ThermalVisionEffect extends EffectBase {
+  type: 'thermalVision';
+  intensity: number;
+}
+
+export interface AsciiEffect extends EffectBase {
+  type: 'ascii';
+  pixelSize: number;
+  monochrome: boolean;
+  color: string;
+}
+
+export interface RippleEffect extends EffectBase {
+  type: 'ripple';
+  intensity: number;
+  speed: number;
+}
+
+export interface FogOfWarEffect extends EffectBase {
+  type: 'fogOfWar';
+  fogColor: string;
+  unexploredColor: string;
+  smoothness: number;
+}
+
 export interface ColorMatrixEffect extends EffectBase {
   type: 'colorMatrix';
   matrix: number[];
@@ -194,7 +277,8 @@ export type EffectSpec =
   | BlurEffect
   | MotionBlurEffect
   | RimLightEffect
-  | ColorMatrixEffect;
+  | ColorMatrixEffect
+  | BloomEffect;
 
 export type EffectChain = EffectSpec[];
 
@@ -432,6 +516,127 @@ export const EFFECT_METADATA: Record<EffectType, EffectMetadata> = {
       { key: 'falloff', type: 'number', displayName: 'Falloff', min: 0, max: 1, step: 0.1, defaultValue: 0.5 },
     ],
     defaultValues: { type: 'rimLight', color: '#ff00ff', width: 3, intensity: 1 },
+  },
+  bloom: {
+    type: 'bloom',
+    displayName: 'Bloom',
+    description: 'Bright areas glow',
+    category: 'postProcess',
+    params: [
+      { key: 'threshold', type: 'number', displayName: 'Threshold', min: 0, max: 1, step: 0.05, defaultValue: 0.8 },
+      { key: 'intensity', type: 'number', displayName: 'Intensity', min: 0, max: 5, step: 0.1, defaultValue: 1.5 },
+      { key: 'radius', type: 'number', displayName: 'Radius', min: 0, max: 10, step: 0.5, defaultValue: 3 },
+    ],
+    defaultValues: { type: 'bloom', threshold: 0.8, intensity: 1.5, radius: 3 },
+  },
+  nightVision: {
+    type: 'nightVision',
+    displayName: 'Night Vision',
+    description: 'Green tactical vision with noise',
+    category: 'postProcess',
+    params: [
+      { key: 'intensity', type: 'number', displayName: 'Intensity', min: 0, max: 1, step: 0.1, defaultValue: 0.8 },
+      { key: 'noiseStrength', type: 'number', displayName: 'Noise', min: 0, max: 1, step: 0.1, defaultValue: 0.3 },
+      { key: 'scanlineStrength', type: 'number', displayName: 'Scanlines', min: 0, max: 1, step: 0.1, defaultValue: 0.1 },
+      { key: 'vignetteSize', type: 'number', displayName: 'Vignette', min: 0, max: 1, step: 0.1, defaultValue: 0.4 },
+    ],
+    defaultValues: { type: 'nightVision', intensity: 0.8, noiseStrength: 0.3, scanlineStrength: 0.1, vignetteSize: 0.4 },
+  },
+  speedLines: {
+    type: 'speedLines',
+    displayName: 'Speed Lines',
+    description: 'Anime-style radial motion lines',
+    category: 'postProcess',
+    params: [
+      { key: 'intensity', type: 'number', displayName: 'Intensity', min: 0, max: 1, step: 0.1, defaultValue: 0.5 },
+      { key: 'density', type: 'number', displayName: 'Density', min: 0, max: 1, step: 0.1, defaultValue: 0.2 },
+      { key: 'speed', type: 'number', displayName: 'Speed', min: 0, max: 10, step: 0.5, defaultValue: 2.0 },
+    ],
+    defaultValues: { type: 'speedLines', intensity: 0.5, density: 0.2, speed: 2.0 },
+  },
+  underwater: {
+    type: 'underwater',
+    displayName: 'Underwater',
+    description: 'Wavy distortion with blue tint',
+    category: 'postProcess',
+    params: [
+      { key: 'intensity', type: 'number', displayName: 'Intensity', min: 0, max: 1, step: 0.1, defaultValue: 0.8 },
+      { key: 'waveSpeed', type: 'number', displayName: 'Wave Speed', min: 0, max: 5, step: 0.1, defaultValue: 1.0 },
+      { key: 'waveFrequency', type: 'number', displayName: 'Frequency', min: 1, max: 20, step: 1, defaultValue: 10.0 },
+      { key: 'waveAmplitude', type: 'number', displayName: 'Amplitude', min: 0, max: 0.05, step: 0.001, defaultValue: 0.01 },
+      { key: 'waterTint', type: 'color', displayName: 'Tint', defaultValue: '#0066cc' },
+    ],
+    defaultValues: { type: 'underwater', intensity: 0.8, waveSpeed: 1.0, waveFrequency: 10.0, waveAmplitude: 0.01, waterTint: '#0066cc' },
+  },
+  halftone: {
+    type: 'halftone',
+    displayName: 'Halftone',
+    description: 'CMYK dot pattern print effect',
+    category: 'postProcess',
+    params: [
+      { key: 'intensity', type: 'number', displayName: 'Intensity', min: 0, max: 1, step: 0.1, defaultValue: 1.0 },
+      { key: 'dotSize', type: 'number', displayName: 'Dot Size', min: 1, max: 50, step: 1, defaultValue: 8.0 },
+      { key: 'contrast', type: 'number', displayName: 'Contrast', min: 1, max: 5, step: 0.1, defaultValue: 1.0 },
+    ],
+    defaultValues: { type: 'halftone', intensity: 1.0, dotSize: 8.0, contrast: 1.0 },
+  },
+  oldFilm: {
+    type: 'oldFilm',
+    displayName: 'Old Film',
+    description: 'Vintage movie look with scratches',
+    category: 'postProcess',
+    params: [
+      { key: 'sepiaStrength', type: 'number', displayName: 'Sepia', min: 0, max: 1, step: 0.1, defaultValue: 0.8 },
+      { key: 'scratchStrength', type: 'number', displayName: 'Scratches', min: 0, max: 1, step: 0.1, defaultValue: 0.3 },
+      { key: 'noiseStrength', type: 'number', displayName: 'Noise', min: 0, max: 1, step: 0.1, defaultValue: 0.2 },
+      { key: 'vignetteSize', type: 'number', displayName: 'Vignette', min: 0, max: 1, step: 0.1, defaultValue: 0.4 },
+    ],
+    defaultValues: { type: 'oldFilm', sepiaStrength: 0.8, scratchStrength: 0.3, noiseStrength: 0.2, vignetteSize: 0.4 },
+  },
+  thermalVision: {
+    type: 'thermalVision',
+    displayName: 'Thermal Vision',
+    description: 'Heat-map style color gradient',
+    category: 'postProcess',
+    params: [
+      { key: 'intensity', type: 'number', displayName: 'Intensity', min: 0, max: 1, step: 0.1, defaultValue: 1.0 },
+    ],
+    defaultValues: { type: 'thermalVision', intensity: 1.0 },
+  },
+  ascii: {
+    type: 'ascii',
+    displayName: 'ASCII Art',
+    description: 'Convert screen to text characters',
+    category: 'postProcess',
+    params: [
+      { key: 'pixelSize', type: 'number', displayName: 'Char Size', min: 4, max: 32, step: 2, defaultValue: 8.0 },
+      { key: 'monochrome', type: 'boolean', displayName: 'Monochrome', defaultValue: false },
+      { key: 'color', type: 'color', displayName: 'Tint', defaultValue: '#00ff00' },
+    ],
+    defaultValues: { type: 'ascii', pixelSize: 8.0, monochrome: false, color: '#00ff00' },
+  },
+  ripple: {
+    type: 'ripple',
+    displayName: 'Ripple Field',
+    description: 'Distortion based on entity movement',
+    category: 'distortion',
+    params: [
+      { key: 'intensity', type: 'number', displayName: 'Intensity', min: 0, max: 0.1, step: 0.001, defaultValue: 0.02 },
+      { key: 'speed', type: 'number', displayName: 'Speed', min: 0, max: 5, step: 0.1, defaultValue: 1.0 },
+    ],
+    defaultValues: { type: 'ripple', intensity: 0.02, speed: 1.0 },
+  },
+  fogOfWar: {
+    type: 'fogOfWar',
+    displayName: 'Fog of War',
+    description: 'Hide unexplored areas',
+    category: 'postProcess',
+    params: [
+      { key: 'fogColor', type: 'color', displayName: 'Fog Color', defaultValue: '#00000080' },
+      { key: 'unexploredColor', type: 'color', displayName: 'Hidden Color', defaultValue: '#000000ff' },
+      { key: 'smoothness', type: 'number', displayName: 'Edge Smoothness', min: 0, max: 0.2, step: 0.01, defaultValue: 0.05 },
+    ],
+    defaultValues: { type: 'fogOfWar', fogColor: '#00000080', unexploredColor: '#000000ff', smoothness: 0.05 },
   },
   colorMatrix: {
     type: 'colorMatrix',
