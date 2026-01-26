@@ -198,6 +198,8 @@ export function GameRuntimeGodot({
         physicsRef.current = physics;
 
         await bridge.loadGame(definition);
+        
+        bridge.pausePhysics();
 
         const analyzer = new DependencyAnalyzer(definition);
         const report = analyzer.analyze();
@@ -984,6 +986,7 @@ export function GameRuntimeGodot({
   }, []);
 
   const handleStart = useCallback(() => {
+    bridgeRef.current?.resumePhysics();
     gameRef.current?.rulesEvaluator.start();
     gameJustStartedRef.current = true;
   }, []);
@@ -1008,6 +1011,7 @@ export function GameRuntimeGodot({
     ) {
       bridgeRef.current.clearGame();
       bridgeRef.current.loadGame(definition);
+      bridgeRef.current.pausePhysics();
 
       const newGame = loaderRef.current.reload(gameRef.current);
       gameRef.current = newGame;
@@ -1164,10 +1168,12 @@ export function GameRuntimeGodot({
       const { locationX: x, locationY: y } = event.nativeEvent;
       const world = screenToWorld(x, y);
 
+      console.log('[GameRuntime] TAP detected at screen:', x, y, 'world:', world.x, world.y);
       inputRef.current = {
         ...inputRef.current,
         tap: { x, y, worldX: world.x, worldY: world.y },
       };
+      console.log('[GameRuntime] inputRef.current.tap set:', inputRef.current.tap);
 
       if (dragStart) {
         const VELOCITY_SCALE = 0.1;

@@ -196,6 +196,10 @@ export interface GodotBridge {
   loadGame(definition: GameDefinition): Promise<void>;
   clearGame(): void;
 
+  // Physics control (for pre-game pausing)
+  pausePhysics(): void;
+  resumePhysics(): void;
+
   // Entity management (high-level)
   spawnEntity(templateId: string, x: number, y: number): string;
   destroyEntity(entityId: string): void;

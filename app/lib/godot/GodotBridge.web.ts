@@ -202,6 +202,8 @@ declare global {
       getWorldInfo: () => void;
       getCameraInfo: () => void;
       getViewportInfo: () => void;
+      pausePhysics: () => void;
+      resumePhysics: () => void;
     };
   }
 }
@@ -393,6 +395,14 @@ export function createWebGodotBridge(): GodotBridge {
 
     clearGame() {
       getGodotBridge()?.clearGame();
+    },
+
+    pausePhysics() {
+      (getGodotBridge() as any)?.pausePhysics?.();
+    },
+
+    resumePhysics() {
+      (getGodotBridge() as any)?.resumePhysics?.();
     },
 
     spawnEntity(templateId: string, x: number, y: number): string {

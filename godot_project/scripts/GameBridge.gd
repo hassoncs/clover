@@ -112,6 +112,10 @@ var camera_smoothing: float = 5.0
 var _event_queue: Array = []
 const MAX_EVENT_QUEUE_SIZE: int = 100
 
+# Physics pause state (for pre-game loading)
+var _physics_paused: bool = false
+var _stored_time_scale: float = 1.0
+
 func _ready() -> void:
 	_init_modules()
 	_setup_camera()
@@ -529,6 +533,14 @@ func _setup_js_bridge() -> void:
 	_js_callbacks.append(get_viewport_info_cb)
 	_js_bridge_obj["getViewportInfo"] = get_viewport_info_cb
 	
+	var pause_physics_cb = JavaScriptBridge.create_callback(_js_pause_physics)
+	_js_callbacks.append(pause_physics_cb)
+	_js_bridge_obj["pausePhysics"] = pause_physics_cb
+	
+	var resume_physics_cb = JavaScriptBridge.create_callback(_js_resume_physics)
+	_js_callbacks.append(resume_physics_cb)
+	_js_bridge_obj["resumePhysics"] = resume_physics_cb
+	
 	window["GodotBridge"] = _js_bridge_obj
 
 func _js_load_game(args: Array) -> bool:
@@ -539,6 +551,29 @@ func _js_load_game(args: Array) -> bool:
 
 func _js_clear_game(_args: Array) -> void:
 	clear_game()
+
+func _js_pause_physics(_args: Array) -> void:
+	pause_physics()
+
+func _js_resume_physics(_args: Array) -> void:
+	resume_physics()
+
+# Pause the physics simulation (freeze entities in place)
+func pause_physics() -> void:
+	if _physics_paused:
+		return
+	_physics_paused = true
+	_stored_time_scale = Engine.time_scale
+	Engine.time_scale = 0.0
+	get_tree().paused = true
+
+# Resume the physics simulation
+func resume_physics() -> void:
+	if not _physics_paused:
+		return
+	_physics_paused = false
+	Engine.time_scale = _stored_time_scale
+	get_tree().paused = false
 
 func _js_load_custom_scene(args: Array) -> bool:
 	if args.size() < 1:

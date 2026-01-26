@@ -398,6 +398,14 @@ export function createNativeGodotBridge(): GodotBridge {
       callGameBridge('clear_game');
     },
 
+    pausePhysics() {
+      callGameBridge('pause_physics');
+    },
+
+    resumePhysics() {
+      callGameBridge('resume_physics');
+    },
+
     spawnEntity(templateId: string, x: number, y: number): string {
       const entityId = `${templateId}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
       callGameBridge('spawn_entity_with_id', templateId, x, y, entityId);
