@@ -711,9 +711,7 @@ export class SlotMachineSystem {
       this.phase = "bonus_free_spins";
       this.callbacks.onBonusTrigger?.('free_spins');
     } else if (this.config.pickBonus) {
-      this.pickBonusSelections = [];
-      this.phase = "bonus_pick";
-      this.callbacks.onBonusTrigger?.('pick_bonus');
+      this.triggerPickBonus();
     }
   }
 
@@ -726,8 +724,27 @@ export class SlotMachineSystem {
       totalPayout: this.totalPayout,
     });
 
+    // Check for bonus trigger
     if (this.shouldTriggerBonus()) {
+      // Check if we're already in free spins mode (retrigger case)
+      if (this.phase === 'bonus_free_spins') {
+        this.triggerFreeSpins();
+      }
       this.enterBonusMode();
+    } else if (this.phase === 'bonus_free_spins') {
+      // Returning from a free spin with a win
+      if (this.freeSpinsRemaining > 0) {
+        // Continue free spinning
+        this.freeSpinsRemaining--;
+        this.generateSpinTargets();
+        this.phase = 'spinning';
+        this.startReelAnimations();
+        this.callbacks.onSpinStart?.();
+      } else {
+        // Free spins exhausted
+        this.phase = 'idle';
+        this.callbacks.onFreeSpinsComplete?.();
+      }
     } else {
       this.phase = "idle";
       this.callbacks.onSpinComplete?.(this.currentWins, this.totalPayout);
@@ -830,28 +847,41 @@ export class SlotMachineSystem {
   }
 
   private updatePickBonus(dt: number): void {
-    this.phaseTimer -= dt;
-    if (this.phaseTimer <= 0) {
-      this.phaseTimer = 0.1;
-    }
-
-    const pickCount = this.config.pickBonus?.gridRows ?? 3;
-    if (this.pickBonusSelections.length >= pickCount) {
-      this.phase = "idle";
-    }
   }
 
-  makePick(selectionIndex: number): void {
-    if (this.phase !== "bonus_pick") {
-      return;
+  public handlePickSelection(index: number): boolean {
+    if (this.phase !== "bonus_pick" || !this.pickBonusState) {
+      return false;
     }
 
-    this.pickBonusSelections.push(selectionIndex);
-
-    const pickCount = this.config.pickBonus?.gridRows ?? 3;
-    if (this.pickBonusSelections.length >= pickCount) {
-      this.phase = "idle";
+    if (this.pickBonusState.revealed[index]) {
+      return false;
     }
+
+    this.pickBonusState.revealed[index] = true;
+    const prize = this.pickBonusState.prizes[index];
+
+    if (prize === -1) {
+      this.callbacks.onPickReveal?.(index, 0, true);
+      this.completePickBonus();
+      return true;
+    }
+
+    this.pickBonusState.totalPrize += prize;
+    this.callbacks.onPickReveal?.(index, prize, false);
+
+    if (this.pickBonusState.revealed.every(r => r)) {
+      this.completePickBonus();
+    }
+
+    return true;
+  }
+
+  private completePickBonus(): void {
+    const total = this.pickBonusState?.totalPrize ?? 0;
+    this.callbacks.onPickBonusComplete?.(total);
+    this.pickBonusState = null;
+    this.phase = "idle";
   }
 
   destroy(): void {
@@ -888,5 +918,9 @@ export class SlotMachineSystem {
 
   getGrid(): number[][] {
     return this.grid.map((row) => [...row]);
+  }
+
+  getPickBonusState(): PickBonusState | null {
+    return this.pickBonusState;
   }
 }
