@@ -355,6 +355,8 @@ export interface TiltConfig {
 export interface InputConfig {
   tapZones?: TapZone[];
   debugTapZones?: boolean;
+  /** Enable comprehensive input debug overlay showing tap positions, entity targets, drag vectors, etc. */
+  debugInputs?: boolean;
   virtualButtons?: VirtualButton[];
   virtualJoystick?: VirtualJoystick;
   virtualDPad?: VirtualDPad;
@@ -394,6 +396,40 @@ export interface TetrisConfig {
   levelSpeedMultiplier?: number;
 }
 
+export interface PayoutConfig {
+  symbolIndex: number;
+  counts: Record<number, number>;  // count → multiplier (e.g., {3: 0.5, 4: 2, 5: 10})
+}
+
+export interface FreeSpinsConfig {
+  scatterCount: number[];  // [10, 15, 20] for 3/4/5 scatters
+}
+
+export interface PickBonusConfig {
+  trigger: string;          // Symbol or 'bonus'
+  gridRows: number;         // 3
+  gridCols: number;         // 3
+  itemTemplate: string;     // Visual template for pick items
+  endTrigger: 'collect' | 'reveal_all' | 'find_end';
+}
+
+export interface SlotMachineConfig {
+  gridId: string;
+  reels: number;           // 5
+  rows: number;            // 3
+  cellSize: number;        // Size of each symbol cell
+  symbolTemplates: string[]; // Template IDs for symbols
+  reelStrips: number[][];  // Symbol indices per reel [reel][position]
+  wildSymbolIndex?: number;
+  scatterSymbolIndex?: number;
+  payouts: PayoutConfig[];
+  freeSpins?: FreeSpinsConfig;
+  cascading?: boolean;
+  pickBonus?: PickBonusConfig;
+  spinDuration?: number;
+  reelStopDelay?: number;  // Stagger between reel stops
+}
+
 export interface GameDefinition {
   metadata: GameMetadata;
   world: WorldConfig;
@@ -423,6 +459,7 @@ export interface GameDefinition {
   input?: InputConfig;
   match3?: Match3Config;
   tetris?: TetrisConfig;
+  slotMachine?: SlotMachineConfig;
   /**
    * Game-level state machines for managing game phases, turns, and flow.
    * Unlike entity-level machines, these have no `owner` field set.
