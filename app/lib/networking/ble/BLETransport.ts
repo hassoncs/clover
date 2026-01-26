@@ -1,4 +1,5 @@
 import { Platform, PermissionsAndroid } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 import type {
   NetworkTransport,
   TransportConfig,
@@ -143,47 +144,93 @@ export class BLETransport implements NetworkTransport {
   }
 
   async startHosting(config: TransportConfig): Promise<void> {
-    this.config = config;
-    this._role = SessionRole.HOST;
-    this.setState(ConnectionState.ADVERTISING);
+    try {
+      Sentry.addBreadcrumb({
+        category: 'ble',
+        message: 'Starting BLE hosting',
+        level: 'info',
+        data: { deviceName: config.deviceName, gameId: config.gameId },
+      });
 
-    this.peripheralManager = createBLEPeripheralManager();
+      this.config = config;
+      this._role = SessionRole.HOST;
+      this.setState(ConnectionState.ADVERTISING);
 
-    const sessionInfo: SessionInfo = {
-      gameId: config.gameId,
-      sessionId: config.sessionId || this.generateSessionId(),
-      hostName: config.deviceName,
-      hostPeerId: this._localPeerId,
-    };
+      this.peripheralManager = createBLEPeripheralManager();
 
-    await this.peripheralManager.initialize({
-      serviceUuid: BLE_CONSTANTS.SERVICE_UUID,
-      characteristics: BLE_CONSTANTS.CHARACTERISTICS,
-      deviceName: config.deviceName,
-      sessionInfo,
-      onClientConnected: this.handleClientConnected.bind(this),
-      onClientDisconnected: this.handleClientDisconnected.bind(this),
-      onDataReceived: this.handleDataReceived.bind(this),
-    });
+      const sessionInfo: SessionInfo = {
+        gameId: config.gameId,
+        sessionId: config.sessionId || this.generateSessionId(),
+        hostName: config.deviceName,
+        hostPeerId: this._localPeerId,
+      };
 
-    await this.peripheralManager.startAdvertising();
-    this.startPingInterval();
+      await this.peripheralManager.initialize({
+        serviceUuid: BLE_CONSTANTS.SERVICE_UUID,
+        characteristics: BLE_CONSTANTS.CHARACTERISTICS,
+        deviceName: config.deviceName,
+        sessionInfo,
+        onClientConnected: this.handleClientConnected.bind(this),
+        onClientDisconnected: this.handleClientDisconnected.bind(this),
+        onDataReceived: this.handleDataReceived.bind(this),
+      });
+
+      await this.peripheralManager.startAdvertising();
+      this.startPingInterval();
+
+      Sentry.addBreadcrumb({
+        category: 'ble',
+        message: 'BLE hosting started successfully',
+        level: 'info',
+      });
+    } catch (error) {
+      Sentry.captureException(error, {
+        tags: { module: 'BLETransport', operation: 'startHosting' },
+        extra: { config: { deviceName: config.deviceName, gameId: config.gameId } },
+      });
+      this.setState(ConnectionState.DISCONNECTED);
+      this._role = null;
+      throw new Error(`Failed to start BLE hosting: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   async joinSession(config: TransportConfig): Promise<void> {
-    this.config = config;
-    this._role = SessionRole.CLIENT;
-    this.setState(ConnectionState.SCANNING);
+    try {
+      Sentry.addBreadcrumb({
+        category: 'ble',
+        message: 'Starting BLE session join',
+        level: 'info',
+        data: { deviceName: config.deviceName, gameId: config.gameId },
+      });
 
-    const hostDevice = await this.scanForHost(config.gameId, config.sessionId);
+      this.config = config;
+      this._role = SessionRole.CLIENT;
+      this.setState(ConnectionState.SCANNING);
 
-    if (!hostDevice) {
-      throw new Error('No host found');
+      const hostDevice = await this.scanForHost(config.gameId, config.sessionId);
+
+      if (!hostDevice) {
+        throw new Error('No host found for this game');
+      }
+
+      this.setState(ConnectionState.CONNECTING);
+      await this.connectToHost(hostDevice);
+      this.startPingInterval();
+
+      Sentry.addBreadcrumb({
+        category: 'ble',
+        message: 'Successfully joined BLE session',
+        level: 'info',
+      });
+    } catch (error) {
+      Sentry.captureException(error, {
+        tags: { module: 'BLETransport', operation: 'joinSession' },
+        extra: { config: { deviceName: config.deviceName, gameId: config.gameId } },
+      });
+      this.setState(ConnectionState.DISCONNECTED);
+      this._role = null;
+      throw new Error(`Failed to join BLE session: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-
-    this.setState(ConnectionState.CONNECTING);
-    await this.connectToHost(hostDevice);
-    this.startPingInterval();
   }
 
   async disconnect(): Promise<void> {
@@ -395,6 +442,13 @@ export class BLETransport implements NetworkTransport {
   }
 
   private handleClientConnected(clientId: string, clientName: string): void {
+    Sentry.addBreadcrumb({
+      category: 'ble',
+      message: 'Client connected',
+      level: 'info',
+      data: { clientId: clientId.substring(0, 8) + '...', clientName },
+    });
+
     this._connectedPeers.set(clientId, {
       name: clientName,
       latency: 0,
@@ -406,6 +460,13 @@ export class BLETransport implements NetworkTransport {
   }
 
   private handleClientDisconnected(clientId: string): void {
+    Sentry.addBreadcrumb({
+      category: 'ble',
+      message: 'Client disconnected',
+      level: 'info',
+      data: { clientId: clientId.substring(0, 8) + '...' },
+    });
+
     this._connectedPeers.delete(clientId);
     this.reassemblers.delete(clientId);
     this.handlers?.onPeerDisconnected(clientId, 'disconnected');
@@ -456,6 +517,24 @@ export class BLETransport implements NetworkTransport {
   }
 
   private handleDisconnection(peerId: PeerId, error: Error | null): void {
+    Sentry.addBreadcrumb({
+      category: 'ble',
+      message: 'Connection lost',
+      level: 'warning',
+      data: { 
+        peerId: peerId.substring(0, 8) + '...', 
+        error: error?.message,
+        role: this._role,
+      },
+    });
+
+    if (error) {
+      Sentry.captureException(error, {
+        tags: { module: 'BLETransport', operation: 'handleDisconnection' },
+        extra: { peerId, role: this._role },
+      });
+    }
+
     this._connectedPeers.delete(peerId);
     this.reassemblers.delete(peerId);
     this.handlers?.onPeerDisconnected(peerId, error?.message || 'Connection lost');
