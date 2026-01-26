@@ -8,6 +8,38 @@ const LINKING_ERROR =
   '- You rebuilt the app after installing the package\n' +
   '- You are not using Expo Go (use development build)\n';
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isValidUUID(uuid: string): boolean {
+  return typeof uuid === 'string' && UUID_REGEX.test(uuid);
+}
+
+function validateConfig(config: PeripheralConfig): void {
+  if (!config.serviceUuid || !isValidUUID(config.serviceUuid)) {
+    throw new Error(`Invalid service UUID: ${config.serviceUuid}`);
+  }
+
+  if (!config.characteristics || typeof config.characteristics !== 'object') {
+    throw new Error('Characteristics must be an object');
+  }
+
+  const requiredCharacteristics = ['GAME_STATE', 'PLAYER_INPUT', 'SESSION_INFO', 'CONTROL'];
+  for (const key of requiredCharacteristics) {
+    const uuid = config.characteristics[key];
+    if (!uuid || !isValidUUID(uuid)) {
+      throw new Error(`Invalid ${key} characteristic UUID: ${uuid}`);
+    }
+  }
+
+  if (!config.deviceName || typeof config.deviceName !== 'string' || config.deviceName.trim().length === 0) {
+    throw new Error('Device name must be a non-empty string');
+  }
+
+  if (!config.sessionInfo || typeof config.sessionInfo !== 'object') {
+    throw new Error('Session info must be an object');
+  }
+}
+
 interface NativeBLEPeripheral {
   initialize(config: {
     serviceUuid: string;
@@ -38,6 +70,8 @@ class NativeBLEPeripheralManager implements BLEPeripheralManager {
     if (!NativeBLEPeripheralModule) {
       throw new Error(LINKING_ERROR);
     }
+
+    validateConfig(config);
 
     this.config = config;
     this.emitter = new NativeEventEmitter(NativeModules.BLEPeripheralModule);
