@@ -12,6 +12,17 @@ import { registerSlotMachineSlotImplementations } from "./slots";
 
 export type { SlotMachineConfig };
 
+// Easing functions for smooth animations
+function easeOutQuad(t: number): number {
+  return 1 - (1 - t) * (1 - t);
+}
+
+function easeOutBack(t: number): number {
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
+  return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+}
+
 export type SlotMachinePhase =
   | "idle"
   | "spinning"
@@ -24,9 +35,18 @@ export type SlotMachinePhase =
 export interface ReelState {
   symbols: number[];
   targetSymbols: number[];
-  position: number;
-  isSpinning: boolean;
-  stopTime?: number;
+  // Virtual position for scroll animation (offset in symbols)
+  virtualPosition: number;
+  // Current spin phase
+  spinPhase: 'accelerating' | 'full_speed' | 'decelerating' | 'stopped';
+  // When spin started (for acceleration phase)
+  spinStartTime: number;
+  // When to start decelerating (target stop time minus deceleration duration)
+  decelerationStartTime: number;
+  // Target final position when stopping (for snapping)
+  targetPosition: number;
+  // Time spent in full speed (for calculating remaining spin)
+  fullSpeedTime: number;
 }
 
 export interface SlotMachineCallbacks {
@@ -158,8 +178,12 @@ export class SlotMachineSystem {
       this.reels[reelIndex] = {
         symbols,
         targetSymbols: [...symbols],
-        position: 0,
-        isSpinning: false,
+        virtualPosition: 0,
+        spinPhase: 'stopped',
+        spinStartTime: 0,
+        decelerationStartTime: 0,
+        targetPosition: 0,
+        fullSpeedTime: 0,
       };
     }
 
@@ -227,10 +251,21 @@ export class SlotMachineSystem {
 
   private startReelAnimations(): void {
     const now = Date.now() / 1000;
+    // Duration of acceleration phase (0.2s)
+    const ACCEL_DURATION = 0.2;
+    // Duration of deceleration phase (0.5s)
+    const DECEL_DURATION = 0.5;
 
     for (let reelIndex = 0; reelIndex < this.config.reels; reelIndex++) {
-      this.reels[reelIndex].isSpinning = true;
-      this.reels[reelIndex].stopTime = now + this.SPIN_DURATION + (reelIndex * this.REEL_STOP_DELAY);
+      const reel = this.reels[reelIndex];
+      // Staggered stop times - each reel stops REEL_STOP_DELAY seconds after the previous
+      const reelStopTime = now + this.SPIN_DURATION + (reelIndex * this.REEL_STOP_DELAY);
+      
+      reel.spinPhase = 'accelerating';
+      reel.spinStartTime = now;
+      reel.decelerationStartTime = reelStopTime - DECEL_DURATION;
+      reel.targetPosition = 0;
+      reel.fullSpeedTime = 0;
     }
   }
 
@@ -269,21 +304,76 @@ export class SlotMachineSystem {
 
   private updateSpinning(dt: number): void {
     const now = Date.now() / 1000;
+    // Animation constants
+    const ACCEL_DURATION = 0.2;
+    const DECEL_DURATION = 0.5;
+    const SPIN_VELOCITY = 25; // symbols per second at full speed
+    
     let allStopped = true;
 
     for (let reelIndex = 0; reelIndex < this.config.reels; reelIndex++) {
       const reel = this.reels[reelIndex];
 
-      if (reel.isSpinning) {
-        if (reel.stopTime && now >= reel.stopTime) {
-          reel.isSpinning = false;
-          reel.symbols = reel.targetSymbols;
-          reel.position = 0;
-        } else {
-          allStopped = false;
-          reel.position += dt * 20;
+      if (reel.spinPhase !== 'accelerating' && reel.spinPhase !== 'full_speed' && reel.spinPhase !== 'decelerating') {
+        continue;
+      }
+
+      allStopped = false;
+
+      // Check if it's time to start decelerating
+      if (reel.spinPhase !== 'decelerating' && now >= reel.decelerationStartTime) {
+        reel.spinPhase = 'decelerating';
+      }
+
+      // Calculate velocity based on phase
+      let velocity = 0;
+      
+      switch (reel.spinPhase) {
+        case 'accelerating': {
+          // Ramp up velocity using easeOutQuad
+          const elapsed = now - reel.spinStartTime;
+          const t = Math.min(1, elapsed / ACCEL_DURATION);
+          const easedT = easeOutQuad(t);
+          velocity = easedT * SPIN_VELOCITY;
+          
+          if (t >= 1) {
+            reel.spinPhase = 'full_speed';
+          }
+          break;
+        }
+        
+        case 'full_speed':
+          velocity = SPIN_VELOCITY;
+          reel.fullSpeedTime += dt;
+          break;
+        
+        case 'decelerating': {
+          // Ease down to target with easeOutBack bounce
+          const elapsed = now - reel.decelerationStartTime;
+          const t = Math.min(1, elapsed / DECEL_DURATION);
+          const easedT = easeOutBack(t);
+          
+          // Calculate remaining distance to target and interpolate
+          const currentOffset = reel.virtualPosition % 1;
+          const targetOffset = 0;
+          const distance = currentOffset - targetOffset;
+          
+          // Move toward target with easing
+          velocity = distance * (1 - easedT) * SPIN_VELOCITY * 2;
+          
+          if (t >= 1) {
+            // Snap to exact target position
+            reel.virtualPosition = Math.round(reel.virtualPosition);
+            reel.spinPhase = 'stopped';
+            reel.symbols = reel.targetSymbols;
+            velocity = 0;
+          }
+          break;
         }
       }
+
+      // Update virtual position
+      reel.virtualPosition += velocity * dt;
     }
 
     if (allStopped) {
@@ -293,21 +383,33 @@ export class SlotMachineSystem {
   }
 
   private updateReelPositions(): void {
+    const now = Date.now() / 1000;
+
     for (let reelIndex = 0; reelIndex < this.config.reels; reelIndex++) {
       const reel = this.reels[reelIndex];
+      const isSpinning = reel.spinPhase !== 'stopped';
 
       for (let row = 0; row < this.config.rows; row++) {
         const symbolIndex = reel.symbols[row];
         const pos = this.getSymbolWorldPosition(reelIndex, row);
 
+        let yOffset = 0;
+        
+        if (isSpinning) {
+          // Calculate wrap-around offset for smooth scrolling
+          // virtualPosition increases as symbols scroll down
+          // We offset symbols based on their row and virtual position
+          yOffset = (row - reel.virtualPosition) * this.config.cellSize;
+        }
+
         const entityId = this.getEntityId(reelIndex, row);
         const entity = this.entityManager.getEntity(entityId);
         if (entity) {
           entity.transform.x = pos.x;
-          entity.transform.y = pos.y + (reel.isSpinning ? reel.position : 0);
+          entity.transform.y = pos.y + yOffset;
 
           if (this.bridge) {
-            this.bridge.setPosition(entityId, pos.x, pos.y + (reel.isSpinning ? reel.position : 0));
+            this.bridge.setPosition(entityId, pos.x, pos.y + yOffset);
           }
         }
       }
