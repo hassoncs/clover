@@ -241,7 +241,11 @@ class BLEPeripheralModule: RCTEventEmitter, CBPeripheralManagerDelegate {
     
     let serviceUUID = CBUUID(string: serviceUuid)
     
-    let gameStateUUID = CBUUID(string: characteristics["GAME_STATE"] ?? "")
+    guard let gameStateUUIDString = characteristics["GAME_STATE"], !gameStateUUIDString.isEmpty else {
+      print("[BLEPeripheralModule] Error: GAME_STATE characteristic UUID is missing")
+      return
+    }
+    let gameStateUUID = CBUUID(string: gameStateUUIDString)
     gameStateCharacteristic = CBMutableCharacteristic(
       type: gameStateUUID,
       properties: [.read, .notify, .indicate],
@@ -249,7 +253,11 @@ class BLEPeripheralModule: RCTEventEmitter, CBPeripheralManagerDelegate {
       permissions: [.readable]
     )
     
-    let playerInputUUID = CBUUID(string: characteristics["PLAYER_INPUT"] ?? "")
+    guard let playerInputUUIDString = characteristics["PLAYER_INPUT"], !playerInputUUIDString.isEmpty else {
+      print("[BLEPeripheralModule] Error: PLAYER_INPUT characteristic UUID is missing")
+      return
+    }
+    let playerInputUUID = CBUUID(string: playerInputUUIDString)
     playerInputCharacteristic = CBMutableCharacteristic(
       type: playerInputUUID,
       properties: [.write, .writeWithoutResponse],
@@ -257,7 +265,11 @@ class BLEPeripheralModule: RCTEventEmitter, CBPeripheralManagerDelegate {
       permissions: [.writeable]
     )
     
-    let sessionInfoUUID = CBUUID(string: characteristics["SESSION_INFO"] ?? "")
+    guard let sessionInfoUUIDString = characteristics["SESSION_INFO"], !sessionInfoUUIDString.isEmpty else {
+      print("[BLEPeripheralModule] Error: SESSION_INFO characteristic UUID is missing")
+      return
+    }
+    let sessionInfoUUID = CBUUID(string: sessionInfoUUIDString)
     let sessionInfoData = sessionInfo.data(using: .utf8)
     sessionInfoCharacteristic = CBMutableCharacteristic(
       type: sessionInfoUUID,
@@ -266,7 +278,11 @@ class BLEPeripheralModule: RCTEventEmitter, CBPeripheralManagerDelegate {
       permissions: [.readable]
     )
     
-    let controlUUID = CBUUID(string: characteristics["CONTROL"] ?? "")
+    guard let controlUUIDString = characteristics["CONTROL"], !controlUUIDString.isEmpty else {
+      print("[BLEPeripheralModule] Error: CONTROL characteristic UUID is missing")
+      return
+    }
+    let controlUUID = CBUUID(string: controlUUIDString)
     controlCharacteristic = CBMutableCharacteristic(
       type: controlUUID,
       properties: [.read, .notify, .indicate],
@@ -274,15 +290,28 @@ class BLEPeripheralModule: RCTEventEmitter, CBPeripheralManagerDelegate {
       permissions: [.readable]
     )
     
+    guard let gameState = gameStateCharacteristic,
+          let playerInput = playerInputCharacteristic,
+          let sessionInfo = sessionInfoCharacteristic,
+          let control = controlCharacteristic else {
+      print("[BLEPeripheralModule] Error: Failed to create one or more characteristics")
+      return
+    }
+    
     service = CBMutableService(type: serviceUUID, primary: true)
     service?.characteristics = [
-      gameStateCharacteristic!,
-      playerInputCharacteristic!,
-      sessionInfoCharacteristic!,
-      controlCharacteristic!
+      gameState,
+      playerInput,
+      sessionInfo,
+      control
     ]
     
-    peripheralManager.add(service!)
+    guard let service = service else {
+      print("[BLEPeripheralModule] Error: Failed to create service")
+      return
+    }
+    
+    peripheralManager.add(service)
   }
   
   func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
