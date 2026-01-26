@@ -12,7 +12,7 @@ export const metadata: ExampleMeta = {
     "Complete showcase of all 7 AI-generated themed UI controls: Button, CheckBox, Panel, ProgressBar, ScrollBar H/V, TabBar with medieval fantasy theme.",
 };
 
-const ASSET_BASE = "http://localhost:8787/assets/generated/ui-cli";
+const ASSET_BASE = "http://localhost:8789/assets/generated/ui-cli";
 
 const UI_CONTROLS = [
   { id: "button", type: 0, name: "Button", path: "button/button", width: 200, height: 60 },
