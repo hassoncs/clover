@@ -1,0 +1,283 @@
+import type { GameDefinition } from "@slopcade/shared";
+import type { TestGameMeta } from "@/lib/registry/types";
+
+export const metadata: TestGameMeta = {
+  title: "Cats falling objects",
+  description: "A game where I catch falling apples but avoid the bombs",
+};
+
+const game: GameDefinition = {
+  metadata: {
+    id: "game-1768974518826",
+    title: "Cats falling objects",
+    description: "A game where I catch falling apples but avoid the bombs",
+    version: "1.0.0",
+  },
+  world: {
+    gravity: {
+      x: 0,
+      y: 8,
+    },
+    pixelsPerMeter: 50,
+    bounds: {
+      width: 10,
+      height: 14,
+    },
+  },
+  camera: {
+    type: "fixed",
+    zoom: 1,
+  },
+  ui: {
+    showScore: true,
+    showTimer: true,
+    timerCountdown: true,
+    scorePosition: "top-center",
+    backgroundColor: "#2C3E50",
+  },
+  templates: {
+    catcher: {
+      id: "catcher",
+      sprite: {
+        type: "rect",
+        width: 2,
+        height: 0.5,
+        color: "#3498DB",
+      },
+      physics: {
+        bodyType: "kinematic",
+        shape: "box",
+        width: 2,
+        height: 0.5,
+        density: 1,
+        friction: 0.5,
+        restitution: 0.3,
+      },
+      behaviors: [
+        {
+          type: "draggable",
+          mode: "kinematic",
+        },
+      ],
+      tags: ["catcher", "player"],
+    },
+    good_item: {
+      id: "good_item",
+      sprite: {
+        type: "circle",
+        radius: 0.4,
+        color: "#2ECC71",
+      },
+      physics: {
+        bodyType: "dynamic",
+        shape: "circle",
+        radius: 0.4,
+        density: 0.5,
+        friction: 0.3,
+        restitution: 0.5,
+      },
+      behaviors: [
+        {
+          type: "score_on_collision",
+          withTags: ["catcher"],
+          points: 10,
+          once: true,
+          showPopup: true,
+        },
+        {
+          type: "destroy_on_collision",
+          withTags: ["catcher", "ground"],
+          effect: "fade",
+        },
+      ],
+      tags: ["good", "falling"],
+    },
+    bad_item: {
+      id: "bad_item",
+      sprite: {
+        type: "rect",
+        width: 0.6,
+        height: 0.6,
+        color: "#E74C3C",
+      },
+      physics: {
+        bodyType: "dynamic",
+        shape: "box",
+        width: 0.6,
+        height: 0.6,
+        density: 0.5,
+        friction: 0.3,
+        restitution: 0.3,
+      },
+      behaviors: [
+        {
+          type: "destroy_on_collision",
+          withTags: ["ground"],
+          effect: "fade",
+        },
+      ],
+      tags: ["bad", "falling"],
+    },
+    ground: {
+      id: "ground",
+      sprite: {
+        type: "rect",
+        width: 12,
+        height: 1,
+        color: "#34495E",
+      },
+      physics: {
+        bodyType: "static",
+        shape: "box",
+        width: 12,
+        height: 1,
+        density: 1,
+        friction: 0.8,
+        restitution: 0,
+        isSensor: true,
+      },
+      tags: ["ground"],
+    },
+    spawner: {
+      id: "spawner",
+      sprite: {
+        type: "rect",
+        width: 10,
+        height: 0.2,
+        color: "transparent",
+      },
+      tags: ["spawner"],
+    },
+  },
+  entities: [
+    {
+      id: "catcher",
+      name: "Catcher",
+      template: "catcher",
+      transform: {
+        x: 5,
+        y: 12,
+        angle: 0,
+        scaleX: 1,
+        scaleY: 1,
+      },
+    },
+    {
+      id: "ground",
+      name: "Ground",
+      template: "ground",
+      transform: {
+        x: 5,
+        y: 14,
+        angle: 0,
+        scaleX: 1,
+        scaleY: 1,
+      },
+    },
+    {
+      id: "spawner-good",
+      name: "Good Item Spawner",
+      template: "spawner",
+      transform: {
+        x: 5,
+        y: 0,
+        angle: 0,
+        scaleX: 1,
+        scaleY: 1,
+      },
+      behaviors: [
+        {
+          type: "spawn_on_event",
+          event: "timer",
+          entityTemplate: "good_item",
+          spawnPosition: "random_in_bounds",
+          bounds: {
+            minX: 1,
+            maxX: 9,
+            minY: 0,
+            maxY: 0.5,
+          },
+          interval: 1.5,
+          maxSpawns: 30,
+        },
+      ],
+    },
+    {
+      id: "spawner-bad",
+      name: "Bad Item Spawner",
+      template: "spawner",
+      transform: {
+        x: 5,
+        y: 0,
+        angle: 0,
+        scaleX: 1,
+        scaleY: 1,
+      },
+      behaviors: [
+        {
+          type: "spawn_on_event",
+          event: "timer",
+          entityTemplate: "bad_item",
+          spawnPosition: "random_in_bounds",
+          bounds: {
+            minX: 1,
+            maxX: 9,
+            minY: 0,
+            maxY: 0.5,
+          },
+          interval: 3,
+          maxSpawns: 10,
+        },
+      ],
+    },
+  ],
+  rules: [
+    {
+      id: "caught-bad",
+      name: "Caught bad item",
+      trigger: {
+        type: "collision",
+        entityATag: "catcher",
+        entityBTag: "bad",
+      },
+      actions: [
+        {
+          type: "score",
+          operation: "subtract",
+          value: 20,
+        },
+        {
+          type: "destroy",
+          target: {
+            type: "collision_entities",
+          },
+        },
+      ],
+    },
+    {
+      id: "game-timer",
+      name: "Game ends after 30 seconds",
+      trigger: {
+        type: "timer",
+        time: 30,
+      },
+      actions: [
+        {
+          type: "game_state",
+          state: "win",
+          delay: 0,
+        },
+      ],
+    },
+  ],
+  winCondition: {
+    type: "survive_time",
+    time: 30,
+  },
+  loseCondition: {
+    type: "score_below",
+    score: 0,
+  },
+};
+
+export default game;
