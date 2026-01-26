@@ -1,0 +1,5 @@
+=== POSITIVE ===
+A button UI background for a game interface. Rectangular button with raised 3D appearance. Theme: medieval fantasy with stone textures and ornate metalwork. State: neutral, clean. Front view, flat 2D element with transparent background. Decorative borders and clean center area suitable for nine-patch scaling. Professional game UI style, functional and thematic.
+
+=== NEGATIVE ===
+text, labels, icons, checkmarks, letters, numbers, watermark, signature, grid lines, measurement marks, multiple elements, 3D perspective, angled view, blurry, low quality

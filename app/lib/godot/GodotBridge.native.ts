@@ -1154,6 +1154,23 @@ export function createNativeGodotBridge(): GodotBridge {
       };
     },
 
+    createThemedUIComponent(
+      componentId: string,
+      componentType: 0 | 1 | 2 | 3 | 4 | 5 | 6,
+      metadataUrl: string,
+      x: number,
+      y: number,
+      width: number,
+      height: number,
+      labelText: string = ''
+    ) {
+      callGameBridge('create_themed_ui_component', componentId, componentType, metadataUrl, x, y, width, height, labelText);
+    },
+
+    destroyThemedUIComponent(componentId: string) {
+      callGameBridge('destroy_themed_ui_component', componentId);
+    },
+
     show3DModel(path: string): boolean {
       callGameBridge('show_3d_model', path);
       return true;

@@ -1,10 +1,5 @@
 import { useCallback, useRef, useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  type GestureResponderEvent,
-} from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import type { ExampleMeta } from "@/lib/registry/types";
@@ -186,42 +181,11 @@ const GAME_DEFINITION: GameDefinition = {
   rules: [],
 };
 
-interface ContainerLayout {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
 interface DragTracker {
   startAngle: number;
   lastAngle: number;
   lastTime: number;
   angularVelocity: number;
-}
-
-function screenToWorldCoords(
-  screenX: number,
-  screenY: number,
-  layout: ContainerLayout
-): { x: number; y: number } {
-  const viewWidth = layout.width;
-  const viewHeight = layout.height;
-
-  const scaleX = viewWidth / (WORLD_BOUNDS.width * PIXELS_PER_METER);
-  const scaleY = viewHeight / (WORLD_BOUNDS.height * PIXELS_PER_METER);
-  const scale = Math.min(scaleX, scaleY);
-
-  const offsetX = (viewWidth - WORLD_BOUNDS.width * PIXELS_PER_METER * scale) / 2;
-  const offsetY = (viewHeight - WORLD_BOUNDS.height * PIXELS_PER_METER * scale) / 2;
-
-  const relativeX = screenX - layout.x;
-  const relativeY = screenY - layout.y;
-
-  const worldX = (relativeX - offsetX) / (PIXELS_PER_METER * scale);
-  const worldY = (relativeY - offsetY) / (PIXELS_PER_METER * scale);
-
-  return { x: worldX, y: worldY };
 }
 
 function getAngleFromCenter(x: number, y: number): number {
@@ -241,8 +205,6 @@ export default function SpinningWheelExample() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [GodotView, setGodotView] = useState<React.ComponentType<{ style?: object }> | null>(null);
 
-  const containerRef = useRef<View>(null);
-  const containerLayoutRef = useRef<ContainerLayout | null>(null);
   const dragTrackerRef = useRef<DragTracker | null>(null);
 
   const [debugInfo, setDebugInfo] = useState<{
@@ -307,86 +269,66 @@ export default function SpinningWheelExample() {
     return () => { mounted = false; };
   }, [bridge, GodotView, addLog]);
 
-  const handleTouchStart = useCallback(
-    (event: GestureResponderEvent) => {
-      if (!bridge || status !== "ready") return;
+  useEffect(() => {
+    if (!bridge || status !== "ready") return;
 
-      const { pageX, pageY } = event.nativeEvent;
-      const layout = containerLayoutRef.current;
-      if (!layout) return;
+    const unsubscribe = bridge.onInputEvent((type, x, y, _entityId) => {
+      if (type === "drag_start") {
+        const distFromCenter = Math.sqrt(
+          Math.pow(x - WHEEL_CENTER.x, 2) + Math.pow(y - WHEEL_CENTER.y, 2)
+        );
 
-      const world = screenToWorldCoords(pageX, pageY, layout);
-      const distFromCenter = Math.sqrt(
-        Math.pow(world.x - WHEEL_CENTER.x, 2) + Math.pow(world.y - WHEEL_CENTER.y, 2)
-      );
+        if (distFromCenter <= WHEEL_RADIUS + 0.5) {
+          const currentAngle = getAngleFromCenter(x, y);
+          dragTrackerRef.current = {
+            startAngle: currentAngle,
+            lastAngle: currentAngle,
+            lastTime: Date.now(),
+            angularVelocity: 0,
+          };
 
-      if (distFromCenter <= WHEEL_RADIUS + 0.5) {
-        const currentAngle = getAngleFromCenter(world.x, world.y);
-        dragTrackerRef.current = {
-          startAngle: currentAngle,
-          lastAngle: currentAngle,
-          lastTime: Date.now(),
-          angularVelocity: 0,
-        };
+          addLog(`Drag started at angle ${(currentAngle * 180 / Math.PI).toFixed(1)}°`);
+          setDebugInfo({
+            isDragging: true,
+            angularVelocity: 0,
+            currentAngle: currentAngle,
+          });
+        }
+      } else if (type === "drag_move") {
+        const tracker = dragTrackerRef.current;
+        if (!tracker) return;
 
-        addLog(`Drag started at angle ${(currentAngle * 180 / Math.PI).toFixed(1)}°`);
-        setDebugInfo({
-          isDragging: true,
-          angularVelocity: 0,
-          currentAngle: currentAngle,
-        });
+        const currentAngle = getAngleFromCenter(x, y);
+        const now = Date.now();
+        const deltaTime = (now - tracker.lastTime) / 1000;
+
+        if (deltaTime > 0.001) {
+          const angleDelta = normalizeAngle(currentAngle - tracker.lastAngle);
+          tracker.angularVelocity = angleDelta / deltaTime;
+          tracker.lastAngle = currentAngle;
+          tracker.lastTime = now;
+
+          bridge.setAngularVelocity("wheel", tracker.angularVelocity);
+
+          setDebugInfo({
+            isDragging: true,
+            angularVelocity: tracker.angularVelocity,
+            currentAngle: currentAngle,
+          });
+        }
+      } else if (type === "drag_end") {
+        const tracker = dragTrackerRef.current;
+        if (tracker) {
+          addLog(`Released with angular velocity ${(tracker.angularVelocity * 180 / Math.PI).toFixed(1)}°/s`);
+          bridge.setAngularVelocity("wheel", tracker.angularVelocity * 1.5);
+          dragTrackerRef.current = null;
+          setDebugInfo(null);
+        }
       }
-    },
-    [bridge, status, addLog]
-  );
+    });
 
-  const handleTouchMove = useCallback(
-    (event: GestureResponderEvent) => {
-      if (!bridge || status !== "ready") return;
-
-      const tracker = dragTrackerRef.current;
-      if (!tracker) return;
-
-      const { pageX, pageY } = event.nativeEvent;
-      const layout = containerLayoutRef.current;
-      if (!layout) return;
-
-      const world = screenToWorldCoords(pageX, pageY, layout);
-      const currentAngle = getAngleFromCenter(world.x, world.y);
-      const now = Date.now();
-      const deltaTime = (now - tracker.lastTime) / 1000;
-
-      if (deltaTime > 0.001) {
-        const angleDelta = normalizeAngle(currentAngle - tracker.lastAngle);
-        tracker.angularVelocity = angleDelta / deltaTime;
-        tracker.lastAngle = currentAngle;
-        tracker.lastTime = now;
-
-        bridge.setAngularVelocity("wheel", tracker.angularVelocity);
-
-        setDebugInfo({
-          isDragging: true,
-          angularVelocity: tracker.angularVelocity,
-          currentAngle: currentAngle,
-        });
-      }
-    },
-    [bridge, status]
-  );
-
-  const handleTouchEnd = useCallback(() => {
-    if (!bridge) return;
-
-    const tracker = dragTrackerRef.current;
-    if (tracker) {
-      addLog(`Released with angular velocity ${(tracker.angularVelocity * 180 / Math.PI).toFixed(1)}°/s`);
-
-      bridge.setAngularVelocity("wheel", tracker.angularVelocity * 1.5);
-
-      dragTrackerRef.current = null;
-      setDebugInfo(null);
-    }
-  }, [bridge, addLog]);
+    return unsubscribe;
+  }, [bridge, status, addLog]);
 
   const handleReset = useCallback(() => {
     if (!bridge || status !== "ready") return;
@@ -395,13 +337,6 @@ export default function SpinningWheelExample() {
     bridge.setAngularVelocity("wheel", 0);
     bridge.setTransform("wheel", WHEEL_CENTER.x, WHEEL_CENTER.y, 0);
   }, [bridge, status, addLog]);
-
-  const handleLayout = useCallback(() => {
-    containerRef.current?.measureInWindow((x, y, width, height) => {
-      containerLayoutRef.current = { x, y, width, height };
-      addLog(`Container layout: ${width.toFixed(0)}x${height.toFixed(0)}`);
-    });
-  }, [addLog]);
 
   if (status === "error") {
     return (
@@ -432,44 +367,30 @@ export default function SpinningWheelExample() {
       />
 
       <View className="flex-1 bg-gray-900">
-        <View
-          ref={containerRef}
-          className="flex-1"
-          onLayout={handleLayout}
-          onStartShouldSetResponder={() => status === "ready"}
-          onMoveShouldSetResponder={() => status === "ready"}
-          onResponderGrant={handleTouchStart}
-          onResponderMove={handleTouchMove}
-          onResponderRelease={handleTouchEnd}
-          onResponderTerminate={handleTouchEnd}
-        >
-          <View className="flex-1" style={{ pointerEvents: "none" }}>
-            {GodotView ? (
-              <GodotView style={{ flex: 1 }} />
-            ) : (
-              <View className="flex-1 items-center justify-center">
-                <Text className="text-white">Loading Godot...</Text>
-              </View>
-            )}
+        {GodotView ? (
+          <GodotView style={{ flex: 1 }} />
+        ) : (
+          <View className="flex-1 items-center justify-center">
+            <Text className="text-white">Loading Godot...</Text>
           </View>
-        </View>
+        )}
+      </View>
 
-        <View className="bg-black/80 p-3 max-h-40">
-          <Text className="text-green-400 font-mono text-xs mb-2">
-            {status === "loading"
-              ? "Initializing..."
-              : debugInfo
-                ? `Dragging | Velocity: ${(debugInfo.angularVelocity * 180 / Math.PI).toFixed(1)}°/s`
-                : "Drag the wheel to spin it!"
-            }
-          </Text>
-          <View className="border-t border-gray-700 pt-2">
-            {logs.slice(-5).map((log, idx) => (
-              <Text key={`log-${idx}-${log.slice(0, 10)}`} className="text-gray-400 font-mono text-xs">
-                {log}
-              </Text>
-            ))}
-          </View>
+      <View className="bg-black/80 p-3 max-h-40">
+        <Text className="text-green-400 font-mono text-xs mb-2">
+          {status === "loading"
+            ? "Initializing..."
+            : debugInfo
+              ? `Dragging | Velocity: ${(debugInfo.angularVelocity * 180 / Math.PI).toFixed(1)}°/s`
+              : "Drag the wheel to spin it!"
+          }
+        </Text>
+        <View className="border-t border-gray-700 pt-2">
+          {logs.slice(-5).map((log, idx) => (
+            <Text key={`log-${idx}-${log.slice(0, 10)}`} className="text-gray-400 font-mono text-xs">
+              {log}
+            </Text>
+          ))}
         </View>
       </View>
     </SafeAreaView>

@@ -1,0 +1,25 @@
+{
+  "componentType": "panel",
+  "states": {
+    "normal": {
+      "r2Key": "generated/ui-cli/panel/panel/normal.png",
+      "publicUrl": "http://localhost:8787/assets/generated/ui-cli/panel/panel/normal.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256
+      }
+    }
+  },
+  "ninePatchMargins": {
+    "left": 16,
+    "right": 16,
+    "top": 16,
+    "bottom": 16
+  },
+  "width": 256,
+  "height": 256,
+  "generatedAt": 1769401182539,
+  "theme": "medieval fantasy with stone textures and ornate metalwork"
+}

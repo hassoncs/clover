@@ -337,6 +337,19 @@ export interface GodotBridge {
   destroyUIButton(buttonId: string): void;
   onUIButtonEvent(callback: (eventType: 'button_down' | 'button_up' | 'button_pressed', buttonId: string) => void): () => void;
 
+  // Themed UI Components (AI-generated with metadata)
+  createThemedUIComponent(
+    componentId: string,
+    componentType: 0 | 1 | 2 | 3 | 4 | 5 | 6,
+    metadataUrl: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    labelText?: string
+  ): void;
+  destroyThemedUIComponent(componentId: string): void;
+
   // 3D Model Rendering (2.5D)
   show3DModel(path: string): boolean;
   show3DModelFromUrl(url: string): void;

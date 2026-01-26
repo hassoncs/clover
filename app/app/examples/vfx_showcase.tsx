@@ -1,10 +1,9 @@
-import { useCallback, useRef, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
   Pressable,
   ScrollView,
-  type GestureResponderEvent,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -113,31 +112,7 @@ const PARTICLE_PRESETS = [
   "fire", "smoke", "sparks", "magic", "explosion", "confetti", "dust", "stars",
 ];
 
-interface ContainerLayout {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
 
-function screenToWorldCoords(
-  screenX: number,
-  screenY: number,
-  layout: ContainerLayout
-): { x: number; y: number } {
-  const viewWidth = layout.width;
-  const viewHeight = layout.height;
-  const scaleX = viewWidth / (WORLD_BOUNDS.width * PIXELS_PER_METER);
-  const scaleY = viewHeight / (WORLD_BOUNDS.height * PIXELS_PER_METER);
-  const scale = Math.min(scaleX, scaleY);
-  const offsetX = (viewWidth - WORLD_BOUNDS.width * PIXELS_PER_METER * scale) / 2;
-  const offsetY = (viewHeight - WORLD_BOUNDS.height * PIXELS_PER_METER * scale) / 2;
-  const relativeX = screenX - layout.x;
-  const relativeY = screenY - layout.y;
-  const worldX = (relativeX - offsetX) / (PIXELS_PER_METER * scale);
-  const worldY = (relativeY - offsetY) / (PIXELS_PER_METER * scale);
-  return { x: worldX, y: worldY };
-}
 
 type EffectCategory = "sprite" | "post" | "camera" | "particles";
 
@@ -148,8 +123,7 @@ export default function VFXShowcaseExample() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [GodotView, setGodotView] = useState<React.ComponentType<{ style?: object }> | null>(null);
   
-  const containerRef = useRef<View>(null);
-  const containerLayoutRef = useRef<ContainerLayout | null>(null);
+  const activeCategoryRef = useRef<EffectCategory>("sprite");
 
   const [activeCategory, setActiveCategory] = useState<EffectCategory>("sprite");
   const [selectedSpriteEffect, setSelectedSpriteEffect] = useState("none");
@@ -259,29 +233,21 @@ export default function VFXShowcaseExample() {
     }
   }, [bridge, status]);
 
-  const handleTap = useCallback((event: GestureResponderEvent) => {
+  useEffect(() => {
+    activeCategoryRef.current = activeCategory;
+  }, [activeCategory]);
+
+  useEffect(() => {
     if (!bridge || status !== "ready") return;
-    
-    const { pageX, pageY } = event.nativeEvent;
-    const layout = containerLayoutRef.current;
-    if (!layout) {
-      console.log("[VFX] No layout available");
-      return;
-    }
 
-    const world = screenToWorldCoords(pageX, pageY, layout);
-    console.log("[VFX] Tap at screen:", pageX, pageY, "world:", world.x, world.y, "particle:", selectedParticle);
-    
-    if (activeCategory === "particles") {
-      bridge.spawnParticlePreset(selectedParticle, world.x, world.y);
-    }
-  }, [bridge, status, activeCategory, selectedParticle]);
-
-  const handleLayout = useCallback(() => {
-    containerRef.current?.measureInWindow((x, y, width, height) => {
-      containerLayoutRef.current = { x, y, width, height };
+    const unsubscribe = bridge.onInputEvent((type, x, y) => {
+      if (type === "tap" && activeCategoryRef.current === "particles") {
+        bridge.spawnParticlePreset(selectedParticle, x, y);
+      }
     });
-  }, []);
+
+    return unsubscribe;
+  }, [bridge, status, selectedParticle]);
 
   const renderCategoryTabs = () => (
     <View className="flex-row bg-black/60 px-2 py-1">
@@ -393,18 +359,9 @@ export default function VFXShowcaseExample() {
       />
 
       <View className="flex-1">
-        <View
-          ref={containerRef}
-          className="flex-1"
-          onLayout={handleLayout}
-          onStartShouldSetResponder={() => status === "ready" && activeCategory === "particles"}
-          onMoveShouldSetResponder={() => false}
-          onResponderGrant={() => {}}
-          onResponderRelease={handleTap}
-          style={{ position: "relative" }}
-        >
+        <View className="flex-1">
           {GodotView ? (
-            <GodotView style={{ flex: 1, pointerEvents: activeCategory === "particles" ? "none" : "auto" }} />
+            <GodotView style={{ flex: 1 }} />
           ) : (
             <View className="flex-1 items-center justify-center">
               <Text className="text-white">Loading Godot...</Text>

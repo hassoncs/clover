@@ -1042,6 +1042,38 @@ export function createWebGodotBridge(): GodotBridge {
       };
     },
 
+    createThemedUIComponent(
+      componentId: string,
+      componentType: 0 | 1 | 2 | 3 | 4 | 5 | 6,
+      metadataUrl: string,
+      x: number,
+      y: number,
+      width: number,
+      height: number,
+      labelText: string = ''
+    ) {
+      const godotBridge = getGodotBridge() as any;
+      if (godotBridge?.createThemedUIComponent) {
+        godotBridge.createThemedUIComponent(
+          componentId,
+          componentType,
+          metadataUrl,
+          x,
+          y,
+          width,
+          height,
+          labelText
+        );
+      }
+    },
+
+    destroyThemedUIComponent(componentId: string) {
+      const godotBridge = getGodotBridge() as any;
+      if (godotBridge?.destroyThemedUIComponent) {
+        godotBridge.destroyThemedUIComponent(componentId);
+      }
+    },
+
     show3DModel(path: string): boolean {
       const godotBridge = getGodotBridge();
       return godotBridge?.show_3d_model?.(path) ?? false;

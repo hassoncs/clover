@@ -1,7 +1,7 @@
 class_name ThemedUIComponent
 extends Control
 
-enum ComponentType { BUTTON, CHECKBOX }
+enum ComponentType { BUTTON, CHECKBOX, PANEL, PROGRESS_BAR, SCROLL_BAR_H, SCROLL_BAR_V, TAB_BAR }
 
 signal pressed()
 signal toggled(is_checked: bool)
@@ -49,21 +49,61 @@ func _create_control_node() -> void:
 	if _control_node:
 		_control_node.queue_free()
 	
-	if _component_type == ComponentType.BUTTON:
-		var btn = Button.new()
-		btn.name = "Button"
-		btn.text = text
-		btn.flat = true
-		btn.pressed.connect(_on_button_pressed)
-		_control_node = btn
-	else:
-		var chk = CheckBox.new()
-		chk.name = "CheckBox"
-		chk.text = text
-		chk.toggle_mode = true
-		chk.flat = true
-		chk.toggled.connect(_on_checkbox_toggled)
-		_control_node = chk
+	match _component_type:
+		ComponentType.BUTTON:
+			var btn = Button.new()
+			btn.name = "Button"
+			btn.text = text
+			btn.flat = true
+			btn.pressed.connect(_on_button_pressed)
+			_control_node = btn
+		
+		ComponentType.CHECKBOX:
+			var chk = CheckBox.new()
+			chk.name = "CheckBox"
+			chk.text = text
+			chk.toggle_mode = true
+			chk.flat = true
+			chk.toggled.connect(_on_checkbox_toggled)
+			_control_node = chk
+		
+		ComponentType.PANEL:
+			var panel = Panel.new()
+			panel.name = "Panel"
+			_control_node = panel
+		
+		ComponentType.PROGRESS_BAR:
+			var progress = ProgressBar.new()
+			progress.name = "ProgressBar"
+			progress.min_value = 0
+			progress.max_value = 100
+			progress.value = 50
+			progress.show_percentage = false
+			_control_node = progress
+		
+		ComponentType.SCROLL_BAR_H:
+			var hscroll = HScrollBar.new()
+			hscroll.name = "HScrollBar"
+			hscroll.min_value = 0
+			hscroll.max_value = 100
+			hscroll.value = 30
+			_control_node = hscroll
+		
+		ComponentType.SCROLL_BAR_V:
+			var vscroll = VScrollBar.new()
+			vscroll.name = "VScrollBar"
+			vscroll.min_value = 0
+			vscroll.max_value = 100
+			vscroll.value = 30
+			_control_node = vscroll
+		
+		ComponentType.TAB_BAR:
+			var tabs = TabBar.new()
+			tabs.name = "TabBar"
+			tabs.add_tab("Tab 1")
+			tabs.add_tab("Tab 2")
+			tabs.add_tab("Tab 3")
+			_control_node = tabs
 	
 	add_child(_control_node)
 	
@@ -170,29 +210,54 @@ func _apply_styles() -> void:
 	if not is_instance_valid(_control_node):
 		return
 	
-	if _style_boxes.has("normal"):
-		_control_node.add_theme_stylebox_override("normal", _style_boxes["normal"])
-	
-	if _style_boxes.has("hover"):
-		_control_node.add_theme_stylebox_override("hover", _style_boxes["hover"])
-	else:
-		_control_node.add_theme_stylebox_override("hover", _style_boxes.get("normal", null))
-	
-	if _style_boxes.has("pressed"):
-		_control_node.add_theme_stylebox_override("pressed", _style_boxes["pressed"])
-	else:
-		_control_node.add_theme_stylebox_override("pressed", _style_boxes.get("normal", null))
-	
-	if _style_boxes.has("disabled"):
-		_control_node.add_theme_stylebox_override("disabled", _style_boxes["disabled"])
-	
-	if _style_boxes.has("focus"):
-		_control_node.add_theme_stylebox_override("focus", _style_boxes["focus"])
-	
-	if _component_type == ComponentType.CHECKBOX and _icon_texture:
-		var chk = _control_node as CheckBox
-		chk.add_theme_icon_override("checked", _icon_texture)
-		chk.add_theme_icon_override("checked_disabled", _icon_texture)
+	match _component_type:
+		ComponentType.BUTTON, ComponentType.CHECKBOX:
+			if _style_boxes.has("normal"):
+				_control_node.add_theme_stylebox_override("normal", _style_boxes["normal"])
+			if _style_boxes.has("hover"):
+				_control_node.add_theme_stylebox_override("hover", _style_boxes["hover"])
+			else:
+				_control_node.add_theme_stylebox_override("hover", _style_boxes.get("normal", null))
+			if _style_boxes.has("pressed"):
+				_control_node.add_theme_stylebox_override("pressed", _style_boxes["pressed"])
+			else:
+				_control_node.add_theme_stylebox_override("pressed", _style_boxes.get("normal", null))
+			if _style_boxes.has("disabled"):
+				_control_node.add_theme_stylebox_override("disabled", _style_boxes["disabled"])
+			if _style_boxes.has("focus"):
+				_control_node.add_theme_stylebox_override("focus", _style_boxes["focus"])
+			
+			if _component_type == ComponentType.CHECKBOX and _icon_texture:
+				var chk = _control_node as CheckBox
+				chk.add_theme_icon_override("checked", _icon_texture)
+				chk.add_theme_icon_override("checked_disabled", _icon_texture)
+		
+		ComponentType.PANEL:
+			if _style_boxes.has("normal"):
+				_control_node.add_theme_stylebox_override("panel", _style_boxes["normal"])
+		
+		ComponentType.PROGRESS_BAR:
+			if _style_boxes.has("normal"):
+				_control_node.add_theme_stylebox_override("background", _style_boxes["normal"])
+			if _style_boxes.has("disabled"):
+				_control_node.add_theme_stylebox_override("fill", _style_boxes["disabled"])
+		
+		ComponentType.SCROLL_BAR_H, ComponentType.SCROLL_BAR_V:
+			if _style_boxes.has("normal"):
+				_control_node.add_theme_stylebox_override("scroll", _style_boxes["normal"])
+				_control_node.add_theme_stylebox_override("scroll_focus", _style_boxes["normal"])
+			if _style_boxes.has("hover"):
+				_control_node.add_theme_stylebox_override("grabber_highlight", _style_boxes["hover"])
+			if _style_boxes.has("pressed"):
+				_control_node.add_theme_stylebox_override("grabber_pressed", _style_boxes["pressed"])
+		
+		ComponentType.TAB_BAR:
+			if _style_boxes.has("unselected"):
+				_control_node.add_theme_stylebox_override("tab_unselected", _style_boxes["unselected"])
+			if _style_boxes.has("selected"):
+				_control_node.add_theme_stylebox_override("tab_selected", _style_boxes["selected"])
+			if _style_boxes.has("hover"):
+				_control_node.add_theme_stylebox_override("tab_hovered", _style_boxes["hover"])
 
 func _on_button_pressed() -> void:
 	pressed.emit()

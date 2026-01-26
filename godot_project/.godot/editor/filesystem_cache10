@@ -21,7 +21,7 @@ VFXShowcase.tscn::PackedScene::2855297431937620752::1769205700::0::1::::<><><>0<
 ::res://scenes/lab/::1769366245
 ui_components_demo.tscn::PackedScene::5962763572750761863::1769366245::0::1::::<><><>0<>0<><>::res://scripts/lab/UIComponentsDemo.gd
 ::res://scripts/::1769385517
-GameBridge.gd::GDScript::7400890102577367664::1769399460::0::1::::<>Node<><>0<>0<><>::
+GameBridge.gd::GDScript::7400890102577367664::1769401524::0::1::::<>Node<><>0<>0<><>::
 Lab3D.gd::GDScript::2743172060191353031::1769312349::0::1::::<>Node3D<><>0<>0<><>::
 Main.gd::GDScript::4927831078751178685::1769366407::0::1::::<>Node2D<><>0<>0<><>::
 PhysicsBody.gd::GDScript::3101094749307879933::1769200136::0::1::::<>RigidBody2D<><>0<>0<><>::
@@ -64,7 +64,7 @@ PhysicsQueries.gd::GDScript::5196289122445717834::1769397370::0::1::::PhysicsQue
 ::res://scripts/ui/::1769366214
 TestUIComponents.gd::GDScript::1812308515672171160::1769361346::0::1::::<>Control<><>0<>0<><>::
 ThemedCheckbox.gd::GDScript::4244886539141142883::1769361335::0::1::::ThemedCheckbox<>Control<><>0<>0<><>::
-ThemedUIComponent.gd::GDScript::8085600949968827971::1769366211::0::1::::ThemedUIComponent<>Control<><>0<>0<><>::
+ThemedUIComponent.gd::GDScript::8085600949968827971::1769401435::0::1::::ThemedUIComponent<>Control<><>0<>0<><>::
 UIManager.gd::GDScript::138953571495935723::1769312655::0::1::::UIManager<>RefCounted<><>0<>0<><>::
 ::res://scripts/world/::1769312640
 CameraController.gd::GDScript::1570035161264884953::1769312637::0::1::::CameraController<>RefCounted<><>0<>0<><>::

@@ -6,7 +6,6 @@ import {
   ScrollView,
   Platform,
   Alert,
-  type GestureResponderEvent,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -41,12 +40,7 @@ interface DragState {
   jointId: number;
 }
 
-interface ContainerLayout {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
+
 
 interface CubePosition {
   id: string;
@@ -137,26 +131,7 @@ const GAME_DEFINITION: GameDefinition = {
   rules: [],
 };
 
-function screenToWorldCoords(
-  screenX: number,
-  screenY: number,
-  layout: ContainerLayout
-): { x: number; y: number } {
-  const viewWidth = layout.width;
-  const viewHeight = layout.height;
-  const scaleX = viewWidth / (WORLD_BOUNDS.width * PIXELS_PER_METER);
-  const scaleY = viewHeight / (WORLD_BOUNDS.height * PIXELS_PER_METER);
-  const scale = Math.min(scaleX, scaleY);
-  const offsetX = (viewWidth - WORLD_BOUNDS.width * PIXELS_PER_METER * scale) / 2;
-  const offsetY = (viewHeight - WORLD_BOUNDS.height * PIXELS_PER_METER * scale) / 2;
-  const relativeX = screenX - layout.x;
-  const relativeY = screenY - layout.y;
-  const viewportX = (relativeX - offsetX) / (PIXELS_PER_METER * scale);
-  const viewportY = (relativeY - offsetY) / (PIXELS_PER_METER * scale);
-  const worldX = viewportX - WORLD_BOUNDS.width / 2;
-  const worldY = WORLD_BOUNDS.height / 2 - viewportY;
-  return { x: worldX, y: worldY };
-}
+
 
 export default function BluetoothSyncExample() {
   const router = useRouter();
@@ -174,8 +149,6 @@ export default function BluetoothSyncExample() {
   
   const dragStateRef = useRef<DragState | null>(null);
   const remoteDragJointsRef = useRef<Map<string, number>>(new Map());
-  const containerRef = useRef<View>(null);
-  const containerLayoutRef = useRef<ContainerLayout | null>(null);
   const sequenceRef = useRef(0);
 
   const peripheralSupported = isBLEPeripheralSupported();
@@ -396,78 +369,55 @@ export default function BluetoothSyncExample() {
     }
   }, [addLog]);
 
-  const handleTouchStart = useCallback(async (event: GestureResponderEvent) => {
+  useEffect(() => {
     const bridge = bridgeRef.current;
-    if (!bridge || gameStatus !== "ready") return;
-    
-    const { pageX, pageY } = event.nativeEvent;
-    const layout = containerLayoutRef.current;
-    if (!layout) return;
+    if (!bridge || gameStatus !== "ready" || mode !== "connected") return;
 
-    const world = screenToWorldCoords(pageX, pageY, layout);
-    const hitEntity = await bridge.queryPointEntity({ x: world.x, y: world.y });
+    const unsubscribe = bridge.onInputEvent(async (type, x, y, entityId) => {
+      if (type === "drag_start") {
+        if (entityId && entityId.startsWith("cube")) {
+          const jointId = await bridge.createMouseJointAsync({
+            type: "mouse",
+            body: entityId,
+            target: { x, y },
+            maxForce: 50000,
+            stiffness: 30,
+            damping: 0.5,
+          });
 
-    if (hitEntity && hitEntity.startsWith("cube")) {
-      const jointId = await bridge.createMouseJointAsync({
-        type: "mouse",
-        body: hitEntity,
-        target: { x: world.x, y: world.y },
-        maxForce: 50000,
-        stiffness: 30,
-        damping: 0.5,
-      });
-
-      dragStateRef.current = { entityId: hitEntity, jointId };
-      
-      sendSyncMessage("drag_start", {
-        dragStart: { entityId: hitEntity, x: world.x, y: world.y }
-      });
-      
-      addLog(`Drag: ${hitEntity}`, "info");
-    }
-  }, [gameStatus, sendSyncMessage, addLog]);
-
-  const handleTouchMove = useCallback((event: GestureResponderEvent) => {
-    const bridge = bridgeRef.current;
-    if (!bridge || gameStatus !== "ready") return;
-    
-    const { pageX, pageY } = event.nativeEvent;
-    const layout = containerLayoutRef.current;
-    if (!layout) return;
-
-    const world = screenToWorldCoords(pageX, pageY, layout);
-    const dragState = dragStateRef.current;
-    
-    if (dragState) {
-      bridge.setMouseTarget(dragState.jointId, { x: world.x, y: world.y });
-      
-      sendSyncMessage("drag_move", {
-        dragMove: { entityId: dragState.entityId, x: world.x, y: world.y }
-      });
-    }
-  }, [gameStatus, sendSyncMessage]);
-
-  const handleTouchEnd = useCallback(() => {
-    const bridge = bridgeRef.current;
-    if (!bridge) return;
-    
-    const dragState = dragStateRef.current;
-    if (dragState) {
-      bridge.destroyJoint(dragState.jointId);
-      
-      sendSyncMessage("drag_end", {
-        dragEnd: { entityId: dragState.entityId }
-      });
-      
-      dragStateRef.current = null;
-    }
-  }, [sendSyncMessage]);
-
-  const handleLayout = useCallback(() => {
-    containerRef.current?.measureInWindow((x, y, width, height) => {
-      containerLayoutRef.current = { x, y, width, height };
+          dragStateRef.current = { entityId, jointId };
+          
+          sendSyncMessage("drag_start", {
+            dragStart: { entityId, x, y }
+          });
+          
+          addLog(`Drag: ${entityId}`, "info");
+        }
+      } else if (type === "drag_move") {
+        const dragState = dragStateRef.current;
+        if (dragState) {
+          bridge.setMouseTarget(dragState.jointId, { x, y });
+          
+          sendSyncMessage("drag_move", {
+            dragMove: { entityId: dragState.entityId, x, y }
+          });
+        }
+      } else if (type === "drag_end") {
+        const dragState = dragStateRef.current;
+        if (dragState) {
+          bridge.destroyJoint(dragState.jointId);
+          
+          sendSyncMessage("drag_end", {
+            dragEnd: { entityId: dragState.entityId }
+          });
+          
+          dragStateRef.current = null;
+        }
+      }
     });
-  }, []);
+
+    return unsubscribe;
+  }, [gameStatus, mode, sendSyncMessage, addLog]);
 
   useEffect(() => {
     return () => {
@@ -548,26 +498,14 @@ export default function BluetoothSyncExample() {
       />
 
       <View className="flex-1">
-        <View
-          ref={containerRef}
-          className="flex-1"
-          onLayout={handleLayout}
-          onStartShouldSetResponder={() => gameStatus === "ready" && mode === "connected"}
-          onMoveShouldSetResponder={() => gameStatus === "ready" && mode === "connected"}
-          onResponderGrant={handleTouchStart}
-          onResponderMove={handleTouchMove}
-          onResponderRelease={handleTouchEnd}
-          onResponderTerminate={handleTouchEnd}
-        >
-          <View className="flex-1" style={{ pointerEvents: "none" }}>
-            {GodotView ? (
-              <GodotView style={{ flex: 1 }} />
-            ) : (
-              <View className="flex-1 items-center justify-center">
-                <Text className="text-white">Loading physics...</Text>
-              </View>
-            )}
-          </View>
+        <View className="flex-1">
+          {GodotView ? (
+            <GodotView style={{ flex: 1 }} />
+          ) : (
+            <View className="flex-1 items-center justify-center">
+              <Text className="text-white">Loading physics...</Text>
+            </View>
+          )}
 
           {mode !== "connected" && (
             <View className="absolute inset-0 bg-black/70 items-center justify-center">
