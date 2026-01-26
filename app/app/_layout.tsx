@@ -5,9 +5,18 @@ import { Stack, useRouter } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as Linking from "expo-linking";
+import * as Sentry from "@sentry/react-native";
 import { TRPCProvider } from "@/lib/trpc/react";
 import { handleNativeAuthCallback } from "@/lib/supabase/auth";
 import "../global.css";
+
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  debug: __DEV__,
+  enabled: !__DEV__,
+  enableNative: true,
+  tracesSampleRate: __DEV__ ? 0 : 0.2,
+});
 
 if (typeof window !== "undefined" && typeof global === "undefined") {
   (globalThis as any).global = globalThis;
@@ -47,7 +56,7 @@ function useDeepLinkHandler() {
   }, [router]);
 }
 
-export default function RootLayout() {
+function RootLayout() {
   useDeepLinkHandler();
   return (
     <GestureHandlerRootView style={{ flex: 1 }} className={Platform.OS === "web" ? "no-select" : ""}>
@@ -86,3 +95,5 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
+
+export default Sentry.wrap(RootLayout);

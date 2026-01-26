@@ -9,7 +9,8 @@
     "plugins": [
       "expo-router",
       "./plugins/withGodotAssets",
-      "./plugins/withMetroPort"
+      "./plugins/withMetroPort",
+      "@sentry/react-native"
     ],
     "name": "Slopcade",
     "slug": "slopcade",
