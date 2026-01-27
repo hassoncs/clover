@@ -396,6 +396,13 @@ export function GameRuntimeGodot({
         const game = loader.load(definition);
         gameRef.current = game;
 
+        bridge.onEntitySpawned((event) => {
+          game.entityManager.handleEntitySpawned(event);
+        });
+        bridge.onEntityDestroyed((entityId) => {
+          game.entityManager.handleEntityDestroyed(entityId);
+        });
+
         const inputEntityManager = new InputEntityManager();
         inputEntityManagerRef.current = inputEntityManager;
 

@@ -26,7 +26,7 @@ import {
   createColliderId,
   createJointId,
 } from "../physics2d/types";
-import type { GodotBridge, EntityTransform } from "./types";
+import type { GodotBridge, EntityTransform, EntitySpawnedEvent } from "./types";
 
 interface CachedBodyState {
   transform: Transform;
@@ -44,6 +44,9 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
   const groupStore = new Map<number, string>();
 
   const cachedStates = new Map<number, CachedBodyState>();
+  
+  // Track entity generations from Godot for pool safety
+  const entityGenerations = new Map<string, number>();
 
   let nextBodyId = 1;
   let nextColliderId = 1;
@@ -54,8 +57,19 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
   const sensorBeginCallbacks: SensorCallback[] = [];
   const sensorEndCallbacks: SensorCallback[] = [];
 
+  function handleEntitySpawned(event: EntitySpawnedEvent) {
+    entityGenerations.set(event.entityId, event.generation);
+  }
+
+  function handleEntityDestroyed(entityId: string) {
+    entityGenerations.delete(entityId);
+  }
+
   function handleTransformSync(transforms: Record<string, EntityTransform>) {
     for (const [entityId, transform] of Object.entries(transforms)) {
+      if (!entityGenerations.has(entityId)) {
+        continue;
+      }
       const bodyId = entityIdToBodyId.get(entityId);
       if (bodyId) {
         const cached = cachedStates.get(bodyId.value);
@@ -101,6 +115,8 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
 
   bridge.onTransformSync(handleTransformSync);
   bridge.onPropertySync(handlePropertySync);
+  bridge.onEntitySpawned(handleEntitySpawned);
+  bridge.onEntityDestroyed(handleEntityDestroyed);
 
   bridge.onCollision((event) => {
     const bodyA = entityIdToBodyId.get(event.entityA);

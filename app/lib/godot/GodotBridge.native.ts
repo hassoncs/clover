@@ -3,6 +3,7 @@ import type {
   GodotBridge,
   CollisionEvent,
   SensorEvent,
+  EntitySpawnedEvent,
   EntityTransform,
   Vec2,
   RaycastHit,
@@ -134,6 +135,7 @@ interface QueuedEvent {
 export function createNativeGodotBridge(): GodotBridge {
   const collisionCallbacks: ((event: CollisionEvent) => void)[] = [];
   const destroyCallbacks: ((entityId: string) => void)[] = [];
+  const entitySpawnedCallbacks: ((event: EntitySpawnedEvent) => void)[] = [];
   const sensorBeginCallbacks: ((event: SensorEvent) => void)[] = [];
   const sensorEndCallbacks: ((event: SensorEvent) => void)[] = [];
   const inputEventCallbacks: ((type: string, x: number, y: number, entityId: string | null) => void)[] = [];
@@ -196,6 +198,11 @@ export function createNativeGodotBridge(): GodotBridge {
           case 'destroy': {
             const entityId = (event.data as { entityId: string }).entityId;
             for (const cb of destroyCallbacks) cb(entityId);
+            break;
+          }
+          case 'entity_spawned': {
+            const data = event.data as unknown as EntitySpawnedEvent;
+            for (const cb of entitySpawnedCallbacks) cb(data);
             break;
           }
           case 'sensor_begin': {
@@ -939,6 +946,14 @@ export function createNativeGodotBridge(): GodotBridge {
       return () => {
         const index = destroyCallbacks.indexOf(callback);
         if (index >= 0) destroyCallbacks.splice(index, 1);
+      };
+    },
+
+    onEntitySpawned(callback: (event: EntitySpawnedEvent) => void): () => void {
+      entitySpawnedCallbacks.push(callback);
+      return () => {
+        const index = entitySpawnedCallbacks.indexOf(callback);
+        if (index >= 0) entitySpawnedCallbacks.splice(index, 1);
       };
     },
 

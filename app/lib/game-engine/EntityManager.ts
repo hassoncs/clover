@@ -13,6 +13,14 @@ import type { RuntimeEntity, RuntimeBehavior, EntityManagerOptions } from './typ
 import { getGlobalTagRegistry } from '@slopcade/shared';
 import { recomputeActiveConditionalGroup } from './behaviors/conditional';
 
+export interface EntitySpawnedSnapshot {
+  entityId: string;
+  template: string;
+  generation: number;
+  tags: string[];
+  transform: { x: number; y: number; angle: number; scaleX: number; scaleY: number };
+}
+
 /**
  * Combines parent and local transforms into a world transform.
  * Handles rotation, scale, and translation.
@@ -86,6 +94,9 @@ export class EntityManager {
   
   /** Index for O(1) tag queries: tagId -> Set of entityIds */
   private entitiesByTagId = new Map<number, Set<string>>();
+  
+  /** Godot generation tokens for pool safety during async operations */
+  private godotGenerations = new Map<string, number>();
 
   constructor(physics: Physics2D, options: EntityManagerOptions = {}) {
     this.physics = physics;
@@ -123,6 +134,72 @@ export class EntityManager {
     this.spawnChildEntities(runtime, resolved.children || [], resolved.slots);
 
     return runtime;
+  }
+
+  handleEntitySpawned(snapshot: EntitySpawnedSnapshot): RuntimeEntity | null {
+    if (this.entities.has(snapshot.entityId)) {
+      return this.entities.get(snapshot.entityId)!;
+    }
+
+    this.godotGenerations.set(snapshot.entityId, snapshot.generation);
+
+    const template = this.templates.get(snapshot.template);
+    const tags = [...(template?.tags ?? []), ...snapshot.tags];
+
+    const runtime: RuntimeEntity = {
+      id: snapshot.entityId,
+      name: template?.id ?? snapshot.template,
+      template: snapshot.template,
+      parentId: undefined,
+      children: [],
+      localTransform: { ...snapshot.transform },
+      worldTransform: { ...snapshot.transform },
+      transform: { ...snapshot.transform },
+      sprite: template?.sprite,
+      physics: template?.physics,
+      behaviors: (template?.behaviors ?? []).map((b: Behavior) => ({
+        definition: b,
+        enabled: b.enabled !== false,
+        state: {},
+      })),
+      tags,
+      tagBits: new Set(),
+      layer: template?.layer ?? 0,
+      visible: true,
+      active: true,
+      bodyId: null,
+      colliderId: null,
+      conditionalBehaviors: template?.conditionalBehaviors ?? [],
+      activeConditionalGroupId: -1,
+    };
+
+    for (const tag of tags) {
+      const tagId = getGlobalTagRegistry().intern(tag);
+      runtime.tagBits.add(tagId);
+      if (!this.entitiesByTagId.has(tagId)) {
+        this.entitiesByTagId.set(tagId, new Set());
+      }
+      this.entitiesByTagId.get(tagId)!.add(snapshot.entityId);
+    }
+
+    this.entities.set(snapshot.entityId, runtime);
+    return runtime;
+  }
+
+  handleEntityDestroyed(entityId: string): void {
+    const entity = this.entities.get(entityId);
+    if (!entity) return;
+
+    for (const tagId of entity.tagBits) {
+      this.entitiesByTagId.get(tagId)?.delete(entityId);
+    }
+
+    this.entities.delete(entityId);
+    this.godotGenerations.delete(entityId);
+  }
+
+  getGodotGeneration(entityId: string): number | undefined {
+    return this.godotGenerations.get(entityId);
   }
 
   private getPooledEntityId(): string {
