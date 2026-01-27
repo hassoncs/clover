@@ -5,6 +5,7 @@ import type { TileSheet, TileMap } from './tilemap';
 import type { AssetSystemConfig } from './asset-system';
 import type { Value, ExpressionValueType } from '../expressions/types';
 import type { StateMachineDefinition } from '../systems/state-machine/types';
+import type { ContainerConfig } from './container';
 
 export interface WorldConfig {
   gravity: Vec2;
@@ -465,6 +466,11 @@ export interface GameDefinition {
    * Unlike entity-level machines, these have no `owner` field set.
    */
   stateMachines?: StateMachineDefinition[];
+  /**
+   * Container definitions for declarative container-based games (Ball Sort, Connect4, etc.).
+   * Containers track entity membership, validate placements, and compute positions.
+   */
+  containers?: ContainerConfig[];
 }
 
 export const DEFAULT_WORLD_CONFIG: WorldConfig = {

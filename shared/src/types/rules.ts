@@ -1,4 +1,5 @@
 import type { Bounds, Vec2 } from './common';
+import type { ContainerMatchRule } from './container';
 import type { Value } from '../expressions/types';
 import type { ComboIncrementAction, ComboResetAction } from '../systems/combo/types';
 import type { ActivateCheckpointAction, SaveCheckpointAction, RestoreCheckpointAction } from '../systems/checkpoint/types';
@@ -201,7 +202,14 @@ export type RuleCondition =
   | VariableCondition
   | ListContainsCondition
   | ExpressionCondition
-  | StateCondition;
+  | StateCondition
+  | ContainerIsEmptyCondition
+  | ContainerIsFullCondition
+  | ContainerCountCondition
+  | ContainerHasItemCondition
+  | ContainerCanAcceptCondition
+  | ContainerTopItemCondition
+  | ContainerIsOccupiedCondition;
 
 export type SpawnPositionType = 'fixed' | 'random' | 'at_entity' | 'at_collision';
 
@@ -389,6 +397,123 @@ export interface BallSortCheckWinAction {
   type: 'ball_sort_check_win';
 }
 
+// ============================================================================
+// Container Actions
+// ============================================================================
+
+export interface ContainerPushAction {
+  type: 'container_push';
+  container: string;
+  item: string | EntityTarget;
+  storeAs?: string;
+  position?: {
+    offset?: Vec2;
+    animate?: boolean;
+    duration?: number;
+  };
+}
+
+export interface ContainerPopAction {
+  type: 'container_pop';
+  container: string;
+  position?: 'top' | 'selected' | number;
+  storeAs?: string;
+  destroyAfter?: boolean;
+}
+
+export interface ContainerTransferAction {
+  type: 'container_transfer';
+  fromContainer: string;
+  toContainer: string;
+  item?: string | EntityTarget;
+  fromPosition?: 'top' | 'selected' | number;
+  toPosition?: 'next' | number;
+  storeAs?: string;
+  animate?: boolean;
+  duration?: number;
+}
+
+export interface ContainerSwapAction {
+  type: 'container_swap';
+  container: string;
+  positionA: number | 'top' | 'selected';
+  positionB: number | 'top' | 'selected';
+  betweenContainers?: boolean;
+  containerB?: string;
+}
+
+export interface ContainerClearAction {
+  type: 'container_clear';
+  container: string;
+  destroy?: boolean;
+  keep?: number;
+}
+
+export interface ContainerSelectAction {
+  type: 'container_select';
+  container: string;
+  index: number | 'next' | 'previous' | 'first' | 'last';
+  deselectOthers?: boolean;
+}
+
+export interface ContainerDeselectAction {
+  type: 'container_deselect';
+  container: string;
+}
+
+// ============================================================================
+// Container Conditions
+// ============================================================================
+
+export interface ContainerIsEmptyCondition {
+  type: 'container_is_empty';
+  container: string;
+  negated?: boolean;
+}
+
+export interface ContainerIsFullCondition {
+  type: 'container_is_full';
+  container: string;
+  negated?: boolean;
+}
+
+export interface ContainerCountCondition {
+  type: 'container_count';
+  container: string;
+  comparison: 'eq' | 'gt' | 'lt' | 'gte' | 'lte' | 'neq';
+  value: number;
+}
+
+export interface ContainerHasItemCondition {
+  type: 'container_has_item';
+  container: string;
+  item: string | EntityTarget;
+  negated?: boolean;
+}
+
+export interface ContainerCanAcceptCondition {
+  type: 'container_can_accept';
+  container: string;
+  item: string | EntityTarget;
+  match?: ContainerMatchRule;
+  negated?: boolean;
+}
+
+export interface ContainerTopItemCondition {
+  type: 'container_top_item';
+  container: string;
+  tag?: string;
+  entityId?: string;
+  negated?: boolean;
+}
+
+export interface ContainerIsOccupiedCondition {
+  type: 'container_is_occupied';
+  container: string;
+  position: { row: number; col: number } | number;
+  negated?: boolean;
+}
+
 export type RuleAction =
   | SpawnAction
   | DestroyAction
@@ -433,7 +558,14 @@ export type RuleAction =
   | TargetNearestAction
   | BallSortPickupAction
   | BallSortDropAction
-  | BallSortCheckWinAction;
+  | BallSortCheckWinAction
+  | ContainerPushAction
+  | ContainerPopAction
+  | ContainerTransferAction
+  | ContainerSwapAction
+  | ContainerClearAction
+  | ContainerSelectAction
+  | ContainerDeselectAction;
 
 export interface GameRule {
   id: string;

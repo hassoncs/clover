@@ -1,4 +1,4 @@
-import type { GameDefinition, GameEntity, GameJoint } from '@slopcade/shared';
+import type { GameDefinition, GameEntity, GameJoint, ContainerConfig } from '@slopcade/shared';
 import type { Physics2D } from '../physics2d/Physics2D';
 import type { JointId } from '../physics2d/types';
 import { EntityManager } from './EntityManager';
@@ -48,7 +48,7 @@ export class GameLoader {
       }
     }
 
-    const rulesEvaluator = new RulesEvaluator();
+    const rulesEvaluator = new RulesEvaluator(entityManager, definition.containers);
     rulesEvaluator.loadRules(definition.rules ?? []);
     rulesEvaluator.setWinCondition(definition.winCondition);
     rulesEvaluator.setLoseCondition(definition.loseCondition);

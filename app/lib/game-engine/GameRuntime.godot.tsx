@@ -33,8 +33,12 @@ import {
   createGodotPhysicsAdapter,
 } from "../godot";
 import { PropertySyncManager } from "../godot/PropertySyncManager";
-import type { GodotBridge } from "../godot/types";
-import type { Physics2D, CollisionEvent, Unsubscribe } from "../physics2d";
+import type {
+  GodotBridge,
+  CollisionEvent as GodotCollisionEvent,
+} from "../godot/types";
+import type { Physics2D } from "../physics2d/Physics2D";
+import type { Unsubscribe } from "../physics2d/types";
 import { GameLoader, type LoadedGame } from "./GameLoader";
 import type { RuntimeEntity } from "./types";
 import type {
@@ -58,6 +62,11 @@ import { VirtualDPadOverlay } from "./VirtualDPadOverlay";
 import { InputDebugOverlay } from "./InputDebugOverlay";
 import { useTiltInput } from "./hooks/useTiltInput";
 import {
+  DevToolsProvider,
+  useDevToolsOptional,
+} from "../contexts/DevToolsContext";
+import { DevToolbar } from "@/components/game/DevToolbar";
+import {
   Match3GameSystem,
   type Match3Config,
 } from "./systems/Match3GameSystem";
@@ -77,7 +86,11 @@ export interface GameRuntimeGodotProps {
   enablePerfLogging?: boolean;
   autoStart?: boolean;
   preloadTextureUrls?: string[];
-  onPreloadProgress?: (percent: number, completed: number, failed: number) => void;
+  onPreloadProgress?: (
+    percent: number,
+    completed: number,
+    failed: number,
+  ) => void;
   /** Called when Godot is fully initialized and textures are preloaded - safe to show the game */
   onReady?: () => void;
 }
@@ -92,11 +105,12 @@ export function GameRuntimeGodot({
   onRequestRestart,
   showHUD = true,
   enablePerfLogging = false,
-  autoStart = false,
-  preloadTextureUrls,
+  autoStart = true,
+  preloadTextureUrls = [],
   onPreloadProgress,
   onReady,
 }: GameRuntimeGodotProps) {
+  const devToolsCheck = useDevToolsOptional();
   const bridgeRef = useRef<GodotBridge | null>(null);
   const physicsRef = useRef<Physics2D | null>(null);
   const gameRef = useRef<LoadedGame | null>(null);
@@ -178,7 +192,7 @@ export function GameRuntimeGodot({
   });
 
   const handleVariableChange = useCallback((key: string, value: number) => {
-    setGameState(prev => ({
+    setGameState((prev) => ({
       ...prev,
       variables: {
         ...prev.variables,
@@ -191,11 +205,15 @@ export function GameRuntimeGodot({
     const defaults: Record<string, number | string | boolean> = {};
     for (const [key, variable] of Object.entries(definition.variables || {})) {
       const value = getValue(variable as GameVariable);
-      if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
+      if (
+        typeof value === "number" ||
+        typeof value === "string" ||
+        typeof value === "boolean"
+      ) {
         defaults[key] = value;
       }
     }
-    setGameState(prev => ({ ...prev, variables: defaults }));
+    setGameState((prev) => ({ ...prev, variables: defaults }));
   }, [definition.variables]);
 
   const handleExport = useCallback(() => {
@@ -205,21 +223,23 @@ export function GameRuntimeGodot({
         Object.entries(definition.variables || {}).map(([key, variable]) => {
           const currentValue = gameState.variables[key];
           return [key, currentValue ?? getValue(variable as GameVariable)];
-        })
+        }),
       ),
     };
     const json = JSON.stringify(exported, null, 2);
-    console.log('Exported game definition:', json);
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+    console.log("Exported game definition:", json);
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(json);
     }
   }, [definition, gameState.variables]);
 
-  const gameId = definition.metadata.title.toLowerCase().replace(/\s+/g, '-');
+  const gameId = definition.metadata.title.toLowerCase().replace(/\s+/g, "-");
   const storageKey = `tuning-overrides-${gameId}`;
 
-  const [savedValues, setSavedValues] = useState<Record<string, number | boolean | string>>(() => {
-    if (typeof window !== 'undefined' && window.localStorage) {
+  const [savedValues, setSavedValues] = useState<
+    Record<string, number | boolean | string>
+  >(() => {
+    if (typeof window !== "undefined" && window.localStorage) {
       try {
         const stored = window.localStorage.getItem(storageKey);
         return stored ? JSON.parse(stored) : {};
@@ -233,13 +253,18 @@ export function GameRuntimeGodot({
   const hasUnsavedChanges = useMemo(() => {
     const tunableKeys = Object.entries(definition.variables || {})
       .filter(([_, v]) => {
-        if (typeof v === 'object' && v !== null && 'value' in v && 'tuning' in v) {
+        if (
+          typeof v === "object" &&
+          v !== null &&
+          "value" in v &&
+          "tuning" in v
+        ) {
           return true;
         }
         return false;
       })
       .map(([k]) => k);
-    
+
     for (const key of tunableKeys) {
       const current = gameState.variables[key];
       const saved = savedValues[key];
@@ -259,18 +284,27 @@ export function GameRuntimeGodot({
   const handleSave = useCallback(() => {
     const tunableOverrides: Record<string, number | boolean | string> = {};
     for (const [key, variable] of Object.entries(definition.variables || {})) {
-      if (typeof variable === 'object' && variable !== null && 'value' in variable && 'tuning' in variable) {
+      if (
+        typeof variable === "object" &&
+        variable !== null &&
+        "value" in variable &&
+        "tuning" in variable
+      ) {
         const current = gameState.variables[key];
         if (current !== undefined) {
           tunableOverrides[key] = current;
         }
       }
     }
-    
-    if (typeof window !== 'undefined' && window.localStorage) {
+
+    if (typeof window !== "undefined" && window.localStorage) {
       window.localStorage.setItem(storageKey, JSON.stringify(tunableOverrides));
       setSavedValues(tunableOverrides);
-      console.log(`[Tuning] Saved ${Object.keys(tunableOverrides).length} variable overrides for "${gameId}"`);
+      console.log(
+        `[Tuning] Saved ${
+          Object.keys(tunableOverrides).length
+        } variable overrides for "${gameId}"`,
+      );
     }
   }, [definition.variables, gameState.variables, storageKey, gameId]);
 
@@ -315,7 +349,7 @@ export function GameRuntimeGodot({
         physicsRef.current = physics;
 
         await bridge.loadGame(definition);
-        
+
         bridge.pausePhysics();
 
         const analyzer = new DependencyAnalyzer(definition);
@@ -388,50 +422,83 @@ export function GameRuntimeGodot({
             game.entityManager,
             {
               onSpinStart: () => {
-                let currentCredits = game.rulesEvaluator.getVariable('credits') as number ?? 1000;
-                const bet = game.rulesEvaluator.getVariable('bet') as number ?? 1;
-                
+                let currentCredits =
+                  (game.rulesEvaluator.getVariable("credits") as number) ??
+                  1000;
+                const bet =
+                  (game.rulesEvaluator.getVariable("bet") as number) ?? 1;
+
                 // Auto-refill if credits are depleted
                 if (currentCredits <= 0) {
                   currentCredits = 1000;
-                  game.rulesEvaluator.setVariable('credits', currentCredits);
-                  console.log('[SlotMachine] Credits refilled to 1000');
+                  game.rulesEvaluator.setVariable("credits", currentCredits);
+                  console.log("[SlotMachine] Credits refilled to 1000");
                 }
-                
-                game.rulesEvaluator.setVariable('credits', currentCredits - bet);
-                game.rulesEvaluator.setVariable('lastWin', 0);
-                console.log(`[SlotMachine] Spin started - deducted ${bet} credits, remaining: ${currentCredits - bet}`);
+
+                game.rulesEvaluator.setVariable(
+                  "credits",
+                  currentCredits - bet,
+                );
+                game.rulesEvaluator.setVariable("lastWin", 0);
+                console.log(
+                  `[SlotMachine] Spin started - deducted ${bet} credits, remaining: ${
+                    currentCredits - bet
+                  }`,
+                );
               },
               onSpinComplete: (wins, totalPayout) => {
-                const currentCredits = game.rulesEvaluator.getVariable('credits') as number ?? 1000;
-                game.rulesEvaluator.setVariable('credits', currentCredits + totalPayout);
-                game.rulesEvaluator.setVariable('lastWin', totalPayout);
-                console.log(`[SlotMachine] Spin complete - payout: ${totalPayout}, new credits: ${currentCredits + totalPayout}`);
+                const currentCredits =
+                  (game.rulesEvaluator.getVariable("credits") as number) ??
+                  1000;
+                game.rulesEvaluator.setVariable(
+                  "credits",
+                  currentCredits + totalPayout,
+                );
+                game.rulesEvaluator.setVariable("lastWin", totalPayout);
+                console.log(
+                  `[SlotMachine] Spin complete - payout: ${totalPayout}, new credits: ${
+                    currentCredits + totalPayout
+                  }`,
+                );
               },
               onWinFound: () => {},
               onBonusTrigger: (bonusType) => {
-                if (bonusType === 'free_spins') {
-                  const remaining = slotMachineSystemRef.current?.getFreeSpinsRemaining() ?? 0;
-                  game.rulesEvaluator.setVariable('freeSpins', remaining);
-                  console.log(`[SlotMachine] Bonus triggered - free spins: ${remaining}`);
+                if (bonusType === "free_spins") {
+                  const remaining =
+                    slotMachineSystemRef.current?.getFreeSpinsRemaining() ?? 0;
+                  game.rulesEvaluator.setVariable("freeSpins", remaining);
+                  console.log(
+                    `[SlotMachine] Bonus triggered - free spins: ${remaining}`,
+                  );
                 }
               },
               onCascadeComplete: () => {},
               onBoardReady: () => {},
               onFreeSpinStart: (remaining) => {
-                game.rulesEvaluator.setVariable('freeSpins', remaining);
-                console.log(`[SlotMachine] Free spin started - remaining: ${remaining}`);
+                game.rulesEvaluator.setVariable("freeSpins", remaining);
+                console.log(
+                  `[SlotMachine] Free spin started - remaining: ${remaining}`,
+                );
               },
               onFreeSpinsComplete: () => {
-                game.rulesEvaluator.setVariable('freeSpins', 0);
+                game.rulesEvaluator.setVariable("freeSpins", 0);
                 console.log(`[SlotMachine] Free spins complete`);
               },
               onPickReveal: () => {},
               onPickBonusComplete: (totalPrize) => {
-                const currentCredits = game.rulesEvaluator.getVariable('credits') as number ?? 1000;
-                game.rulesEvaluator.setVariable('credits', currentCredits + totalPrize);
-                game.rulesEvaluator.setVariable('lastWin', totalPrize);
-                console.log(`[SlotMachine] Pick bonus complete - prize: ${totalPrize}, new credits: ${currentCredits + totalPrize}`);
+                const currentCredits =
+                  (game.rulesEvaluator.getVariable("credits") as number) ??
+                  1000;
+                game.rulesEvaluator.setVariable(
+                  "credits",
+                  currentCredits + totalPrize,
+                );
+                game.rulesEvaluator.setVariable("lastWin", totalPrize);
+                console.log(
+                  `[SlotMachine] Pick bonus complete - prize: ${totalPrize}, new credits: ${
+                    currentCredits + totalPrize
+                  }`,
+                );
               },
             },
           );
@@ -455,18 +522,18 @@ export function GameRuntimeGodot({
           gameVariablesRef.current = resolvedVars;
         }
 
-        collisionUnsubRef.current = physics.onCollisionBegin(
-          (event: CollisionEvent) => {
+        collisionUnsubRef.current = (physics as any).onCollisionBegin(
+          (event: GodotCollisionEvent) => {
             const entityA = game.entityManager
               .getActiveEntities()
-              .find((e) => e.bodyId?.value === event.bodyA.value);
+              .find((e) => e.id === event.entityA);
             const entityB = game.entityManager
               .getActiveEntities()
-              .find((e) => e.bodyId?.value === event.bodyB.value);
+              .find((e) => e.id === event.entityB);
 
             if (entityA && entityB) {
               const impulse = event.contacts.reduce(
-                (sum, c) => sum + c.normalImpulse,
+                (sum: number, c: any) => sum + c.normalImpulse,
                 0,
               );
               const normal = event.contacts[0]?.normal ?? { x: 0, y: 0 };
@@ -559,20 +626,22 @@ export function GameRuntimeGodot({
         });
 
         const initialVariables = game.rulesEvaluator.getVariables();
-        
+
         let mergedVariables = { ...initialVariables };
-        if (typeof window !== 'undefined' && window.localStorage) {
+        if (typeof window !== "undefined" && window.localStorage) {
           try {
-            const tuningStorageKey = `tuning-overrides-${definition.metadata.title.toLowerCase().replace(/\s+/g, '-')}`;
-            const savedOverrides = window.localStorage.getItem(tuningStorageKey);
+            const tuningStorageKey = `tuning-overrides-${definition.metadata.title
+              .toLowerCase()
+              .replace(/\s+/g, "-")}`;
+            const savedOverrides =
+              window.localStorage.getItem(tuningStorageKey);
             if (savedOverrides) {
               const parsed = JSON.parse(savedOverrides);
               mergedVariables = { ...mergedVariables, ...parsed };
             }
-          } catch {
-          }
+          } catch {}
         }
-        
+
         setGameState((s) => ({
           ...s,
           state: "ready",
@@ -637,7 +706,32 @@ export function GameRuntimeGodot({
       loaderRef.current = null;
       cameraRef.current = null;
     };
-  }, [godotReady, definition, onGameEnd, onScoreChange, preloadTextureUrls, onPreloadProgress, onReady]);
+  }, [
+    godotReady,
+    definition,
+    onGameEnd,
+    onScoreChange,
+    preloadTextureUrls,
+    onPreloadProgress,
+    onReady,
+  ]);
+
+  const showInputDebug = devToolsCheck?.state?.showInputDebug ?? false;
+  const showPhysicsShapes = devToolsCheck?.state?.showPhysicsShapes ?? false;
+  const showFPS = devToolsCheck?.state?.showFPS ?? false;
+
+  useEffect(() => {
+    const bridge = bridgeRef.current;
+    console.log('[GameRuntime] Debug settings effect - bridge:', !!bridge, 'showInputDebug:', showInputDebug, 'showPhysicsShapes:', showPhysicsShapes, 'showFPS:', showFPS);
+    if (!bridge) return;
+
+    console.log('[GameRuntime] Calling setDebugSettings');
+    bridge.setDebugSettings({
+      showInputDebug,
+      showPhysicsShapes,
+      showFPS,
+    });
+  }, [showInputDebug, showPhysicsShapes, showFPS]);
 
   const setTimeScale = useCallback((scale: number, duration?: number) => {
     const currentScale = timeScaleRef.current;
@@ -770,7 +864,10 @@ export function GameRuntimeGodot({
           wave: 1,
           dt,
           frameId: frameIdRef.current,
-          variables: { ...gameVariablesRef.current, ...fullGameState.variables },
+          variables: {
+            ...gameVariablesRef.current,
+            ...fullGameState.variables,
+          },
           random: Math.random,
           entityManager: game.entityManager,
           customFunctions: getAllSystemExpressionFunctions(),
@@ -868,7 +965,11 @@ export function GameRuntimeGodot({
         playSound: (soundId: string) => {
           bridge.playSound(soundId);
         },
-        applySpriteEffect: (entityId: string, effect: string, params?: Record<string, unknown>) => {
+        applySpriteEffect: (
+          entityId: string,
+          effect: string,
+          params?: Record<string, unknown>,
+        ) => {
           bridge.applySpriteEffect(entityId, effect, params);
         },
         clearSpriteEffect: (entityId: string) => {
@@ -1084,7 +1185,12 @@ export function GameRuntimeGodot({
       const viewportX = e.clientX - rect.left;
       const viewportY = e.clientY - rect.top;
 
-      if (viewportX < 0 || viewportX > rect.width || viewportY < 0 || viewportY > rect.height) {
+      if (
+        viewportX < 0 ||
+        viewportX > rect.width ||
+        viewportY < 0 ||
+        viewportY > rect.height
+      ) {
         inputRef.current.mouse = undefined;
         return;
       }
@@ -1100,7 +1206,12 @@ export function GameRuntimeGodot({
         camera.getZoom(),
       );
 
-      inputRef.current.mouse = { x: viewportX, y: viewportY, worldX: world.x, worldY: world.y };
+      inputRef.current.mouse = {
+        x: viewportX,
+        y: viewportY,
+        worldX: world.x,
+        worldY: world.y,
+      };
     };
 
     const handleMouseLeave = () => {
@@ -1119,7 +1230,12 @@ export function GameRuntimeGodot({
       const viewportX = e.clientX - rect.left;
       const viewportY = e.clientY - rect.top;
 
-      if (viewportX < 0 || viewportX > rect.width || viewportY < 0 || viewportY > rect.height) {
+      if (
+        viewportX < 0 ||
+        viewportX > rect.width ||
+        viewportY < 0 ||
+        viewportY > rect.height
+      ) {
         return;
       }
 
@@ -1145,7 +1261,13 @@ export function GameRuntimeGodot({
 
       inputRef.current = {
         ...inputRef.current,
-        tap: { x: viewportX, y: viewportY, worldX: world.x, worldY: world.y, targetEntityId },
+        tap: {
+          x: viewportX,
+          y: viewportY,
+          worldX: world.x,
+          worldY: world.y,
+          targetEntityId,
+        },
       };
     };
 
@@ -1383,12 +1505,22 @@ export function GameRuntimeGodot({
       const { locationX: x, locationY: y } = event.nativeEvent;
       const world = screenToWorld(x, y);
 
-      console.log('[GameRuntime] TAP detected at screen:', x, y, 'world:', world.x, world.y);
+      console.log(
+        "[GameRuntime] TAP detected at screen:",
+        x,
+        y,
+        "world:",
+        world.x,
+        world.y,
+      );
       inputRef.current = {
         ...inputRef.current,
         tap: { x, y, worldX: world.x, worldY: world.y },
       };
-      console.log('[GameRuntime] inputRef.current.tap set:', inputRef.current.tap);
+      console.log(
+        "[GameRuntime] inputRef.current.tap set:",
+        inputRef.current.tap,
+      );
 
       if (dragStart) {
         const VELOCITY_SCALE = 0.1;
@@ -1496,7 +1628,7 @@ export function GameRuntimeGodot({
         <TapZoneOverlay
           zones={definition.input.tapZones}
           viewportRect={viewportRect}
-          debug={definition.input.debugTapZones}
+          debug={definition.input.debugTapZones || showInputDebug}
           onZonePress={handleZonePress}
         />
       )}
@@ -1529,16 +1661,10 @@ export function GameRuntimeGodot({
         />
       )}
 
-      {hasViewport && definition.input?.debugInputs && (
-        <InputDebugOverlay
-          inputRef={inputRef}
-          cameraRef={cameraRef}
-          viewportSystemRef={viewportSystemRef}
-          viewportRect={viewportRect}
-          rules={definition.rules}
-          entities={gameRef.current?.entityManager.getActiveEntities()}
-        />
-      )}
+      <InputDebugOverlay
+        inputRef={inputRef}
+        viewportRect={viewportRect}
+      />
 
       {showHUD && hasViewport && (
         <View
@@ -1667,7 +1793,7 @@ export function GameRuntimeGodot({
 
       {__DEV__ && hasTunables(definition.variables as any) && (
         <TuningPanel
-          variables={definition.variables as any || {}}
+          variables={(definition.variables as any) || {}}
           currentValues={gameState.variables}
           onVariableChange={handleVariableChange}
           onReset={handleReset}
@@ -1676,7 +1802,18 @@ export function GameRuntimeGodot({
           hasUnsavedChanges={hasUnsavedChanges}
         />
       )}
+
+      {__DEV__ && <DevToolbar />}
     </View>
+  );
+}
+
+export function GameRuntimeGodotWithDevTools(props: GameRuntimeGodotProps) {
+  console.log("[GameRuntimeGodotWithDevTools] Rendering with DevToolsProvider");
+  return (
+    <DevToolsProvider>
+      <GameRuntimeGodot {...props} />
+    </DevToolsProvider>
   );
 }
 

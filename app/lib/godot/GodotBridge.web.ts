@@ -140,6 +140,7 @@ declare global {
         ) => void,
       ) => void;
       setDebugShowShapes: (show: boolean) => void;
+      setDebugSettings: (settingsJson: string) => void;
       setCameraTarget: (entityId: string) => void;
       setCameraPosition: (x: number, y: number) => void;
       setCameraZoom: (zoom: number) => void;
@@ -847,6 +848,17 @@ export function createWebGodotBridge(): GodotBridge {
 
     setDebugShowShapes(show: boolean) {
       getGodotBridge()?.setDebugShowShapes(show);
+    },
+
+    setDebugSettings(settings: { showInputDebug: boolean; showPhysicsShapes: boolean; showFPS: boolean }) {
+      console.log('[GodotBridge.web] setDebugSettings called:', settings);
+      const bridge = getGodotBridge();
+      if (bridge) {
+        console.log('[GodotBridge.web] Calling Godot setDebugSettings');
+        bridge.setDebugSettings(JSON.stringify(settings));
+      } else {
+        console.warn('[GodotBridge.web] No Godot bridge available');
+      }
     },
 
     setCameraTarget(entityId: string | null) {

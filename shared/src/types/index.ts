@@ -12,3 +12,12 @@ export * from './tilemap';
 export * from './asset-system';
 export * from './asset-sheet';
 export * from './godot-bridge';
+export type {
+  ContainerConfig,
+  ContainerMatchRule,
+  GridCell,
+  ContainerType,
+  StackContainerConfig,
+  GridContainerConfig,
+  SlotContainerConfig,
+} from './container';

@@ -19,3 +19,4 @@ export * from './SpatialQueryActionExecutor';
 export * from './StateMachineActionExecutor';
 export * from './WaveActionExecutor';
 export * from './BallSortActionExecutor';
+export * from './ContainerActionExecutor';

@@ -47,6 +47,10 @@
     "storybook:device": {
       "cache": false,
       "persistent": true
+    },
+    "ui-gen": {
+      "cache": false,
+      "persistent": true
     }
   }
 }

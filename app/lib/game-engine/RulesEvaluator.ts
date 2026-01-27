@@ -10,6 +10,7 @@ import type {
   StateMachineDefinition,
   StateMachineState,
   TransitionDefinition,
+  ContainerConfig,
 } from "@slopcade/shared";
 import type { EntityManager } from "./EntityManager";
 import type { InputEntityManager } from "./InputEntityManager";
@@ -40,17 +41,20 @@ import {
   StateMachineActionExecutor,
   WaveActionExecutor,
   BallSortActionExecutor,
+  ContainerActionExecutor,
   ActionRegistry,
 } from "./rules/actions";
 import {
   LogicConditionEvaluator,
   PhysicsConditionEvaluator,
+  ContainerConditionEvaluator,
 } from "./rules/conditions";
 import {
   CollisionTriggerEvaluator,
   InputTriggerEvaluator,
   LogicTriggerEvaluator,
 } from "./rules/triggers";
+import { ContainerSystem } from "./systems/ContainerSystem";
 
 export type { RuleContext } from "./rules/types";
 
@@ -84,12 +88,13 @@ export class RulesEvaluator implements IGameStateMutator {
   // Condition & Trigger Evaluators
   private logicConditionEvaluator = new LogicConditionEvaluator();
   private physicsConditionEvaluator = new PhysicsConditionEvaluator();
+  private containerConditionEvaluator!: ContainerConditionEvaluator;
 
   private collisionTriggerEvaluator = new CollisionTriggerEvaluator();
   private inputTriggerEvaluator = new InputTriggerEvaluator();
   private logicTriggerEvaluator = new LogicTriggerEvaluator();
 
-  constructor() {
+  constructor(entityManager: EntityManager, containers?: ContainerConfig[]) {
     const scoreActionExecutor = new ScoreActionExecutor();
     const spawnActionExecutor = new SpawnActionExecutor();
     const destroyActionExecutor = new DestroyActionExecutor();
@@ -109,6 +114,15 @@ export class RulesEvaluator implements IGameStateMutator {
     const stateMachineActionExecutor = new StateMachineActionExecutor();
     const waveActionExecutor = new WaveActionExecutor();
     const ballSortActionExecutor = new BallSortActionExecutor();
+
+    // Create ContainerSystem first (with optional container configs)
+    const containerSystem = new ContainerSystem(entityManager, { containers });
+
+    // Create ContainerActionExecutor with ContainerSystem
+    const containerActionExecutor = new ContainerActionExecutor(containerSystem);
+
+    // Create ContainerConditionEvaluator with ContainerSystem
+    this.containerConditionEvaluator = new ContainerConditionEvaluator(containerSystem);
 
     this.actionRegistry = new ActionRegistry(
       scoreActionExecutor,
@@ -130,6 +144,7 @@ export class RulesEvaluator implements IGameStateMutator {
       stateMachineActionExecutor,
       waveActionExecutor,
       ballSortActionExecutor,
+      containerActionExecutor,
     );
   }
 
@@ -526,6 +541,14 @@ export class RulesEvaluator implements IGameStateMutator {
         case "touching":
         case "velocity":
           return this.physicsConditionEvaluator.evaluate(c, context);
+        case "container_is_empty":
+        case "container_is_full":
+        case "container_count":
+        case "container_has_item":
+        case "container_can_accept":
+        case "container_top_item":
+        case "container_is_occupied":
+          return this.containerConditionEvaluator.evaluate(c, context);
         default:
           return true;
       }

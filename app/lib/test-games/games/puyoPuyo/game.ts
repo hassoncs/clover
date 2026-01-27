@@ -1,9 +1,12 @@
 import type { GameDefinition, GameEntity } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
+const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/puyoPuyo";
+
 export const metadata: TestGameMeta = {
   title: "Puyo Puyo",
   description: "Match 4+ same-colored puyos to pop them and create chains!",
+  titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
 };
 
 const GRID_COLS = 6;
@@ -45,9 +48,10 @@ function createPuyoTemplate(color: keyof typeof PUYO_COLORS) {
     id: `puyo_${color}`,
     tags: ["puyo", `puyo_${color}`, color === "garbage" ? "garbage" : "colored"],
     sprite: {
-      type: "circle" as const,
-      radius: PUYO_RADIUS,
-      color: PUYO_COLORS[color],
+      type: "image" as const,
+      imageUrl: `${ASSET_BASE}/puyo_${color}.png`,
+      imageWidth: PUYO_RADIUS * 2,
+      imageHeight: PUYO_RADIUS * 2,
     },
     physics: {
       bodyType: "dynamic" as const,
@@ -86,11 +90,16 @@ const game: GameDefinition = {
     description: "Match 4+ same-colored puyos to pop them and create chains!",
     instructions: "Use D-pad to move, A/B to rotate. Match 4+ same-colored puyos to pop them. Create chains for bonus points!",
     version: "1.0.0",
+    titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
   },
   world: {
     gravity: { x: 0, y: -3 },
     pixelsPerMeter: 50,
     bounds: { width: WORLD_WIDTH, height: WORLD_HEIGHT },
+  },
+  background: {
+    type: "static",
+    imageUrl: `${ASSET_BASE}/background.png`,
   },
   camera: { type: "fixed", zoom: 1 },
   input: {
@@ -147,10 +156,10 @@ const game: GameDefinition = {
       id: "emptyCell",
       tags: ["cell"],
       sprite: {
-        type: "rect",
-        width: CELL_SIZE,
-        height: CELL_SIZE,
-        color: "#2a2a4e",
+        type: "image",
+        imageUrl: `${ASSET_BASE}/emptyCell.png`,
+        imageWidth: CELL_SIZE,
+        imageHeight: CELL_SIZE,
       },
       physics: {
         bodyType: "static",
@@ -192,10 +201,10 @@ const game: GameDefinition = {
       id: "wall",
       tags: ["wall", "boundary"],
       sprite: {
-        type: "rect",
-        width: WALL_THICKNESS,
-        height: GRID_HEIGHT + 2,
-        color: "#4a4a6e",
+        type: "image",
+        imageUrl: `${ASSET_BASE}/wall.png`,
+        imageWidth: WALL_THICKNESS,
+        imageHeight: GRID_HEIGHT + 2,
       },
       physics: {
         bodyType: "static",
@@ -211,10 +220,10 @@ const game: GameDefinition = {
       id: "wallBottom",
       tags: ["wall", "boundary", "floor"],
       sprite: {
-        type: "rect",
-        width: GRID_WIDTH + WALL_THICKNESS * 2,
-        height: WALL_THICKNESS,
-        color: "#4a4a6e",
+        type: "image",
+        imageUrl: `${ASSET_BASE}/wallBottom.png`,
+        imageWidth: GRID_WIDTH + WALL_THICKNESS * 2,
+        imageHeight: WALL_THICKNESS,
       },
       physics: {
         bodyType: "static",
@@ -250,10 +259,10 @@ const game: GameDefinition = {
       id: "gridBackground",
       tags: ["background"],
       sprite: {
-        type: "rect",
-        width: GRID_WIDTH,
-        height: GRID_HEIGHT,
-        color: "#16162e",
+        type: "image",
+        imageUrl: `${ASSET_BASE}/gridBackground.png`,
+        imageWidth: GRID_WIDTH,
+        imageHeight: GRID_HEIGHT,
       },
       physics: {
         bodyType: "static",

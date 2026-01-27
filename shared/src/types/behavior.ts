@@ -233,7 +233,17 @@ export interface MaintainSpeedBehavior extends BaseBehavior {
   mode?: 'constant' | 'minimum';
 }
 
-export type SpriteEffectType = 'glow' | 'pulse' | 'fade_partial' | 'fade_out' | 'rim_light';
+export type SpriteEffectType = 
+  | 'outline'
+  | 'glow'
+  | 'tint'
+  | 'flash'
+  | 'pixelate'
+  | 'posterize'
+  | 'rim_light'
+  | 'color_matrix'
+  | 'inner_glow'
+  | 'drop_shadow';
 
 export interface SpriteEffectBehavior extends BaseBehavior {
   type: 'sprite_effect';

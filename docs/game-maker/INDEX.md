@@ -94,6 +94,14 @@ Step-by-step tutorials for game creation and development.
 
 ---
 
+## Design Documents
+
+| Document | Description |
+|----------|-------------|
+| [Container System](design/container-system.md) | Declarative container abstraction for Stack/Grid/Slot games |
+
+---
+
 ## Decisions (ADRs)
 
 > **🏗️ Engine RFCs Moved**: Architectural decisions now in **[../game-engine-architecture/05-rfcs/](../game-engine-architecture/05-rfcs/)**
@@ -110,7 +118,11 @@ Step-by-step tutorials for game creation and development.
 
 ---
 
-## Planning
+## Roadmap
+
+| Document | Description | Status |
+|----------|-------------|--------|
+| [Dynamic Mechanics Roadmap](roadmap/dynamic-mechanics-roadmap.md) | Containers, expressions, variables | planning |
 
 > **🏗️ Engine Roadmap Moved**: See **[../game-engine-architecture/02-dynamic-mechanics/roadmap.md](../game-engine-architecture/02-dynamic-mechanics/roadmap.md)**
 

@@ -1,4 +1,5 @@
 import sharp from 'sharp';
+import { createTextHint, createIconHint, TextHintParams, IconHintParams, ICON_PATHS } from './text-hint';
 
 export const UI_COMPONENT_MARGINS = {
   small: 8,
@@ -13,6 +14,8 @@ export interface NinePatchSilhouetteParams {
   height: number;
   marginSize: number;
   canvasSize?: number;
+  textHint?: Omit<TextHintParams, 'x' | 'y'> & { x?: number; y?: number };
+  iconHint?: Omit<IconHintParams, 'x' | 'y'> & { x?: number; y?: number };
 }
 
 /**
@@ -22,12 +25,13 @@ export interface NinePatchSilhouetteParams {
  * - Outer border zone in dark gray (#404040) - fixed corners/edges for nine-patch
  * - Inner content zone in medium gray (#808080) - stretchable center
  * - White background (#FFFFFF)
+ * - Optional text/icon hints to guide AI on text placement
  * 
  * This visual structure helps the AI understand where decorative borders
  * should go versus the stretchable center region.
  */
 export async function createNinePatchSilhouette(params: NinePatchSilhouetteParams): Promise<Uint8Array> {
-  const { width, height, marginSize, canvasSize = 256 } = params;
+  const { width, height, marginSize, canvasSize = 256, textHint, iconHint } = params;
   
   const borderColor = { r: 64, g: 64, b: 64, alpha: 255 };
   const centerColor = { r: 128, g: 128, b: 128, alpha: 255 };
@@ -69,21 +73,51 @@ export async function createNinePatchSilhouette(params: NinePatchSilhouetteParam
     }
   }
   
+  const composites: sharp.OverlayOptions[] = [
+    {
+      input: outerRect,
+      raw: { width, height, channels: 4 },
+      left: x,
+      top: y,
+    },
+    {
+      input: innerRect,
+      raw: { width: innerWidth, height: innerHeight, channels: 4 },
+      left: x + marginSize,
+      top: y + marginSize,
+    },
+  ];
+  
+  if (textHint) {
+    const hintX = textHint.x ?? canvasSize / 2;
+    const hintY = textHint.y ?? canvasSize / 2;
+    const textBuffer = await createTextHint({
+      ...textHint,
+      x: hintX,
+      y: hintY,
+    });
+    composites.push({
+      input: textBuffer,
+      blend: 'over' as const,
+    });
+  }
+  
+  if (iconHint) {
+    const hintX = iconHint.x ?? canvasSize / 2;
+    const hintY = iconHint.y ?? canvasSize / 2;
+    const iconBuffer = await createIconHint({
+      ...iconHint,
+      x: hintX,
+      y: hintY,
+    });
+    composites.push({
+      input: iconBuffer,
+      blend: 'over' as const,
+    });
+  }
+  
   const result = await canvas
-    .composite([
-      {
-        input: outerRect,
-        raw: { width, height, channels: 4 },
-        left: x,
-        top: y,
-      },
-      {
-        input: innerRect,
-        raw: { width: innerWidth, height: innerHeight, channels: 4 },
-        left: x + marginSize,
-        top: y + marginSize,
-      },
-    ])
+    .composite(composites)
     .png()
     .toBuffer();
   

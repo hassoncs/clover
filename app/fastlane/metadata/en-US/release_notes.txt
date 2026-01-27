@@ -1,0 +1,6 @@
+Initial release of Slopcade!
+
+• Physics-based game engine
+• Multiple game templates
+• Interactive examples
+• Export and share functionality

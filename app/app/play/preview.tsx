@@ -73,7 +73,7 @@ export default function PreviewScreen() {
         getComponent={() =>
           import("@/lib/game-engine/GameRuntime.godot").then((mod) => ({
             default: () => (
-              <mod.GameRuntimeGodot
+              <mod.GameRuntimeGodotWithDevTools
                 definition={gameDefinition}
                 onGameEnd={handleGameEnd}
                 onRequestRestart={handleRequestRestart}

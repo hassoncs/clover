@@ -6,9 +6,12 @@ import {
 } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
+const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/gem-crush";
+
 export const metadata: TestGameMeta = {
   title: "Gem Crush",
   description: "Match 3 or more gems to clear them and score points!",
+  titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
 };
 
 const GRID_COLS = 7;
@@ -51,10 +54,11 @@ const game: GameDefinition = {
     instructions:
       "Tap two adjacent gems to swap them. Match 3 or more of the same color to clear!",
     version: "1.0.0",
+    titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
   },
   background: {
     type: "static",
-    color: "#fd1b4e",
+    imageUrl: `${ASSET_BASE}/background.png`,
   },
   world: {
     gravity: { x: 0, y: 0 },

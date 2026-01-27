@@ -7,6 +7,7 @@ import type {
   SwipeTrigger,
 } from "@slopcade/shared";
 import type { RuleContext } from "../types";
+import type { RuntimeEntity } from "../../types";
 
 export class InputTriggerEvaluator
   implements
@@ -31,10 +32,25 @@ export class InputTriggerEvaluator
         }
         if (trigger.target && trigger.target !== "screen") {
           const targetEntityId = context.inputEvents.tap.targetEntityId;
-          if (!targetEntityId) return false;
           
-          if (targetEntityId === trigger.target) return true;
-          return context.entityManager.hasTag(targetEntityId, trigger.target);
+          if (targetEntityId) {
+            if (targetEntityId === trigger.target) return true;
+            if (context.entityManager.hasTag(targetEntityId, trigger.target)) return true;
+          }
+          
+          const tapX = context.inputEvents.tap.worldX;
+          const tapY = context.inputEvents.tap.worldY;
+          if (tapX !== undefined && tapY !== undefined) {
+            const matchingEntity = this.findEntityWithTagAtPoint(
+              tapX, tapY, trigger.target, targetEntityId, context
+            );
+            if (matchingEntity) {
+              context.inputEvents.tap.targetEntityId = matchingEntity.id;
+              return true;
+            }
+          }
+          
+          return false;
         }
 
         const tapWorldX = context.inputEvents.tap.worldX;
@@ -110,5 +126,45 @@ export class InputTriggerEvaluator
       default:
         return false;
     }
+  }
+
+  private findEntityWithTagAtPoint(
+    x: number,
+    y: number,
+    tag: string,
+    excludeEntityId: string | undefined,
+    context: RuleContext
+  ): RuntimeEntity | null {
+    const allEntities = context.entityManager.getActiveEntities();
+    for (const entity of allEntities) {
+      if (entity.id === excludeEntityId) continue;
+      if (!context.entityManager.hasTag(entity.id, tag)) continue;
+      if (this.isPointInEntity(x, y, entity)) {
+        return entity;
+      }
+    }
+    return null;
+  }
+
+  private isPointInEntity(x: number, y: number, entity: RuntimeEntity): boolean {
+    const physics = entity.physics;
+    if (!physics) return false;
+
+    const ex = entity.transform.x;
+    const ey = entity.transform.y;
+
+    if (physics.shape === "circle" && physics.radius) {
+      const dx = x - ex;
+      const dy = y - ey;
+      return dx * dx + dy * dy <= physics.radius * physics.radius;
+    }
+
+    if (physics.shape === "box" && physics.width && physics.height) {
+      const halfW = physics.width / 2;
+      const halfH = physics.height / 2;
+      return x >= ex - halfW && x <= ex + halfW && y >= ey - halfH && y <= ey + halfH;
+    }
+
+    return false;
   }
 }

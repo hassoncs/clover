@@ -487,3 +487,40 @@ CREATE TABLE IF NOT EXISTS promo_code_redemptions (
 
 CREATE INDEX IF NOT EXISTS idx_promo_code_redemptions_code ON promo_code_redemptions(code);
 CREATE INDEX IF NOT EXISTS idx_promo_code_redemptions_user ON promo_code_redemptions(user_id);
+
+-- =============================================================================
+-- UI GEN ADMIN (Developer Tool for UI Component Experimentation)
+-- Stores generated UI component experiments for debugging and iteration
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS ui_gen_results (
+  id TEXT PRIMARY KEY,
+  
+  -- Generation Parameters
+  control_type TEXT NOT NULL,
+  state TEXT NOT NULL,
+  theme TEXT NOT NULL,
+  strength REAL NOT NULL,
+  prompt_modifier TEXT,
+  
+  -- Prompts (for debugging)
+  prompt_positive TEXT NOT NULL,
+  prompt_negative TEXT NOT NULL,
+  
+  -- Timing (milliseconds)
+  silhouette_ms INTEGER NOT NULL,
+  generation_ms INTEGER NOT NULL,
+  total_ms INTEGER NOT NULL,
+  
+  -- R2 Storage Keys
+  silhouette_r2_key TEXT NOT NULL,
+  generated_r2_key TEXT NOT NULL,
+  
+  -- Metadata
+  created_at INTEGER NOT NULL,
+  deleted_at INTEGER
+);
+
+CREATE INDEX IF NOT EXISTS idx_ui_gen_results_created ON ui_gen_results(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_ui_gen_results_control ON ui_gen_results(control_type);
+CREATE INDEX IF NOT EXISTS idx_ui_gen_results_deleted ON ui_gen_results(deleted_at);

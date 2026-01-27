@@ -1087,6 +1087,10 @@ export function createNativeGodotBridge(): GodotBridge {
       callGameBridge('set_debug_show_shapes', show);
     },
 
+    setDebugSettings(settings: { showInputDebug: boolean; showPhysicsShapes: boolean; showFPS: boolean }) {
+      callGameBridge('set_debug_settings', JSON.stringify(settings));
+    },
+
     setCameraTarget(entityId: string | null) {
       callGameBridge('set_camera_target', entityId ?? '');
     },

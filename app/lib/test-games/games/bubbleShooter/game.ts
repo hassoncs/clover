@@ -1,9 +1,12 @@
 import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
+const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/bubbleShooter";
+
 export const metadata: TestGameMeta = {
   title: "Bubble Shooter",
   description: "Match 3+ bubbles of the same color to pop them and clear the board",
+  titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
 };
 
 const WORLD_WIDTH = 12;
@@ -68,11 +71,16 @@ const game: GameDefinition = {
     description: "Match 3+ bubbles of the same color to pop them and clear the board",
     instructions: "Drag to aim, release to shoot. Match 3+ same-colored bubbles to pop them!",
     version: "1.0.0",
+    titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
   },
   world: {
     gravity: { x: 0, y: 0 },
     pixelsPerMeter: 50,
     bounds: { width: WORLD_WIDTH, height: WORLD_HEIGHT },
+  },
+  background: {
+    type: "static",
+    imageUrl: `${ASSET_BASE}/background.png`,
   },
   camera: { type: "fixed", zoom: 1 },
   ui: {
@@ -92,7 +100,12 @@ const game: GameDefinition = {
     bubble_red: {
       id: "bubble_red",
       tags: ["bubble", "bubble-red"],
-      sprite: { type: "circle", radius: BUBBLE_RADIUS, color: BUBBLE_COLORS.red },
+      sprite: { 
+        type: "image", 
+        imageUrl: `${ASSET_BASE}/bubble_red.png`,
+        imageWidth: BUBBLE_DIAMETER,
+        imageHeight: BUBBLE_DIAMETER,
+      },
       physics: {
         bodyType: "static",
         shape: "circle",
@@ -105,7 +118,12 @@ const game: GameDefinition = {
     bubble_blue: {
       id: "bubble_blue",
       tags: ["bubble", "bubble-blue"],
-      sprite: { type: "circle", radius: BUBBLE_RADIUS, color: BUBBLE_COLORS.blue },
+      sprite: { 
+        type: "image", 
+        imageUrl: `${ASSET_BASE}/bubble_blue.png`,
+        imageWidth: BUBBLE_DIAMETER,
+        imageHeight: BUBBLE_DIAMETER,
+      },
       physics: {
         bodyType: "static",
         shape: "circle",
@@ -118,7 +136,12 @@ const game: GameDefinition = {
     bubble_green: {
       id: "bubble_green",
       tags: ["bubble", "bubble-green"],
-      sprite: { type: "circle", radius: BUBBLE_RADIUS, color: BUBBLE_COLORS.green },
+      sprite: { 
+        type: "image", 
+        imageUrl: `${ASSET_BASE}/bubble_green.png`,
+        imageWidth: BUBBLE_DIAMETER,
+        imageHeight: BUBBLE_DIAMETER,
+      },
       physics: {
         bodyType: "static",
         shape: "circle",
@@ -131,7 +154,12 @@ const game: GameDefinition = {
     bubble_yellow: {
       id: "bubble_yellow",
       tags: ["bubble", "bubble-yellow"],
-      sprite: { type: "circle", radius: BUBBLE_RADIUS, color: BUBBLE_COLORS.yellow },
+      sprite: { 
+        type: "image", 
+        imageUrl: `${ASSET_BASE}/bubble_yellow.png`,
+        imageWidth: BUBBLE_DIAMETER,
+        imageHeight: BUBBLE_DIAMETER,
+      },
       physics: {
         bodyType: "static",
         shape: "circle",
@@ -144,7 +172,12 @@ const game: GameDefinition = {
     bubble_purple: {
       id: "bubble_purple",
       tags: ["bubble", "bubble-purple"],
-      sprite: { type: "circle", radius: BUBBLE_RADIUS, color: BUBBLE_COLORS.purple },
+      sprite: { 
+        type: "image", 
+        imageUrl: `${ASSET_BASE}/bubble_purple.png`,
+        imageWidth: BUBBLE_DIAMETER,
+        imageHeight: BUBBLE_DIAMETER,
+      },
       physics: {
         bodyType: "static",
         shape: "circle",
@@ -157,7 +190,12 @@ const game: GameDefinition = {
     projectile: {
       id: "projectile",
       tags: ["projectile"],
-      sprite: { type: "circle", radius: BUBBLE_RADIUS, color: BUBBLE_COLORS.red },
+      sprite: { 
+        type: "image", 
+        imageUrl: `${ASSET_BASE}/projectile.png`,
+        imageWidth: BUBBLE_DIAMETER,
+        imageHeight: BUBBLE_DIAMETER,
+      },
       physics: {
         bodyType: "dynamic",
         shape: "circle",
@@ -171,7 +209,12 @@ const game: GameDefinition = {
     shooter: {
       id: "shooter",
       tags: ["shooter"],
-      sprite: { type: "rect", width: SHOOTER_WIDTH, height: SHOOTER_HEIGHT, color: "#4A5568" },
+      sprite: { 
+        type: "image", 
+        imageUrl: `${ASSET_BASE}/shooter.png`,
+        imageWidth: SHOOTER_WIDTH,
+        imageHeight: SHOOTER_HEIGHT,
+      },
       physics: {
         bodyType: "kinematic",
         shape: "box",
@@ -189,7 +232,12 @@ const game: GameDefinition = {
     shooterBase: {
       id: "shooterBase",
       tags: ["shooter-base"],
-      sprite: { type: "circle", radius: 0.5, color: "#2D3748" },
+      sprite: { 
+        type: "image", 
+        imageUrl: `${ASSET_BASE}/shooterBase.png`,
+        imageWidth: 1.0,
+        imageHeight: 1.0,
+      },
       physics: {
         bodyType: "static",
         shape: "circle",

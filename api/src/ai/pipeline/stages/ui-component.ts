@@ -1,6 +1,7 @@
 import type { Stage, AssetRun, PipelineAdapters, DebugSink, UIComponentSheetSpec } from '../types';
 import { isUIComponentSpec } from '../types';
 import { createNinePatchSilhouette } from '../silhouettes/ui-component';
+import { ICON_PATHS } from '../silhouettes/text-hint';
 import { 
   createPanelSilhouette, 
   createProgressBarSilhouette, 
@@ -27,12 +28,33 @@ export const uiBaseStateStage: Stage = {
     
     switch (spec.componentType) {
       case 'button':
+        silhouettePng = await createNinePatchSilhouette({
+          width: 160,
+          height: 64,
+          marginSize,
+          canvasSize: width,
+          textHint: {
+            text: 'BUTTON',
+            fontSize: 24,
+            color: '#E0E0E0',
+            fontWeight: 'bold'
+          }
+        });
+        break;
+
       case 'checkbox':
         silhouettePng = await createNinePatchSilhouette({
           width: 64,
           height: 64,
           marginSize,
           canvasSize: width,
+          iconHint: {
+            svgPath: ICON_PATHS.checkmark,
+            size: 48,
+            color: '#E0E0E0',
+            x: 128,
+            y: 128
+          }
         });
         break;
       
@@ -114,7 +136,7 @@ export const uiBaseStateStage: Stage = {
     const img2imgResult = await adapters.scenario.img2img({
       imageAssetId: silhouetteAssetId,
       prompt,
-      strength: 0.95,
+      strength: 0.91,
     });
 
     const { buffer: generatedBuffer } = await adapters.scenario.downloadImage(img2imgResult.assetId);
@@ -197,7 +219,7 @@ export const uiVariationStatesStage: Stage = {
       const img2imgResult = await adapters.scenario.img2img({
         imageAssetId: baseAssetId,
         prompt,
-        strength: 0.7,
+        strength: 0.91,
       });
 
       const { buffer: generatedBuffer } = await adapters.scenario.downloadImage(img2imgResult.assetId);

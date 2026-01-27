@@ -1,6 +1,6 @@
 # Slopcade Project Roadmap
 
-**Last Updated**: 2026-01-24
+**Last Updated**: 2026-01-26
 **Status**: Active Development
 
 ---
@@ -510,10 +510,11 @@ Low priority because individual sprite generation works well and no immediate us
 
 All Oracle consultation plans are **decision records**, not tasks. They document the "why" behind technical choices.
 
-### Completed Decisions (21 total)
+### Completed Decisions (22 total)
 
 | Date | Decision | Summary |
 |------|----------|---------|
+| 2026-01-26 | Physics-first puzzle strategy | Lean into physics (Angry Birds, Triple Town) over logic puzzles (Sudoku); simulation-based validation not BFS |
 | 2026-01-22 | Cross-entity refs | O(1) ID lookups + safe helpers; defer tag queries |
 | 2026-01-22 | Platform-specific modules | Shared index + verify.ts pattern |
 | 2026-01-22 | Input-action system | Decoupled architecture |
@@ -611,10 +612,19 @@ docs/
 
 ### Medium-Term (Q1 2026)
 
-6. **Animation System**: Sprite sheet slicing + frame playback
-7. **Sound Generation**: ElevenLabs integration
-8. **Mobile Editor**: Touch-optimized game editor UI
-9. **Multiplayer**: Real-time sync for shared games
+6. **Procedural Level Generation**: Physics-native puzzle generation
+   - Structure generator for Angry Birds-style destruction levels
+   - Terrain generator for vehicle/marble games
+   - Simulation-based validation pipeline
+   - See: `docs/plans/physics-puzzle-generation.md`
+7. **Ball Sort/Ice Slide Solvability**: State-machine puzzle generation
+   - BFS solver for guaranteed-solvable levels
+   - Reverse-from-goal generation
+   - See: `docs/plans/puzzle-generation-system.md`
+8. **Animation System**: Sprite sheet slicing + frame playback
+9. **Sound Generation**: ElevenLabs integration
+10. **Mobile Editor**: Touch-optimized game editor UI
+11. **Multiplayer**: Real-time sync for shared games
 
 ---
 

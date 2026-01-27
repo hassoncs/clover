@@ -226,9 +226,9 @@ function GameRuntimeWrapper({ definition, imageUrls, onBackToMenu, onRequestRest
   }> | null>(null);
 
   useEffect(() => {
-    import("@/lib/game-engine/GameRuntime.godot").then((mod) => {
-      setGameRuntime(() => mod.GameRuntimeGodot);
-    });
+      import("@/lib/game-engine/GameRuntime.godot").then((mod) => {
+        setGameRuntime(() => mod.GameRuntimeGodotWithDevTools);
+      });
   }, []);
 
   if (!GameRuntime) {

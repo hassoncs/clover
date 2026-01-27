@@ -291,6 +291,23 @@ lib/godot/
 
 ---
 
+## Local Storage (Non-Sensitive Data)
+
+**ALWAYS use** `lib/utils/storage.ts` for persisting non-sensitive data across reloads:
+
+```typescript
+import { getStorageItem, setStorageItem } from '@/lib/utils/storage';
+
+const prefs = await getStorageItem('my_key', defaultValue);
+await setStorageItem('my_key', newValue);
+```
+
+**Use Cases:** User preferences, dev settings, UI state, feature flags  
+**Don't Use For:** Auth tokens (use `lib/auth/storage` instead)  
+**Full Guide:** See `.opencode/skills/storage.skill`
+
+---
+
 ## Registry System (Auto-Discovery)
 
 The project uses a **Universal Lazy Registry** for type-safe, auto-discovered module loading. Files with `export const metadata` are automatically discovered and made available for Suspense-compatible lazy loading.

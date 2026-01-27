@@ -20,6 +20,7 @@ import { SpatialQueryActionExecutor } from './SpatialQueryActionExecutor';
 import { StateMachineActionExecutor } from './StateMachineActionExecutor';
 import { WaveActionExecutor } from './WaveActionExecutor';
 import { BallSortActionExecutor } from './BallSortActionExecutor';
+import { ContainerActionExecutor } from './ContainerActionExecutor';
 
 export type ActionType = RuleAction['type'];
 
@@ -45,7 +46,8 @@ export class ActionRegistry {
     private spatialQueryActionExecutor: SpatialQueryActionExecutor,
     private stateMachineActionExecutor: StateMachineActionExecutor,
     private waveActionExecutor: WaveActionExecutor,
-    private ballSortActionExecutor: BallSortActionExecutor
+    private ballSortActionExecutor: BallSortActionExecutor,
+    private containerActionExecutor: ContainerActionExecutor,
   ) {
     this.registerAll();
   }
@@ -95,6 +97,14 @@ export class ActionRegistry {
     this.registry.set('ball_sort_pickup', this.ballSortActionExecutor);
     this.registry.set('ball_sort_drop', this.ballSortActionExecutor);
     this.registry.set('ball_sort_check_win', this.ballSortActionExecutor);
+    // Container actions
+    this.registry.set('container_push', this.containerActionExecutor);
+    this.registry.set('container_pop', this.containerActionExecutor);
+    this.registry.set('container_transfer', this.containerActionExecutor);
+    this.registry.set('container_swap', this.containerActionExecutor);
+    this.registry.set('container_clear', this.containerActionExecutor);
+    this.registry.set('container_select', this.containerActionExecutor);
+    this.registry.set('container_deselect', this.containerActionExecutor);
   }
 
   execute(action: RuleAction, context: RuleContext): void {

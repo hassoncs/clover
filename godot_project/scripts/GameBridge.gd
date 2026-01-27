@@ -19,6 +19,7 @@ var _property_collector: PropertyCollector = null
 var _query_system: QuerySystem = null
 var _debug_bridge: DebugBridge = null
 var _physics_queries: PhysicsQueries = null
+var _devtools_overlay: DebugOverlay = null
 
 # ============================================================================
 # CORE STATE
@@ -133,6 +134,10 @@ func _init_modules() -> void:
 	_register_core_query_handlers()
 	
 	_debug_bridge = DebugBridge.new(self, _query_system)
+	
+	_devtools_overlay = DebugOverlay.new()
+	_devtools_overlay.setup(self)
+	add_child(_devtools_overlay)
 
 func _register_core_query_handlers() -> void:
 	# Core game queries - always available
@@ -197,6 +202,9 @@ func _input(event: InputEvent) -> void:
 			
 			_queue_event("input", {"type": "drag_start", "x": game_pos.x, "y": game_pos.y, "entityId": hit_entity_id})
 			_notify_js_input_event("drag_start", game_pos.x, game_pos.y, hit_entity_id)
+			
+			if _devtools_overlay:
+				_devtools_overlay.start_drag(world_pos, str(hit_entity_id) if hit_entity_id else "")
 		else:
 			_is_dragging = false
 			
@@ -208,9 +216,16 @@ func _input(event: InputEvent) -> void:
 			if is_tap:
 				_queue_event("input", {"type": "tap", "x": game_pos.x, "y": game_pos.y, "entityId": _drag_entity_id})
 				_notify_js_input_event("tap", game_pos.x, game_pos.y, _drag_entity_id)
+				
+				if _devtools_overlay:
+					_devtools_overlay.add_tap_marker(world_pos, str(_drag_entity_id) if _drag_entity_id else "")
+					_devtools_overlay.end_drag(world_pos)
 			else:
 				_queue_event("input", {"type": "drag_end", "x": game_pos.x, "y": game_pos.y, "entityId": _drag_entity_id})
 				_notify_js_input_event("drag_end", game_pos.x, game_pos.y, _drag_entity_id)
+				
+				if _devtools_overlay:
+					_devtools_overlay.end_drag(world_pos)
 			
 			_drag_entity_id = null
 	
@@ -221,6 +236,9 @@ func _input(event: InputEvent) -> void:
 		
 		_queue_event("input", {"type": "drag_move", "x": game_pos.x, "y": game_pos.y, "entityId": _drag_entity_id})
 		_notify_js_input_event("drag_move", game_pos.x, game_pos.y, _drag_entity_id)
+		
+		if _devtools_overlay:
+			_devtools_overlay.update_drag(world_pos)
 
 func _setup_camera() -> void:
 	var camera_script = load("res://scripts/effects/CameraEffects.gd")
@@ -459,6 +477,10 @@ func _setup_js_bridge() -> void:
 	var set_debug_show_shapes_cb = JavaScriptBridge.create_callback(_js_set_debug_show_shapes)
 	_js_callbacks.append(set_debug_show_shapes_cb)
 	_js_bridge_obj["setDebugShowShapes"] = set_debug_show_shapes_cb
+	
+	var set_debug_settings_cb = JavaScriptBridge.create_callback(_js_set_debug_settings)
+	_js_callbacks.append(set_debug_settings_cb)
+	_js_bridge_obj["setDebugSettings"] = set_debug_settings_cb
 	
 	var set_camera_target_cb = JavaScriptBridge.create_callback(_js_set_camera_target)
 	_js_callbacks.append(set_camera_target_cb)
@@ -1761,8 +1783,6 @@ func _js_preload_textures(args: Array) -> void:
 				_on_preload_complete(url, false)
 				return
 			
-			print("[GameBridge] Preloaded texture: " + url)
-			
 			var texture = ImageTexture.create_from_image(image)
 			_texture_cache[url] = texture
 			_on_preload_complete(url, true)
@@ -1802,6 +1822,32 @@ func _js_set_debug_show_shapes(args: Array) -> void:
 		var node = entities[entity_id]
 		if node:
 			_apply_debug_visibility(node)
+
+func _js_set_debug_settings(args: Array) -> void:
+	print("[GameBridge] _js_set_debug_settings called with args: ", args)
+	if args.size() < 1:
+		push_error("[GameBridge] setDebugSettings requires 1 arg: settings JSON string")
+		return
+	
+	var json_str = str(args[0])
+	print("[GameBridge] setDebugSettings JSON string: ", json_str)
+	var json = JSON.new()
+	var parse_result = json.parse(json_str)
+	if parse_result != OK:
+		push_error("[GameBridge] setDebugSettings: Invalid JSON: " + json_str)
+		return
+	
+	var settings = json.data
+	print("[GameBridge] setDebugSettings parsed: ", settings)
+	if not settings is Dictionary:
+		push_error("[GameBridge] setDebugSettings: Expected object, got: " + str(typeof(settings)))
+		return
+	
+	if _devtools_overlay:
+		print("[GameBridge] Forwarding to _devtools_overlay")
+		_devtools_overlay.set_settings(settings)
+	else:
+		push_error("[GameBridge] _devtools_overlay is null!")
 
 func clear_texture_cache(url: String = "") -> void:
 	if url != "":

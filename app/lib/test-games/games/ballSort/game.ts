@@ -1,4 +1,5 @@
-import type { GameDefinition, GameEntity } from "@slopcade/shared";
+import type { GameDefinition, GameEntity, StackContainerConfig } from "@slopcade/shared";
+import { distributeRow } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
 export const metadata: TestGameMeta = {
@@ -21,9 +22,15 @@ const BALL_SPACING = 1.1;
 const NUM_TUBES = 6;
 const NUM_FILLED_TUBES = 4;
 const BALLS_PER_TUBE = 4;
-const TUBE_SPACING = 2.8;
-const TUBE_START_X = 0.2;
 const TUBE_Y = 10;
+
+const tubePositions = distributeRow({
+  count: NUM_TUBES,
+  containerWidth: WORLD_WIDTH,
+  itemWidth: TUBE_WIDTH,
+  align: "space-evenly",
+  padding: 0.3,
+});
 
 const BALL_COLORS = ["#E53935", "#1E88E5", "#43A047", "#FDD835"];
 const TUBE_COLOR = "#546E7A";
@@ -56,8 +63,23 @@ function generateSolvableLayout(): number[][] {
 
 const tubeLayout = generateSolvableLayout();
 
-function createTubeEntities(tubeIndex: number, x: number): GameEntity[] {
+// Build container configurations for the 6 tubes
+// These enable declarative container rules in the future
+const tubeContainers: StackContainerConfig[] = tubePositions.map((pos, index) => ({
+  id: `tube-${index}`,
+  type: 'stack' as const,
+  capacity: BALLS_PER_TUBE,
+  layout: {
+    direction: 'vertical' as const,
+    spacing: BALL_SPACING,
+    basePosition: { x: pos.x, y: cy(TUBE_Y) },
+    anchor: 'bottom' as const,
+  },
+}));
+
+function createTubeEntities(tubeIndex: number, tubeX: number): GameEntity[] {
   const entities: GameEntity[] = [];
+  const tubeY = cy(TUBE_Y);
 
   entities.push({
     id: `tube-${tubeIndex}-left`,
@@ -65,8 +87,8 @@ function createTubeEntities(tubeIndex: number, x: number): GameEntity[] {
     template: "tubeWall",
     tags: ["tube-wall"],
     transform: {
-      x: cx(x - TUBE_WIDTH / 2 + TUBE_WALL_THICKNESS / 2),
-      y: cy(TUBE_Y),
+      x: tubeX - TUBE_WIDTH / 2 + TUBE_WALL_THICKNESS / 2,
+      y: tubeY,
       angle: 0,
       scaleX: 1,
       scaleY: 1,
@@ -79,8 +101,8 @@ function createTubeEntities(tubeIndex: number, x: number): GameEntity[] {
     template: "tubeWall",
     tags: ["tube-wall"],
     transform: {
-      x: cx(x + TUBE_WIDTH / 2 - TUBE_WALL_THICKNESS / 2),
-      y: cy(TUBE_Y),
+      x: tubeX + TUBE_WIDTH / 2 - TUBE_WALL_THICKNESS / 2,
+      y: tubeY,
       angle: 0,
       scaleX: 1,
       scaleY: 1,
@@ -93,7 +115,7 @@ function createTubeEntities(tubeIndex: number, x: number): GameEntity[] {
     template: "tubeBottom",
     tags: ["tube-bottom"],
     transform: {
-      x: cx(x),
+      x: tubeX,
       y: cy(TUBE_Y + TUBE_HEIGHT / 2 - TUBE_WALL_THICKNESS / 2),
       angle: 0,
       scaleX: 1,
@@ -107,8 +129,8 @@ function createTubeEntities(tubeIndex: number, x: number): GameEntity[] {
     template: "tubeSensor",
     tags: ["tube", `tube-${tubeIndex}`],
     transform: {
-      x: cx(x),
-      y: cy(TUBE_Y),
+      x: tubeX,
+      y: tubeY,
       angle: 0,
       scaleX: 1,
       scaleY: 1,
@@ -123,7 +145,7 @@ function createBallEntities(): GameEntity[] {
   let ballId = 0;
 
   for (let tubeIndex = 0; tubeIndex < NUM_TUBES; tubeIndex++) {
-    const tubeX = TUBE_START_X + tubeIndex * TUBE_SPACING;
+    const tubeX = tubePositions[tubeIndex].x;
     const balls = tubeLayout[tubeIndex];
 
     for (let slot = 0; slot < balls.length; slot++) {
@@ -134,9 +156,9 @@ function createBallEntities(): GameEntity[] {
         id: `ball-${ballId}`,
         name: `Ball ${ballId}`,
         template: `ball${colorIndex}`,
-        tags: ["ball", `color-${colorIndex}`, `in-tube-${tubeIndex}`],
+        tags: ["ball", `color-${colorIndex}`, `in-container-tube-${tubeIndex}`],
         transform: {
-          x: cx(tubeX),
+          x: tubeX,
           y: cy(ballY),
           angle: 0,
           scaleX: 1,
@@ -152,7 +174,7 @@ function createBallEntities(): GameEntity[] {
 
 const tubeEntities: GameEntity[] = [];
 for (let i = 0; i < NUM_TUBES; i++) {
-  const x = TUBE_START_X + i * TUBE_SPACING;
+  const x = tubePositions[i].x;
   tubeEntities.push(...createTubeEntities(i, x));
 }
 
@@ -172,6 +194,7 @@ const game: GameDefinition = {
     bounds: { width: WORLD_WIDTH, height: WORLD_HEIGHT },
   },
   camera: { type: "fixed", zoom: 1 },
+  input: { debugInputs: true },
   variables: {
     heldBallColor: -1,
     sourceTubeIndex: -1,
@@ -190,6 +213,7 @@ const game: GameDefinition = {
     tube5_topColor: tubeLayout[5].length > 0 ? tubeLayout[5][tubeLayout[5].length - 1] : -1,
     moveCount: 0,
   },
+  containers: tubeContainers,
   ui: {
     showScore: false,
     showLives: false,
@@ -306,6 +330,24 @@ const game: GameDefinition = {
         friction: 0,
         restitution: 0,
       },
+      conditionalBehaviors: [
+        {
+          when: { hasTag: "held" },
+          priority: 1,
+          behaviors: [
+            { type: "scale_oscillate", min: 0.95, max: 1.15, speed: 4 },
+            { type: "sprite_effect", effect: "glow", params: { pulse: true } },
+          ],
+        },
+        {
+          when: { hasTag: "invalid" },
+          priority: 2,
+          behaviors: [
+            { type: "scale_oscillate", min: 0.85, max: 1.15, speed: 25 },
+            { type: "sprite_effect", effect: "flash", params: { color: [255, 80, 80], intensity: 0.7 } },
+          ],
+        },
+      ],
     },
     ball1: {
       id: "ball1",
@@ -323,6 +365,24 @@ const game: GameDefinition = {
         friction: 0,
         restitution: 0,
       },
+      conditionalBehaviors: [
+        {
+          when: { hasTag: "held" },
+          priority: 1,
+          behaviors: [
+            { type: "scale_oscillate", min: 0.95, max: 1.15, speed: 4 },
+            { type: "sprite_effect", effect: "glow", params: { pulse: true } },
+          ],
+        },
+        {
+          when: { hasTag: "invalid" },
+          priority: 2,
+          behaviors: [
+            { type: "scale_oscillate", min: 0.85, max: 1.15, speed: 25 },
+            { type: "sprite_effect", effect: "flash", params: { color: [255, 80, 80], intensity: 0.7 } },
+          ],
+        },
+      ],
     },
     ball2: {
       id: "ball2",
@@ -340,6 +400,24 @@ const game: GameDefinition = {
         friction: 0,
         restitution: 0,
       },
+      conditionalBehaviors: [
+        {
+          when: { hasTag: "held" },
+          priority: 1,
+          behaviors: [
+            { type: "scale_oscillate", min: 0.95, max: 1.15, speed: 4 },
+            { type: "sprite_effect", effect: "glow", params: { pulse: true } },
+          ],
+        },
+        {
+          when: { hasTag: "invalid" },
+          priority: 2,
+          behaviors: [
+            { type: "scale_oscillate", min: 0.85, max: 1.15, speed: 25 },
+            { type: "sprite_effect", effect: "flash", params: { color: [255, 80, 80], intensity: 0.7 } },
+          ],
+        },
+      ],
     },
     ball3: {
       id: "ball3",
@@ -357,6 +435,24 @@ const game: GameDefinition = {
         friction: 0,
         restitution: 0,
       },
+      conditionalBehaviors: [
+        {
+          when: { hasTag: "held" },
+          priority: 1,
+          behaviors: [
+            { type: "scale_oscillate", min: 0.95, max: 1.15, speed: 4 },
+            { type: "sprite_effect", effect: "glow", params: { pulse: true } },
+          ],
+        },
+        {
+          when: { hasTag: "invalid" },
+          priority: 2,
+          behaviors: [
+            { type: "scale_oscillate", min: 0.85, max: 1.15, speed: 25 },
+            { type: "sprite_effect", effect: "flash", params: { color: [255, 80, 80], intensity: 0.7 } },
+          ],
+        },
+      ],
     },
     heldBallIndicator: {
       id: "heldBallIndicator",

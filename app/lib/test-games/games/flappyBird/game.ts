@@ -1,9 +1,12 @@
 import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
+const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird";
+
 export const metadata: TestGameMeta = {
   title: "Flappy Bird",
   description: "Tap to fly through the pipes without hitting them",
+  titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
 };
 
 const WORLD_WIDTH = 12;
@@ -28,11 +31,16 @@ const game: GameDefinition = {
     description: "Tap to fly through the pipes without hitting them",
     instructions: "Tap anywhere to flap! Avoid the pipes and ground.",
     version: "1.0.0",
+    titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
   },
   world: {
     gravity: { x: 0, y: -15 },
     pixelsPerMeter: 50,
     bounds: { width: WORLD_WIDTH, height: WORLD_HEIGHT },
+  },
+  background: {
+    type: "static",
+    imageUrl: `${ASSET_BASE}/background.png`,
   },
   camera: { type: "fixed", zoom: 1 },
   ui: {
@@ -49,7 +57,12 @@ const game: GameDefinition = {
     bird: {
       id: "bird",
       tags: ["bird"],
-      sprite: { type: "circle", radius: BIRD_RADIUS, color: "#f7dc6f" },
+      sprite: { 
+        type: "image", 
+        imageUrl: `${ASSET_BASE}/bird.png`,
+        imageWidth: BIRD_RADIUS * 2,
+        imageHeight: BIRD_RADIUS * 2,
+      },
       physics: {
         bodyType: "dynamic",
         shape: "circle",
@@ -66,7 +79,12 @@ const game: GameDefinition = {
     pipeTop: {
       id: "pipeTop",
       tags: ["pipe", "pipe-top"],
-      sprite: { type: "rect", width: PIPE_WIDTH, height: PIPE_HEIGHT, color: "#2ecc71" },
+      sprite: { 
+        type: "image", 
+        imageUrl: `${ASSET_BASE}/pipeTop.png`,
+        imageWidth: PIPE_WIDTH,
+        imageHeight: PIPE_HEIGHT,
+      },
       physics: {
         bodyType: "kinematic",
         shape: "box",
@@ -84,7 +102,12 @@ const game: GameDefinition = {
     pipeBottom: {
       id: "pipeBottom",
       tags: ["pipe", "pipe-bottom"],
-      sprite: { type: "rect", width: PIPE_WIDTH, height: PIPE_HEIGHT, color: "#27ae60" },
+      sprite: { 
+        type: "image", 
+        imageUrl: `${ASSET_BASE}/pipeBottom.png`,
+        imageWidth: PIPE_WIDTH,
+        imageHeight: PIPE_HEIGHT,
+      },
       physics: {
         bodyType: "kinematic",
         shape: "box",
@@ -122,7 +145,12 @@ const game: GameDefinition = {
     ground: {
       id: "ground",
       tags: ["ground"],
-      sprite: { type: "rect", width: WORLD_WIDTH + 4, height: GROUND_HEIGHT, color: "#c4a35a" },
+      sprite: { 
+        type: "image", 
+        imageUrl: `${ASSET_BASE}/ground.png`,
+        imageWidth: WORLD_WIDTH + 4,
+        imageHeight: GROUND_HEIGHT,
+      },
       physics: {
         bodyType: "static",
         shape: "box",
@@ -136,7 +164,12 @@ const game: GameDefinition = {
     ceiling: {
       id: "ceiling",
       tags: ["ceiling"],
-      sprite: { type: "rect", width: WORLD_WIDTH + 4, height: 0.5, color: "#70c5ce" },
+      sprite: { 
+        type: "image", 
+        imageUrl: `${ASSET_BASE}/ceiling.png`,
+        imageWidth: WORLD_WIDTH + 4,
+        imageHeight: 0.5,
+      },
       physics: {
         bodyType: "static",
         shape: "box",

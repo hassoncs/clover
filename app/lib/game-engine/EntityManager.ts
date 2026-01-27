@@ -166,6 +166,7 @@ export class EntityManager {
       sprite: definition.sprite ?? template.sprite,
       physics: definition.physics ?? template.physics,
       behaviors: definition.behaviors ?? template.behaviors,
+      conditionalBehaviors: definition.conditionalBehaviors ?? template.conditionalBehaviors,
       tags: [...(template.tags ?? []), ...(definition.tags ?? [])],
       layer: definition.layer ?? template.layer ?? 0,
       children: [
@@ -203,7 +204,7 @@ export class EntityManager {
         bodyId: null,
         colliderId: null,
         assetPackId: resolved.assetPackId,
-        conditionalBehaviors: [],
+        conditionalBehaviors: resolved.conditionalBehaviors ?? [],
         activeConditionalGroupId: -1,
       };
     }

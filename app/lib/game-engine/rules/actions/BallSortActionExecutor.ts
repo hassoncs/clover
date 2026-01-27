@@ -3,11 +3,8 @@ import type { BallSortPickupAction, BallSortDropAction, BallSortCheckWinAction }
 import type { RuleContext } from '../types';
 import type { RuntimeEntity } from '../../types';
 
-const WORLD_WIDTH = 12;
 const WORLD_HEIGHT = 16;
-const HALF_W = WORLD_WIDTH / 2;
 const HALF_H = WORLD_HEIGHT / 2;
-const cx = (x: number) => x - HALF_W;
 const cy = (y: number) => HALF_H - y;
 
 const TUBE_HEIGHT = 5.0;
@@ -15,8 +12,6 @@ const TUBE_WALL_THICKNESS = 0.15;
 const BALL_RADIUS = 0.5;
 const BALL_SPACING = 1.1;
 const TUBE_Y = 10;
-const TUBE_SPACING = 2.8;
-const TUBE_START_X = 0.2;
 const LIFT_HEIGHT = 3.0;
 
 interface TubeInfo {
@@ -68,9 +63,15 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
       return;
     }
 
+    const ballColorTag = ball.tags.find(t => t.startsWith('color-'));
+    const actualBallColor = ballColorTag ? parseInt(ballColorTag.replace('color-', ''), 10) : -1;
+
     context.mutator.setVariable('heldBallId', ballId);
     context.mutator.setVariable('sourceTubeIndex', tubeIndex);
-    context.mutator.setVariable('heldBallColor', topColor);
+    context.mutator.setVariable('heldBallColor', actualBallColor);
+
+    context.entityManager.addTag(ballId, 'held');
+    context.entityManager.removeTag(ballId, `in-tube-${tubeIndex}`);
 
     context.mutator.setVariable(countVar, count - 1);
     const newTopColor = this.getNewTopColor(tubeIndex, count - 1, context);
@@ -109,7 +110,7 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
     const targetCount = (context.mutator.getVariable(targetCountVar) as number) ?? 0;
 
     if (targetCount >= 4) {
-      this.cancelPickup(context);
+      this.showInvalidFeedback(heldBallId, context);
       return;
     }
 
@@ -117,9 +118,10 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
     const targetTopColor = (context.mutator.getVariable(targetTopColorVar) as number) ?? -1;
 
     if (targetCount > 0 && targetTopColor !== heldBallColor) {
-      this.cancelPickup(context);
+      this.showInvalidFeedback(heldBallId, context);
       return;
     }
+
 
     const ball = context.entityManager.getEntity(heldBallId);
     if (!ball) {
@@ -127,10 +129,11 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
       return;
     }
 
-    const tubeX = TUBE_START_X + targetTubeIndex * TUBE_SPACING;
+
+
+    const tubeSensor = context.entityManager.getEntity(`tube-${targetTubeIndex}-sensor`);
+    const worldX = tubeSensor?.transform.x ?? 0;
     const ballY = TUBE_Y + TUBE_HEIGHT / 2 - TUBE_WALL_THICKNESS - BALL_RADIUS - targetCount * BALL_SPACING;
-    
-    const worldX = cx(tubeX);
     const worldY = cy(ballY);
 
     if (context.bridge) {
@@ -150,6 +153,7 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
       }
     }
     context.entityManager.addTag(heldBallId, `in-tube-${targetTubeIndex}`);
+    context.entityManager.removeTag(heldBallId, 'held');
 
     const newTargetCount = targetCount + 1;
     context.mutator.setVariable(targetCountVar, newTargetCount);
@@ -195,7 +199,9 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
 
     const match = targetEntityId.match(/tube-(\d+)-sensor/);
     if (match) {
-      return parseInt(match[1], 10);
+      const tubeIndex = parseInt(match[1], 10);
+      console.log(`[BallSort] Tap detected: ${targetEntityId} → index ${tubeIndex}`);
+      return tubeIndex;
     }
     return -1;
   }
@@ -250,6 +256,13 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
     return this.getBallColor(topBall, context);
   }
 
+  private showInvalidFeedback(ballId: string, context: RuleContext): void {
+    context.entityManager.addTag(ballId, 'invalid');
+    setTimeout(() => {
+      context.entityManager.removeTag(ballId, 'invalid');
+    }, 300);
+  }
+
   private cancelPickup(context: RuleContext): void {
     const heldBallId = (context.mutator.getVariable('heldBallId') as string) ?? '';
     const sourceTubeIndex = (context.mutator.getVariable('sourceTubeIndex') as number) ?? -1;
@@ -272,13 +285,13 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
           ball.transform.y = worldY;
           context.entityManager.updateWorldTransforms(heldBallId);
         }
+        context.entityManager.removeTag(heldBallId, 'held');
+        context.entityManager.addTag(heldBallId, `in-tube-${sourceTubeIndex}`);
       }
 
       context.mutator.setVariable(countVar, count + 1);
-      if (topColor < 0) {
-        const heldBallColor = (context.mutator.getVariable('heldBallColor') as number) ?? 0;
-        context.mutator.setVariable(topColorVar, heldBallColor);
-      }
+      const heldBallColor = (context.mutator.getVariable('heldBallColor') as number) ?? 0;
+      context.mutator.setVariable(topColorVar, heldBallColor);
     }
 
     context.mutator.setVariable('heldBallId', '');

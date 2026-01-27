@@ -144,7 +144,7 @@ export default function BrowseScreen() {
               </Text>
             </View>
 
-            {paginatedGames.length === 0 ? (
+            {filteredAndSortedGames.length === 0 ? (
               <View className="p-6 bg-gray-800 rounded-xl border border-gray-700 items-center">
                 <Text className="text-4xl mb-3">🎮</Text>
                 <Text className="text-gray-400 text-center">
@@ -156,7 +156,7 @@ export default function BrowseScreen() {
               </View>
             ) : (
               <View className="flex-row flex-wrap justify-between">
-                {paginatedGames.map((game) => (
+                {filteredAndSortedGames.map((game) => (
                   <GameGridCard
                     key={game.id}
                     title={game.meta.title}

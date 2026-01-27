@@ -41,6 +41,23 @@ export * from './spatial-query/types';
 export * from './dynamic-collider/types';
 export * from './slots';
 
+export {
+  distributeRow,
+  distributeColumn,
+  distributeGrid,
+  distributeCircular,
+  getRowX,
+  getColumnY,
+  getGridPosition,
+  type RowLayoutConfig,
+  type ColumnLayoutConfig,
+  type GridLayoutConfig,
+  type CircularLayoutConfig,
+  type LayoutPosition,
+  type GridPosition,
+  type Alignment,
+} from './layout';
+
 import { comboSystem } from './combo';
 import { checkpointSystem } from './checkpoint';
 import { gridSystem } from './grid';

@@ -570,9 +570,9 @@ export default function PlayScreen() {
         <WithGodot
           key={runtimeKey}
           getComponent={() =>
-            import("@/lib/game-engine/GameRuntime.godot").then((mod) => ({
-              default: () => (
-                <mod.GameRuntimeGodot
+          import("@/lib/game-engine/GameRuntime.godot").then((mod) => ({
+            default: () => (
+              <mod.GameRuntimeGodotWithDevTools
                   definition={gameDefinition!}
                   onGameEnd={handleGameEnd}
                   onRequestRestart={handleRequestRestart}
