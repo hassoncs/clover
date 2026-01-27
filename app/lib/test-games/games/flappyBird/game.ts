@@ -1,4 +1,5 @@
-import type { GameDefinition } from "@slopcade/shared";
+import type { GameDefinition, PersistenceConfig } from "@slopcade/shared";
+import { FlappyBirdProgressSchema, type FlappyBirdProgress } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
 const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird";
@@ -7,6 +8,7 @@ export const metadata: TestGameMeta = {
   title: "Flappy Bird",
   description: "Tap to fly through the pipes without hitting them",
   titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
+  status: "archived",
 };
 
 const WORLD_WIDTH = 12;
@@ -24,13 +26,37 @@ const PIPE_SPEED = 15;
 const GROUND_HEIGHT = 1.5;
 const SPAWN_X = cx(WORLD_WIDTH + 2);
 
+/**
+ * Persistence configuration for Flappy Bird.
+ * Tracks high score, games played, and unlockables.
+ */
+export const flappyBirdPersistence: PersistenceConfig<FlappyBirdProgress> = {
+  storageKey: "flappy-bird-progress",
+  schema: FlappyBirdProgressSchema as unknown as PersistenceConfig<FlappyBirdProgress>["schema"],
+  version: 1,
+  defaultProgress: {
+    version: 1,
+    highScore: 0,
+    gamesPlayed: 0,
+    totalPipesPassed: 0,
+    bestStreak: 0,
+    unlockedBirds: ["default"],
+    totalPlayTime: 0,
+    sessionsCompleted: 0,
+  },
+  autoSave: {
+    onGameLose: true,
+    onBackground: true,
+  },
+};
+
 const game: GameDefinition = {
   metadata: {
     id: "test-flappy-bird",
     title: "Flappy Bird",
     description: "Tap to fly through the pipes without hitting them",
     instructions: "Tap anywhere to flap! Avoid the pipes and ground.",
-    version: "1.0.0",
+    version: "1.1.0",
     titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
   },
   world: {
@@ -304,6 +330,7 @@ const game: GameDefinition = {
       ],
     },
   ],
+  persistence: flappyBirdPersistence,
 };
 
 export default game;
