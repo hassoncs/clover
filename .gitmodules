@@ -1,0 +1,3 @@
+[submodule "api/runpod-worker"]
+	path = api/runpod-worker
+	url = git@github.com:hassoncs/worker-comfyui.git
