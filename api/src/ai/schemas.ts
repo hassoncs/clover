@@ -582,6 +582,11 @@ export const TileMapSchema = z.object({
   layers: z.array(TileLayerSchema),
 });
 
+export const AssetSystemConfigSchema = z.object({
+  activeAssetPackId: z.string().optional(),
+  baseAssetUrl: z.string().optional(),
+});
+
 export const GameDefinitionSchema = z.object({
   metadata: GameMetadataSchema,
   world: WorldConfigSchema,
@@ -595,6 +600,7 @@ export const GameDefinitionSchema = z.object({
   loseCondition: LoseConditionSchema.optional(),
   assetPacks: z.record(z.string(), AssetPackSchema).optional(),
   activeAssetPackId: z.string().optional(),
+  assetSystem: AssetSystemConfigSchema.optional(),
   parallaxConfig: ParallaxConfigSchema.optional(),
   tileSheets: z.array(TileSheetSchema).optional(),
   tileMaps: z.array(TileMapSchema).optional(),

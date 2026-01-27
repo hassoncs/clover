@@ -30,9 +30,13 @@ describe('validateGameDefinition', () => {
               restitution: 0.5,
             },
             sprite: { type: 'rect', width: 1, height: 1, fill: '#FF0000' },
-            behaviors: [{ type: 'control', controlType: 'tap_to_jump' }],
           },
         ],
+        rules: [
+          { id: 'r1', trigger: { type: 'tap' }, actions: [] },
+        ],
+        winCondition: { type: 'score', score: 100 },
+        loseCondition: { type: 'time_up', time: 60 },
       };
 
       const result = validateGameDefinition(game as any);
@@ -173,23 +177,23 @@ describe('validateGameDefinition', () => {
       expect(result.warnings.some(w => w.code === 'TOO_MANY_ENTITIES')).toBe(true);
     });
 
-    it('should warn when no entity has control behavior', () => {
-      const game = {
-        metadata: { id: 'test' },
-        world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-        entities: [
-          {
-            id: 'static-box',
-            transform: { x: 0, y: 0 },
-            physics: { bodyType: 'static', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
-            sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
-          },
-        ],
-      };
+     it('should error when no entity has control behavior', () => {
+       const game = {
+         metadata: { id: 'test' },
+         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
+         entities: [
+           {
+             id: 'static-box',
+             transform: { x: 0, y: 0 },
+             physics: { bodyType: 'static', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
+             sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
+           },
+         ],
+       };
 
-      const result = validateGameDefinition(game as any);
-      expect(result.warnings.some(w => w.code === 'NO_PLAYER_CONTROL')).toBe(true);
-    });
+       const result = validateGameDefinition(game as any);
+       expect(result.errors.some(e => e.code === 'NO_PLAYER_CONTROL')).toBe(true);
+     });
   });
 
   describe('physics validation', () => {
@@ -276,24 +280,24 @@ describe('validateGameDefinition', () => {
       expect(result.errors.some(e => e.code === 'INVALID_BEHAVIOR_TYPE')).toBe(true);
     });
 
-    it('should error on invalid control type', () => {
-      const game = {
-        metadata: { id: 'test' },
-        world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-        entities: [
-          {
-            id: 'e1',
-            transform: { x: 0, y: 0 },
-            physics: { bodyType: 'static', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
-            sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
-            behaviors: [{ type: 'control', controlType: 'invalid_control' }],
-          },
-        ],
-      };
+     it('should error on control behavior type (no longer supported)', () => {
+       const game = {
+         metadata: { id: 'test' },
+         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
+         entities: [
+           {
+             id: 'e1',
+             transform: { x: 0, y: 0 },
+             physics: { bodyType: 'static', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
+             sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
+             behaviors: [{ type: 'control', controlType: 'tap_to_jump' }],
+           },
+         ],
+       };
 
-      const result = validateGameDefinition(game as any);
-      expect(result.errors.some(e => e.code === 'INVALID_CONTROL_TYPE')).toBe(true);
-    });
+       const result = validateGameDefinition(game as any);
+       expect(result.errors.some(e => e.code === 'INVALID_BEHAVIOR_TYPE')).toBe(true);
+     });
 
     it('should error on spawn_on_event missing template', () => {
       const game = {
@@ -316,44 +320,49 @@ describe('validateGameDefinition', () => {
   });
 
   describe('win/lose condition validation', () => {
-    it('should warn on missing win condition', () => {
-      const game = {
-        metadata: { id: 'test' },
-        world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-        entities: [
-          {
-            id: 'player',
-            transform: { x: 0, y: 0 },
-            physics: { bodyType: 'dynamic', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
-            sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
-            behaviors: [{ type: 'control', controlType: 'tap_to_jump' }],
-          },
-        ],
-      };
+     it('should error on missing win condition', () => {
+       const game = {
+         metadata: { id: 'test' },
+         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
+         entities: [
+           {
+             id: 'player',
+             transform: { x: 0, y: 0 },
+             physics: { bodyType: 'dynamic', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
+             sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
+           },
+         ],
+         rules: [
+           { id: 'r1', trigger: { type: 'tap' }, actions: [] },
+         ],
+         loseCondition: { type: 'time_up', time: 60 },
+       };
 
-      const result = validateGameDefinition(game as any);
-      expect(result.warnings.some(w => w.code === 'NO_WIN_CONDITION')).toBe(true);
-    });
+       const result = validateGameDefinition(game as any);
+       expect(result.errors.some(e => e.code === 'MISSING_WIN_CONDITION')).toBe(true);
+     });
 
-    it('should warn on missing lose condition', () => {
-      const game = {
-        metadata: { id: 'test' },
-        world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-        entities: [
-          {
-            id: 'player',
-            transform: { x: 0, y: 0 },
-            physics: { bodyType: 'dynamic', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
-            sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
-            behaviors: [{ type: 'control', controlType: 'tap_to_jump' }],
-          },
-        ],
-        winCondition: { type: 'score', target: 100 },
-      };
+     it('should error on missing lose condition', () => {
+       const game = {
+         metadata: { id: 'test' },
+         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
+         entities: [
+           {
+             id: 'player',
+             transform: { x: 0, y: 0 },
+             physics: { bodyType: 'dynamic', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
+             sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
+           },
+         ],
+         rules: [
+           { id: 'r1', trigger: { type: 'tap' }, actions: [] },
+         ],
+         winCondition: { type: 'score', score: 100 },
+       };
 
-      const result = validateGameDefinition(game as any);
-      expect(result.warnings.some(w => w.code === 'NO_LOSE_CONDITION')).toBe(true);
-    });
+       const result = validateGameDefinition(game as any);
+       expect(result.errors.some(e => e.code === 'MISSING_LOSE_CONDITION')).toBe(true);
+     });
   });
 });
 

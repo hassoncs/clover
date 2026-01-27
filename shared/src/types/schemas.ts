@@ -6,7 +6,11 @@ import {
   NonNegativeNumberValueSchema,
   Vec2ValueSchema,
   GameVariablesSchema,
+  TuningConfigSchema,
+  VariableCategorySchema,
+  VariableWithTuningSchema,
 } from '../expressions/schema-helpers';
+import { AssetSystemConfigSchema, AssetSourceSchema, PromptDefaultsSchema } from './asset-system';
 
 export const Vec2Schema = z.object({
   x: z.number(),
@@ -458,6 +462,37 @@ export const SlotDefinitionSchema = z.object({
   layer: z.number().optional(),
 });
 
+export const ChildEntityDefinitionSchema: z.ZodType<any> = z.lazy(() =>
+  z.object({
+    id: z.string().optional(),
+    name: z.string(),
+    template: z.string(),
+    localTransform: TransformComponentSchema,
+    slot: z.string().optional(),
+    sprite: SpriteComponentSchema.optional(),
+    physics: PhysicsComponentSchema.optional(),
+    behaviors: z.array(BehaviorSchema).optional(),
+    tags: z.array(z.string()).optional(),
+    visible: z.boolean().optional(),
+    assetPackId: z.string().optional(),
+    children: z.array(ChildEntityDefinitionSchema).optional(),
+  })
+);
+
+export const ChildTemplateDefinitionSchema: z.ZodType<any> = z.lazy(() =>
+  z.object({
+    name: z.string(),
+    template: z.string(),
+    localTransform: TransformComponentSchema,
+    slot: z.string().optional(),
+    sprite: SpriteComponentSchema.optional(),
+    physics: PhysicsComponentSchema.optional(),
+    behaviors: z.array(BehaviorSchema).optional(),
+    tags: z.array(z.string()).optional(),
+    children: z.array(ChildTemplateDefinitionSchema).optional(),
+  })
+);
+
 export const EntityTemplateSchema = z.object({
   id: z.string(),
   sprite: SpriteComponentSchema.optional(),
@@ -466,6 +501,7 @@ export const EntityTemplateSchema = z.object({
   tags: z.array(z.string()).optional(),
   layer: z.number().optional(),
   slots: z.record(z.string(), SlotDefinitionSchema).optional(),
+  children: z.array(ChildTemplateDefinitionSchema).optional(),
 });
 
 export const GameEntitySchema = z.object({
@@ -481,6 +517,7 @@ export const GameEntitySchema = z.object({
   visible: z.boolean().optional(),
   active: z.boolean().optional(),
   assetPackId: z.string().optional(),
+  children: z.array(ChildEntityDefinitionSchema).optional(),
 });
 
 export const WorldConfigSchema = z.object({
@@ -495,6 +532,7 @@ export const WorldConfigSchema = z.object({
 export const CameraConfigSchema = z.object({
   type: z.enum(['fixed', 'follow', 'follow-x', 'follow-y', 'auto-scroll']),
   followTarget: z.string().optional(),
+  viewHeight: z.number().positive().optional(),
   zoom: z.number().positive().optional(),
   minZoom: z.number().positive().optional(),
   maxZoom: z.number().positive().optional(),
@@ -569,17 +607,20 @@ export const GameMetadataSchema = z.object({
   id: z.string(),
   title: z.string().min(1),
   description: z.string().optional(),
+  instructions: z.string().optional(),
   author: z.string().optional(),
   version: z.string(),
   createdAt: z.number().optional(),
   updatedAt: z.number().optional(),
   thumbnailUrl: z.string().optional(),
+  thumbnailAssetRef: z.string().optional(),
+  titleHeroImageUrl: z.string().optional(),
+  titleHeroAssetRef: z.string().optional(),
 });
-
-export const AssetSourceSchema = z.enum(['generated', 'uploaded', 'none']);
 
 export const AssetConfigSchema = z.object({
   imageUrl: z.string().optional(),
+  assetRef: z.string().optional(),
   source: AssetSourceSchema.optional(),
   scale: z.number().optional(),
   offsetX: z.number().optional(),
@@ -591,7 +632,7 @@ export const AssetConfigSchema = z.object({
   })).optional(),
 });
 
-export const SpriteStyleSchema = z.enum(['pixel', 'cartoon', '3d', 'flat']);
+export const SpriteStyleSchema = z.string();
 
 export const AssetPackSchema = z.object({
   id: z.string(),
@@ -607,6 +648,7 @@ export const ParallaxLayerSchema = z.object({
   id: z.string(),
   name: z.string(),
   imageUrl: z.string().optional(),
+  assetRef: z.string().optional(),
   depth: ParallaxDepthSchema,
   parallaxFactor: z.number().min(0).max(1),
   scale: z.number().optional(),
@@ -618,43 +660,6 @@ export const ParallaxLayerSchema = z.object({
 export const ParallaxConfigSchema = z.object({
   enabled: z.boolean(),
   layers: z.array(ParallaxLayerSchema),
-});
-
-export const TileCollisionSchema = z.union([
-  z.literal('none'),
-  z.literal('full'),
-  z.literal('platform'),
-  z.object({
-    polygon: z.array(Vec2Schema),
-  }),
-]);
-
-export const TileAnimationSchema = z.object({
-  frames: z.array(z.number()),
-  fps: z.number().positive(),
-  loop: z.boolean().optional(),
-});
-
-export const TileMetadataSchema = z.object({
-  name: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  collision: TileCollisionSchema.optional(),
-  animation: TileAnimationSchema.optional(),
-});
-
-export const TileSheetSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  imageUrl: z.string(),
-  tileWidth: z.number().positive(),
-  tileHeight: z.number().positive(),
-  columns: z.number().positive(),
-  rows: z.number().positive(),
-  spacing: z.number().optional(),
-  margin: z.number().optional(),
-  tiles: z.record(z.number(), TileMetadataSchema).optional(),
-  source: AssetSourceSchema.optional(),
-  style: SpriteStyleSchema.optional(),
 });
 
 export const TileLayerTypeSchema = z.enum(['background', 'collision', 'foreground', 'decoration']);
@@ -732,6 +737,207 @@ export const GameJointSchema = z.discriminatedUnion('type', [
   GamePrismaticJointSchema,
 ]);
 
+export const SheetLayoutSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("grid"),
+    columns: z.number().positive(),
+    rows: z.number().positive(),
+    cellWidth: z.number().positive(),
+    cellHeight: z.number().positive(),
+    spacing: z.number().optional(),
+    margin: z.number().optional(),
+    origin: z.literal("top-left").optional(),
+  }),
+  z.object({
+    type: z.literal("strip"),
+    direction: z.enum(["horizontal", "vertical"]),
+    frameCount: z.number().positive(),
+    cellWidth: z.number().positive(),
+    cellHeight: z.number().positive(),
+    spacing: z.number().optional(),
+    margin: z.number().optional(),
+  }),
+  z.object({
+    type: z.literal("manual"),
+  }),
+]);
+
+export const SheetRegionSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("gridIndex"),
+    index: z.number().int().nonnegative(),
+  }),
+  z.object({
+    type: z.literal("rect"),
+    x: z.number().int().nonnegative(),
+    y: z.number().int().nonnegative(),
+    w: z.number().int().positive(),
+    h: z.number().int().positive(),
+  }),
+]);
+
+export const SheetPivotSchema = z.object({
+  x: z.number(),
+  y: z.number(),
+});
+
+export const SheetPromptConfigSchema = z.object({
+  basePrompt: z.string(),
+  commonModifiers: z.array(z.string()).optional(),
+  stylePreset: z.string().optional(),
+  negativePrompt: z.string().optional(),
+});
+
+export const AssetSheetEntrySchema = z.object({
+  id: z.string().min(1),
+  region: SheetRegionSchema,
+  pivot: SheetPivotSchema.optional(),
+  tags: z.array(z.string()).optional(),
+  promptOverride: z.string().optional(),
+});
+
+export const SheetAnimationSchema = z.object({
+  id: z.string().min(1),
+  frames: z.array(z.string()).min(1),
+  fps: z.number().positive(),
+  loop: z.boolean().optional(),
+});
+
+export const SheetTileCollisionSchema = z.union([
+  z.literal("none"),
+  z.literal("full"),
+  z.literal("platform"),
+  z.object({ polygon: z.array(z.object({ x: z.number(), y: z.number() })).min(3) }),
+]);
+
+export const SheetTileAnimationSchema = z.object({
+  frames: z.array(z.number().int().nonnegative()).min(1),
+  fps: z.number().positive(),
+  loop: z.boolean().optional(),
+});
+
+export const SheetTileMetadataSchema = z.object({
+  name: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  collision: SheetTileCollisionSchema.optional(),
+  animation: SheetTileAnimationSchema.optional(),
+  promptOverride: z.string().optional(),
+});
+
+export const TileSheetSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  imageUrl: z.string(),
+  tileWidth: z.number().positive(),
+  tileHeight: z.number().positive(),
+  columns: z.number().positive(),
+  rows: z.number().positive(),
+  spacing: z.number().optional(),
+  margin: z.number().optional(),
+  tiles: z.record(z.number(), SheetTileMetadataSchema).optional(),
+  source: AssetSourceSchema.optional(),
+  style: SpriteStyleSchema.optional(),
+});
+
+export const VariationVariantSchema = z.object({
+  entryId: z.string().min(1),
+  tags: z.array(z.string()).optional(),
+  weight: z.number().positive().optional(),
+  promptOverride: z.string().optional(),
+});
+
+export const VariationGroupSchema = z.object({
+  id: z.string().min(1),
+  variants: z.record(z.string(), VariationVariantSchema),
+});
+
+export const AssetSheetBaseSchema = z.object({
+  id: z.string(),
+  packId: z.string(),
+  source: AssetSourceSchema.optional(),
+  imageAssetId: z.string().optional(),
+  imageUrl: z.string(),
+  imageWidth: z.number().positive(),
+  imageHeight: z.number().positive(),
+  layout: SheetLayoutSchema,
+  entries: z.record(z.string(), AssetSheetEntrySchema),
+  promptConfig: SheetPromptConfigSchema.optional(),
+  createdAt: z.number(),
+  deletedAt: z.number().optional(),
+});
+
+export const AssetSheetSchema = z.discriminatedUnion("kind", [
+  AssetSheetBaseSchema.extend({
+    kind: z.literal("sprite"),
+    animations: z.record(z.string(), SheetAnimationSchema).optional(),
+    defaultAnimationId: z.string().optional(),
+  }),
+  AssetSheetBaseSchema.extend({
+    kind: z.literal("tile"),
+    tileWidth: z.number().positive(),
+    tileHeight: z.number().positive(),
+    tiles: z.record(z.number(), SheetTileMetadataSchema).optional(),
+  }),
+  AssetSheetBaseSchema.extend({
+    kind: z.literal("variation"),
+    groups: z.record(z.string(), VariationGroupSchema),
+    defaultGroupId: z.string().optional(),
+    defaultVariantKey: z.string().optional(),
+  }),
+]);
+
+export const TapZoneEdgeSchema = z.enum(['left', 'right', 'top', 'bottom']);
+export const TapZoneButtonSchema = z.enum(['left', 'right', 'up', 'down', 'jump', 'action']);
+
+export const TapZoneSchema = z.object({
+  id: z.string(),
+  edge: TapZoneEdgeSchema,
+  size: z.number().min(0).max(1),
+  button: TapZoneButtonSchema,
+  debugColor: z.string().optional(),
+});
+
+export const VirtualButtonTypeSchema = z.enum(['jump', 'action']);
+
+export const VirtualButtonSchema = z.object({
+  id: z.string(),
+  button: VirtualButtonTypeSchema,
+  label: z.string().optional(),
+  size: z.number().positive().optional(),
+  color: z.string().optional(),
+  activeColor: z.string().optional(),
+});
+
+export const VirtualJoystickSchema = z.object({
+  id: z.string(),
+  size: z.number().positive().optional(),
+  knobSize: z.number().positive().optional(),
+  deadZone: z.number().min(0).max(1).optional(),
+  color: z.string().optional(),
+  knobColor: z.string().optional(),
+});
+
+export const DPadDirectionSchema = z.enum(['up', 'down', 'left', 'right']);
+
+export const VirtualDPadSchema = z.object({
+  id: z.string(),
+  size: z.number().positive().optional(),
+  buttonSize: z.number().positive().optional(),
+  color: z.string().optional(),
+  activeColor: z.string().optional(),
+  showDiagonals: z.boolean().optional(),
+});
+
+export const InputConfigSchema = z.object({
+  tapZones: z.array(TapZoneSchema).optional(),
+  debugTapZones: z.boolean().optional(),
+  debugInputs: z.boolean().optional(),
+  virtualButtons: z.array(VirtualButtonSchema).optional(),
+  virtualJoystick: VirtualJoystickSchema.optional(),
+  virtualDPad: VirtualDPadSchema.optional(),
+  enableHaptics: z.boolean().optional(),
+});
+
 export const GameDefinitionSchema = z.object({
   metadata: GameMetadataSchema,
   world: WorldConfigSchema,
@@ -747,9 +953,13 @@ export const GameDefinitionSchema = z.object({
   loseCondition: LoseConditionSchema.optional(),
   assetPacks: z.record(z.string(), AssetPackSchema).optional(),
   activeAssetPackId: z.string().optional(),
+  assetSystem: AssetSystemConfigSchema.optional(),
   parallaxConfig: ParallaxConfigSchema.optional(),
   tileSheets: z.array(TileSheetSchema).optional(),
   tileMaps: z.array(TileMapSchema).optional(),
+  input: InputConfigSchema.optional(),
 });
 
 export type GameDefinitionInput = z.infer<typeof GameDefinitionSchema>;
+
+export { TuningConfigSchema, VariableCategorySchema, VariableWithTuningSchema } from '../expressions/schema-helpers';

@@ -33,10 +33,21 @@ interface GenerationModalProps {
     style: 'pixel' | 'cartoon' | '3d' | 'flat';
     templateOverrides: Record<string, { entityPrompt?: string }>;
     templateIds: string[];
+    strength?: number;
+    guidance?: number;
+    seed?: string;
   }) => void;
   isGenerating: boolean;
   progress: { total: number; completed: number; failed: number };
   generatingTemplates: Set<string>;
+  lastGeneration?: {
+    compiledPrompt?: string;
+    strength?: number;
+    guidance?: number;
+    seed?: string;
+    style?: string;
+    silhouetteUrl?: string;
+  };
 }
 
 const STYLE_OPTIONS: { id: 'pixel' | 'cartoon' | '3d' | 'flat'; label: string }[] = [
@@ -57,6 +68,7 @@ export function GenerationModal({
   isGenerating,
   progress,
   generatingTemplates,
+  lastGeneration,
 }: GenerationModalProps) {
   const [themePrompt, setThemePrompt] = useState(gameDescription ?? '');
   const [selectedStyle, setSelectedStyle] = useState<'pixel' | 'cartoon' | '3d' | 'flat'>(
@@ -71,6 +83,10 @@ export function GenerationModal({
     }))
   );
   const [expandedTemplate, setExpandedTemplate] = useState<string | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [strength, setStrength] = useState(0.5);
+  const [guidance, setGuidance] = useState(3.5);
+  const [seed, setSeed] = useState('');
 
   const phase: GenerationPhase = useMemo(() => {
     if (isGenerating) return 'generating';
@@ -111,8 +127,11 @@ export function GenerationModal({
       style: selectedStyle,
       templateOverrides,
       templateIds: enabledTemplates.map(t => t.id),
+      strength,
+      guidance,
+      seed: seed.trim() || undefined,
     });
-  }, [templateConfigs, themePrompt, selectedStyle, onGenerate]);
+  }, [templateConfigs, themePrompt, selectedStyle, onGenerate, strength, guidance, seed]);
 
   const renderConfigurePhase = () => (
     <>
@@ -221,6 +240,94 @@ export function GenerationModal({
           ))}
         </ScrollView>
       </View>
+
+      <View style={styles.section}>
+        <Pressable
+          style={styles.advancedToggle}
+          onPress={() => setShowAdvanced(!showAdvanced)}
+        >
+          <Text style={styles.advancedToggleText}>
+            {showAdvanced ? '▼' : '▶'} Advanced
+          </Text>
+        </Pressable>
+
+        {showAdvanced && (
+          <View style={styles.advancedContent}>
+            <View style={styles.sliderContainer}>
+              <View style={styles.sliderHeader}>
+                <Text style={styles.sliderLabel}>Strength</Text>
+                <Text style={styles.sliderValue}>{strength.toFixed(2)}</Text>
+              </View>
+              <View style={styles.sliderTrack}>
+                <View
+                  style={[
+                    styles.sliderFill,
+                    { width: `${((strength - 0.1) / 0.89) * 100}%` },
+                  ]}
+                />
+              </View>
+              <View style={styles.sliderRangeLabels}>
+                <Text style={styles.sliderRangeText}>0.1</Text>
+                <Text style={styles.sliderRangeText}>0.99</Text>
+              </View>
+              <View style={styles.slider}>
+                <Pressable
+                  style={[styles.sliderThumb, { left: `${((strength - 0.1) / 0.89) * 100}%` }]}
+                  onPress={(e) => {
+                    const { locationX } = e.nativeEvent;
+                    e.currentTarget.measure((_x, _y, width) => {
+                      const newValue = 0.1 + (locationX / width) * 0.89;
+                      setStrength(Math.min(Math.max(newValue, 0.1), 0.99));
+                    });
+                  }}
+                />
+              </View>
+            </View>
+
+            <View style={styles.sliderContainer}>
+              <View style={styles.sliderHeader}>
+                <Text style={styles.sliderLabel}>Guidance</Text>
+                <Text style={styles.sliderValue}>{guidance.toFixed(1)}</Text>
+              </View>
+              <View style={styles.sliderTrack}>
+                <View
+                  style={[
+                    styles.sliderFill,
+                    { width: `${((guidance - 2) / 10) * 100}%` },
+                  ]}
+                />
+              </View>
+              <View style={styles.sliderRangeLabels}>
+                <Text style={styles.sliderRangeText}>2</Text>
+                <Text style={styles.sliderRangeText}>12</Text>
+              </View>
+              <View style={styles.slider}>
+                <Pressable
+                  style={[styles.sliderThumb, { left: `${((guidance - 2) / 10) * 100}%` }]}
+                  onPress={(e) => {
+                    const { locationX } = e.nativeEvent;
+                    e.currentTarget.measure((_x, _y, width) => {
+                      const newValue = 2 + (locationX / width) * 10;
+                      setGuidance(Math.min(Math.max(newValue, 2), 12));
+                    });
+                  }}
+                />
+              </View>
+            </View>
+
+            <View style={styles.seedContainer}>
+              <Text style={styles.sliderLabel}>Seed (optional)</Text>
+              <TextInput
+                style={styles.seedInput}
+                value={seed}
+                onChangeText={setSeed}
+                placeholder="Leave empty for random"
+                placeholderTextColor="#6B7280"
+              />
+            </View>
+          </View>
+        )}
+      </View>
     </>
   );
 
@@ -248,6 +355,13 @@ export function GenerationModal({
         {progress.completed} succeeded
         {progress.failed > 0 && `, ${progress.failed} failed`}
       </Text>
+
+      {lastGeneration?.compiledPrompt && (
+        <View style={styles.lastPromptContainer}>
+          <Text style={styles.lastPromptLabel}>LAST PROMPT</Text>
+          <Text style={styles.lastPromptText}>{lastGeneration.compiledPrompt}</Text>
+        </View>
+      )}
     </View>
   );
 
@@ -281,18 +395,42 @@ export function GenerationModal({
 
           <View style={styles.footer}>
             {phase === 'configure' && (
-              <Pressable
-                style={[
-                  styles.generateButton,
-                  enabledCount === 0 && styles.generateButtonDisabled,
-                ]}
-                onPress={handleGenerate}
-                disabled={enabledCount === 0}
-              >
-                <Text style={styles.generateButtonText}>
-                  Generate {enabledCount} Asset{enabledCount !== 1 ? 's' : ''}
-                </Text>
-              </Pressable>
+              <View style={styles.footerButtons}>
+                {lastGeneration && (
+                  <Pressable
+                    style={styles.remixButton}
+                    onPress={() => {
+                      if (lastGeneration.strength !== undefined) {
+                        setStrength(lastGeneration.strength);
+                      }
+                      if (lastGeneration.guidance !== undefined) {
+                        setGuidance(lastGeneration.guidance);
+                      }
+                      if (lastGeneration.seed !== undefined) {
+                        setSeed(lastGeneration.seed);
+                      }
+                      if (lastGeneration.style) {
+                        setSelectedStyle(lastGeneration.style as 'pixel' | 'cartoon' | '3d' | 'flat');
+                      }
+                    }}
+                  >
+                    <Text style={styles.remixButtonText}>Remix</Text>
+                  </Pressable>
+                )}
+                <Pressable
+                  style={[
+                    styles.generateButton,
+                    enabledCount === 0 && styles.generateButtonDisabled,
+                    lastGeneration && { flex: 1 },
+                  ]}
+                  onPress={handleGenerate}
+                  disabled={enabledCount === 0}
+                >
+                  <Text style={styles.generateButtonText}>
+                    Generate {enabledCount} Asset{enabledCount !== 1 ? 's' : ''}
+                  </Text>
+                </Pressable>
+              </View>
             )}
             {phase === 'generating' && (
               <View style={styles.generatingFooter}>
@@ -556,6 +694,123 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   doneButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  advancedToggle: {
+    paddingVertical: 8,
+  },
+  advancedToggleText: {
+    color: '#9CA3AF',
+    fontSize: 13,
+  },
+  advancedContent: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#374151',
+  },
+  sliderContainer: {
+    marginBottom: 20,
+  },
+  sliderHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  sliderLabel: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  sliderValue: {
+    color: '#4F46E5',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  sliderTrack: {
+    height: 6,
+    backgroundColor: '#374151',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  sliderFill: {
+    height: '100%',
+    backgroundColor: '#4F46E5',
+    borderRadius: 3,
+  },
+  sliderRangeLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  sliderRangeText: {
+    color: '#6B7280',
+    fontSize: 11,
+  },
+  slider: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: -7,
+    height: 20,
+  },
+  sliderThumb: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+    transform: [{ translateX: -10 }],
+  },
+  seedContainer: {
+    marginTop: 16,
+  },
+  seedInput: {
+    backgroundColor: '#374151',
+    borderRadius: 8,
+    padding: 12,
+    color: '#FFFFFF',
+    fontSize: 14,
+    marginTop: 8,
+  },
+  lastPromptContainer: {
+    backgroundColor: '#1F2937',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 16,
+  },
+  lastPromptLabel: {
+    color: '#9CA3AF',
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 1,
+    marginBottom: 8,
+  },
+  lastPromptText: {
+    color: '#E5E7EB',
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  footerButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  remixButton: {
+    backgroundColor: '#7C3AED',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    flex: 1,
+  },
+  remixButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',

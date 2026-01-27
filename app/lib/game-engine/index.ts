@@ -7,9 +7,9 @@ export {
   createDefaultGameDefinition,
 } from './GameLoader';
 export { GameRuntime } from './GameRuntime';
+export { GameRuntimeGodot } from './GameRuntime.godot';
 export { CameraSystem } from './CameraSystem';
 export { ViewportSystem } from './ViewportSystem';
-export { ViewportProvider, useViewport } from './ViewportContext';
 export {
   createCollisionBodiesFromTileMap,
   destroyTileMapBodies,
@@ -21,4 +21,4 @@ export type { CameraConfig, ViewportSize, CameraTransform } from './CameraSystem
 export type { ViewportRect, ViewportConfig } from './ViewportSystem';
 export * from './BehaviorContext';
 export * from './types';
-export * from './renderers';
+export * from './progress';

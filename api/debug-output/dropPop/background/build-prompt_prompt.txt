@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+A tropical beach paradise at golden hour for a puzzle game. Crystal clear turquoise ocean waves gently lapping at white sandy shore. Tall palm trees swaying in the breeze with coconuts. Vibrant sunset sky with orange, pink, and purple gradients. Distant tropical islands on the horizon. Colorful tropical flowers and lush vegetation. Summer vacation paradise atmosphere with warm sunshine. No text, no characters, just the environment. High quality game background.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

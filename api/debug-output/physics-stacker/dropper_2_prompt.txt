@@ -1,0 +1,30 @@
+=== POSITIVE PROMPT ===
+=== CAMERA/VIEW (CRITICAL) ===
+FRONT VIEW. Camera is directly facing the front of the object.
+Flat, 2D perspective. NO 3D rotation, NO angled view, NO side view.
+Like a sprite in a 2D side-scrolling platformer game.
+The object faces the viewer head-on.
+
+=== SHAPE (CRITICAL - MUST MATCH EXACTLY) ===
+EXTREMELY WIDE HORIZONTAL BAR (6.7:1). Very thin, very wide rectangle.
+
+=== COMPOSITION ===
+The object FILLS THE ENTIRE FRAME. No empty space around it.
+
+=== SUBJECT ===
+A a cartoon child's hand reaching down, palm facing down, fingers slightly curled as if about to drop something, wooden toy blocks, natural wood grain, children's toy aesthetic style for a video game.
+This is a UI/game element.
+
+=== STYLE ===
+cartoon style, bold black outlines, vibrant saturated colors
+
+=== TECHNICAL REQUIREMENTS ===
+Transparent background (alpha channel).
+Game sprite asset for 2D game.
+cel-shaded, clean vector-like edges, flat color fills
+Single object only, no duplicates.
+No text, watermarks, or signatures.
+Flat front-facing view only.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

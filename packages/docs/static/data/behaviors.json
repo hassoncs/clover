@@ -1,0 +1,720 @@
+[
+  {
+    "type": "animate",
+    "interfaceName": "AnimateBehavior",
+    "displayName": "Animate",
+    "properties": [
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "fps",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "frames",
+        "type": "string[]",
+        "required": true
+      },
+      {
+        "name": "loop",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "playOn",
+        "type": "AnimationTrigger",
+        "required": false
+      }
+    ]
+  },
+  {
+    "type": "attach_to",
+    "interfaceName": "AttachToBehavior",
+    "displayName": "Attach To",
+    "properties": [
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "inheritRotation",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "parentTag",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "slotName",
+        "type": "string",
+        "required": true
+      }
+    ]
+  },
+  {
+    "type": "bounce",
+    "interfaceName": "BounceBehavior",
+    "displayName": "Bounce",
+    "properties": [
+      {
+        "name": "bounds",
+        "type": "Bounds",
+        "required": true
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      }
+    ]
+  },
+  {
+    "type": "destroy_on_collision",
+    "interfaceName": "DestroyOnCollisionBehavior",
+    "displayName": "Destroy On Collision",
+    "properties": [
+      {
+        "name": "delay",
+        "type": "DestructionDelay",
+        "required": false
+      },
+      {
+        "name": "destroyOther",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "effect",
+        "type": "DestructionEffect",
+        "required": false
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "markedColor",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "markedEffect",
+        "type": "MarkedEffect",
+        "required": false
+      },
+      {
+        "name": "minImpactVelocity",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "withTags",
+        "type": "string[]",
+        "required": true
+      }
+    ]
+  },
+  {
+    "type": "draggable",
+    "interfaceName": "DraggableBehavior",
+    "displayName": "Draggable",
+    "properties": [
+      {
+        "name": "damping",
+        "type": "number",
+        "required": false,
+        "description": "Damping of the drag force (higher = less oscillation) - only used in 'force' mode"
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "mode",
+        "type": "DragMode",
+        "required": false,
+        "description": "Drag mode: 'force' applies physics forces, 'kinematic' moves directly with cursor"
+      },
+      {
+        "name": "requireDirectHit",
+        "type": "boolean",
+        "required": false,
+        "description": "Only allow dragging if touch starts on this entity"
+      },
+      {
+        "name": "stiffness",
+        "type": "number",
+        "required": false,
+        "description": "Stiffness of the drag force (higher = snappier response) - only used in 'force' mode"
+      }
+    ]
+  },
+  {
+    "type": "follow",
+    "interfaceName": "FollowBehavior",
+    "displayName": "Follow",
+    "properties": [
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "maxDistance",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "minDistance",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "speed",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "target",
+        "type": "string",
+        "required": true
+      }
+    ]
+  },
+  {
+    "type": "gravity_zone",
+    "interfaceName": "GravityZoneBehavior",
+    "displayName": "Gravity Zone",
+    "properties": [
+      {
+        "name": "affectsTags",
+        "type": "string[]",
+        "required": false
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "falloff",
+        "type": "GravityFalloff",
+        "required": false
+      },
+      {
+        "name": "gravity",
+        "type": "Vec2",
+        "required": true
+      },
+      {
+        "name": "radius",
+        "type": "number",
+        "required": true
+      }
+    ]
+  },
+  {
+    "type": "health",
+    "interfaceName": "HealthBehavior",
+    "displayName": "Health",
+    "properties": [
+      {
+        "name": "currentHealth",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "damageFromTags",
+        "type": "string[]",
+        "required": false
+      },
+      {
+        "name": "damagePerHit",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "destroyOnDeath",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "invulnerabilityTime",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "maxHealth",
+        "type": "number",
+        "required": true
+      }
+    ]
+  },
+  {
+    "type": "magnetic",
+    "interfaceName": "MagneticBehavior",
+    "displayName": "Magnetic",
+    "properties": [
+      {
+        "name": "attractsTags",
+        "type": "string[]",
+        "required": false
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "radius",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "repels",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "strength",
+        "type": "number",
+        "required": true
+      }
+    ]
+  },
+  {
+    "type": "maintain_speed",
+    "interfaceName": "MaintainSpeedBehavior",
+    "displayName": "Maintain Speed",
+    "properties": [
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "mode",
+        "type": "'constant' | 'minimum'",
+        "required": false
+      },
+      {
+        "name": "speed",
+        "type": "Value<number>",
+        "required": true
+      }
+    ]
+  },
+  {
+    "type": "move",
+    "interfaceName": "MoveBehavior",
+    "displayName": "Move",
+    "properties": [
+      {
+        "name": "direction",
+        "type": "MoveDirection",
+        "required": true
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "movementType",
+        "type": "'velocity' | 'force'",
+        "required": false
+      },
+      {
+        "name": "patrol",
+        "type": "Bounds",
+        "required": false
+      },
+      {
+        "name": "speed",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "target",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  {
+    "type": "oscillate",
+    "interfaceName": "OscillateBehavior",
+    "displayName": "Oscillate",
+    "properties": [
+      {
+        "name": "amplitude",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "axis",
+        "type": "'x' | 'y' | 'both'",
+        "required": true
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "frequency",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "phase",
+        "type": "number",
+        "required": false
+      }
+    ]
+  },
+  {
+    "type": "particle_emitter",
+    "interfaceName": "ParticleEmitterBehavior",
+    "displayName": "Particle Emitter",
+    "properties": [
+      {
+        "name": "emitterType",
+        "type": "ParticleEmitterType",
+        "required": true
+      },
+      {
+        "name": "emitWhile",
+        "type": "'always' | 'moving' | 'enabled'",
+        "required": false
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "offset",
+        "type": "Vec2",
+        "required": false
+      }
+    ]
+  },
+  {
+    "type": "rotate",
+    "interfaceName": "RotateBehavior",
+    "displayName": "Rotate",
+    "properties": [
+      {
+        "name": "affectsPhysics",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "direction",
+        "type": "'clockwise' | 'counterclockwise'",
+        "required": true
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "speed",
+        "type": "number",
+        "required": true
+      }
+    ]
+  },
+  {
+    "type": "rotate_toward",
+    "interfaceName": "RotateTowardBehavior",
+    "displayName": "Rotate Toward",
+    "properties": [
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "offset",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "speed",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "target",
+        "type": "string",
+        "required": true
+      }
+    ]
+  },
+  {
+    "type": "scale_oscillate",
+    "interfaceName": "ScaleOscillateBehavior",
+    "displayName": "Scale Oscillate",
+    "properties": [
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "max",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "min",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "phase",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "speed",
+        "type": "number",
+        "required": true
+      }
+    ]
+  },
+  {
+    "type": "score_on_collision",
+    "interfaceName": "ScoreOnCollisionBehavior",
+    "displayName": "Score On Collision",
+    "properties": [
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "once",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "points",
+        "type": "Value<number>",
+        "required": true
+      },
+      {
+        "name": "showPopup",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "withTags",
+        "type": "string[]",
+        "required": true
+      }
+    ]
+  },
+  {
+    "type": "score_on_destroy",
+    "interfaceName": "ScoreOnDestroyBehavior",
+    "displayName": "Score On Destroy",
+    "properties": [
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "points",
+        "type": "Value<number>",
+        "required": true
+      }
+    ]
+  },
+  {
+    "type": "spawn_on_event",
+    "interfaceName": "SpawnOnEventBehavior",
+    "displayName": "Spawn On Event",
+    "properties": [
+      {
+        "name": "bounds",
+        "type": "Bounds",
+        "required": false
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "entityTemplate",
+        "type": "string | string[]",
+        "required": true
+      },
+      {
+        "name": "event",
+        "type": "SpawnEvent",
+        "required": true
+      },
+      {
+        "name": "initialVelocity",
+        "type": "Vec2",
+        "required": false
+      },
+      {
+        "name": "interval",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "maxSpawns",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "offset",
+        "type": "Vec2",
+        "required": false
+      },
+      {
+        "name": "spawnEffect",
+        "type": "ParticleEmitterType",
+        "required": false
+      },
+      {
+        "name": "spawnPosition",
+        "type": "BehaviorSpawnPosition",
+        "required": true
+      },
+      {
+        "name": "withTags",
+        "type": "string[]",
+        "required": false
+      }
+    ]
+  },
+  {
+    "type": "sprite_effect",
+    "interfaceName": "SpriteEffectBehavior",
+    "displayName": "Sprite Effect",
+    "properties": [
+      {
+        "name": "effect",
+        "type": "SpriteEffectType",
+        "required": true
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "params",
+        "type": "{\n    color?: [number, number, number];\n    intensity?: number;\n    duration?: number;\n    pulse?: boolean;\n  }",
+        "required": false
+      }
+    ]
+  },
+  {
+    "type": "teleport",
+    "interfaceName": "TeleportBehavior",
+    "displayName": "Teleport",
+    "properties": [
+      {
+        "name": "cooldown",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "destinationEntityId",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "exitOffset",
+        "type": "Vec2",
+        "required": false
+      },
+      {
+        "name": "preserveVelocity",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "velocityMultiplier",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "withTags",
+        "type": "string[]",
+        "required": true
+      }
+    ]
+  },
+  {
+    "type": "timer",
+    "interfaceName": "TimerBehavior",
+    "displayName": "Timer",
+    "properties": [
+      {
+        "name": "action",
+        "type": "TimerAction",
+        "required": true
+      },
+      {
+        "name": "behaviorIndex",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "duration",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "eventName",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "repeat",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "spawnTemplate",
+        "type": "string",
+        "required": false
+      }
+    ]
+  }
+]

@@ -1,0 +1,26 @@
+=== POSITIVE PROMPT ===
+=== CAMERA/VIEW (CRITICAL) ===
+FRONT VIEW. Camera is directly facing the front of the object.
+Flat, 2D perspective. NO 3D rotation, NO angled view.
+
+=== SHAPE (CRITICAL) ===
+SQUARE-ISH (1.00:1).
+
+=== COMPOSITION ===
+The object FILLS THE ENTIRE FRAME. No empty space around it.
+
+=== SUBJECT ===
+A an ancient stone tablet with a glowing rune for number 512, pure gold stone with intense magical glow, legendary rune symbol with arcane circles, golden aura pulsing for a video game.
+Style: ancient stone tablets, mystical runes, archaeological discovery, desert temple
+
+=== STYLE ===
+cartoon style, bold black outlines, vibrant saturated colors
+
+=== TECHNICAL ===
+Transparent background (alpha channel).
+cel-shaded, clean vector-like edges, flat color fills
+Single object only, no duplicates.
+No text, watermarks, or signatures.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

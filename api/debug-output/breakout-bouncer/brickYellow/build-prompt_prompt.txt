@@ -1,0 +1,26 @@
+=== POSITIVE PROMPT ===
+=== CAMERA/VIEW (CRITICAL) ===
+FRONT VIEW. Camera is directly facing the front of the object.
+Flat, 2D perspective. NO 3D rotation, NO angled view.
+
+=== SHAPE (CRITICAL) ===
+WIDE HORIZONTAL RECTANGLE (2.4:1).
+
+=== COMPOSITION ===
+The object FILLS THE ENTIRE FRAME. No empty space around it.
+
+=== SUBJECT ===
+A a neon brick block, glowing yellow/gold, crystalline structure, sci-fi arcade style for a video game.
+Style: sci-fi neon arcade, glowing edges, dark background with vibrant colors
+
+=== STYLE ===
+cartoon style, bold black outlines, vibrant saturated colors
+
+=== TECHNICAL ===
+Transparent background (alpha channel).
+cel-shaded, clean vector-like edges, flat color fills
+Single object only, no duplicates.
+No text, watermarks, or signatures.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

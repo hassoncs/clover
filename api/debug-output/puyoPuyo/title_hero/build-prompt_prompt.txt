@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+A stylized game title logo that says "Puyo Puyo". Bold, playful 3D text with depth and shadows. Kawaii slime kingdom aesthetic with bouncy jelly textures, cute colorful slime creatures, bubbly playful typography with goo drips and sparkles, vibrant pastel colors with glossy highlights style letters. The text is the main focus, centered in the frame. High quality game logo, professional design. Cartoon style, vibrant colors.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

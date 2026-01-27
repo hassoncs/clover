@@ -1,0 +1,67 @@
+{
+  "runId": "run-1769219591019",
+  "config": {
+    "dryRun": false,
+    "theme": "whimsical pachinko arcade, glowing neon, magical sparkles",
+    "style": "cartoon"
+  },
+  "timestamp": "2026-01-24T01:55:18.560Z",
+  "results": [
+    {
+      "templateId": "ball",
+      "silhouettePath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/ball_1_silhouette.png",
+      "promptPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/ball_2_prompt.txt",
+      "finalPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/ball_4_final.png",
+      "gameAssetPath": "/Users/hassoncs/Workspaces/Personal/slopcade/app/public/assets/games/slopeggle/ball.png"
+    },
+    {
+      "templateId": "bluePeg",
+      "silhouettePath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/bluePeg_1_silhouette.png",
+      "promptPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/bluePeg_2_prompt.txt",
+      "finalPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/bluePeg_4_final.png",
+      "gameAssetPath": "/Users/hassoncs/Workspaces/Personal/slopcade/app/public/assets/games/slopeggle/bluePeg.png"
+    },
+    {
+      "templateId": "orangePeg",
+      "silhouettePath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/orangePeg_1_silhouette.png",
+      "promptPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/orangePeg_2_prompt.txt",
+      "finalPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/orangePeg_4_final.png",
+      "gameAssetPath": "/Users/hassoncs/Workspaces/Personal/slopcade/app/public/assets/games/slopeggle/orangePeg.png"
+    },
+    {
+      "templateId": "cannon",
+      "silhouettePath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/cannon_1_silhouette.png",
+      "promptPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/cannon_2_prompt.txt",
+      "finalPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/cannon_4_final.png",
+      "gameAssetPath": "/Users/hassoncs/Workspaces/Personal/slopcade/app/public/assets/games/slopeggle/cannon.png"
+    },
+    {
+      "templateId": "cannonBase",
+      "silhouettePath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/cannonBase_1_silhouette.png",
+      "promptPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/cannonBase_2_prompt.txt",
+      "finalPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/cannonBase_4_final.png",
+      "gameAssetPath": "/Users/hassoncs/Workspaces/Personal/slopcade/app/public/assets/games/slopeggle/cannonBase.png"
+    },
+    {
+      "templateId": "bucket",
+      "silhouettePath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/bucket_1_silhouette.png",
+      "promptPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/bucket_2_prompt.txt",
+      "finalPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/bucket_4_final.png",
+      "gameAssetPath": "/Users/hassoncs/Workspaces/Personal/slopcade/app/public/assets/games/slopeggle/bucket.png"
+    },
+    {
+      "templateId": "portalA",
+      "silhouettePath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/portalA_1_silhouette.png",
+      "promptPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/portalA_2_prompt.txt",
+      "finalPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/portalA_4_final.png",
+      "gameAssetPath": "/Users/hassoncs/Workspaces/Personal/slopcade/app/public/assets/games/slopeggle/portalA.png"
+    },
+    {
+      "templateId": "portalB",
+      "silhouettePath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/portalB_1_silhouette.png",
+      "promptPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/portalB_2_prompt.txt",
+      "finalPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/slopeggle/portalB_4_final.png",
+      "gameAssetPath": "/Users/hassoncs/Workspaces/Personal/slopcade/app/public/assets/games/slopeggle/portalB.png"
+    }
+  ]
+}

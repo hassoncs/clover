@@ -367,6 +367,134 @@ behaviors: [
 
 ---
 
+## Asset Generation (REQUIRED for all games)
+
+Every game MUST have AI-generated assets including:
+- **Entity sprites** - All game entities (balls, paddles, bricks, characters, etc.)
+- **Background image** - Game background (ALWAYS REQUIRED)
+- **Title hero image** - Game title/logo (ALWAYS REQUIRED)
+
+### Asset Generation Workflow
+
+1. **Create a game config** at `api/scripts/game-configs/<game-id>.ts`:
+
+```typescript
+import type { GameAssetConfig, EntitySpec, BackgroundSpec, TitleHeroSpec } from '../../src/ai/pipeline/types';
+
+export const myGameConfig: GameAssetConfig = {
+  gameId: 'my-game',
+  gameTitle: 'My Game',
+  theme: 'describe the visual theme here',
+  style: 'cartoon', // Options: 'pixel' | 'cartoon' | '3d' | 'flat'
+  r2Prefix: 'generated/my-game',
+  assets: [
+    // Entity sprites (one per game object with physics)
+    {
+      type: 'entity',
+      id: 'ball',
+      shape: 'circle',  // Must match physics shape
+      width: 0.5,       // Must match physics dimensions
+      height: 0.5,
+      entityType: 'item',
+      description: 'describe what it looks like',
+    } as EntitySpec,
+    
+    // Background (ALWAYS REQUIRED)
+    {
+      type: 'background',
+      id: 'background',
+      prompt: 'Full description of the game background',
+      width: 1024,
+      height: 1024,
+    } as BackgroundSpec,
+    
+    // Title hero (ALWAYS REQUIRED)
+    {
+      type: 'title_hero',
+      id: 'title_hero',
+      title: 'My Game',
+      themeDescription: 'Style description for the title',
+      width: 1024,
+      height: 512,
+    } as TitleHeroSpec,
+  ],
+};
+```
+
+2. **Register the config** in `api/scripts/game-configs/index.ts`:
+
+```typescript
+import { myGameConfig } from './my-game';
+
+export const gameConfigs: Record<string, GameAssetConfig> = {
+  // ... existing configs
+  'my-game': myGameConfig,
+};
+```
+
+3. **Run asset generation**:
+
+```bash
+# Requires Scenario.com API keys via hush
+hush run -- npx tsx api/scripts/generate-game-assets.ts my-game
+
+# Dry run to preview what will be generated
+npx tsx api/scripts/generate-game-assets.ts my-game --dry-run
+```
+
+4. **Use generated assets in the game**:
+
+```typescript
+const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/my-game";
+
+const game: GameDefinition = {
+  metadata: {
+    id: "my-game",
+    title: "My Game",
+    // ... other metadata
+    titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,  // REQUIRED
+  },
+  background: {
+    type: "static",
+    imageUrl: `${ASSET_BASE}/background.png`,  // REQUIRED
+  },
+  templates: {
+    ball: {
+      sprite: {
+        type: "image",
+        imageUrl: `${ASSET_BASE}/ball.png`,
+        imageWidth: 0.5,
+        imageHeight: 0.5,
+      },
+      // ... physics config
+    },
+  },
+  // ... rest of game definition
+};
+```
+
+### Asset Types Reference
+
+| Type | Purpose | Required Fields |
+|------|---------|-----------------|
+| `entity` | Game object sprites | `shape`, `width`, `height`, `entityType`, `description` |
+| `background` | Game background | `prompt`, `width`, `height` |
+| `title_hero` | Title/logo image | `title`, `themeDescription`, `width`, `height` |
+| `parallax` | Multi-layer backgrounds | `prompt`, `layerCount`, `width`, `height` |
+
+### Entity Types
+
+| Type | Use For |
+|------|---------|
+| `character` | Player characters, NPCs |
+| `enemy` | Enemies, obstacles |
+| `item` | Collectibles, projectiles, balls |
+| `platform` | Platforms, ground |
+| `background` | Background decorations |
+| `ui` | UI elements, buttons |
+
+---
+
 ## Checklist for New Games
 
 - [ ] File created at `app/lib/test-games/games/<name>.ts`
@@ -379,5 +507,9 @@ behaviors: [
 - [ ] Tags are consistent between templates and rules
 - [ ] Win condition is achievable
 - [ ] Lose condition is defined (if applicable)
+- [ ] **Asset config created** at `api/scripts/game-configs/<game-id>.ts`
+- [ ] **Asset config includes background and title_hero** (REQUIRED)
+- [ ] **Assets generated** via `hush run -- npx tsx api/scripts/generate-game-assets.ts <game-id>`
+- [ ] **Game uses generated assets** (`titleHeroImageUrl`, `background`, entity sprites)
 - [ ] Run `node scripts/generate-registry.mjs` from `app/` directory
 - [ ] TypeScript compiles without errors

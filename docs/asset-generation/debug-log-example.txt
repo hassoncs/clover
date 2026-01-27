@@ -1,0 +1,21 @@
+[AssetGen] [INFO] [job:abc12345] Starting job with 3 tasks
+[AssetGen] [DEBUG] [job:abc12345] [task:def67890] Processing: platform (widePlatform)
+[AssetGen] [DEBUG] [job:abc12345] [task:def67890] Physics: shape=box, width=4, height=1
+[AssetGen] [DEBUG] [job:abc12345] [task:def67890] Target dimensions: 512x128
+[AssetGen] [DEBUG] Physics: shape=box, width=4, height=1
+[AssetGen] [INFO] Silhouette created: 512x512 for box 4x1
+[Scenario] [DEBUG] Uploading asset: silhouette-1737762000 (size: 1234 bytes)
+[Scenario] [INFO] Asset uploaded: asset_abc123
+[AssetGen] [INFO] Uploaded silhouette to Scenario: asset_abc123
+[AssetGen] [INFO] Starting img2img generation with strength=0.95
+[Scenario] [DEBUG] POST /generate/img2img - prompt: "=== SHAPE (CRITICAL - MUST MATCH EXACTLY) ===..." strength: 0.95
+[Scenario] [INFO] img2img job created: job_xyz789
+[Scenario] [DEBUG] [job_xyz789] Polling: status=pending (attempt 1/60)
+[Scenario] [DEBUG] [job_xyz789] Polling: status=pending (attempt 2/60)
+[Scenario] [INFO] [job_xyz789] Job succeeded: 1 asset(s) generated
+[Scenario] [DEBUG] Downloading asset: asset_final456
+[Scenario] [INFO] Downloaded: asset_final456 (image/png, .png)
+[AssetGen] [INFO] Downloaded generated asset: asset_final456
+[AssetGen] [INFO] Uploaded to R2: generated/platform/uuid.png
+[AssetGen] [INFO] [job:abc12345] [task:def67890] Task succeeded - Asset: asset_final456
+[AssetGen] [INFO] [job:abc12345] Job finished: 3 succeeded, 0 failed

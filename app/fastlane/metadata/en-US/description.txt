@@ -1,0 +1,10 @@
+Create physics-based 2D games with AI assistance. Slopcade lets kids and beginners build games using natural language prompts.
+
+FEATURES:
+• AI-powered game generation from text descriptions
+• Real-time physics simulation powered by Godot Engine
+• Pre-built game templates (Plinko, Peg Solitaire, Breakout, and more)
+• Interactive game editor with drag-and-drop
+• Export and share your creations
+
+Perfect for young game developers learning programming concepts through play!

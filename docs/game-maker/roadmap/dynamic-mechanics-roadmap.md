@@ -1,6 +1,6 @@
 # Dynamic Game Mechanics Roadmap
 
-> **Last Updated**: 2026-01-21  
+> **Last Updated**: 2026-01-26  
 > **Status**: Planning
 
 ## Vision
@@ -53,23 +53,89 @@ Transform the game maker from a static configuration tool into a dynamic game de
 ## Roadmap Overview
 
 ```
-Q1 2026                    Q2 2026                    Q3 2026
-   │                          │                          │
-   ▼                          ▼                          ▼
-┌──────────────┐        ┌──────────────┐        ┌──────────────┐
-│   Phase 1    │        │   Phase 2    │        │   Phase 3    │
-│  Foundation  │───────▶│  Expansion   │───────▶│   Polish     │
-│              │        │              │        │              │
-│ • Expressions│        │ • Difficulty │        │ • State      │
-│ • Variables  │        │ • Resources  │        │   Machines   │
-│ • Basic eval │        │ • Combos     │        │ • Tooling    │
-└──────────────┘        └──────────────┘        └──────────────┘
-     2 weeks                 4 weeks                 4 weeks
+Jan 2026                Feb 2026                   Q2 2026                    Q3 2026
+   │                       │                          │                          │
+   ▼                       ▼                          ▼                          ▼
+┌──────────────┐     ┌──────────────┐        ┌──────────────┐        ┌──────────────┐
+│  Phase 1.5   │     │   Phase 1    │        │   Phase 2    │        │   Phase 3    │
+│  Containers  │────▶│  Foundation  │───────▶│  Expansion   │───────▶│   Polish     │
+│              │     │              │        │              │        │              │
+│ • Stack/Grid │     │ • Expressions│        │ • Difficulty │        │ • State      │
+│ • Slots      │     │ • Variables  │        │ • Resources  │        │   Machines   │
+│ • Refactors  │     │ • Basic eval │        │ • Combos     │        │ • Tooling    │
+└──────────────┘     └──────────────┘        └──────────────┘        └──────────────┘
+     2.5 weeks            2 weeks                 4 weeks                 4 weeks
 ```
+
+> **Note**: Phase 1.5 (Containers) is inserted ahead of Phase 1 to fix critical bugs in container-based games and establish a solid foundation for derived state before building the expression system.
 
 ---
 
-## Phase 1: Foundation (Weeks 1-2)
+## Phase 1.5: Container System (Weeks 1-2.5)
+
+> **Design Document**: [Container System Design](../design/container-system.md)
+
+### Goal
+Establish a declarative container abstraction that eliminates dual-state bugs in container-based games (Ball Sort, Connect4, Stack Match, etc.) by computing derived state from entity membership.
+
+### Motivation
+The Ball Sort validation bug (2026-01-26) revealed that maintaining dual state (entity tags + cached variables) leads to desync bugs. The container system establishes the "single source of truth" principle before the expression system builds on top of it.
+
+### Phase 1.5A: Core Infrastructure (Week 1)
+
+| Item | Description | Est. |
+|------|-------------|------|
+| Container types | Stack, Grid, Slots type definitions | 0.5d |
+| ContainerSystem | Core system class with membership tracking | 1d |
+| Stack implementation | push, pop, peek, canAccept | 1d |
+| Grid implementation | place, remove, swap, findMatches | 1d |
+| Slots implementation | select, deselect, place, remove | 0.5d |
+| Unit tests | Tests for all container operations | 1d |
+
+### Phase 1.5B: Action & Condition Integration (Week 2)
+
+| Item | Description | Est. |
+|------|-------------|------|
+| Container actions schema | container_push, container_pop, container_transfer | 0.5d |
+| Container conditions schema | container_can_accept, container_is_empty/full | 0.5d |
+| Action executors | Implement all container actions | 1.5d |
+| Condition evaluators | Implement all container conditions | 1d |
+| Integration tests | Rules using containers end-to-end | 1d |
+
+### Phase 1.5C: Game Refactoring (Week 2.5)
+
+| Game | Container Types | Est. |
+|------|-----------------|------|
+| Ball Sort | 6x Stack | 1d |
+| Connect4 | 7x Stack + 1x Grid | 1d |
+| Stack Match | 1x Grid + 1x Slots | 0.5d |
+
+### Milestone Criteria
+
+- [ ] ContainerSystem computes derived state (count, topItem, isEmpty) from tags
+- [ ] Ball Sort uses declarative containers (no BallSortActionExecutor)
+- [ ] Connect4 uses declarative containers
+- [ ] All container-based games pass existing tests
+- [ ] No manual `tube0_count`, `col0Height` style variables needed
+
+### Files to Create
+
+| File | Purpose |
+|------|---------|
+| `shared/src/types/container.ts` | Container type definitions |
+| `app/lib/game-engine/systems/ContainerSystem.ts` | Core container system |
+| `app/lib/game-engine/rules/actions/ContainerActionExecutor.ts` | Container actions |
+| `app/lib/game-engine/rules/conditions/ContainerConditionEvaluator.ts` | Container conditions |
+
+### Files to Delete
+
+| File | Reason |
+|------|--------|
+| `app/lib/game-engine/rules/actions/BallSortActionExecutor.ts` | Replaced by declarative containers |
+
+---
+
+## Phase 1: Foundation (Weeks 3-4)
 
 ### Goal
 Establish the core computed values infrastructure that all other systems will build upon.
@@ -103,7 +169,7 @@ Establish the core computed values infrastructure that all other systems will bu
 
 ---
 
-## Phase 2: Expansion (Weeks 3-6)
+## Phase 2: Expansion (Weeks 5-8)
 
 ### Goal
 Extend expressions to all systems and add the first complementary game systems.
@@ -160,7 +226,7 @@ Extend expressions to all systems and add the first complementary game systems.
 
 ---
 
-## Phase 3: Polish (Weeks 7-10)
+## Phase 3: Polish (Weeks 9-12)
 
 ### Goal
 Production-ready system with tooling and advanced features.
@@ -317,6 +383,9 @@ Production-ready system with tooling and advanced features.
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
+| 2026-01-26 | Add Phase 1.5 (Containers) before expressions | Ball Sort bug showed dual-state is error-prone; establish single-source-of-truth pattern first |
+| 2026-01-26 | Use tags for container membership | Tags already sync with Godot, no new sync mechanism needed |
+| 2026-01-26 | Compute derived state on demand, never cache | Eliminates desync bugs (the original Ball Sort problem) |
 | 2026-01-21 | Use expression strings over visual nodes | Lower complexity, AI-compatible |
 | 2026-01-21 | Compile at load, not at definition change | Simpler initial implementation |
 | 2026-01-21 | Start with numeric expressions only | Most common use case, lower risk |
@@ -326,6 +395,7 @@ Production-ready system with tooling and advanced features.
 
 ## References
 
+- [Container System Design](../design/container-system.md) - Declarative container abstraction
 - [RFC-001: Derived Values System](../rfcs/RFC-001-derived-values-system.md)
 - [RFC-002: Complementary Game Systems](../rfcs/RFC-002-complementary-game-systems.md)
 - [Behavior System Reference](../reference/behavior-system.md)

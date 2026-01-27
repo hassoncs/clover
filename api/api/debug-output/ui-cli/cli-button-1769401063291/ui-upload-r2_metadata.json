@@ -1,0 +1,55 @@
+{
+  "componentType": "button",
+  "states": {
+    "normal": {
+      "r2Key": "generated/ui-cli/button/button/normal.png",
+      "publicUrl": "http://localhost:8787/assets/generated/ui-cli/button/button/normal.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256
+      }
+    },
+    "hover": {
+      "r2Key": "generated/ui-cli/button/button/hover.png",
+      "publicUrl": "http://localhost:8787/assets/generated/ui-cli/button/button/hover.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256
+      }
+    },
+    "pressed": {
+      "r2Key": "generated/ui-cli/button/button/pressed.png",
+      "publicUrl": "http://localhost:8787/assets/generated/ui-cli/button/button/pressed.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256
+      }
+    },
+    "disabled": {
+      "r2Key": "generated/ui-cli/button/button/disabled.png",
+      "publicUrl": "http://localhost:8787/assets/generated/ui-cli/button/button/disabled.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256
+      }
+    }
+  },
+  "ninePatchMargins": {
+    "left": 12,
+    "right": 12,
+    "top": 12,
+    "bottom": 12
+  },
+  "width": 256,
+  "height": 256,
+  "generatedAt": 1769401123755,
+  "theme": "medieval fantasy with stone textures and ornate metalwork"
+}

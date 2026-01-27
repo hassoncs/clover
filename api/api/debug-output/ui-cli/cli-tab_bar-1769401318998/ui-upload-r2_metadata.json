@@ -1,0 +1,45 @@
+{
+  "componentType": "tab_bar",
+  "states": {
+    "normal": {
+      "r2Key": "generated/ui-cli/tab_bar/tab_bar/normal.png",
+      "publicUrl": "http://localhost:8787/assets/generated/ui-cli/tab_bar/tab_bar/normal.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 128,
+        "height": 48
+      }
+    },
+    "selected": {
+      "r2Key": "generated/ui-cli/tab_bar/tab_bar/selected.png",
+      "publicUrl": "http://localhost:8787/assets/generated/ui-cli/tab_bar/tab_bar/selected.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 128,
+        "height": 48
+      }
+    },
+    "hover": {
+      "r2Key": "generated/ui-cli/tab_bar/tab_bar/hover.png",
+      "publicUrl": "http://localhost:8787/assets/generated/ui-cli/tab_bar/tab_bar/hover.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 128,
+        "height": 48
+      }
+    }
+  },
+  "ninePatchMargins": {
+    "left": 12,
+    "right": 12,
+    "top": 12,
+    "bottom": 12
+  },
+  "width": 128,
+  "height": 48,
+  "generatedAt": 1769401370112,
+  "theme": "medieval fantasy with stone textures and ornate metalwork"
+}

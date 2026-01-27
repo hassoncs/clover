@@ -8,12 +8,13 @@ import type {
   Value,
   Vec2 as ExprVec2,
   ParticleEmitterType,
+  SpriteEffectType,
 } from '@slopcade/shared';
 
 export type CreateEvalContextForEntity = (entity?: RuntimeEntity) => EvalContext;
 
 export interface InputState {
-  tap?: { x: number; y: number; worldX: number; worldY: number };
+  tap?: { x: number; y: number; worldX: number; worldY: number; targetEntityId?: string };
   drag?: {
     startX: number;
     startY: number;
@@ -40,6 +41,13 @@ export interface InputState {
     jump: boolean;
     action: boolean;
   };
+  joystick?: {
+    x: number;
+    y: number;
+    magnitude: number;
+    angle: number;
+  };
+  mouse?: { x: number; y: number; worldX: number; worldY: number };
 }
 
 export interface InputEvents {
@@ -84,13 +92,18 @@ export interface BehaviorContext {
 
   addScore(points: number): void;
   setGameState(state: GameState['state']): void;
-  spawnEntity(templateId: string, x: number, y: number): RuntimeEntity | null;
+  spawnEntity(templateId: string, x: number, y: number): string | null;
+  setEntityVelocity(entityId: string, velocity: Vec2): void;
   destroyEntity(entityId: string): void;
   triggerEvent(eventName: string, data?: Record<string, unknown>): void;
   triggerParticleEffect(type: ParticleEmitterType, x: number, y: number): void;
   createEntityEmitter(type: ParticleEmitterType, x: number, y: number): string;
   updateEmitterPosition(emitterId: string, x: number, y: number): void;
   stopEmitter(emitterId: string): void;
+  playSound(soundId: string): void;
+
+  applySpriteEffect(entityId: string, effect: SpriteEffectType, params?: Record<string, unknown>): void;
+  clearSpriteEffect(entityId: string): void;
 
   resolveNumber(value: Value<number>): number;
   resolveVec2(value: Value<ExprVec2>): ExprVec2;

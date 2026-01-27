@@ -1,0 +1,6 @@
+app_identifier("me.ch5.slopcade.app")
+apple_id("hassoncs@gmail.com")
+team_id("73G23Y42T6")
+
+# Interactive authentication (no API key)
+# Fastlane will prompt for password and 2FA code when needed

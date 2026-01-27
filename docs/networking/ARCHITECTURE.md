@@ -20,10 +20,10 @@ The networking system provides peer-to-peer multiplayer for the game engine, sup
 ┌─────────────────────────────────────────────────────────────────┐
 │                    Synchronization Layer                        │
 │  ┌───────────────────────┐  ┌───────────────────────────────┐  │
-│  │   Box2DSynchronizer   │  │     NetEntityRegistry         │  │
-│  │   - State snapshots   │  │   - Entity-network mapping    │  │
-│  │   - Delta updates     │  │   - Ownership tracking        │  │
-│  │   - Interpolation     │  │                               │  │
+│  │  PhysicsSynchronizer  │  │     NetEntityRegistry         │  │
+│  │  - State snapshots    │  │   - Entity-network mapping    │  │
+│  │  - Delta updates      │  │   - Ownership tracking        │  │
+│  │  - Interpolation      │  │                               │  │
 │  └───────────────────────┘  └───────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
                               │
@@ -98,7 +98,7 @@ app/lib/networking/
 ├── websocket/
 │   └── WebSocketTransport.ts   # WebSocket relay
 └── sync/
-    ├── Box2DSynchronizer.ts    # Physics state sync
+    ├── PhysicsSynchronizer.ts  # Godot physics state sync
     ├── NetEntityRegistry.ts    # Entity-network mapping
     └── NetworkGameLoop.ts      # Game loop integration
 ```

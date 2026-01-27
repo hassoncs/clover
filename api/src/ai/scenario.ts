@@ -18,6 +18,26 @@ import {
   MIME_TO_EXT,
 } from './scenario-types';
 
+import type { ImageGenerationResult } from './provider-contract';
+import { ProviderError, ProviderErrorCode, tryGetPngDimensions } from './provider-contract';
+
+// Log level utility for production-safe debugging
+const LOG_LEVEL = process.env.LOG_LEVEL || 'INFO';
+const LOG_LEVELS: Record<string, number> = { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 };
+
+function shouldLog(level: string): boolean {
+  return (LOG_LEVELS[level] ?? 1) >= (LOG_LEVELS[LOG_LEVEL] ?? 1);
+}
+
+function scenarioLog(level: string, context: string, message: string): void {
+  if (shouldLog(level)) {
+    const formatted = `[Scenario] [${level}] ${context ? `[${context}] ` : ''}${message}`;
+    if (level === 'ERROR') console.error(formatted);
+    else if (level === 'WARN') console.warn(formatted);
+    else console.log(formatted);
+  }
+}
+
 export class ScenarioClient {
   private apiKey: string;
   private apiSecret: string;
@@ -150,41 +170,45 @@ export class ScenarioClient {
     return jobId;
   }
 
-  async createImg2ImgJob(params: Img2ImgParams): Promise<string> {
-    const modelId = params.modelId ?? SCENARIO_DEFAULTS.MODEL;
-    const strength = Math.max(0, Math.min(1, params.strength));
-    const numSamples = params.numSamples ?? 1;
-    const guidance = params.guidance ?? SCENARIO_DEFAULTS.DEFAULT_GUIDANCE;
-    const numInferenceSteps =
-      params.numInferenceSteps ?? SCENARIO_DEFAULTS.DEFAULT_STEPS;
+   async createImg2ImgJob(params: Img2ImgParams): Promise<string> {
+     const modelId = params.modelId ?? SCENARIO_DEFAULTS.MODEL;
+     const strength = Math.max(0, Math.min(1, params.strength));
+     const numSamples = params.numSamples ?? 1;
+     const guidance = params.guidance ?? SCENARIO_DEFAULTS.DEFAULT_GUIDANCE;
+     const numInferenceSteps =
+       params.numInferenceSteps ?? SCENARIO_DEFAULTS.DEFAULT_STEPS;
 
-    const payload: Record<string, unknown> = {
-      prompt: params.prompt,
-      image: params.image,
-      strength,
-      modelId,
-      numSamples,
-      guidance,
-      numInferenceSteps,
-    };
+     const payload: Record<string, unknown> = {
+       prompt: params.prompt,
+       image: params.image,
+       strength,
+       modelId,
+       numSamples,
+       guidance,
+       numInferenceSteps,
+     };
 
-    if (params.seed) {
-      payload.seed = params.seed;
-    }
+     if (params.seed) {
+       payload.seed = params.seed;
+     }
 
-    const response = await this.request<{ job?: { jobId?: string } }>(
-      'POST',
-      '/generate/img2img',
-      payload
-    );
+     scenarioLog('DEBUG', '', `POST /generate/img2img - prompt: "${params.prompt.substring(0, 80)}..." strength: ${strength}`);
 
-    const jobId = response.job?.jobId;
-    if (!jobId) {
-      throw new Error('No jobId returned from API');
-    }
+     const response = await this.request<{ job?: { jobId?: string } }>(
+       'POST',
+       '/generate/img2img',
+       payload
+     );
 
-    return jobId;
-  }
+     const jobId = response.job?.jobId;
+     if (!jobId) {
+       throw new Error('No jobId returned from API');
+     }
+
+     scenarioLog('INFO', '', `img2img job created: ${jobId}`);
+
+     return jobId;
+   }
 
   async createRemoveBackgroundJob(params: RemoveBackgroundParams): Promise<string> {
     const payload: Record<string, unknown> = {
@@ -210,34 +234,37 @@ export class ScenarioClient {
     return jobId;
   }
 
-  async pollJobUntilComplete(jobId: string): Promise<string[]> {
-    for (let attempt = 0; attempt < SCENARIO_DEFAULTS.MAX_POLL_ATTEMPTS; attempt++) {
-      const response = await this.request<JobResponse>('GET', `/jobs/${jobId}`);
-      const job = response.job;
+   async pollJobUntilComplete(jobId: string): Promise<string[]> {
+     for (let attempt = 0; attempt < SCENARIO_DEFAULTS.MAX_POLL_ATTEMPTS; attempt++) {
+       const response = await this.request<JobResponse>('GET', `/jobs/${jobId}`);
+       const job = response.job;
 
-      if (!job) {
-        throw new Error('Invalid job response');
-      }
+       if (!job) {
+         throw new Error('Invalid job response');
+       }
 
-      const status: JobStatus = job.status;
+       const status: JobStatus = job.status;
 
-      if (status === 'success') {
-        const assetIds = job.metadata?.assetIds ?? [];
-        if (assetIds.length === 0) {
-          throw new Error('No assets generated');
-        }
-        return assetIds;
-      }
+       scenarioLog('DEBUG', jobId, `Polling: status=${status} (attempt ${attempt + 1}/${SCENARIO_DEFAULTS.MAX_POLL_ATTEMPTS})`);
 
-      if (status === 'failed' || status === 'cancelled') {
-        throw new Error(job.error ?? `Job ${status}`);
-      }
+       if (status === 'success') {
+         const assetIds = job.metadata?.assetIds ?? [];
+         if (assetIds.length === 0) {
+           throw new Error('No assets generated');
+         }
+         scenarioLog('INFO', jobId, `Job succeeded: ${assetIds.length} asset(s) generated`);
+         return assetIds;
+       }
 
-      await this.sleep(SCENARIO_DEFAULTS.POLL_INTERVAL_MS);
-    }
+       if (status === 'failed' || status === 'cancelled') {
+         throw new Error(job.error ?? `Job ${status}`);
+       }
 
-    throw new Error('Job timed out');
-  }
+       await this.sleep(SCENARIO_DEFAULTS.POLL_INTERVAL_MS);
+     }
+
+     throw new Error('Job timed out');
+   }
 
   async getAssetDetails(
     assetId: string
@@ -255,39 +282,47 @@ export class ScenarioClient {
     return { url: asset.url, mimeType: asset.mimeType };
   }
 
-  async downloadAsset(assetId: string): Promise<{
-    buffer: ArrayBuffer;
-    mimeType: string;
-    extension: string;
-  }> {
-    const { url, mimeType } = await this.getAssetDetails(assetId);
+   async downloadAsset(assetId: string): Promise<{
+     buffer: ArrayBuffer;
+     mimeType: string;
+     extension: string;
+   }> {
+     scenarioLog('DEBUG', '', `Downloading asset: ${assetId}`);
 
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to download asset: HTTP ${response.status}`);
-    }
+     const { url, mimeType } = await this.getAssetDetails(assetId);
 
-    const buffer = await response.arrayBuffer();
-    const extension = MIME_TO_EXT[mimeType ?? ''] ?? '.png';
+     const response = await fetch(url);
+     if (!response.ok) {
+       throw new Error(`Failed to download asset: HTTP ${response.status}`);
+     }
 
-    return { buffer, mimeType: mimeType ?? 'image/png', extension };
-  }
+     const buffer = await response.arrayBuffer();
+     const extension = MIME_TO_EXT[mimeType ?? ''] ?? '.png';
 
-  async uploadAsset(imageBuffer: ArrayBuffer, name?: string): Promise<string> {
-    const base64Image = this.arrayBufferToBase64(imageBuffer);
+     scenarioLog('INFO', '', `Downloaded: ${assetId} (${mimeType}, ${extension})`);
 
-    const response = await this.request<UploadResponse>('POST', '/assets', {
-      image: base64Image,
-      name: name ?? `upload-${Date.now()}`,
-    });
+     return { buffer, mimeType: mimeType ?? 'image/png', extension };
+   }
 
-    const assetId = response.asset?.id;
-    if (!assetId) {
-      throw new Error('No asset ID returned from upload');
-    }
+   async uploadAsset(imageBuffer: ArrayBuffer, name?: string): Promise<string> {
+     scenarioLog('DEBUG', '', `Uploading asset: ${name ?? 'unnamed'} (size: ${imageBuffer.byteLength} bytes)`);
 
-    return assetId;
-  }
+     const base64Image = this.arrayBufferToBase64(imageBuffer);
+
+     const response = await this.request<UploadResponse>('POST', '/assets', {
+       image: base64Image,
+       name: name ?? `upload-${Date.now()}`,
+     });
+
+     const assetId = response.asset?.id;
+     if (!assetId) {
+       throw new Error('No asset ID returned from upload');
+     }
+
+     scenarioLog('INFO', '', `Asset uploaded: ${assetId}`);
+
+     return assetId;
+   }
 
   async listModels(includePublic = false): Promise<Model[]> {
     const endpoint = includePublic ? '/models/public' : '/models';
@@ -336,6 +371,116 @@ export class ScenarioClient {
     return { jobId, assetIds, urls };
   }
 
+  async txt2imgResult(params: GenerationParams): Promise<ImageGenerationResult> {
+    try {
+      const modelId = params.modelId ?? SCENARIO_DEFAULTS.MODEL;
+      const width = params.width ?? SCENARIO_DEFAULTS.DEFAULT_WIDTH;
+      const height = params.height ?? SCENARIO_DEFAULTS.DEFAULT_HEIGHT;
+
+      const gen = await this.generate({ ...params, modelId, width, height });
+      const assetId = gen.assetIds[0];
+      if (!assetId) {
+        throw new Error('No assets generated');
+      }
+
+      const downloaded = await this.downloadAsset(assetId);
+      const buffer = new Uint8Array(downloaded.buffer);
+      const dims = tryGetPngDimensions(buffer);
+
+      return {
+        buffer,
+        providerAssetId: assetId,
+        mimeType: downloaded.mimeType,
+        metadata: {
+          provider: 'scenario',
+          providerJobId: gen.jobId,
+          modelId,
+          seed: params.seed,
+          width: dims?.width ?? width,
+          height: dims?.height ?? height,
+        },
+      };
+    } catch (err) {
+      throw new ProviderError({
+        provider: 'scenario',
+        code: classifyProviderError(err),
+        message: err instanceof Error ? err.message : 'Unknown Scenario error',
+        cause: err,
+      });
+    }
+  }
+
+  async img2imgResult(params: Img2ImgParams): Promise<ImageGenerationResult> {
+    try {
+      const modelId = params.modelId ?? SCENARIO_DEFAULTS.MODEL;
+      const gen = await this.generateImg2Img({ ...params, modelId });
+      const assetId = gen.assetIds[0];
+      if (!assetId) {
+        throw new Error('No assets generated');
+      }
+
+      const downloaded = await this.downloadAsset(assetId);
+      const buffer = new Uint8Array(downloaded.buffer);
+      const dims = tryGetPngDimensions(buffer);
+
+      return {
+        buffer,
+        providerAssetId: assetId,
+        mimeType: downloaded.mimeType,
+        metadata: {
+          provider: 'scenario',
+          providerJobId: gen.jobId,
+          modelId,
+          seed: params.seed,
+          width: dims?.width ?? SCENARIO_DEFAULTS.DEFAULT_WIDTH,
+          height: dims?.height ?? SCENARIO_DEFAULTS.DEFAULT_HEIGHT,
+        },
+      };
+    } catch (err) {
+      throw new ProviderError({
+        provider: 'scenario',
+        code: classifyProviderError(err),
+        message: err instanceof Error ? err.message : 'Unknown Scenario error',
+        cause: err,
+      });
+    }
+  }
+
+  async removeBackgroundResult(params: RemoveBackgroundParams): Promise<ImageGenerationResult> {
+    try {
+      const jobId = await this.createRemoveBackgroundJob(params);
+      const assetIds = await this.pollJobUntilComplete(jobId);
+      const assetId = assetIds[0];
+      if (!assetId) {
+        throw new Error('No assets generated from background removal');
+      }
+
+      const downloaded = await this.downloadAsset(assetId);
+      const buffer = new Uint8Array(downloaded.buffer);
+      const dims = tryGetPngDimensions(buffer);
+
+      return {
+        buffer,
+        providerAssetId: assetId,
+        mimeType: downloaded.mimeType,
+        metadata: {
+          provider: 'scenario',
+          providerJobId: jobId,
+          modelId: 'remove-background',
+          width: dims?.width ?? SCENARIO_DEFAULTS.DEFAULT_WIDTH,
+          height: dims?.height ?? SCENARIO_DEFAULTS.DEFAULT_HEIGHT,
+        },
+      };
+    } catch (err) {
+      throw new ProviderError({
+        provider: 'scenario',
+        code: classifyProviderError(err),
+        message: err instanceof Error ? err.message : 'Unknown Scenario error',
+        cause: err,
+      });
+    }
+  }
+
   async removeBackground(params: RemoveBackgroundParams): Promise<string> {
     const jobId = await this.createRemoveBackgroundJob(params);
     const assetIds = await this.pollJobUntilComplete(jobId);
@@ -359,6 +504,14 @@ export class ScenarioClient {
     }
     return btoa(binary);
   }
+}
+
+function classifyProviderError(err: unknown): ProviderErrorCode {
+  const msg = err instanceof Error ? err.message.toLowerCase() : '';
+  if (msg.includes('timed out') || msg.includes('timeout')) return ProviderErrorCode.PROVIDER_TIMEOUT;
+  if (msg.includes('rate limit') || msg.includes('429')) return ProviderErrorCode.RATE_LIMITED;
+  if (msg.includes('invalid') || msg.includes('missing')) return ProviderErrorCode.INPUT_INVALID;
+  return ProviderErrorCode.UNKNOWN_PROVIDER_ERROR;
 }
 
 export function createScenarioClient(env: {

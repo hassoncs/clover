@@ -1,0 +1,89 @@
+# Slopcade IAP Products
+products:
+  # Consumables - Gems
+  - product_id: slopcade.gems.100
+    type: consumable
+    reference_name: Gems 100
+    cleared_for_sale: true
+    review_notes: "100 gems for unlocking templates and generation"
+    localizations:
+      en-US:
+        name: "Gems 100"
+        description: "100 gems to unlock premium game templates and effects"
+    pricing:
+      tier: 2  # $1.99
+
+  - product_id: slopcade.gems.300
+    type: consumable
+    reference_name: Gems 300
+    cleared_for_sale: true
+    review_notes: "300 gems bundle"
+    localizations:
+      en-US:
+        name: "Gems 300"
+        description: "300 gems with better value"
+    pricing:
+      tier: 5  # $4.99
+
+  - product_id: slopcade.gems.1500
+    type: consumable
+    reference_name: Gems 1500
+    cleared_for_sale: true
+    review_notes: "1500 gems best value pack"
+    localizations:
+      en-US:
+        name: "Gems 1500"
+        description: "1500 gems - best value!"
+    pricing:
+      tier: 20  # $19.99
+
+  # Consumables - Sparks
+  - product_id: slopcade.sparks.50
+    type: consumable
+    reference_name: Sparks 50
+    cleared_for_sale: true
+    review_notes: "50 sparks for asset tweaks"
+    localizations:
+      en-US:
+        name: "Sparks 50"
+        description: "50 sparks for re-rolling sprites and tweaks"
+    pricing:
+      tier: 1  # $0.99
+
+  - product_id: slopcade.sparks.200
+    type: consumable
+    reference_name: Sparks 200
+    cleared_for_sale: true
+    review_notes: "200 sparks bundle"
+    localizations:
+      en-US:
+        name: "Sparks 200"
+        description: "200 sparks with better value"
+    pricing:
+      tier: 3  # $2.99
+
+  - product_id: slopcade.sparks.1000
+    type: consumable
+    reference_name: Sparks 1000
+    cleared_for_sale: true
+    review_notes: "1000 sparks best value"
+    localizations:
+      en-US:
+        name: "Sparks 1000"
+        description: "1000 sparks - best value!"
+    pricing:
+      tier: 10  # $9.99
+
+  # Subscription
+  - product_id: slopcade.pro.monthly
+    type: auto_renewable_subscription
+    reference_name: Slopcade Pro Monthly
+    subscription_group: slopcade_pro
+    cleared_for_sale: true
+    review_notes: "Monthly subscription for offline play and premium features"
+    localizations:
+      en-US:
+        name: "Slopcade Pro"
+        description: "Offline play + 500 Gems/mo + 100 Sparks/mo"
+    pricing:
+      tier: 10  # $9.99/month

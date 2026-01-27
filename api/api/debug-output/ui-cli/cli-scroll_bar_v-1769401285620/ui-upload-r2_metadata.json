@@ -1,0 +1,45 @@
+{
+  "componentType": "scroll_bar_v",
+  "states": {
+    "normal": {
+      "r2Key": "generated/ui-cli/scroll_bar_v/scroll_bar_v/normal.png",
+      "publicUrl": "http://localhost:8787/assets/generated/ui-cli/scroll_bar_v/scroll_bar_v/normal.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 256
+      }
+    },
+    "hover": {
+      "r2Key": "generated/ui-cli/scroll_bar_v/scroll_bar_v/hover.png",
+      "publicUrl": "http://localhost:8787/assets/generated/ui-cli/scroll_bar_v/scroll_bar_v/hover.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 256
+      }
+    },
+    "pressed": {
+      "r2Key": "generated/ui-cli/scroll_bar_v/scroll_bar_v/pressed.png",
+      "publicUrl": "http://localhost:8787/assets/generated/ui-cli/scroll_bar_v/scroll_bar_v/pressed.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 256
+      }
+    }
+  },
+  "ninePatchMargins": {
+    "left": 8,
+    "right": 8,
+    "top": 8,
+    "bottom": 8
+  },
+  "width": 32,
+  "height": 256,
+  "generatedAt": 1769401317669,
+  "theme": "medieval fantasy with stone textures and ornate metalwork"
+}

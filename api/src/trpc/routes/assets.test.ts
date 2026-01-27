@@ -6,6 +6,7 @@ import {
   createAuthenticatedContext,
   createInstalledContext,
   createPublicContext,
+  createTestUser,
   TEST_USER,
 } from '../../__fixtures__/test-utils';
 
@@ -47,12 +48,15 @@ describe('Assets Router', () => {
       assetId1 = crypto.randomUUID();
       assetId2 = crypto.randomUUID();
 
+      // Create test user first (required for foreign key constraint)
+      await createTestUser();
+
       await env.DB.prepare(
         `INSERT INTO assets (id, user_id, install_id, entity_type, description, style, r2_key, width, height, is_animated, created_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).bind(
         assetId1,
-        null,
+        TEST_USER.id,
         installId,
         'character',
         'A hero sprite',
@@ -69,7 +73,7 @@ describe('Assets Router', () => {
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).bind(
         assetId2,
-        null,
+        TEST_USER.id,
         installId,
         'enemy',
         'A monster sprite',
@@ -82,8 +86,8 @@ describe('Assets Router', () => {
       ).run();
     });
 
-    it('should list assets for install ID', async () => {
-      const ctx = createInstalledContext(installId);
+    it('should list assets for user', async () => {
+      const ctx = createAuthenticatedContext(TEST_USER, installId);
       const caller = appRouter.createCaller(ctx);
 
       const assets = await caller.assets.list();
@@ -94,7 +98,7 @@ describe('Assets Router', () => {
     });
 
     it('should filter assets by entity type', async () => {
-      const ctx = createInstalledContext(installId);
+      const ctx = createAuthenticatedContext(TEST_USER, installId);
       const caller = appRouter.createCaller(ctx);
 
       const characterAssets = await caller.assets.list({ entityType: 'character' });
@@ -104,7 +108,7 @@ describe('Assets Router', () => {
     });
 
     it('should support pagination', async () => {
-      const ctx = createInstalledContext(installId);
+      const ctx = createAuthenticatedContext(TEST_USER, installId);
       const caller = appRouter.createCaller(ctx);
 
       const page1 = await caller.assets.list({ limit: 1, offset: 0 });
@@ -112,7 +116,7 @@ describe('Assets Router', () => {
     });
 
     it('should return asset with correct structure', async () => {
-      const ctx = createInstalledContext(installId);
+      const ctx = createAuthenticatedContext(TEST_USER, installId);
       const caller = appRouter.createCaller(ctx);
 
       const assets = await caller.assets.list();
@@ -188,6 +192,8 @@ describe('Assets Router', () => {
       gameId = crypto.randomUUID();
       installId = 'delete-pack-test-' + Date.now();
 
+      await createTestUser();
+
       const gameDefinition = {
         metadata: { id: gameId, title: 'Test Game', version: '1.0.0' },
         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
@@ -213,7 +219,7 @@ describe('Assets Router', () => {
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
       ).bind(
         gameId,
-        null,
+        TEST_USER.id,
         installId,
         'Test Game',
         JSON.stringify(gameDefinition),
@@ -224,7 +230,7 @@ describe('Assets Router', () => {
     });
 
     it('should delete an asset pack from game', async () => {
-      const ctx = createInstalledContext(installId);
+      const ctx = createAuthenticatedContext(TEST_USER, installId);
       const caller = appRouter.createCaller(ctx);
 
       const result = await caller.assets.deletePack({
@@ -244,7 +250,7 @@ describe('Assets Router', () => {
     });
 
     it('should clear activeAssetPackId when deleting active pack', async () => {
-      const ctx = createInstalledContext(installId);
+      const ctx = createAuthenticatedContext(TEST_USER, installId);
       const caller = appRouter.createCaller(ctx);
 
       const result = await caller.assets.deletePack({
@@ -263,7 +269,7 @@ describe('Assets Router', () => {
     });
 
     it('should throw NOT_FOUND for non-existent game', async () => {
-      const ctx = createInstalledContext(installId);
+      const ctx = createAuthenticatedContext(TEST_USER, installId);
       const caller = appRouter.createCaller(ctx);
 
       await expect(
@@ -275,7 +281,7 @@ describe('Assets Router', () => {
     });
 
     it('should throw NOT_FOUND for non-existent pack', async () => {
-      const ctx = createInstalledContext(installId);
+      const ctx = createAuthenticatedContext(TEST_USER, installId);
       const caller = appRouter.createCaller(ctx);
 
       await expect(

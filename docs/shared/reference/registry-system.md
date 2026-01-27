@@ -128,7 +128,7 @@ The generator produces:
 ### 1. Type-safe ID Union
 
 ```typescript
-export type ExampleId = "avalanche" | "box2d" | "bridge" | "car" | ...;
+export type ExampleId = "avalanche" | "bridge" | "car" | ...;
 ```
 
 ### 2. Static Metadata Array

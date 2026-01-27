@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+A deep underground crystal cavern for a bubble shooter puzzle game. Massive stalactites and stalagmites made of glowing crystals in various colors. Bioluminescent minerals embedded in dark cave walls. Magical gem formations casting colorful light. Underground lake reflecting crystal glow. Mysterious spelunking adventure atmosphere. Deep purples, blues, and warm gem colors against dark cave stone. No text, no characters, just the environment. High quality game background.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

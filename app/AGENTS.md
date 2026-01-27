@@ -3,8 +3,17 @@
 > **Entry point for AI agents and developers**
 >
 > This project has two main components:
-> 1. **Physics Engine**: Box2D + Skia rendering for React Native (iOS, Android, Web)
+> 1. **Game Engine**: Godot 4 physics and rendering for React Native (iOS, Android, Web)
 > 2. **Game Maker**: AI-powered game generation from natural language prompts
+
+---
+
+## ⚠️ GODOT AUTOMATION (IMPORTANT)
+
+**GODOT EXPORTS ARE AUTOMATED.**
+- **Automatic Watching**: `scripts/export-godot.mjs` watches `godot_project/` and rebuilds on any change to `.gd`, `.tscn`, `.tres`, `.gdshader`, etc.
+- **DO NOT** manually rebuild or tell others to do so.
+- **Service**: Managed via `devmux` as the `godot` service.
 
 ---
 
@@ -12,7 +21,8 @@
 
 ```bash
 # Start development servers (DevMux managed)
-pnpm dev              # Starts Metro (port 8085) + API (port 8789)
+pnpm dev              # Starts Metro (port 8085) + API (port 8789) + Godot Watcher
+pnpm docs             # Starts Documentation site (port 3000)
 pnpm storybook        # Starts Storybook (port 6006)
 pnpm svc:status       # Check service status
 
@@ -25,31 +35,44 @@ pnpm build            # Build all packages
 pnpm test             # Run tests
 pnpm tsc --noEmit     # Type check
 
+# Documentation
+pnpm docs             # Start docs site with auto-updating TypeScript
+pnpm docs:build       # Build docs for production
+pnpm docs:typedoc     # Regenerate TypeDoc API reference
+
 # Registry (auto-discovered modules)
-pnpm generate:registry        # Regenerate module registry
-pnpm generate:registry:watch  # Watch mode
+pnpm generate:registry        # Regenerate module registry (one-time)
+pnpm generate:registry:watch  # Watch mode (manual use)
 ```
 
 ---
 
 ## Documentation
 
+### Interactive Documentation Site
+Start with `pnpm docs` to access the auto-updating documentation site at http://localhost:3000:
+- **5 Interactive Pages**: Behaviors, Effects, Particles, Rules, Examples
+- **7 Comprehensive Guides**: Setup, testing, asset generation, and more
+- **TypeDoc API Reference**: Full TypeScript API documentation
+- **Auto-Updates**: Changes to TypeScript files update in < 3 seconds
+
+See [packages/docs/README.md](../packages/docs/README.md) for detailed documentation system guide.
+
+### Static Documentation
 All documentation lives in `docs/` with a component-first structure:
 
 | Index | Description |
 |-------|-------------|
 | **[docs/INDEX.md](../docs/INDEX.md)** | Global documentation hub |
-| **[docs/physics-engine/INDEX.md](../docs/physics-engine/INDEX.md)** | Physics engine (Box2D, Skia, adapters) |
+| **[docs/godot-migration/](../docs/godot-migration/)** | Godot migration docs |
 | **[docs/game-maker/INDEX.md](../docs/game-maker/INDEX.md)** | AI game generation, entities, behaviors |
 
 ### Most-Used References
 
 | Document | Description |
 |----------|-------------|
-| [Physics2D API](../docs/physics-engine/reference/physics2d-api.md) | Complete Physics2D interface |
 | [Entity System](../docs/game-maker/reference/entity-system.md) | Game entity structure |
 | [Behavior System](../docs/game-maker/reference/behavior-system.md) | Game logic behaviors |
-| [Box2D Coverage](../docs/physics-engine/reference/box2d-api-coverage.md) | Which Box2D features are exposed |
 | [Registry System](../docs/shared/reference/registry-system.md) | Auto-discovered lazy loading |
 | [Troubleshooting](../docs/shared/troubleshooting/) | Common issues and fixes |
 
@@ -72,28 +95,29 @@ See **[.opencode/skills/documentation.md](../.opencode/skills/documentation.md)*
 │  - Metro (:8085)                                            │
 │  - API (:8789)                                              │
 │  - Storybook (:6006)                                        │
+│  - Godot Watcher (auto-rebuilds WASM/.pck)                  │
 └─────────────────────┬───────────────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────────────┐
 │                      React Components                        │
-│  (FallingBoxes, GameRuntime, Interaction, etc.)             │
+│  (GameRuntime, Examples, UI)                                │
 └─────────────────────┬───────────────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────────────┐
-│                    Physics2D Interface                       │
-│  lib/physics2d/Physics2D.ts (unified API contract)          │
+│                    GodotBridge (TypeScript)                  │
+│  lib/godot/GodotBridge.native.ts | GodotBridge.web.ts       │
 └─────────────────────┬───────────────────────────────────────┘
                       │
          ┌───────────┴───────────┐
          │                       │
 ┌────────▼────────┐    ┌────────▼────────┐
 │   Native (JSI)   │    │   Web (WASM)    │
-│ react-native-    │    │  box2d-wasm +   │
-│   box2d          │    │  Polyfills      │
+│ react-native-    │    │  Godot WASM +   │
+│   godot          │    │  GameBridge.gd  │
 └──────────────────┘    └─────────────────┘
 ```
 
-**Full architecture docs**: [physics-engine/architecture/](../docs/physics-engine/architecture/) | [game-maker/architecture/](../docs/game-maker/architecture/)
+**Full architecture docs**: [godot-migration/](../docs/godot-migration/) | [game-maker/architecture/](../docs/game-maker/architecture/)
 
 ---
 
@@ -110,7 +134,7 @@ This project uses `DevMux` to manage background services in named `tmux` session
 
 | Command | Action |
 |---------|--------|
-| `pnpm dev` | Ensures `metro` (:8085) and `api` (:8789) are running. |
+| `pnpm dev` | Ensures `metro` (:8085), `api` (:8789), `godot`, and `registry` (watchers) are running. |
 | `pnpm storybook` | Ensures `storybook` (:6006) is running. |
 | `pnpm svc:status` | Shows health of all configured services. |
 | `pnpm svc:stop` | Stops all services (kills tmux sessions). |
@@ -124,13 +148,12 @@ This project uses `DevMux` to manage background services in named `tmux` session
 
 | Path | Purpose |
 |------|---------|
-| `lib/physics2d/` | **Physics2D API** - Use this for new physics code |
-| `lib/physics/` | **Legacy raw Box2D** - Some examples still use this |
-| `lib/game-runtime/` | **Game engine** - Entity manager, behaviors, rules |
+| `lib/godot/` | **Godot Bridge** - TypeScript ↔ Godot communication |
+| `lib/game-engine/` | **Game engine** - Entity manager, behaviors, rules |
 | `lib/registry/` | **Universal Registry** - Auto-discovered lazy loading system |
-| `components/examples/` | Physics demo components |
 | `app/examples/` | Expo Router pages for demos (auto-discovered) |
-| `docs/` | All documentation (see structure above) |
+| `godot_project/` | **Godot project** - GDScript, scenes, physics |
+| `docs/` | All documentation |
 
 ---
 
@@ -139,9 +162,9 @@ This project uses `DevMux` to manage background services in named `tmux` session
 | Layer | Technology |
 |-------|------------|
 | **Framework** | Expo SDK 54 |
-| **Rendering** | `@shopify/react-native-skia` |
-| **Physics (Native)** | `react-native-box2d` (JSI) |
-| **Physics (Web)** | `box2d-wasm` (WASM) |
+| **Rendering/Physics** | Godot 4 (native + WASM) |
+| **Bridge (Native)** | `@borndotcom/react-native-godot` |
+| **Bridge (Web)** | Godot WASM + JavaScriptBridge |
 | **Styling** | NativeWind (Tailwind) |
 | **API** | Hono + tRPC on Cloudflare Workers |
 | **Database** | Cloudflare D1 |
@@ -149,59 +172,139 @@ This project uses `DevMux` to manage background services in named `tmux` session
 
 ---
 
-## Physics2D Quick Reference
+## Asset Generation Pipeline
 
-```typescript
-import { createPhysics2D, vec2 } from '@/lib/physics2d';
+The project uses a **type-driven asset generation pipeline** for AI-generated game sprites, backgrounds, and title images. Different asset types flow through different pipeline stages.
 
-// Setup
-const physics = await createPhysics2D();
-physics.createWorld(vec2(0, 9.8));
+### Asset Types
 
-// Create body
-const bodyId = physics.createBody({
-  type: 'dynamic',
-  position: vec2(5, 2),
-});
+| Type | Pipeline | Description |
+|------|----------|-------------|
+| `entity` | silhouette → img2img → removeBg → R2 | Physics-constrained sprites |
+| `background` | txt2img → R2 | Full-frame backgrounds |
+| `title_hero` | txt2img → removeBg → R2 | Game title logos |
+| `parallax` | txt2img → layeredDecompose → R2 | Multi-layer backgrounds |
 
-// Add shape
-physics.addFixture(bodyId, {
-  shape: { type: 'circle', radius: 0.5 },
-  density: 1.0,
-  friction: 0.3,
-  restitution: 0.5,
-});
+### CLI Usage
 
-// Physics loop
-physics.step(deltaTime, 8, 3);
+```bash
+# Generate all assets for a game
+npx tsx api/scripts/generate-game-assets.ts slopeggle
 
-// Get transform
-const { position, angle } = physics.getTransform(bodyId);
+# Dry run (preview without API calls)
+npx tsx api/scripts/generate-game-assets.ts slopeggle --dry-run
+
+# Generate single asset
+npx tsx api/scripts/generate-game-assets.ts slopeggle --asset=ball
+
+# Generate only entity sprites
+npx tsx api/scripts/generate-game-assets.ts slopeggle --type=entity
+
+# List available games
+npx tsx api/scripts/generate-game-assets.ts --help
 ```
 
-**Full API reference**: [docs/physics-engine/reference/physics2d-api.md](../docs/physics-engine/reference/physics2d-api.md)
+### Adding a New Game
+
+1. Create a config in `api/scripts/game-configs/`:
+```typescript
+// api/scripts/game-configs/my-game.ts
+import type { GameAssetConfig } from '../../src/ai/pipeline/types';
+
+export const myGameConfig: GameAssetConfig = {
+  gameId: 'my-game',
+  gameTitle: 'My Game',
+  theme: 'your visual theme description',
+  style: 'cartoon', // pixel | cartoon | 3d | flat
+  r2Prefix: 'generated/my-game',
+  assets: [
+    { type: 'entity', id: 'player', shape: 'box', width: 1, height: 2, entityType: 'character', description: '...' },
+    { type: 'background', id: 'background', prompt: '...' },
+    { type: 'title_hero', id: 'title_hero', title: 'My Game', themeDescription: '...' },
+  ],
+};
+```
+
+2. Register it in `api/scripts/game-configs/index.ts`
+
+### Debug Output
+
+Every stage saves artifacts to `api/debug-output/{gameId}/{assetId}/`:
+- `silhouette_silhouette.png` - Physics shape mask
+- `build-prompt_prompt.txt` - Full prompts
+- `img2img_generated.png` - Raw AI output
+- `remove-bg_no-bg.png` - Final transparent sprite
+
+### Key Files
+
+| Path | Purpose |
+|------|---------|
+| `api/src/ai/pipeline/` | Pipeline core (types, stages, executor) |
+| `api/src/ai/pipeline/registry.ts` | Asset type → stage mapping |
+| `api/src/ai/pipeline/adapters/` | Platform adapters (Workers vs Node) |
+| `api/scripts/generate-game-assets.ts` | CLI script |
+| `api/scripts/game-configs/` | Per-game asset configurations |
 
 ---
 
-## Web Compatibility (CRITICAL)
-
-### Skia Loading
-ALL Skia components MUST be lazy-loaded:
+## GodotBridge Quick Reference
 
 ```typescript
-import { WithSkia } from "@/components/WithSkia";
+import { createGodotBridge, GodotView } from '@/lib/godot';
 
-export default function MyPage() {
-  return (
-    <WithSkia fallback={<Text>Loading...</Text>}>
-      {() => import("@/components/MySkiaComponent").then(m => <m.default />)}
-    </WithSkia>
-  );
-}
+// Initialize bridge
+const bridge = await createGodotBridge();
+await bridge.initialize();
+
+// Load game definition
+await bridge.loadGame(gameDefinition);
+
+// Spawn entities
+const entityId = bridge.spawnEntity('box', 5, 2);
+
+// Control entities
+bridge.applyImpulse(entityId, { x: 0, y: -10 });
+bridge.setLinearVelocity(entityId, { x: 5, y: 0 });
+
+// Dynamic images
+bridge.setEntityImage(entityId, imageUrl, width, height);
+
+// Cleanup
+bridge.dispose();
 ```
 
-### Physics Platform Extensions
-Use `.web.ts` and `.native.ts` extensions for platform-specific code.
+**Full API reference**: See `lib/godot/types.ts` for complete interface
+
+---
+
+## Platform-Specific Code
+
+Use `.web.ts` and `.native.ts` extensions for platform-specific implementations:
+
+```
+lib/godot/
+├── GodotBridge.native.ts  # iOS/Android implementation
+├── GodotBridge.web.ts     # Web WASM implementation
+├── index.ts               # Unified export
+└── types.ts               # Shared types
+```
+
+---
+
+## Local Storage (Non-Sensitive Data)
+
+**ALWAYS use** `lib/utils/storage.ts` for persisting non-sensitive data across reloads:
+
+```typescript
+import { getStorageItem, setStorageItem } from '@/lib/utils/storage';
+
+const prefs = await getStorageItem('my_key', defaultValue);
+await setStorageItem('my_key', newValue);
+```
+
+**Use Cases:** User preferences, dev settings, UI state, feature flags  
+**Don't Use For:** Auth tokens (use `lib/auth/storage` instead)  
+**Full Guide:** See `.opencode/skills/storage.skill`
 
 ---
 
@@ -223,7 +326,7 @@ export const metadata: ExampleMeta = {
 export default function MyExample() { ... }
 ```
 
-Then run `pnpm generate:registry` (or it runs automatically with `pnpm dev`).
+Then run `pnpm generate:registry` (or it runs automatically and watches with `pnpm dev`).
 
 ### Using the Registry
 
@@ -254,18 +357,16 @@ const Example = getExampleComponent("pinball"); // TS validates ID!
 
 | Issue | Check |
 |-------|-------|
-| Body not moving | `type: 'dynamic'` and `density > 0` |
+| Entity not moving | `bodyType: 'dynamic'` and `density > 0` |
 | Passing through objects | Enable `bullet: true` on fast bodies |
-| Jittery physics | Reduce `maxDeltaTime` or use fixed timestep |
+| Jittery physics | Reduce timestep or use fixed timestep |
 | No collision | Check `categoryBits` and `maskBits` |
-| Web WASM errors | Check metro.config.js box2d-wasm resolution |
-
-**Full troubleshooting**: [docs/physics-engine/troubleshooting/](../docs/physics-engine/troubleshooting/)
+| Images not updating (native) | Ensure paths don't have `file://` prefix |
 
 ---
 
 ## Related Documentation
 
 - **[Documentation Skill](../.opencode/skills/documentation.md)** - How to write docs for this project
-- **[Waypoint Architecture](../docs/shared/reference/waypoint-architecture.md)** - Infrastructure patterns
-- **[Game Templates](../docs/game-maker/templates/)** - 10 pre-built game patterns
+- **[Godot Project README](../godot_project/README.md)** - Godot-specific documentation
+- **[Game Templates](../docs/game-maker/templates/)** - Pre-built game patterns

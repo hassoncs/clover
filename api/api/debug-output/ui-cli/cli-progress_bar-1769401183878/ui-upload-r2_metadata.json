@@ -1,0 +1,35 @@
+{
+  "componentType": "progress_bar",
+  "states": {
+    "normal": {
+      "r2Key": "generated/ui-cli/progress_bar/progress_bar/normal.png",
+      "publicUrl": "http://localhost:8787/assets/generated/ui-cli/progress_bar/progress_bar/normal.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 64
+      }
+    },
+    "disabled": {
+      "r2Key": "generated/ui-cli/progress_bar/progress_bar/disabled.png",
+      "publicUrl": "http://localhost:8787/assets/generated/ui-cli/progress_bar/progress_bar/disabled.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 64
+      }
+    }
+  },
+  "ninePatchMargins": {
+    "left": 8,
+    "right": 8,
+    "top": 8,
+    "bottom": 8
+  },
+  "width": 256,
+  "height": 64,
+  "generatedAt": 1769401230632,
+  "theme": "medieval fantasy with stone textures and ornate metalwork"
+}

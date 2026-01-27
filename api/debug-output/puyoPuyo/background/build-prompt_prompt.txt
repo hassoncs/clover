@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+A colorful slime kingdom world for a Puyo Puyo puzzle game. Bouncy jelly platforms floating in a candy-colored sky. Cute slime creatures in the background. Rainbow gel waterfalls. Kawaii aesthetic with sparkles and bubbles. Soft pastel colors with vibrant accents. Magical goo world with bouncy surfaces everywhere. Pink, purple, and blue color scheme with colorful highlights. No text, no characters, just the environment. High quality game background.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

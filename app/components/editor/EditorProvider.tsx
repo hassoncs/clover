@@ -7,10 +7,15 @@ import React, {
   useMemo,
   type ReactNode,
 } from "react";
-import type { GameDefinition, GameEntity } from "@slopcade/shared";
+import type { GameDefinition, GameEntity, AssetPlacement } from "@slopcade/shared";
 import type { RuntimeEntity } from "@/lib/game-engine/types";
 import type { Physics2D } from "@/lib/physics2d";
 import type { EntityManager } from "@/lib/game-engine/EntityManager";
+
+export interface ResolvedPackEntry {
+  imageUrl: string;
+  placement?: AssetPlacement;
+}
 
 export type EditorMode = "edit" | "playtest";
 export type EditorTab = "gallery" | "assets" | "properties" | "layers" | "debug";
@@ -66,7 +71,8 @@ type EditorStateAction =
   | { type: "DUPLICATE_ENTITY"; entityId: string }
   | { type: "ADD_ENTITY"; entity: GameEntity }
   | { type: "ADD_ENTITY_FROM_TEMPLATE"; templateId: string; x: number; y: number }
-  | { type: "UPDATE_ENTITY_PROPERTY"; entityId: string; path: string; value: unknown };
+  | { type: "UPDATE_ENTITY_PROPERTY"; entityId: string; path: string; value: unknown }
+  | { type: "SET_ACTIVE_ASSET_PACK"; packId: string | undefined; entries: Record<string, ResolvedPackEntry> };
 
 const MAX_HISTORY = 50;
 
@@ -370,6 +376,62 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
       };
     }
 
+    case "SET_ACTIVE_ASSET_PACK": {
+      console.log('[EditorProvider] SET_ACTIVE_ASSET_PACK reducer', {
+        packId: action.packId,
+        entriesCount: Object.keys(action.entries).length,
+        templateIds: Object.keys(action.entries),
+      });
+
+      const newDocument = JSON.parse(JSON.stringify(state.document)) as GameDefinition;
+      
+      newDocument.assetSystem = {
+        ...newDocument.assetSystem,
+        activeAssetPackId: action.packId,
+      };
+
+      for (const [templateId, entry] of Object.entries(action.entries)) {
+        const template = newDocument.templates[templateId];
+        if (template) {
+          const physics = template.physics;
+          let imageWidth = 1;
+          let imageHeight = 1;
+          
+          if (physics) {
+            if (physics.shape === 'box') {
+              imageWidth = physics.width;
+              imageHeight = physics.height;
+            } else if (physics.shape === 'circle') {
+              imageWidth = physics.radius * 2;
+              imageHeight = physics.radius * 2;
+            }
+          }
+          
+          console.log('[EditorProvider] Updating template sprite', {
+            templateId,
+            imageUrl: entry.imageUrl,
+            width: imageWidth,
+            height: imageHeight,
+          });
+          
+          template.sprite = {
+            type: 'image',
+            imageUrl: entry.imageUrl,
+            imageWidth,
+            imageHeight,
+          };
+        }
+      }
+
+      console.log('[EditorProvider] Document updated with asset pack');
+      
+      return {
+        ...state,
+        document: newDocument,
+        isDirty: true,
+      };
+    }
+
     default:
       return state;
   }
@@ -406,6 +468,7 @@ interface EditorContextValue {
   addEntity: (entity: GameEntity) => void;
   addEntityFromTemplate: (templateId: string, x: number, y: number) => void;
   updateEntityProperty: (id: string, path: string, value: unknown) => void;
+  setActiveAssetPack: (packId: string | undefined, entries: Record<string, ResolvedPackEntry>) => void;
 
   undo: () => void;
   redo: () => void;
@@ -510,6 +573,14 @@ export function EditorProvider({
     dispatch({ type: "SET_CAMERA", position, zoom });
   }, []);
 
+  const setActiveAssetPack = useCallback((packId: string | undefined, entries: Record<string, ResolvedPackEntry>) => {
+    console.log('[EditorProvider] setActiveAssetPack called', {
+      packId,
+      entriesCount: Object.keys(entries).length,
+    });
+    dispatch({ type: "SET_ACTIVE_ASSET_PACK", packId, entries });
+  }, []);
+
   const selectedEntity = useMemo(() => {
     if (!state.selectedEntityId) return null;
     return state.document.entities.find((e) => e.id === state.selectedEntityId) ?? null;
@@ -542,6 +613,7 @@ export function EditorProvider({
       addEntity,
       addEntityFromTemplate,
       updateEntityProperty,
+      setActiveAssetPack,
 
       undo,
       redo,
@@ -567,6 +639,7 @@ export function EditorProvider({
       addEntity,
       addEntityFromTemplate,
       updateEntityProperty,
+      setActiveAssetPack,
       undo,
       redo,
       setCamera,

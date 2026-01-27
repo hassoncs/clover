@@ -6,9 +6,10 @@ import {
   type Value,
   type EntityContext,
 } from './types';
+import { getValue, type GameVariable } from '../types/GameDefinition';
 
 export interface GameVariables {
-  [key: string]: Value<ExpressionValueType>;
+  [key: string]: GameVariable;
 }
 
 export interface GameState {
@@ -96,7 +97,9 @@ export class EvalContextBuilder {
 
     this.nodes.clear();
 
-    for (const [name, value] of Object.entries(variables)) {
+    for (const [name, variable] of Object.entries(variables)) {
+      // Extract the actual value from VariableWithTuning if needed
+      const value = getValue(variable);
       const deps = isExpression(value) ? extractDependencies(value.expr) : [];
       this.nodes.set(name, {
         name,

@@ -1,0 +1,189 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-01-24T18:28:12.007Z",
+  "sources": {
+    "plans": {
+      "count": 0,
+      "lastScanned": "2026-01-24T18:28:12.007Z"
+    },
+    "docs": {
+      "count": 4,
+      "lastScanned": "2026-01-24T18:28:12.007Z"
+    },
+    "codeComments": {
+      "count": 3,
+      "lastScanned": "2026-01-24T18:28:12.007Z"
+    }
+  },
+  "features": [
+    {
+      "id": "godot-game-engine",
+      "title": "Godot 4 Game Engine Integration",
+      "status": "active",
+      "source": "docs",
+      "created": "2026-01-24",
+      "updated": "2026-01-24",
+      "objective": "Godot 4 physics and rendering for React Native (iOS, Android, Web)",
+      "progress": [
+        "Native bridge implementation (GodotBridge.native.ts)",
+        "Web WASM bridge implementation (GodotBridge.web.ts)",
+        "GameBridge.gd singleton for TypeScript ↔ Godot communication",
+        "Physics body management and entity spawning",
+        "Dynamic image loading support"
+      ],
+      "blockers": [],
+      "notes": "Core game engine is operational. Documentation exists in docs/godot-migration/"
+    },
+    {
+      "id": "ai-game-maker",
+      "title": "AI-Powered Game Generation",
+      "status": "active",
+      "source": "docs",
+      "created": "2026-01-24",
+      "updated": "2026-01-24",
+      "objective": "AI-powered game generation from natural language prompts using entity/behavior systems",
+      "progress": [
+        "Entity system with templates and behaviors",
+        "Asset generation pipeline (Scenario.com integration)",
+        "Multiple asset types: entity, background, title_hero, parallax",
+        "Game templates: fallingCatcher, hillRacer, jumpyCat, stackAttack, ballLauncher",
+        "CLI tools for asset generation"
+      ],
+      "blockers": [],
+      "notes": "Documentation in docs/game-maker/. Asset pipeline fully documented in docs/asset-generation-knowledge.md"
+    },
+    {
+      "id": "asset-generation-pipeline",
+      "title": "Type-Driven Asset Generation Pipeline",
+      "status": "active",
+      "source": "docs",
+      "created": "2026-01-24",
+      "updated": "2026-01-24",
+      "objective": "AI-generated game sprites, backgrounds, and title images with physics-aware silhouette generation",
+      "progress": [
+        "Silhouette creation from physics dimensions",
+        "Scenario.com API integration (img2img, txt2img, background removal)",
+        "R2 storage upload via Wrangler",
+        "Debug output for all pipeline stages",
+        "Godot sprite scaling logic for square textures",
+        "Working example: generate-physics-stacker-assets.ts"
+      ],
+      "blockers": [],
+      "notes": "Comprehensive documentation in docs/asset-generation-knowledge.md and docs/asset-pipeline.md"
+    },
+    {
+      "id": "storybook-nativewind",
+      "title": "Storybook + NativeWind Setup",
+      "status": "active",
+      "source": "docs",
+      "created": "2026-01-24",
+      "updated": "2026-01-24",
+      "objective": "Web-based component previews with full NativeWind (Tailwind CSS) styling support",
+      "progress": [
+        "Webpack configuration for monorepo packages",
+        "Babel loader for TypeScript transpilation",
+        "PostCSS + Tailwind CSS integration",
+        "React Native Web aliasing",
+        "Platform-specific extensions (.web.ts, .native.ts)"
+      ],
+      "blockers": [],
+      "notes": "Complete setup guide in docs/storybook-setup.md"
+    },
+    {
+      "id": "devmux-orchestration",
+      "title": "DevMux Service Orchestration",
+      "status": "active",
+      "source": "docs",
+      "created": "2026-01-24",
+      "updated": "2026-01-24",
+      "objective": "Managed tmux sessions for long-running development processes (Metro, API, Storybook)",
+      "progress": [
+        "DevMux configuration for Metro (:8085), API (:8789), Storybook (:6006)",
+        "Idempotent service management",
+        "Service status checking",
+        "Automatic service coordination (e.g., pnpm ios ensures Metro is running)"
+      ],
+      "blockers": [],
+      "notes": "Documented in app/AGENTS.md. Configuration in devmux.config.json"
+    },
+    {
+      "id": "universal-registry",
+      "title": "Universal Lazy Registry System",
+      "status": "active",
+      "source": "docs",
+      "created": "2026-01-24",
+      "updated": "2026-01-24",
+      "objective": "Type-safe, auto-discovered module loading for examples and other registerable components",
+      "progress": [
+        "Auto-discovery via metadata exports",
+        "Type-safe lazy loading with Suspense",
+        "Registry generation script",
+        "Watch mode for development"
+      ],
+      "blockers": [],
+      "notes": "Documented in docs/shared/reference/registry-system.md and app/AGENTS.md"
+    }
+  ],
+  "humanTasks": [
+    {
+      "id": "ht-001",
+      "title": "Implement AI Generation API Call",
+      "type": "decision-needed",
+      "priority": "medium",
+      "source": "app/components/editor/AIGenerateModal.tsx:46",
+      "detected": "2026-01-24",
+      "context": "AIGenerateModal has a TODO placeholder for actual AI generation API call. Currently simulates generation with a 1.5s delay.",
+      "whyHumanRequired": "Requires decision on which AI API to use and how to integrate it with the existing game generation system."
+    },
+    {
+      "id": "ht-002",
+      "title": "Implement Sheet Prompt Builder",
+      "type": "decision-needed",
+      "priority": "low",
+      "source": "api/src/ai/pipeline/prompt-builder.ts:80",
+      "detected": "2026-01-24",
+      "context": "buildSheetPrompt function returns 'TODO: implement sheet prompt'. This is for sprite sheet generation.",
+      "whyHumanRequired": "Requires design decision on how sprite sheets should be prompted and generated, likely similar to individual sprite generation but with layout considerations."
+    }
+  ],
+  "patterns": [
+    {
+      "id": "pattern-001",
+      "title": "Platform-Specific Module Pattern",
+      "category": "architecture",
+      "description": "Use .web.ts and .native.ts extensions for platform-specific implementations with a unified index.ts export",
+      "examples": [
+        "lib/godot/GodotBridge.native.ts + GodotBridge.web.ts",
+        "packages/physics/src/physics2d/index.native.ts + index.web.ts"
+      ],
+      "detectedFrom": "codebase-scan",
+      "proposedForAgentsMd": true
+    },
+    {
+      "id": "pattern-002",
+      "title": "Documentation Taxonomy",
+      "category": "documentation",
+      "description": "Structured documentation types: guides/ (how-to), reference/ (APIs), architecture/ (design), decisions/ (ADRs), troubleshooting/ (fixes), log/ (temporal updates), plans/ (roadmaps)",
+      "examples": [
+        "docs/shared/guides/expo-development.md",
+        "docs/shared/reference/registry-system.md",
+        "docs/shared/log/2026/2026-01-21-scenario-setup.md"
+      ],
+      "detectedFrom": "docs/INDEX.md",
+      "proposedForAgentsMd": false
+    },
+    {
+      "id": "pattern-003",
+      "title": "Asset Pipeline Debug Output",
+      "category": "debugging",
+      "description": "Save intermediate files for each pipeline stage to api/debug-output/{gameId}/{assetId}/ with descriptive filenames like {stage}_{artifact}.{ext}",
+      "examples": [
+        "api/debug-output/physics-stacker/foundation_1_silhouette.png",
+        "api/debug-output/physics-stacker/foundation_2_prompt.txt",
+        "api/debug-output/physics-stacker/foundation_3_generated.jpg"
+      ],
+      "detectedFrom": "docs/asset-generation-knowledge.md",
+      "proposedForAgentsMd": true
+    }
+  ]
+}

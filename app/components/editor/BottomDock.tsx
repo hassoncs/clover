@@ -12,11 +12,11 @@ interface DockItem {
 }
 
 const DOCK_ITEMS: DockItem[] = [
+  { id: "gallery", icon: "🎨", label: "Assets", tab: "gallery" },
   { id: "add", icon: "➕", label: "Add", tab: "assets" },
   { id: "edit", icon: "✏️", label: "Edit", tab: "properties", requiresSelection: true },
   { id: "layers", icon: "📑", label: "Layers", tab: "layers" },
   { id: "debug", icon: "🐛", label: "Debug", tab: "debug" },
-  { id: "more", icon: "•••", label: "More", action: "showMoreMenu" },
 ];
 
 export function BottomDock() {

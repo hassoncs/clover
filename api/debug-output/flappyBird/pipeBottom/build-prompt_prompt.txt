@@ -1,0 +1,26 @@
+=== POSITIVE PROMPT ===
+=== CAMERA/VIEW (CRITICAL) ===
+FRONT VIEW. Camera is directly facing the front of the object.
+Flat, 2D perspective. NO 3D rotation, NO angled view.
+
+=== SHAPE (CRITICAL) ===
+TALL VERTICAL RECTANGLE (1:5.0).
+
+=== COMPOSITION ===
+The object FILLS THE ENTIRE FRAME. No empty space around it.
+
+=== SUBJECT ===
+A an ancient weathered stone pillar rising from below, covered in climbing vines and emerald moss, crumbling edges with mystical runes carved into the surface, small flowers growing from cracks for a video game.
+Style: floating sky kingdom, fluffy clouds, magical floating islands, whimsical birds
+
+=== STYLE ===
+cartoon style, bold black outlines, vibrant saturated colors
+
+=== TECHNICAL ===
+Transparent background (alpha channel).
+cel-shaded, clean vector-like edges, flat color fills
+Single object only, no duplicates.
+No text, watermarks, or signatures.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

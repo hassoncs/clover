@@ -1,4 +1,4 @@
-import { View, Text, Pressable, TextInput, StyleSheet, Modal, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, TextInput, StyleSheet, Modal, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useState } from 'react';
 
 interface AssetPackInfo {
@@ -30,7 +30,9 @@ interface AssetPackSelectorProps {
   totalTemplates: number;
   onSelectPack: (packId: string) => void;
   onCreatePack: (params: CreatePackParams) => void;
+  onDeletePack?: (packId: string) => void;
   isCreating?: boolean;
+  isDeleting?: boolean;
 }
 
 const STYLE_OPTIONS: { id: 'pixel' | 'cartoon' | '3d' | 'flat'; label: string; emoji: string }[] = [
@@ -48,7 +50,9 @@ export function AssetPackSelector({
   totalTemplates,
   onSelectPack,
   onCreatePack,
+  onDeletePack,
   isCreating = false,
+  isDeleting = false,
 }: AssetPackSelectorProps) {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newPackName, setNewPackName] = useState('');
@@ -70,6 +74,21 @@ export function AssetPackSelector({
   const getStyleEmoji = (style?: string) => {
     const option = STYLE_OPTIONS.find(s => s.id === style);
     return option?.emoji ?? '🎨';
+  };
+
+  const handleDeletePack = (pack: AssetPackInfo) => {
+    Alert.alert(
+      'Delete Asset Pack',
+      `Are you sure you want to delete "${pack.name}"? This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => onDeletePack?.(pack.id),
+        },
+      ]
+    );
   };
 
   return (
@@ -103,37 +122,52 @@ export function AssetPackSelector({
             )}
 
             {packs.map(pack => (
-              <Pressable
-                key={pack.id}
-                style={[
-                  styles.packCard,
-                  selectedPackId === pack.id && styles.packCardSelected,
-                ]}
-                onPress={() => {
-                  onSelectPack(pack.id);
-                  onClose();
-                }}
-              >
-                <View style={styles.packIcon}>
-                  <Text style={styles.packIconText}>{getStyleEmoji(pack.promptDefaults?.styleOverride)}</Text>
-                </View>
-                <View style={styles.packInfo}>
-                  <Text style={styles.packName}>{pack.name}</Text>
-                  {pack.description && (
-                    <Text style={styles.packDescription} numberOfLines={1}>
-                      {pack.description}
-                    </Text>
-                  )}
-                  <Text style={styles.packDate}>
-                    Created {new Date(pack.createdAt).toLocaleDateString()}
-                  </Text>
-                </View>
-                {selectedPackId === pack.id && (
-                  <View style={styles.selectedBadge}>
-                    <Text style={styles.selectedBadgeText}>✓</Text>
+              <View key={pack.id} style={styles.packCardContainer}>
+                <Pressable
+                  style={[
+                    styles.packCard,
+                    selectedPackId === pack.id && styles.packCardSelected,
+                  ]}
+                  onPress={() => {
+                    console.log('[AssetPackSelector] Pack selected:', pack.id, pack.name);
+                    onSelectPack(pack.id);
+                    onClose();
+                  }}
+                >
+                  <View style={styles.packIcon}>
+                    <Text style={styles.packIconText}>{getStyleEmoji(pack.promptDefaults?.styleOverride)}</Text>
                   </View>
+                  <View style={styles.packInfo}>
+                    <Text style={styles.packName}>{pack.name}</Text>
+                    {pack.description && (
+                      <Text style={styles.packDescription} numberOfLines={1}>
+                        {pack.description}
+                      </Text>
+                    )}
+                    <Text style={styles.packDate}>
+                      Created {new Date(pack.createdAt).toLocaleDateString()}
+                    </Text>
+                  </View>
+                  {selectedPackId === pack.id && (
+                    <View style={styles.selectedBadge}>
+                      <Text style={styles.selectedBadgeText}>✓</Text>
+                    </View>
+                  )}
+                </Pressable>
+                {onDeletePack && (
+                  <Pressable
+                    style={styles.deleteButton}
+                    onPress={() => handleDeletePack(pack)}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? (
+                      <ActivityIndicator size="small" color="#EF4444" />
+                    ) : (
+                      <Text style={styles.deleteButtonText}>🗑</Text>
+                    )}
+                  </Pressable>
                 )}
-              </Pressable>
+              </View>
             ))}
 
             {showCreateForm ? (
@@ -305,13 +339,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 20,
   },
+  packCardContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   packCard: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#374151',
     borderRadius: 12,
     padding: 16,
-    marginBottom: 12,
     borderWidth: 2,
     borderColor: 'transparent',
   },
@@ -362,6 +401,18 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '700',
+  },
+  deleteButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#374151',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  deleteButtonText: {
+    fontSize: 18,
   },
   addPackButton: {
     flexDirection: 'row',

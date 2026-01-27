@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+An arctic tundra landscape at twilight for a puzzle game. Vast frozen plains stretching to distant snow-capped mountains. Brilliant aurora borealis dancing across the dark blue sky with green and purple ribbons of light. Scattered ice formations and snow drifts. Soft ambient lighting from the northern lights. Deep blues, icy whites, and aurora greens and purples. Peaceful polar expedition atmosphere. No text, no characters, just the environment. High quality game background.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

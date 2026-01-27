@@ -4,6 +4,8 @@ import { STACK_ATTACK_TEMPLATE } from './stackAttack';
 import { JUMPY_CAT_TEMPLATE } from './jumpyCat';
 import { HILL_RACER_TEMPLATE } from './hillRacer';
 import { FALLING_CATCHER_TEMPLATE } from './fallingCatcher';
+import { MATCH3_TEMPLATE } from './match3';
+import { TETRIS_TEMPLATE } from './tetris';
 
 export type GameType =
   | 'projectile'
@@ -11,7 +13,9 @@ export type GameType =
   | 'stacking'
   | 'vehicle'
   | 'falling_objects'
-  | 'rope_physics';
+  | 'rope_physics'
+  | 'match3'
+  | 'tetris';
 
 export const GAME_TEMPLATES: Record<GameType, GameDefinition> = {
   projectile: BALL_LAUNCHER_TEMPLATE,
@@ -20,6 +24,8 @@ export const GAME_TEMPLATES: Record<GameType, GameDefinition> = {
   vehicle: HILL_RACER_TEMPLATE,
   falling_objects: FALLING_CATCHER_TEMPLATE,
   rope_physics: BALL_LAUNCHER_TEMPLATE,
+  match3: MATCH3_TEMPLATE,
+  tetris: TETRIS_TEMPLATE,
 };
 
 export function getTemplateForGameType(gameType: GameType): GameDefinition {
@@ -38,4 +44,6 @@ export {
   JUMPY_CAT_TEMPLATE,
   HILL_RACER_TEMPLATE,
   FALLING_CATCHER_TEMPLATE,
+  MATCH3_TEMPLATE,
+  TETRIS_TEMPLATE,
 };

@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+A stylized game title logo that says "Pendulum Swing". Bold, playful 3D text with depth and shadows. Jungle adventure theme, swinging mechanics, spike danger and gold coins style letters. The text is the main focus, centered in the frame. High quality game logo, professional design. Cartoon style, vibrant colors.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

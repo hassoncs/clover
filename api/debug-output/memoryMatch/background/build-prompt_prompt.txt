@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+A grand mystical ancient library interior for a memory card game. Towering wooden bookshelves filled with leather-bound spell books reaching to a vaulted ceiling. Floating magical orbs providing soft ambient lighting in warm gold and cool blue tones. Ancient scrolls and magical artifacts scattered on ornate wooden tables. Dust motes sparkling in beams of light from arched windows. Scholarly and enchanting atmosphere with deep mahogany and midnight blue color palette. No text, no characters, just the environment. High quality game background.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

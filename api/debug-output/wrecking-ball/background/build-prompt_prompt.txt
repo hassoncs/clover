@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+A construction site demolition background. Industrial environment with crane and destruction zone. Dark blue-gray tones with steel textures. Physics game atmosphere. No text, no characters, just the environment. High quality game background.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

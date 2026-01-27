@@ -1,0 +1,1927 @@
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  Platform,
+  type GestureResponderEvent,
+} from "react-native";
+import type {
+  GameDefinition,
+  ParticleEmitterType,
+  EvalContext,
+  ExpressionValueType,
+  TapZoneButton,
+  VirtualButtonType,
+  DPadDirection,
+  AssetSheet,
+  PropertyWatchSpec,
+  GameVariable,
+} from "@slopcade/shared";
+import {
+  createComputedValueSystem,
+  getAllSystemExpressionFunctions,
+  DependencyAnalyzer,
+  PropertyCache,
+  EntityContextProxy,
+  getValue,
+} from "@slopcade/shared";
+import {
+  GodotView,
+  createGodotBridge,
+  createGodotPhysicsAdapter,
+} from "../godot";
+import { PropertySyncManager } from "../godot/PropertySyncManager";
+import type { GodotBridge } from "../godot/types";
+import type { Physics2D } from "../physics2d/Physics2D";
+import type { Unsubscribe, CollisionEvent } from "../physics2d/types";
+import { GameLoader, type LoadedGame } from "./GameLoader";
+import type { RuntimeEntity } from "./types";
+import type {
+  BehaviorContext,
+  GameState,
+  CollisionInfo,
+} from "./BehaviorContext";
+import { CameraSystem } from "./CameraSystem";
+import { ViewportSystem, type ViewportRect } from "./ViewportSystem";
+import {
+  InputEntityManager,
+  type InputState as InputEntityState,
+} from "./InputEntityManager";
+import { TapZoneOverlay } from "./TapZoneOverlay";
+import { VirtualButtonsOverlay } from "./VirtualButtonsOverlay";
+import {
+  VirtualJoystickOverlay,
+  type JoystickState,
+} from "./VirtualJoystickOverlay";
+import { VirtualDPadOverlay } from "./VirtualDPadOverlay";
+import { InputDebugOverlay } from "./InputDebugOverlay";
+import { useTiltInput } from "./hooks/useTiltInput";
+import {
+  DevToolsProvider,
+  useDevToolsOptional,
+} from "../contexts/DevToolsContext";
+import { DevToolbar } from "@/components/game/DevToolbar";
+import {
+  Match3GameSystem,
+  type Match3Config,
+} from "./systems/Match3GameSystem";
+import {
+  SlotMachineSystem,
+  type SlotMachineConfig,
+} from "./systems/slotMachine";
+import { TuningPanel, hasTunables } from "@/components/game";
+
+export interface GameRuntimeGodotProps {
+  definition: GameDefinition;
+  onGameEnd?: (state: "won" | "lost") => void;
+  onScoreChange?: (score: number) => void;
+  onBackToMenu?: () => void;
+  onRequestRestart?: () => void;
+  showHUD?: boolean;
+  enablePerfLogging?: boolean;
+  autoStart?: boolean;
+  preloadTextureUrls?: string[];
+  onPreloadProgress?: (
+    percent: number,
+    completed: number,
+    failed: number,
+  ) => void;
+  /** Called when Godot is fully initialized and textures are preloaded - safe to show the game */
+  onReady?: () => void;
+}
+
+const GAME_LOOP_INTERVAL = 16;
+
+export function GameRuntimeGodot({
+  definition,
+  onGameEnd,
+  onScoreChange,
+  onBackToMenu,
+  onRequestRestart,
+  showHUD = true,
+  enablePerfLogging = false,
+  autoStart = true,
+  preloadTextureUrls = [],
+  onPreloadProgress,
+  onReady,
+}: GameRuntimeGodotProps) {
+  const devToolsCheck = useDevToolsOptional();
+  const bridgeRef = useRef<GodotBridge | null>(null);
+  const physicsRef = useRef<Physics2D | null>(null);
+  const gameRef = useRef<LoadedGame | null>(null);
+  const loaderRef = useRef<GameLoader | null>(null);
+  const cameraRef = useRef<CameraSystem | null>(null);
+  const viewportSystemRef = useRef<ViewportSystem | null>(null);
+  const inputEntityManagerRef = useRef<InputEntityManager | null>(null);
+  const match3SystemRef = useRef<Match3GameSystem | null>(null);
+  const slotMachineSystemRef = useRef<SlotMachineSystem | null>(null);
+  const propertyCacheRef = useRef(new PropertyCache());
+  const propertySyncManagerRef = useRef<PropertySyncManager | null>(null);
+  const elapsedRef = useRef(0);
+  const frameIdRef = useRef(0);
+  const collisionsRef = useRef<CollisionInfo[]>([]);
+  const collisionUnsubRef = useRef<Unsubscribe | null>(null);
+  const sensorUnsubRef = useRef<Unsubscribe | null>(null);
+  const inputEventUnsubRef = useRef<Unsubscribe | null>(null);
+  const gameLoopRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastTickRef = useRef(0);
+  const screenSizeRef = useRef({ width: 0, height: 0 });
+  const computedValuesRef = useRef(createComputedValueSystem());
+  const gameVariablesRef = useRef<Record<string, ExpressionValueType>>({});
+  const inputRef = useRef<Record<string, unknown>>({});
+  const buttonsRef = useRef<Record<string, boolean>>({
+    left: false,
+    right: false,
+    up: false,
+    down: false,
+    jump: false,
+    action: false,
+  });
+  const joystickRef = useRef<JoystickState>({
+    x: 0,
+    y: 0,
+    magnitude: 0,
+    angle: 0,
+  });
+  const gameJustStartedRef = useRef(false);
+
+  const handleTiltUpdate = useCallback((tilt: { x: number; y: number }) => {
+    inputRef.current.tilt = tilt;
+  }, []);
+
+  useTiltInput(
+    {
+      enabled: definition.input?.tilt?.enabled ?? false,
+      sensitivity: definition.input?.tilt?.sensitivity,
+      updateInterval: definition.input?.tilt?.updateInterval,
+    },
+    handleTiltUpdate,
+  );
+
+  const timeScaleRef = useRef(1.0);
+  const timeScaleTargetRef = useRef(1.0);
+  const timeScaleTransitionRef = useRef<{
+    startScale: number;
+    endScale: number;
+    duration: number;
+    elapsed: number;
+    restoreAfter?: number;
+  } | null>(null);
+
+  const [isReady, setIsReady] = useState(false);
+  const [godotReady, setGodotReady] = useState(false);
+  const [gameState, setGameState] = useState<GameState>({
+    score: 0,
+    lives: 3,
+    time: 0,
+    state: "loading",
+    variables: {},
+  });
+  const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
+  const [viewportRect, setViewportRect] = useState<ViewportRect>({
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+    scale: 1,
+  });
+
+  const handleVariableChange = useCallback((key: string, value: number) => {
+    setGameState((prev) => ({
+      ...prev,
+      variables: {
+        ...prev.variables,
+        [key]: value,
+      },
+    }));
+  }, []);
+
+  const handleReset = useCallback(() => {
+    const defaults: Record<string, number | string | boolean> = {};
+    for (const [key, variable] of Object.entries(definition.variables || {})) {
+      const value = getValue(variable as GameVariable);
+      if (
+        typeof value === "number" ||
+        typeof value === "string" ||
+        typeof value === "boolean"
+      ) {
+        defaults[key] = value;
+      }
+    }
+    setGameState((prev) => ({ ...prev, variables: defaults }));
+  }, [definition.variables]);
+
+  const handleExport = useCallback(() => {
+    const exported = {
+      ...definition,
+      variables: Object.fromEntries(
+        Object.entries(definition.variables || {}).map(([key, variable]) => {
+          const currentValue = gameState.variables[key];
+          return [key, currentValue ?? getValue(variable as GameVariable)];
+        }),
+      ),
+    };
+    const json = JSON.stringify(exported, null, 2);
+    console.log("Exported game definition:", json);
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(json);
+    }
+  }, [definition, gameState.variables]);
+
+  const gameId = definition.metadata.title.toLowerCase().replace(/\s+/g, "-");
+  const storageKey = `tuning-overrides-${gameId}`;
+
+  const [savedValues, setSavedValues] = useState<
+    Record<string, number | boolean | string>
+  >(() => {
+    if (typeof window !== "undefined" && window.localStorage) {
+      try {
+        const stored = window.localStorage.getItem(storageKey);
+        return stored ? JSON.parse(stored) : {};
+      } catch {
+        return {};
+      }
+    }
+    return {};
+  });
+
+  const hasUnsavedChanges = useMemo(() => {
+    const tunableKeys = Object.entries(definition.variables || {})
+      .filter(([_, v]) => {
+        if (
+          typeof v === "object" &&
+          v !== null &&
+          "value" in v &&
+          "tuning" in v
+        ) {
+          return true;
+        }
+        return false;
+      })
+      .map(([k]) => k);
+
+    for (const key of tunableKeys) {
+      const current = gameState.variables[key];
+      const saved = savedValues[key];
+      if (saved !== undefined && current !== saved) {
+        return true;
+      }
+      if (saved === undefined) {
+        const original = getValue(definition.variables![key] as GameVariable);
+        if (current !== original) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }, [gameState.variables, savedValues, definition.variables]);
+
+  const handleSave = useCallback(() => {
+    const tunableOverrides: Record<string, number | boolean | string> = {};
+    for (const [key, variable] of Object.entries(definition.variables || {})) {
+      if (
+        typeof variable === "object" &&
+        variable !== null &&
+        "value" in variable &&
+        "tuning" in variable
+      ) {
+        const current = gameState.variables[key];
+        if (current !== undefined) {
+          tunableOverrides[key] = current;
+        }
+      }
+    }
+
+    if (typeof window !== "undefined" && window.localStorage) {
+      window.localStorage.setItem(storageKey, JSON.stringify(tunableOverrides));
+      setSavedValues(tunableOverrides);
+      console.log(
+        `[Tuning] Saved ${
+          Object.keys(tunableOverrides).length
+        } variable overrides for "${gameId}"`,
+      );
+    }
+  }, [definition.variables, gameState.variables, storageKey, gameId]);
+
+  const viewportSystem = useMemo(() => {
+    const presentationConfig = definition.presentation;
+    return new ViewportSystem(definition.world.bounds, {
+      aspectRatio: presentationConfig?.aspectRatio,
+      fit: presentationConfig?.fit,
+      letterboxColor:
+        presentationConfig?.letterboxColor ?? definition.ui?.backgroundColor,
+    });
+  }, [
+    definition.presentation,
+    definition.world.bounds,
+    definition.ui?.backgroundColor,
+  ]);
+
+  viewportSystemRef.current = viewportSystem;
+
+  const handleGodotReady = useCallback(() => {
+    setGodotReady(true);
+  }, []);
+
+  const handleGodotError = useCallback((error: Error) => {
+    console.error("[GameRuntime.godot] Godot error:", error);
+  }, []);
+
+  useEffect(() => {
+    if (!godotReady) return;
+
+    const setup = async () => {
+      try {
+        const bridge = await createGodotBridge();
+        await bridge.initialize();
+        bridgeRef.current = bridge;
+
+        if (preloadTextureUrls && preloadTextureUrls.length > 0) {
+          await bridge.preloadTextures(preloadTextureUrls, onPreloadProgress);
+        }
+
+        const physics = createGodotPhysicsAdapter(bridge);
+        physicsRef.current = physics;
+
+        await bridge.loadGame(definition);
+
+        bridge.pausePhysics();
+
+        const analyzer = new DependencyAnalyzer(definition);
+        const report = analyzer.analyze();
+        const watches = analyzer.getWatchSpecs();
+
+        if (report.errors.length > 0) {
+          console.warn(
+            "[GameRuntime.godot] Property watching validation errors:",
+            report.errors,
+          );
+        }
+
+        const { WatchRegistry } = await import("@slopcade/shared");
+        const registry = new WatchRegistry();
+        registry.addWatches(watches);
+        const activeConfig = registry.getActiveConfig();
+
+        const serializeMapOfSetsToJSON = (
+          map: Map<string, Set<string>>,
+        ): Record<string, string[]> => {
+          const result: Record<string, string[]> = {};
+          for (const [key, set] of map.entries()) {
+            result[key] = Array.from(set);
+          }
+          return result;
+        };
+
+        const serializableConfig = {
+          frameProperties: Array.from(activeConfig.frameProperties),
+          changeProperties: serializeMapOfSetsToJSON(
+            activeConfig.changeProperties,
+          ),
+          entityWatches: serializeMapOfSetsToJSON(activeConfig.entityWatches),
+          tagWatches: serializeMapOfSetsToJSON(activeConfig.tagWatches),
+        };
+
+        bridge.setWatchConfig(serializableConfig);
+
+        const propertySync = new PropertySyncManager(propertyCacheRef.current);
+        propertySync.start(bridge);
+        propertySyncManagerRef.current = propertySync;
+
+        const loader = new GameLoader({ physics });
+        loaderRef.current = loader;
+
+        const game = loader.load(definition);
+        gameRef.current = game;
+
+        bridge.onEntitySpawned((event) => {
+          game.entityManager.handleEntitySpawned(event);
+        });
+        bridge.onEntityDestroyed((entityId) => {
+          game.entityManager.handleEntityDestroyed(entityId);
+        });
+
+        const inputEntityManager = new InputEntityManager();
+        inputEntityManagerRef.current = inputEntityManager;
+
+        if (definition.match3) {
+          const match3System = new Match3GameSystem(
+            definition.match3 as Match3Config,
+            game.entityManager,
+            {
+              onScoreAdd: (points) => game.rulesEvaluator.addScore(points),
+              onMatchFound: () => {},
+              onBoardReady: () => {},
+            },
+          );
+          match3System.setBridge(bridge);
+          match3SystemRef.current = match3System;
+        }
+
+        if (definition.slotMachine) {
+          const slotMachineSystem = new SlotMachineSystem(
+            definition.slotMachine as SlotMachineConfig,
+            game.entityManager,
+            {
+              onSpinStart: () => {
+                let currentCredits =
+                  (game.rulesEvaluator.getVariable("credits") as number) ??
+                  1000;
+                const bet =
+                  (game.rulesEvaluator.getVariable("bet") as number) ?? 1;
+
+                // Auto-refill if credits are depleted
+                if (currentCredits <= 0) {
+                  currentCredits = 1000;
+                  game.rulesEvaluator.setVariable("credits", currentCredits);
+                  console.log("[SlotMachine] Credits refilled to 1000");
+                }
+
+                game.rulesEvaluator.setVariable(
+                  "credits",
+                  currentCredits - bet,
+                );
+                game.rulesEvaluator.setVariable("lastWin", 0);
+                console.log(
+                  `[SlotMachine] Spin started - deducted ${bet} credits, remaining: ${
+                    currentCredits - bet
+                  }`,
+                );
+              },
+              onSpinComplete: (wins, totalPayout) => {
+                const currentCredits =
+                  (game.rulesEvaluator.getVariable("credits") as number) ??
+                  1000;
+                game.rulesEvaluator.setVariable(
+                  "credits",
+                  currentCredits + totalPayout,
+                );
+                game.rulesEvaluator.setVariable("lastWin", totalPayout);
+                console.log(
+                  `[SlotMachine] Spin complete - payout: ${totalPayout}, new credits: ${
+                    currentCredits + totalPayout
+                  }`,
+                );
+              },
+              onWinFound: () => {},
+              onBonusTrigger: (bonusType) => {
+                if (bonusType === "free_spins") {
+                  const remaining =
+                    slotMachineSystemRef.current?.getFreeSpinsRemaining() ?? 0;
+                  game.rulesEvaluator.setVariable("freeSpins", remaining);
+                  console.log(
+                    `[SlotMachine] Bonus triggered - free spins: ${remaining}`,
+                  );
+                }
+              },
+              onCascadeComplete: () => {},
+              onBoardReady: () => {},
+              onFreeSpinStart: (remaining) => {
+                game.rulesEvaluator.setVariable("freeSpins", remaining);
+                console.log(
+                  `[SlotMachine] Free spin started - remaining: ${remaining}`,
+                );
+              },
+              onFreeSpinsComplete: () => {
+                game.rulesEvaluator.setVariable("freeSpins", 0);
+                console.log(`[SlotMachine] Free spins complete`);
+              },
+              onPickReveal: () => {},
+              onPickBonusComplete: (totalPrize) => {
+                const currentCredits =
+                  (game.rulesEvaluator.getVariable("credits") as number) ??
+                  1000;
+                game.rulesEvaluator.setVariable(
+                  "credits",
+                  currentCredits + totalPrize,
+                );
+                game.rulesEvaluator.setVariable("lastWin", totalPrize);
+                console.log(
+                  `[SlotMachine] Pick bonus complete - prize: ${totalPrize}, new credits: ${
+                    currentCredits + totalPrize
+                  }`,
+                );
+              },
+            },
+          );
+          slotMachineSystem.setBridge(bridge);
+          slotMachineSystemRef.current = slotMachineSystem;
+        }
+
+        if (definition.variables) {
+          const resolvedVars: Record<string, ExpressionValueType> = {};
+          for (const [key, value] of Object.entries(definition.variables)) {
+            if (
+              typeof value === "object" &&
+              value !== null &&
+              "expr" in value
+            ) {
+              resolvedVars[key] = 0;
+            } else {
+              resolvedVars[key] = value as ExpressionValueType;
+            }
+          }
+          gameVariablesRef.current = resolvedVars;
+        }
+
+        collisionUnsubRef.current = (physics as any).onCollisionBegin(
+          (event: CollisionEvent) => {
+            // The physics adapter converts entity IDs to body IDs, so we need to look up by bodyId
+            const entityA = game.entityManager
+              .getActiveEntities()
+              .find((e) => e.bodyId?.value === event.bodyA?.value);
+            const entityB = game.entityManager
+              .getActiveEntities()
+              .find((e) => e.bodyId?.value === event.bodyB?.value);
+
+            if (!entityA || !entityB) {
+              const activeEntities = game.entityManager.getActiveEntities();
+              console.warn('[GameRuntime] Collision entity lookup failed:', {
+                bodyAValue: event.bodyA?.value,
+                bodyBValue: event.bodyB?.value,
+                entityAFound: !!entityA,
+                entityBFound: !!entityB,
+                activeEntityCount: activeEntities.length,
+                sampleEntities: activeEntities.slice(0, 5).map(e => ({
+                  id: e.id,
+                  bodyIdValue: e.bodyId?.value,
+                })),
+              });
+              return;
+            }
+
+            const impulse = event.contacts?.reduce(
+              (sum: number, c: any) => sum + (c.normalImpulse || 0),
+              0,
+            ) ?? 0;
+            const normal = event.contacts?.[0]?.normal ?? { x: 0, y: 0 };
+
+            collisionsRef.current.push({
+              entityA,
+              entityB,
+              normal,
+              impulse,
+            });
+          },
+        );
+
+        sensorUnsubRef.current = physics.onSensorBegin((event) => {
+          const sensorEntity = game.entityManager
+            .getActiveEntities()
+            .find((e) => e.colliderId?.value === event.sensor.value);
+          const otherEntity = game.entityManager
+            .getActiveEntities()
+            .find((e) => e.bodyId?.value === event.otherBody.value);
+
+          if (sensorEntity && otherEntity) {
+            collisionsRef.current.push({
+              entityA: sensorEntity,
+              entityB: otherEntity,
+              normal: { x: 0, y: 0 },
+              impulse: 0,
+            });
+          }
+        });
+
+        inputEventUnsubRef.current = bridge.onInputEvent(
+          (type, x, y, _entityId) => {
+            if (type === "tap") {
+              const ppm = definition.world.pixelsPerMeter ?? 50;
+              const screenX = x * ppm;
+              const screenY = y * ppm;
+              inputRef.current = {
+                ...inputRef.current,
+                tap: { x: screenX, y: screenY, worldX: x, worldY: y },
+              };
+            }
+          },
+        );
+
+        const camera = CameraSystem.fromGameConfig(
+          definition.camera,
+          definition.world.bounds,
+          { width: 800, height: 600 },
+          definition.world.pixelsPerMeter ?? 50,
+        );
+        cameraRef.current = camera;
+
+        if (screenSizeRef.current.width > 0 && viewportSystemRef.current) {
+          viewportSystemRef.current.updateScreenSize(screenSizeRef.current);
+          const currentViewport = viewportSystemRef.current.getViewportRect();
+          camera.updateViewport({
+            width: currentViewport.width,
+            height: currentViewport.height,
+          });
+          camera.updatePixelsPerMeter(currentViewport.scale);
+          setViewportRect(currentViewport);
+
+          const godotPixelsPerMeter = definition.world.pixelsPerMeter ?? 50;
+          const godotZoom = currentViewport.scale / godotPixelsPerMeter;
+          bridge.setCameraZoom(godotZoom);
+        }
+
+        // Camera stays at origin (0,0) - Godot owns camera positioning now
+        // We still keep the CameraSystem for screen-to-world coordinate transforms
+
+        game.rulesEvaluator.setCallbacks({
+          onScoreChange: (score) => {
+            setGameState((s) => ({ ...s, score }));
+            onScoreChange?.(score);
+          },
+          onLivesChange: (lives) => {
+            setGameState((s) => ({ ...s, lives }));
+          },
+          onGameStateChange: (state) => {
+            setGameState((s) => ({ ...s, state }));
+            if (state === "won" || state === "lost") {
+              onGameEnd?.(state);
+            }
+          },
+          onVariablesChange: (variables) => {
+            setGameState((s) => ({ ...s, variables }));
+          },
+        });
+
+        const initialVariables = game.rulesEvaluator.getVariables();
+
+        let mergedVariables = { ...initialVariables };
+        if (typeof window !== "undefined" && window.localStorage) {
+          try {
+            const tuningStorageKey = `tuning-overrides-${definition.metadata.title
+              .toLowerCase()
+              .replace(/\s+/g, "-")}`;
+            const savedOverrides =
+              window.localStorage.getItem(tuningStorageKey);
+            if (savedOverrides) {
+              const parsed = JSON.parse(savedOverrides);
+              mergedVariables = { ...mergedVariables, ...parsed };
+            }
+          } catch {}
+        }
+
+        setGameState((s) => ({
+          ...s,
+          state: "ready",
+          variables: mergedVariables,
+        }));
+        setIsReady(true);
+        onReady?.();
+
+        if (match3SystemRef.current) {
+          const match3Config = definition.match3 as Match3Config;
+          if (
+            match3Config.variantSheet?.enabled &&
+            match3Config.variantSheet.metadataUrl
+          ) {
+            try {
+              const response = await fetch(
+                match3Config.variantSheet.metadataUrl,
+              );
+              const metadata = await response.json();
+              match3SystemRef.current.setSheetMetadata(metadata as AssetSheet);
+            } catch (error) {
+              console.error(
+                "[GameRuntime.godot] Failed to load variant sheet metadata:",
+                error,
+              );
+            }
+          }
+          match3SystemRef.current.initialize();
+        }
+
+        if (slotMachineSystemRef.current) {
+          slotMachineSystemRef.current.initialize();
+        }
+      } catch (error) {
+        console.error("[GameRuntime.godot] Failed to initialize game:", error);
+      }
+    };
+
+    setup();
+
+    return () => {
+      if (gameLoopRef.current) {
+        clearInterval(gameLoopRef.current);
+        gameLoopRef.current = null;
+      }
+      collisionUnsubRef.current?.();
+      collisionUnsubRef.current = null;
+      sensorUnsubRef.current?.();
+      sensorUnsubRef.current = null;
+      inputEventUnsubRef.current?.();
+      inputEventUnsubRef.current = null;
+      match3SystemRef.current?.destroy();
+      match3SystemRef.current = null;
+      slotMachineSystemRef.current?.destroy();
+      slotMachineSystemRef.current = null;
+      propertySyncManagerRef.current?.stop();
+      propertySyncManagerRef.current = null;
+      bridgeRef.current?.dispose();
+      bridgeRef.current = null;
+      physicsRef.current = null;
+      gameRef.current = null;
+      loaderRef.current = null;
+      cameraRef.current = null;
+    };
+  }, [
+    godotReady,
+    definition,
+    onGameEnd,
+    onScoreChange,
+    preloadTextureUrls,
+    onPreloadProgress,
+    onReady,
+  ]);
+
+  const showInputDebug = devToolsCheck?.state?.showInputDebug ?? false;
+  const showPhysicsShapes = devToolsCheck?.state?.showPhysicsShapes ?? false;
+  const showFPS = devToolsCheck?.state?.showFPS ?? false;
+
+  useEffect(() => {
+    const bridge = bridgeRef.current;
+    console.log('[GameRuntime] Debug settings effect - bridge:', !!bridge, 'showInputDebug:', showInputDebug, 'showPhysicsShapes:', showPhysicsShapes, 'showFPS:', showFPS);
+    if (!bridge) return;
+
+    console.log('[GameRuntime] Calling setDebugSettings');
+    bridge.setDebugSettings({
+      showInputDebug,
+      showPhysicsShapes,
+      showFPS,
+    });
+  }, [showInputDebug, showPhysicsShapes, showFPS]);
+
+  const setTimeScale = useCallback((scale: number, duration?: number) => {
+    const currentScale = timeScaleRef.current;
+
+    if (duration && duration > 0) {
+      timeScaleTransitionRef.current = {
+        startScale: currentScale,
+        endScale: scale,
+        duration: 0.2,
+        elapsed: 0,
+        restoreAfter: duration,
+      };
+    } else {
+      timeScaleRef.current = scale;
+      timeScaleTargetRef.current = scale;
+      timeScaleTransitionRef.current = null;
+    }
+  }, []);
+
+  const stepGame = useCallback(
+    (rawDt: number) => {
+      const physics = physicsRef.current;
+      const game = gameRef.current;
+      const camera = cameraRef.current;
+      const bridge = bridgeRef.current;
+      if (!physics || !game || !camera || !bridge) {
+        return;
+      }
+
+      if (game.rulesEvaluator.getGameStateValue() !== "playing") return;
+
+      const transition = timeScaleTransitionRef.current;
+      if (transition) {
+        transition.elapsed += rawDt;
+        const t = Math.min(1, transition.elapsed / transition.duration);
+        const eased = t * t * (3 - 2 * t);
+        timeScaleRef.current =
+          transition.startScale +
+          (transition.endScale - transition.startScale) * eased;
+
+        if (t >= 1) {
+          timeScaleRef.current = transition.endScale;
+          if (transition.restoreAfter) {
+            timeScaleTransitionRef.current = {
+              startScale: transition.endScale,
+              endScale: 1.0,
+              duration: 0.2,
+              elapsed: -transition.restoreAfter,
+            };
+          } else {
+            timeScaleTransitionRef.current = null;
+          }
+        }
+      }
+
+      const dt = rawDt * timeScaleRef.current;
+      if (dt <= 0) return;
+
+      const frameStart = enablePerfLogging ? performance.now() : 0;
+
+      game.entityManager.syncTransformsFromPhysics();
+
+      const inputEntityManager = inputEntityManagerRef.current;
+      if (inputEntityManager) {
+        const currentInput = inputRef.current as Record<string, unknown>;
+        inputEntityManager.syncFromInput({
+          mouse: currentInput.mouse as InputEntityState["mouse"],
+          tap: currentInput.tap as InputEntityState["tap"],
+          drag: currentInput.drag as InputEntityState["drag"],
+        });
+      }
+
+      camera.update(dt, (id) => game.entityManager.getEntity(id));
+
+      elapsedRef.current += dt;
+      frameIdRef.current += 1;
+
+      const fullGameState = game.rulesEvaluator.getFullState();
+      const computedValues = computedValuesRef.current;
+
+      const createEvalContext = (entity?: RuntimeEntity): EvalContext => {
+        let selfContext: EvalContext["self"] | undefined;
+
+        if (entity) {
+          const propertySyncEnabled = propertyCacheRef.current;
+
+          if (propertySyncEnabled) {
+            const entityProxy = EntityContextProxy.createEntityContext(
+              propertyCacheRef.current,
+              entity.id,
+            );
+
+            const velocity = entity.bodyId
+              ? physics.getLinearVelocity(entity.bodyId)
+              : { x: 0, y: 0 };
+            const transform =
+              (entityProxy.transform as {
+                x: number;
+                y: number;
+                angle: number;
+              }) || entity.transform;
+            const syncedVelocity =
+              (entityProxy.velocity as { x: number; y: number }) || velocity;
+
+            selfContext = {
+              id: entity.id,
+              transform,
+              velocity: syncedVelocity,
+              health: (entityProxy.health as number) ?? 100,
+              maxHealth: (entityProxy.maxHealth as number) ?? 100,
+            };
+          } else {
+            const velocity = entity.bodyId
+              ? physics.getLinearVelocity(entity.bodyId)
+              : { x: 0, y: 0 };
+            selfContext = {
+              id: entity.id,
+              transform: entity.transform,
+              velocity,
+              health: 100,
+              maxHealth: 100,
+            };
+          }
+        }
+
+        return {
+          score: fullGameState.score,
+          lives: fullGameState.lives,
+          time: elapsedRef.current,
+          wave: 1,
+          dt,
+          frameId: frameIdRef.current,
+          variables: {
+            ...gameVariablesRef.current,
+            ...fullGameState.variables,
+          },
+          random: Math.random,
+          entityManager: game.entityManager,
+          customFunctions: getAllSystemExpressionFunctions(),
+          self: selfContext,
+        };
+      };
+
+      const baseEvalContext = createEvalContext();
+
+      const inputSnapshot = inputRef.current;
+
+      const match3System = match3SystemRef.current;
+      if (match3System) {
+        const tapInput = inputSnapshot.tap as
+          | { worldX: number; worldY: number }
+          | undefined;
+        if (tapInput) {
+          match3System.handleTap(tapInput.worldX, tapInput.worldY);
+        }
+        const mouseInput = inputSnapshot.mouse as
+          | { worldX: number; worldY: number }
+          | undefined;
+        if (mouseInput) {
+          match3System.handleMouseMove(mouseInput.worldX, mouseInput.worldY);
+        }
+        match3System.update(dt);
+      }
+
+      const slotMachineSystem = slotMachineSystemRef.current;
+      if (slotMachineSystem) {
+        const tapInput = inputSnapshot.tap as
+          | { worldX: number; worldY: number }
+          | undefined;
+        if (tapInput && slotMachineSystem.isIdle()) {
+          slotMachineSystem.startSpin();
+        }
+        slotMachineSystem.update(dt);
+      }
+
+      const behaviorContext: Omit<
+        BehaviorContext,
+        "entity" | "resolveNumber" | "resolveVec2"
+      > = {
+        dt,
+        elapsed: elapsedRef.current,
+        input: inputSnapshot,
+        gameState: fullGameState,
+        entityManager: game.entityManager,
+        physics,
+        collisions: collisionsRef.current,
+        pixelsPerMeter: game.pixelsPerMeter,
+        addScore: (points) => game.rulesEvaluator.addScore(points),
+        setGameState: (state) => {
+          if (state === "won") game.rulesEvaluator["setGameState"]("won");
+          else if (state === "lost")
+            game.rulesEvaluator["setGameState"]("lost");
+          else if (state === "paused") game.rulesEvaluator.pause();
+          else if (state === "playing") game.rulesEvaluator.resume();
+        },
+        spawnEntity: (templateId, x, y) => {
+          const template = game.entityManager.getTemplate(templateId);
+          if (!template) return null;
+          return bridge.spawnEntity(templateId, x, y);
+        },
+        setEntityVelocity: (entityId, velocity) => {
+          bridge.setLinearVelocity(entityId, velocity);
+        },
+        destroyEntity: (id) => game.entityManager.destroyEntity(id),
+        triggerEvent: (name, data) =>
+          game.rulesEvaluator.triggerEvent(name, data),
+        triggerParticleEffect: (
+          type: ParticleEmitterType,
+          x: number,
+          y: number,
+        ) => {
+          bridge.spawnParticle(type, x, y);
+        },
+        createEntityEmitter: (
+          _type: ParticleEmitterType,
+          _x: number,
+          _y: number,
+        ) => {
+          return `emitter_${Date.now()}`;
+        },
+        updateEmitterPosition: (
+          _emitterId: string,
+          _x: number,
+          _y: number,
+        ) => {},
+        stopEmitter: (_emitterId: string) => {},
+        playSound: (soundId: string) => {
+          bridge.playSound(soundId);
+        },
+        applySpriteEffect: (
+          entityId: string,
+          effect: string,
+          params?: Record<string, unknown>,
+        ) => {
+          bridge.applySpriteEffect(entityId, effect, params);
+        },
+        clearSpriteEffect: (entityId: string) => {
+          bridge.clearSpriteEffect(entityId);
+        },
+        computedValues,
+        evalContext: baseEvalContext,
+        createEvalContextForEntity: createEvalContext,
+      };
+
+      game.behaviorExecutor.executeAll(
+        game.entityManager.getActiveEntities(),
+        behaviorContext,
+      );
+
+      const inputEvents: import("./BehaviorContext").InputEvents = {};
+      const currentInput = inputRef.current as Record<string, unknown>;
+      if (currentInput.tap) {
+        inputEvents.tap = currentInput.tap as {
+          x: number;
+          y: number;
+          worldX: number;
+          worldY: number;
+        };
+        // console.log("[GameRuntime] inputEvents.tap SET:", inputEvents.tap);
+      }
+      if (currentInput.dragEnd) {
+        inputEvents.dragEnd = currentInput.dragEnd as {
+          velocityX: number;
+          velocityY: number;
+          worldVelocityX: number;
+          worldVelocityY: number;
+        };
+      }
+      if (gameJustStartedRef.current) {
+        inputEvents.gameStarted = true;
+        gameJustStartedRef.current = false;
+      }
+
+      game.rulesEvaluator.update(
+        dt,
+        game.entityManager,
+        collisionsRef.current,
+        inputRef.current,
+        inputEvents,
+        physics,
+        computedValues,
+        baseEvalContext,
+        camera,
+        setTimeScale,
+        inputEntityManager ?? undefined,
+        (soundId: string, _volume?: number) => {
+          bridge.playSound(soundId);
+        },
+        bridge,
+      );
+
+      const preservedDrag = inputRef.current.drag;
+      const preservedButtons = inputRef.current.buttons;
+      const preservedTilt = inputRef.current.tilt;
+      inputRef.current = {};
+      if (preservedDrag && !inputEvents.dragEnd) {
+        inputRef.current.drag = preservedDrag;
+      }
+      if (preservedButtons) {
+        inputRef.current.buttons = preservedButtons;
+      }
+      if (preservedTilt) {
+        inputRef.current.tilt = preservedTilt;
+      }
+      collisionsRef.current = [];
+
+      setGameState((s) => ({ ...s, time: elapsedRef.current }));
+
+      if (enablePerfLogging) {
+        const frameEnd = performance.now();
+        const frameMs = frameEnd - frameStart;
+        if (frameIdRef.current % 60 === 0) {
+          console.log(`[Perf.godot] frame=${frameMs.toFixed(2)}ms`);
+        }
+      }
+    },
+    [setTimeScale, enablePerfLogging],
+  );
+
+  useEffect(() => {
+    if (!isReady || gameState.state !== "playing") {
+      if (gameLoopRef.current) {
+        clearInterval(gameLoopRef.current);
+        gameLoopRef.current = null;
+      }
+      return;
+    }
+
+    lastTickRef.current = performance.now();
+    gameLoopRef.current = setInterval(() => {
+      const now = performance.now();
+      const dt = Math.min((now - lastTickRef.current) / 1000, 0.1);
+      lastTickRef.current = now;
+      stepGame(dt);
+    }, GAME_LOOP_INTERVAL);
+
+    return () => {
+      if (gameLoopRef.current) {
+        clearInterval(gameLoopRef.current);
+        gameLoopRef.current = null;
+      }
+    };
+  }, [isReady, gameState.state, stepGame]);
+
+  // Keyboard input handling (web only)
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      let changed = false;
+      switch (e.key) {
+        case "ArrowLeft":
+        case "a":
+        case "A":
+          if (!buttonsRef.current.left) {
+            buttonsRef.current.left = true;
+            changed = true;
+          }
+          break;
+        case "ArrowRight":
+        case "d":
+        case "D":
+          if (!buttonsRef.current.right) {
+            buttonsRef.current.right = true;
+            changed = true;
+          }
+          break;
+        case "ArrowUp":
+        case "w":
+        case "W":
+          if (!buttonsRef.current.up) {
+            buttonsRef.current.up = true;
+            changed = true;
+          }
+          break;
+        case "ArrowDown":
+        case "s":
+        case "S":
+          if (!buttonsRef.current.down) {
+            buttonsRef.current.down = true;
+            changed = true;
+          }
+          break;
+        case " ":
+          if (!buttonsRef.current.jump) {
+            buttonsRef.current.jump = true;
+            changed = true;
+          }
+          break;
+      }
+      if (changed) {
+        inputRef.current.buttons = { ...buttonsRef.current };
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case "ArrowLeft":
+        case "a":
+        case "A":
+          buttonsRef.current.left = false;
+          break;
+        case "ArrowRight":
+        case "d":
+        case "D":
+          buttonsRef.current.right = false;
+          break;
+        case "ArrowUp":
+        case "w":
+        case "W":
+          buttonsRef.current.up = false;
+          break;
+        case "ArrowDown":
+        case "s":
+        case "S":
+          buttonsRef.current.down = false;
+          break;
+        case " ":
+          buttonsRef.current.jump = false;
+          break;
+      }
+      inputRef.current.buttons = { ...buttonsRef.current };
+    };
+
+    // Use capture phase to catch events before iframe steals focus
+    window.addEventListener("keydown", handleKeyDown, { capture: true });
+    window.addEventListener("keyup", handleKeyUp, { capture: true });
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown, { capture: true });
+      window.removeEventListener("keyup", handleKeyUp, { capture: true });
+    };
+  }, []);
+
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const container = viewportContainerRef.current;
+      if (!container) return;
+
+      const rect = (
+        container as unknown as HTMLElement
+      ).getBoundingClientRect?.();
+      if (!rect) return;
+
+      const viewportX = e.clientX - rect.left;
+      const viewportY = e.clientY - rect.top;
+
+      if (
+        viewportX < 0 ||
+        viewportX > rect.width ||
+        viewportY < 0 ||
+        viewportY > rect.height
+      ) {
+        inputRef.current.mouse = undefined;
+        return;
+      }
+
+      const camera = cameraRef.current;
+      const viewportSystem = viewportSystemRef.current;
+      if (!camera || !viewportSystem) return;
+
+      const world = viewportSystem.viewportToWorld(
+        viewportX,
+        viewportY,
+        camera.getPosition(),
+        camera.getZoom(),
+      );
+
+      inputRef.current.mouse = {
+        x: viewportX,
+        y: viewportY,
+        worldX: world.x,
+        worldY: world.y,
+      };
+    };
+
+    const handleMouseLeave = () => {
+      inputRef.current.mouse = undefined;
+    };
+
+    const handleClick = async (e: MouseEvent) => {
+      const container = viewportContainerRef.current;
+      if (!container) return;
+
+      const rect = (
+        container as unknown as HTMLElement
+      ).getBoundingClientRect?.();
+      if (!rect) return;
+
+      const viewportX = e.clientX - rect.left;
+      const viewportY = e.clientY - rect.top;
+
+      if (
+        viewportX < 0 ||
+        viewportX > rect.width ||
+        viewportY < 0 ||
+        viewportY > rect.height
+      ) {
+        return;
+      }
+
+      const camera = cameraRef.current;
+      const viewportSystem = viewportSystemRef.current;
+      const bridge = bridgeRef.current;
+      if (!camera || !viewportSystem) return;
+
+      const world = viewportSystem.viewportToWorld(
+        viewportX,
+        viewportY,
+        camera.getPosition(),
+        camera.getZoom(),
+      );
+
+      let targetEntityId: string | undefined;
+      if (bridge) {
+        const entityId = await bridge.queryPointEntity(world);
+        if (entityId) {
+          targetEntityId = entityId;
+        }
+      }
+
+      inputRef.current = {
+        ...inputRef.current,
+        tap: {
+          x: viewportX,
+          y: viewportY,
+          worldX: world.x,
+          worldY: world.y,
+          targetEntityId,
+        },
+      };
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseleave", handleMouseLeave);
+    window.addEventListener("click", handleClick);
+
+    (window as any).__GAME_RUNTIME__ = {
+      setInput: (type: string, value: any) => {
+        switch (type) {
+          case "mouse":
+            inputRef.current.mouse = value;
+            break;
+          case "tap":
+            inputRef.current.tap = value;
+            break;
+          case "drag":
+            inputRef.current.drag = value;
+            break;
+          case "dragEnd":
+            inputRef.current.dragEnd = value;
+            break;
+        }
+      },
+      getInput: (type: string) => {
+        return (inputRef.current as any)[type];
+      },
+      setButtonState: (button: string, pressed: boolean) => {
+        if (!buttonsRef.current) {
+          buttonsRef.current = {
+            left: false,
+            right: false,
+            up: false,
+            down: false,
+            jump: false,
+            action: false,
+          };
+        }
+        (buttonsRef.current as any)[button] = pressed;
+        inputRef.current.buttons = { ...buttonsRef.current };
+      },
+      clearInput: (type: string) => {
+        (inputRef.current as any)[type] = undefined;
+      },
+    };
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener("click", handleClick);
+      delete (window as any).__GAME_RUNTIME__;
+    };
+  }, []);
+
+  const handleStart = useCallback(() => {
+    bridgeRef.current?.resumePhysics();
+    gameRef.current?.rulesEvaluator.start();
+    gameJustStartedRef.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (autoStart && gameState.state === "ready" && gameRef.current) {
+      handleStart();
+    }
+  }, [autoStart, gameState.state, handleStart]);
+
+  const handleRestart = useCallback(() => {
+    if (onRequestRestart) {
+      onRequestRestart();
+      return;
+    }
+
+    if (
+      gameRef.current &&
+      loaderRef.current &&
+      cameraRef.current &&
+      bridgeRef.current
+    ) {
+      bridgeRef.current.clearGame();
+      bridgeRef.current.loadGame(definition);
+      bridgeRef.current.pausePhysics();
+
+      const newGame = loaderRef.current.reload(gameRef.current);
+      gameRef.current = newGame;
+      elapsedRef.current = 0;
+
+      cameraRef.current.setPosition({ x: 0, y: 0 });
+      cameraRef.current.setZoom(definition.camera?.zoom ?? 1);
+
+      timeScaleRef.current = 1.0;
+      timeScaleTargetRef.current = 1.0;
+      timeScaleTransitionRef.current = null;
+
+      newGame.rulesEvaluator.setCallbacks({
+        onScoreChange: (score) => {
+          setGameState((s) => ({ ...s, score }));
+          onScoreChange?.(score);
+        },
+        onLivesChange: (lives) => {
+          setGameState((s) => ({ ...s, lives }));
+        },
+        onGameStateChange: (state) => {
+          setGameState((s) => ({ ...s, state }));
+          if (state === "won" || state === "lost") {
+            onGameEnd?.(state);
+          }
+        },
+      });
+
+      const initialVariables = newGame.rulesEvaluator.getVariables();
+      setGameState({
+        score: 0,
+        lives: 3,
+        time: 0,
+        state: "ready",
+        variables: initialVariables,
+      });
+    }
+  }, [onGameEnd, onScoreChange, onRequestRestart, definition]);
+
+  const handleLayout = useCallback(
+    (event: { nativeEvent: { layout: { width: number; height: number } } }) => {
+      const { width, height } = event.nativeEvent.layout;
+      screenSizeRef.current = { width, height };
+      setScreenSize({ width, height });
+
+      if (viewportSystemRef.current) {
+        viewportSystemRef.current.updateScreenSize({ width, height });
+        const newViewportRect = viewportSystemRef.current.getViewportRect();
+        setViewportRect(newViewportRect);
+
+        cameraRef.current?.updateViewport({
+          width: newViewportRect.width,
+          height: newViewportRect.height,
+        });
+        cameraRef.current?.updatePixelsPerMeter(newViewportRect.scale);
+
+        if (bridgeRef.current) {
+          const godotPixelsPerMeter = definition.world.pixelsPerMeter ?? 50;
+          const godotZoom = newViewportRect.scale / godotPixelsPerMeter;
+          bridgeRef.current.setCameraZoom(godotZoom);
+        }
+      }
+    },
+    [definition.world.pixelsPerMeter],
+  );
+
+  const dragStartRef = useRef<{
+    x: number;
+    y: number;
+    worldX: number;
+    worldY: number;
+  } | null>(null);
+  const viewportContainerRef = useRef<View>(null);
+
+  const screenToWorld = useCallback((screenX: number, screenY: number) => {
+    const camera = cameraRef.current;
+    const vs = viewportSystemRef.current;
+    if (!camera) return { x: 0, y: 0 };
+
+    if (vs) {
+      return vs.viewportToWorld(
+        screenX,
+        screenY,
+        camera.getPosition(),
+        camera.getZoom(),
+      );
+    }
+    return camera.screenToWorld(screenX, screenY);
+  }, []);
+
+  const handleTouchStart = useCallback(
+    (event: GestureResponderEvent) => {
+      const bridge = bridgeRef.current;
+      if (!bridge) return;
+
+      const { locationX: x, locationY: y } = event.nativeEvent;
+      const world = screenToWorld(x, y);
+
+      dragStartRef.current = { x, y, worldX: world.x, worldY: world.y };
+
+      inputRef.current = {
+        ...inputRef.current,
+        drag: {
+          startX: x,
+          startY: y,
+          currentX: x,
+          currentY: y,
+          startWorldX: world.x,
+          startWorldY: world.y,
+          currentWorldX: world.x,
+          currentWorldY: world.y,
+        },
+      };
+
+      bridge.sendInput("drag_start", { x: world.x, y: world.y });
+    },
+    [screenToWorld],
+  );
+
+  const handleTouchMove = useCallback(
+    (event: GestureResponderEvent) => {
+      const bridge = bridgeRef.current;
+      const dragStart = dragStartRef.current;
+      if (!bridge || !dragStart) return;
+
+      const { locationX: x, locationY: y } = event.nativeEvent;
+      const world = screenToWorld(x, y);
+
+      inputRef.current = {
+        ...inputRef.current,
+        drag: {
+          startX: dragStart.x,
+          startY: dragStart.y,
+          currentX: x,
+          currentY: y,
+          startWorldX: dragStart.worldX,
+          startWorldY: dragStart.worldY,
+          currentWorldX: world.x,
+          currentWorldY: world.y,
+        },
+      };
+
+      bridge.sendInput("drag_move", { x: world.x, y: world.y });
+    },
+    [screenToWorld],
+  );
+
+  const handleTouchEnd = useCallback(
+    (event: GestureResponderEvent) => {
+      const bridge = bridgeRef.current;
+      const dragStart = dragStartRef.current;
+      if (!bridge) return;
+
+      const { locationX: x, locationY: y } = event.nativeEvent;
+      const world = screenToWorld(x, y);
+
+      console.log(
+        "[GameRuntime] TAP detected at screen:",
+        x,
+        y,
+        "world:",
+        world.x,
+        world.y,
+      );
+      inputRef.current = {
+        ...inputRef.current,
+        tap: { x, y, worldX: world.x, worldY: world.y },
+      };
+      console.log(
+        "[GameRuntime] inputRef.current.tap set:",
+        inputRef.current.tap,
+      );
+
+      if (dragStart) {
+        const VELOCITY_SCALE = 0.1;
+        inputRef.current.dragEnd = {
+          velocityX: (x - dragStart.x) * VELOCITY_SCALE,
+          velocityY: (y - dragStart.y) * VELOCITY_SCALE,
+          worldVelocityX: (world.x - dragStart.worldX) * VELOCITY_SCALE,
+          worldVelocityY: (world.y - dragStart.worldY) * VELOCITY_SCALE,
+        };
+      }
+
+      bridge.sendInput("tap", { x: world.x, y: world.y });
+      bridge.sendInput("drag_end", { x: world.x, y: world.y });
+
+      dragStartRef.current = null;
+      inputRef.current.drag = undefined;
+    },
+    [screenToWorld],
+  );
+
+  const handleZonePress = useCallback(
+    (button: TapZoneButton, pressed: boolean) => {
+      buttonsRef.current[button] = pressed;
+      inputRef.current.buttons = { ...buttonsRef.current };
+    },
+    [],
+  );
+
+  const handleVirtualButtonPress = useCallback(
+    (button: VirtualButtonType, pressed: boolean) => {
+      buttonsRef.current[button] = pressed;
+      inputRef.current.buttons = { ...buttonsRef.current };
+    },
+    [],
+  );
+
+  const handleJoystickMove = useCallback((state: JoystickState) => {
+    joystickRef.current = state;
+
+    const threshold = 0.5;
+    buttonsRef.current.left = state.x < -threshold;
+    buttonsRef.current.right = state.x > threshold;
+    buttonsRef.current.up = state.y < -threshold;
+    buttonsRef.current.down = state.y > threshold;
+
+    inputRef.current.buttons = { ...buttonsRef.current };
+    inputRef.current.joystick = { ...joystickRef.current };
+  }, []);
+
+  const handleJoystickRelease = useCallback(() => {
+    joystickRef.current = { x: 0, y: 0, magnitude: 0, angle: 0 };
+
+    buttonsRef.current.left = false;
+    buttonsRef.current.right = false;
+    buttonsRef.current.up = false;
+    buttonsRef.current.down = false;
+
+    inputRef.current.buttons = { ...buttonsRef.current };
+    inputRef.current.joystick = { ...joystickRef.current };
+  }, []);
+
+  const handleDPadPress = useCallback(
+    (direction: DPadDirection, pressed: boolean) => {
+      buttonsRef.current[direction] = pressed;
+      inputRef.current.buttons = { ...buttonsRef.current };
+    },
+    [],
+  );
+
+  const letterboxColor = definition.presentation?.letterboxColor ?? "#000000";
+  const hasViewport = viewportRect.width > 0 && viewportRect.height > 0;
+
+  return (
+    <View
+      style={[styles.container, { backgroundColor: letterboxColor }]}
+      onLayout={handleLayout}
+    >
+      {hasViewport && (
+        <View
+          ref={viewportContainerRef}
+          style={[
+            styles.viewportContainer,
+            {
+              left: viewportRect.x,
+              top: viewportRect.y,
+              width: viewportRect.width,
+              height: viewportRect.height,
+            },
+          ]}
+          onStartShouldSetResponder={() => true}
+          onMoveShouldSetResponder={() => true}
+          onResponderGrant={handleTouchStart}
+          onResponderMove={handleTouchMove}
+          onResponderRelease={handleTouchEnd}
+        >
+          <GodotView
+            style={styles.godotView}
+            onReady={handleGodotReady}
+            onError={handleGodotError}
+          />
+        </View>
+      )}
+
+      {hasViewport && definition.input?.tapZones && (
+        <TapZoneOverlay
+          zones={definition.input.tapZones}
+          viewportRect={viewportRect}
+          debug={definition.input.debugTapZones || showInputDebug}
+          onZonePress={handleZonePress}
+        />
+      )}
+
+      {hasViewport && definition.input?.virtualJoystick && (
+        <VirtualJoystickOverlay
+          config={definition.input.virtualJoystick}
+          viewportRect={viewportRect}
+          onJoystickMove={handleJoystickMove}
+          onJoystickRelease={handleJoystickRelease}
+          enableHaptics={definition.input.enableHaptics}
+        />
+      )}
+
+      {hasViewport && definition.input?.virtualDPad && (
+        <VirtualDPadOverlay
+          config={definition.input.virtualDPad}
+          viewportRect={viewportRect}
+          onDirectionPress={handleDPadPress}
+          enableHaptics={definition.input.enableHaptics}
+        />
+      )}
+
+      {hasViewport && definition.input?.virtualButtons && (
+        <VirtualButtonsOverlay
+          buttons={definition.input.virtualButtons}
+          viewportRect={viewportRect}
+          onButtonPress={handleVirtualButtonPress}
+          enableHaptics={definition.input.enableHaptics}
+        />
+      )}
+
+      <InputDebugOverlay
+        inputRef={inputRef}
+        viewportRect={viewportRect}
+      />
+
+      {showHUD && hasViewport && (
+        <View
+          style={[
+            styles.hud,
+            {
+              left: viewportRect.x + 20,
+              top: viewportRect.y + 40,
+              right:
+                screenSize.width - viewportRect.x - viewportRect.width + 20,
+            },
+          ]}
+        >
+          {definition.ui?.showScore !== false && (
+            <Text style={styles.scoreText}>Score: {gameState.score}</Text>
+          )}
+          {definition.ui?.showTimer && (
+            <Text style={styles.timerText}>
+              Time: {Math.floor(gameState.time)}s
+            </Text>
+          )}
+          {definition.ui?.showLives && (
+            <Text style={styles.livesText}>
+              {definition.ui?.livesLabel ?? "Lives"}: {gameState.lives}
+            </Text>
+          )}
+          {definition.ui?.entityCountDisplays?.map((display) => {
+            const count =
+              gameRef.current?.entityManager.getEntitiesByTag(display.tag)
+                .length ?? 0;
+            return (
+              <Text
+                key={display.tag}
+                style={[
+                  styles.livesText,
+                  display.color ? { color: display.color } : undefined,
+                ]}
+              >
+                {display.label}: {count}
+              </Text>
+            );
+          })}
+          {definition.ui?.variableDisplays?.map((display) => {
+            const value = gameState.variables[display.name];
+            const shouldShow =
+              display.showWhen !== "not_default" ||
+              value !== display.defaultValue;
+            if (!shouldShow) return null;
+            const formattedValue = display.format
+              ? display.format.replace("{value}", String(value))
+              : String(value);
+            return (
+              <Text
+                key={display.name}
+                style={[
+                  styles.livesText,
+                  display.color ? { color: display.color } : undefined,
+                ]}
+              >
+                {display.label}: {formattedValue}
+              </Text>
+            );
+          })}
+          {gameState.state === "playing" && (
+            <TouchableOpacity
+              style={styles.pauseButton}
+              onPress={() => gameRef.current?.rulesEvaluator.pause()}
+            >
+              <Text style={styles.pauseButtonText}>⏸</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+
+      {gameState.state === "paused" && (
+        <View style={styles.overlay}>
+          <Text style={styles.overlayTitle}>Paused</Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => gameRef.current?.rulesEvaluator.resume()}
+          >
+            <Text style={styles.buttonText}>Resume</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: "#888", marginTop: 12 }]}
+            onPress={handleRestart}
+          >
+            <Text style={styles.buttonText}>Restart</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {gameState.state === "ready" && (
+        <View style={styles.overlay}>
+          <Text style={styles.overlayTitle}>{definition.metadata.title}</Text>
+          {definition.metadata.instructions && (
+            <Text style={styles.instructions}>
+              {definition.metadata.instructions}
+            </Text>
+          )}
+          <TouchableOpacity style={styles.button} onPress={handleStart}>
+            <Text style={styles.buttonText}>Play</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {(gameState.state === "won" || gameState.state === "lost") && (
+        <View style={styles.overlay}>
+          <Text style={styles.overlayTitle}>
+            {gameState.state === "won" ? "🎉 You Win!" : "💀 Game Over"}
+          </Text>
+          <Text style={styles.finalScore}>Final Score: {gameState.score}</Text>
+          <TouchableOpacity style={styles.button} onPress={handleRestart}>
+            <Text style={styles.buttonText}>Play Again</Text>
+          </TouchableOpacity>
+          {onBackToMenu && (
+            <TouchableOpacity
+              style={[styles.button, styles.secondaryButton]}
+              onPress={onBackToMenu}
+            >
+              <Text style={styles.buttonText}>Back to Menu</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+
+      {__DEV__ && hasTunables(definition.variables as any) && (
+        <TuningPanel
+          variables={(definition.variables as any) || {}}
+          currentValues={gameState.variables}
+          onVariableChange={handleVariableChange}
+          onReset={handleReset}
+          onExport={handleExport}
+          onSave={handleSave}
+          hasUnsavedChanges={hasUnsavedChanges}
+        />
+      )}
+
+      {__DEV__ && <DevToolbar />}
+    </View>
+  );
+}
+
+export function GameRuntimeGodotWithDevTools(props: GameRuntimeGodotProps) {
+  console.log("[GameRuntimeGodotWithDevTools] Rendering with DevToolsProvider");
+  return (
+    <DevToolsProvider>
+      <GameRuntimeGodot {...props} />
+    </DevToolsProvider>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  viewportContainer: {
+    position: "absolute",
+    overflow: "hidden",
+  },
+  godotView: {
+    flex: 1,
+  },
+  hud: {
+    position: "absolute",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  scoreText: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+    textShadowColor: "#000",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  timerText: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+    textShadowColor: "#000",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  livesText: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+    textShadowColor: "#000",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  pauseButton: {
+    backgroundColor: "rgba(0,0,0,0.5)",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  pauseButtonText: {
+    color: "#fff",
+    fontSize: 20,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  overlayTitle: {
+    color: "#fff",
+    fontSize: 36,
+    fontWeight: "bold",
+    marginBottom: 12,
+  },
+  instructions: {
+    color: "#ccc",
+    fontSize: 18,
+    textAlign: "center",
+    marginBottom: 24,
+    paddingHorizontal: 30,
+    lineHeight: 24,
+  },
+  finalScore: {
+    color: "#fff",
+    fontSize: 24,
+    marginBottom: 30,
+  },
+  button: {
+    backgroundColor: "#4CAF50",
+    paddingHorizontal: 40,
+    paddingVertical: 15,
+    borderRadius: 10,
+  },
+  secondaryButton: {
+    backgroundColor: "#666",
+    marginTop: 12,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+});

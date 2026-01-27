@@ -1,0 +1,17 @@
+{
+  "runId": "run-1769216413523",
+  "config": {
+    "dryRun": true,
+    "theme": "wooden toy blocks, natural wood grain, children's toy aesthetic",
+    "style": "cartoon",
+    "templateFilter": "blockWide"
+  },
+  "timestamp": "2026-01-24T01:00:13.538Z",
+  "results": [
+    {
+      "templateId": "blockWide",
+      "silhouettePath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockWide_1_silhouette.png",
+      "promptPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockWide_2_prompt.txt"
+    }
+  ]
+}

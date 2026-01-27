@@ -86,11 +86,75 @@ Comprehensive document covering:
 
 ```bash
 # Image Generation Provider
-IMAGE_GENERATION_PROVIDER=comfyui  # 'scenario' | 'comfyui'
+IMAGE_GENERATION_PROVIDER=comfyui  # 'scenario' | 'comfyui' | 'runpod'
 
 # RunPod (for ComfyUI serverless)
 RUNPOD_API_KEY=
 RUNPOD_COMFYUI_ENDPOINT_ID=
+```
+
+### 7. Runtime Type Bindings
+
+**Location**: `api/src/trpc/context.ts`
+
+The following env vars are typed and available via `ctx.env`:
+
+| Variable | Type | Required For | Description |
+|----------|------|--------------|-------------|
+| `IMAGE_GENERATION_PROVIDER` | `'scenario' \| 'comfyui' \| 'runpod'` | All | Provider selection |
+| `RUNPOD_API_KEY` | `string` | `runpod` provider | RunPod API key |
+| `RUNPOD_COMFYUI_ENDPOINT_ID` | `string` | `runpod` provider | Serverless endpoint ID |
+| `COMFYUI_ENDPOINT` | `string` | `comfyui` provider | Direct ComfyUI endpoint URL |
+| `SCENARIO_API_KEY` | `string` | `scenario` provider | Scenario.com API key |
+| `SCENARIO_SECRET_API_KEY` | `string` | `scenario` provider | Scenario.com secret key |
+
+---
+
+## Secrets Configuration
+
+### Local Development
+
+1. Copy `.hush.template` to `.hush`:
+   ```bash
+   cp .hush.template .hush
+   ```
+
+2. Fill in the values:
+   ```bash
+   IMAGE_GENERATION_PROVIDER=runpod
+   RUNPOD_API_KEY=your-runpod-api-key
+   RUNPOD_COMFYUI_ENDPOINT_ID=your-endpoint-id
+   ```
+
+3. Encrypt for local development:
+   ```bash
+   pnpm hush:encrypt
+   ```
+
+### Cloudflare Workers Deployment
+
+For production deployment, secrets must be set via Wrangler:
+
+```bash
+# Set each secret individually (prompts for value)
+wrangler secret put RUNPOD_API_KEY
+wrangler secret put RUNPOD_COMFYUI_ENDPOINT_ID
+wrangler secret put IMAGE_GENERATION_PROVIDER
+
+# Or set all at once via .env.production (not recommended for sensitive values)
+npx wrangler secret bulk < .env.production.secrets
+```
+
+**Important**: Never commit `.hush` or actual secret values to version control.
+
+### Provider Selection Flow
+
+```
+ctx.env.IMAGE_GENERATION_PROVIDER
+    ↓
+    ├─→ 'scenario' → Uses SCENARIO_API_KEY, SCENARIO_SECRET_API_KEY
+    ├─→ 'comfyui'  → Uses COMFYUI_ENDPOINT (optional, defaults to cloud.comfy.org)
+    └─→ 'runpod'   → Uses RUNPOD_API_KEY, RUNPOD_COMFYUI_ENDPOINT_ID
 ```
 
 ---
@@ -145,6 +209,7 @@ Error: clip_name: not in []
 
 ### Phase 3: Configure Environment
 
+#### Local Development
 - [ ] Update `.hush`:
   ```bash
   RUNPOD_API_KEY=<your-api-key>
@@ -152,6 +217,15 @@ Error: clip_name: not in []
   IMAGE_GENERATION_PROVIDER=comfyui
   ```
 - [ ] Encrypt: `pnpm hush:encrypt`
+
+#### Production Deployment
+- [ ] Set Cloudflare Workers secrets:
+  ```bash
+  wrangler secret put RUNPOD_API_KEY
+  wrangler secret put RUNPOD_COMFYUI_ENDPOINT_ID
+  wrangler secret put IMAGE_GENERATION_PROVIDER
+  ```
+  When prompted, enter the value for each secret.
 
 ### Phase 4: Test
 
@@ -177,7 +251,11 @@ Error: clip_name: not in []
 
 ### Phase 5: Switch Provider
 
-- [ ] Update `IMAGE_GENERATION_PROVIDER=comfyui` in production
+- [ ] Set production provider secret:
+  ```bash
+  wrangler secret put IMAGE_GENERATION_PROVIDER
+  # Enter: comfyui
+  ```
 - [ ] Monitor for errors
 - [ ] Keep Scenario.com credentials as fallback
 
@@ -214,7 +292,8 @@ docs/plans/runpod-comfyui-setup-status.md (this file)
 
 ### Modified Files
 ```
-.hush.template (added RunPod env vars)
+api/src/trpc/context.ts (added Env type bindings)
+.hush.template (added RunPod and provider selection env vars)
 ```
 
 ### Existing Files (unchanged, still using Scenario.com)
@@ -275,11 +354,41 @@ Final Asset URL
 
 ---
 
-## Contact/Support
+## Links & Resources
 
+### Our Endpoints
+- **RunPod Endpoint Console**: https://console.runpod.io/serverless/user/endpoint/pd3dqti6qlf5cs?tab=overview
+- **Comfy.org Cloud** (alternative): https://cloud.comfy.org/
+
+### Documentation
 - **RunPod Docs**: https://docs.runpod.io/
 - **ComfyUI Worker Repo**: https://github.com/runpod-workers/worker-comfyui
 - **1038lab RMBG**: https://github.com/1038lab/ComfyUI-RMBG
+
+---
+
+## Billing Notes
+
+### True Serverless (Pay Only When Running)
+
+To get **$0 cost when idle**, set:
+- **Min Workers = 0** (no always-on workers)
+- **Idle Timeout = 5-30 seconds** (how long worker stays warm after job)
+
+Trade-off: Cold starts of 30-120 seconds on first request after idle.
+
+### If Min Workers > 0
+
+You pay 24/7 for that GPU (with 20-30% discount vs on-demand). Example:
+- Min Workers = 1 on L40 → ~$16-28/day idle cost
+
+### Cost Estimates (L40 24GB GPU)
+
+| Scenario | Daily Cost |
+|----------|------------|
+| Min Workers = 0, no requests | **$0** |
+| Min Workers = 1, idle all day | ~$16-28 |
+| Min Workers = 0, 100 images (~30s each) | ~$0.50-1.50 |
 
 ---
 

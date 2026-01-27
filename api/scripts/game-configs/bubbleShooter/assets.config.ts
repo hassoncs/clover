@@ -1,0 +1,110 @@
+import type { GameAssetConfig, EntitySpec, BackgroundSpec, TitleHeroSpec } from '../../../src/ai/pipeline/types';
+
+const BUBBLE_RADIUS = 0.35;
+const BUBBLE_DIAMETER = BUBBLE_RADIUS * 2;
+const SHOOTER_WIDTH = 0.8;
+const SHOOTER_HEIGHT = 0.4;
+const SHOOTER_BASE_RADIUS = 0.5;
+
+export const bubbleShooterConfig: GameAssetConfig = {
+  gameId: 'bubbleShooter',
+  gameTitle: 'Bubble Shooter',
+  theme: 'underground crystal cavern, glowing minerals, magical gems, spelunking adventure',
+  style: 'cartoon',
+  r2Prefix: 'generated/bubbleShooter',
+  assets: [
+    {
+      type: 'entity',
+      id: 'bubble_red',
+      shape: 'circle',
+      width: BUBBLE_DIAMETER,
+      height: BUBBLE_DIAMETER,
+      entityType: 'item',
+      description: 'a brilliant ruby crystal gem with faceted surfaces, glowing with inner crimson fire, magical red sparkles emanating from within, translucent with deep red core',
+      color: '#E53935',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'bubble_blue',
+      shape: 'circle',
+      width: BUBBLE_DIAMETER,
+      height: BUBBLE_DIAMETER,
+      entityType: 'item',
+      description: 'a radiant sapphire crystal gem with faceted surfaces, swirling ethereal blue energy inside, glowing with cool azure light, translucent with deep blue core',
+      color: '#1E88E5',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'bubble_green',
+      shape: 'circle',
+      width: BUBBLE_DIAMETER,
+      height: BUBBLE_DIAMETER,
+      entityType: 'item',
+      description: 'a luminous emerald crystal gem with faceted surfaces, pulsing with verdant nature magic, glowing with forest green light, translucent with deep green core',
+      color: '#43A047',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'bubble_yellow',
+      shape: 'circle',
+      width: BUBBLE_DIAMETER,
+      height: BUBBLE_DIAMETER,
+      entityType: 'item',
+      description: 'a golden topaz crystal gem with faceted surfaces, radiating warm sunlight energy, glowing with honey-colored magical light, translucent with amber core',
+      color: '#FDD835',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'bubble_purple',
+      shape: 'circle',
+      width: BUBBLE_DIAMETER,
+      height: BUBBLE_DIAMETER,
+      entityType: 'item',
+      description: 'a mystical amethyst crystal gem with faceted surfaces, swirling with purple arcane energy, glowing with violet magical light, translucent with deep purple core',
+      color: '#8E24AA',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'projectile',
+      shape: 'circle',
+      width: BUBBLE_DIAMETER,
+      height: BUBBLE_DIAMETER,
+      entityType: 'item',
+      description: 'a glowing crystal orb ready to be launched, swirling with multicolored magical energy, bright white core with rainbow sparkles, trailing magical particles',
+      color: '#FFFFFF',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'shooter',
+      shape: 'box',
+      width: SHOOTER_WIDTH,
+      height: SHOOTER_HEIGHT,
+      entityType: 'ui',
+      description: 'a magical crystal launcher cannon made of carved obsidian and glowing runes, ancient dwarven craftsmanship, embedded with small gems, metallic accents with mystical engravings',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'shooterBase',
+      shape: 'circle',
+      width: SHOOTER_BASE_RADIUS * 2,
+      height: SHOOTER_BASE_RADIUS * 2,
+      entityType: 'platform',
+      description: 'a circular stone pedestal with carved runes, ancient dwarven design, embedded crystals around the edge, mossy stone texture with glowing magical inscriptions',
+    } as EntitySpec,
+    {
+      type: 'background',
+      id: 'background',
+      prompt: 'A deep underground crystal cavern for a bubble shooter puzzle game. Massive stalactites and stalagmites made of glowing crystals in various colors. Bioluminescent minerals embedded in dark cave walls. Magical gem formations casting colorful light. Underground lake reflecting crystal glow. Mysterious spelunking adventure atmosphere. Deep purples, blues, and warm gem colors against dark cave stone.',
+      width: 1024,
+      height: 1024,
+    } as BackgroundSpec,
+    {
+      type: 'title_hero',
+      id: 'title_hero',
+      title: 'Bubble Shooter',
+      themeDescription: 'Crystal cavern aesthetic with glowing gems, magical underground adventure vibes, fantasy typography with crystal and gem accents, deep cave purples and blues with colorful gem highlights',
+      width: 1024,
+      height: 512,
+    } as TitleHeroSpec,
+  ],
+};

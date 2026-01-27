@@ -1,9 +1,11 @@
 import type { EntityManager } from '../EntityManager';
+import type { InputEntityManager } from '../InputEntityManager';
 import type { CollisionInfo, GameState, InputState, InputEvents } from '../BehaviorContext';
 import type { ComputedValueSystem, EvalContext } from '@slopcade/shared';
 import type { Physics2D } from '../../physics2d/Physics2D';
 import type { RuntimeEntity } from '../types';
 import type { CameraSystem } from '../CameraSystem';
+import type { GodotBridge } from '../../godot/types';
 
 export type ListValue = (number | string | boolean)[];
 
@@ -31,9 +33,11 @@ export interface IGameStateMutator {
 
 export interface RuleContext {
   entityManager: EntityManager;
+  inputEntityManager?: InputEntityManager;
   physics: Physics2D;
   mutator: IGameStateMutator;
   camera?: CameraSystem;
+  bridge?: GodotBridge;
   score: number;
   lives: number;
   elapsed: number;
@@ -48,4 +52,5 @@ export interface RuleContext {
   screenBounds?: { minX: number; maxX: number; minY: number; maxY: number };
   timeScale?: number;
   setTimeScale?: (scale: number, duration?: number) => void;
+  playSound?: (soundId: string, volume?: number) => void;
 }

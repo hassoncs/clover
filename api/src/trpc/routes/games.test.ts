@@ -28,7 +28,9 @@ CREATE TABLE IF NOT EXISTS games (
   play_count INTEGER DEFAULT 0,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
-  deleted_at INTEGER
+  deleted_at INTEGER,
+  base_game_id TEXT REFERENCES games(id),
+  forked_from_id TEXT REFERENCES games(id)
 );
 
 -- Indexes for common queries
@@ -239,7 +241,7 @@ describe('Games Router', () => {
       expect(result.errors.some(e => e.code === 'NO_ENTITIES')).toBe(true);
     });
 
-    it('should return warnings for game missing win condition', async () => {
+    it('should return errors for game missing win condition', async () => {
       const caller = appRouter.createCaller(ctx);
       
       const result = await caller.games.validate({
@@ -256,7 +258,7 @@ describe('Games Router', () => {
         }),
       });
 
-      expect(result.warnings.some(w => w.code === 'NO_WIN_CONDITION')).toBe(true);
+      expect(result.errors.some(e => e.code === 'MISSING_WIN_CONDITION')).toBe(true);
     });
 
     it('should include summary in response', async () => {

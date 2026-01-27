@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+An enchanted forest clearing at twilight for a puzzle game. Ancient moss-covered stone pedestals arranged in a mystical pattern. Glowing fireflies floating in the air. Magical flowers with bioluminescent petals. Soft purple and blue ambient lighting filtering through towering trees. Fairy tale atmosphere with sparkles and magical particles. Deep forest greens and mystical purples. No text, no characters, just the environment. High quality game background.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

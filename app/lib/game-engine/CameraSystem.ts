@@ -98,9 +98,12 @@ export class CameraSystem {
     const worldWidth = worldBounds?.width ?? 20;
     const worldHeight = worldBounds?.height ?? 12;
     
+    const cameraType = gameCamera?.type ?? 'fixed';
+    const initialPosition = { x: 0, y: 0 };
+    
     const config: CameraConfig = {
-      type: gameCamera?.type ?? 'fixed',
-      position: { x: worldWidth / 2, y: worldHeight / 2 },
+      type: cameraType,
+      position: initialPosition,
       zoom: gameCamera?.zoom ?? 1,
       minZoom: gameCamera?.minZoom,
       maxZoom: gameCamera?.maxZoom,

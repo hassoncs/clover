@@ -11,7 +11,7 @@ Every game requires four categories of primitives:
 | Category | Purpose | Technology |
 |----------|---------|------------|
 | **Visual** | What players see | React Native Skia |
-| **Physics** | How objects move and collide | Box2D / Planck.js |
+| **Physics** | How objects move and collide | Godot Physics |
 | **Gameplay** | Game logic and mechanics | Custom systems |
 | **Structural** | Architecture and organization | ECS-lite pattern |
 
@@ -205,7 +205,7 @@ const ParticleEmitter = ({ particles, onUpdate }) => {
 
 ---
 
-## Physics Primitives (Box2D)
+## Physics Primitives (Godot)
 
 ### Body Types
 
@@ -224,173 +224,59 @@ const BODY_DYNAMIC = 2;
 
 ### Shapes
 
-#### Box (Rectangle)
-```typescript
-const createBox = (Box2d, halfWidth, halfHeight) => {
-  const shape = Box2d.b2PolygonShape();
-  shape.SetAsBox(halfWidth, halfHeight);
-  return shape;
-};
-```
+Godot Physics supports multiple shape types for collision detection:
 
-#### Circle
-```typescript
-const createCircle = (Box2d, radius) => {
-  const shape = Box2d.b2CircleShape();
-  shape.SetRadius(radius);
-  return shape;
-};
-```
+| Shape | Godot Type | Use Case |
+|-------|-----------|----------|
+| **Box** | RectangleShape2D | Platforms, walls, boxes |
+| **Circle** | CircleShape2D | Balls, wheels, round objects |
+| **Polygon** | ConvexPolygonShape2D | Custom convex shapes |
+| **Edge** | SegmentShape2D | Single line segments |
+| **Chain** | ConcavePolygonShape2D | Terrain, complex edges |
 
-#### Polygon (up to 8 vertices)
-```typescript
-const createPolygon = (Box2d, vertices) => {
-  // vertices = [{x, y}, {x, y}, ...] - max 8 points, convex only
-  const shape = Box2d.b2PolygonShape();
-  const b2Vertices = vertices.map(v => Box2d.b2Vec2(v.x, v.y));
-  shape.Set(b2Vertices);
-  return shape;
-};
-```
-
-#### Chain (Terrain)
-```typescript
-const createChain = (Box2d, points) => {
-  // points = [{x, y}, ...] - for terrain edges
-  const shape = Box2d.b2ChainShape();
-  const b2Points = points.map(p => Box2d.b2Vec2(p.x, p.y));
-  shape.CreateChain(b2Points);
-  return shape;
-};
-```
+Shapes are attached to physics bodies via the GameBridge JSON interface. Define shapes in your entity template and send to Godot via the bridge.
 
 ### Joints
 
-#### Revolute Joint (Hinges, Wheels)
-```typescript
-const createRevoluteJoint = (Box2d, world, bodyA, bodyB, anchor, options = {}) => {
-  const jointDef = Box2d.b2RevoluteJointDef();
-  jointDef.Initialize(bodyA, bodyB, Box2d.b2Vec2(anchor.x, anchor.y));
-  
-  // Motor (for wheels, flippers)
-  if (options.enableMotor) {
-    jointDef.enableMotor = true;
-    jointDef.motorSpeed = options.motorSpeed || 0;
-    jointDef.maxMotorTorque = options.maxMotorTorque || 100;
-  }
-  
-  // Limits (for ragdoll joints)
-  if (options.enableLimit) {
-    jointDef.enableLimit = true;
-    jointDef.lowerAngle = options.lowerAngle || -Math.PI / 4;
-    jointDef.upperAngle = options.upperAngle || Math.PI / 4;
-  }
-  
-  return world.CreateJoint(jointDef);
-};
-```
+Godot Physics supports various joint types for connecting bodies:
 
-#### Distance Joint (Ropes, Springs)
-```typescript
-const createDistanceJoint = (Box2d, world, bodyA, bodyB, anchorA, anchorB, options = {}) => {
-  const jointDef = Box2d.b2DistanceJointDef();
-  jointDef.Initialize(bodyA, bodyB, 
-    Box2d.b2Vec2(anchorA.x, anchorA.y),
-    Box2d.b2Vec2(anchorB.x, anchorB.y)
-  );
-  
-  // Spring properties (for soft connections)
-  jointDef.frequencyHz = options.frequencyHz || 4;
-  jointDef.dampingRatio = options.dampingRatio || 0.5;
-  
-  // Fixed length (for rigid ropes)
-  if (options.length !== undefined) {
-    jointDef.length = options.length;
-  }
-  
-  return world.CreateJoint(jointDef);
-};
-```
+| Joint Type | Godot Type | Use Case |
+|-----------|-----------|----------|
+| **Revolute** | PinJoint2D | Hinges, wheels, rotating connections |
+| **Distance** | DampedSpringJoint2D | Ropes, springs, elastic connections |
+| **Prismatic** | SliderJoint (via script) | Pistons, sliders, linear motion |
+| **Wheel** | PinJoint2D + SliderJoint | Vehicle suspension |
+| **Weld** | Stiff spring or merged bodies | Rigid connections |
+| **Rope** | DampedSpringJoint2D with max length | Rope constraints |
 
-#### Prismatic Joint (Pistons, Sliders)
-```typescript
-const createPrismaticJoint = (Box2d, world, bodyA, bodyB, anchor, axis, options = {}) => {
-  const jointDef = Box2d.b2PrismaticJointDef();
-  jointDef.Initialize(bodyA, bodyB,
-    Box2d.b2Vec2(anchor.x, anchor.y),
-    Box2d.b2Vec2(axis.x, axis.y)
-  );
-  
-  if (options.enableLimit) {
-    jointDef.enableLimit = true;
-    jointDef.lowerTranslation = options.lowerTranslation || -1;
-    jointDef.upperTranslation = options.upperTranslation || 1;
-  }
-  
-  if (options.enableMotor) {
-    jointDef.enableMotor = true;
-    jointDef.motorSpeed = options.motorSpeed || 0;
-    jointDef.maxMotorForce = options.maxMotorForce || 100;
-  }
-  
-  return world.CreateJoint(jointDef);
-};
-```
-
-#### Wheel Joint (Vehicles)
-```typescript
-const createWheelJoint = (Box2d, world, chassis, wheel, anchor, axis, options = {}) => {
-  const jointDef = Box2d.b2WheelJointDef();
-  jointDef.Initialize(chassis, wheel,
-    Box2d.b2Vec2(anchor.x, anchor.y),
-    Box2d.b2Vec2(axis.x, axis.y)
-  );
-  
-  // Suspension
-  jointDef.frequencyHz = options.frequencyHz || 4;
-  jointDef.dampingRatio = options.dampingRatio || 0.7;
-  
-  // Motor
-  jointDef.enableMotor = options.enableMotor || false;
-  jointDef.motorSpeed = options.motorSpeed || 0;
-  jointDef.maxMotorTorque = options.maxMotorTorque || 100;
-  
-  return world.CreateJoint(jointDef);
-};
-```
+Joints are created via the GameBridge JSON interface. Define joint configurations in your entity template and send to Godot for instantiation.
 
 ### Sensors (Trigger Zones)
 
-Sensors detect overlap without physical collision response—perfect for collectibles, triggers, and ground detection.
+Godot Physics uses Area2D nodes as sensors to detect overlap without physical collision response—perfect for collectibles, triggers, and ground detection.
+
+Sensors are created via the GameBridge JSON interface by setting the body type to "sensor" or using Area2D nodes in your Godot scene definitions.
+
+### Physics Material Properties
+
+Godot Physics bodies use PhysicsMaterial to define surface properties:
 
 ```typescript
-const createSensor = (Box2d, body, shape, userData) => {
-  const fixtureDef = Box2d.b2FixtureDef();
-  fixtureDef.shape = shape;
-  fixtureDef.isSensor = true;  // Key property!
-  fixtureDef.userData = userData;
-  
-  return body.CreateFixture(fixtureDef);
-};
-```
-
-### Fixture Properties
-
-```typescript
-interface FixtureConfig {
-  density: number;      // Mass per area (0 for static bodies)
+interface PhysicsMaterialConfig {
+  mass: number;         // Body mass (calculated from density in TypeScript)
   friction: number;     // 0 = ice, 1 = rubber
-  restitution: number;  // 0 = no bounce, 1 = perfect bounce
-  isSensor: boolean;    // Detect but don't collide
+  bounce: number;       // 0 = no bounce, 1 = perfect bounce
+  linearDamp: number;   // Linear velocity damping
+  angularDamp: number;  // Angular velocity damping
 }
 
 // Common presets
 const PRESETS = {
-  metal: { density: 7.8, friction: 0.6, restitution: 0.1 },
-  wood: { density: 0.5, friction: 0.4, restitution: 0.2 },
-  rubber: { density: 1.2, friction: 0.9, restitution: 0.8 },
-  ice: { density: 0.9, friction: 0.05, restitution: 0.1 },
-  bouncy: { density: 0.5, friction: 0.3, restitution: 0.9 },
+  metal: { friction: 0.6, bounce: 0.1 },
+  wood: { friction: 0.4, bounce: 0.2 },
+  rubber: { friction: 0.9, bounce: 0.8 },
+  ice: { friction: 0.05, bounce: 0.1 },
+  bouncy: { friction: 0.3, bounce: 0.9 },
 };
 ```
 
@@ -640,7 +526,7 @@ interface Entity {
   parent?: Entity;
   
   // Runtime references
-  body?: b2Body;        // Box2D body reference
+  godotNodeId?: string; // Godot node reference ID
   userData?: any;       // Custom data
 }
 ```
@@ -745,25 +631,25 @@ class GameStateMachine {
 
 ### World Units
 
-- **Physics**: Meters (Box2D native units)
+- **Physics**: World units (Godot native units)
 - **Rendering**: Pixels (screen units)
-- **Conversion**: `PIXELS_PER_METER` constant (typically 50)
+- **Conversion**: `PIXELS_PER_UNIT` constant (typically 50)
 
 ```typescript
-const PIXELS_PER_METER = 50;
+const PIXELS_PER_UNIT = 50;
 
 // Physics → Screen
-const toScreen = (meters: number) => meters * PIXELS_PER_METER;
+const toScreen = (units: number) => units * PIXELS_PER_UNIT;
 const toScreenVec = (vec: { x: number, y: number }) => ({
-  x: vec.x * PIXELS_PER_METER,
-  y: vec.y * PIXELS_PER_METER
+  x: vec.x * PIXELS_PER_UNIT,
+  y: vec.y * PIXELS_PER_UNIT
 });
 
 // Screen → Physics
-const toPhysics = (pixels: number) => pixels / PIXELS_PER_METER;
+const toPhysics = (pixels: number) => pixels / PIXELS_PER_UNIT;
 const toPhysicsVec = (vec: { x: number, y: number }) => ({
-  x: vec.x / PIXELS_PER_METER,
-  y: vec.y / PIXELS_PER_METER
+  x: vec.x / PIXELS_PER_UNIT,
+  y: vec.y / PIXELS_PER_UNIT
 });
 ```
 
@@ -772,12 +658,12 @@ const toPhysicsVec = (vec: { x: number, y: number }) => ({
 ```
 (0,0) ────────────────────────► X+ (right)
   │
-  │     Origin at top-left
+  │     Origin at center (Godot default)
   │     Y increases downward
-  │     (Standard screen coordinates)
+  │     (Godot 2D coordinate system)
   │
-  │     Box2D also uses Y-down by default
-  │     when gravity is positive Y
+  │     Godot Physics uses center-origin
+  │     coordinates for all calculations
   │
   ▼
   Y+ (down)

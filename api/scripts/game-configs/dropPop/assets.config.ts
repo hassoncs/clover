@@ -1,0 +1,135 @@
+import type { GameAssetConfig, EntitySpec, BackgroundSpec, TitleHeroSpec } from '../../../src/ai/pipeline/types';
+
+const WALL_THICKNESS = 0.3;
+const CONTAINER_LEFT = 1.5;
+const CONTAINER_RIGHT = 8.5;
+const CONTAINER_BOTTOM = 12.5;
+const DANGER_LINE_Y = 2.5;
+const AIM_Y = 1.5;
+
+const FRUIT_RADII = [0.3, 0.4, 0.5, 0.6, 0.7, 0.85];
+
+export const dropPopConfig: GameAssetConfig = {
+  gameId: 'dropPop',
+  gameTitle: 'Drop & Pop',
+  theme: 'tropical island paradise, juicy fruits, beach vibes, summer sunshine',
+  style: 'cartoon',
+  r2Prefix: 'generated/dropPop',
+  assets: [
+    {
+      type: 'entity',
+      id: 'wall',
+      shape: 'box',
+      width: WALL_THICKNESS,
+      height: CONTAINER_BOTTOM - DANGER_LINE_Y,
+      entityType: 'platform',
+      description: 'a vertical bamboo wall segment with natural wood grain texture, tropical tiki-style bamboo poles lashed together with rope, warm brown tones',
+      color: '#37474F',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'floor',
+      shape: 'box',
+      width: CONTAINER_RIGHT - CONTAINER_LEFT + WALL_THICKNESS * 2,
+      height: WALL_THICKNESS,
+      entityType: 'platform',
+      description: 'a horizontal bamboo floor panel with woven texture, tropical tiki-style bamboo slats, warm brown tones with natural wood grain',
+      color: '#37474F',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'dangerLine',
+      shape: 'box',
+      width: CONTAINER_RIGHT - CONTAINER_LEFT,
+      height: 0.05,
+      entityType: 'ui',
+      description: 'a glowing red warning stripe with hazard pattern, pulsing danger indicator line, bright red with subtle glow effect',
+      color: '#FF5252',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'aimIndicator',
+      shape: 'box',
+      width: 0.1,
+      height: CONTAINER_BOTTOM - AIM_Y - 0.5,
+      entityType: 'ui',
+      description: 'a thin translucent white aiming guide line, subtle dotted drop indicator, semi-transparent white with soft glow',
+      color: '#FFFFFF22',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'fruit0',
+      shape: 'circle',
+      width: FRUIT_RADII[0] * 2,
+      height: FRUIT_RADII[0] * 2,
+      entityType: 'item',
+      description: 'a plump juicy cherry with glossy red skin and a small green stem, vibrant tropical fruit with highlight shine, cute and round',
+      color: '#E53935',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'fruit1',
+      shape: 'circle',
+      width: FRUIT_RADII[1] * 2,
+      height: FRUIT_RADII[1] * 2,
+      entityType: 'item',
+      description: 'a cluster of purple grapes with glossy skin and subtle highlights, juicy tropical fruit bunch, rich purple with shine',
+      color: '#7B1FA2',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'fruit2',
+      shape: 'circle',
+      width: FRUIT_RADII[2] * 2,
+      height: FRUIT_RADII[2] * 2,
+      entityType: 'item',
+      description: 'a bright orange citrus fruit with textured peel and glossy surface, juicy tropical orange with highlight shine, vibrant orange color',
+      color: '#FF9800',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'fruit3',
+      shape: 'circle',
+      width: FRUIT_RADII[3] * 2,
+      height: FRUIT_RADII[3] * 2,
+      entityType: 'item',
+      description: 'a crisp green apple with glossy skin and a small leaf on the stem, fresh tropical fruit with highlight shine, bright green',
+      color: '#4CAF50',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'fruit4',
+      shape: 'circle',
+      width: FRUIT_RADII[4] * 2,
+      height: FRUIT_RADII[4] * 2,
+      entityType: 'item',
+      description: 'a ripe yellow-green pear with smooth skin and subtle blush, juicy tropical fruit with highlight shine, light green with yellow tones',
+      color: '#8BC34A',
+    } as EntitySpec,
+    {
+      type: 'entity',
+      id: 'fruit5',
+      shape: 'circle',
+      width: FRUIT_RADII[5] * 2,
+      height: FRUIT_RADII[5] * 2,
+      entityType: 'item',
+      description: 'a large fuzzy peach with soft pink-orange skin and rosy blush, juicy tropical fruit with velvety texture, warm peachy tones',
+      color: '#FFAB91',
+    } as EntitySpec,
+    {
+      type: 'background',
+      id: 'background',
+      prompt: 'A tropical beach paradise at golden hour for a puzzle game. Crystal clear turquoise ocean waves gently lapping at white sandy shore. Tall palm trees swaying in the breeze with coconuts. Vibrant sunset sky with orange, pink, and purple gradients. Distant tropical islands on the horizon. Colorful tropical flowers and lush vegetation. Summer vacation paradise atmosphere with warm sunshine.',
+      width: 1024,
+      height: 1024,
+    } as BackgroundSpec,
+    {
+      type: 'title_hero',
+      id: 'title_hero',
+      title: 'Drop & Pop',
+      themeDescription: 'Tropical fruit paradise aesthetic with juicy fruit-styled letters, beach vibes, summer sunshine glow, vibrant tropical colors, playful and fun typography with fruit accents',
+      width: 1024,
+      height: 512,
+    } as TitleHeroSpec,
+  ],
+};

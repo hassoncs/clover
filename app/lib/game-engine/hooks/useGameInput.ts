@@ -5,15 +5,18 @@ import type { CameraSystem } from "../CameraSystem";
 import type { LoadedGame } from "../GameLoader";
 import type { Physics2D } from "../../physics2d";
 import type { ViewportSystem } from "../ViewportSystem";
+import type { TiltConfig } from "@slopcade/shared";
+import { useTiltInput } from "./useTiltInput";
 
 interface UseGameInputProps {
   cameraRef: React.RefObject<CameraSystem | null>;
   gameRef: React.RefObject<LoadedGame | null>;
   physicsRef: React.RefObject<Physics2D | null>;
   viewportSystemRef?: React.RefObject<ViewportSystem | null>;
+  tiltConfig?: TiltConfig;
 }
 
-export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef }: UseGameInputProps) {
+export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef, tiltConfig }: UseGameInputProps) {
   const inputRef = useRef<InputState>({});
   const dragStartRef = useRef<{
     x: number;
@@ -30,6 +33,19 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
     jump: false,
     action: false,
   });
+
+  const handleTiltUpdate = useCallback((tilt: { x: number; y: number }) => {
+    inputRef.current.tilt = tilt;
+  }, []);
+
+  useTiltInput(
+    {
+      enabled: tiltConfig?.enabled ?? false,
+      sensitivity: tiltConfig?.sensitivity,
+      updateInterval: tiltConfig?.updateInterval,
+    },
+    handleTiltUpdate
+  );
 
   const handleTouchStart = useCallback((event: GestureResponderEvent) => {
     const camera = cameraRef.current;
@@ -139,6 +155,7 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
       y,
       worldX: worldPos.x,
       worldY: worldPos.y,
+      targetEntityId: dragStart?.targetEntityId,
     };
     console.log("[Input] Tap set:", inputRef.current.tap);
 
@@ -222,12 +239,12 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
       inputRef.current.buttons = { ...buttonsRef.current };
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("keydown", handleKeyDown, { capture: true });
+    window.addEventListener("keyup", handleKeyUp, { capture: true });
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("keydown", handleKeyDown, { capture: true });
+      window.removeEventListener("keyup", handleKeyUp, { capture: true });
     };
   }, []);
 

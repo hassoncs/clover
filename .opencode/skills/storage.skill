@@ -1,0 +1,214 @@
+---
+name: storage
+type: user
+description: Cross-platform local storage for non-sensitive data. Use when you need to persist user preferences, dev settings, or app state across reloads.
+triggers:
+  - "save to local storage"
+  - "persist settings"
+  - "remember user preferences"
+  - "store data locally"
+  - "AsyncStorage"
+  - "localStorage"
+---
+
+# Local Storage Pattern
+
+## When to Use
+
+Use `lib/utils/storage.ts` for **non-sensitive data** that needs to persist across app reloads:
+
+✅ **Good Use Cases:**
+- User preferences (theme, language, display settings)
+- Developer tool settings (debug flags, toolbar state)
+- UI state (collapsed/expanded panels, last-selected tab)
+- Onboarding progress (tutorial completion flags)
+- Feature flags (A/B test assignments)
+- Draft content (unsaved form data)
+
+❌ **DO NOT Use For:**
+- Authentication tokens (use `lib/auth/storage` instead - encrypted)
+- Sensitive user data (passwords, API keys, personal info)
+- Large datasets (use database instead)
+- Server-synced state (use TanStack Query instead)
+
+## API Reference
+
+### Basic Storage
+
+```typescript
+import { storage } from '@/lib/utils/storage';
+
+await storage.getItem('my-key');           // Returns: string | null
+await storage.setItem('my-key', 'value');  // Void
+await storage.removeItem('my-key');        // Void
+await storage.clear();                     // Void (clears ALL storage)
+```
+
+### Type-Safe JSON Storage (Recommended)
+
+```typescript
+import { getStorageItem, setStorageItem, removeStorageItem } from '@/lib/utils/storage';
+
+interface UserPrefs {
+  theme: 'light' | 'dark';
+  language: string;
+  notifications: boolean;
+}
+
+const DEFAULT_PREFS: UserPrefs = {
+  theme: 'light',
+  language: 'en',
+  notifications: true,
+};
+
+const prefs = await getStorageItem<UserPrefs>('user_prefs', DEFAULT_PREFS);
+
+await setStorageItem('user_prefs', { ...prefs, theme: 'dark' });
+
+await removeStorageItem('user_prefs');
+```
+
+## Implementation Pattern
+
+### Persistent State Hook
+
+```typescript
+import { useState, useEffect, useCallback } from 'react';
+import { getStorageItem, setStorageItem } from '@/lib/utils/storage';
+
+const STORAGE_KEY = '@my_feature_state';
+
+interface MyFeatureState {
+  setting1: boolean;
+  setting2: string;
+}
+
+const DEFAULT_STATE: MyFeatureState = {
+  setting1: false,
+  setting2: 'default',
+};
+
+export function useMyFeature() {
+  const [state, setState] = useState<MyFeatureState>(DEFAULT_STATE);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const stored = await getStorageItem<MyFeatureState>(STORAGE_KEY, DEFAULT_STATE);
+        setState(stored);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadSettings();
+  }, []);
+
+  const updateSetting = useCallback((updates: Partial<MyFeatureState>) => {
+    setState(prev => {
+      const next = { ...prev, ...updates };
+      setStorageItem(STORAGE_KEY, next);
+      return next;
+    });
+  }, []);
+
+  return { state, isLoading, updateSetting };
+}
+```
+
+### React Context Pattern
+
+```typescript
+import { createContext, useContext } from 'react';
+import { useMyFeature } from '@/lib/hooks/useMyFeature';
+
+const MyFeatureContext = createContext<ReturnType<typeof useMyFeature> | null>(null);
+
+export function MyFeatureProvider({ children }) {
+  const feature = useMyFeature();
+  return <MyFeatureContext.Provider value={feature}>{children}</MyFeatureContext.Provider>;
+}
+
+export function useMyFeatureContext() {
+  const ctx = useContext(MyFeatureContext);
+  if (!ctx) throw new Error('useMyFeatureContext must be within MyFeatureProvider');
+  return ctx;
+}
+```
+
+## Platform Behavior
+
+| Platform | Implementation | Location |
+|----------|----------------|----------|
+| **Web** | `localStorage` | Browser storage (persists per domain) |
+| **iOS/Android** | `AsyncStorage` | Device storage (persists per app install) |
+
+Both are **automatically cleared** when:
+- User clears browser data (Web)
+- User deletes app (Native)
+- User calls `storage.clear()` or `AsyncStorage.clear()`
+
+## Storage Keys Convention
+
+Use namespaced keys with `@` prefix:
+
+```typescript
+const STORAGE_KEY = '@slopcade_feature_name';
+```
+
+**Examples:**
+- `@slopcade_dev_tools` - Developer toolbar settings
+- `@slopcade_user_prefs` - User preferences
+- `@slopcade_onboarding` - Tutorial progress
+
+## Example: DevTools Implementation
+
+See **real implementation** in:
+- `app/lib/hooks/useDevTools.ts` - Persistent state hook
+- `app/lib/contexts/DevToolsContext.tsx` - Context provider
+- `app/components/game/DevToolbar.tsx` - UI that triggers updates
+
+**Flow:**
+1. User toggles checkbox → `updateState()` called
+2. State updates → `setStorageItem()` saves to storage
+3. Context re-renders → consumers see new state instantly
+4. User reloads app → `getStorageItem()` restores state
+
+## Migration from Direct AsyncStorage
+
+**Before:**
+```typescript
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const stored = await AsyncStorage.getItem('my-key');
+const parsed = stored ? JSON.parse(stored) : defaultValue;
+
+await AsyncStorage.setItem('my-key', JSON.stringify(value));
+```
+
+**After:**
+```typescript
+import { getStorageItem, setStorageItem } from '@/lib/utils/storage';
+
+const value = await getStorageItem('my-key', defaultValue);
+
+await setStorageItem('my-key', value);
+```
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| `app/lib/utils/storage.ts` | Storage abstraction (USE THIS) |
+| `app/lib/auth/storage.ts` | Encrypted storage (auth tokens only) |
+| `app/lib/hooks/useDevTools.ts` | Reference implementation |
+
+## When NOT to Use Storage
+
+| Don't Use | Use Instead |
+|-----------|-------------|
+| Server-synced data | TanStack Query + tRPC |
+| Authentication tokens | `lib/auth/storage` (encrypted) |
+| Large datasets (>5 MB) | Database (Supabase) |
+| Temporary session state | React state only |
+| Cross-device sync | Backend + TanStack Query |

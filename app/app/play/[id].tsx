@@ -1,27 +1,28 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { View, Text, Pressable, ActivityIndicator, TextInput, Modal, ScrollView } from "react-native";
+import { View, Text, Pressable, ActivityIndicator, TextInput, Modal, ScrollView, Animated } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { trpc } from "@/lib/trpc/client";
 import type { GameDefinition, AssetPack } from "@slopcade/shared";
-import { WithSkia } from "../../components/WithSkia";
+import { WithGodot } from "../../components/WithGodot";
 import { FullScreenHeader } from "../../components/FullScreenHeader";
 import { EntityAssetList, ParallaxAssetPanel } from "../../components/assets";
+import { AssetLoadingScreen } from "../../components/game";
+import { useGamePreloader } from "@/lib/hooks/useGamePreloader";
+import type { ResolvedPackEntry } from "@/lib/assets";
 
 export default function PlayScreen() {
   const router = useRouter();
-  const { id, definition: definitionParam } = useLocalSearchParams<{
+  const { id, definition: definitionParam, packId } = useLocalSearchParams<{
     id: string;
     definition?: string;
+    packId?: string;
   }>();
   
   const [gameDefinition, setGameDefinition] = useState<GameDefinition | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingDefinition, setIsLoadingDefinition] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [runtimeKey, setRuntimeKey] = useState(0);
-
-  const [renderMode, setRenderMode] = useState<'default' | 'primitive'>('default');
-  const [showOverlays, setShowOverlays] = useState(false);
   const [showAssetMenu, setShowAssetMenu] = useState(false);
   const [genPrompt, setGenPrompt] = useState("");
   const [selectedStyle, setSelectedStyle] = useState<'pixel' | 'cartoon' | '3d' | 'flat'>('pixel');
@@ -31,21 +32,83 @@ export default function PlayScreen() {
   const [activeAssetPackId, setActiveAssetPackId] = useState<string | undefined>(undefined);
   const [isForking, setIsForking] = useState(false);
 
+  const [resolvedPackEntries, setResolvedPackEntries] = useState<Record<string, ResolvedPackEntry> | undefined>(undefined);
+  const [availablePacks, setAvailablePacks] = useState<{ id: string; name: string; isComplete: boolean }[]>([]);
+  const [isLoadingPack, setIsLoadingPack] = useState(false);
+  const [godotReady, setGodotReady] = useState(false);
+  const [loadingDismissed, setLoadingDismissed] = useState(false);
+  const loadingOpacity = useRef(new Animated.Value(1)).current;
+
+  const { phase, progress, imageUrls, startPreload, skipPreload, reset } = useGamePreloader(gameDefinition, {
+    resolvedPackEntries,
+  });
+
+  useEffect(() => {
+    if (id && id !== "preview") {
+      trpc.assetSystem.getCompatiblePacks.query({ gameId: id })
+        .then(result => {
+          setAvailablePacks(result.packs);
+        })
+        .catch(err => console.error("Failed to fetch compatible packs:", err));
+    }
+  }, [id]);
+
+  useEffect(() => {
+    const loadPack = async () => {
+      if (!id || id === "preview" || !packId) {
+        setResolvedPackEntries(undefined);
+        return;
+      }
+
+      setIsLoadingPack(true);
+      try {
+        const result = await trpc.assetSystem.getResolvedForGame.query({
+          gameId: id,
+          packId,
+        });
+
+        const entries: Record<string, ResolvedPackEntry> = {};
+        Object.entries(result.entriesByTemplateId).forEach(([templateId, entry]) => {
+          if (entry.imageUrl) {
+            entries[templateId] = {
+              imageUrl: entry.imageUrl,
+              placement: entry.placement || undefined,
+            };
+          }
+        });
+
+        setResolvedPackEntries(entries);
+        setActiveAssetPackId(packId);
+      } catch (err) {
+        console.error("Failed to load asset pack:", err);
+        setResolvedPackEntries(undefined);
+      } finally {
+        setIsLoadingPack(false);
+      }
+    };
+
+    loadPack();
+  }, [id, packId]);
+
   useEffect(() => {
     const loadGame = async () => {
-      setIsLoading(true);
+      setIsLoadingDefinition(true);
       setError(null);
 
       try {
         if (definitionParam) {
           const parsed = JSON.parse(definitionParam) as GameDefinition;
           setGameDefinition(parsed);
-          setActiveAssetPackId(parsed.activeAssetPackId);
+          if (!packId) {
+            setActiveAssetPackId(parsed.activeAssetPackId);
+          }
         } else if (id && id !== "preview") {
           const game = await trpc.games.get.query({ id });
           const parsed = JSON.parse(game.definition) as GameDefinition;
           setGameDefinition(parsed);
-          setActiveAssetPackId(parsed.activeAssetPackId);
+          if (!packId) {
+            setActiveAssetPackId(parsed.activeAssetPackId);
+          }
 
           await trpc.games.incrementPlayCount.mutate({ id });
         } else {
@@ -55,20 +118,55 @@ export default function PlayScreen() {
         const message = err instanceof Error ? err.message : "Failed to load game";
         setError(message);
       } finally {
-        setIsLoading(false);
+        setIsLoadingDefinition(false);
       }
     };
 
     loadGame();
-  }, [id, definitionParam]);
+  }, [id, definitionParam, packId]);
+
+  useEffect(() => {
+    if (gameDefinition && !isLoadingDefinition && !isLoadingPack && phase === 'idle') {
+      startPreload();
+    }
+  }, [gameDefinition, isLoadingDefinition, isLoadingPack, phase, startPreload]);
 
   const handleGameEnd = useCallback((state: "won" | "lost") => {
     console.log(`Game ended: ${state}`);
   }, []);
 
+  const handleGodotReady = useCallback(() => {
+    setGodotReady(true);
+    Animated.timing(loadingOpacity, {
+      toValue: 0,
+      duration: 500,
+      useNativeDriver: true,
+    }).start(() => {
+      setLoadingDismissed(true);
+    });
+  }, [loadingOpacity]);
+
   const handleRequestRestart = useCallback(() => {
+    reset();
+    setGodotReady(false);
+    setLoadingDismissed(false);
+    loadingOpacity.setValue(1);
     setRuntimeKey((k) => k + 1);
-  }, []);
+    startPreload();
+  }, [reset, startPreload, loadingOpacity]);
+
+  const handlePackSelect = (newPackId: string) => {
+    if (newPackId === activeAssetPackId) return;
+    
+    router.replace({
+      pathname: "/play/[id]",
+      params: { id: id!, packId: newPackId }
+    });
+    
+    reset();
+    setRuntimeKey(k => k + 1);
+    setShowAssetMenu(false);
+  };
 
   const handleBack = useCallback(() => {
     router.back();
@@ -86,20 +184,6 @@ export default function PlayScreen() {
       setIsForking(false);
     }
   }, [id, router]);
-
-  const toggleDebug = () => {
-    if (renderMode === 'default' && !showOverlays) {
-      setShowOverlays(true);
-    } else if (renderMode === 'default' && showOverlays) {
-      setRenderMode('primitive');
-      setShowOverlays(false);
-    } else if (renderMode === 'primitive' && !showOverlays) {
-      setShowOverlays(true);
-    } else {
-      setRenderMode('default');
-      setShowOverlays(false);
-    }
-  };
 
   const generateAssets = async () => {
     if (!id || id === "preview" || !gameDefinition) return;
@@ -298,7 +382,7 @@ export default function PlayScreen() {
     }
   };
 
-  if (isLoading) {
+  if (isLoadingDefinition) {
     return (
       <SafeAreaView className="flex-1 bg-gray-900 items-center justify-center">
         <ActivityIndicator size="large" color="#4CAF50" />
@@ -321,46 +405,13 @@ export default function PlayScreen() {
     );
   }
 
+  const canMountGame = phase === 'ready' || phase === 'skipped';
+  const showLoadingOverlay = !loadingDismissed;
+
   return (
     <View className="flex-1 bg-gray-900">
       <FullScreenHeader
         onBack={handleBack}
-        title={gameDefinition.metadata.title}
-        rightContent={
-          <View className="flex-row gap-2">
-            <Pressable
-              className={`py-2 px-3 rounded-lg ${showOverlays || renderMode === 'primitive' ? 'bg-yellow-600' : 'bg-gray-700'}`}
-              onPress={toggleDebug}
-            >
-              <Text className="text-white font-bold text-xs">
-                {renderMode === 'primitive' ? 'PRIM' : 'VIS'}
-                {showOverlays ? '+DBG' : ''}
-              </Text>
-            </Pressable>
-
-            {id && id !== "preview" && (
-              <>
-                <Pressable
-                  className={`py-2 px-3 rounded-lg ${isForking ? 'bg-gray-600' : 'bg-green-600'}`}
-                  onPress={handleFork}
-                  disabled={isForking}
-                >
-                  {isForking ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
-                  ) : (
-                    <Text className="text-white font-bold text-xs">✂️ Fork</Text>
-                  )}
-                </Pressable>
-                <Pressable
-                  className="py-2 px-3 bg-indigo-600 rounded-lg"
-                  onPress={() => setShowAssetMenu(true)}
-                >
-                  <Text className="text-white font-bold text-xs">🎨 Skin</Text>
-                </Pressable>
-              </>
-            )}
-          </View>
-        }
       />
 
       <Modal
@@ -372,7 +423,48 @@ export default function PlayScreen() {
         <View className="flex-1 bg-black/80 justify-center items-center p-4">
           <View className="bg-gray-800 w-full max-w-sm rounded-xl p-6">
             <Text className="text-white text-xl font-bold mb-4">Generate Asset Pack</Text>
-            
+
+            {id && id !== "preview" && (
+              <Pressable
+                className={`mb-4 py-2 rounded-lg items-center ${isForking ? 'bg-gray-600' : 'bg-green-600'}`}
+                onPress={handleFork}
+                disabled={isForking}
+              >
+                {isForking ? (
+                  <View className="flex-row items-center">
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                    <Text className="text-white font-semibold ml-2">Forking...</Text>
+                  </View>
+                ) : (
+                  <Text className="text-white font-semibold">✂️ Fork Game</Text>
+                )}
+              </Pressable>
+            )}
+
+            {availablePacks.length > 0 && (
+              <View className="mb-6">
+                <Text className="text-gray-400 mb-2">Select Asset Pack</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row gap-2">
+                  {availablePacks.map(pack => (
+                    <Pressable
+                      key={pack.id}
+                      className={`p-3 rounded-lg mr-2 border ${
+                        activeAssetPackId === pack.id 
+                          ? 'bg-indigo-600 border-indigo-400' 
+                          : 'bg-gray-700 border-gray-600'
+                      } ${!pack.isComplete ? 'opacity-50' : ''}`}
+                      onPress={() => handlePackSelect(pack.id)}
+                    >
+                      <Text className="text-white font-semibold">{pack.name}</Text>
+                      {!pack.isComplete && (
+                        <Text className="text-xs text-yellow-400 mt-1">Generating...</Text>
+                      )}
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
             <Text className="text-gray-400 mb-2">Theme Prompt</Text>
             <TextInput
               className="bg-gray-700 text-white p-3 rounded-lg mb-4"
@@ -465,29 +557,49 @@ export default function PlayScreen() {
         </View>
       </Modal>
 
-      <WithSkia
-        key={runtimeKey}
-        getComponent={() =>
-          import("@/lib/game-engine/GameRuntime.native").then((mod) => ({
+      {canMountGame && (
+        <WithGodot
+          key={runtimeKey}
+          getComponent={() =>
+          import("@/lib/game-engine/GameRuntime.godot").then((mod) => ({
             default: () => (
-              <mod.GameRuntime
-                definition={gameDefinition!}
-                onGameEnd={handleGameEnd}
-                onRequestRestart={handleRequestRestart}
-                showHUD
-                renderMode={renderMode}
-                showDebugOverlays={showOverlays}
-                activeAssetPackId={activeAssetPackId}
-              />
-            ),
-          }))
-        }
-        fallback={
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color="#4CAF50" />
-          </View>
-        }
-      />
+              <mod.GameRuntimeGodotWithDevTools
+                  definition={gameDefinition!}
+                  onGameEnd={handleGameEnd}
+                  onRequestRestart={handleRequestRestart}
+                  showHUD
+                  preloadTextureUrls={imageUrls}
+                  onReady={handleGodotReady}
+                />
+              ),
+            }))
+          }
+          fallback={null}
+        />
+      )}
+
+      {showLoadingOverlay && (
+        <Animated.View 
+          style={{ 
+            position: 'absolute', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            zIndex: 20,
+            opacity: loadingOpacity,
+          }}
+          pointerEvents={godotReady ? 'none' : 'auto'}
+        >
+          <AssetLoadingScreen
+            gameTitle={gameDefinition.metadata.title}
+            progress={progress}
+            config={gameDefinition.loadingScreen}
+            titleHeroImageUrl={gameDefinition.metadata.titleHeroImageUrl}
+            onSkip={godotReady ? undefined : skipPreload}
+          />
+        </Animated.View>
+      )}
     </View>
   );
 }

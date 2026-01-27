@@ -124,6 +124,14 @@ function extractMetadata(filePath) {
 function generateId(filePath, sourceDir) {
   const rel = relative(sourceDir, filePath);
   const withoutExt = rel.replace(/\.(tsx?|jsx?)$/, '');
+  
+  // If the file is named 'game' (from game.ts), use the parent folder name as ID
+  const parts = withoutExt.split(/[\/\\]/);
+  if (parts.length > 1 && parts[parts.length - 1] === 'game') {
+    // Use the parent folder name
+    return parts[parts.length - 2].replace(/[^a-zA-Z0-9_]/g, '');
+  }
+  
   return withoutExt.replace(/[\/\\]/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
 }
 

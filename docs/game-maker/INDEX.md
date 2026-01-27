@@ -8,7 +8,9 @@
 
 ## Vision
 
-**Core Premise**: Given a robust graphics engine (Skia) and physics library (Box2D), combined with AI image generation and a well-structured game framework, users can describe a game idea in plain language and receive a playable game within seconds.
+**Core Premise**: Given a robust game engine architecture with declarative systems, physics (Godot), and AI-powered generation, users can describe a game idea in plain language and receive a playable game within seconds.
+
+> **📚 Engine Architecture**: For complete technical specifications of how the engine works, see **[docs/game-engine-architecture/](../game-engine-architecture/README.md)**
 
 ```
 User: "I want a game where I launch a ball at towers and knock them down"
@@ -38,7 +40,12 @@ The Game Maker provides:
 - **Asset Generation**: AI-generated sprites via Scenario.com
 - **10 Game Templates**: Pre-built patterns for common game types
 
-**Tech Stack**: React Native (Expo) + Skia + Box2D (JSI/WASM) + tRPC + Cloudflare D1
+**Tech Stack**:
+- **Frontend**: React Native (Expo SDK 54)  
+- **Physics & Rendering**: Godot 4.3 (native via react-native-godot JSI, web via WASM)
+- **API**: Hono + tRPC on Cloudflare Workers
+- **Database**: Cloudflare D1
+- **AI**: OpenRouter (GPT-4) + Scenario.com (sprites)
 
 ---
 
@@ -54,116 +61,82 @@ Step-by-step tutorials for game creation and development.
 
 ## Reference
 
-API documentation and system specifications.
+> **🏗️ Engine Architecture Moved**: Core system specs now live in **[../game-engine-architecture/](../game-engine-architecture/README.md)**
 
-| Document | Description |
-|----------|-------------|
-| [Entity System](reference/entity-system.md) | Entity structure, components, templates |
-| [Behavior System](reference/behavior-system.md) | Declarative game logic behaviors |
-| [Game Rules](reference/game-rules.md) | Triggers, conditions, actions, win/lose |
-| [Game Types](reference/game-types.md) | Catalog of supported game genres |
-| [AI Integration](reference/ai-integration.md) | Prompt → game generation pipeline |
-| [Sprite Generation](reference/sprite-generation.md) | AI asset generation with Scenario.com |
-| [Technical Primitives](reference/technical-primitives.md) | Core building blocks for 2D games |
-| [Data Models & Workflows](reference/data-models-and-workflows.md) | Complete data flow from prompt to game |
+**For implementation reference, see:**
+- [Entity System](../game-engine-architecture/01-core-concepts/entity-system.md)
+- [Behavior System](../game-engine-architecture/01-core-concepts/behavior-system.md)  
+- [Rules System](../game-engine-architecture/01-core-concepts/rules-system.md)
+- [Variables & Expressions](../game-engine-architecture/02-dynamic-mechanics/variables-and-expressions.md)
+
+**Product/editor docs remain here:**
+- [Game Patterns](reference/game-patterns.md) | Reusable patterns for puzzle/physics games
+- [Input Methods](reference/input-methods-catalog.md) | All supported input types
+- [Playability Contract](reference/playability-contract.md) | What makes a game "playable"
+- [Data Models & Workflows](reference/data-models-and-workflows.md) | Complete data flow
 
 ---
 
 ## Architecture
 
-System design and component relationships.
+> **🏗️ Engine Architecture Moved**: All engine architecture now in **[../game-engine-architecture/](../game-engine-architecture/README.md)**
+
+**See consolidated architecture:**
+- [Master Architecture](../game-engine-architecture/00-MASTER-ARCHITECTURE.md) | Complete system overview ⭐
+- [Entity Hierarchy](../game-engine-architecture/00-HIERARCHY-AND-COMPOSABILITY-ANALYSIS.md) | Critical gap analysis
+- [Composable Systems](../game-engine-architecture/03-composable-systems/overview.md) | Match3, Grid, Inventory, etc.
+- [RFCs](../game-engine-architecture/05-rfcs/) | Design proposals and rationale
+
+**Product architecture docs:**
+| Document | Description |
+|----------|-------------|
+| [Asset Integration Design](architecture/asset-integration-design.md) | Two-phase asset generation pipeline |
+
+---
+
+## Design Documents
 
 | Document | Description |
 |----------|-------------|
-| [System Architecture](architecture/system-overview.md) | Frontend, backend, runtime engine |
-| [2D/3D Strategy](architecture/2d-3d-strategy.md) | Supporting both 2D and 3D physics |
-| [Asset Integration Design](architecture/asset-integration-design.md) | Two-phase asset generation pipeline |
-| [Viewport & Camera System](architecture/viewport-and-camera-system.md) | Fixed aspect ratio, letterboxing, camera types (85% done) |
+| [Container System](design/container-system.md) | Declarative container abstraction for Stack/Grid/Slot games |
 
 ---
 
 ## Decisions (ADRs)
 
-Architectural Decision Records explaining key choices.
+> **🏗️ Engine RFCs Moved**: Architectural decisions now in **[../game-engine-architecture/05-rfcs/](../game-engine-architecture/05-rfcs/)**
 
+**See:**
+- [RFC-001: Derived Values System](../game-engine-architecture/05-rfcs/RFC-001-derived-values.md)
+- [RFC-002: Complementary Systems](../game-engine-architecture/05-rfcs/RFC-002-complementary-systems.md)
+- [Native Collision Support](../game-engine-architecture/05-rfcs/native-collision-support.md)
+
+**Product decisions:**
 | Document | Description |
 |----------|-------------|
-| [Physics Engine Evaluation](decisions/physics-engine-evaluation.md) | Why Box2D + Skia |
 | [Behavior Extensions](decisions/behavior-extensions.md) | Power behaviors for complex genres |
 
 ---
 
-## Troubleshooting
-
-Known issues and solutions.
-
-| Document | Description |
-|----------|-------------|
-| _None yet_ | |
-
----
-
-## Planning
-
-Roadmaps and feature plans (temporal - will be archived when implemented).
+## Roadmap
 
 | Document | Description | Status |
 |----------|-------------|--------|
-| [CURRENT WORK](planning/CURRENT_WORK.md) | Quick pickup for current focus | **active** |
-| [Implementation Roadmap](planning/implementation-roadmap.md) | Full development status tracker | active |
-| [MVP Roadmap](planning/mvp-roadmap.md) | Development phases to launch | active |
-| [Editor Redesign](planning/editor-redesign/INDEX.md) | Mobile-first editor UI | **75% complete** |
-| [Viewport & Camera](architecture/viewport-and-camera-system.md) | Fixed aspect ratio + camera types | **85% complete** |
-| [Asset Integration Plan](planning/asset-integration-plan.md) | Connecting AI assets to game gen | **implemented** |
-| [Infrastructure Plan](planning/infrastructure-plan.md) | Physics/graphics on React Native | implemented |
-| [Physics2D Implementation](planning/physics2d-implementation-plan.md) | Physics2D foundation plan | implemented |
-| [Scenario API TODO](planning/scenario-api-todo.md) | Model testing tasks | implemented |
+| [Dynamic Mechanics Roadmap](roadmap/dynamic-mechanics-roadmap.md) | Containers, expressions, variables | planning |
 
----
+> **🏗️ Engine Roadmap Moved**: See **[../game-engine-architecture/02-dynamic-mechanics/roadmap.md](../game-engine-architecture/02-dynamic-mechanics/roadmap.md)**
 
-## Research
-
-Active investigations and experiments.
+**Product execution tracking:**
 
 | Document | Description | Status |
 |----------|-------------|--------|
-| [Asset Integration Investigation](research/asset-integration-investigation.md) | Why assets aren't in generated games | open |
-| [Market Analysis](research/market-analysis.md) | AI game maker competitive landscape | closed |
-
----
-
-## Templates
-
-The 10 core game templates - reusable patterns for common game types.
-
-| # | Template | Core Mechanic |
-|---|----------|---------------|
-| 01 | [Slingshot Destruction](templates/01-slingshot-destruction.md) | Pull-and-release projectile physics |
-| 02 | [Rope Physics](templates/02-rope-physics.md) | Swinging, grappling, tethered objects |
-| 03 | [Endless Runner](templates/03-endless-runner.md) | Continuous scrolling with obstacles |
-| 04 | [Hill Climb Vehicle](templates/04-hill-climb-vehicle.md) | Terrain traversal with physics |
-| 05 | [Physics Platformer](templates/05-physics-platformer.md) | Jump, run, physics-based puzzles |
-| 06 | [Breakout Bouncer](templates/06-breakout-bouncer.md) | Ball bouncing, brick breaking |
-| 07 | [Pinball Lite](templates/07-pinball-lite.md) | Flippers, bumpers, ball control |
-| 08 | [Bumper Arena](templates/08-bumper-arena.md) | Multi-body collisions, knockback |
-| 09 | [Physics Stacker](templates/09-physics-stacker.md) | Balance, tower building |
-| 10 | [Ragdoll Goal](templates/10-ragdoll-goal.md) | Articulated characters, targeting |
-
-See [Game Templates Overview](templates/INDEX.md) for philosophy and customization levels.
-
----
-
-## Archive
-
-Historical documents kept for reference.
-
-| Document | Description | Archived |
-|----------|-------------|----------|
-| _None yet_ | | |
+| [HUMAN TASKS](planning/HUMAN_TASKS.md) | Blockers requiring human action | active |
 
 ---
 
 ## Related
 
-- [Physics Engine Documentation](../physics-engine/INDEX.md) - Underlying physics system
+- [Physics Engine Documentation](../godot/) - Godot 4 physics backend
+- [AI Templates](../game-engine-architecture/06-ai-integration/tier-1-templates.md) - AI-generated template patterns
+- [Game Patterns](reference/game-patterns.md) - Reusable physics game patterns
 - [Global Documentation Index](../INDEX.md)

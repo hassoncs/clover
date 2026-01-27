@@ -7,14 +7,19 @@ import type {
   RuleAction,
   ComputedValueSystem,
   EvalContext,
-} from '@slopcade/shared';
-import type { EntityManager } from './EntityManager';
-import type { RuntimeEntity } from './types';
-import type { CollisionInfo, GameState, InputState } from './BehaviorContext';
-import type { Physics2D } from '../physics2d/Physics2D';
-import type { IGameStateMutator, RuleContext, ListValue } from './rules/types';
-import type { InputEvents } from './BehaviorContext';
-import type { CameraSystem } from './CameraSystem';
+  StateMachineDefinition,
+  StateMachineState,
+  TransitionDefinition,
+  ContainerConfig,
+} from "@slopcade/shared";
+import type { EntityManager } from "./EntityManager";
+import type { InputEntityManager } from "./InputEntityManager";
+import type { CollisionInfo, GameState, InputState } from "./BehaviorContext";
+import type { Physics2D } from "../physics2d/Physics2D";
+import type { IGameStateMutator, RuleContext, ListValue } from "./rules/types";
+import type { InputEvents } from "./BehaviorContext";
+import type { CameraSystem } from "./CameraSystem";
+import type { GodotBridge } from "../godot/types";
 
 import {
   ScoreActionExecutor,
@@ -24,25 +29,41 @@ import {
   LogicActionExecutor,
   EntityActionExecutor,
   CameraActionExecutor,
-} from './rules/actions';
+  SoundActionExecutor,
+  SetEntitySizeActionExecutor,
+  ComboActionExecutor,
+  CheckpointActionExecutor,
+  GridActionExecutor,
+  InventoryActionExecutor,
+  PathActionExecutor,
+  ProgressionActionExecutor,
+  SpatialQueryActionExecutor,
+  StateMachineActionExecutor,
+  WaveActionExecutor,
+  BallSortActionExecutor,
+  ContainerActionExecutor,
+  ActionRegistry,
+} from "./rules/actions";
 import {
   LogicConditionEvaluator,
   PhysicsConditionEvaluator,
-} from './rules/conditions';
+  ContainerConditionEvaluator,
+} from "./rules/conditions";
 import {
   CollisionTriggerEvaluator,
   InputTriggerEvaluator,
   LogicTriggerEvaluator,
-} from './rules/triggers';
+} from "./rules/triggers";
+import { ContainerSystem } from "./systems/ContainerSystem";
 
-export type { RuleContext } from './rules/types';
+export type { RuleContext } from "./rules/types";
 
 export class RulesEvaluator implements IGameStateMutator {
   private rules: GameRule[] = [];
   private winCondition: WinCondition | null = null;
   private loseCondition: LoseCondition | null = null;
 
-  private gameState: GameState['state'] = 'ready';
+  private gameState: GameState["state"] = "ready";
   private score = 0;
   private lives = 3;
   private elapsed = 0;
@@ -56,24 +77,76 @@ export class RulesEvaluator implements IGameStateMutator {
 
   private onScoreChange?: (score: number) => void;
   private onLivesChange?: (lives: number) => void;
-  private onGameStateChange?: (state: GameState['state']) => void;
-  private onVariablesChange?: (variables: Record<string, number | string | boolean>) => void;
+  private onGameStateChange?: (state: GameState["state"]) => void;
+  private onVariablesChange?: (
+    variables: Record<string, number | string | boolean>,
+  ) => void;
 
-  // Executors & Evaluators
-  private scoreActionExecutor = new ScoreActionExecutor();
-  private spawnActionExecutor = new SpawnActionExecutor();
-  private destroyActionExecutor = new DestroyActionExecutor();
-  private physicsActionExecutor = new PhysicsActionExecutor();
-  private logicActionExecutor = new LogicActionExecutor();
-  private entityActionExecutor = new EntityActionExecutor();
-  private cameraActionExecutor = new CameraActionExecutor();
+  // Action Registry
+  private actionRegistry: ActionRegistry;
 
+  // Condition & Trigger Evaluators
   private logicConditionEvaluator = new LogicConditionEvaluator();
   private physicsConditionEvaluator = new PhysicsConditionEvaluator();
+  private containerConditionEvaluator!: ContainerConditionEvaluator;
 
   private collisionTriggerEvaluator = new CollisionTriggerEvaluator();
   private inputTriggerEvaluator = new InputTriggerEvaluator();
   private logicTriggerEvaluator = new LogicTriggerEvaluator();
+
+  constructor(entityManager: EntityManager, containers?: ContainerConfig[]) {
+    const scoreActionExecutor = new ScoreActionExecutor();
+    const spawnActionExecutor = new SpawnActionExecutor();
+    const destroyActionExecutor = new DestroyActionExecutor();
+    const physicsActionExecutor = new PhysicsActionExecutor();
+    const logicActionExecutor = new LogicActionExecutor();
+    const entityActionExecutor = new EntityActionExecutor();
+    const cameraActionExecutor = new CameraActionExecutor();
+    const soundActionExecutor = new SoundActionExecutor();
+    const setEntitySizeActionExecutor = new SetEntitySizeActionExecutor();
+    const comboActionExecutor = new ComboActionExecutor();
+    const checkpointActionExecutor = new CheckpointActionExecutor();
+    const gridActionExecutor = new GridActionExecutor();
+    const inventoryActionExecutor = new InventoryActionExecutor();
+    const pathActionExecutor = new PathActionExecutor();
+    const progressionActionExecutor = new ProgressionActionExecutor();
+    const spatialQueryActionExecutor = new SpatialQueryActionExecutor();
+    const stateMachineActionExecutor = new StateMachineActionExecutor();
+    const waveActionExecutor = new WaveActionExecutor();
+    const ballSortActionExecutor = new BallSortActionExecutor();
+
+    // Create ContainerSystem first (with optional container configs)
+    const containerSystem = new ContainerSystem(entityManager, { containers });
+
+    // Create ContainerActionExecutor with ContainerSystem
+    const containerActionExecutor = new ContainerActionExecutor(containerSystem);
+
+    // Create ContainerConditionEvaluator with ContainerSystem
+    this.containerConditionEvaluator = new ContainerConditionEvaluator(containerSystem);
+
+    this.actionRegistry = new ActionRegistry(
+      scoreActionExecutor,
+      spawnActionExecutor,
+      destroyActionExecutor,
+      physicsActionExecutor,
+      logicActionExecutor,
+      entityActionExecutor,
+      cameraActionExecutor,
+      soundActionExecutor,
+      setEntitySizeActionExecutor,
+      comboActionExecutor,
+      checkpointActionExecutor,
+      gridActionExecutor,
+      inventoryActionExecutor,
+      pathActionExecutor,
+      progressionActionExecutor,
+      spatialQueryActionExecutor,
+      stateMachineActionExecutor,
+      waveActionExecutor,
+      ballSortActionExecutor,
+      containerActionExecutor,
+    );
+  }
 
   loadRules(rules: GameRule[]): void {
     this.rules = rules;
@@ -91,12 +164,18 @@ export class RulesEvaluator implements IGameStateMutator {
     this.lives = lives;
   }
 
-  setInitialVariables(variables: Record<string, number | string | boolean> | undefined): void {
+  setInitialVariables(
+    variables: Record<string, number | string | boolean> | undefined,
+  ): void {
     this.variables.clear();
     this.initialVariables.clear();
     if (variables) {
       for (const [name, value] of Object.entries(variables)) {
-        if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
+        if (
+          typeof value === "number" ||
+          typeof value === "string" ||
+          typeof value === "boolean"
+        ) {
           this.variables.set(name, value);
           this.initialVariables.set(name, value);
         }
@@ -104,11 +183,35 @@ export class RulesEvaluator implements IGameStateMutator {
     }
   }
 
+  setStateMachines(stateMachines: StateMachineDefinition[] | undefined): void {
+    if (!stateMachines || stateMachines.length === 0) return;
+
+    const smStates: Record<string, { currentState: string; previousState: string; stateEnteredAt: number; transitionCount: number }> = {};
+    const smDefs: Record<string, StateMachineDefinition> = {};
+
+    for (const sm of stateMachines) {
+      smStates[sm.id] = {
+        currentState: sm.initialState,
+        previousState: '',
+        stateEnteredAt: 0,
+        transitionCount: 0,
+      };
+      smDefs[sm.id] = sm;
+    }
+
+    this.variables.set('__smStates', smStates as unknown as number);
+    this.variables.set('__smDefs', smDefs as unknown as number);
+    this.initialVariables.set('__smStates', smStates as unknown as number);
+    this.initialVariables.set('__smDefs', smDefs as unknown as number);
+  }
+
   setCallbacks(callbacks: {
     onScoreChange?: (score: number) => void;
     onLivesChange?: (lives: number) => void;
-    onGameStateChange?: (state: GameState['state']) => void;
-    onVariablesChange?: (variables: Record<string, number | string | boolean>) => void;
+    onGameStateChange?: (state: GameState["state"]) => void;
+    onVariablesChange?: (
+      variables: Record<string, number | string | boolean>,
+    ) => void;
   }): void {
     this.onScoreChange = callbacks.onScoreChange;
     this.onLivesChange = callbacks.onLivesChange;
@@ -117,18 +220,18 @@ export class RulesEvaluator implements IGameStateMutator {
   }
 
   start(): void {
-    this.setGameState('playing');
+    this.setGameState("playing");
   }
 
   pause(): void {
-    if (this.gameState === 'playing') {
-      this.setGameState('paused');
+    if (this.gameState === "playing") {
+      this.setGameState("paused");
     }
   }
 
   resume(): void {
-    if (this.gameState === 'paused') {
-      this.setGameState('playing');
+    if (this.gameState === "paused") {
+      this.setGameState("playing");
     }
   }
 
@@ -144,7 +247,7 @@ export class RulesEvaluator implements IGameStateMutator {
     }
     this.lists.clear();
     this.pendingEvents.clear();
-    this.setGameState('ready');
+    this.setGameState("ready");
     this.onVariablesChange?.(this.getVariables());
   }
 
@@ -169,7 +272,7 @@ export class RulesEvaluator implements IGameStateMutator {
     this.onLivesChange?.(this.lives);
   }
 
-  setGameState(state: GameState['state']): void {
+  setGameState(state: GameState["state"]): void {
     if (this.gameState !== state) {
       this.gameState = state;
       this.onGameStateChange?.(state);
@@ -211,10 +314,13 @@ export class RulesEvaluator implements IGameStateMutator {
     this.lists.set(name, list);
   }
 
-  popFromList(name: string, position: 'front' | 'back'): number | string | boolean | undefined {
+  popFromList(
+    name: string,
+    position: "front" | "back",
+  ): number | string | boolean | undefined {
     const list = this.lists.get(name);
     if (!list || list.length === 0) return undefined;
-    return position === 'front' ? list.shift() : list.pop();
+    return position === "front" ? list.shift() : list.pop();
   }
 
   shuffleList(name: string, random: () => number = Math.random): void {
@@ -243,7 +349,7 @@ export class RulesEvaluator implements IGameStateMutator {
     return this.elapsed;
   }
 
-  getGameStateValue(): GameState['state'] {
+  getGameStateValue(): GameState["state"] {
     return this.gameState;
   }
 
@@ -267,11 +373,17 @@ export class RulesEvaluator implements IGameStateMutator {
     computedValues?: ComputedValueSystem,
     evalContext?: EvalContext,
     camera?: CameraSystem,
-    setTimeScale?: (scale: number, duration?: number) => void
+    setTimeScale?: (scale: number, duration?: number) => void,
+    inputEntityManager?: InputEntityManager,
+    playSound?: (soundId: string, volume?: number) => void,
+    bridge?: GodotBridge,
   ): void {
-    if (this.gameState !== 'playing') {
+    if (inputEvents.tap) {
+      console.log("[Rules] TAP event received! Game state:", this.gameState, "tap:", inputEvents.tap);
+    }
+    if (this.gameState !== "playing") {
       if (inputEvents.tap || inputEvents.dragEnd) {
-        console.log('[Rules] Ignoring input - game state is:', this.gameState);
+        console.log("[Rules] Ignoring input - game state is:", this.gameState);
       }
       return;
     }
@@ -280,10 +392,13 @@ export class RulesEvaluator implements IGameStateMutator {
 
     const context: RuleContext = {
       entityManager,
+      inputEntityManager,
       physics,
       mutator: this,
       camera,
+      bridge,
       setTimeScale,
+      playSound,
       score: this.score,
       lives: this.lives,
       elapsed: this.elapsed,
@@ -297,12 +412,12 @@ export class RulesEvaluator implements IGameStateMutator {
     (context as any).cooldowns = this.cooldowns;
 
     if (this.checkWinCondition(context)) {
-      this.setGameState('won');
+      this.setGameState("won");
       return;
     }
 
     if (this.checkLoseCondition(context)) {
-      this.setGameState('lost');
+      this.setGameState("lost");
       return;
     }
 
@@ -315,10 +430,11 @@ export class RulesEvaluator implements IGameStateMutator {
 
       const triggerResult = this.evaluateTrigger(rule.trigger, context);
       if (triggerResult) {
-        console.log('[Rules] Trigger matched for rule:', rule.id, rule.trigger.type);
-        const conditionsResult = this.evaluateConditions(rule.conditions, context);
+        const conditionsResult = this.evaluateConditions(
+          rule.conditions,
+          context,
+        );
         if (conditionsResult) {
-          console.log('[Rules] Conditions passed, executing actions for:', rule.id);
           this.executeActions(rule.actions, context);
 
           if (rule.fireOnce) {
@@ -328,79 +444,120 @@ export class RulesEvaluator implements IGameStateMutator {
           if (rule.cooldown) {
             this.cooldowns.set(rule.id, this.elapsed + rule.cooldown);
           }
-        } else {
-          console.log('[Rules] Conditions FAILED for rule:', rule.id, rule.conditions);
         }
       }
     }
 
+    this.processStateMachineEvents();
+
     this.pendingEvents.clear();
+  }
+
+  private processStateMachineEvents(): void {
+    if (this.pendingEvents.size === 0) return;
+
+    const smDefs = this.variables.get('__smDefs') as unknown as Record<string, StateMachineDefinition> | undefined;
+    const smStates = this.variables.get('__smStates') as unknown as Record<string, StateMachineState> | undefined;
+
+    if (!smDefs || !smStates) return;
+
+    for (const [eventName] of this.pendingEvents) {
+      for (const [machineId, def] of Object.entries(smDefs)) {
+        const state = smStates[machineId];
+        if (!state) continue;
+
+        for (const transition of def.transitions) {
+          if (!this.transitionMatches(transition, state.currentState, eventName)) continue;
+
+          console.log(`[StateMachine] Transition: ${machineId} "${state.currentState}" -> "${transition.to}" (event: ${eventName})`);
+
+          state.previousState = state.currentState;
+          state.currentState = transition.to;
+          state.stateEnteredAt = this.elapsed;
+          state.transitionCount += 1;
+
+          break;
+        }
+      }
+    }
+
+    this.variables.set('__smStates', smStates as unknown as number);
+  }
+
+  private transitionMatches(
+    transition: TransitionDefinition,
+    currentState: string,
+    eventName: string
+  ): boolean {
+    if (transition.trigger?.type !== 'event') return false;
+    if (transition.trigger.eventName !== eventName) return false;
+
+    if (transition.from === '*') return true;
+    if (Array.isArray(transition.from)) return transition.from.includes(currentState);
+    return transition.from === currentState;
   }
 
   // Delegate Methods
   private evaluateTrigger(trigger: RuleTrigger, context: RuleContext): boolean {
     switch (trigger.type) {
-      case 'collision': return this.collisionTriggerEvaluator.evaluate(trigger, context);
-      case 'timer':
-      case 'score':
-      case 'entity_count':
-      case 'event':
-      case 'frame':
-      case 'gameStart': return this.logicTriggerEvaluator.evaluate(trigger, context);
-      case 'tap':
-      case 'drag':
-      case 'tilt':
-      case 'button':
-      case 'swipe': return this.inputTriggerEvaluator.evaluate(trigger, context);
-      default: return false;
+      case "collision":
+        return this.collisionTriggerEvaluator.evaluate(trigger, context);
+      case "timer":
+      case "score":
+      case "entity_count":
+      case "event":
+      case "frame":
+      case "gameStart":
+        return this.logicTriggerEvaluator.evaluate(trigger, context);
+      case "tap":
+      case "drag":
+      case "tilt":
+      case "button":
+      case "swipe":
+        return this.inputTriggerEvaluator.evaluate(trigger, context);
+      default:
+        return false;
     }
   }
 
-  private evaluateConditions(conditions: RuleCondition[] | undefined, context: RuleContext): boolean {
+  private evaluateConditions(
+    conditions: RuleCondition[] | undefined,
+    context: RuleContext,
+  ): boolean {
     if (!conditions || conditions.length === 0) return true;
-    return conditions.every(c => {
+    return conditions.every((c) => {
       switch (c.type) {
-        case 'score':
-        case 'time':
-        case 'entity_count':
-        case 'random':
-        case 'cooldown_ready':
-        case 'variable':
-        case 'list_contains':
-        case 'expression': return this.logicConditionEvaluator.evaluate(c, context);
-        case 'entity_exists':
-        case 'on_ground':
-        case 'touching':
-        case 'velocity': return this.physicsConditionEvaluator.evaluate(c, context);
-        default: return true;
+        case "score":
+        case "time":
+        case "entity_count":
+        case "random":
+        case "cooldown_ready":
+        case "variable":
+        case "list_contains":
+        case "expression":
+          return this.logicConditionEvaluator.evaluate(c, context);
+        case "entity_exists":
+        case "on_ground":
+        case "touching":
+        case "velocity":
+          return this.physicsConditionEvaluator.evaluate(c, context);
+        case "container_is_empty":
+        case "container_is_full":
+        case "container_count":
+        case "container_has_item":
+        case "container_can_accept":
+        case "container_top_item":
+        case "container_is_occupied":
+          return this.containerConditionEvaluator.evaluate(c, context);
+        default:
+          return true;
       }
     });
   }
 
   private executeActions(actions: RuleAction[], context: RuleContext): void {
     for (const a of actions) {
-      switch (a.type) {
-        case 'score': this.scoreActionExecutor.execute(a, context); break;
-        case 'spawn': this.spawnActionExecutor.execute(a, context); break;
-        case 'destroy':
-        case 'destroy_marked': this.destroyActionExecutor.execute(a, context); break;
-        case 'apply_impulse':
-        case 'apply_force':
-        case 'set_velocity':
-        case 'move': this.physicsActionExecutor.execute(a, context); break;
-        case 'modify': this.entityActionExecutor.execute(a, context); break;
-        case 'game_state':
-        case 'event':
-        case 'set_variable':
-        case 'start_cooldown':
-        case 'lives':
-        case 'push_to_list':
-        case 'pop_from_list':
-        case 'shuffle_list': this.logicActionExecutor.execute(a, context); break;
-        case 'camera_shake':
-        case 'camera_zoom':
-        case 'set_time_scale': this.cameraActionExecutor.execute(a, context); break;
-      }
+      this.actionRegistry.execute(a, context);
     }
   }
 
@@ -409,25 +566,33 @@ export class RulesEvaluator implements IGameStateMutator {
     if (!this.winCondition) return false;
 
     switch (this.winCondition.type) {
-      case 'score':
+      case "score":
         return this.score >= (this.winCondition.score ?? 0);
 
-      case 'destroy_all':
+      case "destroy_all":
         if (!this.winCondition.tag) return false;
-        return context.entityManager.getEntitiesByTag(this.winCondition.tag).length === 0;
+        return (
+          context.entityManager.getEntitiesByTag(this.winCondition.tag)
+            .length === 0
+        );
 
-      case 'survive_time':
+      case "survive_time":
         return this.elapsed >= (this.winCondition.time ?? 0);
 
-      case 'collect_all':
+      case "collect_all":
         if (!this.winCondition.tag) return false;
-        return context.entityManager.getEntitiesByTag(this.winCondition.tag).length === 0;
+        return (
+          context.entityManager.getEntitiesByTag(this.winCondition.tag)
+            .length === 0
+        );
 
-      case 'reach_entity': {
+      case "reach_entity": {
         if (!this.winCondition.entityId) return false;
-        const targetEntity = context.entityManager.getEntity(this.winCondition.entityId);
+        const targetEntity = context.entityManager.getEntity(
+          this.winCondition.entityId,
+        );
         if (!targetEntity) return false;
-        const playerEntities = context.entityManager.getEntitiesByTag('player');
+        const playerEntities = context.entityManager.getEntitiesByTag("player");
         if (playerEntities.length === 0) return false;
         const player = playerEntities[0];
         const dx = player.transform.x - targetEntity.transform.x;
@@ -445,25 +610,28 @@ export class RulesEvaluator implements IGameStateMutator {
     if (!this.loseCondition) return false;
 
     switch (this.loseCondition.type) {
-      case 'entity_destroyed':
+      case "entity_destroyed":
         if (this.loseCondition.entityId) {
           return !context.entityManager.getEntity(this.loseCondition.entityId);
         }
         if (this.loseCondition.tag) {
-          return context.entityManager.getEntitiesByTag(this.loseCondition.tag).length === 0;
+          return (
+            context.entityManager.getEntitiesByTag(this.loseCondition.tag)
+              .length === 0
+          );
         }
         return false;
 
-      case 'time_up':
+      case "time_up":
         return this.elapsed >= (this.loseCondition.time ?? 0);
 
-      case 'score_below':
+      case "score_below":
         return this.score < (this.loseCondition.score ?? 0);
 
-      case 'lives_zero':
+      case "lives_zero":
         return this.lives <= 0;
 
-      case 'entity_exits_screen': {
+      case "entity_exits_screen": {
         // Need screenBounds in context?
         // GameRuntime passes it? No, context has screenBounds?
         // I need to add screenBounds to context in update().

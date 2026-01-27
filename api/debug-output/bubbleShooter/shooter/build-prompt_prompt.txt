@@ -1,0 +1,26 @@
+=== POSITIVE PROMPT ===
+=== CAMERA/VIEW (CRITICAL) ===
+FRONT VIEW. Camera is directly facing the front of the object.
+Flat, 2D perspective. NO 3D rotation, NO angled view.
+
+=== SHAPE (CRITICAL) ===
+SLIGHTLY WIDE RECTANGLE (2.0:1).
+
+=== COMPOSITION ===
+The object FILLS THE ENTIRE FRAME. No empty space around it.
+
+=== SUBJECT ===
+A a magical crystal launcher cannon made of carved obsidian and glowing runes, ancient dwarven craftsmanship, embedded with small gems, metallic accents with mystical engravings for a video game.
+Style: underground crystal cavern, glowing minerals, magical gems, spelunking adventure
+
+=== STYLE ===
+cartoon style, bold black outlines, vibrant saturated colors
+
+=== TECHNICAL ===
+Transparent background (alpha channel).
+cel-shaded, clean vector-like edges, flat color fills
+Single object only, no duplicates.
+No text, watermarks, or signatures.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

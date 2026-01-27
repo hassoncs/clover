@@ -1,0 +1,43 @@
+# Fastlane Configuration for Slopcade
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Upload metadata and screenshots to App Store Connect"
+  lane :deliver_metadata do
+    deliver(
+      skip_binary_upload: true,
+      skip_screenshots: false,
+      force: true, # Skip HTML preview (good for CI/automation)
+      precheck_default_rule_level: :warn,
+      submit_for_review: false, # Never auto-submit, always manual review
+      automatic_release: false,
+      
+      # Metadata paths (defaults, but explicit for clarity)
+      metadata_path: "./fastlane/metadata",
+      screenshots_path: "./fastlane/screenshots",
+      
+      # Interactive authentication (prompts for password + 2FA)
+      skip_waiting_for_build_processing: true,
+      use_system_keychain: false # Don't auto-fetch credentials
+    )
+  end
+
+  desc "Download existing metadata from App Store Connect"
+  lane :download_metadata do
+    deliver(
+      download_metadata: true,
+      metadata_path: "./fastlane/metadata",
+      force: true
+    )
+  end
+
+  desc "Download existing screenshots from App Store Connect"
+  lane :download_screenshots do
+    deliver(
+      download_screenshots: true,
+      screenshots_path: "./fastlane/screenshots",
+      force: true
+    )
+  end
+end

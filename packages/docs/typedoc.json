@@ -1,0 +1,32 @@
+{
+  "entryPoints": ["../../shared/src/types/index.ts"],
+  "out": "docs/api-reference",
+  "plugin": ["typedoc-plugin-markdown"],
+  "markdown": {
+    "outputFileStrategy": "members"
+  },
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "excludeProtected": false,
+  "includeVersion": true,
+  "tsconfig": "./typedoc-tsconfig.json",
+  "skipErrorChecking": true,
+  "cleanOutputDir": true,
+  "sort": ["source-order"],
+  "categorizeByGroup": true,
+  "categoryOrder": [
+    "Common",
+    "Entity",
+    "Physics",
+    "Behavior",
+    "Sprite",
+    "Rules",
+    "Effects",
+    "Particles",
+    "Tilemap",
+    "Asset System",
+    "Schemas",
+    "Game Definition",
+    "Godot Bridge"
+  ]
+}

@@ -2,12 +2,18 @@
   "name": "@slopcade/shared",
   "version": "1.0.0",
   "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
     "./schema": "./src/schema/index.ts",
-    "./schema/*": "./src/schema/*.ts"
+    "./schema/*": "./src/schema/*.ts",
+    "./utils/asset-url": "./src/utils/asset-url.ts",
+    "./utils/*": "./src/utils/*.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.38.3",

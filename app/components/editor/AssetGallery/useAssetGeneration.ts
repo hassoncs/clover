@@ -1,5 +1,9 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { trpcReact } from '@/lib/trpc/react';
+import { DEFAULT_THEMES, DEFAULT_STYLES } from '@slopcade/shared';
+
+export const THEME_OPTIONS = DEFAULT_THEMES.map(theme => ({ value: theme, label: theme }));
+export const STYLE_OPTIONS = DEFAULT_STYLES.map(style => ({ value: style, label: style }));
 
 export type GenerationStatus = 'idle' | 'creating-job' | 'generating' | 'succeeded' | 'failed';
 
@@ -233,4 +237,113 @@ export function useUpdatePlacement() {
       utils.assetSystem.getPack.invalidate({ id: variables.packId });
     },
   });
+}
+
+export function useDeleteAssetPack(gameId: string) {
+  const utils = trpcReact.useUtils();
+  const mutation = trpcReact.assetSystem.deletePack.useMutation({
+    onSuccess: () => {
+      utils.assetSystem.listPacks.invalidate({ gameId });
+    },
+  });
+
+  const deletePack = useCallback(async (packId: string) => {
+    return mutation.mutateAsync({ id: packId });
+  }, [mutation]);
+
+  return {
+    deletePack,
+    isDeleting: mutation.isPending,
+    error: mutation.error?.message ?? null,
+  };
+}
+
+export function useRegenerateAssetPack(gameId: string) {
+  const utils = trpcReact.useUtils();
+  const mutation = trpcReact.assetSystem.regeneratePack.useMutation({
+    onSuccess: (_, variables) => {
+      utils.assetSystem.listPacks.invalidate({ gameId });
+      utils.assetSystem.getPack.invalidate({ id: variables.packId });
+    },
+  });
+
+  const regeneratePack = useCallback(async (params: {
+    packId: string;
+    newTheme: string;
+    newStyle: 'pixel' | 'cartoon' | '3d' | 'flat';
+  }) => {
+    return mutation.mutateAsync(params);
+  }, [mutation]);
+
+  return {
+    regeneratePack,
+    isRegenerating: mutation.isPending,
+    error: mutation.error?.message ?? null,
+  };
+}
+
+export function useRegenerateAssets(gameId: string) {
+  const utils = trpcReact.useUtils();
+  const mutation = trpcReact.assetSystem.regenerateAssets.useMutation({
+    onSuccess: (_, variables) => {
+      utils.assetSystem.listPacks.invalidate({ gameId });
+      utils.assetSystem.getPack.invalidate({ id: variables.packId });
+    },
+  });
+
+  const regenerateAssets = useCallback(async (params: {
+    packId: string;
+    templateIds: string[];
+    newTheme?: string;
+    newStyle?: string;
+    customPrompts?: Record<string, string>;
+  }) => {
+    return mutation.mutateAsync(params);
+  }, [mutation]);
+
+  return {
+    regenerateAssets,
+    isRegenerating: mutation.isPending,
+    error: mutation.error?.message ?? null,
+  };
+}
+
+export function useApplyThemeToPack(gameId: string) {
+  const utils = trpcReact.useUtils();
+  const { regenerateAssets, isRegenerating, error } = useRegenerateAssets(gameId);
+
+  const applyTheme = useCallback(async (packId: string, newTheme: string) => {
+    const pack = await utils.assetSystem.getPack.fetch({ id: packId });
+    const templateIds = pack?.entries?.map(e => e.templateId) ?? [];
+    if (templateIds.length === 0) {
+      throw new Error('Pack has no entries');
+    }
+    return regenerateAssets({ packId, templateIds, newTheme });
+  }, [utils, regenerateAssets]);
+
+  return {
+    applyTheme,
+    isApplying: isRegenerating,
+    error,
+  };
+}
+
+export function useApplyStyleToPack(gameId: string) {
+  const utils = trpcReact.useUtils();
+  const { regenerateAssets, isRegenerating, error } = useRegenerateAssets(gameId);
+
+  const applyStyle = useCallback(async (packId: string, newStyle: string) => {
+    const pack = await utils.assetSystem.getPack.fetch({ id: packId });
+    const templateIds = pack?.entries?.map(e => e.templateId) ?? [];
+    if (templateIds.length === 0) {
+      throw new Error('Pack has no entries');
+    }
+    return regenerateAssets({ packId, templateIds, newStyle });
+  }, [utils, regenerateAssets]);
+
+  return {
+    applyStyle,
+    isApplying: isRegenerating,
+    error,
+  };
 }

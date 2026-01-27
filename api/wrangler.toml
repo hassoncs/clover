@@ -1,6 +1,6 @@
 name = "slopcade-api"
 compatibility_date = "2025-01-01"
-compatibility_flags = ["nodejs_compat"]
+compatibility_flags = ["nodejs_compat", "enable_nodejs_fs_module"]
 main = "src/index.ts"
 workers_dev = true
 

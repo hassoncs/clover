@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+A stylized game title logo that says "Domino Chain". Bold, playful 3D text with depth and shadows. Classic domino aesthetic, wooden elements, chain reaction puzzle theme style letters. The text is the main focus, centered in the frame. High quality game logo, professional design. Cartoon style, vibrant colors.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

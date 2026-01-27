@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+A dark sci-fi arcade game background for a breakout-style video game. Deep blue-black space with subtle grid lines. Neon accents in cyan and magenta. Futuristic, retro arcade aesthetic. No text, no characters, just the environment. High quality game background.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

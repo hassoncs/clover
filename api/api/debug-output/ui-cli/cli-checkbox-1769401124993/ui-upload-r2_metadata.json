@@ -1,0 +1,55 @@
+{
+  "componentType": "checkbox",
+  "states": {
+    "normal": {
+      "r2Key": "generated/ui-cli/checkbox/checkbox/normal.png",
+      "publicUrl": "http://localhost:8787/assets/generated/ui-cli/checkbox/checkbox/normal.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256
+      }
+    },
+    "hover": {
+      "r2Key": "generated/ui-cli/checkbox/checkbox/hover.png",
+      "publicUrl": "http://localhost:8787/assets/generated/ui-cli/checkbox/checkbox/hover.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256
+      }
+    },
+    "pressed": {
+      "r2Key": "generated/ui-cli/checkbox/checkbox/pressed.png",
+      "publicUrl": "http://localhost:8787/assets/generated/ui-cli/checkbox/checkbox/pressed.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256
+      }
+    },
+    "disabled": {
+      "r2Key": "generated/ui-cli/checkbox/checkbox/disabled.png",
+      "publicUrl": "http://localhost:8787/assets/generated/ui-cli/checkbox/checkbox/disabled.png",
+      "region": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256
+      }
+    }
+  },
+  "ninePatchMargins": {
+    "left": 12,
+    "right": 12,
+    "top": 12,
+    "bottom": 12
+  },
+  "width": 256,
+  "height": 256,
+  "generatedAt": 1769401171806,
+  "theme": "medieval fantasy with stone textures and ornate metalwork"
+}

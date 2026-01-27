@@ -11,7 +11,8 @@
     "db:reset": "rm -rf .wrangler/state/v3/d1 && pnpm db:push",
     "type-check": "tsc --noEmit",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "generate:ui": "npx tsx src/cli/generate-ui.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.17",

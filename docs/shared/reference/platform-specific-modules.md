@@ -6,7 +6,7 @@ This document describes the type-safe pattern for modules with platform-specific
 
 When a module has platform-specific implementations:
 ```
-lib/physics2d/
+lib/auth/
 ├── index.ts          # Default (usually native)
 ├── index.web.ts      # Web-specific
 └── index.native.ts   # Native-specific
@@ -19,7 +19,7 @@ lib/physics2d/
 ### Pattern Overview
 
 ```
-lib/physics2d/
+lib/module/
 ├── index.contract.ts    # 1. Defines the public API interface
 ├── index.shared.ts      # 2. Platform-agnostic exports
 ├── index.web.ts         # 3. Web implementation + shared
@@ -166,12 +166,6 @@ This way, you only need to add exports to ONE file (`index.shared.ts`) for platf
 
 All platform-specific modules now have `.verify.ts` files for compile-time export validation:
 
-### app/lib/physics2d/
-- `index.verify.ts`, `createPhysics2D.verify.ts`, `usePhysicsLoop.verify.ts`, `usePhysicsWorld.verify.ts`
-
-### app/lib/physics/ (Legacy)
-- `index.verify.ts`, `Physics.verify.ts`
-
 ### app/lib/auth/
 - `storage.verify.ts`
 
@@ -183,9 +177,6 @@ All platform-specific modules now have `.verify.ts` files for compile-time expor
 
 ### app/lib/game-engine/
 - Uses default pattern (single `GameRuntime.tsx` with `.native.tsx` override) - no web-specific file, so verify pattern not applicable
-
-### packages/physics/src/physics2d/
-- `index.verify.ts`, `createPhysics2D.verify.ts`, `usePhysicsLoop.verify.ts`, `usePhysicsWorld.verify.ts`
 
 ### packages/ui/src/SortableList/
 - `index.verify.ts`, `SortableList.verify.ts`

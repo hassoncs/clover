@@ -1,0 +1,3 @@
+- Use `loadContent()` to perform initial extraction and write to `packages/docs/static/data/*.json` so data is available client-side without extra routes.
+- Use chokidar in dev mode only with a 500ms debounce to keep round-trip time low and avoid thrashing.
+- For effects metadata, filter `EFFECT_METADATA` to effects present in the `EffectSpec` union to avoid documenting unsupported effects.

@@ -25,7 +25,6 @@ This document explains how Expo development works in this project, including the
 **Why we can't use it:** Expo Go only includes Expo's built-in native modules. This project uses:
 
 - `@shopify/react-native-skia` (custom native code)
-- `react-native-box2d` (custom native code)
 - `react-native-reanimated` (needs native setup)
 
 These require a **Development Build**.
@@ -273,7 +272,7 @@ pnpm ios
 
 ### ⚠️ Critical: expo-dev-client
 
-This project REQUIRES `expo-dev-client` because we use custom native modules (Skia, Box2D).
+This project REQUIRES `expo-dev-client` because we use custom native modules (Skia, Reanimated).
 
 **Check if installed:**
 

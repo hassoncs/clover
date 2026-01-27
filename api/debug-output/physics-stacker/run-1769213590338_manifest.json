@@ -1,0 +1,20 @@
+{
+  "runId": "run-1769213590338",
+  "config": {
+    "dryRun": false,
+    "theme": "wooden toy blocks, natural wood grain, children's toy aesthetic",
+    "style": "cartoon",
+    "templateFilter": "blockSmall"
+  },
+  "timestamp": "2026-01-24T00:14:26.688Z",
+  "results": [
+    {
+      "templateId": "blockSmall",
+      "silhouettePath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockSmall_1_silhouette.png",
+      "promptPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockSmall_2_prompt.txt",
+      "generatedPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockSmall_3_generated.jpg",
+      "finalPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockSmall_4_final.png",
+      "gameAssetPath": "/Users/hassoncs/Workspaces/Personal/slopcade/app/public/assets/games/physics-stacker/blockSmall.png"
+    }
+  ]
+}

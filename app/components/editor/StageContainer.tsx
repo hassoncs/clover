@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { View, ActivityIndicator, StyleSheet } from "react-native";
 import { useEditor } from "./EditorProvider";
-import { WithSkia } from "@/components/WithSkia";
+import { WithGodot } from "@/components/WithGodot";
 import { InteractionLayer } from "./InteractionLayer";
 
 export function StageContainer() {
@@ -12,24 +12,23 @@ export function StageContainer() {
     setRuntimeKey((k) => k + 1);
   }, []);
 
-  const activePackId = document.activeAssetPackId;
+  const activePackId = document.assetSystem?.activeAssetPackId;
   const worldBounds = document.world.bounds ?? { width: 20, height: 12 };
   const pixelsPerMeter = document.world.pixelsPerMeter ?? 50;
 
+  console.log('[StageContainer] Render - activePackId:', activePackId, 'runtimeKey:', runtimeKey);
+
   return (
     <View className="flex-1 bg-gray-800">
-      <WithSkia
-        key={runtimeKey}
+      <WithGodot
+        key={`${runtimeKey}-${activePackId ?? 'none'}`}
         getComponent={() =>
-          import("@/lib/game-engine/GameRuntime.native").then((mod) => ({
+          import("@/lib/game-engine/GameRuntime.godot").then((mod) => ({
             default: () => (
-              <mod.GameRuntime
+              <mod.GameRuntimeGodot
                 definition={document}
                 showHUD={mode === "playtest"}
                 onRequestRestart={handleRequestRestart}
-                renderMode="default"
-                showDebugOverlays={false}
-                activeAssetPackId={activePackId}
               />
             ),
           }))

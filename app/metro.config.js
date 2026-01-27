@@ -1,6 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 const { getDefaultConfig } = require("expo/metro-config");
+const { getSentryExpoConfig } = require("@sentry/react-native/metro");
 const { withNativeWind } = require("nativewind/metro");
 
 const projectRoot = __dirname;
@@ -8,7 +9,7 @@ const monorepoRoot = path.resolve(projectRoot, "..");
 
 const box2dRoot = path.join(projectRoot, "node_modules/react-native-box2d");
 
-const baseConfig = getDefaultConfig(__dirname);
+const baseConfig = getSentryExpoConfig(__dirname);
 
 baseConfig.cacheStores = [
   new (require("metro-cache").FileStore)({

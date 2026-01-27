@@ -1,5 +1,5 @@
 import { View, Text, Pressable, Image, ActivityIndicator, StyleSheet, Alert } from 'react-native';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { PrimitivePreview } from './PrimitivePreview';
 import type { EntityTemplate, AssetPlacement } from '@slopcade/shared';
 import { resolveAssetUrl } from '@/lib/config/env';
@@ -9,6 +9,7 @@ type ViewMode = 'primitive' | 'generated';
 interface LastGenerationInfo {
   compiledPrompt?: string;
   backgroundRemoved?: boolean;
+  silhouetteUrl?: string;
   createdAt?: number;
 }
 
@@ -34,6 +35,16 @@ export function TemplateAssetCard({
   const resolvedImageUrl = useMemo(() => resolveAssetUrl(imageUrl), [imageUrl]);
   const [viewMode, setViewMode] = useState<ViewMode>(resolvedImageUrl ? 'generated' : 'primitive');
   const [imageError, setImageError] = useState(false);
+  const [showSilhouette, setShowSilhouette] = useState(false);
+
+  useEffect(() => {
+    if (resolvedImageUrl) {
+      setViewMode('generated');
+      setImageError(false);
+    } else {
+      setViewMode('primitive');
+    }
+  }, [resolvedImageUrl]);
 
   const hasGeneratedAsset = !!resolvedImageUrl;
   const showGeneratedView = viewMode === 'generated' && hasGeneratedAsset && !imageError;
@@ -72,12 +83,27 @@ export function TemplateAssetCard({
     <Pressable style={styles.card} onPress={onPress}>
       <View style={styles.previewContainer}>
         {showGeneratedView ? (
-          <Image
-            source={{ uri: resolvedImageUrl }}
-            style={styles.generatedImage}
-            resizeMode="contain"
-            onError={() => setImageError(true)}
-          />
+          <View style={styles.generatedImageContainer}>
+            <Pressable
+              onPressIn={() => setShowSilhouette(true)}
+              onPressOut={() => setShowSilhouette(false)}
+              style={styles.resultImageWrapper}
+            >
+              <Image
+                source={{ uri: lastGeneration?.silhouetteUrl && showSilhouette ? lastGeneration.silhouetteUrl : resolvedImageUrl }}
+                style={styles.resultImage}
+                resizeMode="contain"
+                onError={() => setImageError(true)}
+              />
+            </Pressable>
+            {lastGeneration?.silhouetteUrl && (
+              <View style={styles.resultImageLabel}>
+                <Text style={styles.resultImageLabelText}>
+                  {showSilhouette ? "IN" : "OUT"}
+                </Text>
+              </View>
+            )}
+          </View>
         ) : (
           <PrimitivePreview
             physics={template.physics}
@@ -236,5 +262,31 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontSize: 10,
     marginTop: 4,
+  },
+  generatedImageContainer: {
+    width: '100%',
+    height: '100%',
+  },
+  resultImageWrapper: {
+    width: '100%',
+    height: '100%',
+  },
+  resultImage: {
+    width: '100%',
+    height: '100%',
+  },
+  resultImageLabel: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  resultImageLabelText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '600',
   },
 });

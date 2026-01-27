@@ -1,0 +1,35 @@
+=== POSITIVE ===
+=== CAMERA/VIEW (CRITICAL) ===
+FRONT VIEW. Flat 2D UI element. No 3D perspective or rotation.
+Camera directly facing the component surface.
+
+=== SHAPE (CRITICAL) ===
+Nine-patch UI component background.
+DECORATIVE BORDERS around all edges (fixed when scaled).
+FLAT CENTER REGION (stretches when component is resized).
+Clear visual distinction between border decoration and center area.
+
+=== COMPOSITION ===
+Component fills the 256x256 frame.
+Consistent border width on all four sides.
+Center area is visually distinct from borders.
+
+=== SUBJECT ===
+A checkbox background for a video game UI.
+Theme: medieval fantasy with stone textures
+State: hover - Subtle highlight effect, slightly brighter or elevated
+
+=== STYLE ===
+Clean UI design, professional game interface.
+Stylized to match the theme while remaining functional.
+Decorative but not cluttered.
+
+=== TECHNICAL ===
+Transparent background (alpha channel).
+NO text, NO labels, NO icons inside the component.
+NO grid lines, NO measurement marks.
+Consistent border widths suitable for nine-patch scaling.
+Single UI element only, no duplicates or variations.
+
+=== NEGATIVE ===
+text, labels, icons, checkmarks, letters, numbers, watermark, signature, grid lines, borders around the component, multiple elements, 3D perspective, angled view, blurry, low quality

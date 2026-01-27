@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+a transparent glass candy jar wall with subtle rainbow reflections, crystal clear with candy-colored tint at the edges for a video game. Theme: whimsical candy factory, sweet treats, colorful confections, bubblegum aesthetic Style: cartoon style, bold black outlines, vibrant saturated colors Front view, flat 2D perspective. Transparent background. Single object, no duplicates, no text.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

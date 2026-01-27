@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+A dreamy sky kingdom background for a flying game. Soft gradient sky from pale blue at the bottom to deeper azure at the top. Fluffy white clouds scattered throughout. Distant floating islands with tiny castles and towers visible in the background. Magical sparkles and light rays filtering through the clouds. Whimsical and enchanting atmosphere. Parallax-ready with clear depth layers. No text, no characters, just the environment. High quality game background.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

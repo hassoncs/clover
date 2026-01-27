@@ -1,0 +1,127 @@
+{
+  "id": "gem-variants",
+  "kind": "variation",
+  "layout": {
+    "type": "grid",
+    "columns": 4,
+    "rows": 2,
+    "cellWidth": 64,
+    "cellHeight": 64
+  },
+  "dimensions": {
+    "width": 512,
+    "height": 512
+  },
+  "entries": {
+    "red": {
+      "id": "red",
+      "region": {
+        "x": 26,
+        "y": 141,
+        "w": 115,
+        "h": 115
+      }
+    },
+    "blue": {
+      "id": "blue",
+      "region": {
+        "x": 141,
+        "y": 141,
+        "w": 115,
+        "h": 115
+      }
+    },
+    "green": {
+      "id": "green",
+      "region": {
+        "x": 256,
+        "y": 141,
+        "w": 115,
+        "h": 115
+      }
+    },
+    "yellow": {
+      "id": "yellow",
+      "region": {
+        "x": 371,
+        "y": 141,
+        "w": 115,
+        "h": 115
+      }
+    },
+    "purple": {
+      "id": "purple",
+      "region": {
+        "x": 26,
+        "y": 256,
+        "w": 115,
+        "h": 115
+      }
+    },
+    "orange": {
+      "id": "orange",
+      "region": {
+        "x": 141,
+        "y": 256,
+        "w": 115,
+        "h": 115
+      }
+    },
+    "variant_6": {
+      "id": "variant_6",
+      "region": {
+        "x": 256,
+        "y": 256,
+        "w": 115,
+        "h": 115
+      }
+    },
+    "variant_7": {
+      "id": "variant_7",
+      "region": {
+        "x": 371,
+        "y": 256,
+        "w": 115,
+        "h": 115
+      }
+    }
+  },
+  "promptConfig": {
+    "basePrompt": "photorealistic brilliant cut gemstone, sparkling facets, light rays, glistening reflections, jewelry quality",
+    "negativePrompt": "borders, grid lines, labels, cartoon, pixel art, flat"
+  },
+  "groups": {
+    "default": {
+      "id": "default",
+      "variants": {
+        "red": {
+          "entryId": "red"
+        },
+        "blue": {
+          "entryId": "blue"
+        },
+        "green": {
+          "entryId": "green"
+        },
+        "yellow": {
+          "entryId": "yellow"
+        },
+        "purple": {
+          "entryId": "purple"
+        },
+        "orange": {
+          "entryId": "orange"
+        }
+      },
+      "order": [
+        "red",
+        "blue",
+        "green",
+        "yellow",
+        "purple",
+        "orange"
+      ]
+    }
+  },
+  "defaultGroupId": "default"
+}

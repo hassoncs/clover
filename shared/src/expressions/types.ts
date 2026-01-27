@@ -151,8 +151,14 @@ export interface EntityContext {
 }
 
 export interface EntityManagerLike {
-  getEntitiesByTag(tag: string): { id: string; transform: { x: number; y: number } }[];
+  getEntity(id: string): { id: string; transform: { x: number; y: number; scaleX: number; scaleY: number }; sprite?: { type: string; width?: number; height?: number; radius?: number } } | undefined;
+  getEntitiesByTag(tag: string): { id: string; transform: { x: number; y: number; scaleX: number; scaleY: number }; sprite?: { type: string; width?: number; height?: number; radius?: number } }[];
 }
+
+export type CustomFunction = (
+  args: ExpressionValueType[],
+  ctx: EvalContext
+) => ExpressionValueType;
 
 export interface EvalContext {
   score: number;
@@ -169,6 +175,8 @@ export interface EvalContext {
   random: () => number;
 
   entityManager?: EntityManagerLike;
+  
+  customFunctions?: Record<string, CustomFunction>;
 }
 
 export interface CompiledExpression<T extends ExpressionValueType = ExpressionValueType> {

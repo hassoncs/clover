@@ -338,24 +338,101 @@ describe('EvalContextBuilder', () => {
     });
   });
 
-  describe('self context', () => {
-    it('passes self context through to expressions', () => {
-      const ctx = builder.build({
-        gameState: defaultGameState,
-        variables: {
-          healthPercent: { expr: 'self.health / self.maxHealth' },
-        },
-        self: {
-          id: 'player',
-          transform: { x: 0, y: 0, angle: 0 },
-          health: 75,
-          maxHealth: 100,
-        },
-      });
+   describe('self context', () => {
+     it('passes self context through to expressions', () => {
+       const ctx = builder.build({
+         gameState: defaultGameState,
+         variables: {
+           healthPercent: { expr: 'self.health / self.maxHealth' },
+         },
+         self: {
+           id: 'player',
+           transform: { x: 0, y: 0, angle: 0 },
+           health: 75,
+           maxHealth: 100,
+         },
+       });
 
-      expect(ctx.variables.healthPercent).toBe(0.75);
-    });
-  });
+       expect(ctx.variables.healthPercent).toBe(0.75);
+     });
+   });
+
+   describe('VariableWithTuning support', () => {
+     it('extracts values from VariableWithTuning objects', () => {
+       const ctx = builder.build({
+         gameState: defaultGameState,
+         variables: {
+           speed: {
+             value: 10,
+             tuning: { min: 0, max: 100, step: 1 },
+             category: 'gameplay',
+             label: 'Player Speed',
+           },
+           damage: {
+             value: 25,
+             tuning: { min: 1, max: 100, step: 5 },
+             category: 'gameplay',
+           },
+         },
+       });
+
+       expect(ctx.variables.speed).toBe(10);
+       expect(ctx.variables.damage).toBe(25);
+     });
+
+     it('handles mixed simple values and VariableWithTuning', () => {
+       const ctx = builder.build({
+         gameState: defaultGameState,
+         variables: {
+           baseSpeed: 5,
+           tunedDamage: {
+             value: 20,
+             tuning: { min: 10, max: 50, step: 1 },
+             category: 'gameplay',
+           },
+           calculated: { expr: 'baseSpeed * 2' },
+         },
+       });
+
+       expect(ctx.variables.baseSpeed).toBe(5);
+       expect(ctx.variables.tunedDamage).toBe(20);
+       expect(ctx.variables.calculated).toBe(10);
+     });
+
+     it('resolves expressions within VariableWithTuning', () => {
+       const ctx = builder.build({
+         gameState: { ...defaultGameState, wave: 3 },
+         variables: {
+           baseDamage: 10,
+           scaledDamage: {
+             value: { expr: 'baseDamage * wave' },
+             tuning: { min: 0, max: 100, step: 1 },
+             category: 'gameplay',
+             label: 'Scaled Damage',
+           },
+         },
+       });
+
+       expect(ctx.variables.baseDamage).toBe(10);
+       expect(ctx.variables.scaledDamage).toBe(30);
+     });
+
+     it('handles VariableWithTuning with vec2 values', () => {
+       const ctx = builder.build({
+         gameState: defaultGameState,
+         variables: {
+           velocity: {
+             value: { x: 5, y: 10 },
+             tuning: { min: 0, max: 50, step: 1 },
+             category: 'physics',
+             label: 'Velocity',
+           },
+         },
+       });
+
+       expect(ctx.variables.velocity).toEqual({ x: 5, y: 10 });
+     });
+ });
 });
 
 describe('buildEvalContext helper', () => {

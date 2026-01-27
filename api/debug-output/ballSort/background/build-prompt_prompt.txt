@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+A whimsical candy factory interior for a puzzle game. Colorful conveyor belts carrying candies. Giant lollipops and candy canes as decorative pillars. Bubblegum pink and mint green color scheme. Swirling rainbow patterns on the walls. Candy dispensers and gumball machines in the background. Sweet pastel lighting with sparkles. Playful and delicious atmosphere. No text, no characters, just the environment. High quality game background.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy

@@ -97,7 +97,7 @@ This avoids duplicating demos while still taking advantage of Storybook for rapi
 
 ---
 
-### D) Physics System (Box2D-based)
+### D) Physics System (Godot-based)
 
 **Source**: `packages/physics/`, `shared/src/types/physics.ts`  
 **Existing Stories**: `FallingBoxes.stories.tsx`, `Interaction.stories.tsx`
@@ -160,7 +160,7 @@ This avoids duplicating demos while still taking advantage of Storybook for rapi
 top_down_asteroids, slingshot, rope_swing, ragdoll, pendulum,
 particle_playground, parallax_demo, newtons_cradle, magnet_playground,
 liquid_illusion, interaction, effects_gallery, dominoes, destructible_tower,
-car, bridge, pinball, avalanche, box2d
+car, bridge, pinball, avalanche
 ```
 
 **Discoverability Status**: ⚠️ **Good raw content**, but:

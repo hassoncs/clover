@@ -1,0 +1,59 @@
+{
+  "runId": "run-1769213675962",
+  "config": {
+    "dryRun": false,
+    "theme": "wooden toy blocks, natural wood grain, children's toy aesthetic",
+    "style": "cartoon"
+  },
+  "timestamp": "2026-01-24T00:15:25.160Z",
+  "results": [
+    {
+      "templateId": "foundation",
+      "silhouettePath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/foundation_1_silhouette.png",
+      "promptPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/foundation_2_prompt.txt",
+      "generatedPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/foundation_3_generated.jpg",
+      "finalPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/foundation_4_final.png",
+      "gameAssetPath": "/Users/hassoncs/Workspaces/Personal/slopcade/app/public/assets/games/physics-stacker/foundation.png"
+    },
+    {
+      "templateId": "dropper",
+      "silhouettePath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/dropper_1_silhouette.png",
+      "promptPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/dropper_2_prompt.txt",
+      "generatedPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/dropper_3_generated.jpg",
+      "finalPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/dropper_4_final.png",
+      "gameAssetPath": "/Users/hassoncs/Workspaces/Personal/slopcade/app/public/assets/games/physics-stacker/dropper.png"
+    },
+    {
+      "templateId": "blockWide",
+      "silhouettePath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockWide_1_silhouette.png",
+      "promptPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockWide_2_prompt.txt",
+      "generatedPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockWide_3_generated.jpg",
+      "finalPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockWide_4_final.png",
+      "gameAssetPath": "/Users/hassoncs/Workspaces/Personal/slopcade/app/public/assets/games/physics-stacker/blockWide.png"
+    },
+    {
+      "templateId": "blockMedium",
+      "silhouettePath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockMedium_1_silhouette.png",
+      "promptPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockMedium_2_prompt.txt",
+      "generatedPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockMedium_3_generated.jpg",
+      "finalPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockMedium_4_final.png",
+      "gameAssetPath": "/Users/hassoncs/Workspaces/Personal/slopcade/app/public/assets/games/physics-stacker/blockMedium.png"
+    },
+    {
+      "templateId": "blockSmall",
+      "silhouettePath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockSmall_1_silhouette.png",
+      "promptPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockSmall_2_prompt.txt",
+      "generatedPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockSmall_3_generated.jpg",
+      "finalPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockSmall_4_final.png",
+      "gameAssetPath": "/Users/hassoncs/Workspaces/Personal/slopcade/app/public/assets/games/physics-stacker/blockSmall.png"
+    },
+    {
+      "templateId": "blockTall",
+      "silhouettePath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockTall_1_silhouette.png",
+      "promptPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockTall_2_prompt.txt",
+      "generatedPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockTall_3_generated.jpg",
+      "finalPath": "/Users/hassoncs/Workspaces/Personal/slopcade/api/debug-output/physics-stacker/blockTall_4_final.png",
+      "gameAssetPath": "/Users/hassoncs/Workspaces/Personal/slopcade/app/public/assets/games/physics-stacker/blockTall.png"
+    }
+  ]
+}

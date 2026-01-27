@@ -1,0 +1,11 @@
+[**@slopcade/shared v1.0.0**](../README.md)
+
+***
+
+[@slopcade/shared](../README.md) / VariableWithTuningSchema
+
+# Variable: VariableWithTuningSchema
+
+> `const` **VariableWithTuningSchema**: `ZodObject`\<\{ `value`: `ZodUnion`\<\[`ZodNumber`, `ZodBoolean`, `ZodString`, `ZodObject`\<\{ `x`: `ZodNumber`; `y`: `ZodNumber`; \}, `"strip"`, `ZodTypeAny`, \{ `x`: `number`; `y`: `number`; \}, \{ `x`: `number`; `y`: `number`; \}\>, `ZodObject`\<\{ `expr`: `ZodString`; `debugName`: `ZodOptional`\<`ZodString`\>; `cache`: `ZodOptional`\<`ZodEnum`\<\[`"none"`, `"frame"`\]\>\>; \}, `"strip"`, `ZodTypeAny`, \{ `expr`: `string`; `debugName?`: `string`; `cache?`: `"none"` \| `"frame"`; \}, \{ `expr`: `string`; `debugName?`: `string`; `cache?`: `"none"` \| `"frame"`; \}\>\]\>; `tuning`: `ZodOptional`\<`ZodObject`\<\{ `min`: `ZodNumber`; `max`: `ZodNumber`; `step`: `ZodNumber`; \}, `"strip"`, `ZodTypeAny`, \{ `min`: `number`; `max`: `number`; `step`: `number`; \}, \{ `min`: `number`; `max`: `number`; `step`: `number`; \}\>\>; `category`: `ZodOptional`\<`ZodEnum`\<\[`"physics"`, `"gameplay"`, `"visuals"`, `"economy"`, `"ai"`\]\>\>; `label`: `ZodOptional`\<`ZodString`\>; `description`: `ZodOptional`\<`ZodString`\>; `display`: `ZodOptional`\<`ZodBoolean`\>; \}, `"strip"`, `ZodTypeAny`, \{ `value`: `string` \| `number` \| `boolean` \| \{ `expr`: `string`; `debugName?`: `string`; `cache?`: `"none"` \| `"frame"`; \} \| \{ `x`: `number`; `y`: `number`; \}; `tuning?`: \{ `min`: `number`; `max`: `number`; `step`: `number`; \}; `category?`: `"physics"` \| `"gameplay"` \| `"visuals"` \| `"economy"` \| `"ai"`; `label?`: `string`; `description?`: `string`; `display?`: `boolean`; \}, \{ `value`: `string` \| `number` \| `boolean` \| \{ `expr`: `string`; `debugName?`: `string`; `cache?`: `"none"` \| `"frame"`; \} \| \{ `x`: `number`; `y`: `number`; \}; `tuning?`: \{ `min`: `number`; `max`: `number`; `step`: `number`; \}; `category?`: `"physics"` \| `"gameplay"` \| `"visuals"` \| `"economy"` \| `"ai"`; `label?`: `string`; `description?`: `string`; `display?`: `boolean`; \}\>
+
+Defined in: [expressions/schema-helpers.ts:30](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/expressions/schema-helpers.ts#L30)

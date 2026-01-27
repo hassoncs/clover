@@ -10,3 +10,15 @@ export * from './effects';
 export * from './particles';
 export * from './tilemap';
 export * from './asset-system';
+export * from './asset-sheet';
+export * from './godot-bridge';
+export * from './progress';
+export type {
+  ContainerConfig,
+  ContainerMatchRule,
+  GridCell,
+  ContainerType,
+  StackContainerConfig,
+  GridContainerConfig,
+  SlotContainerConfig,
+} from './container';

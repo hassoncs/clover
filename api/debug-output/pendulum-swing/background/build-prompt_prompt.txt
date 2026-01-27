@@ -1,0 +1,5 @@
+=== POSITIVE PROMPT ===
+A jungle adventure background with cave atmosphere. Dark tones with natural rock textures. Swinging ropes and platforms visible. Adventure game style. No text, no characters, just the environment. High quality game background.
+
+=== NEGATIVE PROMPT ===
+blurry, low quality, text, watermark, signature, cropped, multiple objects, realistic, photo, noisy, grainy
