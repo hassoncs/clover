@@ -92,12 +92,10 @@ const game: GameDefinition = {
   },
   camera: { type: "fixed", zoom: 1 },
   variables: {
-    flippedCount: 0,
     firstCardId: "",
     secondCardId: "",
     firstPairId: -1,
     secondPairId: -1,
-    canFlip: 1,
     matchedPairs: 0,
   },
   ui: {
@@ -114,6 +112,44 @@ const game: GameDefinition = {
     type: "score",
     score: 800,
   },
+  stateMachines: [
+    {
+      id: "gameFlow",
+      initialState: "idle",
+      states: [
+        { id: "idle" },
+        { id: "firstCardFlipped" },
+        { id: "secondCardFlipped" },
+        { id: "checkingMatch", timeout: 1.0, timeoutTransition: "idle" },
+      ],
+      transitions: [
+        {
+          id: "flip_first",
+          from: "idle",
+          to: "firstCardFlipped",
+          trigger: { type: "event", eventName: "card_flipped" },
+        },
+        {
+          id: "flip_second",
+          from: "firstCardFlipped",
+          to: "secondCardFlipped",
+          trigger: { type: "event", eventName: "card_flipped" },
+        },
+        {
+          id: "check_match",
+          from: "secondCardFlipped",
+          to: "checkingMatch",
+          trigger: { type: "event", eventName: "check_match" },
+        },
+        {
+          id: "match_found",
+          from: "checkingMatch",
+          to: "idle",
+          trigger: { type: "event", eventName: "match_success" },
+        },
+      ],
+    },
+  ],
   templates: {
     cardBack: {
       id: "cardBack",
@@ -258,8 +294,7 @@ const game: GameDefinition = {
       name: "Flip a face-down card when tapped",
       trigger: { type: "tap", target: "face-down" },
       conditions: [
-        { type: "variable", name: "canFlip", comparison: "eq", value: 1 },
-        { type: "variable", name: "flippedCount", comparison: "lt", value: 2 },
+        { type: "expression", expr: "stateIs('gameFlow', 'idle') || stateIs('gameFlow', 'firstCardFlipped')" },
       ],
       actions: [
         { type: "event", eventName: "card_flipped" },
@@ -270,10 +305,10 @@ const game: GameDefinition = {
       name: "Track first card flip",
       trigger: { type: "event", eventName: "card_flipped" },
       conditions: [
-        { type: "variable", name: "flippedCount", comparison: "eq", value: 0 },
+        { type: "expression", expr: "stateIs('gameFlow', 'idle')" },
       ],
       actions: [
-        { type: "set_variable", name: "flippedCount", operation: "set", value: 1 },
+        { type: "state_transition", machineId: "gameFlow", toState: "firstCardFlipped" },
       ],
     },
     {
@@ -281,11 +316,10 @@ const game: GameDefinition = {
       name: "Track second card flip and check match",
       trigger: { type: "event", eventName: "card_flipped" },
       conditions: [
-        { type: "variable", name: "flippedCount", comparison: "eq", value: 1 },
+        { type: "expression", expr: "stateIs('gameFlow', 'firstCardFlipped')" },
       ],
       actions: [
-        { type: "set_variable", name: "flippedCount", operation: "set", value: 2 },
-        { type: "set_variable", name: "canFlip", operation: "set", value: 0 },
+        { type: "state_transition", machineId: "gameFlow", toState: "secondCardFlipped" },
         { type: "event", eventName: "check_match" },
       ],
     },
@@ -297,8 +331,7 @@ const game: GameDefinition = {
         { type: "score", operation: "add", value: 100 },
         { type: "set_variable", name: "matchedPairs", operation: "add", value: 1 },
         { type: "destroy", target: { type: "by_tag", tag: "face-up" } },
-        { type: "set_variable", name: "flippedCount", operation: "set", value: 0 },
-        { type: "set_variable", name: "canFlip", operation: "set", value: 1 },
+        { type: "state_transition", machineId: "gameFlow", toState: "idle" },
         { type: "camera_shake", intensity: 0.05, duration: 0.15 },
       ],
     },
@@ -307,8 +340,7 @@ const game: GameDefinition = {
       name: "Handle non-matching pair - flip back after delay",
       trigger: { type: "event", eventName: "match_fail" },
       actions: [
-        { type: "set_variable", name: "flippedCount", operation: "set", value: 0 },
-        { type: "set_variable", name: "canFlip", operation: "set", value: 1 },
+        { type: "state_transition", machineId: "gameFlow", toState: "idle" },
       ],
     },
     {
@@ -316,7 +348,7 @@ const game: GameDefinition = {
       name: "Reset cards after no match",
       trigger: { type: "timer", time: 1, repeat: false },
       conditions: [
-        { type: "variable", name: "canFlip", comparison: "eq", value: 0 },
+        { type: "expression", expr: "stateIs('gameFlow', 'checkingMatch')" },
       ],
       actions: [
         { type: "event", eventName: "match_fail" },

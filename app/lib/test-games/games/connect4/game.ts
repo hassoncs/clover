@@ -95,7 +95,6 @@ const game: GameDefinition = {
     ],
   },
   variables: {
-    currentPlayer: 1,
     isPlayerTurn: 1,
     moveCount: 0,
     col0Height: 0,
@@ -105,8 +104,44 @@ const game: GameDefinition = {
     col4Height: 0,
     col5Height: 0,
     col6Height: 0,
-    gameOver: 0,
   },
+  stateMachines: [
+    {
+      id: "turnFlow",
+      initialState: "player1Turn",
+      states: [
+        { id: "player1Turn" },
+        { id: "player2Turn" },
+        { id: "gameOver" },
+      ],
+      transitions: [
+        {
+          id: "p1_to_p2",
+          from: "player1Turn",
+          to: "player2Turn",
+          trigger: { type: "event", eventName: "disc_dropped" },
+        },
+        {
+          id: "p2_to_p1",
+          from: "player2Turn",
+          to: "player1Turn",
+          trigger: { type: "event", eventName: "disc_dropped" },
+        },
+        {
+          id: "end_game_p1",
+          from: "player1Turn",
+          to: "gameOver",
+          trigger: { type: "event", eventName: "game_ended" },
+        },
+        {
+          id: "end_game_p2",
+          from: "player2Turn",
+          to: "gameOver",
+          trigger: { type: "event", eventName: "game_ended" },
+        },
+      ],
+    },
+  ],
   winCondition: {
     type: "custom",
   },
@@ -227,90 +262,90 @@ const game: GameDefinition = {
     ...columnSelectorEntities,
   ],
   rules: [
-    {
-      id: "tap_column_0",
-      name: "Tap Column 0",
-      trigger: { type: "tap", target: "selector-col-0" },
-      conditions: [
-        { type: "variable", name: "gameOver", comparison: "eq", value: 0 },
-        { type: "variable", name: "col0Height", comparison: "lt", value: ROWS },
-      ],
-      actions: [
-        { type: "event", eventName: "drop_col_0" },
-      ],
-    },
-    {
-      id: "tap_column_1",
-      name: "Tap Column 1",
-      trigger: { type: "tap", target: "selector-col-1" },
-      conditions: [
-        { type: "variable", name: "gameOver", comparison: "eq", value: 0 },
-        { type: "variable", name: "col1Height", comparison: "lt", value: ROWS },
-      ],
-      actions: [
-        { type: "event", eventName: "drop_col_1" },
-      ],
-    },
-    {
-      id: "tap_column_2",
-      name: "Tap Column 2",
-      trigger: { type: "tap", target: "selector-col-2" },
-      conditions: [
-        { type: "variable", name: "gameOver", comparison: "eq", value: 0 },
-        { type: "variable", name: "col2Height", comparison: "lt", value: ROWS },
-      ],
-      actions: [
-        { type: "event", eventName: "drop_col_2" },
-      ],
-    },
-    {
-      id: "tap_column_3",
-      name: "Tap Column 3",
-      trigger: { type: "tap", target: "selector-col-3" },
-      conditions: [
-        { type: "variable", name: "gameOver", comparison: "eq", value: 0 },
-        { type: "variable", name: "col3Height", comparison: "lt", value: ROWS },
-      ],
-      actions: [
-        { type: "event", eventName: "drop_col_3" },
-      ],
-    },
-    {
-      id: "tap_column_4",
-      name: "Tap Column 4",
-      trigger: { type: "tap", target: "selector-col-4" },
-      conditions: [
-        { type: "variable", name: "gameOver", comparison: "eq", value: 0 },
-        { type: "variable", name: "col4Height", comparison: "lt", value: ROWS },
-      ],
-      actions: [
-        { type: "event", eventName: "drop_col_4" },
-      ],
-    },
-    {
-      id: "tap_column_5",
-      name: "Tap Column 5",
-      trigger: { type: "tap", target: "selector-col-5" },
-      conditions: [
-        { type: "variable", name: "gameOver", comparison: "eq", value: 0 },
-        { type: "variable", name: "col5Height", comparison: "lt", value: ROWS },
-      ],
-      actions: [
-        { type: "event", eventName: "drop_col_5" },
-      ],
-    },
-    {
-      id: "tap_column_6",
-      name: "Tap Column 6",
-      trigger: { type: "tap", target: "selector-col-6" },
-      conditions: [
-        { type: "variable", name: "gameOver", comparison: "eq", value: 0 },
-        { type: "variable", name: "col6Height", comparison: "lt", value: ROWS },
-      ],
-      actions: [
-        { type: "event", eventName: "drop_col_6" },
-      ],
-    },
+     {
+       id: "tap_column_0",
+       name: "Tap Column 0",
+       trigger: { type: "tap", target: "selector-col-0" },
+       conditions: [
+         { type: "expression", expr: '!stateIs("turnFlow", "gameOver")' },
+         { type: "variable", name: "col0Height", comparison: "lt", value: ROWS },
+       ],
+       actions: [
+         { type: "event", eventName: "drop_col_0" },
+       ],
+     },
+     {
+       id: "tap_column_1",
+       name: "Tap Column 1",
+       trigger: { type: "tap", target: "selector-col-1" },
+       conditions: [
+         { type: "expression", expr: '!stateIs("turnFlow", "gameOver")' },
+         { type: "variable", name: "col1Height", comparison: "lt", value: ROWS },
+       ],
+       actions: [
+         { type: "event", eventName: "drop_col_1" },
+       ],
+     },
+     {
+       id: "tap_column_2",
+       name: "Tap Column 2",
+       trigger: { type: "tap", target: "selector-col-2" },
+       conditions: [
+         { type: "expression", expr: '!stateIs("turnFlow", "gameOver")' },
+         { type: "variable", name: "col2Height", comparison: "lt", value: ROWS },
+       ],
+       actions: [
+         { type: "event", eventName: "drop_col_2" },
+       ],
+     },
+     {
+       id: "tap_column_3",
+       name: "Tap Column 3",
+       trigger: { type: "tap", target: "selector-col-3" },
+       conditions: [
+         { type: "expression", expr: '!stateIs("turnFlow", "gameOver")' },
+         { type: "variable", name: "col3Height", comparison: "lt", value: ROWS },
+       ],
+       actions: [
+         { type: "event", eventName: "drop_col_3" },
+       ],
+     },
+     {
+       id: "tap_column_4",
+       name: "Tap Column 4",
+       trigger: { type: "tap", target: "selector-col-4" },
+       conditions: [
+         { type: "expression", expr: '!stateIs("turnFlow", "gameOver")' },
+         { type: "variable", name: "col4Height", comparison: "lt", value: ROWS },
+       ],
+       actions: [
+         { type: "event", eventName: "drop_col_4" },
+       ],
+     },
+     {
+       id: "tap_column_5",
+       name: "Tap Column 5",
+       trigger: { type: "tap", target: "selector-col-5" },
+       conditions: [
+         { type: "expression", expr: '!stateIs("turnFlow", "gameOver")' },
+         { type: "variable", name: "col5Height", comparison: "lt", value: ROWS },
+       ],
+       actions: [
+         { type: "event", eventName: "drop_col_5" },
+       ],
+     },
+     {
+       id: "tap_column_6",
+       name: "Tap Column 6",
+       trigger: { type: "tap", target: "selector-col-6" },
+       conditions: [
+         { type: "expression", expr: '!stateIs("turnFlow", "gameOver")' },
+         { type: "variable", name: "col6Height", comparison: "lt", value: ROWS },
+       ],
+       actions: [
+         { type: "event", eventName: "drop_col_6" },
+       ],
+     },
     {
       id: "handle_drop_col_0",
       name: "Handle Drop Column 0",
@@ -381,39 +416,18 @@ const game: GameDefinition = {
         { type: "event", eventName: "disc_dropped" },
       ],
     },
-    {
-      id: "switch_turn",
-      name: "Switch Turn After Drop",
-      trigger: { type: "event", eventName: "disc_dropped" },
-      conditions: [
-        { type: "variable", name: "currentPlayer", comparison: "eq", value: 1 },
-      ],
-      actions: [
-        { type: "set_variable", name: "currentPlayer", operation: "set", value: 2 },
-      ],
-    },
-    {
-      id: "switch_turn_back",
-      name: "Switch Turn Back",
-      trigger: { type: "event", eventName: "disc_dropped" },
-      conditions: [
-        { type: "variable", name: "currentPlayer", comparison: "eq", value: 2 },
-      ],
-      actions: [
-        { type: "set_variable", name: "currentPlayer", operation: "set", value: 1 },
-      ],
-    },
-    {
-      id: "check_draw",
-      name: "Check for Draw",
-      trigger: { type: "event", eventName: "disc_dropped" },
-      conditions: [
-        { type: "variable", name: "moveCount", comparison: "gte", value: 42 },
-      ],
-      actions: [
-        { type: "set_variable", name: "gameOver", operation: "set", value: 1 },
-      ],
-    },
+
+     {
+       id: "check_draw",
+       name: "Check for Draw",
+       trigger: { type: "event", eventName: "disc_dropped" },
+       conditions: [
+         { type: "variable", name: "moveCount", comparison: "gte", value: 42 },
+       ],
+       actions: [
+         { type: "event", eventName: "game_ended" },
+       ],
+     },
   ],
 };
 
