@@ -41,8 +41,8 @@ pnpm docs:build       # Build docs for production
 pnpm docs:typedoc     # Regenerate TypeDoc API reference
 
 # Registry (auto-discovered modules)
-pnpm generate:registry        # Regenerate module registry
-pnpm generate:registry:watch  # Watch mode
+pnpm generate:registry        # Regenerate module registry (one-time)
+pnpm generate:registry:watch  # Watch mode (manual use)
 ```
 
 ---
@@ -134,7 +134,7 @@ This project uses `DevMux` to manage background services in named `tmux` session
 
 | Command | Action |
 |---------|--------|
-| `pnpm dev` | Ensures `metro` (:8085), `api` (:8789), and `godot` (watcher) are running. |
+| `pnpm dev` | Ensures `metro` (:8085), `api` (:8789), `godot`, and `registry` (watchers) are running. |
 | `pnpm storybook` | Ensures `storybook` (:6006) is running. |
 | `pnpm svc:status` | Shows health of all configured services. |
 | `pnpm svc:stop` | Stops all services (kills tmux sessions). |
@@ -326,7 +326,7 @@ export const metadata: ExampleMeta = {
 export default function MyExample() { ... }
 ```
 
-Then run `pnpm generate:registry` (or it runs automatically with `pnpm dev`).
+Then run `pnpm generate:registry` (or it runs automatically and watches with `pnpm dev`).
 
 ### Using the Registry
 
