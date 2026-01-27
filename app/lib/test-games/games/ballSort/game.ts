@@ -1,11 +1,14 @@
 import type { GameDefinition, GameEntity, StackContainerConfig } from "@slopcade/shared";
 import { distributeRow } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
+import { generateVerifiedPuzzle, type PuzzleConfig } from "./puzzleGenerator";
 
 export const metadata: TestGameMeta = {
   title: "Ball Sort",
   description: "Sort colored balls into tubes - each tube should contain only one color",
 };
+
+const DEFAULT_DIFFICULTY = 5;
 
 const WORLD_WIDTH = 12;
 const WORLD_HEIGHT = 16;
@@ -36,35 +39,16 @@ const BALL_COLORS = ["#E53935", "#1E88E5", "#43A047", "#FDD835"];
 const TUBE_COLOR = "#546E7A";
 const TUBE_BOTTOM_COLOR = "#37474F";
 
-function generateSolvableLayout(): number[][] {
-  const allBalls: number[] = [];
-  for (let color = 0; color < 4; color++) {
-    for (let i = 0; i < BALLS_PER_TUBE; i++) {
-      allBalls.push(color);
-    }
-  }
+const puzzleConfig: PuzzleConfig = {
+  numColors: 4,
+  ballsPerColor: BALLS_PER_TUBE,
+  extraTubes: NUM_TUBES - 4,
+  difficulty: DEFAULT_DIFFICULTY,
+};
 
-  for (let i = allBalls.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [allBalls[i], allBalls[j]] = [allBalls[j], allBalls[i]];
-  }
+const generatedPuzzle = generateVerifiedPuzzle(puzzleConfig);
+const tubeLayout = generatedPuzzle.tubes;
 
-  const tubes: number[][] = [];
-  for (let t = 0; t < NUM_FILLED_TUBES; t++) {
-    tubes.push(allBalls.slice(t * BALLS_PER_TUBE, (t + 1) * BALLS_PER_TUBE));
-  }
-  
-  for (let t = NUM_FILLED_TUBES; t < NUM_TUBES; t++) {
-    tubes.push([]);
-  }
-
-  return tubes;
-}
-
-const tubeLayout = generateSolvableLayout();
-
-// Build container configurations for the 6 tubes
-// These enable declarative container rules in the future
 const tubeContainers: StackContainerConfig[] = tubePositions.map((pos, index) => ({
   id: `tube-${index}`,
   type: 'stack' as const,
