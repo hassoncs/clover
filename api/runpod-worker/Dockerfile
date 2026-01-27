@@ -48,10 +48,6 @@ RUN comfy model download \
 # =============================================================================
 
 # BiRefNet model for high-quality background removal
-# The 1038lab node auto-downloads models on first use, but we can pre-bake them
-# for faster cold starts. The models go to: /comfyui/models/RMBG/
-RUN mkdir -p /comfyui/models/RMBG && \
-    comfy model download \
-    --url https://huggingface.co/ZhengPeng7/BiRefNet/resolve/main/BiRefNet-general-epoch_244.pth \
-    --relative-path models/RMBG \
-    --filename BiRefNet-general-epoch_244.pth
+# The 1038lab node auto-downloads models on first use to: /comfyui/models/RMBG/
+# Pre-baking the model would speed up cold starts but the HuggingFace URL is unreliable
+# The model will be downloaded automatically on first use (adds ~30s to first cold start)
