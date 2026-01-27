@@ -49,6 +49,7 @@ var ws_url: String = "ws://localhost:8789"
 
 var _js_collision_callback: JavaScriptObject = null
 var _js_destroy_callback: JavaScriptObject = null
+var _js_entity_spawned_callback: JavaScriptObject = null
 
 var _js_callbacks: Array = []
 var _js_bridge_obj: JavaScriptObject = null
@@ -92,6 +93,10 @@ var _debug_show_shapes: bool = false
 var body_id_map: Dictionary = {}  # entity_id -> body_id (int)
 var body_id_reverse: Dictionary = {}  # body_id -> entity_id
 var next_body_id: int = 1
+
+# Entity generation tracking for pool safety (prevents stale entity references)
+var entity_generations: Dictionary = {}  # entity_id -> generation (int)
+var next_generation: int = 1
 
 # Collider ID tracking
 var collider_id_map: Dictionary = {}  # collider_id -> {entity_id, node}
@@ -344,6 +349,10 @@ func _setup_js_bridge() -> void:
 	var on_destroy_cb = JavaScriptBridge.create_callback(_js_on_entity_destroyed)
 	_js_callbacks.append(on_destroy_cb)
 	_js_bridge_obj["onEntityDestroyed"] = on_destroy_cb
+	
+	var on_spawned_cb = JavaScriptBridge.create_callback(_js_on_entity_spawned)
+	_js_callbacks.append(on_spawned_cb)
+	_js_bridge_obj["onEntitySpawned"] = on_spawned_cb
 	
 	# Transform control
 	var set_transform_cb = JavaScriptBridge.create_callback(_js_set_transform)
@@ -810,6 +819,10 @@ func _js_on_entity_destroyed(args: Array) -> void:
 	if args.size() >= 1:
 		_js_destroy_callback = args[0]
 
+func _js_on_entity_spawned(args: Array) -> void:
+	if args.size() >= 1:
+		_js_entity_spawned_callback = args[0]
+
 func _notify_js_collision(entity_a: String, entity_b: String, impulse: float) -> void:
 	if _js_collision_callback != null:
 		# Legacy format for backward compatibility
@@ -906,6 +919,14 @@ func _notify_js_destroy(entity_id: String) -> void:
 	else:
 		# Native path: queue event for polling
 		_queue_event("destroy", {"entityId": entity_id})
+
+func _notify_js_entity_spawned(entity_id: String, snapshot: Dictionary) -> void:
+	if _js_entity_spawned_callback != null:
+		var json_str = JSON.stringify(snapshot)
+		_js_entity_spawned_callback.call("call", null, json_str)
+	else:
+		# Native path: queue event for polling
+		_queue_event("entity_spawned", snapshot)
 
 func _setup_splat_map() -> void:
 	if _splat_enabled:
@@ -1321,7 +1342,31 @@ func _create_entity(entity_data: Dictionary) -> Node2D:
 		node.set_meta("behaviors", merged.behaviors if merged.behaviors is Array else [])
 	
 	entities[entity_id] = node
+	
+	# Track entity generation for pool safety
+	var generation = next_generation
+	next_generation += 1
+	entity_generations[entity_id] = generation
+	
+	# Build snapshot for TypeScript
+	var snapshot_pos = godot_to_game_pos(node.position)
+	var snapshot = {
+		"entityId": entity_id,
+		"template": template_id,
+		"generation": generation,
+		"tags": merged.get("tags", []),
+		"transform": {
+			"x": snapshot_pos.x,
+			"y": snapshot_pos.y,
+			"angle": -node.rotation,
+			"scaleX": node.scale.x,
+			"scaleY": node.scale.y
+		}
+	}
+	
+	# Emit signal and notify JS
 	entity_spawned.emit(entity_id, node)
+	_notify_js_entity_spawned(entity_id, snapshot)
 	
 	return node
 

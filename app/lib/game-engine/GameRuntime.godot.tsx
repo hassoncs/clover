@@ -949,14 +949,10 @@ export function GameRuntimeGodot({
         spawnEntity: (templateId, x, y) => {
           const template = game.entityManager.getTemplate(templateId);
           if (!template) return null;
-          return game.entityManager.createEntity({
-            id: `spawned_${Date.now()}_${Math.random()
-              .toString(36)
-              .slice(2, 6)}`,
-            name: templateId,
-            template: templateId,
-            transform: { x, y, angle: 0, scaleX: 1, scaleY: 1 },
-          });
+          return bridge.spawnEntity(templateId, x, y);
+        },
+        setEntityVelocity: (entityId, velocity) => {
+          bridge.setLinearVelocity(entityId, velocity);
         },
         destroyEntity: (id) => game.entityManager.destroyEntity(id),
         triggerEvent: (name, data) =>

@@ -92,7 +92,8 @@ export interface BehaviorContext {
 
   addScore(points: number): void;
   setGameState(state: GameState['state']): void;
-  spawnEntity(templateId: string, x: number, y: number): RuntimeEntity | null;
+  spawnEntity(templateId: string, x: number, y: number): string | null;
+  setEntityVelocity(entityId: string, velocity: Vec2): void;
   destroyEntity(entityId: string): void;
   triggerEvent(eventName: string, data?: Record<string, unknown>): void;
   triggerParticleEffect(type: ParticleEmitterType, x: number, y: number): void;

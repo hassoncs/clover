@@ -50,20 +50,20 @@ export class SpawnActionExecutor implements ActionExecutor<SpawnAction> {
 
       const template = context.entityManager.getTemplate(templateId);
       if (template) {
-        let entityId: string;
-
         if (context.bridge) {
-          entityId = context.bridge.spawnEntity(templateId, x, y);
+          // Event-driven: bridge.spawnEntity() triggers Godot spawn,
+          // which emits entity_spawned event that populates EntityManager
+          context.bridge.spawnEntity(templateId, x, y);
         } else {
-          entityId = `spawned_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+          // Fallback for tests/mock scenarios without bridge
+          const entityId = `spawned_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+          context.entityManager.createEntity({
+            id: entityId,
+            name: template.id,
+            template: templateId,
+            transform: { x, y, angle: 0, scaleX: 1, scaleY: 1 },
+          });
         }
-
-        context.entityManager.createEntity({
-          id: entityId,
-          name: template.id,
-          template: templateId,
-          transform: { x, y, angle: 0, scaleX: 1, scaleY: 1 },
-        });
       }
     }
   }
