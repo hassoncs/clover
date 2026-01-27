@@ -11,17 +11,21 @@
       "cwd": ".",
       "command": "node scripts/export-godot.mjs --watch"
     },
+    "registry": {
+      "cwd": "app",
+      "command": "node scripts/generate-registry.mjs --watch"
+    },
     "metro": {
       "cwd": "app",
       "command": "node ../scripts/export-godot.mjs --once && node scripts/generate-registry.mjs && RCT_METRO_PORT=8085 npx hush run -t app -- npx expo start --dev-client --port 8085",
       "health": { "type": "port", "port": 8085 },
-      "dependsOn": ["api", "godot"]
+      "dependsOn": ["api", "godot", "registry"]
     },
     "web": {
       "cwd": "app",
       "command": "node ../scripts/export-godot.mjs --once && node scripts/generate-registry.mjs && npx hush run -t app -- npx expo start --web --port 8085",
       "health": { "type": "port", "port": 8085 },
-      "dependsOn": ["api", "godot"]
+      "dependsOn": ["api", "godot", "registry"]
     },
     "storybook": {
       "cwd": "apps/storybook",

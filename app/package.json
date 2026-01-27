@@ -5,7 +5,6 @@
   "scripts": {
     "start": "expo start --port 8085",
     "dev": "node scripts/generate-registry.mjs && expo start --port 8085",
-    "dev:watch": "node scripts/generate-registry.mjs --watch & expo start --port 8085",
     "generate:registry": "node scripts/generate-registry.mjs",
     "generate:registry:check": "node scripts/generate-registry.mjs --check",
     "generate:registry:watch": "node scripts/generate-registry.mjs --watch",
