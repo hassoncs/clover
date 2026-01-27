@@ -259,6 +259,7 @@ export interface GodotBridge {
   onSensorBegin(callback: (event: SensorEvent) => void): () => void;
   onSensorEnd(callback: (event: SensorEvent) => void): () => void;
   onTransformSync(callback: (transforms: Record<string, EntityTransform>) => void): () => void;
+  onScore(callback: (points: number, entityId: string) => void): () => void;
   
   // Property sync (for expression evaluation)
   getAllProperties(): Promise<PropertySyncPayload>;

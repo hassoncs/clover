@@ -140,6 +140,7 @@ export function createNativeGodotBridge(): GodotBridge {
   const uiButtonCallbacks: ((eventType: 'button_down' | 'button_up' | 'button_pressed', buttonId: string) => void)[] = [];
   const transformSyncCallbacks: ((transforms: Record<string, EntityTransform>) => void)[] = [];
   const propertySyncCallbacks: ((properties: PropertySyncPayload) => void)[] = [];
+  const scoreCallbacks: ((points: number, entityId: string) => void)[] = [];
   let eventPollIntervalId: ReturnType<typeof setInterval> | null = null;
 
   async function pollAndDispatchEvents() {
@@ -235,6 +236,13 @@ export function createNativeGodotBridge(): GodotBridge {
             const data = event.data as unknown as PropertySyncPayload;
             for (const cb of propertySyncCallbacks) {
               cb(data);
+            }
+            break;
+          }
+          case 'score': {
+            const data = event.data as { points: number; entityId: string };
+            for (const cb of scoreCallbacks) {
+              cb(data.points, data.entityId);
             }
             break;
           }
@@ -963,6 +971,14 @@ export function createNativeGodotBridge(): GodotBridge {
       return () => {
         const index = propertySyncCallbacks.indexOf(callback);
         if (index >= 0) propertySyncCallbacks.splice(index, 1);
+      };
+    },
+
+    onScore(callback: (points: number, entityId: string) => void): () => void {
+      scoreCallbacks.push(callback);
+      return () => {
+        const index = scoreCallbacks.indexOf(callback);
+        if (index >= 0) scoreCallbacks.splice(index, 1);
       };
     },
 

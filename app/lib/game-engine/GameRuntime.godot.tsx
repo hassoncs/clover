@@ -33,12 +33,9 @@ import {
   createGodotPhysicsAdapter,
 } from "../godot";
 import { PropertySyncManager } from "../godot/PropertySyncManager";
-import type {
-  GodotBridge,
-  CollisionEvent as GodotCollisionEvent,
-} from "../godot/types";
+import type { GodotBridge } from "../godot/types";
 import type { Physics2D } from "../physics2d/Physics2D";
-import type { Unsubscribe } from "../physics2d/types";
+import type { Unsubscribe, CollisionEvent } from "../physics2d/types";
 import { GameLoader, type LoadedGame } from "./GameLoader";
 import type { RuntimeEntity } from "./types";
 import type {
@@ -523,28 +520,43 @@ export function GameRuntimeGodot({
         }
 
         collisionUnsubRef.current = (physics as any).onCollisionBegin(
-          (event: GodotCollisionEvent) => {
+          (event: CollisionEvent) => {
+            // The physics adapter converts entity IDs to body IDs, so we need to look up by bodyId
             const entityA = game.entityManager
               .getActiveEntities()
-              .find((e) => e.id === event.entityA);
+              .find((e) => e.bodyId?.value === event.bodyA?.value);
             const entityB = game.entityManager
               .getActiveEntities()
-              .find((e) => e.id === event.entityB);
+              .find((e) => e.bodyId?.value === event.bodyB?.value);
 
-            if (entityA && entityB) {
-              const impulse = event.contacts.reduce(
-                (sum: number, c: any) => sum + c.normalImpulse,
-                0,
-              );
-              const normal = event.contacts[0]?.normal ?? { x: 0, y: 0 };
-
-              collisionsRef.current.push({
-                entityA,
-                entityB,
-                normal,
-                impulse,
+            if (!entityA || !entityB) {
+              const activeEntities = game.entityManager.getActiveEntities();
+              console.warn('[GameRuntime] Collision entity lookup failed:', {
+                bodyAValue: event.bodyA?.value,
+                bodyBValue: event.bodyB?.value,
+                entityAFound: !!entityA,
+                entityBFound: !!entityB,
+                activeEntityCount: activeEntities.length,
+                sampleEntities: activeEntities.slice(0, 5).map(e => ({
+                  id: e.id,
+                  bodyIdValue: e.bodyId?.value,
+                })),
               });
+              return;
             }
+
+            const impulse = event.contacts?.reduce(
+              (sum: number, c: any) => sum + (c.normalImpulse || 0),
+              0,
+            ) ?? 0;
+            const normal = event.contacts?.[0]?.normal ?? { x: 0, y: 0 };
+
+            collisionsRef.current.push({
+              entityA,
+              entityB,
+              normal,
+              impulse,
+            });
           },
         );
 

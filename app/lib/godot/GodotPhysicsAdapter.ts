@@ -105,17 +105,28 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
   bridge.onCollision((event) => {
     const bodyA = entityIdToBodyId.get(event.entityA);
     const bodyB = entityIdToBodyId.get(event.entityB);
-    if (bodyA && bodyB) {
-      const collisionEvent: CollisionEvent = {
-        bodyA,
-        bodyB,
-        colliderA: createColliderId(bodyA.value),
-        colliderB: createColliderId(bodyB.value),
-        contacts: event.contacts,
-      };
-      for (const cb of collisionBeginCallbacks) {
-        cb(collisionEvent);
-      }
+    
+    // Debug logging for breakout collision issues
+    if (!bodyA || !bodyB) {
+      console.warn('[GodotPhysicsAdapter] Collision entity lookup failed:', {
+        entityA: event.entityA,
+        entityB: event.entityB,
+        bodyAFound: !!bodyA,
+        bodyBFound: !!bodyB,
+        knownEntityIds: Array.from(entityIdToBodyId.keys()).slice(0, 10),
+      });
+      return;
+    }
+    
+    const collisionEvent: CollisionEvent = {
+      bodyA,
+      bodyB,
+      colliderA: createColliderId(bodyA.value),
+      colliderB: createColliderId(bodyB.value),
+      contacts: event.contacts,
+    };
+    for (const cb of collisionBeginCallbacks) {
+      cb(collisionEvent);
     }
   });
 
@@ -163,10 +174,10 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
     createBody(def: BodyDef): BodyId {
       const bodyId = createBodyId(nextBodyId++);
 
-      // Use actual entity ID from userData if available (set by EntityManager)
-      // This ensures we reference the same entity that Godot created via loadGame()
       const actualEntityId = (def.userData as { entityId?: string })?.entityId;
       const entityId = actualEntityId ?? `body_${bodyId.value}_${Date.now()}`;
+
+      console.log('[GodotPhysicsAdapter] createBody registering:', { entityId, bodyIdValue: bodyId.value });
 
       bodyIdToEntityId.set(bodyId.value, entityId);
       entityIdToBodyId.set(entityId, bodyId);

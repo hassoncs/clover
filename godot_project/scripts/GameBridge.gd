@@ -895,6 +895,10 @@ func _handle_collision_manifold(body_node: RigidBody2D, state: PhysicsDirectBody
 		
 		_notify_js_collision_detailed(collision_data)
 		collision_occurred.emit(entity_a, entity_b, total_impulse)
+		
+		# Process destroy_on_collision behaviors directly in Godot
+		_process_collision_behaviors(entity_a, entity_b)
+		_process_collision_behaviors(entity_b, entity_a)
 
 func _notify_js_destroy(entity_id: String) -> void:
 	if _js_destroy_callback != null:
@@ -1098,47 +1102,64 @@ func _setup_world(world_data: Dictionary) -> void:
 	if camera:
 		camera.global_position = Vector2.ZERO
 
-var _background_sprite: Sprite2D = null
+var _background_layer: CanvasLayer = null
+var _background_rect: TextureRect = null
+var _parallax_layers: Array = []
 
 func _setup_background(bg_data: Dictionary) -> void:
-	if _background_sprite:
-		_background_sprite.queue_free()
-		_background_sprite = null
+	# Clean up existing background
+	if _background_layer:
+		_background_layer.queue_free()
+		_background_layer = null
+		_background_rect = null
+	
+	for layer in _parallax_layers:
+		if is_instance_valid(layer):
+			layer.queue_free()
+	_parallax_layers.clear()
 	
 	if bg_data.is_empty():
 		return
 	
 	var bg_type = bg_data.get("type", "")
+	
+	if bg_type == "parallax":
+		_setup_parallax_background(bg_data)
+		return
+	
 	if bg_type != "static":
 		return
 	
 	var image_url = bg_data.get("imageUrl", "")
 	var color = bg_data.get("color", "")
 	
-	_background_sprite = Sprite2D.new()
-	_background_sprite.z_index = -100
-	_background_sprite.name = "Background"
-	add_child(_background_sprite)
+	_background_layer = CanvasLayer.new()
+	_background_layer.layer = -100
+	_background_layer.name = "BackgroundLayer"
+	add_child(_background_layer)
 	
-	var world_data = game_data.get("world", {})
-	var bounds = world_data.get("bounds", {"width": 20, "height": 12})
-	var target_width = bounds.get("width", 20) * pixels_per_meter
-	var target_height = bounds.get("height", 12) * pixels_per_meter
-	
-	# Background centered at origin (0,0) in new coordinate system
-	_background_sprite.position = Vector2.ZERO
+	_background_rect = TextureRect.new()
+	_background_rect.name = "Background"
+	_background_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_background_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_background_rect.anchor_left = 0.0
+	_background_rect.anchor_top = 0.0
+	_background_rect.anchor_right = 1.0
+	_background_rect.anchor_bottom = 1.0
+	_background_layer.add_child(_background_rect)
 	
 	if image_url != "":
-		_download_background_texture(image_url, target_width, target_height)
+		_download_background_texture(image_url)
 	elif color != "":
-		var img = Image.create(int(target_width), int(target_height), false, Image.FORMAT_RGBA8)
+		var viewport_size = get_viewport().get_visible_rect().size
+		var img = Image.create(int(viewport_size.x), int(viewport_size.y), false, Image.FORMAT_RGBA8)
 		img.fill(Color.from_string(color, Color.GRAY))
-		_background_sprite.texture = ImageTexture.create_from_image(img)
+		_background_rect.texture = ImageTexture.create_from_image(img)
 
-func _download_background_texture(url: String, target_width: float, target_height: float) -> void:
+func _download_image_texture(url: String, callback: Callable) -> void:
 	if _texture_cache.has(url):
 		var texture = _texture_cache[url]
-		_apply_background_texture(texture, target_width, target_height)
+		callback.call(texture)
 		return
 	
 	var http = HTTPRequest.new()
@@ -1147,7 +1168,7 @@ func _download_background_texture(url: String, target_width: float, target_heigh
 	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
 		http.queue_free()
 		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
-			push_error("[GameBridge] Failed to download background: " + url)
+			push_error("[GameBridge] Failed to download image: " + url)
 			return
 		
 		var image = Image.new()
@@ -1157,33 +1178,81 @@ func _download_background_texture(url: String, target_width: float, target_heigh
 		if err != OK:
 			err = image.load_webp_from_buffer(body)
 		if err != OK:
-			push_error("[GameBridge] Failed to parse background image: " + url)
+			push_error("[GameBridge] Failed to parse image: " + url)
 			return
 		
 		var texture = ImageTexture.create_from_image(image)
 		_texture_cache[url] = texture
-		_apply_background_texture(texture, target_width, target_height)
+		callback.call(texture)
 	)
 	
 	var err = http.request(url)
 	if err != OK:
-		push_error("[GameBridge] Failed to start background download: " + url)
+		push_error("[GameBridge] Failed to start image download: " + url)
 		http.queue_free()
 
-func _apply_background_texture(texture: Texture2D, target_width: float, target_height: float) -> void:
-	if not is_instance_valid(_background_sprite) or texture == null:
+func _download_background_texture(url: String) -> void:
+	_download_image_texture(url, func(texture: Texture2D):
+		if is_instance_valid(_background_rect):
+			_background_rect.texture = texture
+			print("[BG] Applied texture ", texture.get_width(), "x", texture.get_height(), " to TextureRect with STRETCH_KEEP_ASPECT_COVERED")
+	)
+
+func _apply_background_texture(texture: Texture2D) -> void:
+	if not is_instance_valid(_background_rect) or texture == null:
 		return
 	
-	_background_sprite.texture = texture
+	_background_rect.texture = texture
+	print("[BG] Applied texture ", texture.get_width(), "x", texture.get_height(), " to TextureRect with STRETCH_KEEP_ASPECT_COVERED")
+
+func _setup_parallax_background(bg_data: Dictionary) -> void:
+	var layers_data = bg_data.get("layers", [])
+	if layers_data.is_empty():
+		return
 	
-	var tex_w = texture.get_width()
-	var tex_h = texture.get_height()
+	# Map depth to z-index (further back = lower z-index)
+	var depth_to_z = {
+		"sky": -400,
+		"far": -300,
+		"mid": -200,
+		"near": -100
+	}
 	
-	var scale_x = target_width / tex_w
-	var scale_y = target_height / tex_h
-	var uniform_scale = max(scale_x, scale_y)
+	for layer_data in layers_data:
+		var layer_id = layer_data.get("id", "")
+		var image_url = layer_data.get("imageUrl", "")
+		var depth = layer_data.get("depth", "mid")
+		var parallax_factor = layer_data.get("parallaxFactor", 0.5)
+		var visible = layer_data.get("visible", true)
+		
+		if not visible or image_url == "":
+			continue
+		
+		var layer = CanvasLayer.new()
+		layer.layer = depth_to_z.get(depth, -200)
+		layer.name = "ParallaxLayer_" + layer_id
+		add_child(layer)
+		
+		var rect = TextureRect.new()
+		rect.name = layer_id
+		rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		rect.anchor_left = 0.0
+		rect.anchor_top = 0.0
+		rect.anchor_right = 1.0
+		rect.anchor_bottom = 1.0
+		layer.add_child(rect)
+		
+		_parallax_layers.append({"layer": layer, "rect": rect, "factor": parallax_factor, "url": image_url})
+		
+		# Download texture for this layer
+		_download_image_texture(image_url, func(texture: Texture2D):
+			if is_instance_valid(rect):
+				rect.texture = texture
+				print("[BG] Applied parallax layer texture ", texture.get_width(), "x", texture.get_height())
+		)
 	
-	_background_sprite.scale = Vector2(uniform_scale, uniform_scale)
+	print("[BG] Setup ", _parallax_layers.size(), " parallax layers")
 
 func _create_entity(entity_data: Dictionary) -> Node2D:
 	var entity_id = entity_data.get("id", "entity_" + str(randi()))
@@ -1248,6 +1317,8 @@ func _create_entity(entity_data: Dictionary) -> Node2D:
 		node.set_meta("template", template_id)
 	if merged.has("tags"):
 		node.set_meta("tags", merged.tags if merged.tags is Array else [])
+	if merged.has("behaviors"):
+		node.set_meta("behaviors", merged.behaviors if merged.behaviors is Array else [])
 	
 	entities[entity_id] = node
 	entity_spawned.emit(entity_id, node)
@@ -1564,45 +1635,11 @@ func _add_text_sprite(node: Node2D, sprite_data: Dictionary, opacity: float, z_i
 	node.add_child(label)
 
 func _queue_texture_download(sprite: Sprite2D, url: String, sprite_data: Dictionary) -> void:
-	if _texture_cache.has(url):
-		var texture = _texture_cache[url]
-		print("[GameBridge] Using cached texture for: " + url)
-		sprite.texture = texture
-		_apply_sprite_scale(sprite, sprite_data, texture)
-		return
-	
-	print("[GameBridge] Cache MISS - downloading texture: " + url)
-	
-	var http = HTTPRequest.new()
-	add_child(http)
-	
-	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
-		http.queue_free()
-		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
-			push_error("[GameBridge] Failed to download texture: " + url)
-			return
-		
-		var image = Image.new()
-		var err = image.load_png_from_buffer(body)
-		if err != OK:
-			err = image.load_jpg_from_buffer(body)
-		if err != OK:
-			err = image.load_webp_from_buffer(body)
-		if err != OK:
-			push_error("[GameBridge] Failed to parse texture: " + url)
-			return
-		
-		var texture = ImageTexture.create_from_image(image)
-		_texture_cache[url] = texture
+	_download_image_texture(url, func(texture: Texture2D):
 		if is_instance_valid(sprite):
 			sprite.texture = texture
 			_apply_sprite_scale(sprite, sprite_data, texture)
 	)
-	
-	var err = http.request(url)
-	if err != OK:
-		push_error("[GameBridge] Failed to start texture download: " + url)
-		http.queue_free()
 
 var _font_cache = {}
 
@@ -1860,6 +1897,10 @@ func _on_body_entered(body: Node, entity_id: String) -> void:
 	if body.name in entities:
 		collision_occurred.emit(entity_id, body.name, 0.0)
 		_notify_js_collision(entity_id, body.name, 0.0)
+		
+		# Process destroy_on_collision behaviors directly in Godot
+		_process_collision_behaviors(entity_id, body.name)
+		_process_collision_behaviors(body.name, entity_id)
 
 func spawn_entity(template_id: String, x: float, y: float) -> Node2D:
 	return spawn_entity_with_id(template_id, x, y, template_id + "_" + str(randi()))
@@ -1877,11 +1918,41 @@ func spawn_entity_with_id(template_id: String, x: float, y: float, entity_id: St
 	
 	return _create_entity(entity_data)
 
+func _process_collision_behaviors(entity_id: String, other_entity_id: String) -> void:
+	if not entities.has(entity_id) or not entities.has(other_entity_id):
+		return
+	
+	var node = entities[entity_id]
+	var other_node = entities[other_entity_id]
+	
+	if not node.has_meta("behaviors"):
+		return
+	
+	var behaviors = node.get_meta("behaviors") as Array
+	var other_tags = other_node.get_meta("tags") if other_node.has_meta("tags") else []
+	
+	for behavior in behaviors:
+		if behavior is Dictionary and behavior.get("type") == "destroy_on_collision":
+			var with_tags = behavior.get("withTags", []) as Array
+			var should_destroy = false
+			
+			for tag in with_tags:
+				if tag in other_tags:
+					should_destroy = true
+					break
+			
+			if should_destroy:
+				call_deferred("destroy_entity", entity_id)
+				
+				if behavior.get("destroyOther", false):
+					call_deferred("destroy_entity", other_entity_id)
+				return
+
 func destroy_entity(entity_id: String) -> void:
 	if entities.has(entity_id):
 		var node = entities[entity_id]
 		entities.erase(entity_id)
-		sensor_velocities.erase(entity_id)  # Clean up sensor velocity tracking
+		sensor_velocities.erase(entity_id)
 		node.queue_free()
 		entity_destroyed.emit(entity_id)
 		_notify_js_destroy(entity_id)
@@ -1994,39 +2065,13 @@ func _apply_atlas_region(sprite: Sprite2D, texture: Texture2D, region_dict: Dict
 	_apply_sprite_scale(sprite, sprite_data, atlas_texture)
 
 func _download_atlas_texture(sprite: Sprite2D, url: String, region_dict: Dictionary, sprite_data: Dictionary = {}) -> void:
-	var http = HTTPRequest.new()
-	add_child(http)
-	
-	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
-		http.queue_free()
-		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
-			push_error("[GameBridge] Failed to download atlas texture: " + url + " (code: " + str(response_code) + ")")
-			return
-		
-		var image = Image.new()
-		var err = image.load_png_from_buffer(body)
-		if err != OK:
-			err = image.load_jpg_from_buffer(body)
-		if err != OK:
-			err = image.load_webp_from_buffer(body)
-		if err != OK:
-			push_error("[GameBridge] Failed to parse atlas image: " + url)
-			return
-		
-		var texture = ImageTexture.create_from_image(image)
-		_texture_cache[url] = texture
-		
+	_download_image_texture(url, func(texture: Texture2D):
 		if is_instance_valid(sprite):
 			_apply_atlas_region(sprite, texture, region_dict, sprite_data)
 			var node = sprite.get_parent()
 			if node:
 				_hide_shape_children(node)
 	)
-	
-	var err = http.request(url)
-	if err != OK:
-		push_error("[GameBridge] Failed to start atlas texture download: " + url)
-		http.queue_free()
 
 func _js_set_entity_atlas_region(args: Array) -> void:
 	if args.size() < 8:

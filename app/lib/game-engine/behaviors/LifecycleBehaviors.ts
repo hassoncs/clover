@@ -115,6 +115,21 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
       return;
     }
 
+    // DEBUG: Log when this behavior runs
+    if (ctx.entity.tags.includes('brick') && ctx.collisions.length > 0) {
+      console.log('[destroy_on_collision] Brick checking collisions:', {
+        entityId: ctx.entity.id,
+        collisionCount: ctx.collisions.length,
+        collisions: ctx.collisions.map(c => ({
+          entityAId: c.entityA.id,
+          entityATags: c.entityA.tags,
+          entityBId: c.entityB.id,
+          entityBTags: c.entityB.tags,
+        })),
+        withTags: destroy.withTags,
+      });
+    }
+
     for (const collision of ctx.collisions) {
       const other =
         collision.entityA.id === ctx.entity.id ? collision.entityB : collision.entityA;

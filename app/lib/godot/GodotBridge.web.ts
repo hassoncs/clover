@@ -243,6 +243,7 @@ export function createWebGodotBridge(): GodotBridge {
   ) => void)[] = [];
   const propertySyncCallbacks: ((properties: PropertySyncPayload) => void)[] =
     [];
+  const scoreCallbacks: ((points: number, entityId: string) => void)[] = [];
 
   const getGodotBridge = (): Window["GodotBridge"] | null => {
     const iframe = document.querySelector(
@@ -750,6 +751,14 @@ export function createWebGodotBridge(): GodotBridge {
       return () => {
         const index = propertySyncCallbacks.indexOf(callback);
         if (index >= 0) propertySyncCallbacks.splice(index, 1);
+      };
+    },
+
+    onScore(callback: (points: number, entityId: string) => void): () => void {
+      scoreCallbacks.push(callback);
+      return () => {
+        const index = scoreCallbacks.indexOf(callback);
+        if (index >= 0) scoreCallbacks.splice(index, 1);
       };
     },
 
