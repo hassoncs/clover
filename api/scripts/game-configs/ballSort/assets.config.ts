@@ -20,6 +20,7 @@ export const ballSortConfig: GameAssetConfig = {
       height: TUBE_HEIGHT,
       entityType: 'platform',
       description: 'a transparent glass candy jar wall with subtle rainbow reflections, crystal clear with candy-colored tint at the edges',
+      color: '#B3E5FC',
     } as EntitySpec,
     {
       type: 'entity',
@@ -29,6 +30,7 @@ export const ballSortConfig: GameAssetConfig = {
       height: TUBE_WALL_THICKNESS,
       entityType: 'platform',
       description: 'a thick glass candy jar bottom with swirled candy colors embedded in the glass, sturdy and decorative',
+      color: '#81D4FA',
     } as EntitySpec,
     {
       type: 'entity',
@@ -78,6 +80,7 @@ export const ballSortConfig: GameAssetConfig = {
       height: BALL_RADIUS * 2.4,
       entityType: 'ui',
       description: 'a glowing candy wrapper highlight ring with sparkles, translucent pink and white swirled glow effect',
+      color: '#F8BBD9',
     } as EntitySpec,
     {
       type: 'background',

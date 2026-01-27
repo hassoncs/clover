@@ -176,6 +176,7 @@ export async function createNodeSilhouetteAdapter(): Promise<SilhouetteAdapter> 
   return {
     async createSilhouette(params): Promise<Uint8Array> {
       const canvasSize = params.canvasSize ?? 512;
+      const fillColor = params.color ?? '#808080';
       const aspectRatio = params.width / params.height;
 
       let shapeWidth: number, shapeHeight: number;
@@ -195,12 +196,12 @@ export async function createNodeSilhouetteAdapter(): Promise<SilhouetteAdapter> 
         const radius = Math.min(shapeWidth, shapeHeight) / 2;
         svg = `<svg width="${canvasSize}" height="${canvasSize}">
           <rect width="${canvasSize}" height="${canvasSize}" fill="white"/>
-          <circle cx="${canvasSize/2}" cy="${canvasSize/2}" r="${radius}" fill="black"/>
+          <circle cx="${canvasSize/2}" cy="${canvasSize/2}" r="${radius}" fill="${fillColor}"/>
         </svg>`;
       } else {
         svg = `<svg width="${canvasSize}" height="${canvasSize}">
           <rect width="${canvasSize}" height="${canvasSize}" fill="white"/>
-          <rect x="${x}" y="${y}" width="${shapeWidth}" height="${shapeHeight}" fill="black" rx="8"/>
+          <rect x="${x}" y="${y}" width="${shapeWidth}" height="${shapeHeight}" fill="${fillColor}" rx="8"/>
         </svg>`;
       }
 

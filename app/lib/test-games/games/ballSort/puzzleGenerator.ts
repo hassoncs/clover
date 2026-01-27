@@ -91,6 +91,23 @@ function getValidMoves(tubes: number[][], capacity: number): Move[] {
   return moves;
 }
 
+function getScrambleMoves(tubes: number[][], capacity: number): Move[] {
+  const moves: Move[] = [];
+
+  for (let from = 0; from < tubes.length; from++) {
+    if (tubes[from].length === 0) continue;
+
+    for (let to = 0; to < tubes.length; to++) {
+      if (from === to) continue;
+      if (tubes[to].length < capacity) {
+        moves.push({ from, to });
+      }
+    }
+  }
+
+  return moves;
+}
+
 function isTubeComplete(tube: number[], capacity: number): boolean {
   if (tube.length !== capacity) return false;
   const color = tube[0];
@@ -171,25 +188,23 @@ export function generatePuzzle(config: PuzzleConfig): GeneratedPuzzle {
   const maxStuckAttempts = 100;
 
   while (movesMade < targetMoves && stuckCount < maxStuckAttempts) {
-    const validMoves = getValidMoves(tubes, capacity);
+    const scrambleMoves = getScrambleMoves(tubes, capacity);
 
-    if (validMoves.length === 0) {
+    if (scrambleMoves.length === 0) {
       stuckCount++;
       continue;
     }
 
-    // Avoid immediately undoing last move
-    let candidateMoves = validMoves;
+    let candidateMoves = scrambleMoves;
     if (lastMove) {
-      candidateMoves = validMoves.filter(
+      candidateMoves = scrambleMoves.filter(
         (m) => !(m.from === lastMove!.to && m.to === lastMove!.from)
       );
       if (candidateMoves.length === 0) {
-        candidateMoves = validMoves;
+        candidateMoves = scrambleMoves;
       }
     }
 
-    // Higher difficulties prefer moves that increase mixing
     let selectedMove: Move;
     if (difficulty >= 5 && rng.next() < 0.7) {
       let bestMove = candidateMoves[0];

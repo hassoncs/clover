@@ -69,7 +69,8 @@ export function createWorkersSilhouetteAdapter(): SilhouetteAdapter {
         params.shape,
         params.width,
         params.height,
-        params.canvasSize ?? 512
+        params.canvasSize ?? 512,
+        params.color ?? '#808080'
       );
     },
   };

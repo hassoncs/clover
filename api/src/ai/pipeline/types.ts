@@ -308,6 +308,8 @@ export interface SilhouetteAdapter {
     width: number;
     height: number;
     canvasSize?: number;
+    /** Optional color hint (hex like #FF0000) - defaults to neutral gray (#808080) */
+    color?: string;
   }) => Promise<Uint8Array>;
 }
 

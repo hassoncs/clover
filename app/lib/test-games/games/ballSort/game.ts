@@ -3,6 +3,8 @@ import { distributeRow } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 import { generateVerifiedPuzzle, type PuzzleConfig } from "./puzzleGenerator";
 
+const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort";
+
 export const metadata: TestGameMeta = {
   title: "Ball Sort",
   description: "Sort colored balls into tubes - each tube should contain only one color",
@@ -177,6 +179,10 @@ const game: GameDefinition = {
     pixelsPerMeter: 50,
     bounds: { width: WORLD_WIDTH, height: WORLD_HEIGHT },
   },
+  background: {
+    type: "static",
+    imageUrl: `${ASSET_BASE}/background.png`,
+  },
   camera: { type: "fixed", zoom: 1 },
   input: { debugInputs: true },
   variables: {
@@ -244,10 +250,10 @@ const game: GameDefinition = {
       id: "tubeWall",
       tags: ["tube-wall"],
       sprite: {
-        type: "rect",
-        width: TUBE_WALL_THICKNESS,
-        height: TUBE_HEIGHT,
-        color: TUBE_COLOR,
+        type: "image",
+        imageUrl: `${ASSET_BASE}/tubeWall.png`,
+        imageWidth: TUBE_WALL_THICKNESS,
+        imageHeight: TUBE_HEIGHT,
       },
       physics: {
         bodyType: "static",
@@ -263,10 +269,10 @@ const game: GameDefinition = {
       id: "tubeBottom",
       tags: ["tube-bottom"],
       sprite: {
-        type: "rect",
-        width: TUBE_WIDTH,
-        height: TUBE_WALL_THICKNESS,
-        color: TUBE_BOTTOM_COLOR,
+        type: "image",
+        imageUrl: `${ASSET_BASE}/tubeBottom.png`,
+        imageWidth: TUBE_WIDTH,
+        imageHeight: TUBE_WALL_THICKNESS,
       },
       physics: {
         bodyType: "static",
@@ -302,9 +308,10 @@ const game: GameDefinition = {
       id: "ball0",
       tags: ["ball", "color-0"],
       sprite: {
-        type: "circle",
-        radius: BALL_RADIUS,
-        color: BALL_COLORS[0],
+        type: "image",
+        imageUrl: `${ASSET_BASE}/ball0.png`,
+        imageWidth: BALL_RADIUS * 2,
+        imageHeight: BALL_RADIUS * 2,
       },
       physics: {
         bodyType: "kinematic",
@@ -337,9 +344,10 @@ const game: GameDefinition = {
       id: "ball1",
       tags: ["ball", "color-1"],
       sprite: {
-        type: "circle",
-        radius: BALL_RADIUS,
-        color: BALL_COLORS[1],
+        type: "image",
+        imageUrl: `${ASSET_BASE}/ball1.png`,
+        imageWidth: BALL_RADIUS * 2,
+        imageHeight: BALL_RADIUS * 2,
       },
       physics: {
         bodyType: "kinematic",
@@ -372,9 +380,10 @@ const game: GameDefinition = {
       id: "ball2",
       tags: ["ball", "color-2"],
       sprite: {
-        type: "circle",
-        radius: BALL_RADIUS,
-        color: BALL_COLORS[2],
+        type: "image",
+        imageUrl: `${ASSET_BASE}/ball2.png`,
+        imageWidth: BALL_RADIUS * 2,
+        imageHeight: BALL_RADIUS * 2,
       },
       physics: {
         bodyType: "kinematic",
@@ -407,9 +416,10 @@ const game: GameDefinition = {
       id: "ball3",
       tags: ["ball", "color-3"],
       sprite: {
-        type: "circle",
-        radius: BALL_RADIUS,
-        color: BALL_COLORS[3],
+        type: "image",
+        imageUrl: `${ASSET_BASE}/ball3.png`,
+        imageWidth: BALL_RADIUS * 2,
+        imageHeight: BALL_RADIUS * 2,
       },
       physics: {
         bodyType: "kinematic",
@@ -442,9 +452,10 @@ const game: GameDefinition = {
       id: "heldBallIndicator",
       tags: ["held-indicator"],
       sprite: {
-        type: "circle",
-        radius: BALL_RADIUS * 1.2,
-        color: "#FFFFFF44",
+        type: "image",
+        imageUrl: `${ASSET_BASE}/heldBallIndicator.png`,
+        imageWidth: BALL_RADIUS * 2.4,
+        imageHeight: BALL_RADIUS * 2.4,
       },
       physics: {
         bodyType: "kinematic",

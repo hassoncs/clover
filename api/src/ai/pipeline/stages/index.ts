@@ -82,6 +82,7 @@ export const silhouetteStage: Stage = {
       shape: entitySpec.shape,
       width: entitySpec.width,
       height: entitySpec.height,
+      color: entitySpec.color,
     });
 
     await debug({
@@ -154,7 +155,7 @@ export const img2imgStage: Stage = {
     const result = await adapters.scenario.img2img({
       imageAssetId: run.artifacts.scenarioAssetId,
       prompt: run.artifacts.prompt,
-      strength: 0.92,
+      strength: 0.925,
     });
 
     const { buffer } = await adapters.scenario.downloadImage(result.assetId);

@@ -71,7 +71,7 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
     context.mutator.setVariable('heldBallColor', actualBallColor);
 
     context.entityManager.addTag(ballId, 'held');
-    context.entityManager.removeTag(ballId, `in-tube-${tubeIndex}`);
+    context.entityManager.removeTag(ballId, `in-container-tube-${tubeIndex}`);
 
     context.mutator.setVariable(countVar, count - 1);
     const newTopColor = this.getNewTopColor(tubeIndex, count - 1, context);
@@ -148,11 +148,11 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
     }
 
     for (const tag of ball.tags) {
-      if (tag.startsWith('in-tube-')) {
+      if (tag.startsWith('in-container-tube-')) {
         context.entityManager.removeTag(heldBallId, tag);
       }
     }
-    context.entityManager.addTag(heldBallId, `in-tube-${targetTubeIndex}`);
+    context.entityManager.addTag(heldBallId, `in-container-tube-${targetTubeIndex}`);
     context.entityManager.removeTag(heldBallId, 'held');
 
     const newTargetCount = targetCount + 1;
@@ -225,7 +225,7 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
 
   private getBallsInTube(tubeIndex: number, context: RuleContext): RuntimeEntity[] {
     const allBalls = context.entityManager.getEntitiesByTag('ball');
-    return allBalls.filter(ball => ball.tags.includes(`in-tube-${tubeIndex}`));
+    return allBalls.filter(ball => ball.tags.includes(`in-container-tube-${tubeIndex}`));
   }
 
   private getBallColor(ball: RuntimeEntity, context: RuleContext): number {
@@ -286,7 +286,7 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
           context.entityManager.updateWorldTransforms(heldBallId);
         }
         context.entityManager.removeTag(heldBallId, 'held');
-        context.entityManager.addTag(heldBallId, `in-tube-${sourceTubeIndex}`);
+        context.entityManager.addTag(heldBallId, `in-container-tube-${sourceTubeIndex}`);
       }
 
       context.mutator.setVariable(countVar, count + 1);

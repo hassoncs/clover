@@ -81,6 +81,8 @@ export interface DirectGenerationRequest {
   style: SpriteStyle;
   width: number;
   height: number;
+  strength?: number;
+  guidance?: number;
   seed?: string;
   context?: AssetContext;
 }
@@ -267,13 +269,24 @@ function deflateSync(data: Uint8Array): Uint8Array {
   return new Uint8Array(output);
 }
 
+function parseHexColor(hex: string): { r: number; g: number; b: number } {
+  const clean = hex.replace('#', '');
+  return {
+    r: parseInt(clean.substring(0, 2), 16),
+    g: parseInt(clean.substring(2, 4), 16),
+    b: parseInt(clean.substring(4, 6), 16),
+  };
+}
+
 export function createSilhouettePng(
   shape: 'box' | 'circle' | 'polygon',
   physicsWidth: number,
   physicsHeight: number,
-  canvasSize: number = 512
+  canvasSize: number = 512,
+  color: string = '#808080'
 ): Uint8Array {
   const aspectRatio = physicsWidth / physicsHeight;
+  const { r, g, b } = parseHexColor(color);
   
   let shapeWidth: number;
   let shapeHeight: number;
@@ -303,9 +316,9 @@ export function createSilhouettePng(
         const dy = py - cy;
         if (dx * dx + dy * dy <= radius * radius) {
           const idx = (py * canvasSize + px) * 3;
-          pixels[idx] = 0;
-          pixels[idx + 1] = 0;
-          pixels[idx + 2] = 0;
+          pixels[idx] = r;
+          pixels[idx + 1] = g;
+          pixels[idx + 2] = b;
         }
       }
     }
@@ -313,9 +326,9 @@ export function createSilhouettePng(
     for (let py = y; py < y + shapeHeight && py < canvasSize; py++) {
       for (let px = x; px < x + shapeWidth && px < canvasSize; px++) {
         const idx = (py * canvasSize + px) * 3;
-        pixels[idx] = 0;
-        pixels[idx + 1] = 0;
-        pixels[idx + 2] = 0;
+        pixels[idx] = r;
+        pixels[idx + 1] = g;
+        pixels[idx + 2] = b;
       }
     }
   }
@@ -550,6 +563,9 @@ export class AssetService {
       style,
       width,
       height,
+      strength = 0.95,
+      guidance = 3.5,
+      seed,
       context,
     } = request;
 
@@ -579,14 +595,15 @@ export class AssetService {
        const uploadedAssetId = await client.uploadAsset(arrayBuffer);
 
        assetLog('INFO', '', `Uploaded silhouette to Scenario: ${uploadedAssetId}`);
-       assetLog('INFO', '', `Starting img2img generation with strength=0.95`);
+       assetLog('INFO', '', `Starting img2img generation with strength=${strength}`);
 
       const result = await client.generateImg2Img({
         prompt,
         image: uploadedAssetId,
-        strength: 0.95,
+        strength,
         numInferenceSteps: 20,
-        guidance: 3.5,
+        guidance,
+        seed,
       });
 
        if (result.assetIds.length === 0) {
