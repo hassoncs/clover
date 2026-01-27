@@ -471,6 +471,12 @@ export interface GameDefinition {
    * Containers track entity membership, validate placements, and compute positions.
    */
   containers?: ContainerConfig[];
+
+  /**
+   * Optional persistence configuration for saving/loading game progress.
+   * Games opt-in to persistence by providing this configuration.
+   */
+  persistence?: import('./progress').PersistenceConfig<unknown>;
 }
 
 export const DEFAULT_WORLD_CONFIG: WorldConfig = {
