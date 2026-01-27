@@ -6,7 +6,7 @@
 
 # Interface: ParallaxConfig
 
-Defined in: [types/GameDefinition.ts:162](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L162)
+Defined in: [types/GameDefinition.ts:163](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L163)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:162](https://github.com/hassoncs/clover/blo
 
 > **enabled**: `boolean`
 
-Defined in: [types/GameDefinition.ts:163](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L163)
+Defined in: [types/GameDefinition.ts:164](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L164)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [types/GameDefinition.ts:163](https://github.com/hassoncs/clover/blo
 
 > **layers**: [`ParallaxLayer`](ParallaxLayer.md)[]
 
-Defined in: [types/GameDefinition.ts:164](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L164)
+Defined in: [types/GameDefinition.ts:165](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L165)

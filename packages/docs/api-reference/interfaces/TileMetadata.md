@@ -6,7 +6,7 @@
 
 # Interface: TileMetadata
 
-Defined in: [types/tilemap.ts:4](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/tilemap.ts#L4)
+Defined in: [types/tilemap.ts:4](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/tilemap.ts#L4)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/tilemap.ts:4](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **name**: `string`
 
-Defined in: [types/tilemap.ts:5](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/tilemap.ts#L5)
+Defined in: [types/tilemap.ts:5](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/tilemap.ts#L5)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/tilemap.ts:5](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **tags**: `string`[]
 
-Defined in: [types/tilemap.ts:6](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/tilemap.ts#L6)
+Defined in: [types/tilemap.ts:6](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/tilemap.ts#L6)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/tilemap.ts:6](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **collision**: [`TileCollision`](../type-aliases/TileCollision.md)
 
-Defined in: [types/tilemap.ts:7](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/tilemap.ts#L7)
+Defined in: [types/tilemap.ts:7](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/tilemap.ts#L7)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/tilemap.ts:7](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **animation**: [`TileAnimation`](TileAnimation.md)
 
-Defined in: [types/tilemap.ts:8](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/tilemap.ts#L8)
+Defined in: [types/tilemap.ts:8](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/tilemap.ts#L8)

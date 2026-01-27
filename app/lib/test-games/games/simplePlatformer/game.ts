@@ -7,6 +7,7 @@ export const metadata: TestGameMeta = {
   title: "Simple Platformer",
   description: "Jump between platforms, collect coins, reach the goal flag",
   titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
+  status: "archived",
 };
 
 const WORLD_WIDTH = 25;

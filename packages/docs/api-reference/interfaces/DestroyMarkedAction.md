@@ -6,7 +6,7 @@
 
 # Interface: DestroyMarkedAction
 
-Defined in: [types/rules.ts:233](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L233)
+Defined in: [types/rules.ts:241](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L241)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:233](https://github.com/hassoncs/clover/blob/5a10349
 
 > **type**: `"destroy_marked"`
 
-Defined in: [types/rules.ts:234](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L234)
+Defined in: [types/rules.ts:242](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L242)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [types/rules.ts:234](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **tag**: `string`
 
-Defined in: [types/rules.ts:235](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L235)
+Defined in: [types/rules.ts:243](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L243)

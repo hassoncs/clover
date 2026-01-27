@@ -9,6 +9,7 @@ import type {
   SpriteStyle,
 } from './types';
 import { getStagesForAssetType } from './registry';
+import * as crypto from 'crypto';
 
 function generateRunId(): string {
   return `run-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
@@ -16,28 +17,40 @@ function generateRunId(): string {
 
 const noopDebugSink: DebugSink = () => {};
 
+export interface ExecutionOptions {
+  strength?: number;
+  /** UUID of the asset pack for this execution */
+  packId?: string;
+}
+
 export async function executeAsset(
   spec: AssetSpec,
   adapters: PipelineAdapters,
   meta: {
     gameId: string;
+    packId: string;
+    assetId?: string;
     gameTitle: string;
     theme: string;
     style: SpriteStyle;
     r2Prefix: string;
   },
   debugSink: DebugSink = noopDebugSink,
+  options: ExecutionOptions = {},
 ): Promise<PipelineResult> {
   const runId = generateRunId();
   const startTime = Date.now();
+  const assetId = meta.assetId ?? crypto.randomUUID();
 
   const run: AssetRun = {
     spec,
     artifacts: {},
     meta: {
       ...meta,
+      assetId,
       startedAt: startTime,
       runId,
+      strength: options.strength,
     },
   };
 
@@ -46,6 +59,9 @@ export async function executeAsset(
     runId,
     assetId: spec.id,
     assetType: spec.type,
+    gameId: meta.gameId,
+    packId: meta.packId,
+    generatedAssetId: assetId,
   });
 
   const stages = getStagesForAssetType(spec.type);
@@ -101,6 +117,10 @@ export async function executeAsset(
       durationMs,
       ok: true,
       r2Keys,
+      publicUrls,
+      gameId: meta.gameId,
+      packId: meta.packId,
+      generatedAssetId: assetId,
     });
 
     return {
@@ -122,6 +142,9 @@ export async function executeAsset(
       durationMs,
       ok: false,
       error: errorMsg,
+      gameId: meta.gameId,
+      packId: meta.packId,
+      generatedAssetId: assetId,
     });
 
     return {
@@ -140,12 +163,16 @@ export async function executeGameAssets(
   config: GameAssetConfig,
   adapters: PipelineAdapters,
   debugSink: DebugSink = noopDebugSink,
+  options: ExecutionOptions = {},
 ): Promise<BatchPipelineResult> {
   const startTime = Date.now();
   const results: PipelineResult[] = [];
 
+  const packId = options.packId ?? crypto.randomUUID();
+
   const meta = {
     gameId: config.gameId,
+    packId,
     gameTitle: config.gameTitle,
     theme: config.theme,
     style: config.style,
@@ -153,7 +180,7 @@ export async function executeGameAssets(
   };
 
   for (const spec of config.assets) {
-    const result = await executeAsset(spec, adapters, meta, debugSink);
+    const result = await executeAsset(spec, adapters, meta, debugSink, options);
     results.push(result);
   }
 

@@ -6,7 +6,7 @@
 
 # Interface: CameraShakeAction
 
-Defined in: [types/rules.ts:358](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L358)
+Defined in: [types/rules.ts:366](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L366)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:358](https://github.com/hassoncs/clover/blob/5a10349
 
 > **type**: `"camera_shake"`
 
-Defined in: [types/rules.ts:359](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L359)
+Defined in: [types/rules.ts:367](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L367)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:359](https://github.com/hassoncs/clover/blob/5a10349
 
 > **intensity**: `Value`\<`number`\>
 
-Defined in: [types/rules.ts:360](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L360)
+Defined in: [types/rules.ts:368](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L368)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/rules.ts:360](https://github.com/hassoncs/clover/blob/5a10349
 
 > **duration**: `Value`\<`number`\>
 
-Defined in: [types/rules.ts:361](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L361)
+Defined in: [types/rules.ts:369](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L369)

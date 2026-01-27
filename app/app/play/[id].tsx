@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { View, Text, Pressable, ActivityIndicator, TextInput, Modal, ScrollView, Image, Animated } from "react-native";
+import { View, Text, Pressable, ActivityIndicator, TextInput, Modal, ScrollView, Animated } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { trpc } from "@/lib/trpc/client";
@@ -412,32 +412,6 @@ export default function PlayScreen() {
     <View className="flex-1 bg-gray-900">
       <FullScreenHeader
         onBack={handleBack}
-        title={gameDefinition.metadata.title}
-        rightContent={
-          <View className="flex-row gap-2">
-            {id && id !== "preview" && (
-              <>
-                <Pressable
-                  className={`py-2 px-3 rounded-lg ${isForking ? 'bg-gray-600' : 'bg-green-600'}`}
-                  onPress={handleFork}
-                  disabled={isForking}
-                >
-                  {isForking ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
-                  ) : (
-                    <Text className="text-white font-bold text-xs">✂️ Fork</Text>
-                  )}
-                </Pressable>
-                <Pressable
-                  className="py-2 px-3 bg-indigo-600 rounded-lg"
-                  onPress={() => setShowAssetMenu(true)}
-                >
-                  <Text className="text-white font-bold text-xs">🎨 Skin</Text>
-                </Pressable>
-              </>
-            )}
-          </View>
-        }
       />
 
       <Modal
@@ -449,7 +423,24 @@ export default function PlayScreen() {
         <View className="flex-1 bg-black/80 justify-center items-center p-4">
           <View className="bg-gray-800 w-full max-w-sm rounded-xl p-6">
             <Text className="text-white text-xl font-bold mb-4">Generate Asset Pack</Text>
-            
+
+            {id && id !== "preview" && (
+              <Pressable
+                className={`mb-4 py-2 rounded-lg items-center ${isForking ? 'bg-gray-600' : 'bg-green-600'}`}
+                onPress={handleFork}
+                disabled={isForking}
+              >
+                {isForking ? (
+                  <View className="flex-row items-center">
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                    <Text className="text-white font-semibold ml-2">Forking...</Text>
+                  </View>
+                ) : (
+                  <Text className="text-white font-semibold">✂️ Fork Game</Text>
+                )}
+              </Pressable>
+            )}
+
             {availablePacks.length > 0 && (
               <View className="mb-6">
                 <Text className="text-gray-400 mb-2">Select Asset Pack</Text>

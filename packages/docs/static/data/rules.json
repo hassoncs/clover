@@ -195,6 +195,160 @@
   ],
   "conditions": [
     {
+      "type": "container_can_accept",
+      "interfaceName": "ContainerCanAcceptCondition",
+      "displayName": "Container Can Accept",
+      "properties": [
+        {
+          "name": "container",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "item",
+          "type": "string | EntityTarget",
+          "required": true
+        },
+        {
+          "name": "match",
+          "type": "ContainerMatchRule",
+          "required": false
+        },
+        {
+          "name": "negated",
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "container_count",
+      "interfaceName": "ContainerCountCondition",
+      "displayName": "Container Count",
+      "properties": [
+        {
+          "name": "comparison",
+          "type": "'eq' | 'gt' | 'lt' | 'gte' | 'lte' | 'neq'",
+          "required": true
+        },
+        {
+          "name": "container",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "container_has_item",
+      "interfaceName": "ContainerHasItemCondition",
+      "displayName": "Container Has Item",
+      "properties": [
+        {
+          "name": "container",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "item",
+          "type": "string | EntityTarget",
+          "required": true
+        },
+        {
+          "name": "negated",
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "container_is_empty",
+      "interfaceName": "ContainerIsEmptyCondition",
+      "displayName": "Container Is Empty",
+      "properties": [
+        {
+          "name": "container",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "negated",
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "container_is_full",
+      "interfaceName": "ContainerIsFullCondition",
+      "displayName": "Container Is Full",
+      "properties": [
+        {
+          "name": "container",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "negated",
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "container_is_occupied",
+      "interfaceName": "ContainerIsOccupiedCondition",
+      "displayName": "Container Is Occupied",
+      "properties": [
+        {
+          "name": "container",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "negated",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "position",
+          "type": "{ row: number; col: number } | number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "container_top_item",
+      "interfaceName": "ContainerTopItemCondition",
+      "displayName": "Container Top Item",
+      "properties": [
+        {
+          "name": "container",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "entityId",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "negated",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    {
       "type": "cooldown_ready",
       "interfaceName": "CooldownReadyCondition",
       "displayName": "Cooldown Ready",
@@ -616,6 +770,195 @@
           "name": "comboId",
           "type": "string",
           "required": true
+        }
+      ]
+    },
+    {
+      "type": "container_clear",
+      "interfaceName": "ContainerClearAction",
+      "displayName": "Container Clear",
+      "properties": [
+        {
+          "name": "container",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "destroy",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "keep",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "container_deselect",
+      "interfaceName": "ContainerDeselectAction",
+      "displayName": "Container Deselect",
+      "properties": [
+        {
+          "name": "container",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "container_pop",
+      "interfaceName": "ContainerPopAction",
+      "displayName": "Container Pop",
+      "properties": [
+        {
+          "name": "container",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "destroyAfter",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "position",
+          "type": "'top' | 'selected' | number",
+          "required": false
+        },
+        {
+          "name": "storeAs",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "container_push",
+      "interfaceName": "ContainerPushAction",
+      "displayName": "Container Push",
+      "properties": [
+        {
+          "name": "container",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "item",
+          "type": "string | EntityTarget",
+          "required": true
+        },
+        {
+          "name": "position",
+          "type": "{\n    offset?: Vec2;\n    animate?: boolean;\n    duration?: number;\n  }",
+          "required": false
+        },
+        {
+          "name": "storeAs",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "container_select",
+      "interfaceName": "ContainerSelectAction",
+      "displayName": "Container Select",
+      "properties": [
+        {
+          "name": "container",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "deselectOthers",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "number | 'next' | 'previous' | 'first' | 'last'",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "container_swap",
+      "interfaceName": "ContainerSwapAction",
+      "displayName": "Container Swap",
+      "properties": [
+        {
+          "name": "betweenContainers",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "container",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "containerB",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "positionA",
+          "type": "number | 'top' | 'selected'",
+          "required": true
+        },
+        {
+          "name": "positionB",
+          "type": "number | 'top' | 'selected'",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "container_transfer",
+      "interfaceName": "ContainerTransferAction",
+      "displayName": "Container Transfer",
+      "properties": [
+        {
+          "name": "animate",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "duration",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "fromContainer",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "fromPosition",
+          "type": "'top' | 'selected' | number",
+          "required": false
+        },
+        {
+          "name": "item",
+          "type": "string | EntityTarget",
+          "required": false
+        },
+        {
+          "name": "storeAs",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "toContainer",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "toPosition",
+          "type": "'next' | number",
+          "required": false
         }
       ]
     },

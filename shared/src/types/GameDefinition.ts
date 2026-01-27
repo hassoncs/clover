@@ -7,6 +7,20 @@ import type { Value, ExpressionValueType } from '../expressions/types';
 import type { StateMachineDefinition } from '../systems/state-machine/types';
 import type { ContainerConfig } from './container';
 
+/**
+ * Dual-field image reference for backwards compatibility.
+ *
+ * Preferred: set `assetRef` to the asset UUID (R2 key derivation handled elsewhere).
+ * Legacy: set `imageUrl` to a full URL or relative path.
+ *
+ * During the migration window, callers may provide either (or both); runtime resolution
+ * will decide precedence.
+ */
+export type ImageField = {
+  imageUrl?: string;
+  assetRef?: string;
+};
+
 export interface WorldConfig {
   gravity: Vec2;
   pixelsPerMeter: number;
@@ -106,14 +120,19 @@ export interface GameMetadata {
   version: string;
   createdAt?: number;
   updatedAt?: number;
+  /** Legacy: full URL or relative path */
   thumbnailUrl?: string;
+  /** New: asset UUID reference for `thumbnailUrl` */
+  thumbnailAssetRef?: string;
+  /** Legacy: full URL or relative path */
   titleHeroImageUrl?: string;
+  /** New: asset UUID reference for `titleHeroImageUrl` */
+  titleHeroAssetRef?: string;
 }
 
 export type AssetSource = 'generated' | 'uploaded' | 'none';
 
-export interface AssetConfig {
-  imageUrl?: string;
+export interface AssetConfig extends ImageField {
   source?: AssetSource;
   scale?: number;
   offsetX?: number;
@@ -135,10 +154,9 @@ export interface AssetPack {
 
 export type ParallaxDepth = 'sky' | 'far' | 'mid' | 'near';
 
-export interface ParallaxLayer {
+export interface ParallaxLayer extends ImageField {
   id: string;
   name: string;
-  imageUrl?: string;
   depth: ParallaxDepth;
   parallaxFactor: number;
   scale?: number;
@@ -152,9 +170,8 @@ export interface ParallaxBackground {
   layers: ParallaxLayer[];
 }
 
-export interface StaticBackground {
+export interface StaticBackground extends ImageField {
   type: 'static';
-  imageUrl?: string;
   color?: string;
 }
 
@@ -290,9 +307,18 @@ export interface MultiplayerConfig {
 }
 
 export interface LoadingScreenConfig {
+  /** Legacy: full URL or relative path */
   backgroundImageUrl?: string;
+  /** New: asset UUID reference for `backgroundImageUrl` */
+  backgroundAssetRef?: string;
+  /** Legacy: full URL or relative path */
   progressBarImageUrl?: string;
+  /** New: asset UUID reference for `progressBarImageUrl` */
+  progressBarAssetRef?: string;
+  /** Legacy: full URL or relative path */
   progressBarFillImageUrl?: string;
+  /** New: asset UUID reference for `progressBarFillImageUrl` */
+  progressBarFillAssetRef?: string;
   backgroundColor?: string;
   progressBarColor?: string;
   textColor?: string;
@@ -368,8 +394,14 @@ export interface InputConfig {
 export interface VariantSheetConfig {
   enabled: boolean;
   groupId: string;
+  /** Legacy: full URL or relative path */
   atlasUrl: string;
+  /** New: asset UUID reference for `atlasUrl` */
+  atlasAssetRef?: string;
+  /** Legacy: full URL or relative path */
   metadataUrl?: string;
+  /** New: asset UUID reference for `metadataUrl` */
+  metadataAssetRef?: string;
   layout: { columns: number; rows: number; cellWidth: number; cellHeight: number };
 }
 

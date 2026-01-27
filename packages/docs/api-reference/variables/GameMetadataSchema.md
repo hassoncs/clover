@@ -8,4 +8,4 @@
 
 > `const` **GameMetadataSchema**: `ZodObject`\<\{ `id`: `ZodString`; `title`: `ZodString`; `description`: `ZodOptional`\<`ZodString`\>; `author`: `ZodOptional`\<`ZodString`\>; `version`: `ZodString`; `createdAt`: `ZodOptional`\<`ZodNumber`\>; `updatedAt`: `ZodOptional`\<`ZodNumber`\>; `thumbnailUrl`: `ZodOptional`\<`ZodString`\>; \}, `"strip"`, `ZodTypeAny`, \{ `id`: `string`; `title`: `string`; `description?`: `string`; `author?`: `string`; `version`: `string`; `createdAt?`: `number`; `updatedAt?`: `number`; `thumbnailUrl?`: `string`; \}, \{ `id`: `string`; `title`: `string`; `description?`: `string`; `author?`: `string`; `version`: `string`; `createdAt?`: `number`; `updatedAt?`: `number`; `thumbnailUrl?`: `string`; \}\>
 
-Defined in: [types/schemas.ts:606](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/schemas.ts#L606)
+Defined in: [types/schemas.ts:606](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/schemas.ts#L606)

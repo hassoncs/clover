@@ -6,7 +6,7 @@
 
 # Interface: AssetSheetBase
 
-Defined in: [types/asset-sheet.ts:145](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L145)
+Defined in: [types/asset-sheet.ts:145](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L145)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/asset-sheet.ts:145](https://github.com/hassoncs/clover/blob/5
 
 > **id**: `string`
 
-Defined in: [types/asset-sheet.ts:146](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L146)
+Defined in: [types/asset-sheet.ts:146](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L146)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/asset-sheet.ts:146](https://github.com/hassoncs/clover/blob/5
 
 > **packId**: `string`
 
-Defined in: [types/asset-sheet.ts:147](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L147)
+Defined in: [types/asset-sheet.ts:147](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L147)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/asset-sheet.ts:147](https://github.com/hassoncs/clover/blob/5
 
 > **source**: `"none"` \| `"generated"` \| `"uploaded"`
 
-Defined in: [types/asset-sheet.ts:148](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L148)
+Defined in: [types/asset-sheet.ts:148](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L148)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/asset-sheet.ts:148](https://github.com/hassoncs/clover/blob/5
 
 > `optional` **imageAssetId**: `string`
 
-Defined in: [types/asset-sheet.ts:149](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L149)
+Defined in: [types/asset-sheet.ts:149](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L149)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [types/asset-sheet.ts:149](https://github.com/hassoncs/clover/blob/5
 
 > **imageUrl**: `string`
 
-Defined in: [types/asset-sheet.ts:150](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L150)
+Defined in: [types/asset-sheet.ts:150](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L150)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [types/asset-sheet.ts:150](https://github.com/hassoncs/clover/blob/5
 
 > **imageWidth**: `number`
 
-Defined in: [types/asset-sheet.ts:151](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L151)
+Defined in: [types/asset-sheet.ts:151](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L151)
 
 ***
 
@@ -62,7 +62,7 @@ Defined in: [types/asset-sheet.ts:151](https://github.com/hassoncs/clover/blob/5
 
 > **imageHeight**: `number`
 
-Defined in: [types/asset-sheet.ts:152](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L152)
+Defined in: [types/asset-sheet.ts:152](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L152)
 
 ***
 
@@ -70,7 +70,7 @@ Defined in: [types/asset-sheet.ts:152](https://github.com/hassoncs/clover/blob/5
 
 > **layout**: [`SheetLayout`](../type-aliases/SheetLayout.md)
 
-Defined in: [types/asset-sheet.ts:153](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L153)
+Defined in: [types/asset-sheet.ts:153](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L153)
 
 ***
 
@@ -78,7 +78,7 @@ Defined in: [types/asset-sheet.ts:153](https://github.com/hassoncs/clover/blob/5
 
 > **entries**: `Record`\<`string`, [`AssetSheetEntry`](AssetSheetEntry.md)\>
 
-Defined in: [types/asset-sheet.ts:154](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L154)
+Defined in: [types/asset-sheet.ts:154](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L154)
 
 ***
 
@@ -86,7 +86,7 @@ Defined in: [types/asset-sheet.ts:154](https://github.com/hassoncs/clover/blob/5
 
 > `optional` **promptConfig**: [`SheetPromptConfig`](SheetPromptConfig.md)
 
-Defined in: [types/asset-sheet.ts:155](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L155)
+Defined in: [types/asset-sheet.ts:155](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L155)
 
 ***
 
@@ -94,7 +94,7 @@ Defined in: [types/asset-sheet.ts:155](https://github.com/hassoncs/clover/blob/5
 
 > **createdAt**: `number`
 
-Defined in: [types/asset-sheet.ts:156](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L156)
+Defined in: [types/asset-sheet.ts:156](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L156)
 
 ***
 
@@ -102,4 +102,4 @@ Defined in: [types/asset-sheet.ts:156](https://github.com/hassoncs/clover/blob/5
 
 > `optional` **deletedAt**: `number`
 
-Defined in: [types/asset-sheet.ts:157](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L157)
+Defined in: [types/asset-sheet.ts:157](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L157)

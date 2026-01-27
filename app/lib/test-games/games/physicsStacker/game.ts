@@ -7,6 +7,7 @@ export const metadata: TestGameMeta = {
   title: "Block Stacker",
   description: "Stack blocks as high as you can! Higher stacks = more points!",
   titleHeroImageUrl: `${ASSET_BASE}/title_hero.jpg`,
+  status: "archived",
 };
 
 const WORLD_WIDTH = 14;

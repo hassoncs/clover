@@ -24,6 +24,13 @@ export function createJointId(value: number): JointId {
   return { __brand: "JointId", value } as JointId;
 }
 
+export interface ContactInfo {
+  point: Vec2;
+  normal: Vec2;
+  normalImpulse: number;
+  tangentImpulse: number;
+}
+
 export type BodyType = "static" | "dynamic" | "kinematic";
 
 export interface BodyDef {
@@ -154,6 +161,7 @@ export interface CollisionEvent {
   bodyB: BodyId;
   colliderA: ColliderId;
   colliderB: ColliderId;
+  contacts?: ContactInfo[];
 }
 
 export interface SensorEvent {

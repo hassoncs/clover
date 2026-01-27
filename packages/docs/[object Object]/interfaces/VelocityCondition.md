@@ -6,7 +6,7 @@
 
 # Interface: VelocityCondition
 
-Defined in: [types/rules.ts:153](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L153)
+Defined in: [types/rules.ts:154](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L154)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:153](https://github.com/hassoncs/clover/blob/5a10349
 
 > **type**: `"velocity"`
 
-Defined in: [types/rules.ts:154](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L154)
+Defined in: [types/rules.ts:155](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L155)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:154](https://github.com/hassoncs/clover/blob/5a10349
 
 > **axis**: `"x"` \| `"y"`
 
-Defined in: [types/rules.ts:155](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L155)
+Defined in: [types/rules.ts:156](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L156)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:155](https://github.com/hassoncs/clover/blob/5a10349
 
 > **comparison**: `"gte"` \| `"lte"` \| `"eq"` \| `"gt"` \| `"lt"`
 
-Defined in: [types/rules.ts:156](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L156)
+Defined in: [types/rules.ts:157](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L157)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/rules.ts:156](https://github.com/hassoncs/clover/blob/5a10349
 
 > **value**: `number`
 
-Defined in: [types/rules.ts:157](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L157)
+Defined in: [types/rules.ts:158](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L158)

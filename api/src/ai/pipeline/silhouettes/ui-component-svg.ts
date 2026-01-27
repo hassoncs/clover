@@ -1,4 +1,7 @@
-import sharp from 'sharp';
+async function getSharp() {
+  const mod = await import('sharp');
+  return mod.default;
+}
 
 export interface PanelSilhouetteParams {
   width: number;
@@ -18,6 +21,7 @@ export async function createPanelSilhouette(params: PanelSilhouetteParams): Prom
     </svg>
   `;
 
+  const sharp = await getSharp();
   const buffer = await sharp(Buffer.from(svg)).png().toBuffer();
   return new Uint8Array(buffer);
 }
@@ -39,6 +43,7 @@ export async function createProgressBarSilhouette(params: ProgressBarSilhouetteP
     </svg>
   `;
 
+  const sharp = await getSharp();
   const buffer = await sharp(Buffer.from(svg)).png().toBuffer();
   return new Uint8Array(buffer);
 }
@@ -75,6 +80,7 @@ export async function createScrollBarSilhouette(params: ScrollBarSilhouetteParam
     `;
   }
 
+  const sharp = await getSharp();
   const buffer = await sharp(Buffer.from(svg)).png().toBuffer();
   return new Uint8Array(buffer);
 }
@@ -102,6 +108,7 @@ export async function createTabBarSilhouette(params: TabBarSilhouetteParams): Pr
     </svg>
   `;
 
+  const sharp = await getSharp();
   const buffer = await sharp(Buffer.from(svg)).png().toBuffer();
   return new Uint8Array(buffer);
 }

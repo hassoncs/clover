@@ -6,7 +6,7 @@
 
 # Interface: SheetTileCollision
 
-Defined in: [types/asset-sheet.ts:102](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L102)
+Defined in: [types/asset-sheet.ts:102](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L102)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/asset-sheet.ts:102](https://github.com/hassoncs/clover/blob/5
 
 > **type**: `"none"` \| `"full"` \| `"platform"`
 
-Defined in: [types/asset-sheet.ts:103](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L103)
+Defined in: [types/asset-sheet.ts:103](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L103)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/asset-sheet.ts:103](https://github.com/hassoncs/clover/blob/5
 
 > `optional` **polygon**: `object`[]
 
-Defined in: [types/asset-sheet.ts:104](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L104)
+Defined in: [types/asset-sheet.ts:104](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L104)
 
 #### x
 

@@ -5,17 +5,21 @@
  * This is the core type system - runtime-agnostic, no Node.js or Workers APIs.
  */
 
+import type { ImageProvider } from '../provider-contract';
+
 // =============================================================================
 // ASSET TYPES - The discriminator for pipeline flow
 // =============================================================================
 
-export type AssetType = 'entity' | 'background' | 'title_hero' | 'parallax' | 'sheet';
+export type AssetType = 'entity' | 'background' | 'title_hero' | 'title_hero_no_bg' | 'parallax' | 'sheet';
 
 // =============================================================================
 // SPRITE STYLES - Visual style for generated assets
 // =============================================================================
 
 export type SpriteStyle = 'pixel' | 'cartoon' | '3d' | 'flat';
+
+export type { ImageProvider } from '../provider-contract';
 
 export const STYLE_DESCRIPTORS: Record<SpriteStyle, { aesthetic: string; technical: string }> = {
   pixel: {
@@ -74,6 +78,18 @@ export interface BackgroundSpec {
 
 export interface TitleHeroSpec {
   type: 'title_hero';
+  id: string;
+  /** Game title text to render */
+  title: string;
+  /** Theme description for styling */
+  themeDescription: string;
+  /** Output dimensions in pixels */
+  width?: number;
+  height?: number;
+}
+
+export interface TitleHeroNoBgSpec {
+  type: 'title_hero_no_bg';
   id: string;
   /** Game title text to render */
   title: string;
@@ -151,7 +167,7 @@ export interface UIComponentSheetSpec extends SheetSpecBase {
   iconStrategy?: 'separate' | 'composite' | 'overlay' | 'none';
 }
 
-export type AssetSpec = EntitySpec | BackgroundSpec | TitleHeroSpec | ParallaxSpec | SpriteSheetSpec | TileSheetSpec | VariationSheetSpec | UIComponentSheetSpec;
+export type AssetSpec = EntitySpec | BackgroundSpec | TitleHeroSpec | TitleHeroNoBgSpec | ParallaxSpec | SpriteSheetSpec | TileSheetSpec | VariationSheetSpec | UIComponentSheetSpec;
 
 // =============================================================================
 // GAME CONFIG - Configuration for generating all assets for a game
@@ -185,7 +201,13 @@ export interface Artifacts {
   prompt?: string;
   /** Negative prompt text */
   negativePrompt?: string;
-  /** Scenario.com asset ID after upload */
+  /** Provider asset ID after upload/generation */
+  providerAssetId?: string;
+  /** Provider job/request ID when available */
+  providerJobId?: string;
+  /** Provider discriminator for providerAssetId/providerJobId */
+  provider?: ImageProvider;
+  /** @deprecated Use providerAssetId */
   scenarioAssetId?: string;
   /** Generated image buffer (before background removal) */
   generatedImage?: Uint8Array;
@@ -219,12 +241,19 @@ export interface AssetRun<T extends AssetSpec = AssetSpec> {
   /** Metadata about the run */
   meta: {
     gameId: string;
+    /** UUID of the asset pack for this run */
+    packId: string;
+    /** UUID for this specific generated asset (NOT spec.id) */
+    assetId: string;
     gameTitle: string;
     theme: string;
     style: SpriteStyle;
+    /** @deprecated Use buildAssetPath(gameId, packId, assetId) */
     r2Prefix: string;
     startedAt: number;
     runId: string;
+    /** Optional img2img strength override (0-1, default: 0.925) */
+    strength?: number;
   };
 }
 
@@ -233,7 +262,17 @@ export interface AssetRun<T extends AssetSpec = AssetSpec> {
 // =============================================================================
 
 export type DebugEvent =
-  | { type: 'run:start'; runId: string; assetId: string; assetType: AssetType }
+  | {
+      type: 'run:start';
+      runId: string;
+      /** Friendly spec id (aka spec.id) */
+      assetId: string;
+      assetType: AssetType;
+      gameId?: string;
+      packId?: string;
+      /** UUID for this generated asset (aka run.meta.assetId) */
+      generatedAssetId?: string;
+    }
   | { type: 'stage:start'; runId: string; assetId: string; stageId: string }
   | {
       type: 'artifact';
@@ -245,7 +284,21 @@ export type DebugEvent =
       data: Uint8Array | string;
     }
   | { type: 'stage:end'; runId: string; assetId: string; stageId: string; durationMs: number; ok: boolean; error?: string }
-  | { type: 'run:end'; runId: string; assetId: string; durationMs: number; ok: boolean; error?: string; r2Keys?: string[] };
+  | {
+      type: 'run:end';
+      runId: string;
+      /** Friendly spec id (aka spec.id) */
+      assetId: string;
+      durationMs: number;
+      ok: boolean;
+      error?: string;
+      r2Keys?: string[];
+      publicUrls?: string[];
+      gameId?: string;
+      packId?: string;
+      /** UUID for this generated asset (aka run.meta.assetId) */
+      generatedAssetId?: string;
+    };
 
 export type DebugSink = (event: DebugEvent) => void | Promise<void>;
 
@@ -266,8 +319,8 @@ export interface Stage {
 // PIPELINE ADAPTERS - Platform-specific implementations injected into stages
 // =============================================================================
 
-export interface ScenarioAdapter {
-  /** Upload an image buffer to Scenario.com, returns asset ID */
+export interface ImageGenerationAdapter {
+  /** Upload an image buffer, returns provider asset ID */
   uploadImage: (png: Uint8Array) => Promise<string>;
   /** Generate image from text prompt */
   txt2img: (params: {
@@ -282,7 +335,7 @@ export interface ScenarioAdapter {
     prompt: string;
     strength?: number;
   }) => Promise<{ assetId: string }>;
-  /** Download image buffer from Scenario.com */
+  /** Download image buffer */
   downloadImage: (assetId: string) => Promise<{ buffer: Uint8Array; extension: string }>;
   /** Remove background from image */
   removeBackground: (assetId: string) => Promise<{ assetId: string }>;
@@ -314,10 +367,16 @@ export interface SilhouetteAdapter {
 }
 
 export interface PipelineAdapters {
-  scenario: ScenarioAdapter;
+  /** Provider-agnostic image generation adapter */
+  provider: ImageGenerationAdapter;
+  /** @deprecated Use provider */
+  scenario?: ImageGenerationAdapter;
   r2: R2Adapter;
   silhouette: SilhouetteAdapter;
 }
+
+/** @deprecated Use ImageGenerationAdapter */
+export type ScenarioAdapter = ImageGenerationAdapter;
 
 // =============================================================================
 // PIPELINE RESULT - Final output from pipeline execution

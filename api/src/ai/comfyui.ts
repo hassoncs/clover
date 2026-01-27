@@ -13,6 +13,9 @@ import {
   MIME_TO_EXT,
 } from './comfyui-types';
 
+import type { ImageGenerationResult, LayeredImageGenerationResult } from './provider-contract';
+import { ProviderError, ProviderErrorCode, tryGetPngDimensions } from './provider-contract';
+
 import * as workflows from './workflows';
 
 export class ComfyUIClient {
@@ -57,6 +60,16 @@ export class ComfyUIClient {
     return this.executeDirect(workflow, images);
   }
 
+  private async executeWorkflowWithJobId(
+    workflow: ComfyWorkflow,
+    images?: Array<{ name: string; image: string }>
+  ): Promise<{ images: Array<{ image: string; filename: string }>; providerJobId?: string }> {
+    if (this.isServerless) {
+      return this.executeServerlessWithJobId(workflow, images);
+    }
+    return this.executeDirectWithJobId(workflow, images);
+  }
+
   private async executeServerless(
     workflow: ComfyWorkflow,
     images?: Array<{ name: string; image: string }>
@@ -88,6 +101,40 @@ export class ComfyUIClient {
     }
 
     return result.output?.images ?? [];
+  }
+
+  private async executeServerlessWithJobId(
+    workflow: ComfyWorkflow,
+    images?: Array<{ name: string; image: string }>
+  ): Promise<{ images: Array<{ image: string; filename: string }>; providerJobId?: string }> {
+    const response = await fetch(`${this.endpoint}/runsync`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify({
+        input: { workflow, images },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`RunPod API error: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json() as RunPodResponse;
+
+    if (result.status === 'FAILED' || result.error) {
+      throw new Error(`RunPod job failed: ${result.error ?? result.output?.error ?? 'Unknown error'}`);
+    }
+
+    if (result.status !== 'COMPLETED') {
+      const imagesOut = await this.pollRunPodJob(result.id);
+      return { images: imagesOut, providerJobId: result.id };
+    }
+
+    return { images: result.output?.images ?? [], providerJobId: result.id };
   }
 
   private async pollRunPodJob(jobId: string): Promise<Array<{ image: string; filename: string }>> {
@@ -140,6 +187,31 @@ export class ComfyUIClient {
 
     const { prompt_id } = await promptResponse.json() as { prompt_id: string };
     return this.pollDirectJob(prompt_id);
+  }
+
+  private async executeDirectWithJobId(
+    workflow: ComfyWorkflow,
+    images?: Array<{ name: string; image: string }>
+  ): Promise<{ images: Array<{ image: string; filename: string }>; providerJobId?: string }> {
+    if (images?.length) {
+      for (const img of images) {
+        await this.uploadImageDirect(img.name, img.image);
+      }
+    }
+
+    const promptResponse = await fetch(`${this.endpoint}/prompt`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: workflow }),
+    });
+
+    if (!promptResponse.ok) {
+      throw new Error(`ComfyUI prompt error: ${promptResponse.status}`);
+    }
+
+    const { prompt_id } = await promptResponse.json() as { prompt_id: string };
+    const imagesOut = await this.pollDirectJob(prompt_id);
+    return { images: imagesOut, providerJobId: prompt_id };
   }
 
   private async uploadImageDirect(filename: string, base64Data: string): Promise<void> {
@@ -222,6 +294,55 @@ export class ComfyUIClient {
     return { assetId };
   }
 
+  async txt2imgResult(params: ComfyTxt2ImgParams): Promise<ImageGenerationResult> {
+    try {
+      const width = params.width ?? COMFYUI_DEFAULTS.WIDTH;
+      const height = params.height ?? COMFYUI_DEFAULTS.HEIGHT;
+      const seed = params.seed ?? Math.floor(Math.random() * 1000000000);
+      const modelId = params.workflow ?? 'comfyui/txt2img';
+
+      const workflow = workflows.buildTxt2ImgWorkflow({
+        prompt: params.prompt,
+        negativePrompt: params.negativePrompt,
+        width,
+        height,
+        steps: params.steps ?? COMFYUI_DEFAULTS.STEPS,
+        guidance: params.guidance ?? COMFYUI_DEFAULTS.GUIDANCE,
+        seed,
+      });
+
+      const { images, providerJobId } = await this.executeWorkflowWithJobId(workflow);
+      if (!images.length) {
+        throw new Error('No images generated');
+      }
+
+      const providerAssetId = this.storeAsset(images[0].image, 'image/png', images[0].filename);
+      const { buffer } = await this.downloadImage(providerAssetId);
+      const dims = tryGetPngDimensions(buffer);
+
+      return {
+        buffer,
+        providerAssetId,
+        mimeType: 'image/png',
+        metadata: {
+          provider: 'comfyui',
+          providerJobId,
+          modelId,
+          seed,
+          width: dims?.width ?? width,
+          height: dims?.height ?? height,
+        },
+      };
+    } catch (err) {
+      throw new ProviderError({
+        provider: 'comfyui',
+        code: classifyProviderError(err),
+        message: err instanceof Error ? err.message : 'Unknown ComfyUI error',
+        cause: err,
+      });
+    }
+  }
+
   async img2img(params: ComfyImg2ImgParams): Promise<{ assetId: string }> {
     let imageData = params.image;
     const existingAsset = this.getAsset(params.image);
@@ -250,6 +371,60 @@ export class ComfyUIClient {
     return { assetId };
   }
 
+  async img2imgResult(params: ComfyImg2ImgParams): Promise<ImageGenerationResult> {
+    try {
+      let imageData = params.image;
+      const existingAsset = this.getAsset(params.image);
+      if (existingAsset) {
+        imageData = existingAsset.data;
+      }
+
+      const inputFilename = `input_${Date.now()}.png`;
+      const seed = params.seed ?? Math.floor(Math.random() * 1000000000);
+      const modelId = params.workflow ?? 'comfyui/img2img';
+
+      const workflow = workflows.buildImg2ImgWorkflow({
+        inputImage: inputFilename,
+        prompt: params.prompt,
+        negativePrompt: params.negativePrompt,
+        strength: params.strength ?? COMFYUI_DEFAULTS.STRENGTH,
+        steps: params.steps ?? COMFYUI_DEFAULTS.STEPS,
+        guidance: params.guidance ?? COMFYUI_DEFAULTS.GUIDANCE,
+        seed,
+      });
+
+      const { images, providerJobId } = await this.executeWorkflowWithJobId(workflow, [{ name: inputFilename, image: imageData }]);
+      if (!images.length) {
+        throw new Error('No images generated');
+      }
+
+      const providerAssetId = this.storeAsset(images[0].image, 'image/png', images[0].filename);
+      const { buffer } = await this.downloadImage(providerAssetId);
+      const dims = tryGetPngDimensions(buffer);
+
+      return {
+        buffer,
+        providerAssetId,
+        mimeType: 'image/png',
+        metadata: {
+          provider: 'comfyui',
+          providerJobId,
+          modelId,
+          seed,
+          width: dims?.width ?? COMFYUI_DEFAULTS.WIDTH,
+          height: dims?.height ?? COMFYUI_DEFAULTS.HEIGHT,
+        },
+      };
+    } catch (err) {
+      throw new ProviderError({
+        provider: 'comfyui',
+        code: classifyProviderError(err),
+        message: err instanceof Error ? err.message : 'Unknown ComfyUI error',
+        cause: err,
+      });
+    }
+  }
+
   async removeBackground(params: ComfyRemoveBackgroundParams): Promise<{ assetId: string }> {
     let imageData = params.image;
     const existingAsset = this.getAsset(params.image);
@@ -271,6 +446,53 @@ export class ComfyUIClient {
 
     const assetId = this.storeAsset(images[0].image, 'image/png', images[0].filename);
     return { assetId };
+  }
+
+  async removeBackgroundResult(params: ComfyRemoveBackgroundParams): Promise<ImageGenerationResult> {
+    try {
+      let imageData = params.image;
+      const existingAsset = this.getAsset(params.image);
+      if (existingAsset) {
+        imageData = existingAsset.data;
+      }
+
+      const inputFilename = `input_${Date.now()}.png`;
+      const modelId = params.workflow ?? 'comfyui/remove-background';
+
+      const workflow = workflows.buildRemoveBackgroundWorkflow({
+        inputImage: inputFilename,
+        model: params.model ?? COMFYUI_DEFAULTS.BG_REMOVAL_MODEL,
+      });
+
+      const { images, providerJobId } = await this.executeWorkflowWithJobId(workflow, [{ name: inputFilename, image: imageData }]);
+      if (!images.length) {
+        throw new Error('No images generated');
+      }
+
+      const providerAssetId = this.storeAsset(images[0].image, 'image/png', images[0].filename);
+      const { buffer } = await this.downloadImage(providerAssetId);
+      const dims = tryGetPngDimensions(buffer);
+
+      return {
+        buffer,
+        providerAssetId,
+        mimeType: 'image/png',
+        metadata: {
+          provider: 'comfyui',
+          providerJobId,
+          modelId,
+          width: dims?.width ?? COMFYUI_DEFAULTS.WIDTH,
+          height: dims?.height ?? COMFYUI_DEFAULTS.HEIGHT,
+        },
+      };
+    } catch (err) {
+      throw new ProviderError({
+        provider: 'comfyui',
+        code: classifyProviderError(err),
+        message: err instanceof Error ? err.message : 'Unknown ComfyUI error',
+        cause: err,
+      });
+    }
   }
 
   async layeredDecompose(params: ComfyLayeredParams): Promise<{ assetIds: string[] }> {
@@ -300,6 +522,38 @@ export class ComfyUIClient {
     return { assetIds };
   }
 
+  async layeredDecomposeResult(params: ComfyLayeredParams): Promise<LayeredImageGenerationResult> {
+    try {
+      const result = await this.layeredDecompose(params);
+      const layers: ImageGenerationResult[] = [];
+
+      for (const assetId of result.assetIds) {
+        const { buffer } = await this.downloadImage(assetId);
+        const dims = tryGetPngDimensions(buffer);
+        layers.push({
+          buffer,
+          providerAssetId: assetId,
+          mimeType: 'image/png',
+          metadata: {
+            provider: 'comfyui',
+            modelId: params.workflow ?? 'comfyui/layered-decompose',
+            width: dims?.width ?? COMFYUI_DEFAULTS.WIDTH,
+            height: dims?.height ?? COMFYUI_DEFAULTS.HEIGHT,
+          },
+        });
+      }
+
+      return { layers };
+    } catch (err) {
+      throw new ProviderError({
+        provider: 'comfyui',
+        code: classifyProviderError(err),
+        message: err instanceof Error ? err.message : 'Unknown ComfyUI error',
+        cause: err,
+      });
+    }
+  }
+
   async uploadImage(imageBuffer: Uint8Array): Promise<string> {
     const base64 = Buffer.from(imageBuffer).toString('base64');
     return this.storeAsset(base64, 'image/png');
@@ -320,6 +574,17 @@ export class ComfyUIClient {
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
+}
+
+function classifyProviderError(err: unknown): ProviderErrorCode {
+  const msg = err instanceof Error ? err.message.toLowerCase() : '';
+  if (msg.includes('timed out') || msg.includes('timeout')) return ProviderErrorCode.PROVIDER_TIMEOUT;
+  if (msg.includes('cold start')) return ProviderErrorCode.PROVIDER_COLD_START;
+  if (msg.includes('workflow') && msg.includes('invalid')) return ProviderErrorCode.WORKFLOW_INVALID;
+  if (msg.includes('rate limit') || msg.includes('429')) return ProviderErrorCode.RATE_LIMITED;
+  if (msg.includes('upload') && msg.includes('failed')) return ProviderErrorCode.UPLOAD_FAILED;
+  if (msg.includes('invalid') || msg.includes('missing')) return ProviderErrorCode.INPUT_INVALID;
+  return ProviderErrorCode.UNKNOWN_PROVIDER_ERROR;
 }
 
 export function createComfyUIClient(env: {

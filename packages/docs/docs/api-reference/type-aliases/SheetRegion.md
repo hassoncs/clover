@@ -8,7 +8,7 @@
 
 > **SheetRegion** = `object`
 
-Defined in: [types/asset-sheet.ts:47](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L47)
+Defined in: [types/asset-sheet.ts:47](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L47)
 
 ## Properties
 
@@ -16,7 +16,7 @@ Defined in: [types/asset-sheet.ts:47](https://github.com/hassoncs/clover/blob/5a
 
 > **x**: `number`
 
-Defined in: [types/asset-sheet.ts:47](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L47)
+Defined in: [types/asset-sheet.ts:47](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L47)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [types/asset-sheet.ts:47](https://github.com/hassoncs/clover/blob/5a
 
 > **y**: `number`
 
-Defined in: [types/asset-sheet.ts:47](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L47)
+Defined in: [types/asset-sheet.ts:47](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L47)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [types/asset-sheet.ts:47](https://github.com/hassoncs/clover/blob/5a
 
 > **w**: `number`
 
-Defined in: [types/asset-sheet.ts:47](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L47)
+Defined in: [types/asset-sheet.ts:47](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L47)
 
 ***
 
@@ -40,4 +40,4 @@ Defined in: [types/asset-sheet.ts:47](https://github.com/hassoncs/clover/blob/5a
 
 > **h**: `number`
 
-Defined in: [types/asset-sheet.ts:47](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L47)
+Defined in: [types/asset-sheet.ts:47](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L47)

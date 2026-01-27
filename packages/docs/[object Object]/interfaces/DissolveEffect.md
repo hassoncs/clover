@@ -6,7 +6,7 @@
 
 # Interface: DissolveEffect
 
-Defined in: [types/effects.ts:108](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L108)
+Defined in: [types/effects.ts:108](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L108)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/effects.ts:108](https://github.com/hassoncs/clover/blob/5a103
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L48)
+Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L48)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **opacity**: `number`
 
-Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L49)
+Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L49)
 
 #### Inherited from
 
@@ -42,7 +42,7 @@ Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **blendMode**: [`EffectBlendMode`](../type-aliases/EffectBlendMode.md)
 
-Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L50)
+Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L50)
 
 #### Inherited from
 
@@ -54,7 +54,7 @@ Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **id**: `string`
 
-Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L51)
+Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L51)
 
 #### Inherited from
 
@@ -66,7 +66,7 @@ Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/5a1034
 
 > **type**: `"dissolve"`
 
-Defined in: [types/effects.ts:109](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L109)
+Defined in: [types/effects.ts:109](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L109)
 
 #### Overrides
 
@@ -78,7 +78,7 @@ Defined in: [types/effects.ts:109](https://github.com/hassoncs/clover/blob/5a103
 
 > **progress**: `number`
 
-Defined in: [types/effects.ts:110](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L110)
+Defined in: [types/effects.ts:110](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L110)
 
 ***
 
@@ -86,7 +86,7 @@ Defined in: [types/effects.ts:110](https://github.com/hassoncs/clover/blob/5a103
 
 > **noiseScale**: `number`
 
-Defined in: [types/effects.ts:111](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L111)
+Defined in: [types/effects.ts:111](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L111)
 
 ***
 
@@ -94,7 +94,7 @@ Defined in: [types/effects.ts:111](https://github.com/hassoncs/clover/blob/5a103
 
 > **edgeWidth**: `number`
 
-Defined in: [types/effects.ts:112](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L112)
+Defined in: [types/effects.ts:112](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L112)
 
 ***
 
@@ -102,7 +102,7 @@ Defined in: [types/effects.ts:112](https://github.com/hassoncs/clover/blob/5a103
 
 > **edgeColor**: `string`
 
-Defined in: [types/effects.ts:113](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L113)
+Defined in: [types/effects.ts:113](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L113)
 
 ***
 
@@ -110,4 +110,4 @@ Defined in: [types/effects.ts:113](https://github.com/hassoncs/clover/blob/5a103
 
 > `optional` **direction**: `"left"` \| `"right"` \| `"up"` \| `"down"` \| `"random"`
 
-Defined in: [types/effects.ts:114](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L114)
+Defined in: [types/effects.ts:114](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L114)

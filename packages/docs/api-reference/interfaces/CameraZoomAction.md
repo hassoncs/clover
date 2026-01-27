@@ -6,7 +6,7 @@
 
 # Interface: CameraZoomAction
 
-Defined in: [types/rules.ts:364](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L364)
+Defined in: [types/rules.ts:372](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L372)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:364](https://github.com/hassoncs/clover/blob/5a10349
 
 > **type**: `"camera_zoom"`
 
-Defined in: [types/rules.ts:365](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L365)
+Defined in: [types/rules.ts:373](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L373)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:365](https://github.com/hassoncs/clover/blob/5a10349
 
 > **scale**: `Value`\<`number`\>
 
-Defined in: [types/rules.ts:366](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L366)
+Defined in: [types/rules.ts:374](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L374)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:366](https://github.com/hassoncs/clover/blob/5a10349
 
 > **duration**: `Value`\<`number`\>
 
-Defined in: [types/rules.ts:367](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L367)
+Defined in: [types/rules.ts:375](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L375)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/rules.ts:367](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **restoreDelay**: `Value`\<`number`\>
 
-Defined in: [types/rules.ts:368](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L368)
+Defined in: [types/rules.ts:376](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L376)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [types/rules.ts:368](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **focusTag**: `string`
 
-Defined in: [types/rules.ts:369](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L369)
+Defined in: [types/rules.ts:377](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L377)

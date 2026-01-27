@@ -6,7 +6,7 @@
 
 # Interface: GameStateAction
 
-Defined in: [types/rules.ts:244](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L244)
+Defined in: [types/rules.ts:252](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L252)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:244](https://github.com/hassoncs/clover/blob/5a10349
 
 > **type**: `"game_state"`
 
-Defined in: [types/rules.ts:245](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L245)
+Defined in: [types/rules.ts:253](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L253)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:245](https://github.com/hassoncs/clover/blob/5a10349
 
 > **state**: `"win"` \| `"lose"` \| `"pause"` \| `"restart"` \| `"next_level"`
 
-Defined in: [types/rules.ts:246](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L246)
+Defined in: [types/rules.ts:254](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L254)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/rules.ts:246](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **delay**: `number`
 
-Defined in: [types/rules.ts:247](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L247)
+Defined in: [types/rules.ts:255](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L255)

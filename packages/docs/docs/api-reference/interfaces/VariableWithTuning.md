@@ -6,7 +6,7 @@
 
 # Interface: VariableWithTuning
 
-Defined in: [types/GameDefinition.ts:220](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L220)
+Defined in: [types/GameDefinition.ts:221](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L221)
 
 Variable with tuning metadata for live editing
 
@@ -16,7 +16,7 @@ Variable with tuning metadata for live editing
 
 > **value**: [`GameVariableValue`](../type-aliases/GameVariableValue.md)
 
-Defined in: [types/GameDefinition.ts:222](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L222)
+Defined in: [types/GameDefinition.ts:223](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L223)
 
 Current/default value
 
@@ -26,7 +26,7 @@ Current/default value
 
 > `optional` **tuning**: `object`
 
-Defined in: [types/GameDefinition.ts:225](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L225)
+Defined in: [types/GameDefinition.ts:226](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L226)
 
 Tuning configuration for dev UI (optional)
 
@@ -48,7 +48,7 @@ Tuning configuration for dev UI (optional)
 
 > `optional` **category**: `"physics"` \| `"gameplay"` \| `"visuals"` \| `"economy"` \| `"ai"`
 
-Defined in: [types/GameDefinition.ts:232](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L232)
+Defined in: [types/GameDefinition.ts:233](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L233)
 
 Category for grouping in UI (optional)
 
@@ -58,7 +58,7 @@ Category for grouping in UI (optional)
 
 > `optional` **label**: `string`
 
-Defined in: [types/GameDefinition.ts:235](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L235)
+Defined in: [types/GameDefinition.ts:236](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L236)
 
 Human-readable label (optional)
 
@@ -68,7 +68,7 @@ Human-readable label (optional)
 
 > `optional` **description**: `string`
 
-Defined in: [types/GameDefinition.ts:238](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L238)
+Defined in: [types/GameDefinition.ts:239](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L239)
 
 Tooltip description (optional)
 
@@ -78,6 +78,6 @@ Tooltip description (optional)
 
 > `optional` **display**: `boolean`
 
-Defined in: [types/GameDefinition.ts:241](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L241)
+Defined in: [types/GameDefinition.ts:242](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L242)
 
 Show to player in HUD (optional)

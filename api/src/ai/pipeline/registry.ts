@@ -2,7 +2,7 @@ import type { AssetType, Stage } from './types';
 import {
   silhouetteStage,
   buildPromptStage,
-  uploadToScenarioStage,
+  uploadToProviderStage,
   img2imgStage,
   txt2imgStage,
   removeBackgroundStage,
@@ -16,7 +16,7 @@ export const pipelineRegistry: Record<AssetType, Stage[]> = {
   entity: [
     silhouetteStage,
     buildPromptStage,
-    uploadToScenarioStage,
+    uploadToProviderStage,
     img2imgStage,
     removeBackgroundStage,
     uploadR2Stage,
@@ -27,6 +27,12 @@ export const pipelineRegistry: Record<AssetType, Stage[]> = {
     uploadR2Stage,
   ],
   title_hero: [
+    buildPromptStage,
+    txt2imgStage,
+    // removeBackgroundStage, // Commented out: Keep backgrounds for hero title images to use in game detail pages
+    uploadR2Stage,
+  ],
+  title_hero_no_bg: [
     buildPromptStage,
     txt2imgStage,
     removeBackgroundStage,
@@ -41,7 +47,7 @@ export const pipelineRegistry: Record<AssetType, Stage[]> = {
   sheet: [
     sheetGuideStage,
     buildPromptStage,
-    uploadToScenarioStage,
+    uploadToProviderStage,
     img2imgStage,
     removeBackgroundStage,
     buildSheetMetadataStage,

@@ -1,6 +1,28 @@
 import { z } from 'zod';
 import type { AssetSource } from './GameDefinition';
 
+export const PromptDefaultsSchema = z.object({
+  themePrompt: z.string().optional(),
+  styleOverride: z.string().optional(),
+  modelId: z.string().optional(),
+  negativePrompt: z.string().optional(),
+  customPrompts: z.record(z.string()).optional(),
+});
+
+export const DEFAULT_THEMES = [
+  'Dark fantasy medieval castle',
+  'Bright cartoon forest',
+  'Sci-fi space station',
+  'Cozy cottage interior',
+] as const;
+
+export const DEFAULT_STYLES = [
+  'pixel',
+  'cartoon',
+  '3d',
+  'flat',
+] as const;
+
 export const AssetSourceSchema = z.enum(['generated', 'uploaded', 'none']);
 
 export type GenerationStatus = 'queued' | 'running' | 'succeeded' | 'failed' | 'canceled';
@@ -29,6 +51,7 @@ export interface PromptDefaults {
   styleOverride?: string;
   modelId?: string;
   negativePrompt?: string;
+  customPrompts?: Record<string, string>; // templateId -> custom prompt override
 }
 
 export interface PromptComponents {
@@ -123,13 +146,6 @@ export const AssetPlacementSchema = z.object({
   offsetX: z.number(),
   offsetY: z.number(),
   anchor: z.object({ x: z.number(), y: z.number() }).optional(),
-});
-
-export const PromptDefaultsSchema = z.object({
-  themePrompt: z.string().optional(),
-  styleOverride: z.string().optional(),
-  modelId: z.string().optional(),
-  negativePrompt: z.string().optional(),
 });
 
 export const PromptComponentsSchema = z.object({

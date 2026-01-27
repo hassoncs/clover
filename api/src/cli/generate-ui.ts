@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
 import * as path from 'path';
+import * as crypto from 'node:crypto';
 import { createNodeAdapters, createFileDebugSink } from '../ai/pipeline/adapters/node';
+import { getImageGenerationConfig } from '../ai/assets';
 import { uiBaseStateStage, uiVariationStatesStage, uiUploadR2Stage } from '../ai/pipeline/stages/ui-component';
 import type { AssetRun, UIComponentSheetSpec, SpriteStyle } from '../ai/pipeline/types';
-import { UI_CONTROL_CONFIG, getControlConfig } from '../ai/pipeline/ui-control-config';
+import { UI_CONTROL_CONFIG } from '../ai/pipeline/ui-control-config';
 import { getPresetTheme, listPresets, THEME_PRESETS } from './theme-presets';
 
 type UIControlType = 'button' | 'checkbox' | 'panel' | 'progress_bar' | 'scroll_bar_h' | 'scroll_bar_v' | 'tab_bar';
@@ -38,18 +40,28 @@ THEME PRESETS:
 EXAMPLES:
   # Single control with theme
   pnpm generate:ui button --theme "medieval fantasy"
-  
+
   # Multiple controls with preset
   pnpm generate:ui panel progress_bar --preset scifi
-  
+
   # All controls
   pnpm generate:ui --all --preset cartoon
-  
+
   # Custom output directory
   pnpm generate:ui button --preset medieval --output ./my-test
 
 ENVIRONMENT:
-  Requires SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY (or SCENARIO_API_SECRET)
+  Set IMAGE_GENERATION_PROVIDER to choose the provider:
+    - "scenario" (default): Uses Scenario.com API
+    - "comfyui": Uses RunPod ComfyUI endpoint
+    - "runpod": Uses RunPod direct endpoints
+
+  For Scenario (default):
+    SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY (or SCENARIO_API_SECRET)
+
+  For ComfyUI/RunPod:
+    RUNPOD_API_KEY and RUNPOD_COMFYUI_ENDPOINT_ID
+
   Typically run via: hush run -- pnpm generate:ui ...
 `);
 }
@@ -94,6 +106,8 @@ async function generateControl(
     artifacts: {},
     meta: {
       gameId: 'ui-cli',
+      packId: crypto.randomUUID(),
+      assetId: crypto.randomUUID(),
       gameTitle: 'UI CLI Generation',
       theme,
       style: 'flat' as SpriteStyle,
@@ -176,15 +190,24 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const apiKey = process.env.SCENARIO_API_KEY;
-  const apiSecret = process.env.SCENARIO_SECRET_API_KEY || process.env.SCENARIO_API_SECRET;
-
-  if (!apiKey || !apiSecret) {
-    console.error('Error: SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required');
+  const providerConfig = getImageGenerationConfig(process.env as unknown as import('../trpc/context').Env);
+  if (!providerConfig.configured) {
+    console.error(`Error: ${providerConfig.error}`);
     console.error('Set them in your environment or use hush:');
     console.error('  hush run -- pnpm generate:ui ...');
     process.exit(1);
   }
+
+  const adapterOptions: Parameters<typeof createNodeAdapters>[0] = {
+    provider: providerConfig.provider,
+    r2Bucket: 'slopcade-assets-dev',
+    wranglerCwd: process.cwd(),
+    publicUrlBase: 'http://localhost:8787/assets',
+    scenarioApiKey: providerConfig.provider === 'scenario' ? process.env.SCENARIO_API_KEY : undefined,
+    scenarioApiSecret: providerConfig.provider === 'scenario' ? process.env.SCENARIO_SECRET_API_KEY : undefined,
+    runpodApiKey: (providerConfig.provider === 'runpod' || providerConfig.provider === 'comfyui') ? process.env.RUNPOD_API_KEY : undefined,
+    comfyuiEndpoint: providerConfig.provider === 'comfyui' ? `https://api.runpod.ai/v2/${process.env.RUNPOD_COMFYUI_ENDPOINT_ID}` : undefined,
+  };
 
   const controls = values.all ? ALL_CONTROLS : validateControls(positionals);
   const theme = values.theme || getPresetTheme(values.preset)!;
@@ -193,18 +216,13 @@ async function main(): Promise<void> {
   console.log('\n' + '='.repeat(60));
   console.log('Godot UI Control Generator');
   console.log('='.repeat(60));
+  console.log(`Provider: ${providerConfig.provider}`);
   console.log(`Theme: ${theme}`);
   console.log(`Controls: ${controls.join(', ')}`);
   console.log(`Output: ${outputDir}`);
   console.log('='.repeat(60) + '\n');
 
-  const adapters = await createNodeAdapters({
-    scenarioApiKey: apiKey,
-    scenarioApiSecret: apiSecret,
-    r2Bucket: 'slopcade-assets-dev',
-    wranglerCwd: process.cwd(),
-    publicUrlBase: 'http://localhost:8787/assets',
-  });
+  const adapters = await createNodeAdapters(adapterOptions);
 
   let successCount = 0;
   let failCount = 0;

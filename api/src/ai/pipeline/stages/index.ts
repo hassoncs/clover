@@ -10,8 +10,37 @@ import type {
   VariationSheetSpec,
 } from '../types';
 import { buildPromptForSpec } from '../prompt-builder';
+import { buildAssetPath } from '@slopcade/shared';
 
 type SheetSpec = SpriteSheetSpec | TileSheetSpec | VariationSheetSpec;
+
+const DEFAULT_IMG2IMG_STRENGTH = 0.925;
+const MIN_DYNAMIC_STRENGTH = 0.87;
+const MAX_DYNAMIC_STRENGTH = 0.93;
+
+function parseHexColor(hex: string): { r: number; g: number; b: number } | null {
+  const match = hex.match(/^#?([0-9a-f]{6})$/i);
+  if (!match) return null;
+  const val = parseInt(match[1], 16);
+  return {
+    r: (val >> 16) & 0xff,
+    g: (val >> 8) & 0xff,
+    b: val & 0xff,
+  };
+}
+
+function calculateLuminance(r: number, g: number, b: number): number {
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+}
+
+function calculateStrengthFromColor(color: string | undefined): number | undefined {
+  if (!color) return undefined;
+  const rgb = parseHexColor(color);
+  if (!rgb) return undefined;
+  
+  const luminance = calculateLuminance(rgb.r, rgb.g, rgb.b);
+  return MIN_DYNAMIC_STRENGTH + (1 - luminance) * (MAX_DYNAMIC_STRENGTH - MIN_DYNAMIC_STRENGTH);
+}
 
 function isSheetSpec(spec: { type: string }): spec is SheetSpec {
   return spec.type === 'sheet';
@@ -125,40 +154,58 @@ export const buildPromptStage: Stage = {
   },
 };
 
-export const uploadToScenarioStage: Stage = {
-  id: 'upload-scenario',
-  name: 'Upload to Scenario',
+export const uploadToProviderStage: Stage = {
+  id: 'upload-provider',
+  name: 'Upload to Provider',
   async run(run: AssetRun, adapters: PipelineAdapters, _debug: DebugSink): Promise<AssetRun> {
     // Accept either silhouette (for entities) or sheet guide (for sheets)
     const imageToUpload = run.artifacts.silhouettePng ?? run.artifacts.sheetGuidePng;
     if (!imageToUpload) {
-      throw new Error('silhouette or sheet-guide stage must run before upload-scenario');
+      throw new Error('silhouette or sheet-guide stage must run before upload-provider');
     }
 
-    const scenarioAssetId = await adapters.scenario.uploadImage(imageToUpload);
+    const providerAssetId = await adapters.provider.uploadImage(imageToUpload);
 
     return {
       ...run,
-      artifacts: { ...run.artifacts, scenarioAssetId },
+      artifacts: { ...run.artifacts, providerAssetId },
     };
   },
 };
+
+/** @deprecated Use uploadToProviderStage */
+export const uploadToScenarioStage = uploadToProviderStage;
 
 export const img2imgStage: Stage = {
   id: 'img2img',
   name: 'Generate via img2img',
   async run(run: AssetRun, adapters: PipelineAdapters, debug: DebugSink): Promise<AssetRun> {
-    if (!run.artifacts.scenarioAssetId || !run.artifacts.prompt) {
-      throw new Error('upload-scenario and build-prompt stages must run before img2img');
+    const imageAssetId = run.artifacts.providerAssetId;
+    if (!imageAssetId || !run.artifacts.prompt) {
+      throw new Error('upload-provider and build-prompt stages must run before img2img');
     }
 
-    const result = await adapters.scenario.img2img({
-      imageAssetId: run.artifacts.scenarioAssetId,
-      prompt: run.artifacts.prompt,
-      strength: 0.925,
+    const entityColor = run.spec.type === 'entity' ? (run.spec as EntitySpec).color : undefined;
+    const colorBasedStrength = calculateStrengthFromColor(entityColor);
+    const strength = run.meta.strength ?? colorBasedStrength ?? DEFAULT_IMG2IMG_STRENGTH;
+
+    await debug({
+      type: 'artifact',
+      runId: run.meta.runId,
+      assetId: run.spec.id,
+      stageId: 'img2img',
+      name: 'strength-info.txt',
+      contentType: 'text/plain',
+      data: `color: ${entityColor ?? 'none'}\ncolorBasedStrength: ${colorBasedStrength ?? 'N/A'}\nfinalStrength: ${strength}`,
     });
 
-    const { buffer } = await adapters.scenario.downloadImage(result.assetId);
+    const result = await adapters.provider.img2img({
+      imageAssetId,
+      prompt: run.artifacts.prompt,
+      strength,
+    });
+
+    const { buffer } = await adapters.provider.downloadImage(result.assetId);
 
     await debug({
       type: 'artifact',
@@ -174,7 +221,7 @@ export const img2imgStage: Stage = {
       ...run,
       artifacts: { 
         ...run.artifacts, 
-        scenarioAssetId: result.assetId,
+        providerAssetId: result.assetId,
         generatedImage: buffer,
       },
     };
@@ -190,17 +237,20 @@ export const txt2imgStage: Stage = {
     }
 
     const spec = run.spec;
-    const width = 'width' in spec && spec.width ? spec.width : 1024;
-    const height = 'height' in spec && spec.height ? spec.height : 1024;
+    const isBackground = spec.type === 'background';
+    const defaultWidth = isBackground ? 1024 : 1024;
+    const defaultHeight = isBackground ? 1792 : 1024;
+    const width = 'width' in spec && spec.width ? spec.width : defaultWidth;
+    const height = 'height' in spec && spec.height ? spec.height : defaultHeight;
 
-    const result = await adapters.scenario.txt2img({
+    const result = await adapters.provider.txt2img({
       prompt: run.artifacts.prompt,
       width,
       height,
       negativePrompt: run.artifacts.negativePrompt,
     });
 
-    const { buffer } = await adapters.scenario.downloadImage(result.assetId);
+    const { buffer } = await adapters.provider.downloadImage(result.assetId);
 
     await debug({
       type: 'artifact',
@@ -216,7 +266,7 @@ export const txt2imgStage: Stage = {
       ...run,
       artifacts: { 
         ...run.artifacts, 
-        scenarioAssetId: result.assetId,
+        providerAssetId: result.assetId,
         generatedImage: buffer,
       },
     };
@@ -227,12 +277,13 @@ export const removeBackgroundStage: Stage = {
   id: 'remove-bg',
   name: 'Remove Background',
   async run(run: AssetRun, adapters: PipelineAdapters, debug: DebugSink): Promise<AssetRun> {
-    if (!run.artifacts.scenarioAssetId) {
+    const assetId = run.artifacts.providerAssetId;
+    if (!assetId) {
       throw new Error('generation stage must run before remove-bg');
     }
 
-    const result = await adapters.scenario.removeBackground(run.artifacts.scenarioAssetId);
-    const { buffer } = await adapters.scenario.downloadImage(result.assetId);
+    const result = await adapters.provider.removeBackground(assetId);
+    const { buffer } = await adapters.provider.downloadImage(result.assetId);
 
     await debug({
       type: 'artifact',
@@ -258,7 +309,8 @@ export const layeredDecomposeStage: Stage = {
   id: 'layered-decompose',
   name: 'Decompose into Layers',
   async run(run: AssetRun, adapters: PipelineAdapters, debug: DebugSink): Promise<AssetRun> {
-    if (!run.artifacts.scenarioAssetId) {
+    const assetId = run.artifacts.providerAssetId;
+    if (!assetId) {
       throw new Error('generation stage must run before layered-decompose');
     }
 
@@ -266,18 +318,18 @@ export const layeredDecomposeStage: Stage = {
       throw new Error('layered-decompose only works with parallax assets');
     }
 
-    if (!adapters.scenario.layeredDecompose) {
+    if (!adapters.provider.layeredDecompose) {
       throw new Error('layeredDecompose not supported by this adapter');
     }
 
-    const result = await adapters.scenario.layeredDecompose({
-      imageAssetId: run.artifacts.scenarioAssetId,
+    const result = await adapters.provider.layeredDecompose({
+      imageAssetId: assetId,
       layerCount: run.spec.layerCount,
     });
 
     const layerImages: Uint8Array[] = [];
     for (let i = 0; i < result.assetIds.length; i++) {
-      const { buffer } = await adapters.scenario.downloadImage(result.assetIds[i]);
+      const { buffer } = await adapters.provider.downloadImage(result.assetIds[i]);
       layerImages.push(buffer);
 
       await debug({
@@ -311,7 +363,7 @@ export const uploadR2Stage: Stage = {
 
     if (run.spec.type === 'parallax' && run.artifacts.layerImages) {
       for (let i = 0; i < run.artifacts.layerImages.length; i++) {
-        const key = `${run.meta.r2Prefix}/${run.spec.id}-layer-${i}.png`;
+        const key = buildAssetPath(run.meta.gameId, run.meta.packId, `${run.meta.assetId}-layer-${i}`);
         await adapters.r2.put(key, run.artifacts.layerImages[i], { contentType: 'image/png' });
         r2Keys.push(key);
         publicUrls.push(adapters.r2.getPublicUrl(key));
@@ -322,13 +374,13 @@ export const uploadR2Stage: Stage = {
         throw new Error('No final image to upload');
       }
 
-      const key = `${run.meta.r2Prefix}/${run.spec.id}.png`;
+      const key = buildAssetPath(run.meta.gameId, run.meta.packId, run.meta.assetId);
       await adapters.r2.put(key, finalImage, { contentType: 'image/png' });
       r2Keys.push(key);
       publicUrls.push(adapters.r2.getPublicUrl(key));
 
       if (run.artifacts.sheetMetadataJson && run.spec.type === 'sheet') {
-        const metadataKey = `${run.meta.r2Prefix}/${run.spec.id}.json`;
+        const metadataKey = buildAssetPath(run.meta.gameId, run.meta.packId, run.meta.assetId).replace(/\.png$/, '.json');
         const metadataBuffer = new Uint8Array(Buffer.from(run.artifacts.sheetMetadataJson));
         await adapters.r2.put(metadataKey, metadataBuffer, { 
           contentType: 'application/json' 

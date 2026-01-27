@@ -4,6 +4,7 @@ import type { TestGameMeta } from "@/lib/registry/types";
 export const metadata: TestGameMeta = {
   title: "Drop & Pop",
   description: "Drop fruits and merge matching pairs into bigger fruits! Inspired by Suika Game.",
+  status: "archived",
 };
 
 const WORLD_WIDTH = 10;

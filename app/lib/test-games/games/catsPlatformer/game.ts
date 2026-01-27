@@ -4,6 +4,7 @@ import type { TestGameMeta } from "@/lib/registry/types";
 export const metadata: TestGameMeta = {
   title: "Cats platformer",
   description: "A platformer where a cat jumps between clouds to collect stars",
+  status: "archived",
 };
 
 const game: GameDefinition = {

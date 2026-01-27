@@ -1,5 +1,6 @@
 
 import { createNodeAdapters } from '../src/ai/pipeline/adapters/node';
+import { getImageGenerationConfig } from '../src/ai/assets';
 import { buildUIComponentPrompt } from '../src/ai/pipeline/prompt-builder';
 import { 
   createPanelSilhouette,
@@ -62,21 +63,25 @@ async function main() {
   console.log(`Output Directory: ${RUN_DIR}`);
   console.log('Parameters:', JSON.stringify(params, null, 2));
 
-  const apiKey = process.env.SCENARIO_API_KEY;
-  const apiSecret = process.env.SCENARIO_SECRET_API_KEY || process.env.SCENARIO_API_SECRET;
-
-  if (!apiKey || !apiSecret) {
-    console.error('Error: SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required');
+  const providerConfig = getImageGenerationConfig(process.env as unknown as import('../src/trpc/context').Env);
+  if (!providerConfig.configured) {
+    console.error(`Error: ${providerConfig.error}`);
     process.exit(1);
   }
 
-  const adapters = await createNodeAdapters({
-    scenarioApiKey: apiKey,
-    scenarioApiSecret: apiSecret,
+  const adapterOptions: Parameters<typeof createNodeAdapters>[0] = {
+    provider: providerConfig.provider,
     r2Bucket: 'slopcade-assets-dev',
     wranglerCwd: process.cwd(),
     publicUrlBase: 'http://localhost:8787/assets',
-  });
+    scenarioApiKey: providerConfig.provider === 'scenario' ? process.env.SCENARIO_API_KEY : undefined,
+    scenarioApiSecret: providerConfig.provider === 'scenario' ? process.env.SCENARIO_SECRET_API_KEY : undefined,
+    runpodApiKey: (providerConfig.provider === 'runpod' || providerConfig.provider === 'comfyui') ? process.env.RUNPOD_API_KEY : undefined,
+    comfyuiEndpoint: providerConfig.provider === 'comfyui' ? `https://api.runpod.ai/v2/${process.env.RUNPOD_COMFYUI_ENDPOINT_ID}` : undefined,
+  };
+
+  console.log(`Using provider: ${providerConfig.provider}`);
+  const adapters = await createNodeAdapters(adapterOptions);
 
   fs.mkdirSync(RUN_DIR, { recursive: true });
 
@@ -87,7 +92,7 @@ async function main() {
   const silhouettePng = await generateSilhouette(controlType);
   
   console.log('Uploading silhouette...');
-  const silhouetteAssetId = await adapters.scenario.uploadImage(silhouettePng);
+  const silhouetteAssetId = await adapters.provider.uploadImage(silhouettePng);
   console.log(`Silhouette uploaded: ${silhouetteAssetId}`);
 
   for (const theme of params.themes) {
@@ -121,19 +126,19 @@ async function main() {
 
         try {
           console.log('  Generating image...');
-          const img2imgResult = await adapters.scenario.img2img({
+          const img2imgResult = await adapters.provider.img2img({
             imageAssetId: silhouetteAssetId,
             prompt: fullPrompt,
             strength: strength,
           });
 
-          const { buffer: generatedBuffer } = await adapters.scenario.downloadImage(img2imgResult.assetId);
+          const { buffer: generatedBuffer } = await adapters.provider.downloadImage(img2imgResult.assetId);
           const generatedPath = path.join(runDir, 'generated-normal.png');
           fs.writeFileSync(generatedPath, generatedBuffer);
 
           console.log('  Skipping background removal for comparison experiment...');
-          // const bgRemoveResult = await adapters.scenario.removeBackground(img2imgResult.assetId);
-          // const { buffer: finalBuffer } = await adapters.scenario.downloadImage(bgRemoveResult.assetId);
+          // const bgRemoveResult = await adapters.provider.removeBackground(img2imgResult.assetId);
+          // const { buffer: finalBuffer } = await adapters.provider.downloadImage(bgRemoveResult.assetId);
           const finalPath = path.join(runDir, 'final-normal.png');
           fs.writeFileSync(finalPath, generatedBuffer); // Use generated as final for now
 

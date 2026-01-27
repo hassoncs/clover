@@ -6,7 +6,7 @@
 
 # Interface: PayoutConfig
 
-Defined in: [types/GameDefinition.ts:399](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L399)
+Defined in: [types/GameDefinition.ts:400](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L400)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:399](https://github.com/hassoncs/clover/blo
 
 > **symbolIndex**: `number`
 
-Defined in: [types/GameDefinition.ts:400](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L400)
+Defined in: [types/GameDefinition.ts:401](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L401)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [types/GameDefinition.ts:400](https://github.com/hassoncs/clover/blo
 
 > **counts**: `Record`\<`number`, `number`\>
 
-Defined in: [types/GameDefinition.ts:401](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L401)
+Defined in: [types/GameDefinition.ts:402](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L402)

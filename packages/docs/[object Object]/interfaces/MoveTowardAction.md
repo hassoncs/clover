@@ -6,7 +6,7 @@
 
 # Interface: MoveTowardAction
 
-Defined in: [types/rules.ts:318](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L318)
+Defined in: [types/rules.ts:326](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L326)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:318](https://github.com/hassoncs/clover/blob/5a10349
 
 > **type**: `"move_toward"`
 
-Defined in: [types/rules.ts:319](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L319)
+Defined in: [types/rules.ts:327](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L327)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:319](https://github.com/hassoncs/clover/blob/5a10349
 
 > **target**: [`EntityTarget`](../type-aliases/EntityTarget.md)
 
-Defined in: [types/rules.ts:320](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L320)
+Defined in: [types/rules.ts:328](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L328)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:320](https://github.com/hassoncs/clover/blob/5a10349
 
 > **towardEntity**: [`EntityTarget`](../type-aliases/EntityTarget.md)
 
-Defined in: [types/rules.ts:321](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L321)
+Defined in: [types/rules.ts:329](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L329)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/rules.ts:321](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **axis**: `"x"` \| `"y"` \| `"both"`
 
-Defined in: [types/rules.ts:322](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L322)
+Defined in: [types/rules.ts:330](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L330)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [types/rules.ts:322](https://github.com/hassoncs/clover/blob/5a10349
 
 > **speed**: `Value`\<`number`\>
 
-Defined in: [types/rules.ts:323](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L323)
+Defined in: [types/rules.ts:331](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L331)
 
 ***
 
@@ -54,4 +54,4 @@ Defined in: [types/rules.ts:323](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **maxSpeed**: `Value`\<`number`\>
 
-Defined in: [types/rules.ts:324](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L324)
+Defined in: [types/rules.ts:332](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L332)

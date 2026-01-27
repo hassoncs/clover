@@ -4,6 +4,7 @@ import type { TestGameMeta } from "@/lib/registry/types";
 export const metadata: TestGameMeta = {
   title: "2048",
   description: "Slide tiles to combine matching numbers and reach 2048!",
+  status: "archived",
 };
 
 const GRID_SIZE = 4;

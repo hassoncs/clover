@@ -8,7 +8,7 @@
 
 > **selectVariantByIndex**(`sheet`, `groupId`, `index`): \{ `entryId`: `string`; `region`: \{ `x`: `number`; `y`: `number`; `w`: `number`; `h`: `number`; \}; \} \| `null`
 
-Defined in: [types/asset-sheet.ts:255](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L255)
+Defined in: [types/asset-sheet.ts:255](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L255)
 
 Select a variant by index (for deterministic Match-3 mapping)
 Uses group.order if available, else falls back to sorted keys

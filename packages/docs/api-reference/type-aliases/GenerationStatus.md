@@ -8,4 +8,4 @@
 
 > **GenerationStatus** = `"queued"` \| `"running"` \| `"succeeded"` \| `"failed"` \| `"canceled"`
 
-Defined in: [types/asset-system.ts:6](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-system.ts#L6)
+Defined in: [types/asset-system.ts:6](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-system.ts#L6)

@@ -4,6 +4,7 @@ import type { TestGameMeta } from "@/lib/registry/types";
 export const metadata: TestGameMeta = {
   title: "Fruit Slots",
   description: "Classic 5-reel fruit machine with free spins and bonuses",
+  status: "archived",
 };
 
 // Configuration constants

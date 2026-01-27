@@ -6,7 +6,7 @@
 
 # Interface: ImageSpriteComponent
 
-Defined in: [types/sprite.ts:40](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/sprite.ts#L40)
+Defined in: [types/sprite.ts:40](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/sprite.ts#L40)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/sprite.ts:40](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **color**: `string`
 
-Defined in: [types/sprite.ts:15](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/sprite.ts#L15)
+Defined in: [types/sprite.ts:15](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/sprite.ts#L15)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/sprite.ts:15](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **strokeColor**: `string`
 
-Defined in: [types/sprite.ts:16](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/sprite.ts#L16)
+Defined in: [types/sprite.ts:16](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/sprite.ts#L16)
 
 #### Inherited from
 
@@ -42,7 +42,7 @@ Defined in: [types/sprite.ts:16](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **strokeWidth**: `number`
 
-Defined in: [types/sprite.ts:17](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/sprite.ts#L17)
+Defined in: [types/sprite.ts:17](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/sprite.ts#L17)
 
 #### Inherited from
 
@@ -54,7 +54,7 @@ Defined in: [types/sprite.ts:17](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **opacity**: `number`
 
-Defined in: [types/sprite.ts:18](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/sprite.ts#L18)
+Defined in: [types/sprite.ts:18](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/sprite.ts#L18)
 
 #### Inherited from
 
@@ -66,7 +66,7 @@ Defined in: [types/sprite.ts:18](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **shadow**: [`ShadowEffect`](ShadowEffect.md)
 
-Defined in: [types/sprite.ts:19](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/sprite.ts#L19)
+Defined in: [types/sprite.ts:19](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/sprite.ts#L19)
 
 #### Inherited from
 
@@ -78,7 +78,7 @@ Defined in: [types/sprite.ts:19](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **tint**: `string`
 
-Defined in: [types/sprite.ts:20](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/sprite.ts#L20)
+Defined in: [types/sprite.ts:20](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/sprite.ts#L20)
 
 #### Inherited from
 
@@ -90,7 +90,7 @@ Defined in: [types/sprite.ts:20](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **effects**: [`EffectChain`](../type-aliases/EffectChain.md)
 
-Defined in: [types/sprite.ts:21](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/sprite.ts#L21)
+Defined in: [types/sprite.ts:21](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/sprite.ts#L21)
 
 #### Inherited from
 
@@ -102,7 +102,7 @@ Defined in: [types/sprite.ts:21](https://github.com/hassoncs/clover/blob/5a10349
 
 > **type**: `"image"`
 
-Defined in: [types/sprite.ts:41](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/sprite.ts#L41)
+Defined in: [types/sprite.ts:41](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/sprite.ts#L41)
 
 #### Overrides
 
@@ -114,7 +114,7 @@ Defined in: [types/sprite.ts:41](https://github.com/hassoncs/clover/blob/5a10349
 
 > **imageUrl**: `string`
 
-Defined in: [types/sprite.ts:42](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/sprite.ts#L42)
+Defined in: [types/sprite.ts:42](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/sprite.ts#L42)
 
 ***
 
@@ -122,7 +122,7 @@ Defined in: [types/sprite.ts:42](https://github.com/hassoncs/clover/blob/5a10349
 
 > **imageWidth**: `number`
 
-Defined in: [types/sprite.ts:43](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/sprite.ts#L43)
+Defined in: [types/sprite.ts:43](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/sprite.ts#L43)
 
 ***
 
@@ -130,4 +130,4 @@ Defined in: [types/sprite.ts:43](https://github.com/hassoncs/clover/blob/5a10349
 
 > **imageHeight**: `number`
 
-Defined in: [types/sprite.ts:44](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/sprite.ts#L44)
+Defined in: [types/sprite.ts:44](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/sprite.ts#L44)

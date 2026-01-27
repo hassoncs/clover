@@ -6,7 +6,7 @@
 
 # Interface: FrameTrigger
 
-Defined in: [types/rules.ts:58](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L58)
+Defined in: [types/rules.ts:59](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L59)
 
 ## Properties
 
@@ -14,4 +14,4 @@ Defined in: [types/rules.ts:58](https://github.com/hassoncs/clover/blob/5a103498
 
 > **type**: `"frame"`
 
-Defined in: [types/rules.ts:59](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L59)
+Defined in: [types/rules.ts:60](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L60)

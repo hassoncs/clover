@@ -11,7 +11,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./schema": "./src/schema/index.ts",
-    "./schema/*": "./src/schema/*.ts"
+    "./schema/*": "./src/schema/*.ts",
+    "./utils/asset-url": "./src/utils/asset-url.ts",
+    "./utils/*": "./src/utils/*.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.38.3",

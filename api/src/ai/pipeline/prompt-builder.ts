@@ -1,51 +1,21 @@
-import type { AssetSpec, EntitySpec, BackgroundSpec, TitleHeroSpec, ParallaxSpec, SpriteStyle, SpriteSheetSpec, TileSheetSpec, VariationSheetSpec, UIComponentSheetSpec, SheetPromptConfig } from './types';
+import type { AssetSpec, EntitySpec, BackgroundSpec, TitleHeroSpec, TitleHeroNoBgSpec, ParallaxSpec, SpriteStyle, SpriteSheetSpec, TileSheetSpec, VariationSheetSpec, UIComponentSheetSpec, SheetPromptConfig } from './types';
 import { STYLE_DESCRIPTORS } from './types';
 
 type SheetSpec = SpriteSheetSpec | TileSheetSpec | VariationSheetSpec | UIComponentSheetSpec;
 
-function describeShapeSilhouette(shape: 'box' | 'circle', width: number, height: number): string {
-  if (shape === 'circle') {
-    return 'PERFECTLY CIRCULAR. The object is round like a ball or orb.';
-  }
-  const ratio = width / height;
-  if (ratio > 4) return `EXTREMELY WIDE HORIZONTAL BAR (${ratio.toFixed(1)}:1).`;
-  if (ratio > 2) return `WIDE HORIZONTAL RECTANGLE (${ratio.toFixed(1)}:1).`;
-  if (ratio > 1.2) return `SLIGHTLY WIDE RECTANGLE (${ratio.toFixed(1)}:1).`;
-  if (ratio > 0.8) return `SQUARE-ISH (${ratio.toFixed(2)}:1).`;
-  if (ratio > 0.5) return `SLIGHTLY TALL RECTANGLE (1:${(1/ratio).toFixed(1)}).`;
-  return `TALL VERTICAL RECTANGLE (1:${(1/ratio).toFixed(1)}).`;
-}
-
 export function buildEntityPrompt(spec: EntitySpec, theme: string, style: SpriteStyle): string {
   const styleDesc = STYLE_DESCRIPTORS[style];
-  const shapeDesc = describeShapeSilhouette(spec.shape, spec.width, spec.height);
 
   const lines = [
-    '=== CAMERA/VIEW (CRITICAL) ===',
-    'FRONT VIEW. Camera is directly facing the front of the object.',
-    'Flat, 2D perspective. NO 3D rotation, NO angled view.',
-    '',
-    '=== SHAPE (CRITICAL) ===',
-    shapeDesc,
-    '',
-    '=== COMPOSITION ===',
-    'The object FILLS THE ENTIRE FRAME. No empty space around it.',
-    '',
-    '=== SUBJECT ===',
-    `A ${spec.description} for a video game.`,
-    `Style: ${theme}`,
-    '',
-    '=== STYLE ===',
-    styleDesc.aesthetic,
-    '',
-    '=== TECHNICAL ===',
-    'Transparent background (alpha channel).',
-    styleDesc.technical,
-    'Single object only, no duplicates.',
-    'No text, watermarks, or signatures.',
+    `${spec.description} for a video game.`,
+    `Theme: ${theme}`,
+    `Style: ${styleDesc.aesthetic}`,
+    'Front view, flat 2D perspective.',
+    'Transparent background.',
+    'Single object, no duplicates, no text.',
   ];
 
-  return lines.join('\n');
+  return lines.join(' ');
 }
 
 export function buildBackgroundPrompt(spec: BackgroundSpec): string {
@@ -56,7 +26,7 @@ export function buildBackgroundPrompt(spec: BackgroundSpec): string {
   ].join(' ');
 }
 
-export function buildTitleHeroPrompt(spec: TitleHeroSpec): string {
+export function buildTitleHeroPrompt(spec: TitleHeroSpec | TitleHeroNoBgSpec): string {
   return [
     `A stylized game title logo that says "${spec.title}".`,
     'Bold, playful 3D text with depth and shadows.',
@@ -233,6 +203,9 @@ export function buildPromptForSpec(spec: AssetSpec, theme: string, style: Sprite
       prompt = buildBackgroundPrompt(spec);
       break;
     case 'title_hero':
+      prompt = buildTitleHeroPrompt(spec);
+      break;
+    case 'title_hero_no_bg':
       prompt = buildTitleHeroPrompt(spec);
       break;
     case 'parallax':

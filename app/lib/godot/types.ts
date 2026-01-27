@@ -30,6 +30,14 @@ export interface SensorEvent {
   otherColliderId: number;
 }
 
+export interface EntitySpawnedEvent {
+  entityId: string;
+  template: string;
+  generation: number;
+  tags: string[];
+  transform: EntityTransform & { scaleX: number; scaleY: number };
+}
+
 export interface RaycastHit {
   bodyId: number;
   colliderId: number;
@@ -256,6 +264,7 @@ export interface GodotBridge {
   // Events
   onCollision(callback: (event: CollisionEvent) => void): () => void;
   onEntityDestroyed(callback: (entityId: string) => void): () => void;
+  onEntitySpawned(callback: (event: EntitySpawnedEvent) => void): () => void;
   onSensorBegin(callback: (event: SensorEvent) => void): () => void;
   onSensorEnd(callback: (event: SensorEvent) => void): () => void;
   onTransformSync(callback: (transforms: Record<string, EntityTransform>) => void): () => void;

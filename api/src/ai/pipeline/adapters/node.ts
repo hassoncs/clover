@@ -1,4 +1,4 @@
-import type { PipelineAdapters, ScenarioAdapter, R2Adapter, SilhouetteAdapter, DebugSink, DebugEvent } from '../types';
+import type { PipelineAdapters, ImageGenerationAdapter, R2Adapter, SilhouetteAdapter, DebugSink, DebugEvent } from '../types';
 import { ComfyUIClient } from '../../comfyui';
 import { RunPodClient } from '../../runpod';
 
@@ -57,7 +57,7 @@ async function pollJob(config: NodeScenarioConfig, jobId: string, maxAttempts = 
   throw new Error(`Job timed out after ${maxAttempts * 2} seconds`);
 }
 
-export function createNodeScenarioAdapter(config: NodeScenarioConfig): ScenarioAdapter {
+export function createNodeScenarioAdapter(config: NodeScenarioConfig): ImageGenerationAdapter {
   return {
     async uploadImage(png: Uint8Array): Promise<string> {
       const res = await scenarioRequest<{ asset?: { id?: string } }>(config, 'POST', '/assets', {
@@ -191,17 +191,22 @@ export async function createNodeSilhouetteAdapter(): Promise<SilhouetteAdapter> 
       const x = Math.floor((canvasSize - shapeWidth) / 2);
       const y = Math.floor((canvasSize - shapeHeight) / 2);
 
+      const minDimension = Math.min(shapeWidth, shapeHeight);
+      const needsStroke = minDimension < 30;
+      const strokeWidth = needsStroke ? Math.max(4, Math.floor(minDimension * 0.3)) : 0;
+      const strokeAttr = needsStroke ? `stroke="#333333" stroke-width="${strokeWidth}"` : '';
+
       let svg: string;
       if (params.shape === 'circle') {
         const radius = Math.min(shapeWidth, shapeHeight) / 2;
         svg = `<svg width="${canvasSize}" height="${canvasSize}">
           <rect width="${canvasSize}" height="${canvasSize}" fill="white"/>
-          <circle cx="${canvasSize/2}" cy="${canvasSize/2}" r="${radius}" fill="${fillColor}"/>
+          <circle cx="${canvasSize/2}" cy="${canvasSize/2}" r="${radius}" fill="${fillColor}" ${strokeAttr}/>
         </svg>`;
       } else {
         svg = `<svg width="${canvasSize}" height="${canvasSize}">
           <rect width="${canvasSize}" height="${canvasSize}" fill="white"/>
-          <rect x="${x}" y="${y}" width="${shapeWidth}" height="${shapeHeight}" fill="${fillColor}" rx="8"/>
+          <rect x="${x}" y="${y}" width="${shapeWidth}" height="${shapeHeight}" fill="${fillColor}" rx="8" ${strokeAttr}/>
         </svg>`;
       }
 
@@ -216,7 +221,7 @@ interface ComfyUIAdapterConfig {
   apiKey?: string;
 }
 
-export function createNodeComfyUIAdapter(config: ComfyUIAdapterConfig): ScenarioAdapter {
+export function createNodeComfyUIAdapter(config: ComfyUIAdapterConfig): ImageGenerationAdapter {
   const client = new ComfyUIClient({
     endpoint: config.endpoint,
     apiKey: config.apiKey,
@@ -269,7 +274,7 @@ interface RunPodAdapterConfig {
   bgRemovalEndpointId?: string;
 }
 
-export function createNodeRunPodAdapter(config: RunPodAdapterConfig): ScenarioAdapter {
+export function createNodeRunPodAdapter(config: RunPodAdapterConfig): ImageGenerationAdapter {
   const client = new RunPodClient({
     apiKey: config.apiKey,
     sdxlEndpointId: config.sdxlEndpointId,
@@ -330,7 +335,7 @@ export interface NodeAdaptersOptions {
 export async function createNodeAdapters(options: NodeAdaptersOptions): Promise<PipelineAdapters> {
   const provider = options.provider ?? 'scenario';
 
-  let imageAdapter: ScenarioAdapter;
+  let imageAdapter: ImageGenerationAdapter;
 
   if (provider === 'runpod') {
     if (!options.runpodApiKey) {
@@ -361,6 +366,7 @@ export async function createNodeAdapters(options: NodeAdaptersOptions): Promise<
   }
 
   return {
+    provider: imageAdapter,
     scenario: imageAdapter,
     r2: createNodeR2Adapter({
       bucket: options.r2Bucket,
@@ -405,6 +411,24 @@ export function createFileDebugSink(outputDir: string): DebugSink {
       if (event.r2Keys?.length) {
         console.log(`  R2 Keys: ${event.r2Keys.join(', ')}`);
       }
+
+      const assetDir = path.join(outputDir, event.assetId);
+      fs.mkdirSync(assetDir, { recursive: true });
+      const metadataPath = path.join(assetDir, 'metadata.json');
+
+      const metadata = {
+        gameId: event.gameId,
+        packId: event.packId,
+        assetId: event.generatedAssetId,
+        specId: event.assetId,
+        r2Key: event.r2Keys?.[0],
+        publicUrl: event.publicUrls?.[0],
+        pipelineRunId: event.runId,
+        generatedAt: new Date().toISOString(),
+      };
+
+      fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2), 'utf-8');
+      console.log(`  [DEBUG] Saved: ${metadataPath}`);
     }
   };
 }

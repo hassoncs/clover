@@ -6,7 +6,7 @@
 
 # Interface: HolographicEffect
 
-Defined in: [types/effects.ts:93](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L93)
+Defined in: [types/effects.ts:93](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L93)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/effects.ts:93](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L48)
+Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L48)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **opacity**: `number`
 
-Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L49)
+Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L49)
 
 #### Inherited from
 
@@ -42,7 +42,7 @@ Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **blendMode**: [`EffectBlendMode`](../type-aliases/EffectBlendMode.md)
 
-Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L50)
+Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L50)
 
 #### Inherited from
 
@@ -54,7 +54,7 @@ Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **id**: `string`
 
-Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L51)
+Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L51)
 
 #### Inherited from
 
@@ -66,7 +66,7 @@ Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/5a1034
 
 > **type**: `"holographic"`
 
-Defined in: [types/effects.ts:94](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L94)
+Defined in: [types/effects.ts:94](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L94)
 
 #### Overrides
 
@@ -78,7 +78,7 @@ Defined in: [types/effects.ts:94](https://github.com/hassoncs/clover/blob/5a1034
 
 > **speed**: `number`
 
-Defined in: [types/effects.ts:95](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L95)
+Defined in: [types/effects.ts:95](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L95)
 
 ***
 
@@ -86,7 +86,7 @@ Defined in: [types/effects.ts:95](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **saturation**: `number`
 
-Defined in: [types/effects.ts:96](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L96)
+Defined in: [types/effects.ts:96](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L96)
 
 ***
 
@@ -94,7 +94,7 @@ Defined in: [types/effects.ts:96](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **scanlines**: `boolean`
 
-Defined in: [types/effects.ts:97](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L97)
+Defined in: [types/effects.ts:97](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L97)
 
 ***
 
@@ -102,4 +102,4 @@ Defined in: [types/effects.ts:97](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **scanlineSpacing**: `number`
 
-Defined in: [types/effects.ts:98](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L98)
+Defined in: [types/effects.ts:98](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L98)

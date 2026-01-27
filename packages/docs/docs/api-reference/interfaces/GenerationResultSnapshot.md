@@ -6,7 +6,7 @@
 
 # Interface: GenerationResultSnapshot
 
-Defined in: [types/asset-system.ts:68](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-system.ts#L68)
+Defined in: [types/asset-system.ts:68](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-system.ts#L68)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/asset-system.ts:68](https://github.com/hassoncs/clover/blob/5
 
 > **jobId**: `string`
 
-Defined in: [types/asset-system.ts:69](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-system.ts#L69)
+Defined in: [types/asset-system.ts:69](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-system.ts#L69)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/asset-system.ts:69](https://github.com/hassoncs/clover/blob/5
 
 > **taskId**: `string`
 
-Defined in: [types/asset-system.ts:70](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-system.ts#L70)
+Defined in: [types/asset-system.ts:70](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-system.ts#L70)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/asset-system.ts:70](https://github.com/hassoncs/clover/blob/5
 
 > **compiledPrompt**: `string`
 
-Defined in: [types/asset-system.ts:71](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-system.ts#L71)
+Defined in: [types/asset-system.ts:71](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-system.ts#L71)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/asset-system.ts:71](https://github.com/hassoncs/clover/blob/5
 
 > **createdAt**: `number`
 
-Defined in: [types/asset-system.ts:72](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-system.ts#L72)
+Defined in: [types/asset-system.ts:72](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-system.ts#L72)

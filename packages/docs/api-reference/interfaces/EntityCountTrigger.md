@@ -6,7 +6,7 @@
 
 # Interface: EntityCountTrigger
 
-Defined in: [types/rules.ts:46](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L46)
+Defined in: [types/rules.ts:47](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L47)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:46](https://github.com/hassoncs/clover/blob/5a103498
 
 > **type**: `"entity_count"`
 
-Defined in: [types/rules.ts:47](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L47)
+Defined in: [types/rules.ts:48](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L48)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:47](https://github.com/hassoncs/clover/blob/5a103498
 
 > **tag**: `string`
 
-Defined in: [types/rules.ts:48](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L48)
+Defined in: [types/rules.ts:49](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L49)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:48](https://github.com/hassoncs/clover/blob/5a103498
 
 > **count**: `number`
 
-Defined in: [types/rules.ts:49](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L49)
+Defined in: [types/rules.ts:50](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L50)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/rules.ts:49](https://github.com/hassoncs/clover/blob/5a103498
 
 > **comparison**: `"gte"` \| `"lte"` \| `"eq"` \| `"zero"`
 
-Defined in: [types/rules.ts:50](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L50)
+Defined in: [types/rules.ts:51](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L51)

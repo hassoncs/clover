@@ -4,6 +4,7 @@ import type { TestGameMeta } from "@/lib/registry/types";
 export const metadata: TestGameMeta = {
   title: "Block Drop",
   description: "Drop colored blocks into columns. Match adjacent same-colored blocks to merge and score!",
+  status: "archived",
 };
 
 const WORLD_WIDTH = 12;

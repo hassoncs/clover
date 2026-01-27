@@ -8,7 +8,7 @@
 
 > **isTunable**(`v`): `boolean`
 
-Defined in: [types/GameDefinition.ts:259](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L259)
+Defined in: [types/GameDefinition.ts:260](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L260)
 
 Check if a variable has tuning metadata
 

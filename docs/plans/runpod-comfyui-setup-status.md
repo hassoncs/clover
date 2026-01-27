@@ -86,11 +86,75 @@ Comprehensive document covering:
 
 ```bash
 # Image Generation Provider
-IMAGE_GENERATION_PROVIDER=comfyui  # 'scenario' | 'comfyui'
+IMAGE_GENERATION_PROVIDER=comfyui  # 'scenario' | 'comfyui' | 'runpod'
 
 # RunPod (for ComfyUI serverless)
 RUNPOD_API_KEY=
 RUNPOD_COMFYUI_ENDPOINT_ID=
+```
+
+### 7. Runtime Type Bindings
+
+**Location**: `api/src/trpc/context.ts`
+
+The following env vars are typed and available via `ctx.env`:
+
+| Variable | Type | Required For | Description |
+|----------|------|--------------|-------------|
+| `IMAGE_GENERATION_PROVIDER` | `'scenario' \| 'comfyui' \| 'runpod'` | All | Provider selection |
+| `RUNPOD_API_KEY` | `string` | `runpod` provider | RunPod API key |
+| `RUNPOD_COMFYUI_ENDPOINT_ID` | `string` | `runpod` provider | Serverless endpoint ID |
+| `COMFYUI_ENDPOINT` | `string` | `comfyui` provider | Direct ComfyUI endpoint URL |
+| `SCENARIO_API_KEY` | `string` | `scenario` provider | Scenario.com API key |
+| `SCENARIO_SECRET_API_KEY` | `string` | `scenario` provider | Scenario.com secret key |
+
+---
+
+## Secrets Configuration
+
+### Local Development
+
+1. Copy `.hush.template` to `.hush`:
+   ```bash
+   cp .hush.template .hush
+   ```
+
+2. Fill in the values:
+   ```bash
+   IMAGE_GENERATION_PROVIDER=runpod
+   RUNPOD_API_KEY=your-runpod-api-key
+   RUNPOD_COMFYUI_ENDPOINT_ID=your-endpoint-id
+   ```
+
+3. Encrypt for local development:
+   ```bash
+   pnpm hush:encrypt
+   ```
+
+### Cloudflare Workers Deployment
+
+For production deployment, secrets must be set via Wrangler:
+
+```bash
+# Set each secret individually (prompts for value)
+wrangler secret put RUNPOD_API_KEY
+wrangler secret put RUNPOD_COMFYUI_ENDPOINT_ID
+wrangler secret put IMAGE_GENERATION_PROVIDER
+
+# Or set all at once via .env.production (not recommended for sensitive values)
+npx wrangler secret bulk < .env.production.secrets
+```
+
+**Important**: Never commit `.hush` or actual secret values to version control.
+
+### Provider Selection Flow
+
+```
+ctx.env.IMAGE_GENERATION_PROVIDER
+    ↓
+    ├─→ 'scenario' → Uses SCENARIO_API_KEY, SCENARIO_SECRET_API_KEY
+    ├─→ 'comfyui'  → Uses COMFYUI_ENDPOINT (optional, defaults to cloud.comfy.org)
+    └─→ 'runpod'   → Uses RUNPOD_API_KEY, RUNPOD_COMFYUI_ENDPOINT_ID
 ```
 
 ---
@@ -145,6 +209,7 @@ Error: clip_name: not in []
 
 ### Phase 3: Configure Environment
 
+#### Local Development
 - [ ] Update `.hush`:
   ```bash
   RUNPOD_API_KEY=<your-api-key>
@@ -152,6 +217,15 @@ Error: clip_name: not in []
   IMAGE_GENERATION_PROVIDER=comfyui
   ```
 - [ ] Encrypt: `pnpm hush:encrypt`
+
+#### Production Deployment
+- [ ] Set Cloudflare Workers secrets:
+  ```bash
+  wrangler secret put RUNPOD_API_KEY
+  wrangler secret put RUNPOD_COMFYUI_ENDPOINT_ID
+  wrangler secret put IMAGE_GENERATION_PROVIDER
+  ```
+  When prompted, enter the value for each secret.
 
 ### Phase 4: Test
 
@@ -177,7 +251,11 @@ Error: clip_name: not in []
 
 ### Phase 5: Switch Provider
 
-- [ ] Update `IMAGE_GENERATION_PROVIDER=comfyui` in production
+- [ ] Set production provider secret:
+  ```bash
+  wrangler secret put IMAGE_GENERATION_PROVIDER
+  # Enter: comfyui
+  ```
 - [ ] Monitor for errors
 - [ ] Keep Scenario.com credentials as fallback
 
@@ -214,7 +292,8 @@ docs/plans/runpod-comfyui-setup-status.md (this file)
 
 ### Modified Files
 ```
-.hush.template (added RunPod env vars)
+api/src/trpc/context.ts (added Env type bindings)
+.hush.template (added RunPod and provider selection env vars)
 ```
 
 ### Existing Files (unchanged, still using Scenario.com)

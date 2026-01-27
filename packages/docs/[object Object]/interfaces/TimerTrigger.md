@@ -6,7 +6,7 @@
 
 # Interface: TimerTrigger
 
-Defined in: [types/rules.ts:34](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L34)
+Defined in: [types/rules.ts:35](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L35)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:34](https://github.com/hassoncs/clover/blob/5a103498
 
 > **type**: `"timer"`
 
-Defined in: [types/rules.ts:35](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L35)
+Defined in: [types/rules.ts:36](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L36)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:35](https://github.com/hassoncs/clover/blob/5a103498
 
 > **time**: `number`
 
-Defined in: [types/rules.ts:36](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L36)
+Defined in: [types/rules.ts:37](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L37)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/rules.ts:36](https://github.com/hassoncs/clover/blob/5a103498
 
 > `optional` **repeat**: `boolean`
 
-Defined in: [types/rules.ts:37](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L37)
+Defined in: [types/rules.ts:38](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L38)

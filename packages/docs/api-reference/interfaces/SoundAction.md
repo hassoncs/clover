@@ -6,7 +6,7 @@
 
 # Interface: SoundAction
 
-Defined in: [types/rules.ts:250](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L250)
+Defined in: [types/rules.ts:258](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L258)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:250](https://github.com/hassoncs/clover/blob/5a10349
 
 > **type**: `"sound"`
 
-Defined in: [types/rules.ts:251](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L251)
+Defined in: [types/rules.ts:259](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L259)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:251](https://github.com/hassoncs/clover/blob/5a10349
 
 > **soundId**: `string`
 
-Defined in: [types/rules.ts:252](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L252)
+Defined in: [types/rules.ts:260](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L260)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/rules.ts:252](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **volume**: `number`
 
-Defined in: [types/rules.ts:253](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L253)
+Defined in: [types/rules.ts:261](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L261)

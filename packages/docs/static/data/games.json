@@ -3,7 +3,6 @@
     "id": "ballSort",
     "title": "Ball Sort",
     "description": "Sort colored balls into tubes - each tube should contain only one color",
-    "gameId": "test-ball-sort",
     "sourcePath": "app/lib/test-games/games/ballSort/game.ts"
   },
   {

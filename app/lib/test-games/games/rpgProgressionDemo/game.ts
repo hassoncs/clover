@@ -4,6 +4,7 @@ import type { TestGameMeta } from "@/lib/registry/types";
 export const metadata: TestGameMeta = {
   title: "RPG Progression Demo",
   description: "Collect gems for XP and gold coins for resources. Level up to unlock abilities!",
+  status: "archived",
 };
 
 const WORLD_WIDTH = 12;

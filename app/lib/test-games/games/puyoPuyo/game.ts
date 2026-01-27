@@ -7,6 +7,7 @@ export const metadata: TestGameMeta = {
   title: "Puyo Puyo",
   description: "Match 4+ same-colored puyos to pop them and create chains!",
   titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
+  status: "archived",
 };
 
 const GRID_COLS = 6;

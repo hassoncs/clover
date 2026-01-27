@@ -1,18 +1,41 @@
-const LEGACY_URL_PREFIXES = [
+const PASSTHROUGH_PREFIXES = [
   'http://',
   'https://',
-  '/assets/',
   'data:',
   'res://',
 ] as const;
 
-export function isLegacyUrl(value: string): boolean {
+const RELATIVE_PATH_PREFIXES = ['/assets/'] as const;
+
+const R2_KEY_PREFIX = 'generated/' as const;
+
+export function isPassthroughUrl(value: string): boolean {
   if (!value || typeof value !== 'string') {
     return false;
   }
 
   const lowerValue = value.toLowerCase();
-  return LEGACY_URL_PREFIXES.some(prefix => lowerValue.startsWith(prefix));
+  return PASSTHROUGH_PREFIXES.some(prefix => lowerValue.startsWith(prefix));
+}
+
+export function isRelativePath(value: string): boolean {
+  if (!value || typeof value !== 'string') {
+    return false;
+  }
+
+  return RELATIVE_PATH_PREFIXES.some(prefix => value.startsWith(prefix));
+}
+
+export function isStoredR2Key(value: string): boolean {
+  if (!value || typeof value !== 'string') {
+    return false;
+  }
+
+  return value.startsWith(R2_KEY_PREFIX);
+}
+
+export function isLegacyUrl(value: string): boolean {
+  return isPassthroughUrl(value) || isRelativePath(value);
 }
 
 export function constructAssetUrl(
@@ -39,12 +62,18 @@ export function resolveAssetReference(
   gameId?: string,
   packId?: string
 ): string {
-  if (isLegacyUrl(value)) {
-    if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('data:') || value.startsWith('res://')) {
-      return value;
-    }
-    const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  if (isPassthroughUrl(value)) {
+    return value;
+  }
+
+  const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+
+  if (isRelativePath(value)) {
     return `${cleanBaseUrl}${value}`;
+  }
+
+  if (isStoredR2Key(value)) {
+    return `${cleanBaseUrl}/${value}`;
   }
 
   if (!gameId || !packId) {

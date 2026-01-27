@@ -4,6 +4,7 @@ import type { TestGameMeta } from "@/lib/registry/types";
 export const metadata: TestGameMeta = {
   title: "Ice Slide",
   description: "Push ice blocks to their goals - they slide until they hit something!",
+  status: "archived",
 };
 
 const GRID_SIZE = 7;

@@ -4,6 +4,7 @@ import type { TestGameMeta } from "@/lib/registry/types";
 export const metadata: TestGameMeta = {
   title: "Sports projectile",
   description: "A game where I launch balls at stacked blocks to knock them down",
+  status: "archived",
 };
 
 const game: GameDefinition = {

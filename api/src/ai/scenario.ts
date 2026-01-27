@@ -18,6 +18,9 @@ import {
   MIME_TO_EXT,
 } from './scenario-types';
 
+import type { ImageGenerationResult } from './provider-contract';
+import { ProviderError, ProviderErrorCode, tryGetPngDimensions } from './provider-contract';
+
 // Log level utility for production-safe debugging
 const LOG_LEVEL = process.env.LOG_LEVEL || 'INFO';
 const LOG_LEVELS: Record<string, number> = { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 };
@@ -368,6 +371,116 @@ export class ScenarioClient {
     return { jobId, assetIds, urls };
   }
 
+  async txt2imgResult(params: GenerationParams): Promise<ImageGenerationResult> {
+    try {
+      const modelId = params.modelId ?? SCENARIO_DEFAULTS.MODEL;
+      const width = params.width ?? SCENARIO_DEFAULTS.DEFAULT_WIDTH;
+      const height = params.height ?? SCENARIO_DEFAULTS.DEFAULT_HEIGHT;
+
+      const gen = await this.generate({ ...params, modelId, width, height });
+      const assetId = gen.assetIds[0];
+      if (!assetId) {
+        throw new Error('No assets generated');
+      }
+
+      const downloaded = await this.downloadAsset(assetId);
+      const buffer = new Uint8Array(downloaded.buffer);
+      const dims = tryGetPngDimensions(buffer);
+
+      return {
+        buffer,
+        providerAssetId: assetId,
+        mimeType: downloaded.mimeType,
+        metadata: {
+          provider: 'scenario',
+          providerJobId: gen.jobId,
+          modelId,
+          seed: params.seed,
+          width: dims?.width ?? width,
+          height: dims?.height ?? height,
+        },
+      };
+    } catch (err) {
+      throw new ProviderError({
+        provider: 'scenario',
+        code: classifyProviderError(err),
+        message: err instanceof Error ? err.message : 'Unknown Scenario error',
+        cause: err,
+      });
+    }
+  }
+
+  async img2imgResult(params: Img2ImgParams): Promise<ImageGenerationResult> {
+    try {
+      const modelId = params.modelId ?? SCENARIO_DEFAULTS.MODEL;
+      const gen = await this.generateImg2Img({ ...params, modelId });
+      const assetId = gen.assetIds[0];
+      if (!assetId) {
+        throw new Error('No assets generated');
+      }
+
+      const downloaded = await this.downloadAsset(assetId);
+      const buffer = new Uint8Array(downloaded.buffer);
+      const dims = tryGetPngDimensions(buffer);
+
+      return {
+        buffer,
+        providerAssetId: assetId,
+        mimeType: downloaded.mimeType,
+        metadata: {
+          provider: 'scenario',
+          providerJobId: gen.jobId,
+          modelId,
+          seed: params.seed,
+          width: dims?.width ?? SCENARIO_DEFAULTS.DEFAULT_WIDTH,
+          height: dims?.height ?? SCENARIO_DEFAULTS.DEFAULT_HEIGHT,
+        },
+      };
+    } catch (err) {
+      throw new ProviderError({
+        provider: 'scenario',
+        code: classifyProviderError(err),
+        message: err instanceof Error ? err.message : 'Unknown Scenario error',
+        cause: err,
+      });
+    }
+  }
+
+  async removeBackgroundResult(params: RemoveBackgroundParams): Promise<ImageGenerationResult> {
+    try {
+      const jobId = await this.createRemoveBackgroundJob(params);
+      const assetIds = await this.pollJobUntilComplete(jobId);
+      const assetId = assetIds[0];
+      if (!assetId) {
+        throw new Error('No assets generated from background removal');
+      }
+
+      const downloaded = await this.downloadAsset(assetId);
+      const buffer = new Uint8Array(downloaded.buffer);
+      const dims = tryGetPngDimensions(buffer);
+
+      return {
+        buffer,
+        providerAssetId: assetId,
+        mimeType: downloaded.mimeType,
+        metadata: {
+          provider: 'scenario',
+          providerJobId: jobId,
+          modelId: 'remove-background',
+          width: dims?.width ?? SCENARIO_DEFAULTS.DEFAULT_WIDTH,
+          height: dims?.height ?? SCENARIO_DEFAULTS.DEFAULT_HEIGHT,
+        },
+      };
+    } catch (err) {
+      throw new ProviderError({
+        provider: 'scenario',
+        code: classifyProviderError(err),
+        message: err instanceof Error ? err.message : 'Unknown Scenario error',
+        cause: err,
+      });
+    }
+  }
+
   async removeBackground(params: RemoveBackgroundParams): Promise<string> {
     const jobId = await this.createRemoveBackgroundJob(params);
     const assetIds = await this.pollJobUntilComplete(jobId);
@@ -391,6 +504,14 @@ export class ScenarioClient {
     }
     return btoa(binary);
   }
+}
+
+function classifyProviderError(err: unknown): ProviderErrorCode {
+  const msg = err instanceof Error ? err.message.toLowerCase() : '';
+  if (msg.includes('timed out') || msg.includes('timeout')) return ProviderErrorCode.PROVIDER_TIMEOUT;
+  if (msg.includes('rate limit') || msg.includes('429')) return ProviderErrorCode.RATE_LIMITED;
+  if (msg.includes('invalid') || msg.includes('missing')) return ProviderErrorCode.INPUT_INVALID;
+  return ProviderErrorCode.UNKNOWN_PROVIDER_ERROR;
 }
 
 export function createScenarioClient(env: {

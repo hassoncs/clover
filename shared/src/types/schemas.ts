@@ -10,7 +10,7 @@ import {
   VariableCategorySchema,
   VariableWithTuningSchema,
 } from '../expressions/schema-helpers';
-import { AssetSystemConfigSchema, AssetSourceSchema } from './asset-system';
+import { AssetSystemConfigSchema, AssetSourceSchema, PromptDefaultsSchema } from './asset-system';
 
 export const Vec2Schema = z.object({
   x: z.number(),
@@ -607,15 +607,20 @@ export const GameMetadataSchema = z.object({
   id: z.string(),
   title: z.string().min(1),
   description: z.string().optional(),
+  instructions: z.string().optional(),
   author: z.string().optional(),
   version: z.string(),
   createdAt: z.number().optional(),
   updatedAt: z.number().optional(),
   thumbnailUrl: z.string().optional(),
+  thumbnailAssetRef: z.string().optional(),
+  titleHeroImageUrl: z.string().optional(),
+  titleHeroAssetRef: z.string().optional(),
 });
 
 export const AssetConfigSchema = z.object({
   imageUrl: z.string().optional(),
+  assetRef: z.string().optional(),
   source: AssetSourceSchema.optional(),
   scale: z.number().optional(),
   offsetX: z.number().optional(),
@@ -627,7 +632,7 @@ export const AssetConfigSchema = z.object({
   })).optional(),
 });
 
-export const SpriteStyleSchema = z.enum(['pixel', 'cartoon', '3d', 'flat']);
+export const SpriteStyleSchema = z.string();
 
 export const AssetPackSchema = z.object({
   id: z.string(),
@@ -643,6 +648,7 @@ export const ParallaxLayerSchema = z.object({
   id: z.string(),
   name: z.string(),
   imageUrl: z.string().optional(),
+  assetRef: z.string().optional(),
   depth: ParallaxDepthSchema,
   parallaxFactor: z.number().min(0).max(1),
   scale: z.number().optional(),

@@ -48,15 +48,29 @@ OPENROUTER_API_KEY=
 # Image Generation Provider
 # =============================================================================
 
-# Provider selection: scenario | runpod | comfyui
-# IMAGE_GENERATION_PROVIDER=comfyui
+# Provider selection: 'scenario' | 'comfyui' | 'runpod'
+# - 'scenario': Scenario.com (legacy, being phased out)
+# - 'comfyui': Direct ComfyUI endpoint (self-hosted or cloud.comfy.org)
+# - 'runpod': RunPod serverless ComfyUI (recommended for production)
+IMAGE_GENERATION_PROVIDER=
 
-# Scenario.com (legacy - being phased out)
+# -----------------------------------------------------------------------------
+# Scenario.com (legacy - kept for backward compatibility)
+# Get keys from: https://www.scenario.com/dashboard/api
+# -----------------------------------------------------------------------------
 # SCENARIO_API_KEY=
 # SCENARIO_SECRET_API_KEY=
 
-# RunPod (for ComfyUI serverless)
+# -----------------------------------------------------------------------------
+# RunPod Serverless (recommended for production)
 # Get API key from: https://www.runpod.io/console/serverless/user/settings
+# Get Endpoint ID from your serverless endpoint after deployment
+# -----------------------------------------------------------------------------
 # RUNPOD_API_KEY=
-# Endpoint ID from your serverless endpoint (e.g., pd3dqti6qlf5cs)
 # RUNPOD_COMFYUI_ENDPOINT_ID=
+
+# -----------------------------------------------------------------------------
+# Direct ComfyUI Endpoint (optional, for self-hosted or cloud.comfy.org)
+# Only needed if IMAGE_GENERATION_PROVIDER=comfyui and not using RunPod
+# -----------------------------------------------------------------------------
+# COMFYUI_ENDPOINT=https://your-comfyui-instance.com/api

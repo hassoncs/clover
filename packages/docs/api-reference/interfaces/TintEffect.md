@@ -6,7 +6,7 @@
 
 # Interface: TintEffect
 
-Defined in: [types/effects.ts:86](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L86)
+Defined in: [types/effects.ts:86](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L86)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/effects.ts:86](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L48)
+Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L48)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **opacity**: `number`
 
-Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L49)
+Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L49)
 
 #### Inherited from
 
@@ -42,7 +42,7 @@ Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **blendMode**: [`EffectBlendMode`](../type-aliases/EffectBlendMode.md)
 
-Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L50)
+Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L50)
 
 #### Inherited from
 
@@ -54,7 +54,7 @@ Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **id**: `string`
 
-Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L51)
+Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L51)
 
 #### Inherited from
 
@@ -66,7 +66,7 @@ Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/5a1034
 
 > **type**: `"tint"`
 
-Defined in: [types/effects.ts:87](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L87)
+Defined in: [types/effects.ts:87](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L87)
 
 #### Overrides
 
@@ -78,7 +78,7 @@ Defined in: [types/effects.ts:87](https://github.com/hassoncs/clover/blob/5a1034
 
 > **color**: `string`
 
-Defined in: [types/effects.ts:88](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L88)
+Defined in: [types/effects.ts:88](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L88)
 
 ***
 
@@ -86,7 +86,7 @@ Defined in: [types/effects.ts:88](https://github.com/hassoncs/clover/blob/5a1034
 
 > **intensity**: `number`
 
-Defined in: [types/effects.ts:89](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L89)
+Defined in: [types/effects.ts:89](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L89)
 
 ***
 
@@ -94,4 +94,4 @@ Defined in: [types/effects.ts:89](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **preserveLuminance**: `boolean`
 
-Defined in: [types/effects.ts:90](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L90)
+Defined in: [types/effects.ts:90](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L90)

@@ -1,8 +1,11 @@
-import type { PipelineAdapters, ScenarioAdapter, R2Adapter, SilhouetteAdapter } from './types';
-import type { ScenarioClient } from '../../scenario';
+import type { PipelineAdapters, ImageGenerationAdapter, R2Adapter, SilhouetteAdapter } from './types';
+import { createComfyUIClient } from '../../comfyui';
+import { createScenarioClient, type ScenarioClient } from '../../scenario';
 import { createSilhouettePng } from '../../assets';
+import type { Env } from '../../../trpc/context';
+import type { R2Bucket } from '@cloudflare/workers-types';
 
-export function createWorkersScenarioAdapter(client: ScenarioClient): ScenarioAdapter {
+export function createWorkersScenarioAdapter(client: ScenarioClient): ImageGenerationAdapter {
   return {
     async uploadImage(png: Uint8Array): Promise<string> {
       const arrayBuffer = png.buffer.slice(
@@ -46,6 +49,74 @@ export function createWorkersScenarioAdapter(client: ScenarioClient): ScenarioAd
   };
 }
 
+export function createWorkersComfyUIAdapter(env: Env): ImageGenerationAdapter {
+  if (!env.RUNPOD_API_KEY) {
+    throw new Error('RUNPOD_API_KEY required when using ComfyUI/RunPod image generation provider');
+  }
+  if (!env.RUNPOD_COMFYUI_ENDPOINT_ID) {
+    throw new Error('RUNPOD_COMFYUI_ENDPOINT_ID required when using ComfyUI/RunPod image generation provider');
+  }
+
+  const endpoint = `https://api.runpod.ai/v2/${env.RUNPOD_COMFYUI_ENDPOINT_ID}`;
+  const client = createComfyUIClient({
+    COMFYUI_ENDPOINT: endpoint,
+    RUNPOD_API_KEY: env.RUNPOD_API_KEY,
+  });
+
+  return {
+    async uploadImage(png: Uint8Array): Promise<string> {
+      return client.uploadImage(png);
+    },
+
+    async txt2img(params): Promise<{ assetId: string }> {
+      return client.txt2img({
+        prompt: params.prompt,
+        negativePrompt: params.negativePrompt,
+        width: params.width ?? 1024,
+        height: params.height ?? 1024,
+      });
+    },
+
+    async img2img(params): Promise<{ assetId: string }> {
+      return client.img2img({
+        image: params.imageAssetId,
+        prompt: params.prompt,
+        strength: params.strength ?? 0.95,
+      });
+    },
+
+    async downloadImage(assetId: string): Promise<{ buffer: Uint8Array; extension: string }> {
+      return client.downloadImage(assetId);
+    },
+
+    async removeBackground(assetId: string): Promise<{ assetId: string }> {
+      return client.removeBackground({ image: assetId });
+    },
+
+    async layeredDecompose(params): Promise<{ assetIds: string[] }> {
+      return client.layeredDecompose({
+        image: params.imageAssetId,
+        layerCount: params.layerCount,
+        description: params.description,
+      });
+    },
+  };
+}
+
+export function createWorkersProviderAdapter(env: Env): ImageGenerationAdapter {
+  const provider = env.IMAGE_GENERATION_PROVIDER;
+
+  if (provider === 'comfyui' || provider === 'runpod') {
+    return createWorkersComfyUIAdapter(env);
+  }
+
+  if (!env.SCENARIO_API_KEY || !env.SCENARIO_SECRET_API_KEY) {
+    throw new Error('SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using Scenario image generation provider');
+  }
+
+  return createWorkersScenarioAdapter(createScenarioClient(env));
+}
+
 export function createWorkersR2Adapter(r2Bucket: R2Bucket): R2Adapter {
   return {
     async put(key: string, body: Uint8Array, options?: { contentType?: string }): Promise<void> {
@@ -76,12 +147,17 @@ export function createWorkersSilhouetteAdapter(): SilhouetteAdapter {
   };
 }
 
+export function createWorkersAdapters(env: Env): PipelineAdapters;
+export function createWorkersAdapters(env: Env, r2Bucket: R2Bucket): PipelineAdapters;
 export function createWorkersAdapters(
-  scenarioClient: ScenarioClient,
-  r2Bucket: R2Bucket,
+  env: Env,
+  r2Bucket: R2Bucket = env.ASSETS,
 ): PipelineAdapters {
+  const imageGeneration = createWorkersProviderAdapter(env);
+
   return {
-    scenario: createWorkersScenarioAdapter(scenarioClient),
+    provider: imageGeneration,
+    scenario: imageGeneration,
     r2: createWorkersR2Adapter(r2Bucket),
     silhouette: createWorkersSilhouetteAdapter(),
   };

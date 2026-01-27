@@ -4,6 +4,7 @@ import type { TestGameMeta } from "@/lib/registry/types";
 export const metadata: TestGameMeta = {
   title: "Tip the Scale",
   description: "Place weights on a seesaw to achieve perfect balance",
+  status: "archived",
 };
 
 const WORLD_WIDTH = 12;

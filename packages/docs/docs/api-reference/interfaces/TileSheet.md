@@ -6,7 +6,7 @@
 
 # Interface: TileSheet
 
-Defined in: [types/tilemap.ts:23](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/tilemap.ts#L23)
+Defined in: [types/tilemap.ts:23](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/tilemap.ts#L23)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/tilemap.ts:23](https://github.com/hassoncs/clover/blob/5a1034
 
 > **id**: `string`
 
-Defined in: [types/tilemap.ts:24](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/tilemap.ts#L24)
+Defined in: [types/tilemap.ts:24](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/tilemap.ts#L24)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/tilemap.ts:24](https://github.com/hassoncs/clover/blob/5a1034
 
 > **name**: `string`
 
-Defined in: [types/tilemap.ts:25](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/tilemap.ts#L25)
+Defined in: [types/tilemap.ts:25](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/tilemap.ts#L25)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/tilemap.ts:25](https://github.com/hassoncs/clover/blob/5a1034
 
 > **imageUrl**: `string`
 
-Defined in: [types/tilemap.ts:26](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/tilemap.ts#L26)
+Defined in: [types/tilemap.ts:26](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/tilemap.ts#L26)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/tilemap.ts:26](https://github.com/hassoncs/clover/blob/5a1034
 
 > **tileWidth**: `number`
 
-Defined in: [types/tilemap.ts:28](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/tilemap.ts#L28)
+Defined in: [types/tilemap.ts:28](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/tilemap.ts#L28)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [types/tilemap.ts:28](https://github.com/hassoncs/clover/blob/5a1034
 
 > **tileHeight**: `number`
 
-Defined in: [types/tilemap.ts:29](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/tilemap.ts#L29)
+Defined in: [types/tilemap.ts:29](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/tilemap.ts#L29)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [types/tilemap.ts:29](https://github.com/hassoncs/clover/blob/5a1034
 
 > **columns**: `number`
 
-Defined in: [types/tilemap.ts:30](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/tilemap.ts#L30)
+Defined in: [types/tilemap.ts:30](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/tilemap.ts#L30)
 
 ***
 
@@ -62,7 +62,7 @@ Defined in: [types/tilemap.ts:30](https://github.com/hassoncs/clover/blob/5a1034
 
 > **rows**: `number`
 
-Defined in: [types/tilemap.ts:31](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/tilemap.ts#L31)
+Defined in: [types/tilemap.ts:31](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/tilemap.ts#L31)
 
 ***
 
@@ -70,7 +70,7 @@ Defined in: [types/tilemap.ts:31](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **spacing**: `number`
 
-Defined in: [types/tilemap.ts:32](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/tilemap.ts#L32)
+Defined in: [types/tilemap.ts:32](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/tilemap.ts#L32)
 
 ***
 
@@ -78,7 +78,7 @@ Defined in: [types/tilemap.ts:32](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **margin**: `number`
 
-Defined in: [types/tilemap.ts:33](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/tilemap.ts#L33)
+Defined in: [types/tilemap.ts:33](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/tilemap.ts#L33)
 
 ***
 
@@ -86,7 +86,7 @@ Defined in: [types/tilemap.ts:33](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **tiles**: `Record`\<`number`, [`TileMetadata`](TileMetadata.md)\>
 
-Defined in: [types/tilemap.ts:35](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/tilemap.ts#L35)
+Defined in: [types/tilemap.ts:35](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/tilemap.ts#L35)
 
 ***
 
@@ -94,7 +94,7 @@ Defined in: [types/tilemap.ts:35](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **source**: [`AssetSource`](../type-aliases/AssetSource.md)
 
-Defined in: [types/tilemap.ts:36](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/tilemap.ts#L36)
+Defined in: [types/tilemap.ts:36](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/tilemap.ts#L36)
 
 ***
 
@@ -102,4 +102,4 @@ Defined in: [types/tilemap.ts:36](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **style**: `"pixel"` \| `"cartoon"` \| `"3d"` \| `"flat"`
 
-Defined in: [types/tilemap.ts:37](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/tilemap.ts#L37)
+Defined in: [types/tilemap.ts:37](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/tilemap.ts#L37)

@@ -8,7 +8,7 @@
 
 > **getLabel**(`key`, `v`): `string`
 
-Defined in: [types/GameDefinition.ts:273](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L273)
+Defined in: [types/GameDefinition.ts:274](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L274)
 
 Get label for a variable (auto-generates from key if not provided)
 

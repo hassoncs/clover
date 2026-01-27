@@ -4,6 +4,7 @@ import type { TestGameMeta } from "@/lib/registry/types";
 export const metadata: TestGameMeta = {
   title: "Dungeon Crawler",
   description: "Grid-based dungeon exploration with inventory and state transitions",
+  status: "archived",
 };
 
 const GRID_SIZE = 8;

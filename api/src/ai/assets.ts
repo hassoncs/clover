@@ -1,5 +1,6 @@
 import type { Env } from '../trpc/context';
 import { ScenarioClient, createScenarioClient } from './scenario';
+import { ComfyUIClient, createComfyUIClient } from './comfyui';
 import { buildAssetPath } from '@slopcade/shared';
 
 const DEBUG_ASSET_GENERATION = process.env.DEBUG_ASSET_GENERATION === 'true';
@@ -91,6 +92,8 @@ export interface AssetGenerationResult {
   success: boolean;
   assetUrl?: string;
   r2Key?: string;
+  silhouetteUrl?: string;
+  silhouetteR2Key?: string;
   scenarioAssetId?: string;
   frames?: string[];
   error?: string;
@@ -490,8 +493,155 @@ export function buildStructuredNegativePrompt(style: SpriteStyle): string {
   return [...baseNegatives, ...styleSpecific[style]].join(', ');
 }
 
+export type ImageGenerationProvider = 'scenario' | 'comfyui' | 'runpod';
+
+export interface ProviderClient {
+  uploadImage(imageBuffer: Uint8Array): Promise<string>;
+  txt2img(params: {
+    prompt: string;
+    negativePrompt?: string;
+    width: number;
+    height: number;
+    strength?: number;
+    guidance?: number;
+    seed?: number;
+  }): Promise<{ assetId: string }>;
+  img2img(params: {
+    image: string;
+    prompt: string;
+    negativePrompt?: string;
+    strength?: number;
+    guidance?: number;
+    seed?: number;
+  }): Promise<{ assetId: string }>;
+  downloadImage(assetId: string): Promise<{ buffer: Uint8Array; extension: string }>;
+  removeBackground(params: { image: string; format?: string }): Promise<{ assetId: string }>;
+}
+
+function createScenarioProviderClient(env: Env): ProviderClient {
+  const client = createScenarioClient(env);
+
+  return {
+    uploadImage: async (png: Uint8Array): Promise<string> => {
+      const arrayBuffer = png.buffer.slice(
+        png.byteOffset,
+        png.byteOffset + png.byteLength
+      ) as ArrayBuffer;
+      return client.uploadAsset(arrayBuffer);
+    },
+
+    txt2img: async (params): Promise<{ assetId: string }> => {
+      const result = await client.generate({
+        prompt: params.prompt,
+        width: params.width,
+        height: params.height,
+        negativePrompt: params.negativePrompt,
+        seed: params.seed !== undefined ? String(params.seed) : undefined,
+      });
+      if (result.assetIds.length === 0) {
+        throw new Error('No assets generated');
+      }
+      return { assetId: result.assetIds[0] };
+    },
+
+    img2img: async (params): Promise<{ assetId: string }> => {
+      const result = await client.generateImg2Img({
+        image: params.image,
+        prompt: params.prompt,
+        strength: params.strength ?? 0.95,
+        guidance: params.guidance ?? 3.5,
+        seed: params.seed !== undefined ? String(params.seed) : undefined,
+      });
+      if (result.assetIds.length === 0) {
+        throw new Error('No assets generated');
+      }
+      return { assetId: result.assetIds[0] };
+    },
+
+    downloadImage: async (assetId: string): Promise<{ buffer: Uint8Array; extension: string }> => {
+      const result = await client.downloadAsset(assetId);
+      return {
+        buffer: new Uint8Array(result.buffer),
+        extension: result.extension,
+      };
+    },
+
+    removeBackground: async (params): Promise<{ assetId: string }> => {
+      const resultAssetId = await client.removeBackground({
+        image: params.image,
+        format: params.format as 'png' | 'jpg' | 'webp' | undefined,
+      });
+      return { assetId: resultAssetId };
+    },
+  };
+}
+
+function createComfyUIProviderClient(env: Env): ProviderClient {
+  if (!env.RUNPOD_API_KEY) {
+    throw new Error('RUNPOD_API_KEY required when using ComfyUI/RunPod image generation provider');
+  }
+  if (!env.RUNPOD_COMFYUI_ENDPOINT_ID) {
+    throw new Error('RUNPOD_COMFYUI_ENDPOINT_ID required when using ComfyUI/RunPod image generation provider');
+  }
+
+  const endpoint = `https://api.runpod.ai/v2/${env.RUNPOD_COMFYUI_ENDPOINT_ID}`;
+  const client = createComfyUIClient({
+    COMFYUI_ENDPOINT: endpoint,
+    RUNPOD_API_KEY: env.RUNPOD_API_KEY,
+  });
+
+  return {
+    uploadImage: async (png: Uint8Array): Promise<string> => {
+      return client.uploadImage(png);
+    },
+
+    txt2img: async (params): Promise<{ assetId: string }> => {
+      return client.txt2img({
+        prompt: params.prompt,
+        negativePrompt: params.negativePrompt,
+        width: params.width,
+        height: params.height,
+        guidance: params.guidance,
+        seed: params.seed,
+      });
+    },
+
+    img2img: async (params): Promise<{ assetId: string }> => {
+      return client.img2img({
+        image: params.image,
+        prompt: params.prompt,
+        strength: params.strength ?? 0.95,
+        guidance: params.guidance,
+        seed: params.seed,
+      });
+    },
+
+    downloadImage: async (assetId: string): Promise<{ buffer: Uint8Array; extension: string }> => {
+      return client.downloadImage(assetId);
+    },
+
+    removeBackground: async (params): Promise<{ assetId: string }> => {
+      return client.removeBackground({ image: params.image });
+    },
+  };
+}
+
+export function getProviderClient(env: Env): ProviderClient {
+  const provider = env.IMAGE_GENERATION_PROVIDER;
+
+  if (provider === 'comfyui' || provider === 'runpod') {
+    return createComfyUIProviderClient(env);
+  }
+
+  if (!env.SCENARIO_API_KEY || !env.SCENARIO_SECRET_API_KEY) {
+    throw new Error('SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using Scenario image generation provider');
+  }
+
+  return createScenarioProviderClient(env);
+}
+
 export class AssetService {
-  private client: ScenarioClient | null = null;
+  private providerClient: ProviderClient | null = null;
   private env: Env;
   private debugMode: boolean;
 
@@ -529,11 +679,11 @@ export class AssetService {
     return `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
   }
 
-  private getClient(): ScenarioClient {
-    if (!this.client) {
-      this.client = createScenarioClient(this.env);
+  private getProviderClient(): ProviderClient {
+    if (!this.providerClient) {
+      this.providerClient = getProviderClient(this.env);
     }
-    return this.client;
+    return this.providerClient;
   }
 
   selectModel(
@@ -572,12 +722,8 @@ export class AssetService {
     const debugId = this.generateDebugId();
     const startTime = Date.now();
 
-    if (!this.env.SCENARIO_API_KEY || !this.env.SCENARIO_SECRET_API_KEY) {
-      return this.createPlaceholderResult(entityType, prompt);
-    }
-
     try {
-      const client = this.getClient();
+      const provider = this.getProviderClient();
 
        const physicsShape: 'box' | 'circle' = entityType === 'item' ? 'circle' : 'box';
        const silhouetteData = createSilhouettePng(physicsShape, width, height);
@@ -585,36 +731,25 @@ export class AssetService {
        assetLog('DEBUG', '', `Physics: shape=${physicsShape}, width=${width}, height=${height}`);
        assetLog('INFO', '', `Silhouette created: 512x512 for ${physicsShape} ${width}x${height}`);
 
-      // Debug: save silhouette
       await this.saveDebugFile(`${debugId}_silhouette.png`, silhouetteData);
 
-      const arrayBuffer = silhouetteData.buffer.slice(
-        silhouetteData.byteOffset,
-        silhouetteData.byteOffset + silhouetteData.byteLength
-      ) as ArrayBuffer;
-       const uploadedAssetId = await client.uploadAsset(arrayBuffer);
+       const uploadedAssetId = await provider.uploadImage(silhouetteData);
 
-       assetLog('INFO', '', `Uploaded silhouette to Scenario: ${uploadedAssetId}`);
+      const silhouetteR2Key = await this.uploadToR2(silhouetteData, '.png', entityType, context, 'silhouette');
+
+       assetLog('INFO', '', `Uploaded silhouette to provider: ${uploadedAssetId}`);
        assetLog('INFO', '', `Starting img2img generation with strength=${strength}`);
 
-      const result = await client.generateImg2Img({
+      const result = await provider.img2img({
         prompt,
         image: uploadedAssetId,
         strength,
-        numInferenceSteps: 20,
         guidance,
-        seed,
+        seed: seed !== undefined ? parseInt(seed, 10) : undefined,
       });
 
-       if (result.assetIds.length === 0) {
-         return {
-           success: false,
-           error: 'No assets generated',
-         };
-       }
-
-       const assetId = result.assetIds[0];
-       const { buffer, extension } = await client.downloadAsset(assetId);
+        const assetId = result.assetId;
+        const { buffer, extension } = await provider.downloadImage(assetId);
 
        assetLog('INFO', '', `Downloaded generated asset: ${assetId}`);
 
@@ -632,11 +767,14 @@ export class AssetService {
        const r2Key = await this.uploadToR2(buffer, extension, entityType, context);
 
        assetLog('INFO', '', `Uploaded to R2: ${r2Key}`);
+       assetLog('INFO', '', `Uploaded silhouette to R2: ${silhouetteR2Key}`);
 
        return {
          success: true,
          assetUrl: this.getR2PublicUrl(r2Key),
          r2Key,
+         silhouetteUrl: this.getR2PublicUrl(silhouetteR2Key),
+         silhouetteR2Key,
          scenarioAssetId: assetId,
        };
      } catch (err) {
@@ -683,12 +821,8 @@ export class AssetService {
     const debugId = this.generateDebugId();
     const startTime = Date.now();
 
-    if (!this.env.SCENARIO_API_KEY || !this.env.SCENARIO_SECRET_API_KEY) {
-      return this.createPlaceholderResult(entityType, buildStructuredPrompt(params));
-    }
-
     try {
-      const client = this.getClient();
+      const provider = this.getProviderClient();
       
       const silhouetteData = createSilhouettePng(
         physicsShape,
@@ -699,34 +833,22 @@ export class AssetService {
       // Debug: save silhouette
       await this.saveDebugFile(`${debugId}_silhouette.png`, silhouetteData);
 
-      const arrayBuffer = silhouetteData.buffer.slice(
-        silhouetteData.byteOffset,
-        silhouetteData.byteOffset + silhouetteData.byteLength
-      ) as ArrayBuffer;
-      const uploadedAssetId = await client.uploadAsset(arrayBuffer);
+      const uploadedAssetId = await provider.uploadImage(silhouetteData);
 
       const prompt = buildStructuredPrompt(params);
       
       // Debug: save prompt
       await this.saveDebugFile(`${debugId}_prompt.txt`, prompt);
 
-      const result = await client.generateImg2Img({
+      const result = await provider.img2img({
         prompt,
         image: uploadedAssetId,
         strength: 0.95,
-        numInferenceSteps: 20,
         guidance: 3.5,
       });
 
-      if (result.assetIds.length === 0) {
-        return {
-          success: false,
-          error: 'No assets generated from silhouette transformation',
-        };
-      }
-
-      const assetId = result.assetIds[0];
-      const { buffer, extension } = await client.downloadAsset(assetId);
+      const assetId = result.assetId;
+      const { buffer, extension } = await provider.downloadImage(assetId);
 
       // Debug: save result image and metadata
       await this.saveDebugFile(`${debugId}_result${extension}`, buffer);
@@ -772,12 +894,8 @@ export class AssetService {
       context,
     } = request;
 
-    if (!this.env.SCENARIO_API_KEY || !this.env.SCENARIO_SECRET_API_KEY) {
-      return this.createPlaceholderResult(entityType, description);
-    }
-
     try {
-      const client = this.getClient();
+      const provider = this.getProviderClient();
 
       const width = size?.width ?? 256;
       const height = size?.height ?? 256;
@@ -787,31 +905,19 @@ export class AssetService {
 
       console.log(`[AssetService] Creating silhouette for ${entityType} (${width}x${height}, ${physicsShape})`);
 
-      const arrayBuffer = silhouetteData.buffer.slice(
-        silhouetteData.byteOffset,
-        silhouetteData.byteOffset + silhouetteData.byteLength
-      ) as ArrayBuffer;
-      const uploadedAssetId = await client.uploadAsset(arrayBuffer);
+      const uploadedAssetId = await provider.uploadImage(silhouetteData);
 
       console.log(`[AssetService] Generating ${entityType} with silhouette img2img`);
 
-      const result = await client.generateImg2Img({
+      const result = await provider.img2img({
         prompt: description,
         image: uploadedAssetId,
         strength: 0.95,
-        numInferenceSteps: 20,
         guidance: 3.5,
       });
 
-      if (result.assetIds.length === 0) {
-        return {
-          success: false,
-          error: 'No assets generated',
-        };
-      }
-
-      const assetId = result.assetIds[0];
-      const { buffer, extension } = await client.downloadAsset(assetId);
+      const assetId = result.assetId;
+      const { buffer, extension } = await provider.downloadImage(assetId);
 
       const r2Key = await this.uploadToR2(buffer, extension, entityType, context);
 
@@ -839,31 +945,24 @@ export class AssetService {
     entityType: EntityType,
     context?: AssetContext
   ): Promise<AssetGenerationResult> {
-    if (!this.env.SCENARIO_API_KEY || !this.env.SCENARIO_SECRET_API_KEY) {
-      return {
-        success: false,
-        error: 'Scenario API not configured',
-      };
-    }
-
     try {
-      const client = this.getClient();
+      const provider = this.getProviderClient();
 
-      const uploadedAssetId = await client.uploadAsset(imageBuffer);
+      const uploadedAssetId = await provider.uploadImage(new Uint8Array(imageBuffer));
 
-      const resultAssetId = await client.removeBackground({
+      const result = await provider.removeBackground({
         image: uploadedAssetId,
         format: 'png',
       });
 
-      const { buffer, extension } = await client.downloadAsset(resultAssetId);
+      const { buffer, extension } = await provider.downloadImage(result.assetId);
       const r2Key = await this.uploadToR2(buffer, extension, entityType, context);
 
       return {
         success: true,
         assetUrl: this.getR2PublicUrl(r2Key),
         r2Key,
-        scenarioAssetId: resultAssetId,
+        scenarioAssetId: result.assetId,
       };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
@@ -875,18 +974,21 @@ export class AssetService {
   }
 
   private async uploadToR2(
-    buffer: ArrayBuffer,
+    buffer: ArrayBuffer | Uint8Array,
     extension: string,
     entityType: EntityType,
-    context?: AssetContext
+    context?: AssetContext,
+    suffix?: string
   ): Promise<string> {
     const assetId = crypto.randomUUID();
+    const fileSuffix = suffix ? `-${suffix}` : '';
     
     let r2Key: string;
     if (context?.gameId && context?.packId) {
-      r2Key = buildAssetPath(context.gameId, context.packId, assetId);
+      const basePath = buildAssetPath(context.gameId, context.packId, assetId);
+      r2Key = suffix ? basePath.replace(extension, `${fileSuffix}${extension}`) : basePath;
     } else {
-      r2Key = `generated/${entityType}/${assetId}${extension}`;
+      r2Key = `generated/${entityType}/${assetId}${fileSuffix}${extension}`;
     }
 
     await this.env.ASSETS.put(r2Key, buffer, {
@@ -939,4 +1041,40 @@ export function getScenarioConfigFromEnv(env: Env): {
     apiKey,
     apiSecret,
   };
+}
+
+export function getImageGenerationConfig(env: Env): {
+  configured: boolean;
+  provider: 'scenario' | 'comfyui' | 'runpod';
+  error?: string;
+} {
+  const provider = env.IMAGE_GENERATION_PROVIDER ?? 'scenario';
+
+  if (provider === 'comfyui' || provider === 'runpod') {
+    if (!env.RUNPOD_API_KEY) {
+      return {
+        configured: false,
+        provider,
+        error: 'RUNPOD_API_KEY required when using ComfyUI/RunPod image generation provider',
+      };
+    }
+    if (!env.RUNPOD_COMFYUI_ENDPOINT_ID) {
+      return {
+        configured: false,
+        provider,
+        error: 'RUNPOD_COMFYUI_ENDPOINT_ID required when using ComfyUI/RunPod image generation provider',
+      };
+    }
+    return { configured: true, provider };
+  }
+
+  if (!env.SCENARIO_API_KEY || !env.SCENARIO_SECRET_API_KEY) {
+    return {
+      configured: false,
+      provider: 'scenario',
+      error: 'SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using Scenario image generation provider',
+    };
+  }
+
+  return { configured: true, provider: 'scenario' };
 }

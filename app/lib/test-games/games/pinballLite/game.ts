@@ -7,6 +7,7 @@ export const metadata: TestGameMeta = {
   title: "Pinball Lite",
   description: "Pinball table with bumpers, flippers - reach 5000 points to win!",
   titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
+  status: "archived",
 };
 
 const WORLD_WIDTH = 10;

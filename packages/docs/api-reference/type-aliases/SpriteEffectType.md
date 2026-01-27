@@ -6,6 +6,6 @@
 
 # Type Alias: SpriteEffectType
 
-> **SpriteEffectType** = `"glow"` \| `"pulse"` \| `"fade_partial"` \| `"fade_out"` \| `"rim_light"`
+> **SpriteEffectType** = `"outline"` \| `"glow"` \| `"tint"` \| `"flash"` \| `"pixelate"` \| `"posterize"` \| `"rim_light"` \| `"color_matrix"` \| `"inner_glow"` \| `"drop_shadow"`
 
-Defined in: [types/behavior.ts:236](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L236)
+Defined in: [types/behavior.ts:236](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L236)

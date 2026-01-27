@@ -6,7 +6,7 @@
 
 # Interface: GameDistanceJoint
 
-Defined in: [types/GameDefinition.ts:185](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L185)
+Defined in: [types/GameDefinition.ts:186](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L186)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/GameDefinition.ts:185](https://github.com/hassoncs/clover/blo
 
 > **id**: `string`
 
-Defined in: [types/GameDefinition.ts:168](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L168)
+Defined in: [types/GameDefinition.ts:169](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L169)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/GameDefinition.ts:168](https://github.com/hassoncs/clover/blo
 
 > **entityA**: `string`
 
-Defined in: [types/GameDefinition.ts:169](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L169)
+Defined in: [types/GameDefinition.ts:170](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L170)
 
 #### Inherited from
 
@@ -42,7 +42,7 @@ Defined in: [types/GameDefinition.ts:169](https://github.com/hassoncs/clover/blo
 
 > **entityB**: `string`
 
-Defined in: [types/GameDefinition.ts:170](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L170)
+Defined in: [types/GameDefinition.ts:171](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L171)
 
 #### Inherited from
 
@@ -54,7 +54,7 @@ Defined in: [types/GameDefinition.ts:170](https://github.com/hassoncs/clover/blo
 
 > `optional` **collideConnected**: `boolean`
 
-Defined in: [types/GameDefinition.ts:171](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L171)
+Defined in: [types/GameDefinition.ts:172](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L172)
 
 #### Inherited from
 
@@ -66,7 +66,7 @@ Defined in: [types/GameDefinition.ts:171](https://github.com/hassoncs/clover/blo
 
 > **type**: `"distance"`
 
-Defined in: [types/GameDefinition.ts:186](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L186)
+Defined in: [types/GameDefinition.ts:187](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L187)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [types/GameDefinition.ts:186](https://github.com/hassoncs/clover/blo
 
 > **anchorA**: [`Vec2`](Vec2.md)
 
-Defined in: [types/GameDefinition.ts:187](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L187)
+Defined in: [types/GameDefinition.ts:188](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L188)
 
 ***
 
@@ -82,7 +82,7 @@ Defined in: [types/GameDefinition.ts:187](https://github.com/hassoncs/clover/blo
 
 > **anchorB**: [`Vec2`](Vec2.md)
 
-Defined in: [types/GameDefinition.ts:188](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L188)
+Defined in: [types/GameDefinition.ts:189](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L189)
 
 ***
 
@@ -90,7 +90,7 @@ Defined in: [types/GameDefinition.ts:188](https://github.com/hassoncs/clover/blo
 
 > `optional` **length**: `number`
 
-Defined in: [types/GameDefinition.ts:189](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L189)
+Defined in: [types/GameDefinition.ts:190](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L190)
 
 ***
 
@@ -98,7 +98,7 @@ Defined in: [types/GameDefinition.ts:189](https://github.com/hassoncs/clover/blo
 
 > `optional` **stiffness**: `number`
 
-Defined in: [types/GameDefinition.ts:190](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L190)
+Defined in: [types/GameDefinition.ts:191](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L191)
 
 ***
 
@@ -106,4 +106,4 @@ Defined in: [types/GameDefinition.ts:190](https://github.com/hassoncs/clover/blo
 
 > `optional` **damping**: `number`
 
-Defined in: [types/GameDefinition.ts:191](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L191)
+Defined in: [types/GameDefinition.ts:192](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L192)

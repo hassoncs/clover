@@ -6,7 +6,7 @@
 
 # Interface: StateCondition
 
-Defined in: [types/rules.ts:184](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L184)
+Defined in: [types/rules.ts:185](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L185)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:184](https://github.com/hassoncs/clover/blob/5a10349
 
 > **type**: `"state"`
 
-Defined in: [types/rules.ts:185](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L185)
+Defined in: [types/rules.ts:186](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L186)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:185](https://github.com/hassoncs/clover/blob/5a10349
 
 > **machineId**: `string`
 
-Defined in: [types/rules.ts:186](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L186)
+Defined in: [types/rules.ts:187](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L187)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:186](https://github.com/hassoncs/clover/blob/5a10349
 
 > **state**: `string`
 
-Defined in: [types/rules.ts:187](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L187)
+Defined in: [types/rules.ts:188](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L188)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/rules.ts:187](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **negated**: `boolean`
 
-Defined in: [types/rules.ts:188](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L188)
+Defined in: [types/rules.ts:189](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L189)

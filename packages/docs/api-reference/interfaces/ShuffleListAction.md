@@ -6,7 +6,7 @@
 
 # Interface: ShuffleListAction
 
-Defined in: [types/rules.ts:353](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L353)
+Defined in: [types/rules.ts:361](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L361)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:353](https://github.com/hassoncs/clover/blob/5a10349
 
 > **type**: `"shuffle_list"`
 
-Defined in: [types/rules.ts:354](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L354)
+Defined in: [types/rules.ts:362](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L362)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [types/rules.ts:354](https://github.com/hassoncs/clover/blob/5a10349
 
 > **listName**: `string`
 
-Defined in: [types/rules.ts:355](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L355)
+Defined in: [types/rules.ts:363](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L363)

@@ -4,6 +4,7 @@ import type { TestGameMeta } from "@/lib/registry/types";
 export const metadata: TestGameMeta = {
   title: "Cats falling objects",
   description: "A game where I catch falling apples but avoid the bombs",
+  status: "archived",
 };
 
 const game: GameDefinition = {
@@ -134,7 +135,6 @@ const game: GameDefinition = {
         density: 1,
         friction: 0.8,
         restitution: 0,
-        isSensor: true,
       },
       tags: ["ground"],
     },

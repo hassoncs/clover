@@ -304,4 +304,310 @@ describe('RunPodClient', () => {
       expect(mockFetch).toHaveBeenCalledWith('https://example.com/image.png');
     });
   });
+
+  // ============================================================================
+  // Provider Contract Stability Tests - Status Polling Behavior
+  // ============================================================================
+
+  describe('status polling behavior (provider contract)', () => {
+    const client = new RunPodClient(validConfig);
+
+    it('polls async job until completion', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ id: 'job-123', status: 'IN_QUEUE' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ id: 'job-123', status: 'IN_PROGRESS' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            id: 'job-123',
+            status: 'COMPLETED',
+            output: 'base64data',
+          }),
+        });
+
+      const result = await client.txt2img({ prompt: 'test' });
+
+      expect(result.assetId).toMatch(/^runpod-/);
+      expect(mockFetch).toHaveBeenCalledTimes(3);
+    });
+
+    it('polls with correct endpoint selection', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ id: 'job-456', status: 'IN_PROGRESS' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            id: 'job-456',
+            status: 'COMPLETED',
+            output: 'data',
+          }),
+        });
+
+      const result = await client.txt2img({ prompt: 'test' });
+
+      expect(result.assetId).toMatch(/^runpod-/);
+      // Verify flux endpoint is used (preferred over sdxl)
+      expect(mockFetch.mock.calls[0][0]).toContain('flux-endpoint-123');
+    });
+
+    it('handles rapid completion (no polling needed)', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 'job-789',
+          status: 'COMPLETED',
+          output: 'base64data',
+        }),
+      });
+
+      const result = await client.txt2img({ prompt: 'test' });
+
+      expect(result.assetId).toMatch(/^runpod-/);
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('respects timeout during polling', async () => {
+      // Simulate long-running job that times out
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ id: 'job-timeout', status: 'IN_PROGRESS' }),
+      });
+
+      const clientWithShortTimeout = new RunPodClient({ ...validConfig, timeout: 1000 });
+
+      await expect(clientWithShortTimeout.txt2img({ prompt: 'test' }))
+        .rejects.toThrow();
+    });
+
+    it('polls img2img until completion', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ id: 'job-img2img', status: 'IN_QUEUE' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            id: 'job-img2img',
+            status: 'COMPLETED',
+            output: 'result',
+          }),
+        });
+
+      const result = await client.img2img({
+        image: 'existing-asset-id',
+        prompt: 'transform this',
+      });
+
+      expect(result.assetId).toMatch(/^runpod-/);
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  // ============================================================================
+  // Provider Contract Stability Tests - Error Mapping
+  // ============================================================================
+
+  describe('error mapping (provider contract)', () => {
+    const client = new RunPodClient(validConfig);
+
+    it('maps HTTP 401 to authentication error', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        text: async () => 'Unauthorized',
+      });
+
+      await expect(client.txt2img({ prompt: 'test' }))
+        .rejects.toThrow('RunPod API error: 401');
+    });
+
+    it('maps HTTP 403 to forbidden error', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        text: async () => 'Forbidden',
+      });
+
+      await expect(client.txt2img({ prompt: 'test' }))
+        .rejects.toThrow('RunPod API error: 403');
+    });
+
+    it('maps HTTP 429 to rate limit error with retry hint', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        text: async () => 'Too Many Requests',
+      });
+
+      await expect(client.txt2img({ prompt: 'test' }))
+        .rejects.toThrow('RunPod API error: 429');
+    });
+
+    it('maps HTTP 404 to not found error', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        text: async () => 'Endpoint not found',
+      });
+
+      await expect(client.txt2img({ prompt: 'test' }))
+        .rejects.toThrow('RunPod API error: 404');
+    });
+
+    it('maps job status FAILED with error message', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 'job-123',
+          status: 'FAILED',
+          error: 'Model loading failed: out of memory',
+        }),
+      });
+
+      await expect(client.txt2img({ prompt: 'test' }))
+        .rejects.toThrow('RunPod job failed: Model loading failed: out of memory');
+    });
+
+    it('maps job status CANCELLED', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 'job-123',
+          status: 'CANCELLED',
+          error: 'Job cancelled by user',
+        }),
+      });
+
+      await expect(client.txt2img({ prompt: 'test' }))
+        .rejects.toThrow('No output from job');
+    });
+
+    it('maps timeout during polling to error', async () => {
+      // Simulate timeout by returning IN_PROGRESS repeatedly
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ id: 'job-timeout', status: 'IN_PROGRESS' }),
+      });
+
+      const clientWithShortTimeout = new RunPodClient({ ...validConfig, timeout: 500 });
+
+      await expect(clientWithShortTimeout.txt2img({ prompt: 'test' }))
+        .rejects.toThrow();
+    });
+
+    it('handles network errors during polling', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ id: 'job-network', status: 'IN_PROGRESS' }),
+        })
+        .mockRejectedValueOnce(new Error('Network error'));
+
+      await expect(client.txt2img({ prompt: 'test' }))
+        .rejects.toThrow('Network error');
+    });
+  });
+
+  // ============================================================================
+  // Provider Contract Stability Tests - Request Payload Shaping
+  // ============================================================================
+
+  describe('request payload shaping (provider contract)', () => {
+    const client = new RunPodClient(validConfig);
+
+    it('txt2img shapes request correctly for Flux endpoint', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 'job-123',
+          status: 'COMPLETED',
+          output: 'base64data',
+        }),
+      });
+
+      await client.txt2img({
+        prompt: 'a futuristic cityscape',
+        negativePrompt: 'blurry, low quality',
+        width: 768,
+        height: 1024,
+      });
+
+      const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+
+      // Verify required fields for Flux
+      expect(callBody.input).toBeDefined();
+      expect(callBody.input.prompt).toBe('a futuristic cityscape');
+      expect(callBody.input.negative_prompt).toBe('blurry, low quality');
+      expect(callBody.input.width).toBe(768);
+      expect(callBody.input.height).toBe(1024);
+    });
+
+    it('img2img shapes request with image reference', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status: 'COMPLETED',
+          output: 'result',
+        }),
+      });
+
+      await client.img2img({
+        image: 'base64-image-data',
+        prompt: 'add style to this',
+        strength: 0.75,
+      });
+
+      const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+
+      // Verify required fields
+      expect(callBody.input.image).toBe('base64-image-data');
+      expect(callBody.input.prompt).toBe('add style to this');
+      expect(callBody.input.strength).toBe(0.75);
+    });
+
+    it('removeBackground calls correct endpoint', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status: 'COMPLETED',
+          output: 'nobg-result',
+        }),
+      });
+
+      await client.removeBackground({ image: 'test-image' });
+
+      // Verify bg removal endpoint is used
+      expect(mockFetch.mock.calls[0][0]).toContain('rembg-endpoint-789');
+    });
+
+    it('uses SDXL endpoint when flux is not available', async () => {
+      const clientSdxlOnly = new RunPodClient({
+        apiKey: 'test-api-key',
+        sdxlEndpointId: 'sdxl-endpoint-123',
+      });
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status: 'COMPLETED',
+          output: 'data',
+        }),
+      });
+
+      await clientSdxlOnly.txt2img({ prompt: 'test' });
+
+      // Verify SDXL endpoint is used
+      expect(mockFetch.mock.calls[0][0]).toContain('sdxl-endpoint-123');
+    });
+  });
 });

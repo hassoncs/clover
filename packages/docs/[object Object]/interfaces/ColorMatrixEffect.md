@@ -6,7 +6,7 @@
 
 # Interface: ColorMatrixEffect
 
-Defined in: [types/effects.ts:257](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L257)
+Defined in: [types/effects.ts:257](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L257)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/effects.ts:257](https://github.com/hassoncs/clover/blob/5a103
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L48)
+Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L48)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **opacity**: `number`
 
-Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L49)
+Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L49)
 
 #### Inherited from
 
@@ -42,7 +42,7 @@ Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **blendMode**: [`EffectBlendMode`](../type-aliases/EffectBlendMode.md)
 
-Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L50)
+Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L50)
 
 #### Inherited from
 
@@ -54,7 +54,7 @@ Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **id**: `string`
 
-Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L51)
+Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L51)
 
 #### Inherited from
 
@@ -66,7 +66,7 @@ Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/5a1034
 
 > **type**: `"colorMatrix"`
 
-Defined in: [types/effects.ts:258](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L258)
+Defined in: [types/effects.ts:258](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L258)
 
 #### Overrides
 
@@ -78,4 +78,4 @@ Defined in: [types/effects.ts:258](https://github.com/hassoncs/clover/blob/5a103
 
 > **matrix**: `number`[]
 
-Defined in: [types/effects.ts:259](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L259)
+Defined in: [types/effects.ts:259](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L259)

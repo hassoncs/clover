@@ -1,9 +1,9 @@
-import { router, publicProcedure, protectedProcedure } from '../index';
+import { protectedProcedure, router } from '../index';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import {
   AssetService,
-  getScenarioConfigFromEnv,
+  getImageGenerationConfig,
   buildStructuredPrompt,
   buildStructuredNegativePrompt,
   type EntityType,
@@ -11,8 +11,17 @@ import {
 } from '../../ai/assets';
 import { migrateAssetPacks, rollbackMigration } from '../../migrations/migrate-asset-packs';
 import { isLegacyUrl } from '@slopcade/shared';
+import { buildAssetPath, isStoredR2Key } from '@slopcade/shared/utils/asset-url';
 import { WalletService, InsufficientBalanceError } from '../../economy/wallet-service';
-import { RATE_LIMITS, microsToSparks, USER_COSTS } from '../../economy/pricing';
+import { PROVIDER_COSTS, RATE_LIMITS, microsToSparks, USER_COSTS } from '../../economy/pricing';
+import { createWorkersAdapters as createWorkersAdaptersImpl } from '../../ai/pipeline/adapters/workers';
+
+import type { AssetRun, DebugEvent, UIComponentSheetSpec } from '../../ai/pipeline/types';
+import { uiBaseStateStage, uiVariationStatesStage } from '../../ai/pipeline/stages/ui-component';
+import { getControlBaseState, getControlConfig } from '../../ai/pipeline/ui-control-config';
+import type { Env } from '../context';
+
+const createWorkersAdapters = (env: Env) => createWorkersAdaptersImpl(env, env.ASSETS);
 
 // Log level utility for production-safe debugging
 const LOG_LEVEL = process.env.LOG_LEVEL || 'INFO';
@@ -34,18 +43,29 @@ function jobLog(level: string, jobId: string, taskId: string | null, message: st
 
 function resolveStoredAssetUrl(storedValue: string | null, assetHost: string | undefined): string | null {
   if (!storedValue) return null;
-  
-  if (isLegacyUrl(storedValue)) {
-    if (storedValue.startsWith('http://') || storedValue.startsWith('https://') || 
-        storedValue.startsWith('data:') || storedValue.startsWith('res://')) {
-      return storedValue;
-    }
-    const baseUrl = assetHost || '';
-    return `${baseUrl}${storedValue}`;
+
+  // No configured asset host: preserve old behavior (API serves /assets/* locally)
+  if (!assetHost) {
+    if (isLegacyUrl(storedValue)) return storedValue;
+    return `/assets/${storedValue}`;
   }
-  
-  const baseUrl = assetHost || '';
-  return `${baseUrl}/assets/${storedValue}`;
+
+  const cleanBaseUrl = assetHost.endsWith('/') ? assetHost.slice(0, -1) : assetHost;
+
+  if (isLegacyUrl(storedValue)) {
+    // passthrough (http/https/data/res) OR relative /assets/*
+    if (storedValue.startsWith('/assets/')) {
+      return `${cleanBaseUrl}${storedValue}`;
+    }
+    return storedValue;
+  }
+
+  if (isStoredR2Key(storedValue)) {
+    return `${cleanBaseUrl}/${storedValue}`;
+  }
+
+  // Fallback: treat as relative path under the asset host
+  return `${cleanBaseUrl}/${storedValue}`;
 }
 
 interface GameAssetRow {
@@ -66,9 +86,17 @@ interface AssetPackRow {
   base_game_id: string | null;
   name: string;
   description: string | null;
+  component_type?: UIComponentSheetSpec['componentType'] | null;
+  nine_patch_margins_json?: string | null;
   prompt_defaults_json: string | null;
   created_at: number;
   deleted_at: number | null;
+}
+
+interface AssetPackUIInfoRow {
+  component_type: UIComponentSheetSpec['componentType'] | null;
+  nine_patch_margins_json: string | null;
+  prompt_defaults_json: string | null;
 }
 
 interface GameRowForAssets {
@@ -120,8 +148,6 @@ interface GenerationTaskRow {
 }
 
 const assetSourceSchema = z.enum(['generated', 'uploaded']);
-const generationStatusSchema = z.enum(['queued', 'running', 'succeeded', 'failed', 'canceled']);
-const spriteStyleSchema = z.enum(['pixel', 'cartoon', '3d', 'flat']);
 
 const placementSchema = z.object({
   scale: z.number().default(1),
@@ -136,16 +162,22 @@ const promptDefaultsSchema = z.object({
   modelId: z.string().optional(),
   negativePrompt: z.string().optional(),
   removeBackground: z.boolean().optional(),
+  strength: z.number().min(0.1).max(0.99).optional(),
+  guidance: z.number().min(2).max(12).optional(),
+  seed: z.string().optional(),
+  componentType: z.enum(['button', 'checkbox', 'radio', 'slider', 'panel', 'progress_bar', 'scroll_bar_h', 'scroll_bar_v', 'tab_bar', 'list_item', 'dropdown', 'toggle_switch']).optional(),
+  states: z.array(z.enum(['normal', 'hover', 'pressed', 'disabled', 'focus', 'selected', 'unselected'])).optional(),
+  baseResolution: z.number().min(64).max(1024).optional(),
 });
 
 
 
-function toClientAsset(row: GameAssetRow) {
+function toClientAsset(row: GameAssetRow, assetHost: string | undefined) {
   return {
     id: row.id,
     ownerGameId: row.owner_game_id,
     source: row.source as 'generated' | 'uploaded',
-    imageUrl: row.image_url,
+    imageUrl: resolveStoredAssetUrl(row.image_url, assetHost),
     width: row.width,
     height: row.height,
     contentHash: row.content_hash,
@@ -215,7 +247,7 @@ function toClientTask(row: GenerationTaskRow) {
   };
 }
 
-function getTargetDimensions(physicsShape: string, width?: number, height?: number, radius?: number): {
+function getTargetDimensions(physicsShape: string, width?: number, height?: number): {
   width: number;
   height: number;
   aspectRatio: string;
@@ -228,6 +260,7 @@ function getTargetDimensions(physicsShape: string, width?: number, height?: numb
   } else if (physicsShape === 'circle') {
     aspectRatio = 1;
   }
+
 
   let targetWidth: number;
   let targetHeight: number;
@@ -262,7 +295,7 @@ export const assetSystemRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Asset not found' });
       }
 
-      return toClientAsset(row);
+      return toClientAsset(row, ctx.env.ASSET_HOST);
     }),
 
   listAssets: protectedProcedure
@@ -284,7 +317,7 @@ export const assetSystemRouter = router({
       params.push(input.limit, input.offset);
 
       const result = await ctx.env.DB.prepare(query).bind(...params).all<GameAssetRow>();
-      return result.results.map(toClientAsset);
+      return result.results.map((row) => toClientAsset(row, ctx.env.ASSET_HOST));
     }),
 
   createAsset: protectedProcedure
@@ -546,7 +579,31 @@ export const assetSystemRouter = router({
         });
       }
 
-      const estimatedCostMicros = input.templateIds.length * USER_COSTS.ASSET_ENTITY;
+      let packUiInfo: AssetPackUIInfoRow | null = null;
+      if (input.packId) {
+        packUiInfo = await ctx.env.DB.prepare(
+          `SELECT component_type, nine_patch_margins_json, prompt_defaults_json 
+           FROM asset_packs WHERE id = ? AND deleted_at IS NULL`
+        ).bind(input.packId).first<AssetPackUIInfoRow>();
+      }
+
+      const isUiComponentPack = Boolean(packUiInfo?.component_type);
+
+      const margin = USER_COSTS.ASSET_ENTITY / PROVIDER_COSTS.SCENARIO_IMG2IMG;
+      const removeBgCostMicros = Math.ceil(PROVIDER_COSTS.SCENARIO_REMOVE_BG * margin);
+      const uiBaseOpCostMicros = USER_COSTS.ASSET_ENTITY + removeBgCostMicros;
+
+      const requestedStates = input.promptDefaults.states;
+      const uiComponentType = packUiInfo?.component_type ?? null;
+      const uiBaseState = uiComponentType ? getControlBaseState(uiComponentType) : 'normal';
+
+      const uiStates = (requestedStates && requestedStates.length > 0)
+        ? requestedStates
+        : (uiComponentType ? getControlConfig(uiComponentType).states : ['normal']);
+
+      const estimatedCostMicros = isUiComponentPack
+        ? uiStates.reduce((sum, state) => sum + (state === uiBaseState ? uiBaseOpCostMicros : uiBaseOpCostMicros * 2), 0)
+        : input.templateIds.length * USER_COSTS.ASSET_ENTITY;
       const jobId = crypto.randomUUID();
 
       try {
@@ -557,7 +614,9 @@ export const assetSystemRouter = router({
           referenceType: 'generation_job',
           referenceId: jobId,
           idempotencyKey: `gen_debit_${jobId}`,
-          description: `Asset generation for ${input.templateIds.length} templates`,
+          description: isUiComponentPack
+            ? `UI component generation for ${uiStates.length} states`
+            : `Asset generation for ${input.templateIds.length} templates`,
         });
       } catch (err) {
         if (err instanceof InsufficientBalanceError) {
@@ -610,6 +669,24 @@ export const assetSystemRouter = router({
            VALUES (?, ?, ?, 'queued', ?, ?)`
         ).bind(jobId, input.gameId, input.packId ?? null, JSON.stringify(input.promptDefaults), now).run();
 
+        if (isUiComponentPack && uiComponentType) {
+          for (const state of uiStates) {
+            const taskId = crypto.randomUUID();
+            await ctx.env.DB.prepare(
+              `INSERT INTO generation_tasks (id, job_id, template_id, status, prompt_components_json, created_at)
+               VALUES (?, ?, ?, 'queued', ?, ?)`
+            ).bind(
+              taskId,
+              jobId,
+              state,
+              JSON.stringify({ componentType: uiComponentType, state }),
+              now
+            ).run();
+          }
+
+          return { jobId, taskCount: uiStates.length };
+        }
+
         for (const templateId of input.templateIds) {
           const template = definition.templates?.[templateId];
           const physics = template?.physics;
@@ -632,8 +709,7 @@ export const assetSystemRouter = router({
           const dimensions = getTargetDimensions(
             physicsContext.shape,
             physicsContext.width,
-            physicsContext.height,
-            physicsContext.radius
+            physicsContext.height
           );
 
           const overrides = input.templateOverrides?.[templateId];
@@ -700,14 +776,252 @@ export const assetSystemRouter = router({
       }
     }),
 
+  regeneratePack: protectedProcedure
+    .input(z.object({
+      packId: z.string(),
+      newTheme: z.string(),
+      newStyle: z.enum(['pixel', 'cartoon', '3d', 'flat']),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const walletService = new WalletService(ctx.env.DB);
+
+      const allowed = await walletService.checkRateLimit(
+        ctx.user.id,
+        'generation',
+        RATE_LIMITS.GENERATIONS_PER_HOUR,
+        60 * 60 * 1000
+      );
+      if (!allowed) {
+        throw new TRPCError({
+          code: 'TOO_MANY_REQUESTS',
+          message: `Rate limit exceeded. Max ${RATE_LIMITS.GENERATIONS_PER_HOUR} generations per hour.`,
+        });
+      }
+
+      const packRow = await ctx.env.DB.prepare(
+        'SELECT * FROM asset_packs WHERE id = ? AND deleted_at IS NULL'
+      ).bind(input.packId).first<AssetPackRow>();
+
+      if (!packRow) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Asset pack not found' });
+      }
+
+      const packUiInfo = await ctx.env.DB.prepare(
+        `SELECT component_type, nine_patch_margins_json, prompt_defaults_json
+         FROM asset_packs WHERE id = ? AND deleted_at IS NULL`
+      ).bind(input.packId).first<AssetPackUIInfoRow>();
+
+      const isUiComponentPack = Boolean(packUiInfo?.component_type);
+
+      const entriesResult = await ctx.env.DB.prepare(
+        'SELECT template_id FROM asset_pack_entries WHERE pack_id = ?'
+      ).bind(input.packId).all<{ template_id: string }>();
+
+      const templateIds = entriesResult.results.map(e => e.template_id);
+
+      if (templateIds.length === 0) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Pack has no entries to regenerate' });
+      }
+
+      const margin = USER_COSTS.ASSET_ENTITY / PROVIDER_COSTS.SCENARIO_IMG2IMG;
+      const removeBgCostMicros = Math.ceil(PROVIDER_COSTS.SCENARIO_REMOVE_BG * margin);
+      const uiBaseOpCostMicros = USER_COSTS.ASSET_ENTITY + removeBgCostMicros;
+
+      const uiStates = isUiComponentPack && packUiInfo?.component_type
+        ? getControlConfig(packUiInfo.component_type).states
+        : ['normal'];
+
+      const estimatedCostMicros = isUiComponentPack
+        ? uiStates.reduce((sum, state) => sum + (state === 'normal' ? uiBaseOpCostMicros : uiBaseOpCostMicros * 2), 0)
+        : templateIds.length * USER_COSTS.ASSET_ENTITY;
+      const jobId = crypto.randomUUID();
+
+      try {
+        await walletService.debit({
+          userId: ctx.user.id,
+          type: 'generation_debit',
+          amountMicros: -estimatedCostMicros,
+          referenceType: 'generation_job',
+          referenceId: jobId,
+          idempotencyKey: `gen_debit_${jobId}`,
+          description: isUiComponentPack
+            ? `UI component regeneration for ${uiStates.length} states`
+            : `Asset regeneration for ${templateIds.length} templates`,
+        });
+      } catch (err) {
+        if (err instanceof InsufficientBalanceError) {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: `Insufficient balance. Need ${microsToSparks(estimatedCostMicros)} Sparks.`,
+          });
+        }
+        throw err;
+      }
+
+      const gameRow = await ctx.env.DB.prepare(
+        'SELECT definition FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(packRow.game_id).first<{ definition: string }>();
+
+      if (!gameRow) {
+        await walletService.credit({
+          userId: ctx.user.id,
+          type: 'generation_refund',
+          amountMicros: estimatedCostMicros,
+          referenceType: 'generation_job',
+          referenceId: jobId,
+          idempotencyKey: `gen_refund_${jobId}`,
+          description: `Refund: game not found`,
+        });
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
+      }
+
+      let definition: { templates?: Record<string, { physics?: { shape: string; width?: number; height?: number; radius?: number }; tags?: string[] }> };
+      try {
+        definition = JSON.parse(gameRow.definition);
+      } catch {
+        await walletService.credit({
+          userId: ctx.user.id,
+          type: 'generation_refund',
+          amountMicros: estimatedCostMicros,
+          referenceType: 'generation_job',
+          referenceId: jobId,
+          idempotencyKey: `gen_refund_${jobId}`,
+          description: `Refund: invalid game definition`,
+        });
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Invalid game definition' });
+      }
+
+      const now = Date.now();
+      const newPromptDefaults = {
+        ...(packUiInfo?.prompt_defaults_json ? JSON.parse(packUiInfo.prompt_defaults_json) : {}),
+        themePrompt: input.newTheme,
+        styleOverride: input.newStyle,
+      };
+
+      await ctx.env.DB.prepare(
+        `UPDATE asset_packs SET prompt_defaults_json = ? WHERE id = ?`
+      ).bind(JSON.stringify(newPromptDefaults), input.packId).run();
+
+      try {
+        await ctx.env.DB.prepare(
+          `INSERT INTO generation_jobs (id, game_id, pack_id, status, prompt_defaults_json, created_at)
+           VALUES (?, ?, ?, 'queued', ?, ?)`
+        ).bind(jobId, packRow.game_id, input.packId, JSON.stringify(newPromptDefaults), now).run();
+
+        if (isUiComponentPack && packUiInfo?.component_type) {
+          for (const state of uiStates) {
+            const taskId = crypto.randomUUID();
+            await ctx.env.DB.prepare(
+              `INSERT INTO generation_tasks (id, job_id, template_id, status, prompt_components_json, created_at)
+               VALUES (?, ?, ?, 'queued', ?, ?)`
+            ).bind(
+              taskId,
+              jobId,
+              state,
+              JSON.stringify({ componentType: packUiInfo.component_type, state }),
+              now
+            ).run();
+          }
+
+          return { jobId, taskCount: uiStates.length };
+        }
+
+        for (const templateId of templateIds) {
+          const template = definition.templates?.[templateId];
+          const physics = template?.physics;
+          const tags = template?.tags ?? [];
+
+          let entityType: EntityType = 'item';
+          if (tags.includes('player') || tags.includes('character')) entityType = 'character';
+          else if (tags.includes('enemy')) entityType = 'enemy';
+          else if (tags.includes('platform') || tags.includes('wall') || tags.includes('ground')) entityType = 'platform';
+          else if (tags.includes('background')) entityType = 'background';
+          else if (tags.includes('ui')) entityType = 'ui';
+
+          const physicsContext = physics ? {
+            shape: physics.shape,
+            width: physics.width,
+            height: physics.height,
+            radius: physics.radius,
+          } : { shape: 'box' as const, width: 1, height: 1 };
+
+          const dimensions = getTargetDimensions(
+            physicsContext.shape,
+            physicsContext.width,
+            physicsContext.height
+          );
+
+          const styleOverride = input.newStyle as SpriteStyle;
+
+          const compiledPrompt = buildStructuredPrompt({
+            templateId,
+            physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
+            physicsWidth: physicsContext.width,
+            physicsHeight: physicsContext.height,
+            physicsRadius: physicsContext.radius,
+            entityType,
+            themePrompt: input.newTheme,
+            style: styleOverride,
+            targetWidth: dimensions.width,
+            targetHeight: dimensions.height,
+          });
+
+          const compiledNegativePrompt = buildStructuredNegativePrompt(styleOverride);
+
+          const promptComponents = {
+            themePrompt: input.newTheme,
+            templateId,
+            entityType,
+            styleOverride,
+            physicsShape: physicsContext.shape,
+            physicsWidth: physicsContext.width,
+            physicsHeight: physicsContext.height,
+          };
+
+          const taskId = crypto.randomUUID();
+
+          await ctx.env.DB.prepare(
+            `INSERT INTO generation_tasks (id, job_id, template_id, status, prompt_components_json, compiled_prompt, compiled_negative_prompt, model_id, target_width, target_height, aspect_ratio, physics_context_json, created_at)
+             VALUES (?, ?, ?, 'queued', ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          ).bind(
+            taskId,
+            jobId,
+            templateId,
+            JSON.stringify(promptComponents),
+            compiledPrompt,
+            compiledNegativePrompt,
+            newPromptDefaults.modelId ?? null,
+            dimensions.width,
+            dimensions.height,
+            dimensions.aspectRatio,
+            JSON.stringify(physicsContext),
+            now
+          ).run();
+        }
+
+        return { jobId, taskCount: templateIds.length };
+      } catch (jobCreationError) {
+        await walletService.credit({
+          userId: ctx.user.id,
+          type: 'generation_refund',
+          amountMicros: estimatedCostMicros,
+          referenceType: 'generation_job',
+          referenceId: jobId,
+          idempotencyKey: `gen_refund_${jobId}`,
+          description: `Refund: job creation failed`,
+        });
+        throw jobCreationError;
+      }
+    }),
+
   processGenerationJob: protectedProcedure
     .input(z.object({ jobId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const scenarioConfig = getScenarioConfigFromEnv(ctx.env);
-      if (!scenarioConfig.configured) {
+      const providerConfig = getImageGenerationConfig(ctx.env);
+      if (!providerConfig.configured) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: 'Scenario.com not configured',
+          message: providerConfig.error ?? 'Image generation provider not configured',
         });
       }
 
@@ -718,6 +1032,17 @@ export const assetSystemRouter = router({
       if (!jobRow) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Job not found' });
       }
+
+       let packUiInfo: AssetPackUIInfoRow | null = null;
+       if (jobRow.pack_id) {
+         packUiInfo = await ctx.env.DB.prepare(
+           `SELECT component_type, nine_patch_margins_json, prompt_defaults_json 
+            FROM asset_packs WHERE id = ? AND deleted_at IS NULL`
+         ).bind(jobRow.pack_id).first<AssetPackUIInfoRow>();
+       }
+
+       const uiComponentType = packUiInfo?.component_type ?? null;
+       const isUiComponentPack = Boolean(uiComponentType);
 
       const now = Date.now();
       await ctx.env.DB.prepare(
@@ -737,6 +1062,29 @@ export const assetSystemRouter = router({
        const jobDefaults = jobRow.prompt_defaults_json ? JSON.parse(jobRow.prompt_defaults_json) : {};
        const shouldRemoveBackground = jobDefaults.removeBackground === true;
 
+       const uiMargin = USER_COSTS.ASSET_ENTITY / PROVIDER_COSTS.SCENARIO_IMG2IMG;
+       const uiRemoveBgCostMicros = Math.ceil(PROVIDER_COSTS.SCENARIO_REMOVE_BG * uiMargin);
+       const uiOpCostMicros = USER_COSTS.ASSET_ENTITY + uiRemoveBgCostMicros;
+
+        const uiAdapters = isUiComponentPack ? createWorkersAdapters(ctx.env) : null;
+
+       const uiBaseState = uiComponentType ? getControlBaseState(uiComponentType) : 'normal';
+       const uiConfig = uiComponentType ? getControlConfig(uiComponentType) : null;
+       const uiNinePatchMargins = (() => {
+         if (!uiComponentType) return null;
+         if (packUiInfo?.nine_patch_margins_json) {
+           try {
+             return JSON.parse(packUiInfo.nine_patch_margins_json);
+           } catch {
+             return null;
+           }
+         }
+         return uiConfig?.margins ?? null;
+       })();
+
+       const uiTheme = typeof jobDefaults.themePrompt === 'string' ? jobDefaults.themePrompt : '';
+       const uiR2Prefix = `generated/${jobRow.game_id}/ui-theme`;
+
        for (const task of tasksResult.results) {
          const promptComponents = task.prompt_components_json ? JSON.parse(task.prompt_components_json) : {};
          const physicsContext = task.physics_context_json ? JSON.parse(task.physics_context_json) : {};
@@ -748,8 +1096,123 @@ export const assetSystemRouter = router({
           `UPDATE generation_tasks SET status = 'running', started_at = ? WHERE id = ?`
         ).bind(taskNow, task.id).run();
 
-        try {
+         try {
           const promptComponents = task.prompt_components_json ? JSON.parse(task.prompt_components_json) : {};
+
+          if (isUiComponentPack && uiComponentType && uiAdapters && uiConfig && uiNinePatchMargins) {
+            const state = task.template_id as UIComponentSheetSpec['states'][number];
+            jobLog('DEBUG', input.jobId, task.id, `UI pack task: component=${uiComponentType}, state=${state}`);
+
+            let capturedSilhouette: Uint8Array | null = null;
+            const debugSink = async (event: DebugEvent) => {
+              if (event.type !== 'artifact') return;
+              if (event.stageId !== 'ui-base-state') return;
+              if (event.name !== '1-silhouette.png') return;
+              if (typeof event.data === 'string') return;
+              capturedSilhouette = event.data;
+            };
+
+            const spec: UIComponentSheetSpec = {
+              type: 'sheet',
+              id: `${jobRow.pack_id ?? jobRow.game_id}-${uiComponentType}-${state}-${Date.now()}`,
+              kind: 'ui_component',
+              componentType: uiComponentType,
+              states: [state],
+              ninePatchMargins: uiNinePatchMargins,
+              width: uiConfig.dimensions.width,
+              height: uiConfig.dimensions.height,
+              layout: { type: 'manual' },
+              baseResolution: jobDefaults.baseResolution,
+            };
+
+            const runMeta = {
+              gameId: jobRow.game_id,
+              packId: jobRow.pack_id ?? crypto.randomUUID(),
+              assetId: crypto.randomUUID(),
+              gameTitle: `UI Pack - ${uiComponentType}`,
+              theme: uiTheme,
+              style: 'flat' as const,
+              r2Prefix: uiR2Prefix,
+              startedAt: Date.now(),
+              runId: crypto.randomUUID(),
+            };
+
+            const run: AssetRun<UIComponentSheetSpec> = {
+              spec,
+              artifacts: {},
+              meta: runMeta,
+            };
+
+            const afterBase = await uiBaseStateStage.run(run, uiAdapters, debugSink);
+            const afterVariations = await uiVariationStatesStage.run(afterBase, uiAdapters, debugSink);
+
+            if (!afterVariations.artifacts.stateImages?.[state]) {
+              throw new Error(`UI pipeline did not produce image for state: ${state}`);
+            }
+
+            if (!jobRow.pack_id) {
+              throw new Error('UI component generation requires pack_id');
+            }
+
+            const assetId = crypto.randomUUID();
+            const stateR2Key = buildAssetPath(jobRow.game_id, jobRow.pack_id, assetId);
+            const silhouetteR2Key = stateR2Key.replace(/\.png$/, '-silhouette.png');
+
+            await uiAdapters.r2.put(stateR2Key, afterVariations.artifacts.stateImages[state], { contentType: 'image/png' });
+
+            let silhouetteUrl: string | null = null;
+            if (capturedSilhouette) {
+              await uiAdapters.r2.put(silhouetteR2Key, capturedSilhouette, { contentType: 'image/png' });
+              silhouetteUrl = resolveStoredAssetUrl(silhouetteR2Key, ctx.env.ASSET_HOST);
+            }
+            const assetNow = Date.now();
+
+            await ctx.env.DB.prepare(
+              `INSERT INTO game_assets (id, owner_game_id, source, image_url, width, height, created_at)
+               VALUES (?, ?, 'generated', ?, ?, ?, ?)`
+            ).bind(assetId, jobRow.game_id, stateR2Key, uiConfig.dimensions.width, uiConfig.dimensions.height, assetNow).run();
+
+            await ctx.env.DB.prepare(
+              `UPDATE generation_tasks SET status = 'succeeded', asset_id = ?, finished_at = ? WHERE id = ?`
+            ).bind(assetId, Date.now(), task.id).run();
+
+            const operationMultiplier = state === uiBaseState ? 1 : 2;
+            const costMicros = uiOpCostMicros * operationMultiplier;
+            const costId = crypto.randomUUID();
+            await ctx.env.DB.prepare(
+              `INSERT INTO operation_costs (id, user_id, operation_type, estimated_cost_micros, charged_cost_micros, reference_type, reference_id, created_at)
+               VALUES (?, ?, 'scenario_txt2img', ?, ?, 'generation_task', ?, ?)`
+            ).bind(costId, ctx.user.id, costMicros, costMicros, task.id, assetNow).run();
+
+            if (jobRow.pack_id) {
+              const entryId = crypto.randomUUID();
+              const lastGenJson = JSON.stringify({
+                jobId: input.jobId,
+                taskId: task.id,
+                componentType: uiComponentType,
+                state,
+                silhouetteUrl,
+                r2Key: stateR2Key,
+                publicUrl: resolveStoredAssetUrl(stateR2Key, ctx.env.ASSET_HOST),
+                metadataUrl: null,
+                r2Keys: capturedSilhouette ? [stateR2Key, silhouetteR2Key] : [stateR2Key],
+                createdAt: assetNow,
+              });
+
+              await ctx.env.DB.prepare(
+                `INSERT INTO asset_pack_entries (id, pack_id, template_id, asset_id, last_generation_json)
+                 VALUES (?, ?, ?, ?, ?)
+                 ON CONFLICT(pack_id, template_id) DO UPDATE SET
+                   asset_id = excluded.asset_id,
+                   last_generation_json = excluded.last_generation_json`
+              ).bind(entryId, jobRow.pack_id, state, assetId, lastGenJson).run();
+            }
+
+            jobLog('INFO', input.jobId, task.id, `UI task succeeded - Asset: ${assetId}`);
+            successCount++;
+            continue;
+          }
+
           const entityType = (promptComponents.entityType ?? 'item') as EntityType;
           const style = (promptComponents.styleOverride ?? 'pixel') as SpriteStyle;
 
@@ -762,6 +1225,9 @@ export const assetSystemRouter = router({
             style,
             width: task.target_width ?? 512,
             height: task.target_height ?? 512,
+            strength: jobDefaults.strength,
+            guidance: jobDefaults.guidance,
+            seed: jobDefaults.seed,
             context: assetContext,
           });
 
@@ -812,6 +1278,11 @@ export const assetSystemRouter = router({
                 taskId: task.id,
                 compiledPrompt: task.compiled_prompt,
                 backgroundRemoved: shouldRemoveBackground,
+                silhouetteUrl: result.silhouetteUrl,
+                strength: jobDefaults.strength,
+                guidance: jobDefaults.guidance,
+                seed: jobDefaults.seed,
+                style: jobDefaults.styleOverride,
                 createdAt: assetNow,
               });
 
@@ -1063,5 +1534,231 @@ export const assetSystemRouter = router({
       `).bind(taskId, jobId, sheetSpec.id, now).run();
 
       return { jobId };
+    }),
+
+  regenerateAssets: protectedProcedure
+    .input(z.object({
+      packId: z.string(),
+      templateIds: z.array(z.string()).min(1),
+      newTheme: z.string().optional(),
+      newStyle: z.string().optional(),
+      customPrompts: z.record(z.string()).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const walletService = new WalletService(ctx.env.DB);
+
+      const allowed = await walletService.checkRateLimit(
+        ctx.user.id,
+        'generation',
+        RATE_LIMITS.GENERATIONS_PER_HOUR,
+        60 * 60 * 1000
+      );
+      if (!allowed) {
+        throw new TRPCError({
+          code: 'TOO_MANY_REQUESTS',
+          message: `Rate limit exceeded. Max ${RATE_LIMITS.GENERATIONS_PER_HOUR} generations per hour.`,
+        });
+      }
+
+      const packRow = await ctx.env.DB.prepare(
+        'SELECT * FROM asset_packs WHERE id = ? AND deleted_at IS NULL'
+      ).bind(input.packId).first<AssetPackRow>();
+
+      if (!packRow) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Asset pack not found' });
+      }
+
+      const packUiInfo = await ctx.env.DB.prepare(
+        `SELECT component_type, nine_patch_margins_json, prompt_defaults_json
+         FROM asset_packs WHERE id = ? AND deleted_at IS NULL`
+      ).bind(input.packId).first<AssetPackUIInfoRow>();
+
+      const isUiComponentPack = Boolean(packUiInfo?.component_type);
+
+      if (isUiComponentPack) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'regenerateAssets does not support UI component packs',
+        });
+      }
+
+      const entriesResult = await ctx.env.DB.prepare(
+        'SELECT template_id FROM asset_pack_entries WHERE pack_id = ?'
+      ).bind(input.packId).all<{ template_id: string }>();
+
+      const validTemplateIds = new Set(entriesResult.results.map(e => e.template_id));
+      const invalidTemplateIds = input.templateIds.filter(id => !validTemplateIds.has(id));
+      if (invalidTemplateIds.length > 0) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Invalid templateIds not in pack: ${invalidTemplateIds.join(', ')}`,
+        });
+      }
+
+      const estimatedCostMicros = input.templateIds.length * USER_COSTS.ASSET_ENTITY;
+      const jobId = crypto.randomUUID();
+
+      try {
+        await walletService.debit({
+          userId: ctx.user.id,
+          type: 'generation_debit',
+          amountMicros: -estimatedCostMicros,
+          referenceType: 'generation_job',
+          referenceId: jobId,
+          idempotencyKey: `gen_debit_${jobId}`,
+          description: `Asset regeneration for ${input.templateIds.length} templates`,
+        });
+      } catch (err) {
+        if (err instanceof InsufficientBalanceError) {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: `Insufficient balance. Need ${microsToSparks(estimatedCostMicros)} Sparks.`,
+          });
+        }
+        throw err;
+      }
+
+      const gameRow = await ctx.env.DB.prepare(
+        'SELECT definition FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(packRow.game_id).first<{ definition: string }>();
+
+      if (!gameRow) {
+        await walletService.credit({
+          userId: ctx.user.id,
+          type: 'generation_refund',
+          amountMicros: estimatedCostMicros,
+          referenceType: 'generation_job',
+          referenceId: jobId,
+          idempotencyKey: `gen_refund_${jobId}`,
+          description: `Refund: game not found`,
+        });
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
+      }
+
+      let definition: { templates?: Record<string, { physics?: { shape: string; width?: number; height?: number; radius?: number }; tags?: string[] }> };
+      try {
+        definition = JSON.parse(gameRow.definition);
+      } catch {
+        await walletService.credit({
+          userId: ctx.user.id,
+          type: 'generation_refund',
+          amountMicros: estimatedCostMicros,
+          referenceType: 'generation_job',
+          referenceId: jobId,
+          idempotencyKey: `gen_refund_${jobId}`,
+          description: `Refund: invalid game definition`,
+        });
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Invalid game definition' });
+      }
+
+      const now = Date.now();
+      const existingPromptDefaults = packUiInfo?.prompt_defaults_json
+        ? JSON.parse(packUiInfo.prompt_defaults_json)
+        : {};
+
+      const mergedPromptDefaults = {
+        ...existingPromptDefaults,
+        themePrompt: input.newTheme ?? existingPromptDefaults.themePrompt,
+        styleOverride: input.newStyle ?? existingPromptDefaults.styleOverride,
+      };
+
+      await ctx.env.DB.prepare(
+        `UPDATE asset_packs SET prompt_defaults_json = ? WHERE id = ?`
+      ).bind(JSON.stringify(mergedPromptDefaults), input.packId).run();
+
+      try {
+        await ctx.env.DB.prepare(
+          `INSERT INTO generation_jobs (id, game_id, pack_id, status, prompt_defaults_json, created_at)
+           VALUES (?, ?, ?, 'queued', ?, ?)`
+        ).bind(jobId, packRow.game_id, input.packId, JSON.stringify(mergedPromptDefaults), now).run();
+
+        for (const templateId of input.templateIds) {
+          const template = definition.templates?.[templateId];
+          const physics = template?.physics;
+          const tags = template?.tags ?? [];
+
+          let entityType: EntityType = 'item';
+          if (tags.includes('player') || tags.includes('character')) entityType = 'character';
+          else if (tags.includes('enemy')) entityType = 'enemy';
+          else if (tags.includes('platform') || tags.includes('wall') || tags.includes('ground')) entityType = 'platform';
+          else if (tags.includes('background')) entityType = 'background';
+          else if (tags.includes('ui')) entityType = 'ui';
+
+          const physicsContext = physics ? {
+            shape: physics.shape,
+            width: physics.width,
+            height: physics.height,
+            radius: physics.radius,
+          } : { shape: 'box' as const, width: 1, height: 1 };
+
+          const dimensions = getTargetDimensions(
+            physicsContext.shape,
+            physicsContext.width,
+            physicsContext.height
+          );
+
+          const customPrompt = input.customPrompts?.[templateId];
+          const themePrompt = input.newTheme ?? mergedPromptDefaults.themePrompt;
+          const styleOverride = (input.newStyle ?? mergedPromptDefaults.styleOverride ?? 'pixel') as SpriteStyle;
+
+          const compiledPrompt = customPrompt ?? buildStructuredPrompt({
+            templateId,
+            physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
+            physicsWidth: physicsContext.width,
+            physicsHeight: physicsContext.height,
+            physicsRadius: physicsContext.radius,
+            entityType,
+            themePrompt,
+            style: styleOverride,
+            targetWidth: dimensions.width,
+            targetHeight: dimensions.height,
+          });
+
+          const compiledNegativePrompt = buildStructuredNegativePrompt(styleOverride);
+
+          const promptComponents = {
+            themePrompt,
+            templateId,
+            entityType,
+            styleOverride,
+            physicsShape: physicsContext.shape,
+            physicsWidth: physicsContext.width,
+            physicsHeight: physicsContext.height,
+          };
+
+          const taskId = crypto.randomUUID();
+
+          await ctx.env.DB.prepare(
+            `INSERT INTO generation_tasks (id, job_id, template_id, status, prompt_components_json, compiled_prompt, compiled_negative_prompt, model_id, target_width, target_height, aspect_ratio, physics_context_json, created_at)
+             VALUES (?, ?, ?, 'queued', ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          ).bind(
+            taskId,
+            jobId,
+            templateId,
+            JSON.stringify(promptComponents),
+            compiledPrompt,
+            compiledNegativePrompt,
+            mergedPromptDefaults.modelId ?? null,
+            dimensions.width,
+            dimensions.height,
+            dimensions.aspectRatio,
+            JSON.stringify(physicsContext),
+            now
+          ).run();
+        }
+
+        return { jobId, taskCount: input.templateIds.length };
+      } catch (jobCreationError) {
+        await walletService.credit({
+          userId: ctx.user.id,
+          type: 'generation_refund',
+          amountMicros: estimatedCostMicros,
+          referenceType: 'generation_job',
+          referenceId: jobId,
+          idempotencyKey: `gen_refund_${jobId}`,
+          description: `Refund: job creation failed`,
+        });
+        throw jobCreationError;
+      }
     }),
 });

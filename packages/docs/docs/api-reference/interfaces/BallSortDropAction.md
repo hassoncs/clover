@@ -6,7 +6,7 @@
 
 # Interface: BallSortDropAction
 
-Defined in: [types/rules.ts:383](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L383)
+Defined in: [types/rules.ts:391](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L391)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:383](https://github.com/hassoncs/clover/blob/5a10349
 
 > **type**: `"ball_sort_drop"`
 
-Defined in: [types/rules.ts:384](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L384)
+Defined in: [types/rules.ts:392](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L392)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [types/rules.ts:384](https://github.com/hassoncs/clover/blob/5a10349
 
 > `optional` **tubeIndex**: `number`
 
-Defined in: [types/rules.ts:385](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L385)
+Defined in: [types/rules.ts:393](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L393)

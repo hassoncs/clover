@@ -5,6 +5,7 @@ import type { TestGameMeta } from "@/lib/registry/types";
 export const metadata: TestGameMeta = {
   title: "Stack & Match",
   description: "Place tiles on a grid to match 3+ adjacent same-color tiles",
+  status: "archived",
 };
 
 const WORLD_WIDTH = 12;

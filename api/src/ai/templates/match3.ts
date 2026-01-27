@@ -64,7 +64,7 @@ export const MATCH3_TEMPLATE: GameDefinition = {
           when: { hasTag: 'sys.match3:matched' },
           priority: 3,
           behaviors: [
-            { type: 'sprite_effect', effect: 'fade_out', params: { duration: 0.4 } },
+            { type: 'sprite_effect', effect: 'flash', params: { duration: 0.4 } },
           ],
         },
       ],
@@ -99,7 +99,7 @@ export const MATCH3_TEMPLATE: GameDefinition = {
           when: { hasTag: 'sys.match3:matched' },
           priority: 3,
           behaviors: [
-            { type: 'sprite_effect', effect: 'fade_out', params: { duration: 0.4 } },
+            { type: 'sprite_effect', effect: 'flash', params: { duration: 0.4 } },
           ],
         },
       ],
@@ -134,7 +134,7 @@ export const MATCH3_TEMPLATE: GameDefinition = {
           when: { hasTag: 'sys.match3:matched' },
           priority: 3,
           behaviors: [
-            { type: 'sprite_effect', effect: 'fade_out', params: { duration: 0.4 } },
+            { type: 'sprite_effect', effect: 'flash', params: { duration: 0.4 } },
           ],
         },
       ],
@@ -169,7 +169,7 @@ export const MATCH3_TEMPLATE: GameDefinition = {
           when: { hasTag: 'sys.match3:matched' },
           priority: 3,
           behaviors: [
-            { type: 'sprite_effect', effect: 'fade_out', params: { duration: 0.4 } },
+            { type: 'sprite_effect', effect: 'flash', params: { duration: 0.4 } },
           ],
         },
       ],

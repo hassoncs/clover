@@ -1,4 +1,7 @@
-import sharp from 'sharp';
+async function getSharp() {
+  const mod = await import('sharp');
+  return mod.default;
+}
 
 export interface TextHintParams {
   text: string;
@@ -37,6 +40,7 @@ export async function createTextHint(params: TextHintParams): Promise<Buffer> {
     </svg>
   `;
   
+  const sharp = await getSharp();
   return sharp(Buffer.from(svg)).png().toBuffer();
 }
 
@@ -51,6 +55,7 @@ export async function createIconHint(params: IconHintParams): Promise<Buffer> {
     </svg>
   `;
   
+  const sharp = await getSharp();
   return sharp(Buffer.from(svg)).png().toBuffer();
 }
 

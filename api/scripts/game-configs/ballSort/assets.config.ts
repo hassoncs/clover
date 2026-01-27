@@ -87,7 +87,7 @@ export const ballSortConfig: GameAssetConfig = {
       id: 'background',
       prompt: 'A whimsical candy factory interior for a puzzle game. Colorful conveyor belts carrying candies. Giant lollipops and candy canes as decorative pillars. Bubblegum pink and mint green color scheme. Swirling rainbow patterns on the walls. Candy dispensers and gumball machines in the background. Sweet pastel lighting with sparkles. Playful and delicious atmosphere.',
       width: 1024,
-      height: 1024,
+      height: 1792,
     } as BackgroundSpec,
     {
       type: 'title_hero',

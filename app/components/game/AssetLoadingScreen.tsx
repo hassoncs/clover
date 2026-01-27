@@ -79,7 +79,7 @@ export function AssetLoadingScreen({
             />
           ) : (
             <View style={styles.heroPlaceholder}>
-              <Text style={styles.heroEmoji}>🎮</Text>
+              <Text style={styles.heroText}>GAME</Text>
             </View>
           )}
         </View>
@@ -196,8 +196,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  heroEmoji: {
-    fontSize: 48,
+  heroText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'rgba(255, 255, 255, 0.8)',
+    letterSpacing: 2,
   },
   title: {
     fontSize: 28,

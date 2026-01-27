@@ -1,9 +1,11 @@
 #!/usr/bin/env npx tsx
 import * as path from 'path';
+import * as crypto from 'node:crypto';
 import { executeGameAssets } from '../src/ai/pipeline';
 import { createNodeAdapters, createFileDebugSink } from '../src/ai/pipeline/adapters/node';
 import { getGameConfig, listGameIds } from './game-configs';
 import type { GameAssetConfig } from '../src/ai/pipeline/types';
+import { buildAssetPath } from '@slopcade/shared/utils/asset-url';
 
 interface CliOptions {
   gameId?: string;
@@ -12,6 +14,8 @@ interface CliOptions {
   assetType?: string;
   debugDir: string;
   help: boolean;
+  strength?: number;
+  packId?: string;
 }
 
 function parseArgs(): CliOptions {
@@ -36,6 +40,16 @@ function parseArgs(): CliOptions {
       options.assetType = arg.split('=')[1];
     } else if (arg.startsWith('--debug-dir=')) {
       options.debugDir = arg.split('=').slice(1).join('=');
+    } else if (arg.startsWith('--strength=')) {
+      const val = parseFloat(arg.split('=')[1]);
+      if (!isNaN(val) && val >= 0 && val <= 1) {
+        options.strength = val;
+      } else {
+        console.error('Error: --strength must be a number between 0 and 1');
+        process.exit(1);
+      }
+    } else if (arg.startsWith('--pack-id=')) {
+      options.packId = arg.split('=').slice(1).join('=');
     } else if (!arg.startsWith('--') && !options.gameId) {
       options.gameId = arg;
     }
@@ -55,6 +69,8 @@ Options:
   --dry-run            Only show what would be generated, skip API calls
   --asset=ID           Only generate specific asset by ID
   --type=TYPE          Only generate assets of specific type (entity, background, title_hero, parallax, sheet)
+  --strength=N         img2img strength (0-1, default: 0.925). Lower = more faithful to silhouette
+  --pack-id=UUID        Asset pack UUID to use for this run (default: auto-generate)
   --debug-dir=PATH     Directory for debug output (default: api/debug-output)
   -h, --help           Show this help message
 
@@ -149,6 +165,7 @@ async function main(): Promise<void> {
 
   config = filterAssets(config, options);
   const debugDir = path.join(options.debugDir, config.gameId);
+  const packId = options.packId ?? crypto.randomUUID();
 
   console.log('═'.repeat(60));
   console.log('  GAME ASSET GENERATION');
@@ -158,6 +175,7 @@ async function main(): Promise<void> {
 
   console.log(`Debug output: ${debugDir}`);
   console.log(`Dry run: ${options.dryRun}`);
+  console.log(`Pack ID: ${packId}`);
   console.log('');
 
   if (options.dryRun) {
@@ -165,7 +183,24 @@ async function main(): Promise<void> {
     console.log('');
     console.log('Would generate the following assets:');
     for (const asset of config.assets) {
-      console.log(`  ${asset.id} -> ${config.r2Prefix}/${asset.id}.png`);
+      const assetId = crypto.randomUUID();
+      const baseKey = buildAssetPath(config.gameId, packId, assetId);
+
+      if (asset.type === 'parallax') {
+        console.log(`  ${asset.id} (assetId=${assetId})`);
+        for (let i = 0; i < asset.layerCount; i++) {
+          const key = buildAssetPath(config.gameId, packId, `${assetId}-layer-${i}`);
+          console.log(`    - ${key}`);
+        }
+        continue;
+      }
+
+      console.log(`  ${asset.id} (assetId=${assetId}) -> ${baseKey}`);
+
+      if (asset.type === 'sheet') {
+        const metadataKey = baseKey.replace(/\.png$/, '.json');
+        console.log(`    - ${metadataKey}`);
+      }
     }
     process.exit(0);
   }
@@ -189,8 +224,14 @@ async function main(): Promise<void> {
   const debugSink = createFileDebugSink(debugDir);
 
   console.log('Starting generation...\n');
+  if (options.strength !== undefined) {
+    console.log(`Using strength override: ${options.strength}\n`);
+  }
 
-  const result = await executeGameAssets(config, adapters, debugSink);
+  const result = await executeGameAssets(config, adapters, debugSink, {
+    strength: options.strength,
+    packId,
+  });
 
   console.log('');
   console.log('═'.repeat(60));

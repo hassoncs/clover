@@ -46,7 +46,11 @@ export function estimateGameAssetCost(
     id.includes('title') || id.includes('hero')
   ).length;
   
-  const entityCount = templatesToGenerate.length - backgroundCount - parallaxCount - titleHeroCount;
+  const titleHeroNoBgCount = templatesToGenerate.filter(id => 
+    id.includes('title_hero_no_bg') || id.includes('hero_no_bg')
+  ).length;
+  
+  const entityCount = templatesToGenerate.length - backgroundCount - parallaxCount - titleHeroCount - titleHeroNoBgCount;
   
   // Build breakdown
   if (entityCount > 0) {
@@ -82,6 +86,15 @@ export function estimateGameAssetCost(
       count: titleHeroCount,
       unitCostMicros: USER_COSTS.ASSET_TITLE_HERO,
       totalMicros: titleHeroCount * USER_COSTS.ASSET_TITLE_HERO,
+    });
+  }
+  
+  if (titleHeroNoBgCount > 0) {
+    breakdown.push({
+      description: 'Title/Hero images (no bg)',
+      count: titleHeroNoBgCount,
+      unitCostMicros: USER_COSTS.ASSET_TITLE_HERO_NO_BG,
+      totalMicros: titleHeroNoBgCount * USER_COSTS.ASSET_TITLE_HERO_NO_BG,
     });
   }
   

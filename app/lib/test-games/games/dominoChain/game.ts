@@ -4,6 +4,7 @@ import type { TestGameMeta } from "@/lib/registry/types";
 export const metadata: TestGameMeta = {
   title: "Domino Chain",
   description: "Place dominoes and watch them fall in a satisfying chain reaction",
+  status: "archived",
 };
 
 const WORLD_WIDTH = 16;

@@ -6,7 +6,7 @@
 
 # Interface: ChromaticAberrationEffect
 
-Defined in: [types/effects.ts:134](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L134)
+Defined in: [types/effects.ts:134](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L134)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/effects.ts:134](https://github.com/hassoncs/clover/blob/5a103
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L48)
+Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L48)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **opacity**: `number`
 
-Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L49)
+Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L49)
 
 #### Inherited from
 
@@ -42,7 +42,7 @@ Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **blendMode**: [`EffectBlendMode`](../type-aliases/EffectBlendMode.md)
 
-Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L50)
+Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L50)
 
 #### Inherited from
 
@@ -54,7 +54,7 @@ Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/5a1034
 
 > `optional` **id**: `string`
 
-Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L51)
+Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L51)
 
 #### Inherited from
 
@@ -66,7 +66,7 @@ Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/5a1034
 
 > **type**: `"chromaticAberration"`
 
-Defined in: [types/effects.ts:135](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L135)
+Defined in: [types/effects.ts:135](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L135)
 
 #### Overrides
 
@@ -78,7 +78,7 @@ Defined in: [types/effects.ts:135](https://github.com/hassoncs/clover/blob/5a103
 
 > **offsetX**: `number`
 
-Defined in: [types/effects.ts:136](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L136)
+Defined in: [types/effects.ts:136](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L136)
 
 ***
 
@@ -86,7 +86,7 @@ Defined in: [types/effects.ts:136](https://github.com/hassoncs/clover/blob/5a103
 
 > **offsetY**: `number`
 
-Defined in: [types/effects.ts:137](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L137)
+Defined in: [types/effects.ts:137](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L137)
 
 ***
 
@@ -94,7 +94,7 @@ Defined in: [types/effects.ts:137](https://github.com/hassoncs/clover/blob/5a103
 
 > `optional` **animated**: `boolean`
 
-Defined in: [types/effects.ts:138](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L138)
+Defined in: [types/effects.ts:138](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L138)
 
 ***
 
@@ -102,4 +102,4 @@ Defined in: [types/effects.ts:138](https://github.com/hassoncs/clover/blob/5a103
 
 > `optional` **intensity**: `number`
 
-Defined in: [types/effects.ts:139](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L139)
+Defined in: [types/effects.ts:139](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L139)

@@ -112,7 +112,7 @@ export const uiBaseStateStage: Stage = {
       data: silhouettePng,
     });
 
-    const silhouetteAssetId = await adapters.scenario.uploadImage(silhouettePng);
+    const silhouetteAssetId = await adapters.provider.uploadImage(silhouettePng);
 
     const baseState = getControlBaseState(spec.componentType);
     
@@ -133,13 +133,13 @@ export const uiBaseStateStage: Stage = {
       data: `=== POSITIVE ===\n${prompt}\n\n=== NEGATIVE ===\n${negativePrompt}`,
     });
 
-    const img2imgResult = await adapters.scenario.img2img({
+    const img2imgResult = await adapters.provider.img2img({
       imageAssetId: silhouetteAssetId,
       prompt,
       strength: 0.91,
     });
 
-    const { buffer: generatedBuffer } = await adapters.scenario.downloadImage(img2imgResult.assetId);
+    const { buffer: generatedBuffer } = await adapters.provider.downloadImage(img2imgResult.assetId);
 
     await debug({
       type: 'artifact',
@@ -151,8 +151,8 @@ export const uiBaseStateStage: Stage = {
       data: generatedBuffer,
     });
 
-    const bgRemoveResult = await adapters.scenario.removeBackground(img2imgResult.assetId);
-    const { buffer: finalBuffer } = await adapters.scenario.downloadImage(bgRemoveResult.assetId);
+    const bgRemoveResult = await adapters.provider.removeBackground(img2imgResult.assetId);
+    const { buffer: finalBuffer } = await adapters.provider.downloadImage(bgRemoveResult.assetId);
 
     await debug({
       type: 'artifact',
@@ -170,7 +170,7 @@ export const uiBaseStateStage: Stage = {
         ...run.artifacts,
         baseStateImage: finalBuffer,
         stateImages: { normal: finalBuffer },
-        scenarioAssetId: bgRemoveResult.assetId,
+        providerAssetId: bgRemoveResult.assetId,
       },
     };
   },
@@ -196,7 +196,7 @@ export const uiVariationStatesStage: Stage = {
 
     const statesToGenerate = spec.states.filter(s => s !== baseState);
 
-    const baseAssetId = await adapters.scenario.uploadImage(run.artifacts.baseStateImage);
+    const baseAssetId = await adapters.provider.uploadImage(run.artifacts.baseStateImage);
 
     for (const state of statesToGenerate) {
       const { prompt, negativePrompt } = buildUIComponentPrompt({
@@ -216,13 +216,13 @@ export const uiVariationStatesStage: Stage = {
         data: `=== POSITIVE ===\n${prompt}\n\n=== NEGATIVE ===\n${negativePrompt}`,
       });
 
-      const img2imgResult = await adapters.scenario.img2img({
+      const img2imgResult = await adapters.provider.img2img({
         imageAssetId: baseAssetId,
         prompt,
         strength: 0.91,
       });
 
-      const { buffer: generatedBuffer } = await adapters.scenario.downloadImage(img2imgResult.assetId);
+      const { buffer: generatedBuffer } = await adapters.provider.downloadImage(img2imgResult.assetId);
 
       await debug({
         type: 'artifact',
@@ -234,8 +234,8 @@ export const uiVariationStatesStage: Stage = {
         data: generatedBuffer,
       });
 
-      const bgRemoveResult = await adapters.scenario.removeBackground(img2imgResult.assetId);
-      const { buffer: finalBuffer } = await adapters.scenario.downloadImage(bgRemoveResult.assetId);
+      const bgRemoveResult = await adapters.provider.removeBackground(img2imgResult.assetId);
+      const { buffer: finalBuffer } = await adapters.provider.downloadImage(bgRemoveResult.assetId);
 
       await debug({
         type: 'artifact',

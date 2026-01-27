@@ -6,7 +6,7 @@
 
 # Interface: PhysicsContext
 
-Defined in: [types/asset-system.ts:42](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-system.ts#L42)
+Defined in: [types/asset-system.ts:42](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-system.ts#L42)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/asset-system.ts:42](https://github.com/hassoncs/clover/blob/5
 
 > **shape**: `"circle"` \| `"polygon"` \| `"box"`
 
-Defined in: [types/asset-system.ts:43](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-system.ts#L43)
+Defined in: [types/asset-system.ts:43](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-system.ts#L43)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/asset-system.ts:43](https://github.com/hassoncs/clover/blob/5
 
 > `optional` **width**: `number`
 
-Defined in: [types/asset-system.ts:44](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-system.ts#L44)
+Defined in: [types/asset-system.ts:44](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-system.ts#L44)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/asset-system.ts:44](https://github.com/hassoncs/clover/blob/5
 
 > `optional` **height**: `number`
 
-Defined in: [types/asset-system.ts:45](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-system.ts#L45)
+Defined in: [types/asset-system.ts:45](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-system.ts#L45)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/asset-system.ts:45](https://github.com/hassoncs/clover/blob/5
 
 > `optional` **radius**: `number`
 
-Defined in: [types/asset-system.ts:46](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-system.ts#L46)
+Defined in: [types/asset-system.ts:46](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-system.ts#L46)

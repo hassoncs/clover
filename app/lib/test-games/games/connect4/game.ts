@@ -4,6 +4,7 @@ import type { TestGameMeta } from "@/lib/registry/types";
 export const metadata: TestGameMeta = {
   title: "Connect 4",
   description: "Drop discs to connect four in a row",
+  status: "archived",
 };
 
 const COLS = 7;

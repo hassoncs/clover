@@ -6,7 +6,7 @@
 
 # Interface: ExpressionCondition
 
-Defined in: [types/rules.ts:179](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L179)
+Defined in: [types/rules.ts:180](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L180)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:179](https://github.com/hassoncs/clover/blob/5a10349
 
 > **type**: `"expression"`
 
-Defined in: [types/rules.ts:180](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L180)
+Defined in: [types/rules.ts:181](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L181)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [types/rules.ts:180](https://github.com/hassoncs/clover/blob/5a10349
 
 > **expr**: `string`
 
-Defined in: [types/rules.ts:181](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L181)
+Defined in: [types/rules.ts:182](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L182)

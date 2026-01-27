@@ -1,5 +1,11 @@
-import sharp from 'sharp';
-import { createTextHint, createIconHint, TextHintParams, IconHintParams, ICON_PATHS } from './text-hint';
+import type { OverlayOptions } from 'sharp';
+import { createTextHint, createIconHint } from './text-hint';
+import type { TextHintParams, IconHintParams } from './text-hint';
+
+async function getSharp() {
+  const mod = await import('sharp');
+  return mod.default;
+}
 
 export const UI_COMPONENT_MARGINS = {
   small: 8,
@@ -37,6 +43,7 @@ export async function createNinePatchSilhouette(params: NinePatchSilhouetteParam
   const centerColor = { r: 128, g: 128, b: 128, alpha: 255 };
   const bgColor = { r: 255, g: 255, b: 255, alpha: 255 };
   
+  const sharp = await getSharp();
   const canvas = sharp({
     create: {
       width: canvasSize,
@@ -73,7 +80,7 @@ export async function createNinePatchSilhouette(params: NinePatchSilhouetteParam
     }
   }
   
-  const composites: sharp.OverlayOptions[] = [
+  const composites: OverlayOptions[] = [
     {
       input: outerRect,
       raw: { width, height, channels: 4 },

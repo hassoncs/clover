@@ -6,7 +6,7 @@
 
 # Interface: GameJointBase
 
-Defined in: [types/GameDefinition.ts:167](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L167)
+Defined in: [types/GameDefinition.ts:168](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L168)
 
 ## Extended by
 
@@ -21,7 +21,7 @@ Defined in: [types/GameDefinition.ts:167](https://github.com/hassoncs/clover/blo
 
 > **id**: `string`
 
-Defined in: [types/GameDefinition.ts:168](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L168)
+Defined in: [types/GameDefinition.ts:169](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L169)
 
 ***
 
@@ -29,7 +29,7 @@ Defined in: [types/GameDefinition.ts:168](https://github.com/hassoncs/clover/blo
 
 > **entityA**: `string`
 
-Defined in: [types/GameDefinition.ts:169](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L169)
+Defined in: [types/GameDefinition.ts:170](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L170)
 
 ***
 
@@ -37,7 +37,7 @@ Defined in: [types/GameDefinition.ts:169](https://github.com/hassoncs/clover/blo
 
 > **entityB**: `string`
 
-Defined in: [types/GameDefinition.ts:170](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L170)
+Defined in: [types/GameDefinition.ts:171](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L171)
 
 ***
 
@@ -45,4 +45,4 @@ Defined in: [types/GameDefinition.ts:170](https://github.com/hassoncs/clover/blo
 
 > `optional` **collideConnected**: `boolean`
 
-Defined in: [types/GameDefinition.ts:171](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L171)
+Defined in: [types/GameDefinition.ts:172](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L172)

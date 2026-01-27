@@ -4,6 +4,7 @@ export * from './systems';
 export * from './events';
 export * from './tags';
 export * from './utils/asset-url';
+export * from './utils/definition-resolver';
 export * from './utils/game-helpers';
 export * from './validation';
 export * from './economy/currency';

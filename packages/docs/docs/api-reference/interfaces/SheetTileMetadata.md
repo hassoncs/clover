@@ -6,7 +6,7 @@
 
 # Interface: SheetTileMetadata
 
-Defined in: [types/asset-sheet.ts:113](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L113)
+Defined in: [types/asset-sheet.ts:113](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L113)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/asset-sheet.ts:113](https://github.com/hassoncs/clover/blob/5
 
 > `optional` **name**: `string`
 
-Defined in: [types/asset-sheet.ts:114](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L114)
+Defined in: [types/asset-sheet.ts:114](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L114)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/asset-sheet.ts:114](https://github.com/hassoncs/clover/blob/5
 
 > `optional` **tags**: `string`[]
 
-Defined in: [types/asset-sheet.ts:115](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L115)
+Defined in: [types/asset-sheet.ts:115](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L115)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/asset-sheet.ts:115](https://github.com/hassoncs/clover/blob/5
 
 > `optional` **collision**: [`SheetTileCollision`](SheetTileCollision.md)
 
-Defined in: [types/asset-sheet.ts:116](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L116)
+Defined in: [types/asset-sheet.ts:116](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L116)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/asset-sheet.ts:116](https://github.com/hassoncs/clover/blob/5
 
 > `optional` **animation**: [`SheetTileAnimation`](SheetTileAnimation.md)
 
-Defined in: [types/asset-sheet.ts:117](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L117)
+Defined in: [types/asset-sheet.ts:117](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L117)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [types/asset-sheet.ts:117](https://github.com/hassoncs/clover/blob/5
 
 > `optional` **promptOverride**: `string`
 
-Defined in: [types/asset-sheet.ts:119](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L119)
+Defined in: [types/asset-sheet.ts:119](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L119)

@@ -6,7 +6,7 @@
 
 # Interface: DestroyAction
 
-Defined in: [types/rules.ts:228](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L228)
+Defined in: [types/rules.ts:236](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L236)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:228](https://github.com/hassoncs/clover/blob/5a10349
 
 > **type**: `"destroy"`
 
-Defined in: [types/rules.ts:229](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L229)
+Defined in: [types/rules.ts:237](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L237)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [types/rules.ts:229](https://github.com/hassoncs/clover/blob/5a10349
 
 > **target**: [`DestroyTarget`](../type-aliases/DestroyTarget.md)
 
-Defined in: [types/rules.ts:230](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L230)
+Defined in: [types/rules.ts:238](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L238)

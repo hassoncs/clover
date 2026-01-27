@@ -66,7 +66,7 @@ export const TETRIS_TEMPLATE: GameDefinition = {
         {
           when: { hasTag: 'sys.tetris:clearing' },
           priority: 3,
-          behaviors: [{ type: 'sprite_effect', effect: 'fade_out', params: { duration: 0.3 } }],
+      behaviors: [{ type: 'sprite_effect', effect: 'flash', params: { duration: 0.3 } }],
         },
       ],
     },
@@ -98,7 +98,7 @@ export const TETRIS_TEMPLATE: GameDefinition = {
         {
           when: { hasTag: 'sys.tetris:clearing' },
           priority: 3,
-          behaviors: [{ type: 'sprite_effect', effect: 'fade_out', params: { duration: 0.3 } }],
+      behaviors: [{ type: 'sprite_effect', effect: 'flash', params: { duration: 0.3 } }],
         },
       ],
     },
@@ -130,7 +130,7 @@ export const TETRIS_TEMPLATE: GameDefinition = {
         {
           when: { hasTag: 'sys.tetris:clearing' },
           priority: 3,
-          behaviors: [{ type: 'sprite_effect', effect: 'fade_out', params: { duration: 0.3 } }],
+      behaviors: [{ type: 'sprite_effect', effect: 'flash', params: { duration: 0.3 } }],
         },
       ],
     },
@@ -162,7 +162,7 @@ export const TETRIS_TEMPLATE: GameDefinition = {
         {
           when: { hasTag: 'sys.tetris:clearing' },
           priority: 3,
-          behaviors: [{ type: 'sprite_effect', effect: 'fade_out', params: { duration: 0.3 } }],
+      behaviors: [{ type: 'sprite_effect', effect: 'flash', params: { duration: 0.3 } }],
         },
       ],
     },
@@ -194,7 +194,7 @@ export const TETRIS_TEMPLATE: GameDefinition = {
         {
           when: { hasTag: 'sys.tetris:clearing' },
           priority: 3,
-          behaviors: [{ type: 'sprite_effect', effect: 'fade_out', params: { duration: 0.3 } }],
+      behaviors: [{ type: 'sprite_effect', effect: 'flash', params: { duration: 0.3 } }],
         },
       ],
     },
@@ -226,7 +226,7 @@ export const TETRIS_TEMPLATE: GameDefinition = {
         {
           when: { hasTag: 'sys.tetris:clearing' },
           priority: 3,
-          behaviors: [{ type: 'sprite_effect', effect: 'fade_out', params: { duration: 0.3 } }],
+      behaviors: [{ type: 'sprite_effect', effect: 'flash', params: { duration: 0.3 } }],
         },
       ],
     },
@@ -258,7 +258,7 @@ export const TETRIS_TEMPLATE: GameDefinition = {
         {
           when: { hasTag: 'sys.tetris:clearing' },
           priority: 3,
-          behaviors: [{ type: 'sprite_effect', effect: 'fade_out', params: { duration: 0.3 } }],
+      behaviors: [{ type: 'sprite_effect', effect: 'flash', params: { duration: 0.3 } }],
         },
       ],
     },

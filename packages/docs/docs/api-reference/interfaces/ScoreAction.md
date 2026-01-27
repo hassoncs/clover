@@ -6,7 +6,7 @@
 
 # Interface: ScoreAction
 
-Defined in: [types/rules.ts:238](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L238)
+Defined in: [types/rules.ts:246](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L246)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:238](https://github.com/hassoncs/clover/blob/5a10349
 
 > **type**: `"score"`
 
-Defined in: [types/rules.ts:239](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L239)
+Defined in: [types/rules.ts:247](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L247)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:239](https://github.com/hassoncs/clover/blob/5a10349
 
 > **operation**: `"add"` \| `"subtract"` \| `"set"` \| `"multiply"`
 
-Defined in: [types/rules.ts:240](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L240)
+Defined in: [types/rules.ts:248](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L248)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/rules.ts:240](https://github.com/hassoncs/clover/blob/5a10349
 
 > **value**: `number`
 
-Defined in: [types/rules.ts:241](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L241)
+Defined in: [types/rules.ts:249](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L249)

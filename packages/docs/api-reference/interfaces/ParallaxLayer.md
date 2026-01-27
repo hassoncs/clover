@@ -6,7 +6,7 @@
 
 # Interface: ParallaxLayer
 
-Defined in: [types/GameDefinition.ts:137](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L137)
+Defined in: [types/GameDefinition.ts:138](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L138)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:137](https://github.com/hassoncs/clover/blo
 
 > **id**: `string`
 
-Defined in: [types/GameDefinition.ts:138](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L138)
+Defined in: [types/GameDefinition.ts:139](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L139)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/GameDefinition.ts:138](https://github.com/hassoncs/clover/blo
 
 > **name**: `string`
 
-Defined in: [types/GameDefinition.ts:139](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L139)
+Defined in: [types/GameDefinition.ts:140](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L140)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/GameDefinition.ts:139](https://github.com/hassoncs/clover/blo
 
 > `optional` **imageUrl**: `string`
 
-Defined in: [types/GameDefinition.ts:140](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L140)
+Defined in: [types/GameDefinition.ts:141](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L141)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/GameDefinition.ts:140](https://github.com/hassoncs/clover/blo
 
 > **depth**: [`ParallaxDepth`](../type-aliases/ParallaxDepth.md)
 
-Defined in: [types/GameDefinition.ts:141](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L141)
+Defined in: [types/GameDefinition.ts:142](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L142)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [types/GameDefinition.ts:141](https://github.com/hassoncs/clover/blo
 
 > **parallaxFactor**: `number`
 
-Defined in: [types/GameDefinition.ts:142](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L142)
+Defined in: [types/GameDefinition.ts:143](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L143)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [types/GameDefinition.ts:142](https://github.com/hassoncs/clover/blo
 
 > `optional` **scale**: `number`
 
-Defined in: [types/GameDefinition.ts:143](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L143)
+Defined in: [types/GameDefinition.ts:144](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L144)
 
 ***
 
@@ -62,7 +62,7 @@ Defined in: [types/GameDefinition.ts:143](https://github.com/hassoncs/clover/blo
 
 > `optional` **offsetX**: `number`
 
-Defined in: [types/GameDefinition.ts:144](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L144)
+Defined in: [types/GameDefinition.ts:145](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L145)
 
 ***
 
@@ -70,7 +70,7 @@ Defined in: [types/GameDefinition.ts:144](https://github.com/hassoncs/clover/blo
 
 > `optional` **offsetY**: `number`
 
-Defined in: [types/GameDefinition.ts:145](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L145)
+Defined in: [types/GameDefinition.ts:146](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L146)
 
 ***
 
@@ -78,4 +78,4 @@ Defined in: [types/GameDefinition.ts:145](https://github.com/hassoncs/clover/blo
 
 > `optional` **visible**: `boolean`
 
-Defined in: [types/GameDefinition.ts:146](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L146)
+Defined in: [types/GameDefinition.ts:147](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L147)

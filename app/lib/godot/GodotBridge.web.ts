@@ -4,6 +4,7 @@ import type {
   CollisionEvent,
   ContactInfo,
   SensorEvent,
+  EntitySpawnedEvent,
   EntityTransform,
   Vec2,
   RaycastHit,
@@ -98,6 +99,7 @@ declare global {
         ) => void,
       ) => void;
       onEntityDestroyed: (callback: (entityId: string) => void) => void;
+      onEntitySpawned?: (callback: (jsonStr: string) => void) => void;
       onSensorBegin: (
         callback: (
           sensorId: number,
@@ -226,6 +228,7 @@ declare global {
 export function createWebGodotBridge(): GodotBridge {
   const collisionCallbacks: ((event: CollisionEvent) => void)[] = [];
   const destroyCallbacks: ((entityId: string) => void)[] = [];
+  const entitySpawnedCallbacks: ((event: EntitySpawnedEvent) => void)[] = [];
   const sensorBeginCallbacks: ((event: SensorEvent) => void)[] = [];
   const sensorEndCallbacks: ((event: SensorEvent) => void)[] = [];
   const inputEventCallbacks: ((
@@ -330,6 +333,15 @@ export function createWebGodotBridge(): GodotBridge {
               for (const cb of destroyCallbacks) cb(entityId);
             });
 
+            godotBridge.onEntitySpawned?.((jsonStr: string) => {
+              try {
+                const event = JSON.parse(jsonStr) as EntitySpawnedEvent;
+                for (const cb of entitySpawnedCallbacks) cb(event);
+              } catch {
+                console.warn("[GodotBridge.web] Failed to parse entity spawned event:", jsonStr);
+              }
+            });
+
             godotBridge.onSensorBegin((sensorId, bodyId, colliderId) => {
               const event: SensorEvent = {
                 sensorColliderId: sensorId,
@@ -401,6 +413,7 @@ export function createWebGodotBridge(): GodotBridge {
     dispose() {
       collisionCallbacks.length = 0;
       destroyCallbacks.length = 0;
+      entitySpawnedCallbacks.length = 0;
       sensorBeginCallbacks.length = 0;
       sensorEndCallbacks.length = 0;
       inputEventCallbacks.length = 0;
@@ -715,6 +728,14 @@ export function createWebGodotBridge(): GodotBridge {
       return () => {
         const index = destroyCallbacks.indexOf(callback);
         if (index >= 0) destroyCallbacks.splice(index, 1);
+      };
+    },
+
+    onEntitySpawned(callback: (event: EntitySpawnedEvent) => void): () => void {
+      entitySpawnedCallbacks.push(callback);
+      return () => {
+        const index = entitySpawnedCallbacks.indexOf(callback);
+        if (index >= 0) entitySpawnedCallbacks.splice(index, 1);
       };
     },
 

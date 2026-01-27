@@ -225,7 +225,6 @@ const game: GameDefinition = {
     drain: {
       id: "drain",
       tags: ["drain"],
-      sprite: { type: "rect", width: WORLD_WIDTH, height: 2, color: "#FF000033" },
       physics: {
         bodyType: "static",
         shape: "box",

@@ -4,6 +4,7 @@ import type { TestGameMeta } from "@/lib/registry/types";
 export const metadata: TestGameMeta = {
   title: "Tower Defense",
   description: "Defend your base from waves of enemies. Towers target nearest enemies and fire projectiles. Enemies follow a path to reach your base.",
+  status: "archived",
 };
 
 const WORLD_WIDTH = 16;

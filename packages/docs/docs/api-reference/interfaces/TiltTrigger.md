@@ -6,7 +6,7 @@
 
 # Interface: TiltTrigger
 
-Defined in: [types/rules.ts:77](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L77)
+Defined in: [types/rules.ts:78](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L78)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:77](https://github.com/hassoncs/clover/blob/5a103498
 
 > **type**: `"tilt"`
 
-Defined in: [types/rules.ts:78](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L78)
+Defined in: [types/rules.ts:79](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L79)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:78](https://github.com/hassoncs/clover/blob/5a103498
 
 > `optional` **axis**: `"x"` \| `"y"` \| `"both"`
 
-Defined in: [types/rules.ts:79](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L79)
+Defined in: [types/rules.ts:80](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L80)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/rules.ts:79](https://github.com/hassoncs/clover/blob/5a103498
 
 > `optional` **threshold**: `number`
 
-Defined in: [types/rules.ts:80](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L80)
+Defined in: [types/rules.ts:81](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L81)

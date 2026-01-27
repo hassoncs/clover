@@ -1,6 +1,5 @@
-import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert, TextInput } from 'react-native';
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { TemplateAssetCard } from './TemplateAssetCard';
 import { AssetPackSelector } from './AssetPackSelector';
 import { AssetAlignmentEditor } from '../AssetAlignment/AssetAlignmentEditor';
 import { QuickGenerationForm } from './QuickGenerationForm';
@@ -8,6 +7,7 @@ import { TemplateGrid } from './TemplateGrid';
 import { useAssetGeneration, useCreateAssetPack, useAssetPacks, useAssetPackWithEntries, useUpdatePlacement, useDeleteAssetPack } from './useAssetGeneration';
 import { useEditor, type ResolvedPackEntry } from '../EditorProvider';
 import type { AssetPlacement, EntityTemplate } from '@slopcade/shared';
+import { trpcReact } from '@/lib/trpc/react';
 
 interface AssetGalleryPanelProps {
   onTemplatePress?: (templateId: string) => void;
@@ -20,6 +20,40 @@ interface AlignmentEditorState {
   imageUrl?: string;
   placement?: AssetPlacement;
 }
+
+type Mode = 'entities' | 'ui-components';
+
+type ComponentType = 'button' | 'checkbox' | 'radio' | 'slider' | 'panel' | 
+  'progress_bar' | 'scroll_bar_h' | 'scroll_bar_v' | 'tab_bar' | 
+  'list_item' | 'dropdown' | 'toggle_switch';
+
+type UIState = 'normal' | 'hover' | 'pressed' | 'disabled' | 'focus' | 
+  'selected' | 'unselected';
+
+const COMPONENT_TYPES: { id: ComponentType; label: string }[] = [
+  { id: 'button', label: 'Button' },
+  { id: 'checkbox', label: 'Checkbox' },
+  { id: 'radio', label: 'Radio' },
+  { id: 'slider', label: 'Slider' },
+  { id: 'panel', label: 'Panel' },
+  { id: 'progress_bar', label: 'Progress Bar' },
+  { id: 'scroll_bar_h', label: 'Scroll Bar (H)' },
+  { id: 'scroll_bar_v', label: 'Scroll Bar (V)' },
+  { id: 'tab_bar', label: 'Tab Bar' },
+  { id: 'list_item', label: 'List Item' },
+  { id: 'dropdown', label: 'Dropdown' },
+  { id: 'toggle_switch', label: 'Toggle Switch' },
+];
+
+const UI_STATES: { id: UIState; label: string }[] = [
+  { id: 'normal', label: 'Normal' },
+  { id: 'hover', label: 'Hover' },
+  { id: 'pressed', label: 'Pressed' },
+  { id: 'disabled', label: 'Disabled' },
+  { id: 'focus', label: 'Focus' },
+  { id: 'selected', label: 'Selected' },
+  { id: 'unselected', label: 'Unselected' },
+];
 
 const STYLE_OPTIONS = [
   { id: 'pixel' as const, label: 'Pixel', emoji: '🎮' },
@@ -34,6 +68,7 @@ export function AssetGalleryPanel({
   const { gameId, document, setActiveAssetPack } = useEditor();
   const isPreviewMode = gameId === 'preview';
   
+  const [mode, setMode] = useState<Mode>('entities');
   const [selectedPackId, setSelectedPackId] = useState<string | undefined>(
     document.assetSystem?.activeAssetPackId
   );
@@ -49,6 +84,13 @@ export function AssetGalleryPanel({
   const [removeBackground, setRemoveBackground] = useState(true);
   const [isQuickCreating, setIsQuickCreating] = useState(false);
 
+  // UI Component mode state
+  const [selectedUIPackId, setSelectedUIPackId] = useState<string | undefined>();
+  const [uiComponentType, setUiComponentType] = useState<ComponentType>('button');
+  const [selectedStates, setSelectedStates] = useState<UIState[]>(['normal', 'pressed']);
+  const [uiTheme, setUiTheme] = useState('');
+  const [isGeneratingUI, setIsGeneratingUI] = useState(false);
+
   const templates = useMemo(() => {
     return Object.entries(document.templates).map(([id, template]) => ({
       id,
@@ -58,6 +100,19 @@ export function AssetGalleryPanel({
 
   const { data: assetPacks, isLoading: isLoadingPacks } = useAssetPacks(gameId);
   const { data: activePack, isLoading: isLoadingActivePack } = useAssetPackWithEntries(selectedPackId);
+
+  // UI Component packs query
+  const { data: uiPacks, isLoading: isLoadingUIPacks } = trpcReact.uiComponents.listUIComponentPacks.useQuery(
+    { gameId },
+    { enabled: !isPreviewMode && mode === 'ui-components' }
+  );
+
+  // Generate UI component mutation
+  const generateUIComponent = trpcReact.uiComponents.generateUIComponent.useMutation();
+
+  // Asset system job mutations
+  const createJobMutation = trpcReact.assetSystem.createGenerationJob.useMutation();
+  const processJobMutation = trpcReact.assetSystem.processGenerationJob.useMutation();
 
   const entriesByTemplateId = useMemo(() => {
     if (!activePack?.entries) return new Map<string, { imageUrl?: string; placement?: AssetPlacement; lastGeneration?: { compiledPrompt?: string; backgroundRemoved?: boolean; createdAt?: number } }>();
@@ -282,9 +337,253 @@ export function AssetGalleryPanel({
     }
   }, [selectedPackId, alignmentEditor.templateId, updatePlacementMutation]);
 
+  const toggleState = useCallback((state: UIState) => {
+    setSelectedStates(prev => 
+      prev.includes(state) 
+        ? prev.filter(s => s !== state)
+        : [...prev, state]
+    );
+  }, []);
+
+  const handleGenerateUIComponent = useCallback(async () => {
+    if (isPreviewMode) {
+      Alert.alert('Save Game First', 'Please save your game before generating assets.');
+      return;
+    }
+
+    if (selectedStates.length === 0) {
+      Alert.alert('No States Selected', 'Please select at least one state for the component.');
+      return;
+    }
+
+    if (!uiTheme.trim()) {
+      Alert.alert('Theme Required', 'Please describe the visual theme for your component.');
+      return;
+    }
+
+    setIsGeneratingUI(true);
+
+    try {
+      // Create UI component pack
+      const componentTypeLabel = COMPONENT_TYPES.find(c => c.id === uiComponentType)?.label ?? 'Component';
+
+      const packResult = await generateUIComponent.mutateAsync({
+        gameId,
+        componentType: uiComponentType,
+        theme: uiTheme.trim(),
+        states: selectedStates,
+      });
+
+      // Create generation job for the pack
+      const jobResult = await createJobMutation.mutateAsync({
+        gameId,
+        packId: packResult.packId,
+        templateIds: [],
+        promptDefaults: {
+          componentType: uiComponentType,
+          states: selectedStates,
+          themePrompt: uiTheme.trim(),
+        },
+      });
+
+      // Process the job
+      await processJobMutation.mutateAsync({ jobId: jobResult.jobId });
+
+      Alert.alert(
+        'Generation Complete',
+        `Generated ${selectedStates.length} state${selectedStates.length > 1 ? 's' : ''} for ${componentTypeLabel.toLowerCase()}.`
+      );
+
+      // Refresh UI packs
+      setSelectedUIPackId(packResult.packId);
+    } catch (error) {
+      Alert.alert('Generation Failed', error instanceof Error ? error.message : 'Failed to generate UI component');
+    } finally {
+      setIsGeneratingUI(false);
+    }
+  }, [
+    isPreviewMode,
+    gameId,
+    uiComponentType,
+    selectedStates,
+    uiTheme,
+    generateUIComponent,
+    createJobMutation,
+    processJobMutation,
+  ]);
+
   const isLoading = isLoadingPacks || isLoadingActivePack;
   const hasNoPacks = !isLoadingPacks && packList.length === 0;
   const showQuickCreate = hasNoPacks && !isPreviewMode;
+
+  // Mode switcher component
+  const renderModeSwitcher = () => (
+    <View style={styles.modeSwitcher}>
+      <Pressable
+        style={[styles.modeTab, mode === 'entities' && styles.modeTabActive]}
+        onPress={() => setMode('entities')}
+      >
+        <Text style={[styles.modeTabText, mode === 'entities' && styles.modeTabTextActive]}>
+          Entities
+        </Text>
+      </Pressable>
+      <Pressable
+        style={[styles.modeTab, mode === 'ui-components' && styles.modeTabActive]}
+        onPress={() => setMode('ui-components')}
+      >
+        <Text style={[styles.modeTabText, mode === 'ui-components' && styles.modeTabTextActive]}>
+          UI Components
+        </Text>
+      </Pressable>
+    </View>
+  );
+
+  // UI Components mode content
+  const renderUIComponentsMode = () => {
+    if (isPreviewMode) {
+      return (
+        <View style={styles.previewModeContainer}>
+          <Text style={styles.previewModeEmoji}>💾</Text>
+          <Text style={styles.previewModeTitle}>Save Your Game First</Text>
+          <Text style={styles.previewModeText}>
+            To generate UI components, you need to save your game first.
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.uiComponentsContainer}>
+        <View style={styles.uiSection}>
+          <Text style={styles.sectionTitle}>UI COMPONENT PACKS</Text>
+          {isLoadingUIPacks ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#6366F1" />
+            </View>
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.packList}>
+              {uiPacks?.map(pack => (
+                <Pressable
+                  key={pack.id}
+                  style={[
+                    styles.packChip,
+                    selectedUIPackId === pack.id && styles.packChipActive,
+                  ]}
+                  onPress={() => setSelectedUIPackId(pack.id)}
+                >
+                  <Text style={[
+                    styles.packChipText,
+                    selectedUIPackId === pack.id && styles.packChipTextActive,
+                  ]}>
+                    {pack.name}
+                  </Text>
+                </Pressable>
+              ))}
+              {(!uiPacks || uiPacks.length === 0) && (
+                <Text style={styles.emptyPackText}>No UI packs yet</Text>
+              )}
+            </ScrollView>
+          )}
+        </View>
+
+        <View style={styles.uiSection}>
+          <Text style={styles.sectionTitle}>COMPONENT TYPE</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.componentTypeList}>
+            {COMPONENT_TYPES.map(type => (
+              <Pressable
+                key={type.id}
+                style={[
+                  styles.componentTypeChip,
+                  uiComponentType === type.id && styles.componentTypeChipActive,
+                ]}
+                onPress={() => setUiComponentType(type.id)}
+              >
+                <Text style={[
+                  styles.componentTypeChipText,
+                  uiComponentType === type.id && styles.componentTypeChipTextActive,
+                ]}>
+                  {type.label}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+
+        <View style={styles.uiSection}>
+          <Text style={styles.sectionTitle}>STATES ({selectedStates.length} selected)</Text>
+          <View style={styles.statesGrid}>
+            {UI_STATES.map(state => (
+              <Pressable
+                key={state.id}
+                style={[
+                  styles.stateChip,
+                  selectedStates.includes(state.id) && styles.stateChipActive,
+                ]}
+                onPress={() => toggleState(state.id)}
+              >
+                <View style={[
+                  styles.checkbox,
+                  selectedStates.includes(state.id) && styles.checkboxActive,
+                ]}>
+                  {selectedStates.includes(state.id) && (
+                    <Text style={styles.checkmark}>✓</Text>
+                  )}
+                </View>
+                <Text style={[
+                  styles.stateChipText,
+                  selectedStates.includes(state.id) && styles.stateChipTextActive,
+                ]}>
+                  {state.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.uiSection}>
+          <Text style={styles.sectionTitle}>THEME</Text>
+          <TextInput
+            style={styles.themeInput}
+            placeholder="Describe the visual theme (e.g., 'dark sci-fi button with neon glow')"
+            placeholderTextColor="#6B7280"
+            value={uiTheme}
+            onChangeText={setUiTheme}
+            multiline
+            numberOfLines={3}
+          />
+        </View>
+
+        <Pressable
+          style={[
+            styles.generateButton,
+            (isGeneratingUI || selectedStates.length === 0 || !uiTheme.trim()) && styles.generateButtonDisabled,
+          ]}
+          onPress={handleGenerateUIComponent}
+          disabled={isGeneratingUI || selectedStates.length === 0 || !uiTheme.trim()}
+        >
+          {isGeneratingUI ? (
+            <View style={styles.generateButtonContent}>
+              <ActivityIndicator size="small" color="#FFFFFF" />
+              <Text style={styles.generateButtonText}>Generating...</Text>
+            </View>
+          ) : (
+            <Text style={styles.generateButtonText}>
+              Generate {COMPONENT_TYPES.find(c => c.id === uiComponentType)?.label} ({selectedStates.length} states)
+            </Text>
+          )}
+        </Pressable>
+      </View>
+    );
+  };
+
+  if (isPreviewMode && mode === 'ui-components') {
+    return (
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        {renderModeSwitcher()}
+        {renderUIComponentsMode()}
+      </ScrollView>
+    );
+  }
 
   if (isPreviewMode) {
     return (
@@ -302,106 +601,114 @@ export function AssetGalleryPanel({
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Asset Gallery</Text>
-        <Text style={styles.subtitle}>
-          {coverage.covered}/{coverage.total} templates have assets
-        </Text>
-      </View>
+      {renderModeSwitcher()}
 
-      {showQuickCreate ? (
-        <QuickGenerationForm
-          gameId={gameId}
-          theme={quickCreateTheme}
-          onThemeChange={setQuickCreateTheme}
-          style={quickCreateStyle}
-          onStyleChange={setQuickCreateStyle}
-          removeBackground={removeBackground}
-          onRemoveBackgroundToggle={() => setRemoveBackground(prev => !prev)}
-          templateCount={templates.length}
-          isGenerating={isGenerating}
-          isQuickCreating={isQuickCreating}
-          progress={progress}
-          onGenerate={handleQuickGenerate}
-        />
+      {mode === 'ui-components' ? (
+        renderUIComponentsMode()
       ) : (
         <>
-          <View style={styles.packSelector}>
-            <View style={styles.packSelectorHeader}>
-              <Text style={styles.sectionTitle}>ASSET PACKS</Text>
-              <Pressable
-                style={styles.managePacksButton}
-                onPress={() => setPackSelectorVisible(true)}
-              >
-                <Text style={styles.managePacksButtonText}>
-                  {packList.length > 0 ? 'Manage' : '+ Create Pack'}
-                </Text>
-              </Pressable>
-            </View>
-            {isLoadingPacks ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color="#6366F1" />
-              </View>
-            ) : (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.packList}>
-                {packList.map(pack => (
+          <View style={styles.header}>
+            <Text style={styles.title}>Asset Gallery</Text>
+            <Text style={styles.subtitle}>
+              {coverage.covered}/{coverage.total} templates have assets
+            </Text>
+          </View>
+
+          {showQuickCreate ? (
+            <QuickGenerationForm
+              gameId={gameId}
+              theme={quickCreateTheme}
+              onThemeChange={setQuickCreateTheme}
+              style={quickCreateStyle}
+              onStyleChange={setQuickCreateStyle}
+              removeBackground={removeBackground}
+              onRemoveBackgroundToggle={() => setRemoveBackground(prev => !prev)}
+              templateCount={templates.length}
+              isGenerating={isGenerating}
+              isQuickCreating={isQuickCreating}
+              progress={progress}
+              onGenerate={handleQuickGenerate}
+            />
+          ) : (
+            <>
+              <View style={styles.packSelector}>
+                <View style={styles.packSelectorHeader}>
+                  <Text style={styles.sectionTitle}>ASSET PACKS</Text>
                   <Pressable
-                    key={pack.id}
-                    style={[
-                      styles.packChip,
-                      selectedPackId === pack.id && styles.packChipActive,
-                    ]}
-                    onPress={() => setSelectedPackId(pack.id)}
+                    style={styles.managePacksButton}
+                    onPress={() => setPackSelectorVisible(true)}
                   >
-                    <Text style={[
-                      styles.packChipText,
-                      selectedPackId === pack.id && styles.packChipTextActive,
-                    ]}>
-                      {pack.name}
+                    <Text style={styles.managePacksButtonText}>
+                      {packList.length > 0 ? 'Manage' : '+ Create Pack'}
                     </Text>
                   </Pressable>
-                ))}
-              </ScrollView>
-            )}
+                </View>
+                {isLoadingPacks ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="small" color="#6366F1" />
+                  </View>
+                ) : (
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.packList}>
+                    {packList.map(pack => (
+                      <Pressable
+                        key={pack.id}
+                        style={[
+                          styles.packChip,
+                          selectedPackId === pack.id && styles.packChipActive,
+                        ]}
+                        onPress={() => setSelectedPackId(pack.id)}
+                      >
+                        <Text style={[
+                          styles.packChipText,
+                          selectedPackId === pack.id && styles.packChipTextActive,
+                        ]}>
+                          {pack.name}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </ScrollView>
+                )}
+              </View>
+
+              <View style={styles.actionsRow}>
+                <Pressable
+                  style={[
+                    styles.generateButton,
+                    (isGenerating || !selectedPackId) && styles.generateButtonDisabled,
+                  ]}
+                  onPress={handleGenerateAll}
+                  disabled={isGenerating || !selectedPackId}
+                >
+                  {isGenerating ? (
+                    <View style={styles.generateButtonContent}>
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                      <Text style={styles.generateButtonText}>
+                        {progress.completed}/{progress.total} Generating...
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.generateButtonText}>
+                      {selectedPackId ? 'Regenerate All Assets' : 'Select a Pack First'}
+                    </Text>
+                  )}
+                </Pressable>
+              </View>
+            </>
+          )}
+
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>TEMPLATES ({templates.length})</Text>
           </View>
 
-          <View style={styles.actionsRow}>
-            <Pressable
-              style={[
-                styles.generateButton,
-                (isGenerating || !selectedPackId) && styles.generateButtonDisabled,
-              ]}
-              onPress={handleGenerateAll}
-              disabled={isGenerating || !selectedPackId}
-            >
-              {isGenerating ? (
-                <View style={styles.generateButtonContent}>
-                  <ActivityIndicator size="small" color="#FFFFFF" />
-                  <Text style={styles.generateButtonText}>
-                    {progress.completed}/{progress.total} Generating...
-                  </Text>
-                </View>
-              ) : (
-                <Text style={styles.generateButtonText}>
-                  {selectedPackId ? 'Regenerate All Assets' : 'Select a Pack First'}
-                </Text>
-              )}
-            </Pressable>
-          </View>
+          <TemplateGrid
+            templates={templates}
+            entriesByTemplateId={entriesByTemplateId}
+            generatingTemplates={generatingTemplates}
+            isLoading={isLoading}
+            onTemplatePress={handleTemplatePress}
+          />
         </>
       )}
-
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>TEMPLATES ({templates.length})</Text>
-      </View>
-
-      <TemplateGrid
-        templates={templates}
-        entriesByTemplateId={entriesByTemplateId}
-        generatingTemplates={generatingTemplates}
-        isLoading={isLoading}
-        onTemplatePress={handleTemplatePress}
-      />
 
       <AssetPackSelector
         visible={packSelectorVisible}
@@ -598,6 +905,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 1,
+    marginBottom: 8,
   },
   packList: {
     flexDirection: 'row',
@@ -669,5 +977,94 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontSize: 14,
     marginTop: 4,
+  },
+  // Mode switcher styles
+  modeSwitcher: {
+    flexDirection: 'row',
+    backgroundColor: '#374151',
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 16,
+  },
+  modeTab: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  modeTabActive: {
+    backgroundColor: '#4F46E5',
+  },
+  modeTabText: {
+    color: '#9CA3AF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  modeTabTextActive: {
+    color: '#FFFFFF',
+  },
+  // UI Components mode styles
+  uiComponentsContainer: {
+    backgroundColor: '#374151',
+    borderRadius: 16,
+    padding: 16,
+  },
+  uiSection: {
+    marginBottom: 20,
+  },
+  componentTypeList: {
+    flexDirection: 'row',
+  },
+  componentTypeChip: {
+    backgroundColor: '#1F2937',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 16,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#4B5563',
+  },
+  componentTypeChipActive: {
+    backgroundColor: '#4F46E5',
+    borderColor: '#4F46E5',
+  },
+  componentTypeChipText: {
+    color: '#9CA3AF',
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  componentTypeChipTextActive: {
+    color: '#FFFFFF',
+  },
+  statesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  stateChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1F2937',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#4B5563',
+  },
+  stateChipActive: {
+    backgroundColor: '#312E81',
+    borderColor: '#4F46E5',
+  },
+  stateChipText: {
+    color: '#9CA3AF',
+    fontSize: 13,
+  },
+  stateChipTextActive: {
+    color: '#FFFFFF',
+  },
+  emptyPackText: {
+    color: '#6B7280',
+    fontSize: 13,
+    fontStyle: 'italic',
   },
 });

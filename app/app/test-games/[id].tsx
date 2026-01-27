@@ -16,7 +16,6 @@ export default function TestGameRunScreen() {
   const entry = useMemo(() => (id && id in TESTGAMES_BY_ID ? TESTGAMES_BY_ID[id as TestGameId] : undefined), [id]);
 
   const [runtimeKey, setRuntimeKey] = useState(0);
-  const [isSaving, setIsSaving] = useState(false);
   const [isLoadingDefinition, setIsLoadingDefinition] = useState(true);
   const [gameDefinition, setGameDefinition] = useState<GameDefinition | null>(null);
   const loadedDefinitionRef = useRef<GameDefinition | null>(null);
@@ -73,40 +72,6 @@ export default function TestGameRunScreen() {
     startPreload();
   }, [reset, startPreload, loadingOpacity]);
 
-  const handleSaveToLibrary = useCallback(async () => {
-    if (!entry || !loadedDefinitionRef.current) {
-      Alert.alert("Error", "Game not loaded yet");
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      const definition = loadedDefinitionRef.current;
-      const result = await trpc.games.create.mutate({
-        title: definition.metadata.title,
-        description: definition.metadata.description,
-        definition: JSON.stringify(definition),
-        isPublic: false,
-      });
-
-      Alert.alert(
-        "Saved!",
-        "Game saved to library. Opening in Play mode where you can generate assets.",
-        [
-          {
-            text: "Open",
-            onPress: () => router.push(`/play/${result.id}`),
-          },
-        ]
-      );
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to save game";
-      Alert.alert("Error", message);
-    } finally {
-      setIsSaving(false);
-    }
-  }, [entry, router]);
-
   if (!entry) {
     return (
       <SafeAreaView className="flex-1 bg-gray-900 items-center justify-center p-6">
@@ -145,26 +110,7 @@ export default function TestGameRunScreen() {
     <View className="flex-1 bg-gray-900">
       <FullScreenHeader
         onBack={handleBack}
-        title={entry.meta.title}
         showBackground
-        rightContent={
-          <View className="flex-row gap-2">
-            <Pressable
-              className={`py-2 px-3 rounded-lg ${isSaving ? 'bg-indigo-800' : 'bg-indigo-600'}`}
-              onPress={handleSaveToLibrary}
-              disabled={isSaving}
-            >
-              {isSaving ? (
-                <ActivityIndicator size="small" color="white" />
-              ) : (
-                <Text className="text-white font-bold text-xs">Save</Text>
-              )}
-            </Pressable>
-            <Pressable className="py-2 px-4 bg-black/60 rounded-lg" onPress={handleReset}>
-              <Text className="text-white font-semibold">Reset</Text>
-            </Pressable>
-          </View>
-        }
       />
 
       {canMountGame && (

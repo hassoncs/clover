@@ -6,7 +6,7 @@
 
 # Interface: SpawnOnEventBehavior
 
-Defined in: [types/behavior.ts:65](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L65)
+Defined in: [types/behavior.ts:65](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L65)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/behavior.ts:65](https://github.com/hassoncs/clover/blob/5a103
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L46)
+Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L46)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/5a103
 
 > **type**: `"spawn_on_event"`
 
-Defined in: [types/behavior.ts:66](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L66)
+Defined in: [types/behavior.ts:66](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L66)
 
 #### Overrides
 
@@ -42,7 +42,7 @@ Defined in: [types/behavior.ts:66](https://github.com/hassoncs/clover/blob/5a103
 
 > **event**: [`SpawnEvent`](../type-aliases/SpawnEvent.md)
 
-Defined in: [types/behavior.ts:67](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L67)
+Defined in: [types/behavior.ts:67](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L67)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [types/behavior.ts:67](https://github.com/hassoncs/clover/blob/5a103
 
 > **entityTemplate**: `string` \| `string`[]
 
-Defined in: [types/behavior.ts:68](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L68)
+Defined in: [types/behavior.ts:68](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L68)
 
 ***
 
@@ -58,7 +58,7 @@ Defined in: [types/behavior.ts:68](https://github.com/hassoncs/clover/blob/5a103
 
 > **spawnPosition**: [`BehaviorSpawnPosition`](../type-aliases/BehaviorSpawnPosition.md)
 
-Defined in: [types/behavior.ts:69](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L69)
+Defined in: [types/behavior.ts:69](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L69)
 
 ***
 
@@ -66,7 +66,7 @@ Defined in: [types/behavior.ts:69](https://github.com/hassoncs/clover/blob/5a103
 
 > `optional` **offset**: [`Vec2`](Vec2.md)
 
-Defined in: [types/behavior.ts:70](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L70)
+Defined in: [types/behavior.ts:70](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L70)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [types/behavior.ts:70](https://github.com/hassoncs/clover/blob/5a103
 
 > `optional` **bounds**: [`Bounds`](Bounds.md)
 
-Defined in: [types/behavior.ts:71](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L71)
+Defined in: [types/behavior.ts:71](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L71)
 
 ***
 
@@ -82,7 +82,7 @@ Defined in: [types/behavior.ts:71](https://github.com/hassoncs/clover/blob/5a103
 
 > `optional` **interval**: `number`
 
-Defined in: [types/behavior.ts:72](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L72)
+Defined in: [types/behavior.ts:72](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L72)
 
 ***
 
@@ -90,7 +90,7 @@ Defined in: [types/behavior.ts:72](https://github.com/hassoncs/clover/blob/5a103
 
 > `optional` **maxSpawns**: `number`
 
-Defined in: [types/behavior.ts:73](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L73)
+Defined in: [types/behavior.ts:73](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L73)
 
 ***
 
@@ -98,7 +98,7 @@ Defined in: [types/behavior.ts:73](https://github.com/hassoncs/clover/blob/5a103
 
 > `optional` **initialVelocity**: [`Vec2`](Vec2.md)
 
-Defined in: [types/behavior.ts:74](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L74)
+Defined in: [types/behavior.ts:74](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L74)
 
 ***
 
@@ -106,7 +106,7 @@ Defined in: [types/behavior.ts:74](https://github.com/hassoncs/clover/blob/5a103
 
 > `optional` **withTags**: `string`[]
 
-Defined in: [types/behavior.ts:75](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L75)
+Defined in: [types/behavior.ts:75](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L75)
 
 ***
 
@@ -114,4 +114,4 @@ Defined in: [types/behavior.ts:75](https://github.com/hassoncs/clover/blob/5a103
 
 > `optional` **spawnEffect**: [`ParticleEmitterType`](../type-aliases/ParticleEmitterType.md)
 
-Defined in: [types/behavior.ts:76](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L76)
+Defined in: [types/behavior.ts:76](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L76)

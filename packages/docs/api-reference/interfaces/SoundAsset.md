@@ -6,7 +6,7 @@
 
 # Interface: SoundAsset
 
-Defined in: [types/GameDefinition.ts:300](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L300)
+Defined in: [types/GameDefinition.ts:301](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L301)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:300](https://github.com/hassoncs/clover/blo
 
 > **url**: `string`
 
-Defined in: [types/GameDefinition.ts:301](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L301)
+Defined in: [types/GameDefinition.ts:302](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L302)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/GameDefinition.ts:301](https://github.com/hassoncs/clover/blo
 
 > **type**: `"sfx"` \| `"music"`
 
-Defined in: [types/GameDefinition.ts:302](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L302)
+Defined in: [types/GameDefinition.ts:303](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L303)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/GameDefinition.ts:302](https://github.com/hassoncs/clover/blo
 
 > `optional` **loop**: `boolean`
 
-Defined in: [types/GameDefinition.ts:303](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L303)
+Defined in: [types/GameDefinition.ts:304](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L304)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/GameDefinition.ts:303](https://github.com/hassoncs/clover/blo
 
 > `optional` **defaultVolume**: `number`
 
-Defined in: [types/GameDefinition.ts:304](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L304)
+Defined in: [types/GameDefinition.ts:305](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L305)

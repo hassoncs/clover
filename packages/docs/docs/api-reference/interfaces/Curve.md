@@ -6,7 +6,7 @@
 
 # Interface: Curve
 
-Defined in: [types/particles.ts:37](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L37)
+Defined in: [types/particles.ts:37](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/particles.ts#L37)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/particles.ts:37](https://github.com/hassoncs/clover/blob/5a10
 
 > **kind**: `"linear"` \| `"constant"` \| `"easeIn"` \| `"easeOut"` \| `"easeInOut"`
 
-Defined in: [types/particles.ts:38](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L38)
+Defined in: [types/particles.ts:38](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/particles.ts#L38)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/particles.ts:38](https://github.com/hassoncs/clover/blob/5a10
 
 > **from**: `number`
 
-Defined in: [types/particles.ts:39](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L39)
+Defined in: [types/particles.ts:39](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/particles.ts#L39)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/particles.ts:39](https://github.com/hassoncs/clover/blob/5a10
 
 > **to**: `number`
 
-Defined in: [types/particles.ts:40](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L40)
+Defined in: [types/particles.ts:40](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/particles.ts#L40)

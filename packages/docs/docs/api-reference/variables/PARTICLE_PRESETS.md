@@ -8,4 +8,4 @@
 
 > `const` **PARTICLE\_PRESETS**: `Record`\<[`ParticleEmitterType`](../type-aliases/ParticleEmitterType.md), `Partial`\<[`ParticleEmitterConfig`](../interfaces/ParticleEmitterConfig.md)\>\>
 
-Defined in: [types/particles.ts:111](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L111)
+Defined in: [types/particles.ts:111](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/particles.ts#L111)

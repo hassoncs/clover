@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import {
   AssetService,
-  getScenarioConfigFromEnv,
+  getImageGenerationConfig,
   type EntityType,
   type SpriteStyle,
 } from '../../ai/assets';
@@ -60,13 +60,12 @@ export const assetsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const scenarioConfig = getScenarioConfigFromEnv(ctx.env);
+      const providerConfig = getImageGenerationConfig(ctx.env);
 
-      if (!scenarioConfig.configured) {
+      if (!providerConfig.configured) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message:
-            'Scenario.com not configured. Set SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY.',
+          message: providerConfig.error ?? 'Image generation provider not configured',
         });
       }
 
@@ -145,13 +144,12 @@ export const assetsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const scenarioConfig = getScenarioConfigFromEnv(ctx.env);
+      const providerConfig = getImageGenerationConfig(ctx.env);
 
-      if (!scenarioConfig.configured) {
+      if (!providerConfig.configured) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message:
-            'Scenario.com not configured. Set SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY.',
+          message: providerConfig.error ?? 'Image generation provider not configured',
         });
       }
 
@@ -256,9 +254,9 @@ export const assetsRouter = router({
     }),
 
   status: publicProcedure.query(({ ctx }) => {
-    const config = getScenarioConfigFromEnv(ctx.env);
+    const providerConfig = getImageGenerationConfig(ctx.env);
     return {
-      configured: config.configured,
+      configured: providerConfig.configured,
       timestamp: Date.now(),
     };
   }),
@@ -272,11 +270,11 @@ export const assetsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const scenarioConfig = getScenarioConfigFromEnv(ctx.env);
-      if (!scenarioConfig.configured) {
+      const providerConfig = getImageGenerationConfig(ctx.env);
+      if (!providerConfig.configured) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: 'Scenario.com not configured',
+          message: providerConfig.error ?? 'Image generation provider not configured',
         });
       }
 
@@ -498,11 +496,11 @@ export const assetsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const scenarioConfig = getScenarioConfigFromEnv(ctx.env);
-      if (!scenarioConfig.configured) {
+      const providerConfig = getImageGenerationConfig(ctx.env);
+      if (!providerConfig.configured) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: 'Scenario.com not configured',
+          message: providerConfig.error ?? 'Image generation provider not configured',
         });
       }
 
@@ -591,11 +589,11 @@ export const assetsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const scenarioConfig = getScenarioConfigFromEnv(ctx.env);
-      if (!scenarioConfig.configured) {
+      const providerConfig = getImageGenerationConfig(ctx.env);
+      if (!providerConfig.configured) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: 'Scenario.com not configured',
+          message: providerConfig.error ?? 'Image generation provider not configured',
         });
       }
 

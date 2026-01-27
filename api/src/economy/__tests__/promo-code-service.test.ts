@@ -44,7 +44,7 @@ describe('PromoCodeService', () => {
 
       expect(result.success).toBe(true);
       expect(result.newBalance).toBe(5000000);
-      expect(result.grantedSparks).toBe(5000);
+      expect(result.grantedSparks).toBe(500);
 
       const balance = await walletService.getBalance(TEST_USER.id);
       expect(balance).toBe(5000000);

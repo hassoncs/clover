@@ -7,6 +7,7 @@ export const metadata: TestGameMeta = {
   title: "Bubble Shooter",
   description: "Match 3+ bubbles of the same color to pop them and clear the board",
   titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
+  status: "archived",
 };
 
 const WORLD_WIDTH = 12;
