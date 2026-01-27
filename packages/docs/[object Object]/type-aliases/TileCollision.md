@@ -8,4 +8,4 @@
 
 > **TileCollision** = `"none"` \| `"full"` \| `"platform"` \| \{ `polygon`: [`Vec2`](../interfaces/Vec2.md)[]; \}
 
-Defined in: [types/tilemap.ts:11](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/tilemap.ts#L11)
+Defined in: [types/tilemap.ts:11](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/tilemap.ts#L11)

@@ -6,7 +6,7 @@
 
 # Interface: TapTrigger
 
-Defined in: [types/rules.ts:62](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L62)
+Defined in: [types/rules.ts:62](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L62)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:62](https://github.com/hassoncs/clover/blob/4fd406b0
 
 > **type**: `"tap"`
 
-Defined in: [types/rules.ts:63](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L63)
+Defined in: [types/rules.ts:63](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L63)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:63](https://github.com/hassoncs/clover/blob/4fd406b0
 
 > `optional` **target**: `string`
 
-Defined in: [types/rules.ts:64](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L64)
+Defined in: [types/rules.ts:64](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L64)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:64](https://github.com/hassoncs/clover/blob/4fd406b0
 
 > `optional` **xMin**: `number`
 
-Defined in: [types/rules.ts:65](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L65)
+Defined in: [types/rules.ts:65](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L65)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/rules.ts:65](https://github.com/hassoncs/clover/blob/4fd406b0
 
 > `optional` **xMax**: `number`
 
-Defined in: [types/rules.ts:66](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L66)
+Defined in: [types/rules.ts:66](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L66)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [types/rules.ts:66](https://github.com/hassoncs/clover/blob/4fd406b0
 
 > `optional` **xMinPercent**: `number`
 
-Defined in: [types/rules.ts:67](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L67)
+Defined in: [types/rules.ts:67](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L67)
 
 ***
 
@@ -54,4 +54,4 @@ Defined in: [types/rules.ts:67](https://github.com/hassoncs/clover/blob/4fd406b0
 
 > `optional` **xMaxPercent**: `number`
 
-Defined in: [types/rules.ts:68](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L68)
+Defined in: [types/rules.ts:68](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L68)

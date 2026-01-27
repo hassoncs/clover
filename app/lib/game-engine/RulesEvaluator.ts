@@ -7,6 +7,9 @@ import type {
   RuleAction,
   ComputedValueSystem,
   EvalContext,
+  StateMachineDefinition,
+  StateMachineState,
+  TransitionDefinition,
 } from "@slopcade/shared";
 import type { EntityManager } from "./EntityManager";
 import type { InputEntityManager } from "./InputEntityManager";
@@ -36,6 +39,7 @@ import {
   SpatialQueryActionExecutor,
   StateMachineActionExecutor,
   WaveActionExecutor,
+  BallSortActionExecutor,
   ActionRegistry,
 } from "./rules/actions";
 import {
@@ -104,6 +108,7 @@ export class RulesEvaluator implements IGameStateMutator {
     const spatialQueryActionExecutor = new SpatialQueryActionExecutor();
     const stateMachineActionExecutor = new StateMachineActionExecutor();
     const waveActionExecutor = new WaveActionExecutor();
+    const ballSortActionExecutor = new BallSortActionExecutor();
 
     this.actionRegistry = new ActionRegistry(
       scoreActionExecutor,
@@ -124,6 +129,7 @@ export class RulesEvaluator implements IGameStateMutator {
       spatialQueryActionExecutor,
       stateMachineActionExecutor,
       waveActionExecutor,
+      ballSortActionExecutor,
     );
   }
 
@@ -160,6 +166,28 @@ export class RulesEvaluator implements IGameStateMutator {
         }
       }
     }
+  }
+
+  setStateMachines(stateMachines: StateMachineDefinition[] | undefined): void {
+    if (!stateMachines || stateMachines.length === 0) return;
+
+    const smStates: Record<string, { currentState: string; previousState: string; stateEnteredAt: number; transitionCount: number }> = {};
+    const smDefs: Record<string, StateMachineDefinition> = {};
+
+    for (const sm of stateMachines) {
+      smStates[sm.id] = {
+        currentState: sm.initialState,
+        previousState: '',
+        stateEnteredAt: 0,
+        transitionCount: 0,
+      };
+      smDefs[sm.id] = sm;
+    }
+
+    this.variables.set('__smStates', smStates as unknown as number);
+    this.variables.set('__smDefs', smDefs as unknown as number);
+    this.initialVariables.set('__smStates', smStates as unknown as number);
+    this.initialVariables.set('__smDefs', smDefs as unknown as number);
   }
 
   setCallbacks(callbacks: {
@@ -405,7 +433,53 @@ export class RulesEvaluator implements IGameStateMutator {
       }
     }
 
+    this.processStateMachineEvents();
+
     this.pendingEvents.clear();
+  }
+
+  private processStateMachineEvents(): void {
+    if (this.pendingEvents.size === 0) return;
+
+    const smDefs = this.variables.get('__smDefs') as unknown as Record<string, StateMachineDefinition> | undefined;
+    const smStates = this.variables.get('__smStates') as unknown as Record<string, StateMachineState> | undefined;
+
+    if (!smDefs || !smStates) return;
+
+    for (const [eventName] of this.pendingEvents) {
+      for (const [machineId, def] of Object.entries(smDefs)) {
+        const state = smStates[machineId];
+        if (!state) continue;
+
+        for (const transition of def.transitions) {
+          if (!this.transitionMatches(transition, state.currentState, eventName)) continue;
+
+          console.log(`[StateMachine] Transition: ${machineId} "${state.currentState}" -> "${transition.to}" (event: ${eventName})`);
+
+          state.previousState = state.currentState;
+          state.currentState = transition.to;
+          state.stateEnteredAt = this.elapsed;
+          state.transitionCount += 1;
+
+          break;
+        }
+      }
+    }
+
+    this.variables.set('__smStates', smStates as unknown as number);
+  }
+
+  private transitionMatches(
+    transition: TransitionDefinition,
+    currentState: string,
+    eventName: string
+  ): boolean {
+    if (transition.trigger?.type !== 'event') return false;
+    if (transition.trigger.eventName !== eventName) return false;
+
+    if (transition.from === '*') return true;
+    if (Array.isArray(transition.from)) return transition.from.includes(currentState);
+    return transition.from === currentState;
   }
 
   // Delegate Methods

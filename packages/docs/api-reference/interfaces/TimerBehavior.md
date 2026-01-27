@@ -6,7 +6,7 @@
 
 # Interface: TimerBehavior
 
-Defined in: [types/behavior.ts:107](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L107)
+Defined in: [types/behavior.ts:107](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L107)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/behavior.ts:107](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L46)
+Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L46)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/4fd40
 
 > **type**: `"timer"`
 
-Defined in: [types/behavior.ts:108](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L108)
+Defined in: [types/behavior.ts:108](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L108)
 
 #### Overrides
 
@@ -42,7 +42,7 @@ Defined in: [types/behavior.ts:108](https://github.com/hassoncs/clover/blob/4fd4
 
 > **duration**: `number`
 
-Defined in: [types/behavior.ts:109](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L109)
+Defined in: [types/behavior.ts:109](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L109)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [types/behavior.ts:109](https://github.com/hassoncs/clover/blob/4fd4
 
 > **action**: [`TimerAction`](../type-aliases/TimerAction.md)
 
-Defined in: [types/behavior.ts:110](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L110)
+Defined in: [types/behavior.ts:110](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L110)
 
 ***
 
@@ -58,7 +58,7 @@ Defined in: [types/behavior.ts:110](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **repeat**: `boolean`
 
-Defined in: [types/behavior.ts:111](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L111)
+Defined in: [types/behavior.ts:111](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L111)
 
 ***
 
@@ -66,7 +66,7 @@ Defined in: [types/behavior.ts:111](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **spawnTemplate**: `string`
 
-Defined in: [types/behavior.ts:112](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L112)
+Defined in: [types/behavior.ts:112](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L112)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [types/behavior.ts:112](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **behaviorIndex**: `number`
 
-Defined in: [types/behavior.ts:113](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L113)
+Defined in: [types/behavior.ts:113](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L113)
 
 ***
 
@@ -82,4 +82,4 @@ Defined in: [types/behavior.ts:113](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **eventName**: `string`
 
-Defined in: [types/behavior.ts:114](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L114)
+Defined in: [types/behavior.ts:114](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L114)

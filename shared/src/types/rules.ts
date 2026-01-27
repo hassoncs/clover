@@ -375,6 +375,20 @@ export interface SetTimeScaleAction {
   duration?: Value<number>;
 }
 
+export interface BallSortPickupAction {
+  type: 'ball_sort_pickup';
+  tubeIndex?: number;
+}
+
+export interface BallSortDropAction {
+  type: 'ball_sort_drop';
+  tubeIndex?: number;
+}
+
+export interface BallSortCheckWinAction {
+  type: 'ball_sort_check_win';
+}
+
 export type RuleAction =
   | SpawnAction
   | DestroyAction
@@ -416,7 +430,10 @@ export type RuleAction =
   | WavesNextAction
   | PathStartAction
   | PathStopAction
-  | TargetNearestAction;
+  | TargetNearestAction
+  | BallSortPickupAction
+  | BallSortDropAction
+  | BallSortCheckWinAction;
 
 export interface GameRule {
   id: string;

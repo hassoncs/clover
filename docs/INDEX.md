@@ -10,7 +10,7 @@
 
 | Component | Description | Entry Point |
 |-----------|-------------|-------------|
-| **Game Engine** | Godot 4 physics and rendering for React Native | [godot-migration/](godot-migration/) |
+| **Game Engine** | Godot 4 physics and rendering for React Native | [godot/](../godot/) |
 | **Game Maker** | AI-powered game generation, entity/behavior systems | [game-maker/INDEX.md](game-maker/INDEX.md) |
 | **Economy** | Virtual currency strategy, Sparks/Gems, monetization | [economy/INDEX.md](economy/INDEX.md) |
 | **Shared** | Cross-cutting guides, tooling, project-wide docs | [shared/](#shared-documentation) |
@@ -71,8 +71,8 @@ Documentation for the Godot 4 game engine integration.
 
 | Document | Description |
 |----------|-------------|
-| [Migration Plan](godot-migration/MIGRATION_PLAN.md) | Full migration roadmap |
-| [Gap Analysis](godot/GAP_ANALYSIS.md) | Feature comparison |
+| [Godot 4 Integration](godot/) | Godot 4 physics and rendering backend |
+| [Coordinate System Guide](godot/COORDINATE_SYSTEM_GUIDE.md) | Center-origin coordinate system |
 | [Native Bridge TODO](godot/NATIVE_BRIDGE_TODO.md) | Outstanding native work |
 
 ---

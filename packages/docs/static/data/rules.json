@@ -493,6 +493,36 @@
       ]
     },
     {
+      "type": "ball_sort_check_win",
+      "interfaceName": "BallSortCheckWinAction",
+      "displayName": "Ball Sort Check Win",
+      "properties": []
+    },
+    {
+      "type": "ball_sort_drop",
+      "interfaceName": "BallSortDropAction",
+      "displayName": "Ball Sort Drop",
+      "properties": [
+        {
+          "name": "tubeIndex",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "ball_sort_pickup",
+      "interfaceName": "BallSortPickupAction",
+      "displayName": "Ball Sort Pickup",
+      "properties": [
+        {
+          "name": "tubeIndex",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    {
       "type": "camera_shake",
       "interfaceName": "CameraShakeAction",
       "displayName": "Camera Shake",

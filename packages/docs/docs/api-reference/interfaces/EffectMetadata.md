@@ -6,7 +6,7 @@
 
 # Interface: EffectMetadata
 
-Defined in: [types/effects.ts:285](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/effects.ts#L285)
+Defined in: [types/effects.ts:294](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L294)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/effects.ts:285](https://github.com/hassoncs/clover/blob/4fd40
 
 > **type**: [`EffectType`](../type-aliases/EffectType.md)
 
-Defined in: [types/effects.ts:286](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/effects.ts#L286)
+Defined in: [types/effects.ts:295](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L295)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/effects.ts:286](https://github.com/hassoncs/clover/blob/4fd40
 
 > **displayName**: `string`
 
-Defined in: [types/effects.ts:287](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/effects.ts#L287)
+Defined in: [types/effects.ts:296](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L296)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/effects.ts:287](https://github.com/hassoncs/clover/blob/4fd40
 
 > **description**: `string`
 
-Defined in: [types/effects.ts:288](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/effects.ts#L288)
+Defined in: [types/effects.ts:297](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L297)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/effects.ts:288](https://github.com/hassoncs/clover/blob/4fd40
 
 > **category**: `"glow"` \| `"color"` \| `"distortion"` \| `"postProcess"` \| `"artistic"`
 
-Defined in: [types/effects.ts:289](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/effects.ts#L289)
+Defined in: [types/effects.ts:298](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L298)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [types/effects.ts:289](https://github.com/hassoncs/clover/blob/4fd40
 
 > **params**: [`EffectParamMeta`](EffectParamMeta.md)[]
 
-Defined in: [types/effects.ts:290](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/effects.ts#L290)
+Defined in: [types/effects.ts:299](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L299)
 
 ***
 
@@ -54,4 +54,4 @@ Defined in: [types/effects.ts:290](https://github.com/hassoncs/clover/blob/4fd40
 
 > **defaultValues**: `Partial`\<[`EffectSpec`](../type-aliases/EffectSpec.md)\>
 
-Defined in: [types/effects.ts:291](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/effects.ts#L291)
+Defined in: [types/effects.ts:300](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L300)

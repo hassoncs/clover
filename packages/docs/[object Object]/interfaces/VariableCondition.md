@@ -6,7 +6,7 @@
 
 # Interface: VariableCondition
 
-Defined in: [types/rules.ts:165](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L165)
+Defined in: [types/rules.ts:165](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L165)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:165](https://github.com/hassoncs/clover/blob/4fd406b
 
 > **type**: `"variable"`
 
-Defined in: [types/rules.ts:166](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L166)
+Defined in: [types/rules.ts:166](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L166)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:166](https://github.com/hassoncs/clover/blob/4fd406b
 
 > **name**: `string`
 
-Defined in: [types/rules.ts:167](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L167)
+Defined in: [types/rules.ts:167](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L167)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:167](https://github.com/hassoncs/clover/blob/4fd406b
 
 > **comparison**: `"gte"` \| `"lte"` \| `"eq"` \| `"gt"` \| `"lt"` \| `"neq"`
 
-Defined in: [types/rules.ts:168](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L168)
+Defined in: [types/rules.ts:168](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L168)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/rules.ts:168](https://github.com/hassoncs/clover/blob/4fd406b
 
 > **value**: `string` \| `number` \| `boolean`
 
-Defined in: [types/rules.ts:169](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L169)
+Defined in: [types/rules.ts:169](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L169)

@@ -6,7 +6,7 @@
 
 # Interface: EffectParamMeta
 
-Defined in: [types/effects.ts:294](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/effects.ts#L294)
+Defined in: [types/effects.ts:303](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L303)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/effects.ts:294](https://github.com/hassoncs/clover/blob/4fd40
 
 > **key**: `string`
 
-Defined in: [types/effects.ts:295](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/effects.ts#L295)
+Defined in: [types/effects.ts:304](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L304)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/effects.ts:295](https://github.com/hassoncs/clover/blob/4fd40
 
 > **type**: `"number"` \| `"boolean"` \| `"color"` \| `"select"`
 
-Defined in: [types/effects.ts:296](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/effects.ts#L296)
+Defined in: [types/effects.ts:305](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L305)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/effects.ts:296](https://github.com/hassoncs/clover/blob/4fd40
 
 > **displayName**: `string`
 
-Defined in: [types/effects.ts:297](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/effects.ts#L297)
+Defined in: [types/effects.ts:306](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L306)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/effects.ts:297](https://github.com/hassoncs/clover/blob/4fd40
 
 > `optional` **min**: `number`
 
-Defined in: [types/effects.ts:298](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/effects.ts#L298)
+Defined in: [types/effects.ts:307](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L307)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [types/effects.ts:298](https://github.com/hassoncs/clover/blob/4fd40
 
 > `optional` **max**: `number`
 
-Defined in: [types/effects.ts:299](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/effects.ts#L299)
+Defined in: [types/effects.ts:308](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L308)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [types/effects.ts:299](https://github.com/hassoncs/clover/blob/4fd40
 
 > `optional` **step**: `number`
 
-Defined in: [types/effects.ts:300](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/effects.ts#L300)
+Defined in: [types/effects.ts:309](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L309)
 
 ***
 
@@ -62,7 +62,7 @@ Defined in: [types/effects.ts:300](https://github.com/hassoncs/clover/blob/4fd40
 
 > `optional` **options**: `string`[]
 
-Defined in: [types/effects.ts:301](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/effects.ts#L301)
+Defined in: [types/effects.ts:310](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L310)
 
 ***
 
@@ -70,4 +70,4 @@ Defined in: [types/effects.ts:301](https://github.com/hassoncs/clover/blob/4fd40
 
 > **defaultValue**: `string` \| `number` \| `boolean`
 
-Defined in: [types/effects.ts:302](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/effects.ts#L302)
+Defined in: [types/effects.ts:311](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/effects.ts#L311)

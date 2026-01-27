@@ -1,8 +1,8 @@
 {
-  "active_plan": null,
-  "completed_at": "2026-01-26T19:45:00.000Z",
-  "final_status": "blocked_on_human_action",
-  "completion": "39/41 (95%)",
-  "blocked_tasks": ["6.1 RevenueCat account setup", "6.5 End-to-end IAP testing"],
-  "notes": "Credit system is launch-ready without IAP. Security fix applied to webhook. Remaining tasks require external account creation and physical device testing."
+  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/slot-machine-game.md",
+  "started_at": "2026-01-26T22:46:15.769Z",
+  "session_ids": [
+    "ses_40383822bffekepRMeMAdplmfI"
+  ],
+  "plan_name": "slot-machine-game"
 }

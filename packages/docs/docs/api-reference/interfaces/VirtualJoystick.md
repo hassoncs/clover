@@ -6,7 +6,7 @@
 
 # Interface: VirtualJoystick
 
-Defined in: [types/GameDefinition.ts:265](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L265)
+Defined in: [types/GameDefinition.ts:329](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L329)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:265](https://github.com/hassoncs/clover/blo
 
 > **id**: `string`
 
-Defined in: [types/GameDefinition.ts:266](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L266)
+Defined in: [types/GameDefinition.ts:330](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L330)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/GameDefinition.ts:266](https://github.com/hassoncs/clover/blo
 
 > `optional` **size**: `number`
 
-Defined in: [types/GameDefinition.ts:267](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L267)
+Defined in: [types/GameDefinition.ts:331](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L331)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/GameDefinition.ts:267](https://github.com/hassoncs/clover/blo
 
 > `optional` **knobSize**: `number`
 
-Defined in: [types/GameDefinition.ts:268](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L268)
+Defined in: [types/GameDefinition.ts:332](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L332)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/GameDefinition.ts:268](https://github.com/hassoncs/clover/blo
 
 > `optional` **deadZone**: `number`
 
-Defined in: [types/GameDefinition.ts:269](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L269)
+Defined in: [types/GameDefinition.ts:333](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L333)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [types/GameDefinition.ts:269](https://github.com/hassoncs/clover/blo
 
 > `optional` **color**: `string`
 
-Defined in: [types/GameDefinition.ts:270](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L270)
+Defined in: [types/GameDefinition.ts:334](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L334)
 
 ***
 
@@ -54,4 +54,4 @@ Defined in: [types/GameDefinition.ts:270](https://github.com/hassoncs/clover/blo
 
 > `optional` **knobColor**: `string`
 
-Defined in: [types/GameDefinition.ts:271](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L271)
+Defined in: [types/GameDefinition.ts:335](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L335)

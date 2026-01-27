@@ -925,6 +925,7 @@ export const VirtualDPadSchema = z.object({
 export const InputConfigSchema = z.object({
   tapZones: z.array(TapZoneSchema).optional(),
   debugTapZones: z.boolean().optional(),
+  debugInputs: z.boolean().optional(),
   virtualButtons: z.array(VirtualButtonSchema).optional(),
   virtualJoystick: VirtualJoystickSchema.optional(),
   virtualDPad: VirtualDPadSchema.optional(),

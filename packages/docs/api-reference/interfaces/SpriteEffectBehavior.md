@@ -6,7 +6,7 @@
 
 # Interface: SpriteEffectBehavior
 
-Defined in: [types/behavior.ts:238](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L238)
+Defined in: [types/behavior.ts:238](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L238)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/behavior.ts:238](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L46)
+Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L46)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/4fd40
 
 > **type**: `"sprite_effect"`
 
-Defined in: [types/behavior.ts:239](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L239)
+Defined in: [types/behavior.ts:239](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L239)
 
 #### Overrides
 
@@ -42,7 +42,7 @@ Defined in: [types/behavior.ts:239](https://github.com/hassoncs/clover/blob/4fd4
 
 > **effect**: [`SpriteEffectType`](../type-aliases/SpriteEffectType.md)
 
-Defined in: [types/behavior.ts:240](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L240)
+Defined in: [types/behavior.ts:240](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L240)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [types/behavior.ts:240](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **params**: `object`
 
-Defined in: [types/behavior.ts:241](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L241)
+Defined in: [types/behavior.ts:241](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L241)
 
 #### color?
 

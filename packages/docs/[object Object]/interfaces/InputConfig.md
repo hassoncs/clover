@@ -6,7 +6,7 @@
 
 # Interface: InputConfig
 
-Defined in: [types/GameDefinition.ts:291](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L291)
+Defined in: [types/GameDefinition.ts:355](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L355)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:291](https://github.com/hassoncs/clover/blo
 
 > `optional` **tapZones**: [`TapZone`](TapZone.md)[]
 
-Defined in: [types/GameDefinition.ts:292](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L292)
+Defined in: [types/GameDefinition.ts:356](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L356)
 
 ***
 
@@ -22,7 +22,17 @@ Defined in: [types/GameDefinition.ts:292](https://github.com/hassoncs/clover/blo
 
 > `optional` **debugTapZones**: `boolean`
 
-Defined in: [types/GameDefinition.ts:293](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L293)
+Defined in: [types/GameDefinition.ts:357](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L357)
+
+***
+
+### debugInputs?
+
+> `optional` **debugInputs**: `boolean`
+
+Defined in: [types/GameDefinition.ts:359](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L359)
+
+Enable comprehensive input debug overlay showing tap positions, entity targets, drag vectors, etc.
 
 ***
 
@@ -30,7 +40,7 @@ Defined in: [types/GameDefinition.ts:293](https://github.com/hassoncs/clover/blo
 
 > `optional` **virtualButtons**: [`VirtualButton`](VirtualButton.md)[]
 
-Defined in: [types/GameDefinition.ts:294](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L294)
+Defined in: [types/GameDefinition.ts:360](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L360)
 
 ***
 
@@ -38,7 +48,7 @@ Defined in: [types/GameDefinition.ts:294](https://github.com/hassoncs/clover/blo
 
 > `optional` **virtualJoystick**: [`VirtualJoystick`](VirtualJoystick.md)
 
-Defined in: [types/GameDefinition.ts:295](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L295)
+Defined in: [types/GameDefinition.ts:361](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L361)
 
 ***
 
@@ -46,7 +56,7 @@ Defined in: [types/GameDefinition.ts:295](https://github.com/hassoncs/clover/blo
 
 > `optional` **virtualDPad**: [`VirtualDPad`](VirtualDPad.md)
 
-Defined in: [types/GameDefinition.ts:296](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L296)
+Defined in: [types/GameDefinition.ts:362](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L362)
 
 ***
 
@@ -54,7 +64,7 @@ Defined in: [types/GameDefinition.ts:296](https://github.com/hassoncs/clover/blo
 
 > `optional` **enableHaptics**: `boolean`
 
-Defined in: [types/GameDefinition.ts:297](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L297)
+Defined in: [types/GameDefinition.ts:363](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L363)
 
 ***
 
@@ -62,4 +72,4 @@ Defined in: [types/GameDefinition.ts:297](https://github.com/hassoncs/clover/blo
 
 > `optional` **tilt**: [`TiltConfig`](TiltConfig.md)
 
-Defined in: [types/GameDefinition.ts:298](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L298)
+Defined in: [types/GameDefinition.ts:364](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L364)

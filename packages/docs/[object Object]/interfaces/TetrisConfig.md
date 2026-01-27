@@ -6,7 +6,7 @@
 
 # Interface: TetrisConfig
 
-Defined in: [types/GameDefinition.ts:324](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L324)
+Defined in: [types/GameDefinition.ts:390](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L390)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:324](https://github.com/hassoncs/clover/blo
 
 > **gridId**: `string`
 
-Defined in: [types/GameDefinition.ts:325](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L325)
+Defined in: [types/GameDefinition.ts:391](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L391)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/GameDefinition.ts:325](https://github.com/hassoncs/clover/blo
 
 > **boardWidth**: `number`
 
-Defined in: [types/GameDefinition.ts:326](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L326)
+Defined in: [types/GameDefinition.ts:392](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L392)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/GameDefinition.ts:326](https://github.com/hassoncs/clover/blo
 
 > **boardHeight**: `number`
 
-Defined in: [types/GameDefinition.ts:327](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L327)
+Defined in: [types/GameDefinition.ts:393](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L393)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/GameDefinition.ts:327](https://github.com/hassoncs/clover/blo
 
 > **pieceTemplates**: `string`[]
 
-Defined in: [types/GameDefinition.ts:328](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L328)
+Defined in: [types/GameDefinition.ts:394](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L394)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [types/GameDefinition.ts:328](https://github.com/hassoncs/clover/blo
 
 > `optional` **initialDropSpeed**: `number`
 
-Defined in: [types/GameDefinition.ts:329](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L329)
+Defined in: [types/GameDefinition.ts:395](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L395)
 
 ***
 
@@ -54,4 +54,4 @@ Defined in: [types/GameDefinition.ts:329](https://github.com/hassoncs/clover/blo
 
 > `optional` **levelSpeedMultiplier**: `number`
 
-Defined in: [types/GameDefinition.ts:330](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L330)
+Defined in: [types/GameDefinition.ts:396](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L396)

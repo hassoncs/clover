@@ -6,7 +6,7 @@
 
 # Interface: TiltConfig
 
-Defined in: [types/GameDefinition.ts:285](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L285)
+Defined in: [types/GameDefinition.ts:349](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L349)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:285](https://github.com/hassoncs/clover/blo
 
 > **enabled**: `boolean`
 
-Defined in: [types/GameDefinition.ts:286](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L286)
+Defined in: [types/GameDefinition.ts:350](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L350)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/GameDefinition.ts:286](https://github.com/hassoncs/clover/blo
 
 > `optional` **sensitivity**: `number`
 
-Defined in: [types/GameDefinition.ts:287](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L287)
+Defined in: [types/GameDefinition.ts:351](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L351)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/GameDefinition.ts:287](https://github.com/hassoncs/clover/blo
 
 > `optional` **updateInterval**: `number`
 
-Defined in: [types/GameDefinition.ts:288](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L288)
+Defined in: [types/GameDefinition.ts:352](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L352)

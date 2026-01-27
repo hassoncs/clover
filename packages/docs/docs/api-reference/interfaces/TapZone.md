@@ -6,7 +6,7 @@
 
 # Interface: TapZone
 
-Defined in: [types/GameDefinition.ts:246](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L246)
+Defined in: [types/GameDefinition.ts:310](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L310)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:246](https://github.com/hassoncs/clover/blo
 
 > **id**: `string`
 
-Defined in: [types/GameDefinition.ts:247](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L247)
+Defined in: [types/GameDefinition.ts:311](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L311)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/GameDefinition.ts:247](https://github.com/hassoncs/clover/blo
 
 > **edge**: [`TapZoneEdge`](../type-aliases/TapZoneEdge.md)
 
-Defined in: [types/GameDefinition.ts:248](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L248)
+Defined in: [types/GameDefinition.ts:312](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L312)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/GameDefinition.ts:248](https://github.com/hassoncs/clover/blo
 
 > **size**: `number`
 
-Defined in: [types/GameDefinition.ts:249](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L249)
+Defined in: [types/GameDefinition.ts:313](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L313)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/GameDefinition.ts:249](https://github.com/hassoncs/clover/blo
 
 > **button**: [`TapZoneButton`](../type-aliases/TapZoneButton.md)
 
-Defined in: [types/GameDefinition.ts:250](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L250)
+Defined in: [types/GameDefinition.ts:314](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L314)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [types/GameDefinition.ts:250](https://github.com/hassoncs/clover/blo
 
 > `optional` **debugColor**: `string`
 
-Defined in: [types/GameDefinition.ts:251](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L251)
+Defined in: [types/GameDefinition.ts:315](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L315)

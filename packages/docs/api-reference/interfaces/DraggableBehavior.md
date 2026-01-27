@@ -6,7 +6,7 @@
 
 # Interface: DraggableBehavior
 
-Defined in: [types/behavior.ts:194](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L194)
+Defined in: [types/behavior.ts:194](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L194)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/behavior.ts:194](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L46)
+Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L46)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/4fd40
 
 > **type**: `"draggable"`
 
-Defined in: [types/behavior.ts:195](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L195)
+Defined in: [types/behavior.ts:195](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L195)
 
 #### Overrides
 
@@ -42,7 +42,7 @@ Defined in: [types/behavior.ts:195](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **mode**: [`DragMode`](../type-aliases/DragMode.md)
 
-Defined in: [types/behavior.ts:197](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L197)
+Defined in: [types/behavior.ts:197](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L197)
 
 Drag mode: 'force' applies physics forces, 'kinematic' moves directly with cursor
 
@@ -52,7 +52,7 @@ Drag mode: 'force' applies physics forces, 'kinematic' moves directly with curso
 
 > `optional` **stiffness**: `number`
 
-Defined in: [types/behavior.ts:199](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L199)
+Defined in: [types/behavior.ts:199](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L199)
 
 Stiffness of the drag force (higher = snappier response) - only used in 'force' mode
 
@@ -62,7 +62,7 @@ Stiffness of the drag force (higher = snappier response) - only used in 'force' 
 
 > `optional` **damping**: `number`
 
-Defined in: [types/behavior.ts:201](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L201)
+Defined in: [types/behavior.ts:201](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L201)
 
 Damping of the drag force (higher = less oscillation) - only used in 'force' mode
 
@@ -72,6 +72,6 @@ Damping of the drag force (higher = less oscillation) - only used in 'force' mod
 
 > `optional` **requireDirectHit**: `boolean`
 
-Defined in: [types/behavior.ts:203](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L203)
+Defined in: [types/behavior.ts:203](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L203)
 
 Only allow dragging if touch starts on this entity

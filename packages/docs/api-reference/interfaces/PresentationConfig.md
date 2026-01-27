@@ -6,7 +6,7 @@
 
 # Interface: PresentationConfig
 
-Defined in: [types/GameDefinition.ts:65](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L65)
+Defined in: [types/GameDefinition.ts:65](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L65)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:65](https://github.com/hassoncs/clover/blob
 
 > `optional` **aspectRatio**: `number` \| \{ `width`: `number`; `height`: `number`; \}
 
-Defined in: [types/GameDefinition.ts:66](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L66)
+Defined in: [types/GameDefinition.ts:66](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L66)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/GameDefinition.ts:66](https://github.com/hassoncs/clover/blob
 
 > `optional` **fit**: `"contain"` \| `"cover"`
 
-Defined in: [types/GameDefinition.ts:67](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L67)
+Defined in: [types/GameDefinition.ts:67](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L67)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/GameDefinition.ts:67](https://github.com/hassoncs/clover/blob
 
 > `optional` **letterboxColor**: `string`
 
-Defined in: [types/GameDefinition.ts:68](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L68)
+Defined in: [types/GameDefinition.ts:68](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L68)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/GameDefinition.ts:68](https://github.com/hassoncs/clover/blob
 
 > `optional` **orientation**: `"any"` \| `"portrait"` \| `"landscape"`
 
-Defined in: [types/GameDefinition.ts:69](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L69)
+Defined in: [types/GameDefinition.ts:69](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L69)

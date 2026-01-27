@@ -6,7 +6,7 @@
 
 # Interface: ScoreTrigger
 
-Defined in: [types/rules.ts:40](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L40)
+Defined in: [types/rules.ts:40](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L40)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:40](https://github.com/hassoncs/clover/blob/4fd406b0
 
 > **type**: `"score"`
 
-Defined in: [types/rules.ts:41](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L41)
+Defined in: [types/rules.ts:41](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L41)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:41](https://github.com/hassoncs/clover/blob/4fd406b0
 
 > **threshold**: `number`
 
-Defined in: [types/rules.ts:42](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L42)
+Defined in: [types/rules.ts:42](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L42)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/rules.ts:42](https://github.com/hassoncs/clover/blob/4fd406b0
 
 > **comparison**: `"gte"` \| `"lte"` \| `"eq"`
 
-Defined in: [types/rules.ts:43](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L43)
+Defined in: [types/rules.ts:43](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L43)

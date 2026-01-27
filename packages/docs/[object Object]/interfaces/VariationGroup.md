@@ -6,7 +6,7 @@
 
 # Interface: VariationGroup
 
-Defined in: [types/asset-sheet.ts:135](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/asset-sheet.ts#L135)
+Defined in: [types/asset-sheet.ts:135](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L135)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/asset-sheet.ts:135](https://github.com/hassoncs/clover/blob/4
 
 > **id**: `string`
 
-Defined in: [types/asset-sheet.ts:136](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/asset-sheet.ts#L136)
+Defined in: [types/asset-sheet.ts:136](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L136)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/asset-sheet.ts:136](https://github.com/hassoncs/clover/blob/4
 
 > **variants**: `Record`\<`string`, [`VariationVariant`](VariationVariant.md)\>
 
-Defined in: [types/asset-sheet.ts:137](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/asset-sheet.ts#L137)
+Defined in: [types/asset-sheet.ts:137](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L137)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/asset-sheet.ts:137](https://github.com/hassoncs/clover/blob/4
 
 > `optional` **order**: `string`[]
 
-Defined in: [types/asset-sheet.ts:138](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/asset-sheet.ts#L138)
+Defined in: [types/asset-sheet.ts:138](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L138)

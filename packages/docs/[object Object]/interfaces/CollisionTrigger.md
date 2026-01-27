@@ -6,7 +6,7 @@
 
 # Interface: CollisionTrigger
 
-Defined in: [types/rules.ts:28](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L28)
+Defined in: [types/rules.ts:28](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L28)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:28](https://github.com/hassoncs/clover/blob/4fd406b0
 
 > **type**: `"collision"`
 
-Defined in: [types/rules.ts:29](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L29)
+Defined in: [types/rules.ts:29](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L29)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:29](https://github.com/hassoncs/clover/blob/4fd406b0
 
 > **entityATag**: `string`
 
-Defined in: [types/rules.ts:30](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L30)
+Defined in: [types/rules.ts:30](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L30)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/rules.ts:30](https://github.com/hassoncs/clover/blob/4fd406b0
 
 > **entityBTag**: `string`
 
-Defined in: [types/rules.ts:31](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L31)
+Defined in: [types/rules.ts:31](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L31)

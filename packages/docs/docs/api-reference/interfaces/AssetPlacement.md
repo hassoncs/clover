@@ -6,7 +6,7 @@
 
 # Interface: AssetPlacement
 
-Defined in: [types/asset-system.ts:20](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/asset-system.ts#L20)
+Defined in: [types/asset-system.ts:20](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-system.ts#L20)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/asset-system.ts:20](https://github.com/hassoncs/clover/blob/4
 
 > **scale**: `number`
 
-Defined in: [types/asset-system.ts:21](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/asset-system.ts#L21)
+Defined in: [types/asset-system.ts:21](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-system.ts#L21)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/asset-system.ts:21](https://github.com/hassoncs/clover/blob/4
 
 > **offsetX**: `number`
 
-Defined in: [types/asset-system.ts:22](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/asset-system.ts#L22)
+Defined in: [types/asset-system.ts:22](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-system.ts#L22)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/asset-system.ts:22](https://github.com/hassoncs/clover/blob/4
 
 > **offsetY**: `number`
 
-Defined in: [types/asset-system.ts:23](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/asset-system.ts#L23)
+Defined in: [types/asset-system.ts:23](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-system.ts#L23)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/asset-system.ts:23](https://github.com/hassoncs/clover/blob/4
 
 > `optional` **anchor**: `object`
 
-Defined in: [types/asset-system.ts:24](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/asset-system.ts#L24)
+Defined in: [types/asset-system.ts:24](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-system.ts#L24)
 
 #### x
 

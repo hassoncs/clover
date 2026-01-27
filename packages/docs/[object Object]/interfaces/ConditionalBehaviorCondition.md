@@ -6,7 +6,7 @@
 
 # Interface: ConditionalBehaviorCondition
 
-Defined in: [types/behavior.ts:277](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L277)
+Defined in: [types/behavior.ts:277](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L277)
 
 Condition for when a conditional behavior group should be active.
 Tags-first design: hasTag is primary, expressions are escape hatch.
@@ -17,7 +17,7 @@ Tags-first design: hasTag is primary, expressions are escape hatch.
 
 > `optional` **hasTag**: `string`
 
-Defined in: [types/behavior.ts:279](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L279)
+Defined in: [types/behavior.ts:279](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L279)
 
 Primary: Entity must have this tag
 
@@ -27,7 +27,7 @@ Primary: Entity must have this tag
 
 > `optional` **hasAnyTag**: `string`[]
 
-Defined in: [types/behavior.ts:281](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L281)
+Defined in: [types/behavior.ts:281](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L281)
 
 Entity must have ANY of these tags
 
@@ -37,7 +37,7 @@ Entity must have ANY of these tags
 
 > `optional` **hasAllTags**: `string`[]
 
-Defined in: [types/behavior.ts:283](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L283)
+Defined in: [types/behavior.ts:283](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L283)
 
 Entity must have ALL of these tags
 
@@ -47,7 +47,7 @@ Entity must have ALL of these tags
 
 > `optional` **lacksTag**: `string`
 
-Defined in: [types/behavior.ts:285](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L285)
+Defined in: [types/behavior.ts:285](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L285)
 
 Entity must NOT have this tag
 
@@ -57,6 +57,6 @@ Entity must NOT have this tag
 
 > `optional` **expr**: `string`
 
-Defined in: [types/behavior.ts:287](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L287)
+Defined in: [types/behavior.ts:287](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L287)
 
 Escape hatch: Expression that evaluates to boolean (e.g., "health < 20")

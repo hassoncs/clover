@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { GameInspectorState, WindowWithBridge } from "../types.js";
 import { DEFAULT_BASE_URL, DEFAULT_TIMEOUT } from "../types.js";
-import { normalizeGameName, buildGameUrl, buildExampleUrl, ensurePage, waitForDebugBridge } from "../utils.js";
+import { normalizeGameName, buildGameUrl, buildExampleUrl, ensurePage, waitForDebugBridge, clearLogs } from "../utils.js";
 import { getAvailableGames, getAvailableExamples, isValidGame, isValidExample, type GameInfo } from "../registry.js";
 
 export function registerGameManagementTools(server: McpServer, state: GameInspectorState) {
@@ -111,6 +111,8 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
 
       const page = await ensurePage(state);
 
+      clearLogs(state);
+      
       await page.goto(url);
       const ready = await waitForDebugBridge(page, timeout);
 

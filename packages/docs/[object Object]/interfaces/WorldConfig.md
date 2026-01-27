@@ -6,7 +6,7 @@
 
 # Interface: WorldConfig
 
-Defined in: [types/GameDefinition.ts:9](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L9)
+Defined in: [types/GameDefinition.ts:9](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L9)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:9](https://github.com/hassoncs/clover/blob/
 
 > **gravity**: [`Vec2`](Vec2.md)
 
-Defined in: [types/GameDefinition.ts:10](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L10)
+Defined in: [types/GameDefinition.ts:10](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L10)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/GameDefinition.ts:10](https://github.com/hassoncs/clover/blob
 
 > **pixelsPerMeter**: `number`
 
-Defined in: [types/GameDefinition.ts:11](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L11)
+Defined in: [types/GameDefinition.ts:11](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L11)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/GameDefinition.ts:11](https://github.com/hassoncs/clover/blob
 
 > `optional` **bounds**: `object`
 
-Defined in: [types/GameDefinition.ts:12](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L12)
+Defined in: [types/GameDefinition.ts:12](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L12)
 
 #### width
 

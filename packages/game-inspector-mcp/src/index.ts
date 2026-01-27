@@ -16,6 +16,8 @@ const state: GameInspectorState = {
   browser: null,
   page: null,
   currentGameId: null,
+  consoleLogs: [],
+  maxLogEntries: 500,
 };
 
 const server = new McpServer({

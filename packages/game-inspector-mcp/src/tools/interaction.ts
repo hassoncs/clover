@@ -1,6 +1,12 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { GameInspectorState, AssertParams } from "../types.js";
+import type { GameInspectorState, AssertParams, ConsoleLogEntry } from "../types.js";
+import { queryGodot, getRecentLogs, takeScreenshot } from "../utils.js";
+
+interface QueryPointResult {
+  entities: Array<{ entityId: string; shapeIndex: number }>;
+  point: { x: number; y: number };
+}
 
 export function registerInteractionTools(server: McpServer, state: GameInspectorState) {
   server.tool(
@@ -32,6 +38,10 @@ export function registerInteractionTools(server: McpServer, state: GameInspector
       }).optional().describe("Release velocity (for drag_end)"),
       
       key: z.enum(["left", "right", "up", "down", "jump", "action"]).optional().describe("Button key (for key_down/key_up)"),
+      
+      waitMs: z.number().optional().describe("Time to wait after input before capturing screenshot/logs (default: 100ms)"),
+      skipScreenshot: z.boolean().optional().describe("Skip automatic screenshot capture (default: false)"),
+      skipLogs: z.boolean().optional().describe("Skip returning console logs (default: false)"),
     },
     async (args) => {
       const inputType = args.type as string;
@@ -39,14 +49,28 @@ export function registerInteractionTools(server: McpServer, state: GameInspector
       const worldY = args.worldY as number | undefined;
       const startWorldX = args.startWorldX as number | undefined;
       const startWorldY = args.startWorldY as number | undefined;
-      const targetEntityId = args.targetEntityId as string | undefined;
+      let targetEntityId = args.targetEntityId as string | undefined;
       const velocity = args.velocity as { x: number; y: number } | undefined;
       const key = args.key as string | undefined;
+      const waitMs = (args.waitMs as number | undefined) ?? 100;
+      const skipScreenshot = (args.skipScreenshot as boolean | undefined) ?? false;
+      const skipLogs = (args.skipLogs as boolean | undefined) ?? false;
 
       if (!state.page) {
         return {
           content: [{ type: "text" as const, text: JSON.stringify({ error: "No game open. Call game_open first." }) }],
         };
+      }
+
+      if (inputType === "tap" && worldX !== undefined && worldY !== undefined && !targetEntityId) {
+        const queryResult = await queryGodot<QueryPointResult>(
+          state.page,
+          "queryPoint",
+          [worldX, worldY, { includeSensors: true }]
+        );
+        if (queryResult && !("error" in queryResult) && queryResult.entities?.length > 0) {
+          targetEntityId = queryResult.entities[0].entityId;
+        }
       }
 
       const result = await state.page.evaluate(
@@ -75,8 +99,9 @@ export function registerInteractionTools(server: McpServer, state: GameInspector
                 y: 0,
                 worldX: params.worldX,
                 worldY: params.worldY,
+                targetEntityId: params.targetEntityId,
               });
-              return { success: true, type: "tap", world: { x: params.worldX, y: params.worldY } };
+              return { success: true, type: "tap", world: { x: params.worldX, y: params.worldY }, targetEntityId: params.targetEntityId };
 
             case "mouse_move":
               if (params.worldX === undefined || params.worldY === undefined) {
@@ -172,8 +197,40 @@ export function registerInteractionTools(server: McpServer, state: GameInspector
         { type: inputType, worldX, worldY, startWorldX, startWorldY, targetEntityId, velocity, key }
       );
 
+      const timestampBeforeWait = Date.now();
+      
+      if (waitMs > 0) {
+        await new Promise(resolve => setTimeout(resolve, waitMs));
+      }
+
+      let screenshotPath: string | undefined;
+      if (!skipScreenshot && state.page) {
+        try {
+          screenshotPath = await takeScreenshot(state.page, `input-${inputType}`);
+        } catch (e) {
+          // Screenshot failed, continue without it
+        }
+      }
+
+      let logs: ConsoleLogEntry[] = [];
+      if (!skipLogs) {
+        logs = getRecentLogs(state, timestampBeforeWait - 1000);
+      }
+
+      const response: Record<string, unknown> = { ...result as Record<string, unknown> };
+      if (screenshotPath) {
+        response.screenshotPath = screenshotPath;
+      }
+      if (logs.length > 0) {
+        response.logs = logs.map(l => ({
+          type: l.type,
+          text: l.text,
+          timestamp: l.timestamp,
+        }));
+      }
+
       return {
-        content: [{ type: "text" as const, text: JSON.stringify(result) }],
+        content: [{ type: "text" as const, text: JSON.stringify(response) }],
       };
     }
   );

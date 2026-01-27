@@ -3,7 +3,7 @@
 export_presets.cfg::TextFile::-1::1769197259::0::1::::<><><>0<>0<><>::
 icon.svg::CompressedTexture2D::8162193418698039025::1769188378::1769188930::1::::<><><>0<>0<>b60b07e3b7c5c7da747f33a9e77945db<>res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex::
 Main.tscn::PackedScene::-1::1769283296::0::1::::<><><>0<>0<><>::res://scripts/Main.gd
-README.md::TextFile::-1::1769283353::0::1::::<><><>0<>0<><>::
+README.md::TextFile::-1::1769465898::0::1::::<><><>0<>0<><>::
 ::res://docs/::1769205833
 VFX_IMPLEMENTATION_TODO.md::TextFile::-1::1769205833::0::1::::<><><>0<>0<><>::
 ::res://export/::1769358836
@@ -22,7 +22,7 @@ VFXShowcase.tscn::PackedScene::2855297431937620752::1769205700::0::1::::<><><>0<
 ::res://scenes/lab/::1769366245
 ui_components_demo.tscn::PackedScene::5962763572750761863::1769366245::0::1::::<><><>0<>0<><>::res://scripts/lab/UIComponentsDemo.gd
 ::res://scripts/::1769385517
-GameBridge.gd::GDScript::7400890102577367664::1769452307::0::1::::<>Node<><>0<>0<><>::
+GameBridge.gd::GDScript::7400890102577367664::1769465158::0::1::::<>Node<><>0<>0<><>::
 Lab3D.gd::GDScript::2743172060191353031::1769312349::0::1::::<>Node3D<><>0<>0<><>::
 Main.gd::GDScript::4927831078751178685::1769366407::0::1::::<>Node2D<><>0<>0<><>::
 PhysicsBody.gd::GDScript::3101094749307879933::1769200136::0::1::::<>RigidBody2D<><>0<>0<><>::

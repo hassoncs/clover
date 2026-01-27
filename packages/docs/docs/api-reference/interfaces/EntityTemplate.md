@@ -6,7 +6,7 @@
 
 # Interface: EntityTemplate
 
-Defined in: [types/entity.ts:44](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L44)
+Defined in: [types/entity.ts:96](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L96)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/entity.ts:44](https://github.com/hassoncs/clover/blob/4fd406b
 
 > **id**: `string`
 
-Defined in: [types/entity.ts:45](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L45)
+Defined in: [types/entity.ts:97](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L97)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/entity.ts:45](https://github.com/hassoncs/clover/blob/4fd406b
 
 > `optional` **description**: `string`
 
-Defined in: [types/entity.ts:47](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L47)
+Defined in: [types/entity.ts:99](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L99)
 
 Human-readable description for AI image generation prompts
 
@@ -32,7 +32,7 @@ Human-readable description for AI image generation prompts
 
 > `optional` **sprite**: [`SpriteComponent`](../type-aliases/SpriteComponent.md)
 
-Defined in: [types/entity.ts:48](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L48)
+Defined in: [types/entity.ts:100](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L100)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [types/entity.ts:48](https://github.com/hassoncs/clover/blob/4fd406b
 
 > `optional` **physics**: [`PhysicsComponent`](../type-aliases/PhysicsComponent.md)
 
-Defined in: [types/entity.ts:49](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L49)
+Defined in: [types/entity.ts:101](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L101)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [types/entity.ts:49](https://github.com/hassoncs/clover/blob/4fd406b
 
 > `optional` **behaviors**: [`Behavior`](../type-aliases/Behavior.md)[]
 
-Defined in: [types/entity.ts:50](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L50)
+Defined in: [types/entity.ts:102](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L102)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [types/entity.ts:50](https://github.com/hassoncs/clover/blob/4fd406b
 
 > `optional` **conditionalBehaviors**: [`ConditionalBehavior`](ConditionalBehavior.md)[]
 
-Defined in: [types/entity.ts:52](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L52)
+Defined in: [types/entity.ts:104](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L104)
 
 Tag-driven conditional behavior groups (exclusive by priority)
 
@@ -66,7 +66,7 @@ Tag-driven conditional behavior groups (exclusive by priority)
 
 > `optional` **tags**: `string`[]
 
-Defined in: [types/entity.ts:53](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L53)
+Defined in: [types/entity.ts:105](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L105)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [types/entity.ts:53](https://github.com/hassoncs/clover/blob/4fd406b
 
 > `optional` **layer**: `number`
 
-Defined in: [types/entity.ts:54](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L54)
+Defined in: [types/entity.ts:106](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L106)
 
 ***
 
@@ -82,4 +82,14 @@ Defined in: [types/entity.ts:54](https://github.com/hassoncs/clover/blob/4fd406b
 
 > `optional` **slots**: `Record`\<`string`, [`SlotDefinition`](SlotDefinition.md)\>
 
-Defined in: [types/entity.ts:55](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L55)
+Defined in: [types/entity.ts:107](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L107)
+
+***
+
+### children?
+
+> `optional` **children**: [`ChildTemplateDefinition`](ChildTemplateDefinition.md)[]
+
+Defined in: [types/entity.ts:109](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L109)
+
+Template-level children (part of prefab)

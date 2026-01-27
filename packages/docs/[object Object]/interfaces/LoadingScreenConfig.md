@@ -6,7 +6,7 @@
 
 # Interface: LoadingScreenConfig
 
-Defined in: [types/GameDefinition.ts:227](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L227)
+Defined in: [types/GameDefinition.ts:291](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L291)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:227](https://github.com/hassoncs/clover/blo
 
 > `optional` **backgroundImageUrl**: `string`
 
-Defined in: [types/GameDefinition.ts:228](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L228)
+Defined in: [types/GameDefinition.ts:292](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L292)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/GameDefinition.ts:228](https://github.com/hassoncs/clover/blo
 
 > `optional` **progressBarImageUrl**: `string`
 
-Defined in: [types/GameDefinition.ts:229](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L229)
+Defined in: [types/GameDefinition.ts:293](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L293)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/GameDefinition.ts:229](https://github.com/hassoncs/clover/blo
 
 > `optional` **progressBarFillImageUrl**: `string`
 
-Defined in: [types/GameDefinition.ts:230](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L230)
+Defined in: [types/GameDefinition.ts:294](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L294)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/GameDefinition.ts:230](https://github.com/hassoncs/clover/blo
 
 > `optional` **backgroundColor**: `string`
 
-Defined in: [types/GameDefinition.ts:231](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L231)
+Defined in: [types/GameDefinition.ts:295](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L295)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [types/GameDefinition.ts:231](https://github.com/hassoncs/clover/blo
 
 > `optional` **progressBarColor**: `string`
 
-Defined in: [types/GameDefinition.ts:232](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L232)
+Defined in: [types/GameDefinition.ts:296](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L296)
 
 ***
 
@@ -54,4 +54,4 @@ Defined in: [types/GameDefinition.ts:232](https://github.com/hassoncs/clover/blo
 
 > `optional` **textColor**: `string`
 
-Defined in: [types/GameDefinition.ts:233](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L233)
+Defined in: [types/GameDefinition.ts:297](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L297)

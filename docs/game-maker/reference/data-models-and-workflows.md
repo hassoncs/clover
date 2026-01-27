@@ -142,7 +142,7 @@ interface GameEntity {
   };
   
   sprite?: SpriteComponent;      // Visual representation
-  physics?: PhysicsComponent;    // Box2D body config
+  physics?: PhysicsComponent;    // Godot physics body config
   behaviors?: Behavior[];        // Game logic (control, spawn, score, etc.)
   tags?: string[];               // ["player", "controllable"]
   

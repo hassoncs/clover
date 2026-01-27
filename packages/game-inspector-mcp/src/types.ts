@@ -37,8 +37,17 @@ export interface AssertParams {
   count?: number;
 }
 
+export interface ConsoleLogEntry {
+  timestamp: number;
+  type: 'log' | 'warn' | 'error' | 'info' | 'debug';
+  text: string;
+  args?: string[];
+}
+
 export interface GameInspectorState {
   browser: Browser | null;
   page: Page | null;
   currentGameId: string | null;
+  consoleLogs: ConsoleLogEntry[];
+  maxLogEntries: number;
 }

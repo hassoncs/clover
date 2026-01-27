@@ -6,7 +6,7 @@
 
 # Interface: GameEntity
 
-Defined in: [types/entity.ts:21](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L21)
+Defined in: [types/entity.ts:48](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L48)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/entity.ts:21](https://github.com/hassoncs/clover/blob/4fd406b
 
 > **id**: `string`
 
-Defined in: [types/entity.ts:22](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L22)
+Defined in: [types/entity.ts:49](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L49)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/entity.ts:22](https://github.com/hassoncs/clover/blob/4fd406b
 
 > **name**: `string`
 
-Defined in: [types/entity.ts:23](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L23)
+Defined in: [types/entity.ts:50](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L50)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/entity.ts:23](https://github.com/hassoncs/clover/blob/4fd406b
 
 > `optional` **template**: `string`
 
-Defined in: [types/entity.ts:24](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L24)
+Defined in: [types/entity.ts:51](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L51)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/entity.ts:24](https://github.com/hassoncs/clover/blob/4fd406b
 
 > **transform**: [`TransformComponent`](TransformComponent.md)
 
-Defined in: [types/entity.ts:25](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L25)
+Defined in: [types/entity.ts:52](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L52)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [types/entity.ts:25](https://github.com/hassoncs/clover/blob/4fd406b
 
 > `optional` **sprite**: [`SpriteComponent`](../type-aliases/SpriteComponent.md)
 
-Defined in: [types/entity.ts:26](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L26)
+Defined in: [types/entity.ts:53](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L53)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [types/entity.ts:26](https://github.com/hassoncs/clover/blob/4fd406b
 
 > `optional` **physics**: [`PhysicsComponent`](../type-aliases/PhysicsComponent.md)
 
-Defined in: [types/entity.ts:27](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L27)
+Defined in: [types/entity.ts:54](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L54)
 
 ***
 
@@ -62,7 +62,7 @@ Defined in: [types/entity.ts:27](https://github.com/hassoncs/clover/blob/4fd406b
 
 > `optional` **behaviors**: [`Behavior`](../type-aliases/Behavior.md)[]
 
-Defined in: [types/entity.ts:28](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L28)
+Defined in: [types/entity.ts:55](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L55)
 
 ***
 
@@ -70,7 +70,7 @@ Defined in: [types/entity.ts:28](https://github.com/hassoncs/clover/blob/4fd406b
 
 > `optional` **conditionalBehaviors**: [`ConditionalBehavior`](ConditionalBehavior.md)[]
 
-Defined in: [types/entity.ts:30](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L30)
+Defined in: [types/entity.ts:57](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L57)
 
 Tag-driven conditional behavior groups (exclusive by priority)
 
@@ -80,7 +80,7 @@ Tag-driven conditional behavior groups (exclusive by priority)
 
 > `optional` **tags**: `string`[]
 
-Defined in: [types/entity.ts:31](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L31)
+Defined in: [types/entity.ts:58](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L58)
 
 ***
 
@@ -88,7 +88,7 @@ Defined in: [types/entity.ts:31](https://github.com/hassoncs/clover/blob/4fd406b
 
 > `optional` **layer**: `number`
 
-Defined in: [types/entity.ts:32](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L32)
+Defined in: [types/entity.ts:59](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L59)
 
 ***
 
@@ -96,7 +96,7 @@ Defined in: [types/entity.ts:32](https://github.com/hassoncs/clover/blob/4fd406b
 
 > `optional` **visible**: `boolean`
 
-Defined in: [types/entity.ts:33](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L33)
+Defined in: [types/entity.ts:60](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L60)
 
 ***
 
@@ -104,7 +104,7 @@ Defined in: [types/entity.ts:33](https://github.com/hassoncs/clover/blob/4fd406b
 
 > `optional` **active**: `boolean`
 
-Defined in: [types/entity.ts:34](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L34)
+Defined in: [types/entity.ts:61](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L61)
 
 ***
 
@@ -112,4 +112,14 @@ Defined in: [types/entity.ts:34](https://github.com/hassoncs/clover/blob/4fd406b
 
 > `optional` **assetPackId**: `string`
 
-Defined in: [types/entity.ts:35](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L35)
+Defined in: [types/entity.ts:62](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L62)
+
+***
+
+### children?
+
+> `optional` **children**: [`ChildEntityDefinition`](ChildEntityDefinition.md)[]
+
+Defined in: [types/entity.ts:64](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L64)
+
+Nested child entities

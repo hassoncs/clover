@@ -55,11 +55,16 @@ import {
   type JoystickState,
 } from "./VirtualJoystickOverlay";
 import { VirtualDPadOverlay } from "./VirtualDPadOverlay";
+import { InputDebugOverlay } from "./InputDebugOverlay";
 import { useTiltInput } from "./hooks/useTiltInput";
 import {
   Match3GameSystem,
   type Match3Config,
 } from "./systems/Match3GameSystem";
+import {
+  SlotMachineSystem,
+  type SlotMachineConfig,
+} from "./systems/slotMachine";
 import { TuningPanel, hasTunables } from "@/components/game";
 
 export interface GameRuntimeGodotProps {
@@ -100,6 +105,7 @@ export function GameRuntimeGodot({
   const viewportSystemRef = useRef<ViewportSystem | null>(null);
   const inputEntityManagerRef = useRef<InputEntityManager | null>(null);
   const match3SystemRef = useRef<Match3GameSystem | null>(null);
+  const slotMachineSystemRef = useRef<SlotMachineSystem | null>(null);
   const propertyCacheRef = useRef(new PropertyCache());
   const propertySyncManagerRef = useRef<PropertySyncManager | null>(null);
   const elapsedRef = useRef(0);
@@ -376,6 +382,63 @@ export function GameRuntimeGodot({
           match3SystemRef.current = match3System;
         }
 
+        if (definition.slotMachine) {
+          const slotMachineSystem = new SlotMachineSystem(
+            definition.slotMachine as SlotMachineConfig,
+            game.entityManager,
+            {
+              onSpinStart: () => {
+                let currentCredits = game.rulesEvaluator.getVariable('credits') as number ?? 1000;
+                const bet = game.rulesEvaluator.getVariable('bet') as number ?? 1;
+                
+                // Auto-refill if credits are depleted
+                if (currentCredits <= 0) {
+                  currentCredits = 1000;
+                  game.rulesEvaluator.setVariable('credits', currentCredits);
+                  console.log('[SlotMachine] Credits refilled to 1000');
+                }
+                
+                game.rulesEvaluator.setVariable('credits', currentCredits - bet);
+                game.rulesEvaluator.setVariable('lastWin', 0);
+                console.log(`[SlotMachine] Spin started - deducted ${bet} credits, remaining: ${currentCredits - bet}`);
+              },
+              onSpinComplete: (wins, totalPayout) => {
+                const currentCredits = game.rulesEvaluator.getVariable('credits') as number ?? 1000;
+                game.rulesEvaluator.setVariable('credits', currentCredits + totalPayout);
+                game.rulesEvaluator.setVariable('lastWin', totalPayout);
+                console.log(`[SlotMachine] Spin complete - payout: ${totalPayout}, new credits: ${currentCredits + totalPayout}`);
+              },
+              onWinFound: () => {},
+              onBonusTrigger: (bonusType) => {
+                if (bonusType === 'free_spins') {
+                  const remaining = slotMachineSystemRef.current?.getFreeSpinsRemaining() ?? 0;
+                  game.rulesEvaluator.setVariable('freeSpins', remaining);
+                  console.log(`[SlotMachine] Bonus triggered - free spins: ${remaining}`);
+                }
+              },
+              onCascadeComplete: () => {},
+              onBoardReady: () => {},
+              onFreeSpinStart: (remaining) => {
+                game.rulesEvaluator.setVariable('freeSpins', remaining);
+                console.log(`[SlotMachine] Free spin started - remaining: ${remaining}`);
+              },
+              onFreeSpinsComplete: () => {
+                game.rulesEvaluator.setVariable('freeSpins', 0);
+                console.log(`[SlotMachine] Free spins complete`);
+              },
+              onPickReveal: () => {},
+              onPickBonusComplete: (totalPrize) => {
+                const currentCredits = game.rulesEvaluator.getVariable('credits') as number ?? 1000;
+                game.rulesEvaluator.setVariable('credits', currentCredits + totalPrize);
+                game.rulesEvaluator.setVariable('lastWin', totalPrize);
+                console.log(`[SlotMachine] Pick bonus complete - prize: ${totalPrize}, new credits: ${currentCredits + totalPrize}`);
+              },
+            },
+          );
+          slotMachineSystem.setBridge(bridge);
+          slotMachineSystemRef.current = slotMachineSystem;
+        }
+
         if (definition.variables) {
           const resolvedVars: Record<string, ExpressionValueType> = {};
           for (const [key, value] of Object.entries(definition.variables)) {
@@ -539,6 +602,10 @@ export function GameRuntimeGodot({
           }
           match3SystemRef.current.initialize();
         }
+
+        if (slotMachineSystemRef.current) {
+          slotMachineSystemRef.current.initialize();
+        }
       } catch (error) {
         console.error("[GameRuntime.godot] Failed to initialize game:", error);
       }
@@ -559,6 +626,8 @@ export function GameRuntimeGodot({
       inputEventUnsubRef.current = null;
       match3SystemRef.current?.destroy();
       match3SystemRef.current = null;
+      slotMachineSystemRef.current?.destroy();
+      slotMachineSystemRef.current = null;
       propertySyncManagerRef.current?.stop();
       propertySyncManagerRef.current = null;
       bridgeRef.current?.dispose();
@@ -701,7 +770,7 @@ export function GameRuntimeGodot({
           wave: 1,
           dt,
           frameId: frameIdRef.current,
-          variables: gameVariablesRef.current,
+          variables: { ...gameVariablesRef.current, ...fullGameState.variables },
           random: Math.random,
           entityManager: game.entityManager,
           customFunctions: getAllSystemExpressionFunctions(),
@@ -728,6 +797,17 @@ export function GameRuntimeGodot({
           match3System.handleMouseMove(mouseInput.worldX, mouseInput.worldY);
         }
         match3System.update(dt);
+      }
+
+      const slotMachineSystem = slotMachineSystemRef.current;
+      if (slotMachineSystem) {
+        const tapInput = inputSnapshot.tap as
+          | { worldX: number; worldY: number }
+          | undefined;
+        if (tapInput && slotMachineSystem.isIdle()) {
+          slotMachineSystem.startSpin();
+        }
+        slotMachineSystem.update(dt);
       }
 
       const behaviorContext: Omit<
@@ -1027,7 +1107,7 @@ export function GameRuntimeGodot({
       inputRef.current.mouse = undefined;
     };
 
-    const handleClick = (e: MouseEvent) => {
+    const handleClick = async (e: MouseEvent) => {
       const container = viewportContainerRef.current;
       if (!container) return;
 
@@ -1045,6 +1125,7 @@ export function GameRuntimeGodot({
 
       const camera = cameraRef.current;
       const viewportSystem = viewportSystemRef.current;
+      const bridge = bridgeRef.current;
       if (!camera || !viewportSystem) return;
 
       const world = viewportSystem.viewportToWorld(
@@ -1054,9 +1135,17 @@ export function GameRuntimeGodot({
         camera.getZoom(),
       );
 
+      let targetEntityId: string | undefined;
+      if (bridge) {
+        const entityId = await bridge.queryPointEntity(world);
+        if (entityId) {
+          targetEntityId = entityId;
+        }
+      }
+
       inputRef.current = {
         ...inputRef.current,
-        tap: { x: viewportX, y: viewportY, worldX: world.x, worldY: world.y },
+        tap: { x: viewportX, y: viewportY, worldX: world.x, worldY: world.y, targetEntityId },
       };
     };
 
@@ -1437,6 +1526,17 @@ export function GameRuntimeGodot({
           viewportRect={viewportRect}
           onButtonPress={handleVirtualButtonPress}
           enableHaptics={definition.input.enableHaptics}
+        />
+      )}
+
+      {hasViewport && definition.input?.debugInputs && (
+        <InputDebugOverlay
+          inputRef={inputRef}
+          cameraRef={cameraRef}
+          viewportSystemRef={viewportSystemRef}
+          viewportRect={viewportRect}
+          rules={definition.rules}
+          entities={gameRef.current?.entityManager.getActiveEntities()}
         />
       )}
 

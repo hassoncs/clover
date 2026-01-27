@@ -6,7 +6,7 @@
 
 # Interface: AnimateBehavior
 
-Defined in: [types/behavior.ts:141](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L141)
+Defined in: [types/behavior.ts:141](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L141)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/behavior.ts:141](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L46)
+Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L46)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/4fd40
 
 > **type**: `"animate"`
 
-Defined in: [types/behavior.ts:142](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L142)
+Defined in: [types/behavior.ts:142](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L142)
 
 #### Overrides
 
@@ -42,7 +42,7 @@ Defined in: [types/behavior.ts:142](https://github.com/hassoncs/clover/blob/4fd4
 
 > **frames**: `string`[]
 
-Defined in: [types/behavior.ts:143](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L143)
+Defined in: [types/behavior.ts:143](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L143)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [types/behavior.ts:143](https://github.com/hassoncs/clover/blob/4fd4
 
 > **fps**: `number`
 
-Defined in: [types/behavior.ts:144](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L144)
+Defined in: [types/behavior.ts:144](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L144)
 
 ***
 
@@ -58,7 +58,7 @@ Defined in: [types/behavior.ts:144](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **loop**: `boolean`
 
-Defined in: [types/behavior.ts:145](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L145)
+Defined in: [types/behavior.ts:145](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L145)
 
 ***
 
@@ -66,4 +66,4 @@ Defined in: [types/behavior.ts:145](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **playOn**: [`AnimationTrigger`](../type-aliases/AnimationTrigger.md)
 
-Defined in: [types/behavior.ts:146](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L146)
+Defined in: [types/behavior.ts:146](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L146)

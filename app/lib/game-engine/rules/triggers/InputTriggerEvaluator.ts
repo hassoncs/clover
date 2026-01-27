@@ -30,7 +30,11 @@ export class InputTriggerEvaluator
           return false; // Requires entity context handling in RulesEvaluator integration
         }
         if (trigger.target && trigger.target !== "screen") {
-          return context.inputEvents.tap.targetEntityId === trigger.target;
+          const targetEntityId = context.inputEvents.tap.targetEntityId;
+          if (!targetEntityId) return false;
+          
+          if (targetEntityId === trigger.target) return true;
+          return context.entityManager.hasTag(targetEntityId, trigger.target);
         }
 
         const tapWorldX = context.inputEvents.tap.worldX;

@@ -8,4 +8,4 @@
 
 > `const` **TileLayerTypeSchema**: `ZodEnum`\<\[`"background"`, `"collision"`, `"foreground"`, `"decoration"`\]\>
 
-Defined in: [types/schemas.ts:623](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/schemas.ts#L623)
+Defined in: [types/schemas.ts:659](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/schemas.ts#L659)

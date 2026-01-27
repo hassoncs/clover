@@ -14,7 +14,6 @@
     "ios": "expo run:ios --port 8082"
   },
   "dependencies": {
-    "@slopcade/physics": "workspace:*",
     "@slopcade/shared": "workspace:*",
     "@slopcade/theme": "workspace:*",
     "@slopcade/ui": "workspace:*",

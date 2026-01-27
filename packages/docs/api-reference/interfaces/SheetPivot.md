@@ -6,7 +6,7 @@
 
 # Interface: SheetPivot
 
-Defined in: [types/asset-sheet.ts:49](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/asset-sheet.ts#L49)
+Defined in: [types/asset-sheet.ts:49](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L49)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/asset-sheet.ts:49](https://github.com/hassoncs/clover/blob/4f
 
 > **x**: `number`
 
-Defined in: [types/asset-sheet.ts:50](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/asset-sheet.ts#L50)
+Defined in: [types/asset-sheet.ts:50](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L50)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [types/asset-sheet.ts:50](https://github.com/hassoncs/clover/blob/4f
 
 > **y**: `number`
 
-Defined in: [types/asset-sheet.ts:51](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/asset-sheet.ts#L51)
+Defined in: [types/asset-sheet.ts:51](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/asset-sheet.ts#L51)

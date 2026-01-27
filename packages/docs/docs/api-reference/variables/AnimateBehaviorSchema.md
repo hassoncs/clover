@@ -8,4 +8,4 @@
 
 > `const` **AnimateBehaviorSchema**: `ZodObject`\<`object` & `object`, `"strip"`, `ZodTypeAny`, \{ `enabled?`: `boolean`; `type`: `"animate"`; `frames`: `string`[]; `fps`: `number` \| \{ `expr`: `string`; `debugName?`: `string`; `cache?`: `"none"` \| `"frame"`; \}; `loop?`: `boolean`; `playOn?`: `"collision"` \| `"destroy"` \| `"always"` \| `"moving"`; \}, \{ `enabled?`: `boolean`; `type`: `"animate"`; `frames`: `string`[]; `fps`: `number` \| \{ `expr`: `string`; `debugName?`: `string`; `cache?`: `"none"` \| `"frame"`; \}; `loop?`: `boolean`; `playOn?`: `"collision"` \| `"destroy"` \| `"always"` \| `"moving"`; \}\>
 
-Defined in: [types/schemas.ts:180](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/schemas.ts#L180)
+Defined in: [types/schemas.ts:183](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/schemas.ts#L183)

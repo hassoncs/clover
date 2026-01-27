@@ -326,7 +326,7 @@ Production-ready system with tooling and advanced features.
 
 ## References
 
-- [RFC-001: Derived Values System](../rfcs/RFC-001-derived-values-system.md)
-- [RFC-002: Complementary Game Systems](../rfcs/RFC-002-complementary-game-systems.md)
+- [RFC-001: Derived Values System](../05-rfcs/RFC-001-derived-values.md)
+- [RFC-002: Complementary Game Systems](../05-rfcs/RFC-002-complementary-systems.md)
 - [Behavior System Reference](../reference/behavior-system.md)
 - [Rules System Reference](../reference/rules-system.md)

@@ -19,6 +19,7 @@ import { ProgressionActionExecutor } from './ProgressionActionExecutor';
 import { SpatialQueryActionExecutor } from './SpatialQueryActionExecutor';
 import { StateMachineActionExecutor } from './StateMachineActionExecutor';
 import { WaveActionExecutor } from './WaveActionExecutor';
+import { BallSortActionExecutor } from './BallSortActionExecutor';
 
 export type ActionType = RuleAction['type'];
 
@@ -43,7 +44,8 @@ export class ActionRegistry {
     private progressionActionExecutor: ProgressionActionExecutor,
     private spatialQueryActionExecutor: SpatialQueryActionExecutor,
     private stateMachineActionExecutor: StateMachineActionExecutor,
-    private waveActionExecutor: WaveActionExecutor
+    private waveActionExecutor: WaveActionExecutor,
+    private ballSortActionExecutor: BallSortActionExecutor
   ) {
     this.registerAll();
   }
@@ -90,6 +92,9 @@ export class ActionRegistry {
     this.registry.set('state_transition', this.stateMachineActionExecutor);
     this.registry.set('waves_start', this.waveActionExecutor);
     this.registry.set('waves_next', this.waveActionExecutor);
+    this.registry.set('ball_sort_pickup', this.ballSortActionExecutor);
+    this.registry.set('ball_sort_drop', this.ballSortActionExecutor);
+    this.registry.set('ball_sort_check_win', this.ballSortActionExecutor);
   }
 
   execute(action: RuleAction, context: RuleContext): void {

@@ -6,7 +6,7 @@
 
 # Interface: SlotDefinition
 
-Defined in: [types/entity.ts:38](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L38)
+Defined in: [types/entity.ts:67](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L67)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/entity.ts:38](https://github.com/hassoncs/clover/blob/4fd406b
 
 > **x**: `number`
 
-Defined in: [types/entity.ts:39](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L39)
+Defined in: [types/entity.ts:68](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L68)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/entity.ts:39](https://github.com/hassoncs/clover/blob/4fd406b
 
 > **y**: `number`
 
-Defined in: [types/entity.ts:40](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L40)
+Defined in: [types/entity.ts:69](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L69)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/entity.ts:40](https://github.com/hassoncs/clover/blob/4fd406b
 
 > `optional` **layer**: `number`
 
-Defined in: [types/entity.ts:41](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/entity.ts#L41)
+Defined in: [types/entity.ts:70](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/entity.ts#L70)

@@ -14,7 +14,7 @@ import type {
 export type CreateEvalContextForEntity = (entity?: RuntimeEntity) => EvalContext;
 
 export interface InputState {
-  tap?: { x: number; y: number; worldX: number; worldY: number };
+  tap?: { x: number; y: number; worldX: number; worldY: number; targetEntityId?: string };
   drag?: {
     startX: number;
     startY: number;

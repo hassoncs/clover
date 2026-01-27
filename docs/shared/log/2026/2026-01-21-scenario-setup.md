@@ -142,9 +142,7 @@ pnpm release  # Deploy with secrets
 
 ### Optional Enhancements
 
-4. **Add Sprite Sheet Models** (from docs/game-maker/SPRITE_GENERATION.md):
-   - `model_scenario-grid-maker` - Arrange images into sprite sheets
-   - `model_scenario-image-slicer` - Extract frames from sheets
+4. **Add Sprite Sheet Models** - Use Scenario.com grid maker and image slicer models for sprite sheet generation.
 
 5. **Implement Post-Processing** - Add palette quantization, centering, background removal pipeline.
 
@@ -154,10 +152,9 @@ pnpm release  # Deploy with secrets
 
 ## 📖 Documentation
 
-- **Testing Guide**: `docs/game-maker/SCENARIO_TEST_GUIDE.md`
-- **API Integration**: `docs/game-maker/SCENARIO_INTEGRATION_PLAN.md`
-- **Sprite Generation**: `docs/game-maker/SPRITE_GENERATION.md`
-- **API TODO**: `docs/game-maker/SCENARIO_API_TODO.md`
+- **Testing Guide**: See `api/src/ai/__tests__/scenario-visual-test-runner.ts` for visual testing
+- **API Integration**: See `api/src/ai/assets.ts` for implementation
+- **Sprite Generation**: See `docs/game-maker/reference/sprite-generation.md`
 
 ---
 

@@ -6,7 +6,7 @@
 
 # Interface: ParticleEmitterConfig
 
-Defined in: [types/particles.ts:52](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L52)
+Defined in: [types/particles.ts:52](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L52)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/particles.ts:52](https://github.com/hassoncs/clover/blob/4fd4
 
 > **maxParticles**: `number`
 
-Defined in: [types/particles.ts:53](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L53)
+Defined in: [types/particles.ts:53](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L53)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/particles.ts:53](https://github.com/hassoncs/clover/blob/4fd4
 
 > **emissionRate**: `number`
 
-Defined in: [types/particles.ts:54](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L54)
+Defined in: [types/particles.ts:54](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L54)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/particles.ts:54](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **burst**: `object`
 
-Defined in: [types/particles.ts:55](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L55)
+Defined in: [types/particles.ts:55](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L55)
 
 #### count
 
@@ -46,7 +46,7 @@ Defined in: [types/particles.ts:55](https://github.com/hassoncs/clover/blob/4fd4
 
 > **lifetime**: [`NumberRange`](NumberRange.md)
 
-Defined in: [types/particles.ts:59](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L59)
+Defined in: [types/particles.ts:59](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L59)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [types/particles.ts:59](https://github.com/hassoncs/clover/blob/4fd4
 
 > **initialSpeed**: [`NumberRange`](NumberRange.md)
 
-Defined in: [types/particles.ts:60](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L60)
+Defined in: [types/particles.ts:60](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L60)
 
 ***
 
@@ -62,7 +62,7 @@ Defined in: [types/particles.ts:60](https://github.com/hassoncs/clover/blob/4fd4
 
 > **initialDirection**: `object`
 
-Defined in: [types/particles.ts:61](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L61)
+Defined in: [types/particles.ts:61](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L61)
 
 #### minAngle
 
@@ -78,7 +78,7 @@ Defined in: [types/particles.ts:61](https://github.com/hassoncs/clover/blob/4fd4
 
 > **gravity**: `object`
 
-Defined in: [types/particles.ts:65](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L65)
+Defined in: [types/particles.ts:65](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L65)
 
 #### x
 
@@ -94,7 +94,7 @@ Defined in: [types/particles.ts:65](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **drag**: `number`
 
-Defined in: [types/particles.ts:66](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L66)
+Defined in: [types/particles.ts:66](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L66)
 
 ***
 
@@ -102,7 +102,7 @@ Defined in: [types/particles.ts:66](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **sizeOverLife**: [`Curve`](Curve.md)
 
-Defined in: [types/particles.ts:67](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L67)
+Defined in: [types/particles.ts:67](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L67)
 
 ***
 
@@ -110,7 +110,7 @@ Defined in: [types/particles.ts:67](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **opacityOverLife**: [`Curve`](Curve.md)
 
-Defined in: [types/particles.ts:68](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L68)
+Defined in: [types/particles.ts:68](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L68)
 
 ***
 
@@ -118,7 +118,7 @@ Defined in: [types/particles.ts:68](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **rotationOverLife**: [`Curve`](Curve.md)
 
-Defined in: [types/particles.ts:69](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L69)
+Defined in: [types/particles.ts:69](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L69)
 
 ***
 
@@ -126,7 +126,7 @@ Defined in: [types/particles.ts:69](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **colorOverLife**: [`ColorGradient`](ColorGradient.md)
 
-Defined in: [types/particles.ts:70](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L70)
+Defined in: [types/particles.ts:70](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L70)
 
 ***
 
@@ -134,7 +134,7 @@ Defined in: [types/particles.ts:70](https://github.com/hassoncs/clover/blob/4fd4
 
 > **initialSize**: [`NumberRange`](NumberRange.md)
 
-Defined in: [types/particles.ts:71](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L71)
+Defined in: [types/particles.ts:71](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L71)
 
 ***
 
@@ -142,7 +142,7 @@ Defined in: [types/particles.ts:71](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **initialOpacity**: [`NumberRange`](NumberRange.md)
 
-Defined in: [types/particles.ts:72](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L72)
+Defined in: [types/particles.ts:72](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L72)
 
 ***
 
@@ -150,7 +150,7 @@ Defined in: [types/particles.ts:72](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **initialRotation**: [`NumberRange`](NumberRange.md)
 
-Defined in: [types/particles.ts:73](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L73)
+Defined in: [types/particles.ts:73](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L73)
 
 ***
 
@@ -158,7 +158,7 @@ Defined in: [types/particles.ts:73](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **rotationSpeed**: [`NumberRange`](NumberRange.md)
 
-Defined in: [types/particles.ts:74](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L74)
+Defined in: [types/particles.ts:74](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L74)
 
 ***
 
@@ -166,7 +166,7 @@ Defined in: [types/particles.ts:74](https://github.com/hassoncs/clover/blob/4fd4
 
 > **spawnShape**: [`SpawnShape`](../type-aliases/SpawnShape.md)
 
-Defined in: [types/particles.ts:75](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L75)
+Defined in: [types/particles.ts:75](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L75)
 
 ***
 
@@ -174,7 +174,7 @@ Defined in: [types/particles.ts:75](https://github.com/hassoncs/clover/blob/4fd4
 
 > **renderStyle**: [`RenderStyle`](../type-aliases/RenderStyle.md)
 
-Defined in: [types/particles.ts:76](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L76)
+Defined in: [types/particles.ts:76](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L76)
 
 ***
 
@@ -182,7 +182,7 @@ Defined in: [types/particles.ts:76](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **blendMode**: [`ParticleBlendMode`](../type-aliases/ParticleBlendMode.md)
 
-Defined in: [types/particles.ts:77](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L77)
+Defined in: [types/particles.ts:77](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L77)
 
 ***
 
@@ -190,4 +190,4 @@ Defined in: [types/particles.ts:77](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **localSpace**: `boolean`
 
-Defined in: [types/particles.ts:78](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/particles.ts#L78)
+Defined in: [types/particles.ts:78](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/particles.ts#L78)

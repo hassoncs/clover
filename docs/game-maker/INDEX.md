@@ -8,7 +8,7 @@
 
 ## Vision
 
-**Core Premise**: Given a robust game engine architecture with declarative systems, physics (Box2D via Godot), and AI-powered generation, users can describe a game idea in plain language and receive a playable game within seconds.
+**Core Premise**: Given a robust game engine architecture with declarative systems, physics (Godot), and AI-powered generation, users can describe a game idea in plain language and receive a playable game within seconds.
 
 > **📚 Engine Architecture**: For complete technical specifications of how the engine works, see **[docs/game-engine-architecture/](../game-engine-architecture/README.md)**
 
@@ -110,16 +110,6 @@ Step-by-step tutorials for game creation and development.
 
 ---
 
-## Troubleshooting
-
-Known issues and solutions.
-
-| Document | Description |
-|----------|-------------|
-| _None yet_ | |
-
----
-
 ## Planning
 
 > **🏗️ Engine Roadmap Moved**: See **[../game-engine-architecture/02-dynamic-mechanics/roadmap.md](../game-engine-architecture/02-dynamic-mechanics/roadmap.md)**
@@ -128,60 +118,13 @@ Known issues and solutions.
 
 | Document | Description | Status |
 |----------|-------------|--------|
-| [CURRENT WORK](planning/CURRENT_WORK.md) | Quick pickup for current focus | **active** |
-| [Implementation Roadmap](planning/implementation-roadmap.md) | Full development status tracker | active |
 | [HUMAN TASKS](planning/HUMAN_TASKS.md) | Blockers requiring human action | active |
-| [Editor Redesign](planning/editor-redesign/INDEX.md) | Mobile-first editor UI | **75% complete** |
-
-**Archived planning docs**: See `docs/archive/planning-2024-2025/` for historical feature plans
-
----
-
-## Research
-
-Active investigations and experiments.
-
-| Document | Description | Status |
-|----------|-------------|--------|
-| [Asset Integration Investigation](research/asset-integration-investigation.md) | Why assets aren't in generated games | open |
-| [Market Analysis](research/market-analysis.md) | AI game maker competitive landscape | closed |
-
----
-
-## Templates
-
-> **🏗️ Templates Consolidated**: See **[../game-engine-architecture/06-game-templates/physics-templates-catalog.md](../game-engine-architecture/06-game-templates/physics-templates-catalog.md)**
-
-The 10 core physics-based game templates are now documented in a single comprehensive catalog. Individual template docs archived to `docs/archive/game-maker-2024/`.
-
-| # | Template | Core Mechanic |
-|---|----------|---------------|
-| 01 | [Slingshot Destruction](templates/01-slingshot-destruction.md) | Pull-and-release projectile physics |
-| 02 | [Rope Physics](templates/02-rope-physics.md) | Swinging, grappling, tethered objects |
-| 03 | [Endless Runner](templates/03-endless-runner.md) | Continuous scrolling with obstacles |
-| 04 | [Hill Climb Vehicle](templates/04-hill-climb-vehicle.md) | Terrain traversal with physics |
-| 05 | [Physics Platformer](templates/05-physics-platformer.md) | Jump, run, physics-based puzzles |
-| 06 | [Breakout Bouncer](templates/06-breakout-bouncer.md) | Ball bouncing, brick breaking |
-| 07 | [Pinball Lite](templates/07-pinball-lite.md) | Flippers, bumpers, ball control |
-| 08 | [Bumper Arena](templates/08-bumper-arena.md) | Multi-body collisions, knockback |
-| 09 | [Physics Stacker](templates/09-physics-stacker.md) | Balance, tower building |
-| 10 | [Ragdoll Goal](templates/10-ragdoll-goal.md) | Articulated characters, targeting |
-
-See [Game Templates Overview](templates/INDEX.md) for philosophy and customization levels.
-
----
-
-## Archive
-
-Historical documents kept for reference.
-
-| Document | Description | Archived |
-|----------|-------------|----------|
-| _None yet_ | | |
 
 ---
 
 ## Related
 
-- [Physics Engine Documentation](../physics-engine/INDEX.md) - Underlying physics system
+- [Physics Engine Documentation](../godot/) - Godot 4 physics backend
+- [AI Templates](../game-engine-architecture/06-ai-integration/tier-1-templates.md) - AI-generated template patterns
+- [Game Patterns](reference/game-patterns.md) - Reusable physics game patterns
 - [Global Documentation Index](../INDEX.md)

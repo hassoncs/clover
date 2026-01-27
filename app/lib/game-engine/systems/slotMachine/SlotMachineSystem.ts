@@ -124,6 +124,7 @@ export class SlotMachineSystem {
 
   private reels: ReelState[] = [];
   private grid: number[][] = [];
+  private symbolEntityIds: string[][] = [];
   private phase: SlotMachinePhase = "idle";
   private currentBet = 0;
   private freeSpinsRemaining = 0;
@@ -149,8 +150,8 @@ export class SlotMachineSystem {
     this.callbacks = callbacks;
     this.eventBus = eventBus ?? null;
 
-    this.SPIN_DURATION = config.spinDuration ?? 2.0;
-    this.REEL_STOP_DELAY = config.reelStopDelay ?? 0.3;
+    this.SPIN_DURATION = (config.spinDuration ?? 2000) / 1000;
+    this.REEL_STOP_DELAY = (config.reelStopDelay ?? 300) / 1000;
 
     registerSlotMachineSlotImplementations();
     const registry = getGlobalSlotRegistry();
@@ -204,6 +205,7 @@ export class SlotMachineSystem {
     }
 
     this.buildGridFromReels();
+    this.createSymbolEntities();
     this.phase = "idle";
     this.callbacks.onBoardReady?.();
   }
@@ -230,7 +232,39 @@ export class SlotMachineSystem {
     }
   }
 
+  private createSymbolEntities(): void {
+    this.symbolEntityIds = [];
+
+    for (let row = 0; row < this.config.rows; row++) {
+      this.symbolEntityIds[row] = [];
+      for (let col = 0; col < this.config.reels; col++) {
+        const symbolIndex = this.reels[col].symbols[row];
+        const template = this.config.symbolTemplates[symbolIndex];
+
+        const pos = this.getSymbolWorldPosition(col, row);
+
+        let entityId: string;
+        if (this.bridge) {
+          entityId = this.bridge.spawnEntity(template, pos.x, pos.y);
+        } else {
+          entityId = `slot_${row}_${col}_${Date.now()}`;
+        }
+
+        this.entityManager.createEntity({
+          id: entityId,
+          name: `Symbol ${row},${col}`,
+          template,
+          transform: { x: pos.x, y: pos.y, angle: 0, scaleX: 1, scaleY: 1 },
+          tags: ["slot_symbol"],
+        });
+
+        this.symbolEntityIds[row][col] = entityId;
+      }
+    }
+  }
+
   startSpin(bet: number = 1): boolean {
+    console.log('[SlotMachine] startSpin called, phase:', this.phase);
     if (this.phase !== "idle") {
       return false;
     }
@@ -240,6 +274,8 @@ export class SlotMachineSystem {
     }
 
     this.currentBet = bet;
+    this.currentWins = [];
+    this.totalPayout = 0;
     this.generateSpinTargets();
 
     if (this.freeSpinsRemaining > 0) {
@@ -249,6 +285,7 @@ export class SlotMachineSystem {
       this.phase = "spinning";
     }
 
+    console.log('[SlotMachine] Spin started, new phase:', this.phase);
     this.startReelAnimations();
     this.callbacks.onSpinStart?.();
 
@@ -393,40 +430,61 @@ export class SlotMachineSystem {
     }
 
     if (allStopped) {
+      console.log('[SlotMachine] All reels stopped, transitioning to evaluating');
       this.buildGridFromReels();
+      this.updateSymbolTemplates();
       this.phase = "evaluating";
     }
   }
 
   private updateReelPositions(): void {
-    const now = Date.now() / 1000;
-
     for (let reelIndex = 0; reelIndex < this.config.reels; reelIndex++) {
-      const reel = this.reels[reelIndex];
-      const isSpinning = reel.spinPhase !== 'stopped';
-
       for (let row = 0; row < this.config.rows; row++) {
-        const symbolIndex = reel.symbols[row];
         const pos = this.getSymbolWorldPosition(reelIndex, row);
+        const entityId = this.symbolEntityIds[row]?.[reelIndex];
 
-        let yOffset = 0;
-        
-        if (isSpinning) {
-          // Calculate wrap-around offset for smooth scrolling
-          // virtualPosition increases as symbols scroll down
-          // We offset symbols based on their row and virtual position
-          yOffset = (row - reel.virtualPosition) * this.config.cellSize;
-        }
+        if (entityId) {
+          const entity = this.entityManager.getEntity(entityId);
+          if (entity) {
+            entity.transform.x = pos.x;
+            entity.transform.y = pos.y;
 
-        const entityId = this.getEntityId(reelIndex, row);
-        const entity = this.entityManager.getEntity(entityId);
-        if (entity) {
-          entity.transform.x = pos.x;
-          entity.transform.y = pos.y + yOffset;
-
-          if (this.bridge) {
-            this.bridge.setPosition(entityId, pos.x, pos.y + yOffset);
+            if (this.bridge) {
+              this.bridge.setPosition(entityId, pos.x, pos.y);
+            }
           }
+        }
+      }
+    }
+  }
+
+  private updateSymbolTemplates(): void {
+    console.log('[SlotMachine] updateSymbolTemplates called');
+    for (let row = 0; row < this.config.rows; row++) {
+      for (let col = 0; col < this.config.reels; col++) {
+        const symbolIndex = this.grid[row][col];
+        const template = this.config.symbolTemplates[symbolIndex];
+        const entityId = this.symbolEntityIds[row]?.[col];
+
+        if (entityId && this.bridge) {
+          const pos = this.getSymbolWorldPosition(col, row);
+
+          // Destroy old entity
+          this.bridge.destroyEntity(entityId);
+          this.entityManager.destroyEntity(entityId);
+
+          // Create new entity with updated symbol
+          const newEntityId = this.bridge.spawnEntity(template, pos.x, pos.y);
+
+          this.entityManager.createEntity({
+            id: newEntityId,
+            name: `Symbol ${row},${col}`,
+            template,
+            transform: { x: pos.x, y: pos.y, angle: 0, scaleX: 1, scaleY: 1 },
+            tags: ["slot_symbol"],
+          });
+
+          this.symbolEntityIds[row][col] = newEntityId;
         }
       }
     }
@@ -446,8 +504,9 @@ export class SlotMachineSystem {
     return `slot_${reelIndex}_${row}`;
   }
 
-  private evaluateSpin(): void {
-    const wins = this.detectWins();
+   private evaluateSpin(): void {
+     console.log('[SlotMachine] Grid state:', JSON.stringify(this.grid));
+     const wins = this.detectWins();
 
     if (wins.length > 0) {
       let totalPayout = 0;
@@ -456,8 +515,8 @@ export class SlotMachineSystem {
         this.callbacks.onWinFound?.(win);
       }
 
-      this.currentWins = wins;
-      this.totalPayout = totalPayout;
+      this.currentWins = this.currentWins.concat(wins);
+      this.totalPayout += totalPayout;
 
       if (this.config.cascading) {
         this.winPositions = this.getUniquePositions(wins);
@@ -469,9 +528,6 @@ export class SlotMachineSystem {
         this.phaseTimer = 0.5;
       }
     } else {
-      this.currentWins = [];
-      this.totalPayout = 0;
-
       // Check for bonus trigger
       if (this.shouldTriggerBonus()) {
         // Check if we're already in free spins mode (retrigger case)
@@ -493,10 +549,10 @@ export class SlotMachineSystem {
           this.phase = 'idle';
           this.callbacks.onFreeSpinsComplete?.();
         }
-      } else {
-        this.phase = 'idle';
-        this.callbacks.onSpinComplete?.([], 0);
-      }
+       } else {
+         this.phase = 'idle';
+         this.callbacks.onSpinComplete?.(this.currentWins, this.totalPayout);
+       }
     }
   }
 
@@ -517,29 +573,32 @@ export class SlotMachineSystem {
     return result;
   }
 
-  private detectWins(): SlotWin[] {
-    if (this.winDetectionImpl) {
-      const wins = this.winDetectionImpl.run(null, {
-        grid: this.grid,
-        rows: this.config.rows,
-        cols: this.config.reels,
-        symbolCount: this.config.symbolTemplates.length,
-        wildSymbolIndex: this.config.wildSymbolIndex,
-        scatterSymbolIndex: this.config.scatterSymbolIndex,
-        payouts: this.config.payouts,
-      });
+   private detectWins(): SlotWin[] {
+     if (this.winDetectionImpl) {
+       const input = {
+         grid: this.grid,
+         rows: this.config.rows,
+         cols: this.config.reels,
+         symbolCount: this.config.symbolTemplates.length,
+         wildSymbolIndex: this.config.wildSymbolIndex,
+         scatterSymbolIndex: this.config.scatterSymbolIndex,
+         payouts: this.config.payouts,
+       };
+       console.log('[SlotMachine] Win detection input:', JSON.stringify(input));
+       const wins = this.winDetectionImpl.run(null, input);
+       console.log('[SlotMachine] Wins found:', JSON.stringify(wins));
 
-      return wins.map((win) => ({
-        symbol: win.symbol,
-        count: win.count,
-        ways: win.ways,
-        positions: win.positions,
-        payout: win.payout,
-      }));
-    }
+       return wins.map((win) => ({
+         symbol: win.symbol,
+         count: win.count,
+         ways: win.ways,
+         positions: win.positions,
+         payout: win.payout,
+       }));
+     }
 
-    return this.detectWinsLegacy();
-  }
+     return this.detectWinsLegacy();
+   }
 
   private detectWinsLegacy(): SlotWin[] {
     const wins: SlotWin[] = [];
@@ -885,13 +944,15 @@ export class SlotMachineSystem {
   }
 
   destroy(): void {
-    for (let reelIndex = 0; reelIndex < this.config.reels; reelIndex++) {
-      for (let row = 0; row < this.config.rows; row++) {
-        const entityId = this.getEntityId(reelIndex, row);
-        if (this.bridge) {
-          this.bridge.destroyEntity(entityId);
+    for (let row = 0; row < this.config.rows; row++) {
+      for (let col = 0; col < this.config.reels; col++) {
+        const entityId = this.symbolEntityIds[row]?.[col];
+        if (entityId) {
+          if (this.bridge) {
+            this.bridge.destroyEntity(entityId);
+          }
+          this.entityManager.destroyEntity(entityId);
         }
-        this.entityManager.destroyEntity(entityId);
       }
     }
   }
@@ -901,6 +962,7 @@ export class SlotMachineSystem {
   }
 
   isIdle(): boolean {
+    console.log('[SlotMachine] isIdle called, phase:', this.phase, 'result:', this.phase === "idle");
     return this.phase === "idle";
   }
 

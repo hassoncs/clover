@@ -3,8 +3,8 @@ status: active
 created: 2026-01-26
 updated: 2026-01-26
 related:
-  - ../roadmap/dynamic-mechanics-roadmap.md
-  - ../reference/ai-integration.md
+  - ../02-dynamic-mechanics/roadmap.md
+  - ../06-ai-integration/generation-pipeline.md
 ---
 
 # Variables and Expressions Guide
@@ -443,10 +443,12 @@ Currently all properties sync at frame rate. Future optimization: implement chan
 ## Related Documentation
 
 - [Dynamic Mechanics Roadmap](../roadmap/dynamic-mechanics-roadmap.md) - Phase 1-4 implementation plan
-- [AI Integration](../reference/ai-integration.md) - Expression generation from natural language
-- [Behavior System](../reference/behavior-system.md) - How behaviors use expressions
-- [Game Rules](../reference/game-rules.md) - Triggers, conditions, actions
-- [Entity System](../reference/entity-system.md) - Entity metadata structure
+### Related Documentation
+
+- [AI Integration](../06-ai-integration/generation-pipeline.md) - Expression generation from natural language
+- [Behavior System](../01-core-concepts/behavior-system.md) - How behaviors use expressions
+- [Game Rules](../01-core-concepts/rules-system.md) - Triggers, conditions, actions
+- [Entity System](../01-core-concepts/entity-system.md) - Entity metadata structure
 
 ## Implementation References
 

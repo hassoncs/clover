@@ -1,8 +1,10 @@
 import { chromium } from "playwright";
 import type { Browser, Page } from "playwright";
-import type { GameInspectorState, WindowWithBridge } from "./types.js";
+import type { GameInspectorState, WindowWithBridge, ConsoleLogEntry } from "./types.js";
 import { DEFAULT_TIMEOUT } from "./types.js";
 import { findByIdOrPath, type GameInfo } from "./registry.js";
+import path from "path";
+import fs from "fs";
 
 export function normalizeGameName(name: string): GameInfo | null {
   return findByIdOrPath(name) ?? null;
@@ -27,8 +29,50 @@ export async function ensurePage(state: GameInspectorState): Promise<Page> {
   const browser = await ensureBrowser(state);
   if (!state.page) {
     state.page = await browser.newPage();
+    setupConsoleCapture(state.page, state);
   }
   return state.page;
+}
+
+function setupConsoleCapture(page: Page, state: GameInspectorState): void {
+  page.on('console', (msg) => {
+    const entry: ConsoleLogEntry = {
+      timestamp: Date.now(),
+      type: msg.type() as ConsoleLogEntry['type'],
+      text: msg.text(),
+    };
+    
+    state.consoleLogs.push(entry);
+    
+    if (state.consoleLogs.length > state.maxLogEntries) {
+      state.consoleLogs.shift();
+    }
+  });
+}
+
+export function getRecentLogs(state: GameInspectorState, since?: number): ConsoleLogEntry[] {
+  if (since === undefined) {
+    return [...state.consoleLogs];
+  }
+  return state.consoleLogs.filter(log => log.timestamp >= since);
+}
+
+export function clearLogs(state: GameInspectorState): void {
+  state.consoleLogs.length = 0;
+}
+
+export async function takeScreenshot(page: Page, prefix: string = 'screenshot'): Promise<string> {
+  const screenshotsDir = path.join(process.cwd(), 'tmp', 'game-inspector-screenshots');
+  if (!fs.existsSync(screenshotsDir)) {
+    fs.mkdirSync(screenshotsDir, { recursive: true });
+  }
+  
+  const timestamp = Date.now();
+  const filename = `${prefix}-${timestamp}.png`;
+  const filepath = path.join(screenshotsDir, filename);
+  
+  await page.screenshot({ path: filepath });
+  return filepath;
 }
 
 export async function waitForDebugBridge(page: Page, timeout: number = DEFAULT_TIMEOUT): Promise<boolean> {

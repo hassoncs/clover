@@ -6,7 +6,7 @@
 
 # Interface: AssetConfig
 
-Defined in: [types/GameDefinition.ts:114](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L114)
+Defined in: [types/GameDefinition.ts:114](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L114)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:114](https://github.com/hassoncs/clover/blo
 
 > `optional` **imageUrl**: `string`
 
-Defined in: [types/GameDefinition.ts:115](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L115)
+Defined in: [types/GameDefinition.ts:115](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L115)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/GameDefinition.ts:115](https://github.com/hassoncs/clover/blo
 
 > `optional` **source**: [`AssetSource`](../type-aliases/AssetSource.md)
 
-Defined in: [types/GameDefinition.ts:116](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L116)
+Defined in: [types/GameDefinition.ts:116](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L116)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/GameDefinition.ts:116](https://github.com/hassoncs/clover/blo
 
 > `optional` **scale**: `number`
 
-Defined in: [types/GameDefinition.ts:117](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L117)
+Defined in: [types/GameDefinition.ts:117](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L117)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/GameDefinition.ts:117](https://github.com/hassoncs/clover/blo
 
 > `optional` **offsetX**: `number`
 
-Defined in: [types/GameDefinition.ts:118](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L118)
+Defined in: [types/GameDefinition.ts:118](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L118)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [types/GameDefinition.ts:118](https://github.com/hassoncs/clover/blo
 
 > `optional` **offsetY**: `number`
 
-Defined in: [types/GameDefinition.ts:119](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L119)
+Defined in: [types/GameDefinition.ts:119](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L119)
 
 ***
 
@@ -54,4 +54,4 @@ Defined in: [types/GameDefinition.ts:119](https://github.com/hassoncs/clover/blo
 
 > `optional` **animations**: `Record`\<`string`, \{ `frames`: `string`[]; `fps`: `number`; `loop?`: `boolean`; \}\>
 
-Defined in: [types/GameDefinition.ts:120](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L120)
+Defined in: [types/GameDefinition.ts:120](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L120)

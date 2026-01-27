@@ -66,7 +66,7 @@ Design decisions favor what AI can generate reliably over developer convenience.
 │                                                                 │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐        │
 │  │  Expression  │  │   Physics    │  │   Renderer   │        │
-│  │   Evaluator  │  │  (Box2D)     │  │   (Godot)    │        │
+│  │   Evaluator  │  │   (Godot)    │  │   (Godot)    │        │
 │  └──────────────┘  └──────────────┘  └──────────────┘        │
 └────────────────────────────────────────────────────────────────┘
 ```
@@ -326,7 +326,7 @@ SlotDefinition = { x: number, y: number, layer?: number }
 
 ### 7. Physics Integration
 
-**Purpose**: Box2D physics via Godot bridge
+**Purpose**: Godot physics
 
 **Features**:
 - Body types: dynamic, static, kinematic
@@ -588,7 +588,7 @@ If you know Unity, here's the mapping:
 | **MonoBehaviour** | `Behavior` (declarative) + `Rule` (event-driven) |
 | **Transform Hierarchy** | Proposed (not yet implemented) |
 | **Inspector Variables** | `variables` + `variableMetadata` |
-| **Rigidbody** | `PhysicsComponent` → Box2D body |
+| **Rigidbody** | `PhysicsComponent` → Godot RigidBody2D |
 | **Joint** | `GameJoint` (revolute, distance, weld, prismatic) |
 
 ### Key Difference
@@ -933,7 +933,7 @@ Adding hierarchy:
 - Declarative, JSON-driven game engine
 - AI-native design with progressive complexity
 - Composable systems (behaviors, rules, variables, expressions)
-- Physics-based (Box2D via Godot)
+- Physics-based (Godot)
 - Cross-platform (iOS, Android, Web)
 
 **What Makes It Unique:**

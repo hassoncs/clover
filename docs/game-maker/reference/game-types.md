@@ -29,10 +29,10 @@ This document catalogs the types of games that can be built with the AI Game Mak
 - `destroy_on_collision` (optional cleanup)
 - `score_on_collision` (if collecting)
 
-**Box2D Features**:
-- Dynamic bodies
-- Polygon/circle shapes
-- Restitution for bouncing
+**Physics Features**:
+- Dynamic bodies (RigidBody2D)
+- Polygon/circle shapes (Polygon2D, CircleShape2D)
+- Restitution for bouncing (PhysicsMaterial.bounce)
 
 ---
 
@@ -52,10 +52,10 @@ This document catalogs the types of games that can be built with the AI Game Mak
 - `destroy_on_collision` (projectile + target)
 - `score_on_collision` (points per hit)
 
-**Box2D Features**:
-- ApplyLinearImpulse for launch
-- Collision detection
-- Dynamic + static bodies
+**Physics Features**:
+- ApplyLinearImpulse for launch (via Godot bridge)
+- Collision detection (Area2D sensors)
+- Dynamic + static bodies (RigidBody2D, StaticBody2D)
 
 ---
 
@@ -74,10 +74,10 @@ This document catalogs the types of games that can be built with the AI Game Mak
 - `score_on_collision` (bumpers)
 - `rotate` (spinner targets)
 
-**Box2D Features**:
-- High restitution for bumpers
-- Revolute joints for flippers
-- Motor torque for flipper action
+**Physics Features**:
+- High restitution for bumpers (PhysicsMaterial.bounce)
+- Revolute joints for flippers (PinJoint2D)
+- Motor torque for flipper action (via script-driven forces)
 
 ---
 
@@ -95,10 +95,10 @@ This document catalogs the types of games that can be built with the AI Game Mak
 - `spawn_on_event` (create ragdolls)
 - Optional scoring for distance
 
-**Box2D Features**:
-- Revolute joints (elbows, knees)
-- Joint limits (prevent unnatural bending)
-- Multiple connected bodies
+**Physics Features**:
+- Revolute joints (elbows, knees) (PinJoint2D)
+- Joint limits (prevent unnatural bending) (via script constraints)
+- Multiple connected bodies (RigidBody2D hierarchy)
 
 ---
 
@@ -116,10 +116,10 @@ This document catalogs the types of games that can be built with the AI Game Mak
 - `spawn_on_event` (create blocks)
 - Custom balance detection
 
-**Box2D Features**:
-- Friction for stacking
-- Collision detection for falling
-- GetMass for balance calculations
+**Physics Features**:
+- Friction for stacking (PhysicsMaterial.friction)
+- Collision detection for falling (Area2D/RigidBody2D)
+- Mass calculations for balance (via Godot physics queries)
 
 ---
 
@@ -141,10 +141,10 @@ This document catalogs the types of games that can be built with the AI Game Mak
 - `destroy_on_collision` (hazards)
 - `score_on_collision` (collectibles)
 
-**Box2D Features**:
-- Ground contact detection (sensors)
-- Kinematic bodies for platforms
-- Velocity control for movement
+**Physics Features**:
+- Ground contact detection (Area2D sensors)
+- Kinematic bodies for platforms (CharacterBody2D/AnimatableBody2D)
+- Velocity control for movement (via bridge setLinearVelocity)
 
 **Tuning Required**:
 - Jump force
@@ -169,10 +169,10 @@ This document catalogs the types of games that can be built with the AI Game Mak
 - `score_on_collision` (checkpoints, collectibles)
 - `destroy_on_collision` (crash = lose)
 
-**Box2D Features**:
-- Revolute joints with motors (wheels)
-- Motor speed control
-- Terrain from polygon chains
+**Physics Features**:
+- Revolute joints with motors (wheels) (PinJoint2D + script motor)
+- Motor speed control (via script-driven angular velocity)
+- Terrain from polygon chains (ConcavePolygonShape2D)
 
 **Tuning Required**:
 - Motor torque
@@ -197,10 +197,10 @@ This document catalogs the types of games that can be built with the AI Game Mak
 - `spawn_on_event` (debris, explosions)
 - `control` (aim wrecking ball)
 
-**Box2D Features**:
-- Joints with break thresholds
-- Explosion forces (ApplyForce to nearby bodies)
-- Many dynamic bodies
+**Physics Features**:
+- Joints with break thresholds (via script monitoring)
+- Explosion forces (applyForce to nearby bodies via bridge)
+- Many dynamic bodies (RigidBody2D instances)
 
 **Tuning Required**:
 - Joint strength
@@ -224,10 +224,10 @@ This document catalogs the types of games that can be built with the AI Game Mak
 - `destroy_on_collision` (targets)
 - `score_on_collision` (points)
 
-**Box2D Features**:
-- Distance joints with spring (catapult arm)
-- ApplyLinearImpulse (calculated from pull distance)
-- Trajectory prediction (optional)
+**Physics Features**:
+- Distance joints with spring (catapult arm) (DampedSpringJoint2D)
+- ApplyLinearImpulse (calculated from pull distance via bridge)
+- Trajectory prediction (optional, calculated in TypeScript)
 
 **Tuning Required**:
 - Spring strength
@@ -250,10 +250,10 @@ This document catalogs the types of games that can be built with the AI Game Mak
 - `control` (tap_to_cut, tap_to_grab)
 - `score_on_collision` (collectibles)
 
-**Box2D Features**:
-- Distance joints (rope segments)
-- Revolute joints (rope to anchor)
-- DestroyJoint (cutting ropes)
+**Physics Features**:
+- Distance joints (rope segments) (DampedSpringJoint2D)
+- Revolute joints (rope to anchor) (PinJoint2D)
+- Joint destruction (cutting ropes via bridge destroyEntity)
 
 **Tuning Required**:
 - Rope length

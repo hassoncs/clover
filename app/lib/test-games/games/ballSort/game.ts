@@ -18,10 +18,11 @@ const TUBE_HEIGHT = 5.0;
 const TUBE_WALL_THICKNESS = 0.15;
 const BALL_RADIUS = 0.5;
 const BALL_SPACING = 1.1;
-const NUM_TUBES = 4;
+const NUM_TUBES = 6;
+const NUM_FILLED_TUBES = 4;
 const BALLS_PER_TUBE = 4;
 const TUBE_SPACING = 2.8;
-const TUBE_START_X = 1.4;
+const TUBE_START_X = 0.2;
 const TUBE_Y = 10;
 
 const BALL_COLORS = ["#E53935", "#1E88E5", "#43A047", "#FDD835"];
@@ -42,8 +43,12 @@ function generateSolvableLayout(): number[][] {
   }
 
   const tubes: number[][] = [];
-  for (let t = 0; t < NUM_TUBES; t++) {
+  for (let t = 0; t < NUM_FILLED_TUBES; t++) {
     tubes.push(allBalls.slice(t * BALLS_PER_TUBE, (t + 1) * BALLS_PER_TUBE));
+  }
+  
+  for (let t = NUM_FILLED_TUBES; t < NUM_TUBES; t++) {
+    tubes.push([]);
   }
 
   return tubes;
@@ -171,14 +176,18 @@ const game: GameDefinition = {
     heldBallColor: -1,
     sourceTubeIndex: -1,
     heldBallId: "",
-    tube0_count: BALLS_PER_TUBE,
-    tube1_count: BALLS_PER_TUBE,
-    tube2_count: BALLS_PER_TUBE,
-    tube3_count: BALLS_PER_TUBE,
-    tube0_topColor: tubeLayout[0][BALLS_PER_TUBE - 1],
-    tube1_topColor: tubeLayout[1][BALLS_PER_TUBE - 1],
-    tube2_topColor: tubeLayout[2][BALLS_PER_TUBE - 1],
-    tube3_topColor: tubeLayout[3][BALLS_PER_TUBE - 1],
+    tube0_count: tubeLayout[0].length,
+    tube1_count: tubeLayout[1].length,
+    tube2_count: tubeLayout[2].length,
+    tube3_count: tubeLayout[3].length,
+    tube4_count: tubeLayout[4].length,
+    tube5_count: tubeLayout[5].length,
+    tube0_topColor: tubeLayout[0].length > 0 ? tubeLayout[0][tubeLayout[0].length - 1] : -1,
+    tube1_topColor: tubeLayout[1].length > 0 ? tubeLayout[1][tubeLayout[1].length - 1] : -1,
+    tube2_topColor: tubeLayout[2].length > 0 ? tubeLayout[2][tubeLayout[2].length - 1] : -1,
+    tube3_topColor: tubeLayout[3].length > 0 ? tubeLayout[3][tubeLayout[3].length - 1] : -1,
+    tube4_topColor: tubeLayout[4].length > 0 ? tubeLayout[4][tubeLayout[4].length - 1] : -1,
+    tube5_topColor: tubeLayout[5].length > 0 ? tubeLayout[5][tubeLayout[5].length - 1] : -1,
     moveCount: 0,
   },
   ui: {
@@ -378,7 +387,7 @@ const game: GameDefinition = {
         { type: "expression", expr: "stateIs('gameFlow', 'idle')" },
       ],
       actions: [
-        { type: "event", eventName: "try_pickup" },
+        { type: "ball_sort_pickup" },
       ],
     },
     {
@@ -389,30 +398,13 @@ const game: GameDefinition = {
         { type: "expression", expr: "stateIs('gameFlow', 'holding')" },
       ],
       actions: [
-        { type: "event", eventName: "try_drop" },
+        { type: "ball_sort_drop" },
       ],
     },
     {
-      id: "handle_pickup",
-      name: "Handle ball pickup logic",
-      trigger: { type: "event", eventName: "try_pickup" },
-      actions: [
-        { type: "event", eventName: "ball_picked" },
-      ],
-    },
-    {
-      id: "handle_drop",
-      name: "Handle ball drop logic",
-      trigger: { type: "event", eventName: "try_drop" },
-      actions: [
-        { type: "set_variable", name: "moveCount", operation: "add", value: 1 },
-        { type: "event", eventName: "ball_dropped" },
-      ],
-    },
-    {
-      id: "cancel_pickup",
+      id: "cancel_pickup_same_tube",
       name: "Cancel pickup when tapping same tube",
-      trigger: { type: "event", eventName: "cancel_pickup" },
+      trigger: { type: "event", eventName: "pickup_cancelled" },
       actions: [
         { type: "event", eventName: "pickup_cancelled" },
       ],
@@ -422,7 +414,7 @@ const game: GameDefinition = {
       name: "Check win condition after each move",
       trigger: { type: "event", eventName: "ball_dropped" },
       actions: [
-        { type: "event", eventName: "check_win_condition" },
+        { type: "ball_sort_check_win" },
       ],
     },
   ],

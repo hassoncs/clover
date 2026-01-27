@@ -6,7 +6,7 @@
 
 # Interface: MultiplayerConfig
 
-Defined in: [types/GameDefinition.ts:217](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L217)
+Defined in: [types/GameDefinition.ts:281](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L281)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:217](https://github.com/hassoncs/clover/blo
 
 > **enabled**: `boolean`
 
-Defined in: [types/GameDefinition.ts:218](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L218)
+Defined in: [types/GameDefinition.ts:282](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L282)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/GameDefinition.ts:218](https://github.com/hassoncs/clover/blo
 
 > **maxPlayers**: `number`
 
-Defined in: [types/GameDefinition.ts:219](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L219)
+Defined in: [types/GameDefinition.ts:283](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L283)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/GameDefinition.ts:219](https://github.com/hassoncs/clover/blo
 
 > `optional` **syncMode**: `"host-authoritative"` \| `"peer-to-peer"`
 
-Defined in: [types/GameDefinition.ts:220](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L220)
+Defined in: [types/GameDefinition.ts:284](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L284)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/GameDefinition.ts:220](https://github.com/hassoncs/clover/blo
 
 > `optional` **inputDelay**: `number`
 
-Defined in: [types/GameDefinition.ts:221](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L221)
+Defined in: [types/GameDefinition.ts:285](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L285)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [types/GameDefinition.ts:221](https://github.com/hassoncs/clover/blo
 
 > `optional` **snapshotRate**: `number`
 
-Defined in: [types/GameDefinition.ts:222](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L222)
+Defined in: [types/GameDefinition.ts:286](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L286)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [types/GameDefinition.ts:222](https://github.com/hassoncs/clover/blo
 
 > `optional` **deltaRate**: `number`
 
-Defined in: [types/GameDefinition.ts:223](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L223)
+Defined in: [types/GameDefinition.ts:287](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L287)
 
 ***
 
@@ -62,4 +62,4 @@ Defined in: [types/GameDefinition.ts:223](https://github.com/hassoncs/clover/blo
 
 > `optional` **interpolationDelay**: `number`
 
-Defined in: [types/GameDefinition.ts:224](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/GameDefinition.ts#L224)
+Defined in: [types/GameDefinition.ts:288](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/GameDefinition.ts#L288)

@@ -8,4 +8,4 @@
 
 > `const` **PopFromListActionSchema**: `ZodObject`\<\{ `type`: `ZodLiteral`\<`"pop_from_list"`\>; `listName`: `ZodString`; `position`: `ZodOptional`\<`ZodEnum`\<\[`"front"`, `"back"`\]\>\>; `storeIn`: `ZodOptional`\<`ZodString`\>; \}, `"strip"`, `ZodTypeAny`, \{ `type`: `"pop_from_list"`; `listName`: `string`; `position?`: `"front"` \| `"back"`; `storeIn?`: `string`; \}, \{ `type`: `"pop_from_list"`; `listName`: `string`; `position?`: `"front"` \| `"back"`; `storeIn?`: `string`; \}\>
 
-Defined in: [types/schemas.ts:395](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/schemas.ts#L395)
+Defined in: [types/schemas.ts:398](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/schemas.ts#L398)

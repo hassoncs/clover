@@ -49,5 +49,5 @@ The Gallery System provides a unified way to discover, preview, and reuse all ga
 ## Related Documentation
 
 - [Special Effects Plan](../special-effects/EFFECTS_PLAN.md) - Original effects implementation plan
-- [Physics Engine](../physics-engine/INDEX.md) - Physics system documentation
+- [Godot Physics](../godot/) - Godot 4 physics backend
 - [Game Maker](../game-maker/INDEX.md) - Game generation documentation

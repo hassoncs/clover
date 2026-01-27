@@ -6,7 +6,7 @@
 
 # Interface: SpawnAction
 
-Defined in: [types/rules.ts:220](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L220)
+Defined in: [types/rules.ts:220](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L220)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:220](https://github.com/hassoncs/clover/blob/4fd406b
 
 > **type**: `"spawn"`
 
-Defined in: [types/rules.ts:221](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L221)
+Defined in: [types/rules.ts:221](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L221)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:221](https://github.com/hassoncs/clover/blob/4fd406b
 
 > **template**: `string` \| `string`[]
 
-Defined in: [types/rules.ts:222](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L222)
+Defined in: [types/rules.ts:222](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L222)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:222](https://github.com/hassoncs/clover/blob/4fd406b
 
 > **position**: [`SpawnPosition`](../type-aliases/SpawnPosition.md)
 
-Defined in: [types/rules.ts:223](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L223)
+Defined in: [types/rules.ts:223](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L223)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/rules.ts:223](https://github.com/hassoncs/clover/blob/4fd406b
 
 > `optional` **count**: `number`
 
-Defined in: [types/rules.ts:224](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L224)
+Defined in: [types/rules.ts:224](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L224)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [types/rules.ts:224](https://github.com/hassoncs/clover/blob/4fd406b
 
 > `optional` **spread**: `number`
 
-Defined in: [types/rules.ts:225](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/rules.ts#L225)
+Defined in: [types/rules.ts:225](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/rules.ts#L225)

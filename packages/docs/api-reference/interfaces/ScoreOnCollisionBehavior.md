@@ -6,7 +6,7 @@
 
 # Interface: ScoreOnCollisionBehavior
 
-Defined in: [types/behavior.ts:99](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L99)
+Defined in: [types/behavior.ts:99](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L99)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/behavior.ts:99](https://github.com/hassoncs/clover/blob/4fd40
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L46)
+Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L46)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/4fd40
 
 > **type**: `"score_on_collision"`
 
-Defined in: [types/behavior.ts:100](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L100)
+Defined in: [types/behavior.ts:100](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L100)
 
 #### Overrides
 
@@ -42,7 +42,7 @@ Defined in: [types/behavior.ts:100](https://github.com/hassoncs/clover/blob/4fd4
 
 > **withTags**: `string`[]
 
-Defined in: [types/behavior.ts:101](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L101)
+Defined in: [types/behavior.ts:101](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L101)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [types/behavior.ts:101](https://github.com/hassoncs/clover/blob/4fd4
 
 > **points**: `Value`\<`number`\>
 
-Defined in: [types/behavior.ts:102](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L102)
+Defined in: [types/behavior.ts:102](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L102)
 
 ***
 
@@ -58,7 +58,7 @@ Defined in: [types/behavior.ts:102](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **once**: `boolean`
 
-Defined in: [types/behavior.ts:103](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L103)
+Defined in: [types/behavior.ts:103](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L103)
 
 ***
 
@@ -66,4 +66,4 @@ Defined in: [types/behavior.ts:103](https://github.com/hassoncs/clover/blob/4fd4
 
 > `optional` **showPopup**: `boolean`
 
-Defined in: [types/behavior.ts:104](https://github.com/hassoncs/clover/blob/4fd406b0597c61e88b1324c5a31ce13307db5f2a/shared/src/types/behavior.ts#L104)
+Defined in: [types/behavior.ts:104](https://github.com/hassoncs/clover/blob/5a1034980770c49d5a2278254b551ba5ffaeefe1/shared/src/types/behavior.ts#L104)

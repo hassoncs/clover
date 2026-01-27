@@ -88,10 +88,12 @@ Slopcade uses a **center-origin** coordinate system:
 
 Godot uses top-left origin with Y+ down. GameBridge handles conversion automatically via `game_to_godot_pos()` and `godot_to_game_pos()`.
 
-## Physics Mapping (Box2D → Godot)
+## Physics Property Mapping
 
-| Box2D | Godot |
-|-------|-------|
+Slopcade uses Godot's physics system with the following type and property mappings:
+
+| Property | Godot |
+|----------|-------|
 | `type: 'static'` | `StaticBody2D` |
 | `type: 'dynamic'` | `RigidBody2D` |
 | `type: 'kinematic'` | `CharacterBody2D` / `Area2D` (if sensor) |

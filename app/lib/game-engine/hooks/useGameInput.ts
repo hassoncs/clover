@@ -155,6 +155,7 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
       y,
       worldX: worldPos.x,
       worldY: worldPos.y,
+      targetEntityId: dragStart?.targetEntityId,
     };
     console.log("[Input] Tap set:", inputRef.current.tap);
 

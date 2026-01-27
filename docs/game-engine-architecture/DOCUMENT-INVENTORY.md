@@ -21,7 +21,7 @@ Found **60+ documents** across 5 categories related to game engine architecture.
 | `docs/game-maker/reference/entity-system.md` | Reference | GameEntity, EntityTemplate, TransformComponent, SpriteComponent, PhysicsComponent |
 | `docs/game-maker/reference/technical-primitives.md` | Reference | Low-level technical primitives |
 | `docs/game-maker/architecture/system-overview.md` | Architecture | High-level execution flow: EntityManager, PhysicsSystem, Renderer |
-| `docs/game-maker/planning/physics2d-implementation-plan.md` | Planning | Box2D integration and entity syncing |
+| `docs/godot-migration/MIGRATION_PLAN.md` | Planning | Godot physics integration and entity syncing |
 
 ### Behaviors System
 
@@ -278,7 +278,7 @@ docs/game-engine-architecture/
 │   ├── entity-system.md              # From reference/entity-system.md
 │   ├── behavior-system.md            # From reference/behavior-system.md
 │   ├── rules-system.md               # From reference/game-rules.md
-│   ├── physics-integration.md        # From planning/physics2d-implementation-plan.md
+│   ├── physics-integration.md        # From godot-migration/MIGRATION_PLAN.md
 │   └── execution-flow.md             # From architecture/system-overview.md
 │
 ├── 02-dynamic-mechanics/

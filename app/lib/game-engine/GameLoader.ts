@@ -56,6 +56,7 @@ export class GameLoader {
       rulesEvaluator.setInitialLives(definition.initialLives);
     }
     rulesEvaluator.setInitialVariables(definition.variables as Record<string, number | string | boolean> | undefined);
+    rulesEvaluator.setStateMachines(definition.stateMachines);
 
     const behaviorExecutor = createBehaviorExecutor();
 

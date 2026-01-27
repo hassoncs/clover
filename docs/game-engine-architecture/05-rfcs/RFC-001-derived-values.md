@@ -644,7 +644,7 @@ This game automatically:
 
 ## References
 
-- [ECS Architecture](../architecture/ecs-overview.md)
-- [Behavior System](../reference/behavior-system.md)
-- [Rules System](../reference/rules-system.md)
+- [Entity Hierarchy Analysis](../00-HIERARCHY-AND-COMPOSABILITY-ANALYSIS.md) - Composability patterns
+- [Behavior System](../01-core-concepts/behavior-system.md) - Behavior implementation
+- [Rules System](../01-core-concepts/rules-system.md) - Rules implementation
 - Current implementation: `app/lib/game-engine/`

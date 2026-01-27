@@ -8,7 +8,7 @@ Welcome to Slopcade! This guide will help you create your first game in minutes.
 
 ## What is Slopcade?
 
-Slopcade is a physics-based game engine built on React Native and Godot. It lets you create interactive games by defining entities, behaviors, and rules in JSON. Games run at 60fps with realistic physics powered by Box2D.
+Slopcade is a physics-based game engine built on React Native and Godot. It lets you create interactive games by defining entities, behaviors, and rules in JSON. Games run at 60fps with realistic physics powered by Godot.
 
 ## Installation
 
@@ -132,7 +132,7 @@ Behaviors define how entities move and interact. Learn more in the [Behaviors Gu
 Rules trigger actions when conditions are met (collisions, timers, etc.). Learn more in the [Rules Guide](./rules.md).
 
 ### Physics
-The engine uses Box2D for realistic physics. Bodies can be static (don't move), dynamic (affected by forces), or kinematic (move but don't respond to forces).
+The engine uses Godot for realistic physics. Bodies can be static (don't move), dynamic (affected by forces), or kinematic (move but don't respond to forces).
 
 ## Next Steps
 
