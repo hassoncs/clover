@@ -48,9 +48,9 @@ describe('RulesEvaluator', () => {
   let mockPhysics: Physics2D;
 
   beforeEach(() => {
-    evaluator = new RulesEvaluator();
     mockEntityManager = createMockEntityManager();
     mockPhysics = createMockPhysics();
+    evaluator = new RulesEvaluator(mockEntityManager);
   });
 
   const runUpdate = (inputEvents: InputEvents = {}, collisions: CollisionInfo[] = []) => {
@@ -133,7 +133,7 @@ describe('RulesEvaluator', () => {
     });
 
     it('can set initial lives', () => {
-      const e = new RulesEvaluator();
+      const e = new RulesEvaluator(mockEntityManager);
       e.setInitialLives(5);
       expect(e.getLives()).toBe(5);
     });

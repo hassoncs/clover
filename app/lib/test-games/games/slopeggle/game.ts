@@ -299,6 +299,24 @@ const game: GameDefinition = {
         { type: "teleport", destinationEntityId: "portal-a", withTags: ["ball"], preserveVelocity: true, cooldown: 0.3 },
       ],
     },
+    trajectoryLine: {
+      id: "trajectoryLine",
+      tags: ["trajectory-line"],
+      sprite: { type: "rect", width: 0.05, height: 6, color: "#FFFFFF66" },
+      physics: {
+        bodyType: "kinematic",
+        shape: "box",
+        width: 0.05,
+        height: 6,
+        density: 0,
+        friction: 0,
+        restitution: 0,
+        isSensor: true,
+      },
+      behaviors: [
+        { type: "rotate_toward", target: "touch", speed: 200, offset: 0 },
+      ],
+    },
   },
   entities: [
     { id: "wall-left", name: "Left Wall", template: "wallVertical", transform: { x: cx(0.1), y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
@@ -317,10 +335,30 @@ const game: GameDefinition = {
     { id: "portal-b", name: "Portal B", template: "portalB", transform: { x: cx(WORLD_WIDTH - 1.5), y: cy(11), angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "cannon-base", name: "Cannon Base", template: "cannonBase", transform: { x: 0, y: cy(1.0), angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "cannon", name: "Cannon", template: "cannon", transform: { x: 0, y: cy(1.0), angle: Math.PI / 2, scaleX: 1, scaleY: 1 } },
+    { id: "trajectory-line", name: "Trajectory Line", template: "trajectoryLine", transform: { x: 0, y: cy(1.0), angle: Math.PI / 2, scaleX: 1, scaleY: 1 } },
     ...bluePegEntities,
     ...orangePegEntities,
   ],
   rules: [
+    {
+      id: "show_trajectory",
+      name: "Show trajectory line when aiming starts",
+      trigger: { type: "drag", phase: "start" },
+      conditions: [
+        { type: "entity_count", tag: "ball", max: 0 },
+      ],
+      actions: [
+        { type: "spawn", template: "trajectoryLine", position: { type: "fixed", x: 0, y: cy(1.0) } },
+      ],
+    },
+    {
+      id: "hide_trajectory",
+      name: "Hide trajectory line when aiming ends",
+      trigger: { type: "drag", phase: "end" },
+      actions: [
+        { type: "destroy", target: { type: "by_tag", tag: "trajectory-line" } },
+      ],
+    },
     {
       id: "fire_ball",
       name: "Fire ball on release (only if no ball in play)",

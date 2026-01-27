@@ -243,7 +243,8 @@ export type SpriteEffectType =
   | 'rim_light'
   | 'color_matrix'
   | 'inner_glow'
-  | 'drop_shadow';
+  | 'drop_shadow'
+  | 'fade_out';
 
 export interface SpriteEffectBehavior extends BaseBehavior {
   type: 'sprite_effect';

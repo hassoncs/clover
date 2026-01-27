@@ -18,6 +18,8 @@ import type {
 } from "./types";
 
 export interface Physics2D {
+  createWorld(gravity: Vec2): void;
+  destroyWorld(): void;
   step(dt: number): void;
   dispose(): void;
 

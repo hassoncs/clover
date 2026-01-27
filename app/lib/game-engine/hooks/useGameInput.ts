@@ -88,6 +88,14 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
       targetEntityId,
     };
 
+    // Set continuous touch tracking for behaviors like rotate_toward
+    inputRef.current.touch = {
+      x,
+      y,
+      worldX: worldPos.x,
+      worldY: worldPos.y,
+    };
+
     inputRef.current.drag = {
       startX: x,
       startY: y,
@@ -128,6 +136,14 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
       currentWorldX: worldPos.x,
       currentWorldY: worldPos.y,
       targetEntityId: dragStart.targetEntityId,
+    };
+
+    // Update continuous touch tracking
+    inputRef.current.touch = {
+      x,
+      y,
+      worldX: worldPos.x,
+      worldY: worldPos.y,
     };
   }, [cameraRef, viewportSystemRef]);
 
@@ -174,6 +190,7 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
 
     dragStartRef.current = null;
     inputRef.current.drag = undefined;
+    inputRef.current.touch = undefined;
   }, [cameraRef, viewportSystemRef]);
 
   useEffect(() => {

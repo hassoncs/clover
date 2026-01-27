@@ -235,57 +235,20 @@ interface GameDefinition {
 }
 \`\`\`
 
-### 2. Rendering in GameRuntime.native.tsx
+### 2. Rendering in GameRuntime
+
+Parallax layers are rendered via the Godot bridge. The game engine handles
+layer ordering and parallax factor calculations natively.
 
 \`\`\`typescript
-import { useImage } from '@shopify/react-native-skia';
-
-// Inside GameRuntime component:
-const parallaxImages = useMemo(() => {
-  if (!game.parallaxBackground) return [];
-  return game.parallaxBackground.layers.map(layer => ({
-    ...layer,
-    image: useImage(layer.imageUrl),
-  }));
-}, [game.parallaxBackground]);
-
-// Inside <Canvas>:
-{parallaxImages
-  .sort((a, b) => a.zIndex - b.zIndex)
-  .map((layer, index) => {
-    const cameraX = cameraRef.current?.getPosition().x ?? 0;
-    const cameraY = cameraRef.current?.getPosition().y ?? 0;
-    const zoom = cameraRef.current?.getZoom() ?? 1;
-
-    // Calculate parallax offset
-    const translateX = -cameraX * pixelsPerMeter * layer.parallaxFactor * zoom;
-    const translateY = -cameraY * pixelsPerMeter * layer.parallaxFactor * zoom;
-
-    const screenCenterX = viewportSize.width / 2;
-    const screenCenterY = viewportSize.height / 2;
-
-    return (
-      <Group
-        key={index}
-        transform={[
-          { translateX: screenCenterX + translateX },
-          { translateY: screenCenterY + translateY },
-          { scale: zoom },
-        ]}
-      >
-        {layer.image && (
-          <Image
-            image={layer.image}
-            x={-viewportSize.width / 2}
-            y={-viewportSize.height / 2}
-            width={viewportSize.width}
-            height={viewportSize.height}
-            fit="cover"
-          />
-        )}
-      </Group>
-    );
-  })}
+// Pass layers to Godot bridge for rendering
+bridge.setParallaxBackground({
+  layers: game.parallaxBackground.layers.map(layer => ({
+    imageUrl: layer.imageUrl,
+    parallaxFactor: layer.parallaxFactor,
+    zIndex: layer.zIndex,
+  })),
+});
 \`\`\`
 
 ### 3. Generation Integration

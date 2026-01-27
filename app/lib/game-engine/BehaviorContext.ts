@@ -48,6 +48,7 @@ export interface InputState {
     angle: number;
   };
   mouse?: { x: number; y: number; worldX: number; worldY: number };
+  touch?: { x: number; y: number; worldX: number; worldY: number };
 }
 
 export interface InputEvents {
@@ -94,6 +95,7 @@ export interface BehaviorContext {
   setGameState(state: GameState['state']): void;
   spawnEntity(templateId: string, x: number, y: number): string | null;
   setEntityVelocity(entityId: string, velocity: Vec2): void;
+  setEntityRotation(entityId: string, angle: number): void;
   destroyEntity(entityId: string): void;
   triggerEvent(eventName: string, data?: Record<string, unknown>): void;
   triggerParticleEffect(type: ParticleEmitterType, x: number, y: number): void;

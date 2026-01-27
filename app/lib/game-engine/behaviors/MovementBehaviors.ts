@@ -102,7 +102,11 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
     let hasTarget = false;
 
     if (b.target === 'touch') {
-        if (ctx.input.drag) {
+        if (ctx.input.touch) {
+            targetX = ctx.input.touch.worldX;
+            targetY = ctx.input.touch.worldY;
+            hasTarget = true;
+        } else if (ctx.input.drag) {
             targetX = ctx.input.drag.currentWorldX;
             targetY = ctx.input.drag.currentWorldY;
             hasTarget = true;
@@ -127,38 +131,55 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
     let targetAngle = Math.atan2(dy, dx);
     if (b.offset) targetAngle += (b.offset * Math.PI) / 180;
 
-    const currentAngle = ctx.entity.transform.angle;
-    let diff = targetAngle - currentAngle;
-    while (diff > Math.PI) diff -= 2 * Math.PI;
-    while (diff < -Math.PI) diff += 2 * Math.PI;
-    
-    const speed = ctx.resolveNumber(b.speed ?? 250);
-    ctx.physics.setAngularVelocity(ctx.entity.bodyId, diff * (speed / 50));
+    ctx.setEntityRotation(ctx.entity.id, targetAngle);
   });
 
   executor.registerHandler('oscillate', (behavior, ctx) => {
     const b = behavior as OscillateBehavior;
     if (!ctx.entity.bodyId) return;
 
-    // Oscillate needs original position?
-    // We can use time-based velocity.
-    // v = A * w * cos(w * t + phi)
+    // Position-based oscillation for reliable kinematic body movement
+    // Store initial position as center point on first frame
+    const initialPosKey = `__oscillate_initial_${b.axis}`;
+    let centerX = ctx.entity.transform.x;
+    let centerY = ctx.entity.transform.y;
+
+    // Check if we have stored initial position
+    const storedInit = (ctx.entity as any)[initialPosKey];
+    if (storedInit !== undefined) {
+      centerX = storedInit.x;
+      centerY = storedInit.y;
+    } else {
+      // Store initial position for future frames
+      (ctx.entity as any)[initialPosKey] = { x: centerX, y: centerY };
+    }
+
     const amplitude = ctx.resolveNumber(b.amplitude ?? 1);
     const frequency = ctx.resolveNumber(b.frequency ?? 1);
     const phase = ctx.resolveNumber(b.phase ?? 0) * Math.PI / 180;
     const w = 2 * Math.PI * frequency;
-    
-    const v = amplitude * w * Math.cos(w * ctx.elapsed + phase);
-    
-    const currentVel = ctx.physics.getLinearVelocity(ctx.entity.bodyId);
-    let vx = currentVel.x;
-    let vy = currentVel.y;
 
-    if (b.axis === 'x') vx = v;
-    if (b.axis === 'y') vy = v;
-    if (b.axis === 'both') { vx = v; vy = v; } // Probably separate phase needed for circles
+    // Calculate displacement: displacement = amplitude * sin(w * t + phase)
+    const displacement = amplitude * Math.sin(w * ctx.elapsed + phase);
 
-    ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: vx, y: vy });
+    // Calculate new position based on axis
+    let newX = centerX;
+    let newY = centerY;
+
+    if (b.axis === 'x' || b.axis === 'both') {
+      newX = centerX + displacement;
+    }
+    if (b.axis === 'y' || b.axis === 'both') {
+      newY = centerY + displacement;
+    }
+
+    // Set position directly for kinematic bodies
+    if (b.axis === 'x' || b.axis === 'both') {
+      ctx.entity.transform.x = newX;
+    }
+    if (b.axis === 'y' || b.axis === 'both') {
+      ctx.entity.transform.y = newY;
+    }
   });
 
   executor.registerHandler('draggable', (behavior, ctx) => {

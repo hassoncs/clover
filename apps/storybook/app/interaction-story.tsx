@@ -1,5 +1,4 @@
 import { Text, View } from 'react-native';
-import { Canvas } from '@shopify/react-native-skia';
 import { Interaction } from '@slopcade/physics';
 
 export default function InteractionStory() {

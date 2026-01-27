@@ -94,7 +94,7 @@ export default function MakerScreen() {
         prompt: prompt.trim(),
         saveToLibrary: false,
       });
-      setGeneratedGame(result.game);
+      setGeneratedGame(result.game as GameDefinition);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to generate game";
       setGenerateError(message);

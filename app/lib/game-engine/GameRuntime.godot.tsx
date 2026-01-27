@@ -526,7 +526,7 @@ export function GameRuntimeGodot({
           gameVariablesRef.current = resolvedVars;
         }
 
-        collisionUnsubRef.current = (physics as any).onCollisionBegin(
+        collisionUnsubRef.current = physics.onCollision(
           (event: CollisionEvent) => {
             // The physics adapter converts entity IDs to body IDs, so we need to look up by bodyId
             const entityA = game.entityManager
@@ -954,6 +954,9 @@ export function GameRuntimeGodot({
         setEntityVelocity: (entityId, velocity) => {
           bridge.setLinearVelocity(entityId, velocity);
         },
+        setEntityRotation: (entityId, angle) => {
+          bridge.setRotation(entityId, angle);
+        },
         destroyEntity: (id) => game.entityManager.destroyEntity(id),
         triggerEvent: (name, data) =>
           game.rulesEvaluator.triggerEvent(name, data),
@@ -1045,6 +1048,7 @@ export function GameRuntimeGodot({
       const preservedDrag = inputRef.current.drag;
       const preservedButtons = inputRef.current.buttons;
       const preservedTilt = inputRef.current.tilt;
+      const preservedMouse = inputRef.current.mouse;
       inputRef.current = {};
       if (preservedDrag && !inputEvents.dragEnd) {
         inputRef.current.drag = preservedDrag;
@@ -1054,6 +1058,9 @@ export function GameRuntimeGodot({
       }
       if (preservedTilt) {
         inputRef.current.tilt = preservedTilt;
+      }
+      if (preservedMouse) {
+        inputRef.current.mouse = preservedMouse;
       }
       collisionsRef.current = [];
 
@@ -1134,12 +1141,38 @@ export function GameRuntimeGodot({
             changed = true;
           }
           break;
-        case " ":
+        case " ": {
           if (!buttonsRef.current.jump) {
             buttonsRef.current.jump = true;
             changed = true;
           }
+          const game = gameRef.current;
+          if (game) {
+            const cannon = game.entityManager.getActiveEntities().find(
+              (entity) => game.entityManager.hasTag(entity.id, "cannon")
+            );
+            if (cannon) {
+              const angle = cannon.transform.angle;
+              const distance = 10;
+              const targetX = cannon.transform.x + Math.cos(angle) * distance;
+              const targetY = cannon.transform.y + Math.sin(angle) * distance;
+              
+              inputRef.current.tap = {
+                x: 0,
+                y: 0,
+                worldX: targetX,
+                worldY: targetY,
+              };
+              inputRef.current.dragEnd = {
+                velocityX: 0,
+                velocityY: 0,
+                worldVelocityX: 0,
+                worldVelocityY: 0,
+              };
+            }
+          }
           break;
+        }
       }
       if (changed) {
         inputRef.current.buttons = { ...buttonsRef.current };

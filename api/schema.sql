@@ -38,6 +38,18 @@ CREATE INDEX IF NOT EXISTS idx_games_created_at ON games(created_at);
 CREATE INDEX IF NOT EXISTS idx_games_base_game ON games(base_game_id);
 CREATE INDEX IF NOT EXISTS idx_games_forked_from ON games(forked_from_id);
 
+-- Themes table (must be before assets due to FK)
+CREATE TABLE IF NOT EXISTS themes (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  prompt_modifier TEXT,
+  creator_user_id TEXT REFERENCES users(id),
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER
+);
+
+CREATE INDEX IF NOT EXISTS idx_themes_creator ON themes(creator_user_id);
+
 -- Assets table (AI-generated sprites stored in R2)
 CREATE TABLE IF NOT EXISTS assets (
   id TEXT PRIMARY KEY,
@@ -53,12 +65,34 @@ CREATE TABLE IF NOT EXISTS assets (
   height INTEGER,
   is_animated INTEGER DEFAULT 0,
   frame_count INTEGER,
-  created_at INTEGER NOT NULL
+  created_at INTEGER NOT NULL,
+  prompt TEXT,
+  parent_asset_id TEXT REFERENCES assets(id),
+  game_id TEXT REFERENCES games(id),
+  slot_id TEXT,
+  shape TEXT,
+  theme_id TEXT REFERENCES themes(id),
+  deleted_at INTEGER
 );
 
 CREATE INDEX IF NOT EXISTS idx_assets_user_id ON assets(user_id);
 CREATE INDEX IF NOT EXISTS idx_assets_install_id ON assets(install_id);
 CREATE INDEX IF NOT EXISTS idx_assets_entity_type ON assets(entity_type);
+CREATE INDEX IF NOT EXISTS idx_assets_game_slot ON assets(game_id, slot_id, created_at DESC) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_assets_parent ON assets(parent_asset_id) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_assets_theme ON assets(theme_id) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_assets_structural ON assets(shape, width, height) WHERE deleted_at IS NULL;
+
+-- Game asset selections (which asset is active for each slot)
+CREATE TABLE IF NOT EXISTS game_asset_selections (
+  game_id TEXT NOT NULL REFERENCES games(id),
+  slot_id TEXT NOT NULL,
+  asset_id TEXT NOT NULL REFERENCES assets(id),
+  selected_at INTEGER NOT NULL,
+  PRIMARY KEY (game_id, slot_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_game_asset_selections_asset ON game_asset_selections(asset_id);
 
 -- =============================================================================
 -- NEW ASSET SYSTEM TABLES (v2)

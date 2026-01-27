@@ -107,7 +107,7 @@ Infrastructure (RunPod worker + endpoint) -> Runtime config (Env + secrets) -> P
   **Acceptance Criteria**:
   - Contract is documented inside code (types/interfaces) and used consistently by updated modules.
 
-- [ ] 2. Deploy/validate RunPod serverless custom ComfyUI worker (Flux Dev)
+- [x] 2. Deploy/validate RunPod serverless custom ComfyUI worker (Flux Dev)
 
   **What to do**:
   - Ensure Docker image build pipeline works and image is available: `api/runpod-worker/Dockerfile`, `.github/workflows/build-runpod-worker.yml`.
@@ -225,7 +225,7 @@ Infrastructure (RunPod worker + endpoint) -> Runtime config (Env + secrets) -> P
   - With `IMAGE_GENERATION_PROVIDER=comfyui`, calling existing TRPC generation flows succeeds.
   - Error messages are provider-specific (e.g., missing RunPod env yields actionable message).
 
-- [ ] 7. Validate ComfyUI endpoint with existing scripts (txt2img/img2img)
+- [x] 7. Validate ComfyUI endpoint with existing scripts (txt2img/img2img)
 
   **What to do**:
   - Run the existing test scripts using hush-provided RunPod vars.
@@ -241,7 +241,7 @@ Infrastructure (RunPod worker + endpoint) -> Runtime config (Env + secrets) -> P
   - `pnpm hush run -- npx tsx api/scripts/test-comfyui-api.ts "A pixel art knight" txt2img` writes a PNG and exits 0.
   - `pnpm hush run -- npx tsx api/scripts/test-comfyui-api.ts "Refine" img2img <path>` writes a PNG and exits 0.
 
-- [ ] 8. Run an end-to-end asset pipeline generation with provider = comfyui
+- [x] 8. Run an end-to-end asset pipeline generation with provider = comfyui
 
   **What to do**:
   - Use existing CLI pipeline (already supports provider selection) to generate representative assets.
@@ -290,7 +290,7 @@ Infrastructure (RunPod worker + endpoint) -> Runtime config (Env + secrets) -> P
   **Acceptance Criteria**:
   - Switching `IMAGE_GENERATION_PROVIDER` toggles provider without code changes.
 
-- [ ] 12. Scenario deprecation phase (after successful comfyui runs)
+- [x] 12. Scenario deprecation phase (after successful comfyui runs)
 
   **What to do**:
   - Remove Scenario credential requirement from any user-facing flow.

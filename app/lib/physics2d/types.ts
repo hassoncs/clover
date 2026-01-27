@@ -3,8 +3,7 @@ import type { Vec2 as SharedVec2 } from "@slopcade/shared";
 export type Vec2 = SharedVec2;
 
 export interface Transform {
-  x: number;
-  y: number;
+  position: Vec2;
   angle: number;
 }
 
@@ -52,8 +51,8 @@ export type ShapeType = "box" | "circle" | "polygon" | "edge" | "chain";
 
 export interface BoxShapeDef {
   type: "box";
-  width: number;
-  height: number;
+  halfWidth: number;
+  halfHeight: number;
   center?: Vec2;
 }
 
@@ -98,9 +97,11 @@ export interface FixtureDef {
 }
 
 export interface RevoluteJointDef {
+  type?: 'revolute';
   bodyA: BodyId;
   bodyB: BodyId;
   anchor: Vec2;
+  collideConnected?: boolean;
   enableLimit?: boolean;
   lowerAngle?: number;
   upperAngle?: number;
@@ -110,20 +111,24 @@ export interface RevoluteJointDef {
 }
 
 export interface DistanceJointDef {
+  type?: 'distance';
   bodyA: BodyId;
   bodyB: BodyId;
   anchorA: Vec2;
   anchorB: Vec2;
+  collideConnected?: boolean;
   length?: number;
   stiffness?: number;
   damping?: number;
 }
 
 export interface PrismaticJointDef {
+  type?: 'prismatic';
   bodyA: BodyId;
   bodyB: BodyId;
   anchor: Vec2;
   axis: Vec2;
+  collideConnected?: boolean;
   enableLimit?: boolean;
   lowerTranslation?: number;
   upperTranslation?: number;
@@ -133,18 +138,19 @@ export interface PrismaticJointDef {
 }
 
 export interface MouseJointDef {
-  bodyA: BodyId;
-  bodyB: BodyId;
+  body: BodyId;
   target: Vec2;
-  maxForce?: number;
+  maxForce: number;
   stiffness?: number;
   damping?: number;
 }
 
 export interface WeldJointDef {
+  type?: 'weld';
   bodyA: BodyId;
   bodyB: BodyId;
   anchor: Vec2;
+  collideConnected?: boolean;
   stiffness?: number;
   damping?: number;
 }

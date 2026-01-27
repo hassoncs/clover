@@ -1,5 +1,7 @@
 import { nanoid } from 'nanoid';
 
+type D1Database = import('@cloudflare/workers-types').D1Database;
+
 export type TransactionType =
   | 'signup_code_grant'
   | 'promo_code_grant'

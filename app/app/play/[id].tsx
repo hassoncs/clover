@@ -3,7 +3,7 @@ import { View, Text, Pressable, ActivityIndicator, TextInput, Modal, ScrollView,
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { trpc } from "@/lib/trpc/client";
-import type { GameDefinition, AssetPack } from "@slopcade/shared";
+import type { GameDefinition } from "@slopcade/shared";
 import { WithGodot } from "../../components/WithGodot";
 import { FullScreenHeader } from "../../components/FullScreenHeader";
 import { EntityAssetList, ParallaxAssetPanel } from "../../components/assets";
@@ -196,15 +196,12 @@ export default function PlayScreen() {
         style: selectedStyle,
       });
 
-      if (result.success && 'assetPack' in result) {
-        const successRes = result as { success: true; packId: string; assetPack: AssetPack };
-        const newDef = { ...gameDefinition };
-        if (!newDef.assetPacks) newDef.assetPacks = {};
-        newDef.assetPacks[successRes.packId] = successRes.assetPack;
-        newDef.activeAssetPackId = successRes.packId;
-        
-        setGameDefinition(newDef);
-        setActiveAssetPackId(successRes.packId);
+      if (result.success && result.generatedAssets.length > 0) {
+        const entries: Record<string, ResolvedPackEntry> = {};
+        result.generatedAssets.forEach(asset => {
+          entries[asset.slotId] = { imageUrl: asset.url };
+        });
+        setResolvedPackEntries(entries);
         setShowAssetMenu(false);
       }
     } catch (e) {
@@ -220,18 +217,25 @@ export default function PlayScreen() {
     
     setRegeneratingTemplateId(templateId);
     try {
-      const result = await trpc.assets.regenerateTemplateAsset.mutate({
-        gameId: id,
+      const result = await trpc.assetSystem.regenerateAssets.mutate({
         packId: activeAssetPackId,
-        templateId,
-        style: selectedStyle,
+        templateIds: [templateId],
+        newStyle: selectedStyle,
       });
 
-      if (result.success && result.asset) {
-        const newDef = { ...gameDefinition };
-        if (newDef.assetPacks?.[activeAssetPackId]) {
-          newDef.assetPacks[activeAssetPackId].assets[templateId] = result.asset;
-          setGameDefinition(newDef);
+      if (result.jobId) {
+        const pack = await trpc.assetSystem.getPack.query({ id: activeAssetPackId });
+        if (pack?.entries) {
+          const entries: Record<string, ResolvedPackEntry> = {};
+          pack.entries.forEach(entry => {
+            if (entry.imageUrl) {
+              entries[entry.templateId] = { 
+                imageUrl: entry.imageUrl, 
+                placement: entry.placement 
+              };
+            }
+          });
+          setResolvedPackEntries(entries);
         }
       }
     } catch (e) {
@@ -246,18 +250,17 @@ export default function PlayScreen() {
     if (!id || id === "preview" || !gameDefinition || !activeAssetPackId) return;
     
     try {
-      await trpc.assets.setTemplateAsset.mutate({
-        gameId: id,
+      await trpc.assetSystem.removePackEntry.mutate({
         packId: activeAssetPackId,
         templateId,
-        source: 'none',
       });
 
-      const newDef = { ...gameDefinition };
-      if (newDef.assetPacks?.[activeAssetPackId]) {
-        newDef.assetPacks[activeAssetPackId].assets[templateId] = { source: 'none' };
-        setGameDefinition(newDef);
-      }
+      setResolvedPackEntries(prev => {
+        if (!prev) return prev;
+        const updated = { ...prev };
+        delete updated[templateId];
+        return updated;
+      });
     } catch (e) {
       console.error("Clear asset failed", e);
       alert("Failed to clear asset: " + (e instanceof Error ? e.message : String(e)));
@@ -268,21 +271,12 @@ export default function PlayScreen() {
     if (!id || id === "preview" || !gameDefinition) return;
     
     try {
-      await trpc.assets.deletePack.mutate({
-        gameId: id,
-        packId,
-      });
+      await trpc.assetSystem.deletePack.mutate({ id: packId });
 
-      const newDef = { ...gameDefinition };
-      if (newDef.assetPacks) {
-        delete newDef.assetPacks[packId];
-      }
-      if (newDef.activeAssetPackId === packId) {
-        newDef.activeAssetPackId = undefined;
-      }
-      setGameDefinition(newDef);
+      setAvailablePacks(prev => prev.filter(p => p.id !== packId));
       if (activeAssetPackId === packId) {
         setActiveAssetPackId(undefined);
+        setResolvedPackEntries(undefined);
       }
     } catch (e) {
       console.error("Delete pack failed", e);

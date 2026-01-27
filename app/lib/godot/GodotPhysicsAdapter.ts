@@ -26,7 +26,7 @@ import {
   createColliderId,
   createJointId,
 } from "../physics2d/types";
-import type { GodotBridge, EntityTransform, EntitySpawnedEvent } from "./types";
+import type { GodotBridge, EntityTransform, EntitySpawnedEvent, FixtureDef as GodotFixtureDef } from "./types";
 
 interface CachedBodyState {
   transform: Transform;
@@ -171,6 +171,8 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
   const adapter: Physics2D = {
     createWorld(_gravity: Vec2): void {},
 
+    dispose(): void {},
+
     destroyWorld(): void {
       bridge.clearGame();
       bodyIdToEntityId.clear();
@@ -239,7 +241,7 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       const colliderId = createColliderId(nextColliderId++);
       colliderIdMap.set(colliderId.value, colliderId);
 
-      bridge.addFixture(bodyId.value, def);
+      bridge.addFixture(bodyId.value, def as GodotFixtureDef);
 
       return colliderId;
     },
@@ -521,19 +523,11 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       return null;
     },
 
-    onCollisionBegin(callback: CollisionCallback): Unsubscribe {
+    onCollision(callback: CollisionCallback): Unsubscribe {
       collisionBeginCallbacks.push(callback);
       return () => {
         const index = collisionBeginCallbacks.indexOf(callback);
         if (index >= 0) collisionBeginCallbacks.splice(index, 1);
-      };
-    },
-
-    onCollisionEnd(callback: CollisionCallback): Unsubscribe {
-      collisionEndCallbacks.push(callback);
-      return () => {
-        const index = collisionEndCallbacks.indexOf(callback);
-        if (index >= 0) collisionEndCallbacks.splice(index, 1);
       };
     },
 

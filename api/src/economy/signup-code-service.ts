@@ -2,6 +2,8 @@ import { nanoid } from 'nanoid';
 import { GRANTS } from './pricing';
 import { WalletService } from './wallet-service';
 
+type D1Database = import('@cloudflare/workers-types').D1Database;
+
 export interface SignupCode {
   code: string;
   name: string;

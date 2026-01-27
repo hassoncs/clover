@@ -180,14 +180,46 @@ export function registerInteractionTools(server: McpServer, state: GameInspector
               if (!params.key) {
                 return { error: "key_down requires key parameter" };
               }
-              runtime.setButtonState(params.key, true);
+              {
+                const keyMap: Record<string, string> = {
+                  left: "ArrowLeft",
+                  right: "ArrowRight",
+                  up: "ArrowUp",
+                  down: "ArrowDown",
+                  jump: " ",
+                  action: "Enter",
+                };
+                const keyCode = keyMap[params.key] || params.key;
+                const event = new KeyboardEvent("keydown", {
+                  key: keyCode,
+                  bubbles: true,
+                  cancelable: true,
+                });
+                window.dispatchEvent(event);
+              }
               return { success: true, type: "key_down", key: params.key };
 
             case "key_up":
               if (!params.key) {
                 return { error: "key_up requires key parameter" };
               }
-              runtime.setButtonState(params.key, false);
+              {
+                const keyMap: Record<string, string> = {
+                  left: "ArrowLeft",
+                  right: "ArrowRight",
+                  up: "ArrowUp",
+                  down: "ArrowDown",
+                  jump: " ",
+                  action: "Enter",
+                };
+                const keyCode = keyMap[params.key] || params.key;
+                const event = new KeyboardEvent("keyup", {
+                  key: keyCode,
+                  bubbles: true,
+                  cancelable: true,
+                });
+                window.dispatchEvent(event);
+              }
               return { success: true, type: "key_up", key: params.key };
 
             default:

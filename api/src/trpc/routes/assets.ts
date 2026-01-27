@@ -28,6 +28,29 @@ interface AssetRow {
   is_animated: number;
   frame_count: number | null;
   created_at: number;
+  prompt: string | null;
+  parent_asset_id: string | null;
+  game_id: string | null;
+  slot_id: string | null;
+  shape: string | null;
+  theme_id: string | null;
+  deleted_at: number | null;
+}
+
+interface ThemeRow {
+  id: string;
+  name: string;
+  prompt_modifier: string | null;
+  creator_user_id: string | null;
+  created_at: number;
+  updated_at: number | null;
+}
+
+interface GameAssetSelectionRow {
+  game_id: string;
+  slot_id: string;
+  asset_id: string;
+  selected_at: number;
 }
 
 const entityTypeSchema = z.enum([
@@ -267,6 +290,7 @@ export const assetsRouter = router({
         gameId: z.string().uuid(),
         prompt: z.string().min(3).max(500),
         style: spriteStyleSchema.default('pixel'),
+        themeId: z.string().uuid().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -296,6 +320,18 @@ export const assetsRouter = router({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Invalid game definition',
         });
+      }
+
+      let themeModifier = '';
+      if (input.themeId) {
+        const theme = await ctx.env.DB.prepare(
+          `SELECT prompt_modifier FROM themes WHERE id = ?`
+        )
+          .bind(input.themeId)
+          .first<{ prompt_modifier: string | null }>();
+        if (theme?.prompt_modifier) {
+          themeModifier = theme.prompt_modifier;
+        }
       }
 
       const templates = definition.templates || {};
@@ -319,262 +355,91 @@ export const assetsRouter = router({
         else if (tags.includes('projectile') || tags.includes('bullet'))
           entityType = 'item';
 
-        const description = `${tId} designed as part of ${input.prompt}`;
+        const basePrompt = `${tId} designed as part of ${input.prompt}`;
+        const description = themeModifier
+          ? `${basePrompt}. ${themeModifier}`
+          : basePrompt;
 
         return {
           entityType,
           description,
           style: input.style as SpriteStyle,
           size: { width: 512, height: 512 },
+          slotId: tId,
         };
       });
 
       if (assetRequests.length === 0) {
-        return { success: false, message: 'No templates found' };
+        return { success: false, message: 'No templates found', generatedAssets: [] };
       }
 
       const assetService = new AssetService(ctx.env);
       const results = await assetService.generateBatch(assetRequests);
 
-      const packId = crypto.randomUUID();
-      const assetPack = {
-        id: packId,
-        name: input.prompt,
-        assets: {} as Record<string, { imageUrl: string; scale?: number }>,
-      };
+      const baseUrl = ctx.env.ASSET_HOST ?? 'https://assets.clover.app';
+      const cleanBase = baseUrl.replace(/\/$/, '');
+      const now = Date.now();
 
-      results.forEach((res, idx) => {
-        if (res.success && res.assetUrl) {
-          const tId = templateIds[idx];
-          assetPack.assets[tId] = {
-            imageUrl: res.assetUrl,
-            scale: 1,
-          };
+      const generatedAssets: Array<{
+        id: string;
+        slotId: string;
+        url: string;
+        prompt: string;
+      }> = [];
+
+      for (let idx = 0; idx < results.length; idx++) {
+        const res = results[idx];
+        const req = assetRequests[idx];
+        const slotId = templateIds[idx];
+
+        if (res.success && res.r2Key) {
+          const assetId = crypto.randomUUID();
+          const basePrompt = `${slotId} designed as part of ${input.prompt}`;
+
+          await ctx.env.DB.prepare(
+            `INSERT INTO assets (id, user_id, entity_type, description, style, r2_key, width, height, created_at,
+             prompt, game_id, slot_id, theme_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          )
+            .bind(
+              assetId,
+              ctx.user.id,
+              req.entityType,
+              basePrompt,
+              input.style,
+              res.r2Key,
+              512,
+              512,
+              now,
+              basePrompt,
+              input.gameId,
+              slotId,
+              input.themeId ?? null
+            )
+            .run();
+
+          await ctx.env.DB.prepare(
+            `INSERT INTO game_asset_selections (game_id, slot_id, asset_id, selected_at)
+             VALUES (?, ?, ?, ?)
+             ON CONFLICT (game_id, slot_id) DO UPDATE SET asset_id = ?, selected_at = ?`
+          )
+            .bind(input.gameId, slotId, assetId, now, assetId, now)
+            .run();
+
+          generatedAssets.push({
+            id: assetId,
+            slotId,
+            url: `${cleanBase}/${res.r2Key}`,
+            prompt: basePrompt,
+          });
         }
-      });
-
-      if (!definition.assetPacks) {
-        definition.assetPacks = {};
       }
-      definition.assetPacks[packId] = assetPack;
-      definition.activeAssetPackId = packId;
-
-      await ctx.env.DB.prepare(
-        'UPDATE games SET definition = ?, updated_at = ? WHERE id = ?'
-      )
-        .bind(JSON.stringify(definition), Date.now(), input.gameId)
-        .run();
 
       return {
         success: true,
-        packId,
-        assetPack,
-      };
-    }),
-
-  updatePackMetadata: protectedProcedure
-    .input(
-      z.object({
-        gameId: z.string().uuid(),
-        packId: z.string(),
-        name: z.string().min(1).max(100).optional(),
-        description: z.string().max(500).optional(),
-        style: spriteStyleSchema.optional(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const gameRow = await ctx.env.DB.prepare(
-        'SELECT * FROM games WHERE id = ?'
-      )
-        .bind(input.gameId)
-        .first<{ definition: string }>();
-
-      if (!gameRow) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
-      }
-
-      let definition: GameDefinitionGenerated;
-      try {
-        definition = JSON.parse(gameRow.definition);
-      } catch {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Invalid game definition',
-        });
-      }
-
-      if (!definition.assetPacks?.[input.packId]) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Asset pack not found' });
-      }
-
-      const pack = definition.assetPacks[input.packId];
-      if (input.name !== undefined) pack.name = input.name;
-      if (input.description !== undefined) pack.description = input.description;
-      if (input.style !== undefined) pack.style = input.style;
-
-      await ctx.env.DB.prepare(
-        'UPDATE games SET definition = ?, updated_at = ? WHERE id = ?'
-      )
-        .bind(JSON.stringify(definition), Date.now(), input.gameId)
-        .run();
-
-      return { success: true, pack };
-    }),
-
-  setTemplateAsset: protectedProcedure
-    .input(
-      z.object({
-        gameId: z.string().uuid(),
-        packId: z.string(),
-        templateId: z.string(),
-        imageUrl: z.string().optional(),
-        source: z.enum(['generated', 'uploaded', 'none']).optional(),
-        scale: z.number().min(0.1).max(10).optional(),
-        offsetX: z.number().optional(),
-        offsetY: z.number().optional(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const gameRow = await ctx.env.DB.prepare(
-        'SELECT * FROM games WHERE id = ?'
-      )
-        .bind(input.gameId)
-        .first<{ definition: string }>();
-
-      if (!gameRow) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
-      }
-
-      let definition: GameDefinitionGenerated;
-      try {
-        definition = JSON.parse(gameRow.definition);
-      } catch {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Invalid game definition',
-        });
-      }
-
-      if (!definition.assetPacks?.[input.packId]) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Asset pack not found' });
-      }
-
-      const pack = definition.assetPacks[input.packId];
-      
-      if (!pack.assets[input.templateId]) {
-        pack.assets[input.templateId] = {};
-      }
-
-      const asset = pack.assets[input.templateId];
-      if (input.imageUrl !== undefined) asset.imageUrl = input.imageUrl;
-      if (input.source !== undefined) asset.source = input.source;
-      if (input.scale !== undefined) asset.scale = input.scale;
-      if (input.offsetX !== undefined) asset.offsetX = input.offsetX;
-      if (input.offsetY !== undefined) asset.offsetY = input.offsetY;
-
-      if (input.source === 'none') {
-        delete asset.imageUrl;
-      }
-
-      await ctx.env.DB.prepare(
-        'UPDATE games SET definition = ?, updated_at = ? WHERE id = ?'
-      )
-        .bind(JSON.stringify(definition), Date.now(), input.gameId)
-        .run();
-
-      return { success: true, asset };
-    }),
-
-  regenerateTemplateAsset: protectedProcedure
-    .input(
-      z.object({
-        gameId: z.string().uuid(),
-        packId: z.string(),
-        templateId: z.string(),
-        style: spriteStyleSchema.default('pixel'),
-        customPrompt: z.string().optional(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const providerConfig = getImageGenerationConfig(ctx.env);
-      if (!providerConfig.configured) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: providerConfig.error ?? 'Image generation provider not configured',
-        });
-      }
-
-      const gameRow = await ctx.env.DB.prepare(
-        'SELECT * FROM games WHERE id = ?'
-      )
-        .bind(input.gameId)
-        .first<{ definition: string }>();
-
-      if (!gameRow) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
-      }
-
-      let definition: GameDefinitionGenerated;
-      try {
-        definition = JSON.parse(gameRow.definition);
-      } catch {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Invalid game definition',
-        });
-      }
-
-      if (!definition.assetPacks?.[input.packId]) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Asset pack not found' });
-      }
-
-      const template = definition.templates?.[input.templateId];
-      if (!template) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Template not found' });
-      }
-
-      const tags = template.tags || [];
-      let entityType: EntityType = 'item';
-      if (tags.includes('player') || tags.includes('character')) entityType = 'character';
-      else if (tags.includes('enemy')) entityType = 'enemy';
-      else if (tags.includes('platform') || tags.includes('wall') || tags.includes('ground')) entityType = 'platform';
-      else if (tags.includes('background')) entityType = 'background';
-      else if (tags.includes('ui')) entityType = 'ui';
-
-      const description = input.customPrompt || `${input.templateId} for game: ${definition.metadata.title}`;
-
-      const assetService = new AssetService(ctx.env);
-      const result = await assetService.generateAsset({
-        entityType,
-        description,
-        style: input.style as SpriteStyle,
-        size: { width: 512, height: 512 },
-        context: { gameId: input.gameId, packId: input.packId },
-      });
-
-      if (!result.success || !result.assetUrl) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: result.error || 'Asset generation failed',
-        });
-      }
-
-      const pack = definition.assetPacks[input.packId];
-      pack.assets[input.templateId] = {
-        imageUrl: result.assetUrl,
-        source: 'generated',
-        scale: pack.assets[input.templateId]?.scale ?? 1,
-      };
-
-      await ctx.env.DB.prepare(
-        'UPDATE games SET definition = ?, updated_at = ? WHERE id = ?'
-      )
-        .bind(JSON.stringify(definition), Date.now(), input.gameId)
-        .run();
-
-      return {
-        success: true,
-        asset: pack.assets[input.templateId],
+        generatedAssets,
+        totalGenerated: generatedAssets.length,
+        totalTemplates: templateIds.length,
       };
     }),
 
@@ -748,50 +613,223 @@ export const assetsRouter = router({
       return { success: true, parallaxConfig: definition.parallaxConfig };
     }),
 
-  deletePack: protectedProcedure
+  createTheme: protectedProcedure
     .input(
       z.object({
-        gameId: z.string().uuid(),
-        packId: z.string(),
+        name: z.string().min(1).max(100),
+        promptModifier: z.string().max(500).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const gameRow = await ctx.env.DB.prepare(
-        'SELECT * FROM games WHERE id = ?'
-      )
-        .bind(input.gameId)
-        .first<{ definition: string }>();
-
-      if (!gameRow) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
-      }
-
-      let definition: GameDefinitionGenerated;
-      try {
-        definition = JSON.parse(gameRow.definition);
-      } catch {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Invalid game definition',
-        });
-      }
-
-      if (!definition.assetPacks?.[input.packId]) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Asset pack not found' });
-      }
-
-      delete definition.assetPacks[input.packId];
-
-      if (definition.activeAssetPackId === input.packId) {
-        definition.activeAssetPackId = undefined;
-      }
+      const id = crypto.randomUUID();
+      const now = Date.now();
 
       await ctx.env.DB.prepare(
-        'UPDATE games SET definition = ?, updated_at = ? WHERE id = ?'
+        `INSERT INTO themes (id, name, prompt_modifier, creator_user_id, created_at)
+         VALUES (?, ?, ?, ?, ?)`
       )
-        .bind(JSON.stringify(definition), Date.now(), input.gameId)
+        .bind(id, input.name, input.promptModifier ?? null, ctx.user.id, now)
+        .run();
+
+      return { id, name: input.name, promptModifier: input.promptModifier };
+    }),
+
+  listThemes: protectedProcedure.query(async ({ ctx }) => {
+    const result = await ctx.env.DB.prepare(
+      `SELECT * FROM themes WHERE creator_user_id = ? ORDER BY created_at DESC`
+    )
+      .bind(ctx.user.id)
+      .all<ThemeRow>();
+
+    return result.results.map((row) => ({
+      id: row.id,
+      name: row.name,
+      promptModifier: row.prompt_modifier,
+      createdAt: new Date(row.created_at),
+    }));
+  }),
+
+  getGameSelections: publicProcedure
+    .input(z.object({ gameId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const baseUrl = ctx.env.ASSET_HOST ?? 'https://assets.clover.app';
+      const cleanBase = baseUrl.replace(/\/$/, '');
+
+      const result = await ctx.env.DB.prepare(
+        `SELECT s.slot_id, s.selected_at, a.*
+         FROM game_asset_selections s
+         JOIN assets a ON s.asset_id = a.id
+         WHERE s.game_id = ? AND a.deleted_at IS NULL`
+      )
+        .bind(input.gameId)
+        .all<GameAssetSelectionRow & AssetRow>();
+
+      return result.results.map((row) => ({
+        slotId: row.slot_id,
+        selectedAt: new Date(row.selected_at),
+        asset: {
+          id: row.id,
+          url: `${cleanBase}/${row.r2_key}`,
+          width: row.width,
+          height: row.height,
+          prompt: row.prompt,
+          shape: row.shape,
+        },
+      }));
+    }),
+
+  selectAssetForSlot: protectedProcedure
+    .input(
+      z.object({
+        gameId: z.string().uuid(),
+        slotId: z.string().min(1).max(100),
+        assetId: z.string().uuid(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const now = Date.now();
+
+      await ctx.env.DB.prepare(
+        `INSERT INTO game_asset_selections (game_id, slot_id, asset_id, selected_at)
+         VALUES (?, ?, ?, ?)
+         ON CONFLICT (game_id, slot_id) DO UPDATE SET asset_id = ?, selected_at = ?`
+      )
+        .bind(input.gameId, input.slotId, input.assetId, now, input.assetId, now)
         .run();
 
       return { success: true };
+    }),
+
+  generateForSlot: protectedProcedure
+    .input(
+      z.object({
+        gameId: z.string().uuid(),
+        slotId: z.string().min(1).max(100),
+        prompt: z.string().min(3).max(500),
+        style: spriteStyleSchema.default('pixel'),
+        width: z.number().min(32).max(1024).optional(),
+        height: z.number().min(32).max(1024).optional(),
+        shape: z.enum(['box', 'circle', 'polygon']).optional(),
+        themeId: z.string().uuid().optional(),
+        parentAssetId: z.string().uuid().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const providerConfig = getImageGenerationConfig(ctx.env);
+      if (!providerConfig.configured) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: providerConfig.error ?? 'Image generation provider not configured',
+        });
+      }
+
+      let themeModifier = '';
+      if (input.themeId) {
+        const theme = await ctx.env.DB.prepare(
+          `SELECT prompt_modifier FROM themes WHERE id = ?`
+        )
+          .bind(input.themeId)
+          .first<{ prompt_modifier: string | null }>();
+        if (theme?.prompt_modifier) {
+          themeModifier = theme.prompt_modifier;
+        }
+      }
+
+      const fullPrompt = themeModifier
+        ? `${input.prompt}. ${themeModifier}`
+        : input.prompt;
+
+      const assetService = new AssetService(ctx.env);
+      const result = await assetService.generateAsset({
+        entityType: 'item',
+        description: fullPrompt,
+        style: input.style as SpriteStyle,
+        size: { width: input.width ?? 256, height: input.height ?? 256 },
+      });
+
+      if (!result.success) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: result.error ?? 'Asset generation failed',
+        });
+      }
+
+      const id = crypto.randomUUID();
+      const now = Date.now();
+
+      await ctx.env.DB.prepare(
+        `INSERT INTO assets (id, user_id, entity_type, description, style, r2_key, width, height, created_at,
+         prompt, parent_asset_id, game_id, slot_id, shape, theme_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      )
+        .bind(
+          id,
+          ctx.user.id,
+          'item',
+          input.prompt,
+          input.style,
+          result.r2Key ?? '',
+          input.width ?? 256,
+          input.height ?? 256,
+          now,
+          input.prompt,
+          input.parentAssetId ?? null,
+          input.gameId,
+          input.slotId,
+          input.shape ?? null,
+          input.themeId ?? null
+        )
+        .run();
+
+      await ctx.env.DB.prepare(
+        `INSERT INTO game_asset_selections (game_id, slot_id, asset_id, selected_at)
+         VALUES (?, ?, ?, ?)
+         ON CONFLICT (game_id, slot_id) DO UPDATE SET asset_id = ?, selected_at = ?`
+      )
+        .bind(input.gameId, input.slotId, id, now, id, now)
+        .run();
+
+      const baseUrl = ctx.env.ASSET_HOST ?? 'https://assets.clover.app';
+      const cleanBase = baseUrl.replace(/\/$/, '');
+
+      return {
+        id,
+        url: `${cleanBase}/${result.r2Key}`,
+        prompt: input.prompt,
+        slotId: input.slotId,
+      };
+    }),
+
+  getSlotHistory: protectedProcedure
+    .input(
+      z.object({
+        gameId: z.string().uuid(),
+        slotId: z.string().min(1).max(100),
+        limit: z.number().min(1).max(50).default(10),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const baseUrl = ctx.env.ASSET_HOST ?? 'https://assets.clover.app';
+      const cleanBase = baseUrl.replace(/\/$/, '');
+
+      const result = await ctx.env.DB.prepare(
+        `SELECT * FROM assets
+         WHERE game_id = ? AND slot_id = ? AND deleted_at IS NULL
+         ORDER BY created_at DESC
+         LIMIT ?`
+      )
+        .bind(input.gameId, input.slotId, input.limit)
+        .all<AssetRow>();
+
+      return result.results.map((row) => ({
+        id: row.id,
+        url: `${cleanBase}/${row.r2_key}`,
+        prompt: row.prompt,
+        width: row.width,
+        height: row.height,
+        shape: row.shape,
+        parentAssetId: row.parent_asset_id,
+        createdAt: new Date(row.created_at),
+      }));
     }),
 });
