@@ -1,5 +1,5 @@
 import type { SpriteComponent } from './sprite';
-import type { PhysicsComponent } from './physics';
+import type { PhysicsComponent, ZoneComponent } from './physics';
 import type { Behavior, ConditionalBehavior } from './behavior';
 
 export interface TransformComponent {
@@ -108,3 +108,30 @@ export interface EntityTemplate {
   /** Template-level children (part of prefab) */
   children?: ChildTemplateDefinition[];
 }
+
+// ============================================================================
+// Entity Definitions for Zone Types
+// ============================================================================
+
+export interface BaseEntityDefinition {
+  id: string;
+  name: string;
+  template?: string;
+  transform: TransformComponent;
+  sprite?: SpriteComponent;
+  behaviors?: Behavior[];
+  conditionalBehaviors?: ConditionalBehavior[];
+  tags?: string[];
+  layer?: number;
+  visible?: boolean;
+  active?: boolean;
+  assetPackId?: string;
+  children?: ChildEntityDefinition[];
+}
+
+export interface BodyEntityDefinition extends BaseEntityDefinition {
+  type: 'body';
+  physics: PhysicsComponent;
+}
+
+export { ZoneEntityDefinition } from './physics';

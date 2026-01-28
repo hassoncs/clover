@@ -9,7 +9,6 @@ interface BasePhysicsComponent {
   density: number;
   friction: number;
   restitution: number;
-  isSensor?: boolean;
   fixedRotation?: boolean;
   bullet?: boolean;
   linearDamping?: number;
@@ -38,3 +37,26 @@ export type PhysicsComponent =
   | BoxPhysicsComponent
   | CirclePhysicsComponent
   | PolygonPhysicsComponent;
+
+// ============================================================================
+// Zone Types
+// ============================================================================
+
+export type ZoneMovementType = 'static' | 'kinematic';
+
+export type ZoneShape =
+  | { type: 'box'; width: number; height: number }
+  | { type: 'circle'; radius: number }
+  | { type: 'polygon'; vertices: Vec2[] };
+
+export interface ZoneComponent {
+  movement?: ZoneMovementType; // defaults to "static"
+  shape: ZoneShape;
+  categoryBits?: number;
+  maskBits?: number;
+}
+
+export interface ZoneEntityDefinition {
+  type: 'zone';
+  zone: ZoneComponent;
+}

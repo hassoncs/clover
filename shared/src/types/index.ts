@@ -22,3 +22,13 @@ export type {
   GridContainerConfig,
   SlotContainerConfig,
 } from './container';
+export type {
+  ZoneMovementType,
+  ZoneShape,
+  ZoneComponent,
+  ZoneEntityDefinition,
+} from './physics';
+export type {
+  BaseEntityDefinition,
+  BodyEntityDefinition,
+} from './entity';
