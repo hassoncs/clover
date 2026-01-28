@@ -1,5 +1,6 @@
 import type { Env } from '../trpc/context';
 import { ComfyUIClient, createComfyUIClient } from './comfyui';
+import { createScenarioClient } from './scenario';
 import { buildAssetPath } from '@slopcade/shared';
 
 const DEBUG_ASSET_GENERATION = process.env.DEBUG_ASSET_GENERATION === 'true';
@@ -561,7 +562,102 @@ function createComfyUIProviderClient(env: Env): ProviderClient {
   };
 }
 
+function createScenarioProviderClient(env: Env): ProviderClient {
+  if (!env.SCENARIO_API_KEY || !env.SCENARIO_SECRET_API_KEY) {
+    throw new Error('SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using Scenario provider');
+  }
+  
+  const client = createScenarioClient({
+    apiKey: env.SCENARIO_API_KEY,
+    apiSecret: env.SCENARIO_SECRET_API_KEY,
+    apiUrl: env.SCENARIO_API_URL,
+  });
+
+  return {
+    uploadImage: async (png: Uint8Array): Promise<string> => {
+      const arrayBuffer = png.buffer.slice(
+        png.byteOffset,
+        png.byteOffset + png.byteLength
+      ) as ArrayBuffer;
+      return client.uploadAsset(arrayBuffer);
+    },
+
+    txt2img: async (params): Promise<{ assetId: string }> => {
+      const result = await client.generate({
+        prompt: params.prompt,
+        width: params.width,
+        height: params.height,
+        negativePrompt: params.negativePrompt,
+        seed: params.seed !== undefined ? String(params.seed) : undefined,
+      });
+      if (result.assetIds.length === 0) {
+        throw new Error('No assets generated');
+      }
+      return { assetId: result.assetIds[0] };
+    },
+
+    img2img: async (params): Promise<{ assetId: string }> => {
+      const result = await client.generateImg2Img({
+        image: params.image,
+        prompt: params.prompt,
+        strength: params.strength ?? 0.95,
+        guidance: params.guidance ?? 3.5,
+        seed: params.seed !== undefined ? String(params.seed) : undefined,
+      });
+      if (result.assetIds.length === 0) {
+        throw new Error('No assets generated');
+      }
+      return { assetId: result.assetIds[0] };
+    },
+
+    downloadImage: async (assetId: string): Promise<{ buffer: Uint8Array; extension: string }> => {
+      const result = await client.downloadAsset(assetId);
+      return {
+        buffer: new Uint8Array(result.buffer),
+        extension: result.extension,
+      };
+    },
+
+    removeBackground: async (params): Promise<{ assetId: string }> => {
+      const resultAssetId = await client.removeBackground({
+        image: params.image,
+        format: params.format as 'png' | 'jpg' | 'webp' | undefined,
+      });
+      return { assetId: resultAssetId };
+    },
+  };
+}
+
+export type ImageGenerationProvider = 'modal' | 'scenario';
+
+export function getImageGenerationConfig(env: Env): {
+  configured: boolean;
+  provider: ImageGenerationProvider;
+  error?: string;
+} {
+  const provider = env.IMAGE_GENERATION_PROVIDER ?? 'modal';
+
+  if (provider === 'scenario') {
+    if (!env.SCENARIO_API_KEY || !env.SCENARIO_SECRET_API_KEY) {
+      return {
+        configured: false,
+        provider: 'scenario',
+        error: 'SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using Scenario provider',
+      };
+    }
+    return { configured: true, provider: 'scenario' };
+  }
+
+  return { configured: true, provider: 'modal' };
+}
+
 export function getProviderClient(env: Env): ProviderClient {
+  const provider = env.IMAGE_GENERATION_PROVIDER ?? 'modal';
+  
+  if (provider === 'scenario') {
+    return createScenarioProviderClient(env);
+  }
+  
   return createComfyUIProviderClient(env);
 }
 

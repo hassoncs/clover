@@ -97,6 +97,21 @@ export function createWorkersComfyUIAdapter(env: Env): ImageGenerationAdapter {
 }
 
 export function createWorkersProviderAdapter(env: Env): ImageGenerationAdapter {
+  const provider = env.IMAGE_GENERATION_PROVIDER ?? 'modal';
+
+  if (provider === 'scenario') {
+    if (!env.SCENARIO_API_KEY || !env.SCENARIO_SECRET_API_KEY) {
+      throw new Error('SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using Scenario provider');
+    }
+    const client = createScenarioClient({
+      SCENARIO_API_KEY: env.SCENARIO_API_KEY,
+      SCENARIO_SECRET_API_KEY: env.SCENARIO_SECRET_API_KEY,
+      SCENARIO_API_URL: env.SCENARIO_API_URL,
+    });
+    return createWorkersScenarioAdapter(client);
+  }
+
+  // Default: Modal ComfyUI
   return createWorkersComfyUIAdapter(env);
 }
 

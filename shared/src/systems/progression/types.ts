@@ -17,7 +17,7 @@ export interface AchievementReward {
   itemId?: string;
 }
 
-export interface LevelDefinition {
+export interface ProgressionLevelDefinition {
   level: number;
   xpRequired: number;
   rewards?: AchievementReward[];
@@ -26,7 +26,7 @@ export interface LevelDefinition {
 export interface ProgressionDefinition {
   id: string;
   achievements?: AchievementDefinition[];
-  levels?: LevelDefinition[];
+  levels?: ProgressionLevelDefinition[];
   xpCurve?: 'linear' | 'exponential';
   xpBase?: number;
   xpMultiplier?: number;

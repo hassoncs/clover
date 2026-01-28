@@ -20,8 +20,16 @@ export interface Env {
   AI_MODEL?: string;
   AI_BASE_URL?: string;
 
+  // Image generation provider selection
+  IMAGE_GENERATION_PROVIDER?: 'modal' | 'scenario';
+
   // Modal ComfyUI endpoint (optional, defaults to deployed endpoint)
   MODAL_ENDPOINT?: string;
+
+  // Scenario.com credentials (only needed if using scenario provider)
+  SCENARIO_API_KEY?: string;
+  SCENARIO_SECRET_API_KEY?: string;
+  SCENARIO_API_URL?: string;
 
   ASSET_HOST?: string;
 
