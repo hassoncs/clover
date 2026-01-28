@@ -2372,6 +2372,9 @@ func set_position(entity_id: String, x: float, y: float) -> void:
 			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(current_angle, godot_pos))
 		else:
 			node.position = godot_pos
+	elif sensors.has(entity_id):
+		# Area2D sensors - just set position directly
+		sensors[entity_id].position = godot_pos
 
 func _js_set_rotation(args: Array) -> void:
 	if args.size() < 2:
