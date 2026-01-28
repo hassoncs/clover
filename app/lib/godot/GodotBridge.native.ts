@@ -421,9 +421,11 @@ export function createNativeGodotBridge(): GodotBridge {
       callGameBridge('resume_physics');
     },
 
-    spawnEntity(templateId: string, x: number, y: number): string {
+    spawnEntity(templateId: string, x: number, y: number, initialVelocity?: { x: number; y: number }): string {
       const entityId = `${templateId}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-      callGameBridge('spawn_entity_with_id', templateId, x, y, entityId);
+      // Pass initial velocity as JSON string since react-native-godot doesn't support object bindings
+      const velocityJson = initialVelocity ? JSON.stringify(initialVelocity) : '';
+      callGameBridge('spawn_entity_with_id', templateId, x, y, entityId, velocityJson);
       return entityId;
     },
 

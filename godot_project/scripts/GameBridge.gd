@@ -234,16 +234,21 @@ func _input(event: InputEvent) -> void:
 			
 			_drag_entity_id = null
 	
-	elif event is InputEventMouseMotion and _is_dragging:
+	elif event is InputEventMouseMotion:
 		var screen_pos = event.position
 		var world_pos = get_viewport().get_canvas_transform().affine_inverse() * screen_pos
 		var game_pos = godot_to_game_pos(world_pos)
 		
-		_queue_event("input", {"type": "drag_move", "x": game_pos.x, "y": game_pos.y, "entityId": _drag_entity_id})
-		_notify_js_input_event("drag_move", game_pos.x, game_pos.y, _drag_entity_id)
+		# Always send mouse move for continuous tracking (e.g., rotate_toward behavior)
+		_queue_event("input", {"type": "mouse_move", "x": game_pos.x, "y": game_pos.y})
+		_notify_js_input_event("mouse_move", game_pos.x, game_pos.y, null)
 		
-		if _devtools_overlay:
-			_devtools_overlay.update_drag(world_pos)
+		if _is_dragging:
+			_queue_event("input", {"type": "drag_move", "x": game_pos.x, "y": game_pos.y, "entityId": _drag_entity_id})
+			_notify_js_input_event("drag_move", game_pos.x, game_pos.y, _drag_entity_id)
+			
+			if _devtools_overlay:
+				_devtools_overlay.update_drag(world_pos)
 
 func _setup_camera() -> void:
 	var camera_script = load("res://scripts/effects/CameraEffects.gd")
@@ -618,7 +623,18 @@ func _js_load_custom_scene(args: Array) -> bool:
 func _js_spawn_entity(args: Array) -> void:
 	if args.size() < 4:
 		return
-	spawn_entity_with_id(str(args[0]), float(args[1]), float(args[2]), str(args[3]))
+	
+	var template_id = str(args[0])
+	var x = float(args[1])
+	var y = float(args[2])
+	var entity_id = str(args[3])
+	
+	# Get initial velocity from args[4] if provided
+	var initial_velocity_json = ""
+	if args.size() >= 5 and args[4] != null:
+		initial_velocity_json = str(args[4])
+	
+	spawn_entity_with_id(template_id, x, y, entity_id, initial_velocity_json)
 
 func _js_destroy_entity(args: Array) -> void:
 	if args.size() < 1:
@@ -1327,6 +1343,10 @@ func _create_entity(entity_data: Dictionary) -> Node2D:
 		if main:
 			main.add_child(node)
 	
+	# Transfer initial velocity from entity_data to node metadata
+	if entity_data.has("_initial_velocity") and node is RigidBody2D:
+		node.set_meta("_initial_velocity", entity_data["_initial_velocity"])
+	
 	# Apply initial velocity now that the body is in the scene tree
 	if node is RigidBody2D and node.has_meta("_initial_velocity"):
 		var initial_vel = node.get_meta("_initial_velocity") as Vector2
@@ -1948,9 +1968,9 @@ func _on_body_entered(body: Node, entity_id: String) -> void:
 		_process_collision_behaviors(body.name, entity_id)
 
 func spawn_entity(template_id: String, x: float, y: float) -> Node2D:
-	return spawn_entity_with_id(template_id, x, y, template_id + "_" + str(randi()))
+	return spawn_entity_with_id(template_id, x, y, template_id + "_" + str(randi()), "")
 
-func spawn_entity_with_id(template_id: String, x: float, y: float, entity_id: String) -> Node2D:
+func spawn_entity_with_id(template_id: String, x: float, y: float, entity_id: String, initial_velocity_json: String = "") -> Node2D:
 	if not templates.has(template_id):
 		push_error("[GameBridge] Template not found: " + template_id)
 		return null
@@ -1960,6 +1980,16 @@ func spawn_entity_with_id(template_id: String, x: float, y: float, entity_id: St
 		"template": template_id,
 		"transform": {"x": x, "y": y, "angle": 0}
 	}
+	
+	# Parse and store initial velocity if provided
+	if initial_velocity_json != "":
+		var json = JSON.new()
+		var err = json.parse(initial_velocity_json)
+		if err == OK:
+			var vel_data = json.data as Dictionary
+			if vel_data.has("x") and vel_data.has("y"):
+				var game_vel = Vector2(vel_data["x"], vel_data["y"])
+				entity_data["_initial_velocity"] = game_to_godot_vec(game_vel)
 	
 	return _create_entity(entity_data)
 

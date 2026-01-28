@@ -209,7 +209,7 @@ export interface GodotBridge {
   resumePhysics(): void;
 
   // Entity management (high-level)
-  spawnEntity(templateId: string, x: number, y: number): string;
+  spawnEntity(templateId: string, x: number, y: number, initialVelocity?: Vec2): string;
   destroyEntity(entityId: string): void;
 
   // Transform queries (async - native requires worklet communication)
@@ -392,4 +392,10 @@ export interface GodotViewProps {
   onKeyDown?: (event: KeyboardEvent) => void;
   /** Called when a key is released inside the iframe */
   onKeyUp?: (event: KeyboardEvent) => void;
+  /** Called when mouse moves inside the iframe */
+  onMouseMove?: (event: MouseEvent) => void;
+  /** Called when mouse leaves the iframe */
+  onMouseLeave?: (event: MouseEvent) => void;
+  /** Called when mouse clicks inside the iframe */
+  onClick?: (event: MouseEvent) => void;
 }

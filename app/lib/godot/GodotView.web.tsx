@@ -6,7 +6,7 @@ const GODOT_WASM_PATH = process.env.NODE_ENV === 'production'
   ? '/godot/index.html'
   : '/godot/index.html';
 
-export function GodotViewWeb({ style, onReady, onError, onKeyDown, onKeyUp }: GodotViewProps) {
+export function GodotViewWeb({ style, onReady, onError, onKeyDown, onKeyUp, onMouseMove, onMouseLeave, onClick }: GodotViewProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const isLoadedRef = useRef(false);
   const contentWindowRef = useRef<Window | null>(null);
@@ -20,8 +20,11 @@ export function GodotViewWeb({ style, onReady, onError, onKeyDown, onKeyUp }: Go
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     let iframeKeyDownListener: (() => void) | null = null;
     let iframeKeyUpListener: (() => void) | null = null;
+    let iframeMouseMoveListener: (() => void) | null = null;
+    let iframeMouseLeaveListener: (() => void) | null = null;
+    let iframeClickListener: (() => void) | null = null;
 
-    const attachKeyboardListeners = (win: Window) => {
+    const attachListeners = (win: Window) => {
       if (!win) return;
 
       const handleIframeKeyDown = (e: KeyboardEvent) => {
@@ -32,18 +35,42 @@ export function GodotViewWeb({ style, onReady, onError, onKeyDown, onKeyUp }: Go
         onKeyUp?.(e);
       };
 
+      const handleIframeMouseMove = (e: MouseEvent) => {
+        onMouseMove?.(e);
+      };
+
+      const handleIframeMouseLeave = (e: MouseEvent) => {
+        onMouseLeave?.(e);
+      };
+
+      const handleIframeClick = (e: MouseEvent) => {
+        onClick?.(e);
+      };
+
       win.addEventListener('keydown', handleIframeKeyDown, { capture: true });
       win.addEventListener('keyup', handleIframeKeyUp, { capture: true });
+      win.addEventListener('mousemove', handleIframeMouseMove, { capture: true });
+      win.addEventListener('mouseleave', handleIframeMouseLeave, { capture: true });
+      win.addEventListener('click', handleIframeClick, { capture: true });
 
       iframeKeyDownListener = () => win.removeEventListener('keydown', handleIframeKeyDown, { capture: true });
       iframeKeyUpListener = () => win.removeEventListener('keyup', handleIframeKeyUp, { capture: true });
+      iframeMouseMoveListener = () => win.removeEventListener('mousemove', handleIframeMouseMove, { capture: true });
+      iframeMouseLeaveListener = () => win.removeEventListener('mouseleave', handleIframeMouseLeave, { capture: true });
+      iframeClickListener = () => win.removeEventListener('click', handleIframeClick, { capture: true });
     };
 
-    const detachKeyboardListeners = () => {
+    const detachListeners = () => {
       if (iframeKeyDownListener) iframeKeyDownListener();
       if (iframeKeyUpListener) iframeKeyUpListener();
+      if (iframeMouseMoveListener) iframeMouseMoveListener();
+      if (iframeMouseLeaveListener) iframeMouseLeaveListener();
+      if (iframeClickListener) iframeClickListener();
       iframeKeyDownListener = null;
       iframeKeyUpListener = null;
+      iframeMouseMoveListener = null;
+      iframeMouseLeaveListener = null;
+      iframeClickListener = null;
     };
 
     const handleLoad = () => {
@@ -55,8 +82,8 @@ export function GodotViewWeb({ style, onReady, onError, onKeyDown, onKeyUp }: Go
             if (timeoutId) clearTimeout(timeoutId);
             isLoadedRef.current = true;
             contentWindowRef.current = contentWindow;
-            attachKeyboardListeners(contentWindow);
-            cleanupRef.current = detachKeyboardListeners;
+            attachListeners(contentWindow);
+            cleanupRef.current = detachListeners;
             onReady?.();
           }
         } catch (err) {
@@ -85,7 +112,7 @@ export function GodotViewWeb({ style, onReady, onError, onKeyDown, onKeyUp }: Go
         contentWindowRef.current = null;
       }
     };
-  }, [onReady, onError, onKeyDown, onKeyUp]);
+  }, [onReady, onError, onKeyDown, onKeyUp, onMouseMove, onMouseLeave, onClick]);
 
   return (
     <View style={[styles.container, style]}>

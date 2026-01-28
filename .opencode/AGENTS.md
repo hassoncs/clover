@@ -1,5 +1,20 @@
 # Project Agents Configuration
 
+## Terminal Command Execution
+
+**ALWAYS use the `interactive_bash` tool for running terminal commands**, unless:
+- You only need a simple one-shot command with immediate output
+- The command is a simple status check (e.g., `git status`, `ls`)
+
+**Prefer `interactive_bash` for:**
+- Long-running processes
+- Build commands
+- Test commands
+- Commands that may produce interactive output
+- Any command that might require monitoring or interaction
+
+The `interactive_bash` tool runs commands in a persistent tmux session, which provides better output handling and allows for ongoing interaction.
+
 ## Service Management (Devmux)
 - **ALWAYS** use the `devmux` skill for starting, stopping, or debugging services (api, metro, storybook).
 - **NEVER** run `pnpm start` or `node server.js` directly for long-running processes.

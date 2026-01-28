@@ -230,6 +230,76 @@ Production-ready system with tooling and advanced features.
 
 ---
 
+## Phase 6: Procedural Level Generation (Future/Backlog)
+
+### Endless Peggle-Style Level Builder
+
+**Vision**: Enable AI and procedural systems to generate infinite, playable physics-based levels with constraint-based placement and automated playability validation.
+
+#### Core Concepts
+
+**1. Constraint-Based Placement**
+- Define spatial zones (launch area, mid-field, target zone)
+- Use poisson disc sampling for even peg distribution
+- Maintain minimum distances between obstacles for gameplay flow
+- Support moving platforms and dynamic elements
+
+**2. Physics Validation**
+- Solvability checking: simulate shots from multiple angles
+- Ensure minimum viable paths exist (guaranteed reachability)
+- Stability verification: no overlapping geometry, no stuck states
+- Power-up accessibility validation
+
+**3. Object Template System**
+```typescript
+interface PegTemplate {
+  type: 'normal' | 'multiplier' | 'explosive' | 'bumper';
+  physicsShape: Circle | Polygon;
+  behavior: Static | Oscillating | Rotating;
+  points: number;
+  hitEffect: ParticleEffect;
+}
+```
+- Composable prefabs (pre-designed obstacle clusters)
+- Difficulty-scaled object selection
+
+**4. Two-Phase Generation Pipeline**
+```
+Seed → Layout Strategy → Place Anchors → Fill Gaps → 
+Simulate → Validate → Adjust → Finalize
+```
+
+- **Phase A**: Designer/AI places "hero" elements (special pegs, power-ups)
+- **Phase B**: Algorithm fills remaining space maintaining playability
+
+**5. Playability Heuristics**
+- Bounce potential: ricochet pattern variety
+- Risk/reward clustering: high-value in harder positions
+- Funnel design: natural ball movement toward collectors
+- Difficulty progression: sparse → dense → complex
+
+#### Deliverables
+
+| Item | Description | Effort |
+|------|-------------|--------|
+| Poisson Disc Placement | Even distribution algorithm | 3d |
+| Constraint Solver | Spatial relationship validation | 4d |
+| Playability Simulator | Shot simulation from multiple angles | 5d |
+| Template System | Peg/obstacle archetype definitions | 3d |
+| Two-Phase Generator | Anchor + autofill pipeline | 4d |
+| Difficulty Scaling | Progression algorithms | 2d |
+| Integration | Hook into game generation pipeline | 3d |
+
+**Total**: ~3-4 weeks (deferred until core engine complete)
+
+#### Dependencies
+- Physics engine with deterministic simulation
+- Expression system (Phase 1-2)
+- Entity hierarchy (IMP-001)
+- AI generation pipeline (Phase 5)
+
+---
+
 ## Success Metrics
 
 ### Developer Experience

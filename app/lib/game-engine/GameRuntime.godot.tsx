@@ -596,6 +596,11 @@ export function GameRuntimeGodot({
                 ...inputRef.current,
                 tap: { x: screenX, y: screenY, worldX: x, worldY: y },
               };
+            } else if (type === "mouse_move") {
+              inputRef.current = {
+                ...inputRef.current,
+                mouse: { x: 0, y: 0, worldX: x, worldY: y },
+              };
             }
           },
         );
@@ -957,6 +962,9 @@ export function GameRuntimeGodot({
         },
         setEntityRotation: (entityId, angle) => {
           bridge.setRotation(entityId, angle);
+        },
+        setEntityPosition: (entityId, x, y) => {
+          bridge.setPosition(entityId, x, y);
         },
         destroyEntity: (id) => game.entityManager.destroyEntity(id),
         triggerEvent: (name, data) =>
@@ -1342,9 +1350,13 @@ export function GameRuntimeGodot({
       };
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseleave", handleMouseLeave);
-    window.addEventListener("click", handleClick);
+    const container = viewportContainerRef.current;
+    if (container) {
+      const htmlContainer = container as unknown as HTMLElement;
+      htmlContainer.addEventListener("mousemove", handleMouseMove);
+      htmlContainer.addEventListener("mouseleave", handleMouseLeave);
+      htmlContainer.addEventListener("click", handleClick);
+    }
 
     (window as any).__GAME_RUNTIME__ = {
       setInput: (type: string, value: any) => {
@@ -1386,9 +1398,14 @@ export function GameRuntimeGodot({
     };
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseleave", handleMouseLeave);
-      window.removeEventListener("click", handleClick);
+      const container = viewportContainerRef.current;
+      if (container) {
+        const htmlContainer = container as unknown as HTMLElement;
+        htmlContainer.removeEventListener("mousemove", handleMouseMove);
+        htmlContainer.removeEventListener("mouseleave", handleMouseLeave);
+        htmlContainer.removeEventListener("click", handleClick);
+      }
+      
       delete (window as any).__GAME_RUNTIME__;
     };
   }, []);

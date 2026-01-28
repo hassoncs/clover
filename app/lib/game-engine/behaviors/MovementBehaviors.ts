@@ -95,7 +95,6 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
 
   executor.registerHandler('rotate_toward', (behavior, ctx) => {
     const b = behavior as RotateTowardBehavior;
-    if (!ctx.entity.bodyId) return;
 
     let targetX = 0;
     let targetY = 0;
@@ -116,7 +115,8 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
             hasTarget = true;
         }
     } else {
-        const target = ctx.entityManager.getEntitiesByTag('player')[0];
+        // Treat target as a tag
+        const target = ctx.entityManager.getEntitiesByTag(b.target)[0];
         if (target) {
             targetX = target.transform.x;
             targetY = target.transform.y;
@@ -179,6 +179,14 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
     }
     if (b.axis === 'y' || b.axis === 'both') {
       ctx.entity.transform.y = newY;
+    }
+
+    // Update physics body position for kinematic bodies
+    if (ctx.entity.bodyId) {
+      ctx.physics.setTransform(ctx.entity.bodyId, {
+        position: { x: newX, y: newY },
+        angle: ctx.entity.transform.angle,
+      });
     }
   });
 

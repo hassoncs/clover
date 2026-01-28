@@ -1,7 +1,8 @@
 import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
-const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle";
+const ASSET_BASE =
+  "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle";
 
 export const metadata: TestGameMeta = {
   title: "Slopeggle",
@@ -18,9 +19,13 @@ const cy = (y: number) => HALF_H - y;
 const PEG_RADIUS = 0.125;
 const BALL_RADIUS = 0.15;
 
-function generatePegLayout(): Array<{ x: number; y: number; isOrange: boolean }> {
+function generatePegLayout(): Array<{
+  x: number;
+  y: number;
+  isOrange: boolean;
+}> {
   const pegs: Array<{ x: number; y: number; isOrange: boolean }> = [];
-  
+
   const rows = [
     { y: 3.5, count: 9, offset: 0 },
     { y: 4.3, count: 10, offset: 0.5 },
@@ -83,7 +88,8 @@ const game: GameDefinition = {
     id: "test-slopeggle",
     title: "Slopeggle",
     description: "Clear all orange pegs by bouncing a ball through the board",
-    instructions: "Touch and hold to aim the cannon, then release to fire! Clear all 10 orange pegs to win. You have 10 balls.",
+    instructions:
+      "Touch and hold to aim the cannon, then release to fire! Clear all 10 orange pegs to win. You have 10 balls.",
     version: "1.0.0",
     titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
   },
@@ -111,7 +117,13 @@ const game: GameDefinition = {
       { tag: "orange-peg", label: "Orange Pegs", color: "#F97316" },
     ],
     variableDisplays: [
-      { name: "multiplier", label: "Multiplier", color: "#FBBF24", showWhen: "not_default", defaultValue: 1 },
+      {
+        name: "multiplier",
+        label: "Multiplier",
+        color: "#FBBF24",
+        showWhen: "not_default",
+        defaultValue: 1,
+      },
       { name: "turn", label: "Shot", color: "#94A3B8" },
     ],
   },
@@ -127,7 +139,12 @@ const game: GameDefinition = {
     ball: {
       id: "ball",
       tags: ["ball"],
-      sprite: { type: "image", imageUrl: `${ASSET_BASE}/ball.png`, imageWidth: BALL_RADIUS * 2, imageHeight: BALL_RADIUS * 2 },
+      sprite: {
+        type: "image",
+        imageUrl: `${ASSET_BASE}/ball.png`,
+        imageWidth: BALL_RADIUS * 2,
+        imageHeight: BALL_RADIUS * 2,
+      },
       physics: {
         bodyType: "dynamic",
         shape: "circle",
@@ -141,7 +158,12 @@ const game: GameDefinition = {
     cannon: {
       id: "cannon",
       tags: ["cannon"],
-      sprite: { type: "image", imageUrl: `${ASSET_BASE}/cannon.png`, imageWidth: 0.6, imageHeight: 0.25 },
+      sprite: {
+        type: "image",
+        imageUrl: `${ASSET_BASE}/cannon.png`,
+        imageWidth: 0.6,
+        imageHeight: 0.25,
+      },
       physics: {
         bodyType: "kinematic",
         shape: "box",
@@ -159,7 +181,12 @@ const game: GameDefinition = {
     cannonBase: {
       id: "cannonBase",
       tags: ["cannon-base"],
-      sprite: { type: "image", imageUrl: `${ASSET_BASE}/cannonBase.png`, imageWidth: 0.6, imageHeight: 0.6 },
+      sprite: {
+        type: "image",
+        imageUrl: `${ASSET_BASE}/cannonBase.png`,
+        imageWidth: 0.6,
+        imageHeight: 0.6,
+      },
       physics: {
         bodyType: "static",
         shape: "circle",
@@ -173,7 +200,12 @@ const game: GameDefinition = {
     bluePeg: {
       id: "bluePeg",
       tags: ["peg", "blue-peg"],
-      sprite: { type: "image", imageUrl: `${ASSET_BASE}/bluePeg.png`, imageWidth: PEG_RADIUS * 2, imageHeight: PEG_RADIUS * 2 },
+      sprite: {
+        type: "image",
+        imageUrl: `${ASSET_BASE}/bluePeg.png`,
+        imageWidth: PEG_RADIUS * 2,
+        imageHeight: PEG_RADIUS * 2,
+      },
       physics: {
         bodyType: "static",
         shape: "circle",
@@ -183,21 +215,30 @@ const game: GameDefinition = {
         restitution: 0.85,
       },
       behaviors: [
-        { 
-          type: "destroy_on_collision", 
-          withTags: ["ball"], 
+        {
+          type: "destroy_on_collision",
+          withTags: ["ball"],
           effect: "fade",
           delay: { type: "event", eventName: "turn_end" },
           markedEffect: "glow",
           markedColor: "#60A5FA",
         },
-        { type: "score_on_collision", withTags: ["ball"], points: { expr: "10 * multiplier" } },
+        {
+          type: "score_on_collision",
+          withTags: ["ball"],
+          points: { expr: "10 * multiplier" },
+        },
       ],
     },
     orangePeg: {
       id: "orangePeg",
       tags: ["peg", "orange-peg"],
-      sprite: { type: "image", imageUrl: `${ASSET_BASE}/orangePeg.png`, imageWidth: PEG_RADIUS * 2, imageHeight: PEG_RADIUS * 2 },
+      sprite: {
+        type: "image",
+        imageUrl: `${ASSET_BASE}/orangePeg.png`,
+        imageWidth: PEG_RADIUS * 2,
+        imageHeight: PEG_RADIUS * 2,
+      },
       physics: {
         bodyType: "static",
         shape: "circle",
@@ -207,21 +248,30 @@ const game: GameDefinition = {
         restitution: 0.85,
       },
       behaviors: [
-        { 
-          type: "destroy_on_collision", 
-          withTags: ["ball"], 
+        {
+          type: "destroy_on_collision",
+          withTags: ["ball"],
           effect: "fade",
           delay: { type: "event", eventName: "turn_end" },
           markedEffect: "glow",
           markedColor: "#FBBF24",
         },
-        { type: "score_on_collision", withTags: ["ball"], points: { expr: "100 * multiplier" } },
+        {
+          type: "score_on_collision",
+          withTags: ["ball"],
+          points: { expr: "100 * multiplier" },
+        },
       ],
     },
     wallVertical: {
       id: "wallVertical",
       tags: ["wall"],
-      sprite: { type: "rect", width: 0.2, height: WORLD_HEIGHT, color: "#1e3a5f" },
+      sprite: {
+        type: "rect",
+        width: 0.2,
+        height: WORLD_HEIGHT,
+        color: "#1e3a5f",
+      },
       physics: {
         bodyType: "static",
         shape: "box",
@@ -235,7 +285,6 @@ const game: GameDefinition = {
     drain: {
       id: "drain",
       tags: ["drain"],
-      sprite: { type: "rect", width: WORLD_WIDTH, height: 1, color: "#FF000011" },
       physics: {
         bodyType: "static",
         shape: "box",
@@ -250,7 +299,12 @@ const game: GameDefinition = {
     bucket: {
       id: "bucket",
       tags: ["bucket"],
-      sprite: { type: "image", imageUrl: `${ASSET_BASE}/bucket.png`, imageWidth: 1.2, imageHeight: 0.35 },
+      sprite: {
+        type: "image",
+        imageUrl: `${ASSET_BASE}/bucket.png`,
+        imageWidth: 1.2,
+        imageHeight: 0.35,
+      },
       physics: {
         bodyType: "kinematic",
         shape: "box",
@@ -259,7 +313,6 @@ const game: GameDefinition = {
         density: 0,
         friction: 0,
         restitution: 0,
-        isSensor: true,
       },
       behaviors: [
         { type: "oscillate", axis: "x", amplitude: 4, frequency: 0.25 },
@@ -268,7 +321,12 @@ const game: GameDefinition = {
     portalA: {
       id: "portalA",
       tags: ["portal"],
-      sprite: { type: "image", imageUrl: `${ASSET_BASE}/portalA.png`, imageWidth: 0.8, imageHeight: 0.8 },
+      sprite: {
+        type: "image",
+        imageUrl: `${ASSET_BASE}/portalA.png`,
+        imageWidth: 0.8,
+        imageHeight: 0.8,
+      },
       physics: {
         bodyType: "static",
         shape: "circle",
@@ -279,13 +337,24 @@ const game: GameDefinition = {
         isSensor: true,
       },
       behaviors: [
-        { type: "teleport", destinationEntityId: "portal-b", withTags: ["ball"], preserveVelocity: true, cooldown: 0.3 },
+        {
+          type: "teleport",
+          destinationEntityId: "portal-b",
+          withTags: ["ball"],
+          preserveVelocity: true,
+          cooldown: 0.3,
+        },
       ],
     },
     portalB: {
       id: "portalB",
       tags: ["portal"],
-      sprite: { type: "image", imageUrl: `${ASSET_BASE}/portalB.png`, imageWidth: 0.8, imageHeight: 0.8 },
+      sprite: {
+        type: "image",
+        imageUrl: `${ASSET_BASE}/portalB.png`,
+        imageWidth: 0.8,
+        imageHeight: 0.8,
+      },
       physics: {
         bodyType: "static",
         shape: "circle",
@@ -296,7 +365,13 @@ const game: GameDefinition = {
         isSensor: true,
       },
       behaviors: [
-        { type: "teleport", destinationEntityId: "portal-a", withTags: ["ball"], preserveVelocity: true, cooldown: 0.3 },
+        {
+          type: "teleport",
+          destinationEntityId: "portal-a",
+          withTags: ["ball"],
+          preserveVelocity: true,
+          cooldown: 0.3,
+        },
       ],
     },
     trajectoryLine: {
@@ -319,23 +394,105 @@ const game: GameDefinition = {
     },
   },
   entities: [
-    { id: "wall-left", name: "Left Wall", template: "wallVertical", transform: { x: cx(0.1), y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "wall-right", name: "Right Wall", template: "wallVertical", transform: { x: cx(WORLD_WIDTH - 0.1), y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+    {
+      id: "wall-left",
+      name: "Left Wall",
+      template: "wallVertical",
+      transform: { x: cx(0.1), y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+    },
+    {
+      id: "wall-right",
+      name: "Right Wall",
+      template: "wallVertical",
+      transform: {
+        x: cx(WORLD_WIDTH - 0.1),
+        y: 0,
+        angle: 0,
+        scaleX: 1,
+        scaleY: 1,
+      },
+    },
     {
       id: "wall-top",
       name: "Top Wall",
       tags: ["wall"],
       transform: { x: 0, y: cy(0.1), angle: 0, scaleX: 1, scaleY: 1 },
-      sprite: { type: "rect", width: WORLD_WIDTH, height: 0.2, color: "#1e3a5f" },
-      physics: { bodyType: "static", shape: "box", width: WORLD_WIDTH, height: 0.2, density: 0, friction: 0.1, restitution: 0.6 },
+      sprite: {
+        type: "rect",
+        width: WORLD_WIDTH,
+        height: 0.2,
+        color: "#1e3a5f",
+      },
+      physics: {
+        bodyType: "static",
+        shape: "box",
+        width: WORLD_WIDTH,
+        height: 0.2,
+        density: 0,
+        friction: 0.1,
+        restitution: 0.6,
+      },
     },
-    { id: "drain", name: "Drain Zone", template: "drain", transform: { x: 0, y: cy(WORLD_HEIGHT + 0.5), angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "bucket", name: "Free Ball Bucket", template: "bucket", transform: { x: 0, y: cy(WORLD_HEIGHT - 0.5), angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "portal-a", name: "Portal A", template: "portalA", transform: { x: cx(1.5), y: cy(7), angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "portal-b", name: "Portal B", template: "portalB", transform: { x: cx(WORLD_WIDTH - 1.5), y: cy(11), angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "cannon-base", name: "Cannon Base", template: "cannonBase", transform: { x: 0, y: cy(1.0), angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "cannon", name: "Cannon", template: "cannon", transform: { x: 0, y: cy(1.0), angle: Math.PI / 2, scaleX: 1, scaleY: 1 } },
-    { id: "trajectory-line", name: "Trajectory Line", template: "trajectoryLine", transform: { x: 0, y: cy(1.0), angle: Math.PI / 2, scaleX: 1, scaleY: 1 } },
+    {
+      id: "drain",
+      name: "Drain Zone",
+      template: "drain",
+      transform: {
+        x: 0,
+        y: cy(WORLD_HEIGHT + 0.5),
+        angle: 0,
+        scaleX: 1,
+        scaleY: 1,
+      },
+    },
+    {
+      id: "bucket",
+      name: "Free Ball Bucket",
+      template: "bucket",
+      transform: {
+        x: 0,
+        y: cy(WORLD_HEIGHT - 0.5),
+        angle: 0,
+        scaleX: 1,
+        scaleY: 1,
+      },
+    },
+    {
+      id: "portal-a",
+      name: "Portal A",
+      template: "portalA",
+      transform: { x: cx(1.5), y: cy(7), angle: 0, scaleX: 1, scaleY: 1 },
+    },
+    {
+      id: "portal-b",
+      name: "Portal B",
+      template: "portalB",
+      transform: {
+        x: cx(WORLD_WIDTH - 1.5),
+        y: cy(11),
+        angle: 0,
+        scaleX: 1,
+        scaleY: 1,
+      },
+    },
+    {
+      id: "cannon-base",
+      name: "Cannon Base",
+      template: "cannonBase",
+      transform: { x: 0, y: cy(1.0), angle: 0, scaleX: 1, scaleY: 1 },
+    },
+    {
+      id: "cannon",
+      name: "Cannon",
+      template: "cannon",
+      transform: { x: 0, y: cy(1.0), angle: Math.PI / 2, scaleX: 1, scaleY: 1 },
+    },
+    {
+      id: "trajectory-line",
+      name: "Trajectory Line",
+      template: "trajectoryLine",
+      transform: { x: 0, y: cy(1.0), angle: Math.PI / 2, scaleX: 1, scaleY: 1 },
+    },
     ...bluePegEntities,
     ...orangePegEntities,
   ],
@@ -344,11 +501,13 @@ const game: GameDefinition = {
       id: "show_trajectory",
       name: "Show trajectory line when aiming starts",
       trigger: { type: "drag", phase: "start" },
-      conditions: [
-        { type: "entity_count", tag: "ball", max: 0 },
-      ],
+      conditions: [{ type: "entity_count", tag: "ball", max: 0 }],
       actions: [
-        { type: "spawn", template: "trajectoryLine", position: { type: "fixed", x: 0, y: cy(1.0) } },
+        {
+          type: "spawn",
+          template: "trajectoryLine",
+          position: { type: "fixed", x: 0, y: cy(1.0) },
+        },
       ],
     },
     {
@@ -363,12 +522,37 @@ const game: GameDefinition = {
       id: "fire_ball",
       name: "Fire ball on release (only if no ball in play)",
       trigger: { type: "drag", phase: "end" },
-      conditions: [
-        { type: "entity_count", tag: "ball", max: 0 },
-      ],
+      conditions: [{ type: "entity_count", tag: "ball", max: 0 }],
       actions: [
-        { type: "spawn", template: "ball", position: { type: "fixed", x: 0, y: cy(1.0) } },
-        { type: "apply_impulse", target: { type: "by_tag", tag: "ball" }, direction: "toward_touch", force: 1, sourceEntityId: "cannon" },
+        {
+          type: "spawn",
+          template: "ball",
+          position: { type: "fixed", x: 0, y: cy(1.0) },
+          launch: {
+            direction: "toward_touch",
+            force: 15,
+            sourceEntityId: "cannon",
+          },
+        },
+        { type: "set_variable", name: "turn", operation: "add", value: 1 },
+      ],
+    },
+    {
+      id: "fire_ball_tap",
+      name: "Fire ball on tap/click (only if no ball in play)",
+      trigger: { type: "tap" },
+      conditions: [{ type: "entity_count", tag: "ball", max: 0 }],
+      actions: [
+        {
+          type: "spawn",
+          template: "ball",
+          position: { type: "fixed", x: 0, y: cy(1.0) },
+          launch: {
+            direction: "toward_touch",
+            force: 15,
+            sourceEntityId: "cannon",
+          },
+        },
         { type: "set_variable", name: "turn", operation: "add", value: 1 },
       ],
     },
@@ -399,26 +583,32 @@ const game: GameDefinition = {
     {
       id: "blue_peg_hit_shake",
       name: "Camera shake on blue peg hit",
-      trigger: { type: "collision", entityATag: "ball", entityBTag: "blue-peg" },
-      actions: [
-        { type: "camera_shake", intensity: 0.03, duration: 0.1 },
-      ],
+      trigger: {
+        type: "collision",
+        entityATag: "ball",
+        entityBTag: "blue-peg",
+      },
+      actions: [{ type: "camera_shake", intensity: 0.03, duration: 0.1 }],
     },
     {
       id: "orange_peg_hit_shake",
       name: "Stronger camera shake on orange peg hit",
-      trigger: { type: "collision", entityATag: "ball", entityBTag: "orange-peg" },
-      actions: [
-        { type: "camera_shake", intensity: 0.08, duration: 0.15 },
-      ],
+      trigger: {
+        type: "collision",
+        entityATag: "ball",
+        entityBTag: "orange-peg",
+      },
+      actions: [{ type: "camera_shake", intensity: 0.08, duration: 0.15 }],
     },
     {
       id: "last_orange_peg_slowmo",
       name: "Dramatic slow-mo when hitting the last orange peg",
-      trigger: { type: "collision", entityATag: "ball", entityBTag: "orange-peg" },
-      conditions: [
-        { type: "entity_count", tag: "orange-peg", max: 1 },
-      ],
+      trigger: {
+        type: "collision",
+        entityATag: "ball",
+        entityBTag: "orange-peg",
+      },
+      conditions: [{ type: "entity_count", tag: "orange-peg", max: 1 }],
       actions: [
         { type: "set_time_scale", scale: 0.25, duration: 2.5 },
         { type: "camera_shake", intensity: 0.12, duration: 0.3 },
@@ -430,7 +620,12 @@ const game: GameDefinition = {
       name: "Increment score multiplier on peg hit",
       trigger: { type: "collision", entityATag: "ball", entityBTag: "peg" },
       actions: [
-        { type: "set_variable", name: "multiplier", operation: "add", value: 1 },
+        {
+          type: "set_variable",
+          name: "multiplier",
+          operation: "add",
+          value: 1,
+        },
       ],
     },
     {
@@ -438,7 +633,12 @@ const game: GameDefinition = {
       name: "Reset score multiplier at turn end",
       trigger: { type: "event", eventName: "turn_end" },
       actions: [
-        { type: "set_variable", name: "multiplier", operation: "set", value: 1 },
+        {
+          type: "set_variable",
+          name: "multiplier",
+          operation: "set",
+          value: 1,
+        },
       ],
     },
     {
@@ -447,7 +647,10 @@ const game: GameDefinition = {
       trigger: { type: "frame" },
       conditions: [
         { type: "entity_count", tag: "ball", min: 1 },
-        { type: "expression", expr: "minDistanceToTag('orange-peg', entityPos('ball')) < 1.2" },
+        {
+          type: "expression",
+          expr: "minDistanceToTag('orange-peg', entityPos('ball')) < 1.2",
+        },
       ],
       actions: [
         { type: "set_time_scale", scale: 0.5 },
@@ -460,7 +663,10 @@ const game: GameDefinition = {
       trigger: { type: "frame" },
       conditions: [
         { type: "entity_count", tag: "ball", min: 1 },
-        { type: "expression", expr: "minDistanceToTag('orange-peg', entityPos('ball')) >= 1.2" },
+        {
+          type: "expression",
+          expr: "minDistanceToTag('orange-peg', entityPos('ball')) >= 1.2",
+        },
       ],
       actions: [
         { type: "set_time_scale", scale: 1.0 },

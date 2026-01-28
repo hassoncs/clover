@@ -38,6 +38,7 @@ declare global {
         x: number,
         y: number,
         entityId: string,
+        initialVelocityJson: string,
       ) => void;
       destroyEntity: (entityId: string) => void;
       getEntityTransform: (entityId: string) => EntityTransform | null;
@@ -437,11 +438,14 @@ export function createWebGodotBridge(): GodotBridge {
       (getGodotBridge() as any)?.resumePhysics?.();
     },
 
-    spawnEntity(templateId: string, x: number, y: number): string {
+    spawnEntity(templateId: string, x: number, y: number, initialVelocity?: Vec2): string {
       const entityId = `${templateId}_${Date.now()}_${Math.random()
         .toString(36)
         .slice(2, 7)}`;
-      getGodotBridge()?.spawnEntity(templateId, x, y, entityId);
+      
+      // Pass initial velocity as JSON directly to Godot
+      const velocityJson = initialVelocity ? JSON.stringify(initialVelocity) : "";
+      getGodotBridge()?.spawnEntity(templateId, x, y, entityId, velocityJson);
       return entityId;
     },
 

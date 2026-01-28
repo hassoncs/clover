@@ -219,6 +219,21 @@ export type SpawnPosition =
   | { type: 'at_entity'; entityId: string }
   | { type: 'at_collision' };
 
+export type LaunchDirection = 
+  | 'up' 
+  | 'down' 
+  | 'left' 
+  | 'right' 
+  | 'toward_touch'
+  | { x: number; y: number };
+
+export interface LaunchConfig {
+  direction: LaunchDirection;
+  force: number;
+  /** Source entity whose position is used for toward_touch direction calculation */
+  sourceEntityId?: string;
+}
+
 export type DestroyTarget =
   | { type: 'by_id'; entityId: string }
   | { type: 'by_tag'; tag: string; count?: number }
@@ -231,6 +246,8 @@ export interface SpawnAction {
   position: SpawnPosition;
   count?: number;
   spread?: number;
+  /** Optional launch configuration - applies initial velocity when entity is spawned */
+  launch?: LaunchConfig;
 }
 
 export interface DestroyAction {

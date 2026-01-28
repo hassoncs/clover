@@ -328,6 +328,21 @@ export const SpawnPositionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('at_collision') }),
 ]);
 
+export const LaunchDirectionSchema = z.union([
+  z.literal('up'),
+  z.literal('down'),
+  z.literal('left'),
+  z.literal('right'),
+  z.literal('toward_touch'),
+  z.object({ x: z.number(), y: z.number() }),
+]);
+
+export const LaunchConfigSchema = z.object({
+  direction: LaunchDirectionSchema,
+  force: z.number().positive(),
+  sourceEntityId: z.string().optional(),
+});
+
 export const DestroyTargetSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('by_id'), entityId: z.string() }),
   z.object({ type: z.literal('by_tag'), tag: z.string(), count: z.number().optional() }),
@@ -341,6 +356,7 @@ export const SpawnActionSchema = z.object({
   position: SpawnPositionSchema,
   count: z.number().positive().optional(),
   spread: z.number().optional(),
+  launch: LaunchConfigSchema.optional(),
 });
 
 export const DestroyActionSchema = z.object({

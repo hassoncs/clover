@@ -1,5 +1,5 @@
 import type { ActionExecutor } from './ActionExecutor';
-import type { SpawnAction } from '@slopcade/shared';
+import type { LaunchConfig, SpawnAction } from '@slopcade/shared';
 import type { RuleContext } from '../types';
 
 export class SpawnActionExecutor implements ActionExecutor<SpawnAction> {
@@ -50,10 +50,16 @@ export class SpawnActionExecutor implements ActionExecutor<SpawnAction> {
 
       const template = context.entityManager.getTemplate(templateId);
       if (template) {
+        // Calculate launch velocity if provided
+        let initialVelocity: { x: number; y: number } | undefined;
+        if (action.launch) {
+          initialVelocity = this.calculateLaunchVelocity(action.launch, x, y, context);
+        }
+
         if (context.bridge) {
           // Event-driven: bridge.spawnEntity() triggers Godot spawn,
           // which emits entity_spawned event that populates EntityManager
-          context.bridge.spawnEntity(templateId, x, y);
+          context.bridge.spawnEntity(templateId, x, y, initialVelocity);
         } else {
           // Fallback for tests/mock scenarios without bridge
           const entityId = `spawned_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
@@ -66,5 +72,83 @@ export class SpawnActionExecutor implements ActionExecutor<SpawnAction> {
         }
       }
     }
+  }
+
+  private calculateLaunchVelocity(
+    launch: LaunchConfig,
+    spawnX: number,
+    spawnY: number,
+    context: RuleContext
+  ): { x: number; y: number } {
+    const force = launch.force;
+    let directionX = 0;
+    let directionY = 0;
+
+    switch (launch.direction) {
+      case 'up':
+        directionX = 0;
+        directionY = 1;
+        break;
+      case 'down':
+        directionX = 0;
+        directionY = -1;
+        break;
+      case 'left':
+        directionX = -1;
+        directionY = 0;
+        break;
+      case 'right':
+        directionX = 1;
+        directionY = 0;
+        break;
+      case 'toward_touch': {
+        // Get touch position from input state
+        const touchX = context.input.drag?.currentWorldX ?? context.input.tap?.worldX ?? spawnX;
+        const touchY = context.input.drag?.currentWorldY ?? context.input.tap?.worldY ?? spawnY;
+        
+        // Get source entity position (or use spawn position if not specified)
+        let sourceX = spawnX;
+        let sourceY = spawnY;
+        
+        if (launch.sourceEntityId) {
+          const sourceEntity = context.entityManager.getEntity(launch.sourceEntityId);
+          if (sourceEntity) {
+            sourceX = sourceEntity.transform.x;
+            sourceY = sourceEntity.transform.y;
+          }
+        }
+        
+        // Calculate direction from source to touch
+        const dx = touchX - sourceX;
+        const dy = touchY - sourceY;
+        const magnitude = Math.sqrt(dx * dx + dy * dy);
+        
+        if (magnitude > 0.001) {
+          directionX = dx / magnitude;
+          directionY = dy / magnitude;
+        } else {
+          // Default to upward if touch is at same position as source
+          directionY = 1;
+        }
+        break;
+      }
+      default:
+        // Handle { x: number, y: number } direction
+        if (typeof launch.direction === 'object') {
+          const dx = launch.direction.x;
+          const dy = launch.direction.y;
+          const magnitude = Math.sqrt(dx * dx + dy * dy);
+          if (magnitude > 0.001) {
+            directionX = dx / magnitude;
+            directionY = dy / magnitude;
+          }
+        }
+        break;
+    }
+
+    return {
+      x: directionX * force,
+      y: directionY * force,
+    };
   }
 }
