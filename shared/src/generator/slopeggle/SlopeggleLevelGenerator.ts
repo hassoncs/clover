@@ -4,7 +4,7 @@ import type {
   GenerateSlopeggleLevelParams,
   SlopeggleDynamicElement,
 } from "./types";
-import { SLOPEGGLE_DIFFICULTY_PRESETS, SLOPEGGLE_WORLD_DEFAULTS } from "./types";
+import { SLOPEGGLE_DIFFICULTY_PRESETS, SLOPEGGLE_WORLD_DEFAULTS, isSlopeggleLevelOverlay } from "./types";
 import { createSeededRandomWithSubstreams, type SeededRandom } from "../SeededRandom";
 
 /**

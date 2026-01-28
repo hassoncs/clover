@@ -20,19 +20,8 @@ export interface Env {
   AI_MODEL?: string;
   AI_BASE_URL?: string;
 
-  // Image generation provider selection
-  // 'comfyui' = Modal ComfyUI serverless (DEFAULT)
-  // 'modal' = Alias for 'comfyui'
-  // 'scenario' = Scenario.com (DEPRECATED - maintained for backwards compatibility)
-  IMAGE_GENERATION_PROVIDER?: 'scenario' | 'comfyui' | 'modal';
-
   // Modal ComfyUI endpoint (optional, defaults to deployed endpoint)
   MODAL_ENDPOINT?: string;
-
-  // Scenario credentials (only needed if using deprecated 'scenario' provider)
-  SCENARIO_API_KEY?: string;
-  SCENARIO_SECRET_API_KEY?: string;
-  SCENARIO_API_URL?: string;
 
   ASSET_HOST?: string;
 

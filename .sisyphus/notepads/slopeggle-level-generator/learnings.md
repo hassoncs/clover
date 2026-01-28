@@ -253,7 +253,153 @@ const positions = rng.shuffle([...]);
 
 ---
 
-## Wave 3: Loader + Pack Sources - PLANNED
+## Wave 2 Tasks 3 & 5: Slopeggle Level Generator ✅ COMPLETE
+
+**Status**: ✅ COMPLETE - LevelDefinition overlay model + Runtime generator implemented
+
+### Files Created
+
+- `shared/src/generator/slopeggle/types.ts` - Slopeggle-specific overlay types
+- `shared/src/generator/slopeggle/SlopeggleLevelGenerator.ts` - Core generator implementation
+- `shared/src/generator/slopeggle/index.ts` - Module exports
+- `shared/src/generator/slopeggle/__examples__/generated-levels.ts` - Usage examples
+
+### What Was Implemented
+
+#### 1. SlopeggleLevelOverlay Type
+
+Extended `LevelDefinition` with Slopeggle-specific fields:
+
+```typescript
+interface SlopeggleLevelOverlay extends LevelDefinition {
+  generatorId: "slopeggle-generator";
+  pegs: SlopegglePeg[];           // Array of {x, y, isOrange, motion?}
+  lives: number;                  // Starting balls
+  dynamicElements?: DynamicElement[];  // bucket, portals with motion
+  slopeggleDifficulty?: SlopeggleDifficultyParams;
+}
+
+interface SlopegglePeg {
+  x: number;
+  y: number;
+  isOrange: boolean;
+  motion?: PegMotionConfig;       // Optional animation
+}
+```
+
+#### 2. Difficulty Presets
+
+```typescript
+const SLOPEGGLE_DIFFICULTY_PRESETS = {
+  easy: { orangeCount: 6, lives: 12, hasBucket: true, hasPortals: false, bucketAmplitude: 3 },
+  medium: { orangeCount: 8, lives: 10, hasBucket: true, hasPortals: true, bucketAmplitude: 4 },
+  hard: { orangeCount: 10, lives: 8, hasBucket: true, hasPortals: true, bucketAmplitude: 5 },
+  extreme: { orangeCount: 12, lives: 6, hasBucket: true, hasPortals: true, bucketAmplitude: 6 },
+};
+```
+
+#### 3. Generator Implementation
+
+**Key Features**:
+- Deterministic generation using `SeededRandom` with substreams
+- Layout stream: peg grid positions
+- Oranges stream: orange peg placement with accessibility guarantee
+- Motion stream: dynamic element parameters (phase, etc.)
+- IDs stream: entity naming
+
+**Accessibility Algorithm**:
+- Calculates launch angle from launcher (x=6, y=1) to each peg
+- Orange pegs within -60° to -15° from horizontal are "accessible"
+- Guarantees minimum accessible oranges (`minOrangeAccessibility` parameter)
+- Remaining oranges placed from non-accessible regions
+
+**Usage**:
+```typescript
+const level = generateSlopeggleLevel({
+  seed: "my-level-seed",
+  packId: "slopeggle-pack-v1",
+  levelId: "level-1",
+  difficultyTier: "medium",
+  // Optional overrides
+  orangeCount: 10,
+  lives: 8,
+  hasBucket: true,
+  hasPortals: true,
+  minOrangeAccessibility: 4,
+});
+```
+
+### Gotchas Fixed
+
+1. **TypeScript import issues**:
+   - `import type` vs `import` - type guards need regular import for value usage
+   - `Mulberry32` class is private in SeededRandom - used `any` type for substreams
+
+2. **Substream typing**:
+   - `rng.oranges()` returns `Mulberry32` directly, not a function
+   - Generator uses separate RNG streams for independent randomness
+
+3. **Coordinate system**:
+   - Slopeggle uses center-origin (cx, cy) in game.ts
+   - Generator outputs center-origin coordinates directly
+   - No conversion needed when merging onto base game
+
+### Verification
+
+- ✅ All files compile without TypeScript errors
+- ✅ `pnpm tsc --noEmit` passes
+- ✅ Generator uses seeded RNG (no `Math.random()`)
+- ✅ Accessibility guarantee enforced in orange placement
+- ✅ Example levels demonstrate all difficulty tiers
+
+### Key Algorithms
+
+#### Peg Layout Generation
+```typescript
+// 12 rows, alternating 9-10 pegs per row
+// Spacing variation (±0.05) for visual interest
+for (let row = 0; row < pegRows; row++) {
+  const y = startY + row * rowSpacing;
+  const pegCount = row % 2 === 0 ? 9 : 10;
+  // ... generate peg positions
+}
+```
+
+#### Orange Accessibility Check
+```typescript
+// Launcher at (6, 1), accessible if angle between -60° and -15°
+const angle = Math.atan2(peg.y - launcherY, peg.x - launcherX);
+const isAccessible = angle >= minAngle && angle <= maxAngle && peg.y > 2;
+```
+
+### Integration with Base Game
+
+The generated `SlopeggleLevelOverlay` is designed to merge with the base `slopeggle/game.ts`:
+
+1. `overlay.pegs` → Replace static peg entities with generated positions
+2. `overlay.lives` → Set `initialLives` in GameDefinition
+3. `overlay.dynamicElements.bucket` → Override bucket motion params
+4. `overlay.dynamicElements.portals` → Enable/disable portal entities
+
+### Next Steps
+
+- Integrate with level loader (Wave 3)
+- Add cosmetic motion assignment (Wave 4)
+- QA + documentation (Wave 5)
+
+---
+
+## Summary: Generator Implementation Complete
+
+**Total Lines of Code**: ~450 lines across 4 files
+
+**Core Functions**:
+- `generateSlopeggleLevel()` - Main entry point
+- `generatePegLayout()` - Creates grid of peg positions
+- `placeOrangePegs()` - Places oranges with accessibility guarantee
+- `verifyDeterminism()` - Tests same-seed reproducibility
+
+**Output**: Deterministic, playable Slopeggle levels with configurable difficulty.
 
 **Status**: Ready to start after Wave 2 completes
 

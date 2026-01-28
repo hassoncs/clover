@@ -22,7 +22,7 @@ VFXShowcase.tscn::PackedScene::2855297431937620752::1769538422::0::1::::<><><>0<
 ::res://scenes/lab/::1769538422
 ui_components_demo.tscn::PackedScene::5962763572750761863::1769538422::0::1::::<><><>0<>0<><>::res://scripts/lab/UIComponentsDemo.gd
 ::res://scripts/::1769538423
-GameBridge.gd::GDScript::7400890102577367664::1769569103::0::1::::<>Node<><>0<>0<><>::
+GameBridge.gd::GDScript::7400890102577367664::1769611022::0::1::::<>Node<><>0<>0<><>::
 Lab3D.gd::GDScript::2743172060191353031::1769538422::0::1::::<>Node3D<><>0<>0<><>::
 Main.gd::GDScript::4927831078751178685::1769538422::0::1::::<>Node2D<><>0<>0<><>::
 PhysicsBody.gd::GDScript::3101094749307879933::1769538422::0::1::::<>RigidBody2D<><>0<>0<><>::

@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import type { UIComponentSheetSpec, AssetRun } from '../../ai/pipeline/types';
 import { getControlConfig } from '../../ai/pipeline/ui-control-config';
-import { getImageGenerationConfig } from '../../ai/assets';
 
 const componentTypeSchema = z.enum(['button', 'checkbox', 'radio', 'slider', 'panel', 'progress_bar', 'scroll_bar_h', 'scroll_bar_v', 'tab_bar', 'list_item', 'dropdown', 'toggle_switch']);
 const stateSchema = z.enum(['normal', 'hover', 'pressed', 'disabled', 'focus', 'selected', 'unselected']);
@@ -168,16 +167,7 @@ export const uiComponentsRouter = router({
         ? input.theme 
         : [input.theme.era, input.theme.texture, input.theme.palette?.join(', ')].filter(Boolean).join(', ');
 
-      const providerConfig = getImageGenerationConfig(ctx.env);
-      if (!providerConfig.configured) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: providerConfig.error ?? 'Image generation provider not configured',
-        });
-      }
-
       const adapters = await createNodeAdapters({
-        provider: providerConfig.provider,
         r2Bucket: 'slopcade-assets-dev',
         wranglerCwd: process.cwd(),
         publicUrlBase: ctx.env.ASSET_HOST || 'http://localhost:8787/assets',

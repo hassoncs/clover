@@ -3,7 +3,6 @@ import { parseArgs } from 'node:util';
 import * as path from 'path';
 import * as crypto from 'node:crypto';
 import { createNodeAdapters, createFileDebugSink } from '../ai/pipeline/adapters/node';
-import { getImageGenerationConfig } from '../ai/assets';
 import { uiBaseStateStage, uiVariationStatesStage, uiUploadR2Stage } from '../ai/pipeline/stages/ui-component';
 import type { AssetRun, UIComponentSheetSpec, SpriteStyle } from '../ai/pipeline/types';
 import { UI_CONTROL_CONFIG } from '../ai/pipeline/ui-control-config';
@@ -51,16 +50,10 @@ EXAMPLES:
   pnpm generate:ui button --preset medieval --output ./my-test
 
 ENVIRONMENT:
-  Set IMAGE_GENERATION_PROVIDER to choose the provider:
-    - "comfyui" (default): Uses Modal ComfyUI serverless endpoint
-    - "modal": Alias for "comfyui"
-    - "scenario": Uses Scenario.com API (DEPRECATED)
+  Uses Modal ComfyUI serverless endpoint by default.
+  No API key required.
 
-  For Modal (default):
-    No API key required for the public endpoint
-
-  For Scenario (deprecated):
-    SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY
+  Optional: Set MODAL_ENDPOINT to use custom endpoint
 
   Typically run via: hush run -- pnpm generate:ui ...
 `);
@@ -190,22 +183,11 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const providerConfig = getImageGenerationConfig(process.env as unknown as import('../trpc/context').Env);
-  if (!providerConfig.configured) {
-    console.error(`Error: ${providerConfig.error}`);
-    console.error('Set them in your environment or use hush:');
-    console.error('  hush run -- pnpm generate:ui ...');
-    process.exit(1);
-  }
-
   const adapterOptions: Parameters<typeof createNodeAdapters>[0] = {
-    provider: providerConfig.provider,
     r2Bucket: 'slopcade-assets-dev',
     wranglerCwd: process.cwd(),
     publicUrlBase: 'http://localhost:8787/assets',
-    scenarioApiKey: providerConfig.provider === 'scenario' ? process.env.SCENARIO_API_KEY : undefined,
-    scenarioApiSecret: providerConfig.provider === 'scenario' ? process.env.SCENARIO_SECRET_API_KEY : undefined,
-    modalEndpoint: (providerConfig.provider === 'comfyui' || providerConfig.provider === 'modal') ? process.env.MODAL_ENDPOINT : undefined,
+    modalEndpoint: process.env.MODAL_ENDPOINT,
   };
 
   const controls = values.all ? ALL_CONTROLS : validateControls(positionals);
@@ -215,7 +197,6 @@ async function main(): Promise<void> {
   console.log('\n' + '='.repeat(60));
   console.log('Godot UI Control Generator');
   console.log('='.repeat(60));
-  console.log(`Provider: ${providerConfig.provider}`);
   console.log(`Theme: ${theme}`);
   console.log(`Controls: ${controls.join(', ')}`);
   console.log(`Output: ${outputDir}`);

@@ -3183,9 +3183,10 @@ func _js_add_fixture(args: Array) -> int:
 	
 	# Check for sensor mode
 	var is_sensor = bool(args[shape_data_end + 3]) if args.size() > shape_data_end + 3 else false
+	var area = null
 	if is_sensor:
 		# For sensors, create an Area2D instead
-		var area = Area2D.new()
+		area = Area2D.new()
 		area.name = entity_id + "_sensor"
 		var sensor_collision = CollisionShape2D.new()
 		sensor_collision.shape = shape
