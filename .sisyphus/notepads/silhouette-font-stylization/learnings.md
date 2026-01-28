@@ -9,3 +9,9 @@
 - Word wrapping: segment into word-like vs whitespace tokens; prefer word-boundary wraps; fall back to grapheme breaks for long tokens.
 - Determinism: stable cell ids (`cell_<row>_<col>`) + stable JSON stringify + SHA-256 hashes for inputs/layout.
 - Hard limits: enforce max graphemes (256) and max grid cells (1024) with descriptive errors.
+
+## 2026-01-28 (text-grid SVG renderer)
+
+- Generate stable SVG: one `<g id="cell-${cellId}">` per visible cell; escape text/attrs to avoid SVG/XML injection.
+- Typography controls: keep kerning on (`letter-spacing:normal`, `font-kerning:normal`) and disable ligatures (`font-variant-ligatures:none`).
+- Silhouette modes: map `fill`/`stroke`/`outline` to SVG text `fill`/`stroke`/`paint-order` with optional `stroke-width`.

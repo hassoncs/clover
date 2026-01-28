@@ -547,13 +547,19 @@ export const ChildTemplateDefinitionSchema: z.ZodType<any> = z.lazy(() =>
 export const BodyEntityTemplateSchema = z.object({
   type: z.literal('body').optional(),
   id: z.string(),
+  description: z.string().optional(),
   sprite: SpriteComponentSchema.optional(),
-  physics: PhysicsComponentSchema.optional(),
+  physics: PhysicsComponentSchema,
   behaviors: z.array(BehaviorSchema).optional(),
   tags: z.array(z.string()).optional(),
   layer: z.number().optional(),
   slots: z.record(z.string(), SlotDefinitionSchema).optional(),
   children: z.array(ChildTemplateDefinitionSchema).optional(),
+}).transform((data) => {
+  if (!data.type) {
+    return { ...data, type: 'body' as const };
+  }
+  return data;
 });
 
 export const EntityTemplateSchema = z.discriminatedUnion('type', [
