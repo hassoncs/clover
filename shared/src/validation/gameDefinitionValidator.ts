@@ -42,7 +42,7 @@ const VALID_BEHAVIOR_TYPES: BehaviorType[] = [
 
 const VALID_BODY_TYPES = ['static', 'dynamic', 'kinematic'];
 const VALID_SHAPES = ['box', 'circle', 'polygon'];
-const VALID_SPRITE_TYPES = ['rect', 'circle', 'polygon', 'image'];
+const VALID_VISUAL_TYPES = ['rect', 'circle', 'polygon', 'image', 'text'];
 
 function validateMetadata(
   game: GameDefinition,
@@ -138,125 +138,67 @@ function validatePhysicsComponent(
     });
   }
 
-  if (!VALID_SHAPES.includes(physics.shape)) {
-    errors.push({
-      code: 'INVALID_SHAPE',
-      message: `Entity ${entityId} has invalid physics shape: ${physics.shape}`,
-      path: `entities.${entityId}.physics.shape`,
-    });
-  }
-
-  if (physics.density < 0) {
-    errors.push({
-      code: 'NEGATIVE_DENSITY',
-      message: `Entity ${entityId} has negative density`,
-      path: `entities.${entityId}.physics.density`,
-    });
-  }
-
-  if (physics.density > 100) {
-    warnings.push({
-      code: 'HIGH_DENSITY',
-      message: `Entity ${entityId} has unusually high density (${physics.density})`,
-      path: `entities.${entityId}.physics.density`,
-    });
-  }
-
-  if (physics.friction < 0 || physics.friction > 1) {
-    warnings.push({
-      code: 'FRICTION_OUT_OF_RANGE',
-      message: `Entity ${entityId} friction should be between 0 and 1`,
-      path: `entities.${entityId}.physics.friction`,
-    });
-  }
-
-  if (physics.restitution < 0) {
-    errors.push({
-      code: 'NEGATIVE_RESTITUTION',
-      message: `Entity ${entityId} has negative restitution`,
-      path: `entities.${entityId}.physics.restitution`,
-    });
-  }
-
-  if (physics.restitution > 1) {
-    warnings.push({
-      code: 'HIGH_RESTITUTION',
-      message: `Entity ${entityId} restitution > 1 may cause instability`,
-      path: `entities.${entityId}.physics.restitution`,
-    });
-  }
-
-  if (physics.shape === 'box') {
-    const boxPhysics = physics as { width?: number; height?: number };
-    if (!boxPhysics.width || boxPhysics.width <= 0) {
+  // Validate density if provided
+  if (physics.density !== undefined) {
+    if (physics.density < 0) {
       errors.push({
-        code: 'INVALID_BOX_WIDTH',
-        message: `Entity ${entityId} box physics must have positive width`,
-        path: `entities.${entityId}.physics.width`,
+        code: 'NEGATIVE_DENSITY',
+        message: `Entity ${entityId} has negative density`,
+        path: `entities.${entityId}.physics.density`,
       });
     }
-    if (!boxPhysics.height || boxPhysics.height <= 0) {
-      errors.push({
-        code: 'INVALID_BOX_HEIGHT',
-        message: `Entity ${entityId} box physics must have positive height`,
-        path: `entities.${entityId}.physics.height`,
-      });
-    }
-  }
 
-  if (physics.shape === 'circle') {
-    const circlePhysics = physics as { radius?: number };
-    if (!circlePhysics.radius || circlePhysics.radius <= 0) {
-      errors.push({
-        code: 'INVALID_CIRCLE_RADIUS',
-        message: `Entity ${entityId} circle physics must have positive radius`,
-        path: `entities.${entityId}.physics.radius`,
+    if (physics.density > 100) {
+      warnings.push({
+        code: 'HIGH_DENSITY',
+        message: `Entity ${entityId} has unusually high density (${physics.density})`,
+        path: `entities.${entityId}.physics.density`,
       });
     }
   }
 }
 
-function validateSpriteComponent(
-  sprite: GameDefinition['entities'][0]['sprite'],
+function validateVisualComponent(
+  visual: GameDefinition['entities'][0]['visual'],
   entityId: string,
   errors: ValidationError[],
   warnings: ValidationWarning[]
 ): void {
-  if (!sprite) return;
+  if (!visual) return;
 
-  if (!VALID_SPRITE_TYPES.includes(sprite.type)) {
+  if (!VALID_VISUAL_TYPES.includes(visual.type)) {
     errors.push({
-      code: 'INVALID_SPRITE_TYPE',
-      message: `Entity ${entityId} has invalid sprite type: ${sprite.type}`,
-      path: `entities.${entityId}.sprite.type`,
+      code: 'INVALID_VISUAL_TYPE',
+      message: `Entity ${entityId} has invalid visual type: ${visual.type}`,
+      path: `entities.${entityId}.visual.type`,
     });
   }
 
-  if (sprite.type === 'rect') {
-    const rectSprite = sprite as { width?: number; height?: number };
-    if (!rectSprite.width || rectSprite.width <= 0) {
+  if (visual.type === 'rect') {
+    const rectVisual = visual as { width?: number; height?: number };
+    if (!rectVisual.width || rectVisual.width <= 0) {
       errors.push({
         code: 'INVALID_RECT_WIDTH',
-        message: `Entity ${entityId} rect sprite must have positive width`,
-        path: `entities.${entityId}.sprite.width`,
+        message: `Entity ${entityId} rect visual must have positive width`,
+        path: `entities.${entityId}.visual.width`,
       });
     }
-    if (!rectSprite.height || rectSprite.height <= 0) {
+    if (!rectVisual.height || rectVisual.height <= 0) {
       errors.push({
         code: 'INVALID_RECT_HEIGHT',
-        message: `Entity ${entityId} rect sprite must have positive height`,
-        path: `entities.${entityId}.sprite.height`,
+        message: `Entity ${entityId} rect visual must have positive height`,
+        path: `entities.${entityId}.visual.height`,
       });
     }
   }
 
-  if (sprite.type === 'circle') {
-    const circleSprite = sprite as { radius?: number };
-    if (!circleSprite.radius || circleSprite.radius <= 0) {
+  if (visual.type === 'circle') {
+    const circleVisual = visual as { radius?: number };
+    if (!circleVisual.radius || circleVisual.radius <= 0) {
       errors.push({
-        code: 'INVALID_SPRITE_RADIUS',
-        message: `Entity ${entityId} circle sprite must have positive radius`,
-        path: `entities.${entityId}.sprite.radius`,
+        code: 'INVALID_VISUAL_RADIUS',
+        message: `Entity ${entityId} circle visual must have positive radius`,
+        path: `entities.${entityId}.visual.radius`,
       });
     }
   }
@@ -348,7 +290,7 @@ function validateEntity(
   }
 
   validatePhysicsComponent(entity.physics, entity.id, errors, warnings);
-  validateSpriteComponent(entity.sprite, entity.id, errors, warnings);
+  validateVisualComponent(entity.visual, entity.id, errors, warnings);
 
   if (entity.behaviors) {
     entity.behaviors.forEach((behavior, index) => {
@@ -375,8 +317,8 @@ function validateTemplates(
       validatePhysicsComponent(template.physics, `template:${templateId}`, errors, warnings);
     }
 
-    if (template.sprite) {
-      validateSpriteComponent(template.sprite, `template:${templateId}`, errors, warnings);
+    if (template.visual) {
+      validateVisualComponent(template.visual, `template:${templateId}`, errors, warnings);
     }
 
     if (template.behaviors) {

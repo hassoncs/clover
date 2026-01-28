@@ -1,46 +1,60 @@
 import type { Vec2 } from './common';
 
 export type PhysicsBodyType = 'static' | 'dynamic' | 'kinematic';
-export type PhysicsShape = 'box' | 'circle' | 'polygon';
 
-interface BasePhysicsComponent {
+export interface PhysicsComponent {
   bodyType: PhysicsBodyType;
-  shape: PhysicsShape;
-  density: number;
-  friction: number;
-  restitution: number;
-  fixedRotation?: boolean;
-  bullet?: boolean;
+  density?: number;
+  mass?: number;
+  gravityScale?: number;
   linearDamping?: number;
   angularDamping?: number;
+  fixedRotation?: boolean;
+  ccd?: boolean;
   initialVelocity?: Vec2;
   initialAngularVelocity?: number;
 }
 
-export interface BoxPhysicsComponent extends BasePhysicsComponent {
+export type ColliderShape = 'box' | 'circle' | 'polygon' | 'capsule';
+
+export type CoefficientCombineRule = 'average' | 'min' | 'multiply' | 'max';
+
+interface BaseColliderComponent {
+  shape: ColliderShape;
+  friction?: number;
+  restitution?: number;
+  frictionCombine?: CoefficientCombineRule;
+  restitutionCombine?: CoefficientCombineRule;
+  isSensor?: boolean;
+}
+
+export interface BoxColliderComponent extends BaseColliderComponent {
   shape: 'box';
   width: number;
   height: number;
 }
 
-export interface CirclePhysicsComponent extends BasePhysicsComponent {
+export interface CircleColliderComponent extends BaseColliderComponent {
   shape: 'circle';
   radius: number;
 }
 
-export interface PolygonPhysicsComponent extends BasePhysicsComponent {
+export interface PolygonColliderComponent extends BaseColliderComponent {
   shape: 'polygon';
   vertices: Vec2[];
 }
 
-export type PhysicsComponent =
-  | BoxPhysicsComponent
-  | CirclePhysicsComponent
-  | PolygonPhysicsComponent;
+export interface CapsuleColliderComponent extends BaseColliderComponent {
+  shape: 'capsule';
+  radius: number;
+  height: number;
+}
 
-// ============================================================================
-// Zone Types
-// ============================================================================
+export type ColliderComponent =
+  | BoxColliderComponent
+  | CircleColliderComponent
+  | PolygonColliderComponent
+  | CapsuleColliderComponent;
 
 export type ZoneMovementType = 'static' | 'kinematic';
 
@@ -50,7 +64,7 @@ export type ZoneShape =
   | { type: 'polygon'; vertices: Vec2[] };
 
 export interface ZoneComponent {
-  movement?: ZoneMovementType; // defaults to "static"
+  movement?: ZoneMovementType;
   shape: ZoneShape;
   categoryBits?: number;
   maskBits?: number;

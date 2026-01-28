@@ -1,6 +1,8 @@
 export * from './common';
-export * from './sprite';
+export * from './visual';
 export * from './physics';
+export * from './collider';
+export * from './character';
 export * from './behavior';
 export * from './entity';
 export * from './rules';
@@ -30,6 +32,27 @@ export type {
   ZoneComponent,
   ZoneEntityDefinition,
 } from './physics';
+export type {
+  ColliderShape,
+  CoefficientCombineRule,
+  BoxColliderComponent,
+  CircleColliderComponent,
+  PolygonColliderComponent,
+  CapsuleColliderComponent,
+  ColliderComponent,
+} from './collider';
+export type {
+  CharacterComponent,
+} from './character';
+export type {
+  VisualType,
+  VisualComponent,
+  RectVisualComponent,
+  CircleVisualComponent,
+  PolygonVisualComponent,
+  ImageVisualComponent,
+  TextVisualComponent,
+} from './visual';
 export type {
   BaseEntityDefinition,
   BodyEntityDefinition,

@@ -1293,36 +1293,46 @@ func _create_entity(entity_data: Dictionary) -> Node2D:
 	var entity_id = entity_data.get("id", "entity_" + str(randi()))
 	var template_id = entity_data.get("template", "")
 	var transform_data = entity_data.get("transform", {})
-	print("[DEBUG _create_entity] Creating entity: ", entity_id, " template: ", template_id)
+	
+	print("[DEBUG _create_entity] START entity_id: ", entity_id, " template_id: ", template_id)
+	JavaScriptBridge.eval("console.log('[Godot] Creating entity: " + entity_id + " template: " + template_id + "')")
 	
 	# Merge template with entity data
 	var merged = entity_data.duplicate(true)
+	
 	if template_id != "" and templates.has(template_id):
 		var tmpl = templates[template_id]
-		print("[DEBUG _create_entity] Found template, keys: ", tmpl.keys())
 		# Template provides defaults, entity_data overrides
 		for key in tmpl:
 			if not merged.has(key):
 				merged[key] = tmpl[key]
-		# Merge physics specifically
-		if tmpl.has("physics") and merged.has("physics"):
-			var merged_physics = tmpl.physics.duplicate(true)
-			for key in merged.physics:
-				merged_physics[key] = merged.physics[key]
-			merged.physics = merged_physics
-		elif tmpl.has("physics"):
-			merged.physics = tmpl.physics.duplicate(true)
-	else:
-		print("[DEBUG _create_entity] NO TEMPLATE FOUND for: ", template_id, " available: ", templates.keys())
+		# Merge components specifically
+		_merged_component(merged, tmpl, "physics")
+		_merged_component(merged, tmpl, "collider")
+		_merged_component(merged, tmpl, "visual")
+		_merged_component(merged, tmpl, "character")
+		_merged_component(merged, tmpl, "zone")
 	
 	var physics_data = merged.get("physics", null)
-	var sprite_data = merged.get("sprite", null)
-	print("[DEBUG _create_entity] sprite_data: ", sprite_data, " physics_data: ", physics_data != null)
+	var collider_data = merged.get("collider", null)
+	var visual_data = merged.get("visual", null)
+	var zone_data = merged.get("zone", null)
+	var entity_type = merged.get("type", "")
+	
+	print("[DEBUG _create_entity] AFTER MERGE - visual null: ", visual_data == null, " collider null: ", collider_data == null, " physics null: ", physics_data == null)
 	
 	var node: Node2D = null
 	
+	# Create physics body if physics component exists
 	if physics_data:
-		node = _create_physics_body(entity_id, physics_data, transform_data)
+		node = _create_physics_body(entity_id, physics_data, collider_data, transform_data)
+	# Create zone (legacy) if zone component exists
+	elif entity_type == "zone" and zone_data:
+		node = _create_zone_entity(entity_id, zone_data, transform_data)
+	# Create sensor-only entity if collider with isSensor exists
+	elif collider_data and collider_data.get("isSensor", false):
+		node = _create_sensor_entity(entity_id, collider_data, transform_data)
+	# Otherwise create plain Node2D
 	else:
 		node = Node2D.new()
 		node.name = entity_id
@@ -1332,11 +1342,26 @@ func _create_entity(entity_data: Dictionary) -> Node2D:
 	var godot_pos = game_to_godot_pos(game_pos)
 	var angle = transform_data.get("angle", 0)
 	node.position = godot_pos
-	node.rotation = -angle  # Flip angle for Y-up convention
+	node.rotation = -angle
 	
-	# Add sprite visualization
-	if sprite_data:
-		_add_sprite(node, sprite_data, physics_data)
+	# Add visual component
+	if visual_data:
+		print("[DEBUG] Adding visual for entity: ", entity_id, " type: ", visual_data.get("type", "unknown"))
+		# Apply smart defaults: visual inherits from collider
+		var resolved_visual = _resolve_visual_with_defaults(visual_data, collider_data)
+		_add_visual(node, resolved_visual)
+	elif collider_data:
+		# Auto-generate visual from collider if no visual specified
+		var auto_visual = _generate_visual_from_collider(collider_data)
+		_add_visual(node, auto_visual)
+	else:
+		print("[DEBUG] NO visual or collider for entity: ", entity_id)
+	
+	# Add collider shape if collider exists (and not already added by physics)
+	if collider_data and not physics_data:
+		var collision = CollisionShape2D.new()
+		collision.shape = _create_collider_shape(collider_data)
+		node.add_child(collision)
 	
 	# Add to scene
 	if game_root:
@@ -1346,15 +1371,11 @@ func _create_entity(entity_data: Dictionary) -> Node2D:
 		if main:
 			main.add_child(node)
 	
-	# Transfer initial velocity from entity_data to node metadata
-	if entity_data.has("_initial_velocity") and node is RigidBody2D:
-		node.set_meta("_initial_velocity", entity_data["_initial_velocity"])
-	
-	# Apply initial velocity now that the body is in the scene tree
-	if node is RigidBody2D and node.has_meta("_initial_velocity"):
-		var initial_vel = node.get_meta("_initial_velocity") as Vector2
-		node.linear_velocity = initial_vel
-		node.remove_meta("_initial_velocity")
+	# Apply initial velocity if specified
+	if node is RigidBody2D and physics_data and physics_data.has("initialVelocity"):
+		var initial_vel = physics_data.initialVelocity
+		var game_vel = Vector2(initial_vel.get("x", 0), initial_vel.get("y", 0))
+		node.linear_velocity = game_to_godot_vec(game_vel)
 	
 	# Set metadata for selectors
 	if template_id != "":
@@ -1393,30 +1414,17 @@ func _create_entity(entity_data: Dictionary) -> Node2D:
 	
 	return node
 
-func _create_physics_body(entity_id: String, physics_data: Dictionary, transform_data: Dictionary) -> Node2D:
+func _create_physics_body(entity_id: String, physics_data: Dictionary, collider_data: Dictionary, transform_data: Dictionary) -> Node2D:
 	var body_type = physics_data.get("bodyType", "dynamic")
-	var is_sensor = physics_data.get("isSensor", false)
 	var node: Node2D
 	
-	# For sensors, use Area2D instead of physics body
-	if is_sensor:
-		var area = Area2D.new()
-		area.name = entity_id
-		area.body_shape_entered.connect(_on_sensor_body_shape_entered.bind(entity_id))
-		area.body_shape_exited.connect(_on_sensor_body_shape_exited.bind(entity_id))
-		
-		var collision = CollisionShape2D.new()
-		collision.shape = _create_shape(physics_data)
-		area.add_child(collision)
-		
-		# Apply collision filtering
-		area.collision_layer = physics_data.get("categoryBits", 1)
-		area.collision_mask = physics_data.get("maskBits", 0xFFFFFFFF)
-		
-		# Store as sensor type in entities
-		area.set_meta("entity_type", "sensor")
-		node = area
-	else:
+	match body_type:
+		"static":
+			node = StaticBody2D.new()
+		"kinematic":
+			var char_body = CharacterBody2D.new()
+			node = char_body
+		_:  # dynamic
 		match body_type:
 			"static":
 				node = StaticBody2D.new()
@@ -1434,31 +1442,9 @@ func _create_physics_body(entity_id: String, physics_data: Dictionary, transform
 				# Attach PhysicsBody script for _integrate_forces callback
 				rigid.set_script(load("res://scripts/PhysicsBody.gd"))
 				
-				# Set physics properties
+				# Set physics body properties (mass, damping, etc.)
 				var density = physics_data.get("density", 1.0)
-				var friction = physics_data.get("friction", 0.3)
-				var restitution = physics_data.get("restitution", 0.0)
-				
-				# Create physics material
-				var material = PhysicsMaterial.new()
-				material.friction = friction
-				material.bounce = restitution
-				rigid.physics_material_override = material
-				
-				# Mass is calculated from density * area (simplified)
-				var shape_type = physics_data.get("shape", "box")
-				var area = 1.0
-				if shape_type == "box":
-					var w = physics_data.get("width", 1.0)
-					var h = physics_data.get("height", 1.0)
-					area = w * h
-				elif shape_type == "circle":
-					var r = physics_data.get("radius", 0.5)
-					area = PI * r * r
-				elif shape_type == "polygon":
-					var vertices = physics_data.get("vertices", [])
-					area = _calculate_polygon_area(vertices)
-				rigid.mass = density * area
+				var mass = physics_data.get("mass", 0.0)
 				
 				# Linear/angular damping
 				rigid.linear_damp = physics_data.get("linearDamping", 0.0)
@@ -1469,7 +1455,7 @@ func _create_physics_body(entity_id: String, physics_data: Dictionary, transform
 					rigid.lock_rotation = true
 				
 				# CCD for fast-moving objects
-				if physics_data.get("bullet", false):
+				if physics_data.get("ccd", false) or physics_data.get("bullet", false):
 					rigid.continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
 				
 				# Connect collision signals (kept for backward compatibility)
@@ -1486,10 +1472,39 @@ func _create_physics_body(entity_id: String, physics_data: Dictionary, transform
 		
 		node.name = entity_id
 		
-		# Add collision shape
-		var collision = CollisionShape2D.new()
-		collision.shape = _create_shape(physics_data)
-		node.add_child(collision)
+		# Add collision shape from collider data
+		if collider_data:
+			var collision = CollisionShape2D.new()
+			collision.shape = _create_collider_shape(collider_data)
+			
+			# Apply collider material properties (if dynamic body)
+			if node is RigidBody2D:
+				var friction = collider_data.get("friction", 0.5)
+				var restitution = collider_data.get("restitution", 0.0)
+				var material = PhysicsMaterial.new()
+				material.friction = friction
+				material.bounce = restitution
+				node.physics_material_override = material
+				
+				# Calculate mass if density provided and no direct mass
+				if mass <= 0 and density > 0:
+					var shape_type = collider_data.get("shape", "box")
+					var shape_area = 1.0
+					if shape_type == "box":
+						var w = collider_data.get("width", 1.0)
+						var h = collider_data.get("height", 1.0)
+						shape_area = w * h
+					elif shape_type == "circle":
+						var r = collider_data.get("radius", 0.5)
+						shape_area = PI * r * r
+					elif shape_type == "polygon":
+						var vertices = collider_data.get("vertices", [])
+						shape_area = _calculate_polygon_area(vertices)
+					node.mass = density * shape_area
+				elif mass > 0:
+					node.mass = mass
+			
+			node.add_child(collision)
 		
 		# Apply collision filtering
 		node.collision_layer = physics_data.get("categoryBits", 1)
@@ -1501,6 +1516,60 @@ func _create_physics_body(entity_id: String, physics_data: Dictionary, transform
 	next_body_id += 1
 	
 	return node
+
+func _create_zone_entity(entity_id: String, zone_data: Dictionary, transform_data: Dictionary) -> Node2D:
+	"""Create a zone entity (Area2D) for collision detection without physics response.
+	Zones can have sprites and detect collisions but don't participate in physics simulation."""
+	var movement_type = zone_data.get("movement", "static")
+	var zone_shape = zone_data.get("shape", {"type": "box", "width": 1.0, "height": 1.0})
+	
+	var area = Area2D.new()
+	area.name = entity_id
+	
+	# Connect collision signals for zone detection
+	area.body_shape_entered.connect(_on_sensor_body_shape_entered.bind(entity_id))
+	area.body_shape_exited.connect(_on_sensor_body_shape_exited.bind(entity_id))
+	
+	# Add collision shape
+	var collision = CollisionShape2D.new()
+	var shape_type = zone_shape.get("type", "box")
+	
+	match shape_type:
+		"circle":
+			var circle = CircleShape2D.new()
+			circle.radius = zone_shape.get("radius", 0.5) * pixels_per_meter
+			collision.shape = circle
+		"polygon":
+			var polygon = ConvexPolygonShape2D.new()
+			var vertices = zone_shape.get("vertices", [])
+			var points: PackedVector2Array = []
+			for v in vertices:
+				points.append(Vector2(v.x * pixels_per_meter, -v.y * pixels_per_meter))
+			polygon.points = points
+			collision.shape = polygon
+		_:  # box
+			var rect = RectangleShape2D.new()
+			var w = zone_shape.get("width", 1.0) * pixels_per_meter
+			var h = zone_shape.get("height", 1.0) * pixels_per_meter
+			rect.size = Vector2(w, h)
+			collision.shape = rect
+	
+	area.add_child(collision)
+	
+	# Apply collision filtering
+	area.collision_layer = zone_data.get("categoryBits", 1)
+	area.collision_mask = zone_data.get("maskBits", 0xFFFFFFFF)
+	
+	# Store zone metadata
+	area.set_meta("entity_type", "zone")
+	area.set_meta("zone_movement", movement_type)
+	
+	# Track body ID for compatibility
+	body_id_map[entity_id] = next_body_id
+	body_id_reverse[next_body_id] = entity_id
+	next_body_id += 1
+	
+	return area
 
 func _calculate_polygon_area(vertices: Array) -> float:
 	if vertices.size() < 3:
@@ -1552,17 +1621,29 @@ func _create_shape(physics_data: Dictionary) -> Shape2D:
 	
 	return shape
 
-func _add_sprite(node: Node2D, sprite_data: Dictionary, physics_data: Dictionary) -> void:
+func _add_sprite(node: Node2D, sprite_data: Dictionary, physics_data: Dictionary, zone_data = null) -> void:
+	print("[DEBUG _add_sprite] Adding sprite type: ", sprite_data.get("type", "unknown"), " to node: ", node.name)
 	var sprite_type = sprite_data.get("type", "rect")
 	var color = Color.from_string(sprite_data.get("color", "#FF0000"), Color.RED)
 	var opacity = sprite_data.get("opacity", 1.0)
 	var z_index_val = sprite_data.get("zIndex", 0)
 	
+	# Helper function to get dimension from sprite_data, physics_data, zone_data, or default
+	var _get_dimension = func(key: String, default_val: float):
+		if sprite_data.has(key):
+			return sprite_data.get(key)
+		elif physics_data and physics_data.has(key):
+			return physics_data.get(key)
+		elif zone_data and zone_data.has("shape") and zone_data.shape.has(key):
+			return zone_data.shape.get(key)
+		else:
+			return default_val
+	
 	match sprite_type:
 		"rect":
 			var polygon = Polygon2D.new()
-			var w = sprite_data.get("width", physics_data.get("width", 1.0) if physics_data else 1.0) * pixels_per_meter
-			var h = sprite_data.get("height", physics_data.get("height", 1.0) if physics_data else 1.0) * pixels_per_meter
+			var w = _get_dimension.call("width", 1.0) * pixels_per_meter
+			var h = _get_dimension.call("height", 1.0) * pixels_per_meter
 			var hw = w / 2.0
 			var hh = h / 2.0
 			polygon.polygon = PackedVector2Array([
@@ -1589,7 +1670,7 @@ func _add_sprite(node: Node2D, sprite_data: Dictionary, physics_data: Dictionary
 			node.add_child(polygon)
 		"circle":
 			var polygon = Polygon2D.new()
-			var radius = sprite_data.get("radius", physics_data.get("radius", 0.5) if physics_data else 0.5) * pixels_per_meter
+			var radius = _get_dimension.call("radius", 0.5) * pixels_per_meter
 			var points: PackedVector2Array = []
 			var uvs: PackedVector2Array = []
 			var tex_size = max(int(radius * 2), 64)
@@ -4136,3 +4217,221 @@ func _screen_to_world_impl(screen_x: float, screen_y: float) -> Dictionary:
 	print("  game_pos (transform)=%s, (manual)=%s" % [game_pos, manual_game_pos])
 	
 	return {"x": game_pos.x, "y": game_pos.y}
+
+# ============================================================================
+# NEW COMPONENT SYSTEM HELPERS
+# ============================================================================
+
+func _merged_component(merged: Dictionary, tmpl: Dictionary, component_name: String) -> void:
+	"""Merge a component from template into merged data, with entity data taking precedence."""
+	if tmpl.has(component_name) and merged.has(component_name):
+		var merged_component = tmpl[component_name].duplicate(true)
+		for key in merged[component_name]:
+			merged_component[key] = merged[component_name][key]
+		merged[component_name] = merged_component
+	elif tmpl.has(component_name):
+		merged[component_name] = tmpl[component_name].duplicate(true)
+
+func _resolve_visual_with_defaults(visual_data: Dictionary, collider_data: Dictionary) -> Dictionary:
+	"""Apply smart defaults: visual inherits dimensions from collider if not specified."""
+	var resolved = visual_data.duplicate(true)
+	
+	if collider_data:
+		# Inherit width/height from collider if not specified in visual
+		if not resolved.has("width") and collider_data.has("width"):
+			resolved.width = collider_data.width
+		if not resolved.has("height") and collider_data.has("height"):
+			resolved.height = collider_data.height
+		if not resolved.has("radius") and collider_data.has("radius"):
+			resolved.radius = collider_data.radius
+		if not resolved.has("vertices") and collider_data.has("vertices"):
+			resolved.vertices = collider_data.vertices.duplicate()
+	
+	return resolved
+
+func _generate_visual_from_collider(collider_data: Dictionary) -> Dictionary:
+	"""Auto-generate a visual component from collider data."""
+	var shape = collider_data.get("shape", "box")
+	
+	var visual = {
+		"type": shape,  # rect, circle, polygon
+		"width": collider_data.get("width", 1.0),
+		"height": collider_data.get("height", 1.0),
+		"radius": collider_data.get("radius", 0.5),
+		"vertices": collider_data.get("vertices", []),
+		"color": "#FFFFFF",  # Default white
+		"opacity": 0.5  # Semi-transparent for debug
+	}
+	
+	return visual
+
+func _create_sensor_entity(entity_id: String, collider_data: Dictionary, transform_data: Dictionary) -> Area2D:
+	"""Create a sensor-only entity (Area2D with collision detection but no physics response)."""
+	var area = Area2D.new()
+	area.name = entity_id
+	
+	# Connect collision signals
+	area.body_shape_entered.connect(_on_sensor_body_shape_entered.bind(entity_id))
+	area.body_shape_exited.connect(_on_sensor_body_shape_exited.bind(entity_id))
+	
+	# Add collision shape
+	var collision = CollisionShape2D.new()
+	collision.shape = _create_collider_shape(collider_data)
+	area.add_child(collision)
+	
+	# Apply collision filtering
+	area.collision_layer = collider_data.get("categoryBits", 1)
+	area.collision_mask = collider_data.get("maskBits", 0xFFFFFFFF)
+	
+	# Store as sensor type
+	area.set_meta("entity_type", "sensor")
+	
+	return area
+
+func _create_collider_shape(collider_data: Dictionary) -> Shape2D:
+	"""Create a collision shape from collider component data."""
+	var shape_type = collider_data.get("shape", "box")
+	var shape: Shape2D
+	
+	match shape_type:
+		"circle":
+			var circle = CircleShape2D.new()
+			circle.radius = collider_data.get("radius", 0.5) * pixels_per_meter
+			shape = circle
+		"polygon":
+			var polygon = ConvexPolygonShape2D.new()
+			var vertices = collider_data.get("vertices", [])
+			var points: PackedVector2Array = []
+			for v in vertices:
+				points.append(Vector2(v.x * pixels_per_meter, -v.y * pixels_per_meter))
+			polygon.points = points
+			shape = polygon
+		"capsule":
+			# Godot doesn't have native capsule, use capsule shape from library
+			var capsule = CapsuleShape2D.new()
+			capsule.radius = collider_data.get("radius", 0.5) * pixels_per_meter
+			capsule.height = collider_data.get("height", 1.0) * pixels_per_meter
+			shape = capsule
+		_:  # box
+			var rect = RectangleShape2D.new()
+			var w = collider_data.get("width", 1.0) * pixels_per_meter
+			var h = collider_data.get("height", 1.0) * pixels_per_meter
+			rect.size = Vector2(w, h)
+			shape = rect
+	
+	return shape
+
+func _add_visual(node: Node2D, visual_data: Dictionary) -> void:
+	"""Add a visual component to an entity node."""
+	var visual_type = visual_data.get("type", "rect")
+	var color = Color.from_string(visual_data.get("color", "#FFFFFF"), Color.WHITE)
+	var opacity = visual_data.get("opacity", 1.0)
+	var z_index_val = visual_data.get("zIndex", 0)
+	var offset_x = visual_data.get("offsetX", 0.0)
+	var offset_y = visual_data.get("offsetY", 0.0)
+	
+	match visual_type:
+		"rect", "box":
+			var polygon = Polygon2D.new()
+			var w = visual_data.get("width", 1.0) * pixels_per_meter
+			var h = visual_data.get("height", 1.0) * pixels_per_meter
+			var hw = w / 2.0
+			var hh = h / 2.0
+			polygon.polygon = PackedVector2Array([
+				Vector2(-hw, -hh),
+				Vector2(hw, -hh),
+				Vector2(hw, hh),
+				Vector2(-hw, hh)
+			])
+			color.a = opacity
+			polygon.color = color
+			polygon.z_index = z_index_val
+			polygon.position = Vector2(offset_x * pixels_per_meter, -offset_y * pixels_per_meter)
+			node.add_child(polygon)
+		
+		"circle":
+			var polygon = Polygon2D.new()
+			var radius = visual_data.get("radius", 0.5) * pixels_per_meter
+			var points: PackedVector2Array = []
+			for i in range(32):
+				var angle = i * TAU / 32
+				points.append(Vector2(cos(angle), sin(angle)) * radius)
+			polygon.polygon = points
+			color.a = opacity
+			polygon.color = color
+			polygon.z_index = z_index_val
+			polygon.position = Vector2(offset_x * pixels_per_meter, -offset_y * pixels_per_meter)
+			node.add_child(polygon)
+		
+		"polygon":
+			var polygon = Polygon2D.new()
+			var vertices = visual_data.get("vertices", [])
+			var points: PackedVector2Array = []
+			for v in vertices:
+				points.append(Vector2(v.x * pixels_per_meter, -v.y * pixels_per_meter))
+			polygon.polygon = points
+			color.a = opacity
+			polygon.color = color
+			polygon.z_index = z_index_val
+			polygon.position = Vector2(offset_x * pixels_per_meter, -offset_y * pixels_per_meter)
+			node.add_child(polygon)
+		
+		"image":
+			_add_image_visual(node, visual_data, opacity, z_index_val)
+		
+		"text":
+			_add_text_visual(node, visual_data, opacity, z_index_val)
+
+func _add_image_visual(node: Node2D, visual_data: Dictionary, opacity: float, z_index_val: int) -> void:
+	"""Add an image visual to an entity node."""
+	var sprite = Sprite2D.new()
+	var url = visual_data.get("imageUrl", visual_data.get("url", ""))
+	var width = visual_data.get("width", 1.0)
+	var height = visual_data.get("height", 1.0)
+	var offset_x = visual_data.get("offsetX", 0.0)
+	var offset_y = visual_data.get("offsetY", 0.0)
+	
+	sprite.position = Vector2(offset_x * pixels_per_meter, -offset_y * pixels_per_meter)
+	sprite.modulate.a = opacity
+	sprite.z_index = z_index_val
+	
+	if url == "":
+		node.add_child(sprite)
+		return
+	
+	if url.begins_with("res://"):
+		var texture = load(url)
+		if texture:
+			sprite.texture = texture
+			var scale_x = (width * pixels_per_meter) / texture.get_width()
+			var scale_y = (height * pixels_per_meter) / texture.get_height()
+			sprite.scale = Vector2(scale_x, scale_y)
+	else:
+		_download_image_texture(url, func(texture: Texture2D):
+			if is_instance_valid(sprite):
+				sprite.texture = texture
+				var scale_x = (width * pixels_per_meter) / texture.get_width()
+				var scale_y = (height * pixels_per_meter) / texture.get_height()
+				sprite.scale = Vector2(scale_x, scale_y)
+		)
+	
+	node.add_child(sprite)
+
+func _add_text_visual(node: Node2D, visual_data: Dictionary, opacity: float, z_index_val: int) -> void:
+	"""Add a text visual to an entity node."""
+	var label = Label.new()
+	label.text = visual_data.get("text", "")
+	
+	var font_size = int(visual_data.get("fontSize", 16) * pixels_per_meter / 50.0)
+	label.add_theme_font_size_override("font_size", font_size)
+	
+	var text_color = Color.from_string(visual_data.get("color", "#FFFFFF"), Color.WHITE)
+	label.modulate = text_color
+	label.modulate.a = opacity
+	label.z_index = z_index_val
+	
+	var offset_x = visual_data.get("offsetX", 0.0)
+	var offset_y = visual_data.get("offsetY", 0.0)
+	label.position = Vector2(offset_x * pixels_per_meter, -offset_y * pixels_per_meter)
+	
+	node.add_child(label)
