@@ -81,7 +81,7 @@ export interface GameRuntimeGodotProps {
   onRequestRestart?: () => void;
   showHUD?: boolean;
   enablePerfLogging?: boolean;
-  autoStart?: boolean;
+  debugMode?: boolean;
   preloadTextureUrls?: string[];
   onPreloadProgress?: (
     percent: number,
@@ -102,7 +102,7 @@ export function GameRuntimeGodot({
   onRequestRestart,
   showHUD = true,
   enablePerfLogging = false,
-  autoStart = true,
+  debugMode = false,
   preloadTextureUrls = [],
   onPreloadProgress,
   onReady,
@@ -673,12 +673,27 @@ export function GameRuntimeGodot({
           } catch {}
         }
 
-        setGameState((s) => ({
-          ...s,
-          state: "ready",
-          variables: mergedVariables,
-        }));
+        if (debugMode) {
+          game.rulesEvaluator.start();
+          setGameState((s) => ({
+            ...s,
+            state: "playing",
+            variables: mergedVariables,
+          }));
+        } else {
+          setGameState((s) => ({
+            ...s,
+            state: "ready",
+            variables: mergedVariables,
+          }));
+        }
         setIsReady(true);
+        
+        // Signal to external tools (like game-inspector-mcp) that the game is fully loaded
+        if (typeof window !== 'undefined') {
+          (window as unknown as { slopcadeGameReady?: boolean }).slopcadeGameReady = true;
+        }
+        
         onReady?.();
 
         if (match3SystemRef.current) {
@@ -745,24 +760,27 @@ export function GameRuntimeGodot({
     preloadTextureUrls,
     onPreloadProgress,
     onReady,
+    debugMode,
   ]);
 
   const showInputDebug = devToolsCheck?.state?.showInputDebug ?? false;
   const showPhysicsShapes = devToolsCheck?.state?.showPhysicsShapes ?? false;
+  const showZones = devToolsCheck?.state?.showZones ?? false;
   const showFPS = devToolsCheck?.state?.showFPS ?? false;
 
   useEffect(() => {
     const bridge = bridgeRef.current;
-    console.log('[GameRuntime] Debug settings effect - bridge:', !!bridge, 'showInputDebug:', showInputDebug, 'showPhysicsShapes:', showPhysicsShapes, 'showFPS:', showFPS);
+    console.log('[GameRuntime] Debug settings effect - bridge:', !!bridge, 'showInputDebug:', showInputDebug, 'showPhysicsShapes:', showPhysicsShapes, 'showZones:', showZones, 'showFPS:', showFPS);
     if (!bridge) return;
 
     console.log('[GameRuntime] Calling setDebugSettings');
     bridge.setDebugSettings({
       showInputDebug,
       showPhysicsShapes,
+      showZones,
       showFPS,
     });
-  }, [showInputDebug, showPhysicsShapes, showFPS]);
+  }, [showInputDebug, showPhysicsShapes, showZones, showFPS]);
 
   const setTimeScale = useCallback((scale: number, duration?: number) => {
     const currentScale = timeScaleRef.current;
@@ -1422,11 +1440,7 @@ export function GameRuntimeGodot({
     gameJustStartedRef.current = true;
   }, []);
 
-  useEffect(() => {
-    if (autoStart && gameState.state === "ready" && gameRef.current) {
-      handleStart();
-    }
-  }, [autoStart, gameState.state, handleStart]);
+
 
   const handleRestart = useCallback(() => {
     if (onRequestRestart) {
@@ -1853,7 +1867,7 @@ export function GameRuntimeGodot({
         </View>
       )}
 
-      {gameState.state === "ready" && (
+      {gameState.state === "ready" && !debugMode && (
         <View style={styles.overlay}>
           <Text style={styles.overlayTitle}>{definition.metadata.title}</Text>
           {definition.metadata.instructions && (

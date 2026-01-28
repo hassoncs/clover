@@ -10,6 +10,7 @@ extends CanvasLayer
 # Settings from React Native DevTools
 var _show_input_debug: bool = false
 var _show_physics_shapes: bool = false
+var _show_zones: bool = false
 var _show_fps: bool = false
 
 # Reference to GameBridge for entity/physics access
@@ -66,8 +67,9 @@ func set_settings(settings: Dictionary) -> void:
 	print("[DebugOverlay] set_settings called with: ", settings)
 	_show_input_debug = settings.get("showInputDebug", false)
 	_show_physics_shapes = settings.get("showPhysicsShapes", false)
+	_show_zones = settings.get("showZones", false)
 	_show_fps = settings.get("showFPS", false)
-	print("[DebugOverlay] After parse: input=", _show_input_debug, " physics=", _show_physics_shapes, " fps=", _show_fps)
+	print("[DebugOverlay] After parse: input=", _show_input_debug, " physics=", _show_physics_shapes, " zones=", _show_zones, " fps=", _show_fps)
 	
 	# Update FPS label visibility
 	if _fps_label:
@@ -91,7 +93,7 @@ func _process(delta: float) -> void:
 	_tap_markers = _tap_markers.filter(func(m): return current_time - m.time < TAP_MARKER_DURATION)
 	
 	# Request redraw if we have active debug modes
-	if _show_physics_shapes or _show_input_debug or (_tap_markers.size() > 0) or _is_dragging:
+	if _show_physics_shapes or _show_zones or _show_input_debug or (_tap_markers.size() > 0) or _is_dragging:
 		if _draw_node:
 			_draw_node.queue_redraw()
 
@@ -148,7 +150,7 @@ func _on_draw() -> void:
 	# Log current state (only once per second to avoid spam)
 	var now = Time.get_ticks_msec()
 	if now - _last_log_time > 1000:
-		print("[DebugOverlay] _on_draw: physics=", _show_physics_shapes, " input=", _show_input_debug, " fps=", _show_fps)
+		print("[DebugOverlay] _on_draw: physics=", _show_physics_shapes, " zones=", _show_zones, " input=", _show_input_debug, " fps=", _show_fps)
 		_last_log_time = now
 	
 	if not _game_bridge:
@@ -163,6 +165,10 @@ func _on_draw() -> void:
 	# Draw physics shapes with entity labels if enabled
 	if _show_physics_shapes:
 		_draw_physics_shapes(canvas_transform)
+	
+	# Draw zones if enabled
+	if _show_zones:
+		_draw_zones(canvas_transform)
 	
 	# Draw input debug (tap markers, drag lines) if enabled
 	if _show_input_debug:
@@ -232,6 +238,73 @@ func _draw_physics_shapes(canvas_transform: Transform2D) -> void:
 					_draw_node.draw_line(screen_pos + Vector2(radius, -height/2 + radius), screen_pos + Vector2(radius, height/2 - radius), outline_color, 2.0)
 		
 		# Draw entity ID label (only if we drew at least one shape)
+		if drew_shape:
+			var label_text = entity_id
+			var font = ThemeDB.fallback_font
+			var font_size = 10
+			var text_size = font.get_string_size(label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+			var label_pos = entity_screen_pos + Vector2(-text_size.x / 2, -20)
+			var bg_rect = Rect2(label_pos.x - 2, label_pos.y - text_size.y, text_size.x + 4, text_size.y + 4)
+			_draw_node.draw_rect(bg_rect, label_bg_color, true)
+			_draw_node.draw_string(font, label_pos, label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, label_color)
+
+func _draw_zones(canvas_transform: Transform2D) -> void:
+	if not _game_bridge or not _game_bridge.entities:
+		return
+	
+	var zone_color = Color(1, 0, 1, 0.5)  # Semi-transparent magenta for zones
+	var label_color = Color(1, 0, 1, 1.0)  # Solid magenta for labels
+	var label_bg_color = Color(0.5, 0, 0.5, 0.8)  # Dark magenta background
+	
+	for entity_id in _game_bridge.entities:
+		var node = _game_bridge.entities[entity_id]
+		if not node or not is_instance_valid(node):
+			continue
+		
+		# Only draw Area2D nodes (zones)
+		if not (node is Area2D):
+			continue
+		
+		var entity_screen_pos = canvas_transform * node.global_position
+		var drew_shape = false
+		
+		# Find collision shapes (zones use these for detection)
+		for child in node.get_children():
+			if child is CollisionShape2D:
+				var shape = child.shape
+				if not shape:
+					continue
+				
+				drew_shape = true
+				
+				# Transform world position to screen position
+				var world_pos = node.global_position + child.position.rotated(node.global_rotation)
+				var screen_pos = canvas_transform * world_pos
+				var scale_factor = canvas_transform.get_scale().x
+				
+				if shape is RectangleShape2D:
+					var rect_shape = shape as RectangleShape2D
+					var size = rect_shape.size * scale_factor
+					var rect = Rect2(screen_pos - size / 2, size)
+					_draw_node.draw_rect(rect, zone_color, true, 2.0)
+					_draw_node.draw_rect(rect, label_color, false, 2.0)
+				
+				elif shape is CircleShape2D:
+					var circle_shape = shape as CircleShape2D
+					var radius = circle_shape.radius * scale_factor
+					_draw_node.draw_circle(screen_pos, radius, zone_color)
+					_draw_node.draw_arc(screen_pos, radius, 0, TAU, 32, label_color, 2.0)
+				
+				elif shape is CapsuleShape2D:
+					var capsule_shape = shape as CapsuleShape2D
+					var radius = capsule_shape.radius * scale_factor
+					var height = capsule_shape.height * scale_factor
+					_draw_node.draw_arc(screen_pos + Vector2(0, -height/2 + radius), radius, 0, PI, 16, label_color, 2.0)
+					_draw_node.draw_arc(screen_pos + Vector2(0, height/2 - radius), radius, PI, TAU, 16, label_color, 2.0)
+					_draw_node.draw_line(screen_pos + Vector2(-radius, -height/2 + radius), screen_pos + Vector2(-radius, height/2 - radius), label_color, 2.0)
+					_draw_node.draw_line(screen_pos + Vector2(radius, -height/2 + radius), screen_pos + Vector2(radius, height/2 - radius), label_color, 2.0)
+		
+		# Draw entity ID label
 		if drew_shape:
 			var label_text = entity_id
 			var font = ThemeDB.fallback_font

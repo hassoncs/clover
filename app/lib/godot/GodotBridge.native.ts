@@ -1120,7 +1120,7 @@ export function createNativeGodotBridge(): GodotBridge {
       callGameBridge('set_debug_show_shapes', show);
     },
 
-    setDebugSettings(settings: { showInputDebug: boolean; showPhysicsShapes: boolean; showFPS: boolean }) {
+    setDebugSettings(settings: { showInputDebug: boolean; showPhysicsShapes: boolean; showZones: boolean; showFPS: boolean }) {
       callGameBridge('set_debug_settings', JSON.stringify(settings));
     },
 

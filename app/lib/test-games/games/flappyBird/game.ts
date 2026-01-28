@@ -105,8 +105,8 @@ const game: GameDefinition = {
     pipeTop: {
       id: "pipeTop",
       tags: ["pipe", "pipe-top"],
-      sprite: { 
-        type: "image", 
+      sprite: {
+        type: "image",
         imageUrl: `${ASSET_BASE}/pipeTop.png`,
         imageWidth: PIPE_WIDTH,
         imageHeight: PIPE_HEIGHT,
@@ -122,14 +122,14 @@ const game: GameDefinition = {
       },
       behaviors: [
         { type: "move", direction: "left", speed: PIPE_SPEED },
-        { type: "timer", duration: 8, action: "destroy" },
+        { type: "timer", duration: 2, action: "destroy" },
       ],
     },
     pipeBottom: {
       id: "pipeBottom",
       tags: ["pipe", "pipe-bottom"],
-      sprite: { 
-        type: "image", 
+      sprite: {
+        type: "image",
         imageUrl: `${ASSET_BASE}/pipeBottom.png`,
         imageWidth: PIPE_WIDTH,
         imageHeight: PIPE_HEIGHT,
@@ -145,7 +145,7 @@ const game: GameDefinition = {
       },
       behaviors: [
         { type: "move", direction: "left", speed: PIPE_SPEED },
-        { type: "timer", duration: 8, action: "destroy" },
+        { type: "timer", duration: 2, action: "destroy" },
       ],
     },
     scoreZone: {
@@ -160,7 +160,7 @@ const game: GameDefinition = {
       behaviors: [
         { type: "move", direction: "left", speed: PIPE_SPEED },
         { type: "score_on_collision", withTags: ["bird"], points: 1, once: true },
-        { type: "timer", duration: 8, action: "destroy" },
+        { type: "timer", duration: 2, action: "destroy" },
       ],
     },
     ground: {

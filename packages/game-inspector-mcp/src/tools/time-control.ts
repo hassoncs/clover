@@ -54,8 +54,8 @@ export function registerTimeControlTools(server: McpServer, state: GameInspector
       
       if (shouldScreenshot && state.page) {
         const prefix = screenshotFilename ?? `step-${frames}`;
-        const screenshotPath = await takeScreenshot(state.page, prefix);
-        response.screenshot = screenshotPath;
+        const screenshotResult = await takeScreenshot(state.page, { prefix });
+        response.screenshot = screenshotResult.filepath;
       }
       
       return { content: [{ type: "text" as const, text: JSON.stringify(response, null, 2) }] };
@@ -123,7 +123,7 @@ export function registerTimeControlTools(server: McpServer, state: GameInspector
 
       if (includeStart) {
         const startPath = `${screenshotsDir}/seq-${sessionId}-frame-0.png`;
-        await state.page.screenshot({ path: startPath });
+        await takeScreenshot(state.page, { filepath: startPath });
         frames.push({ imagePath: startPath, frameNumber: 0 });
       }
 
@@ -133,7 +133,7 @@ export function registerTimeControlTools(server: McpServer, state: GameInspector
         currentFrame += framesToStep;
 
         const framePath = `${screenshotsDir}/seq-${sessionId}-frame-${currentFrame}.png`;
-        await state.page.screenshot({ path: framePath });
+        await takeScreenshot(state.page, { filepath: framePath });
         frames.push({ imagePath: framePath, frameNumber: currentFrame });
       }
 

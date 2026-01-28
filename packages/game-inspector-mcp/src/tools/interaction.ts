@@ -238,8 +238,9 @@ export function registerInteractionTools(server: McpServer, state: GameInspector
       let screenshotPath: string | undefined;
       if (!skipScreenshot && state.page) {
         try {
-          screenshotPath = await takeScreenshot(state.page, `input-${inputType}`);
-        } catch (e) {
+          const result = await takeScreenshot(state.page, { prefix: `input-${inputType}` });
+          screenshotPath = result.filepath;
+        } catch {
           // Screenshot failed, continue without it
         }
       }

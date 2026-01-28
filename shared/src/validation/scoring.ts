@@ -1,4 +1,4 @@
-import type { ValidationIssue, ValidationSummary, ScoringOptions, TopIssuesOptions } from './types';
+import type { GameValidationIssue, ValidationSummary, ScoringOptions, TopIssuesOptions } from './types';
 
 const DEFAULT_SCORING: Required<ScoringOptions> = {
   criticalPenalty: 30,
@@ -13,7 +13,7 @@ const DEFAULT_TOP_ISSUES: Required<TopIssuesOptions> = {
 };
 
 export function computeValidationScore(
-  issues: ValidationIssue[],
+  issues: GameValidationIssue[],
   options: ScoringOptions = {}
 ): number {
   const opts = { ...DEFAULT_SCORING, ...options };
@@ -36,9 +36,9 @@ export function computeValidationScore(
 }
 
 export function selectTopIssues(
-  issues: ValidationIssue[],
+  issues: GameValidationIssue[],
   options: TopIssuesOptions = {}
-): ValidationIssue[] {
+): GameValidationIssue[] {
   const opts = { ...DEFAULT_TOP_ISSUES, ...options };
   
   const sorted = [...issues].sort((a, b) => {
@@ -56,7 +56,7 @@ export function selectTopIssues(
 }
 
 export function computeValidationSummary(
-  issues: ValidationIssue[],
+  issues: GameValidationIssue[],
   scoringOptions?: ScoringOptions,
   topIssuesOptions?: TopIssuesOptions
 ): ValidationSummary {

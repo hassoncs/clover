@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { GameInspectorState, WindowWithBridge } from '../types.js'
+import { takeScreenshot, takeScreenshotToBuffer } from '../utils.js'
 
 export function registerSnapshotTools(server: McpServer, state: GameInspectorState) {
   server.tool(
@@ -100,57 +101,26 @@ export function registerSnapshotTools(server: McpServer, state: GameInspectorSta
         };
       }
 
-      const godotElement = await state.page.$('iframe[title="Godot Game Engine"], canvas#canvas, canvas');
-      
-      if (!godotElement) {
-        const buffer = await state.page.screenshot({ type: "png" });
-        const base64 = buffer.toString("base64");
-        
-        if (filename) {
-          const fs = await import("fs/promises");
-          await fs.writeFile(filename, buffer);
-          return {
-            content: [
-              {
-                type: "text" as const,
-                text: JSON.stringify({ success: true, filename, note: "Full page screenshot (Godot element not found)" }),
-              },
-            ],
-          };
-        }
-        
-        return {
-          content: [
-            {
-              type: "image" as const,
-              data: base64,
-              mimeType: "image/png",
-            },
-          ],
-        };
-      }
-
-      const buffer = await godotElement.screenshot({ type: "png" });
-      const base64 = buffer.toString("base64");
-      const box = await godotElement.boundingBox();
-
       if (filename) {
-        const fs = await import("fs/promises");
-        await fs.writeFile(filename, buffer);
+        const result = await takeScreenshot(state.page, { filepath: filename });
         return {
           content: [
             {
               type: "text" as const,
               text: JSON.stringify({ 
                 success: true, 
-                filename, 
-                width: box?.width ?? 0, 
-                height: box?.height ?? 0 
+                filename: result.filepath, 
+                width: result.width, 
+                height: result.height,
+                isGameCanvas: result.isGameCanvas,
               }),
             },
           ],
         };
       }
+
+      const result = await takeScreenshotToBuffer(state.page);
+      const base64 = result.buffer.toString("base64");
 
       return {
         content: [

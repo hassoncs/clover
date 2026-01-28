@@ -20,7 +20,7 @@ export { GameDefinitionSchema } from '@/ai/schemas'
 export {
   validateGameDefinition,
   getValidationSummary,
-  type ValidationResult,
+  type GameDefinitionValidationResult,
   type ValidationError,
   type ValidationWarning,
 } from '@/ai/validator'

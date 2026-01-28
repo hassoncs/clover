@@ -5,6 +5,7 @@ import {
 } from '@/trpc/index'
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
+import type { GameDefinition } from '@slopcade/shared/types/GameDefinition';
 import {
   generateGame,
   refineGame,
@@ -14,6 +15,9 @@ import {
   validateGameDefinition,
   getValidationSummary,
 } from '@/ai'
+import { validateGame, getValidationReportJson } from '@/validation/gameValidator';
+import type { GameValidationReport } from '@slopcade/shared/validation';
+import { isTestGameId, getTestGame } from '@/dev/templateLoader';
 
 interface GameRow {
   id: string;
@@ -29,9 +33,27 @@ interface GameRow {
   deleted_at: number | null;
   base_game_id: string | null;
   forked_from_id: string | null;
+  validation_report: string | null;
+  validation_score: number | null;
+  validation_critical_count: number;
+  validation_warning_count: number;
+  validation_valid: number;
+  validation_updated_at: number | null;
+  validator_version: string | null;
+}
+
+function parseValidationReport(json: string | null): GameValidationReport | null {
+  if (!json) return null;
+  try {
+    return JSON.parse(json) as GameValidationReport;
+  } catch {
+    return null;
+  }
 }
 
 function toClientGame(row: GameRow) {
+  const validationReport = parseValidationReport(row.validation_report);
+
   return {
     id: row.id,
     userId: row.user_id,
@@ -45,6 +67,45 @@ function toClientGame(row: GameRow) {
     updatedAt: new Date(row.updated_at),
     baseGameId: row.base_game_id,
     forkedFromId: row.forked_from_id,
+    validation: validationReport ? {
+      valid: row.validation_valid === 1,
+      score: row.validation_score ?? 0,
+      criticalCount: row.validation_critical_count,
+      warningCount: row.validation_warning_count,
+      topIssues: validationReport.summary.topIssues,
+      isStale: validationReport.validatorVersion !== '1.0.0',
+    } : null,
+  };
+}
+
+function createDevTemplateResponse(id: string) {
+  const game = getTestGame(id);
+  if (!game) return null;
+
+  const definition = JSON.stringify(game.definition);
+  const validationReport = validateGame(game.definition);
+
+  return {
+    id,
+    userId: '00000000-0000-0000-0000-000000000000',
+    title: game.title,
+    description: game.description,
+    definition,
+    thumbnailUrl: null,
+    isPublic: true,
+    playCount: 0,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    baseGameId: id,
+    forkedFromId: null,
+    validation: {
+      valid: validationReport.valid,
+      score: validationReport.summary.score,
+      criticalCount: validationReport.summary.criticalCount,
+      warningCount: validationReport.summary.warningCount,
+      topIssues: validationReport.summary.topIssues,
+      isStale: false,
+    },
   };
 }
 
@@ -60,8 +121,19 @@ export const gamesRouter = router({
   }),
 
   getPublic: publicProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
+      if (isTestGameId(input.id)) {
+        const devGame = createDevTemplateResponse(input.id);
+        if (devGame) {
+          return devGame;
+        }
+      }
+
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.id)) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Invalid game ID format' });
+      }
+
       const result = await ctx.env.DB.prepare(
         `SELECT * FROM games WHERE id = ? AND deleted_at IS NULL`
       )
@@ -80,8 +152,19 @@ export const gamesRouter = router({
     }),
 
   get: protectedProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
+      if (isTestGameId(input.id)) {
+        const devGame = createDevTemplateResponse(input.id);
+        if (devGame) {
+          return devGame;
+        }
+      }
+
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.id)) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Invalid game ID format' });
+      }
+
       const result = await ctx.env.DB.prepare(
         `SELECT * FROM games WHERE id = ? AND deleted_at IS NULL`
       )
@@ -111,12 +194,27 @@ export const gamesRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const id = crypto.randomUUID();
+      let gameDefinition: GameDefinition;
+      try {
+        gameDefinition = JSON.parse(input.definition) as GameDefinition;
+      } catch {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Invalid game definition JSON',
+        });
+      }
+
+      const validationReport = validateGame(gameDefinition);
       const now = Date.now();
+      const id = crypto.randomUUID();
 
       await ctx.env.DB.prepare(
-        `INSERT INTO games (id, user_id, title, description, definition, is_public, play_count, created_at, updated_at, base_game_id)
-         VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`
+        `INSERT INTO games (
+          id, user_id, title, description, definition, is_public, play_count, 
+          created_at, updated_at, base_game_id,
+          validation_report, validation_score, validation_critical_count, 
+          validation_warning_count, validation_valid, validation_updated_at, validator_version
+        ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
         .bind(
           id,
@@ -127,7 +225,14 @@ export const gamesRouter = router({
           input.isPublic ? 1 : 0,
           now,
           now,
-          id
+          id,
+          getValidationReportJson(validationReport),
+          validationReport.summary.score,
+          validationReport.summary.criticalCount,
+          validationReport.summary.warningCount,
+          validationReport.valid ? 1 : 0,
+          now,
+          validationReport.validatorVersion
         )
         .run();
 
@@ -144,6 +249,13 @@ export const gamesRouter = router({
         updatedAt: new Date(now),
         baseGameId: id,
         forkedFromId: null,
+        validation: {
+          valid: validationReport.valid,
+          score: validationReport.summary.score,
+          criticalCount: validationReport.summary.criticalCount,
+          warningCount: validationReport.summary.warningCount,
+          topIssues: validationReport.summary.topIssues,
+        },
       };
     }),
 
@@ -183,10 +295,42 @@ export const gamesRouter = router({
         updates.push('description = ?');
         values.push(input.description);
       }
+
+      let validationReport: GameValidationReport | null = null;
+
       if (input.definition !== undefined) {
         updates.push('definition = ?');
         values.push(input.definition);
+
+        let gameDefinition: GameDefinition;
+        try {
+          gameDefinition = JSON.parse(input.definition) as GameDefinition;
+          validationReport = validateGame(gameDefinition);
+        } catch {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Invalid game definition JSON',
+          });
+        }
+
+        updates.push('validation_report = ?');
+        updates.push('validation_score = ?');
+        updates.push('validation_critical_count = ?');
+        updates.push('validation_warning_count = ?');
+        updates.push('validation_valid = ?');
+        updates.push('validation_updated_at = ?');
+        updates.push('validator_version = ?');
+
+        const now = Date.now();
+        values.push(getValidationReportJson(validationReport));
+        values.push(validationReport.summary.score);
+        values.push(validationReport.summary.criticalCount);
+        values.push(validationReport.summary.warningCount);
+        values.push(validationReport.valid ? 1 : 0);
+        values.push(now);
+        values.push(validationReport.validatorVersion);
       }
+
       if (input.isPublic !== undefined) {
         updates.push('is_public = ?');
         values.push(input.isPublic ? 1 : 0);
@@ -210,7 +354,17 @@ export const gamesRouter = router({
         .bind(...values)
         .run();
 
-      return { id: input.id, updatedAt: new Date(now) };
+      return { 
+        id: input.id, 
+        updatedAt: new Date(now),
+        validation: validationReport ? {
+          valid: validationReport.valid,
+          score: validationReport.summary.score,
+          criticalCount: validationReport.summary.criticalCount,
+          warningCount: validationReport.summary.warningCount,
+          topIssues: validationReport.summary.topIssues,
+        } : null,
+      };
     }),
 
   delete: protectedProcedure
@@ -255,20 +409,90 @@ export const gamesRouter = router({
         .object({
           limit: z.number().min(1).max(50).default(20),
           offset: z.number().min(0).default(0),
+          includeCritical: z.boolean().default(false),
         })
         .optional()
     )
     .query(async ({ ctx, input }) => {
       const limit = input?.limit ?? 20;
       const offset = input?.offset ?? 0;
+      const includeCritical = input?.includeCritical ?? false;
 
-      const result = await ctx.env.DB.prepare(
-        `SELECT * FROM games WHERE is_public = 1 AND deleted_at IS NULL ORDER BY play_count DESC, created_at DESC LIMIT ? OFFSET ?`
-      )
+      let query = `SELECT * FROM games WHERE is_public = 1 AND deleted_at IS NULL`;
+      
+      if (!includeCritical) {
+        query += ` AND (validation_valid = 1 OR validation_valid IS NULL)`;
+      }
+      
+      query += ` ORDER BY play_count DESC, created_at DESC LIMIT ? OFFSET ?`;
+
+      const result = await ctx.env.DB.prepare(query)
         .bind(limit, offset)
         .all<GameRow>();
 
       return result.results.map(toClientGame);
+    }),
+
+  validate: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.env.DB.prepare(
+        `SELECT * FROM games WHERE id = ? AND deleted_at IS NULL`
+      )
+        .bind(input.id)
+        .first<GameRow>();
+
+      if (!existing) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
+      }
+
+      if (existing.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Cannot validate games you do not own' });
+      }
+
+      let gameDefinition: GameDefinition;
+      try {
+        gameDefinition = JSON.parse(existing.definition) as GameDefinition;
+      } catch {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Invalid game definition JSON',
+        });
+      }
+
+      const validationReport = validateGame(gameDefinition);
+      const now = Date.now();
+
+      await ctx.env.DB.prepare(
+        `UPDATE games SET 
+          validation_report = ?,
+          validation_score = ?,
+          validation_critical_count = ?,
+          validation_warning_count = ?,
+          validation_valid = ?,
+          validation_updated_at = ?,
+          validator_version = ?
+        WHERE id = ?`
+      )
+        .bind(
+          getValidationReportJson(validationReport),
+          validationReport.summary.score,
+          validationReport.summary.criticalCount,
+          validationReport.summary.warningCount,
+          validationReport.valid ? 1 : 0,
+          now,
+          validationReport.validatorVersion,
+          input.id
+        )
+        .run();
+
+      return {
+        valid: validationReport.valid,
+        score: validationReport.summary.score,
+        criticalCount: validationReport.summary.criticalCount,
+        warningCount: validationReport.summary.warningCount,
+        topIssues: validationReport.summary.topIssues,
+      };
     }),
 
   generate: protectedProcedure
@@ -306,10 +530,15 @@ export const gamesRouter = router({
         const id = crypto.randomUUID();
         const now = Date.now();
         const definition = JSON.stringify(result.game);
+        const validationReport = validateGame(result.game);
 
         await ctx.env.DB.prepare(
-          `INSERT INTO games (id, user_id, title, description, definition, is_public, play_count, created_at, updated_at, base_game_id)
-           VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?, ?)`
+          `INSERT INTO games (
+            id, user_id, title, description, definition, is_public, play_count, 
+            created_at, updated_at, base_game_id,
+            validation_report, validation_score, validation_critical_count, 
+            validation_warning_count, validation_valid, validation_updated_at, validator_version
+          ) VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         )
           .bind(
             id,
@@ -319,7 +548,14 @@ export const gamesRouter = router({
             definition,
             now,
             now,
-            id
+            id,
+            getValidationReportJson(validationReport),
+            validationReport.summary.score,
+            validationReport.summary.criticalCount,
+            validationReport.summary.warningCount,
+            validationReport.valid ? 1 : 0,
+            now,
+            validationReport.validatorVersion
           )
           .run();
 
@@ -410,7 +646,7 @@ export const gamesRouter = router({
       };
     }),
 
-  validate: publicProcedure
+  validateDefinition: publicProcedure
     .input(z.object({ gameDefinition: z.string() }))
     .query(({ input }) => {
       let game: unknown;
@@ -482,12 +718,17 @@ export const gamesRouter = router({
       }
 
       const newDefinition = JSON.stringify(definition);
+      const validationReport = validateGame(definition as unknown as GameDefinition);
 
       const parentBaseGameId = existing.base_game_id ?? existing.id;
 
       await ctx.env.DB.prepare(
-        `INSERT INTO games (id, user_id, title, description, definition, is_public, play_count, created_at, updated_at, base_game_id, forked_from_id)
-         VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?)`
+        `INSERT INTO games (
+          id, user_id, title, description, definition, is_public, play_count, 
+          created_at, updated_at, base_game_id, forked_from_id,
+          validation_report, validation_score, validation_critical_count, 
+          validation_warning_count, validation_valid, validation_updated_at, validator_version
+        ) VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
         .bind(
           newId,
@@ -498,7 +739,14 @@ export const gamesRouter = router({
           now,
           now,
           parentBaseGameId,
-          existing.id
+          existing.id,
+          getValidationReportJson(validationReport),
+          validationReport.summary.score,
+          validationReport.summary.criticalCount,
+          validationReport.summary.warningCount,
+          validationReport.valid ? 1 : 0,
+          now,
+          validationReport.validatorVersion
         )
         .run();
 
@@ -508,56 +756,161 @@ export const gamesRouter = router({
         title: `${existing.title} (Fork)`,
         description: existing.description,
         definition: newDefinition,
-        thumbnailUrl: null,
+        thumbnailUrl: existing.thumbnail_url,
         isPublic: false,
         playCount: 0,
         createdAt: new Date(now),
         updatedAt: new Date(now),
         baseGameId: parentBaseGameId,
         forkedFromId: existing.id,
-        forkedFrom: {
-          gameId: existing.id,
-          title: existing.title,
-        },
       };
     }),
 
-  getDetail: protectedProcedure
-    .input(z.object({ id: z.string().uuid() }))
-    .query(async ({ ctx, input }) => {
-      const result = await ctx.env.DB.prepare(
-        `SELECT * FROM games WHERE id = ? AND deleted_at IS NULL`
-      )
-        .bind(input.id)
-        .first<GameRow>();
+  syncTemplates: protectedProcedure
+    .input(
+      z.object({
+        templates: z.array(
+          z.object({
+            id: z.string(),
+            title: z.string(),
+            description: z.string().optional(),
+            definition: z.string(),
+            isPublic: z.boolean().default(true),
+          })
+        ),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const SYSTEM_USER_ID = '00000000-0000-0000-0000-000000000000';
+      const now = Date.now();
 
-      if (!result) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
+      const results: Array<{
+        id: string;
+        title: string;
+        action: 'created' | 'updated' | 'error';
+        error?: string;
+      }> = [];
+
+      for (const template of input.templates) {
+        try {
+          let gameDefinition: GameDefinition;
+          try {
+            gameDefinition = JSON.parse(template.definition) as GameDefinition;
+          } catch {
+            results.push({
+              id: template.id,
+              title: template.title,
+              action: 'error',
+              error: 'Invalid game definition JSON',
+            });
+            continue;
+          }
+
+          const validationReport = validateGame(gameDefinition);
+
+          const existing = await ctx.env.DB.prepare(
+            `SELECT id FROM games WHERE id = ? AND user_id = ? AND deleted_at IS NULL`
+          )
+            .bind(template.id, SYSTEM_USER_ID)
+            .first<{ id: string }>();
+
+          if (existing) {
+            await ctx.env.DB.prepare(
+              `UPDATE games SET 
+                title = ?,
+                description = ?,
+                definition = ?,
+                is_public = ?,
+                updated_at = ?,
+                validation_report = ?,
+                validation_score = ?,
+                validation_critical_count = ?,
+                validation_warning_count = ?,
+                validation_valid = ?,
+                validation_updated_at = ?,
+                validator_version = ?
+              WHERE id = ? AND user_id = ?`
+            )
+              .bind(
+                template.title,
+                template.description ?? null,
+                template.definition,
+                template.isPublic ? 1 : 0,
+                now,
+                getValidationReportJson(validationReport),
+                validationReport.summary.score,
+                validationReport.summary.criticalCount,
+                validationReport.summary.warningCount,
+                validationReport.valid ? 1 : 0,
+                now,
+                validationReport.validatorVersion,
+                template.id,
+                SYSTEM_USER_ID
+              )
+              .run();
+
+            results.push({
+              id: template.id,
+              title: template.title,
+              action: 'updated',
+            });
+          } else {
+            await ctx.env.DB.prepare(
+              `INSERT INTO games (
+                id, user_id, title, description, definition, is_public, play_count,
+                created_at, updated_at, base_game_id,
+                validation_report, validation_score, validation_critical_count,
+                validation_warning_count, validation_valid, validation_updated_at, validator_version
+              ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            )
+              .bind(
+                template.id,
+                SYSTEM_USER_ID,
+                template.title,
+                template.description ?? null,
+                template.definition,
+                template.isPublic ? 1 : 0,
+                now,
+                now,
+                template.id,
+                getValidationReportJson(validationReport),
+                validationReport.summary.score,
+                validationReport.summary.criticalCount,
+                validationReport.summary.warningCount,
+                validationReport.valid ? 1 : 0,
+                now,
+                validationReport.validatorVersion
+              )
+              .run();
+
+            results.push({
+              id: template.id,
+              title: template.title,
+              action: 'created',
+            });
+          }
+        } catch (error) {
+          results.push({
+            id: template.id,
+            title: template.title,
+            action: 'error',
+            error: error instanceof Error ? error.message : 'Unknown error',
+          });
+        }
       }
 
-      const isOwner = result.user_id === ctx.user.id;
-      
-      if (!result.is_public && !isOwner) {
-        throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
-      }
-
-      const baseGameId = result.base_game_id ?? result.id;
-
-      const packsResult = await ctx.env.DB.prepare(
-        `SELECT id, name, description, created_at FROM asset_packs WHERE base_game_id = ? AND deleted_at IS NULL ORDER BY created_at DESC`
-      )
-        .bind(baseGameId)
-        .all<{ id: string; name: string; description: string | null; created_at: number }>();
+      const created = results.filter(r => r.action === 'created').length;
+      const updated = results.filter(r => r.action === 'updated').length;
+      const errors = results.filter(r => r.action === 'error').length;
 
       return {
-        game: toClientGame(result),
-        baseGameId,
-        packs: packsResult.results.map(p => ({
-          id: p.id,
-          name: p.name,
-          description: p.description,
-          createdAt: p.created_at,
-        })),
+        summary: {
+          total: input.templates.length,
+          created,
+          updated,
+          errors,
+        },
+        results,
       };
     }),
 });

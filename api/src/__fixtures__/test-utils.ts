@@ -31,13 +31,22 @@ CREATE TABLE IF NOT EXISTS games (
   updated_at INTEGER NOT NULL,
   deleted_at INTEGER,
   base_game_id TEXT REFERENCES games(id),
-  forked_from_id TEXT REFERENCES games(id)
+  forked_from_id TEXT REFERENCES games(id),
+  validation_report TEXT,
+  validation_score INTEGER,
+  validation_critical_count INTEGER DEFAULT 0,
+  validation_warning_count INTEGER DEFAULT 0,
+  validation_valid INTEGER DEFAULT 0,
+  validation_updated_at INTEGER,
+  validator_version TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_games_user_id ON games(user_id);
 CREATE INDEX IF NOT EXISTS idx_games_install_id ON games(install_id);
 CREATE INDEX IF NOT EXISTS idx_games_is_public ON games(is_public);
 CREATE INDEX IF NOT EXISTS idx_games_created_at ON games(created_at);
+CREATE INDEX IF NOT EXISTS idx_games_validation_valid ON games(validation_valid);
+CREATE INDEX IF NOT EXISTS idx_games_validation_score ON games(validation_score);
 
 -- Assets table
 CREATE TABLE IF NOT EXISTS assets (

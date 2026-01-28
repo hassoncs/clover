@@ -884,7 +884,7 @@ export function createWebGodotBridge(): GodotBridge {
       getGodotBridge()?.setDebugShowShapes(show);
     },
 
-    setDebugSettings(settings: { showInputDebug: boolean; showPhysicsShapes: boolean; showFPS: boolean }) {
+    setDebugSettings(settings: { showInputDebug: boolean; showPhysicsShapes: boolean; showZones: boolean; showFPS: boolean }) {
       console.log('[GodotBridge.web] setDebugSettings called:', settings);
       const bridge = getGodotBridge();
       if (bridge) {

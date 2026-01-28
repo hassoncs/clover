@@ -11,8 +11,8 @@ import type { GameDefinition } from "@slopcade/shared";
 
 export default function TestGameRunScreen() {
   const router = useRouter();
-  const { id, autostart } = useLocalSearchParams<{ id: string; autostart?: string }>();
-  const shouldAutoStart = autostart === "true" || autostart === "1";
+  const { id, debug } = useLocalSearchParams<{ id: string; debug?: string }>();
+  const isDebugMode = debug === "true" || debug === "1";
   const entry = useMemo(() => (id && id in TESTGAMES_BY_ID ? TESTGAMES_BY_ID[id as TestGameId] : undefined), [id]);
 
   const [runtimeKey, setRuntimeKey] = useState(0);
@@ -120,7 +120,7 @@ export default function TestGameRunScreen() {
           imageUrls={imageUrls}
           onBackToMenu={handleBack}
           onRequestRestart={handleReset}
-          autoStart={shouldAutoStart}
+          debugMode={isDebugMode}
           onReady={handleGodotReady}
         />
       )}
@@ -143,6 +143,7 @@ export default function TestGameRunScreen() {
             progress={progress}
             config={gameDefinition.loadingScreen}
             titleHeroImageUrl={gameDefinition.metadata.titleHeroImageUrl}
+            instructions={gameDefinition.metadata.instructions}
             onSkip={godotReady ? undefined : skipPreload}
           />
         </Animated.View>
@@ -156,17 +157,17 @@ interface GameRuntimeWrapperProps {
   imageUrls: string[];
   onBackToMenu: () => void;
   onRequestRestart: () => void;
-  autoStart: boolean;
+  debugMode: boolean;
   onReady?: () => void;
 }
 
-function GameRuntimeWrapper({ definition, imageUrls, onBackToMenu, onRequestRestart, autoStart, onReady }: GameRuntimeWrapperProps) {
+function GameRuntimeWrapper({ definition, imageUrls, onBackToMenu, onRequestRestart, debugMode, onReady }: GameRuntimeWrapperProps) {
   const [GameRuntime, setGameRuntime] = useState<React.ComponentType<{
     definition: GameDefinition;
     showHUD: boolean;
     onBackToMenu: () => void;
     onRequestRestart: () => void;
-    autoStart: boolean;
+    debugMode: boolean;
     preloadTextureUrls?: string[];
     onReady?: () => void;
   }> | null>(null);
@@ -184,10 +185,10 @@ function GameRuntimeWrapper({ definition, imageUrls, onBackToMenu, onRequestRest
   return (
     <GameRuntime
       definition={definition}
-      showHUD={true}
+      showHUD={!debugMode}
       onBackToMenu={onBackToMenu}
       onRequestRestart={onRequestRestart}
-      autoStart={autoStart}
+      debugMode={debugMode}
       preloadTextureUrls={imageUrls}
       onReady={onReady}
     />

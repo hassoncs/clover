@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS games (
   install_id TEXT,
   title TEXT NOT NULL,
   description TEXT,
-  definition TEXT NOT NULL,  -- JSON blob containing GameDefinition
+  definition TEXT NOT NULL,
   thumbnail_url TEXT,
   is_public INTEGER DEFAULT 0,
   play_count INTEGER DEFAULT 0,
@@ -30,7 +30,14 @@ CREATE TABLE IF NOT EXISTS games (
   updated_at INTEGER NOT NULL,
   deleted_at INTEGER,
   base_game_id TEXT REFERENCES games(id),
-  forked_from_id TEXT REFERENCES games(id)
+  forked_from_id TEXT REFERENCES games(id),
+  validation_report TEXT,
+  validation_score INTEGER,
+  validation_critical_count INTEGER DEFAULT 0,
+  validation_warning_count INTEGER DEFAULT 0,
+  validation_valid INTEGER DEFAULT 0,
+  validation_updated_at INTEGER,
+  validator_version TEXT
 );
 
 -- Indexes for common queries
@@ -38,6 +45,8 @@ CREATE INDEX IF NOT EXISTS idx_games_user_id ON games(user_id);
 CREATE INDEX IF NOT EXISTS idx_games_install_id ON games(install_id);
 CREATE INDEX IF NOT EXISTS idx_games_is_public ON games(is_public);
 CREATE INDEX IF NOT EXISTS idx_games_created_at ON games(created_at);
+CREATE INDEX IF NOT EXISTS idx_games_validation_valid ON games(validation_valid);
+CREATE INDEX IF NOT EXISTS idx_games_validation_score ON games(validation_score);
 
 -- Assets table (AI-generated sprites stored in R2)
 CREATE TABLE IF NOT EXISTS assets (
@@ -203,11 +212,11 @@ describe('Games Router', () => {
     });
   });
 
-  describe('validate route', () => {
+  describe('validateDefinition route', () => {
     it('should validate a correct game definition', async () => {
       const caller = appRouter.createCaller(ctx);
       
-      const result = await caller.games.validate({
+      const result = await caller.games.validateDefinition({
         gameDefinition: JSON.stringify(validProjectileGame),
       });
 
@@ -218,7 +227,7 @@ describe('Games Router', () => {
     it('should return errors for invalid JSON', async () => {
       const caller = appRouter.createCaller(ctx);
       
-      const result = await caller.games.validate({
+      const result = await caller.games.validateDefinition({
         gameDefinition: 'not valid json {{{',
       });
 
@@ -229,7 +238,7 @@ describe('Games Router', () => {
     it('should return errors for game with no entities', async () => {
       const caller = appRouter.createCaller(ctx);
       
-      const result = await caller.games.validate({
+      const result = await caller.games.validateDefinition({
         gameDefinition: JSON.stringify({
           metadata: { id: 'test' },
           world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
@@ -244,7 +253,7 @@ describe('Games Router', () => {
     it('should return errors for game missing win condition', async () => {
       const caller = appRouter.createCaller(ctx);
       
-      const result = await caller.games.validate({
+      const result = await caller.games.validateDefinition({
         gameDefinition: JSON.stringify({
           metadata: { id: 'test', title: 'Test' },
           world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
@@ -264,7 +273,7 @@ describe('Games Router', () => {
     it('should include summary in response', async () => {
       const caller = appRouter.createCaller(ctx);
       
-      const result = await caller.games.validate({
+      const result = await caller.games.validateDefinition({
         gameDefinition: JSON.stringify(validProjectileGame),
       });
 
@@ -301,13 +310,13 @@ describe('Games Router', () => {
 
       const publicGame = await caller.games.create({
         title: 'Public Game ' + Date.now(),
-        definition: '{}',
+        definition: JSON.stringify(validProjectileGame),
         isPublic: true,
       });
 
       await caller.games.create({
         title: 'Private Game ' + Date.now(),
-        definition: '{}',
+        definition: JSON.stringify(validProjectileGame),
         isPublic: false,
       });
 
@@ -328,13 +337,13 @@ describe('Games Router', () => {
 
       const game1 = await caller.games.create({
         title: 'Low Play Game',
-        definition: '{}',
+        definition: JSON.stringify(validProjectileGame),
         isPublic: true,
       });
 
       const game2 = await caller.games.create({
         title: 'High Play Game',
-        definition: '{}',
+        definition: JSON.stringify(validProjectileGame),
         isPublic: true,
       });
 

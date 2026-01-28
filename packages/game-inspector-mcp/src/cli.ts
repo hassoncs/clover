@@ -1,11 +1,12 @@
 #!/usr/bin/env npx tsx
 import { chromium } from "playwright";
+import { takeScreenshot } from "./utils.js";
 
 const DEFAULT_BASE_URL = "http://localhost:8085";
 
 async function main() {
   const gameId = process.argv[2] || "candyCrush";
-  const url = `${DEFAULT_BASE_URL}/test-games/${gameId}?debug=true&autostart=true`;
+  const url = `${DEFAULT_BASE_URL}/test-games/${gameId}?debug=true`;
   
   console.log(`Opening ${url}...`);
   
@@ -161,11 +162,8 @@ async function main() {
   
   console.log("\n=== Taking screenshot ===");
   
-  const godotElement = await page.$('iframe[title="Godot Game Engine"], canvas#canvas, canvas');
-  if (godotElement) {
-    await godotElement.screenshot({ path: "debug-game-screenshot.png" });
-    console.log("Saved to debug-game-screenshot.png");
-  }
+  const result = await takeScreenshot(page, { filepath: "debug-game-screenshot.png" });
+  console.log(`Saved to ${result.filepath} (${result.width}x${result.height}, isGameCanvas: ${result.isGameCanvas})`);
   
   console.log("\nPress Ctrl+C to exit...");
   

@@ -11,7 +11,7 @@ export function normalizeGameName(name: string): GameInfo | null {
 }
 
 export function buildGameUrl(gameId: string, baseUrl: string): string {
-  return `${baseUrl}/test-games/${gameId}?debug=true&autostart=true`;
+  return `${baseUrl}/test-games/${gameId}?debug=true`;
 }
 
 export function buildExampleUrl(exampleId: string, baseUrl: string): string {
@@ -69,15 +69,68 @@ export function getScreenshotsDir(): string {
   return screenshotsDir;
 }
 
-export async function takeScreenshot(page: Page, prefix: string = 'screenshot'): Promise<string> {
-  const screenshotsDir = getScreenshotsDir();
+export interface ScreenshotResult {
+  filepath: string;
+  width: number;
+  height: number;
+  isGameCanvas: boolean;
+}
+
+export interface ScreenshotOptions {
+  filepath?: string;
+  prefix?: string;
+}
+
+export async function takeScreenshot(page: Page, options: ScreenshotOptions = {}): Promise<ScreenshotResult> {
+  const { filepath: explicitPath, prefix = 'screenshot' } = options;
   
-  const timestamp = Date.now();
-  const filename = `${prefix}-${timestamp}.png`;
-  const filepath = path.join(screenshotsDir, filename);
+  const filepath = explicitPath ?? path.join(getScreenshotsDir(), `${prefix}-${Date.now()}.png`);
+  
+  const godotElement = await page.$('iframe[title="Godot Game Engine"], canvas#canvas, canvas');
+  
+  if (godotElement) {
+    await godotElement.screenshot({ path: filepath });
+    const box = await godotElement.boundingBox();
+    return {
+      filepath,
+      width: box?.width ?? 0,
+      height: box?.height ?? 0,
+      isGameCanvas: true,
+    };
+  }
   
   await page.screenshot({ path: filepath });
-  return filepath;
+  const viewport = page.viewportSize();
+  return {
+    filepath,
+    width: viewport?.width ?? 0,
+    height: viewport?.height ?? 0,
+    isGameCanvas: false,
+  };
+}
+
+export async function takeScreenshotToBuffer(page: Page): Promise<{ buffer: Buffer; width: number; height: number; isGameCanvas: boolean }> {
+  const godotElement = await page.$('iframe[title="Godot Game Engine"], canvas#canvas, canvas');
+  
+  if (godotElement) {
+    const buffer = await godotElement.screenshot({ type: 'png' });
+    const box = await godotElement.boundingBox();
+    return {
+      buffer,
+      width: box?.width ?? 0,
+      height: box?.height ?? 0,
+      isGameCanvas: true,
+    };
+  }
+  
+  const buffer = await page.screenshot({ type: 'png' });
+  const viewport = page.viewportSize();
+  return {
+    buffer,
+    width: viewport?.width ?? 0,
+    height: viewport?.height ?? 0,
+    isGameCanvas: false,
+  };
 }
 
 export async function waitForDebugBridge(page: Page, timeout: number = DEFAULT_TIMEOUT): Promise<boolean> {
@@ -86,6 +139,21 @@ export async function waitForDebugBridge(page: Page, timeout: number = DEFAULT_T
       () => {
         const w = window as unknown as WindowWithBridge;
         return w.GodotDebugBridge?.enabled === true;
+      },
+      { timeout }
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function waitForGameReady(page: Page, timeout: number = DEFAULT_TIMEOUT): Promise<boolean> {
+  try {
+    await page.waitForFunction(
+      () => {
+        const w = window as unknown as { slopcadeGameReady?: boolean };
+        return w.slopcadeGameReady === true;
       },
       { timeout }
     );

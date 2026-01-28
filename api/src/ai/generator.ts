@@ -6,7 +6,7 @@ import type { GameDefinition } from '@slopcade/shared/types/GameDefinition'
 import type { GameIntent } from '@/ai/classifier'
 import { classifyPrompt } from '@/ai/classifier'
 import { getTemplateForGameType } from '@/ai/templates'
-import { validateGameDefinition, type ValidationResult } from '@/ai/validator'
+import { validateGameDefinition, type GameDefinitionValidationResult } from '@/ai/validator'
 import { GameDefinitionSchema } from '@/ai/schemas'
 
 export type AIProvider = 'openai' | 'openrouter' | 'anthropic';
@@ -160,7 +160,7 @@ export interface GenerationResult {
     suggestions?: string[];
   };
   intent?: GameIntent;
-  validationResult?: ValidationResult;
+  validationResult?: GameDefinitionValidationResult;
   retryCount?: number;
 }
 
@@ -172,7 +172,7 @@ export interface RefinementResult {
     message: string;
     suggestions?: string[];
   };
-  validationResult?: ValidationResult;
+  validationResult?: GameDefinitionValidationResult;
 }
 
 function buildGenerationPrompt(prompt: string, intent: GameIntent): string {

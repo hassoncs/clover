@@ -30,6 +30,7 @@ const REGISTRY_CONFIG = [
     name: 'testGames',
     sourceDir: 'lib/test-games/games',
     outputFile: 'lib/registry/generated/testGames.ts',
+    jsonOutputFile: '../../api/dev-test-games.json',
     metaType: 'TestGameMeta',
     entryType: 'TestGameEntry',
     idType: 'TestGameId',
@@ -240,7 +241,7 @@ export async function load${capitalizedSingular}(id: ${idType}): Promise<Compone
 }
 `;
 
-  return { output, count: entries.length };
+  return { output, count: entries.length, entries };
 }
 
 function generateDataRegistry(config, files, fullSourceDir) {
@@ -336,7 +337,7 @@ export async function loadAll${name.charAt(0).toUpperCase() + name.slice(1)}(): 
 }
 `;
 
-  return { output, count: entries.length };
+  return { output, count: entries.length, entries };
 }
 
 function generateRegistry(config, options = {}) {
@@ -381,29 +382,51 @@ function generateRegistry(config, options = {}) {
   chmodSync(fullOutputFile, 0o444);
   
   console.log(`[${name}] Generated ${outputFile} with ${result.count} entries (read-only)`);
-  
-  return { count: result.count, stale: false };
+
+  return { count: result.count, stale: false, entries: result.entries };
 }
 
-function generateAll(options = {}) {
-  const results = [];
+async function generateJsonOutput(config, entries) {
+  if (!config.jsonOutputFile || entries.length === 0) {
+    return;
+  }
+
+  const { execSync } = await import('child_process');
   
+  try {
+    execSync(
+      'npx tsx scripts/export-test-games-for-api.ts',
+      { encoding: 'utf-8', cwd: ROOT, stdio: 'inherit' }
+    );
+  } catch (err) {
+    console.error(`[${config.name}] Failed to generate JSON output: ${err.message}`);
+  }
+}
+
+async function generateAll(options = {}) {
+  const results = [];
+
   for (const config of REGISTRY_CONFIG) {
     const result = generateRegistry(config, options);
     results.push({ name: config.name, outputFile: config.outputFile, ...result });
+
+    // Generate JSON output for data modules (after TS generation)
+    if (!options.dryRun && config.jsonOutputFile && result.entries) {
+      await generateJsonOutput(config, result.entries);
+    }
   }
-  
+
   return results;
 }
 
-function main() {
+async function main() {
   console.log('Registry Generator');
   console.log('==================');
-  
+
   if (checkMode) {
     console.log('Running in --check mode (verifying generated files are up-to-date)\n');
-    const results = generateAll({ dryRun: true });
-    
+    const results = await generateAll({ dryRun: true });
+
     let hasStale = false;
     for (const r of results) {
       if (r.stale) {
@@ -415,7 +438,7 @@ function main() {
         console.log(`✓ [${r.name}] ${r.outputFile} is up-to-date`);
       }
     }
-    
+
     if (hasStale) {
       console.log('\n⚠️  Generated files are out of sync. Run "pnpm generate:registry" to fix.');
       process.exit(1);
@@ -424,8 +447,8 @@ function main() {
       process.exit(0);
     }
   }
-  
-  generateAll();
+
+  await generateAll();
   
   if (watchMode) {
     console.log('\nWatch mode enabled. Watching for changes...');

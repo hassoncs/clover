@@ -6,6 +6,7 @@ const STORAGE_KEY = "@slopcade_dev_tools";
 export interface DevToolsState {
   showInputDebug: boolean;
   showPhysicsShapes: boolean;
+  showZones: boolean;
   showFPS: boolean;
   isExpanded: boolean;
 }
@@ -13,6 +14,7 @@ export interface DevToolsState {
 const DEFAULT_STATE: DevToolsState = {
   showInputDebug: false,
   showPhysicsShapes: false,
+  showZones: false,
   showFPS: false,
   isExpanded: false,
 };
@@ -85,6 +87,20 @@ export function useDevTools() {
     });
   }, [saveSettings]);
 
+  const toggleZones = useCallback(() => {
+    setState((prev) => {
+      const next = { ...prev, showZones: !prev.showZones };
+      console.log(
+        "[DevTools] Toggle Zones:",
+        prev.showZones,
+        "→",
+        next.showZones,
+      );
+      saveSettings(next);
+      return next;
+    });
+  }, [saveSettings]);
+
   const toggleFPS = useCallback(() => {
     setState((prev) => {
       const next = { ...prev, showFPS: !prev.showFPS };
@@ -107,6 +123,7 @@ export function useDevTools() {
     isLoading,
     toggleInputDebug,
     togglePhysicsShapes,
+    toggleZones,
     toggleFPS,
     toggleExpanded,
   };

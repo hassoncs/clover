@@ -590,6 +590,7 @@ export default function PlayScreen() {
             progress={progress}
             config={gameDefinition.loadingScreen}
             titleHeroImageUrl={gameDefinition.metadata.titleHeroImageUrl}
+            instructions={gameDefinition.metadata.instructions}
             onSkip={godotReady ? undefined : skipPreload}
           />
         </Animated.View>

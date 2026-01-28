@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { ValidationIssue } from '../types';
+import type { GameValidationIssue } from '../types';
 import { computeValidationScore, selectTopIssues, computeValidationSummary } from '../scoring';
 
 describe('computeValidationScore', () => {
@@ -8,21 +8,21 @@ describe('computeValidationScore', () => {
   });
 
   it('deducts 30 points per critical issue', () => {
-    const issues: ValidationIssue[] = [
+    const issues: GameValidationIssue[] = [
       { code: 'ERR1', message: 'Error 1', severity: 'critical', source: 'gameDefinition', path: 'a' },
     ];
     expect(computeValidationScore(issues)).toBe(70);
   });
 
   it('deducts 3 points per warning', () => {
-    const issues: ValidationIssue[] = [
+    const issues: GameValidationIssue[] = [
       { code: 'WARN1', message: 'Warning 1', severity: 'warning', source: 'gameDefinition', path: 'a' },
     ];
     expect(computeValidationScore(issues)).toBe(97);
   });
 
   it('combines critical and warning penalties', () => {
-    const issues: ValidationIssue[] = [
+    const issues: GameValidationIssue[] = [
       { code: 'ERR1', message: 'Error 1', severity: 'critical', source: 'gameDefinition', path: 'a' },
       { code: 'WARN1', message: 'Warning 1', severity: 'warning', source: 'gameDefinition', path: 'b' },
       { code: 'WARN2', message: 'Warning 2', severity: 'warning', source: 'gameDefinition', path: 'c' },
@@ -31,7 +31,7 @@ describe('computeValidationScore', () => {
   });
 
   it('clamps to minimum of 0', () => {
-    const issues: ValidationIssue[] = Array(10).fill(null).map((_, i) => ({
+    const issues: GameValidationIssue[] = Array(10).fill(null).map((_, i) => ({
       code: `ERR${i}`,
       message: `Error ${i}`,
       severity: 'critical' as const,
@@ -42,7 +42,7 @@ describe('computeValidationScore', () => {
   });
 
   it('respects custom penalties', () => {
-    const issues: ValidationIssue[] = [
+    const issues: GameValidationIssue[] = [
       { code: 'ERR1', message: 'Error 1', severity: 'critical', source: 'gameDefinition', path: 'a' },
     ];
     expect(computeValidationScore(issues, { criticalPenalty: 50 })).toBe(50);
@@ -51,7 +51,7 @@ describe('computeValidationScore', () => {
   it('respects custom min/max scores', () => {
     expect(computeValidationScore([], { minScore: 10, maxScore: 90 })).toBe(90);
     
-    const issues: ValidationIssue[] = [
+    const issues: GameValidationIssue[] = [
       { code: 'ERR1', message: 'Error 1', severity: 'critical', source: 'gameDefinition', path: 'a' },
       { code: 'ERR2', message: 'Error 2', severity: 'critical', source: 'gameDefinition', path: 'b' },
       { code: 'ERR3', message: 'Error 3', severity: 'critical', source: 'gameDefinition', path: 'c' },
@@ -61,7 +61,7 @@ describe('computeValidationScore', () => {
 });
 
 describe('selectTopIssues', () => {
-  const createIssues = (): ValidationIssue[] => [
+  const createIssues = (): GameValidationIssue[] => [
     { code: 'WARN1', message: 'Warning 1', severity: 'warning', source: 'gameDefinition', path: 'z' },
     { code: 'CRIT1', message: 'Critical 1', severity: 'critical', source: 'gameDefinition', path: 'b' },
     { code: 'WARN2', message: 'Warning 2', severity: 'warning', source: 'gameDefinition', path: 'a' },
@@ -100,7 +100,7 @@ describe('selectTopIssues', () => {
   });
 
   it('returns all issues if fewer than limit', () => {
-    const issues: ValidationIssue[] = [
+    const issues: GameValidationIssue[] = [
       { code: 'WARN1', message: 'Warning', severity: 'warning', source: 'gameDefinition', path: 'a' },
     ];
     const top = selectTopIssues(issues, { limit: 5 });
@@ -110,7 +110,7 @@ describe('selectTopIssues', () => {
 
 describe('computeValidationSummary', () => {
   it('computes complete summary', () => {
-    const issues: ValidationIssue[] = [
+    const issues: GameValidationIssue[] = [
       { code: 'ERR1', message: 'Error 1', severity: 'critical', source: 'gameDefinition', path: 'a' },
       { code: 'ERR2', message: 'Error 2', severity: 'critical', source: 'gameDefinition', path: 'b' },
       { code: 'WARN1', message: 'Warning 1', severity: 'warning', source: 'gameDefinition', path: 'c' },
@@ -125,7 +125,7 @@ describe('computeValidationSummary', () => {
   });
 
   it('passes options to scoring and top issues', () => {
-    const issues: ValidationIssue[] = [
+    const issues: GameValidationIssue[] = [
       { code: 'ERR1', message: 'Error 1', severity: 'critical', source: 'gameDefinition', path: 'a' },
       { code: 'WARN1', message: 'Warning 1', severity: 'warning', source: 'gameDefinition', path: 'b' },
     ];

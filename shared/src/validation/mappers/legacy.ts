@@ -1,4 +1,4 @@
-import type { ValidationIssue, GameValidationReport, ValidatorSource } from '../types';
+import type { GameValidationIssue, GameValidationReport, ValidatorSource } from '../types';
 import { CURRENT_VALIDATOR_VERSION } from '../types';
 import { computeValidationSummary } from '../scoring';
 
@@ -20,7 +20,7 @@ interface LegacyValidationResult {
   warnings: LegacyValidationWarning[];
 }
 
-function mapErrorToIssue(error: LegacyValidationError, source: ValidatorSource): ValidationIssue {
+function mapErrorToIssue(error: LegacyValidationError, source: ValidatorSource): GameValidationIssue {
   return {
     code: error.code,
     message: error.message,
@@ -30,7 +30,7 @@ function mapErrorToIssue(error: LegacyValidationError, source: ValidatorSource):
   };
 }
 
-function mapWarningToIssue(warning: LegacyValidationWarning, source: ValidatorSource): ValidationIssue {
+function mapWarningToIssue(warning: LegacyValidationWarning, source: ValidatorSource): GameValidationIssue {
   return {
     code: warning.code,
     message: warning.message,
@@ -44,7 +44,7 @@ export function mapLegacyResultToReport(
   result: LegacyValidationResult,
   source: ValidatorSource = 'gameDefinition'
 ): GameValidationReport {
-  const issues: ValidationIssue[] = [
+  const issues: GameValidationIssue[] = [
     ...result.errors.map(e => mapErrorToIssue(e, source)),
     ...result.warnings.map(w => mapWarningToIssue(w, source)),
   ];

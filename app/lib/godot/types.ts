@@ -304,7 +304,7 @@ export interface GodotBridge {
 
    // Debug mode
    setDebugShowShapes(show: boolean): void;
-   setDebugSettings(settings: { showInputDebug: boolean; showPhysicsShapes: boolean; showFPS: boolean }): void;
+    setDebugSettings(settings: { showInputDebug: boolean; showPhysicsShapes: boolean; showZones: boolean; showFPS: boolean }): void;
 
   // Camera control
   setCameraTarget(entityId: string | null): void;

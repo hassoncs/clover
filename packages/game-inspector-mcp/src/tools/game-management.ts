@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { GameInspectorState, WindowWithBridge } from "../types.js";
 import { DEFAULT_BASE_URL, DEFAULT_TIMEOUT } from "../types.js";
-import { normalizeGameName, buildGameUrl, buildExampleUrl, ensurePage, waitForDebugBridge, clearLogs, getRecentLogs, queryGodot } from "../utils.js";
+import { normalizeGameName, buildGameUrl, buildExampleUrl, ensurePage, waitForDebugBridge, waitForGameReady, clearLogs, getRecentLogs, queryGodot } from "../utils.js";
 import { getAvailableGames, getAvailableExamples, isValidGame, isValidExample, type GameInfo } from "../registry.js";
 
 export function registerGameManagementTools(server: McpServer, state: GameInspectorState) {
@@ -68,10 +68,6 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
         
         const hasDebug = name.includes("debug=");
         url = `${baseUrl}${cleanPath}${hasDebug ? "" : (name.includes("?") ? "&debug=true" : "?debug=true")}`;
-        
-        if (pathParts[0] === "test-games") {
-          url += "&autostart=true";
-        }
       } else {
         const gameInfo = normalizeGameName(name);
         
@@ -114,9 +110,9 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
       clearLogs(state);
       
       await page.goto(url);
-      const ready = await waitForDebugBridge(page, timeout);
+      const bridgeReady = await waitForDebugBridge(page, timeout);
 
-      if (!ready) {
+      if (!bridgeReady) {
         return {
           content: [
             {
@@ -126,6 +122,24 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
                 error: "Timeout waiting for GodotDebugBridge to become ready",
                 url,
                 hint: "Make sure the dev server is running (pnpm dev) and the URL is correct",
+              }),
+            },
+          ],
+        };
+      }
+
+      const gameReady = await waitForGameReady(page, timeout);
+      
+      if (!gameReady) {
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify({
+                success: false,
+                error: "Timeout waiting for game to finish loading (slopcadeGameReady)",
+                url,
+                hint: "The Godot iframe loaded but the React GameRuntime did not complete setup",
               }),
             },
           ],

@@ -1,7 +1,7 @@
 export type IssueSeverity = 'critical' | 'warning';
 export type ValidatorSource = 'gameDefinition' | 'expressions';
 
-export interface ValidationIssue {
+export interface GameValidationIssue {
   code: string;
   message: string;
   severity: IssueSeverity;
@@ -14,12 +14,12 @@ export interface ValidationSummary {
   criticalCount: number;
   warningCount: number;
   score: number;
-  topIssues: ValidationIssue[];
+  topIssues: GameValidationIssue[];
 }
 
 export interface GameValidationReport {
   valid: boolean;
-  issues: ValidationIssue[];
+  issues: GameValidationIssue[];
   summary: ValidationSummary;
   validatorVersion: string;
   validatedAt: number;

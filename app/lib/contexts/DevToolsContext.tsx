@@ -6,6 +6,7 @@ interface DevToolsContextValue {
   isLoading: boolean;
   toggleInputDebug: () => void;
   togglePhysicsShapes: () => void;
+  toggleZones: () => void;
   toggleFPS: () => void;
   toggleExpanded: () => void;
 }

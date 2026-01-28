@@ -17,6 +17,7 @@ interface AssetLoadingScreenProps {
   progress: PreloadProgress;
   config?: LoadingScreenConfig;
   titleHeroImageUrl?: string;
+  instructions?: string;
   onSkip?: () => void;
   allowSkipAfterPercent?: number;
 }
@@ -26,6 +27,7 @@ export function AssetLoadingScreen({
   progress,
   config,
   titleHeroImageUrl,
+  instructions,
   onSkip,
   allowSkipAfterPercent = 30,
 }: AssetLoadingScreenProps) {
@@ -74,17 +76,21 @@ export function AssetLoadingScreen({
           {titleHeroImageUrl ? (
             <Image
               source={{ uri: titleHeroImageUrl }}
-              style={styles.heroImage}
+              style={styles.heroImageNoBg}
               resizeMode="contain"
             />
           ) : (
             <View style={styles.heroPlaceholder}>
-              <Text style={styles.heroText}>GAME</Text>
+              <Text style={styles.heroText}>{gameTitle}</Text>
             </View>
           )}
         </View>
 
-        <Text style={[styles.title, { color: textColor }]}>{gameTitle}</Text>
+        {instructions && (
+          <Text style={[styles.instructions, { color: textColor }]}>
+            {instructions}
+          </Text>
+        )}
 
         <View style={styles.progressSection}>
           {config?.progressBarImageUrl ? (
@@ -181,12 +187,16 @@ const styles = StyleSheet.create({
     opacity: 0.3,
   },
   heroContainer: {
-    marginBottom: 24,
+    marginBottom: 32,
   },
   heroImage: {
     width: 200,
     height: 120,
     borderRadius: 12,
+  },
+  heroImageNoBg: {
+    width: 280,
+    height: 160,
   },
   heroPlaceholder: {
     width: 120,
@@ -207,6 +217,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 32,
     textAlign: 'center',
+  },
+  instructions: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 40,
+    paddingHorizontal: 32,
+    opacity: 0.9,
+    lineHeight: 24,
   },
   progressSection: {
     width: '100%',
@@ -275,18 +293,17 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   skipButton: {
-    marginTop: 32,
-    paddingVertical: 10,
-    paddingHorizontal: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    marginTop: 48,
+    paddingVertical: 16,
+    paddingHorizontal: 48,
+    backgroundColor: '#4F46E5',
+    borderRadius: 12,
+    borderWidth: 0,
   },
   skipButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: '600',
   },
   warningContainer: {
     marginTop: 16,

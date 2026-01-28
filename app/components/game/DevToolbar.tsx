@@ -8,7 +8,7 @@ export function DevToolbar() {
     return null;
   }
   
-  const { state, isLoading, toggleInputDebug, togglePhysicsShapes, toggleFPS, toggleExpanded } = devTools;
+  const { state, isLoading, toggleInputDebug, togglePhysicsShapes, toggleZones, toggleFPS, toggleExpanded } = devTools;
 
   if (isLoading) return null;
 
@@ -33,6 +33,11 @@ export function DevToolbar() {
           <Pressable style={styles.toggleRow} onPress={togglePhysicsShapes}>
             <Text style={styles.checkbox}>{state.showPhysicsShapes ? '☑' : '☐'}</Text>
             <Text style={styles.label}>Physics Shapes</Text>
+          </Pressable>
+
+          <Pressable style={styles.toggleRow} onPress={toggleZones}>
+            <Text style={styles.checkbox}>{state.showZones ? '☑' : '☐'}</Text>
+            <Text style={styles.label}>Show Zones</Text>
           </Pressable>
 
           <Pressable style={styles.toggleRow} onPress={toggleFPS}>
