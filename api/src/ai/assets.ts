@@ -565,7 +565,11 @@ function createScenarioProviderClient(env: Env): ProviderClient {
     throw new Error('SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using Scenario provider');
   }
   
-  const client = createScenarioClient(env);
+  const client = createScenarioClient({
+    SCENARIO_API_KEY: env.SCENARIO_API_KEY,
+    SCENARIO_SECRET_API_KEY: env.SCENARIO_SECRET_API_KEY,
+    SCENARIO_API_URL: env.SCENARIO_API_URL,
+  });
 
   return {
     uploadImage: async (png: Uint8Array): Promise<string> => {
