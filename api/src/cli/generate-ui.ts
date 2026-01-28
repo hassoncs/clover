@@ -187,7 +187,6 @@ async function main(): Promise<void> {
     r2Bucket: 'slopcade-assets-dev',
     wranglerCwd: process.cwd(),
     publicUrlBase: 'http://localhost:8787/assets',
-    modalEndpoint: process.env.MODAL_ENDPOINT,
   };
 
   const controls = values.all ? ALL_CONTROLS : validateControls(positionals);

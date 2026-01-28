@@ -267,15 +267,32 @@ export function createNodeComfyUIAdapter(config: ComfyUIAdapterConfig): ImageGen
 }
 
 export interface NodeAdaptersOptions {
-  modalEndpoint?: string;
   r2Bucket: string;
   wranglerCwd: string;
   publicUrlBase: string;
 }
 
 export async function createNodeAdapters(options: NodeAdaptersOptions): Promise<PipelineAdapters> {
-  const endpoint = options.modalEndpoint ?? 'https://hassoncs--slopcade-comfyui-web-img2img.modal.run';
-  const imageAdapter = createNodeComfyUIAdapter({ endpoint });
+  // Read provider from env - default to 'modal'
+  const provider = process.env.IMAGE_GENERATION_PROVIDER ?? 'modal';
+  
+  let imageAdapter: ImageGenerationAdapter;
+  
+  if (provider === 'scenario') {
+    // Use Scenario client
+    const apiKey = process.env.SCENARIO_API_KEY;
+    const apiSecret = process.env.SCENARIO_SECRET_API_KEY;
+    
+    if (!apiKey || !apiSecret) {
+      throw new Error('SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using Scenario provider');
+    }
+    
+    imageAdapter = createNodeScenarioAdapter({ apiKey, apiSecret });
+  } else {
+    // Use Modal ComfyUI - default provider
+    const endpoint = process.env.MODAL_ENDPOINT ?? 'https://hassoncs--slopcade-comfyui-web-img2img.modal.run';
+    imageAdapter = createNodeComfyUIAdapter({ endpoint });
+  }
 
   return {
     provider: imageAdapter,
