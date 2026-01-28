@@ -6,7 +6,7 @@
 
 # Interface: ChildTemplateDefinition
 
-Defined in: [types/entity.ts:76](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/entity.ts#L76)
+Defined in: [types/entity.ts:80](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L80)
 
 Definition for a child entity within a template (prefab pattern)
 
@@ -16,7 +16,7 @@ Definition for a child entity within a template (prefab pattern)
 
 > **name**: `string`
 
-Defined in: [types/entity.ts:78](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/entity.ts#L78)
+Defined in: [types/entity.ts:82](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L82)
 
 Name of the child
 
@@ -26,7 +26,7 @@ Name of the child
 
 > **template**: `string`
 
-Defined in: [types/entity.ts:80](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/entity.ts#L80)
+Defined in: [types/entity.ts:84](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L84)
 
 Template to instantiate
 
@@ -36,7 +36,7 @@ Template to instantiate
 
 > **localTransform**: [`TransformComponent`](TransformComponent.md)
 
-Defined in: [types/entity.ts:82](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/entity.ts#L82)
+Defined in: [types/entity.ts:86](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L86)
 
 Transform relative to parent
 
@@ -46,7 +46,7 @@ Transform relative to parent
 
 > `optional` **slot**: `string`
 
-Defined in: [types/entity.ts:84](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/entity.ts#L84)
+Defined in: [types/entity.ts:88](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L88)
 
 Reference to parent's slot for coordinates (optional)
 
@@ -56,7 +56,7 @@ Reference to parent's slot for coordinates (optional)
 
 > `optional` **sprite**: `Partial`\<[`SpriteComponent`](../type-aliases/SpriteComponent.md)\>
 
-Defined in: [types/entity.ts:87](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/entity.ts#L87)
+Defined in: [types/entity.ts:91](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L91)
 
 Optional overrides
 
@@ -66,7 +66,7 @@ Optional overrides
 
 > `optional` **physics**: `Partial`\<[`PhysicsComponent`](../type-aliases/PhysicsComponent.md)\>
 
-Defined in: [types/entity.ts:88](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/entity.ts#L88)
+Defined in: [types/entity.ts:92](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L92)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [types/entity.ts:88](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **behaviors**: [`Behavior`](../type-aliases/Behavior.md)[]
 
-Defined in: [types/entity.ts:89](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/entity.ts#L89)
+Defined in: [types/entity.ts:93](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L93)
 
 ***
 
@@ -82,7 +82,7 @@ Defined in: [types/entity.ts:89](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **tags**: `string`[]
 
-Defined in: [types/entity.ts:90](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/entity.ts#L90)
+Defined in: [types/entity.ts:94](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L94)
 
 ***
 
@@ -90,6 +90,6 @@ Defined in: [types/entity.ts:90](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **children**: `ChildTemplateDefinition`[]
 
-Defined in: [types/entity.ts:93](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/entity.ts#L93)
+Defined in: [types/entity.ts:97](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L97)
 
 Recursive nesting

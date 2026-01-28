@@ -6,7 +6,7 @@
 
 # Interface: EntityExistsCondition
 
-Defined in: [types/rules.ts:125](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L125)
+Defined in: [types/rules.ts:141](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L141)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:125](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"entity_exists"`
 
-Defined in: [types/rules.ts:126](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L126)
+Defined in: [types/rules.ts:142](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L142)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:126](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **entityId**: `string`
 
-Defined in: [types/rules.ts:127](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L127)
+Defined in: [types/rules.ts:143](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L143)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/rules.ts:127](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **entityTag**: `string`
 
-Defined in: [types/rules.ts:128](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L128)
+Defined in: [types/rules.ts:144](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L144)

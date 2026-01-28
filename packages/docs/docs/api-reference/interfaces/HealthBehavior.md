@@ -6,7 +6,7 @@
 
 # Interface: HealthBehavior
 
-Defined in: [types/behavior.ts:182](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L182)
+Defined in: [types/behavior.ts:182](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L182)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/behavior.ts:182](https://github.com/hassoncs/clover/blob/2f92
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L46)
+Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L46)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/2f921
 
 > **type**: `"health"`
 
-Defined in: [types/behavior.ts:183](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L183)
+Defined in: [types/behavior.ts:183](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L183)
 
 #### Overrides
 
@@ -42,7 +42,7 @@ Defined in: [types/behavior.ts:183](https://github.com/hassoncs/clover/blob/2f92
 
 > **maxHealth**: `number`
 
-Defined in: [types/behavior.ts:184](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L184)
+Defined in: [types/behavior.ts:184](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L184)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [types/behavior.ts:184](https://github.com/hassoncs/clover/blob/2f92
 
 > `optional` **currentHealth**: `number`
 
-Defined in: [types/behavior.ts:185](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L185)
+Defined in: [types/behavior.ts:185](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L185)
 
 ***
 
@@ -58,7 +58,7 @@ Defined in: [types/behavior.ts:185](https://github.com/hassoncs/clover/blob/2f92
 
 > `optional` **damageFromTags**: `string`[]
 
-Defined in: [types/behavior.ts:186](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L186)
+Defined in: [types/behavior.ts:186](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L186)
 
 ***
 
@@ -66,7 +66,7 @@ Defined in: [types/behavior.ts:186](https://github.com/hassoncs/clover/blob/2f92
 
 > `optional` **damagePerHit**: `number`
 
-Defined in: [types/behavior.ts:187](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L187)
+Defined in: [types/behavior.ts:187](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L187)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [types/behavior.ts:187](https://github.com/hassoncs/clover/blob/2f92
 
 > `optional` **destroyOnDeath**: `boolean`
 
-Defined in: [types/behavior.ts:188](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L188)
+Defined in: [types/behavior.ts:188](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L188)
 
 ***
 
@@ -82,4 +82,4 @@ Defined in: [types/behavior.ts:188](https://github.com/hassoncs/clover/blob/2f92
 
 > `optional` **invulnerabilityTime**: `number`
 
-Defined in: [types/behavior.ts:189](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L189)
+Defined in: [types/behavior.ts:189](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L189)

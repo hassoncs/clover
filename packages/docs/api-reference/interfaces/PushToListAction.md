@@ -6,7 +6,7 @@
 
 # Interface: PushToListAction
 
-Defined in: [types/rules.ts:348](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L348)
+Defined in: [types/rules.ts:381](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L381)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:348](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"push_to_list"`
 
-Defined in: [types/rules.ts:349](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L349)
+Defined in: [types/rules.ts:382](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L382)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:349](https://github.com/hassoncs/clover/blob/2f92107
 
 > **listName**: `string`
 
-Defined in: [types/rules.ts:350](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L350)
+Defined in: [types/rules.ts:383](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L383)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/rules.ts:350](https://github.com/hassoncs/clover/blob/2f92107
 
 > **value**: `Value`\<`string` \| `number` \| `boolean`\>
 
-Defined in: [types/rules.ts:351](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L351)
+Defined in: [types/rules.ts:384](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L384)

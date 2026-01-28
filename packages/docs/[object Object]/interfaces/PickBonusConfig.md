@@ -6,7 +6,7 @@
 
 # Interface: PickBonusConfig
 
-Defined in: [types/GameDefinition.ts:409](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L409)
+Defined in: [types/GameDefinition.ts:441](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L441)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:409](https://github.com/hassoncs/clover/blo
 
 > **trigger**: `string`
 
-Defined in: [types/GameDefinition.ts:410](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L410)
+Defined in: [types/GameDefinition.ts:442](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L442)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/GameDefinition.ts:410](https://github.com/hassoncs/clover/blo
 
 > **gridRows**: `number`
 
-Defined in: [types/GameDefinition.ts:411](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L411)
+Defined in: [types/GameDefinition.ts:443](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L443)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/GameDefinition.ts:411](https://github.com/hassoncs/clover/blo
 
 > **gridCols**: `number`
 
-Defined in: [types/GameDefinition.ts:412](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L412)
+Defined in: [types/GameDefinition.ts:444](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L444)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/GameDefinition.ts:412](https://github.com/hassoncs/clover/blo
 
 > **itemTemplate**: `string`
 
-Defined in: [types/GameDefinition.ts:413](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L413)
+Defined in: [types/GameDefinition.ts:445](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L445)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [types/GameDefinition.ts:413](https://github.com/hassoncs/clover/blo
 
 > **endTrigger**: `"collect"` \| `"reveal_all"` \| `"find_end"`
 
-Defined in: [types/GameDefinition.ts:414](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L414)
+Defined in: [types/GameDefinition.ts:446](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L446)

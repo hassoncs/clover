@@ -8,4 +8,4 @@
 
 > `const` **GodotTransformsMapSchema**: `ZodRecord`\<`ZodString`, `ZodObject`\<\{ `x`: `ZodNumber`; `y`: `ZodNumber`; `angle`: `ZodNumber`; \}, `"strip"`, `ZodTypeAny`, \{ `x`: `number`; `y`: `number`; `angle`: `number`; \}, \{ `x`: `number`; `y`: `number`; `angle`: `number`; \}\>\>
 
-Defined in: [types/godot-bridge.ts:63](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/godot-bridge.ts#L63)
+Defined in: [types/godot-bridge.ts:63](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/godot-bridge.ts#L63)

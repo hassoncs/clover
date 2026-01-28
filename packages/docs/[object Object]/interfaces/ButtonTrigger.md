@@ -6,7 +6,7 @@
 
 # Interface: ButtonTrigger
 
-Defined in: [types/rules.ts:84](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L84)
+Defined in: [types/rules.ts:98](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L98)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:84](https://github.com/hassoncs/clover/blob/2f921078
 
 > **type**: `"button"`
 
-Defined in: [types/rules.ts:85](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L85)
+Defined in: [types/rules.ts:99](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L99)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:85](https://github.com/hassoncs/clover/blob/2f921078
 
 > **button**: `"left"` \| `"right"` \| `"up"` \| `"down"` \| `"jump"` \| `"action"` \| `"any"`
 
-Defined in: [types/rules.ts:86](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L86)
+Defined in: [types/rules.ts:100](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L100)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/rules.ts:86](https://github.com/hassoncs/clover/blob/2f921078
 
 > **state**: `"pressed"` \| `"released"` \| `"held"`
 
-Defined in: [types/rules.ts:87](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L87)
+Defined in: [types/rules.ts:101](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L101)

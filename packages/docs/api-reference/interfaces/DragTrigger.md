@@ -6,7 +6,7 @@
 
 # Interface: DragTrigger
 
-Defined in: [types/rules.ts:72](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L72)
+Defined in: [types/rules.ts:86](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L86)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:72](https://github.com/hassoncs/clover/blob/2f921078
 
 > **type**: `"drag"`
 
-Defined in: [types/rules.ts:73](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L73)
+Defined in: [types/rules.ts:87](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L87)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:73](https://github.com/hassoncs/clover/blob/2f921078
 
 > **phase**: `"move"` \| `"start"` \| `"end"`
 
-Defined in: [types/rules.ts:74](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L74)
+Defined in: [types/rules.ts:88](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L88)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/rules.ts:74](https://github.com/hassoncs/clover/blob/2f921078
 
 > `optional` **target**: `string`
 
-Defined in: [types/rules.ts:75](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L75)
+Defined in: [types/rules.ts:89](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L89)

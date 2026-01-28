@@ -6,23 +6,51 @@
 
 # Interface: StaticBackground
 
-Defined in: [types/GameDefinition.ts:155](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L155)
+Defined in: [types/GameDefinition.ts:173](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L173)
+
+Dual-field image reference for backwards compatibility.
+
+Preferred: set `assetRef` to the asset UUID (R2 key derivation handled elsewhere).
+Legacy: set `imageUrl` to a full URL or relative path.
+
+During the migration window, callers may provide either (or both); runtime resolution
+will decide precedence.
+
+## Extends
+
+- [`ImageField`](../type-aliases/ImageField.md)
 
 ## Properties
-
-### type
-
-> **type**: `"static"`
-
-Defined in: [types/GameDefinition.ts:156](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L156)
-
-***
 
 ### imageUrl?
 
 > `optional` **imageUrl**: `string`
 
-Defined in: [types/GameDefinition.ts:157](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L157)
+Defined in: [types/GameDefinition.ts:20](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L20)
+
+#### Inherited from
+
+`ImageField.imageUrl`
+
+***
+
+### assetRef?
+
+> `optional` **assetRef**: `string`
+
+Defined in: [types/GameDefinition.ts:21](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L21)
+
+#### Inherited from
+
+`ImageField.assetRef`
+
+***
+
+### type
+
+> **type**: `"static"`
+
+Defined in: [types/GameDefinition.ts:174](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L174)
 
 ***
 
@@ -30,4 +58,4 @@ Defined in: [types/GameDefinition.ts:157](https://github.com/hassoncs/clover/blo
 
 > `optional` **color**: `string`
 
-Defined in: [types/GameDefinition.ts:158](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L158)
+Defined in: [types/GameDefinition.ts:175](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L175)

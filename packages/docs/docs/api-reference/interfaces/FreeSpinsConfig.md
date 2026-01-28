@@ -6,7 +6,7 @@
 
 # Interface: FreeSpinsConfig
 
-Defined in: [types/GameDefinition.ts:405](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L405)
+Defined in: [types/GameDefinition.ts:437](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L437)
 
 ## Properties
 
@@ -14,4 +14,4 @@ Defined in: [types/GameDefinition.ts:405](https://github.com/hassoncs/clover/blo
 
 > **scatterCount**: `number`[]
 
-Defined in: [types/GameDefinition.ts:406](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L406)
+Defined in: [types/GameDefinition.ts:438](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L438)

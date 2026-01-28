@@ -8,7 +8,7 @@
 
 > `const` **BaseGameProgressSchema**: `ZodObject`\<\{ `version`: `ZodDefault`\<`ZodNumber`\>; `lastPlayedAt`: `ZodOptional`\<`ZodNumber`\>; `totalPlayTime`: `ZodDefault`\<`ZodNumber`\>; `sessionsCompleted`: `ZodDefault`\<`ZodNumber`\>; `firstPlayedAt`: `ZodOptional`\<`ZodNumber`\>; \}, `"strip"`, `ZodTypeAny`, \{ `version`: `number`; `lastPlayedAt?`: `number`; `totalPlayTime`: `number`; `sessionsCompleted`: `number`; `firstPlayedAt?`: `number`; \}, \{ `version?`: `number`; `lastPlayedAt?`: `number`; `totalPlayTime?`: `number`; `sessionsCompleted?`: `number`; `firstPlayedAt?`: `number`; \}\>
 
-Defined in: types/progress.ts:18
+Defined in: [types/progress.ts:18](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/progress.ts#L18)
 
 Base progress schema that all game progress schemas should extend.
 Provides common metadata fields for tracking play history.

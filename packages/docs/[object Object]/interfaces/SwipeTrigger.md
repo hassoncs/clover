@@ -6,7 +6,7 @@
 
 # Interface: SwipeTrigger
 
-Defined in: [types/rules.ts:90](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L90)
+Defined in: [types/rules.ts:104](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L104)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:90](https://github.com/hassoncs/clover/blob/2f921078
 
 > **type**: `"swipe"`
 
-Defined in: [types/rules.ts:91](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L91)
+Defined in: [types/rules.ts:105](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L105)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [types/rules.ts:91](https://github.com/hassoncs/clover/blob/2f921078
 
 > **direction**: `"left"` \| `"right"` \| `"up"` \| `"down"` \| `"any"`
 
-Defined in: [types/rules.ts:92](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L92)
+Defined in: [types/rules.ts:106](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L106)

@@ -6,7 +6,7 @@
 
 # Interface: LivesAction
 
-Defined in: [types/rules.ts:278](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L278)
+Defined in: [types/rules.ts:311](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L311)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:278](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"lives"`
 
-Defined in: [types/rules.ts:279](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L279)
+Defined in: [types/rules.ts:312](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L312)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:279](https://github.com/hassoncs/clover/blob/2f92107
 
 > **operation**: `"add"` \| `"subtract"` \| `"set"`
 
-Defined in: [types/rules.ts:280](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L280)
+Defined in: [types/rules.ts:313](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L313)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/rules.ts:280](https://github.com/hassoncs/clover/blob/2f92107
 
 > **value**: `number`
 
-Defined in: [types/rules.ts:281](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L281)
+Defined in: [types/rules.ts:314](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L314)

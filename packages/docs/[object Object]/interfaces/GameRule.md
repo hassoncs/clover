@@ -6,7 +6,7 @@
 
 # Interface: GameRule
 
-Defined in: [types/rules.ts:570](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L570)
+Defined in: [types/rules.ts:603](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L603)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:570](https://github.com/hassoncs/clover/blob/2f92107
 
 > **id**: `string`
 
-Defined in: [types/rules.ts:571](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L571)
+Defined in: [types/rules.ts:604](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L604)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:571](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **name**: `string`
 
-Defined in: [types/rules.ts:572](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L572)
+Defined in: [types/rules.ts:605](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L605)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:572](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/rules.ts:573](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L573)
+Defined in: [types/rules.ts:606](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L606)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/rules.ts:573](https://github.com/hassoncs/clover/blob/2f92107
 
 > **trigger**: [`RuleTrigger`](../type-aliases/RuleTrigger.md)
 
-Defined in: [types/rules.ts:574](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L574)
+Defined in: [types/rules.ts:607](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L607)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [types/rules.ts:574](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **conditions**: [`RuleCondition`](../type-aliases/RuleCondition.md)[]
 
-Defined in: [types/rules.ts:575](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L575)
+Defined in: [types/rules.ts:608](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L608)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [types/rules.ts:575](https://github.com/hassoncs/clover/blob/2f92107
 
 > **actions**: [`RuleAction`](../type-aliases/RuleAction.md)[]
 
-Defined in: [types/rules.ts:576](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L576)
+Defined in: [types/rules.ts:609](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L609)
 
 ***
 
@@ -62,7 +62,7 @@ Defined in: [types/rules.ts:576](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **fireOnce**: `boolean`
 
-Defined in: [types/rules.ts:577](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L577)
+Defined in: [types/rules.ts:610](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L610)
 
 ***
 
@@ -70,4 +70,4 @@ Defined in: [types/rules.ts:577](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **cooldown**: `number`
 
-Defined in: [types/rules.ts:578](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L578)
+Defined in: [types/rules.ts:611](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L611)

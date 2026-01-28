@@ -8,4 +8,4 @@
 
 > **GameDefinitionInput** = `z.infer`\<*typeof* [`GameDefinitionSchema`](../variables/GameDefinitionSchema.md)\>
 
-Defined in: [types/schemas.ts:957](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/schemas.ts#L957)
+Defined in: [types/schemas.ts:1030](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/schemas.ts#L1030)

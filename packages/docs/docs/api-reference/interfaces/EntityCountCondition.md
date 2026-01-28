@@ -6,7 +6,7 @@
 
 # Interface: EntityCountCondition
 
-Defined in: [types/rules.ts:131](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L131)
+Defined in: [types/rules.ts:147](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L147)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:131](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"entity_count"`
 
-Defined in: [types/rules.ts:132](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L132)
+Defined in: [types/rules.ts:148](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L148)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:132](https://github.com/hassoncs/clover/blob/2f92107
 
 > **tag**: `string`
 
-Defined in: [types/rules.ts:133](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L133)
+Defined in: [types/rules.ts:149](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L149)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:133](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **min**: `number`
 
-Defined in: [types/rules.ts:134](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L134)
+Defined in: [types/rules.ts:150](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L150)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/rules.ts:134](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **max**: `number`
 
-Defined in: [types/rules.ts:135](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L135)
+Defined in: [types/rules.ts:151](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L151)

@@ -6,7 +6,7 @@
 
 # Interface: SheetPromptConfig
 
-Defined in: [types/asset-sheet.ts:58](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L58)
+Defined in: [types/asset-sheet.ts:58](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-sheet.ts#L58)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/asset-sheet.ts:58](https://github.com/hassoncs/clover/blob/2f
 
 > **basePrompt**: `string`
 
-Defined in: [types/asset-sheet.ts:60](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L60)
+Defined in: [types/asset-sheet.ts:60](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-sheet.ts#L60)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/asset-sheet.ts:60](https://github.com/hassoncs/clover/blob/2f
 
 > `optional` **commonModifiers**: `string`[]
 
-Defined in: [types/asset-sheet.ts:63](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L63)
+Defined in: [types/asset-sheet.ts:63](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-sheet.ts#L63)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/asset-sheet.ts:63](https://github.com/hassoncs/clover/blob/2f
 
 > `optional` **stylePreset**: `string`
 
-Defined in: [types/asset-sheet.ts:66](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L66)
+Defined in: [types/asset-sheet.ts:66](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-sheet.ts#L66)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/asset-sheet.ts:66](https://github.com/hassoncs/clover/blob/2f
 
 > `optional` **negativePrompt**: `string`
 
-Defined in: [types/asset-sheet.ts:69](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L69)
+Defined in: [types/asset-sheet.ts:69](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-sheet.ts#L69)

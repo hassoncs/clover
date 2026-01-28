@@ -6,7 +6,7 @@
 
 # Interface: PromptDefaults
 
-Defined in: [types/asset-system.ts:27](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-system.ts#L27)
+Defined in: [types/asset-system.ts:49](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-system.ts#L49)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/asset-system.ts:27](https://github.com/hassoncs/clover/blob/2
 
 > `optional` **themePrompt**: `string`
 
-Defined in: [types/asset-system.ts:28](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-system.ts#L28)
+Defined in: [types/asset-system.ts:50](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-system.ts#L50)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/asset-system.ts:28](https://github.com/hassoncs/clover/blob/2
 
 > `optional` **styleOverride**: `string`
 
-Defined in: [types/asset-system.ts:29](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-system.ts#L29)
+Defined in: [types/asset-system.ts:51](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-system.ts#L51)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/asset-system.ts:29](https://github.com/hassoncs/clover/blob/2
 
 > `optional` **modelId**: `string`
 
-Defined in: [types/asset-system.ts:30](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-system.ts#L30)
+Defined in: [types/asset-system.ts:52](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-system.ts#L52)
 
 ***
 
@@ -38,4 +38,12 @@ Defined in: [types/asset-system.ts:30](https://github.com/hassoncs/clover/blob/2
 
 > `optional` **negativePrompt**: `string`
 
-Defined in: [types/asset-system.ts:31](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-system.ts#L31)
+Defined in: [types/asset-system.ts:53](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-system.ts#L53)
+
+***
+
+### customPrompts?
+
+> `optional` **customPrompts**: `Record`\<`string`, `string`\>
+
+Defined in: [types/asset-system.ts:54](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-system.ts#L54)

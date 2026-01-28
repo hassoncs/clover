@@ -6,7 +6,7 @@
 
 # Interface: CameraLookAhead
 
-Defined in: [types/GameDefinition.ts:26](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L26)
+Defined in: [types/GameDefinition.ts:40](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L40)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:26](https://github.com/hassoncs/clover/blob
 
 > **enabled**: `boolean`
 
-Defined in: [types/GameDefinition.ts:27](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L27)
+Defined in: [types/GameDefinition.ts:41](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L41)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/GameDefinition.ts:27](https://github.com/hassoncs/clover/blob
 
 > **distance**: `number`
 
-Defined in: [types/GameDefinition.ts:28](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L28)
+Defined in: [types/GameDefinition.ts:42](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L42)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/GameDefinition.ts:28](https://github.com/hassoncs/clover/blob
 
 > `optional` **smoothing**: `number`
 
-Defined in: [types/GameDefinition.ts:29](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L29)
+Defined in: [types/GameDefinition.ts:43](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L43)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/GameDefinition.ts:29](https://github.com/hassoncs/clover/blob
 
 > `optional` **mode**: `"velocity"` \| `"facing"` \| `"input"`
 
-Defined in: [types/GameDefinition.ts:30](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L30)
+Defined in: [types/GameDefinition.ts:44](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L44)

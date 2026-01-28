@@ -6,7 +6,7 @@
 
 # Interface: ContainerTransferAction
 
-Defined in: [types/rules.ts:424](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L424)
+Defined in: [types/rules.ts:457](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L457)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:424](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"container_transfer"`
 
-Defined in: [types/rules.ts:425](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L425)
+Defined in: [types/rules.ts:458](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L458)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:425](https://github.com/hassoncs/clover/blob/2f92107
 
 > **fromContainer**: `string`
 
-Defined in: [types/rules.ts:426](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L426)
+Defined in: [types/rules.ts:459](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L459)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:426](https://github.com/hassoncs/clover/blob/2f92107
 
 > **toContainer**: `string`
 
-Defined in: [types/rules.ts:427](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L427)
+Defined in: [types/rules.ts:460](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L460)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/rules.ts:427](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **item**: `string` \| [`EntityTarget`](../type-aliases/EntityTarget.md)
 
-Defined in: [types/rules.ts:428](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L428)
+Defined in: [types/rules.ts:461](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L461)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [types/rules.ts:428](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **fromPosition**: `number` \| `"top"` \| `"selected"`
 
-Defined in: [types/rules.ts:429](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L429)
+Defined in: [types/rules.ts:462](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L462)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [types/rules.ts:429](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **toPosition**: `number` \| `"next"`
 
-Defined in: [types/rules.ts:430](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L430)
+Defined in: [types/rules.ts:463](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L463)
 
 ***
 
@@ -62,7 +62,7 @@ Defined in: [types/rules.ts:430](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **storeAs**: `string`
 
-Defined in: [types/rules.ts:431](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L431)
+Defined in: [types/rules.ts:464](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L464)
 
 ***
 
@@ -70,7 +70,7 @@ Defined in: [types/rules.ts:431](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **animate**: `boolean`
 
-Defined in: [types/rules.ts:432](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L432)
+Defined in: [types/rules.ts:465](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L465)
 
 ***
 
@@ -78,4 +78,4 @@ Defined in: [types/rules.ts:432](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **duration**: `number`
 
-Defined in: [types/rules.ts:433](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L433)
+Defined in: [types/rules.ts:466](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L466)

@@ -6,7 +6,7 @@
 
 # Interface: SetTimeScaleAction
 
-Defined in: [types/rules.ts:380](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L380)
+Defined in: [types/rules.ts:413](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L413)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:380](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"set_time_scale"`
 
-Defined in: [types/rules.ts:381](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L381)
+Defined in: [types/rules.ts:414](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L414)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:381](https://github.com/hassoncs/clover/blob/2f92107
 
 > **scale**: `Value`\<`number`\>
 
-Defined in: [types/rules.ts:382](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L382)
+Defined in: [types/rules.ts:415](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L415)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/rules.ts:382](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **duration**: `Value`\<`number`\>
 
-Defined in: [types/rules.ts:383](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L383)
+Defined in: [types/rules.ts:416](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L416)

@@ -6,7 +6,7 @@
 
 # Interface: PolygonPhysicsComponent
 
-Defined in: [types/physics.ts:32](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/physics.ts#L32)
+Defined in: [types/physics.ts:31](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L31)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/physics.ts:32](https://github.com/hassoncs/clover/blob/2f9210
 
 > **bodyType**: [`PhysicsBodyType`](../type-aliases/PhysicsBodyType.md)
 
-Defined in: [types/physics.ts:7](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/physics.ts#L7)
+Defined in: [types/physics.ts:7](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L7)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/physics.ts:7](https://github.com/hassoncs/clover/blob/2f92107
 
 > **density**: `number`
 
-Defined in: [types/physics.ts:9](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/physics.ts#L9)
+Defined in: [types/physics.ts:9](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L9)
 
 #### Inherited from
 
@@ -42,7 +42,7 @@ Defined in: [types/physics.ts:9](https://github.com/hassoncs/clover/blob/2f92107
 
 > **friction**: `number`
 
-Defined in: [types/physics.ts:10](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/physics.ts#L10)
+Defined in: [types/physics.ts:10](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L10)
 
 #### Inherited from
 
@@ -54,7 +54,7 @@ Defined in: [types/physics.ts:10](https://github.com/hassoncs/clover/blob/2f9210
 
 > **restitution**: `number`
 
-Defined in: [types/physics.ts:11](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/physics.ts#L11)
+Defined in: [types/physics.ts:11](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L11)
 
 #### Inherited from
 
@@ -62,23 +62,11 @@ Defined in: [types/physics.ts:11](https://github.com/hassoncs/clover/blob/2f9210
 
 ***
 
-### isSensor?
-
-> `optional` **isSensor**: `boolean`
-
-Defined in: [types/physics.ts:12](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/physics.ts#L12)
-
-#### Inherited from
-
-`BasePhysicsComponent.isSensor`
-
-***
-
 ### fixedRotation?
 
 > `optional` **fixedRotation**: `boolean`
 
-Defined in: [types/physics.ts:13](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/physics.ts#L13)
+Defined in: [types/physics.ts:12](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L12)
 
 #### Inherited from
 
@@ -90,7 +78,7 @@ Defined in: [types/physics.ts:13](https://github.com/hassoncs/clover/blob/2f9210
 
 > `optional` **bullet**: `boolean`
 
-Defined in: [types/physics.ts:14](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/physics.ts#L14)
+Defined in: [types/physics.ts:13](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L13)
 
 #### Inherited from
 
@@ -102,7 +90,7 @@ Defined in: [types/physics.ts:14](https://github.com/hassoncs/clover/blob/2f9210
 
 > `optional` **linearDamping**: `number`
 
-Defined in: [types/physics.ts:15](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/physics.ts#L15)
+Defined in: [types/physics.ts:14](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L14)
 
 #### Inherited from
 
@@ -114,7 +102,7 @@ Defined in: [types/physics.ts:15](https://github.com/hassoncs/clover/blob/2f9210
 
 > `optional` **angularDamping**: `number`
 
-Defined in: [types/physics.ts:16](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/physics.ts#L16)
+Defined in: [types/physics.ts:15](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L15)
 
 #### Inherited from
 
@@ -126,7 +114,7 @@ Defined in: [types/physics.ts:16](https://github.com/hassoncs/clover/blob/2f9210
 
 > `optional` **initialVelocity**: [`Vec2`](Vec2.md)
 
-Defined in: [types/physics.ts:17](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/physics.ts#L17)
+Defined in: [types/physics.ts:16](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L16)
 
 #### Inherited from
 
@@ -138,7 +126,7 @@ Defined in: [types/physics.ts:17](https://github.com/hassoncs/clover/blob/2f9210
 
 > `optional` **initialAngularVelocity**: `number`
 
-Defined in: [types/physics.ts:18](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/physics.ts#L18)
+Defined in: [types/physics.ts:17](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L17)
 
 #### Inherited from
 
@@ -150,7 +138,7 @@ Defined in: [types/physics.ts:18](https://github.com/hassoncs/clover/blob/2f9210
 
 > **shape**: `"polygon"`
 
-Defined in: [types/physics.ts:33](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/physics.ts#L33)
+Defined in: [types/physics.ts:32](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L32)
 
 #### Overrides
 
@@ -162,4 +150,4 @@ Defined in: [types/physics.ts:33](https://github.com/hassoncs/clover/blob/2f9210
 
 > **vertices**: [`Vec2`](Vec2.md)[]
 
-Defined in: [types/physics.ts:34](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/physics.ts#L34)
+Defined in: [types/physics.ts:33](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L33)

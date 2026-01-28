@@ -6,7 +6,7 @@
 
 # Interface: SlotContainerConfig
 
-Defined in: [types/container.ts:58](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/container.ts#L58)
+Defined in: [types/container.ts:58](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/container.ts#L58)
 
 Slot container for linear arrangements with named slots (choice tiles, inventory)
 
@@ -20,7 +20,7 @@ Slot container for linear arrangements with named slots (choice tiles, inventory
 
 > **id**: `string`
 
-Defined in: [types/container.ts:11](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/container.ts#L11)
+Defined in: [types/container.ts:11](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/container.ts#L11)
 
 #### Inherited from
 
@@ -32,7 +32,7 @@ Defined in: [types/container.ts:11](https://github.com/hassoncs/clover/blob/2f92
 
 > **type**: `"slots"`
 
-Defined in: [types/container.ts:59](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/container.ts#L59)
+Defined in: [types/container.ts:59](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/container.ts#L59)
 
 #### Overrides
 
@@ -44,7 +44,7 @@ Defined in: [types/container.ts:59](https://github.com/hassoncs/clover/blob/2f92
 
 > **count**: `number`
 
-Defined in: [types/container.ts:61](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/container.ts#L61)
+Defined in: [types/container.ts:61](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/container.ts#L61)
 
 Number of slots
 
@@ -54,7 +54,7 @@ Number of slots
 
 > **layout**: `object`
 
-Defined in: [types/container.ts:62](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/container.ts#L62)
+Defined in: [types/container.ts:62](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/container.ts#L62)
 
 #### direction
 
@@ -80,6 +80,6 @@ Position of the first slot
 
 > `optional` **allowEmpty**: `boolean`
 
-Defined in: [types/container.ts:71](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/container.ts#L71)
+Defined in: [types/container.ts:71](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/container.ts#L71)
 
 Whether slots can be empty (false = always fill)

@@ -6,7 +6,7 @@
 
 # Interface: PersistenceConfig\<T\>
 
-Defined in: types/progress.ts:85
+Defined in: [types/progress.ts:85](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/progress.ts#L85)
 
 Persistence configuration for a game.
 Games add this to their GameDefinition to opt-in to persistence.
@@ -38,7 +38,7 @@ const game: GameDefinition = {
 
 > `optional` **storageKey**: `string`
 
-Defined in: types/progress.ts:87
+Defined in: [types/progress.ts:87](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/progress.ts#L87)
 
 Storage key (defaults to game metadata id)
 
@@ -48,7 +48,7 @@ Storage key (defaults to game metadata id)
 
 > **schema**: `ZodType`\<`T`\>
 
-Defined in: types/progress.ts:90
+Defined in: [types/progress.ts:90](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/progress.ts#L90)
 
 Zod schema for validation
 
@@ -58,7 +58,7 @@ Zod schema for validation
 
 > **defaultProgress**: `T`
 
-Defined in: types/progress.ts:93
+Defined in: [types/progress.ts:93](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/progress.ts#L93)
 
 Default progress state for new players
 
@@ -68,7 +68,7 @@ Default progress state for new players
 
 > **version**: `number`
 
-Defined in: types/progress.ts:96
+Defined in: [types/progress.ts:96](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/progress.ts#L96)
 
 Schema version for migrations
 
@@ -78,7 +78,7 @@ Schema version for migrations
 
 > `optional` **autoSave**: `object`
 
-Defined in: types/progress.ts:99
+Defined in: [types/progress.ts:99](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/progress.ts#L99)
 
 Auto-save triggers
 

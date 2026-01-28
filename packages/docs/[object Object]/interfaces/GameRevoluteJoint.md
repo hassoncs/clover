@@ -6,7 +6,7 @@
 
 # Interface: GameRevoluteJoint
 
-Defined in: [types/GameDefinition.ts:175](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L175)
+Defined in: [types/GameDefinition.ts:192](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L192)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/GameDefinition.ts:175](https://github.com/hassoncs/clover/blo
 
 > **id**: `string`
 
-Defined in: [types/GameDefinition.ts:169](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L169)
+Defined in: [types/GameDefinition.ts:186](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L186)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/GameDefinition.ts:169](https://github.com/hassoncs/clover/blo
 
 > **entityA**: `string`
 
-Defined in: [types/GameDefinition.ts:170](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L170)
+Defined in: [types/GameDefinition.ts:187](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L187)
 
 #### Inherited from
 
@@ -42,7 +42,7 @@ Defined in: [types/GameDefinition.ts:170](https://github.com/hassoncs/clover/blo
 
 > **entityB**: `string`
 
-Defined in: [types/GameDefinition.ts:171](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L171)
+Defined in: [types/GameDefinition.ts:188](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L188)
 
 #### Inherited from
 
@@ -54,7 +54,7 @@ Defined in: [types/GameDefinition.ts:171](https://github.com/hassoncs/clover/blo
 
 > `optional` **collideConnected**: `boolean`
 
-Defined in: [types/GameDefinition.ts:172](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L172)
+Defined in: [types/GameDefinition.ts:189](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L189)
 
 #### Inherited from
 
@@ -66,7 +66,7 @@ Defined in: [types/GameDefinition.ts:172](https://github.com/hassoncs/clover/blo
 
 > **type**: `"revolute"`
 
-Defined in: [types/GameDefinition.ts:176](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L176)
+Defined in: [types/GameDefinition.ts:193](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L193)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [types/GameDefinition.ts:176](https://github.com/hassoncs/clover/blo
 
 > **anchor**: [`Vec2`](Vec2.md)
 
-Defined in: [types/GameDefinition.ts:177](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L177)
+Defined in: [types/GameDefinition.ts:194](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L194)
 
 ***
 
@@ -82,7 +82,7 @@ Defined in: [types/GameDefinition.ts:177](https://github.com/hassoncs/clover/blo
 
 > `optional` **enableLimit**: `boolean`
 
-Defined in: [types/GameDefinition.ts:178](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L178)
+Defined in: [types/GameDefinition.ts:195](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L195)
 
 ***
 
@@ -90,7 +90,7 @@ Defined in: [types/GameDefinition.ts:178](https://github.com/hassoncs/clover/blo
 
 > `optional` **lowerAngle**: `number`
 
-Defined in: [types/GameDefinition.ts:179](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L179)
+Defined in: [types/GameDefinition.ts:196](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L196)
 
 ***
 
@@ -98,7 +98,7 @@ Defined in: [types/GameDefinition.ts:179](https://github.com/hassoncs/clover/blo
 
 > `optional` **upperAngle**: `number`
 
-Defined in: [types/GameDefinition.ts:180](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L180)
+Defined in: [types/GameDefinition.ts:197](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L197)
 
 ***
 
@@ -106,7 +106,7 @@ Defined in: [types/GameDefinition.ts:180](https://github.com/hassoncs/clover/blo
 
 > `optional` **enableMotor**: `boolean`
 
-Defined in: [types/GameDefinition.ts:181](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L181)
+Defined in: [types/GameDefinition.ts:198](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L198)
 
 ***
 
@@ -114,7 +114,7 @@ Defined in: [types/GameDefinition.ts:181](https://github.com/hassoncs/clover/blo
 
 > `optional` **motorSpeed**: `number`
 
-Defined in: [types/GameDefinition.ts:182](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L182)
+Defined in: [types/GameDefinition.ts:199](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L199)
 
 ***
 
@@ -122,4 +122,4 @@ Defined in: [types/GameDefinition.ts:182](https://github.com/hassoncs/clover/blo
 
 > `optional` **maxMotorTorque**: `number`
 
-Defined in: [types/GameDefinition.ts:183](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L183)
+Defined in: [types/GameDefinition.ts:200](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L200)

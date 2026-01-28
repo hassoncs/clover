@@ -69,6 +69,38 @@ const game: GameDefinition = {
     type: "lives_zero",
   },
   initialLives: 3,
+  variables: {
+    paddleForce: {
+      value: 120,
+      tuning: { min: 50, max: 200, step: 10 },
+      category: 'physics',
+      label: 'Paddle Push Force',
+    },
+    tapImpulse: {
+      value: 25,
+      tuning: { min: 10, max: 50, step: 5 },
+      category: 'physics',
+      label: 'Tap Impulse Strength',
+    },
+    tiltForce: {
+      value: 60,
+      tuning: { min: 20, max: 100, step: 5 },
+      category: 'physics',
+      label: 'Tilt Push Force',
+    },
+    frictionFactor: {
+      value: 0.90,
+      tuning: { min: 0.80, max: 0.98, step: 0.01 },
+      category: 'physics',
+      label: 'Paddle Friction',
+    },
+    velocityThreshold: {
+      value: 0.1,
+      tuning: { min: 0.01, max: 0.5, step: 0.01 },
+      category: 'physics',
+      label: 'Velocity Cutoff',
+    },
+  },
   templates: {
     ball: {
       id: "ball",
@@ -88,13 +120,7 @@ const game: GameDefinition = {
         linearDamping: 0,
         bullet: true,
       },
-      behaviors: [
-        {
-          type: "maintain_speed",
-          speed: 7,
-          mode: "constant",
-        },
-      ],
+      behaviors: [],
     },
     paddle: {
       id: "paddle",
@@ -106,13 +132,15 @@ const game: GameDefinition = {
         imageHeight: PADDLE_HEIGHT,
       },
       physics: {
-        bodyType: "kinematic",
+        bodyType: "dynamic",
         shape: "box",
         width: PADDLE_WIDTH,
         height: PADDLE_HEIGHT,
-        density: 0,
-        friction: 0,
-        restitution: 1,
+        density: 5,
+        friction: 0.1,
+        restitution: 0.2,
+        linearDamping: 8,
+        fixedRotation: true,
       },
       behaviors: [],
     },
@@ -293,26 +321,6 @@ const game: GameDefinition = {
       ],
     },
     {
-      id: "lock_paddle_y",
-      name: "Lock paddle Y position",
-      trigger: { type: "frame" },
-      actions: [
-        {
-          type: "modify",
-          target: { type: "by_id", entityId: "paddle" },
-          property: "y",
-          operation: "set",
-          value: cy(18),
-        },
-        {
-          type: "set_velocity",
-          target: { type: "by_id", entityId: "paddle" },
-          y: 0,
-        },
-      ],
-    },
-
-    {
       id: "ball_drain",
       name: "Ball falls through drain - lose a life and respawn",
       trigger: { type: "collision", entityATag: "ball", entityBTag: "drain" },
@@ -325,96 +333,91 @@ const game: GameDefinition = {
     },
     {
       id: "paddle_left",
-      name: "Move paddle left with Left Arrow",
+      name: "Push paddle left with Left Arrow",
       trigger: { type: "button", button: "left", state: "held" },
       actions: [
         {
-          type: "move",
+          type: "apply_force",
           target: { type: "by_tag", tag: "paddle" },
-          direction: "left",
-          speed: 15,
+          x: { expr: "-variables.paddleForce" },
         },
       ],
     },
     {
       id: "paddle_right",
-      name: "Move paddle right with Right Arrow",
+      name: "Push paddle right with Right Arrow",
       trigger: { type: "button", button: "right", state: "held" },
       actions: [
         {
-          type: "move",
+          type: "apply_force",
           target: { type: "by_tag", tag: "paddle" },
-          direction: "right",
-          speed: 15,
+          x: { expr: "variables.paddleForce" },
         },
       ],
     },
     {
       id: "tap_left",
-      name: "Tap left half of screen to move paddle left",
+      name: "Tap left half to push paddle left",
       trigger: { type: "tap", xMinPercent: 0, xMaxPercent: 50 },
       actions: [
         {
-          type: "move",
+          type: "apply_impulse",
           target: { type: "by_tag", tag: "paddle" },
-          direction: "left",
-          speed: 10,
+          x: { expr: "-variables.tapImpulse" },
         },
       ],
     },
     {
       id: "tap_right",
-      name: "Tap right half of screen to move paddle right",
+      name: "Tap right half to push paddle right",
       trigger: { type: "tap", xMinPercent: 50, xMaxPercent: 100 },
       actions: [
         {
-          type: "move",
+          type: "apply_impulse",
           target: { type: "by_tag", tag: "paddle" },
-          direction: "right",
-          speed: 10,
+          x: { expr: "variables.tapImpulse" },
         },
       ],
     },
     {
-      id: "tilt_left",
-      name: "Tilt device left to move paddle left",
-      trigger: { type: "tilt", axis: "x", threshold: 0.15 },
-      conditions: [{ type: "expression", expr: "input.tilt.x < -0.15" }],
+      id: "tilt_control",
+      name: "Tilt device to push paddle",
+      trigger: { type: "tilt", axis: "x", threshold: 0.1 },
       actions: [
         {
-          type: "move",
+          type: "apply_force",
           target: { type: "by_tag", tag: "paddle" },
           direction: "tilt_direction",
-          speed: 12,
+          force: { expr: "variables.tiltForce" },
         },
       ],
     },
     {
-      id: "tilt_right",
-      name: "Tilt device right to move paddle right",
-      trigger: { type: "tilt", axis: "x", threshold: 0.15 },
-      conditions: [{ type: "expression", expr: "input.tilt.x > 0.15" }],
-      actions: [
-        {
-          type: "move",
-          target: { type: "by_tag", tag: "paddle" },
-          direction: "tilt_direction",
-          speed: 12,
-        },
-      ],
-    },
-    {
-      id: "stop_paddle_no_input",
-      name: "Stop paddle when no input",
+      id: "paddle_friction",
+      name: "Apply friction to slow paddle when no input",
       trigger: { type: "frame" },
       conditions: [
-        { type: "expression", expr: "!input.buttons.left && !input.buttons.right" },
+        { type: "expression", expr: "!input.buttons.left && !input.buttons.right && Math.abs(entity.velocity.x) > variables.velocityThreshold" },
       ],
       actions: [
         {
           type: "set_velocity",
           target: { type: "by_tag", tag: "paddle" },
-          x: 0,
+          x: { expr: "entity.velocity.x * variables.frictionFactor" },
+        },
+      ],
+    },
+    {
+      id: "lock_paddle_y",
+      name: "Lock paddle Y position",
+      trigger: { type: "frame" },
+      actions: [
+        {
+          type: "modify",
+          target: { type: "by_id", entityId: "paddle" },
+          property: "y",
+          operation: "set",
+          value: cy(18),
         },
       ],
     },

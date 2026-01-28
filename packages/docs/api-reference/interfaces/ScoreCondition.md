@@ -6,7 +6,7 @@
 
 # Interface: ScoreCondition
 
-Defined in: [types/rules.ts:113](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L113)
+Defined in: [types/rules.ts:129](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L129)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:113](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"score"`
 
-Defined in: [types/rules.ts:114](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L114)
+Defined in: [types/rules.ts:130](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L130)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:114](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **min**: `number`
 
-Defined in: [types/rules.ts:115](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L115)
+Defined in: [types/rules.ts:131](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L131)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/rules.ts:115](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **max**: `number`
 
-Defined in: [types/rules.ts:116](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L116)
+Defined in: [types/rules.ts:132](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L132)

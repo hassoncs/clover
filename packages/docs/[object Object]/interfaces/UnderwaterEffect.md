@@ -6,7 +6,7 @@
 
 # Interface: UnderwaterEffect
 
-Defined in: [types/effects.ts:208](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L208)
+Defined in: [types/effects.ts:208](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L208)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/effects.ts:208](https://github.com/hassoncs/clover/blob/2f921
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L48)
+Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L48)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/2f9210
 
 > `optional` **opacity**: `number`
 
-Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L49)
+Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L49)
 
 #### Inherited from
 
@@ -42,7 +42,7 @@ Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/2f9210
 
 > `optional` **blendMode**: [`EffectBlendMode`](../type-aliases/EffectBlendMode.md)
 
-Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L50)
+Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L50)
 
 #### Inherited from
 
@@ -54,7 +54,7 @@ Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/2f9210
 
 > `optional` **id**: `string`
 
-Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L51)
+Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L51)
 
 #### Inherited from
 
@@ -66,7 +66,7 @@ Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/2f9210
 
 > **type**: `"underwater"`
 
-Defined in: [types/effects.ts:209](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L209)
+Defined in: [types/effects.ts:209](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L209)
 
 #### Overrides
 
@@ -78,7 +78,7 @@ Defined in: [types/effects.ts:209](https://github.com/hassoncs/clover/blob/2f921
 
 > **intensity**: `number`
 
-Defined in: [types/effects.ts:210](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L210)
+Defined in: [types/effects.ts:210](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L210)
 
 ***
 
@@ -86,7 +86,7 @@ Defined in: [types/effects.ts:210](https://github.com/hassoncs/clover/blob/2f921
 
 > **waveSpeed**: `number`
 
-Defined in: [types/effects.ts:211](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L211)
+Defined in: [types/effects.ts:211](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L211)
 
 ***
 
@@ -94,7 +94,7 @@ Defined in: [types/effects.ts:211](https://github.com/hassoncs/clover/blob/2f921
 
 > **waveFrequency**: `number`
 
-Defined in: [types/effects.ts:212](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L212)
+Defined in: [types/effects.ts:212](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L212)
 
 ***
 
@@ -102,7 +102,7 @@ Defined in: [types/effects.ts:212](https://github.com/hassoncs/clover/blob/2f921
 
 > **waveAmplitude**: `number`
 
-Defined in: [types/effects.ts:213](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L213)
+Defined in: [types/effects.ts:213](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L213)
 
 ***
 
@@ -110,4 +110,4 @@ Defined in: [types/effects.ts:213](https://github.com/hassoncs/clover/blob/2f921
 
 > **waterTint**: `string`
 
-Defined in: [types/effects.ts:214](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L214)
+Defined in: [types/effects.ts:214](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L214)

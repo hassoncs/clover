@@ -6,7 +6,7 @@
 
 # Interface: ContainerIsFullCondition
 
-Defined in: [types/rules.ts:474](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L474)
+Defined in: [types/rules.ts:507](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L507)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:474](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"container_is_full"`
 
-Defined in: [types/rules.ts:475](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L475)
+Defined in: [types/rules.ts:508](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L508)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:475](https://github.com/hassoncs/clover/blob/2f92107
 
 > **container**: `string`
 
-Defined in: [types/rules.ts:476](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L476)
+Defined in: [types/rules.ts:509](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L509)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/rules.ts:476](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **negated**: `boolean`
 
-Defined in: [types/rules.ts:477](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L477)
+Defined in: [types/rules.ts:510](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L510)

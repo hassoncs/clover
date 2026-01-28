@@ -6,7 +6,7 @@
 
 # Interface: DestructionDelay
 
-Defined in: [types/behavior.ts:81](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L81)
+Defined in: [types/behavior.ts:81](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L81)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/behavior.ts:81](https://github.com/hassoncs/clover/blob/2f921
 
 > **type**: `"time"` \| `"event"` \| `"entity_destroyed"`
 
-Defined in: [types/behavior.ts:82](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L82)
+Defined in: [types/behavior.ts:82](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L82)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/behavior.ts:82](https://github.com/hassoncs/clover/blob/2f921
 
 > `optional` **time**: `number`
 
-Defined in: [types/behavior.ts:83](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L83)
+Defined in: [types/behavior.ts:83](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L83)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/behavior.ts:83](https://github.com/hassoncs/clover/blob/2f921
 
 > `optional` **eventName**: `string`
 
-Defined in: [types/behavior.ts:84](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L84)
+Defined in: [types/behavior.ts:84](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L84)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/behavior.ts:84](https://github.com/hassoncs/clover/blob/2f921
 
 > `optional` **entityTag**: `string`
 
-Defined in: [types/behavior.ts:85](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L85)
+Defined in: [types/behavior.ts:85](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L85)

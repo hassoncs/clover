@@ -6,7 +6,7 @@
 
 # Interface: ScanlinesEffect
 
-Defined in: [types/effects.ts:150](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L150)
+Defined in: [types/effects.ts:150](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L150)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/effects.ts:150](https://github.com/hassoncs/clover/blob/2f921
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L48)
+Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L48)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/2f9210
 
 > `optional` **opacity**: `number`
 
-Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L49)
+Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L49)
 
 #### Inherited from
 
@@ -42,7 +42,7 @@ Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/2f9210
 
 > `optional` **blendMode**: [`EffectBlendMode`](../type-aliases/EffectBlendMode.md)
 
-Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L50)
+Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L50)
 
 #### Inherited from
 
@@ -54,7 +54,7 @@ Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/2f9210
 
 > `optional` **id**: `string`
 
-Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L51)
+Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L51)
 
 #### Inherited from
 
@@ -66,7 +66,7 @@ Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/2f9210
 
 > **type**: `"scanlines"`
 
-Defined in: [types/effects.ts:151](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L151)
+Defined in: [types/effects.ts:151](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L151)
 
 #### Overrides
 
@@ -78,7 +78,7 @@ Defined in: [types/effects.ts:151](https://github.com/hassoncs/clover/blob/2f921
 
 > **spacing**: `number`
 
-Defined in: [types/effects.ts:152](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L152)
+Defined in: [types/effects.ts:152](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L152)
 
 ***
 
@@ -86,7 +86,7 @@ Defined in: [types/effects.ts:152](https://github.com/hassoncs/clover/blob/2f921
 
 > **thickness**: `number`
 
-Defined in: [types/effects.ts:153](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L153)
+Defined in: [types/effects.ts:153](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L153)
 
 ***
 
@@ -94,7 +94,7 @@ Defined in: [types/effects.ts:153](https://github.com/hassoncs/clover/blob/2f921
 
 > `optional` **animated**: `boolean`
 
-Defined in: [types/effects.ts:154](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L154)
+Defined in: [types/effects.ts:154](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L154)
 
 ***
 
@@ -102,4 +102,4 @@ Defined in: [types/effects.ts:154](https://github.com/hassoncs/clover/blob/2f921
 
 > `optional` **speed**: `number`
 
-Defined in: [types/effects.ts:155](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L155)
+Defined in: [types/effects.ts:155](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L155)

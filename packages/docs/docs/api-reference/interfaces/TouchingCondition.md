@@ -6,7 +6,7 @@
 
 # Interface: TouchingCondition
 
-Defined in: [types/rules.ts:148](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L148)
+Defined in: [types/rules.ts:164](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L164)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:148](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"touching"`
 
-Defined in: [types/rules.ts:149](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L149)
+Defined in: [types/rules.ts:165](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L165)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:149](https://github.com/hassoncs/clover/blob/2f92107
 
 > **tag**: `string`
 
-Defined in: [types/rules.ts:150](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L150)
+Defined in: [types/rules.ts:166](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L166)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/rules.ts:150](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **negated**: `boolean`
 
-Defined in: [types/rules.ts:151](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L151)
+Defined in: [types/rules.ts:167](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L167)

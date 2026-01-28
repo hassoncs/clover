@@ -6,7 +6,7 @@
 
 # Interface: SetVariableAction
 
-Defined in: [types/rules.ts:335](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L335)
+Defined in: [types/rules.ts:368](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L368)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:335](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"set_variable"`
 
-Defined in: [types/rules.ts:336](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L336)
+Defined in: [types/rules.ts:369](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L369)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:336](https://github.com/hassoncs/clover/blob/2f92107
 
 > **name**: `string`
 
-Defined in: [types/rules.ts:337](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L337)
+Defined in: [types/rules.ts:370](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L370)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:337](https://github.com/hassoncs/clover/blob/2f92107
 
 > **operation**: `"add"` \| `"subtract"` \| `"set"` \| `"multiply"` \| `"toggle"`
 
-Defined in: [types/rules.ts:338](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L338)
+Defined in: [types/rules.ts:371](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L371)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/rules.ts:338](https://github.com/hassoncs/clover/blob/2f92107
 
 > **value**: `Value`\<`string` \| `number` \| `boolean`\>
 
-Defined in: [types/rules.ts:339](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L339)
+Defined in: [types/rules.ts:372](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L372)

@@ -8,4 +8,4 @@
 
 > `const` **ScoreTriggerSchema**: `ZodObject`\<\{ `type`: `ZodLiteral`\<`"score"`\>; `threshold`: `ZodNumber`; `comparison`: `ZodEnum`\<\[`"gte"`, `"lte"`, `"eq"`\]\>; \}, `"strip"`, `ZodTypeAny`, \{ `type`: `"score"`; `threshold`: `number`; `comparison`: `"gte"` \| `"lte"` \| `"eq"`; \}, \{ `type`: `"score"`; `threshold`: `number`; `comparison`: `"gte"` \| `"lte"` \| `"eq"`; \}\>
 
-Defined in: [types/schemas.ts:247](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/schemas.ts#L247)
+Defined in: [types/schemas.ts:280](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/schemas.ts#L280)

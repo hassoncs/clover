@@ -41,13 +41,6 @@
     "sourcePath": "app/lib/test-games/games/catsPlatformer/game.ts"
   },
   {
-    "id": "comboFighter",
-    "title": "Combo Fighter",
-    "description": "Side-scrolling fighter where consecutive hits build combos. Reach checkpoints to save progress. Player grows with each combo!",
-    "gameId": "test-combo-fighter",
-    "sourcePath": "app/lib/test-games/games/comboFighter/game.ts"
-  },
-  {
     "id": "connect4",
     "title": "Connect 4",
     "description": "Drop discs to connect four in a row",

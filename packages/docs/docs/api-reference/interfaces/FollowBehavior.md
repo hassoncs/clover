@@ -6,7 +6,7 @@
 
 # Interface: FollowBehavior
 
-Defined in: [types/behavior.ts:149](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L149)
+Defined in: [types/behavior.ts:149](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L149)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/behavior.ts:149](https://github.com/hassoncs/clover/blob/2f92
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L46)
+Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L46)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/2f921
 
 > **type**: `"follow"`
 
-Defined in: [types/behavior.ts:150](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L150)
+Defined in: [types/behavior.ts:150](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L150)
 
 #### Overrides
 
@@ -42,7 +42,7 @@ Defined in: [types/behavior.ts:150](https://github.com/hassoncs/clover/blob/2f92
 
 > **target**: `string`
 
-Defined in: [types/behavior.ts:151](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L151)
+Defined in: [types/behavior.ts:151](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L151)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [types/behavior.ts:151](https://github.com/hassoncs/clover/blob/2f92
 
 > **speed**: `number`
 
-Defined in: [types/behavior.ts:152](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L152)
+Defined in: [types/behavior.ts:152](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L152)
 
 ***
 
@@ -58,7 +58,7 @@ Defined in: [types/behavior.ts:152](https://github.com/hassoncs/clover/blob/2f92
 
 > `optional` **minDistance**: `number`
 
-Defined in: [types/behavior.ts:153](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L153)
+Defined in: [types/behavior.ts:153](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L153)
 
 ***
 
@@ -66,4 +66,4 @@ Defined in: [types/behavior.ts:153](https://github.com/hassoncs/clover/blob/2f92
 
 > `optional` **maxDistance**: `number`
 
-Defined in: [types/behavior.ts:154](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L154)
+Defined in: [types/behavior.ts:154](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L154)

@@ -6,7 +6,7 @@
 
 # Interface: CameraConfig
 
-Defined in: [types/GameDefinition.ts:45](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L45)
+Defined in: [types/GameDefinition.ts:59](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L59)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:45](https://github.com/hassoncs/clover/blob
 
 > **type**: [`CameraType`](../type-aliases/CameraType.md)
 
-Defined in: [types/GameDefinition.ts:46](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L46)
+Defined in: [types/GameDefinition.ts:60](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L60)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/GameDefinition.ts:46](https://github.com/hassoncs/clover/blob
 
 > `optional` **followTarget**: `string`
 
-Defined in: [types/GameDefinition.ts:47](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L47)
+Defined in: [types/GameDefinition.ts:61](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L61)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/GameDefinition.ts:47](https://github.com/hassoncs/clover/blob
 
 > `optional` **viewHeight**: `number`
 
-Defined in: [types/GameDefinition.ts:48](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L48)
+Defined in: [types/GameDefinition.ts:62](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L62)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/GameDefinition.ts:48](https://github.com/hassoncs/clover/blob
 
 > `optional` **zoom**: `number`
 
-Defined in: [types/GameDefinition.ts:49](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L49)
+Defined in: [types/GameDefinition.ts:63](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L63)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [types/GameDefinition.ts:49](https://github.com/hassoncs/clover/blob
 
 > `optional` **minZoom**: `number`
 
-Defined in: [types/GameDefinition.ts:50](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L50)
+Defined in: [types/GameDefinition.ts:64](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L64)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [types/GameDefinition.ts:50](https://github.com/hassoncs/clover/blob
 
 > `optional` **maxZoom**: `number`
 
-Defined in: [types/GameDefinition.ts:51](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L51)
+Defined in: [types/GameDefinition.ts:65](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L65)
 
 ***
 
@@ -62,7 +62,7 @@ Defined in: [types/GameDefinition.ts:51](https://github.com/hassoncs/clover/blob
 
 > `optional` **followSmoothing**: `number`
 
-Defined in: [types/GameDefinition.ts:52](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L52)
+Defined in: [types/GameDefinition.ts:66](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L66)
 
 ***
 
@@ -70,7 +70,7 @@ Defined in: [types/GameDefinition.ts:52](https://github.com/hassoncs/clover/blob
 
 > `optional` **followOffset**: [`Vec2`](Vec2.md)
 
-Defined in: [types/GameDefinition.ts:53](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L53)
+Defined in: [types/GameDefinition.ts:67](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L67)
 
 ***
 
@@ -78,7 +78,7 @@ Defined in: [types/GameDefinition.ts:53](https://github.com/hassoncs/clover/blob
 
 > `optional` **deadZone**: [`CameraDeadZone`](CameraDeadZone.md)
 
-Defined in: [types/GameDefinition.ts:54](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L54)
+Defined in: [types/GameDefinition.ts:68](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L68)
 
 ***
 
@@ -86,7 +86,7 @@ Defined in: [types/GameDefinition.ts:54](https://github.com/hassoncs/clover/blob
 
 > `optional` **lookAhead**: [`CameraLookAhead`](CameraLookAhead.md)
 
-Defined in: [types/GameDefinition.ts:55](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L55)
+Defined in: [types/GameDefinition.ts:69](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L69)
 
 ***
 
@@ -94,7 +94,7 @@ Defined in: [types/GameDefinition.ts:55](https://github.com/hassoncs/clover/blob
 
 > `optional` **bounds**: `object`
 
-Defined in: [types/GameDefinition.ts:56](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L56)
+Defined in: [types/GameDefinition.ts:70](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L70)
 
 #### minX
 
@@ -118,7 +118,7 @@ Defined in: [types/GameDefinition.ts:56](https://github.com/hassoncs/clover/blob
 
 > `optional` **autoScroll**: [`CameraAutoScroll`](CameraAutoScroll.md)
 
-Defined in: [types/GameDefinition.ts:62](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L62)
+Defined in: [types/GameDefinition.ts:76](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L76)
 
 ***
 
@@ -126,4 +126,4 @@ Defined in: [types/GameDefinition.ts:62](https://github.com/hassoncs/clover/blob
 
 > `optional` **shake**: [`CameraShakeConfig`](CameraShakeConfig.md)
 
-Defined in: [types/GameDefinition.ts:63](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L63)
+Defined in: [types/GameDefinition.ts:77](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L77)

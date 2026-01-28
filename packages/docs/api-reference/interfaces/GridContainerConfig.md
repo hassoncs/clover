@@ -6,7 +6,7 @@
 
 # Interface: GridContainerConfig
 
-Defined in: [types/container.ts:37](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/container.ts#L37)
+Defined in: [types/container.ts:37](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/container.ts#L37)
 
 Grid container for 2D arrangements (Gem Crush, Connect4 board)
 
@@ -20,7 +20,7 @@ Grid container for 2D arrangements (Gem Crush, Connect4 board)
 
 > **id**: `string`
 
-Defined in: [types/container.ts:11](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/container.ts#L11)
+Defined in: [types/container.ts:11](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/container.ts#L11)
 
 #### Inherited from
 
@@ -32,7 +32,7 @@ Defined in: [types/container.ts:11](https://github.com/hassoncs/clover/blob/2f92
 
 > **type**: `"grid"`
 
-Defined in: [types/container.ts:38](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/container.ts#L38)
+Defined in: [types/container.ts:38](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/container.ts#L38)
 
 #### Overrides
 
@@ -44,7 +44,7 @@ Defined in: [types/container.ts:38](https://github.com/hassoncs/clover/blob/2f92
 
 > **rows**: `number`
 
-Defined in: [types/container.ts:40](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/container.ts#L40)
+Defined in: [types/container.ts:40](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/container.ts#L40)
 
 Number of rows
 
@@ -54,7 +54,7 @@ Number of rows
 
 > **cols**: `number`
 
-Defined in: [types/container.ts:42](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/container.ts#L42)
+Defined in: [types/container.ts:42](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/container.ts#L42)
 
 Number of columns
 
@@ -64,7 +64,7 @@ Number of columns
 
 > **cellSize**: `number`
 
-Defined in: [types/container.ts:44](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/container.ts#L44)
+Defined in: [types/container.ts:44](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/container.ts#L44)
 
 Size of each cell in world units
 
@@ -74,7 +74,7 @@ Size of each cell in world units
 
 > **origin**: [`Vec2`](Vec2.md)
 
-Defined in: [types/container.ts:46](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/container.ts#L46)
+Defined in: [types/container.ts:46](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/container.ts#L46)
 
 Position of the grid origin
 
@@ -84,7 +84,7 @@ Position of the grid origin
 
 > `optional` **originAnchor**: `"top-left"` \| `"top-right"` \| `"center"` \| `"bottom-left"` \| `"bottom-right"`
 
-Defined in: [types/container.ts:48](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/container.ts#L48)
+Defined in: [types/container.ts:48](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/container.ts#L48)
 
 Which corner the origin is at
 
@@ -94,7 +94,7 @@ Which corner the origin is at
 
 > `optional` **matchTagPattern**: `string`
 
-Defined in: [types/container.ts:50](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/container.ts#L50)
+Defined in: [types/container.ts:50](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/container.ts#L50)
 
 Optional tag pattern for match detection (e.g., "color-*" or "gem_*")
 
@@ -104,6 +104,6 @@ Optional tag pattern for match detection (e.g., "color-*" or "gem_*")
 
 > `optional` **minMatch**: `number`
 
-Defined in: [types/container.ts:52](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/container.ts#L52)
+Defined in: [types/container.ts:52](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/container.ts#L52)
 
 Minimum match length for match detection

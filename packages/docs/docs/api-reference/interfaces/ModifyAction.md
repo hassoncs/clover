@@ -6,7 +6,7 @@
 
 # Interface: ModifyAction
 
-Defined in: [types/rules.ts:270](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L270)
+Defined in: [types/rules.ts:303](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L303)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:270](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"modify"`
 
-Defined in: [types/rules.ts:271](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L271)
+Defined in: [types/rules.ts:304](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L304)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:271](https://github.com/hassoncs/clover/blob/2f92107
 
 > **target**: \{ `type`: `"by_id"`; `entityId`: `string`; \} \| \{ `type`: `"by_tag"`; `tag`: `string`; \}
 
-Defined in: [types/rules.ts:272](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L272)
+Defined in: [types/rules.ts:305](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L305)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:272](https://github.com/hassoncs/clover/blob/2f92107
 
 > **property**: `string`
 
-Defined in: [types/rules.ts:273](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L273)
+Defined in: [types/rules.ts:306](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L306)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/rules.ts:273](https://github.com/hassoncs/clover/blob/2f92107
 
 > **operation**: `"add"` \| `"set"` \| `"multiply"`
 
-Defined in: [types/rules.ts:274](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L274)
+Defined in: [types/rules.ts:307](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L307)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [types/rules.ts:274](https://github.com/hassoncs/clover/blob/2f92107
 
 > **value**: `Value`\<`number`\>
 
-Defined in: [types/rules.ts:275](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L275)
+Defined in: [types/rules.ts:308](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L308)

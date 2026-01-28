@@ -6,7 +6,7 @@
 
 # Interface: ColorStop
 
-Defined in: [types/particles.ts:43](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/particles.ts#L43)
+Defined in: [types/particles.ts:43](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L43)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/particles.ts:43](https://github.com/hassoncs/clover/blob/2f92
 
 > **position**: `number`
 
-Defined in: [types/particles.ts:44](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/particles.ts#L44)
+Defined in: [types/particles.ts:44](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L44)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [types/particles.ts:44](https://github.com/hassoncs/clover/blob/2f92
 
 > **color**: `string`
 
-Defined in: [types/particles.ts:45](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/particles.ts#L45)
+Defined in: [types/particles.ts:45](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L45)

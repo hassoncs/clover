@@ -6,7 +6,7 @@
 
 # Interface: EventTrigger
 
-Defined in: [types/rules.ts:54](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L54)
+Defined in: [types/rules.ts:68](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L68)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:54](https://github.com/hassoncs/clover/blob/2f921078
 
 > **type**: `"event"`
 
-Defined in: [types/rules.ts:55](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L55)
+Defined in: [types/rules.ts:69](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L69)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [types/rules.ts:55](https://github.com/hassoncs/clover/blob/2f921078
 
 > **eventName**: `string`
 
-Defined in: [types/rules.ts:56](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L56)
+Defined in: [types/rules.ts:70](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L70)

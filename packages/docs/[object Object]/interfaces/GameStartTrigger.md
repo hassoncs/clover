@@ -6,7 +6,7 @@
 
 # Interface: GameStartTrigger
 
-Defined in: [types/rules.ts:95](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L95)
+Defined in: [types/rules.ts:109](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L109)
 
 ## Properties
 
@@ -14,4 +14,4 @@ Defined in: [types/rules.ts:95](https://github.com/hassoncs/clover/blob/2f921078
 
 > **type**: `"gameStart"`
 
-Defined in: [types/rules.ts:96](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L96)
+Defined in: [types/rules.ts:110](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L110)

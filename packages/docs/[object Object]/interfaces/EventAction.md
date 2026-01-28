@@ -6,7 +6,7 @@
 
 # Interface: EventAction
 
-Defined in: [types/rules.ts:264](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L264)
+Defined in: [types/rules.ts:297](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L297)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:264](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"event"`
 
-Defined in: [types/rules.ts:265](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L265)
+Defined in: [types/rules.ts:298](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L298)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:265](https://github.com/hassoncs/clover/blob/2f92107
 
 > **eventName**: `string`
 
-Defined in: [types/rules.ts:266](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L266)
+Defined in: [types/rules.ts:299](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L299)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/rules.ts:266](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **data**: `Record`\<`string`, `unknown`\>
 
-Defined in: [types/rules.ts:267](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L267)
+Defined in: [types/rules.ts:300](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L300)

@@ -6,7 +6,7 @@
 
 # Interface: GlowEffect
 
-Defined in: [types/effects.ts:54](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L54)
+Defined in: [types/effects.ts:54](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L54)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/effects.ts:54](https://github.com/hassoncs/clover/blob/2f9210
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L48)
+Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L48)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/effects.ts:48](https://github.com/hassoncs/clover/blob/2f9210
 
 > `optional` **opacity**: `number`
 
-Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L49)
+Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L49)
 
 #### Inherited from
 
@@ -42,7 +42,7 @@ Defined in: [types/effects.ts:49](https://github.com/hassoncs/clover/blob/2f9210
 
 > `optional` **blendMode**: [`EffectBlendMode`](../type-aliases/EffectBlendMode.md)
 
-Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L50)
+Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L50)
 
 #### Inherited from
 
@@ -54,7 +54,7 @@ Defined in: [types/effects.ts:50](https://github.com/hassoncs/clover/blob/2f9210
 
 > `optional` **id**: `string`
 
-Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L51)
+Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L51)
 
 #### Inherited from
 
@@ -66,7 +66,7 @@ Defined in: [types/effects.ts:51](https://github.com/hassoncs/clover/blob/2f9210
 
 > **type**: `"glow"`
 
-Defined in: [types/effects.ts:55](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L55)
+Defined in: [types/effects.ts:55](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L55)
 
 #### Overrides
 
@@ -78,7 +78,7 @@ Defined in: [types/effects.ts:55](https://github.com/hassoncs/clover/blob/2f9210
 
 > **color**: `string`
 
-Defined in: [types/effects.ts:56](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L56)
+Defined in: [types/effects.ts:56](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L56)
 
 ***
 
@@ -86,7 +86,7 @@ Defined in: [types/effects.ts:56](https://github.com/hassoncs/clover/blob/2f9210
 
 > **radius**: `number`
 
-Defined in: [types/effects.ts:57](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L57)
+Defined in: [types/effects.ts:57](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L57)
 
 ***
 
@@ -94,7 +94,7 @@ Defined in: [types/effects.ts:57](https://github.com/hassoncs/clover/blob/2f9210
 
 > **intensity**: `number`
 
-Defined in: [types/effects.ts:58](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L58)
+Defined in: [types/effects.ts:58](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L58)
 
 ***
 
@@ -102,7 +102,7 @@ Defined in: [types/effects.ts:58](https://github.com/hassoncs/clover/blob/2f9210
 
 > `optional` **pulse**: `boolean`
 
-Defined in: [types/effects.ts:59](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L59)
+Defined in: [types/effects.ts:59](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L59)
 
 ***
 
@@ -110,4 +110,4 @@ Defined in: [types/effects.ts:59](https://github.com/hassoncs/clover/blob/2f9210
 
 > `optional` **pulseSpeed**: `number`
 
-Defined in: [types/effects.ts:60](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/effects.ts#L60)
+Defined in: [types/effects.ts:60](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/effects.ts#L60)

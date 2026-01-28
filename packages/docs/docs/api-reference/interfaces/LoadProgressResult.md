@@ -6,7 +6,7 @@
 
 # Interface: LoadProgressResult\<T\>
 
-Defined in: types/progress.ts:109
+Defined in: [types/progress.ts:109](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/progress.ts#L109)
 
 Result of loading progress from storage.
 
@@ -22,7 +22,7 @@ Result of loading progress from storage.
 
 > **success**: `boolean`
 
-Defined in: types/progress.ts:111
+Defined in: [types/progress.ts:111](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/progress.ts#L111)
 
 Whether the load was successful
 
@@ -32,7 +32,7 @@ Whether the load was successful
 
 > **data**: `T`
 
-Defined in: types/progress.ts:114
+Defined in: [types/progress.ts:114](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/progress.ts#L114)
 
 The loaded progress data (or defaults on failure)
 
@@ -42,7 +42,7 @@ The loaded progress data (or defaults on failure)
 
 > **migrated**: `boolean`
 
-Defined in: types/progress.ts:117
+Defined in: [types/progress.ts:117](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/progress.ts#L117)
 
 Whether data was migrated during load
 
@@ -52,6 +52,6 @@ Whether data was migrated during load
 
 > `optional` **errors**: `string`[]
 
-Defined in: types/progress.ts:120
+Defined in: [types/progress.ts:120](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/progress.ts#L120)
 
 Error messages if load failed

@@ -6,7 +6,7 @@
 
 # Interface: Bounds
 
-Defined in: [types/common.ts:6](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/common.ts#L6)
+Defined in: [types/common.ts:6](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/common.ts#L6)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/common.ts:6](https://github.com/hassoncs/clover/blob/2f921078
 
 > **minX**: `number`
 
-Defined in: [types/common.ts:7](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/common.ts#L7)
+Defined in: [types/common.ts:7](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/common.ts#L7)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/common.ts:7](https://github.com/hassoncs/clover/blob/2f921078
 
 > **maxX**: `number`
 
-Defined in: [types/common.ts:8](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/common.ts#L8)
+Defined in: [types/common.ts:8](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/common.ts#L8)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/common.ts:8](https://github.com/hassoncs/clover/blob/2f921078
 
 > **minY**: `number`
 
-Defined in: [types/common.ts:9](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/common.ts#L9)
+Defined in: [types/common.ts:9](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/common.ts#L9)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/common.ts:9](https://github.com/hassoncs/clover/blob/2f921078
 
 > **maxY**: `number`
 
-Defined in: [types/common.ts:10](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/common.ts#L10)
+Defined in: [types/common.ts:10](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/common.ts#L10)

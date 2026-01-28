@@ -6,7 +6,7 @@
 
 # Interface: ShadowEffect
 
-Defined in: [types/sprite.ts:6](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/sprite.ts#L6)
+Defined in: [types/sprite.ts:6](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/sprite.ts#L6)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/sprite.ts:6](https://github.com/hassoncs/clover/blob/2f921078
 
 > **color**: `string`
 
-Defined in: [types/sprite.ts:7](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/sprite.ts#L7)
+Defined in: [types/sprite.ts:7](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/sprite.ts#L7)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/sprite.ts:7](https://github.com/hassoncs/clover/blob/2f921078
 
 > **offsetX**: `number`
 
-Defined in: [types/sprite.ts:8](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/sprite.ts#L8)
+Defined in: [types/sprite.ts:8](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/sprite.ts#L8)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/sprite.ts:8](https://github.com/hassoncs/clover/blob/2f921078
 
 > **offsetY**: `number`
 
-Defined in: [types/sprite.ts:9](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/sprite.ts#L9)
+Defined in: [types/sprite.ts:9](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/sprite.ts#L9)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/sprite.ts:9](https://github.com/hassoncs/clover/blob/2f921078
 
 > **blur**: `number`
 
-Defined in: [types/sprite.ts:10](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/sprite.ts#L10)
+Defined in: [types/sprite.ts:10](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/sprite.ts#L10)

@@ -6,7 +6,7 @@
 
 # Interface: PopFromListAction
 
-Defined in: [types/rules.ts:354](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L354)
+Defined in: [types/rules.ts:387](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L387)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:354](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"pop_from_list"`
 
-Defined in: [types/rules.ts:355](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L355)
+Defined in: [types/rules.ts:388](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L388)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:355](https://github.com/hassoncs/clover/blob/2f92107
 
 > **listName**: `string`
 
-Defined in: [types/rules.ts:356](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L356)
+Defined in: [types/rules.ts:389](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L389)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:356](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **position**: `"front"` \| `"back"`
 
-Defined in: [types/rules.ts:357](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L357)
+Defined in: [types/rules.ts:390](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L390)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/rules.ts:357](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **storeIn**: `string`
 
-Defined in: [types/rules.ts:358](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L358)
+Defined in: [types/rules.ts:391](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L391)

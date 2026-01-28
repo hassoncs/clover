@@ -6,7 +6,7 @@
 
 # Interface: ConditionalBehavior
 
-Defined in: [types/behavior.ts:318](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L318)
+Defined in: [types/behavior.ts:319](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L319)
 
 A group of behaviors that activate based on tag conditions.
 Only ONE conditional behavior group is active at a time (exclusive by priority).
@@ -31,7 +31,7 @@ conditionalBehaviors: [
 
 > **when**: [`ConditionalBehaviorCondition`](ConditionalBehaviorCondition.md)
 
-Defined in: [types/behavior.ts:320](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L320)
+Defined in: [types/behavior.ts:321](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L321)
 
 Condition that must be met for this group to be active
 
@@ -41,7 +41,7 @@ Condition that must be met for this group to be active
 
 > **priority**: `number`
 
-Defined in: [types/behavior.ts:322](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L322)
+Defined in: [types/behavior.ts:323](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L323)
 
 Priority for exclusive evaluation - higher wins (default: 0)
 
@@ -51,6 +51,6 @@ Priority for exclusive evaluation - higher wins (default: 0)
 
 > **behaviors**: [`Behavior`](../type-aliases/Behavior.md)[]
 
-Defined in: [types/behavior.ts:324](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L324)
+Defined in: [types/behavior.ts:325](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L325)
 
 Behaviors to execute when this group is active

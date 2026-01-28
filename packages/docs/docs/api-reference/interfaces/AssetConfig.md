@@ -6,7 +6,19 @@
 
 # Interface: AssetConfig
 
-Defined in: [types/GameDefinition.ts:115](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L115)
+Defined in: [types/GameDefinition.ts:135](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L135)
+
+Dual-field image reference for backwards compatibility.
+
+Preferred: set `assetRef` to the asset UUID (R2 key derivation handled elsewhere).
+Legacy: set `imageUrl` to a full URL or relative path.
+
+During the migration window, callers may provide either (or both); runtime resolution
+will decide precedence.
+
+## Extends
+
+- [`ImageField`](../type-aliases/ImageField.md)
 
 ## Properties
 
@@ -14,7 +26,23 @@ Defined in: [types/GameDefinition.ts:115](https://github.com/hassoncs/clover/blo
 
 > `optional` **imageUrl**: `string`
 
-Defined in: [types/GameDefinition.ts:116](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L116)
+Defined in: [types/GameDefinition.ts:20](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L20)
+
+#### Inherited from
+
+`ImageField.imageUrl`
+
+***
+
+### assetRef?
+
+> `optional` **assetRef**: `string`
+
+Defined in: [types/GameDefinition.ts:21](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L21)
+
+#### Inherited from
+
+`ImageField.assetRef`
 
 ***
 
@@ -22,7 +50,7 @@ Defined in: [types/GameDefinition.ts:116](https://github.com/hassoncs/clover/blo
 
 > `optional` **source**: [`AssetSource`](../type-aliases/AssetSource.md)
 
-Defined in: [types/GameDefinition.ts:117](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L117)
+Defined in: [types/GameDefinition.ts:136](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L136)
 
 ***
 
@@ -30,7 +58,7 @@ Defined in: [types/GameDefinition.ts:117](https://github.com/hassoncs/clover/blo
 
 > `optional` **scale**: `number`
 
-Defined in: [types/GameDefinition.ts:118](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L118)
+Defined in: [types/GameDefinition.ts:137](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L137)
 
 ***
 
@@ -38,7 +66,7 @@ Defined in: [types/GameDefinition.ts:118](https://github.com/hassoncs/clover/blo
 
 > `optional` **offsetX**: `number`
 
-Defined in: [types/GameDefinition.ts:119](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L119)
+Defined in: [types/GameDefinition.ts:138](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L138)
 
 ***
 
@@ -46,7 +74,7 @@ Defined in: [types/GameDefinition.ts:119](https://github.com/hassoncs/clover/blo
 
 > `optional` **offsetY**: `number`
 
-Defined in: [types/GameDefinition.ts:120](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L120)
+Defined in: [types/GameDefinition.ts:139](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L139)
 
 ***
 
@@ -54,4 +82,4 @@ Defined in: [types/GameDefinition.ts:120](https://github.com/hassoncs/clover/blo
 
 > `optional` **animations**: `Record`\<`string`, \{ `frames`: `string`[]; `fps`: `number`; `loop?`: `boolean`; \}\>
 
-Defined in: [types/GameDefinition.ts:121](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L121)
+Defined in: [types/GameDefinition.ts:140](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L140)

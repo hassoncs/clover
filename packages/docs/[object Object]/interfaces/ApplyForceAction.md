@@ -6,7 +6,7 @@
 
 # Interface: ApplyForceAction
 
-Defined in: [types/rules.ts:303](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L303)
+Defined in: [types/rules.ts:336](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L336)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:303](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"apply_force"`
 
-Defined in: [types/rules.ts:304](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L304)
+Defined in: [types/rules.ts:337](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L337)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:304](https://github.com/hassoncs/clover/blob/2f92107
 
 > **target**: [`EntityTarget`](../type-aliases/EntityTarget.md)
 
-Defined in: [types/rules.ts:305](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L305)
+Defined in: [types/rules.ts:338](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L338)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:305](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **x**: `Value`\<`number`\>
 
-Defined in: [types/rules.ts:306](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L306)
+Defined in: [types/rules.ts:339](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L339)
 
 ***
 
@@ -38,15 +38,15 @@ Defined in: [types/rules.ts:306](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **y**: `Value`\<`number`\>
 
-Defined in: [types/rules.ts:307](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L307)
+Defined in: [types/rules.ts:340](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L340)
 
 ***
 
 ### direction?
 
-> `optional` **direction**: `"drag_direction"` \| `"tilt_direction"` \| `"toward_touch"`
+> `optional` **direction**: `"toward_touch"` \| `"drag_direction"` \| `"tilt_direction"`
 
-Defined in: [types/rules.ts:308](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L308)
+Defined in: [types/rules.ts:341](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L341)
 
 ***
 
@@ -54,4 +54,4 @@ Defined in: [types/rules.ts:308](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **force**: `Value`\<`number`\>
 
-Defined in: [types/rules.ts:309](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L309)
+Defined in: [types/rules.ts:342](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L342)

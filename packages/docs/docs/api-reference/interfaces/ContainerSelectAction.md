@@ -6,7 +6,7 @@
 
 # Interface: ContainerSelectAction
 
-Defined in: [types/rules.ts:452](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L452)
+Defined in: [types/rules.ts:485](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L485)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:452](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"container_select"`
 
-Defined in: [types/rules.ts:453](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L453)
+Defined in: [types/rules.ts:486](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L486)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:453](https://github.com/hassoncs/clover/blob/2f92107
 
 > **container**: `string`
 
-Defined in: [types/rules.ts:454](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L454)
+Defined in: [types/rules.ts:487](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L487)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:454](https://github.com/hassoncs/clover/blob/2f92107
 
 > **index**: `number` \| `"next"` \| `"previous"` \| `"first"` \| `"last"`
 
-Defined in: [types/rules.ts:455](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L455)
+Defined in: [types/rules.ts:488](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L488)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/rules.ts:455](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **deselectOthers**: `boolean`
 
-Defined in: [types/rules.ts:456](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L456)
+Defined in: [types/rules.ts:489](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L489)

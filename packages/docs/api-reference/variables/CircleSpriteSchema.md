@@ -8,4 +8,4 @@
 
 > `const` **CircleSpriteSchema**: `ZodObject`\<`object` & `object`, `"strip"`, `ZodTypeAny`, \{ `color?`: `string`; `strokeColor?`: `string`; `strokeWidth?`: `number`; `opacity?`: `number`; `shadow?`: \{ `color`: `string`; `offsetX`: `number`; `offsetY`: `number`; `blur`: `number`; \}; `type`: `"circle"`; `radius`: `number`; \}, \{ `color?`: `string`; `strokeColor?`: `string`; `strokeWidth?`: `number`; `opacity?`: `number`; `shadow?`: \{ `color`: `string`; `offsetX`: `number`; `offsetY`: `number`; `blur`: `number`; \}; `type`: `"circle"`; `radius`: `number`; \}\>
 
-Defined in: [types/schemas.ts:48](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/schemas.ts#L48)
+Defined in: [types/schemas.ts:48](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/schemas.ts#L48)

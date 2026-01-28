@@ -191,6 +191,40 @@
           "required": true
         }
       ]
+    },
+    {
+      "type": "zone_enter",
+      "interfaceName": "ZoneEnterTrigger",
+      "displayName": "Zone Enter",
+      "properties": [
+        {
+          "name": "entityTag",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "zoneTag",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "zone_exit",
+      "interfaceName": "ZoneExitTrigger",
+      "displayName": "Zone Exit",
+      "properties": [
+        {
+          "name": "entityTag",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "zoneTag",
+          "type": "string",
+          "required": true
+        }
+      ]
     }
   ],
   "conditions": [
@@ -1523,6 +1557,12 @@
           "name": "count",
           "type": "number",
           "required": false
+        },
+        {
+          "name": "launch",
+          "type": "LaunchConfig",
+          "required": false,
+          "description": "Optional launch configuration - applies initial velocity when entity is spawned"
         },
         {
           "name": "position",

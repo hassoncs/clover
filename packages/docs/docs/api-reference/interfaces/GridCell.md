@@ -6,7 +6,7 @@
 
 # Interface: GridCell
 
-Defined in: [types/container.ts:91](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/container.ts#L91)
+Defined in: [types/container.ts:91](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/container.ts#L91)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/container.ts:91](https://github.com/hassoncs/clover/blob/2f92
 
 > **row**: `number`
 
-Defined in: [types/container.ts:92](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/container.ts#L92)
+Defined in: [types/container.ts:92](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/container.ts#L92)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [types/container.ts:92](https://github.com/hassoncs/clover/blob/2f92
 
 > **col**: `number`
 
-Defined in: [types/container.ts:93](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/container.ts#L93)
+Defined in: [types/container.ts:93](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/container.ts#L93)

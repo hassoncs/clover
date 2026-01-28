@@ -6,7 +6,7 @@
 
 # Interface: ContainerClearAction
 
-Defined in: [types/rules.ts:445](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L445)
+Defined in: [types/rules.ts:478](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L478)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:445](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"container_clear"`
 
-Defined in: [types/rules.ts:446](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L446)
+Defined in: [types/rules.ts:479](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L479)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:446](https://github.com/hassoncs/clover/blob/2f92107
 
 > **container**: `string`
 
-Defined in: [types/rules.ts:447](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L447)
+Defined in: [types/rules.ts:480](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L480)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:447](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **destroy**: `boolean`
 
-Defined in: [types/rules.ts:448](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L448)
+Defined in: [types/rules.ts:481](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L481)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/rules.ts:448](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **keep**: `number`
 
-Defined in: [types/rules.ts:449](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L449)
+Defined in: [types/rules.ts:482](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L482)

@@ -6,7 +6,7 @@
 
 # Interface: ContainerCanAcceptCondition
 
-Defined in: [types/rules.ts:494](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L494)
+Defined in: [types/rules.ts:527](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L527)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:494](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"container_can_accept"`
 
-Defined in: [types/rules.ts:495](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L495)
+Defined in: [types/rules.ts:528](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L528)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:495](https://github.com/hassoncs/clover/blob/2f92107
 
 > **container**: `string`
 
-Defined in: [types/rules.ts:496](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L496)
+Defined in: [types/rules.ts:529](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L529)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:496](https://github.com/hassoncs/clover/blob/2f92107
 
 > **item**: `string` \| [`EntityTarget`](../type-aliases/EntityTarget.md)
 
-Defined in: [types/rules.ts:497](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L497)
+Defined in: [types/rules.ts:530](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L530)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/rules.ts:497](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **match**: [`ContainerMatchRule`](ContainerMatchRule.md)
 
-Defined in: [types/rules.ts:498](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L498)
+Defined in: [types/rules.ts:531](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L531)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [types/rules.ts:498](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **negated**: `boolean`
 
-Defined in: [types/rules.ts:499](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L499)
+Defined in: [types/rules.ts:532](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L532)

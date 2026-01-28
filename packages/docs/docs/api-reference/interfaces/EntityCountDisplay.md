@@ -6,7 +6,7 @@
 
 # Interface: EntityCountDisplay
 
-Defined in: [types/GameDefinition.ts:73](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L73)
+Defined in: [types/GameDefinition.ts:87](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L87)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:73](https://github.com/hassoncs/clover/blob
 
 > **tag**: `string`
 
-Defined in: [types/GameDefinition.ts:74](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L74)
+Defined in: [types/GameDefinition.ts:88](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L88)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/GameDefinition.ts:74](https://github.com/hassoncs/clover/blob
 
 > **label**: `string`
 
-Defined in: [types/GameDefinition.ts:75](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L75)
+Defined in: [types/GameDefinition.ts:89](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L89)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/GameDefinition.ts:75](https://github.com/hassoncs/clover/blob
 
 > `optional` **color**: `string`
 
-Defined in: [types/GameDefinition.ts:76](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L76)
+Defined in: [types/GameDefinition.ts:90](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L90)

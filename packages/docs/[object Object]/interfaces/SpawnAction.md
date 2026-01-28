@@ -6,7 +6,7 @@
 
 # Interface: SpawnAction
 
-Defined in: [types/rules.ts:228](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L228)
+Defined in: [types/rules.ts:259](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L259)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:228](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"spawn"`
 
-Defined in: [types/rules.ts:229](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L229)
+Defined in: [types/rules.ts:260](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L260)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:229](https://github.com/hassoncs/clover/blob/2f92107
 
 > **template**: `string` \| `string`[]
 
-Defined in: [types/rules.ts:230](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L230)
+Defined in: [types/rules.ts:261](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L261)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:230](https://github.com/hassoncs/clover/blob/2f92107
 
 > **position**: [`SpawnPosition`](../type-aliases/SpawnPosition.md)
 
-Defined in: [types/rules.ts:231](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L231)
+Defined in: [types/rules.ts:262](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L262)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/rules.ts:231](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **count**: `number`
 
-Defined in: [types/rules.ts:232](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L232)
+Defined in: [types/rules.ts:263](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L263)
 
 ***
 
@@ -46,4 +46,14 @@ Defined in: [types/rules.ts:232](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **spread**: `number`
 
-Defined in: [types/rules.ts:233](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L233)
+Defined in: [types/rules.ts:264](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L264)
+
+***
+
+### launch?
+
+> `optional` **launch**: [`LaunchConfig`](LaunchConfig.md)
+
+Defined in: [types/rules.ts:266](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L266)
+
+Optional launch configuration - applies initial velocity when entity is spawned

@@ -6,7 +6,7 @@
 
 # Interface: ScaleOscillateBehavior
 
-Defined in: [types/behavior.ts:125](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L125)
+Defined in: [types/behavior.ts:125](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L125)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/behavior.ts:125](https://github.com/hassoncs/clover/blob/2f92
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L46)
+Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L46)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/2f921
 
 > **type**: `"scale_oscillate"`
 
-Defined in: [types/behavior.ts:126](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L126)
+Defined in: [types/behavior.ts:126](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L126)
 
 #### Overrides
 
@@ -42,7 +42,7 @@ Defined in: [types/behavior.ts:126](https://github.com/hassoncs/clover/blob/2f92
 
 > **min**: `number`
 
-Defined in: [types/behavior.ts:127](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L127)
+Defined in: [types/behavior.ts:127](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L127)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [types/behavior.ts:127](https://github.com/hassoncs/clover/blob/2f92
 
 > **max**: `number`
 
-Defined in: [types/behavior.ts:128](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L128)
+Defined in: [types/behavior.ts:128](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L128)
 
 ***
 
@@ -58,7 +58,7 @@ Defined in: [types/behavior.ts:128](https://github.com/hassoncs/clover/blob/2f92
 
 > **speed**: `number`
 
-Defined in: [types/behavior.ts:129](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L129)
+Defined in: [types/behavior.ts:129](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L129)
 
 ***
 
@@ -66,4 +66,4 @@ Defined in: [types/behavior.ts:129](https://github.com/hassoncs/clover/blob/2f92
 
 > `optional` **phase**: `number`
 
-Defined in: [types/behavior.ts:130](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L130)
+Defined in: [types/behavior.ts:130](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L130)

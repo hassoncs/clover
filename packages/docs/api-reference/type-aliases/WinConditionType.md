@@ -8,4 +8,4 @@
 
 > **WinConditionType** = `"score"` \| `"destroy_all"` \| `"survive_time"` \| `"reach_entity"` \| `"collect_all"` \| `"custom"`
 
-Defined in: [types/rules.ts:581](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L581)
+Defined in: [types/rules.ts:614](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L614)

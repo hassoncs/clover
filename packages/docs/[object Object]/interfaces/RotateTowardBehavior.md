@@ -6,7 +6,7 @@
 
 # Interface: RotateTowardBehavior
 
-Defined in: [types/behavior.ts:170](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L170)
+Defined in: [types/behavior.ts:170](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L170)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/behavior.ts:170](https://github.com/hassoncs/clover/blob/2f92
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L46)
+Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L46)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/2f921
 
 > **type**: `"rotate_toward"`
 
-Defined in: [types/behavior.ts:171](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L171)
+Defined in: [types/behavior.ts:171](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L171)
 
 #### Overrides
 
@@ -42,7 +42,7 @@ Defined in: [types/behavior.ts:171](https://github.com/hassoncs/clover/blob/2f92
 
 > **target**: `string`
 
-Defined in: [types/behavior.ts:172](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L172)
+Defined in: [types/behavior.ts:172](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L172)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [types/behavior.ts:172](https://github.com/hassoncs/clover/blob/2f92
 
 > `optional` **speed**: `number`
 
-Defined in: [types/behavior.ts:173](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L173)
+Defined in: [types/behavior.ts:173](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L173)
 
 ***
 
@@ -58,4 +58,4 @@ Defined in: [types/behavior.ts:173](https://github.com/hassoncs/clover/blob/2f92
 
 > `optional` **offset**: `number`
 
-Defined in: [types/behavior.ts:174](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/behavior.ts#L174)
+Defined in: [types/behavior.ts:174](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L174)

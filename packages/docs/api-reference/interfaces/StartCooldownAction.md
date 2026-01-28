@@ -6,7 +6,7 @@
 
 # Interface: StartCooldownAction
 
-Defined in: [types/rules.ts:342](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L342)
+Defined in: [types/rules.ts:375](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L375)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:342](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"start_cooldown"`
 
-Defined in: [types/rules.ts:343](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L343)
+Defined in: [types/rules.ts:376](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L376)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:343](https://github.com/hassoncs/clover/blob/2f92107
 
 > **cooldownId**: `string`
 
-Defined in: [types/rules.ts:344](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L344)
+Defined in: [types/rules.ts:377](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L377)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/rules.ts:344](https://github.com/hassoncs/clover/blob/2f92107
 
 > **duration**: `Value`\<`number`\>
 
-Defined in: [types/rules.ts:345](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L345)
+Defined in: [types/rules.ts:378](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L378)

@@ -6,7 +6,7 @@
 
 # Interface: CameraDeadZone
 
-Defined in: [types/GameDefinition.ts:21](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L21)
+Defined in: [types/GameDefinition.ts:35](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L35)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:21](https://github.com/hassoncs/clover/blob
 
 > **width**: `number`
 
-Defined in: [types/GameDefinition.ts:22](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L22)
+Defined in: [types/GameDefinition.ts:36](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L36)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [types/GameDefinition.ts:22](https://github.com/hassoncs/clover/blob
 
 > **height**: `number`
 
-Defined in: [types/GameDefinition.ts:23](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/GameDefinition.ts#L23)
+Defined in: [types/GameDefinition.ts:37](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L37)

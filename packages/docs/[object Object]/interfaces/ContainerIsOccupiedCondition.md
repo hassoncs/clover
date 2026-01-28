@@ -6,7 +6,7 @@
 
 # Interface: ContainerIsOccupiedCondition
 
-Defined in: [types/rules.ts:510](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L510)
+Defined in: [types/rules.ts:543](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L543)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:510](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"container_is_occupied"`
 
-Defined in: [types/rules.ts:511](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L511)
+Defined in: [types/rules.ts:544](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L544)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:511](https://github.com/hassoncs/clover/blob/2f92107
 
 > **container**: `string`
 
-Defined in: [types/rules.ts:512](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L512)
+Defined in: [types/rules.ts:545](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L545)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:512](https://github.com/hassoncs/clover/blob/2f92107
 
 > **position**: `number` \| \{ `row`: `number`; `col`: `number`; \}
 
-Defined in: [types/rules.ts:513](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L513)
+Defined in: [types/rules.ts:546](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L546)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/rules.ts:513](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **negated**: `boolean`
 
-Defined in: [types/rules.ts:514](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L514)
+Defined in: [types/rules.ts:547](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L547)

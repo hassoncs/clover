@@ -6,7 +6,7 @@
 
 # Interface: SheetTileAnimation
 
-Defined in: [types/asset-sheet.ts:107](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L107)
+Defined in: [types/asset-sheet.ts:107](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-sheet.ts#L107)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/asset-sheet.ts:107](https://github.com/hassoncs/clover/blob/2
 
 > **frames**: `number`[]
 
-Defined in: [types/asset-sheet.ts:108](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L108)
+Defined in: [types/asset-sheet.ts:108](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-sheet.ts#L108)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/asset-sheet.ts:108](https://github.com/hassoncs/clover/blob/2
 
 > **fps**: `number`
 
-Defined in: [types/asset-sheet.ts:109](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L109)
+Defined in: [types/asset-sheet.ts:109](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-sheet.ts#L109)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/asset-sheet.ts:109](https://github.com/hassoncs/clover/blob/2
 
 > `optional` **loop**: `boolean`
 
-Defined in: [types/asset-sheet.ts:110](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/asset-sheet.ts#L110)
+Defined in: [types/asset-sheet.ts:110](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-sheet.ts#L110)

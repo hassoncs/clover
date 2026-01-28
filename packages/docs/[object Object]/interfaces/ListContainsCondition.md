@@ -6,7 +6,7 @@
 
 # Interface: ListContainsCondition
 
-Defined in: [types/rules.ts:173](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L173)
+Defined in: [types/rules.ts:189](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L189)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:173](https://github.com/hassoncs/clover/blob/2f92107
 
 > **type**: `"list_contains"`
 
-Defined in: [types/rules.ts:174](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L174)
+Defined in: [types/rules.ts:190](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L190)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:174](https://github.com/hassoncs/clover/blob/2f92107
 
 > **listName**: `string`
 
-Defined in: [types/rules.ts:175](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L175)
+Defined in: [types/rules.ts:191](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L191)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:175](https://github.com/hassoncs/clover/blob/2f92107
 
 > **value**: `Value`\<`string` \| `number` \| `boolean`\>
 
-Defined in: [types/rules.ts:176](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L176)
+Defined in: [types/rules.ts:192](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L192)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/rules.ts:176](https://github.com/hassoncs/clover/blob/2f92107
 
 > `optional` **negated**: `boolean`
 
-Defined in: [types/rules.ts:177](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/rules.ts#L177)
+Defined in: [types/rules.ts:193](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L193)

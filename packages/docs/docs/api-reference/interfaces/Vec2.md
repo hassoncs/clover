@@ -6,7 +6,7 @@
 
 # Interface: Vec2
 
-Defined in: [types/common.ts:1](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/common.ts#L1)
+Defined in: [types/common.ts:1](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/common.ts#L1)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/common.ts:1](https://github.com/hassoncs/clover/blob/2f921078
 
 > **x**: `number`
 
-Defined in: [types/common.ts:2](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/common.ts#L2)
+Defined in: [types/common.ts:2](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/common.ts#L2)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [types/common.ts:2](https://github.com/hassoncs/clover/blob/2f921078
 
 > **y**: `number`
 
-Defined in: [types/common.ts:3](https://github.com/hassoncs/clover/blob/2f9210785e99663f02331a1f99376dd2b95d60e1/shared/src/types/common.ts#L3)
+Defined in: [types/common.ts:3](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/common.ts#L3)
