@@ -266,13 +266,7 @@ export function createNodeComfyUIAdapter(config: ComfyUIAdapterConfig): ImageGen
   };
 }
 
-export type ImageGenerationProvider = 'scenario' | 'comfyui' | 'modal';
-
 export interface NodeAdaptersOptions {
-  provider?: ImageGenerationProvider;
-  scenarioApiKey?: string;
-  scenarioApiSecret?: string;
-  comfyuiEndpoint?: string;
   modalEndpoint?: string;
   r2Bucket: string;
   wranglerCwd: string;
@@ -280,29 +274,11 @@ export interface NodeAdaptersOptions {
 }
 
 export async function createNodeAdapters(options: NodeAdaptersOptions): Promise<PipelineAdapters> {
-  const provider = options.provider ?? 'comfyui';
-
-  let imageAdapter: ImageGenerationAdapter;
-
-  if (provider === 'comfyui' || provider === 'modal') {
-    const endpoint = options.modalEndpoint ?? options.comfyuiEndpoint ?? 'https://hassoncs--slopcade-comfyui-web-img2img.modal.run';
-    imageAdapter = createNodeComfyUIAdapter({
-      endpoint: endpoint,
-    });
-  } else {
-    console.warn('⚠️  SCENARIO PROVIDER IS DEPRECATED. Please migrate to Modal (comfyui).');
-    if (!options.scenarioApiKey || !options.scenarioApiSecret) {
-      throw new Error('Scenario API credentials required for deprecated provider');
-    }
-    imageAdapter = createNodeScenarioAdapter({
-      apiKey: options.scenarioApiKey,
-      apiSecret: options.scenarioApiSecret,
-    });
-  }
+  const endpoint = options.modalEndpoint ?? options.comfyuiEndpoint ?? 'https://hassoncs--slopcade-comfyui-web-img2img.modal.run';
+  const imageAdapter = createNodeComfyUIAdapter({ endpoint });
 
   return {
     provider: imageAdapter,
-    scenario: imageAdapter,
     r2: createNodeR2Adapter({
       bucket: options.r2Bucket,
       wranglerCwd: options.wranglerCwd,

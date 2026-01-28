@@ -621,19 +621,7 @@ function createComfyUIProviderClient(env: Env): ProviderClient {
 }
 
 export function getProviderClient(env: Env): ProviderClient {
-  const provider = env.IMAGE_GENERATION_PROVIDER ?? 'comfyui';
-
-  if (provider === 'comfyui' || provider === 'modal') {
-    return createComfyUIProviderClient(env);
-  }
-
-  console.warn('⚠️  SCENARIO PROVIDER IS DEPRECATED. Please migrate to Modal (comfyui).');
-
-  if (!env.SCENARIO_API_KEY || !env.SCENARIO_SECRET_API_KEY) {
-    throw new Error('SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using deprecated Scenario provider');
-  }
-
-  return createScenarioProviderClient(env);
+  return createComfyUIProviderClient(env);
 }
 
 export class AssetService {
@@ -1039,39 +1027,9 @@ export function getScenarioConfigFromEnv(env: Env): {
   };
 }
 
-export function getImageGenerationConfig(env: Env): {
+export function getImageGenerationConfig(_env: Env): {
   configured: boolean;
-  provider: 'scenario' | 'comfyui' | 'modal';
-  error?: string;
 } {
-  // Default to Modal (comfyui) - Scenario is deprecated
-  const provider = env.IMAGE_GENERATION_PROVIDER ?? 'comfyui';
-
-  if (provider === 'comfyui' || provider === 'modal') {
-    // Modal uses the deployed endpoint - no API key needed for public endpoints
-    // Private endpoints would need MODAL_TOKEN
-    return { configured: true, provider: 'comfyui' };
-  }
-
-  // Scenario support maintained for backwards compatibility but deprecated
-  if (provider === 'scenario') {
-    console.warn('⚠️  SCENARIO PROVIDER IS DEPRECATED. Please migrate to Modal (comfyui).');
-    const apiKey = env.SCENARIO_API_KEY;
-    const apiSecret = env.SCENARIO_SECRET_API_KEY;
-
-    if (!apiKey || !apiSecret) {
-      return {
-        configured: false,
-        provider: 'scenario',
-        error: 'SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using Scenario provider (deprecated)',
-      };
-    }
-    return { configured: true, provider: 'scenario' };
-  }
-
-  return {
-    configured: false,
-    provider: 'comfyui',
-    error: `Unknown provider: ${provider}. Use 'comfyui' (Modal) or 'scenario' (deprecated)`,
-  };
+  // Modal ComfyUI is always available - no configuration needed
+  return { configured: true };
 }

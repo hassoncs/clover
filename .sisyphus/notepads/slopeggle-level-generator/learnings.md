@@ -2,9 +2,13 @@
 
 ## Session: 2026-01-28
 
-### Wave 1: Schema + Interfaces - Task Completed
+### Wave 1: COMPLETED
 
-**Status**: Completed - Generic JSON Level & Pack Schema Defined
+**Status**: ✅ COMPLETE - Schema + RNG Foundation Ready
+
+---
+
+## Wave 1 Task 1: Generic JSON Level & Pack Schema ✅
 
 **Files Created**:
 - `shared/src/types/LevelDefinition.ts` - Core level overlay types
@@ -88,18 +92,136 @@ interface SlopeggleLevelOverrides {
 
 ---
 
-### Wave 1: Schema + Interfaces
+## Wave 1 Task 2: Deterministic RNG Contract ✅
 
-**Status**: In Progress (2 background tasks running)
+**Files Created**:
+- `shared/src/generator/SeededRandom.ts` - Core RNG with substreams
+- `shared/src/generator/index.ts` - Module exports
+- `shared/src/generator/SeededRandom.demo.ts` - Determinism verification
+
+**What Was Learned**:
+
+1. **Mulberry32 Algorithm** - Better quality than LCG, used in Ball Sort
+2. **Substream Independence** - Each stream (layout, oranges, motion, ids) has its own state
+3. **Seed Derivation** - Uses FNV-1a + Mulberry32 to hash seed + streamName → sub-seed
+4. **Coexistence Strategy** - Renamed to `createSeededRandomWithSubstreams` to avoid conflict with existing `createSeededRandom` in expressions
+5. **Canonical JSON** - Stable serialization for deterministic comparison
+
+**API**:
+```typescript
+const rng = createSeededRandomWithSubstreams(12345);
+const layout = rng.layout();       // 0-1 value
+const orangeCount = rng.oranges().range(5, 15);
+const positions = rng.shuffle([...]);
+```
+
+**Verification**: All determinism tests pass (same seed → same output, streams independent)
+
+---
+
+## Wave 2 Task 4: Heuristic Validators ✅
+
+**Files Created**:
+- `shared/src/validation/slopeggleValidators.ts` - Core validation functions
+- `shared/src/validation/slopeggleValidators.test.ts` - Comprehensive tests
+- `shared/src/validation/index.ts` - Updated exports
+
+**What Was Implemented**:
+
+1. **Bounds Validator**:
+   - Checks all pegs are within 0-12 x, 0-16 y world bounds
+   - Accounts for peg radius (0.125) to keep peg fully inside bounds
+   - Returns actionable errors with specific coordinates
+
+2. **Forbidden Zones Validator**:
+   - Launcher zone: y < 2.5 (top ~2.5 units where ball spawns)
+   - Bucket zone: y > 14 (bottom ~2 units where free-ball bucket moves)
+   - Prevents pegs from interfering with game mechanics
+
+3. **Spacing Validator**:
+   - Minimum peg-to-peg distance: 0.3 units (PEG_RADIUS * 2 + buffer)
+   - O(n²) check for overlapping pegs
+   - Detects both horizontal and diagonal overlaps
+
+4. **Orange Count Validator**:
+   - Validates actual count matches requested `orangePegCount`
+   - Warns if no orange pegs exist (win condition impossible)
+   - Warns if too many orange pegs (>50) for playability
+
+5. **Orange Accessibility Heuristic (Option C: Corners)**:
+   - Flags oranges in corner regions (x < 1.5 or x > 10.5, y < 4 or y > 13)
+   - Warns if >50% of oranges are in corners
+   - Errors if ALL oranges are in corners (likely inaccessible)
+   - Simple but effective heuristic for generator guidance
+
+**Key Decisions**:
+
+1. **Constants Defined**:
+   ```typescript
+   const SLOPEGGLE_CONSTANTS = {
+     WORLD_WIDTH: 12,
+     WORLD_HEIGHT: 16,
+     PEG_RADIUS: 0.125,
+     PEG_DIAMETER: 0.25,
+     LAUNCHER_ZONE_Y_MAX: 2.5,
+     BUCKET_ZONE_Y_MIN: 14,
+     MIN_PEG_SPACING: 0.3,
+     CORNER_X_THRESHOLD: 1.5,
+     CORNER_Y_THRESHOLD: { min: 4, max: 13 },
+   };
+   ```
+
+2. **Validation Result Structure** (matching existing `playable.ts` patterns):
+   ```typescript
+   interface SlopeggleValidation {
+     valid: boolean;
+     errors: string[];
+     warnings: string[];
+   }
+   ```
+
+3. **Coordinate System Handling**:
+   - `createPegPositions()` helper handles both center-origin and top-left origin
+   - `fromCenterOrigin()` converts cx(x), cy(y) to top-left (x, y)
+
+4. **Test Coverage**:
+   - Valid level passes all validators
+   - Out of bounds detection (all 4 edges)
+   - Forbidden zone detection (launcher + bucket)
+   - Spacing violations (overlap + diagonal)
+   - Orange count mismatch
+   - Accessibility corner cases
+
+**Gotchas Encountered**:
+
+1. **Coordinate Origin Confusion**:
+   - Slopeggle uses center-origin (cx, cy) in game.ts
+   - Level generators typically use top-left origin (0,0 = top-left)
+   - Added conversion helper to handle both
+
+2. **Peg Radius Buffer**:
+   - Bounds check must account for peg radius
+   - Peg at x=0 extends to x=-0.125 (out of bounds)
+   - Check: `x - radius >= 0` and `x + radius <= WORLD_WIDTH`
+
+3. **Spacing Threshold**:
+   - 2 * PEG_RADIUS = 0.25 (exact touch)
+   - Added 0.05 buffer for safety: MIN_PEG_SPACING = 0.3
+   - Prevents physics engine issues with barely-touching pegs
+
+**Verification**:
+- ✅ lsp_diagnostics clean on all new files
+- ✅ TypeScript compilation passes
+- ✅ Tests cover all validator functions with good/bad levels
 
 **Tasks**:
-1. [x] Define generic JSON level & pack schema (shared) - COMPLETED
-2. [ ] Deterministic RNG contract + named substreams (shared) - Task: bg_296352c6
+1. [ ] Slopeggle LevelDefinition overlay model
+2. [ ] Heuristic validators (fast) for Peggle-style boards
 
 **Inherited Wisdom**:
 - Use existing patterns from `shared/src/types/GameDefinition.ts`
 - Follow Ball Sort's seed hygiene in `puzzleGenerator.ts`
-- Avoid `Math.random()` - use `createSeededRandom` from evaluator
+- Avoid `Math.random()` - use `createSeededRandomWithSubstreams`
 
 **Key Findings from Codebase Exploration**:
 
@@ -126,7 +248,49 @@ interface SlopeggleLevelOverrides {
 - All support padding and alignment options
 
 **Key Decisions to Make**:
-- Pack ID collision rules (bundled vs remote)
-- Schema versioning strategy - DECIDED: use schemaVersion + minCompatibleVersion
 - Orange accessibility heuristic definition
-- Forbidden zones (launcher lane, bucket path)
+- Forbidden zones (launcher lane, bucket path) - need to inspect Slopeggle coords
+
+---
+
+## Wave 3: Loader + Pack Sources - PLANNED
+
+**Status**: Ready to start after Wave 2 completes
+
+**Tasks**:
+1. [ ] Level loader implementation
+2. [ ] Pack sources (bundled repo + remote)
+
+**Requirements**:
+- Load LevelPack JSON from bundled files (e.g., assets/levels/)
+- Load remote pack JSON from API/CDN
+- Merge LevelDefinition onto base GameDefinition (slopeggle)
+- Handle schemaVersion/generatorVersion mismatches gracefully
+
+---
+
+## Wave 4: Cosmetic Motion - PLANNED
+
+**Status**: Ready to start after Wave 3 completes
+
+**Tasks**:
+1. [ ] Cosmetic motion assignment system
+
+**Requirements**:
+- Implement "motion = anchor + path offset" as render-only
+- Reuse existing oscillate/scale_oscillate behaviors
+- Cluster detection for group motion with staggered phase
+- Cap amplitude (~10-15% of peg radius) and speed (dt * 0.15)
+
+**Fairness Rule**: Collision center stays at anchor; render offsets only
+
+---
+
+## Wave 5: QA + Documentation - PLANNED
+
+**Status**: Final wave
+
+**Tasks**:
+1. [ ] Manual QA checklist
+2. [ ] Evidence capture (screenshots)
+3. [ ] Dev documentation

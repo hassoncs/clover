@@ -97,19 +97,7 @@ export function createWorkersComfyUIAdapter(env: Env): ImageGenerationAdapter {
 }
 
 export function createWorkersProviderAdapter(env: Env): ImageGenerationAdapter {
-  const provider = env.IMAGE_GENERATION_PROVIDER ?? 'comfyui';
-
-  if (provider === 'comfyui' || provider === 'modal') {
-    return createWorkersComfyUIAdapter(env);
-  }
-
-  console.warn('⚠️  SCENARIO PROVIDER IS DEPRECATED. Please migrate to Modal (comfyui).');
-
-  if (!env.SCENARIO_API_KEY || !env.SCENARIO_SECRET_API_KEY) {
-    throw new Error('SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using deprecated Scenario provider');
-  }
-
-  return createWorkersScenarioAdapter(createScenarioClient(env));
+  return createWorkersComfyUIAdapter(env);
 }
 
 export function createWorkersR2Adapter(r2Bucket: R2Bucket): R2Adapter {
