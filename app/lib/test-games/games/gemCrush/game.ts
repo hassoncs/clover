@@ -12,7 +12,7 @@ export const metadata: TestGameMeta = {
   title: "Gem Crush",
   description: "Match 3 or more gems to clear them and score points!",
   titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
-  status: "archived",
+  status: "active",
 };
 
 const GRID_COLS = 7;

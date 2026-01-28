@@ -8,7 +8,7 @@ export const metadata: TestGameMeta = {
   title: "Flappy Bird",
   description: "Tap to fly through the pipes without hitting them",
   titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
-  status: "archived",
+  status: "active",
 };
 
 const WORLD_WIDTH = 12;

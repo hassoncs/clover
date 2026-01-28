@@ -316,17 +316,14 @@ export function createNodeRunPodAdapter(config: RunPodAdapterConfig): ImageGener
   };
 }
 
-export type ImageGenerationProvider = 'scenario' | 'runpod' | 'comfyui';
+export type ImageGenerationProvider = 'scenario' | 'comfyui' | 'modal';
 
 export interface NodeAdaptersOptions {
   provider?: ImageGenerationProvider;
   scenarioApiKey?: string;
   scenarioApiSecret?: string;
-  runpodApiKey?: string;
-  runpodSdxlEndpointId?: string;
-  runpodFluxEndpointId?: string;
-  runpodBgRemovalEndpointId?: string;
   comfyuiEndpoint?: string;
+  modalEndpoint?: string;
   r2Bucket: string;
   wranglerCwd: string;
   publicUrlBase: string;

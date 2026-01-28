@@ -493,7 +493,7 @@ export function buildStructuredNegativePrompt(style: SpriteStyle): string {
   return [...baseNegatives, ...styleSpecific[style]].join(', ');
 }
 
-export type ImageGenerationProvider = 'scenario' | 'comfyui' | 'runpod';
+export type ImageGenerationProvider = 'scenario' | 'comfyui' | 'modal';
 
 export interface ProviderClient {
   uploadImage(imageBuffer: Uint8Array): Promise<string>;

@@ -25,17 +25,18 @@ export interface Env {
   SCENARIO_API_URL?: string;
 
   // Image generation provider selection
-  // 'scenario' = Scenario.com (legacy, being phased out)
-  // 'comfyui' = Direct ComfyUI endpoint
-  // 'runpod' = RunPod serverless ComfyUI
-  IMAGE_GENERATION_PROVIDER?: 'scenario' | 'comfyui' | 'runpod';
+  // 'comfyui' = Modal ComfyUI serverless (DEFAULT)
+  // 'modal' = Alias for 'comfyui'
+  // 'scenario' = Scenario.com (DEPRECATED - maintained for backwards compatibility)
+  IMAGE_GENERATION_PROVIDER?: 'scenario' | 'comfyui' | 'modal';
 
-  // RunPod serverless credentials (for 'runpod' provider)
-  RUNPOD_API_KEY?: string;
-  RUNPOD_COMFYUI_ENDPOINT_ID?: string;
+  // Modal ComfyUI endpoint (optional, defaults to deployed endpoint)
+  MODAL_ENDPOINT?: string;
 
-  // Direct ComfyUI endpoint (for 'comfyui' provider, optional)
-  COMFYUI_ENDPOINT?: string;
+  // Scenario credentials (only needed if using deprecated 'scenario' provider)
+  SCENARIO_API_KEY?: string;
+  SCENARIO_SECRET_API_KEY?: string;
+  SCENARIO_API_URL?: string;
 
   ASSET_HOST?: string;
 

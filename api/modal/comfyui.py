@@ -30,7 +30,7 @@ image = (
     .pip_install(
         "comfy-cli", "aiohttp", "requests", "websocket-client",
         "safetensors", "accelerate", "transformers", "sentencepiece",
-        "huggingface-hub"
+        "huggingface-hub", "fastapi[standard]"
     )
     .run_commands(
         f"comfy --skip-prompt install --nvidia --version {COMFYUI_COMMIT}",
@@ -383,6 +383,33 @@ class ComfyUIWorker:
         workflow = build_rmbg_workflow("input.png")
         result = self._run_workflow(workflow, [("input.png", img_bytes)])
         return base64.b64encode(result).decode()
+
+
+@app.function(image=image, gpu="A10G", timeout=900, volumes={"/models": models_volume})
+@modal.fastapi_endpoint(method="POST")
+def web_img2img(data: dict) -> dict:
+    """HTTP endpoint for img2img - callable from Node/TypeScript."""
+    import os
+    import sys
+    
+    # Add comfyui to path for imports
+    sys.path.insert(0, "/root/comfy/ComfyUI")
+    
+    worker = ComfyUIWorker()
+    
+    # Initialize (downloads models if needed, starts ComfyUI)
+    worker.setup()
+    
+    result = worker.img2img(
+        prompt=data.get("prompt", ""),
+        image_base64=data.get("image_base64", ""),
+        strength=data.get("strength", 0.5),
+        steps=data.get("steps", 20),
+        guidance=data.get("guidance", 3.5),
+        seed=data.get("seed")
+    )
+    
+    return {"success": True, "image_base64": result}
 
 
 @app.local_entrypoint()

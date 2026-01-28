@@ -32,6 +32,7 @@ export default function BrowseScreen() {
   const [playerFilter, setPlayerFilter] = useState<PlayerFilter>("all");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [currentPage, setCurrentPage] = useState(1);
+  const [showFilters, setShowFilters] = useState(false);
 
   const {
     publicGames,
@@ -131,8 +132,8 @@ export default function BrowseScreen() {
             onPlayerFilterChange={setPlayerFilter}
             sortBy={sortBy}
             onSortByChange={setSortBy}
-            showFilters={false}
-            onToggleFilters={() => {}}
+            showFilters={showFilters}
+            onToggleFilters={() => setShowFilters(!showFilters)}
             onClearFilters={clearFilters}
           />
 
