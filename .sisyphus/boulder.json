@@ -1,6 +1,9 @@
 {
   "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/zone-system-refactor.md",
   "started_at": "2026-01-28T02:06:44.079Z",
-  "session_ids": ["ses_3fe0849bfffeYtm3kg1nmGozQ5"],
+  "session_ids": [
+    "ses_3fe0849bfffeYtm3kg1nmGozQ5",
+    "ses_3fd969335ffeh621C2YbP0umm3"
+  ],
   "plan_name": "zone-system-refactor"
 }

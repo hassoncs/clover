@@ -53,6 +53,11 @@ export const pipelineRegistry: Record<AssetType, Stage[]> = {
     buildSheetMetadataStage,
     uploadR2Stage,
   ],
+  text_grid: [
+    buildPromptStage,
+    txt2imgStage,
+    uploadR2Stage,
+  ],
 };
 
 export function getStagesForAssetType(assetType: AssetType): Stage[] {

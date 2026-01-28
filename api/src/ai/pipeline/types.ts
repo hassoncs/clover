@@ -167,7 +167,106 @@ export interface UIComponentSheetSpec extends SheetSpecBase {
   iconStrategy?: 'separate' | 'composite' | 'overlay' | 'none';
 }
 
-export type AssetSpec = EntitySpec | BackgroundSpec | TitleHeroSpec | TitleHeroNoBgSpec | ParallaxSpec | SpriteSheetSpec | TileSheetSpec | VariationSheetSpec | UIComponentSheetSpec;
+export type TextAlignment = 'left' | 'center' | 'right';
+export type TextOverflow = 'truncate' | 'ellipsis' | 'error';
+
+export interface GridCell {
+  cellId: string;
+  g: string;
+  row: number;
+  col: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  visible: boolean;
+}
+
+export interface TextLine {
+  line: number;
+  startCellId: string;
+  endCellId: string;
+  baselineY: number;
+}
+
+export interface GridSpec {
+  cellW: number;
+  cellH: number;
+  cols: number;
+  rows: number;
+  lineGap: number;
+  align: TextAlignment;
+  maxLines: number;
+}
+
+export interface WrapConfig {
+  mode: 'word' | 'char';
+  overflow: TextOverflow;
+}
+
+export interface LayoutDoc {
+  version: '1.0';
+  text: string;
+  grid: GridSpec;
+  wrap: WrapConfig;
+  cells: GridCell[];
+  lines: TextLine[];
+  hashes: Record<string, string>;
+}
+
+export interface FontSpec {
+  family: string;
+  weight: string;
+  style: string;
+  size: number;
+}
+
+export interface SilhouetteSpec {
+  mode: string;
+  strokePx?: number;
+  padPx: number;
+  cornerRoundPx?: number;
+  fillColor: string;
+  strokeColor?: string;
+}
+
+export interface TextStyleSpec {
+  prompt: string;
+  seed?: number;
+  model?: string;
+  negativePrompt?: string;
+  palette?: string[];
+}
+
+export interface TextOutputSpec {
+  svg: boolean;
+  rasterFormat?: string;
+  rasterScale?: number;
+}
+
+export interface TextGridSpec {
+  type: 'text_grid';
+  id: string;
+  text: string;
+  grid: GridSpec;
+  wrap: WrapConfig;
+  font: FontSpec;
+  silhouette: SilhouetteSpec;
+  style: TextStyleSpec;
+  output: TextOutputSpec;
+}
+
+export type AssetSpec =
+  | EntitySpec
+  | BackgroundSpec
+  | TitleHeroSpec
+  | TitleHeroNoBgSpec
+  | ParallaxSpec
+  | SpriteSheetSpec
+  | TileSheetSpec
+  | VariationSheetSpec
+  | UIComponentSheetSpec
+  | TextGridSpec;
 
 // =============================================================================
 // GAME CONFIG - Configuration for generating all assets for a game
@@ -407,4 +506,8 @@ export interface BatchPipelineResult {
 
 export function isUIComponentSpec(spec: AssetSpec): spec is UIComponentSheetSpec {
   return spec.type === 'sheet' && 'kind' in spec && spec.kind === 'ui_component';
+}
+
+export function isTextGridSpec(spec: AssetSpec): spec is TextGridSpec {
+  return spec.type === 'text_grid';
 }
