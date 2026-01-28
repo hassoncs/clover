@@ -441,18 +441,9 @@ function createBallTemplate(colorIndex: number) {
     tags: ["ball", `color-${colorIndex}`],
     sprite: {
       type: "image",
-      imageUrl: `${ASSET_BASE}/ball${colorIndex % 4}.png`, // Reuse existing assets, cycle through 0-3
+      imageUrl: `${ASSET_BASE}/ball${colorIndex % 4}.png`,
       imageWidth: BALL_RADIUS * 2,
       imageHeight: BALL_RADIUS * 2,
-    },
-    physics: {
-      bodyType: "kinematic",
-      shape: "circle",
-      radius: BALL_RADIUS,
-      density: 0,
-      friction: 0,
-      restitution: 0,
-      isSensor: true, // Make balls sensors so taps pass through to tube zones
     },
     conditionalBehaviors: [
       {

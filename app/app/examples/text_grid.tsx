@@ -1,11 +1,11 @@
-import React, { useState, useCallback } from "react";
-import { View, StyleSheet, Text, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, Image } from "react-native";
+import React, { useState, useCallback, useEffect } from "react";
+import { View, StyleSheet, Text, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, Image, useWindowDimensions } from "react-native";
 import type { ExampleMeta } from "@/lib/registry/types";
 import { env } from "@/lib/config/env";
 
 export const metadata: ExampleMeta = {
   title: "Text Grid Generator",
-  description: "Test the silhouette font stylization pipeline with configurable grid, fonts, and rendering.",
+  description: "Generate stylized text grids with AI-powered img2img transformation",
 };
 
 const FONT_OPTIONS = [
@@ -22,6 +22,9 @@ const ALIGN_OPTIONS = ["left", "center", "right"] as const;
 const WRAP_MODES = ["word", "char"] as const;
 
 export default function TextGridLab() {
+  const { width: windowWidth } = useWindowDimensions();
+  const isWide = windowWidth >= 900;
+  
   const [text, setText] = useState("HELLO\nWORLD");
   const [selectedFont, setSelectedFont] = useState(FONT_OPTIONS[0]);
   const [fontSize, setFontSize] = useState(48);
@@ -38,18 +41,54 @@ export default function TextGridLab() {
   const [svgDataUrl, setSvgDataUrl] = useState<string | null>(null);
   const [stylizedImageUrl, setStylizedImageUrl] = useState<string | null>(null);
   const [stylePrompt, setStylePrompt] = useState("puffy blue cartoon text, 3D rendered, playful, game title style");
-  const [loading, setLoading] = useState(false);
-  const [stylizeLoading, setStylizeLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [layoutInfo, setLayoutInfo] = useState<{ cells: number; lines: number } | null>(null);
 
-  const generateGrid = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const updatePreview = useCallback(() => {
+    const width = cols * cellWidth;
+    const height = rows * cellHeight + Math.max(0, rows - 1) * lineGap;
+    const fill = silhouetteMode === 'fill' ? '808080' : 'none';
+    const stroke = silhouetteMode === 'fill' ? 'none' : '404040';
+    const strokeWidth = silhouetteMode === 'fill' ? 0 : 2;
     
+    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <rect width="${width}" height="${height}" fill="#1a1a1a"/>
+  <text x="${width / 2}" y="${height / 2}" 
+        font-family="${selectedFont.family}, Arial, sans-serif"
+        font-size="${fontSize}"
+        fill="#${fill}"
+        stroke="#${stroke}"
+        stroke-width="${strokeWidth}"
+        text-anchor="middle"
+        dominant-baseline="middle">
+    ${text.replace(/\n/g, ' ')}
+  </text>
+</svg>`;
+    
+    const dataUrl = 'data:image/svg+xml;base64,' + btoa(svgContent);
+    setSvg(svgContent);
+    setSvgDataUrl(dataUrl);
+    setStylizedImageUrl(null);
+    setLayoutInfo({ cells: text.length, lines: text.split('\n').length });
+  }, [text, selectedFont, fontSize, cols, rows, cellWidth, cellHeight, lineGap, silhouetteMode]);
+
+  useEffect(() => {
+    updatePreview();
+  }, [updatePreview]);
+
+  const generateStylized = useCallback(async () => {
+    if (!svg) {
+      setError('No SVG to stylize');
+      return;
+    }
+
+    setGenerating(true);
+    setError(null);
+    setStylizedImageUrl(null);
+
     try {
-      // Call the API to generate the text grid
-      const response = await fetch(`${env.apiUrl}/api/text-grid/generate`, {
+      const generateResponse = await fetch(`${env.apiUrl}/api/text-grid/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -82,7 +121,7 @@ export default function TextGridLab() {
             strokeColor: '#404040',
           },
           style: {
-            prompt: 'stylized game title text',
+            prompt: stylePrompt,
           },
           output: {
             svg: true,
@@ -90,93 +129,46 @@ export default function TextGridLab() {
         }),
       });
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errData.error || `HTTP ${response.status}`);
+      if (!generateResponse.ok) {
+        const errData = await generateResponse.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errData.error || `HTTP ${generateResponse.status}`);
       }
 
-    const data = await response.json();
-    const dataUrl = 'data:image/svg+xml;base64,' + btoa(data.svg);
-    setSvg(data.svg);
-    setSvgDataUrl(dataUrl);
-    setLayoutInfo({
-      cells: data.layoutDoc?.cells?.length || 0,
-      lines: data.layoutDoc?.lines?.length || 0,
-    });
-  } catch (err) {
-    setError(err instanceof Error ? err.message : 'Failed to generate');
-    setSvg(null);
-    setSvgDataUrl(null);
-  } finally {
-    setLoading(false);
-  }
-  }, [text, selectedFont, fontSize, cols, rows, cellWidth, cellHeight, silhouetteMode, align, wrapMode, lineGap, padding]);
+      const generateData = await generateResponse.json();
+      const generatedSvg = generateData.svg;
 
-  const renderLocalPreview = useCallback(() => {
-    const width = cols * cellWidth;
-    const height = rows * cellHeight + Math.max(0, rows - 1) * lineGap;
-    const fill = silhouetteMode === 'fill' ? '808080' : 'none';
-    const stroke = silhouetteMode === 'fill' ? 'none' : '404040';
-    const strokeWidth = silhouetteMode === 'fill' ? 0 : 2;
-    
-    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-  <rect width="${width}" height="${height}" fill="#1a1a1a"/>
-  <text x="${width / 2}" y="${height / 2}" 
-        font-family="${selectedFont.family}, Arial, sans-serif"
-        font-size="${fontSize}"
-        fill="#${fill}"
-        stroke="#${stroke}"
-        stroke-width="${strokeWidth}"
-        text-anchor="middle"
-        dominant-baseline="middle">
-    ${text.replace(/\n/g, ' ')}
-  </text>
-</svg>`;
-    
-    const dataUrl = 'data:image/svg+xml;base64,' + btoa(svgContent);
-    setSvg(svgContent);
-    setSvgDataUrl(dataUrl);
-    setLayoutInfo({ cells: text.length, lines: text.split('\n').length });
-  }, [text, selectedFont, fontSize, cols, rows, cellWidth, cellHeight, lineGap, silhouetteMode]);
-
-  const stylizeGrid = useCallback(async () => {
-    if (!svg) {
-      setError('Generate a grid first before stylizing');
-      return;
-    }
-
-    setStylizeLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`${env.apiUrl}/api/text-grid/stylize`, {
+      const stylizeResponse = await fetch(`${env.apiUrl}/api/text-grid/stylize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          svg,
+          svg: generatedSvg,
           prompt: stylePrompt,
           strength: 0.75,
         }),
       });
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
-        throw new Error(errData.error?.message || `HTTP ${response.status}`);
+      if (!stylizeResponse.ok) {
+        const errData = await stylizeResponse.json().catch(() => ({ error: { message: 'Unknown error' } }));
+        throw new Error(errData.error?.message || `HTTP ${stylizeResponse.status}`);
       }
 
-      const data = await response.json();
-      setStylizedImageUrl(data.stylizedImage);
+      const stylizeData = await stylizeResponse.json();
+      setStylizedImageUrl(stylizeData.stylizedImage);
+      setLayoutInfo({
+        cells: generateData.layoutDoc?.cells?.length || 0,
+        lines: generateData.layoutDoc?.lines?.length || 0,
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to stylize');
+      setError(err instanceof Error ? err.message : 'Failed to generate stylized text');
       setStylizedImageUrl(null);
     } finally {
-      setStylizeLoading(false);
+      setGenerating(false);
     }
-  }, [svg, stylePrompt]);
+  }, [svg, text, selectedFont, fontSize, cols, rows, cellWidth, cellHeight, lineGap, silhouetteMode, align, wrapMode, padding, stylePrompt]);
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.controls} contentContainerStyle={styles.controlsContent}>
+    <View style={[styles.container, isWide && styles.containerWide]}>
+      <ScrollView style={[styles.controls, isWide && styles.controlsWide]} contentContainerStyle={styles.controlsContent}>
         <Text style={styles.sectionTitle}>Text</Text>
         <TextInput
           style={styles.textInput}
@@ -323,44 +315,28 @@ export default function TextGridLab() {
           </View>
         </View>
 
-        <View style={styles.actionRow}>
-          <TouchableOpacity style={styles.previewButton} onPress={renderLocalPreview}>
-            <Text style={styles.previewButtonText}>Preview</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.generateButton} onPress={generateGrid} disabled={loading}>
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.generateButtonText}>Generate Grid</Text>
-            )}
-          </TouchableOpacity>
-        </View>
+        <Text style={styles.sectionTitle}>AI Style Prompt</Text>
+        <TextInput
+          style={styles.textInput}
+          value={stylePrompt}
+          onChangeText={setStylePrompt}
+          multiline
+          numberOfLines={3}
+          placeholder="Describe the style (e.g., 'puffy blue cartoon text, 3D rendered, playful')"
+          placeholderTextColor="#666"
+        />
 
-        {svgDataUrl && (
-          <>
-            <Text style={styles.sectionTitle}>AI Stylization</Text>
-            <TextInput
-              style={styles.textInput}
-              value={stylePrompt}
-              onChangeText={setStylePrompt}
-              multiline
-              numberOfLines={2}
-              placeholder="Describe how to style the text (e.g., 'puffy blue cartoon text, 3D rendered')"
-              placeholderTextColor="#666"
-            />
-            <TouchableOpacity 
-              style={[styles.stylizeButton, !svgDataUrl && styles.buttonDisabled]} 
-              onPress={stylizeGrid} 
-              disabled={stylizeLoading || !svgDataUrl}
-            >
-              {stylizeLoading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.stylizeButtonText}>✨ Stylize with AI</Text>
-              )}
-            </TouchableOpacity>
-          </>
-        )}
+        <TouchableOpacity 
+          style={styles.generateButton} 
+          onPress={generateStylized} 
+          disabled={generating}
+        >
+          {generating ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.generateButtonText}>✨ Generate Stylized Text</Text>
+          )}
+        </TouchableOpacity>
 
         {error && (
           <View style={styles.errorBox}>
@@ -377,7 +353,7 @@ export default function TextGridLab() {
         )}
       </ScrollView>
 
-      <View style={styles.preview}>
+      <View style={[styles.preview, isWide && styles.previewWide]}>
         {stylizedImageUrl ? (
           <ScrollView contentContainerStyle={styles.svgContainer}>
             <Text style={styles.svgPlaceholder}>✨ AI Stylized Result</Text>
@@ -394,7 +370,7 @@ export default function TextGridLab() {
         ) : svgDataUrl ? (
           <ScrollView contentContainerStyle={styles.svgContainer}>
             <Text style={styles.svgPlaceholder}>
-              SVG Grid Preview ({cols * cellWidth}x{rows * cellHeight + Math.max(0, rows - 1) * lineGap})
+              Preview: {cols * cellWidth}x{rows * cellHeight + Math.max(0, rows - 1) * lineGap}
             </Text>
             <Image
               source={{ uri: svgDataUrl }}
@@ -405,13 +381,10 @@ export default function TextGridLab() {
               }}
               resizeMode="contain"
             />
-            <Text style={styles.svgCode} numberOfLines={3}>
-              {svg?.substring(0, 200)}...
-            </Text>
           </ScrollView>
         ) : (
           <View style={styles.emptyPreview}>
-            <Text style={styles.emptyText}>Configure settings and tap Preview or Generate</Text>
+            <Text style={styles.emptyText}>Configure settings to see preview</Text>
           </View>
         )}
       </View>
@@ -424,9 +397,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#000",
   },
+  containerWide: {
+    flexDirection: "row",
+  },
   controls: {
     flex: 1,
     backgroundColor: "#111",
+  },
+  controlsWide: {
+    flex: 0.45,
+    maxWidth: 500,
+    borderRightWidth: 1,
+    borderRightColor: "#333",
   },
   controlsContent: {
     padding: 16,
@@ -437,6 +419,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#1a1a1a",
     borderTopWidth: 1,
     borderTopColor: "#333",
+  },
+  previewWide: {
+    flex: 0.55,
+    borderTopWidth: 0,
+    borderLeftWidth: 1,
+    borderLeftColor: "#333",
   },
   sectionTitle: {
     color: "#FFD700",
@@ -491,32 +479,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 14,
   },
-  actionRow: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 8,
-  },
-  previewButton: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: "#444",
-    alignItems: "center",
-  },
-  previewButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-  },
   generateButton: {
-    flex: 2,
-    padding: 12,
+    padding: 14,
     borderRadius: 8,
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#9C27B0",
     alignItems: "center",
+    marginTop: 8,
   },
   generateButtonText: {
     color: "#fff",
     fontWeight: "600",
+    fontSize: 16,
   },
   errorBox: {
     backgroundColor: "#ff444433",
@@ -544,11 +517,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 8,
   },
-  svgCode: {
-    color: "#888",
-    fontSize: 10,
-    fontFamily: "monospace",
-  },
   emptyPreview: {
     flex: 1,
     justifyContent: "center",
@@ -558,21 +526,5 @@ const styles = StyleSheet.create({
     color: "#666",
     textAlign: "center",
     padding: 32,
-  },
-  stylizeButton: {
-    padding: 14,
-    borderRadius: 8,
-    backgroundColor: "#9C27B0",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  stylizeButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16,
-  },
-  buttonDisabled: {
-    backgroundColor: "#555",
-    opacity: 0.5,
   },
 });
