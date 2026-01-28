@@ -1012,21 +1012,6 @@ export class AssetService {
   }
 }
 
-export function getScenarioConfigFromEnv(env: Env): {
-  configured: boolean;
-  apiKey?: string;
-  apiSecret?: string;
-} {
-  const apiKey = env.SCENARIO_API_KEY;
-  const apiSecret = env.SCENARIO_SECRET_API_KEY;
-
-  return {
-    configured: Boolean(apiKey && apiSecret),
-    apiKey,
-    apiSecret,
-  };
-}
-
 export function getImageGenerationConfig(_env: Env): {
   configured: boolean;
 } {

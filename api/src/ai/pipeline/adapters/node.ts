@@ -274,7 +274,7 @@ export interface NodeAdaptersOptions {
 }
 
 export async function createNodeAdapters(options: NodeAdaptersOptions): Promise<PipelineAdapters> {
-  const endpoint = options.modalEndpoint ?? options.comfyuiEndpoint ?? 'https://hassoncs--slopcade-comfyui-web-img2img.modal.run';
+  const endpoint = options.modalEndpoint ?? 'https://hassoncs--slopcade-comfyui-web-img2img.modal.run';
   const imageAdapter = createNodeComfyUIAdapter({ endpoint });
 
   return {

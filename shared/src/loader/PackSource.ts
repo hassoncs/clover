@@ -219,10 +219,10 @@ export class RemotePackSource extends PackSource {
 
     // Attach cache metadata if available
     if (etag) {
-      (pack as Record<string, unknown>)._etag = etag;
+      (pack as unknown as Record<string, unknown>)._etag = etag;
     }
     if (lastModified) {
-      (pack as Record<string, unknown>)._lastModified = lastModified;
+      (pack as unknown as Record<string, unknown>)._lastModified = lastModified;
     }
 
     return this.validatePack(pack, url);

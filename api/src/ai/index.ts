@@ -49,7 +49,6 @@ export {
 
 export {
   AssetService,
-  getScenarioConfigFromEnv,
   type EntityType,
   type SpriteStyle,
   type AssetGenerationRequest,

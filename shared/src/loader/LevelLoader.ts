@@ -22,10 +22,10 @@
  */
 
 import type { GameDefinition } from '../types/GameDefinition';
-import type {
-  LevelPack,
-  LevelDefinition,
-  PackGameConfig,
+import {
+  type LevelPack,
+  type LevelDefinition,
+  type PackGameConfig,
   CURRENT_PACK_SCHEMA_VERSION,
   MIN_COMPATIBLE_PACK_VERSION,
 } from '../types/LevelPack';
@@ -364,9 +364,9 @@ export class LevelLoader {
       game.metadata.description = level.description;
     }
 
-    (game.metadata as Record<string, unknown>).generatorId = level.generatorId;
-    (game.metadata as Record<string, unknown>).generatorVersion = level.generatorVersion;
-    (game.metadata as Record<string, unknown>).levelSeed = level.seed;
+    (game.metadata as unknown as Record<string, unknown>).generatorId = level.generatorId;
+    (game.metadata as unknown as Record<string, unknown>).generatorVersion = level.generatorVersion;
+    (game.metadata as unknown as Record<string, unknown>).levelSeed = level.seed;
 
     return game;
   }
@@ -376,11 +376,6 @@ export class LevelLoader {
     overrides: SlopeggleLevelOverrides,
     warn: (message: string, category: keyof LevelLoadWarnings) => void,
   ): void {
-    // Lives
-    if (overrides.initialLives !== undefined) {
-      game.initialLives = overrides.initialLives;
-    }
-
     // World dimensions
     if (overrides.worldWidth !== undefined || overrides.worldHeight !== undefined) {
       const width = overrides.worldWidth ?? game.world.bounds?.width ?? 12;
@@ -400,8 +395,7 @@ export class LevelLoader {
     if (overrides.hasBucket !== undefined) {
       const bucketEntity = game.entities.find(e => e.id === 'bucket' || e.template === 'bucket');
       if (bucketEntity) {
-        // Enable/disable bucket by changing visibility/collision
-        (bucketEntity as Record<string, unknown>).disabled = !overrides.hasBucket;
+        (bucketEntity as unknown as Record<string, unknown>).disabled = !overrides.hasBucket;
       }
     }
 
@@ -410,10 +404,10 @@ export class LevelLoader {
       const portalB = game.entities.find(e => e.id === 'portal-b');
 
       if (portalA) {
-        (portalA as Record<string, unknown>).disabled = !overrides.hasPortals;
+        (portalA as unknown as Record<string, unknown>).disabled = !overrides.hasPortals;
       }
       if (portalB) {
-        (portalB as Record<string, unknown>).disabled = !overrides.hasPortals;
+        (portalB as unknown as Record<string, unknown>).disabled = !overrides.hasPortals;
       }
     }
   }
