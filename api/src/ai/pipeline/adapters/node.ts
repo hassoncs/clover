@@ -1,6 +1,5 @@
 import type { PipelineAdapters, ImageGenerationAdapter, R2Adapter, SilhouetteAdapter, DebugSink, DebugEvent } from '../types';
 import { ComfyUIClient } from '../../comfyui';
-import { RunPodClient } from '../../runpod';
 
 const SCENARIO_API_URL = 'https://api.cloud.scenario.com/v1';
 

@@ -20,10 +20,6 @@ export interface Env {
   AI_MODEL?: string;
   AI_BASE_URL?: string;
 
-  SCENARIO_API_KEY?: string;
-  SCENARIO_SECRET_API_KEY?: string;
-  SCENARIO_API_URL?: string;
-
   // Image generation provider selection
   // 'comfyui' = Modal ComfyUI serverless (DEFAULT)
   // 'modal' = Alias for 'comfyui'

@@ -621,14 +621,16 @@ function createComfyUIProviderClient(env: Env): ProviderClient {
 }
 
 export function getProviderClient(env: Env): ProviderClient {
-  const provider = env.IMAGE_GENERATION_PROVIDER;
+  const provider = env.IMAGE_GENERATION_PROVIDER ?? 'comfyui';
 
-  if (provider === 'comfyui' || provider === 'runpod') {
+  if (provider === 'comfyui' || provider === 'modal') {
     return createComfyUIProviderClient(env);
   }
 
+  console.warn('⚠️  SCENARIO PROVIDER IS DEPRECATED. Please migrate to Modal (comfyui).');
+
   if (!env.SCENARIO_API_KEY || !env.SCENARIO_SECRET_API_KEY) {
-    throw new Error('SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using Scenario image generation provider');
+    throw new Error('SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using deprecated Scenario provider');
   }
 
   return createScenarioProviderClient(env);
