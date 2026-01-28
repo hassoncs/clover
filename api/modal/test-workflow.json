@@ -1,0 +1,49 @@
+{
+  "input": {
+    "workflow": {
+      "5": {
+        "inputs": {"width": 512, "height": 512, "batch_size": 1},
+        "class_type": "EmptyLatentImage"
+      },
+      "6": {
+        "inputs": {"text": "A cute cat", "clip": ["11", 0]},
+        "class_type": "CLIPTextEncode"
+      },
+      "8": {
+        "inputs": {"samples": ["13", 0], "vae": ["12", 0]},
+        "class_type": "VAEDecode"
+      },
+      "9": {
+        "inputs": {"filename_prefix": "test", "images": ["8", 0]},
+        "class_type": "SaveImage"
+      },
+      "10": {
+        "inputs": {"unet_name": "flux1-dev-fp8.safetensors", "weight_dtype": "fp8_e4m3fn"},
+        "class_type": "UNETLoader"
+      },
+      "11": {
+        "inputs": {"clip_name1": "clip_l.safetensors", "clip_name2": "t5xxl_fp8_e4m3fn.safetensors", "type": "flux"},
+        "class_type": "DualCLIPLoader"
+      },
+      "12": {
+        "inputs": {"vae_name": "ae.safetensors"},
+        "class_type": "VAELoader"
+      },
+      "13": {
+        "inputs": {
+          "seed": 12345,
+          "steps": 20,
+          "cfg": 3.5,
+          "sampler_name": "euler",
+          "scheduler": "simple",
+          "denoise": 1,
+          "model": ["10", 0],
+          "positive": ["6", 0],
+          "negative": ["6", 0],
+          "latent_image": ["5", 0]
+        },
+        "class_type": "KSampler"
+      }
+    }
+  }
+}
