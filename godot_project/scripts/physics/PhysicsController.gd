@@ -16,7 +16,7 @@ func set_linear_velocity(entity_id: String, vx: float, vy: float) -> void:
 	if node is RigidBody2D:
 		node.linear_velocity = godot_vel
 	elif node is Area2D:
-		bridge.sensor_velocities[entity_id] = godot_vel
+		node.set_meta("velocity", godot_vel)
 
 func get_linear_velocity(entity_id: String) -> Variant:
 	if not bridge.entities.has(entity_id):
@@ -27,8 +27,8 @@ func get_linear_velocity(entity_id: String) -> Variant:
 	
 	if node is RigidBody2D:
 		godot_vel = node.linear_velocity
-	elif node is Area2D and bridge.sensor_velocities.has(entity_id):
-		godot_vel = bridge.sensor_velocities[entity_id]
+	elif node is Area2D and node.has_meta("velocity"):
+		godot_vel = node.get_meta("velocity")
 	
 	var game_vel = CoordinateUtils.godot_to_game_vec(godot_vel, bridge.pixels_per_meter)
 	return {"x": game_vel.x, "y": game_vel.y}

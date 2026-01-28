@@ -26,7 +26,6 @@ func destroy_entity(entity_id: String) -> void:
 	if bridge.entities.has(entity_id):
 		var node = bridge.entities[entity_id]
 		bridge.entities.erase(entity_id)
-		bridge.sensor_velocities.erase(entity_id)
 		node.queue_free()
 		bridge.entity_destroyed.emit(entity_id)
 		bridge._notify_js_destroy(entity_id)

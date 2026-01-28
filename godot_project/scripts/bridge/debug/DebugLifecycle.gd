@@ -180,12 +180,6 @@ func destroy(entity_id: String, options: Dictionary = {}) -> Dictionary:
 			_game_bridge.body_id_reverse.erase(body_id)
 			_game_bridge.body_id_map.erase(entity_id)
 		
-		if _game_bridge.sensors.has(entity_id):
-			_game_bridge.sensors.erase(entity_id)
-		
-		if _game_bridge.sensor_velocities.has(entity_id):
-			_game_bridge.sensor_velocities.erase(entity_id)
-		
 		node.queue_free()
 		
 		_game_bridge._notify_js_destroy(entity_id)
@@ -233,7 +227,7 @@ func clone(entity_id: String, options: Dictionary = {}) -> Dictionary:
 		_game_bridge.next_body_id += 1
 	
 	if clone_node is Area2D:
-		_game_bridge.sensors[new_id] = clone_node
+		clone_node.set_meta("entity_type", "sensor")
 	
 	if original.has_meta("template"):
 		clone_node.set_meta("template", original.get_meta("template"))

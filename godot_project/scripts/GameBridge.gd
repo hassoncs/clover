@@ -62,9 +62,7 @@ var _audio_cache: Dictionary = {}
 var joints: Dictionary = {}
 var joint_counter: int = 0
 
-# Sensor management (Area2D nodes for isSensor entities)
-var sensors: Dictionary = {}
-var sensor_velocities: Dictionary = {}  # entity_id -> Vector2 (Godot coords)
+# Sensor callback (for isSensor entities)
 var _js_sensor_begin_callback: JavaScriptObject = null
 var _js_sensor_end_callback: JavaScriptObject = null
 var _js_input_event_callback: JavaScriptObject = null
@@ -715,8 +713,8 @@ func set_linear_velocity(entity_id: String, vx: float, vy: float) -> void:
 		elif node is CharacterBody2D:
 			node.velocity = godot_vel
 		elif node is Area2D:
-			# Area2D doesn't have built-in velocity - track it manually
-			sensor_velocities[entity_id] = godot_vel
+			# Area2D doesn't have built-in velocity - track it via metadata
+			node.set_meta("velocity", godot_vel)
 
 func _js_set_angular_velocity(args: Array) -> void:
 	if args.size() < 2:
@@ -996,8 +994,8 @@ func _process(_delta: float) -> void:
 				vel = entity.linear_velocity
 			elif entity is CharacterBody2D:
 				vel = entity.velocity
-			elif sensor_velocities.has(entity_id):
-				vel = sensor_velocities[entity_id]
+			elif entity is Area2D and entity.has_meta("velocity"):
+				vel = entity.get_meta("velocity")
 			
 			# Cull low-velocity entities (reduce updates)
 			if vel.length_squared() < 0.01 and _splat_proxies.has(entity_id):
@@ -1410,7 +1408,8 @@ func _create_physics_body(entity_id: String, physics_data: Dictionary, transform
 		area.collision_layer = physics_data.get("categoryBits", 1)
 		area.collision_mask = physics_data.get("maskBits", 0xFFFFFFFF)
 		
-		sensors[entity_id] = area
+		# Store as sensor type in entities
+		area.set_meta("entity_type", "sensor")
 		node = area
 	else:
 		match body_type:
@@ -2027,7 +2026,6 @@ func destroy_entity(entity_id: String) -> void:
 	if entities.has(entity_id):
 		var node = entities[entity_id]
 		entities.erase(entity_id)
-		sensor_velocities.erase(entity_id)
 		node.queue_free()
 		entity_destroyed.emit(entity_id)
 		_notify_js_destroy(entity_id)
@@ -2289,15 +2287,7 @@ func clear_game() -> void:
 			joint_node.queue_free()
 	joints.clear()
 	
-	# Clear sensors
-	for sensor_id in sensors:
-		var sensor_node = sensors[sensor_id]
-		if is_instance_valid(sensor_node):
-			sensor_node.queue_free()
-	sensors.clear()
-	sensor_velocities.clear()
-	
-	# Clear entities
+	# Clear entities (including Area2D sensors stored in entities dict)
 	for entity_id in entities:
 		var node = entities[entity_id]
 		if is_instance_valid(node):
@@ -2371,10 +2361,8 @@ func set_position(entity_id: String, x: float, y: float) -> void:
 			var current_angle = node.rotation
 			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(current_angle, godot_pos))
 		else:
+			# For Area2D and other node types, just set position directly
 			node.position = godot_pos
-	elif sensors.has(entity_id):
-		# Area2D sensors - just set position directly
-		sensors[entity_id].position = godot_pos
 
 func _js_set_rotation(args: Array) -> void:
 	if args.size() < 2:
@@ -2438,6 +2426,10 @@ func _js_get_linear_velocity(args: Array) -> Variant:
 		var node = entities[entity_id]
 		if node is RigidBody2D:
 			var game_vel = godot_to_game_vec(node.linear_velocity)
+			return {"x": game_vel.x, "y": game_vel.y}
+		elif node is Area2D and node.has_meta("velocity"):
+			var godot_vel = node.get_meta("velocity") as Vector2
+			var game_vel = godot_to_game_vec(godot_vel)
 			return {"x": game_vel.x, "y": game_vel.y}
 	return null
 
@@ -3201,7 +3193,10 @@ func _js_add_fixture(args: Array) -> int:
 		area.body_shape_entered.connect(_on_sensor_body_shape_entered.bind(entity_id))
 		area.body_shape_exited.connect(_on_sensor_body_shape_exited.bind(entity_id))
 		node.add_child(area)
-		sensors[entity_id] = area
+		
+		# Store sensor Area2D in entities dict with type tag
+		area.set_meta("entity_type", "sensor")
+		entities[entity_id + "_sensor"] = area
 	else:
 		node.add_child(collision)
 	
@@ -3213,7 +3208,8 @@ func _js_add_fixture(args: Array) -> int:
 	
 	# Track collider
 	var collider_id = next_collider_id
-	collider_id_map[collider_id] = {"entity_id": entity_id, "node": collision if not is_sensor else sensors[entity_id]}
+	var sensor_area = area if is_sensor else null
+	collider_id_map[collider_id] = {"entity_id": entity_id, "node": collision if not is_sensor else sensor_area}
 	next_collider_id += 1
 	
 	# Track shape index -> collider_id mapping for this entity
@@ -3421,12 +3417,12 @@ func _physics_process(delta: float) -> void:
 		if node is CharacterBody2D and node.velocity.length() > 0.01:
 			node.move_and_slide()
 	
-	# Process Area2D movement (sensors with velocity)
-	for entity_id in sensor_velocities:
-		if entities.has(entity_id):
-			var node = entities[entity_id]
-			var vel = sensor_velocities[entity_id]
-			if node is Area2D and vel.length() > 0.01:
+	# Process Area2D movement (sensors with velocity stored in metadata)
+	for entity_id in entities:
+		var node = entities[entity_id]
+		if node is Area2D and node.has_meta("velocity"):
+			var vel = node.get_meta("velocity") as Vector2
+			if vel.length() > 0.01:
 				node.position += vel * delta
 	
 	# Process camera follow
@@ -4010,8 +4006,8 @@ func _collect_overlay_data() -> Array:
 		
 		if node is RigidBody2D:
 			entity_data["velocity"] = godot_to_game_vec(node.linear_velocity)
-		elif entity_id in sensor_velocities:
-			entity_data["velocity"] = godot_to_game_vec(sensor_velocities[entity_id])
+		elif node is Area2D and node.has_meta("velocity"):
+			entity_data["velocity"] = godot_to_game_vec(node.get_meta("velocity"))
 		
 		for child in node.get_children():
 			if child is CollisionShape2D and child.shape:

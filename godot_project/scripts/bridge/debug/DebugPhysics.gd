@@ -326,13 +326,14 @@ func get_overlaps(entity_id: String, options: Dictionary = {}) -> Dictionary:
 	return {"entityId": entity_id, "overlaps": overlapping_ids}
 
 func get_all_overlaps(options: Dictionary = {}) -> Dictionary:
-	var sensors = _game_bridge.sensors
 	var all_overlaps = {}
 	
-	for sensor_id in sensors:
-		var result = get_overlaps(sensor_id, options)
-		if not result.has("error") and result.overlaps.size() > 0:
-			all_overlaps[sensor_id] = result.overlaps
+	for entity_id in _game_bridge.entities:
+		var node = _game_bridge.entities[entity_id]
+		if node is Area2D:
+			var result = get_overlaps(entity_id, options)
+			if not result.has("error") and result.overlaps.size() > 0:
+				all_overlaps[entity_id] = result.overlaps
 	
 	return {"overlaps": all_overlaps}
 
