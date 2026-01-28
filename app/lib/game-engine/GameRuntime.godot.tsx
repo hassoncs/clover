@@ -587,14 +587,20 @@ export function GameRuntimeGodot({
         });
 
         inputEventUnsubRef.current = bridge.onInputEvent(
-          (type, x, y, _entityId) => {
+          (type, x, y, entityId) => {
             if (type === "tap") {
               const ppm = definition.world.pixelsPerMeter ?? 50;
               const screenX = x * ppm;
               const screenY = y * ppm;
               inputRef.current = {
                 ...inputRef.current,
-                tap: { x: screenX, y: screenY, worldX: x, worldY: y },
+                tap: {
+                  x: screenX,
+                  y: screenY,
+                  worldX: x,
+                  worldY: y,
+                  targetEntityId: entityId ?? undefined,
+                },
               };
             } else if (type === "mouse_move") {
               inputRef.current = {

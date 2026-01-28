@@ -49,6 +49,8 @@ export default function TextGridLab() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          type: 'text_grid',
+          id: `text-grid-${Date.now()}`,
           text,
           grid: {
             cellW: cellWidth,
