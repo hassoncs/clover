@@ -145,9 +145,9 @@ export function extractAssetManifest(
   // --- Template Sprites ---
 
   Object.entries(definition.templates).forEach(([templateId, template]) => {
-    if (template.sprite?.type === 'image' && 'imageUrl' in template.sprite) {
+    if (template.visual?.type === 'image' && 'imageUrl' in template.visual) {
       addImage(
-        template.sprite.imageUrl,
+        template.visual.imageUrl,
         `template-${templateId}`,
         templateId,
         'normal'

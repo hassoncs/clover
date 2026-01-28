@@ -42,7 +42,7 @@ export const TETRIS_TEMPLATE: GameDefinition = {
       id: 'piece_i',
       type: 'zone',
       tags: ['piece', 'cyan'],
-      sprite: { type: 'rect', width: 0.8, height: 0.8, color: '#00FFFF' },
+      visual: { type: 'rect', width: 0.8, height: 0.8, color: '#00FFFF' },
       zone: {
         shape: {
           type: 'box',
@@ -73,7 +73,7 @@ export const TETRIS_TEMPLATE: GameDefinition = {
       id: 'piece_o',
       type: 'zone',
       tags: ['piece', 'yellow'],
-      sprite: { type: 'rect', width: 0.8, height: 0.8, color: '#FFFF00' },
+      visual: { type: 'rect', width: 0.8, height: 0.8, color: '#FFFF00' },
       zone: {
         shape: {
           type: 'box',
@@ -104,7 +104,7 @@ export const TETRIS_TEMPLATE: GameDefinition = {
       id: 'piece_t',
       type: 'zone',
       tags: ['piece', 'purple'],
-      sprite: { type: 'rect', width: 0.8, height: 0.8, color: '#AA00FF' },
+      visual: { type: 'rect', width: 0.8, height: 0.8, color: '#AA00FF' },
       zone: {
         shape: {
           type: 'box',
@@ -135,7 +135,7 @@ export const TETRIS_TEMPLATE: GameDefinition = {
       id: 'piece_s',
       type: 'zone',
       tags: ['piece', 'green'],
-      sprite: { type: 'rect', width: 0.8, height: 0.8, color: '#00FF00' },
+      visual: { type: 'rect', width: 0.8, height: 0.8, color: '#00FF00' },
       zone: {
         shape: {
           type: 'box',
@@ -166,7 +166,7 @@ export const TETRIS_TEMPLATE: GameDefinition = {
       id: 'piece_z',
       type: 'zone',
       tags: ['piece', 'red'],
-      sprite: { type: 'rect', width: 0.8, height: 0.8, color: '#FF0000' },
+      visual: { type: 'rect', width: 0.8, height: 0.8, color: '#FF0000' },
       zone: {
         shape: {
           type: 'box',
@@ -197,7 +197,7 @@ export const TETRIS_TEMPLATE: GameDefinition = {
       id: 'piece_j',
       type: 'zone',
       tags: ['piece', 'blue'],
-      sprite: { type: 'rect', width: 0.8, height: 0.8, color: '#0000FF' },
+      visual: { type: 'rect', width: 0.8, height: 0.8, color: '#0000FF' },
       zone: {
         shape: {
           type: 'box',
@@ -228,7 +228,7 @@ export const TETRIS_TEMPLATE: GameDefinition = {
       id: 'piece_l',
       type: 'zone',
       tags: ['piece', 'orange'],
-      sprite: { type: 'rect', width: 0.8, height: 0.8, color: '#FF8800' },
+      visual: { type: 'rect', width: 0.8, height: 0.8, color: '#FF8800' },
       zone: {
         shape: {
           type: 'box',

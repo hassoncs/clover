@@ -53,8 +53,10 @@ function log(msg) {
 }
 
 function findGodot() {
-  // Try common paths
+  // Try common paths - prefer Godot 4.4 to match our custom templates
   const paths = [
+    "/Applications/Godot-4.4.app/Contents/MacOS/Godot",
+    "/Applications/Godot-4.3.app/Contents/MacOS/Godot",
     "godot",
     "/opt/homebrew/bin/godot",
     "/usr/local/bin/godot",

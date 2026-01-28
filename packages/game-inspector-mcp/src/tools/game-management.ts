@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { GameInspectorState, WindowWithBridge } from "../types.js";
 import { DEFAULT_BASE_URL, DEFAULT_TIMEOUT } from "../types.js";
-import { normalizeGameName, buildGameUrl, buildExampleUrl, ensurePage, waitForDebugBridge, waitForGameReady, clearLogs, getRecentLogs, queryGodot } from "../utils.js";
+import { normalizeGameName, buildGameUrl, buildExampleUrl, ensurePage, waitForDebugBridge, waitForGameReady, clearLogs, getRecentLogs, queryGodot, querySlopcade } from "../utils.js";
 import { getAvailableGames, getAvailableExamples, isValidGame, isValidExample, type GameInfo } from "../registry.js";
 
 export function registerGameManagementTools(server: McpServer, state: GameInspectorState) {
@@ -148,13 +148,15 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
 
       state.currentGameId = identifier;
 
-      const pauseResult = await queryGodot(page, "pause", []);
+      const pauseResult = await querySlopcade(page, "pause", []);
       
       const snapshot = await page.evaluate(async () => {
         const w = window as unknown as WindowWithBridge;
         if (!w.GodotDebugBridge) return null;
         return w.GodotDebugBridge.getSnapshot({ detail: "med" });
       });
+      
+      const timeState = await querySlopcade(page, "getTimeState", []);
 
       const startupLogs = getRecentLogs(state);
       const errorLogs = startupLogs.filter(l => 
@@ -167,7 +169,7 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
         url,
         snapshot,
         paused: true,
-        timeState: pauseResult,
+        timeState,
         logCount: startupLogs.length,
       };
 

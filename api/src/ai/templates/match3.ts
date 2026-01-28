@@ -38,7 +38,7 @@ export const MATCH3_TEMPLATE: GameDefinition = {
       id: 'piece_red',
       type: 'zone',
       tags: ['piece', 'red'],
-      sprite: {
+      visual: {
         type: 'circle',
         radius: 0.5,
         color: '#FF4444',
@@ -72,7 +72,7 @@ export const MATCH3_TEMPLATE: GameDefinition = {
       id: 'piece_blue',
       type: 'zone',
       tags: ['piece', 'blue'],
-      sprite: {
+      visual: {
         type: 'circle',
         radius: 0.5,
         color: '#4444FF',
@@ -106,7 +106,7 @@ export const MATCH3_TEMPLATE: GameDefinition = {
       id: 'piece_green',
       type: 'zone',
       tags: ['piece', 'green'],
-      sprite: {
+      visual: {
         type: 'circle',
         radius: 0.5,
         color: '#44FF44',
@@ -140,7 +140,7 @@ export const MATCH3_TEMPLATE: GameDefinition = {
       id: 'piece_yellow',
       type: 'zone',
       tags: ['piece', 'yellow'],
-      sprite: {
+      visual: {
         type: 'circle',
         radius: 0.5,
         color: '#FFFF44',
@@ -174,7 +174,7 @@ export const MATCH3_TEMPLATE: GameDefinition = {
       id: 'grid_cell',
       type: 'zone',
       tags: ['grid'],
-      sprite: {
+      visual: {
         type: 'rect',
         width: 1.1,
         height: 1.1,

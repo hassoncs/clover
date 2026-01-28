@@ -1,0 +1,9 @@
+[submodule "vendor/godot"]
+	path = vendor/godot
+	url = https://github.com/godotengine/godot.git
+[submodule "vendor/godot-rapier-physics"]
+	path = vendor/godot-rapier-physics
+	url = https://github.com/appsinacup/godot-rapier-physics.git
+[submodule "vendor/godot-cpp"]
+	path = vendor/godot-cpp
+	url = https://github.com/godotengine/godot-cpp.git

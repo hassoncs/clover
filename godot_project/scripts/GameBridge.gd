@@ -1425,14 +1425,7 @@ func _create_physics_body(entity_id: String, physics_data: Dictionary, collider_
 			var char_body = CharacterBody2D.new()
 			node = char_body
 		_:  # dynamic
-		match body_type:
-			"static":
-				node = StaticBody2D.new()
-			"kinematic":
-				var char_body = CharacterBody2D.new()
-				node = char_body
-			_:  # dynamic
-				var rigid = RigidBody2D.new()
+			var rigid = RigidBody2D.new()
 				rigid.gravity_scale = physics_data.get("gravityScale", 1.0)
 				
 				# Enable contact monitoring for detailed collision data

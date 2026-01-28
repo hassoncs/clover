@@ -27,48 +27,35 @@ export const JUMPY_CAT_TEMPLATE: GameDefinition = {
   templates: {
     player: {
       id: 'player',
-      sprite: {
+      visual: {
         type: 'rect',
         width: 0.8,
         height: 0.8,
         color: '#FF9933',
       },
-      physics: {
-        bodyType: 'dynamic',
-        shape: 'box',
-        width: 0.8,
-        height: 0.8,
-        density: 1.0,
-        friction: 0.3,
-        restitution: 0,
-        fixedRotation: true,
-      },
+      physics: { density: 1.0, fixedRotation: true },
+      collider: { shape: 'box', physics: {
+        bodyType: 'dynamic', width: 0.8, height: 0.8, friction: 0.3, restitution: 0 },
       behaviors: [],
       tags: ['player'],
     },
     platform: {
       id: 'platform',
-      sprite: {
+      visual: {
         type: 'rect',
         width: 2,
         height: 0.4,
         color: '#228B22',
       },
-      physics: {
-        bodyType: 'static',
-        shape: 'box',
-        width: 2,
-        height: 0.4,
-        density: 1,
-        friction: 0.8,
-        restitution: 0,
-      },
+      physics: { density: 1 },
+      collider: { shape: 'box', physics: {
+        bodyType: 'static', width: 2, height: 0.4, friction: 0.8, restitution: 0 },
       tags: ['platform', 'ground'],
     },
     collectible: {
       id: 'collectible',
       type: 'zone',
-      sprite: {
+      visual: {
         type: 'circle',
         radius: 0.3,
         color: '#FFD700',
@@ -102,19 +89,14 @@ export const JUMPY_CAT_TEMPLATE: GameDefinition = {
     },
     enemy: {
       id: 'enemy',
-      sprite: {
+      visual: {
         type: 'circle',
         radius: 0.4,
         color: '#FF0000',
       },
-      physics: {
-        bodyType: 'kinematic',
-        shape: 'circle',
-        radius: 0.4,
-        density: 1,
-        friction: 0,
-        restitution: 0,
-      },
+      physics: { density: 1 },
+      collider: { shape: 'circle', physics: {
+        bodyType: 'kinematic', radius: 0.4, friction: 0, restitution: 0 },
       behaviors: [
         {
           type: 'oscillate',
@@ -168,7 +150,7 @@ export const JUMPY_CAT_TEMPLATE: GameDefinition = {
       name: 'Goal Platform',
       template: 'platform',
       transform: { x: 5, y: 4, angle: 0, scaleX: 1.5, scaleY: 1 },
-      sprite: {
+      visual: {
         type: 'rect',
         width: 3,
         height: 0.4,

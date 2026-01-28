@@ -25,21 +25,15 @@ export const STACK_ATTACK_TEMPLATE: GameDefinition = {
   templates: {
     block: {
       id: 'block',
-      sprite: {
+      visual: {
         type: 'rect',
         width: 2,
         height: 0.6,
         color: '#e94560',
       },
-      physics: {
-        bodyType: 'dynamic',
-        shape: 'box',
-        width: 2,
-        height: 0.6,
-        density: 1.0,
-        friction: 0.7,
-        restitution: 0.05,
-      },
+      physics: { density: 1.0 },
+      collider: { shape: 'box', physics: {
+        bodyType: 'dynamic', width: 2, height: 0.6, friction: 0.7, restitution: 0.05 },
       behaviors: [
         {
           type: 'score_on_collision',
@@ -57,7 +51,7 @@ export const STACK_ATTACK_TEMPLATE: GameDefinition = {
     },
     moving_block: {
       id: 'moving_block',
-      sprite: {
+      visual: {
         type: 'rect',
         width: 2,
         height: 0.6,
@@ -65,15 +59,9 @@ export const STACK_ATTACK_TEMPLATE: GameDefinition = {
         strokeColor: '#e94560',
         strokeWidth: 3,
       },
-      physics: {
-        bodyType: 'kinematic',
-        shape: 'box',
-        width: 2,
-        height: 0.6,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-      },
+      physics: { density: 0 },
+      collider: { shape: 'box', physics: {
+        bodyType: 'kinematic', width: 2, height: 0.6, friction: 0, restitution: 0 },
       behaviors: [
         {
           type: 'oscillate',
@@ -86,27 +74,21 @@ export const STACK_ATTACK_TEMPLATE: GameDefinition = {
     },
     ground: {
       id: 'ground',
-      sprite: {
+      visual: {
         type: 'rect',
         width: 10,
         height: 1,
         color: '#0f3460',
       },
-      physics: {
-        bodyType: 'static',
-        shape: 'box',
-        width: 10,
-        height: 1,
-        density: 1,
-        friction: 0.9,
-        restitution: 0,
-      },
+      physics: { density: 1 },
+      collider: { shape: 'box', physics: {
+        bodyType: 'static', width: 10, height: 1, friction: 0.9, restitution: 0 },
       tags: ['ground'],
     },
     death_zone: {
       id: 'death_zone',
       type: 'zone',
-      sprite: {
+      visual: {
         type: 'rect',
         width: 2,
         height: 16,

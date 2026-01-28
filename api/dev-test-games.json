@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-01-28T18:38:06.955Z",
+  "generatedAt": "2026-01-28T20:59:26.664Z",
   "games": [
     {
       "id": "ballSort",
@@ -4431,7 +4431,7 @@
           {
             "id": "bubble-0",
             "name": "Bubble 1",
-            "template": "bubble_purple",
+            "template": "bubble_red",
             "transform": {
               "x": -4.35,
               "y": 6.5,
@@ -4443,7 +4443,7 @@
           {
             "id": "bubble-1",
             "name": "Bubble 2",
-            "template": "bubble_green",
+            "template": "bubble_yellow",
             "transform": {
               "x": -3.6500000000000004,
               "y": 6.5,
@@ -4455,7 +4455,7 @@
           {
             "id": "bubble-2",
             "name": "Bubble 3",
-            "template": "bubble_purple",
+            "template": "bubble_blue",
             "transform": {
               "x": -2.95,
               "y": 6.5,
@@ -4467,7 +4467,7 @@
           {
             "id": "bubble-3",
             "name": "Bubble 4",
-            "template": "bubble_green",
+            "template": "bubble_red",
             "transform": {
               "x": -2.2500000000000004,
               "y": 6.5,
@@ -4479,7 +4479,7 @@
           {
             "id": "bubble-4",
             "name": "Bubble 5",
-            "template": "bubble_yellow",
+            "template": "bubble_blue",
             "transform": {
               "x": -1.5500000000000007,
               "y": 6.5,
@@ -4491,7 +4491,7 @@
           {
             "id": "bubble-5",
             "name": "Bubble 6",
-            "template": "bubble_red",
+            "template": "bubble_purple",
             "transform": {
               "x": -0.8499999999999996,
               "y": 6.5,
@@ -4503,7 +4503,7 @@
           {
             "id": "bubble-6",
             "name": "Bubble 7",
-            "template": "bubble_purple",
+            "template": "bubble_green",
             "transform": {
               "x": -0.15000000000000036,
               "y": 6.5,
@@ -4515,7 +4515,7 @@
           {
             "id": "bubble-7",
             "name": "Bubble 8",
-            "template": "bubble_red",
+            "template": "bubble_green",
             "transform": {
               "x": 0.5499999999999989,
               "y": 6.5,
@@ -4527,7 +4527,7 @@
           {
             "id": "bubble-8",
             "name": "Bubble 9",
-            "template": "bubble_green",
+            "template": "bubble_blue",
             "transform": {
               "x": -3.65,
               "y": 5.893800000000001,
@@ -4539,7 +4539,7 @@
           {
             "id": "bubble-9",
             "name": "Bubble 10",
-            "template": "bubble_blue",
+            "template": "bubble_purple",
             "transform": {
               "x": -2.95,
               "y": 5.893800000000001,
@@ -4563,7 +4563,7 @@
           {
             "id": "bubble-11",
             "name": "Bubble 12",
-            "template": "bubble_yellow",
+            "template": "bubble_purple",
             "transform": {
               "x": -1.5500000000000007,
               "y": 5.893800000000001,
@@ -4575,7 +4575,7 @@
           {
             "id": "bubble-12",
             "name": "Bubble 13",
-            "template": "bubble_purple",
+            "template": "bubble_blue",
             "transform": {
               "x": -0.8499999999999996,
               "y": 5.893800000000001,
@@ -4587,7 +4587,7 @@
           {
             "id": "bubble-13",
             "name": "Bubble 14",
-            "template": "bubble_purple",
+            "template": "bubble_green",
             "transform": {
               "x": -0.15000000000000036,
               "y": 5.893800000000001,
@@ -4611,7 +4611,7 @@
           {
             "id": "bubble-15",
             "name": "Bubble 16",
-            "template": "bubble_green",
+            "template": "bubble_purple",
             "transform": {
               "x": -4.35,
               "y": 5.2876,
@@ -4647,7 +4647,7 @@
           {
             "id": "bubble-18",
             "name": "Bubble 19",
-            "template": "bubble_red",
+            "template": "bubble_blue",
             "transform": {
               "x": -2.2500000000000004,
               "y": 5.2876,
@@ -4659,7 +4659,7 @@
           {
             "id": "bubble-19",
             "name": "Bubble 20",
-            "template": "bubble_purple",
+            "template": "bubble_green",
             "transform": {
               "x": -1.5500000000000007,
               "y": 5.2876,
@@ -4671,7 +4671,7 @@
           {
             "id": "bubble-20",
             "name": "Bubble 21",
-            "template": "bubble_purple",
+            "template": "bubble_green",
             "transform": {
               "x": -0.8499999999999996,
               "y": 5.2876,
@@ -4695,7 +4695,7 @@
           {
             "id": "bubble-22",
             "name": "Bubble 23",
-            "template": "bubble_red",
+            "template": "bubble_blue",
             "transform": {
               "x": 0.5499999999999989,
               "y": 5.2876,
@@ -4707,7 +4707,7 @@
           {
             "id": "bubble-23",
             "name": "Bubble 24",
-            "template": "bubble_blue",
+            "template": "bubble_purple",
             "transform": {
               "x": -3.65,
               "y": 4.6814,
@@ -4719,7 +4719,7 @@
           {
             "id": "bubble-24",
             "name": "Bubble 25",
-            "template": "bubble_blue",
+            "template": "bubble_red",
             "transform": {
               "x": -2.95,
               "y": 4.6814,
@@ -4731,7 +4731,7 @@
           {
             "id": "bubble-25",
             "name": "Bubble 26",
-            "template": "bubble_green",
+            "template": "bubble_yellow",
             "transform": {
               "x": -2.25,
               "y": 4.6814,
@@ -4755,7 +4755,7 @@
           {
             "id": "bubble-27",
             "name": "Bubble 28",
-            "template": "bubble_blue",
+            "template": "bubble_green",
             "transform": {
               "x": -0.8499999999999996,
               "y": 4.6814,
@@ -4779,7 +4779,7 @@
           {
             "id": "bubble-29",
             "name": "Bubble 30",
-            "template": "bubble_purple",
+            "template": "bubble_yellow",
             "transform": {
               "x": 0.5499999999999989,
               "y": 4.6814,
@@ -4803,7 +4803,7 @@
           {
             "id": "bubble-31",
             "name": "Bubble 32",
-            "template": "bubble_yellow",
+            "template": "bubble_purple",
             "transform": {
               "x": -3.6500000000000004,
               "y": 4.075200000000001,
@@ -4815,7 +4815,7 @@
           {
             "id": "bubble-32",
             "name": "Bubble 33",
-            "template": "bubble_blue",
+            "template": "bubble_red",
             "transform": {
               "x": -2.95,
               "y": 4.075200000000001,
@@ -4839,7 +4839,7 @@
           {
             "id": "bubble-34",
             "name": "Bubble 35",
-            "template": "bubble_purple",
+            "template": "bubble_blue",
             "transform": {
               "x": -1.5500000000000007,
               "y": 4.075200000000001,
@@ -4851,7 +4851,7 @@
           {
             "id": "bubble-35",
             "name": "Bubble 36",
-            "template": "bubble_green",
+            "template": "bubble_blue",
             "transform": {
               "x": -0.8499999999999996,
               "y": 4.075200000000001,
@@ -4875,7 +4875,7 @@
           {
             "id": "bubble-37",
             "name": "Bubble 38",
-            "template": "bubble_yellow",
+            "template": "bubble_red",
             "transform": {
               "x": 0.5499999999999989,
               "y": 4.075200000000001,
@@ -4887,7 +4887,7 @@
           {
             "id": "bubble-38",
             "name": "Bubble 39",
-            "template": "bubble_purple",
+            "template": "bubble_yellow",
             "transform": {
               "x": -3.65,
               "y": 3.4690000000000003,
@@ -4899,7 +4899,7 @@
           {
             "id": "bubble-39",
             "name": "Bubble 40",
-            "template": "bubble_blue",
+            "template": "bubble_green",
             "transform": {
               "x": -2.95,
               "y": 3.4690000000000003,
@@ -4911,7 +4911,7 @@
           {
             "id": "bubble-40",
             "name": "Bubble 41",
-            "template": "bubble_purple",
+            "template": "bubble_red",
             "transform": {
               "x": -2.25,
               "y": 3.4690000000000003,
@@ -4923,7 +4923,7 @@
           {
             "id": "bubble-41",
             "name": "Bubble 42",
-            "template": "bubble_purple",
+            "template": "bubble_blue",
             "transform": {
               "x": -1.5500000000000007,
               "y": 3.4690000000000003,
@@ -4935,7 +4935,7 @@
           {
             "id": "bubble-42",
             "name": "Bubble 43",
-            "template": "bubble_yellow",
+            "template": "bubble_green",
             "transform": {
               "x": -0.8499999999999996,
               "y": 3.4690000000000003,
@@ -4959,7 +4959,7 @@
           {
             "id": "bubble-44",
             "name": "Bubble 45",
-            "template": "bubble_green",
+            "template": "bubble_yellow",
             "transform": {
               "x": 0.5499999999999989,
               "y": 3.4690000000000003,
@@ -9690,6 +9690,239 @@
       }
     },
     {
+      "id": "endlessScrollPlayground",
+      "title": "Endless Scroll Playground",
+      "description": "Debug endless scrolling mechanics - pipes and background",
+      "definition": {
+        "metadata": {
+          "id": "endless-scroll-playground",
+          "title": "Endless Scroll Playground",
+          "description": "Debug endless scrolling mechanics - pipes and background",
+          "instructions": "Watch pipes scroll endlessly. Debug scrolling mechanics.",
+          "version": "1.0.0",
+          "titleHeroImageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/title_hero.png"
+        },
+        "world": {
+          "gravity": {
+            "x": 0,
+            "y": -15
+          },
+          "pixelsPerMeter": 50,
+          "bounds": {
+            "width": 12,
+            "height": 16
+          }
+        },
+        "background": {
+          "type": "static",
+          "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/background.png"
+        },
+        "camera": {
+          "type": "fixed",
+          "zoom": 1
+        },
+        "ui": {
+          "showScore": false,
+          "showLives": false,
+          "showTimer": false,
+          "backgroundColor": "#70c5ce"
+        },
+        "templates": {
+          "pipeTop": {
+            "id": "pipeTop",
+            "tags": [
+              "pipe",
+              "pipe-top"
+            ],
+            "sprite": {
+              "type": "image",
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/pipeTop.png",
+              "imageWidth": 1.2,
+              "imageHeight": 6
+            },
+            "physics": {
+              "bodyType": "kinematic",
+              "shape": "box",
+              "width": 1.2,
+              "height": 6,
+              "density": 0,
+              "friction": 0,
+              "restitution": 0
+            },
+            "behaviors": [
+              {
+                "type": "move",
+                "direction": "left",
+                "speed": 15
+              },
+              {
+                "type": "timer",
+                "duration": 2,
+                "action": "destroy"
+              }
+            ]
+          },
+          "pipeBottom": {
+            "id": "pipeBottom",
+            "tags": [
+              "pipe",
+              "pipe-bottom"
+            ],
+            "sprite": {
+              "type": "image",
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/pipeBottom.png",
+              "imageWidth": 1.2,
+              "imageHeight": 6
+            },
+            "physics": {
+              "bodyType": "kinematic",
+              "shape": "box",
+              "width": 1.2,
+              "height": 6,
+              "density": 0,
+              "friction": 0,
+              "restitution": 0
+            },
+            "behaviors": [
+              {
+                "type": "move",
+                "direction": "left",
+                "speed": 15
+              },
+              {
+                "type": "timer",
+                "duration": 2,
+                "action": "destroy"
+              }
+            ]
+          },
+          "ground": {
+            "id": "ground",
+            "tags": [
+              "ground"
+            ],
+            "sprite": {
+              "type": "image",
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/ground.png",
+              "imageWidth": 16,
+              "imageHeight": 1.5
+            },
+            "physics": {
+              "bodyType": "static",
+              "shape": "box",
+              "width": 16,
+              "height": 1.5,
+              "density": 0,
+              "friction": 0.5,
+              "restitution": 0
+            }
+          },
+          "ceiling": {
+            "id": "ceiling",
+            "tags": [
+              "ceiling"
+            ],
+            "sprite": {
+              "type": "image",
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/ceiling.png",
+              "imageWidth": 16,
+              "imageHeight": 0.5
+            },
+            "physics": {
+              "bodyType": "static",
+              "shape": "box",
+              "width": 16,
+              "height": 0.5,
+              "density": 0,
+              "friction": 0,
+              "restitution": 0
+            }
+          }
+        },
+        "entities": [
+          {
+            "id": "ground",
+            "name": "Ground",
+            "template": "ground",
+            "transform": {
+              "x": 0,
+              "y": -7.25,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "ceiling",
+            "name": "Ceiling",
+            "template": "ceiling",
+            "transform": {
+              "x": 0,
+              "y": 7.75,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "initial_pipe_bottom",
+            "name": "Initial Pipe Bottom",
+            "template": "pipeBottom",
+            "transform": {
+              "x": 2,
+              "y": -5,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "initial_pipe_top",
+            "name": "Initial Pipe Top",
+            "template": "pipeTop",
+            "transform": {
+              "x": 2,
+              "y": 10,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          }
+        ],
+        "rules": [
+          {
+            "id": "spawn_pipes",
+            "name": "Spawn pipe pairs",
+            "trigger": {
+              "type": "timer",
+              "time": 2.5,
+              "repeat": true
+            },
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "pipeBottom",
+                "position": {
+                  "type": "fixed",
+                  "x": 8,
+                  "y": -5
+                }
+              },
+              {
+                "type": "spawn",
+                "template": "pipeTop",
+                "position": {
+                  "type": "fixed",
+                  "x": 8,
+                  "y": 10
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "id": "flappyBird",
       "title": "Flappy Bird",
       "description": "Tap to fly through the pipes without hitting them",
@@ -13341,6 +13574,169 @@
       }
     },
     {
+      "id": "imageNoPhysicsTest",
+      "title": "Image No Physics Test",
+      "description": "Tests image rendering without physics",
+      "definition": {
+        "metadata": {
+          "id": "image-no-physics-test",
+          "title": "Image No Physics Test",
+          "description": "Tests image rendering without physics",
+          "version": "1.0.0"
+        },
+        "world": {
+          "gravity": {
+            "x": 0,
+            "y": -10
+          },
+          "pixelsPerMeter": 50,
+          "bounds": {
+            "width": 10,
+            "height": 10
+          }
+        },
+        "camera": {
+          "type": "fixed",
+          "zoom": 1
+        },
+        "ui": {
+          "showScore": false,
+          "showLives": false,
+          "showTimer": false,
+          "backgroundColor": "#222222"
+        },
+        "templates": {
+          "imageOnly": {
+            "id": "imageOnly",
+            "tags": [
+              "image-only"
+            ],
+            "visual": {
+              "type": "image",
+              "imageUrl": "https://via.placeholder.com/100/FF0000/FFFFFF?text=NO+PHYSICS",
+              "width": 2,
+              "height": 2
+            }
+          }
+        },
+        "entities": [
+          {
+            "id": "image-no-physics",
+            "template": "imageOnly",
+            "transform": {
+              "x": -2,
+              "y": 0,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          }
+        ],
+        "rules": []
+      }
+    },
+    {
+      "id": "imageWithPhysicsTest",
+      "title": "Image With Physics Test",
+      "description": "Tests image rendering with physics",
+      "definition": {
+        "metadata": {
+          "id": "image-with-physics-test",
+          "title": "Image With Physics Test",
+          "description": "Tests image rendering with physics",
+          "version": "1.0.0"
+        },
+        "world": {
+          "gravity": {
+            "x": 0,
+            "y": -10
+          },
+          "pixelsPerMeter": 50,
+          "bounds": {
+            "width": 10,
+            "height": 10
+          }
+        },
+        "camera": {
+          "type": "fixed",
+          "zoom": 1
+        },
+        "ui": {
+          "showScore": false,
+          "showLives": false,
+          "showTimer": false,
+          "backgroundColor": "#222222"
+        },
+        "templates": {
+          "physicsImage": {
+            "id": "physicsImage",
+            "tags": [
+              "physics-image"
+            ],
+            "physics": {
+              "bodyType": "dynamic",
+              "density": 1,
+              "restitution": 0.5
+            },
+            "collider": {
+              "shape": "box",
+              "width": 1,
+              "height": 1,
+              "friction": 0.3,
+              "restitution": 0.5
+            },
+            "visual": {
+              "type": "image",
+              "imageUrl": "https://via.placeholder.com/100/FF0000/FFFFFF?text=PHYSICS"
+            }
+          },
+          "staticFloor": {
+            "id": "staticFloor",
+            "tags": [
+              "floor"
+            ],
+            "physics": {
+              "bodyType": "static"
+            },
+            "collider": {
+              "shape": "box",
+              "width": 6,
+              "height": 0.5
+            },
+            "visual": {
+              "type": "image",
+              "imageUrl": "https://via.placeholder.com/300/00FF00/000000?text=FLOOR"
+            }
+          }
+        },
+        "entities": [
+          {
+            "id": "falling-box",
+            "template": "physicsImage",
+            "transform": {
+              "x": 0,
+              "y": 3,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "floor",
+            "template": "staticFloor",
+            "transform": {
+              "x": 0,
+              "y": -3,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          }
+        ],
+        "rules": []
+      }
+    },
+    {
       "id": "memoryMatch",
       "title": "Memory Match",
       "description": "Flip cards to find matching pairs",
@@ -13651,7 +14047,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-0"
+              "pair-4"
             ],
             "transform": {
               "x": -4.2,
@@ -13661,7 +14057,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 0,
+              "pairId": 4,
               "cardIndex": 0
             }
           },
@@ -13672,7 +14068,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-1"
+              "pair-6"
             ],
             "transform": {
               "x": -1.7999999999999998,
@@ -13682,7 +14078,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 1,
+              "pairId": 6,
               "cardIndex": 1
             }
           },
@@ -13693,7 +14089,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-6"
+              "pair-5"
             ],
             "transform": {
               "x": 0.5999999999999996,
@@ -13703,7 +14099,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 6,
+              "pairId": 5,
               "cardIndex": 2
             }
           },
@@ -13714,7 +14110,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-5"
+              "pair-3"
             ],
             "transform": {
               "x": 3,
@@ -13724,7 +14120,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 5,
+              "pairId": 3,
               "cardIndex": 3
             }
           },
@@ -13735,7 +14131,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-7"
+              "pair-0"
             ],
             "transform": {
               "x": -4.2,
@@ -13745,7 +14141,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 7,
+              "pairId": 0,
               "cardIndex": 4
             }
           },
@@ -13756,7 +14152,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-5"
+              "pair-3"
             ],
             "transform": {
               "x": -1.7999999999999998,
@@ -13766,7 +14162,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 5,
+              "pairId": 3,
               "cardIndex": 5
             }
           },
@@ -13798,7 +14194,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-4"
+              "pair-1"
             ],
             "transform": {
               "x": 3,
@@ -13808,7 +14204,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 4,
+              "pairId": 1,
               "cardIndex": 7
             }
           },
@@ -13819,7 +14215,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-0"
+              "pair-2"
             ],
             "transform": {
               "x": -4.2,
@@ -13829,7 +14225,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 0,
+              "pairId": 2,
               "cardIndex": 8
             }
           },
@@ -13861,7 +14257,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-3"
+              "pair-4"
             ],
             "transform": {
               "x": 0.5999999999999996,
@@ -13871,7 +14267,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 3,
+              "pairId": 4,
               "cardIndex": 10
             }
           },
@@ -13882,7 +14278,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-2"
+              "pair-1"
             ],
             "transform": {
               "x": 3,
@@ -13892,7 +14288,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 2,
+              "pairId": 1,
               "cardIndex": 11
             }
           },
@@ -13903,7 +14299,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-4"
+              "pair-0"
             ],
             "transform": {
               "x": -4.2,
@@ -13913,7 +14309,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 4,
+              "pairId": 0,
               "cardIndex": 12
             }
           },
@@ -13924,7 +14320,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-1"
+              "pair-5"
             ],
             "transform": {
               "x": -1.7999999999999998,
@@ -13934,7 +14330,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 1,
+              "pairId": 5,
               "cardIndex": 13
             }
           },
@@ -13966,7 +14362,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-3"
+              "pair-7"
             ],
             "transform": {
               "x": 3,
@@ -13976,7 +14372,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 3,
+              "pairId": 7,
               "cardIndex": 15
             }
           }
@@ -23087,6 +23483,159 @@
                 "target": {
                   "type": "self"
                 }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "zoneTest",
+      "title": "Zone Test",
+      "description": "Tests zone detection with new collider component",
+      "definition": {
+        "metadata": {
+          "id": "zone-test",
+          "title": "Zone Test",
+          "description": "Tests zone detection with new collider component",
+          "version": "1.0.0"
+        },
+        "world": {
+          "gravity": {
+            "x": 0,
+            "y": -10
+          },
+          "pixelsPerMeter": 50,
+          "bounds": {
+            "width": 10,
+            "height": 10
+          }
+        },
+        "camera": {
+          "type": "fixed",
+          "zoom": 1
+        },
+        "ui": {
+          "showScore": false,
+          "showLives": false,
+          "showTimer": false,
+          "backgroundColor": "#222222"
+        },
+        "templates": {
+          "detectionZone": {
+            "id": "detectionZone",
+            "tags": [
+              "zone"
+            ],
+            "collider": {
+              "shape": "box",
+              "width": 2,
+              "height": 2,
+              "isSensor": true
+            },
+            "visual": {
+              "type": "rect",
+              "color": "#0000FF",
+              "opacity": 0.3
+            }
+          },
+          "fallingBox": {
+            "id": "fallingBox",
+            "tags": [
+              "falling-box"
+            ],
+            "physics": {
+              "bodyType": "dynamic",
+              "density": 1
+            },
+            "collider": {
+              "shape": "box",
+              "width": 0.5,
+              "height": 0.5
+            },
+            "visual": {
+              "type": "image",
+              "imageUrl": "https://via.placeholder.com/50/FFFF00/000000?text=BOX"
+            }
+          },
+          "floor": {
+            "id": "floor",
+            "tags": [
+              "floor"
+            ],
+            "physics": {
+              "bodyType": "static"
+            },
+            "collider": {
+              "shape": "box",
+              "width": 6,
+              "height": 0.5
+            },
+            "visual": {
+              "type": "rect",
+              "color": "#00FF00"
+            }
+          }
+        },
+        "entities": [
+          {
+            "id": "the-zone",
+            "template": "detectionZone",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "falling-box",
+            "template": "fallingBox",
+            "transform": {
+              "x": 0,
+              "y": 3,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "floor",
+            "template": "floor",
+            "transform": {
+              "x": 0,
+              "y": -3,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          }
+        ],
+        "rules": [
+          {
+            "trigger": {
+              "type": "zone_enter",
+              "zoneTag": "zone",
+              "entityTag": "falling-box"
+            },
+            "actions": [
+              {
+                "type": "event",
+                "eventName": "box_entered_zone"
+              }
+            ]
+          },
+          {
+            "trigger": {
+              "type": "zone_exit",
+              "zoneTag": "zone",
+              "entityTag": "falling-box"
+            },
+            "actions": [
+              {
+                "type": "event",
+                "eventName": "box_exited_zone"
               }
             ]
           }

@@ -20,16 +20,10 @@ describe('validateGameDefinition', () => {
           {
             id: 'player',
             transform: { x: 5, y: 5 },
-            physics: {
-              bodyType: 'dynamic',
-              shape: 'box',
-              width: 1,
-              height: 1,
-              density: 1,
-              friction: 0.5,
-              restitution: 0.5,
-            },
-            sprite: { type: 'rect', width: 1, height: 1, fill: '#FF0000' },
+            physics: { density: 1 },
+      collider: { shape: 'box', physics: {
+              bodyType: 'dynamic', width: 1, height: 1, friction: 0.5, restitution: 0.5 },
+            visual: { type: 'rect', width: 1, height: 1, fill: '#FF0000' },
           },
         ],
         rules: [
@@ -59,8 +53,9 @@ describe('validateGameDefinition', () => {
           {
             id: 'e1',
             transform: { x: 0, y: 0 },
-            physics: { bodyType: 'static', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
-            sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
+            physics: { density: 1 },
+      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
+            visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
           },
         ],
       };
@@ -77,8 +72,9 @@ describe('validateGameDefinition', () => {
           {
             id: 'e1',
             transform: { x: 0, y: 0 },
-            physics: { bodyType: 'static', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
-            sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
+            physics: { density: 1 },
+      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
+            visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
           },
         ],
       };
@@ -107,8 +103,9 @@ describe('validateGameDefinition', () => {
           {
             id: 'e1',
             transform: { x: 0, y: 0 },
-            physics: { bodyType: 'static', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
-            sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
+            physics: { density: 1 },
+      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
+            visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
           },
         ],
       };
@@ -143,14 +140,16 @@ describe('validateGameDefinition', () => {
           {
             id: 'same-id',
             transform: { x: 0, y: 0 },
-            physics: { bodyType: 'static', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
-            sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
+            physics: { density: 1 },
+      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
+            visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
           },
           {
             id: 'same-id',
             transform: { x: 5, y: 5 },
-            physics: { bodyType: 'static', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
-            sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
+            physics: { density: 1 },
+      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
+            visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
           },
         ],
       };
@@ -163,8 +162,9 @@ describe('validateGameDefinition', () => {
       const entities = Array.from({ length: 55 }, (_, i) => ({
         id: `entity-${i}`,
         transform: { x: i, y: 0 },
-        physics: { bodyType: 'static', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
-        sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
+        physics: { density: 1 },
+      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
+        visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
       }));
 
       const game = {
@@ -185,8 +185,9 @@ describe('validateGameDefinition', () => {
            {
              id: 'static-box',
              transform: { x: 0, y: 0 },
-             physics: { bodyType: 'static', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
-             sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
+             physics: { density: 1 },
+      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
+             visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
            },
          ],
        };
@@ -230,8 +231,9 @@ describe('validateGameDefinition', () => {
           {
             id: 'bad-box',
             transform: { x: 0, y: 0 },
-            physics: { bodyType: 'static', shape: 'box', density: 1, friction: 0.5, restitution: 0 },
-            sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
+            physics: { density: 1 },
+      collider: { shape: 'box', physics: { bodyType: 'static', friction: 0.5, restitution: 0 },
+            visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
           },
         ],
       };
@@ -249,8 +251,9 @@ describe('validateGameDefinition', () => {
           {
             id: 'bad-circle',
             transform: { x: 0, y: 0 },
-            physics: { bodyType: 'dynamic', shape: 'circle', density: 1, friction: 0.5, restitution: 0 },
-            sprite: { type: 'circle', radius: 1, fill: '#000' },
+            physics: { density: 1 },
+      collider: { shape: 'circle', physics: { bodyType: 'dynamic', friction: 0.5, restitution: 0 },
+            visual: { type: 'circle', radius: 1, fill: '#000' },
           },
         ],
       };
@@ -269,8 +272,9 @@ describe('validateGameDefinition', () => {
           {
             id: 'e1',
             transform: { x: 0, y: 0 },
-            physics: { bodyType: 'static', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
-            sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
+            physics: { density: 1 },
+      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
+            visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
             behaviors: [{ type: 'invalid_behavior_type' }],
           },
         ],
@@ -288,8 +292,9 @@ describe('validateGameDefinition', () => {
            {
              id: 'e1',
              transform: { x: 0, y: 0 },
-             physics: { bodyType: 'static', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
-             sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
+             physics: { density: 1 },
+      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
+             visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
              behaviors: [{ type: 'control', controlType: 'tap_to_jump' }],
            },
          ],
@@ -307,8 +312,9 @@ describe('validateGameDefinition', () => {
           {
             id: 'spawner',
             transform: { x: 0, y: 0 },
-            physics: { bodyType: 'static', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
-            sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
+            physics: { density: 1 },
+      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
+            visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
             behaviors: [{ type: 'spawn_on_event', event: 'tap' }],
           },
         ],
@@ -328,8 +334,9 @@ describe('validateGameDefinition', () => {
            {
              id: 'player',
              transform: { x: 0, y: 0 },
-             physics: { bodyType: 'dynamic', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
-             sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
+             physics: { density: 1 },
+      collider: { shape: 'box', physics: { bodyType: 'dynamic', width: 1, height: 1, friction: 0.5, restitution: 0 },
+             visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
            },
          ],
          rules: [
@@ -350,8 +357,9 @@ describe('validateGameDefinition', () => {
            {
              id: 'player',
              transform: { x: 0, y: 0 },
-             physics: { bodyType: 'dynamic', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0 },
-             sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
+             physics: { density: 1 },
+      collider: { shape: 'box', physics: { bodyType: 'dynamic', width: 1, height: 1, friction: 0.5, restitution: 0 },
+             visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
            },
          ],
          rules: [

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { GameInspectorState } from "../types.js";
-import { queryGodot, takeScreenshot, getScreenshotsDir } from "../utils.js";
+import { queryGodot, querySlopcade, takeScreenshot, getScreenshotsDir } from "../utils.js";
 import { createFilmstrip, type FilmstripFrame } from "../filmstrip.js";
 
 export function registerTimeControlTools(server: McpServer, state: GameInspectorState) {
@@ -10,7 +10,7 @@ export function registerTimeControlTools(server: McpServer, state: GameInspector
     "Get current time control state (paused, timeScale, frame, etc.)",
     {},
     async () => {
-      const result = await queryGodot(state.page, "getTimeState", []);
+      const result = await querySlopcade(state.page, "getTimeState", []);
       return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
     }
   );
@@ -20,7 +20,7 @@ export function registerTimeControlTools(server: McpServer, state: GameInspector
     "Pause game simulation",
     {},
     async () => {
-      const result = await queryGodot(state.page, "pause", []);
+      const result = await querySlopcade(state.page, "pause", []);
       return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
     }
   );
@@ -30,14 +30,14 @@ export function registerTimeControlTools(server: McpServer, state: GameInspector
     "Resume game simulation",
     {},
     async () => {
-      const result = await queryGodot(state.page, "resume", []);
+      const result = await querySlopcade(state.page, "resume", []);
       return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
     }
   );
 
   server.tool(
     "step",
-    "Step forward N physics frames while paused",
+    "Step forward N physics frames while paused (advances both physics AND game rules)",
     {
       frames: z.number().describe("Number of frames to step (default: 1)"),
       screenshot: z.boolean().optional().describe("Take a screenshot after stepping (default: false)"),
@@ -48,7 +48,7 @@ export function registerTimeControlTools(server: McpServer, state: GameInspector
       const shouldScreenshot = (args.screenshot as boolean | undefined) ?? false;
       const screenshotFilename = args.screenshotFilename as string | undefined;
       
-      const result = await queryGodot(state.page, "step", [frames]);
+      const result = await querySlopcade(state.page, "step", [frames]);
       
       const response: Record<string, unknown> = { ...result as object };
       
@@ -70,7 +70,7 @@ export function registerTimeControlTools(server: McpServer, state: GameInspector
     },
     async (args) => {
       const scale = args.scale as number;
-      const result = await queryGodot(state.page, "setTimeScale", [scale]);
+      const result = await querySlopcade(state.page, "setTimeScale", [scale]);
       return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
     }
   );
@@ -129,7 +129,7 @@ export function registerTimeControlTools(server: McpServer, state: GameInspector
 
       for (let stepped = 0; stepped < totalFrames; stepped += captureEvery) {
         const framesToStep = Math.min(captureEvery, totalFrames - stepped);
-        await queryGodot(state.page, "step", [framesToStep]);
+        await querySlopcade(state.page, "step", [framesToStep]);
         currentFrame += framesToStep;
 
         const framePath = `${screenshotsDir}/seq-${sessionId}-frame-${currentFrame}.png`;

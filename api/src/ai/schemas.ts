@@ -56,7 +56,7 @@ export const ImageSpriteSchema = z.object({
   opacity: z.number().min(0).max(1).optional(),
 });
 
-export const SpriteComponentSchema = z.discriminatedUnion('type', [
+export const VisualComponentSchema = z.discriminatedUnion('type', [
   RectSpriteSchema,
   CircleSpriteSchema,
   PolygonSpriteSchema,
@@ -267,7 +267,7 @@ export const TransformSchema = z.object({
 
 export const EntityTemplateSchema = z.object({
   id: z.string(),
-  sprite: SpriteComponentSchema.optional(),
+  visual: VisualComponentSchema.optional(),
   physics: PhysicsComponentSchema.optional(),
   behaviors: z.array(BehaviorSchema).optional(),
   tags: z.array(z.string()).optional(),
@@ -279,7 +279,7 @@ export const GameEntitySchema = z.object({
   name: z.string(),
   template: z.string().optional(),
   transform: TransformSchema,
-  sprite: SpriteComponentSchema.optional(),
+  visual: VisualComponentSchema.optional(),
   physics: PhysicsComponentSchema.optional(),
   behaviors: z.array(BehaviorSchema).optional(),
   tags: z.array(z.string()).optional(),

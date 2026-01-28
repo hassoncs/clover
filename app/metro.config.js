@@ -21,6 +21,13 @@ baseConfig.maxWorkers = 4;
 
 baseConfig.server = {
   port: 8085,
+  enhanceMiddleware: (middleware) => {
+    return (req, res, next) => {
+      res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+      res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+      return middleware(req, res, next);
+    };
+  },
 };
 
 baseConfig.watchFolders = [monorepoRoot];
@@ -47,6 +54,19 @@ baseConfig.resolver.extraNodeModules = {
 };
 
 const config = withNativeWind(baseConfig, { input: "./global.css" });
+
+// Re-apply server config after withNativeWind to ensure headers are set
+config.server = {
+  ...config.server,
+  port: 8085,
+  enhanceMiddleware: (middleware) => {
+    return (req, res, next) => {
+      res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+      res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+      return middleware(req, res, next);
+    };
+  },
+};
 
 const nativeWindResolver = config.resolver.resolveRequest;
 
@@ -100,5 +120,8 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   }
   return context.resolveRequest(context, moduleName, platform);
 };
+
+// Log to verify config is loaded
+console.log('[metro.config.js] Server config:', config.server);
 
 module.exports = config;

@@ -72,6 +72,11 @@ import {
   type SlotMachineConfig,
 } from "./systems/slotMachine";
 import { TuningPanel, hasTunables } from "@/components/game";
+import {
+  SlopcadeDebugBridge,
+  type SlopcadeDebugBridgeInterface,
+  type GameStateValue,
+} from "./debug";
 
 export interface GameRuntimeGodotProps {
   definition: GameDefinition;
@@ -93,6 +98,7 @@ export interface GameRuntimeGodotProps {
 }
 
 const GAME_LOOP_INTERVAL = 16;
+const FIXED_DT = 1 / 60;
 
 export function GameRuntimeGodot({
   definition,
@@ -147,6 +153,7 @@ export function GameRuntimeGodot({
   });
   const gameJustStartedRef = useRef(false);
   const lastKeyEventRef = useRef<{ key: string; code: string; type: 'keydown' | 'keyup'; timeStamp: number } | null>(null);
+  const debugBridgeRef = useRef<SlopcadeDebugBridge | null>(null);
 
   const handleTiltUpdate = useCallback((tilt: { x: number; y: number }) => {
     inputRef.current.tilt = tilt;
@@ -173,6 +180,7 @@ export function GameRuntimeGodot({
 
   const [isReady, setIsReady] = useState(false);
   const [godotReady, setGodotReady] = useState(false);
+  const [debugPaused, setDebugPaused] = useState(debugMode);
   const [gameState, setGameState] = useState<GameState>({
     score: 0,
     lives: 3,
@@ -1110,8 +1118,41 @@ export function GameRuntimeGodot({
     [setTimeScale, enablePerfLogging],
   );
 
+  const manualStep = useCallback(
+    async (frames: number): Promise<{ ok: boolean; framesAdvanced: number; startFrame: number; endFrame: number }> => {
+      if (gameLoopRef.current) {
+        clearInterval(gameLoopRef.current);
+        gameLoopRef.current = null;
+      }
+
+      const bridge = bridgeRef.current;
+      if (!bridge) {
+        return { ok: false, framesAdvanced: 0, startFrame: frameIdRef.current, endFrame: frameIdRef.current };
+      }
+
+      const startFrame = frameIdRef.current;
+
+      // Step Godot physics (Rapier's space_step is synchronous)
+      await bridge.stepPhysics(frames);
+      
+      for (let i = 0; i < frames; i++) {
+        stepGame(FIXED_DT);
+      }
+
+      return {
+        ok: true,
+        framesAdvanced: frames,
+        startFrame,
+        endFrame: frameIdRef.current,
+      };
+    },
+    [stepGame],
+  );
+
   useEffect(() => {
-    if (!isReady || gameState.state !== "playing") {
+    const shouldRun = isReady && gameState.state === "playing" && (!debugMode || !debugPaused);
+
+    if (!shouldRun) {
       if (gameLoopRef.current) {
         clearInterval(gameLoopRef.current);
         gameLoopRef.current = null;
@@ -1133,7 +1174,91 @@ export function GameRuntimeGodot({
         gameLoopRef.current = null;
       }
     };
-  }, [isReady, gameState.state, stepGame]);
+  }, [isReady, gameState.state, stepGame, debugMode, debugPaused]);
+
+  useEffect(() => {
+    if (!isReady || !debugMode || typeof window === "undefined") {
+      return;
+    }
+
+    const bridge = new SlopcadeDebugBridge(definition.metadata.id ?? "unknown", {
+      pause: () => {
+        setDebugPaused(true);
+        if (gameLoopRef.current) {
+          clearInterval(gameLoopRef.current);
+          gameLoopRef.current = null;
+        }
+        bridgeRef.current?.pausePhysics();
+      },
+      resume: () => {
+        setDebugPaused(false);
+        bridgeRef.current?.resumePhysics();
+      },
+      step: async (frames: number) => {
+        const result = await manualStep(frames);
+        return {
+          ok: result.ok,
+          framesAdvanced: result.framesAdvanced,
+          startFrame: result.startFrame,
+          endFrame: result.endFrame,
+          timeState: {
+            paused: debugPaused,
+            timeScale: timeScaleRef.current,
+            frame: frameIdRef.current,
+            elapsed: elapsedRef.current,
+            gameState: gameState.state as "loading" | "ready" | "playing" | "paused" | "won" | "lost",
+            score: gameState.score,
+            lives: gameState.lives,
+          },
+        };
+      },
+      setTimeScale: (scale: number) => {
+        timeScaleRef.current = scale;
+        timeScaleTargetRef.current = scale;
+        timeScaleTransitionRef.current = null;
+      },
+      getTimeState: () => ({
+        paused: debugPaused,
+        timeScale: timeScaleRef.current,
+        frame: frameIdRef.current,
+        elapsed: elapsedRef.current,
+        gameState: gameState.state as GameStateValue,
+        score: gameState.score,
+        lives: gameState.lives,
+      }),
+      getReactState: () => ({
+        score: gameState.score,
+        lives: gameState.lives,
+        state: gameState.state as GameStateValue,
+        variables: gameState.variables,
+        frame: frameIdRef.current,
+        elapsed: elapsedRef.current,
+        timeScale: timeScaleRef.current,
+      }),
+      getGodotSnapshot: (options) => {
+        const iframe = document.querySelector(
+          'iframe[title="Godot Game Engine"]'
+        ) as HTMLIFrameElement | null;
+        if (!iframe?.contentWindow) return null;
+
+        const godotBridge = (
+          iframe.contentWindow as { GodotDebugBridge?: { getSnapshot?: (detail: string) => unknown } }
+        ).GodotDebugBridge;
+        if (!godotBridge?.getSnapshot) return null;
+
+        return godotBridge.getSnapshot(options?.detail ?? "med");
+      },
+    });
+
+    bridge.setReady(true);
+    debugBridgeRef.current = bridge;
+    window.SlopcadeDebugBridge = bridge;
+
+    return () => {
+      debugBridgeRef.current = null;
+      delete window.SlopcadeDebugBridge;
+    };
+  }, [isReady, debugMode, definition.metadata.id, manualStep, gameState, debugPaused]);
 
   // Keyboard input handling (web only) - shared handlers with deduplication
   const sharedHandleKeyDown = useCallback((e: KeyboardEvent) => {

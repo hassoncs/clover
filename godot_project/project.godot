@@ -31,6 +31,7 @@ window/stretch/mode="canvas_items"
 
 [physics]
 
+2d/physics_engine="Rapier2D"
 2d/default_gravity=980.0
 2d/default_gravity_vector=Vector2(0, 1)
 

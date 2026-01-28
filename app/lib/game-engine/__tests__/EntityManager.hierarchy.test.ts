@@ -17,15 +17,15 @@ describe('Entity Hierarchy', () => {
       templates: {
         parent: {
           id: 'parent',
-          sprite: { type: 'rect', width: 1, height: 1, color: '#ff0000' },
+          visual: { type: 'rect', width: 1, height: 1, color: '#ff0000' },
         },
         child: {
           id: 'child',
-          sprite: { type: 'rect', width: 0.5, height: 0.5, color: '#00ff00' },
+          visual: { type: 'rect', width: 0.5, height: 0.5, color: '#00ff00' },
         },
         parentWithChildren: {
           id: 'parentWithChildren',
-          sprite: { type: 'rect', width: 2, height: 2, color: '#0000ff' },
+          visual: { type: 'rect', width: 2, height: 2, color: '#0000ff' },
           children: [
             {
               name: 'Child1',

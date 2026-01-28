@@ -438,6 +438,42 @@ export function createWebGodotBridge(): GodotBridge {
       (getGodotBridge() as any)?.resumePhysics?.();
     },
 
+    async stepPhysics(frames: number): Promise<{ ok: boolean; framesAdvanced: number; endFrame: number }> {
+      const bridge = getGodotBridge();
+      if (!bridge?.query) {
+        return { ok: false, framesAdvanced: 0, endFrame: 0 };
+      }
+
+      return new Promise((resolve) => {
+        const requestId = `step_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+        const timeout = setTimeout(() => {
+          delete (window as any)._godotPendingQueries?.[requestId];
+          resolve({ ok: false, framesAdvanced: 0, endFrame: 0 });
+        }, 10000);
+
+        if (!(window as any)._godotPendingQueries) {
+          (window as any)._godotPendingQueries = new Map();
+        }
+        if (!(window as any)._godotQueryResolve) {
+          (window as any)._godotQueryResolve = (id: string, json: string) => {
+            const pending = (window as any)._godotPendingQueries?.get(id);
+            if (pending) {
+              clearTimeout(pending.timeout);
+              (window as any)._godotPendingQueries?.delete(id);
+              try {
+                pending.resolve(JSON.parse(json));
+              } catch {
+                pending.resolve({ ok: false, framesAdvanced: 0, endFrame: 0 });
+              }
+            }
+          };
+        }
+
+        (window as any)._godotPendingQueries.set(requestId, { resolve, timeout });
+        bridge.query(requestId, "stepPhysicsSync", JSON.stringify([frames]));
+      });
+    },
+
     spawnEntity(templateId: string, x: number, y: number, initialVelocity?: Vec2): string {
       const entityId = `${templateId}_${Date.now()}_${Math.random()
         .toString(36)

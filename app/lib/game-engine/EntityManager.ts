@@ -6,7 +6,7 @@ import type {
   PhysicsComponent,
   Behavior,
   TransformComponent,
-  SpriteComponent,
+  VisualComponent,
   ChildEntityDefinition,
   ZoneComponent,
 } from '@slopcade/shared';
@@ -171,7 +171,7 @@ export class EntityManager {
       localTransform: { ...snapshot.transform },
       worldTransform: { ...snapshot.transform },
       transform: { ...snapshot.transform },
-      sprite: template?.sprite,
+      visual: template?.visual,
       physics: template?.physics,
       behaviors: (template?.behaviors ?? []).map((b: Behavior) => ({
         definition: b,
@@ -259,7 +259,7 @@ export class EntityManager {
 
     return {
       ...definition,
-      sprite: definition.sprite ?? template.sprite,
+      visual: definition.visual ?? template.visual,
       physics: definition.physics ?? template.physics,
       behaviors: definition.behaviors ?? template.behaviors,
       conditionalBehaviors: definition.conditionalBehaviors ?? template.conditionalBehaviors,
@@ -291,7 +291,7 @@ export class EntityManager {
         localTransform: { ...resolved.transform },
         worldTransform: { ...resolved.transform },
         transform: { ...resolved.transform },
-        sprite: resolved.sprite,
+        visual: resolved.visual,
         physics: resolved.physics,
         behaviors,
         tags: resolved.tags ?? [],
@@ -327,7 +327,7 @@ export class EntityManager {
         name: childDef.name,
         template: childDef.template,
         transform: childLocalTransform,
-        sprite: childDef.sprite as SpriteComponent | undefined,
+        visual: childDef.visual as VisualComponent | undefined,
         physics: childDef.physics as PhysicsComponent | undefined,
         behaviors: childDef.behaviors,
         tags: childDef.tags,
@@ -521,7 +521,7 @@ export class EntityManager {
      private resetEntityForPooling(entity: RuntimeEntity): void {
        entity.transform = { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 };
        entity.template = undefined;
-       entity.sprite = undefined;
+       entity.visual = undefined;
        entity.physics = undefined;
        entity.zone = undefined;
        entity.behaviors = [];

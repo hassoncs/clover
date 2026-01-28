@@ -31,6 +31,9 @@ func unregister_handler(method_name: String) -> void:
 func has_handler(method_name: String) -> bool:
 	return _handlers.has(method_name)
 
+# Methods that require async handling (use await)
+var _async_methods: Array[String] = ["step"]
+
 func _on_js_query(args: Array) -> void:
 	if args.size() < 3:
 		push_error("[QuerySystem] query requires 3 args: requestId, method, argsJson")
@@ -46,7 +49,15 @@ func _on_js_query(args: Array) -> void:
 		if parse_result != null:
 			method_args = parse_result if parse_result is Array else [parse_result]
 	
-	var result = dispatch(method, method_args)
+	# For async methods, use the async dispatch path
+	if method in _async_methods:
+		_handle_async_query(request_id, method, method_args)
+	else:
+		var result = dispatch(method, method_args)
+		send_response(request_id, result)
+
+func _handle_async_query(request_id: String, method: String, method_args: Array) -> void:
+	var result = await dispatch_async(method, method_args)
 	send_response(request_id, result)
 
 func dispatch(method: String, args: Array) -> Variant:
@@ -56,6 +67,22 @@ func dispatch(method: String, args: Array) -> Variant:
 		if callback.is_valid():
 			var result = callback.call(args)
 			print("[QuerySystem] dispatch result: %s" % str(result))
+			return result
+	
+	push_error("[QuerySystem] Unknown query method: %s" % method)
+	return {"error": "Unknown method: %s" % method}
+
+# Async dispatch that properly awaits coroutines
+func dispatch_async(method: String, args: Array) -> Variant:
+	print("[QuerySystem] dispatch_async: method=%s, args=%s" % [method, str(args)])
+	if _handlers.has(method):
+		var callback: Callable = _handlers[method]
+		if callback.is_valid():
+			var result = callback.call(args)
+			# If result is a coroutine/signal, await it
+			if result is Object and result.has_signal("completed"):
+				result = await result
+			print("[QuerySystem] dispatch_async result: %s" % str(result))
 			return result
 	
 	push_error("[QuerySystem] Unknown query method: %s" % method)

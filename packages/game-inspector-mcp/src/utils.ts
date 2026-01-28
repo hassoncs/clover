@@ -152,8 +152,8 @@ export async function waitForGameReady(page: Page, timeout: number = DEFAULT_TIM
   try {
     await page.waitForFunction(
       () => {
-        const w = window as unknown as { slopcadeGameReady?: boolean };
-        return w.slopcadeGameReady === true;
+        const w = window as unknown as WindowWithBridge;
+        return w.SlopcadeDebugBridge?.ready === true || w.slopcadeGameReady === true;
       },
       { timeout }
     );
@@ -202,5 +202,44 @@ export async function queryGodot<T>(page: Page | null, method: string, args: unk
       win._godotPendingQueries.set(requestId, { resolve, timeout });
       bridge.query!(requestId, evalArgs.method, JSON.stringify(evalArgs.args));
     });
+  }, { method, args }) as Promise<T | { error: string }>;
+}
+
+export async function querySlopcade<T>(page: Page | null, method: string, args: unknown[] = []): Promise<T | { error: string }> {
+  if (!page) {
+    return { error: "No game open. Call game_open first." };
+  }
+
+  return page.evaluate(async (evalArgs: { method: string; args: unknown[] }) => {
+    type SlopcadeWindow = Window & {
+      SlopcadeDebugBridge?: {
+        ready?: boolean;
+        pause?: () => void;
+        resume?: () => void;
+        step?: (frames?: number) => Promise<unknown>;
+        setTimeScale?: (scale: number) => void;
+        getTimeState?: () => unknown;
+        getSnapshot?: (options?: unknown) => unknown;
+      };
+    };
+    const w = window as SlopcadeWindow;
+    const bridge = w.SlopcadeDebugBridge;
+
+    if (!bridge?.ready) {
+      return { error: "SlopcadeDebugBridge not available or not ready" };
+    }
+
+    const methodFn = bridge[evalArgs.method as keyof typeof bridge];
+    if (typeof methodFn !== "function") {
+      return { error: `Method ${evalArgs.method} not found on SlopcadeDebugBridge` };
+    }
+
+    try {
+      const result = (methodFn as (...args: unknown[]) => unknown | Promise<unknown>).apply(bridge, evalArgs.args);
+      const resolvedResult = result instanceof Promise ? await result : result;
+      return resolvedResult ?? { success: true };
+    } catch (err) {
+      return { error: `Error calling ${evalArgs.method}: ${String(err)}` };
+    }
   }, { method, args }) as Promise<T | { error: string }>;
 }

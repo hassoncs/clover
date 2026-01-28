@@ -25,39 +25,27 @@ export const BALL_LAUNCHER_TEMPLATE: GameDefinition = {
   templates: {
     projectile: {
       id: 'projectile',
-      sprite: {
+      visual: {
         type: 'circle',
         radius: 0.4,
         color: '#FF6B6B',
       },
-      physics: {
-        bodyType: 'dynamic',
-        shape: 'circle',
-        radius: 0.4,
-        density: 1.5,
-        friction: 0.3,
-        restitution: 0.4,
-        bullet: true,
-      },
+      physics: { density: 1.5, bullet: true },
+      collider: { shape: 'circle', physics: {
+        bodyType: 'dynamic', radius: 0.4, friction: 0.3, restitution: 0.4 },
       tags: ['projectile'],
     },
     target: {
       id: 'target',
-      sprite: {
+      visual: {
         type: 'rect',
         width: 0.8,
         height: 0.8,
         color: '#4ECDC4',
       },
-      physics: {
-        bodyType: 'dynamic',
-        shape: 'box',
-        width: 0.8,
-        height: 0.8,
-        density: 0.8,
-        friction: 0.5,
-        restitution: 0.2,
-      },
+      physics: { density: 0.8 },
+      collider: { shape: 'box', physics: {
+        bodyType: 'dynamic', width: 0.8, height: 0.8, friction: 0.5, restitution: 0.2 },
       behaviors: [
         {
           type: 'score_on_collision',
@@ -76,40 +64,28 @@ export const BALL_LAUNCHER_TEMPLATE: GameDefinition = {
     },
     block: {
       id: 'block',
-      sprite: {
+      visual: {
         type: 'rect',
         width: 1.0,
         height: 0.5,
         color: '#8B4513',
       },
-      physics: {
-        bodyType: 'dynamic',
-        shape: 'box',
-        width: 1.0,
-        height: 0.5,
-        density: 0.6,
-        friction: 0.6,
-        restitution: 0.1,
-      },
+      physics: { density: 0.6 },
+      collider: { shape: 'box', physics: {
+        bodyType: 'dynamic', width: 1.0, height: 0.5, friction: 0.6, restitution: 0.1 },
       tags: ['block', 'destructible'],
     },
     ground: {
       id: 'ground',
-      sprite: {
+      visual: {
         type: 'rect',
         width: 20,
         height: 1,
         color: '#228B22',
       },
-      physics: {
-        bodyType: 'static',
-        shape: 'box',
-        width: 20,
-        height: 1,
-        density: 1,
-        friction: 0.8,
-        restitution: 0.1,
-      },
+      physics: { density: 1 },
+      collider: { shape: 'box', physics: {
+        bodyType: 'static', width: 20, height: 1, friction: 0.8, restitution: 0.1 },
       tags: ['ground'],
     },
   },
@@ -118,7 +94,7 @@ export const BALL_LAUNCHER_TEMPLATE: GameDefinition = {
       id: 'launcher',
       name: 'Launcher',
       transform: { x: 2, y: 9, angle: 0, scaleX: 1, scaleY: 1 },
-      sprite: {
+      visual: {
         type: 'circle',
         radius: 0.5,
         color: '#333333',

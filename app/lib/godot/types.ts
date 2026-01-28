@@ -207,6 +207,9 @@ export interface GodotBridge {
   // Physics control (for pre-game pausing)
   pausePhysics(): void;
   resumePhysics(): void;
+  
+  // Debug stepping - advances physics by N frames and returns when complete
+  stepPhysics(frames: number): Promise<{ ok: boolean; framesAdvanced: number; endFrame: number }>;
 
   // Entity management (high-level)
   spawnEntity(templateId: string, x: number, y: number, initialVelocity?: Vec2): string;

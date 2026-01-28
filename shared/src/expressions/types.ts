@@ -151,8 +151,8 @@ export interface EntityContext {
 }
 
 export interface EntityManagerLike {
-  getEntity(id: string): { id: string; transform: { x: number; y: number; scaleX: number; scaleY: number }; sprite?: { type: string; width?: number; height?: number; radius?: number } } | undefined;
-  getEntitiesByTag(tag: string): { id: string; transform: { x: number; y: number; scaleX: number; scaleY: number }; sprite?: { type: string; width?: number; height?: number; radius?: number } }[];
+getEntity(id: string): { id: string; transform: { x: number; y: number; scaleX: number; scaleY: number }; visual?: { type: string; width?: number; height?: number; radius?: number } } | undefined;
+getEntitiesByTag(tag: string): { id: string; transform: { x: number; y: number; scaleX: number; scaleY: number }; visual?: { type: string; width?: number; height?: number; radius?: number } }[];
 }
 
 export type CustomFunction = (

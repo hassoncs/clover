@@ -260,8 +260,9 @@ describe('Games Router', () => {
           entities: [{
             id: 'player',
             transform: { x: 0, y: 0 },
-            physics: { bodyType: 'dynamic', shape: 'box', width: 1, height: 1, density: 1, friction: 0.5, restitution: 0.5 },
-            sprite: { type: 'rect', width: 1, height: 1, fill: '#FF0000' },
+            physics: { density: 1 },
+      collider: { shape: 'box', physics: { bodyType: 'dynamic', width: 1, height: 1, friction: 0.5, restitution: 0.5 },
+            visual: { type: 'rect', width: 1, height: 1, fill: '#FF0000' },
             behaviors: [{ type: 'control', controlType: 'tap_to_jump' }],
           }],
         }),

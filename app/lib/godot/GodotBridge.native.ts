@@ -421,6 +421,12 @@ export function createNativeGodotBridge(): GodotBridge {
       callGameBridge('resume_physics');
     },
 
+    async stepPhysics(frames: number): Promise<{ ok: boolean; framesAdvanced: number; endFrame: number }> {
+      // TODO: Implement native stepping - for now this is a stub
+      console.warn('[GodotBridge.native] stepPhysics not yet implemented for native');
+      return { ok: false, framesAdvanced: 0, endFrame: 0 };
+    },
+
     spawnEntity(templateId: string, x: number, y: number, initialVelocity?: { x: number; y: number }): string {
       const entityId = `${templateId}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
       // Pass initial velocity as JSON string since react-native-godot doesn't support object bindings

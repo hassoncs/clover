@@ -343,8 +343,8 @@ const BUILTIN_FUNCTIONS: Record<string, BuiltinFunction> = {
     if (!ctx.entityManager) return 0;
     const entity = ctx.entityManager.getEntity(idOrTag)
       ?? ctx.entityManager.getEntitiesByTag(idOrTag)[0];
-    if (!entity?.sprite) return 0;
-    const sprite = entity.sprite;
+    if (!entity?.visual) return 0;
+    const sprite = entity.visual;
     if (sprite.type === 'rect' && sprite.width !== undefined) {
       return sprite.width * entity.transform.scaleX;
     }
@@ -360,8 +360,8 @@ const BUILTIN_FUNCTIONS: Record<string, BuiltinFunction> = {
     if (!ctx.entityManager) return 0;
     const entity = ctx.entityManager.getEntity(idOrTag)
       ?? ctx.entityManager.getEntitiesByTag(idOrTag)[0];
-    if (!entity?.sprite) return 0;
-    const sprite = entity.sprite;
+    if (!entity?.visual) return 0;
+    const sprite = entity.visual;
     if (sprite.type === 'rect' && sprite.height !== undefined) {
       return sprite.height * entity.transform.scaleY;
     }
@@ -377,8 +377,8 @@ const BUILTIN_FUNCTIONS: Record<string, BuiltinFunction> = {
     if (!ctx.entityManager) return 0;
     const entity = ctx.entityManager.getEntity(idOrTag)
       ?? ctx.entityManager.getEntitiesByTag(idOrTag)[0];
-    if (!entity?.sprite) return 0;
-    const sprite = entity.sprite;
+    if (!entity?.visual) return 0;
+    const sprite = entity.visual;
     if (sprite.type === 'circle' && sprite.radius !== undefined) {
       return sprite.radius * entity.transform.scaleX;
     }

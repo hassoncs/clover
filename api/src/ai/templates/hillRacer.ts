@@ -28,43 +28,32 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
   templates: {
     vehicle_body: {
       id: 'vehicle_body',
-      sprite: {
+      visual: {
         type: 'rect',
         width: 2.4,
         height: 0.8,
         color: '#E74C3C',
       },
-      physics: {
-        bodyType: 'dynamic',
-        shape: 'box',
-        width: 2.4,
-        height: 0.8,
-        density: 1.0,
-        friction: 0.3,
-        restitution: 0.1,
-      },
+      physics: { density: 1.0 },
+      collider: { shape: 'box', physics: {
+        bodyType: 'dynamic', width: 2.4, height: 0.8, friction: 0.3, restitution: 0.1 },
       tags: ['vehicle'],
     },
     wheel: {
       id: 'wheel',
-      sprite: {
+      visual: {
         type: 'circle',
         radius: 0.4,
         color: '#2C3E50',
       },
-      physics: {
-        bodyType: 'dynamic',
-        shape: 'circle',
-        radius: 0.4,
-        density: 0.8,
-        friction: 0.9,
-        restitution: 0.1,
-      },
+      physics: { density: 0.8 },
+      collider: { shape: 'circle', physics: {
+        bodyType: 'dynamic', radius: 0.4, friction: 0.9, restitution: 0.1 },
       tags: ['wheel'],
     },
     ground_segment: {
       id: 'ground_segment',
-      sprite: {
+      visual: {
         type: 'polygon',
         vertices: [
           { x: -5, y: 0 },
@@ -74,10 +63,9 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
         ],
         color: '#228B22',
       },
-      physics: {
-        bodyType: 'static',
-        shape: 'polygon',
-        vertices: [
+      physics: { bodyType: "dynamic" },
+      collider: { shape: 'polygon', physics: {
+        bodyType: 'static', vertices: [
           { x: -5, y: 0 },
           { x: 5, y: 0 },
           { x: 5, y: 2 },
@@ -92,7 +80,7 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
     coin: {
       id: 'coin',
       type: 'zone',
-      sprite: {
+      visual: {
         type: 'circle',
         radius: 0.3,
         color: '#F1C40F',
@@ -122,7 +110,7 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
     finish: {
       id: 'finish',
       type: 'zone',
-      sprite: {
+      visual: {
         type: 'rect',
         width: 0.5,
         height: 4,
@@ -158,7 +146,7 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
       id: 'ground-2',
       name: 'Ground 2 (hill)',
       transform: { x: 15, y: 11, angle: -0.15, scaleX: 1, scaleY: 1 },
-      sprite: {
+      visual: {
         type: 'polygon',
         vertices: [
           { x: -5, y: 0 },
@@ -168,10 +156,9 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
         ],
         color: '#228B22',
       },
-      physics: {
-        bodyType: 'static',
-        shape: 'polygon',
-        vertices: [
+      physics: { bodyType: "dynamic" },
+      collider: { shape: 'polygon', physics: {
+        bodyType: 'static', vertices: [
           { x: -5, y: 0 },
           { x: 5, y: 0 },
           { x: 5, y: 2 },
@@ -187,7 +174,7 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
       id: 'ground-3',
       name: 'Ground 3',
       transform: { x: 25, y: 10, angle: 0, scaleX: 1, scaleY: 1 },
-      sprite: {
+      visual: {
         type: 'polygon',
         vertices: [
           { x: -5, y: 0 },
@@ -197,10 +184,9 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
         ],
         color: '#228B22',
       },
-      physics: {
-        bodyType: 'static',
-        shape: 'polygon',
-        vertices: [
+      physics: { bodyType: "dynamic" },
+      collider: { shape: 'polygon', physics: {
+        bodyType: 'static', vertices: [
           { x: -5, y: 0 },
           { x: 5, y: 0 },
           { x: 5, y: 2 },

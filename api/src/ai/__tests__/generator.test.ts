@@ -113,8 +113,9 @@ describe('generateGame integration (using fixtures)', () => {
         entities: [{
           id: 'bad-entity',
           transform: { x: 0, y: 0 },
-          physics: { bodyType: 'invalid', shape: 'invalid', density: -1, friction: 0.5, restitution: 0 },
-          sprite: { type: 'rect', width: 1, height: 1, fill: '#000' },
+          physics: { density: -1 },
+      collider: { shape: 'invalid', physics: { bodyType: 'invalid', friction: 0.5, restitution: 0 },
+          visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
         }],
       };
 

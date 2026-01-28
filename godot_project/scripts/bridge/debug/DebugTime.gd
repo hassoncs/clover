@@ -13,11 +13,34 @@ var _step_frames_remaining: int = 0
 var _frame_counter: int = 0
 var _seed: int = 0
 var _deterministic_mode: bool = false
+var _manual_stepping_enabled: bool = false
 
 signal step_completed(frame: int)
 
 func _init(game_bridge: Node) -> void:
 	_game_bridge = game_bridge
+
+func enable_manual_stepping() -> void:
+	if _manual_stepping_enabled:
+		return
+	_manual_stepping_enabled = true
+	var viewport = _game_bridge.get_viewport()
+	if viewport and viewport.world_2d:
+		var space = viewport.world_2d.space
+		if space.is_valid():
+			PhysicsServer2D.space_set_active(space, false)
+			print("[DebugTime] Manual stepping enabled - auto physics disabled")
+
+func disable_manual_stepping() -> void:
+	if not _manual_stepping_enabled:
+		return
+	_manual_stepping_enabled = false
+	var viewport = _game_bridge.get_viewport()
+	if viewport and viewport.world_2d:
+		var space = viewport.world_2d.space
+		if space.is_valid():
+			PhysicsServer2D.space_set_active(space, true)
+			print("[DebugTime] Manual stepping disabled - auto physics enabled")
 
 # =============================================================================
 # STATE QUERY
@@ -47,6 +70,9 @@ func pause() -> Dictionary:
 	Engine.time_scale = 0.0
 	_is_paused = true
 	
+	# Enable manual stepping so we can step physics frame-by-frame
+	enable_manual_stepping()
+	
 	_game_bridge.get_tree().paused = true
 	
 	return {"ok": true, "state": get_time_state()}
@@ -58,6 +84,9 @@ func resume() -> Dictionary:
 	Engine.time_scale = _stored_time_scale
 	_is_paused = false
 	_step_frames_remaining = 0
+	
+	# Disable manual stepping so auto physics runs again
+	disable_manual_stepping()
 	
 	_game_bridge.get_tree().paused = false
 	
@@ -77,21 +106,30 @@ func step(frames: int, options: Dictionary = {}) -> Dictionary:
 	_step_frames_remaining = frames
 	var start_frame = _frame_counter
 	
+	# Temporarily unpause to allow physics frames to run
+	var prev_time_scale = Engine.time_scale
 	if _is_paused:
-		Engine.time_scale = _stored_time_scale
+		# Use stored time scale or default to 1.0 if it was 0
+		Engine.time_scale = _stored_time_scale if _stored_time_scale > 0 else 1.0
 		_game_bridge.get_tree().paused = false
 	
+	print("[DebugTime] step: starting %d frames from frame %d (was_paused=%s, time_scale=%s)" % [frames, start_frame, was_paused, Engine.time_scale])
+	
 	for i in range(frames):
+		# Wait for actual physics frame to complete
 		await _game_bridge.get_tree().physics_frame
 		_frame_counter += 1
 		_step_frames_remaining -= 1
 	
+	print("[DebugTime] step: completed at frame %d" % _frame_counter)
+	
+	# Restore pause state if requested
 	if restore_pause_state and was_paused:
 		Engine.time_scale = 0.0
 		_game_bridge.get_tree().paused = true
-	elif not was_paused:
-		pass
-	else:
+		_is_paused = true
+	elif not restore_pause_state:
+		# Keep running
 		_is_paused = false
 	
 	var end_frame = _frame_counter
@@ -105,19 +143,35 @@ func step(frames: int, options: Dictionary = {}) -> Dictionary:
 		"state": get_time_state()
 	}
 
-func step_sync(frames: int) -> Dictionary:
+# Manual physics stepping - uses Rapier if available, otherwise falls back to async stepping
+func step_physics_sync(frames: int) -> Dictionary:
 	if frames <= 0:
 		return {"ok": false, "error": "Frames must be positive"}
 	
-	_step_frames_remaining = frames
 	var start_frame = _frame_counter
 	
-	return {
-		"ok": true,
-		"framesRequested": frames,
-		"startFrame": start_frame,
-		"message": "Step started. Poll get_time_state() to check progress."
-	}
+	# Check if Rapier is available
+	if Engine.has_singleton("RapierPhysicsServer2D"):
+		var rapier = Engine.get_singleton("RapierPhysicsServer2D")
+		var delta = 1.0 / Engine.physics_ticks_per_second
+		var viewport = _game_bridge.get_viewport()
+		if viewport:
+			var space = viewport.world_2d.space
+			if space.is_valid():
+				for i in range(frames):
+					rapier.space_step(space, delta)
+					_frame_counter += 1
+				rapier.space_flush_queries(space)
+				return {
+					"ok": true,
+					"framesAdvanced": frames,
+					"startFrame": start_frame,
+					"endFrame": _frame_counter,
+					"state": get_time_state()
+				}
+	
+	# Fallback: use async stepping
+	return await step(frames)
 
 func process_step_frame() -> void:
 	if _step_frames_remaining > 0:

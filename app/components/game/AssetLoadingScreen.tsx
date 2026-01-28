@@ -181,6 +181,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
+    maxWidth: 480,
+    alignSelf: 'center',
+    width: '100%',
   },
   backgroundImage: {
     ...StyleSheet.absoluteFillObject,
@@ -225,6 +228,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     opacity: 0.9,
     lineHeight: 24,
+    maxWidth: 400,
   },
   progressSection: {
     width: '100%',
@@ -293,11 +297,12 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   skipButton: {
-    marginTop: 48,
-    paddingVertical: 16,
-    paddingHorizontal: 48,
+    marginTop: 64,
+    marginBottom: 24,
+    paddingVertical: 18,
+    paddingHorizontal: 56,
     backgroundColor: '#4F46E5',
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 0,
   },
   skipButtonText: {

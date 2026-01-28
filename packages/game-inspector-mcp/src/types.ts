@@ -21,8 +21,35 @@ export interface DebugBridge {
   };
 }
 
+export interface TimeState {
+  paused: boolean;
+  timeScale: number;
+  frame: number;
+  elapsed: number;
+  gameState: string;
+  score: number;
+  lives: number;
+}
+
+export interface SlopcadeDebugBridgeInterface {
+  ready: boolean;
+  gameId: string;
+  paused: boolean;
+  timeScale: number;
+  frame: number;
+  elapsed: number;
+  pause(): void;
+  resume(): void;
+  step(frames?: number): void;
+  setTimeScale(scale: number): void;
+  getTimeState(): TimeState;
+  getSnapshot(options?: { detail?: string; includeGodot?: boolean }): unknown;
+}
+
 export interface WindowWithBridge {
   GodotDebugBridge?: DebugBridge;
+  SlopcadeDebugBridge?: SlopcadeDebugBridgeInterface;
+  slopcadeGameReady?: boolean;
 }
 
 export interface AssertParams {

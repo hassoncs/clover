@@ -64,6 +64,7 @@ func _register_handlers() -> void:
 	_query_system.register_handler("pause", _on_pause)
 	_query_system.register_handler("resume", _on_resume)
 	_query_system.register_handler("step", _on_step)
+	_query_system.register_handler("stepPhysicsSync", _on_step_physics_sync)
 	_query_system.register_handler("setTimeScale", _on_set_time_scale)
 	_query_system.register_handler("setSeed", _on_set_seed)
 	
@@ -90,7 +91,7 @@ func unregister_handlers() -> void:
 		"getEntitiesInRect", "getEntityCount", "query", "queryAst",
 		"getProps", "getAllProps", "setProps", "patchProps",
 		"spawn", "destroy", "clone", "reparent", "lifecycleBatch",
-		"getTimeState", "pause", "resume", "step", "setTimeScale", "setSeed",
+		"getTimeState", "pause", "resume", "step", "stepPhysicsSync", "setTimeScale", "setSeed",
 		"subscribe", "unsubscribe", "pollEvents", "listSubscriptions",
 		"raycast", "raycastAll", "getShapes", "getJoints", "getEntityJoints",
 		"getOverlaps", "getAllOverlaps", "queryPoint", "queryAABB"
@@ -243,12 +244,20 @@ func _on_pause(args: Array) -> Dictionary:
 func _on_resume(args: Array) -> Dictionary:
 	return _time.resume()
 
-func _on_step(args: Array) -> Dictionary:
+func _on_step(args: Array):
 	if args.size() < 1:
 		return {"ok": false, "error": "Frames count required"}
 	var frames = int(args[0])
 	var options = args[1] if args.size() > 1 and args[1] is Dictionary else {}
-	return _time.step_sync(frames)
+	# Use async step that properly waits for physics_frame signals
+	return await _time.step(frames, options)
+
+func _on_step_physics_sync(args: Array) -> Dictionary:
+	if args.size() < 1:
+		return {"ok": false, "error": "Frames count required"}
+	var frames = int(args[0])
+	# Use synchronous step that directly advances physics via PhysicsServer2D
+	return _time.step_physics_sync(frames)
 
 func _on_set_time_scale(args: Array) -> Dictionary:
 	if args.size() < 1:
