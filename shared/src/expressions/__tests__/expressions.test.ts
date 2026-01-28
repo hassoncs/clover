@@ -569,6 +569,47 @@ describe('Validator', () => {
       expect(result.valid).toBe(true);
     });
   });
+
+  describe('Variables Container', () => {
+    it('validates variables.xxx pattern with known variables', () => {
+      const result = validateExpression('variables.tapImpulse', {
+        knownVariables: ['tapImpulse', 'paddleForce'],
+      });
+      expect(result.valid).toBe(true);
+    });
+
+    it('catches unknown variable references in variables.xxx pattern', () => {
+      const result = validateExpression('variables.unknownVar', {
+        knownVariables: ['tapImpulse', 'paddleForce'],
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors[0].message).toContain('Unknown variable');
+      expect(result.errors[0].message).toContain('tapImpulse');
+      expect(result.errors[0].message).toContain('paddleForce');
+    });
+
+    it('catches variables.xxx when no variables are defined', () => {
+      const result = validateExpression('variables.tapImpulse');
+      expect(result.valid).toBe(false);
+      expect(result.errors[0].message).toContain('Unknown variable');
+      expect(result.errors[0].message).toContain('none');
+    });
+
+    it('evaluates variables.xxx expressions correctly', () => {
+      const ctx = createDefaultContext({
+        variables: {
+          paddleForce: 120,
+          tapImpulse: 25,
+        },
+      });
+
+      const result = compile<number>('variables.paddleForce').evaluate(ctx);
+      expect(result).toBe(120);
+
+      const negativeResult = compile<number>('-variables.tapImpulse').evaluate(ctx);
+      expect(negativeResult).toBe(-25);
+    });
+  });
 });
 
 describe('Real-World Scenarios', () => {

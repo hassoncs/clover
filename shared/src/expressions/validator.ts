@@ -15,6 +15,7 @@ const KNOWN_GLOBALS = new Set([
   'PI',
   'E',
   'self',
+  'variables',
   'true',
   'false',
 ]);
@@ -146,6 +147,20 @@ function inferType(node: ASTNode, ctx: ValidationContext, source: string): Expre
         if (SELF_PROPERTIES.has(prop)) {
           if (prop === 'transform' || prop === 'velocity') return 'object';
           return 'number';
+        }
+        return 'unknown';
+      }
+
+      if (node.object.type === 'Identifier' && node.object.name === 'variables') {
+        if (!ctx.knownVariables.has(prop)) {
+          ctx.errors.push(
+            createError(
+              `Unknown variable: '${prop}'. Available variables: ${Array.from(ctx.knownVariables).join(', ') || 'none'}`,
+              source,
+              node,
+              ctx.path
+            )
+          );
         }
         return 'unknown';
       }

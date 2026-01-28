@@ -664,6 +664,8 @@ function resolveIdentifier(name: string, ctx: EvalContext): ExpressionValueType 
     case 'self':
       if (!ctx.self) throw new Error("'self' is not available in this context");
       return ctx.self as unknown as ExpressionValueType;
+    case 'variables':
+      return ctx.variables as unknown as ExpressionValueType;
     default:
       if (name in ctx.variables) {
         return ctx.variables[name];

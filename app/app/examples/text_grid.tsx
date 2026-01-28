@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View, StyleSheet, Text, TouchableOpacity, ScrollView, TextInput, ActivityIndicator } from "react-native";
+import { View, StyleSheet, Text, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, Image } from "react-native";
 import type { ExampleMeta } from "@/lib/registry/types";
 import { env } from "@/lib/config/env";
 
@@ -35,6 +35,7 @@ export default function TextGridLab() {
   const [lineGap, setLineGap] = useState(8);
   const [padding, setPadding] = useState(4);
   const [svg, setSvg] = useState<string | null>(null);
+  const [svgDataUrl, setSvgDataUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [layoutInfo, setLayoutInfo] = useState<{ cells: number; lines: number } | null>(null);
@@ -91,43 +92,47 @@ export default function TextGridLab() {
         throw new Error(errData.error || `HTTP ${response.status}`);
       }
 
-      const data = await response.json();
-      setSvg(data.svg);
-      setLayoutInfo({
-        cells: data.layoutDoc?.cells?.length || 0,
-        lines: data.layoutDoc?.lines?.length || 0,
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate');
-      setSvg(null);
-    } finally {
-      setLoading(false);
-    }
+    const data = await response.json();
+    const dataUrl = 'data:image/svg+xml;base64,' + btoa(data.svg);
+    setSvg(data.svg);
+    setSvgDataUrl(dataUrl);
+    setLayoutInfo({
+      cells: data.layoutDoc?.cells?.length || 0,
+      lines: data.layoutDoc?.lines?.length || 0,
+    });
+  } catch (err) {
+    setError(err instanceof Error ? err.message : 'Failed to generate');
+    setSvg(null);
+    setSvgDataUrl(null);
+  } finally {
+    setLoading(false);
+  }
   }, [text, selectedFont, fontSize, cols, rows, cellWidth, cellHeight, silhouetteMode, align, wrapMode, lineGap, padding]);
 
   const renderLocalPreview = useCallback(() => {
-    // Simple local SVG preview without API call
     const width = cols * cellWidth;
     const height = rows * cellHeight + Math.max(0, rows - 1) * lineGap;
+    const fill = silhouetteMode === 'fill' ? '808080' : 'none';
+    const stroke = silhouetteMode === 'fill' ? 'none' : '404040';
+    const strokeWidth = silhouetteMode === 'fill' ? 0 : 2;
     
-    const svgContent = `
-<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
   <rect width="${width}" height="${height}" fill="#1a1a1a"/>
   <text x="${width / 2}" y="${height / 2}" 
-        font-family="${selectedFont.family}, sans-serif"
+        font-family="${selectedFont.family}, Arial, sans-serif"
         font-size="${fontSize}"
-        fill="#${silhouetteMode === 'stroke' ? 'none' : '808080'}"
-        stroke="#${silhouetteMode === 'fill' ? 'none' : '404040'}"
-        stroke-width="${silhouetteMode === 'fill' ? 0 : 2}"
+        fill="#${fill}"
+        stroke="#${stroke}"
+        stroke-width="${strokeWidth}"
         text-anchor="middle"
         dominant-baseline="middle">
     ${text.replace(/\n/g, ' ')}
   </text>
-  <text x="10" y="20" font-size="12" fill="#666">Preview Mode - Click Generate for Full Grid</text>
-</svg>
-    `.trim();
+</svg>`;
     
+    const dataUrl = 'data:image/svg+xml;base64,' + btoa(svgContent);
     setSvg(svgContent);
+    setSvgDataUrl(dataUrl);
     setLayoutInfo({ cells: text.length, lines: text.split('\n').length });
   }, [text, selectedFont, fontSize, cols, rows, cellWidth, cellHeight, lineGap, silhouetteMode]);
 
@@ -309,12 +314,22 @@ export default function TextGridLab() {
       </ScrollView>
 
       <View style={styles.preview}>
-        {svg ? (
+        {svgDataUrl ? (
           <ScrollView contentContainerStyle={styles.svgContainer}>
-            {/* Note: In a real implementation, use react-native-svg or webview */}
-            <Text style={styles.svgPlaceholder}>SVG Preview ({cols * cellWidth}x{rows * cellHeight})</Text>
-            <Text style={styles.svgCode} numberOfLines={10}>
-              {svg.substring(0, 500)}...
+            <Text style={styles.svgPlaceholder}>
+              SVG Preview ({cols * cellWidth}x{rows * cellHeight + Math.max(0, rows - 1) * lineGap})
+            </Text>
+            <Image
+              source={{ uri: svgDataUrl }}
+              style={{
+                width: cols * cellWidth,
+                height: rows * cellHeight + Math.max(0, rows - 1) * lineGap,
+                backgroundColor: '#1a1a1a',
+              }}
+              resizeMode="contain"
+            />
+            <Text style={styles.svgCode} numberOfLines={3}>
+              {svg?.substring(0, 200)}...
             </Text>
           </ScrollView>
         ) : (
