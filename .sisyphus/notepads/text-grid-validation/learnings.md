@@ -1,3 +1,4 @@
 - Text grid layout hashes in this repo are sha256 hex (64 chars) for keys: text, inputs, layout.
 - SVG renderer uses <g id="cell-${cellId}">; SVG validation can treat all id attributes as unique to cover cell ids.
 - text-grid/index.ts acts as the barrel export and provides generateTextGrid(spec) orchestration: validate spec → createLayoutDoc → renderSilhouetteSvgGrid → validateSvgOutput.
+- API routes in this repo use Hono sub-routers mounted via app.route(basePath, router); keep the router paths relative (e.g., router.post('/generate', ...)).
