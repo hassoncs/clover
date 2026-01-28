@@ -59,14 +59,9 @@ const GAME_DEFINITION: GameDefinition = {
       id: "outerRing",
       tags: ["decoration"],
       sprite: { type: "circle", radius: WHEEL_RADIUS + 0.2, color: "#D4AF37" },
-      physics: {
-        bodyType: "dynamic",
-        shape: "circle",
-        radius: WHEEL_RADIUS + 0.2,
-        density: 0.01,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: { type: "circle", radius: WHEEL_RADIUS + 0.2 },
       },
     },
     anchor: {
@@ -99,15 +94,9 @@ const GAME_DEFINITION: GameDefinition = {
       id: "wheelDivider",
       tags: ["divider"],
       sprite: { type: "rect", width: 0.15, height: WHEEL_RADIUS * 0.95, color: "#FFFFFF" },
-      physics: {
-        bodyType: "dynamic",
-        shape: "box",
-        width: 0.15,
-        height: WHEEL_RADIUS * 0.95,
-        density: 0.1,
-        friction: 0.3,
-        restitution: 0.1,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: { type: "box", width: 0.15, height: WHEEL_RADIUS * 0.95 },
       },
     },
   },

@@ -1,7 +1,59 @@
 # Slopcade Project Roadmap
 
-**Last Updated**: 2026-01-26
+**Last Updated**: 2026-01-27
 **Status**: Active Development
+
+---
+
+## 🚀 NEW: Strategic Game Portfolio Development
+
+**Status**: 🔴 HIGHEST PRIORITY - Execute Immediately  
+**Priority**: CRITICAL  
+**Strategic Document**: [docs/STRATEGIC_GAME_RECOMMENDATIONS.md](../../docs/STRATEGIC_GAME_RECOMMENDATIONS.md)
+
+### Overview
+Based on comprehensive market research (top iOS games 2025, AI image generation trends, kids gaming analytics), we are prioritizing **6 AI-first game concepts** that leverage our unique competitive advantages:
+- Physics-based gameplay (Box2D + Godot)
+- AI image generation pipeline (Scenario.com)
+- Declarative game definitions (JSON-based rapid prototyping)
+
+### Phase 1: Quick Wins (Week 1-2) 🔥
+
+| # | Game | Status | Effort | Goal |
+|---|------|--------|--------|------|
+| 1 | **PromptPals Closet Dash** (Endless Runner + Avatar) | 🔴 TODO | 2-3 days | Showcase AI magic immediately |
+| 2 | **PromptPegs Party** (Peggle + Themes) | 🔴 TODO | 1-2 days | Quick win, reuse slopeggle |
+| 3 | **RoomDrop Designer** (Physics Decoration) | 🔴 TODO | 2-3 days | Hit #1 kid trend |
+
+### Phase 2: Character Attachment (Week 3-4)
+
+| # | Game | Status | Effort | Goal |
+|---|------|--------|--------|------|
+| 4 | **Pet Pocket Parkour** (Platformer + Pet) | 🔴 TODO | 3-4 days | Build emotional connection |
+| 5 | **Build-a-Buddy Pinball** (Customizable Tables) | 🔴 TODO | 2-3 days | Introduce UGC-lite |
+
+### Phase 3: Long-term Play (Month 2)
+
+| # | Game | Status | Effort | Goal |
+|---|------|--------|--------|------|
+| 6 | **ToyBox Physics Sandbox** (Prompt-to-Object) | 🔴 TODO | 1-2 weeks | Community + retention |
+
+### Success Metrics
+
+| Game | D1 Retention Target | Key Action |
+|------|---------------------|------------|
+| PromptPals Closet Dash | 45% | Create 3+ avatars |
+| RoomDrop Designer | 40% | Spend 5+ min decorating |
+| Pet Pocket Parkour | 50% | Play 10+ levels |
+| All Games | - | Pass "viral prompt" test |
+
+### Market Intelligence Summary
+
+- **Block Blast!**: #1 downloaded (puzzle mechanics)
+- **Roblox**: 70% of 44M games use AI assets, creator earnings +52% YoY
+- **Toca Boca World**: Avatar customization = primary gameplay
+- **Genies**: $150M raised for AI avatar platform
+- **Top trend for kids 6-12**: Visual customization is THE content
 
 ---
 
@@ -14,27 +66,76 @@ Slopcade is a physics-based game engine and AI-powered game maker built with Rea
 | Status | Count | Description |
 |--------|-------|-------------|
 | 🏆 Completed | 2 | Godot 4 integration, Storybook + NativeWind |
-| 🚧 In Progress | 5 | Launch Roadmap (New), Asset pipeline (86%), AI game maker, DevMux, Registry |
+| 🚧 In Progress | 6 | Launch Roadmap (New), Asset pipeline (86%), AI game maker, DevMux, Registry, **Strategic Games** |
+| 🔴 HIGHEST | 6 | PromptPals, PromptPegs, RoomDrop, Pet Parkour, Pinball Studio, ToyBox Sandbox |
 | ⏳ Blocked | 4 | ht-001 (AI API), ht-002 (Sheet prompts), ht-003 (BLE Android), ht-004 (Godot Fonts) |
 
 ---
 
-## Today's Focus (2026-01-26)
+## Today's Focus (2026-01-27)
 
-**Current Sprint**: Launch Preparation & Asset Validation
+**Current Sprint**: Strategic Game Portfolio - Phase 1 Launch
 
-See detailed plan: [docs/TODAY_2026-01-26.md](../../docs/TODAY_2026-01-26.md)
+See detailed plan: [docs/STRATEGIC_GAME_RECOMMENDATIONS.md](../../docs/STRATEGIC_GAME_RECOMMENDATIONS.md)
 
 **Top Priorities**:
-1. Validate new puzzle game assets generated last night
-2. Test native Bluetooth (iOS/Android) for multiplayer viability
-3. Implement gem & spark economy (Apple IAP architecture + server validation)
-4. Production build configuration (hide Labs tab)
-5. Launch UI polish (title screen, splash screen)
+1. **🎮 PromptPals Closet Dash** - Build endless runner with AI avatar customization (Week 1 Goal)
+2. **🎨 PromptPegs Party** - Reskin slopeggle with themed peg collection (Quick win)
+3. Validate new puzzle game assets generated last night
+4. Implement gem & spark economy (Apple IAP architecture + server validation)
+5. Test native Bluetooth (iOS/Android) for multiplayer viability
 
 ---
 
 ## Active Features
+
+### 0. Strategic Game Portfolio Development 🎯
+
+**Status**: 🔴 Just Started  
+**Priority**: CRITICAL  
+**Started**: 2026-01-27
+
+#### Objective
+Build 6 AI-first games targeting high-growth market segments where visual customization is the primary gameplay. Leverage physics engine + AI image generation for unique competitive moat.
+
+#### Games In Development
+
+**Week 1-2: Quick Wins**
+- **PromptPals Closet Dash**: Endless runner + AI avatar theming
+- **PromptPegs Party**: Slopeggle reskin + sticker collection
+- **RoomDrop Designer**: Physics-based room decoration
+
+**Week 3-4: Character Attachment**
+- **Pet Pocket Parkour**: Physics platformer + pet customization
+- **Build-a-Buddy Pinball**: Customizable pinball tables
+
+**Month 2: Long-term Play**
+- **ToyBox Physics Sandbox**: Prompt-to-object creator
+
+#### Progress Tracking
+
+| Game | Status | Started | Target |
+|------|--------|---------|--------|
+| PromptPals Closet Dash | 🔴 TODO | - | Week 1 |
+| PromptPegs Party | 🔴 TODO | - | Week 1 |
+| RoomDrop Designer | 🔴 TODO | - | Week 2 |
+| Pet Pocket Parkour | 🔴 TODO | - | Week 3 |
+| Build-a-Buddy Pinball | 🔴 TODO | - | Week 4 |
+| ToyBox Sandbox | 🔴 TODO | - | Month 2 |
+
+#### Key Technical Requirements
+- Avatar layering system (head/body/legs/accessories)
+- Theme generation API integration
+- Furniture collider archetypes
+- Pet physics archetype system
+- Save/share infrastructure for UGC
+
+#### Documentation
+- [Strategic Game Recommendations](../../docs/STRATEGIC_GAME_RECOMMENDATIONS.md)
+- Market Research: Task bg_e51919d6
+- AI Opportunities: Task bg_70947257
+
+---
 
 ### 1. Gem & Spark Economy System
 
@@ -555,19 +656,20 @@ All 21 plans are stored in `.opencode/plans/`. Consider archiving completed plan
 
 ```
 docs/
-├── INDEX.md                      # Documentation hub
-├── godot-migration/              # Godot integration
-├── godot/                        # Godot-specific docs
-├── asset-generation-knowledge.md # Asset pipeline
-├── asset-pipeline.md             # Asset types & stages
-├── storybook-setup.md            # Storybook config
-├── game-maker/                   # Game generation docs
+├── INDEX.md                              # Documentation hub
+├── STRATEGIC_GAME_RECOMMENDATIONS.md     # 🎯 AI-first game portfolio strategy
+├── godot-migration/                      # Godot integration
+├── godot/                                # Godot-specific docs
+├── asset-generation-knowledge.md         # Asset pipeline
+├── asset-pipeline.md                     # Asset types & stages
+├── storybook-setup.md                    # Storybook config
+├── game-maker/                           # Game generation docs
 ├── shared/
 │   ├── reference/
-│   │   ├── registry-system.md    # Registry patterns
-│   │   └── sound-generation.md   # ElevenLabs
-│   └── architecture/             # Shared patterns
-└── archive/                      # Deprecated docs
+│   │   ├── registry-system.md            # Registry patterns
+│   │   └── sound-generation.md           # ElevenLabs
+│   └── architecture/                     # Shared patterns
+└── archive/                              # Deprecated docs
 ```
 
 ---
@@ -599,16 +701,34 @@ docs/
 
 ## Next Steps
 
-### Immediate (This Week)
+### Immediate (This Week) - STRATEGIC GAMES PHASE 1
 
-1. **ht-001**: Decide on AI generation API approach
-2. **ht-001**: Implement API call in `AIGenerateModal`
+1. **🎮 PromptPals Closet Dash**: Begin endless runner with AI avatar customization
+   - [ ] Create game definition structure
+   - [ ] Implement avatar layering system (head/body/legs/accessories)
+   - [ ] Integrate AI theme generation API
+   - [ ] Build runner gameplay (lanes, jumping, collecting)
+2. **🎨 PromptPegs Party**: Reskin slopeggle with themed collection
+   - [ ] Duplicate slopeggle as base
+   - [ ] Add theme generation integration
+   - [ ] Create sticker album UI
+3. **ht-001**: Decide on AI generation API approach
 
-### Short-Term (This Month)
+### Short-Term (This Month) - STRATEGIC GAMES PHASE 2
 
-3. **ht-002**: Design sprite sheet layout strategy
-4. **ht-002**: Implement `buildSheetPrompt()`
-5. **Archive**: Move completed Oracle plans to `roadmap/completed/2026-01/`
+4. **🛋️ RoomDrop Designer**: Physics-based room decoration
+   - [ ] Implement furniture collider archetypes
+   - [ ] Build design goal system
+   - [ ] Create stability scoring
+5. **🐾 Pet Pocket Parkour**: Platformer + pet customization
+   - [ ] Build pet physics archetype system
+   - [ ] Create platformer levels
+   - [ ] Implement accessory system
+6. **🏓 Build-a-Buddy Pinball**: Customizable tables
+   - [ ] Create module socket system
+   - [ ] Build table sharing infrastructure
+7. **ht-002**: Design sprite sheet layout strategy
+8. **Archive**: Move completed Oracle plans to `roadmap/completed/2026-01/`
 
 ### Medium-Term (Q1 2026)
 

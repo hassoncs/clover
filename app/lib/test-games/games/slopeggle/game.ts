@@ -164,15 +164,10 @@ const game: GameDefinition = {
         imageWidth: 0.6,
         imageHeight: 0.25,
       },
-      physics: {
-        bodyType: "kinematic",
-        shape: "box",
-        width: 0.6,
-        height: 0.25,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        movement: "kinematic",
+        shape: { type: "box", width: 0.6, height: 0.25 },
       },
       behaviors: [
         { type: "rotate_toward", target: "touch", speed: 200, offset: 0 },
@@ -187,14 +182,9 @@ const game: GameDefinition = {
         imageWidth: 0.6,
         imageHeight: 0.6,
       },
-      physics: {
-        bodyType: "static",
-        shape: "circle",
-        radius: 0.3,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: { type: "circle", radius: 0.3 },
       },
     },
     bluePeg: {
@@ -285,15 +275,9 @@ const game: GameDefinition = {
     drain: {
       id: "drain",
       tags: ["drain"],
-      physics: {
-        bodyType: "static",
-        shape: "box",
-        width: WORLD_WIDTH,
-        height: 1,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: { type: "box", width: WORLD_WIDTH, height: 1 },
       },
     },
     bucket: {
@@ -305,15 +289,10 @@ const game: GameDefinition = {
         imageWidth: 1.2,
         imageHeight: 0.35,
       },
-      physics: {
-        bodyType: "kinematic",
-        shape: "box",
-        width: 1.2,
-        height: 0.35,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        movement: "kinematic",
+        shape: { type: "box", width: 1.2, height: 0.35 },
       },
       behaviors: [
         { type: "oscillate", axis: "x", amplitude: 4, frequency: 0.25 },
@@ -328,14 +307,9 @@ const game: GameDefinition = {
         imageWidth: 0.8,
         imageHeight: 0.8,
       },
-      physics: {
-        bodyType: "static",
-        shape: "circle",
-        radius: 0.4,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: { type: "circle", radius: 0.4 },
       },
       behaviors: [
         {
@@ -356,14 +330,9 @@ const game: GameDefinition = {
         imageWidth: 0.8,
         imageHeight: 0.8,
       },
-      physics: {
-        bodyType: "static",
-        shape: "circle",
-        radius: 0.4,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: { type: "circle", radius: 0.4 },
       },
       behaviors: [
         {
@@ -379,15 +348,10 @@ const game: GameDefinition = {
       id: "trajectoryLine",
       tags: ["trajectory-line"],
       sprite: { type: "rect", width: 0.05, height: 6, color: "#FFFFFF66" },
-      physics: {
-        bodyType: "kinematic",
-        shape: "box",
-        width: 0.05,
-        height: 6,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        movement: "kinematic",
+        shape: { type: "box", width: 0.05, height: 6 },
       },
       behaviors: [
         { type: "rotate_toward", target: "touch", speed: 200, offset: 0 },

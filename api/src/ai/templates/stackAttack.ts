@@ -65,6 +65,15 @@ export const STACK_ATTACK_TEMPLATE: GameDefinition = {
         strokeColor: '#e94560',
         strokeWidth: 3,
       },
+      physics: {
+        bodyType: 'kinematic',
+        shape: 'box',
+        width: 2,
+        height: 0.6,
+        density: 0,
+        friction: 0,
+        restitution: 0,
+      },
       behaviors: [
         {
           type: 'oscillate',
@@ -93,6 +102,24 @@ export const STACK_ATTACK_TEMPLATE: GameDefinition = {
         restitution: 0,
       },
       tags: ['ground'],
+    },
+    death_zone: {
+      id: 'death_zone',
+      type: 'zone',
+      sprite: {
+        type: 'rect',
+        width: 2,
+        height: 16,
+        color: 'transparent',
+      },
+      zone: {
+        shape: {
+          type: 'box',
+          width: 2,
+          height: 16,
+        },
+      },
+      tags: ['death-zone'],
     },
   },
   entities: [
@@ -125,46 +152,14 @@ export const STACK_ATTACK_TEMPLATE: GameDefinition = {
     {
       id: 'death-zone-left',
       name: 'Death Zone Left',
+      template: 'death_zone',
       transform: { x: -1, y: 8, angle: 0, scaleX: 1, scaleY: 1 },
-      sprite: {
-        type: 'rect',
-        width: 2,
-        height: 16,
-        color: 'transparent',
-      },
-      physics: {
-        bodyType: 'static',
-        shape: 'box',
-        width: 2,
-        height: 16,
-        density: 1,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
-      },
-      tags: ['death-zone'],
     },
     {
       id: 'death-zone-right',
       name: 'Death Zone Right',
+      template: 'death_zone',
       transform: { x: 11, y: 8, angle: 0, scaleX: 1, scaleY: 1 },
-      sprite: {
-        type: 'rect',
-        width: 2,
-        height: 16,
-        color: 'transparent',
-      },
-      physics: {
-        bodyType: 'static',
-        shape: 'box',
-        width: 2,
-        height: 16,
-        density: 1,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
-      },
-      tags: ['death-zone'],
     },
   ],
   rules: [

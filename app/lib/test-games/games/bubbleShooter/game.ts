@@ -216,15 +216,14 @@ const game: GameDefinition = {
         imageWidth: SHOOTER_WIDTH,
         imageHeight: SHOOTER_HEIGHT,
       },
-      physics: {
-        bodyType: "kinematic",
-        shape: "box",
-        width: SHOOTER_WIDTH,
-        height: SHOOTER_HEIGHT,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: {
+          type: "box",
+          width: SHOOTER_WIDTH,
+          height: SHOOTER_HEIGHT,
+        },
+        movement: "kinematic",
       },
       behaviors: [
         { type: "rotate_toward", target: "touch", speed: 200, offset: 0 },
@@ -239,14 +238,12 @@ const game: GameDefinition = {
         imageWidth: 1.0,
         imageHeight: 1.0,
       },
-      physics: {
-        bodyType: "static",
-        shape: "circle",
-        radius: 0.5,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: {
+          type: "circle",
+          radius: 0.5,
+        },
       },
     },
     wallLeft: {
@@ -295,30 +292,27 @@ const game: GameDefinition = {
       id: "deathLine",
       tags: ["death-line"],
       sprite: { type: "rect", width: WORLD_WIDTH, height: 0.1, color: "#FF000044" },
-      physics: {
-        bodyType: "static",
-        shape: "box",
-        width: WORLD_WIDTH,
-        height: 0.1,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: {
+          type: "box",
+          width: WORLD_WIDTH,
+          height: 0.1,
+        },
       },
     },
     aimLine: {
       id: "aimLine",
       tags: ["aim-line"],
       sprite: { type: "rect", width: 0.05, height: 3, color: "#FFFFFF44" },
-      physics: {
-        bodyType: "kinematic",
-        shape: "box",
-        width: 0.05,
-        height: 3,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: {
+          type: "box",
+          width: 0.05,
+          height: 3,
+        },
+        movement: "kinematic",
       },
       behaviors: [
         { type: "rotate_toward", target: "touch", speed: 200, offset: 0 },

@@ -225,15 +225,13 @@ const game: GameDefinition = {
     drain: {
       id: "drain",
       tags: ["drain"],
-      physics: {
-        bodyType: "static",
-        shape: "box",
-        width: WORLD_WIDTH,
-        height: 2,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: {
+          type: "box",
+          width: WORLD_WIDTH,
+          height: 2,
+        },
       },
     },
   },

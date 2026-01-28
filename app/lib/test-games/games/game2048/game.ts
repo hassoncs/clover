@@ -51,15 +51,10 @@ function createTileTemplate(value: number) {
       height: CELL_SIZE,
       color: TILE_COLORS[value] || "#3c3a32",
     },
-    physics: {
-      bodyType: "kinematic" as const,
-      shape: "box" as const,
-      width: CELL_SIZE,
-      height: CELL_SIZE,
-      density: 0,
-      friction: 0,
-      restitution: 0,
-      isSensor: true,
+    type: "zone" as const,
+    zone: {
+      shape: { type: "box" as const, width: CELL_SIZE, height: CELL_SIZE },
+      movement: "kinematic" as const,
     },
   };
 }
@@ -153,15 +148,9 @@ const game: GameDefinition = {
         height: CELL_SIZE,
         color: "#cdc1b4",
       },
-      physics: {
-        bodyType: "static",
-        shape: "box",
-        width: CELL_SIZE,
-        height: CELL_SIZE,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone" as const,
+      zone: {
+        shape: { type: "box" as const, width: CELL_SIZE, height: CELL_SIZE },
       },
     },
     tile2: createTileTemplate(2),
@@ -184,15 +173,9 @@ const game: GameDefinition = {
         height: GRID_TOTAL,
         color: "#bbada0",
       },
-      physics: {
-        bodyType: "static",
-        shape: "box",
-        width: GRID_TOTAL,
-        height: GRID_TOTAL,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone" as const,
+      zone: {
+        shape: { type: "box" as const, width: GRID_TOTAL, height: GRID_TOTAL },
       },
     },
   },

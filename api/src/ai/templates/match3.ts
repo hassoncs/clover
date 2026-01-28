@@ -36,20 +36,19 @@ export const MATCH3_TEMPLATE: GameDefinition = {
   templates: {
     piece_red: {
       id: 'piece_red',
+      type: 'zone',
       tags: ['piece', 'red'],
       sprite: {
         type: 'circle',
         radius: 0.5,
         color: '#FF4444',
       },
-      physics: {
-        bodyType: 'kinematic',
-        shape: 'circle',
-        radius: 0.5,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      zone: {
+        shape: {
+          type: 'circle',
+          radius: 0.5,
+        },
+        movement: 'kinematic',
       },
       conditionalBehaviors: [
         {
@@ -71,20 +70,19 @@ export const MATCH3_TEMPLATE: GameDefinition = {
     },
     piece_blue: {
       id: 'piece_blue',
+      type: 'zone',
       tags: ['piece', 'blue'],
       sprite: {
         type: 'circle',
         radius: 0.5,
         color: '#4444FF',
       },
-      physics: {
-        bodyType: 'kinematic',
-        shape: 'circle',
-        radius: 0.5,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      zone: {
+        shape: {
+          type: 'circle',
+          radius: 0.5,
+        },
+        movement: 'kinematic',
       },
       conditionalBehaviors: [
         {
@@ -106,20 +104,19 @@ export const MATCH3_TEMPLATE: GameDefinition = {
     },
     piece_green: {
       id: 'piece_green',
+      type: 'zone',
       tags: ['piece', 'green'],
       sprite: {
         type: 'circle',
         radius: 0.5,
         color: '#44FF44',
       },
-      physics: {
-        bodyType: 'kinematic',
-        shape: 'circle',
-        radius: 0.5,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      zone: {
+        shape: {
+          type: 'circle',
+          radius: 0.5,
+        },
+        movement: 'kinematic',
       },
       conditionalBehaviors: [
         {
@@ -141,20 +138,19 @@ export const MATCH3_TEMPLATE: GameDefinition = {
     },
     piece_yellow: {
       id: 'piece_yellow',
+      type: 'zone',
       tags: ['piece', 'yellow'],
       sprite: {
         type: 'circle',
         radius: 0.5,
         color: '#FFFF44',
       },
-      physics: {
-        bodyType: 'kinematic',
-        shape: 'circle',
-        radius: 0.5,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      zone: {
+        shape: {
+          type: 'circle',
+          radius: 0.5,
+        },
+        movement: 'kinematic',
       },
       conditionalBehaviors: [
         {
@@ -176,6 +172,7 @@ export const MATCH3_TEMPLATE: GameDefinition = {
     },
     grid_cell: {
       id: 'grid_cell',
+      type: 'zone',
       tags: ['grid'],
       sprite: {
         type: 'rect',
@@ -183,15 +180,12 @@ export const MATCH3_TEMPLATE: GameDefinition = {
         height: 1.1,
         color: '#222222',
       },
-      physics: {
-        bodyType: 'static',
-        shape: 'box',
-        width: 1.1,
-        height: 1.1,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      zone: {
+        shape: {
+          type: 'box',
+          width: 1.1,
+          height: 1.1,
+        },
       },
     },
   },

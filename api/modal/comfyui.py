@@ -29,7 +29,8 @@ image = (
     )
     .pip_install(
         "comfy-cli", "aiohttp", "requests", "websocket-client",
-        "safetensors", "accelerate", "transformers", "sentencepiece"
+        "safetensors", "accelerate", "transformers", "sentencepiece",
+        "huggingface-hub"
     )
     .run_commands(
         f"comfy --skip-prompt install --nvidia --version {COMFYUI_COMMIT}",
@@ -41,30 +42,60 @@ image = (
 models_volume = modal.Volume.from_name(MODELS_VOLUME, create_if_missing=True)
 
 
+# Expected file sizes in bytes (for validation)
+MODEL_SIZES = {
+    "flux1-dev-fp8.safetensors": 17_000_000_000,  # ~17GB
+    "clip_l.safetensors": 250_000_000,  # ~250MB
+    "t5xxl_fp8_e4m3fn.safetensors": 5_000_000_000,  # ~5GB
+    "ae.safetensors": 300_000_000,  # ~300MB
+}
+
+
 def download_models_if_needed(models_path: Path):
     """Download Flux models to persistent volume if not present."""
+    from huggingface_hub import hf_hub_download
+    import os
+    
     models_path.mkdir(parents=True, exist_ok=True)
     
-    unet_path = models_path / "unet" / "flux1-dev-fp8.safetensors"
-    clip_l_path = models_path / "clip" / "clip_l.safetensors"
-    clip_t5_path = models_path / "clip" / "t5xxl_fp8_e4m3fn.safetensors"
-    vae_path = models_path / "vae" / "ae.safetensors"
-    
     downloads = [
-        (unet_path, "https://huggingface.co/Comfy-Org/flux1-dev/resolve/main/flux1-dev-fp8.safetensors"),
-        (clip_l_path, "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors"),
-        (clip_t5_path, "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn.safetensors"),
-        (vae_path, "https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/vae/ae.safetensors"),
+        ("Comfy-Org/flux1-dev", "flux1-dev-fp8.safetensors", "unet"),
+        ("comfyanonymous/flux_text_encoders", "clip_l.safetensors", "clip"),
+        ("comfyanonymous/flux_text_encoders", "t5xxl_fp8_e4m3fn.safetensors", "clip"),
+        ("Comfy-Org/z_image_turbo", "split_files/vae/ae.safetensors", "vae"),
     ]
     
-    for file_path, url in downloads:
-        if not file_path.exists():
-            print(f"Downloading {file_path.name}...")
-            file_path.parent.mkdir(parents=True, exist_ok=True)
-            subprocess.run(["curl", "-L", "--fail", "-o", str(file_path), url], check=True)
-            print(f"Downloaded {file_path.name}")
-        else:
-            print(f"Already have {file_path.name}")
+    for repo_id, filename, subfolder in downloads:
+        target_path = models_path / subfolder / Path(filename).name
+        expected_size = MODEL_SIZES.get(Path(filename).name, 0)
+        
+        # Check if file exists and has correct size (within 10% tolerance)
+        needs_download = True
+        if target_path.exists():
+            actual_size = target_path.stat().st_size
+            if actual_size >= expected_size * 0.9:  # Within 10% of expected
+                print(f"✓ {filename} already exists ({actual_size / 1e9:.1f} GB)")
+                needs_download = False
+            else:
+                print(f"⚠ {filename} is incomplete ({actual_size / 1e9:.1f} GB, expected {expected_size / 1e9:.1f} GB). Re-downloading...")
+                target_path.unlink()  # Delete corrupted file
+        
+        if needs_download:
+            print(f"📥 Downloading {filename}...")
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                downloaded = hf_hub_download(
+                    repo_id=repo_id,
+                    filename=filename,
+                    local_dir=str(models_path / subfolder),
+                    local_dir_use_symlinks=False,
+                    resume_download=True
+                )
+                final_size = Path(downloaded).stat().st_size
+                print(f"✅ Downloaded {filename} ({final_size / 1e9:.1f} GB)")
+            except Exception as e:
+                print(f"❌ Failed to download {filename}: {e}")
+                raise
 
 
 def build_txt2img_workflow(prompt: str, width: int, height: int, steps: int, guidance: float, seed: int) -> dict:
@@ -155,6 +186,7 @@ class ComfyUIWorker:
         download_models_if_needed(models_path)
         models_volume.commit()
         
+        # Create symlinks for ComfyUI to find models
         comfy_models = Path("/root/comfy/ComfyUI/models")
         for subdir in ["unet", "clip", "vae"]:
             src = models_path / subdir
@@ -166,6 +198,7 @@ class ComfyUIWorker:
                     if not target.exists():
                         os.symlink(f, target)
         
+        # Start ComfyUI server
         self.comfyui_process = subprocess.Popen(
             ["comfy", "launch", "--", "--listen", "127.0.0.1", "--port", "8188"],
             cwd="/root/comfy/ComfyUI"
@@ -182,25 +215,20 @@ class ComfyUIWorker:
         while time.time() - start < timeout:
             try:
                 urllib.request.urlopen("http://127.0.0.1:8188/system_stats", timeout=2)
-                print("ComfyUI is ready")
+                print("✅ ComfyUI is ready")
                 return
             except (urllib.error.URLError, ConnectionRefusedError):
                 time.sleep(1)
         raise TimeoutError("ComfyUI failed to start")
     
-    def _run_workflow(self, workflow: dict, input_images: list[tuple[str, bytes]] = None) -> bytes:
+    def _run_workflow(self, workflow: dict, input_images: list = None) -> bytes:
         """Execute a workflow and return the output image."""
         import urllib.request
         import uuid
         
+        # Upload input images if provided
         if input_images:
             for name, data in input_images:
-                files = {"image": (name, data, "image/png")}
-                import io
-                from email.mime.multipart import MIMEMultipart
-                from email.mime.base import MIMEBase
-                import email.encoders
-                
                 boundary = uuid.uuid4().hex
                 body = []
                 body.append(f"--{boundary}".encode())
@@ -217,6 +245,7 @@ class ComfyUIWorker:
                 )
                 urllib.request.urlopen(req)
         
+        # Submit workflow
         prompt_id = str(uuid.uuid4())
         payload = {"prompt": workflow, "client_id": prompt_id}
         
@@ -227,6 +256,7 @@ class ComfyUIWorker:
         )
         urllib.request.urlopen(req)
         
+        # Wait for completion
         while True:
             time.sleep(0.5)
             history_url = f"http://127.0.0.1:8188/history/{prompt_id}"
@@ -270,7 +300,8 @@ def main():
     """Test the endpoint locally."""
     worker = ComfyUIWorker()
     
-    print("Testing txt2img...")
+    print("\n🎨 Testing txt2img...")
+    print("=" * 50)
     result = worker.txt2img.remote(
         prompt="A cute pixel art cat, 16-bit style, game sprite",
         width=512,
@@ -278,6 +309,6 @@ def main():
         steps=20
     )
     
-    output_path = Path("test_output.png")
+    output_path = Path("/Users/hassoncs/Workspaces/Personal/slopcade/test_output.png")
     output_path.write_bytes(base64.b64decode(result))
-    print(f"Saved to {output_path}")
+    print(f"\n✅ Success! Saved to {output_path}")

@@ -91,19 +91,17 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
     },
     coin: {
       id: 'coin',
+      type: 'zone',
       sprite: {
         type: 'circle',
         radius: 0.3,
         color: '#F1C40F',
       },
-      physics: {
-        bodyType: 'static',
-        shape: 'circle',
-        radius: 0.3,
-        density: 1,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      zone: {
+        shape: {
+          type: 'circle',
+          radius: 0.3,
+        },
       },
       behaviors: [
         {
@@ -123,6 +121,7 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
     },
     finish: {
       id: 'finish',
+      type: 'zone',
       sprite: {
         type: 'rect',
         width: 0.5,
@@ -131,15 +130,12 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
         strokeColor: '#000000',
         strokeWidth: 2,
       },
-      physics: {
-        bodyType: 'static',
-        shape: 'box',
-        width: 0.5,
-        height: 4,
-        density: 1,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      zone: {
+        shape: {
+          type: 'box',
+          width: 0.5,
+          height: 4,
+        },
       },
       tags: ['finish', 'goal'],
     },

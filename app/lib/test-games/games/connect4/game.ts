@@ -159,15 +159,13 @@ const game: GameDefinition = {
         height: BOARD_HEIGHT,
         color: BOARD_COLOR,
       },
-      physics: {
-        bodyType: "static",
-        shape: "box",
-        width: BOARD_WIDTH,
-        height: BOARD_HEIGHT,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: {
+          type: "box",
+          width: BOARD_WIDTH,
+          height: BOARD_HEIGHT,
+        },
       },
     },
     emptySlot: {
@@ -178,14 +176,12 @@ const game: GameDefinition = {
         radius: DISC_SIZE / 2,
         color: EMPTY_SLOT_INNER,
       },
-      physics: {
-        bodyType: "static",
-        shape: "circle",
-        radius: DISC_SIZE / 2,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: {
+          type: "circle",
+          radius: DISC_SIZE / 2,
+        },
       },
     },
     columnSelector: {
@@ -197,15 +193,13 @@ const game: GameDefinition = {
         height: SELECTOR_HEIGHT,
         color: "rgba(255, 255, 255, 0.1)",
       },
-      physics: {
-        bodyType: "static",
-        shape: "box",
-        width: DISC_SIZE,
-        height: SELECTOR_HEIGHT,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: {
+          type: "box",
+          width: DISC_SIZE,
+          height: SELECTOR_HEIGHT,
+        },
       },
     },
     redDisc: {
@@ -216,14 +210,12 @@ const game: GameDefinition = {
         radius: DISC_SIZE / 2 - 0.05,
         color: RED_COLOR,
       },
-      physics: {
-        bodyType: "static",
-        shape: "circle",
-        radius: DISC_SIZE / 2 - 0.05,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: {
+          type: "circle",
+          radius: DISC_SIZE / 2 - 0.05,
+        },
       },
     },
     yellowDisc: {
@@ -234,14 +226,12 @@ const game: GameDefinition = {
         radius: DISC_SIZE / 2 - 0.05,
         color: YELLOW_COLOR,
       },
-      physics: {
-        bodyType: "static",
-        shape: "circle",
-        radius: DISC_SIZE / 2 - 0.05,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: {
+          type: "circle",
+          radius: DISC_SIZE / 2 - 0.05,
+        },
       },
     },
   },

@@ -106,15 +106,9 @@ const game: GameDefinition = {
       id: "base",
       tags: ["base"],
       sprite: { type: "rect", width: BASE_WIDTH, height: BASE_HEIGHT, color: "#27AE60" },
-      physics: {
-        bodyType: "static",
-        shape: "box",
-        width: BASE_WIDTH,
-        height: BASE_HEIGHT,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: { type: "box", width: BASE_WIDTH, height: BASE_HEIGHT },
       },
       behaviors: [],
     },

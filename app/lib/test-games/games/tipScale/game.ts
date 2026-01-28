@@ -243,15 +243,10 @@ const game: GameDefinition = {
         height: 0.6,
         color: "#00000022",
       },
-      physics: {
-        bodyType: "kinematic",
-        shape: "box",
-        width: BEAM_WIDTH,
-        height: 0.6,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: { type: "box", width: BEAM_WIDTH, height: 0.6 },
+        movement: "kinematic",
       },
     },
     weightChoice0: {
@@ -262,14 +257,10 @@ const game: GameDefinition = {
         radius: WEIGHT_RADIUS,
         color: WEIGHT_COLORS[0],
       },
-      physics: {
-        bodyType: "kinematic",
-        shape: "circle",
-        radius: WEIGHT_RADIUS,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: { type: "circle", radius: WEIGHT_RADIUS },
+        movement: "kinematic",
       },
     },
     weightChoice1: {
@@ -280,14 +271,10 @@ const game: GameDefinition = {
         radius: WEIGHT_RADIUS * 1.3,
         color: WEIGHT_COLORS[1],
       },
-      physics: {
-        bodyType: "kinematic",
-        shape: "circle",
-        radius: WEIGHT_RADIUS * 1.3,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: { type: "circle", radius: WEIGHT_RADIUS * 1.3 },
+        movement: "kinematic",
       },
     },
     weightChoice2: {
@@ -298,14 +285,10 @@ const game: GameDefinition = {
         radius: WEIGHT_RADIUS * 1.6,
         color: WEIGHT_COLORS[2],
       },
-      physics: {
-        bodyType: "kinematic",
-        shape: "circle",
-        radius: WEIGHT_RADIUS * 1.6,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: { type: "circle", radius: WEIGHT_RADIUS * 1.6 },
+        movement: "kinematic",
       },
     },
     placedWeight0: {
@@ -368,6 +351,10 @@ const game: GameDefinition = {
         height: 0.5,
         color: "#00000000",
       },
+      type: "zone",
+      zone: {
+        shape: { type: "box", width: 0.5, height: 0.5 },
+      },
     },
     selectionIndicator: {
       id: "selectionIndicator",
@@ -377,14 +364,10 @@ const game: GameDefinition = {
         radius: WEIGHT_RADIUS * 2,
         color: "#FFFFFF33",
       },
-      physics: {
-        bodyType: "kinematic",
-        shape: "circle",
-        radius: WEIGHT_RADIUS * 2,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: { type: "circle", radius: WEIGHT_RADIUS * 2 },
+        movement: "kinematic",
       },
     },
   },

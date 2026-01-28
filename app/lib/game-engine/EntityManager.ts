@@ -8,6 +8,7 @@ import type {
   TransformComponent,
   SpriteComponent,
   ChildEntityDefinition,
+  ZoneComponent,
 } from '@slopcade/shared';
 import type { RuntimeEntity, RuntimeBehavior, EntityManagerOptions } from './types';
 import { getGlobalTagRegistry } from '@slopcade/shared';
@@ -125,7 +126,13 @@ export class EntityManager {
     const resolved = this.resolveTemplate(definition);
     const runtime = this.createRuntimeEntity(id, resolved);
 
-    if (resolved.physics) {
+    // Check if this is a zone entity (type: 'zone' or has zone property)
+    const isZone = (resolved as any).type === 'zone' || (resolved as any).zone != null;
+    
+    if (isZone) {
+      // Zones use Area2D for collision detection only (no physics body)
+      this.createZoneArea(runtime, (resolved as any).zone);
+    } else if (resolved.physics) {
       this.createPhysicsBody(runtime, resolved.physics);
     }
 
@@ -347,7 +354,7 @@ export class EntityManager {
       density: physicsConfig.density,
       friction: physicsConfig.friction,
       restitution: physicsConfig.restitution,
-      isSensor: physicsConfig.isSensor,
+      isSensor: false,
     };
 
     const colliderId = this.physics.addFixture(bodyId, fixtureDef);
@@ -381,6 +388,56 @@ export class EntityManager {
         };
       default:
         throw new Error(`Unknown physics shape: ${(physics as any).shape}`);
+    }
+  }
+
+  private createZoneArea(entity: RuntimeEntity, zoneConfig: ZoneComponent): void {
+    const isKinematic = zoneConfig.movement === 'kinematic';
+    
+    const bodyDef: BodyDef = {
+      type: isKinematic ? 'kinematic' : 'static',
+      position: { x: entity.transform.x, y: entity.transform.y },
+      angle: entity.transform.angle,
+      userData: { entityId: entity.id, isZone: true },
+    };
+
+    const bodyId = this.physics.createBody(bodyDef);
+    entity.bodyId = bodyId;
+
+    const shapeDef = this.createZoneShapeDef(zoneConfig);
+    const fixtureDef: FixtureDef = {
+      shape: shapeDef,
+      density: 0,
+      friction: 0,
+      restitution: 0,
+      isSensor: true,
+    };
+
+    const colliderId = this.physics.addFixture(bodyId, fixtureDef);
+    entity.colliderId = colliderId;
+  }
+
+  private createZoneShapeDef(zone: ZoneComponent): ShapeDef {
+    const shape = zone.shape;
+    switch (shape.type) {
+      case 'circle':
+        return {
+          type: 'circle',
+          radius: shape.radius,
+        };
+      case 'box':
+        return {
+          type: 'box',
+          halfWidth: shape.width / 2,
+          halfHeight: shape.height / 2,
+        };
+      case 'polygon':
+        return {
+          type: 'polygon',
+          vertices: shape.vertices,
+        };
+      default:
+        throw new Error(`Unknown zone shape: ${(shape as any).type}`);
     }
   }
 

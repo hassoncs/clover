@@ -93,7 +93,7 @@ export interface ChildTemplateDefinition {
   children?: ChildTemplateDefinition[];
 }
 
-export interface EntityTemplate {
+export interface BaseEntityTemplate {
   id: string;
   /** Human-readable description for AI image generation prompts */
   description?: string;
@@ -107,7 +107,15 @@ export interface EntityTemplate {
   slots?: Record<string, SlotDefinition>;
   /** Template-level children (part of prefab) */
   children?: ChildTemplateDefinition[];
+  /** Explicit type annotation - inferred from presence of physics vs zone */
+  type?: 'body' | 'zone';
+  /** Zone configuration (only for zone type entities) */
+  zone?: ZoneComponent;
 }
+
+export type EntityTemplate = 
+  | (BaseEntityTemplate & { type?: 'body'; physics: PhysicsComponent })
+  | (BaseEntityTemplate & { type: 'zone'; zone: ZoneComponent });
 
 // ============================================================================
 // Entity Definitions for Zone Types

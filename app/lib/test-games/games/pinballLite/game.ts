@@ -143,15 +143,9 @@ const game: GameDefinition = {
       id: "drain",
       tags: ["drain"],
       sprite: { type: "rect", width: 10, height: 0.5, color: "#FF000033" },
-      physics: {
-        bodyType: "static",
-        shape: "box",
-        width: 10,
-        height: 0.5,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: { type: "box", width: 10, height: 0.5 },
       },
     },
   },

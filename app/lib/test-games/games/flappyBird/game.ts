@@ -152,15 +152,10 @@ const game: GameDefinition = {
       id: "scoreZone",
       tags: ["score-zone"],
       sprite: { type: "rect", width: 0.3, height: PIPE_GAP, color: "#00000000" },
-      physics: {
-        bodyType: "kinematic",
-        shape: "box",
-        width: 0.3,
-        height: PIPE_GAP,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: { type: "box", width: 0.3, height: PIPE_GAP },
+        movement: "kinematic",
       },
       behaviors: [
         { type: "move", direction: "left", speed: PIPE_SPEED },

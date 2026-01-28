@@ -189,15 +189,9 @@ const game: GameDefinition = {
         height: CELL_SIZE,
         color: COLORS.floor,
       },
-      physics: {
-        bodyType: "static",
-        shape: "box",
-        width: CELL_SIZE,
-        height: CELL_SIZE,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: { type: "box", width: CELL_SIZE, height: CELL_SIZE },
       },
     },
     goal: {
@@ -209,15 +203,9 @@ const game: GameDefinition = {
         height: CELL_SIZE * 0.8,
         color: COLORS.goal,
       },
-      physics: {
-        bodyType: "static",
-        shape: "box",
-        width: CELL_SIZE * 0.8,
-        height: CELL_SIZE * 0.8,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: { type: "box", width: CELL_SIZE * 0.8, height: CELL_SIZE * 0.8 },
       },
     },
     iceBlock: {

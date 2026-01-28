@@ -11,7 +11,7 @@ import type { ImageProvider } from '../provider-contract';
 // ASSET TYPES - The discriminator for pipeline flow
 // =============================================================================
 
-export type AssetType = 'entity' | 'background' | 'title_hero' | 'title_hero_no_bg' | 'parallax' | 'sheet';
+export type AssetType = 'entity' | 'background' | 'title_hero' | 'title_hero_no_bg' | 'parallax' | 'sheet' | 'text_grid';
 
 // =============================================================================
 // SPRITE STYLES - Visual style for generated assets

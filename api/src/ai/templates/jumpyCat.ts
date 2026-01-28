@@ -67,19 +67,17 @@ export const JUMPY_CAT_TEMPLATE: GameDefinition = {
     },
     collectible: {
       id: 'collectible',
+      type: 'zone',
       sprite: {
         type: 'circle',
         radius: 0.3,
         color: '#FFD700',
       },
-      physics: {
-        bodyType: 'static',
-        shape: 'circle',
-        radius: 0.3,
-        density: 1,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      zone: {
+        shape: {
+          type: 'circle',
+          radius: 0.3,
+        },
       },
       behaviors: [
         {

@@ -40,17 +40,16 @@ export const TETRIS_TEMPLATE: GameDefinition = {
   templates: {
     piece_i: {
       id: 'piece_i',
+      type: 'zone',
       tags: ['piece', 'cyan'],
       sprite: { type: 'rect', width: 0.8, height: 0.8, color: '#00FFFF' },
-      physics: {
-        bodyType: 'kinematic',
-        shape: 'box',
-        width: 0.8,
-        height: 0.8,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      zone: {
+        shape: {
+          type: 'box',
+          width: 0.8,
+          height: 0.8,
+        },
+        movement: 'kinematic',
       },
       conditionalBehaviors: [
         {
@@ -72,17 +71,16 @@ export const TETRIS_TEMPLATE: GameDefinition = {
     },
     piece_o: {
       id: 'piece_o',
+      type: 'zone',
       tags: ['piece', 'yellow'],
       sprite: { type: 'rect', width: 0.8, height: 0.8, color: '#FFFF00' },
-      physics: {
-        bodyType: 'kinematic',
-        shape: 'box',
-        width: 0.8,
-        height: 0.8,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      zone: {
+        shape: {
+          type: 'box',
+          width: 0.8,
+          height: 0.8,
+        },
+        movement: 'kinematic',
       },
       conditionalBehaviors: [
         {
@@ -104,17 +102,16 @@ export const TETRIS_TEMPLATE: GameDefinition = {
     },
     piece_t: {
       id: 'piece_t',
+      type: 'zone',
       tags: ['piece', 'purple'],
       sprite: { type: 'rect', width: 0.8, height: 0.8, color: '#AA00FF' },
-      physics: {
-        bodyType: 'kinematic',
-        shape: 'box',
-        width: 0.8,
-        height: 0.8,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      zone: {
+        shape: {
+          type: 'box',
+          width: 0.8,
+          height: 0.8,
+        },
+        movement: 'kinematic',
       },
       conditionalBehaviors: [
         {
@@ -136,17 +133,16 @@ export const TETRIS_TEMPLATE: GameDefinition = {
     },
     piece_s: {
       id: 'piece_s',
+      type: 'zone',
       tags: ['piece', 'green'],
       sprite: { type: 'rect', width: 0.8, height: 0.8, color: '#00FF00' },
-      physics: {
-        bodyType: 'kinematic',
-        shape: 'box',
-        width: 0.8,
-        height: 0.8,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      zone: {
+        shape: {
+          type: 'box',
+          width: 0.8,
+          height: 0.8,
+        },
+        movement: 'kinematic',
       },
       conditionalBehaviors: [
         {
@@ -168,17 +164,16 @@ export const TETRIS_TEMPLATE: GameDefinition = {
     },
     piece_z: {
       id: 'piece_z',
+      type: 'zone',
       tags: ['piece', 'red'],
       sprite: { type: 'rect', width: 0.8, height: 0.8, color: '#FF0000' },
-      physics: {
-        bodyType: 'kinematic',
-        shape: 'box',
-        width: 0.8,
-        height: 0.8,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      zone: {
+        shape: {
+          type: 'box',
+          width: 0.8,
+          height: 0.8,
+        },
+        movement: 'kinematic',
       },
       conditionalBehaviors: [
         {
@@ -200,17 +195,16 @@ export const TETRIS_TEMPLATE: GameDefinition = {
     },
     piece_j: {
       id: 'piece_j',
+      type: 'zone',
       tags: ['piece', 'blue'],
       sprite: { type: 'rect', width: 0.8, height: 0.8, color: '#0000FF' },
-      physics: {
-        bodyType: 'kinematic',
-        shape: 'box',
-        width: 0.8,
-        height: 0.8,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      zone: {
+        shape: {
+          type: 'box',
+          width: 0.8,
+          height: 0.8,
+        },
+        movement: 'kinematic',
       },
       conditionalBehaviors: [
         {
@@ -232,17 +226,16 @@ export const TETRIS_TEMPLATE: GameDefinition = {
     },
     piece_l: {
       id: 'piece_l',
+      type: 'zone',
       tags: ['piece', 'orange'],
       sprite: { type: 'rect', width: 0.8, height: 0.8, color: '#FF8800' },
-      physics: {
-        bodyType: 'kinematic',
-        shape: 'box',
-        width: 0.8,
-        height: 0.8,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      zone: {
+        shape: {
+          type: 'box',
+          width: 0.8,
+          height: 0.8,
+        },
+        movement: 'kinematic',
       },
       conditionalBehaviors: [
         {

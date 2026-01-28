@@ -1,4 +1,4 @@
-import type { GameDefinition } from "@slopcade/shared";
+import type { GameDefinition, EntityTemplate } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
 export const metadata: TestGameMeta = {
@@ -69,7 +69,7 @@ const symbolColors: Record<SymbolKey, string> = {
   scatter: "#2979FF",
 };
 
-function createRectSymbolTemplate(key: Exclude<SymbolKey, "scatter">) {
+function createRectSymbolTemplate(key: Exclude<SymbolKey, "scatter">): EntityTemplate {
   return {
     id: key,
     tags: ["symbol", key, key === "wild" ? "wild" : ""].filter(Boolean),
@@ -79,20 +79,18 @@ function createRectSymbolTemplate(key: Exclude<SymbolKey, "scatter">) {
       height: CELL_SIZE * 0.85,
       color: symbolColors[key],
     },
-    physics: {
-      bodyType: "static" as const,
-      shape: "box" as const,
-      width: CELL_SIZE * 0.85,
-      height: CELL_SIZE * 0.85,
-      density: 0,
-      friction: 0,
-      restitution: 0,
-      isSensor: true,
+    type: "zone",
+    zone: {
+      shape: {
+        type: "box" as const,
+        width: CELL_SIZE * 0.85,
+        height: CELL_SIZE * 0.85,
+      },
     },
-  };
+  } as EntityTemplate;
 }
 
-function createCircleSymbolTemplate() {
+function createCircleSymbolTemplate(): EntityTemplate {
   return {
     id: "scatter",
     tags: ["symbol", "scatter"],
@@ -101,16 +99,14 @@ function createCircleSymbolTemplate() {
       radius: (CELL_SIZE * 0.85) / 2,
       color: symbolColors.scatter,
     },
-    physics: {
-      bodyType: "static" as const,
-      shape: "circle" as const,
-      radius: (CELL_SIZE * 0.85) / 2,
-      density: 0,
-      friction: 0,
-      restitution: 0,
-      isSensor: true,
+    type: "zone",
+    zone: {
+      shape: {
+        type: "circle" as const,
+        radius: (CELL_SIZE * 0.85) / 2,
+      },
     },
-  };
+  } as EntityTemplate;
 }
 
 const game: GameDefinition = {
@@ -169,15 +165,13 @@ const game: GameDefinition = {
         height: CELL_SIZE * 0.9,
         color: "#2D2D44",
       },
-      physics: {
-        bodyType: "static",
-        shape: "box",
-        width: CELL_SIZE * 0.9,
-        height: CELL_SIZE * 0.9,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: {
+          type: "box",
+          width: CELL_SIZE * 0.9,
+          height: CELL_SIZE * 0.9,
+        },
       },
     },
     
@@ -191,15 +185,13 @@ const game: GameDefinition = {
         height: 0.9,
         color: "#4CAF50",
       },
-      physics: {
-        bodyType: "static",
-        shape: "box",
-        width: 2.2,
-        height: 0.9,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: {
+          type: "box",
+          width: 2.2,
+          height: 0.9,
+        },
       },
     },
     betButton: {
@@ -211,15 +203,13 @@ const game: GameDefinition = {
         height: 0.6,
         color: "#2196F3",
       },
-      physics: {
-        bodyType: "static",
-        shape: "box",
-        width: 1.2,
-        height: 0.6,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-        isSensor: true,
+      type: "zone",
+      zone: {
+        shape: {
+          type: "box",
+          width: 1.2,
+          height: 0.6,
+        },
       },
     },
   },
