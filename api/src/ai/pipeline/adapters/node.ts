@@ -266,55 +266,6 @@ export function createNodeComfyUIAdapter(config: ComfyUIAdapterConfig): ImageGen
   };
 }
 
-interface RunPodAdapterConfig {
-  apiKey: string;
-  sdxlEndpointId?: string;
-  fluxEndpointId?: string;
-  bgRemovalEndpointId?: string;
-}
-
-export function createNodeRunPodAdapter(config: RunPodAdapterConfig): ImageGenerationAdapter {
-  const client = new RunPodClient({
-    apiKey: config.apiKey,
-    sdxlEndpointId: config.sdxlEndpointId,
-    fluxEndpointId: config.fluxEndpointId,
-    bgRemovalEndpointId: config.bgRemovalEndpointId,
-  });
-
-  return {
-    async uploadImage(png: Uint8Array): Promise<string> {
-      return client.uploadImage(png);
-    },
-
-    async txt2img(params): Promise<{ assetId: string }> {
-      return client.txt2img({
-        prompt: params.prompt,
-        negativePrompt: params.negativePrompt,
-        width: params.width ?? 1024,
-        height: params.height ?? 1024,
-      });
-    },
-
-    async img2img(params): Promise<{ assetId: string }> {
-      return client.img2img({
-        image: params.imageAssetId,
-        prompt: params.prompt,
-        strength: params.strength ?? 0.95,
-      });
-    },
-
-    async downloadImage(assetId: string): Promise<{ buffer: Uint8Array; extension: string }> {
-      return client.downloadImage(assetId);
-    },
-
-    async removeBackground(assetId: string): Promise<{ assetId: string }> {
-      return client.removeBackground({ image: assetId });
-    },
-
-    layeredDecompose: undefined,
-  };
-}
-
 export type ImageGenerationProvider = 'scenario' | 'comfyui' | 'modal';
 
 export interface NodeAdaptersOptions {

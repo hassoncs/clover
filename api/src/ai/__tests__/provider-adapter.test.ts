@@ -33,19 +33,6 @@ describe('Provider Adapter Factory Contract', () => {
       expect(typeof client.layeredDecompose).toBe('function');
     });
 
-    it('RunPod client satisfies ImageGenerationAdapter contract', async () => {
-      const { RunPodClient } = await import('../runpod');
-      const client = new RunPodClient({
-        apiKey: 'test-key',
-        fluxEndpointId: 'flux-123',
-      });
-
-      expect(typeof client.uploadImage).toBe('function');
-      expect(typeof client.txt2img).toBe('function');
-      expect(typeof client.img2img).toBe('function');
-      expect(typeof client.downloadImage).toBe('function');
-      expect(typeof client.removeBackground).toBe('function');
-    });
   });
 
   describe('Node adapter factory contract', () => {
