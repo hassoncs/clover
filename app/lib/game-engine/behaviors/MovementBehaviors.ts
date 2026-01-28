@@ -136,7 +136,6 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
 
   executor.registerHandler('oscillate', (behavior, ctx) => {
     const b = behavior as OscillateBehavior;
-    if (!ctx.entity.bodyId) return;
 
     // Position-based oscillation for reliable kinematic body movement
     // Store initial position as center point on first frame
@@ -181,12 +180,13 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
       ctx.entity.transform.y = newY;
     }
 
-    // Update physics body position for kinematic bodies
     if (ctx.entity.bodyId) {
       ctx.physics.setTransform(ctx.entity.bodyId, {
         position: { x: newX, y: newY },
         angle: ctx.entity.transform.angle,
       });
+    } else {
+      ctx.setEntityPosition(ctx.entity.id, newX, newY);
     }
   });
 
