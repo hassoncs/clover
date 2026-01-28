@@ -7,7 +7,7 @@
  * - Keep provider-specific IDs available for debugging and follow-up operations.
  */
 
-export type ImageProvider = 'scenario' | 'comfyui' | 'runpod';
+export type ImageProvider = 'scenario' | 'comfyui' | 'modal';
 
 // =============================================================================
 // Input spec + provider selection

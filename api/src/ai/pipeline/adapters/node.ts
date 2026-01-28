@@ -330,31 +330,19 @@ export interface NodeAdaptersOptions {
 }
 
 export async function createNodeAdapters(options: NodeAdaptersOptions): Promise<PipelineAdapters> {
-  const provider = options.provider ?? 'scenario';
+  const provider = options.provider ?? 'comfyui';
 
   let imageAdapter: ImageGenerationAdapter;
 
-  if (provider === 'runpod') {
-    if (!options.runpodApiKey) {
-      throw new Error('RUNPOD_API_KEY required when using RunPod provider');
-    }
-    imageAdapter = createNodeRunPodAdapter({
-      apiKey: options.runpodApiKey,
-      sdxlEndpointId: options.runpodSdxlEndpointId,
-      fluxEndpointId: options.runpodFluxEndpointId,
-      bgRemovalEndpointId: options.runpodBgRemovalEndpointId,
-    });
-  } else if (provider === 'comfyui') {
-    if (!options.comfyuiEndpoint) {
-      throw new Error('COMFYUI_ENDPOINT required when using ComfyUI provider');
-    }
+  if (provider === 'comfyui' || provider === 'modal') {
+    const endpoint = options.modalEndpoint ?? options.comfyuiEndpoint ?? 'https://hassoncs--slopcade-comfyui-web-img2img.modal.run';
     imageAdapter = createNodeComfyUIAdapter({
-      endpoint: options.comfyuiEndpoint,
-      apiKey: options.runpodApiKey,
+      endpoint: endpoint,
     });
   } else {
+    console.warn('⚠️  SCENARIO PROVIDER IS DEPRECATED. Please migrate to Modal (comfyui).');
     if (!options.scenarioApiKey || !options.scenarioApiSecret) {
-      throw new Error('Scenario API credentials required');
+      throw new Error('Scenario API credentials required for deprecated provider');
     }
     imageAdapter = createNodeScenarioAdapter({
       apiKey: options.scenarioApiKey,

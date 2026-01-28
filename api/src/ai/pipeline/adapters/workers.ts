@@ -50,17 +50,10 @@ export function createWorkersScenarioAdapter(client: ScenarioClient): ImageGener
 }
 
 export function createWorkersComfyUIAdapter(env: Env): ImageGenerationAdapter {
-  if (!env.RUNPOD_API_KEY) {
-    throw new Error('RUNPOD_API_KEY required when using ComfyUI/RunPod image generation provider');
-  }
-  if (!env.RUNPOD_COMFYUI_ENDPOINT_ID) {
-    throw new Error('RUNPOD_COMFYUI_ENDPOINT_ID required when using ComfyUI/RunPod image generation provider');
-  }
+  const endpoint = env.MODAL_ENDPOINT ?? 'https://hassoncs--slopcade-comfyui-web-img2img.modal.run';
 
-  const endpoint = `https://api.runpod.ai/v2/${env.RUNPOD_COMFYUI_ENDPOINT_ID}`;
   const client = createComfyUIClient({
     COMFYUI_ENDPOINT: endpoint,
-    RUNPOD_API_KEY: env.RUNPOD_API_KEY,
   });
 
   return {
@@ -104,14 +97,16 @@ export function createWorkersComfyUIAdapter(env: Env): ImageGenerationAdapter {
 }
 
 export function createWorkersProviderAdapter(env: Env): ImageGenerationAdapter {
-  const provider = env.IMAGE_GENERATION_PROVIDER;
+  const provider = env.IMAGE_GENERATION_PROVIDER ?? 'comfyui';
 
-  if (provider === 'comfyui' || provider === 'runpod') {
+  if (provider === 'comfyui' || provider === 'modal') {
     return createWorkersComfyUIAdapter(env);
   }
 
+  console.warn('⚠️  SCENARIO PROVIDER IS DEPRECATED. Please migrate to Modal (comfyui).');
+
   if (!env.SCENARIO_API_KEY || !env.SCENARIO_SECRET_API_KEY) {
-    throw new Error('SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using Scenario image generation provider');
+    throw new Error('SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using deprecated Scenario provider');
   }
 
   return createWorkersScenarioAdapter(createScenarioClient(env));

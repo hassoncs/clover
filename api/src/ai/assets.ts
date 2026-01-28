@@ -577,17 +577,11 @@ function createScenarioProviderClient(env: Env): ProviderClient {
 }
 
 function createComfyUIProviderClient(env: Env): ProviderClient {
-  if (!env.RUNPOD_API_KEY) {
-    throw new Error('RUNPOD_API_KEY required when using ComfyUI/RunPod image generation provider');
-  }
-  if (!env.RUNPOD_COMFYUI_ENDPOINT_ID) {
-    throw new Error('RUNPOD_COMFYUI_ENDPOINT_ID required when using ComfyUI/RunPod image generation provider');
-  }
-
-  const endpoint = `https://api.runpod.ai/v2/${env.RUNPOD_COMFYUI_ENDPOINT_ID}`;
+  // Use Modal's deployed endpoint by default, or allow custom endpoint via env
+  const endpoint = env.MODAL_ENDPOINT ?? 'https://hassoncs--slopcade-comfyui-web-img2img.modal.run';
+  
   const client = createComfyUIClient({
     COMFYUI_ENDPOINT: endpoint,
-    RUNPOD_API_KEY: env.RUNPOD_API_KEY,
   });
 
   return {

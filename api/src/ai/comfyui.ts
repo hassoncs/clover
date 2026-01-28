@@ -28,12 +28,8 @@ export class ComfyUIClient {
   constructor(config: ComfyUIConfig) {
     this.endpoint = config.endpoint.replace(/\/$/, '');
     this.apiKey = config.apiKey;
-    this.isServerless = config.isServerless ?? this.endpoint.includes('runpod.ai');
+    this.isServerless = config.isServerless ?? false;
     this.timeout = config.timeout ?? COMFYUI_DEFAULTS.TIMEOUT_MS;
-
-    if (this.isServerless && !this.apiKey) {
-      throw new Error('RunPod API key required for serverless endpoints');
-    }
   }
 
   private generateAssetId(): string {
@@ -589,23 +585,12 @@ function classifyProviderError(err: unknown): ProviderErrorCode {
 
 export function createComfyUIClient(env: {
   COMFYUI_ENDPOINT?: string;
-  RUNPOD_API_KEY?: string;
-  RUNPOD_ENDPOINT_ID?: string;
+  MODAL_ENDPOINT?: string;
 }): ComfyUIClient {
-  let endpoint = env.COMFYUI_ENDPOINT;
-
-  if (!endpoint && env.RUNPOD_ENDPOINT_ID) {
-    endpoint = `https://api.runpod.ai/v2/${env.RUNPOD_ENDPOINT_ID}`;
-  }
-
-  if (!endpoint) {
-    throw new Error(
-      'ComfyUI endpoint required. Set COMFYUI_ENDPOINT or RUNPOD_ENDPOINT_ID.'
-    );
-  }
+  const endpoint = env.MODAL_ENDPOINT ?? env.COMFYUI_ENDPOINT ?? 'https://hassoncs--slopcade-comfyui-web-img2img.modal.run';
 
   return new ComfyUIClient({
     endpoint,
-    apiKey: env.RUNPOD_API_KEY,
+    isServerless: false,
   });
 }

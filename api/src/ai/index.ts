@@ -48,11 +48,6 @@ export {
 } from './comfyui';
 
 export {
-  RunPodClient,
-  createRunPodClient,
-} from './runpod';
-
-export {
   AssetService,
   getScenarioConfigFromEnv,
   type EntityType,
@@ -72,11 +67,6 @@ export type {
   ComfyTxt2ImgParams,
   ComfyImg2ImgParams,
 } from './comfyui-types';
-
-export type {
-  RunPodConfig,
-  RunPodJobInput,
-} from './runpod-types';
 
 export {
   evaluateGame,
