@@ -20,3 +20,8 @@
 
 - External stylizer input/output should validate strict dimension preservation (`width`/`height`) and require transparency; mismatches must be surfaced with descriptive errors.
 - For text-grid, compute expected dimensions the same way as the SVG renderer: `cols*cellW` by `rows*cellH + (rows-1)*lineGap`.
+
+## 2026-01-28 (runtime animation integration)
+
+- Runtime animation metadata can be derived directly from `LayoutDoc.cells`: normalize `x/y/w/h` by atlas dimensions to produce UV rects.
+- A helpful debug artifact is an SVG that defines one `<image id="atlas" .../>` and per-cell `<clipPath>` rects; per-cell rendering can then be previewed with `<g clip-path="url(#clip_cell_...)" ...><use href="#atlas" /></g>`.

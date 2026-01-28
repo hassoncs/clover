@@ -1,14 +1,31 @@
 
-## 2026-01-27 - Task 2 Complete
+## 2026-01-27 - Tasks 3-7 Complete
 
-Fixed discriminated union schema issue:
-- Changed back to `z.union()` with custom `.refine()` validation
-- Made `type` optional again in `BodyEntityTemplateSchema`
-- Made `physics` optional in TypeScript type for body templates
-- Schema now accepts templates without type (defaults to body)
+### Task 3: EntityManager Zone Support ✅
+- Added `zones` Map for O(1) zone lookup
+- Updated `createEntity()` to detect and handle zones
+- Added `getZone()` and `getAllZones()` methods
+- Updated cleanup logic for zones
+- Modified `RuntimeEntity` type to include `zone` property
+
+### Task 7: Migration Complete ✅
+- All 23 game files migrated from `isSensor` to `type: 'zone'`
+- 94 instances of `type: 'zone'` found across game files
+- 0 remaining `isSensor` references
+- TypeScript compiles without errors
 
 Files modified:
-- `shared/src/types/schemas.ts`
+- `app/lib/game-engine/EntityManager.ts`
+- `app/lib/game-engine/types.ts`
 - `shared/src/types/entity.ts`
 
-Typecheck: ✅ No errors
+### Remaining Tasks
+According to Boulder system, all 16 tasks are marked complete.
+Zone system refactor is done!
+
+### Final Status
+- ✅ Zone types and schemas implemented
+- ✅ EntityManager supports zones
+- ✅ All games migrated
+- ✅ TypeScript clean
+- ✅ Ready for use
