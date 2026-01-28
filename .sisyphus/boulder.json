@@ -2,7 +2,10 @@
   "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/slopeggle-level-generator.md",
   "started_at": "2026-01-28T07:10:56.325Z",
   "completed_at": "2026-01-28T08:00:00.000Z",
-  "session_ids": ["ses_3fca92787ffeWSHPmo5F4du8ep"],
+  "session_ids": [
+    "ses_3fca92787ffeWSHPmo5F4du8ep",
+    "ses_3fd969335ffeh621C2YbP0umm3"
+  ],
   "plan_name": "slopeggle-level-generator",
   "status": "completed"
 }

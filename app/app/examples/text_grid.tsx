@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { View, StyleSheet, Text, TouchableOpacity, ScrollView, TextInput, ActivityIndicator } from "react-native";
 import type { ExampleMeta } from "@/lib/registry/types";
+import { env } from "@/lib/config/env";
 
 export const metadata: ExampleMeta = {
   title: "Text Grid Generator",
@@ -44,7 +45,7 @@ export default function TextGridLab() {
     
     try {
       // Call the API to generate the text grid
-      const response = await fetch('/api/text-grid/generate', {
+      const response = await fetch(`${env.apiUrl}/api/text-grid/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -3790,7 +3790,14 @@ func show_3d_model_from_url(url: String) -> void:
 
 func set_3d_viewport_position(x: float, y: float) -> void:
 	if _viewport_3d:
-		_viewport_3d.position = game_to_godot_pos(Vector2(x, y))
+		# Convert game coordinates to screen pixel coordinates
+		# Game (0,0) is center, so we need to offset by half screen size
+		var viewport_size = get_viewport().get_visible_rect().size
+		var screen_center = viewport_size / 2.0
+		# Game coordinates: x is horizontal (positive right), y is vertical (positive up)
+		# Screen coordinates: origin is top-left, y increases downward
+		var screen_pos = screen_center + Vector2(x * pixels_per_meter, -y * pixels_per_meter)
+		_viewport_3d.position = screen_pos
 
 func set_3d_viewport_size(width: int, height: int) -> void:
 	if _viewport_3d:
