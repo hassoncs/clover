@@ -53,6 +53,7 @@ import {
   CollisionTriggerEvaluator,
   InputTriggerEvaluator,
   LogicTriggerEvaluator,
+  ZoneTriggerEvaluator,
 } from "./rules/triggers";
 import { ContainerSystem } from "./systems/ContainerSystem";
 
@@ -93,6 +94,7 @@ export class RulesEvaluator implements IGameStateMutator {
   private collisionTriggerEvaluator = new CollisionTriggerEvaluator();
   private inputTriggerEvaluator = new InputTriggerEvaluator();
   private logicTriggerEvaluator = new LogicTriggerEvaluator();
+  private zoneTriggerEvaluator = new ZoneTriggerEvaluator();
 
   constructor(entityManager: EntityManager, containers?: ContainerConfig[]) {
     const scoreActionExecutor = new ScoreActionExecutor();
@@ -502,6 +504,9 @@ export class RulesEvaluator implements IGameStateMutator {
     switch (trigger.type) {
       case "collision":
         return this.collisionTriggerEvaluator.evaluate(trigger, context);
+      case "zone_enter":
+      case "zone_exit":
+        return this.zoneTriggerEvaluator.evaluate(trigger, context);
       case "timer":
       case "score":
       case "entity_count":
