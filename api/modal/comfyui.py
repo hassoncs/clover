@@ -54,7 +54,7 @@ def download_models_if_needed(models_path: Path):
         (unet_path, "https://huggingface.co/Comfy-Org/flux1-dev/resolve/main/flux1-dev-fp8.safetensors"),
         (clip_l_path, "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors"),
         (clip_t5_path, "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn.safetensors"),
-        (vae_path, "https://huggingface.co/Comfy-Org/flux1-dev/resolve/main/ae.safetensors"),
+        (vae_path, "https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/vae/ae.safetensors"),
     ]
     
     for file_path, url in downloads:
