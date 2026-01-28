@@ -7,8 +7,8 @@ import type {
   BatchPipelineResult,
   GameAssetConfig,
   SpriteStyle,
-} from './types';
-import { getStagesForAssetType } from './registry';
+} from '@/ai/pipeline/types'
+import { getStagesForAssetType } from '@/ai/pipeline/registry'
 import * as crypto from 'crypto';
 
 function generateRunId(): string {

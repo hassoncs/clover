@@ -6,7 +6,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import sharp from 'sharp';
-import { ScenarioClient } from '../scenario';
+import { ScenarioClient } from '@/ai/scenario'
 
 const OUTPUT_DIR = path.join(__dirname, 'output', 'silhouette-tests');
 

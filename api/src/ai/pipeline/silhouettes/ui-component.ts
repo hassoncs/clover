@@ -1,6 +1,6 @@
 import type { OverlayOptions } from 'sharp';
-import { createTextHint, createIconHint } from './text-hint';
-import type { TextHintParams, IconHintParams } from './text-hint';
+import { createTextHint, createIconHint } from '@/ai/pipeline/silhouettes/text-hint'
+import type { TextHintParams, IconHintParams } from '@/ai/pipeline/silhouettes/text-hint'
 
 async function getSharp() {
   const mod = await import('sharp');

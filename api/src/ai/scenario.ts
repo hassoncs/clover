@@ -11,15 +11,15 @@ import type {
   ModelsResponse,
   Model,
   UploadResponse,
-} from './scenario-types';
+} from '@/ai/scenario-types'
 import {
   SCENARIO_DEFAULTS,
   CUSTOM_MODEL_PREFIXES,
   MIME_TO_EXT,
-} from './scenario-types';
+} from '@/ai/scenario-types'
 
-import type { ImageGenerationResult } from './provider-contract';
-import { ProviderError, ProviderErrorCode, tryGetPngDimensions } from './provider-contract';
+import type { ImageGenerationResult } from '@/ai/provider-contract'
+import { ProviderError, ProviderErrorCode, tryGetPngDimensions } from '@/ai/provider-contract'
 
 // Log level utility for production-safe debugging
 const LOG_LEVEL = process.env.LOG_LEVEL || 'INFO';

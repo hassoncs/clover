@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { ScenarioClient } from '../scenario';
-import { AssetService, buildStructuredPrompt } from '../assets';
-import type { Env } from '../../trpc/context';
+import { ScenarioClient } from '@/ai/scenario'
+import { AssetService, buildStructuredPrompt } from '@/ai/assets'
+import type { Env } from '@/trpc/context'
 
 const hasCredentials = !!(process.env.SCENARIO_API_KEY && process.env.SCENARIO_SECRET_API_KEY);
 

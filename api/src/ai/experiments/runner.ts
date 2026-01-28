@@ -1,7 +1,7 @@
-import type { AIConfig } from '../generator';
-import { generateGame } from '../generator';
-import { evaluateGame } from '../evaluator';
-import type { EvaluationConfig } from '../evaluator/types';
+import type { AIConfig } from '@/ai/generator'
+import { generateGame } from '@/ai/generator'
+import { evaluateGame } from '@/ai/evaluator'
+import type { EvaluationConfig } from '@/ai/evaluator/types'
 import type {
   ExperimentConfig,
   ExperimentResult,
@@ -9,7 +9,7 @@ import type {
   RunResult,
   ModelStats,
   PromptStats,
-} from './types';
+} from '@/ai/experiments/types'
 
 export interface ExperimentRunner {
   run(

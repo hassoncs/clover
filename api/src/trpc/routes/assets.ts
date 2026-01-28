@@ -2,15 +2,15 @@ import {
   router,
   publicProcedure,
   protectedProcedure,
-} from '../index';
+} from '@/trpc/index'
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import {
   AssetService,
   type EntityType,
   type SpriteStyle,
-} from '../../ai/assets';
-import { GameDefinitionSchema, type GameDefinitionGenerated, type AssetPackSchema } from '../../ai/schemas';
+} from '@/ai/assets'
+import { GameDefinitionSchema, type GameDefinitionGenerated, type AssetPackSchema } from '@/ai/schemas'
 
 interface AssetRow {
   id: string;

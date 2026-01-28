@@ -1,5 +1,5 @@
-import { USER_COSTS, microsToSparks, formatSparks } from './pricing';
-import type { GameDefinition } from '../../../shared/src/types/GameDefinition';
+import { USER_COSTS, microsToSparks, formatSparks } from '@/economy/pricing'
+import type { GameDefinition } from '@slopcade/shared/types/GameDefinition'
 
 export interface CostEstimate {
   totalMicros: number;

@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
-import { GRANTS } from './pricing';
-import { WalletService } from './wallet-service';
+import { GRANTS } from '@/economy/pricing'
+import { WalletService } from '@/economy/wallet-service'
 
 type D1Database = import('@cloudflare/workers-types').D1Database;
 

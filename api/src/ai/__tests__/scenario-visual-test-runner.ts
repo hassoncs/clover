@@ -15,8 +15,8 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { ScenarioClient } from '../scenario';
-import type { GenerationParams, Model } from '../scenario-types';
+import { ScenarioClient } from '@/ai/scenario'
+import type { GenerationParams, Model } from '@/ai/scenario-types'
 
 const OUTPUT_DIR = path.join(__dirname, 'output', 'scenario-visual-tests');
 

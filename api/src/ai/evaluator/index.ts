@@ -7,9 +7,9 @@ import type {
   EvaluationConfig,
   EvaluationResult,
   GameEvaluation,
-} from './types';
-import { DEFAULT_EVALUATION_MODELS } from './types';
-import { EVALUATION_SYSTEM_PROMPT, buildEvaluationPrompt } from './prompts';
+} from '@/ai/evaluator/types'
+import { DEFAULT_EVALUATION_MODELS } from '@/ai/evaluator/types'
+import { EVALUATION_SYSTEM_PROMPT, buildEvaluationPrompt } from '@/ai/evaluator/prompts'
 
 function createModel(config: EvaluationConfig): LanguageModel {
   const model = config.model ?? DEFAULT_EVALUATION_MODELS[config.provider];
@@ -207,11 +207,11 @@ export function evaluateGameStructure(gameDefinition: {
   };
 }
 
-export * from './types';
+export * from '@/ai/evaluator/types'
 export {
   runImprovementLoop,
   quickEvaluate,
   type ImprovementLoopConfig,
   type ImprovementLoopResult,
   type IterationRecord,
-} from './improvement-loop';
+} from '@/ai/evaluator/improvement-loop'

@@ -1,8 +1,8 @@
 import { env } from 'cloudflare:test';
 import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
-import { SignupCodeService, InvalidSignupCodeError } from '../signup-code-service';
-import { WalletService } from '../wallet-service';
-import { initTestDatabase, TEST_USER, createTestUser, TEST_USER_2 } from '../../__fixtures__/test-utils';
+import { SignupCodeService, InvalidSignupCodeError } from '@/economy/signup-code-service'
+import { WalletService } from '@/economy/wallet-service'
+import { initTestDatabase, TEST_USER, createTestUser, TEST_USER_2 } from '@/__fixtures__/test-utils'
 
 describe('SignupCodeService', () => {
   let signupCodeService: SignupCodeService;

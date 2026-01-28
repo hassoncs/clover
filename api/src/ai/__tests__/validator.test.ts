@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { validateGameDefinition, getValidationSummary } from '../validator';
-import validProjectileGame from '../../__fixtures__/games/valid-projectile-game.json';
-import invalidNoEntities from '../../__fixtures__/games/invalid-game-no-entities.json';
-import invalidBadPhysics from '../../__fixtures__/games/invalid-game-bad-physics.json';
+import { validateGameDefinition, getValidationSummary } from '@/ai/validator'
+import validProjectileGame from '@/__fixtures__/games/valid-projectile-game.json'
+import invalidNoEntities from '@/__fixtures__/games/invalid-game-no-entities.json'
+import invalidBadPhysics from '@/__fixtures__/games/invalid-game-bad-physics.json'
 
 describe('validateGameDefinition', () => {
   describe('valid games', () => {

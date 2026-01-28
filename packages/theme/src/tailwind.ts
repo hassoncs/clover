@@ -1,4 +1,4 @@
-import { tokens } from './tokens';
+import { tokens } from './tokens'
 
 // Tailwind CSS preset from design tokens
 // used by NativeWind in React Native apps and web Tailwind config

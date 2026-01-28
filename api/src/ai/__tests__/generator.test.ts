@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { validateGameDefinition } from '../validator';
-import { classifyPrompt } from '../classifier';
-import validProjectileGame from '../../__fixtures__/games/valid-projectile-game.json';
-import type { GameDefinition } from '../../../../shared/src/types/GameDefinition';
+import { validateGameDefinition } from '@/ai/validator'
+import { classifyPrompt } from '@/ai/classifier'
+import validProjectileGame from '@/__fixtures__/games/valid-projectile-game.json'
+import type { GameDefinition } from '@slopcade/shared/types/GameDefinition'
 
 describe('generateGame integration (using fixtures)', () => {
   describe('intent classification + validation pipeline', () => {

@@ -1,11 +1,11 @@
-import type { GameDefinition } from '../../../../shared/src/types/GameDefinition';
-import { BALL_LAUNCHER_TEMPLATE } from './ballLauncher';
-import { STACK_ATTACK_TEMPLATE } from './stackAttack';
-import { JUMPY_CAT_TEMPLATE } from './jumpyCat';
-import { HILL_RACER_TEMPLATE } from './hillRacer';
-import { FALLING_CATCHER_TEMPLATE } from './fallingCatcher';
-import { MATCH3_TEMPLATE } from './match3';
-import { TETRIS_TEMPLATE } from './tetris';
+import type { GameDefinition } from '@slopcade/shared/types/GameDefinition'
+import { BALL_LAUNCHER_TEMPLATE } from '@/ai/templates/ballLauncher'
+import { STACK_ATTACK_TEMPLATE } from '@/ai/templates/stackAttack'
+import { JUMPY_CAT_TEMPLATE } from '@/ai/templates/jumpyCat'
+import { HILL_RACER_TEMPLATE } from '@/ai/templates/hillRacer'
+import { FALLING_CATCHER_TEMPLATE } from '@/ai/templates/fallingCatcher'
+import { MATCH3_TEMPLATE } from '@/ai/templates/match3'
+import { TETRIS_TEMPLATE } from '@/ai/templates/tetris'
 
 export type GameType =
   | 'projectile'

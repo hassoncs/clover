@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { classifyPrompt, getClassificationConfidence } from '../classifier';
+import { classifyPrompt, getClassificationConfidence } from '@/ai/classifier'
 
 describe('classifyPrompt', () => {
   describe('game type detection', () => {

@@ -2,12 +2,12 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { generateObject } from 'ai';
 import type { LanguageModel } from 'ai';
-import type { GameDefinition } from '../../../shared/src/types/GameDefinition';
-import type { GameIntent } from './classifier';
-import { classifyPrompt } from './classifier';
-import { getTemplateForGameType } from './templates';
-import { validateGameDefinition, type ValidationResult } from './validator';
-import { GameDefinitionSchema } from './schemas';
+import type { GameDefinition } from '@slopcade/shared/types/GameDefinition'
+import type { GameIntent } from '@/ai/classifier'
+import { classifyPrompt } from '@/ai/classifier'
+import { getTemplateForGameType } from '@/ai/templates'
+import { validateGameDefinition, type ValidationResult } from '@/ai/validator'
+import { GameDefinitionSchema } from '@/ai/schemas'
 
 export type AIProvider = 'openai' | 'openrouter' | 'anthropic';
 

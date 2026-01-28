@@ -1,12 +1,12 @@
 import { env } from 'cloudflare:test';
 import { describe, it, expect, beforeAll } from 'vitest';
-import { appRouter } from '../router';
+import { appRouter } from '@/trpc/router'
 import {
   initTestDatabase,
   createAuthenticatedContext,
   TEST_USER,
   TEST_USER_2,
-} from '../../__fixtures__/test-utils';
+} from '@/__fixtures__/test-utils'
 
 describe('Users Router', () => {
   beforeAll(async () => {

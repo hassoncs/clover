@@ -2,10 +2,10 @@ import {
   router,
   publicProcedure,
   protectedProcedure,
-} from '../index';
+} from '@/trpc/index'
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { TileSheetSchema, TileMapSchema, SpriteStyleSchema } from '../../ai/schemas';
+import { TileSheetSchema, TileMapSchema, SpriteStyleSchema } from '@/ai/schemas'
 
 export const tilesRouter = router({
   generateSheet: protectedProcedure

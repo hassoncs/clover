@@ -1,8 +1,8 @@
 import { nanoid } from 'nanoid';
-import { WalletService } from './wallet-service';
+import { WalletService } from '@/economy/wallet-service'
 
 type D1Database = import('@cloudflare/workers-types').D1Database;
-import { microsToSparks } from './pricing';
+import { microsToSparks } from '@/economy/pricing'
 
 export interface PromoCode {
   code: string;

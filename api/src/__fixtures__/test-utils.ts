@@ -1,6 +1,6 @@
 import { env as cloudflareEnv } from 'cloudflare:test';
-import { appRouter } from '../trpc/router';
-import type { Context, AuthenticatedContext, User, Env } from '../trpc/context';
+import { appRouter } from '@/trpc/router'
+import type { Context, AuthenticatedContext, User, Env } from '@/trpc/context'
 
 // Cast the cloudflare test env to our Env type
 const env = cloudflareEnv as Env;

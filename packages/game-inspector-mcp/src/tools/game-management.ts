@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { GameInspectorState, WindowWithBridge } from "../types.js";
 import { DEFAULT_BASE_URL, DEFAULT_TIMEOUT } from "../types.js";
-import { normalizeGameName, buildGameUrl, buildExampleUrl, ensurePage, waitForDebugBridge, clearLogs } from "../utils.js";
+import { normalizeGameName, buildGameUrl, buildExampleUrl, ensurePage, waitForDebugBridge, clearLogs, getRecentLogs, queryGodot } from "../utils.js";
 import { getAvailableGames, getAvailableExamples, isValidGame, isValidExample, type GameInfo } from "../registry.js";
 
 export function registerGameManagementTools(server: McpServer, state: GameInspectorState) {
@@ -134,22 +134,38 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
 
       state.currentGameId = identifier;
 
+      const pauseResult = await queryGodot(page, "pause", []);
+      
       const snapshot = await page.evaluate(async () => {
         const w = window as unknown as WindowWithBridge;
         if (!w.GodotDebugBridge) return null;
         return w.GodotDebugBridge.getSnapshot({ detail: "med" });
       });
 
+      const startupLogs = getRecentLogs(state);
+      const errorLogs = startupLogs.filter(l => 
+        l.type === 'error' || l.text.includes('ERROR') || l.text.includes('SCRIPT ERROR')
+      );
+
+      const response: Record<string, unknown> = {
+        success: true,
+        identifier,
+        url,
+        snapshot,
+        paused: true,
+        timeState: pauseResult,
+        logCount: startupLogs.length,
+      };
+
+      if (errorLogs.length > 0) {
+        response.errors = errorLogs.map(l => l.text);
+      }
+
       return {
         content: [
           {
             type: "text" as const,
-            text: JSON.stringify({
-              success: true,
-              identifier,
-              url,
-              snapshot,
-            }),
+            text: JSON.stringify(response),
           },
         ],
       };

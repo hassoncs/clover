@@ -1,5 +1,5 @@
-import type { GameDefinition } from '../../../../shared/src/types/GameDefinition';
-import type { GameEvaluation } from '../evaluator/types';
+import type { GameDefinition } from '@slopcade/shared/types/GameDefinition'
+import type { GameEvaluation } from '@/ai/evaluator/types'
 
 export interface ExperimentConfig {
   name: string;

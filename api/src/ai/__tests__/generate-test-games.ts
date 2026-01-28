@@ -1,5 +1,5 @@
-import { generateGame, type AIConfig } from '../generator';
-import { validateGameDefinition, getValidationSummary } from '../validator';
+import { generateGame, type AIConfig } from '@/ai/generator'
+import { validateGameDefinition, getValidationSummary } from '@/ai/validator'
 import * as fs from 'fs';
 import * as path from 'path';
 

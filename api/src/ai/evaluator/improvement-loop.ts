@@ -1,8 +1,8 @@
-import type { GameDefinition } from '../../../../shared/src/types/GameDefinition';
-import type { AIConfig } from '../generator';
-import { generateGame, refineGame } from '../generator';
-import { evaluateGame, evaluateGameStructure } from './index';
-import type { EvaluationConfig, GameEvaluation } from './types';
+import type { GameDefinition } from '@slopcade/shared/types/GameDefinition'
+import type { AIConfig } from '@/ai/generator'
+import { generateGame, refineGame } from '@/ai/generator'
+import { evaluateGame, evaluateGameStructure } from '@/ai/evaluator/index'
+import type { EvaluationConfig, GameEvaluation } from '@/ai/evaluator/types'
 
 export interface ImprovementLoopConfig {
   generationConfig: AIConfig;

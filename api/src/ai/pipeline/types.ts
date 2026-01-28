@@ -5,7 +5,7 @@
  * This is the core type system - runtime-agnostic, no Node.js or Workers APIs.
  */
 
-import type { ImageProvider } from '../provider-contract';
+import type { ImageProvider } from '@/ai/provider-contract'
 
 // =============================================================================
 // ASSET TYPES - The discriminator for pipeline flow
@@ -19,7 +19,7 @@ export type AssetType = 'entity' | 'background' | 'title_hero' | 'title_hero_no_
 
 export type SpriteStyle = 'pixel' | 'cartoon' | '3d' | 'flat';
 
-export type { ImageProvider } from '../provider-contract';
+export type { ImageProvider } from '@/ai/provider-contract'
 
 export const STYLE_DESCRIPTORS: Record<SpriteStyle, { aesthetic: string; technical: string }> = {
   pixel: {

@@ -2,7 +2,7 @@ import {
   router,
   publicProcedure,
   protectedProcedure,
-} from '../index';
+} from '@/trpc/index'
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import {
@@ -13,7 +13,7 @@ import {
   getClassificationConfidence,
   validateGameDefinition,
   getValidationSummary,
-} from '../../ai';
+} from '@/ai'
 
 interface GameRow {
   id: string;

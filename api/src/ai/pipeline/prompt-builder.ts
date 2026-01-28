@@ -1,5 +1,5 @@
-import type { AssetSpec, EntitySpec, BackgroundSpec, TitleHeroSpec, TitleHeroNoBgSpec, ParallaxSpec, SpriteStyle, SpriteSheetSpec, TileSheetSpec, VariationSheetSpec, UIComponentSheetSpec, SheetPromptConfig } from './types';
-import { STYLE_DESCRIPTORS } from './types';
+import type { AssetSpec, EntitySpec, BackgroundSpec, TitleHeroSpec, TitleHeroNoBgSpec, ParallaxSpec, SpriteStyle, SpriteSheetSpec, TileSheetSpec, VariationSheetSpec, UIComponentSheetSpec, SheetPromptConfig } from '@/ai/pipeline/types'
+import { STYLE_DESCRIPTORS } from '@/ai/pipeline/types'
 
 type SheetSpec = SpriteSheetSpec | TileSheetSpec | VariationSheetSpec | UIComponentSheetSpec;
 

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { GameInspectorState, WindowWithBridge } from "../types.js";
+import type { GameInspectorState, WindowWithBridge } from '../types.js'
 
 export function registerSnapshotTools(server: McpServer, state: GameInspectorState) {
   server.tool(

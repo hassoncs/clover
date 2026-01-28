@@ -1,5 +1,5 @@
-import type { LayoutDoc, TextGridSpec } from '../types';
-import { isFontAllowlisted } from './font-allowlist';
+import type { LayoutDoc, TextGridSpec } from '@/ai/pipeline/types'
+import { isFontAllowlisted } from '@/ai/pipeline/text-grid/font-allowlist'
 
 export const TEXT_EMPTY = 'TEXT_EMPTY' as const;
 export const TEXT_TOO_LONG = 'TEXT_TOO_LONG' as const;

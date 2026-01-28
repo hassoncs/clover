@@ -27,7 +27,14 @@ CREATE TABLE IF NOT EXISTS games (
   deleted_at INTEGER,
   -- Lineage tracking for fork/asset pack sharing
   base_game_id TEXT REFERENCES games(id),  -- Points to root game; self-referential for originals
-  forked_from_id TEXT REFERENCES games(id) -- Immediate parent; NULL for originals
+  forked_from_id TEXT REFERENCES games(id), -- Immediate parent; NULL for originals
+  validation_report TEXT,
+  validation_score INTEGER,
+  validation_critical_count INTEGER DEFAULT 0,
+  validation_warning_count INTEGER DEFAULT 0,
+  validation_valid INTEGER DEFAULT 0,
+  validation_updated_at INTEGER,
+  validator_version TEXT
 );
 
 -- Indexes for common queries
@@ -37,6 +44,9 @@ CREATE INDEX IF NOT EXISTS idx_games_is_public ON games(is_public);
 CREATE INDEX IF NOT EXISTS idx_games_created_at ON games(created_at);
 CREATE INDEX IF NOT EXISTS idx_games_base_game ON games(base_game_id);
 CREATE INDEX IF NOT EXISTS idx_games_forked_from ON games(forked_from_id);
+CREATE INDEX IF NOT EXISTS idx_games_validation_valid ON games(validation_valid);
+CREATE INDEX IF NOT EXISTS idx_games_validation_score ON games(validation_score);
+CREATE INDEX IF NOT EXISTS idx_games_browse ON games(is_public, validation_valid, validation_score, play_count, created_at);
 
 -- Themes table (must be before assets due to FK)
 CREATE TABLE IF NOT EXISTS themes (

@@ -1,8 +1,8 @@
 import { chromium } from "playwright";
 import type { Browser, Page } from "playwright";
-import type { GameInspectorState, WindowWithBridge, ConsoleLogEntry } from "./types.js";
-import { DEFAULT_TIMEOUT } from "./types.js";
-import { findByIdOrPath, type GameInfo } from "./registry.js";
+import type { GameInspectorState, WindowWithBridge, ConsoleLogEntry } from './types.js'
+import { DEFAULT_TIMEOUT } from './types.js'
+import { findByIdOrPath, type GameInfo } from './registry.js'
 import path from "path";
 import fs from "fs";
 
@@ -61,11 +61,16 @@ export function clearLogs(state: GameInspectorState): void {
   state.consoleLogs.length = 0;
 }
 
-export async function takeScreenshot(page: Page, prefix: string = 'screenshot'): Promise<string> {
+export function getScreenshotsDir(): string {
   const screenshotsDir = path.join(process.cwd(), 'tmp', 'game-inspector-screenshots');
   if (!fs.existsSync(screenshotsDir)) {
     fs.mkdirSync(screenshotsDir, { recursive: true });
   }
+  return screenshotsDir;
+}
+
+export async function takeScreenshot(page: Page, prefix: string = 'screenshot'): Promise<string> {
+  const screenshotsDir = getScreenshotsDir();
   
   const timestamp = Date.now();
   const filename = `${prefix}-${timestamp}.png`;

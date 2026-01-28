@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { trpcServer } from "@hono/trpc-server";
-import { appRouter } from "./trpc/router";
-import { createContext, type Env } from "./trpc/context";
-import revenuecatWebhookRouter from "./routes/webhooks/revenuecat";
-import textGridRouter from "./routes/text-grid";
+import { appRouter } from '@/trpc/router'
+import { createContext, type Env } from '@/trpc/context'
+import revenuecatWebhookRouter from '@/routes/webhooks/revenuecat'
+import textGridRouter from '@/routes/text-grid'
 
 const app = new Hono<{ Bindings: Env }>();
 

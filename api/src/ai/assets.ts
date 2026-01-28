@@ -1,6 +1,6 @@
-import type { Env } from '../trpc/context';
-import { ComfyUIClient, createComfyUIClient } from './comfyui';
-import { createScenarioClient } from './scenario';
+import type { Env } from '@/trpc/context'
+import { ComfyUIClient, createComfyUIClient } from '@/ai/comfyui'
+import { createScenarioClient } from '@/ai/scenario'
 import { buildAssetPath } from '@slopcade/shared';
 
 const DEBUG_ASSET_GENERATION = process.env.DEBUG_ASSET_GENERATION === 'true';

@@ -1,7 +1,7 @@
 import { env } from 'cloudflare:test';
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
-import { WalletService, InsufficientBalanceError } from '../wallet-service';
-import { initTestDatabase, TEST_USER, createTestUser } from '../../__fixtures__/test-utils';
+import { WalletService, InsufficientBalanceError } from '@/economy/wallet-service'
+import { initTestDatabase, TEST_USER, createTestUser } from '@/__fixtures__/test-utils'
 
 describe('WalletService', () => {
   let walletService: WalletService;

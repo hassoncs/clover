@@ -1,4 +1,4 @@
-import type { LayoutDoc, SilhouetteSpec, TextStyleSpec } from '../types';
+import type { LayoutDoc, SilhouetteSpec, TextStyleSpec } from '@/ai/pipeline/types'
 
 /**
  * External Stylizer Contract

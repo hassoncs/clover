@@ -1,8 +1,8 @@
-import type { ComfyWorkflow } from '../comfyui-types';
+import type { ComfyWorkflow } from '@/ai/comfyui-types'
 
-import txt2imgWorkflow from './txt2img.json';
-import img2imgWorkflow from './img2img.json';
-import removeBackgroundWorkflow from './remove-background.json';
+import txt2imgWorkflow from '@/ai/workflows/txt2img.json'
+import img2imgWorkflow from '@/ai/workflows/img2img.json'
+import removeBackgroundWorkflow from '@/ai/workflows/remove-background.json'
 
 interface Txt2ImgParams {
   prompt: string;

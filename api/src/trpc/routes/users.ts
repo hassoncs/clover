@@ -1,7 +1,7 @@
 import {
   router,
   protectedProcedure,
-} from '../index';
+} from '@/trpc/index'
 
 export const usersRouter = router({
   me: protectedProcedure.query(async ({ ctx }) => {

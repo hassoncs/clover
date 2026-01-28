@@ -1,8 +1,8 @@
 // This file is ONLY for type-checking. Never import it.
 // If this file has type errors, your platform exports are out of sync.
 
-import type * as Native from './index.native';
-import type * as Web from './index.web';
+import type * as Native from '@/SortableList/index.native'
+import type * as Web from '@/SortableList/index.web'
 
 type NativeKeys = keyof typeof Native;
 type WebKeys = keyof typeof Web;

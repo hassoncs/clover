@@ -1,15 +1,15 @@
-import type { Stage, AssetRun, PipelineAdapters, DebugSink, UIComponentSheetSpec } from '../types';
-import { isUIComponentSpec } from '../types';
-import { createNinePatchSilhouette } from '../silhouettes/ui-component';
-import { ICON_PATHS } from '../silhouettes/text-hint';
+import type { Stage, AssetRun, PipelineAdapters, DebugSink, UIComponentSheetSpec } from '@/ai/pipeline/types'
+import { isUIComponentSpec } from '@/ai/pipeline/types'
+import { createNinePatchSilhouette } from '@/ai/pipeline/silhouettes/ui-component'
+import { ICON_PATHS } from '@/ai/pipeline/silhouettes/text-hint'
 import { 
   createPanelSilhouette, 
   createProgressBarSilhouette, 
   createScrollBarSilhouette, 
   createTabBarSilhouette 
-} from '../silhouettes/ui-component-svg';
-import { buildUIComponentPrompt } from '../prompt-builder';
-import { getControlConfig, getControlBaseState } from '../ui-control-config';
+} from '@/ai/pipeline/silhouettes/ui-component-svg'
+import { buildUIComponentPrompt } from '@/ai/pipeline/prompt-builder'
+import { getControlConfig, getControlBaseState } from '@/ai/pipeline/ui-control-config'
 
 export const uiBaseStateStage: Stage = {
   id: 'ui-base-state',

@@ -2,11 +2,11 @@
 import { parseArgs } from 'node:util';
 import * as path from 'path';
 import * as crypto from 'node:crypto';
-import { createNodeAdapters, createFileDebugSink } from '../ai/pipeline/adapters/node';
-import { uiBaseStateStage, uiVariationStatesStage, uiUploadR2Stage } from '../ai/pipeline/stages/ui-component';
-import type { AssetRun, UIComponentSheetSpec, SpriteStyle } from '../ai/pipeline/types';
-import { UI_CONTROL_CONFIG } from '../ai/pipeline/ui-control-config';
-import { getPresetTheme, listPresets, THEME_PRESETS } from './theme-presets';
+import { createNodeAdapters, createFileDebugSink } from '@/ai/pipeline/adapters/node'
+import { uiBaseStateStage, uiVariationStatesStage, uiUploadR2Stage } from '@/ai/pipeline/stages/ui-component'
+import type { AssetRun, UIComponentSheetSpec, SpriteStyle } from '@/ai/pipeline/types'
+import { UI_CONTROL_CONFIG } from '@/ai/pipeline/ui-control-config'
+import { getPresetTheme, listPresets, THEME_PRESETS } from '@/cli/theme-presets'
 
 type UIControlType = 'button' | 'checkbox' | 'panel' | 'progress_bar' | 'scroll_bar_h' | 'scroll_bar_v' | 'tab_bar';
 

@@ -1,7 +1,7 @@
 export {
   runExperiment,
   formatExperimentReport,
-} from './runner';
+} from '@/ai/experiments/runner'
 
 export {
   BENCHMARK_PROMPTS,
@@ -12,4 +12,4 @@ export {
   type ModelConfig,
   type ModelStats,
   type PromptStats,
-} from './types';
+} from '@/ai/experiments/types'

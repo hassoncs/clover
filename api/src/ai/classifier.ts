@@ -1,5 +1,5 @@
-import type { GameType } from './templates';
-import type { WinConditionType, LoseConditionType } from '../../../shared/src/types/rules';
+import type { GameType } from '@/ai/templates'
+import type { WinConditionType, LoseConditionType } from '@slopcade/shared/types/rules'
 
 export type ControlIntent =
   | 'tap_to_jump'

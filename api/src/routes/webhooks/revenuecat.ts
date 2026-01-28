@@ -1,8 +1,8 @@
 import { Hono } from 'hono';
 import { createHmac } from 'crypto';
 import { nanoid } from 'nanoid';
-import { WalletService } from '../../economy/wallet-service';
-import type { Env } from '../../trpc/context';
+import { WalletService } from '@/economy/wallet-service'
+import type { Env } from '@/trpc/context'
 
 const router = new Hono<{ Bindings: Env }>();
 

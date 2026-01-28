@@ -1,4 +1,4 @@
-import type { FontSpec, LayoutDoc, SilhouetteSpec, TextAlignment } from '../types';
+import type { FontSpec, LayoutDoc, SilhouetteSpec, TextAlignment } from '@/ai/pipeline/types'
 
 export interface RenderParams {
   layoutDoc: LayoutDoc;

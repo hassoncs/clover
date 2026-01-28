@@ -1,4 +1,4 @@
-import type { GridCell, GridSpec, LayoutDoc, TextAlignment, TextLine, WrapConfig } from '../types';
+import type { GridCell, GridSpec, LayoutDoc, TextAlignment, TextLine, WrapConfig } from '@/ai/pipeline/types'
 
 export const TEXT_GRID_LIMITS = {
   maxGraphemes: 256,

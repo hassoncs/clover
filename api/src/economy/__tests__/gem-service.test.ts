@@ -1,7 +1,7 @@
 import { env } from 'cloudflare:test';
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
-import { GemService, InsufficientGemsError } from '../gem-service';
-import { initTestDatabase, TEST_USER, createTestUser } from '../../__fixtures__/test-utils';
+import { GemService, InsufficientGemsError } from '@/economy/gem-service'
+import { initTestDatabase, TEST_USER, createTestUser } from '@/__fixtures__/test-utils'
 
 describe('GemService', () => {
   let gemService: GemService;

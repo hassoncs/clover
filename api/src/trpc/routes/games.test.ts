@@ -1,8 +1,8 @@
 import { env } from 'cloudflare:test';
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
-import { appRouter } from '../router';
-import { type Context } from '../context';
-import validProjectileGame from '../../__fixtures__/games/valid-projectile-game.json';
+import { appRouter } from '@/trpc/router'
+import { type Context } from '@/trpc/context'
+import validProjectileGame from '@/__fixtures__/games/valid-projectile-game.json'
 
 const schema = `
 -- Users table (synced from Supabase Auth)

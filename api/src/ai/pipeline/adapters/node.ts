@@ -1,5 +1,5 @@
-import type { PipelineAdapters, ImageGenerationAdapter, R2Adapter, SilhouetteAdapter, DebugSink, DebugEvent } from '../types';
-import { ComfyUIClient } from '../../comfyui';
+import type { PipelineAdapters, ImageGenerationAdapter, R2Adapter, SilhouetteAdapter, DebugSink, DebugEvent } from '@/ai/pipeline/types'
+import { ComfyUIClient } from '@/ai/comfyui'
 
 const SCENARIO_API_URL = 'https://api.cloud.scenario.com/v1';
 

@@ -1,8 +1,8 @@
 import { env } from 'cloudflare:test';
 import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
-import { PromoCodeService, InvalidPromoCodeError } from '../promo-code-service';
-import { WalletService } from '../wallet-service';
-import { initTestDatabase, TEST_USER, createTestUser, TEST_USER_2 } from '../../__fixtures__/test-utils';
+import { PromoCodeService, InvalidPromoCodeError } from '@/economy/promo-code-service'
+import { WalletService } from '@/economy/wallet-service'
+import { initTestDatabase, TEST_USER, createTestUser, TEST_USER_2 } from '@/__fixtures__/test-utils'
 
 describe('PromoCodeService', () => {
   let promoCodeService: PromoCodeService;

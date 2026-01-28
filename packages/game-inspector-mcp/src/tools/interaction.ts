@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { GameInspectorState, AssertParams, ConsoleLogEntry } from "../types.js";
-import { queryGodot, getRecentLogs, takeScreenshot } from "../utils.js";
+import type { GameInspectorState, AssertParams, ConsoleLogEntry } from '../types.js'
+import { queryGodot, getRecentLogs, takeScreenshot } from '../utils.js'
 
 interface QueryPointResult {
   entities: Array<{ entityId: string; shapeIndex: number }>;

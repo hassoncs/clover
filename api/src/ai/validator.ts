@@ -1,7 +1,7 @@
-import type { GameDefinition } from '../../../shared/src/types/GameDefinition';
-import type { GameEntity, EntityTemplate } from '../../../shared/src/types/entity';
-import type { Behavior, BehaviorType } from '../../../shared/src/types/behavior';
-import type { GameRule } from '../../../shared/src/types/rules';
+import type { GameDefinition } from '@slopcade/shared/types/GameDefinition'
+import type { GameEntity, EntityTemplate } from '@slopcade/shared/types/entity'
+import type { Behavior, BehaviorType } from '@slopcade/shared/types/behavior'
+import type { GameRule } from '@slopcade/shared/types/rules'
 
 export interface ValidationResult {
   valid: boolean;

@@ -36,6 +36,16 @@ baseConfig.resolver.unstable_conditionNames = ["require", "import", "react-nativ
 baseConfig.resolver.sourceExts = [...(baseConfig.resolver.sourceExts || []), "cjs"];
 baseConfig.resolver.unstable_enablePackageExports = false;
 
+// Configure path aliases for monorepo packages
+baseConfig.resolver.extraNodeModules = {
+  ...baseConfig.resolver.extraNodeModules,
+  // Map @/ in packages to their src directories
+  '@slopcade/theme': path.resolve(monorepoRoot, 'packages/theme/src'),
+  '@slopcade/ui': path.resolve(monorepoRoot, 'packages/ui/src'),
+  '@slopcade/shared': path.resolve(monorepoRoot, 'shared/src'),
+  '@slopcade/game-inspector-mcp': path.resolve(monorepoRoot, 'packages/game-inspector-mcp/src'),
+};
+
 const config = withNativeWind(baseConfig, { input: "./global.css" });
 
 const nativeWindResolver = config.resolver.resolveRequest;
@@ -47,6 +57,42 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
       type: "sourceFile",
       filePath: umdPath,
     };
+  }
+
+  // Handle @/ imports from monorepo packages
+  if (moduleName.startsWith('@/')) {
+    // Check if this is being resolved from a monorepo package
+    const originPath = context.originModulePath || '';
+    
+    if (originPath.includes('packages/theme/')) {
+      const resolvedPath = path.resolve(monorepoRoot, 'packages/theme/src', moduleName.replace('@/', ''));
+      if (fs.existsSync(resolvedPath + '.ts') || fs.existsSync(resolvedPath + '.tsx')) {
+        return {
+          type: 'sourceFile',
+          filePath: resolvedPath + (fs.existsSync(resolvedPath + '.tsx') ? '.tsx' : '.ts'),
+        };
+      }
+    }
+    
+    if (originPath.includes('packages/ui/')) {
+      const resolvedPath = path.resolve(monorepoRoot, 'packages/ui/src', moduleName.replace('@/', ''));
+      if (fs.existsSync(resolvedPath + '.ts') || fs.existsSync(resolvedPath + '.tsx')) {
+        return {
+          type: 'sourceFile',
+          filePath: resolvedPath + (fs.existsSync(resolvedPath + '.tsx') ? '.tsx' : '.ts'),
+        };
+      }
+    }
+    
+    if (originPath.includes('shared/')) {
+      const resolvedPath = path.resolve(monorepoRoot, 'shared/src', moduleName.replace('@/', ''));
+      if (fs.existsSync(resolvedPath + '.ts') || fs.existsSync(resolvedPath + '.tsx')) {
+        return {
+          type: 'sourceFile',
+          filePath: resolvedPath + (fs.existsSync(resolvedPath + '.tsx') ? '.tsx' : '.ts'),
+        };
+      }
+    }
   }
 
   if (nativeWindResolver) {

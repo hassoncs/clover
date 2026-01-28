@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { GameInspectorState } from "../types.js";
-import { queryGodot } from "../utils.js";
+import type { GameInspectorState } from '../types.js'
+import { queryGodot } from '../utils.js'
 
 export function registerPropertiesTools(server: McpServer, state: GameInspectorState) {
   server.tool(

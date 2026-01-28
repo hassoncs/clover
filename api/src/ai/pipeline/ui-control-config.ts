@@ -1,4 +1,4 @@
-import type { UIComponentSheetSpec } from './types';
+import type { UIComponentSheetSpec } from '@/ai/pipeline/types'
 
 type UIComponentType = UIComponentSheetSpec['componentType'];
 type UIState = UIComponentSheetSpec['states'][number];

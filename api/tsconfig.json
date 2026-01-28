@@ -9,7 +9,12 @@
     "lib": ["ES2022"],
     "types": ["@cloudflare/workers-types", "@cloudflare/vitest-pool-workers"],
     "noEmit": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@slopcade/shared/*": ["../shared/src/*"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts"],
   "exclude": [

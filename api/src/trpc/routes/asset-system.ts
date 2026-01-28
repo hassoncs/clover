@@ -1,4 +1,4 @@
-import { protectedProcedure, router } from '../index';
+import { protectedProcedure, router } from '@/trpc/index'
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import {
@@ -7,18 +7,18 @@ import {
   buildStructuredNegativePrompt,
   type EntityType,
   type SpriteStyle,
-} from '../../ai/assets';
-import { migrateAssetPacks, rollbackMigration } from '../../migrations/migrate-asset-packs';
+} from '@/ai/assets'
+import { migrateAssetPacks, rollbackMigration } from '@/migrations/migrate-asset-packs'
 import { isLegacyUrl } from '@slopcade/shared';
 import { buildAssetPath, isStoredR2Key } from '@slopcade/shared/utils/asset-url';
-import { WalletService, InsufficientBalanceError } from '../../economy/wallet-service';
-import { PROVIDER_COSTS, RATE_LIMITS, microsToSparks, USER_COSTS } from '../../economy/pricing';
-import { createWorkersAdapters as createWorkersAdaptersImpl } from '../../ai/pipeline/adapters/workers';
+import { WalletService, InsufficientBalanceError } from '@/economy/wallet-service'
+import { PROVIDER_COSTS, RATE_LIMITS, microsToSparks, USER_COSTS } from '@/economy/pricing'
+import { createWorkersAdapters as createWorkersAdaptersImpl } from '@/ai/pipeline/adapters/workers'
 
-import type { AssetRun, DebugEvent, UIComponentSheetSpec } from '../../ai/pipeline/types';
-import { uiBaseStateStage, uiVariationStatesStage } from '../../ai/pipeline/stages/ui-component';
-import { getControlBaseState, getControlConfig } from '../../ai/pipeline/ui-control-config';
-import type { Env } from '../context';
+import type { AssetRun, DebugEvent, UIComponentSheetSpec } from '@/ai/pipeline/types'
+import { uiBaseStateStage, uiVariationStatesStage } from '@/ai/pipeline/stages/ui-component'
+import { getControlBaseState, getControlConfig } from '@/ai/pipeline/ui-control-config'
+import type { Env } from '@/trpc/context'
 
 const createWorkersAdapters = (env: Env) => createWorkersAdaptersImpl(env, env.ASSETS);
 

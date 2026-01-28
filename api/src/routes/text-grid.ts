@@ -1,9 +1,9 @@
 import { Hono } from 'hono';
-import type { Env } from '../trpc/context';
-import { generateTextGrid, validateTextGridSpec } from '../ai/pipeline/text-grid';
-import type { TextGridSpec } from '../ai/pipeline/text-grid';
-import type { ValidationError as TextGridValidationError } from '../ai/pipeline/text-grid/validation';
-import { createImageGenerationAdapter } from '../ai/assets';
+import type { Env } from '@/trpc/context'
+import { generateTextGrid, validateTextGridSpec } from '@/ai/pipeline/text-grid'
+import type { TextGridSpec } from '@/ai/pipeline/text-grid'
+import type { ValidationError as TextGridValidationError } from '@/ai/pipeline/text-grid/validation'
+import { createImageGenerationAdapter } from '@/ai/assets'
 
 const router = new Hono<{ Bindings: Env }>();
 

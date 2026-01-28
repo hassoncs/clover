@@ -1,8 +1,8 @@
-import type { PipelineAdapters, ImageGenerationAdapter, R2Adapter, SilhouetteAdapter } from './types';
-import { createComfyUIClient } from '../../comfyui';
-import { createScenarioClient, type ScenarioClient } from '../../scenario';
-import { createSilhouettePng } from '../../assets';
-import type { Env } from '../../../trpc/context';
+import type { PipelineAdapters, ImageGenerationAdapter, R2Adapter, SilhouetteAdapter } from '@/ai/pipeline/adapters/types'
+import { createComfyUIClient } from '@/ai/comfyui'
+import { createScenarioClient, type ScenarioClient } from '@/ai/scenario'
+import { createSilhouettePng } from '@/ai/assets'
+import type { Env } from '@/trpc/context'
 import type { R2Bucket } from '@cloudflare/workers-types';
 
 export function createWorkersScenarioAdapter(client: ScenarioClient): ImageGenerationAdapter {

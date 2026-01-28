@@ -8,7 +8,6 @@ export const games = sqliteTable('games', {
   installId: text('install_id'),
   title: text('title').notNull(),
   description: text('description'),
-  // JSON blob containing the full GameDefinition
   definition: text('definition').notNull(),
   thumbnailUrl: text('thumbnail_url'),
   isPublic: integer('is_public', { mode: 'boolean' }).default(false),
@@ -16,6 +15,13 @@ export const games = sqliteTable('games', {
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
   deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  validationReport: text('validation_report'),
+  validationScore: integer('validation_score'),
+  validationCriticalCount: integer('validation_critical_count').default(0),
+  validationWarningCount: integer('validation_warning_count').default(0),
+  validationValid: integer('validation_valid', { mode: 'boolean' }).default(false),
+  validationUpdatedAt: integer('validation_updated_at', { mode: 'timestamp' }),
+  validatorVersion: text('validator_version'),
 });
 
 // Import users for the reference

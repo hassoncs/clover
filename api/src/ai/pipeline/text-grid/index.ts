@@ -1,19 +1,19 @@
-import type { LayoutDoc, TextGridSpec } from '../types';
-import { createLayoutDoc } from './segmentation';
-import { renderSilhouetteSvgGrid } from './svg-renderer';
-import { validateLayoutDoc, validateSvgOutput, validateTextGridSpec } from './validation';
+import type { LayoutDoc, TextGridSpec } from '@/ai/pipeline/types'
+import { createLayoutDoc } from '@/ai/pipeline/text-grid/segmentation'
+import { renderSilhouetteSvgGrid } from '@/ai/pipeline/text-grid/svg-renderer'
+import { validateLayoutDoc, validateSvgOutput, validateTextGridSpec } from '@/ai/pipeline/text-grid/validation'
 
 // Public API for the text-grid module.
 
 // Types
-export type { FontAllowlistEntry } from './font-allowlist';
-export type { RenderParams } from './svg-renderer';
-export type { ValidationResult } from './validation';
-export type { StylizerInput, StylizerOutput } from './stylizer-contract';
-export type { AnimationCell } from './runtime';
+export type { FontAllowlistEntry } from '@/ai/pipeline/text-grid/font-allowlist'
+export type { RenderParams } from '@/ai/pipeline/text-grid/svg-renderer'
+export type { ValidationResult } from '@/ai/pipeline/text-grid/validation'
+export type { StylizerInput, StylizerOutput } from '@/ai/pipeline/text-grid/stylizer-contract'
+export type { AnimationCell } from '@/ai/pipeline/text-grid/runtime'
 
 // (Common pipeline types)
-export type { TextGridSpec, LayoutDoc } from '../types';
+export type { TextGridSpec, LayoutDoc } from '@/ai/pipeline/types'
 
 // Functions
 export {
@@ -23,11 +23,11 @@ export {
   getAllowlistedFamilies,
   isWeightAvailable,
   getDefaultFont,
-} from './font-allowlist';
+} from '@/ai/pipeline/text-grid/font-allowlist'
 
-export { segmentGraphemes, createLayoutDoc, computeLayoutDocHashes, makeCellId, TEXT_GRID_LIMITS } from './segmentation';
+export { segmentGraphemes, createLayoutDoc, computeLayoutDocHashes, makeCellId, TEXT_GRID_LIMITS } from '@/ai/pipeline/text-grid/segmentation'
 
-export { renderSilhouetteSvgGrid } from './svg-renderer';
+export { renderSilhouetteSvgGrid } from '@/ai/pipeline/text-grid/svg-renderer'
 
 export {
   validateTextGridSpec,
@@ -43,11 +43,11 @@ export {
   PROMPT_TOO_LONG,
   SVG_INVALID,
   SVG_MISSING_ATTRIBUTES,
-} from './validation';
+} from '@/ai/pipeline/text-grid/validation'
 
-export { createStylizerInput, validateStylizerOutput } from './stylizer-contract';
+export { createStylizerInput, validateStylizerOutput } from '@/ai/pipeline/text-grid/stylizer-contract'
 
-export { createAnimationMetadata, generateClipPathSvg } from './runtime';
+export { createAnimationMetadata, generateClipPathSvg } from '@/ai/pipeline/text-grid/runtime'
 
 export class TextGridError extends Error {
   code: string;
@@ -93,7 +93,7 @@ export interface GenerateTextGridResult {
   layoutDoc?: LayoutDoc;
   svg?: string;
   svgDimensions?: { width: number; height: number };
-  validationErrors?: Array<import('./validation').ValidationError>;
+  validationErrors?: Array<import('@/ai/pipeline/text-grid/validation').ValidationError>;
   error?: string;
 }
 

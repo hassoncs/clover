@@ -1,4 +1,4 @@
-import type { AssetType, Stage } from './types';
+import type { AssetType, Stage } from '@/ai/pipeline/types'
 import {
   silhouetteStage,
   buildPromptStage,
@@ -10,7 +10,7 @@ import {
   uploadR2Stage,
   sheetGuideStage,
   buildSheetMetadataStage,
-} from './stages';
+} from '@/ai/pipeline/stages'
 
 export const pipelineRegistry: Record<AssetType, Stage[]> = {
   entity: [

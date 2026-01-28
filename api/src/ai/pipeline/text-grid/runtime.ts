@@ -1,4 +1,4 @@
-import type { LayoutDoc } from '../types';
+import type { LayoutDoc } from '@/ai/pipeline/types'
 
 /**
  * Runtime integration helpers for text-grid sprite-sheet animation.

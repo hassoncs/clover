@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { AssetService, getScenarioConfigFromEnv, buildStructuredPrompt, buildStructuredNegativePrompt } from '../assets';
-import type { Env } from '../../trpc/context';
+import { AssetService, getScenarioConfigFromEnv, buildStructuredPrompt, buildStructuredNegativePrompt } from '@/ai/assets'
+import type { Env } from '@/trpc/context'
 
 const createMockEnv = (overrides: Partial<Env> = {}): Env => ({
   DB: {} as D1Database,

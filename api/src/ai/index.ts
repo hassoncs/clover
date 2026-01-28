@@ -2,7 +2,7 @@ export {
   classifyPrompt,
   getClassificationConfidence,
   type GameIntent,
-} from './classifier';
+} from '@/ai/classifier'
 
 export {
   generateGame,
@@ -13,9 +13,9 @@ export {
   type GenerationOptions,
   type GenerationResult,
   type RefinementResult,
-} from './generator';
+} from '@/ai/generator'
 
-export { GameDefinitionSchema } from './schemas';
+export { GameDefinitionSchema } from '@/ai/schemas'
 
 export {
   validateGameDefinition,
@@ -23,7 +23,7 @@ export {
   type ValidationResult,
   type ValidationError,
   type ValidationWarning,
-} from './validator';
+} from '@/ai/validator'
 
 export {
   GAME_TEMPLATES,
@@ -35,17 +35,17 @@ export {
   HILL_RACER_TEMPLATE,
   FALLING_CATCHER_TEMPLATE,
   type GameType,
-} from './templates';
+} from '@/ai/templates'
 
 export {
   ScenarioClient,
   createScenarioClient,
-} from './scenario';
+} from '@/ai/scenario'
 
 export {
   ComfyUIClient,
   createComfyUIClient,
-} from './comfyui';
+} from '@/ai/comfyui'
 
 export {
   AssetService,
@@ -53,13 +53,13 @@ export {
   type SpriteStyle,
   type AssetGenerationRequest,
   type AssetGenerationResult,
-} from './assets';
+} from '@/ai/assets'
 
 export type {
   ScenarioConfig,
   GenerationParams,
   GenerationResult as ScenarioGenerationResult,
-} from './scenario-types';
+} from '@/ai/scenario-types'
 
 export type {
   ComfyUIConfig,
@@ -68,7 +68,7 @@ export type {
   ComfyGenerateLayeredParams,
   ParallaxLayerConfig,
   ComfyLayeredResult,
-} from './comfyui-types';
+} from '@/ai/comfyui-types'
 
 export {
   evaluateGame,
@@ -84,7 +84,7 @@ export {
   type ImprovementLoopConfig,
   type ImprovementLoopResult,
   type IterationRecord,
-} from './evaluator';
+} from '@/ai/evaluator'
 
 export {
   runExperiment,
@@ -97,4 +97,4 @@ export {
   type ModelConfig,
   type ModelStats,
   type PromptStats,
-} from './experiments';
+} from '@/ai/experiments'

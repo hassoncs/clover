@@ -1,4 +1,4 @@
-import type { GameDefinition } from '../../../../shared/src/types/GameDefinition';
+import type { GameDefinition } from '@slopcade/shared/types/GameDefinition'
 
 export const JUMPY_CAT_TEMPLATE: GameDefinition = {
   metadata: {

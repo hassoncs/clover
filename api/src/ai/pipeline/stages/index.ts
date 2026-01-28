@@ -8,8 +8,8 @@ import type {
   SpriteSheetSpec,
   TileSheetSpec,
   VariationSheetSpec,
-} from '../types';
-import { buildPromptForSpec } from '../prompt-builder';
+} from '@/ai/pipeline/types'
+import { buildPromptForSpec } from '@/ai/pipeline/prompt-builder'
 import { buildAssetPath } from '@slopcade/shared';
 
 type SheetSpec = SpriteSheetSpec | TileSheetSpec | VariationSheetSpec;
