@@ -94,16 +94,10 @@ describe('Provider Adapter Factory Contract', () => {
   });
 
   describe('Workers adapter factory contract', () => {
-    it('createWorkersProviderAdapter selects ComfyUI provider', async () => {
+    it('createWorkersProviderAdapter returns Modal ComfyUI adapter', async () => {
       const { createWorkersProviderAdapter } = await import('../pipeline/adapters/workers');
 
-      const mockEnv = {
-        IMAGE_GENERATION_PROVIDER: 'comfyui',
-        RUNPOD_API_KEY: 'test-key',
-        RUNPOD_COMFYUI_ENDPOINT_ID: 'endpoint-123',
-        SCENARIO_API_KEY: undefined,
-        SCENARIO_SECRET_API_KEY: undefined,
-      } as any;
+      const mockEnv = {} as any;
 
       const adapter = createWorkersProviderAdapter(mockEnv);
       
@@ -111,39 +105,6 @@ describe('Provider Adapter Factory Contract', () => {
       expect(typeof adapter.txt2img).toBe('function');
       expect(typeof adapter.uploadImage).toBe('function');
       expect(typeof adapter.downloadImage).toBe('function');
-    });
-
-    it('createWorkersProviderAdapter selects RunPod provider', async () => {
-      const { createWorkersProviderAdapter } = await import('../pipeline/adapters/workers');
-
-      const mockEnv = {
-        IMAGE_GENERATION_PROVIDER: 'runpod',
-        RUNPOD_API_KEY: 'test-key',
-        RUNPOD_COMFYUI_ENDPOINT_ID: 'endpoint-123',
-        SCENARIO_API_KEY: undefined,
-        SCENARIO_SECRET_API_KEY: undefined,
-      } as any;
-
-      const adapter = createWorkersProviderAdapter(mockEnv);
-      
-      expect(typeof adapter.txt2img).toBe('function');
-      expect(typeof adapter.uploadImage).toBe('function');
-    });
-
-    it('createWorkersProviderAdapter selects Scenario provider by default', async () => {
-      const { createWorkersProviderAdapter } = await import('../pipeline/adapters/workers');
-
-      const mockEnv = {
-        IMAGE_GENERATION_PROVIDER: undefined,
-        RUNPOD_API_KEY: undefined,
-        SCENARIO_API_KEY: 'scenario-key',
-        SCENARIO_SECRET_API_KEY: 'scenario-secret',
-      } as any;
-
-      const adapter = createWorkersProviderAdapter(mockEnv);
-      
-      expect(typeof adapter.txt2img).toBe('function');
-      expect(typeof adapter.uploadImage).toBe('function');
     });
   });
 
