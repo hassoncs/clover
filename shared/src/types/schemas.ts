@@ -74,7 +74,6 @@ const BasePhysicsSchema = z.object({
   density: z.number().nonnegative(),
   friction: z.number().nonnegative(),
   restitution: z.number().nonnegative(),
-  isSensor: z.boolean().optional(),
   fixedRotation: z.boolean().optional(),
   bullet: z.boolean().optional(),
   linearDamping: z.number().optional(),
@@ -104,6 +103,28 @@ export const PhysicsComponentSchema = z.discriminatedUnion('shape', [
   CirclePhysicsSchema,
   PolygonPhysicsSchema,
 ]);
+
+// ============================================================================
+// Zone Schemas
+// ============================================================================
+
+export const ZoneShapeSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('box'), width: z.number(), height: z.number() }),
+  z.object({ type: z.literal('circle'), radius: z.number() }),
+  z.object({ type: z.literal('polygon'), vertices: z.array(Vec2Schema).min(3) }),
+]);
+
+export const ZoneComponentSchema = z.object({
+  movement: z.enum(['static', 'kinematic']).optional(),
+  shape: ZoneShapeSchema,
+  categoryBits: z.number().optional(),
+  maskBits: z.number().optional(),
+});
+
+export const ZoneEntityDefinitionSchema = z.object({
+  type: z.literal('zone'),
+  zone: ZoneComponentSchema,
+});
 
 const BaseBehaviorSchema = z.object({
   enabled: z.boolean().optional(),
@@ -509,7 +530,8 @@ export const ChildTemplateDefinitionSchema: z.ZodType<any> = z.lazy(() =>
   })
 );
 
-export const EntityTemplateSchema = z.object({
+export const BodyEntityTemplateSchema = z.object({
+  type: z.literal('body').optional(),
   id: z.string(),
   sprite: SpriteComponentSchema.optional(),
   physics: PhysicsComponentSchema.optional(),
@@ -519,6 +541,11 @@ export const EntityTemplateSchema = z.object({
   slots: z.record(z.string(), SlotDefinitionSchema).optional(),
   children: z.array(ChildTemplateDefinitionSchema).optional(),
 });
+
+export const EntityTemplateSchema = z.discriminatedUnion('type', [
+  BodyEntityTemplateSchema,
+  ZoneEntityDefinitionSchema,
+]);
 
 export const GameEntitySchema = z.object({
   id: z.string(),
