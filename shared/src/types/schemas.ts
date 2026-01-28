@@ -259,6 +259,18 @@ export const CollisionTriggerSchema = z.object({
   entityBTag: z.string(),
 });
 
+export const ZoneEnterTriggerSchema = z.object({
+  type: z.literal('zone_enter'),
+  zoneTag: z.string(),
+  entityTag: z.string(),
+});
+
+export const ZoneExitTriggerSchema = z.object({
+  type: z.literal('zone_exit'),
+  zoneTag: z.string(),
+  entityTag: z.string(),
+});
+
 export const TimerTriggerSchema = z.object({
   type: z.literal('timer'),
   time: z.number().positive(),
@@ -289,6 +301,8 @@ export const FrameTriggerSchema = z.object({
 
 export const RuleTriggerSchema = z.discriminatedUnion('type', [
   CollisionTriggerSchema,
+  ZoneEnterTriggerSchema,
+  ZoneExitTriggerSchema,
   TimerTriggerSchema,
   ScoreTriggerSchema,
   EntityCountTriggerSchema,

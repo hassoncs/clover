@@ -31,6 +31,12 @@ export interface IGameStateMutator {
   listContains(name: string, value: number | string | boolean): boolean;
 }
 
+export interface ZoneEventInfo {
+  zone: { id: string; tags?: string[] };
+  entity: { id: string; tags?: string[] };
+  type: 'enter' | 'exit';
+}
+
 export interface RuleContext {
   entityManager: EntityManager;
   inputEntityManager?: InputEntityManager;
@@ -53,4 +59,5 @@ export interface RuleContext {
   timeScale?: number;
   setTimeScale?: (scale: number, duration?: number) => void;
   playSound?: (soundId: string, volume?: number) => void;
+  zoneEvents?: ZoneEventInfo[];
 }
