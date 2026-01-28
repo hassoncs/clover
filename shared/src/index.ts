@@ -8,3 +8,4 @@ export * from './utils/definition-resolver';
 export * from './utils/game-helpers';
 export * from './validation';
 export * from './economy/currency';
+export * from './generator';

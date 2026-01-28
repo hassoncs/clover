@@ -13,6 +13,8 @@ export * from './asset-system';
 export * from './asset-sheet';
 export * from './godot-bridge';
 export * from './progress';
+export * from './LevelDefinition';
+export * from './LevelPack';
 export type {
   ContainerConfig,
   ContainerMatchRule,

@@ -4,6 +4,7 @@ import type {
   ComfyImg2ImgParams,
   ComfyRemoveBackgroundParams,
   ComfyLayeredParams,
+  ComfyGenerateLayeredParams,
   ComfyWorkflow,
   ComfyAsset,
   RunPodResponse,
@@ -548,6 +549,30 @@ export class ComfyUIClient {
         cause: err,
       });
     }
+  }
+
+  async generateLayered(params: ComfyGenerateLayeredParams): Promise<{ assetIds: string[] }> {
+    const { basePrompt, layers, width = 1024, height = 512, steps = 20, seed } = params;
+
+    const assetIds: string[] = [];
+    const baseSeed = seed ?? Math.floor(Math.random() * 2 ** 32);
+
+    for (let i = 0; i < layers.length; i++) {
+      const layer = layers[i];
+      const fullPrompt = `${basePrompt}, ${layer.prompt}, ${layer.depth} depth, game background layer`;
+
+      const result = await this.txt2img({
+        prompt: fullPrompt,
+        width,
+        height,
+        steps,
+        seed: baseSeed + i,
+      });
+
+      assetIds.push(result.assetId);
+    }
+
+    return { assetIds };
   }
 
   async uploadImage(imageBuffer: Uint8Array): Promise<string> {

@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "exampleType": "LevelPack example containing multiple Slopeggle levels",
+  "schemaVersion": 1,
+  "metadata": {
+    "id": "slopeggle-basic-v1",
+    "name": "Slopeggle: Basic Course",
+    "description": "Master the art of peg clearing in this introductory course. 10 levels of increasing difficulty.",
+    "author": "Slopcade Team",
+    "version": "1.0.0",
+    "category": "standard",
+    "thumbnailUrl": "https://example.com/packs/slopeggle-basic/thumb.png",
+    "platforms": ["ios", "android", "web"],
+    "tags": ["beginner", "pegging", "casual"],
+    "createdAt": 1738012800000,
+    "updatedAt": 1738012800000
+  },
+  "version": "1.0.0",
+  "gameConfig": {
+    "baseGameDefinition": {
+      "metadata": {
+        "id": "test-slopeggle",
+        "title": "Slopeggle",
+        "description": "Clear all orange pegs by bouncing a ball through the board"
+      },
+      "world": {
+        "gravity": { "x": 0, "y": -5 },
+        "pixelsPerMeter": 50,
+        "bounds": { "width": 12, "height": 16 }
+      },
+      "templates": {
+        "ball": { "id": "ball", "tags": ["ball"] },
+        "cannon": { "id": "cannon", "tags": ["cannon"] },
+        "bluePeg": { "id": "bluePeg", "tags": ["peg", "blue-peg"] },
+        "orangePeg": { "id": "orangePeg", "tags": ["peg", "orange-peg"] }
+      },
+      "rules": [
+        { "id": "fire_ball", "trigger": { "type": "drag", "phase": "end" } }
+      ]
+    },
+    "fixedTemplateIds": ["ball", "cannon", "cannonBase", "wallVertical", "drain"],
+    "variableTemplateIds": ["bluePeg", "orangePeg", "bucket", "portalA", "portalB"]
+  },
+  "levels": [
+    {
+      "schemaVersion": 1,
+      "packId": "slopeggle-basic-v1",
+      "levelId": "1",
+      "generatorId": "slopeggle-generator",
+      "generatorVersion": "1.0.0",
+      "seed": "seed001",
+      "title": "Getting Started",
+      "description": "Your first level! Clear all orange pegs to win.",
+      "ordinal": 1,
+      "difficulty": {
+        "targetTier": "easy",
+        "minScoreThreshold": 1000,
+        "maxScoreThreshold": 5000,
+        "estimatedDurationSeconds": 120,
+        "initialLives": 10,
+        "initialMultiplier": 1,
+        "difficultyCurve": "progressive"
+      },
+      "overrides": {
+        "slopeggle": {
+          "pegRows": 10,
+          "orangePegCount": 8,
+          "hasBucket": true,
+          "hasPortals": false
+        }
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "packId": "slopeggle-basic-v1",
+      "levelId": "2",
+      "generatorId": "slopeggle-generator",
+      "generatorVersion": "1.0.0",
+      "seed": "seed002",
+      "title": "Double Trouble",
+      "description": "More pegs, more points, more fun!",
+      "ordinal": 2,
+      "difficulty": {
+        "targetTier": "easy",
+        "minScoreThreshold": 2000,
+        "maxScoreThreshold": 8000,
+        "estimatedDurationSeconds": 150,
+        "initialLives": 10,
+        "difficultyCurve": "progressive"
+      },
+      "overrides": {
+        "slopeggle": {
+          "pegRows": 12,
+          "orangePegCount": 10,
+          "hasBucket": true,
+          "hasPortals": false
+        }
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "packId": "slopeggle-basic-v1",
+      "levelId": "boss",
+      "generatorId": "slopeggle-generator",
+      "generatorVersion": "1.0.0",
+      "seed": "seed999",
+      "title": "The Gauntlet",
+      "description": "Test your skills with the ultimate challenge!",
+      "ordinal": 10,
+      "difficulty": {
+        "targetTier": "hard",
+        "minScoreThreshold": 10000,
+        "maxScoreThreshold": 50000,
+        "estimatedDurationSeconds": 300,
+        "initialLives": 15,
+        "difficultyCurve": "spike"
+      },
+      "overrides": {
+        "slopeggle": {
+          "pegRows": 15,
+          "orangePegCount": 15,
+          "hasBucket": true,
+          "hasPortals": true
+        }
+      }
+    }
+  ],
+  "progression": {
+    "mode": "linear",
+    "unlockAfterCompleted": ["1"],
+    "isReleased": true
+  },
+  "stats": {
+    "levelCount": 3,
+    "estimatedPlaytimeMinutes": 10,
+    "uniqueSeeds": 3,
+    "difficultyDistribution": {
+      "easyCount": 2,
+      "hardCount": 1
+    }
+  }
+}

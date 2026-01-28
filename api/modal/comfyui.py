@@ -238,6 +238,93 @@ def build_rmbg_workflow(input_image_name: str) -> dict:
     }
 
 
+def build_layered_workflow(base_prompt: str, layers: list, width: int, height: int, steps: int, seed: int) -> dict:
+    """Build ComfyUI workflow for generating layered parallax background.
+    
+    Generates multiple images with different depth prompts for parallax scrolling.
+    Each layer is generated separately with transparency support.
+    
+    Args:
+        base_prompt: Base scene description
+        layers: List of layer configs [{"depth": "far", "prompt": "mountains"}, ...]
+        width: Image width
+        height: Image height  
+        steps: Generation steps
+        seed: Random seed
+    """
+    workflow = {}
+    node_id = 1
+    
+    # Shared model loaders
+    workflow["10"] = {
+        "class_type": "UNETLoader",
+        "inputs": {"unet_name": "flux1-dev-fp8.safetensors", "weight_dtype": "fp8_e4m3fn"}
+    }
+    workflow["11"] = {
+        "class_type": "DualCLIPLoader",
+        "inputs": {
+            "clip_name1": "clip_l.safetensors",
+            "clip_name2": "t5xxl_fp8_e4m3fn.safetensors",
+            "type": "flux"
+        }
+    }
+    workflow["12"] = {
+        "class_type": "VAELoader",
+        "inputs": {"vae_name": "ae.safetensors"}
+    }
+    
+    # Generate each layer
+    for i, layer in enumerate(layers):
+        depth = layer.get("depth", "mid")
+        layer_prompt = layer.get("prompt", "")
+        full_prompt = f"{base_prompt}, {layer_prompt}, {depth} depth, game background layer"
+        
+        # Empty latent for this layer
+        workflow[str(node_id)] = {
+            "class_type": "EmptyLatentImage",
+            "inputs": {"batch_size": 1, "height": height, "width": width}
+        }
+        
+        # CLIP encode
+        workflow[str(node_id + 1)] = {
+            "class_type": "CLIPTextEncode",
+            "inputs": {"clip": ["11", 0], "text": full_prompt}
+        }
+        
+        # KSampler
+        workflow[str(node_id + 2)] = {
+            "class_type": "KSampler",
+            "inputs": {
+                "cfg": 3.5,
+                "denoise": 1,
+                "latent_image": [str(node_id), 0],
+                "model": ["10", 0],
+                "negative": [str(node_id + 1), 0],
+                "positive": [str(node_id + 1), 0],
+                "sampler_name": "euler",
+                "scheduler": "simple",
+                "seed": seed + i,
+                "steps": steps
+            }
+        }
+        
+        # VAE Decode
+        workflow[str(node_id + 3)] = {
+            "class_type": "VAEDecode",
+            "inputs": {"samples": [str(node_id + 2), 0], "vae": ["12", 0]}
+        }
+        
+        # Save
+        workflow[str(node_id + 4)] = {
+            "class_type": "SaveImage",
+            "inputs": {"filename_prefix": f"layer_{depth}", "images": [str(node_id + 3), 0]}
+        }
+        
+        node_id += 5
+    
+    return workflow
+
+
 @app.cls(
     image=image,
     gpu="A10G",
@@ -383,6 +470,43 @@ class ComfyUIWorker:
         workflow = build_rmbg_workflow("input.png")
         result = self._run_workflow(workflow, [("input.png", img_bytes)])
         return base64.b64encode(result).decode()
+
+    @modal.method()
+    def generate_layered(self, base_prompt: str, layers: list, width: int = 1024, height: int = 512, steps: int = 20, seed: int = None) -> list:
+        """Generate layered parallax background. Returns list of base64 PNGs.
+
+        Args:
+            base_prompt: Base scene description (e.g., "pixel art forest")
+            layers: List of layer configs [{"depth": "far", "prompt": "mountains"}, ...]
+            width: Image width (default 1024)
+            height: Image height (default 512 for backgrounds)
+            steps: Generation steps per layer
+            seed: Random seed (optional)
+        """
+        import random
+        if seed is None:
+            seed = random.randint(0, 2**32 - 1)
+
+        results = []
+        for i, layer in enumerate(layers):
+            depth = layer.get("depth", "mid")
+            layer_prompt = layer.get("prompt", "")
+            full_prompt = f"{base_prompt}, {layer_prompt}, {depth} depth, game background layer, pixel art"
+
+            result = self.txt2img(
+                prompt=full_prompt,
+                width=width,
+                height=height,
+                steps=steps,
+                seed=seed + i
+            )
+            results.append({
+                "depth": depth,
+                "prompt": layer_prompt,
+                "image_base64": result
+            })
+
+        return results
 
 
 @app.function(image=image, gpu="A10G", timeout=900, volumes={"/models": models_volume})

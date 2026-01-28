@@ -63,7 +63,7 @@ export interface ComfyRemoveBackgroundParams {
 }
 
 /**
- * Parameters for layered image decomposition
+ * Parameters for layered image decomposition (from existing image)
  */
 export interface ComfyLayeredParams {
   /** Base64-encoded image or image ID */
@@ -74,6 +74,46 @@ export interface ComfyLayeredParams {
   description?: string;
   /** Workflow override (default: layered-decompose) */
   workflow?: string;
+}
+
+/**
+ * Layer configuration for parallax background generation
+ */
+export interface ParallaxLayerConfig {
+  /** Depth level: 'sky' | 'far' | 'mid' | 'near' */
+  depth: 'sky' | 'far' | 'mid' | 'near';
+  /** Prompt describing this layer's content */
+  prompt: string;
+}
+
+/**
+ * Parameters for generating layered parallax backgrounds
+ */
+export interface ComfyGenerateLayeredParams {
+  /** Base scene description (e.g., "pixel art forest") */
+  basePrompt: string;
+  /** Layer configurations from back to front */
+  layers: ParallaxLayerConfig[];
+  /** Output width (default: 1024) */
+  width?: number;
+  /** Output height (default: 512) */
+  height?: number;
+  /** Generation steps per layer (default: 20) */
+  steps?: number;
+  /** Random seed (optional) */
+  seed?: number;
+}
+
+/**
+ * Result from layered generation
+ */
+export interface ComfyLayeredResult {
+  /** Layer depth identifier */
+  depth: string;
+  /** Layer prompt */
+  prompt: string;
+  /** Generated image as base64 */
+  imageBase64: string;
 }
 
 /**

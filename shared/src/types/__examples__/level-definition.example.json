@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "exampleType": "LevelDefinition example for a Slopeggle game level",
+  "schemaVersion": 1,
+  "packId": "slopeggle-basic-v1",
+  "levelId": "1",
+  "generatorId": "slopeggle-generator",
+  "generatorVersion": "1.0.0",
+  "seed": "abc123def456",
+  "title": "Getting Started",
+  "description": "Your first level! Clear all orange pegs to win.",
+  "ordinal": 1,
+  "difficulty": {
+    "targetTier": "easy",
+    "minScoreThreshold": 1000,
+    "maxScoreThreshold": 5000,
+    "estimatedDurationSeconds": 120,
+    "initialLives": 10,
+    "initialMultiplier": 1,
+    "difficultyCurve": "progressive"
+  },
+  "generatedAt": 1738012800000,
+  "generatorParams": {
+    "layoutPattern": "standard",
+    "obstacleDensity": 0.1
+  },
+  "overrides": {
+    "slopeggle": {
+      "pegRows": 10,
+      "orangePegCount": 8,
+      "hasBucket": true,
+      "hasPortals": false,
+      "worldWidth": 12,
+      "worldHeight": 16,
+      "launchForceMultiplier": 1.0,
+      "dramaticFinalPeg": true
+    }
+  },
+  "metadata": {
+    "hint": "Aim for the orange pegs first for maximum points!"
+  }
+}

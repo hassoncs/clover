@@ -66,6 +66,9 @@ export type {
   ComfyUIConfig,
   ComfyTxt2ImgParams,
   ComfyImg2ImgParams,
+  ComfyGenerateLayeredParams,
+  ParallaxLayerConfig,
+  ComfyLayeredResult,
 } from './comfyui-types';
 
 export {
