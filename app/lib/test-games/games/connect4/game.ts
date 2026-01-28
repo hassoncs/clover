@@ -153,7 +153,7 @@ const game: GameDefinition = {
     boardBackground: {
       id: "boardBackground",
       tags: ["board"],
-      sprite: {
+      visual: {
         type: "rect",
         width: BOARD_WIDTH,
         height: BOARD_HEIGHT,
@@ -171,7 +171,7 @@ const game: GameDefinition = {
     emptySlot: {
       id: "emptySlot",
       tags: ["slot"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: DISC_SIZE / 2,
         color: EMPTY_SLOT_INNER,
@@ -187,7 +187,7 @@ const game: GameDefinition = {
     columnSelector: {
       id: "columnSelector",
       tags: ["selector"],
-      sprite: {
+      visual: {
         type: "rect",
         width: DISC_SIZE,
         height: SELECTOR_HEIGHT,
@@ -205,7 +205,7 @@ const game: GameDefinition = {
     redDisc: {
       id: "redDisc",
       tags: ["disc", "red"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: DISC_SIZE / 2 - 0.05,
         color: RED_COLOR,
@@ -221,7 +221,7 @@ const game: GameDefinition = {
     yellowDisc: {
       id: "yellowDisc",
       tags: ["disc", "yellow"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: DISC_SIZE / 2 - 0.05,
         color: YELLOW_COLOR,

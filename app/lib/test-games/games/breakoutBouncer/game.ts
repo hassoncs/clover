@@ -105,27 +105,30 @@ const game: GameDefinition = {
     ball: {
       id: "ball",
       tags: ["ball"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: BALL_RADIUS,
         color: "#FF00FF",
       },
       physics: {
         bodyType: "dynamic",
+        density: 1,
+        linearDamping: 0,
+        fixedRotation: false,
+        ccd: true,
+      },
+      collider: {
         shape: "circle",
         radius: BALL_RADIUS,
-        density: 1,
         friction: 0,
         restitution: 1,
-        linearDamping: 0,
-        bullet: true,
       },
       behaviors: [],
     },
     paddle: {
       id: "paddle",
       tags: ["paddle"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/paddle.png`,
         imageWidth: PADDLE_WIDTH,
@@ -133,21 +136,23 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "dynamic",
+        density: 5,
+        linearDamping: 8,
+        fixedRotation: true,
+      },
+      collider: {
         shape: "box",
         width: PADDLE_WIDTH,
         height: PADDLE_HEIGHT,
-        density: 5,
         friction: 0.1,
         restitution: 0.2,
-        linearDamping: 8,
-        fixedRotation: true,
       },
       behaviors: [],
     },
     brickRed: {
       id: "brickRed",
       tags: ["brick"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/brickRed.png`,
         imageWidth: BRICK_WIDTH,
@@ -155,10 +160,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: BRICK_WIDTH,
         height: BRICK_HEIGHT,
-        density: 0,
         friction: 0,
         restitution: 1,
       },
@@ -170,7 +177,7 @@ const game: GameDefinition = {
     brickBlue: {
       id: "brickBlue",
       tags: ["brick"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/brickBlue.png`,
         imageWidth: BRICK_WIDTH,
@@ -178,10 +185,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: BRICK_WIDTH,
         height: BRICK_HEIGHT,
-        density: 0,
         friction: 0,
         restitution: 1,
       },
@@ -193,7 +202,7 @@ const game: GameDefinition = {
     brickGreen: {
       id: "brickGreen",
       tags: ["brick"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/brickGreen.png`,
         imageWidth: BRICK_WIDTH,
@@ -201,10 +210,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: BRICK_WIDTH,
         height: BRICK_HEIGHT,
-        density: 0,
         friction: 0,
         restitution: 1,
       },
@@ -216,7 +227,7 @@ const game: GameDefinition = {
     brickYellow: {
       id: "brickYellow",
       tags: ["brick"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/brickYellow.png`,
         imageWidth: BRICK_WIDTH,
@@ -224,10 +235,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: BRICK_WIDTH,
         height: BRICK_HEIGHT,
-        density: 0,
         friction: 0,
         restitution: 1,
       },
@@ -239,13 +252,15 @@ const game: GameDefinition = {
     wall: {
       id: "wall",
       tags: ["wall"],
-      sprite: { type: "rect", width: WALL_THICKNESS, height: WORLD_HEIGHT, color: "#333366" },
+      visual: { type: "rect", width: WALL_THICKNESS, height: WORLD_HEIGHT, color: "#333366" },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: WALL_THICKNESS,
         height: WORLD_HEIGHT,
-        density: 0,
         friction: 0,
         restitution: 1,
       },
@@ -271,8 +286,9 @@ const game: GameDefinition = {
       name: "Top Wall",
       tags: ["wall"],
       transform: { x: cx(5), y: cy(0.15), angle: 0, scaleX: 1, scaleY: 1 },
-      sprite: { type: "rect", width: 10, height: 0.3, color: "#333366" },
-      physics: { bodyType: "static", shape: "box", width: 10, height: 0.3, density: 0, friction: 0, restitution: 1 },
+      visual: { type: "rect", width: 10, height: 0.3, color: "#333366" },
+      physics: { bodyType: "static", density: 0 },
+      collider: { shape: "box", width: 10, height: 0.3, friction: 0, restitution: 1 },
     },
     { id: "drain", name: "Drain Zone", template: "drain", transform: { x: cx(5), y: cy(21), angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "paddle", name: "Paddle", template: "paddle", transform: { x: cx(5), y: cy(18), angle: 0, scaleX: 1, scaleY: 1 } },

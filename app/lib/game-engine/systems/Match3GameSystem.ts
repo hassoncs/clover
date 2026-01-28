@@ -275,17 +275,17 @@ export class Match3GameSystem {
         let spriteWidth = 1.0;
         let spriteHeight = 1.0;
 
-        if (templateDef?.physics) {
-          const physics = templateDef.physics;
-          if (physics.shape === "circle" && "radius" in physics) {
-            spriteWidth = spriteHeight = physics.radius * 2;
+        if (templateDef?.collider) {
+          const collider = templateDef.collider;
+          if (collider.shape === "circle" && "radius" in collider) {
+            spriteWidth = spriteHeight = collider.radius * 2;
           } else if (
-            physics.shape === "box" &&
-            "width" in physics &&
-            "height" in physics
+            collider.shape === "box" &&
+            "width" in collider &&
+            "height" in collider
           ) {
-            spriteWidth = physics.width;
-            spriteHeight = physics.height;
+            spriteWidth = collider.width;
+            spriteHeight = collider.height;
           }
         }
 

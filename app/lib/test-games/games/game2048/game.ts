@@ -45,7 +45,7 @@ function createTileTemplate(value: number) {
   return {
     id: `tile${value}`,
     tags: ["tile", `tile${value}`, `value-${value}`],
-    sprite: {
+    visual: {
       type: "rect" as const,
       width: CELL_SIZE,
       height: CELL_SIZE,
@@ -142,7 +142,7 @@ const game: GameDefinition = {
     emptyCell: {
       id: "emptyCell",
       tags: ["cell"],
-      sprite: {
+      visual: {
         type: "rect",
         width: CELL_SIZE,
         height: CELL_SIZE,
@@ -167,7 +167,7 @@ const game: GameDefinition = {
     gridBackground: {
       id: "gridBackground",
       tags: ["background"],
-      sprite: {
+      visual: {
         type: "rect",
         width: GRID_TOTAL,
         height: GRID_TOTAL,

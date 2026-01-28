@@ -193,7 +193,7 @@ const game: GameDefinition = {
     pivot: {
       id: "pivot",
       tags: ["pivot"],
-      sprite: {
+      visual: {
         type: "polygon",
         vertices: [
           { x: 0, y: -PIVOT_SIZE / 2 },
@@ -204,13 +204,15 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "polygon",
         vertices: [
           { x: 0, y: -PIVOT_SIZE / 2 },
           { x: -PIVOT_SIZE / 2, y: PIVOT_SIZE / 2 },
           { x: PIVOT_SIZE / 2, y: PIVOT_SIZE / 2 },
         ],
-        density: 0,
         friction: 0.5,
         restitution: 0,
       },
@@ -218,7 +220,7 @@ const game: GameDefinition = {
     beam: {
       id: "beam",
       tags: ["beam"],
-      sprite: {
+      visual: {
         type: "rect",
         width: BEAM_WIDTH,
         height: BEAM_HEIGHT,
@@ -226,10 +228,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "kinematic",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: BEAM_WIDTH,
         height: BEAM_HEIGHT,
-        density: 0,
         friction: 0.8,
         restitution: 0,
       },
@@ -237,7 +241,7 @@ const game: GameDefinition = {
     beamSensor: {
       id: "beamSensor",
       tags: ["beam-sensor"],
-      sprite: {
+      visual: {
         type: "rect",
         width: BEAM_WIDTH,
         height: 0.6,
@@ -252,7 +256,7 @@ const game: GameDefinition = {
     weightChoice0: {
       id: "weightChoice0",
       tags: ["weight-choice", "mass-1"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: WEIGHT_RADIUS,
         color: WEIGHT_COLORS[0],
@@ -266,7 +270,7 @@ const game: GameDefinition = {
     weightChoice1: {
       id: "weightChoice1",
       tags: ["weight-choice", "mass-2"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: WEIGHT_RADIUS * 1.3,
         color: WEIGHT_COLORS[1],
@@ -280,7 +284,7 @@ const game: GameDefinition = {
     weightChoice2: {
       id: "weightChoice2",
       tags: ["weight-choice", "mass-3"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: WEIGHT_RADIUS * 1.6,
         color: WEIGHT_COLORS[2],
@@ -294,16 +298,18 @@ const game: GameDefinition = {
     placedWeight0: {
       id: "placedWeight0",
       tags: ["placed-weight", "mass-1"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: WEIGHT_RADIUS,
         color: WEIGHT_COLORS[0],
       },
       physics: {
         bodyType: "kinematic",
+        density: 1,
+      },
+      collider: {
         shape: "circle",
         radius: WEIGHT_RADIUS,
-        density: 1,
         friction: 0.5,
         restitution: 0,
       },
@@ -311,16 +317,18 @@ const game: GameDefinition = {
     placedWeight1: {
       id: "placedWeight1",
       tags: ["placed-weight", "mass-2"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: WEIGHT_RADIUS * 1.3,
         color: WEIGHT_COLORS[1],
       },
       physics: {
         bodyType: "kinematic",
+        density: 2,
+      },
+      collider: {
         shape: "circle",
         radius: WEIGHT_RADIUS * 1.3,
-        density: 2,
         friction: 0.5,
         restitution: 0,
       },
@@ -328,16 +336,18 @@ const game: GameDefinition = {
     placedWeight2: {
       id: "placedWeight2",
       tags: ["placed-weight", "mass-3"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: WEIGHT_RADIUS * 1.6,
         color: WEIGHT_COLORS[2],
       },
       physics: {
         bodyType: "kinematic",
+        density: 3,
+      },
+      collider: {
         shape: "circle",
         radius: WEIGHT_RADIUS * 1.6,
-        density: 3,
         friction: 0.5,
         restitution: 0,
       },
@@ -345,7 +355,7 @@ const game: GameDefinition = {
     weightLabel: {
       id: "weightLabel",
       tags: ["weight-label"],
-      sprite: {
+      visual: {
         type: "rect",
         width: 0.5,
         height: 0.5,
@@ -359,7 +369,7 @@ const game: GameDefinition = {
     selectionIndicator: {
       id: "selectionIndicator",
       tags: ["selection-indicator"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: WEIGHT_RADIUS * 2,
         color: "#FFFFFF33",

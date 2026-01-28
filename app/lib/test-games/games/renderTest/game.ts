@@ -30,7 +30,7 @@ const game: GameDefinition = {
     spriteOnly: {
       id: "spriteOnly",
       tags: ["sprite-only"],
-      sprite: {
+      visual: {
         type: "rect",
         width: 1,
         height: 1,
@@ -40,7 +40,7 @@ const game: GameDefinition = {
     physicsBox: {
       id: "physicsBox",
       tags: ["physics-box"],
-      sprite: {
+      visual: {
         type: "rect",
         width: 1,
         height: 1,
@@ -48,6 +48,9 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: 1,
         height: 1,
@@ -56,7 +59,7 @@ const game: GameDefinition = {
     zoneBox: {
       id: "zoneBox",
       tags: ["zone-box"],
-      sprite: {
+      visual: {
         type: "rect",
         width: 1,
         height: 1,
@@ -74,7 +77,7 @@ const game: GameDefinition = {
     spriteOnlyCircle: {
       id: "spriteOnlyCircle",
       tags: ["sprite-only-circle"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: 0.5,
         color: "#FFFF00",
@@ -83,13 +86,16 @@ const game: GameDefinition = {
     physicsCircle: {
       id: "physicsCircle",
       tags: ["physics-circle"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: 0.5,
         color: "#FF00FF",
       },
       physics: {
         bodyType: "dynamic",
+        density: 0,
+      },
+      collider: {
         shape: "circle",
         radius: 0.5,
       },

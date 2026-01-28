@@ -39,7 +39,7 @@ const game: GameDefinition = {
   templates: {
     catcher: {
       id: "catcher",
-      sprite: {
+      visual: {
         type: "rect",
         width: 2,
         height: 0.5,
@@ -47,10 +47,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "kinematic",
+        density: 1,
+      },
+      collider: {
         shape: "box",
         width: 2,
         height: 0.5,
-        density: 1,
         friction: 0.5,
         restitution: 0.3,
       },
@@ -64,16 +66,18 @@ const game: GameDefinition = {
     },
     good_item: {
       id: "good_item",
-      sprite: {
+      visual: {
         type: "circle",
         radius: 0.4,
         color: "#2ECC71",
       },
       physics: {
         bodyType: "dynamic",
+        density: 0.5,
+      },
+      collider: {
         shape: "circle",
         radius: 0.4,
-        density: 0.5,
         friction: 0.3,
         restitution: 0.5,
       },
@@ -95,7 +99,7 @@ const game: GameDefinition = {
     },
     bad_item: {
       id: "bad_item",
-      sprite: {
+      visual: {
         type: "rect",
         width: 0.6,
         height: 0.6,
@@ -103,10 +107,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "dynamic",
+        density: 0.5,
+      },
+      collider: {
         shape: "box",
         width: 0.6,
         height: 0.6,
-        density: 0.5,
         friction: 0.3,
         restitution: 0.3,
       },
@@ -121,7 +127,7 @@ const game: GameDefinition = {
     },
     ground: {
       id: "ground",
-      sprite: {
+      visual: {
         type: "rect",
         width: 12,
         height: 1,
@@ -129,10 +135,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 1,
+      },
+      collider: {
         shape: "box",
         width: 12,
         height: 1,
-        density: 1,
         friction: 0.8,
         restitution: 0,
       },
@@ -140,7 +148,7 @@ const game: GameDefinition = {
     },
     spawner: {
       id: "spawner",
-      sprite: {
+      visual: {
         type: "rect",
         width: 10,
         height: 0.2,

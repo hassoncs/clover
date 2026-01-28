@@ -1,4 +1,4 @@
-72322a848ab928aa5c89f0cb78209805
+fc8a56933c4b1c8d796fdb8f7a9f9475
 ::res://::1769633767
 export_presets.cfg::TextFile/TextFile::-1::1769631103::0::1::::<><><>0<>0<><>::
 icon.svg::CompressedTexture2D/CompressedTexture2D::8162193418698039025::1769538422::1769633767::1::::<><><>0<>0<>b60b07e3b7c5c7da747f33a9e77945db<>res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex::
@@ -58,7 +58,7 @@ VFXShowcase.tscn::PackedScene/PackedScene::2855297431937620752::1769538422::0::1
 ::res://scenes/lab/::1769538422
 ui_components_demo.tscn::PackedScene/PackedScene::5962763572750761863::1769538422::0::1::::<><><>0<>0<><>::res://scripts/lab/UIComponentsDemo.gd
 ::res://scripts/::1769620755
-GameBridge.gd::GDScript::7400890102577367664::1769634468::0::1::::<>Node<><>0<>0<><>::
+GameBridge.gd::GDScript/GDScript::7400890102577367664::1769634664::0::1::::<>Node<><>0<>0<><>::
 Lab3D.gd::GDScript/GDScript::2743172060191353031::1769538422::0::1::::<>Node3D<><>0<>0<><>::
 Main.gd::GDScript/GDScript::4927831078751178685::1769538422::0::1::::<>Node2D<><>0<>0<><>::
 PhysicsBody.gd::GDScript/GDScript::3101094749307879933::1769538422::0::1::::<>RigidBody2D<><>0<>0<><>::
@@ -81,7 +81,7 @@ DebugLifecycle.gd::GDScript/GDScript::2459095375678203847::1769569248::0::1::::D
 DebugPhysics.gd::GDScript/GDScript::2325521010436117967::1769569293::0::1::::DebugPhysics<>RefCounted<><>0<>0<><>::
 DebugProps.gd::GDScript/GDScript::4891004605017099441::1769538422::0::1::::DebugProps<>RefCounted<><>0<>0<><>::
 DebugSelector.gd::GDScript/GDScript::4146464479291421755::1769538422::0::1::::DebugSelector<>RefCounted<><>0<>0<><>::
-DebugTime.gd::GDScript/GDScript::5403663126197881566::1769634433::0::1::::DebugTime<>RefCounted<><>0<>0<><>::
+DebugTime.gd::GDScript/GDScript::5403663126197881566::1769634748::0::1::::DebugTime<>RefCounted<><>0<>0<><>::
 ::res://scripts/debug/::1769538422
 DebugOverlay.gd::GDScript/GDScript::2525373150256143966::1769624844::0::1::::DebugOverlay<>CanvasLayer<><>0<>0<><>::
 ::res://scripts/effects/::1769538422

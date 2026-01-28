@@ -83,20 +83,22 @@ const game: GameDefinition = {
     bird: {
       id: "bird",
       tags: ["bird"],
-      sprite: { 
-        type: "image", 
+      visual: {
+        type: "image",
         imageUrl: `${ASSET_BASE}/bird.png`,
         imageWidth: BIRD_RADIUS * 2,
         imageHeight: BIRD_RADIUS * 2,
       },
       physics: {
         bodyType: "dynamic",
+        density: 1,
+        fixedRotation: true,
+      },
+      collider: {
         shape: "circle",
         radius: BIRD_RADIUS,
-        density: 1,
         friction: 0,
         restitution: 0,
-        fixedRotation: true,
       },
       behaviors: [
         { type: "destroy_on_collision", withTags: ["pipe", "ground", "ceiling"], effect: "fade" },
@@ -105,7 +107,7 @@ const game: GameDefinition = {
     pipeTop: {
       id: "pipeTop",
       tags: ["pipe", "pipe-top"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/pipeTop.png`,
         imageWidth: PIPE_WIDTH,
@@ -113,10 +115,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "kinematic",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: PIPE_WIDTH,
         height: PIPE_HEIGHT,
-        density: 0,
         friction: 0,
         restitution: 0,
       },
@@ -128,7 +132,7 @@ const game: GameDefinition = {
     pipeBottom: {
       id: "pipeBottom",
       tags: ["pipe", "pipe-bottom"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/pipeBottom.png`,
         imageWidth: PIPE_WIDTH,
@@ -136,10 +140,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "kinematic",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: PIPE_WIDTH,
         height: PIPE_HEIGHT,
-        density: 0,
         friction: 0,
         restitution: 0,
       },
@@ -151,7 +157,7 @@ const game: GameDefinition = {
     scoreZone: {
       id: "scoreZone",
       tags: ["score-zone"],
-      sprite: { type: "rect", width: 0.3, height: PIPE_GAP, color: "#00000000" },
+      visual: { type: "rect", width: 0.3, height: PIPE_GAP, color: "#00000000" },
       type: "zone",
       zone: {
         shape: { type: "box", width: 0.3, height: PIPE_GAP },
@@ -166,7 +172,7 @@ const game: GameDefinition = {
     ground: {
       id: "ground",
       tags: ["ground"],
-      sprite: { 
+      visual: { 
         type: "image", 
         imageUrl: `${ASSET_BASE}/ground.png`,
         imageWidth: WORLD_WIDTH + 4,
@@ -174,10 +180,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: WORLD_WIDTH + 4,
         height: GROUND_HEIGHT,
-        density: 0,
         friction: 0.5,
         restitution: 0,
       },
@@ -185,7 +193,7 @@ const game: GameDefinition = {
     ceiling: {
       id: "ceiling",
       tags: ["ceiling"],
-      sprite: { 
+      visual: { 
         type: "image", 
         imageUrl: `${ASSET_BASE}/ceiling.png`,
         imageWidth: WORLD_WIDTH + 4,
@@ -193,10 +201,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: WORLD_WIDTH + 4,
         height: 0.5,
-        density: 0,
         friction: 0,
         restitution: 0,
       },

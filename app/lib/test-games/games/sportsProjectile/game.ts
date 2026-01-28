@@ -38,25 +38,27 @@ const game: GameDefinition = {
   templates: {
     projectile: {
       id: "projectile",
-      sprite: {
+      visual: {
         type: "circle",
         radius: 0.4,
         color: "#FF6B6B",
       },
       physics: {
         bodyType: "dynamic",
+        density: 1.5,
+        ccd: true,
+      },
+      collider: {
         shape: "circle",
         radius: 0.4,
-        density: 1.5,
         friction: 0.3,
         restitution: 0.4,
-        bullet: true,
       },
       tags: ["projectile"],
     },
     target: {
       id: "target",
-      sprite: {
+      visual: {
         type: "rect",
         width: 0.8,
         height: 0.8,
@@ -64,10 +66,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "dynamic",
+        density: 0.8,
+      },
+      collider: {
         shape: "box",
         width: 0.8,
         height: 0.8,
-        density: 0.8,
         friction: 0.5,
         restitution: 0.2,
       },
@@ -89,7 +93,7 @@ const game: GameDefinition = {
     },
     block: {
       id: "block",
-      sprite: {
+      visual: {
         type: "rect",
         width: 1,
         height: 0.5,
@@ -97,10 +101,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "dynamic",
+        density: 0.6,
+      },
+      collider: {
         shape: "box",
         width: 1,
         height: 0.5,
-        density: 0.6,
         friction: 0.6,
         restitution: 0.1,
       },
@@ -108,7 +114,7 @@ const game: GameDefinition = {
     },
     ground: {
       id: "ground",
-      sprite: {
+      visual: {
         type: "rect",
         width: 20,
         height: 1,
@@ -116,10 +122,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 1,
+      },
+      collider: {
         shape: "box",
         width: 20,
         height: 1,
-        density: 1,
         friction: 0.8,
         restitution: 0.1,
       },
@@ -137,7 +145,7 @@ const game: GameDefinition = {
         scaleX: 1,
         scaleY: 1,
       },
-      sprite: {
+      visual: {
         type: "circle",
         radius: 0.5,
         color: "#333333",

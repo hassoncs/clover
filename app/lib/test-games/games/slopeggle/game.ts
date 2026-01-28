@@ -139,7 +139,7 @@ const game: GameDefinition = {
     ball: {
       id: "ball",
       tags: ["ball"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/ball.png`,
         imageWidth: BALL_RADIUS * 2,
@@ -147,18 +147,20 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "dynamic",
+        density: 1,
+        ccd: true,
+      },
+      collider: {
         shape: "circle",
         radius: BALL_RADIUS,
-        density: 1,
         friction: 0.05,
         restitution: 0.75,
-        bullet: true,
       },
     },
     cannon: {
       id: "cannon",
       tags: ["cannon"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/cannon.png`,
         imageWidth: 0.6,
@@ -176,7 +178,7 @@ const game: GameDefinition = {
     cannonBase: {
       id: "cannonBase",
       tags: ["cannon-base"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/cannonBase.png`,
         imageWidth: 0.6,
@@ -190,7 +192,7 @@ const game: GameDefinition = {
     bluePeg: {
       id: "bluePeg",
       tags: ["peg", "blue-peg"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/bluePeg.png`,
         imageWidth: PEG_RADIUS * 2,
@@ -198,9 +200,11 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "circle",
         radius: PEG_RADIUS,
-        density: 0,
         friction: 0.05,
         restitution: 0.85,
       },
@@ -223,7 +227,7 @@ const game: GameDefinition = {
     orangePeg: {
       id: "orangePeg",
       tags: ["peg", "orange-peg"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/orangePeg.png`,
         imageWidth: PEG_RADIUS * 2,
@@ -231,9 +235,11 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "circle",
         radius: PEG_RADIUS,
-        density: 0,
         friction: 0.05,
         restitution: 0.85,
       },
@@ -256,7 +262,7 @@ const game: GameDefinition = {
     wallVertical: {
       id: "wallVertical",
       tags: ["wall"],
-      sprite: {
+      visual: {
         type: "rect",
         width: 0.2,
         height: WORLD_HEIGHT,
@@ -264,10 +270,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: 0.2,
         height: WORLD_HEIGHT,
-        density: 0,
         friction: 0.1,
         restitution: 0.6,
       },
@@ -283,7 +291,7 @@ const game: GameDefinition = {
     bucket: {
       id: "bucket",
       tags: ["bucket"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/bucket.png`,
         imageWidth: 1.2,
@@ -301,7 +309,7 @@ const game: GameDefinition = {
     portalA: {
       id: "portalA",
       tags: ["portal"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/portalA.png`,
         imageWidth: 0.8,
@@ -324,7 +332,7 @@ const game: GameDefinition = {
     portalB: {
       id: "portalB",
       tags: ["portal"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/portalB.png`,
         imageWidth: 0.8,
@@ -347,7 +355,7 @@ const game: GameDefinition = {
     trajectoryLine: {
       id: "trajectoryLine",
       tags: ["trajectory-line"],
-      sprite: { type: "rect", width: 0.05, height: 6, color: "#FFFFFF66" },
+      visual: { type: "rect", width: 0.05, height: 6, color: "#FFFFFF66" },
       type: "zone",
       zone: {
         movement: "kinematic",

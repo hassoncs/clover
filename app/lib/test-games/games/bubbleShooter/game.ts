@@ -101,7 +101,7 @@ const game: GameDefinition = {
     bubble_red: {
       id: "bubble_red",
       tags: ["bubble", "bubble-red"],
-      sprite: { 
+      visual: { 
         type: "image", 
         imageUrl: `${ASSET_BASE}/bubble_red.png`,
         imageWidth: BUBBLE_DIAMETER,
@@ -109,9 +109,11 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "circle",
         radius: BUBBLE_RADIUS,
-        density: 0,
         friction: 0,
         restitution: 0,
       },
@@ -119,7 +121,7 @@ const game: GameDefinition = {
     bubble_blue: {
       id: "bubble_blue",
       tags: ["bubble", "bubble-blue"],
-      sprite: { 
+      visual: { 
         type: "image", 
         imageUrl: `${ASSET_BASE}/bubble_blue.png`,
         imageWidth: BUBBLE_DIAMETER,
@@ -127,9 +129,11 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "circle",
         radius: BUBBLE_RADIUS,
-        density: 0,
         friction: 0,
         restitution: 0,
       },
@@ -137,7 +141,7 @@ const game: GameDefinition = {
     bubble_green: {
       id: "bubble_green",
       tags: ["bubble", "bubble-green"],
-      sprite: { 
+      visual: { 
         type: "image", 
         imageUrl: `${ASSET_BASE}/bubble_green.png`,
         imageWidth: BUBBLE_DIAMETER,
@@ -145,9 +149,11 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "circle",
         radius: BUBBLE_RADIUS,
-        density: 0,
         friction: 0,
         restitution: 0,
       },
@@ -155,7 +161,7 @@ const game: GameDefinition = {
     bubble_yellow: {
       id: "bubble_yellow",
       tags: ["bubble", "bubble-yellow"],
-      sprite: { 
+      visual: { 
         type: "image", 
         imageUrl: `${ASSET_BASE}/bubble_yellow.png`,
         imageWidth: BUBBLE_DIAMETER,
@@ -163,9 +169,11 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "circle",
         radius: BUBBLE_RADIUS,
-        density: 0,
         friction: 0,
         restitution: 0,
       },
@@ -173,7 +181,7 @@ const game: GameDefinition = {
     bubble_purple: {
       id: "bubble_purple",
       tags: ["bubble", "bubble-purple"],
-      sprite: { 
+      visual: { 
         type: "image", 
         imageUrl: `${ASSET_BASE}/bubble_purple.png`,
         imageWidth: BUBBLE_DIAMETER,
@@ -181,9 +189,11 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "circle",
         radius: BUBBLE_RADIUS,
-        density: 0,
         friction: 0,
         restitution: 0,
       },
@@ -191,7 +201,7 @@ const game: GameDefinition = {
     projectile: {
       id: "projectile",
       tags: ["projectile"],
-      sprite: { 
+      visual: { 
         type: "image", 
         imageUrl: `${ASSET_BASE}/projectile.png`,
         imageWidth: BUBBLE_DIAMETER,
@@ -199,18 +209,21 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "dynamic",
+        density: 1,
+        fixedRotation: false,
+        ccd: true,
+      },
+      collider: {
         shape: "circle",
         radius: BUBBLE_RADIUS,
-        density: 1,
         friction: 0,
         restitution: 1,
-        bullet: true,
       },
     },
     shooter: {
       id: "shooter",
       tags: ["shooter"],
-      sprite: { 
+      visual: { 
         type: "image", 
         imageUrl: `${ASSET_BASE}/shooter.png`,
         imageWidth: SHOOTER_WIDTH,
@@ -232,7 +245,7 @@ const game: GameDefinition = {
     shooterBase: {
       id: "shooterBase",
       tags: ["shooter-base"],
-      sprite: { 
+      visual: { 
         type: "image", 
         imageUrl: `${ASSET_BASE}/shooterBase.png`,
         imageWidth: 1.0,
@@ -249,13 +262,15 @@ const game: GameDefinition = {
     wallLeft: {
       id: "wallLeft",
       tags: ["wall"],
-      sprite: { type: "rect", width: WALL_WIDTH, height: WORLD_HEIGHT, color: "#2D3748" },
+      visual: { type: "rect", width: WALL_WIDTH, height: WORLD_HEIGHT, color: "#2D3748" },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: WALL_WIDTH,
         height: WORLD_HEIGHT,
-        density: 0,
         friction: 0,
         restitution: 1,
       },
@@ -263,13 +278,15 @@ const game: GameDefinition = {
     wallRight: {
       id: "wallRight",
       tags: ["wall"],
-      sprite: { type: "rect", width: WALL_WIDTH, height: WORLD_HEIGHT, color: "#2D3748" },
+      visual: { type: "rect", width: WALL_WIDTH, height: WORLD_HEIGHT, color: "#2D3748" },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: WALL_WIDTH,
         height: WORLD_HEIGHT,
-        density: 0,
         friction: 0,
         restitution: 1,
       },
@@ -277,13 +294,15 @@ const game: GameDefinition = {
     ceiling: {
       id: "ceiling",
       tags: ["ceiling"],
-      sprite: { type: "rect", width: WORLD_WIDTH, height: WALL_WIDTH, color: "#2D3748" },
+      visual: { type: "rect", width: WORLD_WIDTH, height: WALL_WIDTH, color: "#2D3748" },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: WORLD_WIDTH,
         height: WALL_WIDTH,
-        density: 0,
         friction: 0,
         restitution: 0,
       },
@@ -291,7 +310,7 @@ const game: GameDefinition = {
     deathLine: {
       id: "deathLine",
       tags: ["death-line"],
-      sprite: { type: "rect", width: WORLD_WIDTH, height: 0.1, color: "#FF000044" },
+      visual: { type: "rect", width: WORLD_WIDTH, height: 0.1, color: "#FF000044" },
       type: "zone",
       zone: {
         shape: {
@@ -304,7 +323,7 @@ const game: GameDefinition = {
     aimLine: {
       id: "aimLine",
       tags: ["aim-line"],
-      sprite: { type: "rect", width: 0.05, height: 3, color: "#FFFFFF44" },
+      visual: { type: "rect", width: 0.05, height: 3, color: "#FFFFFF44" },
       type: "zone",
       zone: {
         shape: {

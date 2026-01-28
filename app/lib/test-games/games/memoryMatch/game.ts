@@ -155,7 +155,7 @@ const game: GameDefinition = {
     cardBack: {
       id: "cardBack",
       tags: ["card", "face-down"],
-      sprite: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_BACK_COLOR },
+      visual: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_BACK_COLOR },
       type: "zone",
       zone: {
         shape: { type: "box", width: CARD_WIDTH, height: CARD_HEIGHT },
@@ -164,7 +164,7 @@ const game: GameDefinition = {
     card0: {
       id: "card0",
       tags: ["card", "face-up"],
-      sprite: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[0] },
+      visual: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[0] },
       type: "zone",
       zone: {
         shape: { type: "box", width: CARD_WIDTH, height: CARD_HEIGHT },
@@ -173,7 +173,7 @@ const game: GameDefinition = {
     card1: {
       id: "card1",
       tags: ["card", "face-up"],
-      sprite: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[1] },
+      visual: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[1] },
       type: "zone",
       zone: {
         shape: { type: "box", width: CARD_WIDTH, height: CARD_HEIGHT },
@@ -182,7 +182,7 @@ const game: GameDefinition = {
     card2: {
       id: "card2",
       tags: ["card", "face-up"],
-      sprite: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[2] },
+      visual: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[2] },
       type: "zone",
       zone: {
         shape: { type: "box", width: CARD_WIDTH, height: CARD_HEIGHT },
@@ -191,7 +191,7 @@ const game: GameDefinition = {
     card3: {
       id: "card3",
       tags: ["card", "face-up"],
-      sprite: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[3] },
+      visual: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[3] },
       type: "zone",
       zone: {
         shape: { type: "box", width: CARD_WIDTH, height: CARD_HEIGHT },
@@ -200,7 +200,7 @@ const game: GameDefinition = {
     card4: {
       id: "card4",
       tags: ["card", "face-up"],
-      sprite: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[4] },
+      visual: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[4] },
       type: "zone",
       zone: {
         shape: { type: "box", width: CARD_WIDTH, height: CARD_HEIGHT },
@@ -209,7 +209,7 @@ const game: GameDefinition = {
     card5: {
       id: "card5",
       tags: ["card", "face-up"],
-      sprite: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[5] },
+      visual: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[5] },
       type: "zone",
       zone: {
         shape: { type: "box", width: CARD_WIDTH, height: CARD_HEIGHT },
@@ -218,7 +218,7 @@ const game: GameDefinition = {
     card6: {
       id: "card6",
       tags: ["card", "face-up"],
-      sprite: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[6] },
+      visual: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[6] },
       type: "zone",
       zone: {
         shape: { type: "box", width: CARD_WIDTH, height: CARD_HEIGHT },
@@ -227,7 +227,7 @@ const game: GameDefinition = {
     card7: {
       id: "card7",
       tags: ["card", "face-up"],
-      sprite: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[7] },
+      visual: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[7] },
       type: "zone",
       zone: {
         shape: { type: "box", width: CARD_WIDTH, height: CARD_HEIGHT },

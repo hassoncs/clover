@@ -174,7 +174,7 @@ const game: GameDefinition = {
     columnHeader: {
       id: "columnHeader",
       tags: ["column"],
-      sprite: { type: "rect", width: BLOCK_SIZE, height: 0.8, color: COLUMN_HEADER_COLOR },
+      visual: { type: "rect", width: BLOCK_SIZE, height: 0.8, color: COLUMN_HEADER_COLOR },
       type: "zone",
       zone: {
         shape: {
@@ -187,7 +187,7 @@ const game: GameDefinition = {
     gridSlot: {
       id: "gridSlot",
       tags: ["slot"],
-      sprite: { type: "rect", width: BLOCK_SIZE, height: BLOCK_SIZE, color: SLOT_COLOR },
+      visual: { type: "rect", width: BLOCK_SIZE, height: BLOCK_SIZE, color: SLOT_COLOR },
       type: "zone",
       zone: {
         shape: {
@@ -200,7 +200,7 @@ const game: GameDefinition = {
     block0: {
       id: "block0",
       tags: ["block", "color0"],
-      sprite: { type: "rect", width: BLOCK_SIZE * 0.9, height: BLOCK_SIZE * 0.9, color: BLOCK_COLORS[0] },
+      visual: { type: "rect", width: BLOCK_SIZE * 0.9, height: BLOCK_SIZE * 0.9, color: BLOCK_COLORS[0] },
       type: "zone",
       zone: {
         shape: {
@@ -213,7 +213,7 @@ const game: GameDefinition = {
     block1: {
       id: "block1",
       tags: ["block", "color1"],
-      sprite: { type: "rect", width: BLOCK_SIZE * 0.9, height: BLOCK_SIZE * 0.9, color: BLOCK_COLORS[1] },
+      visual: { type: "rect", width: BLOCK_SIZE * 0.9, height: BLOCK_SIZE * 0.9, color: BLOCK_COLORS[1] },
       type: "zone",
       zone: {
         shape: {
@@ -226,7 +226,7 @@ const game: GameDefinition = {
     block2: {
       id: "block2",
       tags: ["block", "color2"],
-      sprite: { type: "rect", width: BLOCK_SIZE * 0.9, height: BLOCK_SIZE * 0.9, color: BLOCK_COLORS[2] },
+      visual: { type: "rect", width: BLOCK_SIZE * 0.9, height: BLOCK_SIZE * 0.9, color: BLOCK_COLORS[2] },
       type: "zone",
       zone: {
         shape: {
@@ -239,7 +239,7 @@ const game: GameDefinition = {
     block3: {
       id: "block3",
       tags: ["block", "color3"],
-      sprite: { type: "rect", width: BLOCK_SIZE * 0.9, height: BLOCK_SIZE * 0.9, color: BLOCK_COLORS[3] },
+      visual: { type: "rect", width: BLOCK_SIZE * 0.9, height: BLOCK_SIZE * 0.9, color: BLOCK_COLORS[3] },
       type: "zone",
       zone: {
         shape: {
@@ -252,7 +252,7 @@ const game: GameDefinition = {
     placedBlock0: {
       id: "placedBlock0",
       tags: ["placed", "color0"],
-      sprite: { type: "rect", width: BLOCK_SIZE * 0.85, height: BLOCK_SIZE * 0.85, color: BLOCK_COLORS[0] },
+      visual: { type: "rect", width: BLOCK_SIZE * 0.85, height: BLOCK_SIZE * 0.85, color: BLOCK_COLORS[0] },
       type: "zone",
       zone: {
         shape: {
@@ -265,7 +265,7 @@ const game: GameDefinition = {
     placedBlock1: {
       id: "placedBlock1",
       tags: ["placed", "color1"],
-      sprite: { type: "rect", width: BLOCK_SIZE * 0.85, height: BLOCK_SIZE * 0.85, color: BLOCK_COLORS[1] },
+      visual: { type: "rect", width: BLOCK_SIZE * 0.85, height: BLOCK_SIZE * 0.85, color: BLOCK_COLORS[1] },
       type: "zone",
       zone: {
         shape: {
@@ -278,7 +278,7 @@ const game: GameDefinition = {
     placedBlock2: {
       id: "placedBlock2",
       tags: ["placed", "color2"],
-      sprite: { type: "rect", width: BLOCK_SIZE * 0.85, height: BLOCK_SIZE * 0.85, color: BLOCK_COLORS[2] },
+      visual: { type: "rect", width: BLOCK_SIZE * 0.85, height: BLOCK_SIZE * 0.85, color: BLOCK_COLORS[2] },
       type: "zone",
       zone: {
         shape: {
@@ -291,7 +291,7 @@ const game: GameDefinition = {
     placedBlock3: {
       id: "placedBlock3",
       tags: ["placed", "color3"],
-      sprite: { type: "rect", width: BLOCK_SIZE * 0.85, height: BLOCK_SIZE * 0.85, color: BLOCK_COLORS[3] },
+      visual: { type: "rect", width: BLOCK_SIZE * 0.85, height: BLOCK_SIZE * 0.85, color: BLOCK_COLORS[3] },
       type: "zone",
       zone: {
         shape: {

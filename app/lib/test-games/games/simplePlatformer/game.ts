@@ -81,16 +81,18 @@ const game: GameDefinition = {
     player: {
       id: "player",
       tags: ["player"],
-      sprite: { type: "image", imageUrl: `${ASSET_BASE}/player.png`, imageWidth: 0.7, imageHeight: 1 },
+      visual: { type: "image", imageUrl: `${ASSET_BASE}/player.png`, imageWidth: 0.7, imageHeight: 1 },
       physics: {
         bodyType: "dynamic",
+        density: 1,
+        fixedRotation: true,
+      },
+      collider: {
         shape: "box",
         width: 0.7,
         height: 1,
-        density: 1,
         friction: 0.3,
         restitution: 0,
-        fixedRotation: true,
       },
       behaviors: [
         { type: "destroy_on_collision", withTags: ["enemy", "hazard"], effect: "fade" },
@@ -99,13 +101,15 @@ const game: GameDefinition = {
     platform: {
       id: "platform",
       tags: ["platform", "ground"],
-      sprite: { type: "image", imageUrl: `${ASSET_BASE}/platform.png`, imageWidth: 3, imageHeight: 0.5 },
+      visual: { type: "image", imageUrl: `${ASSET_BASE}/platform.png`, imageWidth: 3, imageHeight: 0.5 },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: 3,
         height: 0.5,
-        density: 0,
         friction: 0.9,
         restitution: 0,
       },
@@ -113,13 +117,15 @@ const game: GameDefinition = {
     smallPlatform: {
       id: "smallPlatform",
       tags: ["platform"],
-      sprite: { type: "image", imageUrl: `${ASSET_BASE}/smallPlatform.png`, imageWidth: 2, imageHeight: 0.4 },
+      visual: { type: "image", imageUrl: `${ASSET_BASE}/smallPlatform.png`, imageWidth: 2, imageHeight: 0.4 },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: 2,
         height: 0.4,
-        density: 0,
         friction: 0.9,
         restitution: 0,
       },
@@ -127,7 +133,7 @@ const game: GameDefinition = {
     coin: {
       id: "coin",
       tags: ["collectible", "coin"],
-      sprite: { type: "image", imageUrl: `${ASSET_BASE}/coin.png`, imageWidth: 0.6, imageHeight: 0.6 },
+      visual: { type: "image", imageUrl: `${ASSET_BASE}/coin.png`, imageWidth: 0.6, imageHeight: 0.6 },
       type: "zone",
       zone: {
         shape: { type: "circle", radius: 0.3 },
@@ -140,12 +146,14 @@ const game: GameDefinition = {
     enemy: {
       id: "enemy",
       tags: ["enemy"],
-      sprite: { type: "image", imageUrl: `${ASSET_BASE}/enemy.png`, imageWidth: 0.8, imageHeight: 0.8 },
+      visual: { type: "image", imageUrl: `${ASSET_BASE}/enemy.png`, imageWidth: 0.8, imageHeight: 0.8 },
       physics: {
         bodyType: "kinematic",
+        density: 0,
+      },
+      collider: {
         shape: "circle",
         radius: 0.4,
-        density: 0,
         friction: 0,
         restitution: 0,
       },
@@ -156,7 +164,7 @@ const game: GameDefinition = {
     goal: {
       id: "goal",
       tags: ["goal"],
-      sprite: { type: "image", imageUrl: `${ASSET_BASE}/goal.png`, imageWidth: 0.5, imageHeight: 2 },
+      visual: { type: "image", imageUrl: `${ASSET_BASE}/goal.png`, imageWidth: 0.5, imageHeight: 2 },
       type: "zone",
       zone: {
         shape: { type: "box", width: 0.5, height: 2 },
@@ -165,7 +173,7 @@ const game: GameDefinition = {
     deathZone: {
       id: "deathZone",
       tags: ["hazard"],
-      sprite: { type: "rect", width: 30, height: 1, color: "#FF000022" },
+      visual: { type: "rect", width: 30, height: 1, color: "#FF000022" },
       type: "zone",
       zone: {
         shape: { type: "box", width: 30, height: 1 },
@@ -214,10 +222,27 @@ const game: GameDefinition = {
       ],
     },
     {
-      id: "jump",
-      name: "Jump (A Button)",
-      trigger: { type: "button", button: "jump", state: "pressed" },
-      actions: [{ type: "apply_impulse", target: { type: "by_tag", tag: "player" }, y: 8 }],
+      id: "wall-top",
+      name: "Top Wall",
+      tags: ["wall"],
+      transform: { x: 0, y: cy(0.1), angle: 0, scaleX: 1, scaleY: 1 },
+      visual: {
+        type: "rect",
+        width: WORLD_WIDTH,
+        height: 0.2,
+        color: "#1e3a5f",
+      },
+      physics: {
+        bodyType: "static",
+        density: 0,
+      },
+      collider: {
+        shape: "box",
+        width: WORLD_WIDTH,
+        height: 0.2,
+        friction: 0.1,
+        restitution: 0.6,
+      },
     },
     {
       id: "dash-right",

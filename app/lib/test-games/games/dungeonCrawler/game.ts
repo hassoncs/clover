@@ -50,13 +50,15 @@ const game: GameDefinition = {
     floor_tile: {
       id: "floor_tile",
       tags: ["floor"],
-      sprite: { type: "rect", width: TILE_SIZE, height: TILE_SIZE, color: "#444444" },
+      visual: { type: "rect", width: TILE_SIZE, height: TILE_SIZE, color: "#444444" },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: TILE_SIZE,
         height: TILE_SIZE,
-        density: 0,
         friction: 0,
         restitution: 0,
       },
@@ -64,23 +66,25 @@ const game: GameDefinition = {
     player: {
       id: "player",
       tags: ["player"],
-      sprite: { type: "rect", width: 0.8, height: 0.8, color: "#4A90E2" },
+      visual: { type: "rect", width: 0.8, height: 0.8, color: "#4A90E2" },
       physics: {
         bodyType: "kinematic",
+        density: 0,
+        fixedRotation: true,
+      },
+      collider: {
         shape: "box",
         width: 0.8,
         height: 0.8,
-        density: 0,
         friction: 0,
         restitution: 0,
-        fixedRotation: true,
       },
       behaviors: [],
     },
     key: {
       id: "key",
       tags: ["key"],
-      sprite: { type: "rect", width: 0.6, height: 0.6, color: "#FFD700" },
+      visual: { type: "rect", width: 0.6, height: 0.6, color: "#FFD700" },
       type: "zone",
       zone: {
         shape: { type: "box", width: 0.6, height: 0.6 },
@@ -90,7 +94,7 @@ const game: GameDefinition = {
     enemy: {
       id: "enemy",
       tags: ["enemy"],
-      sprite: { type: "rect", width: 0.7, height: 0.7, color: "#E74C3C" },
+      visual: { type: "rect", width: 0.7, height: 0.7, color: "#E74C3C" },
       type: "zone",
       zone: {
         shape: { type: "box", width: 0.7, height: 0.7 },
@@ -100,7 +104,7 @@ const game: GameDefinition = {
     door: {
       id: "door",
       tags: ["door"],
-      sprite: { type: "rect", width: 0.9, height: 0.9, color: "#8B4513" },
+      visual: { type: "rect", width: 0.9, height: 0.9, color: "#8B4513" },
       type: "zone",
       zone: {
         shape: { type: "box", width: 0.9, height: 0.9 },

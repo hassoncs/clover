@@ -45,7 +45,7 @@ const game: GameDefinition = {
   templates: {
     player: {
       id: "player",
-      sprite: {
+      visual: {
         type: "rect",
         width: 0.8,
         height: 0.8,
@@ -53,19 +53,21 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "dynamic",
+        density: 1,
+        fixedRotation: true,
+      },
+      collider: {
         shape: "box",
         width: 0.8,
         height: 0.8,
-        density: 1,
         friction: 0.3,
         restitution: 0,
-        fixedRotation: true,
       },
       tags: ["player"],
     },
     platform: {
       id: "platform",
-      sprite: {
+      visual: {
         type: "rect",
         width: 2,
         height: 0.4,
@@ -73,10 +75,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 1,
+      },
+      collider: {
         shape: "box",
         width: 2,
         height: 0.4,
-        density: 1,
         friction: 0.8,
         restitution: 0,
       },
@@ -84,7 +88,7 @@ const game: GameDefinition = {
     },
     collectible: {
       id: "collectible",
-      sprite: {
+      visual: {
         type: "circle",
         radius: 0.3,
         color: "#FFD700",
@@ -119,16 +123,18 @@ const game: GameDefinition = {
     },
     enemy: {
       id: "enemy",
-      sprite: {
+      visual: {
         type: "circle",
         radius: 0.4,
         color: "#FF0000",
       },
       physics: {
         bodyType: "kinematic",
+        density: 1,
+      },
+      collider: {
         shape: "circle",
         radius: 0.4,
-        density: 1,
         friction: 0,
         restitution: 0,
       },
@@ -227,7 +233,7 @@ const game: GameDefinition = {
         scaleX: 1.5,
         scaleY: 1,
       },
-      sprite: {
+      visual: {
         type: "rect",
         width: 3,
         height: 0.4,

@@ -164,7 +164,7 @@ const game: GameDefinition = {
     wall: {
       id: "wall",
       tags: ["wall", "solid"],
-      sprite: {
+      visual: {
         type: "rect",
         width: CELL_SIZE,
         height: CELL_SIZE,
@@ -172,10 +172,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: CELL_SIZE,
         height: CELL_SIZE,
-        density: 0,
         friction: 0,
         restitution: 0,
       },
@@ -183,7 +185,7 @@ const game: GameDefinition = {
     floor: {
       id: "floor",
       tags: ["floor"],
-      sprite: {
+      visual: {
         type: "rect",
         width: CELL_SIZE,
         height: CELL_SIZE,
@@ -197,7 +199,7 @@ const game: GameDefinition = {
     goal: {
       id: "goal",
       tags: ["goal"],
-      sprite: {
+      visual: {
         type: "rect",
         width: CELL_SIZE * 0.8,
         height: CELL_SIZE * 0.8,
@@ -211,7 +213,7 @@ const game: GameDefinition = {
     iceBlock: {
       id: "iceBlock",
       tags: ["iceBlock", "movable"],
-      sprite: {
+      visual: {
         type: "rect",
         width: CELL_SIZE * 0.9,
         height: CELL_SIZE * 0.9,
@@ -219,10 +221,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "kinematic",
+        density: 1,
+      },
+      collider: {
         shape: "box",
         width: CELL_SIZE * 0.9,
         height: CELL_SIZE * 0.9,
-        density: 1,
         friction: 0,
         restitution: 0,
       },

@@ -19,18 +19,18 @@ export class SetEntitySizeActionExecutor implements ActionExecutor<SetEntitySize
       }
 
       if (action.width !== undefined) {
-        const physics = entity.physics as { shape?: string; width?: number } | undefined;
-        if (physics?.shape === 'box' && physics.width) {
+        const collider = entity.collider as { shape?: string; width?: number } | undefined;
+        if (collider?.shape === 'box' && collider.width) {
           const newWidth = resolveNumber(action.width, context);
-          targetScaleX = newWidth / physics.width;
+          targetScaleX = newWidth / collider.width;
         }
       }
       
       if (action.height !== undefined) {
-        const physics = entity.physics as { shape?: string; height?: number } | undefined;
-        if (physics?.shape === 'box' && physics.height) {
+        const collider = entity.collider as { shape?: string; height?: number } | undefined;
+        if (collider?.shape === 'box' && collider.height) {
           const newHeight = resolveNumber(action.height, context);
-          targetScaleY = newHeight / physics.height;
+          targetScaleY = newHeight / collider.height;
         }
       }
 

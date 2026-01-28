@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-Build an end-of-day MVP of an **Angry Birds-style** projectile physics game (“Angry Burns”) plus a **deterministic, seed-based tower generator** whose only input is **difficulty ∈ [0,1]**. The generator produces a **LevelDefinition overlay** that plugs into the existing **LevelPack/LevelLoader** system, supports **endless regeneration** (“Next Level”), and supports **saving favorites** to local storage as a **user pack**.
+Build an end-of-day MVP of an **Angry Birds-style** projectile physics game (“Angry Burns”) with a **pull-back cannon / slingshot aiming mechanic** (drag to pull back; release to fire), plus a **deterministic, seed-based tower generator** whose only input is **difficulty ∈ [0,1]**. The generator produces a **LevelDefinition overlay** that plugs into the existing **LevelPack/LevelLoader** system, supports **endless regeneration** (“Next Level”), and supports **saving favorites** to local storage as a **user pack**.
 
 **Estimated effort**: Medium (one-day MVP)
 
@@ -40,9 +40,10 @@ Ship a playable Angry Birds-style game loop plus a procedural level builder that
 3) allows saving favorites into a LevelPack persisted locally.
 
 ### Deliverables
-1. New game: **Angry Burns** base `GameDefinition` (launcher + projectile + blocks + targets + win/lose).
+1. A reusable **pull-back launcher mechanic** ("slingshot") implemented as a generic pattern usable by other games.
+2. New game: **Angry Burns** base `GameDefinition` (launcher + projectile + blocks + targets + win/lose).
 2. New generator: `generateAngryBurnsLevel({ seed, packId, levelId, difficulty01 }) → LevelDefinition`.
-3. New validators: fast **geometry-first** tower validation + bounded retry + fallback.
+3. New validators: **minimal geometry checks only** (bounds/overlap/support). No physics simulation validation.
 4. LevelLoader support for `overrides.angryBurns` so `LevelDefinition` can inject per-level entities/settings.
 5. Minimal UX:
    - “Next Level” (increment index)
@@ -55,7 +56,8 @@ Ship a playable Angry Birds-style game loop plus a procedural level builder that
 - No ML/GAN/solver. No evolutionary search. (Heuristics + bounded retries only.)
 - No large editor buildout. (Only minimal buttons for regenerate/favorite.)
 - No cloud sync/sharing for favorites in v1.
-- No physics-based “proof of solvability”; only stability/playability smoke checks.
+- No heavy validation of “solvability” or “looks good”. If a level is weird, user regenerates.
+- No physics simulation used as a generator gate.
 
 ---
 
@@ -73,9 +75,35 @@ We’ll map difficulty to a small set of knobs (kept intentionally simple for v1
 - Use a **base seed string** (e.g. `"angry-burns"`) + `levelIndex` → derived seed `"${baseSeed}:${levelIndex}"`.
 - Favorites store the exact LevelDefinition snapshot (including generated entities) so generator changes don’t invalidate saved levels.
 
+### Launcher control ("cannon" feel + pull-back aiming)
+- Launcher is visually a **cannon** (stationary).
+- Player drags/pulls back the **loaded projectile** (or a pull-handle) and releases to fire.
+- Mechanic is implemented generically so other games can use it (not Angry Burns specific).
+
 ---
 
 ## Technical Design
+
+### 0) Generic pull-back launcher (slingshot) mechanic
+
+**Goal**: Implement a reusable "pull-back and release" launcher that can be used in multiple games.
+
+**MVP behavior**
+- On tap (or game start), spawn/load a projectile at the launcher.
+- While dragging:
+  - aim vector is derived from drag (pull-back direction)
+  - show a simple aim indicator (optional for MVP)
+- On drag end:
+  - apply impulse to the projectile using drag vector
+  - decrement lives / shots
+  - optionally prevent additional shots until projectile despawns or sleeps
+
+**Preferred implementation path (min engine churn)**
+- Use existing rule triggers/actions (`drag`, `spawn`, `apply_impulse`, `lives`) plus existing behaviors (`draggable` with `mode: 'kinematic'` if needed) to avoid inventing a new input system.
+
+**References for feasibility**
+- `shared/src/types/rules.ts` includes `DragTrigger` + `SpawnAction` + `ApplyImpulseAction`.
+- `shared/src/types/behavior.ts` includes `draggable` with `mode?: 'force' | 'kinematic'`.
 
 ### 1) Level output format
 Use existing `LevelDefinition` and add a game-specific namespace:
@@ -114,17 +142,15 @@ Why: `shared/src/loader/LevelLoader.ts` already has an entity merge mechanism (`
 ### 3) Validator pipeline (cheap first; bounded retries)
 Return `{ ok, errors[], warnings[], metrics }`.
 
-Order:
+Order (MVP):
 1. Bounds check (all AABBs in world)
 2. Overlap check (AABB overlap <= epsilon)
 3. Support check (each non-ground block has sufficient support under its left/right “feet”)
 4. Required entities (launcher, ground, >=1 target)
-5. “Not instantly trivial” heuristic (at least some shielding at medium/hard)
 
 Retry loop:
-- `maxAttempts = 12` (fixed)
-- generate → validate → accept; else next attempt seed
-- fallback: known-good simple tower
+- Keep attempts low (e.g., `maxAttempts = 3`) to stay fast.
+- If still failing, return a simple known-good tower.
 
 ### 4) Minimal play loop defaults
 - Win: `destroy_all` targets
@@ -168,7 +194,34 @@ Independent tasks that can run in parallel.
 
 > Each task includes **References** (what to open) and **Acceptance Criteria**.
 
-### 1) Create Angry Burns base game definition (launcher + projectile + targets)
+### 1) Implement reusable pull-back launcher (slingshot) mechanic
+
+**What to do**
+- Implement a generic "pull-back to aim; release to fire" launcher pattern usable in other games.
+- Prefer doing this with existing `drag` triggers + `spawn` + `apply_impulse` + `lives` actions and/or `draggable(mode:'kinematic')` on the loaded projectile.
+- Keep it configurable via variables:
+  - max pull distance
+  - force multiplier
+  - min pull threshold
+  - projectile template id
+  - cooldown / one-shot-at-a-time behavior
+
+**Recommended Agent Profile**
+- Category: `unspecified-high`
+- Skills: `slopcade-game-builder`
+
+**References**
+- `shared/src/types/rules.ts` — `DragTrigger`, `SpawnAction`, `ApplyImpulseAction`, `LivesAction`.
+- `shared/src/types/behavior.ts` — `draggable` (`mode: 'force' | 'kinematic'`).
+- `app/lib/test-games/games/sportsProjectile/game.ts` — baseline drag-to-impulse pattern to adapt.
+
+**Acceptance Criteria**
+- Player can pull back and release to fire a projectile.
+- The launcher implementation can be reused by another game by swapping template IDs + params.
+
+---
+
+### 2) Create Angry Burns base game definition (cannon + projectile + targets)
 
 **What to do**
 - Create a new Angry Burns `GameDefinition` by adapting the patterns in projectile games.
@@ -197,7 +250,7 @@ Independent tasks that can run in parallel.
 
 ---
 
-### 2) Define Angry Burns level override type in shared schema
+### 3) Define Angry Burns level override type in shared schema
 
 **What to do**
 - Extend `shared/src/types/LevelDefinition.ts` `GameOverrides` with `angryBurns?: AngryBurnsLevelOverrides`.
@@ -220,7 +273,7 @@ Independent tasks that can run in parallel.
 
 ---
 
-### 3) Extend LevelLoader to apply Angry Burns overrides
+### 4) Extend LevelLoader to apply Angry Burns overrides
 
 **What to do**
 - In `shared/src/loader/LevelLoader.ts`, add logic similar to `applySlopeggleOverrides`:
@@ -243,7 +296,7 @@ Independent tasks that can run in parallel.
 
 ---
 
-### 4) Implement Angry Burns tower generator (deterministic)
+### 5) Implement Angry Burns tower generator (deterministic)
 
 **What to do**
 - Add `shared/src/generator/angryBurns/AngryBurnsLevelGenerator.ts` that exports:
@@ -269,7 +322,7 @@ Independent tasks that can run in parallel.
 
 ---
 
-### 5) Implement Angry Burns validators + retry/fallback
+### 6) Implement minimal Angry Burns validators (geometry only)
 
 **What to do**
 - Add `shared/src/validation/angryBurnsValidators.ts` with:
@@ -289,12 +342,12 @@ Independent tasks that can run in parallel.
 - `shared/src/generator/SeededRandom.ts` — attempt substreams.
 
 **Acceptance Criteria**
-- 100 generated levels across difficulties produce ≥ 80% “ok” within maxAttempts (in tests or a dev harness).
 - Validation errors are human-readable and identify which entity IDs are problematic.
+- Generator uses low retry count; "regen" is the user-facing escape hatch.
 
 ---
 
-### 6) Add shared unit tests (vitest)
+### 7) Add shared unit tests (vitest)
 
 **What to do**
 - Add tests under `shared/src/**` matching `src/**/*.test.ts` include.
@@ -316,7 +369,7 @@ Independent tasks that can run in parallel.
 
 ---
 
-### 7) Minimal UX: endless regenerate + favorite pack
+### 8) Minimal UX: endless regenerate + favorite pack
 
 **What to do**
 - Add a minimal UI surface (in the Angry Burns screen/test-game) with:
@@ -343,7 +396,7 @@ Persistence model:
 
 ---
 
-### 8) Load and play the saved favorites pack
+### 9) Load and play the saved favorites pack
 
 **What to do**
 - Implement a local `PackSource` in app-land that reads the saved `LevelPack` from storage.
@@ -365,7 +418,7 @@ Persistence model:
 
 ---
 
-### 9) Final integration QA
+### 10) Final integration QA
 
 **What to do**
 - Run through a deterministic QA script:

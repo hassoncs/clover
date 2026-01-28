@@ -143,35 +143,37 @@ func step(frames: int, options: Dictionary = {}) -> Dictionary:
 		"state": get_time_state()
 	}
 
-# Manual physics stepping - uses Rapier if available, otherwise falls back to async stepping
+# Manual physics stepping via Rapier
 func step_physics_sync(frames: int) -> Dictionary:
 	if frames <= 0:
 		return {"ok": false, "error": "Frames must be positive"}
 	
 	var start_frame = _frame_counter
+	var delta = 1.0 / Engine.physics_ticks_per_second
+	var viewport = _game_bridge.get_viewport()
+	if not viewport:
+		return {"ok": false, "error": "No viewport available"}
 	
-	# Check if Rapier is available
-	if Engine.has_singleton("RapierPhysicsServer2D"):
-		var rapier = Engine.get_singleton("RapierPhysicsServer2D")
-		var delta = 1.0 / Engine.physics_ticks_per_second
-		var viewport = _game_bridge.get_viewport()
-		if viewport:
-			var space = viewport.world_2d.space
-			if space.is_valid():
-				for i in range(frames):
-					rapier.space_step(space, delta)
-					_frame_counter += 1
-				rapier.space_flush_queries(space)
-				return {
-					"ok": true,
-					"framesAdvanced": frames,
-					"startFrame": start_frame,
-					"endFrame": _frame_counter,
-					"state": get_time_state()
-				}
+	var space = viewport.world_2d.space
+	if not space.is_valid():
+		return {"ok": false, "error": "Invalid physics space"}
 	
-	# Fallback: use async stepping
-	return await step(frames)
+	# Step physics using Rapier's direct API (access via Engine singleton)
+	var rapier = Engine.get_singleton("RapierPhysicsServer2D")
+	for i in range(frames):
+		rapier.space_step(space, delta)
+		_frame_counter += 1
+	
+	# Flush collision queries to sync state
+	rapier.space_flush_queries(space)
+	
+	return {
+		"ok": true,
+		"framesAdvanced": frames,
+		"startFrame": start_frame,
+		"endFrame": _frame_counter,
+		"state": get_time_state()
+	}
 
 func process_step_frame() -> void:
 	if _step_frames_remaining > 0:

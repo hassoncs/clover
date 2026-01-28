@@ -55,14 +55,14 @@ export function isEntityOnGround(entity: RuntimeEntity, context: RuleContext): b
   const transform = context.physics.getTransform(entity.bodyId);
   const { x, y } = transform.position;
   
-  if (!entity.physics) return false;
+  if (!entity.collider) return false;
 
   let dist = 0.6;
-  if (entity.physics.shape === 'box') {
-      dist = (entity.physics.height / 2) * entity.transform.scaleY + 0.1;
-  } else if (entity.physics.shape === 'circle') {
-      dist = entity.physics.radius * entity.transform.scaleY + 0.1;
-  } else if (entity.physics.shape === 'polygon') {
+  if (entity.collider.shape === 'box') {
+      dist = (entity.collider.height / 2) * entity.transform.scaleY + 0.1;
+  } else if (entity.collider.shape === 'circle') {
+      dist = entity.collider.radius * entity.transform.scaleY + 0.1;
+  } else if (entity.collider.shape === 'polygon') {
        dist = 0.5 * entity.transform.scaleY + 0.1; 
   }
   

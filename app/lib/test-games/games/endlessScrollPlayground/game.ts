@@ -59,9 +59,8 @@ const game: GameDefinition = {
         imageWidth: PIPE_WIDTH,
         imageHeight: PIPE_HEIGHT,
       },
-      physics: { density: 0 },
-      collider: { shape: 'box', physics: {
-        bodyType: "kinematic", width: PIPE_WIDTH, height: PIPE_HEIGHT, friction: 0, restitution: 0 },
+      physics: { bodyType: "kinematic", density: 0 },
+      collider: { shape: "box", width: PIPE_WIDTH, height: PIPE_HEIGHT, friction: 0, restitution: 0 },
       behaviors: [
         { type: "move", direction: "left", speed: PIPE_SPEED },
         { type: "timer", duration: 2, action: "destroy" },
@@ -76,9 +75,8 @@ const game: GameDefinition = {
         imageWidth: PIPE_WIDTH,
         imageHeight: PIPE_HEIGHT,
       },
-      physics: { density: 0 },
-      collider: { shape: 'box', physics: {
-        bodyType: "kinematic", width: PIPE_WIDTH, height: PIPE_HEIGHT, friction: 0, restitution: 0 },
+      physics: { bodyType: "kinematic", density: 0 },
+      collider: { shape: "box", width: PIPE_WIDTH, height: PIPE_HEIGHT, friction: 0, restitution: 0 },
       behaviors: [
         { type: "move", direction: "left", speed: PIPE_SPEED },
         { type: "timer", duration: 2, action: "destroy" },
@@ -93,9 +91,8 @@ const game: GameDefinition = {
         imageWidth: WORLD_WIDTH + 4,
         imageHeight: GROUND_HEIGHT,
       },
-      physics: { density: 0 },
-      collider: { shape: 'box', physics: {
-        bodyType: "static", width: WORLD_WIDTH + 4, height: GROUND_HEIGHT, friction: 0.5, restitution: 0 },
+      physics: { bodyType: "static", density: 0 },
+      collider: { shape: "box", width: WORLD_WIDTH + 4, height: GROUND_HEIGHT, friction: 0.5, restitution: 0 },
     },
     ceiling: {
       id: "ceiling",
@@ -106,9 +103,8 @@ const game: GameDefinition = {
         imageWidth: WORLD_WIDTH + 4,
         imageHeight: 0.5,
       },
-      physics: { density: 0 },
-      collider: { shape: 'box', physics: {
-        bodyType: "static", width: WORLD_WIDTH + 4, height: 0.5, friction: 0, restitution: 0 },
+      physics: { bodyType: "static", density: 0 },
+      collider: { shape: "box", width: WORLD_WIDTH + 4, height: 0.5, friction: 0, restitution: 0 },
     },
   },
   entities: [

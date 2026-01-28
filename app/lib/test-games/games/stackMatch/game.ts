@@ -148,7 +148,7 @@ const game: GameDefinition = {
     gridSlot: {
       id: "gridSlot",
       tags: ["slot"],
-      sprite: { type: "rect", width: TILE_SIZE, height: TILE_SIZE, color: SLOT_COLOR },
+      visual: { type: "rect", width: TILE_SIZE, height: TILE_SIZE, color: SLOT_COLOR },
       type: "zone",
       zone: {
         shape: { type: "box", width: TILE_SIZE, height: TILE_SIZE },
@@ -157,7 +157,7 @@ const game: GameDefinition = {
     tile0: {
       id: "tile0",
       tags: ["tile", "color0"],
-      sprite: { type: "rect", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9, color: TILE_COLORS[0] },
+      visual: { type: "rect", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9, color: TILE_COLORS[0] },
       type: "zone",
       zone: {
         shape: { type: "box", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9 },
@@ -166,7 +166,7 @@ const game: GameDefinition = {
     tile1: {
       id: "tile1",
       tags: ["tile", "color1"],
-      sprite: { type: "rect", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9, color: TILE_COLORS[1] },
+      visual: { type: "rect", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9, color: TILE_COLORS[1] },
       type: "zone",
       zone: {
         shape: { type: "box", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9 },
@@ -175,7 +175,7 @@ const game: GameDefinition = {
     tile2: {
       id: "tile2",
       tags: ["tile", "color2"],
-      sprite: { type: "rect", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9, color: TILE_COLORS[2] },
+      visual: { type: "rect", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9, color: TILE_COLORS[2] },
       type: "zone",
       zone: {
         shape: { type: "box", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9 },
@@ -184,7 +184,7 @@ const game: GameDefinition = {
     tile3: {
       id: "tile3",
       tags: ["tile", "color3"],
-      sprite: { type: "rect", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9, color: TILE_COLORS[3] },
+      visual: { type: "rect", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9, color: TILE_COLORS[3] },
       type: "zone",
       zone: {
         shape: { type: "box", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9 },
@@ -193,7 +193,7 @@ const game: GameDefinition = {
     tile4: {
       id: "tile4",
       tags: ["tile", "color4"],
-      sprite: { type: "rect", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9, color: TILE_COLORS[4] },
+      visual: { type: "rect", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9, color: TILE_COLORS[4] },
       type: "zone",
       zone: {
         shape: { type: "box", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9 },
@@ -202,7 +202,7 @@ const game: GameDefinition = {
     placedTile0: {
       id: "placedTile0",
       tags: ["placed", "color0"],
-      sprite: { type: "rect", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85, color: TILE_COLORS[0] },
+      visual: { type: "rect", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85, color: TILE_COLORS[0] },
       type: "zone",
       zone: {
         shape: { type: "box", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85 },
@@ -211,7 +211,7 @@ const game: GameDefinition = {
     placedTile1: {
       id: "placedTile1",
       tags: ["placed", "color1"],
-      sprite: { type: "rect", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85, color: TILE_COLORS[1] },
+      visual: { type: "rect", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85, color: TILE_COLORS[1] },
       type: "zone",
       zone: {
         shape: { type: "box", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85 },
@@ -220,7 +220,7 @@ const game: GameDefinition = {
     placedTile2: {
       id: "placedTile2",
       tags: ["placed", "color2"],
-      sprite: { type: "rect", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85, color: TILE_COLORS[2] },
+      visual: { type: "rect", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85, color: TILE_COLORS[2] },
       type: "zone",
       zone: {
         shape: { type: "box", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85 },
@@ -229,7 +229,7 @@ const game: GameDefinition = {
     placedTile3: {
       id: "placedTile3",
       tags: ["placed", "color3"],
-      sprite: { type: "rect", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85, color: TILE_COLORS[3] },
+      visual: { type: "rect", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85, color: TILE_COLORS[3] },
       type: "zone",
       zone: {
         shape: { type: "box", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85 },
@@ -238,7 +238,7 @@ const game: GameDefinition = {
     placedTile4: {
       id: "placedTile4",
       tags: ["placed", "color4"],
-      sprite: { type: "rect", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85, color: TILE_COLORS[4] },
+      visual: { type: "rect", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85, color: TILE_COLORS[4] },
       type: "zone",
       zone: {
         shape: { type: "box", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85 },

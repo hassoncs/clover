@@ -1418,6 +1418,10 @@ func _create_physics_body(entity_id: String, physics_data: Dictionary, collider_
 	var body_type = physics_data.get("bodyType", "dynamic")
 	var node: Node2D
 	
+	# Extract physics properties (needed outside match block)
+	var density = physics_data.get("density", 1.0)
+	var mass = physics_data.get("mass", 0.0)
+	
 	match body_type:
 		"static":
 			node = StaticBody2D.new()
@@ -1426,82 +1430,78 @@ func _create_physics_body(entity_id: String, physics_data: Dictionary, collider_
 			node = char_body
 		_:  # dynamic
 			var rigid = RigidBody2D.new()
-				rigid.gravity_scale = physics_data.get("gravityScale", 1.0)
-				
-				# Enable contact monitoring for detailed collision data
-				rigid.contact_monitor = true
-				rigid.max_contacts_reported = 4
-				
-				# Attach PhysicsBody script for _integrate_forces callback
-				rigid.set_script(load("res://scripts/PhysicsBody.gd"))
-				
-				# Set physics body properties (mass, damping, etc.)
-				var density = physics_data.get("density", 1.0)
-				var mass = physics_data.get("mass", 0.0)
-				
-				# Linear/angular damping
-				rigid.linear_damp = physics_data.get("linearDamping", 0.0)
-				rigid.angular_damp = physics_data.get("angularDamping", 0.0)
-				
-				# Fixed rotation
-				if physics_data.get("fixedRotation", false):
-					rigid.lock_rotation = true
-				
-				# CCD for fast-moving objects
-				if physics_data.get("ccd", false) or physics_data.get("bullet", false):
-					rigid.continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
-				
-				# Connect collision signals (kept for backward compatibility)
-				rigid.body_entered.connect(_on_body_entered.bind(entity_id))
-				
-				# Apply initial velocity if specified (convert with Y-flip)
-				var initial_vel = physics_data.get("initialVelocity", null)
-				if initial_vel != null:
-					# Store for deferred application (must be applied after body is in scene tree)
-					var game_vel = Vector2(initial_vel.get("x", 0), initial_vel.get("y", 0))
-					rigid.set_meta("_initial_velocity", game_to_godot_vec(game_vel))
-				
-				node = rigid
-		
-		node.name = entity_id
-		
-		# Add collision shape from collider data
-		if collider_data:
-			var collision = CollisionShape2D.new()
-			collision.shape = _create_collider_shape(collider_data)
+			rigid.gravity_scale = physics_data.get("gravityScale", 1.0)
 			
-			# Apply collider material properties (if dynamic body)
-			if node is RigidBody2D:
-				var friction = collider_data.get("friction", 0.5)
-				var restitution = collider_data.get("restitution", 0.0)
-				var material = PhysicsMaterial.new()
-				material.friction = friction
-				material.bounce = restitution
-				node.physics_material_override = material
-				
-				# Calculate mass if density provided and no direct mass
-				if mass <= 0 and density > 0:
-					var shape_type = collider_data.get("shape", "box")
-					var shape_area = 1.0
-					if shape_type == "box":
-						var w = collider_data.get("width", 1.0)
-						var h = collider_data.get("height", 1.0)
-						shape_area = w * h
-					elif shape_type == "circle":
-						var r = collider_data.get("radius", 0.5)
-						shape_area = PI * r * r
-					elif shape_type == "polygon":
-						var vertices = collider_data.get("vertices", [])
-						shape_area = _calculate_polygon_area(vertices)
-					node.mass = density * shape_area
-				elif mass > 0:
-					node.mass = mass
+			# Enable contact monitoring for detailed collision data
+			rigid.contact_monitor = true
+			rigid.max_contacts_reported = 4
 			
-			node.add_child(collision)
+			# Attach PhysicsBody script for _integrate_forces callback
+			rigid.set_script(load("res://scripts/PhysicsBody.gd"))
+			
+			# Linear/angular damping
+			rigid.linear_damp = physics_data.get("linearDamping", 0.0)
+			rigid.angular_damp = physics_data.get("angularDamping", 0.0)
+			
+			# Fixed rotation
+			if physics_data.get("fixedRotation", false):
+				rigid.lock_rotation = true
+			
+			# CCD for fast-moving objects
+			if physics_data.get("ccd", false) or physics_data.get("bullet", false):
+				rigid.continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
+			
+			# Connect collision signals (kept for backward compatibility)
+			rigid.body_entered.connect(_on_body_entered.bind(entity_id))
+			
+			# Apply initial velocity if specified (convert with Y-flip)
+			var initial_vel = physics_data.get("initialVelocity", null)
+			if initial_vel != null:
+				# Store for deferred application (must be applied after body is in scene tree)
+				var game_vel = Vector2(initial_vel.get("x", 0), initial_vel.get("y", 0))
+				rigid.set_meta("_initial_velocity", game_to_godot_vec(game_vel))
+			
+			node = rigid
+	
+	node.name = entity_id
+	
+	# Add collision shape from collider data
+	if collider_data:
+		var collision = CollisionShape2D.new()
+		collision.shape = _create_collider_shape(collider_data)
 		
-		# Apply collision filtering
-		node.collision_layer = physics_data.get("categoryBits", 1)
-		node.collision_mask = physics_data.get("maskBits", 0xFFFFFFFF)
+		# Apply collider material properties (if dynamic body)
+		if node is RigidBody2D:
+			var friction = collider_data.get("friction", 0.5)
+			var restitution = collider_data.get("restitution", 0.0)
+			var material = PhysicsMaterial.new()
+			material.friction = friction
+			material.bounce = restitution
+			node.physics_material_override = material
+			
+			# Calculate mass if density provided and no direct mass
+			if mass <= 0 and density > 0:
+				var shape_type = collider_data.get("shape", "box")
+				var shape_area = 1.0
+				if shape_type == "box":
+					var w = collider_data.get("width", 1.0)
+					var h = collider_data.get("height", 1.0)
+					shape_area = w * h
+				elif shape_type == "circle":
+					var r = collider_data.get("radius", 0.5)
+					shape_area = PI * r * r
+				elif shape_type == "polygon":
+					var vertices = collider_data.get("vertices", [])
+					shape_area = _calculate_polygon_area(vertices)
+				node.mass = density * shape_area
+			elif mass > 0:
+				node.mass = mass
+		
+		node.add_child(collision)
+	
+	# Apply collision filtering
+	node.collision_layer = physics_data.get("categoryBits", 1)
+	node.collision_mask = physics_data.get("maskBits", 0xFFFFFFFF)
 	
 	# Track body ID for Physics2D compatibility
 	body_id_map[entity_id] = next_body_id

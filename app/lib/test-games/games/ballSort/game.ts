@@ -311,7 +311,7 @@ export function createBallSortGame(level: number = 1): GameDefinition {
       tubeWall: {
         id: "tubeWall",
         tags: ["tube-wall"],
-        sprite: {
+        visual: {
           type: "image",
           imageUrl: `${ASSET_BASE}/tubeWall.png`,
           imageWidth: TUBE_WALL_THICKNESS,
@@ -319,10 +319,12 @@ export function createBallSortGame(level: number = 1): GameDefinition {
         },
         physics: {
           bodyType: "static",
+          density: 0,
+        },
+        collider: {
           shape: "box",
           width: TUBE_WALL_THICKNESS,
           height: TUBE_HEIGHT,
-          density: 0,
           friction: 0,
           restitution: 0,
         },
@@ -330,7 +332,7 @@ export function createBallSortGame(level: number = 1): GameDefinition {
       tubeBottom: {
         id: "tubeBottom",
         tags: ["tube-bottom"],
-        sprite: {
+        visual: {
           type: "image",
           imageUrl: `${ASSET_BASE}/tubeBottom.png`,
           imageWidth: TUBE_WIDTH,
@@ -338,10 +340,12 @@ export function createBallSortGame(level: number = 1): GameDefinition {
         },
         physics: {
           bodyType: "static",
+          density: 0,
+        },
+        collider: {
           shape: "box",
           width: TUBE_WIDTH,
           height: TUBE_WALL_THICKNESS,
-          density: 0,
           friction: 0,
           restitution: 0,
         },
@@ -349,7 +353,7 @@ export function createBallSortGame(level: number = 1): GameDefinition {
       tubeSensor: {
         id: "tubeSensor",
         tags: ["tube"],
-        sprite: {
+        visual: {
           type: "rect",
           width: TUBE_WIDTH - TUBE_WALL_THICKNESS * 2,
           height: TUBE_HEIGHT,
@@ -375,7 +379,7 @@ export function createBallSortGame(level: number = 1): GameDefinition {
       heldBallIndicator: {
         id: "heldBallIndicator",
         tags: ["held-indicator"],
-        sprite: {
+        visual: {
           type: "image",
           imageUrl: `${ASSET_BASE}/heldBallIndicator.png`,
           imageWidth: BALL_RADIUS * 2.4,
@@ -439,7 +443,7 @@ function createBallTemplate(colorIndex: number) {
   return {
     id: `ball${colorIndex}`,
     tags: ["ball", `color-${colorIndex}`],
-    sprite: {
+    visual: {
       type: "image",
       imageUrl: `${ASSET_BASE}/ball${colorIndex % 4}.png`,
       imageWidth: BALL_RADIUS * 2,

@@ -56,13 +56,15 @@ const game: GameDefinition = {
     tower: {
       id: "tower",
       tags: ["tower"],
-      sprite: { type: "rect", width: TOWER_WIDTH, height: TOWER_HEIGHT, color: "#4A90E2" },
+      visual: { type: "rect", width: TOWER_WIDTH, height: TOWER_HEIGHT, color: "#4A90E2" },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: TOWER_WIDTH,
         height: TOWER_HEIGHT,
-        density: 0,
         friction: 0,
         restitution: 0,
       },
@@ -71,30 +73,34 @@ const game: GameDefinition = {
     enemy: {
       id: "enemy",
       tags: ["enemy"],
-      sprite: { type: "circle", radius: ENEMY_RADIUS, color: "#E74C3C" },
+      visual: { type: "circle", radius: ENEMY_RADIUS, color: "#E74C3C" },
       physics: {
         bodyType: "dynamic",
+        density: 1,
+        linearDamping: 2,
+      },
+      collider: {
         shape: "circle",
         radius: ENEMY_RADIUS,
-        density: 1,
         friction: 0.5,
         restitution: 0.3,
-        linearDamping: 2,
       },
       behaviors: [],
     },
     projectile: {
       id: "projectile",
       tags: ["projectile"],
-      sprite: { type: "circle", radius: PROJECTILE_RADIUS, color: "#F1C40F" },
+      visual: { type: "circle", radius: PROJECTILE_RADIUS, color: "#F1C40F" },
       physics: {
         bodyType: "dynamic",
+        density: 0.5,
+        ccd: true,
+      },
+      collider: {
         shape: "circle",
         radius: PROJECTILE_RADIUS,
-        density: 0.5,
         friction: 0,
         restitution: 0.8,
-        bullet: true,
       },
       behaviors: [
         { type: "destroy_on_collision", withTags: ["enemy"], effect: "fade" },
@@ -105,7 +111,7 @@ const game: GameDefinition = {
     base: {
       id: "base",
       tags: ["base"],
-      sprite: { type: "rect", width: BASE_WIDTH, height: BASE_HEIGHT, color: "#27AE60" },
+      visual: { type: "rect", width: BASE_WIDTH, height: BASE_HEIGHT, color: "#27AE60" },
       type: "zone",
       zone: {
         shape: { type: "box", width: BASE_WIDTH, height: BASE_HEIGHT },

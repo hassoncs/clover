@@ -132,7 +132,7 @@ const game: GameDefinition = {
     floor: {
       id: "floor",
       tags: ["floor", "static"],
-      sprite: {
+      visual: {
         type: "rect",
         width: WORLD_WIDTH - 2,
         height: FLOOR_HEIGHT,
@@ -140,10 +140,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: WORLD_WIDTH - 2,
         height: FLOOR_HEIGHT,
-        density: 0,
         friction: 0.8,
         restitution: 0.1,
       },
@@ -151,7 +153,7 @@ const game: GameDefinition = {
     domino: {
       id: "domino",
       tags: ["domino"],
-      sprite: {
+      visual: {
         type: "rect",
         width: DOMINO_WIDTH,
         height: DOMINO_HEIGHT,
@@ -159,19 +161,21 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "dynamic",
+        density: 1,
+        linearDamping: 0.5,
+      },
+      collider: {
         shape: "box",
         width: DOMINO_WIDTH,
         height: DOMINO_HEIGHT,
-        density: 1,
         friction: 0.5,
         restitution: 0.1,
-        linearDamping: 0.5,
       },
     },
     pusher: {
       id: "pusher",
       tags: ["pusher"],
-      sprite: {
+      visual: {
         type: "rect",
         width: 0.3,
         height: 0.5,
@@ -186,7 +190,7 @@ const game: GameDefinition = {
     startButton: {
       id: "startButton",
       tags: ["start-button", "ui-element"],
-      sprite: {
+      visual: {
         type: "rect",
         width: START_BUTTON_WIDTH,
         height: START_BUTTON_HEIGHT,
@@ -201,7 +205,7 @@ const game: GameDefinition = {
     placementZone: {
       id: "placementZone",
       tags: ["placement-zone"],
-      sprite: {
+      visual: {
         type: "rect",
         width: WORLD_WIDTH - 4,
         height: 2,

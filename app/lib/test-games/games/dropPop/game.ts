@@ -208,7 +208,7 @@ const game: GameDefinition = {
     wall: {
       id: "wall",
       tags: ["wall"],
-      sprite: {
+      visual: {
         type: "rect",
         width: WALL_THICKNESS,
         height: CONTAINER_BOTTOM - DANGER_LINE_Y,
@@ -216,10 +216,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: WALL_THICKNESS,
         height: CONTAINER_BOTTOM - DANGER_LINE_Y,
-        density: 0,
         friction: 0.3,
         restitution: 0.2,
       },
@@ -227,7 +229,7 @@ const game: GameDefinition = {
     floor: {
       id: "floor",
       tags: ["wall"],
-      sprite: {
+      visual: {
         type: "rect",
         width: CONTAINER_RIGHT - CONTAINER_LEFT + WALL_THICKNESS * 2,
         height: WALL_THICKNESS,
@@ -235,10 +237,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: CONTAINER_RIGHT - CONTAINER_LEFT + WALL_THICKNESS * 2,
         height: WALL_THICKNESS,
-        density: 0,
         friction: 0.5,
         restitution: 0.1,
       },
@@ -246,7 +250,7 @@ const game: GameDefinition = {
     dangerLine: {
       id: "dangerLine",
       tags: ["danger"],
-      sprite: {
+      visual: {
         type: "rect",
         width: CONTAINER_RIGHT - CONTAINER_LEFT,
         height: 0.05,
@@ -260,7 +264,7 @@ const game: GameDefinition = {
     aimIndicator: {
       id: "aimIndicator",
       tags: ["aim"],
-      sprite: {
+      visual: {
         type: "rect",
         width: 0.1,
         height: CONTAINER_BOTTOM - AIM_Y - 0.5,
@@ -275,16 +279,18 @@ const game: GameDefinition = {
     fruit0: {
       id: "fruit0",
       tags: ["fruit", "fruit0"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: FRUIT_PROGRESSION[0].radius,
         color: FRUIT_PROGRESSION[0].color,
       },
       physics: {
         bodyType: "dynamic",
+        density: 1,
+      },
+      collider: {
         shape: "circle",
         radius: FRUIT_PROGRESSION[0].radius,
-        density: 1,
         friction: 0.3,
         restitution: 0.2,
       },
@@ -295,16 +301,18 @@ const game: GameDefinition = {
     fruit1: {
       id: "fruit1",
       tags: ["fruit", "fruit1"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: FRUIT_PROGRESSION[1].radius,
         color: FRUIT_PROGRESSION[1].color,
       },
       physics: {
         bodyType: "dynamic",
+        density: 1,
+      },
+      collider: {
         shape: "circle",
         radius: FRUIT_PROGRESSION[1].radius,
-        density: 1,
         friction: 0.3,
         restitution: 0.2,
       },
@@ -315,16 +323,18 @@ const game: GameDefinition = {
     fruit2: {
       id: "fruit2",
       tags: ["fruit", "fruit2"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: FRUIT_PROGRESSION[2].radius,
         color: FRUIT_PROGRESSION[2].color,
       },
       physics: {
         bodyType: "dynamic",
+        density: 1,
+      },
+      collider: {
         shape: "circle",
         radius: FRUIT_PROGRESSION[2].radius,
-        density: 1,
         friction: 0.3,
         restitution: 0.2,
       },
@@ -335,16 +345,18 @@ const game: GameDefinition = {
     fruit3: {
       id: "fruit3",
       tags: ["fruit", "fruit3"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: FRUIT_PROGRESSION[3].radius,
         color: FRUIT_PROGRESSION[3].color,
       },
       physics: {
         bodyType: "dynamic",
+        density: 1,
+      },
+      collider: {
         shape: "circle",
         radius: FRUIT_PROGRESSION[3].radius,
-        density: 1,
         friction: 0.3,
         restitution: 0.2,
       },
@@ -355,16 +367,18 @@ const game: GameDefinition = {
     fruit4: {
       id: "fruit4",
       tags: ["fruit", "fruit4"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: FRUIT_PROGRESSION[4].radius,
         color: FRUIT_PROGRESSION[4].color,
       },
       physics: {
         bodyType: "dynamic",
+        density: 1,
+      },
+      collider: {
         shape: "circle",
         radius: FRUIT_PROGRESSION[4].radius,
-        density: 1,
         friction: 0.3,
         restitution: 0.2,
       },
@@ -375,16 +389,18 @@ const game: GameDefinition = {
     fruit5: {
       id: "fruit5",
       tags: ["fruit", "fruit5"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: FRUIT_PROGRESSION[5].radius,
         color: FRUIT_PROGRESSION[5].color,
       },
       physics: {
         bodyType: "dynamic",
+        density: 1,
+      },
+      collider: {
         shape: "circle",
         radius: FRUIT_PROGRESSION[5].radius,
-        density: 1,
         friction: 0.3,
         restitution: 0.2,
       },

@@ -48,7 +48,7 @@ function createPuyoTemplate(color: keyof typeof PUYO_COLORS) {
   return {
     id: `puyo_${color}`,
     tags: ["puyo", `puyo_${color}`, color === "garbage" ? "garbage" : "colored"],
-    sprite: {
+    visual: {
       type: "image" as const,
       imageUrl: `${ASSET_BASE}/puyo_${color}.png`,
       imageWidth: PUYO_RADIUS * 2,
@@ -56,13 +56,15 @@ function createPuyoTemplate(color: keyof typeof PUYO_COLORS) {
     },
     physics: {
       bodyType: "dynamic" as const,
-      shape: "circle" as const,
-      radius: PUYO_RADIUS,
       density: 1,
-      friction: 0.3,
-      restitution: 0,
       fixedRotation: true,
       linearDamping: 5,
+    },
+    collider: {
+      shape: "circle" as const,
+      radius: PUYO_RADIUS,
+      friction: 0.3,
+      restitution: 0,
     },
   };
 }
@@ -156,7 +158,7 @@ const game: GameDefinition = {
     emptyCell: {
       id: "emptyCell",
       tags: ["cell"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/emptyCell.png`,
         imageWidth: CELL_SIZE,
@@ -175,7 +177,7 @@ const game: GameDefinition = {
     puyoPair: {
       id: "puyoPair",
       tags: ["pair", "active"],
-      sprite: {
+      visual: {
         type: "rect",
         width: 0.1,
         height: 0.1,
@@ -190,7 +192,7 @@ const game: GameDefinition = {
     wall: {
       id: "wall",
       tags: ["wall", "boundary"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/wall.png`,
         imageWidth: WALL_THICKNESS,
@@ -198,10 +200,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: WALL_THICKNESS,
         height: GRID_HEIGHT + 2,
-        density: 0,
         friction: 0.5,
         restitution: 0,
       },
@@ -209,7 +213,7 @@ const game: GameDefinition = {
     wallBottom: {
       id: "wallBottom",
       tags: ["wall", "boundary", "floor"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/wallBottom.png`,
         imageWidth: GRID_WIDTH + WALL_THICKNESS * 2,
@@ -217,10 +221,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: GRID_WIDTH + WALL_THICKNESS * 2,
         height: WALL_THICKNESS,
-        density: 0,
         friction: 0.5,
         restitution: 0,
       },
@@ -228,7 +234,7 @@ const game: GameDefinition = {
     spawnZone: {
       id: "spawnZone",
       tags: ["spawn-zone", "danger"],
-      sprite: {
+      visual: {
         type: "rect",
         width: CELL_SIZE * 2,
         height: CELL_SIZE,
@@ -242,7 +248,7 @@ const game: GameDefinition = {
     gridBackground: {
       id: "gridBackground",
       tags: ["background"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/gridBackground.png`,
         imageWidth: GRID_WIDTH,

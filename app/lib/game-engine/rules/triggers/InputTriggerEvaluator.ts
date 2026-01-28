@@ -147,21 +147,21 @@ export class InputTriggerEvaluator
   }
 
   private isPointInEntity(x: number, y: number, entity: RuntimeEntity): boolean {
-    const physics = entity.physics;
-    if (!physics) return false;
+    const collider = entity.collider;
+    if (!collider) return false;
 
     const ex = entity.transform.x;
     const ey = entity.transform.y;
 
-    if (physics.shape === "circle" && physics.radius) {
+    if (collider.shape === "circle" && collider.radius) {
       const dx = x - ex;
       const dy = y - ey;
-      return dx * dx + dy * dy <= physics.radius * physics.radius;
+      return dx * dx + dy * dy <= collider.radius * collider.radius;
     }
 
-    if (physics.shape === "box" && physics.width && physics.height) {
-      const halfW = physics.width / 2;
-      const halfH = physics.height / 2;
+    if (collider.shape === "box" && collider.width && collider.height) {
+      const halfW = collider.width / 2;
+      const halfH = collider.height / 2;
       return x >= ex - halfW && x <= ex + halfW && y >= ey - halfH && y <= ey + halfH;
     }
 

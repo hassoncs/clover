@@ -73,7 +73,7 @@ function createRectSymbolTemplate(key: Exclude<SymbolKey, "scatter">): EntityTem
   return {
     id: key,
     tags: ["symbol", key, key === "wild" ? "wild" : ""].filter(Boolean),
-    sprite: {
+    visual: {
       type: "rect" as const,
       width: CELL_SIZE * 0.85,
       height: CELL_SIZE * 0.85,
@@ -94,7 +94,7 @@ function createCircleSymbolTemplate(): EntityTemplate {
   return {
     id: "scatter",
     tags: ["symbol", "scatter"],
-    sprite: {
+    visual: {
       type: "circle" as const,
       radius: (CELL_SIZE * 0.85) / 2,
       color: symbolColors.scatter,
@@ -159,7 +159,7 @@ const game: GameDefinition = {
     gridCell: {
       id: "gridCell",
       tags: ["grid"],
-      sprite: {
+      visual: {
         type: "rect",
         width: CELL_SIZE * 0.9,
         height: CELL_SIZE * 0.9,
@@ -179,7 +179,7 @@ const game: GameDefinition = {
     spinButton: {
       id: "spinButton",
       tags: ["ui", "button"],
-      sprite: {
+      visual: {
         type: "rect",
         width: 2.2,
         height: 0.9,
@@ -197,7 +197,7 @@ const game: GameDefinition = {
     betButton: {
       id: "betButton",
       tags: ["ui", "button"],
-      sprite: {
+      visual: {
         type: "rect",
         width: 1.2,
         height: 0.6,

@@ -49,7 +49,7 @@ const game: GameDefinition = {
     player: {
       id: "player",
       tags: ["player"],
-      sprite: {
+      visual: {
         type: "rect",
         width: 0.6,
         height: 1,
@@ -57,33 +57,37 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "dynamic",
+        density: 1,
+        linearDamping: 2,
+        fixedRotation: true,
+      },
+      collider: {
         shape: "box",
         width: 0.6,
         height: 1,
-        density: 1,
         friction: 0.3,
         restitution: 0.2,
-        linearDamping: 2,
-        fixedRotation: true,
       },
       behaviors: [],
     },
     xpGem: {
       id: "xpGem",
       tags: ["xp_gem"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: 0.25,
         color: "#FFD700",
       },
       physics: {
         bodyType: "dynamic",
+        density: 0.5,
+        linearDamping: 1,
+      },
+      collider: {
         shape: "circle",
         radius: 0.25,
-        density: 0.5,
         friction: 0.2,
         restitution: 0.6,
-        linearDamping: 1,
       },
       behaviors: [
         {
@@ -96,19 +100,21 @@ const game: GameDefinition = {
     goldCoin: {
       id: "goldCoin",
       tags: ["gold_coin"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: 0.2,
         color: "#FFA500",
       },
       physics: {
         bodyType: "dynamic",
+        density: 0.4,
+        linearDamping: 1,
+      },
+      collider: {
         shape: "circle",
         radius: 0.2,
-        density: 0.4,
         friction: 0.2,
         restitution: 0.5,
-        linearDamping: 1,
       },
       behaviors: [
         {
@@ -121,7 +127,7 @@ const game: GameDefinition = {
     ground: {
       id: "ground",
       tags: ["ground"],
-      sprite: {
+      visual: {
         type: "rect",
         width: WORLD_WIDTH,
         height: 0.5,
@@ -129,10 +135,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: WORLD_WIDTH,
         height: 0.5,
-        density: 0,
         friction: 0.5,
         restitution: 0.1,
       },
@@ -140,7 +148,7 @@ const game: GameDefinition = {
     platform: {
       id: "platform",
       tags: ["platform"],
-      sprite: {
+      visual: {
         type: "rect",
         width: 2,
         height: 0.4,
@@ -148,10 +156,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: 2,
         height: 0.4,
-        density: 0,
         friction: 0.5,
         restitution: 0.1,
       },

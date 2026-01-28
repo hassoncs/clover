@@ -112,7 +112,7 @@ const game: GameDefinition = {
     gem_red: {
       id: "gem_red",
       tags: ["gem", "gem_red"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: GEM_SIZE / 2,
         color: "#FF4444",
@@ -127,7 +127,7 @@ const game: GameDefinition = {
     gem_blue: {
       id: "gem_blue",
       tags: ["gem", "gem_blue"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: GEM_SIZE / 2,
         color: "#4444FF",
@@ -142,7 +142,7 @@ const game: GameDefinition = {
     gem_green: {
       id: "gem_green",
       tags: ["gem", "gem_green"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: GEM_SIZE / 2,
         color: "#44FF44",
@@ -157,7 +157,7 @@ const game: GameDefinition = {
     gem_yellow: {
       id: "gem_yellow",
       tags: ["gem", "gem_yellow"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: GEM_SIZE / 2,
         color: "#FFFF44",
@@ -172,7 +172,7 @@ const game: GameDefinition = {
     gem_purple: {
       id: "gem_purple",
       tags: ["gem", "gem_purple"],
-      sprite: {
+      visual: {
         type: "circle",
         radius: GEM_SIZE / 2,
         color: "#AA44FF",
@@ -187,7 +187,7 @@ const game: GameDefinition = {
     selection_highlight: {
       id: "selection_highlight",
       tags: ["highlight"],
-      sprite: {
+      visual: {
         type: "rect",
         width: CELL_SIZE * 1.15,
         height: CELL_SIZE * 1.15,
@@ -202,7 +202,7 @@ const game: GameDefinition = {
     hover_highlight: {
       id: "hover_highlight",
       tags: ["highlight", "hover"],
-      sprite: {
+      visual: {
         type: "rect",
         width: CELL_SIZE * 1.1,
         height: CELL_SIZE * 1.1,
@@ -217,7 +217,7 @@ const game: GameDefinition = {
     grid_cell: {
       id: "grid_cell",
       tags: ["grid"],
-      sprite: {
+      visual: {
         type: "rect",
         width: CELL_SIZE * 0.95,
         height: CELL_SIZE * 0.95,

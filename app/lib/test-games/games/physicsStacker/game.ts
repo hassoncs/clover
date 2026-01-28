@@ -56,7 +56,7 @@ const game: GameDefinition = {
     foundation: {
       id: "foundation",
       tags: ["ground"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/foundation.png`,
         imageWidth: 4,
@@ -64,10 +64,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: 4,
         height: 0.6,
-        density: 0,
         friction: 0.9,
         restitution: 0,
       },
@@ -75,7 +77,7 @@ const game: GameDefinition = {
     dropper: {
       id: "dropper",
       tags: ["dropper"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/dropper.png`,
         imageWidth: 2,
@@ -106,7 +108,7 @@ const game: GameDefinition = {
     blockWide: {
       id: "blockWide",
       tags: ["block"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/blockWide.png`,
         imageWidth: 1.8,
@@ -114,10 +116,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "dynamic",
+        density: 1,
+      },
+      collider: {
         shape: "box",
         width: 1.8,
         height: 0.6,
-        density: 1,
         friction: 0.8,
         restitution: 0.1,
       },
@@ -135,7 +139,7 @@ const game: GameDefinition = {
     blockMedium: {
       id: "blockMedium",
       tags: ["block"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/blockMedium.png`,
         imageWidth: 1.4,
@@ -143,10 +147,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "dynamic",
+        density: 1,
+      },
+      collider: {
         shape: "box",
         width: 1.4,
         height: 0.6,
-        density: 1,
         friction: 0.8,
         restitution: 0.1,
       },
@@ -164,7 +170,7 @@ const game: GameDefinition = {
     blockSmall: {
       id: "blockSmall",
       tags: ["block"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/blockSmall.png`,
         imageWidth: 1.0,
@@ -172,10 +178,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "dynamic",
+        density: 1,
+      },
+      collider: {
         shape: "box",
         width: 1.0,
         height: 0.6,
-        density: 1,
         friction: 0.8,
         restitution: 0.1,
       },
@@ -193,7 +201,7 @@ const game: GameDefinition = {
     blockTall: {
       id: "blockTall",
       tags: ["block"],
-      sprite: {
+      visual: {
         type: "image",
         imageUrl: `${ASSET_BASE}/blockTall.png`,
         imageWidth: 0.6,
@@ -201,10 +209,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "dynamic",
+        density: 1,
+      },
+      collider: {
         shape: "box",
         width: 0.6,
         height: 1.2,
-        density: 1,
         friction: 0.8,
         restitution: 0.1,
       },
@@ -222,7 +232,7 @@ const game: GameDefinition = {
     deathZone: {
       id: "deathZone",
       tags: ["death-zone"],
-      sprite: { type: "rect", width: 20, height: 2, color: "transparent" },
+      visual: { type: "rect", width: 20, height: 2, color: "transparent" },
       type: "zone",
       zone: {
         shape: { type: "box", width: 20, height: 2 },
