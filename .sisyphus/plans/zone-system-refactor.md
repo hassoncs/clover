@@ -302,27 +302,27 @@ export interface ZoneExitEvent {
 
 ### QA Checklist (must pass before merge)
 
-- [ ] Static zone enter/exit (drain in Slopeggle)
-- [ ] Moving zone enter/exit (bucket in Slopeggle)
-- [ ] Zone used as UI button hit region (slotMachine buttons)
-- [ ] Zone used as collectible trigger (coins in platformer)
-- [ ] Zone used as portal (Slopeggle portals)
-- [ ] Zone+body collision rules still fire
-- [ ] All 23 games load without errors
-- [ ] All 23 games play correctly (spot check)
+- [x] Static zone enter/exit (drain in Slopeggle)
+- [x] Moving zone enter/exit (bucket in Slopeggle)
+- [x] Zone used as UI button hit region (slotMachine buttons)
+- [x] Zone used as collectible trigger (coins in platformer)
+- [x] Zone used as portal (Slopeggle portals)
+- [x] Zone+body collision rules still fire
+- [x] All 23 games load without errors
+- [x] All 23 games play correctly (spot check)
 
 ---
 
 ## Success Criteria
 
-- [ ] `physics.isSensor` is **completely removed** from types and schemas.
-- [ ] Zones are represented as a first-class entity kind (`type: "zone"`) with a `zone` component.
-- [ ] No engine/bridge API silently fails for zones (velocity, transform, lookup, cleanup).
-- [ ] Rules can consume zone enter/exit via new trigger types.
-- [ ] Collision triggers continue to work for zone interactions (backward compat).
-- [ ] All 23 games are migrated and working.
-- [ ] AI templates output `type: "zone"` syntax.
-- [ ] Documentation uses Zone concept exclusively (no mention of `isSensor`).
+- [x] `physics.isSensor` is **completely removed** from types and schemas.
+- [x] Zones are represented as a first-class entity kind (`type: "zone"`) with a `zone` component.
+- [x] No engine/bridge API silently fails for zones (velocity, transform, lookup, cleanup).
+- [x] Rules can consume zone enter/exit via new trigger types.
+- [x] Collision triggers continue to work for zone interactions (backward compat).
+- [x] All 23 games are migrated and working.
+- [x] AI templates output `type: "zone"` syntax.
+- [x] Documentation uses Zone concept exclusively (no mention of `isSensor`).
 
 ---
 
