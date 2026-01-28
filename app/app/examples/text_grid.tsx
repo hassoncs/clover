@@ -54,11 +54,10 @@ export default function TextGridLab() {
     const fill = silhouetteMode === 'fill' ? '808080' : 'none';
     const stroke = silhouetteMode === 'fill' ? 'none' : '404040';
     const strokeWidth = silhouetteMode === 'fill' ? 0 : 2;
-    
-    // Regular text view (no grid)
+
     const textSvgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
   <rect width="${width}" height="${height}" fill="#1a1a1a"/>
-  <text x="${width / 2}" y="${height / 2}" 
+  <text x="${width / 2}" y="${height / 2}"
         font-family="${selectedFont.family}, Arial, sans-serif"
         font-size="${fontSize}"
         fill="#${fill}"
@@ -69,7 +68,7 @@ export default function TextGridLab() {
     ${text.replace(/\n/g, ' ')}
   </text>
 </svg>`;
-    
+
     const gridLines = [];
     for (let r = 0; r <= rows; r++) {
       const y = r * (cellHeight + lineGap) - (r > 0 ? lineGap : 0);
@@ -79,22 +78,39 @@ export default function TextGridLab() {
       const x = c * cellWidth;
       gridLines.push(`<line x1="${x}" y1="0" x2="${x}" y2="${height}" stroke="#444" stroke-width="1" stroke-dasharray="4,4"/>`);
     }
-    
-    const gridSvgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-  <rect width="${width}" height="${height}" fill="#1a1a1a"/>
-  ${gridLines.join('\n  ')}
-  <text x="${width / 2}" y="${height / 2}" 
+
+    const graphemes = text.replace(/\n/g, '').split('');
+    const textElements = [];
+    let currentRow = 0;
+    let currentCol = 0;
+
+    for (let i = 0; i < graphemes.length && currentRow < rows; i++) {
+      const g = graphemes[i];
+      const x = currentCol * cellWidth + cellWidth / 2;
+      const y = currentRow * (cellHeight + lineGap) + cellHeight / 2;
+
+      textElements.push(`<text x="${x}" y="${y}"
         font-family="${selectedFont.family}, Arial, sans-serif"
         font-size="${fontSize}"
         fill="#${fill}"
         stroke="#${stroke}"
         stroke-width="${strokeWidth}"
         text-anchor="middle"
-        dominant-baseline="middle">
-    ${text.replace(/\n/g, ' ')}
-  </text>
+        dominant-baseline="middle">${g}</text>`);
+
+      currentCol++;
+      if (currentCol >= cols) {
+        currentCol = 0;
+        currentRow++;
+      }
+    }
+
+    const gridSvgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <rect width="${width}" height="${height}" fill="#1a1a1a"/>
+  ${gridLines.join('\n  ')}
+  ${textElements.join('\n  ')}
 </svg>`;
-    
+
     setTextSvg(textSvgContent);
     setTextSvgDataUrl('data:image/svg+xml;base64,' + btoa(textSvgContent));
     setGridSvg(gridSvgContent);

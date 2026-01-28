@@ -1,11 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { validateGameDefinition, getValidationSummary } from '../validator';
 import { validateExpression } from '../../../shared/src/expressions/validator';
 import { isExpression } from '../../../shared/src/expressions/types';
 import type { GameDefinition, GameRule, RuleCondition, RuleAction } from '../../../shared/src/types/GameDefinition';
 import type { Value } from '../../../shared/src/expressions/types';
-
-// Import test games dynamically from the registry
 import { loadAllTestGames, type TestGameId } from '../../../app/lib/registry/generated/testGames';
 
 interface ExpressionLocation {
@@ -15,12 +13,8 @@ interface ExpressionLocation {
   expression: string;
 }
 
-/**
- * Extract all expressions from a game definition
- */
 function extractExpressions(game: GameDefinition, gameId: TestGameId): ExpressionLocation[] {
   const expressions: ExpressionLocation[] = [];
-  const knownVariableNames = game.variables ? Object.keys(game.variables) : [];
 
   function addExpression(ruleId: string, path: string, value: Value<unknown>) {
     if (isExpression(value)) {
@@ -97,20 +91,17 @@ function extractExpressions(game: GameDefinition, gameId: TestGameId): Expressio
     }
   }
 
-  // Extract from rules
   if (game.rules) {
     for (const rule of game.rules) {
       const ruleId = rule.id || 'unknown';
       const rulePath = `rules.${ruleId}`;
 
-      // Extract from conditions
       if (rule.conditions) {
         for (let i = 0; i < rule.conditions.length; i++) {
           extractFromCondition(ruleId, `${rulePath}.conditions[${i}]`, rule.conditions[i]);
         }
       }
 
-      // Extract from actions
       if (rule.actions) {
         for (let i = 0; i < rule.actions.length; i++) {
           extractFromAction(ruleId, `${rulePath}.actions[${i}]`, rule.actions[i]);
@@ -122,9 +113,6 @@ function extractExpressions(game: GameDefinition, gameId: TestGameId): Expressio
   return expressions;
 }
 
-/**
- * Validate all expressions in a game
- */
 function validateGameExpressions(
   game: GameDefinition,
   gameId: TestGameId
@@ -156,7 +144,6 @@ function validateGameExpressions(
 describe('All Test Games Validation', () => {
   let testGames: Array<{ id: TestGameId; data: GameDefinition }> = [];
 
-  // Load all test games once before running tests
   beforeAll(async () => {
     testGames = await loadAllTestGames();
   });
