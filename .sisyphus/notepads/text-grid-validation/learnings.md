@@ -1,0 +1,2 @@
+- Text grid layout hashes in this repo are sha256 hex (64 chars) for keys: text, inputs, layout.
+- SVG renderer uses <g id="cell-${cellId}">; SVG validation can treat all id attributes as unique to cover cell ids.

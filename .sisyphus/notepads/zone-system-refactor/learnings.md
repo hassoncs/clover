@@ -1,11 +1,14 @@
 
-## 2026-01-27 - Task 1 Complete
+## 2026-01-27 - Task 2 Complete
 
-Fixed `BodyEntityTemplateSchema` discriminator:
-- Changed `type: z.literal('body').optional()` to `type: z.literal('body')` (required)
-- Added `description: z.string().optional()` to match type definition
-- Made `physics: PhysicsComponentSchema` required (was optional)
+Fixed discriminated union schema issue:
+- Changed back to `z.union()` with custom `.refine()` validation
+- Made `type` optional again in `BodyEntityTemplateSchema`
+- Made `physics` optional in TypeScript type for body templates
+- Schema now accepts templates without type (defaults to body)
 
-This enables the discriminated union to work correctly for `EntityTemplateSchema`.
+Files modified:
+- `shared/src/types/schemas.ts`
+- `shared/src/types/entity.ts`
 
-File: `shared/src/types/schemas.ts` (lines 547-558)
+Typecheck: ✅ No errors

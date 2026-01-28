@@ -114,7 +114,7 @@ export interface BaseEntityTemplate {
 }
 
 export type EntityTemplate = 
-  | (BaseEntityTemplate & { type?: 'body'; physics: PhysicsComponent })
+  | (BaseEntityTemplate & { type?: 'body'; physics?: PhysicsComponent })
   | (BaseEntityTemplate & { type: 'zone'; zone: ZoneComponent });
 
 // ============================================================================

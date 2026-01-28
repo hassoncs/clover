@@ -555,17 +555,21 @@ export const BodyEntityTemplateSchema = z.object({
   layer: z.number().optional(),
   slots: z.record(z.string(), SlotDefinitionSchema).optional(),
   children: z.array(ChildTemplateDefinitionSchema).optional(),
-}).transform((data) => {
-  if (!data.type) {
-    return { ...data, type: 'body' as const };
-  }
-  return data;
 });
 
-export const EntityTemplateSchema = z.discriminatedUnion('type', [
+export const EntityTemplateSchema = z.union([
   BodyEntityTemplateSchema,
   ZoneEntityDefinitionSchema,
-]);
+]).refine((data): data is z.infer<typeof BodyEntityTemplateSchema> => {
+  // If it has physics and no type, it's a body
+  if ('physics' in data && !('type' in data)) {
+    return true;
+  }
+  // If it has type: 'body' or type: 'zone', let the schema handle it
+  return 'type' in data;
+}, {
+  message: 'Invalid entity template - must have either physics (body) or zone',
+});
 
 export const GameEntitySchema = z.object({
   id: z.string(),
