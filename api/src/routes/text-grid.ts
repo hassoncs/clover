@@ -24,6 +24,13 @@ function parseTextGridSpec(body: unknown): { ok: true; spec: TextGridSpec } | { 
     return { ok: false, errors: [validationError('', 'Request body must be an object')] };
   }
 
+  // If input already matches the shape, run pipeline validation and accept.
+  if (candidate.type === 'text_grid') {
+    const preSpec = candidate as unknown as TextGridSpec;
+    const preValidation = validateTextGridSpec(preSpec);
+    if (preValidation.valid) return { ok: true, spec: preSpec };
+  }
+
   const errors: TextGridValidationError[] = [];
 
   const isOneOf = <T extends string>(v: unknown, allowed: readonly T[]): v is T => typeof v === 'string' && (allowed as readonly string[]).includes(v);

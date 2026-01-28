@@ -493,8 +493,6 @@ export function buildStructuredNegativePrompt(style: SpriteStyle): string {
   return [...baseNegatives, ...styleSpecific[style]].join(', ');
 }
 
-export type ImageGenerationProvider = 'scenario' | 'comfyui' | 'modal';
-
 export interface ProviderClient {
   uploadImage(imageBuffer: Uint8Array): Promise<string>;
   txt2img(params: {
@@ -567,11 +565,7 @@ function createScenarioProviderClient(env: Env): ProviderClient {
     throw new Error('SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using Scenario provider');
   }
   
-  const client = createScenarioClient({
-    apiKey: env.SCENARIO_API_KEY,
-    apiSecret: env.SCENARIO_SECRET_API_KEY,
-    apiUrl: env.SCENARIO_API_URL,
-  });
+  const client = createScenarioClient(env);
 
   return {
     uploadImage: async (png: Uint8Array): Promise<string> => {
@@ -1047,11 +1041,4 @@ export class AssetService {
     </svg>`;
     return `data:image/svg+xml;base64,${btoa(svg)}`;
   }
-}
-
-export function getImageGenerationConfig(_env: Env): {
-  configured: boolean;
-} {
-  // Modal ComfyUI is always available - no configuration needed
-  return { configured: true };
 }
