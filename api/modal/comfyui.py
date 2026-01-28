@@ -151,6 +151,75 @@ def build_txt2img_workflow(prompt: str, width: int, height: int, steps: int, gui
     }
 
 
+def build_img2img_workflow(prompt: str, input_image_name: str, strength: float, steps: int, guidance: float, seed: int) -> dict:
+    """Build ComfyUI workflow JSON for image-to-image with Flux.
+
+    Args:
+        prompt: Text prompt for transformation
+        input_image_name: Name of the input image file (must be uploaded first)
+        strength: How much to change the image (0.0-1.0, higher = more change)
+        steps: Number of denoising steps
+        guidance: CFG scale
+        seed: Random seed
+    """
+    # Calculate denoise based on strength (strength 0.5 = denoise 0.5)
+    denoise = strength
+
+    return {
+        "1": {
+            "class_type": "LoadImage",
+            "inputs": {"image": input_image_name}
+        },
+        "2": {
+            "class_type": "VAEEncode",
+            "inputs": {"pixels": ["1", 0], "vae": ["12", 0]}
+        },
+        "6": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {"clip": ["11", 0], "text": prompt}
+        },
+        "8": {
+            "class_type": "VAEDecode",
+            "inputs": {"samples": ["13", 0], "vae": ["12", 0]}
+        },
+        "9": {
+            "class_type": "SaveImage",
+            "inputs": {"filename_prefix": "ComfyUI_img2img", "images": ["8", 0]}
+        },
+        "10": {
+            "class_type": "UNETLoader",
+            "inputs": {"unet_name": "flux1-dev-fp8.safetensors", "weight_dtype": "fp8_e4m3fn"}
+        },
+        "11": {
+            "class_type": "DualCLIPLoader",
+            "inputs": {
+                "clip_name1": "clip_l.safetensors",
+                "clip_name2": "t5xxl_fp8_e4m3fn.safetensors",
+                "type": "flux"
+            }
+        },
+        "12": {
+            "class_type": "VAELoader",
+            "inputs": {"vae_name": "ae.safetensors"}
+        },
+        "13": {
+            "class_type": "KSampler",
+            "inputs": {
+                "cfg": guidance,
+                "denoise": denoise,
+                "latent_image": ["2", 0],
+                "model": ["10", 0],
+                "negative": ["6", 0],
+                "positive": ["6", 0],
+                "sampler_name": "euler",
+                "scheduler": "simple",
+                "seed": seed,
+                "steps": steps
+            }
+        }
+    }
+
+
 def build_rmbg_workflow(input_image_name: str) -> dict:
     """Build ComfyUI workflow JSON for background removal."""
     return {
@@ -287,6 +356,27 @@ class ComfyUIWorker:
         return base64.b64encode(img_bytes).decode()
     
     @modal.method()
+    def img2img(self, prompt: str, image_base64: str, strength: float = 0.5, steps: int = 20, guidance: float = 3.5, seed: int = None) -> str:
+        """Transform image based on prompt. Returns base64 PNG.
+
+        Args:
+            prompt: Text description of desired transformation
+            image_base64: Input image as base64 string
+            strength: How much to change image (0.0-1.0, default 0.5)
+            steps: Number of denoising steps (default 20)
+            guidance: CFG scale (default 3.5)
+            seed: Random seed (optional)
+        """
+        import random
+        if seed is None:
+            seed = random.randint(0, 2**32 - 1)
+
+        img_bytes = base64.b64decode(image_base64)
+        workflow = build_img2img_workflow(prompt, "input.png", strength, steps, guidance, seed)
+        result = self._run_workflow(workflow, [("input.png", img_bytes)])
+        return base64.b64encode(result).decode()
+
+    @modal.method()
     def remove_background(self, image_base64: str) -> str:
         """Remove background from image. Returns base64 PNG."""
         img_bytes = base64.b64decode(image_base64)
@@ -297,18 +387,70 @@ class ComfyUIWorker:
 
 @app.local_entrypoint()
 def main():
-    """Test the endpoint locally."""
+    """Test all ComfyUI functions locally."""
     worker = ComfyUIWorker()
-    
-    print("\n🎨 Testing txt2img...")
-    print("=" * 50)
-    result = worker.txt2img.remote(
+    output_dir = Path("/Users/hassoncs/Workspaces/Personal/slopcade/test_outputs")
+    output_dir.mkdir(exist_ok=True)
+
+    print("\n" + "="*60)
+    print("🎨 COMPREHENSIVE COMFYUI TEST SUITE")
+    print("="*60)
+
+    # Test 1: txt2img
+    print("\n📸 TEST 1: Text-to-Image (txt2img)")
+    print("-" * 60)
+    txt_result = worker.txt2img.remote(
         prompt="A cute pixel art cat, 16-bit style, game sprite",
         width=512,
         height=512,
-        steps=20
+        steps=15
     )
-    
-    output_path = Path("/Users/hassoncs/Workspaces/Personal/slopcade/test_output.png")
-    output_path.write_bytes(base64.b64decode(result))
-    print(f"\n✅ Success! Saved to {output_path}")
+    (output_dir / "01_txt2img.png").write_bytes(base64.b64decode(txt_result))
+    print("✅ txt2img complete -> test_outputs/01_txt2img.png")
+
+    # Test 2: img2img (transform the generated image)
+    print("\n🎭 TEST 2: Image-to-Image (img2img)")
+    print("-" * 60)
+    img2img_result = worker.img2img.remote(
+        prompt="A cute pixel art dog, 16-bit style, game sprite",
+        image_base64=txt_result,
+        strength=0.6,
+        steps=15
+    )
+    (output_dir / "02_img2img.png").write_bytes(base64.b64decode(img2img_result))
+    print("✅ img2img complete -> test_outputs/02_img2img.png")
+
+    # Test 3: Remove background
+    print("\n✂️  TEST 3: Background Removal (RMBG)")
+    print("-" * 60)
+    rmbg_result = worker.remove_background.remote(
+        image_base64=txt_result
+    )
+    (output_dir / "03_rmbg.png").write_bytes(base64.b64decode(rmbg_result))
+    print("✅ remove_background complete -> test_outputs/03_rmbg.png")
+
+    # Test 4: Full pipeline (txt2img -> img2img)
+    print("\n🔗 TEST 4: Full Pipeline (txt2img -> img2img)")
+    print("-" * 60)
+    base_img = worker.txt2img.remote(
+        prompt="A magical potion bottle, pixel art",
+        width=512,
+        height=512,
+        steps=15
+    )
+    transformed = worker.img2img.remote(
+        prompt="A glowing magical potion, neon colors, pixel art",
+        image_base64=base_img,
+        strength=0.5,
+        steps=15
+    )
+    (output_dir / "04a_pipeline_base.png").write_bytes(base64.b64decode(base_img))
+    (output_dir / "04b_pipeline_transformed.png").write_bytes(base64.b64decode(transformed))
+    print("✅ Pipeline complete:")
+    print("   -> test_outputs/04a_pipeline_base.png")
+    print("   -> test_outputs/04b_pipeline_transformed.png")
+
+    print("\n" + "="*60)
+    print("🎉 ALL TESTS PASSED!")
+    print("="*60)
+    print(f"\n📁 All outputs saved to: {output_dir}")
