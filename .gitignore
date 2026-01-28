@@ -83,3 +83,21 @@ plan.json
 # Test outputs
 test-results/
 **/__tests__/output/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Temporary test scripts
+test_*.py
+*_test.py
+
+# Work in progress / drafts
+.sisyphus/drafts/
+*.draft.md

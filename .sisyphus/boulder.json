@@ -1,11 +1,6 @@
 {
-  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/scenario-to-runpod-comfyui-switchover.md",
-  "started_at": "2026-01-27T16:28:24.207Z",
-  "session_ids": [
-    "ses_3ffc996a7ffeLClF37sWwfOLqv",
-    "ses_3ff91d77bffeeLVPeY6Cll25GZ",
-    "ses_3fea107b4ffe6mjSfxGLY6Sjyw",
-    "ses_3fe0849bfffeYtm3kg1nmGozQ5"
-  ],
-  "plan_name": "scenario-to-runpod-comfyui-switchover"
+  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/zone-system-refactor.md",
+  "started_at": "2026-01-28T02:06:44.079Z",
+  "session_ids": ["ses_3fe0849bfffeYtm3kg1nmGozQ5"],
+  "plan_name": "zone-system-refactor"
 }
