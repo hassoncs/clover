@@ -1,5 +1,4 @@
 import type { Env } from '../trpc/context';
-import { ScenarioClient, createScenarioClient } from './scenario';
 import { ComfyUIClient, createComfyUIClient } from './comfyui';
 import { buildAssetPath } from '@slopcade/shared';
 
@@ -516,64 +515,6 @@ export interface ProviderClient {
   }): Promise<{ assetId: string }>;
   downloadImage(assetId: string): Promise<{ buffer: Uint8Array; extension: string }>;
   removeBackground(params: { image: string; format?: string }): Promise<{ assetId: string }>;
-}
-
-function createScenarioProviderClient(env: Env): ProviderClient {
-  const client = createScenarioClient(env);
-
-  return {
-    uploadImage: async (png: Uint8Array): Promise<string> => {
-      const arrayBuffer = png.buffer.slice(
-        png.byteOffset,
-        png.byteOffset + png.byteLength
-      ) as ArrayBuffer;
-      return client.uploadAsset(arrayBuffer);
-    },
-
-    txt2img: async (params): Promise<{ assetId: string }> => {
-      const result = await client.generate({
-        prompt: params.prompt,
-        width: params.width,
-        height: params.height,
-        negativePrompt: params.negativePrompt,
-        seed: params.seed !== undefined ? String(params.seed) : undefined,
-      });
-      if (result.assetIds.length === 0) {
-        throw new Error('No assets generated');
-      }
-      return { assetId: result.assetIds[0] };
-    },
-
-    img2img: async (params): Promise<{ assetId: string }> => {
-      const result = await client.generateImg2Img({
-        image: params.image,
-        prompt: params.prompt,
-        strength: params.strength ?? 0.95,
-        guidance: params.guidance ?? 3.5,
-        seed: params.seed !== undefined ? String(params.seed) : undefined,
-      });
-      if (result.assetIds.length === 0) {
-        throw new Error('No assets generated');
-      }
-      return { assetId: result.assetIds[0] };
-    },
-
-    downloadImage: async (assetId: string): Promise<{ buffer: Uint8Array; extension: string }> => {
-      const result = await client.downloadAsset(assetId);
-      return {
-        buffer: new Uint8Array(result.buffer),
-        extension: result.extension,
-      };
-    },
-
-    removeBackground: async (params): Promise<{ assetId: string }> => {
-      const resultAssetId = await client.removeBackground({
-        image: params.image,
-        format: params.format as 'png' | 'jpg' | 'webp' | undefined,
-      });
-      return { assetId: resultAssetId };
-    },
-  };
 }
 
 function createComfyUIProviderClient(env: Env): ProviderClient {

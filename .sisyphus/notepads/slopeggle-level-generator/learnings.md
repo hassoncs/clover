@@ -432,11 +432,116 @@ The generated `SlopeggleLevelOverlay` is designed to merge with the base `slopeg
 
 ---
 
-## Wave 5: QA + Documentation - PLANNED
+## Wave 3: Level Loader + Pack Sources - COMPLETE
 
-**Status**: Final wave
+**Status**: ✅ COMPLETE - LevelLoader and PackSource implementation ready
 
-**Tasks**:
-1. [ ] Manual QA checklist
-2. [ ] Evidence capture (screenshots)
-3. [ ] Dev documentation
+### Files Created
+
+- `shared/src/loader/PackSource.ts` - Abstract pack source with bundled, remote, and composite implementations
+- `shared/src/loader/LevelLoader.ts` - Core loader with applyLevel merging logic
+- `shared/src/loader/index.ts` - Module exports
+- `shared/src/loader/__examples__/slopeggle-demo-pack.json` - Example bundled pack
+- `shared/src/loader/__examples__/usage.ts` - Comprehensive usage examples
+
+### What Was Implemented
+
+#### 1. PackSource Abstraction
+
+```typescript
+// Bundled - loads from local JSON files
+const bundledSource = new BundledPackSource('assets/packs');
+
+// Remote - fetches from API/CDN
+const remoteSource = new RemotePackSource('https://api.example.com/packs');
+
+// Composite - checks multiple sources in order
+const compositeSource = new CompositePackSource([bundledSource, remoteSource]);
+```
+
+#### 2. LevelLoader Core Methods
+
+- `loadBundled(packId)` - Load from local assets
+- `loadRemote(url)` - Load from remote endpoint
+- `loadPack(selector)` - Load using "sourceId:packId" format
+- `applyLevel(pack, levelIndex, baseGame)` - Merge level onto base
+- `applyLevelById(pack, levelId, baseGame)` - Apply by level identifier
+- `applyLevelByIdentity(pack, identity, baseGame)` - Apply by "packId:levelId"
+
+#### 3. Level Merging Strategy
+
+The `applyLevel` method merges LevelDefinition overlays onto a base GameDefinition:
+
+1. Deep copies the base game definition
+2. Applies pack-level gameConfig (templates, rules, variables)
+3. Merges level difficulty settings (initialLives, etc.)
+4. Applies game-specific overrides (Slopeggle: lives, world size, dynamic elements)
+5. Updates metadata with level title and generator provenance
+
+#### 4. Schema Version Handling
+
+- Warns on schema version mismatch (doesn't crash)
+- Respects MIN_COMPATIBLE_PACK_VERSION for parsing oldest supported format
+- Callback for warnings allows custom handling (migration logic)
+
+#### 5. Slopeggle Overrides Supported
+
+- `initialLives` - Starting ball count
+- `worldWidth` / `worldHeight` - Board dimensions
+- `hasBucket` - Enable/disable free-ball bucket
+- `hasPortals` - Enable/disable teleport portals
+
+### TypeScript Fixes Applied
+
+1. **Import type vs value**: Changed `import type` to mixed `import { type X, VALUE }` for constants used as values
+2. **Type conversion**: Used `as unknown as Record<string, unknown>` for adding dynamic properties to typed objects
+3. **Entity properties**: Added required `name` property to example entities
+4. **Interface gaps**: Removed invalid `initialLives` from SlopeggleLevelOverrides (it's in LevelDifficultyParams)
+
+### Usage Example
+
+```typescript
+const loader = new LevelLoader();
+
+// Load pack
+const pack = await loader.loadBundled('slopeggle-demo-v1');
+
+// Get base game
+const baseGame = await loadBaseSlopeggleGame();
+
+// Apply first level
+const result = loader.applyLevel(pack, 0, baseGame, {
+  validate: true,
+  onWarning: (warning, category) => {
+    console.warn(`[${category}] ${warning}`);
+  },
+});
+
+console.log('Ready to play:', result.game.metadata.title);
+console.log('Starting lives:', result.game.initialLives);
+```
+
+### Key Decisions
+
+1. **Pack Selection Format**: Used "sourceId:packId" pattern for flexible loading (e.g., "bundled:my-pack", "remote:https://...")
+
+2. **Deep Copy Strategy**: Used `structuredClone()` for base game to avoid mutation
+
+3. **Entity Merging**: Replaces entities by ID when pack provides entities with same ID
+
+4. **Warning Categories**: Split warnings into schema/merge/validation for filtering
+
+5. **Composite Source Fallback**: First source with the pack wins, collects errors from all sources
+
+### Verification
+
+- ✅ All loader files pass `pnpm tsc --noEmit`
+- ✅ lsp_diagnostics clean on PackSource.ts, LevelLoader.ts, index.ts
+- ✅ TypeScript compilation successful for shared package
+
+### Next Steps
+
+- Wave 4: Cosmetic motion assignment system
+- Wave 5: QA + documentation
+
+---
