@@ -313,6 +313,7 @@ const game: GameDefinition = {
         density: 0,
         friction: 0,
         restitution: 0,
+        isSensor: true,
       },
       behaviors: [
         { type: "oscillate", axis: "x", amplitude: 4, frequency: 0.25 },
