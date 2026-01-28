@@ -1,12 +1,16 @@
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, ActivityIndicator, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useState } from "react";
 import { useEditor } from "./EditorProvider";
+import { trpc } from "@/lib/trpc/client";
 
 export function EditorTopBar() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const [isSaving, setIsSaving] = useState(false);
   const {
+    gameId,
     mode,
     toggleMode,
     document,
@@ -15,10 +19,44 @@ export function EditorTopBar() {
     undo,
     redo,
     isDirty,
+    isEphemeral,
+    ephemeralSource,
   } = useEditor();
 
   const handleBack = () => {
     router.back();
+  };
+
+  const handleSave = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+
+    try {
+      if (isEphemeral) {
+        const result = await trpc.games.create.mutate({
+          title: document.metadata.title,
+          description: document.metadata.description,
+          definition: JSON.stringify(document),
+          isPublic: false,
+        });
+        router.replace(`/editor/${result.id}`);
+      } else if (gameId !== "preview") {
+        await trpc.games.update.mutate({
+          id: gameId,
+          title: document.metadata.title,
+          description: document.metadata.description,
+          definition: JSON.stringify(document),
+        });
+      }
+    } catch (err) {
+      console.error("Failed to save game:", err);
+      Alert.alert(
+        "Save Failed",
+        err instanceof Error ? err.message : "An error occurred while saving"
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -64,16 +102,36 @@ export function EditorTopBar() {
         </Text>
       </View>
 
-      <Pressable
-        className={`px-4 py-2 rounded-lg active:opacity-80 ${
-          mode === "playtest" ? "bg-green-600" : "bg-indigo-600"
-        }`}
-        onPress={toggleMode}
-      >
-        <Text className="text-white font-bold text-sm">
-          {mode === "playtest" ? "✏️ EDIT" : "▶ PLAY"}
-        </Text>
-      </Pressable>
+      <View className="flex-row gap-2">
+        {(isEphemeral || isDirty) && (
+          <Pressable
+            className={`px-4 py-2 rounded-lg active:opacity-80 ${
+              isSaving ? "bg-gray-600" : "bg-green-600"
+            }`}
+            onPress={handleSave}
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Text className="text-white font-bold text-sm">
+                {isEphemeral ? "💾 SAVE" : "💾 SAVE"}
+              </Text>
+            )}
+          </Pressable>
+        )}
+
+        <Pressable
+          className={`px-4 py-2 rounded-lg active:opacity-80 ${
+            mode === "playtest" ? "bg-green-600" : "bg-indigo-600"
+          }`}
+          onPress={toggleMode}
+        >
+          <Text className="text-white font-bold text-sm">
+            {mode === "playtest" ? "✏️ EDIT" : "▶ PLAY"}
+          </Text>
+        </Pressable>
+      </View>
     </View>
   );
 }

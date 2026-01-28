@@ -13,9 +13,11 @@ import { BottomSheetHost } from "@/components/editor/BottomSheetHost";
 
 export default function EditorScreen() {
   const router = useRouter();
-  const { id, definition: definitionParam } = useLocalSearchParams<{
+  const { id, definition: definitionParam, sourceType, sourceId } = useLocalSearchParams<{
     id: string;
     definition?: string;
+    sourceType?: string;
+    sourceId?: string;
   }>();
 
   const [gameDefinition, setGameDefinition] = useState<GameDefinition | null>(null);
@@ -79,7 +81,19 @@ export default function EditorScreen() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View className="flex-1 bg-gray-900">
-        <EditorProvider gameId={id ?? "preview"} initialDefinition={gameDefinition}>
+        <EditorProvider
+          gameId={id === "ephemeral" ? "preview" : (id ?? "preview")}
+          initialDefinition={gameDefinition}
+          isEphemeral={id === "ephemeral"}
+          ephemeralSource={
+            id === "ephemeral" && sourceType && sourceId
+              ? {
+                  type: sourceType as "template" | "database",
+                  id: sourceId,
+                }
+              : undefined
+          }
+        >
           <EditorTopBar />
           <StageContainer />
           <BottomDock />

@@ -442,6 +442,11 @@ export interface GameRuntimeRef {
   getEntityManager: () => EntityManager | null;
 }
 
+export interface EphemeralSource {
+  type: "template" | "database";
+  id: string;
+}
+
 interface EditorContextValue {
   gameId: string;
   state: EditorState;
@@ -453,6 +458,8 @@ interface EditorContextValue {
   isDirty: boolean;
   canUndo: boolean;
   canRedo: boolean;
+  isEphemeral: boolean;
+  ephemeralSource: EphemeralSource | undefined;
 
   setMode: (mode: EditorMode) => void;
   toggleMode: () => void;
@@ -485,12 +492,16 @@ export interface EditorProviderProps {
   gameId: string;
   initialDefinition: GameDefinition;
   children: ReactNode;
+  isEphemeral?: boolean;
+  ephemeralSource?: EphemeralSource;
 }
 
 export function EditorProvider({
   gameId,
   initialDefinition,
   children,
+  isEphemeral = false,
+  ephemeralSource,
 }: EditorProviderProps) {
   const runtimeRef = useRef<GameRuntimeRef | null>(null);
 
@@ -598,6 +609,8 @@ export function EditorProvider({
       isDirty: state.isDirty,
       canUndo: state.undoStack.length > 0,
       canRedo: state.redoStack.length > 0,
+      isEphemeral,
+      ephemeralSource,
 
       setMode,
       toggleMode,
@@ -644,6 +657,8 @@ export function EditorProvider({
       redo,
       setCamera,
       selectedEntity,
+      isEphemeral,
+      ephemeralSource,
     ]
   );
 

@@ -26,6 +26,7 @@ export default function GameDetailScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isForking, setIsForking] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const [packsData, setPacksData] = useState<{
     packs: {
@@ -140,6 +141,42 @@ export default function GameDetailScreen() {
     }
   }, [gameInfo, router]);
 
+  const handleEdit = useCallback(async () => {
+    if (!gameInfo) return;
+
+    setIsEditing(true);
+    try {
+      let definition: GameDefinition;
+      
+      if (gameInfo.source === "template") {
+        definition = await loadTestGame(gameInfo.id as TestGameId);
+      } else {
+        const game = await trpc.games.get.query({ id: gameInfo.id });
+        definition = JSON.parse(game.definition) as GameDefinition;
+      }
+
+      router.push({
+        pathname: "/editor/[id]",
+        params: {
+          id: "ephemeral",
+          definition: JSON.stringify(definition),
+          sourceType: gameInfo.source,
+          sourceId: gameInfo.id,
+        },
+      });
+    } catch (err) {
+      console.error("Failed to load game for editing:", err);
+      Alert.alert(
+        "Edit Failed",
+        "Could not load the game for editing.\n\n" +
+          "Error: " +
+          (err instanceof Error ? err.message : String(err))
+      );
+    } finally {
+      setIsEditing(false);
+    }
+  }, [gameInfo, router]);
+
 
 
   if (isLoading) {
@@ -233,6 +270,23 @@ export default function GameDetailScreen() {
                 </View>
               ) : (
                 <Text className="text-white font-bold text-base">Fork</Text>
+              )}
+            </Pressable>
+
+            <Pressable
+              className={`flex-1 py-3 rounded-xl items-center ${
+                isEditing ? "bg-gray-600" : "bg-purple-600 active:bg-purple-700"
+              }`}
+              onPress={handleEdit}
+              disabled={isEditing}
+            >
+              {isEditing ? (
+                <View className="flex-row items-center">
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <Text className="text-white font-bold text-base ml-2">Loading...</Text>
+                </View>
+              ) : (
+                <Text className="text-white font-bold text-base">Edit</Text>
               )}
             </Pressable>
 
