@@ -15,3 +15,8 @@
 - Generate stable SVG: one `<g id="cell-${cellId}">` per visible cell; escape text/attrs to avoid SVG/XML injection.
 - Typography controls: keep kerning on (`letter-spacing:normal`, `font-kerning:normal`) and disable ligatures (`font-variant-ligatures:none`).
 - Silhouette modes: map `fill`/`stroke`/`outline` to SVG text `fill`/`stroke`/`paint-order` with optional `stroke-width`.
+
+## 2026-01-28 (external stylizer contract)
+
+- External stylizer input/output should validate strict dimension preservation (`width`/`height`) and require transparency; mismatches must be surfaced with descriptive errors.
+- For text-grid, compute expected dimensions the same way as the SVG renderer: `cols*cellW` by `rows*cellH + (rows-1)*lineGap`.

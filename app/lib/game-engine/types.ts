@@ -8,6 +8,7 @@ import type {
   EntityTemplate,
   EventBus,
   ConditionalBehavior,
+  ZoneComponent,
 } from '@slopcade/shared';
 
 /**
@@ -47,6 +48,7 @@ export interface RuntimeEntity {
   transform: TransformComponent;
   sprite?: SpriteComponent;
   physics?: PhysicsComponent;
+  zone?: ZoneComponent;
   behaviors: RuntimeBehavior[];
   tags: string[];
   /** Interned tag IDs for O(1) tag operations. Managed by EntityManager. */

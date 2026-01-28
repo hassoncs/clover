@@ -86,16 +86,17 @@ function generateId(): string {
 
 export class EntityManager {
   private entities = new Map<string, RuntimeEntity>();
+  private zones = new Map<string, RuntimeEntity>();
   private templates = new Map<string, EntityTemplate>();
   private physics: Physics2D;
-  
+
   private entityPool: PooledEntitySlot[] = [];
   private freeSlots: number[] = [];
   private nextGeneration = 1;
-  
+
   /** Index for O(1) tag queries: tagId -> Set of entityIds */
   private entitiesByTagId = new Map<number, Set<string>>();
-  
+
   /** Godot generation tokens for pool safety during async operations */
   private godotGenerations = new Map<string, number>();
 
@@ -127,11 +128,19 @@ export class EntityManager {
     const runtime = this.createRuntimeEntity(id, resolved);
 
     // Check if this is a zone entity (type: 'zone' or has zone property)
-    const isZone = (resolved as any).type === 'zone' || (resolved as any).zone != null;
-    
+    const isZone = resolved.type === 'zone' || resolved.zone != null;
+
     if (isZone) {
       // Zones use Area2D for collision detection only (no physics body)
-      this.createZoneArea(runtime, (resolved as any).zone);
+      const zoneConfig = resolved.zone;
+      if (zoneConfig) {
+        runtime.zone = zoneConfig;
+        this.createZoneArea(runtime, zoneConfig);
+      } else {
+        // Fallback: create zone with default config if no zone component provided
+        this.createZoneArea(runtime, { shape: { type: 'box', width: 1, height: 1 } });
+      }
+      this.zones.set(id, runtime);
     } else if (resolved.physics) {
       this.createPhysicsBody(runtime, resolved.physics);
     }
@@ -234,7 +243,7 @@ export class EntityManager {
     return this.entityPool.findIndex(slot => slot.id === id);
   }
 
-  private resolveTemplate(definition: GameEntity): GameEntity & { slots?: Record<string, { x: number; y: number; layer?: number }> } {
+  private resolveTemplate(definition: GameEntity): GameEntity & { slots?: Record<string, { x: number; y: number; layer?: number }>; type?: 'body' | 'zone'; zone?: ZoneComponent } {
     if (!definition.template) {
       return definition;
     }
@@ -244,6 +253,9 @@ export class EntityManager {
       console.warn(`Template "${definition.template}" not found, using definition as-is`);
       return definition;
     }
+
+    // Cast definition to access optional type and zone properties
+    const defWithZoneType = definition as GameEntity & { type?: 'body' | 'zone'; zone?: ZoneComponent };
 
     return {
       ...definition,
@@ -258,6 +270,8 @@ export class EntityManager {
         ...(definition.children || []),
       ],
       slots: template.slots,
+      type: defWithZoneType.type ?? template.type,
+      zone: defWithZoneType.zone ?? template.zone,
     };
   }
 
@@ -481,42 +495,46 @@ export class EntityManager {
   /**
    * Internal method to destroy a single entity (no hierarchy handling).
    */
-  private destroyEntityInternal(id: string): void {
-    const entity = this.entities.get(id);
-    if (!entity) return;
-    
-    // Destroy physics body if exists
-    if (entity.bodyId) {
-      this.physics.destroyBody(entity.bodyId);
-    }
-    
-    // Remove from tag index
-    for (const tagId of entity.tagBits) {
-      this.entitiesByTagId.get(tagId)?.delete(id);
-    }
-    
-    // Reset and return to pool
-    this.resetEntityForPooling(entity);
-    this.entities.delete(id);
-    this.returnEntityToPool(id);
-  }
+   private destroyEntityInternal(id: string): void {
+     const entity = this.entities.get(id);
+     if (!entity) return;
 
-    private resetEntityForPooling(entity: RuntimeEntity): void {
-      entity.transform = { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 };
-      entity.template = undefined;
-      entity.sprite = undefined;
-      entity.physics = undefined;
-      entity.behaviors = [];
-      entity.tags = [];
-      entity.tagBits.clear();
-      entity.layer = 0;
-      entity.visible = true;
-      entity.active = true;
-      entity.bodyId = null;
-      entity.colliderId = null;
-      entity.conditionalBehaviors = [];
-      entity.activeConditionalGroupId = -1;
-    }
+     // Destroy physics body if exists
+     if (entity.bodyId) {
+       this.physics.destroyBody(entity.bodyId);
+     }
+
+     // Remove from zones map if this is a zone
+     this.zones.delete(id);
+
+     // Remove from tag index
+     for (const tagId of entity.tagBits) {
+       this.entitiesByTagId.get(tagId)?.delete(id);
+     }
+
+     // Reset and return to pool
+     this.resetEntityForPooling(entity);
+     this.entities.delete(id);
+     this.returnEntityToPool(id);
+   }
+
+     private resetEntityForPooling(entity: RuntimeEntity): void {
+       entity.transform = { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 };
+       entity.template = undefined;
+       entity.sprite = undefined;
+       entity.physics = undefined;
+       entity.zone = undefined;
+       entity.behaviors = [];
+       entity.tags = [];
+       entity.tagBits.clear();
+       entity.layer = 0;
+       entity.visible = true;
+       entity.active = true;
+       entity.bodyId = null;
+       entity.colliderId = null;
+       entity.conditionalBehaviors = [];
+       entity.activeConditionalGroupId = -1;
+     }
 
   private returnEntityToPool(id: string): void {
     const slotIndex = this.getSlotIndex(id);
@@ -527,6 +545,14 @@ export class EntityManager {
 
   getEntity(id: string): RuntimeEntity | undefined {
     return this.entities.get(id);
+  }
+
+  getZone(id: string): RuntimeEntity | undefined {
+    return this.zones.get(id);
+  }
+
+  getAllZones(): RuntimeEntity[] {
+    return Array.from(this.zones.values());
   }
 
   getEntitiesByTag(tag: string): RuntimeEntity[] {

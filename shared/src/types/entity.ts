@@ -62,6 +62,10 @@ export interface GameEntity {
   assetPackId?: string;
   /** Nested child entities */
   children?: ChildEntityDefinition[];
+  /** Explicit type annotation - inferred from presence of physics vs zone */
+  type?: 'body' | 'zone';
+  /** Zone configuration (only for zone type entities) */
+  zone?: ZoneComponent;
 }
 
 export interface SlotDefinition {
