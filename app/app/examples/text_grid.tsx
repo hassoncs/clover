@@ -37,10 +37,13 @@ export default function TextGridLab() {
   const [wrapMode, setWrapMode] = useState<typeof WRAP_MODES[number]>("word");
   const [lineGap, setLineGap] = useState(8);
   const [padding, setPadding] = useState(4);
-  const [svg, setSvg] = useState<string | null>(null);
-  const [svgDataUrl, setSvgDataUrl] = useState<string | null>(null);
+  const [textSvg, setTextSvg] = useState<string | null>(null);
+  const [textSvgDataUrl, setTextSvgDataUrl] = useState<string | null>(null);
+  const [gridSvg, setGridSvg] = useState<string | null>(null);
+  const [gridSvgDataUrl, setGridSvgDataUrl] = useState<string | null>(null);
   const [stylizedImageUrl, setStylizedImageUrl] = useState<string | null>(null);
   const [stylePrompt, setStylePrompt] = useState("puffy blue cartoon text, 3D rendered, playful, game title style");
+  const [previewMode, setPreviewMode] = useState<'text' | 'grid' | 'both'>('both');
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [layoutInfo, setLayoutInfo] = useState<{ cells: number; lines: number } | null>(null);
@@ -52,7 +55,8 @@ export default function TextGridLab() {
     const stroke = silhouetteMode === 'fill' ? 'none' : '404040';
     const strokeWidth = silhouetteMode === 'fill' ? 0 : 2;
     
-    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+    // Regular text view (no grid)
+    const textSvgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
   <rect width="${width}" height="${height}" fill="#1a1a1a"/>
   <text x="${width / 2}" y="${height / 2}" 
         font-family="${selectedFont.family}, Arial, sans-serif"
@@ -66,9 +70,35 @@ export default function TextGridLab() {
   </text>
 </svg>`;
     
-    const dataUrl = 'data:image/svg+xml;base64,' + btoa(svgContent);
-    setSvg(svgContent);
-    setSvgDataUrl(dataUrl);
+    const gridLines = [];
+    for (let r = 0; r <= rows; r++) {
+      const y = r * (cellHeight + lineGap) - (r > 0 ? lineGap : 0);
+      gridLines.push(`<line x1="0" y1="${y}" x2="${width}" y2="${y}" stroke="#444" stroke-width="1" stroke-dasharray="4,4"/>`);
+    }
+    for (let c = 0; c <= cols; c++) {
+      const x = c * cellWidth;
+      gridLines.push(`<line x1="${x}" y1="0" x2="${x}" y2="${height}" stroke="#444" stroke-width="1" stroke-dasharray="4,4"/>`);
+    }
+    
+    const gridSvgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <rect width="${width}" height="${height}" fill="#1a1a1a"/>
+  ${gridLines.join('\n  ')}
+  <text x="${width / 2}" y="${height / 2}" 
+        font-family="${selectedFont.family}, Arial, sans-serif"
+        font-size="${fontSize}"
+        fill="#${fill}"
+        stroke="#${stroke}"
+        stroke-width="${strokeWidth}"
+        text-anchor="middle"
+        dominant-baseline="middle">
+    ${text.replace(/\n/g, ' ')}
+  </text>
+</svg>`;
+    
+    setTextSvg(textSvgContent);
+    setTextSvgDataUrl('data:image/svg+xml;base64,' + btoa(textSvgContent));
+    setGridSvg(gridSvgContent);
+    setGridSvgDataUrl('data:image/svg+xml;base64,' + btoa(gridSvgContent));
     setStylizedImageUrl(null);
     setLayoutInfo({ cells: text.length, lines: text.split('\n').length });
   }, [text, selectedFont, fontSize, cols, rows, cellWidth, cellHeight, lineGap, silhouetteMode]);
@@ -78,8 +108,8 @@ export default function TextGridLab() {
   }, [updatePreview]);
 
   const generateStylized = useCallback(async () => {
-    if (!svg) {
-      setError('No SVG to stylize');
+    if (!gridSvg) {
+      setError('Generate a grid first');
       return;
     }
 
@@ -88,60 +118,11 @@ export default function TextGridLab() {
     setStylizedImageUrl(null);
 
     try {
-      const generateResponse = await fetch(`${env.apiUrl}/api/text-grid/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'text_grid',
-          id: `text-grid-${Date.now()}`,
-          text,
-          grid: {
-            cellW: cellWidth,
-            cellH: cellHeight,
-            cols,
-            rows,
-            maxLines: rows,
-            lineGap,
-            align,
-          },
-          wrap: {
-            mode: wrapMode,
-            overflow: 'truncate',
-          },
-          font: {
-            family: selectedFont.family,
-            weight: '400',
-            style: 'normal',
-            size: fontSize,
-          },
-          silhouette: {
-            mode: silhouetteMode,
-            padPx: padding,
-            fillColor: '#808080',
-            strokeColor: '#404040',
-          },
-          style: {
-            prompt: stylePrompt,
-          },
-          output: {
-            svg: true,
-          },
-        }),
-      });
-
-      if (!generateResponse.ok) {
-        const errData = await generateResponse.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errData.error || `HTTP ${generateResponse.status}`);
-      }
-
-      const generateData = await generateResponse.json();
-      const generatedSvg = generateData.svg;
-
       const stylizeResponse = await fetch(`${env.apiUrl}/api/text-grid/stylize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          svg: generatedSvg,
+          svg: gridSvg,
           prompt: stylePrompt,
           strength: 0.75,
         }),
@@ -154,17 +135,13 @@ export default function TextGridLab() {
 
       const stylizeData = await stylizeResponse.json();
       setStylizedImageUrl(stylizeData.stylizedImage);
-      setLayoutInfo({
-        cells: generateData.layoutDoc?.cells?.length || 0,
-        lines: generateData.layoutDoc?.lines?.length || 0,
-      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate stylized text');
       setStylizedImageUrl(null);
     } finally {
       setGenerating(false);
     }
-  }, [svg, text, selectedFont, fontSize, cols, rows, cellWidth, cellHeight, lineGap, silhouetteMode, align, wrapMode, padding, stylePrompt]);
+  }, [gridSvg, stylePrompt]);
 
   return (
     <View style={[styles.container, isWide && styles.containerWide]}>
@@ -315,6 +292,22 @@ export default function TextGridLab() {
           </View>
         </View>
 
+        <Text style={styles.sectionTitle}>Preview Mode</Text>
+        <View style={styles.buttonRow}>
+          {(['text', 'grid', 'both'] as const).map((mode) => (
+            <TouchableOpacity
+              key={mode}
+              style={[
+                styles.button,
+                previewMode === mode && styles.buttonActive,
+              ]}
+              onPress={() => setPreviewMode(mode)}
+            >
+              <Text style={styles.buttonText}>{mode}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
         <Text style={styles.sectionTitle}>AI Style Prompt</Text>
         <TextInput
           style={styles.textInput}
@@ -354,39 +347,58 @@ export default function TextGridLab() {
       </ScrollView>
 
       <View style={[styles.preview, isWide && styles.previewWide]}>
-        {stylizedImageUrl ? (
-          <ScrollView contentContainerStyle={styles.svgContainer}>
-            <Text style={styles.svgPlaceholder}>✨ AI Stylized Result</Text>
-            <Image
-              source={{ uri: stylizedImageUrl }}
-              style={{
-                width: 512,
-                height: 512,
-                backgroundColor: '#1a1a1a',
-              }}
-              resizeMode="contain"
-            />
-          </ScrollView>
-        ) : svgDataUrl ? (
-          <ScrollView contentContainerStyle={styles.svgContainer}>
-            <Text style={styles.svgPlaceholder}>
-              Preview: {cols * cellWidth}x{rows * cellHeight + Math.max(0, rows - 1) * lineGap}
-            </Text>
-            <Image
-              source={{ uri: svgDataUrl }}
-              style={{
-                width: cols * cellWidth,
-                height: rows * cellHeight + Math.max(0, rows - 1) * lineGap,
-                backgroundColor: '#1a1a1a',
-              }}
-              resizeMode="contain"
-            />
-          </ScrollView>
-        ) : (
-          <View style={styles.emptyPreview}>
-            <Text style={styles.emptyText}>Configure settings to see preview</Text>
-          </View>
-        )}
+        <ScrollView contentContainerStyle={styles.previewContent}>
+          {(previewMode === 'text' || previewMode === 'both') && textSvgDataUrl && (
+            <View style={styles.previewSection}>
+              <Text style={styles.previewLabel}>Text View</Text>
+              <Image
+                source={{ uri: textSvgDataUrl }}
+                style={{
+                  width: cols * cellWidth,
+                  height: rows * cellHeight + Math.max(0, rows - 1) * lineGap,
+                  backgroundColor: '#1a1a1a',
+                }}
+                resizeMode="contain"
+              />
+            </View>
+          )}
+          
+          {(previewMode === 'grid' || previewMode === 'both') && gridSvgDataUrl && (
+            <View style={styles.previewSection}>
+              <Text style={styles.previewLabel}>Grid View (sent to AI)</Text>
+              <Image
+                source={{ uri: gridSvgDataUrl }}
+                style={{
+                  width: cols * cellWidth,
+                  height: rows * cellHeight + Math.max(0, rows - 1) * lineGap,
+                  backgroundColor: '#1a1a1a',
+                }}
+                resizeMode="contain"
+              />
+            </View>
+          )}
+          
+          {stylizedImageUrl && (
+            <View style={[styles.previewSection, styles.stylizedSection]}>
+              <Text style={styles.previewLabel}>✨ AI Stylized Result</Text>
+              <Image
+                source={{ uri: stylizedImageUrl }}
+                style={{
+                  width: 512,
+                  height: 512,
+                  backgroundColor: '#1a1a1a',
+                }}
+                resizeMode="contain"
+              />
+            </View>
+          )}
+          
+          {!textSvgDataUrl && !gridSvgDataUrl && (
+            <View style={styles.emptyPreview}>
+              <Text style={styles.emptyText}>Configure settings to see preview</Text>
+            </View>
+          )}
+        </ScrollView>
       </View>
     </View>
   );
@@ -509,13 +521,23 @@ const styles = StyleSheet.create({
   infoText: {
     color: "#cccc99",
   },
-  svgContainer: {
+  previewContent: {
     padding: 16,
+    gap: 24,
   },
-  svgPlaceholder: {
-    color: "#666",
+  previewSection: {
+    gap: 8,
+  },
+  stylizedSection: {
+    borderTopWidth: 2,
+    borderTopColor: "#9C27B0",
+    paddingTop: 16,
+    marginTop: 8,
+  },
+  previewLabel: {
+    color: "#FFD700",
     fontSize: 14,
-    marginBottom: 8,
+    fontWeight: "600",
   },
   emptyPreview: {
     flex: 1,

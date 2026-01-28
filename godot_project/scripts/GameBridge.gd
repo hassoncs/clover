@@ -1293,11 +1293,13 @@ func _create_entity(entity_data: Dictionary) -> Node2D:
 	var entity_id = entity_data.get("id", "entity_" + str(randi()))
 	var template_id = entity_data.get("template", "")
 	var transform_data = entity_data.get("transform", {})
+	print("[DEBUG _create_entity] Creating entity: ", entity_id, " template: ", template_id)
 	
 	# Merge template with entity data
 	var merged = entity_data.duplicate(true)
 	if template_id != "" and templates.has(template_id):
 		var tmpl = templates[template_id]
+		print("[DEBUG _create_entity] Found template, keys: ", tmpl.keys())
 		# Template provides defaults, entity_data overrides
 		for key in tmpl:
 			if not merged.has(key):
@@ -1310,9 +1312,12 @@ func _create_entity(entity_data: Dictionary) -> Node2D:
 			merged.physics = merged_physics
 		elif tmpl.has("physics"):
 			merged.physics = tmpl.physics.duplicate(true)
+	else:
+		print("[DEBUG _create_entity] NO TEMPLATE FOUND for: ", template_id, " available: ", templates.keys())
 	
 	var physics_data = merged.get("physics", null)
 	var sprite_data = merged.get("sprite", null)
+	print("[DEBUG _create_entity] sprite_data: ", sprite_data, " physics_data: ", physics_data != null)
 	
 	var node: Node2D = null
 	
