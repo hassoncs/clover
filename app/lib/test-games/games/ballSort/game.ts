@@ -445,8 +445,15 @@ function createBallTemplate(colorIndex: number) {
       imageWidth: BALL_RADIUS * 2,
       imageHeight: BALL_RADIUS * 2,
     },
-    // No physics - balls are purely visual, positioned by game logic.
-    // This ensures taps pass through to the tube zone sensors.
+    physics: {
+      bodyType: "kinematic",
+      shape: "circle",
+      radius: BALL_RADIUS,
+      density: 0,
+      friction: 0,
+      restitution: 0,
+      isSensor: true, // Make balls sensors so taps pass through to tube zones
+    },
     conditionalBehaviors: [
       {
         when: { hasTag: "held" },

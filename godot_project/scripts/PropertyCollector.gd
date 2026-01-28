@@ -51,7 +51,7 @@ func _collect_characterbody_properties(node: CharacterBody2D) -> Dictionary:
 	var snapshot = {}
 	
 	_collect_transform_properties(node, snapshot)
-	_collect_velocity_properties(node, snapshot)
+	_collect_characterbody_velocity_properties(node, snapshot)
 	_collect_metadata_properties(node, snapshot)
 	
 	return snapshot
@@ -92,6 +92,16 @@ func _collect_velocity_properties(node: RigidBody2D, snapshot: Dictionary) -> vo
 			snapshot["velocity.y"] = game_vel.y
 	if _should_collect_property("angularVelocity"):
 		snapshot["angularVelocity"] = -node.angular_velocity
+
+func _collect_characterbody_velocity_properties(node: CharacterBody2D, snapshot: Dictionary) -> void:
+	if _should_collect_property("velocity.x") or _should_collect_property("velocity.y"):
+		var game_vel = game_bridge.godot_to_game_vec(node.velocity)
+		if _should_collect_property("velocity.x"):
+			snapshot["velocity.x"] = game_vel.x
+		if _should_collect_property("velocity.y"):
+			snapshot["velocity.y"] = game_vel.y
+	if _should_collect_property("angularVelocity"):
+		snapshot["angularVelocity"] = 0.0
 
 func _collect_sensor_velocity_properties(node: Node, snapshot: Dictionary) -> void:
 	if _should_collect_property("velocity.x") or _should_collect_property("velocity.y"):

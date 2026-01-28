@@ -3,6 +3,7 @@ import type { Env } from '../trpc/context';
 import { generateTextGrid, validateTextGridSpec } from '../ai/pipeline/text-grid';
 import type { TextGridSpec } from '../ai/pipeline/text-grid';
 import type { ValidationError as TextGridValidationError } from '../ai/pipeline/text-grid/validation';
+import { createImageGenerationAdapter } from '../ai/assets';
 
 const router = new Hono<{ Bindings: Env }>();
 
@@ -205,6 +206,58 @@ router.post('/generate', async (c) => {
     const message = err instanceof Error ? err.message : String(err);
     const res: ErrorResponse = { success: false, error: { type: 'server', message } };
     return c.json(res, 500);
+  }
+});
+
+router.post('/stylize', async (c) => {
+  try {
+    const body = await c.req.json();
+    const { svg, prompt, strength = 0.75 } = body;
+
+    if (!svg || typeof svg !== 'string') {
+      return c.json({ success: false, error: { type: 'validation', message: 'SVG is required' } }, 400);
+    }
+
+    if (!prompt || typeof prompt !== 'string') {
+      return c.json({ success: false, error: { type: 'validation', message: 'Prompt is required' } }, 400);
+    }
+
+    const sharp = (await import('sharp')).default;
+    const pngBuffer = await sharp(Buffer.from(svg)).png().toBuffer();
+
+    const provider = await createImageGenerationAdapter({
+      provider: 'scenario',
+      env: c.env,
+    });
+
+    if (!provider.configured) {
+      return c.json({ success: false, error: { type: 'server', message: 'Image generation provider not configured' } }, 500);
+    }
+
+    const uploadResult = await provider.uploadImage!(pngBuffer, 'text-grid-silhouette.png');
+
+    const img2imgResult = await provider.img2img({
+      image: uploadResult.assetId,
+      prompt,
+      strength,
+      width: 512,
+      height: 512,
+    });
+
+    const { buffer: stylizedBuffer, mimeType } = await provider.downloadImage(img2imgResult.assetId);
+
+    const base64 = Buffer.from(stylizedBuffer).toString('base64');
+    const dataUrl = `data:${mimeType};base64,${base64}`;
+
+    return c.json({
+      success: true,
+      stylizedImage: dataUrl,
+      assetId: img2imgResult.assetId,
+    });
+  } catch (err) {
+    console.error('Stylize error:', err);
+    const message = err instanceof Error ? err.message : String(err);
+    return c.json({ success: false, error: { type: 'server', message } }, 500);
   }
 });
 
