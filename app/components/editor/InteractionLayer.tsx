@@ -85,15 +85,15 @@ export function InteractionLayer({
         const template = document.templates[entity.template];
         if (!template) continue;
 
-        const physics = template.physics;
+        const collider = template.collider;
         let halfWidth = 0.5;
         let halfHeight = 0.5;
-        if (physics?.shape === "box") {
-          halfWidth = (physics.width ?? 1) / 2;
-          halfHeight = (physics.height ?? 1) / 2;
-        } else if (physics?.shape === "circle") {
-          halfWidth = physics.radius ?? 0.5;
-          halfHeight = physics.radius ?? 0.5;
+        if (collider?.shape === "box") {
+          halfWidth = (collider.width ?? 1) / 2;
+          halfHeight = (collider.height ?? 1) / 2;
+        } else if (collider?.shape === "circle") {
+          halfWidth = collider.radius ?? 0.5;
+          halfHeight = collider.radius ?? 0.5;
         }
 
         if (

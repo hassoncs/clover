@@ -58,18 +58,20 @@ export function AIGenerateModal({ visible, onClose }: AIGenerateModalProps) {
           scaleX: 1,
           scaleY: 1,
         },
-        sprite: {
+        visual: {
           type: "rect",
           width: 1,
           height: 1,
           color: "#8B5CF6",
         },
         physics: {
-          shape: "box",
           bodyType: "dynamic",
+          density: 1,
+        },
+        collider: {
+          shape: "box",
           width: 1,
           height: 1,
-          density: 1,
           friction: 0.3,
           restitution: 0.3,
         },

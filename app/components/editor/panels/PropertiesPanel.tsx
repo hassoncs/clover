@@ -131,7 +131,8 @@ export function PropertiesPanel() {
 
   const displayName = selectedEntity.name || selectedEntity.template || selectedEntity.id;
   const physics = selectedEntity.physics;
-  const sprite = selectedEntity.sprite;
+  const collider = selectedEntity.collider;
+  const visual = selectedEntity.visual;
 
   const x = selectedEntity.transform.x;
   const y = selectedEntity.transform.y;
@@ -153,8 +154,8 @@ export function PropertiesPanel() {
       <View style={styles.header}>
         <View style={styles.headerText}>
           <Text style={styles.entityName}>{displayName}</Text>
-          {physics && (
-            <Text style={styles.entityType}>{physics.shape}</Text>
+          {collider && (
+            <Text style={styles.entityType}>{collider.shape}</Text>
           )}
         </View>
         <View style={styles.headerActions}>
@@ -213,7 +214,7 @@ export function PropertiesPanel() {
         />
       </View>
 
-      {sprite && "color" in sprite && (
+      {visual && "color" in visual && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>APPEARANCE</Text>
           <Text style={styles.colorLabel}>Color</Text>
@@ -224,7 +225,7 @@ export function PropertiesPanel() {
                 style={[
                   styles.colorSwatch,
                   { backgroundColor: color },
-                  sprite.color === color && styles.colorSwatchActive,
+                  visual.color === color && styles.colorSwatchActive,
                 ]}
                 onPress={() => handleSpriteChange("color", color)}
               />
@@ -233,20 +234,20 @@ export function PropertiesPanel() {
         </View>
       )}
 
-      {physics && (
+      {(physics || collider) && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>PHYSICS</Text>
-          
+
           <PropertySegment
             label="Body Type"
             options={BODY_TYPE_OPTIONS}
-            value={physics.bodyType}
+            value={physics?.bodyType ?? "dynamic"}
             onChange={(value) => handlePhysicsChange("bodyType", value as PhysicsBodyType)}
           />
 
           <PropertySlider
             label="Density"
-            value={physics.density}
+            value={physics?.density ?? 1}
             min={0.1}
             max={10}
             step={0.1}
@@ -255,7 +256,7 @@ export function PropertiesPanel() {
 
           <PropertySlider
             label="Friction"
-            value={physics.friction}
+            value={collider?.friction ?? 0.3}
             min={0}
             max={1}
             step={0.1}
@@ -264,7 +265,7 @@ export function PropertiesPanel() {
 
           <PropertySlider
             label="Bounce"
-            value={physics.restitution}
+            value={collider?.restitution ?? 0.3}
             min={0}
             max={1}
             step={0.1}

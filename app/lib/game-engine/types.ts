@@ -2,7 +2,7 @@ import type { BodyId, ColliderId } from '../physics2d/types';
 import type {
   GameEntity,
   TransformComponent,
-  SpriteComponent,
+  VisualComponent,
   PhysicsComponent,
   Behavior,
   EntityTemplate,
@@ -46,8 +46,17 @@ export interface RuntimeEntity {
   /** Computed world transform (cached) */
   worldTransform: TransformComponent;
   transform: TransformComponent;
-  sprite?: SpriteComponent;
+  visual?: VisualComponent;
   physics?: PhysicsComponent;
+  collider?: {
+    shape: 'circle' | 'box' | 'polygon';
+    width?: number;
+    height?: number;
+    radius?: number;
+    friction?: number;
+    restitution?: number;
+    vertices?: { x: number; y: number }[];
+  };
   zone?: ZoneComponent;
   behaviors: RuntimeBehavior[];
   tags: string[];

@@ -319,8 +319,8 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
           scaleX: 1,
           scaleY: 1,
         },
-        sprite: template.sprite,
-        physics: template.physics,
+        visual: template.visual,
+        collider: template.collider,
         behaviors: template.behaviors,
         tags: template.tags,
         layer: template.layer,
@@ -393,28 +393,28 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
       for (const [templateId, entry] of Object.entries(action.entries)) {
         const template = newDocument.templates[templateId];
         if (template) {
-          const physics = template.physics;
+          const collider = template.collider;
           let imageWidth = 1;
           let imageHeight = 1;
           
-          if (physics) {
-            if (physics.shape === 'box') {
-              imageWidth = physics.width;
-              imageHeight = physics.height;
-            } else if (physics.shape === 'circle') {
-              imageWidth = physics.radius * 2;
-              imageHeight = physics.radius * 2;
+          if (collider) {
+            if (collider.shape === 'box') {
+              imageWidth = collider.width;
+              imageHeight = collider.height;
+            } else if (collider.shape === 'circle') {
+              imageWidth = collider.radius * 2;
+              imageHeight = collider.radius * 2;
             }
           }
           
-          console.log('[EditorProvider] Updating template sprite', {
+          console.log('[EditorProvider] Updating template visual', {
             templateId,
             imageUrl: entry.imageUrl,
             width: imageWidth,
             height: imageHeight,
           });
           
-          template.sprite = {
+          template.visual = {
             type: 'image',
             imageUrl: entry.imageUrl,
             imageWidth,

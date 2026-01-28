@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
-import type { PhysicsComponent } from '@slopcade/shared';
+import type { ColliderComponent } from '@slopcade/shared';
 import { resolveAssetUrl } from '@/lib/config/env';
 
 interface AlignmentPreviewCanvasProps {
   size: number;
-  physics?: PhysicsComponent;
+  collider?: ColliderComponent;
   imageUrl?: string;
   scale: number;
   offsetX: number;
@@ -15,7 +15,7 @@ interface AlignmentPreviewCanvasProps {
 
 export function AlignmentPreviewCanvas({
   size,
-  physics,
+  collider,
   imageUrl,
   scale,
   offsetX,
@@ -26,18 +26,18 @@ export function AlignmentPreviewCanvas({
   const padding = size * 0.1;
   const availableSize = size - padding * 2;
 
-  const physicsMetrics = useMemo(() => {
-    if (!physics) return { width: availableSize, height: availableSize, type: 'rect' as const };
+  const colliderMetrics = useMemo(() => {
+    if (!collider) return { width: availableSize, height: availableSize, type: 'rect' as const };
 
     let aspectRatio = 1;
     let type: 'rect' | 'circle' | 'polygon' = 'rect';
 
-    if (physics.shape === 'box' && physics.width && physics.height) {
-      aspectRatio = physics.width / physics.height;
+    if (collider.shape === 'box' && collider.width && collider.height) {
+      aspectRatio = collider.width / collider.height;
       type = 'rect';
-    } else if (physics.shape === 'circle') {
+    } else if (collider.shape === 'circle') {
       type = 'circle';
-    } else if (physics.shape === 'polygon') {
+    } else if (collider.shape === 'polygon') {
       type = 'polygon';
     }
 
@@ -53,12 +53,12 @@ export function AlignmentPreviewCanvas({
     }
 
     return { width: shapeWidth, height: shapeHeight, type };
-  }, [physics, availableSize]);
+  }, [collider, availableSize]);
 
-  const imageWidth = physicsMetrics.width * scale;
-  const imageHeight = physicsMetrics.height * scale;
+  const imageWidth = colliderMetrics.width * scale;
+  const imageHeight = colliderMetrics.height * scale;
 
-  const isCircle = physicsMetrics.type === 'circle';
+  const isCircle = colliderMetrics.type === 'circle';
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
@@ -102,9 +102,9 @@ export function AlignmentPreviewCanvas({
           style={[
             styles.outline,
             {
-              width: physicsMetrics.width,
-              height: physicsMetrics.height,
-              borderRadius: isCircle ? physicsMetrics.width / 2 : 0,
+              width: colliderMetrics.width,
+              height: colliderMetrics.height,
+              borderRadius: isCircle ? colliderMetrics.width / 2 : 0,
             },
           ]}
         />

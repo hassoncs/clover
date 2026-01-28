@@ -1,17 +1,17 @@
 import { View, StyleSheet } from 'react-native';
-import type { PhysicsComponent, SpriteComponent } from '@slopcade/shared';
+import type { ColliderComponent, VisualComponent } from '@slopcade/shared';
 
 interface PrimitivePreviewProps {
-  physics?: PhysicsComponent;
-  sprite?: SpriteComponent;
+  collider?: ColliderComponent;
+  visual?: VisualComponent;
   size: number;
   color?: string;
   backgroundColor?: string;
 }
 
 export function PrimitivePreview({
-  physics,
-  sprite,
+  collider,
+  visual,
   size,
   color = '#4CAF50',
   backgroundColor = '#1F2937',
@@ -22,19 +22,19 @@ export function PrimitivePreview({
   let aspectRatio = 1;
   let shapeType: 'rect' | 'circle' | 'polygon' = 'rect';
 
-  if (physics) {
-    shapeType = physics.shape === 'box' ? 'rect' : physics.shape;
-    if (physics.shape === 'box' && physics.width && physics.height) {
-      aspectRatio = physics.width / physics.height;
+  if (collider) {
+    shapeType = collider.shape === 'box' ? 'rect' : collider.shape;
+    if (collider.shape === 'box' && collider.width && collider.height) {
+      aspectRatio = collider.width / collider.height;
     }
-  } else if (sprite) {
-    if (sprite.type === 'rect') {
+  } else if (visual) {
+    if (visual.type === 'rect') {
       shapeType = 'rect';
-      aspectRatio = sprite.width / sprite.height;
-    } else if (sprite.type === 'circle') {
+      aspectRatio = visual.width / visual.height;
+    } else if (visual.type === 'circle') {
       shapeType = 'circle';
       aspectRatio = 1;
-    } else if (sprite.type === 'polygon') {
+    } else if (visual.type === 'polygon') {
       shapeType = 'polygon';
     }
   }

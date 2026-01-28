@@ -30,16 +30,9 @@ const GAME_DEFINITION: GameDefinition = {
   templates: {
     testBox: {
       id: "testBox",
-      sprite: { type: "rect", width: 4, height: 4, color: "#4ECDC4" },
-      physics: {
-        bodyType: "static",
-        shape: "box",
-        width: 4,
-        height: 4,
-        density: 0,
-        friction: 0,
-        restitution: 0,
-      },
+      visual: { type: "rect", width: 4, height: 4, color: "#4ECDC4" },
+      physics: { bodyType: "static" },
+      collider: { shape: "box", width: 4, height: 4, friction: 0, restitution: 0 },
     },
   },
   entities: [

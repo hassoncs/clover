@@ -53,8 +53,9 @@ export function AssetsPanel({ onOpenAIModal }: AssetsPanelProps) {
         id: newId,
         name: shape.label,
         transform: { x: centerX, y: centerY, angle: 0, scaleX: 1, scaleY: 1 },
-        sprite: { type: "circle", radius: 0.5, color },
-        physics: { shape: "circle", bodyType: "dynamic", radius: 0.5, density: 1, friction: 0.3, restitution: 0.5 },
+        visual: { type: "circle", radius: 0.5, color },
+        physics: { bodyType: "dynamic", density: 1 },
+        collider: { shape: "circle", radius: 0.5, friction: 0.3, restitution: 0.5 },
       };
     } else if (shape.physicsShape === "polygon") {
       const vertices = [{ x: 0, y: -0.5 }, { x: 0.5, y: 0.5 }, { x: -0.5, y: 0.5 }];
@@ -62,16 +63,18 @@ export function AssetsPanel({ onOpenAIModal }: AssetsPanelProps) {
         id: newId,
         name: shape.label,
         transform: { x: centerX, y: centerY, angle: 0, scaleX: 1, scaleY: 1 },
-        sprite: { type: "polygon", vertices, color },
-        physics: { shape: "polygon", bodyType: "dynamic", vertices, density: 1, friction: 0.3, restitution: 0.5 },
+        visual: { type: "polygon", vertices, color },
+        physics: { bodyType: "dynamic", density: 1 },
+        collider: { shape: "polygon", vertices, friction: 0.3, restitution: 0.5 },
       };
     } else {
       newEntity = {
         id: newId,
         name: shape.label,
         transform: { x: centerX, y: centerY, angle: 0, scaleX: 1, scaleY: 1 },
-        sprite: { type: "rect", width: 1, height: 1, color },
-        physics: { shape: "box", bodyType: "dynamic", width: 1, height: 1, density: 1, friction: 0.3, restitution: 0.5 },
+        visual: { type: "rect", width: 1, height: 1, color },
+        physics: { bodyType: "dynamic", density: 1 },
+        collider: { shape: "box", width: 1, height: 1, friction: 0.3, restitution: 0.5 },
       };
     }
     
@@ -125,7 +128,7 @@ export function AssetsPanel({ onOpenAIModal }: AssetsPanelProps) {
               >
                 <View style={styles.assetIcon}>
                   <Text style={styles.assetIconText}>
-                    {asset.template.physics?.shape === "circle" ? "⚪" : "⬜"}
+                    {asset.template.collider?.shape === "circle" ? "⚪" : "⬜"}
                   </Text>
                 </View>
                 <Text style={styles.assetLabel} numberOfLines={1}>

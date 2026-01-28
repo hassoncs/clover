@@ -53,7 +53,7 @@ export function LayersPanel() {
                   </Text>
                   {template && (
                     <Text style={styles.entityType}>
-                      {template.physics?.shape || "entity"}
+                      {template.collider?.shape || "entity"}
                     </Text>
                   )}
                 </View>

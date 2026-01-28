@@ -106,10 +106,10 @@ export function TemplateAssetCard({
           </View>
         ) : (
           <PrimitivePreview
-            physics={template.physics}
-            sprite={template.sprite}
+            collider={template.collider}
+            visual={template.visual}
             size={64}
-            color={template.sprite?.color ?? '#4CAF50'}
+            color={template.visual?.color ?? '#4CAF50'}
           />
         )}
         

@@ -156,7 +156,7 @@ export function extractAssetManifest(
   });
 
   // --- Asset Pack Images ---
-  // Priority: resolvedPackEntries (from DB) > embedded assetPacks > template sprites
+  // Priority: resolvedPackEntries (from DB) > embedded assetPacks > template visuals
   
   if (options?.resolvedPackEntries) {
     Object.entries(options.resolvedPackEntries).forEach(([templateId, entry]) => {

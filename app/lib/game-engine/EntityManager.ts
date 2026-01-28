@@ -355,19 +355,19 @@ export class EntityManager {
       linearDamping: physicsConfig.linearDamping,
       angularDamping: physicsConfig.angularDamping,
       fixedRotation: physicsConfig.fixedRotation,
-      bullet: physicsConfig.bullet,
+      bullet: physicsConfig.ccd,
       userData: { entityId: entity.id },
     };
 
     const bodyId = this.physics.createBody(bodyDef);
     entity.bodyId = bodyId;
 
-    const shapeDef = this.createShapeDef(physicsConfig);
+    const shapeDef = this.createShapeDef(entity);
     const fixtureDef: FixtureDef = {
       shape: shapeDef,
       density: physicsConfig.density,
-      friction: physicsConfig.friction,
-      restitution: physicsConfig.restitution,
+      friction: entity.collider?.friction ?? 0,
+      restitution: entity.collider?.restitution ?? 0,
       isSensor: false,
     };
 
@@ -382,26 +382,30 @@ export class EntityManager {
     }
   }
 
-  private createShapeDef(physics: PhysicsComponent): ShapeDef {
-    switch (physics.shape) {
+  private createShapeDef(entity: RuntimeEntity): ShapeDef {
+    const collider = entity.collider;
+    switch (collider?.shape) {
       case 'circle':
         return {
           type: 'circle',
-          radius: physics.radius,
+          radius: collider.radius ?? 0.5,
         };
       case 'box':
         return {
           type: 'box',
-          halfWidth: physics.width / 2,
-          halfHeight: physics.height / 2,
+          halfWidth: ((collider?.width ?? 1) / 2),
+          halfHeight: ((collider?.height ?? 1) / 2),
         };
       case 'polygon':
+        if (!collider?.vertices) {
+          throw new Error('Polygon shape requires vertices');
+        }
         return {
           type: 'polygon',
-          vertices: physics.vertices,
+          vertices: collider.vertices,
         };
       default:
-        throw new Error(`Unknown physics shape: ${(physics as any).shape}`);
+        throw new Error(`Unknown physics shape: ${(collider as any)?.shape}`);
     }
   }
 
