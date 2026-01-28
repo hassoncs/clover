@@ -7,7 +7,6 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import {
   AssetService,
-  getImageGenerationConfig,
   type EntityType,
   type SpriteStyle,
 } from '../../ai/assets';
@@ -83,15 +82,6 @@ export const assetsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const providerConfig = getImageGenerationConfig(ctx.env);
-
-      if (!providerConfig.configured) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: providerConfig.error ?? 'Image generation provider not configured',
-        });
-      }
-
       const assetService = new AssetService(ctx.env);
       const result = await assetService.generateAsset({
         entityType: input.entityType as EntityType,
@@ -167,15 +157,6 @@ export const assetsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const providerConfig = getImageGenerationConfig(ctx.env);
-
-      if (!providerConfig.configured) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: providerConfig.error ?? 'Image generation provider not configured',
-        });
-      }
-
       const assetService = new AssetService(ctx.env);
       const results = await assetService.generateBatch(
         input.assets.map((a) => ({
@@ -276,10 +257,9 @@ export const assetsRouter = router({
       };
     }),
 
-  status: publicProcedure.query(({ ctx }) => {
-    const providerConfig = getImageGenerationConfig(ctx.env);
+  status: publicProcedure.query(() => {
     return {
-      configured: providerConfig.configured,
+      configured: true,
       timestamp: Date.now(),
     };
   }),
@@ -294,14 +274,6 @@ export const assetsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const providerConfig = getImageGenerationConfig(ctx.env);
-      if (!providerConfig.configured) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: providerConfig.error ?? 'Image generation provider not configured',
-        });
-      }
-
       const gameRow = await ctx.env.DB.prepare(
         'SELECT * FROM games WHERE id = ?'
       )
@@ -454,14 +426,6 @@ export const assetsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const providerConfig = getImageGenerationConfig(ctx.env);
-      if (!providerConfig.configured) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: providerConfig.error ?? 'Image generation provider not configured',
-        });
-      }
-
       const gameRow = await ctx.env.DB.prepare(
         'SELECT * FROM games WHERE id = ?'
       )
@@ -715,14 +679,6 @@ export const assetsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const providerConfig = getImageGenerationConfig(ctx.env);
-      if (!providerConfig.configured) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: providerConfig.error ?? 'Image generation provider not configured',
-        });
-      }
-
       let themeModifier = '';
       if (input.themeId) {
         const theme = await ctx.env.DB.prepare(

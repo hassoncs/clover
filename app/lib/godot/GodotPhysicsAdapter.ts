@@ -26,7 +26,12 @@ import {
   createColliderId,
   createJointId,
 } from "../physics2d/types";
-import type { GodotBridge, EntityTransform, EntitySpawnedEvent, FixtureDef as GodotFixtureDef } from "./types";
+import type {
+  GodotBridge,
+  EntityTransform,
+  EntitySpawnedEvent,
+  FixtureDef as GodotFixtureDef,
+} from "./types";
 
 interface CachedBodyState {
   transform: Transform;
@@ -44,7 +49,7 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
   const groupStore = new Map<number, string>();
 
   const cachedStates = new Map<number, CachedBodyState>();
-  
+
   // Track entity generations from Godot for pool safety
   const entityGenerations = new Map<string, number>();
 
@@ -90,11 +95,11 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       const bodyId = entityIdToBodyId.get(entityId);
       if (bodyId) {
         const cached = cachedStates.get(bodyId.value);
-        
-        const vx = props['velocity.x'];
-        const vy = props['velocity.y'];
-        const angVel = props['angularVelocity'];
-        
+
+        const vx = props["velocity.x"];
+        const vy = props["velocity.y"];
+        const angVel = props["angularVelocity"];
+
         if (vx !== undefined && vy !== undefined) {
           if (cached) {
             cached.linearVelocity = { x: vx, y: vy };
@@ -121,10 +126,10 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
   bridge.onCollision((event) => {
     const bodyA = entityIdToBodyId.get(event.entityA);
     const bodyB = entityIdToBodyId.get(event.entityB);
-    
+
     // Debug logging for breakout collision issues
     if (!bodyA || !bodyB) {
-      console.warn('[GodotPhysicsAdapter] Collision entity lookup failed:', {
+      console.warn("[GodotPhysicsAdapter] Collision entity lookup failed:", {
         entityA: event.entityA,
         entityB: event.entityB,
         bodyAFound: !!bodyA,
@@ -133,7 +138,7 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       });
       return;
     }
-    
+
     const collisionEvent: CollisionEvent = {
       bodyA,
       bodyB,
@@ -186,7 +191,7 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
     step(
       _dt: number,
       _velocityIterations?: number,
-      _positionIterations?: number,
+      _positionIterations?: number
     ): void {},
 
     createBody(def: BodyDef): BodyId {
@@ -194,8 +199,6 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
 
       const actualEntityId = (def.userData as { entityId?: string })?.entityId;
       const entityId = actualEntityId ?? `body_${bodyId.value}_${Date.now()}`;
-
-      console.log('[GodotPhysicsAdapter] createBody registering:', { entityId, bodyIdValue: bodyId.value });
 
       bodyIdToEntityId.set(bodyId.value, entityId);
       entityIdToBodyId.set(entityId, bodyId);
@@ -267,7 +270,7 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
           entityId,
           transform.position.x,
           transform.position.y,
-          transform.angle,
+          transform.angle
         );
       }
     },
@@ -284,7 +287,7 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       const entityId = bodyIdToEntityId.get(id.value);
       if (entityId) {
         bridge.setLinearVelocity(entityId, velocity);
-        
+
         const cached = cachedStates.get(id.value);
         if (cached) {
           cached.linearVelocity = velocity;
@@ -298,7 +301,7 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       } else {
         console.warn(
           "[GodotPhysicsAdapter] No entityId found for bodyId:",
-          id.value,
+          id.value
         );
       }
     },
@@ -315,7 +318,7 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       const entityId = bodyIdToEntityId.get(id.value);
       if (entityId) {
         bridge.setAngularVelocity(entityId, velocity);
-        
+
         const cached = cachedStates.get(id.value);
         if (cached) {
           cached.angularVelocity = velocity;
@@ -495,7 +498,7 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
     queryPoint(_point: Vec2): BodyId | null {
       if (Platform.OS !== "web") {
         console.warn(
-          "[GodotPhysicsAdapter] queryPoint is async on native - use queryPointAsync instead",
+          "[GodotPhysicsAdapter] queryPoint is async on native - use queryPointAsync instead"
         );
       }
       return null;
@@ -504,7 +507,7 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
     queryAABB(_min: Vec2, _max: Vec2): BodyId[] {
       if (Platform.OS !== "web") {
         console.warn(
-          "[GodotPhysicsAdapter] queryAABB is async on native - use queryAABBAsync instead",
+          "[GodotPhysicsAdapter] queryAABB is async on native - use queryAABBAsync instead"
         );
       }
       return [];
@@ -513,11 +516,11 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
     raycast(
       _origin: Vec2,
       _direction: Vec2,
-      _maxDistance: number,
+      _maxDistance: number
     ): RaycastHit | null {
       if (Platform.OS !== "web") {
         console.warn(
-          "[GodotPhysicsAdapter] raycast is async on native - use raycastAsync instead",
+          "[GodotPhysicsAdapter] raycast is async on native - use raycastAsync instead"
         );
       }
       return null;

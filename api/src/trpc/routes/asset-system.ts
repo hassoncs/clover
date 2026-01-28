@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import {
   AssetService,
-  getImageGenerationConfig,
   buildStructuredPrompt,
   buildStructuredNegativePrompt,
   type EntityType,
@@ -1017,13 +1016,7 @@ export const assetSystemRouter = router({
   processGenerationJob: protectedProcedure
     .input(z.object({ jobId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const providerConfig = getImageGenerationConfig(ctx.env);
-      if (!providerConfig.configured) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: providerConfig.error ?? 'Image generation provider not configured',
-        });
-      }
+
 
       const jobRow = await ctx.env.DB.prepare(
         'SELECT * FROM generation_jobs WHERE id = ?'

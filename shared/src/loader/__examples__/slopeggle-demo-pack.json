@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "metadata": {
+    "id": "slopeggle-demo-v1",
+    "name": "Slopeggle Demo Pack",
+    "description": "A demo pack showcasing different difficulty levels",
+    "author": "Slopcade Team",
+    "version": "1.0.0",
+    "category": "tutorial",
+    "tags": ["slopeggle", "demo", "tutorial"]
+  },
+  "version": "1.0.0",
+  "gameConfig": {
+    "fixedTemplateIds": ["ball", "cannon", "cannonBase", "wallVertical", "drain", "bucket", "trajectoryLine"],
+    "variableTemplateIds": ["bluePeg", "orangePeg", "portalA", "portalB"],
+    "fixedEntityIds": ["wall-left", "wall-right", "wall-top", "drain", "bucket", "cannon-base", "cannon", "trajectory-line"]
+  },
+  "levels": [
+    {
+      "schemaVersion": 1,
+      "packId": "slopeggle-demo-v1",
+      "levelId": "easy-1",
+      "generatorId": "slopeggle-generator",
+      "generatorVersion": "1.0.0",
+      "seed": "demo-easy-001",
+      "title": "Easy Start",
+      "description": "A gentle introduction to Slopeggle",
+      "ordinal": 1,
+      "difficulty": {
+        "targetTier": "easy",
+        "initialLives": 12,
+        "estimatedDurationSeconds": 180
+      },
+      "generatedAt": 1738000000000,
+      "generatorParams": {
+        "pegRows": 10,
+        "orangePegCount": 6
+      },
+      "overrides": {
+        "slopeggle": {
+          "pegRows": 10,
+          "orangePegCount": 6,
+          "hasBucket": true,
+          "hasPortals": false,
+          "worldWidth": 12,
+          "worldHeight": 14
+        }
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "packId": "slopeggle-demo-v1",
+      "levelId": "medium-1",
+      "generatorId": "slopeggle-generator",
+      "generatorVersion": "1.0.0",
+      "seed": "demo-medium-001",
+      "title": "Medium Challenge",
+      "description": "Pick up the pace with more orange pegs",
+      "ordinal": 2,
+      "difficulty": {
+        "targetTier": "medium",
+        "initialLives": 10,
+        "estimatedDurationSeconds": 240
+      },
+      "generatedAt": 1738000000001,
+      "generatorParams": {
+        "pegRows": 12,
+        "orangePegCount": 8
+      },
+      "overrides": {
+        "slopeggle": {
+          "pegRows": 12,
+          "orangePegCount": 8,
+          "hasBucket": true,
+          "hasPortals": true,
+          "worldWidth": 12,
+          "worldHeight": 16
+        }
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "packId": "slopeggle-demo-v1",
+      "levelId": "hard-1",
+      "generatorId": "slopeggle-generator",
+      "generatorVersion": "1.0.0",
+      "seed": "demo-hard-001",
+      "title": "Hard Mode",
+      "description": "Expert level with many targets",
+      "ordinal": 3,
+      "difficulty": {
+        "targetTier": "hard",
+        "initialLives": 8,
+        "estimatedDurationSeconds": 300
+      },
+      "generatedAt": 1738000000002,
+      "generatorParams": {
+        "pegRows": 14,
+        "orangePegCount": 10
+      },
+      "overrides": {
+        "slopeggle": {
+          "pegRows": 14,
+          "orangePegCount": 10,
+          "hasBucket": true,
+          "hasPortals": true,
+          "worldWidth": 12,
+          "worldHeight": 18
+        }
+      }
+    }
+  ],
+  "progression": {
+    "mode": "linear",
+    "isReleased": true
+  },
+  "stats": {
+    "levelCount": 3,
+    "estimatedPlaytimeMinutes": 12,
+    "uniqueSeeds": 3,
+    "difficultyDistribution": {
+      "easyCount": 1,
+      "mediumCount": 1,
+      "hardCount": 1
+    }
+  }
+}
