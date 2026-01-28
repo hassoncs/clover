@@ -146,6 +146,7 @@ export function GameRuntimeGodot({
     angle: 0,
   });
   const gameJustStartedRef = useRef(false);
+  const lastKeyEventRef = useRef<{ key: string; code: string; type: 'keydown' | 'keyup'; timeStamp: number } | null>(null);
 
   const handleTiltUpdate = useCallback((tilt: { x: number; y: number }) => {
     inputRef.current.tilt = tilt;
@@ -1102,121 +1103,143 @@ export function GameRuntimeGodot({
     };
   }, [isReady, gameState.state, stepGame]);
 
-  // Keyboard input handling (web only)
+  // Keyboard input handling (web only) - shared handlers with deduplication
+  const sharedHandleKeyDown = useCallback((e: KeyboardEvent) => {
+    // Deduplication: ignore if same key/code received within 20ms
+    if (
+      lastKeyEventRef.current?.key === e.key &&
+      lastKeyEventRef.current?.code === e.code &&
+      lastKeyEventRef.current?.type === 'keydown' &&
+      Math.abs(e.timeStamp - lastKeyEventRef.current.timeStamp) < 20
+    ) {
+      return;
+    }
+    lastKeyEventRef.current = { key: e.key, code: e.code, type: 'keydown', timeStamp: e.timeStamp };
+
+    let changed = false;
+    switch (e.key) {
+      case "ArrowLeft":
+      case "a":
+      case "A":
+        if (!buttonsRef.current.left) {
+          buttonsRef.current.left = true;
+          changed = true;
+        }
+        break;
+      case "ArrowRight":
+      case "d":
+      case "D":
+        if (!buttonsRef.current.right) {
+          buttonsRef.current.right = true;
+          changed = true;
+        }
+        break;
+      case "ArrowUp":
+      case "w":
+      case "W":
+        if (!buttonsRef.current.up) {
+          buttonsRef.current.up = true;
+          changed = true;
+        }
+        break;
+      case "ArrowDown":
+      case "s":
+      case "S":
+        if (!buttonsRef.current.down) {
+          buttonsRef.current.down = true;
+          changed = true;
+        }
+        break;
+      case " ": {
+        if (!buttonsRef.current.jump) {
+          buttonsRef.current.jump = true;
+          changed = true;
+        }
+        const game = gameRef.current;
+        if (game) {
+          const cannon = game.entityManager.getActiveEntities().find(
+            (entity) => game.entityManager.hasTag(entity.id, "cannon")
+          );
+          if (cannon) {
+            const angle = cannon.transform.angle;
+            const distance = 10;
+            const targetX = cannon.transform.x + Math.cos(angle) * distance;
+            const targetY = cannon.transform.y + Math.sin(angle) * distance;
+
+            inputRef.current.tap = {
+              x: 0,
+              y: 0,
+              worldX: targetX,
+              worldY: targetY,
+            };
+            inputRef.current.dragEnd = {
+              velocityX: 0,
+              velocityY: 0,
+              worldVelocityX: 0,
+              worldVelocityY: 0,
+            };
+          }
+        }
+        break;
+      }
+    }
+    if (changed) {
+      inputRef.current.buttons = { ...buttonsRef.current };
+    }
+  }, []);
+
+  const sharedHandleKeyUp = useCallback((e: KeyboardEvent) => {
+    // Deduplication: ignore if same key/code received within 20ms
+    if (
+      lastKeyEventRef.current?.key === e.key &&
+      lastKeyEventRef.current?.code === e.code &&
+      lastKeyEventRef.current?.type === 'keyup' &&
+      Math.abs(e.timeStamp - lastKeyEventRef.current.timeStamp) < 20
+    ) {
+      return;
+    }
+    lastKeyEventRef.current = { key: e.key, code: e.code, type: 'keyup', timeStamp: e.timeStamp };
+
+    switch (e.key) {
+      case "ArrowLeft":
+      case "a":
+      case "A":
+        buttonsRef.current.left = false;
+        break;
+      case "ArrowRight":
+      case "d":
+      case "D":
+        buttonsRef.current.right = false;
+        break;
+      case "ArrowUp":
+      case "w":
+      case "W":
+        buttonsRef.current.up = false;
+        break;
+      case "ArrowDown":
+      case "s":
+      case "S":
+        buttonsRef.current.down = false;
+        break;
+      case " ":
+        buttonsRef.current.jump = false;
+        break;
+    }
+    inputRef.current.buttons = { ...buttonsRef.current };
+  }, []);
+
   useEffect(() => {
     if (Platform.OS !== "web") return;
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      let changed = false;
-      switch (e.key) {
-        case "ArrowLeft":
-        case "a":
-        case "A":
-          if (!buttonsRef.current.left) {
-            buttonsRef.current.left = true;
-            changed = true;
-          }
-          break;
-        case "ArrowRight":
-        case "d":
-        case "D":
-          if (!buttonsRef.current.right) {
-            buttonsRef.current.right = true;
-            changed = true;
-          }
-          break;
-        case "ArrowUp":
-        case "w":
-        case "W":
-          if (!buttonsRef.current.up) {
-            buttonsRef.current.up = true;
-            changed = true;
-          }
-          break;
-        case "ArrowDown":
-        case "s":
-        case "S":
-          if (!buttonsRef.current.down) {
-            buttonsRef.current.down = true;
-            changed = true;
-          }
-          break;
-        case " ": {
-          if (!buttonsRef.current.jump) {
-            buttonsRef.current.jump = true;
-            changed = true;
-          }
-          const game = gameRef.current;
-          if (game) {
-            const cannon = game.entityManager.getActiveEntities().find(
-              (entity) => game.entityManager.hasTag(entity.id, "cannon")
-            );
-            if (cannon) {
-              const angle = cannon.transform.angle;
-              const distance = 10;
-              const targetX = cannon.transform.x + Math.cos(angle) * distance;
-              const targetY = cannon.transform.y + Math.sin(angle) * distance;
-              
-              inputRef.current.tap = {
-                x: 0,
-                y: 0,
-                worldX: targetX,
-                worldY: targetY,
-              };
-              inputRef.current.dragEnd = {
-                velocityX: 0,
-                velocityY: 0,
-                worldVelocityX: 0,
-                worldVelocityY: 0,
-              };
-            }
-          }
-          break;
-        }
-      }
-      if (changed) {
-        inputRef.current.buttons = { ...buttonsRef.current };
-      }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      switch (e.key) {
-        case "ArrowLeft":
-        case "a":
-        case "A":
-          buttonsRef.current.left = false;
-          break;
-        case "ArrowRight":
-        case "d":
-        case "D":
-          buttonsRef.current.right = false;
-          break;
-        case "ArrowUp":
-        case "w":
-        case "W":
-          buttonsRef.current.up = false;
-          break;
-        case "ArrowDown":
-        case "s":
-        case "S":
-          buttonsRef.current.down = false;
-          break;
-        case " ":
-          buttonsRef.current.jump = false;
-          break;
-      }
-      inputRef.current.buttons = { ...buttonsRef.current };
-    };
-
     // Use capture phase to catch events before iframe steals focus
-    window.addEventListener("keydown", handleKeyDown, { capture: true });
-    window.addEventListener("keyup", handleKeyUp, { capture: true });
+    window.addEventListener("keydown", sharedHandleKeyDown, { capture: true });
+    window.addEventListener("keyup", sharedHandleKeyUp, { capture: true });
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown, { capture: true });
-      window.removeEventListener("keyup", handleKeyUp, { capture: true });
+      window.removeEventListener("keydown", sharedHandleKeyDown, { capture: true });
+      window.removeEventListener("keyup", sharedHandleKeyUp, { capture: true });
     };
-  }, []);
+  }, [sharedHandleKeyDown, sharedHandleKeyUp]);
 
   useEffect(() => {
     if (Platform.OS !== "web") return;
@@ -1668,6 +1691,8 @@ export function GameRuntimeGodot({
             style={styles.godotView}
             onReady={handleGodotReady}
             onError={handleGodotError}
+            onKeyDown={sharedHandleKeyDown}
+            onKeyUp={sharedHandleKeyUp}
           />
         </View>
       )}

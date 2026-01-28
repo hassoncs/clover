@@ -388,4 +388,8 @@ export interface GodotViewProps {
   style?: object;
   onReady?: () => void;
   onError?: (error: Error) => void;
+  /** Called when a key is pressed inside the iframe */
+  onKeyDown?: (event: KeyboardEvent) => void;
+  /** Called when a key is released inside the iframe */
+  onKeyUp?: (event: KeyboardEvent) => void;
 }
