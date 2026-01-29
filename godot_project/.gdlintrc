@@ -1,0 +1,18 @@
+# GDScript Linting Configuration
+# Relaxed rules for legacy code
+
+max-file-lines: 3000
+max-public-methods: 150
+max-line-length: 120
+
+# Disable naming convention checks
+disable: 
+  - class-name
+  - class-variable-name
+  - class-load-variable-name
+  - function-name
+  - function-variable-name
+  - function-argument-name
+  - signal-name
+  - trailing-whitespace
+  - missing-docstring

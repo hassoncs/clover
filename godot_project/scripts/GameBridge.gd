@@ -22,6 +22,8 @@ var _physics_queries: PhysicsQueries = null
 var _devtools_overlay: DebugOverlay = null
 var _entity_factory: EntityFactory = null
 var _visual_renderer: VisualRenderer = null
+var _background_system: BackgroundSystem = null
+var _ui_button_system: UIButtonSystem = null
 
 # ============================================================================
 # CORE STATE
@@ -142,10 +144,52 @@ func _init_modules() -> void:
 	_entity_factory = EntityFactory.new(self)
 	_update_entity_factory_state()
 
+	# Download image texture helper (used by VisualRenderer and sprite loading)
+	func _download_image_texture(url: String, callback: Callable) -> void:
+		if _texture_cache.has(url):
+			var texture = _texture_cache[url]
+			callback.call(texture)
+			return
+
+		var http = HTTPRequest.new()
+		add_child(http)
+
+		http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+			http.queue_free()
+			if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+				push_error("[GameBridge] Failed to download image: " + url)
+				return
+
+			var image = Image.new()
+			var err = image.load_png_from_buffer(body)
+			if err != OK:
+				err = image.load_jpg_from_buffer(body)
+			if err != OK:
+				err = image.load_webp_from_buffer(body)
+			if err != OK:
+				push_error("[GameBridge] Failed to parse image: " + url)
+				return
+
+			var texture = ImageTexture.create_from_image(image)
+			_texture_cache[url] = texture
+			callback.call(texture)
+		)
+
+		var err = http.request(url)
+		if err != OK:
+			push_error("[GameBridge] Failed to start image download: " + url)
+			http.queue_free()
+
 	# Initialize visual renderer
 	_visual_renderer = VisualRenderer.new(pixels_per_meter, _debug_show_shapes, _texture_cache, _font_cache, _download_image_texture)
 
 	_debug_bridge = DebugBridge.new(self, _query_system)
+
+	# Initialize background system
+	_background_system = BackgroundSystem.new(self)
+
+	# Initialize UI button system
+	_ui_button_system = UIButtonSystem.new(self)
 
 	_devtools_overlay = DebugOverlay.new()
 	_devtools_overlay.setup(self)
@@ -524,15 +568,15 @@ func _setup_js_bridge() -> void:
 	_js_bridge_obj["playSound"] = play_sound_cb
 
 	# UI Button methods
-	var create_ui_button_cb = JavaScriptBridge.create_callback(_js_create_ui_button)
+	var create_ui_button_cb = JavaScriptBridge.create_callback(_js_create_ui_button_delegated)
 	_js_callbacks.append(create_ui_button_cb)
 	_js_bridge_obj["createUIButton"] = create_ui_button_cb
 
-	var destroy_ui_button_cb = JavaScriptBridge.create_callback(_js_destroy_ui_button)
+	var destroy_ui_button_cb = JavaScriptBridge.create_callback(_js_destroy_ui_button_delegated)
 	_js_callbacks.append(destroy_ui_button_cb)
 	_js_bridge_obj["destroyUIButton"] = destroy_ui_button_cb
 
-	var on_ui_button_event_cb = JavaScriptBridge.create_callback(_js_on_ui_button_event)
+	var on_ui_button_event_cb = JavaScriptBridge.create_callback(_js_on_ui_button_event_delegated)
 	_js_callbacks.append(on_ui_button_event_cb)
 	_js_bridge_obj["onUIButtonEvent"] = on_ui_button_event_cb
 
@@ -1094,7 +1138,7 @@ func load_game_json(json_string: String) -> bool:
 	_setup_world(game_data.get("world", {}))
 
 	# Setup background
-	_setup_background(game_data.get("background", {}))
+	_background_system.setup_background(game_data.get("background", {}))
 
 	# Load templates
 	templates = game_data.get("templates", {})
@@ -1152,158 +1196,6 @@ func _setup_world(world_data: Dictionary) -> void:
 
 	if camera:
 		camera.global_position = Vector2.ZERO
-
-var _background_layer: CanvasLayer = null
-var _background_rect: TextureRect = null
-var _parallax_layers: Array = []
-
-func _setup_background(bg_data: Dictionary) -> void:
-	# Clean up existing background
-	if _background_layer:
-		_background_layer.queue_free()
-		_background_layer = null
-		_background_rect = null
-
-	for layer in _parallax_layers:
-		if is_instance_valid(layer):
-			layer.queue_free()
-	_parallax_layers.clear()
-
-	if bg_data.is_empty():
-		return
-
-	var bg_type = bg_data.get("type", "")
-
-	if bg_type == "parallax":
-		_setup_parallax_background(bg_data)
-		return
-
-	if bg_type != "static":
-		return
-
-	var image_url = bg_data.get("imageUrl", "")
-	var color = bg_data.get("color", "")
-
-	_background_layer = CanvasLayer.new()
-	_background_layer.layer = -100
-	_background_layer.name = "BackgroundLayer"
-	add_child(_background_layer)
-
-	_background_rect = TextureRect.new()
-	_background_rect.name = "Background"
-	_background_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_background_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	_background_rect.anchor_left = 0.0
-	_background_rect.anchor_top = 0.0
-	_background_rect.anchor_right = 1.0
-	_background_rect.anchor_bottom = 1.0
-	_background_layer.add_child(_background_rect)
-
-	if image_url != "":
-		_download_background_texture(image_url)
-	elif color != "":
-		var viewport_size = get_viewport().get_visible_rect().size
-		var img = Image.create(int(viewport_size.x), int(viewport_size.y), false, Image.FORMAT_RGBA8)
-		img.fill(Color.from_string(color, Color.GRAY))
-		_background_rect.texture = ImageTexture.create_from_image(img)
-
-func _download_image_texture(url: String, callback: Callable) -> void:
-	if _texture_cache.has(url):
-		var texture = _texture_cache[url]
-		callback.call(texture)
-		return
-
-	var http = HTTPRequest.new()
-	add_child(http)
-
-	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
-		http.queue_free()
-		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
-			push_error("[GameBridge] Failed to download image: " + url)
-			return
-
-		var image = Image.new()
-		var err = image.load_png_from_buffer(body)
-		if err != OK:
-			err = image.load_jpg_from_buffer(body)
-		if err != OK:
-			err = image.load_webp_from_buffer(body)
-		if err != OK:
-			push_error("[GameBridge] Failed to parse image: " + url)
-			return
-
-		var texture = ImageTexture.create_from_image(image)
-		_texture_cache[url] = texture
-		callback.call(texture)
-	)
-
-	var err = http.request(url)
-	if err != OK:
-		push_error("[GameBridge] Failed to start image download: " + url)
-		http.queue_free()
-
-func _download_background_texture(url: String) -> void:
-	_download_image_texture(url, func(texture: Texture2D):
-		if is_instance_valid(_background_rect):
-			_background_rect.texture = texture
-			print("[BG] Applied texture ", texture.get_width(), "x", texture.get_height(), " to TextureRect with STRETCH_KEEP_ASPECT_COVERED")
-	)
-
-func _apply_background_texture(texture: Texture2D) -> void:
-	if not is_instance_valid(_background_rect) or texture == null:
-		return
-
-	_background_rect.texture = texture
-	print("[BG] Applied texture ", texture.get_width(), "x", texture.get_height(), " to TextureRect with STRETCH_KEEP_ASPECT_COVERED")
-
-func _setup_parallax_background(bg_data: Dictionary) -> void:
-	var layers_data = bg_data.get("layers", [])
-	if layers_data.is_empty():
-		return
-
-	# Map depth to z-index (further back = lower z-index)
-	var depth_to_z = {
-		"sky": -400,
-		"far": -300,
-		"mid": -200,
-		"near": -100
-	}
-
-	for layer_data in layers_data:
-		var layer_id = layer_data.get("id", "")
-		var image_url = layer_data.get("imageUrl", "")
-		var depth = layer_data.get("depth", "mid")
-		var parallax_factor = layer_data.get("parallaxFactor", 0.5)
-		var visible = layer_data.get("visible", true)
-
-		if not visible or image_url == "":
-			continue
-
-		var layer = CanvasLayer.new()
-		layer.layer = depth_to_z.get(depth, -200)
-		layer.name = "ParallaxLayer_" + layer_id
-		add_child(layer)
-
-		var rect = TextureRect.new()
-		rect.name = layer_id
-		rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-		rect.anchor_left = 0.0
-		rect.anchor_top = 0.0
-		rect.anchor_right = 1.0
-		rect.anchor_bottom = 1.0
-		layer.add_child(rect)
-
-		_parallax_layers.append({"layer": layer, "rect": rect, "factor": parallax_factor, "url": image_url})
-
-		# Download texture for this layer
-		_download_image_texture(image_url, func(texture: Texture2D):
-			if is_instance_valid(rect):
-				rect.texture = texture
-				print("[BG] Applied parallax layer texture ", texture.get_width(), "x", texture.get_height())
-		)
-
-	print("[BG] Setup ", _parallax_layers.size(), " parallax layers")
 
 func _create_entity(entity_data: Dictionary) -> Node2D:
 	if _entity_factory:
@@ -2018,10 +1910,10 @@ func _js_clear_texture_cache(args: Array) -> void:
 	else:
 		_texture_cache.clear()
 
-func _preload_pending_count: int = 0
-func _preload_completed_count: int = 0
-func _preload_failed_count: int = 0
-func _js_preload_progress_callback: JavaScriptObject = null
+var _preload_pending_count: int = 0
+var _preload_completed_count: int = 0
+var _preload_failed_count: int = 0
+var _js_preload_progress_callback: JavaScriptObject = null
 
 func _js_preload_textures(args: Array) -> void:
 	if args.size() < 1:
