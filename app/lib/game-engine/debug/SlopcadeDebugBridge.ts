@@ -5,6 +5,7 @@ import type {
   SnapshotOptions,
   StepResult,
   ReactGameState,
+  TimeControl,
 } from "./types";
 
 interface GodotBridgeLike {
@@ -15,9 +16,11 @@ interface GameRuntimeAPI {
   pauseGameLoop: () => void;
   resumeGameLoop: () => void;
   stepGame: (dt: number) => void;
+  manualStep: (frames: number) => Promise<{ ok: boolean; framesAdvanced: number; startFrame: number; endFrame: number }>;
   setTimeScale: (scale: number) => void;
   getGameState: () => ReactGameState;
   getGodotBridge: () => GodotBridgeLike | null;
+  getTimeControl: () => TimeControl;
 }
 
 export class SlopcadeDebugBridge implements SlopcadeDebugBridgeInterface {
@@ -51,28 +54,10 @@ export class SlopcadeDebugBridge implements SlopcadeDebugBridgeInterface {
   }
 
   async step(frames = 1): Promise<StepResult> {
-    const bridge = this.runtime.getGodotBridge();
-    if (!bridge) {
-      throw new Error("GodotBridge not available");
-    }
-
-    const gameState = this.runtime.getGameState();
-    const startFrame = gameState.frame;
-
-    const physicsResult = await bridge.stepPhysics(frames);
-    
-    const fixedDt = 1 / 60;
-    for (let i = 0; i < frames; i++) {
-      this.runtime.stepGame(fixedDt);
-    }
-
-    const endFrame = startFrame + frames;
+    const result = await this.runtime.manualStep(frames);
     
     return {
-      ok: physicsResult.ok,
-      framesAdvanced: frames,
-      startFrame,
-      endFrame,
+      ...result,
       timeState: this.getTimeState(),
     };
   }
@@ -83,8 +68,9 @@ export class SlopcadeDebugBridge implements SlopcadeDebugBridgeInterface {
 
   getTimeState(): TimeState {
     const gameState = this.runtime.getGameState();
+    const timeControl = this.runtime.getTimeControl();
     return {
-      paused: gameState.state === "paused",
+      timeControl,
       timeScale: gameState.timeScale,
       frame: gameState.frame,
       elapsed: gameState.elapsed,
@@ -105,7 +91,7 @@ export class SlopcadeDebugBridge implements SlopcadeDebugBridgeInterface {
   }
 
   get paused(): boolean {
-    return this.runtime.getGameState().state === "paused";
+    return this.runtime.getTimeControl().paused;
   }
 
   get timeScale(): number {

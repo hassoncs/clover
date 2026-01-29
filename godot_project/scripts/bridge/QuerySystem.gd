@@ -39,9 +39,9 @@ func _on_js_query(args: Array) -> void:
 		push_error("[QuerySystem] query requires 3 args: requestId, method, argsJson")
 		return
 	
-	var request_id = str(args[0])
-	var method = str(args[1])
-	var args_json = str(args[2])
+	var request_id = String(args[0])
+	var method = String(args[1])
+	var args_json = String(args[2])
 	
 	var method_args: Array = []
 	if args_json != "[]" and args_json != "":

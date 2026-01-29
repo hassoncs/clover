@@ -8,8 +8,47 @@
 
 export type GameStateValue = "loading" | "ready" | "playing" | "paused" | "won" | "lost";
 
-export interface TimeState {
+/**
+ * Player Phase - what the player sees
+ * This is the high-level game state that players interact with.
+ */
+export type PlayerPhase = GameStateValue;
+
+/**
+ * Time Mode - whether simulation advances normally or is controlled by inspector
+ */
+export type TimeMode = "normal" | "inspect";
+
+/**
+ * Time Control - controls whether the simulation advances
+ *
+ * This is ORTHOGONAL to player phase:
+ * - In normal mode: paused is derived from playerPhase !== "playing"
+ * - In inspect mode: playerPhase can be "playing" while paused is true
+ *   (inspector holds the clock while game logic continues)
+ */
+export interface TimeControl {
+  mode: TimeMode;
   paused: boolean;
+  pendingSteps: number;
+}
+
+/**
+ * @deprecated No longer used - game loop now checks timeControl.mode directly
+ */
+export function framesToAdvance(
+  isReady: boolean,
+  playerPhase: PlayerPhase,
+  timeControl: TimeControl,
+): number {
+  if (!isReady) return 0;
+  if (timeControl.mode === "inspect") return 0;
+  if (playerPhase !== "playing") return 0;
+  return timeControl.paused ? 0 : 1;
+}
+
+export interface TimeState {
+  timeControl: TimeControl;
   timeScale: number;
   frame: number;
   elapsed: number;

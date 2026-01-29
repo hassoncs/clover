@@ -76,7 +76,16 @@ import {
   SlopcadeDebugBridge,
   type SlopcadeDebugBridgeInterface,
   type GameStateValue,
+  type TimeControl,
+  type PlayerPhase,
+  framesToAdvance,
 } from "./debug";
+import {
+  ScriptSandbox,
+  type SandboxRuntimeContext,
+  type ScriptInputEvent,
+  type ScriptCollisionEvent,
+} from "@/lib/scripting";
 
 export interface GameRuntimeGodotProps {
   definition: GameDefinition;
@@ -128,9 +137,7 @@ export function GameRuntimeGodot({
   const elapsedRef = useRef(0);
   const frameIdRef = useRef(0);
   const collisionsRef = useRef<CollisionInfo[]>([]);
-  const zoneEventsRef = useRef<{ zone: { id: string; tags?: string[] }; entity: { id: string; tags?: string[] }; type: 'enter' | 'exit' }[]>([]);
   const collisionUnsubRef = useRef<Unsubscribe | null>(null);
-  const sensorUnsubRef = useRef<Unsubscribe | null>(null);
   const inputEventUnsubRef = useRef<Unsubscribe | null>(null);
   const gameLoopRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastTickRef = useRef(0);
@@ -155,6 +162,13 @@ export function GameRuntimeGodot({
   const gameJustStartedRef = useRef(false);
   const lastKeyEventRef = useRef<{ key: string; code: string; type: 'keydown' | 'keyup'; timeStamp: number } | null>(null);
   const debugBridgeRef = useRef<SlopcadeDebugBridge | null>(null);
+  const scriptSandboxRef = useRef<ScriptSandbox | null>(null);
+  const scriptStartedRef = useRef(false);
+  const timeControlRef = useRef<TimeControl>({
+    mode: debugMode ? "inspect" : "normal",
+    paused: debugMode,
+    pendingSteps: 0,
+  });
 
   const handleTiltUpdate = useCallback((tilt: { x: number; y: number }) => {
     inputRef.current.tilt = tilt;
@@ -181,7 +195,11 @@ export function GameRuntimeGodot({
 
   const [isReady, setIsReady] = useState(false);
   const [godotReady, setGodotReady] = useState(false);
-  const [debugPaused, setDebugPaused] = useState(debugMode);
+  const [timeControl, setTimeControl] = useState<TimeControl>(() => ({
+    mode: debugMode ? "inspect" : "normal",
+    paused: debugMode, // In inspect mode, start paused; in normal mode, start unpaused (ready state controls this)
+    pendingSteps: 0,
+  }));
   const [gameState, setGameState] = useState<GameState>({
     score: 0,
     lives: 3,
@@ -355,6 +373,10 @@ export function GameRuntimeGodot({
         const physics = createGodotPhysicsAdapter(bridge);
         physicsRef.current = physics;
 
+        if (debugMode) {
+          bridge.setInspectMode(true);
+        }
+
         await bridge.loadGame(definition);
 
         bridge.pausePhysics();
@@ -400,11 +422,31 @@ export function GameRuntimeGodot({
         propertySync.start(bridge);
         propertySyncManagerRef.current = propertySync;
 
-        const loader = new GameLoader({ physics });
+        // Create ScriptSandbox early if game has scripts (for run_script actions)
+        let scriptSandbox: ScriptSandbox | undefined;
+        if (definition.script) {
+          scriptSandbox = new ScriptSandbox({
+            scriptCode: definition.script,
+            scriptId: definition.metadata.id,
+            gameId: definition.metadata.id,
+          });
+          scriptSandboxRef.current = scriptSandbox;
+        }
+
+        const loader = new GameLoader({ physics, scriptSandbox });
         loaderRef.current = loader;
 
         const game = loader.load(definition);
         gameRef.current = game;
+        
+        // Initialize script sandbox after game is loaded
+        if (scriptSandbox) {
+          scriptSandbox.initialize().then((result) => {
+            if (!result.success) {
+              console.error('[GameRuntime.godot] Script initialization failed:', result.error);
+            }
+          });
+        }
 
         bridge.onEntitySpawned((event) => {
           game.entityManager.handleEntitySpawned(event);
@@ -577,58 +619,6 @@ export function GameRuntimeGodot({
           },
         );
 
-        sensorUnsubRef.current = physics.onSensorBegin((event) => {
-          const sensorEntity = game.entityManager
-            .getActiveEntities()
-            .find((e) => e.colliderId?.value === event.sensor.value);
-          const otherEntity = game.entityManager
-            .getActiveEntities()
-            .find((e) => e.bodyId?.value === event.otherBody.value);
-
-          if (sensorEntity && otherEntity) {
-            zoneEventsRef.current.push({
-              zone: { id: sensorEntity.id, tags: sensorEntity.tags },
-              entity: { id: otherEntity.id, tags: otherEntity.tags },
-              type: 'enter',
-            });
-            
-            // Also add to collisions for backward compatibility with collision triggers
-            collisionsRef.current.push({
-              entityA: sensorEntity,
-              entityB: otherEntity,
-              normal: { x: 0, y: 0 },
-              impulse: 0,
-            });
-          } else {
-            // Zone ENTER entity lookup failed - entity may have been destroyed
-          }
-        });
-
-        // Handle zone exit events
-        const sensorEndUnsub = physics.onSensorEnd((event) => {
-          const sensorEntity = game.entityManager
-            .getActiveEntities()
-            .find((e) => e.colliderId?.value === event.sensor.value);
-          const otherEntity = game.entityManager
-            .getActiveEntities()
-            .find((e) => e.bodyId?.value === event.otherBody.value);
-
-          if (sensorEntity && otherEntity) {
-            zoneEventsRef.current.push({
-              zone: { id: sensorEntity.id, tags: sensorEntity.tags },
-              entity: { id: otherEntity.id, tags: otherEntity.tags },
-              type: 'exit',
-            });
-          }
-        });
-        
-        // Store both unsub functions
-        const originalSensorUnsub = sensorUnsubRef.current;
-        sensorUnsubRef.current = () => {
-          originalSensorUnsub?.();
-          sensorEndUnsub();
-        };
-
         inputEventUnsubRef.current = bridge.onInputEvent(
           (type, x, y, entityId) => {
             if (type === "tap") {
@@ -732,7 +722,6 @@ export function GameRuntimeGodot({
         }
         setIsReady(true);
         
-        // Signal to external tools (like game-inspector-mcp) that the game is fully loaded
         if (typeof window !== 'undefined') {
           (window as unknown as { slopcadeGameReady?: boolean }).slopcadeGameReady = true;
         }
@@ -778,8 +767,6 @@ export function GameRuntimeGodot({
       }
       collisionUnsubRef.current?.();
       collisionUnsubRef.current = null;
-      sensorUnsubRef.current?.();
-      sensorUnsubRef.current = null;
       inputEventUnsubRef.current?.();
       inputEventUnsubRef.current = null;
       match3SystemRef.current?.destroy();
@@ -788,6 +775,9 @@ export function GameRuntimeGodot({
       slotMachineSystemRef.current = null;
       propertySyncManagerRef.current?.stop();
       propertySyncManagerRef.current = null;
+      scriptSandboxRef.current?.dispose();
+      scriptSandboxRef.current = null;
+      scriptStartedRef.current = false;
       bridgeRef.current?.dispose();
       bridgeRef.current = null;
       physicsRef.current = null;
@@ -1101,6 +1091,116 @@ export function GameRuntimeGodot({
         gameJustStartedRef.current = false;
       }
 
+      const sandbox = scriptSandboxRef.current;
+      if (sandbox) {
+        const createScriptRuntime = (): SandboxRuntimeContext => ({
+          entityManager: {
+            spawnEntity: (templateId, position) => {
+              const template = game.entityManager.getTemplate(templateId);
+              if (!template) return null;
+              return bridge.spawnEntity(templateId, position.x, position.y);
+            },
+            destroyEntity: (id) => game.entityManager.destroyEntity(id),
+            getEntityPosition: (id) => {
+              const e = game.entityManager.getEntity(id);
+              return e ? { x: e.transform.x, y: e.transform.y } : null;
+            },
+            setEntityPosition: (id, pos) => {
+              bridge.setPosition(id, pos.x, pos.y);
+            },
+            getEntityVelocity: (id) => {
+              const e = game.entityManager.getEntity(id);
+              return e?.bodyId ? physics.getLinearVelocity(e.bodyId) : null;
+            },
+            setEntityVelocity: (id, vel) => {
+              bridge.setLinearVelocity(id, vel);
+            },
+            applyImpulse: (id, impulse) => {
+              const e = game.entityManager.getEntity(id);
+              if (e?.bodyId) physics.applyImpulse(e.bodyId, impulse);
+            },
+            getEntityTags: (id) => {
+              const e = game.entityManager.getEntity(id);
+              return e?.tags ? [...e.tags] : [];
+            },
+            addTag: (id, tag) => game.entityManager.addTag(id, tag),
+            removeTag: (id, tag) => game.entityManager.removeTag(id, tag),
+            hasTag: (id, tag) => game.entityManager.hasTag(id, tag),
+            queryEntities: (query) => {
+              let entities = game.entityManager.getActiveEntities();
+              if (query?.tag) entities = entities.filter(e => e.tags?.includes(query.tag!));
+              if (query?.templateId) entities = entities.filter(e => e.template === query.templateId);
+              return entities.map(e => e.id);
+            },
+          },
+          rulesEvaluator: {
+            getVariable: (name) => game.rulesEvaluator.getVariable(name),
+            setVariable: (name, value) => game.rulesEvaluator.setVariable(name, value as number | string | boolean),
+            getConstant: (name) => definition.constants?.[name],
+            emitEvent: (eventName, data) => game.rulesEvaluator.triggerEvent(eventName, data),
+            win: () => game.rulesEvaluator['setGameState']('won'),
+            lose: () => game.rulesEvaluator['setGameState']('lost'),
+          },
+          inputSnapshot: currentInput.tap ? {
+            type: 'tap',
+            position: { x: (currentInput.tap as any).worldX, y: (currentInput.tap as any).worldY },
+            entityId: (currentInput.tap as any).targetEntityId,
+            timestamp: Date.now(),
+          } : null,
+          frameInfo: {
+            frameId: frameIdRef.current,
+            elapsed: elapsedRef.current,
+            dt,
+          },
+          constants: definition.constants,
+        });
+
+        if (inputEvents.gameStarted && !scriptStartedRef.current) {
+          scriptStartedRef.current = true;
+          const runtime = createScriptRuntime();
+          const result = sandbox.runStart(runtime);
+          if (!result.success) {
+            console.warn('[GameRuntime.godot] Script onStart error:', result.error);
+          }
+        }
+
+        if (inputEvents.tap) {
+          const runtime = createScriptRuntime();
+          const inputEvent: ScriptInputEvent = {
+            type: 'tap',
+            position: { x: inputEvents.tap.worldX, y: inputEvents.tap.worldY },
+            entityId: inputEvents.tap.targetEntityId,
+            timestamp: Date.now(),
+          };
+          sandbox.runInput(runtime, inputEvent);
+        }
+
+        if (inputEvents.dragEnd) {
+          const runtime = createScriptRuntime();
+          const inputEvent: ScriptInputEvent = {
+            type: 'dragEnd',
+            timestamp: Date.now(),
+          };
+          sandbox.runInput(runtime, inputEvent);
+        }
+
+        for (const collision of collisionsRef.current) {
+          const runtime = createScriptRuntime();
+          const collisionEvent: ScriptCollisionEvent = {
+            entityA: collision.entityA.id,
+            entityB: collision.entityB.id,
+            normal: collision.normal,
+            impulse: collision.impulse,
+            contactPoint: { x: 0, y: 0 },
+            timestamp: Date.now(),
+          };
+          sandbox.runCollision(runtime, collisionEvent);
+        }
+
+        const runtime = createScriptRuntime();
+        sandbox.runUpdate(runtime, dt);
+      }
+
       game.rulesEvaluator.update(
         dt,
         game.entityManager,
@@ -1117,7 +1217,6 @@ export function GameRuntimeGodot({
           bridge.playSound(soundId);
         },
         bridge,
-        zoneEventsRef.current,
       );
 
       const preservedDrag = inputRef.current.drag;
@@ -1138,7 +1237,6 @@ export function GameRuntimeGodot({
         inputRef.current.mouse = preservedMouse;
       }
       collisionsRef.current = [];
-      zoneEventsRef.current = [];
 
       setGameState((s) => ({ ...s, time: elapsedRef.current }));
 
@@ -1185,8 +1283,19 @@ export function GameRuntimeGodot({
   );
 
   useEffect(() => {
-    const shouldRun = isReady && gameState.state === "playing" && (!debugMode || !debugPaused);
+    // In inspect mode, game loop doesn't run - only manualStep() advances physics
+    if (timeControl.mode === "inspect") {
+      if (gameLoopRef.current) {
+        clearInterval(gameLoopRef.current);
+        gameLoopRef.current = null;
+      }
+      return;
+    }
 
+    // In normal mode, run game loop when playing and not paused
+    const playerPhase = gameState.state as PlayerPhase;
+    const shouldRun = isReady && playerPhase === "playing" && !timeControl.paused;
+    
     if (!shouldRun) {
       if (gameLoopRef.current) {
         clearInterval(gameLoopRef.current);
@@ -1209,7 +1318,7 @@ export function GameRuntimeGodot({
         gameLoopRef.current = null;
       }
     };
-  }, [isReady, gameState.state, stepGame, debugMode, debugPaused]);
+  }, [isReady, gameState.state, stepGame, timeControl]);
 
   useEffect(() => {
     if (!isReady || !debugMode || typeof window === "undefined") {
@@ -1218,18 +1327,23 @@ export function GameRuntimeGodot({
 
     const runtimeAPI = {
       pauseGameLoop: () => {
-        setDebugPaused(true);
+        const newTc = { ...timeControlRef.current, paused: true };
+        timeControlRef.current = newTc;
+        setTimeControl(newTc);
         if (gameLoopRef.current) {
           clearInterval(gameLoopRef.current);
           gameLoopRef.current = null;
         }
       },
       resumeGameLoop: () => {
-        setDebugPaused(false);
+        const newTc = { ...timeControlRef.current, paused: false };
+        timeControlRef.current = newTc;
+        setTimeControl(newTc);
       },
       stepGame: (dt: number) => {
         stepGame(dt);
       },
+      manualStep: (frames: number) => manualStep(frames),
       setTimeScale: (scale: number) => {
         timeScaleRef.current = scale;
         timeScaleTargetRef.current = scale;
@@ -1245,6 +1359,7 @@ export function GameRuntimeGodot({
         timeScale: timeScaleRef.current,
       }),
       getGodotBridge: () => bridgeRef.current,
+      getTimeControl: () => timeControlRef.current,
     };
 
     const bridge = new SlopcadeDebugBridge(
@@ -1262,7 +1377,7 @@ export function GameRuntimeGodot({
       debugBridgeRef.current = null;
       delete window.SlopcadeDebugBridge;
     };
-  }, [isReady, debugMode, definition.metadata.id, stepGame, gameState]);
+  }, [isReady, debugMode, definition.metadata.id, stepGame, manualStep, gameState]);
 
   // Keyboard input handling (web only) - shared handlers with deduplication
   const sharedHandleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -1402,22 +1517,24 @@ export function GameRuntimeGodot({
     };
   }, [sharedHandleKeyDown, sharedHandleKeyUp]);
 
-  // Mouse/click handlers for web input
+  // Iframe events: e.clientX/Y are already iframe-local (0,0 = top-left of canvas)
+  const mouseMoveCountRef = useRef(0);
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    const container = viewportContainerRef.current;
-    if (!container) return;
-
-    const rect = (container as unknown as HTMLElement).getBoundingClientRect?.();
-    if (!rect) return;
-
-    const viewportX = e.clientX - rect.left;
-    const viewportY = e.clientY - rect.top;
+    mouseMoveCountRef.current++;
+    const shouldLog = mouseMoveCountRef.current % 30 === 1;
+    
+    const viewportX = e.clientX;
+    const viewportY = e.clientY;
+    
+    if (shouldLog) {
+      console.log('[Mouse] canvas:', viewportX, viewportY, 'viewportRect:', viewportRect.width, 'x', viewportRect.height);
+    }
 
     if (
       viewportX < 0 ||
-      viewportX > rect.width ||
+      viewportX > viewportRect.width ||
       viewportY < 0 ||
-      viewportY > rect.height
+      viewportY > viewportRect.height
     ) {
       inputRef.current.mouse = undefined;
       return;
@@ -1425,7 +1542,9 @@ export function GameRuntimeGodot({
 
     const camera = cameraRef.current;
     const viewportSystem = viewportSystemRef.current;
-    if (!camera || !viewportSystem) return;
+    if (!camera || !viewportSystem) {
+      return;
+    }
 
     const world = viewportSystem.viewportToWorld(
       viewportX,
@@ -1433,6 +1552,7 @@ export function GameRuntimeGodot({
       camera.getPosition(),
       camera.getZoom(),
     );
+    if (shouldLog) console.log('[Mouse] world:', world.x.toFixed(2), world.y.toFixed(2));
 
     inputRef.current.mouse = {
       x: viewportX,
@@ -1440,27 +1560,21 @@ export function GameRuntimeGodot({
       worldX: world.x,
       worldY: world.y,
     };
-  }, []);
+  }, [viewportRect.width, viewportRect.height]);
 
   const handleMouseLeave = useCallback(() => {
     inputRef.current.mouse = undefined;
   }, []);
 
   const handleClick = useCallback(async (e: MouseEvent) => {
-    const container = viewportContainerRef.current;
-    if (!container) return;
-
-    const rect = (container as unknown as HTMLElement).getBoundingClientRect?.();
-    if (!rect) return;
-
-    const viewportX = e.clientX - rect.left;
-    const viewportY = e.clientY - rect.top;
+    const viewportX = e.clientX;
+    const viewportY = e.clientY;
 
     if (
       viewportX < 0 ||
-      viewportX > rect.width ||
+      viewportX > viewportRect.width ||
       viewportY < 0 ||
-      viewportY > rect.height
+      viewportY > viewportRect.height
     ) {
       return;
     }
@@ -1495,33 +1609,11 @@ export function GameRuntimeGodot({
         targetEntityId,
       },
     };
-  }, []);
+  }, [viewportRect.width, viewportRect.height]);
 
+  // Expose input API for external tools (game-inspector)
   useEffect(() => {
     if (Platform.OS !== "web") return;
-
-    // Store handler references for cleanup
-    const mouseMoveHandler = handleMouseMove;
-    const mouseLeaveHandler = handleMouseLeave;
-    const clickHandler = handleClick;
-
-    // Attach listeners when container is available
-    const attachListeners = () => {
-      const container = viewportContainerRef.current;
-      if (!container) {
-        // Try again after a short delay if container isn't ready
-        setTimeout(attachListeners, 50);
-        return;
-      }
-
-      const htmlContainer = container as unknown as HTMLElement;
-      htmlContainer.addEventListener("mousemove", mouseMoveHandler);
-      htmlContainer.addEventListener("mouseleave", mouseLeaveHandler);
-      htmlContainer.addEventListener("click", clickHandler);
-    };
-
-    // Start attaching listeners
-    attachListeners();
 
     (window as any).__GAME_RUNTIME__ = {
       setInput: (type: string, value: any) => {
@@ -1563,14 +1655,6 @@ export function GameRuntimeGodot({
     };
 
     return () => {
-      const container = viewportContainerRef.current;
-      if (container) {
-        const htmlContainer = container as unknown as HTMLElement;
-        htmlContainer.removeEventListener("mousemove", mouseMoveHandler);
-        htmlContainer.removeEventListener("mouseleave", mouseLeaveHandler);
-        htmlContainer.removeEventListener("click", clickHandler);
-      }
-      
       delete (window as any).__GAME_RUNTIME__;
     };
   }, []);
@@ -1871,6 +1955,9 @@ export function GameRuntimeGodot({
             onError={handleGodotError}
             onKeyDown={sharedHandleKeyDown}
             onKeyUp={sharedHandleKeyUp}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            onClick={handleClick}
           />
         </View>
       )}

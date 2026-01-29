@@ -208,6 +208,9 @@ export interface GodotBridge {
   pausePhysics(): void;
   resumePhysics(): void;
   
+  // Inspect mode - disables automatic physics stepping for manual control
+  setInspectMode(enabled: boolean): void;
+  
   // Debug stepping - advances physics by N frames and returns when complete
   stepPhysics(frames: number): Promise<{ ok: boolean; framesAdvanced: number; endFrame: number }>;
   

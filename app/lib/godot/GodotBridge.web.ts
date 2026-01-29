@@ -222,6 +222,18 @@ declare global {
       getViewportInfo: () => void;
       pausePhysics: () => void;
       resumePhysics: () => void;
+      setInspectMode: (enabled: boolean) => void;
+      createThemedUIComponent: (
+        componentId: string,
+        componentType: number,
+        metadataUrl: string,
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        labelText: string,
+      ) => void;
+      destroyThemedUIComponent: (componentId: string) => void;
     };
   }
 }
@@ -428,17 +440,18 @@ export function createWebGodotBridge(): GodotBridge {
     },
 
     pausePhysics() {
-      (getGodotBridge() as any)?.pausePhysics?.();
+      getGodotBridge()?.pausePhysics?.();
     },
-
     resumePhysics() {
-      (getGodotBridge() as any)?.resumePhysics?.();
+      getGodotBridge()?.resumePhysics?.();
+    },
+    setInspectMode(enabled: boolean) {
+      getGodotBridge()?.setInspectMode?.(enabled);
     },
 
     async stepPhysics(frames: number): Promise<{ ok: boolean; framesAdvanced: number; endFrame: number }> {
       return queryAsync<{ ok: boolean; framesAdvanced: number; endFrame: number }>(
-        this,
-        "stepPhysicsSync",
+        "step",
         [frames]
       );
     },
@@ -1176,7 +1189,7 @@ export function createWebGodotBridge(): GodotBridge {
       height: number,
       labelText: string = "",
     ) {
-      const godotBridge = getGodotBridge() as any;
+      const godotBridge = getGodotBridge();
       if (godotBridge?.createThemedUIComponent) {
         godotBridge.createThemedUIComponent(
           componentId,
@@ -1192,7 +1205,7 @@ export function createWebGodotBridge(): GodotBridge {
     },
 
     destroyThemedUIComponent(componentId: string) {
-      const godotBridge = getGodotBridge() as any;
+      const godotBridge = getGodotBridge();
       if (godotBridge?.destroyThemedUIComponent) {
         godotBridge.destroyThemedUIComponent(componentId);
       }
@@ -1231,6 +1244,11 @@ export function createWebGodotBridge(): GodotBridge {
     clear3DModels(): void {
       const godotBridge = getGodotBridge();
       godotBridge?.clear_3d_models?.();
+    },
+
+    async callRpc(method: string, params?: unknown): Promise<unknown> {
+      const result = await queryAsync<unknown>(method, params ? [params] : []);
+      return result;
     },
   };
 
