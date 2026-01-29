@@ -612,7 +612,7 @@ export function createComfyUIClient(env: {
   COMFYUI_ENDPOINT?: string;
   MODAL_ENDPOINT?: string;
 }): ComfyUIClient {
-  const endpoint = env.MODAL_ENDPOINT ?? env.COMFYUI_ENDPOINT ?? 'https://hassoncs--slopcade-comfyui-web-img2img.modal.run';
+  const endpoint = env.MODAL_ENDPOINT ?? env.COMFYUI_ENDPOINT ?? 'https://hassoncs--slopcade-comfyui-web-generate.modal.run';
 
   return new ComfyUIClient({
     endpoint,

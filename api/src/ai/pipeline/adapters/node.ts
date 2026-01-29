@@ -220,6 +220,260 @@ interface ComfyUIAdapterConfig {
   apiKey?: string;
 }
 
+interface ModalAdapterConfig {
+  endpoint: string;
+  maxWakeTimeMs?: number;
+  pollIntervalMs?: number;
+}
+
+/**
+ * Creates a Modal-aware image generation adapter with auto-wake functionality.
+ * Handles Modal's cold start gracefully with clear status messages.
+ */
+export function createNodeModalAdapter(config: ModalAdapterConfig): ImageGenerationAdapter {
+  const endpoint = config.endpoint.replace(/\/$/, '');
+  const maxWakeTimeMs = config.maxWakeTimeMs ?? 900000;
+  const pollIntervalMs = config.pollIntervalMs ?? 5000;
+
+  const assetStore = new Map<string, { id: string; data: string; mimeType: string }>();
+
+  // Global coordination to prevent multiple cold-starts
+  let wakeUpPromise: Promise<void> | null = null;
+  let isWakingUp = false;
+
+  function generateAssetId(): string {
+    return `modal-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  }
+
+  function storeAsset(data: string, mimeType: string): string {
+    const id = generateAssetId();
+    assetStore.set(id, { id, data, mimeType });
+    return id;
+  }
+
+  function getAsset(id: string) {
+    return assetStore.get(id);
+  }
+
+  async function wakeModal(): Promise<void> {
+    // If already waking up, wait for that to complete
+    if (isWakingUp && wakeUpPromise) {
+      console.log('  ⏳ Another request is waking Modal, waiting...');
+      return wakeUpPromise;
+    }
+
+    // Start the wake-up process
+    isWakingUp = true;
+    wakeUpPromise = doWakeModal();
+
+    try {
+      await wakeUpPromise;
+    } finally {
+      isWakingUp = false;
+      wakeUpPromise = null;
+    }
+  }
+
+  async function doWakeModal(): Promise<void> {
+    const startTime = Date.now();
+    let attempt = 0;
+    let lastStatus: string | null = null;
+
+    console.log('  🌙 Modal is sleeping, waking it up...');
+    console.log(`  ⏱️  Max wait time: ${(maxWakeTimeMs / 1000).toFixed(0)}s`);
+    console.log('  📡 Sending wake-up pings...');
+
+    while (Date.now() - startTime < maxWakeTimeMs) {
+      attempt++;
+      const elapsedSecs = Math.floor((Date.now() - startTime) / 1000);
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: 'ping',
+            image_base64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+            strength: 0.1,
+            steps: 1
+          }),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (response.status === 200) {
+          console.log(`  ✅ Modal woke up! (${elapsedSecs}s, ${attempt} attempts)`);
+          return;
+        }
+
+        if (response.status === 503) {
+          const status = `  ⏳ Container starting... (${elapsedSecs}s elapsed)`;
+          if (status !== lastStatus) {
+            console.log(status);
+            lastStatus = status;
+          }
+        } else if (response.status === 404) {
+          const status = `  🔍 Endpoint not ready... (${elapsedSecs}s elapsed)`;
+          if (status !== lastStatus) {
+            console.log(status);
+            lastStatus = status;
+          }
+        } else {
+          const status = `  ⚠️  Status ${response.status}... (${elapsedSecs}s elapsed)`;
+          if (status !== lastStatus) {
+            console.log(status);
+            lastStatus = status;
+          }
+        }
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        if (errorMsg.includes('abort')) {
+          const status = `  ⏱️  Request timeout, still waking... (${elapsedSecs}s elapsed)`;
+          if (status !== lastStatus) {
+            console.log(status);
+            lastStatus = status;
+          }
+        } else {
+          const status = `  🔄 Connection error, retrying... (${elapsedSecs}s elapsed)`;
+          if (status !== lastStatus) {
+            console.log(status);
+            lastStatus = status;
+          }
+        }
+      }
+
+      await new Promise(r => setTimeout(r, pollIntervalMs));
+    }
+
+    throw new Error(`Modal failed to wake up after ${maxWakeTimeMs / 1000}s`);
+  }
+
+  async function modalRequest(payload: unknown): Promise<{ success: boolean; image_base64?: string; error?: string }> {
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 600000);
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (response.status === 503 || response.status === 404) {
+          if (attempt === 0) {
+            await wakeModal();
+            continue;
+          } else {
+            throw new Error('Modal returned 503 even after wake attempt');
+          }
+        }
+
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(`Modal error ${response.status}: ${text}`);
+        }
+
+        return await response.json() as { success: boolean; image_base64?: string; error?: string };
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+
+        if (attempt === 0 && (lastError.message.includes('fetch failed') || lastError.message.includes('ECONNREFUSED'))) {
+          await wakeModal();
+          continue;
+        }
+
+        throw lastError;
+      }
+    }
+
+    throw lastError || new Error('Modal request failed');
+  }
+
+  return {
+    async uploadImage(png: Uint8Array): Promise<string> {
+      const base64 = Buffer.from(png).toString('base64');
+      return storeAsset(base64, 'image/png');
+    },
+
+    async txt2img(params): Promise<{ assetId: string }> {
+      console.log('  🎨 Generating image with Modal...');
+      const startTime = Date.now();
+
+      const result = await modalRequest({
+        prompt: params.prompt,
+        width: params.width ?? 512,
+        height: params.height ?? 512,
+        steps: 20,
+        guidance: 3.5
+      });
+
+      if (!result.success || !result.image_base64) {
+        throw new Error(result.error || 'Modal generation failed');
+      }
+
+      const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+      console.log(`  ✅ Generated in ${duration}s`);
+
+      const assetId = storeAsset(result.image_base64, 'image/png');
+      return { assetId };
+    },
+
+    async img2img(params): Promise<{ assetId: string }> {
+      console.log('  🎨 Transforming image with Modal...');
+      const startTime = Date.now();
+
+      const asset = getAsset(params.imageAssetId);
+      if (!asset) {
+        throw new Error(`Asset not found: ${params.imageAssetId}`);
+      }
+
+      const result = await modalRequest({
+        prompt: params.prompt,
+        image_base64: asset.data,
+        strength: params.strength ?? 0.5,
+        steps: 20,
+        guidance: 3.5
+      });
+
+      if (!result.success || !result.image_base64) {
+        throw new Error(result.error || 'Modal img2img failed');
+      }
+
+      const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+      console.log(`  ✅ Transformed in ${duration}s`);
+
+      const assetId = storeAsset(result.image_base64, 'image/png');
+      return { assetId };
+    },
+
+    async downloadImage(assetId: string): Promise<{ buffer: Uint8Array; extension: string }> {
+      const asset = getAsset(assetId);
+      if (!asset) {
+        throw new Error(`Asset not found: ${assetId}`);
+      }
+
+      const buffer = Buffer.from(asset.data, 'base64');
+      return { buffer: new Uint8Array(buffer), extension: '.png' };
+    },
+
+    async removeBackground(assetId: string): Promise<{ assetId: string }> {
+      return { assetId };
+    },
+
+    async layeredDecompose(): Promise<{ assetIds: string[] }> {
+      throw new Error('Layered decompose not supported in Modal adapter');
+    },
+  };
+}
+
 export function createNodeComfyUIAdapter(config: ComfyUIAdapterConfig): ImageGenerationAdapter {
   const client = new ComfyUIClient({
     endpoint: config.endpoint,
@@ -290,8 +544,8 @@ export async function createNodeAdapters(options: NodeAdaptersOptions): Promise<
     imageAdapter = createNodeScenarioAdapter({ apiKey, apiSecret });
   } else {
     // Use Modal ComfyUI - default provider
-    const endpoint = process.env.MODAL_ENDPOINT ?? 'https://hassoncs--slopcade-comfyui-web-img2img.modal.run';
-    imageAdapter = createNodeComfyUIAdapter({ endpoint });
+    const endpoint = process.env.MODAL_ENDPOINT ?? 'https://hassoncs--slopcade-comfyui-web-generate.modal.run';
+    imageAdapter = createNodeModalAdapter({ endpoint });
   }
 
   return {

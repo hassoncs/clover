@@ -330,7 +330,8 @@ def build_layered_workflow(base_prompt: str, layers: list, width: int, height: i
     gpu="A10G",
     timeout=600,
     volumes={"/models": models_volume},
-    scaledown_window=60,
+    scaledown_window=300,
+    keep_warm=1,
 )
 class ComfyUIWorker:
     @modal.enter()
@@ -338,11 +339,17 @@ class ComfyUIWorker:
         """Called once when container starts."""
         import os
         
+        print("[setup] Starting setup...")
+        
         models_path = Path("/models")
+        print(f"[setup] Downloading models to {models_path}...")
         download_models_if_needed(models_path)
+        print("[setup] Models downloaded, committing volume...")
         models_volume.commit()
+        print("[setup] Volume committed")
         
         # Create symlinks for ComfyUI to find models
+        print("[setup] Creating symlinks...")
         comfy_models = Path("/root/comfy/ComfyUI/models")
         for subdir in ["unet", "clip", "vae"]:
             src = models_path / subdir
@@ -353,14 +360,18 @@ class ComfyUIWorker:
                     target = dst / f.name
                     if not target.exists():
                         os.symlink(f, target)
+        print("[setup] Symlinks created")
         
         # Start ComfyUI server
+        print("[setup] Starting ComfyUI server...")
         self.comfyui_process = subprocess.Popen(
             ["comfy", "launch", "--", "--listen", "127.0.0.1", "--port", "8188"],
             cwd="/root/comfy/ComfyUI"
         )
+        print("[setup] ComfyUI process started, waiting for readiness...")
         
         self._wait_for_comfyui()
+        print("[setup] Setup complete!")
     
     def _wait_for_comfyui(self, timeout: int = 120):
         """Wait for ComfyUI to be ready."""
@@ -377,13 +388,17 @@ class ComfyUIWorker:
                 time.sleep(1)
         raise TimeoutError("ComfyUI failed to start")
     
-    def _run_workflow(self, workflow: dict, input_images: list = None) -> bytes:
+    def _run_workflow(self, workflow: dict, input_images: list = None, timeout: int = 300) -> bytes:
         """Execute a workflow and return the output image."""
         import urllib.request
         import uuid
-        
+
+        print(f"  [_run_workflow] Starting workflow execution...")
+        start_time = time.time()
+
         # Upload input images if provided
         if input_images:
+            print(f"  [_run_workflow] Uploading {len(input_images)} input images...")
             for name, data in input_images:
                 boundary = uuid.uuid4().hex
                 body = []
@@ -393,67 +408,103 @@ class ComfyUIWorker:
                 body.append(b"")
                 body.append(data)
                 body.append(f"--{boundary}--".encode())
-                
+
                 req = urllib.request.Request(
                     "http://127.0.0.1:8188/upload/image",
                     data=b"\r\n".join(body),
                     headers={"Content-Type": f"multipart/form-data; boundary={boundary}"}
                 )
                 urllib.request.urlopen(req)
-        
+            print(f"  [_run_workflow] Images uploaded")
+
         # Submit workflow
         prompt_id = str(uuid.uuid4())
+        print(f"  [_run_workflow] Submitting workflow with prompt_id: {prompt_id}")
         payload = {"prompt": workflow, "client_id": prompt_id}
-        
+
         req = urllib.request.Request(
             "http://127.0.0.1:8188/prompt",
             data=json.dumps(payload).encode(),
             headers={"Content-Type": "application/json"}
         )
         urllib.request.urlopen(req)
-        
-        # Wait for completion
+        print(f"  [_run_workflow] Workflow submitted, waiting for completion...")
+
+        # Wait for completion with timeout
+        last_status_print = 0
+        check_count = 0
         while True:
-            time.sleep(0.5)
+            elapsed = time.time() - start_time
+            check_count += 1
+            
+            if elapsed > timeout:
+                print(f"  [_run_workflow] TIMEOUT after {timeout}s (checked {check_count} times)")
+                raise TimeoutError(f"Workflow timed out after {timeout}s")
+
+            time.sleep(1.0)
             history_url = f"http://127.0.0.1:8188/history/{prompt_id}"
+            
             try:
-                resp = urllib.request.urlopen(history_url)
-                history = json.loads(resp.read())
+                resp = urllib.request.urlopen(history_url, timeout=5)
+                history_data = resp.read()
+                history = json.loads(history_data)
+                
                 if prompt_id in history:
-                    outputs = history[prompt_id].get("outputs", {})
+                    print(f"  [_run_workflow] FOUND prompt_id in history! (elapsed: {elapsed:.1f}s, checks: {check_count})")
+                    entry = history[prompt_id]
+                    print(f"  [_run_workflow] History keys: {list(entry.keys())}")
+                    
+                    # Check for outputs
+                    outputs = entry.get("outputs", {})
+                    print(f"  [_run_workflow] Outputs count: {len(outputs)}")
+                    
                     for node_id, node_output in outputs.items():
-                        if "images" in node_output:
-                            img_info = node_output["images"][0]
-                            img_url = f"http://127.0.0.1:8188/view?filename={img_info['filename']}&type={img_info['type']}&subfolder={img_info.get('subfolder', '')}"
-                            img_resp = urllib.request.urlopen(img_url)
-                            return img_resp.read()
-            except Exception:
-                pass
+                        print(f"  [_run_workflow] Node {node_id} output type: {type(node_output)}")
+                        if isinstance(node_output, dict):
+                            print(f"  [_run_workflow] Node {node_id} has keys: {list(node_output.keys())}")
+                            if "images" in node_output:
+                                images = node_output["images"]
+                                print(f"  [_run_workflow] Found {len(images)} image(s) in node {node_id}")
+                                if images:
+                                    img_info = images[0]
+                                    print(f"  [_run_workflow] Image info: {img_info}")
+                                    filename = img_info.get('filename', 'unknown')
+                                    img_type = img_info.get('type', 'output')
+                                    subfolder = img_info.get('subfolder', '')
+                                    
+                                    img_url = f"http://127.0.0.1:8188/view?filename={filename}&type={img_type}&subfolder={subfolder}"
+                                    print(f"  [_run_workflow] Fetching: {img_url}")
+                                    
+                                    img_resp = urllib.request.urlopen(img_url, timeout=10)
+                                    img_data = img_resp.read()
+                                    print(f"  [_run_workflow] SUCCESS! Image size: {len(img_data)} bytes")
+                                    return img_data
+                    
+                    print(f"  [_run_workflow] No images in outputs yet, continuing to wait...")
+                else:
+                    if elapsed - last_status_print > 10:
+                        print(f"  [_run_workflow] Waiting... {elapsed:.1f}s, {check_count} checks, prompt_id not in history yet")
+                        last_status_print = elapsed
+                        
+            except Exception as e:
+                if elapsed - last_status_print > 10:
+                    print(f"  [_run_workflow] Error: {str(e)[:80]} at {elapsed:.1f}s")
+                    last_status_print = elapsed
     
-    @modal.method()
-    def txt2img(self, prompt: str, width: int = 512, height: int = 512, 
+    # Internal methods (not exposed as @modal.method to avoid conflicts with web endpoints)
+    def txt2img(self, prompt: str, width: int = 512, height: int = 512,
                 steps: int = 20, guidance: float = 3.5, seed: int = None) -> str:
         """Generate image from text prompt. Returns base64 PNG."""
         import random
         if seed is None:
             seed = random.randint(0, 2**32 - 1)
-        
+
         workflow = build_txt2img_workflow(prompt, width, height, steps, guidance, seed)
         img_bytes = self._run_workflow(workflow)
         return base64.b64encode(img_bytes).decode()
-    
-    @modal.method()
-    def img2img(self, prompt: str, image_base64: str, strength: float = 0.5, steps: int = 20, guidance: float = 3.5, seed: int = None) -> str:
-        """Transform image based on prompt. Returns base64 PNG.
 
-        Args:
-            prompt: Text description of desired transformation
-            image_base64: Input image as base64 string
-            strength: How much to change image (0.0-1.0, default 0.5)
-            steps: Number of denoising steps (default 20)
-            guidance: CFG scale (default 3.5)
-            seed: Random seed (optional)
-        """
+    def img2img(self, prompt: str, image_base64: str, strength: float = 0.5, steps: int = 20, guidance: float = 3.5, seed: int = None) -> str:
+        """Transform image based on prompt. Returns base64 PNG."""
         import random
         if seed is None:
             seed = random.randint(0, 2**32 - 1)
@@ -463,7 +514,6 @@ class ComfyUIWorker:
         result = self._run_workflow(workflow, [("input.png", img_bytes)])
         return base64.b64encode(result).decode()
 
-    @modal.method()
     def remove_background(self, image_base64: str) -> str:
         """Remove background from image. Returns base64 PNG."""
         img_bytes = base64.b64decode(image_base64)
@@ -471,18 +521,8 @@ class ComfyUIWorker:
         result = self._run_workflow(workflow, [("input.png", img_bytes)])
         return base64.b64encode(result).decode()
 
-    @modal.method()
     def generate_layered(self, base_prompt: str, layers: list, width: int = 1024, height: int = 512, steps: int = 20, seed: int = None) -> list:
-        """Generate layered parallax background. Returns list of base64 PNGs.
-
-        Args:
-            base_prompt: Base scene description (e.g., "pixel art forest")
-            layers: List of layer configs [{"depth": "far", "prompt": "mountains"}, ...]
-            width: Image width (default 1024)
-            height: Image height (default 512 for backgrounds)
-            steps: Generation steps per layer
-            seed: Random seed (optional)
-        """
+        """Generate layered parallax background. Returns list of base64 PNGs."""
         import random
         if seed is None:
             seed = random.randint(0, 2**32 - 1)
@@ -508,32 +548,54 @@ class ComfyUIWorker:
 
         return results
 
+    @modal.fastapi_endpoint(method="GET")
+    def health(self) -> dict:
+        """Health check endpoint."""
+        return {"status": "ok", "comfyui_ready": True}
 
-@app.function(image=image, gpu="A10G", timeout=900, volumes={"/models": models_volume})
-@modal.fastapi_endpoint(method="POST")
-def web_img2img(data: dict) -> dict:
-    """HTTP endpoint for img2img - callable from Node/TypeScript."""
-    import os
-    import sys
-    
-    # Add comfyui to path for imports
-    sys.path.insert(0, "/root/comfy/ComfyUI")
-    
-    worker = ComfyUIWorker()
-    
-    # Initialize (downloads models if needed, starts ComfyUI)
-    worker.setup()
-    
-    result = worker.img2img(
-        prompt=data.get("prompt", ""),
-        image_base64=data.get("image_base64", ""),
-        strength=data.get("strength", 0.5),
-        steps=data.get("steps", 20),
-        guidance=data.get("guidance", 3.5),
-        seed=data.get("seed")
-    )
-    
-    return {"success": True, "image_base64": result}
+    @modal.fastapi_endpoint(method="POST")
+    def web_generate(self, data: dict) -> dict:
+        """HTTP endpoint for image generation - supports both txt2img and img2img."""
+        import random
+        import traceback
+
+        print(f"[web_generate] Received request: {data.keys()}")
+
+        prompt = data.get("prompt", "")
+        image_base64 = data.get("image_base64", "")
+        width = data.get("width", 512)
+        height = data.get("height", 512)
+        steps = data.get("steps", 20)
+        guidance = data.get("guidance", 3.5)
+        seed = data.get("seed")
+        strength = data.get("strength", 0.5)
+
+        print(f"[web_generate] prompt='{prompt[:50]}...', has_image={bool(image_base64)}, size={width}x{height}")
+
+        try:
+            if seed is None:
+                seed = random.randint(0, 2**32 - 1)
+                print(f"[web_generate] Generated seed: {seed}")
+
+            if not image_base64:
+                print(f"[web_generate] Running txt2img...")
+                workflow = build_txt2img_workflow(prompt, width, height, steps, guidance, seed)
+                img_bytes = self._run_workflow(workflow)
+            else:
+                print(f"[web_generate] Running img2img with {len(image_base64)} bytes...")
+                img_bytes_input = base64.b64decode(image_base64)
+                workflow = build_img2img_workflow(prompt, "input.png", strength, steps, guidance, seed)
+                img_bytes = self._run_workflow(workflow, [("input.png", img_bytes_input)])
+
+            result = base64.b64encode(img_bytes).decode()
+            print(f"[web_generate] Success! Generated {len(result)} bytes")
+            return {"success": True, "image_base64": result}
+        except Exception as e:
+            error_msg = str(e)
+            stack_trace = traceback.format_exc()
+            print(f"[web_generate] ERROR: {error_msg}")
+            print(f"[web_generate] Stack trace: {stack_trace}")
+            return {"success": False, "error": error_msg, "traceback": stack_trace}
 
 
 @app.local_entrypoint()

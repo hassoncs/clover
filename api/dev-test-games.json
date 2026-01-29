@@ -1,6 +1,494 @@
 {
-  "generatedAt": "2026-01-28T20:59:26.664Z",
+  "generatedAt": "2026-01-28T21:31:45.567Z",
   "games": [
+    {
+      "id": "angryBurns",
+      "title": "Angry Burns",
+      "description": "Pull back the cannon to launch cannonballs at structures and destroy all the targets to win!",
+      "definition": {
+        "metadata": {
+          "id": "angry-burns",
+          "title": "Angry Burns",
+          "description": "Pull back the cannon to launch cannonballs at structures and destroy all the targets to win!",
+          "version": "1.0.0"
+        },
+        "world": {
+          "gravity": {
+            "x": 0,
+            "y": 9.8
+          },
+          "pixelsPerMeter": 50,
+          "bounds": {
+            "width": 20,
+            "height": 12
+          }
+        },
+        "camera": {
+          "type": "fixed",
+          "zoom": 1
+        },
+        "ui": {
+          "showScore": true,
+          "showLives": true,
+          "scorePosition": "top-right",
+          "backgroundColor": "#87CEEB"
+        },
+        "templates": {
+          "projectile": {
+            "id": "projectile",
+            "visual": {
+              "type": "circle",
+              "radius": 0.3,
+              "color": "#2C2C2C"
+            },
+            "physics": {
+              "bodyType": "dynamic",
+              "density": 2,
+              "ccd": true
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.3,
+              "friction": 0.5,
+              "restitution": 0.6
+            },
+            "tags": [
+              "projectile"
+            ]
+          },
+          "woodBlock": {
+            "id": "woodBlock",
+            "visual": {
+              "type": "rect",
+              "width": 0.8,
+              "height": 0.4,
+              "color": "#8B4513"
+            },
+            "physics": {
+              "bodyType": "dynamic",
+              "density": 0.5
+            },
+            "collider": {
+              "shape": "box",
+              "width": 0.8,
+              "height": 0.4,
+              "friction": 0.6,
+              "restitution": 0.1
+            },
+            "behaviors": [
+              {
+                "type": "health",
+                "maxHealth": 50,
+                "damageFromTags": [
+                  "projectile"
+                ],
+                "damagePerHit": 25,
+                "destroyOnDeath": true
+              }
+            ],
+            "tags": [
+              "block",
+              "destructible"
+            ]
+          },
+          "stoneBlock": {
+            "id": "stoneBlock",
+            "visual": {
+              "type": "rect",
+              "width": 0.8,
+              "height": 0.4,
+              "color": "#696969"
+            },
+            "physics": {
+              "bodyType": "dynamic",
+              "density": 0.8
+            },
+            "collider": {
+              "shape": "box",
+              "width": 0.8,
+              "height": 0.4,
+              "friction": 0.7,
+              "restitution": 0.05
+            },
+            "behaviors": [
+              {
+                "type": "health",
+                "maxHealth": 75,
+                "damageFromTags": [
+                  "projectile"
+                ],
+                "damagePerHit": 25,
+                "destroyOnDeath": true
+              }
+            ],
+            "tags": [
+              "block",
+              "destructible"
+            ]
+          },
+          "glassBlock": {
+            "id": "glassBlock",
+            "visual": {
+              "type": "rect",
+              "width": 0.8,
+              "height": 0.4,
+              "color": "#ADD8E6"
+            },
+            "physics": {
+              "bodyType": "dynamic",
+              "density": 0.3
+            },
+            "collider": {
+              "shape": "box",
+              "width": 0.8,
+              "height": 0.4,
+              "friction": 0.3,
+              "restitution": 0.2
+            },
+            "behaviors": [
+              {
+                "type": "health",
+                "maxHealth": 25,
+                "damageFromTags": [
+                  "projectile"
+                ],
+                "damagePerHit": 25,
+                "destroyOnDeath": true
+              }
+            ],
+            "tags": [
+              "block",
+              "destructible"
+            ]
+          },
+          "target": {
+            "id": "target",
+            "visual": {
+              "type": "circle",
+              "radius": 0.35,
+              "color": "#90EE90"
+            },
+            "physics": {
+              "bodyType": "dynamic",
+              "density": 0.4
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.35,
+              "friction": 0.5,
+              "restitution": 0.2
+            },
+            "behaviors": [
+              {
+                "type": "health",
+                "maxHealth": 50,
+                "damageFromTags": [
+                  "projectile"
+                ],
+                "damagePerHit": 25,
+                "destroyOnDeath": true
+              },
+              {
+                "type": "score_on_destroy",
+                "points": 500
+              }
+            ],
+            "tags": [
+              "target",
+              "destructible"
+            ]
+          },
+          "ground": {
+            "id": "ground",
+            "visual": {
+              "type": "rect",
+              "width": 20,
+              "height": 1,
+              "color": "#228B22"
+            },
+            "physics": {
+              "bodyType": "static",
+              "density": 1
+            },
+            "collider": {
+              "shape": "box",
+              "width": 20,
+              "height": 1,
+              "friction": 0.8,
+              "restitution": 0.1
+            },
+            "tags": [
+              "ground"
+            ]
+          },
+          "wall": {
+            "id": "wall",
+            "visual": {
+              "type": "rect",
+              "width": 0.5,
+              "height": 12,
+              "color": "#4A5568"
+            },
+            "physics": {
+              "bodyType": "static",
+              "density": 1
+            },
+            "collider": {
+              "shape": "box",
+              "width": 0.5,
+              "height": 12,
+              "friction": 0.5,
+              "restitution": 0.3
+            },
+            "tags": [
+              "wall"
+            ]
+          }
+        },
+        "entities": [
+          {
+            "id": "cannon",
+            "name": "cannon",
+            "transform": {
+              "x": 3,
+              "y": 9,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "visual": {
+              "type": "circle",
+              "radius": 0.6,
+              "color": "#8B0000"
+            },
+            "behaviors": [
+              {
+                "type": "draggable",
+                "mode": "force",
+                "stiffness": 10,
+                "damping": 2,
+                "requireDirectHit": true
+              }
+            ],
+            "tags": [
+              "launcher"
+            ]
+          },
+          {
+            "id": "ground",
+            "template": "ground",
+            "transform": {
+              "x": 10,
+              "y": 11.5,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "wall-right",
+            "template": "wall",
+            "transform": {
+              "x": 19.75,
+              "y": 6,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "stone-1",
+            "template": "stoneBlock",
+            "transform": {
+              "x": 14,
+              "y": 10.8,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "stone-2",
+            "template": "stoneBlock",
+            "transform": {
+              "x": 15.5,
+              "y": 10.8,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "stone-3",
+            "template": "stoneBlock",
+            "transform": {
+              "x": 17,
+              "y": 10.8,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "wood-1",
+            "template": "woodBlock",
+            "transform": {
+              "x": 14,
+              "y": 10.3,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "wood-2",
+            "template": "woodBlock",
+            "transform": {
+              "x": 15.5,
+              "y": 10.3,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "wood-3",
+            "template": "woodBlock",
+            "transform": {
+              "x": 17,
+              "y": 10.3,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "glass-1",
+            "template": "glassBlock",
+            "transform": {
+              "x": 14,
+              "y": 9.8,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "glass-2",
+            "template": "glassBlock",
+            "transform": {
+              "x": 15.5,
+              "y": 9.8,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "glass-3",
+            "template": "glassBlock",
+            "transform": {
+              "x": 17,
+              "y": 9.8,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "target-1",
+            "template": "target",
+            "transform": {
+              "x": 15.5,
+              "y": 9.3,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "target-2",
+            "template": "target",
+            "transform": {
+              "x": 14,
+              "y": 10.1,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "target-3",
+            "template": "target",
+            "transform": {
+              "x": 17,
+              "y": 10.1,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          }
+        ],
+        "rules": [
+          {
+            "id": "cannon-fire",
+            "name": "cannon fire on drag end",
+            "trigger": {
+              "type": "drag",
+              "phase": "end",
+              "target": "cannon"
+            },
+            "conditions": [
+              {
+                "type": "entity_count",
+                "tag": "projectile",
+                "max": 0
+              }
+            ],
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "projectile",
+                "position": {
+                  "type": "fixed",
+                  "x": 3,
+                  "y": 8.4
+                }
+              },
+              {
+                "type": "apply_impulse",
+                "target": {
+                  "type": "by_tag",
+                  "tag": "projectile"
+                },
+                "direction": "drag_direction",
+                "force": 20
+              },
+              {
+                "type": "lives",
+                "operation": "subtract",
+                "value": 1
+              },
+              {
+                "type": "start_cooldown",
+                "cooldownId": "cannon-cooldown",
+                "duration": 0.5
+              }
+            ],
+            "cooldown": 0.5
+          }
+        ],
+        "winCondition": {
+          "type": "destroy_all",
+          "tag": "target"
+        },
+        "loseCondition": {
+          "type": "lives_zero"
+        },
+        "initialLives": 5,
+        "initialScore": 0
+      }
+    },
     {
       "id": "ballSort",
       "title": "Ball Sort",
@@ -212,7 +700,7 @@
             "tags": [
               "tube-wall"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/tubeWall.png",
               "imageWidth": 0.18,
@@ -220,10 +708,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 0.18,
               "height": 6,
-              "density": 0,
               "friction": 0,
               "restitution": 0
             }
@@ -233,7 +723,7 @@
             "tags": [
               "tube-bottom"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/tubeBottom.png",
               "imageWidth": 1.68,
@@ -241,10 +731,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 1.68,
               "height": 0.18,
-              "density": 0,
               "friction": 0,
               "restitution": 0
             }
@@ -254,7 +746,7 @@
             "tags": [
               "tube"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.3199999999999998,
               "height": 6,
@@ -275,7 +767,7 @@
               "ball",
               "color-0"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball0.png",
               "imageWidth": 1.2,
@@ -337,7 +829,7 @@
               "ball",
               "color-1"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball1.png",
               "imageWidth": 1.2,
@@ -399,7 +891,7 @@
               "ball",
               "color-2"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball2.png",
               "imageWidth": 1.2,
@@ -461,7 +953,7 @@
               "ball",
               "color-3"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball3.png",
               "imageWidth": 1.2,
@@ -523,7 +1015,7 @@
               "ball",
               "color-4"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball0.png",
               "imageWidth": 1.2,
@@ -585,7 +1077,7 @@
               "ball",
               "color-5"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball1.png",
               "imageWidth": 1.2,
@@ -647,7 +1139,7 @@
               "ball",
               "color-6"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball2.png",
               "imageWidth": 1.2,
@@ -709,7 +1201,7 @@
               "ball",
               "color-7"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball3.png",
               "imageWidth": 1.2,
@@ -770,7 +1262,7 @@
             "tags": [
               "held-indicator"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/heldBallIndicator.png",
               "imageWidth": 1.44,
@@ -1698,7 +2190,7 @@
             "tags": [
               "column"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.4,
               "height": 0.8,
@@ -1718,7 +2210,7 @@
             "tags": [
               "slot"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.4,
               "height": 1.4,
@@ -1739,7 +2231,7 @@
               "block",
               "color0"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.26,
               "height": 1.26,
@@ -1760,7 +2252,7 @@
               "block",
               "color1"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.26,
               "height": 1.26,
@@ -1781,7 +2273,7 @@
               "block",
               "color2"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.26,
               "height": 1.26,
@@ -1802,7 +2294,7 @@
               "block",
               "color3"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.26,
               "height": 1.26,
@@ -1823,7 +2315,7 @@
               "placed",
               "color0"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.19,
               "height": 1.19,
@@ -1844,7 +2336,7 @@
               "placed",
               "color1"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.19,
               "height": 1.19,
@@ -1865,7 +2357,7 @@
               "placed",
               "color2"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.19,
               "height": 1.19,
@@ -1886,7 +2378,7 @@
               "placed",
               "color3"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.19,
               "height": 1.19,
@@ -3145,20 +3637,23 @@
             "tags": [
               "ball"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.25,
               "color": "#FF00FF"
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1,
+              "linearDamping": 0,
+              "fixedRotation": false,
+              "ccd": true
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.25,
-              "density": 1,
               "friction": 0,
-              "restitution": 1,
-              "linearDamping": 0,
-              "bullet": true
+              "restitution": 1
             },
             "behaviors": []
           },
@@ -3167,7 +3662,7 @@
             "tags": [
               "paddle"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/breakout-bouncer/paddle.png",
               "imageWidth": 2,
@@ -3175,14 +3670,16 @@
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 5,
+              "linearDamping": 8,
+              "fixedRotation": true
+            },
+            "collider": {
               "shape": "box",
               "width": 2,
               "height": 0.4,
-              "density": 5,
               "friction": 0.1,
-              "restitution": 0.2,
-              "linearDamping": 8,
-              "fixedRotation": true
+              "restitution": 0.2
             },
             "behaviors": []
           },
@@ -3191,7 +3688,7 @@
             "tags": [
               "brick"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/breakout-bouncer/brickRed.png",
               "imageWidth": 1.2,
@@ -3199,10 +3696,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 1.2,
               "height": 0.5,
-              "density": 0,
               "friction": 0,
               "restitution": 1
             },
@@ -3228,7 +3727,7 @@
             "tags": [
               "brick"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/breakout-bouncer/brickBlue.png",
               "imageWidth": 1.2,
@@ -3236,10 +3735,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 1.2,
               "height": 0.5,
-              "density": 0,
               "friction": 0,
               "restitution": 1
             },
@@ -3265,7 +3766,7 @@
             "tags": [
               "brick"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/breakout-bouncer/brickGreen.png",
               "imageWidth": 1.2,
@@ -3273,10 +3774,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 1.2,
               "height": 0.5,
-              "density": 0,
               "friction": 0,
               "restitution": 1
             },
@@ -3302,7 +3805,7 @@
             "tags": [
               "brick"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/breakout-bouncer/brickYellow.png",
               "imageWidth": 1.2,
@@ -3310,10 +3813,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 1.2,
               "height": 0.5,
-              "density": 0,
               "friction": 0,
               "restitution": 1
             },
@@ -3339,7 +3844,7 @@
             "tags": [
               "wall"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.3,
               "height": 20,
@@ -3347,10 +3852,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 0.3,
               "height": 20,
-              "density": 0,
               "friction": 0,
               "restitution": 1
             }
@@ -3408,7 +3915,7 @@
               "scaleX": 1,
               "scaleY": 1
             },
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 10,
               "height": 0.3,
@@ -3416,10 +3923,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 10,
               "height": 0.3,
-              "density": 0,
               "friction": 0,
               "restitution": 1
             }
@@ -4062,7 +4571,7 @@
               "bubble",
               "bubble-red"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/bubbleShooter/bubble_red.png",
               "imageWidth": 0.7,
@@ -4070,9 +4579,11 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.35,
-              "density": 0,
               "friction": 0,
               "restitution": 0
             }
@@ -4083,7 +4594,7 @@
               "bubble",
               "bubble-blue"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/bubbleShooter/bubble_blue.png",
               "imageWidth": 0.7,
@@ -4091,9 +4602,11 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.35,
-              "density": 0,
               "friction": 0,
               "restitution": 0
             }
@@ -4104,7 +4617,7 @@
               "bubble",
               "bubble-green"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/bubbleShooter/bubble_green.png",
               "imageWidth": 0.7,
@@ -4112,9 +4625,11 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.35,
-              "density": 0,
               "friction": 0,
               "restitution": 0
             }
@@ -4125,7 +4640,7 @@
               "bubble",
               "bubble-yellow"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/bubbleShooter/bubble_yellow.png",
               "imageWidth": 0.7,
@@ -4133,9 +4648,11 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.35,
-              "density": 0,
               "friction": 0,
               "restitution": 0
             }
@@ -4146,7 +4663,7 @@
               "bubble",
               "bubble-purple"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/bubbleShooter/bubble_purple.png",
               "imageWidth": 0.7,
@@ -4154,9 +4671,11 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.35,
-              "density": 0,
               "friction": 0,
               "restitution": 0
             }
@@ -4166,7 +4685,7 @@
             "tags": [
               "projectile"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/bubbleShooter/projectile.png",
               "imageWidth": 0.7,
@@ -4174,12 +4693,15 @@
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1,
+              "fixedRotation": false,
+              "ccd": true
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.35,
-              "density": 1,
               "friction": 0,
-              "restitution": 1,
-              "bullet": true
+              "restitution": 1
             }
           },
           "shooter": {
@@ -4187,7 +4709,7 @@
             "tags": [
               "shooter"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/bubbleShooter/shooter.png",
               "imageWidth": 0.8,
@@ -4216,7 +4738,7 @@
             "tags": [
               "shooter-base"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/bubbleShooter/shooterBase.png",
               "imageWidth": 1,
@@ -4235,7 +4757,7 @@
             "tags": [
               "wall"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.3,
               "height": 16,
@@ -4243,10 +4765,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 0.3,
               "height": 16,
-              "density": 0,
               "friction": 0,
               "restitution": 1
             }
@@ -4256,7 +4780,7 @@
             "tags": [
               "wall"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.3,
               "height": 16,
@@ -4264,10 +4788,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 0.3,
               "height": 16,
-              "density": 0,
               "friction": 0,
               "restitution": 1
             }
@@ -4277,7 +4803,7 @@
             "tags": [
               "ceiling"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 12,
               "height": 0.3,
@@ -4285,10 +4811,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 12,
               "height": 0.3,
-              "density": 0,
               "friction": 0,
               "restitution": 0
             }
@@ -4298,7 +4826,7 @@
             "tags": [
               "death-line"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 12,
               "height": 0.1,
@@ -4318,7 +4846,7 @@
             "tags": [
               "aim-line"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.05,
               "height": 3,
@@ -4431,7 +4959,7 @@
           {
             "id": "bubble-0",
             "name": "Bubble 1",
-            "template": "bubble_red",
+            "template": "bubble_blue",
             "transform": {
               "x": -4.35,
               "y": 6.5,
@@ -4443,7 +4971,7 @@
           {
             "id": "bubble-1",
             "name": "Bubble 2",
-            "template": "bubble_yellow",
+            "template": "bubble_purple",
             "transform": {
               "x": -3.6500000000000004,
               "y": 6.5,
@@ -4455,7 +4983,7 @@
           {
             "id": "bubble-2",
             "name": "Bubble 3",
-            "template": "bubble_blue",
+            "template": "bubble_yellow",
             "transform": {
               "x": -2.95,
               "y": 6.5,
@@ -4467,7 +4995,7 @@
           {
             "id": "bubble-3",
             "name": "Bubble 4",
-            "template": "bubble_red",
+            "template": "bubble_yellow",
             "transform": {
               "x": -2.2500000000000004,
               "y": 6.5,
@@ -4479,7 +5007,7 @@
           {
             "id": "bubble-4",
             "name": "Bubble 5",
-            "template": "bubble_blue",
+            "template": "bubble_green",
             "transform": {
               "x": -1.5500000000000007,
               "y": 6.5,
@@ -4491,7 +5019,7 @@
           {
             "id": "bubble-5",
             "name": "Bubble 6",
-            "template": "bubble_purple",
+            "template": "bubble_yellow",
             "transform": {
               "x": -0.8499999999999996,
               "y": 6.5,
@@ -4503,7 +5031,7 @@
           {
             "id": "bubble-6",
             "name": "Bubble 7",
-            "template": "bubble_green",
+            "template": "bubble_yellow",
             "transform": {
               "x": -0.15000000000000036,
               "y": 6.5,
@@ -4515,7 +5043,7 @@
           {
             "id": "bubble-7",
             "name": "Bubble 8",
-            "template": "bubble_green",
+            "template": "bubble_purple",
             "transform": {
               "x": 0.5499999999999989,
               "y": 6.5,
@@ -4563,7 +5091,7 @@
           {
             "id": "bubble-11",
             "name": "Bubble 12",
-            "template": "bubble_purple",
+            "template": "bubble_yellow",
             "transform": {
               "x": -1.5500000000000007,
               "y": 5.893800000000001,
@@ -4575,7 +5103,7 @@
           {
             "id": "bubble-12",
             "name": "Bubble 13",
-            "template": "bubble_blue",
+            "template": "bubble_red",
             "transform": {
               "x": -0.8499999999999996,
               "y": 5.893800000000001,
@@ -4599,7 +5127,7 @@
           {
             "id": "bubble-14",
             "name": "Bubble 15",
-            "template": "bubble_blue",
+            "template": "bubble_purple",
             "transform": {
               "x": 0.5499999999999989,
               "y": 5.893800000000001,
@@ -4611,7 +5139,7 @@
           {
             "id": "bubble-15",
             "name": "Bubble 16",
-            "template": "bubble_purple",
+            "template": "bubble_yellow",
             "transform": {
               "x": -4.35,
               "y": 5.2876,
@@ -4623,7 +5151,7 @@
           {
             "id": "bubble-16",
             "name": "Bubble 17",
-            "template": "bubble_red",
+            "template": "bubble_green",
             "transform": {
               "x": -3.6500000000000004,
               "y": 5.2876,
@@ -4635,7 +5163,7 @@
           {
             "id": "bubble-17",
             "name": "Bubble 18",
-            "template": "bubble_blue",
+            "template": "bubble_purple",
             "transform": {
               "x": -2.95,
               "y": 5.2876,
@@ -4647,7 +5175,7 @@
           {
             "id": "bubble-18",
             "name": "Bubble 19",
-            "template": "bubble_blue",
+            "template": "bubble_green",
             "transform": {
               "x": -2.2500000000000004,
               "y": 5.2876,
@@ -4659,7 +5187,7 @@
           {
             "id": "bubble-19",
             "name": "Bubble 20",
-            "template": "bubble_green",
+            "template": "bubble_purple",
             "transform": {
               "x": -1.5500000000000007,
               "y": 5.2876,
@@ -4671,7 +5199,7 @@
           {
             "id": "bubble-20",
             "name": "Bubble 21",
-            "template": "bubble_green",
+            "template": "bubble_red",
             "transform": {
               "x": -0.8499999999999996,
               "y": 5.2876,
@@ -4683,7 +5211,7 @@
           {
             "id": "bubble-21",
             "name": "Bubble 22",
-            "template": "bubble_blue",
+            "template": "bubble_red",
             "transform": {
               "x": -0.15000000000000036,
               "y": 5.2876,
@@ -4695,7 +5223,7 @@
           {
             "id": "bubble-22",
             "name": "Bubble 23",
-            "template": "bubble_blue",
+            "template": "bubble_red",
             "transform": {
               "x": 0.5499999999999989,
               "y": 5.2876,
@@ -4707,7 +5235,7 @@
           {
             "id": "bubble-23",
             "name": "Bubble 24",
-            "template": "bubble_purple",
+            "template": "bubble_green",
             "transform": {
               "x": -3.65,
               "y": 4.6814,
@@ -4719,7 +5247,7 @@
           {
             "id": "bubble-24",
             "name": "Bubble 25",
-            "template": "bubble_red",
+            "template": "bubble_blue",
             "transform": {
               "x": -2.95,
               "y": 4.6814,
@@ -4731,7 +5259,7 @@
           {
             "id": "bubble-25",
             "name": "Bubble 26",
-            "template": "bubble_yellow",
+            "template": "bubble_red",
             "transform": {
               "x": -2.25,
               "y": 4.6814,
@@ -4743,7 +5271,7 @@
           {
             "id": "bubble-26",
             "name": "Bubble 27",
-            "template": "bubble_green",
+            "template": "bubble_yellow",
             "transform": {
               "x": -1.5500000000000007,
               "y": 4.6814,
@@ -4755,7 +5283,7 @@
           {
             "id": "bubble-27",
             "name": "Bubble 28",
-            "template": "bubble_green",
+            "template": "bubble_purple",
             "transform": {
               "x": -0.8499999999999996,
               "y": 4.6814,
@@ -4767,7 +5295,7 @@
           {
             "id": "bubble-28",
             "name": "Bubble 29",
-            "template": "bubble_yellow",
+            "template": "bubble_red",
             "transform": {
               "x": -0.15000000000000036,
               "y": 4.6814,
@@ -4779,7 +5307,7 @@
           {
             "id": "bubble-29",
             "name": "Bubble 30",
-            "template": "bubble_yellow",
+            "template": "bubble_blue",
             "transform": {
               "x": 0.5499999999999989,
               "y": 4.6814,
@@ -4791,7 +5319,7 @@
           {
             "id": "bubble-30",
             "name": "Bubble 31",
-            "template": "bubble_blue",
+            "template": "bubble_yellow",
             "transform": {
               "x": -4.35,
               "y": 4.075200000000001,
@@ -4803,7 +5331,7 @@
           {
             "id": "bubble-31",
             "name": "Bubble 32",
-            "template": "bubble_purple",
+            "template": "bubble_blue",
             "transform": {
               "x": -3.6500000000000004,
               "y": 4.075200000000001,
@@ -4815,7 +5343,7 @@
           {
             "id": "bubble-32",
             "name": "Bubble 33",
-            "template": "bubble_red",
+            "template": "bubble_green",
             "transform": {
               "x": -2.95,
               "y": 4.075200000000001,
@@ -4827,7 +5355,7 @@
           {
             "id": "bubble-33",
             "name": "Bubble 34",
-            "template": "bubble_purple",
+            "template": "bubble_blue",
             "transform": {
               "x": -2.2500000000000004,
               "y": 4.075200000000001,
@@ -4851,7 +5379,7 @@
           {
             "id": "bubble-35",
             "name": "Bubble 36",
-            "template": "bubble_blue",
+            "template": "bubble_purple",
             "transform": {
               "x": -0.8499999999999996,
               "y": 4.075200000000001,
@@ -4863,7 +5391,7 @@
           {
             "id": "bubble-36",
             "name": "Bubble 37",
-            "template": "bubble_red",
+            "template": "bubble_yellow",
             "transform": {
               "x": -0.15000000000000036,
               "y": 4.075200000000001,
@@ -4887,7 +5415,7 @@
           {
             "id": "bubble-38",
             "name": "Bubble 39",
-            "template": "bubble_yellow",
+            "template": "bubble_blue",
             "transform": {
               "x": -3.65,
               "y": 3.4690000000000003,
@@ -4899,7 +5427,7 @@
           {
             "id": "bubble-39",
             "name": "Bubble 40",
-            "template": "bubble_green",
+            "template": "bubble_blue",
             "transform": {
               "x": -2.95,
               "y": 3.4690000000000003,
@@ -4911,7 +5439,7 @@
           {
             "id": "bubble-40",
             "name": "Bubble 41",
-            "template": "bubble_red",
+            "template": "bubble_yellow",
             "transform": {
               "x": -2.25,
               "y": 3.4690000000000003,
@@ -4923,7 +5451,7 @@
           {
             "id": "bubble-41",
             "name": "Bubble 42",
-            "template": "bubble_blue",
+            "template": "bubble_yellow",
             "transform": {
               "x": -1.5500000000000007,
               "y": 3.4690000000000003,
@@ -4935,7 +5463,7 @@
           {
             "id": "bubble-42",
             "name": "Bubble 43",
-            "template": "bubble_green",
+            "template": "bubble_yellow",
             "transform": {
               "x": -0.8499999999999996,
               "y": 3.4690000000000003,
@@ -4947,7 +5475,7 @@
           {
             "id": "bubble-43",
             "name": "Bubble 44",
-            "template": "bubble_purple",
+            "template": "bubble_red",
             "transform": {
               "x": -0.15000000000000036,
               "y": 3.4690000000000003,
@@ -4959,7 +5487,7 @@
           {
             "id": "bubble-44",
             "name": "Bubble 45",
-            "template": "bubble_yellow",
+            "template": "bubble_red",
             "transform": {
               "x": 0.5499999999999989,
               "y": 3.4690000000000003,
@@ -5106,7 +5634,7 @@
         "templates": {
           "catcher": {
             "id": "catcher",
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 2,
               "height": 0.5,
@@ -5114,10 +5642,12 @@
             },
             "physics": {
               "bodyType": "kinematic",
+              "density": 1
+            },
+            "collider": {
               "shape": "box",
               "width": 2,
               "height": 0.5,
-              "density": 1,
               "friction": 0.5,
               "restitution": 0.3
             },
@@ -5134,16 +5664,18 @@
           },
           "good_item": {
             "id": "good_item",
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.4,
               "color": "#2ECC71"
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 0.5
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.4,
-              "density": 0.5,
               "friction": 0.3,
               "restitution": 0.5
             },
@@ -5173,7 +5705,7 @@
           },
           "bad_item": {
             "id": "bad_item",
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.6,
               "height": 0.6,
@@ -5181,10 +5713,12 @@
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 0.5
+            },
+            "collider": {
               "shape": "box",
               "width": 0.6,
               "height": 0.6,
-              "density": 0.5,
               "friction": 0.3,
               "restitution": 0.3
             },
@@ -5204,7 +5738,7 @@
           },
           "ground": {
             "id": "ground",
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 12,
               "height": 1,
@@ -5212,10 +5746,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 1
+            },
+            "collider": {
               "shape": "box",
               "width": 12,
               "height": 1,
-              "density": 1,
               "friction": 0.8,
               "restitution": 0
             },
@@ -5225,7 +5761,7 @@
           },
           "spawner": {
             "id": "spawner",
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 10,
               "height": 0.2,
@@ -5409,7 +5945,7 @@
         "templates": {
           "player": {
             "id": "player",
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.8,
               "height": 0.8,
@@ -5417,13 +5953,15 @@
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1,
+              "fixedRotation": true
+            },
+            "collider": {
               "shape": "box",
               "width": 0.8,
               "height": 0.8,
-              "density": 1,
               "friction": 0.3,
-              "restitution": 0,
-              "fixedRotation": true
+              "restitution": 0
             },
             "tags": [
               "player"
@@ -5431,7 +5969,7 @@
           },
           "platform": {
             "id": "platform",
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 2,
               "height": 0.4,
@@ -5439,10 +5977,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 1
+            },
+            "collider": {
               "shape": "box",
               "width": 2,
               "height": 0.4,
-              "density": 1,
               "friction": 0.8,
               "restitution": 0
             },
@@ -5453,7 +5993,7 @@
           },
           "collectible": {
             "id": "collectible",
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.3,
               "color": "#FFD700"
@@ -5495,16 +6035,18 @@
           },
           "enemy": {
             "id": "enemy",
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.4,
               "color": "#FF0000"
             },
             "physics": {
               "bodyType": "kinematic",
+              "density": 1
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.4,
-              "density": 1,
               "friction": 0,
               "restitution": 0
             },
@@ -5605,7 +6147,7 @@
               "scaleX": 1.5,
               "scaleY": 1
             },
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 3,
               "height": 0.4,
@@ -5827,7 +6369,7 @@
             "tags": [
               "board"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 8.200000000000001,
               "height": 7.1000000000000005,
@@ -5847,7 +6389,7 @@
             "tags": [
               "slot"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.5,
               "color": "#0D47A1"
@@ -5865,7 +6407,7 @@
             "tags": [
               "selector"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1,
               "height": 1,
@@ -5886,7 +6428,7 @@
               "disc",
               "red"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.45,
               "color": "#E53935"
@@ -5905,7 +6447,7 @@
               "disc",
               "yellow"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.45,
               "color": "#FDD835"
@@ -7273,7 +7815,7 @@
               "floor",
               "static"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 14,
               "height": 1,
@@ -7281,10 +7823,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 14,
               "height": 1,
-              "density": 0,
               "friction": 0.8,
               "restitution": 0.1
             }
@@ -7294,7 +7838,7 @@
             "tags": [
               "domino"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.15,
               "height": 0.8,
@@ -7302,13 +7846,15 @@
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1,
+              "linearDamping": 0.5
+            },
+            "collider": {
               "shape": "box",
               "width": 0.15,
               "height": 0.8,
-              "density": 1,
               "friction": 0.5,
-              "restitution": 0.1,
-              "linearDamping": 0.5
+              "restitution": 0.1
             }
           },
           "pusher": {
@@ -7316,7 +7862,7 @@
             "tags": [
               "pusher"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.3,
               "height": 0.5,
@@ -7338,7 +7884,7 @@
               "start-button",
               "ui-element"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 2,
               "height": 0.8,
@@ -7359,7 +7905,7 @@
             "tags": [
               "placement-zone"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 12,
               "height": 2,
@@ -7839,7 +8385,7 @@
             "tags": [
               "wall"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.3,
               "height": 10,
@@ -7847,10 +8393,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 0.3,
               "height": 10,
-              "density": 0,
               "friction": 0.3,
               "restitution": 0.2
             }
@@ -7860,7 +8408,7 @@
             "tags": [
               "wall"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 7.6,
               "height": 0.3,
@@ -7868,10 +8416,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 7.6,
               "height": 0.3,
-              "density": 0,
               "friction": 0.5,
               "restitution": 0.1
             }
@@ -7881,7 +8431,7 @@
             "tags": [
               "danger"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 7,
               "height": 0.05,
@@ -7901,7 +8451,7 @@
             "tags": [
               "aim"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.1,
               "height": 10.5,
@@ -7923,16 +8473,18 @@
               "fruit",
               "fruit0"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.3,
               "color": "#E53935"
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.3,
-              "density": 1,
               "friction": 0.3,
               "restitution": 0.2
             },
@@ -7952,16 +8504,18 @@
               "fruit",
               "fruit1"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.4,
               "color": "#7B1FA2"
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.4,
-              "density": 1,
               "friction": 0.3,
               "restitution": 0.2
             },
@@ -7981,16 +8535,18 @@
               "fruit",
               "fruit2"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.5,
               "color": "#FF9800"
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.5,
-              "density": 1,
               "friction": 0.3,
               "restitution": 0.2
             },
@@ -8010,16 +8566,18 @@
               "fruit",
               "fruit3"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.6,
               "color": "#4CAF50"
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.6,
-              "density": 1,
               "friction": 0.3,
               "restitution": 0.2
             },
@@ -8039,16 +8597,18 @@
               "fruit",
               "fruit4"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.7,
               "color": "#8BC34A"
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.7,
-              "density": 1,
               "friction": 0.3,
               "restitution": 0.2
             },
@@ -8068,16 +8628,18 @@
               "fruit",
               "fruit5"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.85,
               "color": "#FFAB91"
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.85,
-              "density": 1,
               "friction": 0.3,
               "restitution": 0.2
             },
@@ -8576,7 +9138,7 @@
             "tags": [
               "floor"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1,
               "height": 1,
@@ -8584,10 +9146,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 1,
               "height": 1,
-              "density": 0,
               "friction": 0,
               "restitution": 0
             }
@@ -8597,7 +9161,7 @@
             "tags": [
               "player"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.8,
               "height": 0.8,
@@ -8605,13 +9169,15 @@
             },
             "physics": {
               "bodyType": "kinematic",
+              "density": 0,
+              "fixedRotation": true
+            },
+            "collider": {
               "shape": "box",
               "width": 0.8,
               "height": 0.8,
-              "density": 0,
               "friction": 0,
-              "restitution": 0,
-              "fixedRotation": true
+              "restitution": 0
             },
             "behaviors": []
           },
@@ -8620,7 +9186,7 @@
             "tags": [
               "key"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.6,
               "height": 0.6,
@@ -8641,7 +9207,7 @@
             "tags": [
               "enemy"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.7,
               "height": 0.7,
@@ -8662,7 +9228,7 @@
             "tags": [
               "door"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.9,
               "height": 0.9,
@@ -9734,7 +10300,7 @@
               "pipe",
               "pipe-top"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/pipeTop.png",
               "imageWidth": 1.2,
@@ -9742,10 +10308,12 @@
             },
             "physics": {
               "bodyType": "kinematic",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 1.2,
               "height": 6,
-              "density": 0,
               "friction": 0,
               "restitution": 0
             },
@@ -9768,7 +10336,7 @@
               "pipe",
               "pipe-bottom"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/pipeBottom.png",
               "imageWidth": 1.2,
@@ -9776,10 +10344,12 @@
             },
             "physics": {
               "bodyType": "kinematic",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 1.2,
               "height": 6,
-              "density": 0,
               "friction": 0,
               "restitution": 0
             },
@@ -9801,7 +10371,7 @@
             "tags": [
               "ground"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/ground.png",
               "imageWidth": 16,
@@ -9809,10 +10379,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 16,
               "height": 1.5,
-              "density": 0,
               "friction": 0.5,
               "restitution": 0
             }
@@ -9822,7 +10394,7 @@
             "tags": [
               "ceiling"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/ceiling.png",
               "imageWidth": 16,
@@ -9830,10 +10402,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 16,
               "height": 0.5,
-              "density": 0,
               "friction": 0,
               "restitution": 0
             }
@@ -9970,7 +10544,7 @@
             "tags": [
               "bird"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/bird.png",
               "imageWidth": 0.6,
@@ -9978,12 +10552,14 @@
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1,
+              "fixedRotation": true
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.3,
-              "density": 1,
               "friction": 0,
-              "restitution": 0,
-              "fixedRotation": true
+              "restitution": 0
             },
             "behaviors": [
               {
@@ -10003,7 +10579,7 @@
               "pipe",
               "pipe-top"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/pipeTop.png",
               "imageWidth": 1.2,
@@ -10011,10 +10587,12 @@
             },
             "physics": {
               "bodyType": "kinematic",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 1.2,
               "height": 6,
-              "density": 0,
               "friction": 0,
               "restitution": 0
             },
@@ -10037,7 +10615,7 @@
               "pipe",
               "pipe-bottom"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/pipeBottom.png",
               "imageWidth": 1.2,
@@ -10045,10 +10623,12 @@
             },
             "physics": {
               "bodyType": "kinematic",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 1.2,
               "height": 6,
-              "density": 0,
               "friction": 0,
               "restitution": 0
             },
@@ -10070,7 +10650,7 @@
             "tags": [
               "score-zone"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.3,
               "height": 3,
@@ -10111,7 +10691,7 @@
             "tags": [
               "ground"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/ground.png",
               "imageWidth": 16,
@@ -10119,10 +10699,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 16,
               "height": 1.5,
-              "density": 0,
               "friction": 0.5,
               "restitution": 0
             }
@@ -10132,7 +10714,7 @@
             "tags": [
               "ceiling"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/ceiling.png",
               "imageWidth": 16,
@@ -10140,10 +10722,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 16,
               "height": 0.5,
-              "density": 0,
               "friction": 0,
               "restitution": 0
             }
@@ -10485,7 +11069,7 @@
             "tags": [
               "cell"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 1.8,
@@ -10507,7 +11091,7 @@
               "tile2",
               "value-2"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 1.8,
@@ -10530,7 +11114,7 @@
               "tile4",
               "value-4"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 1.8,
@@ -10553,7 +11137,7 @@
               "tile8",
               "value-8"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 1.8,
@@ -10576,7 +11160,7 @@
               "tile16",
               "value-16"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 1.8,
@@ -10599,7 +11183,7 @@
               "tile32",
               "value-32"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 1.8,
@@ -10622,7 +11206,7 @@
               "tile64",
               "value-64"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 1.8,
@@ -10645,7 +11229,7 @@
               "tile128",
               "value-128"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 1.8,
@@ -10668,7 +11252,7 @@
               "tile256",
               "value-256"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 1.8,
@@ -10691,7 +11275,7 @@
               "tile512",
               "value-512"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 1.8,
@@ -10714,7 +11298,7 @@
               "tile1024",
               "value-1024"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 1.8,
@@ -10737,7 +11321,7 @@
               "tile2048",
               "value-2048"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 1.8,
@@ -10758,7 +11342,7 @@
             "tags": [
               "background"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 8.25,
               "height": 8.25,
@@ -11405,7 +11989,7 @@
               "gem",
               "gem_red"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.51,
               "color": "#FF4444"
@@ -11475,7 +12059,7 @@
               "gem",
               "gem_blue"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.51,
               "color": "#4444FF"
@@ -11545,7 +12129,7 @@
               "gem",
               "gem_green"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.51,
               "color": "#44FF44"
@@ -11615,7 +12199,7 @@
               "gem",
               "gem_yellow"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.51,
               "color": "#FFFF44"
@@ -11685,7 +12269,7 @@
               "gem",
               "gem_purple"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.51,
               "color": "#AA44FF"
@@ -11754,7 +12338,7 @@
             "tags": [
               "highlight"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.38,
               "height": 1.38,
@@ -11776,7 +12360,7 @@
               "highlight",
               "hover"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.32,
               "height": 1.32,
@@ -11797,7 +12381,7 @@
             "tags": [
               "grid"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.14,
               "height": 1.14,
@@ -12548,7 +13132,7 @@
               "wall",
               "solid"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.2,
               "height": 1.2,
@@ -12556,10 +13140,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 1.2,
               "height": 1.2,
-              "density": 0,
               "friction": 0,
               "restitution": 0
             }
@@ -12569,7 +13155,7 @@
             "tags": [
               "floor"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.2,
               "height": 1.2,
@@ -12589,7 +13175,7 @@
             "tags": [
               "goal"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.96,
               "height": 0.96,
@@ -12610,7 +13196,7 @@
               "iceBlock",
               "movable"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.08,
               "height": 1.08,
@@ -12618,10 +13204,12 @@
             },
             "physics": {
               "bodyType": "kinematic",
+              "density": 1
+            },
+            "collider": {
               "shape": "box",
               "width": 1.08,
               "height": 1.08,
-              "density": 1,
               "friction": 0,
               "restitution": 0
             }
@@ -13855,7 +14443,7 @@
               "card",
               "face-down"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 2.4,
@@ -13876,7 +14464,7 @@
               "card",
               "face-up"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 2.4,
@@ -13897,7 +14485,7 @@
               "card",
               "face-up"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 2.4,
@@ -13918,7 +14506,7 @@
               "card",
               "face-up"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 2.4,
@@ -13939,7 +14527,7 @@
               "card",
               "face-up"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 2.4,
@@ -13960,7 +14548,7 @@
               "card",
               "face-up"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 2.4,
@@ -13981,7 +14569,7 @@
               "card",
               "face-up"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 2.4,
@@ -14002,7 +14590,7 @@
               "card",
               "face-up"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 2.4,
@@ -14023,7 +14611,7 @@
               "card",
               "face-up"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.8,
               "height": 2.4,
@@ -14047,7 +14635,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-4"
+              "pair-6"
             ],
             "transform": {
               "x": -4.2,
@@ -14057,7 +14645,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 4,
+              "pairId": 6,
               "cardIndex": 0
             }
           },
@@ -14068,7 +14656,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-6"
+              "pair-7"
             ],
             "transform": {
               "x": -1.7999999999999998,
@@ -14078,7 +14666,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 6,
+              "pairId": 7,
               "cardIndex": 1
             }
           },
@@ -14089,7 +14677,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-5"
+              "pair-7"
             ],
             "transform": {
               "x": 0.5999999999999996,
@@ -14099,7 +14687,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 5,
+              "pairId": 7,
               "cardIndex": 2
             }
           },
@@ -14110,7 +14698,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-3"
+              "pair-2"
             ],
             "transform": {
               "x": 3,
@@ -14120,7 +14708,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 3,
+              "pairId": 2,
               "cardIndex": 3
             }
           },
@@ -14131,7 +14719,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-0"
+              "pair-1"
             ],
             "transform": {
               "x": -4.2,
@@ -14141,7 +14729,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 0,
+              "pairId": 1,
               "cardIndex": 4
             }
           },
@@ -14152,7 +14740,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-3"
+              "pair-0"
             ],
             "transform": {
               "x": -1.7999999999999998,
@@ -14162,7 +14750,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 3,
+              "pairId": 0,
               "cardIndex": 5
             }
           },
@@ -14173,7 +14761,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-7"
+              "pair-4"
             ],
             "transform": {
               "x": 0.5999999999999996,
@@ -14183,7 +14771,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 7,
+              "pairId": 4,
               "cardIndex": 6
             }
           },
@@ -14194,7 +14782,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-1"
+              "pair-3"
             ],
             "transform": {
               "x": 3,
@@ -14204,7 +14792,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 1,
+              "pairId": 3,
               "cardIndex": 7
             }
           },
@@ -14215,7 +14803,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-2"
+              "pair-5"
             ],
             "transform": {
               "x": -4.2,
@@ -14225,7 +14813,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 2,
+              "pairId": 5,
               "cardIndex": 8
             }
           },
@@ -14236,7 +14824,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-2"
+              "pair-1"
             ],
             "transform": {
               "x": -1.7999999999999998,
@@ -14246,7 +14834,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 2,
+              "pairId": 1,
               "cardIndex": 9
             }
           },
@@ -14257,7 +14845,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-4"
+              "pair-5"
             ],
             "transform": {
               "x": 0.5999999999999996,
@@ -14267,7 +14855,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 4,
+              "pairId": 5,
               "cardIndex": 10
             }
           },
@@ -14278,7 +14866,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-1"
+              "pair-0"
             ],
             "transform": {
               "x": 3,
@@ -14288,7 +14876,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 1,
+              "pairId": 0,
               "cardIndex": 11
             }
           },
@@ -14299,7 +14887,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-0"
+              "pair-4"
             ],
             "transform": {
               "x": -4.2,
@@ -14309,7 +14897,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 0,
+              "pairId": 4,
               "cardIndex": 12
             }
           },
@@ -14320,7 +14908,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-5"
+              "pair-2"
             ],
             "transform": {
               "x": -1.7999999999999998,
@@ -14330,7 +14918,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 5,
+              "pairId": 2,
               "cardIndex": 13
             }
           },
@@ -14362,7 +14950,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-7"
+              "pair-3"
             ],
             "transform": {
               "x": 3,
@@ -14372,7 +14960,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 7,
+              "pairId": 3,
               "cardIndex": 15
             }
           }
@@ -14573,7 +15161,7 @@
             "tags": [
               "ground"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "/assets/games/physics-stacker/foundation.png",
               "imageWidth": 4,
@@ -14581,10 +15169,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 4,
               "height": 0.6,
-              "density": 0,
               "friction": 0.9,
               "restitution": 0
             }
@@ -14594,7 +15184,7 @@
             "tags": [
               "dropper"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "/assets/games/physics-stacker/dropper.png",
               "imageWidth": 2,
@@ -14636,7 +15226,7 @@
             "tags": [
               "block"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "/assets/games/physics-stacker/blockWide.png",
               "imageWidth": 1.8,
@@ -14644,10 +15234,12 @@
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1
+            },
+            "collider": {
               "shape": "box",
               "width": 1.8,
               "height": 0.6,
-              "density": 1,
               "friction": 0.8,
               "restitution": 0.1
             },
@@ -14670,7 +15262,7 @@
             "tags": [
               "block"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "/assets/games/physics-stacker/blockMedium.png",
               "imageWidth": 1.4,
@@ -14678,10 +15270,12 @@
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1
+            },
+            "collider": {
               "shape": "box",
               "width": 1.4,
               "height": 0.6,
-              "density": 1,
               "friction": 0.8,
               "restitution": 0.1
             },
@@ -14704,7 +15298,7 @@
             "tags": [
               "block"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "/assets/games/physics-stacker/blockSmall.png",
               "imageWidth": 1,
@@ -14712,10 +15306,12 @@
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1
+            },
+            "collider": {
               "shape": "box",
               "width": 1,
               "height": 0.6,
-              "density": 1,
               "friction": 0.8,
               "restitution": 0.1
             },
@@ -14738,7 +15334,7 @@
             "tags": [
               "block"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "/assets/games/physics-stacker/blockTall.png",
               "imageWidth": 0.6,
@@ -14746,10 +15342,12 @@
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1
+            },
+            "collider": {
               "shape": "box",
               "width": 0.6,
               "height": 1.2,
-              "density": 1,
               "friction": 0.8,
               "restitution": 0.1
             },
@@ -14772,7 +15370,7 @@
             "tags": [
               "death-zone"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 20,
               "height": 2,
@@ -14944,7 +15542,7 @@
             "tags": [
               "ball"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/pinball-lite/pinball.png",
               "imageWidth": 0.6,
@@ -14952,15 +15550,13 @@
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 2
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.3,
-              "density": 2,
               "friction": 0.1,
-              "restitution": 0.6,
-              "initialVelocity": {
-                "x": 1,
-                "y": -3
-              }
+              "restitution": 0.6
             }
           },
           "bumper": {
@@ -14968,7 +15564,7 @@
             "tags": [
               "bumper"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/pinball-lite/bumper.png",
               "imageWidth": 1.2,
@@ -14976,9 +15572,11 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.6,
-              "density": 0,
               "friction": 0,
               "restitution": 1.5
             },
@@ -14997,7 +15595,7 @@
             "tags": [
               "bumper"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/pinball-lite/smallBumper.png",
               "imageWidth": 0.8,
@@ -15005,9 +15603,11 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.4,
-              "density": 0,
               "friction": 0,
               "restitution": 1.3
             },
@@ -15026,7 +15626,7 @@
             "tags": [
               "target"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/pinball-lite/target.png",
               "imageWidth": 0.8,
@@ -15034,10 +15634,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 0.8,
               "height": 0.3,
-              "density": 0,
               "friction": 0,
               "restitution": 1
             },
@@ -15056,7 +15658,7 @@
             "tags": [
               "wall"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.3,
               "height": 16,
@@ -15064,10 +15666,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 0.3,
               "height": 16,
-              "density": 0,
               "friction": 0.1,
               "restitution": 0.5
             }
@@ -15077,7 +15681,7 @@
             "tags": [
               "flipper"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/pinball-lite/flipper.png",
               "imageWidth": 1.5,
@@ -15085,13 +15689,15 @@
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 5,
+              "fixedRotation": false
+            },
+            "collider": {
               "shape": "box",
               "width": 1.5,
               "height": 0.3,
-              "density": 5,
               "friction": 0.5,
-              "restitution": 0.3,
-              "fixedRotation": false
+              "restitution": 0.3
             },
             "behaviors": []
           },
@@ -15100,7 +15706,7 @@
             "tags": [
               "drain"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 10,
               "height": 0.5,
@@ -15154,7 +15760,7 @@
               "scaleX": 1,
               "scaleY": 1
             },
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 10,
               "height": 0.3,
@@ -15162,10 +15768,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 10,
               "height": 0.3,
-              "density": 0,
               "friction": 0.1,
               "restitution": 0.5
             }
@@ -15303,7 +15911,7 @@
               "scaleX": 1,
               "scaleY": 1
             },
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 2,
               "height": 0.2,
@@ -15311,10 +15919,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 2,
               "height": 0.2,
-              "density": 0,
               "friction": 0,
               "restitution": 1.2
             }
@@ -15332,7 +15942,7 @@
               "scaleX": 1,
               "scaleY": 1
             },
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 2,
               "height": 0.2,
@@ -15340,10 +15950,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 2,
               "height": 0.2,
-              "density": 0,
               "friction": 0,
               "restitution": 1.2
             }
@@ -15571,7 +16183,7 @@
             "tags": [
               "cell"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/puyoPuyo/emptyCell.png",
               "imageWidth": 0.8,
@@ -15593,7 +16205,7 @@
               "puyo_red",
               "colored"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/puyoPuyo/puyo_red.png",
               "imageWidth": 0.76,
@@ -15601,13 +16213,15 @@
             },
             "physics": {
               "bodyType": "dynamic",
-              "shape": "circle",
-              "radius": 0.38,
               "density": 1,
-              "friction": 0.3,
-              "restitution": 0,
               "fixedRotation": true,
               "linearDamping": 5
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.38,
+              "friction": 0.3,
+              "restitution": 0
             }
           },
           "puyo_blue": {
@@ -15617,7 +16231,7 @@
               "puyo_blue",
               "colored"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/puyoPuyo/puyo_blue.png",
               "imageWidth": 0.76,
@@ -15625,13 +16239,15 @@
             },
             "physics": {
               "bodyType": "dynamic",
-              "shape": "circle",
-              "radius": 0.38,
               "density": 1,
-              "friction": 0.3,
-              "restitution": 0,
               "fixedRotation": true,
               "linearDamping": 5
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.38,
+              "friction": 0.3,
+              "restitution": 0
             }
           },
           "puyo_green": {
@@ -15641,7 +16257,7 @@
               "puyo_green",
               "colored"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/puyoPuyo/puyo_green.png",
               "imageWidth": 0.76,
@@ -15649,13 +16265,15 @@
             },
             "physics": {
               "bodyType": "dynamic",
-              "shape": "circle",
-              "radius": 0.38,
               "density": 1,
-              "friction": 0.3,
-              "restitution": 0,
               "fixedRotation": true,
               "linearDamping": 5
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.38,
+              "friction": 0.3,
+              "restitution": 0
             }
           },
           "puyo_yellow": {
@@ -15665,7 +16283,7 @@
               "puyo_yellow",
               "colored"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/puyoPuyo/puyo_yellow.png",
               "imageWidth": 0.76,
@@ -15673,13 +16291,15 @@
             },
             "physics": {
               "bodyType": "dynamic",
-              "shape": "circle",
-              "radius": 0.38,
               "density": 1,
-              "friction": 0.3,
-              "restitution": 0,
               "fixedRotation": true,
               "linearDamping": 5
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.38,
+              "friction": 0.3,
+              "restitution": 0
             }
           },
           "puyo_garbage": {
@@ -15689,7 +16309,7 @@
               "puyo_garbage",
               "garbage"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/puyoPuyo/puyo_garbage.png",
               "imageWidth": 0.76,
@@ -15697,13 +16317,15 @@
             },
             "physics": {
               "bodyType": "dynamic",
-              "shape": "circle",
-              "radius": 0.38,
               "density": 1,
-              "friction": 0.3,
-              "restitution": 0,
               "fixedRotation": true,
               "linearDamping": 5
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.38,
+              "friction": 0.3,
+              "restitution": 0
             }
           },
           "puyoPair": {
@@ -15712,7 +16334,7 @@
               "pair",
               "active"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.1,
               "height": 0.1,
@@ -15734,7 +16356,7 @@
               "wall",
               "boundary"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/puyoPuyo/wall.png",
               "imageWidth": 0.3,
@@ -15742,10 +16364,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 0.3,
               "height": 12.55,
-              "density": 0,
               "friction": 0.5,
               "restitution": 0
             }
@@ -15757,7 +16381,7 @@
               "boundary",
               "floor"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/puyoPuyo/wallBottom.png",
               "imageWidth": 6.050000000000001,
@@ -15765,10 +16389,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 6.050000000000001,
               "height": 0.3,
-              "density": 0,
               "friction": 0.5,
               "restitution": 0
             }
@@ -15779,7 +16405,7 @@
               "spawn-zone",
               "danger"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.6,
               "height": 0.8,
@@ -15799,7 +16425,7 @@
             "tags": [
               "background"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/puyoPuyo/gridBackground.png",
               "imageWidth": 5.450000000000001,
@@ -17287,7 +17913,7 @@
             "tags": [
               "sprite-only"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1,
               "height": 1,
@@ -17299,7 +17925,7 @@
             "tags": [
               "physics-box"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1,
               "height": 1,
@@ -17307,6 +17933,9 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 1,
               "height": 1
@@ -17317,7 +17946,7 @@
             "tags": [
               "zone-box"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1,
               "height": 1,
@@ -17337,7 +17966,7 @@
             "tags": [
               "sprite-only-circle"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.5,
               "color": "#FFFF00"
@@ -17348,13 +17977,16 @@
             "tags": [
               "physics-circle"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.5,
               "color": "#FF00FF"
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 0
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.5
             }
@@ -17468,7 +18100,7 @@
             "tags": [
               "player"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.6,
               "height": 1,
@@ -17476,14 +18108,16 @@
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1,
+              "linearDamping": 2,
+              "fixedRotation": true
+            },
+            "collider": {
               "shape": "box",
               "width": 0.6,
               "height": 1,
-              "density": 1,
               "friction": 0.3,
-              "restitution": 0.2,
-              "linearDamping": 2,
-              "fixedRotation": true
+              "restitution": 0.2
             },
             "behaviors": []
           },
@@ -17492,19 +18126,21 @@
             "tags": [
               "xp_gem"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.25,
               "color": "#FFD700"
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 0.5,
+              "linearDamping": 1
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.25,
-              "density": 0.5,
               "friction": 0.2,
-              "restitution": 0.6,
-              "linearDamping": 1
+              "restitution": 0.6
             },
             "behaviors": [
               {
@@ -17521,19 +18157,21 @@
             "tags": [
               "gold_coin"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.2,
               "color": "#FFA500"
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 0.4,
+              "linearDamping": 1
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.2,
-              "density": 0.4,
               "friction": 0.2,
-              "restitution": 0.5,
-              "linearDamping": 1
+              "restitution": 0.5
             },
             "behaviors": [
               {
@@ -17550,7 +18188,7 @@
             "tags": [
               "ground"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 12,
               "height": 0.5,
@@ -17558,10 +18196,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 12,
               "height": 0.5,
-              "density": 0,
               "friction": 0.5,
               "restitution": 0.1
             }
@@ -17571,7 +18211,7 @@
             "tags": [
               "platform"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 2,
               "height": 0.4,
@@ -17579,10 +18219,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 2,
               "height": 0.4,
-              "density": 0,
               "friction": 0.5,
               "restitution": 0.1
             }
@@ -17972,7 +18614,7 @@
             "tags": [
               "player"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/simple-platformer/player.png",
               "imageWidth": 0.7,
@@ -17980,13 +18622,15 @@
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1,
+              "fixedRotation": true
+            },
+            "collider": {
               "shape": "box",
               "width": 0.7,
               "height": 1,
-              "density": 1,
               "friction": 0.3,
-              "restitution": 0,
-              "fixedRotation": true
+              "restitution": 0
             },
             "behaviors": [
               {
@@ -18005,7 +18649,7 @@
               "platform",
               "ground"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/simple-platformer/platform.png",
               "imageWidth": 3,
@@ -18013,10 +18657,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 3,
               "height": 0.5,
-              "density": 0,
               "friction": 0.9,
               "restitution": 0
             }
@@ -18026,7 +18672,7 @@
             "tags": [
               "platform"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/simple-platformer/smallPlatform.png",
               "imageWidth": 2,
@@ -18034,10 +18680,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 2,
               "height": 0.4,
-              "density": 0,
               "friction": 0.9,
               "restitution": 0
             }
@@ -18048,7 +18696,7 @@
               "collectible",
               "coin"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/simple-platformer/coin.png",
               "imageWidth": 0.6,
@@ -18085,7 +18733,7 @@
             "tags": [
               "enemy"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/simple-platformer/enemy.png",
               "imageWidth": 0.8,
@@ -18093,9 +18741,11 @@
             },
             "physics": {
               "bodyType": "kinematic",
+              "density": 0
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.4,
-              "density": 0,
               "friction": 0,
               "restitution": 0
             },
@@ -18113,7 +18763,7 @@
             "tags": [
               "goal"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/simple-platformer/goal.png",
               "imageWidth": 0.5,
@@ -18133,7 +18783,7 @@
             "tags": [
               "hazard"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 30,
               "height": 1,
@@ -18445,23 +19095,35 @@
             ]
           },
           {
-            "id": "jump",
-            "name": "Jump (A Button)",
-            "trigger": {
-              "type": "button",
-              "button": "jump",
-              "state": "pressed"
+            "id": "wall-top",
+            "name": "Top Wall",
+            "tags": [
+              "wall"
+            ],
+            "transform": {
+              "x": 0,
+              "y": 7.4,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
             },
-            "actions": [
-              {
-                "type": "apply_impulse",
-                "target": {
-                  "type": "by_tag",
-                  "tag": "player"
-                },
-                "y": 8
-              }
-            ]
+            "visual": {
+              "type": "rect",
+              "width": 25,
+              "height": 0.2,
+              "color": "#1e3a5f"
+            },
+            "physics": {
+              "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
+              "shape": "box",
+              "width": 25,
+              "height": 0.2,
+              "friction": 0.1,
+              "restitution": 0.6
+            }
           },
           {
             "id": "dash-right",
@@ -18600,7 +19262,7 @@
             "tags": [
               "ball"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle/ball.png",
               "imageWidth": 0.3,
@@ -18608,12 +19270,14 @@
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1,
+              "ccd": true
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.15,
-              "density": 1,
               "friction": 0.05,
-              "restitution": 0.75,
-              "bullet": true
+              "restitution": 0.75
             }
           },
           "cannon": {
@@ -18621,7 +19285,7 @@
             "tags": [
               "cannon"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle/cannon.png",
               "imageWidth": 0.6,
@@ -18650,7 +19314,7 @@
             "tags": [
               "cannon-base"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle/cannonBase.png",
               "imageWidth": 0.6,
@@ -18670,7 +19334,7 @@
               "peg",
               "blue-peg"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle/bluePeg.png",
               "imageWidth": 0.25,
@@ -18678,9 +19342,11 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.125,
-              "density": 0,
               "friction": 0.05,
               "restitution": 0.85
             },
@@ -18715,7 +19381,7 @@
               "peg",
               "orange-peg"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle/orangePeg.png",
               "imageWidth": 0.25,
@@ -18723,9 +19389,11 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.125,
-              "density": 0,
               "friction": 0.05,
               "restitution": 0.85
             },
@@ -18759,7 +19427,7 @@
             "tags": [
               "wall"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.2,
               "height": 16,
@@ -18767,10 +19435,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 0.2,
               "height": 16,
-              "density": 0,
               "friction": 0.1,
               "restitution": 0.6
             }
@@ -18794,7 +19464,7 @@
             "tags": [
               "bucket"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle/bucket.png",
               "imageWidth": 1.2,
@@ -18823,7 +19493,7 @@
             "tags": [
               "portal"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle/portalA.png",
               "imageWidth": 0.8,
@@ -18853,7 +19523,7 @@
             "tags": [
               "portal"
             ],
-            "sprite": {
+            "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle/portalB.png",
               "imageWidth": 0.8,
@@ -18883,7 +19553,7 @@
             "tags": [
               "trajectory-line"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.05,
               "height": 6,
@@ -20806,7 +21476,7 @@
               "symbol",
               "cherry"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.19,
               "height": 1.19,
@@ -20827,7 +21497,7 @@
               "symbol",
               "lemon"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.19,
               "height": 1.19,
@@ -20848,7 +21518,7 @@
               "symbol",
               "orange"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.19,
               "height": 1.19,
@@ -20869,7 +21539,7 @@
               "symbol",
               "plum"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.19,
               "height": 1.19,
@@ -20890,7 +21560,7 @@
               "symbol",
               "bell"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.19,
               "height": 1.19,
@@ -20911,7 +21581,7 @@
               "symbol",
               "bar"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.19,
               "height": 1.19,
@@ -20932,7 +21602,7 @@
               "symbol",
               "seven"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.19,
               "height": 1.19,
@@ -20954,7 +21624,7 @@
               "wild",
               "wild"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.19,
               "height": 1.19,
@@ -20975,7 +21645,7 @@
               "symbol",
               "scatter"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.595,
               "color": "#2979FF"
@@ -20993,7 +21663,7 @@
             "tags": [
               "grid"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.26,
               "height": 1.26,
@@ -21014,7 +21684,7 @@
               "ui",
               "button"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 2.2,
               "height": 0.9,
@@ -21035,7 +21705,7 @@
               "ui",
               "button"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.2,
               "height": 0.6,
@@ -21360,19 +22030,21 @@
         "templates": {
           "projectile": {
             "id": "projectile",
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.4,
               "color": "#FF6B6B"
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1.5,
+              "ccd": true
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.4,
-              "density": 1.5,
               "friction": 0.3,
-              "restitution": 0.4,
-              "bullet": true
+              "restitution": 0.4
             },
             "tags": [
               "projectile"
@@ -21380,7 +22052,7 @@
           },
           "target": {
             "id": "target",
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.8,
               "height": 0.8,
@@ -21388,10 +22060,12 @@
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 0.8
+            },
+            "collider": {
               "shape": "box",
               "width": 0.8,
               "height": 0.8,
-              "density": 0.8,
               "friction": 0.5,
               "restitution": 0.2
             },
@@ -21420,7 +22094,7 @@
           },
           "block": {
             "id": "block",
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1,
               "height": 0.5,
@@ -21428,10 +22102,12 @@
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 0.6
+            },
+            "collider": {
               "shape": "box",
               "width": 1,
               "height": 0.5,
-              "density": 0.6,
               "friction": 0.6,
               "restitution": 0.1
             },
@@ -21442,7 +22118,7 @@
           },
           "ground": {
             "id": "ground",
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 20,
               "height": 1,
@@ -21450,10 +22126,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 1
+            },
+            "collider": {
               "shape": "box",
               "width": 20,
               "height": 1,
-              "density": 1,
               "friction": 0.8,
               "restitution": 0.1
             },
@@ -21473,7 +22151,7 @@
               "scaleX": 1,
               "scaleY": 1
             },
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.5,
               "color": "#333333"
@@ -21732,7 +22410,7 @@
             "tags": [
               "slot"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.6,
               "height": 1.6,
@@ -21753,7 +22431,7 @@
               "tile",
               "color0"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.4400000000000002,
               "height": 1.4400000000000002,
@@ -21774,7 +22452,7 @@
               "tile",
               "color1"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.4400000000000002,
               "height": 1.4400000000000002,
@@ -21795,7 +22473,7 @@
               "tile",
               "color2"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.4400000000000002,
               "height": 1.4400000000000002,
@@ -21816,7 +22494,7 @@
               "tile",
               "color3"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.4400000000000002,
               "height": 1.4400000000000002,
@@ -21837,7 +22515,7 @@
               "tile",
               "color4"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.4400000000000002,
               "height": 1.4400000000000002,
@@ -21858,7 +22536,7 @@
               "placed",
               "color0"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.36,
               "height": 1.36,
@@ -21879,7 +22557,7 @@
               "placed",
               "color1"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.36,
               "height": 1.36,
@@ -21900,7 +22578,7 @@
               "placed",
               "color2"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.36,
               "height": 1.36,
@@ -21921,7 +22599,7 @@
               "placed",
               "color3"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.36,
               "height": 1.36,
@@ -21942,7 +22620,7 @@
               "placed",
               "color4"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.36,
               "height": 1.36,
@@ -22673,7 +23351,7 @@
             "tags": [
               "pivot"
             ],
-            "sprite": {
+            "visual": {
               "type": "polygon",
               "vertices": [
                 {
@@ -22693,6 +23371,9 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "polygon",
               "vertices": [
                 {
@@ -22708,7 +23389,6 @@
                   "y": 0.3
                 }
               ],
-              "density": 0,
               "friction": 0.5,
               "restitution": 0
             }
@@ -22718,7 +23398,7 @@
             "tags": [
               "beam"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 8,
               "height": 0.3,
@@ -22726,10 +23406,12 @@
             },
             "physics": {
               "bodyType": "kinematic",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 8,
               "height": 0.3,
-              "density": 0,
               "friction": 0.8,
               "restitution": 0
             }
@@ -22739,7 +23421,7 @@
             "tags": [
               "beam-sensor"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 8,
               "height": 0.6,
@@ -22761,7 +23443,7 @@
               "weight-choice",
               "mass-1"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.4,
               "color": "#4CAF50"
@@ -22781,7 +23463,7 @@
               "weight-choice",
               "mass-2"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.52,
               "color": "#2196F3"
@@ -22801,7 +23483,7 @@
               "weight-choice",
               "mass-3"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.6400000000000001,
               "color": "#FF9800"
@@ -22821,16 +23503,18 @@
               "placed-weight",
               "mass-1"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.4,
               "color": "#4CAF50"
             },
             "physics": {
               "bodyType": "kinematic",
+              "density": 1
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.4,
-              "density": 1,
               "friction": 0.5,
               "restitution": 0
             }
@@ -22841,16 +23525,18 @@
               "placed-weight",
               "mass-2"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.52,
               "color": "#2196F3"
             },
             "physics": {
               "bodyType": "kinematic",
+              "density": 2
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.52,
-              "density": 2,
               "friction": 0.5,
               "restitution": 0
             }
@@ -22861,16 +23547,18 @@
               "placed-weight",
               "mass-3"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.6400000000000001,
               "color": "#FF9800"
             },
             "physics": {
               "bodyType": "kinematic",
+              "density": 3
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.6400000000000001,
-              "density": 3,
               "friction": 0.5,
               "restitution": 0
             }
@@ -22880,7 +23568,7 @@
             "tags": [
               "weight-label"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.5,
               "height": 0.5,
@@ -22900,7 +23588,7 @@
             "tags": [
               "selection-indicator"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.8,
               "color": "#FFFFFF33"
@@ -23224,7 +23912,7 @@
             "tags": [
               "tower"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 0.8,
               "height": 0.8,
@@ -23232,10 +23920,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 0.8,
               "height": 0.8,
-              "density": 0,
               "friction": 0,
               "restitution": 0
             },
@@ -23246,19 +23936,21 @@
             "tags": [
               "enemy"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.4,
               "color": "#E74C3C"
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 1,
+              "linearDamping": 2
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.4,
-              "density": 1,
               "friction": 0.5,
-              "restitution": 0.3,
-              "linearDamping": 2
+              "restitution": 0.3
             },
             "behaviors": []
           },
@@ -23267,19 +23959,21 @@
             "tags": [
               "projectile"
             ],
-            "sprite": {
+            "visual": {
               "type": "circle",
               "radius": 0.2,
               "color": "#F1C40F"
             },
             "physics": {
               "bodyType": "dynamic",
+              "density": 0.5,
+              "ccd": true
+            },
+            "collider": {
               "shape": "circle",
               "radius": 0.2,
-              "density": 0.5,
               "friction": 0,
-              "restitution": 0.8,
-              "bullet": true
+              "restitution": 0.8
             },
             "behaviors": [
               {
@@ -23308,7 +24002,7 @@
             "tags": [
               "base"
             ],
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 1.2,
               "height": 1.2,
