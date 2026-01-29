@@ -21,6 +21,7 @@ import { StateMachineActionExecutor } from './StateMachineActionExecutor';
 import { WaveActionExecutor } from './WaveActionExecutor';
 import { BallSortActionExecutor } from './BallSortActionExecutor';
 import { ContainerActionExecutor } from './ContainerActionExecutor';
+import { RunScriptActionExecutor } from './RunScriptActionExecutor';
 
 export type ActionType = RuleAction['type'];
 
@@ -48,6 +49,7 @@ export class ActionRegistry {
     private waveActionExecutor: WaveActionExecutor,
     private ballSortActionExecutor: BallSortActionExecutor,
     private containerActionExecutor: ContainerActionExecutor,
+    private runScriptActionExecutor: RunScriptActionExecutor,
   ) {
     this.registerAll();
   }
@@ -105,6 +107,8 @@ export class ActionRegistry {
     this.registry.set('container_clear', this.containerActionExecutor);
     this.registry.set('container_select', this.containerActionExecutor);
     this.registry.set('container_deselect', this.containerActionExecutor);
+    // Script action
+    this.registry.set('run_script', this.runScriptActionExecutor);
   }
 
   execute(action: RuleAction, context: RuleContext): void {

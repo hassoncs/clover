@@ -7,4 +7,8 @@ export type {
   SnapshotOptions,
   ReactGameState,
   GameStateValue,
+  PlayerPhase,
+  TimeMode,
+  TimeControl,
 } from "./types";
+export { framesToAdvance } from "./types";

@@ -35,7 +35,12 @@ export function GodotViewWeb({ style, onReady, onError, onKeyDown, onKeyUp, onMo
         onKeyUp?.(e);
       };
 
+      let mouseMoveCount = 0;
       const handleIframeMouseMove = (e: MouseEvent) => {
+        mouseMoveCount++;
+        if (mouseMoveCount % 60 === 1) {
+          console.log('[GodotView.web] iframe mousemove #' + mouseMoveCount, e.clientX, e.clientY, 'callback?', !!onMouseMove);
+        }
         onMouseMove?.(e);
       };
 

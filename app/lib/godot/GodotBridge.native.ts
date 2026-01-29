@@ -439,9 +439,11 @@ export function createNativeGodotBridge(): GodotBridge {
     pausePhysics() {
       callGameBridge('pause_physics');
     },
-
     resumePhysics() {
       callGameBridge('resume_physics');
+    },
+    setInspectMode(_enabled: boolean) {
+      // Not implemented for native yet - only web needs this
     },
 
     async stepPhysics(frames: number): Promise<{ ok: boolean; framesAdvanced: number; endFrame: number }> {

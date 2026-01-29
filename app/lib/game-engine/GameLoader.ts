@@ -4,6 +4,7 @@ import type { JointId } from '../physics2d/types';
 import { EntityManager } from './EntityManager';
 import { RulesEvaluator } from './RulesEvaluator';
 import { createBehaviorExecutor, BehaviorExecutor } from './BehaviorExecutor';
+import type { ScriptSandbox } from '@/lib/scripting';
 
 export interface LoadedGame {
   definition: GameDefinition;
@@ -16,13 +17,16 @@ export interface LoadedGame {
 
 export interface GameLoaderOptions {
   physics: Physics2D;
+  scriptSandbox?: ScriptSandbox;
 }
 
 export class GameLoader {
   private physics: Physics2D;
+  private scriptSandbox?: ScriptSandbox;
 
   constructor(options: GameLoaderOptions) {
     this.physics = options.physics;
+    this.scriptSandbox = options.scriptSandbox;
   }
 
   load(definition: GameDefinition): LoadedGame {
@@ -57,6 +61,11 @@ export class GameLoader {
     }
     rulesEvaluator.setInitialVariables(definition.variables as Record<string, number | string | boolean> | undefined);
     rulesEvaluator.setStateMachines(definition.stateMachines);
+    
+    // Connect script sandbox to rules evaluator for run_script actions
+    if (this.scriptSandbox) {
+      rulesEvaluator.setScriptSandbox(this.scriptSandbox);
+    }
 
     const behaviorExecutor = createBehaviorExecutor();
 

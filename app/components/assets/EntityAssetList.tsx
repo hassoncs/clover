@@ -34,7 +34,7 @@ export function EntityAssetList({
         {templates.map(([templateId, template]) => {
           const asset = activePack?.assets?.[templateId];
           const isRegenerating = regeneratingTemplateId === templateId;
-          const spriteColor = template.sprite?.color || '#666';
+          const visualColor = (template.visual && 'color' in template.visual) ? template.visual.color : '#666';
           
           return (
             <View 
@@ -50,7 +50,7 @@ export function EntityAssetList({
               ) : (
                 <View 
                   className="w-12 h-12 rounded items-center justify-center"
-                  style={{ backgroundColor: spriteColor }}
+                  style={{ backgroundColor: visualColor }}
                 >
                   <Text className="text-white text-xs">Shape</Text>
                 </View>

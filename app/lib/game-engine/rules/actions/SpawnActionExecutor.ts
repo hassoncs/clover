@@ -50,15 +50,13 @@ export class SpawnActionExecutor implements ActionExecutor<SpawnAction> {
 
       const template = context.entityManager.getTemplate(templateId);
       if (template) {
-        // Calculate launch velocity if provided
         let initialVelocity: { x: number; y: number } | undefined;
         if (action.launch) {
           initialVelocity = this.calculateLaunchVelocity(action.launch, x, y, context);
+          console.log('[SpawnAction] Launch velocity:', initialVelocity, 'from tap:', context.inputEvents.tap?.worldX, context.inputEvents.tap?.worldY);
         }
 
         if (context.bridge) {
-          // Event-driven: bridge.spawnEntity() triggers Godot spawn,
-          // which emits entity_spawned event that populates EntityManager
           context.bridge.spawnEntity(templateId, x, y, initialVelocity);
         } else {
           // Fallback for tests/mock scenarios without bridge
@@ -102,9 +100,8 @@ export class SpawnActionExecutor implements ActionExecutor<SpawnAction> {
         directionY = 0;
         break;
       case 'toward_touch': {
-        // Get touch position from input state
-        const touchX = context.input.drag?.currentWorldX ?? context.input.tap?.worldX ?? spawnX;
-        const touchY = context.input.drag?.currentWorldY ?? context.input.tap?.worldY ?? spawnY;
+        const touchX = context.input.drag?.currentWorldX ?? context.inputEvents.tap?.worldX ?? context.input.tap?.worldX ?? spawnX;
+        const touchY = context.input.drag?.currentWorldY ?? context.inputEvents.tap?.worldY ?? context.input.tap?.worldY ?? spawnY;
         
         // Get source entity position (or use spawn position if not specified)
         let sourceX = spawnX;

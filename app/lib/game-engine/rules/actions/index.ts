@@ -20,3 +20,4 @@ export * from './StateMachineActionExecutor';
 export * from './WaveActionExecutor';
 export * from './BallSortActionExecutor';
 export * from './ContainerActionExecutor';
+export * from './RunScriptActionExecutor';

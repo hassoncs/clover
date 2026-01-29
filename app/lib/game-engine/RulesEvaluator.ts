@@ -42,6 +42,7 @@ import {
   WaveActionExecutor,
   BallSortActionExecutor,
   ContainerActionExecutor,
+  RunScriptActionExecutor,
   ActionRegistry,
 } from "./rules/actions";
 import {
@@ -53,9 +54,9 @@ import {
   CollisionTriggerEvaluator,
   InputTriggerEvaluator,
   LogicTriggerEvaluator,
-  SensorTriggerEvaluator,
 } from "./rules/triggers";
 import { ContainerSystem } from "./systems/ContainerSystem";
+import type { ScriptSandbox } from "@/lib/scripting";
 
 export type { RuleContext } from "./rules/types";
 
@@ -85,6 +86,7 @@ export class RulesEvaluator implements IGameStateMutator {
 
   // Action Registry
   private actionRegistry: ActionRegistry;
+  private runScriptActionExecutor: RunScriptActionExecutor;
 
   // Condition & Trigger Evaluators
   private logicConditionEvaluator = new LogicConditionEvaluator();
@@ -94,7 +96,6 @@ export class RulesEvaluator implements IGameStateMutator {
   private collisionTriggerEvaluator = new CollisionTriggerEvaluator();
   private inputTriggerEvaluator = new InputTriggerEvaluator();
   private logicTriggerEvaluator = new LogicTriggerEvaluator();
-  private sensorTriggerEvaluator = new SensorTriggerEvaluator();
 
   constructor(entityManager: EntityManager, containers?: ContainerConfig[]) {
     const scoreActionExecutor = new ScoreActionExecutor();
@@ -126,6 +127,9 @@ export class RulesEvaluator implements IGameStateMutator {
     // Create ContainerConditionEvaluator with ContainerSystem
     this.containerConditionEvaluator = new ContainerConditionEvaluator(containerSystem);
 
+    // Create RunScriptActionExecutor and store reference
+    this.runScriptActionExecutor = new RunScriptActionExecutor();
+
     this.actionRegistry = new ActionRegistry(
       scoreActionExecutor,
       spawnActionExecutor,
@@ -147,7 +151,12 @@ export class RulesEvaluator implements IGameStateMutator {
       waveActionExecutor,
       ballSortActionExecutor,
       containerActionExecutor,
+      this.runScriptActionExecutor,
     );
+  }
+
+  setScriptSandbox(sandbox: ScriptSandbox): void {
+    this.runScriptActionExecutor.setSandbox(sandbox);
   }
 
   loadRules(rules: GameRule[]): void {
@@ -379,8 +388,6 @@ export class RulesEvaluator implements IGameStateMutator {
     inputEntityManager?: InputEntityManager,
     playSound?: (soundId: string, volume?: number) => void,
     bridge?: GodotBridge,
-    /** @deprecated Zone events are deprecated. Use collision events with sensors instead. */
-    zoneEvents?: { zone: { id: string; tags?: string[] }; entity: { id: string; tags?: string[] }; type: 'enter' | 'exit' }[],
   ): void {
     if (this.gameState !== "playing") {
       return;
@@ -406,7 +413,6 @@ export class RulesEvaluator implements IGameStateMutator {
       inputEvents,
       computedValues,
       evalContext,
-      zoneEvents,
     } as unknown as RuleContext & { cooldowns: Map<string, number> };
     (context as any).cooldowns = this.cooldowns;
 
@@ -499,10 +505,6 @@ export class RulesEvaluator implements IGameStateMutator {
     switch (trigger.type) {
       case "collision":
         return this.collisionTriggerEvaluator.evaluate(trigger, context);
-      case "sensor_enter":
-      case "sensor_exit":
-        console.warn('[DEPRECATED] Sensor triggers are deprecated. Use collision triggers with sensors instead.');
-        return this.sensorTriggerEvaluator.evaluate(trigger, context);
       case "timer":
       case "score":
       case "entity_count":
