@@ -13,6 +13,7 @@ import type {
 import type { RuntimeEntity, RuntimeBehavior, EntityManagerOptions } from './types';
 import { getGlobalTagRegistry } from '@slopcade/shared';
 import { recomputeActiveConditionalGroup } from './behaviors/conditional';
+import { createBodyId, createColliderId } from '../physics2d/types';
 
 export interface EntitySpawnedSnapshot {
   entityId: string;
@@ -185,8 +186,8 @@ export class EntityManager {
       layer: template?.layer ?? 0,
       visible: true,
       active: true,
-      bodyId: snapshot.bodyId ?? null,
-      colliderId: snapshot.colliderId ?? null,
+      bodyId: snapshot.bodyId ? createBodyId(snapshot.bodyId.value) : null,
+      colliderId: snapshot.colliderId ? createColliderId(snapshot.colliderId.value) : null,
       conditionalBehaviors: template?.conditionalBehaviors ?? [],
       activeConditionalGroupId: -1,
     };
