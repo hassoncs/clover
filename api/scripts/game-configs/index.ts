@@ -1,5 +1,6 @@
 import type { GameAssetConfig } from '../../src/ai/pipeline/types';
 import { slopeggleConfig } from './slopeggle/assets.config';
+import { loginHeroConfig } from './login-hero/assets.config';
 import { physicsStackerConfig } from './physicsStacker/assets.config';
 import { breakoutBouncerConfig } from './breakoutBouncer/assets.config';
 import { gemCrushConfig } from './gemCrush/assets.config';
@@ -24,6 +25,7 @@ import { tictactoeConfig } from './tictactoe';
 
 export const gameConfigs: Record<string, GameAssetConfig> = {
   slopeggle: slopeggleConfig,
+  'login-hero': loginHeroConfig,
   physicsStacker: physicsStackerConfig,
   breakoutBouncer: breakoutBouncerConfig,
   gemCrush: gemCrushConfig,

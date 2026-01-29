@@ -25,6 +25,12 @@ let importCounter = 0;
 type ToolHandler = (args: Record<string, unknown>) => Promise<{ content: Array<{ type: "text"; text: string }> }>;
 type ToolRegistrar = (server: McpServer, state: GameInspectorState) => void;
 
+interface ToolDefinition {
+  description: string;
+  schema: Record<string, unknown>;
+  handler: ToolHandler;
+}
+
 interface ToolModule {
   registerGameManagementTools?: ToolRegistrar;
   registerSnapshotTools?: ToolRegistrar;
@@ -37,14 +43,14 @@ interface ToolModule {
   registerPhysicsTools?: ToolRegistrar;
 }
 
-const toolHandlers: Map<string, ToolHandler> = new Map();
+const toolDefinitions: Map<string, ToolDefinition> = new Map();
 
 async function loadAndRegisterTools() {
   const suffix = `?v=${importCounter++}`;
   
   const tempServer = {
-    tool: (name: string, _description: string, _schema: unknown, handler: ToolHandler) => {
-      toolHandlers.set(name, handler);
+    tool: (name: string, description: string, schema: Record<string, unknown>, handler: ToolHandler) => {
+      toolDefinitions.set(name, { description, schema, handler });
     },
   } as unknown as McpServer;
 
@@ -70,7 +76,7 @@ async function loadAndRegisterTools() {
   modules[7].registerEventsTools?.(tempServer, state);
   modules[8].registerPhysicsTools?.(tempServer, state);
 
-  console.error(`[game-inspector] Loaded ${toolHandlers.size} tool handlers`);
+  console.error(`[game-inspector] Loaded ${toolDefinitions.size} tool handlers`);
 }
 
 await loadAndRegisterTools();
@@ -78,7 +84,7 @@ await loadAndRegisterTools();
 async function reloadTools() {
   console.error("[game-inspector] Reloading tools...");
   try {
-    toolHandlers.clear();
+    toolDefinitions.clear();
     await loadAndRegisterTools();
     console.error("[game-inspector] Tools reloaded successfully");
   } catch (err) {
@@ -102,17 +108,17 @@ function createServer(): McpServer {
     version: "1.0.0",
   });
 
-  for (const [name] of toolHandlers) {
+  for (const [name, def] of toolDefinitions) {
     server.tool(
       name,
-      `Dynamic tool: ${name}`,
-      {},
+      def.description,
+      def.schema,
       async (args) => {
-        const handler = toolHandlers.get(name);
-        if (!handler) {
+        const currentDef = toolDefinitions.get(name);
+        if (!currentDef) {
           return { content: [{ type: "text" as const, text: JSON.stringify({ error: `Tool ${name} not found` }) }] };
         }
-        return handler(args as Record<string, unknown>);
+        return currentDef.handler(args as Record<string, unknown>);
       }
     );
   }
