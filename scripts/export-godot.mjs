@@ -55,6 +55,10 @@ function log(msg) {
 function findGodot() {
   // Try common paths - prefer Godot 4.4 to match our custom templates
   const paths = [
+    // Use official Godot 4.5 editor for correct GDScript version
+    "/Applications/Godot-4.5.app/Contents/MacOS/Godot",
+    // Fallback to custom-built
+    "vendor/godot/bin/godot.macos.editor.arm64",
     "/Applications/Godot-4.4.app/Contents/MacOS/Godot",
     "/Applications/Godot-4.3.app/Contents/MacOS/Godot",
     "godot",

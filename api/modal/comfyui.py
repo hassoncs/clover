@@ -427,7 +427,13 @@ class ComfyUIWorker:
             data=json.dumps(payload).encode(),
             headers={"Content-Type": "application/json"}
         )
-        urllib.request.urlopen(req)
+        resp = urllib.request.urlopen(req)
+        response_data = json.loads(resp.read())
+        print(f"  [_run_workflow] Prompt response: {response_data}")
+        # ComfyUI generates its own prompt_id - use that instead
+        if "prompt_id" in response_data:
+            prompt_id = response_data["prompt_id"]
+            print(f"  [_run_workflow] Using ComfyUI prompt_id: {prompt_id}")
         print(f"  [_run_workflow] Workflow submitted, waiting for completion...")
 
         # Wait for completion with timeout

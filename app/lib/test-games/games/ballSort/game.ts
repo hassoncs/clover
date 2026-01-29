@@ -446,8 +446,18 @@ function createBallTemplate(colorIndex: number) {
     visual: {
       type: "image",
       imageUrl: `${ASSET_BASE}/ball${colorIndex % 4}.png`,
-      imageWidth: BALL_RADIUS * 2,
-      imageHeight: BALL_RADIUS * 2,
+      width: BALL_RADIUS * 2,
+      height: BALL_RADIUS * 2,
+    },
+    physics: {
+      bodyType: "dynamic",
+      density: 1,
+    },
+    collider: {
+      shape: "circle",
+      radius: BALL_RADIUS,
+      friction: 0.3,
+      restitution: 0.2,
     },
     conditionalBehaviors: [
       {
