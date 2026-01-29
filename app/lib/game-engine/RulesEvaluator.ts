@@ -379,6 +379,7 @@ export class RulesEvaluator implements IGameStateMutator {
     inputEntityManager?: InputEntityManager,
     playSound?: (soundId: string, volume?: number) => void,
     bridge?: GodotBridge,
+    zoneEvents?: { zone: { id: string; tags?: string[] }; entity: { id: string; tags?: string[] }; type: 'enter' | 'exit' }[],
   ): void {
     if (inputEvents.tap) {
       console.log("[Rules] TAP event received! Game state:", this.gameState, "tap:", inputEvents.tap);
@@ -410,6 +411,7 @@ export class RulesEvaluator implements IGameStateMutator {
       inputEvents,
       computedValues,
       evalContext,
+      zoneEvents,
     } as unknown as RuleContext & { cooldowns: Map<string, number> };
     (context as any).cooldowns = this.cooldowns;
 

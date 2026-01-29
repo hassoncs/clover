@@ -128,6 +128,7 @@ export function GameRuntimeGodot({
   const elapsedRef = useRef(0);
   const frameIdRef = useRef(0);
   const collisionsRef = useRef<CollisionInfo[]>([]);
+  const zoneEventsRef = useRef<{ zone: { id: string; tags?: string[] }; entity: { id: string; tags?: string[] }; type: 'enter' | 'exit' }[]>([]);
   const collisionUnsubRef = useRef<Unsubscribe | null>(null);
   const sensorUnsubRef = useRef<Unsubscribe | null>(null);
   const inputEventUnsubRef = useRef<Unsubscribe | null>(null);
@@ -585,6 +586,14 @@ export function GameRuntimeGodot({
             .find((e) => e.bodyId?.value === event.otherBody.value);
 
           if (sensorEntity && otherEntity) {
+            console.log('[GameRuntime] Zone ENTER:', sensorEntity.id, '<-', otherEntity.id, 'tags:', sensorEntity.tags, '<-', otherEntity.tags);
+            zoneEventsRef.current.push({
+              zone: { id: sensorEntity.id, tags: sensorEntity.tags },
+              entity: { id: otherEntity.id, tags: otherEntity.tags },
+              type: 'enter',
+            });
+            
+            // Also add to collisions for backward compatibility with collision triggers
             collisionsRef.current.push({
               entityA: sensorEntity,
               entityB: otherEntity,
@@ -593,6 +602,32 @@ export function GameRuntimeGodot({
             });
           }
         });
+
+        // Handle zone exit events
+        const sensorEndUnsub = physics.onSensorEnd((event) => {
+          const sensorEntity = game.entityManager
+            .getActiveEntities()
+            .find((e) => e.colliderId?.value === event.sensor.value);
+          const otherEntity = game.entityManager
+            .getActiveEntities()
+            .find((e) => e.bodyId?.value === event.otherBody.value);
+
+          if (sensorEntity && otherEntity) {
+            console.log('[GameRuntime] Zone EXIT:', sensorEntity.id, '<-', otherEntity.id);
+            zoneEventsRef.current.push({
+              zone: { id: sensorEntity.id, tags: sensorEntity.tags },
+              entity: { id: otherEntity.id, tags: otherEntity.tags },
+              type: 'exit',
+            });
+          }
+        });
+        
+        // Store both unsub functions
+        const originalSensorUnsub = sensorUnsubRef.current;
+        sensorUnsubRef.current = () => {
+          originalSensorUnsub?.();
+          sensorEndUnsub();
+        };
 
         inputEventUnsubRef.current = bridge.onInputEvent(
           (type, x, y, entityId) => {
@@ -1084,6 +1119,7 @@ export function GameRuntimeGodot({
           bridge.playSound(soundId);
         },
         bridge,
+        zoneEventsRef.current,
       );
 
       const preservedDrag = inputRef.current.drag;
@@ -1104,6 +1140,7 @@ export function GameRuntimeGodot({
         inputRef.current.mouse = preservedMouse;
       }
       collisionsRef.current = [];
+      zoneEventsRef.current = [];
 
       setGameState((s) => ({ ...s, time: elapsedRef.current }));
 
