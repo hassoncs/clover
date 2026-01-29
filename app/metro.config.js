@@ -23,6 +23,7 @@ baseConfig.server = {
   port: 8085,
   enhanceMiddleware: (middleware) => {
     return (req, res, next) => {
+      // COOP/COEP headers required for SharedArrayBuffer (Godot 4.5 + Rapier)
       res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
       res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
       return middleware(req, res, next);

@@ -398,10 +398,12 @@ const game: GameDefinition = {
       },
       physics: {
         bodyType: "static",
+        density: 0,
+      },
+      collider: {
         shape: "box",
         width: WORLD_WIDTH,
         height: 0.2,
-        density: 0,
         friction: 0.1,
         restitution: 0.6,
       },
