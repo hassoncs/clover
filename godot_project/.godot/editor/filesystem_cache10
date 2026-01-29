@@ -1,6 +1,6 @@
-fc8a56933c4b1c8d796fdb8f7a9f9475
+72322a848ab928aa5c89f0cb78209805
 ::res://::1769633767
-export_presets.cfg::TextFile/TextFile::-1::1769631103::0::1::::<><><>0<>0<><>::
+export_presets.cfg::TextFile::-1::1769639815::0::1::::<><><>0<>0<><>::
 icon.svg::CompressedTexture2D/CompressedTexture2D::8162193418698039025::1769538422::1769633767::1::::<><><>0<>0<>b60b07e3b7c5c7da747f33a9e77945db<>res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex::
 Main.tscn::PackedScene/PackedScene::-1::1769538422::0::1::::<><><>0<>0<><>::res://scripts/Main.gd
 README.md::TextFile/TextFile::-1::1769538422::0::1::::<><><>0<>0<><>::
@@ -42,11 +42,8 @@ StateManager2D.svg::CompressedTexture2D/CompressedTexture2D::1277279720193679363
 ::res://docs/::1769538422
 VFX_IMPLEMENTATION_TODO.md::TextFile/TextFile::-1::1769538422::0::1::::<><><>0<>0<><>::
 ::res://export/::1769538422
-::res://export/web/::1769633767
-index.apple-touch-icon.png::CompressedTexture2D/CompressedTexture2D::3008797173950879524::1769560888::1769633767::1::::<><><>0<>0<>ec5fb2b17cff9624bc7119381b74adf7<>res://.godot/imported/index.apple-touch-icon.png-aebfb1e41ce4a993e231d731c37e24be.ctex::
-index.icon.png::CompressedTexture2D/CompressedTexture2D::8567596562072014535::1769560888::1769633767::1::::<><><>0<>0<>ff7ca3caf9ce8c4824fcacd26ff436c1<>res://.godot/imported/index.icon.png-71c9d3338695ba24c45c706011eaad77.ctex::
-index.png::CompressedTexture2D/CompressedTexture2D::8308857111999474707::1769560888::1769633767::1::::<><><>0<>0<>3373f616c8fdcb71f46fc0645e048a11<>res://.godot/imported/index.png-c2d8175aa2006ac735a751c5803e019d.ctex::
-::res://export_templates/::1769631096
+::res://export/web/::1769636180
+::res://export_templates/::1769639608
 ::res://models/::1769633767
 test_model.glb::PackedScene/PackedScene::2451084565682209964::1769538422::1769633767::0::::<><><>0<>0<>b9b133cf4e800c93b8956f6acbfdee9e<>::
 ::res://particles/::1769205175
