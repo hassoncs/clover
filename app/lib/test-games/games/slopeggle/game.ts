@@ -534,7 +534,7 @@ const game: GameDefinition = {
     {
       id: "ball_drain",
       name: "Ball falls through drain - lose a life, destroy marked pegs",
-      trigger: { type: "collision", entityATag: "ball", entityBTag: "drain" },
+      trigger: { type: "zone_enter", zoneTag: "drain", entityTag: "ball" },
       actions: [
         { type: "event", eventName: "turn_end" },
         { type: "destroy_marked", tag: "peg" },
@@ -545,7 +545,7 @@ const game: GameDefinition = {
     {
       id: "bucket_catch",
       name: "Bucket catches ball - free ball bonus!",
-      trigger: { type: "collision", entityATag: "ball", entityBTag: "bucket" },
+      trigger: { type: "zone_enter", zoneTag: "bucket", entityTag: "ball" },
       actions: [
         { type: "event", eventName: "turn_end" },
         { type: "destroy_marked", tag: "peg" },
