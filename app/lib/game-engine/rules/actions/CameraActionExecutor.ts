@@ -50,7 +50,6 @@ export class CameraActionExecutor implements ActionExecutor<CameraAction> {
       }
     }
 
-    console.log('[CameraActionExecutor] Executing camera_zoom:', scale, duration, 'focus:', focusWorld);
     context.camera.zoomEffect(scale, duration, restoreDelay, focusWorld);
   }
 

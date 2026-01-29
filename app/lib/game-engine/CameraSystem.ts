@@ -344,7 +344,6 @@ export class CameraSystem {
   }
 
   zoomEffect(scale: number, duration: number, restoreDelay?: number, focusWorld?: Vec2): void {
-    console.log('[CameraSystem.zoomEffect] scale:', scale, 'duration:', duration, 'focus:', focusWorld);
     this.zoomEffectStart = this.zoomEffectScale;
     this.zoomEffectTarget = scale;
     this.zoomEffectDuration = duration;
