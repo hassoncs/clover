@@ -1087,6 +1087,11 @@ func load_game_json(json_string: String) -> bool:
 
 	# Load templates
 	templates = game_data.get("templates", {})
+	print("[DEBUG] Loaded templates: ", templates.keys())
+	for tmpl_id in templates:
+		var tmpl = templates[tmpl_id]
+		if tmpl.has("visual"):
+			print("[DEBUG] Template ", tmpl_id, " visual.type: ", tmpl.visual.get("type", "NO TYPE"))
 
 	# Create entities
 	var entities_data = game_data.get("entities", [])
@@ -1343,9 +1348,10 @@ func _create_entity(entity_data: Dictionary) -> Node2D:
 
 	# Add visual component
 	if visual_data:
-		print("[DEBUG] Adding visual for entity: ", entity_id, " type: ", visual_data.get("type", "unknown"))
+		print("[DEBUG] Adding visual for entity: ", entity_id, " type: ", visual_data.get("type", "unknown"), " keys: ", visual_data.keys())
 		# Apply smart defaults: visual inherits from collider
 		var resolved_visual = _resolve_visual_with_defaults(visual_data, collider_data)
+		print("[DEBUG] Resolved visual type: ", resolved_visual.get("type", "NO TYPE"))
 		_add_visual(node, resolved_visual)
 	elif collider_data:
 		# Auto-generate visual from collider if no visual specified
@@ -1391,6 +1397,13 @@ func _create_entity(entity_data: Dictionary) -> Node2D:
 
 	# Build snapshot for TypeScript
 	var snapshot_pos = godot_to_game_pos(node.position)
+	
+	# Get physics IDs if available
+	var body_id = body_id_map.get(entity_id, -1)
+	var collider_id = -1
+	if entity_shape_map.has(entity_id) and entity_shape_map[entity_id].size() > 0:
+		collider_id = entity_shape_map[entity_id][0]
+	
 	var snapshot = {
 		"entityId": entity_id,
 		"template": template_id,
@@ -1404,6 +1417,12 @@ func _create_entity(entity_data: Dictionary) -> Node2D:
 			"scaleY": node.scale.y
 		}
 	}
+	
+	# Add physics IDs if they exist
+	if body_id >= 0:
+		snapshot["bodyId"] = {"value": body_id}
+	if collider_id >= 0:
+		snapshot["colliderId"] = {"value": collider_id}
 
 	# Emit signal and notify JS
 	entity_spawned.emit(entity_id, node)
@@ -1451,12 +1470,17 @@ func _create_physics_body(entity_id: String, physics_data: Dictionary, collider_
 			# Connect collision signals (kept for backward compatibility)
 			rigid.body_entered.connect(_on_body_entered.bind(entity_id))
 
-			# Apply initial velocity if specified (convert with Y-flip)
+			# Apply initial velocity if specified
 			var initial_vel = physics_data.get("initialVelocity", null)
 			if initial_vel != null:
-				# Store for deferred application (must be applied after body is in scene tree)
 				var game_vel = Vector2(initial_vel.get("x", 0), initial_vel.get("y", 0))
-				rigid.set_meta("_initial_velocity", game_to_godot_vec(game_vel))
+				rigid.linear_velocity = game_to_godot_vec(game_vel)
+
+			# Store user data and group if provided
+			if physics_data.has("userData"):
+				user_data[next_body_id] = physics_data.userData
+			if physics_data.has("group"):
+				body_groups[next_body_id] = physics_data.group
 
 			node = rigid
 
@@ -2519,1812 +2543,933 @@ func _js_get_angular_velocity(args: Array) -> Variant:
 			return node.angular_velocity
 	return null
 
-func _js_apply_torque(args: Array) -> void:
-	if args.size() < 2:
+func _js_apply_impulse(args: Array) -> void:
+	if args.size() < 3:
 		return
 	var entity_id = str(args[0])
-	var torque = float(args[1])
 	if entities.has(entity_id):
 		var node = entities[entity_id]
 		if node is RigidBody2D:
-			node.apply_torque(torque)
+			var game_impulse = Vector2(float(args[1]), float(args[2]))
+			node.apply_central_impulse(game_to_godot_vec(game_impulse))
 
-func apply_torque(entity_id: String, torque: float) -> void:
+func apply_impulse(entity_id: String, ix: float, iy: float) -> void:
 	if entities.has(entity_id):
 		var node = entities[entity_id]
 		if node is RigidBody2D:
-			node.apply_torque(torque)
+			node.apply_central_impulse(game_to_godot_vec(Vector2(ix, iy)))
 
-# =============================================================================
-# JOINT SYSTEM
-# =============================================================================
-
-func _js_create_revolute_joint(args: Array) -> int:
-	# args: [bodyA_id, bodyB_id, anchorX, anchorY, enableLimit, lowerAngle, upperAngle, enableMotor, motorSpeed, maxMotorTorque]
-	if args.size() < 4:
-		return -1
-
-	var entity_a = str(args[0])
-	var entity_b = str(args[1])
-	var godot_anchor = game_to_godot_pos(Vector2(float(args[2]), float(args[3])))
-
-	if not entities.has(entity_a) or not entities.has(entity_b):
-		return -1
-
-	var node_a = entities[entity_a]
-	var node_b = entities[entity_b]
-
-	var joint = PinJoint2D.new()
-	joint.position = godot_anchor
-	joint.node_a = node_a.get_path()
-	joint.node_b = node_b.get_path()
-
-	# Motor settings
-	if args.size() > 7 and bool(args[7]):  # enableMotor
-		joint.motor_enabled = true
-		if args.size() > 8:
-			joint.motor_target_velocity = float(args[8])
-
-	# Angle limits (PinJoint2D doesn't have angle limits, would need custom implementation)
-
-	var main = get_tree().current_scene
-	if main:
-		main.add_child(joint)
-
-	joint_counter += 1
-	joints[joint_counter] = joint
-	return joint_counter
-
-func _js_create_distance_joint(args: Array) -> int:
-	# args: [bodyA_id, bodyB_id, anchorAX, anchorAY, anchorBX, anchorBY, length, stiffness, damping]
-	if args.size() < 6:
-		return -1
-
-	var entity_a = str(args[0])
-	var entity_b = str(args[1])
-	var anchor_a = game_to_godot_pos(Vector2(float(args[2]), float(args[3])))
-	var anchor_b = game_to_godot_pos(Vector2(float(args[4]), float(args[5])))
-
-	if not entities.has(entity_a) or not entities.has(entity_b):
-		return -1
-
-	var node_a = entities[entity_a]
-	var node_b = entities[entity_b]
-
-	var joint = DampedSpringJoint2D.new()
-	joint.position = anchor_a
-	joint.node_a = node_a.get_path()
-	joint.node_b = node_b.get_path()
-
-	# Calculate length
-	var length = anchor_a.distance_to(anchor_b)
-	if args.size() > 6 and float(args[6]) > 0:
-		length = float(args[6]) * pixels_per_meter
-	joint.length = length
-	joint.rest_length = length
-
-	# Stiffness and damping
-	if args.size() > 7:
-		joint.stiffness = float(args[7])
-	if args.size() > 8:
-		joint.damping = float(args[8])
-
-	var main = get_tree().current_scene
-	if main:
-		main.add_child(joint)
-
-	joint_counter += 1
-	joints[joint_counter] = joint
-	return joint_counter
-
-func _js_create_prismatic_joint(args: Array) -> int:
-	# args: [bodyA_id, bodyB_id, anchorX, anchorY, axisX, axisY, enableLimit, lowerTrans, upperTrans, enableMotor, motorSpeed, maxMotorForce]
-	# Godot doesn't have a direct prismatic joint, use GrooveJoint2D as approximation
-	if args.size() < 6:
-		return -1
-
-	var entity_a = str(args[0])
-	var entity_b = str(args[1])
-	var anchor = game_to_godot_pos(Vector2(float(args[2]), float(args[3])))
-	var game_axis = Vector2(float(args[4]), float(args[5]))
-	var axis_vec = Vector2(game_axis.x, -game_axis.y).normalized()  # Flip Y for axis direction
-
-	if not entities.has(entity_a) or not entities.has(entity_b):
-		return -1
-
-	var node_a = entities[entity_a]
-	var node_b = entities[entity_b]
-
-	var joint = GrooveJoint2D.new()
-	joint.position = anchor
-	joint.node_a = node_a.get_path()
-	joint.node_b = node_b.get_path()
-
-	# GrooveJoint2D slides along its local Y-axis. Rotate so local Y aligns with axis_vec.
-	joint.rotation = Vector2(0, 1).angle_to(axis_vec)
-
-	# Set groove length based on limits
-	var lower = 0.0
-	var upper = 100.0  # Default groove length
-	if args.size() > 6 and bool(args[6]):  # enableLimit
-		if args.size() > 7:
-			lower = float(args[7]) * pixels_per_meter
-		if args.size() > 8:
-			upper = float(args[8]) * pixels_per_meter
-	joint.length = upper - lower
-	joint.initial_offset = -lower
-
-	# Attach PrismaticJointDriver script for motor support
-	joint.set_script(load("res://scripts/PrismaticJointDriver.gd"))
-
-	# Set motor properties (args 9, 10, 11)
-	var motor_enabled = false
-	var motor_speed = 0.0
-	var max_motor_force = 0.0
-	if args.size() > 9:
-		motor_enabled = bool(args[9])
-	if args.size() > 10:
-		motor_speed = float(args[10]) * pixels_per_meter
-	if args.size() > 11:
-		max_motor_force = float(args[11]) * pixels_per_meter
-
-	joint.motor_enabled = motor_enabled
-	joint.motor_speed = motor_speed
-	joint.max_motor_force = max_motor_force
-
-	var main = get_tree().current_scene
-	if main:
-		main.add_child(joint)
-
-	joint_counter += 1
-	joints[joint_counter] = joint
-	return joint_counter
-
-func _js_create_weld_joint(args: Array) -> int:
-	# args: [bodyA_id, bodyB_id, anchorX, anchorY, stiffness, damping]
-	# Simulate rigid weld using two PinJoint2Ds offset from each other to prevent rotation
-	if args.size() < 4:
-		return -1
-
-	var entity_a = str(args[0])
-	var entity_b = str(args[1])
-	var anchor = game_to_godot_pos(Vector2(float(args[2]), float(args[3])))
-
-	if not entities.has(entity_a) or not entities.has(entity_b):
-		return -1
-
-	var node_a = entities[entity_a]
-	var node_b = entities[entity_b]
-
-	# Validate both are physics bodies that support joints
-	if not (node_a is RigidBody2D or node_a is StaticBody2D or node_a is CharacterBody2D):
-		push_error("[GameBridge] createWeldJoint: node_a is not a physics body")
-		return -1
-	if not (node_b is RigidBody2D or node_b is StaticBody2D or node_b is CharacterBody2D):
-		push_error("[GameBridge] createWeldJoint: node_b is not a physics body")
-		return -1
-
-	# Create a container Node2D to hold both joints (for easy cleanup)
-	var container = Node2D.new()
-	container.name = "WeldJoint_%d" % (joint_counter + 1)
-
-	# Joint 1: PinJoint2D at the anchor point
-	var joint1 = PinJoint2D.new()
-	joint1.position = anchor
-	joint1.node_a = node_a.get_path()
-	joint1.node_b = node_b.get_path()
-	container.add_child(joint1)
-
-	# Joint 2: PinJoint2D offset by 10 pixels to prevent rotation
-	var joint2 = PinJoint2D.new()
-	joint2.position = anchor + Vector2(10, 0)
-	joint2.node_a = node_a.get_path()
-	joint2.node_b = node_b.get_path()
-	container.add_child(joint2)
-
-	var main = get_tree().current_scene
-	if main:
-		main.add_child(container)
-
-	joint_counter += 1
-	joints[joint_counter] = container
-	return joint_counter
-
-# Synchronous version for native (react-native-godot) - returns joint_id directly
-func create_mouse_joint(entity_id: String, target_x: float, target_y: float, max_force: float, stiffness: float, damping: float) -> int:
-
-	if not entities.has(entity_id):
-		return -1
-
-	joint_counter += 1
-	joints[joint_counter] = {
-		"type": "mouse",
-		"entity_id": entity_id,
-		"target": game_to_godot_pos(Vector2(target_x, target_y)),
-		"max_force": max_force,
-		"stiffness": stiffness,
-		"damping": damping
-	}
-	return joint_counter
-
-func set_mouse_target(joint_id: int, target_x: float, target_y: float) -> void:
-	if joints.has(joint_id):
-		var joint = joints[joint_id]
-		if joint is Dictionary and joint.get("type") == "mouse":
-			joint["target"] = game_to_godot_pos(Vector2(target_x, target_y))
-
-func destroy_joint(joint_id: int) -> void:
-	if joints.has(joint_id):
-		var joint = joints[joint_id]
-		if joint is Node:
-			joint.queue_free()
-		joints.erase(joint_id)
-
-func _js_create_mouse_joint(args: Array) -> void:
-	# args: [body_id, targetX, targetY, maxForce, stiffness, damping]
-	# Mouse joint simulated by applying forces towards target
-	if args.size() < 4:
-		JavaScriptBridge.eval("window.GodotBridge._lastResult = -1;")
+func _js_apply_force(args: Array) -> void:
+	if args.size() < 3:
 		return
-
 	var entity_id = str(args[0])
-	var godot_target = game_to_godot_pos(Vector2(float(args[1]), float(args[2])))
-	var max_force = float(args[3])
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			var game_force = Vector2(float(args[1]), float(args[2]))
+			node.apply_central_force(game_to_godot_vec(game_force))
 
-	if not entities.has(entity_id):
-		JavaScriptBridge.eval("window.GodotBridge._lastResult = -1;")
-		return
+func apply_force(entity_id: String, fx: float, fy: float) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			node.apply_central_force(game_to_godot_vec(Vector2(fx, fy)))
 
-	# Store mouse joint data (we'll apply forces in _physics_process)
-	joint_counter += 1
-	joints[joint_counter] = {
-		"type": "mouse",
-		"entity_id": entity_id,
-		"target": godot_target,
-		"max_force": max_force,
-		"stiffness": float(args[4]) if args.size() > 4 else 5.0,
-		"damping": float(args[5]) if args.size() > 5 else 0.7
-	}
-	JavaScriptBridge.eval("window.GodotBridge._lastResult = %d;" % joint_counter)
+func send_input(input_type: String, x: float, y: float, entity_id: String = "") -> void:
+	if input_type == "tap":
+		var hit_entity_id: Variant = null
+		var godot_point = game_to_godot_pos(Vector2(x, y))
+		var space = get_viewport().find_world_2d().direct_space_state
+		if space:
+			var query = PhysicsPointQueryParameters2D.new()
+			query.position = godot_point
+			query.collision_mask = 0xFFFFFFFF
+			query.collide_with_bodies = true
+			query.collide_with_areas = true
+			var results = space.intersect_point(query, 1)
+			if results.size() > 0:
+				var collider = results[0].collider
+				if collider and collider.name in entities:
+					hit_entity_id = collider.name
+		_queue_event("input", {"type": input_type, "x": x, "y": y, "entityId": hit_entity_id})
+		_notify_js_input_event(input_type, x, y, hit_entity_id)
 
-func _js_destroy_joint(args: Array) -> void:
-	if args.size() < 1:
-		return
-	var joint_id = int(args[0])
-	if joints.has(joint_id):
-		var joint = joints[joint_id]
-		if joint is Node:
-			joint.queue_free()
-		joints.erase(joint_id)
-
-func _js_set_motor_speed(args: Array) -> void:
-	if args.size() < 2:
-		return
-	var joint_id = int(args[0])
-	var speed = float(args[1])
-	if joints.has(joint_id):
-		var joint = joints[joint_id]
-		if joint is PinJoint2D:
-			joint.motor_target_velocity = speed
-
-func set_motor_speed(joint_id: int, speed: float) -> void:
-	if joints.has(joint_id):
-		var joint = joints[joint_id]
-		if joint is PinJoint2D:
-			joint.motor_target_velocity = speed
-
-func create_revolute_joint(entity_a: String, entity_b: String, anchor_x: float, anchor_y: float, enable_limit: bool = false, lower_angle: float = 0.0, upper_angle: float = 0.0, enable_motor: bool = false, motor_speed: float = 0.0, max_motor_torque: float = 0.0) -> int:
-	return _js_create_revolute_joint([entity_a, entity_b, anchor_x, anchor_y, enable_limit, lower_angle, upper_angle, enable_motor, motor_speed, max_motor_torque])
-
-func create_distance_joint(entity_a: String, entity_b: String, anchor_ax: float, anchor_ay: float, anchor_bx: float, anchor_by: float, length: float = 0.0, stiffness: float = 0.0, damping: float = 0.0) -> int:
-	return _js_create_distance_joint([entity_a, entity_b, anchor_ax, anchor_ay, anchor_bx, anchor_by, length, stiffness, damping])
-
-func create_prismatic_joint(entity_a: String, entity_b: String, anchor_x: float, anchor_y: float, axis_x: float, axis_y: float, enable_limit: bool = false, lower_trans: float = 0.0, upper_trans: float = 0.0, enable_motor: bool = false, motor_speed: float = 0.0, max_motor_force: float = 0.0) -> int:
-	return _js_create_prismatic_joint([entity_a, entity_b, anchor_x, anchor_y, axis_x, axis_y, enable_limit, lower_trans, upper_trans, enable_motor, motor_speed, max_motor_force])
-
-func create_weld_joint(entity_a: String, entity_b: String, anchor_x: float, anchor_y: float, stiffness: float = 0.0, damping: float = 0.0) -> int:
-	return _js_create_weld_joint([entity_a, entity_b, anchor_x, anchor_y, stiffness, damping])
-
-func _js_set_mouse_target(args: Array) -> void:
-	if args.size() < 3:
-		return
-	var joint_id = int(args[0])
-	var godot_target = game_to_godot_pos(Vector2(float(args[1]), float(args[2])))
-	if joints.has(joint_id):
-		var joint = joints[joint_id]
-		if joint is Dictionary and joint.get("type") == "mouse":
-			joint["target"] = godot_target
-
-# =============================================================================
-# PHYSICS QUERIES
-# =============================================================================
-
-func _js_query_point(args: Array) -> Variant:
-	if args.size() < 2:
-		return null
-	var godot_point = game_to_godot_pos(Vector2(float(args[0]), float(args[1])))
-
-	var space = get_viewport().find_world_2d().direct_space_state
-	var query = PhysicsPointQueryParameters2D.new()
-	query.position = godot_point
-	query.collide_with_bodies = true
-	query.collide_with_areas = true
-
-	var results = space.intersect_point(query, 1)
-	if results.size() > 0:
-		var collider = results[0].collider
-		if collider and collider.name in entities:
-			var entity_id = collider.name
-			if body_id_map.has(entity_id):
-				return body_id_map[entity_id]
-	return null
-
-func _js_query_point_entity(args: Array) -> void:
-	# JavaScriptBridge.create_callback() does NOT pass return values to JS!
-	# Use JavaScriptBridge.eval() to set window.GodotBridge._lastResult directly
-	if args.size() < 2:
-		JavaScriptBridge.eval("window.GodotBridge._lastResult = null;")
-		return
-	var point = game_to_godot_pos(Vector2(float(args[0]), float(args[1])))
-
-	# Debug: print entity positions
-	for eid in entities:
-		var e = entities[eid]
-		if e is RigidBody2D:
-			var shape_info = "no shape"
-			for child in e.get_children():
-				if child is CollisionShape2D:
-					var s = child.shape
-					if s is RectangleShape2D:
-						shape_info = "rect size=%s" % s.size
-					elif s is CircleShape2D:
-						shape_info = "circle r=%s" % s.radius
-
-	var space = get_viewport().find_world_2d().direct_space_state
-	if not space:
-		JavaScriptBridge.eval("window.GodotBridge._lastResult = null;")
-		return
-
-	var query = PhysicsPointQueryParameters2D.new()
-	query.position = point
-	query.collision_mask = 0xFFFFFFFF
-	query.collide_with_bodies = true
-	query.collide_with_areas = true
-
-	var results = space.intersect_point(query, 32)
-	for i in range(results.size()):
-		var collider = results[i].collider
-
-	if results.size() > 0:
-		var collider = results[0].collider
-		if collider and collider.name in entities:
-			var entity_name = collider.name
-			var js_code = "console.log('[GDScript eval] Setting _lastResult to: %s'); window.GodotBridge._lastResult = '%s';" % [entity_name, entity_name]
-			JavaScriptBridge.eval(js_code)
-			return
-	JavaScriptBridge.eval("console.log('[GDScript eval] Setting _lastResult to null'); window.GodotBridge._lastResult = null;")
-
-# Synchronous version for native (react-native-godot) - returns entity_id directly
-func query_point_entity(x: float, y: float) -> Variant:
-	var godot_point = game_to_godot_pos(Vector2(x, y))
-
-	var space = get_viewport().find_world_2d().direct_space_state
-	if not space:
-		return null
-
-	var query = PhysicsPointQueryParameters2D.new()
-	query.position = godot_point
-	query.collision_mask = 0xFFFFFFFF
-	query.collide_with_bodies = true
-	query.collide_with_areas = true
-
-	var results = space.intersect_point(query, 32)
-
-	if results.size() > 0:
-		var collider = results[0].collider
-		if collider and collider.name in entities:
-			return collider.name
-	return null
-
-func query_point_entity_async(request_id: int, x: float, y: float) -> void:
-	var godot_point = game_to_godot_pos(Vector2(x, y))
-
-	var space = get_viewport().find_world_2d().direct_space_state
-	if not space:
-		emit_signal("query_result", request_id, null)
-		return
-
-	var query = PhysicsPointQueryParameters2D.new()
-	query.position = godot_point
-	query.collision_mask = 0xFFFFFFFF
-	query.collide_with_bodies = true
-	query.collide_with_areas = true
-
-	var results = space.intersect_point(query, 32)
-	if results.size() > 0:
-		var collider = results[0].collider
-		if collider and collider.name in entities:
-			emit_signal("query_result", request_id, collider.name)
-			return
-	emit_signal("query_result", request_id, null)
-
-func create_mouse_joint_async(request_id: int, entity_id: String, target_x: float, target_y: float, max_force: float, stiffness: float, damping: float) -> void:
-	if not entities.has(entity_id):
-		emit_signal("joint_created", request_id, -1)
-		return
-
-	joint_counter += 1
-	joints[joint_counter] = {
-		"type": "mouse",
-		"entity_id": entity_id,
-		"target": game_to_godot_pos(Vector2(target_x, target_y)),
-		"max_force": max_force,
-		"stiffness": stiffness,
-		"damping": damping
-	}
-	emit_signal("joint_created", request_id, joint_counter)
-
-func _js_query_aabb(args: Array) -> Array:
+func _js_send_input(args: Array) -> void:
 	if args.size() < 4:
-		return []
-	# Convert AABB corners from game coords to Godot coords
-	var game_min = Vector2(float(args[0]), float(args[1]))
-	var game_max = Vector2(float(args[2]), float(args[3]))
-	var godot_min = game_to_godot_pos(game_min)
-	var godot_max = game_to_godot_pos(game_max)
-	# After Y-flip, min/max may be swapped
-	var actual_min = Vector2(min(godot_min.x, godot_max.x), min(godot_min.y, godot_max.y))
-	var actual_max = Vector2(max(godot_min.x, godot_max.x), max(godot_min.y, godot_max.y))
+		return
+	var input_type = str(args[0])
+	var x = float(args[1])
+	var y = float(args[2])
+	var provided_entity_id = str(args[3]) if args[3] != null else ""
 
-	var space = get_viewport().find_world_2d().direct_space_state
+	if input_type == "tap":
+		var hit_entity_id: Variant = null
 
-	# Create a rectangle shape for AABB query
-	var shape = RectangleShape2D.new()
-	shape.size = actual_max - actual_min
+		var godot_point = game_to_godot_pos(Vector2(x, y))
+		var space = get_viewport().find_world_2d().direct_space_state
+		if space:
+			var query = PhysicsPointQueryParameters2D.new()
+			query.position = godot_point
+			query.collision_mask = 0xFFFFFFFF
+			query.collide_with_bodies = true
+			query.collide_with_areas = true
 
-	var query = PhysicsShapeQueryParameters2D.new()
-	query.shape = shape
-	query.transform = Transform2D(0, (actual_min + actual_max) / 2)
-	query.collide_with_bodies = true
-	query.collide_with_areas = true
+			var results = space.intersect_point(query, 1)
+			if results.size() > 0:
+				var collider = results[0].collider
+				if collider and collider.name in entities:
+					hit_entity_id = collider.name
 
-	var results = space.intersect_shape(query)
-	var body_ids: Array = []
-	for result in results:
-		var collider = result.collider
-		if collider and collider.name in entities:
-			var entity_id = collider.name
-			if body_id_map.has(entity_id):
-				body_ids.append(body_id_map[entity_id])
-	return body_ids
+		_notify_js_input_event(input_type, x, y, hit_entity_id)
 
-func _js_raycast(args: Array) -> Variant:
-	if args.size() < 5:
-		return null
-	var godot_origin = game_to_godot_pos(Vector2(float(args[0]), float(args[1])))
-	var game_dir = Vector2(float(args[2]), float(args[3]))
-	var godot_dir = Vector2(game_dir.x, -game_dir.y).normalized()  # Flip Y for direction
-	var max_distance = float(args[4]) * pixels_per_meter
-
-	var end = godot_origin + godot_dir * max_distance
-
-	var space = get_viewport().find_world_2d().direct_space_state
-	var query = PhysicsRayQueryParameters2D.create(godot_origin, end)
-	query.collide_with_bodies = true
-	query.collide_with_areas = true
-
-	var result = space.intersect_ray(query)
-	if result:
-		var collider = result.collider
-		if collider and collider.name in entities:
-			var entity_id = collider.name
-			var body_id = body_id_map.get(entity_id, -1)
-			var collider_id = -1  # TODO: proper collider tracking
-			var game_hit_point = godot_to_game_pos(result.position)
-			var game_normal = Vector2(result.normal.x, -result.normal.y)  # Flip Y for normal
-			var fraction = godot_origin.distance_to(result.position) / max_distance
-			return {
-				"bodyId": body_id,
-				"colliderId": collider_id,
-				"point": {"x": game_hit_point.x, "y": game_hit_point.y},
-				"normal": {"x": game_normal.x, "y": game_normal.y},
-				"fraction": fraction
-			}
-	return null
-
-func query_point(x: float, y: float) -> Variant:
-	var godot_point = game_to_godot_pos(Vector2(x, y))
-
-	var space = get_viewport().find_world_2d().direct_space_state
-	var query = PhysicsPointQueryParameters2D.new()
-	query.position = godot_point
-	query.collide_with_bodies = true
-	query.collide_with_areas = true
-
-	var results = space.intersect_point(query, 1)
-	if results.size() > 0:
-		var collider = results[0].collider
-		if collider and collider.name in entities:
-			var entity_id = collider.name
-			if body_id_map.has(entity_id):
-				return body_id_map[entity_id]
-	return null
-
-func query_aabb(min_x: float, min_y: float, max_x: float, max_y: float) -> String:
-	# Convert AABB corners from game coords to Godot coords
-	var game_min = Vector2(min_x, min_y)
-	var game_max = Vector2(max_x, max_y)
-	var godot_min = game_to_godot_pos(game_min)
-	var godot_max = game_to_godot_pos(game_max)
-	# After Y-flip, min/max may be swapped
-	var actual_min = Vector2(min(godot_min.x, godot_max.x), min(godot_min.y, godot_max.y))
-	var actual_max = Vector2(max(godot_min.x, godot_max.x), max(godot_min.y, godot_max.y))
-
-	var space = get_viewport().find_world_2d().direct_space_state
-
-	var shape = RectangleShape2D.new()
-	shape.size = actual_max - actual_min
-
-	var query = PhysicsShapeQueryParameters2D.new()
-	query.shape = shape
-	query.transform = Transform2D(0, (actual_min + actual_max) / 2)
-	query.collide_with_bodies = true
-	query.collide_with_areas = true
-
-	var results = space.intersect_shape(query)
-	var body_ids: Array = []
-	for result in results:
-		var collider = result.collider
-		if collider and collider.name in entities:
-			var entity_id = collider.name
-			if body_id_map.has(entity_id):
-				body_ids.append(body_id_map[entity_id])
-	return JSON.stringify(body_ids)
-
-func raycast(origin_x: float, origin_y: float, dir_x: float, dir_y: float, max_distance: float) -> Variant:
-	var godot_origin = game_to_godot_pos(Vector2(origin_x, origin_y))
-	var game_dir = Vector2(dir_x, dir_y)
-	var godot_dir = Vector2(game_dir.x, -game_dir.y).normalized()  # Flip Y for direction
-	var end = godot_origin + godot_dir * (max_distance * pixels_per_meter)
-
-	var space = get_viewport().find_world_2d().direct_space_state
-	var query = PhysicsRayQueryParameters2D.create(godot_origin, end)
-	query.collide_with_bodies = true
-	query.collide_with_areas = true
-
-	var result = space.intersect_ray(query)
-	if result:
-		var collider = result.collider
-		if collider and collider.name in entities:
-			var entity_id = collider.name
-			var body_id = body_id_map.get(entity_id, -1)
-			var collider_id = -1
-			var game_hit_point = godot_to_game_pos(result.position)
-			var game_normal = Vector2(result.normal.x, -result.normal.y)  # Flip Y for normal
-			var fraction = godot_origin.distance_to(result.position) / (max_distance * pixels_per_meter)
-			return JSON.stringify({
-				"bodyId": body_id,
-				"colliderId": collider_id,
-				"point": {"x": game_hit_point.x, "y": game_hit_point.y},
-				"normal": {"x": game_normal.x, "y": game_normal.y},
-				"fraction": fraction
-			})
-	return null
-
-# =============================================================================
-# SENSOR SYSTEM
-# =============================================================================
-
-func _js_on_sensor_begin(args: Array) -> void:
+func _js_on_input_event(args: Array) -> void:
 	if args.size() >= 1:
-		_js_sensor_begin_callback = args[0]
+		_js_input_event_callback = args[0]
 
-func _js_on_sensor_end(args: Array) -> void:
+func _notify_js_input_event(input_type: String, x: float, y: float, entity_id: Variant) -> void:
+	if _js_input_event_callback != null:
+		var data = {
+			"type": input_type,
+			"x": x,
+			"y": y,
+			"entityId": entity_id
+		}
+		var json_str = JSON.stringify(data)
+		_js_input_event_callback.call("call", null, json_str)
+
+func _js_on_collision(args: Array) -> void:
 	if args.size() >= 1:
-		_js_sensor_end_callback = args[0]
+		_js_collision_callback = args[0]
 
-func _notify_sensor_begin(sensor_collider_id: int, other_entity: String, other_collider_id: int) -> void:
-	var other_body_id = body_id_map.get(other_entity, -1)
-	if _js_sensor_begin_callback != null:
-		_js_sensor_begin_callback.call("call", null, sensor_collider_id, other_body_id, other_collider_id)
+func _js_on_entity_destroyed(args: Array) -> void:
+	if args.size() >= 1:
+		_js_destroy_callback = args[0]
+
+func _js_on_entity_spawned(args: Array) -> void:
+	if args.size() >= 1:
+		_js_entity_spawned_callback = args[0]
+
+func _notify_js_collision(entity_a: String, entity_b: String, impulse: float) -> void:
+	if _js_collision_callback != null:
+		# Legacy format for backward compatibility
+		_js_collision_callback.call("call", null, entity_a, entity_b, impulse)
 	else:
 		# Native path: queue event for polling
-		_queue_event("sensor_begin", {"sensorColliderId": sensor_collider_id, "otherBodyId": other_body_id, "otherColliderId": other_collider_id})
+		_queue_event("collision", {"entityA": entity_a, "entityB": entity_b, "impulse": impulse})
 
-func _notify_sensor_end(sensor_collider_id: int, other_entity: String, other_collider_id: int) -> void:
-	var other_body_id = body_id_map.get(other_entity, -1)
-	if _js_sensor_end_callback != null:
-		_js_sensor_end_callback.call("call", null, sensor_collider_id, other_body_id, other_collider_id)
+func _notify_js_collision_detailed(collision_data: Dictionary) -> void:
+	if _js_collision_callback != null:
+		# New detailed format: { entityA, entityB, contacts: [{point, normal, normalImpulse, tangentImpulse}] }
+		var json_str = JSON.stringify(collision_data)
+		# Use legacy format which works - pass entityA, entityB, impulse separately
+		var entity_a = collision_data.get("entityA", "")
+		var entity_b = collision_data.get("entityB", "")
+		var total_impulse = 0.0
+		for contact in collision_data.get("contacts", []):
+			total_impulse += abs(contact.get("normalImpulse", 0.0))
+		_js_collision_callback.call("call", null, entity_a, entity_b, total_impulse)
 	else:
 		# Native path: queue event for polling
-		_queue_event("sensor_end", {"sensorColliderId": sensor_collider_id, "otherBodyId": other_body_id, "otherColliderId": other_collider_id})
+		_queue_event("collision_detailed", collision_data)
 
-# =============================================================================
-# BODY/COLLIDER MANAGEMENT (Physics2D API style)
-# =============================================================================
+func _handle_collision_manifold(body_node: RigidBody2D, state: PhysicsDirectBodyState2D) -> void:
+	var contact_count = state.get_contact_count()
+	if contact_count == 0:
+		return
 
-func _js_create_body(args: Array) -> int:
-	# args: [type, posX, posY, angle, linearDamping, angularDamping, fixedRotation, bullet, userData, group]
-	if args.size() < 3:
-		return -1
+	var entity_a = body_node.name
+	if not entities.has(entity_a):
+		return
 
-	var body_type = str(args[0])
-	var godot_pos = game_to_godot_pos(Vector2(float(args[1]), float(args[2])))
-	var game_angle = float(args[3]) if args.size() > 3 else 0.0
-	var godot_angle = -game_angle  # Flip angle for Y-up convention
+	# Group contacts by colliding body
+	var contacts_by_body: Dictionary = {}
 
-	var entity_id = "body_" + str(next_body_id)
-	var node: Node2D
+	for i in range(contact_count):
+		var collider = state.get_contact_collider_object(i)
+		if collider == null or not (collider is Node2D):
+			continue
 
-	match body_type:
-		"static":
-			node = StaticBody2D.new()
-		"kinematic":
-			node = CharacterBody2D.new()
-		_:  # dynamic
-			var rigid = RigidBody2D.new()
-			rigid.gravity_scale = 1.0
-			if args.size() > 4:
-				rigid.linear_damp = float(args[4])
-			if args.size() > 5:
-				rigid.angular_damp = float(args[5])
-			if args.size() > 6 and bool(args[6]):
-				rigid.lock_rotation = true
-			if args.size() > 7 and bool(args[7]):
-				rigid.continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
-			rigid.body_entered.connect(_on_body_entered.bind(entity_id))
-			node = rigid
+		var entity_b = collider.name
+		if not entities.has(entity_b):
+			continue
 
-	node.name = entity_id
-	node.position = godot_pos
-	node.rotation = godot_angle
+		# Get contact data and convert to game coordinates
+		var godot_contact_pos = state.get_contact_local_position(i)
+		var game_contact_pos = godot_to_game_pos(godot_contact_pos)
+		var godot_normal = state.get_contact_local_normal(i)
+		var game_normal = Vector2(godot_normal.x, -godot_normal.y)  # Flip Y for normal
+		var impulse_vec = state.get_contact_impulse(i)
+		var normal_impulse = impulse_vec.dot(godot_normal)
+		var tangent = Vector2(-godot_normal.y, godot_normal.x)
+		var tangent_impulse = impulse_vec.dot(tangent)
 
-	var main = get_tree().current_scene
-	if main:
-		main.add_child(node)
+		# Only report if impulse is significant (avoid spam for resting contacts)
+		if abs(normal_impulse) < IMPULSE_THRESHOLD and abs(tangent_impulse) < IMPULSE_THRESHOLD:
+			continue
 
-	entities[entity_id] = node
-	body_id_map[entity_id] = next_body_id
-	body_id_reverse[next_body_id] = entity_id
+		if not contacts_by_body.has(entity_b):
+			contacts_by_body[entity_b] = []
 
-	# Store user data and group if provided
-	if args.size() > 8:
-		user_data[next_body_id] = args[8]
-	if args.size() > 9:
-		body_groups[next_body_id] = str(args[9])
+		contacts_by_body[entity_b].append({
+			"point": {"x": game_contact_pos.x, "y": game_contact_pos.y},
+			"normal": {"x": game_normal.x, "y": game_normal.y},
+			"normalImpulse": normal_impulse / pixels_per_meter,
+			"tangentImpulse": tangent_impulse / pixels_per_meter
+		})
 
-	var result = next_body_id
-	next_body_id += 1
-	return result
+	# Emit collision events for each colliding body
+	for entity_b in contacts_by_body:
+		var contacts = contacts_by_body[entity_b]
 
-func _js_add_fixture(args: Array) -> int:
-	# args: [bodyId, shapeType, shapeData..., density, friction, restitution, isSensor, categoryBits, maskBits]
-	if args.size() < 3:
-		return -1
+		# Calculate total impulse for this collision pair
+		var total_impulse = 0.0
+		for contact in contacts:
+			total_impulse += abs(contact["normalImpulse"])
 
-	var body_id = int(args[0])
-	var shape_type = str(args[1])
+		var collision_data = {
+			"entityA": entity_a,
+			"entityB": entity_b,
+			"contacts": contacts
+		}
 
-	if not body_id_reverse.has(body_id):
-		return -1
+		_notify_js_collision_detailed(collision_data)
+		collision_occurred.emit(entity_a, entity_b, total_impulse)
 
-	var entity_id = body_id_reverse[body_id]
-	var node = entities[entity_id]
+		# Process destroy_on_collision behaviors directly in Godot
+		_process_collision_behaviors(entity_a, entity_b)
+		_process_collision_behaviors(entity_b, entity_a)
 
-	var shape: Shape2D
-	var shape_data_end = 2
-
-	match shape_type:
-		"circle":
-			var circle = CircleShape2D.new()
-			circle.radius = float(args[2]) * pixels_per_meter
-			shape = circle
-			shape_data_end = 3
-		"box":
-			var rect = RectangleShape2D.new()
-			rect.size = Vector2(float(args[2]) * 2, float(args[3]) * 2) * pixels_per_meter  # halfWidth, halfHeight
-			shape = rect
-			shape_data_end = 4
-		"polygon":
-			var polygon = ConvexPolygonShape2D.new()
-			var vertex_count = int(args[2])
-			var points: PackedVector2Array = []
-			for i in range(vertex_count):
-				var vx = float(args[3 + i * 2]) * pixels_per_meter
-				var vy = -float(args[4 + i * 2]) * pixels_per_meter  # Flip Y for vertices
-				points.append(Vector2(vx, vy))
-			polygon.points = points
-			shape = polygon
-			shape_data_end = 3 + vertex_count * 2
-		_:
-			return -1
-
-	var collision = CollisionShape2D.new()
-	collision.shape = shape
-
-	# Apply physics material properties if dynamic body
-	if node is RigidBody2D:
-		var density = float(args[shape_data_end]) if args.size() > shape_data_end else 1.0
-		var friction = float(args[shape_data_end + 1]) if args.size() > shape_data_end + 1 else 0.3
-		var restitution = float(args[shape_data_end + 2]) if args.size() > shape_data_end + 2 else 0.0
-
-		var material = PhysicsMaterial.new()
-		material.friction = friction
-		material.bounce = restitution
-		node.physics_material_override = material
-
-		# Update mass based on density
-		var area = _calculate_shape_area(shape)
-		node.mass = density * area
-
-	# Check for sensor mode
-	var is_sensor = bool(args[shape_data_end + 3]) if args.size() > shape_data_end + 3 else false
-	var area = null
-	if is_sensor:
-		# For sensors, create an Area2D instead
-		area = Area2D.new()
-		area.name = entity_id + "_sensor"
-		var sensor_collision = CollisionShape2D.new()
-		sensor_collision.shape = shape
-		area.add_child(sensor_collision)
-		area.body_shape_entered.connect(_on_sensor_body_shape_entered.bind(entity_id))
-		area.body_shape_exited.connect(_on_sensor_body_shape_exited.bind(entity_id))
-		node.add_child(area)
-
-		# Store sensor Area2D in entities dict with type tag
-		area.set_meta("entity_type", "sensor")
-		entities[entity_id + "_sensor"] = area
+func _notify_js_destroy(entity_id: String) -> void:
+	if _js_destroy_callback != null:
+		_js_destroy_callback.call("call", null, entity_id)
 	else:
-		node.add_child(collision)
+		# Native path: queue event for polling
+		_queue_event("destroy", {"entityId": entity_id})
 
-	# Collision filtering
-	var category_bits = int(args[shape_data_end + 4]) if args.size() > shape_data_end + 4 else 1
-	var mask_bits = int(args[shape_data_end + 5]) if args.size() > shape_data_end + 5 else 0xFFFFFFFF
-	node.collision_layer = category_bits
-	node.collision_mask = mask_bits
-
-	# Track collider
-	var collider_id = next_collider_id
-	var sensor_area = area if is_sensor else null
-	collider_id_map[collider_id] = {"entity_id": entity_id, "node": collision if not is_sensor else sensor_area}
-	next_collider_id += 1
-
-	# Track shape index -> collider_id mapping for this entity
-	if not entity_shape_map.has(entity_id):
-		entity_shape_map[entity_id] = []
-	entity_shape_map[entity_id].append(collider_id)
-
-	return collider_id
-
-func _calculate_shape_area(shape: Shape2D) -> float:
-	if shape is CircleShape2D:
-		return PI * shape.radius * shape.radius / (pixels_per_meter * pixels_per_meter)
-	elif shape is RectangleShape2D:
-		return shape.size.x * shape.size.y / (pixels_per_meter * pixels_per_meter)
-	elif shape is ConvexPolygonShape2D:
-		# Approximate polygon area using shoelace formula
-		var points = shape.points
-		var area = 0.0
-		var n = points.size()
-		for i in range(n):
-			var j = (i + 1) % n
-			area += points[i].x * points[j].y
-			area -= points[j].x * points[i].y
-		return abs(area) / 2.0 / (pixels_per_meter * pixels_per_meter)
-	return 1.0
-
-func _js_set_sensor(args: Array) -> void:
-	if args.size() < 2:
-		return
-	var collider_id = int(args[0])
-	var is_sensor = bool(args[1])
-	# TODO: Convert existing collider to/from sensor
-
-func set_sensor(collider_id: int, is_sensor: bool) -> void:
-	# TODO: Convert existing collider to/from sensor
-	pass
-
-func add_fixture(body_id: int, shape_type: String, shape_param1: float = 0.0, shape_param2: float = 0.0, shape_param3: float = 0.0, shape_param4: float = 0.0, shape_param5: float = 0.0, shape_param6: float = 0.0, shape_param7: float = 0.0, shape_param8: float = 0.0, density: float = 1.0, friction: float = 0.3, restitution: float = 0.0, is_sensor: bool = false, category_bits: int = 1, mask_bits: int = 0xFFFFFFFF) -> int:
-	var args: Array = [body_id, shape_type]
-	match shape_type:
-		"circle":
-			args.append(shape_param1)
-		"box":
-			args.append(shape_param1)
-			args.append(shape_param2)
-		"polygon":
-			var vertex_count = int(shape_param1)
-			args.append(vertex_count)
-			if vertex_count >= 1:
-				args.append(shape_param2)
-				args.append(shape_param3)
-			if vertex_count >= 2:
-				args.append(shape_param4)
-				args.append(shape_param5)
-			if vertex_count >= 3:
-				args.append(shape_param6)
-				args.append(shape_param7)
-	args.append(density)
-	args.append(friction)
-	args.append(restitution)
-	args.append(is_sensor)
-	args.append(category_bits)
-	args.append(mask_bits)
-	return _js_add_fixture(args)
-
-func _js_set_user_data(args: Array) -> void:
-	if args.size() < 2:
-		return
-	var body_id = int(args[0])
-	user_data[body_id] = args[1]
-
-func _js_get_user_data(args: Array) -> Variant:
-	if args.size() < 1:
-		return null
-	var body_id = int(args[0])
-	return user_data.get(body_id)
-
-func create_body(body_type: String, pos_x: float, pos_y: float, angle: float = 0.0, linear_damping: float = 0.0, angular_damping: float = 0.0, fixed_rotation: bool = false, bullet: bool = false, user_data_json: String = "", group: String = "") -> int:
-	var godot_pos = game_to_godot_pos(Vector2(pos_x, pos_y))
-	var godot_angle = -angle  # Flip angle for Y-up convention
-
-	var entity_id = "body_" + str(next_body_id)
-	var node: Node2D
-
-	match body_type:
-		"static":
-			node = StaticBody2D.new()
-		"kinematic":
-			node = CharacterBody2D.new()
-		_:
-			var rigid = RigidBody2D.new()
-			rigid.gravity_scale = 1.0
-			rigid.linear_damp = linear_damping
-			rigid.angular_damp = angular_damping
-			if fixed_rotation:
-				rigid.lock_rotation = true
-			if bullet:
-				rigid.continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
-			rigid.body_entered.connect(_on_body_entered.bind(entity_id))
-			node = rigid
-
-	node.name = entity_id
-	node.position = godot_pos
-	node.rotation = godot_angle
-
-	var main = get_tree().current_scene
-	if main:
-		main.add_child(node)
-
-	entities[entity_id] = node
-	body_id_map[entity_id] = next_body_id
-	body_id_reverse[next_body_id] = entity_id
-
-	if user_data_json != "":
-		var json = JSON.new()
-		if json.parse(user_data_json) == OK:
-			user_data[next_body_id] = json.data
-	if group != "":
-		body_groups[next_body_id] = group
-
-	var result = next_body_id
-	next_body_id += 1
-	return result
-
-func set_user_data(body_id: int, data_json: String) -> void:
-	if data_json == "":
-		user_data.erase(body_id)
+func _notify_js_entity_spawned(entity_id: String, snapshot: Dictionary) -> void:
+	if _js_entity_spawned_callback != null:
+		var json_str = JSON.stringify(snapshot)
+		_js_entity_spawned_callback.call("call", null, json_str)
 	else:
-		var json = JSON.new()
-		if json.parse(data_json) == OK:
-			user_data[body_id] = json.data
+		# Native path: queue event for polling
+		_queue_event("entity_spawned", snapshot)
 
-func _js_get_all_bodies(args: Array) -> Array:
-	var result: Array = []
-	for body_id in body_id_reverse:
-		result.append(body_id)
-	return result
-
-func _on_sensor_body_shape_entered(body_rid: RID, body: Node2D, body_shape_index: int, local_shape_index: int, sensor_entity_id: String) -> void:
-	if body.name in entities:
-		var sensor_collider_id = -1
-		var other_collider_id = -1
-
-		if entity_shape_map.has(sensor_entity_id) and local_shape_index < entity_shape_map[sensor_entity_id].size():
-			sensor_collider_id = entity_shape_map[sensor_entity_id][local_shape_index]
-
-		if entity_shape_map.has(body.name) and body_shape_index < entity_shape_map[body.name].size():
-			other_collider_id = entity_shape_map[body.name][body_shape_index]
-
-		_notify_sensor_begin(sensor_collider_id, body.name, other_collider_id)
-
-func _on_sensor_body_shape_exited(body_rid: RID, body: Node2D, body_shape_index: int, local_shape_index: int, sensor_entity_id: String) -> void:
-	if body.name in entities:
-		var sensor_collider_id = -1
-		var other_collider_id = -1
-
-		if entity_shape_map.has(sensor_entity_id) and local_shape_index < entity_shape_map[sensor_entity_id].size():
-			sensor_collider_id = entity_shape_map[sensor_entity_id][local_shape_index]
-
-		if entity_shape_map.has(body.name) and body_shape_index < entity_shape_map[body.name].size():
-			other_collider_id = entity_shape_map[body.name][body_shape_index]
-
-		_notify_sensor_end(sensor_collider_id, body.name, other_collider_id)
-
-# =============================================================================
-# PHYSICS PROCESS (for mouse joints and other continuous effects)
-# =============================================================================
-
-var _transform_sync_timer: float = 0.0
-const TRANSFORM_SYNC_INTERVAL: float = 0.033  # ~30fps sync rate
-var _property_sync_timer: float = 0.0
-const PROPERTY_SYNC_INTERVAL: float = 0.016  # 60fps property sync
-
-func _physics_process(delta: float) -> void:
-	# Push transform updates to JS
-	_transform_sync_timer += delta
-	if _transform_sync_timer >= TRANSFORM_SYNC_INTERVAL:
-		_transform_sync_timer = 0.0
-		_notify_transform_sync()
-
-	# Push property updates to JS
-	_property_sync_timer += delta
-	if _property_sync_timer >= PROPERTY_SYNC_INTERVAL:
-		_property_sync_timer = 0.0
-		_notify_property_sync()
-
-	# Process mouse joints
-	for joint_id in joints:
-		var joint = joints[joint_id]
-		if joint is Dictionary and joint.get("type") == "mouse":
-			var entity_id = joint["entity_id"]
-			if entities.has(entity_id):
-				var node = entities[entity_id]
-				if node is RigidBody2D:
-					var target = joint["target"]
-					var current_pos = node.global_position
-					var diff = target - current_pos
-					var force = diff * joint["stiffness"] - node.linear_velocity * joint["damping"]
-					force = force.limit_length(joint["max_force"])
-					node.apply_central_force(force)
-
-	# Process CharacterBody2D movement (kinematic bodies)
-	for entity_id in entities:
-		var node = entities[entity_id]
-		if node is CharacterBody2D and node.velocity.length() > 0.01:
-			node.move_and_slide()
-
-	# Process Area2D movement (sensors with velocity stored in metadata)
-	for entity_id in entities:
-		var node = entities[entity_id]
-		if node is Area2D and node.has_meta("velocity"):
-			var vel = node.get_meta("velocity") as Vector2
-			if vel.length() > 0.01:
-				node.position += vel * delta
-
-	# Process camera follow
-	if camera and camera_target_id != "" and entities.has(camera_target_id):
-		var target_node = entities[camera_target_id]
-		var target_pos = target_node.global_position
-		camera.global_position = camera.global_position.lerp(target_pos, camera_smoothing * delta)
-
-# =============================================================================
-# CAMERA CONTROL
-# =============================================================================
-
-func _js_set_camera_target(args: Array) -> void:
-	if args.size() < 1 or args[0] == null or str(args[0]) == "":
-		camera_target_id = ""
-	else:
-		camera_target_id = str(args[0])
-
-func _js_set_camera_position(args: Array) -> void:
-	if args.size() < 2:
-		return
-	camera_target_id = ""
-	var godot_pos = game_to_godot_pos(Vector2(float(args[0]), float(args[1])))
-	if camera:
-		camera.global_position = godot_pos
-
-func _js_set_camera_zoom(args: Array) -> void:
-	if args.size() < 1:
-		return
-	var zoom_level = float(args[0])
-	if camera:
-		camera.zoom = Vector2(zoom_level, zoom_level)
-
-func set_camera_target(entity_id: String) -> void:
-	if entity_id == "":
-		camera_target_id = ""
-	else:
-		camera_target_id = entity_id
-
-func set_camera_position(x: float, y: float) -> void:
-	camera_target_id = ""
-	if camera:
-		camera.global_position = game_to_godot_pos(Vector2(x, y))
-
-func set_camera_zoom(zoom_level: float) -> void:
-	if camera:
-		camera.zoom = Vector2(zoom_level, zoom_level)
-
-# =============================================================================
-# PARTICLE SYSTEM
-# =============================================================================
-
-func _js_spawn_particle(args: Array) -> void:
-	if args.size() < 3:
-		push_error("[GameBridge] spawnParticle requires 3 args: type, x, y")
+func _setup_splat_map() -> void:
+	if _splat_enabled:
 		return
 
-	var particle_type = str(args[0])
-	var godot_pos = game_to_godot_pos(Vector2(float(args[1]), float(args[2])))
+	_splat_viewport = SubViewport.new()
+	_splat_viewport.name = "SplatMap"
+	_splat_viewport.size = Vector2(512, 512) # Low res is fine for splat map
+	_splat_viewport.transparent_bg = false
+	_splat_viewport.render_target_update_mode = SubViewport.UPDATE_WHEN_VISIBLE
+	_splat_viewport.render_target_clear_mode = SubViewport.CLEAR_MODE_ALWAYS
+	add_child(_splat_viewport)
 
-	var particles: CPUParticles2D = null
+	_splat_canvas = CanvasLayer.new()
+	_splat_viewport.add_child(_splat_canvas)
 
-	var scene_path = "res://particles/" + particle_type + ".tscn"
-	if ResourceLoader.exists(scene_path):
-		var scene = load(scene_path)
-		if scene:
-			var instance = scene.instantiate()
-			if instance is CPUParticles2D:
-				particles = instance
-			elif instance is GPUParticles2D:
-				push_warning("[GameBridge] GPUParticles2D not supported, using fallback")
-			else:
-				for child in instance.get_children():
-					if child is CPUParticles2D:
-						particles = child
-						child.get_parent().remove_child(child)
-						instance.queue_free()
-						break
-				if particles == null:
-					instance.queue_free()
+	# Background black (no force)
+	var bg = ColorRect.new()
+	bg.color = Color.BLACK
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_splat_canvas.add_child(bg)
 
-	if particles == null:
-		particles = CPUParticles2D.new()
-		particles.amount = 16
-		particles.explosiveness = 1.0
-		particles.spread = 180.0
-		particles.gravity = Vector2(0, 0)
-		particles.initial_velocity_min = 50.0
-		particles.initial_velocity_max = 100.0
-		particles.scale_amount_min = 2.0
-		particles.scale_amount_max = 4.0
-		particles.color = Color.YELLOW
-		particles.lifetime = 0.5
+	_splat_enabled = true
 
-	particles.position = godot_pos
-	particles.one_shot = true
-	particles.emitting = false
+func enable_splat_map() -> void:
+	if not _splat_enabled:
+		_setup_splat_map()
+
+func disable_splat_map() -> void:
+	if _splat_enabled and _splat_viewport:
+		for proxy in _splat_proxies.values():
+			proxy.queue_free()
+		_splat_proxies.clear()
+		_splat_viewport.queue_free()
+		_splat_viewport = null
+		_splat_canvas = null
+		_splat_enabled = false
+
+func get_splat_texture() -> Texture2D:
+	return _splat_viewport.get_texture()
+
+func _process(_delta: float) -> void:
+	# Update splat proxies (only if enabled)
+	if _splat_enabled and _splat_viewport and _splat_canvas:
+		for entity_id in entities:
+			var entity = entities[entity_id]
+
+			# Skip stationary entities (optimization for 100+ entities)
+			var vel = Vector2.ZERO
+			if entity is RigidBody2D:
+				vel = entity.linear_velocity
+			elif entity is CharacterBody2D:
+				vel = entity.velocity
+			elif entity is Area2D and entity.has_meta("velocity"):
+				vel = entity.get_meta("velocity")
+
+			# Cull low-velocity entities (reduce updates)
+			if vel.length_squared() < 0.01 and _splat_proxies.has(entity_id):
+				continue  # Skip update for stationary entities
+
+			if not _splat_proxies.has(entity_id):
+				var proxy = SPLAT_PROXY_SCENE.instantiate()
+				_splat_canvas.add_child(proxy)
+				_splat_proxies[entity_id] = proxy
+
+			var proxy = _splat_proxies[entity_id]
+
+			# Sync position (map game world to viewport)
+			if camera:
+				var screen_pos = entity.get_global_transform_with_canvas().origin
+				# Map screen pos to splat viewport
+				var viewport_size = get_viewport().get_visible_rect().size
+				var uv = screen_pos / viewport_size
+				proxy.position = uv * Vector2(_splat_viewport.size)
+
+			# Encode Velocity
+			# R = X vel, G = Y vel, B = Presence
+			# Normalize velocity (-20..20 -> 0..1)
+			var r = clamp((vel.x / 40.0) + 0.5, 0.0, 1.0)
+			var g = clamp((-vel.y / 40.0) + 0.5, 0.0, 1.0) # Flip Y for texture space
+			proxy.modulate = Color(r, g, 1.0, 1.0)
+
+			# Scale proxy based on mass/size if possible, default to fixed size for now
+			proxy.scale = Vector2(0.5, 0.5)
+
+		# Clean up dead proxies
+		var dead_ids = []
+		for id in _splat_proxies:
+			if not entities.has(id):
+				dead_ids.append(id)
+		for id in dead_ids:
+			_splat_proxies[id].queue_free()
+			_splat_proxies.erase(id)
+
+	if ws:
+		ws.poll()
+		var state = ws.get_ready_state()
+		if state == WebSocketPeer.STATE_OPEN:
+			while ws.get_available_packet_count() > 0:
+				var packet = ws.get_packet()
+				_on_ws_message(packet.get_string_from_utf8())
+		elif state == WebSocketPeer.STATE_CLOSED:
+			ws = null
+
+# Connect to WebSocket server
+func connect_to_server(url: String = "") -> void:
+	if url != "":
+		ws_url = url
+	ws = WebSocketPeer.new()
+	var err = ws.connect_to_url(ws_url)
+	if err != OK:
+		ws = null
+
+func _on_ws_message(message: String) -> void:
+	var json = JSON.new()
+	var err = json.parse(message)
+	if err == OK:
+		var data = json.data
+		if data.has("type"):
+			match data.type:
+				"load_game":
+					load_game_json(JSON.stringify(data.game))
+				"spawn":
+					spawn_entity(data.template, data.x, data.y)
+
+# Main entry point: Load a game from JSON string
+func load_game_json(json_string: String) -> bool:
+	var json = JSON.new()
+	var err = json.parse(json_string)
+	if err != OK:
+		push_error("[GameBridge] JSON parse error: " + json.get_error_message())
+		return false
+
+	game_data = json.data
+
+	# Clear existing game
+	clear_game()
+
+	# Setup world
+	_setup_world(game_data.get("world", {}))
+
+	# Setup background
+	_setup_background(game_data.get("background", {}))
+
+	# Load templates
+	templates = game_data.get("templates", {})
+	print("[DEBUG] Loaded templates: ", templates.keys())
+	for tmpl_id in templates:
+		var tmpl = templates[tmpl_id]
+		if tmpl.has("visual"):
+			print("[DEBUG] Template ", tmpl_id, " visual.type: ", tmpl.visual.get("type", "NO TYPE"))
+
+	# Create entities
+	var entities_data = game_data.get("entities", [])
+	for entity_data in entities_data:
+		_create_entity(entity_data)
+
+	game_loaded.emit(game_data)
+	return true
+
+func load_custom_scene(scene_path: String) -> bool:
+	if not ResourceLoader.exists(scene_path):
+		push_error("[GameBridge] Scene not found: " + scene_path)
+		return false
+
+	var scene = load(scene_path)
+	if not scene:
+		push_error("[GameBridge] Failed to load scene: " + scene_path)
+		return false
 
 	if game_root:
-		game_root.add_child(particles)
+		for child in game_root.get_children():
+			child.queue_free()
+
+		var instance = scene.instantiate()
+		game_root.add_child(instance)
+		return true
+	else:
+		push_error("[GameBridge] game_root not set")
+		return false
+
+func _setup_world(world_data: Dictionary) -> void:
+	pixels_per_meter = world_data.get("pixelsPerMeter", 50.0)
+
+	var gravity = world_data.get("gravity", {"x": 0, "y": -9.8})
+	var gravity_vec = game_to_godot_vec(Vector2(gravity.x, gravity.y))
+
+	PhysicsServer2D.area_set_param(
+		get_viewport().find_world_2d().space,
+		PhysicsServer2D.AREA_PARAM_GRAVITY,
+		gravity_vec.length()
+	)
+	PhysicsServer2D.area_set_param(
+		get_viewport().find_world_2d().space,
+		PhysicsServer2D.AREA_PARAM_GRAVITY_VECTOR,
+		gravity_vec.normalized()
+	)
+
+	if camera:
+		camera.global_position = Vector2.ZERO
+
+var _background_layer: CanvasLayer = null
+var _background_rect: TextureRect = null
+var _parallax_layers: Array = []
+
+func _setup_background(bg_data: Dictionary) -> void:
+	# Clean up existing background
+	if _background_layer:
+		_background_layer.queue_free()
+		_background_layer = null
+		_background_rect = null
+
+	for layer in _parallax_layers:
+		if is_instance_valid(layer):
+			layer.queue_free()
+	_parallax_layers.clear()
+
+	if bg_data.is_empty():
+		return
+
+	var bg_type = bg_data.get("type", "")
+
+	if bg_type == "parallax":
+		_setup_parallax_background(bg_data)
+		return
+
+	if bg_type != "static":
+		return
+
+	var image_url = bg_data.get("imageUrl", "")
+	var color = bg_data.get("color", "")
+
+	_background_layer = CanvasLayer.new()
+	_background_layer.layer = -100
+	_background_layer.name = "BackgroundLayer"
+	add_child(_background_layer)
+
+	_background_rect = TextureRect.new()
+	_background_rect.name = "Background"
+	_background_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_background_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_background_rect.anchor_left = 0.0
+	_background_rect.anchor_top = 0.0
+	_background_rect.anchor_right = 1.0
+	_background_rect.anchor_bottom = 1.0
+	_background_layer.add_child(_background_rect)
+
+	if image_url != "":
+		_download_background_texture(image_url)
+	elif color != "":
+		var viewport_size = get_viewport().get_visible_rect().size
+		var img = Image.create(int(viewport_size.x), int(viewport_size.y), false, Image.FORMAT_RGBA8)
+		img.fill(Color.from_string(color, Color.GRAY))
+		_background_rect.texture = ImageTexture.create_from_image(img)
+
+func _download_image_texture(url: String, callback: Callable) -> void:
+	if _texture_cache.has(url):
+		var texture = _texture_cache[url]
+		callback.call(texture)
+		return
+
+	var http = HTTPRequest.new()
+	add_child(http)
+
+	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+			push_error("[GameBridge] Failed to download image: " + url)
+			return
+
+		var image = Image.new()
+		var err = image.load_png_from_buffer(body)
+		if err != OK:
+			err = image.load_jpg_from_buffer(body)
+		if err != OK:
+			err = image.load_webp_from_buffer(body)
+		if err != OK:
+			push_error("[GameBridge] Failed to parse image: " + url)
+			return
+
+		var texture = ImageTexture.create_from_image(image)
+		_texture_cache[url] = texture
+		callback.call(texture)
+	)
+
+	var err = http.request(url)
+	if err != OK:
+		push_error("[GameBridge] Failed to start image download: " + url)
+		http.queue_free()
+
+func _download_background_texture(url: String) -> void:
+	_download_image_texture(url, func(texture: Texture2D):
+		if is_instance_valid(_background_rect):
+			_background_rect.texture = texture
+			print("[BG] Applied texture ", texture.get_width(), "x", texture.get_height(), " to TextureRect with STRETCH_KEEP_ASPECT_COVERED")
+	)
+
+func _apply_background_texture(texture: Texture2D) -> void:
+	if not is_instance_valid(_background_rect) or texture == null:
+		return
+
+	_background_rect.texture = texture
+	print("[BG] Applied texture ", texture.get_width(), "x", texture.get_height(), " to TextureRect with STRETCH_KEEP_ASPECT_COVERED")
+
+func _setup_parallax_background(bg_data: Dictionary) -> void:
+	var layers_data = bg_data.get("layers", [])
+	if layers_data.is_empty():
+		return
+
+	# Map depth to z-index (further back = lower z-index)
+	var depth_to_z = {
+		"sky": -400,
+		"far": -300,
+		"mid": -200,
+		"near": -100
+	}
+
+	for layer_data in layers_data:
+		var layer_id = layer_data.get("id", "")
+		var image_url = layer_data.get("imageUrl", "")
+		var depth = layer_data.get("depth", "mid")
+		var parallax_factor = layer_data.get("parallaxFactor", 0.5)
+		var visible = layer_data.get("visible", true)
+
+		if not visible or image_url == "":
+			continue
+
+		var layer = CanvasLayer.new()
+		layer.layer = depth_to_z.get(depth, -200)
+		layer.name = "ParallaxLayer_" + layer_id
+		add_child(layer)
+
+		var rect = TextureRect.new()
+		rect.name = layer_id
+		rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		rect.anchor_left = 0.0
+		rect.anchor_top = 0.0
+		rect.anchor_right = 1.0
+		rect.anchor_bottom = 1.0
+		layer.add_child(rect)
+
+		_parallax_layers.append({"layer": layer, "rect": rect, "factor": parallax_factor, "url": image_url})
+
+		# Download texture for this layer
+		_download_image_texture(image_url, func(texture: Texture2D):
+			if is_instance_valid(rect):
+				rect.texture = texture
+				print("[BG] Applied parallax layer texture ", texture.get_width(), "x", texture.get_height())
+		)
+
+	print("[BG] Setup ", _parallax_layers.size(), " parallax layers")
+
+func _create_entity(entity_data: Dictionary) -> Node2D:
+	var entity_id = entity_data.get("id", "entity_" + str(randi()))
+	var template_id = entity_data.get("template", "")
+	var transform_data = entity_data.get("transform", {})
+
+	JavaScriptBridge.eval("console.log('[Godot] Creating entity: " + entity_id + " template: " + template_id + "')")
+
+	# Merge template with entity data
+	var merged = entity_data.duplicate(true)
+
+	if template_id != "" and templates.has(template_id):
+		var tmpl = templates[template_id]
+		# Template provides defaults, entity_data overrides
+		for key in tmpl:
+			if not merged.has(key):
+				merged[key] = tmpl[key]
+		# Merge components specifically
+		_merged_component(merged, tmpl, "physics")
+		_merged_component(merged, tmpl, "collider")
+		_merged_component(merged, tmpl, "visual")
+		_merged_component(merged, tmpl, "character")
+		_merged_component(merged, tmpl, "zone")
+
+	var physics_data = merged.get("physics", null)
+	var collider_data = merged.get("collider", null)
+	var visual_data = merged.get("visual", null)
+	var zone_data = merged.get("zone", null)
+	var entity_type = merged.get("type", "")
+
+	var node: Node2D = null
+
+	# Create physics body if physics component exists
+	if physics_data:
+		node = _create_physics_body(entity_id, physics_data, collider_data, transform_data)
+	# Create zone (legacy) if zone component exists
+	elif entity_type == "zone" and zone_data:
+		node = _create_zone_entity(entity_id, zone_data, transform_data)
+	# Create sensor-only entity if collider with isSensor exists
+	elif collider_data and collider_data.get("isSensor", false):
+		node = _create_sensor_entity(entity_id, collider_data, transform_data)
+	# Otherwise create plain Node2D
+	else:
+		node = Node2D.new()
+		node.name = entity_id
+
+	# Set transform (convert from game coords to Godot coords with Y-flip)
+	var game_pos = Vector2(transform_data.get("x", 0), transform_data.get("y", 0))
+	var godot_pos = game_to_godot_pos(game_pos)
+	var angle = transform_data.get("angle", 0)
+	node.position = godot_pos
+	node.rotation = -angle
+
+	# Add visual component
+	if visual_data:
+		print("[DEBUG] Adding visual for entity: ", entity_id, " type: ", visual_data.get("type", "unknown"), " keys: ", visual_data.keys())
+		# Apply smart defaults: visual inherits from collider
+		var resolved_visual = _resolve_visual_with_defaults(visual_data, collider_data)
+		print("[DEBUG] Resolved visual type: ", resolved_visual.get("type", "NO TYPE"))
+		_add_visual(node, resolved_visual)
+	elif collider_data:
+		# Auto-generate visual from collider if no visual specified
+		var auto_visual = _generate_visual_from_collider(collider_data)
+		_add_visual(node, auto_visual)
+	else:
+		print("[DEBUG] NO visual or collider for entity: ", entity_id)
+
+	# Add collider shape if collider exists (and not already added by physics)
+	if collider_data and not physics_data:
+		var collision = CollisionShape2D.new()
+		collision.shape = _create_collider_shape(collider_data)
+		node.add_child(collision)
+
+	# Add to scene
+	if game_root:
+		game_root.add_child(node)
 	else:
 		var main = get_tree().current_scene
 		if main:
-			main.add_child(particles)
-
-	particles.emitting = true
-	particles.finished.connect(particles.queue_free)
-
-func spawn_particle(particle_type: String, x: float, y: float) -> void:
-	_js_spawn_particle([particle_type, x, y])
-
-# =============================================================================
-# AUDIO SYSTEM
-# =============================================================================
-
-func _js_play_sound(args: Array) -> void:
-	if args.size() < 1:
-		push_error("[GameBridge] playSound requires 1 arg: resource_path")
-		return
-
-	var resource_path = str(args[0])
-
-	var audio_stream: AudioStream = null
-	if _audio_cache.has(resource_path):
-		audio_stream = _audio_cache[resource_path]
-	else:
-		var resource = load(resource_path)
-		if resource == null or not (resource is AudioStream):
-			push_error("[GameBridge] playSound: failed to load audio resource: " + resource_path)
-			return
-		audio_stream = resource
-		_audio_cache[resource_path] = audio_stream
-
-	var player = AudioStreamPlayer.new()
-	player.stream = audio_stream
-	add_child(player)
-	player.play()
-	player.finished.connect(player.queue_free)
-
-func play_sound(resource_path: String) -> void:
-	_js_play_sound([resource_path])
-
-# =============================================================================
-# UI BUTTON SYSTEM
-# =============================================================================
-
-func _js_create_ui_button(args: Array) -> void:
-	# args: [buttonId, normalImageUrl, pressedImageUrl, x, y, width, height]
-	# x, y, width, height are in screen pixels (not world meters)
-	if args.size() < 7:
-		push_error("[GameBridge] createUIButton requires 7 args: buttonId, normalUrl, pressedUrl, x, y, width, height")
-		return
-
-	var button_id = str(args[0])
-	var normal_url = str(args[1])
-	var pressed_url = str(args[2])
-	var pos_x = float(args[3])
-	var pos_y = float(args[4])
-	var btn_width = float(args[5])
-	var btn_height = float(args[6])
-
-	# Remove existing button with same ID
-	if _ui_buttons.has(button_id):
-		_ui_buttons[button_id].queue_free()
-		_ui_buttons.erase(button_id)
-
-	# Create TextureButton
-	var button = TextureButton.new()
-	button.name = button_id
-	button.position = Vector2(pos_x, pos_y)
-	button.custom_minimum_size = Vector2(btn_width, btn_height)
-	button.size = Vector2(btn_width, btn_height)
-	button.ignore_texture_size = true
-	button.stretch_mode = TextureButton.STRETCH_SCALE
-
-	var normal_tex = _create_placeholder_texture(normal_url, int(btn_width), int(btn_height))
-	var pressed_tex = _create_placeholder_texture(pressed_url, int(btn_width), int(btn_height))
-
-	button.texture_normal = normal_tex
-	button.texture_pressed = pressed_tex
-
-	# Connect signals
-	button.button_down.connect(_on_ui_button_down.bind(button_id))
-	button.button_up.connect(_on_ui_button_up.bind(button_id))
-	button.pressed.connect(_on_ui_button_pressed.bind(button_id))
-
-	var ui_layer = _get_or_create_ui_layer()
-	ui_layer.add_child(button)
-	_ui_buttons[button_id] = button
-
-func _js_destroy_ui_button(args: Array) -> void:
-	if args.size() < 1:
-		return
-	var button_id = str(args[0])
-	if _ui_buttons.has(button_id):
-		_ui_buttons[button_id].queue_free()
-		_ui_buttons.erase(button_id)
-
-func create_ui_button(button_id: String, normal_url: String, pressed_url: String, pos_x: float, pos_y: float, btn_width: float, btn_height: float) -> void:
-	if _ui_buttons.has(button_id):
-		_ui_buttons[button_id].queue_free()
-		_ui_buttons.erase(button_id)
-
-	var button = TextureButton.new()
-	button.name = button_id
-	button.position = Vector2(pos_x, pos_y)
-	button.custom_minimum_size = Vector2(btn_width, btn_height)
-	button.size = Vector2(btn_width, btn_height)
-	button.ignore_texture_size = true
-	button.stretch_mode = TextureButton.STRETCH_SCALE
-
-	var normal_tex = _create_placeholder_texture(normal_url, int(btn_width), int(btn_height))
-	var pressed_tex = _create_placeholder_texture(pressed_url, int(btn_width), int(btn_height))
-	button.texture_normal = normal_tex
-	button.texture_pressed = pressed_tex
-
-	button.button_down.connect(_on_ui_button_down.bind(button_id))
-	button.button_up.connect(_on_ui_button_up.bind(button_id))
-	button.pressed.connect(_on_ui_button_pressed.bind(button_id))
-
-	var ui_layer = _get_or_create_ui_layer()
-	ui_layer.add_child(button)
-	_ui_buttons[button_id] = button
-
-func destroy_ui_button(button_id: String) -> void:
-	if _ui_buttons.has(button_id):
-		_ui_buttons[button_id].queue_free()
-		_ui_buttons.erase(button_id)
-
-func create_themed_ui_component(component_id: String, component_type: int, metadata_url: String, pos_x: float, pos_y: float, width: float, height: float, label_text: String = "") -> void:
-	var ui_layer = _get_or_create_ui_layer()
-
-	var themed_comp = ThemedUIComponent.new()
-	themed_comp.name = component_id
-	themed_comp.position = Vector2(pos_x, pos_y)
-	themed_comp.custom_minimum_size = Vector2(width, height)
-	themed_comp.setup(component_type, metadata_url, label_text)
-
-	ui_layer.add_child(themed_comp)
-	_ui_buttons[component_id] = themed_comp
-
-func destroy_themed_ui_component(component_id: String) -> void:
-	if _ui_buttons.has(component_id):
-		_ui_buttons[component_id].queue_free()
-		_ui_buttons.erase(component_id)
-
-func _js_on_ui_button_event(args: Array) -> void:
-	if args.size() >= 1:
-		_js_ui_button_callback = args[0]
-
-func _on_ui_button_down(button_id: String) -> void:
-	_notify_ui_button_event("button_down", button_id)
-
-func _on_ui_button_up(button_id: String) -> void:
-	_notify_ui_button_event("button_up", button_id)
-
-func _on_ui_button_pressed(button_id: String) -> void:
-	_notify_ui_button_event("button_pressed", button_id)
-
-func _notify_ui_button_event(event_type: String, button_id: String) -> void:
-	if _js_ui_button_callback != null:
-		_js_ui_button_callback.call("call", null, event_type, button_id)
-	else:
-		# Native path: queue event for polling
-		_queue_event("ui_button", {"eventType": event_type, "buttonId": button_id})
-
-func _get_or_create_ui_layer() -> CanvasLayer:
-	var ui_layer = get_node_or_null("UILayer")
-	if ui_layer:
-		return ui_layer
-
-	ui_layer = CanvasLayer.new()
-	ui_layer.name = "UILayer"
-	ui_layer.layer = 100  # On top of everything
-	add_child(ui_layer)
-	return ui_layer
-
-func _create_placeholder_texture(url: String, width: int, height: int) -> ImageTexture:
-	# Parse color from URL (supports dummyimage.com format or hex colors)
-	var color = Color.GRAY
-
-	# Try to extract color from dummyimage.com URL format: /200x200/COLOR/...
-	if "dummyimage.com" in url:
-		var parts = url.split("/")
-		for i in range(parts.size()):
-			if "x" in parts[i] and parts[i].is_valid_int() == false:
-				# Found dimension like "200x200", next part should be color
-				if i + 1 < parts.size():
-					var color_str = parts[i + 1]
-					if color_str.length() == 3 or color_str.length() == 6:
-						color = Color.from_string("#" + color_str, Color.GRAY)
-				break
-	elif url.begins_with("#"):
-		color = Color.from_string(url, Color.GRAY)
-
-	# Create image with solid color
-	var image = Image.create(max(width, 1), max(height, 1), false, Image.FORMAT_RGBA8)
-	image.fill(color)
-
-	var texture = ImageTexture.create_from_image(image)
-	return texture
-
-# =============================================================================
-# EVENT QUEUE FOR NATIVE POLLING
-# Delegates to EventQueue module for cleaner separation
-# =============================================================================
-
-func _queue_event(event_type: String, data: Dictionary) -> void:
-	if _event_queue_module:
-		_event_queue_module.queue_event(event_type, data)
-	else:
-		# Fallback for early calls before module init
-		if _event_queue.size() >= MAX_EVENT_QUEUE_SIZE:
-			_event_queue.pop_front()
-		_event_queue.append({"type": event_type, "data": data})
-
-func poll_events() -> String:
-	if _event_queue_module:
-		return _event_queue_module.poll_events()
-	# Fallback
-	if _event_queue.is_empty():
-		return "[]"
-	var events = _event_queue.duplicate()
-	_event_queue.clear()
-	return JSON.stringify(events)
-
-# =============================================================================
-# 3D MODEL LOADING (GLB/glTF)
-# Delegates to GLBLoader module for 3D model support
-# =============================================================================
-
-func load_glb(path: String, parent: Node3D = null) -> Node3D:
-	if _glb_loader:
-		return _glb_loader.load_glb(path, parent)
-	push_error("[GameBridge] GLBLoader module not initialized")
-	return null
-
-func load_glb_from_buffer(buffer: PackedByteArray, base_path: String = "", parent: Node3D = null) -> Node3D:
-	if _glb_loader:
-		return _glb_loader.load_glb_from_buffer(buffer, base_path, parent)
-	push_error("[GameBridge] GLBLoader module not initialized")
-	return null
-
-func load_glb_async(url: String, parent: Node3D = null, callback: Callable = Callable()) -> void:
-	if _glb_loader:
-		_glb_loader.load_glb_async(url, parent, callback)
-	else:
-		push_error("[GameBridge] GLBLoader module not initialized")
-		if callback.is_valid():
-			callback.call(null)
-
-func show_3d_model(path: String) -> bool:
-	if not _viewport_3d:
-		push_error("[GameBridge] Viewport3D not initialized")
-		return false
-	var model = _viewport_3d.load_glb(path)
-	return model != null
-
-func show_3d_model_from_url(url: String) -> void:
-	if not _viewport_3d:
-		push_error("[GameBridge] Viewport3D not initialized")
-		return
-	_viewport_3d.load_glb_async(url)
-
-func set_3d_viewport_position(x: float, y: float) -> void:
-	if _viewport_3d:
-		# Convert game coordinates to screen pixel coordinates
-		# Game (0,0) is center, so we need to offset by half screen size
-		var viewport_size = get_viewport().get_visible_rect().size
-		var screen_center = viewport_size / 2.0
-		# Game coordinates: x is horizontal (positive right), y is vertical (positive up)
-		# Screen coordinates: origin is top-left, y increases downward
-		var screen_pos = screen_center + Vector2(x * pixels_per_meter, -y * pixels_per_meter)
-		_viewport_3d.position = screen_pos
-
-func set_3d_viewport_size(width: int, height: int) -> void:
-	if _viewport_3d:
-		_viewport_3d.set_viewport_size(width, height)
-
-func rotate_3d_model(x: float, y: float, z: float) -> void:
-	if _viewport_3d:
-		_viewport_3d.set_model_rotation(Vector3(x, y, z))
-
-func set_3d_camera_distance(distance: float) -> void:
-	if _viewport_3d:
-		_viewport_3d.set_camera_distance(distance)
-
-func clear_3d_models() -> void:
-	if _viewport_3d:
-		_viewport_3d.clear_models()
-
-func _js_show_3d_model(args: Array) -> bool:
-	if args.size() < 1:
-		return false
-	return show_3d_model(str(args[0]))
-
-func _js_show_3d_model_from_url(args: Array) -> void:
-	if args.size() < 1:
-		return
-	show_3d_model_from_url(str(args[0]))
-
-func _js_set_3d_viewport_position(args: Array) -> void:
-	if args.size() < 2:
-		return
-	set_3d_viewport_position(float(args[0]), float(args[1]))
-
-func _js_set_3d_viewport_size(args: Array) -> void:
-	if args.size() < 2:
-		return
-	set_3d_viewport_size(int(args[0]), int(args[1]))
-
-func _js_rotate_3d_model(args: Array) -> void:
-	if args.size() < 3:
-		return
-	rotate_3d_model(float(args[0]), float(args[1]), float(args[2]))
-
-func _js_set_3d_camera_distance(args: Array) -> void:
-	if args.size() < 1:
-		return
-	set_3d_camera_distance(float(args[0]))
-
-func _js_clear_3d_models(_args: Array) -> void:
-	clear_3d_models()
-
-# =============================================================================
-# PROPERTY COLLECTION (for property watching system)
-# =============================================================================
-
-var _frame_counter: int = 0
-
-func collect_all_properties() -> Dictionary:
-	if _property_collector:
-		_frame_counter += 1
-		return _property_collector.collect_properties(_frame_counter)
-	return {
-		"frameId": 0,
-		"timestamp": Time.get_ticks_msec(),
-		"entities": {}
-	}
-
-func set_watch_config(config: Dictionary) -> void:
-	if _property_collector:
-		_property_collector.set_watch_config(config)
-	else:
-		push_warning("[GameBridge] PropertyCollector not initialized, cannot set watch config")
-
-# =============================================================================
-# DEBUG BRIDGE - Screenshot and Info Methods
-# =============================================================================
-
-var _debug_overlay: CanvasLayer = null
-var _debug_overlay_visible: bool = false
-
-func _js_capture_screenshot(args: Array) -> void:
-	var with_overlays = false
-	var overlay_types: Array = ["bounds", "labels"]
-
-	if args.size() >= 1:
-		with_overlays = bool(args[0])
-	if args.size() >= 2:
-		var types_json = str(args[1])
-		var parsed = JSON.parse_string(types_json)
-		if parsed is Array:
-			overlay_types = parsed
-
-	var result = await capture_screenshot(with_overlays, overlay_types)
-	_js_bridge_obj["_lastResult"] = result
-
-func capture_screenshot(with_overlays: bool = false, overlay_types: Array = ["bounds", "labels"]) -> Dictionary:
-	if with_overlays:
-		_draw_debug_overlays(overlay_types)
-
-	await RenderingServer.frame_post_draw
-
-	var viewport = get_viewport()
-	var img = viewport.get_texture().get_image()
-
-	if with_overlays:
-		_clear_debug_overlays()
-
-	var buffer = img.save_png_to_buffer()
-	var base64 = Marshalls.raw_to_base64(buffer)
-
-	return {
-		"base64": base64,
-		"width": img.get_width(),
-		"height": img.get_height(),
-		"timestamp": Time.get_ticks_msec(),
-		"frameId": _frame_counter
-	}
-
-func _draw_debug_overlays(overlay_types: Array) -> void:
-	if not _debug_overlay:
-		_debug_overlay = CanvasLayer.new()
-		_debug_overlay.name = "DebugOverlay"
-		_debug_overlay.layer = 100
-		add_child(_debug_overlay)
-
-	for child in _debug_overlay.get_children():
-		child.queue_free()
-
-	var draw_node = Control.new()
-	draw_node.set_anchors_preset(Control.PRESET_FULL_RECT)
-	draw_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_debug_overlay.add_child(draw_node)
-
-	var overlay_script = GDScript.new()
-	overlay_script.source_code = _get_overlay_draw_script(overlay_types)
-	overlay_script.reload()
-	draw_node.set_script(overlay_script)
-	draw_node.set("entities_data", _collect_overlay_data())
-	draw_node.set("pixels_per_meter", pixels_per_meter)
-	draw_node.set("camera_pos", camera.global_position if camera else Vector2.ZERO)
-	draw_node.set("camera_zoom", camera.zoom if camera else Vector2.ONE)
-
-	_debug_overlay.visible = true
-	_debug_overlay_visible = true
-
-func _get_overlay_draw_script(overlay_types: Array) -> String:
-	var draw_bounds = "bounds" in overlay_types
-	var draw_labels = "labels" in overlay_types
-	var draw_velocities = "velocities" in overlay_types
-	var draw_ids = "ids" in overlay_types
-
-	return """
-extends Control
-
-var entities_data: Array = []
-var pixels_per_meter: float = 50.0
-var camera_pos: Vector2 = Vector2.ZERO
-var camera_zoom: Vector2 = Vector2.ONE
-
-func _draw():
-	var viewport_center = get_viewport_rect().size / 2
-
-	for entity in entities_data:
-		var godot_pos = entity.get("godot_pos", Vector2.ZERO)
-		var screen_pos = (godot_pos - camera_pos) * camera_zoom + viewport_center
-
-		var width = entity.get("width", 1.0) * pixels_per_meter * camera_zoom.x
-		var height = entity.get("height", 1.0) * pixels_per_meter * camera_zoom.y
-		var entity_id = entity.get("id", "")
-		var template = entity.get("template", "")
-		var velocity = entity.get("velocity", Vector2.ZERO)
-
-		var rect = Rect2(screen_pos.x - width/2, screen_pos.y - height/2, width, height)
-
-		%s
-
-		%s
-
-		%s
-""" % [
-		"draw_rect(rect, Color.CYAN, false, 2.0)" if draw_bounds else "",
-		"""
-		var label = entity_id if %s else template
-		var font = ThemeDB.fallback_font
-		var font_size = 12
-		draw_string(font, Vector2(screen_pos.x - width/2, screen_pos.y - height/2 - 4), label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.YELLOW)
-""" % ("true" if draw_ids else "false") if draw_labels or draw_ids else "",
-		"""
-		if velocity.length() > 0.1:
-			var vel_end = screen_pos + velocity * pixels_per_meter * camera_zoom.x * 0.5
-			draw_line(screen_pos, vel_end, Color.GREEN, 2.0)
-			var angle = velocity.angle()
-			var arrow_size = 8
-			draw_line(vel_end, vel_end - Vector2(cos(angle - 0.5), sin(angle - 0.5)) * arrow_size, Color.GREEN, 2.0)
-			draw_line(vel_end, vel_end - Vector2(cos(angle + 0.5), sin(angle + 0.5)) * arrow_size, Color.GREEN, 2.0)
-""" if draw_velocities else ""
-	]
-
-func _collect_overlay_data() -> Array:
-	var data: Array = []
-
-	for entity_id in entities:
-		var node = entities[entity_id]
-		if not is_instance_valid(node):
-			continue
-
-		var entity_data = {
-			"id": entity_id,
-			"godot_pos": node.global_position,
-			"template": "",
-			"width": 1.0,
-			"height": 1.0,
-			"velocity": Vector2.ZERO
+			main.add_child(node)
+
+	# Apply initial velocity if specified
+	if node is RigidBody2D and physics_data and physics_data.has("initialVelocity"):
+		var initial_vel = physics_data.initialVelocity
+		var game_vel = Vector2(initial_vel.get("x", 0), initial_vel.get("y", 0))
+		node.linear_velocity = game_to_godot_vec(game_vel)
+
+	# Set metadata for selectors
+	if template_id != "":
+		node.set_meta("template", template_id)
+	if merged.has("tags"):
+		node.set_meta("tags", merged.tags if merged.tags is Array else [])
+	if merged.has("behaviors"):
+		node.set_meta("behaviors", merged.behaviors if merged.behaviors is Array else [])
+
+	entities[entity_id] = node
+
+	# Track entity generation for pool safety
+	var generation = next_generation
+	next_generation += 1
+	entity_generations[entity_id] = generation
+
+	# Build snapshot for TypeScript
+	var snapshot_pos = godot_to_game_pos(node.position)
+	
+	# Get physics IDs if available
+	var body_id = body_id_map.get(entity_id, -1)
+	var collider_id = -1
+	if entity_shape_map.has(entity_id) and entity_shape_map[entity_id].size() > 0:
+		collider_id = entity_shape_map[entity_id][0]
+	
+	var snapshot = {
+		"entityId": entity_id,
+		"template": template_id,
+		"generation": generation,
+		"tags": merged.get("tags", []),
+		"transform": {
+			"x": snapshot_pos.x,
+			"y": snapshot_pos.y,
+			"angle": -node.rotation,
+			"scaleX": node.scale.x,
+			"scaleY": node.scale.y
 		}
-
-		if node is RigidBody2D:
-			entity_data["velocity"] = godot_to_game_vec(node.linear_velocity)
-		elif node is Area2D and node.has_meta("velocity"):
-			entity_data["velocity"] = godot_to_game_vec(node.get_meta("velocity"))
-
-		for child in node.get_children():
-			if child is CollisionShape2D and child.shape:
-				var shape = child.shape
-				if shape is RectangleShape2D:
-					entity_data["width"] = shape.size.x / pixels_per_meter
-					entity_data["height"] = shape.size.y / pixels_per_meter
-				elif shape is CircleShape2D:
-					var diameter = shape.radius * 2 / pixels_per_meter
-					entity_data["width"] = diameter
-					entity_data["height"] = diameter
-				break
-
-		data.append(entity_data)
-
-	return data
-
-func _clear_debug_overlays() -> void:
-	if _debug_overlay:
-		for child in _debug_overlay.get_children():
-			child.queue_free()
-		_debug_overlay.visible = false
-		_debug_overlay_visible = false
-
-func _js_get_world_info(_args: Array) -> void:
-	var result = get_world_info()
-	_js_bridge_obj["_lastResult"] = result
-
-func get_world_info() -> Dictionary:
-	var gravity_vec = godot_to_game_vec(Vector2(0, -1) * PhysicsServer2D.area_get_param(
-		get_viewport().find_world_2d().space,
-		PhysicsServer2D.AREA_PARAM_GRAVITY
-	))
-
-	var bounds = game_data.get("world", {}).get("bounds", {"width": 20, "height": 12})
-
-	return {
-		"pixelsPerMeter": pixels_per_meter,
-		"gravity": {"x": gravity_vec.x, "y": gravity_vec.y},
-		"bounds": bounds
 	}
+	
+	# Add physics IDs if they exist
+	if body_id >= 0:
+		snapshot["bodyId"] = {"value": body_id}
+	if collider_id >= 0:
+		snapshot["colliderId"] = {"value": collider_id}
 
-func _js_get_camera_info(_args: Array) -> void:
-	var result = get_camera_info()
-	_js_bridge_obj["_lastResult"] = result
+	# Emit signal and notify JS
+	entity_spawned.emit(entity_id, node)
+	_notify_js_entity_spawned(entity_id, snapshot)
 
-func get_camera_info() -> Dictionary:
-	if not camera:
-		return {"x": 0, "y": 0, "zoom": 1, "target": ""}
+	return node
 
-	var game_pos = godot_to_game_pos(camera.global_position)
+func _create_physics_body(entity_id: String, physics_data: Dictionary, collider_data: Dictionary, transform_data: Dictionary) -> Node2D:
+	var body_type = physics_data.get("bodyType", "dynamic")
+	var node: Node2D
 
-	return {
-		"x": game_pos.x,
-		"y": game_pos.y,
-		"zoom": camera.zoom.x,
-		"target": camera_target_id
-	}
+	# Extract physics properties (needed outside match block)
+	var density = physics_data.get("density", 1.0)
+	var mass = physics_data.get("mass", 0.0)
 
-func _js_get_viewport_info(_args: Array) -> void:
-	var result = get_viewport_info()
-	_js_bridge_obj["_lastResult"] = result
+	match body_type:
+		"static":
+			node = StaticBody2D.new()
+		"kinematic":
+			var char_body = CharacterBody2D.new()
+			node = char_body
+		_:  # dynamic
+			var rigid = RigidBody2D.new()
+			rigid.gravity_scale = physics_data.get("gravityScale", 1.0)
 
-func get_viewport_info() -> Dictionary:
-	var vp_size = get_viewport().get_visible_rect().size
-	return {
-		"width": int(vp_size.x),
-		"height": int(vp_size.y)
-	}
+			# Enable contact monitoring for detailed collision data
+			rigid.contact_monitor = true
+			rigid.max_contacts_reported = 4
 
-# =============================================================================
-# CORE QUERY HELPERS
-# =============================================================================
+			# Attach PhysicsBody script for _integrate_forces callback
+			rigid.set_script(load("res://scripts/PhysicsBody.gd"))
 
-func _get_entity_transform_impl(entity_id: String) -> Variant:
-	if not entities.has(entity_id):
-		return null
-	var node = entities[entity_id]
-	var game_pos = godot_to_game_pos(node.position)
-	return {
-		"x": game_pos.x,
-		"y": game_pos.y,
-		"angle": -node.rotation
-	}
+			# Linear/angular damping
+			rigid.linear_damp = physics_data.get("linearDamping", 0.0)
+			rigid.angular_damp = physics_data.get("angularDamping", 0.0)
 
-func _screen_to_world_impl(screen_x: float, screen_y: float) -> Dictionary:
-	var screen_pos = Vector2(screen_x, screen_y)
-	var viewport = get_viewport()
-	var viewport_size = viewport.get_visible_rect().size
-	var canvas_transform = viewport.get_canvas_transform()
+			# Fixed rotation
+			if physics_data.get("fixedRotation", false):
+				rigid.lock_rotation = true
 
-	# Debug: print all the relevant info
-	print("[GameBridge] screenToWorld DEBUG:")
-	print("  viewport_size=%s" % viewport_size)
-	print("  canvas_transform.origin=%s" % canvas_transform.origin)
-	print("  canvas_transform.x=%s, y=%s" % [canvas_transform.x, canvas_transform.y])
-	if camera:
-		print("  camera.position=%s, camera.zoom=%s" % [camera.global_position, camera.zoom])
+			# CCD for fast-moving objects
+			if physics_data.get("ccd", false) or physics_data.get("bullet", false):
+				rigid.continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
 
-	# Try the transform
-	var godot_world_pos = canvas_transform.affine_inverse() * screen_pos
-	print("  screen=%s -> godot_world=%s" % [screen_pos, godot_world_pos])
+			# Connect collision signals (kept for backward compatibility)
+			rigid.body_entered.connect(_on_body_entered.bind(entity_id))
 
-	# Alternative: manual calculation based on viewport center and camera
-	var viewport_center = viewport_size / 2.0
-	var camera_pos = camera.global_position if camera else Vector2.ZERO
-	var camera_zoom = camera.zoom if camera else Vector2.ONE
-	var manual_world_pos = (screen_pos - viewport_center) / camera_zoom + camera_pos
-	print("  manual calculation: screen=%s -> godot_world=%s" % [screen_pos, manual_world_pos])
+			# Apply initial velocity if specified
+			var initial_vel = physics_data.get("initialVelocity", null)
+			if initial_vel != null:
+				var game_vel = Vector2(initial_vel.get("x", 0), initial_vel.get("y", 0))
+				rigid.linear_velocity = game_to_godot_vec(game_vel)
 
-	var game_pos = godot_to_game_pos(godot_world_pos)
-	var manual_game_pos = godot_to_game_pos(manual_world_pos)
-	print("  game_pos (transform)=%s, (manual)=%s" % [game_pos, manual_game_pos])
+			# Store user data and group if provided
+			if physics_data.has("userData"):
+				user_data[next_body_id] = physics_data.userData
+			if physics_data.has("group"):
+				body_groups[next_body_id] = physics_data.group
 
-	return {"x": game_pos.x, "y": game_pos.y}
+			node = rigid
 
-# ============================================================================
-# NEW COMPONENT SYSTEM HELPERS
-# ============================================================================
+	node.name = entity_id
 
-func _merged_component(merged: Dictionary, tmpl: Dictionary, component_name: String) -> void:
-	"""Merge a component from template into merged data, with entity data taking precedence."""
-	if tmpl.has(component_name) and merged.has(component_name):
-		var merged_component = tmpl[component_name].duplicate(true)
-		for key in merged[component_name]:
-			merged_component[key] = merged[component_name][key]
-		merged[component_name] = merged_component
-	elif tmpl.has(component_name):
-		merged[component_name] = tmpl[component_name].duplicate(true)
-
-func _resolve_visual_with_defaults(visual_data: Dictionary, collider_data: Dictionary) -> Dictionary:
-	"""Apply smart defaults: visual inherits dimensions from collider if not specified."""
-	var resolved = visual_data.duplicate(true)
-
+	# Add collision shape from collider data
 	if collider_data:
-		# Inherit width/height from collider if not specified in visual
-		if not resolved.has("width") and collider_data.has("width"):
-			resolved.width = collider_data.width
-		if not resolved.has("height") and collider_data.has("height"):
-			resolved.height = collider_data.height
-		if not resolved.has("radius") and collider_data.has("radius"):
-			resolved.radius = collider_data.radius
-		if not resolved.has("vertices") and collider_data.has("vertices"):
-			resolved.vertices = collider_data.vertices.duplicate()
+		var collision = CollisionShape2D.new()
+		collision.shape = _create_collider_shape(collider_data)
 
-	return resolved
+		# Apply collider material properties (if dynamic body)
+		if node is RigidBody2D:
+			var friction = collider_data.get("friction", 0.5)
+			var restitution = collider_data.get("restitution", 0.0)
+			var material = PhysicsMaterial.new()
+			material.friction = friction
+			material.bounce = restitution
+			node.physics_material_override = material
 
-func _generate_visual_from_collider(collider_data: Dictionary) -> Dictionary:
-	"""Auto-generate a visual component from collider data."""
-	var shape = collider_data.get("shape", "box")
+			# Calculate mass if density provided and no direct mass
+			if mass <= 0 and density > 0:
+				var shape_type = collider_data.get("shape", "box")
+				var shape_area = 1.0
+				if shape_type == "box":
+					var w = collider_data.get("width", 1.0)
+					var h = collider_data.get("height", 1.0)
+					shape_area = w * h
+				elif shape_type == "circle":
+					var r = collider_data.get("radius", 0.5)
+					shape_area = PI * r * r
+				elif shape_type == "polygon":
+					var vertices = collider_data.get("vertices", [])
+					shape_area = _calculate_polygon_area(vertices)
+				node.mass = density * shape_area
+			elif mass > 0:
+				node.mass = mass
 
-	var visual = {
-		"type": shape,  # rect, circle, polygon
-		"width": collider_data.get("width", 1.0),
-		"height": collider_data.get("height", 1.0),
-		"radius": collider_data.get("radius", 0.5),
-		"vertices": collider_data.get("vertices", []),
-		"color": "#FFFFFF",  # Default white
-		"opacity": 0.5  # Semi-transparent for debug
-	}
+		node.add_child(collision)
 
-	return visual
+	# Apply collision filtering
+	node.collision_layer = physics_data.get("categoryBits", 1)
+	node.collision_mask = physics_data.get("maskBits", 0xFFFFFFFF)
 
-func _create_sensor_entity(entity_id: String, collider_data: Dictionary, transform_data: Dictionary) -> Area2D:
-	"""Create a sensor-only entity (Area2D with collision detection but no physics response)."""
+	# Track body ID for Physics2D compatibility
+	body_id_map[entity_id] = next_body_id
+	body_id_reverse[next_body_id] = entity_id
+	next_body_id += 1
+
+	return node
+
+func _create_zone_entity(entity_id: String, zone_data: Dictionary, transform_data: Dictionary) -> Node2D:
+	"""Create a zone entity (Area2D) for collision detection without physics response.
+	Zones can have sprites and detect collisions but don't participate in physics simulation."""
+	var movement_type = zone_data.get("movement", "static")
+	var zone_shape = zone_data.get("shape", {"type": "box", "width": 1.0, "height": 1.0})
+
 	var area = Area2D.new()
 	area.name = entity_id
 
-	# Connect collision signals
+	# Connect collision signals for zone detection
 	area.body_shape_entered.connect(_on_sensor_body_shape_entered.bind(entity_id))
 	area.body_shape_exited.connect(_on_sensor_body_shape_exited.bind(entity_id))
 
 	# Add collision shape
 	var collision = CollisionShape2D.new()
-	collision.shape = _create_collider_shape(collider_data)
+	var shape_type = zone_shape.get("type", "box")
+
+	match shape_type:
+		"circle":
+			var circle = CircleShape2D.new()
+			circle.radius = zone_shape.get("radius", 0.5) * pixels_per_meter
+			collision.shape = circle
+		"polygon":
+			var polygon = ConvexPolygonShape2D.new()
+			var vertices = zone_shape.get("vertices", [])
+			var points: PackedVector2Array = []
+			for v in vertices:
+				points.append(Vector2(v.x * pixels_per_meter, -v.y * pixels_per_meter))
+			polygon.points = points
+			collision.shape = polygon
+		_:  # box
+			var rect = RectangleShape2D.new()
+			var w = zone_shape.get("width", 1.0) * pixels_per_meter
+			var h = zone_shape.get("height", 1.0) * pixels_per_meter
+			rect.size = Vector2(w, h)
+			collision.shape = rect
+
 	area.add_child(collision)
 
 	# Apply collision filtering
-	area.collision_layer = collider_data.get("categoryBits", 1)
-	area.collision_mask = collider_data.get("maskBits", 0xFFFFFFFF)
+	area.collision_layer = zone_data.get("categoryBits", 1)
+	area.collision_mask = zone_data.get("maskBits", 0xFFFFFFFF)
 
-	# Store as sensor type
-	area.set_meta("entity_type", "sensor")
+	# Store zone metadata
+	area.set_meta("entity_type", "zone")
+	area.set_meta("zone_movement", movement_type)
+
+	# Track body ID for compatibility
+	body_id_map[entity_id] = next_body_id
+	body_id_reverse[next_body_id] = entity_id
+	next_body_id += 1
 
 	return area
 
-func _create_collider_shape(collider_data: Dictionary) -> Shape2D:
-	"""Create a collision shape from collider component data."""
-	var shape_type = collider_data.get("shape", "box")
+func _calculate_polygon_area(vertices: Array) -> float:
+	if vertices.size() < 3:
+		return 1.0
+	var area = 0.0
+	var n = vertices.size()
+	for i in range(n):
+		var j = (i + 1) % n
+		area += vertices[i].x * vertices[j].y
+		area -= vertices[j].x * vertices[i].y
+	return abs(area) / 2.0
+
+func _create_polygon_texture(width: int, height: int, color: Color, padding: int = 0) -> ImageTexture:
+	# Create texture with optional transparent padding for shader edge detection
+	var tex_w = width + padding * 2
+	var tex_h = height + padding * 2
+	var image = Image.create(tex_w, tex_h, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0, 0, 0, 0))  # Start transparent
+	# Fill the center region with the actual color
+	for y in range(padding, tex_h - padding):
+		for x in range(padding, tex_w - padding):
+			image.set_pixel(x, y, color)
+	return ImageTexture.create_from_image(image)
+
+func _create_shape(physics_data: Dictionary) -> Shape2D:
+	var shape_type = physics_data.get("shape", "box")
 	var shape: Shape2D
 
 	match shape_type:
 		"circle":
 			var circle = CircleShape2D.new()
-			circle.radius = collider_data.get("radius", 0.5) * pixels_per_meter
+			circle.radius = physics_data.get("radius", 0.5) * pixels_per_meter
 			shape = circle
 		"polygon":
 			var polygon = ConvexPolygonShape2D.new()
-			var vertices = collider_data.get("vertices", [])
+			var vertices = physics_data.get("vertices", [])
 			var points: PackedVector2Array = []
 			for v in vertices:
+				# Vertices are relative to entity center, just scale and flip Y
 				points.append(Vector2(v.x * pixels_per_meter, -v.y * pixels_per_meter))
 			polygon.points = points
 			shape = polygon
-		"capsule":
-			# Godot doesn't have native capsule, use capsule shape from library
-			var capsule = CapsuleShape2D.new()
-			capsule.radius = collider_data.get("radius", 0.5) * pixels_per_meter
-			capsule.height = collider_data.get("height", 1.0) * pixels_per_meter
-			shape = capsule
 		_:  # box
 			var rect = RectangleShape2D.new()
-			var w = collider_data.get("width", 1.0) * pixels_per_meter
-			var h = collider_data.get("height", 1.0) * pixels_per_meter
+			var w = physics_data.get("width", 1.0) * pixels_per_meter
+			var h = physics_data.get("height", 1.0) * pixels_per_meter
 			rect.size = Vector2(w, h)
 			shape = rect
 
 	return shape
 
-func _add_visual(node: Node2D, visual_data: Dictionary) -> void:
-	"""Add a visual component to an entity node."""
-	var visual_type = visual_data.get("type", "rect")
-	var color = Color.from_string(visual_data.get("color", "#FFFFFF"), Color.WHITE)
-	var opacity = visual_data.get("opacity", 1.0)
-	var z_index_val = visual_data.get("zIndex", 0)
-	var offset_x = visual_data.get("offsetX", 0.0)
-	var offset_y = visual_data.get("offsetY", 0.0)
+func _add_sprite(node: Node2D, sprite_data: Dictionary, physics_data: Dictionary, zone_data = null) -> void:
+	print("[DEBUG _add_sprite] Adding sprite type: ", sprite_data.get("type", "unknown"), " to node: ", node.name)
+	var sprite_type = sprite_data.get("type", "rect")
+	var color = Color.from_string(sprite_data.get("color", "#FF0000"), Color.RED)
+	var opacity = sprite_data.get("opacity", 1.0)
+	var z_index_val = sprite_data.get("zIndex", 0)
 
-	match visual_type:
-		"rect", "box":
+	# Helper function to get dimension from sprite_data, physics_data, zone_data, or default
+	var _get_dimension = func(key: String, default_val: float):
+		if sprite_data.has(key):
+			return sprite_data.get(key)
+		elif physics_data and physics_data.has(key):
+			return physics_data.get(key)
+		elif zone_data and zone_data.has("shape") and zone_data.shape.has(key):
+			return zone_data.shape.get(key)
+		else:
+			return default_val
+
+	match sprite_type:
+		"rect":
 			var polygon = Polygon2D.new()
-			var w = visual_data.get("width", 1.0) * pixels_per_meter
-			var h = visual_data.get("height", 1.0) * pixels_per_meter
+			var w = _get_dimension.call("width", 1.0) * pixels_per_meter
+			var h = _get_dimension.call("height", 1.0) * pixels_per_meter
 			var hw = w / 2.0
 			var hh = h / 2.0
 			polygon.polygon = PackedVector2Array([
@@ -4334,58 +3479,76 @@ func _add_visual(node: Node2D, visual_data: Dictionary) -> void:
 				Vector2(-hw, hh)
 			])
 			color.a = opacity
-			polygon.color = color
 			polygon.z_index = z_index_val
-			polygon.position = Vector2(offset_x * pixels_per_meter, -offset_y * pixels_per_meter)
+			# Add texture for shader compatibility (WebGL needs valid TEXTURE_PIXEL_SIZE)
+			# Bake the color INTO the texture with padding for edge-detection shaders
+			var tex_size = max(int(w), int(h), 64)
+			var padding = 16  # Transparent padding for outline/glow shaders
+			polygon.texture = _create_polygon_texture(tex_size, tex_size, color, padding)
+			polygon.color = Color.WHITE  # Don't multiply - color is in texture
+			# UV maps to the padded texture (shape is offset by padding)
+			polygon.uv = PackedVector2Array([
+				Vector2(padding, padding),
+				Vector2(tex_size + padding, padding),
+				Vector2(tex_size + padding, tex_size + padding),
+				Vector2(padding, tex_size + padding)
+			])
 			node.add_child(polygon)
-
 		"circle":
 			var polygon = Polygon2D.new()
-			var radius = visual_data.get("radius", 0.5) * pixels_per_meter
+			var radius = _get_dimension.call("radius", 0.5) * pixels_per_meter
 			var points: PackedVector2Array = []
 			for i in range(32):
 				var angle = i * TAU / 32
 				points.append(Vector2(cos(angle), sin(angle)) * radius)
 			polygon.polygon = points
 			color.a = opacity
-			polygon.color = color
 			polygon.z_index = z_index_val
-			polygon.position = Vector2(offset_x * pixels_per_meter, -offset_y * pixels_per_meter)
+			# Add texture for shader compatibility
+			polygon.texture = _create_polygon_texture(tex_size, tex_size, color, padding)
+			polygon.color = Color.WHITE  # Don't multiply - color is in texture
+			polygon.uv = uvs
 			node.add_child(polygon)
-
 		"polygon":
 			var polygon = Polygon2D.new()
-			var vertices = visual_data.get("vertices", [])
+			var vertices = sprite_data.get("vertices", [])
 			var points: PackedVector2Array = []
 			for v in vertices:
 				points.append(Vector2(v.x * pixels_per_meter, -v.y * pixels_per_meter))
 			polygon.polygon = points
 			color.a = opacity
-			polygon.color = color
 			polygon.z_index = z_index_val
-			polygon.position = Vector2(offset_x * pixels_per_meter, -offset_y * pixels_per_meter)
+			# Add texture for shader compatibility
+			var poly_size = max_pt - min_pt
+			var tex_size = max(int(poly_size.x), int(poly_size.y), 64)
+			var padding = 16  # Transparent padding for edge-detection shaders
+			polygon.texture = _create_polygon_texture(tex_size, tex_size, color, padding)
+			polygon.color = Color.WHITE  # Don't multiply - color is in texture
+			var uvs: PackedVector2Array = []
+			for pt in points:
+				uvs.append(Vector2(
+					(pt.x - min_pt.x) / poly_size.x * tex_size + padding if poly_size.x > 0 else padding,
+					(pt.y - min_pt.y) / poly_size.y * tex_size + padding if poly_size.y > 0 else padding
+				))
+			polygon.uv = uvs
 			node.add_child(polygon)
-
 		"image":
-			_add_image_visual(node, visual_data, opacity, z_index_val)
-
+			_add_image_sprite(node, sprite_data, opacity, z_index_val)
 		"text":
-			_add_text_visual(node, visual_data, opacity, z_index_val)
+			_add_text_sprite(node, sprite_data, opacity, z_index_val)
 
-func _add_image_visual(node: Node2D, visual_data: Dictionary, opacity: float, z_index_val: int) -> void:
-	"""Add an image visual to an entity node."""
+func _add_image_sprite(node: Node2D, sprite_data: Dictionary, opacity: float, z_index_val: int) -> void:
 	var sprite = Sprite2D.new()
-	var url = visual_data.get("imageUrl", visual_data.get("url", ""))
-	var width = visual_data.get("width", 1.0)
-	var height = visual_data.get("height", 1.0)
-	var offset_x = visual_data.get("offsetX", 0.0)
-	var offset_y = visual_data.get("offsetY", 0.0)
-
-	sprite.position = Vector2(offset_x * pixels_per_meter, -offset_y * pixels_per_meter)
-	sprite.modulate.a = opacity
-	sprite.z_index = z_index_val
+	var url = sprite_data.get("imageUrl", sprite_data.get("url", ""))
+	var width = sprite_data.get("imageWidth", sprite_data.get("width", 1.0))
+	var height = sprite_data.get("imageHeight", sprite_data.get("height", 1.0))
+	var asset_scale = sprite_data.get("scale", 1.0)
+	var offset_x = sprite_data.get("offsetX", 0.0)
+	var offset_y = sprite_data.get("offsetY", 0.0)
 
 	if url == "":
+		sprite.modulate.a = opacity
+		sprite.z_index = z_index_val
 		node.add_child(sprite)
 		return
 
@@ -4393,35 +3556,6641 @@ func _add_image_visual(node: Node2D, visual_data: Dictionary, opacity: float, z_
 		var texture = load(url)
 		if texture:
 			sprite.texture = texture
-			var scale_x = (width * pixels_per_meter) / texture.get_width()
-			var scale_y = (height * pixels_per_meter) / texture.get_height()
-			sprite.scale = Vector2(scale_x, scale_y)
+			var local_sprite_data = {
+				"width": img_width,
+				"height": img_height,
+				"scale": asset_scale,
+				"offsetX": offset_x,
+				"offsetY": offset_y
+			}
+			_apply_sprite_scale(sprite, local_sprite_data, texture)
 	else:
-		_download_image_texture(url, func(texture: Texture2D):
-			if is_instance_valid(sprite):
-				sprite.texture = texture
-				var scale_x = (width * pixels_per_meter) / texture.get_width()
-				var scale_y = (height * pixels_per_meter) / texture.get_height()
-				sprite.scale = Vector2(scale_x, scale_y)
-		)
+		var normalized_data = {
+			"width": img_width,
+			"height": img_height,
+			"scale": asset_scale,
+			"offsetX": offset_x,
+			"offsetY": offset_y
+		}
+		_queue_texture_download(sprite, url, normalized_data)
 
+	sprite.modulate.a = opacity
+	sprite.z_index = z_index_val
 	node.add_child(sprite)
 
-func _add_text_visual(node: Node2D, visual_data: Dictionary, opacity: float, z_index_val: int) -> void:
-	"""Add a text visual to an entity node."""
+func _add_text_sprite(node: Node2D, sprite_data: Dictionary, opacity: float, z_index_val: int) -> void:
 	var label = Label.new()
-	label.text = visual_data.get("text", "")
+	label.text = sprite_data.get("text", "")
 
-	var font_size = int(visual_data.get("fontSize", 16) * pixels_per_meter / 50.0)
+	var font_size = int(sprite_data.get("fontSize", 16) * pixels_per_meter / 50.0)
 	label.add_theme_font_size_override("font_size", font_size)
 
-	var text_color = Color.from_string(visual_data.get("color", "#FFFFFF"), Color.WHITE)
+	var text_color = Color.from_string(sprite_data.get("color", "#FFFFFF"), Color.WHITE)
 	label.modulate = text_color
 	label.modulate.a = opacity
 	label.z_index = z_index_val
-
-	var offset_x = visual_data.get("offsetX", 0.0)
-	var offset_y = visual_data.get("offsetY", 0.0)
-	label.position = Vector2(offset_x * pixels_per_meter, -offset_y * pixels_per_meter)
-
 	node.add_child(label)
+
+func _queue_texture_download(sprite: Sprite2D, url: String, sprite_data: Dictionary) -> void:
+	_download_image_texture(url, func(texture: Texture2D):
+		if is_instance_valid(sprite):
+			sprite.texture = texture
+			_apply_sprite_scale(sprite, sprite_data, texture)
+	)
+
+var _font_cache = {}
+
+func _queue_font_download(label: Label, url: String) -> void:
+	if _font_cache.has(url):
+		label.add_theme_font_override("font", _font_cache[url])
+		return
+
+	var http = HTTPRequest.new()
+	add_child(http)
+
+	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+			push_error("[GameBridge] Failed to download font: " + url + " (code: " + str(response_code) + ")")
+			return
+
+		var font = FontFile.new()
+		font.data = body
+		var err = OK
+		if err != OK:
+			push_error("[GameBridge] Failed to parse font: " + url)
+			return
+
+		_font_cache[url] = font
+
+		if is_instance_valid(label):
+			label.add_theme_font_override("font", font)
+	)
+
+	var err = http.request(url)
+	if err != OK:
+		push_error("[GameBridge] Failed to start font download: " + url)
+		http.queue_free()
+
+func _apply_sprite_scale(sprite: Sprite2D, sprite_data: Dictionary, texture: Texture2D) -> void:
+	if texture == null:
+		return
+
+	# Get asset placement values (scale multiplier, offsets)
+	var asset_scale = sprite_data.get("scale", 1.0)
+	var offset_x = sprite_data.get("offsetX", 0.0) * pixels_per_meter
+	var offset_y = sprite_data.get("offsetY", 0.0) * pixels_per_meter
+
+	var target_w = sprite_data.get("width", 1.0) * pixels_per_meter * asset_scale
+	var target_h = sprite_data.get("height", 1.0) * pixels_per_meter * asset_scale
+
+	# Check if this is a generated asset (square texture with content that preserves aspect ratio)
+	# Generated assets have content that fills 90% of the larger dimension, centered in canvas
+	var tex_w = texture.get_width()
+	var tex_h = texture.get_height()
+	var is_square_texture = abs(tex_w - tex_h) < 2  # Allow 1px tolerance
+
+	if is_square_texture and tex_w > 0:
+		# For generated square textures (e.g., 512x512), use uniform scaling
+		# The actual content fills 90% of canvas on the larger dimension
+		var canvas_size = float(tex_w)
+		var fill_ratio = 0.9
+		var physics_w = sprite_data.get("width", 1.0)
+		var physics_h = sprite_data.get("height", 1.0)
+		var aspect_ratio = physics_w / physics_h if physics_h > 0 else 1.0
+
+		# Calculate silhouette dimensions within the canvas (matches generation logic)
+		var silhouette_w: float
+		var silhouette_h: float
+		if aspect_ratio >= 1.0:
+			silhouette_w = canvas_size * fill_ratio
+			silhouette_h = silhouette_w / aspect_ratio
+		else:
+			silhouette_h = canvas_size * fill_ratio
+			silhouette_w = silhouette_h * aspect_ratio
+
+		# Uniform scale: map silhouette pixels to target world pixels
+		var uniform_scale = target_w / silhouette_w if silhouette_w > 0 else 1.0
+		sprite.scale = Vector2(uniform_scale, uniform_scale)
+	else:
+		# Non-square textures: use uniform scaling to preserve aspect ratio (contain behavior)
+		var scale_x = target_w / tex_w if tex_w > 0 else 1.0
+		var scale_y = target_h / tex_h if tex_h > 0 else 1.0
+		var uniform_scale = min(scale_x, scale_y)
+		sprite.scale = Vector2(uniform_scale, uniform_scale)
+
+	# Apply offset to position the sprite relative to physics body center
+	sprite.position = Vector2(offset_x, offset_y)
+
+func _hide_shape_children(node: Node2D) -> void:
+	"""Hide Polygon2D shape children when a texture sprite is applied.
+	This prevents double-rendering of shapes and textures."""
+	for child in node.get_children():
+		if child is Polygon2D:
+			child.visible = false
+
+func _apply_debug_visibility(node: Node2D) -> void:
+	"""Apply current debug mode visibility to a node's children.
+	When debug mode is ON: show Polygon2D shapes, hide Sprite2D textures.
+	When debug mode is OFF: hide Polygon2D shapes, show Sprite2D textures."""
+	for child in node.get_children():
+		if child is Polygon2D:
+			child.visible = _debug_show_shapes
+		elif child is Sprite2D:
+			child.visible = not _debug_show_shapes
+
+func _js_clear_texture_cache(args: Array) -> void:
+	if args.size() > 0 and str(args[0]) != "":
+		var url = str(args[0])
+		if _texture_cache.has(url):
+			_texture_cache.erase(url)
+	else:
+		_texture_cache.clear()
+
+var _preload_pending_count: int = 0
+var _preload_completed_count: int = 0
+var _preload_failed_count: int = 0
+var _js_preload_progress_callback: JavaScriptObject = null
+
+func _js_preload_textures(args: Array) -> void:
+	if args.size() < 1:
+		push_error("[GameBridge] preloadTextures requires at least 1 arg: urls (JSON string)")
+		return
+
+	var urls_json = str(args[0])
+	var urls = JSON.parse_string(urls_json)
+	if urls == null or not (urls is Array):
+		push_error("[GameBridge] preloadTextures: failed to parse URLs from JSON")
+		return
+	if urls.size() == 0:
+		if args.size() > 1 and args[1] != null:
+			var cb = args[1]
+			if cb is JavaScriptObject:
+				cb.call("call", null, 100, 0, 0)
+		return
+
+	# Store callback if provided
+	if args.size() > 1 and args[1] != null:
+		_js_preload_progress_callback = args[1]
+	else:
+		_js_preload_progress_callback = null
+
+	_preload_pending_count = urls.size()
+	_preload_completed_count = 0
+	_preload_failed_count = 0
+
+	for url_variant in urls:
+		var url = str(url_variant)
+		if url == "":
+			_on_preload_complete(url, false)
+			continue
+
+		# Skip if already cached
+		if _texture_cache.has(url):
+			_on_preload_complete(url, true)
+			continue
+
+		# Download the texture
+		var http = HTTPRequest.new()
+		add_child(http)
+
+		http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+			http.queue_free()
+			if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+				push_warning("[GameBridge] Failed to preload texture: " + url + " (result: " + str(result) + ", code: " + str(response_code) + ")")
+				_on_preload_complete(url, false)
+				return
+
+			if body.size() == 0:
+				push_warning("[GameBridge] Empty body for texture: " + url)
+				_on_preload_complete(url, false)
+				return
+
+			var image = Image.new()
+			var err = image.load_png_from_buffer(body)
+			if err != OK:
+				err = image.load_jpg_from_buffer(body)
+			if err != OK:
+				err = image.load_webp_from_buffer(body)
+			if err != OK:
+				push_warning("[GameBridge] All image formats failed for: " + url + " (size: " + str(body.size()) + ")")
+				_on_preload_complete(url, false)
+				return
+
+			var texture = ImageTexture.create_from_image(image)
+			_texture_cache[url] = texture
+			_on_preload_complete(url, true)
+		)
+
+		var err = http.request(url)
+		if err != OK:
+			push_warning("[GameBridge] Failed to start preload request: " + url)
+			http.queue_free()
+			_on_preload_complete(url, false)
+
+func _on_preload_complete(url: String, success: bool) -> void:
+	if success:
+		_preload_completed_count += 1
+	else:
+		_preload_failed_count += 1
+
+	var total_done = _preload_completed_count + _preload_failed_count
+	var percent = int((float(total_done) / float(_preload_pending_count)) * 100.0)
+
+	if _js_preload_progress_callback != null:
+		_js_preload_progress_callback.call("call", null, percent, _preload_completed_count, _preload_failed_count)
+	else:
+		print("[GameBridge] No progress callback registered!")
+
+func _js_set_debug_show_shapes(args: Array) -> void:
+	"""Toggle debug mode to show physics shapes or textures.
+	args[0]: boolean - true to show shapes, false to show textures"""
+	if args.size() < 1:
+		push_error("[GameBridge] setDebugShowShapes requires 1 arg: show_shapes (boolean)")
+		return
+
+	_debug_show_shapes = bool(args[0])
+
+	# Apply debug visibility to all existing entities
+	for entity_id in entities:
+		var node = entities[entity_id]
+		if node:
+			_apply_debug_visibility(node)
+
+func _js_set_debug_settings(args: Array) -> void:
+	print("[GameBridge] _js_set_debug_settings called with args: ", args)
+	if args.size() < 1:
+		push_error("[GameBridge] setDebugSettings requires 1 arg: settings JSON string")
+		return
+
+	var json_str = str(args[0])
+	print("[GameBridge] setDebugSettings JSON string: ", json_str)
+	var json = JSON.new()
+	var parse_result = json.parse(json_str)
+	if parse_result != OK:
+		push_error("[GameBridge] setDebugSettings: Invalid JSON: " + json_str)
+		return
+
+	var settings = json.data
+	print("[GameBridge] setDebugSettings parsed: ", settings)
+	if not settings is Dictionary:
+		push_error("[GameBridge] setDebugSettings: Expected object, got: " + str(typeof(settings)))
+		return
+
+	if _devtools_overlay:
+		print("[GameBridge] Forwarding to _devtools_overlay")
+		_devtools_overlay.set_settings(settings)
+	else:
+		push_error("[GameBridge] _devtools_overlay is null!")
+
+func clear_texture_cache(url: String = "") -> void:
+	if url != "":
+		if _texture_cache.has(url):
+			_texture_cache.erase(url)
+	else:
+		_texture_cache.clear()
+
+func _on_body_entered(body: Node, entity_id: String) -> void:
+	if body.name in entities:
+		collision_occurred.emit(entity_id, body.name, 0.0)
+		_notify_js_collision(entity_id, body.name, 0.0)
+
+		# Process destroy_on_collision behaviors directly in Godot
+		_process_collision_behaviors(entity_id, body.name)
+		_process_collision_behaviors(body.name, entity_id)
+
+func spawn_entity(template_id: String, x: float, y: float) -> Node2D:
+	return spawn_entity_with_id(template_id, x, y, template_id + "_" + str(randi()), "")
+
+func spawn_entity_with_id(template_id: String, x: float, y: float, entity_id: String, initial_velocity_json: String = "") -> Node2D:
+	if not templates.has(template_id):
+		push_error("[GameBridge] Template not found: " + template_id)
+		return null
+
+	var entity_data = {
+		"id": entity_id,
+		"template": template_id,
+		"transform": {"x": x, "y": y, "angle": 0}
+	}
+
+	# Parse and store initial velocity if provided
+	if initial_velocity_json != "":
+		var json = JSON.new()
+		var err = json.parse(initial_velocity_json)
+		if err == OK:
+			var vel_data = json.data as Dictionary
+			if vel_data.has("x") and vel_data.has("y"):
+				var game_vel = Vector2(vel_data["x"], vel_data["y"])
+				entity_data["_initial_velocity"] = game_to_godot_vec(game_vel)
+
+	return _create_entity(entity_data)
+
+func _process_collision_behaviors(entity_id: String, other_entity_id: String) -> void:
+	if not entities.has(entity_id) or not entities.has(other_entity_id):
+		return
+
+	var node = entities[entity_id]
+	var other_node = entities[other_entity_id]
+
+	if not node.has_meta("behaviors"):
+		return
+
+	var behaviors = node.get_meta("behaviors") as Array
+	var other_tags = other_node.get_meta("tags") if other_node.has_meta("tags") else []
+
+	for behavior in behaviors:
+		if behavior is Dictionary and behavior.get("type") == "destroy_on_collision":
+			var with_tags = behavior.get("withTags", []) as Array
+			var should_destroy = false
+
+			for tag in with_tags:
+				if tag in other_tags:
+					should_destroy = true
+					break
+
+			if should_destroy:
+				call_deferred("destroy_entity", entity_id)
+
+				if behavior.get("destroyOther", false):
+					call_deferred("destroy_entity", other_entity_id)
+				return
+
+func destroy_entity(entity_id: String) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		entities.erase(entity_id)
+		node.queue_free()
+		entity_destroyed.emit(entity_id)
+		_notify_js_destroy(entity_id)
+
+# Get entity node by ID
+func get_entity(entity_id: String) -> Node2D:
+	return entities.get(entity_id)
+
+func set_entity_image(entity_id: String, url: String, width: float, height: float) -> void:
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_image: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var sprite_data = {"width": width, "height": height}
+
+	if _texture_cache.has(url):
+		var texture = _texture_cache[url]
+		sprite.texture = texture
+		_apply_sprite_scale(sprite, sprite_data, texture)
+		_hide_shape_children(node)
+		return
+
+	var http = HTTPRequest.new()
+	add_child(http)
+
+	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+			push_error("[GameBridge] Failed to download texture: " + url + " (code: " + str(response_code) + ")")
+			return
+
+		var image = Image.new()
+		var err = image.load_png_from_buffer(body)
+		if err != OK:
+			err = image.load_jpg_from_buffer(body)
+		if err != OK:
+			err = image.load_webp_from_buffer(body)
+		if err != OK:
+			push_error("[GameBridge] Failed to parse image: " + url)
+			return
+
+		var texture = ImageTexture.create_from_image(image)
+		_texture_cache[url] = texture
+
+		if is_instance_valid(sprite):
+			sprite.texture = texture
+			_apply_sprite_scale(sprite, sprite_data, texture)
+			var parent_node = sprite.get_parent()
+			if parent_node:
+				_hide_shape_children(parent_node)
+
+	)
+
+	var err = http.request(url)
+	if err != OK:
+		push_error("[GameBridge] Failed to start texture download: " + url)
+		http.queue_free()
+
+func _js_set_entity_image(args: Array) -> void:
+	if args.size() < 4:
+		push_error("[GameBridge] setEntityImage requires 4 args: entity_id, url, width, height")
+		return
+	set_entity_image(str(args[0]), str(args[1]), float(args[2]), float(args[3]))
+
+func set_entity_atlas_region(entity_id: String, atlas_url: String, region_dict: Dictionary, sprite_data: Dictionary = {}) -> void:
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_atlas_region: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	if _texture_cache.has(atlas_url):
+		_apply_atlas_region(sprite, _texture_cache[atlas_url], region_dict, sprite_data)
+		_hide_shape_children(node)
+	else:
+		_download_atlas_texture(sprite, atlas_url, region_dict, sprite_data)
+
+func _apply_atlas_region(sprite: Sprite2D, texture: Texture2D, region_dict: Dictionary, sprite_data: Dictionary = {}) -> void:
+	var atlas_texture = AtlasTexture.new()
+	atlas_texture.atlas = texture
+	atlas_texture.region = Rect2(
+		region_dict.get("x", 0),
+		region_dict.get("y", 0),
+		region_dict.get("w", 0),
+		region_dict.get("h", 0)
+	)
+	sprite.texture = atlas_texture
+	_apply_sprite_scale(sprite, sprite_data, atlas_texture)
+
+func _download_atlas_texture(sprite: Sprite2D, url: String, region_dict: Dictionary, sprite_data: Dictionary = {}) -> void:
+	_download_image_texture(url, func(texture: Texture2D):
+		if is_instance_valid(sprite):
+			_apply_atlas_region(sprite, texture, region_dict, sprite_data)
+			var node = sprite.get_parent()
+			if node:
+				_hide_shape_children(node)
+	)
+
+func _js_set_entity_atlas_region(args: Array) -> void:
+	if args.size() < 8:
+		push_error("[GameBridge] setEntityAtlasRegion requires 8 args: entity_id, atlas_url, x, y, w, h, width, height")
+		return
+	var entity_id = str(args[0])
+	var atlas_url = str(args[1])
+	var region_dict = {
+		"x": float(args[2]),
+		"y": float(args[3]),
+		"w": float(args[4]),
+		"h": float(args[5])
+	}
+	var sprite_data = {
+		"width": float(args[6]),
+		"height": float(args[7])
+	}
+	set_entity_atlas_region(entity_id, atlas_url, region_dict, sprite_data)
+
+func set_entity_image_base64(entity_id: String, base64_data: String, width: float, height: float) -> void:
+
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_image_base64: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var raw_data = Marshalls.base64_to_raw(base64_data)
+	if raw_data.is_empty():
+		push_error("[GameBridge] set_entity_image_base64: failed to decode base64")
+		return
+
+	var image = Image.new()
+	var err = image.load_png_from_buffer(raw_data)
+	if err != OK:
+		err = image.load_jpg_from_buffer(raw_data)
+	if err != OK:
+		err = image.load_webp_from_buffer(raw_data)
+	if err != OK:
+		push_error("[GameBridge] set_entity_image_base64: failed to parse image data")
+		return
+
+	var texture = ImageTexture.create_from_image(image)
+	sprite.texture = texture
+	var sprite_data = {"width": width, "height": height}
+	_apply_sprite_scale(sprite, sprite_data, texture)
+
+
+func set_entity_image_from_file(entity_id: String, file_path: String, width: float, height: float) -> void:
+
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_image_from_file: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var image = Image.new()
+	var err = image.load(file_path)
+	if err != OK:
+		push_error("[GameBridge] set_entity_image_from_file: failed to load image from " + file_path + " error=" + str(err))
+		return
+
+	var texture = ImageTexture.create_from_image(image)
+	sprite.texture = texture
+	var sprite_data = {"width": width, "height": height}
+	_apply_sprite_scale(sprite, sprite_data, texture)
+
+
+func set_entity_atlas_region_from_file(entity_id: String, file_path: String, region_x: float, region_y: float, region_w: float, region_h: float, sprite_width: float, sprite_height: float) -> void:
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_atlas_region_from_file: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var image = Image.new()
+	var err = image.load(file_path)
+	if err != OK:
+		push_error("[GameBridge] set_entity_atlas_region_from_file: failed to load image from " + file_path + " error=" + str(err))
+		return
+
+	var texture = ImageTexture.create_from_image(image)
+	_texture_cache[file_path] = texture
+
+	var region_dict = {"x": region_x, "y": region_y, "w": region_w, "h": region_h}
+	var sprite_data = {"width": sprite_width, "height": sprite_height}
+	_apply_atlas_region(sprite, texture, region_dict, sprite_data)
+	_hide_shape_children(node)
+
+
+# Get all entity transforms (for syncing)
+func get_all_transforms() -> Dictionary:
+	var result = {}
+	for entity_id in entities:
+		var node = entities[entity_id]
+		var game_pos = godot_to_game_pos(node.position)
+		result[entity_id] = {
+			"x": game_pos.x,
+			"y": game_pos.y,
+			"angle": -node.rotation  # Flip angle back to game convention
+		}
+	return result
+
+# Clear all entities
+func clear_game() -> void:
+	# Clear joints first
+	for joint_id in joints:
+		var joint_node = joints[joint_id]
+		if is_instance_valid(joint_node):
+			joint_node.queue_free()
+	joints.clear()
+
+	# Clear entities (including Area2D sensors stored in entities dict)
+	for entity_id in entities:
+		var node = entities[entity_id]
+		if is_instance_valid(node):
+			node.queue_free()
+	entities.clear()
+	templates.clear()
+
+	# Reset ID tracking
+	body_id_map.clear()
+	body_id_reverse.clear()
+	collider_id_map.clear()
+	entity_shape_map.clear()
+	user_data.clear()
+	body_groups.clear()
+
+# =============================================================================
+# TRANSFORM CONTROL
+# =============================================================================
+
+func _js_set_transform(args: Array) -> void:
+	if args.size() < 4:
+		return
+	var entity_id = str(args[0])
+	var game_pos = Vector2(float(args[1]), float(args[2]))
+	var godot_pos = game_to_godot_pos(game_pos)
+	var godot_angle = -float(args[3])  # Flip angle for Y-up convention
+
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.position = godot_pos
+			node.rotation = godot_angle
+		elif node is RigidBody2D:
+			# For RigidBody2D, we need to use physics server or _integrate_forces
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(godot_angle, godot_pos))
+
+func set_transform(entity_id: String, x: float, y: float, angle: float) -> void:
+	var godot_pos = game_to_godot_pos(Vector2(x, y))
+	var godot_angle = -angle  # Flip angle for Y-up convention
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.position = godot_pos
+			node.rotation = godot_angle
+		elif node is RigidBody2D:
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(godot_angle, godot_pos))
+
+func _js_set_position(args: Array) -> void:
+	if args.size() < 3:
+		return
+	var entity_id = str(args[0])
+	var godot_pos = game_to_godot_pos(Vector2(float(args[1]), float(args[2])))
+
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.position = godot_pos
+		elif node is RigidBody2D:
+			var current_angle = node.rotation
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(current_angle, godot_pos))
+		else:
+			node.position = godot_pos
+
+func set_position(entity_id: String, x: float, y: float) -> void:
+	var godot_pos = game_to_godot_pos(Vector2(x, y))
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.position = godot_pos
+		elif node is RigidBody2D:
+			var current_angle = node.rotation
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(current_angle, godot_pos))
+		else:
+			# For Area2D and other node types, just set position directly
+			node.position = godot_pos
+
+func _js_set_rotation(args: Array) -> void:
+	if args.size() < 2:
+		return
+	var entity_id = str(args[0])
+	var angle = float(args[1])
+
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.rotation = angle
+		elif node is RigidBody2D:
+			var current_pos = node.position
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(angle, current_pos))
+		else:
+			node.rotation = angle
+
+func set_rotation(entity_id: String, angle: float) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.rotation = angle
+		elif node is RigidBody2D:
+			var current_pos = node.position
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(angle, current_pos))
+		else:
+			node.rotation = angle
+
+func _js_set_scale(args: Array) -> void:
+	if args.size() < 3:
+		return
+	var entity_id = str(args[0])
+	var scale_x = float(args[1])
+	var scale_y = float(args[2])
+	set_scale_entity(entity_id, scale_x, scale_y)
+
+func set_scale_entity(entity_id: String, scale_x: float, scale_y: float) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		# Find the sprite child to scale (scaling physics bodies directly causes issues)
+		var sprite = _find_sprite_in_entity(node)
+		if sprite:
+			sprite.scale = Vector2(scale_x, scale_y)
+
+func _find_sprite_in_entity(node: Node) -> CanvasItem:
+	if node is Sprite2D or node is AnimatedSprite2D:
+		return node
+	for child in node.get_children():
+		if child is Sprite2D or child is AnimatedSprite2D:
+			return child
+		var found = _find_sprite_in_entity(child)
+		if found:
+			return found
+	return null
+
+func _js_get_linear_velocity(args: Array) -> Variant:
+	if args.size() < 1:
+		return null
+	var entity_id = str(args[0])
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			var game_vel = godot_to_game_vec(node.linear_velocity)
+			return {"x": game_vel.x, "y": game_vel.y}
+		elif node is Area2D and node.has_meta("velocity"):
+			var godot_vel = node.get_meta("velocity") as Vector2
+			var game_vel = godot_to_game_vec(godot_vel)
+			return {"x": game_vel.x, "y": game_vel.y}
+	return null
+
+func _js_get_angular_velocity(args: Array) -> Variant:
+	if args.size() < 1:
+		return null
+	var entity_id = str(args[0])
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			return node.angular_velocity
+	return null
+
+func _js_apply_impulse(args: Array) -> void:
+	if args.size() < 3:
+		return
+	var entity_id = str(args[0])
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			var game_impulse = Vector2(float(args[1]), float(args[2]))
+			node.apply_central_impulse(game_to_godot_vec(game_impulse))
+
+func apply_impulse(entity_id: String, ix: float, iy: float) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			node.apply_central_impulse(game_to_godot_vec(Vector2(ix, iy)))
+
+func _js_apply_force(args: Array) -> void:
+	if args.size() < 3:
+		return
+	var entity_id = str(args[0])
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			var game_force = Vector2(float(args[1]), float(args[2]))
+			node.apply_central_force(game_to_godot_vec(game_force))
+
+func apply_force(entity_id: String, fx: float, fy: float) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			node.apply_central_force(game_to_godot_vec(Vector2(fx, fy)))
+
+func send_input(input_type: String, x: float, y: float, entity_id: String = "") -> void:
+	if input_type == "tap":
+		var hit_entity_id: Variant = null
+		var godot_point = game_to_godot_pos(Vector2(x, y))
+		var space = get_viewport().find_world_2d().direct_space_state
+		if space:
+			var query = PhysicsPointQueryParameters2D.new()
+			query.position = godot_point
+			query.collision_mask = 0xFFFFFFFF
+			query.collide_with_bodies = true
+			query.collide_with_areas = true
+			var results = space.intersect_point(query, 1)
+			if results.size() > 0:
+				var collider = results[0].collider
+				if collider and collider.name in entities:
+					hit_entity_id = collider.name
+		_queue_event("input", {"type": input_type, "x": x, "y": y, "entityId": hit_entity_id})
+		_notify_js_input_event(input_type, x, y, hit_entity_id)
+
+func _js_send_input(args: Array) -> void:
+	if args.size() < 4:
+		return
+	var input_type = str(args[0])
+	var x = float(args[1])
+	var y = float(args[2])
+	var provided_entity_id = str(args[3]) if args[3] != null else ""
+
+	if input_type == "tap":
+		var hit_entity_id: Variant = null
+
+		var godot_point = game_to_godot_pos(Vector2(x, y))
+		var space = get_viewport().find_world_2d().direct_space_state
+		if space:
+			var query = PhysicsPointQueryParameters2D.new()
+			query.position = godot_point
+			query.collision_mask = 0xFFFFFFFF
+			query.collide_with_bodies = true
+			query.collide_with_areas = true
+
+			var results = space.intersect_point(query, 1)
+			if results.size() > 0:
+				var collider = results[0].collider
+				if collider and collider.name in entities:
+					hit_entity_id = collider.name
+
+		_notify_js_input_event(input_type, x, y, hit_entity_id)
+
+func _js_on_input_event(args: Array) -> void:
+	if args.size() >= 1:
+		_js_input_event_callback = args[0]
+
+func _notify_js_input_event(input_type: String, x: float, y: float, entity_id: Variant) -> void:
+	if _js_input_event_callback != null:
+		var data = {
+			"type": input_type,
+			"x": x,
+			"y": y,
+			"entityId": entity_id
+		}
+		var json_str = JSON.stringify(data)
+		_js_input_event_callback.call("call", null, json_str)
+
+func _js_on_collision(args: Array) -> void:
+	if args.size() >= 1:
+		_js_collision_callback = args[0]
+
+func _js_on_entity_destroyed(args: Array) -> void:
+	if args.size() >= 1:
+		_js_destroy_callback = args[0]
+
+func _js_on_entity_spawned(args: Array) -> void:
+	if args.size() >= 1:
+		_js_entity_spawned_callback = args[0]
+
+func _notify_js_collision(entity_a: String, entity_b: String, impulse: float) -> void:
+	if _js_collision_callback != null:
+		# Legacy format for backward compatibility
+		_js_collision_callback.call("call", null, entity_a, entity_b, impulse)
+	else:
+		# Native path: queue event for polling
+		_queue_event("collision", {"entityA": entity_a, "entityB": entity_b, "impulse": impulse})
+
+func _notify_js_collision_detailed(collision_data: Dictionary) -> void:
+	if _js_collision_callback != null:
+		# New detailed format: { entityA, entityB, contacts: [{point, normal, normalImpulse, tangentImpulse}] }
+		var json_str = JSON.stringify(collision_data)
+		# Use legacy format which works - pass entityA, entityB, impulse separately
+		var entity_a = collision_data.get("entityA", "")
+		var entity_b = collision_data.get("entityB", "")
+		var total_impulse = 0.0
+		for contact in collision_data.get("contacts", []):
+			total_impulse += abs(contact.get("normalImpulse", 0.0))
+		_js_collision_callback.call("call", null, entity_a, entity_b, total_impulse)
+	else:
+		# Native path: queue event for polling
+		_queue_event("collision_detailed", collision_data)
+
+func _handle_collision_manifold(body_node: RigidBody2D, state: PhysicsDirectBodyState2D) -> void:
+	var contact_count = state.get_contact_count()
+	if contact_count == 0:
+		return
+
+	var entity_a = body_node.name
+	if not entities.has(entity_a):
+		return
+
+	# Group contacts by colliding body
+	var contacts_by_body: Dictionary = {}
+
+	for i in range(contact_count):
+		var collider = state.get_contact_collider_object(i)
+		if collider == null or not (collider is Node2D):
+			continue
+
+		var entity_b = collider.name
+		if not entities.has(entity_b):
+			continue
+
+		# Get contact data and convert to game coordinates
+		var godot_contact_pos = state.get_contact_local_position(i)
+		var game_contact_pos = godot_to_game_pos(godot_contact_pos)
+		var godot_normal = state.get_contact_local_normal(i)
+		var game_normal = Vector2(godot_normal.x, -godot_normal.y)  # Flip Y for normal
+		var impulse_vec = state.get_contact_impulse(i)
+		var normal_impulse = impulse_vec.dot(godot_normal)
+		var tangent = Vector2(-godot_normal.y, godot_normal.x)
+		var tangent_impulse = impulse_vec.dot(tangent)
+
+		# Only report if impulse is significant (avoid spam for resting contacts)
+		if abs(normal_impulse) < IMPULSE_THRESHOLD and abs(tangent_impulse) < IMPULSE_THRESHOLD:
+			continue
+
+		if not contacts_by_body.has(entity_b):
+			contacts_by_body[entity_b] = []
+
+		contacts_by_body[entity_b].append({
+			"point": {"x": game_contact_pos.x, "y": game_contact_pos.y},
+			"normal": {"x": game_normal.x, "y": game_normal.y},
+			"normalImpulse": normal_impulse / pixels_per_meter,
+			"tangentImpulse": tangent_impulse / pixels_per_meter
+		})
+
+	# Emit collision events for each colliding body
+	for entity_b in contacts_by_body:
+		var contacts = contacts_by_body[entity_b]
+
+		# Calculate total impulse for this collision pair
+		var total_impulse = 0.0
+		for contact in contacts:
+			total_impulse += abs(contact["normalImpulse"])
+
+		var collision_data = {
+			"entityA": entity_a,
+			"entityB": entity_b,
+			"contacts": contacts
+		}
+
+		_notify_js_collision_detailed(collision_data)
+		collision_occurred.emit(entity_a, entity_b, total_impulse)
+
+		# Process destroy_on_collision behaviors directly in Godot
+		_process_collision_behaviors(entity_a, entity_b)
+		_process_collision_behaviors(entity_b, entity_a)
+
+func _notify_js_destroy(entity_id: String) -> void:
+	if _js_destroy_callback != null:
+		_js_destroy_callback.call("call", null, entity_id)
+	else:
+		# Native path: queue event for polling
+		_queue_event("destroy", {"entityId": entity_id})
+
+func _notify_js_entity_spawned(entity_id: String, snapshot: Dictionary) -> void:
+	if _js_entity_spawned_callback != null:
+		var json_str = JSON.stringify(snapshot)
+		_js_entity_spawned_callback.call("call", null, json_str)
+	else:
+		# Native path: queue event for polling
+		_queue_event("entity_spawned", snapshot)
+
+func _setup_splat_map() -> void:
+	if _splat_enabled:
+		return
+
+	_splat_viewport = SubViewport.new()
+	_splat_viewport.name = "SplatMap"
+	_splat_viewport.size = Vector2(512, 512) # Low res is fine for splat map
+	_splat_viewport.transparent_bg = false
+	_splat_viewport.render_target_update_mode = SubViewport.UPDATE_WHEN_VISIBLE
+	_splat_viewport.render_target_clear_mode = SubViewport.CLEAR_MODE_ALWAYS
+	add_child(_splat_viewport)
+
+	_splat_canvas = CanvasLayer.new()
+	_splat_viewport.add_child(_splat_canvas)
+
+	# Background black (no force)
+	var bg = ColorRect.new()
+	bg.color = Color.BLACK
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_splat_canvas.add_child(bg)
+
+	_splat_enabled = true
+
+func enable_splat_map() -> void:
+	if not _splat_enabled:
+		_setup_splat_map()
+
+func disable_splat_map() -> void:
+	if _splat_enabled and _splat_viewport:
+		for proxy in _splat_proxies.values():
+			proxy.queue_free()
+		_splat_proxies.clear()
+		_splat_viewport.queue_free()
+		_splat_viewport = null
+		_splat_canvas = null
+		_splat_enabled = false
+
+func get_splat_texture() -> Texture2D:
+	return _splat_viewport.get_texture()
+
+func _process(_delta: float) -> void:
+	# Update splat proxies (only if enabled)
+	if _splat_enabled and _splat_viewport and _splat_canvas:
+		for entity_id in entities:
+			var entity = entities[entity_id]
+
+			# Skip stationary entities (optimization for 100+ entities)
+			var vel = Vector2.ZERO
+			if entity is RigidBody2D:
+				vel = entity.linear_velocity
+			elif entity is CharacterBody2D:
+				vel = entity.velocity
+			elif entity is Area2D and entity.has_meta("velocity"):
+				vel = entity.get_meta("velocity")
+
+			# Cull low-velocity entities (reduce updates)
+			if vel.length_squared() < 0.01 and _splat_proxies.has(entity_id):
+				continue  # Skip update for stationary entities
+
+			if not _splat_proxies.has(entity_id):
+				var proxy = SPLAT_PROXY_SCENE.instantiate()
+				_splat_canvas.add_child(proxy)
+				_splat_proxies[entity_id] = proxy
+
+			var proxy = _splat_proxies[entity_id]
+
+			# Sync position (map game world to viewport)
+			if camera:
+				var screen_pos = entity.get_global_transform_with_canvas().origin
+				# Map screen pos to splat viewport
+				var viewport_size = get_viewport().get_visible_rect().size
+				var uv = screen_pos / viewport_size
+				proxy.position = uv * Vector2(_splat_viewport.size)
+
+			# Encode Velocity
+			# R = X vel, G = Y vel, B = Presence
+			# Normalize velocity (-20..20 -> 0..1)
+			var r = clamp((vel.x / 40.0) + 0.5, 0.0, 1.0)
+			var g = clamp((-vel.y / 40.0) + 0.5, 0.0, 1.0) # Flip Y for texture space
+			proxy.modulate = Color(r, g, 1.0, 1.0)
+
+			# Scale proxy based on mass/size if possible, default to fixed size for now
+			proxy.scale = Vector2(0.5, 0.5)
+
+		# Clean up dead proxies
+		var dead_ids = []
+		for id in _splat_proxies:
+			if not entities.has(id):
+				dead_ids.append(id)
+		for id in dead_ids:
+			_splat_proxies[id].queue_free()
+			_splat_proxies.erase(id)
+
+	if ws:
+		ws.poll()
+		var state = ws.get_ready_state()
+		if state == WebSocketPeer.STATE_OPEN:
+			while ws.get_available_packet_count() > 0:
+				var packet = ws.get_packet()
+				_on_ws_message(packet.get_string_from_utf8())
+		elif state == WebSocketPeer.STATE_CLOSED:
+			ws = null
+
+# Connect to WebSocket server
+func connect_to_server(url: String = "") -> void:
+	if url != "":
+		ws_url = url
+	ws = WebSocketPeer.new()
+	var err = ws.connect_to_url(ws_url)
+	if err != OK:
+		ws = null
+
+func _on_ws_message(message: String) -> void:
+	var json = JSON.new()
+	var err = json.parse(message)
+	if err == OK:
+		var data = json.data
+		if data.has("type"):
+			match data.type:
+				"load_game":
+					load_game_json(JSON.stringify(data.game))
+				"spawn":
+					spawn_entity(data.template, data.x, data.y)
+
+# Main entry point: Load a game from JSON string
+func load_game_json(json_string: String) -> bool:
+	var json = JSON.new()
+	var err = json.parse(json_string)
+	if err != OK:
+		push_error("[GameBridge] JSON parse error: " + json.get_error_message())
+		return false
+
+	game_data = json.data
+
+	# Clear existing game
+	clear_game()
+
+	# Setup world
+	_setup_world(game_data.get("world", {}))
+
+	# Setup background
+	_setup_background(game_data.get("background", {}))
+
+	# Load templates
+	templates = game_data.get("templates", {})
+	print("[DEBUG] Loaded templates: ", templates.keys())
+	for tmpl_id in templates:
+		var tmpl = templates[tmpl_id]
+		if tmpl.has("visual"):
+			print("[DEBUG] Template ", tmpl_id, " visual.type: ", tmpl.visual.get("type", "NO TYPE"))
+
+	# Create entities
+	var entities_data = game_data.get("entities", [])
+	for entity_data in entities_data:
+		_create_entity(entity_data)
+
+	game_loaded.emit(game_data)
+	return true
+
+func load_custom_scene(scene_path: String) -> bool:
+	if not ResourceLoader.exists(scene_path):
+		push_error("[GameBridge] Scene not found: " + scene_path)
+		return false
+
+	var scene = load(scene_path)
+	if not scene:
+		push_error("[GameBridge] Failed to load scene: " + scene_path)
+		return false
+
+	if game_root:
+		for child in game_root.get_children():
+			child.queue_free()
+
+		var instance = scene.instantiate()
+		game_root.add_child(instance)
+		return true
+	else:
+		push_error("[GameBridge] game_root not set")
+		return false
+
+func _setup_world(world_data: Dictionary) -> void:
+	pixels_per_meter = world_data.get("pixelsPerMeter", 50.0)
+
+	var gravity = world_data.get("gravity", {"x": 0, "y": -9.8})
+	var gravity_vec = game_to_godot_vec(Vector2(gravity.x, gravity.y))
+
+	PhysicsServer2D.area_set_param(
+		get_viewport().find_world_2d().space,
+		PhysicsServer2D.AREA_PARAM_GRAVITY,
+		gravity_vec.length()
+	)
+	PhysicsServer2D.area_set_param(
+		get_viewport().find_world_2d().space,
+		PhysicsServer2D.AREA_PARAM_GRAVITY_VECTOR,
+		gravity_vec.normalized()
+	)
+
+	if camera:
+		camera.global_position = Vector2.ZERO
+
+var _background_layer: CanvasLayer = null
+var _background_rect: TextureRect = null
+var _parallax_layers: Array = []
+
+func _setup_background(bg_data: Dictionary) -> void:
+	# Clean up existing background
+	if _background_layer:
+		_background_layer.queue_free()
+		_background_layer = null
+		_background_rect = null
+
+	for layer in _parallax_layers:
+		if is_instance_valid(layer):
+			layer.queue_free()
+	_parallax_layers.clear()
+
+	if bg_data.is_empty():
+		return
+
+	var bg_type = bg_data.get("type", "")
+
+	if bg_type == "parallax":
+		_setup_parallax_background(bg_data)
+		return
+
+	if bg_type != "static":
+		return
+
+	var image_url = bg_data.get("imageUrl", "")
+	var color = bg_data.get("color", "")
+
+	_background_layer = CanvasLayer.new()
+	_background_layer.layer = -100
+	_background_layer.name = "BackgroundLayer"
+	add_child(_background_layer)
+
+	_background_rect = TextureRect.new()
+	_background_rect.name = "Background"
+	_background_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_background_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_background_rect.anchor_left = 0.0
+	_background_rect.anchor_top = 0.0
+	_background_rect.anchor_right = 1.0
+	_background_rect.anchor_bottom = 1.0
+	_background_layer.add_child(_background_rect)
+
+	if image_url != "":
+		_download_background_texture(image_url)
+	elif color != "":
+		var viewport_size = get_viewport().get_visible_rect().size
+		var img = Image.create(int(viewport_size.x), int(viewport_size.y), false, Image.FORMAT_RGBA8)
+		img.fill(Color.from_string(color, Color.GRAY))
+		_background_rect.texture = ImageTexture.create_from_image(img)
+
+func _download_image_texture(url: String, callback: Callable) -> void:
+	if _texture_cache.has(url):
+		var texture = _texture_cache[url]
+		callback.call(texture)
+		return
+
+	var http = HTTPRequest.new()
+	add_child(http)
+
+	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+			push_error("[GameBridge] Failed to download image: " + url)
+			return
+
+		var image = Image.new()
+		var err = image.load_png_from_buffer(body)
+		if err != OK:
+			err = image.load_jpg_from_buffer(body)
+		if err != OK:
+			err = image.load_webp_from_buffer(body)
+		if err != OK:
+			push_error("[GameBridge] Failed to parse image: " + url)
+			return
+
+		var texture = ImageTexture.create_from_image(image)
+		_texture_cache[url] = texture
+		callback.call(texture)
+	)
+
+	var err = http.request(url)
+	if err != OK:
+		push_error("[GameBridge] Failed to start image download: " + url)
+		http.queue_free()
+
+func _download_background_texture(url: String) -> void:
+	_download_image_texture(url, func(texture: Texture2D):
+		if is_instance_valid(_background_rect):
+			_background_rect.texture = texture
+			print("[BG] Applied texture ", texture.get_width(), "x", texture.get_height(), " to TextureRect with STRETCH_KEEP_ASPECT_COVERED")
+	)
+
+func _apply_background_texture(texture: Texture2D) -> void:
+	if not is_instance_valid(_background_rect) or texture == null:
+		return
+
+	_background_rect.texture = texture
+	print("[BG] Applied texture ", texture.get_width(), "x", texture.get_height(), " to TextureRect with STRETCH_KEEP_ASPECT_COVERED")
+
+func _setup_parallax_background(bg_data: Dictionary) -> void:
+	var layers_data = bg_data.get("layers", [])
+	if layers_data.is_empty():
+		return
+
+	# Map depth to z-index (further back = lower z-index)
+	var depth_to_z = {
+		"sky": -400,
+		"far": -300,
+		"mid": -200,
+		"near": -100
+	}
+
+	for layer_data in layers_data:
+		var layer_id = layer_data.get("id", "")
+		var image_url = layer_data.get("imageUrl", "")
+		var depth = layer_data.get("depth", "mid")
+		var parallax_factor = layer_data.get("parallaxFactor", 0.5)
+		var visible = layer_data.get("visible", true)
+
+		if not visible or image_url == "":
+			continue
+
+		var layer = CanvasLayer.new()
+		layer.layer = depth_to_z.get(depth, -200)
+		layer.name = "ParallaxLayer_" + layer_id
+		add_child(layer)
+
+		var rect = TextureRect.new()
+		rect.name = layer_id
+		rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		rect.anchor_left = 0.0
+		rect.anchor_top = 0.0
+		rect.anchor_right = 1.0
+		rect.anchor_bottom = 1.0
+		layer.add_child(rect)
+
+		_parallax_layers.append({"layer": layer, "rect": rect, "factor": parallax_factor, "url": image_url})
+
+		# Download texture for this layer
+		_download_image_texture(image_url, func(texture: Texture2D):
+			if is_instance_valid(rect):
+				rect.texture = texture
+				print("[BG] Applied parallax layer texture ", texture.get_width(), "x", texture.get_height())
+		)
+
+	print("[BG] Setup ", _parallax_layers.size(), " parallax layers")
+
+func _create_entity(entity_data: Dictionary) -> Node2D:
+	var entity_id = entity_data.get("id", "entity_" + str(randi()))
+	var template_id = entity_data.get("template", "")
+	var transform_data = entity_data.get("transform", {})
+
+	JavaScriptBridge.eval("console.log('[Godot] Creating entity: " + entity_id + " template: " + template_id + "')")
+
+	# Merge template with entity data
+	var merged = entity_data.duplicate(true)
+
+	if template_id != "" and templates.has(template_id):
+		var tmpl = templates[template_id]
+		# Template provides defaults, entity_data overrides
+		for key in tmpl:
+			if not merged.has(key):
+				merged[key] = tmpl[key]
+		# Merge components specifically
+		_merged_component(merged, tmpl, "physics")
+		_merged_component(merged, tmpl, "collider")
+		_merged_component(merged, tmpl, "visual")
+		_merged_component(merged, tmpl, "character")
+		_merged_component(merged, tmpl, "zone")
+
+	var physics_data = merged.get("physics", null)
+	var collider_data = merged.get("collider", null)
+	var visual_data = merged.get("visual", null)
+	var zone_data = merged.get("zone", null)
+	var entity_type = merged.get("type", "")
+
+	var node: Node2D = null
+
+	# Create physics body if physics component exists
+	if physics_data:
+		node = _create_physics_body(entity_id, physics_data, collider_data, transform_data)
+	# Create zone (legacy) if zone component exists
+	elif entity_type == "zone" and zone_data:
+		node = _create_zone_entity(entity_id, zone_data, transform_data)
+	# Create sensor-only entity if collider with isSensor exists
+	elif collider_data and collider_data.get("isSensor", false):
+		node = _create_sensor_entity(entity_id, collider_data, transform_data)
+	# Otherwise create plain Node2D
+	else:
+		node = Node2D.new()
+		node.name = entity_id
+
+	# Set transform (convert from game coords to Godot coords with Y-flip)
+	var game_pos = Vector2(transform_data.get("x", 0), transform_data.get("y", 0))
+	var godot_pos = game_to_godot_pos(game_pos)
+	var angle = transform_data.get("angle", 0)
+	node.position = godot_pos
+	node.rotation = -angle
+
+	# Add visual component
+	if visual_data:
+		print("[DEBUG] Adding visual for entity: ", entity_id, " type: ", visual_data.get("type", "unknown"), " keys: ", visual_data.keys())
+		# Apply smart defaults: visual inherits from collider
+		var resolved_visual = _resolve_visual_with_defaults(visual_data, collider_data)
+		print("[DEBUG] Resolved visual type: ", resolved_visual.get("type", "NO TYPE"))
+		_add_visual(node, resolved_visual)
+	elif collider_data:
+		# Auto-generate visual from collider if no visual specified
+		var auto_visual = _generate_visual_from_collider(collider_data)
+		_add_visual(node, auto_visual)
+	else:
+		print("[DEBUG] NO visual or collider for entity: ", entity_id)
+
+	# Add collider shape if collider exists (and not already added by physics)
+	if collider_data and not physics_data:
+		var collision = CollisionShape2D.new()
+		collision.shape = _create_collider_shape(collider_data)
+		node.add_child(collision)
+
+	# Add to scene
+	if game_root:
+		game_root.add_child(node)
+	else:
+		var main = get_tree().current_scene
+		if main:
+			main.add_child(node)
+
+	# Apply initial velocity if specified
+	if node is RigidBody2D and physics_data and physics_data.has("initialVelocity"):
+		var initial_vel = physics_data.initialVelocity
+		var game_vel = Vector2(initial_vel.get("x", 0), initial_vel.get("y", 0))
+		node.linear_velocity = game_to_godot_vec(game_vel)
+
+	# Set metadata for selectors
+	if template_id != "":
+		node.set_meta("template", template_id)
+	if merged.has("tags"):
+		node.set_meta("tags", merged.tags if merged.tags is Array else [])
+	if merged.has("behaviors"):
+		node.set_meta("behaviors", merged.behaviors if merged.behaviors is Array else [])
+
+	entities[entity_id] = node
+
+	# Track entity generation for pool safety
+	var generation = next_generation
+	next_generation += 1
+	entity_generations[entity_id] = generation
+
+	# Build snapshot for TypeScript
+	var snapshot_pos = godot_to_game_pos(node.position)
+	
+	# Get physics IDs if available
+	var body_id = body_id_map.get(entity_id, -1)
+	var collider_id = -1
+	if entity_shape_map.has(entity_id) and entity_shape_map[entity_id].size() > 0:
+		collider_id = entity_shape_map[entity_id][0]
+	
+	var snapshot = {
+		"entityId": entity_id,
+		"template": template_id,
+		"generation": generation,
+		"tags": merged.get("tags", []),
+		"transform": {
+			"x": snapshot_pos.x,
+			"y": snapshot_pos.y,
+			"angle": -node.rotation,
+			"scaleX": node.scale.x,
+			"scaleY": node.scale.y
+		}
+	}
+	
+	# Add physics IDs if they exist
+	if body_id >= 0:
+		snapshot["bodyId"] = {"value": body_id}
+	if collider_id >= 0:
+		snapshot["colliderId"] = {"value": collider_id}
+
+	# Emit signal and notify JS
+	entity_spawned.emit(entity_id, node)
+	_notify_js_entity_spawned(entity_id, snapshot)
+
+	return node
+
+func _create_physics_body(entity_id: String, physics_data: Dictionary, collider_data: Dictionary, transform_data: Dictionary) -> Node2D:
+	var body_type = physics_data.get("bodyType", "dynamic")
+	var node: Node2D
+
+	# Extract physics properties (needed outside match block)
+	var density = physics_data.get("density", 1.0)
+	var mass = physics_data.get("mass", 0.0)
+
+	match body_type:
+		"static":
+			node = StaticBody2D.new()
+		"kinematic":
+			var char_body = CharacterBody2D.new()
+			node = char_body
+		_:  # dynamic
+			var rigid = RigidBody2D.new()
+			rigid.gravity_scale = physics_data.get("gravityScale", 1.0)
+
+			# Enable contact monitoring for detailed collision data
+			rigid.contact_monitor = true
+			rigid.max_contacts_reported = 4
+
+			# Attach PhysicsBody script for _integrate_forces callback
+			rigid.set_script(load("res://scripts/PhysicsBody.gd"))
+
+			# Linear/angular damping
+			rigid.linear_damp = physics_data.get("linearDamping", 0.0)
+			rigid.angular_damp = physics_data.get("angularDamping", 0.0)
+
+			# Fixed rotation
+			if physics_data.get("fixedRotation", false):
+				rigid.lock_rotation = true
+
+			# CCD for fast-moving objects
+			if physics_data.get("ccd", false) or physics_data.get("bullet", false):
+				rigid.continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
+
+			# Connect collision signals (kept for backward compatibility)
+			rigid.body_entered.connect(_on_body_entered.bind(entity_id))
+
+			# Apply initial velocity if specified
+			var initial_vel = physics_data.get("initialVelocity", null)
+			if initial_vel != null:
+				var game_vel = Vector2(initial_vel.get("x", 0), initial_vel.get("y", 0))
+				rigid.linear_velocity = game_to_godot_vec(game_vel)
+
+			# Store user data and group if provided
+			if physics_data.has("userData"):
+				user_data[next_body_id] = physics_data.userData
+			if physics_data.has("group"):
+				body_groups[next_body_id] = physics_data.group
+
+			node = rigid
+
+	node.name = entity_id
+
+	# Add collision shape from collider data
+	if collider_data:
+		var collision = CollisionShape2D.new()
+		collision.shape = _create_collider_shape(collider_data)
+
+		# Apply collider material properties (if dynamic body)
+		if node is RigidBody2D:
+			var friction = collider_data.get("friction", 0.5)
+			var restitution = collider_data.get("restitution", 0.0)
+			var material = PhysicsMaterial.new()
+			material.friction = friction
+			material.bounce = restitution
+			node.physics_material_override = material
+
+			# Calculate mass if density provided and no direct mass
+			if mass <= 0 and density > 0:
+				var shape_type = collider_data.get("shape", "box")
+				var shape_area = 1.0
+				if shape_type == "box":
+					var w = collider_data.get("width", 1.0)
+					var h = collider_data.get("height", 1.0)
+					shape_area = w * h
+				elif shape_type == "circle":
+					var r = collider_data.get("radius", 0.5)
+					shape_area = PI * r * r
+				elif shape_type == "polygon":
+					var vertices = collider_data.get("vertices", [])
+					shape_area = _calculate_polygon_area(vertices)
+				node.mass = density * shape_area
+			elif mass > 0:
+				node.mass = mass
+
+		node.add_child(collision)
+
+	# Apply collision filtering
+	node.collision_layer = physics_data.get("categoryBits", 1)
+	node.collision_mask = physics_data.get("maskBits", 0xFFFFFFFF)
+
+	# Track body ID for Physics2D compatibility
+	body_id_map[entity_id] = next_body_id
+	body_id_reverse[next_body_id] = entity_id
+	next_body_id += 1
+
+	return node
+
+func _create_zone_entity(entity_id: String, zone_data: Dictionary, transform_data: Dictionary) -> Node2D:
+	"""Create a zone entity (Area2D) for collision detection without physics response.
+	Zones can have sprites and detect collisions but don't participate in physics simulation."""
+	var movement_type = zone_data.get("movement", "static")
+	var zone_shape = zone_data.get("shape", {"type": "box", "width": 1.0, "height": 1.0})
+
+	var area = Area2D.new()
+	area.name = entity_id
+
+	# Connect collision signals for zone detection
+	area.body_shape_entered.connect(_on_sensor_body_shape_entered.bind(entity_id))
+	area.body_shape_exited.connect(_on_sensor_body_shape_exited.bind(entity_id))
+
+	# Add collision shape
+	var collision = CollisionShape2D.new()
+	var shape_type = zone_shape.get("type", "box")
+
+	match shape_type:
+		"circle":
+			var circle = CircleShape2D.new()
+			circle.radius = zone_shape.get("radius", 0.5) * pixels_per_meter
+			collision.shape = circle
+		"polygon":
+			var polygon = ConvexPolygonShape2D.new()
+			var vertices = zone_shape.get("vertices", [])
+			var points: PackedVector2Array = []
+			for v in vertices:
+				points.append(Vector2(v.x * pixels_per_meter, -v.y * pixels_per_meter))
+			polygon.points = points
+			collision.shape = polygon
+		_:  # box
+			var rect = RectangleShape2D.new()
+			var w = zone_shape.get("width", 1.0) * pixels_per_meter
+			var h = zone_shape.get("height", 1.0) * pixels_per_meter
+			rect.size = Vector2(w, h)
+			collision.shape = rect
+
+	area.add_child(collision)
+
+	# Apply collision filtering
+	area.collision_layer = zone_data.get("categoryBits", 1)
+	area.collision_mask = zone_data.get("maskBits", 0xFFFFFFFF)
+
+	# Store zone metadata
+	area.set_meta("entity_type", "zone")
+	area.set_meta("zone_movement", movement_type)
+
+	# Track body ID for compatibility
+	body_id_map[entity_id] = next_body_id
+	body_id_reverse[next_body_id] = entity_id
+	next_body_id += 1
+
+	return area
+
+func _calculate_polygon_area(vertices: Array) -> float:
+	if vertices.size() < 3:
+		return 1.0
+	var area = 0.0
+	var n = vertices.size()
+	for i in range(n):
+		var j = (i + 1) % n
+		area += vertices[i].x * vertices[j].y
+		area -= vertices[j].x * vertices[i].y
+	return abs(area) / 2.0
+
+func _create_polygon_texture(width: int, height: int, color: Color, padding: int = 0) -> ImageTexture:
+	# Create texture with optional transparent padding for shader edge detection
+	var tex_w = width + padding * 2
+	var tex_h = height + padding * 2
+	var image = Image.create(tex_w, tex_h, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0, 0, 0, 0))  # Start transparent
+	# Fill the center region with the actual color
+	for y in range(padding, tex_h - padding):
+		for x in range(padding, tex_w - padding):
+			image.set_pixel(x, y, color)
+	return ImageTexture.create_from_image(image)
+
+func _create_shape(physics_data: Dictionary) -> Shape2D:
+	var shape_type = physics_data.get("shape", "box")
+	var shape: Shape2D
+
+	match shape_type:
+		"circle":
+			var circle = CircleShape2D.new()
+			circle.radius = physics_data.get("radius", 0.5) * pixels_per_meter
+			shape = circle
+		"polygon":
+			var polygon = ConvexPolygonShape2D.new()
+			var vertices = physics_data.get("vertices", [])
+			var points: PackedVector2Array = []
+			for v in vertices:
+				# Vertices are relative to entity center, just scale and flip Y
+				points.append(Vector2(v.x * pixels_per_meter, -v.y * pixels_per_meter))
+			polygon.points = points
+			shape = polygon
+		_:  # box
+			var rect = RectangleShape2D.new()
+			var w = physics_data.get("width", 1.0) * pixels_per_meter
+			var h = physics_data.get("height", 1.0) * pixels_per_meter
+			rect.size = Vector2(w, h)
+			shape = rect
+
+	return shape
+
+func _add_sprite(node: Node2D, sprite_data: Dictionary, physics_data: Dictionary, zone_data = null) -> void:
+	print("[DEBUG _add_sprite] Adding sprite type: ", sprite_data.get("type", "unknown"), " to node: ", node.name)
+	var sprite_type = sprite_data.get("type", "rect")
+	var color = Color.from_string(sprite_data.get("color", "#FF0000"), Color.RED)
+	var opacity = sprite_data.get("opacity", 1.0)
+	var z_index_val = sprite_data.get("zIndex", 0)
+
+	# Helper function to get dimension from sprite_data, physics_data, zone_data, or default
+	var _get_dimension = func(key: String, default_val: float):
+		if sprite_data.has(key):
+			return sprite_data.get(key)
+		elif physics_data and physics_data.has(key):
+			return physics_data.get(key)
+		elif zone_data and zone_data.has("shape") and zone_data.shape.has(key):
+			return zone_data.shape.get(key)
+		else:
+			return default_val
+
+	match sprite_type:
+		"rect":
+			var polygon = Polygon2D.new()
+			var w = _get_dimension.call("width", 1.0) * pixels_per_meter
+			var h = _get_dimension.call("height", 1.0) * pixels_per_meter
+			var hw = w / 2.0
+			var hh = h / 2.0
+			polygon.polygon = PackedVector2Array([
+				Vector2(-hw, -hh),
+				Vector2(hw, -hh),
+				Vector2(hw, hh),
+				Vector2(-hw, hh)
+			])
+			color.a = opacity
+			polygon.z_index = z_index_val
+			# Add texture for shader compatibility (WebGL needs valid TEXTURE_PIXEL_SIZE)
+			# Bake the color INTO the texture with padding for edge-detection shaders
+			var tex_size = max(int(w), int(h), 64)
+			var padding = 16  # Transparent padding for outline/glow shaders
+			polygon.texture = _create_polygon_texture(tex_size, tex_size, color, padding)
+			polygon.color = Color.WHITE  # Don't multiply - color is in texture
+			# UV maps to the padded texture (shape is offset by padding)
+			polygon.uv = PackedVector2Array([
+				Vector2(padding, padding),
+				Vector2(tex_size + padding, padding),
+				Vector2(tex_size + padding, tex_size + padding),
+				Vector2(padding, tex_size + padding)
+			])
+			node.add_child(polygon)
+		"circle":
+			var polygon = Polygon2D.new()
+			var radius = _get_dimension.call("radius", 0.5) * pixels_per_meter
+			var points: PackedVector2Array = []
+			var uvs: PackedVector2Array = []
+			var tex_size = max(int(radius * 2), 64)
+			var padding = 16  # Transparent padding for edge-detection shaders
+			for i in range(32):
+				var angle = i * TAU / 32
+				points.append(Vector2(cos(angle), sin(angle)) * radius)
+				# Map circle points to UV space, offset by padding
+				uvs.append(Vector2(
+					(cos(angle) + 1.0) * 0.5 * tex_size + padding,
+					(sin(angle) + 1.0) * 0.5 * tex_size + padding
+				))
+			polygon.polygon = points
+			color.a = opacity
+			polygon.z_index = z_index_val
+			# Add texture for shader compatibility
+			polygon.texture = _create_polygon_texture(tex_size, tex_size, color, padding)
+			polygon.color = Color.WHITE  # Don't multiply - color is in texture
+			polygon.uv = uvs
+			node.add_child(polygon)
+		"polygon":
+			var polygon = Polygon2D.new()
+			var vertices = sprite_data.get("vertices", [])
+			var points: PackedVector2Array = []
+			for v in vertices:
+				points.append(Vector2(v.x * pixels_per_meter, -v.y * pixels_per_meter))
+			polygon.polygon = points
+			color.a = opacity
+			polygon.z_index = z_index_val
+			# Add texture for shader compatibility
+			var poly_size = max_pt - min_pt
+			var tex_size = max(int(poly_size.x), int(poly_size.y), 64)
+			var padding = 16  # Transparent padding for edge-detection shaders
+			polygon.texture = _create_polygon_texture(tex_size, tex_size, color, padding)
+			polygon.color = Color.WHITE  # Don't multiply - color is in texture
+			var uvs: PackedVector2Array = []
+			for pt in points:
+				uvs.append(Vector2(
+					(pt.x - min_pt.x) / poly_size.x * tex_size + padding if poly_size.x > 0 else padding,
+					(pt.y - min_pt.y) / poly_size.y * tex_size + padding if poly_size.y > 0 else padding
+				))
+			polygon.uv = uvs
+			node.add_child(polygon)
+		"image":
+			_add_image_sprite(node, sprite_data, opacity, z_index_val)
+		"text":
+			_add_text_sprite(node, sprite_data, opacity, z_index_val)
+
+func _add_image_sprite(node: Node2D, sprite_data: Dictionary, opacity: float, z_index_val: int) -> void:
+	var sprite = Sprite2D.new()
+	var url = sprite_data.get("imageUrl", sprite_data.get("url", ""))
+	var width = sprite_data.get("imageWidth", sprite_data.get("width", 1.0))
+	var height = sprite_data.get("imageHeight", sprite_data.get("height", 1.0))
+	var asset_scale = sprite_data.get("scale", 1.0)
+	var offset_x = sprite_data.get("offsetX", 0.0)
+	var offset_y = sprite_data.get("offsetY", 0.0)
+
+	if url == "":
+		sprite.modulate.a = opacity
+		sprite.z_index = z_index_val
+		node.add_child(sprite)
+		return
+
+	if url.begins_with("res://"):
+		var texture = load(url)
+		if texture:
+			sprite.texture = texture
+			var local_sprite_data = {
+				"width": img_width,
+				"height": img_height,
+				"scale": asset_scale,
+				"offsetX": offset_x,
+				"offsetY": offset_y
+			}
+			_apply_sprite_scale(sprite, local_sprite_data, texture)
+	else:
+		var normalized_data = {
+			"width": img_width,
+			"height": img_height,
+			"scale": asset_scale,
+			"offsetX": offset_x,
+			"offsetY": offset_y
+		}
+		_queue_texture_download(sprite, url, normalized_data)
+
+	sprite.modulate.a = opacity
+	sprite.z_index = z_index_val
+	node.add_child(sprite)
+
+func _add_text_sprite(node: Node2D, sprite_data: Dictionary, opacity: float, z_index_val: int) -> void:
+	var label = Label.new()
+	label.text = sprite_data.get("text", "")
+
+	var font_size = int(sprite_data.get("fontSize", 16) * pixels_per_meter / 50.0)
+	label.add_theme_font_size_override("font_size", font_size)
+
+	var font_url = sprite_data.get("fontUrl", "")
+	if font_url != "":
+		_queue_font_download(label, font_url)
+
+	var text_color = Color.from_string(sprite_data.get("color", "#FFFFFF"), Color.WHITE)
+	label.modulate = text_color
+	label.modulate.a = opacity
+	label.z_index = z_index_val
+	node.add_child(label)
+
+func _queue_texture_download(sprite: Sprite2D, url: String, sprite_data: Dictionary) -> void:
+	_download_image_texture(url, func(texture: Texture2D):
+		if is_instance_valid(sprite):
+			sprite.texture = texture
+			_apply_sprite_scale(sprite, sprite_data, texture)
+	)
+
+var _font_cache = {}
+
+func _queue_font_download(label: Label, url: String) -> void:
+	if _font_cache.has(url):
+		label.add_theme_font_override("font", _font_cache[url])
+		return
+
+	var http = HTTPRequest.new()
+	add_child(http)
+
+	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+			push_error("[GameBridge] Failed to download font: " + url + " (code: " + str(response_code) + ")")
+			return
+
+		var font = FontFile.new()
+		font.data = body
+		var err = OK
+		if err != OK:
+			push_error("[GameBridge] Failed to parse font: " + url)
+			return
+
+		_font_cache[url] = font
+
+		if is_instance_valid(label):
+			label.add_theme_font_override("font", font)
+	)
+
+	var err = http.request(url)
+	if err != OK:
+		push_error("[GameBridge] Failed to start font download: " + url)
+		http.queue_free()
+
+func _apply_sprite_scale(sprite: Sprite2D, sprite_data: Dictionary, texture: Texture2D) -> void:
+	if texture == null:
+		return
+
+	# Get asset placement values (scale multiplier, offsets)
+	var asset_scale = sprite_data.get("scale", 1.0)
+	var offset_x = sprite_data.get("offsetX", 0.0) * pixels_per_meter
+	var offset_y = sprite_data.get("offsetY", 0.0) * pixels_per_meter
+
+	var target_w = sprite_data.get("width", 1.0) * pixels_per_meter * asset_scale
+	var target_h = sprite_data.get("height", 1.0) * pixels_per_meter * asset_scale
+
+	# Check if this is a generated asset (square texture with content that preserves aspect ratio)
+	# Generated assets have content that fills 90% of the larger dimension, centered in canvas
+	var tex_w = texture.get_width()
+	var tex_h = texture.get_height()
+	var is_square_texture = abs(tex_w - tex_h) < 2  # Allow 1px tolerance
+
+	if is_square_texture and tex_w > 0:
+		# For generated square textures (e.g., 512x512), use uniform scaling
+		# The actual content fills 90% of canvas on the larger dimension
+		var canvas_size = float(tex_w)
+		var fill_ratio = 0.9
+		var physics_w = sprite_data.get("width", 1.0)
+		var physics_h = sprite_data.get("height", 1.0)
+		var aspect_ratio = physics_w / physics_h if physics_h > 0 else 1.0
+
+		# Calculate silhouette dimensions within the canvas (matches generation logic)
+		var silhouette_w: float
+		var silhouette_h: float
+		if aspect_ratio >= 1.0:
+			silhouette_w = canvas_size * fill_ratio
+			silhouette_h = silhouette_w / aspect_ratio
+		else:
+			silhouette_h = canvas_size * fill_ratio
+			silhouette_w = silhouette_h * aspect_ratio
+
+		# Uniform scale: map silhouette pixels to target world pixels
+		var uniform_scale = target_w / silhouette_w if silhouette_w > 0 else 1.0
+		sprite.scale = Vector2(uniform_scale, uniform_scale)
+	else:
+		# Non-square textures: use uniform scaling to preserve aspect ratio (contain behavior)
+		var scale_x = target_w / tex_w if tex_w > 0 else 1.0
+		var scale_y = target_h / tex_h if tex_h > 0 else 1.0
+		var uniform_scale = min(scale_x, scale_y)
+		sprite.scale = Vector2(uniform_scale, uniform_scale)
+
+	# Apply offset to position the sprite relative to physics body center
+	sprite.position = Vector2(offset_x, offset_y)
+
+func _hide_shape_children(node: Node2D) -> void:
+	"""Hide Polygon2D shape children when a texture sprite is applied.
+	This prevents double-rendering of shapes and textures."""
+	for child in node.get_children():
+		if child is Polygon2D:
+			child.visible = false
+
+func _apply_debug_visibility(node: Node2D) -> void:
+	"""Apply current debug mode visibility to a node's children.
+	When debug mode is ON: show Polygon2D shapes, hide Sprite2D textures.
+	When debug mode is OFF: hide Polygon2D shapes, show Sprite2D textures."""
+	for child in node.get_children():
+		if child is Polygon2D:
+			child.visible = _debug_show_shapes
+		elif child is Sprite2D:
+			child.visible = not _debug_show_shapes
+
+func _js_clear_texture_cache(args: Array) -> void:
+	if args.size() > 0 and str(args[0]) != "":
+		var url = str(args[0])
+		if _texture_cache.has(url):
+			_texture_cache.erase(url)
+	else:
+		_texture_cache.clear()
+
+var _preload_pending_count: int = 0
+var _preload_completed_count: int = 0
+var _preload_failed_count: int = 0
+var _js_preload_progress_callback: JavaScriptObject = null
+
+func _js_preload_textures(args: Array) -> void:
+	if args.size() < 1:
+		push_error("[GameBridge] preloadTextures requires at least 1 arg: urls (JSON string)")
+		return
+
+	var urls_json = str(args[0])
+	var urls = JSON.parse_string(urls_json)
+	if urls == null or not (urls is Array):
+		push_error("[GameBridge] preloadTextures: failed to parse URLs from JSON")
+		return
+	if urls.size() == 0:
+		if args.size() > 1 and args[1] != null:
+			var cb = args[1]
+			if cb is JavaScriptObject:
+				cb.call("call", null, 100, 0, 0)
+		return
+
+	# Store callback if provided
+	if args.size() > 1 and args[1] != null:
+		_js_preload_progress_callback = args[1]
+	else:
+		_js_preload_progress_callback = null
+
+	_preload_pending_count = urls.size()
+	_preload_completed_count = 0
+	_preload_failed_count = 0
+
+	for url_variant in urls:
+		var url = str(url_variant)
+		if url == "":
+			_on_preload_complete(url, false)
+			continue
+
+		# Skip if already cached
+		if _texture_cache.has(url):
+			_on_preload_complete(url, true)
+			continue
+
+		# Download the texture
+		var http = HTTPRequest.new()
+		add_child(http)
+
+		http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+			http.queue_free()
+			if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+				push_warning("[GameBridge] Failed to preload texture: " + url + " (result: " + str(result) + ", code: " + str(response_code) + ")")
+				_on_preload_complete(url, false)
+				return
+
+			if body.size() == 0:
+				push_warning("[GameBridge] Empty body for texture: " + url)
+				_on_preload_complete(url, false)
+				return
+
+			var image = Image.new()
+			var err = image.load_png_from_buffer(body)
+			if err != OK:
+				err = image.load_jpg_from_buffer(body)
+			if err != OK:
+				err = image.load_webp_from_buffer(body)
+			if err != OK:
+				push_warning("[GameBridge] All image formats failed for: " + url + " (size: " + str(body.size()) + ")")
+				_on_preload_complete(url, false)
+				return
+
+			var texture = ImageTexture.create_from_image(image)
+			_texture_cache[url] = texture
+			_on_preload_complete(url, true)
+		)
+
+		var err = http.request(url)
+		if err != OK:
+			push_warning("[GameBridge] Failed to start preload request: " + url)
+			http.queue_free()
+			_on_preload_complete(url, false)
+
+func _on_preload_complete(url: String, success: bool) -> void:
+	if success:
+		_preload_completed_count += 1
+	else:
+		_preload_failed_count += 1
+
+	var total_done = _preload_completed_count + _preload_failed_count
+	var percent = int((float(total_done) / float(_preload_pending_count)) * 100.0)
+
+	if _js_preload_progress_callback != null:
+		_js_preload_progress_callback.call("call", null, percent, _preload_completed_count, _preload_failed_count)
+	else:
+		print("[GameBridge] No progress callback registered!")
+
+func _js_set_debug_show_shapes(args: Array) -> void:
+	"""Toggle debug mode to show physics shapes or textures.
+	args[0]: boolean - true to show shapes, false to show textures"""
+	if args.size() < 1:
+		push_error("[GameBridge] setDebugShowShapes requires 1 arg: show_shapes (boolean)")
+		return
+
+	_debug_show_shapes = bool(args[0])
+
+	# Apply debug visibility to all existing entities
+	for entity_id in entities:
+		var node = entities[entity_id]
+		if node:
+			_apply_debug_visibility(node)
+
+func _js_set_debug_settings(args: Array) -> void:
+	print("[GameBridge] _js_set_debug_settings called with args: ", args)
+	if args.size() < 1:
+		push_error("[GameBridge] setDebugSettings requires 1 arg: settings JSON string")
+		return
+
+	var json_str = str(args[0])
+	print("[GameBridge] setDebugSettings JSON string: ", json_str)
+	var json = JSON.new()
+	var parse_result = json.parse(json_str)
+	if parse_result != OK:
+		push_error("[GameBridge] setDebugSettings: Invalid JSON: " + json_str)
+		return
+
+	var settings = json.data
+	print("[GameBridge] setDebugSettings parsed: ", settings)
+	if not settings is Dictionary:
+		push_error("[GameBridge] setDebugSettings: Expected object, got: " + str(typeof(settings)))
+		return
+
+	if _devtools_overlay:
+		print("[GameBridge] Forwarding to _devtools_overlay")
+		_devtools_overlay.set_settings(settings)
+	else:
+		push_error("[GameBridge] _devtools_overlay is null!")
+
+func clear_texture_cache(url: String = "") -> void:
+	if url != "":
+		if _texture_cache.has(url):
+			_texture_cache.erase(url)
+	else:
+		_texture_cache.clear()
+
+func _on_body_entered(body: Node, entity_id: String) -> void:
+	if body.name in entities:
+		collision_occurred.emit(entity_id, body.name, 0.0)
+		_notify_js_collision(entity_id, body.name, 0.0)
+
+		# Process destroy_on_collision behaviors directly in Godot
+		_process_collision_behaviors(entity_id, body.name)
+		_process_collision_behaviors(body.name, entity_id)
+
+func spawn_entity(template_id: String, x: float, y: float) -> Node2D:
+	return spawn_entity_with_id(template_id, x, y, template_id + "_" + str(randi()), "")
+
+func spawn_entity_with_id(template_id: String, x: float, y: float, entity_id: String, initial_velocity_json: String = "") -> Node2D:
+	if not templates.has(template_id):
+		push_error("[GameBridge] Template not found: " + template_id)
+		return null
+
+	var entity_data = {
+		"id": entity_id,
+		"template": template_id,
+		"transform": {"x": x, "y": y, "angle": 0}
+	}
+
+	# Parse and store initial velocity if provided
+	if initial_velocity_json != "":
+		var json = JSON.new()
+		var err = json.parse(initial_velocity_json)
+		if err == OK:
+			var vel_data = json.data as Dictionary
+			if vel_data.has("x") and vel_data.has("y"):
+				var game_vel = Vector2(vel_data["x"], vel_data["y"])
+				entity_data["_initial_velocity"] = game_to_godot_vec(game_vel)
+
+	return _create_entity(entity_data)
+
+func _process_collision_behaviors(entity_id: String, other_entity_id: String) -> void:
+	if not entities.has(entity_id) or not entities.has(other_entity_id):
+		return
+
+	var node = entities[entity_id]
+	var other_node = entities[other_entity_id]
+
+	if not node.has_meta("behaviors"):
+		return
+
+	var behaviors = node.get_meta("behaviors") as Array
+	var other_tags = other_node.get_meta("tags") if other_node.has_meta("tags") else []
+
+	for behavior in behaviors:
+		if behavior is Dictionary and behavior.get("type") == "destroy_on_collision":
+			var with_tags = behavior.get("withTags", []) as Array
+			var should_destroy = false
+
+			for tag in with_tags:
+				if tag in other_tags:
+					should_destroy = true
+					break
+
+			if should_destroy:
+				call_deferred("destroy_entity", entity_id)
+
+				if behavior.get("destroyOther", false):
+					call_deferred("destroy_entity", other_entity_id)
+				return
+
+func destroy_entity(entity_id: String) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		entities.erase(entity_id)
+		node.queue_free()
+		entity_destroyed.emit(entity_id)
+		_notify_js_destroy(entity_id)
+
+# Get entity node by ID
+func get_entity(entity_id: String) -> Node2D:
+	return entities.get(entity_id)
+
+func set_entity_image(entity_id: String, url: String, width: float, height: float) -> void:
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_image: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var sprite_data = {"width": width, "height": height}
+
+	if _texture_cache.has(url):
+		var texture = _texture_cache[url]
+		sprite.texture = texture
+		_apply_sprite_scale(sprite, sprite_data, texture)
+		_hide_shape_children(node)
+		return
+
+	var http = HTTPRequest.new()
+	add_child(http)
+
+	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+			push_error("[GameBridge] Failed to download texture: " + url + " (code: " + str(response_code) + ")")
+			return
+
+		var image = Image.new()
+		var err = image.load_png_from_buffer(body)
+		if err != OK:
+			err = image.load_jpg_from_buffer(body)
+		if err != OK:
+			err = image.load_webp_from_buffer(body)
+		if err != OK:
+			push_error("[GameBridge] Failed to parse image: " + url)
+			return
+
+		var texture = ImageTexture.create_from_image(image)
+		_texture_cache[url] = texture
+
+		if is_instance_valid(sprite):
+			sprite.texture = texture
+			_apply_sprite_scale(sprite, sprite_data, texture)
+			var parent_node = sprite.get_parent()
+			if parent_node:
+				_hide_shape_children(parent_node)
+
+	)
+
+	var err = http.request(url)
+	if err != OK:
+		push_error("[GameBridge] Failed to start texture download: " + url)
+		http.queue_free()
+
+func _js_set_entity_image(args: Array) -> void:
+	if args.size() < 4:
+		push_error("[GameBridge] setEntityImage requires 4 args: entity_id, url, width, height")
+		return
+	set_entity_image(str(args[0]), str(args[1]), float(args[2]), float(args[3]))
+
+func set_entity_atlas_region(entity_id: String, atlas_url: String, region_dict: Dictionary, sprite_data: Dictionary = {}) -> void:
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_atlas_region: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	if _texture_cache.has(atlas_url):
+		_apply_atlas_region(sprite, _texture_cache[atlas_url], region_dict, sprite_data)
+		_hide_shape_children(node)
+	else:
+		_download_atlas_texture(sprite, atlas_url, region_dict, sprite_data)
+
+func _apply_atlas_region(sprite: Sprite2D, texture: Texture2D, region_dict: Dictionary, sprite_data: Dictionary = {}) -> void:
+	var atlas_texture = AtlasTexture.new()
+	atlas_texture.atlas = texture
+	atlas_texture.region = Rect2(
+		region_dict.get("x", 0),
+		region_dict.get("y", 0),
+		region_dict.get("w", 0),
+		region_dict.get("h", 0)
+	)
+	sprite.texture = atlas_texture
+	_apply_sprite_scale(sprite, sprite_data, atlas_texture)
+
+func _download_atlas_texture(sprite: Sprite2D, url: String, region_dict: Dictionary, sprite_data: Dictionary = {}) -> void:
+	_download_image_texture(url, func(texture: Texture2D):
+		if is_instance_valid(sprite):
+			_apply_atlas_region(sprite, texture, region_dict, sprite_data)
+			var node = sprite.get_parent()
+			if node:
+				_hide_shape_children(node)
+	)
+
+func _js_set_entity_atlas_region(args: Array) -> void:
+	if args.size() < 8:
+		push_error("[GameBridge] setEntityAtlasRegion requires 8 args: entity_id, atlas_url, x, y, w, h, width, height")
+		return
+	var entity_id = str(args[0])
+	var atlas_url = str(args[1])
+	var region_dict = {
+		"x": float(args[2]),
+		"y": float(args[3]),
+		"w": float(args[4]),
+		"h": float(args[5])
+	}
+	var sprite_data = {
+		"width": float(args[6]),
+		"height": float(args[7])
+	}
+	set_entity_atlas_region(entity_id, atlas_url, region_dict, sprite_data)
+
+func set_entity_image_base64(entity_id: String, base64_data: String, width: float, height: float) -> void:
+
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_image_base64: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var raw_data = Marshalls.base64_to_raw(base64_data)
+	if raw_data.is_empty():
+		push_error("[GameBridge] set_entity_image_base64: failed to decode base64")
+		return
+
+	var image = Image.new()
+	var err = image.load_png_from_buffer(raw_data)
+	if err != OK:
+		err = image.load_jpg_from_buffer(raw_data)
+	if err != OK:
+		err = image.load_webp_from_buffer(raw_data)
+	if err != OK:
+		push_error("[GameBridge] set_entity_image_base64: failed to parse image data")
+		return
+
+	var texture = ImageTexture.create_from_image(image)
+	sprite.texture = texture
+	var sprite_data = {"width": width, "height": height}
+	_apply_sprite_scale(sprite, sprite_data, texture)
+
+
+func set_entity_image_from_file(entity_id: String, file_path: String, width: float, height: float) -> void:
+
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_image_from_file: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var image = Image.new()
+	var err = image.load(file_path)
+	if err != OK:
+		push_error("[GameBridge] set_entity_image_from_file: failed to load image from " + file_path + " error=" + str(err))
+		return
+
+	var texture = ImageTexture.create_from_image(image)
+	sprite.texture = texture
+	var sprite_data = {"width": width, "height": height}
+	_apply_sprite_scale(sprite, sprite_data, texture)
+
+
+func set_entity_atlas_region_from_file(entity_id: String, file_path: String, region_x: float, region_y: float, region_w: float, region_h: float, sprite_width: float, sprite_height: float) -> void:
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_atlas_region_from_file: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var image = Image.new()
+	var err = image.load(file_path)
+	if err != OK:
+		push_error("[GameBridge] set_entity_atlas_region_from_file: failed to load image from " + file_path + " error=" + str(err))
+		return
+
+	var texture = ImageTexture.create_from_image(image)
+	_texture_cache[file_path] = texture
+
+	var region_dict = {"x": region_x, "y": region_y, "w": region_w, "h": region_h}
+	var sprite_data = {"width": sprite_width, "height": sprite_height}
+	_apply_atlas_region(sprite, texture, region_dict, sprite_data)
+	_hide_shape_children(node)
+
+
+# Get all entity transforms (for syncing)
+func get_all_transforms() -> Dictionary:
+	var result = {}
+	for entity_id in entities:
+		var node = entities[entity_id]
+		var game_pos = godot_to_game_pos(node.position)
+		result[entity_id] = {
+			"x": game_pos.x,
+			"y": game_pos.y,
+			"angle": -node.rotation  # Flip angle back to game convention
+		}
+	return result
+
+# Clear all entities
+func clear_game() -> void:
+	# Clear joints first
+	for joint_id in joints:
+		var joint_node = joints[joint_id]
+		if is_instance_valid(joint_node):
+			joint_node.queue_free()
+	joints.clear()
+
+	# Clear entities (including Area2D sensors stored in entities dict)
+	for entity_id in entities:
+		var node = entities[entity_id]
+		if is_instance_valid(node):
+			node.queue_free()
+	entities.clear()
+	templates.clear()
+
+	# Reset ID tracking
+	body_id_map.clear()
+	body_id_reverse.clear()
+	collider_id_map.clear()
+	entity_shape_map.clear()
+	user_data.clear()
+	body_groups.clear()
+
+# =============================================================================
+# TRANSFORM CONTROL
+# =============================================================================
+
+func _js_set_transform(args: Array) -> void:
+	if args.size() < 4:
+		return
+	var entity_id = str(args[0])
+	var game_pos = Vector2(float(args[1]), float(args[2]))
+	var godot_pos = game_to_godot_pos(game_pos)
+	var godot_angle = -float(args[3])  # Flip angle for Y-up convention
+
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.position = godot_pos
+			node.rotation = godot_angle
+		elif node is RigidBody2D:
+			# For RigidBody2D, we need to use physics server or _integrate_forces
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(godot_angle, godot_pos))
+
+func set_transform(entity_id: String, x: float, y: float, angle: float) -> void:
+	var godot_pos = game_to_godot_pos(Vector2(x, y))
+	var godot_angle = -angle  # Flip angle for Y-up convention
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.position = godot_pos
+			node.rotation = godot_angle
+		elif node is RigidBody2D:
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(godot_angle, godot_pos))
+
+func _js_set_position(args: Array) -> void:
+	if args.size() < 3:
+		return
+	var entity_id = str(args[0])
+	var godot_pos = game_to_godot_pos(Vector2(float(args[1]), float(args[2])))
+
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.position = godot_pos
+		elif node is RigidBody2D:
+			var current_angle = node.rotation
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(current_angle, godot_pos))
+		else:
+			node.position = godot_pos
+
+func set_position(entity_id: String, x: float, y: float) -> void:
+	var godot_pos = game_to_godot_pos(Vector2(x, y))
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.position = godot_pos
+		elif node is RigidBody2D:
+			var current_angle = node.rotation
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(current_angle, godot_pos))
+		else:
+			# For Area2D and other node types, just set position directly
+			node.position = godot_pos
+
+func _js_set_rotation(args: Array) -> void:
+	if args.size() < 2:
+		return
+	var entity_id = str(args[0])
+	var angle = float(args[1])
+
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.rotation = angle
+		elif node is RigidBody2D:
+			var current_pos = node.position
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(angle, current_pos))
+		else:
+			node.rotation = angle
+
+func set_rotation(entity_id: String, angle: float) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.rotation = angle
+		elif node is RigidBody2D:
+			var current_pos = node.position
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(angle, current_pos))
+		else:
+			node.rotation = angle
+
+func _js_set_scale(args: Array) -> void:
+	if args.size() < 3:
+		return
+	var entity_id = str(args[0])
+	var scale_x = float(args[1])
+	var scale_y = float(args[2])
+	set_scale_entity(entity_id, scale_x, scale_y)
+
+func set_scale_entity(entity_id: String, scale_x: float, scale_y: float) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		# Find the sprite child to scale (scaling physics bodies directly causes issues)
+		var sprite = _find_sprite_in_entity(node)
+		if sprite:
+			sprite.scale = Vector2(scale_x, scale_y)
+
+func _find_sprite_in_entity(node: Node) -> CanvasItem:
+	if node is Sprite2D or node is AnimatedSprite2D:
+		return node
+	for child in node.get_children():
+		if child is Sprite2D or child is AnimatedSprite2D:
+			return child
+		var found = _find_sprite_in_entity(child)
+		if found:
+			return found
+	return null
+
+func _js_get_linear_velocity(args: Array) -> Variant:
+	if args.size() < 1:
+		return null
+	var entity_id = str(args[0])
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			var game_vel = godot_to_game_vec(node.linear_velocity)
+			return {"x": game_vel.x, "y": game_vel.y}
+		elif node is Area2D and node.has_meta("velocity"):
+			var godot_vel = node.get_meta("velocity") as Vector2
+			var game_vel = godot_to_game_vec(godot_vel)
+			return {"x": game_vel.x, "y": game_vel.y}
+	return null
+
+func _js_get_angular_velocity(args: Array) -> Variant:
+	if args.size() < 1:
+		return null
+	var entity_id = str(args[0])
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			return node.angular_velocity
+	return null
+
+func _js_apply_impulse(args: Array) -> void:
+	if args.size() < 3:
+		return
+	var entity_id = str(args[0])
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			var game_impulse = Vector2(float(args[1]), float(args[2]))
+			node.apply_central_impulse(game_to_godot_vec(game_impulse))
+
+func apply_impulse(entity_id: String, ix: float, iy: float) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			node.apply_central_impulse(game_to_godot_vec(Vector2(ix, iy)))
+
+func _js_apply_force(args: Array) -> void:
+	if args.size() < 3:
+		return
+	var entity_id = str(args[0])
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			var game_force = Vector2(float(args[1]), float(args[2]))
+			node.apply_central_force(game_to_godot_vec(game_force))
+
+func apply_force(entity_id: String, fx: float, fy: float) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			node.apply_central_force(game_to_godot_vec(Vector2(fx, fy)))
+
+func send_input(input_type: String, x: float, y: float, entity_id: String = "") -> void:
+	if input_type == "tap":
+		var hit_entity_id: Variant = null
+		var godot_point = game_to_godot_pos(Vector2(x, y))
+		var space = get_viewport().find_world_2d().direct_space_state
+		if space:
+			var query = PhysicsPointQueryParameters2D.new()
+			query.position = godot_point
+			query.collision_mask = 0xFFFFFFFF
+			query.collide_with_bodies = true
+			query.collide_with_areas = true
+			var results = space.intersect_point(query, 1)
+			if results.size() > 0:
+				var collider = results[0].collider
+				if collider and collider.name in entities:
+					hit_entity_id = collider.name
+		_queue_event("input", {"type": input_type, "x": x, "y": y, "entityId": hit_entity_id})
+		_notify_js_input_event(input_type, x, y, hit_entity_id)
+
+func _js_send_input(args: Array) -> void:
+	if args.size() < 4:
+		return
+	var input_type = str(args[0])
+	var x = float(args[1])
+	var y = float(args[2])
+	var provided_entity_id = str(args[3]) if args[3] != null else ""
+
+	if input_type == "tap":
+		var hit_entity_id: Variant = null
+
+		var godot_point = game_to_godot_pos(Vector2(x, y))
+		var space = get_viewport().find_world_2d().direct_space_state
+		if space:
+			var query = PhysicsPointQueryParameters2D.new()
+			query.position = godot_point
+			query.collision_mask = 0xFFFFFFFF
+			query.collide_with_bodies = true
+			query.collide_with_areas = true
+
+			var results = space.intersect_point(query, 1)
+			if results.size() > 0:
+				var collider = results[0].collider
+				if collider and collider.name in entities:
+					hit_entity_id = collider.name
+
+		_notify_js_input_event(input_type, x, y, hit_entity_id)
+
+func _js_on_input_event(args: Array) -> void:
+	if args.size() >= 1:
+		_js_input_event_callback = args[0]
+
+func _notify_js_input_event(input_type: String, x: float, y: float, entity_id: Variant) -> void:
+	if _js_input_event_callback != null:
+		var data = {
+			"type": input_type,
+			"x": x,
+			"y": y,
+			"entityId": entity_id
+		}
+		var json_str = JSON.stringify(data)
+		_js_input_event_callback.call("call", null, json_str)
+
+func _js_on_collision(args: Array) -> void:
+	if args.size() >= 1:
+		_js_collision_callback = args[0]
+
+func _js_on_entity_destroyed(args: Array) -> void:
+	if args.size() >= 1:
+		_js_destroy_callback = args[0]
+
+func _js_on_entity_spawned(args: Array) -> void:
+	if args.size() >= 1:
+		_js_entity_spawned_callback = args[0]
+
+func _notify_js_collision(entity_a: String, entity_b: String, impulse: float) -> void:
+	if _js_collision_callback != null:
+		# Legacy format for backward compatibility
+		_js_collision_callback.call("call", null, entity_a, entity_b, impulse)
+	else:
+		# Native path: queue event for polling
+		_queue_event("collision", {"entityA": entity_a, "entityB": entity_b, "impulse": impulse})
+
+func _notify_js_collision_detailed(collision_data: Dictionary) -> void:
+	if _js_collision_callback != null:
+		# New detailed format: { entityA, entityB, contacts: [{point, normal, normalImpulse, tangentImpulse}] }
+		var json_str = JSON.stringify(collision_data)
+		# Use legacy format which works - pass entityA, entityB, impulse separately
+		var entity_a = collision_data.get("entityA", "")
+		var entity_b = collision_data.get("entityB", "")
+		var total_impulse = 0.0
+		for contact in collision_data.get("contacts", []):
+			total_impulse += abs(contact.get("normalImpulse", 0.0))
+		_js_collision_callback.call("call", null, entity_a, entity_b, total_impulse)
+	else:
+		# Native path: queue event for polling
+		_queue_event("collision_detailed", collision_data)
+
+func _handle_collision_manifold(body_node: RigidBody2D, state: PhysicsDirectBodyState2D) -> void:
+	var contact_count = state.get_contact_count()
+	if contact_count == 0:
+		return
+
+	var entity_a = body_node.name
+	if not entities.has(entity_a):
+		return
+
+	# Group contacts by colliding body
+	var contacts_by_body: Dictionary = {}
+
+	for i in range(contact_count):
+		var collider = state.get_contact_collider_object(i)
+		if collider == null or not (collider is Node2D):
+			continue
+
+		var entity_b = collider.name
+		if not entities.has(entity_b):
+			continue
+
+		# Get contact data and convert to game coordinates
+		var godot_contact_pos = state.get_contact_local_position(i)
+		var game_contact_pos = godot_to_game_pos(godot_contact_pos)
+		var godot_normal = state.get_contact_local_normal(i)
+		var game_normal = Vector2(godot_normal.x, -godot_normal.y)  # Flip Y for normal
+		var impulse_vec = state.get_contact_impulse(i)
+		var normal_impulse = impulse_vec.dot(godot_normal)
+		var tangent = Vector2(-godot_normal.y, godot_normal.x)
+		var tangent_impulse = impulse_vec.dot(tangent)
+
+		# Only report if impulse is significant (avoid spam for resting contacts)
+		if abs(normal_impulse) < IMPULSE_THRESHOLD and abs(tangent_impulse) < IMPULSE_THRESHOLD:
+			continue
+
+		if not contacts_by_body.has(entity_b):
+			contacts_by_body[entity_b] = []
+
+		contacts_by_body[entity_b].append({
+			"point": {"x": game_contact_pos.x, "y": game_contact_pos.y},
+			"normal": {"x": game_normal.x, "y": game_normal.y},
+			"normalImpulse": normal_impulse / pixels_per_meter,
+			"tangentImpulse": tangent_impulse / pixels_per_meter
+		})
+
+	# Emit collision events for each colliding body
+	for entity_b in contacts_by_body:
+		var contacts = contacts_by_body[entity_b]
+
+		# Calculate total impulse for this collision pair
+		var total_impulse = 0.0
+		for contact in contacts:
+			total_impulse += abs(contact["normalImpulse"])
+
+		var collision_data = {
+			"entityA": entity_a,
+			"entityB": entity_b,
+			"contacts": contacts
+		}
+
+		_notify_js_collision_detailed(collision_data)
+		collision_occurred.emit(entity_a, entity_b, total_impulse)
+
+		# Process destroy_on_collision behaviors directly in Godot
+		_process_collision_behaviors(entity_a, entity_b)
+		_process_collision_behaviors(entity_b, entity_a)
+
+func _notify_js_destroy(entity_id: String) -> void:
+	if _js_destroy_callback != null:
+		_js_destroy_callback.call("call", null, entity_id)
+	else:
+		# Native path: queue event for polling
+		_queue_event("destroy", {"entityId": entity_id})
+
+func _notify_js_entity_spawned(entity_id: String, snapshot: Dictionary) -> void:
+	if _js_entity_spawned_callback != null:
+		var json_str = JSON.stringify(snapshot)
+		_js_entity_spawned_callback.call("call", null, json_str)
+	else:
+		# Native path: queue event for polling
+		_queue_event("entity_spawned", snapshot)
+
+func _setup_splat_map() -> void:
+	if _splat_enabled:
+		return
+
+	_splat_viewport = SubViewport.new()
+	_splat_viewport.name = "SplatMap"
+	_splat_viewport.size = Vector2(512, 512) # Low res is fine for splat map
+	_splat_viewport.transparent_bg = false
+	_splat_viewport.render_target_update_mode = SubViewport.UPDATE_WHEN_VISIBLE
+	_splat_viewport.render_target_clear_mode = SubViewport.CLEAR_MODE_ALWAYS
+	add_child(_splat_viewport)
+
+	_splat_canvas = CanvasLayer.new()
+	_splat_viewport.add_child(_splat_canvas)
+
+	# Background black (no force)
+	var bg = ColorRect.new()
+	bg.color = Color.BLACK
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_splat_canvas.add_child(bg)
+
+	_splat_enabled = true
+
+func enable_splat_map() -> void:
+	if not _splat_enabled:
+		_setup_splat_map()
+
+func disable_splat_map() -> void:
+	if _splat_enabled and _splat_viewport:
+		for proxy in _splat_proxies.values():
+			proxy.queue_free()
+		_splat_proxies.clear()
+		_splat_viewport.queue_free()
+		_splat_viewport = null
+		_splat_canvas = null
+		_splat_enabled = false
+
+func get_splat_texture() -> Texture2D:
+	return _splat_viewport.get_texture()
+
+func _process(_delta: float) -> void:
+	# Update splat proxies (only if enabled)
+	if _splat_enabled and _splat_viewport and _splat_canvas:
+		for entity_id in entities:
+			var entity = entities[entity_id]
+
+			# Skip stationary entities (optimization for 100+ entities)
+			var vel = Vector2.ZERO
+			if entity is RigidBody2D:
+				vel = entity.linear_velocity
+			elif entity is CharacterBody2D:
+				vel = entity.velocity
+			elif entity is Area2D and entity.has_meta("velocity"):
+				vel = entity.get_meta("velocity")
+
+			# Cull low-velocity entities (reduce updates)
+			if vel.length_squared() < 0.01 and _splat_proxies.has(entity_id):
+				continue  # Skip update for stationary entities
+
+			if not _splat_proxies.has(entity_id):
+				var proxy = SPLAT_PROXY_SCENE.instantiate()
+				_splat_canvas.add_child(proxy)
+				_splat_proxies[entity_id] = proxy
+
+			var proxy = _splat_proxies[entity_id]
+
+			# Sync position (map game world to viewport)
+			if camera:
+				var screen_pos = entity.get_global_transform_with_canvas().origin
+				# Map screen pos to splat viewport
+				var viewport_size = get_viewport().get_visible_rect().size
+				var uv = screen_pos / viewport_size
+				proxy.position = uv * Vector2(_splat_viewport.size)
+
+			# Encode Velocity
+			# R = X vel, G = Y vel, B = Presence
+			# Normalize velocity (-20..20 -> 0..1)
+			var r = clamp((vel.x / 40.0) + 0.5, 0.0, 1.0)
+			var g = clamp((-vel.y / 40.0) + 0.5, 0.0, 1.0) # Flip Y for texture space
+			proxy.modulate = Color(r, g, 1.0, 1.0)
+
+			# Scale proxy based on mass/size if possible, default to fixed size for now
+			proxy.scale = Vector2(0.5, 0.5)
+
+		# Clean up dead proxies
+		var dead_ids = []
+		for id in _splat_proxies:
+			if not entities.has(id):
+				dead_ids.append(id)
+		for id in dead_ids:
+			_splat_proxies[id].queue_free()
+			_splat_proxies.erase(id)
+
+	if ws:
+		ws.poll()
+		var state = ws.get_ready_state()
+		if state == WebSocketPeer.STATE_OPEN:
+			while ws.get_available_packet_count() > 0:
+				var packet = ws.get_packet()
+				_on_ws_message(packet.get_string_from_utf8())
+		elif state == WebSocketPeer.STATE_CLOSED:
+			ws = null
+
+# Connect to WebSocket server
+func connect_to_server(url: String = "") -> void:
+	if url != "":
+		ws_url = url
+	ws = WebSocketPeer.new()
+	var err = ws.connect_to_url(ws_url)
+	if err != OK:
+		ws = null
+
+func _on_ws_message(message: String) -> void:
+	var json = JSON.new()
+	var err = json.parse(message)
+	if err == OK:
+		var data = json.data
+		if data.has("type"):
+			match data.type:
+				"load_game":
+					load_game_json(JSON.stringify(data.game))
+				"spawn":
+					spawn_entity(data.template, data.x, data.y)
+
+# Main entry point: Load a game from JSON string
+func load_game_json(json_string: String) -> bool:
+	var json = JSON.new()
+	var err = json.parse(json_string)
+	if err != OK:
+		push_error("[GameBridge] JSON parse error: " + json.get_error_message())
+		return false
+
+	game_data = json.data
+
+	# Clear existing game
+	clear_game()
+
+	# Setup world
+	_setup_world(game_data.get("world", {}))
+
+	# Setup background
+	_setup_background(game_data.get("background", {}))
+
+	# Load templates
+	templates = game_data.get("templates", {})
+	print("[DEBUG] Loaded templates: ", templates.keys())
+	for tmpl_id in templates:
+		var tmpl = templates[tmpl_id]
+		if tmpl.has("visual"):
+			print("[DEBUG] Template ", tmpl_id, " visual.type: ", tmpl.visual.get("type", "NO TYPE"))
+
+	# Create entities
+	var entities_data = game_data.get("entities", [])
+	for entity_data in entities_data:
+		_create_entity(entity_data)
+
+	game_loaded.emit(game_data)
+	return true
+
+func load_custom_scene(scene_path: String) -> bool:
+	if not ResourceLoader.exists(scene_path):
+		push_error("[GameBridge] Scene not found: " + scene_path)
+		return false
+
+	var scene = load(scene_path)
+	if not scene:
+		push_error("[GameBridge] Failed to load scene: " + scene_path)
+		return false
+
+	if game_root:
+		for child in game_root.get_children():
+			child.queue_free()
+
+		var instance = scene.instantiate()
+		game_root.add_child(instance)
+		return true
+	else:
+		push_error("[GameBridge] game_root not set")
+		return false
+
+func _setup_world(world_data: Dictionary) -> void:
+	pixels_per_meter = world_data.get("pixelsPerMeter", 50.0)
+
+	var gravity = world_data.get("gravity", {"x": 0, "y": -9.8})
+	var gravity_vec = game_to_godot_vec(Vector2(gravity.x, gravity.y))
+
+	PhysicsServer2D.area_set_param(
+		get_viewport().find_world_2d().space,
+		PhysicsServer2D.AREA_PARAM_GRAVITY,
+		gravity_vec.length()
+	)
+	PhysicsServer2D.area_set_param(
+		get_viewport().find_world_2d().space,
+		PhysicsServer2D.AREA_PARAM_GRAVITY_VECTOR,
+		gravity_vec.normalized()
+	)
+
+	if camera:
+		camera.global_position = Vector2.ZERO
+
+var _background_layer: CanvasLayer = null
+var _background_rect: TextureRect = null
+var _parallax_layers: Array = []
+
+func _setup_background(bg_data: Dictionary) -> void:
+	# Clean up existing background
+	if _background_layer:
+		_background_layer.queue_free()
+		_background_layer = null
+		_background_rect = null
+
+	for layer in _parallax_layers:
+		if is_instance_valid(layer):
+			layer.queue_free()
+	_parallax_layers.clear()
+
+	if bg_data.is_empty():
+		return
+
+	var bg_type = bg_data.get("type", "")
+
+	if bg_type == "parallax":
+		_setup_parallax_background(bg_data)
+		return
+
+	if bg_type != "static":
+		return
+
+	var image_url = bg_data.get("imageUrl", "")
+	var color = bg_data.get("color", "")
+
+	_background_layer = CanvasLayer.new()
+	_background_layer.layer = -100
+	_background_layer.name = "BackgroundLayer"
+	add_child(_background_layer)
+
+	_background_rect = TextureRect.new()
+	_background_rect.name = "Background"
+	_background_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_background_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_background_rect.anchor_left = 0.0
+	_background_rect.anchor_top = 0.0
+	_background_rect.anchor_right = 1.0
+	_background_rect.anchor_bottom = 1.0
+	_background_layer.add_child(_background_rect)
+
+	if image_url != "":
+		_download_background_texture(image_url)
+	elif color != "":
+		var viewport_size = get_viewport().get_visible_rect().size
+		var img = Image.create(int(viewport_size.x), int(viewport_size.y), false, Image.FORMAT_RGBA8)
+		img.fill(Color.from_string(color, Color.GRAY))
+		_background_rect.texture = ImageTexture.create_from_image(img)
+
+func _download_image_texture(url: String, callback: Callable) -> void:
+	if _texture_cache.has(url):
+		var texture = _texture_cache[url]
+		callback.call(texture)
+		return
+
+	var http = HTTPRequest.new()
+	add_child(http)
+
+	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+			push_error("[GameBridge] Failed to download image: " + url)
+			return
+
+		var image = Image.new()
+		var err = image.load_png_from_buffer(body)
+		if err != OK:
+			err = image.load_jpg_from_buffer(body)
+		if err != OK:
+			err = image.load_webp_from_buffer(body)
+		if err != OK:
+			push_error("[GameBridge] Failed to parse image: " + url)
+			return
+
+		var texture = ImageTexture.create_from_image(image)
+		_texture_cache[url] = texture
+		callback.call(texture)
+	)
+
+	var err = http.request(url)
+	if err != OK:
+		push_error("[GameBridge] Failed to start image download: " + url)
+		http.queue_free()
+
+func _download_background_texture(url: String) -> void:
+	_download_image_texture(url, func(texture: Texture2D):
+		if is_instance_valid(_background_rect):
+			_background_rect.texture = texture
+			print("[BG] Applied texture ", texture.get_width(), "x", texture.get_height(), " to TextureRect with STRETCH_KEEP_ASPECT_COVERED")
+	)
+
+func _apply_background_texture(texture: Texture2D) -> void:
+	if not is_instance_valid(_background_rect) or texture == null:
+		return
+
+	_background_rect.texture = texture
+	print("[BG] Applied texture ", texture.get_width(), "x", texture.get_height(), " to TextureRect with STRETCH_KEEP_ASPECT_COVERED")
+
+func _setup_parallax_background(bg_data: Dictionary) -> void:
+	var layers_data = bg_data.get("layers", [])
+	if layers_data.is_empty():
+		return
+
+	# Map depth to z-index (further back = lower z-index)
+	var depth_to_z = {
+		"sky": -400,
+		"far": -300,
+		"mid": -200,
+		"near": -100
+	}
+
+	for layer_data in layers_data:
+		var layer_id = layer_data.get("id", "")
+		var image_url = layer_data.get("imageUrl", "")
+		var depth = layer_data.get("depth", "mid")
+		var parallax_factor = layer_data.get("parallaxFactor", 0.5)
+		var visible = layer_data.get("visible", true)
+
+		if not visible or image_url == "":
+			continue
+
+		var layer = CanvasLayer.new()
+		layer.layer = depth_to_z.get(depth, -200)
+		layer.name = "ParallaxLayer_" + layer_id
+		add_child(layer)
+
+		var rect = TextureRect.new()
+		rect.name = layer_id
+		rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		rect.anchor_left = 0.0
+		rect.anchor_top = 0.0
+		rect.anchor_right = 1.0
+		rect.anchor_bottom = 1.0
+		layer.add_child(rect)
+
+		_parallax_layers.append({"layer": layer, "rect": rect, "factor": parallax_factor, "url": image_url})
+
+		# Download texture for this layer
+		_download_image_texture(image_url, func(texture: Texture2D):
+			if is_instance_valid(rect):
+				rect.texture = texture
+				print("[BG] Applied parallax layer texture ", texture.get_width(), "x", texture.get_height())
+		)
+
+	print("[BG] Setup ", _parallax_layers.size(), " parallax layers")
+
+func _create_entity(entity_data: Dictionary) -> Node2D:
+	var entity_id = entity_data.get("id", "entity_" + str(randi()))
+	var template_id = entity_data.get("template", "")
+	var transform_data = entity_data.get("transform", {})
+
+	JavaScriptBridge.eval("console.log('[Godot] Creating entity: " + entity_id + " template: " + template_id + "')")
+
+	# Merge template with entity data
+	var merged = entity_data.duplicate(true)
+
+	if template_id != "" and templates.has(template_id):
+		var tmpl = templates[template_id]
+		# Template provides defaults, entity_data overrides
+		for key in tmpl:
+			if not merged.has(key):
+				merged[key] = tmpl[key]
+		# Merge components specifically
+		_merged_component(merged, tmpl, "physics")
+		_merged_component(merged, tmpl, "collider")
+		_merged_component(merged, tmpl, "visual")
+		_merged_component(merged, tmpl, "character")
+		_merged_component(merged, tmpl, "zone")
+
+	var physics_data = merged.get("physics", null)
+	var collider_data = merged.get("collider", null)
+	var visual_data = merged.get("visual", null)
+	var zone_data = merged.get("zone", null)
+	var entity_type = merged.get("type", "")
+
+	var node: Node2D = null
+
+	# Create physics body if physics component exists
+	if physics_data:
+		node = _create_physics_body(entity_id, physics_data, collider_data, transform_data)
+	# Create zone (legacy) if zone component exists
+	elif entity_type == "zone" and zone_data:
+		node = _create_zone_entity(entity_id, zone_data, transform_data)
+	# Create sensor-only entity if collider with isSensor exists
+	elif collider_data and collider_data.get("isSensor", false):
+		node = _create_sensor_entity(entity_id, collider_data, transform_data)
+	# Otherwise create plain Node2D
+	else:
+		node = Node2D.new()
+		node.name = entity_id
+
+	# Set transform (convert from game coords to Godot coords with Y-flip)
+	var game_pos = Vector2(transform_data.get("x", 0), transform_data.get("y", 0))
+	var godot_pos = game_to_godot_pos(game_pos)
+	var angle = transform_data.get("angle", 0)
+	node.position = godot_pos
+	node.rotation = -angle
+
+	# Add visual component
+	if visual_data:
+		print("[DEBUG] Adding visual for entity: ", entity_id, " type: ", visual_data.get("type", "unknown"), " keys: ", visual_data.keys())
+		# Apply smart defaults: visual inherits from collider
+		var resolved_visual = _resolve_visual_with_defaults(visual_data, collider_data)
+		print("[DEBUG] Resolved visual type: ", resolved_visual.get("type", "NO TYPE"))
+		_add_visual(node, resolved_visual)
+	elif collider_data:
+		# Auto-generate visual from collider if no visual specified
+		var auto_visual = _generate_visual_from_collider(collider_data)
+		_add_visual(node, auto_visual)
+	else:
+		print("[DEBUG] NO visual or collider for entity: ", entity_id)
+
+	# Add collider shape if collider exists (and not already added by physics)
+	if collider_data and not physics_data:
+		var collision = CollisionShape2D.new()
+		collision.shape = _create_collider_shape(collider_data)
+		node.add_child(collision)
+
+	# Add to scene
+	if game_root:
+		game_root.add_child(node)
+	else:
+		var main = get_tree().current_scene
+		if main:
+			main.add_child(node)
+
+	# Apply initial velocity if specified
+	if node is RigidBody2D and physics_data and physics_data.has("initialVelocity"):
+		var initial_vel = physics_data.initialVelocity
+		var game_vel = Vector2(initial_vel.get("x", 0), initial_vel.get("y", 0))
+		node.linear_velocity = game_to_godot_vec(game_vel)
+
+	# Set metadata for selectors
+	if template_id != "":
+		node.set_meta("template", template_id)
+	if merged.has("tags"):
+		node.set_meta("tags", merged.tags if merged.tags is Array else [])
+	if merged.has("behaviors"):
+		node.set_meta("behaviors", merged.behaviors if merged.behaviors is Array else [])
+
+	entities[entity_id] = node
+
+	# Track entity generation for pool safety
+	var generation = next_generation
+	next_generation += 1
+	entity_generations[entity_id] = generation
+
+	# Build snapshot for TypeScript
+	var snapshot_pos = godot_to_game_pos(node.position)
+	
+	# Get physics IDs if available
+	var body_id = body_id_map.get(entity_id, -1)
+	var collider_id = -1
+	if entity_shape_map.has(entity_id) and entity_shape_map[entity_id].size() > 0:
+		collider_id = entity_shape_map[entity_id][0]
+	
+	var snapshot = {
+		"entityId": entity_id,
+		"template": template_id,
+		"generation": generation,
+		"tags": merged.get("tags", []),
+		"transform": {
+			"x": snapshot_pos.x,
+			"y": snapshot_pos.y,
+			"angle": -node.rotation,
+			"scaleX": node.scale.x,
+			"scaleY": node.scale.y
+		}
+	}
+	
+	# Add physics IDs if they exist
+	if body_id >= 0:
+		snapshot["bodyId"] = {"value": body_id}
+	if collider_id >= 0:
+		snapshot["colliderId"] = {"value": collider_id}
+
+	# Emit signal and notify JS
+	entity_spawned.emit(entity_id, node)
+	_notify_js_entity_spawned(entity_id, snapshot)
+
+	return node
+
+func _create_physics_body(entity_id: String, physics_data: Dictionary, collider_data: Dictionary, transform_data: Dictionary) -> Node2D:
+	var body_type = physics_data.get("bodyType", "dynamic")
+	var node: Node2D
+
+	# Extract physics properties (needed outside match block)
+	var density = physics_data.get("density", 1.0)
+	var mass = physics_data.get("mass", 0.0)
+
+	match body_type:
+		"static":
+			node = StaticBody2D.new()
+		"kinematic":
+			var char_body = CharacterBody2D.new()
+			node = char_body
+		_:  # dynamic
+			var rigid = RigidBody2D.new()
+			rigid.gravity_scale = physics_data.get("gravityScale", 1.0)
+
+			# Enable contact monitoring for detailed collision data
+			rigid.contact_monitor = true
+			rigid.max_contacts_reported = 4
+
+			# Attach PhysicsBody script for _integrate_forces callback
+			rigid.set_script(load("res://scripts/PhysicsBody.gd"))
+
+			# Linear/angular damping
+			rigid.linear_damp = physics_data.get("linearDamping", 0.0)
+			rigid.angular_damp = physics_data.get("angularDamping", 0.0)
+
+			# Fixed rotation
+			if physics_data.get("fixedRotation", false):
+				rigid.lock_rotation = true
+
+			# CCD for fast-moving objects
+			if physics_data.get("ccd", false) or physics_data.get("bullet", false):
+				rigid.continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
+
+			# Connect collision signals (kept for backward compatibility)
+			rigid.body_entered.connect(_on_body_entered.bind(entity_id))
+
+			# Apply initial velocity if specified
+			var initial_vel = physics_data.get("initialVelocity", null)
+			if initial_vel != null:
+				var game_vel = Vector2(initial_vel.get("x", 0), initial_vel.get("y", 0))
+				rigid.linear_velocity = game_to_godot_vec(game_vel)
+
+			# Store user data and group if provided
+			if physics_data.has("userData"):
+				user_data[next_body_id] = physics_data.userData
+			if physics_data.has("group"):
+				body_groups[next_body_id] = physics_data.group
+
+			node = rigid
+
+	node.name = entity_id
+
+	# Add collision shape from collider data
+	if collider_data:
+		var collision = CollisionShape2D.new()
+		collision.shape = _create_collider_shape(collider_data)
+
+		# Apply collider material properties (if dynamic body)
+		if node is RigidBody2D:
+			var friction = collider_data.get("friction", 0.5)
+			var restitution = collider_data.get("restitution", 0.0)
+			var material = PhysicsMaterial.new()
+			material.friction = friction
+			material.bounce = restitution
+			node.physics_material_override = material
+
+			# Calculate mass if density provided and no direct mass
+			if mass <= 0 and density > 0:
+				var shape_type = collider_data.get("shape", "box")
+				var shape_area = 1.0
+				if shape_type == "box":
+					var w = collider_data.get("width", 1.0)
+					var h = collider_data.get("height", 1.0)
+					shape_area = w * h
+				elif shape_type == "circle":
+					var r = collider_data.get("radius", 0.5)
+					shape_area = PI * r * r
+				elif shape_type == "polygon":
+					var vertices = collider_data.get("vertices", [])
+					shape_area = _calculate_polygon_area(vertices)
+				node.mass = density * shape_area
+			elif mass > 0:
+				node.mass = mass
+
+		node.add_child(collision)
+
+	# Apply collision filtering
+	node.collision_layer = physics_data.get("categoryBits", 1)
+	node.collision_mask = physics_data.get("maskBits", 0xFFFFFFFF)
+
+	# Track body ID for Physics2D compatibility
+	body_id_map[entity_id] = next_body_id
+	body_id_reverse[next_body_id] = entity_id
+	next_body_id += 1
+
+	return node
+
+func _create_zone_entity(entity_id: String, zone_data: Dictionary, transform_data: Dictionary) -> Node2D:
+	"""Create a zone entity (Area2D) for collision detection without physics response.
+	Zones can have sprites and detect collisions but don't participate in physics simulation."""
+	var movement_type = zone_data.get("movement", "static")
+	var zone_shape = zone_data.get("shape", {"type": "box", "width": 1.0, "height": 1.0})
+
+	var area = Area2D.new()
+	area.name = entity_id
+
+	# Connect collision signals for zone detection
+	area.body_shape_entered.connect(_on_sensor_body_shape_entered.bind(entity_id))
+	area.body_shape_exited.connect(_on_sensor_body_shape_exited.bind(entity_id))
+
+	# Add collision shape
+	var collision = CollisionShape2D.new()
+	var shape_type = zone_shape.get("type", "box")
+
+	match shape_type:
+		"circle":
+			var circle = CircleShape2D.new()
+			circle.radius = zone_shape.get("radius", 0.5) * pixels_per_meter
+			collision.shape = circle
+		"polygon":
+			var polygon = ConvexPolygonShape2D.new()
+			var vertices = zone_shape.get("vertices", [])
+			var points: PackedVector2Array = []
+			for v in vertices:
+				points.append(Vector2(v.x * pixels_per_meter, -v.y * pixels_per_meter))
+			polygon.points = points
+			collision.shape = polygon
+		_:  # box
+			var rect = RectangleShape2D.new()
+			var w = zone_shape.get("width", 1.0) * pixels_per_meter
+			var h = zone_shape.get("height", 1.0) * pixels_per_meter
+			rect.size = Vector2(w, h)
+			collision.shape = rect
+
+	area.add_child(collision)
+
+	# Apply collision filtering
+	area.collision_layer = zone_data.get("categoryBits", 1)
+	area.collision_mask = zone_data.get("maskBits", 0xFFFFFFFF)
+
+	# Store zone metadata
+	area.set_meta("entity_type", "zone")
+	area.set_meta("zone_movement", movement_type)
+
+	# Track body ID for compatibility
+	body_id_map[entity_id] = next_body_id
+	body_id_reverse[next_body_id] = entity_id
+	next_body_id += 1
+
+	return area
+
+func _calculate_polygon_area(vertices: Array) -> float:
+	if vertices.size() < 3:
+		return 1.0
+	var area = 0.0
+	var n = vertices.size()
+	for i in range(n):
+		var j = (i + 1) % n
+		area += vertices[i].x * vertices[j].y
+		area -= vertices[j].x * vertices[i].y
+	return abs(area) / 2.0
+
+func _create_polygon_texture(width: int, height: int, color: Color, padding: int = 0) -> ImageTexture:
+	# Create texture with optional transparent padding for shader edge detection
+	var tex_w = width + padding * 2
+	var tex_h = height + padding * 2
+	var image = Image.create(tex_w, tex_h, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0, 0, 0, 0))  # Start transparent
+	# Fill the center region with the actual color
+	for y in range(padding, tex_h - padding):
+		for x in range(padding, tex_w - padding):
+			image.set_pixel(x, y, color)
+	return ImageTexture.create_from_image(image)
+
+func _create_shape(physics_data: Dictionary) -> Shape2D:
+	var shape_type = physics_data.get("shape", "box")
+	var shape: Shape2D
+
+	match shape_type:
+		"circle":
+			var circle = CircleShape2D.new()
+			circle.radius = physics_data.get("radius", 0.5) * pixels_per_meter
+			shape = circle
+		"polygon":
+			var polygon = ConvexPolygonShape2D.new()
+			var vertices = physics_data.get("vertices", [])
+			var points: PackedVector2Array = []
+			for v in vertices:
+				# Vertices are relative to entity center, just scale and flip Y
+				points.append(Vector2(v.x * pixels_per_meter, -v.y * pixels_per_meter))
+			polygon.points = points
+			shape = polygon
+		_:  # box
+			var rect = RectangleShape2D.new()
+			var w = physics_data.get("width", 1.0) * pixels_per_meter
+			var h = physics_data.get("height", 1.0) * pixels_per_meter
+			rect.size = Vector2(w, h)
+			shape = rect
+
+	return shape
+
+func _add_sprite(node: Node2D, sprite_data: Dictionary, physics_data: Dictionary, zone_data = null) -> void:
+	print("[DEBUG _add_sprite] Adding sprite type: ", sprite_data.get("type", "unknown"), " to node: ", node.name)
+	var sprite_type = sprite_data.get("type", "rect")
+	var color = Color.from_string(sprite_data.get("color", "#FF0000"), Color.RED)
+	var opacity = sprite_data.get("opacity", 1.0)
+	var z_index_val = sprite_data.get("zIndex", 0)
+
+	# Helper function to get dimension from sprite_data, physics_data, zone_data, or default
+	var _get_dimension = func(key: String, default_val: float):
+		if sprite_data.has(key):
+			return sprite_data.get(key)
+		elif physics_data and physics_data.has(key):
+			return physics_data.get(key)
+		elif zone_data and zone_data.has("shape") and zone_data.shape.has(key):
+			return zone_data.shape.get(key)
+		else:
+			return default_val
+
+	match sprite_type:
+		"rect":
+			var polygon = Polygon2D.new()
+			var w = _get_dimension.call("width", 1.0) * pixels_per_meter
+			var h = _get_dimension.call("height", 1.0) * pixels_per_meter
+			var hw = w / 2.0
+			var hh = h / 2.0
+			polygon.polygon = PackedVector2Array([
+				Vector2(-hw, -hh),
+				Vector2(hw, -hh),
+				Vector2(hw, hh),
+				Vector2(-hw, hh)
+			])
+			color.a = opacity
+			polygon.z_index = z_index_val
+			# Add texture for shader compatibility (WebGL needs valid TEXTURE_PIXEL_SIZE)
+			# Bake the color INTO the texture with padding for edge-detection shaders
+			var tex_size = max(int(w), int(h), 64)
+			var padding = 16  # Transparent padding for outline/glow shaders
+			polygon.texture = _create_polygon_texture(tex_size, tex_size, color, padding)
+			polygon.color = Color.WHITE  # Don't multiply - color is in texture
+			# UV maps to the padded texture (shape is offset by padding)
+			polygon.uv = PackedVector2Array([
+				Vector2(padding, padding),
+				Vector2(tex_size + padding, padding),
+				Vector2(tex_size + padding, tex_size + padding),
+				Vector2(padding, tex_size + padding)
+			])
+			node.add_child(polygon)
+		"circle":
+			var polygon = Polygon2D.new()
+			var radius = _get_dimension.call("radius", 0.5) * pixels_per_meter
+			var points: PackedVector2Array = []
+			var uvs: PackedVector2Array = []
+			var tex_size = max(int(radius * 2), 64)
+			var padding = 16  # Transparent padding for edge-detection shaders
+			for i in range(32):
+				var angle = i * TAU / 32
+				points.append(Vector2(cos(angle), sin(angle)) * radius)
+				# Map circle points to UV space, offset by padding
+				uvs.append(Vector2(
+					(cos(angle) + 1.0) * 0.5 * tex_size + padding,
+					(sin(angle) + 1.0) * 0.5 * tex_size + padding
+				))
+			polygon.polygon = points
+			color.a = opacity
+			polygon.z_index = z_index_val
+			# Add texture for shader compatibility
+			polygon.texture = _create_polygon_texture(tex_size, tex_size, color, padding)
+			polygon.color = Color.WHITE  # Don't multiply - color is in texture
+			polygon.uv = uvs
+			node.add_child(polygon)
+		"polygon":
+			var polygon = Polygon2D.new()
+			var vertices = sprite_data.get("vertices", [])
+			var points: PackedVector2Array = []
+			for v in vertices:
+				points.append(Vector2(v.x * pixels_per_meter, -v.y * pixels_per_meter))
+			polygon.polygon = points
+			color.a = opacity
+			polygon.z_index = z_index_val
+			# Add texture for shader compatibility
+			var poly_size = max_pt - min_pt
+			var tex_size = max(int(poly_size.x), int(poly_size.y), 64)
+			var padding = 16  # Transparent padding for edge-detection shaders
+			polygon.texture = _create_polygon_texture(tex_size, tex_size, color, padding)
+			polygon.color = Color.WHITE  # Don't multiply - color is in texture
+			var uvs: PackedVector2Array = []
+			for pt in points:
+				uvs.append(Vector2(
+					(pt.x - min_pt.x) / poly_size.x * tex_size + padding if poly_size.x > 0 else padding,
+					(pt.y - min_pt.y) / poly_size.y * tex_size + padding if poly_size.y > 0 else padding
+				))
+			polygon.uv = uvs
+			node.add_child(polygon)
+		"image":
+			_add_image_sprite(node, sprite_data, opacity, z_index_val)
+		"text":
+			_add_text_sprite(node, sprite_data, opacity, z_index_val)
+
+func _add_image_sprite(node: Node2D, sprite_data: Dictionary, opacity: float, z_index_val: int) -> void:
+	var sprite = Sprite2D.new()
+	var url = sprite_data.get("imageUrl", sprite_data.get("url", ""))
+	var width = sprite_data.get("imageWidth", sprite_data.get("width", 1.0))
+	var height = sprite_data.get("imageHeight", sprite_data.get("height", 1.0))
+	var asset_scale = sprite_data.get("scale", 1.0)
+	var offset_x = sprite_data.get("offsetX", 0.0)
+	var offset_y = sprite_data.get("offsetY", 0.0)
+
+	if url == "":
+		sprite.modulate.a = opacity
+		sprite.z_index = z_index_val
+		node.add_child(sprite)
+		return
+
+	if url.begins_with("res://"):
+		var texture = load(url)
+		if texture:
+			sprite.texture = texture
+			var local_sprite_data = {
+				"width": img_width,
+				"height": img_height,
+				"scale": asset_scale,
+				"offsetX": offset_x,
+				"offsetY": offset_y
+			}
+			_apply_sprite_scale(sprite, local_sprite_data, texture)
+	else:
+		var normalized_data = {
+			"width": img_width,
+			"height": img_height,
+			"scale": asset_scale,
+			"offsetX": offset_x,
+			"offsetY": offset_y
+		}
+		_queue_texture_download(sprite, url, normalized_data)
+
+	sprite.modulate.a = opacity
+	sprite.z_index = z_index_val
+	node.add_child(sprite)
+
+func _add_text_sprite(node: Node2D, sprite_data: Dictionary, opacity: float, z_index_val: int) -> void:
+	var label = Label.new()
+	label.text = sprite_data.get("text", "")
+
+	var font_size = int(sprite_data.get("fontSize", 16) * pixels_per_meter / 50.0)
+	label.add_theme_font_size_override("font_size", font_size)
+
+	var text_color = Color.from_string(sprite_data.get("color", "#FFFFFF"), Color.WHITE)
+	label.modulate = text_color
+	label.modulate.a = opacity
+	label.z_index = z_index_val
+	node.add_child(label)
+
+func _queue_texture_download(sprite: Sprite2D, url: String, sprite_data: Dictionary) -> void:
+	_download_image_texture(url, func(texture: Texture2D):
+		if is_instance_valid(sprite):
+			sprite.texture = texture
+			_apply_sprite_scale(sprite, sprite_data, texture)
+	)
+
+var _font_cache = {}
+
+func _queue_font_download(label: Label, url: String) -> void:
+	if _font_cache.has(url):
+		label.add_theme_font_override("font", _font_cache[url])
+		return
+
+	var http = HTTPRequest.new()
+	add_child(http)
+
+	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+			push_error("[GameBridge] Failed to download font: " + url + " (code: " + str(response_code) + ")")
+			return
+
+		var font = FontFile.new()
+		font.data = body
+		var err = OK
+		if err != OK:
+			push_error("[GameBridge] Failed to parse font: " + url)
+			return
+
+		_font_cache[url] = font
+
+		if is_instance_valid(label):
+			label.add_theme_font_override("font", font)
+	)
+
+	var err = http.request(url)
+	if err != OK:
+		push_error("[GameBridge] Failed to start font download: " + url)
+		http.queue_free()
+
+func _apply_sprite_scale(sprite: Sprite2D, sprite_data: Dictionary, texture: Texture2D) -> void:
+	if texture == null:
+		return
+
+	# Get asset placement values (scale multiplier, offsets)
+	var asset_scale = sprite_data.get("scale", 1.0)
+	var offset_x = sprite_data.get("offsetX", 0.0) * pixels_per_meter
+	var offset_y = sprite_data.get("offsetY", 0.0) * pixels_per_meter
+
+	var target_w = sprite_data.get("width", 1.0) * pixels_per_meter * asset_scale
+	var target_h = sprite_data.get("height", 1.0) * pixels_per_meter * asset_scale
+
+	# Check if this is a generated asset (square texture with content that preserves aspect ratio)
+	# Generated assets have content that fills 90% of the larger dimension, centered in canvas
+	var tex_w = texture.get_width()
+	var tex_h = texture.get_height()
+	var is_square_texture = abs(tex_w - tex_h) < 2  # Allow 1px tolerance
+
+	if is_square_texture and tex_w > 0:
+		# For generated square textures (e.g., 512x512), use uniform scaling
+		# The actual content fills 90% of canvas on the larger dimension
+		var canvas_size = float(tex_w)
+		var fill_ratio = 0.9
+		var physics_w = sprite_data.get("width", 1.0)
+		var physics_h = sprite_data.get("height", 1.0)
+		var aspect_ratio = physics_w / physics_h if physics_h > 0 else 1.0
+
+		# Calculate silhouette dimensions within the canvas (matches generation logic)
+		var silhouette_w: float
+		var silhouette_h: float
+		if aspect_ratio >= 1.0:
+			silhouette_w = canvas_size * fill_ratio
+			silhouette_h = silhouette_w / aspect_ratio
+		else:
+			silhouette_h = canvas_size * fill_ratio
+			silhouette_w = silhouette_h * aspect_ratio
+
+		# Uniform scale: map silhouette pixels to target world pixels
+		var uniform_scale = target_w / silhouette_w if silhouette_w > 0 else 1.0
+		sprite.scale = Vector2(uniform_scale, uniform_scale)
+	else:
+		# Non-square textures: use uniform scaling to preserve aspect ratio (contain behavior)
+		var scale_x = target_w / tex_w if tex_w > 0 else 1.0
+		var scale_y = target_h / tex_h if tex_h > 0 else 1.0
+		var uniform_scale = min(scale_x, scale_y)
+		sprite.scale = Vector2(uniform_scale, uniform_scale)
+
+	# Apply offset to position the sprite relative to physics body center
+	sprite.position = Vector2(offset_x, offset_y)
+
+func _hide_shape_children(node: Node2D) -> void:
+	"""Hide Polygon2D shape children when a texture sprite is applied.
+	This prevents double-rendering of shapes and textures."""
+	for child in node.get_children():
+		if child is Polygon2D:
+			child.visible = false
+
+func _apply_debug_visibility(node: Node2D) -> void:
+	"""Apply current debug mode visibility to a node's children.
+	When debug mode is ON: show Polygon2D shapes, hide Sprite2D textures.
+	When debug mode is OFF: hide Polygon2D shapes, show Sprite2D textures."""
+	for child in node.get_children():
+		if child is Polygon2D:
+			child.visible = _debug_show_shapes
+		elif child is Sprite2D:
+			child.visible = not _debug_show_shapes
+
+func _js_clear_texture_cache(args: Array) -> void:
+	if args.size() > 0 and str(args[0]) != "":
+		var url = str(args[0])
+		if _texture_cache.has(url):
+			_texture_cache.erase(url)
+	else:
+		_texture_cache.clear()
+
+var _preload_pending_count: int = 0
+var _preload_completed_count: int = 0
+var _preload_failed_count: int = 0
+var _js_preload_progress_callback: JavaScriptObject = null
+
+func _js_preload_textures(args: Array) -> void:
+	if args.size() < 1:
+		push_error("[GameBridge] preloadTextures requires at least 1 arg: urls (JSON string)")
+		return
+
+	var urls_json = str(args[0])
+	var urls = JSON.parse_string(urls_json)
+	if urls == null or not (urls is Array):
+		push_error("[GameBridge] preloadTextures: failed to parse URLs from JSON")
+		return
+	if urls.size() == 0:
+		if args.size() > 1 and args[1] != null:
+			var cb = args[1]
+			if cb is JavaScriptObject:
+				cb.call("call", null, 100, 0, 0)
+		return
+
+	# Store callback if provided
+	if args.size() > 1 and args[1] != null:
+		_js_preload_progress_callback = args[1]
+	else:
+		_js_preload_progress_callback = null
+
+	_preload_pending_count = urls.size()
+	_preload_completed_count = 0
+	_preload_failed_count = 0
+
+	for url_variant in urls:
+		var url = str(url_variant)
+		if url == "":
+			_on_preload_complete(url, false)
+			continue
+
+		# Skip if already cached
+		if _texture_cache.has(url):
+			_on_preload_complete(url, true)
+			continue
+
+		# Download the texture
+		var http = HTTPRequest.new()
+		add_child(http)
+
+		http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+			http.queue_free()
+			if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+				push_warning("[GameBridge] Failed to preload texture: " + url + " (result: " + str(result) + ", code: " + str(response_code) + ")")
+				_on_preload_complete(url, false)
+				return
+
+			if body.size() == 0:
+				push_warning("[GameBridge] Empty body for texture: " + url)
+				_on_preload_complete(url, false)
+				return
+
+			var image = Image.new()
+			var err = image.load_png_from_buffer(body)
+			if err != OK:
+				err = image.load_jpg_from_buffer(body)
+			if err != OK:
+				err = image.load_webp_from_buffer(body)
+			if err != OK:
+				push_warning("[GameBridge] All image formats failed for: " + url + " (size: " + str(body.size()) + ")")
+				_on_preload_complete(url, false)
+				return
+
+			var texture = ImageTexture.create_from_image(image)
+			_texture_cache[url] = texture
+			_on_preload_complete(url, true)
+		)
+
+		var err = http.request(url)
+		if err != OK:
+			push_warning("[GameBridge] Failed to start preload request: " + url)
+			http.queue_free()
+			_on_preload_complete(url, false)
+
+func _on_preload_complete(url: String, success: bool) -> void:
+	if success:
+		_preload_completed_count += 1
+	else:
+		_preload_failed_count += 1
+
+	var total_done = _preload_completed_count + _preload_failed_count
+	var percent = int((float(total_done) / float(_preload_pending_count)) * 100.0)
+
+	if _js_preload_progress_callback != null:
+		_js_preload_progress_callback.call("call", null, percent, _preload_completed_count, _preload_failed_count)
+	else:
+		print("[GameBridge] No progress callback registered!")
+
+func _js_set_debug_show_shapes(args: Array) -> void:
+	"""Toggle debug mode to show physics shapes or textures.
+	args[0]: boolean - true to show shapes, false to show textures"""
+	if args.size() < 1:
+		push_error("[GameBridge] setDebugShowShapes requires 1 arg: show_shapes (boolean)")
+		return
+
+	_debug_show_shapes = bool(args[0])
+
+	# Apply debug visibility to all existing entities
+	for entity_id in entities:
+		var node = entities[entity_id]
+		if node:
+			_apply_debug_visibility(node)
+
+func _js_set_debug_settings(args: Array) -> void:
+	print("[GameBridge] _js_set_debug_settings called with args: ", args)
+	if args.size() < 1:
+		push_error("[GameBridge] setDebugSettings requires 1 arg: settings JSON string")
+		return
+
+	var json_str = str(args[0])
+	print("[GameBridge] setDebugSettings JSON string: ", json_str)
+	var json = JSON.new()
+	var parse_result = json.parse(json_str)
+	if parse_result != OK:
+		push_error("[GameBridge] setDebugSettings: Invalid JSON: " + json_str)
+		return
+
+	var settings = json.data
+	print("[GameBridge] setDebugSettings parsed: ", settings)
+	if not settings is Dictionary:
+		push_error("[GameBridge] setDebugSettings: Expected object, got: " + str(typeof(settings)))
+		return
+
+	if _devtools_overlay:
+		print("[GameBridge] Forwarding to _devtools_overlay")
+		_devtools_overlay.set_settings(settings)
+	else:
+		push_error("[GameBridge] _devtools_overlay is null!")
+
+func clear_texture_cache(url: String = "") -> void:
+	if url != "":
+		if _texture_cache.has(url):
+			_texture_cache.erase(url)
+	else:
+		_texture_cache.clear()
+
+func _on_body_entered(body: Node, entity_id: String) -> void:
+	if body.name in entities:
+		collision_occurred.emit(entity_id, body.name, 0.0)
+		_notify_js_collision(entity_id, body.name, 0.0)
+
+		# Process destroy_on_collision behaviors directly in Godot
+		_process_collision_behaviors(entity_id, body.name)
+		_process_collision_behaviors(body.name, entity_id)
+
+func spawn_entity(template_id: String, x: float, y: float) -> Node2D:
+	return spawn_entity_with_id(template_id, x, y, template_id + "_" + str(randi()), "")
+
+func spawn_entity_with_id(template_id: String, x: float, y: float, entity_id: String, initial_velocity_json: String = "") -> Node2D:
+	if not templates.has(template_id):
+		push_error("[GameBridge] Template not found: " + template_id)
+		return null
+
+	var entity_data = {
+		"id": entity_id,
+		"template": template_id,
+		"transform": {"x": x, "y": y, "angle": 0}
+	}
+
+	# Parse and store initial velocity if provided
+	if initial_velocity_json != "":
+		var json = JSON.new()
+		var err = json.parse(initial_velocity_json)
+		if err == OK:
+			var vel_data = json.data as Dictionary
+			if vel_data.has("x") and vel_data.has("y"):
+				var game_vel = Vector2(vel_data["x"], vel_data["y"])
+				entity_data["_initial_velocity"] = game_to_godot_vec(game_vel)
+
+	return _create_entity(entity_data)
+
+func _process_collision_behaviors(entity_id: String, other_entity_id: String) -> void:
+	if not entities.has(entity_id) or not entities.has(other_entity_id):
+		return
+
+	var node = entities[entity_id]
+	var other_node = entities[other_entity_id]
+
+	if not node.has_meta("behaviors"):
+		return
+
+	var behaviors = node.get_meta("behaviors") as Array
+	var other_tags = other_node.get_meta("tags") if other_node.has_meta("tags") else []
+
+	for behavior in behaviors:
+		if behavior is Dictionary and behavior.get("type") == "destroy_on_collision":
+			var with_tags = behavior.get("withTags", []) as Array
+			var should_destroy = false
+
+			for tag in with_tags:
+				if tag in other_tags:
+					should_destroy = true
+					break
+
+			if should_destroy:
+				call_deferred("destroy_entity", entity_id)
+
+				if behavior.get("destroyOther", false):
+					call_deferred("destroy_entity", other_entity_id)
+				return
+
+func destroy_entity(entity_id: String) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		entities.erase(entity_id)
+		node.queue_free()
+		entity_destroyed.emit(entity_id)
+		_notify_js_destroy(entity_id)
+
+# Get entity node by ID
+func get_entity(entity_id: String) -> Node2D:
+	return entities.get(entity_id)
+
+func set_entity_image(entity_id: String, url: String, width: float, height: float) -> void:
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_image: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var sprite_data = {"width": width, "height": height}
+
+	if _texture_cache.has(url):
+		var texture = _texture_cache[url]
+		sprite.texture = texture
+		_apply_sprite_scale(sprite, sprite_data, texture)
+		_hide_shape_children(node)
+		return
+
+	var http = HTTPRequest.new()
+	add_child(http)
+
+	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+			push_error("[GameBridge] Failed to download texture: " + url + " (code: " + str(response_code) + ")")
+			return
+
+		var image = Image.new()
+		var err = image.load_png_from_buffer(body)
+		if err != OK:
+			err = image.load_jpg_from_buffer(body)
+		if err != OK:
+			err = image.load_webp_from_buffer(body)
+		if err != OK:
+			push_error("[GameBridge] Failed to parse image: " + url)
+			return
+
+		var texture = ImageTexture.create_from_image(image)
+		_texture_cache[url] = texture
+
+		if is_instance_valid(sprite):
+			sprite.texture = texture
+			_apply_sprite_scale(sprite, sprite_data, texture)
+			var parent_node = sprite.get_parent()
+			if parent_node:
+				_hide_shape_children(parent_node)
+
+	)
+
+	var err = http.request(url)
+	if err != OK:
+		push_error("[GameBridge] Failed to start texture download: " + url)
+		http.queue_free()
+
+func _js_set_entity_image(args: Array) -> void:
+	if args.size() < 4:
+		push_error("[GameBridge] setEntityImage requires 4 args: entity_id, url, width, height")
+		return
+	set_entity_image(str(args[0]), str(args[1]), float(args[2]), float(args[3]))
+
+func set_entity_atlas_region(entity_id: String, atlas_url: String, region_dict: Dictionary, sprite_data: Dictionary = {}) -> void:
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_atlas_region: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	if _texture_cache.has(atlas_url):
+		_apply_atlas_region(sprite, _texture_cache[atlas_url], region_dict, sprite_data)
+		_hide_shape_children(node)
+	else:
+		_download_atlas_texture(sprite, atlas_url, region_dict, sprite_data)
+
+func _apply_atlas_region(sprite: Sprite2D, texture: Texture2D, region_dict: Dictionary, sprite_data: Dictionary = {}) -> void:
+	var atlas_texture = AtlasTexture.new()
+	atlas_texture.atlas = texture
+	atlas_texture.region = Rect2(
+		region_dict.get("x", 0),
+		region_dict.get("y", 0),
+		region_dict.get("w", 0),
+		region_dict.get("h", 0)
+	)
+	sprite.texture = atlas_texture
+	_apply_sprite_scale(sprite, sprite_data, atlas_texture)
+
+func _download_atlas_texture(sprite: Sprite2D, url: String, region_dict: Dictionary, sprite_data: Dictionary = {}) -> void:
+	_download_image_texture(url, func(texture: Texture2D):
+		if is_instance_valid(sprite):
+			_apply_atlas_region(sprite, texture, region_dict, sprite_data)
+			var node = sprite.get_parent()
+			if node:
+				_hide_shape_children(node)
+	)
+
+func _js_set_entity_atlas_region(args: Array) -> void:
+	if args.size() < 8:
+		push_error("[GameBridge] setEntityAtlasRegion requires 8 args: entity_id, atlas_url, x, y, w, h, width, height")
+		return
+	var entity_id = str(args[0])
+	var atlas_url = str(args[1])
+	var region_dict = {
+		"x": float(args[2]),
+		"y": float(args[3]),
+		"w": float(args[4]),
+		"h": float(args[5])
+	}
+	var sprite_data = {
+		"width": float(args[6]),
+		"height": float(args[7])
+	}
+	set_entity_atlas_region(entity_id, atlas_url, region_dict, sprite_data)
+
+func set_entity_image_base64(entity_id: String, base64_data: String, width: float, height: float) -> void:
+
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_image_base64: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var raw_data = Marshalls.base64_to_raw(base64_data)
+	if raw_data.is_empty():
+		push_error("[GameBridge] set_entity_image_base64: failed to decode base64")
+		return
+
+	var image = Image.new()
+	var err = image.load_png_from_buffer(raw_data)
+	if err != OK:
+		err = image.load_jpg_from_buffer(raw_data)
+	if err != OK:
+		err = image.load_webp_from_buffer(raw_data)
+	if err != OK:
+		push_error("[GameBridge] set_entity_image_base64: failed to parse image data")
+		return
+
+	var texture = ImageTexture.create_from_image(image)
+	sprite.texture = texture
+	var sprite_data = {"width": width, "height": height}
+	_apply_sprite_scale(sprite, sprite_data, texture)
+
+
+func set_entity_image_from_file(entity_id: String, file_path: String, width: float, height: float) -> void:
+
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_image_from_file: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var image = Image.new()
+	var err = image.load(file_path)
+	if err != OK:
+		push_error("[GameBridge] set_entity_image_from_file: failed to load image from " + file_path + " error=" + str(err))
+		return
+
+	var texture = ImageTexture.create_from_image(image)
+	sprite.texture = texture
+	var sprite_data = {"width": width, "height": height}
+	_apply_sprite_scale(sprite, sprite_data, texture)
+
+
+func set_entity_atlas_region_from_file(entity_id: String, file_path: String, region_x: float, region_y: float, region_w: float, region_h: float, sprite_width: float, sprite_height: float) -> void:
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_atlas_region_from_file: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var image = Image.new()
+	var err = image.load(file_path)
+	if err != OK:
+		push_error("[GameBridge] set_entity_atlas_region_from_file: failed to load image from " + file_path + " error=" + str(err))
+		return
+
+	var texture = ImageTexture.create_from_image(image)
+	_texture_cache[file_path] = texture
+
+	var region_dict = {"x": region_x, "y": region_y, "w": region_w, "h": region_h}
+	var sprite_data = {"width": sprite_width, "height": sprite_height}
+	_apply_atlas_region(sprite, texture, region_dict, sprite_data)
+	_hide_shape_children(node)
+
+
+# Get all entity transforms (for syncing)
+func get_all_transforms() -> Dictionary:
+	var result = {}
+	for entity_id in entities:
+		var node = entities[entity_id]
+		var game_pos = godot_to_game_pos(node.position)
+		result[entity_id] = {
+			"x": game_pos.x,
+			"y": game_pos.y,
+			"angle": -node.rotation  # Flip angle back to game convention
+		}
+	return result
+
+# Clear all entities
+func clear_game() -> void:
+	# Clear joints first
+	for joint_id in joints:
+		var joint_node = joints[joint_id]
+		if is_instance_valid(joint_node):
+			joint_node.queue_free()
+	joints.clear()
+
+	# Clear entities (including Area2D sensors stored in entities dict)
+	for entity_id in entities:
+		var node = entities[entity_id]
+		if is_instance_valid(node):
+			node.queue_free()
+	entities.clear()
+	templates.clear()
+
+	# Reset ID tracking
+	body_id_map.clear()
+	body_id_reverse.clear()
+	collider_id_map.clear()
+	entity_shape_map.clear()
+	user_data.clear()
+	body_groups.clear()
+
+# =============================================================================
+# TRANSFORM CONTROL
+# =============================================================================
+
+func _js_set_transform(args: Array) -> void:
+	if args.size() < 4:
+		return
+	var entity_id = str(args[0])
+	var game_pos = Vector2(float(args[1]), float(args[2]))
+	var godot_pos = game_to_godot_pos(game_pos)
+	var godot_angle = -float(args[3])  # Flip angle for Y-up convention
+
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.position = godot_pos
+			node.rotation = godot_angle
+		elif node is RigidBody2D:
+			# For RigidBody2D, we need to use physics server or _integrate_forces
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(godot_angle, godot_pos))
+
+func set_transform(entity_id: String, x: float, y: float, angle: float) -> void:
+	var godot_pos = game_to_godot_pos(Vector2(x, y))
+	var godot_angle = -angle  # Flip angle for Y-up convention
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.position = godot_pos
+			node.rotation = godot_angle
+		elif node is RigidBody2D:
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(godot_angle, godot_pos))
+
+func _js_set_position(args: Array) -> void:
+	if args.size() < 3:
+		return
+	var entity_id = str(args[0])
+	var godot_pos = game_to_godot_pos(Vector2(float(args[1]), float(args[2])))
+
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.position = godot_pos
+		elif node is RigidBody2D:
+			var current_angle = node.rotation
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(current_angle, godot_pos))
+		else:
+			node.position = godot_pos
+
+func set_position(entity_id: String, x: float, y: float) -> void:
+	var godot_pos = game_to_godot_pos(Vector2(x, y))
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.position = godot_pos
+		elif node is RigidBody2D:
+			var current_angle = node.rotation
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(current_angle, godot_pos))
+		else:
+			# For Area2D and other node types, just set position directly
+			node.position = godot_pos
+
+func _js_set_rotation(args: Array) -> void:
+	if args.size() < 2:
+		return
+	var entity_id = str(args[0])
+	var angle = float(args[1])
+
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.rotation = angle
+		elif node is RigidBody2D:
+			var current_pos = node.position
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(angle, current_pos))
+		else:
+			node.rotation = angle
+
+func set_rotation(entity_id: String, angle: float) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.rotation = angle
+		elif node is RigidBody2D:
+			var current_pos = node.position
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(angle, current_pos))
+		else:
+			node.rotation = angle
+
+func _js_set_scale(args: Array) -> void:
+	if args.size() < 3:
+		return
+	var entity_id = str(args[0])
+	var scale_x = float(args[1])
+	var scale_y = float(args[2])
+	set_scale_entity(entity_id, scale_x, scale_y)
+
+func set_scale_entity(entity_id: String, scale_x: float, scale_y: float) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		# Find the sprite child to scale (scaling physics bodies directly causes issues)
+		var sprite = _find_sprite_in_entity(node)
+		if sprite:
+			sprite.scale = Vector2(scale_x, scale_y)
+
+func _find_sprite_in_entity(node: Node) -> CanvasItem:
+	if node is Sprite2D or node is AnimatedSprite2D:
+		return node
+	for child in node.get_children():
+		if child is Sprite2D or child is AnimatedSprite2D:
+			return child
+		var found = _find_sprite_in_entity(child)
+		if found:
+			return found
+	return null
+
+func _js_get_linear_velocity(args: Array) -> Variant:
+	if args.size() < 1:
+		return null
+	var entity_id = str(args[0])
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			var game_vel = godot_to_game_vec(node.linear_velocity)
+			return {"x": game_vel.x, "y": game_vel.y}
+		elif node is Area2D and node.has_meta("velocity"):
+			var godot_vel = node.get_meta("velocity") as Vector2
+			var game_vel = godot_to_game_vec(godot_vel)
+			return {"x": game_vel.x, "y": game_vel.y}
+	return null
+
+func _js_get_angular_velocity(args: Array) -> Variant:
+	if args.size() < 1:
+		return null
+	var entity_id = str(args[0])
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			return node.angular_velocity
+	return null
+
+func _js_apply_impulse(args: Array) -> void:
+	if args.size() < 3:
+		return
+	var entity_id = str(args[0])
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			var game_impulse = Vector2(float(args[1]), float(args[2]))
+			node.apply_central_impulse(game_to_godot_vec(game_impulse))
+
+func apply_impulse(entity_id: String, ix: float, iy: float) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			node.apply_central_impulse(game_to_godot_vec(Vector2(ix, iy)))
+
+func _js_apply_force(args: Array) -> void:
+	if args.size() < 3:
+		return
+	var entity_id = str(args[0])
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			var game_force = Vector2(float(args[1]), float(args[2]))
+			node.apply_central_force(game_to_godot_vec(game_force))
+
+func apply_force(entity_id: String, fx: float, fy: float) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			node.apply_central_force(game_to_godot_vec(Vector2(fx, fy)))
+
+func send_input(input_type: String, x: float, y: float, entity_id: String = "") -> void:
+	if input_type == "tap":
+		var hit_entity_id: Variant = null
+		var godot_point = game_to_godot_pos(Vector2(x, y))
+		var space = get_viewport().find_world_2d().direct_space_state
+		if space:
+			var query = PhysicsPointQueryParameters2D.new()
+			query.position = godot_point
+			query.collision_mask = 0xFFFFFFFF
+			query.collide_with_bodies = true
+			query.collide_with_areas = true
+			var results = space.intersect_point(query, 1)
+			if results.size() > 0:
+				var collider = results[0].collider
+				if collider and collider.name in entities:
+					hit_entity_id = collider.name
+		_queue_event("input", {"type": input_type, "x": x, "y": y, "entityId": hit_entity_id})
+		_notify_js_input_event(input_type, x, y, hit_entity_id)
+
+func _js_send_input(args: Array) -> void:
+	if args.size() < 4:
+		return
+	var input_type = str(args[0])
+	var x = float(args[1])
+	var y = float(args[2])
+	var provided_entity_id = str(args[3]) if args[3] != null else ""
+
+	if input_type == "tap":
+		var hit_entity_id: Variant = null
+
+		var godot_point = game_to_godot_pos(Vector2(x, y))
+		var space = get_viewport().find_world_2d().direct_space_state
+		if space:
+			var query = PhysicsPointQueryParameters2D.new()
+			query.position = godot_point
+			query.collision_mask = 0xFFFFFFFF
+			query.collide_with_bodies = true
+			query.collide_with_areas = true
+
+			var results = space.intersect_point(query, 1)
+			if results.size() > 0:
+				var collider = results[0].collider
+				if collider and collider.name in entities:
+					hit_entity_id = collider.name
+
+		_notify_js_input_event(input_type, x, y, hit_entity_id)
+
+func _js_on_input_event(args: Array) -> void:
+	if args.size() >= 1:
+		_js_input_event_callback = args[0]
+
+func _notify_js_input_event(input_type: String, x: float, y: float, entity_id: Variant) -> void:
+	if _js_input_event_callback != null:
+		var data = {
+			"type": input_type,
+			"x": x,
+			"y": y,
+			"entityId": entity_id
+		}
+		var json_str = JSON.stringify(data)
+		_js_input_event_callback.call("call", null, json_str)
+
+func _js_on_collision(args: Array) -> void:
+	if args.size() >= 1:
+		_js_collision_callback = args[0]
+
+func _js_on_entity_destroyed(args: Array) -> void:
+	if args.size() >= 1:
+		_js_destroy_callback = args[0]
+
+func _js_on_entity_spawned(args: Array) -> void:
+	if args.size() >= 1:
+		_js_entity_spawned_callback = args[0]
+
+func _notify_js_collision(entity_a: String, entity_b: String, impulse: float) -> void:
+	if _js_collision_callback != null:
+		# Legacy format for backward compatibility
+		_js_collision_callback.call("call", null, entity_a, entity_b, impulse)
+	else:
+		# Native path: queue event for polling
+		_queue_event("collision", {"entityA": entity_a, "entityB": entity_b, "impulse": impulse})
+
+func _notify_js_collision_detailed(collision_data: Dictionary) -> void:
+	if _js_collision_callback != null:
+		# New detailed format: { entityA, entityB, contacts: [{point, normal, normalImpulse, tangentImpulse}] }
+		var json_str = JSON.stringify(collision_data)
+		# Use legacy format which works - pass entityA, entityB, impulse separately
+		var entity_a = collision_data.get("entityA", "")
+		var entity_b = collision_data.get("entityB", "")
+		var total_impulse = 0.0
+		for contact in collision_data.get("contacts", []):
+			total_impulse += abs(contact.get("normalImpulse", 0.0))
+		_js_collision_callback.call("call", null, entity_a, entity_b, total_impulse)
+	else:
+		# Native path: queue event for polling
+		_queue_event("collision_detailed", collision_data)
+
+func _handle_collision_manifold(body_node: RigidBody2D, state: PhysicsDirectBodyState2D) -> void:
+	var contact_count = state.get_contact_count()
+	if contact_count == 0:
+		return
+
+	var entity_a = body_node.name
+	if not entities.has(entity_a):
+		return
+
+	# Group contacts by colliding body
+	var contacts_by_body: Dictionary = {}
+
+	for i in range(contact_count):
+		var collider = state.get_contact_collider_object(i)
+		if collider == null or not (collider is Node2D):
+			continue
+
+		var entity_b = collider.name
+		if not entities.has(entity_b):
+			continue
+
+		# Get contact data and convert to game coordinates
+		var godot_contact_pos = state.get_contact_local_position(i)
+		var game_contact_pos = godot_to_game_pos(godot_contact_pos)
+		var godot_normal = state.get_contact_local_normal(i)
+		var game_normal = Vector2(godot_normal.x, -godot_normal.y)  # Flip Y for normal
+		var impulse_vec = state.get_contact_impulse(i)
+		var normal_impulse = impulse_vec.dot(godot_normal)
+		var tangent = Vector2(-godot_normal.y, godot_normal.x)
+		var tangent_impulse = impulse_vec.dot(tangent)
+
+		# Only report if impulse is significant (avoid spam for resting contacts)
+		if abs(normal_impulse) < IMPULSE_THRESHOLD and abs(tangent_impulse) < IMPULSE_THRESHOLD:
+			continue
+
+		if not contacts_by_body.has(entity_b):
+			contacts_by_body[entity_b] = []
+
+		contacts_by_body[entity_b].append({
+			"point": {"x": game_contact_pos.x, "y": game_contact_pos.y},
+			"normal": {"x": game_normal.x, "y": game_normal.y},
+			"normalImpulse": normal_impulse / pixels_per_meter,
+			"tangentImpulse": tangent_impulse / pixels_per_meter
+		})
+
+	# Emit collision events for each colliding body
+	for entity_b in contacts_by_body:
+		var contacts = contacts_by_body[entity_b]
+
+		# Calculate total impulse for this collision pair
+		var total_impulse = 0.0
+		for contact in contacts:
+			total_impulse += abs(contact["normalImpulse"])
+
+		var collision_data = {
+			"entityA": entity_a,
+			"entityB": entity_b,
+			"contacts": contacts
+		}
+
+		_notify_js_collision_detailed(collision_data)
+		collision_occurred.emit(entity_a, entity_b, total_impulse)
+
+		# Process destroy_on_collision behaviors directly in Godot
+		_process_collision_behaviors(entity_a, entity_b)
+		_process_collision_behaviors(entity_b, entity_a)
+
+func _notify_js_destroy(entity_id: String) -> void:
+	if _js_destroy_callback != null:
+		_js_destroy_callback.call("call", null, entity_id)
+	else:
+		# Native path: queue event for polling
+		_queue_event("destroy", {"entityId": entity_id})
+
+func _notify_js_entity_spawned(entity_id: String, snapshot: Dictionary) -> void:
+	if _js_entity_spawned_callback != null:
+		var json_str = JSON.stringify(snapshot)
+		_js_entity_spawned_callback.call("call", null, json_str)
+	else:
+		# Native path: queue event for polling
+		_queue_event("entity_spawned", snapshot)
+
+func _setup_splat_map() -> void:
+	if _splat_enabled:
+		return
+
+	_splat_viewport = SubViewport.new()
+	_splat_viewport.name = "SplatMap"
+	_splat_viewport.size = Vector2(512, 512) # Low res is fine for splat map
+	_splat_viewport.transparent_bg = false
+	_splat_viewport.render_target_update_mode = SubViewport.UPDATE_WHEN_VISIBLE
+	_splat_viewport.render_target_clear_mode = SubViewport.CLEAR_MODE_ALWAYS
+	add_child(_splat_viewport)
+
+	_splat_canvas = CanvasLayer.new()
+	_splat_viewport.add_child(_splat_canvas)
+
+	# Background black (no force)
+	var bg = ColorRect.new()
+	bg.color = Color.BLACK
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_splat_canvas.add_child(bg)
+
+	_splat_enabled = true
+
+func enable_splat_map() -> void:
+	if not _splat_enabled:
+		_setup_splat_map()
+
+func disable_splat_map() -> void:
+	if _splat_enabled and _splat_viewport:
+		for proxy in _splat_proxies.values():
+			proxy.queue_free()
+		_splat_proxies.clear()
+		_splat_viewport.queue_free()
+		_splat_viewport = null
+		_splat_canvas = null
+		_splat_enabled = false
+
+func get_splat_texture() -> Texture2D:
+	return _splat_viewport.get_texture()
+
+func _process(_delta: float) -> void:
+	# Update splat proxies (only if enabled)
+	if _splat_enabled and _splat_viewport and _splat_canvas:
+		for entity_id in entities:
+			var entity = entities[entity_id]
+
+			# Skip stationary entities (optimization for 100+ entities)
+			var vel = Vector2.ZERO
+			if entity is RigidBody2D:
+				vel = entity.linear_velocity
+			elif entity is CharacterBody2D:
+				vel = entity.velocity
+			elif entity is Area2D and entity.has_meta("velocity"):
+				vel = entity.get_meta("velocity")
+
+			# Cull low-velocity entities (reduce updates)
+			if vel.length_squared() < 0.01 and _splat_proxies.has(entity_id):
+				continue  # Skip update for stationary entities
+
+			if not _splat_proxies.has(entity_id):
+				var proxy = SPLAT_PROXY_SCENE.instantiate()
+				_splat_canvas.add_child(proxy)
+				_splat_proxies[entity_id] = proxy
+
+			var proxy = _splat_proxies[entity_id]
+
+			# Sync position (map game world to viewport)
+			if camera:
+				var screen_pos = entity.get_global_transform_with_canvas().origin
+				# Map screen pos to splat viewport
+				var viewport_size = get_viewport().get_visible_rect().size
+				var uv = screen_pos / viewport_size
+				proxy.position = uv * Vector2(_splat_viewport.size)
+
+			# Encode Velocity
+			# R = X vel, G = Y vel, B = Presence
+			# Normalize velocity (-20..20 -> 0..1)
+			var r = clamp((vel.x / 40.0) + 0.5, 0.0, 1.0)
+			var g = clamp((-vel.y / 40.0) + 0.5, 0.0, 1.0) # Flip Y for texture space
+			proxy.modulate = Color(r, g, 1.0, 1.0)
+
+			# Scale proxy based on mass/size if possible, default to fixed size for now
+			proxy.scale = Vector2(0.5, 0.5)
+
+		# Clean up dead proxies
+		var dead_ids = []
+		for id in _splat_proxies:
+			if not entities.has(id):
+				dead_ids.append(id)
+		for id in dead_ids:
+			_splat_proxies[id].queue_free()
+			_splat_proxies.erase(id)
+
+	if ws:
+		ws.poll()
+		var state = ws.get_ready_state()
+		if state == WebSocketPeer.STATE_OPEN:
+			while ws.get_available_packet_count() > 0:
+				var packet = ws.get_packet()
+				_on_ws_message(packet.get_string_from_utf8())
+		elif state == WebSocketPeer.STATE_CLOSED:
+			ws = null
+
+# Connect to WebSocket server
+func connect_to_server(url: String = "") -> void:
+	if url != "":
+		ws_url = url
+	ws = WebSocketPeer.new()
+	var err = ws.connect_to_url(ws_url)
+	if err != OK:
+		ws = null
+
+func _on_ws_message(message: String) -> void:
+	var json = JSON.new()
+	var err = json.parse(message)
+	if err == OK:
+		var data = json.data
+		if data.has("type"):
+			match data.type:
+				"load_game":
+					load_game_json(JSON.stringify(data.game))
+				"spawn":
+					spawn_entity(data.template, data.x, data.y)
+
+# Main entry point: Load a game from JSON string
+func load_game_json(json_string: String) -> bool:
+	var json = JSON.new()
+	var err = json.parse(json_string)
+	if err != OK:
+		push_error("[GameBridge] JSON parse error: " + json.get_error_message())
+		return false
+
+	game_data = json.data
+
+	# Clear existing game
+	clear_game()
+
+	# Setup world
+	_setup_world(game_data.get("world", {}))
+
+	# Setup background
+	_setup_background(game_data.get("background", {}))
+
+	# Load templates
+	templates = game_data.get("templates", {})
+	print("[DEBUG] Loaded templates: ", templates.keys())
+	for tmpl_id in templates:
+		var tmpl = templates[tmpl_id]
+		if tmpl.has("visual"):
+			print("[DEBUG] Template ", tmpl_id, " visual.type: ", tmpl.visual.get("type", "NO TYPE"))
+
+	# Create entities
+	var entities_data = game_data.get("entities", [])
+	for entity_data in entities_data:
+		_create_entity(entity_data)
+
+	game_loaded.emit(game_data)
+	return true
+
+func load_custom_scene(scene_path: String) -> bool:
+	if not ResourceLoader.exists(scene_path):
+		push_error("[GameBridge] Scene not found: " + scene_path)
+		return false
+
+	var scene = load(scene_path)
+	if not scene:
+		push_error("[GameBridge] Failed to load scene: " + scene_path)
+		return false
+
+	if game_root:
+		for child in game_root.get_children():
+			child.queue_free()
+
+		var instance = scene.instantiate()
+		game_root.add_child(instance)
+		return true
+	else:
+		push_error("[GameBridge] game_root not set")
+		return false
+
+func _setup_world(world_data: Dictionary) -> void:
+	pixels_per_meter = world_data.get("pixelsPerMeter", 50.0)
+
+	var gravity = world_data.get("gravity", {"x": 0, "y": -9.8})
+	var gravity_vec = game_to_godot_vec(Vector2(gravity.x, gravity.y))
+
+	PhysicsServer2D.area_set_param(
+		get_viewport().find_world_2d().space,
+		PhysicsServer2D.AREA_PARAM_GRAVITY,
+		gravity_vec.length()
+	)
+	PhysicsServer2D.area_set_param(
+		get_viewport().find_world_2d().space,
+		PhysicsServer2D.AREA_PARAM_GRAVITY_VECTOR,
+		gravity_vec.normalized()
+	)
+
+	if camera:
+		camera.global_position = Vector2.ZERO
+
+var _background_layer: CanvasLayer = null
+var _background_rect: TextureRect = null
+var _parallax_layers: Array = []
+
+func _setup_background(bg_data: Dictionary) -> void:
+	# Clean up existing background
+	if _background_layer:
+		_background_layer.queue_free()
+		_background_layer = null
+		_background_rect = null
+
+	for layer in _parallax_layers:
+		if is_instance_valid(layer):
+			layer.queue_free()
+	_parallax_layers.clear()
+
+	if bg_data.is_empty():
+		return
+
+	var bg_type = bg_data.get("type", "")
+
+	if bg_type == "parallax":
+		_setup_parallax_background(bg_data)
+		return
+
+	if bg_type != "static":
+		return
+
+	var image_url = bg_data.get("imageUrl", "")
+	var color = bg_data.get("color", "")
+
+	_background_layer = CanvasLayer.new()
+	_background_layer.layer = -100
+	_background_layer.name = "BackgroundLayer"
+	add_child(_background_layer)
+
+	_background_rect = TextureRect.new()
+	_background_rect.name = "Background"
+	_background_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_background_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_background_rect.anchor_left = 0.0
+	_background_rect.anchor_top = 0.0
+	_background_rect.anchor_right = 1.0
+	_background_rect.anchor_bottom = 1.0
+	_background_layer.add_child(_background_rect)
+
+	if image_url != "":
+		_download_background_texture(image_url)
+	elif color != "":
+		var viewport_size = get_viewport().get_visible_rect().size
+		var img = Image.create(int(viewport_size.x), int(viewport_size.y), false, Image.FORMAT_RGBA8)
+		img.fill(Color.from_string(color, Color.GRAY))
+		_background_rect.texture = ImageTexture.create_from_image(img)
+
+func _download_image_texture(url: String, callback: Callable) -> void:
+	if _texture_cache.has(url):
+		var texture = _texture_cache[url]
+		callback.call(texture)
+		return
+
+	var http = HTTPRequest.new()
+	add_child(http)
+
+	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+			push_error("[GameBridge] Failed to download image: " + url)
+			return
+
+		var image = Image.new()
+		var err = image.load_png_from_buffer(body)
+		if err != OK:
+			err = image.load_jpg_from_buffer(body)
+		if err != OK:
+			err = image.load_webp_from_buffer(body)
+		if err != OK:
+			push_error("[GameBridge] Failed to parse image: " + url)
+			return
+
+		var texture = ImageTexture.create_from_image(image)
+		_texture_cache[url] = texture
+		callback.call(texture)
+	)
+
+	var err = http.request(url)
+	if err != OK:
+		push_error("[GameBridge] Failed to start image download: " + url)
+		http.queue_free()
+
+func _download_background_texture(url: String) -> void:
+	_download_image_texture(url, func(texture: Texture2D):
+		if is_instance_valid(_background_rect):
+			_background_rect.texture = texture
+			print("[BG] Applied texture ", texture.get_width(), "x", texture.get_height(), " to TextureRect with STRETCH_KEEP_ASPECT_COVERED")
+	)
+
+func _apply_background_texture(texture: Texture2D) -> void:
+	if not is_instance_valid(_background_rect) or texture == null:
+		return
+
+	_background_rect.texture = texture
+	print("[BG] Applied texture ", texture.get_width(), "x", texture.get_height(), " to TextureRect with STRETCH_KEEP_ASPECT_COVERED")
+
+func _setup_parallax_background(bg_data: Dictionary) -> void:
+	var layers_data = bg_data.get("layers", [])
+	if layers_data.is_empty():
+		return
+
+	# Map depth to z-index (further back = lower z-index)
+	var depth_to_z = {
+		"sky": -400,
+		"far": -300,
+		"mid": -200,
+		"near": -100
+	}
+
+	for layer_data in layers_data:
+		var layer_id = layer_data.get("id", "")
+		var image_url = layer_data.get("imageUrl", "")
+		var depth = layer_data.get("depth", "mid")
+		var parallax_factor = layer_data.get("parallaxFactor", 0.5)
+		var visible = layer_data.get("visible", true)
+
+		if not visible or image_url == "":
+			continue
+
+		var layer = CanvasLayer.new()
+		layer.layer = depth_to_z.get(depth, -200)
+		layer.name = "ParallaxLayer_" + layer_id
+		add_child(layer)
+
+		var rect = TextureRect.new()
+		rect.name = layer_id
+		rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		rect.anchor_left = 0.0
+		rect.anchor_top = 0.0
+		rect.anchor_right = 1.0
+		rect.anchor_bottom = 1.0
+		layer.add_child(rect)
+
+		_parallax_layers.append({"layer": layer, "rect": rect, "factor": parallax_factor, "url": image_url})
+
+		# Download texture for this layer
+		_download_image_texture(image_url, func(texture: Texture2D):
+			if is_instance_valid(rect):
+				rect.texture = texture
+				print("[BG] Applied parallax layer texture ", texture.get_width(), "x", texture.get_height())
+		)
+
+	print("[BG] Setup ", _parallax_layers.size(), " parallax layers")
+
+func _create_entity(entity_data: Dictionary) -> Node2D:
+	var entity_id = entity_data.get("id", "entity_" + str(randi()))
+	var template_id = entity_data.get("template", "")
+	var transform_data = entity_data.get("transform", {})
+
+	JavaScriptBridge.eval("console.log('[Godot] Creating entity: " + entity_id + " template: " + template_id + "')")
+
+	# Merge template with entity data
+	var merged = entity_data.duplicate(true)
+
+	if template_id != "" and templates.has(template_id):
+		var tmpl = templates[template_id]
+		# Template provides defaults, entity_data overrides
+		for key in tmpl:
+			if not merged.has(key):
+				merged[key] = tmpl[key]
+		# Merge components specifically
+		_merged_component(merged, tmpl, "physics")
+		_merged_component(merged, tmpl, "collider")
+		_merged_component(merged, tmpl, "visual")
+		_merged_component(merged, tmpl, "character")
+		_merged_component(merged, tmpl, "zone")
+
+	var physics_data = merged.get("physics", null)
+	var collider_data = merged.get("collider", null)
+	var visual_data = merged.get("visual", null)
+	var zone_data = merged.get("zone", null)
+	var entity_type = merged.get("type", "")
+
+	var node: Node2D = null
+
+	# Create physics body if physics component exists
+	if physics_data:
+		node = _create_physics_body(entity_id, physics_data, collider_data, transform_data)
+	# Create zone (legacy) if zone component exists
+	elif entity_type == "zone" and zone_data:
+		node = _create_zone_entity(entity_id, zone_data, transform_data)
+	# Create sensor-only entity if collider with isSensor exists
+	elif collider_data and collider_data.get("isSensor", false):
+		node = _create_sensor_entity(entity_id, collider_data, transform_data)
+	# Otherwise create plain Node2D
+	else:
+		node = Node2D.new()
+		node.name = entity_id
+
+	# Set transform (convert from game coords to Godot coords with Y-flip)
+	var game_pos = Vector2(transform_data.get("x", 0), transform_data.get("y", 0))
+	var godot_pos = game_to_godot_pos(game_pos)
+	var angle = transform_data.get("angle", 0)
+	node.position = godot_pos
+	node.rotation = -angle
+
+	# Add visual component
+	if visual_data:
+		print("[DEBUG] Adding visual for entity: ", entity_id, " type: ", visual_data.get("type", "unknown"), " keys: ", visual_data.keys())
+		# Apply smart defaults: visual inherits from collider
+		var resolved_visual = _resolve_visual_with_defaults(visual_data, collider_data)
+		print("[DEBUG] Resolved visual type: ", resolved_visual.get("type", "NO TYPE"))
+		_add_visual(node, resolved_visual)
+	elif collider_data:
+		# Auto-generate visual from collider if no visual specified
+		var auto_visual = _generate_visual_from_collider(collider_data)
+		_add_visual(node, auto_visual)
+	else:
+		print("[DEBUG] NO visual or collider for entity: ", entity_id)
+
+	# Add collider shape if collider exists (and not already added by physics)
+	if collider_data and not physics_data:
+		var collision = CollisionShape2D.new()
+		collision.shape = _create_collider_shape(collider_data)
+		node.add_child(collision)
+
+	# Add to scene
+	if game_root:
+		game_root.add_child(node)
+	else:
+		var main = get_tree().current_scene
+		if main:
+			main.add_child(node)
+
+	# Apply initial velocity if specified
+	if node is RigidBody2D and physics_data and physics_data.has("initialVelocity"):
+		var initial_vel = physics_data.initialVelocity
+		var game_vel = Vector2(initial_vel.get("x", 0), initial_vel.get("y", 0))
+		node.linear_velocity = game_to_godot_vec(game_vel)
+
+	# Set metadata for selectors
+	if template_id != "":
+		node.set_meta("template", template_id)
+	if merged.has("tags"):
+		node.set_meta("tags", merged.tags if merged.tags is Array else [])
+	if merged.has("behaviors"):
+		node.set_meta("behaviors", merged.behaviors if merged.behaviors is Array else [])
+
+	entities[entity_id] = node
+
+	# Track entity generation for pool safety
+	var generation = next_generation
+	next_generation += 1
+	entity_generations[entity_id] = generation
+
+	# Build snapshot for TypeScript
+	var snapshot_pos = godot_to_game_pos(node.position)
+	
+	# Get physics IDs if available
+	var body_id = body_id_map.get(entity_id, -1)
+	var collider_id = -1
+	if entity_shape_map.has(entity_id) and entity_shape_map[entity_id].size() > 0:
+		collider_id = entity_shape_map[entity_id][0]
+	
+	var snapshot = {
+		"entityId": entity_id,
+		"template": template_id,
+		"generation": generation,
+		"tags": merged.get("tags", []),
+		"transform": {
+			"x": snapshot_pos.x,
+			"y": snapshot_pos.y,
+			"angle": -node.rotation,
+			"scaleX": node.scale.x,
+			"scaleY": node.scale.y
+		}
+	}
+	
+	# Add physics IDs if they exist
+	if body_id >= 0:
+		snapshot["bodyId"] = {"value": body_id}
+	if collider_id >= 0:
+		snapshot["colliderId"] = {"value": collider_id}
+
+	# Emit signal and notify JS
+	entity_spawned.emit(entity_id, node)
+	_notify_js_entity_spawned(entity_id, snapshot)
+
+	return node
+
+func _create_physics_body(entity_id: String, physics_data: Dictionary, collider_data: Dictionary, transform_data: Dictionary) -> Node2D:
+	var body_type = physics_data.get("bodyType", "dynamic")
+	var node: Node2D
+
+	# Extract physics properties (needed outside match block)
+	var density = physics_data.get("density", 1.0)
+	var mass = physics_data.get("mass", 0.0)
+
+	match body_type:
+		"static":
+			node = StaticBody2D.new()
+		"kinematic":
+			var char_body = CharacterBody2D.new()
+			node = char_body
+		_:  # dynamic
+			var rigid = RigidBody2D.new()
+			rigid.gravity_scale = physics_data.get("gravityScale", 1.0)
+
+			# Enable contact monitoring for detailed collision data
+			rigid.contact_monitor = true
+			rigid.max_contacts_reported = 4
+
+			# Attach PhysicsBody script for _integrate_forces callback
+			rigid.set_script(load("res://scripts/PhysicsBody.gd"))
+
+			# Linear/angular damping
+			rigid.linear_damp = physics_data.get("linearDamping", 0.0)
+			rigid.angular_damp = physics_data.get("angularDamping", 0.0)
+
+			# Fixed rotation
+			if physics_data.get("fixedRotation", false):
+				rigid.lock_rotation = true
+
+			# CCD for fast-moving objects
+			if physics_data.get("ccd", false) or physics_data.get("bullet", false):
+				rigid.continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
+
+			# Connect collision signals (kept for backward compatibility)
+			rigid.body_entered.connect(_on_body_entered.bind(entity_id))
+
+			# Apply initial velocity if specified
+			var initial_vel = physics_data.get("initialVelocity", null)
+			if initial_vel != null:
+				var game_vel = Vector2(initial_vel.get("x", 0), initial_vel.get("y", 0))
+				rigid.linear_velocity = game_to_godot_vec(game_vel)
+
+			# Store user data and group if provided
+			if physics_data.has("userData"):
+				user_data[next_body_id] = physics_data.userData
+			if physics_data.has("group"):
+				body_groups[next_body_id] = physics_data.group
+
+			node = rigid
+
+	node.name = entity_id
+
+	# Add collision shape from collider data
+	if collider_data:
+		var collision = CollisionShape2D.new()
+		collision.shape = _create_collider_shape(collider_data)
+
+		# Apply collider material properties (if dynamic body)
+		if node is RigidBody2D:
+			var friction = collider_data.get("friction", 0.5)
+			var restitution = collider_data.get("restitution", 0.0)
+			var material = PhysicsMaterial.new()
+			material.friction = friction
+			material.bounce = restitution
+			node.physics_material_override = material
+
+			# Calculate mass if density provided and no direct mass
+			if mass <= 0 and density > 0:
+				var shape_type = collider_data.get("shape", "box")
+				var shape_area = 1.0
+				if shape_type == "box":
+					var w = collider_data.get("width", 1.0)
+					var h = collider_data.get("height", 1.0)
+					shape_area = w * h
+				elif shape_type == "circle":
+					var r = collider_data.get("radius", 0.5)
+					shape_area = PI * r * r
+				elif shape_type == "polygon":
+					var vertices = collider_data.get("vertices", [])
+					shape_area = _calculate_polygon_area(vertices)
+				node.mass = density * shape_area
+			elif mass > 0:
+				node.mass = mass
+
+		node.add_child(collision)
+
+	# Apply collision filtering
+	node.collision_layer = physics_data.get("categoryBits", 1)
+	node.collision_mask = physics_data.get("maskBits", 0xFFFFFFFF)
+
+	# Track body ID for Physics2D compatibility
+	body_id_map[entity_id] = next_body_id
+	body_id_reverse[next_body_id] = entity_id
+	next_body_id += 1
+
+	return node
+
+func _create_zone_entity(entity_id: String, zone_data: Dictionary, transform_data: Dictionary) -> Node2D:
+	"""Create a zone entity (Area2D) for collision detection without physics response.
+	Zones can have sprites and detect collisions but don't participate in physics simulation."""
+	var movement_type = zone_data.get("movement", "static")
+	var zone_shape = zone_data.get("shape", {"type": "box", "width": 1.0, "height": 1.0})
+
+	var area = Area2D.new()
+	area.name = entity_id
+
+	# Connect collision signals for zone detection
+	area.body_shape_entered.connect(_on_sensor_body_shape_entered.bind(entity_id))
+	area.body_shape_exited.connect(_on_sensor_body_shape_exited.bind(entity_id))
+
+	# Add collision shape
+	var collision = CollisionShape2D.new()
+	var shape_type = zone_shape.get("type", "box")
+
+	match shape_type:
+		"circle":
+			var circle = CircleShape2D.new()
+			circle.radius = zone_shape.get("radius", 0.5) * pixels_per_meter
+			collision.shape = circle
+		"polygon":
+			var polygon = ConvexPolygonShape2D.new()
+			var vertices = zone_shape.get("vertices", [])
+			var points: PackedVector2Array = []
+			for v in vertices:
+				points.append(Vector2(v.x * pixels_per_meter, -v.y * pixels_per_meter))
+			polygon.points = points
+			collision.shape = polygon
+		_:  # box
+			var rect = RectangleShape2D.new()
+			var w = zone_shape.get("width", 1.0) * pixels_per_meter
+			var h = zone_shape.get("height", 1.0) * pixels_per_meter
+			rect.size = Vector2(w, h)
+			collision.shape = rect
+
+	area.add_child(collision)
+
+	# Apply collision filtering
+	area.collision_layer = zone_data.get("categoryBits", 1)
+	area.collision_mask = zone_data.get("maskBits", 0xFFFFFFFF)
+
+	# Store zone metadata
+	area.set_meta("entity_type", "zone")
+	area.set_meta("zone_movement", movement_type)
+
+	# Track body ID for compatibility
+	body_id_map[entity_id] = next_body_id
+	body_id_reverse[next_body_id] = entity_id
+	next_body_id += 1
+
+	return area
+
+func _calculate_polygon_area(vertices: Array) -> float:
+	if vertices.size() < 3:
+		return 1.0
+	var area = 0.0
+	var n = vertices.size()
+	for i in range(n):
+		var j = (i + 1) % n
+		area += vertices[i].x * vertices[j].y
+		area -= vertices[j].x * vertices[i].y
+	return abs(area) / 2.0
+
+func _create_polygon_texture(width: int, height: int, color: Color, padding: int = 0) -> ImageTexture:
+	# Create texture with optional transparent padding for shader edge detection
+	var tex_w = width + padding * 2
+	var tex_h = height + padding * 2
+	var image = Image.create(tex_w, tex_h, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0, 0, 0, 0))  # Start transparent
+	# Fill the center region with the actual color
+	for y in range(padding, tex_h - padding):
+		for x in range(padding, tex_w - padding):
+			image.set_pixel(x, y, color)
+	return ImageTexture.create_from_image(image)
+
+func _create_shape(physics_data: Dictionary) -> Shape2D:
+	var shape_type = physics_data.get("shape", "box")
+	var shape: Shape2D
+
+	match shape_type:
+		"circle":
+			var circle = CircleShape2D.new()
+			circle.radius = physics_data.get("radius", 0.5) * pixels_per_meter
+			shape = circle
+		"polygon":
+			var polygon = ConvexPolygonShape2D.new()
+			var vertices = physics_data.get("vertices", [])
+			var points: PackedVector2Array = []
+			for v in vertices:
+				# Vertices are relative to entity center, just scale and flip Y
+				points.append(Vector2(v.x * pixels_per_meter, -v.y * pixels_per_meter))
+			polygon.points = points
+			shape = polygon
+		_:  # box
+			var rect = RectangleShape2D.new()
+			var w = physics_data.get("width", 1.0) * pixels_per_meter
+			var h = physics_data.get("height", 1.0) * pixels_per_meter
+			rect.size = Vector2(w, h)
+			shape = rect
+
+	return shape
+
+func _add_sprite(node: Node2D, sprite_data: Dictionary, physics_data: Dictionary, zone_data = null) -> void:
+	print("[DEBUG _add_sprite] Adding sprite type: ", sprite_data.get("type", "unknown"), " to node: ", node.name)
+	var sprite_type = sprite_data.get("type", "rect")
+	var color = Color.from_string(sprite_data.get("color", "#FF0000"), Color.RED)
+	var opacity = sprite_data.get("opacity", 1.0)
+	var z_index_val = sprite_data.get("zIndex", 0)
+
+	# Helper function to get dimension from sprite_data, physics_data, zone_data, or default
+	var _get_dimension = func(key: String, default_val: float):
+		if sprite_data.has(key):
+			return sprite_data.get(key)
+		elif physics_data and physics_data.has(key):
+			return physics_data.get(key)
+		elif zone_data and zone_data.has("shape") and zone_data.shape.has(key):
+			return zone_data.shape.get(key)
+		else:
+			return default_val
+
+	match sprite_type:
+		"rect":
+			var polygon = Polygon2D.new()
+			var w = _get_dimension.call("width", 1.0) * pixels_per_meter
+			var h = _get_dimension.call("height", 1.0) * pixels_per_meter
+			var hw = w / 2.0
+			var hh = h / 2.0
+			polygon.polygon = PackedVector2Array([
+				Vector2(-hw, -hh),
+				Vector2(hw, -hh),
+				Vector2(hw, hh),
+				Vector2(-hw, hh)
+			])
+			color.a = opacity
+			polygon.z_index = z_index_val
+			# Add texture for shader compatibility (WebGL needs valid TEXTURE_PIXEL_SIZE)
+			# Bake the color INTO the texture with padding for edge-detection shaders
+			var tex_size = max(int(w), int(h), 64)
+			var padding = 16  # Transparent padding for outline/glow shaders
+			polygon.texture = _create_polygon_texture(tex_size, tex_size, color, padding)
+			polygon.color = Color.WHITE  # Don't multiply - color is in texture
+			# UV maps to the padded texture (shape is offset by padding)
+			polygon.uv = PackedVector2Array([
+				Vector2(padding, padding),
+				Vector2(tex_size + padding, padding),
+				Vector2(tex_size + padding, tex_size + padding),
+				Vector2(padding, tex_size + padding)
+			])
+			node.add_child(polygon)
+		"circle":
+			var polygon = Polygon2D.new()
+			var radius = _get_dimension.call("radius", 0.5) * pixels_per_meter
+			var points: PackedVector2Array = []
+			var uvs: PackedVector2Array = []
+			var tex_size = max(int(radius * 2), 64)
+			var padding = 16  # Transparent padding for edge-detection shaders
+			for i in range(32):
+				var angle = i * TAU / 32
+				points.append(Vector2(cos(angle), sin(angle)) * radius)
+				# Map circle points to UV space, offset by padding
+				uvs.append(Vector2(
+					(cos(angle) + 1.0) * 0.5 * tex_size + padding,
+					(sin(angle) + 1.0) * 0.5 * tex_size + padding
+				))
+			polygon.polygon = points
+			color.a = opacity
+			polygon.z_index = z_index_val
+			# Add texture for shader compatibility
+			polygon.texture = _create_polygon_texture(tex_size, tex_size, color, padding)
+			polygon.color = Color.WHITE  # Don't multiply - color is in texture
+			polygon.uv = uvs
+			node.add_child(polygon)
+		"polygon":
+			var polygon = Polygon2D.new()
+			var vertices = sprite_data.get("vertices", [])
+			var points: PackedVector2Array = []
+			for v in vertices:
+				points.append(Vector2(v.x * pixels_per_meter, -v.y * pixels_per_meter))
+			polygon.polygon = points
+			color.a = opacity
+			polygon.z_index = z_index_val
+			# Add texture for shader compatibility
+			var poly_size = max_pt - min_pt
+			var tex_size = max(int(poly_size.x), int(poly_size.y), 64)
+			var padding = 16  # Transparent padding for edge-detection shaders
+			polygon.texture = _create_polygon_texture(tex_size, tex_size, color, padding)
+			polygon.color = Color.WHITE  # Don't multiply - color is in texture
+			var uvs: PackedVector2Array = []
+			for pt in points:
+				uvs.append(Vector2(
+					(pt.x - min_pt.x) / poly_size.x * tex_size + padding if poly_size.x > 0 else padding,
+					(pt.y - min_pt.y) / poly_size.y * tex_size + padding if poly_size.y > 0 else padding
+				))
+			polygon.uv = uvs
+			node.add_child(polygon)
+		"image":
+			_add_image_sprite(node, sprite_data, opacity, z_index_val)
+		"text":
+			_add_text_sprite(node, sprite_data, opacity, z_index_val)
+
+func _add_image_sprite(node: Node2D, sprite_data: Dictionary, opacity: float, z_index_val: int) -> void:
+	var sprite = Sprite2D.new()
+	var url = sprite_data.get("imageUrl", sprite_data.get("url", ""))
+	var width = sprite_data.get("imageWidth", sprite_data.get("width", 1.0))
+	var height = sprite_data.get("imageHeight", sprite_data.get("height", 1.0))
+	var asset_scale = sprite_data.get("scale", 1.0)
+	var offset_x = sprite_data.get("offsetX", 0.0)
+	var offset_y = sprite_data.get("offsetY", 0.0)
+
+	if url == "":
+		sprite.modulate.a = opacity
+		sprite.z_index = z_index_val
+		node.add_child(sprite)
+		return
+
+	if url.begins_with("res://"):
+		var texture = load(url)
+		if texture:
+			sprite.texture = texture
+			var local_sprite_data = {
+				"width": img_width,
+				"height": img_height,
+				"scale": asset_scale,
+				"offsetX": offset_x,
+				"offsetY": offset_y
+			}
+			_apply_sprite_scale(sprite, local_sprite_data, texture)
+	else:
+		var normalized_data = {
+			"width": img_width,
+			"height": img_height,
+			"scale": asset_scale,
+			"offsetX": offset_x,
+			"offsetY": offset_y
+		}
+		_queue_texture_download(sprite, url, normalized_data)
+
+	sprite.modulate.a = opacity
+	sprite.z_index = z_index_val
+	node.add_child(sprite)
+
+func _add_text_sprite(node: Node2D, sprite_data: Dictionary, opacity: float, z_index_val: int) -> void:
+	var label = Label.new()
+	label.text = sprite_data.get("text", "")
+
+	var font_size = int(sprite_data.get("fontSize", 16) * pixels_per_meter / 50.0)
+	label.add_theme_font_size_override("font_size", font_size)
+
+	var text_color = Color.from_string(sprite_data.get("color", "#FFFFFF"), Color.WHITE)
+	label.modulate = text_color
+	label.modulate.a = opacity
+	label.z_index = z_index_val
+	node.add_child(label)
+
+func _queue_texture_download(sprite: Sprite2D, url: String, sprite_data: Dictionary) -> void:
+	_download_image_texture(url, func(texture: Texture2D):
+		if is_instance_valid(sprite):
+			sprite.texture = texture
+			_apply_sprite_scale(sprite, sprite_data, texture)
+	)
+
+var _font_cache = {}
+
+func _queue_font_download(label: Label, url: String) -> void:
+	if _font_cache.has(url):
+		label.add_theme_font_override("font", _font_cache[url])
+		return
+
+	var http = HTTPRequest.new()
+	add_child(http)
+
+	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+			push_error("[GameBridge] Failed to download font: " + url + " (code: " + str(response_code) + ")")
+			return
+
+		var font = FontFile.new()
+		font.data = body
+		var err = OK
+		if err != OK:
+			push_error("[GameBridge] Failed to parse font: " + url)
+			return
+
+		_font_cache[url] = font
+
+		if is_instance_valid(label):
+			label.add_theme_font_override("font", font)
+	)
+
+	var err = http.request(url)
+	if err != OK:
+		push_error("[GameBridge] Failed to start font download: " + url)
+		http.queue_free()
+
+func _apply_sprite_scale(sprite: Sprite2D, sprite_data: Dictionary, texture: Texture2D) -> void:
+	if texture == null:
+		return
+
+	# Get asset placement values (scale multiplier, offsets)
+	var asset_scale = sprite_data.get("scale", 1.0)
+	var offset_x = sprite_data.get("offsetX", 0.0) * pixels_per_meter
+	var offset_y = sprite_data.get("offsetY", 0.0) * pixels_per_meter
+
+	var target_w = sprite_data.get("width", 1.0) * pixels_per_meter * asset_scale
+	var target_h = sprite_data.get("height", 1.0) * pixels_per_meter * asset_scale
+
+	# Check if this is a generated asset (square texture with content that preserves aspect ratio)
+	# Generated assets have content that fills 90% of the larger dimension, centered in canvas
+	var tex_w = texture.get_width()
+	var tex_h = texture.get_height()
+	var is_square_texture = abs(tex_w - tex_h) < 2  # Allow 1px tolerance
+
+	if is_square_texture and tex_w > 0:
+		# For generated square textures (e.g., 512x512), use uniform scaling
+		# The actual content fills 90% of canvas on the larger dimension
+		var canvas_size = float(tex_w)
+		var fill_ratio = 0.9
+		var physics_w = sprite_data.get("width", 1.0)
+		var physics_h = sprite_data.get("height", 1.0)
+		var aspect_ratio = physics_w / physics_h if physics_h > 0 else 1.0
+
+		# Calculate silhouette dimensions within the canvas (matches generation logic)
+		var silhouette_w: float
+		var silhouette_h: float
+		if aspect_ratio >= 1.0:
+			silhouette_w = canvas_size * fill_ratio
+			silhouette_h = silhouette_w / aspect_ratio
+		else:
+			silhouette_h = canvas_size * fill_ratio
+			silhouette_w = silhouette_h * aspect_ratio
+
+		# Uniform scale: map silhouette pixels to target world pixels
+		var uniform_scale = target_w / silhouette_w if silhouette_w > 0 else 1.0
+		sprite.scale = Vector2(uniform_scale, uniform_scale)
+	else:
+		# Non-square textures: use uniform scaling to preserve aspect ratio (contain behavior)
+		var scale_x = target_w / tex_w if tex_w > 0 else 1.0
+		var scale_y = target_h / tex_h if tex_h > 0 else 1.0
+		var uniform_scale = min(scale_x, scale_y)
+		sprite.scale = Vector2(uniform_scale, uniform_scale)
+
+	# Apply offset to position the sprite relative to physics body center
+	sprite.position = Vector2(offset_x, offset_y)
+
+func _hide_shape_children(node: Node2D) -> void:
+	"""Hide Polygon2D shape children when a texture sprite is applied.
+	This prevents double-rendering of shapes and textures."""
+	for child in node.get_children():
+		if child is Polygon2D:
+			child.visible = false
+
+func _apply_debug_visibility(node: Node2D) -> void:
+	"""Apply current debug mode visibility to a node's children.
+	When debug mode is ON: show Polygon2D shapes, hide Sprite2D textures.
+	When debug mode is OFF: hide Polygon2D shapes, show Sprite2D textures."""
+	for child in node.get_children():
+		if child is Polygon2D:
+			child.visible = _debug_show_shapes
+		elif child is Sprite2D:
+			child.visible = not _debug_show_shapes
+
+func _js_clear_texture_cache(args: Array) -> void:
+	if args.size() > 0 and str(args[0]) != "":
+		var url = str(args[0])
+		if _texture_cache.has(url):
+			_texture_cache.erase(url)
+	else:
+		_texture_cache.clear()
+
+var _preload_pending_count: int = 0
+var _preload_completed_count: int = 0
+var _preload_failed_count: int = 0
+var _js_preload_progress_callback: JavaScriptObject = null
+
+func _js_preload_textures(args: Array) -> void:
+	if args.size() < 1:
+		push_error("[GameBridge] preloadTextures requires at least 1 arg: urls (JSON string)")
+		return
+
+	var urls_json = str(args[0])
+	var urls = JSON.parse_string(urls_json)
+	if urls == null or not (urls is Array):
+		push_error("[GameBridge] preloadTextures: failed to parse URLs from JSON")
+		return
+	if urls.size() == 0:
+		if args.size() > 1 and args[1] != null:
+			var cb = args[1]
+			if cb is JavaScriptObject:
+				cb.call("call", null, 100, 0, 0)
+		return
+
+	# Store callback if provided
+	if args.size() > 1 and args[1] != null:
+		_js_preload_progress_callback = args[1]
+	else:
+		_js_preload_progress_callback = null
+
+	_preload_pending_count = urls.size()
+	_preload_completed_count = 0
+	_preload_failed_count = 0
+
+	for url_variant in urls:
+		var url = str(url_variant)
+		if url == "":
+			_on_preload_complete(url, false)
+			continue
+
+		# Skip if already cached
+		if _texture_cache.has(url):
+			_on_preload_complete(url, true)
+			continue
+
+		# Download the texture
+		var http = HTTPRequest.new()
+		add_child(http)
+
+		http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+			http.queue_free()
+			if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+				push_warning("[GameBridge] Failed to preload texture: " + url + " (result: " + str(result) + ", code: " + str(response_code) + ")")
+				_on_preload_complete(url, false)
+				return
+
+			if body.size() == 0:
+				push_warning("[GameBridge] Empty body for texture: " + url)
+				_on_preload_complete(url, false)
+				return
+
+			var image = Image.new()
+			var err = image.load_png_from_buffer(body)
+			if err != OK:
+				err = image.load_jpg_from_buffer(body)
+			if err != OK:
+				err = image.load_webp_from_buffer(body)
+			if err != OK:
+				push_warning("[GameBridge] All image formats failed for: " + url + " (size: " + str(body.size()) + ")")
+				_on_preload_complete(url, false)
+				return
+
+			var texture = ImageTexture.create_from_image(image)
+			_texture_cache[url] = texture
+			_on_preload_complete(url, true)
+		)
+
+		var err = http.request(url)
+		if err != OK:
+			push_warning("[GameBridge] Failed to start preload request: " + url)
+			http.queue_free()
+			_on_preload_complete(url, false)
+
+func _on_preload_complete(url: String, success: bool) -> void:
+	if success:
+		_preload_completed_count += 1
+	else:
+		_preload_failed_count += 1
+
+	var total_done = _preload_completed_count + _preload_failed_count
+	var percent = int((float(total_done) / float(_preload_pending_count)) * 100.0)
+
+	if _js_preload_progress_callback != null:
+		_js_preload_progress_callback.call("call", null, percent, _preload_completed_count, _preload_failed_count)
+	else:
+		print("[GameBridge] No progress callback registered!")
+
+func _js_set_debug_show_shapes(args: Array) -> void:
+	"""Toggle debug mode to show physics shapes or textures.
+	args[0]: boolean - true to show shapes, false to show textures"""
+	if args.size() < 1:
+		push_error("[GameBridge] setDebugShowShapes requires 1 arg: show_shapes (boolean)")
+		return
+
+	_debug_show_shapes = bool(args[0])
+
+	# Apply debug visibility to all existing entities
+	for entity_id in entities:
+		var node = entities[entity_id]
+		if node:
+			_apply_debug_visibility(node)
+
+func _js_set_debug_settings(args: Array) -> void:
+	print("[GameBridge] _js_set_debug_settings called with args: ", args)
+	if args.size() < 1:
+		push_error("[GameBridge] setDebugSettings requires 1 arg: settings JSON string")
+		return
+
+	var json_str = str(args[0])
+	print("[GameBridge] setDebugSettings JSON string: ", json_str)
+	var json = JSON.new()
+	var parse_result = json.parse(json_str)
+	if parse_result != OK:
+		push_error("[GameBridge] setDebugSettings: Invalid JSON: " + json_str)
+		return
+
+	var settings = json.data
+	print("[GameBridge] setDebugSettings parsed: ", settings)
+	if not settings is Dictionary:
+		push_error("[GameBridge] setDebugSettings: Expected object, got: " + str(typeof(settings)))
+		return
+
+	if _devtools_overlay:
+		print("[GameBridge] Forwarding to _devtools_overlay")
+		_devtools_overlay.set_settings(settings)
+	else:
+		push_error("[GameBridge] _devtools_overlay is null!")
+
+func clear_texture_cache(url: String = "") -> void:
+	if url != "":
+		if _texture_cache.has(url):
+			_texture_cache.erase(url)
+	else:
+		_texture_cache.clear()
+
+func _on_body_entered(body: Node, entity_id: String) -> void:
+	if body.name in entities:
+		collision_occurred.emit(entity_id, body.name, 0.0)
+		_notify_js_collision(entity_id, body.name, 0.0)
+
+		# Process destroy_on_collision behaviors directly in Godot
+		_process_collision_behaviors(entity_id, body.name)
+		_process_collision_behaviors(body.name, entity_id)
+
+func spawn_entity(template_id: String, x: float, y: float) -> Node2D:
+	return spawn_entity_with_id(template_id, x, y, template_id + "_" + str(randi()), "")
+
+func spawn_entity_with_id(template_id: String, x: float, y: float, entity_id: String, initial_velocity_json: String = "") -> Node2D:
+	if not templates.has(template_id):
+		push_error("[GameBridge] Template not found: " + template_id)
+		return null
+
+	var entity_data = {
+		"id": entity_id,
+		"template": template_id,
+		"transform": {"x": x, "y": y, "angle": 0}
+	}
+
+	# Parse and store initial velocity if provided
+	if initial_velocity_json != "":
+		var json = JSON.new()
+		var err = json.parse(initial_velocity_json)
+		if err == OK:
+			var vel_data = json.data as Dictionary
+			if vel_data.has("x") and vel_data.has("y"):
+				var game_vel = Vector2(vel_data["x"], vel_data["y"])
+				entity_data["_initial_velocity"] = game_to_godot_vec(game_vel)
+
+	return _create_entity(entity_data)
+
+func _process_collision_behaviors(entity_id: String, other_entity_id: String) -> void:
+	if not entities.has(entity_id) or not entities.has(other_entity_id):
+		return
+
+	var node = entities[entity_id]
+	var other_node = entities[other_entity_id]
+
+	if not node.has_meta("behaviors"):
+		return
+
+	var behaviors = node.get_meta("behaviors") as Array
+	var other_tags = other_node.get_meta("tags") if other_node.has_meta("tags") else []
+
+	for behavior in behaviors:
+		if behavior is Dictionary and behavior.get("type") == "destroy_on_collision":
+			var with_tags = behavior.get("withTags", []) as Array
+			var should_destroy = false
+
+			for tag in with_tags:
+				if tag in other_tags:
+					should_destroy = true
+					break
+
+			if should_destroy:
+				call_deferred("destroy_entity", entity_id)
+
+				if behavior.get("destroyOther", false):
+					call_deferred("destroy_entity", other_entity_id)
+				return
+
+func destroy_entity(entity_id: String) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		entities.erase(entity_id)
+		node.queue_free()
+		entity_destroyed.emit(entity_id)
+		_notify_js_destroy(entity_id)
+
+# Get entity node by ID
+func get_entity(entity_id: String) -> Node2D:
+	return entities.get(entity_id)
+
+func set_entity_image(entity_id: String, url: String, width: float, height: float) -> void:
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_image: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var sprite_data = {"width": width, "height": height}
+
+	if _texture_cache.has(url):
+		var texture = _texture_cache[url]
+		sprite.texture = texture
+		_apply_sprite_scale(sprite, sprite_data, texture)
+		_hide_shape_children(node)
+		return
+
+	var http = HTTPRequest.new()
+	add_child(http)
+
+	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+		http.queue_free()
+		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+			push_error("[GameBridge] Failed to download texture: " + url + " (code: " + str(response_code) + ")")
+			return
+
+		var image = Image.new()
+		var err = image.load_png_from_buffer(body)
+		if err != OK:
+			err = image.load_jpg_from_buffer(body)
+		if err != OK:
+			err = image.load_webp_from_buffer(body)
+		if err != OK:
+			push_error("[GameBridge] Failed to parse image: " + url)
+			return
+
+		var texture = ImageTexture.create_from_image(image)
+		_texture_cache[url] = texture
+
+		if is_instance_valid(sprite):
+			sprite.texture = texture
+			_apply_sprite_scale(sprite, sprite_data, texture)
+			var parent_node = sprite.get_parent()
+			if parent_node:
+				_hide_shape_children(parent_node)
+
+	)
+
+	var err = http.request(url)
+	if err != OK:
+		push_error("[GameBridge] Failed to start texture download: " + url)
+		http.queue_free()
+
+func _js_set_entity_image(args: Array) -> void:
+	if args.size() < 4:
+		push_error("[GameBridge] setEntityImage requires 4 args: entity_id, url, width, height")
+		return
+	set_entity_image(str(args[0]), str(args[1]), float(args[2]), float(args[3]))
+
+func set_entity_atlas_region(entity_id: String, atlas_url: String, region_dict: Dictionary, sprite_data: Dictionary = {}) -> void:
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_atlas_region: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	if _texture_cache.has(atlas_url):
+		_apply_atlas_region(sprite, _texture_cache[atlas_url], region_dict, sprite_data)
+		_hide_shape_children(node)
+	else:
+		_download_atlas_texture(sprite, atlas_url, region_dict, sprite_data)
+
+func _apply_atlas_region(sprite: Sprite2D, texture: Texture2D, region_dict: Dictionary, sprite_data: Dictionary = {}) -> void:
+	var atlas_texture = AtlasTexture.new()
+	atlas_texture.atlas = texture
+	atlas_texture.region = Rect2(
+		region_dict.get("x", 0),
+		region_dict.get("y", 0),
+		region_dict.get("w", 0),
+		region_dict.get("h", 0)
+	)
+	sprite.texture = atlas_texture
+	_apply_sprite_scale(sprite, sprite_data, atlas_texture)
+
+func _download_atlas_texture(sprite: Sprite2D, url: String, region_dict: Dictionary, sprite_data: Dictionary = {}) -> void:
+	_download_image_texture(url, func(texture: Texture2D):
+		if is_instance_valid(sprite):
+			_apply_atlas_region(sprite, texture, region_dict, sprite_data)
+			var node = sprite.get_parent()
+			if node:
+				_hide_shape_children(node)
+	)
+
+func _js_set_entity_atlas_region(args: Array) -> void:
+	if args.size() < 8:
+		push_error("[GameBridge] setEntityAtlasRegion requires 8 args: entity_id, atlas_url, x, y, w, h, width, height")
+		return
+	var entity_id = str(args[0])
+	var atlas_url = str(args[1])
+	var region_dict = {
+		"x": float(args[2]),
+		"y": float(args[3]),
+		"w": float(args[4]),
+		"h": float(args[5])
+	}
+	var sprite_data = {
+		"width": float(args[6]),
+		"height": float(args[7])
+	}
+	set_entity_atlas_region(entity_id, atlas_url, region_dict, sprite_data)
+
+func set_entity_image_base64(entity_id: String, base64_data: String, width: float, height: float) -> void:
+
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_image_base64: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var raw_data = Marshalls.base64_to_raw(base64_data)
+	if raw_data.is_empty():
+		push_error("[GameBridge] set_entity_image_base64: failed to decode base64")
+		return
+
+	var image = Image.new()
+	var err = image.load_png_from_buffer(raw_data)
+	if err != OK:
+		err = image.load_jpg_from_buffer(raw_data)
+	if err != OK:
+		err = image.load_webp_from_buffer(raw_data)
+	if err != OK:
+		push_error("[GameBridge] set_entity_image_base64: failed to parse image data")
+		return
+
+	var texture = ImageTexture.create_from_image(image)
+	sprite.texture = texture
+	var sprite_data = {"width": width, "height": height}
+	_apply_sprite_scale(sprite, sprite_data, texture)
+
+
+func set_entity_image_from_file(entity_id: String, file_path: String, width: float, height: float) -> void:
+
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_image_from_file: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var image = Image.new()
+	var err = image.load(file_path)
+	if err != OK:
+		push_error("[GameBridge] set_entity_image_from_file: failed to load image from " + file_path + " error=" + str(err))
+		return
+
+	var texture = ImageTexture.create_from_image(image)
+	sprite.texture = texture
+	var sprite_data = {"width": width, "height": height}
+	_apply_sprite_scale(sprite, sprite_data, texture)
+
+
+func set_entity_atlas_region_from_file(entity_id: String, file_path: String, region_x: float, region_y: float, region_w: float, region_h: float, sprite_width: float, spriteHeight: float) -> void:
+	if not entities.has(entity_id):
+		push_error("[GameBridge] set_entity_atlas_region_from_file: entity not found: " + entity_id)
+		return
+
+	var node = entities[entity_id]
+	var sprite: Sprite2D = null
+
+	for child in node.get_children():
+		if child is Sprite2D:
+			sprite = child
+			break
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var image = Image.new()
+	var err = image.load(file_path)
+	if err != OK:
+		push_error("[GameBridge] set_entity_atlas_region_from_file: failed to load image from " + file_path + " error=" + str(err))
+		return
+
+	var texture = ImageTexture.create_from_image(image)
+	_texture_cache[file_path] = texture
+
+	var region_dict = {"x": region_x, "y": region_y, "w": region_w, "h": region_h}
+	var sprite_data = {"width": sprite_width, "height": spriteHeight}
+	_apply_atlas_region(sprite, texture, region_dict, sprite_data)
+	_hide_shape_children(node)
+
+
+# Get all entity transforms (for syncing)
+func get_all_transforms() -> Dictionary:
+	var result = {}
+	for entity_id in entities:
+		var node = entities[entity_id]
+		var game_pos = godot_to_game_pos(node.position)
+		result[entity_id] = {
+			"x": game_pos.x,
+			"y": game_pos.y,
+			"angle": -node.rotation  # Flip angle back to game convention
+		}
+	return result
+
+# Clear all entities
+func clear_game() -> void:
+	# Clear joints first
+	for joint_id in joints:
+		var joint_node = joints[joint_id]
+		if is_instance_valid(joint_node):
+			joint_node.queue_free()
+	joints.clear()
+
+	# Clear entities (including Area2D sensors stored in entities dict)
+	for entity_id in entities:
+		var node = entities[entity_id]
+		if is_instance_valid(node):
+			node.queue_free()
+	entities.clear()
+	templates.clear()
+
+	# Reset ID tracking
+	body_id_map.clear()
+	body_id_reverse.clear()
+	collider_id_map.clear()
+	entity_shape_map.clear()
+	user_data.clear()
+	body_groups.clear()
+
+# =============================================================================
+# TRANSFORM CONTROL
+# =============================================================================
+
+func _js_set_transform(args: Array) -> void:
+	if args.size() < 4:
+		return
+	var entity_id = str(args[0])
+	var game_pos = Vector2(float(args[1]), float(args[2]))
+	var godot_pos = game_to_godot_pos(game_pos)
+	var godot_angle = -float(args[3])  # Flip angle for Y-up convention
+
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.position = godot_pos
+			node.rotation = godot_angle
+		elif node is RigidBody2D:
+			# For RigidBody2D, we need to use physics server or _integrate_forces
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(godot_angle, godot_pos))
+
+func set_transform(entity_id: String, x: float, y: float, angle: float) -> void:
+	var godot_pos = game_to_godot_pos(Vector2(x, y))
+	var godot_angle = -angle  # Flip angle for Y-up convention
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.position = godot_pos
+			node.rotation = godot_angle
+		elif node is RigidBody2D:
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(godot_angle, godot_pos))
+
+func _js_set_position(args: Array) -> void:
+	if args.size() < 3:
+		return
+	var entity_id = str(args[0])
+	var godot_pos = game_to_godot_pos(Vector2(float(args[1]), float(args[2])))
+
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.position = godot_pos
+		elif node is RigidBody2D:
+			var current_angle = node.rotation
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(current_angle, godot_pos))
+		else:
+			node.position = godot_pos
+
+func set_position(entity_id: String, x: float, y: float) -> void:
+	var godot_pos = game_to_godot_pos(Vector2(x, y))
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.position = godot_pos
+		elif node is RigidBody2D:
+			var current_angle = node.rotation
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(current_angle, godot_pos))
+		else:
+			# For Area2D and other node types, just set position directly
+			node.position = godot_pos
+
+func _js_set_rotation(args: Array) -> void:
+	if args.size() < 2:
+		return
+	var entity_id = str(args[0])
+	var angle = float(args[1])
+
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.rotation = angle
+		elif node is RigidBody2D:
+			var current_pos = node.position
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(angle, current_pos))
+		else:
+			node.rotation = angle
+
+func set_rotation(entity_id: String, angle: float) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is CharacterBody2D:
+			node.rotation = angle
+		elif node is RigidBody2D:
+			var current_pos = node.position
+			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(angle, current_pos))
+		else:
+			node.rotation = angle
+
+func _js_set_scale(args: Array) -> void:
+	if args.size() < 3:
+		return
+	var entity_id = str(args[0])
+	var scale_x = float(args[1])
+	var scale_y = float(args[2])
+	set_scale_entity(entity_id, scale_x, scale_y)
+
+func set_scale_entity(entity_id: String, scale_x: float, scale_y: float) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		# Find the sprite child to scale (scaling physics bodies directly causes issues)
+		var sprite = _find_sprite_in_entity(node)
+		if sprite:
+			sprite.scale = Vector2(scale_x, scale_y)
+
+func _find_sprite_in_entity(node: Node) -> CanvasItem:
+	if node is Sprite2D or node is AnimatedSprite2D:
+		return node
+	for child in node.get_children():
+		if child is Sprite2D or child is AnimatedSprite2D:
+			return child
+		var found = _find_sprite_in_entity(child)
+		if found:
+			return found
+	return null
+
+func _js_get_linear_velocity(args: Array) -> Variant:
+	if args.size() < 1:
+		return null
+	var entity_id = str(args[0])
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			var game_vel = godot_to_game_vec(node.linear_velocity)
+			return {"x": game_vel.x, "y": game_vel.y}
+		elif node is Area2D and node.has_meta("velocity"):
+			var godot_vel = node.get_meta("velocity") as Vector2
+			var game_vel = godot_to_game_vec(godot_vel)
+			return {"x": game_vel.x, "y": game_vel.y}
+	return null
+
+func _js_get_angular_velocity(args: Array) -> Variant:
+	if args.size() < 1:
+		return null
+	var entity_id = str(args[0])
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			return node.angular_velocity
+	return null
+
+func _js_apply_impulse(args: Array) -> void:
+	if args.size() < 3:
+		return
+	var entity_id = str(args[0])
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			var game_impulse = Vector2(float(args[1]), float(args[2]))
+			node.apply_central_impulse(game_to_godot_vec(game_impulse))
+
+func apply_impulse(entity_id: String, ix: float, iy: float) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			node.apply_central_impulse(game_to_godot_vec(Vector2(ix, iy)))
+
+func _js_apply_force(args: Array) -> void:
+	if args.size() < 3:
+		return
+	var entity_id = str(args[0])
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			var game_force = Vector2(float(args[1]), float(args[2]))
+			node.apply_central_force(game_to_godot_vec(game_force))
+
+func apply_force(entity_id: String, fx: float, fy: float) -> void:
+	if entities.has(entity_id):
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			node.apply_central_force(game_to_godot_vec(Vector2(fx, fy)))
+
+func send_input(input_type: String, x: float, y: float, entity_id: String = "") -> void:
+	if input_type == "tap":
+		var hit_entity_id: Variant = null
+		var godot_point = game_to_godot_pos(Vector2(x, y))
+		var space = get_viewport().find_world_2d().direct_space_state
+		if space:
+			var query = PhysicsPointQueryParameters2D.new()
+			query.position = godot_point
+			query.collision_mask = 0xFFFFFFFF
+			query.collide_with_bodies = true
+			query.collide_with_areas = true
+			var results = space.intersect_point(query, 1)
+			if results.size() > 0:
+				var collider = results[0].collider
+				if collider and collider.name in entities:
+					hit_entity_id = collider.name
+		_queue_event("input", {"type": input_type, "x": x, "y": y, "entityId": hit_entity_id})
+		_notify_js_input_event(input_type, x, y, hit_entity_id)
+
+func _js_send_input(args: Array) -> void:
+	if args.size() < 4:
+		return
+	var input_type = str(args[0])
+	var x = float(args[1])
+	var y = float(args[2])
+	var provided_entity_id = str(args[3]) if args[3] != null else ""
+
+	if input_type == "tap":
+		var hit_entity_id: Variant = null
+
+		var godot_point = game_to_godot_pos(Vector2(x, y))
+		var space = get_viewport().find_world_2d().direct_space_state
+		if space:
+			var query = PhysicsPointQueryParameters2D.new()
+			query.position = godot_point
+			query.collision_mask = 0xFFFFFFFF
+			query.collide_with_bodies = true
+			query.collide_with_areas = true
+
+			var results = space.intersect_point(query, 1)
+			if results.size() > 0:
+				var collider = results[0].collider
+				if collider and collider.name in entities:
+					hit_entity_id = collider.name
+
+		_notify_js_input_event(input_type, x, y, hit_entity_id)
+
+func _js_on_input_event(args: Array) -> void:
+	if args.size() >= 1:
+		_js_input_event_callback = args[0]
+
+func _notify_js_input_event(input_type: String, x: float, y: float, entity_id: Variant) -> void:
+	if _js_input_event_callback != null:
+		var data = {
+			"type": input_type,
+			"x": x,
+			"y": y,
+			"entityId": entity_id
+		}
+		var json_str = JSON.stringify(data)
+		_js_input_event_callback.call("call", null, json_str)
+
+func _js_on_collision(args: Array) -> void:
+	if args.size() >= 1:
+		_js_collision_callback = args[0]
+
+func _js_on_entity_destroyed(args: Array) -> void:
+	if args.size() >= 1:
+		_js_destroy_callback = args[0]
+
+func _js_on_entity_spawned(args: Array) -> void:
+	if args.size() >= 1:
+		_js_entity_spawned_callback = args[0]
+
+func _notify_js_collision(entity_a: String, entity_b: String, impulse: float) -> void:
+	if _js_collision_callback != null:
+		# Legacy format for backward compatibility
+		_js_collision_callback.call("call", null, entity_a, entity_b, impulse)
+	else:
+		# Native path: queue event for polling
+		_queue_event("collision", {"entityA": entity_a, "entityB": entity_b, "impulse": impulse})
+
+func _notify_js_collision_detailed(collision_data: Dictionary) -> void:
+	if _js_collision_callback != null:
+		# New detailed format: { entityA, entityB, contacts: [{point, normal, normalImpulse, tangentImpulse}] }
+		var json_str = JSON.stringify(collision_data)
+		# Use legacy format which works - pass entityA, entityB, impulse separately
+		var entity_a = collision_data.get("entityA", "")
+		var entity_b = collision_data.get("entityB", "")
+		var total_impulse = 0.0
+		for contact in collision_data.get("contacts", []):
+			total_impulse += abs(contact.get("normalImpulse", 0.0))
+		_js_collision_callback.call("call", null, entity_a, entity_b, total_impulse)
+	else:
+		# Native path: queue event for polling
+		_queue_event("collision_detailed", collision_data)
+
+func _handle_collision_manifold(body_node: RigidBody2D, state: PhysicsDirectBodyState2D) -> void:
+	var contact_count = state.get_contact_count()
+	if contact_count == 0:
+		return
+
+	var entity_a = body_node.name
+	if not entities.has(entity_a):
+		return
+
+	# Group contacts by colliding body
+	var contacts_by_body: Dictionary = {}
+
+	for i in range(contact_count):
+		var collider = state.get_contact_collider_object(i)
+		if collider == null or not (collider is Node2D):
+			continue
+
+		var entity_b = collider.name
+		if not entities.has(entity_b):
+			continue
+
+		# Get contact data and convert to game coordinates
+		var godot_contact_pos = state.get_contact_local_position(i)
+		var game_contact_pos = godot_to_game_pos(godot_contact_pos)
+		var godot_normal = state.get_contact_local_normal(i)
+		var game_normal = Vector2(godot_normal.x, -godot_normal.y)  # Flip Y for normal
+		var impulse_vec = state.get_contact_impulse(i)
+		var normal_impulse = impulse_vec.dot(godot_normal)
+		var tangent = Vector2(-godot_normal.y, godot_normal.x)
+		var tangent_impulse = impulse_vec.dot(tangent)
+
+		# Only report if impulse is significant (avoid spam for resting contacts)
+		if abs(normal_impulse) < IMPULSE_THRESHOLD and abs(tangent_impulse) < IMPULSE_THRESHOLD:
+			continue
+
+		if not contacts_by_body.has(entity_b):
+			contacts_by_body[entity_b] = []
+
+		contacts_by_body[entity_b].append({
+			"point": {"x": game_contact_pos.x, "y": game_contact_pos.y},
+			"normal": {"x": game_normal.x, "y": game_normal.y},
+			"normalImpulse": normal_impulse / pixels_per_meter,
+			"tangentImpulse": tangent_impulse / pixels_per_meter
+		})
+
+	# Emit collision events for each colliding body
+	for entity_b in contacts_by_body:
+		var contacts = contacts_by_body[entity_b]
+
+		# Calculate total impulse for this collision pair
+		var total_impulse = 0.0
+		for contact in contacts:
+			total_impulse += abs(contact["normalImpulse"])
+
+		var collision_data = {
+			"entityA": entity_a,
+			"entityB": entity_b,
+			"contacts": contacts
+		}
+
+		_notify_js_collision_detailed(collision_data)
+		collision_occurred.emit(entity_a, entity_b, total_impulse)
+
+		# Process destroy_on_collision behaviors directly in Godot
+		_process_collision_behaviors(entity_a, entity_b)
+		_process_collision_behaviors(entity_b, entity_a)
+
+func _notify_js_destroy(entity_id: String) -> void:
+	if _js_destroy_callback != null:
+		_js_destroy_callback.call("call", null, entity_id)
+	else:
+		# Native path: queue event for polling
+		_queue_event("destroy", {"entityId": entity_id})
+
+func _notify_js_entity_spawned(entity_id: String, snapshot: Dictionary) -> void:
+	if _js_entity_spawned_callback != null:
+		var json_str = JSON.stringify(snapshot)
+		_js_entity_spawned_callback.call("call", null, json_str)
+	else:
+		# Native path: queue event for polling
+		_queue_event("entity_spawned", snapshot)
+
+func _setup_splat_map() -> void:
+	if _splat_enabled:
+		return
+
+	_splat_viewport = SubViewport.new()
+	_splat_viewport.name = "SplatMap"
+	_splat_viewport.size = Vector2(512, 512) # Low res is fine for splat map
+	_splat_viewport.transparent_bg = false
+	_splat_viewport.render_target_update_mode = SubViewport.UPDATE_WHEN_VISIBLE
+	_splat_viewport.render_target_clear_mode = SubViewport.CLEAR_MODE_ALWAYS
+	add_child(_splat_viewport)
+
+	_splat_canvas = CanvasLayer.new()
+	_splat_viewport.add_child(_splat_canvas)
+
+	# Background black (no force)
+	var bg = ColorRect.new()
+	bg.color = Color.BLACK
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_splat_canvas.add_child(bg)
+
+	_splat_enabled = true
+
+func enable_splat_map() -> void:
+	if not _splat_enabled:
+		_setup_splat_map()
+
+func disable_splat_map() -> void:
+	if _splat_enabled and _splat_viewport:
+		for proxy in _splat_proxies.values():
+			proxy.queue_free()
+		_splat_proxies.clear()
+		_splat_viewport.queue_free()
+		_splat_viewport = null
+		_splat_canvas = null
+		_splat_enabled = false
+
+func get_splat_texture() -> Texture2D:
+	return _splat_viewport.get_texture()
+
+func _process(_delta: float) -> void:
+	# Update splat proxies (only if enabled)
+	if _splat_enabled and _splat_viewport and _splat_canvas:
+		for entity_id in entities:
+			var entity = entities[entity_id]
+
+			# Skip stationary entities (optimization for 100+ entities)
+			var vel = Vector2.ZERO
+			if entity is RigidBody2D:
+				vel = entity.linear_velocity
+			elif entity is CharacterBody2D:
+				vel = entity.velocity
+			elif entity is Area2D and entity.has_meta("velocity"):
+				vel = entity.get_meta("velocity")
+
+			# Cull low-velocity entities (reduce updates)
+			if vel.length_squared() < 0.01 and _splat_proxies.has(entity_id):
+				continue  # Skip update for stationary entities
+
+			if not _splat_proxies.has(entity_id):
+				var proxy = SPLAT_PROXY_SCENE.instantiate()
+				_splat_canvas.add_child(proxy)
+				_splat_proxies[entity_id] = proxy
+
+			var proxy = _splat_proxies[entity_id]
+
+			# Sync position (map game world to viewport)
+			if camera:
+				var screen_pos = entity.get_global_transform_with_canvas().origin
+				# Map screen pos to splat viewport
+				var viewport_size = get_viewport().get_visible_rect().size
+				var uv = screen_pos / viewport_size
+				proxy.position = uv * Vector2(_splat_viewport.size)
+
+			# Encode Velocity
+			# R = X vel, G = Y vel, B = Presence
+			# Normalize velocity (-20..20 -> 0..1)
+			var r = clamp((vel.x / 40.0) + 0.5, 0.0, 1.0)
+			var g = clamp((-vel.y / 40.0) + 0.5, 0.0, 1.0) # Flip Y for texture space
+			proxy.modulate = Color(r, g, 1.0, 1.0)
+
+			# Scale proxy based on mass/size if possible, default to fixed size for now
+			proxy.scale = Vector2(0.5, 0.5)
+
+		# Clean up dead proxies
+		var dead_ids = []
+		for id in _splat_proxies:
+			if not entities.has(id):
+				dead_ids.append(id)
+		for id in dead_ids:
+			_splat_proxies[id].queue_free()
+			_splat_proxies.erase(id)
+
+	if ws:
+		ws.poll()
+		var state = ws.get_ready_state()
+		if state == WebSocketPeer.STATE_OPEN:
+			while ws.get_available_packet_count() > 0:
+				var packet = ws.get_packet()
+				_on_ws_message(packet.get_string_from_utf8())
+		elif state == WebSocketPeer.STATE_CLOSED:
+			ws = null
+
+# Connect to WebSocket server
+func connect_to_server(url: String = "") -> void:
+	if url != "":
+		ws_url = url
+	ws = WebSocketPeer.new()
+	var err = ws.connect_to_url(ws_url)
+	if err != OK:
+		ws = null
+
+func _on_ws_message(message: String) -> void:
+	var json = JSON.new()
+	var err = json.parse(message)
+	if err == OK:
+		var data = json.data
+		if data.has("type"):
+			match data.type:
+				"load_game":
+					load_game_json(JSON.stringify(data.game))
+				"spawn":
+					spawn_entity(data.template, data.x, data.y)
+
+# Main entry point: Load a game from JSON string
+func load_game_json(json_string: String) -> bool:
+	var json = JSON.new()
+	var err = json.parse(json_string)
+	if err != OK:
+		push_error("[GameBridge] JSON parse error: " + json.get_error_message())
+		return false
+
+	game_data = json.data
+
+	# Clear existing game
+	clear_game()
+
+	# Setup world
+	_setup_world(game_data.get("world", {}))
+
+	# Setup background
+	_setup_background(game_data.get("background", {}))
+
+	# Load templates
+	templates = game_data.get("templates", {})
+	print("[DEBUG] Loaded templates: ", templates.keys())
+	for tmpl_id in templates:
+		var tmpl = templates[tmpl_id]
+		if tmpl.has("visual"):
+			print("[DEBUG] Template ", tmpl_id, " visual.type: ", tmpl.visual.get("type", "NO TYPE"))
+
+	# Create entities
+	var entities_data = game_data.get("entities", [])
+	for entity_data in entities_data:
+		_create_entity(entity_data)
+
+	game_loaded.emit(game_data)
+	return true
+
+func load_custom_scene(scene_path: String) -> bool:
+	if not ResourceLoader.exists(scene_path):
+		push_error("[GameBridge] Scene not found: " + scene_path)
+		return false
+
+	var scene = load(scene_path)
+	if not scene:
+		push_error("[GameBridge] Failed to load scene: " + scene_path)
+		return false
+
+	if game_root:
+		for child in game_root.get_children():
+			child.queue_free()
+
+		var instance = scene.instantiate()
+		game_root.add_child(instance)
+		return true
+	else:
+		push_error("[GameBridge] game_root not set")
+		return false
+
+func _setup_world(world_data: Dictionary) -> void:
+	pixels_per_meter = world_data.get("pixelsPerMeter", 50.0)
+
+	var gravity = world_data.get("gravity", {"x": 0, "y": -9.8})
+	var gravity_vec = game_to_godot_vec(Vector2(gravity.x, gravity.y))
+
+	PhysicsServer2D.area_set_param(
+		get_viewport().find_world_2d().space,
+		PhysicsServer2D.AREA_PARAM_GRAVITY,
+		gravity_vec.length()
+	)
+	PhysicsServer2D.area_set_param(
+		get_viewport().find_world_2d().space,
+		PhysicsServer2D.AREA_PARAM_GRAVITY_VECTOR,
+		gravity_vec.normalized()
+	)
+
+	if camera:
+		camera.global_position = Vector2.ZERO
+
+var _background_layer: CanvasLayer = null
+var _background_rect: TextureRect = null
+var _parallax_layers: Array = []
+
+func _setup_background(bg_data: Dictionary) -> void:
+	# Clean up existing background
+	if _background_layer:
+		_background_layer.queue_free()
+		_background_layer = null
+		_background_rect = null
+
+	for layer in _parallax_layers:
+		if is_instance_valid(layer):
+			layer.queue_free()
+	_parallax_layers.clear()
+
+	if bg_data.is_empty():
+		return
+
+	var bg_type = bg_data.get("type", "")
+
+	if bg_type == "parallax":
+		_setup_parallax_background(bg_data)
+		return
+
+	if bg_type != "static":
+		return
+
+	var image_url = bg_data.get("imageUrl", "")
+	var color = bg_data.get("color", "")
+
+	_background_layer = CanvasLayer.new()
+	_background_layer.layer = -100
+	_background_layer.name = "BackgroundLayer"
+	add_child(_background_layer)
+
+	_background_rect = TextureRect.new()
+	_background_rect.name = "Background"
+	_background_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	

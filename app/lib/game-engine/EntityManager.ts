@@ -20,6 +20,8 @@ export interface EntitySpawnedSnapshot {
   generation: number;
   tags: string[];
   transform: { x: number; y: number; angle: number; scaleX: number; scaleY: number };
+  bodyId?: { value: number };
+  colliderId?: { value: number };
 }
 
 /**
@@ -183,8 +185,8 @@ export class EntityManager {
       layer: template?.layer ?? 0,
       visible: true,
       active: true,
-      bodyId: null,
-      colliderId: null,
+      bodyId: snapshot.bodyId ?? null,
+      colliderId: snapshot.colliderId ?? null,
       conditionalBehaviors: template?.conditionalBehaviors ?? [],
       activeConditionalGroupId: -1,
     };
