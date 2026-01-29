@@ -62,8 +62,17 @@ config.server = {
   port: 8085,
   enhanceMiddleware: (middleware) => {
     return (req, res, next) => {
+      // COOP/COEP headers required for SharedArrayBuffer (Godot 4.5 + Rapier)
       res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
       res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+      
+      // Disable caching for Godot assets (.pck, .wasm) to ensure fresh loads during development
+      if (req.url && (req.url.endsWith('.pck') || req.url.endsWith('.wasm'))) {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+      }
+      
       return middleware(req, res, next);
     };
   },
@@ -77,6 +86,20 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
     return {
       type: "sourceFile",
       filePath: umdPath,
+    };
+  }
+
+  // Handle quickjs-emscripten subpath exports (Metro doesn't support package.json exports)
+  const quickjsMatch = moduleName.match(/^@jitl\/(quickjs-wasmfile-(?:debug|release)-(?:sync|asyncify))\/emscripten-module$/);
+  if (quickjsMatch) {
+    const variant = quickjsMatch[1];
+    const quickjsPath = path.resolve(
+      monorepoRoot,
+      `node_modules/.pnpm/@jitl+${variant}@0.31.0/node_modules/@jitl/${variant}/dist/emscripten-module.cjs`
+    );
+    return {
+      type: "sourceFile",
+      filePath: quickjsPath,
     };
   }
 

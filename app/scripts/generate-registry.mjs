@@ -309,6 +309,10 @@ function scanForGames(sourceDir, extensions, exclude) {
 
       const stat = statSync(fullPath);
       if (stat.isDirectory()) {
+        // Skip archive folder - games moved to archive should not be included
+        if (entry === 'archive') {
+          continue;
+        }
         if (isBundleDirectory(fullPath)) {
           gameEntries.push({
             type: 'bundle',
