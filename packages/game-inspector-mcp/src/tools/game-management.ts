@@ -1,9 +1,74 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { Page } from "playwright";
 import type { GameInspectorState, WindowWithBridge } from "../types.js";
 import { DEFAULT_BASE_URL, DEFAULT_TIMEOUT } from "../types.js";
 import { normalizeGameName, buildGameUrl, buildExampleUrl, ensurePage, waitForDebugBridge, waitForGameReady, clearLogs, getRecentLogs, queryGodot, querySlopcade } from "../utils.js";
 import { getAvailableGames, getAvailableExamples, isValidGame, isValidExample, type GameInfo } from "../registry.js";
+
+interface PageError {
+  type: string;
+  message: string;
+  hint: string;
+}
+
+async function detectPageError(page: Page): Promise<PageError | null> {
+  return page.evaluate(() => {
+    const bodyText = document.body?.innerText || "";
+    const html = document.documentElement?.innerHTML || "";
+    
+    if (bodyText.includes("Server Error") || html.includes("Server Error")) {
+      const errorMatch = bodyText.match(/Unable to resolve module[^\n]+/);
+      const errorMessage = errorMatch?.[0] || bodyText.slice(0, 500);
+      return {
+        type: "metro-server-error",
+        message: errorMessage,
+        hint: "Fix the module resolution error in your code",
+      };
+    }
+    
+    if (bodyText.includes("Unhandled Runtime Error") || html.includes("Unhandled Runtime Error")) {
+      const errorMatch = bodyText.match(/Error:[^\n]+/);
+      const errorMessage = errorMatch?.[0] || bodyText.slice(0, 500);
+      return {
+        type: "runtime-error",
+        message: errorMessage,
+        hint: "Fix the runtime error in your code",
+      };
+    }
+    
+    if (bodyText.includes("Build Error") || html.includes("Build Error")) {
+      const errorMatch = bodyText.match(/(?:Error|Failed)[^\n]+/);
+      const errorMessage = errorMatch?.[0] || bodyText.slice(0, 500);
+      return {
+        type: "build-error",
+        message: errorMessage,
+        hint: "Fix the build error in your code",
+      };
+    }
+    
+    if (bodyText.includes("Module not found") || html.includes("Module not found")) {
+      const errorMatch = bodyText.match(/Module not found[^\n]+/);
+      const errorMessage = errorMatch?.[0] || bodyText.slice(0, 500);
+      return {
+        type: "module-not-found",
+        message: errorMessage,
+        hint: "Check that the imported module exists and the path is correct",
+      };
+    }
+    
+    if (html.includes('id="__next_error__"') || html.includes("nextjs-portal")) {
+      const errorText = document.querySelector('[id*="error"]')?.textContent || bodyText.slice(0, 500);
+      return {
+        type: "nextjs-error",
+        message: errorText,
+        hint: "Fix the Next.js error shown on the page",
+      };
+    }
+    
+    return null;
+  });
+}
 
 export function registerGameManagementTools(server: McpServer, state: GameInspectorState) {
   server.tool(
@@ -110,9 +175,48 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
       clearLogs(state);
       
       await page.goto(url);
+      
+      const pageError = await detectPageError(page);
+      if (pageError) {
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify({
+                success: false,
+                error: "Page failed to load - error detected",
+                errorType: pageError.type,
+                errorMessage: pageError.message,
+                url,
+                hint: pageError.hint,
+              }),
+            },
+          ],
+        };
+      }
+      
       const bridgeReady = await waitForDebugBridge(page, timeout);
 
       if (!bridgeReady) {
+        const latePageError = await detectPageError(page);
+        if (latePageError) {
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: JSON.stringify({
+                  success: false,
+                  error: "Page failed to load - error detected",
+                  errorType: latePageError.type,
+                  errorMessage: latePageError.message,
+                  url,
+                  hint: latePageError.hint,
+                }),
+              },
+            ],
+          };
+        }
+        
         return {
           content: [
             {

@@ -10,17 +10,19 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch",
     "start": "node dist/index.js",
+    "start:http": "node dist/http-server.js",
     "clean": "rm -rf dist"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "express": "^5.2.1",
     "playwright": "^1.49.1",
     "sharp": "^0.33.5",
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/node": "^22.10.5",
     "typescript": "~5.9.3"
   }
