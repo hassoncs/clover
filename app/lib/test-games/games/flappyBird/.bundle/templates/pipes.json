@@ -1,0 +1,68 @@
+[
+  {
+    "id": "pipeTop",
+    "tags": ["pipe", "pipe-top"],
+    "visual": {
+      "type": "image",
+      "asset": "pipeTop",
+      "width": { "const": "PIPE_WIDTH" },
+      "height": { "const": "PIPE_HEIGHT" }
+    },
+    "physics": {
+      "bodyType": "kinematic",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": { "const": "PIPE_WIDTH" },
+      "height": { "const": "PIPE_HEIGHT" },
+      "friction": 0,
+      "restitution": 0
+    },
+    "behaviors": [
+      {
+        "type": "move",
+        "direction": "left",
+        "speed": { "const": "PIPE_SPEED" }
+      },
+      {
+        "type": "timer",
+        "duration": { "const": "PIPE_LIFETIME" },
+        "action": "destroy"
+      }
+    ]
+  },
+  {
+    "id": "pipeBottom",
+    "tags": ["pipe", "pipe-bottom"],
+    "visual": {
+      "type": "image",
+      "asset": "pipeBottom",
+      "width": { "const": "PIPE_WIDTH" },
+      "height": { "const": "PIPE_HEIGHT" }
+    },
+    "physics": {
+      "bodyType": "kinematic",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": { "const": "PIPE_WIDTH" },
+      "height": { "const": "PIPE_HEIGHT" },
+      "friction": 0,
+      "restitution": 0
+    },
+    "behaviors": [
+      {
+        "type": "move",
+        "direction": "left",
+        "speed": { "const": "PIPE_SPEED" }
+      },
+      {
+        "type": "timer",
+        "duration": { "const": "PIPE_LIFETIME" },
+        "action": "destroy"
+      }
+    ]
+  }
+]

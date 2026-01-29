@@ -1,0 +1,33 @@
+[
+  {
+    "id": "wall",
+    "tags": ["wall"],
+    "visual": {
+      "type": "rect",
+      "width": { "const": "WALL_THICKNESS" },
+      "height": { "const": "WORLD_HEIGHT" },
+      "color": "#333366"
+    },
+    "physics": {
+      "bodyType": "static",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": { "const": "WALL_THICKNESS" },
+      "height": { "const": "WORLD_HEIGHT" },
+      "friction": 0,
+      "restitution": 1
+    }
+  },
+  {
+    "id": "drain",
+    "tags": ["drain"],
+    "collider": {
+      "shape": "box",
+      "width": { "const": "WORLD_WIDTH" },
+      "height": 2,
+      "isSensor": true
+    }
+  }
+]

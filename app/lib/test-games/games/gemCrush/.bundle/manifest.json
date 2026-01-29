@@ -1,0 +1,60 @@
+{
+  "name": "gem-crush",
+  "version": "1.0.0",
+  "title": "Gem Crush",
+  "description": "Match 3 or more gems to clear them!",
+  "instructions": "Tap two adjacent gems to swap them. Match 3 or more of the same color to clear!",
+  "titleHeroImageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/gem-crush/title_hero.png",
+  "world": {
+    "gravity": { "x": 0, "y": 0 },
+    "pixelsPerMeter": { "const": "PIXELS_PER_METER" },
+    "bounds": { "width": { "const": "WORLD_WIDTH" }, "height": { "const": "WORLD_HEIGHT" } }
+  },
+  "background": {
+    "type": "static",
+    "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/gem-crush/background.png"
+  },
+  "camera": {
+    "type": "fixed",
+    "zoom": 1
+  },
+  "ui": {
+    "showScore": true,
+    "showLives": false,
+    "showTimer": true,
+    "timerCountdown": true,
+    "backgroundColor": "#2d1b4e"
+  },
+  "match3": {
+    "gridId": "gem_grid",
+    "rows": { "const": "GRID_ROWS" },
+    "cols": { "const": "GRID_COLS" },
+    "cellSize": { "const": "CELL_SIZE" },
+    "pieceTemplates": [
+      "gem_red",
+      "gem_blue",
+      "gem_green",
+      "gem_yellow",
+      "gem_purple"
+    ],
+    "minMatch": 3,
+    "swapDuration": 0.15,
+    "fallDuration": 0.1,
+    "clearDelay": 0.1,
+    "variantSheet": {
+      "enabled": true,
+      "groupId": "default",
+      "atlasUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/test-gem-variants/gem-variants.png",
+      "metadataUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/test-gem-variants/gem-variants.json",
+      "layout": { "columns": 4, "rows": 2, "cellWidth": 64, "cellHeight": 64 }
+    }
+  },
+  "winCondition": {
+    "type": "score",
+    "score": 1000
+  },
+  "loseCondition": {
+    "type": "time_up",
+    "time": 120
+  }
+}

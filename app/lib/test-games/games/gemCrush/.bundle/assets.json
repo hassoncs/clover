@@ -1,0 +1,10 @@
+{
+  "background": {
+    "path": "https://slopcade-api.hassoncs.workers.dev/assets/generated/gem-crush/background.png",
+    "type": "image"
+  },
+  "titleHero": {
+    "path": "https://slopcade-api.hassoncs.workers.dev/assets/generated/gem-crush/title_hero.png",
+    "type": "image"
+  }
+}

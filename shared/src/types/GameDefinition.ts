@@ -509,6 +509,13 @@ export interface GameDefinition {
    * Games opt-in to persistence by providing this configuration.
    */
   persistence?: import('./progress').PersistenceConfig<unknown>;
+
+  /**
+   * Constants that can be referenced throughout the bundle using { const: "NAME" } syntax.
+   * The compiler resolves these at bundle compile time.
+   * Example: { GRAVITY: 9.8, JUMP_FORCE: 15 }
+   */
+  constants?: Record<string, number | string | boolean>;
 }
 
 export const DEFAULT_WORLD_CONFIG: WorldConfig = {

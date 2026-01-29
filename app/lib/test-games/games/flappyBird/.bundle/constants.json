@@ -1,0 +1,21 @@
+{
+  "ASSET_BASE": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird",
+  "WORLD_WIDTH": 12,
+  "WORLD_HEIGHT": 16,
+  "HALF_W": 6,
+  "HALF_H": 8,
+  "BIRD_RADIUS": 0.3,
+  "BIRD_DIAMETER": 0.6,
+  "PIPE_WIDTH": 1.2,
+  "PIPE_HEIGHT": 6,
+  "PIPE_GAP": 3.0,
+  "PIPE_SPEED": 15,
+  "GROUND_HEIGHT": 1.5,
+  "SPAWN_X": 8,
+  "FLAP_VELOCITY": 7,
+  "GRAVITY_Y": -15,
+  "PIXELS_PER_METER": 50,
+  "PIPE_SPAWN_INTERVAL": 2.5,
+  "PIPE_LIFETIME": 2,
+  "WORLD_WIDTH_PLUS_4": 16
+}

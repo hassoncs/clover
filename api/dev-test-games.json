@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-01-29T03:17:21.211Z",
+  "generatedAt": "2026-01-29T18:18:18.443Z",
   "games": [
     {
       "id": "angryBurns",
@@ -509,10 +509,9 @@
       "description": "Sort colored balls into tubes - each tube should contain only one color",
       "definition": {
         "metadata": {
-          "id": "test-ball-sort",
+          "id": "ball-sort",
           "title": "Ball Sort",
           "description": "Sort colored balls into tubes - each tube should contain only one color",
-          "instructions": "Tap a tube to pick up the top ball, then tap another tube to drop it. You can only drop on the same color or an empty tube.",
           "version": "1.1.0"
         },
         "world": {
@@ -526,123 +525,10 @@
             "height": 25.6
           }
         },
-        "background": {
-          "type": "static",
-          "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/background.png"
-        },
         "camera": {
           "type": "fixed",
           "zoom": 1
         },
-        "input": {
-          "debugInputs": true
-        },
-        "variables": {
-          "currentLevel": 1,
-          "heldBallColor": -1,
-          "sourceTubeIndex": -1,
-          "heldBallId": "",
-          "moveCount": 0,
-          "startTime": 0,
-          "tube0_count": 3,
-          "tube1_count": 2,
-          "tube2_count": 4,
-          "tube3_count": 3,
-          "tube4_count": 1,
-          "tube5_count": 3,
-          "tube0_topColor": 0,
-          "tube1_topColor": 1,
-          "tube2_topColor": 0,
-          "tube3_topColor": 3,
-          "tube4_topColor": 1,
-          "tube5_topColor": 1
-        },
-        "containers": [
-          {
-            "id": "tube-0",
-            "type": "stack",
-            "capacity": 4,
-            "layout": {
-              "direction": "vertical",
-              "spacing": 1.32,
-              "basePosition": {
-                "x": -5.485714285714286,
-                "y": -3.1999999999999993
-              },
-              "anchor": "bottom"
-            }
-          },
-          {
-            "id": "tube-1",
-            "type": "stack",
-            "capacity": 4,
-            "layout": {
-              "direction": "vertical",
-              "spacing": 1.32,
-              "basePosition": {
-                "x": -3.291428571428572,
-                "y": -3.1999999999999993
-              },
-              "anchor": "bottom"
-            }
-          },
-          {
-            "id": "tube-2",
-            "type": "stack",
-            "capacity": 4,
-            "layout": {
-              "direction": "vertical",
-              "spacing": 1.32,
-              "basePosition": {
-                "x": -1.0971428571428579,
-                "y": -3.1999999999999993
-              },
-              "anchor": "bottom"
-            }
-          },
-          {
-            "id": "tube-3",
-            "type": "stack",
-            "capacity": 4,
-            "layout": {
-              "direction": "vertical",
-              "spacing": 1.32,
-              "basePosition": {
-                "x": 1.097142857142856,
-                "y": -3.1999999999999993
-              },
-              "anchor": "bottom"
-            }
-          },
-          {
-            "id": "tube-4",
-            "type": "stack",
-            "capacity": 4,
-            "layout": {
-              "direction": "vertical",
-              "spacing": 1.32,
-              "basePosition": {
-                "x": 3.29142857142857,
-                "y": -3.1999999999999993
-              },
-              "anchor": "bottom"
-            }
-          },
-          {
-            "id": "tube-5",
-            "type": "stack",
-            "capacity": 4,
-            "layout": {
-              "direction": "vertical",
-              "spacing": 1.32,
-              "basePosition": {
-                "x": 5.485714285714284,
-                "y": -3.1999999999999993
-              },
-              "anchor": "bottom"
-            }
-          }
-        ],
         "ui": {
           "showScore": false,
           "showLives": false,
@@ -662,119 +548,7 @@
             }
           ]
         },
-        "stateMachines": [
-          {
-            "id": "gameFlow",
-            "initialState": "idle",
-            "states": [
-              {
-                "id": "idle"
-              },
-              {
-                "id": "holding"
-              }
-            ],
-            "transitions": [
-              {
-                "id": "pickup",
-                "from": "idle",
-                "to": "holding",
-                "trigger": {
-                  "type": "event",
-                  "eventName": "ball_picked"
-                }
-              },
-              {
-                "id": "drop",
-                "from": "holding",
-                "to": "idle",
-                "trigger": {
-                  "type": "event",
-                  "eventName": "ball_dropped"
-                }
-              },
-              {
-                "id": "cancel",
-                "from": "holding",
-                "to": "idle",
-                "trigger": {
-                  "type": "event",
-                  "eventName": "pickup_cancelled"
-                }
-              }
-            ]
-          }
-        ],
-        "winCondition": {
-          "type": "custom"
-        },
         "templates": {
-          "tubeWall": {
-            "id": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "visual": {
-              "type": "image",
-              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/tubeWall.png",
-              "imageWidth": 0.18,
-              "imageHeight": 6
-            },
-            "physics": {
-              "bodyType": "static",
-              "density": 0
-            },
-            "collider": {
-              "shape": "box",
-              "width": 0.18,
-              "height": 6,
-              "friction": 0,
-              "restitution": 0
-            }
-          },
-          "tubeBottom": {
-            "id": "tubeBottom",
-            "tags": [
-              "tube-bottom"
-            ],
-            "visual": {
-              "type": "image",
-              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/tubeBottom.png",
-              "imageWidth": 1.68,
-              "imageHeight": 0.18
-            },
-            "physics": {
-              "bodyType": "static",
-              "density": 0
-            },
-            "collider": {
-              "shape": "box",
-              "width": 1.68,
-              "height": 0.18,
-              "friction": 0,
-              "restitution": 0
-            }
-          },
-          "tubeSensor": {
-            "id": "tubeSensor",
-            "tags": [
-              "tube"
-            ],
-            "visual": {
-              "type": "rect",
-              "width": 1.3199999999999998,
-              "height": 6,
-              "color": "#00000022"
-            },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.3199999999999998,
-                "height": 6
-              }
-            }
-          },
           "ball0": {
             "id": "ball0",
             "tags": [
@@ -784,18 +558,13 @@
             "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball0.png",
-              "width": 1.2,
-              "height": 1.2
-            },
-            "physics": {
-              "bodyType": "dynamic",
-              "density": 1
+              "imageWidth": 0.6,
+              "imageHeight": 0.6
             },
             "collider": {
               "shape": "circle",
               "radius": 0.6,
-              "friction": 0.3,
-              "restitution": 0.2
+              "isSensor": true
             },
             "conditionalBehaviors": [
               {
@@ -856,18 +625,13 @@
             "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball1.png",
-              "width": 1.2,
-              "height": 1.2
-            },
-            "physics": {
-              "bodyType": "dynamic",
-              "density": 1
+              "imageWidth": 0.6,
+              "imageHeight": 0.6
             },
             "collider": {
               "shape": "circle",
               "radius": 0.6,
-              "friction": 0.3,
-              "restitution": 0.2
+              "isSensor": true
             },
             "conditionalBehaviors": [
               {
@@ -928,18 +692,13 @@
             "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball2.png",
-              "width": 1.2,
-              "height": 1.2
-            },
-            "physics": {
-              "bodyType": "dynamic",
-              "density": 1
+              "imageWidth": 0.6,
+              "imageHeight": 0.6
             },
             "collider": {
               "shape": "circle",
               "radius": 0.6,
-              "friction": 0.3,
-              "restitution": 0.2
+              "isSensor": true
             },
             "conditionalBehaviors": [
               {
@@ -1000,18 +759,13 @@
             "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball3.png",
-              "width": 1.2,
-              "height": 1.2
-            },
-            "physics": {
-              "bodyType": "dynamic",
-              "density": 1
+              "imageWidth": 0.6,
+              "imageHeight": 0.6
             },
             "collider": {
               "shape": "circle",
               "radius": 0.6,
-              "friction": 0.3,
-              "restitution": 0.2
+              "isSensor": true
             },
             "conditionalBehaviors": [
               {
@@ -1071,19 +825,14 @@
             ],
             "visual": {
               "type": "image",
-              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball0.png",
-              "width": 1.2,
-              "height": 1.2
-            },
-            "physics": {
-              "bodyType": "dynamic",
-              "density": 1
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball4.png",
+              "imageWidth": 0.6,
+              "imageHeight": 0.6
             },
             "collider": {
               "shape": "circle",
               "radius": 0.6,
-              "friction": 0.3,
-              "restitution": 0.2
+              "isSensor": true
             },
             "conditionalBehaviors": [
               {
@@ -1143,19 +892,14 @@
             ],
             "visual": {
               "type": "image",
-              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball1.png",
-              "width": 1.2,
-              "height": 1.2
-            },
-            "physics": {
-              "bodyType": "dynamic",
-              "density": 1
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball5.png",
+              "imageWidth": 0.6,
+              "imageHeight": 0.6
             },
             "collider": {
               "shape": "circle",
               "radius": 0.6,
-              "friction": 0.3,
-              "restitution": 0.2
+              "isSensor": true
             },
             "conditionalBehaviors": [
               {
@@ -1215,19 +959,14 @@
             ],
             "visual": {
               "type": "image",
-              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball2.png",
-              "width": 1.2,
-              "height": 1.2
-            },
-            "physics": {
-              "bodyType": "dynamic",
-              "density": 1
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball6.png",
+              "imageWidth": 0.6,
+              "imageHeight": 0.6
             },
             "collider": {
               "shape": "circle",
               "radius": 0.6,
-              "friction": 0.3,
-              "restitution": 0.2
+              "isSensor": true
             },
             "conditionalBehaviors": [
               {
@@ -1287,19 +1026,14 @@
             ],
             "visual": {
               "type": "image",
-              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball3.png",
-              "width": 1.2,
-              "height": 1.2
-            },
-            "physics": {
-              "bodyType": "dynamic",
-              "density": 1
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball7.png",
+              "imageWidth": 0.6,
+              "imageHeight": 0.6
             },
             "collider": {
               "shape": "circle",
               "radius": 0.6,
-              "friction": 0.3,
-              "restitution": 0.2
+              "isSensor": true
             },
             "conditionalBehaviors": [
               {
@@ -1351,6 +1085,64 @@
               }
             ]
           },
+          "tubeWall": {
+            "id": "tubeWall",
+            "tags": [
+              "tube-wall"
+            ],
+            "visual": {
+              "type": "image",
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/tubeWall.png",
+              "imageWidth": 0.18,
+              "imageHeight": 6
+            },
+            "collider": {
+              "shape": "box",
+              "width": 0.18,
+              "height": 6,
+              "isSensor": true
+            }
+          },
+          "tubeBottom": {
+            "id": "tubeBottom",
+            "tags": [
+              "tube-bottom"
+            ],
+            "visual": {
+              "type": "image",
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/tubeBottom.png",
+              "imageWidth": 1.68,
+              "imageHeight": 0.18
+            },
+            "collider": {
+              "shape": "box",
+              "width": 1.68,
+              "height": 0.18,
+              "isSensor": true
+            }
+          },
+          "tubeSensor": {
+            "id": "tubeSensor",
+            "tags": [
+              "tube"
+            ],
+            "visual": {
+              "type": "rect",
+              "width": {
+                "expr": "TUBE_WIDTH - TUBE_WALL_THICKNESS * 2"
+              },
+              "height": 6,
+              "color": "#00000022"
+            },
+            "collider": {
+              "shape": "box",
+              "width": {
+                "expr": "TUBE_WIDTH - TUBE_WALL_THICKNESS * 2"
+              },
+              "height": 6,
+              "isSensor": true
+            }
+          },
           "heldBallIndicator": {
             "id": "heldBallIndicator",
             "tags": [
@@ -1359,386 +1151,23 @@
             "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/heldBallIndicator.png",
-              "imageWidth": 1.44,
-              "imageHeight": 1.44
-            },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.72
+              "imageWidth": {
+                "expr": "BALL_RADIUS * 2.4"
               },
-              "movement": "kinematic"
+              "imageHeight": {
+                "expr": "BALL_RADIUS * 2.4"
+              }
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": {
+                "expr": "BALL_RADIUS * 1.2"
+              },
+              "isSensor": true
             }
           }
         },
         "entities": [
-          {
-            "id": "tube-0-left",
-            "name": "Tube 0 Left Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": -6.235714285714286,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-0-right",
-            "name": "Tube 0 Right Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": -4.735714285714286,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-0-bottom",
-            "name": "Tube 0 Bottom",
-            "template": "tubeBottom",
-            "tags": [
-              "tube-bottom"
-            ],
-            "transform": {
-              "x": -5.485714285714286,
-              "y": -6.109999999999999,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-0-sensor",
-            "name": "Tube 0 Sensor",
-            "template": "tubeSensor",
-            "tags": [
-              "tube",
-              "tube-0"
-            ],
-            "transform": {
-              "x": -5.485714285714286,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-1-left",
-            "name": "Tube 1 Left Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": -4.041428571428572,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-1-right",
-            "name": "Tube 1 Right Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": -2.541428571428572,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-1-bottom",
-            "name": "Tube 1 Bottom",
-            "template": "tubeBottom",
-            "tags": [
-              "tube-bottom"
-            ],
-            "transform": {
-              "x": -3.291428571428572,
-              "y": -6.109999999999999,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-1-sensor",
-            "name": "Tube 1 Sensor",
-            "template": "tubeSensor",
-            "tags": [
-              "tube",
-              "tube-1"
-            ],
-            "transform": {
-              "x": -3.291428571428572,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-2-left",
-            "name": "Tube 2 Left Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": -1.8471428571428576,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-2-right",
-            "name": "Tube 2 Right Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": -0.34714285714285786,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-2-bottom",
-            "name": "Tube 2 Bottom",
-            "template": "tubeBottom",
-            "tags": [
-              "tube-bottom"
-            ],
-            "transform": {
-              "x": -1.0971428571428579,
-              "y": -6.109999999999999,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-2-sensor",
-            "name": "Tube 2 Sensor",
-            "template": "tubeSensor",
-            "tags": [
-              "tube",
-              "tube-2"
-            ],
-            "transform": {
-              "x": -1.0971428571428579,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-3-left",
-            "name": "Tube 3 Left Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": 0.3471428571428561,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-3-right",
-            "name": "Tube 3 Right Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": 1.8471428571428559,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-3-bottom",
-            "name": "Tube 3 Bottom",
-            "template": "tubeBottom",
-            "tags": [
-              "tube-bottom"
-            ],
-            "transform": {
-              "x": 1.097142857142856,
-              "y": -6.109999999999999,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-3-sensor",
-            "name": "Tube 3 Sensor",
-            "template": "tubeSensor",
-            "tags": [
-              "tube",
-              "tube-3"
-            ],
-            "transform": {
-              "x": 1.097142857142856,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-4-left",
-            "name": "Tube 4 Left Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": 2.54142857142857,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-4-right",
-            "name": "Tube 4 Right Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": 4.04142857142857,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-4-bottom",
-            "name": "Tube 4 Bottom",
-            "template": "tubeBottom",
-            "tags": [
-              "tube-bottom"
-            ],
-            "transform": {
-              "x": 3.29142857142857,
-              "y": -6.109999999999999,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-4-sensor",
-            "name": "Tube 4 Sensor",
-            "template": "tubeSensor",
-            "tags": [
-              "tube",
-              "tube-4"
-            ],
-            "transform": {
-              "x": 3.29142857142857,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-5-left",
-            "name": "Tube 5 Left Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": 4.735714285714284,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-5-right",
-            "name": "Tube 5 Right Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": 6.235714285714284,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-5-bottom",
-            "name": "Tube 5 Bottom",
-            "template": "tubeBottom",
-            "tags": [
-              "tube-bottom"
-            ],
-            "transform": {
-              "x": 5.485714285714284,
-              "y": -6.109999999999999,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-5-sensor",
-            "name": "Tube 5 Sensor",
-            "template": "tubeSensor",
-            "tags": [
-              "tube",
-              "tube-5"
-            ],
-            "transform": {
-              "x": 5.485714285714284,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
           {
             "id": "ball-0",
             "name": "Ball 0",
@@ -1749,8 +1178,8 @@
               "in-container-tube-0"
             ],
             "transform": {
-              "x": -5.485714285714286,
-              "y": -5.419999999999998,
+              "x": -4.2,
+              "y": -5.42,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1759,15 +1188,15 @@
           {
             "id": "ball-1",
             "name": "Ball 1",
-            "template": "ball0",
+            "template": "ball1",
             "tags": [
               "ball",
-              "color-0",
+              "color-1",
               "in-container-tube-0"
             ],
             "transform": {
-              "x": -5.485714285714286,
-              "y": -4.099999999999998,
+              "x": -4.2,
+              "y": -4.1,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1776,15 +1205,15 @@
           {
             "id": "ball-2",
             "name": "Ball 2",
-            "template": "ball0",
+            "template": "ball2",
             "tags": [
               "ball",
-              "color-0",
+              "color-2",
               "in-container-tube-0"
             ],
             "transform": {
-              "x": -5.485714285714286,
-              "y": -2.7799999999999976,
+              "x": -4.2,
+              "y": -2.78,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1793,15 +1222,15 @@
           {
             "id": "ball-3",
             "name": "Ball 3",
-            "template": "ball1",
+            "template": "ball3",
             "tags": [
               "ball",
-              "color-1",
-              "in-container-tube-1"
+              "color-3",
+              "in-container-tube-0"
             ],
             "transform": {
-              "x": -3.291428571428572,
-              "y": -5.419999999999998,
+              "x": -4.2,
+              "y": -1.46,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1817,8 +1246,8 @@
               "in-container-tube-1"
             ],
             "transform": {
-              "x": -3.291428571428572,
-              "y": -4.099999999999998,
+              "x": -2.04,
+              "y": -5.42,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1831,11 +1260,11 @@
             "tags": [
               "ball",
               "color-2",
-              "in-container-tube-2"
+              "in-container-tube-1"
             ],
             "transform": {
-              "x": -1.0971428571428579,
-              "y": -5.419999999999998,
+              "x": -2.04,
+              "y": -4.1,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1844,15 +1273,15 @@
           {
             "id": "ball-6",
             "name": "Ball 6",
-            "template": "ball2",
+            "template": "ball3",
             "tags": [
               "ball",
-              "color-2",
-              "in-container-tube-2"
+              "color-3",
+              "in-container-tube-1"
             ],
             "transform": {
-              "x": -1.0971428571428579,
-              "y": -4.099999999999998,
+              "x": -2.04,
+              "y": -2.78,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1861,15 +1290,15 @@
           {
             "id": "ball-7",
             "name": "Ball 7",
-            "template": "ball2",
+            "template": "ball0",
             "tags": [
               "ball",
-              "color-2",
-              "in-container-tube-2"
+              "color-0",
+              "in-container-tube-1"
             ],
             "transform": {
-              "x": -1.0971428571428579,
-              "y": -2.7799999999999976,
+              "x": -2.04,
+              "y": -1.46,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1878,15 +1307,15 @@
           {
             "id": "ball-8",
             "name": "Ball 8",
-            "template": "ball0",
+            "template": "ball2",
             "tags": [
               "ball",
-              "color-0",
+              "color-2",
               "in-container-tube-2"
             ],
             "transform": {
-              "x": -1.0971428571428579,
-              "y": -1.4599999999999973,
+              "x": 0.12,
+              "y": -5.42,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1899,11 +1328,11 @@
             "tags": [
               "ball",
               "color-3",
-              "in-container-tube-3"
+              "in-container-tube-2"
             ],
             "transform": {
-              "x": 1.097142857142856,
-              "y": -5.419999999999998,
+              "x": 0.12,
+              "y": -4.1,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1912,15 +1341,15 @@
           {
             "id": "ball-10",
             "name": "Ball 10",
-            "template": "ball3",
+            "template": "ball0",
             "tags": [
               "ball",
-              "color-3",
-              "in-container-tube-3"
+              "color-0",
+              "in-container-tube-2"
             ],
             "transform": {
-              "x": 1.097142857142856,
-              "y": -4.099999999999998,
+              "x": 0.12,
+              "y": -2.78,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1929,15 +1358,15 @@
           {
             "id": "ball-11",
             "name": "Ball 11",
-            "template": "ball3",
+            "template": "ball1",
             "tags": [
               "ball",
-              "color-3",
-              "in-container-tube-3"
+              "color-1",
+              "in-container-tube-2"
             ],
             "transform": {
-              "x": 1.097142857142856,
-              "y": -2.7799999999999976,
+              "x": 0.12,
+              "y": -1.46,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1946,15 +1375,15 @@
           {
             "id": "ball-12",
             "name": "Ball 12",
-            "template": "ball1",
+            "template": "ball3",
             "tags": [
               "ball",
-              "color-1",
-              "in-container-tube-4"
+              "color-3",
+              "in-container-tube-3"
             ],
             "transform": {
-              "x": 3.29142857142857,
-              "y": -5.419999999999998,
+              "x": 2.28,
+              "y": -5.42,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1963,15 +1392,15 @@
           {
             "id": "ball-13",
             "name": "Ball 13",
-            "template": "ball2",
+            "template": "ball0",
             "tags": [
               "ball",
-              "color-2",
-              "in-container-tube-5"
+              "color-0",
+              "in-container-tube-3"
             ],
             "transform": {
-              "x": 5.485714285714284,
-              "y": -5.419999999999998,
+              "x": 2.28,
+              "y": -4.1,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1980,15 +1409,15 @@
           {
             "id": "ball-14",
             "name": "Ball 14",
-            "template": "ball3",
+            "template": "ball1",
             "tags": [
               "ball",
-              "color-3",
-              "in-container-tube-5"
+              "color-1",
+              "in-container-tube-3"
             ],
             "transform": {
-              "x": 5.485714285714284,
-              "y": -4.099999999999998,
+              "x": 2.28,
+              "y": -2.78,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1997,15 +1426,381 @@
           {
             "id": "ball-15",
             "name": "Ball 15",
-            "template": "ball1",
+            "template": "ball2",
             "tags": [
               "ball",
-              "color-1",
-              "in-container-tube-5"
+              "color-2",
+              "in-container-tube-3"
             ],
             "transform": {
-              "x": 5.485714285714284,
-              "y": -2.7799999999999976,
+              "x": 2.28,
+              "y": -1.46,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-0-left",
+            "name": "Tube 0 Left Wall",
+            "template": "tubeWall",
+            "tags": [
+              "tube-wall"
+            ],
+            "transform": {
+              "x": -5.04,
+              "y": -3.2,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-0-right",
+            "name": "Tube 0 Right Wall",
+            "template": "tubeWall",
+            "tags": [
+              "tube-wall"
+            ],
+            "transform": {
+              "x": -3.36,
+              "y": -3.2,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-0-bottom",
+            "name": "Tube 0 Bottom",
+            "template": "tubeBottom",
+            "tags": [
+              "tube-bottom"
+            ],
+            "transform": {
+              "x": -4.2,
+              "y": -0.12,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-0-sensor",
+            "name": "Tube 0 Sensor",
+            "template": "tubeSensor",
+            "tags": [
+              "tube",
+              "tube-0"
+            ],
+            "transform": {
+              "x": -4.2,
+              "y": -3.2,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-1-left",
+            "name": "Tube 1 Left Wall",
+            "template": "tubeWall",
+            "tags": [
+              "tube-wall"
+            ],
+            "transform": {
+              "x": -2.88,
+              "y": -3.2,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-1-right",
+            "name": "Tube 1 Right Wall",
+            "template": "tubeWall",
+            "tags": [
+              "tube-wall"
+            ],
+            "transform": {
+              "x": -1.2,
+              "y": -3.2,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-1-bottom",
+            "name": "Tube 1 Bottom",
+            "template": "tubeBottom",
+            "tags": [
+              "tube-bottom"
+            ],
+            "transform": {
+              "x": -2.04,
+              "y": -0.12,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-1-sensor",
+            "name": "Tube 1 Sensor",
+            "template": "tubeSensor",
+            "tags": [
+              "tube",
+              "tube-1"
+            ],
+            "transform": {
+              "x": -2.04,
+              "y": -3.2,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-2-left",
+            "name": "Tube 2 Left Wall",
+            "template": "tubeWall",
+            "tags": [
+              "tube-wall"
+            ],
+            "transform": {
+              "x": -0.72,
+              "y": -3.2,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-2-right",
+            "name": "Tube 2 Right Wall",
+            "template": "tubeWall",
+            "tags": [
+              "tube-wall"
+            ],
+            "transform": {
+              "x": 0.96,
+              "y": -3.2,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-2-bottom",
+            "name": "Tube 2 Bottom",
+            "template": "tubeBottom",
+            "tags": [
+              "tube-bottom"
+            ],
+            "transform": {
+              "x": 0.12,
+              "y": -0.12,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-2-sensor",
+            "name": "Tube 2 Sensor",
+            "template": "tubeSensor",
+            "tags": [
+              "tube",
+              "tube-2"
+            ],
+            "transform": {
+              "x": 0.12,
+              "y": -3.2,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-3-left",
+            "name": "Tube 3 Left Wall",
+            "template": "tubeWall",
+            "tags": [
+              "tube-wall"
+            ],
+            "transform": {
+              "x": 1.44,
+              "y": -3.2,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-3-right",
+            "name": "Tube 3 Right Wall",
+            "template": "tubeWall",
+            "tags": [
+              "tube-wall"
+            ],
+            "transform": {
+              "x": 3.12,
+              "y": -3.2,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-3-bottom",
+            "name": "Tube 3 Bottom",
+            "template": "tubeBottom",
+            "tags": [
+              "tube-bottom"
+            ],
+            "transform": {
+              "x": 2.28,
+              "y": -0.12,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-3-sensor",
+            "name": "Tube 3 Sensor",
+            "template": "tubeSensor",
+            "tags": [
+              "tube",
+              "tube-3"
+            ],
+            "transform": {
+              "x": 2.28,
+              "y": -3.2,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-4-left",
+            "name": "Tube 4 Left Wall",
+            "template": "tubeWall",
+            "tags": [
+              "tube-wall"
+            ],
+            "transform": {
+              "x": 3.6,
+              "y": -3.2,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-4-right",
+            "name": "Tube 4 Right Wall",
+            "template": "tubeWall",
+            "tags": [
+              "tube-wall"
+            ],
+            "transform": {
+              "x": 5.28,
+              "y": -3.2,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-4-bottom",
+            "name": "Tube 4 Bottom",
+            "template": "tubeBottom",
+            "tags": [
+              "tube-bottom"
+            ],
+            "transform": {
+              "x": 4.44,
+              "y": -0.12,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-4-sensor",
+            "name": "Tube 4 Sensor",
+            "template": "tubeSensor",
+            "tags": [
+              "tube",
+              "tube-4"
+            ],
+            "transform": {
+              "x": 4.44,
+              "y": -3.2,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-5-left",
+            "name": "Tube 5 Left Wall",
+            "template": "tubeWall",
+            "tags": [
+              "tube-wall"
+            ],
+            "transform": {
+              "x": 5.76,
+              "y": -3.2,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-5-right",
+            "name": "Tube 5 Right Wall",
+            "template": "tubeWall",
+            "tags": [
+              "tube-wall"
+            ],
+            "transform": {
+              "x": 7.44,
+              "y": -3.2,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-5-bottom",
+            "name": "Tube 5 Bottom",
+            "template": "tubeBottom",
+            "tags": [
+              "tube-bottom"
+            ],
+            "transform": {
+              "x": 6.6,
+              "y": -0.12,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "tube-5-sensor",
+            "name": "Tube 5 Sensor",
+            "template": "tubeSensor",
+            "tags": [
+              "tube",
+              "tube-5"
+            ],
+            "transform": {
+              "x": 6.6,
+              "y": -3.2,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -2096,45 +1891,8 @@
             ]
           }
         ],
-        "persistence": {
-          "storageKey": "ball-sort-progress",
-          "schema": {
-            "_def": {
-              "unknownKeys": "strip",
-              "catchall": {
-                "_def": {
-                  "typeName": "ZodNever"
-                },
-                "~standard": {
-                  "version": 1,
-                  "vendor": "zod"
-                }
-              },
-              "typeName": "ZodObject"
-            },
-            "~standard": {
-              "version": 1,
-              "vendor": "zod"
-            },
-            "_cached": null
-          },
-          "version": 1,
-          "defaultProgress": {
-            "version": 1,
-            "currentLevel": 1,
-            "highestLevelCompleted": 0,
-            "totalMoves": 0,
-            "bestTimePerLevel": {},
-            "bestMovesPerLevel": {},
-            "totalLevelsCompleted": 0,
-            "currentDifficulty": 1,
-            "totalPlayTime": 0,
-            "sessionsCompleted": 0
-          },
-          "autoSave": {
-            "onGameWin": true,
-            "onBackground": true
-          }
+        "winCondition": {
+          "type": "custom"
         }
       }
     },
@@ -2290,13 +2048,11 @@
               "height": 0.8,
               "color": "#37474F"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.4,
-                "height": 0.8
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.4,
+              "height": 0.8,
+              "isSensor": true
             }
           },
           "gridSlot": {
@@ -2310,13 +2066,11 @@
               "height": 1.4,
               "color": "#263238"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.4,
-                "height": 1.4
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.4,
+              "height": 1.4,
+              "isSensor": true
             }
           },
           "block0": {
@@ -2331,13 +2085,11 @@
               "height": 1.26,
               "color": "#E53935"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.26,
-                "height": 1.26
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.26,
+              "height": 1.26,
+              "isSensor": true
             }
           },
           "block1": {
@@ -2352,13 +2104,11 @@
               "height": 1.26,
               "color": "#1E88E5"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.26,
-                "height": 1.26
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.26,
+              "height": 1.26,
+              "isSensor": true
             }
           },
           "block2": {
@@ -2373,13 +2123,11 @@
               "height": 1.26,
               "color": "#43A047"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.26,
-                "height": 1.26
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.26,
+              "height": 1.26,
+              "isSensor": true
             }
           },
           "block3": {
@@ -2394,13 +2142,11 @@
               "height": 1.26,
               "color": "#FDD835"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.26,
-                "height": 1.26
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.26,
+              "height": 1.26,
+              "isSensor": true
             }
           },
           "placedBlock0": {
@@ -2415,13 +2161,11 @@
               "height": 1.19,
               "color": "#E53935"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.19,
-                "height": 1.19
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.19,
+              "height": 1.19,
+              "isSensor": true
             }
           },
           "placedBlock1": {
@@ -2436,13 +2180,11 @@
               "height": 1.19,
               "color": "#1E88E5"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.19,
-                "height": 1.19
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.19,
+              "height": 1.19,
+              "isSensor": true
             }
           },
           "placedBlock2": {
@@ -2457,13 +2199,11 @@
               "height": 1.19,
               "color": "#43A047"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.19,
-                "height": 1.19
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.19,
+              "height": 1.19,
+              "isSensor": true
             }
           },
           "placedBlock3": {
@@ -2478,13 +2218,11 @@
               "height": 1.19,
               "color": "#FDD835"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.19,
-                "height": 1.19
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.19,
+              "height": 1.19,
+              "isSensor": true
             }
           }
         },
@@ -3611,16 +3349,10 @@
       "description": "Classic brick-breaker with sci-fi neon assets",
       "definition": {
         "metadata": {
-          "id": "test-breakout-bouncer",
+          "id": "breakout-bouncer",
           "title": "Breakout Bouncer",
           "description": "Classic brick-breaker with sci-fi neon assets",
-          "instructions": "Drag the paddle left/right to bounce the ball. Destroy all bricks to win!",
-          "version": "1.0.0",
-          "titleHeroImageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/breakout-bouncer/title_hero.png"
-        },
-        "background": {
-          "type": "static",
-          "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/breakout-bouncer/background.png"
+          "version": "1.0.0"
         },
         "world": {
           "gravity": {
@@ -3637,93 +3369,11 @@
           "type": "fixed",
           "zoom": 1
         },
-        "input": {
-          "tapZones": [
-            {
-              "id": "left-zone",
-              "edge": "left",
-              "size": 0.5,
-              "button": "left"
-            },
-            {
-              "id": "right-zone",
-              "edge": "right",
-              "size": 0.5,
-              "button": "right"
-            }
-          ],
-          "debugTapZones": false,
-          "tilt": {
-            "enabled": true,
-            "sensitivity": 2,
-            "updateInterval": 16
-          }
-        },
         "ui": {
           "showScore": true,
           "showLives": true,
           "showTimer": false,
           "backgroundColor": "#0a0a2e"
-        },
-        "winCondition": {
-          "type": "destroy_all",
-          "tag": "brick"
-        },
-        "loseCondition": {
-          "type": "lives_zero"
-        },
-        "initialLives": 3,
-        "variables": {
-          "paddleForce": {
-            "value": 120,
-            "tuning": {
-              "min": 50,
-              "max": 200,
-              "step": 10
-            },
-            "category": "physics",
-            "label": "Paddle Push Force"
-          },
-          "tapImpulse": {
-            "value": 25,
-            "tuning": {
-              "min": 10,
-              "max": 50,
-              "step": 5
-            },
-            "category": "physics",
-            "label": "Tap Impulse Strength"
-          },
-          "tiltForce": {
-            "value": 60,
-            "tuning": {
-              "min": 20,
-              "max": 100,
-              "step": 5
-            },
-            "category": "physics",
-            "label": "Tilt Push Force"
-          },
-          "frictionFactor": {
-            "value": 0.9,
-            "tuning": {
-              "min": 0.8,
-              "max": 0.98,
-              "step": 0.01
-            },
-            "category": "physics",
-            "label": "Paddle Friction"
-          },
-          "velocityThreshold": {
-            "value": 0.1,
-            "tuning": {
-              "min": 0.01,
-              "max": 0.5,
-              "step": 0.01
-            },
-            "category": "physics",
-            "label": "Velocity Cutoff"
-          }
         },
         "templates": {
           "ball": {
@@ -3732,48 +3382,22 @@
               "ball"
             ],
             "visual": {
-              "type": "circle",
-              "radius": 0.25,
-              "color": "#FF00FF"
+              "type": "image",
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/breakout-bouncer/ball.png",
+              "imageWidth": 0.25,
+              "imageHeight": 0.25
             },
             "physics": {
               "bodyType": "dynamic",
               "density": 1,
               "linearDamping": 0,
-              "fixedRotation": false,
-              "ccd": true
+              "fixedRotation": false
             },
             "collider": {
               "shape": "circle",
               "radius": 0.25,
               "friction": 0,
               "restitution": 1
-            },
-            "behaviors": []
-          },
-          "paddle": {
-            "id": "paddle",
-            "tags": [
-              "paddle"
-            ],
-            "visual": {
-              "type": "image",
-              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/breakout-bouncer/paddle.png",
-              "imageWidth": 2,
-              "imageHeight": 0.4
-            },
-            "physics": {
-              "bodyType": "dynamic",
-              "density": 5,
-              "linearDamping": 8,
-              "fixedRotation": true
-            },
-            "collider": {
-              "shape": "box",
-              "width": 2,
-              "height": 0.4,
-              "friction": 0.1,
-              "restitution": 0.2
             },
             "behaviors": []
           },
@@ -3961,14 +3585,38 @@
             "tags": [
               "drain"
             ],
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 10,
-                "height": 2
-              }
+            "collider": {
+              "shape": "box",
+              "width": 10,
+              "height": 2,
+              "isSensor": true
             }
+          },
+          "paddle": {
+            "id": "paddle",
+            "tags": [
+              "paddle"
+            ],
+            "visual": {
+              "type": "image",
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/breakout-bouncer/paddle.png",
+              "imageWidth": 2,
+              "imageHeight": 0.4
+            },
+            "physics": {
+              "bodyType": "dynamic",
+              "density": 5,
+              "linearDamping": 8,
+              "fixedRotation": true
+            },
+            "collider": {
+              "shape": "box",
+              "width": 2,
+              "height": 0.4,
+              "friction": 0.1,
+              "restitution": 0.2
+            },
+            "behaviors": []
           }
         },
         "entities": [
@@ -3999,32 +3647,13 @@
           {
             "id": "wall-top",
             "name": "Top Wall",
-            "tags": [
-              "wall"
-            ],
+            "template": "wall",
             "transform": {
               "x": 0,
               "y": 9.85,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
-            },
-            "visual": {
-              "type": "rect",
-              "width": 10,
-              "height": 0.3,
-              "color": "#333366"
-            },
-            "physics": {
-              "bodyType": "static",
-              "density": 0
-            },
-            "collider": {
-              "shape": "box",
-              "width": 10,
-              "height": 0.3,
-              "friction": 0,
-              "restitution": 1
             }
           },
           {
@@ -4116,7 +3745,7 @@
             "name": "Brick 1-5",
             "template": "brickRed",
             "transform": {
-              "x": 1.4000000000000004,
+              "x": 1.4,
               "y": 8,
               "angle": 0,
               "scaleX": 1,
@@ -4140,7 +3769,7 @@
             "name": "Brick 1-7",
             "template": "brickRed",
             "transform": {
-              "x": 4.199999999999999,
+              "x": 4.2,
               "y": 8,
               "angle": 0,
               "scaleX": 1,
@@ -4200,7 +3829,7 @@
             "name": "Brick 2-5",
             "template": "brickYellow",
             "transform": {
-              "x": 1.4000000000000004,
+              "x": 1.4,
               "y": 7.3,
               "angle": 0,
               "scaleX": 1,
@@ -4224,7 +3853,7 @@
             "name": "Brick 2-7",
             "template": "brickYellow",
             "transform": {
-              "x": 4.199999999999999,
+              "x": 4.2,
               "y": 7.3,
               "angle": 0,
               "scaleX": 1,
@@ -4284,7 +3913,7 @@
             "name": "Brick 3-5",
             "template": "brickGreen",
             "transform": {
-              "x": 1.4000000000000004,
+              "x": 1.4,
               "y": 6.6,
               "angle": 0,
               "scaleX": 1,
@@ -4308,7 +3937,7 @@
             "name": "Brick 3-7",
             "template": "brickGreen",
             "transform": {
-              "x": 4.199999999999999,
+              "x": 4.2,
               "y": 6.6,
               "angle": 0,
               "scaleX": 1,
@@ -4368,7 +3997,7 @@
             "name": "Brick 4-5",
             "template": "brickBlue",
             "transform": {
-              "x": 1.4000000000000004,
+              "x": 1.4,
               "y": 5.9,
               "angle": 0,
               "scaleX": 1,
@@ -4392,7 +4021,7 @@
             "name": "Brick 4-7",
             "template": "brickBlue",
             "transform": {
-              "x": 4.199999999999999,
+              "x": 4.2,
               "y": 5.9,
               "angle": 0,
               "scaleX": 1,
@@ -4610,7 +4239,15 @@
               }
             ]
           }
-        ]
+        ],
+        "winCondition": {
+          "type": "destroy_all",
+          "tag": "brick"
+        },
+        "loseCondition": {
+          "type": "lives_zero"
+        },
+        "initialLives": 3
       }
     },
     {
@@ -4809,14 +4446,17 @@
               "imageWidth": 0.8,
               "imageHeight": 0.4
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 0.8,
-                "height": 0.4
-              },
-              "movement": "kinematic"
+            "physics": {
+              "bodyType": "kinematic",
+              "density": 0
+            },
+            "collider": {
+              "shape": "box",
+              "width": 0.8,
+              "height": 0.4,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             },
             "behaviors": [
               {
@@ -4838,12 +4478,12 @@
               "imageWidth": 1,
               "imageHeight": 1
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.5
-              }
+            "collider": {
+              "shape": "circle",
+              "radius": 0.5,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           },
           "wallLeft": {
@@ -4926,13 +4566,13 @@
               "height": 0.1,
               "color": "#FF000044"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 12,
-                "height": 0.1
-              }
+            "collider": {
+              "shape": "box",
+              "width": 12,
+              "height": 0.1,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           },
           "aimLine": {
@@ -4946,14 +4586,17 @@
               "height": 3,
               "color": "#FFFFFF44"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 0.05,
-                "height": 3
-              },
-              "movement": "kinematic"
+            "physics": {
+              "bodyType": "kinematic",
+              "density": 0
+            },
+            "collider": {
+              "shape": "box",
+              "width": 0.05,
+              "height": 3,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             },
             "behaviors": [
               {
@@ -5053,7 +4696,7 @@
           {
             "id": "bubble-0",
             "name": "Bubble 1",
-            "template": "bubble_red",
+            "template": "bubble_purple",
             "transform": {
               "x": -4.35,
               "y": 6.5,
@@ -5065,7 +4708,7 @@
           {
             "id": "bubble-1",
             "name": "Bubble 2",
-            "template": "bubble_red",
+            "template": "bubble_blue",
             "transform": {
               "x": -3.6500000000000004,
               "y": 6.5,
@@ -5077,7 +4720,7 @@
           {
             "id": "bubble-2",
             "name": "Bubble 3",
-            "template": "bubble_yellow",
+            "template": "bubble_red",
             "transform": {
               "x": -2.95,
               "y": 6.5,
@@ -5089,7 +4732,7 @@
           {
             "id": "bubble-3",
             "name": "Bubble 4",
-            "template": "bubble_red",
+            "template": "bubble_purple",
             "transform": {
               "x": -2.2500000000000004,
               "y": 6.5,
@@ -5101,7 +4744,7 @@
           {
             "id": "bubble-4",
             "name": "Bubble 5",
-            "template": "bubble_yellow",
+            "template": "bubble_red",
             "transform": {
               "x": -1.5500000000000007,
               "y": 6.5,
@@ -5113,7 +4756,7 @@
           {
             "id": "bubble-5",
             "name": "Bubble 6",
-            "template": "bubble_yellow",
+            "template": "bubble_blue",
             "transform": {
               "x": -0.8499999999999996,
               "y": 6.5,
@@ -5125,7 +4768,7 @@
           {
             "id": "bubble-6",
             "name": "Bubble 7",
-            "template": "bubble_green",
+            "template": "bubble_yellow",
             "transform": {
               "x": -0.15000000000000036,
               "y": 6.5,
@@ -5137,7 +4780,7 @@
           {
             "id": "bubble-7",
             "name": "Bubble 8",
-            "template": "bubble_red",
+            "template": "bubble_yellow",
             "transform": {
               "x": 0.5499999999999989,
               "y": 6.5,
@@ -5161,7 +4804,7 @@
           {
             "id": "bubble-9",
             "name": "Bubble 10",
-            "template": "bubble_red",
+            "template": "bubble_purple",
             "transform": {
               "x": -2.95,
               "y": 5.893800000000001,
@@ -5173,7 +4816,7 @@
           {
             "id": "bubble-10",
             "name": "Bubble 11",
-            "template": "bubble_green",
+            "template": "bubble_blue",
             "transform": {
               "x": -2.25,
               "y": 5.893800000000001,
@@ -5185,7 +4828,7 @@
           {
             "id": "bubble-11",
             "name": "Bubble 12",
-            "template": "bubble_blue",
+            "template": "bubble_red",
             "transform": {
               "x": -1.5500000000000007,
               "y": 5.893800000000001,
@@ -5197,7 +4840,7 @@
           {
             "id": "bubble-12",
             "name": "Bubble 13",
-            "template": "bubble_blue",
+            "template": "bubble_yellow",
             "transform": {
               "x": -0.8499999999999996,
               "y": 5.893800000000001,
@@ -5209,7 +4852,7 @@
           {
             "id": "bubble-13",
             "name": "Bubble 14",
-            "template": "bubble_purple",
+            "template": "bubble_yellow",
             "transform": {
               "x": -0.15000000000000036,
               "y": 5.893800000000001,
@@ -5233,7 +4876,7 @@
           {
             "id": "bubble-15",
             "name": "Bubble 16",
-            "template": "bubble_blue",
+            "template": "bubble_red",
             "transform": {
               "x": -4.35,
               "y": 5.2876,
@@ -5245,7 +4888,7 @@
           {
             "id": "bubble-16",
             "name": "Bubble 17",
-            "template": "bubble_blue",
+            "template": "bubble_green",
             "transform": {
               "x": -3.6500000000000004,
               "y": 5.2876,
@@ -5257,7 +4900,7 @@
           {
             "id": "bubble-17",
             "name": "Bubble 18",
-            "template": "bubble_green",
+            "template": "bubble_purple",
             "transform": {
               "x": -2.95,
               "y": 5.2876,
@@ -5269,7 +4912,7 @@
           {
             "id": "bubble-18",
             "name": "Bubble 19",
-            "template": "bubble_green",
+            "template": "bubble_yellow",
             "transform": {
               "x": -2.2500000000000004,
               "y": 5.2876,
@@ -5281,7 +4924,7 @@
           {
             "id": "bubble-19",
             "name": "Bubble 20",
-            "template": "bubble_yellow",
+            "template": "bubble_purple",
             "transform": {
               "x": -1.5500000000000007,
               "y": 5.2876,
@@ -5293,7 +4936,7 @@
           {
             "id": "bubble-20",
             "name": "Bubble 21",
-            "template": "bubble_yellow",
+            "template": "bubble_blue",
             "transform": {
               "x": -0.8499999999999996,
               "y": 5.2876,
@@ -5305,7 +4948,7 @@
           {
             "id": "bubble-21",
             "name": "Bubble 22",
-            "template": "bubble_yellow",
+            "template": "bubble_green",
             "transform": {
               "x": -0.15000000000000036,
               "y": 5.2876,
@@ -5317,7 +4960,7 @@
           {
             "id": "bubble-22",
             "name": "Bubble 23",
-            "template": "bubble_yellow",
+            "template": "bubble_green",
             "transform": {
               "x": 0.5499999999999989,
               "y": 5.2876,
@@ -5329,7 +4972,7 @@
           {
             "id": "bubble-23",
             "name": "Bubble 24",
-            "template": "bubble_red",
+            "template": "bubble_purple",
             "transform": {
               "x": -3.65,
               "y": 4.6814,
@@ -5353,7 +4996,7 @@
           {
             "id": "bubble-25",
             "name": "Bubble 26",
-            "template": "bubble_yellow",
+            "template": "bubble_blue",
             "transform": {
               "x": -2.25,
               "y": 4.6814,
@@ -5365,7 +5008,7 @@
           {
             "id": "bubble-26",
             "name": "Bubble 27",
-            "template": "bubble_yellow",
+            "template": "bubble_purple",
             "transform": {
               "x": -1.5500000000000007,
               "y": 4.6814,
@@ -5377,7 +5020,7 @@
           {
             "id": "bubble-27",
             "name": "Bubble 28",
-            "template": "bubble_purple",
+            "template": "bubble_blue",
             "transform": {
               "x": -0.8499999999999996,
               "y": 4.6814,
@@ -5389,7 +5032,7 @@
           {
             "id": "bubble-28",
             "name": "Bubble 29",
-            "template": "bubble_blue",
+            "template": "bubble_red",
             "transform": {
               "x": -0.15000000000000036,
               "y": 4.6814,
@@ -5401,7 +5044,7 @@
           {
             "id": "bubble-29",
             "name": "Bubble 30",
-            "template": "bubble_blue",
+            "template": "bubble_green",
             "transform": {
               "x": 0.5499999999999989,
               "y": 4.6814,
@@ -5425,7 +5068,7 @@
           {
             "id": "bubble-31",
             "name": "Bubble 32",
-            "template": "bubble_purple",
+            "template": "bubble_blue",
             "transform": {
               "x": -3.6500000000000004,
               "y": 4.075200000000001,
@@ -5437,7 +5080,7 @@
           {
             "id": "bubble-32",
             "name": "Bubble 33",
-            "template": "bubble_yellow",
+            "template": "bubble_red",
             "transform": {
               "x": -2.95,
               "y": 4.075200000000001,
@@ -5449,7 +5092,7 @@
           {
             "id": "bubble-33",
             "name": "Bubble 34",
-            "template": "bubble_blue",
+            "template": "bubble_green",
             "transform": {
               "x": -2.2500000000000004,
               "y": 4.075200000000001,
@@ -5461,7 +5104,7 @@
           {
             "id": "bubble-34",
             "name": "Bubble 35",
-            "template": "bubble_red",
+            "template": "bubble_purple",
             "transform": {
               "x": -1.5500000000000007,
               "y": 4.075200000000001,
@@ -5473,7 +5116,7 @@
           {
             "id": "bubble-35",
             "name": "Bubble 36",
-            "template": "bubble_red",
+            "template": "bubble_yellow",
             "transform": {
               "x": -0.8499999999999996,
               "y": 4.075200000000001,
@@ -5485,7 +5128,7 @@
           {
             "id": "bubble-36",
             "name": "Bubble 37",
-            "template": "bubble_blue",
+            "template": "bubble_purple",
             "transform": {
               "x": -0.15000000000000036,
               "y": 4.075200000000001,
@@ -5533,7 +5176,7 @@
           {
             "id": "bubble-40",
             "name": "Bubble 41",
-            "template": "bubble_green",
+            "template": "bubble_blue",
             "transform": {
               "x": -2.25,
               "y": 3.4690000000000003,
@@ -5557,7 +5200,7 @@
           {
             "id": "bubble-42",
             "name": "Bubble 43",
-            "template": "bubble_green",
+            "template": "bubble_blue",
             "transform": {
               "x": -0.8499999999999996,
               "y": 3.4690000000000003,
@@ -5569,7 +5212,7 @@
           {
             "id": "bubble-43",
             "name": "Bubble 44",
-            "template": "bubble_green",
+            "template": "bubble_yellow",
             "transform": {
               "x": -0.15000000000000036,
               "y": 3.4690000000000003,
@@ -5581,7 +5224,7 @@
           {
             "id": "bubble-44",
             "name": "Bubble 45",
-            "template": "bubble_red",
+            "template": "bubble_purple",
             "transform": {
               "x": 0.5499999999999989,
               "y": 3.4690000000000003,
@@ -6092,12 +5735,10 @@
               "radius": 0.3,
               "color": "#FFD700"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.3
-              }
+            "collider": {
+              "shape": "circle",
+              "radius": 0.3,
+              "isSensor": true
             },
             "behaviors": [
               {
@@ -6469,13 +6110,11 @@
               "height": 7.1000000000000005,
               "color": "#1976D2"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 8.200000000000001,
-                "height": 7.1000000000000005
-              }
+            "collider": {
+              "shape": "box",
+              "width": 8.200000000000001,
+              "height": 7.1000000000000005,
+              "isSensor": true
             }
           },
           "emptySlot": {
@@ -6488,12 +6127,10 @@
               "radius": 0.5,
               "color": "#0D47A1"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.5
-              }
+            "collider": {
+              "shape": "circle",
+              "radius": 0.5,
+              "isSensor": true
             }
           },
           "columnSelector": {
@@ -6507,13 +6144,11 @@
               "height": 1,
               "color": "rgba(255, 255, 255, 0.1)"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1,
-                "height": 1
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1,
+              "height": 1,
+              "isSensor": true
             }
           },
           "redDisc": {
@@ -6527,12 +6162,10 @@
               "radius": 0.45,
               "color": "#E53935"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.45
-              }
+            "collider": {
+              "shape": "circle",
+              "radius": 0.45,
+              "isSensor": true
             }
           },
           "yellowDisc": {
@@ -6546,12 +6179,10 @@
               "radius": 0.45,
               "color": "#FDD835"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.45
-              }
+            "collider": {
+              "shape": "circle",
+              "radius": 0.45,
+              "isSensor": true
             }
           }
         },
@@ -7962,14 +7593,15 @@
               "height": 0.5,
               "color": "#FF6B6B"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 0.3,
-                "height": 0.5
-              },
-              "movement": "kinematic"
+            "physics": {
+              "bodyType": "kinematic",
+              "density": 0
+            },
+            "collider": {
+              "shape": "box",
+              "width": 0.3,
+              "height": 0.5,
+              "isSensor": true
             }
           },
           "startButton": {
@@ -7984,14 +7616,15 @@
               "height": 0.8,
               "color": "#48BB78"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 2,
-                "height": 0.8
-              },
-              "movement": "kinematic"
+            "physics": {
+              "bodyType": "kinematic",
+              "density": 0
+            },
+            "collider": {
+              "shape": "box",
+              "width": 2,
+              "height": 0.8,
+              "isSensor": true
             }
           },
           "placementZone": {
@@ -8005,14 +7638,15 @@
               "height": 2,
               "color": "#FFFFFF11"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 12,
-                "height": 2
-              },
-              "movement": "kinematic"
+            "physics": {
+              "bodyType": "kinematic",
+              "density": 0
+            },
+            "collider": {
+              "shape": "box",
+              "width": 12,
+              "height": 2,
+              "isSensor": true
             }
           }
         },
@@ -8531,13 +8165,11 @@
               "height": 0.05,
               "color": "#FF5252"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 7,
-                "height": 0.05
-              }
+            "collider": {
+              "shape": "box",
+              "width": 7,
+              "height": 0.05,
+              "isSensor": true
             }
           },
           "aimIndicator": {
@@ -8551,14 +8183,15 @@
               "height": 10.5,
               "color": "#FFFFFF22"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 0.1,
-                "height": 10.5
-              },
-              "movement": "kinematic"
+            "physics": {
+              "bodyType": "kinematic",
+              "density": 0
+            },
+            "collider": {
+              "shape": "box",
+              "width": 0.1,
+              "height": 10.5,
+              "isSensor": true
             }
           },
           "fruit0": {
@@ -9286,13 +8919,13 @@
               "height": 0.6,
               "color": "#FFD700"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 0.6,
-                "height": 0.6
-              }
+            "type": "collider",
+            "collider": {
+              "shape": "box",
+              "width": 0.6,
+              "height": 0.6,
+              "friction": 0,
+              "restitution": 0
             },
             "behaviors": []
           },
@@ -9307,13 +8940,13 @@
               "height": 0.7,
               "color": "#E74C3C"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 0.7,
-                "height": 0.7
-              }
+            "type": "collider",
+            "collider": {
+              "shape": "box",
+              "width": 0.7,
+              "height": 0.7,
+              "friction": 0,
+              "restitution": 0
             },
             "behaviors": []
           },
@@ -9328,13 +8961,13 @@
               "height": 0.9,
               "color": "#8B4513"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 0.9,
-                "height": 0.9
-              }
+            "type": "collider",
+            "collider": {
+              "shape": "box",
+              "width": 0.9,
+              "height": 0.9,
+              "friction": 0,
+              "restitution": 0
             },
             "behaviors": []
           }
@@ -10596,12 +10229,10 @@
       "description": "Tap to fly through the pipes without hitting them",
       "definition": {
         "metadata": {
-          "id": "test-flappy-bird",
+          "id": "flappy-bird",
           "title": "Flappy Bird",
           "description": "Tap to fly through the pipes without hitting them",
-          "instructions": "Tap anywhere to flap! Avoid the pipes and ground.",
-          "version": "1.1.0",
-          "titleHeroImageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/title_hero.png"
+          "version": "1.1.0"
         },
         "world": {
           "gravity": {
@@ -10614,10 +10245,6 @@
             "height": 16
           }
         },
-        "background": {
-          "type": "static",
-          "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/background.png"
-        },
         "camera": {
           "type": "fixed",
           "zoom": 1
@@ -10627,10 +10254,6 @@
           "showLives": false,
           "showTimer": false,
           "backgroundColor": "#70c5ce"
-        },
-        "loseCondition": {
-          "type": "entity_destroyed",
-          "tag": "bird"
         },
         "templates": {
           "bird": {
@@ -10666,6 +10289,90 @@
                 "effect": "fade"
               }
             ]
+          },
+          "scoreZone": {
+            "id": "scoreZone",
+            "tags": [
+              "score-zone"
+            ],
+            "visual": {
+              "type": "rect",
+              "width": 0.3,
+              "height": 3,
+              "color": "#00000000"
+            },
+            "collider": {
+              "shape": "box",
+              "width": 0.3,
+              "height": 3,
+              "isSensor": true
+            },
+            "behaviors": [
+              {
+                "type": "move",
+                "direction": "left",
+                "speed": 15
+              },
+              {
+                "type": "score_on_collision",
+                "withTags": [
+                  "bird"
+                ],
+                "points": 1,
+                "once": true
+              },
+              {
+                "type": "timer",
+                "duration": 2,
+                "action": "destroy"
+              }
+            ]
+          },
+          "ground": {
+            "id": "ground",
+            "tags": [
+              "ground"
+            ],
+            "visual": {
+              "type": "image",
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/ground.png",
+              "imageWidth": 16,
+              "imageHeight": 1.5
+            },
+            "physics": {
+              "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
+              "shape": "box",
+              "width": 16,
+              "height": 1.5,
+              "friction": 0.5,
+              "restitution": 0
+            }
+          },
+          "ceiling": {
+            "id": "ceiling",
+            "tags": [
+              "ceiling"
+            ],
+            "visual": {
+              "type": "image",
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/ceiling.png",
+              "imageWidth": 16,
+              "imageHeight": 0.5
+            },
+            "physics": {
+              "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
+              "shape": "box",
+              "width": 16,
+              "height": 0.5,
+              "friction": 0,
+              "restitution": 0
+            }
           },
           "pipeTop": {
             "id": "pipeTop",
@@ -10738,93 +10445,6 @@
                 "action": "destroy"
               }
             ]
-          },
-          "scoreZone": {
-            "id": "scoreZone",
-            "tags": [
-              "score-zone"
-            ],
-            "visual": {
-              "type": "rect",
-              "width": 0.3,
-              "height": 3,
-              "color": "#00000000"
-            },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 0.3,
-                "height": 3
-              },
-              "movement": "kinematic"
-            },
-            "behaviors": [
-              {
-                "type": "move",
-                "direction": "left",
-                "speed": 15
-              },
-              {
-                "type": "score_on_collision",
-                "withTags": [
-                  "bird"
-                ],
-                "points": 1,
-                "once": true
-              },
-              {
-                "type": "timer",
-                "duration": 2,
-                "action": "destroy"
-              }
-            ]
-          },
-          "ground": {
-            "id": "ground",
-            "tags": [
-              "ground"
-            ],
-            "visual": {
-              "type": "image",
-              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/ground.png",
-              "imageWidth": 16,
-              "imageHeight": 1.5
-            },
-            "physics": {
-              "bodyType": "static",
-              "density": 0
-            },
-            "collider": {
-              "shape": "box",
-              "width": 16,
-              "height": 1.5,
-              "friction": 0.5,
-              "restitution": 0
-            }
-          },
-          "ceiling": {
-            "id": "ceiling",
-            "tags": [
-              "ceiling"
-            ],
-            "visual": {
-              "type": "image",
-              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird/ceiling.png",
-              "imageWidth": 16,
-              "imageHeight": 0.5
-            },
-            "physics": {
-              "bodyType": "static",
-              "density": 0
-            },
-            "collider": {
-              "shape": "box",
-              "width": 16,
-              "height": 0.5,
-              "friction": 0,
-              "restitution": 0
-            }
           }
         },
         "entities": [
@@ -10985,7 +10605,7 @@
                 "position": {
                   "type": "fixed",
                   "x": 8,
-                  "y": -4
+                  "y": -1
                 }
               },
               {
@@ -10994,7 +10614,7 @@
                 "position": {
                   "type": "fixed",
                   "x": 8,
-                  "y": 10.6
+                  "y": 4.5
                 }
               },
               {
@@ -11003,7 +10623,7 @@
                 "position": {
                   "type": "fixed",
                   "x": 8,
-                  "y": 0.2999999999999998
+                  "y": 5.7
                 }
               }
             ]
@@ -11029,7 +10649,7 @@
                 "position": {
                   "type": "fixed",
                   "x": 8,
-                  "y": -3.5
+                  "y": -0.5
                 }
               },
               {
@@ -11038,7 +10658,7 @@
                 "position": {
                   "type": "fixed",
                   "x": 8,
-                  "y": 10.7
+                  "y": 3.8
                 }
               },
               {
@@ -11047,51 +10667,15 @@
                 "position": {
                   "type": "fixed",
                   "x": 8,
-                  "y": 0.5999999999999996
+                  "y": 5.35
                 }
               }
             ]
           }
         ],
-        "persistence": {
-          "storageKey": "flappy-bird-progress",
-          "schema": {
-            "_def": {
-              "unknownKeys": "strip",
-              "catchall": {
-                "_def": {
-                  "typeName": "ZodNever"
-                },
-                "~standard": {
-                  "version": 1,
-                  "vendor": "zod"
-                }
-              },
-              "typeName": "ZodObject"
-            },
-            "~standard": {
-              "version": 1,
-              "vendor": "zod"
-            },
-            "_cached": null
-          },
-          "version": 1,
-          "defaultProgress": {
-            "version": 1,
-            "highScore": 0,
-            "gamesPlayed": 0,
-            "totalPipesPassed": 0,
-            "bestStreak": 0,
-            "unlockedBirds": [
-              "default"
-            ],
-            "totalPlayTime": 0,
-            "sessionsCompleted": 0
-          },
-          "autoSave": {
-            "onGameLose": true,
-            "onBackground": true
-          }
+        "loseCondition": {
+          "type": "entity_destroyed",
+          "tag": "bird"
         }
       }
     },
@@ -11169,13 +10753,11 @@
               "height": 1.8,
               "color": "#cdc1b4"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 1.8
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 1.8,
+              "isSensor": true
             }
           },
           "tile2": {
@@ -11191,14 +10773,11 @@
               "height": 1.8,
               "color": "#eee4da"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 1.8
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 1.8,
+              "isSensor": true
             }
           },
           "tile4": {
@@ -11214,14 +10793,11 @@
               "height": 1.8,
               "color": "#ede0c8"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 1.8
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 1.8,
+              "isSensor": true
             }
           },
           "tile8": {
@@ -11237,14 +10813,11 @@
               "height": 1.8,
               "color": "#f2b179"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 1.8
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 1.8,
+              "isSensor": true
             }
           },
           "tile16": {
@@ -11260,14 +10833,11 @@
               "height": 1.8,
               "color": "#f59563"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 1.8
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 1.8,
+              "isSensor": true
             }
           },
           "tile32": {
@@ -11283,14 +10853,11 @@
               "height": 1.8,
               "color": "#f67c5f"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 1.8
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 1.8,
+              "isSensor": true
             }
           },
           "tile64": {
@@ -11306,14 +10873,11 @@
               "height": 1.8,
               "color": "#f65e3b"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 1.8
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 1.8,
+              "isSensor": true
             }
           },
           "tile128": {
@@ -11329,14 +10893,11 @@
               "height": 1.8,
               "color": "#edcf72"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 1.8
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 1.8,
+              "isSensor": true
             }
           },
           "tile256": {
@@ -11352,14 +10913,11 @@
               "height": 1.8,
               "color": "#edcc61"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 1.8
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 1.8,
+              "isSensor": true
             }
           },
           "tile512": {
@@ -11375,14 +10933,11 @@
               "height": 1.8,
               "color": "#edc850"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 1.8
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 1.8,
+              "isSensor": true
             }
           },
           "tile1024": {
@@ -11398,14 +10953,11 @@
               "height": 1.8,
               "color": "#edc53f"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 1.8
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 1.8,
+              "isSensor": true
             }
           },
           "tile2048": {
@@ -11421,14 +10973,11 @@
               "height": 1.8,
               "color": "#edc22e"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 1.8
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 1.8,
+              "isSensor": true
             }
           },
           "gridBackground": {
@@ -11442,13 +10991,11 @@
               "height": 8.25,
               "color": "#bbada0"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 8.25,
-                "height": 8.25
-              }
+            "collider": {
+              "shape": "box",
+              "width": 8.25,
+              "height": 8.25,
+              "isSensor": true
             }
           }
         },
@@ -12009,13 +11556,7 @@
           "id": "gem-crush",
           "title": "Gem Crush",
           "description": "Match 3 or more gems to clear them!",
-          "instructions": "Tap two adjacent gems to swap them. Match 3 or more of the same color to clear!",
-          "version": "1.0.0",
-          "titleHeroImageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/gem-crush/title_hero.png"
-        },
-        "background": {
-          "type": "static",
-          "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/gem-crush/background.png"
+          "version": "1.0.0"
         },
         "world": {
           "gravity": {
@@ -12039,43 +11580,6 @@
           "timerCountdown": true,
           "backgroundColor": "#2d1b4e"
         },
-        "winCondition": {
-          "type": "score",
-          "score": 1000
-        },
-        "loseCondition": {
-          "type": "time_up",
-          "time": 120
-        },
-        "match3": {
-          "gridId": "gem_grid",
-          "rows": 7,
-          "cols": 7,
-          "cellSize": 1.2,
-          "pieceTemplates": [
-            "gem_red",
-            "gem_blue",
-            "gem_green",
-            "gem_yellow",
-            "gem_purple"
-          ],
-          "minMatch": 3,
-          "swapDuration": 0.15,
-          "fallDuration": 0.1,
-          "clearDelay": 0.1,
-          "variantSheet": {
-            "enabled": true,
-            "groupId": "default",
-            "atlasUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/test-gem-variants/gem-variants.png",
-            "metadataUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/test-gem-variants/gem-variants.json",
-            "layout": {
-              "columns": 4,
-              "rows": 2,
-              "cellWidth": 64,
-              "cellHeight": 64
-            }
-          }
-        },
         "templates": {
           "gem_red": {
             "id": "gem_red",
@@ -12085,16 +11589,13 @@
             ],
             "visual": {
               "type": "circle",
-              "radius": 0.51,
+              "radius": 1.02,
               "color": "#FF4444"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.51
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "circle",
+              "radius": 1.02,
+              "isSensor": true
             },
             "conditionalBehaviors": [
               {
@@ -12155,16 +11656,13 @@
             ],
             "visual": {
               "type": "circle",
-              "radius": 0.51,
+              "radius": 1.02,
               "color": "#4444FF"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.51
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "circle",
+              "radius": 1.02,
+              "isSensor": true
             },
             "conditionalBehaviors": [
               {
@@ -12225,16 +11723,13 @@
             ],
             "visual": {
               "type": "circle",
-              "radius": 0.51,
+              "radius": 1.02,
               "color": "#44FF44"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.51
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "circle",
+              "radius": 1.02,
+              "isSensor": true
             },
             "conditionalBehaviors": [
               {
@@ -12295,16 +11790,13 @@
             ],
             "visual": {
               "type": "circle",
-              "radius": 0.51,
+              "radius": 1.02,
               "color": "#FFFF44"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.51
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "circle",
+              "radius": 1.02,
+              "isSensor": true
             },
             "conditionalBehaviors": [
               {
@@ -12365,16 +11857,13 @@
             ],
             "visual": {
               "type": "circle",
-              "radius": 0.51,
+              "radius": 1.02,
               "color": "#AA44FF"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.51
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "circle",
+              "radius": 1.02,
+              "isSensor": true
             },
             "conditionalBehaviors": [
               {
@@ -12427,6 +11916,24 @@
               }
             ]
           },
+          "grid_cell": {
+            "id": "grid_cell",
+            "tags": [
+              "grid"
+            ],
+            "visual": {
+              "type": "rect",
+              "width": 1.2,
+              "height": 1.2,
+              "color": "#3d2b5e"
+            },
+            "collider": {
+              "shape": "box",
+              "width": 1.2,
+              "height": 1.2,
+              "isSensor": true
+            }
+          },
           "selection_highlight": {
             "id": "selection_highlight",
             "tags": [
@@ -12434,18 +11941,15 @@
             ],
             "visual": {
               "type": "rect",
-              "width": 1.38,
-              "height": 1.38,
+              "width": 1.2,
+              "height": 1.2,
               "color": "#FFFF00CC"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.38,
-                "height": 1.38
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "box",
+              "width": 1.2,
+              "height": 1.2,
+              "isSensor": true
             }
           },
           "hover_highlight": {
@@ -12456,38 +11960,15 @@
             ],
             "visual": {
               "type": "rect",
-              "width": 1.32,
-              "height": 1.32,
+              "width": 1.2,
+              "height": 1.2,
               "color": "#FFFFFF66"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.32,
-                "height": 1.32
-              },
-              "movement": "kinematic"
-            }
-          },
-          "grid_cell": {
-            "id": "grid_cell",
-            "tags": [
-              "grid"
-            ],
-            "visual": {
-              "type": "rect",
-              "width": 1.14,
-              "height": 1.14,
-              "color": "#3d2b5e"
-            },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.14,
-                "height": 1.14
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.2,
+              "height": 1.2,
+              "isSensor": true
             }
           }
         },
@@ -12523,7 +12004,7 @@
             "name": "Grid Cell 0,2",
             "template": "grid_cell",
             "transform": {
-              "x": -1.2000000000000002,
+              "x": -1.2,
               "y": 3.6,
               "angle": 0,
               "scaleX": 1,
@@ -12536,7 +12017,7 @@
             "name": "Grid Cell 0,3",
             "template": "grid_cell",
             "transform": {
-              "x": -5.551115123125783e-16,
+              "x": 0,
               "y": 3.6,
               "angle": 0,
               "scaleX": 1,
@@ -12549,7 +12030,7 @@
             "name": "Grid Cell 0,4",
             "template": "grid_cell",
             "transform": {
-              "x": 1.1999999999999997,
+              "x": 1.2,
               "y": 3.6,
               "angle": 0,
               "scaleX": 1,
@@ -12575,7 +12056,7 @@
             "name": "Grid Cell 0,6",
             "template": "grid_cell",
             "transform": {
-              "x": 3.599999999999999,
+              "x": 3.6,
               "y": 3.6,
               "angle": 0,
               "scaleX": 1,
@@ -12614,7 +12095,7 @@
             "name": "Grid Cell 1,2",
             "template": "grid_cell",
             "transform": {
-              "x": -1.2000000000000002,
+              "x": -1.2,
               "y": 2.4,
               "angle": 0,
               "scaleX": 1,
@@ -12627,7 +12108,7 @@
             "name": "Grid Cell 1,3",
             "template": "grid_cell",
             "transform": {
-              "x": -5.551115123125783e-16,
+              "x": 0,
               "y": 2.4,
               "angle": 0,
               "scaleX": 1,
@@ -12640,7 +12121,7 @@
             "name": "Grid Cell 1,4",
             "template": "grid_cell",
             "transform": {
-              "x": 1.1999999999999997,
+              "x": 1.2,
               "y": 2.4,
               "angle": 0,
               "scaleX": 1,
@@ -12666,7 +12147,7 @@
             "name": "Grid Cell 1,6",
             "template": "grid_cell",
             "transform": {
-              "x": 3.599999999999999,
+              "x": 3.6,
               "y": 2.4,
               "angle": 0,
               "scaleX": 1,
@@ -12680,7 +12161,7 @@
             "template": "grid_cell",
             "transform": {
               "x": -3.6,
-              "y": 1.2000000000000002,
+              "y": 1.2,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12693,7 +12174,7 @@
             "template": "grid_cell",
             "transform": {
               "x": -2.4,
-              "y": 1.2000000000000002,
+              "y": 1.2,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12705,8 +12186,8 @@
             "name": "Grid Cell 2,2",
             "template": "grid_cell",
             "transform": {
-              "x": -1.2000000000000002,
-              "y": 1.2000000000000002,
+              "x": -1.2,
+              "y": 1.2,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12718,8 +12199,8 @@
             "name": "Grid Cell 2,3",
             "template": "grid_cell",
             "transform": {
-              "x": -5.551115123125783e-16,
-              "y": 1.2000000000000002,
+              "x": 0,
+              "y": 1.2,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12731,8 +12212,8 @@
             "name": "Grid Cell 2,4",
             "template": "grid_cell",
             "transform": {
-              "x": 1.1999999999999997,
-              "y": 1.2000000000000002,
+              "x": 1.2,
+              "y": 1.2,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12745,7 +12226,7 @@
             "template": "grid_cell",
             "transform": {
               "x": 2.4,
-              "y": 1.2000000000000002,
+              "y": 1.2,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12757,8 +12238,8 @@
             "name": "Grid Cell 2,6",
             "template": "grid_cell",
             "transform": {
-              "x": 3.599999999999999,
-              "y": 1.2000000000000002,
+              "x": 3.6,
+              "y": 1.2,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12771,7 +12252,7 @@
             "template": "grid_cell",
             "transform": {
               "x": -3.6,
-              "y": 5.551115123125783e-16,
+              "y": 0,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12784,7 +12265,7 @@
             "template": "grid_cell",
             "transform": {
               "x": -2.4,
-              "y": 5.551115123125783e-16,
+              "y": 0,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12796,8 +12277,8 @@
             "name": "Grid Cell 3,2",
             "template": "grid_cell",
             "transform": {
-              "x": -1.2000000000000002,
-              "y": 5.551115123125783e-16,
+              "x": -1.2,
+              "y": 0,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12809,8 +12290,8 @@
             "name": "Grid Cell 3,3",
             "template": "grid_cell",
             "transform": {
-              "x": -5.551115123125783e-16,
-              "y": 5.551115123125783e-16,
+              "x": 0,
+              "y": 0,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12822,8 +12303,8 @@
             "name": "Grid Cell 3,4",
             "template": "grid_cell",
             "transform": {
-              "x": 1.1999999999999997,
-              "y": 5.551115123125783e-16,
+              "x": 1.2,
+              "y": 0,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12836,7 +12317,7 @@
             "template": "grid_cell",
             "transform": {
               "x": 2.4,
-              "y": 5.551115123125783e-16,
+              "y": 0,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12848,8 +12329,8 @@
             "name": "Grid Cell 3,6",
             "template": "grid_cell",
             "transform": {
-              "x": 3.599999999999999,
-              "y": 5.551115123125783e-16,
+              "x": 3.6,
+              "y": 0,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12862,7 +12343,7 @@
             "template": "grid_cell",
             "transform": {
               "x": -3.6,
-              "y": -1.1999999999999997,
+              "y": -1.2,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12875,7 +12356,7 @@
             "template": "grid_cell",
             "transform": {
               "x": -2.4,
-              "y": -1.1999999999999997,
+              "y": -1.2,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12887,8 +12368,8 @@
             "name": "Grid Cell 4,2",
             "template": "grid_cell",
             "transform": {
-              "x": -1.2000000000000002,
-              "y": -1.1999999999999997,
+              "x": -1.2,
+              "y": -1.2,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12900,8 +12381,8 @@
             "name": "Grid Cell 4,3",
             "template": "grid_cell",
             "transform": {
-              "x": -5.551115123125783e-16,
-              "y": -1.1999999999999997,
+              "x": 0,
+              "y": -1.2,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12913,8 +12394,8 @@
             "name": "Grid Cell 4,4",
             "template": "grid_cell",
             "transform": {
-              "x": 1.1999999999999997,
-              "y": -1.1999999999999997,
+              "x": 1.2,
+              "y": -1.2,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12927,7 +12408,7 @@
             "template": "grid_cell",
             "transform": {
               "x": 2.4,
-              "y": -1.1999999999999997,
+              "y": -1.2,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12939,8 +12420,8 @@
             "name": "Grid Cell 4,6",
             "template": "grid_cell",
             "transform": {
-              "x": 3.599999999999999,
-              "y": -1.1999999999999997,
+              "x": 3.6,
+              "y": -1.2,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -12978,7 +12459,7 @@
             "name": "Grid Cell 5,2",
             "template": "grid_cell",
             "transform": {
-              "x": -1.2000000000000002,
+              "x": -1.2,
               "y": -2.4,
               "angle": 0,
               "scaleX": 1,
@@ -12991,7 +12472,7 @@
             "name": "Grid Cell 5,3",
             "template": "grid_cell",
             "transform": {
-              "x": -5.551115123125783e-16,
+              "x": 0,
               "y": -2.4,
               "angle": 0,
               "scaleX": 1,
@@ -13004,7 +12485,7 @@
             "name": "Grid Cell 5,4",
             "template": "grid_cell",
             "transform": {
-              "x": 1.1999999999999997,
+              "x": 1.2,
               "y": -2.4,
               "angle": 0,
               "scaleX": 1,
@@ -13030,7 +12511,7 @@
             "name": "Grid Cell 5,6",
             "template": "grid_cell",
             "transform": {
-              "x": 3.599999999999999,
+              "x": 3.6,
               "y": -2.4,
               "angle": 0,
               "scaleX": 1,
@@ -13044,7 +12525,7 @@
             "template": "grid_cell",
             "transform": {
               "x": -3.6,
-              "y": -3.599999999999999,
+              "y": -3.6,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -13057,7 +12538,7 @@
             "template": "grid_cell",
             "transform": {
               "x": -2.4,
-              "y": -3.599999999999999,
+              "y": -3.6,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -13069,8 +12550,8 @@
             "name": "Grid Cell 6,2",
             "template": "grid_cell",
             "transform": {
-              "x": -1.2000000000000002,
-              "y": -3.599999999999999,
+              "x": -1.2,
+              "y": -3.6,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -13082,8 +12563,8 @@
             "name": "Grid Cell 6,3",
             "template": "grid_cell",
             "transform": {
-              "x": -5.551115123125783e-16,
-              "y": -3.599999999999999,
+              "x": 0,
+              "y": -3.6,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -13095,8 +12576,8 @@
             "name": "Grid Cell 6,4",
             "template": "grid_cell",
             "transform": {
-              "x": 1.1999999999999997,
-              "y": -3.599999999999999,
+              "x": 1.2,
+              "y": -3.6,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -13109,7 +12590,7 @@
             "template": "grid_cell",
             "transform": {
               "x": 2.4,
-              "y": -3.599999999999999,
+              "y": -3.6,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -13121,8 +12602,8 @@
             "name": "Grid Cell 6,6",
             "template": "grid_cell",
             "transform": {
-              "x": 3.599999999999999,
-              "y": -3.599999999999999,
+              "x": 3.6,
+              "y": -3.6,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -13130,7 +12611,15 @@
             "layer": -1
           }
         ],
-        "rules": []
+        "rules": [],
+        "winCondition": {
+          "type": "score",
+          "score": 1000
+        },
+        "loseCondition": {
+          "type": "time_up",
+          "time": 120
+        }
       }
     },
     {
@@ -13255,13 +12744,11 @@
               "height": 1.2,
               "color": "#E2E8F0"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.2,
-                "height": 1.2
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.2,
+              "height": 1.2,
+              "isSensor": true
             }
           },
           "goal": {
@@ -13275,13 +12762,11 @@
               "height": 0.96,
               "color": "#F6E05E"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 0.96,
-                "height": 0.96
-              }
+            "collider": {
+              "shape": "box",
+              "width": 0.96,
+              "height": 0.96,
+              "isSensor": true
             }
           },
           "iceBlock": {
@@ -14543,13 +14028,11 @@
               "height": 2.4,
               "color": "#37474F"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 2.4
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 2.4,
+              "isSensor": true
             }
           },
           "card0": {
@@ -14564,13 +14047,11 @@
               "height": 2.4,
               "color": "#E53935"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 2.4
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 2.4,
+              "isSensor": true
             }
           },
           "card1": {
@@ -14585,13 +14066,11 @@
               "height": 2.4,
               "color": "#1E88E5"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 2.4
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 2.4,
+              "isSensor": true
             }
           },
           "card2": {
@@ -14606,13 +14085,11 @@
               "height": 2.4,
               "color": "#43A047"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 2.4
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 2.4,
+              "isSensor": true
             }
           },
           "card3": {
@@ -14627,13 +14104,11 @@
               "height": 2.4,
               "color": "#FDD835"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 2.4
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 2.4,
+              "isSensor": true
             }
           },
           "card4": {
@@ -14648,13 +14123,11 @@
               "height": 2.4,
               "color": "#8E24AA"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 2.4
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 2.4,
+              "isSensor": true
             }
           },
           "card5": {
@@ -14669,13 +14142,11 @@
               "height": 2.4,
               "color": "#FB8C00"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 2.4
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 2.4,
+              "isSensor": true
             }
           },
           "card6": {
@@ -14690,13 +14161,11 @@
               "height": 2.4,
               "color": "#EC407A"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 2.4
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 2.4,
+              "isSensor": true
             }
           },
           "card7": {
@@ -14711,13 +14180,11 @@
               "height": 2.4,
               "color": "#00ACC1"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.8,
-                "height": 2.4
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.8,
+              "height": 2.4,
+              "isSensor": true
             }
           }
         },
@@ -14729,7 +14196,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-4"
+              "pair-7"
             ],
             "transform": {
               "x": -4.2,
@@ -14739,7 +14206,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 4,
+              "pairId": 7,
               "cardIndex": 0
             }
           },
@@ -14750,7 +14217,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-6"
+              "pair-5"
             ],
             "transform": {
               "x": -1.7999999999999998,
@@ -14760,7 +14227,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 6,
+              "pairId": 5,
               "cardIndex": 1
             }
           },
@@ -14771,7 +14238,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-2"
+              "pair-1"
             ],
             "transform": {
               "x": 0.5999999999999996,
@@ -14781,7 +14248,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 2,
+              "pairId": 1,
               "cardIndex": 2
             }
           },
@@ -14792,7 +14259,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-0"
+              "pair-2"
             ],
             "transform": {
               "x": 3,
@@ -14802,7 +14269,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 0,
+              "pairId": 2,
               "cardIndex": 3
             }
           },
@@ -14813,7 +14280,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-7"
+              "pair-3"
             ],
             "transform": {
               "x": -4.2,
@@ -14823,7 +14290,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 7,
+              "pairId": 3,
               "cardIndex": 4
             }
           },
@@ -14834,7 +14301,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-6"
+              "pair-4"
             ],
             "transform": {
               "x": -1.7999999999999998,
@@ -14844,7 +14311,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 6,
+              "pairId": 4,
               "cardIndex": 5
             }
           },
@@ -14855,7 +14322,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-5"
+              "pair-7"
             ],
             "transform": {
               "x": 0.5999999999999996,
@@ -14865,7 +14332,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 5,
+              "pairId": 7,
               "cardIndex": 6
             }
           },
@@ -14876,7 +14343,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-4"
+              "pair-2"
             ],
             "transform": {
               "x": 3,
@@ -14886,7 +14353,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 4,
+              "pairId": 2,
               "cardIndex": 7
             }
           },
@@ -14897,7 +14364,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-3"
+              "pair-6"
             ],
             "transform": {
               "x": -4.2,
@@ -14907,7 +14374,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 3,
+              "pairId": 6,
               "cardIndex": 8
             }
           },
@@ -14918,7 +14385,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-5"
+              "pair-0"
             ],
             "transform": {
               "x": -1.7999999999999998,
@@ -14928,7 +14395,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 5,
+              "pairId": 0,
               "cardIndex": 9
             }
           },
@@ -14939,7 +14406,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-7"
+              "pair-5"
             ],
             "transform": {
               "x": 0.5999999999999996,
@@ -14949,7 +14416,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 7,
+              "pairId": 5,
               "cardIndex": 10
             }
           },
@@ -14960,7 +14427,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-3"
+              "pair-4"
             ],
             "transform": {
               "x": 3,
@@ -14970,7 +14437,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 3,
+              "pairId": 4,
               "cardIndex": 11
             }
           },
@@ -14981,7 +14448,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-2"
+              "pair-6"
             ],
             "transform": {
               "x": -4.2,
@@ -14991,7 +14458,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 2,
+              "pairId": 6,
               "cardIndex": 12
             }
           },
@@ -15002,7 +14469,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-1"
+              "pair-0"
             ],
             "transform": {
               "x": -1.7999999999999998,
@@ -15012,7 +14479,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 1,
+              "pairId": 0,
               "cardIndex": 13
             }
           },
@@ -15023,7 +14490,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-0"
+              "pair-3"
             ],
             "transform": {
               "x": 0.5999999999999996,
@@ -15033,7 +14500,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 0,
+              "pairId": 3,
               "cardIndex": 14
             }
           },
@@ -15284,14 +14751,17 @@
               "imageWidth": 2,
               "imageHeight": 0.3
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 2,
-                "height": 0.3
-              },
-              "movement": "kinematic"
+            "physics": {
+              "bodyType": "kinematic",
+              "density": 0
+            },
+            "collider": {
+              "shape": "box",
+              "width": 2,
+              "height": 0.3,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             },
             "behaviors": [
               {
@@ -15470,13 +14940,13 @@
               "height": 2,
               "color": "transparent"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 20,
-                "height": 2
-              }
+            "collider": {
+              "shape": "box",
+              "width": 20,
+              "height": 2,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           }
         },
@@ -15806,13 +15276,11 @@
               "height": 0.5,
               "color": "#FF000033"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 10,
-                "height": 0.5
-              }
+            "collider": {
+              "shape": "box",
+              "width": 10,
+              "height": 0.5,
+              "isSensor": true
             }
           }
         },
@@ -16283,13 +15751,13 @@
               "imageWidth": 0.8,
               "imageHeight": 0.8
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 0.8,
-                "height": 0.8
-              }
+            "collider": {
+              "shape": "box",
+              "width": 0.8,
+              "height": 0.8,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           },
           "puyo_red": {
@@ -16434,14 +15902,17 @@
               "height": 0.1,
               "color": "#00000000"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 0.1,
-                "height": 0.1
-              },
-              "movement": "kinematic"
+            "physics": {
+              "bodyType": "kinematic",
+              "density": 0
+            },
+            "collider": {
+              "shape": "box",
+              "width": 0.1,
+              "height": 0.1,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           },
           "wall": {
@@ -16505,13 +15976,13 @@
               "height": 0.8,
               "color": "#FF000033"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.6,
-                "height": 0.8
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.6,
+              "height": 0.8,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           },
           "gridBackground": {
@@ -16525,13 +15996,13 @@
               "imageWidth": 5.450000000000001,
               "imageHeight": 10.55
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 5.450000000000001,
-                "height": 10.55
-              }
+            "collider": {
+              "shape": "box",
+              "width": 5.450000000000001,
+              "height": 10.55,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           }
         },
@@ -18046,13 +17517,11 @@
               "height": 1,
               "color": "#0000FF"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1,
-                "height": 1
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1,
+              "height": 1,
+              "isSensor": true
             }
           },
           "spriteOnlyCircle": {
@@ -18796,12 +18265,12 @@
               "imageWidth": 0.6,
               "imageHeight": 0.6
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.3
-              }
+            "collider": {
+              "shape": "circle",
+              "radius": 0.3,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             },
             "behaviors": [
               {
@@ -18863,13 +18332,13 @@
               "imageWidth": 0.5,
               "imageHeight": 2
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 0.5,
-                "height": 2
-              }
+            "collider": {
+              "shape": "box",
+              "width": 0.5,
+              "height": 2,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           },
           "deathZone": {
@@ -18883,13 +18352,13 @@
               "height": 1,
               "color": "#FF000022"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 30,
-                "height": 1
-              }
+            "collider": {
+              "shape": "box",
+              "width": 30,
+              "height": 1,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           }
         },
@@ -19287,9 +18756,7 @@
           "id": "test-slopeggle",
           "title": "Slopeggle",
           "description": "Clear all orange pegs by bouncing a ball through the board",
-          "instructions": "Touch and hold to aim the cannon, then release to fire! Clear all 10 orange pegs to win. You have 10 balls.",
-          "version": "1.0.0",
-          "titleHeroImageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle/title_hero.png"
+          "version": "1.0.0"
         },
         "world": {
           "gravity": {
@@ -19302,17 +18769,9 @@
             "height": 16
           }
         },
-        "background": {
-          "type": "static",
-          "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle/background.png"
-        },
         "camera": {
           "type": "fixed",
           "zoom": 1
-        },
-        "variables": {
-          "multiplier": 1,
-          "turn": 0
         },
         "ui": {
           "showScore": true,
@@ -19342,14 +18801,6 @@
             }
           ]
         },
-        "winCondition": {
-          "type": "destroy_all",
-          "tag": "orange-peg"
-        },
-        "loseCondition": {
-          "type": "lives_zero"
-        },
-        "initialLives": 10,
         "templates": {
           "ball": {
             "id": "ball",
@@ -19359,8 +18810,8 @@
             "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle/ball.png",
-              "imageWidth": 0.3,
-              "imageHeight": 0.3
+              "imageWidth": 0.15,
+              "imageHeight": 0.15
             },
             "physics": {
               "bodyType": "dynamic",
@@ -19385,14 +18836,11 @@
               "imageWidth": 0.6,
               "imageHeight": 0.25
             },
-            "type": "zone",
-            "zone": {
-              "movement": "kinematic",
-              "shape": {
-                "type": "box",
-                "width": 0.6,
-                "height": 0.25
-              }
+            "collider": {
+              "shape": "box",
+              "width": 0.6,
+              "height": 0.25,
+              "isSensor": true
             },
             "behaviors": [
               {
@@ -19414,12 +18862,10 @@
               "imageWidth": 0.6,
               "imageHeight": 0.6
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.3
-              }
+            "collider": {
+              "shape": "circle",
+              "radius": 0.3,
+              "isSensor": true
             }
           },
           "bluePeg": {
@@ -19431,8 +18877,8 @@
             "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle/bluePeg.png",
-              "imageWidth": 0.25,
-              "imageHeight": 0.25
+              "imageWidth": 0.125,
+              "imageHeight": 0.125
             },
             "physics": {
               "bodyType": "static",
@@ -19463,9 +18909,7 @@
                 "withTags": [
                   "ball"
                 ],
-                "points": {
-                  "expr": "10 * multiplier"
-                }
+                "points": 10
               }
             ]
           },
@@ -19478,8 +18922,8 @@
             "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle/orangePeg.png",
-              "imageWidth": 0.25,
-              "imageHeight": 0.25
+              "imageWidth": 0.125,
+              "imageHeight": 0.125
             },
             "physics": {
               "bodyType": "static",
@@ -19510,9 +18954,7 @@
                 "withTags": [
                   "ball"
                 ],
-                "points": {
-                  "expr": "100 * multiplier"
-                }
+                "points": 100
               }
             ]
           },
@@ -19544,13 +18986,11 @@
             "tags": [
               "drain"
             ],
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 12,
-                "height": 1
-              }
+            "collider": {
+              "shape": "box",
+              "width": 12,
+              "height": 1,
+              "isSensor": true
             }
           },
           "bucket": {
@@ -19564,14 +19004,11 @@
               "imageWidth": 1.2,
               "imageHeight": 0.35
             },
-            "type": "zone",
-            "zone": {
-              "movement": "kinematic",
-              "shape": {
-                "type": "box",
-                "width": 1.2,
-                "height": 0.35
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.2,
+              "height": 0.35,
+              "isSensor": true
             },
             "behaviors": [
               {
@@ -19593,12 +19030,10 @@
               "imageWidth": 0.8,
               "imageHeight": 0.8
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.4
-              }
+            "collider": {
+              "shape": "circle",
+              "radius": 0.4,
+              "isSensor": true
             },
             "behaviors": [
               {
@@ -19623,12 +19058,10 @@
               "imageWidth": 0.8,
               "imageHeight": 0.8
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.4
-              }
+            "collider": {
+              "shape": "circle",
+              "radius": 0.4,
+              "isSensor": true
             },
             "behaviors": [
               {
@@ -19653,14 +19086,11 @@
               "height": 6,
               "color": "#FFFFFF66"
             },
-            "type": "zone",
-            "zone": {
-              "movement": "kinematic",
-              "shape": {
-                "type": "box",
-                "width": 0.05,
-                "height": 6
-              }
+            "collider": {
+              "shape": "box",
+              "width": 0.05,
+              "height": 6,
+              "isSensor": true
             },
             "behaviors": [
               {
@@ -19710,7 +19140,7 @@
               "scaleX": 1,
               "scaleY": 1
             },
-            "sprite": {
+            "visual": {
               "type": "rect",
               "width": 12,
               "height": 0.2,
@@ -19873,6 +19303,18 @@
             }
           },
           {
+            "id": "orange-peg-0",
+            "name": "Orange Peg 1",
+            "template": "orangePeg",
+            "transform": {
+              "x": 1.2000000000000002,
+              "y": 4.5,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
             "id": "blue-peg-5",
             "name": "Blue Peg 6",
             "template": "bluePeg",
@@ -19981,6 +19423,18 @@
             }
           },
           {
+            "id": "orange-peg-1",
+            "name": "Orange Peg 2",
+            "template": "orangePeg",
+            "transform": {
+              "x": 1.8500000000000005,
+              "y": 3.7,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
             "id": "blue-peg-14",
             "name": "Blue Peg 15",
             "template": "bluePeg",
@@ -20070,6 +19524,18 @@
             "template": "bluePeg",
             "transform": {
               "x": 0,
+              "y": 2.9000000000000004,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "orange-peg-2",
+            "name": "Orange Peg 3",
+            "template": "orangePeg",
+            "transform": {
+              "x": 1.2000000000000002,
               "y": 2.9000000000000004,
               "angle": 0,
               "scaleX": 1,
@@ -20197,6 +19663,18 @@
             }
           },
           {
+            "id": "orange-peg-3",
+            "name": "Orange Peg 4",
+            "template": "orangePeg",
+            "transform": {
+              "x": 2.916666666666666,
+              "y": 2.0999999999999996,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
             "id": "blue-peg-32",
             "name": "Blue Peg 33",
             "template": "bluePeg",
@@ -20286,6 +19764,18 @@
             "template": "bluePeg",
             "transform": {
               "x": 1.2000000000000002,
+              "y": 1.2999999999999998,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "orange-peg-4",
+            "name": "Orange Peg 5",
+            "template": "orangePeg",
+            "transform": {
+              "x": 2.3999999999999986,
               "y": 1.2999999999999998,
               "angle": 0,
               "scaleX": 1,
@@ -20413,6 +19903,18 @@
             }
           },
           {
+            "id": "orange-peg-5",
+            "name": "Orange Peg 6",
+            "template": "orangePeg",
+            "transform": {
+              "x": 3.9833333333333325,
+              "y": 0.5,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
             "id": "blue-peg-50",
             "name": "Blue Peg 51",
             "template": "bluePeg",
@@ -20490,6 +19992,18 @@
             "template": "bluePeg",
             "transform": {
               "x": 1.2000000000000002,
+              "y": -0.3000000000000007,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "orange-peg-6",
+            "name": "Orange Peg 7",
+            "template": "orangePeg",
+            "transform": {
+              "x": 2.3999999999999986,
               "y": -0.3000000000000007,
               "angle": 0,
               "scaleX": 1,
@@ -20617,6 +20131,18 @@
             }
           },
           {
+            "id": "orange-peg-7",
+            "name": "Orange Peg 8",
+            "template": "orangePeg",
+            "transform": {
+              "x": 3.9833333333333325,
+              "y": -1.0999999999999996,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
             "id": "blue-peg-67",
             "name": "Blue Peg 68",
             "template": "bluePeg",
@@ -20694,6 +20220,18 @@
             "template": "bluePeg",
             "transform": {
               "x": 1.2000000000000002,
+              "y": -1.9000000000000004,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "orange-peg-8",
+            "name": "Orange Peg 9",
+            "template": "orangePeg",
+            "transform": {
+              "x": 2.3999999999999986,
               "y": -1.9000000000000004,
               "angle": 0,
               "scaleX": 1,
@@ -20839,6 +20377,18 @@
             "transform": {
               "x": 5.049999999999999,
               "y": -2.6999999999999993,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "orange-peg-9",
+            "name": "Orange Peg 10",
+            "template": "orangePeg",
+            "transform": {
+              "x": -4.8,
+              "y": -3.5,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -21035,126 +20585,6 @@
               "scaleX": 1,
               "scaleY": 1
             }
-          },
-          {
-            "id": "orange-peg-0",
-            "name": "Orange Peg 1",
-            "template": "orangePeg",
-            "transform": {
-              "x": 1.2000000000000002,
-              "y": 4.5,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "orange-peg-1",
-            "name": "Orange Peg 2",
-            "template": "orangePeg",
-            "transform": {
-              "x": 1.8500000000000005,
-              "y": 3.7,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "orange-peg-2",
-            "name": "Orange Peg 3",
-            "template": "orangePeg",
-            "transform": {
-              "x": 1.2000000000000002,
-              "y": 2.9000000000000004,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "orange-peg-3",
-            "name": "Orange Peg 4",
-            "template": "orangePeg",
-            "transform": {
-              "x": 2.916666666666666,
-              "y": 2.0999999999999996,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "orange-peg-4",
-            "name": "Orange Peg 5",
-            "template": "orangePeg",
-            "transform": {
-              "x": 2.3999999999999986,
-              "y": 1.2999999999999998,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "orange-peg-5",
-            "name": "Orange Peg 6",
-            "template": "orangePeg",
-            "transform": {
-              "x": 3.9833333333333325,
-              "y": 0.5,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "orange-peg-6",
-            "name": "Orange Peg 7",
-            "template": "orangePeg",
-            "transform": {
-              "x": 2.3999999999999986,
-              "y": -0.3000000000000007,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "orange-peg-7",
-            "name": "Orange Peg 8",
-            "template": "orangePeg",
-            "transform": {
-              "x": 3.9833333333333325,
-              "y": -1.0999999999999996,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "orange-peg-8",
-            "name": "Orange Peg 9",
-            "template": "orangePeg",
-            "transform": {
-              "x": 2.3999999999999986,
-              "y": -1.9000000000000004,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "orange-peg-9",
-            "name": "Orange Peg 10",
-            "template": "orangePeg",
-            "transform": {
-              "x": -4.8,
-              "y": -3.5,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
           }
         ],
         "rules": [
@@ -21278,9 +20708,9 @@
             "id": "ball_drain",
             "name": "Ball falls through drain - lose a life, destroy marked pegs",
             "trigger": {
-              "type": "zone_enter",
-              "zoneTag": "drain",
-              "entityTag": "ball"
+              "type": "collision",
+              "entityATag": "drain",
+              "entityBTag": "ball"
             },
             "actions": [
               {
@@ -21309,9 +20739,9 @@
             "id": "bucket_catch",
             "name": "Bucket catches ball - free ball bonus!",
             "trigger": {
-              "type": "zone_enter",
-              "zoneTag": "bucket",
-              "entityTag": "ball"
+              "type": "collision",
+              "entityATag": "bucket",
+              "entityBTag": "ball"
             },
             "actions": [
               {
@@ -21454,7 +20884,7 @@
               },
               {
                 "type": "expression",
-                "expr": "minDistanceToTag('orange-peg', entityPos('ball')) < 1.2"
+                "expr": "minDistanceToTag('orange-peg', entityPos('ball')) < { \"const\": \"PROXIMITY_THRESHOLD\" }"
               }
             ],
             "actions": [
@@ -21484,7 +20914,7 @@
               },
               {
                 "type": "expression",
-                "expr": "minDistanceToTag('orange-peg', entityPos('ball')) >= 1.2"
+                "expr": "minDistanceToTag('orange-peg', entityPos('ball')) >= { \"const\": \"PROXIMITY_THRESHOLD\" }"
               }
             ],
             "actions": [
@@ -21500,7 +20930,15 @@
               }
             ]
           }
-        ]
+        ],
+        "winCondition": {
+          "type": "destroy_all",
+          "tag": "orange-peg"
+        },
+        "loseCondition": {
+          "type": "lives_zero"
+        },
+        "initialLives": 10
       }
     },
     {
@@ -21578,13 +21016,13 @@
               "height": 1.19,
               "color": "#FF1744"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.19,
-                "height": 1.19
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.19,
+              "height": 1.19,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           },
           "lemon": {
@@ -21599,13 +21037,13 @@
               "height": 1.19,
               "color": "#FFEB3B"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.19,
-                "height": 1.19
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.19,
+              "height": 1.19,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           },
           "orange": {
@@ -21620,13 +21058,13 @@
               "height": 1.19,
               "color": "#FF9100"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.19,
-                "height": 1.19
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.19,
+              "height": 1.19,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           },
           "plum": {
@@ -21641,13 +21079,13 @@
               "height": 1.19,
               "color": "#9C27B0"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.19,
-                "height": 1.19
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.19,
+              "height": 1.19,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           },
           "bell": {
@@ -21662,13 +21100,13 @@
               "height": 1.19,
               "color": "#FFD700"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.19,
-                "height": 1.19
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.19,
+              "height": 1.19,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           },
           "bar": {
@@ -21683,13 +21121,13 @@
               "height": 1.19,
               "color": "#37474F"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.19,
-                "height": 1.19
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.19,
+              "height": 1.19,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           },
           "seven": {
@@ -21704,13 +21142,13 @@
               "height": 1.19,
               "color": "#D50000"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.19,
-                "height": 1.19
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.19,
+              "height": 1.19,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           },
           "wild": {
@@ -21726,13 +21164,13 @@
               "height": 1.19,
               "color": "#00E676"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.19,
-                "height": 1.19
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.19,
+              "height": 1.19,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           },
           "scatter": {
@@ -21746,12 +21184,12 @@
               "radius": 0.595,
               "color": "#2979FF"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.595
-              }
+            "collider": {
+              "shape": "circle",
+              "radius": 0.595,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           },
           "gridCell": {
@@ -21765,13 +21203,13 @@
               "height": 1.26,
               "color": "#2D2D44"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.26,
-                "height": 1.26
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.26,
+              "height": 1.26,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           },
           "spinButton": {
@@ -21786,13 +21224,13 @@
               "height": 0.9,
               "color": "#4CAF50"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 2.2,
-                "height": 0.9
-              }
+            "collider": {
+              "shape": "box",
+              "width": 2.2,
+              "height": 0.9,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           },
           "betButton": {
@@ -21807,13 +21245,13 @@
               "height": 0.6,
               "color": "#2196F3"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.2,
-                "height": 0.6
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.2,
+              "height": 0.6,
+              "friction": 0,
+              "restitution": 0,
+              "isSensor": true
             }
           }
         },
@@ -22512,13 +21950,11 @@
               "height": 1.6,
               "color": "#37474F"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.6,
-                "height": 1.6
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.6,
+              "height": 1.6,
+              "isSensor": true
             }
           },
           "tile0": {
@@ -22533,13 +21969,11 @@
               "height": 1.4400000000000002,
               "color": "#E53935"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.4400000000000002,
-                "height": 1.4400000000000002
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.4400000000000002,
+              "height": 1.4400000000000002,
+              "isSensor": true
             }
           },
           "tile1": {
@@ -22554,13 +21988,11 @@
               "height": 1.4400000000000002,
               "color": "#1E88E5"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.4400000000000002,
-                "height": 1.4400000000000002
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.4400000000000002,
+              "height": 1.4400000000000002,
+              "isSensor": true
             }
           },
           "tile2": {
@@ -22575,13 +22007,11 @@
               "height": 1.4400000000000002,
               "color": "#43A047"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.4400000000000002,
-                "height": 1.4400000000000002
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.4400000000000002,
+              "height": 1.4400000000000002,
+              "isSensor": true
             }
           },
           "tile3": {
@@ -22596,13 +22026,11 @@
               "height": 1.4400000000000002,
               "color": "#FDD835"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.4400000000000002,
-                "height": 1.4400000000000002
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.4400000000000002,
+              "height": 1.4400000000000002,
+              "isSensor": true
             }
           },
           "tile4": {
@@ -22617,13 +22045,11 @@
               "height": 1.4400000000000002,
               "color": "#8E24AA"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.4400000000000002,
-                "height": 1.4400000000000002
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.4400000000000002,
+              "height": 1.4400000000000002,
+              "isSensor": true
             }
           },
           "placedTile0": {
@@ -22638,13 +22064,11 @@
               "height": 1.36,
               "color": "#E53935"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.36,
-                "height": 1.36
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.36,
+              "height": 1.36,
+              "isSensor": true
             }
           },
           "placedTile1": {
@@ -22659,13 +22083,11 @@
               "height": 1.36,
               "color": "#1E88E5"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.36,
-                "height": 1.36
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.36,
+              "height": 1.36,
+              "isSensor": true
             }
           },
           "placedTile2": {
@@ -22680,13 +22102,11 @@
               "height": 1.36,
               "color": "#43A047"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.36,
-                "height": 1.36
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.36,
+              "height": 1.36,
+              "isSensor": true
             }
           },
           "placedTile3": {
@@ -22701,13 +22121,11 @@
               "height": 1.36,
               "color": "#FDD835"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.36,
-                "height": 1.36
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.36,
+              "height": 1.36,
+              "isSensor": true
             }
           },
           "placedTile4": {
@@ -22722,13 +22140,11 @@
               "height": 1.36,
               "color": "#8E24AA"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.36,
-                "height": 1.36
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.36,
+              "height": 1.36,
+              "isSensor": true
             }
           }
         },
@@ -23358,6 +22774,10 @@
           "type": "fixed",
           "zoom": 1
         },
+        "background": {
+          "type": "static",
+          "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/tictactoe/121b959c-b807-45d0-9db7-184afe6489fe/14507b68-9550-49a3-8482-2b55b56c8e17.png"
+        },
         "ui": {
           "showScore": false,
           "showLives": false,
@@ -23399,6 +22819,18 @@
           "type": "custom"
         },
         "templates": {
+          "board": {
+            "id": "board",
+            "tags": [
+              "board"
+            ],
+            "visual": {
+              "type": "image",
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/tictactoe/f0c7d248-b9c7-4ece-bc59-1b599ed6a315/126a752c-f1b3-4b85-987e-e6c101c609e0.png",
+              "imageWidth": 5.2,
+              "imageHeight": 5.2
+            }
+          },
           "cellZone": {
             "id": "cellZone",
             "tags": [
@@ -23409,17 +22841,15 @@
               "type": "rect",
               "width": 1.5,
               "height": 1.5,
-              "color": "rgba(255, 255, 255, 0.05)",
-              "strokeWidth": 0.05,
-              "strokeColor": "#FFFFFF"
+              "color": "rgba(255, 255, 255, 0.1)",
+              "strokeColor": "#FFFFFF",
+              "strokeWidth": 0.02
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.5,
-                "height": 1.5
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.5,
+              "height": 1.5,
+              "isSensor": true
             }
           },
           "pieceX": {
@@ -23429,18 +22859,16 @@
               "x"
             ],
             "visual": {
-              "type": "rect",
-              "width": 1.0499999999999998,
-              "height": 1.0499999999999998,
-              "color": "#FF5252"
+              "type": "image",
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/tictactoe/c6210842-1564-4aec-adb7-5443b8955db7/5afb115e-a83b-43eb-829a-9c547947375c.png",
+              "imageWidth": 1.2000000000000002,
+              "imageHeight": 1.2000000000000002
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.0499999999999998,
-                "height": 1.0499999999999998
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.2000000000000002,
+              "height": 1.2000000000000002,
+              "isSensor": true
             }
           },
           "pieceO": {
@@ -23450,20 +22878,31 @@
               "o"
             ],
             "visual": {
-              "type": "circle",
-              "radius": 0.5249999999999999,
-              "color": "#448AFF"
+              "type": "image",
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/tictactoe/fc1d73fa-c5d2-443a-aeb6-ce1371c4f905/1c383a7a-522c-4141-908e-e1963e8e2128.png",
+              "imageWidth": 1.2000000000000002,
+              "imageHeight": 1.2000000000000002
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.5249999999999999
-              }
+            "collider": {
+              "shape": "circle",
+              "radius": 0.6000000000000001,
+              "isSensor": true
             }
           }
         },
         "entities": [
+          {
+            "id": "board",
+            "name": "Board",
+            "template": "board",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
           {
             "id": "cell00",
             "name": "Cell 0,0",
@@ -25965,14 +25404,11 @@
               "height": 0.6,
               "color": "#00000022"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 8,
-                "height": 0.6
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "box",
+              "width": 8,
+              "height": 0.6,
+              "isSensor": true
             }
           },
           "weightChoice0": {
@@ -25986,13 +25422,10 @@
               "radius": 0.4,
               "color": "#4CAF50"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.4
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "circle",
+              "radius": 0.4,
+              "isSensor": true
             }
           },
           "weightChoice1": {
@@ -26006,13 +25439,10 @@
               "radius": 0.52,
               "color": "#2196F3"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.52
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "circle",
+              "radius": 0.52,
+              "isSensor": true
             }
           },
           "weightChoice2": {
@@ -26026,13 +25456,10 @@
               "radius": 0.6400000000000001,
               "color": "#FF9800"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.6400000000000001
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "circle",
+              "radius": 0.6400000000000001,
+              "isSensor": true
             }
           },
           "placedWeight0": {
@@ -26112,13 +25539,11 @@
               "height": 0.5,
               "color": "#00000000"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 0.5,
-                "height": 0.5
-              }
+            "collider": {
+              "shape": "box",
+              "width": 0.5,
+              "height": 0.5,
+              "isSensor": true
             }
           },
           "selectionIndicator": {
@@ -26131,13 +25556,10 @@
               "radius": 0.8,
               "color": "#FFFFFF33"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "circle",
-                "radius": 0.8
-              },
-              "movement": "kinematic"
+            "collider": {
+              "shape": "circle",
+              "radius": 0.8,
+              "isSensor": true
             }
           }
         },
@@ -26546,13 +25968,11 @@
               "height": 1.2,
               "color": "#27AE60"
             },
-            "type": "zone",
-            "zone": {
-              "shape": {
-                "type": "box",
-                "width": 1.2,
-                "height": 1.2
-              }
+            "collider": {
+              "shape": "box",
+              "width": 1.2,
+              "height": 1.2,
+              "isSensor": true
             },
             "behaviors": []
           }
@@ -26846,10 +26266,11 @@
         ],
         "rules": [
           {
+            "id": "box_enter_zone",
             "trigger": {
-              "type": "zone_enter",
-              "zoneTag": "zone",
-              "entityTag": "falling-box"
+              "type": "collision",
+              "entityATag": "zone",
+              "entityBTag": "falling-box"
             },
             "actions": [
               {
@@ -26859,10 +26280,11 @@
             ]
           },
           {
+            "id": "box_exit_zone",
             "trigger": {
-              "type": "zone_exit",
-              "zoneTag": "zone",
-              "entityTag": "falling-box"
+              "type": "collision",
+              "entityATag": "zone",
+              "entityBTag": "falling-box"
             },
             "actions": [
               {

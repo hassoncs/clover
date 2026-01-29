@@ -1,0 +1,78 @@
+[
+  {
+    "id": "scoreZone",
+    "tags": ["score-zone"],
+    "visual": {
+      "type": "rect",
+      "width": 0.3,
+      "height": { "const": "PIPE_GAP" },
+      "color": "#00000000"
+    },
+    "collider": {
+      "shape": "box",
+      "width": 0.3,
+      "height": { "const": "PIPE_GAP" },
+      "isSensor": true
+    },
+    "behaviors": [
+      {
+        "type": "move",
+        "direction": "left",
+        "speed": { "const": "PIPE_SPEED" }
+      },
+      {
+        "type": "score_on_collision",
+        "withTags": ["bird"],
+        "points": 1,
+        "once": true
+      },
+      {
+        "type": "timer",
+        "duration": { "const": "PIPE_LIFETIME" },
+        "action": "destroy"
+      }
+    ]
+  },
+  {
+    "id": "ground",
+    "tags": ["ground"],
+    "visual": {
+      "type": "image",
+      "asset": "ground",
+      "width": { "const": "WORLD_WIDTH_PLUS_4" },
+      "height": { "const": "GROUND_HEIGHT" }
+    },
+    "physics": {
+      "bodyType": "static",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": { "const": "WORLD_WIDTH_PLUS_4" },
+      "height": { "const": "GROUND_HEIGHT" },
+      "friction": 0.5,
+      "restitution": 0
+    }
+  },
+  {
+    "id": "ceiling",
+    "tags": ["ceiling"],
+    "visual": {
+      "type": "image",
+      "asset": "ceiling",
+      "width": { "const": "WORLD_WIDTH_PLUS_4" },
+      "height": 0.5
+    },
+    "physics": {
+      "bodyType": "static",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": { "const": "WORLD_WIDTH_PLUS_4" },
+      "height": 0.5,
+      "friction": 0,
+      "restitution": 0
+    }
+  }
+]

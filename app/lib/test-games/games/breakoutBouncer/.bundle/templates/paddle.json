@@ -1,0 +1,24 @@
+{
+  "id": "paddle",
+  "tags": ["paddle"],
+  "visual": {
+    "type": "image",
+    "asset": "paddle",
+    "width": { "const": "PADDLE_WIDTH" },
+    "height": { "const": "PADDLE_HEIGHT" }
+  },
+  "physics": {
+    "bodyType": "dynamic",
+    "density": 5,
+    "linearDamping": 8,
+    "fixedRotation": true
+  },
+  "collider": {
+    "shape": "box",
+    "width": { "const": "PADDLE_WIDTH" },
+    "height": { "const": "PADDLE_HEIGHT" },
+    "friction": 0.1,
+    "restitution": 0.2
+  },
+  "behaviors": []
+}

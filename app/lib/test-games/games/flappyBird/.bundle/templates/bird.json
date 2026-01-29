@@ -1,0 +1,28 @@
+{
+  "id": "bird",
+  "tags": ["bird"],
+  "visual": {
+    "type": "image",
+    "asset": "bird",
+    "width": { "const": "BIRD_DIAMETER" },
+    "height": { "const": "BIRD_DIAMETER" }
+  },
+  "physics": {
+    "bodyType": "dynamic",
+    "density": 1,
+    "fixedRotation": true
+  },
+  "collider": {
+    "shape": "circle",
+    "radius": { "const": "BIRD_RADIUS" },
+    "friction": 0,
+    "restitution": 0
+  },
+  "behaviors": [
+    {
+      "type": "destroy_on_collision",
+      "withTags": ["pipe", "ground", "ceiling"],
+      "effect": "fade"
+    }
+  ]
+}

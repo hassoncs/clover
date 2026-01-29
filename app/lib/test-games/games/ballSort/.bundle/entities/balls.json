@@ -1,0 +1,114 @@
+[
+  {
+    "id": "ball-0",
+    "name": "Ball 0",
+    "template": "ball0",
+    "tags": ["ball", "color-0", "in-container-tube-0"],
+    "transform": { "x": -4.2, "y": -5.42, "angle": 0, "scaleX": 1, "scaleY": 1 }
+  },
+  {
+    "id": "ball-1",
+    "name": "Ball 1",
+    "template": "ball1",
+    "tags": ["ball", "color-1", "in-container-tube-0"],
+    "transform": { "x": -4.2, "y": -4.1, "angle": 0, "scaleX": 1, "scaleY": 1 }
+  },
+  {
+    "id": "ball-2",
+    "name": "Ball 2",
+    "template": "ball2",
+    "tags": ["ball", "color-2", "in-container-tube-0"],
+    "transform": { "x": -4.2, "y": -2.78, "angle": 0, "scaleX": 1, "scaleY": 1 }
+  },
+  {
+    "id": "ball-3",
+    "name": "Ball 3",
+    "template": "ball3",
+    "tags": ["ball", "color-3", "in-container-tube-0"],
+    "transform": { "x": -4.2, "y": -1.46, "angle": 0, "scaleX": 1, "scaleY": 1 }
+  },
+  {
+    "id": "ball-4",
+    "name": "Ball 4",
+    "template": "ball1",
+    "tags": ["ball", "color-1", "in-container-tube-1"],
+    "transform": { "x": -2.04, "y": -5.42, "angle": 0, "scaleX": 1, "scaleY": 1 }
+  },
+  {
+    "id": "ball-5",
+    "name": "Ball 5",
+    "template": "ball2",
+    "tags": ["ball", "color-2", "in-container-tube-1"],
+    "transform": { "x": -2.04, "y": -4.1, "angle": 0, "scaleX": 1, "scaleY": 1 }
+  },
+  {
+    "id": "ball-6",
+    "name": "Ball 6",
+    "template": "ball3",
+    "tags": ["ball", "color-3", "in-container-tube-1"],
+    "transform": { "x": -2.04, "y": -2.78, "angle": 0, "scaleX": 1, "scaleY": 1 }
+  },
+  {
+    "id": "ball-7",
+    "name": "Ball 7",
+    "template": "ball0",
+    "tags": ["ball", "color-0", "in-container-tube-1"],
+    "transform": { "x": -2.04, "y": -1.46, "angle": 0, "scaleX": 1, "scaleY": 1 }
+  },
+  {
+    "id": "ball-8",
+    "name": "Ball 8",
+    "template": "ball2",
+    "tags": ["ball", "color-2", "in-container-tube-2"],
+    "transform": { "x": 0.12, "y": -5.42, "angle": 0, "scaleX": 1, "scaleY": 1 }
+  },
+  {
+    "id": "ball-9",
+    "name": "Ball 9",
+    "template": "ball3",
+    "tags": ["ball", "color-3", "in-container-tube-2"],
+    "transform": { "x": 0.12, "y": -4.1, "angle": 0, "scaleX": 1, "scaleY": 1 }
+  },
+  {
+    "id": "ball-10",
+    "name": "Ball 10",
+    "template": "ball0",
+    "tags": ["ball", "color-0", "in-container-tube-2"],
+    "transform": { "x": 0.12, "y": -2.78, "angle": 0, "scaleX": 1, "scaleY": 1 }
+  },
+  {
+    "id": "ball-11",
+    "name": "Ball 11",
+    "template": "ball1",
+    "tags": ["ball", "color-1", "in-container-tube-2"],
+    "transform": { "x": 0.12, "y": -1.46, "angle": 0, "scaleX": 1, "scaleY": 1 }
+  },
+  {
+    "id": "ball-12",
+    "name": "Ball 12",
+    "template": "ball3",
+    "tags": ["ball", "color-3", "in-container-tube-3"],
+    "transform": { "x": 2.28, "y": -5.42, "angle": 0, "scaleX": 1, "scaleY": 1 }
+  },
+  {
+    "id": "ball-13",
+    "name": "Ball 13",
+    "template": "ball0",
+    "tags": ["ball", "color-0", "in-container-tube-3"],
+    "transform": { "x": 2.28, "y": -4.1, "angle": 0, "scaleX": 1, "scaleY": 1 }
+  },
+  {
+    "id": "ball-14",
+    "name": "Ball 14",
+    "template": "ball1",
+    "tags": ["ball", "color-1", "in-container-tube-3"],
+    "transform": { "x": 2.28, "y": -2.78, "angle": 0, "scaleX": 1, "scaleY": 1 }
+  },
+  {
+    "id": "ball-15",
+    "name": "Ball 15",
+    "template": "ball2",
+    "tags": ["ball", "color-2", "in-container-tube-3"],
+    "transform": { "x": 2.28, "y": -1.46, "angle": 0, "scaleX": 1, "scaleY": 1 }
+  }
+]

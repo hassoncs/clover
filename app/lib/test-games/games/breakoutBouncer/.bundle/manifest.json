@@ -1,0 +1,47 @@
+{
+  "name": "breakout-bouncer",
+  "version": "1.0.0",
+  "title": "Breakout Bouncer",
+  "description": "Classic brick-breaker with sci-fi neon assets",
+  "instructions": "Drag the paddle left/right to bounce the ball. Destroy all bricks to win!",
+  "titleHeroImageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/breakout-bouncer/title_hero.png",
+  "world": {
+    "gravity": { "x": 0, "y": 0 },
+    "pixelsPerMeter": { "const": "PIXELS_PER_METER" },
+    "bounds": { "width": { "const": "WORLD_WIDTH" }, "height": { "const": "WORLD_HEIGHT" } }
+  },
+  "background": {
+    "type": "static",
+    "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/breakout-bouncer/background.png"
+  },
+  "camera": {
+    "type": "fixed",
+    "zoom": 1
+  },
+  "input": {
+    "tapZones": [
+      { "id": "left-zone", "edge": "left", "size": 0.5, "button": "left" },
+      { "id": "right-zone", "edge": "right", "size": 0.5, "button": "right" }
+    ],
+    "debugTapZones": false,
+    "tilt": {
+      "enabled": true,
+      "sensitivity": 2,
+      "updateInterval": 16
+    }
+  },
+  "ui": {
+    "showScore": true,
+    "showLives": true,
+    "showTimer": false,
+    "backgroundColor": "#0a0a2e"
+  },
+  "winCondition": {
+    "type": "destroy_all",
+    "tag": "brick"
+  },
+  "loseCondition": {
+    "type": "lives_zero"
+  },
+  "initialLives": 3
+}

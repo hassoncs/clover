@@ -12,6 +12,35 @@ import {
 } from '../expressions/schema-helpers';
 import { AssetSystemConfigSchema, AssetSourceSchema, PromptDefaultsSchema } from './asset-system';
 
+// ============================================================================
+// Constant Reference Types (for bundle format)
+// ============================================================================
+
+/**
+ * Reference to a constant defined in GameDefinition.constants.
+ * Used in bundle format to reference values by name instead of hardcoding.
+ * Example: { const: "GRAVITY" } resolves to the value of constants.GRAVITY
+ */
+export const ConstantRefSchema = z.object({
+  const: z.string(),
+});
+
+export type ConstantRef = z.infer<typeof ConstantRefSchema>;
+
+/**
+ * Union type: either a number or a constant reference
+ */
+export const NumberOrConstantSchema = z.union([z.number(), ConstantRefSchema]);
+
+export type NumberOrConstant = z.infer<typeof NumberOrConstantSchema>;
+
+/**
+ * Union type: either a string or a constant reference
+ */
+export const StringOrConstantSchema = z.union([z.string(), ConstantRefSchema]);
+
+export type StringOrConstant = z.infer<typeof StringOrConstantSchema>;
+
 export const Vec2Schema = z.object({
   x: z.number(),
   y: z.number(),
@@ -1037,6 +1066,7 @@ export const GameDefinitionSchema = z.object({
   tileSheets: z.array(TileSheetSchema).optional(),
   tileMaps: z.array(TileMapSchema).optional(),
   input: InputConfigSchema.optional(),
+  constants: z.record(z.union([z.number(), z.string(), z.boolean()])).optional(),
 });
 
 export type GameDefinitionInput = z.infer<typeof GameDefinitionSchema>;
