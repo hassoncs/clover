@@ -167,6 +167,10 @@ func step_physics_sync(frames: int) -> Dictionary:
 	# Flush collision queries to sync state
 	rapier.space_flush_queries(space)
 	
+	# Manually sync transforms from physics server to Godot nodes
+	# This is needed because the space may be inactive (manual stepping mode)
+	_sync_body_transforms(rapier, space)
+	
 	return {
 		"ok": true,
 		"framesAdvanced": frames,
@@ -174,6 +178,54 @@ func step_physics_sync(frames: int) -> Dictionary:
 		"endFrame": _frame_counter,
 		"state": get_time_state()
 	}
+
+## Manually sync transforms and velocities from physics server to Godot RigidBody2D nodes
+## This is required when the space is inactive (manual stepping mode)
+func _sync_body_transforms(rapier, space: RID) -> void:
+	# Get all entities from the game bridge
+	var entities = _game_bridge.entities
+	if entities.is_empty():
+		return
+	
+	# Build array of body RIDs to query
+	var body_rids: Array[RID] = []
+	var entity_ids: Array[String] = []
+	
+	for entity_id in entities:
+		var node = entities[entity_id]
+		if node is RigidBody2D:
+			body_rids.append(node.get_rid())
+			entity_ids.append(entity_id)
+	
+	if body_rids.is_empty():
+		return
+	
+	# Get transforms from Rapier
+	var transforms = rapier.space_get_bodies_transform(space, body_rids)
+	
+	# Apply transforms and sync velocities back to Godot nodes
+	for i in range(body_rids.size()):
+		var node = entities[entity_ids[i]]
+		if not node or not is_instance_valid(node):
+			continue
+		
+		var rb = node as RigidBody2D
+		var body_rid = body_rids[i]
+		
+		# Sync transform
+		if i < transforms.size():
+			var transform: Transform2D = transforms[i]
+			rb.global_transform = transform
+		
+		# Sync linear velocity from physics server
+		var lin_vel = PhysicsServer2D.body_get_state(body_rid, PhysicsServer2D.BODY_STATE_LINEAR_VELOCITY)
+		if lin_vel is Vector2:
+			rb.linear_velocity = lin_vel
+		
+		# Sync angular velocity from physics server
+		var ang_vel = PhysicsServer2D.body_get_state(body_rid, PhysicsServer2D.BODY_STATE_ANGULAR_VELOCITY)
+		if ang_vel is float:
+			rb.angular_velocity = ang_vel
 
 func process_step_frame() -> void:
 	if _step_frames_remaining > 0:
