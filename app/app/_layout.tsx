@@ -1,5 +1,5 @@
 import "react-native-get-random-values";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Platform } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -8,6 +8,7 @@ import * as Linking from "expo-linking";
 import * as Sentry from "@sentry/react-native";
 import { TRPCProvider } from "@/lib/trpc/react";
 import { handleNativeAuthCallback } from "@/lib/supabase/auth";
+import { AnimatedSplashScreen } from "@/components/AnimatedSplashScreen";
 import "../global.css";
 
 Sentry.init({
@@ -56,40 +57,58 @@ function useDeepLinkHandler() {
   }, [router]);
 }
 
-function RootLayout() {
+function RootLayoutContent() {
   useDeepLinkHandler();
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen
+        name="play/[id]"
+        options={{
+          presentation: "fullScreenModal",
+        }}
+      />
+      <Stack.Screen
+        name="play/preview"
+        options={{
+          presentation: "fullScreenModal",
+        }}
+      />
+      <Stack.Screen
+        name="test-games/[id]"
+        options={{
+          presentation: "fullScreenModal",
+        }}
+      />
+      <Stack.Screen 
+        name="examples/[id]" 
+        options={{ 
+          presentation: "fullScreenModal",
+        }} 
+      />
+    </Stack>
+  );
+}
+
+function RootLayout() {
+  const [isSplashComplete, setIsSplashComplete] = useState(false);
+
+  const handleSplashComplete = useCallback(() => {
+    setIsSplashComplete(true);
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }} className={Platform.OS === "web" ? "no-select" : ""}>
       <TRPCProvider>
         <SafeAreaProvider>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen
-              name="play/[id]"
-              options={{
-                presentation: "fullScreenModal",
-              }}
-            />
-            <Stack.Screen
-              name="play/preview"
-              options={{
-                presentation: "fullScreenModal",
-              }}
-            />
-            <Stack.Screen
-              name="test-games/[id]"
-              options={{
-                presentation: "fullScreenModal",
-              }}
-            />
-            <Stack.Screen 
-              name="examples/[id]" 
-              options={{ 
-                presentation: "fullScreenModal",
-              }} 
-            />
-          </Stack>
+          {isSplashComplete ? (
+            <RootLayoutContent />
+          ) : (
+            <AnimatedSplashScreen onAnimationComplete={handleSplashComplete}>
+              <RootLayoutContent />
+            </AnimatedSplashScreen>
+          )}
         </SafeAreaProvider>
       </TRPCProvider>
     </GestureHandlerRootView>

@@ -2,6 +2,11 @@
   "expo": {
     "scheme": "slopcade",
     "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a1a2e"
+    },
     "web": {
       "output": "static",
       "favicon": "./assets/favicon.png"
