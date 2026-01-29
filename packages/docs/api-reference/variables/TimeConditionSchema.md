@@ -8,4 +8,4 @@
 
 > `const` **TimeConditionSchema**: `ZodObject`\<\{ `type`: `ZodLiteral`\<`"time"`\>; `min`: `ZodOptional`\<`ZodNumber`\>; `max`: `ZodOptional`\<`ZodNumber`\>; \}, `"strip"`, `ZodTypeAny`, \{ `type`: `"time"`; `min?`: `number`; `max?`: `number`; \}, \{ `type`: `"time"`; `min?`: `number`; `max?`: `number`; \}\>
 
-Defined in: [types/schemas.ts:319](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/schemas.ts#L319)
+Defined in: [types/schemas.ts:319](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/schemas.ts#L319)

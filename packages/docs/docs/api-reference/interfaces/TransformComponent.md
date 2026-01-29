@@ -6,7 +6,7 @@
 
 # Interface: TransformComponent
 
-Defined in: [types/entity.ts:5](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L5)
+Defined in: [types/entity.ts:7](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L7)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/entity.ts:5](https://github.com/hassoncs/clover/blob/a677c79c
 
 > **x**: `number`
 
-Defined in: [types/entity.ts:6](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L6)
+Defined in: [types/entity.ts:8](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L8)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/entity.ts:6](https://github.com/hassoncs/clover/blob/a677c79c
 
 > **y**: `number`
 
-Defined in: [types/entity.ts:7](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L7)
+Defined in: [types/entity.ts:9](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L9)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/entity.ts:7](https://github.com/hassoncs/clover/blob/a677c79c
 
 > **angle**: `number`
 
-Defined in: [types/entity.ts:8](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L8)
+Defined in: [types/entity.ts:10](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L10)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/entity.ts:8](https://github.com/hassoncs/clover/blob/a677c79c
 
 > **scaleX**: `number`
 
-Defined in: [types/entity.ts:9](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L9)
+Defined in: [types/entity.ts:11](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L11)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [types/entity.ts:9](https://github.com/hassoncs/clover/blob/a677c79c
 
 > **scaleY**: `number`
 
-Defined in: [types/entity.ts:10](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L10)
+Defined in: [types/entity.ts:12](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L12)

@@ -8,4 +8,4 @@
 
 > **ParticleEmitterType** = `"fire"` \| `"smoke"` \| `"sparks"` \| `"magic"` \| `"explosion"` \| `"rain"` \| `"snow"` \| `"bubbles"` \| `"confetti"` \| `"custom"`
 
-Defined in: [types/particles.ts:1](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L1)
+Defined in: [types/particles.ts:1](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/particles.ts#L1)

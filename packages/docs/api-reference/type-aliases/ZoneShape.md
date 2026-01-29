@@ -8,4 +8,4 @@
 
 > **ZoneShape** = \{ `type`: `"box"`; `width`: `number`; `height`: `number`; \} \| \{ `type`: `"circle"`; `radius`: `number`; \} \| \{ `type`: `"polygon"`; `vertices`: [`Vec2`](../interfaces/Vec2.md)[]; \}
 
-Defined in: [types/physics.ts:47](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L47)
+Defined in: [types/physics.ts:61](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/physics.ts#L61)

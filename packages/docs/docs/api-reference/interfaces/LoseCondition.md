@@ -6,7 +6,7 @@
 
 # Interface: LoseCondition
 
-Defined in: [types/rules.ts:638](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L638)
+Defined in: [types/rules.ts:638](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L638)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:638](https://github.com/hassoncs/clover/blob/a677c79
 
 > **type**: [`LoseConditionType`](../type-aliases/LoseConditionType.md)
 
-Defined in: [types/rules.ts:639](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L639)
+Defined in: [types/rules.ts:639](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L639)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:639](https://github.com/hassoncs/clover/blob/a677c79
 
 > `optional` **tag**: `string`
 
-Defined in: [types/rules.ts:640](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L640)
+Defined in: [types/rules.ts:640](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L640)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:640](https://github.com/hassoncs/clover/blob/a677c79
 
 > `optional` **time**: `number`
 
-Defined in: [types/rules.ts:641](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L641)
+Defined in: [types/rules.ts:641](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L641)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/rules.ts:641](https://github.com/hassoncs/clover/blob/a677c79
 
 > `optional` **entityId**: `string`
 
-Defined in: [types/rules.ts:642](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L642)
+Defined in: [types/rules.ts:642](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L642)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [types/rules.ts:642](https://github.com/hassoncs/clover/blob/a677c79
 
 > `optional` **score**: `number`
 
-Defined in: [types/rules.ts:643](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L643)
+Defined in: [types/rules.ts:643](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L643)

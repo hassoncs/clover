@@ -6,7 +6,7 @@
 
 # Interface: SlopeggleLevelOverrides
 
-Defined in: [types/LevelDefinition.ts:143](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L143)
+Defined in: [types/LevelDefinition.ts:143](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L143)
 
 Slopeggle-specific level configuration overrides.
 These parameters influence how the peg layout and game elements are generated.
@@ -17,7 +17,7 @@ These parameters influence how the peg layout and game elements are generated.
 
 > `optional` **pegRows**: `number`
 
-Defined in: [types/LevelDefinition.ts:145](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L145)
+Defined in: [types/LevelDefinition.ts:145](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L145)
 
 Number of peg rows to generate
 
@@ -27,7 +27,7 @@ Number of peg rows to generate
 
 > `optional` **orangePegCount**: `number`
 
-Defined in: [types/LevelDefinition.ts:147](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L147)
+Defined in: [types/LevelDefinition.ts:147](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L147)
 
 Total number of orange (target) pegs
 
@@ -37,7 +37,7 @@ Total number of orange (target) pegs
 
 > `optional` **hasBucket**: `boolean`
 
-Defined in: [types/LevelDefinition.ts:149](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L149)
+Defined in: [types/LevelDefinition.ts:149](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L149)
 
 Include the free-ball bucket hazard
 
@@ -47,7 +47,7 @@ Include the free-ball bucket hazard
 
 > `optional` **hasPortals**: `boolean`
 
-Defined in: [types/LevelDefinition.ts:151](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L151)
+Defined in: [types/LevelDefinition.ts:151](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L151)
 
 Include teleport portals
 
@@ -57,7 +57,7 @@ Include teleport portals
 
 > `optional` **worldWidth**: `number`
 
-Defined in: [types/LevelDefinition.ts:153](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L153)
+Defined in: [types/LevelDefinition.ts:153](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L153)
 
 World width in meters
 
@@ -67,7 +67,7 @@ World width in meters
 
 > `optional` **worldHeight**: `number`
 
-Defined in: [types/LevelDefinition.ts:155](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L155)
+Defined in: [types/LevelDefinition.ts:155](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L155)
 
 World height in meters
 
@@ -77,7 +77,7 @@ World height in meters
 
 > `optional` **launchForceMultiplier**: `number`
 
-Defined in: [types/LevelDefinition.ts:157](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L157)
+Defined in: [types/LevelDefinition.ts:157](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L157)
 
 Ball launch force multiplier
 
@@ -87,6 +87,6 @@ Ball launch force multiplier
 
 > `optional` **dramaticFinalPeg**: `boolean`
 
-Defined in: [types/LevelDefinition.ts:159](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L159)
+Defined in: [types/LevelDefinition.ts:159](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L159)
 
 Enable slow-motion on final peg

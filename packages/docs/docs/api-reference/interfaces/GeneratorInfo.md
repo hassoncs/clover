@@ -6,7 +6,7 @@
 
 # Interface: GeneratorInfo
 
-Defined in: [types/LevelDefinition.ts:85](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L85)
+Defined in: [types/LevelDefinition.ts:85](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L85)
 
 Generator provenance tracking.
 Enables reproducibility and debugging of AI-generated levels.
@@ -17,7 +17,7 @@ Enables reproducibility and debugging of AI-generated levels.
 
 > **generatorId**: `string`
 
-Defined in: [types/LevelDefinition.ts:87](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L87)
+Defined in: [types/LevelDefinition.ts:87](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L87)
 
 Identifier of the generator that created this level
 
@@ -27,7 +27,7 @@ Identifier of the generator that created this level
 
 > **generatorVersion**: `string`
 
-Defined in: [types/LevelDefinition.ts:89](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L89)
+Defined in: [types/LevelDefinition.ts:89](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L89)
 
 Semantic version of the generator
 
@@ -37,7 +37,7 @@ Semantic version of the generator
 
 > **seed**: `string`
 
-Defined in: [types/LevelDefinition.ts:91](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L91)
+Defined in: [types/LevelDefinition.ts:91](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L91)
 
 Seed used for deterministic generation
 
@@ -47,7 +47,7 @@ Seed used for deterministic generation
 
 > `optional` **generatedAt**: `number`
 
-Defined in: [types/LevelDefinition.ts:93](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L93)
+Defined in: [types/LevelDefinition.ts:93](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L93)
 
 Timestamp of generation (Unix epoch milliseconds)
 
@@ -57,6 +57,6 @@ Timestamp of generation (Unix epoch milliseconds)
 
 > `optional` **generatorParams**: `Record`\<`string`, `unknown`\>
 
-Defined in: [types/LevelDefinition.ts:95](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L95)
+Defined in: [types/LevelDefinition.ts:95](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L95)
 
 Generator-specific parameters used

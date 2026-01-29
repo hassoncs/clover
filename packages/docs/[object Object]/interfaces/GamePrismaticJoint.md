@@ -6,7 +6,7 @@
 
 # Interface: GamePrismaticJoint
 
-Defined in: [types/GameDefinition.ts:219](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L219)
+Defined in: [types/GameDefinition.ts:219](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L219)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/GameDefinition.ts:219](https://github.com/hassoncs/clover/blo
 
 > **id**: `string`
 
-Defined in: [types/GameDefinition.ts:186](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L186)
+Defined in: [types/GameDefinition.ts:186](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L186)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/GameDefinition.ts:186](https://github.com/hassoncs/clover/blo
 
 > **entityA**: `string`
 
-Defined in: [types/GameDefinition.ts:187](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L187)
+Defined in: [types/GameDefinition.ts:187](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L187)
 
 #### Inherited from
 
@@ -42,7 +42,7 @@ Defined in: [types/GameDefinition.ts:187](https://github.com/hassoncs/clover/blo
 
 > **entityB**: `string`
 
-Defined in: [types/GameDefinition.ts:188](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L188)
+Defined in: [types/GameDefinition.ts:188](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L188)
 
 #### Inherited from
 
@@ -54,7 +54,7 @@ Defined in: [types/GameDefinition.ts:188](https://github.com/hassoncs/clover/blo
 
 > `optional` **collideConnected**: `boolean`
 
-Defined in: [types/GameDefinition.ts:189](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L189)
+Defined in: [types/GameDefinition.ts:189](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L189)
 
 #### Inherited from
 
@@ -66,7 +66,7 @@ Defined in: [types/GameDefinition.ts:189](https://github.com/hassoncs/clover/blo
 
 > **type**: `"prismatic"`
 
-Defined in: [types/GameDefinition.ts:220](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L220)
+Defined in: [types/GameDefinition.ts:220](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L220)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [types/GameDefinition.ts:220](https://github.com/hassoncs/clover/blo
 
 > **anchor**: [`Vec2`](Vec2.md)
 
-Defined in: [types/GameDefinition.ts:221](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L221)
+Defined in: [types/GameDefinition.ts:221](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L221)
 
 ***
 
@@ -82,7 +82,7 @@ Defined in: [types/GameDefinition.ts:221](https://github.com/hassoncs/clover/blo
 
 > **axis**: [`Vec2`](Vec2.md)
 
-Defined in: [types/GameDefinition.ts:222](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L222)
+Defined in: [types/GameDefinition.ts:222](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L222)
 
 ***
 
@@ -90,7 +90,7 @@ Defined in: [types/GameDefinition.ts:222](https://github.com/hassoncs/clover/blo
 
 > `optional` **enableLimit**: `boolean`
 
-Defined in: [types/GameDefinition.ts:223](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L223)
+Defined in: [types/GameDefinition.ts:223](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L223)
 
 ***
 
@@ -98,7 +98,7 @@ Defined in: [types/GameDefinition.ts:223](https://github.com/hassoncs/clover/blo
 
 > `optional` **lowerTranslation**: `number`
 
-Defined in: [types/GameDefinition.ts:224](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L224)
+Defined in: [types/GameDefinition.ts:224](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L224)
 
 ***
 
@@ -106,7 +106,7 @@ Defined in: [types/GameDefinition.ts:224](https://github.com/hassoncs/clover/blo
 
 > `optional` **upperTranslation**: `number`
 
-Defined in: [types/GameDefinition.ts:225](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L225)
+Defined in: [types/GameDefinition.ts:225](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L225)
 
 ***
 
@@ -114,7 +114,7 @@ Defined in: [types/GameDefinition.ts:225](https://github.com/hassoncs/clover/blo
 
 > `optional` **enableMotor**: `boolean`
 
-Defined in: [types/GameDefinition.ts:226](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L226)
+Defined in: [types/GameDefinition.ts:226](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L226)
 
 ***
 
@@ -122,7 +122,7 @@ Defined in: [types/GameDefinition.ts:226](https://github.com/hassoncs/clover/blo
 
 > `optional` **motorSpeed**: `number`
 
-Defined in: [types/GameDefinition.ts:227](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L227)
+Defined in: [types/GameDefinition.ts:227](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L227)
 
 ***
 
@@ -130,4 +130,4 @@ Defined in: [types/GameDefinition.ts:227](https://github.com/hassoncs/clover/blo
 
 > `optional` **maxMotorForce**: `number`
 
-Defined in: [types/GameDefinition.ts:228](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L228)
+Defined in: [types/GameDefinition.ts:228](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L228)

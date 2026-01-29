@@ -6,7 +6,7 @@
 
 # Interface: MagneticBehavior
 
-Defined in: [types/behavior.ts:162](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L162)
+Defined in: [types/behavior.ts:162](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L162)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/behavior.ts:162](https://github.com/hassoncs/clover/blob/a677
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L46)
+Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L46)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/a677c
 
 > **type**: `"magnetic"`
 
-Defined in: [types/behavior.ts:163](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L163)
+Defined in: [types/behavior.ts:163](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L163)
 
 #### Overrides
 
@@ -42,7 +42,7 @@ Defined in: [types/behavior.ts:163](https://github.com/hassoncs/clover/blob/a677
 
 > **strength**: `number`
 
-Defined in: [types/behavior.ts:164](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L164)
+Defined in: [types/behavior.ts:164](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L164)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [types/behavior.ts:164](https://github.com/hassoncs/clover/blob/a677
 
 > **radius**: `number`
 
-Defined in: [types/behavior.ts:165](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L165)
+Defined in: [types/behavior.ts:165](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L165)
 
 ***
 
@@ -58,7 +58,7 @@ Defined in: [types/behavior.ts:165](https://github.com/hassoncs/clover/blob/a677
 
 > `optional` **attractsTags**: `string`[]
 
-Defined in: [types/behavior.ts:166](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L166)
+Defined in: [types/behavior.ts:166](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L166)
 
 ***
 
@@ -66,4 +66,4 @@ Defined in: [types/behavior.ts:166](https://github.com/hassoncs/clover/blob/a677
 
 > `optional` **repels**: `boolean`
 
-Defined in: [types/behavior.ts:167](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L167)
+Defined in: [types/behavior.ts:167](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L167)

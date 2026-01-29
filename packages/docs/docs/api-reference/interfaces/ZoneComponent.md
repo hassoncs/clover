@@ -6,7 +6,7 @@
 
 # Interface: ZoneComponent
 
-Defined in: [types/physics.ts:52](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L52)
+Defined in: [types/physics.ts:66](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/physics.ts#L66)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/physics.ts:52](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **movement**: [`ZoneMovementType`](../type-aliases/ZoneMovementType.md)
 
-Defined in: [types/physics.ts:53](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L53)
+Defined in: [types/physics.ts:67](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/physics.ts#L67)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/physics.ts:53](https://github.com/hassoncs/clover/blob/a677c7
 
 > **shape**: [`ZoneShape`](../type-aliases/ZoneShape.md)
 
-Defined in: [types/physics.ts:54](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L54)
+Defined in: [types/physics.ts:68](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/physics.ts#L68)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/physics.ts:54](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **categoryBits**: `number`
 
-Defined in: [types/physics.ts:55](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L55)
+Defined in: [types/physics.ts:69](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/physics.ts#L69)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/physics.ts:55](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **maskBits**: `number`
 
-Defined in: [types/physics.ts:56](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L56)
+Defined in: [types/physics.ts:70](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/physics.ts#L70)

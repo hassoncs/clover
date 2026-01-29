@@ -6,7 +6,7 @@
 
 # Interface: LevelDefinition
 
-Defined in: [types/LevelDefinition.ts:199](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L199)
+Defined in: [types/LevelDefinition.ts:199](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L199)
 
 Level definition overlay for AI-generated levels.
 
@@ -37,7 +37,7 @@ defined at the pack level and merged with level-specific overrides.
 
 > **schemaVersion**: `number`
 
-Defined in: [types/LevelDefinition.ts:201](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L201)
+Defined in: [types/LevelDefinition.ts:201](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L201)
 
 Schema version for compatibility checking
 
@@ -47,7 +47,7 @@ Schema version for compatibility checking
 
 > **packId**: `string`
 
-Defined in: [types/LevelDefinition.ts:203](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L203)
+Defined in: [types/LevelDefinition.ts:203](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L203)
 
 Globally unique pack identifier
 
@@ -57,7 +57,7 @@ Globally unique pack identifier
 
 > **levelId**: `string`
 
-Defined in: [types/LevelDefinition.ts:205](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L205)
+Defined in: [types/LevelDefinition.ts:205](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L205)
 
 Level identity within the pack
 
@@ -67,7 +67,7 @@ Level identity within the pack
 
 > **generatorId**: `string`
 
-Defined in: [types/LevelDefinition.ts:207](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L207)
+Defined in: [types/LevelDefinition.ts:207](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L207)
 
 Generator provenance
 
@@ -77,7 +77,7 @@ Generator provenance
 
 > **generatorVersion**: `string`
 
-Defined in: [types/LevelDefinition.ts:208](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L208)
+Defined in: [types/LevelDefinition.ts:208](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L208)
 
 ***
 
@@ -85,7 +85,7 @@ Defined in: [types/LevelDefinition.ts:208](https://github.com/hassoncs/clover/bl
 
 > **seed**: `string`
 
-Defined in: [types/LevelDefinition.ts:209](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L209)
+Defined in: [types/LevelDefinition.ts:209](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L209)
 
 ***
 
@@ -93,7 +93,7 @@ Defined in: [types/LevelDefinition.ts:209](https://github.com/hassoncs/clover/bl
 
 > `optional` **title**: `string`
 
-Defined in: [types/LevelDefinition.ts:211](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L211)
+Defined in: [types/LevelDefinition.ts:211](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L211)
 
 Human-readable title
 
@@ -103,7 +103,7 @@ Human-readable title
 
 > `optional` **description**: `string`
 
-Defined in: [types/LevelDefinition.ts:213](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L213)
+Defined in: [types/LevelDefinition.ts:213](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L213)
 
 Brief description
 
@@ -113,7 +113,7 @@ Brief description
 
 > `optional` **difficulty**: [`LevelDifficultyParams`](LevelDifficultyParams.md)
 
-Defined in: [types/LevelDefinition.ts:215](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L215)
+Defined in: [types/LevelDefinition.ts:215](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L215)
 
 Difficulty configuration (optional hints for generator)
 
@@ -123,7 +123,7 @@ Difficulty configuration (optional hints for generator)
 
 > `optional` **ordinal**: `number`
 
-Defined in: [types/LevelDefinition.ts:217](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L217)
+Defined in: [types/LevelDefinition.ts:217](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L217)
 
 Ordinal position in progression (1-indexed)
 
@@ -133,7 +133,7 @@ Ordinal position in progression (1-indexed)
 
 > `optional` **generatedAt**: `number`
 
-Defined in: [types/LevelDefinition.ts:219](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L219)
+Defined in: [types/LevelDefinition.ts:219](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L219)
 
 Generation timestamp
 
@@ -143,7 +143,7 @@ Generation timestamp
 
 > `optional` **generatorParams**: `Record`\<`string`, `unknown`\>
 
-Defined in: [types/LevelDefinition.ts:221](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L221)
+Defined in: [types/LevelDefinition.ts:221](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L221)
 
 Generator-specific parameters
 
@@ -153,7 +153,7 @@ Generator-specific parameters
 
 > `optional` **overrides**: [`GameOverrides`](GameOverrides.md)
 
-Defined in: [types/LevelDefinition.ts:223](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L223)
+Defined in: [types/LevelDefinition.ts:223](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L223)
 
 Game-specific overrides (namespaced by game ID)
 
@@ -163,6 +163,6 @@ Game-specific overrides (namespaced by game ID)
 
 > `optional` **metadata**: `Record`\<`string`, `unknown`\>
 
-Defined in: [types/LevelDefinition.ts:225](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L225)
+Defined in: [types/LevelDefinition.ts:225](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L225)
 
 Custom metadata not covered by standard fields

@@ -6,7 +6,7 @@
 
 # Interface: BodyEntityDefinition
 
-Defined in: [types/entity.ts:144](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L144)
+Defined in: [types/entity.ts:121](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L121)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/entity.ts:144](https://github.com/hassoncs/clover/blob/a677c7
 
 > **id**: `string`
 
-Defined in: [types/entity.ts:129](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L129)
+Defined in: [types/entity.ts:103](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L103)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/entity.ts:129](https://github.com/hassoncs/clover/blob/a677c7
 
 > **name**: `string`
 
-Defined in: [types/entity.ts:130](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L130)
+Defined in: [types/entity.ts:104](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L104)
 
 #### Inherited from
 
@@ -42,7 +42,7 @@ Defined in: [types/entity.ts:130](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **template**: `string`
 
-Defined in: [types/entity.ts:131](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L131)
+Defined in: [types/entity.ts:105](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L105)
 
 #### Inherited from
 
@@ -54,7 +54,7 @@ Defined in: [types/entity.ts:131](https://github.com/hassoncs/clover/blob/a677c7
 
 > **transform**: [`TransformComponent`](TransformComponent.md)
 
-Defined in: [types/entity.ts:132](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L132)
+Defined in: [types/entity.ts:106](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L106)
 
 #### Inherited from
 
@@ -62,15 +62,39 @@ Defined in: [types/entity.ts:132](https://github.com/hassoncs/clover/blob/a677c7
 
 ***
 
-### sprite?
+### visual?
 
-> `optional` **sprite**: [`SpriteComponent`](../type-aliases/SpriteComponent.md)
+> `optional` **visual**: [`VisualComponent`](../type-aliases/VisualComponent.md)
 
-Defined in: [types/entity.ts:133](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L133)
+Defined in: [types/entity.ts:107](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L107)
 
 #### Inherited from
 
-[`BaseEntityDefinition`](BaseEntityDefinition.md).[`sprite`](BaseEntityDefinition.md#sprite)
+[`BaseEntityDefinition`](BaseEntityDefinition.md).[`visual`](BaseEntityDefinition.md#visual)
+
+***
+
+### collider?
+
+> `optional` **collider**: [`ColliderComponent`](../type-aliases/ColliderComponent.md)
+
+Defined in: [types/entity.ts:109](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L109)
+
+#### Inherited from
+
+[`BaseEntityDefinition`](BaseEntityDefinition.md).[`collider`](BaseEntityDefinition.md#collider)
+
+***
+
+### character?
+
+> `optional` **character**: [`CharacterComponent`](CharacterComponent.md)
+
+Defined in: [types/entity.ts:110](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L110)
+
+#### Inherited from
+
+[`BaseEntityDefinition`](BaseEntityDefinition.md).[`character`](BaseEntityDefinition.md#character)
 
 ***
 
@@ -78,7 +102,7 @@ Defined in: [types/entity.ts:133](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **behaviors**: [`Behavior`](../type-aliases/Behavior.md)[]
 
-Defined in: [types/entity.ts:134](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L134)
+Defined in: [types/entity.ts:111](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L111)
 
 #### Inherited from
 
@@ -90,7 +114,7 @@ Defined in: [types/entity.ts:134](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **conditionalBehaviors**: [`ConditionalBehavior`](ConditionalBehavior.md)[]
 
-Defined in: [types/entity.ts:135](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L135)
+Defined in: [types/entity.ts:112](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L112)
 
 #### Inherited from
 
@@ -102,7 +126,7 @@ Defined in: [types/entity.ts:135](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **tags**: `string`[]
 
-Defined in: [types/entity.ts:136](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L136)
+Defined in: [types/entity.ts:113](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L113)
 
 #### Inherited from
 
@@ -114,7 +138,7 @@ Defined in: [types/entity.ts:136](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **layer**: `number`
 
-Defined in: [types/entity.ts:137](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L137)
+Defined in: [types/entity.ts:114](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L114)
 
 #### Inherited from
 
@@ -126,7 +150,7 @@ Defined in: [types/entity.ts:137](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **visible**: `boolean`
 
-Defined in: [types/entity.ts:138](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L138)
+Defined in: [types/entity.ts:115](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L115)
 
 #### Inherited from
 
@@ -138,7 +162,7 @@ Defined in: [types/entity.ts:138](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **active**: `boolean`
 
-Defined in: [types/entity.ts:139](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L139)
+Defined in: [types/entity.ts:116](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L116)
 
 #### Inherited from
 
@@ -150,7 +174,7 @@ Defined in: [types/entity.ts:139](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **assetPackId**: `string`
 
-Defined in: [types/entity.ts:140](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L140)
+Defined in: [types/entity.ts:117](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L117)
 
 #### Inherited from
 
@@ -162,7 +186,7 @@ Defined in: [types/entity.ts:140](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **children**: [`ChildEntityDefinition`](ChildEntityDefinition.md)[]
 
-Defined in: [types/entity.ts:141](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L141)
+Defined in: [types/entity.ts:118](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L118)
 
 #### Inherited from
 
@@ -174,12 +198,16 @@ Defined in: [types/entity.ts:141](https://github.com/hassoncs/clover/blob/a677c7
 
 > **type**: `"body"`
 
-Defined in: [types/entity.ts:145](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L145)
+Defined in: [types/entity.ts:122](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L122)
 
 ***
 
 ### physics
 
-> **physics**: [`PhysicsComponent`](../type-aliases/PhysicsComponent.md)
+> **physics**: [`PhysicsComponent`](PhysicsComponent.md)
 
-Defined in: [types/entity.ts:146](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L146)
+Defined in: [types/entity.ts:123](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L123)
+
+#### Overrides
+
+[`BaseEntityDefinition`](BaseEntityDefinition.md).[`physics`](BaseEntityDefinition.md#physics)

@@ -6,9 +6,7 @@
 
 # Interface: ChildTemplateDefinition
 
-Defined in: [types/entity.ts:80](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L80)
-
-Definition for a child entity within a template (prefab pattern)
+Defined in: [types/entity.ts:67](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L67)
 
 ## Properties
 
@@ -16,9 +14,7 @@ Definition for a child entity within a template (prefab pattern)
 
 > **name**: `string`
 
-Defined in: [types/entity.ts:82](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L82)
-
-Name of the child
+Defined in: [types/entity.ts:68](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L68)
 
 ***
 
@@ -26,9 +22,7 @@ Name of the child
 
 > **template**: `string`
 
-Defined in: [types/entity.ts:84](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L84)
-
-Template to instantiate
+Defined in: [types/entity.ts:69](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L69)
 
 ***
 
@@ -36,9 +30,7 @@ Template to instantiate
 
 > **localTransform**: [`TransformComponent`](TransformComponent.md)
 
-Defined in: [types/entity.ts:86](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L86)
-
-Transform relative to parent
+Defined in: [types/entity.ts:70](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L70)
 
 ***
 
@@ -46,27 +38,39 @@ Transform relative to parent
 
 > `optional` **slot**: `string`
 
-Defined in: [types/entity.ts:88](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L88)
-
-Reference to parent's slot for coordinates (optional)
+Defined in: [types/entity.ts:71](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L71)
 
 ***
 
-### sprite?
+### visual?
 
-> `optional` **sprite**: `Partial`\<[`SpriteComponent`](../type-aliases/SpriteComponent.md)\>
+> `optional` **visual**: `Partial`\<[`VisualComponent`](../type-aliases/VisualComponent.md)\>
 
-Defined in: [types/entity.ts:91](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L91)
-
-Optional overrides
+Defined in: [types/entity.ts:72](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L72)
 
 ***
 
 ### physics?
 
-> `optional` **physics**: `Partial`\<[`PhysicsComponent`](../type-aliases/PhysicsComponent.md)\>
+> `optional` **physics**: `Partial`\<[`PhysicsComponent`](PhysicsComponent.md)\>
 
-Defined in: [types/entity.ts:92](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L92)
+Defined in: [types/entity.ts:73](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L73)
+
+***
+
+### collider?
+
+> `optional` **collider**: `Partial`\<[`ColliderComponent`](../type-aliases/ColliderComponent.md)\>
+
+Defined in: [types/entity.ts:74](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L74)
+
+***
+
+### character?
+
+> `optional` **character**: `Partial`\<[`CharacterComponent`](CharacterComponent.md)\>
+
+Defined in: [types/entity.ts:75](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L75)
 
 ***
 
@@ -74,7 +78,7 @@ Defined in: [types/entity.ts:92](https://github.com/hassoncs/clover/blob/a677c79
 
 > `optional` **behaviors**: [`Behavior`](../type-aliases/Behavior.md)[]
 
-Defined in: [types/entity.ts:93](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L93)
+Defined in: [types/entity.ts:76](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L76)
 
 ***
 
@@ -82,7 +86,7 @@ Defined in: [types/entity.ts:93](https://github.com/hassoncs/clover/blob/a677c79
 
 > `optional` **tags**: `string`[]
 
-Defined in: [types/entity.ts:94](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L94)
+Defined in: [types/entity.ts:77](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L77)
 
 ***
 
@@ -90,6 +94,4 @@ Defined in: [types/entity.ts:94](https://github.com/hassoncs/clover/blob/a677c79
 
 > `optional` **children**: `ChildTemplateDefinition`[]
 
-Defined in: [types/entity.ts:97](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L97)
-
-Recursive nesting
+Defined in: [types/entity.ts:78](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L78)

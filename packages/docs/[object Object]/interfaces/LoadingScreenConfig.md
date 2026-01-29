@@ -6,7 +6,7 @@
 
 # Interface: LoadingScreenConfig
 
-Defined in: [types/GameDefinition.ts:309](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L309)
+Defined in: [types/GameDefinition.ts:309](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L309)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:309](https://github.com/hassoncs/clover/blo
 
 > `optional` **backgroundImageUrl**: `string`
 
-Defined in: [types/GameDefinition.ts:311](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L311)
+Defined in: [types/GameDefinition.ts:311](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L311)
 
 Legacy: full URL or relative path
 
@@ -24,7 +24,7 @@ Legacy: full URL or relative path
 
 > `optional` **backgroundAssetRef**: `string`
 
-Defined in: [types/GameDefinition.ts:313](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L313)
+Defined in: [types/GameDefinition.ts:313](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L313)
 
 New: asset UUID reference for `backgroundImageUrl`
 
@@ -34,7 +34,7 @@ New: asset UUID reference for `backgroundImageUrl`
 
 > `optional` **progressBarImageUrl**: `string`
 
-Defined in: [types/GameDefinition.ts:315](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L315)
+Defined in: [types/GameDefinition.ts:315](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L315)
 
 Legacy: full URL or relative path
 
@@ -44,7 +44,7 @@ Legacy: full URL or relative path
 
 > `optional` **progressBarAssetRef**: `string`
 
-Defined in: [types/GameDefinition.ts:317](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L317)
+Defined in: [types/GameDefinition.ts:317](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L317)
 
 New: asset UUID reference for `progressBarImageUrl`
 
@@ -54,7 +54,7 @@ New: asset UUID reference for `progressBarImageUrl`
 
 > `optional` **progressBarFillImageUrl**: `string`
 
-Defined in: [types/GameDefinition.ts:319](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L319)
+Defined in: [types/GameDefinition.ts:319](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L319)
 
 Legacy: full URL or relative path
 
@@ -64,7 +64,7 @@ Legacy: full URL or relative path
 
 > `optional` **progressBarFillAssetRef**: `string`
 
-Defined in: [types/GameDefinition.ts:321](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L321)
+Defined in: [types/GameDefinition.ts:321](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L321)
 
 New: asset UUID reference for `progressBarFillImageUrl`
 
@@ -74,7 +74,7 @@ New: asset UUID reference for `progressBarFillImageUrl`
 
 > `optional` **backgroundColor**: `string`
 
-Defined in: [types/GameDefinition.ts:322](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L322)
+Defined in: [types/GameDefinition.ts:322](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L322)
 
 ***
 
@@ -82,7 +82,7 @@ Defined in: [types/GameDefinition.ts:322](https://github.com/hassoncs/clover/blo
 
 > `optional` **progressBarColor**: `string`
 
-Defined in: [types/GameDefinition.ts:323](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L323)
+Defined in: [types/GameDefinition.ts:323](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L323)
 
 ***
 
@@ -90,4 +90,4 @@ Defined in: [types/GameDefinition.ts:323](https://github.com/hassoncs/clover/blo
 
 > `optional` **textColor**: `string`
 
-Defined in: [types/GameDefinition.ts:324](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L324)
+Defined in: [types/GameDefinition.ts:324](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L324)

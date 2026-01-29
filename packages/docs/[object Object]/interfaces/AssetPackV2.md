@@ -6,7 +6,7 @@
 
 # Interface: AssetPackV2
 
-Defined in: [types/asset-system.ts:72](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-system.ts#L72)
+Defined in: [types/asset-system.ts:72](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/asset-system.ts#L72)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/asset-system.ts:72](https://github.com/hassoncs/clover/blob/a
 
 > **id**: `string`
 
-Defined in: [types/asset-system.ts:73](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-system.ts#L73)
+Defined in: [types/asset-system.ts:73](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/asset-system.ts#L73)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/asset-system.ts:73](https://github.com/hassoncs/clover/blob/a
 
 > **gameId**: `string`
 
-Defined in: [types/asset-system.ts:74](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-system.ts#L74)
+Defined in: [types/asset-system.ts:74](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/asset-system.ts#L74)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/asset-system.ts:74](https://github.com/hassoncs/clover/blob/a
 
 > **name**: `string`
 
-Defined in: [types/asset-system.ts:75](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-system.ts#L75)
+Defined in: [types/asset-system.ts:75](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/asset-system.ts#L75)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/asset-system.ts:75](https://github.com/hassoncs/clover/blob/a
 
 > `optional` **description**: `string`
 
-Defined in: [types/asset-system.ts:76](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-system.ts#L76)
+Defined in: [types/asset-system.ts:76](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/asset-system.ts#L76)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [types/asset-system.ts:76](https://github.com/hassoncs/clover/blob/a
 
 > `optional` **promptDefaults**: [`PromptDefaults`](PromptDefaults.md)
 
-Defined in: [types/asset-system.ts:77](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-system.ts#L77)
+Defined in: [types/asset-system.ts:77](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/asset-system.ts#L77)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [types/asset-system.ts:77](https://github.com/hassoncs/clover/blob/a
 
 > **createdAt**: `number`
 
-Defined in: [types/asset-system.ts:78](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-system.ts#L78)
+Defined in: [types/asset-system.ts:78](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/asset-system.ts#L78)
 
 ***
 
@@ -62,4 +62,4 @@ Defined in: [types/asset-system.ts:78](https://github.com/hassoncs/clover/blob/a
 
 > `optional` **deletedAt**: `number`
 
-Defined in: [types/asset-system.ts:79](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-system.ts#L79)
+Defined in: [types/asset-system.ts:79](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/asset-system.ts#L79)

@@ -6,7 +6,7 @@
 
 # Interface: TileLayer
 
-Defined in: [types/tilemap.ts:42](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/tilemap.ts#L42)
+Defined in: [types/tilemap.ts:42](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/tilemap.ts#L42)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/tilemap.ts:42](https://github.com/hassoncs/clover/blob/a677c7
 
 > **id**: `string`
 
-Defined in: [types/tilemap.ts:43](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/tilemap.ts#L43)
+Defined in: [types/tilemap.ts:43](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/tilemap.ts#L43)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/tilemap.ts:43](https://github.com/hassoncs/clover/blob/a677c7
 
 > **name**: `string`
 
-Defined in: [types/tilemap.ts:44](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/tilemap.ts#L44)
+Defined in: [types/tilemap.ts:44](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/tilemap.ts#L44)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/tilemap.ts:44](https://github.com/hassoncs/clover/blob/a677c7
 
 > **type**: [`TileLayerType`](../type-aliases/TileLayerType.md)
 
-Defined in: [types/tilemap.ts:45](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/tilemap.ts#L45)
+Defined in: [types/tilemap.ts:45](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/tilemap.ts#L45)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/tilemap.ts:45](https://github.com/hassoncs/clover/blob/a677c7
 
 > **visible**: `boolean`
 
-Defined in: [types/tilemap.ts:46](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/tilemap.ts#L46)
+Defined in: [types/tilemap.ts:46](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/tilemap.ts#L46)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [types/tilemap.ts:46](https://github.com/hassoncs/clover/blob/a677c7
 
 > **opacity**: `number`
 
-Defined in: [types/tilemap.ts:47](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/tilemap.ts#L47)
+Defined in: [types/tilemap.ts:47](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/tilemap.ts#L47)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [types/tilemap.ts:47](https://github.com/hassoncs/clover/blob/a677c7
 
 > **data**: `number`[]
 
-Defined in: [types/tilemap.ts:49](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/tilemap.ts#L49)
+Defined in: [types/tilemap.ts:49](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/tilemap.ts#L49)
 
 ***
 
@@ -62,7 +62,7 @@ Defined in: [types/tilemap.ts:49](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **parallaxFactor**: `number`
 
-Defined in: [types/tilemap.ts:51](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/tilemap.ts#L51)
+Defined in: [types/tilemap.ts:51](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/tilemap.ts#L51)
 
 ***
 
@@ -70,4 +70,4 @@ Defined in: [types/tilemap.ts:51](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **zIndex**: `number`
 
-Defined in: [types/tilemap.ts:52](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/tilemap.ts#L52)
+Defined in: [types/tilemap.ts:52](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/tilemap.ts#L52)

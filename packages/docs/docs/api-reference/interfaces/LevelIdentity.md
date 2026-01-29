@@ -6,7 +6,7 @@
 
 # Interface: LevelIdentity
 
-Defined in: [types/LevelDefinition.ts:70](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L70)
+Defined in: [types/LevelDefinition.ts:70](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L70)
 
 Core level identity and generation metadata.
 Required fields present in every level definition.
@@ -17,7 +17,7 @@ Required fields present in every level definition.
 
 > **levelId**: `string`
 
-Defined in: [types/LevelDefinition.ts:72](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L72)
+Defined in: [types/LevelDefinition.ts:72](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L72)
 
 Unique level identifier within the pack (e.g., "1", "boss", "bonus")
 
@@ -27,7 +27,7 @@ Unique level identifier within the pack (e.g., "1", "boss", "bonus")
 
 > `optional` **title**: `string`
 
-Defined in: [types/LevelDefinition.ts:74](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L74)
+Defined in: [types/LevelDefinition.ts:74](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L74)
 
 Human-readable title for the level
 
@@ -37,7 +37,7 @@ Human-readable title for the level
 
 > `optional` **description**: `string`
 
-Defined in: [types/LevelDefinition.ts:76](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L76)
+Defined in: [types/LevelDefinition.ts:76](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L76)
 
 Brief description of the level
 
@@ -47,6 +47,6 @@ Brief description of the level
 
 > `optional` **ordinal**: `number`
 
-Defined in: [types/LevelDefinition.ts:78](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L78)
+Defined in: [types/LevelDefinition.ts:78](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L78)
 
 Ordinal position in the pack (1-indexed)

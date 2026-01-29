@@ -6,7 +6,7 @@
 
 # Interface: ContainerDeselectAction
 
-Defined in: [types/rules.ts:492](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L492)
+Defined in: [types/rules.ts:492](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L492)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:492](https://github.com/hassoncs/clover/blob/a677c79
 
 > **type**: `"container_deselect"`
 
-Defined in: [types/rules.ts:493](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L493)
+Defined in: [types/rules.ts:493](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L493)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [types/rules.ts:493](https://github.com/hassoncs/clover/blob/a677c79
 
 > **container**: `string`
 
-Defined in: [types/rules.ts:494](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L494)
+Defined in: [types/rules.ts:494](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L494)

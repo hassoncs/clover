@@ -1,5 +1,12 @@
 [
   {
+    "id": "angryBurns",
+    "title": "Angry Burns",
+    "description": "Pull back the cannon to launch cannonballs at structures and destroy all the targets to win!",
+    "gameId": "angry-burns",
+    "sourcePath": "app/lib/test-games/games/angryBurns/game.ts"
+  },
+  {
     "id": "ballSort",
     "title": "Ball Sort",
     "description": "Sort colored balls into tubes - each tube should contain only one color",
@@ -69,6 +76,13 @@
     "sourcePath": "app/lib/test-games/games/dungeonCrawler/game.ts"
   },
   {
+    "id": "endlessScrollPlayground",
+    "title": "Endless Scroll Playground",
+    "description": "Debug endless scrolling mechanics - pipes and background",
+    "gameId": "endless-scroll-playground",
+    "sourcePath": "app/lib/test-games/games/endlessScrollPlayground/game.ts"
+  },
+  {
     "id": "flappyBird",
     "title": "Flappy Bird",
     "description": "Tap to fly through the pipes without hitting them",
@@ -97,6 +111,20 @@
     "sourcePath": "app/lib/test-games/games/iceSlide/game.ts"
   },
   {
+    "id": "imageNoPhysicsTest",
+    "title": "Image No Physics Test",
+    "description": "Minimal test: image with NO physics/collider (Node2D + Visual only)",
+    "gameId": "image-no-physics-test",
+    "sourcePath": "app/lib/test-games/games/imageNoPhysicsTest/game.ts"
+  },
+  {
+    "id": "imageWithPhysicsTest",
+    "title": "Image With Physics Test",
+    "description": "Minimal test: image WITH physics (RigidBody2D + Collider + Visual)",
+    "gameId": "image-with-physics-test",
+    "sourcePath": "app/lib/test-games/games/imageWithPhysicsTest/game.ts"
+  },
+  {
     "id": "memoryMatch",
     "title": "Memory Match",
     "description": "Flip cards to find matching pairs",
@@ -123,6 +151,13 @@
     "description": "Match 4+ same-colored puyos to pop them and create chains!",
     "gameId": "test-puyo-puyo",
     "sourcePath": "app/lib/test-games/games/puyoPuyo/game.ts"
+  },
+  {
+    "id": "renderTest",
+    "title": "Render Test",
+    "description": "Minimal test: sprite-only, zone, and physics entities",
+    "gameId": "render-test",
+    "sourcePath": "app/lib/test-games/games/renderTest/game.ts"
   },
   {
     "id": "rpgProgressionDemo",
@@ -179,5 +214,12 @@
     "description": "Defend your base from waves of enemies. Towers target nearest enemies and fire projectiles. Enemies follow a path to reach your base.",
     "gameId": "test-tower-defense",
     "sourcePath": "app/lib/test-games/games/towerDefense/game.ts"
+  },
+  {
+    "id": "zoneTest",
+    "title": "Zone Test",
+    "description": "Minimal test: zone sensor (collider with isSensor)",
+    "gameId": "zone-test",
+    "sourcePath": "app/lib/test-games/games/zoneTest/game.ts"
   }
 ]

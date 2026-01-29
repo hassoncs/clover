@@ -8,7 +8,7 @@
 
 > `const` **CURRENT\_LEVEL\_SCHEMA\_VERSION**: `1` = `1`
 
-Defined in: [types/LevelDefinition.ts:283](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L283)
+Defined in: [types/LevelDefinition.ts:283](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L283)
 
 Current schema major version.
 Increment this when making breaking changes.

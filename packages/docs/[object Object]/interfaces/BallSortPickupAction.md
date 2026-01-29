@@ -6,7 +6,7 @@
 
 # Interface: BallSortPickupAction
 
-Defined in: [types/rules.ts:419](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L419)
+Defined in: [types/rules.ts:419](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L419)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:419](https://github.com/hassoncs/clover/blob/a677c79
 
 > **type**: `"ball_sort_pickup"`
 
-Defined in: [types/rules.ts:420](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L420)
+Defined in: [types/rules.ts:420](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L420)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [types/rules.ts:420](https://github.com/hassoncs/clover/blob/a677c79
 
 > `optional` **tubeIndex**: `number`
 
-Defined in: [types/rules.ts:421](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L421)
+Defined in: [types/rules.ts:421](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L421)

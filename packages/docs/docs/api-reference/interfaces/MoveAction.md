@@ -6,7 +6,7 @@
 
 # Interface: MoveAction
 
-Defined in: [types/rules.ts:352](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L352)
+Defined in: [types/rules.ts:352](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L352)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:352](https://github.com/hassoncs/clover/blob/a677c79
 
 > **type**: `"move"`
 
-Defined in: [types/rules.ts:353](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L353)
+Defined in: [types/rules.ts:353](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L353)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/rules.ts:353](https://github.com/hassoncs/clover/blob/a677c79
 
 > **target**: [`EntityTarget`](../type-aliases/EntityTarget.md)
 
-Defined in: [types/rules.ts:354](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L354)
+Defined in: [types/rules.ts:354](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L354)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/rules.ts:354](https://github.com/hassoncs/clover/blob/a677c79
 
 > **direction**: `"left"` \| `"right"` \| `"up"` \| `"down"` \| `"toward_touch"` \| `"tilt_direction"` \| `"toward_touch_x"` \| `"toward_touch_y"` \| `"toward_mouse_x"`
 
-Defined in: [types/rules.ts:355](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L355)
+Defined in: [types/rules.ts:355](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L355)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/rules.ts:355](https://github.com/hassoncs/clover/blob/a677c79
 
 > **speed**: `Value`\<`number`\>
 
-Defined in: [types/rules.ts:356](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L356)
+Defined in: [types/rules.ts:356](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L356)

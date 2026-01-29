@@ -6,7 +6,7 @@
 
 # Interface: ParticlePoolState
 
-Defined in: [types/particles.ts:104](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L104)
+Defined in: [types/particles.ts:104](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/particles.ts#L104)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/particles.ts:104](https://github.com/hassoncs/clover/blob/a67
 
 > **particles**: [`Particle`](Particle.md)[]
 
-Defined in: [types/particles.ts:105](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L105)
+Defined in: [types/particles.ts:105](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/particles.ts#L105)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/particles.ts:105](https://github.com/hassoncs/clover/blob/a67
 
 > **activeCount**: `number`
 
-Defined in: [types/particles.ts:106](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L106)
+Defined in: [types/particles.ts:106](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/particles.ts#L106)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/particles.ts:106](https://github.com/hassoncs/clover/blob/a67
 
 > **spawnAccumulator**: `number`
 
-Defined in: [types/particles.ts:107](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L107)
+Defined in: [types/particles.ts:107](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/particles.ts#L107)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/particles.ts:107](https://github.com/hassoncs/clover/blob/a67
 
 > **burstCooldown**: `number`
 
-Defined in: [types/particles.ts:108](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L108)
+Defined in: [types/particles.ts:108](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/particles.ts#L108)

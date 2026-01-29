@@ -6,7 +6,7 @@
 
 # Interface: PackStats
 
-Defined in: [types/LevelPack.ts:148](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L148)
+Defined in: [types/LevelPack.ts:148](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L148)
 
 Statistics about the pack.
 
@@ -16,7 +16,7 @@ Statistics about the pack.
 
 > **levelCount**: `number`
 
-Defined in: [types/LevelPack.ts:150](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L150)
+Defined in: [types/LevelPack.ts:150](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L150)
 
 Total number of levels
 
@@ -26,7 +26,7 @@ Total number of levels
 
 > `optional` **estimatedPlaytimeMinutes**: `number`
 
-Defined in: [types/LevelPack.ts:152](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L152)
+Defined in: [types/LevelPack.ts:152](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L152)
 
 Total estimated playtime in minutes
 
@@ -36,7 +36,7 @@ Total estimated playtime in minutes
 
 > `optional` **uniqueSeeds**: `number`
 
-Defined in: [types/LevelPack.ts:154](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L154)
+Defined in: [types/LevelPack.ts:154](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L154)
 
 Number of unique level seeds (for procedural content)
 
@@ -46,6 +46,6 @@ Number of unique level seeds (for procedural content)
 
 > `optional` **difficultyDistribution**: [`PackDifficultyDistribution`](PackDifficultyDistribution.md)
 
-Defined in: [types/LevelPack.ts:156](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L156)
+Defined in: [types/LevelPack.ts:156](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L156)
 
 Difficulty distribution summary

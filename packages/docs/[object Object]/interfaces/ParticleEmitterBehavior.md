@@ -6,7 +6,7 @@
 
 # Interface: ParticleEmitterBehavior
 
-Defined in: [types/behavior.ts:206](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L206)
+Defined in: [types/behavior.ts:206](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L206)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/behavior.ts:206](https://github.com/hassoncs/clover/blob/a677
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L46)
+Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L46)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/a677c
 
 > **type**: `"particle_emitter"`
 
-Defined in: [types/behavior.ts:207](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L207)
+Defined in: [types/behavior.ts:207](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L207)
 
 #### Overrides
 
@@ -42,7 +42,7 @@ Defined in: [types/behavior.ts:207](https://github.com/hassoncs/clover/blob/a677
 
 > **emitterType**: [`ParticleEmitterType`](../type-aliases/ParticleEmitterType.md)
 
-Defined in: [types/behavior.ts:208](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L208)
+Defined in: [types/behavior.ts:208](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L208)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [types/behavior.ts:208](https://github.com/hassoncs/clover/blob/a677
 
 > `optional` **offset**: [`Vec2`](Vec2.md)
 
-Defined in: [types/behavior.ts:209](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L209)
+Defined in: [types/behavior.ts:209](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L209)
 
 ***
 
@@ -58,4 +58,4 @@ Defined in: [types/behavior.ts:209](https://github.com/hassoncs/clover/blob/a677
 
 > `optional` **emitWhile**: `"always"` \| `"moving"` \| `"enabled"`
 
-Defined in: [types/behavior.ts:210](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L210)
+Defined in: [types/behavior.ts:210](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L210)

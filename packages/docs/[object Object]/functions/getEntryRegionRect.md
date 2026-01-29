@@ -8,7 +8,7 @@
 
 > **getEntryRegionRect**(`entry`, `_layout`): [`SheetRegion`](../type-aliases/SheetRegion.md)
 
-Defined in: [types/asset-sheet.ts:219](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-sheet.ts#L219)
+Defined in: [types/asset-sheet.ts:219](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/asset-sheet.ts#L219)
 
 Get the region rect for a given entry
 

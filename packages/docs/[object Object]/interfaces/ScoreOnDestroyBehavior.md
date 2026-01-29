@@ -6,7 +6,7 @@
 
 # Interface: ScoreOnDestroyBehavior
 
-Defined in: [types/behavior.ts:177](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L177)
+Defined in: [types/behavior.ts:177](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L177)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/behavior.ts:177](https://github.com/hassoncs/clover/blob/a677
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L46)
+Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L46)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/a677c
 
 > **type**: `"score_on_destroy"`
 
-Defined in: [types/behavior.ts:178](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L178)
+Defined in: [types/behavior.ts:178](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L178)
 
 #### Overrides
 
@@ -42,4 +42,4 @@ Defined in: [types/behavior.ts:178](https://github.com/hassoncs/clover/blob/a677
 
 > **points**: `Value`\<`number`\>
 
-Defined in: [types/behavior.ts:179](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L179)
+Defined in: [types/behavior.ts:179](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L179)

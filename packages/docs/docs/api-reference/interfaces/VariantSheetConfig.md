@@ -6,7 +6,7 @@
 
 # Interface: VariantSheetConfig
 
-Defined in: [types/GameDefinition.ts:394](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L394)
+Defined in: [types/GameDefinition.ts:394](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L394)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:394](https://github.com/hassoncs/clover/blo
 
 > **enabled**: `boolean`
 
-Defined in: [types/GameDefinition.ts:395](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L395)
+Defined in: [types/GameDefinition.ts:395](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L395)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/GameDefinition.ts:395](https://github.com/hassoncs/clover/blo
 
 > **groupId**: `string`
 
-Defined in: [types/GameDefinition.ts:396](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L396)
+Defined in: [types/GameDefinition.ts:396](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L396)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/GameDefinition.ts:396](https://github.com/hassoncs/clover/blo
 
 > **atlasUrl**: `string`
 
-Defined in: [types/GameDefinition.ts:398](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L398)
+Defined in: [types/GameDefinition.ts:398](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L398)
 
 Legacy: full URL or relative path
 
@@ -40,7 +40,7 @@ Legacy: full URL or relative path
 
 > `optional` **atlasAssetRef**: `string`
 
-Defined in: [types/GameDefinition.ts:400](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L400)
+Defined in: [types/GameDefinition.ts:400](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L400)
 
 New: asset UUID reference for `atlasUrl`
 
@@ -50,7 +50,7 @@ New: asset UUID reference for `atlasUrl`
 
 > `optional` **metadataUrl**: `string`
 
-Defined in: [types/GameDefinition.ts:402](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L402)
+Defined in: [types/GameDefinition.ts:402](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L402)
 
 Legacy: full URL or relative path
 
@@ -60,7 +60,7 @@ Legacy: full URL or relative path
 
 > `optional` **metadataAssetRef**: `string`
 
-Defined in: [types/GameDefinition.ts:404](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L404)
+Defined in: [types/GameDefinition.ts:404](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L404)
 
 New: asset UUID reference for `metadataUrl`
 
@@ -70,7 +70,7 @@ New: asset UUID reference for `metadataUrl`
 
 > **layout**: `object`
 
-Defined in: [types/GameDefinition.ts:405](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L405)
+Defined in: [types/GameDefinition.ts:405](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L405)
 
 #### columns
 

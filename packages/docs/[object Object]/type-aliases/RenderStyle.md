@@ -8,4 +8,4 @@
 
 > **RenderStyle** = \{ `kind`: `"circle"`; \} \| \{ `kind`: `"square"`; \} \| \{ `kind`: `"sprite"`; `imageUrl`: `string`; \} \| \{ `kind`: `"trail"`; `length`: `number`; \}
 
-Defined in: [types/particles.ts:26](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L26)
+Defined in: [types/particles.ts:26](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/particles.ts#L26)

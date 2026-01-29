@@ -6,7 +6,7 @@
 
 # Interface: PackProgress
 
-Defined in: [types/LevelPack.ts:264](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L264)
+Defined in: [types/LevelPack.ts:264](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L264)
 
 Player's overall progress within a pack.
 
@@ -16,7 +16,7 @@ Player's overall progress within a pack.
 
 > **packId**: `string`
 
-Defined in: [types/LevelPack.ts:266](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L266)
+Defined in: [types/LevelPack.ts:266](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L266)
 
 Pack identifier
 
@@ -26,7 +26,7 @@ Pack identifier
 
 > **completedLevelIds**: `string`[]
 
-Defined in: [types/LevelPack.ts:268](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L268)
+Defined in: [types/LevelPack.ts:268](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L268)
 
 Levels completed
 
@@ -36,7 +36,7 @@ Levels completed
 
 > `optional` **currentLevelId**: `string`
 
-Defined in: [types/LevelPack.ts:270](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L270)
+Defined in: [types/LevelPack.ts:270](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L270)
 
 Current level being played
 
@@ -46,7 +46,7 @@ Current level being played
 
 > **totalStars**: `number`
 
-Defined in: [types/LevelPack.ts:272](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L272)
+Defined in: [types/LevelPack.ts:272](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L272)
 
 Total stars earned
 
@@ -56,7 +56,7 @@ Total stars earned
 
 > **maxStars**: `number`
 
-Defined in: [types/LevelPack.ts:274](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L274)
+Defined in: [types/LevelPack.ts:274](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L274)
 
 Maximum possible stars
 
@@ -66,7 +66,7 @@ Maximum possible stars
 
 > **progressPercent**: `number`
 
-Defined in: [types/LevelPack.ts:276](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L276)
+Defined in: [types/LevelPack.ts:276](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L276)
 
 Overall progress percentage
 
@@ -76,7 +76,7 @@ Overall progress percentage
 
 > **levelProgress**: `Record`\<`string`, [`PackLevelProgress`](PackLevelProgress.md)\>
 
-Defined in: [types/LevelPack.ts:278](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L278)
+Defined in: [types/LevelPack.ts:278](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L278)
 
 Detailed level progress
 
@@ -86,6 +86,6 @@ Detailed level progress
 
 > **updatedAt**: `number`
 
-Defined in: [types/LevelPack.ts:280](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L280)
+Defined in: [types/LevelPack.ts:280](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L280)
 
 Last update timestamp

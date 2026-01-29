@@ -6,7 +6,7 @@
 
 # Interface: BaseEntityTemplate
 
-Defined in: [types/entity.ts:100](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L100)
+Defined in: [types/entity.ts:81](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L81)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/entity.ts:100](https://github.com/hassoncs/clover/blob/a677c7
 
 > **id**: `string`
 
-Defined in: [types/entity.ts:101](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L101)
+Defined in: [types/entity.ts:82](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L82)
 
 ***
 
@@ -22,25 +22,39 @@ Defined in: [types/entity.ts:101](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **description**: `string`
 
-Defined in: [types/entity.ts:103](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L103)
-
-Human-readable description for AI image generation prompts
+Defined in: [types/entity.ts:83](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L83)
 
 ***
 
-### sprite?
+### visual?
 
-> `optional` **sprite**: [`SpriteComponent`](../type-aliases/SpriteComponent.md)
+> `optional` **visual**: [`VisualComponent`](../type-aliases/VisualComponent.md)
 
-Defined in: [types/entity.ts:104](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L104)
+Defined in: [types/entity.ts:84](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L84)
 
 ***
 
 ### physics?
 
-> `optional` **physics**: [`PhysicsComponent`](../type-aliases/PhysicsComponent.md)
+> `optional` **physics**: [`PhysicsComponent`](PhysicsComponent.md)
 
-Defined in: [types/entity.ts:105](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L105)
+Defined in: [types/entity.ts:85](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L85)
+
+***
+
+### collider?
+
+> `optional` **collider**: [`ColliderComponent`](../type-aliases/ColliderComponent.md)
+
+Defined in: [types/entity.ts:86](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L86)
+
+***
+
+### character?
+
+> `optional` **character**: [`CharacterComponent`](CharacterComponent.md)
+
+Defined in: [types/entity.ts:87](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L87)
 
 ***
 
@@ -48,7 +62,7 @@ Defined in: [types/entity.ts:105](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **behaviors**: [`Behavior`](../type-aliases/Behavior.md)[]
 
-Defined in: [types/entity.ts:106](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L106)
+Defined in: [types/entity.ts:88](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L88)
 
 ***
 
@@ -56,9 +70,7 @@ Defined in: [types/entity.ts:106](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **conditionalBehaviors**: [`ConditionalBehavior`](ConditionalBehavior.md)[]
 
-Defined in: [types/entity.ts:108](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L108)
-
-Tag-driven conditional behavior groups (exclusive by priority)
+Defined in: [types/entity.ts:89](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L89)
 
 ***
 
@@ -66,7 +78,7 @@ Tag-driven conditional behavior groups (exclusive by priority)
 
 > `optional` **tags**: `string`[]
 
-Defined in: [types/entity.ts:109](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L109)
+Defined in: [types/entity.ts:90](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L90)
 
 ***
 
@@ -74,7 +86,7 @@ Defined in: [types/entity.ts:109](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **layer**: `number`
 
-Defined in: [types/entity.ts:110](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L110)
+Defined in: [types/entity.ts:91](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L91)
 
 ***
 
@@ -82,7 +94,7 @@ Defined in: [types/entity.ts:110](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **slots**: `Record`\<`string`, [`SlotDefinition`](SlotDefinition.md)\>
 
-Defined in: [types/entity.ts:111](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L111)
+Defined in: [types/entity.ts:92](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L92)
 
 ***
 
@@ -90,9 +102,7 @@ Defined in: [types/entity.ts:111](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **children**: [`ChildTemplateDefinition`](ChildTemplateDefinition.md)[]
 
-Defined in: [types/entity.ts:113](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L113)
-
-Template-level children (part of prefab)
+Defined in: [types/entity.ts:93](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L93)
 
 ***
 
@@ -100,9 +110,7 @@ Template-level children (part of prefab)
 
 > `optional` **type**: `"body"` \| `"zone"`
 
-Defined in: [types/entity.ts:115](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L115)
-
-Explicit type annotation - inferred from presence of physics vs zone
+Defined in: [types/entity.ts:94](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L94)
 
 ***
 
@@ -110,6 +118,4 @@ Explicit type annotation - inferred from presence of physics vs zone
 
 > `optional` **zone**: [`ZoneComponent`](ZoneComponent.md)
 
-Defined in: [types/entity.ts:117](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/entity.ts#L117)
-
-Zone configuration (only for zone type entities)
+Defined in: [types/entity.ts:95](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/entity.ts#L95)

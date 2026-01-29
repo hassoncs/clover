@@ -6,7 +6,7 @@
 
 # Interface: SheetAnimation
 
-Defined in: [types/asset-sheet.ts:91](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-sheet.ts#L91)
+Defined in: [types/asset-sheet.ts:91](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/asset-sheet.ts#L91)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/asset-sheet.ts:91](https://github.com/hassoncs/clover/blob/a6
 
 > **id**: `string`
 
-Defined in: [types/asset-sheet.ts:92](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-sheet.ts#L92)
+Defined in: [types/asset-sheet.ts:92](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/asset-sheet.ts#L92)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/asset-sheet.ts:92](https://github.com/hassoncs/clover/blob/a6
 
 > **frames**: `string`[]
 
-Defined in: [types/asset-sheet.ts:93](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-sheet.ts#L93)
+Defined in: [types/asset-sheet.ts:93](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/asset-sheet.ts#L93)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/asset-sheet.ts:93](https://github.com/hassoncs/clover/blob/a6
 
 > **fps**: `number`
 
-Defined in: [types/asset-sheet.ts:94](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-sheet.ts#L94)
+Defined in: [types/asset-sheet.ts:94](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/asset-sheet.ts#L94)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/asset-sheet.ts:94](https://github.com/hassoncs/clover/blob/a6
 
 > `optional` **loop**: `boolean`
 
-Defined in: [types/asset-sheet.ts:95](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/asset-sheet.ts#L95)
+Defined in: [types/asset-sheet.ts:95](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/asset-sheet.ts#L95)

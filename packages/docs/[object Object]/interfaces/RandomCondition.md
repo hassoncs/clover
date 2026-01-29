@@ -6,7 +6,7 @@
 
 # Interface: RandomCondition
 
-Defined in: [types/rules.ts:154](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L154)
+Defined in: [types/rules.ts:154](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L154)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/rules.ts:154](https://github.com/hassoncs/clover/blob/a677c79
 
 > **type**: `"random"`
 
-Defined in: [types/rules.ts:155](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L155)
+Defined in: [types/rules.ts:155](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L155)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [types/rules.ts:155](https://github.com/hassoncs/clover/blob/a677c79
 
 > **probability**: `number`
 
-Defined in: [types/rules.ts:156](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L156)
+Defined in: [types/rules.ts:156](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L156)

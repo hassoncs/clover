@@ -6,7 +6,7 @@
 
 # Interface: PackProgression
 
-Defined in: [types/LevelPack.ts:130](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L130)
+Defined in: [types/LevelPack.ts:130](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L130)
 
 Progression rules for the pack.
 Defines how players unlock and progress through levels.
@@ -17,7 +17,7 @@ Defines how players unlock and progress through levels.
 
 > **mode**: `"linear"` \| `"branching"` \| `"freeform"`
 
-Defined in: [types/LevelPack.ts:132](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L132)
+Defined in: [types/LevelPack.ts:132](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L132)
 
 Progression mode
 
@@ -27,7 +27,7 @@ Progression mode
 
 > `optional` **unlockAfterCompleted**: `string`[]
 
-Defined in: [types/LevelPack.ts:134](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L134)
+Defined in: [types/LevelPack.ts:134](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L134)
 
 Required levels to unlock the next level (for linear mode)
 
@@ -37,7 +37,7 @@ Required levels to unlock the next level (for linear mode)
 
 > `optional` **prerequisites**: `string`[]
 
-Defined in: [types/LevelPack.ts:136](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L136)
+Defined in: [types/LevelPack.ts:136](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L136)
 
 Levels that must be completed to unlock this pack (prerequisites)
 
@@ -47,7 +47,7 @@ Levels that must be completed to unlock this pack (prerequisites)
 
 > `optional` **unlockThreshold**: `number`
 
-Defined in: [types/LevelPack.ts:138](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L138)
+Defined in: [types/LevelPack.ts:138](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L138)
 
 Stars or points required to unlock (for branching mode)
 
@@ -57,7 +57,7 @@ Stars or points required to unlock (for branching mode)
 
 > `optional` **isReleased**: `boolean`
 
-Defined in: [types/LevelPack.ts:140](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L140)
+Defined in: [types/LevelPack.ts:140](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L140)
 
 Whether the pack is currently available
 
@@ -67,6 +67,6 @@ Whether the pack is currently available
 
 > `optional` **releaseDate**: `number`
 
-Defined in: [types/LevelPack.ts:142](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L142)
+Defined in: [types/LevelPack.ts:142](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L142)
 
 Release date for time-gated packs

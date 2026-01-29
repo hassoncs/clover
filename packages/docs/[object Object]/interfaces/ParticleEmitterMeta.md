@@ -6,7 +6,7 @@
 
 # Interface: ParticleEmitterMeta
 
-Defined in: [types/particles.ts:332](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L332)
+Defined in: [types/particles.ts:332](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/particles.ts#L332)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/particles.ts:332](https://github.com/hassoncs/clover/blob/a67
 
 > **type**: [`ParticleEmitterType`](../type-aliases/ParticleEmitterType.md)
 
-Defined in: [types/particles.ts:333](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L333)
+Defined in: [types/particles.ts:333](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/particles.ts#L333)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/particles.ts:333](https://github.com/hassoncs/clover/blob/a67
 
 > **displayName**: `string`
 
-Defined in: [types/particles.ts:334](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L334)
+Defined in: [types/particles.ts:334](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/particles.ts#L334)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/particles.ts:334](https://github.com/hassoncs/clover/blob/a67
 
 > **description**: `string`
 
-Defined in: [types/particles.ts:335](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L335)
+Defined in: [types/particles.ts:335](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/particles.ts#L335)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types/particles.ts:335](https://github.com/hassoncs/clover/blob/a67
 
 > **icon**: `string`
 
-Defined in: [types/particles.ts:336](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L336)
+Defined in: [types/particles.ts:336](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/particles.ts#L336)

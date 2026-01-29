@@ -6,7 +6,7 @@
 
 # Interface: InputConfig
 
-Defined in: [types/GameDefinition.ts:382](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L382)
+Defined in: [types/GameDefinition.ts:382](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L382)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/GameDefinition.ts:382](https://github.com/hassoncs/clover/blo
 
 > `optional` **tapZones**: [`TapZone`](TapZone.md)[]
 
-Defined in: [types/GameDefinition.ts:383](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L383)
+Defined in: [types/GameDefinition.ts:383](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L383)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/GameDefinition.ts:383](https://github.com/hassoncs/clover/blo
 
 > `optional` **debugTapZones**: `boolean`
 
-Defined in: [types/GameDefinition.ts:384](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L384)
+Defined in: [types/GameDefinition.ts:384](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L384)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/GameDefinition.ts:384](https://github.com/hassoncs/clover/blo
 
 > `optional` **debugInputs**: `boolean`
 
-Defined in: [types/GameDefinition.ts:386](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L386)
+Defined in: [types/GameDefinition.ts:386](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L386)
 
 Enable comprehensive input debug overlay showing tap positions, entity targets, drag vectors, etc.
 
@@ -40,7 +40,7 @@ Enable comprehensive input debug overlay showing tap positions, entity targets, 
 
 > `optional` **virtualButtons**: [`VirtualButton`](VirtualButton.md)[]
 
-Defined in: [types/GameDefinition.ts:387](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L387)
+Defined in: [types/GameDefinition.ts:387](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L387)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [types/GameDefinition.ts:387](https://github.com/hassoncs/clover/blo
 
 > `optional` **virtualJoystick**: [`VirtualJoystick`](VirtualJoystick.md)
 
-Defined in: [types/GameDefinition.ts:388](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L388)
+Defined in: [types/GameDefinition.ts:388](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L388)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [types/GameDefinition.ts:388](https://github.com/hassoncs/clover/blo
 
 > `optional` **virtualDPad**: [`VirtualDPad`](VirtualDPad.md)
 
-Defined in: [types/GameDefinition.ts:389](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L389)
+Defined in: [types/GameDefinition.ts:389](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L389)
 
 ***
 
@@ -64,7 +64,7 @@ Defined in: [types/GameDefinition.ts:389](https://github.com/hassoncs/clover/blo
 
 > `optional` **enableHaptics**: `boolean`
 
-Defined in: [types/GameDefinition.ts:390](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L390)
+Defined in: [types/GameDefinition.ts:390](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L390)
 
 ***
 
@@ -72,4 +72,4 @@ Defined in: [types/GameDefinition.ts:390](https://github.com/hassoncs/clover/blo
 
 > `optional` **tilt**: [`TiltConfig`](TiltConfig.md)
 
-Defined in: [types/GameDefinition.ts:391](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L391)
+Defined in: [types/GameDefinition.ts:391](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L391)

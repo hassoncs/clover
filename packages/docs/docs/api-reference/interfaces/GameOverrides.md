@@ -6,7 +6,7 @@
 
 # Interface: GameOverrides
 
-Defined in: [types/LevelDefinition.ts:130](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L130)
+Defined in: [types/LevelDefinition.ts:130](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L130)
 
 Game-specific overrides for the level.
 Use namespaced keys to avoid collisions between games.
@@ -42,7 +42,7 @@ Future games: add their overrides here - key is game ID, value is game-specific 
 
 > `optional` **slopeggle**: [`SlopeggleLevelOverrides`](SlopeggleLevelOverrides.md)
 
-Defined in: [types/LevelDefinition.ts:132](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L132)
+Defined in: [types/LevelDefinition.ts:132](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L132)
 
 Slopeggle-specific level parameters
 
@@ -52,6 +52,6 @@ Slopeggle-specific level parameters
 
 > `optional` **pinball**: [`PinballLevelOverrides`](PinballLevelOverrides.md)
 
-Defined in: [types/LevelDefinition.ts:134](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelDefinition.ts#L134)
+Defined in: [types/LevelDefinition.ts:134](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelDefinition.ts#L134)
 
 Pinball-specific level parameters

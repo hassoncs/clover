@@ -6,7 +6,7 @@
 
 # Interface: MoveBehavior
 
-Defined in: [types/behavior.ts:49](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L49)
+Defined in: [types/behavior.ts:49](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L49)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types/behavior.ts:49](https://github.com/hassoncs/clover/blob/a677c
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L46)
+Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L46)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [types/behavior.ts:46](https://github.com/hassoncs/clover/blob/a677c
 
 > **type**: `"move"`
 
-Defined in: [types/behavior.ts:50](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L50)
+Defined in: [types/behavior.ts:50](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L50)
 
 #### Overrides
 
@@ -42,7 +42,7 @@ Defined in: [types/behavior.ts:50](https://github.com/hassoncs/clover/blob/a677c
 
 > **direction**: [`MoveDirection`](../type-aliases/MoveDirection.md)
 
-Defined in: [types/behavior.ts:51](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L51)
+Defined in: [types/behavior.ts:51](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L51)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [types/behavior.ts:51](https://github.com/hassoncs/clover/blob/a677c
 
 > **speed**: `number`
 
-Defined in: [types/behavior.ts:52](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L52)
+Defined in: [types/behavior.ts:52](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L52)
 
 ***
 
@@ -58,7 +58,7 @@ Defined in: [types/behavior.ts:52](https://github.com/hassoncs/clover/blob/a677c
 
 > `optional` **target**: `string`
 
-Defined in: [types/behavior.ts:53](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L53)
+Defined in: [types/behavior.ts:53](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L53)
 
 ***
 
@@ -66,7 +66,7 @@ Defined in: [types/behavior.ts:53](https://github.com/hassoncs/clover/blob/a677c
 
 > `optional` **movementType**: `"velocity"` \| `"force"`
 
-Defined in: [types/behavior.ts:54](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L54)
+Defined in: [types/behavior.ts:54](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L54)
 
 ***
 
@@ -74,4 +74,4 @@ Defined in: [types/behavior.ts:54](https://github.com/hassoncs/clover/blob/a677c
 
 > `optional` **patrol**: [`Bounds`](Bounds.md)
 
-Defined in: [types/behavior.ts:55](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/behavior.ts#L55)
+Defined in: [types/behavior.ts:55](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/behavior.ts#L55)

@@ -8,4 +8,4 @@
 
 > **DestroyTarget** = \{ `type`: `"by_id"`; `entityId`: `string`; \} \| \{ `type`: `"by_tag"`; `tag`: `string`; `count?`: `number`; \} \| \{ `type`: `"collision_entities"`; \} \| \{ `type`: `"all"`; \}
 
-Defined in: [types/rules.ts:253](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/rules.ts#L253)
+Defined in: [types/rules.ts:253](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/rules.ts#L253)

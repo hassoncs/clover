@@ -6,7 +6,7 @@
 
 # Interface: PackGameConfig
 
-Defined in: [types/LevelPack.ts:175](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L175)
+Defined in: [types/LevelPack.ts:175](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L175)
 
 Base game configuration shared by all levels in the pack.
 This contains the stable GameDefinition that doesn't change per level.
@@ -30,7 +30,7 @@ This contains the stable GameDefinition that doesn't change per level.
 
 > `optional` **baseGameDefinition**: `Record`\<`string`, `unknown`\>
 
-Defined in: [types/LevelPack.ts:177](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L177)
+Defined in: [types/LevelPack.ts:177](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L177)
 
 Base game definition shared across all levels
 
@@ -40,7 +40,7 @@ Base game definition shared across all levels
 
 > `optional` **fixedTemplateIds**: `string`[]
 
-Defined in: [types/LevelPack.ts:179](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L179)
+Defined in: [types/LevelPack.ts:179](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L179)
 
 Template IDs that are fixed across all levels
 
@@ -50,7 +50,7 @@ Template IDs that are fixed across all levels
 
 > `optional` **variableTemplateIds**: `string`[]
 
-Defined in: [types/LevelPack.ts:181](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L181)
+Defined in: [types/LevelPack.ts:181](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L181)
 
 Template IDs that vary per level (generated/overridden)
 
@@ -60,7 +60,7 @@ Template IDs that vary per level (generated/overridden)
 
 > `optional` **fixedEntityIds**: `string`[]
 
-Defined in: [types/LevelPack.ts:183](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L183)
+Defined in: [types/LevelPack.ts:183](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L183)
 
 Shared entities that exist in every level
 
@@ -70,6 +70,6 @@ Shared entities that exist in every level
 
 > `optional` **variableEntityIds**: `string`[]
 
-Defined in: [types/LevelPack.ts:185](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L185)
+Defined in: [types/LevelPack.ts:185](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L185)
 
 Entity IDs that are level-specific

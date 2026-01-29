@@ -6,7 +6,7 @@
 
 # Interface: ParticleEmitterComponent
 
-Defined in: [types/particles.ts:81](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L81)
+Defined in: [types/particles.ts:81](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/particles.ts#L81)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/particles.ts:81](https://github.com/hassoncs/clover/blob/a677
 
 > **type**: [`ParticleEmitterType`](../type-aliases/ParticleEmitterType.md)
 
-Defined in: [types/particles.ts:82](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L82)
+Defined in: [types/particles.ts:82](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/particles.ts#L82)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/particles.ts:82](https://github.com/hassoncs/clover/blob/a677
 
 > **config**: [`ParticleEmitterConfig`](ParticleEmitterConfig.md)
 
-Defined in: [types/particles.ts:83](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L83)
+Defined in: [types/particles.ts:83](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/particles.ts#L83)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types/particles.ts:83](https://github.com/hassoncs/clover/blob/a677
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [types/particles.ts:84](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L84)
+Defined in: [types/particles.ts:84](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/particles.ts#L84)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types/particles.ts:84](https://github.com/hassoncs/clover/blob/a677
 
 > `optional` **offsetX**: `number`
 
-Defined in: [types/particles.ts:85](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L85)
+Defined in: [types/particles.ts:85](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/particles.ts#L85)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [types/particles.ts:85](https://github.com/hassoncs/clover/blob/a677
 
 > `optional` **offsetY**: `number`
 
-Defined in: [types/particles.ts:86](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/particles.ts#L86)
+Defined in: [types/particles.ts:86](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/particles.ts#L86)

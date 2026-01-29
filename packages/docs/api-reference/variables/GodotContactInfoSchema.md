@@ -8,4 +8,4 @@
 
 > `const` **GodotContactInfoSchema**: `ZodObject`\<\{ `point`: `ZodObject`\<\{ `x`: `ZodNumber`; `y`: `ZodNumber`; \}, `"strip"`, `ZodTypeAny`, \{ `x`: `number`; `y`: `number`; \}, \{ `x`: `number`; `y`: `number`; \}\>; `normal`: `ZodObject`\<\{ `x`: `ZodNumber`; `y`: `ZodNumber`; \}, `"strip"`, `ZodTypeAny`, \{ `x`: `number`; `y`: `number`; \}, \{ `x`: `number`; `y`: `number`; \}\>; `normalImpulse`: `ZodNumber`; `tangentImpulse`: `ZodNumber`; \}, `"strip"`, `ZodTypeAny`, \{ `point`: \{ `x`: `number`; `y`: `number`; \}; `normal`: \{ `x`: `number`; `y`: `number`; \}; `normalImpulse`: `number`; `tangentImpulse`: `number`; \}, \{ `point`: \{ `x`: `number`; `y`: `number`; \}; `normal`: \{ `x`: `number`; `y`: `number`; \}; `normalImpulse`: `number`; `tangentImpulse`: `number`; \}\>
 
-Defined in: [types/godot-bridge.ts:96](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/godot-bridge.ts#L96)
+Defined in: [types/godot-bridge.ts:96](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/godot-bridge.ts#L96)

@@ -6,7 +6,7 @@
 
 # Interface: TileAnimation
 
-Defined in: [types/tilemap.ts:17](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/tilemap.ts#L17)
+Defined in: [types/tilemap.ts:17](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/tilemap.ts#L17)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/tilemap.ts:17](https://github.com/hassoncs/clover/blob/a677c7
 
 > **frames**: `number`[]
 
-Defined in: [types/tilemap.ts:18](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/tilemap.ts#L18)
+Defined in: [types/tilemap.ts:18](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/tilemap.ts#L18)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types/tilemap.ts:18](https://github.com/hassoncs/clover/blob/a677c7
 
 > **fps**: `number`
 
-Defined in: [types/tilemap.ts:19](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/tilemap.ts#L19)
+Defined in: [types/tilemap.ts:19](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/tilemap.ts#L19)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [types/tilemap.ts:19](https://github.com/hassoncs/clover/blob/a677c7
 
 > `optional` **loop**: `boolean`
 
-Defined in: [types/tilemap.ts:20](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/tilemap.ts#L20)
+Defined in: [types/tilemap.ts:20](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/tilemap.ts#L20)

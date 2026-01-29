@@ -6,7 +6,7 @@
 
 # Interface: ZoneEntityDefinition
 
-Defined in: [types/physics.ts:59](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L59)
+Defined in: [types/physics.ts:73](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/physics.ts#L73)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types/physics.ts:59](https://github.com/hassoncs/clover/blob/a677c7
 
 > **type**: `"zone"`
 
-Defined in: [types/physics.ts:60](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L60)
+Defined in: [types/physics.ts:74](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/physics.ts#L74)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [types/physics.ts:60](https://github.com/hassoncs/clover/blob/a677c7
 
 > **zone**: [`ZoneComponent`](ZoneComponent.md)
 
-Defined in: [types/physics.ts:61](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/physics.ts#L61)
+Defined in: [types/physics.ts:75](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/physics.ts#L75)

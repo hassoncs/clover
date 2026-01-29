@@ -6,7 +6,7 @@
 
 # Interface: PackMetadata
 
-Defined in: [types/LevelPack.ts:81](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L81)
+Defined in: [types/LevelPack.ts:81](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L81)
 
 Pack metadata - descriptive information about the pack.
 
@@ -16,7 +16,7 @@ Pack metadata - descriptive information about the pack.
 
 > **id**: `string`
 
-Defined in: [types/LevelPack.ts:83](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L83)
+Defined in: [types/LevelPack.ts:83](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L83)
 
 Globally unique pack identifier (e.g., "slopeggle-basic-v1")
 
@@ -26,7 +26,7 @@ Globally unique pack identifier (e.g., "slopeggle-basic-v1")
 
 > **name**: `string`
 
-Defined in: [types/LevelPack.ts:85](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L85)
+Defined in: [types/LevelPack.ts:85](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L85)
 
 Human-readable pack name
 
@@ -36,7 +36,7 @@ Human-readable pack name
 
 > `optional` **description**: `string`
 
-Defined in: [types/LevelPack.ts:87](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L87)
+Defined in: [types/LevelPack.ts:87](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L87)
 
 Brief description of the pack
 
@@ -46,7 +46,7 @@ Brief description of the pack
 
 > `optional` **author**: `string`
 
-Defined in: [types/LevelPack.ts:89](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L89)
+Defined in: [types/LevelPack.ts:89](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L89)
 
 Author or creator name
 
@@ -56,7 +56,7 @@ Author or creator name
 
 > **version**: `string`
 
-Defined in: [types/LevelPack.ts:91](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L91)
+Defined in: [types/LevelPack.ts:91](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L91)
 
 Pack version following semver
 
@@ -66,7 +66,7 @@ Pack version following semver
 
 > `optional` **category**: [`PackCategory`](../type-aliases/PackCategory.md)
 
-Defined in: [types/LevelPack.ts:93](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L93)
+Defined in: [types/LevelPack.ts:93](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L93)
 
 Category for UI organization
 
@@ -76,7 +76,7 @@ Category for UI organization
 
 > `optional` **thumbnailUrl**: `string`
 
-Defined in: [types/LevelPack.ts:95](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L95)
+Defined in: [types/LevelPack.ts:95](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L95)
 
 Thumbnail image URL or asset reference
 
@@ -86,7 +86,7 @@ Thumbnail image URL or asset reference
 
 > `optional` **thumbnailAssetRef**: `string`
 
-Defined in: [types/LevelPack.ts:96](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L96)
+Defined in: [types/LevelPack.ts:96](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L96)
 
 ***
 
@@ -94,7 +94,7 @@ Defined in: [types/LevelPack.ts:96](https://github.com/hassoncs/clover/blob/a677
 
 > `optional` **platforms**: [`PlatformTarget`](../type-aliases/PlatformTarget.md)[]
 
-Defined in: [types/LevelPack.ts:98](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L98)
+Defined in: [types/LevelPack.ts:98](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L98)
 
 Target platforms
 
@@ -104,7 +104,7 @@ Target platforms
 
 > `optional` **tags**: `string`[]
 
-Defined in: [types/LevelPack.ts:100](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L100)
+Defined in: [types/LevelPack.ts:100](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L100)
 
 Tags for discovery
 
@@ -114,7 +114,7 @@ Tags for discovery
 
 > `optional` **createdAt**: `number`
 
-Defined in: [types/LevelPack.ts:102](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L102)
+Defined in: [types/LevelPack.ts:102](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L102)
 
 Creation timestamp
 
@@ -124,6 +124,6 @@ Creation timestamp
 
 > `optional` **updatedAt**: `number`
 
-Defined in: [types/LevelPack.ts:104](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L104)
+Defined in: [types/LevelPack.ts:104](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L104)
 
 Last update timestamp

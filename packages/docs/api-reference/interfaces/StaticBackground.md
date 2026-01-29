@@ -6,7 +6,7 @@
 
 # Interface: StaticBackground
 
-Defined in: [types/GameDefinition.ts:173](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L173)
+Defined in: [types/GameDefinition.ts:173](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L173)
 
 Dual-field image reference for backwards compatibility.
 
@@ -26,7 +26,7 @@ will decide precedence.
 
 > `optional` **imageUrl**: `string`
 
-Defined in: [types/GameDefinition.ts:20](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L20)
+Defined in: [types/GameDefinition.ts:20](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L20)
 
 #### Inherited from
 
@@ -38,7 +38,7 @@ Defined in: [types/GameDefinition.ts:20](https://github.com/hassoncs/clover/blob
 
 > `optional` **assetRef**: `string`
 
-Defined in: [types/GameDefinition.ts:21](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L21)
+Defined in: [types/GameDefinition.ts:21](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L21)
 
 #### Inherited from
 
@@ -50,7 +50,7 @@ Defined in: [types/GameDefinition.ts:21](https://github.com/hassoncs/clover/blob
 
 > **type**: `"static"`
 
-Defined in: [types/GameDefinition.ts:174](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L174)
+Defined in: [types/GameDefinition.ts:174](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L174)
 
 ***
 
@@ -58,4 +58,4 @@ Defined in: [types/GameDefinition.ts:174](https://github.com/hassoncs/clover/blo
 
 > `optional` **color**: `string`
 
-Defined in: [types/GameDefinition.ts:175](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/GameDefinition.ts#L175)
+Defined in: [types/GameDefinition.ts:175](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L175)

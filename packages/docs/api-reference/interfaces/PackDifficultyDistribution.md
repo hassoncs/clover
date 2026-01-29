@@ -6,7 +6,7 @@
 
 # Interface: PackDifficultyDistribution
 
-Defined in: [types/LevelPack.ts:111](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L111)
+Defined in: [types/LevelPack.ts:111](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L111)
 
 Difficulty distribution configuration for the pack.
 Helps players understand the overall difficulty curve.
@@ -17,7 +17,7 @@ Helps players understand the overall difficulty curve.
 
 > `optional` **trivialCount**: `number`
 
-Defined in: [types/LevelPack.ts:113](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L113)
+Defined in: [types/LevelPack.ts:113](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L113)
 
 Number of trivial difficulty levels
 
@@ -27,7 +27,7 @@ Number of trivial difficulty levels
 
 > `optional` **easyCount**: `number`
 
-Defined in: [types/LevelPack.ts:115](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L115)
+Defined in: [types/LevelPack.ts:115](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L115)
 
 Number of easy difficulty levels
 
@@ -37,7 +37,7 @@ Number of easy difficulty levels
 
 > `optional` **mediumCount**: `number`
 
-Defined in: [types/LevelPack.ts:117](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L117)
+Defined in: [types/LevelPack.ts:117](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L117)
 
 Number of medium difficulty levels
 
@@ -47,7 +47,7 @@ Number of medium difficulty levels
 
 > `optional` **hardCount**: `number`
 
-Defined in: [types/LevelPack.ts:119](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L119)
+Defined in: [types/LevelPack.ts:119](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L119)
 
 Number of hard difficulty levels
 
@@ -57,7 +57,7 @@ Number of hard difficulty levels
 
 > `optional` **extremeCount**: `number`
 
-Defined in: [types/LevelPack.ts:121](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L121)
+Defined in: [types/LevelPack.ts:121](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L121)
 
 Number of extreme difficulty levels
 
@@ -67,6 +67,6 @@ Number of extreme difficulty levels
 
 > `optional` **impossibleCount**: `number`
 
-Defined in: [types/LevelPack.ts:123](https://github.com/hassoncs/clover/blob/a677c79c452668dbf385acb885ffb0d8e3b3e3d8/shared/src/types/LevelPack.ts#L123)
+Defined in: [types/LevelPack.ts:123](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/LevelPack.ts#L123)
 
 Number of impossible difficulty levels
