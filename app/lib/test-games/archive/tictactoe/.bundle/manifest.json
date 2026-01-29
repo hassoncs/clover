@@ -1,0 +1,62 @@
+{
+  "name": "tictactoe",
+  "version": "1.0.0",
+  "title": "Tic-Tac-Toe",
+  "description": "Classic two-player strategy game",
+  "instructions": "Tap a square to place your mark. Three in a row wins! Tap anywhere after game over to play again.",
+  "world": {
+    "gravity": { "x": 0, "y": 0 },
+    "pixelsPerMeter": 50,
+    "bounds": { "width": { "const": "WORLD_WIDTH" }, "height": { "const": "WORLD_HEIGHT" } }
+  },
+  "camera": { "type": "fixed", "zoom": 1 },
+  "background": {
+    "type": "static",
+    "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/tictactoe/121b959c-b807-45d0-9db7-184afe6489fe/14507b68-9550-49a3-8482-2b55b56c8e17.png"
+  },
+  "ui": {
+    "showScore": false,
+    "showLives": false,
+    "showTimer": false,
+    "backgroundColor": "#1a1a2e",
+    "variableDisplays": [
+      { "name": "currentPlayer", "label": "Player", "color": "#FFFFFF" },
+      { "name": "statusText", "label": "Status", "color": "#AAAAAA" }
+    ]
+  },
+  "variables": {
+    "cell00": 0,
+    "cell01": 0,
+    "cell02": 0,
+    "cell10": 0,
+    "cell11": 0,
+    "cell12": 0,
+    "cell20": 0,
+    "cell21": 0,
+    "cell22": 0,
+    "moveCount": 0,
+    "lastPlayer": 0,
+    "winner": 0,
+    "currentPlayer": 1,
+    "statusText": "Player X's turn"
+  },
+  "stateMachines": [
+    {
+      "id": "turnFlow",
+      "initialState": "player1Turn",
+      "states": [
+        { "id": "player1Turn" },
+        { "id": "player2Turn" },
+        { "id": "gameOver" }
+      ],
+      "transitions": [
+        { "id": "p1_to_p2", "from": "player1Turn", "to": "player2Turn", "trigger": { "type": "event", "eventName": "move_committed" } },
+        { "id": "p2_to_p1", "from": "player2Turn", "to": "player1Turn", "trigger": { "type": "event", "eventName": "move_committed" } },
+        { "id": "end_game_p1", "from": "player1Turn", "to": "gameOver", "trigger": { "type": "event", "eventName": "game_ended" } },
+        { "id": "end_game_p2", "from": "player2Turn", "to": "gameOver", "trigger": { "type": "event", "eventName": "game_ended" } }
+      ]
+    }
+  ],
+  "winCondition": { "type": "custom" },
+  "loseCondition": { "type": "custom" }
+}

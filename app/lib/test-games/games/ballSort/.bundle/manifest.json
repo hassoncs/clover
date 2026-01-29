@@ -160,5 +160,18 @@
   ],
   "winCondition": {
     "type": "custom"
+  },
+  "generators": {
+    "puzzle": {
+      "script": "generators/puzzleGenerator.js",
+      "export": "generate",
+      "runOn": "load"
+    }
+  },
+  "scripts": {
+    "runtime": {
+      "sandbox": "quickjs",
+      "permissions": ["read:variables", "write:variables", "read:entities", "write:entities"]
+    }
   }
 }

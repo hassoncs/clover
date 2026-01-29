@@ -1,0 +1,9 @@
+[
+  { "id": "wall-left", "name": "Left Wall", "template": "wallLeft", "transform": { "x": -5.85, "y": 0, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "wall-right", "name": "Right Wall", "template": "wallRight", "transform": { "x": 5.85, "y": 0, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "ceiling", "name": "Ceiling", "template": "ceiling", "transform": { "x": 0, "y": 7.85, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "death-line", "name": "Death Line", "template": "deathLine", "transform": { "x": 0, "y": -5, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "shooter-base", "name": "Shooter Base", "template": "shooterBase", "transform": { "x": 0, "y": -6.5, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "shooter", "name": "Shooter", "template": "shooter", "transform": { "x": 0, "y": -6.5, "angle": 1.571, "scaleX": 1, "scaleY": 1 } },
+  { "id": "aim-line", "name": "Aim Line", "template": "aimLine", "transform": { "x": 0, "y": -5, "angle": 1.571, "scaleX": 1, "scaleY": 1 } }
+]

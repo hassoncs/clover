@@ -1,0 +1,44 @@
+[
+  { "id": "wall-left", "name": "Left Wall", "template": "wall", "transform": { "x": -4.85, "y": 0, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "wall-right", "name": "Right Wall", "template": "wall", "transform": { "x": 4.85, "y": 0, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  {
+    "id": "wall-top",
+    "name": "Top Wall",
+    "tags": ["wall"],
+    "transform": { "x": 0, "y": 7.85, "angle": 0, "scaleX": 1, "scaleY": 1 },
+    "visual": { "type": "rect", "width": 10, "height": 0.3, "color": "#333366" },
+    "physics": { "bodyType": "static", "density": 0 },
+    "collider": { "shape": "box", "width": 10, "height": 0.3, "friction": 0.1, "restitution": 0.5 }
+  },
+  { "id": "drain", "name": "Drain Zone", "template": "drain", "transform": { "x": 0, "y": -7.75, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "bumper-1", "name": "Bumper 1", "template": "bumper", "transform": { "x": -2, "y": 4, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "bumper-2", "name": "Bumper 2", "template": "bumper", "transform": { "x": 2, "y": 4, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "bumper-3", "name": "Bumper 3", "template": "bumper", "transform": { "x": 0, "y": 2.5, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "small-bumper-1", "name": "Small Bumper 1", "template": "smallBumper", "transform": { "x": -3, "y": 1, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "small-bumper-2", "name": "Small Bumper 2", "template": "smallBumper", "transform": { "x": 3, "y": 1, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "small-bumper-3", "name": "Small Bumper 3", "template": "smallBumper", "transform": { "x": 0, "y": 0, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "target-1", "name": "Target 1", "template": "target", "transform": { "x": -3, "y": 5.5, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "target-2", "name": "Target 2", "template": "target", "transform": { "x": 0, "y": 6, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "target-3", "name": "Target 3", "template": "target", "transform": { "x": 3, "y": 5.5, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  {
+    "id": "slingshot-left",
+    "name": "Left Slingshot",
+    "tags": ["slingshot"],
+    "transform": { "x": -3.5, "y": -3, "angle": -0.523, "scaleX": 1, "scaleY": 1 },
+    "visual": { "type": "rect", "width": 2, "height": 0.2, "color": "#f39c12" },
+    "physics": { "bodyType": "static", "density": 0 },
+    "collider": { "shape": "box", "width": 2, "height": 0.2, "friction": 0, "restitution": 1.2 }
+  },
+  {
+    "id": "slingshot-right",
+    "name": "Right Slingshot",
+    "tags": ["slingshot"],
+    "transform": { "x": 3.5, "y": -3, "angle": 0.523, "scaleX": 1, "scaleY": 1 },
+    "visual": { "type": "rect", "width": 2, "height": 0.2, "color": "#f39c12" },
+    "physics": { "bodyType": "static", "density": 0 },
+    "collider": { "shape": "box", "width": 2, "height": 0.2, "friction": 0, "restitution": 1.2 }
+  },
+  { "id": "flipper-left", "name": "Left Flipper", "template": "flipper", "transform": { "x": -2, "y": -5.5, "angle": -0.3, "scaleX": 1, "scaleY": 1 } },
+  { "id": "flipper-right", "name": "Right Flipper", "template": "flipper", "transform": { "x": 2, "y": -5.5, "angle": 0.3, "scaleX": 1, "scaleY": 1 } },
+  { "id": "ball", "name": "Ball", "template": "pinball", "transform": { "x": 0, "y": 6, "angle": 0, "scaleX": 1, "scaleY": 1 } }
+]

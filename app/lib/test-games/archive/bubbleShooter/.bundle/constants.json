@@ -1,0 +1,15 @@
+{
+  "ASSET_BASE": "https://slopcade-api.hassoncs.workers.dev/assets/generated/bubbleShooter",
+  "WORLD_WIDTH": 12,
+  "WORLD_HEIGHT": 16,
+  "HALF_W": 6,
+  "HALF_H": 8,
+  "BUBBLE_RADIUS": 0.35,
+  "BUBBLE_DIAMETER": 0.7,
+  "SHOOTER_WIDTH": 0.8,
+  "SHOOTER_HEIGHT": 0.4,
+  "WALL_WIDTH": 0.3,
+  "GRID_ROWS": 6,
+  "GRID_START_Y": 1.5,
+  "SEED": 12345
+}

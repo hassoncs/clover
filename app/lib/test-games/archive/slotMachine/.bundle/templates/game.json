@@ -1,0 +1,62 @@
+[
+  {
+    "id": "cherry",
+    "tags": ["symbol", "cherry"],
+    "visual": { "type": "rect", "width": 1.19, "height": 1.19, "color": "#FF1744" },
+    "collider": { "shape": "box", "width": 1.19, "height": 1.19, "friction": 0, "restitution": 0, "isSensor": true }
+  },
+  {
+    "id": "lemon",
+    "tags": ["symbol", "lemon"],
+    "visual": { "type": "rect", "width": 1.19, "height": 1.19, "color": "#FFEB3B" },
+    "collider": { "shape": "box", "width": 1.19, "height": 1.19, "friction": 0, "restitution": 0, "isSensor": true }
+  },
+  {
+    "id": "orange",
+    "tags": ["symbol", "orange"],
+    "visual": { "type": "rect", "width": 1.19, "height": 1.19, "color": "#FF9100" },
+    "collider": { "shape": "box", "width": 1.19, "height": 1.19, "friction": 0, "restitution": 0, "isSensor": true }
+  },
+  {
+    "id": "plum",
+    "tags": ["symbol", "plum"],
+    "visual": { "type": "rect", "width": 1.19, "height": 1.19, "color": "#9C27B0" },
+    "collider": { "shape": "box", "width": 1.19, "height": 1.19, "friction": 0, "restitution": 0, "isSensor": true }
+  },
+  {
+    "id": "bell",
+    "tags": ["symbol", "bell"],
+    "visual": { "type": "rect", "width": 1.19, "height": 1.19, "color": "#FFD700" },
+    "collider": { "shape": "box", "width": 1.19, "height": 1.19, "friction": 0, "restitution": 0, "isSensor": true }
+  },
+  {
+    "id": "bar",
+    "tags": ["symbol", "bar"],
+    "visual": { "type": "rect", "width": 1.19, "height": 1.19, "color": "#37474F" },
+    "collider": { "shape": "box", "width": 1.19, "height": 1.19, "friction": 0, "restitution": 0, "isSensor": true }
+  },
+  {
+    "id": "seven",
+    "tags": ["symbol", "seven"],
+    "visual": { "type": "rect", "width": 1.19, "height": 1.19, "color": "#D50000" },
+    "collider": { "shape": "box", "width": 1.19, "height": 1.19, "friction": 0, "restitution": 0, "isSensor": true }
+  },
+  {
+    "id": "wild",
+    "tags": ["symbol", "wild"],
+    "visual": { "type": "rect", "width": 1.19, "height": 1.19, "color": "#00E676" },
+    "collider": { "shape": "box", "width": 1.19, "height": 1.19, "friction": 0, "restitution": 0, "isSensor": true }
+  },
+  {
+    "id": "scatter",
+    "tags": ["symbol", "scatter"],
+    "visual": { "type": "circle", "radius": 0.595, "color": "#2979FF" },
+    "collider": { "shape": "circle", "radius": 0.595, "friction": 0, "restitution": 0, "isSensor": true }
+  },
+  {
+    "id": "gridCell",
+    "tags": ["grid"],
+    "visual": { "type": "rect", "width": 1.26, "height": 1.26, "color": "#2D2D44" },
+    "collider": { "shape": "box", "width": 1.26, "height": 1.26, "friction": 0, "restitution": 0, "isSensor": true }
+  }
+]

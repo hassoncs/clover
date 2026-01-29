@@ -1,0 +1,67 @@
+[
+  {
+    "id": "tap_card",
+    "name": "Flip a face-down card when tapped",
+    "trigger": { "type": "tap", "target": "face-down" },
+    "conditions": [
+      { "type": "expression", "expr": "stateIs('gameFlow', 'idle') || stateIs('gameFlow', 'firstCardFlipped')" }
+    ],
+    "actions": [
+      { "type": "event", "eventName": "card_flipped" }
+    ]
+  },
+  {
+    "id": "first_card_flipped",
+    "name": "Track first card flip",
+    "trigger": { "type": "event", "eventName": "card_flipped" },
+    "conditions": [
+      { "type": "expression", "expr": "stateIs('gameFlow', 'idle')" }
+    ],
+    "actions": [
+      { "type": "state_transition", "machineId": "gameFlow", "toState": "firstCardFlipped" }
+    ]
+  },
+  {
+    "id": "second_card_flipped",
+    "name": "Track second card flip and check match",
+    "trigger": { "type": "event", "eventName": "card_flipped" },
+    "conditions": [
+      { "type": "expression", "expr": "stateIs('gameFlow', 'firstCardFlipped')" }
+    ],
+    "actions": [
+      { "type": "state_transition", "machineId": "gameFlow", "toState": "secondCardFlipped" },
+      { "type": "event", "eventName": "check_match" }
+    ]
+  },
+  {
+    "id": "match_found",
+    "name": "Handle matching pair",
+    "trigger": { "type": "event", "eventName": "match_success" },
+    "actions": [
+      { "type": "score", "operation": "add", "value": 100 },
+      { "type": "set_variable", "name": "matchedPairs", "operation": "add", "value": 1 },
+      { "type": "destroy", "target": { "type": "by_tag", "tag": "face-up" } },
+      { "type": "state_transition", "machineId": "gameFlow", "toState": "idle" },
+      { "type": "camera_shake", "intensity": 0.05, "duration": 0.15 }
+    ]
+  },
+  {
+    "id": "no_match",
+    "name": "Handle non-matching pair - flip back after delay",
+    "trigger": { "type": "event", "eventName": "match_fail" },
+    "actions": [
+      { "type": "state_transition", "machineId": "gameFlow", "toState": "idle" }
+    ]
+  },
+  {
+    "id": "reset_after_delay",
+    "name": "Reset cards after no match",
+    "trigger": { "type": "timer", "time": 1, "repeat": false },
+    "conditions": [
+      { "type": "expression", "expr": "stateIs('gameFlow', 'checkingMatch')" }
+    ],
+    "actions": [
+      { "type": "event", "eventName": "match_fail" }
+    ]
+  }
+]

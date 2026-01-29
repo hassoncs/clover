@@ -1,0 +1,11 @@
+[
+  { "id": "pivot", "name": "Pivot", "template": "pivot", "tags": ["pivot"], "transform": { "x": 0, "y": -3.7, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "beam", "name": "Beam", "template": "beam", "tags": ["beam"], "transform": { "x": 0, "y": -4.15, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "beam-sensor", "name": "Beam Sensor", "template": "beamSensor", "tags": ["beam-sensor"], "transform": { "x": 0, "y": -4.45, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "weight-choice-0", "name": "Weight Choice 1", "template": "weightChoice0", "tags": ["weight-choice", "mass-1"], "transform": { "x": -2, "y": 3.5, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "weight-label-0", "name": "Weight Label 1", "template": "weightLabel", "tags": ["weight-label"], "transform": { "x": -2, "y": 4.3, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "weight-choice-1", "name": "Weight Choice 2", "template": "weightChoice1", "tags": ["weight-choice", "mass-2"], "transform": { "x": 0, "y": 3.5, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "weight-label-1", "name": "Weight Label 2", "template": "weightLabel", "tags": ["weight-label"], "transform": { "x": 0, "y": 4.3, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "weight-choice-2", "name": "Weight Choice 3", "template": "weightChoice2", "tags": ["weight-choice", "mass-3"], "transform": { "x": 2, "y": 3.5, "angle": 0, "scaleX": 1, "scaleY": 1 } },
+  { "id": "weight-label-2", "name": "Weight Label 3", "template": "weightLabel", "tags": ["weight-label"], "transform": { "x": 2, "y": 4.3, "angle": 0, "scaleX": 1, "scaleY": 1 } }
+]

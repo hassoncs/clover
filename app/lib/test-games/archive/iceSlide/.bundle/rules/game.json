@@ -1,0 +1,94 @@
+[
+  {
+    "id": "swipe_up",
+    "name": "Swipe Up",
+    "trigger": { "type": "swipe", "direction": "up" },
+    "conditions": [
+      { "type": "expression", "expr": "variable('canMove') === 1 && variable('gameState') === 'idle'" }
+    ],
+    "actions": [
+      { "type": "set_variable", "name": "canMove", "operation": "set", "value": 0 },
+      { "type": "set_variable", "name": "moveCount", "operation": "add", "value": 1 },
+      { "type": "set_variable", "name": "gameState", "operation": "set", "value": "sliding" },
+      { "type": "event", "eventName": "swipe_detected" },
+      { "type": "event", "eventName": "slide_blocks_up" }
+    ]
+  },
+  {
+    "id": "swipe_down",
+    "name": "Swipe Down",
+    "trigger": { "type": "swipe", "direction": "down" },
+    "conditions": [
+      { "type": "expression", "expr": "variable('canMove') === 1 && variable('gameState') === 'idle'" }
+    ],
+    "actions": [
+      { "type": "set_variable", "name": "canMove", "operation": "set", "value": 0 },
+      { "type": "set_variable", "name": "moveCount", "operation": "add", "value": 1 },
+      { "type": "set_variable", "name": "gameState", "operation": "set", "value": "sliding" },
+      { "type": "event", "eventName": "swipe_detected" },
+      { "type": "event", "eventName": "slide_blocks_down" }
+    ]
+  },
+  {
+    "id": "swipe_left",
+    "name": "Swipe Left",
+    "trigger": { "type": "swipe", "direction": "left" },
+    "conditions": [
+      { "type": "expression", "expr": "variable('canMove') === 1 && variable('gameState') === 'idle'" }
+    ],
+    "actions": [
+      { "type": "set_variable", "name": "canMove", "operation": "set", "value": 0 },
+      { "type": "set_variable", "name": "moveCount", "operation": "add", "value": 1 },
+      { "type": "set_variable", "name": "gameState", "operation": "set", "value": "sliding" },
+      { "type": "event", "eventName": "swipe_detected" },
+      { "type": "event", "eventName": "slide_blocks_left" }
+    ]
+  },
+  {
+    "id": "swipe_right",
+    "name": "Swipe Right",
+    "trigger": { "type": "swipe", "direction": "right" },
+    "conditions": [
+      { "type": "expression", "expr": "variable('canMove') === 1 && variable('gameState') === 'idle'" }
+    ],
+    "actions": [
+      { "type": "set_variable", "name": "canMove", "operation": "set", "value": 0 },
+      { "type": "set_variable", "name": "moveCount", "operation": "add", "value": 1 },
+      { "type": "set_variable", "name": "gameState", "operation": "set", "value": "sliding" },
+      { "type": "event", "eventName": "swipe_detected" },
+      { "type": "event", "eventName": "slide_blocks_right" }
+    ]
+  },
+  {
+    "id": "blocks_stopped_handler",
+    "name": "Handle Blocks Stopped",
+    "trigger": { "type": "event", "eventName": "blocks_stopped" },
+    "actions": [
+      { "type": "set_variable", "name": "gameState", "operation": "set", "value": "checking" },
+      { "type": "event", "eventName": "check_win" }
+    ]
+  },
+  {
+    "id": "check_complete",
+    "name": "Check Complete - Return to Idle",
+    "trigger": { "type": "timer", "time": 0.2, "repeat": false },
+    "conditions": [
+      { "type": "expression", "expr": "variable('gameState') === 'checking'" }
+    ],
+    "actions": [
+      { "type": "set_variable", "name": "gameState", "operation": "set", "value": "idle" },
+      { "type": "set_variable", "name": "canMove", "operation": "set", "value": 1 }
+    ]
+  },
+  {
+    "id": "win_condition",
+    "name": "Win When All Blocks On Goals",
+    "trigger": { "type": "collision", "entityATag": "iceBlock", "entityBTag": "goal" },
+    "conditions": [
+      { "type": "expression", "expr": "variable('gameState') === 'checking'" }
+    ],
+    "actions": [
+      { "type": "game_state", "state": "win" }
+    ]
+  }
+]

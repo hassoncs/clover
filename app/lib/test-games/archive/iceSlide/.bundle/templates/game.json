@@ -1,0 +1,28 @@
+[
+  {
+    "id": "wall",
+    "tags": ["wall", "solid"],
+    "visual": { "type": "rect", "width": { "const": "CELL_SIZE" }, "height": { "const": "CELL_SIZE" }, "color": { "const": "WALL_COLOR" } },
+    "physics": { "bodyType": "static", "density": 0 },
+    "collider": { "shape": "box", "width": { "const": "CELL_SIZE" }, "height": { "const": "CELL_SIZE" }, "friction": 0, "restitution": 0 }
+  },
+  {
+    "id": "floor",
+    "tags": ["floor"],
+    "visual": { "type": "rect", "width": { "const": "CELL_SIZE" }, "height": { "const": "CELL_SIZE" }, "color": { "const": "FLOOR_COLOR" } },
+    "collider": { "shape": "box", "width": { "const": "CELL_SIZE" }, "height": { "const": "CELL_SIZE" }, "isSensor": true }
+  },
+  {
+    "id": "goal",
+    "tags": ["goal"],
+    "visual": { "type": "rect", "width": 0.96, "height": 0.96, "color": { "const": "GOAL_COLOR" } },
+    "collider": { "shape": "box", "width": 0.96, "height": 0.96, "isSensor": true }
+  },
+  {
+    "id": "iceBlock",
+    "tags": ["iceBlock", "movable"],
+    "visual": { "type": "rect", "width": 1.08, "height": 1.08, "color": { "const": "ICE_BLOCK_COLOR" } },
+    "physics": { "bodyType": "kinematic", "density": 1 },
+    "collider": { "shape": "box", "width": 1.08, "height": 1.08, "friction": 0, "restitution": 0 }
+  }
+]

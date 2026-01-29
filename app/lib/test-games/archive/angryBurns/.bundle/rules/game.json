@@ -1,0 +1,17 @@
+[
+  {
+    "id": "cannon-fire",
+    "name": "cannon fire on drag end",
+    "trigger": { "type": "drag", "phase": "end", "target": "cannon" },
+    "conditions": [
+      { "type": "entity_count", "tag": "projectile", "max": 0 }
+    ],
+    "actions": [
+      { "type": "spawn", "template": "projectile", "position": { "type": "fixed", "x": -7, "y": 2.6 } },
+      { "type": "apply_impulse", "target": { "type": "by_tag", "tag": "projectile" }, "direction": "drag_direction", "force": 20 },
+      { "type": "lives", "operation": "subtract", "value": 1 },
+      { "type": "start_cooldown", "cooldownId": "cannon-cooldown", "duration": 0.5 }
+    ],
+    "cooldown": 0.5
+  }
+]

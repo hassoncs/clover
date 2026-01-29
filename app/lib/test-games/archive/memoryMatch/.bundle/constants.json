@@ -1,0 +1,16 @@
+{
+  "WORLD_WIDTH": 12,
+  "WORLD_HEIGHT": 16,
+  "HALF_W": 6,
+  "HALF_H": 8,
+  "CARD_WIDTH": 1.8,
+  "CARD_HEIGHT": 2.4,
+  "GRID_COLS": 4,
+  "GRID_ROWS": 4,
+  "CARD_SPACING_X": 2.4,
+  "CARD_SPACING_Y": 3.0,
+  "GRID_START_X": 1.8,
+  "GRID_START_Y": 3.0,
+  "NUM_PAIRS": 8,
+  "SEED": 12345
+}

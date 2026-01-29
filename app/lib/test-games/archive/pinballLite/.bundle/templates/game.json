@@ -1,0 +1,141 @@
+[
+  {
+    "id": "pinball",
+    "tags": ["ball"],
+    "visual": {
+      "type": "image",
+      "imageUrl": { "const": "ASSET_BASE" },
+      "imageWidth": 0.6,
+      "imageHeight": 0.6
+    },
+    "physics": {
+      "bodyType": "dynamic",
+      "density": 2
+    },
+    "collider": {
+      "shape": "circle",
+      "radius": 0.3,
+      "friction": 0.1,
+      "restitution": 0.6
+    }
+  },
+  {
+    "id": "bumper",
+    "tags": ["bumper"],
+    "visual": {
+      "type": "image",
+      "imageUrl": { "const": "ASSET_BASE" },
+      "imageWidth": 1.2,
+      "imageHeight": 1.2
+    },
+    "physics": {
+      "bodyType": "static",
+      "density": 0
+    },
+    "collider": {
+      "shape": "circle",
+      "radius": 0.6,
+      "friction": 0,
+      "restitution": 1.5
+    },
+    "behaviors": [
+      { "type": "score_on_collision", "withTags": ["ball"], "points": 100 }
+    ]
+  },
+  {
+    "id": "smallBumper",
+    "tags": ["bumper"],
+    "visual": {
+      "type": "image",
+      "imageUrl": { "const": "ASSET_BASE" },
+      "imageWidth": 0.8,
+      "imageHeight": 0.8
+    },
+    "physics": {
+      "bodyType": "static",
+      "density": 0
+    },
+    "collider": {
+      "shape": "circle",
+      "radius": 0.4,
+      "friction": 0,
+      "restitution": 1.3
+    },
+    "behaviors": [
+      { "type": "score_on_collision", "withTags": ["ball"], "points": 50 }
+    ]
+  },
+  {
+    "id": "target",
+    "tags": ["target"],
+    "visual": {
+      "type": "image",
+      "imageUrl": { "const": "ASSET_BASE" },
+      "imageWidth": 0.8,
+      "imageHeight": 0.3
+    },
+    "physics": {
+      "bodyType": "static",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 0.8,
+      "height": 0.3,
+      "friction": 0,
+      "restitution": 1.0
+    },
+    "behaviors": [
+      { "type": "score_on_collision", "withTags": ["ball"], "points": 200 }
+    ]
+  },
+  {
+    "id": "wall",
+    "tags": ["wall"],
+    "visual": { "type": "rect", "width": 0.3, "height": 16, "color": "#333366" },
+    "physics": {
+      "bodyType": "static",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 0.3,
+      "height": 16,
+      "friction": 0.1,
+      "restitution": 0.5
+    }
+  },
+  {
+    "id": "flipper",
+    "tags": ["flipper"],
+    "visual": {
+      "type": "image",
+      "imageUrl": { "const": "ASSET_BASE" },
+      "imageWidth": 1.5,
+      "imageHeight": 0.3
+    },
+    "physics": {
+      "bodyType": "dynamic",
+      "density": 5,
+      "fixedRotation": false
+    },
+    "collider": {
+      "shape": "box",
+      "width": 1.5,
+      "height": 0.3,
+      "friction": 0.5,
+      "restitution": 0.3
+    }
+  },
+  {
+    "id": "drain",
+    "tags": ["drain"],
+    "visual": { "type": "rect", "width": 10, "height": 0.5, "color": "#FF000033" },
+    "collider": {
+      "shape": "box",
+      "width": 10,
+      "height": 0.5,
+      "isSensor": true
+    }
+  }
+]

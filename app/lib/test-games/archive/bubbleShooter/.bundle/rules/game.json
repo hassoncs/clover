@@ -1,0 +1,35 @@
+[
+  {
+    "id": "fire_projectile",
+    "name": "Fire projectile on release",
+    "trigger": { "type": "drag", "phase": "end" },
+    "conditions": [{ "type": "entity_count", "tag": "projectile", "max": 0 }],
+    "actions": [
+      { "type": "spawn", "template": "projectile", "position": { "type": "fixed", "x": 0, "y": -6.5 } },
+      { "type": "apply_impulse", "target": { "type": "by_tag", "tag": "projectile" }, "direction": "toward_touch", "force": 8, "sourceEntityId": "shooter" }
+    ]
+  },
+  {
+    "id": "projectile_hits_bubble",
+    "name": "Projectile hits bubble",
+    "trigger": { "type": "collision", "entityATag": "projectile", "entityBTag": "bubble" },
+    "actions": [
+      { "type": "score", "operation": "add", "value": 100 },
+      { "type": "destroy", "target": { "type": "collision_entities" } },
+      { "type": "camera_shake", "intensity": 0.05, "duration": 0.1 }
+    ]
+  },
+  {
+    "id": "projectile_hits_ceiling",
+    "name": "Projectile hits ceiling",
+    "trigger": { "type": "collision", "entityATag": "projectile", "entityBTag": "ceiling" },
+    "actions": [{ "type": "destroy", "target": { "type": "by_tag", "tag": "projectile" } }]
+  },
+  {
+    "id": "bubble_hits_death_line",
+    "name": "Game over if bubble reaches death line",
+    "trigger": { "type": "collision", "entityATag": "bubble", "entityBTag": "death-line" },
+    "actions": [{ "type": "game_state", "state": "lose" }],
+    "fireOnce": true
+  }
+]

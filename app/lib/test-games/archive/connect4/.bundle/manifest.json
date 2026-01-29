@@ -1,0 +1,52 @@
+{
+  "name": "connect4",
+  "version": "1.0.0",
+  "title": "Connect 4",
+  "description": "Drop discs to connect four in a row",
+  "instructions": "Tap a column to drop your disc. Connect four discs horizontally, vertically, or diagonally to win!",
+  "world": {
+    "gravity": { "x": 0, "y": 0 },
+    "pixelsPerMeter": 50,
+    "bounds": { "width": { "const": "WORLD_WIDTH" }, "height": { "const": "WORLD_HEIGHT" } }
+  },
+  "camera": { "type": "fixed", "zoom": 1 },
+  "ui": {
+    "showScore": false,
+    "showLives": false,
+    "showTimer": false,
+    "backgroundColor": "#0D47A1",
+    "variableDisplays": [
+      { "name": "currentPlayer", "label": "Player", "color": "#FFFFFF" }
+    ]
+  },
+  "variables": {
+    "currentPlayer": 1,
+    "moveCount": 0,
+    "col0Height": 0,
+    "col1Height": 0,
+    "col2Height": 0,
+    "col3Height": 0,
+    "col4Height": 0,
+    "col5Height": 0,
+    "col6Height": 0
+  },
+  "stateMachines": [
+    {
+      "id": "turnFlow",
+      "initialState": "player1Turn",
+      "states": [
+        { "id": "player1Turn" },
+        { "id": "player2Turn" },
+        { "id": "gameOver" }
+      ],
+      "transitions": [
+        { "id": "p1_to_p2", "from": "player1Turn", "to": "player2Turn", "trigger": { "type": "event", "eventName": "disc_dropped" } },
+        { "id": "p2_to_p1", "from": "player2Turn", "to": "player1Turn", "trigger": { "type": "event", "eventName": "disc_dropped" } },
+        { "id": "end_game_p1", "from": "player1Turn", "to": "gameOver", "trigger": { "type": "event", "eventName": "game_ended" } },
+        { "id": "end_game_p2", "from": "player2Turn", "to": "gameOver", "trigger": { "type": "event", "eventName": "game_ended" } }
+      ]
+    }
+  ],
+  "winCondition": { "type": "custom" },
+  "loseCondition": { "type": "custom" }
+}

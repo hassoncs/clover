@@ -15,5 +15,7 @@
   "BALLS_PER_TUBE": 4,
   "TUBE_Y": 16.0,
   "PIXELS_PER_METER": 50,
-  "NUM_COLORS": 4
+  "NUM_COLORS": 4,
+  "SEED": 12345,
+  "DIFFICULTY": 5
 }

@@ -1,0 +1,12 @@
+{
+  "GRID_SIZE": 3,
+  "CELL_SIZE": 1.5,
+  "CELL_GAP": 0.1,
+  "BOARD_PADDING": 0.5,
+  "WORLD_WIDTH": 8,
+  "WORLD_HEIGHT": 8,
+  "X_COLOR": "#FF5252",
+  "O_COLOR": "#448AFF",
+  "CELL_OUTLINE_COLOR": "#FFFFFF",
+  "CELL_BG_COLOR": "rgba(255, 255, 255, 0.05)"
+}

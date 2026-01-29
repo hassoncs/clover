@@ -1,0 +1,7 @@
+{
+  "ASSET_BASE": "https://slopcade-api.hassoncs.workers.dev/assets/generated/pinball-lite",
+  "WORLD_WIDTH": 10,
+  "WORLD_HEIGHT": 16,
+  "HALF_W": 5,
+  "HALF_H": 8
+}

@@ -1,0 +1,16 @@
+{
+  "WORLD_WIDTH": 12,
+  "WORLD_HEIGHT": 10,
+  "HALF_W": 6,
+  "HALF_H": 5,
+  "BEAM_WIDTH": 8,
+  "BEAM_HEIGHT": 0.3,
+  "PIVOT_SIZE": 0.6,
+  "BEAM_Y": 6,
+  "WEIGHT_RADIUS": 0.4,
+  "CHOICE_Y": 1.5,
+  "CHOICE_SPACING": 2,
+  "CHOICE_START_X": 4,
+  "MAX_WEIGHTS": 4,
+  "BALANCE_THRESHOLD": 0.3
+}
