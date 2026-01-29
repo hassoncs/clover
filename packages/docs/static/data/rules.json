@@ -115,6 +115,40 @@
       ]
     },
     {
+      "type": "sensor_enter",
+      "interfaceName": "SensorEnterTrigger",
+      "displayName": "Sensor Enter",
+      "properties": [
+        {
+          "name": "entityTag",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "sensorTag",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "sensor_exit",
+      "interfaceName": "SensorExitTrigger",
+      "displayName": "Sensor Exit",
+      "properties": [
+        {
+          "name": "entityTag",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "sensorTag",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
       "type": "swipe",
       "interfaceName": "SwipeTrigger",
       "displayName": "Swipe",
@@ -188,40 +222,6 @@
         {
           "name": "time",
           "type": "number",
-          "required": true
-        }
-      ]
-    },
-    {
-      "type": "zone_enter",
-      "interfaceName": "ZoneEnterTrigger",
-      "displayName": "Zone Enter",
-      "properties": [
-        {
-          "name": "entityTag",
-          "type": "string",
-          "required": true
-        },
-        {
-          "name": "zoneTag",
-          "type": "string",
-          "required": true
-        }
-      ]
-    },
-    {
-      "type": "zone_exit",
-      "interfaceName": "ZoneExitTrigger",
-      "displayName": "Zone Exit",
-      "properties": [
-        {
-          "name": "entityTag",
-          "type": "string",
-          "required": true
-        },
-        {
-          "name": "zoneTag",
-          "type": "string",
           "required": true
         }
       ]

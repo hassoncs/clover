@@ -1,0 +1,16 @@
+# GDScript Linting Configuration
+# Relaxed rules for legacy code
+
+max-file-lines: 3000
+max-public-methods: 150
+max-line-length: 140
+
+# Disable style checks (not naming conventions due to gdtoolkit bug)
+trailing-whitespace: false
+missing-docstring: false
+class-definitions-order: false
+unused-argument: false
+no-elif-return: false
+no-else-return: false
+expression-not-assigned: false
+unused-variable: false

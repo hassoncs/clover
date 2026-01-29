@@ -7,8 +7,8 @@
 ## Quick Summary
 
 - **Total Games**: 27
-- **With Generated Assets** (imageUrl refs): 5
-- **Using Primitive Shapes Only**: 22
+- **With Generated Assets** (titleHeroImageUrl): 10
+- **Using Primitive Shapes Only**: 17
 - **Priority for Asset Generation**: High-appeal games without assets
 
 ---
@@ -24,6 +24,11 @@ These games already reference generated image assets via `ASSET_BASE` URLs:
 | **pinballLite** | `generated/pinball-lite` | pinball.png, bumper.png, smallBumper.png, target.png | Complete |
 | **simplePlatformer** | `generated/simple-platformer` | player.png, platform.png, smallPlatform.png, coin.png, enemy.png | Complete |
 | **slopeggle** | `generated/slopeggle` | background.png, title_hero.png, ball.png, cannon.png, cannonBase.png, bluePeg.png, orangePeg.png, bucket.png | Complete + title hero |
+| **flappyBird** | `generated/flappy-bird` | title_hero.png, bird.png, pipe.png, background.png | Complete + title hero |
+| **bubbleShooter** | `generated/bubble-shooter` | title_hero.png, bubble sprites, shooter/cannon, background | Complete + title hero |
+| **gemCrush** | `generated/gem-crush` | title_hero.png, gem sprites (6 colors), background | Complete + title hero |
+| **puyoPuyo** | `generated/puyo-puyo` | title_hero.png, puyo sprites (4 colors), background | Complete + title hero |
+| **endlessScrollPlayground** | `generated/endless-scroll` | title_hero.png, player sprites, obstacle sprites, background | Complete + title hero |
 
 ---
 
