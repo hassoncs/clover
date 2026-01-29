@@ -578,7 +578,6 @@ export function GameRuntimeGodot({
         );
 
         sensorUnsubRef.current = physics.onSensorBegin((event) => {
-          console.log('[GameRuntime] Raw sensor begin event:', event);
           const sensorEntity = game.entityManager
             .getActiveEntities()
             .find((e) => e.colliderId?.value === event.sensor.value);
@@ -587,7 +586,6 @@ export function GameRuntimeGodot({
             .find((e) => e.bodyId?.value === event.otherBody.value);
 
           if (sensorEntity && otherEntity) {
-            console.log('[GameRuntime] Zone ENTER:', sensorEntity.id, '<-', otherEntity.id, 'tags:', sensorEntity.tags, '<-', otherEntity.tags);
             zoneEventsRef.current.push({
               zone: { id: sensorEntity.id, tags: sensorEntity.tags },
               entity: { id: otherEntity.id, tags: otherEntity.tags },
@@ -602,18 +600,7 @@ export function GameRuntimeGodot({
               impulse: 0,
             });
           } else {
-            console.log('[GameRuntime] Zone ENTER entity lookup failed:', {
-              sensorColliderId: event.sensor.value,
-              otherBodyId: event.otherBody.value,
-              sensorEntityFound: !!sensorEntity,
-              otherEntityFound: !!otherEntity,
-              activeEntities: game.entityManager.getActiveEntities().map(e => ({ 
-                id: e.id, 
-                bodyId: e.bodyId?.value, 
-                colliderId: e.colliderId?.value,
-                tags: e.tags 
-              }))
-            });
+            // Zone ENTER entity lookup failed - entity may have been destroyed
           }
         });
 
@@ -627,7 +614,6 @@ export function GameRuntimeGodot({
             .find((e) => e.bodyId?.value === event.otherBody.value);
 
           if (sensorEntity && otherEntity) {
-            console.log('[GameRuntime] Zone EXIT:', sensorEntity.id, '<-', otherEntity.id);
             zoneEventsRef.current.push({
               zone: { id: sensorEntity.id, tags: sensorEntity.tags },
               entity: { id: otherEntity.id, tags: otherEntity.tags },
@@ -827,10 +813,8 @@ export function GameRuntimeGodot({
 
   useEffect(() => {
     const bridge = bridgeRef.current;
-    console.log('[GameRuntime] Debug settings effect - bridge:', !!bridge, 'showInputDebug:', showInputDebug, 'showPhysicsShapes:', showPhysicsShapes, 'showZones:', showZones, 'showFPS:', showFPS);
     if (!bridge) return;
 
-    console.log('[GameRuntime] Calling setDebugSettings');
     bridge.setDebugSettings({
       showInputDebug,
       showPhysicsShapes,
@@ -1232,52 +1216,26 @@ export function GameRuntimeGodot({
       return;
     }
 
-    const bridge = new SlopcadeDebugBridge(definition.metadata.id ?? "unknown", {
-      pause: () => {
+    const runtimeAPI = {
+      pauseGameLoop: () => {
         setDebugPaused(true);
         if (gameLoopRef.current) {
           clearInterval(gameLoopRef.current);
           gameLoopRef.current = null;
         }
-        bridgeRef.current?.pausePhysics();
       },
-      resume: () => {
+      resumeGameLoop: () => {
         setDebugPaused(false);
-        bridgeRef.current?.resumePhysics();
       },
-      step: async (frames: number) => {
-        const result = await manualStep(frames);
-        return {
-          ok: result.ok,
-          framesAdvanced: result.framesAdvanced,
-          startFrame: result.startFrame,
-          endFrame: result.endFrame,
-          timeState: {
-            paused: debugPaused,
-            timeScale: timeScaleRef.current,
-            frame: frameIdRef.current,
-            elapsed: elapsedRef.current,
-            gameState: gameState.state as "loading" | "ready" | "playing" | "paused" | "won" | "lost",
-            score: gameState.score,
-            lives: gameState.lives,
-          },
-        };
+      stepGame: (dt: number) => {
+        stepGame(dt);
       },
       setTimeScale: (scale: number) => {
         timeScaleRef.current = scale;
         timeScaleTargetRef.current = scale;
         timeScaleTransitionRef.current = null;
       },
-      getTimeState: () => ({
-        paused: debugPaused,
-        timeScale: timeScaleRef.current,
-        frame: frameIdRef.current,
-        elapsed: elapsedRef.current,
-        gameState: gameState.state as GameStateValue,
-        score: gameState.score,
-        lives: gameState.lives,
-      }),
-      getReactState: () => ({
+      getGameState: () => ({
         score: gameState.score,
         lives: gameState.lives,
         state: gameState.state as GameStateValue,
@@ -1286,30 +1244,25 @@ export function GameRuntimeGodot({
         elapsed: elapsedRef.current,
         timeScale: timeScaleRef.current,
       }),
-      getGodotSnapshot: (options) => {
-        const iframe = document.querySelector(
-          'iframe[title="Godot Game Engine"]'
-        ) as HTMLIFrameElement | null;
-        if (!iframe?.contentWindow) return null;
+      getGodotBridge: () => bridgeRef.current,
+    };
 
-        const godotBridge = (
-          iframe.contentWindow as { GodotDebugBridge?: { getSnapshot?: (detail: string) => unknown } }
-        ).GodotDebugBridge;
-        if (!godotBridge?.getSnapshot) return null;
-
-        return godotBridge.getSnapshot(options?.detail ?? "med");
-      },
-    });
+    const bridge = new SlopcadeDebugBridge(
+      definition.metadata.id ?? "unknown",
+      runtimeAPI
+    );
 
     bridge.setReady(true);
     debugBridgeRef.current = bridge;
     window.SlopcadeDebugBridge = bridge;
 
+    bridge.pause();
+
     return () => {
       debugBridgeRef.current = null;
       delete window.SlopcadeDebugBridge;
     };
-  }, [isReady, debugMode, definition.metadata.id, manualStep, gameState, debugPaused]);
+  }, [isReady, debugMode, definition.metadata.id, stepGame, gameState]);
 
   // Keyboard input handling (web only) - shared handlers with deduplication
   const sharedHandleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -1449,114 +1402,126 @@ export function GameRuntimeGodot({
     };
   }, [sharedHandleKeyDown, sharedHandleKeyUp]);
 
-  useEffect(() => {
-    if (Platform.OS !== "web") return;
+  // Mouse/click handlers for web input
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    const container = viewportContainerRef.current;
+    if (!container) return;
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const container = viewportContainerRef.current;
-      if (!container) return;
+    const rect = (container as unknown as HTMLElement).getBoundingClientRect?.();
+    if (!rect) return;
 
-      const rect = (
-        container as unknown as HTMLElement
-      ).getBoundingClientRect?.();
-      if (!rect) return;
+    const viewportX = e.clientX - rect.left;
+    const viewportY = e.clientY - rect.top;
 
-      const viewportX = e.clientX - rect.left;
-      const viewportY = e.clientY - rect.top;
+    if (
+      viewportX < 0 ||
+      viewportX > rect.width ||
+      viewportY < 0 ||
+      viewportY > rect.height
+    ) {
+      inputRef.current.mouse = undefined;
+      return;
+    }
 
-      if (
-        viewportX < 0 ||
-        viewportX > rect.width ||
-        viewportY < 0 ||
-        viewportY > rect.height
-      ) {
-        inputRef.current.mouse = undefined;
-        return;
+    const camera = cameraRef.current;
+    const viewportSystem = viewportSystemRef.current;
+    if (!camera || !viewportSystem) return;
+
+    const world = viewportSystem.viewportToWorld(
+      viewportX,
+      viewportY,
+      camera.getPosition(),
+      camera.getZoom(),
+    );
+
+    inputRef.current.mouse = {
+      x: viewportX,
+      y: viewportY,
+      worldX: world.x,
+      worldY: world.y,
+    };
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    inputRef.current.mouse = undefined;
+  }, []);
+
+  const handleClick = useCallback(async (e: MouseEvent) => {
+    const container = viewportContainerRef.current;
+    if (!container) return;
+
+    const rect = (container as unknown as HTMLElement).getBoundingClientRect?.();
+    if (!rect) return;
+
+    const viewportX = e.clientX - rect.left;
+    const viewportY = e.clientY - rect.top;
+
+    if (
+      viewportX < 0 ||
+      viewportX > rect.width ||
+      viewportY < 0 ||
+      viewportY > rect.height
+    ) {
+      return;
+    }
+
+    const camera = cameraRef.current;
+    const viewportSystem = viewportSystemRef.current;
+    const bridge = bridgeRef.current;
+    if (!camera || !viewportSystem) return;
+
+    const world = viewportSystem.viewportToWorld(
+      viewportX,
+      viewportY,
+      camera.getPosition(),
+      camera.getZoom(),
+    );
+
+    let targetEntityId: string | undefined;
+    if (bridge) {
+      const entityId = await bridge.queryPointEntity(world);
+      if (entityId) {
+        targetEntityId = entityId;
       }
+    }
 
-      const camera = cameraRef.current;
-      const viewportSystem = viewportSystemRef.current;
-      if (!camera || !viewportSystem) return;
-
-      const world = viewportSystem.viewportToWorld(
-        viewportX,
-        viewportY,
-        camera.getPosition(),
-        camera.getZoom(),
-      );
-
-      inputRef.current.mouse = {
+    inputRef.current = {
+      ...inputRef.current,
+      tap: {
         x: viewportX,
         y: viewportY,
         worldX: world.x,
         worldY: world.y,
-      };
+        targetEntityId,
+      },
     };
+  }, []);
 
-    const handleMouseLeave = () => {
-      inputRef.current.mouse = undefined;
-    };
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
 
-    const handleClick = async (e: MouseEvent) => {
+    // Store handler references for cleanup
+    const mouseMoveHandler = handleMouseMove;
+    const mouseLeaveHandler = handleMouseLeave;
+    const clickHandler = handleClick;
+
+    // Attach listeners when container is available
+    const attachListeners = () => {
       const container = viewportContainerRef.current;
-      if (!container) return;
-
-      const rect = (
-        container as unknown as HTMLElement
-      ).getBoundingClientRect?.();
-      if (!rect) return;
-
-      const viewportX = e.clientX - rect.left;
-      const viewportY = e.clientY - rect.top;
-
-      if (
-        viewportX < 0 ||
-        viewportX > rect.width ||
-        viewportY < 0 ||
-        viewportY > rect.height
-      ) {
+      if (!container) {
+        // Try again after a short delay if container isn't ready
+        setTimeout(attachListeners, 50);
         return;
       }
 
-      const camera = cameraRef.current;
-      const viewportSystem = viewportSystemRef.current;
-      const bridge = bridgeRef.current;
-      if (!camera || !viewportSystem) return;
-
-      const world = viewportSystem.viewportToWorld(
-        viewportX,
-        viewportY,
-        camera.getPosition(),
-        camera.getZoom(),
-      );
-
-      let targetEntityId: string | undefined;
-      if (bridge) {
-        const entityId = await bridge.queryPointEntity(world);
-        if (entityId) {
-          targetEntityId = entityId;
-        }
-      }
-
-      inputRef.current = {
-        ...inputRef.current,
-        tap: {
-          x: viewportX,
-          y: viewportY,
-          worldX: world.x,
-          worldY: world.y,
-          targetEntityId,
-        },
-      };
+      const htmlContainer = container as unknown as HTMLElement;
+      htmlContainer.addEventListener("mousemove", mouseMoveHandler);
+      htmlContainer.addEventListener("mouseleave", mouseLeaveHandler);
+      htmlContainer.addEventListener("click", clickHandler);
     };
 
-    const container = viewportContainerRef.current;
-    if (container) {
-      const htmlContainer = container as unknown as HTMLElement;
-      htmlContainer.addEventListener("mousemove", handleMouseMove);
-      htmlContainer.addEventListener("mouseleave", handleMouseLeave);
-      htmlContainer.addEventListener("click", handleClick);
-    }
+    // Start attaching listeners
+    attachListeners();
 
     (window as any).__GAME_RUNTIME__ = {
       setInput: (type: string, value: any) => {
@@ -1601,9 +1566,9 @@ export function GameRuntimeGodot({
       const container = viewportContainerRef.current;
       if (container) {
         const htmlContainer = container as unknown as HTMLElement;
-        htmlContainer.removeEventListener("mousemove", handleMouseMove);
-        htmlContainer.removeEventListener("mouseleave", handleMouseLeave);
-        htmlContainer.removeEventListener("click", handleClick);
+        htmlContainer.removeEventListener("mousemove", mouseMoveHandler);
+        htmlContainer.removeEventListener("mouseleave", mouseLeaveHandler);
+        htmlContainer.removeEventListener("click", clickHandler);
       }
       
       delete (window as any).__GAME_RUNTIME__;

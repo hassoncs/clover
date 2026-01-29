@@ -74,9 +74,6 @@ func create_entity(entity_data: Dictionary) -> Node2D:
 	var template_id = entity_data.get("template", "")
 	var transform_data = entity_data.get("transform", {})
 
-	if _bridge:
-
-
 	# Merge template with entity data
 	var merged = entity_data.duplicate(true)
 

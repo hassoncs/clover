@@ -39,13 +39,11 @@ export function useTiltInput(
 
     Accelerometer.setUpdateInterval(updateInterval);
     subscriptionRef.current = Accelerometer.addListener(handleUpdate);
-    console.log("[TiltInput] Started accelerometer");
 
     return () => {
       if (subscriptionRef.current) {
         subscriptionRef.current.remove();
         subscriptionRef.current = null;
-        console.log("[TiltInput] Stopped accelerometer");
       }
     };
   }, [enabled, updateInterval, handleUpdate]);

@@ -23,7 +23,7 @@ physics: {
 
 ### 1. Keyboard Controls (Web only)
 
-**File:** `app/lib/test-games/games/breakoutBouncer.ts` (lines 291-307)
+**File:** `app/lib/test-games/games/breakoutBouncer/game.ts` (lines 291-307)
 
 **Rules:**
 - `paddle_left`: Button "left" held → move left at speed 15
@@ -43,7 +43,7 @@ physics: {
 
 ### 2. Virtual Tap Controls (Web + Native)
 
-**File:** `app/lib/test-games/games/breakoutBouncer.ts` (lines 309-322)
+**File:** `app/lib/test-games/games/breakoutBouncer/game.ts` (lines 309-322)
 
 **Rules:**
 - `tap_left`: Tap where `worldX < 5` → move left at speed 10
@@ -60,7 +60,7 @@ physics: {
 
 ### 3. Mouse Follow (Web only)
 
-**File:** `app/lib/test-games/games/breakoutBouncer.ts` (lines 324-336)
+**File:** `app/lib/test-games/games/breakoutBouncer/game.ts` (lines 324-336)
 
 **Rule:**
 - `paddle_follow_mouse`: Every frame, move toward `$mouse` entity on X axis at speed 8
@@ -75,7 +75,7 @@ physics: {
 
 ### 4. Drag Controls (Not yet tested)
 
-**File:** `app/lib/test-games/games/breakoutBouncer.ts` (lines 279-289)
+**File:** `app/lib/test-games/games/breakoutBouncer/game.ts` (lines 279-289)
 
 **Rule:**
 - `paddle_move`: On drag move, move toward touch X at speed 20
@@ -89,7 +89,7 @@ physics: {
 
 ## How to Switch Between Input Methods
 
-In `breakoutBouncer.ts`, only ONE input method should be active at a time for testing. Use `/* */` comments to toggle:
+In `breakoutBouncer/game.ts`, only ONE input method should be active at a time for testing. Use `/* */` comments to toggle:
 
 ```typescript
 // To test KEYBOARD: Uncomment lines 291-307, comment others
@@ -117,7 +117,7 @@ In `breakoutBouncer.ts`, only ONE input method should be active at a time for te
 
 ## Related Files
 
-- **Game definition:** `app/lib/test-games/games/breakoutBouncer.ts`
+- **Game definition:** `app/lib/test-games/games/breakoutBouncer/game.ts`}                                     }
 - **Input trigger evaluation:** `app/lib/game-engine/rules/triggers/InputTriggerEvaluator.ts`
 - **Physics actions:** `app/lib/game-engine/rules/actions/PhysicsActionExecutor.ts`
 - **Game runtime (input handling):** `app/lib/game-engine/GameRuntime.godot.tsx`

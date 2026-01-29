@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-01-28T21:31:45.567Z",
+  "generatedAt": "2026-01-29T03:17:21.211Z",
   "games": [
     {
       "id": "angryBurns",
@@ -276,6 +276,7 @@
           },
           {
             "id": "ground",
+            "name": "ground",
             "template": "ground",
             "transform": {
               "x": 10,
@@ -287,6 +288,7 @@
           },
           {
             "id": "wall-right",
+            "name": "wall-right",
             "template": "wall",
             "transform": {
               "x": 19.75,
@@ -298,6 +300,7 @@
           },
           {
             "id": "stone-1",
+            "name": "stone-1",
             "template": "stoneBlock",
             "transform": {
               "x": 14,
@@ -309,6 +312,7 @@
           },
           {
             "id": "stone-2",
+            "name": "stone-2",
             "template": "stoneBlock",
             "transform": {
               "x": 15.5,
@@ -320,6 +324,7 @@
           },
           {
             "id": "stone-3",
+            "name": "stone-3",
             "template": "stoneBlock",
             "transform": {
               "x": 17,
@@ -331,6 +336,7 @@
           },
           {
             "id": "wood-1",
+            "name": "wood-1",
             "template": "woodBlock",
             "transform": {
               "x": 14,
@@ -342,6 +348,7 @@
           },
           {
             "id": "wood-2",
+            "name": "wood-2",
             "template": "woodBlock",
             "transform": {
               "x": 15.5,
@@ -353,6 +360,7 @@
           },
           {
             "id": "wood-3",
+            "name": "wood-3",
             "template": "woodBlock",
             "transform": {
               "x": 17,
@@ -364,6 +372,7 @@
           },
           {
             "id": "glass-1",
+            "name": "glass-1",
             "template": "glassBlock",
             "transform": {
               "x": 14,
@@ -375,6 +384,7 @@
           },
           {
             "id": "glass-2",
+            "name": "glass-2",
             "template": "glassBlock",
             "transform": {
               "x": 15.5,
@@ -386,6 +396,7 @@
           },
           {
             "id": "glass-3",
+            "name": "glass-3",
             "template": "glassBlock",
             "transform": {
               "x": 17,
@@ -397,6 +408,7 @@
           },
           {
             "id": "target-1",
+            "name": "target-1",
             "template": "target",
             "transform": {
               "x": 15.5,
@@ -408,6 +420,7 @@
           },
           {
             "id": "target-2",
+            "name": "target-2",
             "template": "target",
             "transform": {
               "x": 14,
@@ -419,6 +432,7 @@
           },
           {
             "id": "target-3",
+            "name": "target-3",
             "template": "target",
             "transform": {
               "x": 17,
@@ -770,8 +784,18 @@
             "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball0.png",
-              "imageWidth": 1.2,
-              "imageHeight": 1.2
+              "width": 1.2,
+              "height": 1.2
+            },
+            "physics": {
+              "bodyType": "dynamic",
+              "density": 1
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.6,
+              "friction": 0.3,
+              "restitution": 0.2
             },
             "conditionalBehaviors": [
               {
@@ -832,8 +856,18 @@
             "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball1.png",
-              "imageWidth": 1.2,
-              "imageHeight": 1.2
+              "width": 1.2,
+              "height": 1.2
+            },
+            "physics": {
+              "bodyType": "dynamic",
+              "density": 1
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.6,
+              "friction": 0.3,
+              "restitution": 0.2
             },
             "conditionalBehaviors": [
               {
@@ -894,8 +928,18 @@
             "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball2.png",
-              "imageWidth": 1.2,
-              "imageHeight": 1.2
+              "width": 1.2,
+              "height": 1.2
+            },
+            "physics": {
+              "bodyType": "dynamic",
+              "density": 1
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.6,
+              "friction": 0.3,
+              "restitution": 0.2
             },
             "conditionalBehaviors": [
               {
@@ -956,8 +1000,18 @@
             "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball3.png",
-              "imageWidth": 1.2,
-              "imageHeight": 1.2
+              "width": 1.2,
+              "height": 1.2
+            },
+            "physics": {
+              "bodyType": "dynamic",
+              "density": 1
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.6,
+              "friction": 0.3,
+              "restitution": 0.2
             },
             "conditionalBehaviors": [
               {
@@ -1018,8 +1072,18 @@
             "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball0.png",
-              "imageWidth": 1.2,
-              "imageHeight": 1.2
+              "width": 1.2,
+              "height": 1.2
+            },
+            "physics": {
+              "bodyType": "dynamic",
+              "density": 1
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.6,
+              "friction": 0.3,
+              "restitution": 0.2
             },
             "conditionalBehaviors": [
               {
@@ -1080,8 +1144,18 @@
             "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball1.png",
-              "imageWidth": 1.2,
-              "imageHeight": 1.2
+              "width": 1.2,
+              "height": 1.2
+            },
+            "physics": {
+              "bodyType": "dynamic",
+              "density": 1
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.6,
+              "friction": 0.3,
+              "restitution": 0.2
             },
             "conditionalBehaviors": [
               {
@@ -1142,8 +1216,18 @@
             "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball2.png",
-              "imageWidth": 1.2,
-              "imageHeight": 1.2
+              "width": 1.2,
+              "height": 1.2
+            },
+            "physics": {
+              "bodyType": "dynamic",
+              "density": 1
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.6,
+              "friction": 0.3,
+              "restitution": 0.2
             },
             "conditionalBehaviors": [
               {
@@ -1204,8 +1288,18 @@
             "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball3.png",
-              "imageWidth": 1.2,
-              "imageHeight": 1.2
+              "width": 1.2,
+              "height": 1.2
+            },
+            "physics": {
+              "bodyType": "dynamic",
+              "density": 1
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.6,
+              "friction": 0.3,
+              "restitution": 0.2
             },
             "conditionalBehaviors": [
               {
@@ -4959,7 +5053,7 @@
           {
             "id": "bubble-0",
             "name": "Bubble 1",
-            "template": "bubble_blue",
+            "template": "bubble_red",
             "transform": {
               "x": -4.35,
               "y": 6.5,
@@ -4971,7 +5065,7 @@
           {
             "id": "bubble-1",
             "name": "Bubble 2",
-            "template": "bubble_purple",
+            "template": "bubble_red",
             "transform": {
               "x": -3.6500000000000004,
               "y": 6.5,
@@ -4995,7 +5089,7 @@
           {
             "id": "bubble-3",
             "name": "Bubble 4",
-            "template": "bubble_yellow",
+            "template": "bubble_red",
             "transform": {
               "x": -2.2500000000000004,
               "y": 6.5,
@@ -5007,7 +5101,7 @@
           {
             "id": "bubble-4",
             "name": "Bubble 5",
-            "template": "bubble_green",
+            "template": "bubble_yellow",
             "transform": {
               "x": -1.5500000000000007,
               "y": 6.5,
@@ -5031,7 +5125,7 @@
           {
             "id": "bubble-6",
             "name": "Bubble 7",
-            "template": "bubble_yellow",
+            "template": "bubble_green",
             "transform": {
               "x": -0.15000000000000036,
               "y": 6.5,
@@ -5043,7 +5137,7 @@
           {
             "id": "bubble-7",
             "name": "Bubble 8",
-            "template": "bubble_purple",
+            "template": "bubble_red",
             "transform": {
               "x": 0.5499999999999989,
               "y": 6.5,
@@ -5067,7 +5161,7 @@
           {
             "id": "bubble-9",
             "name": "Bubble 10",
-            "template": "bubble_purple",
+            "template": "bubble_red",
             "transform": {
               "x": -2.95,
               "y": 5.893800000000001,
@@ -5091,7 +5185,7 @@
           {
             "id": "bubble-11",
             "name": "Bubble 12",
-            "template": "bubble_yellow",
+            "template": "bubble_blue",
             "transform": {
               "x": -1.5500000000000007,
               "y": 5.893800000000001,
@@ -5103,7 +5197,7 @@
           {
             "id": "bubble-12",
             "name": "Bubble 13",
-            "template": "bubble_red",
+            "template": "bubble_blue",
             "transform": {
               "x": -0.8499999999999996,
               "y": 5.893800000000001,
@@ -5115,7 +5209,7 @@
           {
             "id": "bubble-13",
             "name": "Bubble 14",
-            "template": "bubble_green",
+            "template": "bubble_purple",
             "transform": {
               "x": -0.15000000000000036,
               "y": 5.893800000000001,
@@ -5127,7 +5221,7 @@
           {
             "id": "bubble-14",
             "name": "Bubble 15",
-            "template": "bubble_purple",
+            "template": "bubble_green",
             "transform": {
               "x": 0.5499999999999989,
               "y": 5.893800000000001,
@@ -5139,7 +5233,7 @@
           {
             "id": "bubble-15",
             "name": "Bubble 16",
-            "template": "bubble_yellow",
+            "template": "bubble_blue",
             "transform": {
               "x": -4.35,
               "y": 5.2876,
@@ -5151,7 +5245,7 @@
           {
             "id": "bubble-16",
             "name": "Bubble 17",
-            "template": "bubble_green",
+            "template": "bubble_blue",
             "transform": {
               "x": -3.6500000000000004,
               "y": 5.2876,
@@ -5163,7 +5257,7 @@
           {
             "id": "bubble-17",
             "name": "Bubble 18",
-            "template": "bubble_purple",
+            "template": "bubble_green",
             "transform": {
               "x": -2.95,
               "y": 5.2876,
@@ -5187,7 +5281,7 @@
           {
             "id": "bubble-19",
             "name": "Bubble 20",
-            "template": "bubble_purple",
+            "template": "bubble_yellow",
             "transform": {
               "x": -1.5500000000000007,
               "y": 5.2876,
@@ -5199,7 +5293,7 @@
           {
             "id": "bubble-20",
             "name": "Bubble 21",
-            "template": "bubble_red",
+            "template": "bubble_yellow",
             "transform": {
               "x": -0.8499999999999996,
               "y": 5.2876,
@@ -5211,7 +5305,7 @@
           {
             "id": "bubble-21",
             "name": "Bubble 22",
-            "template": "bubble_red",
+            "template": "bubble_yellow",
             "transform": {
               "x": -0.15000000000000036,
               "y": 5.2876,
@@ -5223,7 +5317,7 @@
           {
             "id": "bubble-22",
             "name": "Bubble 23",
-            "template": "bubble_red",
+            "template": "bubble_yellow",
             "transform": {
               "x": 0.5499999999999989,
               "y": 5.2876,
@@ -5235,7 +5329,7 @@
           {
             "id": "bubble-23",
             "name": "Bubble 24",
-            "template": "bubble_green",
+            "template": "bubble_red",
             "transform": {
               "x": -3.65,
               "y": 4.6814,
@@ -5247,7 +5341,7 @@
           {
             "id": "bubble-24",
             "name": "Bubble 25",
-            "template": "bubble_blue",
+            "template": "bubble_purple",
             "transform": {
               "x": -2.95,
               "y": 4.6814,
@@ -5259,7 +5353,7 @@
           {
             "id": "bubble-25",
             "name": "Bubble 26",
-            "template": "bubble_red",
+            "template": "bubble_yellow",
             "transform": {
               "x": -2.25,
               "y": 4.6814,
@@ -5295,7 +5389,7 @@
           {
             "id": "bubble-28",
             "name": "Bubble 29",
-            "template": "bubble_red",
+            "template": "bubble_blue",
             "transform": {
               "x": -0.15000000000000036,
               "y": 4.6814,
@@ -5331,7 +5425,7 @@
           {
             "id": "bubble-31",
             "name": "Bubble 32",
-            "template": "bubble_blue",
+            "template": "bubble_purple",
             "transform": {
               "x": -3.6500000000000004,
               "y": 4.075200000000001,
@@ -5343,7 +5437,7 @@
           {
             "id": "bubble-32",
             "name": "Bubble 33",
-            "template": "bubble_green",
+            "template": "bubble_yellow",
             "transform": {
               "x": -2.95,
               "y": 4.075200000000001,
@@ -5367,7 +5461,7 @@
           {
             "id": "bubble-34",
             "name": "Bubble 35",
-            "template": "bubble_blue",
+            "template": "bubble_red",
             "transform": {
               "x": -1.5500000000000007,
               "y": 4.075200000000001,
@@ -5379,7 +5473,7 @@
           {
             "id": "bubble-35",
             "name": "Bubble 36",
-            "template": "bubble_purple",
+            "template": "bubble_red",
             "transform": {
               "x": -0.8499999999999996,
               "y": 4.075200000000001,
@@ -5391,7 +5485,7 @@
           {
             "id": "bubble-36",
             "name": "Bubble 37",
-            "template": "bubble_yellow",
+            "template": "bubble_blue",
             "transform": {
               "x": -0.15000000000000036,
               "y": 4.075200000000001,
@@ -5403,7 +5497,7 @@
           {
             "id": "bubble-37",
             "name": "Bubble 38",
-            "template": "bubble_red",
+            "template": "bubble_purple",
             "transform": {
               "x": 0.5499999999999989,
               "y": 4.075200000000001,
@@ -5427,7 +5521,7 @@
           {
             "id": "bubble-39",
             "name": "Bubble 40",
-            "template": "bubble_blue",
+            "template": "bubble_yellow",
             "transform": {
               "x": -2.95,
               "y": 3.4690000000000003,
@@ -5439,7 +5533,7 @@
           {
             "id": "bubble-40",
             "name": "Bubble 41",
-            "template": "bubble_yellow",
+            "template": "bubble_green",
             "transform": {
               "x": -2.25,
               "y": 3.4690000000000003,
@@ -5451,7 +5545,7 @@
           {
             "id": "bubble-41",
             "name": "Bubble 42",
-            "template": "bubble_yellow",
+            "template": "bubble_purple",
             "transform": {
               "x": -1.5500000000000007,
               "y": 3.4690000000000003,
@@ -5463,7 +5557,7 @@
           {
             "id": "bubble-42",
             "name": "Bubble 43",
-            "template": "bubble_yellow",
+            "template": "bubble_green",
             "transform": {
               "x": -0.8499999999999996,
               "y": 3.4690000000000003,
@@ -5475,7 +5569,7 @@
           {
             "id": "bubble-43",
             "name": "Bubble 44",
-            "template": "bubble_red",
+            "template": "bubble_green",
             "transform": {
               "x": -0.15000000000000036,
               "y": 3.4690000000000003,
@@ -14635,7 +14729,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-6"
+              "pair-4"
             ],
             "transform": {
               "x": -4.2,
@@ -14645,7 +14739,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 6,
+              "pairId": 4,
               "cardIndex": 0
             }
           },
@@ -14656,7 +14750,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-7"
+              "pair-6"
             ],
             "transform": {
               "x": -1.7999999999999998,
@@ -14666,7 +14760,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 7,
+              "pairId": 6,
               "cardIndex": 1
             }
           },
@@ -14677,7 +14771,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-7"
+              "pair-2"
             ],
             "transform": {
               "x": 0.5999999999999996,
@@ -14687,7 +14781,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 7,
+              "pairId": 2,
               "cardIndex": 2
             }
           },
@@ -14698,7 +14792,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-2"
+              "pair-0"
             ],
             "transform": {
               "x": 3,
@@ -14708,7 +14802,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 2,
+              "pairId": 0,
               "cardIndex": 3
             }
           },
@@ -14719,7 +14813,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-1"
+              "pair-7"
             ],
             "transform": {
               "x": -4.2,
@@ -14729,7 +14823,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 1,
+              "pairId": 7,
               "cardIndex": 4
             }
           },
@@ -14740,7 +14834,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-0"
+              "pair-6"
             ],
             "transform": {
               "x": -1.7999999999999998,
@@ -14750,7 +14844,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 0,
+              "pairId": 6,
               "cardIndex": 5
             }
           },
@@ -14761,7 +14855,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-4"
+              "pair-5"
             ],
             "transform": {
               "x": 0.5999999999999996,
@@ -14771,7 +14865,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 4,
+              "pairId": 5,
               "cardIndex": 6
             }
           },
@@ -14782,7 +14876,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-3"
+              "pair-4"
             ],
             "transform": {
               "x": 3,
@@ -14792,7 +14886,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 3,
+              "pairId": 4,
               "cardIndex": 7
             }
           },
@@ -14803,7 +14897,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-5"
+              "pair-3"
             ],
             "transform": {
               "x": -4.2,
@@ -14813,7 +14907,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 5,
+              "pairId": 3,
               "cardIndex": 8
             }
           },
@@ -14824,7 +14918,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-1"
+              "pair-5"
             ],
             "transform": {
               "x": -1.7999999999999998,
@@ -14834,7 +14928,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 1,
+              "pairId": 5,
               "cardIndex": 9
             }
           },
@@ -14845,7 +14939,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-5"
+              "pair-7"
             ],
             "transform": {
               "x": 0.5999999999999996,
@@ -14855,7 +14949,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 5,
+              "pairId": 7,
               "cardIndex": 10
             }
           },
@@ -14866,7 +14960,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-0"
+              "pair-3"
             ],
             "transform": {
               "x": 3,
@@ -14876,7 +14970,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 0,
+              "pairId": 3,
               "cardIndex": 11
             }
           },
@@ -14887,7 +14981,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-4"
+              "pair-2"
             ],
             "transform": {
               "x": -4.2,
@@ -14897,7 +14991,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 4,
+              "pairId": 2,
               "cardIndex": 12
             }
           },
@@ -14908,7 +15002,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-2"
+              "pair-1"
             ],
             "transform": {
               "x": -1.7999999999999998,
@@ -14918,7 +15012,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 2,
+              "pairId": 1,
               "cardIndex": 13
             }
           },
@@ -14929,7 +15023,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-6"
+              "pair-0"
             ],
             "transform": {
               "x": 0.5999999999999996,
@@ -14939,7 +15033,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 6,
+              "pairId": 0,
               "cardIndex": 14
             }
           },
@@ -14950,7 +15044,7 @@
             "tags": [
               "card",
               "face-down",
-              "pair-3"
+              "pair-1"
             ],
             "transform": {
               "x": 3,
@@ -14960,7 +15054,7 @@
               "scaleY": 1
             },
             "variables": {
-              "pairId": 3,
+              "pairId": 1,
               "cardIndex": 15
             }
           }
@@ -19624,10 +19718,12 @@
             },
             "physics": {
               "bodyType": "static",
+              "density": 0
+            },
+            "collider": {
               "shape": "box",
               "width": 12,
               "height": 0.2,
-              "density": 0,
               "friction": 0.1,
               "restitution": 0.6
             }
@@ -21182,9 +21278,9 @@
             "id": "ball_drain",
             "name": "Ball falls through drain - lose a life, destroy marked pegs",
             "trigger": {
-              "type": "collision",
-              "entityATag": "ball",
-              "entityBTag": "drain"
+              "type": "zone_enter",
+              "zoneTag": "drain",
+              "entityTag": "ball"
             },
             "actions": [
               {
@@ -21213,9 +21309,9 @@
             "id": "bucket_catch",
             "name": "Bucket catches ball - free ball bonus!",
             "trigger": {
-              "type": "collision",
-              "entityATag": "ball",
-              "entityBTag": "bucket"
+              "type": "zone_enter",
+              "zoneTag": "bucket",
+              "entityTag": "ball"
             },
             "actions": [
               {
@@ -23228,6 +23324,2448 @@
                   "type": "fixed",
                   "x": 3,
                   "y": -6
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "tictactoe",
+      "title": "Tic-Tac-Toe",
+      "description": "Classic two-player strategy game",
+      "definition": {
+        "metadata": {
+          "id": "test-tictactoe",
+          "title": "Tic-Tac-Toe",
+          "description": "Classic two-player strategy game",
+          "instructions": "Tap a square to place your mark. Three in a row wins! Tap anywhere after game over to play again.",
+          "version": "1.0.0"
+        },
+        "world": {
+          "gravity": {
+            "x": 0,
+            "y": 0
+          },
+          "pixelsPerMeter": 50,
+          "bounds": {
+            "width": 8,
+            "height": 8
+          }
+        },
+        "camera": {
+          "type": "fixed",
+          "zoom": 1
+        },
+        "ui": {
+          "showScore": false,
+          "showLives": false,
+          "showTimer": false,
+          "backgroundColor": "#1a1a2e",
+          "variableDisplays": [
+            {
+              "name": "currentPlayer",
+              "label": "Player",
+              "color": "#FFFFFF"
+            },
+            {
+              "name": "statusText",
+              "label": "Status",
+              "color": "#AAAAAA"
+            }
+          ]
+        },
+        "variables": {
+          "cell00": 0,
+          "cell01": 0,
+          "cell02": 0,
+          "cell10": 0,
+          "cell11": 0,
+          "cell12": 0,
+          "cell20": 0,
+          "cell21": 0,
+          "cell22": 0,
+          "moveCount": 0,
+          "lastPlayer": 0,
+          "winner": 0,
+          "currentPlayer": 1,
+          "statusText": "Player X's turn"
+        },
+        "winCondition": {
+          "type": "custom"
+        },
+        "loseCondition": {
+          "type": "custom"
+        },
+        "templates": {
+          "cellZone": {
+            "id": "cellZone",
+            "tags": [
+              "cell",
+              "empty"
+            ],
+            "visual": {
+              "type": "rect",
+              "width": 1.5,
+              "height": 1.5,
+              "color": "rgba(255, 255, 255, 0.05)",
+              "strokeWidth": 0.05,
+              "strokeColor": "#FFFFFF"
+            },
+            "type": "zone",
+            "zone": {
+              "shape": {
+                "type": "box",
+                "width": 1.5,
+                "height": 1.5
+              }
+            }
+          },
+          "pieceX": {
+            "id": "pieceX",
+            "tags": [
+              "piece",
+              "x"
+            ],
+            "visual": {
+              "type": "rect",
+              "width": 1.0499999999999998,
+              "height": 1.0499999999999998,
+              "color": "#FF5252"
+            },
+            "type": "zone",
+            "zone": {
+              "shape": {
+                "type": "box",
+                "width": 1.0499999999999998,
+                "height": 1.0499999999999998
+              }
+            }
+          },
+          "pieceO": {
+            "id": "pieceO",
+            "tags": [
+              "piece",
+              "o"
+            ],
+            "visual": {
+              "type": "circle",
+              "radius": 0.5249999999999999,
+              "color": "#448AFF"
+            },
+            "type": "zone",
+            "zone": {
+              "shape": {
+                "type": "circle",
+                "radius": 0.5249999999999999
+              }
+            }
+          }
+        },
+        "entities": [
+          {
+            "id": "cell00",
+            "name": "Cell 0,0",
+            "template": "cellZone",
+            "tags": [
+              "cell",
+              "cell-0-0",
+              "empty"
+            ],
+            "transform": {
+              "x": -1.6,
+              "y": 1.6,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "cell01",
+            "name": "Cell 0,1",
+            "template": "cellZone",
+            "tags": [
+              "cell",
+              "cell-0-1",
+              "empty"
+            ],
+            "transform": {
+              "x": 0,
+              "y": 1.6,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "cell02",
+            "name": "Cell 0,2",
+            "template": "cellZone",
+            "tags": [
+              "cell",
+              "cell-0-2",
+              "empty"
+            ],
+            "transform": {
+              "x": 1.6,
+              "y": 1.6,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "cell10",
+            "name": "Cell 1,0",
+            "template": "cellZone",
+            "tags": [
+              "cell",
+              "cell-1-0",
+              "empty"
+            ],
+            "transform": {
+              "x": -1.6,
+              "y": 0,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "cell11",
+            "name": "Cell 1,1",
+            "template": "cellZone",
+            "tags": [
+              "cell",
+              "cell-1-1",
+              "empty"
+            ],
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "cell12",
+            "name": "Cell 1,2",
+            "template": "cellZone",
+            "tags": [
+              "cell",
+              "cell-1-2",
+              "empty"
+            ],
+            "transform": {
+              "x": 1.6,
+              "y": 0,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "cell20",
+            "name": "Cell 2,0",
+            "template": "cellZone",
+            "tags": [
+              "cell",
+              "cell-2-0",
+              "empty"
+            ],
+            "transform": {
+              "x": -1.6,
+              "y": -1.6,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "cell21",
+            "name": "Cell 2,1",
+            "template": "cellZone",
+            "tags": [
+              "cell",
+              "cell-2-1",
+              "empty"
+            ],
+            "transform": {
+              "x": 0,
+              "y": -1.6,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "cell22",
+            "name": "Cell 2,2",
+            "template": "cellZone",
+            "tags": [
+              "cell",
+              "cell-2-2",
+              "empty"
+            ],
+            "transform": {
+              "x": 1.6,
+              "y": -1.6,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          }
+        ],
+        "rules": [
+          {
+            "id": "tap_cell_00",
+            "trigger": {
+              "type": "tap",
+              "target": "cell00"
+            },
+            "conditions": [
+              {
+                "type": "expression",
+                "expr": "cell00 == 0"
+              }
+            ],
+            "actions": [
+              {
+                "type": "event",
+                "eventName": "attempt_place_00"
+              }
+            ]
+          },
+          {
+            "id": "tap_cell_01",
+            "trigger": {
+              "type": "tap",
+              "target": "cell01"
+            },
+            "conditions": [
+              {
+                "type": "expression",
+                "expr": "cell01 == 0"
+              }
+            ],
+            "actions": [
+              {
+                "type": "event",
+                "eventName": "attempt_place_01"
+              }
+            ]
+          },
+          {
+            "id": "tap_cell_02",
+            "trigger": {
+              "type": "tap",
+              "target": "cell02"
+            },
+            "conditions": [
+              {
+                "type": "expression",
+                "expr": "cell02 == 0"
+              }
+            ],
+            "actions": [
+              {
+                "type": "event",
+                "eventName": "attempt_place_02"
+              }
+            ]
+          },
+          {
+            "id": "tap_cell_10",
+            "trigger": {
+              "type": "tap",
+              "target": "cell10"
+            },
+            "conditions": [
+              {
+                "type": "expression",
+                "expr": "cell10 == 0"
+              }
+            ],
+            "actions": [
+              {
+                "type": "event",
+                "eventName": "attempt_place_10"
+              }
+            ]
+          },
+          {
+            "id": "tap_cell_11",
+            "trigger": {
+              "type": "tap",
+              "target": "cell11"
+            },
+            "conditions": [
+              {
+                "type": "expression",
+                "expr": "cell11 == 0"
+              }
+            ],
+            "actions": [
+              {
+                "type": "event",
+                "eventName": "attempt_place_11"
+              }
+            ]
+          },
+          {
+            "id": "tap_cell_12",
+            "trigger": {
+              "type": "tap",
+              "target": "cell12"
+            },
+            "conditions": [
+              {
+                "type": "expression",
+                "expr": "cell12 == 0"
+              }
+            ],
+            "actions": [
+              {
+                "type": "event",
+                "eventName": "attempt_place_12"
+              }
+            ]
+          },
+          {
+            "id": "tap_cell_20",
+            "trigger": {
+              "type": "tap",
+              "target": "cell20"
+            },
+            "conditions": [
+              {
+                "type": "expression",
+                "expr": "cell20 == 0"
+              }
+            ],
+            "actions": [
+              {
+                "type": "event",
+                "eventName": "attempt_place_20"
+              }
+            ]
+          },
+          {
+            "id": "tap_cell_21",
+            "trigger": {
+              "type": "tap",
+              "target": "cell21"
+            },
+            "conditions": [
+              {
+                "type": "expression",
+                "expr": "cell21 == 0"
+              }
+            ],
+            "actions": [
+              {
+                "type": "event",
+                "eventName": "attempt_place_21"
+              }
+            ]
+          },
+          {
+            "id": "tap_cell_22",
+            "trigger": {
+              "type": "tap",
+              "target": "cell22"
+            },
+            "conditions": [
+              {
+                "type": "expression",
+                "expr": "cell22 == 0"
+              }
+            ],
+            "actions": [
+              {
+                "type": "event",
+                "eventName": "attempt_place_22"
+              }
+            ]
+          },
+          {
+            "id": "place_x_00",
+            "trigger": {
+              "type": "event",
+              "eventName": "attempt_place_00"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "currentPlayer",
+                "comparison": "eq",
+                "value": 1
+              }
+            ],
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "pieceX",
+                "position": {
+                  "x": -1.6,
+                  "y": 1.6
+                }
+              },
+              {
+                "type": "set_variable",
+                "name": "cell00",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "lastPlayer",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "moveCount",
+                "operation": "add",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "currentPlayer",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player O's turn"
+              },
+              {
+                "type": "event",
+                "eventName": "move_committed"
+              }
+            ]
+          },
+          {
+            "id": "place_o_00",
+            "trigger": {
+              "type": "event",
+              "eventName": "attempt_place_00"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "currentPlayer",
+                "comparison": "eq",
+                "value": 2
+              }
+            ],
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "pieceO",
+                "position": {
+                  "x": -1.6,
+                  "y": 1.6
+                }
+              },
+              {
+                "type": "set_variable",
+                "name": "cell00",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "lastPlayer",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "moveCount",
+                "operation": "add",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "currentPlayer",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player X's turn"
+              },
+              {
+                "type": "event",
+                "eventName": "move_committed"
+              }
+            ]
+          },
+          {
+            "id": "place_x_01",
+            "trigger": {
+              "type": "event",
+              "eventName": "attempt_place_01"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "currentPlayer",
+                "comparison": "eq",
+                "value": 1
+              }
+            ],
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "pieceX",
+                "position": {
+                  "x": 0,
+                  "y": 1.6
+                }
+              },
+              {
+                "type": "set_variable",
+                "name": "cell01",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "lastPlayer",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "moveCount",
+                "operation": "add",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "currentPlayer",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player O's turn"
+              },
+              {
+                "type": "event",
+                "eventName": "move_committed"
+              }
+            ]
+          },
+          {
+            "id": "place_o_01",
+            "trigger": {
+              "type": "event",
+              "eventName": "attempt_place_01"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "currentPlayer",
+                "comparison": "eq",
+                "value": 2
+              }
+            ],
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "pieceO",
+                "position": {
+                  "x": 0,
+                  "y": 1.6
+                }
+              },
+              {
+                "type": "set_variable",
+                "name": "cell01",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "lastPlayer",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "moveCount",
+                "operation": "add",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "currentPlayer",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player X's turn"
+              },
+              {
+                "type": "event",
+                "eventName": "move_committed"
+              }
+            ]
+          },
+          {
+            "id": "place_x_02",
+            "trigger": {
+              "type": "event",
+              "eventName": "attempt_place_02"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "currentPlayer",
+                "comparison": "eq",
+                "value": 1
+              }
+            ],
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "pieceX",
+                "position": {
+                  "x": 1.6,
+                  "y": 1.6
+                }
+              },
+              {
+                "type": "set_variable",
+                "name": "cell02",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "lastPlayer",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "moveCount",
+                "operation": "add",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "currentPlayer",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player O's turn"
+              },
+              {
+                "type": "event",
+                "eventName": "move_committed"
+              }
+            ]
+          },
+          {
+            "id": "place_o_02",
+            "trigger": {
+              "type": "event",
+              "eventName": "attempt_place_02"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "currentPlayer",
+                "comparison": "eq",
+                "value": 2
+              }
+            ],
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "pieceO",
+                "position": {
+                  "x": 1.6,
+                  "y": 1.6
+                }
+              },
+              {
+                "type": "set_variable",
+                "name": "cell02",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "lastPlayer",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "moveCount",
+                "operation": "add",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "currentPlayer",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player X's turn"
+              },
+              {
+                "type": "event",
+                "eventName": "move_committed"
+              }
+            ]
+          },
+          {
+            "id": "place_x_10",
+            "trigger": {
+              "type": "event",
+              "eventName": "attempt_place_10"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "currentPlayer",
+                "comparison": "eq",
+                "value": 1
+              }
+            ],
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "pieceX",
+                "position": {
+                  "x": -1.6,
+                  "y": 0
+                }
+              },
+              {
+                "type": "set_variable",
+                "name": "cell10",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "lastPlayer",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "moveCount",
+                "operation": "add",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "currentPlayer",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player O's turn"
+              },
+              {
+                "type": "event",
+                "eventName": "move_committed"
+              }
+            ]
+          },
+          {
+            "id": "place_o_10",
+            "trigger": {
+              "type": "event",
+              "eventName": "attempt_place_10"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "currentPlayer",
+                "comparison": "eq",
+                "value": 2
+              }
+            ],
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "pieceO",
+                "position": {
+                  "x": -1.6,
+                  "y": 0
+                }
+              },
+              {
+                "type": "set_variable",
+                "name": "cell10",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "lastPlayer",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "moveCount",
+                "operation": "add",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "currentPlayer",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player X's turn"
+              },
+              {
+                "type": "event",
+                "eventName": "move_committed"
+              }
+            ]
+          },
+          {
+            "id": "place_x_11",
+            "trigger": {
+              "type": "event",
+              "eventName": "attempt_place_11"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "currentPlayer",
+                "comparison": "eq",
+                "value": 1
+              }
+            ],
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "pieceX",
+                "position": {
+                  "x": 0,
+                  "y": 0
+                }
+              },
+              {
+                "type": "set_variable",
+                "name": "cell11",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "lastPlayer",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "moveCount",
+                "operation": "add",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "currentPlayer",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player O's turn"
+              },
+              {
+                "type": "event",
+                "eventName": "move_committed"
+              }
+            ]
+          },
+          {
+            "id": "place_o_11",
+            "trigger": {
+              "type": "event",
+              "eventName": "attempt_place_11"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "currentPlayer",
+                "comparison": "eq",
+                "value": 2
+              }
+            ],
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "pieceO",
+                "position": {
+                  "x": 0,
+                  "y": 0
+                }
+              },
+              {
+                "type": "set_variable",
+                "name": "cell11",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "lastPlayer",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "moveCount",
+                "operation": "add",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "currentPlayer",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player X's turn"
+              },
+              {
+                "type": "event",
+                "eventName": "move_committed"
+              }
+            ]
+          },
+          {
+            "id": "place_x_12",
+            "trigger": {
+              "type": "event",
+              "eventName": "attempt_place_12"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "currentPlayer",
+                "comparison": "eq",
+                "value": 1
+              }
+            ],
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "pieceX",
+                "position": {
+                  "x": 1.6,
+                  "y": 0
+                }
+              },
+              {
+                "type": "set_variable",
+                "name": "cell12",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "lastPlayer",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "moveCount",
+                "operation": "add",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "currentPlayer",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player O's turn"
+              },
+              {
+                "type": "event",
+                "eventName": "move_committed"
+              }
+            ]
+          },
+          {
+            "id": "place_o_12",
+            "trigger": {
+              "type": "event",
+              "eventName": "attempt_place_12"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "currentPlayer",
+                "comparison": "eq",
+                "value": 2
+              }
+            ],
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "pieceO",
+                "position": {
+                  "x": 1.6,
+                  "y": 0
+                }
+              },
+              {
+                "type": "set_variable",
+                "name": "cell12",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "lastPlayer",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "moveCount",
+                "operation": "add",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "currentPlayer",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player X's turn"
+              },
+              {
+                "type": "event",
+                "eventName": "move_committed"
+              }
+            ]
+          },
+          {
+            "id": "place_x_20",
+            "trigger": {
+              "type": "event",
+              "eventName": "attempt_place_20"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "currentPlayer",
+                "comparison": "eq",
+                "value": 1
+              }
+            ],
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "pieceX",
+                "position": {
+                  "x": -1.6,
+                  "y": -1.6
+                }
+              },
+              {
+                "type": "set_variable",
+                "name": "cell20",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "lastPlayer",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "moveCount",
+                "operation": "add",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "currentPlayer",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player O's turn"
+              },
+              {
+                "type": "event",
+                "eventName": "move_committed"
+              }
+            ]
+          },
+          {
+            "id": "place_o_20",
+            "trigger": {
+              "type": "event",
+              "eventName": "attempt_place_20"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "currentPlayer",
+                "comparison": "eq",
+                "value": 2
+              }
+            ],
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "pieceO",
+                "position": {
+                  "x": -1.6,
+                  "y": -1.6
+                }
+              },
+              {
+                "type": "set_variable",
+                "name": "cell20",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "lastPlayer",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "moveCount",
+                "operation": "add",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "currentPlayer",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player X's turn"
+              },
+              {
+                "type": "event",
+                "eventName": "move_committed"
+              }
+            ]
+          },
+          {
+            "id": "place_x_21",
+            "trigger": {
+              "type": "event",
+              "eventName": "attempt_place_21"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "currentPlayer",
+                "comparison": "eq",
+                "value": 1
+              }
+            ],
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "pieceX",
+                "position": {
+                  "x": 0,
+                  "y": -1.6
+                }
+              },
+              {
+                "type": "set_variable",
+                "name": "cell21",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "lastPlayer",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "moveCount",
+                "operation": "add",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "currentPlayer",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player O's turn"
+              },
+              {
+                "type": "event",
+                "eventName": "move_committed"
+              }
+            ]
+          },
+          {
+            "id": "place_o_21",
+            "trigger": {
+              "type": "event",
+              "eventName": "attempt_place_21"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "currentPlayer",
+                "comparison": "eq",
+                "value": 2
+              }
+            ],
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "pieceO",
+                "position": {
+                  "x": 0,
+                  "y": -1.6
+                }
+              },
+              {
+                "type": "set_variable",
+                "name": "cell21",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "lastPlayer",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "moveCount",
+                "operation": "add",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "currentPlayer",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player X's turn"
+              },
+              {
+                "type": "event",
+                "eventName": "move_committed"
+              }
+            ]
+          },
+          {
+            "id": "place_x_22",
+            "trigger": {
+              "type": "event",
+              "eventName": "attempt_place_22"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "currentPlayer",
+                "comparison": "eq",
+                "value": 1
+              }
+            ],
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "pieceX",
+                "position": {
+                  "x": 1.6,
+                  "y": -1.6
+                }
+              },
+              {
+                "type": "set_variable",
+                "name": "cell22",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "lastPlayer",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "moveCount",
+                "operation": "add",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "currentPlayer",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player O's turn"
+              },
+              {
+                "type": "event",
+                "eventName": "move_committed"
+              }
+            ]
+          },
+          {
+            "id": "place_o_22",
+            "trigger": {
+              "type": "event",
+              "eventName": "attempt_place_22"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "currentPlayer",
+                "comparison": "eq",
+                "value": 2
+              }
+            ],
+            "actions": [
+              {
+                "type": "spawn",
+                "template": "pieceO",
+                "position": {
+                  "x": 1.6,
+                  "y": -1.6
+                }
+              },
+              {
+                "type": "set_variable",
+                "name": "cell22",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "lastPlayer",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "moveCount",
+                "operation": "add",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "currentPlayer",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player X's turn"
+              },
+              {
+                "type": "event",
+                "eventName": "move_committed"
+              }
+            ]
+          },
+          {
+            "id": "win_x_row0",
+            "trigger": {
+              "type": "event",
+              "eventName": "move_committed"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "cell00",
+                "comparison": "eq",
+                "value": 1
+              },
+              {
+                "type": "variable",
+                "name": "cell01",
+                "comparison": "eq",
+                "value": 1
+              },
+              {
+                "type": "variable",
+                "name": "cell02",
+                "comparison": "eq",
+                "value": 1
+              }
+            ],
+            "actions": [
+              {
+                "type": "set_variable",
+                "name": "winner",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player X wins!"
+              },
+              {
+                "type": "event",
+                "eventName": "game_ended"
+              }
+            ]
+          },
+          {
+            "id": "win_x_row1",
+            "trigger": {
+              "type": "event",
+              "eventName": "move_committed"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "cell10",
+                "comparison": "eq",
+                "value": 1
+              },
+              {
+                "type": "variable",
+                "name": "cell11",
+                "comparison": "eq",
+                "value": 1
+              },
+              {
+                "type": "variable",
+                "name": "cell12",
+                "comparison": "eq",
+                "value": 1
+              }
+            ],
+            "actions": [
+              {
+                "type": "set_variable",
+                "name": "winner",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player X wins!"
+              },
+              {
+                "type": "event",
+                "eventName": "game_ended"
+              }
+            ]
+          },
+          {
+            "id": "win_x_row2",
+            "trigger": {
+              "type": "event",
+              "eventName": "move_committed"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "cell20",
+                "comparison": "eq",
+                "value": 1
+              },
+              {
+                "type": "variable",
+                "name": "cell21",
+                "comparison": "eq",
+                "value": 1
+              },
+              {
+                "type": "variable",
+                "name": "cell22",
+                "comparison": "eq",
+                "value": 1
+              }
+            ],
+            "actions": [
+              {
+                "type": "set_variable",
+                "name": "winner",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player X wins!"
+              },
+              {
+                "type": "event",
+                "eventName": "game_ended"
+              }
+            ]
+          },
+          {
+            "id": "win_x_col0",
+            "trigger": {
+              "type": "event",
+              "eventName": "move_committed"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "cell00",
+                "comparison": "eq",
+                "value": 1
+              },
+              {
+                "type": "variable",
+                "name": "cell10",
+                "comparison": "eq",
+                "value": 1
+              },
+              {
+                "type": "variable",
+                "name": "cell20",
+                "comparison": "eq",
+                "value": 1
+              }
+            ],
+            "actions": [
+              {
+                "type": "set_variable",
+                "name": "winner",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player X wins!"
+              },
+              {
+                "type": "event",
+                "eventName": "game_ended"
+              }
+            ]
+          },
+          {
+            "id": "win_x_col1",
+            "trigger": {
+              "type": "event",
+              "eventName": "move_committed"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "cell01",
+                "comparison": "eq",
+                "value": 1
+              },
+              {
+                "type": "variable",
+                "name": "cell11",
+                "comparison": "eq",
+                "value": 1
+              },
+              {
+                "type": "variable",
+                "name": "cell21",
+                "comparison": "eq",
+                "value": 1
+              }
+            ],
+            "actions": [
+              {
+                "type": "set_variable",
+                "name": "winner",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player X wins!"
+              },
+              {
+                "type": "event",
+                "eventName": "game_ended"
+              }
+            ]
+          },
+          {
+            "id": "win_x_col2",
+            "trigger": {
+              "type": "event",
+              "eventName": "move_committed"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "cell02",
+                "comparison": "eq",
+                "value": 1
+              },
+              {
+                "type": "variable",
+                "name": "cell12",
+                "comparison": "eq",
+                "value": 1
+              },
+              {
+                "type": "variable",
+                "name": "cell22",
+                "comparison": "eq",
+                "value": 1
+              }
+            ],
+            "actions": [
+              {
+                "type": "set_variable",
+                "name": "winner",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player X wins!"
+              },
+              {
+                "type": "event",
+                "eventName": "game_ended"
+              }
+            ]
+          },
+          {
+            "id": "win_x_diag",
+            "trigger": {
+              "type": "event",
+              "eventName": "move_committed"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "cell00",
+                "comparison": "eq",
+                "value": 1
+              },
+              {
+                "type": "variable",
+                "name": "cell11",
+                "comparison": "eq",
+                "value": 1
+              },
+              {
+                "type": "variable",
+                "name": "cell22",
+                "comparison": "eq",
+                "value": 1
+              }
+            ],
+            "actions": [
+              {
+                "type": "set_variable",
+                "name": "winner",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player X wins!"
+              },
+              {
+                "type": "event",
+                "eventName": "game_ended"
+              }
+            ]
+          },
+          {
+            "id": "win_x_anti_diag",
+            "trigger": {
+              "type": "event",
+              "eventName": "move_committed"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "cell02",
+                "comparison": "eq",
+                "value": 1
+              },
+              {
+                "type": "variable",
+                "name": "cell11",
+                "comparison": "eq",
+                "value": 1
+              },
+              {
+                "type": "variable",
+                "name": "cell20",
+                "comparison": "eq",
+                "value": 1
+              }
+            ],
+            "actions": [
+              {
+                "type": "set_variable",
+                "name": "winner",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player X wins!"
+              },
+              {
+                "type": "event",
+                "eventName": "game_ended"
+              }
+            ]
+          },
+          {
+            "id": "win_o_row0",
+            "trigger": {
+              "type": "event",
+              "eventName": "move_committed"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "cell00",
+                "comparison": "eq",
+                "value": 2
+              },
+              {
+                "type": "variable",
+                "name": "cell01",
+                "comparison": "eq",
+                "value": 2
+              },
+              {
+                "type": "variable",
+                "name": "cell02",
+                "comparison": "eq",
+                "value": 2
+              }
+            ],
+            "actions": [
+              {
+                "type": "set_variable",
+                "name": "winner",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player O wins!"
+              },
+              {
+                "type": "event",
+                "eventName": "game_ended"
+              }
+            ]
+          },
+          {
+            "id": "win_o_row1",
+            "trigger": {
+              "type": "event",
+              "eventName": "move_committed"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "cell10",
+                "comparison": "eq",
+                "value": 2
+              },
+              {
+                "type": "variable",
+                "name": "cell11",
+                "comparison": "eq",
+                "value": 2
+              },
+              {
+                "type": "variable",
+                "name": "cell12",
+                "comparison": "eq",
+                "value": 2
+              }
+            ],
+            "actions": [
+              {
+                "type": "set_variable",
+                "name": "winner",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player O wins!"
+              },
+              {
+                "type": "event",
+                "eventName": "game_ended"
+              }
+            ]
+          },
+          {
+            "id": "win_o_row2",
+            "trigger": {
+              "type": "event",
+              "eventName": "move_committed"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "cell20",
+                "comparison": "eq",
+                "value": 2
+              },
+              {
+                "type": "variable",
+                "name": "cell21",
+                "comparison": "eq",
+                "value": 2
+              },
+              {
+                "type": "variable",
+                "name": "cell22",
+                "comparison": "eq",
+                "value": 2
+              }
+            ],
+            "actions": [
+              {
+                "type": "set_variable",
+                "name": "winner",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player O wins!"
+              },
+              {
+                "type": "event",
+                "eventName": "game_ended"
+              }
+            ]
+          },
+          {
+            "id": "win_o_col0",
+            "trigger": {
+              "type": "event",
+              "eventName": "move_committed"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "cell00",
+                "comparison": "eq",
+                "value": 2
+              },
+              {
+                "type": "variable",
+                "name": "cell10",
+                "comparison": "eq",
+                "value": 2
+              },
+              {
+                "type": "variable",
+                "name": "cell20",
+                "comparison": "eq",
+                "value": 2
+              }
+            ],
+            "actions": [
+              {
+                "type": "set_variable",
+                "name": "winner",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player O wins!"
+              },
+              {
+                "type": "event",
+                "eventName": "game_ended"
+              }
+            ]
+          },
+          {
+            "id": "win_o_col1",
+            "trigger": {
+              "type": "event",
+              "eventName": "move_committed"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "cell01",
+                "comparison": "eq",
+                "value": 2
+              },
+              {
+                "type": "variable",
+                "name": "cell11",
+                "comparison": "eq",
+                "value": 2
+              },
+              {
+                "type": "variable",
+                "name": "cell21",
+                "comparison": "eq",
+                "value": 2
+              }
+            ],
+            "actions": [
+              {
+                "type": "set_variable",
+                "name": "winner",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player O wins!"
+              },
+              {
+                "type": "event",
+                "eventName": "game_ended"
+              }
+            ]
+          },
+          {
+            "id": "win_o_col2",
+            "trigger": {
+              "type": "event",
+              "eventName": "move_committed"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "cell02",
+                "comparison": "eq",
+                "value": 2
+              },
+              {
+                "type": "variable",
+                "name": "cell12",
+                "comparison": "eq",
+                "value": 2
+              },
+              {
+                "type": "variable",
+                "name": "cell22",
+                "comparison": "eq",
+                "value": 2
+              }
+            ],
+            "actions": [
+              {
+                "type": "set_variable",
+                "name": "winner",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player O wins!"
+              },
+              {
+                "type": "event",
+                "eventName": "game_ended"
+              }
+            ]
+          },
+          {
+            "id": "win_o_diag",
+            "trigger": {
+              "type": "event",
+              "eventName": "move_committed"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "cell00",
+                "comparison": "eq",
+                "value": 2
+              },
+              {
+                "type": "variable",
+                "name": "cell11",
+                "comparison": "eq",
+                "value": 2
+              },
+              {
+                "type": "variable",
+                "name": "cell22",
+                "comparison": "eq",
+                "value": 2
+              }
+            ],
+            "actions": [
+              {
+                "type": "set_variable",
+                "name": "winner",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player O wins!"
+              },
+              {
+                "type": "event",
+                "eventName": "game_ended"
+              }
+            ]
+          },
+          {
+            "id": "win_o_anti_diag",
+            "trigger": {
+              "type": "event",
+              "eventName": "move_committed"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "cell02",
+                "comparison": "eq",
+                "value": 2
+              },
+              {
+                "type": "variable",
+                "name": "cell11",
+                "comparison": "eq",
+                "value": 2
+              },
+              {
+                "type": "variable",
+                "name": "cell20",
+                "comparison": "eq",
+                "value": 2
+              }
+            ],
+            "actions": [
+              {
+                "type": "set_variable",
+                "name": "winner",
+                "operation": "set",
+                "value": 2
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player O wins!"
+              },
+              {
+                "type": "event",
+                "eventName": "game_ended"
+              }
+            ]
+          },
+          {
+            "id": "check_tie",
+            "trigger": {
+              "type": "event",
+              "eventName": "move_committed"
+            },
+            "conditions": [
+              {
+                "type": "variable",
+                "name": "moveCount",
+                "comparison": "eq",
+                "value": 9
+              },
+              {
+                "type": "variable",
+                "name": "winner",
+                "comparison": "eq",
+                "value": 0
+              }
+            ],
+            "actions": [
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Tie game!"
+              },
+              {
+                "type": "event",
+                "eventName": "game_ended"
+              }
+            ]
+          },
+          {
+            "id": "tap_to_reset",
+            "trigger": {
+              "type": "tap"
+            },
+            "conditions": [
+              {
+                "type": "expression",
+                "expr": "stateIs(\"turnFlow\", \"gameOver\")"
+              }
+            ],
+            "actions": [
+              {
+                "type": "destroy",
+                "target": {
+                  "type": "by_tag",
+                  "tag": "piece"
+                }
+              },
+              {
+                "type": "set_variable",
+                "name": "cell00",
+                "operation": "set",
+                "value": 0
+              },
+              {
+                "type": "set_variable",
+                "name": "cell01",
+                "operation": "set",
+                "value": 0
+              },
+              {
+                "type": "set_variable",
+                "name": "cell02",
+                "operation": "set",
+                "value": 0
+              },
+              {
+                "type": "set_variable",
+                "name": "cell10",
+                "operation": "set",
+                "value": 0
+              },
+              {
+                "type": "set_variable",
+                "name": "cell11",
+                "operation": "set",
+                "value": 0
+              },
+              {
+                "type": "set_variable",
+                "name": "cell12",
+                "operation": "set",
+                "value": 0
+              },
+              {
+                "type": "set_variable",
+                "name": "cell20",
+                "operation": "set",
+                "value": 0
+              },
+              {
+                "type": "set_variable",
+                "name": "cell21",
+                "operation": "set",
+                "value": 0
+              },
+              {
+                "type": "set_variable",
+                "name": "cell22",
+                "operation": "set",
+                "value": 0
+              },
+              {
+                "type": "set_variable",
+                "name": "moveCount",
+                "operation": "set",
+                "value": 0
+              },
+              {
+                "type": "set_variable",
+                "name": "lastPlayer",
+                "operation": "set",
+                "value": 0
+              },
+              {
+                "type": "set_variable",
+                "name": "winner",
+                "operation": "set",
+                "value": 0
+              },
+              {
+                "type": "set_variable",
+                "name": "currentPlayer",
+                "operation": "set",
+                "value": 1
+              },
+              {
+                "type": "set_variable",
+                "name": "statusText",
+                "operation": "set",
+                "value": "Player X's turn"
+              },
+              {
+                "type": "state_transition",
+                "machineId": "turnFlow",
+                "toState": "player1Turn"
+              }
+            ]
+          }
+        ],
+        "stateMachines": [
+          {
+            "id": "turnFlow",
+            "initialState": "player1Turn",
+            "states": [
+              {
+                "id": "player1Turn"
+              },
+              {
+                "id": "player2Turn"
+              },
+              {
+                "id": "gameOver"
+              }
+            ],
+            "transitions": [
+              {
+                "id": "p1_to_p2",
+                "from": "player1Turn",
+                "to": "player2Turn",
+                "trigger": {
+                  "type": "event",
+                  "eventName": "move_committed"
+                }
+              },
+              {
+                "id": "p2_to_p1",
+                "from": "player2Turn",
+                "to": "player1Turn",
+                "trigger": {
+                  "type": "event",
+                  "eventName": "move_committed"
+                }
+              },
+              {
+                "id": "end_game_p1",
+                "from": "player1Turn",
+                "to": "gameOver",
+                "trigger": {
+                  "type": "event",
+                  "eventName": "game_ended"
+                }
+              },
+              {
+                "id": "end_game_p2",
+                "from": "player2Turn",
+                "to": "gameOver",
+                "trigger": {
+                  "type": "event",
+                  "eventName": "game_ended"
                 }
               }
             ]

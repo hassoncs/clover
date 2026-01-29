@@ -633,7 +633,7 @@ export function getImageGenerationConfig(env: Env): {
   provider: ImageGenerationProvider;
   error?: string;
 } {
-  const provider = env.IMAGE_GENERATION_PROVIDER ?? 'modal';
+  const provider = env.IMAGE_GENERATION_PROVIDER ?? 'scenario';
 
   if (provider === 'scenario') {
     if (!env.SCENARIO_API_KEY || !env.SCENARIO_SECRET_API_KEY) {
@@ -650,13 +650,93 @@ export function getImageGenerationConfig(env: Env): {
 }
 
 export function getProviderClient(env: Env): ProviderClient {
-  const provider = env.IMAGE_GENERATION_PROVIDER ?? 'modal';
+  const provider = env.IMAGE_GENERATION_PROVIDER ?? 'scenario';
   
   if (provider === 'scenario') {
     return createScenarioProviderClient(env);
   }
   
   return createComfyUIProviderClient(env);
+}
+
+export interface ImageGenerationAdapter {
+  configured: boolean;
+  uploadImage?: (imageBuffer: Uint8Array, filename?: string) => Promise<{ assetId: string }>;
+  img2img?: (params: {
+    image: string;
+    prompt: string;
+    strength?: number;
+    width?: number;
+    height?: number;
+  }) => Promise<{ assetId: string }>;
+  downloadImage?: (assetId: string) => Promise<{ buffer: Uint8Array; mimeType: string }>;
+}
+
+export async function createImageGenerationAdapter({
+  provider,
+  env,
+}: {
+  provider: 'scenario' | 'modal';
+  env: Env;
+}): Promise<ImageGenerationAdapter> {
+  if (provider === 'scenario') {
+    if (!env.SCENARIO_API_KEY || !env.SCENARIO_SECRET_API_KEY) {
+      return { configured: false };
+    }
+    
+    const client = createScenarioClient({
+      SCENARIO_API_KEY: env.SCENARIO_API_KEY,
+      SCENARIO_SECRET_API_KEY: env.SCENARIO_SECRET_API_KEY,
+    });
+
+    return {
+      configured: true,
+      uploadImage: async (imageBuffer: Uint8Array, filename?: string) => {
+        const assetId = await client.uploadImage(imageBuffer, filename);
+        return { assetId };
+      },
+      img2img: async (params) => {
+        return client.img2img({
+          image: params.image,
+          prompt: params.prompt,
+          strength: params.strength ?? 0.75,
+        });
+      },
+      downloadImage: async (assetId: string) => {
+        const result = await client.downloadImage(assetId);
+        const extension = result.extension;
+        const mimeType = extension === 'png' ? 'image/png' : 
+                        extension === 'jpg' || extension === 'jpeg' ? 'image/jpeg' : 
+                        'image/webp';
+        return { buffer: result.buffer, mimeType };
+      },
+    };
+  }
+
+  // Modal/ComfyUI provider
+  const client = createComfyUIProviderClient(env);
+  
+  return {
+    configured: true,
+    uploadImage: async (imageBuffer: Uint8Array) => {
+      const assetId = await client.uploadImage(imageBuffer);
+      return { assetId };
+    },
+    img2img: async (params) => {
+      return client.img2img({
+        image: params.image,
+        prompt: params.prompt,
+        strength: params.strength,
+      });
+    },
+    downloadImage: async (assetId: string) => {
+      const result = await client.downloadImage(assetId);
+      const mimeType = result.extension === 'png' ? 'image/png' : 
+                       result.extension === 'jpg' || result.extension === 'jpeg' ? 'image/jpeg' : 
+                       'image/webp';
+      return { buffer: result.buffer, mimeType };
+    },
+  };
 }
 
 export class AssetService {

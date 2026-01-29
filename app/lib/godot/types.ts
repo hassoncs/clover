@@ -210,6 +210,9 @@ export interface GodotBridge {
   
   // Debug stepping - advances physics by N frames and returns when complete
   stepPhysics(frames: number): Promise<{ ok: boolean; framesAdvanced: number; endFrame: number }>;
+  
+  // Generic RPC call for debug protocol
+  callRpc(method: string, params?: unknown): Promise<any>;
 
   // Entity management (high-level)
   spawnEntity(templateId: string, x: number, y: number, initialVelocity?: Vec2): string;

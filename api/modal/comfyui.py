@@ -36,6 +36,8 @@ image = (
         f"comfy --skip-prompt install --nvidia --version {COMFYUI_COMMIT}",
         "comfy --skip-prompt node install https://github.com/1038lab/ComfyUI-RMBG",
         "comfy --skip-prompt node install https://github.com/cubiq/ComfyUI_essentials",
+        "comfy --skip-prompt node install https://github.com/Fannovel16/comfyui_controlnet_aux",
+        "comfy --skip-prompt node install https://github.com/XLabs-AI/x-flux-comfyui",
     )
 )
 
@@ -48,6 +50,8 @@ MODEL_SIZES = {
     "clip_l.safetensors": 250_000_000,  # ~250MB
     "t5xxl_fp8_e4m3fn.safetensors": 5_000_000_000,  # ~5GB
     "ae.safetensors": 300_000_000,  # ~300MB
+    "flux1-canny-dev.safetensors": 2_400_000_000,  # ~2.4GB - ControlNet Canny
+    "flux1-controlnet-canny.safetensors": 2_400_000_000,  # ~2.4GB - XLabs open ControlNet
 }
 
 
@@ -63,6 +67,7 @@ def download_models_if_needed(models_path: Path):
         ("comfyanonymous/flux_text_encoders", "clip_l.safetensors", "clip"),
         ("comfyanonymous/flux_text_encoders", "t5xxl_fp8_e4m3fn.safetensors", "clip"),
         ("Comfy-Org/z_image_turbo", "split_files/vae/ae.safetensors", "vae"),
+        ("XLabs-AI/flux-controlnet-canny", "controlnet.safetensors", "xlabs/controlnet"),
     ]
     
     for repo_id, filename, subfolder in downloads:
@@ -216,6 +221,108 @@ def build_img2img_workflow(prompt: str, input_image_name: str, strength: float, 
                 "seed": seed,
                 "steps": steps
             }
+        }
+    }
+
+
+def build_controlnet_canny_workflow(prompt: str, control_image_name: str, control_strength: float, steps: int, seed: int) -> dict:
+    """Build ComfyUI workflow for XLabs ControlNet Canny with Flux.
+    
+    Uses XLabs-AI custom nodes for better Flux ControlNet support.
+    ControlNet model must be in: models/xlabs/controlnet/
+    
+    Args:
+        prompt: Text prompt for style generation
+        control_image_name: Name of the control image (silhouette)
+        control_strength: How strongly to follow the edges (0.0-1.0)
+        steps: Number of sampling steps
+        seed: Random seed
+    """
+    return {
+        "1": {
+            "class_type": "LoadImage",
+            "inputs": {"image": control_image_name}
+        },
+        "2": {
+            "class_type": "CannyEdgePreprocessor",
+            "inputs": {
+                "image": ["1", 0],
+                "low_threshold": 100,
+                "high_threshold": 200,
+                "resolution": 512
+            }
+        },
+        "3": {
+            "class_type": "LoadFluxControlNet",
+            "inputs": {},
+            "widgets_values": ["flux-dev", "xlabs/controlnet/controlnet.safetensors"]
+        },
+        "4": {
+            "class_type": "DualCLIPLoader",
+            "inputs": {},
+            "widgets_values": ["clip_l.safetensors", "t5xxl_fp8_e4m3fn.safetensors", "flux"]
+        },
+        "5": {
+            "class_type": "UNETLoader",
+            "inputs": {},
+            "widgets_values": ["flux1-dev-fp8.safetensors", "fp8_e4m3fn"]
+        },
+        "6": {
+            "class_type": "VAELoader",
+            "inputs": {},
+            "widgets_values": ["ae.safetensors"]
+        },
+        "7": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {},
+            "widgets_values": [512, 512, 1]
+        },
+        "8": {
+            "class_type": "CLIPTextEncodeFlux",
+            "inputs": {
+                "clip": ["4", 0]
+            },
+            "widgets_values": [prompt, prompt, 4.0]
+        },
+        "9": {
+            "class_type": "CLIPTextEncodeFlux",
+            "inputs": {
+                "clip": ["4", 0]
+            },
+            "widgets_values": ["", "", 4.0]
+        },
+        "10": {
+            "class_type": "ApplyFluxControlNet",
+            "inputs": {
+                "controlnet": ["3", 0],
+                "image": ["2", 0]
+            },
+            "widgets_values": [control_strength]
+        },
+        "11": {
+            "class_type": "XlabsSampler",
+            "inputs": {
+                "model": ["5", 0],
+                "conditioning": ["8", 0],
+                "neg_conditioning": ["9", 0],
+                "latent_image": ["7", 0],
+                "controlnet_condition": ["10", 0]
+            },
+            "widgets_values": [seed, "fixed", steps, 1.0, 3.5, 0.0]
+        },
+        "12": {
+            "class_type": "VAEDecode",
+            "inputs": {
+                "samples": ["11", 0],
+                "vae": ["6", 0]
+            }
+        },
+        "13": {
+            "class_type": "SaveImage",
+            "inputs": {
+                "images": ["12", 0]
+            },
+            "widgets_values": ["ControlNet_Canny"]
         }
     }
 
@@ -601,6 +708,45 @@ class ComfyUIWorker:
             stack_trace = traceback.format_exc()
             print(f"[web_generate] ERROR: {error_msg}")
             print(f"[web_generate] Stack trace: {stack_trace}")
+            return {"success": False, "error": error_msg, "traceback": stack_trace}
+
+    @modal.fastapi_endpoint(method="POST")
+    def web_controlnet(self, data: dict) -> dict:
+        """HTTP endpoint for ControlNet Canny generation - best for silhouette preservation."""
+        import random
+        import traceback
+
+        print(f"[web_controlnet] Received request: {data.keys()}")
+
+        prompt = data.get("prompt", "")
+        image_base64 = data.get("image_base64", "")
+        control_strength = data.get("control_strength", 0.7)
+        steps = data.get("steps", 20)
+        seed = data.get("seed")
+
+        print(f"[web_controlnet] prompt='{prompt[:50]}...', has_image={bool(image_base64)}, strength={control_strength}")
+
+        if not image_base64:
+            return {"success": False, "error": "image_base64 is required for ControlNet"}
+
+        try:
+            if seed is None:
+                seed = random.randint(0, 2**32 - 1)
+                print(f"[web_controlnet] Generated seed: {seed}")
+
+            print(f"[web_controlnet] Running ControlNet Canny...")
+            img_bytes_input = base64.b64decode(image_base64)
+            workflow = build_controlnet_canny_workflow(prompt, "input.png", control_strength, steps, seed)
+            img_bytes = self._run_workflow(workflow, [("input.png", img_bytes_input)])
+
+            result = base64.b64encode(img_bytes).decode()
+            print(f"[web_controlnet] Success! Generated {len(result)} bytes")
+            return {"success": True, "image_base64": result}
+        except Exception as e:
+            error_msg = str(e)
+            stack_trace = traceback.format_exc()
+            print(f"[web_controlnet] ERROR: {error_msg}")
+            print(f"[web_controlnet] Stack trace: {stack_trace}")
             return {"success": False, "error": error_msg, "traceback": stack_trace}
 
 

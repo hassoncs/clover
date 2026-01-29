@@ -54,8 +54,6 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
     if (!camera || !game) return;
 
     const { locationX: x, locationY: y } = event.nativeEvent;
-    
-    console.log("[Input] Touch Start:", { x, y });
 
     let worldPos: { x: number; y: number };
     if (viewportSystem) {
@@ -116,7 +114,7 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
     if (!camera || !dragStart) return;
 
     const { locationX: x, locationY: y } = event.nativeEvent;
-    
+
     let worldPos: { x: number; y: number };
     if (viewportSystem) {
       const cameraPos = camera.getPosition();
@@ -154,8 +152,6 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
     if (!camera) return;
 
     const { locationX: x, locationY: y } = event.nativeEvent;
-    
-    console.log("[Input] Touch End:", { x, y });
 
     let worldPos: { x: number; y: number };
     if (viewportSystem) {
@@ -173,7 +169,6 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
       worldY: worldPos.y,
       targetEntityId: dragStart?.targetEntityId,
     };
-    console.log("[Input] Tap set:", inputRef.current.tap);
 
     if (dragStart) {
       const dx = worldPos.x - dragStart.worldX;
@@ -185,7 +180,6 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
         worldVelocityX: dx * VELOCITY_SCALE,
         worldVelocityY: dy * VELOCITY_SCALE,
       };
-      console.log("[Input] DragEnd set:", inputRef.current.dragEnd);
     }
 
     dragStartRef.current = null;
@@ -197,7 +191,6 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
     if (Platform.OS !== "web") return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      console.log("[Input] KeyDown:", e.key);
       switch (e.key) {
         case "ArrowLeft":
         case "a":
@@ -227,7 +220,6 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      console.log("[Input] KeyUp:", e.key);
       switch (e.key) {
         case "ArrowLeft":
         case "a":

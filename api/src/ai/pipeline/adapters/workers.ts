@@ -97,7 +97,7 @@ export function createWorkersComfyUIAdapter(env: Env): ImageGenerationAdapter {
 }
 
 export function createWorkersProviderAdapter(env: Env): ImageGenerationAdapter {
-  const provider = env.IMAGE_GENERATION_PROVIDER ?? 'modal';
+  const provider = env.IMAGE_GENERATION_PROVIDER ?? 'scenario';
 
   if (provider === 'scenario') {
     if (!env.SCENARIO_API_KEY || !env.SCENARIO_SECRET_API_KEY) {
@@ -111,7 +111,7 @@ export function createWorkersProviderAdapter(env: Env): ImageGenerationAdapter {
     return createWorkersScenarioAdapter(client);
   }
 
-  // Default: Modal ComfyUI
+  // Alternative: Modal ComfyUI
   return createWorkersComfyUIAdapter(env);
 }
 

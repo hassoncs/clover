@@ -266,14 +266,6 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
     const vel = ctx.physics.getLinearVelocity(ctx.entity.bodyId);
     const currentSpeed = Math.sqrt(vel.x * vel.x + vel.y * vel.y);
 
-    const frameNum = Math.floor(ctx.elapsed * 60);
-    const isBall = ctx.entity.tags.includes('ball');
-    
-    if (frameNum % 60 === 0 && isBall) {
-      const diff = ((currentSpeed - targetSpeed) / targetSpeed * 100).toFixed(1);
-      console.log(`[maintain_speed] frame=${frameNum}, target=${targetSpeed.toFixed(2)}, current=${currentSpeed.toFixed(2)} (${diff}%), vel=(${vel.x.toFixed(2)}, ${vel.y.toFixed(2)}), mode=${b.mode || 'constant'}`);
-    }
-
     if (b.mode === 'minimum' && currentSpeed >= targetSpeed) {
       return;
     }
@@ -282,12 +274,6 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
       const scale = targetSpeed / currentSpeed;
       const newVel = { x: vel.x * scale, y: vel.y * scale };
       ctx.physics.setLinearVelocity(ctx.entity.bodyId, newVel);
-      
-      if (frameNum % 60 === 0 && isBall) {
-        console.log(`[maintain_speed] Corrected velocity: scale=${scale.toFixed(3)}, new=(${newVel.x.toFixed(2)}, ${newVel.y.toFixed(2)})`);
-      }
-    } else if (isBall) {
-      console.warn('[maintain_speed] Ball speed too low to maintain!', currentSpeed);
     }
   });
 }

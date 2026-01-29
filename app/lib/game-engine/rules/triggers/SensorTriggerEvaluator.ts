@@ -10,19 +10,8 @@ export class SensorTriggerEvaluator
     trigger: SensorEnterTrigger | SensorExitTrigger,
     context: RuleContext,
   ): boolean {
-    console.warn('[DEPRECATED] SensorTriggerEvaluator is deprecated. Use collision triggers with sensors instead.');
+    // SensorTriggerEvaluator is deprecated - use collision triggers with sensors instead
     const sensorEvents = (context as RuleContext & { sensorEvents?: SensorEventInfo[] }).sensorEvents ?? [];
-
-    if (sensorEvents.length > 0) {
-      console.log(
-        `[SensorTrigger] Checking ${sensorEvents.length} sensor events for`,
-        trigger.type,
-        'sensorTag:',
-        trigger.sensorTag,
-        'entityTag:',
-        trigger.entityTag,
-      );
-    }
 
     return sensorEvents.some((event) => {
       const isCorrectEventType =
@@ -32,20 +21,7 @@ export class SensorTriggerEvaluator
       const sensorHasTag = event.sensor.tags?.includes(trigger.sensorTag) ?? false;
       const entityHasTag = event.entity.tags?.includes(trigger.entityTag) ?? false;
 
-      const matched = isCorrectEventType && sensorHasTag && entityHasTag;
-
-      if (matched) {
-        console.log(
-          '[SensorTrigger] MATCHED:',
-          trigger.type,
-          'sensor:',
-          event.sensor.id,
-          'entity:',
-          event.entity.id,
-        );
-      }
-
-      return matched;
+      return isCorrectEventType && sensorHasTag && entityHasTag;
     });
   }
 }

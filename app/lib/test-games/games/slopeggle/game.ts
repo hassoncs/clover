@@ -2,7 +2,7 @@ import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
 const ASSET_BASE =
-  "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle";
+  "/assets/games/slopeggle";
 
 export const metadata: TestGameMeta = {
   title: "Slopeggle",

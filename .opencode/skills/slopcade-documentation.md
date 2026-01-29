@@ -1,6 +1,6 @@
 # Slopcade Project Documentation System
 
-> **Trigger**: When user says "add to roadmap", "add to todo", "document this", "work on today", "what's next", or when organizing/creating project documentation.
+> **Trigger**: When user says "add to roadmap", "add to todo", "document this", "work on today", "what's next", "braindump", "brain dump", "dump my thoughts", "here are my thoughts", "next steps for the project", "things we should do", "ideas for the project", "what I'm thinking", "my todo list", "random thoughts", or when organizing/creating project documentation.
 >
 > **Purpose**: Unified system for managing docs, roadmaps, todos, human tasks, and daily plans across the Slopcade project.
 
@@ -634,6 +634,7 @@ When user says various phrases, here's what to do:
 | "This is a blocker" | Create `.opencode/memory/human-tasks/ht-XXX.md` |
 | "Add this decision" | Create `.opencode/plans/YYYY-MM-DD-{topic}-oracle.md` |
 | "Update roadmap" | Update `.opencode/memory/ROADMAP.md` + relevant active feature docs |
+| "braindump" / "brain dump" / "dump my thoughts" / "here are my thoughts" / "next steps for the project" / "things we should do" / "ideas for the project" / "what I'm thinking" / "my todo list" / "random thoughts" | Process brain dump workflow |
 
 ---
 
@@ -654,7 +655,26 @@ polish UI, hide labs tab, and figure out landing page."
 - **Type**: Validation, Implementation, Decision, Research
 - **Duration**: <1 hour (quick), 1-4 hours (medium), >4 hours (large)
 
-### Step 2: Determine Document Location
+### Step 1.5: Prioritization Rubric
+
+Each item gets annotated with:
+- **Urgency (U)**: U1 (High - blocks launch/work), U2 (Medium - near-term), U3 (Low - nice-to-have)
+- **Type (T)**: Implementation, Validation, Research, Decision
+- **Effort (E)**: E1 Small (<1h), E2 Medium (1-4h), E3 Large (>4h)
+- **Confidence (C)**: C-high (clear), C-low (ambiguous → planning candidate)
+
+**Ranking Score**: U1 first, then U2, U3. Within same urgency: Implementation/Validation before Research, lower effort before higher effort. Decision/C-low items float to top.
+
+### Step 2: Action Routing Rules
+
+Document these exact rules:
+- **Small (<1h)** → Add to `docs/TODAY_YYYY-MM-DD.md` (High Priority section if U1)
+- **Medium (1-4h)** → Add to existing or new `.opencode/memory/roadmap/active/{feature}.md`
+- **Large (>4h OR needs architecture)** → Create `.opencode/memory/human-tasks/ht-XXX.md`
+
+**Important**: Do NOT create Oracle plans directly - Human Task is the trigger for planning.
+
+### Step 2.5: Determine Document Location
 
 | Task Scope | Document |
 |------------|----------|
@@ -663,7 +683,32 @@ polish UI, hide labs tab, and figure out landing page."
 | Blocker/decision needed | `.opencode/memory/human-tasks/ht-XXX.md` |
 | Strategic planning | `docs/LAUNCH_ROADMAP.md` or `.opencode/plans/` |
 
-### Step 3: Structure Output
+### Step 3: Output Templates
+
+**TODAY doc addition**:
+```markdown
+### {N}. {Task title} {⚡ URGENT if U1}
+{1–2 line description}
+
+- [ ] {subtask}
+- [ ] {subtask}
+
+**Notes**: {context from braindump}
+```
+
+**Active Feature creation** - Reference existing template, minimum fields:
+- Title, Status, Priority, Started date
+- Description
+- Progress Phase 1 with checkbox tasks
+- Human Tasks section (if ht-XXX created)
+
+**Human Task creation** - Reference existing template, include:
+- Priority, Status: Open, Source: "braindump"
+- Decision needed section
+- Why blocked/unknown section
+- Next step: "Consult Oracle" or "Create Sisyphus plan"
+
+### Step 4: Structure Output
 
 1. **Create TODAY doc** with all single-day/quick tasks
 2. **Create/update Active Feature docs** for multi-day work
@@ -671,12 +716,51 @@ polish UI, hide labs tab, and figure out landing page."
 4. **Update ROADMAP.md** "Today's Focus" section
 5. **Open TODAY doc in VS Code** for visibility
 
-### Step 4: Integrate & Cross-Reference
+### Step 5: Integration Sequence
+
+Document this exact order:
+1. Parse items (split into bullets, keep original wording)
+2. Annotate each with U/T/E/C and sort
+3. Route and write (TODAY → active feature → human-task)
+4. Cross-link (TODAY links to features/ht-XXX, features list blocking ht-XXX, update ROADMAP.md)
+5. Open TODAY doc for visibility
+
+### Step 6: Integrate & Cross-Reference
 
 - TODAY doc references active features
 - Active features reference human tasks
 - ROADMAP links to all above
 - All docs reference related docs in `docs/`
+
+### Example: Complete Brain Dump Processing
+
+**Raw braindump input**:
+```
+"Need to fix the physics glitch in pinball, validate all puzzle games work on iOS, 
+research better sound generation APIs, decide on credit pricing model, 
+add quick tutorial for new users, and figure out our app store strategy."
+```
+
+**Prioritized list with annotations**:
+1. Fix physics glitch in pinball (U1, Implementation, E2, C-high) → Active Feature
+2. Decide on credit pricing model (U1, Decision, E3, C-low) → Human Task
+3. Validate puzzle games on iOS (U1, Validation, E1, C-high) → TODAY
+4. Add quick tutorial (U2, Implementation, E2, C-high) → Active Feature  
+5. Research sound generation APIs (U2, Research, E2, C-high) → TODAY
+6. Figure out app store strategy (U3, Decision, E3, C-low) → Human Task
+
+**Where each item gets routed**:
+- `docs/TODAY_2026-01-28.md`: iOS validation (E1), sound research (E2)
+- `.opencode/memory/roadmap/active/physics-fixes.md`: Physics glitch fix (E2)
+- `.opencode/memory/roadmap/active/user-onboarding.md`: Tutorial feature (E2)
+- `.opencode/memory/human-tasks/ht-003.md`: Credit pricing decision (E3, C-low)
+- `.opencode/memory/human-tasks/ht-004.md`: App store strategy (E3, C-low)
+
+**Cross-links created**:
+- TODAY doc links to active features and human tasks
+- Active features reference any blocking human tasks
+- ROADMAP.md updated with new active features and human tasks
+- All docs cross-reference related items
 
 ---
 

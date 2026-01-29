@@ -200,7 +200,6 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
     const match = targetEntityId.match(/tube-(\d+)-sensor/);
     if (match) {
       const tubeIndex = parseInt(match[1], 10);
-      console.log(`[BallSort] Tap detected: ${targetEntityId} → index ${tubeIndex}`);
       return tubeIndex;
     }
     return -1;

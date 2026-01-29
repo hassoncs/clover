@@ -12,7 +12,7 @@ Every template must have: **Win/Lose conditions**, **Polished HUD**, **Themed As
 | :--- | :--- | :--- | :--- |
 | **Slopeggle** | Peggle Clone | 🚧 Template only | Needs canonical example in `app/examples/` |
 | **Pinball** | Physics Pinball | ✅ Functional | HUD styling, scoring animations |
-| **Gem Crush** | Match-3 | ❌ Missing | Needs full implementation in Godot bridge |
+| **Gem Crush** | Match-3 | ✅ Functional | Match-3 mechanics working, may need polish |
 | **Jumpy Cat** | Platformer | ⚠️ AI Template | Needs 100% polished "Mario-feel" example |
 | **Stack Attack** | Tower Stacker | ✅ Functional | Win conditions, block variety |
 | **Breakout** | Arcade Bouncer | ✅ Functional | Level layouts, power-ups |

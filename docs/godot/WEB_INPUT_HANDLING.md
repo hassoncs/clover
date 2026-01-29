@@ -149,5 +149,4 @@ On native (iOS/Android via react-native-godot):
 
 ## Related
 
-- `docs/godot/GAP_ANALYSIS.md` - Overall Godot integration status
 - `INPUT_EVENT_FLOW.md` - Detailed event flow documentation

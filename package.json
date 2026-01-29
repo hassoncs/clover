@@ -57,6 +57,7 @@
     "chokidar": "^5.0.0",
     "simple-git-hooks": "^2.11.1",
     "ts-morph": "^27.0.2",
+    "tsx": "^4.21.0",
     "turbo": "^2.3.0"
   },
   "simple-git-hooks": {

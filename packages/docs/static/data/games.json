@@ -202,6 +202,13 @@
     "sourcePath": "app/lib/test-games/games/stackMatch/game.ts"
   },
   {
+    "id": "tictactoe",
+    "title": "Tic-Tac-Toe",
+    "description": "Classic two-player strategy game",
+    "gameId": "test-tictactoe",
+    "sourcePath": "app/lib/test-games/games/tictactoe/game.ts"
+  },
+  {
     "id": "tipScale",
     "title": "Tip the Scale",
     "description": "Place weights on a seesaw to achieve perfect balance",

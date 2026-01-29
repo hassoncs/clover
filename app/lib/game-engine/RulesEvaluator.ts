@@ -382,13 +382,7 @@ export class RulesEvaluator implements IGameStateMutator {
     /** @deprecated Zone events are deprecated. Use collision events with sensors instead. */
     zoneEvents?: { zone: { id: string; tags?: string[] }; entity: { id: string; tags?: string[] }; type: 'enter' | 'exit' }[],
   ): void {
-    if (inputEvents.tap) {
-      console.log("[Rules] TAP event received! Game state:", this.gameState, "tap:", inputEvents.tap);
-    }
     if (this.gameState !== "playing") {
-      if (inputEvents.tap || inputEvents.dragEnd) {
-        console.log("[Rules] Ignoring input - game state is:", this.gameState);
-      }
       return;
     }
 
@@ -473,8 +467,6 @@ export class RulesEvaluator implements IGameStateMutator {
 
         for (const transition of def.transitions) {
           if (!this.transitionMatches(transition, state.currentState, eventName)) continue;
-
-          console.log(`[StateMachine] Transition: ${machineId} "${state.currentState}" -> "${transition.to}" (event: ${eventName})`);
 
           state.previousState = state.currentState;
           state.currentState = transition.to;

@@ -527,8 +527,8 @@ export interface NodeAdaptersOptions {
 }
 
 export async function createNodeAdapters(options: NodeAdaptersOptions): Promise<PipelineAdapters> {
-  // Read provider from env - default to 'modal'
-  const provider = process.env.IMAGE_GENERATION_PROVIDER ?? 'modal';
+  // Read provider from env - default to 'scenario'
+  const provider = process.env.IMAGE_GENERATION_PROVIDER ?? 'scenario';
   
   let imageAdapter: ImageGenerationAdapter;
   
@@ -543,7 +543,7 @@ export async function createNodeAdapters(options: NodeAdaptersOptions): Promise<
     
     imageAdapter = createNodeScenarioAdapter({ apiKey, apiSecret });
   } else {
-    // Use Modal ComfyUI - default provider
+    // Use Modal ComfyUI - alternative provider
     const endpoint = process.env.MODAL_ENDPOINT ?? 'https://hassoncs--slopcade-comfyui-web-generate.modal.run';
     imageAdapter = createNodeModalAdapter({ endpoint });
   }

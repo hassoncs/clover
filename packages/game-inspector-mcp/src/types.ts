@@ -31,6 +31,14 @@ export interface TimeState {
   lives: number;
 }
 
+export interface StepResult {
+  frame: number;
+  elapsed: number;
+  gameState: string;
+  score: number;
+  lives: number;
+}
+
 export interface SlopcadeDebugBridgeInterface {
   ready: boolean;
   gameId: string;
@@ -38,12 +46,12 @@ export interface SlopcadeDebugBridgeInterface {
   timeScale: number;
   frame: number;
   elapsed: number;
-  pause(): void;
-  resume(): void;
-  step(frames?: number): void;
-  setTimeScale(scale: number): void;
-  getTimeState(): TimeState;
-  getSnapshot(options?: { detail?: string; includeGodot?: boolean }): unknown;
+  pause(): Promise<void> | void;
+  resume(): Promise<void> | void;
+  step(frames?: number): Promise<StepResult>;
+  setTimeScale(scale: number): Promise<void> | void;
+  getTimeState(): Promise<TimeState> | TimeState;
+  getSnapshot(options?: { detail?: string; includeGodot?: boolean }): Promise<unknown> | unknown;
 }
 
 export interface WindowWithBridge {

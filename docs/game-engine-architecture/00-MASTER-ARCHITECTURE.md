@@ -342,7 +342,6 @@ SlotDefinition = { x: number, y: number, layer?: number }
 
 **Docs**:
 - Reference: `01-core-systems/physics-integration.md`
-- Gap Analysis: `docs/godot/GAP_ANALYSIS.md`
 
 ---
 

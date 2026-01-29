@@ -1,1 +1,0 @@
-- Validation module avoids adding an XML parser dependency; SVG validation uses conservative string/regex checks (root tag/attrs, forbidden tags/attrs, duplicate ids).

@@ -593,8 +593,9 @@ All numeric gameplay parameters should be defined as variables. For parameters t
 - [ ] Test with various game types
 
 **Files**:
-- `api/src/ai/prompts/game-generation.ts`
 - `api/src/ai/generator.ts`
+- `api/src/ai/pipeline/prompt-builder.ts`
+- `api/src/ai/templates/index.ts`
 
 ---
 
@@ -774,7 +775,9 @@ templates: {
 | `app/components/game/TuningPanel.tsx` | New component | +150 |
 | `app/components/game/TunableSlider.tsx` | New component | +60 |
 | `app/lib/game-engine/GameRuntime.godot.tsx` | Integration | +40 |
-| `api/src/ai/prompts/game-generation.ts` | Update prompts | +50 |
+| `api/src/ai/generator.ts` | Update prompts | +50 |
+| `api/src/ai/pipeline/prompt-builder.ts` | Build variable prompts | +30 |
+| `api/src/ai/templates/index.ts` | Template integration | +20 |
 | `app/lib/game-engine/__tests__/variables-tuning.test.ts` | Tests | +100 |
 
 **Total New/Modified Code**: ~480 lines
