@@ -20,6 +20,8 @@ var _query_system: QuerySystem = null
 var _debug_bridge: DebugBridge = null
 var _physics_queries: PhysicsQueries = null
 var _devtools_overlay: DebugOverlay = null
+var _entity_factory: EntityFactory = null
+var _visual_renderer: VisualRenderer = null
 
 # ============================================================================
 # CORE STATE
@@ -135,6 +137,13 @@ func _init_modules() -> void:
 	_physics_queries = PhysicsQueries.new(self)
 	_query_system = QuerySystem.new()
 	_register_core_query_handlers()
+
+	# Initialize entity factory
+	_entity_factory = EntityFactory.new(self)
+	_update_entity_factory_state()
+
+	# Initialize visual renderer
+	_visual_renderer = VisualRenderer.new(pixels_per_meter, _debug_show_shapes, _texture_cache, _font_cache, _download_image_texture)
 
 	_debug_bridge = DebugBridge.new(self, _query_system)
 
@@ -703,18 +712,20 @@ func _js_set_linear_velocity(args: Array) -> void:
 			node.linear_velocity = godot_vel
 		elif node is CharacterBody2D:
 			node.velocity = godot_vel
+		elif node is Area2D:
+			# Area2D doesn't have built-in velocity - track it via metadata
+			node.set_meta("velocity", godot_vel)
 
 func set_linear_velocity(entity_id: String, vx: float, vy: float) -> void:
 	if entities.has(entity_id):
 		var node = entities[entity_id]
-		var godot_vel = game_to_godot_vec(Vector2(vx, vy))
 		if node is RigidBody2D:
-			node.linear_velocity = godot_vel
+			node.linear_velocity = game_to_godot_vec(Vector2(vx, vy))
 		elif node is CharacterBody2D:
-			node.velocity = godot_vel
+			node.velocity = game_to_godot_vec(Vector2(vx, vy))
 		elif node is Area2D:
 			# Area2D doesn't have built-in velocity - track it via metadata
-			node.set_meta("velocity", godot_vel)
+			node.set_meta("velocity", game_to_godot_vec(Vector2(vx, vy)))
 
 func _js_set_angular_velocity(args: Array) -> void:
 	if args.size() < 2:
@@ -1295,6 +1306,10 @@ func _setup_parallax_background(bg_data: Dictionary) -> void:
 	print("[BG] Setup ", _parallax_layers.size(), " parallax layers")
 
 func _create_entity(entity_data: Dictionary) -> Node2D:
+	if _entity_factory:
+		return _entity_factory.create_entity(entity_data)
+	
+	# Fallback: legacy implementation when factory is not available
 	var entity_id = entity_data.get("id", "entity_" + str(randi()))
 	var template_id = entity_data.get("template", "")
 	var transform_data = entity_data.get("transform", {})
@@ -2003,10 +2018,10 @@ func _js_clear_texture_cache(args: Array) -> void:
 	else:
 		_texture_cache.clear()
 
-var _preload_pending_count: int = 0
-var _preload_completed_count: int = 0
-var _preload_failed_count: int = 0
-var _js_preload_progress_callback: JavaScriptObject = null
+func _preload_pending_count: int = 0
+func _preload_completed_count: int = 0
+func _preload_failed_count: int = 0
+func _js_preload_progress_callback: JavaScriptObject = null
 
 func _js_preload_textures(args: Array) -> void:
 	if args.size() < 1:
@@ -2500,8 +2515,7 @@ func _js_set_transform(args: Array) -> void:
 	if args.size() < 4:
 		return
 	var entity_id = str(args[0])
-	var game_pos = Vector2(float(args[1]), float(args[2]))
-	var godot_pos = game_to_godot_pos(game_pos)
+	var godot_pos = game_to_godot_pos(Vector2(float(args[1]), float(args[2])))
 	var godot_angle = -float(args[3])  # Flip angle for Y-up convention
 
 	if entities.has(entity_id):
@@ -2567,6 +2581,7 @@ func _js_set_rotation(args: Array) -> void:
 			var current_pos = node.position
 			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(angle, current_pos))
 		else:
+			# For Area2D and other node types, just set rotation directly
 			node.rotation = angle
 
 func set_rotation(entity_id: String, angle: float) -> void:
@@ -2578,6 +2593,7 @@ func set_rotation(entity_id: String, angle: float) -> void:
 			var current_pos = node.position
 			PhysicsServer2D.body_set_state(node.get_rid(), PhysicsServer2D.BODY_STATE_TRANSFORM, Transform2D(angle, current_pos))
 		else:
+			# For Area2D and other node types, just set rotation directly
 			node.rotation = angle
 
 func _js_set_scale(args: Array) -> void:
