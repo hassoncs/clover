@@ -247,10 +247,11 @@ const game: GameDefinition = {
         height: 0.6,
         color: "#00000022",
       },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: BEAM_WIDTH, height: 0.6 },
-        movement: "kinematic",
+      collider: {
+        shape: "box",
+        width: BEAM_WIDTH,
+        height: 0.6,
+        isSensor: true,
       },
     },
     weightChoice0: {
@@ -261,10 +262,10 @@ const game: GameDefinition = {
         radius: WEIGHT_RADIUS,
         color: WEIGHT_COLORS[0],
       },
-      type: "zone",
-      zone: {
-        shape: { type: "circle", radius: WEIGHT_RADIUS },
-        movement: "kinematic",
+      collider: {
+        shape: "circle",
+        radius: WEIGHT_RADIUS,
+        isSensor: true,
       },
     },
     weightChoice1: {
@@ -275,10 +276,10 @@ const game: GameDefinition = {
         radius: WEIGHT_RADIUS * 1.3,
         color: WEIGHT_COLORS[1],
       },
-      type: "zone",
-      zone: {
-        shape: { type: "circle", radius: WEIGHT_RADIUS * 1.3 },
-        movement: "kinematic",
+      collider: {
+        shape: "circle",
+        radius: WEIGHT_RADIUS * 1.3,
+        isSensor: true,
       },
     },
     weightChoice2: {
@@ -289,10 +290,10 @@ const game: GameDefinition = {
         radius: WEIGHT_RADIUS * 1.6,
         color: WEIGHT_COLORS[2],
       },
-      type: "zone",
-      zone: {
-        shape: { type: "circle", radius: WEIGHT_RADIUS * 1.6 },
-        movement: "kinematic",
+      collider: {
+        shape: "circle",
+        radius: WEIGHT_RADIUS * 1.6,
+        isSensor: true,
       },
     },
     placedWeight0: {
@@ -361,9 +362,11 @@ const game: GameDefinition = {
         height: 0.5,
         color: "#00000000",
       },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: 0.5, height: 0.5 },
+      collider: {
+        shape: "box",
+        width: 0.5,
+        height: 0.5,
+        isSensor: true,
       },
     },
     selectionIndicator: {
@@ -374,10 +377,10 @@ const game: GameDefinition = {
         radius: WEIGHT_RADIUS * 2,
         color: "#FFFFFF33",
       },
-      type: "zone",
-      zone: {
-        shape: { type: "circle", radius: WEIGHT_RADIUS * 2 },
-        movement: "kinematic",
+      collider: {
+        shape: "circle",
+        radius: WEIGHT_RADIUS * 2,
+        isSensor: true,
       },
     },
   },

@@ -65,13 +65,11 @@ const game: GameDefinition = {
         height: 1,
         color: "#0000FF",
       },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "box",
-          width: 1,
-          height: 1,
-        },
+      collider: {
+        shape: "box",
+        width: 1,
+        height: 1,
+        isSensor: true,
       },
     },
     spriteOnlyCircle: {

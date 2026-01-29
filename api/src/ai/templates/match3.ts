@@ -36,19 +36,16 @@ export const MATCH3_TEMPLATE: GameDefinition = {
   templates: {
     piece_red: {
       id: 'piece_red',
-      type: 'zone',
       tags: ['piece', 'red'],
       visual: {
         type: 'circle',
         radius: 0.5,
         color: '#FF4444',
       },
-      zone: {
-        shape: {
-          type: 'circle',
-          radius: 0.5,
-        },
-        movement: 'kinematic',
+      collider: {
+        shape: 'circle',
+        radius: 0.5,
+        isSensor: true,
       },
       conditionalBehaviors: [
         {
@@ -70,19 +67,16 @@ export const MATCH3_TEMPLATE: GameDefinition = {
     },
     piece_blue: {
       id: 'piece_blue',
-      type: 'zone',
       tags: ['piece', 'blue'],
       visual: {
         type: 'circle',
         radius: 0.5,
         color: '#4444FF',
       },
-      zone: {
-        shape: {
-          type: 'circle',
-          radius: 0.5,
-        },
-        movement: 'kinematic',
+      collider: {
+        shape: 'circle',
+        radius: 0.5,
+        isSensor: true,
       },
       conditionalBehaviors: [
         {
@@ -104,19 +98,16 @@ export const MATCH3_TEMPLATE: GameDefinition = {
     },
     piece_green: {
       id: 'piece_green',
-      type: 'zone',
       tags: ['piece', 'green'],
       visual: {
         type: 'circle',
         radius: 0.5,
         color: '#44FF44',
       },
-      zone: {
-        shape: {
-          type: 'circle',
-          radius: 0.5,
-        },
-        movement: 'kinematic',
+      collider: {
+        shape: 'circle',
+        radius: 0.5,
+        isSensor: true,
       },
       conditionalBehaviors: [
         {
@@ -138,19 +129,16 @@ export const MATCH3_TEMPLATE: GameDefinition = {
     },
     piece_yellow: {
       id: 'piece_yellow',
-      type: 'zone',
       tags: ['piece', 'yellow'],
       visual: {
         type: 'circle',
         radius: 0.5,
         color: '#FFFF44',
       },
-      zone: {
-        shape: {
-          type: 'circle',
-          radius: 0.5,
-        },
-        movement: 'kinematic',
+      collider: {
+        shape: 'circle',
+        radius: 0.5,
+        isSensor: true,
       },
       conditionalBehaviors: [
         {
@@ -172,7 +160,6 @@ export const MATCH3_TEMPLATE: GameDefinition = {
     },
     grid_cell: {
       id: 'grid_cell',
-      type: 'zone',
       tags: ['grid'],
       visual: {
         type: 'rect',
@@ -180,12 +167,11 @@ export const MATCH3_TEMPLATE: GameDefinition = {
         height: 1.1,
         color: '#222222',
       },
-      zone: {
-        shape: {
-          type: 'box',
-          width: 1.1,
-          height: 1.1,
-        },
+      collider: {
+        shape: 'box',
+        width: 1.1,
+        height: 1.1,
+        isSensor: true,
       },
     },
   },

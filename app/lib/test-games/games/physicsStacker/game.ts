@@ -83,10 +83,17 @@ const game: GameDefinition = {
         imageWidth: 2,
         imageHeight: 0.3,
       },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: 2, height: 0.3 },
-        movement: "kinematic",
+      physics: {
+        bodyType: "kinematic",
+        density: 0,
+      },
+      collider: {
+        shape: "box",
+        width: 2,
+        height: 0.3,
+        friction: 0,
+        restitution: 0,
+        isSensor: true,
       },
       behaviors: [
         { type: "oscillate", axis: "x", amplitude: 4, frequency: 0.3 },
@@ -233,9 +240,13 @@ const game: GameDefinition = {
       id: "deathZone",
       tags: ["death-zone"],
       visual: { type: "rect", width: 20, height: 2, color: "transparent" },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: 20, height: 2 },
+      collider: {
+        shape: "box",
+        width: 20,
+        height: 2,
+        friction: 0,
+        restitution: 0,
+        isSensor: true,
       },
     },
   },

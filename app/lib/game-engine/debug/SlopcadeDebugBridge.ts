@@ -1,20 +1,33 @@
 import type {
   SlopcadeDebugBridgeInterface,
-  SlopcadeDebugBridgeCallbacks,
   TimeState,
   GameSnapshot,
   SnapshotOptions,
   StepResult,
+  ReactGameState,
 } from "./types";
+
+interface GodotBridgeLike {
+  stepPhysics(frames: number): Promise<{ ok: boolean; framesAdvanced: number; endFrame: number }>;
+}
+
+interface GameRuntimeAPI {
+  pauseGameLoop: () => void;
+  resumeGameLoop: () => void;
+  stepGame: (dt: number) => void;
+  setTimeScale: (scale: number) => void;
+  getGameState: () => ReactGameState;
+  getGodotBridge: () => GodotBridgeLike | null;
+}
 
 export class SlopcadeDebugBridge implements SlopcadeDebugBridgeInterface {
   private _ready = false;
   private _gameId: string;
-  private callbacks: SlopcadeDebugBridgeCallbacks;
+  private runtime: GameRuntimeAPI;
 
-  constructor(gameId: string, callbacks: SlopcadeDebugBridgeCallbacks) {
+  constructor(gameId: string, runtime: GameRuntimeAPI) {
     this._gameId = gameId;
-    this.callbacks = callbacks;
+    this.runtime = runtime;
   }
 
   get ready(): boolean {
@@ -30,54 +43,80 @@ export class SlopcadeDebugBridge implements SlopcadeDebugBridgeInterface {
   }
 
   pause(): void {
-    this.callbacks.pause();
+    this.runtime.pauseGameLoop();
   }
 
   resume(): void {
-    this.callbacks.resume();
+    this.runtime.resumeGameLoop();
   }
 
   async step(frames = 1): Promise<StepResult> {
-    return this.callbacks.step(frames);
+    const bridge = this.runtime.getGodotBridge();
+    if (!bridge) {
+      throw new Error("GodotBridge not available");
+    }
+
+    const gameState = this.runtime.getGameState();
+    const startFrame = gameState.frame;
+
+    const physicsResult = await bridge.stepPhysics(frames);
+    
+    const fixedDt = 1 / 60;
+    for (let i = 0; i < frames; i++) {
+      this.runtime.stepGame(fixedDt);
+    }
+
+    const endFrame = startFrame + frames;
+    
+    return {
+      ok: physicsResult.ok,
+      framesAdvanced: frames,
+      startFrame,
+      endFrame,
+      timeState: this.getTimeState(),
+    };
   }
 
   setTimeScale(scale: number): void {
-    this.callbacks.setTimeScale(scale);
+    this.runtime.setTimeScale(scale);
   }
 
   getTimeState(): TimeState {
-    return this.callbacks.getTimeState();
+    const gameState = this.runtime.getGameState();
+    return {
+      paused: gameState.state === "paused",
+      timeScale: gameState.timeScale,
+      frame: gameState.frame,
+      elapsed: gameState.elapsed,
+      gameState: gameState.state,
+      score: gameState.score,
+      lives: gameState.lives,
+    };
   }
 
   getSnapshot(options?: SnapshotOptions): GameSnapshot {
-    const timeState = this.callbacks.getTimeState();
-    const reactState = this.callbacks.getReactState();
+    const timeState = this.getTimeState();
+    const reactState = this.runtime.getGameState();
 
-    const snapshot: GameSnapshot = {
+    return {
       timeState,
       react: reactState,
     };
-
-    if (options?.includeGodot !== false && this.callbacks.getGodotSnapshot) {
-      snapshot.godot = this.callbacks.getGodotSnapshot(options);
-    }
-
-    return snapshot;
   }
 
   get paused(): boolean {
-    return this.callbacks.getTimeState().paused;
+    return this.runtime.getGameState().state === "paused";
   }
 
   get timeScale(): number {
-    return this.callbacks.getTimeState().timeScale;
+    return this.runtime.getGameState().timeScale;
   }
 
   get frame(): number {
-    return this.callbacks.getTimeState().frame;
+    return this.runtime.getGameState().frame;
   }
 
   get elapsed(): number {
-    return this.callbacks.getTimeState().elapsed;
+    return this.runtime.getGameState().elapsed;
   }
 }

@@ -21,6 +21,10 @@ func _init(pixels_per_meter: float, debug_show_shapes: bool, texture_cache: Dict
 	_font_cache = font_cache
 	_download_image_texture_cb = download_image_texture_cb
 
+
+func update_pixels_per_meter(new_value: float) -> void:
+	_pixels_per_meter = new_value
+
 # ============================================================================
 # VISUAL DISPATCHER
 # ============================================================================
@@ -118,7 +122,6 @@ func add_visual(node: Node2D, visual_data: Dictionary) -> void:
 # ============================================================================
 
 func add_sprite(node: Node2D, sprite_data: Dictionary, physics_data: Dictionary, zone_data = null) -> void:
-	print("[DEBUG _add_sprite] Adding sprite type: ", sprite_data.get("type", "unknown"), " to node: ", node.name)
 	var sprite_type = sprite_data.get("type", "rect")
 	var color = Color.from_string(sprite_data.get("color", "#FF0000"), Color.RED)
 	var opacity = sprite_data.get("opacity", 1.0)

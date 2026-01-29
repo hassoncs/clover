@@ -112,9 +112,11 @@ const game: GameDefinition = {
       id: "base",
       tags: ["base"],
       visual: { type: "rect", width: BASE_WIDTH, height: BASE_HEIGHT, color: "#27AE60" },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: BASE_WIDTH, height: BASE_HEIGHT },
+      collider: {
+        shape: "box",
+        width: BASE_WIDTH,
+        height: BASE_HEIGHT,
+        isSensor: true,
       },
       behaviors: [],
     },

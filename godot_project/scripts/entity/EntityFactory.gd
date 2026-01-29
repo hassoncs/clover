@@ -13,13 +13,22 @@ var _body_id_reverse: Dictionary = {}
 var _next_body_id: int = 1
 var _entity_shape_map: Dictionary = {}
 
+
 # Coordinate conversion helpers
 func _init(bridge: Node):
 	_bridge = bridge
 
-func setup(entities: Dictionary, templates: Dictionary, pixels_per_meter: float, 
-		game_root: Node2D, body_id_map: Dictionary, body_id_reverse: Dictionary, 
-		next_body_id: int, entity_shape_map: Dictionary):
+
+func setup(
+	entities: Dictionary,
+	templates: Dictionary,
+	pixels_per_meter: float,
+	game_root: Node2D,
+	body_id_map: Dictionary,
+	body_id_reverse: Dictionary,
+	next_body_id: int,
+	entity_shape_map: Dictionary
+):
 	_entities = entities
 	_templates = templates
 	_pixels_per_meter = pixels_per_meter
@@ -29,18 +38,36 @@ func setup(entities: Dictionary, templates: Dictionary, pixels_per_meter: float,
 	_next_body_id = next_body_id
 	_entity_shape_map = entity_shape_map
 
+
+func update_state():
+	# Update state from bridge (called when game data changes)
+	if _bridge:
+		_entities = _bridge.entities
+		_templates = _bridge.templates
+		_pixels_per_meter = _bridge.pixels_per_meter
+		_game_root = _bridge.game_root
+		_body_id_map = _bridge.body_id_map
+		_body_id_reverse = _bridge.body_id_reverse
+		_next_body_id = _bridge.next_body_id
+		_entity_shape_map = _bridge.entity_shape_map
+
+
 func game_to_godot_pos(game_pos: Vector2) -> Vector2:
 	return Vector2(game_pos.x * _pixels_per_meter, -game_pos.y * _pixels_per_meter)
+
 
 func godot_to_game_pos(godot_pos: Vector2) -> Vector2:
 	return Vector2(godot_pos.x / _pixels_per_meter, -godot_pos.y / _pixels_per_meter)
 
+
 func game_to_godot_vec(game_vec: Vector2) -> Vector2:
 	return Vector2(game_vec.x * _pixels_per_meter, -game_vec.y * _pixels_per_meter)
+
 
 # ============================================================================
 # MAIN ENTITY CREATION
 # ============================================================================
+
 
 func create_entity(entity_data: Dictionary) -> Node2D:
 	var entity_id = entity_data.get("id", "entity_" + str(randi()))
@@ -48,7 +75,7 @@ func create_entity(entity_data: Dictionary) -> Node2D:
 	var transform_data = entity_data.get("transform", {})
 
 	if _bridge:
-		JavaScriptBridge.eval("console.log('[Godot] Creating entity: " + entity_id + " template: " + template_id + "')")
+
 
 	# Merge template with entity data
 	var merged = entity_data.duplicate(true)
@@ -78,6 +105,7 @@ func create_entity(entity_data: Dictionary) -> Node2D:
 	if physics_data:
 		node = create_physics_body(entity_id, physics_data, collider_data, transform_data)
 	# Create zone (legacy) if zone component exists
+	# DEPRECATED: Zones should use collider with isSensor: true instead
 	elif entity_type == "zone" and zone_data:
 		node = create_zone_entity(entity_id, zone_data, transform_data)
 	# Create sensor-only entity if collider with isSensor exists
@@ -97,17 +125,15 @@ func create_entity(entity_data: Dictionary) -> Node2D:
 
 	# Add visual component
 	if visual_data:
-		print("[DEBUG] Adding visual for entity: ", entity_id, " type: ", visual_data.get("type", "unknown"), " keys: ", visual_data.keys())
 		# Apply smart defaults: visual inherits from collider
 		var resolved_visual = _resolve_visual_with_defaults(visual_data, collider_data)
-		print("[DEBUG] Resolved visual type: ", resolved_visual.get("type", "NO TYPE"))
 		_add_visual(node, resolved_visual)
 	elif collider_data:
 		# Auto-generate visual from collider if no visual specified
 		var auto_visual = _generate_visual_from_collider(collider_data)
 		_add_visual(node, auto_visual)
 	else:
-		print("[DEBUG] NO visual or collider for entity: ", entity_id)
+		pass  # No visual or collider for entity
 
 	# Add collider shape if collider exists (and not already added by physics)
 	if collider_data and not physics_data:
@@ -141,11 +167,18 @@ func create_entity(entity_data: Dictionary) -> Node2D:
 
 	return node
 
+
 # ============================================================================
 # PHYSICS BODY CREATION
 # ============================================================================
 
-func create_physics_body(entity_id: String, physics_data: Dictionary, collider_data: Dictionary, transform_data: Dictionary) -> Node2D:
+
+func create_physics_body(
+	entity_id: String,
+	physics_data: Dictionary,
+	collider_data: Dictionary,
+	transform_data: Dictionary
+) -> Node2D:
 	var body_type = physics_data.get("bodyType", "dynamic")
 	var node: Node2D
 
@@ -241,11 +274,23 @@ func create_physics_body(entity_id: String, physics_data: Dictionary, collider_d
 
 	return node
 
+
 # ============================================================================
-# ZONE ENTITY CREATION
+# ZONE ENTITY CREATION (DEPRECATED)
+# ============================================================================
+# DEPRECATED: Zone entities are being replaced with collider + isSensor pattern.
+# Use collider with isSensor: true instead of separate zone data.
+# This function is kept for backward compatibility but will be removed in future versions.
+# When zone entities are created, a runtime warning is printed.
 # ============================================================================
 
-func create_zone_entity(entity_id: String, zone_data: Dictionary, transform_data: Dictionary) -> Node2D:
+
+func create_zone_entity(
+	entity_id: String, zone_data: Dictionary, transform_data: Dictionary
+) -> Node2D:
+	# DEPRECATED: Zone entities should use collider with isSensor: true
+	print("[DEPRECATED] Zone entities should use collider with isSensor: true")
+
 	var movement_type = zone_data.get("movement", "static")
 	var zone_shape = zone_data.get("shape", {"type": "box", "width": 1.0, "height": 1.0})
 
@@ -296,11 +341,15 @@ func create_zone_entity(entity_id: String, zone_data: Dictionary, transform_data
 
 	return area
 
+
 # ============================================================================
 # SENSOR ENTITY CREATION
 # ============================================================================
 
-func create_sensor_entity(entity_id: String, collider_data: Dictionary, transform_data: Dictionary) -> Node2D:
+
+func create_sensor_entity(
+	entity_id: String, collider_data: Dictionary, transform_data: Dictionary
+) -> Node2D:
 	var area = Area2D.new()
 	area.name = entity_id
 
@@ -323,9 +372,11 @@ func create_sensor_entity(entity_id: String, collider_data: Dictionary, transfor
 
 	return area
 
+
 # ============================================================================
 # SHAPE CREATION HELPERS
 # ============================================================================
+
 
 func create_shape(physics_data: Dictionary) -> Shape2D:
 	var shape_type = physics_data.get("shape", "box")
@@ -353,6 +404,7 @@ func create_shape(physics_data: Dictionary) -> Shape2D:
 
 	return shape
 
+
 func create_collider_shape(collider_data: Dictionary) -> Shape2D:
 	var shape_type = collider_data.get("shape", "box")
 	var shape: Shape2D
@@ -379,6 +431,7 @@ func create_collider_shape(collider_data: Dictionary) -> Shape2D:
 
 	return shape
 
+
 func calculate_polygon_area(vertices: Array) -> float:
 	if vertices.size() < 3:
 		return 1.0
@@ -390,9 +443,11 @@ func calculate_polygon_area(vertices: Array) -> float:
 		area -= vertices[j].x * vertices[i].y
 	return abs(area) / 2.0
 
+
 # ============================================================================
 # VISUAL CREATION (simplified - delegates to bridge for full implementation)
 # ============================================================================
+
 
 func _add_visual(node: Node2D, visual_data: Dictionary) -> void:
 	if not _bridge:
@@ -400,12 +455,16 @@ func _add_visual(node: Node2D, visual_data: Dictionary) -> void:
 	if _bridge.has_method("_add_visual"):
 		_bridge._add_visual(node, visual_data)
 
-func _create_polygon_texture(width: int, height: int, color: Color, padding: int = 0) -> ImageTexture:
+
+func _create_polygon_texture(
+	width: int, height: int, color: Color, padding: int = 0
+) -> ImageTexture:
 	if not _bridge:
 		return null
 	if _bridge.has_method("_create_polygon_texture"):
 		return _bridge._create_polygon_texture(width, height, color, padding)
 	return null
+
 
 func _merged_component(merged: Dictionary, tmpl: Dictionary, key: String) -> void:
 	if not tmpl.has(key):
@@ -418,12 +477,16 @@ func _merged_component(merged: Dictionary, tmpl: Dictionary, key: String) -> voi
 				merged_val[k] = tmpl_val[k]
 		merged[key] = merged_val
 
-func _resolve_visual_with_defaults(visual_data: Dictionary, collider_data: Dictionary) -> Dictionary:
+
+func _resolve_visual_with_defaults(
+	visual_data: Dictionary, collider_data: Dictionary
+) -> Dictionary:
 	if not _bridge:
 		return visual_data
 	if _bridge.has_method("_resolve_visual_with_defaults"):
 		return _bridge._resolve_visual_with_defaults(visual_data, collider_data)
 	return visual_data
+
 
 func _generate_visual_from_collider(collider_data: Dictionary) -> Dictionary:
 	if not _bridge:
@@ -431,3 +494,17 @@ func _generate_visual_from_collider(collider_data: Dictionary) -> Dictionary:
 	if _bridge.has_method("_generate_visual_from_collider"):
 		return _bridge._generate_visual_from_collider(collider_data)
 	return {"type": "rect", "color": "#FF0000"}
+
+
+func destroy_entity(entity_id: String) -> void:
+	# Clean up entity-related tracking data
+	if _body_id_map.has(entity_id):
+		var body_id = _body_id_map[entity_id]
+		_body_id_reverse.erase(body_id)
+		_body_id_map.erase(entity_id)
+
+	if _entity_shape_map.has(entity_id):
+		_entity_shape_map.erase(entity_id)
+
+	if _entities.has(entity_id):
+		_entities.erase(entity_id)

@@ -304,8 +304,6 @@ export class CameraSystem {
     
     this.shakeOffsetX = (Math.random() - 0.5) * 2 * maxPixels;
     this.shakeOffsetY = (Math.random() - 0.5) * 2 * maxPixels;
-    
-    console.log('[CameraSystem.shake] Started with offset:', this.shakeOffsetX, this.shakeOffsetY);
   }
 
   addTrauma(amount: number): void {

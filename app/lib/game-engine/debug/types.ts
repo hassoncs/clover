@@ -61,13 +61,13 @@ export interface SlopcadeDebugBridgeInterface {
   readonly ready: boolean;
   readonly gameId: string;
 
-  pause(): void;
-  resume(): void;
+  pause(): Promise<void> | void;
+  resume(): Promise<void> | void;
   step(frames?: number): Promise<StepResult>;
-  setTimeScale(scale: number): void;
+  setTimeScale(scale: number): Promise<void> | void;
 
-  getTimeState(): TimeState;
-  getSnapshot(options?: SnapshotOptions): GameSnapshot;
+  getTimeState(): Promise<TimeState> | TimeState;
+  getSnapshot(options?: SnapshotOptions): Promise<GameSnapshot> | GameSnapshot;
 
   readonly paused: boolean;
   readonly timeScale: number;

@@ -61,15 +61,12 @@ func setup(game_bridge: Node) -> void:
 	_fps_label.add_theme_font_size_override("font_size", 16)
 	_fps_label.visible = false
 	add_child(_fps_label)
-	print("[DebugOverlay] FPS label created")
 
 func set_settings(settings: Dictionary) -> void:
-	print("[DebugOverlay] set_settings called with: ", settings)
 	_show_input_debug = settings.get("showInputDebug", false)
 	_show_physics_shapes = settings.get("showPhysicsShapes", false)
 	_show_zones = settings.get("showZones", false)
 	_show_fps = settings.get("showFPS", false)
-	print("[DebugOverlay] After parse: input=", _show_input_debug, " physics=", _show_physics_shapes, " zones=", _show_zones, " fps=", _show_fps)
 	
 	# Update FPS label visibility
 	if _fps_label:
@@ -98,9 +95,7 @@ func _process(delta: float) -> void:
 			_draw_node.queue_redraw()
 
 func add_tap_marker(world_pos: Vector2, entity_id: String = "") -> void:
-	print("[DebugOverlay] add_tap_marker called: pos=", world_pos, " entity=", entity_id, " _show_input_debug=", _show_input_debug)
 	if not _show_input_debug:
-		print("[DebugOverlay] add_tap_marker: skipping (input debug disabled)")
 		return
 	
 	_tap_markers.append({
@@ -108,13 +103,11 @@ func add_tap_marker(world_pos: Vector2, entity_id: String = "") -> void:
 		"time": Time.get_ticks_msec() / 1000.0,
 		"entity_id": entity_id
 	})
-	print("[DebugOverlay] add_tap_marker: added marker, total markers=", _tap_markers.size())
 	
 	if _draw_node:
 		_draw_node.queue_redraw()
 
 func start_drag(world_pos: Vector2, entity_id: String = "") -> void:
-	print("[DebugOverlay] start_drag called: pos=", world_pos, " entity=", entity_id, " _show_input_debug=", _show_input_debug)
 	if not _show_input_debug:
 		return
 	
@@ -167,6 +160,8 @@ func _on_draw() -> void:
 		_draw_physics_shapes(canvas_transform)
 	
 	# Draw zones if enabled
+	# DEPRECATED: Zone entities are being replaced with collider + isSensor pattern
+	# Zone visualization is kept for backward compatibility
 	if _show_zones:
 		_draw_zones(canvas_transform)
 	
@@ -249,6 +244,8 @@ func _draw_physics_shapes(canvas_transform: Transform2D) -> void:
 			_draw_node.draw_string(font, label_pos, label_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, label_color)
 
 func _draw_zones(canvas_transform: Transform2D) -> void:
+	# DEPRECATED: Zone entities should use collider with isSensor: true
+	# This function is kept for backward compatibility with existing zone-based games
 	if not _game_bridge or not _game_bridge.entities:
 		return
 	

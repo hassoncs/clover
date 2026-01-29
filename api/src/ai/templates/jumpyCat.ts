@@ -35,7 +35,7 @@ export const JUMPY_CAT_TEMPLATE: GameDefinition = {
       },
       physics: { density: 1.0, fixedRotation: true },
       collider: { shape: 'box', physics: {
-        bodyType: 'dynamic', width: 0.8, height: 0.8, friction: 0.3, restitution: 0 },
+        bodyType: 'dynamic', width: 0.8, height: 0.8, friction: 0.3, restitution: 0 }},
       behaviors: [],
       tags: ['player'],
     },
@@ -49,22 +49,20 @@ export const JUMPY_CAT_TEMPLATE: GameDefinition = {
       },
       physics: { density: 1 },
       collider: { shape: 'box', physics: {
-        bodyType: 'static', width: 2, height: 0.4, friction: 0.8, restitution: 0 },
+        bodyType: 'static', width: 2, height: 0.4, friction: 0.8, restitution: 0 }},
       tags: ['platform', 'ground'],
     },
     collectible: {
       id: 'collectible',
-      type: 'zone',
       visual: {
         type: 'circle',
         radius: 0.3,
         color: '#FFD700',
       },
-      zone: {
-        shape: {
-          type: 'circle',
-          radius: 0.3,
-        },
+      collider: {
+        shape: 'circle',
+        radius: 0.3,
+        isSensor: true,
       },
       behaviors: [
         {
@@ -96,7 +94,7 @@ export const JUMPY_CAT_TEMPLATE: GameDefinition = {
       },
       physics: { density: 1 },
       collider: { shape: 'circle', physics: {
-        bodyType: 'kinematic', radius: 0.4, friction: 0, restitution: 0 },
+        bodyType: 'kinematic', radius: 0.4, friction: 0, restitution: 0 }},
       behaviors: [
         {
           type: 'oscillate',

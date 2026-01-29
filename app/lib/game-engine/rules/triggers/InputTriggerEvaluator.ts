@@ -76,7 +76,6 @@ export class InputTriggerEvaluator
         if (trigger.xMax !== undefined && tapWorldX >= trigger.xMax) {
           return false;
         }
-        console.log("[InputTrigger] TAP MATCHED!");
         return true;
       }
 

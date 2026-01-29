@@ -191,9 +191,11 @@ const game: GameDefinition = {
         height: CELL_SIZE,
         color: COLORS.floor,
       },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: CELL_SIZE, height: CELL_SIZE },
+      collider: {
+        shape: "box",
+        width: CELL_SIZE,
+        height: CELL_SIZE,
+        isSensor: true,
       },
     },
     goal: {
@@ -205,9 +207,11 @@ const game: GameDefinition = {
         height: CELL_SIZE * 0.8,
         color: COLORS.goal,
       },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: CELL_SIZE * 0.8, height: CELL_SIZE * 0.8 },
+      collider: {
+        shape: "box",
+        width: CELL_SIZE * 0.8,
+        height: CELL_SIZE * 0.8,
+        isSensor: true,
       },
     },
     iceBlock: {

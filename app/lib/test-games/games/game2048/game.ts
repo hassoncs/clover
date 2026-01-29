@@ -51,10 +51,11 @@ function createTileTemplate(value: number) {
       height: CELL_SIZE,
       color: TILE_COLORS[value] || "#3c3a32",
     },
-    type: "zone" as const,
-    zone: {
-      shape: { type: "box" as const, width: CELL_SIZE, height: CELL_SIZE },
-      movement: "kinematic" as const,
+    collider: {
+      shape: "box" as const,
+      width: CELL_SIZE,
+      height: CELL_SIZE,
+      isSensor: true,
     },
   };
 }
@@ -148,9 +149,11 @@ const game: GameDefinition = {
         height: CELL_SIZE,
         color: "#cdc1b4",
       },
-      type: "zone" as const,
-      zone: {
-        shape: { type: "box" as const, width: CELL_SIZE, height: CELL_SIZE },
+      collider: {
+        shape: "box" as const,
+        width: CELL_SIZE,
+        height: CELL_SIZE,
+        isSensor: true,
       },
     },
     tile2: createTileTemplate(2),
@@ -173,9 +176,11 @@ const game: GameDefinition = {
         height: GRID_TOTAL,
         color: "#bbada0",
       },
-      type: "zone" as const,
-      zone: {
-        shape: { type: "box" as const, width: GRID_TOTAL, height: GRID_TOTAL },
+      collider: {
+        shape: "box" as const,
+        width: GRID_TOTAL,
+        height: GRID_TOTAL,
+        isSensor: true,
       },
     },
   },

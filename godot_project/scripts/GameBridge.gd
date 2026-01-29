@@ -27,6 +27,7 @@ var _ui_button_system: UIButtonSystem = null
 var _splat_map_system: SplatMapSystem = null
 var _input_system: InputSystem = null
 var _collision_system: CollisionSystem = null
+var _joint_manager: JointManager = null
 
 # ============================================================================
 # CORE STATE
@@ -69,6 +70,7 @@ var _js_bridge_obj: JavaScriptObject = null
 var _texture_cache: Dictionary = {}
 var _pending_textures: Array = []
 var _audio_cache: Dictionary = {}
+var _font_cache: Dictionary = {}
 
 # Joint management
 var joints: Dictionary = {}
@@ -139,6 +141,45 @@ func _ready() -> void:
 	_setup_js_bridge()
 
 
+func _download_image_texture(url: String, callback: Callable) -> void:
+	if _texture_cache.has(url):
+		var texture = _texture_cache[url]
+		callback.call(texture)
+		return
+
+	var http = HTTPRequest.new()
+	add_child(http)
+
+	http.request_completed.connect(
+		func(
+			result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray
+		):
+			http.queue_free()
+			if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+				push_error("[GameBridge] Failed to download image: " + url)
+				return
+
+			var image = Image.new()
+			var err = image.load_png_from_buffer(body)
+			if err != OK:
+				err = image.load_jpg_from_buffer(body)
+			if err != OK:
+				err = image.load_webp_from_buffer(body)
+			if err != OK:
+				push_error("[GameBridge] Failed to parse image: " + url)
+				return
+
+			var texture = ImageTexture.create_from_image(image)
+			_texture_cache[url] = texture
+			callback.call(texture)
+	)
+
+	var err = http.request(url)
+	if err != OK:
+		push_error("[GameBridge] Failed to start image download: " + url)
+		http.queue_free()
+
+
 func _init_modules() -> void:
 	_event_queue_module = EventQueue.new()
 	_glb_loader = GLBLoader.new(self)
@@ -153,45 +194,6 @@ func _init_modules() -> void:
 	# Initialize entity factory
 	_entity_factory = EntityFactory.new(self)
 	_update_entity_factory_state()
-
-	# Download image texture helper (used by VisualRenderer and sprite loading)
-	func _download_image_texture(url: String, callback: Callable) -> void:
-		if _texture_cache.has(url):
-			var texture = _texture_cache[url]
-			callback.call(texture)
-			return
-
-		var http = HTTPRequest.new()
-		add_child(http)
-
-		http.request_completed.connect(
-			func(
-				result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray
-			):
-				http.queue_free()
-				if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
-					push_error("[GameBridge] Failed to download image: " + url)
-					return
-
-				var image = Image.new()
-				var err = image.load_png_from_buffer(body)
-				if err != OK:
-					err = image.load_jpg_from_buffer(body)
-				if err != OK:
-					err = image.load_webp_from_buffer(body)
-				if err != OK:
-					push_error("[GameBridge] Failed to parse image: " + url)
-					return
-
-				var texture = ImageTexture.create_from_image(image)
-				_texture_cache[url] = texture
-				callback.call(texture)
-		)
-
-		var err = http.request(url)
-		if err != OK:
-			push_error("[GameBridge] Failed to start image download: " + url)
-			http.queue_free()
 
 	# Initialize visual renderer
 	_visual_renderer = VisualRenderer.new(
@@ -214,6 +216,9 @@ func _init_modules() -> void:
 
 	# Initialize collision system
 	_collision_system = CollisionSystem.new(self)
+
+	# Initialize joint manager
+	_joint_manager = JointManager.new(self)
 
 	_devtools_overlay = DebugOverlay.new()
 	_devtools_overlay.setup(self)
@@ -719,8 +724,7 @@ func _notify_property_sync() -> void:
 	var properties = collect_all_properties()
 
 	if _js_property_sync_callback != null:
-		var json_str = JSON.stringify(properties)
-		_js_property_sync_callback.call("call", null, json_str)
+		_js_property_sync_callback.call("call", null, JSON.stringify(properties))
 	else:
 		_queue_event("property_sync", properties)
 
@@ -1004,13 +1008,11 @@ func _js_set_debug_show_shapes(args: Array) -> void:
 
 
 func _js_set_debug_settings(args: Array) -> void:
-	print("[GameBridge] _js_set_debug_settings called with args: ", args)
 	if args.size() < 1:
 		push_error("[GameBridge] setDebugSettings requires 1 arg: settings JSON string")
 		return
 
 	var json_str = str(args[0])
-	print("[GameBridge] setDebugSettings JSON string: ", json_str)
 	var json = JSON.new()
 	var parse_result = json.parse(json_str)
 	if parse_result != OK:
@@ -1018,805 +1020,11 @@ func _js_set_debug_settings(args: Array) -> void:
 		return
 
 	var settings = json.data
-	print("[GameBridge] setDebugSettings parsed: ", settings)
 	if not settings is Dictionary:
 		push_error("[GameBridge] setDebugSettings: Expected object, got: " + str(typeof(settings)))
 		return
 
 	if _devtools_overlay:
-		print("[GameBridge] Forwarding to _devtools_overlay")
 		_devtools_overlay.set_settings(settings)
 	else:
 		push_error("[GameBridge] _devtools_overlay is null!")
-
-
-func clear_texture_cache(url: String = "") -> void:
-	if url != "":
-		if _texture_cache.has(url):
-			_texture_cache.erase(url)
-	else:
-		_texture_cache.clear()
-
-
-func _on_body_entered(body: Node, entity_id: String) -> void:
-	if body.name in entities:
-		collision_occurred.emit(entity_id, body.name, 0.0)
-		_notify_js_collision(entity_id, body.name, 0.0)
-
-		# Process destroy_on_collision behaviors directly in Godot
-		_process_collision_behaviors(entity_id, body.name)
-		_process_collision_behaviors(body.name, entity_id)
-
-
-func spawn_entity(template_id: String, x: float, y: float) -> Node2D:
-	return spawn_entity_with_id(template_id, x, y, template_id + "_" + str(randi()), "")
-
-
-func spawn_entity_with_id(
-	template_id: String, x: float, y: float, entity_id: String, initial_velocity_json: String = ""
-) -> Node2D:
-	if not templates.has(template_id):
-		push_error("[GameBridge] Template not found: " + template_id)
-		return null
-
-	var entity_data = {
-		"id": entity_id, "template": template_id, "transform": {"x": x, "y": y, "angle": 0}
-	}
-
-	# Parse and store initial velocity if provided
-	if initial_velocity_json != "":
-		var json = JSON.new()
-		var err = json.parse(initial_velocity_json)
-		if err == OK:
-			var vel_data = json.data as Dictionary
-			if vel_data.has("x") and vel_data.has("y"):
-				var game_vel = Vector2(vel_data["x"], vel_data["y"])
-				entity_data["_initial_velocity"] = game_to_godot_vec(game_vel)
-
-	return _create_entity(entity_data)
-
-
-func _process(_delta: float) -> void:
-	# Update splat map system
-	if _splat_map_system and _splat_map_system.is_enabled():
-		var camera = get_viewport().get_camera_2d()
-		_splat_map_system.update_splat_proxies(entities, camera, get_viewport())
-
-
-func _process_collision_behaviors(entity_id: String, other_entity_id: String) -> void:
-	if not entities.has(entity_id) or not entities.has(other_entity_id):
-		return
-
-	var node = entities[entity_id]
-	var other_node = entities[other_entity_id]
-
-	if not node.has_meta("behaviors"):
-		return
-
-	var behaviors = node.get_meta("behaviors") as Array
-	var other_tags = other_node.get_meta("tags") if other_node.has_meta("tags") else []
-
-	for behavior in behaviors:
-		if behavior is Dictionary and behavior.get("type") == "destroy_on_collision":
-			var with_tags = behavior.get("withTags", []) as Array
-			var should_destroy = false
-
-			for tag in with_tags:
-				if tag in other_tags:
-					should_destroy = true
-					break
-
-			if should_destroy:
-				call_deferred("destroy_entity", entity_id)
-
-				if behavior.get("destroyOther", false):
-					call_deferred("destroy_entity", other_entity_id)
-				return
-
-
-func destroy_entity(entity_id: String) -> void:
-	if entities.has(entity_id):
-		var node = entities[entity_id]
-		entities.erase(entity_id)
-		node.queue_free()
-		entity_destroyed.emit(entity_id)
-		_notify_js_destroy(entity_id)
-
-
-# Get entity node by ID
-func get_entity(entity_id: String) -> Node2D:
-	return entities.get(entity_id)
-
-
-func set_entity_image(entity_id: String, url: String, width: float, height: float) -> void:
-	if not entities.has(entity_id):
-		push_error("[GameBridge] set_entity_image: entity not found: " + entity_id)
-		return
-
-	var node = entities[entity_id]
-	var sprite: Sprite2D = null
-
-	for child in node.get_children():
-		if child is Sprite2D:
-			sprite = child
-			break
-
-	if sprite == null:
-		sprite = Sprite2D.new()
-		node.add_child(sprite)
-
-	var sprite_data = {"width": width, "height": height}
-	if _texture_cache.has(url):
-		var texture = _texture_cache[url]
-		sprite.texture = texture
-		_apply_sprite_scale(sprite, sprite_data, texture)
-		return
-
-	var http = HTTPRequest.new()
-	add_child(http)
-
-	http.request_completed.connect(
-		func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
-			http.queue_free()
-			if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
-				push_error(
-					(
-						"[GameBridge] Failed to download texture: "
-						+ url
-						+ " (code: "
-						+ str(response_code)
-						+ ")"
-					)
-				)
-				return
-
-			var image = Image.new()
-			var err = image.load_png_from_buffer(body)
-			if err != OK:
-				err = image.load_jpg_from_buffer(body)
-			if err != OK:
-				err = image.load_webp_from_buffer(body)
-			if err != OK:
-				push_error("[GameBridge] Failed to parse image: " + url)
-				return
-
-			var texture = ImageTexture.create_from_image(image)
-			_texture_cache[url] = texture
-
-			if is_instance_valid(sprite):
-				sprite.texture = texture
-				_apply_sprite_scale(sprite, sprite_data, texture)
-				var parent_node = sprite.get_parent()
-				if parent_node:
-					_hide_shape_children(parent_node)
-	)
-
-	var err = http.request(url)
-	if err != OK:
-		push_error("[GameBridge] Failed to start texture download: " + url)
-		http.queue_free()
-
-
-func _js_set_entity_image(args: Array) -> void:
-	if args.size() < 4:
-		push_error("[GameBridge] setEntityImage requires 4 args: entity_id, url, width, height")
-		return
-	set_entity_image(str(args[0]), str(args[1]), float(args[2]), float(args[3]))
-
-
-func set_entity_atlas_region(
-	entity_id: String, atlas_url: String, region_dict: Dictionary, sprite_data: Dictionary = {}
-) -> void:
-	if not entities.has(entity_id):
-		push_error("[GameBridge] set_entity_atlas_region: entity not found: " + entity_id)
-		return
-
-	var node = entities[entity_id]
-	var sprite: Sprite2D = null
-
-	for child in node.get_children():
-		if child is Sprite2D:
-			sprite = child
-			break
-
-	if sprite == null:
-		sprite = Sprite2D.new()
-		node.add_child(sprite)
-
-	if _texture_cache.has(atlas_url):
-		_apply_atlas_region(sprite, _texture_cache[atlas_url], region_dict, sprite_data)
-		_hide_shape_children(node)
-	else:
-		_download_atlas_texture(sprite, atlas_url, region_dict, sprite_data)
-
-
-func _apply_atlas_region(
-	sprite: Sprite2D, texture: Texture2D, region_dict: Dictionary, sprite_data: Dictionary = {}
-) -> void:
-	var atlas_texture = AtlasTexture.new()
-	atlas_texture.atlas = texture
-	atlas_texture.region = Rect2(
-		region_dict.get("x", 0),
-		region_dict.get("y", 0),
-		region_dict.get("w", 0),
-		region_dict.get("h", 0)
-	)
-	sprite.texture = atlas_texture
-	_apply_sprite_scale(sprite, sprite_data, atlas_texture)
-
-
-func _download_atlas_texture(
-	sprite: Sprite2D, url: String, region_dict: Dictionary, sprite_data: Dictionary = {}
-) -> void:
-	_download_image_texture(
-		url,
-		func(texture: Texture2D):
-			if is_instance_valid(sprite):
-				_apply_atlas_region(sprite, texture, region_dict, sprite_data)
-				var node = sprite.get_parent()
-				if node:
-					_hide_shape_children(node)
-	)
-
-
-func _js_set_entity_atlas_region(args: Array) -> void:
-	if args.size() < 8:
-		push_error(
-			"[GameBridge] setEntityAtlasRegion requires 8 args: entity_id, atlas_url, x, y, w, h, width, height"
-		)
-		return
-	var entity_id = str(args[0])
-	var atlas_url = str(args[1])
-	var region_dict = {
-		"x": float(args[2]), "y": float(args[3]), "w": float(args[4]), "h": float(args[5])
-	}
-	var sprite_data = {"width": float(args[6]), "height": float(args[7])}
-	set_entity_atlas_region(entity_id, atlas_url, region_dict, sprite_data)
-
-
-func set_entity_image_base64(
-	entity_id: String, base64_data: String, width: float, height: float
-) -> void:
-	if not entities.has(entity_id):
-		push_error("[GameBridge] set_entity_image_base64: entity not found: " + entity_id)
-		return
-
-	var node = entities[entity_id]
-	var sprite: Sprite2D = null
-
-	for child in node.get_children():
-		if child is Sprite2D:
-			sprite = child
-			break
-
-	if sprite == null:
-		sprite = Sprite2D.new()
-		node.add_child(sprite)
-
-	var raw_data = Marshalls.base64_to_raw(base64_data)
-	if raw_data.is_empty():
-		push_error("[GameBridge] set_entity_image_base64: failed to decode base64")
-		return
-
-	var image = Image.new()
-	var err = image.load_png_from_buffer(raw_data)
-	if err != OK:
-		err = image.load_jpg_from_buffer(raw_data)
-	if err != OK:
-		err = image.load_webp_from_buffer(raw_data)
-	if err != OK:
-		push_error("[GameBridge] set_entity_image_base64: failed to parse image data")
-		return
-
-	var texture = ImageTexture.create_from_image(image)
-	sprite.texture = texture
-	var sprite_data = {"width": width, "height": height}
-	_apply_sprite_scale(sprite, sprite_data, texture)
-
-
-func set_entity_image_from_file(
-	entity_id: String, file_path: String, width: float, height: float
-) -> void:
-	if not entities.has(entity_id):
-		push_error("[GameBridge] set_entity_image_from_file: entity not found: " + entity_id)
-		return
-
-	var node = entities[entity_id]
-	var sprite: Sprite2D = null
-
-	for child in node.get_children():
-		if child is Sprite2D:
-			sprite = child
-			break
-
-	if sprite == null:
-		sprite = Sprite2D.new()
-		node.add_child(sprite)
-
-	var image = Image.new()
-	var err = image.load(file_path)
-	if err != OK:
-		push_error(
-			(
-				"[GameBridge] set_entity_image_from_file: failed to load image from "
-				+ file_path
-				+ " error="
-				+ str(err)
-			)
-		)
-		return
-
-	var texture = ImageTexture.create_from_image(image)
-	sprite.texture = texture
-	var sprite_data = {"width": width, "height": height}
-	_apply_sprite_scale(sprite, sprite_data, texture)
-
-
-func set_entity_atlas_region_from_file(
-	entity_id: String,
-	file_path: String,
-	region_x: float,
-	region_y: float,
-	region_w: float,
-	region_h: float,
-	sprite_width: float,
-	sprite_height: float
-) -> void:
-	if not entities.has(entity_id):
-		push_error("[GameBridge] set_entity_atlas_region_from_file: entity not found: " + entity_id)
-		return
-
-	var node = entities[entity_id]
-	var sprite: Sprite2D = null
-
-	for child in node.get_children():
-		if child is Sprite2D:
-			sprite = child
-			break
-
-	if sprite == null:
-		sprite = Sprite2D.new()
-		node.add_child(sprite)
-
-	var image = Image.new()
-	var err = image.load(file_path)
-	if err != OK:
-		push_error(
-			(
-				"[GameBridge] set_entity_atlas_region_from_file: failed to load image from "
-				+ file_path
-				+ " error="
-				+ str(err)
-			)
-		)
-		return
-
-	var texture = ImageTexture.create_from_image(image)
-	_texture_cache[file_path] = texture
-
-	var region_dict = {"x": region_x, "y": region_y, "w": region_w, "h": region_h}
-	var sprite_data = {"width": sprite_width, "height": sprite_height}
-	_apply_atlas_region(sprite, texture, region_dict, sprite_data)
-	_hide_shape_children(node)
-
-
-# Get all entity transforms (for syncing)
-func get_all_transforms() -> Dictionary:
-	var result = {}
-	for entity_id in entities:
-		var node = entities[entity_id]
-		var game_pos = godot_to_game_pos(node.position)
-		result[entity_id] = {"x": game_pos.x, "y": game_pos.y, "angle": -node.rotation}  # Flip angle back to game convention
-	return result
-
-
-# Clear all entities
-func clear_game() -> void:
-	# Clear joints first
-	for joint_id in joints:
-		var joint_node = joints[joint_id]
-		if is_instance_valid(joint_node):
-			joint_node.queue_free()
-	joints.clear()
-
-	# Clear entities (including Area2D sensors stored in entities dict)
-	for entity_id in entities:
-		var node = entities[entity_id]
-		if is_instance_valid(node):
-			node.queue_free()
-	entities.clear()
-	templates.clear()
-
-	# Reset ID tracking
-	body_id_map.clear()
-	body_id_reverse.clear()
-	collider_id_map.clear()
-	entity_shape_map.clear()
-	user_data.clear()
-	body_groups.clear()
-
-
-# =============================================================================
-# TRANSFORM CONTROL
-# =============================================================================
-
-
-func _js_set_transform(args: Array) -> void:
-	if args.size() < 4:
-		return
-	var entity_id = str(args[0])
-	var godot_pos = game_to_godot_pos(Vector2(float(args[1]), float(args[2])))
-	var godot_angle = -float(args[3])  # Flip angle for Y-up convention
-
-	if entities.has(entity_id):
-		var node = entities[entity_id]
-		if node is CharacterBody2D:
-			node.position = godot_pos
-			node.rotation = godot_angle
-		elif node is RigidBody2D:
-			# For RigidBody2D, we need to use physics server or _integrate_forces
-			PhysicsServer2D.body_set_state(
-				node.get_rid(),
-				PhysicsServer2D.BODY_STATE_TRANSFORM,
-				Transform2D(godot_angle, godot_pos)
-			)
-
-
-func set_transform(entity_id: String, x: float, y: float, angle: float) -> void:
-	var godot_pos = game_to_godot_pos(Vector2(x, y))
-	var godot_angle = -angle  # Flip angle for Y-up convention
-	if entities.has(entity_id):
-		var node = entities[entity_id]
-		if node is CharacterBody2D:
-			node.position = godot_pos
-			node.rotation = godot_angle
-		elif node is RigidBody2D:
-			PhysicsServer2D.body_set_state(
-				node.get_rid(),
-				PhysicsServer2D.BODY_STATE_TRANSFORM,
-				Transform2D(godot_angle, godot_pos)
-			)
-		else:
-			# For Area2D and other node types, just set position directly
-			node.position = godot_pos
-
-
-func _js_set_position(args: Array) -> void:
-	if args.size() < 3:
-		return
-	var entity_id = str(args[0])
-	var godot_pos = game_to_godot_pos(Vector2(float(args[1]), float(args[2])))
-
-	if entities.has(entity_id):
-		var node = entities[entity_id]
-		if node is CharacterBody2D:
-			node.position = godot_pos
-		elif node is RigidBody2D:
-			var current_angle = node.rotation
-			PhysicsServer2D.body_set_state(
-				node.get_rid(),
-				PhysicsServer2D.BODY_STATE_TRANSFORM,
-				Transform2D(current_angle, godot_pos)
-			)
-		else:
-			# For Area2D and other node types, just set position directly
-			node.position = godot_pos
-
-
-func set_position(entity_id: String, x: float, y: float) -> void:
-	var godot_pos = game_to_godot_pos(Vector2(x, y))
-	if entities.has(entity_id):
-		var node = entities[entity_id]
-		if node is CharacterBody2D:
-			node.position = godot_pos
-		elif node is RigidBody2D:
-			var current_angle = node.rotation
-			PhysicsServer2D.body_set_state(
-				node.get_rid(),
-				PhysicsServer2D.BODY_STATE_TRANSFORM,
-				Transform2D(current_angle, godot_pos)
-			)
-		else:
-			# For Area2D and other node types, just set position directly
-			node.position = godot_pos
-
-
-func _js_set_rotation(args: Array) -> void:
-	if args.size() < 2:
-		return
-	var entity_id = str(args[0])
-	var angle = float(args[1])
-
-	if entities.has(entity_id):
-		var node = entities[entity_id]
-		if node is CharacterBody2D:
-			node.rotation = angle
-		elif node is RigidBody2D:
-			var current_pos = node.position
-			PhysicsServer2D.body_set_state(
-				node.get_rid(),
-				PhysicsServer2D.BODY_STATE_TRANSFORM,
-				Transform2D(angle, current_pos)
-			)
-		else:
-			# For Area2D and other node types, just set rotation directly
-			node.rotation = angle
-
-
-func set_rotation(entity_id: String, angle: float) -> void:
-	if entities.has(entity_id):
-		var node = entities[entity_id]
-		if node is CharacterBody2D:
-			node.rotation = angle
-		elif node is RigidBody2D:
-			var current_pos = node.position
-			PhysicsServer2D.body_set_state(
-				node.get_rid(),
-				PhysicsServer2D.BODY_STATE_TRANSFORM,
-				Transform2D(angle, current_pos)
-			)
-		else:
-			# For Area2D and other node types, just set rotation directly
-			node.rotation = angle
-
-
-func _js_get_linear_velocity(args: Array) -> Variant:
-	if args.size() < 1:
-		return null
-	var entity_id = str(args[0])
-	if entities.has(entity_id):
-		var node = entities[entity_id]
-		if node is RigidBody2D:
-			var game_vel = godot_to_game_vec(node.linear_velocity)
-			return {"x": game_vel.x, "y": game_vel.y}
-		elif node is Area2D and node.has_meta("velocity"):
-			var godot_vel = node.get_meta("velocity") as Vector2
-			var game_vel = godot_to_game_vec(godot_vel)
-			return {"x": game_vel.x, "y": game_vel.y}
-	return null
-
-
-func _js_get_angular_velocity(args: Array) -> Variant:
-	if args.size() < 1:
-		return null
-	var entity_id = str(args[0])
-	if entities.has(entity_id):
-		var node = entities[entity_id]
-		if node is RigidBody2D:
-			return node.angular_velocity
-	return null
-
-
-# Stub functions for JS bridge callbacks
-func _js_create_ui_button(args: Array) -> void:
-	if _ui_button_system:
-		_ui_button_system._js_create_ui_button(args)
-
-
-func _js_destroy_ui_button(args: Array) -> void:
-	if _ui_button_system:
-		_ui_button_system._js_destroy_ui_button(args)
-
-
-func _js_on_ui_button_event(args: Array) -> void:
-	if _ui_button_system:
-		_ui_button_system._js_on_ui_button_event(args)
-
-
-func _js_show_3d_model(args: Array) -> void:
-	push_warning("[GameBridge] _js_show_3d_model not implemented")
-
-
-func _js_show_3d_model_from_url(args: Array) -> void:
-	push_warning("[GameBridge] _js_show_3d_model_from_url not implemented")
-
-
-func _js_set_3d_viewport_position(args: Array) -> void:
-	push_warning("[GameBridge] _js_set_3d_viewport_position not implemented")
-
-
-func _js_set_3d_viewport_size(args: Array) -> void:
-	push_warning("[GameBridge] _js_set_3d_viewport_size not implemented")
-
-
-func _js_rotate_3d_model(args: Array) -> void:
-	push_warning("[GameBridge] _js_rotate_3d_model not implemented")
-
-
-func _js_set_3d_camera_distance(args: Array) -> void:
-	push_warning("[GameBridge] _js_set_3d_camera_distance not implemented")
-
-
-func _js_clear_3d_models(args: Array) -> void:
-	push_warning("[GameBridge] _js_clear_3d_models not implemented")
-
-
-func _js_capture_screenshot(args: Array) -> void:
-	push_warning("[GameBridge] _js_capture_screenshot not implemented")
-
-
-func _js_get_world_info(args: Array) -> Variant:
-	return get_world_info()
-
-
-func _js_get_camera_info(args: Array) -> Variant:
-	return get_camera_info()
-
-
-func _js_get_viewport_info(args: Array) -> Variant:
-	return get_viewport_info()
-
-
-# Internal helper functions (stubs or delegates to modules)
-func _queue_event(event_type: String, data: Variant) -> void:
-	if _event_queue_module:
-		_event_queue_module.queue_event(event_type, data)
-
-
-func _apply_debug_visibility(node: Node) -> void:
-	if _visual_renderer:
-		_visual_renderer.apply_debug_visibility(node, _debug_show_shapes)
-
-
-func _apply_sprite_scale(sprite: Sprite2D, sprite_data: Dictionary, texture: Texture2D) -> void:
-	if _visual_renderer:
-		_visual_renderer.apply_sprite_scale(sprite, sprite_data, texture)
-
-
-func _hide_shape_children(node: Node) -> void:
-	if _visual_renderer:
-		_visual_renderer.hide_shape_children(node)
-
-
-func _create_entity(entity_data: Dictionary) -> Node2D:
-	if _entity_factory:
-		return _entity_factory.create_entity(entity_data)
-	return null
-
-
-func _notify_js_destroy(entity_id: String) -> void:
-	if _collision_system:
-		_collision_system._notify_js_destroy(entity_id)
-
-
-func load_game_json(json_str: String) -> bool:
-	push_warning("[GameBridge] load_game_json not implemented")
-	return false
-
-
-func load_custom_scene(scene_path: String) -> bool:
-	push_warning("[GameBridge] load_custom_scene not implemented")
-	return false
-
-
-func collect_all_properties() -> Dictionary:
-	if _property_collector:
-		return _property_collector.collect_all_properties()
-	return {}
-
-
-func get_world_info() -> Dictionary:
-	return {
-		"entities": entities.size(),
-		"templates": templates.size(),
-		"pixelsPerMeter": pixels_per_meter
-	}
-
-
-func get_camera_info() -> Dictionary:
-	if camera:
-		return {
-			"position": {"x": camera.position.x, "y": camera.position.y},
-			"zoom": camera.zoom.x
-		}
-	return {}
-
-
-func get_viewport_info() -> Dictionary:
-	var viewport = get_viewport()
-	if viewport:
-		return {
-			"size": {"x": viewport.size.x, "y": viewport.size.y}
-		}
-	return {}
-
-
-func set_watch_config(config: Dictionary) -> void:
-	push_warning("[GameBridge] set_watch_config not implemented")
-
-
-func _js_spawn_particle(args: Array) -> void:
-	if _visual_renderer:
-		_visual_renderer.spawn_particle(args)
-
-
-func _js_play_sound(args: Array) -> void:
-	push_warning("[GameBridge] _js_play_sound not implemented")
-
-
-func _destroy_entity(entity_id: String) -> void:
-	if not entities.has(entity_id):
-		return
-	
-	var entity = entities[entity_id]
-	
-	# Remove from entity manager if available
-	if _entity_factory:	
-		_entity_factory.destroy_entity(entity_id)
-	
-	# Remove from entities dictionary
-	entities.erase(entity_id)
-	
-	# Free the node
-	if entity and is_instance_valid(entity):
-		entity.queue_free()
-	
-	# Notify JS
-	_notify_js_destroy(entity_id)
-
-# Additional stub functions for JS bridge callbacks
-func _js_set_scale(args: Array) -> void:
-	push_warning("[GameBridge] _js_set_scale not implemented")
-
-func _js_apply_torque(args: Array) -> void:
-	push_warning("[GameBridge] _js_apply_torque not implemented")
-
-func _js_create_revolute_joint(args: Array) -> void:
-	push_warning("[GameBridge] _js_create_revolute_joint not implemented")
-
-func _js_create_distance_joint(args: Array) -> void:
-	push_warning("[GameBridge] _js_create_distance_joint not implemented")
-
-func _js_create_prismatic_joint(args: Array) -> void:
-	push_warning("[GameBridge] _js_create_prismatic_joint not implemented")
-
-func _js_create_weld_joint(args: Array) -> void:
-	push_warning("[GameBridge] _js_create_weld_joint not implemented")
-
-func _js_create_mouse_joint(args: Array) -> void:
-	push_warning("[GameBridge] _js_create_mouse_joint not implemented")
-
-func _js_destroy_joint(args: Array) -> void:
-	push_warning("[GameBridge] _js_destroy_joint not implemented")
-
-func _js_set_motor_speed(args: Array) -> void:
-	push_warning("[GameBridge] _js_set_motor_speed not implemented")
-
-func _js_set_mouse_target(args: Array) -> void:
-	push_warning("[GameBridge] _js_set_mouse_target not implemented")
-
-func _js_query_point(args: Array) -> void:
-	push_warning("[GameBridge] _js_query_point not implemented")
-
-func _js_query_point_entity(args: Array) -> void:
-	push_warning("[GameBridge] _js_query_point_entity not implemented")
-
-func _js_query_aabb(args: Array) -> void:
-	push_warning("[GameBridge] _js_query_aabb not implemented")
-
-func _js_raycast(args: Array) -> void:
-	push_warning("[GameBridge] _js_raycast not implemented")
-
-# Internal helper functions referenced in _register_core_query_handlers
-func _get_entity_transform_impl(entity_id: String) -> Dictionary:
-	if entities.has(entity_id):
-		var entity = entities[entity_id]
-		return {
-			"x": entity.position.x,
-			"y": entity.position.y,
-			"angle": entity.rotation
-		}
-	return {}
-
-func _screen_to_world_impl(x: float, y: float) -> Dictionary:
-	var viewport = get_viewport()
-	if viewport:
-		var world_pos = viewport.get_canvas_transform().affine_inverse() * Vector2(x, y)
-		return {"x": world_pos.x, "y": world_pos.y}
-	return {"x": 0, "y": 0}
-
-# Additional internal functions
-func _update_entity_factory_state() -> void:
-	if _entity_factory:
-		_entity_factory.update_state()
-

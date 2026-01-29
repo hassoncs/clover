@@ -54,7 +54,15 @@ export interface GameEntity {
   active?: boolean;
   assetPackId?: string;
   children?: ChildEntityDefinition[];
+  /**
+   * @deprecated Use collider with isSensor: true instead.
+   * Zones are now implemented as sensor colliders for unified rendering.
+   */
   type?: 'body' | 'zone';
+  /**
+   * @deprecated Use collider with isSensor: true instead.
+   * Zones are now implemented as sensor colliders for unified rendering.
+   */
   zone?: ZoneComponent;
 }
 
@@ -91,12 +99,24 @@ export interface BaseEntityTemplate {
   layer?: number;
   slots?: Record<string, SlotDefinition>;
   children?: ChildTemplateDefinition[];
+  /**
+   * @deprecated Use collider with isSensor: true instead.
+   * Zones are now implemented as sensor colliders for unified rendering.
+   */
   type?: 'body' | 'zone';
+  /**
+   * @deprecated Use collider with isSensor: true instead.
+   * Zones are now implemented as sensor colliders for unified rendering.
+   */
   zone?: ZoneComponent;
 }
 
 export type EntityTemplate = 
   | (BaseEntityTemplate & { type?: 'body'; physics?: PhysicsComponent })
+  /**
+   * @deprecated Use collider with isSensor: true instead.
+   * Zones are now implemented as sensor colliders for unified rendering.
+   */
   | (BaseEntityTemplate & { type: 'zone'; zone: ZoneComponent });
 
 export interface BaseEntityDefinition {
@@ -123,4 +143,8 @@ export interface BodyEntityDefinition extends BaseEntityDefinition {
   physics: PhysicsComponent;
 }
 
+/**
+ * @deprecated Use collider with isSensor: true instead.
+ * Zones are now implemented as sensor colliders for unified rendering.
+ */
 export { ZoneEntityDefinition } from './physics';

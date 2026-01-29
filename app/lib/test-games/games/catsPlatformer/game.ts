@@ -93,12 +93,10 @@ const game: GameDefinition = {
         radius: 0.3,
         color: "#FFD700",
       },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "circle",
-          radius: 0.3,
-        },
+      collider: {
+        shape: "circle",
+        radius: 0.3,
+        isSensor: true,
       },
       behaviors: [
         {

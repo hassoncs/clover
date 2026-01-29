@@ -264,7 +264,6 @@ export class SlotMachineSystem {
   }
 
   startSpin(bet: number = 1): boolean {
-    console.log('[SlotMachine] startSpin called, phase:', this.phase);
     if (this.phase !== "idle") {
       return false;
     }
@@ -285,7 +284,6 @@ export class SlotMachineSystem {
       this.phase = "spinning";
     }
 
-    console.log('[SlotMachine] Spin started, new phase:', this.phase);
     this.startReelAnimations();
     this.callbacks.onSpinStart?.();
 
@@ -430,7 +428,6 @@ export class SlotMachineSystem {
     }
 
     if (allStopped) {
-      console.log('[SlotMachine] All reels stopped, transitioning to evaluating');
       this.buildGridFromReels();
       this.updateSymbolTemplates();
       this.phase = "evaluating";
@@ -459,7 +456,6 @@ export class SlotMachineSystem {
   }
 
   private updateSymbolTemplates(): void {
-    console.log('[SlotMachine] updateSymbolTemplates called');
     for (let row = 0; row < this.config.rows; row++) {
       for (let col = 0; col < this.config.reels; col++) {
         const symbolIndex = this.grid[row][col];
@@ -505,7 +501,6 @@ export class SlotMachineSystem {
   }
 
    private evaluateSpin(): void {
-     console.log('[SlotMachine] Grid state:', JSON.stringify(this.grid));
      const wins = this.detectWins();
 
     if (wins.length > 0) {
@@ -584,9 +579,7 @@ export class SlotMachineSystem {
          scatterSymbolIndex: this.config.scatterSymbolIndex,
          payouts: this.config.payouts,
        };
-       console.log('[SlotMachine] Win detection input:', JSON.stringify(input));
        const wins = this.winDetectionImpl.run(null, input);
-       console.log('[SlotMachine] Wins found:', JSON.stringify(wins));
 
        return wins.map((win) => ({
          symbol: win.symbol,
@@ -962,7 +955,6 @@ export class SlotMachineSystem {
   }
 
   isIdle(): boolean {
-    console.log('[SlotMachine] isIdle called, phase:', this.phase, 'result:', this.phase === "idle");
     return this.phase === "idle";
   }
 

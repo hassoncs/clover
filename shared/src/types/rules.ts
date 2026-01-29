@@ -25,8 +25,8 @@ export type RuleTriggerType =
   | 'button'
   | 'swipe'
   | 'gameStart'
-  | 'zone_enter'
-  | 'zone_exit';
+  | 'sensor_enter'
+  | 'sensor_exit';
 
 export interface CollisionTrigger {
   type: 'collision';
@@ -34,15 +34,15 @@ export interface CollisionTrigger {
   entityBTag: string;
 }
 
-export interface ZoneEnterTrigger {
-  type: 'zone_enter';
-  zoneTag: string;
+export interface SensorEnterTrigger {
+  type: 'sensor_enter';
+  sensorTag: string;
   entityTag: string;
 }
 
-export interface ZoneExitTrigger {
-  type: 'zone_exit';
-  zoneTag: string;
+export interface SensorExitTrigger {
+  type: 'sensor_exit';
+  sensorTag: string;
   entityTag: string;
 }
 
@@ -112,8 +112,8 @@ export interface GameStartTrigger {
 
 export type RuleTrigger =
   | CollisionTrigger
-  | ZoneEnterTrigger
-  | ZoneExitTrigger
+  | SensorEnterTrigger
+  | SensorExitTrigger
   | TimerTrigger
   | ScoreTrigger
   | EntityCountTrigger

@@ -79,13 +79,13 @@ function createRectSymbolTemplate(key: Exclude<SymbolKey, "scatter">): EntityTem
       height: CELL_SIZE * 0.85,
       color: symbolColors[key],
     },
-    type: "zone",
-    zone: {
-      shape: {
-        type: "box" as const,
-        width: CELL_SIZE * 0.85,
-        height: CELL_SIZE * 0.85,
-      },
+    collider: {
+      shape: "box" as const,
+      width: CELL_SIZE * 0.85,
+      height: CELL_SIZE * 0.85,
+      friction: 0,
+      restitution: 0,
+      isSensor: true,
     },
   } as EntityTemplate;
 }
@@ -99,12 +99,12 @@ function createCircleSymbolTemplate(): EntityTemplate {
       radius: (CELL_SIZE * 0.85) / 2,
       color: symbolColors.scatter,
     },
-    type: "zone",
-    zone: {
-      shape: {
-        type: "circle" as const,
-        radius: (CELL_SIZE * 0.85) / 2,
-      },
+    collider: {
+      shape: "circle" as const,
+      radius: (CELL_SIZE * 0.85) / 2,
+      friction: 0,
+      restitution: 0,
+      isSensor: true,
     },
   } as EntityTemplate;
 }
@@ -165,13 +165,13 @@ const game: GameDefinition = {
         height: CELL_SIZE * 0.9,
         color: "#2D2D44",
       },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "box",
-          width: CELL_SIZE * 0.9,
-          height: CELL_SIZE * 0.9,
-        },
+      collider: {
+        shape: "box",
+        width: CELL_SIZE * 0.9,
+        height: CELL_SIZE * 0.9,
+        friction: 0,
+        restitution: 0,
+        isSensor: true,
       },
     },
     
@@ -185,13 +185,13 @@ const game: GameDefinition = {
         height: 0.9,
         color: "#4CAF50",
       },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "box",
-          width: 2.2,
-          height: 0.9,
-        },
+      collider: {
+        shape: "box",
+        width: 2.2,
+        height: 0.9,
+        friction: 0,
+        restitution: 0,
+        isSensor: true,
       },
     },
     betButton: {
@@ -203,13 +203,13 @@ const game: GameDefinition = {
         height: 0.6,
         color: "#2196F3",
       },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "box",
-          width: 1.2,
-          height: 0.6,
-        },
+      collider: {
+        shape: "box",
+        width: 1.2,
+        height: 0.6,
+        friction: 0,
+        restitution: 0,
+        isSensor: true,
       },
     },
   },

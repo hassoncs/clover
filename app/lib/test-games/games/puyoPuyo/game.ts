@@ -164,9 +164,13 @@ const game: GameDefinition = {
         imageWidth: CELL_SIZE,
         imageHeight: CELL_SIZE,
       },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: CELL_SIZE, height: CELL_SIZE },
+      collider: {
+        shape: "box",
+        width: CELL_SIZE,
+        height: CELL_SIZE,
+        friction: 0,
+        restitution: 0,
+        isSensor: true,
       },
     },
     puyo_red: createPuyoTemplate("red"),
@@ -183,10 +187,17 @@ const game: GameDefinition = {
         height: 0.1,
         color: "#00000000",
       },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: 0.1, height: 0.1 },
-        movement: "kinematic",
+      physics: {
+        bodyType: "kinematic",
+        density: 0,
+      },
+      collider: {
+        shape: "box",
+        width: 0.1,
+        height: 0.1,
+        friction: 0,
+        restitution: 0,
+        isSensor: true,
       },
     },
     wall: {
@@ -240,9 +251,13 @@ const game: GameDefinition = {
         height: CELL_SIZE,
         color: "#FF000033",
       },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: CELL_SIZE * 2, height: CELL_SIZE },
+      collider: {
+        shape: "box",
+        width: CELL_SIZE * 2,
+        height: CELL_SIZE,
+        friction: 0,
+        restitution: 0,
+        isSensor: true,
       },
     },
     gridBackground: {
@@ -254,9 +269,13 @@ const game: GameDefinition = {
         imageWidth: GRID_WIDTH,
         imageHeight: GRID_HEIGHT,
       },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: GRID_WIDTH, height: GRID_HEIGHT },
+      collider: {
+        shape: "box",
+        width: GRID_WIDTH,
+        height: GRID_HEIGHT,
+        friction: 0,
+        restitution: 0,
+        isSensor: true,
       },
     },
   },

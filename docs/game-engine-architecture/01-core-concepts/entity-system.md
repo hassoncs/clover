@@ -253,6 +253,7 @@ const bouncyBall: PhysicsComponent = {
 };
 
 // Trigger zone (sensor)
+// Note: For new entities, use collider: { shape: 'box', width: 2, height: 2, isSensor: true }
 const triggerZone: PhysicsComponent = {
   bodyType: 'static',
   shape: 'box',
@@ -263,7 +264,37 @@ const triggerZone: PhysicsComponent = {
   restitution: 0,
   isSensor: true  // Detects collision, no physical response
 };
+
+---
+
+## Zone Component Deprecation
+
+> **DEPRECATED:** The `zone` component is deprecated. Use `collider` with `isSensor: true` instead.
+
+### Migration
+
+**Old (deprecated):**
+```typescript
+{
+  type: "zone",
+  zone: { shape: { type: "circle", radius: 0.5 } }
+}
 ```
+
+**New (recommended):**
+```typescript
+{
+  collider: { shape: "circle", radius: 0.5, isSensor: true }
+}
+```
+
+### Why?
+
+The unified rendering pipeline requires all entities to use the `collider` component for collision detection. This provides:
+- Consistent sprite rendering
+- Unified collision detection
+- Better performance
+- Simplified codebase
 
 ---
 

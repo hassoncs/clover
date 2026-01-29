@@ -181,10 +181,15 @@ const game: GameDefinition = {
         height: 0.5,
         color: "#FF6B6B",
       },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: 0.3, height: 0.5 },
-        movement: "kinematic",
+      physics: {
+        bodyType: "kinematic",
+        density: 0,
+      },
+      collider: {
+        shape: "box",
+        width: 0.3,
+        height: 0.5,
+        isSensor: true,
       },
     },
     startButton: {
@@ -196,10 +201,15 @@ const game: GameDefinition = {
         height: START_BUTTON_HEIGHT,
         color: "#48BB78",
       },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: START_BUTTON_WIDTH, height: START_BUTTON_HEIGHT },
-        movement: "kinematic",
+      physics: {
+        bodyType: "kinematic",
+        density: 0,
+      },
+      collider: {
+        shape: "box",
+        width: START_BUTTON_WIDTH,
+        height: START_BUTTON_HEIGHT,
+        isSensor: true,
       },
     },
     placementZone: {
@@ -211,10 +221,15 @@ const game: GameDefinition = {
         height: 2,
         color: "#FFFFFF11",
       },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: WORLD_WIDTH - 4, height: 2 },
-        movement: "kinematic",
+      physics: {
+        bodyType: "kinematic",
+        density: 0,
+      },
+      collider: {
+        shape: "box",
+        width: WORLD_WIDTH - 4,
+        height: 2,
+        isSensor: true,
       },
     },
   },

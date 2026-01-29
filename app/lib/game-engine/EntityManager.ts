@@ -89,6 +89,7 @@ function generateId(): string {
 
 export class EntityManager {
   private entities = new Map<string, RuntimeEntity>();
+  /** @deprecated Zones are deprecated. Use collider with isSensor: true instead. */
   private zones = new Map<string, RuntimeEntity>();
   private templates = new Map<string, EntityTemplate>();
   private physics: Physics2D;
@@ -131,9 +132,11 @@ export class EntityManager {
     const runtime = this.createRuntimeEntity(id, resolved);
 
     // Check if this is a zone entity (type: 'zone' or has zone property)
+    /** @deprecated Use collider with isSensor: true instead */
     const isZone = resolved.type === 'zone' || resolved.zone != null;
 
     if (isZone) {
+      console.warn('[DEPRECATED] Zone entities are deprecated. Use collider with isSensor: true instead. Entity:', id);
       // Zones use Area2D for collision detection only (no physics body)
       const zoneConfig = resolved.zone;
       if (zoneConfig) {
@@ -415,6 +418,7 @@ export class EntityManager {
   }
 
   private createZoneArea(entity: RuntimeEntity, zoneConfig: ZoneComponent): void {
+    console.warn('[DEPRECATED] createZoneArea is deprecated. Use collider with isSensor: true instead.');
     const isKinematic = zoneConfig.movement === 'kinematic';
     
     const bodyDef: BodyDef = {
@@ -441,6 +445,7 @@ export class EntityManager {
   }
 
   private createZoneShapeDef(zone: ZoneComponent): ShapeDef {
+    console.warn('[DEPRECATED] createZoneShapeDef is deprecated. Use collider with isSensor: true instead.');
     const shape = zone.shape;
     switch (shape.type) {
       case 'circle':
@@ -514,6 +519,7 @@ export class EntityManager {
      }
 
      // Remove from zones map if this is a zone
+     /** @deprecated Zones are deprecated. Use collider with isSensor: true instead. */
      this.zones.delete(id);
 
      // Remove from tag index
@@ -557,10 +563,14 @@ export class EntityManager {
   }
 
   getZone(id: string): RuntimeEntity | undefined {
+    /** @deprecated Use collider with isSensor: true instead */
+    console.warn('[DEPRECATED] getZone is deprecated. Use collider with isSensor: true instead.');
     return this.zones.get(id);
   }
 
   getAllZones(): RuntimeEntity[] {
+    /** @deprecated Use collider with isSensor: true instead */
+    console.warn('[DEPRECATED] getAllZones is deprecated. Use collider with isSensor: true instead.');
     return Array.from(this.zones.values());
   }
 

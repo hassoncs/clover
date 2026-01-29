@@ -1,4 +1,4 @@
-import type { GameDefinition } from '@slopcade/shared/types/GameDefinition'
+import type { GameDefinition } from '@/../../app/lib/game/types';
 
 export const STACK_ATTACK_TEMPLATE: GameDefinition = {
   metadata: {
@@ -33,7 +33,7 @@ export const STACK_ATTACK_TEMPLATE: GameDefinition = {
       },
       physics: { density: 1.0 },
       collider: { shape: 'box', physics: {
-        bodyType: 'dynamic', width: 2, height: 0.6, friction: 0.7, restitution: 0.05 },
+        bodyType: 'dynamic', width: 2, height: 0.6, friction: 0.7, restitution: 0.05 }},
       behaviors: [
         {
           type: 'score_on_collision',
@@ -61,7 +61,7 @@ export const STACK_ATTACK_TEMPLATE: GameDefinition = {
       },
       physics: { density: 0 },
       collider: { shape: 'box', physics: {
-        bodyType: 'kinematic', width: 2, height: 0.6, friction: 0, restitution: 0 },
+        bodyType: 'kinematic', width: 2, height: 0.6, friction: 0, restitution: 0 }},
       behaviors: [
         {
           type: 'oscillate',
@@ -82,24 +82,22 @@ export const STACK_ATTACK_TEMPLATE: GameDefinition = {
       },
       physics: { density: 1 },
       collider: { shape: 'box', physics: {
-        bodyType: 'static', width: 10, height: 1, friction: 0.9, restitution: 0 },
+        bodyType: 'static', width: 10, height: 1, friction: 0.9, restitution: 0 }},
       tags: ['ground'],
     },
     death_zone: {
       id: 'death_zone',
-      type: 'zone',
       visual: {
         type: 'rect',
         width: 2,
         height: 16,
         color: 'transparent',
       },
-      zone: {
-        shape: {
-          type: 'box',
-          width: 2,
-          height: 16,
-        },
+      collider: {
+        shape: 'box',
+        width: 2,
+        height: 16,
+        isSensor: true,
       },
       tags: ['death-zone'],
     },

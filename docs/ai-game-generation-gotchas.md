@@ -1,7 +1,11 @@
 # AI Game Generation Gotchas
 
-> **Purpose**: Common mistakes AI makes when generating Slopcade games, and how to avoid them.  
+> **Purpose**: Common mistakes AI makes when generating Slopcade games, and how to avoid them.
 > **Use**: Include relevant sections in AI prompts to steer generation away from these pitfalls.
+
+---
+
+> **Important**: The `zone` component is deprecated. Always use `collider` with `isSensor: true` for detection-only entities. This ensures compatibility with the unified rendering pipeline.
 
 ---
 
@@ -21,7 +25,7 @@ Use the right tool for the job:
 | Use Case | Solution | Example |
 |----------|----------|---------|
 | **Tappable button/zone** | `{ type: "tap", target: "button-tag" }` | Menu buttons, UI controls |
-| **Detect when entity enters area** | `{ type: "zone_enter", zoneTag: "goal", entityTag: "player" }` | Goal zones, checkpoints |
+| **Detect when entity enters area** | `{ type: "sensor_enter", sensorTag: "goal", entityTag: "player" }` with collider `isSensor: true` | Goal detection areas, checkpoints |
 | **Collectible items** | `isSensor: true` + collision rule | Coins, power-ups |
 | **Screen region tap** | `{ type: "tap", xMinPercent: 0, xMaxPercent: 50 }` | Left/right controls |
 
@@ -59,7 +63,7 @@ goalZone: {
 // Rule to detect player reaching goal
 {
   id: "win_on_goal",
-  trigger: { type: "zone_enter", zoneTag: "goal", entityTag: "player" },
+  trigger: { type: "sensor_enter", sensorTag: "goal", entityTag: "player" },
   actions: [{ type: "game_state", state: "win" }],
 }
 ```
@@ -85,14 +89,16 @@ spinButton: {
 ### Decision Tree
 ```
 Does the player need to walk/roll INTO it?
-├── YES → Use zone_enter/zone_exit with isSensor: true
+├── YES → Use sensor_enter/sensor_exit with collider isSensor: true
 │
 └── NO → Is it a button/control?
     ├── YES → Use tap trigger with target
     └── NO → Is it a collectible?
-        ├── YES → Use isSensor: true + collision rule
+        ├── YES → Use collider isSensor: true + collision rule
         └── NO → Maybe physics isn't needed at all!
 ```
+
+> **Note:** Always use `collider: { shape: "...", isSensor: true }` for detection zones, never the deprecated `zone` component.
 
 ---
 
@@ -401,7 +407,7 @@ Before returning a generated game, verify:
 - [ ] **No physics for pure tap targets** - Use `tap` trigger with `target` instead
 - [ ] **Body types match behavior** - Static for walls, dynamic for objects, kinematic for controlled movement
 - [ ] **Density is correct** - 0 for static/kinematic, >0 for dynamic
-- [ ] **Sensors where needed** - `isSensor: true` for triggers, collectibles, zones
+- [ ] **Sensors where needed** - `collider: { isSensor: true }` for triggers, collectibles, detection areas (NOT deprecated `zone` component)
 - [ ] **Restitution is reasonable** - ≤1.5, preferably ≤1
 - [ ] **Win condition exists** - Game should have an end state
 - [ ] **Lose condition exists** - Game should be losable
@@ -430,7 +436,7 @@ Before returning a generated game, verify:
 // COLLECTIBLE - detect but don't block
 { bodyType: "static", density: 0, isSensor: true }
 
-// TRIGGER ZONE - detect entry/exit
+// TRIGGER ZONE - detect entry/exit (use collider: { isSensor: true } for new entities)
 { bodyType: "static", density: 0, isSensor: true }
 
 // FAST PROJECTILE - prevent tunneling

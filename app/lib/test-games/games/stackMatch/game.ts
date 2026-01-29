@@ -149,99 +149,121 @@ const game: GameDefinition = {
       id: "gridSlot",
       tags: ["slot"],
       visual: { type: "rect", width: TILE_SIZE, height: TILE_SIZE, color: SLOT_COLOR },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: TILE_SIZE, height: TILE_SIZE },
+      collider: {
+        shape: "box",
+        width: TILE_SIZE,
+        height: TILE_SIZE,
+        isSensor: true,
       },
     },
     tile0: {
       id: "tile0",
       tags: ["tile", "color0"],
       visual: { type: "rect", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9, color: TILE_COLORS[0] },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9 },
+      collider: {
+        shape: "box",
+        width: TILE_SIZE * 0.9,
+        height: TILE_SIZE * 0.9,
+        isSensor: true,
       },
     },
     tile1: {
       id: "tile1",
       tags: ["tile", "color1"],
       visual: { type: "rect", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9, color: TILE_COLORS[1] },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9 },
+      collider: {
+        shape: "box",
+        width: TILE_SIZE * 0.9,
+        height: TILE_SIZE * 0.9,
+        isSensor: true,
       },
     },
     tile2: {
       id: "tile2",
       tags: ["tile", "color2"],
       visual: { type: "rect", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9, color: TILE_COLORS[2] },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9 },
+      collider: {
+        shape: "box",
+        width: TILE_SIZE * 0.9,
+        height: TILE_SIZE * 0.9,
+        isSensor: true,
       },
     },
     tile3: {
       id: "tile3",
       tags: ["tile", "color3"],
       visual: { type: "rect", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9, color: TILE_COLORS[3] },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9 },
+      collider: {
+        shape: "box",
+        width: TILE_SIZE * 0.9,
+        height: TILE_SIZE * 0.9,
+        isSensor: true,
       },
     },
     tile4: {
       id: "tile4",
       tags: ["tile", "color4"],
       visual: { type: "rect", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9, color: TILE_COLORS[4] },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: TILE_SIZE * 0.9, height: TILE_SIZE * 0.9 },
+      collider: {
+        shape: "box",
+        width: TILE_SIZE * 0.9,
+        height: TILE_SIZE * 0.9,
+        isSensor: true,
       },
     },
     placedTile0: {
       id: "placedTile0",
       tags: ["placed", "color0"],
       visual: { type: "rect", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85, color: TILE_COLORS[0] },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85 },
+      collider: {
+        shape: "box",
+        width: TILE_SIZE * 0.85,
+        height: TILE_SIZE * 0.85,
+        isSensor: true,
       },
     },
     placedTile1: {
       id: "placedTile1",
       tags: ["placed", "color1"],
       visual: { type: "rect", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85, color: TILE_COLORS[1] },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85 },
+      collider: {
+        shape: "box",
+        width: TILE_SIZE * 0.85,
+        height: TILE_SIZE * 0.85,
+        isSensor: true,
       },
     },
     placedTile2: {
       id: "placedTile2",
       tags: ["placed", "color2"],
       visual: { type: "rect", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85, color: TILE_COLORS[2] },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85 },
+      collider: {
+        shape: "box",
+        width: TILE_SIZE * 0.85,
+        height: TILE_SIZE * 0.85,
+        isSensor: true,
       },
     },
     placedTile3: {
       id: "placedTile3",
       tags: ["placed", "color3"],
       visual: { type: "rect", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85, color: TILE_COLORS[3] },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85 },
+      collider: {
+        shape: "box",
+        width: TILE_SIZE * 0.85,
+        height: TILE_SIZE * 0.85,
+        isSensor: true,
       },
     },
     placedTile4: {
       id: "placedTile4",
       tags: ["placed", "color4"],
       visual: { type: "rect", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85, color: TILE_COLORS[4] },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: TILE_SIZE * 0.85, height: TILE_SIZE * 0.85 },
+      collider: {
+        shape: "box",
+        width: TILE_SIZE * 0.85,
+        height: TILE_SIZE * 0.85,
+        isSensor: true,
       },
     },
   },

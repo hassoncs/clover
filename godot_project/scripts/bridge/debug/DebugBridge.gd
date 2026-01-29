@@ -16,6 +16,7 @@ var _selector: DebugSelector
 var _props: DebugProps
 var _lifecycle: DebugLifecycle
 var _time: DebugTime
+var _time_controller: DeterministicTimeController
 var _events: DebugEvents
 var _physics: DebugPhysics
 
@@ -28,6 +29,7 @@ func _init(game_bridge: Node, query_system: QuerySystem) -> void:
 	_props = DebugProps.new(game_bridge)
 	_lifecycle = DebugLifecycle.new(game_bridge)
 	_time = DebugTime.new(game_bridge)
+	_time_controller = DeterministicTimeController.new(game_bridge)
 	_events = DebugEvents.new(game_bridge)
 	_physics = DebugPhysics.new(game_bridge)
 	
@@ -59,7 +61,7 @@ func _register_handlers() -> void:
 	_query_system.register_handler("reparent", _on_reparent)
 	_query_system.register_handler("lifecycleBatch", _on_lifecycle_batch)
 	
-	# Time Control
+	# Time Control (legacy)
 	_query_system.register_handler("getTimeState", _on_get_time_state)
 	_query_system.register_handler("pause", _on_pause)
 	_query_system.register_handler("resume", _on_resume)
@@ -67,6 +69,15 @@ func _register_handlers() -> void:
 	_query_system.register_handler("stepPhysicsSync", _on_step_physics_sync)
 	_query_system.register_handler("setTimeScale", _on_set_time_scale)
 	_query_system.register_handler("setSeed", _on_set_seed)
+	
+	# Time Control (new JSON-RPC style)
+	_query_system.register_handler("debug.getCapabilities", _on_get_capabilities)
+	_query_system.register_handler("time.pause", _on_time_pause)
+	_query_system.register_handler("time.resume", _on_time_resume)
+	_query_system.register_handler("time.step", _on_time_step)
+	_query_system.register_handler("time.setScale", _on_time_set_scale)
+	_query_system.register_handler("time.getState", _on_time_get_state)
+	_query_system.register_handler("time.setSeed", _on_time_set_seed)
 	
 	# Events
 	_query_system.register_handler("subscribe", _on_subscribe)
@@ -94,7 +105,9 @@ func unregister_handlers() -> void:
 		"getTimeState", "pause", "resume", "step", "stepPhysicsSync", "setTimeScale", "setSeed",
 		"subscribe", "unsubscribe", "pollEvents", "listSubscriptions",
 		"raycast", "raycastAll", "getShapes", "getJoints", "getEntityJoints",
-		"getOverlaps", "getAllOverlaps", "queryPoint", "queryAABB"
+		"getOverlaps", "getAllOverlaps", "queryPoint", "queryAABB",
+		"debug.getCapabilities", "time.pause", "time.resume", "time.step",
+		"time.setScale", "time.getState", "time.setSeed"
 	]
 	for handler in handlers:
 		_query_system.unregister_handler(handler)
@@ -271,6 +284,48 @@ func _on_set_seed(args: Array) -> Dictionary:
 	var seed_val = int(args[0])
 	var options = args[1] if args.size() > 1 and args[1] is Dictionary else {}
 	return _time.set_seed(seed_val, options)
+
+# =============================================================================
+# NEW JSON-RPC STYLE HANDLERS (using DeterministicTimeController)
+# =============================================================================
+
+func _on_get_capabilities(args: Array) -> Dictionary:
+	return {
+		"protocolVersion": "1.0",
+		"platform": "web" if OS.has_feature("web") else "native",
+		"supports": {
+			"deterministicStepping": true,
+			"rapierPhysics": Engine.has_singleton("RapierPhysicsServer2D"),
+			"events": true,
+			"screenshots": false,
+			"seededRng": true
+		}
+	}
+
+func _on_time_pause(args: Array) -> Dictionary:
+	return _time_controller.pause()
+
+func _on_time_resume(args: Array) -> Dictionary:
+	return _time_controller.resume()
+
+func _on_time_step(args: Array) -> Dictionary:
+	var params = args[0] if args.size() > 0 and args[0] is Dictionary else {}
+	var frames = params.get("frames", 1)
+	return _time_controller.step_frames(frames)
+
+func _on_time_set_scale(args: Array) -> Dictionary:
+	var params = args[0] if args.size() > 0 and args[0] is Dictionary else {}
+	var scale = params.get("scale", 1.0)
+	return _time_controller.set_time_scale(scale)
+
+func _on_time_get_state(args: Array) -> Dictionary:
+	return _time_controller.get_time_state()
+
+func _on_time_set_seed(args: Array) -> Dictionary:
+	var params = args[0] if args.size() > 0 and args[0] is Dictionary else {}
+	var seed_val = params.get("seed", 0)
+	var enable_deterministic = params.get("enableDeterministic", true)
+	return _time_controller.set_seed(seed_val, enable_deterministic)
 
 # =============================================================================
 # EVENT HANDLERS
@@ -571,6 +626,9 @@ func get_lifecycle() -> DebugLifecycle:
 
 func get_time_module() -> DebugTime:
 	return _time
+
+func get_time_controller() -> DeterministicTimeController:
+	return _time_controller
 
 func get_events() -> DebugEvents:
 	return _events

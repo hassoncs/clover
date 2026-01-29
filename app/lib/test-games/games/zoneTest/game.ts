@@ -105,8 +105,8 @@ const game: GameDefinition = {
   rules: [
     {
       trigger: {
-        type: "zone_enter",
-        zoneTag: "zone",
+        type: "sensor_enter",
+        sensorTag: "zone",
         entityTag: "falling-box",
       },
       actions: [
@@ -118,8 +118,8 @@ const game: GameDefinition = {
     },
     {
       trigger: {
-        type: "zone_exit",
-        zoneTag: "zone",
+        type: "sensor_exit",
+        sensorTag: "zone",
         entityTag: "falling-box",
       },
       actions: [

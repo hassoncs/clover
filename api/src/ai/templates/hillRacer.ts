@@ -36,7 +36,7 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
       },
       physics: { density: 1.0 },
       collider: { shape: 'box', physics: {
-        bodyType: 'dynamic', width: 2.4, height: 0.8, friction: 0.3, restitution: 0.1 },
+        bodyType: 'dynamic', width: 2.4, height: 0.8, friction: 0.3, restitution: 0.1 }},
       tags: ['vehicle'],
     },
     wheel: {
@@ -48,7 +48,7 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
       },
       physics: { density: 0.8 },
       collider: { shape: 'circle', physics: {
-        bodyType: 'dynamic', radius: 0.4, friction: 0.9, restitution: 0.1 },
+        bodyType: 'dynamic', radius: 0.4, friction: 0.9, restitution: 0.1 }},
       tags: ['wheel'],
     },
     ground_segment: {
@@ -74,22 +74,20 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
         density: 1,
         friction: 0.8,
         restitution: 0,
-      },
+      }},
       tags: ['ground'],
     },
     coin: {
       id: 'coin',
-      type: 'zone',
       visual: {
         type: 'circle',
         radius: 0.3,
         color: '#F1C40F',
       },
-      zone: {
-        shape: {
-          type: 'circle',
-          radius: 0.3,
-        },
+      collider: {
+        shape: 'circle',
+        radius: 0.3,
+        isSensor: true,
       },
       behaviors: [
         {
@@ -109,7 +107,6 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
     },
     finish: {
       id: 'finish',
-      type: 'zone',
       visual: {
         type: 'rect',
         width: 0.5,
@@ -118,12 +115,11 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
         strokeColor: '#000000',
         strokeWidth: 2,
       },
-      zone: {
-        shape: {
-          type: 'box',
-          width: 0.5,
-          height: 4,
-        },
+      collider: {
+        shape: 'box',
+        width: 0.5,
+        height: 4,
+        isSensor: true,
       },
       tags: ['finish', 'goal'],
     },
@@ -167,7 +163,7 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
         density: 1,
         friction: 0.8,
         restitution: 0,
-      },
+      }},
       tags: ['ground'],
     },
     {
@@ -195,7 +191,7 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
         density: 1,
         friction: 0.8,
         restitution: 0,
-      },
+      }},
       tags: ['ground'],
     },
     {

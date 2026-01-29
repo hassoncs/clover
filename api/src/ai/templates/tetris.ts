@@ -40,16 +40,13 @@ export const TETRIS_TEMPLATE: GameDefinition = {
   templates: {
     piece_i: {
       id: 'piece_i',
-      type: 'zone',
       tags: ['piece', 'cyan'],
       visual: { type: 'rect', width: 0.8, height: 0.8, color: '#00FFFF' },
-      zone: {
-        shape: {
-          type: 'box',
-          width: 0.8,
-          height: 0.8,
-        },
-        movement: 'kinematic',
+      collider: {
+        shape: 'box',
+        width: 0.8,
+        height: 0.8,
+        isSensor: true,
       },
       conditionalBehaviors: [
         {
@@ -71,16 +68,13 @@ export const TETRIS_TEMPLATE: GameDefinition = {
     },
     piece_o: {
       id: 'piece_o',
-      type: 'zone',
       tags: ['piece', 'yellow'],
       visual: { type: 'rect', width: 0.8, height: 0.8, color: '#FFFF00' },
-      zone: {
-        shape: {
-          type: 'box',
-          width: 0.8,
-          height: 0.8,
-        },
-        movement: 'kinematic',
+      collider: {
+        shape: 'box',
+        width: 0.8,
+        height: 0.8,
+        isSensor: true,
       },
       conditionalBehaviors: [
         {
@@ -102,16 +96,13 @@ export const TETRIS_TEMPLATE: GameDefinition = {
     },
     piece_t: {
       id: 'piece_t',
-      type: 'zone',
       tags: ['piece', 'purple'],
       visual: { type: 'rect', width: 0.8, height: 0.8, color: '#AA00FF' },
-      zone: {
-        shape: {
-          type: 'box',
-          width: 0.8,
-          height: 0.8,
-        },
-        movement: 'kinematic',
+      collider: {
+        shape: 'box',
+        width: 0.8,
+        height: 0.8,
+        isSensor: true,
       },
       conditionalBehaviors: [
         {
@@ -133,16 +124,13 @@ export const TETRIS_TEMPLATE: GameDefinition = {
     },
     piece_s: {
       id: 'piece_s',
-      type: 'zone',
       tags: ['piece', 'green'],
       visual: { type: 'rect', width: 0.8, height: 0.8, color: '#00FF00' },
-      zone: {
-        shape: {
-          type: 'box',
-          width: 0.8,
-          height: 0.8,
-        },
-        movement: 'kinematic',
+      collider: {
+        shape: 'box',
+        width: 0.8,
+        height: 0.8,
+        isSensor: true,
       },
       conditionalBehaviors: [
         {
@@ -164,16 +152,13 @@ export const TETRIS_TEMPLATE: GameDefinition = {
     },
     piece_z: {
       id: 'piece_z',
-      type: 'zone',
       tags: ['piece', 'red'],
       visual: { type: 'rect', width: 0.8, height: 0.8, color: '#FF0000' },
-      zone: {
-        shape: {
-          type: 'box',
-          width: 0.8,
-          height: 0.8,
-        },
-        movement: 'kinematic',
+      collider: {
+        shape: 'box',
+        width: 0.8,
+        height: 0.8,
+        isSensor: true,
       },
       conditionalBehaviors: [
         {
@@ -195,16 +180,13 @@ export const TETRIS_TEMPLATE: GameDefinition = {
     },
     piece_j: {
       id: 'piece_j',
-      type: 'zone',
       tags: ['piece', 'blue'],
       visual: { type: 'rect', width: 0.8, height: 0.8, color: '#0000FF' },
-      zone: {
-        shape: {
-          type: 'box',
-          width: 0.8,
-          height: 0.8,
-        },
-        movement: 'kinematic',
+      collider: {
+        shape: 'box',
+        width: 0.8,
+        height: 0.8,
+        isSensor: true,
       },
       conditionalBehaviors: [
         {
@@ -226,16 +208,13 @@ export const TETRIS_TEMPLATE: GameDefinition = {
     },
     piece_l: {
       id: 'piece_l',
-      type: 'zone',
       tags: ['piece', 'orange'],
       visual: { type: 'rect', width: 0.8, height: 0.8, color: '#FF8800' },
-      zone: {
-        shape: {
-          type: 'box',
-          width: 0.8,
-          height: 0.8,
-        },
-        movement: 'kinematic',
+      collider: {
+        shape: 'box',
+        width: 0.8,
+        height: 0.8,
+        isSensor: true,
       },
       conditionalBehaviors: [
         {

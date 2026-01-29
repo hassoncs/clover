@@ -28,14 +28,10 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
 
   private executeApplyImpulseAction(action: ApplyImpulseAction, context: RuleContext): void {
     const entities = resolveEntityTarget(action.target, context);
-    console.log(`[apply_impulse] Found ${entities.length} entities for target`, action.target);
     for (const entity of entities) {
       if (!entity.bodyId) {
-        console.log(`[apply_impulse] Entity ${entity.id} has no bodyId, skipping`);
         continue;
       }
-      console.log(`[apply_impulse] Applying to entity ${entity.id} at (${entity.transform.x.toFixed(2)}, ${entity.transform.y.toFixed(2)})`);
-
       let impulseX = action.x ? resolveNumber(action.x, context) : 0;
       let impulseY = action.y ? resolveNumber(action.y, context) : 0;
 
@@ -80,13 +76,12 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
               const dx = touchX - sourceX;
               const dy = touchY - sourceY;
               const mag = Math.sqrt(dx * dx + dy * dy);
-              console.log(`[apply_impulse] toward_touch: touch=(${touchX.toFixed(2)}, ${touchY.toFixed(2)}), source=(${sourceX.toFixed(2)}, ${sourceY.toFixed(2)}), d=(${dx.toFixed(2)}, ${dy.toFixed(2)}), mag=${mag.toFixed(2)}, force=${force}, impulse=(${(dx/mag*force).toFixed(2)}, ${(dy/mag*force).toFixed(2)})`);
               if (mag > 0.001) {
                 impulseX = (dx / mag) * force;
                 impulseY = (dy / mag) * force;
               }
             } else {
-              console.log('[apply_impulse] toward_touch: NO input.drag or inputEvents.tap');
+              // No input.drag or inputEvents.tap available
             }
             break;
         }
@@ -237,17 +232,11 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
     const shouldLog = this.moveTowardDebugCounter % 60 === 0;
 
     if (towardEntities.length === 0) {
-      if (shouldLog) {
-        console.log('[MoveToward] No toward entities found for:', action.towardEntity);
-      }
       return;
     }
 
     const towardEntity = towardEntities[0];
     if (!towardEntity.active) {
-      if (shouldLog) {
-        console.log('[MoveToward] Toward entity not active:', towardEntity.id);
-      }
       return;
     }
 
@@ -255,16 +244,6 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
     const speed = resolveNumber(action.speed, context);
     const maxSpeed = action.maxSpeed ? resolveNumber(action.maxSpeed, context) : null;
     const axis = action.axis ?? 'both';
-
-    if (shouldLog) {
-      console.log('[MoveToward] Executing:', {
-        targetEntities: entities.length,
-        towardEntity: towardEntity.id,
-        towardPos: { x: targetPos.x.toFixed(2), y: targetPos.y.toFixed(2) },
-        axis,
-        speed,
-      });
-    }
 
     for (const entity of entities) {
       if (!entity.bodyId) continue;
@@ -289,14 +268,6 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
           vx *= scale;
           vy *= scale;
         }
-      }
-
-      if (shouldLog) {
-        console.log('[MoveToward] Setting velocity:', {
-          entity: entity.id,
-          entityPos: { x: pos.x.toFixed(2), y: pos.y.toFixed(2) },
-          velocity: { x: vx.toFixed(2), y: vy.toFixed(2) },
-        });
       }
 
       context.physics.setLinearVelocity(entity.bodyId, { x: vx, y: vy });

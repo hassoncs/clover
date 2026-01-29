@@ -64,6 +64,13 @@ func process_input(event: InputEvent, entities: Dictionary) -> void:
 					_game_bridge._devtools_overlay.log_event(
 						"Tap", str(_drag_entity_id) if _drag_entity_id else "none"
 					)
+			else:
+				# Emit drag_end for non-tap releases
+				_game_bridge._queue_event(
+					"input",
+					{"type": "drag_end", "x": game_pos.x, "y": game_pos.y, "entityId": _drag_entity_id}
+				)
+				_notify_js_input_event("drag_end", game_pos.x, game_pos.y, _drag_entity_id)
 
 			if _game_bridge._devtools_overlay:
 				_game_bridge._devtools_overlay.end_drag()

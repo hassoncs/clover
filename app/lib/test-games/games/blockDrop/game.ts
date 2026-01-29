@@ -175,131 +175,61 @@ const game: GameDefinition = {
       id: "columnHeader",
       tags: ["column"],
       visual: { type: "rect", width: BLOCK_SIZE, height: 0.8, color: COLUMN_HEADER_COLOR },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "box",
-          width: BLOCK_SIZE,
-          height: 0.8,
-        },
-      },
+      collider: { shape: "box", width: BLOCK_SIZE, height: 0.8, isSensor: true },
     },
     gridSlot: {
       id: "gridSlot",
       tags: ["slot"],
       visual: { type: "rect", width: BLOCK_SIZE, height: BLOCK_SIZE, color: SLOT_COLOR },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "box",
-          width: BLOCK_SIZE,
-          height: BLOCK_SIZE,
-        },
-      },
+      collider: { shape: "box", width: BLOCK_SIZE, height: BLOCK_SIZE, isSensor: true },
     },
     block0: {
       id: "block0",
       tags: ["block", "color0"],
       visual: { type: "rect", width: BLOCK_SIZE * 0.9, height: BLOCK_SIZE * 0.9, color: BLOCK_COLORS[0] },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "box",
-          width: BLOCK_SIZE * 0.9,
-          height: BLOCK_SIZE * 0.9,
-        },
-      },
+      collider: { shape: "box", width: BLOCK_SIZE * 0.9, height: BLOCK_SIZE * 0.9, isSensor: true },
     },
     block1: {
       id: "block1",
       tags: ["block", "color1"],
       visual: { type: "rect", width: BLOCK_SIZE * 0.9, height: BLOCK_SIZE * 0.9, color: BLOCK_COLORS[1] },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "box",
-          width: BLOCK_SIZE * 0.9,
-          height: BLOCK_SIZE * 0.9,
-        },
-      },
+      collider: { shape: "box", width: BLOCK_SIZE * 0.9, height: BLOCK_SIZE * 0.9, isSensor: true },
     },
     block2: {
       id: "block2",
       tags: ["block", "color2"],
       visual: { type: "rect", width: BLOCK_SIZE * 0.9, height: BLOCK_SIZE * 0.9, color: BLOCK_COLORS[2] },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "box",
-          width: BLOCK_SIZE * 0.9,
-          height: BLOCK_SIZE * 0.9,
-        },
-      },
+      collider: { shape: "box", width: BLOCK_SIZE * 0.9, height: BLOCK_SIZE * 0.9, isSensor: true },
     },
     block3: {
       id: "block3",
       tags: ["block", "color3"],
       visual: { type: "rect", width: BLOCK_SIZE * 0.9, height: BLOCK_SIZE * 0.9, color: BLOCK_COLORS[3] },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "box",
-          width: BLOCK_SIZE * 0.9,
-          height: BLOCK_SIZE * 0.9,
-        },
-      },
+      collider: { shape: "box", width: BLOCK_SIZE * 0.9, height: BLOCK_SIZE * 0.9, isSensor: true },
     },
     placedBlock0: {
       id: "placedBlock0",
       tags: ["placed", "color0"],
       visual: { type: "rect", width: BLOCK_SIZE * 0.85, height: BLOCK_SIZE * 0.85, color: BLOCK_COLORS[0] },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "box",
-          width: BLOCK_SIZE * 0.85,
-          height: BLOCK_SIZE * 0.85,
-        },
-      },
+      collider: { shape: "box", width: BLOCK_SIZE * 0.85, height: BLOCK_SIZE * 0.85, isSensor: true },
     },
     placedBlock1: {
       id: "placedBlock1",
       tags: ["placed", "color1"],
       visual: { type: "rect", width: BLOCK_SIZE * 0.85, height: BLOCK_SIZE * 0.85, color: BLOCK_COLORS[1] },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "box",
-          width: BLOCK_SIZE * 0.85,
-          height: BLOCK_SIZE * 0.85,
-        },
-      },
+      collider: { shape: "box", width: BLOCK_SIZE * 0.85, height: BLOCK_SIZE * 0.85, isSensor: true },
     },
     placedBlock2: {
       id: "placedBlock2",
       tags: ["placed", "color2"],
       visual: { type: "rect", width: BLOCK_SIZE * 0.85, height: BLOCK_SIZE * 0.85, color: BLOCK_COLORS[2] },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "box",
-          width: BLOCK_SIZE * 0.85,
-          height: BLOCK_SIZE * 0.85,
-        },
-      },
+      collider: { shape: "box", width: BLOCK_SIZE * 0.85, height: BLOCK_SIZE * 0.85, isSensor: true },
     },
     placedBlock3: {
       id: "placedBlock3",
       tags: ["placed", "color3"],
       visual: { type: "rect", width: BLOCK_SIZE * 0.85, height: BLOCK_SIZE * 0.85, color: BLOCK_COLORS[3] },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "box",
-          width: BLOCK_SIZE * 0.85,
-          height: BLOCK_SIZE * 0.85,
-        },
-      },
+      collider: { shape: "box", width: BLOCK_SIZE * 0.85, height: BLOCK_SIZE * 0.85, isSensor: true },
     },
   },
   entities: [...columnHeaders, ...gridSlots, ...choiceTiles],

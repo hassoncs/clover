@@ -108,12 +108,20 @@ export const PhysicsComponentSchema = z.discriminatedUnion('shape', [
 // Zone Schemas
 // ============================================================================
 
+/**
+ * @deprecated Use collider with isSensor: true instead.
+ * Zones are now implemented as sensor colliders for unified rendering.
+ */
 export const ZoneShapeSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('box'), width: z.number(), height: z.number() }),
   z.object({ type: z.literal('circle'), radius: z.number() }),
   z.object({ type: z.literal('polygon'), vertices: z.array(Vec2Schema).min(3) }),
 ]);
 
+/**
+ * @deprecated Use collider with isSensor: true instead.
+ * Zones are now implemented as sensor colliders for unified rendering.
+ */
 export const ZoneComponentSchema = z.object({
   movement: z.enum(['static', 'kinematic']).optional(),
   shape: ZoneShapeSchema,
@@ -121,6 +129,10 @@ export const ZoneComponentSchema = z.object({
   maskBits: z.number().optional(),
 });
 
+/**
+ * @deprecated Use collider with isSensor: true instead.
+ * Zones are now implemented as sensor colliders for unified rendering.
+ */
 export const ZoneEntityDefinitionSchema = z.object({
   type: z.literal('zone'),
   zone: ZoneComponentSchema,
@@ -259,15 +271,15 @@ export const CollisionTriggerSchema = z.object({
   entityBTag: z.string(),
 });
 
-export const ZoneEnterTriggerSchema = z.object({
-  type: z.literal('zone_enter'),
-  zoneTag: z.string(),
+export const SensorEnterTriggerSchema = z.object({
+  type: z.literal('sensor_enter'),
+  sensorTag: z.string(),
   entityTag: z.string(),
 });
 
-export const ZoneExitTriggerSchema = z.object({
-  type: z.literal('zone_exit'),
-  zoneTag: z.string(),
+export const SensorExitTriggerSchema = z.object({
+  type: z.literal('sensor_exit'),
+  sensorTag: z.string(),
   entityTag: z.string(),
 });
 
@@ -301,8 +313,8 @@ export const FrameTriggerSchema = z.object({
 
 export const RuleTriggerSchema = z.discriminatedUnion('type', [
   CollisionTriggerSchema,
-  ZoneEnterTriggerSchema,
-  ZoneExitTriggerSchema,
+  SensorEnterTriggerSchema,
+  SensorExitTriggerSchema,
   TimerTriggerSchema,
   ScoreTriggerSchema,
   EntityCountTriggerSchema,

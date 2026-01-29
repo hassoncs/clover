@@ -256,9 +256,11 @@ const game: GameDefinition = {
         height: 0.05,
         color: "#FF5252",
       },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: CONTAINER_RIGHT - CONTAINER_LEFT, height: 0.05 },
+      collider: {
+        shape: "box",
+        width: CONTAINER_RIGHT - CONTAINER_LEFT,
+        height: 0.05,
+        isSensor: true,
       },
     },
     aimIndicator: {
@@ -270,10 +272,15 @@ const game: GameDefinition = {
         height: CONTAINER_BOTTOM - AIM_Y - 0.5,
         color: "#FFFFFF22",
       },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: 0.1, height: CONTAINER_BOTTOM - AIM_Y - 0.5 },
-        movement: "kinematic",
+      physics: {
+        bodyType: "kinematic",
+        density: 0,
+      },
+      collider: {
+        shape: "box",
+        width: 0.1,
+        height: CONTAINER_BOTTOM - AIM_Y - 0.5,
+        isSensor: true,
       },
     },
     fruit0: {

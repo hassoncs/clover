@@ -117,11 +117,7 @@ const game: GameDefinition = {
         radius: GEM_SIZE / 2,
         color: "#FF4444",
       },
-      type: "zone",
-      zone: {
-        shape: { type: "circle", radius: GEM_SIZE / 2 },
-        movement: "kinematic",
-      },
+      collider: { shape: "circle", radius: GEM_SIZE / 2, isSensor: true },
       conditionalBehaviors: gemConditionalBehaviors,
     },
     gem_blue: {
@@ -132,11 +128,7 @@ const game: GameDefinition = {
         radius: GEM_SIZE / 2,
         color: "#4444FF",
       },
-      type: "zone",
-      zone: {
-        shape: { type: "circle", radius: GEM_SIZE / 2 },
-        movement: "kinematic",
-      },
+      collider: { shape: "circle", radius: GEM_SIZE / 2, isSensor: true },
       conditionalBehaviors: gemConditionalBehaviors,
     },
     gem_green: {
@@ -147,11 +139,7 @@ const game: GameDefinition = {
         radius: GEM_SIZE / 2,
         color: "#44FF44",
       },
-      type: "zone",
-      zone: {
-        shape: { type: "circle", radius: GEM_SIZE / 2 },
-        movement: "kinematic",
-      },
+      collider: { shape: "circle", radius: GEM_SIZE / 2, isSensor: true },
       conditionalBehaviors: gemConditionalBehaviors,
     },
     gem_yellow: {
@@ -162,11 +150,7 @@ const game: GameDefinition = {
         radius: GEM_SIZE / 2,
         color: "#FFFF44",
       },
-      type: "zone",
-      zone: {
-        shape: { type: "circle", radius: GEM_SIZE / 2 },
-        movement: "kinematic",
-      },
+      collider: { shape: "circle", radius: GEM_SIZE / 2, isSensor: true },
       conditionalBehaviors: gemConditionalBehaviors,
     },
     gem_purple: {
@@ -177,11 +161,7 @@ const game: GameDefinition = {
         radius: GEM_SIZE / 2,
         color: "#AA44FF",
       },
-      type: "zone",
-      zone: {
-        shape: { type: "circle", radius: GEM_SIZE / 2 },
-        movement: "kinematic",
-      },
+      collider: { shape: "circle", radius: GEM_SIZE / 2, isSensor: true },
       conditionalBehaviors: gemConditionalBehaviors,
     },
     selection_highlight: {
@@ -193,11 +173,7 @@ const game: GameDefinition = {
         height: CELL_SIZE * 1.15,
         color: "#FFFF00CC",
       },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: CELL_SIZE * 1.15, height: CELL_SIZE * 1.15 },
-        movement: "kinematic",
-      },
+      collider: { shape: "box", width: CELL_SIZE * 1.15, height: CELL_SIZE * 1.15, isSensor: true },
     },
     hover_highlight: {
       id: "hover_highlight",
@@ -208,11 +184,7 @@ const game: GameDefinition = {
         height: CELL_SIZE * 1.1,
         color: "#FFFFFF66",
       },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: CELL_SIZE * 1.1, height: CELL_SIZE * 1.1 },
-        movement: "kinematic",
-      },
+      collider: { shape: "box", width: CELL_SIZE * 1.1, height: CELL_SIZE * 1.1, isSensor: true },
     },
     grid_cell: {
       id: "grid_cell",
@@ -223,10 +195,7 @@ const game: GameDefinition = {
         height: CELL_SIZE * 0.95,
         color: "#3d2b5e",
       },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: CELL_SIZE * 0.95, height: CELL_SIZE * 0.95 },
-      },
+      collider: { shape: "box", width: CELL_SIZE * 0.95, height: CELL_SIZE * 0.95, isSensor: true },
     },
   },
   entities: [

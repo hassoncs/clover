@@ -57,6 +57,7 @@ export interface RuntimeEntity {
     restitution?: number;
     vertices?: { x: number; y: number }[];
   };
+  /** @deprecated Use collider with isSensor: true instead */
   zone?: ZoneComponent;
   behaviors: RuntimeBehavior[];
   tags: string[];

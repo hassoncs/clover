@@ -154,9 +154,11 @@ const game: GameDefinition = {
       id: "drain",
       tags: ["drain"],
       visual: { type: "rect", width: 10, height: 0.5, color: "#FF000033" },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: 10, height: 0.5 },
+      collider: {
+        shape: "box",
+        width: 10,
+        height: 0.5,
+        isSensor: true,
       },
     },
   },

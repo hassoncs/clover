@@ -159,14 +159,7 @@ const game: GameDefinition = {
         height: BOARD_HEIGHT,
         color: BOARD_COLOR,
       },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "box",
-          width: BOARD_WIDTH,
-          height: BOARD_HEIGHT,
-        },
-      },
+      collider: { shape: "box", width: BOARD_WIDTH, height: BOARD_HEIGHT, isSensor: true },
     },
     emptySlot: {
       id: "emptySlot",
@@ -176,13 +169,7 @@ const game: GameDefinition = {
         radius: DISC_SIZE / 2,
         color: EMPTY_SLOT_INNER,
       },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "circle",
-          radius: DISC_SIZE / 2,
-        },
-      },
+      collider: { shape: "circle", radius: DISC_SIZE / 2, isSensor: true },
     },
     columnSelector: {
       id: "columnSelector",
@@ -193,14 +180,7 @@ const game: GameDefinition = {
         height: SELECTOR_HEIGHT,
         color: "rgba(255, 255, 255, 0.1)",
       },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "box",
-          width: DISC_SIZE,
-          height: SELECTOR_HEIGHT,
-        },
-      },
+      collider: { shape: "box", width: DISC_SIZE, height: SELECTOR_HEIGHT, isSensor: true },
     },
     redDisc: {
       id: "redDisc",
@@ -210,13 +190,7 @@ const game: GameDefinition = {
         radius: DISC_SIZE / 2 - 0.05,
         color: RED_COLOR,
       },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "circle",
-          radius: DISC_SIZE / 2 - 0.05,
-        },
-      },
+      collider: { shape: "circle", radius: DISC_SIZE / 2 - 0.05, isSensor: true },
     },
     yellowDisc: {
       id: "yellowDisc",
@@ -226,13 +200,7 @@ const game: GameDefinition = {
         radius: DISC_SIZE / 2 - 0.05,
         color: YELLOW_COLOR,
       },
-      type: "zone",
-      zone: {
-        shape: {
-          type: "circle",
-          radius: DISC_SIZE / 2 - 0.05,
-        },
-      },
+      collider: { shape: "circle", radius: DISC_SIZE / 2 - 0.05, isSensor: true },
     },
   },
   entities: [

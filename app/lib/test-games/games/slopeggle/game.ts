@@ -166,10 +166,11 @@ const game: GameDefinition = {
         imageWidth: 0.6,
         imageHeight: 0.25,
       },
-      type: "zone",
-      zone: {
-        movement: "kinematic",
-        shape: { type: "box", width: 0.6, height: 0.25 },
+      collider: {
+        shape: "box",
+        width: 0.6,
+        height: 0.25,
+        isSensor: true,
       },
       behaviors: [
         { type: "rotate_toward", target: "touch", speed: 200, offset: 0 },
@@ -184,9 +185,10 @@ const game: GameDefinition = {
         imageWidth: 0.6,
         imageHeight: 0.6,
       },
-      type: "zone",
-      zone: {
-        shape: { type: "circle", radius: 0.3 },
+      collider: {
+        shape: "circle",
+        radius: 0.3,
+        isSensor: true,
       },
     },
     bluePeg: {
@@ -283,9 +285,11 @@ const game: GameDefinition = {
     drain: {
       id: "drain",
       tags: ["drain"],
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: WORLD_WIDTH, height: 1 },
+      collider: {
+        shape: "box",
+        width: WORLD_WIDTH,
+        height: 1,
+        isSensor: true,
       },
     },
     bucket: {
@@ -297,10 +301,11 @@ const game: GameDefinition = {
         imageWidth: 1.2,
         imageHeight: 0.35,
       },
-      type: "zone",
-      zone: {
-        movement: "kinematic",
-        shape: { type: "box", width: 1.2, height: 0.35 },
+      collider: {
+        shape: "box",
+        width: 1.2,
+        height: 0.35,
+        isSensor: true,
       },
       behaviors: [
         { type: "oscillate", axis: "x", amplitude: 4, frequency: 0.25 },
@@ -315,9 +320,10 @@ const game: GameDefinition = {
         imageWidth: 0.8,
         imageHeight: 0.8,
       },
-      type: "zone",
-      zone: {
-        shape: { type: "circle", radius: 0.4 },
+      collider: {
+        shape: "circle",
+        radius: 0.4,
+        isSensor: true,
       },
       behaviors: [
         {
@@ -338,9 +344,10 @@ const game: GameDefinition = {
         imageWidth: 0.8,
         imageHeight: 0.8,
       },
-      type: "zone",
-      zone: {
-        shape: { type: "circle", radius: 0.4 },
+      collider: {
+        shape: "circle",
+        radius: 0.4,
+        isSensor: true,
       },
       behaviors: [
         {
@@ -356,10 +363,11 @@ const game: GameDefinition = {
       id: "trajectoryLine",
       tags: ["trajectory-line"],
       visual: { type: "rect", width: 0.05, height: 6, color: "#FFFFFF66" },
-      type: "zone",
-      zone: {
-        movement: "kinematic",
-        shape: { type: "box", width: 0.05, height: 6 },
+      collider: {
+        shape: "box",
+        width: 0.05,
+        height: 6,
+        isSensor: true,
       },
       behaviors: [
         { type: "rotate_toward", target: "touch", speed: 200, offset: 0 },
@@ -534,7 +542,7 @@ const game: GameDefinition = {
     {
       id: "ball_drain",
       name: "Ball falls through drain - lose a life, destroy marked pegs",
-      trigger: { type: "zone_enter", zoneTag: "drain", entityTag: "ball" },
+      trigger: { type: "sensor_enter", sensorTag: "drain", entityTag: "ball" },
       actions: [
         { type: "event", eventName: "turn_end" },
         { type: "destroy_marked", tag: "peg" },
@@ -545,7 +553,7 @@ const game: GameDefinition = {
     {
       id: "bucket_catch",
       name: "Bucket catches ball - free ball bonus!",
-      trigger: { type: "zone_enter", zoneTag: "bucket", entityTag: "ball" },
+      trigger: { type: "sensor_enter", sensorTag: "bucket", entityTag: "ball" },
       actions: [
         { type: "event", eventName: "turn_end" },
         { type: "destroy_marked", tag: "peg" },

@@ -156,81 +156,99 @@ const game: GameDefinition = {
       id: "cardBack",
       tags: ["card", "face-down"],
       visual: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_BACK_COLOR },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: CARD_WIDTH, height: CARD_HEIGHT },
+      collider: {
+        shape: "box",
+        width: CARD_WIDTH,
+        height: CARD_HEIGHT,
+        isSensor: true,
       },
     },
     card0: {
       id: "card0",
       tags: ["card", "face-up"],
       visual: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[0] },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: CARD_WIDTH, height: CARD_HEIGHT },
+      collider: {
+        shape: "box",
+        width: CARD_WIDTH,
+        height: CARD_HEIGHT,
+        isSensor: true,
       },
     },
     card1: {
       id: "card1",
       tags: ["card", "face-up"],
       visual: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[1] },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: CARD_WIDTH, height: CARD_HEIGHT },
+      collider: {
+        shape: "box",
+        width: CARD_WIDTH,
+        height: CARD_HEIGHT,
+        isSensor: true,
       },
     },
     card2: {
       id: "card2",
       tags: ["card", "face-up"],
       visual: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[2] },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: CARD_WIDTH, height: CARD_HEIGHT },
+      collider: {
+        shape: "box",
+        width: CARD_WIDTH,
+        height: CARD_HEIGHT,
+        isSensor: true,
       },
     },
     card3: {
       id: "card3",
       tags: ["card", "face-up"],
       visual: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[3] },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: CARD_WIDTH, height: CARD_HEIGHT },
+      collider: {
+        shape: "box",
+        width: CARD_WIDTH,
+        height: CARD_HEIGHT,
+        isSensor: true,
       },
     },
     card4: {
       id: "card4",
       tags: ["card", "face-up"],
       visual: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[4] },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: CARD_WIDTH, height: CARD_HEIGHT },
+      collider: {
+        shape: "box",
+        width: CARD_WIDTH,
+        height: CARD_HEIGHT,
+        isSensor: true,
       },
     },
     card5: {
       id: "card5",
       tags: ["card", "face-up"],
       visual: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[5] },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: CARD_WIDTH, height: CARD_HEIGHT },
+      collider: {
+        shape: "box",
+        width: CARD_WIDTH,
+        height: CARD_HEIGHT,
+        isSensor: true,
       },
     },
     card6: {
       id: "card6",
       tags: ["card", "face-up"],
       visual: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[6] },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: CARD_WIDTH, height: CARD_HEIGHT },
+      collider: {
+        shape: "box",
+        width: CARD_WIDTH,
+        height: CARD_HEIGHT,
+        isSensor: true,
       },
     },
     card7: {
       id: "card7",
       tags: ["card", "face-up"],
       visual: { type: "rect", width: CARD_WIDTH, height: CARD_HEIGHT, color: CARD_COLORS[7] },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: CARD_WIDTH, height: CARD_HEIGHT },
+      collider: {
+        shape: "box",
+        width: CARD_WIDTH,
+        height: CARD_HEIGHT,
+        isSensor: true,
       },
     },
   },

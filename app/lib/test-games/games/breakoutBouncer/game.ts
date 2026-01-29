@@ -268,13 +268,11 @@ const game: GameDefinition = {
     drain: {
       id: "drain",
       tags: ["drain"],
-      type: "zone",
-      zone: {
-        shape: {
-          type: "box",
-          width: WORLD_WIDTH,
-          height: 2,
-        },
+      collider: {
+        shape: "box",
+        width: WORLD_WIDTH,
+        height: 2,
+        isSensor: true,
       },
     },
   },

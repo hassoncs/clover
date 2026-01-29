@@ -134,9 +134,12 @@ const game: GameDefinition = {
       id: "coin",
       tags: ["collectible", "coin"],
       visual: { type: "image", imageUrl: `${ASSET_BASE}/coin.png`, imageWidth: 0.6, imageHeight: 0.6 },
-      type: "zone",
-      zone: {
-        shape: { type: "circle", radius: 0.3 },
+      collider: {
+        shape: "circle",
+        radius: 0.3,
+        friction: 0,
+        restitution: 0,
+        isSensor: true,
       },
       behaviors: [
         { type: "score_on_collision", withTags: ["player"], points: 100, once: true, showPopup: true },
@@ -165,18 +168,26 @@ const game: GameDefinition = {
       id: "goal",
       tags: ["goal"],
       visual: { type: "image", imageUrl: `${ASSET_BASE}/goal.png`, imageWidth: 0.5, imageHeight: 2 },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: 0.5, height: 2 },
+      collider: {
+        shape: "box",
+        width: 0.5,
+        height: 2,
+        friction: 0,
+        restitution: 0,
+        isSensor: true,
       },
     },
     deathZone: {
       id: "deathZone",
       tags: ["hazard"],
       visual: { type: "rect", width: 30, height: 1, color: "#FF000022" },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: 30, height: 1 },
+      collider: {
+        shape: "box",
+        width: 30,
+        height: 1,
+        friction: 0,
+        restitution: 0,
+        isSensor: true,
       },
     },
   },

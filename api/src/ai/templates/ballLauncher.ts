@@ -32,7 +32,7 @@ export const BALL_LAUNCHER_TEMPLATE: GameDefinition = {
       },
       physics: { density: 1.5, bullet: true },
       collider: { shape: 'circle', physics: {
-        bodyType: 'dynamic', radius: 0.4, friction: 0.3, restitution: 0.4 },
+        bodyType: 'dynamic', radius: 0.4, friction: 0.3, restitution: 0.4 }},
       tags: ['projectile'],
     },
     target: {
@@ -45,7 +45,7 @@ export const BALL_LAUNCHER_TEMPLATE: GameDefinition = {
       },
       physics: { density: 0.8 },
       collider: { shape: 'box', physics: {
-        bodyType: 'dynamic', width: 0.8, height: 0.8, friction: 0.5, restitution: 0.2 },
+        bodyType: 'dynamic', width: 0.8, height: 0.8, friction: 0.5, restitution: 0.2 }},
       behaviors: [
         {
           type: 'score_on_collision',
@@ -72,7 +72,7 @@ export const BALL_LAUNCHER_TEMPLATE: GameDefinition = {
       },
       physics: { density: 0.6 },
       collider: { shape: 'box', physics: {
-        bodyType: 'dynamic', width: 1.0, height: 0.5, friction: 0.6, restitution: 0.1 },
+        bodyType: 'dynamic', width: 1.0, height: 0.5, friction: 0.6, restitution: 0.1 }},
       tags: ['block', 'destructible'],
     },
     ground: {
@@ -85,7 +85,7 @@ export const BALL_LAUNCHER_TEMPLATE: GameDefinition = {
       },
       physics: { density: 1 },
       collider: { shape: 'box', physics: {
-        bodyType: 'static', width: 20, height: 1, friction: 0.8, restitution: 0.1 },
+        bodyType: 'static', width: 20, height: 1, friction: 0.8, restitution: 0.1 }},
       tags: ['ground'],
     },
   },

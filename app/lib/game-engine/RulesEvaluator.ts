@@ -53,7 +53,7 @@ import {
   CollisionTriggerEvaluator,
   InputTriggerEvaluator,
   LogicTriggerEvaluator,
-  ZoneTriggerEvaluator,
+  SensorTriggerEvaluator,
 } from "./rules/triggers";
 import { ContainerSystem } from "./systems/ContainerSystem";
 
@@ -94,7 +94,7 @@ export class RulesEvaluator implements IGameStateMutator {
   private collisionTriggerEvaluator = new CollisionTriggerEvaluator();
   private inputTriggerEvaluator = new InputTriggerEvaluator();
   private logicTriggerEvaluator = new LogicTriggerEvaluator();
-  private zoneTriggerEvaluator = new ZoneTriggerEvaluator();
+  private sensorTriggerEvaluator = new SensorTriggerEvaluator();
 
   constructor(entityManager: EntityManager, containers?: ContainerConfig[]) {
     const scoreActionExecutor = new ScoreActionExecutor();
@@ -379,6 +379,7 @@ export class RulesEvaluator implements IGameStateMutator {
     inputEntityManager?: InputEntityManager,
     playSound?: (soundId: string, volume?: number) => void,
     bridge?: GodotBridge,
+    /** @deprecated Zone events are deprecated. Use collision events with sensors instead. */
     zoneEvents?: { zone: { id: string; tags?: string[] }; entity: { id: string; tags?: string[] }; type: 'enter' | 'exit' }[],
   ): void {
     if (inputEvents.tap) {
@@ -506,9 +507,10 @@ export class RulesEvaluator implements IGameStateMutator {
     switch (trigger.type) {
       case "collision":
         return this.collisionTriggerEvaluator.evaluate(trigger, context);
-      case "zone_enter":
-      case "zone_exit":
-        return this.zoneTriggerEvaluator.evaluate(trigger, context);
+      case "sensor_enter":
+      case "sensor_exit":
+        console.warn('[DEPRECATED] Sensor triggers are deprecated. Use collision triggers with sensors instead.');
+        return this.sensorTriggerEvaluator.evaluate(trigger, context);
       case "timer":
       case "score":
       case "entity_count":

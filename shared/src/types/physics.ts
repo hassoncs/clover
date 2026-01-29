@@ -56,13 +56,25 @@ export type ColliderComponent =
   | PolygonColliderComponent
   | CapsuleColliderComponent;
 
+/**
+ * @deprecated Use collider with isSensor: true instead.
+ * Zones are now implemented as sensor colliders for unified rendering.
+ */
 export type ZoneMovementType = 'static' | 'kinematic';
 
+/**
+ * @deprecated Use collider with isSensor: true instead.
+ * Zones are now implemented as sensor colliders for unified rendering.
+ */
 export type ZoneShape =
   | { type: 'box'; width: number; height: number }
   | { type: 'circle'; radius: number }
   | { type: 'polygon'; vertices: Vec2[] };
 
+/**
+ * @deprecated Use collider with isSensor: true instead.
+ * Zones are now implemented as sensor colliders for unified rendering.
+ */
 export interface ZoneComponent {
   movement?: ZoneMovementType;
   shape: ZoneShape;
@@ -70,6 +82,10 @@ export interface ZoneComponent {
   maskBits?: number;
 }
 
+/**
+ * @deprecated Use collider with isSensor: true instead.
+ * Zones are now implemented as sensor colliders for unified rendering.
+ */
 export interface ZoneEntityDefinition {
   type: 'zone';
   zone: ZoneComponent;

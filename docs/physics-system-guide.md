@@ -75,6 +75,8 @@ pipeTop: {
 
 ## The `isSensor` Property
 
+> **Note:** The `zone` component is deprecated. Use `collider` with `isSensor: true` instead for detection-only entities. This ensures proper sprite rendering in the unified rendering pipeline.
+
 ### What is a Sensor?
 
 A **sensor** detects collisions but doesn't physically respond to them. Think of it as a "ghost zone" that can tell when something enters or exits, but doesn't bounce or block.
@@ -85,7 +87,7 @@ A **sensor** detects collisions but doesn't physically respond to them. Think of
 |---------|------------------------------|------------------|
 | **Physical response** | Yes—objects bounce off | No—objects pass through |
 | **Collision detection** | Yes | Yes |
-| **Use case** | Walls, platforms, bumpers | Triggers, collectibles, zones |
+| **Use case** | Walls, platforms, bumpers | Triggers, collectibles, detection areas |
 | **Performance** | Standard | Slightly cheaper |
 
 ### When to Use Sensors
@@ -122,6 +124,33 @@ cannon: {
 ```
 
 The cannon is a sensor so the ball can overlap with it. The game detects the overlap and launches the ball.
+
+---
+
+## Zone Component Deprecation
+
+> **DEPRECATED:** The `zone` component is deprecated. Use `collider` with `isSensor: true` instead.
+
+### Migration Guide
+
+**Old (deprecated):**
+```typescript
+type: "zone",
+zone: { shape: { type: "circle", radius: 0.5 } }
+```
+
+**New (recommended):**
+```typescript
+collider: { shape: "circle", radius: 0.5, isSensor: true }
+```
+
+### Why the Change?
+
+The unified rendering pipeline requires all entities to use the `collider` component for collision detection. Using `collider` with `isSensor: true` provides:
+- Consistent sprite rendering across all entities
+- Unified collision detection system
+- Better performance optimization
+- Simplified codebase maintenance
 
 ---
 
@@ -379,7 +408,7 @@ wall: {
 | Projectiles | `dynamic` | Needs physics simulation |
 | Moving Platforms | `kinematic` | Moves at set speed, ignores gravity |
 | Collectibles | `static` + `isSensor: true` | Detects overlap, no physical response |
-| Triggers/Zones | `static` + `isSensor: true` | Detects entry/exit, no blocking |
+| Triggers/Detection Areas | `static` + `isSensor: true` | Detects entry/exit, no blocking |
 | Pinball Bumpers | `static` | Stays put, bounces ball |
 | Pinball Ball | `dynamic` | Needs realistic physics |
 | Tetris Pieces | `kinematic` + `isSensor: true` | Controlled movement, detect placement |
@@ -447,7 +476,8 @@ The AI validator ensures physics configs are valid:
 // Wall/Ground - blocks movement
 { bodyType: "static", density: 0, isSensor: false }
 
-// Collectible - detects but doesn't block  
+// Collectible - detects but doesn't block
+// Note: For new entities, use collider: { shape: "circle", radius: 0.5, isSensor: true }
 { bodyType: "static", density: 0, isSensor: true }
 
 // Player with gravity - realistic physics

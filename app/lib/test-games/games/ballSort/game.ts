@@ -317,16 +317,11 @@ export function createBallSortGame(level: number = 1): GameDefinition {
           imageWidth: TUBE_WALL_THICKNESS,
           imageHeight: TUBE_HEIGHT,
         },
-        physics: {
-          bodyType: "static",
-          density: 0,
-        },
         collider: {
           shape: "box",
           width: TUBE_WALL_THICKNESS,
           height: TUBE_HEIGHT,
-          friction: 0,
-          restitution: 0,
+          isSensor: true,
         },
       },
       tubeBottom: {
@@ -338,16 +333,11 @@ export function createBallSortGame(level: number = 1): GameDefinition {
           imageWidth: TUBE_WIDTH,
           imageHeight: TUBE_WALL_THICKNESS,
         },
-        physics: {
-          bodyType: "static",
-          density: 0,
-        },
         collider: {
           shape: "box",
           width: TUBE_WIDTH,
           height: TUBE_WALL_THICKNESS,
-          friction: 0,
-          restitution: 0,
+          isSensor: true,
         },
       },
       tubeSensor: {
@@ -359,13 +349,11 @@ export function createBallSortGame(level: number = 1): GameDefinition {
           height: TUBE_HEIGHT,
           color: "#00000022",
         },
-        type: "zone",
-        zone: {
-          shape: {
-            type: "box",
-            width: TUBE_WIDTH - TUBE_WALL_THICKNESS * 2,
-            height: TUBE_HEIGHT,
-          },
+        collider: {
+          shape: "box",
+          width: TUBE_WIDTH - TUBE_WALL_THICKNESS * 2,
+          height: TUBE_HEIGHT,
+          isSensor: true,
         },
       },
       ball0: createBallTemplate(0) as EntityTemplate,
@@ -385,13 +373,10 @@ export function createBallSortGame(level: number = 1): GameDefinition {
           imageWidth: BALL_RADIUS * 2.4,
           imageHeight: BALL_RADIUS * 2.4,
         },
-        type: "zone",
-        zone: {
-          shape: {
-            type: "circle",
-            radius: BALL_RADIUS * 1.2,
-          },
-          movement: "kinematic",
+        collider: {
+          shape: "circle",
+          radius: BALL_RADIUS * 1.2,
+          isSensor: true,
         },
       },
     },
@@ -446,18 +431,13 @@ function createBallTemplate(colorIndex: number) {
     visual: {
       type: "image",
       imageUrl: `${ASSET_BASE}/ball${colorIndex % 4}.png`,
-      width: BALL_RADIUS * 2,
-      height: BALL_RADIUS * 2,
-    },
-    physics: {
-      bodyType: "dynamic",
-      density: 1,
+      imageWidth: BALL_RADIUS * 2,
+      imageHeight: BALL_RADIUS * 2,
     },
     collider: {
       shape: "circle",
       radius: BALL_RADIUS,
-      friction: 0.3,
-      restitution: 0.2,
+      isSensor: true,
     },
     conditionalBehaviors: [
       {

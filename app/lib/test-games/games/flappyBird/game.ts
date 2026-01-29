@@ -158,10 +158,11 @@ const game: GameDefinition = {
       id: "scoreZone",
       tags: ["score-zone"],
       visual: { type: "rect", width: 0.3, height: PIPE_GAP, color: "#00000000" },
-      type: "zone",
-      zone: {
-        shape: { type: "box", width: 0.3, height: PIPE_GAP },
-        movement: "kinematic",
+      collider: {
+        shape: "box",
+        width: 0.3,
+        height: PIPE_GAP,
+        isSensor: true,
       },
       behaviors: [
         { type: "move", direction: "left", speed: PIPE_SPEED },
