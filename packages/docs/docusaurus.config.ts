@@ -69,15 +69,17 @@ const config: Config = {
   ],
 
   plugins: [
+    // Auto-generation: Metadata extraction enabled, TypeDoc disabled
     path.resolve(__dirname, 'plugins/game-engine-metadata/index.ts'),
-    [
-      'docusaurus-plugin-typedoc',
-      {
-        entryPoints: ['../../shared/src/types/index.ts'],
-        tsconfig: '../../tsconfig.json',
-        out: 'api-reference',
-      },
-    ],
+    // TypeDoc API docs generation disabled
+    // [
+    //   'docusaurus-plugin-typedoc',
+    //   {
+    //     entryPoints: ['../../shared/src/types/index.ts'],
+    //     tsconfig: '../../tsconfig.json',
+    //     out: 'api-reference',
+    //   },
+    // ],
   ],
 
   themeConfig: {
