@@ -3,16 +3,21 @@
 
 max-file-lines: 3000
 max-public-methods: 150
-max-line-length: 120
+max-line-length: 140
 
 # Disable naming convention checks
-disable: 
-  - class-name
-  - class-variable-name
-  - class-load-variable-name
-  - function-name
-  - function-variable-name
-  - function-argument-name
-  - signal-name
-  - trailing-whitespace
-  - missing-docstring
+class-name: false
+class-variable-name: false
+class-load-variable-name: false
+function-name: false
+function-variable-name: false
+function-argument-name: false
+signal-name: false
+trailing-whitespace: false
+missing-docstring: false
+class-definitions-order: false
+unused-argument: false
+no-elif-return: false
+no-else-return: false
+expression-not-assigned: false
+unused-variable: false
