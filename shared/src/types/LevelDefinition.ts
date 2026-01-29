@@ -1,3 +1,5 @@
+import { GameEntity } from './entity';
+
 /**
  * @file LevelDefinition.ts
  * @description Type definitions for JSON level schemas used in AI-generated game levels.
@@ -132,8 +134,10 @@ export interface GameOverrides {
   slopeggle?: SlopeggleLevelOverrides;
   /** Pinball-specific level parameters */
   pinball?: PinballLevelOverrides;
+  /** Angry Burns-specific level parameters */
+  angryBurns?: AngryBurnsLevelOverrides;
   /** Future games: add their overrides here - key is game ID, value is game-specific config */
-  [gameId: string]: SlopeggleLevelOverrides | PinballLevelOverrides | Record<string, unknown> | undefined;
+  [gameId: string]: SlopeggleLevelOverrides | PinballLevelOverrides | AngryBurnsLevelOverrides | Record<string, unknown> | undefined;
 }
 
 /**
@@ -171,6 +175,21 @@ export interface PinballLevelOverrides {
   hasMultiball?: boolean;
   /** Number of flippers */
   flipperCount?: number;
+}
+
+/**
+ * Angry Burns-specific level configuration overrides.
+ * Controls difficulty scaling and level-specific entity generation.
+ */
+export interface AngryBurnsLevelOverrides {
+  /** Difficulty level from 0 (easiest) to 1 (hardest) */
+  difficulty01: number;
+  /** Per-level entities to inject or replace */
+  entities: GameEntity[];
+  /** Optional world width in meters */
+  worldWidth?: number;
+  /** Optional world height in meters */
+  worldHeight?: number;
 }
 
 /**

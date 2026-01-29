@@ -9,3 +9,4 @@ export * from './utils/game-helpers';
 export * from './validation';
 export * from './economy/currency';
 export * from './generator';
+export * from './mechanics';

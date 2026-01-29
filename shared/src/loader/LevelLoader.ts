@@ -29,7 +29,7 @@ import {
   CURRENT_PACK_SCHEMA_VERSION,
   MIN_COMPATIBLE_PACK_VERSION,
 } from '../types/LevelPack';
-import type { SlopeggleLevelOverrides } from '../types/LevelDefinition';
+import type { SlopeggleLevelOverrides, AngryBurnsLevelOverrides } from '../types/LevelDefinition';
 
 import {
   BundledPackSource,
@@ -357,6 +357,12 @@ export class LevelLoader {
       this.applySlopeggleOverrides(game, slopeggleOverrides, warn);
     }
 
+    // Apply Angry Burns-specific overrides
+    const angryBurnsOverrides = level.overrides?.angryBurns as AngryBurnsLevelOverrides | undefined;
+    if (angryBurnsOverrides) {
+      this.applyAngryBurnsOverrides(game, angryBurnsOverrides, warn);
+    }
+
     if (level.title) {
       game.metadata.title = level.title;
     }
@@ -408,6 +414,38 @@ export class LevelLoader {
       }
       if (portalB) {
         (portalB as unknown as Record<string, unknown>).disabled = !overrides.hasPortals;
+      }
+    }
+  }
+
+  private applyAngryBurnsOverrides(
+    game: GameDefinition,
+    overrides: AngryBurnsLevelOverrides,
+    warn: (message: string, category: keyof LevelLoadWarnings) => void,
+  ): void {
+    // World dimensions
+    if (overrides.worldWidth !== undefined || overrides.worldHeight !== undefined) {
+      const width = overrides.worldWidth ?? game.world.bounds?.width ?? 20;
+      const height = overrides.worldHeight ?? game.world.bounds?.height ?? 12;
+
+      if (!game.world.bounds) {
+        game.world.bounds = { width, height };
+      } else {
+        game.world.bounds.width = width;
+        game.world.bounds.height = height;
+      }
+
+      warn('World bounds overridden - entities may need repositioning', 'mergeWarnings');
+    }
+
+    // Merge entities (replace by entity.id, deterministic)
+    if (overrides.entities && overrides.entities.length > 0) {
+      const replaceIds = new Set(overrides.entities.map(e => e.id));
+      game.entities = game.entities.filter(e => !replaceIds.has(e.id));
+      game.entities.push(...overrides.entities);
+
+      if (replaceIds.size > 0) {
+        warn(`Replaced ${replaceIds.size} entities from Angry Burns overrides`, 'mergeWarnings');
       }
     }
   }
