@@ -19,6 +19,7 @@
   "dependencies": {
     "drizzle-orm": "^0.38.3",
     "drizzle-zod": "^0.7.0",
+    "quickjs-emscripten": "^0.31.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {

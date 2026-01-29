@@ -547,6 +547,13 @@ export interface ContainerIsOccupiedCondition {
   negated?: boolean;
 }
 
+export interface RunScriptAction {
+  type: 'run_script';
+  script: string;
+  export?: string;
+  args?: Record<string, unknown>;
+}
+
 export type RuleAction =
   | SpawnAction
   | DestroyAction
@@ -598,7 +605,8 @@ export type RuleAction =
   | ContainerSwapAction
   | ContainerClearAction
   | ContainerSelectAction
-  | ContainerDeselectAction;
+  | ContainerDeselectAction
+  | RunScriptAction;
 
 export interface GameRule {
   id: string;

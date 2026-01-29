@@ -9,6 +9,7 @@ import type {
   ConstantRef,
 } from './types';
 import type { GameDefinition, GameMetadata } from '../types/GameDefinition';
+import type { Match3Config, SlotMachineConfig, ContainerConfig, TetrisConfig } from '../types/GameDefinition';
 import type { EntityTemplate } from '../types/entity';
 import type { GameRule } from '../types/rules';
 
@@ -298,7 +299,13 @@ function buildGameDefinition(
   templates: Map<string, Record<string, unknown>>,
   entities: Array<Record<string, unknown>>,
   rules: GameRule[],
-  assets: Record<string, { path: string; type: string }> | null
+  assets: Record<string, { path: string; type: string }> | null,
+  systems: {
+    match3?: Match3Config;
+    slotMachine?: SlotMachineConfig;
+    containers?: ContainerConfig[];
+    tetris?: TetrisConfig;
+  } | null
 ): GameDefinition {
   const metadata: GameMetadata = {
     id: (manifest?.name as string) || 'unnamed-game',
@@ -312,12 +319,21 @@ function buildGameDefinition(
     templateRecord[id] = template as unknown as EntityTemplate;
   }
 
+  // Build world config from manifest or use defaults
+  const worldConfig = (manifest?.world as Record<string, unknown>) || {};
+  const world: GameDefinition['world'] = {
+    gravity: (worldConfig.gravity as { x: number; y: number }) || { x: 0, y: 10 },
+    pixelsPerMeter: (worldConfig.pixelsPerMeter as number) || 50,
+  };
+  
+  // Add bounds if specified
+  if (worldConfig.bounds) {
+    world.bounds = worldConfig.bounds as { width: number; height: number };
+  }
+
   return {
     metadata,
-    world: {
-      gravity: { x: 0, y: 10 },
-      pixelsPerMeter: 50,
-    },
+    world,
     templates: templateRecord,
     entities: entities as unknown as GameDefinition['entities'],
     rules,
@@ -337,6 +353,11 @@ function buildGameDefinition(
         ),
       },
     } : undefined,
+    // Include system configs if provided
+    ...(systems?.match3 && { match3: systems.match3 }),
+    ...(systems?.slotMachine && { slotMachine: systems.slotMachine }),
+    ...(systems?.containers && { containers: systems.containers }),
+    ...(systems?.tetris && { tetris: systems.tetris }),
   };
 }
 
@@ -353,6 +374,7 @@ export function compileBundle(bundlePath: string): BundleCompileResult {
     templates: [],
     entities: [],
     rules: [],
+    schemas: undefined,
   };
 
   if (!fs.existsSync(bundlePath)) {
@@ -434,6 +456,25 @@ export function compileBundle(bundlePath: string): BundleCompileResult {
     } else if (relativePath.startsWith('rules')) {
       const items = normalizeToArray(data);
       rawData.rules.push(...items);
+    }
+  }
+
+  // Load schemas from schemas/ directory
+  const schemasDir = path.join(bundlePath, 'schemas');
+  if (fs.existsSync(schemasDir) && fs.statSync(schemasDir).isDirectory()) {
+    rawData.schemas = {};
+
+    const schemaFiles = ['level.json', 'persistence.json'] as const;
+    for (const schemaFile of schemaFiles) {
+      const schemaPath = path.join(schemasDir, schemaFile);
+      if (fs.existsSync(schemaPath)) {
+        processedFiles.push(path.relative(bundlePath, schemaPath));
+        const result = readJsonFile(schemaPath);
+        if (result && result.data && typeof result.data === 'object') {
+          const schemaName = schemaFile.replace('.json', '') as 'level' | 'persistence';
+          rawData.schemas[schemaName] = result.data as object;
+        }
+      }
     }
   }
 
@@ -524,13 +565,20 @@ export function compileBundle(bundlePath: string): BundleCompileResult {
   validateAssetRefs(resolvedTemplates, assetIds, 'templates', errors);
   validateAssetRefs(resolvedEntities, assetIds, 'entities', errors);
 
+  // Resolve constants in systems config
+  const systemsConfig = (rawData.manifest as any)?.systems;
+  const resolvedSystems = systemsConfig 
+    ? resolveConstantRefs(systemsConfig, constantsMap, ['systems'], errors) as any
+    : null;
+
   const gameDefinition = buildGameDefinition(
     rawData.manifest,
     rawData.constants,
     templateMap,
     resolvedEntities,
     resolvedRules as unknown as GameRule[],
-    rawData.assets
+    rawData.assets,
+    resolvedSystems
   );
 
   return {

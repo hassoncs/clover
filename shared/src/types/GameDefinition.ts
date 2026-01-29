@@ -516,6 +516,16 @@ export interface GameDefinition {
    * Example: { GRAVITY: 9.8, JUMP_FORCE: 15 }
    */
   constants?: Record<string, number | string | boolean>;
+
+  /**
+   * Optional JavaScript code for custom game scripting.
+   * Scripts run in a sandboxed QuickJS environment with lifecycle hooks:
+   * - onStart(ctx): Called once when game starts
+   * - onUpdate(ctx, dt): Called every frame
+   * - onInput(ctx, event): Called on input events
+   * - onCollision(ctx, collision): Called on collision events
+   */
+  script?: string;
 }
 
 export const DEFAULT_WORLD_CONFIG: WorldConfig = {

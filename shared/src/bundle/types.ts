@@ -96,6 +96,10 @@ export interface RawBundleData {
   templates: Array<Record<string, unknown>>;
   entities: Array<Record<string, unknown>>;
   rules: Array<Record<string, unknown>>;
+  schemas?: {
+    level?: object;
+    persistence?: object;
+  };
 }
 
 /**
