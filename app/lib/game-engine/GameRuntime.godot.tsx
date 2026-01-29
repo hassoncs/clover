@@ -578,6 +578,7 @@ export function GameRuntimeGodot({
         );
 
         sensorUnsubRef.current = physics.onSensorBegin((event) => {
+          console.log('[GameRuntime] Raw sensor begin event:', event);
           const sensorEntity = game.entityManager
             .getActiveEntities()
             .find((e) => e.colliderId?.value === event.sensor.value);
@@ -599,6 +600,19 @@ export function GameRuntimeGodot({
               entityB: otherEntity,
               normal: { x: 0, y: 0 },
               impulse: 0,
+            });
+          } else {
+            console.log('[GameRuntime] Zone ENTER entity lookup failed:', {
+              sensorColliderId: event.sensor.value,
+              otherBodyId: event.otherBody.value,
+              sensorEntityFound: !!sensorEntity,
+              otherEntityFound: !!otherEntity,
+              activeEntities: game.entityManager.getActiveEntities().map(e => ({ 
+                id: e.id, 
+                bodyId: e.bodyId?.value, 
+                colliderId: e.colliderId?.value,
+                tags: e.tags 
+              }))
             });
           }
         });
