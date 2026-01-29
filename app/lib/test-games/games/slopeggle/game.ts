@@ -1,8 +1,7 @@
 import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
-const ASSET_BASE =
-  "/assets/games/slopeggle";
+const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle";
 
 export const metadata: TestGameMeta = {
   title: "Slopeggle",
@@ -327,6 +326,11 @@ const game: GameDefinition = {
       },
       behaviors: [
         {
+          type: "rotate",
+          speed: 2,
+          direction: "clockwise",
+        },
+        {
           type: "teleport",
           destinationEntityId: "portal-b",
           withTags: ["ball"],
@@ -351,6 +355,11 @@ const game: GameDefinition = {
       },
       behaviors: [
         {
+          type: "rotate",
+          speed: -2,
+          direction: "counterclockwise",
+        },
+        {
           type: "teleport",
           destinationEntityId: "portal-a",
           withTags: ["ball"],
@@ -370,7 +379,7 @@ const game: GameDefinition = {
         isSensor: true,
       },
       behaviors: [
-        { type: "rotate_toward", target: "touch", speed: 200, offset: 0 },
+        { type: "rotate_toward", target: "touch", speed: 200, offset: -90 },
       ],
     },
   },
@@ -398,7 +407,7 @@ const game: GameDefinition = {
       name: "Top Wall",
       tags: ["wall"],
       transform: { x: 0, y: cy(0.1), angle: 0, scaleX: 1, scaleY: 1 },
-      sprite: {
+      visual: {
         type: "rect",
         width: WORLD_WIDTH,
         height: 0.2,
@@ -542,7 +551,7 @@ const game: GameDefinition = {
     {
       id: "ball_drain",
       name: "Ball falls through drain - lose a life, destroy marked pegs",
-      trigger: { type: "sensor_enter", sensorTag: "drain", entityTag: "ball" },
+      trigger: { type: "collision", entityATag: "drain", entityBTag: "ball" },
       actions: [
         { type: "event", eventName: "turn_end" },
         { type: "destroy_marked", tag: "peg" },
@@ -553,7 +562,7 @@ const game: GameDefinition = {
     {
       id: "bucket_catch",
       name: "Bucket catches ball - free ball bonus!",
-      trigger: { type: "sensor_enter", sensorTag: "bucket", entityTag: "ball" },
+      trigger: { type: "collision", entityATag: "bucket", entityBTag: "ball" },
       actions: [
         { type: "event", eventName: "turn_end" },
         { type: "destroy_marked", tag: "peg" },

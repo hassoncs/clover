@@ -11,6 +11,23 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at INTEGER
 );
 
+-- Email Invites - Replaces signup_codes with invite-by-email system
+-- Any authenticated user can invite others by email
+CREATE TABLE IF NOT EXISTS email_invites (
+  id TEXT PRIMARY KEY,
+  inviter_user_id TEXT REFERENCES users(id),  -- who sent the invite (nullable for admin)
+  invitee_email TEXT NOT NULL,                -- normalized lowercase email
+  status TEXT NOT NULL DEFAULT 'pending',     -- 'pending' | 'redeemed' | 'revoked'
+  redeemed_user_id TEXT REFERENCES users(id), -- set when invitee logs in
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  redeemed_at INTEGER,
+  UNIQUE(invitee_email)                       -- one invite per email
+);
+
+CREATE INDEX IF NOT EXISTS idx_email_invites_email ON email_invites(invitee_email);
+CREATE INDEX IF NOT EXISTS idx_email_invites_status ON email_invites(status);
+
 -- Games table
 CREATE TABLE IF NOT EXISTS games (
   id TEXT PRIMARY KEY,

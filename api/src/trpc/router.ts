@@ -6,6 +6,7 @@ import { tilesRouter } from '@/trpc/routes/tiles'
 import { assetSystemRouter } from '@/trpc/routes/asset-system'
 import { uiComponentsRouter } from '@/trpc/routes/ui-components'
 import { economyRouter } from '@/trpc/routes/economy'
+import { invitesRouter } from '@/trpc/routes/invites'
 
 export const appRouter = router({
   games: gamesRouter,
@@ -15,6 +16,7 @@ export const appRouter = router({
   assetSystem: assetSystemRouter,
   uiComponents: uiComponentsRouter,
   economy: economyRouter,
+  invites: invitesRouter,
 
   health: publicProcedure.query(() => ({
     status: 'ok',
