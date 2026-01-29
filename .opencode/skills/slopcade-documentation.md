@@ -998,9 +998,57 @@ This system is working well when:
 
 ---
 
+## Skill System Integration
+
+The Slopcade project uses specialized skills for different functional areas. When working on tasks, the appropriate skill should be auto-loaded based on context:
+
+| Skill | Trigger Words | Work Areas |
+|-------|---------------|------------|
+| `slopcade-game-engine` | game, entity, physics, behavior, rules, level | Game definitions, entities, physics, behaviors, rules engine, game logic |
+| `slopcade-asset-generation` | asset, sprite, image, generation, scenario, modal | AI image generation, sprites, backgrounds, Scenario.com, Modal.com |
+| `slopcade-3d-assets` | 3d, glb, model, optimize, compress | GLB models, 3D rendering, model optimization, compression |
+| `slopcade-godot-bridge` | bridge, godot, native, web, input | React-Godot bridge, native builds, WebAssembly, input handling |
+| `slopcade-icon-generation` | icon, favicon, app icon | App icons, favicons, iOS/Android icons |
+| `game-inspector` | debug, test, inspect, verify | Game debugging, testing, MCP inspector tools |
+| `slopcade-documentation` | roadmap, todo, plan, document | Project management, roadmaps, planning, documentation |
+
+### Skill Selection Guide
+
+When starting work, identify which functional bucket the task falls into:
+
+1. **Game Logic/Gameplay** → Load `slopcade-game-engine`
+2. **Image/Asset Creation** → Load `slopcade-asset-generation`
+3. **3D Models** → Load `slopcade-3d-assets`
+4. **Platform/Bridge Code** → Load `slopcade-godot-bridge`
+5. **App Icons** → Load `slopcade-icon-generation`
+6. **Debugging** → Load `game-inspector`
+7. **Planning/Organization** → Load `slopcade-documentation` (this skill)
+
+### Cross-Skill Workflows
+
+Some tasks span multiple skills. In these cases:
+
+1. **Create Game with Assets**: 
+   - `slopcade-game-engine` → Define game structure
+   - `slopcade-asset-generation` → Generate sprites/backgrounds
+   - `slopcade-game-engine` → Integrate assets into game
+
+2. **Debug Game Logic**:
+   - `slopcade-game-engine` → Understand expected behavior
+   - `game-inspector` → Test and verify in running game
+   - `slopcade-godot-bridge` → Check bridge communication if needed
+
+3. **Add 3D Feature**:
+   - `slopcade-3d-assets` → Prepare optimized GLB models
+   - `slopcade-godot-bridge` → Implement 3D rendering in Godot
+   - `slopcade-game-engine` → Add game logic for 3D entities
+
+---
+
 ## References
 
 - [Documentation Skill](.opencode/skills/documentation.md) - Base documentation rules
 - [AGENTS.md](.opencode/AGENTS.md) - Roadmap system overview
 - [ROADMAP.md](.opencode/memory/ROADMAP.md) - Master roadmap
 - [docs/INDEX.md](../../docs/INDEX.md) - Documentation hub
+- [Skill Directory](.opencode/skills/) - All available skills
