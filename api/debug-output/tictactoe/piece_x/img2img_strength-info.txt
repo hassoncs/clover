@@ -1,0 +1,3 @@
+color: #FF69B4
+colorBasedStrength: 0.8927294117647059
+finalStrength: 0.8927294117647059

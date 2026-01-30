@@ -1,0 +1,15 @@
+; Engine Configuration File
+; Godot version: 4.x
+
+[application]
+config/name="UI Texture System Example"
+config/features=PackedStringArray("4.2", "Mobile")
+boot_splash/bg_color=Color(0.141176, 0.141176, 0.180392, 1)
+
+[display]
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+
+[rendering]
+renderer/rendering_method="mobile"

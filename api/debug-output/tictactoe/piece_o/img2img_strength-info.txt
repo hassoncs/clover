@@ -1,0 +1,3 @@
+color: #FFDAB9
+colorBasedStrength: 0.876988
+finalStrength: 0.876988

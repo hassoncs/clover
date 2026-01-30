@@ -1,0 +1,62 @@
+# Root Cause Analysis - Image No Physics Bug
+
+## Date: 2026-01-28
+
+## Problem
+When an entity template has `visual.type: "image"` but NO physics/collider,
+the entity renders as a white Polygon2D rectangle instead of the expected Sprite2D.
+
+## Root Cause Identified
+
+The function **`_add_visual(node, visual_data)` is called but DOES NOT EXIST** in GameBridge.gd.
+
+### Evidence
+1. Calls to `_add_visual` exist at lines: 1355, 1359, 3167, 3171, 4960, 4964, 6765, 6769, 8566, 8570
+2. No function definition for `_add_visual` found anywhere in the codebase
+3. The similar function `_add_sprite(node, sprite_data, physics_data, zone_data)` exists at line 1638
+
+### Code Flow Analysis
+
+In `_create_entity()` (around line 1297):
+```gdscript
+# Add visual component
+if visual_data:
+    var resolved_visual = _resolve_visual_with_defaults(visual_data, collider_data)
+    print("[DEBUG] Resolved visual type: ", resolved_visual.get("type", "NO TYPE"))
+    _add_visual(node, resolved_visual)  # <-- THIS FUNCTION DOESN'T EXIST!
+```
+
+### Why It Fails Silently
+In GDScript, calling a non-existent function doesn't throw an error - it simply does nothing and returns null. This is why:
+1. The debug logs show the visual type is correctly "image"
+2. But the visual never gets added to the entity
+3. The code continues execution without error
+4. Later code may create a fallback Polygon2D (evidenced by entity 36289119708)
+
+## Proposed Fix Options
+
+### Option A: Create `_add_visual` function (Recommended)
+Implement a new `_add_visual(node, visual_data)` function that:
+1. Takes the resolved visual data
+2. Dispatches to the appropriate visual creation based on `visual.type`
+3. For `type: "image"`, creates a Sprite2D
+4. For `type: "rect"`, creates a Polygon2D
+5. For `type: "text"`, creates a Label
+
+### Option B: Replace calls with `_add_sprite`
+Change `_add_visual(node, resolved_visual)` to `_add_sprite(node, resolved_visual, physics_data)`
+- Requires passing physics_data to the call site
+- `_add_sprite` already has the correct dispatch logic for image/rect/circle/text
+
+## Recommendation
+Go with **Option A** - create `_add_visual` function, because:
+1. It's the minimal fix - adds the missing function
+2. The calling code expects a 2-argument function
+3. `_add_sprite` has extra parameters that aren't needed for visual-only entities
+4. Keeps the separation of concerns (visual vs sprite)
+
+## Implementation Plan
+1. Add `_add_visual(node: Node2D, visual_data: Dictionary)` function after `_add_sprite`
+2. Function should handle: "image", "rect", "circle", "polygon", "text" types
+3. For "image" type: create Sprite2D and load texture
+4. Test with imageNoPhysicsTest game

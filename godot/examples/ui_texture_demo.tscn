@@ -1,0 +1,213 @@
+[gd_scene load_steps=9 format=3 uid="uid://c0cb7fgfiymxn"]
+
+[ext_resource type="Script" path="res://ui_components/styled_button.gd" id="1_abc123"]
+[ext_resource type="Texture2D" uid="uid://metal1" path="res://assets/textures/ui/arcade_painted_metal_v1.png" id="2_metal1"]
+[ext_resource type="Texture2D" uid="uid://metal2" path="res://assets/textures/ui/arcade_painted_metal_v2.png" id="3_metal2"]
+[ext_resource type="Texture2D" uid="uid://aluminum1" path="res://assets/textures/ui/arcade_brushed_aluminum_v1.png" id="4_alum1"]
+[ext_resource type="Texture2D" uid="uid://plastic1" path="res://assets/textures/ui/arcade_neon_plastic_v1.png" id="5_plastic1"]
+[ext_resource type="Texture2D" uid="uid://plastic2" path="res://assets/textures/ui/arcade_neon_plastic_v2.png" id="6_plastic2"]
+[ext_resource type="Shader" path="res://ui_shaders/styled_surface.gdshader" id="7_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1"]
+shader = ExtResource("7_shader")
+shader_parameter/u_tile = Vector2(1, 1)
+shader_parameter/u_tint = Color(1, 1, 1, 1)
+shader_parameter/u_radius_px = 24.0
+shader_parameter/u_edge_soft_px = 1.0
+shader_parameter/u_border_px = 3.0
+shader_parameter/u_border_color = Color(0.2, 0.8, 1, 0.5)
+shader_parameter/u_shadow_px = 12.0
+shader_parameter/u_shadow_offset_px = Vector2(0, 6)
+shader_parameter/u_shadow_color = Color(0, 0, 0, 0.4)
+shader_parameter/u_bevel_px = 8.0
+shader_parameter/u_bevel_strength = 0.3
+shader_parameter/u_bevel_light_angle = 2.2
+shader_parameter/u_inner_px = 10.0
+shader_parameter/u_inner_strength = 0.3
+shader_parameter/u_inner_color = Color(0, 0, 0, 1)
+
+[node name="UIExample" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.1, 0.15, 1)
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 40.0
+offset_right = 200.0
+offset_bottom = 80.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 32
+text = "UI Texture System Demo"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 90.0
+offset_right = 300.0
+offset_bottom = 120.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 16
+text = "Texture-based buttons with dynamic shader styling"
+horizontal_alignment = 1
+
+[node name="ButtonsContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -150.0
+offset_right = 150.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="Button1" type="Button" parent="ButtonsContainer"]
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 2
+text = "Painted Metal"
+script = ExtResource("1_abc123")
+material_texture = ExtResource("2_metal1")
+corner_radius = 24.0
+shadow_offset = Vector2(0, 6)
+shadow_size = 12.0
+border_size = 3.0
+border_color = Color(0.2, 0.8, 1, 0.5)
+bevel_strength = 0.3
+
+[node name="Button2" type="Button" parent="ButtonsContainer"]
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 2
+text = "Worn Metal"
+script = ExtResource("1_abc123")
+material_texture = ExtResource("3_metal2")
+corner_radius = 20.0
+shadow_offset = Vector2(0, 4)
+shadow_size = 10.0
+shadow_color = Color(0, 0, 0, 0.5)
+border_size = 2.0
+border_color = Color(0.8, 0.6, 0.2, 0.4)
+bevel_strength = 0.25
+inner_shadow_strength = 0.4
+
+[node name="Button3" type="Button" parent="ButtonsContainer"]
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 2
+text = "Brushed Aluminum"
+script = ExtResource("1_abc123")
+material_texture = ExtResource("4_alum1")
+corner_radius = 12.0
+shadow_offset = Vector2(0, 8)
+shadow_size = 15.0
+shadow_color = Color(0, 0, 0, 0.35)
+border_size = 2.0
+border_color = Color(0.9, 0.9, 0.9, 0.3)
+bevel_strength = 0.35
+
+[node name="Button4" type="Button" parent="ButtonsContainer"]
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 2
+text = "Neon Plastic (Blue)"
+script = ExtResource("1_abc123")
+material_texture = ExtResource("5_plastic1")
+corner_radius = 30.0
+shadow_offset = Vector2(0, 5)
+shadow_size = 20.0
+shadow_color = Color(0, 0.5, 1, 0.3)
+border_size = 4.0
+border_color = Color(0, 1, 1, 0.6)
+bevel_strength = 0.2
+inner_shadow_strength = 0.15
+
+[node name="Button5" type="Button" parent="ButtonsContainer"]
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 2
+text = "Neon Plastic (Pink)"
+script = ExtResource("1_abc123")
+material_texture = ExtResource("6_plastic2")
+corner_radius = 30.0
+shadow_offset = Vector2(0, 5)
+shadow_size = 20.0
+shadow_color = Color(1, 0, 0.5, 0.3)
+border_size = 4.0
+border_color = Color(1, 0, 0.8, 0.6)
+bevel_strength = 0.2
+
+[node name="Instructions" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -400.0
+offset_top = -80.0
+offset_right = 400.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 14
+text = "Hover and click buttons to see state changes\nEach button uses a different generated texture with unique styling"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="DemoPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -320.0
+offset_top = 40.0
+offset_right = -40.0
+offset_bottom = 300.0
+grow_horizontal = 0
+
+[node name="PanelTitle" type="Label" parent="DemoPanel"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 10.0
+offset_bottom = 40.0
+grow_horizontal = 2
+text = "Shader Parameters"
+horizontal_alignment = 1
+
+[node name="Params" type="Label" parent="DemoPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 50.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 12
+text = "Corner Radius: 12-30px\nShadow: offset + blur\nBorder: size + color\nBevel: 3D lighting\nInner Shadow: depth"
+vertical_alignment = 1

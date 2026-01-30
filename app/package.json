@@ -8,6 +8,8 @@
     "generate:registry": "node scripts/generate-registry.mjs",
     "generate:registry:check": "node scripts/generate-registry.mjs --check",
     "generate:registry:watch": "node scripts/generate-registry.mjs --watch",
+    "bundle:games": "node scripts/build-game-bundles.mjs",
+    "bundle:games:watch": "node scripts/build-game-bundles.mjs --watch",
     "dev:web": "expo start --web --port 8085",
     "ios": "RCT_METRO_PORT=8085 expo run:ios --port 8085",
     "ios:device": "RCT_METRO_PORT=8085 expo run:ios --configuration Release --device --port 8085",

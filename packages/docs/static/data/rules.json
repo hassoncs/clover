@@ -1400,6 +1400,28 @@
       ]
     },
     {
+      "type": "run_script",
+      "interfaceName": "RunScriptAction",
+      "displayName": "Run Script",
+      "properties": [
+        {
+          "name": "args",
+          "type": "Record<string, unknown>",
+          "required": false
+        },
+        {
+          "name": "export",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "script",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
       "type": "score",
       "interfaceName": "ScoreAction",
       "displayName": "Score",

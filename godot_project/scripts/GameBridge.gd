@@ -1169,11 +1169,6 @@ func _setup_world(world_data: Dictionary) -> void:
 		camera.global_position = Vector2.ZERO
 
 
-var _background_layer: CanvasLayer = null
-var _background_rect: TextureRect = null
-var _parallax_layers: Array = []
-
-
 func _setup_background(bg_data: Dictionary) -> void:
 	# Clean up existing background
 	if _background_layer:
@@ -1237,7 +1232,9 @@ func _download_image_texture(url: String, callback: Callable) -> void:
 	add_child(http)
 
 	http.request_completed.connect(
-		func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+		func(
+			result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray
+		):
 			http.queue_free()
 			if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
 				push_error("[GameBridge] Failed to download image: " + url)
@@ -1327,10 +1324,6 @@ func _setup_parallax_background(bg_data: Dictionary) -> void:
 		rect.anchor_bottom = 1.0
 		layer.add_child(rect)
 
-		_parallax_layers.append(
-			{"layer": layer, "rect": rect, "factor": parallax_factor, "url": image_url}
-		)
-
 		# Download texture for this layer
 		_download_image_texture(
 			image_url,
@@ -1370,6 +1363,12 @@ func _create_entity(entity_data: Dictionary) -> Node2D:
 	var collider_data = merged.get("collider", null)
 	var visual_data = merged.get("visual", null)
 
+	# Debug: Log entity creation for balls
+	if OS.has_feature("web") and entity_id.begins_with("ball"):
+		var window = JavaScriptBridge.get_interface("window")
+		if window:
+			window.console.log("[GODOT] Creating entity: " + entity_id + " template: " + template_id + " has_visual: " + str(visual_data != null) + " visual_data: " + str(visual_data))
+
 	var node: Node2D = null
 
 	if physics_data:
@@ -1390,7 +1389,17 @@ func _create_entity(entity_data: Dictionary) -> Node2D:
 
 	# Add visual component (use collider_data for dimension defaults if physics_data is missing)
 	var dimension_data = physics_data if physics_data else collider_data
-	if visual_data:
+	# Debug: Check if visual_data is truthy
+	if OS.has_feature("web") and entity_id.begins_with("ball"):
+		var window = JavaScriptBridge.get_interface("window")
+		if window:
+			window.console.log("[GODOT] Checking visual_data for " + entity_id + ": " + str(visual_data) + " is_truthy: " + str(bool(visual_data)))
+			window.console.log("[GODOT] visual_data type: " + str(typeof(visual_data)))
+			window.console.log("[GODOT] visual_data.size(): " + str(visual_data.size() if visual_data else 0))
+			window.console.log("[GODOT] dimension_data: " + str(dimension_data))
+	
+	# Always try to add visual for balls if visual_data exists as a Dictionary
+	if visual_data != null and typeof(visual_data) == TYPE_DICTIONARY:
 		_add_visual(node, visual_data, dimension_data)
 
 	# Add to scene
@@ -1613,7 +1622,7 @@ func _create_shape(physics_data: Dictionary) -> Shape2D:
 				points.append(Vector2(v.x * pixels_per_meter, -v.y * pixels_per_meter))
 			polygon.points = points
 			shape = polygon
-		_:  # box
+		_:
 			var rect = RectangleShape2D.new()
 			var w = physics_data.get("width", 1.0) * pixels_per_meter
 			var h = physics_data.get("height", 1.0) * pixels_per_meter
@@ -1628,6 +1637,12 @@ func _add_visual(node: Node2D, visual_data: Dictionary, dimension_data: Dictiona
 	var color = Color.from_string(visual_data.get("color", "#FF0000"), Color.RED)
 	var opacity = visual_data.get("opacity", 1.0)
 	var z_index_val = visual_data.get("zIndex", 0)
+
+	# Debug: Log visual creation
+	if OS.has_feature("web"):
+		var window = JavaScriptBridge.get_interface("window")
+		if window:
+			window.console.log("[GODOT] _add_visual called for: " + node.name + " type: " + visual_type)
 
 	match visual_type:
 		"rect":
@@ -1669,12 +1684,11 @@ func _add_visual(node: Node2D, visual_data: Dictionary, dimension_data: Dictiona
 			node.add_child(polygon)
 		"circle":
 			var polygon = Polygon2D.new()
-			var radius = (
-				visual_data.get(
-					"radius", dimension_data.get("radius", 0.5) if dimension_data else 0.5
-				)
-				* pixels_per_meter
-			)
+			# Get radius from visual_data first, fallback to dimension_data if available
+			var radius_value = visual_data.get("radius", 0.5)
+			if radius_value == 0.5 and dimension_data and dimension_data.has("radius"):
+				radius_value = dimension_data.get("radius", 0.5)
+			var radius = radius_value * pixels_per_meter
 			var points: PackedVector2Array = []
 			var uvs: PackedVector2Array = []
 			var tex_size = max(int(radius * 2), 64)
@@ -2282,11 +2296,12 @@ func set_entity_atlas_region(
 		sprite = Sprite2D.new()
 		node.add_child(sprite)
 
+	var new_sprite_data = {"width": float(args[6]), "height": float(args[7])}
 	if _texture_cache.has(atlas_url):
-		_apply_atlas_region(sprite, _texture_cache[atlas_url], region_dict, sprite_data)
+		_apply_atlas_region(sprite, _texture_cache[atlas_url], region_dict, new_sprite_data)
 		_hide_shape_children(node)
 	else:
-		_download_atlas_texture(sprite, atlas_url, region_dict, sprite_data)
+		_download_atlas_texture(sprite, atlas_url, region_dict, new_sprite_data)
 
 
 func _apply_atlas_region(
@@ -2368,9 +2383,15 @@ func set_entity_image_base64(
 		return
 
 	var texture = ImageTexture.create_from_image(image)
-	sprite.texture = texture
-	var sprite_data = {"width": width, "height": height}
-	_apply_sprite_scale(sprite, sprite_data, texture)
+	_texture_cache[entity_id] = texture
+
+	if is_instance_valid(sprite):
+		sprite.texture = texture
+		_apply_sprite_scale(sprite, sprite_data, texture)
+		var parent_node = sprite.get_parent()
+		if parent_node:
+			_hide_shape_children(parent_node)
+	_texture_cache[entity_id] = texture
 
 
 func set_entity_image_from_file(
@@ -2406,57 +2427,14 @@ func set_entity_image_from_file(
 		return
 
 	var texture = ImageTexture.create_from_image(image)
-	sprite.texture = texture
-	var sprite_data = {"width": width, "height": height}
-	_apply_sprite_scale(sprite, sprite_data, texture)
+	_texture_cache[entity_id] = texture
 
-
-func set_entity_atlas_region_from_file(
-	entity_id: String,
-	file_path: String,
-	region_x: float,
-	region_y: float,
-	region_w: float,
-	region_h: float,
-	sprite_width: float,
-	sprite_height: float
-) -> void:
-	if not entities.has(entity_id):
-		push_error("[GameBridge] set_entity_atlas_region_from_file: entity not found: " + entity_id)
-		return
-
-	var node = entities[entity_id]
-	var sprite: Sprite2D = null
-
-	for child in node.get_children():
-		if child is Sprite2D:
-			sprite = child
-			break
-
-	if sprite == null:
-		sprite = Sprite2D.new()
-		node.add_child(sprite)
-
-	var image = Image.new()
-	var err = image.load(file_path)
-	if err != OK:
-		push_error(
-			(
-				"[GameBridge] set_entity_atlas_region_from_file: failed to load image from "
-				+ file_path
-				+ " error="
-				+ str(err)
-			)
-		)
-		return
-
-	var texture = ImageTexture.create_from_image(image)
-	_texture_cache[file_path] = texture
-
-	var region_dict = {"x": region_x, "y": region_y, "w": region_w, "h": region_h}
-	var sprite_data = {"width": sprite_width, "height": sprite_height}
-	_apply_atlas_region(sprite, texture, region_dict, sprite_data)
-	_hide_shape_children(node)
+	if is_instance_valid(sprite):
+		sprite.texture = texture
+		_apply_sprite_scale(sprite, sprite_data, texture)
+		var parent_node = sprite.get_parent()
+		if parent_node:
+			_hide_shape_children(parent_node)
 
 
 # Get all entity transforms (for syncing)
@@ -3181,7 +3159,6 @@ func query_point_entity(x: float, y: float) -> Variant:
 	query.collide_with_areas = true
 
 	var results = space.intersect_point(query, 32)
-
 	if results.size() > 0:
 		var collider = results[0].collider
 		if collider and collider.name in entities:
@@ -3307,55 +3284,41 @@ func _js_raycast(args: Array) -> Variant:
 	return null
 
 
-func query_point(x: float, y: float) -> Variant:
-	var godot_point = game_to_godot_pos(Vector2(x, y))
+func query_point(
+	origin_x: float, origin_y: float, dir_x: float, dir_y: float, max_distance: float
+) -> Variant:
+	var godot_origin = game_to_godot_pos(Vector2(origin_x, origin_y))
+	var game_dir = Vector2(dir_x, dir_y)
+	var godot_dir = Vector2(game_dir.x, -game_dir.y).normalized()  # Flip Y for direction
+	var end = godot_origin + godot_dir * (max_distance * pixels_per_meter)
 
 	var space = get_viewport().find_world_2d().direct_space_state
-	var query = PhysicsPointQueryParameters2D.new()
-	query.position = godot_point
+	var query = PhysicsRayQueryParameters2D.create(godot_origin, end)
 	query.collide_with_bodies = true
 	query.collide_with_areas = true
 
-	var results = space.intersect_point(query, 1)
-	if results.size() > 0:
-		var collider = results[0].collider
-		if collider and collider.name in entities:
-			var entity_id = collider.name
-			if body_id_map.has(entity_id):
-				return body_id_map[entity_id]
-	return null
-
-
-func query_aabb(min_x: float, min_y: float, max_x: float, max_y: float) -> String:
-	# Convert AABB corners from game coords to Godot coords
-	var game_min = Vector2(min_x, min_y)
-	var game_max = Vector2(max_x, max_y)
-	var godot_min = game_to_godot_pos(game_min)
-	var godot_max = game_to_godot_pos(game_max)
-	# After Y-flip, min/max may be swapped
-	var actual_min = Vector2(min(godot_min.x, godot_max.x), min(godot_min.y, godot_max.y))
-	var actual_max = Vector2(max(godot_min.x, godot_max.x), max(godot_min.y, godot_max.y))
-
-	var space = get_viewport().find_world_2d().direct_space_state
-
-	var shape = RectangleShape2D.new()
-	shape.size = actual_max - actual_min
-
-	var query = PhysicsShapeQueryParameters2D.new()
-	query.shape = shape
-	query.transform = Transform2D(0, (actual_min + actual_max) / 2)
-	query.collide_with_bodies = true
-	query.collide_with_areas = true
-
-	var results = space.intersect_shape(query)
-	var body_ids: Array = []
-	for result in results:
+	var result = space.intersect_ray(query)
+	if result:
 		var collider = result.collider
 		if collider and collider.name in entities:
 			var entity_id = collider.name
-			if body_id_map.has(entity_id):
-				body_ids.append(body_id_map[entity_id])
-	return JSON.stringify(body_ids)
+			var body_id = body_id_map.get(entity_id, -1)
+			var collider_id = -1
+			var game_hit_point = godot_to_game_pos(result.position)
+			var game_normal = Vector2(result.normal.x, -result.normal.y)  # Flip Y for normal
+			var fraction = (
+				godot_origin.distance_to(result.position) / (max_distance * pixels_per_meter)
+			)
+			return JSON.stringify(
+				{
+					"bodyId": body_id,
+					"colliderId": collider_id,
+					"point": {"x": game_hit_point.x, "y": game_hit_point.y},
+					"normal": {"x": game_normal.x, "y": game_normal.y},
+					"fraction": fraction
+				}
+			)
+	return null
 
 
 func raycast(
@@ -4504,15 +4467,13 @@ func _draw():
 		% [
 			"draw_rect(rect, Color.CYAN, false, 2.0)" if draw_bounds else "",
 			(
-				(
-					"""
+				"""
 		var label = entity_id if %s else template
 		var font = ThemeDB.fallback_font
 		var font_size = 12
 		draw_string(font, Vector2(screen_pos.x - width/2, screen_pos.y - height/2 - 4), label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.YELLOW)
 """
-					% ("true" if draw_ids else "false")
-				)
+				% ("true" if draw_ids else "false")
 				if draw_labels or draw_ids
 				else ""
 			),
@@ -4561,10 +4522,6 @@ func _collect_overlay_data() -> Array:
 				if shape is RectangleShape2D:
 					entity_data["width"] = shape.size.x / pixels_per_meter
 					entity_data["height"] = shape.size.y / pixels_per_meter
-				elif shape is CircleShape2D:
-					var diameter = shape.radius * 2 / pixels_per_meter
-					entity_data["width"] = diameter
-					entity_data["height"] = diameter
 				break
 
 		data.append(entity_data)
@@ -4638,7 +4595,7 @@ func _get_entity_transform_impl(entity_id: String) -> Variant:
 		return null
 	var node = entities[entity_id]
 	var game_pos = godot_to_game_pos(node.position)
-	return {"x": game_pos.x, "y": game_pos.y, "angle": -node.rotation}
+	return {"x": game_pos.x, "y": game_pos.y, "angle": -node.rotation}  # Flip angle back to game convention
 
 
 func _screen_to_world_impl(screen_x: float, screen_y: float) -> Dictionary:

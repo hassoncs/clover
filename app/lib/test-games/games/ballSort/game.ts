@@ -312,13 +312,18 @@ export function createBallSortGame(level: number = 1): GameDefinition {
         id: "tubeWall",
         tags: ["tube-wall"],
         visual: {
-          type: "image",
-          imageUrl: `${ASSET_BASE}/tubeWall.png`,
-          imageWidth: TUBE_WALL_THICKNESS,
-          imageHeight: TUBE_HEIGHT,
+          type: "rect",
+          width: TUBE_WALL_THICKNESS,
+          height: TUBE_HEIGHT,
+          color: "#888888",
+        },
+        physics: {
+          bodyType: "static" as const,
+          density: 0,
+          isSensor: true,
         },
         collider: {
-          shape: "box",
+          shape: "box" as const,
           width: TUBE_WALL_THICKNESS,
           height: TUBE_HEIGHT,
           isSensor: true,
@@ -328,13 +333,18 @@ export function createBallSortGame(level: number = 1): GameDefinition {
         id: "tubeBottom",
         tags: ["tube-bottom"],
         visual: {
-          type: "image",
-          imageUrl: `${ASSET_BASE}/tubeBottom.png`,
-          imageWidth: TUBE_WIDTH,
-          imageHeight: TUBE_WALL_THICKNESS,
+          type: "rect",
+          width: TUBE_WIDTH,
+          height: TUBE_WALL_THICKNESS,
+          color: "#888888",
+        },
+        physics: {
+          bodyType: "static" as const,
+          density: 0,
+          isSensor: true,
         },
         collider: {
-          shape: "box",
+          shape: "box" as const,
           width: TUBE_WIDTH,
           height: TUBE_WALL_THICKNESS,
           isSensor: true,
@@ -349,8 +359,13 @@ export function createBallSortGame(level: number = 1): GameDefinition {
           height: TUBE_HEIGHT,
           color: "#00000022",
         },
+        physics: {
+          bodyType: "static" as const,
+          density: 0,
+          isSensor: true,
+        },
         collider: {
-          shape: "box",
+          shape: "box" as const,
           width: TUBE_WIDTH - TUBE_WALL_THICKNESS * 2,
           height: TUBE_HEIGHT,
           isSensor: true,
@@ -368,13 +383,17 @@ export function createBallSortGame(level: number = 1): GameDefinition {
         id: "heldBallIndicator",
         tags: ["held-indicator"],
         visual: {
-          type: "image",
-          imageUrl: `${ASSET_BASE}/heldBallIndicator.png`,
-          imageWidth: BALL_RADIUS * 2.4,
-          imageHeight: BALL_RADIUS * 2.4,
+          type: "circle",
+          radius: BALL_RADIUS * 1.2,
+          color: "#FFD700",
+        },
+        physics: {
+          bodyType: "static" as const,
+          density: 0,
+          isSensor: true,
         },
         collider: {
-          shape: "circle",
+          shape: "circle" as const,
           radius: BALL_RADIUS * 1.2,
           isSensor: true,
         },
@@ -425,20 +444,27 @@ export function createBallSortGame(level: number = 1): GameDefinition {
  * Helper to create ball templates with conditional behaviors.
  */
 function createBallTemplate(colorIndex: number) {
+  const ballColors = [
+    "#FF6B6B", // Red
+    "#4ECDC4", // Teal
+    "#45B7D1", // Blue
+    "#96CEB4", // Green
+    "#FFEAA7", // Yellow
+    "#DDA0DD", // Plum
+    "#98D8C8", // Mint
+    "#F7DC6F", // Gold
+  ];
+  
   return {
     id: `ball${colorIndex}`,
     tags: ["ball", `color-${colorIndex}`],
     visual: {
-      type: "image",
-      imageUrl: `${ASSET_BASE}/ball${colorIndex % 4}.png`,
-      imageWidth: BALL_RADIUS * 2,
-      imageHeight: BALL_RADIUS * 2,
-    },
-    collider: {
-      shape: "circle",
+      type: "circle" as const,
       radius: BALL_RADIUS,
-      isSensor: true,
+      color: ballColors[colorIndex % ballColors.length],
     },
+    // No physics component - balls are visual-only
+    // They don't need physics since they're positioned by game logic
     conditionalBehaviors: [
       {
         when: { hasTag: "held" },

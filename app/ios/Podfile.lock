@@ -172,6 +172,8 @@ PODS:
     - ExpoModulesCore
   - ExpoSensors (15.0.8):
     - ExpoModulesCore
+  - ExpoSplashScreen (31.0.13):
+    - ExpoModulesCore
   - ExpoWebBrowser (15.0.10):
     - ExpoModulesCore
   - EXStructuredHeaders (5.0.0)
@@ -3050,6 +3052,7 @@ DEPENDENCIES:
   - "ExpoModulesCore (from `../../node_modules/.pnpm/expo-modules-core@3.0.29_react-native@0.81.4_@babel+core@7.28.6_@types+react@19.1.17_react@19.1.0__react@19.1.0/node_modules/expo-modules-core`)"
   - "ExpoSecureStore (from `../../node_modules/.pnpm/expo-secure-store@15.0.8_expo@54.0.32_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-route_mwg22nn6mz6ba4qu6cuokrhnzm/node_modules/expo-secure-store/ios`)"
   - "ExpoSensors (from `../../node_modules/.pnpm/expo-sensors@15.0.8_expo@54.0.32_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-router@6.0_kdugbwijugrgahp27z6zymqovy/node_modules/expo-sensors/ios`)"
+  - "ExpoSplashScreen (from `../../node_modules/.pnpm/expo-splash-screen@31.0.13_expo@54.0.32_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-rou_4cfkapqcyk6zoz27hfdddof6xa/node_modules/expo-splash-screen/ios`)"
   - "ExpoWebBrowser (from `../../node_modules/.pnpm/expo-web-browser@15.0.10_expo@54.0.32_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-route_zopeinohmtppqqxouwgzkno3yi/node_modules/expo-web-browser/ios`)"
   - "EXStructuredHeaders (from `../../node_modules/.pnpm/expo-structured-headers@5.0.0/node_modules/expo-structured-headers/ios`)"
   - "EXUpdates (from `../../node_modules/.pnpm/expo-updates@29.0.16_expo@54.0.32_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-router@6._6lhrzr77edubqumpmf2u6wzcga/node_modules/expo-updates/ios`)"
@@ -3186,6 +3189,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/.pnpm/expo-secure-store@15.0.8_expo@54.0.32_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-route_mwg22nn6mz6ba4qu6cuokrhnzm/node_modules/expo-secure-store/ios"
   ExpoSensors:
     :path: "../../node_modules/.pnpm/expo-sensors@15.0.8_expo@54.0.32_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-router@6.0_kdugbwijugrgahp27z6zymqovy/node_modules/expo-sensors/ios"
+  ExpoSplashScreen:
+    :path: "../../node_modules/.pnpm/expo-splash-screen@31.0.13_expo@54.0.32_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-rou_4cfkapqcyk6zoz27hfdddof6xa/node_modules/expo-splash-screen/ios"
   ExpoWebBrowser:
     :path: "../../node_modules/.pnpm/expo-web-browser@15.0.10_expo@54.0.32_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-route_zopeinohmtppqqxouwgzkno3yi/node_modules/expo-web-browser/ios"
   EXStructuredHeaders:
@@ -3378,6 +3383,7 @@ SPEC CHECKSUMS:
   ExpoModulesCore: d86dab8a6c8f1184f9b0b0503ace93919882aa15
   ExpoSecureStore: d32f751874a2ceb5aaeebeb3578e165c1ba2b24a
   ExpoSensors: 8f9fe9a9ffd36ca9c2f0fe40dafc0a063f844420
+  ExpoSplashScreen: bc3cffefca2716e5f22350ca109badd7e50ec14d
   ExpoWebBrowser: 17b064c621789e41d4816c95c93f429b84971f52
   EXStructuredHeaders: c951e77f2d936f88637421e9588c976da5827368
   EXUpdates: 3e8a6246cfe6343d8260c9a0e3f98e097a0db5ce

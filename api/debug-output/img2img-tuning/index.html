@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>img2img Button Tuning Results</title>
+  <style>
+    body { font-family: sans-serif; background: #1a1a2e; color: #eee; padding: 20px; }
+    h1 { text-align: center; }
+    .ref { text-align: center; margin: 20px 0; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 8px; }
+    .ref img { max-width: 400px; border: 2px solid #0f0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; max-width: 1400px; margin: 0 auto; }
+    .card { background: rgba(255,255,255,0.05); border-radius: 8px; overflow: hidden; }
+    .card-header { padding: 15px; background: rgba(0,0,0,0.3); }
+    .card-name { font-weight: bold; font-size: 16px; }
+    .card-params { color: #888; font-size: 12px; margin-top: 5px; }
+    .card img { width: 100%; display: block; }
+    .legend { text-align: center; margin-top: 40px; padding: 20px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+    .legend h3 { color: #0f0; }
+  </style>
+</head>
+<body>
+  <h1>🔘 img2img Button Tuning Results</h1>
+  
+  <div class="ref">
+    <img src="00_silhouette.png" alt="Input silhouette">
+    <p style="color: #0f0; margin-top: 10px;">Target: Rectangular button (256x96)</p>
+  </div>
+
+  <div class="grid">
+    
+      <div class="card">
+        <div class="card-header">
+          <div class="card-name">ultra_low</div>
+          <div class="card-params">Strength: 0.55</div>
+        </div>
+        <img src="ultra_low_s0.55.png" alt="ultra_low">
+      </div>
+    
+      <div class="card">
+        <div class="card-header">
+          <div class="card-name">low_precise</div>
+          <div class="card-params">Strength: 0.62</div>
+        </div>
+        <img src="low_precise_s0.62.png" alt="low_precise">
+      </div>
+    
+      <div class="card">
+        <div class="card-header">
+          <div class="card-name">medium_balanced</div>
+          <div class="card-params">Strength: 0.68</div>
+        </div>
+        <img src="medium_balanced_s0.68.png" alt="medium_balanced">
+      </div>
+    
+      <div class="card">
+        <div class="card-header">
+          <div class="card-name">medium_creative</div>
+          <div class="card-params">Strength: 0.75</div>
+        </div>
+        <img src="medium_creative_s0.75.png" alt="medium_creative">
+      </div>
+    
+      <div class="card">
+        <div class="card-header">
+          <div class="card-name">high_style</div>
+          <div class="card-params">Strength: 0.82</div>
+        </div>
+        <img src="high_style_s0.82.png" alt="high_style">
+      </div>
+    
+  </div>
+
+  <div class="legend">
+    <h3>What to Look For</h3>
+    <p>✅ Sharp 90° corners | ✅ Rectangular proportions | ✅ Shape matches silhouette</p>
+    <p>❌ Rounded corners | ❌ Different proportions | ❌ Blob/organic shape</p>
+  </div>
+</body>
+</html>

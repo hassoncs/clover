@@ -76,6 +76,23 @@
     ]
   },
   {
+    "type": "configure_children_at_spawn",
+    "interfaceName": "ConfigureChildrenAtSpawnBehavior",
+    "displayName": "Configure Children At Spawn",
+    "properties": [
+      {
+        "name": "configs",
+        "type": "ChildSpawnConfig[]",
+        "required": true
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      }
+    ]
+  },
+  {
     "type": "destroy_on_collision",
     "interfaceName": "DestroyOnCollisionBehavior",
     "displayName": "Destroy On Collision",
@@ -119,6 +136,33 @@
         "name": "withTags",
         "type": "string[]",
         "required": true
+      }
+    ]
+  },
+  {
+    "type": "destroy_when_off_screen",
+    "interfaceName": "DestroyWhenOffScreenBehavior",
+    "displayName": "Destroy When Off Screen",
+    "properties": [
+      {
+        "name": "buffer",
+        "type": "number",
+        "required": false
+      },
+      {
+        "name": "edge",
+        "type": "'left' | 'right' | 'top' | 'bottom'",
+        "required": true
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "recursive",
+        "type": "boolean",
+        "required": false
       }
     ]
   },

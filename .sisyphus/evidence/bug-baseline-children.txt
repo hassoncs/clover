@@ -1,0 +1,62 @@
+# Bug Baseline Evidence - Image No Physics Test
+## Date: 2026-01-28
+
+## Bug Description
+When an entity template has `visual.type: "image"` but NO physics/collider,
+the entity renders as a white Polygon2D rectangle instead of the expected Sprite2D.
+
+## Game Definition (imageNoPhysicsTest)
+
+### Template
+```json
+{
+  "id": "imageOnly",
+  "tags": ["image-only"],
+  "visual": {
+    "type": "image",
+    "imageUrl": "https://via.placeholder.com/100/FF0000/FFFFFF?text=NO+PHYSICS",
+    "width": 2,
+    "height": 2
+  }
+  // No physics = static visual only
+  // No collider = no collision detection
+}
+```
+
+### Entity Instance
+```json
+{
+  "id": "image-no-physics",
+  "template": "imageOnly",
+  "transform": { "x": -2, "y": 0, "angle": 0, "scaleX": 1, "scaleY": 1 }
+}
+```
+
+## Expected Behavior
+Entity should have a Sprite2D child displaying the image.
+
+## Actual Behavior
+Entity `image-no-physics` exists at position (-2, 0), but:
+- No Sprite2D child is created
+- Instead, a separate Polygon2D entity (id: 36289119708) appears at the same position
+- This Polygon2D renders as a white rectangle (fallback "rect" visual)
+
+## Evidence Files
+- Screenshot: bug-baseline.png (shows white rectangle)
+- Control Screenshot: bug-control-case.png (shows proper Sprite2D rendering with physics)
+
+## Affected Entities in Bug Case
+1. `image-no-physics` (template: imageOnly, position: -2, 0)
+   - type: Node2D
+   - tags: ["image-only"]
+   - NO Sprite2D child
+
+2. `36289119708` (template: Polygon2D, position: -2, 0) 
+   - This is the white rectangle fallback visual
+   - Should NOT exist - indicates visual.type was not "image" when _add_visual was called
+
+## Control Case (imageWithPhysicsTest) - WORKS CORRECTLY
+Entity `falling-box` (template: physicsImage):
+- Has proper Sprite2D child (id: 36725327324)
+- Visual renders correctly as image
+- Difference: template includes physics + collider

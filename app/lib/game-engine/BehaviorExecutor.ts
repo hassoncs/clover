@@ -35,6 +35,8 @@ const BEHAVIOR_PHASES: Record<BehaviorType, BehaviorPhase> = {
   sprite_effect: 'visual',
   spawn_on_event: 'post_physics',
   destroy_on_collision: 'post_physics',
+  destroy_when_off_screen: 'movement',
+  configure_children_at_spawn: 'post_physics',
   score_on_collision: 'post_physics',
   score_on_destroy: 'post_physics',
   gravity_zone: 'movement',

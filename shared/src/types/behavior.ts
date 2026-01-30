@@ -10,6 +10,8 @@ export type BehaviorType =
   | 'bounce'
   | 'spawn_on_event'
   | 'destroy_on_collision'
+  | 'destroy_when_off_screen'
+  | 'configure_children_at_spawn'
   | 'score_on_collision'
   | 'score_on_destroy'
   | 'timer'
@@ -94,6 +96,26 @@ export interface DestroyOnCollisionBehavior extends BaseBehavior {
   delay?: DestructionDelay;
   markedEffect?: MarkedEffect;
   markedColor?: string;
+}
+
+export interface DestroyWhenOffScreenBehavior extends BaseBehavior {
+  type: 'destroy_when_off_screen';
+  edge: 'left' | 'right' | 'top' | 'bottom';
+  buffer?: number;
+  recursive?: boolean;
+}
+
+export interface ConfigureChildrenAtSpawnBehavior extends BaseBehavior {
+  type: 'configure_children_at_spawn';
+  configs: ChildSpawnConfig[];
+}
+
+export interface ChildSpawnConfig {
+  childName: string;
+  property: 'transform.x' | 'transform.y' | 'localTransform.x' | 'localTransform.y';
+  randomRange?: [number, number];
+  offsetFrom?: string;
+  offset?: number;
 }
 
 export interface ScoreOnCollisionBehavior extends BaseBehavior {
@@ -263,6 +285,8 @@ export type Behavior =
   | RotateTowardBehavior
   | SpawnOnEventBehavior
   | DestroyOnCollisionBehavior
+  | DestroyWhenOffScreenBehavior
+  | ConfigureChildrenAtSpawnBehavior
   | ScoreOnCollisionBehavior
   | ScoreOnDestroyBehavior
   | TimerBehavior

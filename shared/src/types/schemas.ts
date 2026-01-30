@@ -208,6 +208,24 @@ export const DestroyOnCollisionBehaviorSchema = BaseBehaviorSchema.extend({
   minImpactVelocity: NonNegativeNumberValueSchema.optional(),
 });
 
+export const DestroyWhenOffScreenBehaviorSchema = BaseBehaviorSchema.extend({
+  type: z.literal('destroy_when_off_screen'),
+  edge: z.enum(['left', 'right', 'top', 'bottom']),
+  buffer: z.number().optional(),
+  recursive: z.boolean().optional(),
+});
+
+export const ConfigureChildrenAtSpawnBehaviorSchema = BaseBehaviorSchema.extend({
+  type: z.literal('configure_children_at_spawn'),
+  configs: z.array(z.object({
+    childName: z.string(),
+    property: z.enum(['transform.x', 'transform.y', 'localTransform.x', 'localTransform.y']),
+    randomRange: z.tuple([z.number(), z.number()]).optional(),
+    offsetFrom: z.string().optional(),
+    offset: z.number().optional(),
+  })),
+});
+
 export const ScoreOnCollisionBehaviorSchema = BaseBehaviorSchema.extend({
   type: z.literal('score_on_collision'),
   withTags: z.array(z.string()),
@@ -283,6 +301,8 @@ export const BehaviorSchema = z.discriminatedUnion('type', [
   RotateBehaviorSchema,
   SpawnOnEventBehaviorSchema,
   DestroyOnCollisionBehaviorSchema,
+  DestroyWhenOffScreenBehaviorSchema,
+  ConfigureChildrenAtSpawnBehaviorSchema,
   ScoreOnCollisionBehaviorSchema,
   TimerBehaviorSchema,
   OscillateBehaviorSchema,

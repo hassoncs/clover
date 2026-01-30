@@ -391,29 +391,43 @@ export class EntityManager {
   }
 
   private createShapeDef(entity: RuntimeEntity): ShapeDef {
+    // Shape data can come from collider OR physics component
+    // Collider takes precedence if both exist
     const collider = entity.collider;
-    switch (collider?.shape) {
-      case 'circle':
+    const physics = entity.physics;
+    
+    // Get shape from collider first, fallback to physics
+    const shape = collider?.shape ?? (physics as any)?.shape;
+    
+    switch (shape) {
+      case 'circle': {
+        const radius = collider?.radius ?? (physics as any)?.radius ?? 0.5;
         return {
           type: 'circle',
-          radius: collider.radius ?? 0.5,
+          radius,
         };
-      case 'box':
+      }
+      case 'box': {
+        const width = collider?.width ?? (physics as any)?.width ?? 1;
+        const height = collider?.height ?? (physics as any)?.height ?? 1;
         return {
           type: 'box',
-          halfWidth: ((collider?.width ?? 1) / 2),
-          halfHeight: ((collider?.height ?? 1) / 2),
+          halfWidth: width / 2,
+          halfHeight: height / 2,
         };
-      case 'polygon':
-        if (!collider?.vertices) {
+      }
+      case 'polygon': {
+        const vertices = collider?.vertices ?? (physics as any)?.vertices;
+        if (!vertices) {
           throw new Error('Polygon shape requires vertices');
         }
         return {
           type: 'polygon',
-          vertices: collider.vertices,
+          vertices,
         };
+      }
       default:
-        throw new Error(`Unknown physics shape: ${(collider as any)?.shape}`);
+        throw new Error(`Unknown physics shape: ${shape}. Entity must have collider.shape or physics.shape defined.`);
     }
   }
 

@@ -2,6 +2,8 @@ import type {
   Behavior,
   SpawnOnEventBehavior,
   DestroyOnCollisionBehavior,
+  DestroyWhenOffScreenBehavior,
+  ConfigureChildrenAtSpawnBehavior,
   ScoreOnCollisionBehavior,
   ScoreOnDestroyBehavior,
   TimerBehavior,
@@ -154,6 +156,92 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
         }
       }
       break;
+    }
+  });
+
+  executor.registerHandler('destroy_when_off_screen', (behavior, ctx) => {
+    const config = behavior as DestroyWhenOffScreenBehavior;
+    const buffer = config.buffer ?? 0;
+    
+    const worldBounds = ctx.entityManager.getWorldBounds?.() || { 
+      minX: -8, maxX: 8, minY: -10, maxY: 10 
+    };
+    
+    let shouldDestroy = false;
+    const pos = ctx.entity.transform;
+    
+    switch (config.edge) {
+      case 'left':
+        shouldDestroy = pos.x < worldBounds.minX - buffer;
+        break;
+      case 'right':
+        shouldDestroy = pos.x > worldBounds.maxX + buffer;
+        break;
+      case 'top':
+        shouldDestroy = pos.y > worldBounds.maxY + buffer;
+        break;
+      case 'bottom':
+        shouldDestroy = pos.y < worldBounds.minY - buffer;
+        break;
+    }
+    
+    if (shouldDestroy) {
+      ctx.destroyEntity(ctx.entity.id, { recursive: config.recursive !== false });
+    }
+  });
+
+  executor.registerHandler('configure_children_at_spawn', (behavior, ctx, runtime) => {
+    // Only run once - on first frame after spawn
+    if (runtime.state.hasConfigured) {
+      return;
+    }
+    runtime.state.hasConfigured = true;
+    
+    const config = behavior as ConfigureChildrenAtSpawnBehavior;
+    const children = ctx.entityManager.getChildren(ctx.entity.id);
+    
+    for (const childConfig of config.configs) {
+      const child = children.find(c => c.name === childConfig.childName);
+      if (!child) continue;
+      
+      let value: number;
+      
+      if (childConfig.randomRange) {
+        const [min, max] = childConfig.randomRange;
+        value = min + Math.random() * (max - min);
+      } else if (childConfig.offsetFrom) {
+        const sourceChild = children.find(c => c.name === childConfig.offsetFrom);
+        if (!sourceChild) continue;
+        
+        const sourceValue = childConfig.property === 'localTransform.y' 
+          ? sourceChild.localTransform.y 
+          : sourceChild.localTransform.x;
+        value = sourceValue + (childConfig.offset || 0);
+      } else {
+        continue;
+      }
+      
+      // Apply the value
+      if (childConfig.property === 'localTransform.x') {
+        child.localTransform.x = value;
+      } else if (childConfig.property === 'localTransform.y') {
+        child.localTransform.y = value;
+      } else if (childConfig.property === 'transform.x') {
+        child.transform.x = value;
+      } else if (childConfig.property === 'transform.y') {
+        child.transform.y = value;
+      }
+      
+      // Update world transforms after modifying local
+      ctx.entityManager.updateWorldTransforms(child.id);
+      
+      // Sync physics body if exists
+      if (child.bodyId) {
+        ctx.physics.setTransform(child.bodyId, {
+          position: { x: child.transform.x, y: child.transform.y },
+          angle: child.transform.angle,
+        });
+      }
     }
   });
 

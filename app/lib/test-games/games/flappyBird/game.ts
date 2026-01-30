@@ -22,9 +22,19 @@ const BIRD_RADIUS = 0.3;
 const PIPE_WIDTH = 1.2;
 const PIPE_HEIGHT = 6;
 const PIPE_GAP = 3.0;
+const PIPE_GAP_MIN = 2.2;
+const PIPE_GAP_HARD = 1.8;
 const PIPE_SPEED = 15;
 const GROUND_HEIGHT = 1.5;
 const SPAWN_X = cx(WORLD_WIDTH + 2);
+const MIN_PIPE_Y = 4.5;
+const MAX_PIPE_Y = 10.5;
+
+// Gap positioning constants
+const MIN_GAP_Y = 4; // Minimum gap center height (from bottom)
+const MAX_GAP_Y = 12; // Maximum gap center height (from bottom)
+const GROUND_CLEARANCE = 2; // Minimum space from ground
+const CEILING_CLEARANCE = 1; // Minimum space from ceiling
 
 /**
  * Persistence configuration for Flappy Bird.
@@ -124,10 +134,7 @@ const game: GameDefinition = {
         friction: 0,
         restitution: 0,
       },
-      behaviors: [
-        { type: "move", direction: "left", speed: PIPE_SPEED },
-        { type: "timer", duration: 2, action: "destroy" },
-      ],
+      // No behaviors - parent moves the group
     },
     pipeBottom: {
       id: "pipeBottom",
@@ -149,10 +156,7 @@ const game: GameDefinition = {
         friction: 0,
         restitution: 0,
       },
-      behaviors: [
-        { type: "move", direction: "left", speed: PIPE_SPEED },
-        { type: "timer", duration: 2, action: "destroy" },
-      ],
+      // No behaviors - parent moves the group
     },
     scoreZone: {
       id: "scoreZone",
@@ -165,10 +169,60 @@ const game: GameDefinition = {
         isSensor: true,
       },
       behaviors: [
-        { type: "move", direction: "left", speed: PIPE_SPEED },
         { type: "score_on_collision", withTags: ["bird"], points: 1, once: true },
-        { type: "timer", duration: 2, action: "destroy" },
       ],
+    },
+    pipeGroup: {
+      id: "pipeGroup",
+      tags: ["pipe-group", "obstacle"],
+      physics: {
+        bodyType: "kinematic",
+        density: 0,
+      },
+      // Invisible parent that moves and positions children
+      behaviors: [
+        { type: "move", direction: "left", speed: PIPE_SPEED },
+        { type: "destroy_when_off_screen", edge: "left", buffer: 2, recursive: true },
+        {
+          type: "configure_children_at_spawn",
+          configs: [
+            {
+              childName: "pipeTop",
+              property: "localTransform.y",
+              randomRange: [cy(MAX_PIPE_Y) + PIPE_HEIGHT / 2, cy(MIN_PIPE_Y) + PIPE_HEIGHT / 2],
+            },
+            {
+              childName: "pipeBottom",
+              property: "localTransform.y",
+              offsetFrom: "pipeTop",
+              offset: -(PIPE_GAP + PIPE_HEIGHT),
+            },
+            {
+              childName: "scoreZone",
+              property: "localTransform.y",
+              offsetFrom: "pipeTop",
+              offset: -(PIPE_GAP / 2 + PIPE_HEIGHT / 2),
+            },
+          ],
+        },
+      ],
+      children: [
+        {
+          name: "pipeTop",
+          template: "pipeTop",
+          localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+        },
+        {
+          name: "pipeBottom",
+          template: "pipeBottom",
+          localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+        },
+        {
+          name: "scoreZone",
+          template: "scoreZone",
+          localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+        }
+      ]
     },
     ground: {
       id: "ground",
@@ -233,22 +287,10 @@ const game: GameDefinition = {
       transform: { x: 0, y: cy(0.25), angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
-      id: "initial_pipe_bottom",
-      name: "Initial Pipe Bottom",
-      template: "pipeBottom",
-      transform: { x: cx(8), y: cy(10) - PIPE_HEIGHT / 2, angle: 0, scaleX: 1, scaleY: 1 },
-    },
-    {
-      id: "initial_pipe_top",
-      name: "Initial Pipe Top",
-      template: "pipeTop",
-      transform: { x: cx(8), y: cy(10 - PIPE_GAP - PIPE_HEIGHT) + PIPE_HEIGHT / 2, angle: 0, scaleX: 1, scaleY: 1 },
-    },
-    {
-      id: "initial_score_zone",
-      name: "Initial Score Zone",
-      template: "scoreZone",
-      transform: { x: cx(8), y: cy(10 - PIPE_GAP / 2), angle: 0, scaleX: 1, scaleY: 1 },
+      id: "initial_pipe_group",
+      name: "Initial Pipe Group",
+      template: "pipeGroup",
+      transform: { x: cx(8), y: 0, angle: 0, scaleX: 1, scaleY: 1 },
     },
   ],
   rules: [
@@ -261,77 +303,14 @@ const game: GameDefinition = {
       ],
     },
     {
-      id: "spawn_pipes_easy",
-      name: "Spawn easy pipes (score 0-4)",
+      id: "spawn_pipes",
+      name: "Spawn pipe groups",
       trigger: { type: "timer", time: 2.5, repeat: true },
-      conditions: [
-        { type: "score", max: 4 },
-      ],
       actions: [
         {
           type: "spawn",
-          template: "pipeBottom",
-          position: { type: "fixed", x: SPAWN_X, y: cy(10) - PIPE_HEIGHT / 2 },
-        },
-        {
-          type: "spawn",
-          template: "pipeTop",
-          position: { type: "fixed", x: SPAWN_X, y: cy(10 - PIPE_GAP - PIPE_HEIGHT) + PIPE_HEIGHT / 2 },
-        },
-        {
-          type: "spawn",
-          template: "scoreZone",
-          position: { type: "fixed", x: SPAWN_X, y: cy(10 - PIPE_GAP / 2) },
-        },
-      ],
-    },
-    {
-      id: "spawn_pipes_medium",
-      name: "Spawn medium pipes (score 5-9)",
-      trigger: { type: "timer", time: 2.5, repeat: true },
-      conditions: [
-        { type: "score", min: 5, max: 9 },
-      ],
-      actions: [
-        {
-          type: "spawn",
-          template: "pipeBottom",
-          position: { type: "fixed", x: SPAWN_X, y: cy(9) - PIPE_HEIGHT / 2 },
-        },
-        {
-          type: "spawn",
-          template: "pipeTop",
-          position: { type: "fixed", x: SPAWN_X, y: cy(9 - 2.6 - PIPE_HEIGHT) + PIPE_HEIGHT / 2 },
-        },
-        {
-          type: "spawn",
-          template: "scoreZone",
-          position: { type: "fixed", x: SPAWN_X, y: cy(9 - 2.6 / 2) },
-        },
-      ],
-    },
-    {
-      id: "spawn_pipes_hard",
-      name: "Spawn hard pipes (score 10+)",
-      trigger: { type: "timer", time: 2.5, repeat: true },
-      conditions: [
-        { type: "score", min: 10 },
-      ],
-      actions: [
-        {
-          type: "spawn",
-          template: "pipeBottom",
-          position: { type: "fixed", x: SPAWN_X, y: cy(8.5) - PIPE_HEIGHT / 2 },
-        },
-        {
-          type: "spawn",
-          template: "pipeTop",
-          position: { type: "fixed", x: SPAWN_X, y: cy(8.5 - 2.2 - PIPE_HEIGHT) + PIPE_HEIGHT / 2 },
-        },
-        {
-          type: "spawn",
-          template: "scoreZone",
-          position: { type: "fixed", x: SPAWN_X, y: cy(8.5 - 2.2 / 2) },
+          template: "pipeGroup",
+          position: { type: "fixed", x: SPAWN_X, y: 0 },
         },
       ],
     },
