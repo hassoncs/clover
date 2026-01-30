@@ -71,13 +71,131 @@ export function registerSnapshotTools(server: McpServer, state: GameInspectorSta
         if (!w.GodotDebugBridge) {
           return { error: "GodotDebugBridge not available", debugInfo };
         }
-        
-        const snapshot = await w.GodotDebugBridge.getSnapshot({ detail: evalOpts.detail, filterTemplate: evalOpts.filterTemplate, filterTags: evalOpts.filterTags });
-        
-        if (evalOpts.debug) {
-          return { snapshot, debugInfo };
+
+        // Define interface for the snapshot to avoid 'unknown' type issues
+        interface SnapshotEntity {
+          id: string;
+          template?: string;
+          position: { x: number; y: number };
+          angle?: number;
+          velocity?: { x: number; y: number };
+          angularVelocity?: number;
+          physics?: {
+            bodyType: string;
+            mass?: number;
+            isSleeping?: boolean;
+          };
+          visible?: boolean;
+          zIndex?: number;
+          meta?: Record<string, unknown>;
         }
-        return snapshot;
+
+        interface GameSnapshot {
+          protocolVersion: string;
+          timestamp: number;
+          frameId: number;
+          world: {
+            pixelsPerMeter: number;
+            gravity: { x: number; y: number };
+            bounds: { width: number; height: number };
+          };
+          camera: {
+            position: { x: number; y: number };
+            zoom: number;
+            target?: string;
+          };
+          viewport: { width: number; height: number };
+          entities: SnapshotEntity[];
+          entityCount: number;
+        }
+
+        const snapshot = await w.GodotDebugBridge.getSnapshot({ detail: evalOpts.detail, filterTemplate: evalOpts.filterTemplate, filterTags: evalOpts.filterTags }) as GameSnapshot;
+
+        // Compute interactables
+        const interactables: {
+          entities: Array<{
+            entityId: string;
+            tapPoint: { x: number; y: number };
+            sources: ('physics' | 'explicit')[];
+            template?: string;
+            tags?: string[];
+          }>;
+          explicitTargets: string[];
+        } = {
+          entities: [],
+          explicitTargets: [],
+        };
+
+        // Get game rules to find explicit tap targets
+        const gameRuntime = (window as unknown as { __GAME_RUNTIME__?: { getGameDefinition?: () => unknown } }).__GAME_RUNTIME__;
+        if (gameRuntime?.getGameDefinition) {
+          try {
+            const gameDef = gameRuntime.getGameDefinition();
+            const rules = (gameDef as { rules?: Array<{ trigger?: { type: string; target?: string } }> })?.rules ?? [];
+            const tapRules = rules.filter(r => r.trigger?.type === 'tap');
+            interactables.explicitTargets = tapRules
+              .map(r => r.trigger?.target)
+              .filter((t): t is string => typeof t === 'string');
+          } catch {
+            // Failed to get game definition - continue without explicit targets
+          }
+        }
+
+        // Known templates that have physics bodies
+        const KNOWN_PHYSICS_TEMPLATES = new Set([
+          'tubeSensor',
+          'tubeWall',
+          'tubeBottom',
+          'wall',
+          'ground',
+          'platform',
+          'peg',
+          'bumper',
+          'paddle',
+        ]);
+
+        // For each entity in snapshot, determine if tappable
+        for (const entity of snapshot.entities ?? []) {
+          const sources: ('physics' | 'explicit')[] = [];
+
+          // Check if has physics body
+          const hasPhysics = entity.physics !== undefined ||
+            (entity.template !== undefined && KNOWN_PHYSICS_TEMPLATES.has(entity.template));
+          if (hasPhysics) {
+            sources.push('physics');
+          }
+
+          // Get entity tags from meta
+          const entityTags: string[] = [];
+          if (entity.meta && typeof entity.meta === 'object' && !Array.isArray(entity.meta)) {
+            const meta = entity.meta as Record<string, unknown>;
+            if (Array.isArray(meta.tags)) {
+              entityTags.push(...(meta.tags as string[]));
+            }
+          }
+
+          // Check if matches explicit target tag
+          if (entityTags.some(t => interactables.explicitTargets.includes(t))) {
+            sources.push('explicit');
+          }
+
+          if (sources.length > 0) {
+            interactables.entities.push({
+              entityId: entity.id,
+              tapPoint: entity.position,
+              sources,
+              template: entity.template,
+              tags: entityTags.length > 0 ? entityTags : undefined,
+            });
+          }
+        }
+
+        const result = { ...snapshot, interactables };
+
+        if (evalOpts.debug) {
+          return { snapshot: result, debugInfo };
+        }
+        return result;
       }, { ...opts, debug });
 
       return {

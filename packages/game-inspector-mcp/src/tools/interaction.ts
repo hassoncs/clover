@@ -45,8 +45,8 @@ export function registerInteractionTools(server: McpServer, state: GameInspector
     },
     async (args) => {
       const inputType = args.type as string;
-      const worldX = args.worldX as number | undefined;
-      const worldY = args.worldY as number | undefined;
+      let worldX = args.worldX as number | undefined;
+      let worldY = args.worldY as number | undefined;
       const startWorldX = args.startWorldX as number | undefined;
       const startWorldY = args.startWorldY as number | undefined;
       let targetEntityId = args.targetEntityId as string | undefined;
@@ -60,6 +60,56 @@ export function registerInteractionTools(server: McpServer, state: GameInspector
         return {
           content: [{ type: "text" as const, text: JSON.stringify({ error: "No game open. Call game_open first." }) }],
         };
+      }
+
+      let resolvedFromEntityId: string | undefined;
+      let resolvedWorldX: number | undefined;
+      let resolvedWorldY: number | undefined;
+
+      if (inputType === "tap" && targetEntityId && (worldX === undefined || worldY === undefined)) {
+        interface EntityDetails {
+          entityId: string;
+          transform?: { position?: { x: number; y: number } };
+          template?: string;
+        }
+        const entityResult = await queryGodot<EntityDetails | { error?: string }>(
+          state.page,
+          "getEntityDetails",
+          [targetEntityId]
+        );
+
+        if (!entityResult || "error" in entityResult || !("transform" in entityResult)) {
+          return {
+            content: [{
+              type: "text" as const,
+              text: JSON.stringify({
+                error: `Cannot tap entity: ${targetEntityId} - entity not found`,
+                targetEntityId,
+                resolved: false,
+              })
+            }]
+          };
+        }
+
+        const entity = entityResult as EntityDetails;
+        if (!entity.transform?.position) {
+          return {
+            content: [{
+              type: "text" as const,
+              text: JSON.stringify({
+                error: `Cannot tap entity: ${targetEntityId} - entity has no position`,
+                targetEntityId,
+                resolved: false,
+              })
+            }]
+          };
+        }
+
+        worldX = entity.transform.position.x;
+        worldY = entity.transform.position.y;
+        resolvedFromEntityId = targetEntityId;
+        resolvedWorldX = worldX;
+        resolvedWorldY = worldY;
       }
 
       if (inputType === "tap" && worldX !== undefined && worldY !== undefined && !targetEntityId) {
@@ -260,6 +310,12 @@ export function registerInteractionTools(server: McpServer, state: GameInspector
           text: l.text,
           timestamp: l.timestamp,
         }));
+      }
+      if (resolvedFromEntityId) {
+        response.targetEntityId = resolvedFromEntityId;
+        response.resolvedWorldX = resolvedWorldX;
+        response.resolvedWorldY = resolvedWorldY;
+        response.resolvedFromEntityId = true;
       }
 
       return {
