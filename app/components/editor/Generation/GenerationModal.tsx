@@ -21,6 +21,14 @@ interface TemplateConfig {
   enabled: boolean;
 }
 
+interface ModalLifecycleState {
+  ready: boolean;
+  phase: 'initializing' | 'downloading_models' | 'creating_symlinks' | 'starting_comfyui' | 'waiting_for_comfyui' | 'ready' | 'unknown';
+  etaSeconds: number;
+  elapsedSeconds: number;
+  activeJobs: number;
+}
+
 interface GenerationModalProps {
   visible: boolean;
   onClose: () => void;
@@ -48,6 +56,7 @@ interface GenerationModalProps {
     style?: string;
     silhouetteUrl?: string;
   };
+  coldStartState?: ModalLifecycleState;
 }
 
 const STYLE_OPTIONS: { id: 'pixel' | 'cartoon' | '3d' | 'flat'; label: string }[] = [
@@ -69,6 +78,7 @@ export function GenerationModal({
   progress,
   generatingTemplates,
   lastGeneration,
+  coldStartState,
 }: GenerationModalProps) {
   const [themePrompt, setThemePrompt] = useState(gameDescription ?? '');
   const [selectedStyle, setSelectedStyle] = useState<'pixel' | 'cartoon' | '3d' | 'flat'>(
@@ -339,6 +349,7 @@ export function GenerationModal({
         failed={progress.failed}
         templateConfigs={templateConfigs}
         generatingTemplates={generatingTemplates}
+        coldStartState={coldStartState}
       />
     </View>
   );

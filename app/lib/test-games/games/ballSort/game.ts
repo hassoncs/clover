@@ -444,24 +444,17 @@ export function createBallSortGame(level: number = 1): GameDefinition {
  * Helper to create ball templates with conditional behaviors.
  */
 function createBallTemplate(colorIndex: number) {
-  const ballColors = [
-    "#FF6B6B", // Red
-    "#4ECDC4", // Teal
-    "#45B7D1", // Blue
-    "#96CEB4", // Green
-    "#FFEAA7", // Yellow
-    "#DDA0DD", // Plum
-    "#98D8C8", // Mint
-    "#F7DC6F", // Gold
-  ];
+  // Ball diameter for image sizing
+  const ballDiameter = BALL_RADIUS * 2;
   
   return {
     id: `ball${colorIndex}`,
     tags: ["ball", `color-${colorIndex}`],
     visual: {
-      type: "circle" as const,
-      radius: BALL_RADIUS,
-      color: ballColors[colorIndex % ballColors.length],
+      type: "image" as const,
+      imageUrl: `${ASSET_BASE}/ball${colorIndex}.png`,
+      imageWidth: ballDiameter,
+      imageHeight: ballDiameter,
     },
     // No physics component - balls are visual-only
     // They don't need physics since they're positioned by game logic

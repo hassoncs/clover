@@ -114,6 +114,11 @@ var camera: Camera2D = null
 var camera_target_id: String = ""
 var camera_smoothing: float = 5.0
 
+# Background management
+var _background_layer: CanvasLayer = null
+var _background_rect: TextureRect = null
+var _parallax_layers: Array = []
+
 # Event queue for native polling (react-native-godot doesn't support JS callbacks)
 var _event_queue: Array = []
 const MAX_EVENT_QUEUE_SIZE: int = 100
@@ -1632,7 +1637,7 @@ func _create_shape(physics_data: Dictionary) -> Shape2D:
 	return shape
 
 
-func _add_visual(node: Node2D, visual_data: Dictionary, dimension_data: Dictionary) -> void:
+func _add_visual(node: Node2D, visual_data: Dictionary, dimension_data = null) -> void:
 	var visual_type = visual_data.get("type", "rect")
 	var color = Color.from_string(visual_data.get("color", "#FF0000"), Color.RED)
 	var opacity = visual_data.get("opacity", 1.0)
@@ -2296,7 +2301,9 @@ func set_entity_atlas_region(
 		sprite = Sprite2D.new()
 		node.add_child(sprite)
 
-	var new_sprite_data = {"width": float(args[6]), "height": float(args[7])}
+	var new_sprite_data = sprite_data
+	if new_sprite_data.is_empty():
+		new_sprite_data = {"width": 1.0, "height": 1.0}
 	if _texture_cache.has(atlas_url):
 		_apply_atlas_region(sprite, _texture_cache[atlas_url], region_dict, new_sprite_data)
 		_hide_shape_children(node)
@@ -2349,7 +2356,7 @@ func _js_set_entity_atlas_region(args: Array) -> void:
 
 
 func set_entity_image_base64(
-	entity_id: String, base64_data: String, width: float, height: float
+	entity_id: String, base64_data: String, width: float, height: float, sprite_data: Dictionary = {}
 ) -> void:
 	if not entities.has(entity_id):
 		push_error("[GameBridge] set_entity_image_base64: entity not found: " + entity_id)
@@ -2395,7 +2402,7 @@ func set_entity_image_base64(
 
 
 func set_entity_image_from_file(
-	entity_id: String, file_path: String, width: float, height: float
+	entity_id: String, file_path: String, width: float, height: float, sprite_data: Dictionary = {}
 ) -> void:
 	if not entities.has(entity_id):
 		push_error("[GameBridge] set_entity_image_from_file: entity not found: " + entity_id)

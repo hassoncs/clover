@@ -30,6 +30,8 @@ app.get("/assets/*", async (c) => {
     object.writeHttpMetadata(headers);
     headers.set("etag", object.httpEtag);
     headers.set("Cache-Control", "public, max-age=31536000, immutable");
+    headers.set("Cross-Origin-Resource-Policy", "cross-origin");
+    headers.set("Access-Control-Allow-Origin", "*");
     
     return new Response(object.body, { headers });
   } catch (e) {

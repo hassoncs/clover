@@ -6,15 +6,65 @@ interface TemplateConfig {
   enabled: boolean;
 }
 
+interface ModalLifecycleState {
+  ready: boolean;
+  phase: 'initializing' | 'downloading_models' | 'creating_symlinks' | 'starting_comfyui' | 'waiting_for_comfyui' | 'ready' | 'unknown';
+  etaSeconds: number;
+  elapsedSeconds: number;
+  activeJobs: number;
+}
+
+const PHASE_DESCRIPTIONS: Record<ModalLifecycleState['phase'], string> = {
+  initializing: 'Container starting...',
+  downloading_models: 'Downloading AI models (~17GB)...',
+  creating_symlinks: 'Setting up model paths...',
+  starting_comfyui: 'Starting ComfyUI server...',
+  waiting_for_comfyui: 'Waiting for ComfyUI to be ready...',
+  ready: 'Ready',
+  unknown: 'Unknown state...',
+};
+
 interface GenerationProgressTrackerProps {
   total: number;
   completed: number;
   failed: number;
   templateConfigs: TemplateConfig[];
   generatingTemplates: Set<string>;
+  coldStartState?: ModalLifecycleState;
 }
 
 type TaskStatus = 'pending' | 'generating' | 'completed' | 'failed';
+
+function ColdStartView({ state }: { state: ModalLifecycleState }) {
+  const phaseDescription = PHASE_DESCRIPTIONS[state.phase] ?? PHASE_DESCRIPTIONS.unknown;
+  const hasEta = state.etaSeconds > 0;
+
+  return (
+    <View style={styles.coldStartContainer}>
+      <View style={styles.coldStartHeader}>
+        <Text style={styles.coldStartIcon}>🌙</Text>
+        <Text style={styles.coldStartTitle}>Preparing AI Server</Text>
+      </View>
+
+      <Text style={styles.coldStartPhase}>{phaseDescription}</Text>
+
+      <View style={styles.coldStartProgressBar}>
+        <View style={styles.coldStartProgressIndeterminate} />
+      </View>
+
+      <View style={styles.coldStartMeta}>
+        {hasEta && (
+          <Text style={styles.coldStartMetaText}>
+            ~{state.etaSeconds}s remaining
+          </Text>
+        )}
+        <Text style={styles.coldStartMetaText}>
+          Started {state.elapsedSeconds}s ago
+        </Text>
+      </View>
+    </View>
+  );
+}
 
 export function GenerationProgressTracker({
   total,
@@ -22,8 +72,10 @@ export function GenerationProgressTracker({
   failed,
   templateConfigs,
   generatingTemplates,
+  coldStartState,
 }: GenerationProgressTrackerProps) {
   const progressPercent = total > 0 ? ((completed + failed) / total) * 100 : 0;
+  const isColdStarting = coldStartState !== undefined && !coldStartState.ready;
 
   const getTaskStatus = (templateId: string): TaskStatus => {
     if (generatingTemplates.has(templateId)) return 'generating';
@@ -58,6 +110,10 @@ export function GenerationProgressTracker({
 
   return (
     <View style={styles.container}>
+      {isColdStarting && coldStartState && (
+        <ColdStartView state={coldStartState} />
+      )}
+
       <View style={styles.progressHeader}>
         <Text style={styles.progressTitle}>Generating Assets</Text>
         <Text style={styles.progressCount}>
@@ -201,5 +257,53 @@ const styles = StyleSheet.create({
     color: '#EF4444',
     fontSize: 13,
     textAlign: 'center',
+  },
+  coldStartContainer: {
+    backgroundColor: '#1F2937',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#374151',
+  },
+  coldStartHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  coldStartIcon: {
+    fontSize: 24,
+    marginRight: 8,
+  },
+  coldStartTitle: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  coldStartPhase: {
+    color: '#9CA3AF',
+    fontSize: 14,
+    marginBottom: 16,
+  },
+  coldStartProgressBar: {
+    height: 6,
+    backgroundColor: '#374151',
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginBottom: 12,
+  },
+  coldStartProgressIndeterminate: {
+    width: '60%',
+    height: '100%',
+    backgroundColor: '#4F46E5',
+    borderRadius: 3,
+  },
+  coldStartMeta: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  coldStartMetaText: {
+    color: '#6B7280',
+    fontSize: 12,
   },
 });

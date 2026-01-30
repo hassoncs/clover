@@ -1,0 +1,3 @@
+color: #1E88E5
+colorBasedStrength: 0.9029628235294118
+finalStrength: 0.9029628235294118

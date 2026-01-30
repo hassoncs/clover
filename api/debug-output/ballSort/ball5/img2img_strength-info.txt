@@ -1,0 +1,3 @@
+color: #DDA0DD
+colorBasedStrength: 0.8864251764705883
+finalStrength: 0.8864251764705883

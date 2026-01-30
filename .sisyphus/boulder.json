@@ -1,10 +1,9 @@
 {
-  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/game-bundle-systematic-plan.md",
-  "started_at": "2026-01-29T17:02:14.132Z",
+  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/ball-sort-pickup-drop-fix.md",
+  "started_at": "2026-01-29T23:07:32.000Z",
   "session_ids": [
-    "ses_3f5989dc8ffe1L0ub1TkZkrRTq",
-    "ses_3f41bae65ffeyWPkV8pGeNLFbC"
+    "ses_current"
   ],
-  "plan_name": "game-bundle-systematic-plan",
+  "plan_name": "ball-sort-pickup-drop-fix",
   "status": "in_progress"
 }

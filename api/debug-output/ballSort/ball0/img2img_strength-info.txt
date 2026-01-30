@@ -1,0 +1,3 @@
+color: #E53935
+colorBasedStrength: 0.9045948235294118
+finalStrength: 0.9045948235294118

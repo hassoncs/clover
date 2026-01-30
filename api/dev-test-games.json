@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-01-29T22:36:51.416Z",
+  "generatedAt": "2026-01-30T02:40:45.379Z",
   "games": [
     {
       "id": "ballSort",
@@ -213,10 +213,15 @@
               "tube-wall"
             ],
             "visual": {
-              "type": "image",
-              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/tubeWall.png",
-              "imageWidth": 0.18,
-              "imageHeight": 6
+              "type": "rect",
+              "width": 0.18,
+              "height": 6,
+              "color": "#888888"
+            },
+            "physics": {
+              "bodyType": "static",
+              "density": 0,
+              "isSensor": true
             },
             "collider": {
               "shape": "box",
@@ -231,10 +236,15 @@
               "tube-bottom"
             ],
             "visual": {
-              "type": "image",
-              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/tubeBottom.png",
-              "imageWidth": 1.68,
-              "imageHeight": 0.18
+              "type": "rect",
+              "width": 1.68,
+              "height": 0.18,
+              "color": "#888888"
+            },
+            "physics": {
+              "bodyType": "static",
+              "density": 0,
+              "isSensor": true
             },
             "collider": {
               "shape": "box",
@@ -254,6 +264,11 @@
               "height": 6,
               "color": "#00000022"
             },
+            "physics": {
+              "bodyType": "static",
+              "density": 0,
+              "isSensor": true
+            },
             "collider": {
               "shape": "box",
               "width": 1.3199999999999998,
@@ -272,11 +287,6 @@
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball0.png",
               "imageWidth": 1.2,
               "imageHeight": 1.2
-            },
-            "collider": {
-              "shape": "circle",
-              "radius": 0.6,
-              "isSensor": true
             },
             "conditionalBehaviors": [
               {
@@ -340,11 +350,6 @@
               "imageWidth": 1.2,
               "imageHeight": 1.2
             },
-            "collider": {
-              "shape": "circle",
-              "radius": 0.6,
-              "isSensor": true
-            },
             "conditionalBehaviors": [
               {
                 "when": {
@@ -406,11 +411,6 @@
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball2.png",
               "imageWidth": 1.2,
               "imageHeight": 1.2
-            },
-            "collider": {
-              "shape": "circle",
-              "radius": 0.6,
-              "isSensor": true
             },
             "conditionalBehaviors": [
               {
@@ -474,11 +474,6 @@
               "imageWidth": 1.2,
               "imageHeight": 1.2
             },
-            "collider": {
-              "shape": "circle",
-              "radius": 0.6,
-              "isSensor": true
-            },
             "conditionalBehaviors": [
               {
                 "when": {
@@ -537,14 +532,9 @@
             ],
             "visual": {
               "type": "image",
-              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball0.png",
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball4.png",
               "imageWidth": 1.2,
               "imageHeight": 1.2
-            },
-            "collider": {
-              "shape": "circle",
-              "radius": 0.6,
-              "isSensor": true
             },
             "conditionalBehaviors": [
               {
@@ -604,14 +594,9 @@
             ],
             "visual": {
               "type": "image",
-              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball1.png",
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball5.png",
               "imageWidth": 1.2,
               "imageHeight": 1.2
-            },
-            "collider": {
-              "shape": "circle",
-              "radius": 0.6,
-              "isSensor": true
             },
             "conditionalBehaviors": [
               {
@@ -671,14 +656,9 @@
             ],
             "visual": {
               "type": "image",
-              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball2.png",
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball6.png",
               "imageWidth": 1.2,
               "imageHeight": 1.2
-            },
-            "collider": {
-              "shape": "circle",
-              "radius": 0.6,
-              "isSensor": true
             },
             "conditionalBehaviors": [
               {
@@ -738,14 +718,9 @@
             ],
             "visual": {
               "type": "image",
-              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball3.png",
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/ball7.png",
               "imageWidth": 1.2,
               "imageHeight": 1.2
-            },
-            "collider": {
-              "shape": "circle",
-              "radius": 0.6,
-              "isSensor": true
             },
             "conditionalBehaviors": [
               {
@@ -803,10 +778,14 @@
               "held-indicator"
             ],
             "visual": {
-              "type": "image",
-              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/heldBallIndicator.png",
-              "imageWidth": 1.44,
-              "imageHeight": 1.44
+              "type": "circle",
+              "radius": 0.72,
+              "color": "#FFD700"
+            },
+            "physics": {
+              "bodyType": "static",
+              "density": 0,
+              "isSensor": true
             },
             "collider": {
               "shape": "circle",

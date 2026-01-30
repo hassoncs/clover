@@ -77,13 +77,29 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
     const newTopColor = this.getNewTopColor(tubeIndex, count - 1, context);
     context.mutator.setVariable(topColorVar, newTopColor);
 
-    const liftY = ball.transform.y + LIFT_HEIGHT;
+    const tubeSensor = context.entityManager.getEntity(`tube-${tubeIndex}-sensor`);
+    const tubeX = tubeSensor?.transform.x ?? ball.transform.x;
+    
+    // Derive tube height from runtime entity (robust to scale changes)
+    let tubeHeightWorld = TUBE_HEIGHT; // Fallback
+    if (tubeSensor?.collider?.height) {
+      tubeHeightWorld = tubeSensor.collider.height;
+    } else if (tubeSensor?.visual && 'height' in tubeSensor.visual) {
+      tubeHeightWorld = (tubeSensor.visual as { height: number }).height;
+    }
+    
+    // Position ball above tube: tube center Y - half tube height - lift distance
+    const tubeWorldY = tubeSensor?.transform.y ?? cy(TUBE_Y);
+    const pickupWorldY = tubeWorldY - (tubeHeightWorld / 2 + LIFT_HEIGHT);
+
     if (context.bridge) {
-      context.bridge.setPosition(ballId, ball.transform.x, liftY);
-      ball.transform.y = liftY;
+      context.bridge.setPosition(ballId, tubeX, pickupWorldY);
+      ball.transform.x = tubeX;
+      ball.transform.y = pickupWorldY;
       context.entityManager.updateWorldTransforms(ballId);
     } else {
-      ball.transform.y = liftY;
+      ball.transform.x = tubeX;
+      ball.transform.y = pickupWorldY;
       context.entityManager.updateWorldTransforms(ballId);
     }
 
@@ -129,11 +145,15 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
       return;
     }
 
-
-
     const tubeSensor = context.entityManager.getEntity(`tube-${targetTubeIndex}-sensor`);
-    const worldX = tubeSensor?.transform.x ?? 0;
-    const ballY = TUBE_Y + TUBE_HEIGHT / 2 - TUBE_WALL_THICKNESS - BALL_RADIUS - targetCount * BALL_SPACING;
+    if (!tubeSensor) {
+      this.cancelPickup(context);
+      return;
+    }
+
+    const worldX = tubeSensor.transform.x;
+    const slot = targetCount;
+    const ballY = TUBE_Y + TUBE_HEIGHT / 2 - TUBE_WALL_THICKNESS - BALL_RADIUS - slot * BALL_SPACING;
     const worldY = cy(ballY);
 
     if (context.bridge) {
@@ -273,14 +293,21 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
       const topColor = (context.mutator.getVariable(topColorVar) as number) ?? -1;
 
       const ball = context.entityManager.getEntity(heldBallId);
-      if (ball) {
-        const ballY = TUBE_Y + TUBE_HEIGHT / 2 - TUBE_WALL_THICKNESS - BALL_RADIUS - count * BALL_SPACING;
+      const tubeSensor = context.entityManager.getEntity(`tube-${sourceTubeIndex}-sensor`);
+      
+      if (ball && tubeSensor) {
+        const worldX = tubeSensor.transform.x;
+        const slot = count;
+        const ballY = TUBE_Y + TUBE_HEIGHT / 2 - TUBE_WALL_THICKNESS - BALL_RADIUS - slot * BALL_SPACING;
         const worldY = cy(ballY);
+        
         if (context.bridge) {
-          context.bridge.setPosition(heldBallId, ball.transform.x, worldY);
+          context.bridge.setPosition(heldBallId, worldX, worldY);
+          ball.transform.x = worldX;
           ball.transform.y = worldY;
           context.entityManager.updateWorldTransforms(heldBallId);
         } else {
+          ball.transform.x = worldX;
           ball.transform.y = worldY;
           context.entityManager.updateWorldTransforms(heldBallId);
         }

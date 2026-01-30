@@ -1,0 +1,3 @@
+color: #43A047
+colorBasedStrength: 0.9012830588235294
+finalStrength: 0.9012830588235294

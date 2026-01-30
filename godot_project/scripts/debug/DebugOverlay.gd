@@ -283,7 +283,7 @@ func _draw_zones(canvas_transform: Transform2D) -> void:
 					var rect_shape = shape as RectangleShape2D
 					var size = rect_shape.size * scale_factor
 					var rect = Rect2(screen_pos - size / 2, size)
-					_draw_node.draw_rect(rect, zone_color, true, 2.0)
+					_draw_node.draw_rect(rect, zone_color, true)
 					_draw_node.draw_rect(rect, label_color, false, 2.0)
 				
 				elif shape is CircleShape2D:
