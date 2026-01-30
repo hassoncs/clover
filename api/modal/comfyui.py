@@ -441,13 +441,26 @@ def build_layered_workflow(base_prompt: str, layers: list, width: int, height: i
     keep_warm=1,
 )
 class ComfyUIWorker:
+    # Container lifecycle state tracking
+    is_ready: bool = False
+    startup_phase: str = "initializing"
+    startup_start_time: float = 0.0
+    active_jobs: int = 0
+    
     @modal.enter()
     def setup(self):
         """Called once when container starts."""
         import os
         
+        self.startup_start_time = time.time()
+        self.startup_phase = "initializing"
+        self.is_ready = False
+        
         print("[setup] Starting setup...")
         
+        # Phase 1: Download models
+        self.startup_phase = "downloading_models"
+        print(f"[setup] Phase: {self.startup_phase}")
         models_path = Path("/models")
         print(f"[setup] Downloading models to {models_path}...")
         download_models_if_needed(models_path)
@@ -455,8 +468,9 @@ class ComfyUIWorker:
         models_volume.commit()
         print("[setup] Volume committed")
         
-        # Create symlinks for ComfyUI to find models
-        print("[setup] Creating symlinks...")
+        # Phase 2: Create symlinks
+        self.startup_phase = "creating_symlinks"
+        print(f"[setup] Phase: {self.startup_phase}")
         comfy_models = Path("/root/comfy/ComfyUI/models")
         for subdir in ["unet", "clip", "vae"]:
             src = models_path / subdir
@@ -469,16 +483,25 @@ class ComfyUIWorker:
                         os.symlink(f, target)
         print("[setup] Symlinks created")
         
-        # Start ComfyUI server
-        print("[setup] Starting ComfyUI server...")
+        # Phase 3: Start ComfyUI server
+        self.startup_phase = "starting_comfyui"
+        print(f"[setup] Phase: {self.startup_phase}")
         self.comfyui_process = subprocess.Popen(
             ["comfy", "launch", "--", "--listen", "127.0.0.1", "--port", "8188"],
             cwd="/root/comfy/ComfyUI"
         )
         print("[setup] ComfyUI process started, waiting for readiness...")
         
+        # Phase 4: Wait for ComfyUI to be ready
+        self.startup_phase = "waiting_for_comfyui"
+        print(f"[setup] Phase: {self.startup_phase}")
         self._wait_for_comfyui()
-        print("[setup] Setup complete!")
+        
+        # Ready!
+        self.startup_phase = "ready"
+        self.is_ready = True
+        startup_duration = time.time() - self.startup_start_time
+        print(f"[setup] Setup complete! Total startup time: {startup_duration:.1f}s")
     
     def _wait_for_comfyui(self, timeout: int = 120):
         """Wait for ComfyUI to be ready."""
@@ -664,7 +687,41 @@ class ComfyUIWorker:
     @modal.fastapi_endpoint(method="GET")
     def health(self) -> dict:
         """Health check endpoint."""
-        return {"status": "ok", "comfyui_ready": True}
+        return {"status": "ok", "comfyui_ready": self.is_ready}
+
+    @modal.fastapi_endpoint(method="GET")
+    def ready(self) -> dict:
+        """Container lifecycle ready endpoint.
+        
+        Returns detailed state about container startup progress.
+        Use this to distinguish between:
+        - Container cold starting (phase != 'ready')
+        - Container ready but idle (phase == 'ready', active_jobs == 0)
+        - Container processing requests (phase == 'ready', active_jobs > 0)
+        """
+        # Estimate remaining time based on current phase
+        phase_etas = {
+            "initializing": 120,
+            "downloading_models": 90,
+            "creating_symlinks": 5,
+            "starting_comfyui": 30,
+            "waiting_for_comfyui": 15,
+            "ready": 0,
+        }
+        eta_seconds = phase_etas.get(self.startup_phase, 60)
+        
+        # Calculate elapsed time if startup is in progress
+        elapsed_seconds = 0.0
+        if self.startup_start_time > 0 and not self.is_ready:
+            elapsed_seconds = time.time() - self.startup_start_time
+        
+        return {
+            "ready": self.is_ready,
+            "phase": self.startup_phase,
+            "eta_seconds": eta_seconds,
+            "elapsed_seconds": round(elapsed_seconds, 1),
+            "active_jobs": self.active_jobs,
+        }
 
     @modal.fastapi_endpoint(method="POST")
     def web_generate(self, data: dict) -> dict:
@@ -672,7 +729,9 @@ class ComfyUIWorker:
         import random
         import traceback
 
-        print(f"[web_generate] Received request: {data.keys()}")
+        self.active_jobs += 1
+        job_start = time.time()
+        print(f"[web_generate] Received request: {data.keys()} (active_jobs: {self.active_jobs})")
 
         prompt = data.get("prompt", "")
         image_base64 = data.get("image_base64", "")
@@ -701,14 +760,18 @@ class ComfyUIWorker:
                 img_bytes = self._run_workflow(workflow, [("input.png", img_bytes_input)])
 
             result = base64.b64encode(img_bytes).decode()
-            print(f"[web_generate] Success! Generated {len(result)} bytes")
-            return {"success": True, "image_base64": result}
+            job_duration = time.time() - job_start
+            print(f"[web_generate] Success! Generated {len(result)} bytes in {job_duration:.1f}s")
+            return {"success": True, "image_base64": result, "duration_seconds": round(job_duration, 1)}
         except Exception as e:
             error_msg = str(e)
             stack_trace = traceback.format_exc()
             print(f"[web_generate] ERROR: {error_msg}")
             print(f"[web_generate] Stack trace: {stack_trace}")
             return {"success": False, "error": error_msg, "traceback": stack_trace}
+        finally:
+            self.active_jobs -= 1
+            print(f"[web_generate] Job complete (active_jobs: {self.active_jobs})")
 
     @modal.fastapi_endpoint(method="POST")
     def web_controlnet(self, data: dict) -> dict:
@@ -716,7 +779,9 @@ class ComfyUIWorker:
         import random
         import traceback
 
-        print(f"[web_controlnet] Received request: {data.keys()}")
+        self.active_jobs += 1
+        job_start = time.time()
+        print(f"[web_controlnet] Received request: {data.keys()} (active_jobs: {self.active_jobs})")
 
         prompt = data.get("prompt", "")
         image_base64 = data.get("image_base64", "")
@@ -727,6 +792,7 @@ class ComfyUIWorker:
         print(f"[web_controlnet] prompt='{prompt[:50]}...', has_image={bool(image_base64)}, strength={control_strength}")
 
         if not image_base64:
+            self.active_jobs -= 1
             return {"success": False, "error": "image_base64 is required for ControlNet"}
 
         try:
@@ -740,14 +806,18 @@ class ComfyUIWorker:
             img_bytes = self._run_workflow(workflow, [("input.png", img_bytes_input)])
 
             result = base64.b64encode(img_bytes).decode()
-            print(f"[web_controlnet] Success! Generated {len(result)} bytes")
-            return {"success": True, "image_base64": result}
+            job_duration = time.time() - job_start
+            print(f"[web_controlnet] Success! Generated {len(result)} bytes in {job_duration:.1f}s")
+            return {"success": True, "image_base64": result, "duration_seconds": round(job_duration, 1)}
         except Exception as e:
             error_msg = str(e)
             stack_trace = traceback.format_exc()
             print(f"[web_controlnet] ERROR: {error_msg}")
             print(f"[web_controlnet] Stack trace: {stack_trace}")
             return {"success": False, "error": error_msg, "traceback": stack_trace}
+        finally:
+            self.active_jobs -= 1
+            print(f"[web_controlnet] Job complete (active_jobs: {self.active_jobs})")
 
 
 @app.local_entrypoint()

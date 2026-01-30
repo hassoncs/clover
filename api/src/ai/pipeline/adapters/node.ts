@@ -224,20 +224,41 @@ interface ModalAdapterConfig {
   endpoint: string;
   maxWakeTimeMs?: number;
   pollIntervalMs?: number;
+  onLifecycleUpdate?: (state: ModalLifecycleState) => void;
 }
 
 /**
- * Creates a Modal-aware image generation adapter with auto-wake functionality.
- * Handles Modal's cold start gracefully with clear status messages.
+ * Container lifecycle state from Modal's /ready endpoint.
  */
+export interface ModalLifecycleState {
+  ready: boolean;
+  phase: 'initializing' | 'downloading_models' | 'creating_symlinks' | 'starting_comfyui' | 'waiting_for_comfyui' | 'ready' | 'unknown';
+  etaSeconds: number;
+  elapsedSeconds: number;
+  activeJobs: number;
+}
+
+/**
+ * Human-readable phase descriptions for UI display.
+ */
+const PHASE_DESCRIPTIONS: Record<ModalLifecycleState['phase'], string> = {
+  initializing: 'Container starting...',
+  downloading_models: 'Downloading AI models (~17GB)...',
+  creating_symlinks: 'Setting up model paths...',
+  starting_comfyui: 'Starting ComfyUI server...',
+  waiting_for_comfyui: 'Waiting for ComfyUI to be ready...',
+  ready: 'Ready',
+  unknown: 'Unknown state...',
+};
+
 export function createNodeModalAdapter(config: ModalAdapterConfig): ImageGenerationAdapter {
   const endpoint = config.endpoint.replace(/\/$/, '');
   const maxWakeTimeMs = config.maxWakeTimeMs ?? 900000;
   const pollIntervalMs = config.pollIntervalMs ?? 5000;
+  const onLifecycleUpdate = config.onLifecycleUpdate;
 
   const assetStore = new Map<string, { id: string; data: string; mimeType: string }>();
 
-  // Global coordination to prevent multiple cold-starts
   let wakeUpPromise: Promise<void> | null = null;
   let isWakingUp = false;
 
@@ -255,16 +276,119 @@ export function createNodeModalAdapter(config: ModalAdapterConfig): ImageGenerat
     return assetStore.get(id);
   }
 
+  function getReadyEndpoint(): string {
+    return endpoint
+      .replace('web-generate', 'ready')
+      .replace('web-img2img', 'ready')
+      .replace('web-controlnet', 'ready')
+      .replace('web_generate', 'ready')
+      .replace('web_img2img', 'ready');
+  }
+
+  async function checkReady(): Promise<ModalLifecycleState> {
+    const readyUrl = getReadyEndpoint();
+    
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
+      const response = await fetch(readyUrl, { 
+        method: 'GET',
+        signal: controller.signal 
+      });
+      clearTimeout(timeoutId);
+      
+      if (response.status === 503 || response.status === 404) {
+        return {
+          ready: false,
+          phase: 'initializing',
+          etaSeconds: 120,
+          elapsedSeconds: 0,
+          activeJobs: 0,
+        };
+      }
+      
+      if (!response.ok) {
+        return {
+          ready: false,
+          phase: 'unknown',
+          etaSeconds: 60,
+          elapsedSeconds: 0,
+          activeJobs: 0,
+        };
+      }
+      
+      const data = await response.json() as {
+        ready: boolean;
+        phase: string;
+        eta_seconds: number;
+        elapsed_seconds: number;
+        active_jobs: number;
+      };
+      
+      return {
+        ready: data.ready,
+        phase: (data.phase || 'unknown') as ModalLifecycleState['phase'],
+        etaSeconds: data.eta_seconds ?? 60,
+        elapsedSeconds: data.elapsed_seconds ?? 0,
+        activeJobs: data.active_jobs ?? 0,
+      };
+    } catch {
+      return {
+        ready: false,
+        phase: 'initializing',
+        etaSeconds: 120,
+        elapsedSeconds: 0,
+        activeJobs: 0,
+      };
+    }
+  }
+
+  function logLifecycleState(state: ModalLifecycleState, elapsedSecs: number): void {
+    const phaseDesc = PHASE_DESCRIPTIONS[state.phase] || state.phase;
+    const etaInfo = state.etaSeconds > 0 ? ` (ETA: ~${state.etaSeconds}s)` : '';
+    console.log(`  ⏳ [${elapsedSecs}s] ${phaseDesc}${etaInfo}`);
+  }
+
+  async function waitForReady(): Promise<void> {
+    const startTime = Date.now();
+    let lastPhase: string | null = null;
+
+    console.log('  🌙 Modal container starting...');
+    console.log(`  ⏱️  Max wait time: ${(maxWakeTimeMs / 1000).toFixed(0)}s`);
+
+    while (Date.now() - startTime < maxWakeTimeMs) {
+      const elapsedSecs = Math.floor((Date.now() - startTime) / 1000);
+      const state = await checkReady();
+      
+      if (onLifecycleUpdate) {
+        onLifecycleUpdate(state);
+      }
+      
+      if (state.ready) {
+        console.log(`  ✅ Modal ready! (${elapsedSecs}s total startup time)`);
+        return;
+      }
+      
+      if (state.phase !== lastPhase) {
+        logLifecycleState(state, elapsedSecs);
+        lastPhase = state.phase;
+      }
+      
+      await new Promise(r => setTimeout(r, pollIntervalMs));
+    }
+
+    throw new Error(`Modal failed to become ready after ${maxWakeTimeMs / 1000}s`);
+  }
+
   async function wakeModal(): Promise<void> {
-    // If already waking up, wait for that to complete
     if (isWakingUp && wakeUpPromise) {
       console.log('  ⏳ Another request is waking Modal, waiting...');
       return wakeUpPromise;
     }
 
-    // Start the wake-up process
     isWakingUp = true;
-    wakeUpPromise = doWakeModal();
+    wakeUpPromise = waitForReady();
 
     try {
       await wakeUpPromise;
@@ -272,83 +396,6 @@ export function createNodeModalAdapter(config: ModalAdapterConfig): ImageGenerat
       isWakingUp = false;
       wakeUpPromise = null;
     }
-  }
-
-  async function doWakeModal(): Promise<void> {
-    const startTime = Date.now();
-    let attempt = 0;
-    let lastStatus: string | null = null;
-
-    console.log('  🌙 Modal is sleeping, waking it up...');
-    console.log(`  ⏱️  Max wait time: ${(maxWakeTimeMs / 1000).toFixed(0)}s`);
-    console.log('  📡 Sending wake-up pings...');
-
-    while (Date.now() - startTime < maxWakeTimeMs) {
-      attempt++;
-      const elapsedSecs = Math.floor((Date.now() - startTime) / 1000);
-
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
-
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            prompt: 'ping',
-            image_base64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
-            strength: 0.1,
-            steps: 1
-          }),
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-
-        if (response.status === 200) {
-          console.log(`  ✅ Modal woke up! (${elapsedSecs}s, ${attempt} attempts)`);
-          return;
-        }
-
-        if (response.status === 503) {
-          const status = `  ⏳ Container starting... (${elapsedSecs}s elapsed)`;
-          if (status !== lastStatus) {
-            console.log(status);
-            lastStatus = status;
-          }
-        } else if (response.status === 404) {
-          const status = `  🔍 Endpoint not ready... (${elapsedSecs}s elapsed)`;
-          if (status !== lastStatus) {
-            console.log(status);
-            lastStatus = status;
-          }
-        } else {
-          const status = `  ⚠️  Status ${response.status}... (${elapsedSecs}s elapsed)`;
-          if (status !== lastStatus) {
-            console.log(status);
-            lastStatus = status;
-          }
-        }
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        if (errorMsg.includes('abort')) {
-          const status = `  ⏱️  Request timeout, still waking... (${elapsedSecs}s elapsed)`;
-          if (status !== lastStatus) {
-            console.log(status);
-            lastStatus = status;
-          }
-        } else {
-          const status = `  🔄 Connection error, retrying... (${elapsedSecs}s elapsed)`;
-          if (status !== lastStatus) {
-            console.log(status);
-            lastStatus = status;
-          }
-        }
-      }
-
-      await new Promise(r => setTimeout(r, pollIntervalMs));
-    }
-
-    throw new Error(`Modal failed to wake up after ${maxWakeTimeMs / 1000}s`);
   }
 
   async function modalRequest(payload: unknown): Promise<{ success: boolean; image_base64?: string; error?: string }> {
@@ -544,7 +591,7 @@ export async function createNodeAdapters(options: NodeAdaptersOptions): Promise<
     imageAdapter = createNodeScenarioAdapter({ apiKey, apiSecret });
   } else {
     // Use Modal ComfyUI - alternative provider
-    const endpoint = process.env.MODAL_ENDPOINT ?? 'https://hassoncs--slopcade-comfyui-web-generate.modal.run';
+    const endpoint = process.env.MODAL_ENDPOINT ?? 'https://hassoncs--slopcade-comfyui-comfyuiworker-web-generate.modal.run';
     imageAdapter = createNodeModalAdapter({ endpoint });
   }
 

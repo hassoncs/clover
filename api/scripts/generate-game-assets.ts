@@ -144,16 +144,19 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  const imageProvider = process.env.IMAGE_GENERATION_PROVIDER ?? 'scenario';
   const apiKey = process.env.SCENARIO_API_KEY;
   const apiSecret = process.env.SCENARIO_SECRET_API_KEY;
 
-  if (!apiKey || !apiSecret) {
+  if (imageProvider === 'scenario' && (!apiKey || !apiSecret)) {
     if (!options.dryRun) {
       console.error('Error: SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY environment variables are required');
-      console.error('Set them or use --dry-run to preview without API calls');
+      console.error('Set them, use IMAGE_GENERATION_PROVIDER=modal, or use --dry-run to preview');
       process.exit(1);
     }
   }
+  
+  console.log(`Image generation provider: ${imageProvider}`);
 
   let config: GameAssetConfig;
   try {
