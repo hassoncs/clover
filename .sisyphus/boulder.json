@@ -1,9 +1,7 @@
 {
-  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/ball-sort-pickup-drop-fix.md",
-  "started_at": "2026-01-29T23:07:32.000Z",
-  "session_ids": [
-    "ses_current"
-  ],
-  "plan_name": "ball-sort-pickup-drop-fix",
+  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/gamebridge-refactor-v2.md",
+  "started_at": "2026-01-31T19:10:35.437Z",
+  "session_ids": ["ses_3ea9805beffeqxNmHu82hcoNJA"],
+  "plan_name": "gamebridge-refactor-v2",
   "status": "in_progress"
 }

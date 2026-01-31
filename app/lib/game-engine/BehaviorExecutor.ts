@@ -4,6 +4,7 @@ import type { BehaviorContext } from './BehaviorContext';
 import { registerMovementBehaviors } from './behaviors/MovementBehaviors';
 import { registerLifecycleBehaviors } from './behaviors/LifecycleBehaviors';
 import { registerVisualBehaviors } from './behaviors/VisualBehaviors';
+import { registerTweenBehaviors } from './behaviors/TweenBehaviors';
 
 export type BehaviorHandler = (
   behavior: Behavior,
@@ -23,6 +24,9 @@ const BEHAVIOR_PHASES: Record<BehaviorType, BehaviorPhase> = {
   draggable: 'input',
   timer: 'timer',
   move: 'movement',
+  translate: 'movement',
+  set_velocity: 'movement',
+  apply_impulse: 'movement',
   follow: 'movement',
   bounce: 'movement',
   oscillate: 'movement',
@@ -33,6 +37,7 @@ const BEHAVIOR_PHASES: Record<BehaviorType, BehaviorPhase> = {
   particle_emitter: 'visual',
   scale_oscillate: 'visual',
   sprite_effect: 'visual',
+  tween: 'visual',
   spawn_on_event: 'post_physics',
   destroy_on_collision: 'post_physics',
   destroy_when_off_screen: 'movement',
@@ -201,6 +206,7 @@ export function createBehaviorExecutor(): BehaviorExecutor {
   registerMovementBehaviors(executor);
   registerLifecycleBehaviors(executor);
   registerVisualBehaviors(executor);
+  registerTweenBehaviors(executor);
 
   return executor;
 }

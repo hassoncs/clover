@@ -1,4 +1,5 @@
-class_name TransformSystem extends RefCounted
+class_name TransformSystem
+extends RefCounted
 
 var _game_bridge: Node = null
 
@@ -17,8 +18,20 @@ func set_transform(entity_id: String, x: float, y: float, angle: float) -> void:
 		return
 	var entity = _game_bridge.entities[entity_id]
 	var godot_pos = _game_bridge.game_to_godot_pos(Vector2(x, y))
-	entity.global_position = godot_pos
-	entity.global_rotation = deg_to_rad(-angle)  # Convert to radians and flip for Godot
+	var godot_angle = deg_to_rad(-angle)
+
+	if entity is CharacterBody2D:
+		entity.global_position = godot_pos
+		entity.global_rotation = godot_angle
+	elif entity is RigidBody2D:
+		PhysicsServer2D.body_set_state(
+			entity.get_rid(),
+			PhysicsServer2D.BODY_STATE_TRANSFORM,
+			Transform2D(godot_angle, godot_pos)
+		)
+	else:
+		entity.global_position = godot_pos
+		entity.global_rotation = godot_angle
 
 
 func _js_set_position(args: Array) -> void:
@@ -30,7 +43,19 @@ func set_position(entity_id: String, x: float, y: float) -> void:
 	if not _game_bridge.entities.has(entity_id):
 		return
 	var entity = _game_bridge.entities[entity_id]
-	entity.global_position = _game_bridge.game_to_godot_pos(Vector2(x, y))
+	var godot_pos = _game_bridge.game_to_godot_pos(Vector2(x, y))
+
+	if entity is CharacterBody2D:
+		entity.global_position = godot_pos
+	elif entity is RigidBody2D:
+		var current_angle = entity.global_rotation
+		PhysicsServer2D.body_set_state(
+			entity.get_rid(),
+			PhysicsServer2D.BODY_STATE_TRANSFORM,
+			Transform2D(current_angle, godot_pos)
+		)
+	else:
+		entity.global_position = godot_pos
 
 
 func _js_set_rotation(args: Array) -> void:
@@ -42,7 +67,19 @@ func set_rotation(entity_id: String, angle: float) -> void:
 	if not _game_bridge.entities.has(entity_id):
 		return
 	var entity = _game_bridge.entities[entity_id]
-	entity.global_rotation = deg_to_rad(-angle)  # Convert to radians and flip for Godot
+	var godot_angle = deg_to_rad(-angle)
+
+	if entity is CharacterBody2D:
+		entity.global_rotation = godot_angle
+	elif entity is RigidBody2D:
+		var godot_pos = entity.global_position
+		PhysicsServer2D.body_set_state(
+			entity.get_rid(),
+			PhysicsServer2D.BODY_STATE_TRANSFORM,
+			Transform2D(godot_angle, godot_pos)
+		)
+	else:
+		entity.global_rotation = godot_angle
 
 
 func _js_set_scale(args: Array) -> void:
@@ -50,7 +87,43 @@ func _js_set_scale(args: Array) -> void:
 		var entity_id = str(args[0])
 		var scale_x = float(args[1])
 		var scale_y = float(args[2])
-		if not _game_bridge.entities.has(entity_id):
-			return
-		var entity = _game_bridge.entities[entity_id]
-		entity.global_scale = Vector2(scale_x, scale_y)
+		set_scale(entity_id, scale_x, scale_y)
+
+
+func set_scale(entity_id: String, scale_x: float, scale_y: float) -> void:
+	if not _game_bridge.entities.has(entity_id):
+		return
+	var entity = _game_bridge.entities[entity_id]
+	var sprite = _find_sprite_in_entity(entity)
+	if sprite:
+		sprite.global_scale = Vector2(scale_x, scale_y)
+
+
+func _find_sprite_in_entity(node: Node) -> Node:
+	var children = node.get_children()
+	for child in children:
+		if child is Sprite2D or child is AnimatedSprite2D:
+			return child
+		var nested = _find_sprite_in_entity(child)
+		if nested:
+			return nested
+	return null
+
+
+func get_transform(entity_id: String) -> Dictionary:
+	if not _game_bridge.entities.has(entity_id):
+		return {}
+	var entity = _game_bridge.entities[entity_id]
+	var godot_pos = entity.global_position
+	var game_pos = _game_bridge.godot_to_game_pos(godot_pos)
+	var godot_angle = entity.global_rotation
+	var game_angle = -rad_to_deg(godot_angle)
+	return {"x": game_pos.x, "y": game_pos.y, "angle": game_angle}
+
+
+func get_transforms(entity_ids: Array) -> Dictionary:
+	var result = {}
+	for entity_id in entity_ids:
+		if _game_bridge.entities.has(entity_id):
+			result[entity_id] = get_transform(entity_id)
+	return result

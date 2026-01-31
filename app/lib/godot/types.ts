@@ -230,6 +230,7 @@ export interface GodotBridge {
   setPosition(entityId: string, x: number, y: number): void;
   setRotation(entityId: string, angle: number): void;
   setScale(entityId: string, scaleX: number, scaleY: number): void;
+  setOpacity(entityId: string, opacity: number): void;
 
   // Velocity control (async - native requires worklet communication)
   getLinearVelocity(entityId: string): Promise<Vec2 | null>;

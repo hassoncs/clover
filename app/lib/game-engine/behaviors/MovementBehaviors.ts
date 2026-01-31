@@ -7,70 +7,195 @@ import type {
   DraggableBehavior,
   FollowBehavior,
   BounceBehavior,
-  MaintainSpeedBehavior
+  MaintainSpeedBehavior,
+  TranslateBehavior,
+  SetVelocityBehavior,
+  ApplyImpulseBehavior,
 } from '@slopcade/shared';
 import type { BehaviorContext } from '../BehaviorContext';
 import type { BehaviorExecutor } from '../BehaviorExecutor';
 
+const warnedEntities = new Set<string>();
+
 export function registerMovementBehaviors(executor: BehaviorExecutor): void {
   executor.registerHandler('move', (behavior, ctx) => {
     const b = behavior as MoveBehavior;
-    if (!ctx.entity.bodyId) return;
 
-    let vx = 0;
-    let vy = 0;
+    const warningKey = 'move:deprecated';
+    if (!warnedEntities.has(warningKey)) {
+      console.warn('[move] The "move" behavior is deprecated and will be removed in a future version. Use "translate" behavior instead. "move" now uses transform-based movement for consistency.');
+      warnedEntities.add(warningKey);
+    }
+
     const speed = ctx.resolveNumber(b.speed ?? 100);
-    const movementType = b.movementType ?? 'velocity';
+    const dt = ctx.dt;
+    const distance = speed * dt;
+
+    let dx = 0;
+    let dy = 0;
 
     switch (b.direction) {
       case 'left':
-        vx = -speed;
+        dx = -distance;
         break;
       case 'right':
-        vx = speed;
+        dx = distance;
         break;
       case 'up':
-        vy = -speed;
+        dy = -distance;
         break;
       case 'down':
-        vy = speed;
+        dy = distance;
         break;
       case 'toward_target': {
-        const target = ctx.entityManager.getEntitiesByTag('player')[0]; // Default target player
+        const target = ctx.entityManager.getEntitiesByTag('player')[0];
         if (target) {
-          const dx = target.transform.x - ctx.entity.transform.x;
-          const dy = target.transform.y - ctx.entity.transform.y;
-          const angle = Math.atan2(dy, dx);
-          vx = Math.cos(angle) * speed;
-          vy = Math.sin(angle) * speed;
+          const tx = target.transform.x - ctx.entity.transform.x;
+          const ty = target.transform.y - ctx.entity.transform.y;
+          const length = Math.sqrt(tx * tx + ty * ty);
+          if (length > 0) {
+            dx = (tx / length) * distance;
+            dy = (ty / length) * distance;
+          }
         }
         break;
       }
       case 'away_from_target': {
         const target = ctx.entityManager.getEntitiesByTag('player')[0];
         if (target) {
-          const dx = target.transform.x - ctx.entity.transform.x;
-          const dy = target.transform.y - ctx.entity.transform.y;
-          const angle = Math.atan2(dy, dx);
-          vx = -Math.cos(angle) * speed;
-          vy = -Math.sin(angle) * speed;
+          const tx = ctx.entity.transform.x - target.transform.x;
+          const ty = ctx.entity.transform.y - target.transform.y;
+          const length = Math.sqrt(tx * tx + ty * ty);
+          if (length > 0) {
+            dx = (tx / length) * distance;
+            dy = (ty / length) * distance;
+          }
         }
         break;
       }
     }
 
-    if (movementType === 'velocity') {
-      const currentVel = ctx.physics.getLinearVelocity(ctx.entity.bodyId);
-      if (b.direction === 'left' || b.direction === 'right') {
-        ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: vx / ctx.pixelsPerMeter, y: currentVel.y });
-      } else if (b.direction === 'up' || b.direction === 'down') {
-        ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: currentVel.x, y: vy / ctx.pixelsPerMeter });
-      } else {
-        ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: vx / ctx.pixelsPerMeter, y: vy / ctx.pixelsPerMeter });
+    if (b.patrol) {
+      const newX = ctx.entity.localTransform.x + dx;
+      const newY = ctx.entity.localTransform.y + dy;
+
+      if (newX >= b.patrol.minX && newX <= b.patrol.maxX) {
+        ctx.entity.localTransform.x = newX;
+      }
+      if (newY >= b.patrol.minY && newY <= b.patrol.maxY) {
+        ctx.entity.localTransform.y = newY;
       }
     } else {
-      ctx.physics.applyForceToCenter(ctx.entity.bodyId, { x: vx / ctx.pixelsPerMeter, y: vy / ctx.pixelsPerMeter });
+      ctx.entity.localTransform.x += dx;
+      ctx.entity.localTransform.y += dy;
     }
+
+    if (ctx.entity.parentId) {
+      ctx.entityManager.updateWorldTransforms(ctx.entity.id);
+    } else {
+      ctx.entity.transform.x = ctx.entity.localTransform.x;
+      ctx.entity.transform.y = ctx.entity.localTransform.y;
+    }
+
+    ctx.setEntityPosition(ctx.entity.id, ctx.entity.transform.x, ctx.entity.transform.y);
+  });
+
+  executor.registerHandler('translate', (behavior, ctx) => {
+    const b = behavior as TranslateBehavior;
+    
+    // Warn if translate is used on a dynamic physics body (should use physics forces instead)
+    if (ctx.entity.bodyId) {
+      const warningKey = `${ctx.entity.id}:translate`;
+      if (!warnedEntities.has(warningKey)) {
+        console.warn(`[translate] Entity '${ctx.entity.id}' has a physics body. Using translate on dynamic bodies may cause physics conflicts. Consider using 'move' behavior or apply forces instead.`);
+        warnedEntities.add(warningKey);
+      }
+    }
+    
+    const speed = ctx.resolveNumber(b.speed);
+    const dt = ctx.dt;
+    const distance = speed * dt;
+
+    // Calculate movement vector based on direction type
+    let dx = 0;
+    let dy = 0;
+
+    switch (b.direction.type) {
+      case 'vector': {
+        // Normalize the vector
+        const length = Math.sqrt(b.direction.x * b.direction.x + b.direction.y * b.direction.y);
+        if (length > 0) {
+          dx = (b.direction.x / length) * distance;
+          dy = (b.direction.y / length) * distance;
+        }
+        break;
+      }
+      case 'toward_target': {
+        const targetTag = b.direction.targetTag ?? 'player';
+        const target = ctx.entityManager.getEntitiesByTag(targetTag)[0];
+        if (target) {
+          const tx = target.transform.x - ctx.entity.transform.x;
+          const ty = target.transform.y - ctx.entity.transform.y;
+          const length = Math.sqrt(tx * tx + ty * ty);
+          if (length > 0) {
+            dx = (tx / length) * distance;
+            dy = (ty / length) * distance;
+          }
+        }
+        break;
+      }
+      case 'away_from_target': {
+        const targetTag = b.direction.targetTag ?? 'player';
+        const target = ctx.entityManager.getEntitiesByTag(targetTag)[0];
+        if (target) {
+          const tx = ctx.entity.transform.x - target.transform.x;
+          const ty = ctx.entity.transform.y - target.transform.y;
+          const length = Math.sqrt(tx * tx + ty * ty);
+          if (length > 0) {
+            dx = (tx / length) * distance;
+            dy = (ty / length) * distance;
+          }
+        }
+        break;
+      }
+      case 'random': {
+        // Random direction normalized
+        const angle = Math.random() * 2 * Math.PI;
+        dx = Math.cos(angle) * distance;
+        dy = Math.sin(angle) * distance;
+        break;
+      }
+    }
+
+    // Apply bounds if specified
+    if (b.bounds) {
+      const newX = ctx.entity.localTransform.x + dx;
+      const newY = ctx.entity.localTransform.y + dy;
+      
+      if (newX >= b.bounds.minX && newX <= b.bounds.maxX) {
+        ctx.entity.localTransform.x = newX;
+      }
+      if (newY >= b.bounds.minY && newY <= b.bounds.maxY) {
+        ctx.entity.localTransform.y = newY;
+      }
+    } else {
+      // No bounds, just apply movement
+      ctx.entity.localTransform.x += dx;
+      ctx.entity.localTransform.y += dy;
+    }
+
+    // Handle hierarchy: update localTransform for parented, transform for root
+    if (ctx.entity.parentId) {
+      // Update localTransform (already done above), then propagate
+      ctx.entityManager.updateWorldTransforms(ctx.entity.id);
+    } else {
+      // Root entity: update transform directly
+      ctx.entity.transform.x = ctx.entity.localTransform.x;
+      ctx.entity.transform.y = ctx.entity.localTransform.y;
+    }
+
+    // Sync to Godot bridge (only the moved entity, not children)
+    ctx.setEntityPosition(ctx.entity.id, ctx.entity.transform.x, ctx.entity.transform.y);
   });
 
   executor.registerHandler('rotate', (behavior, ctx) => {
@@ -275,5 +400,132 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
       const newVel = { x: vel.x * scale, y: vel.y * scale };
       ctx.physics.setLinearVelocity(ctx.entity.bodyId, newVel);
     }
+  });
+
+  executor.registerHandler('set_velocity', (behavior, ctx) => {
+    const b = behavior as SetVelocityBehavior;
+    if (!ctx.entity.bodyId) {
+      throw new Error(`[set_velocity] Cannot set velocity on entity '${ctx.entity.id}' without a physics body. Add a physics component or use translate behavior instead.`);
+    }
+
+    const speed = ctx.resolveNumber(b.speed);
+    const overwrite = b.overwrite ?? true;
+
+    let vx = 0;
+    let vy = 0;
+
+    switch (b.direction.type) {
+      case 'vector': {
+        const length = Math.sqrt(b.direction.x * b.direction.x + b.direction.y * b.direction.y);
+        if (length > 0) {
+          vx = (b.direction.x / length) * speed;
+          vy = (b.direction.y / length) * speed;
+        }
+        break;
+      }
+      case 'toward_target': {
+        const targetTag = b.direction.targetTag ?? 'player';
+        const target = ctx.entityManager.getEntitiesByTag(targetTag)[0];
+        if (target) {
+          const tx = target.transform.x - ctx.entity.transform.x;
+          const ty = target.transform.y - ctx.entity.transform.y;
+          const length = Math.sqrt(tx * tx + ty * ty);
+          if (length > 0) {
+            vx = (tx / length) * speed;
+            vy = (ty / length) * speed;
+          }
+        }
+        break;
+      }
+      case 'away_from_target': {
+        const targetTag = b.direction.targetTag ?? 'player';
+        const target = ctx.entityManager.getEntitiesByTag(targetTag)[0];
+        if (target) {
+          const tx = ctx.entity.transform.x - target.transform.x;
+          const ty = ctx.entity.transform.y - target.transform.y;
+          const length = Math.sqrt(tx * tx + ty * ty);
+          if (length > 0) {
+            vx = (tx / length) * speed;
+            vy = (ty / length) * speed;
+          }
+        }
+        break;
+      }
+      case 'random': {
+        const angle = Math.random() * 2 * Math.PI;
+        vx = Math.cos(angle) * speed;
+        vy = Math.sin(angle) * speed;
+        break;
+      }
+    }
+
+    if (overwrite) {
+      ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: vx, y: vy });
+    } else {
+      const currentVel = ctx.physics.getLinearVelocity(ctx.entity.bodyId);
+      ctx.physics.setLinearVelocity(ctx.entity.bodyId, {
+        x: currentVel.x + vx,
+        y: currentVel.y + vy,
+      });
+    }
+  });
+
+  executor.registerHandler('apply_impulse', (behavior, ctx) => {
+    const b = behavior as ApplyImpulseBehavior;
+    if (!ctx.entity.bodyId) {
+      throw new Error(`[apply_impulse] Cannot apply impulse on entity '${ctx.entity.id}' without a physics body. Add a physics component or use translate behavior instead.`);
+    }
+
+    const magnitude = ctx.resolveNumber(b.magnitude);
+
+    let ix = 0;
+    let iy = 0;
+
+    switch (b.direction.type) {
+      case 'vector': {
+        const length = Math.sqrt(b.direction.x * b.direction.x + b.direction.y * b.direction.y);
+        if (length > 0) {
+          ix = (b.direction.x / length) * magnitude;
+          iy = (b.direction.y / length) * magnitude;
+        }
+        break;
+      }
+      case 'toward_target': {
+        const targetTag = b.direction.targetTag ?? 'player';
+        const target = ctx.entityManager.getEntitiesByTag(targetTag)[0];
+        if (target) {
+          const tx = target.transform.x - ctx.entity.transform.x;
+          const ty = target.transform.y - ctx.entity.transform.y;
+          const length = Math.sqrt(tx * tx + ty * ty);
+          if (length > 0) {
+            ix = (tx / length) * magnitude;
+            iy = (ty / length) * magnitude;
+          }
+        }
+        break;
+      }
+      case 'away_from_target': {
+        const targetTag = b.direction.targetTag ?? 'player';
+        const target = ctx.entityManager.getEntitiesByTag(targetTag)[0];
+        if (target) {
+          const tx = ctx.entity.transform.x - target.transform.x;
+          const ty = ctx.entity.transform.y - target.transform.y;
+          const length = Math.sqrt(tx * tx + ty * ty);
+          if (length > 0) {
+            ix = (tx / length) * magnitude;
+            iy = (ty / length) * magnitude;
+          }
+        }
+        break;
+      }
+      case 'random': {
+        const angle = Math.random() * 2 * Math.PI;
+        ix = Math.cos(angle) * magnitude;
+        iy = Math.sin(angle) * magnitude;
+        break;
+      }
+    }
+
+    ctx.physics.applyImpulse(ctx.entity.bodyId, { x: ix, y: iy });
   });
 }

@@ -26,7 +26,11 @@ export type BehaviorType =
   | 'attach_to'
   | 'teleport'
   | 'maintain_speed'
-  | 'sprite_effect';
+  | 'sprite_effect'
+  | 'translate'
+  | 'set_velocity'
+  | 'apply_impulse'
+  | 'tween';
 
 export type MoveDirection =
   | 'left'
@@ -35,6 +39,16 @@ export type MoveDirection =
   | 'down'
   | 'toward_target'
   | 'away_from_target';
+
+/**
+ * Vector-based movement direction for translate, set_velocity, and apply_impulse behaviors.
+ * Uses a direction vector (normalized) plus a speed in meters/second.
+ */
+export type MovementDirection =
+  | { type: 'vector'; x: number; y: number }
+  | { type: 'toward_target'; targetTag?: string }
+  | { type: 'away_from_target'; targetTag?: string }
+  | { type: 'random' };
 
 export type SpawnEvent = 'tap' | 'timer' | 'collision' | 'destroy' | 'start';
 export type BehaviorSpawnPosition = 'at_self' | 'at_touch' | 'random_in_bounds' | 'offset';
@@ -279,6 +293,63 @@ export interface SpriteEffectBehavior extends BaseBehavior {
   };
 }
 
+/**
+ * Transform-based movement (no physics required).
+ * Moves entity by modifying its transform position at speed in meters/second.
+ */
+export interface TranslateBehavior extends BaseBehavior {
+  type: 'translate';
+  direction: MovementDirection;
+  /** Speed in meters per second */
+  speed: number;
+  /** Optional bounds to clamp movement within */
+  bounds?: Bounds;
+  /** Optional duration in seconds (infinite if not specified) */
+  duration?: number;
+}
+
+/**
+ * Sets physics body velocity directly.
+ * Requires entity to have a physics body.
+ * Units: meters per second.
+ */
+export interface SetVelocityBehavior extends BaseBehavior {
+  type: 'set_velocity';
+  direction: MovementDirection;
+  /** Speed in meters per second */
+  speed: number;
+  /** Override current velocity (true) or add to it (false) */
+  overwrite?: boolean;
+}
+
+/**
+ * Applies an instantaneous impulse to the physics body.
+ * Requires entity to have a physics body.
+ * Impulse = force × time, resulting in immediate velocity change.
+ */
+export interface ApplyImpulseBehavior extends BaseBehavior {
+  type: 'apply_impulse';
+  direction: MovementDirection;
+  /** Impulse magnitude (force × time) */
+  magnitude: number;
+  /** Optional duration for continuous impulse application */
+  duration?: number;
+}
+
+export type TweenProperty = 'position' | 'rotation' | 'scale' | 'opacity';
+
+export interface TweenBehavior extends BaseBehavior {
+  type: 'tween';
+  property: TweenProperty;
+  to: number | { x: number; y: number };
+  from?: number | { x: number; y: number }; // optional, defaults to current
+  duration: number;
+  ease?: string; // easing function name
+  loop?: boolean;
+  yoyo?: boolean;
+  onCompleteEvent?: string;
+}
+
 export type Behavior =
   | MoveBehavior
   | RotateBehavior
@@ -303,7 +374,11 @@ export type Behavior =
   | AttachToBehavior
   | TeleportBehavior
   | MaintainSpeedBehavior
-  | SpriteEffectBehavior;
+  | SpriteEffectBehavior
+  | TranslateBehavior
+  | SetVelocityBehavior
+  | ApplyImpulseBehavior
+  | TweenBehavior;
 
 /**
  * Condition for when a conditional behavior group should be active.

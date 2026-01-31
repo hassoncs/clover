@@ -88,18 +88,6 @@ const game: GameDefinition = {
       category: 'physics',
       label: 'Tilt Push Force',
     },
-    frictionFactor: {
-      value: 0.90,
-      tuning: { min: 0.80, max: 0.98, step: 0.01 },
-      category: 'physics',
-      label: 'Paddle Friction',
-    },
-    velocityThreshold: {
-      value: 0.1,
-      tuning: { min: 0.01, max: 0.5, step: 0.01 },
-      category: 'physics',
-      label: 'Velocity Cutoff',
-    },
   },
   templates: {
     ball: {
@@ -123,7 +111,9 @@ const game: GameDefinition = {
         friction: 0,
         restitution: 1,
       },
-      behaviors: [],
+      behaviors: [
+        { type: 'maintain_speed', speed: 8 },
+      ],
     },
     paddle: {
       id: "paddle",
@@ -145,7 +135,7 @@ const game: GameDefinition = {
         width: PADDLE_WIDTH,
         height: PADDLE_HEIGHT,
         friction: 0.1,
-        restitution: 0.2,
+        restitution: 1,
       },
       behaviors: [],
     },
@@ -406,21 +396,7 @@ const game: GameDefinition = {
         },
       ],
     },
-    {
-      id: "paddle_friction",
-      name: "Apply friction to slow paddle when no input",
-      trigger: { type: "frame" },
-      conditions: [
-        { type: "expression", expr: "!input.buttons.left && !input.buttons.right && Math.abs(entity.velocity.x) > variables.velocityThreshold" },
-      ],
-      actions: [
-        {
-          type: "set_velocity",
-          target: { type: "by_tag", tag: "paddle" },
-          x: { expr: "entity.velocity.x * variables.frictionFactor" },
-        },
-      ],
-    },
+
     {
       id: "lock_paddle_y",
       name: "Lock paddle Y position",

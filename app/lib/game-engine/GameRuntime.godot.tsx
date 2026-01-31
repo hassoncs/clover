@@ -86,6 +86,8 @@ import {
   type ScriptInputEvent,
   type ScriptCollisionEvent,
 } from "@/lib/scripting";
+import { TweenSystem } from "./animation/TweenSystem";
+import { setGlobalTweenSystem, cancelTweensForEntity } from "./behaviors/TweenBehaviors";
 
 export interface GameRuntimeGodotProps {
   definition: GameDefinition;
@@ -132,6 +134,7 @@ export function GameRuntimeGodot({
   const inputEntityManagerRef = useRef<InputEntityManager | null>(null);
   const match3SystemRef = useRef<Match3GameSystem | null>(null);
   const slotMachineSystemRef = useRef<SlotMachineSystem | null>(null);
+  const tweenSystemRef = useRef<TweenSystem | null>(null);
   const propertyCacheRef = useRef(new PropertyCache());
   const propertySyncManagerRef = useRef<PropertySyncManager | null>(null);
   const elapsedRef = useRef(0);
@@ -452,11 +455,21 @@ export function GameRuntimeGodot({
           game.entityManager.handleEntitySpawned(event);
         });
         bridge.onEntityDestroyed((entityId) => {
+          cancelTweensForEntity(entityId);
           game.entityManager.handleEntityDestroyed(entityId);
         });
 
         const inputEntityManager = new InputEntityManager();
         inputEntityManagerRef.current = inputEntityManager;
+
+        const tweenSystem = new TweenSystem({
+          setEntityPosition: (entityId, x, y) => bridge.setPosition(entityId, x, y),
+          setEntityRotation: (entityId, angle) => bridge.setRotation(entityId, angle),
+          setEntityScale: (entityId, scaleX, scaleY) => bridge.setScale(entityId, scaleX, scaleY),
+          setEntityOpacity: (entityId, opacity) => bridge.setOpacity(entityId, opacity),
+        });
+        tweenSystemRef.current = tweenSystem;
+        setGlobalTweenSystem(tweenSystem);
 
         if (definition.match3) {
           const match3System = new Match3GameSystem(
@@ -773,6 +786,8 @@ export function GameRuntimeGodot({
       match3SystemRef.current = null;
       slotMachineSystemRef.current?.destroy();
       slotMachineSystemRef.current = null;
+      setGlobalTweenSystem(null);
+      tweenSystemRef.current = null;
       propertySyncManagerRef.current?.stop();
       propertySyncManagerRef.current = null;
       scriptSandboxRef.current?.dispose();
@@ -987,6 +1002,11 @@ export function GameRuntimeGodot({
         slotMachineSystem.update(dt);
       }
 
+      const tweenSystem = tweenSystemRef.current;
+      if (tweenSystem) {
+        tweenSystem.update(dt);
+      }
+
       const behaviorContext: Omit<
         BehaviorContext,
         "entity" | "resolveNumber" | "resolveVec2"
@@ -1020,6 +1040,9 @@ export function GameRuntimeGodot({
         },
         setEntityPosition: (entityId, x, y) => {
           bridge.setPosition(entityId, x, y);
+        },
+        setEntityOpacity: (entityId, opacity) => {
+          bridge.setOpacity(entityId, opacity);
         },
         destroyEntity: (id) => game.entityManager.destroyEntity(id),
         triggerEvent: (name, data) =>

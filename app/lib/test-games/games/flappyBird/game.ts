@@ -175,13 +175,9 @@ const game: GameDefinition = {
     pipeGroup: {
       id: "pipeGroup",
       tags: ["pipe-group", "obstacle"],
-      physics: {
-        bodyType: "kinematic",
-        density: 0,
-      },
       // Invisible parent that moves and positions children
       behaviors: [
-        { type: "move", direction: "left", speed: PIPE_SPEED },
+        { type: "translate", direction: { type: "vector", x: -1, y: 0 }, speed: PIPE_SPEED },
         { type: "destroy_when_off_screen", edge: "left", buffer: 2, recursive: true },
         {
           type: "configure_children_at_spawn",

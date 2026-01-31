@@ -15,6 +15,7 @@ describe('BehaviorExecutor', () => {
       name: 'test',
       template: 'test',
       transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+      localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
       behaviors: [],
       tags: [],
       tagBits: new Set(),
@@ -37,7 +38,9 @@ describe('BehaviorExecutor', () => {
       resolveNumber: (v: any) => v,
       entityManager: {
         getEntitiesByTag: vi.fn().mockReturnValue([]),
+        updateWorldTransforms: vi.fn(),
       } as any,
+      setEntityPosition: vi.fn(),
       createEvalContextForEntity: vi.fn().mockReturnValue({}),
       computedValues: {
         resolveNumber: (v: any) => v,
@@ -54,7 +57,8 @@ describe('BehaviorExecutor', () => {
 
     executor.executeAll([entity], context);
 
-    expect(context.physics.setLinearVelocity).toHaveBeenCalled();
+    // move behavior now updates localTransform and calls setEntityPosition
+    expect(context.setEntityPosition).toHaveBeenCalled();
   });
 
   it('should execute timer behavior', () => {

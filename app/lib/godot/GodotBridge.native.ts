@@ -567,6 +567,10 @@ export function createNativeGodotBridge(): GodotBridge {
       callGameBridge('set_scale', entityId, scaleX, scaleY);
     },
 
+    setOpacity(entityId: string, opacity: number) {
+      callGameBridge('set_opacity', entityId, opacity);
+    },
+
     async getLinearVelocity(entityId: string): Promise<Vec2 | null> {
       const { RTNGodot, runOnGodotThread } = await getGodotModule();
       

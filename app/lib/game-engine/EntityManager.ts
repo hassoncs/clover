@@ -789,6 +789,109 @@ export class EntityManager {
   }
 
   /**
+   * Component names that can be used in query({ has: [...] })
+   */
+  static readonly QUERYABLE_COMPONENTS = ['visual', 'physics', 'collider', 'zone', 'bodyId'] as const;
+
+  /**
+   * Flexible entity query supporting multiple filter criteria.
+   * Uses existing indexes for optimal performance:
+   * - tags: Uses entitiesByTagId for O(1) lookup per tag
+   * - withinAabb: Uses physics.queryAABB for spatial query
+   * - template/has: Applied as post-filters
+   * 
+   * @example
+   * // Find all dynamic physics entities with 'enemy' tag
+   * entityManager.query({ tags: ['enemy'], has: ['physics', 'bodyId'] })
+   * 
+   * // Find entities by template in an area
+   * entityManager.query({ template: 'coin', withinAabb: { min: {x: 0, y: 0}, max: {x: 10, y: 10} } })
+   */
+  query(options: {
+    /** Filter by tags (all must match) */
+    tags?: string[];
+    /** Filter by template name */
+    template?: string;
+    /** Filter by component presence */
+    has?: Array<'visual' | 'physics' | 'collider' | 'zone' | 'bodyId'>;
+    /** Filter by spatial region */
+    withinAabb?: { min: { x: number; y: number }; max: { x: number; y: number } };
+  }): RuntimeEntity[] {
+    const { tags, template, has, withinAabb } = options;
+
+    // Start with the most selective filter to minimize iterations
+    let candidates: RuntimeEntity[] | null = null;
+
+    // If withinAabb is specified, use it as the starting set (spatial queries are efficient)
+    if (withinAabb) {
+      candidates = this.getEntitiesInAABB(withinAabb.min, withinAabb.max);
+    }
+
+    // If tags are specified and no spatial filter, use tag index as starting set
+    if (tags && tags.length > 0 && candidates === null) {
+      // Use the first tag's entities as the base set
+      candidates = this.getEntitiesByTag(tags[0]);
+      
+      // Intersect with remaining tags
+      for (let i = 1; i < tags.length && candidates.length > 0; i++) {
+        const taggedIds = new Set(this.getEntitiesByTag(tags[i]).map(e => e.id));
+        candidates = candidates.filter(e => taggedIds.has(e.id));
+      }
+    }
+
+    // If no indexed filter, iterate all entities
+    if (candidates === null) {
+      candidates = Array.from(this.entities.values());
+    }
+
+    // Apply remaining filters
+    let result = candidates;
+
+    // Filter by remaining tags (if we started with spatial query)
+    if (tags && tags.length > 0 && withinAabb) {
+      result = result.filter(entity => {
+        for (const tag of tags) {
+          if (!entity.tags.includes(tag)) return false;
+        }
+        return true;
+      });
+    }
+
+    // Filter by template
+    if (template) {
+      result = result.filter(entity => entity.template === template);
+    }
+
+    // Filter by component presence
+    if (has && has.length > 0) {
+      result = result.filter(entity => {
+        for (const component of has) {
+          switch (component) {
+            case 'visual':
+              if (!entity.visual) return false;
+              break;
+            case 'physics':
+              if (!entity.physics) return false;
+              break;
+            case 'collider':
+              if (!entity.collider) return false;
+              break;
+            case 'zone':
+              if (!entity.zone) return false;
+              break;
+            case 'bodyId':
+              if (!entity.bodyId) return false;
+              break;
+          }
+        }
+        return true;
+      });
+    }
+
+    return result;
+  }
+
+  /**
    * Recursively updates world transforms for an entity and all descendants.
    * Call this when a parent entity moves.
    */

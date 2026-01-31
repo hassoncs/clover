@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-01-30T02:40:45.379Z",
+  "generatedAt": "2026-01-31T19:40:31.749Z",
   "games": [
     {
       "id": "ballSort",
@@ -1658,26 +1658,6 @@
             },
             "category": "physics",
             "label": "Tilt Push Force"
-          },
-          "frictionFactor": {
-            "value": 0.9,
-            "tuning": {
-              "min": 0.8,
-              "max": 0.98,
-              "step": 0.01
-            },
-            "category": "physics",
-            "label": "Paddle Friction"
-          },
-          "velocityThreshold": {
-            "value": 0.1,
-            "tuning": {
-              "min": 0.01,
-              "max": 0.5,
-              "step": 0.01
-            },
-            "category": "physics",
-            "label": "Velocity Cutoff"
           }
         },
         "templates": {
@@ -1704,7 +1684,12 @@
               "friction": 0,
               "restitution": 1
             },
-            "behaviors": []
+            "behaviors": [
+              {
+                "type": "maintain_speed",
+                "speed": 8
+              }
+            ]
           },
           "paddle": {
             "id": "paddle",
@@ -1728,7 +1713,7 @@
               "width": 2,
               "height": 0.4,
               "friction": 0.1,
-              "restitution": 0.2
+              "restitution": 1
             },
             "behaviors": []
           },
@@ -2520,31 +2505,6 @@
             ]
           },
           {
-            "id": "paddle_friction",
-            "name": "Apply friction to slow paddle when no input",
-            "trigger": {
-              "type": "frame"
-            },
-            "conditions": [
-              {
-                "type": "expression",
-                "expr": "!input.buttons.left && !input.buttons.right && Math.abs(entity.velocity.x) > variables.velocityThreshold"
-              }
-            ],
-            "actions": [
-              {
-                "type": "set_velocity",
-                "target": {
-                  "type": "by_tag",
-                  "tag": "paddle"
-                },
-                "x": {
-                  "expr": "entity.velocity.x * variables.frictionFactor"
-                }
-              }
-            ]
-          },
-          {
             "id": "lock_paddle_y",
             "name": "Lock paddle Y position",
             "trigger": {
@@ -2725,14 +2685,14 @@
               "pipe-group",
               "obstacle"
             ],
-            "physics": {
-              "bodyType": "kinematic",
-              "density": 0
-            },
             "behaviors": [
               {
-                "type": "move",
-                "direction": "left",
+                "type": "translate",
+                "direction": {
+                  "type": "vector",
+                  "x": -1,
+                  "y": 0
+                },
                 "speed": 15
               },
               {

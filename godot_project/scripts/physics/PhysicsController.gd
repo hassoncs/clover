@@ -3,8 +3,8 @@ extends RefCounted
 
 var bridge: Node
 
-func _init(game_bridge: Node) -> void:
-	bridge = game_bridge
+func _init(bridge: Node) -> void:
+	self.bridge = bridge
 
 func set_linear_velocity(entity_id: String, vx: float, vy: float) -> void:
 	if not bridge.entities.has(entity_id):
@@ -71,33 +71,3 @@ func apply_torque(entity_id: String, torque: float) -> void:
 	if node is RigidBody2D:
 		var godot_torque = -torque * bridge.pixels_per_meter * bridge.pixels_per_meter
 		node.apply_torque(godot_torque)
-
-func set_transform(entity_id: String, x: float, y: float, angle: float) -> void:
-	if not bridge.entities.has(entity_id):
-		return
-	var node = bridge.entities[entity_id]
-	var godot_pos = CoordinateUtils.game_to_godot_pos(Vector2(x, y), bridge.pixels_per_meter)
-	node.position = godot_pos
-	node.rotation = -angle
-
-func set_position(entity_id: String, x: float, y: float) -> void:
-	if not bridge.entities.has(entity_id):
-		return
-	var node = bridge.entities[entity_id]
-	var godot_pos = CoordinateUtils.game_to_godot_pos(Vector2(x, y), bridge.pixels_per_meter)
-	node.position = godot_pos
-
-func set_rotation(entity_id: String, angle: float) -> void:
-	if not bridge.entities.has(entity_id):
-		return
-	var node = bridge.entities[entity_id]
-	node.rotation = -angle
-
-func get_entity_transform(entity_id: String) -> Variant:
-	if not bridge.entities.has(entity_id):
-		return null
-	var node = bridge.entities[entity_id]
-	if not is_instance_valid(node):
-		return null
-	var game_pos = CoordinateUtils.godot_to_game_pos(node.position, bridge.pixels_per_meter)
-	return {"x": game_pos.x, "y": game_pos.y, "angle": -node.rotation}

@@ -238,7 +238,10 @@ func create_physics_body(
 			node.physics_material_override = material
 
 			# Calculate mass if density provided and no direct mass
-			if mass <= 0 and density > 0:
+			var final_mass = 1.0  # Default mass
+			if mass > 0:
+				final_mass = mass
+			elif density > 0:
 				var shape_type = collider_data.get("shape", "box")
 				var shape_area = 1.0
 				if shape_type == "box":
@@ -251,9 +254,11 @@ func create_physics_body(
 				elif shape_type == "polygon":
 					var vertices = collider_data.get("vertices", [])
 					shape_area = calculate_polygon_area(vertices)
-				node.mass = density * shape_area
-			elif mass > 0:
-				node.mass = mass
+				final_mass = density * shape_area
+			# Ensure mass is always > 0 (Godot requires mass > 0)
+			if final_mass <= 0:
+				final_mass = 1.0
+			node.mass = final_mass
 
 		node.add_child(collision)
 

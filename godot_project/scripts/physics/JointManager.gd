@@ -8,11 +8,103 @@ var joint_counter: int = 0
 func _init(game_bridge: Node) -> void:
 	bridge = game_bridge
 
+
+# =============================================================================
+# JS HANDLERS (called from JavaScript bridge)
+# =============================================================================
+
+func _js_create_revolute_joint(args: Array) -> int:
+	# args: [bodyA_id, bodyB_id, anchorX, anchorY, enableLimit, lowerAngle, upperAngle, enableMotor, motorSpeed, maxMotorTorque]
+	if args.size() < 4:
+		return -1
+	var enable_limit = args.size() > 4 and bool(args[4])
+	var lower_angle = float(args[5]) if args.size() > 5 else 0.0
+	var upper_angle = float(args[6]) if args.size() > 6 else 0.0
+	var enable_motor = args.size() > 7 and bool(args[7])
+	var motor_speed_val = float(args[8]) if args.size() > 8 else 0.0
+	var max_motor_torque = float(args[9]) if args.size() > 9 else 0.0
+	return create_revolute_joint(
+		str(args[0]), str(args[1]), float(args[2]), float(args[3]),
+		enable_limit, lower_angle, upper_angle, enable_motor, motor_speed_val, max_motor_torque
+	)
+
+
+func _js_create_distance_joint(args: Array) -> int:
+	# args: [bodyA_id, bodyB_id, anchorAX, anchorAY, anchorBX, anchorBY, length, stiffness, damping]
+	if args.size() < 6:
+		return -1
+	var length = float(args[6]) if args.size() > 6 else 0.0
+	var stiffness = float(args[7]) if args.size() > 7 else 0.0
+	var damping = float(args[8]) if args.size() > 8 else 0.0
+	return create_distance_joint(
+		str(args[0]), str(args[1]),
+		float(args[2]), float(args[3]), float(args[4]), float(args[5]),
+		length, stiffness, damping
+	)
+
+
+func _js_create_prismatic_joint(args: Array) -> int:
+	# args: [bodyA_id, bodyB_id, anchorX, anchorY, axisX, axisY, enableLimit, lowerTrans, upperTrans, enableMotor, motorSpeed, maxMotorForce]
+	if args.size() < 6:
+		return -1
+	var enable_limit = args.size() > 6 and bool(args[6])
+	var lower_trans = float(args[7]) if args.size() > 7 else 0.0
+	var upper_trans = float(args[8]) if args.size() > 8 else 0.0
+	var enable_motor = args.size() > 9 and bool(args[9])
+	var motor_speed_val = float(args[10]) if args.size() > 10 else 0.0
+	var max_motor_force = float(args[11]) if args.size() > 11 else 0.0
+	return create_prismatic_joint(
+		str(args[0]), str(args[1]),
+		float(args[2]), float(args[3]), float(args[4]), float(args[5]),
+		enable_limit, lower_trans, upper_trans, enable_motor, motor_speed_val, max_motor_force
+	)
+
+
+func _js_create_weld_joint(args: Array) -> int:
+	# args: [bodyA_id, bodyB_id, anchorX, anchorY, stiffness, damping]
+	if args.size() < 4:
+		return -1
+	var stiffness = float(args[4]) if args.size() > 4 else 0.0
+	var damping = float(args[5]) if args.size() > 5 else 0.0
+	return create_weld_joint(str(args[0]), str(args[1]), float(args[2]), float(args[3]), stiffness, damping)
+
+
+func _js_create_mouse_joint(args: Array) -> int:
+	# args: [body_id, targetX, targetY, maxForce, stiffness, damping]
+	if args.size() < 4:
+		return -1
+	var stiffness = float(args[4]) if args.size() > 4 else 5.0
+	var damping = float(args[5]) if args.size() > 5 else 0.7
+	return create_mouse_joint(str(args[0]), float(args[1]), float(args[2]), float(args[3]), stiffness, damping)
+
+
+func _js_destroy_joint(args: Array) -> void:
+	if args.size() < 1:
+		return
+	destroy_joint(int(args[0]))
+
+
+func _js_set_motor_speed(args: Array) -> void:
+	if args.size() < 2:
+		return
+	set_motor_speed(int(args[0]), float(args[1]))
+
+
+func _js_set_mouse_target(args: Array) -> void:
+	if args.size() < 3:
+		return
+	set_mouse_target(int(args[0]), float(args[1]), float(args[2]))
+
+
+# =============================================================================
+# PUBLIC API
+# =============================================================================
+
 func create_revolute_joint(entity_a: String, entity_b: String, anchor_x: float, anchor_y: float, 
 		enable_limit: bool = false, lower_angle: float = 0.0, upper_angle: float = 0.0,
 		enable_motor: bool = false, motor_speed: float = 0.0, max_motor_torque: float = 0.0) -> int:
 	
-	var godot_anchor = CoordinateUtils.game_to_godot_pos(Vector2(anchor_x, anchor_y), bridge.pixels_per_meter)
+	var godot_anchor = bridge.game_to_godot_pos(Vector2(anchor_x, anchor_y))
 	
 	if not bridge.entities.has(entity_a) or not bridge.entities.has(entity_b):
 		return -1
@@ -41,8 +133,8 @@ func create_distance_joint(entity_a: String, entity_b: String,
 		anchor_ax: float, anchor_ay: float, anchor_bx: float, anchor_by: float,
 		length: float = 0.0, stiffness: float = 0.0, damping: float = 0.0) -> int:
 	
-	var anchor_a = CoordinateUtils.game_to_godot_pos(Vector2(anchor_ax, anchor_ay), bridge.pixels_per_meter)
-	var anchor_b = CoordinateUtils.game_to_godot_pos(Vector2(anchor_bx, anchor_by), bridge.pixels_per_meter)
+	var anchor_a = bridge.game_to_godot_pos(Vector2(anchor_ax, anchor_ay))
+	var anchor_b = bridge.game_to_godot_pos(Vector2(anchor_bx, anchor_by))
 	
 	if not bridge.entities.has(entity_a) or not bridge.entities.has(entity_b):
 		return -1
@@ -79,7 +171,7 @@ func create_prismatic_joint(entity_a: String, entity_b: String,
 		enable_limit: bool = false, lower_trans: float = 0.0, upper_trans: float = 0.0,
 		enable_motor: bool = false, motor_speed: float = 0.0, max_motor_force: float = 0.0) -> int:
 	
-	var anchor = CoordinateUtils.game_to_godot_pos(Vector2(anchor_x, anchor_y), bridge.pixels_per_meter)
+	var anchor = bridge.game_to_godot_pos(Vector2(anchor_x, anchor_y))
 	var axis_vec = Vector2(axis_x, -axis_y).normalized()
 	
 	if not bridge.entities.has(entity_a) or not bridge.entities.has(entity_b):
@@ -118,7 +210,7 @@ func create_prismatic_joint(entity_a: String, entity_b: String,
 func create_weld_joint(entity_a: String, entity_b: String,
 		anchor_x: float, anchor_y: float, stiffness: float = 0.0, damping: float = 0.0) -> int:
 	
-	var anchor = CoordinateUtils.game_to_godot_pos(Vector2(anchor_x, anchor_y), bridge.pixels_per_meter)
+	var anchor = bridge.game_to_godot_pos(Vector2(anchor_x, anchor_y))
 	
 	if not bridge.entities.has(entity_a) or not bridge.entities.has(entity_b):
 		return -1
@@ -159,7 +251,7 @@ func create_mouse_joint(entity_id: String, target_x: float, target_y: float,
 	joints[joint_counter] = {
 		"type": "mouse",
 		"entity_id": entity_id,
-		"target": CoordinateUtils.game_to_godot_pos(Vector2(target_x, target_y), bridge.pixels_per_meter),
+		"target": bridge.game_to_godot_pos(Vector2(target_x, target_y)),
 		"max_force": max_force,
 		"stiffness": stiffness,
 		"damping": damping
@@ -170,7 +262,7 @@ func set_mouse_target(joint_id: int, target_x: float, target_y: float) -> void:
 	if joints.has(joint_id):
 		var joint = joints[joint_id]
 		if joint is Dictionary and joint.get("type") == "mouse":
-			joint["target"] = CoordinateUtils.game_to_godot_pos(Vector2(target_x, target_y), bridge.pixels_per_meter)
+			joint["target"] = bridge.game_to_godot_pos(Vector2(target_x, target_y))
 
 func set_motor_speed(joint_id: int, speed: float) -> void:
 	if joints.has(joint_id):

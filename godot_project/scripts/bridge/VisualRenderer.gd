@@ -6,36 +6,322 @@ extends RefCounted
 # Handles all visual rendering logic extracted from GameBridge
 # ============================================================================
 
+var _bridge: Node = null
 var _pixels_per_meter: float = 50.0
 var _debug_show_shapes: bool = false
 var _texture_cache: Dictionary = {}
-var _font_cache: Dictionary = {}
+var _pending_textures: Array = []
 
-# Callback for image texture downloads (injected from GameBridge)
-var _download_image_texture_cb: Callable = func(_url: String, _callback: Callable): pass
+# Preload tracking
+var _preload_pending_count: int = 0
+var _preload_completed_count: int = 0
+var _preload_failed_count: int = 0
+var _preload_progress_callback: Callable = Callable()
 
-func _init(pixels_per_meter: float, debug_show_shapes: bool, texture_cache: Dictionary, font_cache: Dictionary, download_image_texture_cb: Callable):
-	_pixels_per_meter = pixels_per_meter
-	_debug_show_shapes = debug_show_shapes
-	_texture_cache = texture_cache
-	_font_cache = font_cache
-	_download_image_texture_cb = download_image_texture_cb
+func _init(bridge: Node) -> void:
+	_bridge = bridge
+
+
+# ============================================================================
+# JS HANDLERS (called from JavaScript bridge)
+# ============================================================================
+
+func _js_set_entity_image(args: Array) -> void:
+	if args.size() < 4:
+		if _bridge and "_push_error" in _bridge:
+			_bridge._push_error("[VisualRenderer] setEntityImage requires 4 args: entity_id, url, width, height")
+		return
+	set_entity_image(str(args[0]), str(args[1]), float(args[2]), float(args[3]))
+
+
+func _js_set_entity_atlas_region(args: Array) -> void:
+	if args.size() < 8:
+		if _bridge and "_push_error" in _bridge:
+			_bridge._push_error("[VisualRenderer] setEntityAtlasRegion requires 8 args: entity_id, atlas_url, x, y, w, h, width, height")
+		return
+	var entity_id = str(args[0])
+	var atlas_url = str(args[1])
+	var x = float(args[2])
+	var y = float(args[3])
+	var w = float(args[4])
+	var h = float(args[5])
+	var width = float(args[6])
+	var height = float(args[7])
+	set_entity_atlas_region(entity_id, atlas_url, x, y, w, h, width, height)
+
+
+func _js_set_opacity(args: Array) -> void:
+	if args.size() < 2:
+		return
+	var entity_id = str(args[0])
+	var opacity = float(args[1])
+	set_opacity(entity_id, opacity)
+
+
+func _js_set_debug_show_shapes(args: Array) -> void:
+	if args.size() < 1:
+		if _bridge and "_push_error" in _bridge:
+			_bridge._push_error("[VisualRenderer] setDebugShowShapes requires 1 arg: show_shapes (boolean)")
+		return
+	var enabled = bool(args[0])
+	set_debug_show_shapes(enabled)
+
+
+func _js_set_debug_settings(args: Array) -> void:
+	if args.size() < 1:
+		if _bridge and "_push_error" in _bridge:
+			_bridge._push_error("[VisualRenderer] setDebugSettings requires 1 arg: settings JSON string")
+		return
+	var json_str = str(args[0])
+	set_debug_settings(json_str)
+
+
+func _js_clear_texture_cache(args: Array) -> void:
+	if args.size() > 0 and str(args[0]) != "":
+		var url = str(args[0])
+		clear_texture_cache(url)
+	else:
+		clear_texture_cache("")
+
+
+func _js_preload_textures(args: Array) -> void:
+	if args.size() < 1:
+		if _bridge and "_push_error" in _bridge:
+			_bridge._push_error("[VisualRenderer] preloadTextures requires at least 1 arg: urls (JSON string)")
+		return
+
+	var urls_json = str(args[0])
+	var urls = JSON.parse_string(urls_json)
+	if urls == null or not (urls is Array):
+		if _bridge and "_push_error" in _bridge:
+			_bridge._push_error("[VisualRenderer] preloadTextures: failed to parse URLs from JSON")
+		return
+
+	# Store callback if provided
+	var progress_callback: Callable = Callable()
+	if args.size() > 1 and args[1] != null:
+		# Handle JavaScript callback
+		pass
+
+	preload_textures(urls, progress_callback)
+
+
+# ============================================================================
+# PUBLIC API
+# ============================================================================
+
+func set_entity_image(entity_id: String, url: String, width: float, height: float) -> void:
+	if not _has_entity(entity_id):
+		if _bridge and "_push_error" in _bridge:
+			_bridge._push_error("[VisualRenderer] set_entity_image: entity not found: " + entity_id)
+		return
+
+	var node = _get_entity(entity_id)
+	var sprite: Sprite2D = _find_sprite_in_entity(node)
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var sprite_data = {"width": width, "height": height}
+
+	if _texture_cache.has(url):
+		var texture = _texture_cache[url]
+		sprite.texture = texture
+		_apply_sprite_scale(sprite, sprite_data, texture)
+		_hide_shape_children(node)
+		return
+
+	_download_texture(sprite, url, sprite_data)
+
+
+func set_entity_atlas_region(
+	entity_id: String, atlas_url: String, x: float, y: float, w: float, h: float, width: float, height: float
+) -> void:
+	if not _has_entity(entity_id):
+		if _bridge and "_push_error" in _bridge:
+			_bridge._push_error("[VisualRenderer] set_entity_atlas_region: entity not found: " + entity_id)
+		return
+
+	var node = _get_entity(entity_id)
+	var sprite: Sprite2D = _find_sprite_in_entity(node)
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var sprite_data = {"width": width, "height": height}
+	var region_dict = {"x": x, "y": y, "w": w, "h": h}
+
+	if _texture_cache.has(atlas_url):
+		_apply_atlas_region(sprite, _texture_cache[atlas_url], region_dict, sprite_data)
+		_hide_shape_children(node)
+	else:
+		_download_atlas_texture(sprite, atlas_url, region_dict, sprite_data)
+
+
+func set_opacity(entity_id: String, opacity: float) -> void:
+	if not _has_entity(entity_id):
+		return
+
+	var node = _get_entity(entity_id)
+	var sprite = _find_sprite_in_entity(node)
+	if sprite:
+		sprite.modulate.a = opacity
+
+
+func set_debug_show_shapes(enabled: bool) -> void:
+	_debug_show_shapes = enabled
+
+	# Apply debug visibility to all existing entities
+	if _bridge and "entities" in _bridge:
+		var entities = _bridge.entities
+		for entity_id in entities:
+			var node = entities[entity_id]
+			if node:
+				_apply_debug_visibility(node)
+
+
+func set_debug_settings(json_str: String) -> void:
+	var json = JSON.new()
+	var parse_result = json.parse(json_str)
+	if parse_result != OK:
+		if _bridge and "_push_error" in _bridge:
+			_bridge._push_error("[VisualRenderer] setDebugSettings: Invalid JSON: " + json_str)
+		return
+
+	var settings = json.data
+	if not settings is Dictionary:
+		if _bridge and "_push_error" in _bridge:
+			_bridge._push_error("[VisualRenderer] setDebugSettings: Expected object, got: " + str(typeof(settings)))
+		return
+
+	# Forward to devtools overlay if available
+	if _bridge and "_devtools_overlay" in _bridge and _bridge._devtools_overlay:
+		_bridge._devtools_overlay.set_settings(settings)
+
+
+func clear_texture_cache(url: String = "") -> void:
+	if url != "":
+		if _texture_cache.has(url):
+			_texture_cache.erase(url)
+	else:
+		_texture_cache.clear()
+
+
+func preload_textures(urls: Array, progress_callback: Callable = Callable()) -> void:
+	if urls.size() == 0:
+		if progress_callback.is_valid():
+			progress_callback.call(100, 0, 0)
+		return
+
+	_preload_progress_callback = progress_callback
+	_preload_pending_count = urls.size()
+	_preload_completed_count = 0
+	_preload_failed_count = 0
+
+	for url_variant in urls:
+		var url = str(url_variant)
+		if url == "":
+			_on_preload_complete(url, false)
+			continue
+
+		# Skip if already cached
+		if _texture_cache.has(url):
+			_on_preload_complete(url, true)
+			continue
+
+		_download_texture_for_preload(url)
 
 
 func update_pixels_per_meter(new_value: float) -> void:
 	_pixels_per_meter = new_value
+
+
+func set_entity_image_base64(
+	entity_id: String, base64_data: String, width: float, height: float, sprite_data: Dictionary = {}
+) -> void:
+	if not _has_entity(entity_id):
+		if _bridge and "_push_error" in _bridge:
+			_bridge._push_error("[VisualRenderer] set_entity_image_base64: entity not found: " + entity_id)
+		return
+
+	var node = _get_entity(entity_id)
+	var sprite: Sprite2D = _find_sprite_in_entity(node)
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var raw_data = Marshalls.base64_to_raw(base64_data)
+	if raw_data.is_empty():
+		if _bridge and "_push_error" in _bridge:
+			_bridge._push_error("[VisualRenderer] set_entity_image_base64: failed to decode base64")
+		return
+
+	var image = Image.new()
+	var err = image.load_png_from_buffer(raw_data)
+	if err != OK:
+		err = image.load_jpg_from_buffer(raw_data)
+	if err != OK:
+		err = image.load_webp_from_buffer(raw_data)
+	if err != OK:
+		if _bridge and "_push_error" in _bridge:
+			_bridge._push_error("[VisualRenderer] set_entity_image_base64: failed to parse image data")
+		return
+
+	var texture = ImageTexture.create_from_image(image)
+	_texture_cache[entity_id] = texture
+
+	if is_instance_valid(sprite):
+		sprite.texture = texture
+		var final_sprite_data = sprite_data if not sprite_data.is_empty() else {"width": width, "height": height}
+		_apply_sprite_scale(sprite, final_sprite_data, texture)
+		_hide_shape_children(node)
+
+
+func set_entity_image_from_file(
+	entity_id: String, file_path: String, width: float, height: float, sprite_data: Dictionary = {}
+) -> void:
+	if not _has_entity(entity_id):
+		if _bridge and "_push_error" in _bridge:
+			_bridge._push_error("[VisualRenderer] set_entity_image_from_file: entity not found: " + entity_id)
+		return
+
+	var node = _get_entity(entity_id)
+	var sprite: Sprite2D = _find_sprite_in_entity(node)
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var image = Image.new()
+	var err = image.load(file_path)
+	if err != OK:
+		if _bridge and "_push_error" in _bridge:
+			_bridge._push_error("[VisualRenderer] set_entity_image_from_file: failed to load image from " + file_path + " error=" + str(err))
+		return
+
+	var texture = ImageTexture.create_from_image(image)
+	_texture_cache[entity_id] = texture
+
+	if is_instance_valid(sprite):
+		sprite.texture = texture
+		var final_sprite_data = sprite_data if not sprite_data.is_empty() else {"width": width, "height": height}
+		_apply_sprite_scale(sprite, final_sprite_data, texture)
+		_hide_shape_children(node)
+
 
 # ============================================================================
 # VISUAL DISPATCHER
 # ============================================================================
 
 func add_visual(node: Node2D, visual_data: Dictionary) -> void:
-	# Handles visual component for entities (including image-only entities without physics)
 	var visual_type = visual_data.get("type", "rect")
 	var color = Color.from_string(visual_data.get("color", "#FF0000"), Color.RED)
 	var opacity = visual_data.get("opacity", 1.0)
 	var z_index_val = visual_data.get("zIndex", 0)
-	
+
 	match visual_type:
 		"rect":
 			var polygon = Polygon2D.new()
@@ -117,6 +403,7 @@ func add_visual(node: Node2D, visual_data: Dictionary) -> void:
 		"text":
 			_add_text_sprite(node, visual_data, opacity, z_index_val)
 
+
 # ============================================================================
 # SPRITE RENDERING
 # ============================================================================
@@ -127,7 +414,6 @@ func add_sprite(node: Node2D, sprite_data: Dictionary, physics_data: Dictionary,
 	var opacity = sprite_data.get("opacity", 1.0)
 	var z_index_val = sprite_data.get("zIndex", 0)
 
-	# Helper function to get dimension from sprite_data, physics_data, zone_data, or default
 	var _get_dimension = func(key: String, default_val: float):
 		if sprite_data.has(key):
 			return sprite_data.get(key)
@@ -153,13 +439,10 @@ func add_sprite(node: Node2D, sprite_data: Dictionary, physics_data: Dictionary,
 			])
 			color.a = opacity
 			polygon.z_index = z_index_val
-			# Add texture for shader compatibility (WebGL needs valid TEXTURE_PIXEL_SIZE)
-			# Bake the color INTO the texture with padding for edge-detection shaders
 			var tex_size = max(int(w), int(h), 64)
-			var padding = 16  # Transparent padding for outline/glow shaders
+			var padding = 16
 			polygon.texture = _create_polygon_texture(tex_size, tex_size, color, padding)
-			polygon.color = Color.WHITE  # Don't multiply - color is in texture
-			# UV maps to the padded texture (shape is offset by padding)
+			polygon.color = Color.WHITE
 			polygon.uv = PackedVector2Array([
 				Vector2(padding, padding),
 				Vector2(tex_size + padding, padding),
@@ -173,11 +456,10 @@ func add_sprite(node: Node2D, sprite_data: Dictionary, physics_data: Dictionary,
 			var points: PackedVector2Array = []
 			var uvs: PackedVector2Array = []
 			var tex_size = max(int(radius * 2), 64)
-			var padding = 16  # Transparent padding for edge-detection shaders
+			var padding = 16
 			for i in range(32):
 				var angle = i * TAU / 32
 				points.append(Vector2(cos(angle), sin(angle)) * radius)
-				# Map circle points to UV space, offset by padding
 				uvs.append(Vector2(
 					(cos(angle) + 1.0) * 0.5 * tex_size + padding,
 					(sin(angle) + 1.0) * 0.5 * tex_size + padding
@@ -185,9 +467,8 @@ func add_sprite(node: Node2D, sprite_data: Dictionary, physics_data: Dictionary,
 			polygon.polygon = points
 			color.a = opacity
 			polygon.z_index = z_index_val
-			# Add texture for shader compatibility
 			polygon.texture = _create_polygon_texture(tex_size, tex_size, color, padding)
-			polygon.color = Color.WHITE  # Don't multiply - color is in texture
+			polygon.color = Color.WHITE
 			polygon.uv = uvs
 			node.add_child(polygon)
 		"polygon":
@@ -206,12 +487,11 @@ func add_sprite(node: Node2D, sprite_data: Dictionary, physics_data: Dictionary,
 			polygon.polygon = points
 			color.a = opacity
 			polygon.z_index = z_index_val
-			# Add texture for shader compatibility
 			var poly_size = max_pt - min_pt
 			var tex_size = max(int(poly_size.x), int(poly_size.y), 64)
-			var padding = 16  # Transparent padding for edge-detection shaders
+			var padding = 16
 			polygon.texture = _create_polygon_texture(tex_size, tex_size, color, padding)
-			polygon.color = Color.WHITE  # Don't multiply - color is in texture
+			polygon.color = Color.WHITE
 			var uvs: PackedVector2Array = []
 			for pt in points:
 				uvs.append(Vector2(
@@ -224,6 +504,154 @@ func add_sprite(node: Node2D, sprite_data: Dictionary, physics_data: Dictionary,
 			_add_image_sprite(node, sprite_data, opacity, z_index_val)
 		"text":
 			_add_text_sprite(node, sprite_data, opacity, z_index_val)
+
+
+# ============================================================================
+# TEXTURE DOWNLOADING
+# ============================================================================
+
+func _download_texture_for_preload(url: String) -> void:
+	var http = HTTPRequest.new()
+	if _bridge:
+		_bridge.add_child(http)
+
+	http.request_completed.connect(
+		func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+			http.queue_free()
+			if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+				if _bridge and "_push_warning" in _bridge:
+					_bridge._push_warning("[VisualRenderer] Failed to preload texture: " + url + " (result: " + str(result) + ", code: " + str(response_code) + ")")
+				_on_preload_complete(url, false)
+				return
+
+			if body.size() == 0:
+				if _bridge and "_push_warning" in _bridge:
+					_bridge._push_warning("[VisualRenderer] Empty body for texture: " + url)
+				_on_preload_complete(url, false)
+				return
+
+			var image = Image.new()
+			var err = image.load_png_from_buffer(body)
+			if err != OK:
+				err = image.load_jpg_from_buffer(body)
+			if err != OK:
+				err = image.load_webp_from_buffer(body)
+			if err != OK:
+				if _bridge and "_push_warning" in _bridge:
+					_bridge._push_warning("[VisualRenderer] All image formats failed for: " + url + " (size: " + str(body.size()) + ")")
+				_on_preload_complete(url, false)
+				return
+
+			var texture = ImageTexture.create_from_image(image)
+			_texture_cache[url] = texture
+			_on_preload_complete(url, true)
+	)
+
+	var err = http.request(url)
+	if err != OK:
+		if _bridge and "_push_warning" in _bridge:
+			_bridge._push_warning("[VisualRenderer] Failed to start preload request: " + url)
+		http.queue_free()
+		_on_preload_complete(url, false)
+
+
+func _download_atlas_texture(
+	sprite: Sprite2D, url: String, region_dict: Dictionary, sprite_data: Dictionary
+) -> void:
+	_download_texture(
+		sprite,
+		url,
+		sprite_data,
+		func(texture: Texture2D):
+			if is_instance_valid(sprite):
+				_apply_atlas_region(sprite, texture, region_dict, sprite_data)
+				var node = sprite.get_parent()
+				if node:
+					_hide_shape_children(node)
+	)
+
+
+func _download_texture(sprite: Sprite2D, url: String, sprite_data: Dictionary, callback: Callable = Callable()) -> void:
+	var http = HTTPRequest.new()
+	if _bridge:
+		_bridge.add_child(http)
+
+	http.request_completed.connect(
+		func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+			http.queue_free()
+			if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+				if _bridge and "_push_error" in _bridge:
+					_bridge._push_error("[VisualRenderer] Failed to download texture: " + url + " (code: " + str(response_code) + ")")
+				return
+
+			var image = Image.new()
+			var err = image.load_png_from_buffer(body)
+			if err != OK:
+				err = image.load_jpg_from_buffer(body)
+			if err != OK:
+				err = image.load_webp_from_buffer(body)
+			if err != OK:
+				if _bridge and "_push_error" in _bridge:
+					_bridge._push_error("[VisualRenderer] Failed to parse image: " + url)
+				return
+
+			var texture = ImageTexture.create_from_image(image)
+			_texture_cache[url] = texture
+
+			if is_instance_valid(sprite):
+				sprite.texture = texture
+				_apply_sprite_scale(sprite, sprite_data, texture)
+				var parent_node = sprite.get_parent()
+				if parent_node:
+					_hide_shape_children(parent_node)
+				if callback.is_valid():
+					callback.call(texture)
+	)
+
+	var err = http.request(url)
+	if err != OK:
+		if _bridge and "_push_error" in _bridge:
+			_bridge._push_error("[VisualRenderer] Failed to start texture download: " + url)
+		http.queue_free()
+
+
+func _apply_atlas_region(
+	sprite: Sprite2D, texture: Texture2D, region_dict: Dictionary, sprite_data: Dictionary = {}
+) -> void:
+	var atlas_texture = AtlasTexture.new()
+	atlas_texture.atlas = texture
+	atlas_texture.region = Rect2(
+		region_dict.get("x", 0),
+		region_dict.get("y", 0),
+		region_dict.get("w", 0),
+		region_dict.get("h", 0)
+	)
+	sprite.texture = atlas_texture
+	_apply_sprite_scale(sprite, sprite_data, atlas_texture)
+
+
+# ============================================================================
+# PRELOAD TRACKING
+# ============================================================================
+
+func _on_preload_complete(url: String, success: bool) -> void:
+	if success:
+		_preload_completed_count += 1
+	else:
+		_preload_failed_count += 1
+
+	var total_done = _preload_completed_count + _preload_failed_count
+	var percent = int((float(total_done) / float(_preload_pending_count)) * 100.0)
+
+	if _preload_progress_callback.is_valid():
+		_preload_progress_callback.call(percent, _preload_completed_count, _preload_failed_count)
+	else:
+		print("[VisualRenderer] No progress callback registered!")
+
+
+# ============================================================================
+# HELPER METHODS
+# ============================================================================
 
 func _add_image_sprite(node: Node2D, sprite_data: Dictionary, opacity: float, z_index_val: int) -> void:
 	var sprite = Sprite2D.new()
@@ -260,11 +688,12 @@ func _add_image_sprite(node: Node2D, sprite_data: Dictionary, opacity: float, z_
 			"offsetX": offset_x,
 			"offsetY": offset_y
 		}
-		_queue_texture_download(sprite, url, normalized_data)
+		_download_texture(sprite, url, normalized_data)
 
 	sprite.modulate.a = opacity
 	sprite.z_index = z_index_val
 	node.add_child(sprite)
+
 
 func _add_text_sprite(node: Node2D, sprite_data: Dictionary, opacity: float, z_index_val: int) -> void:
 	var label = Label.new()
@@ -273,63 +702,17 @@ func _add_text_sprite(node: Node2D, sprite_data: Dictionary, opacity: float, z_i
 	var font_size = int(sprite_data.get("fontSize", 16) * _pixels_per_meter / 50.0)
 	label.add_theme_font_size_override("font_size", font_size)
 
-	var font_url = sprite_data.get("fontUrl", "")
-	if font_url != "":
-		_queue_font_download(label, font_url)
-
 	var text_color = Color.from_string(sprite_data.get("color", "#FFFFFF"), Color.WHITE)
 	label.modulate = text_color
 	label.modulate.a = opacity
 	label.z_index = z_index_val
 	node.add_child(label)
 
-# ============================================================================
-# TEXTURE AND FONT LOADING
-# ============================================================================
-
-func _queue_texture_download(sprite: Sprite2D, url: String, sprite_data: Dictionary) -> void:
-	_download_image_texture_cb.call(url, func(texture: Texture2D):
-		if is_instance_valid(sprite):
-			sprite.texture = texture
-			_apply_sprite_scale(sprite, sprite_data, texture)
-	)
-
-func _queue_font_download(label: Label, url: String) -> void:
-	if _font_cache.has(url):
-		label.add_theme_font_override("font", _font_cache[url])
-		return
-
-	var http = HTTPRequest.new()
-
-	http.request_completed.connect(func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
-		http.queue_free()
-		if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
-			push_error("[GameBridge] Failed to download font: " + url + " (code: " + str(response_code) + ")")
-			return
-
-		var font = FontFile.new()
-		font.data = body
-
-		_font_cache[url] = font
-
-		if is_instance_valid(label):
-			label.add_theme_font_override("font", font)
-	)
-
-	var err = http.request(url)
-	if err != OK:
-		push_error("[GameBridge] Failed to start font download: " + url)
-		http.queue_free()
-
-# ============================================================================
-# SCALE AND TEXTURE MANAGEMENT
-# ============================================================================
 
 func _apply_sprite_scale(sprite: Sprite2D, sprite_data: Dictionary, texture: Texture2D) -> void:
 	if texture == null:
 		return
 
-	# Get asset placement values (scale multiplier, offsets)
 	var asset_scale = sprite_data.get("scale", 1.0)
 	var offset_x = sprite_data.get("offsetX", 0.0) * _pixels_per_meter
 	var offset_y = sprite_data.get("offsetY", 0.0) * _pixels_per_meter
@@ -337,22 +720,17 @@ func _apply_sprite_scale(sprite: Sprite2D, sprite_data: Dictionary, texture: Tex
 	var target_w = sprite_data.get("width", 1.0) * _pixels_per_meter * asset_scale
 	var target_h = sprite_data.get("height", 1.0) * _pixels_per_meter * asset_scale
 
-	# Check if this is a generated asset (square texture with content that preserves aspect ratio)
-	# Generated assets have content that fills 90% of the larger dimension, centered in canvas
 	var tex_w = texture.get_width()
 	var tex_h = texture.get_height()
-	var is_square_texture = abs(tex_w - tex_h) < 2  # Allow 1px tolerance
+	var is_square_texture = abs(tex_w - tex_h) < 2
 
 	if is_square_texture and tex_w > 0:
-		# For generated square textures (e.g., 512x512), use uniform scaling
-		# The actual content fills 90% of canvas on the larger dimension
 		var canvas_size = float(tex_w)
 		var fill_ratio = 0.9
 		var physics_w = sprite_data.get("width", 1.0)
 		var physics_h = sprite_data.get("height", 1.0)
 		var aspect_ratio = physics_w / physics_h if physics_h > 0 else 1.0
 
-		# Calculate silhouette dimensions within the canvas (matches generation logic)
 		var silhouette_w: float
 		var silhouette_h: float
 		if aspect_ratio >= 1.0:
@@ -362,63 +740,69 @@ func _apply_sprite_scale(sprite: Sprite2D, sprite_data: Dictionary, texture: Tex
 			silhouette_h = canvas_size * fill_ratio
 			silhouette_w = silhouette_h * aspect_ratio
 
-		# Uniform scale: map silhouette pixels to target world pixels
 		var uniform_scale = target_w / silhouette_w if silhouette_w > 0 else 1.0
 		sprite.scale = Vector2(uniform_scale, uniform_scale)
 	else:
-		# Non-square textures: use uniform scaling to preserve aspect ratio (contain behavior)
 		var scale_x = target_w / tex_w if tex_w > 0 else 1.0
 		var scale_y = target_h / tex_h if tex_h > 0 else 1.0
 		var uniform_scale = min(scale_x, scale_y)
 		sprite.scale = Vector2(uniform_scale, uniform_scale)
 
-	# Apply offset to position the sprite relative to physics body center
 	sprite.position = Vector2(offset_x, offset_y)
 
+
 func _create_polygon_texture(width: int, height: int, color: Color, padding: int = 0) -> ImageTexture:
-	# Create texture with optional transparent padding for shader edge detection
 	var tex_w = width + padding * 2
 	var tex_h = height + padding * 2
 	var image = Image.create(tex_w, tex_h, false, Image.FORMAT_RGBA8)
-	image.fill(Color(0, 0, 0, 0))  # Start transparent
-	# Fill the center region with the actual color
+	image.fill(Color(0, 0, 0, 0))
 	for y in range(padding, tex_h - padding):
 		for x in range(padding, tex_w - padding):
 			image.set_pixel(x, y, color)
 	return ImageTexture.create_from_image(image)
 
+
+func _find_sprite_in_entity(node: Node) -> CanvasItem:
+	if node is Sprite2D or node is AnimatedSprite2D:
+		return node
+	for child in node.get_children():
+		if child is Sprite2D or child is AnimatedSprite2D:
+			return child
+		var found = _find_sprite_in_entity(child)
+		if found:
+			return found
+	return null
+
+
+func _has_entity(entity_id: String) -> bool:
+	if _bridge and "entities" in _bridge:
+		return _bridge.entities.has(entity_id)
+	return false
+
+
+func _get_entity(entity_id: String) -> Node:
+	if _bridge and "entities" in _bridge:
+		return _bridge.entities[entity_id]
+	return null
+
+
 # ============================================================================
 # DEBUG VISIBILITY
 # ============================================================================
 
-func hide_shape_children(node: Node2D) -> void:
-	"""Hide Polygon2D shape children when a texture sprite is applied.
-	This prevents double-rendering of shapes and textures."""
+func _hide_shape_children(node: Node2D) -> void:
 	for child in node.get_children():
 		if child is Polygon2D:
 			child.visible = false
 
+
 func apply_debug_visibility(node: Node2D) -> void:
-	"""Apply current debug mode visibility to a node's children.
-	When debug mode is ON: show Polygon2D shapes, hide Sprite2D textures.
-	When debug mode is OFF: hide Polygon2D shapes, show Sprite2D textures."""
 	for child in node.get_children():
 		if child is Polygon2D:
 			child.visible = _debug_show_shapes
 		elif child is Sprite2D:
 			child.visible = not _debug_show_shapes
 
-# ============================================================================
-# SPRITE LOOKUP
-# ============================================================================
 
-func find_sprite_in_entity(node: Node) -> CanvasItem:
-	if node is Sprite2D or node is AnimatedSprite2D:
-		return node
-	for child in node.get_children():
-		if child is Sprite2D or child is AnimatedSprite2D:
-			return child
-		var found = find_sprite_in_entity(child)
-		if found:
-			return found
-	return null
+func _apply_debug_visibility(node: Node2D) -> void:
+	apply_debug_visibility(node)

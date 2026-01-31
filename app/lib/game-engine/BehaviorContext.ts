@@ -97,6 +97,7 @@ export interface BehaviorContext {
   setEntityVelocity(entityId: string, velocity: Vec2): void;
   setEntityRotation(entityId: string, angle: number): void;
   setEntityPosition(entityId: string, x: number, y: number): void;
+  setEntityOpacity(entityId: string, opacity: number): void;
   destroyEntity(entityId: string): void;
   triggerEvent(eventName: string, data?: Record<string, unknown>): void;
   triggerParticleEffect(type: ParticleEmitterType, x: number, y: number): void;
