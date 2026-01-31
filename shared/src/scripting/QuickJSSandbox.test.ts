@@ -91,7 +91,7 @@ describe('QuickJSSandbox', () => {
     const result = await sandbox.evaluate('1 + 1');
     expect(result.success).toBe(false);
     if (isFailure(result)) {
-      expect(result.error.message).toContain('not initialized');
+      expect(result.error.message).toContain('disposed');
     }
   });
 });

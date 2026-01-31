@@ -104,7 +104,10 @@ describe('AngryBurnsLevelGenerator', () => {
       const level1 = generateAngryBurnsLevel(params);
       const level2 = generateAngryBurnsLevel(params);
 
-      expect(JSON.stringify(level1)).toBe(JSON.stringify(level2));
+      // Exclude generatedAt timestamp from comparison (can differ by 1ms)
+      const { generatedAt: _t1, ...level1Rest } = level1;
+      const { generatedAt: _t2, ...level2Rest } = level2;
+      expect(JSON.stringify(level1Rest)).toBe(JSON.stringify(level2Rest));
     });
 
     it('should generate identical levels with numeric seed', () => {
