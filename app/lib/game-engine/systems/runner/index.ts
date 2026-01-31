@@ -1,4 +1,4 @@
-export { GameSystemRunner, FEATURE_FLAGS } from './GameSystemRunner';
+export { GameSystemRunner } from './GameSystemRunner';
 export { EventQueueImpl } from './EventQueue';
 export type {
   RuntimeSystem,

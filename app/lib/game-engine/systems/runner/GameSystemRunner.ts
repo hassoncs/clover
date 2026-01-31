@@ -2,10 +2,6 @@ import { SystemPhase } from '@slopcade/shared';
 import type { RuntimeSystem, SystemContext, UpdateContext } from './types';
 import { EventQueueImpl } from './EventQueue';
 
-export const FEATURE_FLAGS = {
-  USE_SYSTEM_RUNNER: false,
-};
-
 export class GameSystemRunner {
   private systems: RuntimeSystem[] = [];
   private systemsByPhase = new Map<SystemPhase, RuntimeSystem[]>();
