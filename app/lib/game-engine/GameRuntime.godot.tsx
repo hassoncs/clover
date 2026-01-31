@@ -89,7 +89,7 @@ import {
 } from "@/lib/scripting";
 import { TweenSystem } from "./animation/TweenSystem";
 import { setGlobalTweenSystem, cancelTweensForEntity } from "./behaviors/TweenBehaviors";
-import { GameSystemRunner, FEATURE_FLAGS } from "./systems/runner/GameSystemRunner";
+import { GameSystemRunner } from "./systems/runner/GameSystemRunner";
 import type { SystemContext, UpdateContext } from "./systems/runner/types";
 import {
   ViewportRuntimeSystem,
@@ -786,78 +786,76 @@ export function GameRuntimeGodot({
           slotMachineSystemRef.current.initialize();
         }
 
-        if (FEATURE_FLAGS.USE_SYSTEM_RUNNER) {
-          const runner = new GameSystemRunner();
+        const runner = new GameSystemRunner();
 
-          runner.register(new ViewportRuntimeSystem());
-          runner.register(new InputRuntimeSystem());
-          runner.register(new CameraRuntimeSystem());
-          runner.register(new EntityManagerRuntimeSystem());
-          runner.register(new ComputedValuesRuntimeSystem());
-          runner.register(new PropertySyncRuntimeSystem());
+        runner.register(new ViewportRuntimeSystem());
+        runner.register(new InputRuntimeSystem());
+        runner.register(new CameraRuntimeSystem());
+        runner.register(new EntityManagerRuntimeSystem());
+        runner.register(new ComputedValuesRuntimeSystem());
+        runner.register(new PropertySyncRuntimeSystem());
 
-          runner.register(new BehaviorExecutorRuntimeSystem());
-          runner.register(new ScriptSandboxRuntimeSystem());
-          runner.register(new RulesRuntimeSystem());
+        runner.register(new BehaviorExecutorRuntimeSystem());
+        runner.register(new ScriptSandboxRuntimeSystem());
+        runner.register(new RulesRuntimeSystem());
 
-          if (definition.match3) {
-            runner.register(new Match3RuntimeSystem());
-          }
-          if (definition.slotMachine) {
-            runner.register(new SlotMachineRuntimeSystem());
-          }
-          if (definition.containers && definition.containers.length > 0) {
-            runner.register(new ContainerRuntimeSystem());
-          }
-
-          runner.register(new TweenRuntimeSystem());
-
-          const { EventBus } = await import('@slopcade/shared');
-          const eventBus = new EventBus();
-
-          const systemContext: SystemContext = {
-            bridge,
-            physics,
-            entityManager: game.entityManager,
-            eventBus,
-            eventQueue: (runner as any).eventQueue,
-          };
-
-          await runner.initialize(systemContext);
-
-          const behaviorSystem = runner.getSystem<BehaviorExecutorRuntimeSystem>('behavior-executor');
-          const rulesSystem = runner.getSystem<RulesRuntimeSystem>('rules');
-          const computedValuesSystem = runner.getSystem<ComputedValuesRuntimeSystem>('computed-values');
-          const cameraSystem = runner.getSystem<CameraRuntimeSystem>('camera');
-          const inputSystem = runner.getSystem<InputRuntimeSystem>('input');
-
-          if (behaviorSystem && computedValuesSystem) {
-            const cvs = computedValuesSystem.getSystem();
-            if (cvs) behaviorSystem.setComputedValues(cvs);
-          }
-          if (behaviorSystem && cameraSystem) {
-            const cam = cameraSystem.getCamera();
-            if (cam) behaviorSystem.setCamera(cam);
-          }
-          if (behaviorSystem && inputSystem) {
-            const iem = inputSystem.getInputEntityManager();
-            if (iem) behaviorSystem.setInputEntityManager(iem);
-          }
-          if (rulesSystem && computedValuesSystem) {
-            const cvs = computedValuesSystem.getSystem();
-            if (cvs) rulesSystem.setComputedValues(cvs);
-          }
-          if (rulesSystem && cameraSystem) {
-            const cam = cameraSystem.getCamera();
-            if (cam) rulesSystem.setCamera(cam);
-          }
-          if (rulesSystem && inputSystem) {
-            const iem = inputSystem.getInputEntityManager();
-            if (iem) rulesSystem.setInputEntityManager(iem);
-          }
-
-          gameSystemRunnerRef.current = runner;
+        if (definition.match3) {
+          runner.register(new Match3RuntimeSystem());
         }
+        if (definition.slotMachine) {
+          runner.register(new SlotMachineRuntimeSystem());
+        }
+        if (definition.containers && definition.containers.length > 0) {
+          runner.register(new ContainerRuntimeSystem());
+        }
+
+        runner.register(new TweenRuntimeSystem());
+
+        const { EventBus } = await import('@slopcade/shared');
+        const eventBus = new EventBus();
+
+        const systemContext: SystemContext = {
+          bridge,
+          physics,
+          entityManager: game.entityManager,
+          eventBus,
+          eventQueue: (runner as any).eventQueue,
+        };
+
+        await runner.initialize(systemContext);
+
+        const behaviorSystem = runner.getSystem<BehaviorExecutorRuntimeSystem>('behavior-executor');
+        const rulesSystem = runner.getSystem<RulesRuntimeSystem>('rules');
+        const computedValuesSystem = runner.getSystem<ComputedValuesRuntimeSystem>('computed-values');
+        const cameraSystem = runner.getSystem<CameraRuntimeSystem>('camera');
+        const inputSystem = runner.getSystem<InputRuntimeSystem>('input');
+
+        if (behaviorSystem && computedValuesSystem) {
+          const cvs = computedValuesSystem.getSystem();
+          if (cvs) behaviorSystem.setComputedValues(cvs);
+        }
+        if (behaviorSystem && cameraSystem) {
+          const cam = cameraSystem.getCamera();
+          if (cam) behaviorSystem.setCamera(cam);
+        }
+        if (behaviorSystem && inputSystem) {
+          const iem = inputSystem.getInputEntityManager();
+          if (iem) behaviorSystem.setInputEntityManager(iem);
+        }
+        if (rulesSystem && computedValuesSystem) {
+          const cvs = computedValuesSystem.getSystem();
+          if (cvs) rulesSystem.setComputedValues(cvs);
+        }
+        if (rulesSystem && cameraSystem) {
+          const cam = cameraSystem.getCamera();
+          if (cam) rulesSystem.setCamera(cam);
+        }
+        if (rulesSystem && inputSystem) {
+          const iem = inputSystem.getInputEntityManager();
+          if (iem) rulesSystem.setInputEntityManager(iem);
+        }
+
+        gameSystemRunnerRef.current = runner;
       } catch (error) {
         console.error("[GameRuntime.godot] Failed to initialize game:", error);
       }
@@ -982,36 +980,35 @@ export function GameRuntimeGodot({
       const frameStart = enablePerfLogging ? performance.now() : 0;
 
       const runner = gameSystemRunnerRef.current;
-      if (FEATURE_FLAGS.USE_SYSTEM_RUNNER && runner) {
-        const fullGameState = game.rulesEvaluator.getFullState();
-        
-        const updateContext: UpdateContext = {
-          dt,
-          elapsed: elapsedRef.current,
-          frameId: frameIdRef.current,
-          input: inputRef.current as InputState,
-          gameState: fullGameState,
-        };
-
-        runner.update(updateContext);
-
-        elapsedRef.current += dt;
-        frameIdRef.current += 1;
-
-        setGameState((s) => ({ ...s, time: elapsedRef.current }));
-
-        if (enablePerfLogging) {
-          const frameEnd = performance.now();
-          const frameMs = frameEnd - frameStart;
-          if (frameIdRef.current % 60 === 0) {
-            console.log(`[Perf.godot] frame=${frameMs.toFixed(2)}ms`);
-          }
-        }
-
+      if (!runner) {
+        console.error('[GameRuntime.godot] GameSystemRunner not initialized');
         return;
       }
 
-      game.entityManager.syncTransformsFromPhysics();
+      const fullGameState = game.rulesEvaluator.getFullState();
+      
+      const updateContext: UpdateContext = {
+        dt,
+        elapsed: elapsedRef.current,
+        frameId: frameIdRef.current,
+        input: inputRef.current as InputState,
+        gameState: fullGameState,
+      };
+
+      runner.update(updateContext);
+
+      elapsedRef.current += dt;
+      frameIdRef.current += 1;
+
+      setGameState((s) => ({ ...s, time: elapsedRef.current }));
+
+      if (enablePerfLogging) {
+        const frameEnd = performance.now();
+        const frameMs = frameEnd - frameStart;
+        if (frameIdRef.current % 60 === 0) {
+          console.log(`[Perf.godot] frame=${frameMs.toFixed(2)}ms`);
+        }
+      }
 
       const inputEntityManager = inputEntityManagerRef.current;
       if (inputEntityManager) {
