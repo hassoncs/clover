@@ -1,4 +1,4 @@
-import { router, protectedProcedure } from '@/trpc/index'
+import { router, protectedProcedure } from '../index'
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import type { UIComponentSheetSpec, AssetRun } from '@/ai/pipeline/types'

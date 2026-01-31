@@ -14,7 +14,7 @@ import { resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { loadAllTestGames } from '../lib/registry/generated/testGames';
 
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
+const __dirname = fileURLToPath(new URL('.', import.meta.url).href);
 
 async function main() {
   console.log('Loading all test games...');

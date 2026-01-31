@@ -1,6 +1,6 @@
 import { env } from 'cloudflare:test';
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
-import { appRouter } from '@/trpc/router'
+import { appRouter } from '../router'
 import {
   initTestDatabase,
   createAuthenticatedContext,

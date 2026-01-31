@@ -320,7 +320,6 @@ export function createBallSortGame(level: number = 1): GameDefinition {
         physics: {
           bodyType: "static" as const,
           density: 0,
-          isSensor: true,
         },
         collider: {
           shape: "box" as const,
@@ -341,7 +340,6 @@ export function createBallSortGame(level: number = 1): GameDefinition {
         physics: {
           bodyType: "static" as const,
           density: 0,
-          isSensor: true,
         },
         collider: {
           shape: "box" as const,
@@ -362,7 +360,6 @@ export function createBallSortGame(level: number = 1): GameDefinition {
         physics: {
           bodyType: "static" as const,
           density: 0,
-          isSensor: true,
         },
         collider: {
           shape: "box" as const,
@@ -390,7 +387,6 @@ export function createBallSortGame(level: number = 1): GameDefinition {
         physics: {
           bodyType: "static" as const,
           density: 0,
-          isSensor: true,
         },
         collider: {
           shape: "circle" as const,

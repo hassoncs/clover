@@ -163,9 +163,7 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
     const config = behavior as DestroyWhenOffScreenBehavior;
     const buffer = config.buffer ?? 0;
     
-    const worldBounds = ctx.entityManager.getWorldBounds?.() || { 
-      minX: -8, maxX: 8, minY: -10, maxY: 10 
-    };
+    const worldBounds = { minX: -8, maxX: 8, minY: -10, maxY: 10 };
     
     let shouldDestroy = false;
     const pos = ctx.entity.transform;
@@ -186,7 +184,7 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
     }
     
     if (shouldDestroy) {
-      ctx.destroyEntity(ctx.entity.id, { recursive: config.recursive !== false });
+      ctx.destroyEntity(ctx.entity.id);
     }
   });
 

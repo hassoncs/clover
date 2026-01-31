@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
-import { router, protectedProcedure, publicProcedure } from '@/trpc/index'
+import { router, protectedProcedure, publicProcedure } from '../index'
 import { TRPCError } from '@trpc/server';
 import { WalletService, InsufficientBalanceError } from '@/economy/wallet-service'
 import { SignupCodeService, InvalidSignupCodeError } from '@/economy/signup-code-service'

@@ -98,7 +98,6 @@ export function AssetAlignmentEditor({
           <View style={styles.canvasContainer}>
             <AlignmentPreviewCanvas
               size={canvasSize}
-              physics={physics}
               imageUrl={imageUrl}
               scale={placement.scale}
               offsetX={placement.offsetX}

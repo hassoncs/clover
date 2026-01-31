@@ -32,9 +32,8 @@ export const FALLING_CATCHER_TEMPLATE: GameDefinition = {
         height: 0.5,
         color: '#3498DB',
       },
-      physics: { density: 1 },
-      collider: { shape: 'box', physics: {
-        bodyType: 'kinematic', width: 2, height: 0.5, friction: 0.5, restitution: 0.3 }},
+      physics: { bodyType: 'kinematic', density: 1 },
+      collider: { shape: 'box', width: 2, height: 0.5, friction: 0.5, restitution: 0.3 },
       behaviors: [],
       tags: ['catcher', 'player'],
     },
@@ -45,9 +44,8 @@ export const FALLING_CATCHER_TEMPLATE: GameDefinition = {
         radius: 0.4,
         color: '#2ECC71',
       },
-      physics: { density: 0.5 },
-      collider: { shape: 'circle', physics: {
-        bodyType: 'dynamic', radius: 0.4, friction: 0.3, restitution: 0.5 }},
+      physics: { bodyType: 'dynamic', density: 0.5 },
+      collider: { shape: 'circle', radius: 0.4, friction: 0.3, restitution: 0.5 },
       behaviors: [
         {
           type: 'score_on_collision',
@@ -72,9 +70,8 @@ export const FALLING_CATCHER_TEMPLATE: GameDefinition = {
         height: 0.6,
         color: '#E74C3C',
       },
-      physics: { density: 0.5 },
-      collider: { shape: 'box', physics: {
-        bodyType: 'dynamic', width: 0.6, height: 0.6, friction: 0.3, restitution: 0.3 }},
+      physics: { bodyType: 'dynamic', density: 0.5 },
+      collider: { shape: 'box', width: 0.6, height: 0.6, friction: 0.3, restitution: 0.3 },
       behaviors: [
         {
           type: 'destroy_on_collision',
@@ -108,9 +105,8 @@ export const FALLING_CATCHER_TEMPLATE: GameDefinition = {
         height: 0.2,
         color: 'transparent',
       },
-      physics: { density: 0 },
-      collider: { shape: 'box', physics: {
-        bodyType: 'static', width: 10, height: 0.2, friction: 0, restitution: 0 }},
+      physics: { bodyType: 'static', density: 0 },
+      collider: { shape: 'box', width: 10, height: 0.2, friction: 0, restitution: 0 },
       tags: ['spawner'],
     },
   },

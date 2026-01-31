@@ -271,7 +271,7 @@ const game: GameDefinition = {
         { type: "variable", name: "currentPlayer", comparison: "eq", value: 1 },
       ],
       actions: [
-        { type: "spawn", template: "pieceX", position: { x: -1.6, y: 1.6 } },
+        { type: "spawn", template: "pieceX", position: { type: "fixed", x: -1.6, y: 1.6 } },
         { type: "set_variable", name: "cell00", operation: "set", value: 1 },
         { type: "set_variable", name: "lastPlayer", operation: "set", value: 1 },
         { type: "set_variable", name: "moveCount", operation: "add", value: 1 },
@@ -287,7 +287,7 @@ const game: GameDefinition = {
         { type: "variable", name: "currentPlayer", comparison: "eq", value: 2 },
       ],
       actions: [
-        { type: "spawn", template: "pieceO", position: { x: -1.6, y: 1.6 } },
+        { type: "spawn", template: "pieceO", position: { type: "fixed", x: -1.6, y: 1.6 } },
         { type: "set_variable", name: "cell00", operation: "set", value: 2 },
         { type: "set_variable", name: "lastPlayer", operation: "set", value: 2 },
         { type: "set_variable", name: "moveCount", operation: "add", value: 1 },
@@ -305,7 +305,7 @@ const game: GameDefinition = {
         { type: "variable", name: "currentPlayer", comparison: "eq", value: 1 },
       ],
       actions: [
-        { type: "spawn", template: "pieceX", position: { x: 0, y: 1.6 } },
+        { type: "spawn", template: "pieceX", position: { type: "fixed", x: 0, y: 1.6 } },
         { type: "set_variable", name: "cell01", operation: "set", value: 1 },
         { type: "set_variable", name: "lastPlayer", operation: "set", value: 1 },
         { type: "set_variable", name: "moveCount", operation: "add", value: 1 },
@@ -321,7 +321,7 @@ const game: GameDefinition = {
         { type: "variable", name: "currentPlayer", comparison: "eq", value: 2 },
       ],
       actions: [
-        { type: "spawn", template: "pieceO", position: { x: 0, y: 1.6 } },
+        { type: "spawn", template: "pieceO", position: { type: "fixed", x: 0, y: 1.6 } },
         { type: "set_variable", name: "cell01", operation: "set", value: 2 },
         { type: "set_variable", name: "lastPlayer", operation: "set", value: 2 },
         { type: "set_variable", name: "moveCount", operation: "add", value: 1 },
@@ -339,7 +339,7 @@ const game: GameDefinition = {
         { type: "variable", name: "currentPlayer", comparison: "eq", value: 1 },
       ],
       actions: [
-        { type: "spawn", template: "pieceX", position: { x: 1.6, y: 1.6 } },
+        { type: "spawn", template: "pieceX", position: { type: "fixed", x: 1.6, y: 1.6 } },
         { type: "set_variable", name: "cell02", operation: "set", value: 1 },
         { type: "set_variable", name: "lastPlayer", operation: "set", value: 1 },
         { type: "set_variable", name: "moveCount", operation: "add", value: 1 },
@@ -355,7 +355,7 @@ const game: GameDefinition = {
         { type: "variable", name: "currentPlayer", comparison: "eq", value: 2 },
       ],
       actions: [
-        { type: "spawn", template: "pieceO", position: { x: 1.6, y: 1.6 } },
+        { type: "spawn", template: "pieceO", position: { type: "fixed", x: 1.6, y: 1.6 } },
         { type: "set_variable", name: "cell02", operation: "set", value: 2 },
         { type: "set_variable", name: "lastPlayer", operation: "set", value: 2 },
         { type: "set_variable", name: "moveCount", operation: "add", value: 1 },
@@ -373,7 +373,7 @@ const game: GameDefinition = {
         { type: "variable", name: "currentPlayer", comparison: "eq", value: 1 },
       ],
       actions: [
-        { type: "spawn", template: "pieceX", position: { x: -1.6, y: 0 } },
+        { type: "spawn", template: "pieceX", position: { type: "fixed", x: -1.6, y: 0 } },
         { type: "set_variable", name: "cell10", operation: "set", value: 1 },
         { type: "set_variable", name: "lastPlayer", operation: "set", value: 1 },
         { type: "set_variable", name: "moveCount", operation: "add", value: 1 },
@@ -389,7 +389,7 @@ const game: GameDefinition = {
         { type: "variable", name: "currentPlayer", comparison: "eq", value: 2 },
       ],
       actions: [
-        { type: "spawn", template: "pieceO", position: { x: -1.6, y: 0 } },
+        { type: "spawn", template: "pieceO", position: { type: "fixed", x: -1.6, y: 0 } },
         { type: "set_variable", name: "cell10", operation: "set", value: 2 },
         { type: "set_variable", name: "lastPlayer", operation: "set", value: 2 },
         { type: "set_variable", name: "moveCount", operation: "add", value: 1 },
@@ -407,7 +407,7 @@ const game: GameDefinition = {
         { type: "variable", name: "currentPlayer", comparison: "eq", value: 1 },
       ],
       actions: [
-        { type: "spawn", template: "pieceX", position: { x: 0, y: 0 } },
+        { type: "spawn", template: "pieceX", position: { type: "fixed", x: 0, y: 0 } },
         { type: "set_variable", name: "cell11", operation: "set", value: 1 },
         { type: "set_variable", name: "lastPlayer", operation: "set", value: 1 },
         { type: "set_variable", name: "moveCount", operation: "add", value: 1 },
@@ -423,7 +423,7 @@ const game: GameDefinition = {
         { type: "variable", name: "currentPlayer", comparison: "eq", value: 2 },
       ],
       actions: [
-        { type: "spawn", template: "pieceO", position: { x: 0, y: 0 } },
+        { type: "spawn", template: "pieceO", position: { type: "fixed", x: 0, y: 0 } },
         { type: "set_variable", name: "cell11", operation: "set", value: 2 },
         { type: "set_variable", name: "lastPlayer", operation: "set", value: 2 },
         { type: "set_variable", name: "moveCount", operation: "add", value: 1 },
@@ -441,7 +441,7 @@ const game: GameDefinition = {
         { type: "variable", name: "currentPlayer", comparison: "eq", value: 1 },
       ],
       actions: [
-        { type: "spawn", template: "pieceX", position: { x: 1.6, y: 0 } },
+        { type: "spawn", template: "pieceX", position: { type: "fixed", x: 1.6, y: 0 } },
         { type: "set_variable", name: "cell12", operation: "set", value: 1 },
         { type: "set_variable", name: "lastPlayer", operation: "set", value: 1 },
         { type: "set_variable", name: "moveCount", operation: "add", value: 1 },
@@ -457,7 +457,7 @@ const game: GameDefinition = {
         { type: "variable", name: "currentPlayer", comparison: "eq", value: 2 },
       ],
       actions: [
-        { type: "spawn", template: "pieceO", position: { x: 1.6, y: 0 } },
+        { type: "spawn", template: "pieceO", position: { type: "fixed", x: 1.6, y: 0 } },
         { type: "set_variable", name: "cell12", operation: "set", value: 2 },
         { type: "set_variable", name: "lastPlayer", operation: "set", value: 2 },
         { type: "set_variable", name: "moveCount", operation: "add", value: 1 },
@@ -475,7 +475,7 @@ const game: GameDefinition = {
         { type: "variable", name: "currentPlayer", comparison: "eq", value: 1 },
       ],
       actions: [
-        { type: "spawn", template: "pieceX", position: { x: -1.6, y: -1.6 } },
+        { type: "spawn", template: "pieceX", position: { type: "fixed", x: -1.6, y: -1.6 } },
         { type: "set_variable", name: "cell20", operation: "set", value: 1 },
         { type: "set_variable", name: "lastPlayer", operation: "set", value: 1 },
         { type: "set_variable", name: "moveCount", operation: "add", value: 1 },
@@ -491,7 +491,7 @@ const game: GameDefinition = {
         { type: "variable", name: "currentPlayer", comparison: "eq", value: 2 },
       ],
       actions: [
-        { type: "spawn", template: "pieceO", position: { x: -1.6, y: -1.6 } },
+        { type: "spawn", template: "pieceO", position: { type: "fixed", x: -1.6, y: -1.6 } },
         { type: "set_variable", name: "cell20", operation: "set", value: 2 },
         { type: "set_variable", name: "lastPlayer", operation: "set", value: 2 },
         { type: "set_variable", name: "moveCount", operation: "add", value: 1 },
@@ -509,7 +509,7 @@ const game: GameDefinition = {
         { type: "variable", name: "currentPlayer", comparison: "eq", value: 1 },
       ],
       actions: [
-        { type: "spawn", template: "pieceX", position: { x: 0, y: -1.6 } },
+        { type: "spawn", template: "pieceX", position: { type: "fixed", x: 0, y: -1.6 } },
         { type: "set_variable", name: "cell21", operation: "set", value: 1 },
         { type: "set_variable", name: "lastPlayer", operation: "set", value: 1 },
         { type: "set_variable", name: "moveCount", operation: "add", value: 1 },
@@ -525,7 +525,7 @@ const game: GameDefinition = {
         { type: "variable", name: "currentPlayer", comparison: "eq", value: 2 },
       ],
       actions: [
-        { type: "spawn", template: "pieceO", position: { x: 0, y: -1.6 } },
+        { type: "spawn", template: "pieceO", position: { type: "fixed", x: 0, y: -1.6 } },
         { type: "set_variable", name: "cell21", operation: "set", value: 2 },
         { type: "set_variable", name: "lastPlayer", operation: "set", value: 2 },
         { type: "set_variable", name: "moveCount", operation: "add", value: 1 },
@@ -543,7 +543,7 @@ const game: GameDefinition = {
         { type: "variable", name: "currentPlayer", comparison: "eq", value: 1 },
       ],
       actions: [
-        { type: "spawn", template: "pieceX", position: { x: 1.6, y: -1.6 } },
+        { type: "spawn", template: "pieceX", position: { type: "fixed", x: 1.6, y: -1.6 } },
         { type: "set_variable", name: "cell22", operation: "set", value: 1 },
         { type: "set_variable", name: "lastPlayer", operation: "set", value: 1 },
         { type: "set_variable", name: "moveCount", operation: "add", value: 1 },
@@ -559,7 +559,7 @@ const game: GameDefinition = {
         { type: "variable", name: "currentPlayer", comparison: "eq", value: 2 },
       ],
       actions: [
-        { type: "spawn", template: "pieceO", position: { x: 1.6, y: -1.6 } },
+        { type: "spawn", template: "pieceO", position: { type: "fixed", x: 1.6, y: -1.6 } },
         { type: "set_variable", name: "cell22", operation: "set", value: 2 },
         { type: "set_variable", name: "lastPlayer", operation: "set", value: 2 },
         { type: "set_variable", name: "moveCount", operation: "add", value: 1 },

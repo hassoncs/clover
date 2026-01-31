@@ -58,9 +58,9 @@ export function isEntityOnGround(entity: RuntimeEntity, context: RuleContext): b
   if (!entity.collider) return false;
 
   let dist = 0.6;
-  if (entity.collider.shape === 'box') {
+  if (entity.collider.shape === 'box' && entity.collider.height) {
       dist = (entity.collider.height / 2) * entity.transform.scaleY + 0.1;
-  } else if (entity.collider.shape === 'circle') {
+  } else if (entity.collider.shape === 'circle' && entity.collider.radius) {
       dist = entity.collider.radius * entity.transform.scaleY + 0.1;
   } else if (entity.collider.shape === 'polygon') {
        dist = 0.5 * entity.transform.scaleY + 0.1; 

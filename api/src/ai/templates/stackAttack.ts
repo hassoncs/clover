@@ -1,4 +1,4 @@
-import type { GameDefinition } from '@/../../app/lib/game/types';
+import type { GameDefinition } from '@slopcade/shared/types/GameDefinition'
 
 export const STACK_ATTACK_TEMPLATE: GameDefinition = {
   metadata: {
@@ -31,9 +31,8 @@ export const STACK_ATTACK_TEMPLATE: GameDefinition = {
         height: 0.6,
         color: '#e94560',
       },
-      physics: { density: 1.0 },
-      collider: { shape: 'box', physics: {
-        bodyType: 'dynamic', width: 2, height: 0.6, friction: 0.7, restitution: 0.05 }},
+      physics: { bodyType: 'dynamic', density: 1.0 },
+      collider: { shape: 'box', width: 2, height: 0.6, friction: 0.7, restitution: 0.05 },
       behaviors: [
         {
           type: 'score_on_collision',
@@ -59,9 +58,8 @@ export const STACK_ATTACK_TEMPLATE: GameDefinition = {
         strokeColor: '#e94560',
         strokeWidth: 3,
       },
-      physics: { density: 0 },
-      collider: { shape: 'box', physics: {
-        bodyType: 'kinematic', width: 2, height: 0.6, friction: 0, restitution: 0 }},
+      physics: { bodyType: 'kinematic', density: 0 },
+      collider: { shape: 'box', width: 2, height: 0.6, friction: 0, restitution: 0 },
       behaviors: [
         {
           type: 'oscillate',
@@ -80,9 +78,8 @@ export const STACK_ATTACK_TEMPLATE: GameDefinition = {
         height: 1,
         color: '#0f3460',
       },
-      physics: { density: 1 },
-      collider: { shape: 'box', physics: {
-        bodyType: 'static', width: 10, height: 1, friction: 0.9, restitution: 0 }},
+      physics: { bodyType: 'static', density: 1 },
+      collider: { shape: 'box', width: 10, height: 1, friction: 0.9, restitution: 0 },
       tags: ['ground'],
     },
     death_zone: {

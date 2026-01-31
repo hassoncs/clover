@@ -49,7 +49,7 @@ export interface RuntimeEntity {
   visual?: VisualComponent;
   physics?: PhysicsComponent;
   collider?: {
-    shape: 'circle' | 'box' | 'polygon';
+    shape: 'circle' | 'box' | 'polygon' | 'capsule';
     width?: number;
     height?: number;
     radius?: number;

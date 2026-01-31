@@ -109,7 +109,7 @@ export function TemplateAssetCard({
             collider={template.collider}
             visual={template.visual}
             size={64}
-            color={template.visual?.color ?? '#4CAF50'}
+            color={(template.visual && 'color' in template.visual ? template.visual.color : undefined) ?? '#4CAF50'}
           />
         )}
         

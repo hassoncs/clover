@@ -33,9 +33,8 @@ export const JUMPY_CAT_TEMPLATE: GameDefinition = {
         height: 0.8,
         color: '#FF9933',
       },
-      physics: { density: 1.0, fixedRotation: true },
-      collider: { shape: 'box', physics: {
-        bodyType: 'dynamic', width: 0.8, height: 0.8, friction: 0.3, restitution: 0 }},
+      physics: { bodyType: 'dynamic', density: 1.0, fixedRotation: true },
+      collider: { shape: 'box', width: 0.8, height: 0.8, friction: 0.3, restitution: 0 },
       behaviors: [],
       tags: ['player'],
     },
@@ -47,9 +46,8 @@ export const JUMPY_CAT_TEMPLATE: GameDefinition = {
         height: 0.4,
         color: '#228B22',
       },
-      physics: { density: 1 },
-      collider: { shape: 'box', physics: {
-        bodyType: 'static', width: 2, height: 0.4, friction: 0.8, restitution: 0 }},
+      physics: { bodyType: 'static', density: 1 },
+      collider: { shape: 'box', width: 2, height: 0.4, friction: 0.8, restitution: 0 },
       tags: ['platform', 'ground'],
     },
     collectible: {
@@ -92,9 +90,8 @@ export const JUMPY_CAT_TEMPLATE: GameDefinition = {
         radius: 0.4,
         color: '#FF0000',
       },
-      physics: { density: 1 },
-      collider: { shape: 'circle', physics: {
-        bodyType: 'kinematic', radius: 0.4, friction: 0, restitution: 0 }},
+      physics: { bodyType: 'kinematic', density: 1 },
+      collider: { shape: 'circle', radius: 0.4, friction: 0, restitution: 0 },
       behaviors: [
         {
           type: 'oscillate',

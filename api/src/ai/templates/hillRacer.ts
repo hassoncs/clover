@@ -34,9 +34,8 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
         height: 0.8,
         color: '#E74C3C',
       },
-      physics: { density: 1.0 },
-      collider: { shape: 'box', physics: {
-        bodyType: 'dynamic', width: 2.4, height: 0.8, friction: 0.3, restitution: 0.1 }},
+      physics: { bodyType: 'dynamic', density: 1.0 },
+      collider: { shape: 'box', width: 2.4, height: 0.8, friction: 0.3, restitution: 0.1 },
       tags: ['vehicle'],
     },
     wheel: {
@@ -46,9 +45,8 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
         radius: 0.4,
         color: '#2C3E50',
       },
-      physics: { density: 0.8 },
-      collider: { shape: 'circle', physics: {
-        bodyType: 'dynamic', radius: 0.4, friction: 0.9, restitution: 0.1 }},
+      physics: { bodyType: 'dynamic', density: 0.8 },
+      collider: { shape: 'circle', radius: 0.4, friction: 0.9, restitution: 0.1 },
       tags: ['wheel'],
     },
     ground_segment: {
@@ -63,18 +61,13 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
         ],
         color: '#228B22',
       },
-      physics: { bodyType: "dynamic" },
-      collider: { shape: 'polygon', physics: {
-        bodyType: 'static', vertices: [
-          { x: -5, y: 0 },
-          { x: 5, y: 0 },
-          { x: 5, y: 2 },
-          { x: -5, y: 2 },
-        ],
-        density: 1,
-        friction: 0.8,
-        restitution: 0,
-      }},
+      physics: { bodyType: 'static', density: 1 },
+      collider: { shape: 'polygon', vertices: [
+        { x: -5, y: 0 },
+        { x: 5, y: 0 },
+        { x: 5, y: 2 },
+        { x: -5, y: 2 },
+      ], friction: 0.8, restitution: 0 },
       tags: ['ground'],
     },
     coin: {
@@ -152,18 +145,13 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
         ],
         color: '#228B22',
       },
-      physics: { bodyType: "dynamic" },
-      collider: { shape: 'polygon', physics: {
-        bodyType: 'static', vertices: [
-          { x: -5, y: 0 },
-          { x: 5, y: 0 },
-          { x: 5, y: 2 },
-          { x: -5, y: 2 },
-        ],
-        density: 1,
-        friction: 0.8,
-        restitution: 0,
-      }},
+      physics: { bodyType: 'static', density: 1 },
+      collider: { shape: 'polygon', vertices: [
+        { x: -5, y: 0 },
+        { x: 5, y: 0 },
+        { x: 5, y: 2 },
+        { x: -5, y: 2 },
+      ], friction: 0.8, restitution: 0 },
       tags: ['ground'],
     },
     {
@@ -180,18 +168,13 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
         ],
         color: '#228B22',
       },
-      physics: { bodyType: "dynamic" },
-      collider: { shape: 'polygon', physics: {
-        bodyType: 'static', vertices: [
-          { x: -5, y: 0 },
-          { x: 5, y: 0 },
-          { x: 5, y: 2 },
-          { x: -5, y: 2 },
-        ],
-        density: 1,
-        friction: 0.8,
-        restitution: 0,
-      }},
+      physics: { bodyType: 'static', density: 1 },
+      collider: { shape: 'polygon', vertices: [
+        { x: -5, y: 0 },
+        { x: 5, y: 0 },
+        { x: 5, y: 2 },
+        { x: -5, y: 2 },
+      ], friction: 0.8, restitution: 0 },
       tags: ['ground'],
     },
     {

@@ -1,12 +1,12 @@
-import { router, publicProcedure } from '@/trpc/index'
-import { gamesRouter } from '@/trpc/routes/games'
-import { usersRouter } from '@/trpc/routes/users'
-import { assetsRouter } from '@/trpc/routes/assets'
-import { tilesRouter } from '@/trpc/routes/tiles'
-import { assetSystemRouter } from '@/trpc/routes/asset-system'
-import { uiComponentsRouter } from '@/trpc/routes/ui-components'
-import { economyRouter } from '@/trpc/routes/economy'
-import { invitesRouter } from '@/trpc/routes/invites'
+import { router, publicProcedure } from './index'
+import { gamesRouter } from './routes/games'
+import { usersRouter } from './routes/users'
+import { assetsRouter } from './routes/assets'
+import { tilesRouter } from './routes/tiles'
+import { assetSystemRouter } from './routes/asset-system'
+import { uiComponentsRouter } from './routes/ui-components'
+import { economyRouter } from './routes/economy'
+import { invitesRouter } from './routes/invites'
 
 export const appRouter = router({
   games: gamesRouter,

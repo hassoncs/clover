@@ -139,7 +139,7 @@ export function createMockGodotBridge(): GodotBridge {
 }
 
 export function getMockCallCount(mock: GodotBridge, methodName: string): number {
-  const method = (mock as Record<string, unknown>)[methodName];
+  const method = (mock as unknown as Record<string, unknown>)[methodName];
   if (method && typeof method === 'function' && 'mock' in method) {
     return (method as { mock: { calls: unknown[] } }).mock.calls.length;
   }
@@ -147,6 +147,6 @@ export function getMockCallCount(mock: GodotBridge, methodName: string): number 
 }
 
 export function isMockFunction(mock: GodotBridge, methodName: string): boolean {
-  const method = (mock as Record<string, unknown>)[methodName];
+  const method = (mock as unknown as Record<string, unknown>)[methodName];
   return vi.isMockFunction(method as Function);
 }

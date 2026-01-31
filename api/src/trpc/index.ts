@@ -1,6 +1,6 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import { createClient } from '@supabase/supabase-js';
-import type { Context, AuthenticatedContext, User } from '@/trpc/context'
+import type { Context, AuthenticatedContext, User } from './context'
 
 const t = initTRPC.context<Context>().create();
 

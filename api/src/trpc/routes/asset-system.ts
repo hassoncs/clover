@@ -1,4 +1,4 @@
-import { protectedProcedure, router } from '@/trpc/index'
+import { protectedProcedure, router } from '../index'
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import {
@@ -18,7 +18,7 @@ import { createWorkersAdapters as createWorkersAdaptersImpl } from '@/ai/pipelin
 import type { AssetRun, DebugEvent, UIComponentSheetSpec } from '@/ai/pipeline/types'
 import { uiBaseStateStage, uiVariationStatesStage } from '@/ai/pipeline/stages/ui-component'
 import { getControlBaseState, getControlConfig } from '@/ai/pipeline/ui-control-config'
-import type { Env } from '@/trpc/context'
+import type { Env } from '../context'
 
 const createWorkersAdapters = (env: Env) => createWorkersAdaptersImpl(env, env.ASSETS);
 

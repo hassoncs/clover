@@ -230,11 +230,11 @@ router.post('/stylize', async (c) => {
       env: c.env,
     });
 
-    if (!provider.configured) {
+    if (!provider.configured || !provider.uploadImage || !provider.img2img || !provider.downloadImage) {
       return c.json({ success: false, error: { type: 'server', message: 'Image generation provider not configured' } }, 500);
     }
 
-    const uploadResult = await provider.uploadImage!(pngBuffer, 'text-grid-silhouette.png');
+    const uploadResult = await provider.uploadImage(pngBuffer, 'text-grid-silhouette.png');
 
     const img2imgResult = await provider.img2img({
       image: uploadResult.assetId,

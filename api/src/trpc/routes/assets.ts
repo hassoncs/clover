@@ -2,7 +2,7 @@ import {
   router,
   publicProcedure,
   protectedProcedure,
-} from '@/trpc/index'
+} from '../index'
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import {

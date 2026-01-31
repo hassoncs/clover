@@ -692,23 +692,27 @@ export async function createImageGenerationAdapter({
     return {
       configured: true,
       uploadImage: async (imageBuffer: Uint8Array, filename?: string) => {
-        const assetId = await client.uploadImage(imageBuffer, filename);
+        const arrayBuffer = imageBuffer.buffer.slice(
+          imageBuffer.byteOffset,
+          imageBuffer.byteOffset + imageBuffer.byteLength
+        ) as ArrayBuffer;
+        const assetId = await client.uploadAsset(arrayBuffer, filename);
         return { assetId };
       },
       img2img: async (params) => {
-        return client.img2img({
+        const result = await client.generateImg2Img({
           image: params.image,
           prompt: params.prompt,
           strength: params.strength ?? 0.75,
         });
+        return { assetId: result.assetIds[0] };
       },
       downloadImage: async (assetId: string) => {
-        const result = await client.downloadImage(assetId);
-        const extension = result.extension;
-        const mimeType = extension === 'png' ? 'image/png' : 
-                        extension === 'jpg' || extension === 'jpeg' ? 'image/jpeg' : 
-                        'image/webp';
-        return { buffer: result.buffer, mimeType };
+        const result = await client.downloadAsset(assetId);
+        return { 
+          buffer: new Uint8Array(result.buffer), 
+          mimeType: result.mimeType,
+        };
       },
     };
   }
