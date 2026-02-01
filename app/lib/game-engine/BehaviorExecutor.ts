@@ -5,6 +5,7 @@ import { registerMovementBehaviors } from './behaviors/MovementBehaviors';
 import { registerLifecycleBehaviors } from './behaviors/LifecycleBehaviors';
 import { registerVisualBehaviors } from './behaviors/VisualBehaviors';
 import { registerTweenBehaviors } from './behaviors/TweenBehaviors';
+import { registerLaunchBehaviors } from './behaviors/LaunchBehaviors';
 
 export type BehaviorHandler = (
   behavior: Behavior,
@@ -49,6 +50,8 @@ const BEHAVIOR_PHASES: Record<BehaviorType, BehaviorPhase> = {
   health: 'post_physics',
   attach_to: 'movement',
   teleport: 'post_physics',
+  stick_to_entity: 'movement',
+  launch_on_input: 'input',
 };
 
 const PHASE_ORDER: BehaviorPhase[] = ['input', 'timer', 'movement', 'visual', 'post_physics'];
@@ -207,6 +210,7 @@ export function createBehaviorExecutor(): BehaviorExecutor {
   registerLifecycleBehaviors(executor);
   registerVisualBehaviors(executor);
   registerTweenBehaviors(executor);
+  registerLaunchBehaviors(executor);
 
   return executor;
 }

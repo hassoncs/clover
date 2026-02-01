@@ -1,11 +1,19 @@
 import {
-  getQuickJS,
+  newQuickJSWASMModuleFromVariant,
   shouldInterruptAfterDeadline,
-  isSuccess,
-  type QuickJSRuntime,
-  type QuickJSContext,
-  type QuickJSHandle,
-} from 'quickjs-emscripten';
+} from 'quickjs-emscripten-core';
+import releaseVariant from '@jitl/quickjs-singlefile-cjs-release-sync';
+import type {
+  QuickJSWASMModule,
+  QuickJSRuntime,
+  QuickJSContext,
+  QuickJSHandle,
+  SuccessOrFail,
+} from 'quickjs-emscripten-core';
+
+function isSuccess<S, F>(result: SuccessOrFail<S, F>): result is { value: S } {
+  return 'value' in result;
+}
 import type {
   ScriptBudgetConfig,
   ScriptResult,
@@ -19,11 +27,13 @@ export interface QuickJSEngineConfig {
 }
 
 export class QuickJSEngine {
+  private module: QuickJSWASMModule | null = null;
   private runtime: QuickJSRuntime | null = null;
   private context: QuickJSContext | null = null;
   private budget: ScriptBudgetConfig;
   private isInitialized = false;
   private isDisposed = false;
+  private retainedHandles: QuickJSHandle[] = [];
 
   constructor(config: QuickJSEngineConfig = {}) {
     this.budget = {
@@ -35,8 +45,8 @@ export class QuickJSEngine {
   async initialize(): Promise<void> {
     if (this.isInitialized) return;
 
-    const QuickJS = await getQuickJS();
-    this.runtime = QuickJS.newRuntime();
+    this.module = await newQuickJSWASMModuleFromVariant(releaseVariant);
+    this.runtime = this.module.newRuntime();
 
     if (this.budget.maxMemoryBytes) {
       this.runtime.setMemoryLimit(this.budget.maxMemoryBytes);
@@ -51,7 +61,46 @@ export class QuickJSEngine {
 
     const handle = this.valueToHandle(value);
     this.context.setProp(this.context.global, name, handle);
-    handle.dispose();
+    
+    if (typeof value === 'function') {
+      this.retainedHandles.push(handle);
+    } else {
+      handle.dispose();
+    }
+  }
+
+  setupConsole(handlers: {
+    log: (...args: unknown[]) => void;
+    warn: (...args: unknown[]) => void;
+    error: (...args: unknown[]) => void;
+  }): void {
+    if (!this.context) throw new Error('Engine not initialized');
+
+    const ctx = this.context;
+    const consoleObj = ctx.newObject();
+
+    const logFn = ctx.newFunction('log', (...args) => {
+      const values = args.map(a => ctx.dump(a));
+      handlers.log(...values);
+    });
+    ctx.setProp(consoleObj, 'log', logFn);
+
+    const warnFn = ctx.newFunction('warn', (...args) => {
+      const values = args.map(a => ctx.dump(a));
+      handlers.warn(...values);
+    });
+    ctx.setProp(consoleObj, 'warn', warnFn);
+
+    const errorFn = ctx.newFunction('error', (...args) => {
+      const values = args.map(a => ctx.dump(a));
+      handlers.error(...values);
+    });
+    ctx.setProp(consoleObj, 'error', errorFn);
+
+    ctx.setProp(ctx.global, 'console', consoleObj);
+
+    this.retainedHandles.push(logFn, warnFn, errorFn);
+    consoleObj.dispose();
   }
 
   evaluate(code: string, phase: ScriptErrorReport['phase'] = 'load'): ScriptResult<unknown> {
@@ -266,6 +315,11 @@ export class QuickJSEngine {
   }
 
   dispose(): void {
+    for (const handle of this.retainedHandles) {
+      handle.dispose();
+    }
+    this.retainedHandles = [];
+
     if (this.context) {
       this.context.dispose();
       this.context = null;

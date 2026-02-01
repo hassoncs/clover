@@ -75,21 +75,14 @@ export function discoverExamples(): GameInfo[] {
   return examples.sort((a, b) => a.id.localeCompare(b.id));
 }
 
-let cachedGames: GameInfo[] | null = null;
-let cachedExamples: GameInfo[] | null = null;
-
 export function getAvailableGames(): GameInfo[] {
-  if (!cachedGames) {
-    cachedGames = discoverTestGames();
-  }
-  return cachedGames;
+  // Always discover fresh - games may be added/removed during development
+  return discoverTestGames();
 }
 
 export function getAvailableExamples(): GameInfo[] {
-  if (!cachedExamples) {
-    cachedExamples = discoverExamples();
-  }
-  return cachedExamples;
+  // Always discover fresh - examples may be added/removed during development
+  return discoverExamples();
 }
 
 export function getAllAvailable(): GameInfo[] {
@@ -114,7 +107,4 @@ export function findByIdOrPath(input: string): GameInfo | undefined {
   return all.find((g) => g.id.toLowerCase().replace(/[-_\s]/g, "") === normalizedInput);
 }
 
-export function clearCache(): void {
-  cachedGames = null;
-  cachedExamples = null;
-}
+

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import express from "express";
 import { randomUUID } from "node:crypto";
-import { watch } from "node:fs";
+import { watch, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -31,22 +31,22 @@ interface ToolDefinition {
   handler: ToolHandler;
 }
 
-interface ToolModule {
-  registerGameManagementTools?: ToolRegistrar;
-  registerSnapshotTools?: ToolRegistrar;
-  registerInteractionTools?: ToolRegistrar;
-  registerQueryTools?: ToolRegistrar;
-  registerPropertiesTools?: ToolRegistrar;
-  registerLifecycleTools?: ToolRegistrar;
-  registerTimeControlTools?: ToolRegistrar;
-  registerEventsTools?: ToolRegistrar;
-  registerPhysicsTools?: ToolRegistrar;
-}
-
 const toolDefinitions: Map<string, ToolDefinition> = new Map();
+const toolsDir = path.join(__dirname, "tools");
+
+function discoverToolFiles(): string[] {
+  try {
+    return readdirSync(toolsDir)
+      .filter(f => f.endsWith(".js") && !f.endsWith(".d.ts"))
+      .map(f => f.replace(".js", ""));
+  } catch {
+    return [];
+  }
+}
 
 async function loadAndRegisterTools() {
   const suffix = `?v=${importCounter++}`;
+  const toolFiles = discoverToolFiles();
   
   const tempServer = {
     tool: (name: string, description: string, schema: Record<string, unknown>, handler: ToolHandler) => {
@@ -54,29 +54,21 @@ async function loadAndRegisterTools() {
     },
   } as unknown as McpServer;
 
-  const modules = await Promise.all([
-    import(`./tools/game-management.js${suffix}`) as Promise<ToolModule>,
-    import(`./tools/snapshot.js${suffix}`) as Promise<ToolModule>,
-    import(`./tools/interaction.js${suffix}`) as Promise<ToolModule>,
-    import(`./tools/query.js${suffix}`) as Promise<ToolModule>,
-    import(`./tools/properties.js${suffix}`) as Promise<ToolModule>,
-    import(`./tools/lifecycle.js${suffix}`) as Promise<ToolModule>,
-    import(`./tools/time-control.js${suffix}`) as Promise<ToolModule>,
-    import(`./tools/events.js${suffix}`) as Promise<ToolModule>,
-    import(`./tools/physics.js${suffix}`) as Promise<ToolModule>,
-  ]);
+  for (const toolFile of toolFiles) {
+    try {
+      const module = await import(`./tools/${toolFile}.js${suffix}`);
+      const registerFn = Object.values(module).find(
+        (v): v is ToolRegistrar => typeof v === "function" && v.name.startsWith("register")
+      );
+      if (registerFn) {
+        registerFn(tempServer, state);
+      }
+    } catch (err) {
+      console.error(`[game-inspector] Failed to load ${toolFile}:`, err);
+    }
+  }
 
-  modules[0].registerGameManagementTools?.(tempServer, state);
-  modules[1].registerSnapshotTools?.(tempServer, state);
-  modules[2].registerInteractionTools?.(tempServer, state);
-  modules[3].registerQueryTools?.(tempServer, state);
-  modules[4].registerPropertiesTools?.(tempServer, state);
-  modules[5].registerLifecycleTools?.(tempServer, state);
-  modules[6].registerTimeControlTools?.(tempServer, state);
-  modules[7].registerEventsTools?.(tempServer, state);
-  modules[8].registerPhysicsTools?.(tempServer, state);
-
-  console.error(`[game-inspector] Loaded ${toolDefinitions.size} tool handlers`);
+  console.error(`[game-inspector] Loaded ${toolDefinitions.size} tools from ${toolFiles.length} files: ${toolFiles.join(", ")}`);
 }
 
 await loadAndRegisterTools();
@@ -92,7 +84,6 @@ async function reloadTools() {
   }
 }
 
-const toolsDir = path.join(__dirname, "tools");
 let reloadTimeout: ReturnType<typeof setTimeout> | null = null;
 
 watch(toolsDir, { recursive: true }, (eventType, filename) => {
@@ -189,11 +180,11 @@ app.delete("/mcp", async (req, res) => {
 
 app.post("/reload", async (_req, res) => {
   await reloadTools();
-  res.json({ success: true, message: "Tools reloaded" });
+  res.json({ success: true, message: "Tools reloaded", toolCount: toolDefinitions.size });
 });
 
 app.get("/health", (_req, res) => {
-  res.json({ status: "ok", sessions: Object.keys(transports).length });
+  res.json({ status: "ok", sessions: Object.keys(transports).length, tools: toolDefinitions.size });
 });
 
 async function cleanup() {

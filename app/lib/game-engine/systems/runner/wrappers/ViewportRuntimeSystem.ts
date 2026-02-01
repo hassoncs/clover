@@ -29,13 +29,18 @@ export class ViewportRuntimeSystem implements RuntimeSystem<ViewportSystemConfig
   readonly phase = SystemPhase.PRE_UPDATE;
   readonly priority = 100;
   
+  private config: ViewportSystemConfig;
   private system: ViewportSystem | null = null;
   
-  initialize(_ctx: SystemContext, config: ViewportSystemConfig): void {
-    this.system = new ViewportSystem(config.worldBounds, {
-      aspectRatio: config.aspectRatio,
-      fit: config.fit,
-      letterboxColor: config.letterboxColor,
+  constructor(config: ViewportSystemConfig) {
+    this.config = config;
+  }
+  
+  initialize(_ctx: SystemContext, _config: ViewportSystemConfig): void {
+    this.system = new ViewportSystem(this.config.worldBounds, {
+      aspectRatio: this.config.aspectRatio,
+      fit: this.config.fit,
+      letterboxColor: this.config.letterboxColor,
     });
   }
   

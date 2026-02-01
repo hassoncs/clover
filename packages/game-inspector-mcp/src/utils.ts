@@ -35,11 +35,34 @@ export async function ensurePage(state: GameInspectorState): Promise<Page> {
 }
 
 function setupConsoleCapture(page: Page, state: GameInspectorState): void {
-  page.on('console', (msg) => {
+  page.on('console', async (msg) => {
+    let text = msg.text();
+    
+    // For some console messages (especially from eval'd code), msg.text() may be empty
+    // In that case, try to get text from args
+    if (!text || text === '') {
+      try {
+        const args = msg.args();
+        const argTexts = await Promise.all(
+          args.map(async (arg) => {
+            try {
+              const val = await arg.jsonValue();
+              return typeof val === 'string' ? val : JSON.stringify(val);
+            } catch {
+              return arg.toString();
+            }
+          })
+        );
+        text = argTexts.join(' ');
+      } catch {
+        // Fall back to original text
+      }
+    }
+    
     const entry: ConsoleLogEntry = {
       timestamp: Date.now(),
       type: msg.type() as ConsoleLogEntry['type'],
-      text: msg.text(),
+      text,
     };
     
     state.consoleLogs.push(entry);

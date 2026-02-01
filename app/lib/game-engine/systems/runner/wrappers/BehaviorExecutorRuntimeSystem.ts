@@ -22,9 +22,10 @@ export class BehaviorExecutorRuntimeSystem implements RuntimeSystem<BehaviorExec
   readonly phase = SystemPhase.GAME_LOGIC;
   readonly priority = 30;
   
+  private config: BehaviorExecutorSystemConfig;
   private behaviorExecutor: BehaviorExecutor | null = null;
   private systemContext: SystemContext | null = null;
-  private config: BehaviorExecutorSystemConfig | null = null;
+  private pixelsPerMeter: number = 50;
   private executionCount = 0;
   private lastExecutionTime = 0;
   
@@ -32,19 +33,43 @@ export class BehaviorExecutorRuntimeSystem implements RuntimeSystem<BehaviorExec
   private camera?: CameraSystem;
   private inputEntityManager?: InputEntityManager;
   
-  initialize(ctx: SystemContext, config: BehaviorExecutorSystemConfig): void {
-    this.systemContext = ctx;
+  constructor(config: BehaviorExecutorSystemConfig) {
     this.config = config;
+  }
+  
+  initialize(ctx: SystemContext, _config: BehaviorExecutorSystemConfig): void {
+    this.systemContext = ctx;
+    this.pixelsPerMeter = this.config.pixelsPerMeter;
     this.behaviorExecutor = createBehaviorExecutor();
   }
   
   update(ctx: UpdateContext, _state: BehaviorExecutorSystemState): void {
-    if (!this.behaviorExecutor || !this.systemContext) return;
+    console.log('[BehaviorExecutor] UPDATE CALLED');
+    
+    if (!this.behaviorExecutor || !this.systemContext) {
+      console.log('[BehaviorExecutor] Early return - behaviorExecutor:', !!this.behaviorExecutor, 'systemContext:', !!this.systemContext);
+      return;
+    }
     
     const startTime = performance.now();
     
     const entities = this.systemContext.entityManager.getAllEntities() as RuntimeEntity[];
+    const ballEntity = entities.find(e => e.id === 'ball');
+    if (ballEntity) {
+      console.log('[BehaviorExecutor] Ball entity found:', {
+        id: ballEntity.id,
+        active: ballEntity.active,
+        hasBodyId: !!ballEntity.bodyId,
+        behaviorCount: ballEntity.behaviors.length,
+        behaviors: ballEntity.behaviors.map(b => b.definition.type)
+      });
+    }
+    
     const activeEntities = entities.filter(e => e.active);
+    if (ballEntity) {
+      console.log('[BehaviorExecutor] Total entities:', entities.length, 'Active entities:', activeEntities.length);
+      console.log('[BehaviorExecutor] Ball is active:', ballEntity.active, 'Included in activeEntities:', activeEntities.includes(ballEntity));
+    }
     
     const behaviorContext = this.createBehaviorContext(ctx);
     
@@ -88,8 +113,8 @@ export class BehaviorExecutorRuntimeSystem implements RuntimeSystem<BehaviorExec
   }
   
   private createBehaviorContext(ctx: UpdateContext): Omit<BehaviorContext, 'entity' | 'resolveNumber' | 'resolveVec2'> {
-    if (!this.systemContext || !this.config) {
-      throw new Error('[BehaviorExecutorRuntimeSystem] Cannot create context without systemContext or config');
+    if (!this.systemContext) {
+      throw new Error('[BehaviorExecutorRuntimeSystem] Cannot create context without systemContext');
     }
     
     const evalContext: EvalContext = {
@@ -115,7 +140,7 @@ export class BehaviorExecutorRuntimeSystem implements RuntimeSystem<BehaviorExec
       entityManager: this.systemContext.entityManager,
       physics: this.systemContext.physics,
       collisions,
-      pixelsPerMeter: this.config.pixelsPerMeter,
+      pixelsPerMeter: this.pixelsPerMeter,
       
       computedValues: this.computedValues!,
       evalContext,

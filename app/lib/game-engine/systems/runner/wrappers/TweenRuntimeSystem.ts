@@ -26,6 +26,8 @@ export class TweenRuntimeSystem implements RuntimeSystem<TweenSystemConfig, Twee
   
   private tweenSystem: TweenSystem | null = null;
   
+  constructor() {}
+  
   initialize(ctx: SystemContext, _config: TweenSystemConfig): void {
     this.tweenSystem = new TweenSystem({
       setEntityPosition: (entityId, x, y) => ctx.bridge.setPosition(entityId, x, y),

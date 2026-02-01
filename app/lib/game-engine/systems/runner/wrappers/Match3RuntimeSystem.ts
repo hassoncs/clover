@@ -15,10 +15,15 @@ export class Match3RuntimeSystem implements RuntimeSystem<Match3SystemConfig, Ma
   readonly phase = SystemPhase.GAME_LOGIC;
   readonly priority = 100;
   
+  private config: Match3SystemConfig;
   private match3System: Match3GameSystem | null = null;
   private systemContext: SystemContext | null = null;
   
-  initialize(ctx: SystemContext, config: Match3SystemConfig): void {
+  constructor(config: Match3SystemConfig) {
+    this.config = config;
+  }
+  
+  initialize(ctx: SystemContext, _config: Match3SystemConfig): void {
     this.systemContext = ctx;
     
     const callbacks: Match3Callbacks = {
@@ -37,7 +42,7 @@ export class Match3RuntimeSystem implements RuntimeSystem<Match3SystemConfig, Ma
     };
     
     this.match3System = new Match3GameSystem(
-      config,
+      this.config,
       ctx.entityManager,
       callbacks,
       ctx.eventBus

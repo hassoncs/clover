@@ -37,7 +37,7 @@ export function registerTimeControlTools(server: McpServer, state: GameInspector
 
   server.tool(
     "step",
-    "Step forward N physics frames while paused (advances both physics AND game rules)",
+    "Step forward N physics frames (automatically pauses if running, advances physics and game rules)",
     {
       frames: z.number().describe("Number of frames to step (default: 1)"),
       screenshot: z.boolean().optional().describe("Take a screenshot after stepping (default: false)"),
@@ -47,6 +47,11 @@ export function registerTimeControlTools(server: McpServer, state: GameInspector
       const frames = (args.frames as number | undefined) ?? 1;
       const shouldScreenshot = (args.screenshot as boolean | undefined) ?? false;
       const screenshotFilename = args.screenshotFilename as string | undefined;
+      
+      const timeState = await querySlopcade(state.page, "getTimeState", []) as { paused?: boolean };
+      if (timeState && !timeState.paused) {
+        await querySlopcade(state.page, "pause", []);
+      }
       
       const result = await querySlopcade(state.page, "step", [frames]);
       

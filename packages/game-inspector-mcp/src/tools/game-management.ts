@@ -107,13 +107,11 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
       name: z.string().describe("Game name, example name, or full URL (e.g., 'candyCrush', 'draggable_cubes', 'http://localhost:8085/examples/draggable_cubes')"),
       baseUrl: z.string().optional().describe(`Base URL for the app (default: ${DEFAULT_BASE_URL})`),
       timeout: z.number().optional().describe(`Timeout in ms to wait for game ready (default: ${DEFAULT_TIMEOUT})`),
-      startPaused: z.boolean().optional().describe("Start game paused for inspection (default: false)"),
     },
     async (args) => {
       const name = args.name as string;
       const baseUrl = (args.baseUrl as string | undefined) ?? DEFAULT_BASE_URL;
       const timeout = (args.timeout as number | undefined) ?? DEFAULT_TIMEOUT;
-      const startPaused = (args.startPaused as boolean | undefined) ?? false;
 
       let url: string;
       let identifier: string;
@@ -254,10 +252,9 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
 
       state.currentGameId = identifier;
 
-      // Only pause if explicitly requested - games start running by default
-      if (startPaused) {
-        await querySlopcade(page, "pause", []);
-      }
+      await queryGodot(page, "setSeed", [42, { enableDeterministic: true }]);
+      await querySlopcade(page, "pause", []);
+      await querySlopcade(page, "step", [1]);
       
       const snapshot = await page.evaluate(async () => {
         const w = window as unknown as WindowWithBridge;
@@ -277,7 +274,7 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
         identifier,
         url,
         snapshot,
-        paused: startPaused,
+        paused: true,
         timeState,
         logCount: startupLogs.length,
       };

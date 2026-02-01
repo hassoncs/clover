@@ -7,6 +7,7 @@ import type {
   LoseCondition,
   ContainerConfig,
   EvalContext,
+  GameVariable,
 } from '@slopcade/shared';
 import type { ComputedValueSystem } from '@slopcade/shared';
 import type { CameraSystem } from '../../../CameraSystem';
@@ -16,7 +17,7 @@ export interface RulesSystemConfig {
   rules: GameRule[];
   winCondition?: WinCondition;
   loseCondition?: LoseCondition;
-  variables?: Record<string, number | string | boolean>;
+  variables?: Record<string, GameVariable>;
   containers?: ContainerConfig[];
 }
 
@@ -32,6 +33,7 @@ export class RulesRuntimeSystem implements RuntimeSystem<RulesSystemConfig, Rule
   readonly phase = SystemPhase.GAME_LOGIC;
   readonly priority = 50;
   
+  private config: RulesSystemConfig;
   private rulesEvaluator: RulesEvaluator | null = null;
   private systemContext: SystemContext | null = null;
   
@@ -40,16 +42,34 @@ export class RulesRuntimeSystem implements RuntimeSystem<RulesSystemConfig, Rule
   private camera?: CameraSystem;
   private inputEntityManager?: InputEntityManager;
   
-  initialize(ctx: SystemContext, config: RulesSystemConfig): void {
+  constructor(config: RulesSystemConfig) {
+    this.config = config;
+  }
+  
+  initialize(ctx: SystemContext, _config: RulesSystemConfig): void {
     this.systemContext = ctx;
-    this.rulesEvaluator = new RulesEvaluator(ctx.entityManager, config.containers);
+    this.rulesEvaluator = new RulesEvaluator(ctx.entityManager, this.config.containers);
     
-    this.rulesEvaluator.loadRules(config.rules);
-    this.rulesEvaluator.setWinCondition(config.winCondition);
-    this.rulesEvaluator.setLoseCondition(config.loseCondition);
+    this.rulesEvaluator.loadRules(this.config.rules);
+    this.rulesEvaluator.setWinCondition(this.config.winCondition);
+    this.rulesEvaluator.setLoseCondition(this.config.loseCondition);
     
-    if (config.variables) {
-      this.rulesEvaluator.setInitialVariables(config.variables);
+    // Convert GameVariable to primitive values
+    if (this.config.variables) {
+      const resolvedVars: Record<string, number | string | boolean> = {};
+      for (const [key, value] of Object.entries(this.config.variables)) {
+        // Skip complex types like Vec2 and expressions - they'll be handled by computed values
+        if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
+          resolvedVars[key] = value;
+        } else if (typeof value === 'object' && value !== null && 'value' in value) {
+          // Handle VariableWithTuning
+          const varValue = (value as any).value;
+          if (typeof varValue === 'number' || typeof varValue === 'string' || typeof varValue === 'boolean') {
+            resolvedVars[key] = varValue;
+          }
+        }
+      }
+      this.rulesEvaluator.setInitialVariables(resolvedVars);
     }
   }
   

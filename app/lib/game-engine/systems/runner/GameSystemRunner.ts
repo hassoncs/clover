@@ -8,7 +8,7 @@ export class GameSystemRunner {
   private eventQueue = new EventQueueImpl();
   private initialized = false;
 
-  register(system: RuntimeSystem): void {
+  register<TConfig>(system: RuntimeSystem<TConfig>): void {
     if (this.initialized) {
       throw new Error(`Cannot register system '${system.id}' after initialization`);
     }
@@ -39,7 +39,7 @@ export class GameSystemRunner {
     };
 
     for (const system of this.systems) {
-      await system.initialize(contextWithQueue, system.getState());
+      await system.initialize(contextWithQueue, {} as any);
     }
 
     this.initialized = true;

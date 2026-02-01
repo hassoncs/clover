@@ -1,4 +1,3 @@
-import { QuickJSEngine } from './engine/QuickJSEngine';
 import { createScriptContext, contextToPlainObject } from './GameScriptAPI';
 import type {
   ScriptSandboxConfig,
@@ -7,19 +6,10 @@ import type {
   ScriptInputEvent,
   ScriptCollisionEvent,
   SandboxRuntimeContext,
-  ScriptBudgetConfig,
+  ScriptErrorType,
 } from './types';
-import { DEFAULT_SCRIPT_BUDGET } from './types';
 
-const SCRIPT_WRAPPER_PREFIX = `
-var exports = {};
-(function(exports) {
-`;
-
-const SCRIPT_WRAPPER_SUFFIX = `
-})(exports);
-exports;
-`;
+const _nativeConsole = globalThis.console;
 
 export interface ScriptReloadResult {
   success: boolean;
@@ -38,117 +28,103 @@ export interface ScriptReloadResult {
   };
 }
 
+type HookFunction = (ctx: Record<string, unknown>, ...args: unknown[]) => void;
+
+interface CompiledExports {
+  onStart?: HookFunction;
+  onUpdate?: HookFunction;
+  onInput?: HookFunction;
+  onCollision?: HookFunction;
+  [key: string]: unknown;
+}
+
+export interface ScriptLogEntry {
+  level: 'log' | 'warn' | 'error';
+  args: unknown[];
+  timestamp: number;
+}
+
 export class ScriptSandbox {
-  private engine: QuickJSEngine;
   private config: ScriptSandboxConfig;
+  private exports: CompiledExports = {};
   private isInitialized = false;
   private isDisposed = false;
-  private hasOnStart = false;
-  private hasOnUpdate = false;
-  private hasOnInput = false;
-  private hasOnCollision = false;
   private lastError: ScriptErrorReport | null = null;
   private reloadCount = 0;
+  private logs: ScriptLogEntry[] = [];
+  private maxLogs = 500;
+
+  private sandboxConsole = {
+    log: (...args: unknown[]) => {
+      this.logs.push({ level: 'log', args, timestamp: Date.now() });
+      if (this.logs.length > this.maxLogs) this.logs.shift();
+      _nativeConsole.log('[Script]', ...args);
+    },
+    warn: (...args: unknown[]) => {
+      this.logs.push({ level: 'warn', args, timestamp: Date.now() });
+      if (this.logs.length > this.maxLogs) this.logs.shift();
+      _nativeConsole.warn('[Script]', ...args);
+    },
+    error: (...args: unknown[]) => {
+      this.logs.push({ level: 'error', args, timestamp: Date.now() });
+      if (this.logs.length > this.maxLogs) this.logs.shift();
+      _nativeConsole.error('[Script]', ...args);
+    },
+  };
 
   constructor(config: ScriptSandboxConfig) {
     this.config = config;
-    const budget: ScriptBudgetConfig = {
-      ...DEFAULT_SCRIPT_BUDGET,
-      ...config.budget,
-    };
-    this.engine = new QuickJSEngine({ budget });
   }
 
   async initialize(): Promise<ScriptResult<void>> {
     if (this.isInitialized) return { success: true };
 
     try {
-      await this.engine.initialize();
-
-      const wrappedCode = SCRIPT_WRAPPER_PREFIX + this.config.scriptCode + SCRIPT_WRAPPER_SUFFIX;
-      const result = this.engine.evaluate(wrappedCode, 'load');
-
-      if (!result.success) {
-        this.lastError = result.error ?? null;
-        return { success: false, error: result.error };
-      }
-
-      // Detect hooks by evaluating inside QuickJS - dump() doesn't preserve functions
-      const hookCheckResult = this.engine.evaluate(
-        `({
-          onStart: typeof exports.onStart === 'function',
-          onUpdate: typeof exports.onUpdate === 'function',
-          onInput: typeof exports.onInput === 'function',
-          onCollision: typeof exports.onCollision === 'function',
-        })`,
-        'load'
-      );
-
-      if (hookCheckResult.success) {
-        const hooks = hookCheckResult.value as Record<string, boolean>;
-        this.hasOnStart = hooks.onStart ?? false;
-        this.hasOnUpdate = hooks.onUpdate ?? false;
-        this.hasOnInput = hooks.onInput ?? false;
-        this.hasOnCollision = hooks.onCollision ?? false;
-      }
-
+      this.exports = this.compileScript(this.config.scriptCode);
       this.isInitialized = true;
       return { success: true };
     } catch (error) {
-      const errorReport: ScriptErrorReport = {
-        message: error instanceof Error ? error.message : String(error),
-        type: 'unknown',
-        phase: 'load',
-        frameId: 0,
-        timestamp: Date.now(),
-      };
+      const errorReport = this.createErrorReport(error, 'load');
       this.lastError = errorReport;
       return { success: false, error: errorReport };
     }
   }
 
-  /**
-   * Hot reload the script with new code.
-   * This disposes the old engine and creates a new one with the updated script.
-   * Game state is preserved in the runtime context, but any in-script state is lost.
-   */
+  private compileScript(scriptCode: string): CompiledExports {
+    const wrappedCode = `
+      "use strict";
+      return (function(exports, console) {
+        ${scriptCode}
+        return exports;
+      })(exports, console);
+    `;
+
+    const factory = new Function('exports', 'console', wrappedCode);
+    const exports: CompiledExports = {};
+    return factory(exports, this.sandboxConsole) ?? exports;
+  }
+
   async reload(newScriptCode: string): Promise<ScriptReloadResult> {
     const previousHooks = {
-      onStart: this.hasOnStart,
-      onUpdate: this.hasOnUpdate,
-      onInput: this.hasOnInput,
-      onCollision: this.hasOnCollision,
+      onStart: this.hasHook('onStart'),
+      onUpdate: this.hasHook('onUpdate'),
+      onInput: this.hasHook('onInput'),
+      onCollision: this.hasHook('onCollision'),
     };
 
-    // Dispose old engine
-    this.engine.dispose();
-    
-    // Create new engine with updated config
     this.config = { ...this.config, scriptCode: newScriptCode };
-    const budget: ScriptBudgetConfig = {
-      ...DEFAULT_SCRIPT_BUDGET,
-      ...this.config.budget,
-    };
-    this.engine = new QuickJSEngine({ budget });
-    
-    // Reset state
+    this.exports = {};
     this.isInitialized = false;
-    this.hasOnStart = false;
-    this.hasOnUpdate = false;
-    this.hasOnInput = false;
-    this.hasOnCollision = false;
     this.lastError = null;
-    
-    // Re-initialize with new code
+
     const initResult = await this.initialize();
-    
     this.reloadCount++;
-    
+
     const newHooks = {
-      onStart: this.hasOnStart,
-      onUpdate: this.hasOnUpdate,
-      onInput: this.hasOnInput,
-      onCollision: this.hasOnCollision,
+      onStart: this.hasHook('onStart'),
+      onUpdate: this.hasHook('onUpdate'),
+      onInput: this.hasHook('onInput'),
+      onCollision: this.hasHook('onCollision'),
     };
 
     if (!initResult.success) {
@@ -160,23 +136,13 @@ export class ScriptSandbox {
       };
     }
 
-    return {
-      success: true,
-      previousHooks,
-      newHooks,
-    };
+    return { success: true, previousHooks, newHooks };
   }
 
-  /**
-   * Get the number of times this sandbox has been reloaded.
-   */
   getReloadCount(): number {
     return this.reloadCount;
   }
 
-  /**
-   * Get the current script code.
-   */
   getScriptCode(): string {
     return this.config.scriptCode;
   }
@@ -186,21 +152,11 @@ export class ScriptSandbox {
       return { success: false, error: this.createNotReadyError('start') };
     }
 
-    if (!this.hasOnStart) return { success: true };
-
-    const ctx = createScriptContext(runtime);
-    const ctxObj = contextToPlainObject(ctx);
-
-    this.engine.setGlobal('__ctx__', ctxObj);
-    const result = this.engine.evaluate(
-      'if (exports.onStart) exports.onStart(__ctx__);',
-      'start'
-    );
-
-    if (!result.success) {
-      this.lastError = result.error ?? null;
+    if (typeof this.exports.onStart !== 'function') {
+      return { success: true };
     }
-    return result as ScriptResult<void>;
+
+    return this.callHook('onStart', runtime);
   }
 
   runUpdate(runtime: SandboxRuntimeContext, dt: number): ScriptResult<void> {
@@ -208,22 +164,11 @@ export class ScriptSandbox {
       return { success: false, error: this.createNotReadyError('update') };
     }
 
-    if (!this.hasOnUpdate) return { success: true };
-
-    const ctx = createScriptContext(runtime);
-    const ctxObj = contextToPlainObject(ctx);
-
-    this.engine.setGlobal('__ctx__', ctxObj);
-    this.engine.setGlobal('__dt__', dt);
-    const result = this.engine.evaluate(
-      'if (exports.onUpdate) exports.onUpdate(__ctx__, __dt__);',
-      'update'
-    );
-
-    if (!result.success) {
-      this.lastError = result.error ?? null;
+    if (typeof this.exports.onUpdate !== 'function') {
+      return { success: true };
     }
-    return result as ScriptResult<void>;
+
+    return this.callHook('onUpdate', runtime, dt);
   }
 
   runInput(runtime: SandboxRuntimeContext, event: ScriptInputEvent): ScriptResult<void> {
@@ -231,22 +176,11 @@ export class ScriptSandbox {
       return { success: false, error: this.createNotReadyError('input') };
     }
 
-    if (!this.hasOnInput) return { success: true };
-
-    const ctx = createScriptContext(runtime);
-    const ctxObj = contextToPlainObject(ctx);
-
-    this.engine.setGlobal('__ctx__', ctxObj);
-    this.engine.setGlobal('__event__', event);
-    const result = this.engine.evaluate(
-      'if (exports.onInput) exports.onInput(__ctx__, __event__);',
-      'input'
-    );
-
-    if (!result.success) {
-      this.lastError = result.error ?? null;
+    if (typeof this.exports.onInput !== 'function') {
+      return { success: true };
     }
-    return result as ScriptResult<void>;
+
+    return this.callHook('onInput', runtime, event);
   }
 
   runCollision(runtime: SandboxRuntimeContext, collision: ScriptCollisionEvent): ScriptResult<void> {
@@ -254,28 +188,13 @@ export class ScriptSandbox {
       return { success: false, error: this.createNotReadyError('collision') };
     }
 
-    if (!this.hasOnCollision) return { success: true };
-
-    const ctx = createScriptContext(runtime);
-    const ctxObj = contextToPlainObject(ctx);
-
-    this.engine.setGlobal('__ctx__', ctxObj);
-    this.engine.setGlobal('__collision__', collision);
-    const result = this.engine.evaluate(
-      'if (exports.onCollision) exports.onCollision(__ctx__, __collision__);',
-      'collision'
-    );
-
-    if (!result.success) {
-      this.lastError = result.error ?? null;
+    if (typeof this.exports.onCollision !== 'function') {
+      return { success: true };
     }
-    return result as ScriptResult<void>;
+
+    return this.callHook('onCollision', runtime, collision);
   }
 
-  /**
-   * Call an arbitrary exported function from the script.
-   * Used by run_script action to execute specific script functions.
-   */
   callFunction(
     runtime: SandboxRuntimeContext,
     functionName: string,
@@ -285,21 +204,43 @@ export class ScriptSandbox {
       return { success: false, error: this.createNotReadyError('start') };
     }
 
-    const ctx = createScriptContext(runtime);
-    const ctxObj = contextToPlainObject(ctx);
-
-    this.engine.setGlobal('__ctx__', ctxObj);
-    this.engine.setGlobal('__args__', args ?? {});
-    
-    const result = this.engine.evaluate(
-      `if (exports.${functionName}) exports.${functionName}(__ctx__, __args__);`,
-      'start'
-    );
-
-    if (!result.success) {
-      this.lastError = result.error ?? null;
+    const fn = this.exports[functionName];
+    if (typeof fn !== 'function') {
+      return { success: true, value: undefined };
     }
-    return result as ScriptResult<unknown>;
+
+    try {
+      const ctx = createScriptContext(runtime);
+      const ctxObj = contextToPlainObject(ctx);
+      const result = fn(ctxObj, args ?? {});
+      return { success: true, value: result };
+    } catch (error) {
+      const errorReport = this.createErrorReport(error, 'start');
+      this.lastError = errorReport;
+      return { success: false, error: errorReport };
+    }
+  }
+
+  private callHook(
+    hookName: 'onStart' | 'onUpdate' | 'onInput' | 'onCollision',
+    runtime: SandboxRuntimeContext,
+    ...extraArgs: unknown[]
+  ): ScriptResult<void> {
+    try {
+      const ctx = createScriptContext(runtime);
+      const ctxObj = contextToPlainObject(ctx);
+      const fn = this.exports[hookName] as HookFunction;
+      fn(ctxObj, ...extraArgs);
+      return { success: true };
+    } catch (error) {
+      const phase = hookName === 'onStart' ? 'start' 
+        : hookName === 'onUpdate' ? 'update'
+        : hookName === 'onInput' ? 'input'
+        : 'collision';
+      const errorReport = this.createErrorReport(error, phase);
+      this.lastError = errorReport;
+      return { success: false, error: errorReport };
+    }
   }
 
   getLastError(): ScriptErrorReport | null {
@@ -307,17 +248,21 @@ export class ScriptSandbox {
   }
 
   hasHook(hookName: 'onStart' | 'onUpdate' | 'onInput' | 'onCollision'): boolean {
-    switch (hookName) {
-      case 'onStart': return this.hasOnStart;
-      case 'onUpdate': return this.hasOnUpdate;
-      case 'onInput': return this.hasOnInput;
-      case 'onCollision': return this.hasOnCollision;
-    }
+    return typeof this.exports[hookName] === 'function';
+  }
+
+  getLogs(since?: number): ScriptLogEntry[] {
+    if (since === undefined) return [...this.logs];
+    return this.logs.filter(log => log.timestamp >= since);
+  }
+
+  clearLogs(): void {
+    this.logs = [];
   }
 
   dispose(): void {
     if (this.isDisposed) return;
-    this.engine.dispose();
+    this.exports = {};
     this.isDisposed = true;
     this.isInitialized = false;
   }
@@ -330,5 +275,35 @@ export class ScriptSandbox {
       frameId: 0,
       timestamp: Date.now(),
     };
+  }
+
+  private createErrorReport(error: unknown, phase: ScriptErrorReport['phase']): ScriptErrorReport {
+    const message = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : undefined;
+
+    let type: ScriptErrorType = 'runtime';
+    if (error instanceof SyntaxError || this.isSyntaxErrorMessage(message)) {
+      type = 'syntax';
+    }
+
+    return {
+      message,
+      type,
+      stack,
+      phase,
+      frameId: 0,
+      timestamp: Date.now(),
+    };
+  }
+
+  private isSyntaxErrorMessage(message: string): boolean {
+    const syntaxPatterns = [
+      /^expecting /i,
+      /^unexpected token/i,
+      /^unterminated /i,
+      /^invalid /i,
+      /^missing /i,
+    ];
+    return syntaxPatterns.some(pattern => pattern.test(message));
   }
 }

@@ -112,7 +112,9 @@ const game: GameDefinition = {
         restitution: 1,
       },
       behaviors: [
-        { type: 'maintain_speed', speed: 8 },
+        { type: 'stick_to_entity', targetTag: 'paddle', offset: { x: 0, y: -0.5 } },
+        { type: 'launch_on_input', speed: 8, minAngle: 45, maxAngle: 135, enableBehaviorAfterLaunch: 2 },
+        { type: 'maintain_speed', speed: 8, enabled: false },
       ],
     },
     paddle: {
@@ -312,19 +314,6 @@ const game: GameDefinition = {
   ],
   rules: [
     {
-      id: "launch_ball_on_start",
-      name: "Launch ball when game starts",
-      trigger: { type: "gameStart" },
-      actions: [
-        {
-          type: "apply_impulse",
-          target: { type: "by_tag", tag: "ball" },
-          x: 3,
-          y: 6,
-        },
-      ],
-    },
-    {
       id: "ball_drain",
       name: "Ball falls through drain - lose a life and respawn",
       trigger: { type: "collision", entityATag: "ball", entityBTag: "drain" },
@@ -332,7 +321,6 @@ const game: GameDefinition = {
         { type: "lives", operation: "subtract", value: 1 },
         { type: "destroy", target: { type: "by_tag", tag: "ball" } },
         { type: "spawn", template: "ball", position: { type: "fixed", x: 0, y: -7 } },
-        { type: "apply_impulse", target: { type: "by_tag", tag: "ball" }, x: 3, y: 6 },
       ],
     },
     {

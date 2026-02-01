@@ -18,6 +18,8 @@ export function createScriptContext(runtime: SandboxRuntimeContext): ScriptConte
     emit: (eventName, data) => runtime.rulesEvaluator.emitEvent(eventName, data),
     win: () => runtime.rulesEvaluator.win(),
     lose: () => runtime.rulesEvaluator.lose(),
+    addScore: (points) => runtime.rulesEvaluator.addScore(points),
+    addLives: (count) => runtime.rulesEvaluator.addLives(count),
 
     spawnEntity: (templateId, position, opts) =>
       runtime.entityManager.spawnEntity(templateId, position, opts),
@@ -35,6 +37,8 @@ export function createScriptContext(runtime: SandboxRuntimeContext): ScriptConte
     hasTag: (entityId, tag) => runtime.entityManager.hasTag(entityId, tag),
     queryEntities: (query) => runtime.entityManager.queryEntities(query),
     getInput: () => runtime.inputSnapshot,
+    getMouse: () => runtime.mousePosition,
+    getDrag: () => runtime.dragState,
 
     random: () => seededRandom(),
     randomInt: (min, max) => Math.floor(seededRandom() * (max - min + 1)) + min,
@@ -65,6 +69,8 @@ export function contextToPlainObject(ctx: ScriptContext): Record<string, unknown
     emit: ctx.emit,
     win: ctx.win,
     lose: ctx.lose,
+    addScore: ctx.addScore,
+    addLives: ctx.addLives,
     spawnEntity: ctx.spawnEntity,
     destroyEntity: ctx.destroyEntity,
     getEntityPosition: ctx.getEntityPosition,
@@ -78,6 +84,8 @@ export function contextToPlainObject(ctx: ScriptContext): Record<string, unknown
     hasTag: ctx.hasTag,
     queryEntities: ctx.queryEntities,
     getInput: ctx.getInput,
+    getMouse: ctx.getMouse,
+    getDrag: ctx.getDrag,
     random: ctx.random,
     randomInt: ctx.randomInt,
     randomChoice: ctx.randomChoice,

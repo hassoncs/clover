@@ -14,10 +14,15 @@ export class SlotMachineRuntimeSystem implements RuntimeSystem<SlotMachineSystem
   readonly phase = SystemPhase.GAME_LOGIC;
   readonly priority = 90;
   
+  private config: SlotMachineSystemConfig;
   private slotMachineSystem: SlotMachineSystem | null = null;
   private systemContext: SystemContext | null = null;
   
-  initialize(ctx: SystemContext, config: SlotMachineSystemConfig): void {
+  constructor(config: SlotMachineSystemConfig) {
+    this.config = config;
+  }
+  
+  initialize(ctx: SystemContext, _config: SlotMachineSystemConfig): void {
     this.systemContext = ctx;
     
     const callbacks: SlotMachineCallbacks = {
@@ -54,7 +59,7 @@ export class SlotMachineRuntimeSystem implements RuntimeSystem<SlotMachineSystem
     };
     
     this.slotMachineSystem = new SlotMachineSystem(
-      config,
+      this.config,
       ctx.entityManager,
       callbacks,
       ctx.eventBus

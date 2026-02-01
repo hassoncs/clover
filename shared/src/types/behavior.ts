@@ -30,7 +30,9 @@ export type BehaviorType =
   | 'translate'
   | 'set_velocity'
   | 'apply_impulse'
-  | 'tween';
+  | 'tween'
+  | 'stick_to_entity'
+  | 'launch_on_input';
 
 export type MoveDirection =
   | 'left'
@@ -350,6 +352,36 @@ export interface TweenBehavior extends BaseBehavior {
   onCompleteEvent?: string;
 }
 
+/**
+ * Sticks entity to another entity (e.g., ball stuck to paddle).
+ * Entity follows target entity's position with optional offset.
+ */
+export interface StickToEntityBehavior extends BaseBehavior {
+  type: 'stick_to_entity';
+  /** Tag of the entity to stick to */
+  targetTag: string;
+  /** Offset from target entity's position */
+  offset?: Vec2;
+  /** Whether to inherit target's rotation */
+  inheritRotation?: boolean;
+}
+
+/**
+ * Launches entity on input (click, tap, or spacebar).
+ * Applies velocity in a random upward direction and removes itself after launch.
+ */
+export interface LaunchOnInputBehavior extends BaseBehavior {
+  type: 'launch_on_input';
+  /** Launch speed in meters per second */
+  speed: number;
+  /** Minimum angle from vertical (degrees, 0 = straight up) */
+  minAngle?: number;
+  /** Maximum angle from vertical (degrees, 0 = straight up) */
+  maxAngle?: number;
+  /** Behavior to enable after launch (by index in behaviors array) */
+  enableBehaviorAfterLaunch?: number;
+}
+
 export type Behavior =
   | MoveBehavior
   | RotateBehavior
@@ -378,7 +410,9 @@ export type Behavior =
   | TranslateBehavior
   | SetVelocityBehavior
   | ApplyImpulseBehavior
-  | TweenBehavior;
+  | TweenBehavior
+  | StickToEntityBehavior
+  | LaunchOnInputBehavior;
 
 /**
  * Condition for when a conditional behavior group should be active.

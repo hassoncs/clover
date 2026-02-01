@@ -16,6 +16,8 @@ export class EntityManagerRuntimeSystem implements RuntimeSystem<EntityManagerSy
   
   private entityManager: EntityManager | null = null;
   
+  constructor() {}
+  
   initialize(ctx: SystemContext, _config: EntityManagerSystemConfig): void {
     this.entityManager = ctx.entityManager;
   }

@@ -24,10 +24,15 @@ export class ComputedValuesRuntimeSystem implements RuntimeSystem<ComputedValues
   readonly phase = SystemPhase.PRE_UPDATE;
   readonly priority = 80;
   
+  private config: ComputedValuesSystemConfig;
   private system: ComputedValueSystem | null = null;
   
-  initialize(_ctx: SystemContext, config: ComputedValuesSystemConfig): void {
-    this.system = config.system ?? new ComputedValueSystem();
+  constructor(config: ComputedValuesSystemConfig) {
+    this.config = config;
+  }
+  
+  initialize(_ctx: SystemContext, _config: ComputedValuesSystemConfig): void {
+    this.system = this.config.system ?? new ComputedValueSystem();
   }
   
   update(_ctx: UpdateContext, _state: ComputedValuesSystemState): void {

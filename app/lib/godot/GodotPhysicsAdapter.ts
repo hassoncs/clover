@@ -243,6 +243,8 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
     addFixture(bodyId: BodyId, def: FixtureDef): ColliderId {
       const colliderId = createColliderId(nextColliderId++);
       colliderIdMap.set(colliderId.value, colliderId);
+      
+      console.log('[GodotPhysicsAdapter] addFixture - bodyId:', bodyId.value, 'shape:', def.shape.type, 'def:', JSON.stringify(def));
 
       bridge.addFixture(bodyId.value, def as GodotFixtureDef);
 

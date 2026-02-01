@@ -6,8 +6,11 @@ import type {
   SandboxRuntimeContext,
   ScriptErrorReport,
   InputSnapshot,
+  DragSnapshot,
   SpawnOptions,
   EntityQuery,
+  ScriptInputEvent,
+  ScriptCollisionEvent,
 } from '../../../../scripting/types';
 
 export interface ScriptSandboxSystemConfig {
@@ -32,19 +35,29 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
   readonly phase = SystemPhase.GAME_LOGIC;
   readonly priority = 40;
   
+  private config: ScriptSandboxSystemConfig;
   private sandbox: ScriptSandbox | null = null;
   private systemContext: SystemContext | null = null;
-  private config: ScriptSandboxSystemConfig | null = null;
+  private constants?: Record<string, number | string | boolean>;
   private onStartCalled = false;
+  private pendingDestroys: Set<string> = new Set();
   
-  async initialize(ctx: SystemContext, config: ScriptSandboxSystemConfig): Promise<void> {
-    this.systemContext = ctx;
+  constructor(config: ScriptSandboxSystemConfig) {
     this.config = config;
+  }
+  
+  async initialize(ctx: SystemContext, _config: ScriptSandboxSystemConfig): Promise<void> {
+    console.log('[ScriptSandboxRuntimeSystem] Initializing with scriptId:', this.config.scriptId);
+    console.log('[ScriptSandboxRuntimeSystem] Script code length:', this.config.scriptCode.length);
+    console.log('[ScriptSandboxRuntimeSystem] Constants:', this.config.constants);
+    
+    this.systemContext = ctx;
+    this.constants = this.config.constants;
     
     const sandboxConfig: ScriptSandboxConfig = {
-      scriptCode: config.scriptCode,
-      scriptId: config.scriptId,
-      gameId: config.gameId,
+      scriptCode: this.config.scriptCode,
+      scriptId: this.config.scriptId,
+      gameId: this.config.gameId,
     };
     
     this.sandbox = new ScriptSandbox(sandboxConfig);
@@ -52,27 +65,70 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
     
     if (!result.success) {
       console.error('[ScriptSandboxRuntimeSystem] Failed to initialize sandbox:', result.error);
+    } else {
+      console.log('[ScriptSandboxRuntimeSystem] Sandbox initialized successfully');
+      console.log('[ScriptSandboxRuntimeSystem] Available hooks:', {
+        onStart: this.sandbox.hasHook('onStart'),
+        onUpdate: this.sandbox.hasHook('onUpdate'),
+        onInput: this.sandbox.hasHook('onInput'),
+        onCollision: this.sandbox.hasHook('onCollision'),
+      });
     }
   }
   
   update(ctx: UpdateContext, _state: ScriptSandboxSystemState): void {
-    if (!this.sandbox || !this.systemContext || !this.config) return;
+    if (!this.sandbox || !this.systemContext) {
+      if (ctx.frameId % 60 === 0) {
+        console.log('[ScriptSandboxRuntimeSystem] update skipped: sandbox=', !!this.sandbox, 'systemContext=', !!this.systemContext);
+      }
+      return;
+    }
+    
+    const em = this.systemContext.entityManager;
+    
+    if (this.pendingDestroys.size > 0) {
+      for (const entityId of this.pendingDestroys) {
+        em.destroyEntity(entityId);
+      }
+      this.pendingDestroys.clear();
+    }
     
     const runtimeContext = this.createRuntimeContext(ctx);
     
     if (!this.onStartCalled && this.sandbox.hasHook('onStart')) {
+      console.log('[ScriptSandboxRuntimeSystem] Calling onStart...');
       const result = this.sandbox.runStart(runtimeContext);
       if (!result.success) {
         console.error('[ScriptSandboxRuntimeSystem] onStart error:', result.error);
+      } else {
+        console.log('[ScriptSandboxRuntimeSystem] onStart completed successfully');
       }
       this.onStartCalled = true;
     }
     
     if (this.sandbox.hasHook('onUpdate')) {
+      if (ctx.frameId % 30 === 0) {
+        console.log('[ScriptSandboxRuntimeSystem] onUpdate frame:', ctx.frameId, 
+          'rawMouse:', ctx.input.mouse,
+          'mousePosition:', runtimeContext.mousePosition);
+      }
       const result = this.sandbox.runUpdate(runtimeContext, ctx.dt);
       if (!result.success) {
         console.error('[ScriptSandboxRuntimeSystem] onUpdate error:', result.error);
       }
+    } else if (ctx.frameId === 1) {
+      console.log('[ScriptSandboxRuntimeSystem] No onUpdate hook found');
+    }
+    
+    if (ctx.input.tap && this.sandbox.hasHook('onInput')) {
+      const tapEvent: ScriptInputEvent = {
+        type: 'tap',
+        position: { x: ctx.input.tap.worldX, y: ctx.input.tap.worldY },
+        entityId: ctx.input.tap.targetEntityId,
+        timestamp: Date.now(),
+      };
+      console.log('[ScriptSandboxRuntimeSystem] Processing tap event:', tapEvent);
+      this.runInput(ctx, tapEvent);
     }
   }
   
@@ -82,7 +138,6 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
       this.sandbox = null;
     }
     this.systemContext = null;
-    this.config = null;
     this.onStartCalled = false;
   }
   
@@ -114,8 +169,38 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
     return this.sandbox;
   }
   
+  /**
+   * Called when an input event occurs (tap, drag, etc.)
+   */
+  runInput(ctx: UpdateContext, event: ScriptInputEvent): void {
+    if (!this.sandbox || !this.systemContext) return;
+    if (!this.sandbox.hasHook('onInput')) return;
+    
+    console.log('[ScriptSandboxRuntimeSystem] Running onInput:', event.type);
+    const runtimeContext = this.createRuntimeContext(ctx);
+    const result = this.sandbox.runInput(runtimeContext, event);
+    if (!result.success) {
+      console.error('[ScriptSandboxRuntimeSystem] onInput error:', result.error);
+    }
+  }
+  
+  /**
+   * Called when a collision occurs
+   */
+  runCollision(ctx: UpdateContext, collision: ScriptCollisionEvent): void {
+    if (!this.sandbox || !this.systemContext) return;
+    if (!this.sandbox.hasHook('onCollision')) return;
+    
+    console.log('[ScriptSandboxRuntimeSystem] Running onCollision:', collision.entityA, 'vs', collision.entityB);
+    const runtimeContext = this.createRuntimeContext(ctx);
+    const result = this.sandbox.runCollision(runtimeContext, collision);
+    if (!result.success) {
+      console.error('[ScriptSandboxRuntimeSystem] onCollision error:', result.error);
+    }
+  }
+  
   private createRuntimeContext(ctx: UpdateContext): SandboxRuntimeContext {
-    if (!this.systemContext || !this.config) {
+    if (!this.systemContext) {
       throw new Error('[ScriptSandboxRuntimeSystem] Cannot create runtime context: system not initialized');
     }
     
@@ -134,7 +219,7 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
         setVariable: (name, value) => {
           this.systemContext!.eventQueue.emit('variable_change', { name, value });
         },
-        getConstant: (name) => this.config!.constants?.[name],
+        getConstant: (name) => this.constants?.[name],
         emitEvent: (eventName, data) => {
           this.systemContext!.eventQueue.emit(eventName, data);
         },
@@ -144,14 +229,35 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
         lose: () => {
           this.systemContext!.eventQueue.emit('game_state_change', { state: 'lost' });
         },
+        addScore: (points: number) => {
+          this.systemContext!.eventQueue.emit('score_change', { delta: points });
+        },
+        addLives: (count: number) => {
+          this.systemContext!.eventQueue.emit('lives_change', { delta: count });
+        },
       },
       inputSnapshot,
+      mousePosition: ctx.input.mouse
+        ? { x: ctx.input.mouse.worldX, y: ctx.input.mouse.worldY }
+        : null,
+      dragState: this.createDragSnapshot(ctx),
       frameInfo: {
         frameId: ctx.frameId,
         elapsed: ctx.elapsed,
         dt: ctx.dt,
       },
-      constants: this.config.constants,
+      constants: this.constants,
+    };
+  }
+  
+  private createDragSnapshot(ctx: UpdateContext): DragSnapshot | null {
+    if (!ctx.input.drag) return null;
+    
+    return {
+      isDragging: true,
+      startPosition: { x: ctx.input.drag.startWorldX, y: ctx.input.drag.startWorldY },
+      currentPosition: { x: ctx.input.drag.currentWorldX, y: ctx.input.drag.currentWorldY },
+      entityId: ctx.input.drag.targetEntityId ?? null,
     };
   }
   
@@ -185,7 +291,7 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
         return entity.id;
       },
       destroyEntity: (entityId: string) => {
-        em.destroyEntity(entityId);
+        this.pendingDestroys.add(entityId);
       },
       getEntityPosition: (entityId: string) => {
         const entity = em.getEntity(entityId);
@@ -194,7 +300,12 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
       },
       setEntityPosition: (entityId: string, position: { x: number; y: number }) => {
         const entity = em.getEntity(entityId);
-        if (!entity) return;
+        if (!entity) {
+          console.warn('[ScriptSandboxRuntimeSystem] setEntityPosition: entity not found:', entityId);
+          return;
+        }
+        
+        console.log('[ScriptSandboxRuntimeSystem] setEntityPosition:', entityId, 'to', position, 'bodyId:', entity.bodyId?.value);
         
         entity.transform.x = position.x;
         entity.transform.y = position.y;
@@ -204,6 +315,8 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
             position,
             angle: entity.transform.angle,
           });
+        } else {
+          console.warn('[ScriptSandboxRuntimeSystem] setEntityPosition: entity has no bodyId:', entityId);
         }
       },
       getEntityVelocity: (entityId: string) => {
@@ -213,7 +326,15 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
       },
       setEntityVelocity: (entityId: string, velocity: { x: number; y: number }) => {
         const entity = em.getEntity(entityId);
-        if (!entity || !entity.bodyId) return;
+        if (!entity) {
+          console.warn('[ScriptSandboxRuntimeSystem] setEntityVelocity: entity not found:', entityId);
+          return;
+        }
+        if (!entity.bodyId) {
+          console.warn('[ScriptSandboxRuntimeSystem] setEntityVelocity: entity has no bodyId:', entityId);
+          return;
+        }
+        console.log('[ScriptSandboxRuntimeSystem] setEntityVelocity:', entityId, 'to', velocity);
         physics.setLinearVelocity(entity.bodyId, velocity);
       },
       applyImpulse: (entityId: string, impulse: { x: number; y: number }) => {
@@ -249,6 +370,11 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
           template: query.templateId,
           withinAabb,
         });
+        
+        if (results.length === 0 && query.tag) {
+          console.log('[ScriptSandboxRuntimeSystem] queryEntities: no results for tag:', query.tag, 
+            'active entities:', em.getActiveEntities().map(e => ({ id: e.id, tags: e.tags })).slice(0, 5));
+        }
         
         return results.map(e => e.id);
       },

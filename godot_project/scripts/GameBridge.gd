@@ -1620,10 +1620,10 @@ func _create_physics_body(
 
 		node.name = entity_id
 
-		# Add collision shape
-		var collision = CollisionShape2D.new()
-		collision.shape = _create_shape(physics_data)
-		node.add_child(collision)
+# DISABLED - EntityManager adds collision via addFixture: 		# Add collision shape
+# DISABLED - EntityManager adds collision via addFixture: 		var collision = CollisionShape2D.new()
+# DISABLED - EntityManager adds collision via addFixture: 		collision.shape = _create_shape(physics_data)
+# DISABLED - EntityManager adds collision via addFixture: 		node.add_child(collision)
 
 		# Apply collision filtering
 		node.collision_layer = physics_data.get("categoryBits", 1)
@@ -2216,6 +2216,7 @@ func clear_texture_cache(url: String = "") -> void:
 
 
 func _on_body_entered(body: Node, entity_id: String) -> void:
+	print("[GameBridge] _on_body_entered: entity_id=%s, body.name=%s, in_entities=%s" % [entity_id, body.name, body.name in entities])
 	if body.name in entities:
 		collision_occurred.emit(entity_id, body.name, 0.0)
 		_notify_js_collision(entity_id, body.name, 0.0)
@@ -2223,6 +2224,8 @@ func _on_body_entered(body: Node, entity_id: String) -> void:
 		# Process destroy_on_collision behaviors directly in Godot
 		_process_collision_behaviors(entity_id, body.name)
 		_process_collision_behaviors(body.name, entity_id)
+	else:
+		print("[GameBridge] _on_body_entered: body.name '%s' NOT in entities. Known entities: %s" % [body.name, entities.keys().slice(0, 10)])
 
 
 func spawn_entity(template_id: String, x: float, y: float) -> Node2D:

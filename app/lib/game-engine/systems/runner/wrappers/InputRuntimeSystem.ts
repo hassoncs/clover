@@ -17,10 +17,15 @@ export class InputRuntimeSystem implements RuntimeSystem<InputSystemConfig, Inpu
   readonly phase = SystemPhase.PRE_UPDATE;
   readonly priority = 60;
   
+  private config: InputSystemConfig;
   private inputEntityManager: InputEntityManager | null = null;
   
-  initialize(_ctx: SystemContext, config: InputSystemConfig): void {
-    this.inputEntityManager = new InputEntityManager({ debug: config.debug });
+  constructor(config: InputSystemConfig) {
+    this.config = config;
+  }
+  
+  initialize(_ctx: SystemContext, _config: InputSystemConfig): void {
+    this.inputEntityManager = new InputEntityManager({ debug: this.config.debug });
   }
   
   update(ctx: UpdateContext, _state: InputSystemState): void {

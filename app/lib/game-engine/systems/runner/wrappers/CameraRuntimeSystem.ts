@@ -1,12 +1,14 @@
 import { SystemPhase } from '@slopcade/shared';
 import type { RuntimeSystem, SystemContext, UpdateContext } from '../types';
 import { CameraSystem } from '../../../CameraSystem';
-import type { CameraConfig, ViewportSize } from '../../../CameraSystem';
+import type { ViewportSize } from '../../../CameraSystem';
+import type { CameraConfig as GameCameraConfig } from '@slopcade/shared';
 import type { Vec2 } from '@/lib/physics2d/types';
 import type { EntityManager } from '../../../EntityManager';
 
 export interface CameraSystemConfig {
-  cameraConfig: CameraConfig;
+  cameraConfig: GameCameraConfig | undefined;
+  worldBounds: { width: number; height: number } | undefined;
   viewport: ViewportSize;
   pixelsPerMeter: number;
 }
@@ -22,14 +24,20 @@ export class CameraRuntimeSystem implements RuntimeSystem<CameraSystemConfig, Ca
   readonly phase = SystemPhase.PRE_UPDATE;
   readonly priority = 50;
   
+  private config: CameraSystemConfig;
   private camera: CameraSystem | null = null;
   private entityManager: EntityManager | null = null;
   
-  initialize(ctx: SystemContext, config: CameraSystemConfig): void {
-    this.camera = new CameraSystem(
-      config.cameraConfig,
-      config.viewport,
-      config.pixelsPerMeter
+  constructor(config: CameraSystemConfig) {
+    this.config = config;
+  }
+  
+  initialize(ctx: SystemContext, _config: CameraSystemConfig): void {
+    this.camera = CameraSystem.fromGameConfig(
+      this.config.cameraConfig,
+      this.config.worldBounds,
+      this.config.viewport,
+      this.config.pixelsPerMeter
     );
     this.entityManager = ctx.entityManager;
   }

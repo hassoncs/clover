@@ -14,6 +14,13 @@ export const DEFAULT_SCRIPT_BUDGET: ScriptBudgetConfig = {
   maxMemoryBytes: 1 * 1024 * 1024,
 };
 
+export interface DragSnapshot {
+  isDragging: boolean;
+  startPosition: { x: number; y: number } | null;
+  currentPosition: { x: number; y: number } | null;
+  entityId: string | null;
+}
+
 export interface ScriptContext {
   getVariable(name: string): unknown;
   setVariable(name: string, value: unknown): void;
@@ -21,6 +28,8 @@ export interface ScriptContext {
   emit(eventName: string, data?: Record<string, unknown>): void;
   win(): void;
   lose(): void;
+  addScore(points: number): void;
+  addLives(count: number): void;
   spawnEntity(templateId: string, position: { x: number; y: number }, opts?: SpawnOptions): string | null;
   destroyEntity(entityId: string): void;
   getEntityPosition(entityId: string): { x: number; y: number } | null;
@@ -34,6 +43,8 @@ export interface ScriptContext {
   hasTag(entityId: string, tag: string): boolean;
   queryEntities(query?: EntityQuery): string[];
   getInput(): InputSnapshot | null;
+  getMouse(): { x: number; y: number } | null;
+  getDrag(): DragSnapshot | null;
   random(): number;
   randomInt(min: number, max: number): number;
   randomChoice<T>(array: readonly T[]): T;
@@ -132,8 +143,12 @@ export interface SandboxRuntimeContext {
     emitEvent(eventName: string, data?: Record<string, unknown>): void;
     win(): void;
     lose(): void;
+    addScore(points: number): void;
+    addLives(count: number): void;
   };
   inputSnapshot: InputSnapshot | null;
+  mousePosition: { x: number; y: number } | null;
+  dragState: DragSnapshot | null;
   frameInfo: {
     frameId: number;
     elapsed: number;

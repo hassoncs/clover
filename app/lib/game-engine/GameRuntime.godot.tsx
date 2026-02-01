@@ -612,7 +612,7 @@ export function GameRuntimeGodot({
 
         collisionUnsubRef.current = physics.onCollision(
           (event: CollisionEvent) => {
-            // The physics adapter converts entity IDs to body IDs, so we need to look up by bodyId
+            console.log('[GameRuntime] Collision received:', { bodyA: event.bodyA?.value, bodyB: event.bodyB?.value });
             const entityA = game.entityManager
               .getActiveEntities()
               .find((e) => e.bodyId?.value === event.bodyA?.value);
@@ -788,25 +788,67 @@ export function GameRuntimeGodot({
 
         const runner = new GameSystemRunner();
 
-        runner.register(new ViewportRuntimeSystem());
-        runner.register(new InputRuntimeSystem());
-        runner.register(new CameraRuntimeSystem());
-        runner.register(new EntityManagerRuntimeSystem());
-        runner.register(new ComputedValuesRuntimeSystem());
-        runner.register(new PropertySyncRuntimeSystem());
+        const presentationConfig = definition.presentation;
+        runner.register(new ViewportRuntimeSystem({
+          worldBounds: definition.world.bounds,
+          aspectRatio: presentationConfig?.aspectRatio,
+          fit: presentationConfig?.fit,
+          letterboxColor: presentationConfig?.letterboxColor ?? definition.ui?.backgroundColor,
+        }));
 
-        runner.register(new BehaviorExecutorRuntimeSystem());
-        runner.register(new ScriptSandboxRuntimeSystem());
-        runner.register(new RulesRuntimeSystem());
+        runner.register(new InputRuntimeSystem({
+          debug: false,
+        }));
+
+        runner.register(new CameraRuntimeSystem({
+          cameraConfig: definition.camera ?? { type: 'fixed', zoom: 1 },
+          worldBounds: definition.world.bounds,
+          viewport: { width: 800, height: 600 },
+          pixelsPerMeter: definition.world.pixelsPerMeter ?? 50,
+        }));
+
+        runner.register(new EntityManagerRuntimeSystem());
+
+        runner.register(new ComputedValuesRuntimeSystem({
+          system: computedValuesRef.current,
+        }));
+
+        runner.register(new PropertySyncRuntimeSystem({
+          propertyCache: propertyCacheRef.current,
+        }));
+
+        runner.register(new BehaviorExecutorRuntimeSystem({
+          pixelsPerMeter: definition.world.pixelsPerMeter ?? 50,
+        }));
+
+        if (definition.script) {
+          console.log('[GameRuntime] Registering ScriptSandboxRuntimeSystem with script:', definition.script.substring(0, 100) + '...');
+          runner.register(new ScriptSandboxRuntimeSystem({
+            scriptCode: definition.script,
+            scriptId: definition.metadata.id,
+            gameId: definition.metadata.id,
+            constants: definition.constants as Record<string, number | string | boolean> | undefined,
+          }));
+        }
+
+        runner.register(new RulesRuntimeSystem({
+          rules: definition.rules ?? [],
+          winCondition: definition.winCondition,
+          loseCondition: definition.loseCondition,
+          variables: definition.variables as Record<string, number | string | boolean> | undefined,
+          containers: definition.containers,
+        }));
 
         if (definition.match3) {
-          runner.register(new Match3RuntimeSystem());
+          runner.register(new Match3RuntimeSystem(definition.match3 as Match3Config));
         }
         if (definition.slotMachine) {
-          runner.register(new SlotMachineRuntimeSystem());
+          runner.register(new SlotMachineRuntimeSystem(definition.slotMachine as SlotMachineConfig));
         }
         if (definition.containers && definition.containers.length > 0) {
-          runner.register(new ContainerRuntimeSystem());
+          runner.register(new ContainerRuntimeSystem({
+            containers: definition.containers,
+          }));
         }
 
         runner.register(new TweenRuntimeSystem());
@@ -996,6 +1038,35 @@ export function GameRuntimeGodot({
       };
 
       runner.update(updateContext);
+
+      const scriptSystem = runner.getSystem<ScriptSandboxRuntimeSystem>('script-sandbox');
+      if (scriptSystem) {
+        if (inputRef.current.tap) {
+          const tap = inputRef.current.tap as { worldX: number; worldY: number; targetEntityId?: string };
+          scriptSystem.runInput(updateContext, {
+            type: 'tap',
+            position: { x: tap.worldX, y: tap.worldY },
+            entityId: tap.targetEntityId ?? null,
+            timestamp: Date.now(),
+          });
+          inputRef.current = { ...inputRef.current, tap: undefined };
+        }
+        
+        if (collisionsRef.current.length > 0) {
+          console.log('[GameRuntime] Processing', collisionsRef.current.length, 'collisions for script system');
+        }
+        for (const collision of collisionsRef.current) {
+          scriptSystem.runCollision(updateContext, {
+            entityA: collision.entityA.id,
+            entityB: collision.entityB.id,
+            normal: collision.normal,
+            impulse: collision.impulse,
+            contactPoint: { x: 0, y: 0 },
+            timestamp: Date.now(),
+          });
+        }
+        collisionsRef.current = [];
+      }
 
       elapsedRef.current += dt;
       frameIdRef.current += 1;
@@ -1413,6 +1484,12 @@ export function GameRuntimeGodot({
       },
       clearInput: (type: string) => {
         (inputRef.current as any)[type] = undefined;
+      },
+      refs: {
+        gameSystemRunner: gameSystemRunnerRef,
+        game: gameRef,
+        input: inputRef,
+        bridge: bridgeRef,
       },
     };
 

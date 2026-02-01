@@ -10,7 +10,11 @@ describe('ScriptSandboxRuntimeSystem', () => {
   let mockUpdateContext: UpdateContext;
 
   beforeEach(() => {
-    system = new ScriptSandboxRuntimeSystem();
+    system = new ScriptSandboxRuntimeSystem({
+      scriptCode: 'exports.onStart = function() {};',
+      scriptId: 'test-script',
+      gameId: 'test-game',
+    });
     
     mockContext = {
       bridge: {} as any,

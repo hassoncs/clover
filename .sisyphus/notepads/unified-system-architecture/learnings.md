@@ -193,3 +193,149 @@ The comments in the initialization code are necessary because:
 4. **Private field access** - `(runner as any).eventQueue` needs justification comment
 
 These comments document a complex integration with multiple phases and dependencies, making them essential for maintainability.
+
+## Test Coverage Analysis - GameRuntime Integration
+
+### Current Test Coverage
+
+#### Unit Tests (Excellent Coverage)
+1. **Individual Systems** - Well tested in isolation:
+   - `BehaviorExecutor.test.ts` (182 lines) - Behavior execution, lifecycle hooks
+   - `RulesEvaluator.test.ts` (1341 lines) - Comprehensive rules, triggers, conditions, actions
+   - `EntityManager.query.test.ts` (730 lines) - Query operations, filtering, performance
+   - `EntityManager.hierarchy.test.ts` - Parent-child relationships
+   - `EntityManager.tags.test.ts` - Tag operations
+   - `ContainerSystem.test.ts` - Container logic
+   - `MovementBehaviors.physics.test.ts` - Physics-based movement
+   - `MovementBehaviors.translate.test.ts` - Transform-based movement
+
+2. **GameSystemRunner** - Core orchestration tested:
+   - `GameSystemRunner.test.ts` (230 lines) - System registration, initialization, phase ordering, priority sorting, lifecycle
+   - `EventQueue.test.ts` - Event queue next-frame delivery
+   - `BehaviorExecutorRuntimeSystem.test.ts` - Wrapper integration
+   - `ScriptSandboxRuntimeSystem.test.ts` - Async initialization, script lifecycle
+
+#### Integration Test Gap (CRITICAL)
+**NO TESTS FOUND FOR:**
+- `GameRuntime.godot.tsx` (1911 lines) - The main orchestrator
+- Integration between GameSystemRunner and GameRuntime
+- Full game loop execution with all systems working together
+- System-to-system communication via EventQueue
+- Collision event flow from physics → rules → behaviors
+- Input event flow from bridge → input system → behaviors/rules
+- Property watching and sync between systems
+- Camera system integration with viewport and rendering
+- Match3/SlotMachine system integration with game state
+- Script sandbox integration with entity manager and physics
+
+### What's Missing
+
+#### 1. GameRuntime Integration Tests
+**Should test:**
+- Game initialization sequence (bridge → physics → loader → systems)
+- System registration and initialization order
+- Full update loop with all systems executing in correct phases
+- Cleanup and disposal of all systems
+- Feature flag toggling between legacy and runner modes
+- Error handling during initialization
+- Error handling during update loop
+
+#### 2. Cross-System Integration Tests
+**Should test:**
+- Collision events: Physics → EntityManager → RulesEvaluator → BehaviorExecutor
+- Input events: GodotBridge → InputSystem → RulesEvaluator/BehaviorExecutor
+- Score changes: RulesEvaluator → GameState → UI callbacks
+- Entity spawning: Rules/Behaviors → EntityManager → GodotBridge → Physics
+- Entity destruction: Rules/Behaviors → EntityManager → GodotBridge → Physics
+- Property watching: PropertyCache → PropertySync → GodotBridge
+- Computed values: ComputedValueSystem → BehaviorExecutor/RulesEvaluator
+
+#### 3. End-to-End Game Tests
+**Should test:**
+- Load a simple game definition
+- Start the game
+- Simulate input (tap, drag, keyboard)
+- Verify game state changes (score, lives, variables)
+- Verify entity spawning/destruction
+- Verify win/lose conditions
+- Verify game restart
+
+### Manual Testing Requirements
+
+Given the lack of integration tests, the refactoring MUST be verified manually:
+
+#### Test Game Selection
+Choose 3-5 representative test games that exercise different systems:
+1. **Simple physics game** (e.g., Pinball, Breakout) - Tests physics, collisions, scoring
+2. **Match3 game** (e.g., Candy Crush clone) - Tests Match3System, grid logic, cascades
+3. **Slot machine game** - Tests SlotMachineSystem, animations, payouts
+4. **Scripted game** - Tests ScriptSandbox integration, custom logic
+5. **Input-heavy game** (e.g., Angry Birds clone) - Tests drag-to-launch, input handling
+
+#### Manual Test Checklist
+For each test game:
+- [ ] Game loads without errors
+- [ ] All entities spawn correctly
+- [ ] Physics simulation works (gravity, collisions, bouncing)
+- [ ] Input handling works (tap, drag, keyboard)
+- [ ] Scoring works correctly
+- [ ] Lives system works
+- [ ] Win condition triggers correctly
+- [ ] Lose condition triggers correctly
+- [ ] Game restart works
+- [ ] No console errors or warnings
+- [ ] Performance is acceptable (60 FPS)
+- [ ] Memory doesn't leak (check DevTools)
+
+#### Comparison Testing
+For each test game:
+1. Test with `FEATURE_FLAGS.USE_SYSTEM_RUNNER = false` (legacy mode)
+2. Test with `FEATURE_FLAGS.USE_SYSTEM_RUNNER = true` (new runner mode)
+3. Verify identical behavior in both modes
+4. Compare performance metrics (frame time, memory usage)
+
+### Recommendations
+
+#### Short-term (Before Enabling Feature Flag)
+1. **Manual testing is REQUIRED** - No way around this given lack of integration tests
+2. **Use game-inspector tool** - Verify entity state, physics state, game state
+3. **Enable verbose logging** - Add debug logs to GameSystemRunner.update()
+4. **Test incrementally** - Enable runner for one game at a time
+5. **Monitor production** - Use feature flag to gradually roll out
+
+#### Long-term (After Refactoring Complete)
+1. **Add integration tests** - Test GameRuntime initialization and update loop
+2. **Add cross-system tests** - Test event flow between systems
+3. **Add E2E tests** - Test full game scenarios with game-inspector
+4. **Add performance tests** - Benchmark frame time, memory usage
+5. **Add regression tests** - Capture known-good game states and verify
+
+### Risk Assessment
+
+**HIGH RISK:**
+- No integration tests means bugs will only be caught manually
+- Complex system interactions are hard to verify manually
+- Regression risk is high when removing legacy code
+- Performance regressions may not be noticed until production
+
+**MITIGATION:**
+- Feature flag allows gradual rollout
+- Manual testing with representative games
+- Use game-inspector for state verification
+- Monitor production metrics closely
+- Keep legacy code until runner is proven stable
+
+### Test Coverage Metrics
+
+**Total test files:** 438 (across entire project)
+**GameRuntime-specific tests:** 0
+**System unit tests:** ~10 files
+**Integration tests:** 0
+**E2E tests:** 0
+
+**Coverage estimate:**
+- Unit test coverage: ~80% (individual systems well tested)
+- Integration test coverage: 0%
+- E2E test coverage: 0%
+- Overall confidence: MEDIUM (good unit tests, but no integration verification)
+

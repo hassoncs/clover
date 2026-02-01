@@ -4,7 +4,7 @@
   "services": {
     "game-inspector": {
       "cwd": "packages/game-inspector-mcp",
-      "command": "pnpm build && node dist/http-server.js",
+      "command": "pnpm build && node dist/index.js",
       "health": { "type": "port", "port": 3100 }
     },
     "game-inspector-tsc": {

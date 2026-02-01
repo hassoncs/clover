@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, type MockInstance } from 'vitest';
 import { ScriptSandbox } from './ScriptSandbox';
 import type { SandboxRuntimeContext, ScriptInputEvent, ScriptCollisionEvent } from './types';
 
@@ -28,8 +28,12 @@ function createMockRuntime(overrides: Partial<SandboxRuntimeContext> = {}): Sand
       emitEvent: vi.fn((name: string, data?: Record<string, unknown>) => { events.push({ name, data }); }),
       win: vi.fn(),
       lose: vi.fn(),
+      addScore: vi.fn(),
+      addLives: vi.fn(),
     },
     inputSnapshot: null,
+    mousePosition: null,
+    dragState: null,
     frameInfo: {
       frameId: 1,
       elapsed: 0.016,
@@ -350,6 +354,114 @@ describe('ScriptSandbox', () => {
       
       expect(result.success).toBe(false);
       expect(result.error?.message).toContain('disposed');
+    });
+  });
+
+  describe('console logging', () => {
+    let consoleLogSpy: MockInstance;
+    let consoleWarnSpy: MockInstance;
+    let consoleErrorSpy: MockInstance;
+
+    beforeEach(() => {
+      consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      consoleLogSpy.mockRestore();
+      consoleWarnSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should prefix console.log with [Script]', async () => {
+      sandbox = new ScriptSandbox({
+        scriptCode: `
+          exports.onStart = function(ctx) {
+            console.log('Hello from script!');
+          };
+        `,
+        scriptId: 'test-script',
+        gameId: 'test-game',
+      });
+      
+      await sandbox.initialize();
+      const runtime = createMockRuntime();
+      sandbox.runStart(runtime);
+      
+      expect(consoleLogSpy).toHaveBeenCalledWith('[Script]', 'Hello from script!');
+    });
+
+    it('should handle multiple console.log arguments', async () => {
+      sandbox = new ScriptSandbox({
+        scriptCode: `
+          exports.onStart = function(ctx) {
+            console.log('Value:', 42, { key: 'test' });
+          };
+        `,
+        scriptId: 'test-script',
+        gameId: 'test-game',
+      });
+      
+      await sandbox.initialize();
+      const runtime = createMockRuntime();
+      sandbox.runStart(runtime);
+      
+      expect(consoleLogSpy).toHaveBeenCalledWith('[Script]', 'Value:', 42, { key: 'test' });
+    });
+
+    it('should prefix console.warn with [Script]', async () => {
+      sandbox = new ScriptSandbox({
+        scriptCode: `
+          exports.onStart = function(ctx) {
+            console.warn('Warning message');
+          };
+        `,
+        scriptId: 'test-script',
+        gameId: 'test-game',
+      });
+      
+      await sandbox.initialize();
+      const runtime = createMockRuntime();
+      sandbox.runStart(runtime);
+      
+      expect(consoleWarnSpy).toHaveBeenCalledWith('[Script]', 'Warning message');
+    });
+
+    it('should prefix console.error with [Script]', async () => {
+      sandbox = new ScriptSandbox({
+        scriptCode: `
+          exports.onStart = function(ctx) {
+            console.error('Error message');
+          };
+        `,
+        scriptId: 'test-script',
+        gameId: 'test-game',
+      });
+      
+      await sandbox.initialize();
+      const runtime = createMockRuntime();
+      sandbox.runStart(runtime);
+      
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[Script]', 'Error message');
+    });
+
+    it('should allow console.log in onUpdate', async () => {
+      sandbox = new ScriptSandbox({
+        scriptCode: `
+          exports.onUpdate = function(ctx, dt) {
+            console.log('Frame update, dt:', dt);
+          };
+        `,
+        scriptId: 'test-script',
+        gameId: 'test-game',
+      });
+      
+      await sandbox.initialize();
+      const runtime = createMockRuntime();
+      sandbox.runUpdate(runtime, 0.016);
+      
+      expect(consoleLogSpy).toHaveBeenCalledWith('[Script]', 'Frame update, dt:', 0.016);
     });
   });
 });

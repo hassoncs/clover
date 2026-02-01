@@ -108,7 +108,8 @@ export class EntityManager {
     this.physics = physics;
     if (options.templates) {
       Object.entries(options.templates).forEach(([id, template]) => {
-        this.templates.set(id, template);
+        console.log('[EntityManager] Registering template:', id, 'collider:', JSON.stringify(template.collider));
+        this.templates.set(id, structuredClone(template));
       });
     }
   }
@@ -130,6 +131,8 @@ export class EntityManager {
 
     const resolved = this.resolveTemplate(definition);
     const runtime = this.createRuntimeEntity(id, resolved);
+
+    runtime.active = true;
 
     // Check if this is a zone entity (type: 'zone' or has zone property)
     /** @deprecated Use collider with isSensor: true instead */
@@ -259,15 +262,16 @@ export class EntityManager {
       console.warn(`Template "${definition.template}" not found, using definition as-is`);
       return definition;
     }
+    
+    console.log('[EntityManager] resolveTemplate - entity:', definition.id, 'wants template:', definition.template, 'got collider:', JSON.stringify(template.collider));
 
-    // Cast definition to access optional type and zone properties
     const defWithZoneType = definition as GameEntity & { type?: 'body' | 'zone'; zone?: ZoneComponent };
 
     return {
       ...definition,
-      visual: definition.visual ?? template.visual,
-      physics: definition.physics ?? template.physics,
-      collider: definition.collider ?? template.collider,
+      visual: definition.visual ?? (template.visual ? structuredClone(template.visual) : undefined),
+      physics: definition.physics ?? (template.physics ? structuredClone(template.physics) : undefined),
+      collider: definition.collider ?? (template.collider ? structuredClone(template.collider) : undefined),
       behaviors: definition.behaviors ?? template.behaviors,
       conditionalBehaviors: definition.conditionalBehaviors ?? template.conditionalBehaviors,
       tags: [...(template.tags ?? []), ...(definition.tags ?? [])],
@@ -278,7 +282,7 @@ export class EntityManager {
       ],
       slots: template.slots,
       type: defWithZoneType.type ?? template.type,
-      zone: defWithZoneType.zone ?? template.zone,
+      zone: defWithZoneType.zone ?? (template.zone ? structuredClone(template.zone) : undefined),
     };
   }
 
@@ -298,9 +302,9 @@ export class EntityManager {
         localTransform: { ...resolved.transform },
         worldTransform: { ...resolved.transform },
         transform: { ...resolved.transform },
-        visual: resolved.visual,
-        physics: resolved.physics,
-        collider: resolved.collider,
+        visual: resolved.visual ? structuredClone(resolved.visual) : undefined,
+        physics: resolved.physics ? structuredClone(resolved.physics) : undefined,
+        collider: resolved.collider ? structuredClone(resolved.collider) : undefined,
         behaviors,
         tags: resolved.tags ?? [],
         tagBits: new Set(),
@@ -391,12 +395,11 @@ export class EntityManager {
   }
 
   private createShapeDef(entity: RuntimeEntity): ShapeDef {
-    // Shape data can come from collider OR physics component
-    // Collider takes precedence if both exist
     const collider = entity.collider;
     const physics = entity.physics;
     
-    // Get shape from collider first, fallback to physics
+    console.log('[EntityManager] createShapeDef for entity:', entity.id, 'template:', entity.template, 'collider:', JSON.stringify(collider));
+    
     const shape = collider?.shape ?? (physics as any)?.shape;
     
     switch (shape) {

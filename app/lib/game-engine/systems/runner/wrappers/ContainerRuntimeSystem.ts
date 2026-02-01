@@ -17,11 +17,16 @@ export class ContainerRuntimeSystem implements RuntimeSystem<ContainerSystemConf
   readonly phase = SystemPhase.GAME_LOGIC;
   readonly priority = 80;
   
+  private config: ContainerSystemConfig;
   private containerSystem: ContainerSystem | null = null;
   
-  initialize(ctx: SystemContext, config: ContainerSystemConfig): void {
+  constructor(config: ContainerSystemConfig) {
+    this.config = config;
+  }
+  
+  initialize(ctx: SystemContext, _config: ContainerSystemConfig): void {
     this.containerSystem = new ContainerSystem(ctx.entityManager, {
-      containers: config.containers,
+      containers: this.config.containers,
     });
   }
   

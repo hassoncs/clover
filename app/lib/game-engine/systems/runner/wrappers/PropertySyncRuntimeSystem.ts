@@ -25,12 +25,17 @@ export class PropertySyncRuntimeSystem implements RuntimeSystem<PropertySyncSyst
   readonly phase = SystemPhase.PRE_UPDATE;
   readonly priority = 90;
   
+  private config: PropertySyncSystemConfig;
   private manager: PropertySyncManager | null = null;
   private propertyCache: PropertyCache | null = null;
   
-  initialize(ctx: SystemContext, config: PropertySyncSystemConfig): void {
-    this.propertyCache = config.propertyCache;
-    this.manager = new PropertySyncManager(config.propertyCache);
+  constructor(config: PropertySyncSystemConfig) {
+    this.config = config;
+  }
+  
+  initialize(ctx: SystemContext, _config: PropertySyncSystemConfig): void {
+    this.propertyCache = this.config.propertyCache;
+    this.manager = new PropertySyncManager(this.config.propertyCache);
     this.manager.start(ctx.bridge);
   }
   

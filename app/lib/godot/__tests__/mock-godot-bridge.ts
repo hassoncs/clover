@@ -1,6 +1,18 @@
 import { vi } from 'vitest';
 import type { GodotBridge } from '../types';
 
+export interface BridgeCall {
+  method: string;
+  args: unknown[];
+  timestamp: number;
+}
+
+export interface RecordingGodotBridge extends GodotBridge {
+  getCalls(): BridgeCall[];
+  getCallsFor(method: string): BridgeCall[];
+  clearCalls(): void;
+}
+
 export function createMockGodotBridge(): GodotBridge {
   return {
     initialize: vi.fn().mockResolvedValue(undefined),
@@ -149,4 +161,33 @@ export function getMockCallCount(mock: GodotBridge, methodName: string): number 
 export function isMockFunction(mock: GodotBridge, methodName: string): boolean {
   const method = (mock as unknown as Record<string, unknown>)[methodName];
   return vi.isMockFunction(method as Function);
+}
+
+export function createRecordingGodotBridge(): RecordingGodotBridge {
+  const calls: BridgeCall[] = [];
+  
+  const record = (method: string, ...args: unknown[]) => {
+    calls.push({ method, args, timestamp: Date.now() });
+  };
+
+  const mockBridge = createMockGodotBridge();
+  
+  (mockBridge.createBody as any).mockImplementation((def: unknown) => {
+    const bodyId = calls.filter(c => c.method === 'createBody').length + 1;
+    record('createBody', def);
+    return bodyId;
+  });
+  
+  (mockBridge.addFixture as any).mockImplementation((bodyId: number, fixtureDef: unknown) => {
+    const fixtureId = calls.filter(c => c.method === 'addFixture').length + 1;
+    record('addFixture', bodyId, fixtureDef);
+    return fixtureId;
+  });
+  
+  const recordingBridge = mockBridge as RecordingGodotBridge;
+  recordingBridge.getCalls = () => [...calls];
+  recordingBridge.getCallsFor = (method: string) => calls.filter(c => c.method === method);
+  recordingBridge.clearCalls = () => { calls.length = 0; };
+  
+  return recordingBridge;
 }

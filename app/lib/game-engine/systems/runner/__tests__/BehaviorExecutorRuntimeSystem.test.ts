@@ -111,7 +111,9 @@ describe('BehaviorExecutorRuntimeSystem', () => {
       },
     };
 
-    system = new BehaviorExecutorRuntimeSystem();
+    system = new BehaviorExecutorRuntimeSystem({
+      pixelsPerMeter: 50,
+    });
   });
 
   describe('initialization', () => {
