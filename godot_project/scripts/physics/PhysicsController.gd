@@ -71,3 +71,78 @@ func apply_torque(entity_id: String, torque: float) -> void:
 	if node is RigidBody2D:
 		var godot_torque = -torque * bridge.pixels_per_meter * bridge.pixels_per_meter
 		node.apply_torque(godot_torque)
+
+# =============================================================================
+func process_physics(delta: float, entity_registry: Dictionary) -> void:
+	for entity_id in entity_registry:
+		var record = entity_registry[entity_id]
+		if not record or not record.is_valid(): continue
+		
+		var node = record.node
+		if node is CharacterBody2D and node.velocity.length() > 0.01:
+			node.move_and_slide()
+		
+		if record.archetype == "sensor" and node is Area2D and record.velocity.length() > 0.01:
+			node.position += record.velocity * delta
+
+
+# JS HANDLERS
+ (called from JavaScript bridge)
+# =============================================================================
+
+func _js_set_linear_velocity(args: Array) -> void:
+	if args.size() < 3:
+		return
+	set_linear_velocity(str(args[0]), float(args[1]), float(args[2]))
+
+
+func _js_set_angular_velocity(args: Array) -> void:
+	if args.size() < 2:
+		return
+	var entity_id = str(args[0])
+	var omega = float(args[1])
+	set_angular_velocity(entity_id, omega)
+
+
+func _js_get_linear_velocity(args: Array) -> Variant:
+	if args.size() < 1:
+		return null
+	var entity_id = str(args[0])
+	var vel = get_linear_velocity(entity_id)
+	return {"x": vel.x, "y": vel.y}
+
+
+func _js_get_angular_velocity(args: Array) -> Variant:
+	if args.size() < 1:
+		return null
+	var entity_id = str(args[0])
+	return get_angular_velocity(entity_id)
+
+
+func _js_apply_impulse(args: Array) -> void:
+	if args.size() < 3:
+		return
+	apply_impulse(str(args[0]), float(args[1]), float(args[2]))
+
+
+func _js_apply_force(args: Array) -> void:
+	if args.size() < 3:
+		return
+	apply_force(str(args[0]), float(args[1]), float(args[2]))
+
+
+func _js_apply_torque(args: Array) -> void:
+	if args.size() < 2:
+		return
+	apply_torque(str(args[0]), float(args[1]))
+
+func _js_get_linear_velocity(args: Array) -> Variant:
+	if args.size() < 1:
+		return null
+	return get_linear_velocity(str(args[0]))
+
+
+func _js_get_angular_velocity(args: Array) -> Variant:
+	if args.size() < 1:
+		return null
+	return get_angular_velocity(str(args[0]))

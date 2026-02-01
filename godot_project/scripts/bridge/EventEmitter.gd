@@ -7,6 +7,7 @@ var _js_collision_callback: JavaScriptObject = null
 var _js_destroy_callback: JavaScriptObject = null
 var _js_sensor_begin_callback: JavaScriptObject = null
 var _js_sensor_end_callback: JavaScriptObject = null
+var _js_entity_spawned_callback: JavaScriptObject = null
 var _js_input_event_callback: JavaScriptObject = null
 var _js_ui_button_callback: JavaScriptObject = null
 var _js_transform_sync_callback: JavaScriptObject = null
@@ -68,6 +69,18 @@ func emit_collision_detailed(collision_data: Dictionary) -> void:
 		_queue_event("collision_detailed", collision_data)
 
 
+func set_entity_spawned_callback(cb: JavaScriptObject) -> void:
+	_js_entity_spawned_callback = cb
+
+
+func emit_entity_spawned(entity_id: String, snapshot: Dictionary) -> void:
+	if _js_entity_spawned_callback != null:
+		var json_str = JSON.stringify(snapshot)
+		_js_entity_spawned_callback.call("call", null, json_str)
+	else:
+		_queue_event("entity_spawned", snapshot)
+
+
 func emit_destroy(entity_id: String) -> void:
 	if _js_destroy_callback != null:
 		_js_destroy_callback.call("call", null, entity_id)
@@ -84,25 +97,25 @@ func emit_input_event(input_type: String, x: float, y: float, entity_id: Variant
 		_queue_event("input", data)
 
 
-func emit_sensor_begin(sensor_collider_id: int, other_body_id: int, other_collider_id: int) -> void:
+func emit_sensor_begin(sensor_shape_index: int, other_entity_id: String, other_shape_index: int) -> void:
 	if _js_sensor_begin_callback != null:
-		_js_sensor_begin_callback.call("call", null, sensor_collider_id, other_body_id, other_collider_id)
+		_js_sensor_begin_callback.call("call", null, sensor_shape_index, other_entity_id, other_shape_index)
 	else:
 		_queue_event("sensor_begin", {
-			"sensorColliderId": sensor_collider_id,
-			"otherBodyId": other_body_id,
-			"otherColliderId": other_collider_id
+			"sensorShapeIndex": sensor_shape_index,
+			"otherEntityId": other_entity_id,
+			"otherShapeIndex": other_shape_index
 		})
 
 
-func emit_sensor_end(sensor_collider_id: int, other_body_id: int, other_collider_id: int) -> void:
+func emit_sensor_end(sensor_shape_index: int, other_entity_id: String, other_shape_index: int) -> void:
 	if _js_sensor_end_callback != null:
-		_js_sensor_end_callback.call("call", null, sensor_collider_id, other_body_id, other_collider_id)
+		_js_sensor_end_callback.call("call", null, sensor_shape_index, other_entity_id, other_shape_index)
 	else:
 		_queue_event("sensor_end", {
-			"sensorColliderId": sensor_collider_id,
-			"otherBodyId": other_body_id,
-			"otherColliderId": other_collider_id
+			"sensorShapeIndex": sensor_shape_index,
+			"otherEntityId": other_entity_id,
+			"otherShapeIndex": other_shape_index
 		})
 
 
@@ -133,3 +146,31 @@ func emit_property_sync(entity_id: String, property_name: String, value: Variant
 func _queue_event(event_type: String, data: Variant) -> void:
 	if _bridge.has_method("_queue_event"):
 		_bridge._queue_event(event_type, data)
+
+# =============================================================================
+# JS HANDLERS (called from JavaScript bridge)
+# =============================================================================
+
+func _js_on_input_event(args: Array) -> void:
+	if args.size() >= 1:
+		set_input_event_callback(args[0])
+
+
+func _js_on_collision(args: Array) -> void:
+	if args.size() >= 1:
+		set_collision_callback(args[0])
+
+
+func _js_on_entity_destroyed(args: Array) -> void:
+	if args.size() >= 1:
+		set_destroy_callback(args[0])
+
+
+func _js_on_sensor_begin(args: Array) -> void:
+	if args.size() >= 1:
+		set_sensor_begin_callback(args[0])
+
+
+func _js_on_sensor_end(args: Array) -> void:
+	if args.size() >= 1:
+		set_sensor_end_callback(args[0])

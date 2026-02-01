@@ -8,10 +8,6 @@ var _entities: Dictionary = {}
 var _templates: Dictionary = {}
 var _pixels_per_meter: float = 50.0
 var _game_root: Node2D = null
-var _body_id_map: Dictionary = {}
-var _body_id_reverse: Dictionary = {}
-var _next_body_id: int = 1
-var _entity_shape_map: Dictionary = {}
 
 
 # Coordinate conversion helpers
@@ -23,20 +19,12 @@ func setup(
 	entities: Dictionary,
 	templates: Dictionary,
 	pixels_per_meter: float,
-	game_root: Node2D,
-	body_id_map: Dictionary,
-	body_id_reverse: Dictionary,
-	next_body_id: int,
-	entity_shape_map: Dictionary
+	game_root: Node2D
 ):
 	_entities = entities
 	_templates = templates
 	_pixels_per_meter = pixels_per_meter
 	_game_root = game_root
-	_body_id_map = body_id_map
-	_body_id_reverse = body_id_reverse
-	_next_body_id = next_body_id
-	_entity_shape_map = entity_shape_map
 
 
 func update_state():
@@ -46,10 +34,6 @@ func update_state():
 		_templates = _bridge.templates
 		_pixels_per_meter = _bridge.pixels_per_meter
 		_game_root = _bridge.game_root
-		_body_id_map = _bridge.body_id_map
-		_body_id_reverse = _bridge.body_id_reverse
-		_next_body_id = _bridge.next_body_id
-		_entity_shape_map = _bridge.entity_shape_map
 
 
 func game_to_godot_pos(game_pos: Vector2) -> Vector2:
@@ -69,7 +53,7 @@ func game_to_godot_vec(game_vec: Vector2) -> Vector2:
 # ============================================================================
 
 
-func create_entity(entity_data: Dictionary) -> Node2D:
+func create_entity(entity_data: Dictionary) -> EntityRecord:
 	var entity_id = entity_data.get("id", "entity_" + str(randi()))
 	var template_id = entity_data.get("template", "")
 	var transform_data = entity_data.get("transform", {})
@@ -88,12 +72,10 @@ func create_entity(entity_data: Dictionary) -> Node2D:
 		_merged_component(merged, tmpl, "collider")
 		_merged_component(merged, tmpl, "visual")
 		_merged_component(merged, tmpl, "character")
-		_merged_component(merged, tmpl, "zone")
 
 	var physics_data = merged.get("physics", null)
 	var collider_data = merged.get("collider", null)
 	var visual_data = merged.get("visual", null)
-	var zone_data = merged.get("zone", null)
 	var entity_type = merged.get("type", "")
 
 	var node: Node2D = null
@@ -101,10 +83,6 @@ func create_entity(entity_data: Dictionary) -> Node2D:
 	# Create physics body if physics component exists
 	if physics_data:
 		node = create_physics_body(entity_id, physics_data, collider_data, transform_data)
-	# Create zone (legacy) if zone component exists
-	# DEPRECATED: Zones should use collider with isSensor: true instead
-	elif entity_type == "zone" and zone_data:
-		node = create_zone_entity(entity_id, zone_data, transform_data)
 	# Create Area2D for entities with collider but no physics (UI hitboxes)
 	elif collider_data:
 		node = create_area2d_entity(entity_id, collider_data, transform_data)
@@ -159,7 +137,163 @@ func create_entity(entity_data: Dictionary) -> Node2D:
 
 	_entities[entity_id] = node
 
+	# Create children recursively
+	var children_data = merged.get("children", [])
+	if children_data is Array and children_data.size() > 0:
+		for child_def in children_data:
+			create_child_entity(node, entity_id, child_def)
+
+	# Create EntityRecord with archetype
+	var archetype = _determine_archetype(physics_data, collider_data)
+	var record = EntityRecord.new(entity_id, node, archetype)
+	record.template = template_id
+	if merged.has("tags"):
+		record.tags = merged.tags if merged.tags is Array else []
+	return record
+
+
+func create_child_entity(parent_node: Node2D, parent_id: String, child_def: Dictionary) -> Node2D:
+	"""Create a child entity and attach it to the parent node."""
+	var child_name = child_def.get("name", "child_" + str(randi()))
+	var child_id = child_def.get("id", parent_id + "_" + child_name)
+	var child_template_id = child_def.get("template", "")
+	var local_transform = child_def.get("localTransform", {})
+	
+	# Build child entity data
+	var child_entity_data = child_def.duplicate(true)
+	child_entity_data["id"] = child_id
+	
+	# Use localTransform as transform for child creation
+	if local_transform.size() > 0:
+		child_entity_data["transform"] = local_transform
+	elif not child_entity_data.has("transform"):
+		child_entity_data["transform"] = {"x": 0, "y": 0, "angle": 0, "scaleX": 1, "scaleY": 1}
+	
+	# Merge with child's template if specified
+	var merged = child_entity_data.duplicate(true)
+	if child_template_id != "" and _templates.has(child_template_id):
+		var tmpl = _templates[child_template_id]
+		for key in tmpl:
+			if not merged.has(key):
+				merged[key] = tmpl[key]
+		_merged_component(merged, tmpl, "physics")
+		_merged_component(merged, tmpl, "collider")
+		_merged_component(merged, tmpl, "visual")
+	
+	var physics_data = merged.get("physics", null)
+	var collider_data = merged.get("collider", null)
+	var visual_data = merged.get("visual", null)
+	var transform_data = merged.get("transform", {})
+	
+	# For now, create a simple Node2D as a placeholder for children.
+	# TODO: Refactor to use create_physics_body or create_area2d_entity if needed for children.
+	var node = Node2D.new()
+	node.name = child_id
+	
+	# Set local transform relative to parent
+	var local_pos = Vector2(transform_data.get("x", 0), transform_data.get("y", 0))
+	var godot_local_pos = game_to_godot_pos(local_pos)
+	var angle = transform_data.get("angle", 0)
+	node.position = godot_local_pos
+	node.rotation = -angle
+	
+	# Add visual component
+	if visual_data != null and typeof(visual_data) == TYPE_DICTIONARY:
+		_add_visual(node, visual_data)
+	
+	# Add as child of parent node
+	parent_node.add_child(node)
+	
+	# Set metadata
+	if child_template_id != "":
+		node.set_meta("template", child_template_id)
+	if merged.has("tags"):
+		node.set_meta("tags", merged.tags if merged.tags is Array else [])
+	if merged.has("behaviors"):
+		node.set_meta("behaviors", merged.behaviors if merged.behaviors is Array else [])
+	node.set_meta("parent_entity_id", parent_id)
+	
+	# Create EntityRecord and add to registry
+	var archetype = _determine_archetype(physics_data, collider_data)
+	var record = EntityRecord.new(child_id, node, archetype)
+	record.template = child_template_id
+	if merged.has("tags"):
+		record.tags = merged.tags if merged.tags is Array else []
+	
+	if _bridge:
+		_bridge.entity_registry[child_id] = record
+		_bridge.entity_spawned.emit(child_id, node)
+	
+	# Recursively create grandchildren
+	var grandchildren_data = merged.get("children", [])
+	if grandchildren_data is Array and grandchildren_data.size() > 0:
+		for grandchild_def in grandchildren_data:
+			create_child_entity(node, child_id, grandchild_def)
+	
 	return node
+
+
+func create_body(
+	body_type: String,
+	pos_x: float,
+	pos_y: float,
+	angle: float = 0.0,
+	linear_damping: float = 0.0,
+	angular_damping: float = 0.0,
+	fixed_rotation: bool = false,
+	bullet: bool = false,
+	user_data_json: String = "",
+	group: String = ""
+) -> String:
+	var godot_pos = game_to_godot_pos(Vector2(pos_x, pos_y))
+	var godot_angle = -angle  # Flip angle for Y-up convention
+
+	# Generate unique entity_id
+	var entity_id = "body_" + str(Time.get_ticks_msec()) + "_" + str(randi())
+	var node: Node2D
+
+	match body_type:
+		"static":
+			node = StaticBody2D.new()
+		"kinematic":
+			node = CharacterBody2D.new()
+		_:
+			var rigid = RigidBody2D.new()
+			rigid.gravity_scale = 1.0
+			rigid.linear_damp = linear_damping
+			rigid.angular_damp = angular_damping
+			if fixed_rotation:
+				rigid.lock_rotation = true
+			if bullet:
+				rigid.continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
+			if _bridge and _bridge._collision_system:
+				rigid.body_entered.connect(_bridge._collision_system._on_body_entered.bind(entity_id))
+			node = rigid
+
+	node.name = entity_id
+	node.position = godot_pos
+	node.rotation = godot_angle
+
+	var main = _bridge.get_tree().current_scene if _bridge else null
+	if main:
+		main.add_child(node)
+	
+	# Create EntityRecord and add to registry
+	var archetype = "body" if node is RigidBody2D or node is StaticBody2D else "visual"
+	var record = EntityRecord.new(entity_id, node, archetype)
+	
+	if _bridge:
+		_bridge.entity_registry[entity_id] = record
+
+	# Store user data and group (keyed by entity_id)
+	if user_data_json != "":
+		var json = JSON.new()
+		if json.parse(user_data_json) == OK:
+			record.user_data = json.data
+	if group != "":
+		record.group = group
+
+	return entity_id
 
 
 # ============================================================================
@@ -260,85 +394,11 @@ func create_physics_body(
 		node.add_child(collision)
 
 	# Apply collision filtering
-	node.collision_layer = physics_data.get("categoryBits", 1)
+	# Physics bodies use Layer 1 by default
+	node.collision_layer = physics_data.get("categoryBits", CollisionLayers.LAYER_BODIES)
 	node.collision_mask = physics_data.get("maskBits", 0xFFFFFFFF)
 
-	# Track body ID for Physics2D compatibility
-	if _bridge and _bridge.has_method("_allocate_body_id"):
-		var body_id = _bridge._allocate_body_id(entity_id)
-		_body_id_map[entity_id] = body_id
-	else:
-		_body_id_map[entity_id] = _next_body_id
-		_next_body_id += 1
-
 	return node
-
-
-# ============================================================================
-# ZONE ENTITY CREATION (DEPRECATED)
-# ============================================================================
-# DEPRECATED: Zone entities are being replaced with collider + isSensor pattern.
-# Use collider with isSensor: true instead of separate zone data.
-# This function is kept for backward compatibility but will be removed in future versions.
-# When zone entities are created, a runtime warning is printed.
-# ============================================================================
-
-
-func create_zone_entity(
-	entity_id: String, zone_data: Dictionary, transform_data: Dictionary
-) -> Node2D:
-	# DEPRECATED: Zone entities should use collider with isSensor: true
-	print("[DEPRECATED] Zone entities should use collider with isSensor: true")
-
-	var movement_type = zone_data.get("movement", "static")
-	var zone_shape = zone_data.get("shape", {"type": "box", "width": 1.0, "height": 1.0})
-
-	var area = Area2D.new()
-	area.name = entity_id
-
-	# Add collision shape
-	var collision = CollisionShape2D.new()
-	var shape_type = zone_shape.get("type", "box")
-
-	match shape_type:
-		"circle":
-			var circle = CircleShape2D.new()
-			circle.radius = zone_shape.get("radius", 0.5) * _pixels_per_meter
-			collision.shape = circle
-		"polygon":
-			var polygon = ConvexPolygonShape2D.new()
-			var vertices = zone_shape.get("vertices", [])
-			var points: PackedVector2Array = []
-			for v in vertices:
-				points.append(Vector2(v.x * _pixels_per_meter, -v.y * _pixels_per_meter))
-			polygon.points = points
-			collision.shape = polygon
-		_:  # box
-			var rect = RectangleShape2D.new()
-			var w = zone_shape.get("width", 1.0) * _pixels_per_meter
-			var h = zone_shape.get("height", 1.0) * _pixels_per_meter
-			rect.size = Vector2(w, h)
-			collision.shape = rect
-
-	area.add_child(collision)
-
-	# Apply collision filtering
-	area.collision_layer = zone_data.get("categoryBits", 1)
-	area.collision_mask = zone_data.get("maskBits", 0xFFFFFFFF)
-
-	# Store zone metadata
-	area.set_meta("entity_type", "zone")
-	area.set_meta("zone_movement", movement_type)
-
-	# Track body ID for compatibility
-	if _bridge and _bridge.has_method("_allocate_body_id"):
-		var body_id = _bridge._allocate_body_id(entity_id)
-		_body_id_map[entity_id] = body_id
-	else:
-		_body_id_map[entity_id] = _next_body_id
-		_next_body_id += 1
-
-	return area
 
 
 # ============================================================================
@@ -360,18 +420,16 @@ func create_area2d_entity(
 	collision.shape = create_collider_shape(collider_data)
 	area.add_child(collision)
 
-	# Use Layer 2 for UI hitboxes (Layer 1 reserved for physics objects)
-	# This keeps them separate from physics simulation
-	area.collision_layer = collider_data.get("categoryBits", 2)
+	# Determine layer based on whether this is a sensor or hitbox
+	# Sensors (isSensor: true) use Layer 2, UI hitboxes use Layer 4
+	var is_sensor = collider_data.get("isSensor", false)
+	var default_layer = CollisionLayers.LAYER_SENSORS if is_sensor else CollisionLayers.LAYER_HITBOXES
+	area.collision_layer = collider_data.get("categoryBits", default_layer)
 	area.collision_mask = collider_data.get("maskBits", 0)
 
-	# Track body ID for compatibility with queryPoint
-	if _bridge and _bridge.has_method("_allocate_body_id"):
-		var body_id = _bridge._allocate_body_id(entity_id)
-		_body_id_map[entity_id] = body_id
-	else:
-		_body_id_map[entity_id] = _next_body_id
-		_next_body_id += 1
+	if is_sensor and _bridge and _bridge._collision_system:
+		area.body_shape_entered.connect(_bridge._collision_system._on_sensor_body_shape_entered.bind(entity_id))
+		area.body_shape_exited.connect(_bridge._collision_system._on_sensor_body_shape_exited.bind(entity_id))
 
 	return area
 
@@ -455,8 +513,8 @@ func calculate_polygon_area(vertices: Array) -> float:
 func _add_visual(node: Node2D, visual_data: Dictionary) -> void:
 	if not _bridge:
 		return
-	if _bridge.has_method("_add_visual"):
-		_bridge._add_visual(node, visual_data)
+	if _bridge._visual_renderer:
+		_bridge._visual_renderer.add_visual(node, visual_data)
 
 
 func _create_polygon_texture(
@@ -464,8 +522,8 @@ func _create_polygon_texture(
 ) -> ImageTexture:
 	if not _bridge:
 		return null
-	if _bridge.has_method("_create_polygon_texture"):
-		return _bridge._create_polygon_texture(width, height, color, padding)
+	if _bridge._visual_renderer:
+		return _bridge._visual_renderer._create_polygon_texture(width, height, color, padding)
 	return null
 
 
@@ -499,15 +557,17 @@ func _generate_visual_from_collider(collider_data: Dictionary) -> Dictionary:
 	return {"type": "rect", "color": "#FF0000"}
 
 
+func _determine_archetype(physics_data, collider_data) -> String:
+	if physics_data:
+		return "body"
+	elif collider_data:
+		var is_sensor = collider_data.get("isSensor", false)
+		return "sensor" if is_sensor else "hitbox"
+	else:
+		return "visual"
+
+
 func destroy_entity(entity_id: String) -> void:
 	# Clean up entity-related tracking data
-	if _body_id_map.has(entity_id):
-		var body_id = _body_id_map[entity_id]
-		_body_id_reverse.erase(body_id)
-		_body_id_map.erase(entity_id)
-
-	if _entity_shape_map.has(entity_id):
-		_entity_shape_map.erase(entity_id)
-
 	if _entities.has(entity_id):
 		_entities.erase(entity_id)

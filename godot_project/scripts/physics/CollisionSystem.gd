@@ -3,13 +3,12 @@ class_name CollisionSystem extends RefCounted
 const IMPULSE_THRESHOLD: float = 0.1
 
 var _game_bridge: Node = null
+var _event_emitter: EventEmitter = null
 var _js_collision_callback: JavaScriptObject = null
-var _js_destroy_callback: JavaScriptObject = null
-var _js_entity_spawned_callback: JavaScriptObject = null
 
-
-func _init(game_bridge: Node) -> void:
+func _init(game_bridge: Node, event_emitter: EventEmitter) -> void:
 	_game_bridge = game_bridge
+	_event_emitter = event_emitter
 
 
 func _js_on_collision(args: Array) -> void:
@@ -39,18 +38,43 @@ func _notify_js_collision_detailed(collision_data: Dictionary) -> void:
 
 
 func _notify_js_destroy(entity_id: String) -> void:
-	if _js_destroy_callback != null:
-		_js_destroy_callback.call("call", null, entity_id)
-	else:
-		_game_bridge._queue_event("destroy", {"entityId": entity_id})
+	_event_emitter.emit_destroy(entity_id)
 
 
 func _notify_js_entity_spawned(entity_id: String, snapshot: Dictionary) -> void:
-	if _js_entity_spawned_callback != null:
-		var json_str = JSON.stringify(snapshot)
-		_js_entity_spawned_callback.call("call", null, json_str)
-	else:
-		_game_bridge._queue_event("entity_spawned", snapshot)
+	_event_emitter.emit_entity_spawned(entity_id, snapshot)
+
+
+func _on_sensor_body_shape_entered(
+	_body_rid: RID,
+	body: Node2D,
+	body_shape_index: int,
+	local_shape_index: int,
+	_sensor_entity_id: String
+) -> void:
+	# Use entity_registry to check if entity exists
+	if _game_bridge.entity_registry.has(body.name):
+		# Use shape indices directly
+		var sensor_shape_index = local_shape_index
+		var other_shape_index = body_shape_index
+
+		_event_emitter.emit_sensor_begin(sensor_shape_index, body.name, other_shape_index)
+
+
+func _on_sensor_body_shape_exited(
+	_body_rid: RID,
+	body: Node2D,
+	body_shape_index: int,
+	local_shape_index: int,
+	_sensor_entity_id: String
+) -> void:
+	# Use entity_registry to check if entity exists
+	if _game_bridge.entity_registry.has(body.name):
+		# Use shape indices directly
+		var sensor_shape_index = local_shape_index
+		var other_shape_index = body_shape_index
+
+		_event_emitter.emit_sensor_end(sensor_shape_index, body.name, other_shape_index)
 
 
 func _handle_collision_manifold(
@@ -121,7 +145,41 @@ func _handle_collision_manifold(
 		_process_collision_behaviors(entity_b, entity_a)
 
 
-func _process_collision_behaviors(entity_a: String, entity_b: String) -> void:
-	# This is a placeholder - the actual implementation is in GameBridge
-	# We call back to GameBridge to process collision behaviors
-	_game_bridge._process_collision_behaviors(entity_a, entity_b)
+func _on_body_entered(body: Node, entity_id: String) -> void:
+	if body.name in _game_bridge.entity_registry:
+		_game_bridge.collision_occurred.emit(entity_id, body.name, 0.0)
+		_notify_js_collision(entity_id, body.name, 0.0)
+
+		# Process destroy_on_collision behaviors directly in Godot
+		_process_collision_behaviors(entity_id, body.name)
+		_process_collision_behaviors(body.name, entity_id)
+
+
+func _process_collision_behaviors(entity_id: String, other_entity_id: String) -> void:
+	var node = _game_bridge.get_entity_node(entity_id)
+	var other_node = _game_bridge.get_entity_node(other_entity_id)
+	if not node or not other_node:
+		return
+
+	if not node.has_meta("behaviors"):
+		return
+
+	var behaviors = node.get_meta("behaviors") as Array
+	var other_tags = other_node.get_meta("tags") if other_node.has_meta("tags") else []
+
+	for behavior in behaviors:
+		if behavior is Dictionary and behavior.get("type") == "destroy_on_collision":
+			var with_tags = behavior.get("withTags", []) as Array
+			var should_destroy = false
+
+			for tag in with_tags:
+				if tag in other_tags:
+					should_destroy = true
+					break
+
+			if should_destroy:
+				_game_bridge.call_deferred("destroy_entity", entity_id)
+
+				if behavior.get("destroyOther", false):
+					_game_bridge.call_deferred("destroy_entity", other_entity_id)
+				return
