@@ -101,3 +101,6 @@ test_*.py
 # Work in progress / drafts
 .sisyphus/drafts/
 *.draft.md
+
+# Git worktrees
+.worktrees/

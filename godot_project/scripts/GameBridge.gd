@@ -33,6 +33,12 @@ var _ui_manager: UIManager = null
 var _camera_controller: CameraController = null
 
 # ============================================================================
+# COLLISION LAYER CONVENTION
+# ============================================================================
+# Collision layer constants are now defined in CollisionLayers.gd
+# See scripts/constants/CollisionLayers.gd for the single source of truth
+
+# ============================================================================
 # CORE STATE
 # ============================================================================
 var game_data: Dictionary = {}
@@ -58,6 +64,52 @@ func game_to_godot_vec(game_vec: Vector2) -> Vector2:
 
 func godot_to_game_vec(godot_vec: Vector2) -> Vector2:
 	return Vector2(godot_vec.x / pixels_per_meter, -godot_vec.y / pixels_per_meter)
+
+
+# ============================================================================
+# HIT TESTING
+# ============================================================================
+func _hit_test(x: float, y: float) -> String:
+	"""Canonical hit test function with layer-based priority.
+	
+	Args:
+		x, y: Game coordinates (meters, center-origin, Y+ up)
+	
+	Returns:
+		entity_id string or empty string if no hit
+	
+	Priority: Hitboxes (L4) > Bodies (L1)
+	Ignores: Sensors (L2)
+	"""
+	var godot_pos = game_to_godot_pos(Vector2(x, y))
+	var space = get_viewport().find_world_2d().direct_space_state
+	if space == null:
+		return ""
+	
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = godot_pos
+	query.collision_mask = CollisionLayers.MASK_HIT_TEST  # 5 = LAYER_BODIES | LAYER_HITBOXES
+	query.collide_with_bodies = true
+	query.collide_with_areas = true
+	
+	var results = space.intersect_point(query, 10)  # Get multiple for priority sorting
+	if results.is_empty():
+		return ""
+	
+	# Sort by layer priority: hitboxes first (L4), then bodies (L1)
+	var best_hit: String = ""
+	var best_layer: int = 0
+	for result in results:
+		var collider = result.collider
+		if collider and entities.has(collider.name):
+			var layer = collider.collision_layer
+			if layer & CollisionLayers.LAYER_HITBOXES:  # Hitbox has priority
+				return collider.name
+			elif layer & CollisionLayers.LAYER_BODIES and best_layer == 0:
+				best_hit = collider.name
+				best_layer = layer
+	
+	return best_hit
 
 
 var ws: WebSocketPeer = null
@@ -220,19 +272,9 @@ func _input(event: InputEvent) -> void:
 		var game_pos = godot_to_game_pos(world_pos)
 
 		if event.pressed:
-			var hit_entity_id: Variant = null
-			var space = get_viewport().find_world_2d().direct_space_state
-			if space:
-				var query = PhysicsPointQueryParameters2D.new()
-				query.position = world_pos
-				query.collision_mask = 0xFFFFFFFF
-				query.collide_with_bodies = true
-				query.collide_with_areas = true
-				var results = space.intersect_point(query, 1)
-				if results.size() > 0:
-					var collider = results[0].collider
-					if collider and collider.name in entities:
-						hit_entity_id = collider.name
+			var hit_entity_id: Variant = _hit_test(game_pos.x, game_pos.y)
+			if hit_entity_id == "":
+				hit_entity_id = null
 
 			_is_dragging = true
 			_drag_entity_id = hit_entity_id
@@ -826,20 +868,9 @@ func apply_force(entity_id: String, fx: float, fy: float) -> void:
 
 func send_input(input_type: String, x: float, y: float, entity_id: String = "") -> void:
 	if input_type == "tap":
-		var hit_entity_id: Variant = null
-		var godot_point = game_to_godot_pos(Vector2(x, y))
-		var space = get_viewport().find_world_2d().direct_space_state
-		if space:
-			var query = PhysicsPointQueryParameters2D.new()
-			query.position = godot_point
-			query.collision_mask = 0xFFFFFFFF
-			query.collide_with_bodies = true
-			query.collide_with_areas = true
-			var results = space.intersect_point(query, 1)
-			if results.size() > 0:
-				var collider = results[0].collider
-				if collider and collider.name in entities:
-					hit_entity_id = collider.name
+		var hit_entity_id: Variant = _hit_test(x, y)
+		if hit_entity_id == "":
+			hit_entity_id = null
 		_queue_event("input", {"type": input_type, "x": x, "y": y, "entityId": hit_entity_id})
 		_notify_js_input_event(input_type, x, y, hit_entity_id)
 
@@ -853,22 +884,9 @@ func _js_send_input(args: Array) -> void:
 	var provided_entity_id = str(args[3]) if args[3] != null else ""
 
 	if input_type == "tap":
-		var hit_entity_id: Variant = null
-
-		var godot_point = game_to_godot_pos(Vector2(x, y))
-		var space = get_viewport().find_world_2d().direct_space_state
-		if space:
-			var query = PhysicsPointQueryParameters2D.new()
-			query.position = godot_point
-			query.collision_mask = 0xFFFFFFFF
-			query.collide_with_bodies = true
-			query.collide_with_areas = true
-
-			var results = space.intersect_point(query, 1)
-			if results.size() > 0:
-				var collider = results[0].collider
-				if collider and collider.name in entities:
-					hit_entity_id = collider.name
+		var hit_entity_id: Variant = _hit_test(x, y)
+		if hit_entity_id == "":
+			hit_entity_id = null
 
 		_notify_js_input_event(input_type, x, y, hit_entity_id)
 
@@ -1126,7 +1144,7 @@ func load_game_json(json_string: String) -> bool:
 	# Create entities
 	var entities_data = game_data.get("entities", [])
 	for entity_data in entities_data:
-		_create_entity(entity_data)
+		var record = _entity_factory.create_entity(entity_data)
 
 	game_loaded.emit(game_data)
 	return true
@@ -1427,259 +1445,10 @@ func _create_child_entity(parent_node: Node2D, parent_id: String, child_def: Dic
 	return node
 
 
-func _create_entity(entity_data: Dictionary) -> Node2D:
-	var entity_id = entity_data.get("id", "entity_" + str(randi()))
-	var template_id = entity_data.get("template", "")
-	var transform_data = entity_data.get("transform", {})
-
-	# Merge template with entity data
-	var merged = entity_data.duplicate(true)
-	if template_id != "" and templates.has(template_id):
-		var tmpl = templates[template_id]
-		# Template provides defaults, entity_data overrides
-		for key in tmpl:
-			if not merged.has(key):
-				merged[key] = tmpl[key]
-		# Merge component dicts specifically (template provides defaults, entity overrides)
-		_merge_component_dict(merged, tmpl, "physics")
-		_merge_component_dict(merged, tmpl, "collider")
-		_merge_component_dict(merged, tmpl, "visual")
-
-	var physics_data = merged.get("physics", null)
-	var collider_data = merged.get("collider", null)
-	var visual_data = merged.get("visual", null)
-
-	# Debug: Log entity creation for balls
-	if OS.has_feature("web") and entity_id.begins_with("ball"):
-		var window = JavaScriptBridge.get_interface("window")
-		if window:
-			window.console.log("[GODOT] Creating entity: " + entity_id + " template: " + template_id + " has_visual: " + str(visual_data != null) + " visual_data: " + str(visual_data))
-
-	var node: Node2D = null
-
-	if physics_data:
-		node = _create_physics_body(entity_id, physics_data, transform_data)
-	elif collider_data:
-		# Create Area2D for any entity with collider but no physics
-		# This enables hit detection via queryPoint for UI hitboxes
-		node = _create_area2d_entity(entity_id, collider_data, transform_data)
-	else:
-		node = Node2D.new()
-		node.name = entity_id
-
-	# Set transform (convert from game coords to Godot coords with Y-flip)
-	var game_pos = Vector2(transform_data.get("x", 0), transform_data.get("y", 0))
-	var godot_pos = game_to_godot_pos(game_pos)
-	var angle = transform_data.get("angle", 0)
-	node.position = godot_pos
-	node.rotation = -angle  # Flip angle for Y-up convention
-
-	# Add visual component (use collider_data for dimension defaults if physics_data is missing)
-	var dimension_data = physics_data if physics_data else collider_data
-	# Debug: Check if visual_data is truthy
-	if OS.has_feature("web") and entity_id.begins_with("ball"):
-		var window = JavaScriptBridge.get_interface("window")
-		if window:
-			window.console.log("[GODOT] Checking visual_data for " + entity_id + ": " + str(visual_data) + " is_truthy: " + str(bool(visual_data)))
-			window.console.log("[GODOT] visual_data type: " + str(typeof(visual_data)))
-			window.console.log("[GODOT] visual_data.size(): " + str(visual_data.size() if visual_data else 0))
-			window.console.log("[GODOT] dimension_data: " + str(dimension_data))
-	
-	# Always try to add visual for balls if visual_data exists as a Dictionary
-	if visual_data != null and typeof(visual_data) == TYPE_DICTIONARY:
-		_add_visual(node, visual_data, dimension_data)
-
-	# Add to scene
-	if game_root:
-		game_root.add_child(node)
-	else:
-		var main = get_tree().current_scene
-		if main:
-			main.add_child(node)
-
-	# Apply initial velocity now that the body is in the scene tree
-	if node is RigidBody2D and node.has_meta("_initial_velocity"):
-		var initial_vel = node.get_meta("_initial_velocity") as Vector2
-		node.linear_velocity = initial_vel
-		node.remove_meta("_initial_velocity")
-
-	# Set metadata for selectors
-	if template_id != "":
-		node.set_meta("template", template_id)
-	if merged.has("tags"):
-		node.set_meta("tags", merged.tags if merged.tags is Array else [])
-	if merged.has("behaviors"):
-		node.set_meta("behaviors", merged.behaviors if merged.behaviors is Array else [])
-
-	entities[entity_id] = node
-	entity_spawned.emit(entity_id, node)
-	
-	# Queue entity_spawned event for TypeScript (includes bodyId for queryPoint)
-	var tags = node.get_meta("tags") if node.has_meta("tags") else []
-	var body_id = body_id_map.get(entity_id, -1)
-	_queue_event("entity_spawned", {
-		"entityId": entity_id,
-		"template": template_id,
-		"generation": 1,
-		"tags": tags,
-		"transform": {
-			"x": transform_data.get("x", 0),
-			"y": transform_data.get("y", 0),
-			"angle": transform_data.get("angle", 0),
-			"scaleX": transform_data.get("scaleX", 1),
-			"scaleY": transform_data.get("scaleY", 1)
-		},
-		"bodyId": body_id
-	})
-
-	# Create child entities from template or entity definition
-	var children_data = merged.get("children", [])
-	if children_data is Array and children_data.size() > 0:
-		for child_def in children_data:
-			_create_child_entity(node, entity_id, child_def)
-
-	return node
 
 
-func _create_physics_body(
-	entity_id: String, physics_data: Dictionary, transform_data: Dictionary
-) -> Node2D:
-	var body_type = physics_data.get("bodyType", "dynamic")
-	var is_sensor = physics_data.get("isSensor", false)
-	var node: Node2D
-
-	# For sensors, use Area2D instead of physics body
-	if is_sensor:
-		var area = Area2D.new()
-		area.name = entity_id
-		area.body_shape_entered.connect(_on_sensor_body_shape_entered.bind(entity_id))
-		area.body_shape_exited.connect(_on_sensor_body_shape_exited.bind(entity_id))
-
-		var collision = CollisionShape2D.new()
-		collision.shape = _create_shape(physics_data)
-		area.add_child(collision)
-
-		# Apply collision filtering
-		area.collision_layer = physics_data.get("categoryBits", 1)
-		area.collision_mask = physics_data.get("maskBits", 0xFFFFFFFF)
-
-		sensors[entity_id] = area
-		node = area
-	else:
-		match body_type:
-			"static":
-				node = StaticBody2D.new()
-			"kinematic":
-				var char_body = CharacterBody2D.new()
-				node = char_body
-			_:  # dynamic
-				var rigid = RigidBody2D.new()
-				rigid.gravity_scale = physics_data.get("gravityScale", 1.0)
-
-				# Enable contact monitoring for detailed collision data
-				rigid.contact_monitor = true
-				rigid.max_contacts_reported = 4
-
-				# Attach PhysicsBody script for _integrate_forces callback
-				rigid.set_script(load("res://scripts/PhysicsBody.gd"))
-
-				# Set physics properties
-				var density = physics_data.get("density", 1.0)
-				var friction = physics_data.get("friction", 0.3)
-				var restitution = physics_data.get("restitution", 0.0)
-
-				# Create physics material
-				var material = PhysicsMaterial.new()
-				material.friction = friction
-				material.bounce = restitution
-				rigid.physics_material_override = material
-
-				# Mass is calculated from density * area (simplified)
-				var shape_type = physics_data.get("shape", "box")
-				var area = 1.0
-				if shape_type == "box":
-					var w = physics_data.get("width", 1.0)
-					var h = physics_data.get("height", 1.0)
-					area = w * h
-				elif shape_type == "circle":
-					var r = physics_data.get("radius", 0.5)
-					area = PI * r * r
-				elif shape_type == "polygon":
-					var vertices = physics_data.get("vertices", [])
-					area = _calculate_polygon_area(vertices)
-				var final_mass = density * area
-				# Ensure mass is always > 0 (Godot requires mass > 0)
-				if final_mass <= 0:
-					final_mass = 1.0
-				rigid.mass = final_mass
-
-				# Linear/angular damping
-				rigid.linear_damp = physics_data.get("linearDamping", 0.0)
-				rigid.angular_damp = physics_data.get("angularDamping", 0.0)
-
-				# Fixed rotation
-				if physics_data.get("fixedRotation", false):
-					rigid.lock_rotation = true
-
-				# CCD for fast-moving objects
-				if physics_data.get("bullet", false):
-					rigid.continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
-
-				# Connect collision signals (kept for backward compatibility)
-				rigid.body_entered.connect(_on_body_entered.bind(entity_id))
-
-				# Apply initial velocity if specified (convert with Y-flip)
-				var initial_vel = physics_data.get("initialVelocity", null)
-				if initial_vel != null:
-					# Store for deferred application (must be applied after body is in scene tree)
-					var game_vel = Vector2(initial_vel.get("x", 0), initial_vel.get("y", 0))
-					rigid.set_meta("_initial_velocity", game_to_godot_vec(game_vel))
-
-				node = rigid
-
-		node.name = entity_id
-
-# DISABLED - EntityManager adds collision via addFixture: 		# Add collision shape
-# DISABLED - EntityManager adds collision via addFixture: 		var collision = CollisionShape2D.new()
-# DISABLED - EntityManager adds collision via addFixture: 		collision.shape = _create_shape(physics_data)
-# DISABLED - EntityManager adds collision via addFixture: 		node.add_child(collision)
-
-		# Apply collision filtering
-		node.collision_layer = physics_data.get("categoryBits", 1)
-		node.collision_mask = physics_data.get("maskBits", 0xFFFFFFFF)
-
-	# Track body ID for Physics2D compatibility
-	body_id_map[entity_id] = next_body_id
-	body_id_reverse[next_body_id] = entity_id
-	next_body_id += 1
-
-	return node
 
 
-func _create_sensor_entity(
-	entity_id: String, collider_data: Dictionary, transform_data: Dictionary
-) -> Node2D:
-	var area = Area2D.new()
-	area.name = entity_id
-	area.body_shape_entered.connect(_on_sensor_body_shape_entered.bind(entity_id))
-	area.body_shape_exited.connect(_on_sensor_body_shape_exited.bind(entity_id))
-
-	var collision = CollisionShape2D.new()
-	collision.shape = _create_shape(collider_data)
-	area.add_child(collision)
-
-	# Apply collision filtering
-	area.collision_layer = collider_data.get("categoryBits", 1)
-	area.collision_mask = collider_data.get("maskBits", 0xFFFFFFFF)
-
-	sensors[entity_id] = area
-
-	# Track body ID for Physics2D compatibility
-	body_id_map[entity_id] = next_body_id
-	body_id_reverse[next_body_id] = entity_id
-	next_body_id += 1
-
-	return area
 
 
 func _create_area2d_entity(
@@ -1697,7 +1466,7 @@ func _create_area2d_entity(
 
 	# Use Layer 2 for UI hitboxes (Layer 1 is for physics objects)
 	# Mask 0 means it doesn't detect anything on its own, only responds to queries
-	area.collision_layer = collider_data.get("categoryBits", 2)
+	area.collision_layer = collider_data.get("categoryBits", CollisionLayers.LAYER_SENSORS)
 	area.collision_mask = collider_data.get("maskBits", 0)
 
 	# Track body ID for Physics2D compatibility (enables queryPoint)
@@ -2286,7 +2055,8 @@ func spawn_entity_with_id(template_id: String, x: float, y: float, entity_id: St
 		"id": entity_id, "template": template_id, "transform": {"x": x, "y": y, "angle": 0}
 	}
 
-	return _create_entity(entity_data)
+	var record = _entity_factory.create_entity(entity_data)
+	return record.node
 
 
 func _process_collision_behaviors(entity_id: String, other_entity_id: String) -> void:
