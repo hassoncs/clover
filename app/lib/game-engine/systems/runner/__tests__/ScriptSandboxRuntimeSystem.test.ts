@@ -71,6 +71,10 @@ describe('ScriptSandboxRuntimeSystem', () => {
         state: 'playing',
         variables: { testVar: 42 },
       },
+      frame: {
+        inputEvents: [],
+        collisions: [],
+      },
     };
   });
 

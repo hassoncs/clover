@@ -109,6 +109,10 @@ describe('BehaviorExecutorRuntimeSystem', () => {
         state: 'playing',
         variables: {},
       },
+      frame: {
+        inputEvents: [],
+        collisions: [],
+      },
     };
 
     system = new BehaviorExecutorRuntimeSystem({

@@ -1,12 +1,20 @@
 {
-  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/gamebridge-refactor-v2.md",
-  "started_at": "2026-01-31T19:10:35.437Z",
+  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/game-engine-crisis-recovery.md",
+  "started_at": "2026-02-01T04:58:05.873Z",
   "session_ids": [
-    "ses_3ea9805beffeqxNmHu82hcoNJA",
-    "ses_3eaa84bdaffe2NZggfb53fl6Tq",
-    "ses_3e9afa7f3ffeqi1lVC3S63NcvX",
-    "ses_3e9a69a4bffe6PjBMSueKlfUZn"
+    "ses_3e884f270ffepJYi0n8qOFvoOx",
+    "ses_3e5b25e75ffe1mwfCWcVSMSWxN"
   ],
-  "plan_name": "gamebridge-refactor-v2",
-  "status": "in_progress"
+  "plan_name": "game-engine-crisis-recovery",
+  "status": "completed",
+  "completed_at": "2026-02-01T22:30:00.000Z",
+  "summary": {
+    "tasks_completed": 53,
+    "tasks_total": 53,
+    "percentage": 100,
+    "critical_bugs_fixed": 4,
+    "new_tests_added": 53,
+    "tests_passing": 498,
+    "tests_total": 505
+  }
 }

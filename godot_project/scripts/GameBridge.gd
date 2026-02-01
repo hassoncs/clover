@@ -1459,9 +1459,10 @@ func _create_entity(entity_data: Dictionary) -> Node2D:
 
 	if physics_data:
 		node = _create_physics_body(entity_id, physics_data, transform_data)
-	elif collider_data and collider_data.get("isSensor", false):
-		# Create sensor entity (Area2D) for colliders marked as sensors
-		node = _create_sensor_entity(entity_id, collider_data, transform_data)
+	elif collider_data:
+		# Create Area2D for any entity with collider but no physics
+		# This enables hit detection via queryPoint for UI hitboxes
+		node = _create_area2d_entity(entity_id, collider_data, transform_data)
 	else:
 		node = Node2D.new()
 		node.name = entity_id
@@ -1512,6 +1513,24 @@ func _create_entity(entity_data: Dictionary) -> Node2D:
 
 	entities[entity_id] = node
 	entity_spawned.emit(entity_id, node)
+	
+	# Queue entity_spawned event for TypeScript (includes bodyId for queryPoint)
+	var tags = node.get_meta("tags") if node.has_meta("tags") else []
+	var body_id = body_id_map.get(entity_id, -1)
+	_queue_event("entity_spawned", {
+		"entityId": entity_id,
+		"template": template_id,
+		"generation": 1,
+		"tags": tags,
+		"transform": {
+			"x": transform_data.get("x", 0),
+			"y": transform_data.get("y", 0),
+			"angle": transform_data.get("angle", 0),
+			"scaleX": transform_data.get("scaleX", 1),
+			"scaleY": transform_data.get("scaleY", 1)
+		},
+		"bodyId": body_id
+	})
 
 	# Create child entities from template or entity definition
 	var children_data = merged.get("children", [])
@@ -1656,6 +1675,32 @@ func _create_sensor_entity(
 	sensors[entity_id] = area
 
 	# Track body ID for Physics2D compatibility
+	body_id_map[entity_id] = next_body_id
+	body_id_reverse[next_body_id] = entity_id
+	next_body_id += 1
+
+	return area
+
+
+func _create_area2d_entity(
+	entity_id: String, collider_data: Dictionary, transform_data: Dictionary
+) -> Node2D:
+	"""Create Area2D for entities with collider but no physics.
+	Used for UI hitboxes like Ball Sort tube sensors.
+	Unlike _create_sensor_entity, this doesn't connect sensor signals."""
+	var area = Area2D.new()
+	area.name = entity_id
+
+	var collision = CollisionShape2D.new()
+	collision.shape = _create_shape(collider_data)
+	area.add_child(collision)
+
+	# Use Layer 2 for UI hitboxes (Layer 1 is for physics objects)
+	# Mask 0 means it doesn't detect anything on its own, only responds to queries
+	area.collision_layer = collider_data.get("categoryBits", 2)
+	area.collision_mask = collider_data.get("maskBits", 0)
+
+	# Track body ID for Physics2D compatibility (enables queryPoint)
 	body_id_map[entity_id] = next_body_id
 	body_id_reverse[next_body_id] = entity_id
 	next_body_id += 1

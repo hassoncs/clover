@@ -76,7 +76,6 @@ export class RulesRuntimeSystem implements RuntimeSystem<RulesSystemConfig, Rule
   update(ctx: UpdateContext, _state: RulesSystemState): void {
     if (!this.rulesEvaluator || !this.systemContext) return;
     
-    // Create minimal evalContext
     const evalContext: EvalContext = {
       score: this.rulesEvaluator.getScore(),
       lives: this.rulesEvaluator.getLives(),
@@ -90,23 +89,59 @@ export class RulesRuntimeSystem implements RuntimeSystem<RulesSystemConfig, Rule
       customFunctions: {},
     };
     
-    // For now, pass empty collisions and minimal input
-    // Full integration will come in Phase 8
+    const inputEvents = this.convertFrameInputEvents(ctx.frame.inputEvents);
+    
     this.rulesEvaluator.update(
       ctx.dt,
       this.systemContext.entityManager,
-      [], // collisions - will be wired later
+      ctx.frame.collisions,
+      // Cast: Readonly<InputState> → InputState
+      // Safe because RulesEvaluator only reads from input, never writes
       ctx.input as any,
-      {}, // inputEvents - will be wired later
+      inputEvents,
       this.systemContext.physics,
       this.computedValues,
       evalContext,
       this.camera,
-      () => {}, // setTimeScale - will be wired later
+      () => {},
       this.inputEntityManager,
       (soundId) => this.systemContext!.bridge.playSound(soundId),
       this.systemContext.bridge
     );
+  }
+  
+  private convertFrameInputEvents(frameEvents: readonly import('../types').InputEvent[]): import('../../../BehaviorContext').InputEvents {
+    const result: import('../../../BehaviorContext').InputEvents = {};
+    const buttonPressed = new Set<string>();
+    const buttonReleased = new Set<string>();
+    
+    for (const event of frameEvents) {
+      switch (event.type) {
+        case 'tap':
+          result.tap = { x: event.x, y: event.y, worldX: event.worldX, worldY: event.worldY, targetEntityId: event.targetEntityId };
+          break;
+        case 'drag_start':
+          result.dragStart = { x: event.x, y: event.y, worldX: event.worldX, worldY: event.worldY, targetEntityId: event.targetEntityId };
+          break;
+        case 'drag_end':
+          result.dragEnd = { velocityX: event.velocityX, velocityY: event.velocityY, worldVelocityX: event.worldVelocityX, worldVelocityY: event.worldVelocityY };
+          break;
+        case 'button_pressed':
+          buttonPressed.add(event.button);
+          break;
+        case 'button_released':
+          buttonReleased.add(event.button);
+          break;
+        case 'game_started':
+          result.gameStarted = true;
+          break;
+      }
+    }
+    
+    if (buttonPressed.size > 0) result.buttonPressed = buttonPressed;
+    if (buttonReleased.size > 0) result.buttonReleased = buttonReleased;
+    
+    return result;
   }
   
   destroy(): void {

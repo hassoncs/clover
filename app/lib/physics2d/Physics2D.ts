@@ -70,4 +70,5 @@ export interface Physics2D {
   getGroup(id: BodyId): string | undefined;
   getAllBodies(): BodyId[];
   getBodiesInGroup(group: string): BodyId[];
+  getEntityId(bodyId: BodyId): string | undefined;
 }

@@ -6,10 +6,10 @@ import type { RuntimeEntity } from '../../../types';
 import type { ComputedValueSystem, EvalContext } from '@slopcade/shared';
 import type { CameraSystem } from '../../../CameraSystem';
 import type { InputEntityManager } from '../../../InputEntityManager';
-import type { CollisionInfo } from '../../../BehaviorContext';
 
 export interface BehaviorExecutorSystemConfig {
   pixelsPerMeter: number;
+  debug?: boolean;
 }
 
 export interface BehaviorExecutorSystemState {
@@ -44,10 +44,14 @@ export class BehaviorExecutorRuntimeSystem implements RuntimeSystem<BehaviorExec
   }
   
   update(ctx: UpdateContext, _state: BehaviorExecutorSystemState): void {
-    console.log('[BehaviorExecutor] UPDATE CALLED');
+    if (this.config.debug) {
+      console.log('[BehaviorExecutor] UPDATE CALLED');
+    }
     
     if (!this.behaviorExecutor || !this.systemContext) {
-      console.log('[BehaviorExecutor] Early return - behaviorExecutor:', !!this.behaviorExecutor, 'systemContext:', !!this.systemContext);
+      if (this.config.debug) {
+        console.log('[BehaviorExecutor] Early return - behaviorExecutor:', !!this.behaviorExecutor, 'systemContext:', !!this.systemContext);
+      }
       return;
     }
     
@@ -55,7 +59,7 @@ export class BehaviorExecutorRuntimeSystem implements RuntimeSystem<BehaviorExec
     
     const entities = this.systemContext.entityManager.getAllEntities() as RuntimeEntity[];
     const ballEntity = entities.find(e => e.id === 'ball');
-    if (ballEntity) {
+    if (ballEntity && this.config.debug) {
       console.log('[BehaviorExecutor] Ball entity found:', {
         id: ballEntity.id,
         active: ballEntity.active,
@@ -66,7 +70,7 @@ export class BehaviorExecutorRuntimeSystem implements RuntimeSystem<BehaviorExec
     }
     
     const activeEntities = entities.filter(e => e.active);
-    if (ballEntity) {
+    if (ballEntity && this.config.debug) {
       console.log('[BehaviorExecutor] Total entities:', entities.length, 'Active entities:', activeEntities.length);
       console.log('[BehaviorExecutor] Ball is active:', ballEntity.active, 'Included in activeEntities:', activeEntities.includes(ballEntity));
     }
@@ -130,22 +134,24 @@ export class BehaviorExecutorRuntimeSystem implements RuntimeSystem<BehaviorExec
       customFunctions: {},
     };
     
-    const collisions: CollisionInfo[] = [];
-    
     return {
       dt: ctx.dt,
       elapsed: ctx.elapsed,
+      // Casts: Readonly<T> → T - Safe because BehaviorExecutor only reads these values
       input: ctx.input as any,
       gameState: ctx.gameState as any,
       entityManager: this.systemContext.entityManager,
       physics: this.systemContext.physics,
-      collisions,
+      collisions: ctx.frame.collisions,
       pixelsPerMeter: this.pixelsPerMeter,
       
       computedValues: this.computedValues!,
       evalContext,
       createEvalContextForEntity: (entity) => {
         if (!entity) return evalContext;
+        const velocity = entity.bodyId 
+          ? this.systemContext!.physics.getLinearVelocity(entity.bodyId)
+          : { x: 0, y: 0 };
         return {
           ...evalContext,
           entity: {
@@ -153,8 +159,8 @@ export class BehaviorExecutorRuntimeSystem implements RuntimeSystem<BehaviorExec
             x: entity.transform.x,
             y: entity.transform.y,
             angle: entity.transform.angle,
-            vx: 0,
-            vy: 0,
+            vx: velocity.x,
+            vy: velocity.y,
           },
         };
       },

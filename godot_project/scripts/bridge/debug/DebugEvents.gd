@@ -214,11 +214,15 @@ func _on_entity_spawned(entity_id: String, node: Node2D) -> void:
 	var tags = node.get_meta("tags") if node.has_meta("tags") else []
 	var parent_id = _find_entity_id(node.get_parent())
 	
+	# Get bodyId from the bridge's body_id_map
+	var body_id = _game_bridge.body_id_map.get(entity_id, -1)
+	
 	_emit_event("entity_spawned", {
 		"entityId": entity_id,
 		"template": template,
 		"tags": tags,
-		"parentId": parent_id
+		"parentId": parent_id,
+		"bodyId": body_id
 	})
 
 func _on_entity_destroyed(entity_id: String) -> void:

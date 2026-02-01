@@ -120,15 +120,34 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
       console.log('[ScriptSandboxRuntimeSystem] No onUpdate hook found');
     }
     
-    if (ctx.input.tap && this.sandbox.hasHook('onInput')) {
-      const tapEvent: ScriptInputEvent = {
-        type: 'tap',
-        position: { x: ctx.input.tap.worldX, y: ctx.input.tap.worldY },
-        entityId: ctx.input.tap.targetEntityId,
-        timestamp: Date.now(),
-      };
-      console.log('[ScriptSandboxRuntimeSystem] Processing tap event:', tapEvent);
-      this.runInput(ctx, tapEvent);
+    if (this.sandbox.hasHook('onInput')) {
+      for (const event of ctx.frame.inputEvents) {
+        if (event.type === 'tap') {
+          const tapEvent: ScriptInputEvent = {
+            type: 'tap',
+            position: { x: event.worldX, y: event.worldY },
+            entityId: event.targetEntityId ?? null,
+            timestamp: Date.now(),
+          };
+          console.log('[ScriptSandboxRuntimeSystem] Processing tap event from frame:', tapEvent);
+          this.runInput(ctx, tapEvent);
+        }
+      }
+    }
+    
+    if (this.sandbox.hasHook('onCollision') && ctx.frame.collisions.length > 0) {
+      console.log('[ScriptSandboxRuntimeSystem] Processing', ctx.frame.collisions.length, 'collisions from frame');
+      for (const collision of ctx.frame.collisions) {
+        const collisionEvent: ScriptCollisionEvent = {
+          entityA: collision.entityA.id,
+          entityB: collision.entityB.id,
+          normal: collision.normal,
+          impulse: collision.impulse,
+          contactPoint: { x: 0, y: 0 },
+          timestamp: Date.now(),
+        };
+        this.runCollision(ctx, collisionEvent);
+      }
     }
   }
   

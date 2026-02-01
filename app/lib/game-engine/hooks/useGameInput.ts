@@ -8,6 +8,20 @@ import type { ViewportSystem } from "../ViewportSystem";
 import type { TiltConfig } from "@slopcade/shared";
 import { useTiltInput } from "./useTiltInput";
 
+function findEntityAtPoint(worldX: number, worldY: number, game: LoadedGame, physics: Physics2D | null): string | undefined {
+  if (!physics) return undefined;
+  
+  const bodyId = physics.queryPoint({ x: worldX, y: worldY });
+  if (!bodyId) return undefined;
+  
+  const entityId = physics.getEntityId(bodyId);
+  if (entityId && game.entityManager.getEntity(entityId)) {
+    return entityId;
+  }
+  
+  return undefined;
+}
+
 interface UseGameInputProps {
   cameraRef: React.RefObject<CameraSystem | null>;
   gameRef: React.RefObject<LoadedGame | null>;
@@ -64,19 +78,7 @@ export function useGameInput({ cameraRef, gameRef, physicsRef, viewportSystemRef
       worldPos = camera.screenToWorld(x, y);
     }
 
-    const physics = physicsRef.current;
-    let targetEntityId: string | undefined;
-    if (physics) {
-      const bodyId = physics.queryPoint(worldPos);
-      if (bodyId) {
-        const entity = game.entityManager
-          .getActiveEntities()
-          .find((e) => e.bodyId === bodyId);
-        if (entity) {
-          targetEntityId = entity.id;
-        }
-      }
-    }
+    const targetEntityId = findEntityAtPoint(worldPos.x, worldPos.y, game, physicsRef.current);
 
     dragStartRef.current = {
       x,

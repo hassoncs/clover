@@ -64,10 +64,22 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
 
   function handleEntitySpawned(event: EntitySpawnedEvent) {
     entityGenerations.set(event.entityId, event.generation);
+    
+    if (event.bodyId !== undefined && event.bodyId >= 0) {
+      const bodyId = createBodyId(event.bodyId);
+      entityIdToBodyId.set(event.entityId, bodyId);
+      bodyIdToEntityId.set(event.bodyId, event.entityId);
+    }
   }
 
   function handleEntityDestroyed(entityId: string) {
     entityGenerations.delete(entityId);
+    
+    const bodyId = entityIdToBodyId.get(entityId);
+    if (bodyId) {
+      bodyIdToEntityId.delete(bodyId.value);
+      entityIdToBodyId.delete(entityId);
+    }
   }
 
   function handleTransformSync(transforms: Record<string, EntityTransform>) {
@@ -577,6 +589,10 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
         }
       }
       return result;
+    },
+
+    getEntityId(bodyId: BodyId): string | undefined {
+      return bodyIdToEntityId.get(bodyId.value);
     },
   };
 

@@ -317,15 +317,10 @@ export function createBallSortGame(level: number = 1): GameDefinition {
           height: TUBE_HEIGHT,
           color: "#888888",
         },
-        physics: {
-          bodyType: "static" as const,
-          density: 0,
-        },
         collider: {
           shape: "box" as const,
           width: TUBE_WALL_THICKNESS,
           height: TUBE_HEIGHT,
-          isSensor: true,
         },
       },
       tubeBottom: {
@@ -337,15 +332,10 @@ export function createBallSortGame(level: number = 1): GameDefinition {
           height: TUBE_WALL_THICKNESS,
           color: "#888888",
         },
-        physics: {
-          bodyType: "static" as const,
-          density: 0,
-        },
         collider: {
           shape: "box" as const,
           width: TUBE_WIDTH,
           height: TUBE_WALL_THICKNESS,
-          isSensor: true,
         },
       },
       tubeSensor: {
@@ -357,15 +347,10 @@ export function createBallSortGame(level: number = 1): GameDefinition {
           height: TUBE_HEIGHT,
           color: "#00000022",
         },
-        physics: {
-          bodyType: "static" as const,
-          density: 0,
-        },
         collider: {
           shape: "box" as const,
           width: TUBE_WIDTH - TUBE_WALL_THICKNESS * 2,
           height: TUBE_HEIGHT,
-          isSensor: true,
         },
       },
       ball0: createBallTemplate(0) as EntityTemplate,
@@ -384,14 +369,9 @@ export function createBallSortGame(level: number = 1): GameDefinition {
           radius: BALL_RADIUS * 1.2,
           color: "#FFD700",
         },
-        physics: {
-          bodyType: "static" as const,
-          density: 0,
-        },
         collider: {
           shape: "circle" as const,
           radius: BALL_RADIUS * 1.2,
-          isSensor: true,
         },
       },
     },

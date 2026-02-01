@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-01T02:55:51.653Z",
+  "generatedAt": "2026-02-01T17:49:06.330Z",
   "games": [
     {
       "id": "ballSort",
@@ -2559,14 +2559,14 @@
         "initialLives": 3,
         "constants": {
           "PADDLE_Y": -8,
-          "BALL_SPEED": 8,
+          "BALL_SPEED": 6,
           "HALF_W": 5,
           "HALF_H": 10,
           "PADDLE_HALF_WIDTH": 1,
           "WALL_X_MIN": -3.7,
           "WALL_X_MAX": 3.6999999999999993
         },
-        "script": "\nlet launched = false;\n\nexports.onStart = function(ctx) {\n  console.log('[breakoutScripted] onStart called');\n  launched = false;\n  ctx.setVariable('launched', false);\n  console.log('[breakoutScripted] Constants:', {\n    PADDLE_Y: ctx.getConstant('PADDLE_Y'),\n    BALL_SPEED: ctx.getConstant('BALL_SPEED'),\n    WALL_X_MIN: ctx.getConstant('WALL_X_MIN'),\n    WALL_X_MAX: ctx.getConstant('WALL_X_MAX'),\n  });\n};\n\nexports.onUpdate = function(ctx, dt) {\n  const mouse = ctx.getMouse();\n  const paddleId = ctx.queryEntities({ tag: 'paddle' })[0];\n  const ballId = ctx.queryEntities({ tag: 'ball' })[0];\n  \n  if (ctx.frameId % 30 === 0) {\n    console.log('[breakoutScripted] onUpdate - mouse:', mouse, 'paddleId:', paddleId);\n  }\n  \n  if (!paddleId) return;\n  \n  if (mouse) {\n    const clampedX = ctx.clamp(\n      mouse.x,\n      ctx.getConstant('WALL_X_MIN'),\n      ctx.getConstant('WALL_X_MAX')\n    );\n    if (ctx.frameId % 30 === 0) {\n      console.log('[breakoutScripted] Moving paddle to x:', clampedX);\n    }\n    ctx.setEntityPosition(paddleId, { x: clampedX, y: ctx.getConstant('PADDLE_Y') });\n  }\n  \n  if (!launched && ballId) {\n    const paddlePos = ctx.getEntityPosition(paddleId);\n    if (paddlePos) {\n      ctx.setEntityPosition(ballId, { x: paddlePos.x, y: paddlePos.y + 0.5 });\n      ctx.setEntityVelocity(ballId, { x: 0, y: 0 });\n    }\n  }\n};\n\nexports.onInput = function(ctx, event) {\n  console.log('[breakoutScripted] onInput:', event.type, 'launched:', launched);\n  if (event.type === 'tap' && !launched) {\n    const ballId = ctx.queryEntities({ tag: 'ball' })[0];\n    console.log('[breakoutScripted] Tap received, ballId:', ballId);\n    if (ballId) {\n      const angle = ctx.randomInt(45, 135) * Math.PI / 180;\n      const speed = ctx.getConstant('BALL_SPEED');\n      console.log('[breakoutScripted] Launching ball with angle:', angle, 'speed:', speed);\n      ctx.setEntityVelocity(ballId, {\n        x: Math.cos(angle) * speed,\n        y: Math.sin(angle) * speed\n      });\n      launched = true;\n      ctx.setVariable('launched', true);\n    }\n  }\n};\n\nexports.onCollision = function(ctx, collision) {\n  console.log('[breakoutScripted] onCollision:', collision.entityA, 'vs', collision.entityB);\n  if (ctx.hasTag(collision.entityA, 'drain') || ctx.hasTag(collision.entityB, 'drain')) {\n    const drainedBall = ctx.hasTag(collision.entityA, 'ball') ? collision.entityA : \n                        ctx.hasTag(collision.entityB, 'ball') ? collision.entityB : null;\n    if (drainedBall) {\n      ctx.addLives(-1);\n      \n      const paddleId = ctx.queryEntities({ tag: 'paddle' })[0];\n      if (paddleId) {\n        const paddlePos = ctx.getEntityPosition(paddleId);\n        ctx.destroyEntity(drainedBall);\n        ctx.spawnEntity('ball', { x: paddlePos.x, y: paddlePos.y + 0.5 });\n        launched = false;\n        ctx.setVariable('launched', false);\n      }\n    }\n  }\n  \n  const brickA = ctx.hasTag(collision.entityA, 'brick') ? collision.entityA : null;\n  const brickB = ctx.hasTag(collision.entityB, 'brick') ? collision.entityB : null;\n  const hitBrick = brickA || brickB;\n  \n  if (hitBrick) {\n    ctx.addScore(10);\n    ctx.destroyEntity(hitBrick);\n  }\n};\n",
+        "script": "\nlet launched = false;\n\nexports.onStart = function(ctx) {\n  console.log('[breakoutScripted] onStart called');\n  launched = false;\n  ctx.setVariable('launched', false);\n};\n\nexports.onUpdate = function(ctx, dt) {\n  const mouse = ctx.getMouse();\n  const paddleId = ctx.queryEntities({ tag: 'paddle' })[0];\n  const ballId = ctx.queryEntities({ tag: 'ball' })[0];\n  \n  if (!paddleId) return;\n  \n  if (mouse) {\n    const clampedX = ctx.clamp(\n      mouse.x,\n      ctx.getConstant('WALL_X_MIN'),\n      ctx.getConstant('WALL_X_MAX')\n    );\n    ctx.setEntityPosition(paddleId, { x: clampedX, y: ctx.getConstant('PADDLE_Y') });\n  }\n  \n  if (!launched && ballId) {\n    const paddlePos = ctx.getEntityPosition(paddleId);\n    if (paddlePos) {\n      ctx.setEntityPosition(ballId, { x: paddlePos.x, y: paddlePos.y + 0.5 });\n      ctx.setEntityVelocity(ballId, { x: 0, y: 0 });\n    }\n  }\n};\n\nexports.onInput = function(ctx, event) {\n  if (event.type === 'tap' && !launched) {\n    const ballId = ctx.queryEntities({ tag: 'ball' })[0];\n    if (ballId) {\n      const angle = ctx.randomInt(45, 135) * Math.PI / 180;\n      const speed = ctx.getConstant('BALL_SPEED');\n      ctx.setEntityVelocity(ballId, {\n        x: Math.cos(angle) * speed,\n        y: Math.sin(angle) * speed\n      });\n      launched = true;\n      ctx.setVariable('launched', true);\n    }\n  }\n};\n\nexports.onCollision = function(ctx, collision) {\n  if (ctx.hasTag(collision.entityA, 'drain') || ctx.hasTag(collision.entityB, 'drain')) {\n    const drainedBall = ctx.hasTag(collision.entityA, 'ball') ? collision.entityA : \n                        ctx.hasTag(collision.entityB, 'ball') ? collision.entityB : null;\n    if (drainedBall) {\n      ctx.addLives(-1);\n      \n      const paddleId = ctx.queryEntities({ tag: 'paddle' })[0];\n      if (paddleId) {\n        const paddlePos = ctx.getEntityPosition(paddleId);\n        ctx.destroyEntity(drainedBall);\n        ctx.spawnEntity('ball', { x: paddlePos.x, y: paddlePos.y + 0.5 });\n        launched = false;\n        ctx.setVariable('launched', false);\n      }\n    }\n  }\n  \n  const brickA = ctx.hasTag(collision.entityA, 'brick') ? collision.entityA : null;\n  const brickB = ctx.hasTag(collision.entityB, 'brick') ? collision.entityB : null;\n  const hitBrick = brickA || brickB;\n  \n  if (hitBrick) {\n    ctx.addScore(10);\n    ctx.destroyEntity(hitBrick);\n  }\n};\n",
         "templates": {
           "ball": {
             "id": "ball",
@@ -2624,8 +2624,8 @@
             "visual": {
               "type": "image",
               "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/breakout-bouncer/brickBlue.png",
-              "imageWidth": 1.2,
-              "imageHeight": 0.5
+              "imageWidth": 1.15,
+              "imageHeight": 0.48
             },
             "physics": {
               "bodyType": "static",
@@ -2633,8 +2633,8 @@
             },
             "collider": {
               "shape": "box",
-              "width": 1.2,
-              "height": 0.5,
+              "width": 1.15,
+              "height": 0.48,
               "friction": 0,
               "restitution": 1
             }
@@ -2765,6 +2765,12 @@
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.25,
+              "friction": 0,
+              "restitution": 1
             }
           },
           {

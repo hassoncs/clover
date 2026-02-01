@@ -36,6 +36,7 @@ export interface EntitySpawnedEvent {
   generation: number;
   tags: string[];
   transform: EntityTransform & { scaleX: number; scaleY: number };
+  bodyId?: number; // Present for entities with collider or physics (for queryPoint hit detection)
 }
 
 export interface RaycastHit {

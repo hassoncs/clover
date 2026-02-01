@@ -105,10 +105,10 @@ func create_entity(entity_data: Dictionary) -> Node2D:
 	# DEPRECATED: Zones should use collider with isSensor: true instead
 	elif entity_type == "zone" and zone_data:
 		node = create_zone_entity(entity_id, zone_data, transform_data)
-	# Create sensor-only entity if collider with isSensor exists
-	elif collider_data and collider_data.get("isSensor", false):
-		node = create_sensor_entity(entity_id, collider_data, transform_data)
-	# Otherwise create plain Node2D
+	# Create Area2D for entities with collider but no physics (UI hitboxes)
+	elif collider_data:
+		node = create_area2d_entity(entity_id, collider_data, transform_data)
+	# Otherwise create plain Node2D (visual only, no collision)
 	else:
 		node = Node2D.new()
 		node.name = entity_id
@@ -132,11 +132,8 @@ func create_entity(entity_data: Dictionary) -> Node2D:
 	else:
 		pass  # No visual or collider for entity
 
-	# Add collider shape if collider exists (and not already added by physics)
-	if collider_data and not physics_data:
-		var collision = CollisionShape2D.new()
-		collision.shape = create_collider_shape(collider_data)
-		node.add_child(collision)
+	# NOTE: Collider shape is now added by create_area2d_entity() for collider-only entities
+	# This block is no longer needed since we handle it in the Area2D creation path
 
 	# Add to scene
 	if _game_root:
@@ -345,11 +342,14 @@ func create_zone_entity(
 
 
 # ============================================================================
-# SENSOR ENTITY CREATION
+# AREA2D ENTITY CREATION (UI Hitboxes / Collider-only entities)
+# ============================================================================
+# Used for entities that need hit detection but no physics simulation.
+# Examples: UI buttons, puzzle game tiles, Ball Sort tube sensors
 # ============================================================================
 
 
-func create_sensor_entity(
+func create_area2d_entity(
 	entity_id: String, collider_data: Dictionary, transform_data: Dictionary
 ) -> Node2D:
 	var area = Area2D.new()
@@ -360,11 +360,12 @@ func create_sensor_entity(
 	collision.shape = create_collider_shape(collider_data)
 	area.add_child(collision)
 
-	# Apply collision filtering
-	area.collision_layer = collider_data.get("categoryBits", 1)
-	area.collision_mask = collider_data.get("maskBits", 0xFFFFFFFF)
+	# Use Layer 2 for UI hitboxes (Layer 1 reserved for physics objects)
+	# This keeps them separate from physics simulation
+	area.collision_layer = collider_data.get("categoryBits", 2)
+	area.collision_mask = collider_data.get("maskBits", 0)
 
-	# Track body ID for compatibility
+	# Track body ID for compatibility with queryPoint
 	if _bridge and _bridge.has_method("_allocate_body_id"):
 		var body_id = _bridge._allocate_body_id(entity_id)
 		_body_id_map[entity_id] = body_id

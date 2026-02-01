@@ -17,8 +17,161 @@ import type { GodotBridge } from '@/lib/godot/types';
 import type { Physics2D } from '@/lib/physics2d/Physics2D';
 import type { EntityManager } from '../../EntityManager';
 import type { EventBus } from '@slopcade/shared';
-import type { InputState, GameState } from '../../BehaviorContext';
+import type { InputState, GameState, CollisionInfo } from '../../BehaviorContext';
 import type { EventQueue } from './EventQueue';
+
+export type { CollisionInfo };
+
+/**
+ * Input event types for the rules engine and scripts.
+ * These are discrete events that occur during a frame, as opposed to
+ * InputState which represents continuous state (e.g., button held down).
+ */
+export interface TapInputEvent {
+  type: 'tap';
+  x: number;
+  y: number;
+  worldX: number;
+  worldY: number;
+  targetEntityId?: string;
+}
+
+export interface MouseMoveInputEvent {
+  type: 'mouse_move';
+  x: number;
+  y: number;
+  worldX: number;
+  worldY: number;
+}
+
+export interface DragStartInputEvent {
+  type: 'drag_start';
+  x: number;
+  y: number;
+  worldX: number;
+  worldY: number;
+  targetEntityId?: string;
+}
+
+export interface DragEndInputEvent {
+  type: 'drag_end';
+  velocityX: number;
+  velocityY: number;
+  worldVelocityX: number;
+  worldVelocityY: number;
+}
+
+export interface ButtonPressedInputEvent {
+  type: 'button_pressed';
+  button: string;
+}
+
+export interface ButtonReleasedInputEvent {
+  type: 'button_released';
+  button: string;
+}
+
+export interface GameStartedInputEvent {
+  type: 'game_started';
+}
+
+/**
+ * Union of all input event types that can occur during a frame.
+ */
+export type InputEvent =
+  | TapInputEvent
+  | MouseMoveInputEvent
+  | DragStartInputEvent
+  | DragEndInputEvent
+  | ButtonPressedInputEvent
+  | ButtonReleasedInputEvent
+  | GameStartedInputEvent;
+
+/**
+ * Per-frame data buffers owned by the runner.
+ * 
+ * These buffers follow a strict producer/consumer contract that all systems must respect:
+ * 
+ * ┌──────────────┬──────────────────────┬──────────────────────┐
+ * │    Phase     │   frame.inputEvents  │   frame.collisions   │
+ * ├──────────────┼──────────────────────┼──────────────────────┤
+ * │ PRE_UPDATE   │ PRODUCER (write)     │ empty (ignored)      │
+ * │ GAME_LOGIC   │ CONSUMER (read)      │ CONSUMER (read)      │
+ * │ PHYSICS      │ empty (ignored)      │ PRODUCER (write)     │
+ * │ POST_PHYSICS │ CONSUMER (read)      │ CONSUMER (read)      │
+ * │ VISUAL       │ CONSUMER (read)      │ CONSUMER (read)      │
+ * │ CLEANUP      │ CONSUMER (read)      │ CONSUMER (read)      │
+ * └──────────────┴──────────────────────┴──────────────────────┘
+ * 
+ * BUFFER LIFECYCLE:
+ * 1. Runner creates empty buffers at frame start
+ * 2. PRE_UPDATE systems append input events (taps, drags, etc.)
+ * 3. GAME_LOGIC systems read input events to process player commands
+ * 4. PHYSICS systems append collision events during simulation
+ * 5. POST_PHYSICS/VISUAL/CLEANUP systems read collisions for effects/rendering
+ * 6. Runner resets buffers at the start of the next frame
+ * 
+ * IMPORTANT:
+ * - Producers MUST only append (don't reassign the array)
+ * - Consumers MUST NOT mutate (arrays are read-only via `readonly`)
+ * - Only the designated phase may write to each buffer
+ * - All phases may read from any buffer (but should only read their designated buffers)
+ * 
+ * @example
+ * // PRE_UPDATE system producing input events
+ * system.update(ctx) {
+ *   if (ctx.input.wasTapped) {
+ *     ctx.frame.inputEvents.push({
+ *       type: 'tap',
+ *       x: ctx.input.touchX,
+ *       y: ctx.input.touchY,
+ *       worldX: worldX,
+ *       worldY: worldY,
+ *       targetEntityId: entityId
+ *     });
+ *   }
+ * }
+ * 
+ * @example
+ * // GAME_LOGIC system consuming both buffers
+ * system.update(ctx) {
+ *   // Process player input
+ *   for (const event of ctx.frame.inputEvents) {
+ *     if (event.type === 'tap' && event.targetEntityId) {
+ *       this.handleEntityTap(event.targetEntityId);
+ *     }
+ *   }
+ *   
+ *   // Process collisions (e.g., rules engine)
+ *   for (const collision of ctx.frame.collisions) {
+ *     this.evaluateRules(collision);
+ *   }
+ * }
+ */
+export interface FrameData {
+  /**
+   * Input events produced during the PRE_UPDATE phase.
+   * 
+   * PRODUCER: InputSystem (PRE_UPDATE phase)
+   * CONSUMERS: GAME_LOGIC, POST_PHYSICS, VISUAL, CLEANUP
+   * 
+   * Contains discrete input events (taps, drags, button presses) that occurred
+   * since the last frame. Populated by InputSystem during PRE_UPDATE.
+   */
+  readonly inputEvents: InputEvent[];
+  
+  /**
+   * Collision events produced during the PHYSICS phase.
+   * 
+   * PRODUCER: GameRuntime integration layer (populates before runner.update())
+   * CONSUMERS: GAME_LOGIC, POST_PHYSICS, VISUAL, CLEANUP
+   * 
+   * Contains collision pairs with resolved entity references.
+   * Populated by GameRuntime from physics collision callbacks, with BodyIds
+   * resolved to RuntimeEntity references for easy consumption by game logic.
+   */
+  readonly collisions: CollisionInfo[];
+}
 
 /**
  * RuntimeSystem - The unified interface that all systems must implement.
@@ -129,6 +282,9 @@ export interface UpdateContext {
   
   /** Current game state (score, lives, variables, etc.) */
   readonly gameState: Readonly<GameState>;
+  
+  /** Per-frame event buffers (collisions, input events) */
+  readonly frame: FrameData;
 }
 
 /**

@@ -1029,44 +1029,36 @@ export function GameRuntimeGodot({
 
       const fullGameState = game.rulesEvaluator.getFullState();
       
+      const frameCollisions = collisionsRef.current.slice();
+      collisionsRef.current = [];
+      
+      const tap = inputRef.current.tap as { x: number; y: number; worldX: number; worldY: number; targetEntityId?: string } | undefined;
+      const frameInputEvents: import('./systems/runner/types').InputEvent[] = [];
+      if (tap) {
+        frameInputEvents.push({
+          type: 'tap',
+          x: tap.x,
+          y: tap.y,
+          worldX: tap.worldX,
+          worldY: tap.worldY,
+          targetEntityId: tap.targetEntityId,
+        });
+        inputRef.current = { ...inputRef.current, tap: undefined };
+      }
+      
       const updateContext: UpdateContext = {
         dt,
         elapsed: elapsedRef.current,
         frameId: frameIdRef.current,
         input: inputRef.current as InputState,
         gameState: fullGameState,
+        frame: {
+          inputEvents: frameInputEvents,
+          collisions: frameCollisions,
+        },
       };
 
       runner.update(updateContext);
-
-      const scriptSystem = runner.getSystem<ScriptSandboxRuntimeSystem>('script-sandbox');
-      if (scriptSystem) {
-        if (inputRef.current.tap) {
-          const tap = inputRef.current.tap as { worldX: number; worldY: number; targetEntityId?: string };
-          scriptSystem.runInput(updateContext, {
-            type: 'tap',
-            position: { x: tap.worldX, y: tap.worldY },
-            entityId: tap.targetEntityId ?? null,
-            timestamp: Date.now(),
-          });
-          inputRef.current = { ...inputRef.current, tap: undefined };
-        }
-        
-        if (collisionsRef.current.length > 0) {
-          console.log('[GameRuntime] Processing', collisionsRef.current.length, 'collisions for script system');
-        }
-        for (const collision of collisionsRef.current) {
-          scriptSystem.runCollision(updateContext, {
-            entityA: collision.entityA.id,
-            entityB: collision.entityB.id,
-            normal: collision.normal,
-            impulse: collision.impulse,
-            contactPoint: { x: 0, y: 0 },
-            timestamp: Date.now(),
-          });
-        }
-        collisionsRef.current = [];
-      }
 
       elapsedRef.current += dt;
       frameIdRef.current += 1;

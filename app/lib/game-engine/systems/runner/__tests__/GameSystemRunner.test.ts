@@ -30,6 +30,10 @@ describe('GameSystemRunner', () => {
         state: 'playing',
         variables: {},
       },
+      frame: {
+        inputEvents: [],
+        collisions: [],
+      },
     };
   });
 
