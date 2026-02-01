@@ -126,7 +126,7 @@ interface RoomDropGameDefinition extends GameDefinition {
     walls: WallDefinition[];
     doors: DoorDefinition[];
     windows: WindowDefinition[];
-    fixtures: FixtureDefinition[]; // built-in elements
+    builtInElements: BuiltInElementDefinition[]; // built-in elements
   };
   
   furnitureCatalog: FurnitureTemplate[];
@@ -284,7 +284,7 @@ interface StoredItem {
 **Lighting** (8-10 items):
 - Table lamps: desk, bedside, accent
 - Floor lamps: reading, torchiere, arc
-- Ceiling fixtures: chandelier, pendant, flush
+- Ceiling lights: chandelier, pendant, flush
 - Wall sconces: modern, traditional
 
 **Beds** (6-8 items):

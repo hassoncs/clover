@@ -56,10 +56,10 @@ export function registerLaunchBehaviors(executor: BehaviorExecutor): void {
       ctx.entity.transform.angle = target.transform.angle;
     }
 
-    if (ctx.entity.bodyId) {
+    if (ctx.entity.physics) {
       console.log('[stick_to_entity] Setting physics body transform');
-      ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: 0, y: 0 });
-      ctx.physics.setTransform(ctx.entity.bodyId, {
+      ctx.physics.setLinearVelocity(ctx.entity.id, { x: 0, y: 0 });
+      ctx.physics.setTransform(ctx.entity.id, {
         position: { x: ctx.entity.transform.x, y: ctx.entity.transform.y },
         angle: ctx.entity.transform.angle,
       });
@@ -83,8 +83,8 @@ export function registerLaunchBehaviors(executor: BehaviorExecutor): void {
 
     if (shouldLaunch) {
       console.log('[launch_on_input] Processing launch...');
-      if (!ctx.entity.bodyId) {
-        console.warn('[launch_on_input] Entity has no bodyId, cannot launch');
+      if (!ctx.entity.physics) {
+        console.warn('[launch_on_input] Entity has no physics, cannot launch');
         return;
       }
 
@@ -103,7 +103,7 @@ export function registerLaunchBehaviors(executor: BehaviorExecutor): void {
 
       console.log('[launch_on_input] Setting velocity:', vx, vy);
 
-      ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: vx, y: vy });
+      ctx.physics.setLinearVelocity(ctx.entity.id, { x: vx, y: vy });
 
       runtime.state.launched = true;
       console.log('[launch_on_input] Launch completed, state set to launched');

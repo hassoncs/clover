@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BehaviorExecutorRuntimeSystem } from '../wrappers/BehaviorExecutorRuntimeSystem';
 import type { SystemContext, UpdateContext } from '../types';
 import type { RuntimeEntity } from '../../../types';
-import { createBodyId } from '@/lib/physics2d/types';
 
 describe('BehaviorExecutorRuntimeSystem - velocity in EvalContext', () => {
   let system: BehaviorExecutorRuntimeSystem;
@@ -18,9 +17,6 @@ describe('BehaviorExecutorRuntimeSystem - velocity in EvalContext', () => {
       dispose: vi.fn(),
       createBody: vi.fn(),
       destroyBody: vi.fn(),
-      addFixture: vi.fn(),
-      removeFixture: vi.fn(),
-      setSensor: vi.fn(),
       getTransform: vi.fn(),
       setTransform: vi.fn(),
       getLinearVelocity: vi.fn().mockReturnValue({ x: 0, y: 0 }),
@@ -127,10 +123,9 @@ describe('BehaviorExecutorRuntimeSystem - velocity in EvalContext', () => {
   });
 
   describe('createEvalContextForEntity velocity', () => {
-    it('should read velocity from physics.getLinearVelocity when entity has bodyId', () => {
+    it('should read velocity from physics.getLinearVelocity when entity has physics', () => {
       system.initialize(mockContext, { pixelsPerMeter: 50 });
 
-      const bodyId = createBodyId(42);
       const expectedVelocity = { x: 5.5, y: -3.2 };
       mockPhysics.getLinearVelocity.mockReturnValue(expectedVelocity);
 
@@ -161,7 +156,7 @@ describe('BehaviorExecutorRuntimeSystem - velocity in EvalContext', () => {
         tagBits: new Set(),
         layer: 0,
         visible: true,
-        bodyId: bodyId,
+        physics: { bodyType: 'dynamic' } as any,
         colliderId: null,
       };
 
@@ -169,13 +164,13 @@ describe('BehaviorExecutorRuntimeSystem - velocity in EvalContext', () => {
 
       system.update(mockUpdateContext, system.getState());
 
-      expect(mockPhysics.getLinearVelocity).toHaveBeenCalledWith(bodyId);
+      expect(mockPhysics.getLinearVelocity).toHaveBeenCalledWith(mockEntity.id);
       expect(capturedEvalContext).not.toBeNull();
       expect(capturedEvalContext!.entity!.vx).toBe(expectedVelocity.x);
       expect(capturedEvalContext!.entity!.vy).toBe(expectedVelocity.y);
     });
 
-    it('should use 0,0 velocity when entity has no bodyId', () => {
+    it('should use 0,0 velocity when entity has no physics', () => {
       system.initialize(mockContext, { pixelsPerMeter: 50 });
 
       let capturedEvalContext: any = null;
@@ -205,7 +200,6 @@ describe('BehaviorExecutorRuntimeSystem - velocity in EvalContext', () => {
         tagBits: new Set(),
         layer: 0,
         visible: true,
-        bodyId: null,
         colliderId: null,
       };
 

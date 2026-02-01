@@ -6,7 +6,7 @@ A comprehensive reference for understanding physics configurations in the Slopca
 
 ## Body Types
 
-The Slopcade engine uses Box2D-style physics with three body types:
+The Slopcade engine uses Godot-native physics with three body types:
 
 ### `static` - Immovable Objects
 - **What it does**: Never moves, infinite mass, participates in collisions

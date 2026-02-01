@@ -37,7 +37,7 @@ async queryPointEntity(point: Vec2): Promise<string | null> {
 - ✅ `queryPointEntity(point)` → `Promise<string | null>`
 - ✅ `queryAABB(min, max)` → `Promise<number[]>`
 - ✅ `raycast(origin, direction, maxDistance)` → `Promise<RaycastHit | null>`
-- ✅ `getUserData(bodyId)` → `Promise<unknown>`
+- ✅ `getUserData(entityId)` → `Promise<unknown>`
 - ✅ `getAllBodies()` → `Promise<number[]>`
 - ✅ `createMouseJointAsync(def)` → `Promise<number>`
 
@@ -86,13 +86,13 @@ async function syncTransformsFromBridge() {
   for (const [entityId, transform] of Object.entries(transforms)) {
     const linVel = await bridge.getLinearVelocity(entityId);
     const angVel = await bridge.getAngularVelocity(entityId);
-    cachedStates.set(bodyId.value, { transform, linearVelocity, angularVelocity });
+    cachedStates.set(entityId, { transform, linearVelocity, angularVelocity });
   }
 }
 
 // Sync interface returns cached values
-getLinearVelocity(id: BodyId): Vec2 {
-  return cachedStates.get(id.value)?.linearVelocity ?? { x: 0, y: 0 };
+getLinearVelocity(entityId: string): Vec2 {
+  return cachedStates.get(entityId)?.linearVelocity ?? { x: 0, y: 0 };
 }
 ```
 

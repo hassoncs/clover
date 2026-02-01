@@ -557,3 +557,22 @@ func get_events() -> DebugEvents:
 
 func get_physics_module() -> DebugPhysics:
 	return _physics
+
+func get_world_info() -> Dictionary:
+	var gravity_vec = godot_to_game_vec(
+		(
+			Vector2(0, -1)
+			* PhysicsServer2D.area_get_param(
+				_game_bridge.get_viewport().find_world_2d().space, PhysicsServer2D.AREA_PARAM_GRAVITY
+			)
+		)
+	)
+	return {
+		"gravity": {"x": gravity_vec.x, "y": gravity_vec.y},
+		"pixelsPerMeter": _game_bridge.pixels_per_meter
+	}
+
+
+func get_viewport_info() -> Dictionary:
+	var vp_size = _game_bridge.get_viewport().get_visible_rect().size
+	return {"width": int(vp_size.x), "height": int(vp_size.y)}

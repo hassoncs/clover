@@ -13,6 +13,13 @@
     "sourcePath": "app/lib/test-games/games/breakoutBouncer/game.ts"
   },
   {
+    "id": "breakoutScripted",
+    "title": "Breakout (Scripted)",
+    "description": "Breakout using direct script control - mouse follows paddle",
+    "gameId": "test-breakout-scripted",
+    "sourcePath": "app/lib/test-games/games/breakoutScripted/game.ts"
+  },
+  {
     "id": "flappyBird",
     "title": "Flappy Bird",
     "description": "Tap to fly through the pipes without hitting them",

@@ -11,10 +11,7 @@ import { useTiltInput } from "./useTiltInput";
 function findEntityAtPoint(worldX: number, worldY: number, game: LoadedGame, physics: Physics2D | null): string | undefined {
   if (!physics) return undefined;
   
-  const bodyId = physics.queryPoint({ x: worldX, y: worldY });
-  if (!bodyId) return undefined;
-  
-  const entityId = physics.getEntityId(bodyId);
+  const entityId = physics.queryPoint({ x: worldX, y: worldY });
   if (entityId && game.entityManager.getEntity(entityId)) {
     return entityId;
   }

@@ -612,25 +612,20 @@ export function GameRuntimeGodot({
 
         collisionUnsubRef.current = physics.onCollision(
           (event: CollisionEvent) => {
-            console.log('[GameRuntime] Collision received:', { bodyA: event.bodyA?.value, bodyB: event.bodyB?.value });
-            const entityA = game.entityManager
-              .getActiveEntities()
-              .find((e) => e.bodyId?.value === event.bodyA?.value);
-            const entityB = game.entityManager
-              .getActiveEntities()
-              .find((e) => e.bodyId?.value === event.bodyB?.value);
+            console.log('[GameRuntime] Collision received:', { entityA: event.entityA, entityB: event.entityB });
+            const entityA = game.entityManager.getEntity(event.entityA);
+            const entityB = game.entityManager.getEntity(event.entityB);
 
             if (!entityA || !entityB) {
               const activeEntities = game.entityManager.getActiveEntities();
               console.warn('[GameRuntime] Collision entity lookup failed:', {
-                bodyAValue: event.bodyA?.value,
-                bodyBValue: event.bodyB?.value,
+                entityAId: event.entityA,
+                entityBId: event.entityB,
                 entityAFound: !!entityA,
                 entityBFound: !!entityB,
                 activeEntityCount: activeEntities.length,
                 sampleEntities: activeEntities.slice(0, 5).map(e => ({
                   id: e.id,
-                  bodyIdValue: e.bodyId?.value,
                 })),
               });
               return;

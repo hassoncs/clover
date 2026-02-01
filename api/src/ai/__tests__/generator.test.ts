@@ -112,10 +112,11 @@ describe('generateGame integration (using fixtures)', () => {
         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
         entities: [{
           id: 'bad-entity',
-          transform: { x: 0, y: 0 },
-          physics: { density: -1 },
-      collider: { shape: 'invalid', physics: { bodyType: 'invalid', friction: 0.5, restitution: 0 },
-          visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
+          name: 'Bad Entity',
+          transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+          physics: { bodyType: 'invalid', density: -1 },
+          collider: { shape: 'invalid', friction: 0.5, restitution: 0 },
+          visual: { type: 'rect', width: 1, height: 1, color: '#000' },
         }],
       };
 

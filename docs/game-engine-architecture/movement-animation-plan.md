@@ -28,7 +28,7 @@ Add **strict validation** (hard errors when physics behaviors are used on non-ph
 
 Flappy Bird defines a parent container entity (`pipeGroup`) that has children (`pipeTop`, `pipeBottom`, `scoreZone`). `pipeGroup` needs to scroll left; children should follow.
 
-Today, `move` in `app/lib/game-engine/behaviors/MovementBehaviors.ts` returns early if `ctx.entity.bodyId` is missing, preventing container movement. Adding physics to `pipeGroup` without a collider caused Godot-side errors ("Unknown physics shape: undefined"), so `pipeGroup` must remain non-physics.
+Today, `move` in `app/lib/game-engine/behaviors/MovementBehaviors.ts` returns early if `ctx.entity.physics` is missing, preventing container movement. Adding physics to `pipeGroup` without a collider caused Godot-side errors ("Unknown physics shape: undefined"), so `pipeGroup` must remain non-physics.
 
 Godot’s `set_position()` works for *any* node type, and the Godot scene hierarchy will move children automatically when parents move. Therefore, the engine needs a transform-based movement path that does not depend on physics bodies.
 
@@ -116,11 +116,11 @@ Godot’s `set_position()` works for *any* node type, and the Godot scene hierar
 
 #### `set_velocity`
 - Mechanism: set linear velocity on physics body.
-- Requires: `entity.bodyId` (hard error otherwise).
+- Requires: `entity.physics` (hard error otherwise).
 
 #### `apply_impulse`
 - Mechanism: apply impulse once (optionally scaled) on physics body.
-- Requires: `entity.bodyId` (hard error otherwise).
+- Requires: `entity.physics` (hard error otherwise).
 
 #### Direction naming consistency
 - Reuse one `MoveDirection` union across all movement behaviors (`left|right|up|down|toward_target|away_from_target`) with consistent target/tag semantics.
@@ -261,7 +261,7 @@ Manual sanity checks (still required even with tests):
 
 **Acceptance Criteria (tests-first)**
 - New tests:
-  - `translate` moves an entity without `bodyId` by `speed * dt` and calls `context.setEntityPosition`.
+  - `translate` moves an entity without physics by `speed * dt` and calls `context.setEntityPosition`.
   - Translating a parent updates descendants via `EntityManager.updateWorldTransforms`.
   - `set_velocity` calls `physics.setLinearVelocity` with meter/sec values (no px/m conversion).
   - `apply_impulse` calls the physics impulse path once.
@@ -275,17 +275,17 @@ Manual sanity checks (still required even with tests):
 
 **What to do**
 - Add runtime validation in movement behavior handlers:
-  - `set_velocity` / `apply_impulse` on entity without `bodyId` → **throw Error** with a fix hint.
+  - `set_velocity` / `apply_impulse` on entity without physics → **throw Error** with a fix hint.
   - `translate` on dynamic body → **warn** by default OR require `allowDynamic: true` (opt-in flag).
 - Make warnings non-spammy (log once per entity+behavior).
 
 **Acceptance Criteria (tests-first)**
-- `set_velocity` without bodyId throws and error message includes:
+- `set_velocity` without physics throws and error message includes:
   - behavior name
   - entity id
   - hint: “Add physics component or use translate”
-- `apply_impulse` without bodyId throws similarly.
-- `translate` with bodyId logs a warning unless opt-in is set (and does not throw).
+- `apply_impulse` without physics throws similarly.
+- `translate` with physics logs a warning unless opt-in is set (and does not throw).
 
 ---
 

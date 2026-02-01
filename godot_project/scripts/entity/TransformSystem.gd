@@ -127,3 +127,16 @@ func get_transforms(entity_ids: Array) -> Dictionary:
 		if _game_bridge.entities.has(entity_id):
 			result[entity_id] = get_transform(entity_id)
 	return result
+
+func get_all_transforms() -> Dictionary:
+	var result = {}
+	for entity_id in _game_bridge.entity_registry:
+		var node = _game_bridge.get_entity_node(entity_id)
+		if node:
+			var game_pos = CoordinateUtils.godot_to_game_pos(node.position, _game_bridge.pixels_per_meter)
+			result[entity_id] = {"x": game_pos.x, "y": game_pos.y, "angle": -node.rotation}
+	return result
+
+func _js_get_all_transforms(_args: Array) -> void:
+	var transforms = get_all_transforms()
+	_game_bridge._js_bridge_obj["_lastResult"] = transforms

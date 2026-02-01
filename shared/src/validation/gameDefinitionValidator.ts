@@ -41,7 +41,7 @@ const VALID_BEHAVIOR_TYPES: BehaviorType[] = [
 ];
 
 const VALID_BODY_TYPES = ['static', 'dynamic', 'kinematic'];
-const VALID_SHAPES = ['box', 'circle', 'polygon'];
+const VALID_SHAPES = ['box', 'circle', 'polygon', 'capsule'];
 const VALID_VISUAL_TYPES = ['rect', 'circle', 'polygon', 'image', 'text'];
 
 function validateMetadata(
@@ -123,7 +123,7 @@ function validateWorld(
 }
 
 function validatePhysicsComponent(
-  physics: GameDefinition['entities'][0]['physics'],
+  physics: GameEntity['physics'],
   entityId: string,
   errors: ValidationError[],
   warnings: ValidationWarning[]
@@ -158,8 +158,70 @@ function validatePhysicsComponent(
   }
 }
 
+function validateColliderComponent(
+  collider: GameEntity['collider'],
+  entityId: string,
+  errors: ValidationError[],
+  warnings: ValidationWarning[]
+): void {
+  if (!collider) return;
+
+  if (!VALID_SHAPES.includes(collider.shape)) {
+    errors.push({
+      code: 'INVALID_SHAPE',
+      message: `Entity ${entityId} has invalid shape: ${collider.shape}`,
+      path: `entities.${entityId}.collider.shape`,
+    });
+  }
+
+  if (collider.shape === 'box') {
+    const box = collider as { width?: number; height?: number };
+    if (box.width === undefined || box.width <= 0) {
+      errors.push({
+        code: 'INVALID_BOX_WIDTH',
+        message: `Entity ${entityId} box collider must have positive width`,
+        path: `entities.${entityId}.collider.width`,
+      });
+    }
+    if (box.height === undefined || box.height <= 0) {
+      errors.push({
+        code: 'INVALID_BOX_HEIGHT',
+        message: `Entity ${entityId} box collider must have positive height`,
+        path: `entities.${entityId}.collider.height`,
+      });
+    }
+  }
+
+  if (collider.shape === 'circle') {
+    const circle = collider as { radius?: number };
+    if (circle.radius === undefined || circle.radius <= 0) {
+      errors.push({
+        code: 'INVALID_CIRCLE_RADIUS',
+        message: `Entity ${entityId} circle collider must have positive radius`,
+        path: `entities.${entityId}.collider.radius`,
+      });
+    }
+  }
+
+  if (collider.restitution !== undefined && collider.restitution < 0) {
+    errors.push({
+      code: 'NEGATIVE_RESTITUTION',
+      message: `Entity ${entityId} has negative restitution`,
+      path: `entities.${entityId}.collider.restitution`,
+    });
+  }
+
+  if (collider.friction !== undefined && (collider.friction < 0 || collider.friction > 1)) {
+    warnings.push({
+      code: 'FRICTION_OUT_OF_RANGE',
+      message: `Entity ${entityId} has friction out of range (0-1)`,
+      path: `entities.${entityId}.collider.friction`,
+    });
+  }
+}
+
 function validateVisualComponent(
-  visual: GameDefinition['entities'][0]['visual'],
+  visual: GameEntity['visual'],
   entityId: string,
   errors: ValidationError[],
   warnings: ValidationWarning[]
@@ -290,6 +352,7 @@ function validateEntity(
   }
 
   validatePhysicsComponent(entity.physics, entity.id, errors, warnings);
+  validateColliderComponent(entity.collider, entity.id, errors, warnings);
   validateVisualComponent(entity.visual, entity.id, errors, warnings);
 
   if (entity.behaviors) {
@@ -315,6 +378,10 @@ function validateTemplates(
 
     if (template.physics) {
       validatePhysicsComponent(template.physics, `template:${templateId}`, errors, warnings);
+    }
+
+    if (template.collider) {
+      validateColliderComponent(template.collider, `template:${templateId}`, errors, warnings);
     }
 
     if (template.visual) {

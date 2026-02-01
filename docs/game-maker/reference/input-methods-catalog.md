@@ -140,7 +140,7 @@ interface InputState {
 case 'tap_to_jump':
   if (ctx.input.tap) {
     const force = resolveForce();
-    ctx.physics.applyImpulseToCenter(ctx.entity.bodyId, { x: 0, y: -force });
+    ctx.physics.applyImpulseToCenter(ctx.entity.id, { x: 0, y: -force });
     runtime.state.cooldownEnd = ctx.elapsed + resolveCooldown();
   }
   break;
@@ -162,9 +162,8 @@ const handleTouchStart = (event: GestureResponderEvent) => {
   const { locationX: x, locationY: y } = event.nativeEvent;
   const worldPos = camera.screenToWorld(x, y);
 
-  // Raycast to detect which entity was touched
-  const bodyId = physics.queryPoint(worldPos);
-  const targetEntityId = findEntityByBodyId(bodyId);
+  // Query to detect which entity was touched
+  const targetEntityId = physics.queryPoint(worldPos);
 
   dragStartRef.current = { x, y, worldX: worldPos.x, worldY: worldPos.y, targetEntityId };
 
@@ -262,7 +261,7 @@ case 'drag_to_aim':
     const force = resolveForce();
     const vx = -ctx.input.dragEnd.worldVelocityX * force;
     const vy = -ctx.input.dragEnd.worldVelocityY * force;
-    ctx.physics.applyImpulseToCenter(ctx.entity.bodyId, { x: vx, y: vy });
+    ctx.physics.applyImpulseToCenter(ctx.entity.id, { x: vx, y: vy });
   }
   break;
 
@@ -303,7 +302,7 @@ executor.registerHandler('draggable', (behavior, ctx, runtime) => {
     const targetX = ctx.input.drag.currentWorldX;
     const targetY = ctx.input.drag.currentWorldY;
     const position = ctx.entity.transform;
-    const velocity = ctx.physics.getLinearVelocity(ctx.entity.bodyId);
+    const velocity = ctx.physics.getLinearVelocity(ctx.entity.id);
 
     // Spring physics toward touch point
     const dx = targetX - position.x;
@@ -311,7 +310,7 @@ executor.registerHandler('draggable', (behavior, ctx, runtime) => {
     const forceX = dx * stiffness - velocity.x * damping;
     const forceY = dy * stiffness - velocity.y * damping;
 
-    ctx.physics.applyForceToCenter(ctx.entity.bodyId, { x: forceX, y: forceY });
+    ctx.physics.applyForceToCenter(ctx.entity.id, { x: forceX, y: forceY });
   }
 });
 ```
@@ -391,11 +390,11 @@ case 'buttons':
     if (ctx.input.buttons.down) fy += force;
 
     if (ctx.input.buttons.jump) {
-      ctx.physics.applyImpulseToCenter(ctx.entity.bodyId, { x: 0, y: -resolveForce() });
+      ctx.physics.applyImpulseToCenter(ctx.entity.id, { x: 0, y: -resolveForce() });
     }
 
     if (fx !== 0 || fy !== 0) {
-      ctx.physics.applyForceToCenter(ctx.entity.bodyId, { x: fx, y: fy });
+      ctx.physics.applyForceToCenter(ctx.entity.id, { x: fx, y: fy });
     }
   }
   break;

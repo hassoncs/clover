@@ -26,16 +26,6 @@ export type {
   GridContainerConfig,
   SlotContainerConfig,
 } from './container';
-/**
- * @deprecated Use collider with isSensor: true instead.
- * Zones are now implemented as sensor colliders for unified rendering.
- */
-export type {
-  ZoneMovementType,
-  ZoneShape,
-  ZoneComponent,
-  ZoneEntityDefinition,
-} from './physics';
 export type {
   ColliderShape,
   CoefficientCombineRule,

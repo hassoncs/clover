@@ -103,8 +103,7 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
   executor.registerHandler('translate', (behavior, ctx) => {
     const b = behavior as TranslateBehavior;
     
-    // Warn if translate is used on a dynamic physics body (should use physics forces instead)
-    if (ctx.entity.bodyId) {
+    if (ctx.entity.physics) {
       const warningKey = `${ctx.entity.id}:translate`;
       if (!warnedEntities.has(warningKey)) {
         console.warn(`[translate] Entity '${ctx.entity.id}' has a physics body. Using translate on dynamic bodies may cause physics conflicts. Consider using 'move' behavior or apply forces instead.`);
@@ -200,21 +199,16 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
 
   executor.registerHandler('rotate', (behavior, ctx) => {
     const b = behavior as RotateBehavior;
-    if (!ctx.entity.bodyId) return;
+    if (!ctx.entity.physics) return;
 
     const speed = ctx.resolveNumber(b.speed ?? 90);
     const direction = b.direction ?? 'clockwise';
     const radPerSec = (speed * Math.PI) / 180;
     
-    // For kinematic bodies (spinners), we set angular velocity directly
     if (b.affectsPhysics) {
-        ctx.physics.setAngularVelocity(ctx.entity.bodyId, direction === 'clockwise' ? radPerSec : -radPerSec);
+        ctx.physics.setAngularVelocity(ctx.entity.id, direction === 'clockwise' ? radPerSec : -radPerSec);
     } else {
-        // Visual rotation handled by renderer usually, but if we want physics body to rotate...
-        // If affectsPhysics is false, maybe we just update transform?
-        // But syncTransformsFromPhysics overwrites it.
-        // So we must use physics.
-        ctx.physics.setAngularVelocity(ctx.entity.bodyId, direction === 'clockwise' ? radPerSec : -radPerSec);
+        ctx.physics.setAngularVelocity(ctx.entity.id, direction === 'clockwise' ? radPerSec : -radPerSec);
     }
   });
 
@@ -297,7 +291,6 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
       newY = centerY + displacement;
     }
 
-    // Set position directly for kinematic bodies
     if (b.axis === 'x' || b.axis === 'both') {
       ctx.entity.transform.x = newX;
     }
@@ -305,8 +298,8 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
       ctx.entity.transform.y = newY;
     }
 
-    if (ctx.entity.bodyId) {
-      ctx.physics.setTransform(ctx.entity.bodyId, {
+    if (ctx.entity.physics) {
+      ctx.physics.setTransform(ctx.entity.id, {
         position: { x: newX, y: newY },
         angle: ctx.entity.transform.angle,
       });
@@ -317,7 +310,7 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
 
   executor.registerHandler('draggable', (behavior, ctx) => {
     const b = behavior as DraggableBehavior;
-    if (!ctx.entity.bodyId) return;
+    if (!ctx.entity.physics) return;
 
     if (ctx.input.drag && ctx.input.drag.targetEntityId === ctx.entity.id) {
         const stiffness = ctx.resolveNumber(b.stiffness ?? 0.5);
@@ -328,19 +321,18 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
         const currentX = ctx.entity.transform.x;
         const currentY = ctx.entity.transform.y;
         
-        // P-controller for velocity
-        const vx = (targetX - currentX) * stiffness * 60; // 60fps factor
+        const vx = (targetX - currentX) * stiffness * 60;
         const vy = (targetY - currentY) * stiffness * 60;
         
-        ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: vx, y: vy });
+        ctx.physics.setLinearVelocity(ctx.entity.id, { x: vx, y: vy });
     }
   });
 
   executor.registerHandler('follow', (behavior, ctx) => {
       const b = behavior as FollowBehavior;
-      if (!ctx.entity.bodyId) return;
+      if (!ctx.entity.physics) return;
 
-      const target = ctx.entityManager.getEntitiesByTag('player')[0]; // Default
+      const target = ctx.entityManager.getEntitiesByTag('player')[0];
       if (!target) return;
 
       const dx = target.transform.x - ctx.entity.transform.x;
@@ -354,41 +346,41 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
           const speed = ctx.resolveNumber(b.speed ?? 5);
           const vx = (dx / dist) * speed;
           const vy = (dy / dist) * speed;
-          ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: vx, y: vy });
+          ctx.physics.setLinearVelocity(ctx.entity.id, { x: vx, y: vy });
       } else {
-          ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: 0, y: 0 });
+          ctx.physics.setLinearVelocity(ctx.entity.id, { x: 0, y: 0 });
       }
   });
 
   executor.registerHandler('bounce', (behavior, ctx) => {
       const b = behavior as BounceBehavior;
-      if (!ctx.entity.bodyId) return;
+      if (!ctx.entity.physics) return;
       
       const { x, y } = ctx.entity.transform;
-      const vel = ctx.physics.getLinearVelocity(ctx.entity.bodyId);
+      const vel = ctx.physics.getLinearVelocity(ctx.entity.id);
       
       const minX = ctx.resolveNumber(b.bounds.minX ?? 0);
       const maxX = ctx.resolveNumber(b.bounds.maxX ?? 100);
       const minY = ctx.resolveNumber(b.bounds.minY ?? 0);
       const maxY = ctx.resolveNumber(b.bounds.maxY ?? 100);
       
-      if (x < minX && vel.x < 0) ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: -vel.x, y: vel.y });
-      if (x > maxX && vel.x > 0) ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: -vel.x, y: vel.y });
-      if (y < minY && vel.y < 0) ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: vel.x, y: -vel.y });
-      if (y > maxY && vel.y > 0) ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: vel.x, y: -vel.y });
+      if (x < minX && vel.x < 0) ctx.physics.setLinearVelocity(ctx.entity.id, { x: -vel.x, y: vel.y });
+      if (x > maxX && vel.x > 0) ctx.physics.setLinearVelocity(ctx.entity.id, { x: -vel.x, y: vel.y });
+      if (y < minY && vel.y < 0) ctx.physics.setLinearVelocity(ctx.entity.id, { x: vel.x, y: -vel.y });
+      if (y > maxY && vel.y > 0) ctx.physics.setLinearVelocity(ctx.entity.id, { x: vel.x, y: -vel.y });
   });
 
   executor.registerHandler('maintain_speed', (behavior, ctx) => {
     const b = behavior as MaintainSpeedBehavior;
-    if (!ctx.entity.bodyId) {
+    if (!ctx.entity.physics) {
       if (ctx.entity.tags.includes('ball')) {
-        console.warn('[maintain_speed] Ball has no bodyId!');
+        console.warn('[maintain_speed] Ball has no physics!');
       }
       return;
     }
 
     const targetSpeed = ctx.resolveNumber(b.speed);
-    const vel = ctx.physics.getLinearVelocity(ctx.entity.bodyId);
+    const vel = ctx.physics.getLinearVelocity(ctx.entity.id);
     const currentSpeed = Math.sqrt(vel.x * vel.x + vel.y * vel.y);
 
     if (b.mode === 'minimum' && currentSpeed >= targetSpeed) {
@@ -398,13 +390,13 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
     if (currentSpeed > 0.01) {
       const scale = targetSpeed / currentSpeed;
       const newVel = { x: vel.x * scale, y: vel.y * scale };
-      ctx.physics.setLinearVelocity(ctx.entity.bodyId, newVel);
+      ctx.physics.setLinearVelocity(ctx.entity.id, newVel);
     }
   });
 
   executor.registerHandler('set_velocity', (behavior, ctx) => {
     const b = behavior as SetVelocityBehavior;
-    if (!ctx.entity.bodyId) {
+    if (!ctx.entity.physics) {
       throw new Error(`[set_velocity] Cannot set velocity on entity '${ctx.entity.id}' without a physics body. Add a physics component or use translate behavior instead.`);
     }
 
@@ -460,10 +452,10 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
     }
 
     if (overwrite) {
-      ctx.physics.setLinearVelocity(ctx.entity.bodyId, { x: vx, y: vy });
+      ctx.physics.setLinearVelocity(ctx.entity.id, { x: vx, y: vy });
     } else {
-      const currentVel = ctx.physics.getLinearVelocity(ctx.entity.bodyId);
-      ctx.physics.setLinearVelocity(ctx.entity.bodyId, {
+      const currentVel = ctx.physics.getLinearVelocity(ctx.entity.id);
+      ctx.physics.setLinearVelocity(ctx.entity.id, {
         x: currentVel.x + vx,
         y: currentVel.y + vy,
       });
@@ -472,7 +464,7 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
 
   executor.registerHandler('apply_impulse', (behavior, ctx) => {
     const b = behavior as ApplyImpulseBehavior;
-    if (!ctx.entity.bodyId) {
+    if (!ctx.entity.physics) {
       throw new Error(`[apply_impulse] Cannot apply impulse on entity '${ctx.entity.id}' without a physics body. Add a physics component or use translate behavior instead.`);
     }
 
@@ -526,6 +518,6 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
       }
     }
 
-    ctx.physics.applyImpulse(ctx.entity.bodyId, { x: ix, y: iy });
+    ctx.physics.applyImpulse(ctx.entity.id, { x: ix, y: iy });
   });
 }

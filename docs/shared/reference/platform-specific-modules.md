@@ -35,7 +35,7 @@ The contract defines what the module MUST export. This is the source of truth.
 ```typescript
 // index.contract.ts
 import type { Physics2D } from './Physics2D';
-import type { BodyId, Vec2 } from './types';
+import type { Vec2 } from './types';
 
 // Define function signatures
 export type CreatePhysics2D = () => Promise<Physics2D>;

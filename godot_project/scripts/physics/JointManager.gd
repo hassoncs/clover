@@ -4,6 +4,7 @@ extends RefCounted
 var bridge: Node
 var joints: Dictionary = {}
 var joint_counter: int = 0
+var last_created_joint_id: int = -1
 
 func _init(game_bridge: Node) -> void:
 	bridge = game_bridge
@@ -30,7 +31,6 @@ func _js_create_revolute_joint(args: Array) -> int:
 
 
 func _js_create_distance_joint(args: Array) -> int:
-	# args: [bodyA_id, bodyB_id, anchorAX, anchorAY, anchorBX, anchorBY, length, stiffness, damping]
 	if args.size() < 6:
 		return -1
 	var length = float(args[6]) if args.size() > 6 else 0.0
@@ -70,18 +70,43 @@ func _js_create_weld_joint(args: Array) -> int:
 
 
 func _js_create_mouse_joint(args: Array) -> int:
-	# args: [body_id, targetX, targetY, maxForce, stiffness, damping]
 	if args.size() < 4:
+		last_created_joint_id = -1
+		_set_js_last_joint_id(-1)
 		return -1
 	var stiffness = float(args[4]) if args.size() > 4 else 5.0
 	var damping = float(args[5]) if args.size() > 5 else 0.7
-	return create_mouse_joint(str(args[0]), float(args[1]), float(args[2]), float(args[3]), stiffness, damping)
+	var result = create_mouse_joint(str(args[0]), float(args[1]), float(args[2]), float(args[3]), stiffness, damping)
+	last_created_joint_id = result
+	_set_js_last_joint_id(result)
+	return result
+
+func _set_js_last_joint_id(joint_id: int) -> void:
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("window.GodotBridge._lastResult = %d; window._slopcadeLastJointId = %d;" % [joint_id, joint_id], true)
 
 
 func _js_destroy_joint(args: Array) -> void:
 	if args.size() < 1:
 		return
 	destroy_joint(int(args[0]))
+
+func _js_destroy_mouse_joint_for_entity(args: Array) -> void:
+	if args.size() < 1:
+		return
+	var entity_id = str(args[0])
+	destroy_mouse_joint_for_entity(entity_id)
+
+func destroy_mouse_joint_for_entity(entity_id: String) -> void:
+	print("[JointManager] destroy_mouse_joint_for_entity: ", entity_id)
+	var to_remove: Array = []
+	for joint_id in joints:
+		var joint = joints[joint_id]
+		if joint is Dictionary and joint.get("type") == "mouse" and joint.get("entity_id") == entity_id:
+			to_remove.append(joint_id)
+	for joint_id in to_remove:
+		joints.erase(joint_id)
+		print("[JointManager] Removed mouse joint ", joint_id, " for entity ", entity_id)
 
 
 func _js_set_motor_speed(args: Array) -> void:
@@ -94,6 +119,9 @@ func _js_set_mouse_target(args: Array) -> void:
 	if args.size() < 3:
 		return
 	set_mouse_target(int(args[0]), float(args[1]), float(args[2]))
+
+func _js_get_last_joint_id(_args: Array) -> int:
+	return last_created_joint_id
 
 
 # =============================================================================
@@ -244,7 +272,17 @@ func create_weld_joint(entity_a: String, entity_b: String,
 func create_mouse_joint(entity_id: String, target_x: float, target_y: float,
 		max_force: float, stiffness: float, damping: float) -> int:
 	
-	if not bridge.entities.has(entity_id):
+	# Use entity_registry directly instead of computed property
+	var node: Node2D = null
+	if bridge.entity_registry.has(entity_id):
+		var record = bridge.entity_registry[entity_id]
+		if record and record.is_valid():
+			node = record.node
+	
+
+	
+	if node == null:
+		print("[JointManager] Entity not found in registry! keys=", bridge.entity_registry.keys())
 		return -1
 	
 	joint_counter += 1
@@ -279,24 +317,30 @@ func destroy_joint(joint_id: int) -> void:
 			joint.queue_free()
 		joints.erase(joint_id)
 
-func process_mouse_joints(delta: float) -> void:
+func process_mouse_joints(_delta: float) -> void:
 	for joint_id in joints:
 		var joint = joints[joint_id]
 		if joint is Dictionary and joint.get("type") == "mouse":
 			var entity_id = joint["entity_id"]
-			if bridge.entities.has(entity_id):
-				var node = bridge.entities[entity_id]
-				if node is RigidBody2D:
-					var target = joint["target"]
-					var diff = target - node.global_position
-					var stiffness = joint["stiffness"]
-					var damping = joint["damping"]
-					var max_force = joint["max_force"]
-					
-					var force = diff * stiffness - node.linear_velocity * damping
-					if force.length() > max_force:
-						force = force.normalized() * max_force
-					node.apply_central_force(force * node.mass * bridge.pixels_per_meter)
+			var node: Node2D = null
+			if bridge.entity_registry.has(entity_id):
+				var record = bridge.entity_registry[entity_id]
+				if record and record.is_valid():
+					node = record.node
+			if node is RigidBody2D:
+				var target = joint["target"]
+				var diff = target - node.global_position
+				var stiffness = joint["stiffness"]
+				var damping = joint["damping"]
+				var max_force = joint["max_force"]
+				
+				var force = diff * stiffness - node.linear_velocity * damping
+				
+				var force_mag = force.length()
+				if force_mag > max_force:
+					force = force.normalized() * max_force
+				
+				node.apply_central_force(force)
 
 func clear_all() -> void:
 	for joint_id in joints:

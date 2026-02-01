@@ -56,37 +56,18 @@ export type ColliderComponent =
   | PolygonColliderComponent
   | CapsuleColliderComponent;
 
-/**
- * @deprecated Use collider with isSensor: true instead.
- * Zones are now implemented as sensor colliders for unified rendering.
- */
-export type ZoneMovementType = 'static' | 'kinematic';
+// Entity Archetypes - explicit classification for entity behavior
+export type EntityArchetype = 
+  | { type: 'body'; bodyType: 'dynamic' | 'static' | 'kinematic' }
+  | { type: 'sensor' }
+  | { type: 'hitbox' }
+  | { type: 'visual' };
 
-/**
- * @deprecated Use collider with isSensor: true instead.
- * Zones are now implemented as sensor colliders for unified rendering.
- */
-export type ZoneShape =
-  | { type: 'box'; width: number; height: number }
-  | { type: 'circle'; radius: number }
-  | { type: 'polygon'; vertices: Vec2[] };
+// Collision layer constants (matching Godot CollisionLayers.gd)
+export const COLLISION_LAYERS = {
+  BODIES: 1,
+  SENSORS: 2,
+  HITBOXES: 4,
+} as const;
 
-/**
- * @deprecated Use collider with isSensor: true instead.
- * Zones are now implemented as sensor colliders for unified rendering.
- */
-export interface ZoneComponent {
-  movement?: ZoneMovementType;
-  shape: ZoneShape;
-  categoryBits?: number;
-  maskBits?: number;
-}
 
-/**
- * @deprecated Use collider with isSensor: true instead.
- * Zones are now implemented as sensor colliders for unified rendering.
- */
-export interface ZoneEntityDefinition {
-  type: 'zone';
-  zone: ZoneComponent;
-}

@@ -806,3 +806,143 @@ func apply_debug_visibility(node: Node2D) -> void:
 
 func _apply_debug_visibility(node: Node2D) -> void:
 	apply_debug_visibility(node)
+
+# =============================================================================
+# BACKGROUND SYSTEM
+# =============================================================================
+
+var _background_layer: CanvasLayer = null
+var _background_rect: TextureRect = null
+var _parallax_layers: Array = []
+
+func setup_background(bg_data: Dictionary) -> void:
+	# Clean up existing background
+	if _background_layer:
+		_background_layer.queue_free()
+		_background_layer = null
+		_background_rect = null
+
+	for layer in _parallax_layers:
+		if is_instance_valid(layer):
+			layer.queue_free()
+	_parallax_layers.clear()
+
+	if bg_data.is_empty():
+		return
+
+	var bg_type = bg_data.get("type", "")
+
+	if bg_type == "parallax":
+		_setup_parallax_background(bg_data)
+		return
+
+	if bg_type != "static":
+		return
+
+	var image_url = bg_data.get("imageUrl", "")
+	var color = bg_data.get("color", "")
+
+	_background_layer = CanvasLayer.new()
+	_background_layer.layer = -100
+	_background_layer.name = "BackgroundLayer"
+	_bridge.add_child(_background_layer)
+
+	_background_rect = TextureRect.new()
+	_background_rect.name = "Background"
+	_background_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_background_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_background_rect.anchor_left = 0.0
+	_background_rect.anchor_top = 0.0
+	_background_rect.anchor_right = 1.0
+	_background_rect.anchor_bottom = 1.0
+	_background_layer.add_child(_background_rect)
+
+	if image_url != "":
+		_download_background_texture(image_url)
+	elif color != "":
+		var viewport_size = _bridge.get_viewport().get_visible_rect().size
+		var img = Image.create(
+			int(viewport_size.x), int(viewport_size.y), false, Image.FORMAT_RGBA8
+		)
+		img.fill(Color.from_string(color, Color.GRAY))
+		_background_rect.texture = ImageTexture.create_from_image(img)
+
+
+func _download_background_texture(url: String) -> void:
+	_download_texture_generic(
+		url,
+		func(texture: Texture2D):
+			if is_instance_valid(_background_rect):
+				_background_rect.texture = texture
+	)
+
+
+func _setup_parallax_background(bg_data: Dictionary) -> void:
+	var layers_data = bg_data.get("layers", [])
+	if layers_data.is_empty():
+		return
+
+	# Map depth to z-index (further back = lower z-index)
+	var depth_to_z = {"sky": -400, "far": -300, "mid": -200, "near": -100}
+
+	for layer_data in layers_data:
+		var layer_id = layer_data.get("id", "")
+		var image_url = layer_data.get("imageUrl", "")
+		var depth = layer_data.get("depth", "mid")
+		var parallax_factor = layer_data.get("parallaxFactor", 0.5)
+		var visible = layer_data.get("visible", true)
+
+		if not visible or image_url == "":
+			continue
+
+		var layer = CanvasLayer.new()
+		layer.layer = depth_to_z.get(depth, -200)
+		layer.name = "ParallaxLayer_" + layer_id
+		_bridge.add_child(layer)
+		_parallax_layers.append(layer)
+
+		var rect = TextureRect.new()
+		rect.name = layer_id
+		rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		rect.anchor_left = 0.0
+		rect.anchor_top = 0.0
+		rect.anchor_right = 1.0
+		rect.anchor_bottom = 1.0
+		layer.add_child(rect)
+
+		# Download texture for this layer
+		_download_texture_generic(
+			image_url,
+			func(texture: Texture2D):
+				if is_instance_valid(rect):
+					rect.texture = texture
+		)
+
+
+func _download_texture_generic(url: String, callback: Callable) -> void:
+	if _texture_cache.has(url):
+		callback.call(_texture_cache[url])
+		return
+
+	var http = HTTPRequest.new()
+	_bridge.add_child(http)
+
+	http.request_completed.connect(
+		func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+			http.queue_free()
+			if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+				return
+
+			var image = Image.new()
+			var err = image.load_png_from_buffer(body)
+			if err != OK: err = image.load_jpg_from_buffer(body)
+			if err != OK: err = image.load_webp_from_buffer(body)
+			if err != OK: return
+
+			var texture = ImageTexture.create_from_image(image)
+			_texture_cache[url] = texture
+			callback.call(texture)
+	)
+
+	http.request(url)

@@ -23,9 +23,8 @@ func query_point(x: float, y: float) -> Variant:
 		return null
 	
 	var collider = results[0].collider
-	if collider and collider.name in bridge.entities:
-		var body_id = bridge.body_id_map.get(collider.name, -1)
-		return body_id
+	if collider and collider.name in bridge.entity_registry:
+		return collider.name  # Return entity_id directly
 	return null
 
 func query_point_entity(x: float, y: float) -> Variant:
@@ -77,14 +76,14 @@ func query_aabb(min_x: float, min_y: float, max_x: float, max_y: float) -> Array
 	query.collide_with_areas = true
 	
 	var results = space.intersect_shape(query)
-	var body_ids: Array = []
+	var entity_ids: Array = []
 	for result in results:
 		var collider = result.collider
-		if collider and collider.name in bridge.entities:
-			var body_id = bridge.body_id_map.get(collider.name, -1)
-			if body_id >= 0 and body_id not in body_ids:
-				body_ids.append(body_id)
-	return body_ids
+		if collider and collider.name in bridge.entity_registry:
+			var entity_id = collider.name
+			if entity_id not in entity_ids:
+				entity_ids.append(entity_id)
+	return entity_ids
 
 func raycast(origin_x: float, origin_y: float, dir_x: float, dir_y: float, max_distance: float) -> Variant:
 	var godot_origin = CoordinateUtils.game_to_godot_pos(Vector2(origin_x, origin_y), bridge.pixels_per_meter)
@@ -109,16 +108,46 @@ func raycast(origin_x: float, origin_y: float, dir_x: float, dir_y: float, max_d
 	var fraction = godot_origin.distance_to(result.position) / (max_distance * bridge.pixels_per_meter)
 	
 	var entity_id = ""
-	var body_id = -1
-	if result.collider and result.collider.name in bridge.entities:
+	if result.collider and result.collider.name in bridge.entity_registry:
 		entity_id = result.collider.name
-		body_id = bridge.body_id_map.get(entity_id, -1)
 	
 	return {
 		"hit": true,
 		"point": {"x": hit_point.x, "y": hit_point.y},
 		"normal": {"x": hit_normal.x, "y": hit_normal.y},
 		"fraction": fraction,
-		"entityId": entity_id,
-		"bodyId": body_id
+		"entityId": entity_id
 	}
+
+# =============================================================================
+# JS HANDLERS (called from JavaScript bridge)
+# =============================================================================
+
+func _js_query_point(args: Array) -> Variant:
+	if args.size() < 2:
+		return null
+	return query_point(float(args[0]), float(args[1]))
+
+
+func _js_query_point_entity(args: Array) -> void:
+	if args.size() < 2:
+		JavaScriptBridge.eval("window.GodotBridge._lastResult = null;")
+		return
+	var result = query_point_entity(float(args[0]), float(args[1]))
+	if result != null:
+		var js_code = "window.GodotBridge._lastResult = '%s';" % [result]
+		JavaScriptBridge.eval(js_code)
+	else:
+		JavaScriptBridge.eval("window.GodotBridge._lastResult = null;")
+
+
+func _js_query_aabb(args: Array) -> Array:
+	if args.size() < 4:
+		return []
+	return query_aabb(float(args[0]), float(args[1]), float(args[2]), float(args[3]))
+
+
+func _js_raycast(args: Array) -> Variant:
+	if args.size() < 5:
+		return null
+	return raycast(float(args[0]), float(args[1]), float(args[2]), float(args[3]), float(args[4]))

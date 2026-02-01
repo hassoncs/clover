@@ -201,9 +201,21 @@ func _draw_physics_shapes(canvas_transform: Transform2D) -> void:
 				
 				if shape is RectangleShape2D:
 					var rect_shape = shape as RectangleShape2D
-					var size = rect_shape.size * scale_factor
-					var rect = Rect2(screen_pos - size / 2, size)
-					_draw_node.draw_rect(rect, outline_color, false, 2.0)
+					var half_size = rect_shape.size / 2
+					var rotation = node.global_rotation + child.rotation
+					var corners = [
+						Vector2(-half_size.x, -half_size.y),
+						Vector2(half_size.x, -half_size.y),
+						Vector2(half_size.x, half_size.y),
+						Vector2(-half_size.x, half_size.y),
+					]
+					var transformed_points: PackedVector2Array = []
+					for corner in corners:
+						var rotated_corner = corner.rotated(rotation)
+						var screen_p = canvas_transform * (world_pos + rotated_corner)
+						transformed_points.append(screen_p)
+					transformed_points.append(transformed_points[0])
+					_draw_node.draw_polyline(transformed_points, outline_color, 2.0)
 				
 				elif shape is CircleShape2D:
 					var circle_shape = shape as CircleShape2D

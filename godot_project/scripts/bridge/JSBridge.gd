@@ -159,20 +159,9 @@ func _js_send_input(args: Array) -> void:
 	var provided_entity_id = str(args[3]) if args[3] != null else ""
 	
 	if input_type == "tap":
-		var hit_entity_id: Variant = null
-		var godot_point = _game_bridge.game_to_godot_pos(Vector2(x, y))
-		var space = _game_bridge.get_viewport().find_world_2d().direct_space_state
-		if space:
-			var query = PhysicsPointQueryParameters2D.new()
-			query.position = godot_point
-			query.collision_mask = 0xFFFFFFFF
-			query.collide_with_bodies = true
-			query.collide_with_areas = true
-			var results = space.intersect_point(query, 1)
-			if results.size() > 0:
-				var collider = results[0].collider
-				if collider and collider.name in _game_bridge.entities:
-					hit_entity_id = collider.name
+		var hit_entity_id: Variant = _game_bridge._hit_test(x, y)
+		if hit_entity_id == "":
+			hit_entity_id = null
 		_game_bridge._notify_js_input_event(input_type, x, y, hit_entity_id)
 
 func _js_on_input_event(args: Array) -> void:

@@ -29,7 +29,7 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
   private executeApplyImpulseAction(action: ApplyImpulseAction, context: RuleContext): void {
     const entities = resolveEntityTarget(action.target, context);
     for (const entity of entities) {
-      if (!entity.bodyId) {
+      if (!entity.physics) {
         continue;
       }
       let impulseX = action.x ? resolveNumber(action.x, context) : 0;
@@ -80,20 +80,18 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
                 impulseX = (dx / mag) * force;
                 impulseY = (dy / mag) * force;
               }
-            } else {
-              // No input.drag or inputEvents.tap available
             }
             break;
         }
       }
-      context.physics.applyImpulseToCenter(entity.bodyId, { x: impulseX, y: impulseY });
+      context.physics.applyImpulseToCenter(entity.id, { x: impulseX, y: impulseY });
     }
   }
 
   private executeApplyForceAction(action: ApplyForceAction, context: RuleContext): void {
     const entities = resolveEntityTarget(action.target, context);
     for (const entity of entities) {
-      if (!entity.bodyId) continue;
+      if (!entity.physics) continue;
 
       let forceX = action.x ? resolveNumber(action.x, context) : 0;
       let forceY = action.y ? resolveNumber(action.y, context) : 0;
@@ -120,7 +118,7 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
              break;
           case 'toward_touch':
              if (context.input.drag) {
-                  const pos = context.physics.getTransform(entity.bodyId).position;
+                  const pos = context.physics.getTransform(entity.id).position;
                   const dx = context.input.drag.currentWorldX - pos.x;
                   const dy = context.input.drag.currentWorldY - pos.y;
                   const mag = Math.sqrt(dx*dx + dy*dy);
@@ -132,19 +130,19 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
              break;
         }
       }
-      context.physics.applyForceToCenter(entity.bodyId, { x: forceX, y: forceY });
+      context.physics.applyForceToCenter(entity.id, { x: forceX, y: forceY });
     }
   }
 
   private executeSetVelocityAction(action: SetVelocityAction, context: RuleContext): void {
     const entities = resolveEntityTarget(action.target, context);
     for (const entity of entities) {
-      if (!entity.bodyId) continue;
+      if (!entity.physics) continue;
       const vx = action.x ? resolveNumber(action.x, context) : undefined;
       const vy = action.y ? resolveNumber(action.y, context) : undefined;
       
-      const current = context.physics.getLinearVelocity(entity.bodyId);
-      context.physics.setLinearVelocity(entity.bodyId, {
+      const current = context.physics.getLinearVelocity(entity.id);
+      context.physics.setLinearVelocity(entity.id, {
           x: vx ?? current.x,
           y: vy ?? current.y
       });
@@ -155,10 +153,10 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
       const entities = resolveEntityTarget(action.target, context);
       const speed = resolveNumber(action.speed, context);
       for (const entity of entities) {
-          if (!entity.bodyId) continue;
+          if (!entity.physics) continue;
           let vx = 0;
           let vy = 0;
-          const current = context.physics.getLinearVelocity(entity.bodyId);
+          const current = context.physics.getLinearVelocity(entity.id);
           
           switch (action.direction) {
               case 'left': vx = -speed; vy = current.y; break;
@@ -176,7 +174,7 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
                   break;
               case 'toward_touch':
                   if (context.input.drag) {
-                      const pos = context.physics.getTransform(entity.bodyId).position;
+                      const pos = context.physics.getTransform(entity.id).position;
                       vx = (context.input.drag.currentWorldX - pos.x) * speed;
                       vy = (context.input.drag.currentWorldY - pos.y) * speed;
                   } else {
@@ -186,7 +184,7 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
                   break;
               case 'toward_touch_x':
                   if (context.input.drag) {
-                      const pos = context.physics.getTransform(entity.bodyId).position;
+                      const pos = context.physics.getTransform(entity.id).position;
                       vx = (context.input.drag.currentWorldX - pos.x) * speed;
                       vy = current.y;
                   } else {
@@ -196,7 +194,7 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
                   break;
               case 'toward_touch_y':
                   if (context.input.drag) {
-                      const pos = context.physics.getTransform(entity.bodyId).position;
+                      const pos = context.physics.getTransform(entity.id).position;
                       vx = current.x;
                       vy = (context.input.drag.currentWorldY - pos.y) * speed;
                   } else {
@@ -218,7 +216,7 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
                   break;
               }
           }
-          context.physics.setLinearVelocity(entity.bodyId, { x: vx, y: vy });
+          context.physics.setLinearVelocity(entity.id, { x: vx, y: vy });
       }
   }
 
@@ -246,9 +244,9 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
     const axis = action.axis ?? 'both';
 
     for (const entity of entities) {
-      if (!entity.bodyId) continue;
+      if (!entity.physics) continue;
 
-      const current = context.physics.getLinearVelocity(entity.bodyId);
+      const current = context.physics.getLinearVelocity(entity.id);
       const pos = entity.transform;
 
       let vx = current.x;
@@ -270,7 +268,7 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
         }
       }
 
-      context.physics.setLinearVelocity(entity.bodyId, { x: vx, y: vy });
+      context.physics.setLinearVelocity(entity.id, { x: vx, y: vy });
     }
   }
 }

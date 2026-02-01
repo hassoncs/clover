@@ -12,7 +12,7 @@ func _js_spawn_entity(args: Array) -> void:
 		return
 	var entity_data = args[0] as Dictionary
 	if entity_data.has("id") and entity_data.has("template"):
-		_game_bridge._create_entity(entity_data)
+		_game_bridge._entity_factory.create_entity(entity_data)
 
 
 func _js_destroy_entity(args: Array) -> void:

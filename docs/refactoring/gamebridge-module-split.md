@@ -153,7 +153,7 @@ scripts/physics/
 | `entities` | EntityManager | All modules |
 | `templates` | GameBridge | EntityFactory |
 | `pixels_per_meter` | GameBridge | CoordinateUtils, all modules |
-| `body_id_map` | EntityManager | PhysicsController, queries |
+| `entity_id_map` | EntityManager | PhysicsController, queries |
 | `joints` | JointManager | GameBridge (API) |
 | `sensors` | EntityManager | PhysicsController |
 | `sensor_velocities` | PhysicsController | SyncSystem |
@@ -184,8 +184,8 @@ func _init_modules() -> void:
 3. Update GameBridge to delegate to EventEmitter
 
 ### Phase 2: Enhance EntityManager
-1. Move `body_id_map`, `body_id_reverse`, `entity_shape_map` to EntityManager
-2. Move lookup functions: `get_entity_by_body_id()`, `get_entity_node()`
+1. Move `entity_id_map`, `entity_id_reverse`, `entity_shape_map` to EntityManager
+2. Move lookup functions: `get_entity_by_id()`, `get_entity_node()`
 3. Update callers in GameBridge
 
 ### Phase 3: Full PhysicsController Delegation

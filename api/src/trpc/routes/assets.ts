@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import {
   AssetService,
+  getImageGenerationConfig,
   type EntityType,
   type SpriteStyle,
 } from '@/ai/assets'
@@ -257,9 +258,11 @@ export const assetsRouter = router({
       };
     }),
 
-  status: publicProcedure.query(() => {
+  status: publicProcedure.query(({ ctx }) => {
+    const config = getImageGenerationConfig(ctx.env);
     return {
-      configured: true,
+      configured: config.configured,
+      provider: config.provider,
       timestamp: Date.now(),
     };
   }),

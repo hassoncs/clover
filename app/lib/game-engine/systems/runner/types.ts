@@ -167,8 +167,7 @@ export interface FrameData {
    * CONSUMERS: GAME_LOGIC, POST_PHYSICS, VISUAL, CLEANUP
    * 
    * Contains collision pairs with resolved entity references.
-   * Populated by GameRuntime from physics collision callbacks, with BodyIds
-   * resolved to RuntimeEntity references for easy consumption by game logic.
+   * Populated by GameRuntime from physics collision callbacks.
    */
   readonly collisions: CollisionInfo[];
 }

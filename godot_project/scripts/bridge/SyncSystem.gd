@@ -111,3 +111,51 @@ func notify_property_sync(properties: Dictionary) -> void:
 func process_sync() -> void:
 	if should_sync_tracked():
 		notify_tracked_sync()
+
+# =============================================================================
+# JS HANDLERS (called from JavaScript bridge)
+# =============================================================================
+
+func _js_get_transform(args: Array) -> Variant:
+	if args.size() < 1:
+		return null
+	return get_transform(str(args[0]))
+
+
+func _js_get_transforms(args: Array) -> Dictionary:
+	if args.size() < 1:
+		return {}
+	var entity_ids = args[0]
+	if entity_ids is String:
+		entity_ids = JSON.parse_string(entity_ids)
+	if not entity_ids is Array:
+		return {}
+	return get_transforms(entity_ids)
+
+
+func _js_set_tracked_entities(args: Array) -> void:
+	if args.size() < 1:
+		return
+	var entity_ids = args[0]
+	if entity_ids is String:
+		entity_ids = JSON.parse_string(entity_ids)
+	if not entity_ids is Array:
+		return
+	var config = {}
+	if args.size() >= 2:
+		var config_val = args[1]
+		if config_val is String:
+			config = JSON.parse_string(config_val)
+		elif config_val is Dictionary:
+			config = config_val
+	set_tracked_entities(entity_ids, config)
+
+
+func _js_on_transform_sync(args: Array) -> void:
+	if args.size() >= 1:
+		set_transform_sync_callback(args[0])
+
+
+func _js_on_property_sync(args: Array) -> void:
+	if args.size() >= 1:
+		set_property_sync_callback(args[0])

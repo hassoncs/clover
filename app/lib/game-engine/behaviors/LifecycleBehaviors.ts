@@ -233,9 +233,8 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
       // Update world transforms after modifying local
       ctx.entityManager.updateWorldTransforms(child.id);
       
-      // Sync physics body if exists
-      if (child.bodyId) {
-        ctx.physics.setTransform(child.bodyId, {
+      if (child.physics) {
+        ctx.physics.setTransform(child.id, {
           position: { x: child.transform.x, y: child.transform.y },
           angle: child.transform.angle,
         });
@@ -349,38 +348,6 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
     }
   });
 
-  executor.registerHandler('gravity_zone', (behavior, ctx) => {
-    console.warn('[DEPRECATED] gravity_zone behavior is deprecated. Use collision-based gravity fields instead.');
-    const zone = behavior as GravityZoneBehavior;
-    
-    const radius = ctx.resolveNumber(zone.radius);
-    const gravity = ctx.resolveVec2(zone.gravity);
-    
-    const entities = ctx.entityManager.getActiveEntities();
-    for (const target of entities) {
-      if (target.id === ctx.entity.id) continue;
-      if (!target.bodyId) continue;
-      if (zone.affectsTags && !zone.affectsTags.some(tag => target.tags.includes(tag))) continue;
-
-      const dx = ctx.entity.transform.x - target.transform.x;
-      const dy = ctx.entity.transform.y - target.transform.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      if (dist > radius || dist < 0.01) continue;
-
-      let force = { x: gravity.x, y: gravity.y };
-
-      if (zone.falloff && zone.falloff !== 'none') {
-        const factor = zone.falloff === 'linear' 
-          ? 1 - (dist / radius)
-          : Math.pow(1 - (dist / radius), 2);
-        force = { x: force.x * factor, y: force.y * factor };
-      }
-
-      ctx.physics.applyForceToCenter(target.bodyId, force);
-    }
-  });
-
   executor.registerHandler('magnetic', (behavior, ctx) => {
     const magnetic = behavior as MagneticBehavior;
     
@@ -390,7 +357,7 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
     const entities = ctx.entityManager.getActiveEntities();
     for (const target of entities) {
       if (target.id === ctx.entity.id) continue;
-      if (!target.bodyId) continue;
+      if (!target.physics) continue;
       if (magnetic.attractsTags && !magnetic.attractsTags.some(tag => target.tags.includes(tag))) continue;
 
       const dx = ctx.entity.transform.x - target.transform.x;
@@ -404,7 +371,7 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
       const forceX = (dx / dist) * forceMagnitude;
       const forceY = (dy / dist) * forceMagnitude;
 
-      ctx.physics.applyForceToCenter(target.bodyId, { x: forceX, y: forceY });
+      ctx.physics.applyForceToCenter(target.id, { x: forceX, y: forceY });
     }
   });
 
@@ -531,8 +498,8 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
       ctx.entity.layer = parent.layer + slotLayer;
     }
 
-    if (ctx.entity.bodyId) {
-      ctx.physics.setTransform(ctx.entity.bodyId, {
+    if (ctx.entity.physics) {
+      ctx.physics.setTransform(ctx.entity.id, {
         position: { x: ctx.entity.transform.x, y: ctx.entity.transform.y },
         angle: ctx.entity.transform.angle,
       });
@@ -586,21 +553,21 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
       other.transform.x = exitX;
       other.transform.y = exitY;
 
-      if (other.bodyId) {
-        ctx.physics.setTransform(other.bodyId, {
+      if (other.physics) {
+        ctx.physics.setTransform(other.id, {
           position: { x: exitX, y: exitY },
           angle: other.transform.angle,
         });
 
         if (teleport.preserveVelocity !== false) {
-          const velocity = ctx.physics.getLinearVelocity(other.bodyId);
+          const velocity = ctx.physics.getLinearVelocity(other.id);
           const multiplier = teleport.velocityMultiplier ?? 1.0;
-          ctx.physics.setLinearVelocity(other.bodyId, {
+          ctx.physics.setLinearVelocity(other.id, {
             x: velocity.x * multiplier,
             y: velocity.y * multiplier,
           });
         } else {
-          ctx.physics.setLinearVelocity(other.bodyId, { x: 0, y: 0 });
+          ctx.physics.setLinearVelocity(other.id, { x: 0, y: 0 });
         }
       }
 

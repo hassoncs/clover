@@ -60,7 +60,8 @@ func spawn(request: Dictionary) -> Dictionary:
 		}
 	}
 	
-	var node = _game_bridge._create_entity(entity_data)
+	var record = _game_bridge._entity_factory.create_entity(entity_data)
+	var node = record.node
 	
 	if node == null:
 		return {"ok": false, "error": "Failed to create entity"}
@@ -175,11 +176,6 @@ func destroy(entity_id: String, options: Dictionary = {}) -> Dictionary:
 	else:
 		entities.erase(entity_id)
 		
-		if _game_bridge.body_id_map.has(entity_id):
-			var body_id = _game_bridge.body_id_map[entity_id]
-			_game_bridge.body_id_reverse.erase(body_id)
-			_game_bridge.body_id_map.erase(entity_id)
-		
 		node.queue_free()
 		
 		_game_bridge._notify_js_destroy(entity_id)
@@ -220,11 +216,6 @@ func clone(entity_id: String, options: Dictionary = {}) -> Dictionary:
 	original.get_parent().add_child(clone_node)
 	
 	entities[new_id] = clone_node
-	
-	if clone_node is CollisionObject2D:
-		_game_bridge.body_id_map[new_id] = _game_bridge.next_body_id
-		_game_bridge.body_id_reverse[_game_bridge.next_body_id] = new_id
-		_game_bridge.next_body_id += 1
 	
 	if clone_node is Area2D:
 		clone_node.set_meta("entity_type", "sensor")

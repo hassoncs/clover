@@ -225,7 +225,7 @@ func get_joints(options: Dictionary = {}) -> Dictionary:
 	var entity_id_filter = options.get("entityId", "")
 	var joints_data = []
 	
-	var joints = _game_bridge.joints
+	var joints = _game_bridge._joint_manager.joints
 	
 	for joint_id in joints:
 		var joint = joints[joint_id]

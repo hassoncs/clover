@@ -7,17 +7,7 @@ export interface Transform {
   angle: number;
 }
 
-export type BodyId = { readonly __brand: "BodyId"; value: number };
-export type ColliderId = { readonly __brand: "ColliderId"; value: number };
 export type JointId = { readonly __brand: "JointId"; value: number };
-
-export function createBodyId(value: number): BodyId {
-  return { __brand: "BodyId", value } as BodyId;
-}
-
-export function createColliderId(value: number): ColliderId {
-  return { __brand: "ColliderId", value } as ColliderId;
-}
 
 export function createJointId(value: number): JointId {
   return { __brand: "JointId", value } as JointId;
@@ -86,7 +76,7 @@ export type ShapeDef =
   | EdgeShapeDef
   | ChainShapeDef;
 
-export interface FixtureDef {
+export interface ColliderConfig {
   shape: ShapeDef;
   density?: number;
   friction?: number;
@@ -98,8 +88,8 @@ export interface FixtureDef {
 
 export interface RevoluteJointDef {
   type?: 'revolute';
-  bodyA: BodyId;
-  bodyB: BodyId;
+  entityA: string;
+  entityB: string;
   anchor: Vec2;
   collideConnected?: boolean;
   enableLimit?: boolean;
@@ -112,8 +102,8 @@ export interface RevoluteJointDef {
 
 export interface DistanceJointDef {
   type?: 'distance';
-  bodyA: BodyId;
-  bodyB: BodyId;
+  entityA: string;
+  entityB: string;
   anchorA: Vec2;
   anchorB: Vec2;
   collideConnected?: boolean;
@@ -124,8 +114,8 @@ export interface DistanceJointDef {
 
 export interface PrismaticJointDef {
   type?: 'prismatic';
-  bodyA: BodyId;
-  bodyB: BodyId;
+  entityA: string;
+  entityB: string;
   anchor: Vec2;
   axis: Vec2;
   collideConnected?: boolean;
@@ -138,7 +128,7 @@ export interface PrismaticJointDef {
 }
 
 export interface MouseJointDef {
-  body: BodyId;
+  entity: string;
   target: Vec2;
   maxForce: number;
   stiffness?: number;
@@ -147,8 +137,8 @@ export interface MouseJointDef {
 
 export interface WeldJointDef {
   type?: 'weld';
-  bodyA: BodyId;
-  bodyB: BodyId;
+  entityA: string;
+  entityB: string;
   anchor: Vec2;
   collideConnected?: boolean;
   stiffness?: number;
@@ -156,24 +146,24 @@ export interface WeldJointDef {
 }
 
 export interface RaycastHit {
-  bodyId: BodyId;
+  entityId: string;
   point: Vec2;
   normal: Vec2;
   fraction: number;
 }
 
 export interface CollisionEvent {
-  bodyA: BodyId;
-  bodyB: BodyId;
-  colliderA: ColliderId;
-  colliderB: ColliderId;
+  entityA: string;
+  entityB: string;
+  colliderA: string;
+  colliderB: string;
   contacts?: ContactInfo[];
 }
 
 export interface SensorEvent {
-  sensor: ColliderId;
-  otherBody: BodyId;
-  otherCollider: ColliderId;
+  sensor: string;
+  otherEntity: string;
+  otherCollider: string;
 }
 
 export type CollisionCallback = (event: CollisionEvent) => void;

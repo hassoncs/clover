@@ -23,7 +23,7 @@ describe('MovementBehaviors - translate', () => {
       conditionalBehaviors: [],
       activeConditionalGroupId: -1,
       active: true,
-      bodyId: null, // translate does NOT require physics body
+      physics: undefined, // translate does NOT require physics body
       children: [],
     } as unknown as RuntimeEntity;
 
@@ -85,7 +85,7 @@ describe('MovementBehaviors - translate', () => {
     });
 
     it('works for entities without physics body', () => {
-      expect(entity.bodyId).toBeNull();
+      expect(entity.physics).toBeUndefined();
 
       entity.behaviors = [{
         definition: {

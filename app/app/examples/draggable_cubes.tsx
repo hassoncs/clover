@@ -51,14 +51,21 @@ const GAME_DEFINITION: GameDefinition = {
       physics: { bodyType: "static" },
       collider: { shape: "box", width: 0.5, height: 18, friction: 0.5, restitution: 0.3 },
     },
+    anchor: {
+      id: "anchor",
+      visual: { type: "rect", width: 0.3, height: 0.3, color: "#FF6B6B" },
+      physics: { bodyType: "static" },
+      collider: { shape: "box", width: 0.3, height: 0.3 },
+    },
   },
   entities: [
     { id: "ground", name: "Ground", template: "ground", transform: { x: 0, y: -8.5, angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "wall-left", name: "Left Wall", template: "wall", transform: { x: -6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
     { id: "wall-right", name: "Right Wall", template: "wall", transform: { x: 6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "cube1", name: "Cube 1", template: "cube", transform: { x: -3, y: -7, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "cube2", name: "Cube 2", template: "cube", transform: { x: 0, y: -7, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "cube3", name: "Cube 3", template: "cube", transform: { x: 3, y: -7, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "anchor1", name: "Anchor", template: "anchor", transform: { x: 0, y: 7, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "cube1", name: "Cube 1", template: "cube", transform: { x: 0, y: 5, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "cube2", name: "Cube 2", template: "cube", transform: { x: -4, y: 5, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "cube3", name: "Cube 3", template: "cube", transform: { x: 4, y: 5, angle: 0, scaleX: 1, scaleY: 1 } },
   ],
   rules: [],
 };
@@ -130,7 +137,32 @@ export default function DraggableCubesExample() {
     }).then(() => {
       if (!mounted) return;
       addLog("Game loaded successfully!");
+      bridge.setDebugSettings({
+        showInputDebug: true,
+        showPhysicsShapes: true,
+        showZones: false,
+        showFPS: true,
+      });
+      
+      // Test: Create a spring joint between anchor and cube1
+      const springJointId = bridge.createDistanceJoint({
+        type: "distance",
+        bodyA: "anchor1",
+        bodyB: "cube1",
+        anchorA: { x: 0, y: 7 },
+        anchorB: { x: 0, y: 5 },
+        length: 2,
+        stiffness: 50,
+        damping: 5,
+      });
+      addLog(`Spring joint created: ${springJointId}`);
+      
       setStatus("ready");
+      
+      // Set slopcadeGameReady flag for game-inspector MCP
+      if (typeof window !== 'undefined') {
+        (window as unknown as { slopcadeGameReady?: boolean }).slopcadeGameReady = true;
+      }
     }).catch((err) => {
       if (!mounted) return;
       addLog(`Error: ${err.message}`);
@@ -156,9 +188,9 @@ export default function DraggableCubesExample() {
             type: "mouse",
             body: entityId,
             target: { x, y },
-            maxForce: 50000,
-            stiffness: 30,
-            damping: 0.5,
+            maxForce: 500000,
+            stiffness: 300,
+            damping: 10,
           });
           addLog(`Joint created: ${jointId}`);
           dragStateRef.current = { entityId, jointId };

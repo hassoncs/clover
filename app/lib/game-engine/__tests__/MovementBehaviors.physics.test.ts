@@ -21,7 +21,7 @@ describe('MovementBehaviors - set_velocity', () => {
       conditionalBehaviors: [],
       activeConditionalGroupId: -1,
       active: true,
-      bodyId: { value: 1 }, // set_velocity REQUIRES physics body
+      physics: { bodyType: 'dynamic' },
       children: [],
     } as unknown as RuntimeEntity;
 
@@ -61,7 +61,7 @@ describe('MovementBehaviors - set_velocity', () => {
 
       // Speed 10 m/s in x direction, normalized from (1,0) = (1, 0)
       expect(context.physics.setLinearVelocity).toHaveBeenCalledWith(
-        entity.bodyId,
+        entity.id,
         { x: 10, y: 0 }
       );
     });
@@ -81,13 +81,13 @@ describe('MovementBehaviors - set_velocity', () => {
 
       // Normalized: (3,4) has length 5, so result is (6, 8)
       expect(context.physics.setLinearVelocity).toHaveBeenCalledWith(
-        entity.bodyId,
+        entity.id,
         { x: 6, y: 8 }
       );
     });
 
     it('throws error when entity has no physics body', () => {
-      entity.bodyId = null;
+      entity.physics = undefined as any;
 
       entity.behaviors = [{
         definition: {
@@ -128,7 +128,7 @@ describe('MovementBehaviors - set_velocity', () => {
 
       // Target is 10 meters to the right, direction is (1, 0)
       expect(context.physics.setLinearVelocity).toHaveBeenCalledWith(
-        entity.bodyId,
+        entity.id,
         { x: 10, y: 0 }
       );
     });
@@ -155,7 +155,7 @@ describe('MovementBehaviors - set_velocity', () => {
 
       // Should move left (away from target at x=15)
       expect(context.physics.setLinearVelocity).toHaveBeenCalledWith(
-        entity.bodyId,
+        entity.id,
         { x: -10, y: 0 }
       );
     });
@@ -176,7 +176,7 @@ describe('MovementBehaviors - set_velocity', () => {
       executor.executeAll([entity], context);
 
       expect(context.physics.setLinearVelocity).toHaveBeenCalledWith(
-        entity.bodyId,
+        entity.id,
         expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) })
       );
     });
@@ -198,7 +198,7 @@ describe('MovementBehaviors - set_velocity', () => {
       executor.executeAll([entity], context);
 
       expect(context.physics.setLinearVelocity).toHaveBeenCalledWith(
-        entity.bodyId,
+        entity.id,
         { x: 0, y: 5 }
       );
     });
@@ -223,7 +223,7 @@ describe('MovementBehaviors - apply_impulse', () => {
       conditionalBehaviors: [],
       activeConditionalGroupId: -1,
       active: true,
-      bodyId: { value: 1 }, // apply_impulse REQUIRES physics body
+      physics: { bodyType: 'dynamic' }, // apply_impulse REQUIRES physics body
       children: [],
     } as unknown as RuntimeEntity;
 
@@ -264,7 +264,7 @@ describe('MovementBehaviors - apply_impulse', () => {
 
       // Impulse of 50 in direction (1, 0) = (50, 0)
       expect(context.physics.applyImpulse).toHaveBeenCalledWith(
-        entity.bodyId,
+        entity.id,
         { x: 50, y: 0 }
       );
     });
@@ -284,13 +284,13 @@ describe('MovementBehaviors - apply_impulse', () => {
 
       // Normalized: (3,4) has length 5, so result is (30, 40)
       expect(context.physics.applyImpulse).toHaveBeenCalledWith(
-        entity.bodyId,
+        entity.id,
         { x: 30, y: 40 }
       );
     });
 
     it('throws error when entity has no physics body', () => {
-      entity.bodyId = null;
+      entity.physics = undefined as any;
 
       entity.behaviors = [{
         definition: {
@@ -331,7 +331,7 @@ describe('MovementBehaviors - apply_impulse', () => {
 
       // Target is 10 meters to the right, direction is (1, 0)
       expect(context.physics.applyImpulse).toHaveBeenCalledWith(
-        entity.bodyId,
+        entity.id,
         { x: 50, y: 0 }
       );
     });
@@ -358,7 +358,7 @@ describe('MovementBehaviors - apply_impulse', () => {
 
       // Should move left (away from target at x=15)
       expect(context.physics.applyImpulse).toHaveBeenCalledWith(
-        entity.bodyId,
+        entity.id,
         { x: -50, y: 0 }
       );
     });
@@ -379,7 +379,7 @@ describe('MovementBehaviors - apply_impulse', () => {
       executor.executeAll([entity], context);
 
       expect(context.physics.applyImpulse).toHaveBeenCalledWith(
-        entity.bodyId,
+        entity.id,
         expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) })
       );
     });

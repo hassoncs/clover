@@ -9,7 +9,7 @@ We need to visualize game entities in different ways for debugging and developme
 ### Modes
 1.  **Normal**: Render full assets (images, sprites).
 2.  **Primitives**: Ignore image assets; render underlying physics shapes (rects, circles, polygons) with basic colors.
-3.  **Debug/BoundingBox**: Draw physics colliders (fixtures) and AABBs over the entities.
+3.  **Debug/BoundingBox**: Draw physics colliders and AABBs over the entities.
 
 ### Implementation Details
 -   **Component**: `GameRuntime`

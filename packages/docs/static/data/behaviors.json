@@ -32,6 +32,36 @@
     ]
   },
   {
+    "type": "apply_impulse",
+    "interfaceName": "ApplyImpulseBehavior",
+    "displayName": "Apply Impulse",
+    "description": "Applies an instantaneous impulse to the physics body.\nRequires entity to have a physics body.\nImpulse = force × time, resulting in immediate velocity change.",
+    "properties": [
+      {
+        "name": "direction",
+        "type": "MovementDirection",
+        "required": true
+      },
+      {
+        "name": "duration",
+        "type": "number",
+        "required": false,
+        "description": "Optional duration for continuous impulse application"
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "magnitude",
+        "type": "number",
+        "required": true,
+        "description": "Impulse magnitude (force × time)"
+      }
+    ]
+  },
+  {
     "type": "attach_to",
     "interfaceName": "AttachToBehavior",
     "displayName": "Attach To",
@@ -305,6 +335,43 @@
         "name": "maxHealth",
         "type": "number",
         "required": true
+      }
+    ]
+  },
+  {
+    "type": "launch_on_input",
+    "interfaceName": "LaunchOnInputBehavior",
+    "displayName": "Launch On Input",
+    "description": "Launches entity on input (click, tap, or spacebar).\nApplies velocity in a random upward direction and removes itself after launch.",
+    "properties": [
+      {
+        "name": "enableBehaviorAfterLaunch",
+        "type": "number",
+        "required": false,
+        "description": "Behavior to enable after launch (by index in behaviors array)"
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "maxAngle",
+        "type": "number",
+        "required": false,
+        "description": "Maximum angle from vertical (degrees, 0 = straight up)"
+      },
+      {
+        "name": "minAngle",
+        "type": "number",
+        "required": false,
+        "description": "Minimum angle from vertical (degrees, 0 = straight up)"
+      },
+      {
+        "name": "speed",
+        "type": "number",
+        "required": true,
+        "description": "Launch speed in meters per second"
       }
     ]
   },
@@ -594,6 +661,36 @@
     ]
   },
   {
+    "type": "set_velocity",
+    "interfaceName": "SetVelocityBehavior",
+    "displayName": "Set Velocity",
+    "description": "Sets physics body velocity directly.\nRequires entity to have a physics body.\nUnits: meters per second.",
+    "properties": [
+      {
+        "name": "direction",
+        "type": "MovementDirection",
+        "required": true
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "overwrite",
+        "type": "boolean",
+        "required": false,
+        "description": "Override current velocity (true) or add to it (false)"
+      },
+      {
+        "name": "speed",
+        "type": "number",
+        "required": true,
+        "description": "Speed in meters per second"
+      }
+    ]
+  },
+  {
     "type": "spawn_on_event",
     "interfaceName": "SpawnOnEventBehavior",
     "displayName": "Spawn On Event",
@@ -678,6 +775,37 @@
     ]
   },
   {
+    "type": "stick_to_entity",
+    "interfaceName": "StickToEntityBehavior",
+    "displayName": "Stick To Entity",
+    "description": "Sticks entity to another entity (e.g., ball stuck to paddle).\nEntity follows target entity's position with optional offset.",
+    "properties": [
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "inheritRotation",
+        "type": "boolean",
+        "required": false,
+        "description": "Whether to inherit target's rotation"
+      },
+      {
+        "name": "offset",
+        "type": "Vec2",
+        "required": false,
+        "description": "Offset from target entity's position"
+      },
+      {
+        "name": "targetTag",
+        "type": "string",
+        "required": true,
+        "description": "Tag of the entity to stick to"
+      }
+    ]
+  },
+  {
     "type": "teleport",
     "interfaceName": "TeleportBehavior",
     "displayName": "Teleport",
@@ -757,6 +885,94 @@
       {
         "name": "spawnTemplate",
         "type": "string",
+        "required": false
+      }
+    ]
+  },
+  {
+    "type": "translate",
+    "interfaceName": "TranslateBehavior",
+    "displayName": "Translate",
+    "description": "Transform-based movement (no physics required).\nMoves entity by modifying its transform position at speed in meters/second.",
+    "properties": [
+      {
+        "name": "bounds",
+        "type": "Bounds",
+        "required": false,
+        "description": "Optional bounds to clamp movement within"
+      },
+      {
+        "name": "direction",
+        "type": "MovementDirection",
+        "required": true
+      },
+      {
+        "name": "duration",
+        "type": "number",
+        "required": false,
+        "description": "Optional duration in seconds (infinite if not specified)"
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "speed",
+        "type": "number",
+        "required": true,
+        "description": "Speed in meters per second"
+      }
+    ]
+  },
+  {
+    "type": "tween",
+    "interfaceName": "TweenBehavior",
+    "displayName": "Tween",
+    "properties": [
+      {
+        "name": "duration",
+        "type": "number",
+        "required": true
+      },
+      {
+        "name": "ease",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "enabled",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "from",
+        "type": "number | { x: number; y: number }",
+        "required": false
+      },
+      {
+        "name": "loop",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "onCompleteEvent",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "property",
+        "type": "TweenProperty",
+        "required": true
+      },
+      {
+        "name": "to",
+        "type": "number | { x: number; y: number }",
+        "required": true
+      },
+      {
+        "name": "yoyo",
+        "type": "boolean",
         "required": false
       }
     ]

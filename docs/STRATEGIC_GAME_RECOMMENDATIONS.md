@@ -10,7 +10,7 @@
 
 Based on comprehensive market research and analysis of current iOS gaming trends, this document outlines **6 strategic game concepts** that leverage Slopcade's unique competitive advantages:
 
-1. **Physics-based gameplay** (Box2D + Godot 4)
+1. **Physics-based gameplay** (Godot physics + Godot 4)
 2. **AI image generation pipeline** (Scenario.com integration)
 3. **Declarative game definitions** (JSON-based rapid prototyping)
 
@@ -57,7 +57,7 @@ These games target the highest-growth segments where **visuals ARE the content**
 │   ┌─────────────┐      ┌─────────────┐      ┌─────────────┐ │
 │   │   Physics   │  +   │  AI Image   │  +   │  Declarative│ │
 │   │   Engine    │      │  Generation │      │   Games     │ │
-│   │  (Box2D)    │      │ (Scenario)  │      │   (JSON)    │ │
+│   │  (Godot physics) │      │ (Scenario)  │      │   (JSON)    │ │
 │   └─────────────┘      └─────────────┘      └─────────────┘ │
 │          │                    │                    │         │
 │          └────────────────────┼────────────────────┘         │

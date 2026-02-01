@@ -5,13 +5,10 @@ import { resetGlobalTagRegistry } from '@slopcade/shared';
 const mockPhysics = {
   createBody: vi.fn(() => ({ value: 1 })),
   createFixture: vi.fn(() => ({ value: 1 })),
-  addFixture: vi.fn(() => ({ value: 1 })),
   destroyBody: vi.fn(),
   getTransform: vi.fn(() => ({ position: { x: 0, y: 0 }, angle: 0 })),
   queryAABB: vi.fn(() => []),
 } as any;
-
-const mockGetEntityByBodyId = vi.fn();
 
 describe('EntityManager Query Operations', () => {
   let entityManager: EntityManager;
@@ -19,7 +16,6 @@ describe('EntityManager Query Operations', () => {
   beforeEach(() => {
     resetGlobalTagRegistry();
     entityManager = new EntityManager(mockPhysics);
-    (entityManager as any).getEntityByBodyId = mockGetEntityByBodyId;
     vi.clearAllMocks();
   });
 
@@ -185,66 +181,6 @@ describe('EntityManager Query Operations', () => {
       expect(result[0].id).toBe('entity-physics');
     });
 
-    it('should return entities with bodyId component', () => {
-      entityManager.createEntity({
-        id: 'entity-no-body',
-        name: 'No Body Entity',
-        transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
-      });
-      const entityWithBody = entityManager.createEntity({
-        id: 'entity-body',
-        name: 'Body Entity',
-        transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
-        physics: { bodyType: 'dynamic' },
-        collider: { shape: 'circle', radius: 0.5 },
-      });
-
-      (entityWithBody as any).bodyId = 42;
-
-      const result = entityManager.query({ has: ['bodyId'] });
-
-      expect(result).toHaveLength(1);
-      expect(result[0].id).toBe('entity-body');
-    });
-
-    it('should return entities with collider component', () => {
-      entityManager.createEntity({
-        id: 'entity-no-collider',
-        name: 'No Collider Entity',
-        transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
-      });
-      const entityWithCollider = entityManager.createEntity({
-        id: 'entity-collider',
-        name: 'Collider Entity',
-        transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
-        collider: { shape: 'box', width: 1, height: 1 },
-      });
-
-      const result = entityManager.query({ has: ['collider'] });
-
-      expect(result).toHaveLength(1);
-      expect(result[0].id).toBe('entity-collider');
-    });
-
-    it('should return entities with zone component', () => {
-      entityManager.createEntity({
-        id: 'entity-no-zone',
-        name: 'No Zone Entity',
-        transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
-      });
-      const entityWithZone = entityManager.createEntity({
-        id: 'entity-zone',
-        name: 'Zone Entity',
-        transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
-        zone: { shape: { type: 'box', width: 2, height: 2 } },
-      });
-
-      const result = entityManager.query({ has: ['zone'] });
-
-      expect(result).toHaveLength(1);
-      expect(result[0].id).toBe('entity-zone');
-    });
-
     it('should return entities matching multiple components (AND logic)', () => {
       const entityVisualOnly = entityManager.createEntity({
         id: 'entity-visual-only',
@@ -282,7 +218,7 @@ describe('EntityManager Query Operations', () => {
         visual: { type: 'rect', width: 1, height: 1, color: '#ff0000' },
       });
 
-      const result = entityManager.query({ has: ['physics', 'bodyId'] });
+      const result = entityManager.query({ has: ['physics', 'collider'] });
 
       expect(result).toHaveLength(0);
     });
@@ -306,12 +242,7 @@ describe('EntityManager Query Operations', () => {
         transform: { x: 15, y: 15, angle: 0, scaleX: 1, scaleY: 1 },
       });
 
-      mockPhysics.queryAABB.mockReturnValue([{ value: 1 }, { value: 2 }]);
-      mockGetEntityByBodyId.mockImplementation((bodyId: any) => {
-        if (bodyId.value === 1) return entity1;
-        if (bodyId.value === 2) return entity2;
-        return undefined;
-      });
+      mockPhysics.queryAABB.mockReturnValue(['entity-1', 'entity-2']);
 
       const result = entityManager.query({
         withinAabb: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
@@ -494,12 +425,7 @@ describe('EntityManager Query Operations', () => {
         visual: { type: 'rect', width: 1, height: 1, color: '#ff0000' },
       });
 
-      mockPhysics.queryAABB.mockReturnValue([{ value: 1 }, { value: 2 }]);
-      mockGetEntityByBodyId.mockImplementation((bodyId: any) => {
-        if (bodyId.value === 1) return entity1;
-        if (bodyId.value === 2) return entity2;
-        return undefined;
-      });
+      mockPhysics.queryAABB.mockReturnValue(['entity-1', 'entity-2']);
 
       const result = entityManager.query({
         withinAabb: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
@@ -540,11 +466,7 @@ describe('EntityManager Query Operations', () => {
       entityManager.addTag('entity-2', 'friendly');
       entityManager.addTag('entity-3', 'hostile');
 
-      mockPhysics.queryAABB.mockReturnValue([{ value: 1 }]);
-      mockGetEntityByBodyId.mockImplementation((bodyId: any) => {
-        if (bodyId.value === 1) return entity1;
-        return undefined;
-      });
+      mockPhysics.queryAABB.mockReturnValue(['entity-1']);
 
       const result = entityManager.query({
         tags: ['hostile'],
@@ -616,7 +538,7 @@ describe('EntityManager Query Operations', () => {
         visual: { type: 'rect', width: 1, height: 1, color: '#ff0000' },
       });
 
-      const resultNoComponents = entityManager.query({ has: ['physics', 'bodyId'] });
+      const resultNoComponents = entityManager.query({ has: ['physics', 'collider'] });
 
       expect(resultNoComponents).toHaveLength(0);
 
@@ -634,13 +556,10 @@ describe('EntityManager Query Operations', () => {
         visual: { type: 'rect', width: 1, height: 1, color: '#ff0000' },
         physics: { bodyType: 'dynamic' },
         collider: { shape: 'circle', radius: 0.5 },
-        zone: { shape: { type: 'box', width: 2, height: 2 } },
       });
 
-      (entity1 as any).bodyId = 42;
-
       const result = entityManager.query({
-        has: ['visual', 'physics', 'collider', 'zone', 'bodyId'],
+        has: ['visual', 'physics', 'collider'],
       });
 
       expect(result).toHaveLength(1);

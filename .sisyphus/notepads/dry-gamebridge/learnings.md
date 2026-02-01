@@ -1,0 +1,1 @@
+Successfully DRYed GameBridge.gd. Moved background, UI, physics queries, and transform functions to their respective modules. Updated JS bridge to delegate directly to module handlers. Line count reduced from 2549 to 1205.

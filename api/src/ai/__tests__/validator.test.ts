@@ -14,17 +14,17 @@ describe('validateGameDefinition', () => {
 
     it('should accept game with warnings but no errors', () => {
       const game = {
-        metadata: { id: 'test', title: 'Test' },
+        metadata: { id: 'test', title: 'Test', version: '1.0.0' },
         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
         entities: [
           {
             id: 'player',
-            transform: { x: 5, y: 5 },
-            physics: { density: 1 },
-      collider: { shape: 'box', physics: {
-              bodyType: 'dynamic', width: 1, height: 1, friction: 0.5, restitution: 0.5 },
-            visual: { type: 'rect', width: 1, height: 1, fill: '#FF0000' },
-          },
+            name: 'Player',
+            transform: { x: 5, y: 5, angle: 0, scaleX: 1, scaleY: 1 },
+            physics: { bodyType: 'dynamic', density: 1, friction: 0.5, restitution: 0.5 },
+            collider: { shape: 'box', width: 1, height: 1 },
+            visual: { type: 'rect', width: 1, height: 1, color: '#FF0000' },
+          }
         ],
         rules: [
           { id: 'r1', trigger: { type: 'tap' }, actions: [] },
@@ -52,10 +52,11 @@ describe('validateGameDefinition', () => {
         entities: [
           {
             id: 'e1',
-            transform: { x: 0, y: 0 },
-            physics: { density: 1 },
-      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
-            visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
+            name: 'E1',
+            transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+            physics: { bodyType: 'static', density: 1, friction: 0.5, restitution: 0 },
+            collider: { shape: 'box', width: 1, height: 1 },
+            visual: { type: 'rect', width: 1, height: 1, color: '#000' },
           },
         ],
       };
@@ -71,10 +72,11 @@ describe('validateGameDefinition', () => {
         entities: [
           {
             id: 'e1',
-            transform: { x: 0, y: 0 },
-            physics: { density: 1 },
-      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
-            visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
+            name: 'E1',
+            transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+            physics: { bodyType: 'static', density: 1, friction: 0.5, restitution: 0 },
+            collider: { shape: 'box', width: 1, height: 1 },
+            visual: { type: 'rect', width: 1, height: 1, color: '#000' },
           },
         ],
       };
@@ -102,10 +104,11 @@ describe('validateGameDefinition', () => {
         entities: [
           {
             id: 'e1',
-            transform: { x: 0, y: 0 },
-            physics: { density: 1 },
-      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
-            visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
+            name: 'E1',
+            transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+            physics: { bodyType: 'static', density: 1, friction: 0.5, restitution: 0 },
+            collider: { shape: 'box', width: 1, height: 1 },
+            visual: { type: 'rect', width: 1, height: 1, color: '#000' },
           },
         ],
       };
@@ -139,17 +142,19 @@ describe('validateGameDefinition', () => {
         entities: [
           {
             id: 'same-id',
-            transform: { x: 0, y: 0 },
-            physics: { density: 1 },
-      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
-            visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
+            name: 'E1',
+            transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+            physics: { bodyType: 'static', density: 1, friction: 0.5, restitution: 0 },
+            collider: { shape: 'box', width: 1, height: 1 },
+            visual: { type: 'rect', width: 1, height: 1, color: '#000' },
           },
           {
             id: 'same-id',
-            transform: { x: 5, y: 5 },
-            physics: { density: 1 },
-      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
-            visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
+            name: 'E2',
+            transform: { x: 5, y: 5, angle: 0, scaleX: 1, scaleY: 1 },
+            physics: { bodyType: 'static', density: 1, friction: 0.5, restitution: 0 },
+            collider: { shape: 'box', width: 1, height: 1 },
+            visual: { type: 'rect', width: 1, height: 1, color: '#000' },
           },
         ],
       };
@@ -161,10 +166,11 @@ describe('validateGameDefinition', () => {
     it('should warn on too many entities', () => {
       const entities = Array.from({ length: 55 }, (_, i) => ({
         id: `entity-${i}`,
-        transform: { x: i, y: 0 },
-        physics: { density: 1 },
-      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
-        visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
+        name: `Entity ${i}`,
+        transform: { x: i, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+        physics: { bodyType: 'static', density: 1, friction: 0.5, restitution: 0 },
+        collider: { shape: 'box', width: 1, height: 1 },
+        visual: { type: 'rect', width: 1, height: 1, color: '#000' },
       }));
 
       const game = {
@@ -177,24 +183,25 @@ describe('validateGameDefinition', () => {
       expect(result.warnings.some(w => w.code === 'TOO_MANY_ENTITIES')).toBe(true);
     });
 
-     it('should error when no entity has control behavior', () => {
-       const game = {
-         metadata: { id: 'test' },
-         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-         entities: [
-           {
-             id: 'static-box',
-             transform: { x: 0, y: 0 },
-             physics: { density: 1 },
-      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
-             visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
-           },
-         ],
-       };
+    it('should error when no entity has control behavior', () => {
+      const game = {
+        metadata: { id: 'test' },
+        world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
+        entities: [
+          {
+            id: 'static-box',
+            name: 'Static Box',
+            transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+            physics: { bodyType: 'static', density: 1, friction: 0.5, restitution: 0 },
+            collider: { shape: 'box', width: 1, height: 1 },
+            visual: { type: 'rect', width: 1, height: 1, color: '#000' },
+          },
+        ],
+      };
 
-       const result = validateGameDefinition(game as any);
-       expect(result.errors.some(e => e.code === 'NO_PLAYER_CONTROL')).toBe(true);
-     });
+      const result = validateGameDefinition(game as any);
+      expect(result.errors.some(e => e.code === 'NO_PLAYER_CONTROL')).toBe(true);
+    });
   });
 
   describe('physics validation', () => {
@@ -204,22 +211,73 @@ describe('validateGameDefinition', () => {
     });
 
     it('should error on invalid shape', () => {
-      const result = validateGameDefinition(invalidBadPhysics as any);
+      const game = {
+        metadata: { id: 'test' },
+        world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
+        entities: [
+          {
+            id: 'bad-shape',
+            name: 'Bad Shape',
+            transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+            physics: { bodyType: 'static' },
+            collider: { shape: 'invalid' },
+          }
+        ]
+      };
+      const result = validateGameDefinition(game as any);
       expect(result.errors.some(e => e.code === 'INVALID_SHAPE')).toBe(true);
     });
 
     it('should error on negative density', () => {
-      const result = validateGameDefinition(invalidBadPhysics as any);
+      const game = {
+        metadata: { id: 'test' },
+        world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
+        entities: [
+          {
+            id: 'bad-density',
+            name: 'Bad Density',
+            transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+            physics: { bodyType: 'static', density: -1 },
+          }
+        ]
+      };
+      const result = validateGameDefinition(game as any);
       expect(result.errors.some(e => e.code === 'NEGATIVE_DENSITY')).toBe(true);
     });
 
     it('should error on negative restitution', () => {
-      const result = validateGameDefinition(invalidBadPhysics as any);
+      const game = {
+        metadata: { id: 'test' },
+        world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
+        entities: [
+          {
+            id: 'bad-restitution',
+            name: 'Bad Restitution',
+            transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+            physics: { bodyType: 'static' },
+            collider: { shape: 'box', width: 1, height: 1, restitution: -1 },
+          }
+        ]
+      };
+      const result = validateGameDefinition(game as any);
       expect(result.errors.some(e => e.code === 'NEGATIVE_RESTITUTION')).toBe(true);
     });
 
     it('should warn on friction out of range', () => {
-      const result = validateGameDefinition(invalidBadPhysics as any);
+      const game = {
+        metadata: { id: 'test' },
+        world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
+        entities: [
+          {
+            id: 'bad-friction',
+            name: 'Bad Friction',
+            transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+            physics: { bodyType: 'static' },
+            collider: { shape: 'box', width: 1, height: 1, friction: 5 },
+          }
+        ]
+      };
+      const result = validateGameDefinition(game as any);
       expect(result.warnings.some(w => w.code === 'FRICTION_OUT_OF_RANGE')).toBe(true);
     });
 
@@ -230,10 +288,11 @@ describe('validateGameDefinition', () => {
         entities: [
           {
             id: 'bad-box',
-            transform: { x: 0, y: 0 },
-            physics: { density: 1 },
-      collider: { shape: 'box', physics: { bodyType: 'static', friction: 0.5, restitution: 0 },
-            visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
+            name: 'Bad Box',
+            transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+            physics: { bodyType: 'static' },
+            collider: { shape: 'box' },
+            visual: { type: 'rect', width: 1, height: 1, color: '#000' },
           },
         ],
       };
@@ -250,10 +309,11 @@ describe('validateGameDefinition', () => {
         entities: [
           {
             id: 'bad-circle',
-            transform: { x: 0, y: 0 },
-            physics: { density: 1 },
-      collider: { shape: 'circle', physics: { bodyType: 'dynamic', friction: 0.5, restitution: 0 },
-            visual: { type: 'circle', radius: 1, fill: '#000' },
+            name: 'Bad Circle',
+            transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+            physics: { bodyType: 'dynamic' },
+            collider: { shape: 'circle' },
+            visual: { type: 'circle', radius: 1, color: '#000' },
           },
         ],
       };
@@ -271,10 +331,11 @@ describe('validateGameDefinition', () => {
         entities: [
           {
             id: 'e1',
-            transform: { x: 0, y: 0 },
-            physics: { density: 1 },
-      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
-            visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
+            name: 'E1',
+            transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+            physics: { bodyType: 'static', density: 1, friction: 0.5, restitution: 0 },
+            collider: { shape: 'box', width: 1, height: 1 },
+            visual: { type: 'rect', width: 1, height: 1, color: '#000' },
             behaviors: [{ type: 'invalid_behavior_type' }],
           },
         ],
@@ -284,25 +345,26 @@ describe('validateGameDefinition', () => {
       expect(result.errors.some(e => e.code === 'INVALID_BEHAVIOR_TYPE')).toBe(true);
     });
 
-     it('should error on control behavior type (no longer supported)', () => {
-       const game = {
-         metadata: { id: 'test' },
-         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-         entities: [
-           {
-             id: 'e1',
-             transform: { x: 0, y: 0 },
-             physics: { density: 1 },
-      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
-             visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
-             behaviors: [{ type: 'control', controlType: 'tap_to_jump' }],
-           },
-         ],
-       };
+    it('should error on control behavior type (no longer supported)', () => {
+      const game = {
+        metadata: { id: 'test' },
+        world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
+        entities: [
+          {
+            id: 'e1',
+            name: 'E1',
+            transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+            physics: { bodyType: 'static', density: 1, friction: 0.5, restitution: 0 },
+            collider: { shape: 'box', width: 1, height: 1 },
+            visual: { type: 'rect', width: 1, height: 1, color: '#000' },
+            behaviors: [{ type: 'control', controlType: 'tap_to_jump' }],
+          },
+        ],
+      };
 
-       const result = validateGameDefinition(game as any);
-       expect(result.errors.some(e => e.code === 'INVALID_BEHAVIOR_TYPE')).toBe(true);
-     });
+      const result = validateGameDefinition(game as any);
+      expect(result.errors.some(e => e.code === 'INVALID_BEHAVIOR_TYPE')).toBe(true);
+    });
 
     it('should error on spawn_on_event missing template', () => {
       const game = {
@@ -311,10 +373,11 @@ describe('validateGameDefinition', () => {
         entities: [
           {
             id: 'spawner',
-            transform: { x: 0, y: 0 },
-            physics: { density: 1 },
-      collider: { shape: 'box', physics: { bodyType: 'static', width: 1, height: 1, friction: 0.5, restitution: 0 },
-            visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
+            name: 'Spawner',
+            transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+            physics: { bodyType: 'static', density: 1, friction: 0.5, restitution: 0 },
+            collider: { shape: 'box', width: 1, height: 1 },
+            visual: { type: 'rect', width: 1, height: 1, color: '#000' },
             behaviors: [{ type: 'spawn_on_event', event: 'tap' }],
           },
         ],
@@ -326,51 +389,53 @@ describe('validateGameDefinition', () => {
   });
 
   describe('win/lose condition validation', () => {
-     it('should error on missing win condition', () => {
-       const game = {
-         metadata: { id: 'test' },
-         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-         entities: [
-           {
-             id: 'player',
-             transform: { x: 0, y: 0 },
-             physics: { density: 1 },
-      collider: { shape: 'box', physics: { bodyType: 'dynamic', width: 1, height: 1, friction: 0.5, restitution: 0 },
-             visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
-           },
-         ],
-         rules: [
-           { id: 'r1', trigger: { type: 'tap' }, actions: [] },
-         ],
-         loseCondition: { type: 'time_up', time: 60 },
-       };
+    it('should error on missing win condition', () => {
+      const game = {
+        metadata: { id: 'test' },
+        world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
+        entities: [
+          {
+            id: 'player',
+            name: 'Player',
+            transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+            physics: { bodyType: 'dynamic', density: 1, friction: 0.5, restitution: 0 },
+            collider: { shape: 'box', width: 1, height: 1 },
+            visual: { type: 'rect', width: 1, height: 1, color: '#000' },
+          },
+        ],
+        rules: [
+          { id: 'r1', trigger: { type: 'tap' }, actions: [] },
+        ],
+        loseCondition: { type: 'time_up', time: 60 },
+      };
 
-       const result = validateGameDefinition(game as any);
-       expect(result.errors.some(e => e.code === 'MISSING_WIN_CONDITION')).toBe(true);
-     });
+      const result = validateGameDefinition(game as any);
+      expect(result.errors.some(e => e.code === 'MISSING_WIN_CONDITION')).toBe(true);
+    });
 
-     it('should error on missing lose condition', () => {
-       const game = {
-         metadata: { id: 'test' },
-         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
-         entities: [
-           {
-             id: 'player',
-             transform: { x: 0, y: 0 },
-             physics: { density: 1 },
-      collider: { shape: 'box', physics: { bodyType: 'dynamic', width: 1, height: 1, friction: 0.5, restitution: 0 },
-             visual: { type: 'rect', width: 1, height: 1, fill: '#000' },
-           },
-         ],
-         rules: [
-           { id: 'r1', trigger: { type: 'tap' }, actions: [] },
-         ],
-         winCondition: { type: 'score', score: 100 },
-       };
+    it('should error on missing lose condition', () => {
+      const game = {
+        metadata: { id: 'test' },
+        world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
+        entities: [
+          {
+            id: 'player',
+            name: 'Player',
+            transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+            physics: { bodyType: 'dynamic', density: 1, friction: 0.5, restitution: 0 },
+            collider: { shape: 'box', width: 1, height: 1 },
+            visual: { type: 'rect', width: 1, height: 1, color: '#000' },
+          },
+        ],
+        rules: [
+          { id: 'r1', trigger: { type: 'tap' }, actions: [] },
+        ],
+        winCondition: { type: 'score', score: 100 },
+      };
 
-       const result = validateGameDefinition(game as any);
-       expect(result.errors.some(e => e.code === 'MISSING_LOSE_CONDITION')).toBe(true);
-     });
+      const result = validateGameDefinition(game as any);
+      expect(result.errors.some(e => e.code === 'MISSING_LOSE_CONDITION')).toBe(true);
+    });
   });
 });
 

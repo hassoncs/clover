@@ -1,5 +1,5 @@
 import type { VisualComponent } from './visual';
-import type { PhysicsComponent, ZoneComponent } from './physics';
+import type { PhysicsComponent, EntityArchetype } from './physics';
 import type { ColliderComponent } from './collider';
 import type { CharacterComponent } from './character';
 import type { Behavior, ConditionalBehavior } from './behavior';
@@ -54,16 +54,6 @@ export interface GameEntity {
   active?: boolean;
   assetPackId?: string;
   children?: ChildEntityDefinition[];
-  /**
-   * @deprecated Use collider with isSensor: true instead.
-   * Zones are now implemented as sensor colliders for unified rendering.
-   */
-  type?: 'body' | 'zone';
-  /**
-   * @deprecated Use collider with isSensor: true instead.
-   * Zones are now implemented as sensor colliders for unified rendering.
-   */
-  zone?: ZoneComponent;
 }
 
 export interface SlotDefinition {
@@ -89,6 +79,7 @@ export interface ChildTemplateDefinition {
 export interface BaseEntityTemplate {
   id: string;
   description?: string;
+  archetype?: EntityArchetype;
   visual?: VisualComponent;
   physics?: PhysicsComponent;
   collider?: ColliderComponent;
@@ -99,25 +90,10 @@ export interface BaseEntityTemplate {
   layer?: number;
   slots?: Record<string, SlotDefinition>;
   children?: ChildTemplateDefinition[];
-  /**
-   * @deprecated Use collider with isSensor: true instead.
-   * Zones are now implemented as sensor colliders for unified rendering.
-   */
-  type?: 'body' | 'zone';
-  /**
-   * @deprecated Use collider with isSensor: true instead.
-   * Zones are now implemented as sensor colliders for unified rendering.
-   */
-  zone?: ZoneComponent;
 }
 
 export type EntityTemplate = 
-  | (BaseEntityTemplate & { type?: 'body'; physics?: PhysicsComponent })
-  /**
-   * @deprecated Use collider with isSensor: true instead.
-   * Zones are now implemented as sensor colliders for unified rendering.
-   */
-  | (BaseEntityTemplate & { type: 'zone'; zone: ZoneComponent });
+  | (BaseEntityTemplate & { type?: 'body'; physics?: PhysicsComponent });
 
 export interface BaseEntityDefinition {
   id: string;
@@ -142,9 +118,3 @@ export interface BodyEntityDefinition extends BaseEntityDefinition {
   type: 'body';
   physics: PhysicsComponent;
 }
-
-/**
- * @deprecated Use collider with isSensor: true instead.
- * Zones are now implemented as sensor colliders for unified rendering.
- */
-export { ZoneEntityDefinition } from './physics';

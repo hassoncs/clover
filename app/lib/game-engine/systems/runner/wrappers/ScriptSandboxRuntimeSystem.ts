@@ -303,8 +303,8 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
         });
         if (!entity) return null;
         
-        if (opts?.velocity && entity.bodyId) {
-          physics.setLinearVelocity(entity.bodyId, opts.velocity);
+        if (opts?.velocity && entity.physics) {
+          physics.setLinearVelocity(entity.id, opts.velocity);
         }
         
         return entity.id;
@@ -324,24 +324,24 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
           return;
         }
         
-        console.log('[ScriptSandboxRuntimeSystem] setEntityPosition:', entityId, 'to', position, 'bodyId:', entity.bodyId?.value);
+        console.log('[ScriptSandboxRuntimeSystem] setEntityPosition:', entityId, 'to', position, 'hasPhysics:', !!entity.physics);
         
         entity.transform.x = position.x;
         entity.transform.y = position.y;
         
-        if (entity.bodyId) {
-          physics.setTransform(entity.bodyId, {
+        if (entity.physics) {
+          physics.setTransform(entity.id, {
             position,
             angle: entity.transform.angle,
           });
         } else {
-          console.warn('[ScriptSandboxRuntimeSystem] setEntityPosition: entity has no bodyId:', entityId);
+          console.warn('[ScriptSandboxRuntimeSystem] setEntityPosition: entity has no physics:', entityId);
         }
       },
       getEntityVelocity: (entityId: string) => {
         const entity = em.getEntity(entityId);
-        if (!entity || !entity.bodyId) return null;
-        return physics.getLinearVelocity(entity.bodyId);
+        if (!entity || !entity.physics) return null;
+        return physics.getLinearVelocity(entity.id);
       },
       setEntityVelocity: (entityId: string, velocity: { x: number; y: number }) => {
         const entity = em.getEntity(entityId);
@@ -349,17 +349,17 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
           console.warn('[ScriptSandboxRuntimeSystem] setEntityVelocity: entity not found:', entityId);
           return;
         }
-        if (!entity.bodyId) {
-          console.warn('[ScriptSandboxRuntimeSystem] setEntityVelocity: entity has no bodyId:', entityId);
+        if (!entity.physics) {
+          console.warn('[ScriptSandboxRuntimeSystem] setEntityVelocity: entity has no physics:', entityId);
           return;
         }
         console.log('[ScriptSandboxRuntimeSystem] setEntityVelocity:', entityId, 'to', velocity);
-        physics.setLinearVelocity(entity.bodyId, velocity);
+        physics.setLinearVelocity(entity.id, velocity);
       },
       applyImpulse: (entityId: string, impulse: { x: number; y: number }) => {
         const entity = em.getEntity(entityId);
-        if (!entity || !entity.bodyId) return;
-        physics.applyImpulseToCenter(entity.bodyId, impulse);
+        if (!entity || !entity.physics) return;
+        physics.applyImpulseToCenter(entity.id, impulse);
       },
       getEntityTags: (entityId: string) => {
         const entity = em.getEntity(entityId);

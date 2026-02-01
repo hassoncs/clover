@@ -11,7 +11,7 @@ After analyzing 20+ puzzle game types, the key insight is:
 
 > **Slopcade is a physics playground, not a logic puzzle engine.**
 
-Rather than building CSP solvers for Sudoku-class puzzles, we should focus on **procedural physics level generation** that leverages our existing Godot 4 / Box2D infrastructure.
+Rather than building CSP solvers for Sudoku-class puzzles, we should focus on **procedural physics level generation** that leverages our existing Godot 4 physics infrastructure.
 
 ### The Core Distinction
 
@@ -30,7 +30,7 @@ Rather than building CSP solvers for Sudoku-class puzzles, we should focus on **
 | Asset | Capability |
 |-------|------------|
 | Godot 4 physics engine | Real-time rigid body simulation |
-| Box2D integration | Collision, joints, forces, queries |
+| Godot 4 physics | Collision, joints, forces, queries |
 | Behavior system | Entity interactions, spawning, AI |
 | 10 game templates | Slingshot, rope, vehicles, stacking, pinball... |
 

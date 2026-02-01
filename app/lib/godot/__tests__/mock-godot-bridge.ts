@@ -65,9 +65,6 @@ export function createMockGodotBridge(): GodotBridge {
     queryAABB: vi.fn().mockResolvedValue([]),
     raycast: vi.fn().mockResolvedValue(null),
 
-    createBody: vi.fn().mockReturnValue(1),
-    addFixture: vi.fn().mockReturnValue(1),
-    setSensor: vi.fn(),
     setUserData: vi.fn(),
     getUserData: vi.fn().mockResolvedValue(null),
     getAllBodies: vi.fn().mockResolvedValue([]),
@@ -171,19 +168,6 @@ export function createRecordingGodotBridge(): RecordingGodotBridge {
   };
 
   const mockBridge = createMockGodotBridge();
-  
-  (mockBridge.createBody as any).mockImplementation((def: unknown) => {
-    const bodyId = calls.filter(c => c.method === 'createBody').length + 1;
-    record('createBody', def);
-    return bodyId;
-  });
-  
-  (mockBridge.addFixture as any).mockImplementation((bodyId: number, fixtureDef: unknown) => {
-    const fixtureId = calls.filter(c => c.method === 'addFixture').length + 1;
-    record('addFixture', bodyId, fixtureDef);
-    return fixtureId;
-  });
-  
   const recordingBridge = mockBridge as RecordingGodotBridge;
   recordingBridge.getCalls = () => [...calls];
   recordingBridge.getCallsFor = (method: string) => calls.filter(c => c.method === method);

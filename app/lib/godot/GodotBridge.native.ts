@@ -13,7 +13,7 @@ import type {
   WeldJointDef,
   MouseJointDef,
   BodyDef,
-  FixtureDef,
+  ColliderConfig,
   ContactInfo,
   DynamicShaderResult,
 } from './types';
@@ -31,8 +31,7 @@ interface GodotGameBridge {
     angular_velocity?: number;
   }>;
   pixels_per_meter: number;
-  user_data: Record<number, unknown>;
-  body_id_reverse: Record<number, string>;
+  user_data: Record<string, unknown>;
   get_all_transforms(): Record<string, EntityTransform>;
   get_all_properties(): PropertySyncPayload;
   _screen_to_world_impl(screenX: number, screenY: number): { x: number; y: number };
@@ -241,21 +240,21 @@ export function createNativeGodotBridge(): GodotBridge {
             break;
           }
           case 'sensor_begin': {
-            const data = event.data as { sensorColliderId: number; otherBodyId: number; otherColliderId: number };
+            const data = event.data as { sensorShapeIndex: number; otherEntityId: string; otherShapeIndex: number };
             const sensorEvent: SensorEvent = {
-              sensorColliderId: data.sensorColliderId,
-              otherBodyId: data.otherBodyId,
-              otherColliderId: data.otherColliderId,
+              sensorShapeIndex: data.sensorShapeIndex,
+              otherEntityId: data.otherEntityId,
+              otherShapeIndex: data.otherShapeIndex,
             };
             for (const cb of sensorBeginCallbacks) cb(sensorEvent);
             break;
           }
           case 'sensor_end': {
-            const data = event.data as { sensorColliderId: number; otherBodyId: number; otherColliderId: number };
+            const data = event.data as { sensorShapeIndex: number; otherEntityId: string; otherShapeIndex: number };
             const sensorEvent: SensorEvent = {
-              sensorColliderId: data.sensorColliderId,
-              otherBodyId: data.otherBodyId,
-              otherColliderId: data.otherColliderId,
+              sensorShapeIndex: data.sensorShapeIndex,
+              otherEntityId: data.otherEntityId,
+              otherShapeIndex: data.otherShapeIndex,
             };
             for (const cb of sensorEndCallbacks) cb(sensorEvent);
             break;
@@ -879,91 +878,16 @@ export function createNativeGodotBridge(): GodotBridge {
       });
     },
 
-    createBody(def: BodyDef): number {
-      const bodyId = Date.now();
-      const userDataJson = def.userData != null ? JSON.stringify(def.userData) : '';
-      callGameBridge('create_body',
-        def.type,
-        def.position.x, def.position.y,
-        def.angle ?? 0,
-        def.linearDamping ?? 0,
-        def.angularDamping ?? 0,
-        def.fixedRotation ?? false,
-        def.bullet ?? false,
-        userDataJson,
-        def.group ?? ''
-      );
-      return bodyId;
+
+
+    setUserData(_entityId: string, _data: unknown) {},
+
+    async getUserData(_entityId: string): Promise<unknown> {
+      return null;
     },
 
-    addFixture(bodyId: number, def: FixtureDef): number {
-      const colliderId = Date.now();
-      const shape = def.shape;
-      const args: unknown[] = [bodyId, shape.type];
-
-      if (shape.type === 'circle') {
-        args.push(shape.radius ?? 0.5);
-      } else if (shape.type === 'box') {
-        args.push(shape.halfWidth ?? 0.5, shape.halfHeight ?? 0.5);
-      } else if (shape.type === 'polygon' && shape.vertices) {
-        args.push(shape.vertices.length);
-        for (const v of shape.vertices) {
-          args.push(v.x, v.y);
-        }
-      }
-
-      args.push(
-        def.density ?? 1,
-        def.friction ?? 0.3,
-        def.restitution ?? 0,
-        def.isSensor ?? false,
-        def.categoryBits ?? 1,
-        def.maskBits ?? 0xFFFFFFFF
-      );
-
-      callGameBridge('add_fixture', ...args);
-      return colliderId;
-    },
-
-    setSensor(colliderId: number, isSensor: boolean) {
-      callGameBridge('set_sensor', colliderId, isSensor);
-    },
-
-    setUserData(bodyId: number, data: unknown) {
-      const dataJson = data != null ? JSON.stringify(data) : '';
-      callGameBridge('set_user_data', bodyId, dataJson);
-    },
-
-    async getUserData(bodyId: number): Promise<unknown> {
-      const { RTNGodot, runOnGodotThread } = await getGodotModule();
-      
-      return runOnGodotThread(() => {
-        'worklet';
-        try {
-          const Godot = RTNGodot.API();
-          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
-          if (gameBridge?.user_data) {
-            return gameBridge.user_data[bodyId] ?? null;
-          }
-        } catch (e) {}
-        return null;
-      });
-    },
-
-    async getAllBodies(): Promise<number[]> {
-      const { RTNGodot, runOnGodotThread } = await getGodotModule();
-      
-      return runOnGodotThread(() => {
-        'worklet';
-        try {
-          const Godot = RTNGodot.API();
-          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
-          if (gameBridge?.body_id_reverse) {
-            return Object.keys(gameBridge.body_id_reverse).map(k => parseInt(k, 10));
-          }
-        } catch (e) {}
-        return [];
-      });
+    async getAllEntities(): Promise<string[]> {
+      return [];
     },
 
     onCollision(callback: (event: CollisionEvent) => void): () => void {

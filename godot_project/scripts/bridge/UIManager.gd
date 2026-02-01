@@ -104,15 +104,18 @@ func destroy_ui_button(button_id: String) -> void:
 
 
 func _on_ui_button_down(button_id: String) -> void:
-	_bridge.call("_on_ui_button_down", button_id)
+	if _bridge and _bridge._event_emitter:
+		_bridge._event_emitter.emit_ui_button_event("button_down", button_id)
 
 
 func _on_ui_button_up(button_id: String) -> void:
-	_bridge.call("_on_ui_button_up", button_id)
+	if _bridge and _bridge._event_emitter:
+		_bridge._event_emitter.emit_ui_button_event("button_up", button_id)
 
 
 func _on_ui_button_pressed(button_id: String) -> void:
-	_bridge.call("_on_ui_button_pressed", button_id)
+	if _bridge and _bridge._event_emitter:
+		_bridge._event_emitter.emit_ui_button_event("button_pressed", button_id)
 
 
 func _get_or_create_ui_layer() -> CanvasLayer:
@@ -275,3 +278,43 @@ func _get_viewport_size() -> Vector2:
 	if viewport:
 		return viewport.get_visible_rect().size
 	return Vector2(1152, 648)
+
+# =============================================================================
+# THEMED UI COMPONENTS
+# =============================================================================
+
+func create_themed_ui_component(
+	component_id: String,
+	component_type: int,
+	metadata_url: String,
+	pos_x: float,
+	pos_y: float,
+	width: float,
+	height: float,
+	label_text: String = ""
+) -> void:
+	var ui_layer = _get_or_create_ui_layer()
+
+	var themed_comp = load("res://scripts/ui/ThemedUIComponent.gd").new()
+	themed_comp.name = component_id
+	themed_comp.position = Vector2(pos_x, pos_y)
+	themed_comp.custom_minimum_size = Vector2(width, height)
+	themed_comp.setup(component_type, metadata_url, label_text)
+
+	ui_layer.add_child(themed_comp)
+	_ui_buttons[component_id] = themed_comp
+
+
+func destroy_themed_ui_component(component_id: String) -> void:
+	if _ui_buttons.has(component_id):
+		_ui_buttons[component_id].queue_free()
+		_ui_buttons.erase(component_id)
+
+
+# =============================================================================
+# JS CALLBACK SETUP
+# =============================================================================
+
+func _js_on_ui_button_event(args: Array) -> void:
+	if args.size() >= 1 and _bridge and _bridge._event_emitter:
+		_bridge._event_emitter.set_ui_button_callback(args[0])

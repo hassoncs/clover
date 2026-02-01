@@ -25,9 +25,9 @@ export interface CollisionEvent {
 }
 
 export interface SensorEvent {
-  sensorColliderId: number;
-  otherBodyId: number;
-  otherColliderId: number;
+  sensorShapeIndex: number;
+  otherEntityId: string;
+  otherShapeIndex: number;
 }
 
 export interface EntitySpawnedEvent {
@@ -36,12 +36,11 @@ export interface EntitySpawnedEvent {
   generation: number;
   tags: string[];
   transform: EntityTransform & { scaleX: number; scaleY: number };
-  bodyId?: number; // Present for entities with collider or physics (for queryPoint hit detection)
+
 }
 
 export interface RaycastHit {
-  bodyId: number;
-  colliderId: number;
+  entityId: string;
   point: Vec2;
   normal: Vec2;
   fraction: number;
@@ -186,7 +185,7 @@ export interface ShapeDef {
   vertices?: Vec2[];
 }
 
-export interface FixtureDef {
+export interface ColliderConfig {
   shape: ShapeDef;
   density?: number;
   friction?: number;
@@ -264,13 +263,10 @@ export interface GodotBridge {
   queryAABB(min: Vec2, max: Vec2): Promise<number[]>;
   raycast(origin: Vec2, direction: Vec2, maxDistance: number): Promise<RaycastHit | null>;
 
-  // Body management (low-level Physics2D API)
-  createBody(def: BodyDef): number;
-  addFixture(bodyId: number, def: FixtureDef): number;
-  setSensor(colliderId: number, isSensor: boolean): void;
-  setUserData(bodyId: number, data: unknown): void;
-  getUserData(bodyId: number): Promise<unknown>;
-  getAllBodies(): Promise<number[]>;
+  // Entity data management
+  setUserData(entityId: string, data: unknown): void;
+  getUserData(entityId: string): Promise<unknown>;
+  getAllEntities(): Promise<string[]>;
 
   // Events
   onCollision(callback: (event: CollisionEvent) => void): () => void;

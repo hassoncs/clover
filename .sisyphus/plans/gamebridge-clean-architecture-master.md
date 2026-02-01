@@ -13,9 +13,40 @@
 > - ALL Box2D terminology removed (no body_id, collider_id, fixture)
 > - ALL deprecated zone code removed
 >
-> **Estimated Effort**: Large (2.5-3.5 weeks) *(+2-3 days for proper baseline/verification)*
-> **Parallel Execution**: YES – 6 waves
-> **Critical Path**: Wave 0 (Baseline) → Wave 1 (Hit-test + Layers) → Wave 2 (Schema + Factory) → Wave 3 (Registry Migration) → Wave 4 (Bridge + TS) → Wave 5 (Final verification)
+> **Estimated Effort**: Large (3-4 weeks)
+> **Parallel Execution**: YES – 7 waves
+> **Critical Path**: Wave 0 (Baseline) → Wave 1 (Hit-test + Layers) → Wave 2 (Schema + Factory) → Wave 3 (Registry Migration) → Wave 4 (Bridge + TS) → Wave 5 (Verification) → **Wave 6 (Legacy Purge - CRITICAL)**
+>
+> **Final State**: Zero legacy code. Zero cruft. Clean, maintainable engine.
+
+---
+
+## Worktree Strategy
+
+**IMPORTANT**: Worktrees are created OUTSIDE the project directory to avoid self-reference issues.
+
+```bash
+# Worktrees live in a global location, NOT inside the project
+export WORKTREE_BASE="$HOME/.config/superpowers/worktrees/slopcade"
+
+# Before each wave, create isolated worktree
+git worktree add "$WORKTREE_BASE/wave-N" -b wave-N-branch
+
+# Work in the worktree
+cd "$WORKTREE_BASE/wave-N"
+
+# When done, merge back and clean up
+git checkout main
+git merge wave-N-branch
+git worktree remove "$WORKTREE_BASE/wave-N"
+git branch -d wave-N-branch
+```
+
+**Why this approach:**
+- Worktrees outside project dir = no self-reference mess
+- Each wave gets isolated environment
+- Easy rollback by just switching back to main worktree
+- No pollution of main workspace
 
 ---
 
@@ -1533,6 +1564,12 @@ refactor(ts): remove geometric hit fallback
 
 # Wave 5
 docs: update architecture documentation
+
+# Wave 6 (Legacy Purge)
+chore: dead code analysis inventory
+refactor(godot): delete orphaned functions and variables
+refactor(ts): delete legacy physics patterns
+chore: final codebase audit - zero legacy patterns
 ```
 
 ---
@@ -1548,6 +1585,19 @@ docs: update architecture documentation
 - [ ] No deprecated zone code
 - [ ] No geometric fallback in TypeScript
 
+### Legacy Purge (ZERO TOLERANCE)
+- [ ] `audit-legacy.sh` returns exit code 0
+- [ ] Zero `body_id_map` / `body_id_reverse` references
+- [ ] Zero `collider_id_map` references
+- [ ] Zero `_js_create_body` / `_js_add_fixture` functions
+- [ ] Zero `BodyId` / `ColliderId` TypeScript types
+- [ ] Zero `createBodyId` / `createColliderId` functions
+- [ ] Zero `addFixture` calls
+- [ ] Zero `ZoneComponent` / zone code
+- [ ] Zero `isPointInCollider` geometric fallback
+- [ ] Zero orphaned/unused functions in Godot
+- [ ] No backup files (`.old`, `.bak`, etc.)
+
 ### Verification
 - [ ] `pnpm tsc --noEmit` passes
 - [ ] `pnpm test` passes
@@ -1557,6 +1607,7 @@ docs: update architecture documentation
 - [ ] Ball Sort works (tap detection)
 - [ ] Slopeggle works (physics + tap)
 - [ ] Both native and web platforms work
+- [ ] `cleanup-complete.md` summary filed
 
 ---
 
@@ -1571,3 +1622,19 @@ docs: update architecture documentation
 | Large Task 8 | Split into 5 subtasks with incremental verification |
 | Performance regression | Task 18b benchmarks, compare to baseline |
 | Concurrent modification | EntityRecord.is_valid() safety check |
+| **Legacy code creeping back** | Wave 6 audit script runs ZERO tolerance checks |
+| Skipping cleanup | Wave 6 is MANDATORY - not optional "nice to have" |
+
+---
+
+## Philosophy: No Cruft Left Behind
+
+> "Part of the reason we got into this problem in the first place is we let too much old crufty code hang around for too long."
+
+**Wave 6 is not optional.** It's the most important wave. The new architecture means nothing if legacy code still exists to:
+- Confuse future developers
+- Create alternative code paths
+- Accumulate more technical debt
+- Make the next refactor even harder
+
+**The audit script MUST pass with ZERO legacy patterns.** If it doesn't, we're not done.

@@ -188,3 +188,19 @@ func _should_collect_property(property: String) -> bool:
 			return true
 	
 	return false
+
+# =============================================================================
+# JS HANDLERS (called from JavaScript bridge)
+# =============================================================================
+
+func _js_get_all_properties(_args: Array) -> void:
+	var properties = collect_properties(0) # frame_id not used for direct query
+	game_bridge._js_bridge_obj["_lastResult"] = properties
+
+
+func _js_set_watch_config(args: Array) -> void:
+	if args.size() >= 1:
+		var config_json = str(args[0])
+		var config = JSON.parse_string(config_json)
+		if config:
+			set_watch_config(config)

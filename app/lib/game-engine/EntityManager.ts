@@ -1,5 +1,5 @@
 import type { Physics2D } from '../physics2d/Physics2D';
-import type { BodyDef, FixtureDef, ShapeDef } from '../physics2d/types';
+import type { ShapeDef } from '../physics2d/types';
 import type {
   GameEntity,
   EntityTemplate,
@@ -8,12 +8,10 @@ import type {
   TransformComponent,
   VisualComponent,
   ChildEntityDefinition,
-  ZoneComponent,
 } from '@slopcade/shared';
 import type { RuntimeEntity, RuntimeBehavior, EntityManagerOptions } from './types';
 import { getGlobalTagRegistry } from '@slopcade/shared';
 import { recomputeActiveConditionalGroup } from './behaviors/conditional';
-import { createBodyId, createColliderId } from '../physics2d/types';
 
 export interface EntitySpawnedSnapshot {
   entityId: string;
@@ -21,19 +19,13 @@ export interface EntitySpawnedSnapshot {
   generation: number;
   tags: string[];
   transform: { x: number; y: number; angle: number; scaleX: number; scaleY: number };
-  bodyId?: { value: number };
   colliderId?: { value: number };
 }
 
-/**
- * Combines parent and local transforms into a world transform.
- * Handles rotation, scale, and translation.
- */
 export function combineTransforms(
   parent: TransformComponent,
   local: TransformComponent
 ): TransformComponent {
-  // Rotate local offset by parent angle
   const cos = Math.cos(parent.angle);
   const sin = Math.sin(parent.angle);
   const rotatedX = local.x * cos - local.y * sin;
@@ -48,23 +40,16 @@ export function combineTransforms(
   };
 }
 
-/**
- * Converts a world transform to local relative to a parent transform.
- * Used when reparenting entities.
- */
 export function worldToLocal(
   world: TransformComponent,
   parent: TransformComponent
 ): TransformComponent {
-  // Inverse rotation
   const cos = Math.cos(-parent.angle);
   const sin = Math.sin(-parent.angle);
   
-  // Translate relative to parent
   const dx = world.x - parent.x;
   const dy = world.y - parent.y;
   
-  // Inverse rotate and scale
   const localX = (dx * cos - dy * sin) / parent.scaleX;
   const localY = (dx * sin + dy * cos) / parent.scaleY;
 
@@ -89,8 +74,6 @@ function generateId(): string {
 
 export class EntityManager {
   private entities = new Map<string, RuntimeEntity>();
-  /** @deprecated Zones are deprecated. Use collider with isSensor: true instead. */
-  private zones = new Map<string, RuntimeEntity>();
   private templates = new Map<string, EntityTemplate>();
   private physics: Physics2D;
 
@@ -98,10 +81,8 @@ export class EntityManager {
   private freeSlots: number[] = [];
   private nextGeneration = 1;
 
-  /** Index for O(1) tag queries: tagId -> Set of entityIds */
   private entitiesByTagId = new Map<number, Set<string>>();
 
-  /** Godot generation tokens for pool safety during async operations */
   private godotGenerations = new Map<string, number>();
 
   constructor(physics: Physics2D, options: EntityManagerOptions = {}) {
@@ -134,24 +115,8 @@ export class EntityManager {
 
     runtime.active = true;
 
-    // Check if this is a zone entity (type: 'zone' or has zone property)
-    /** @deprecated Use collider with isSensor: true instead */
-    const isZone = resolved.type === 'zone' || resolved.zone != null;
-
-    if (isZone) {
-      console.warn('[DEPRECATED] Zone entities are deprecated. Use collider with isSensor: true instead. Entity:', id);
-      // Zones use Area2D for collision detection only (no physics body)
-      const zoneConfig = resolved.zone;
-      if (zoneConfig) {
-        runtime.zone = zoneConfig;
-        this.createZoneArea(runtime, zoneConfig);
-      } else {
-        // Fallback: create zone with default config if no zone component provided
-        this.createZoneArea(runtime, { shape: { type: 'box', width: 1, height: 1 } });
-      }
-      this.zones.set(id, runtime);
-    } else if (resolved.physics) {
-      this.createPhysicsBody(runtime, resolved.physics);
+    if (resolved.physics) {
+      this.initializePhysicsEntity(runtime, resolved.physics);
     }
 
     this.entities.set(id, runtime);
@@ -192,8 +157,7 @@ export class EntityManager {
       layer: template?.layer ?? 0,
       visible: true,
       active: true,
-      bodyId: snapshot.bodyId ? createBodyId(snapshot.bodyId.value) : null,
-      colliderId: snapshot.colliderId ? createColliderId(snapshot.colliderId.value) : null,
+      colliderId: snapshot.colliderId ? snapshot.colliderId.value : null,
       conditionalBehaviors: template?.conditionalBehaviors ?? [],
       activeConditionalGroupId: -1,
     };
@@ -252,7 +216,7 @@ export class EntityManager {
     return this.entityPool.findIndex(slot => slot.id === id);
   }
 
-  private resolveTemplate(definition: GameEntity): GameEntity & { slots?: Record<string, { x: number; y: number; layer?: number }>; type?: 'body' | 'zone'; zone?: ZoneComponent } {
+  private resolveTemplate(definition: GameEntity): GameEntity & { slots?: Record<string, { x: number; y: number; layer?: number }> } {
     if (!definition.template) {
       return definition;
     }
@@ -264,8 +228,6 @@ export class EntityManager {
     }
     
     console.log('[EntityManager] resolveTemplate - entity:', definition.id, 'wants template:', definition.template, 'got collider:', JSON.stringify(template.collider));
-
-    const defWithZoneType = definition as GameEntity & { type?: 'body' | 'zone'; zone?: ZoneComponent };
 
     return {
       ...definition,
@@ -281,8 +243,6 @@ export class EntityManager {
         ...(definition.children || []),
       ],
       slots: template.slots,
-      type: defWithZoneType.type ?? template.type,
-      zone: defWithZoneType.zone ?? (template.zone ? structuredClone(template.zone) : undefined),
     };
   }
 
@@ -311,7 +271,6 @@ export class EntityManager {
         layer: resolved.layer ?? 0,
         visible: resolved.visible !== false,
         active: resolved.active !== false,
-        bodyId: null,
         colliderId: null,
         assetPackId: resolved.assetPackId,
         conditionalBehaviors: resolved.conditionalBehaviors ?? [],
@@ -359,38 +318,12 @@ export class EntityManager {
     }
   }
 
-  private createPhysicsBody(entity: RuntimeEntity, physicsConfig: PhysicsComponent): void {
-    const bodyDef: BodyDef = {
-      type: physicsConfig.bodyType,
-      position: { x: entity.transform.x, y: entity.transform.y },
-      angle: entity.transform.angle,
-      linearDamping: physicsConfig.linearDamping,
-      angularDamping: physicsConfig.angularDamping,
-      fixedRotation: physicsConfig.fixedRotation,
-      bullet: physicsConfig.ccd,
-      userData: { entityId: entity.id },
-    };
-
-    const bodyId = this.physics.createBody(bodyDef);
-    entity.bodyId = bodyId;
-
-    const shapeDef = this.createShapeDef(entity);
-    const fixtureDef: FixtureDef = {
-      shape: shapeDef,
-      density: physicsConfig.density,
-      friction: entity.collider?.friction ?? 0,
-      restitution: entity.collider?.restitution ?? 0,
-      isSensor: false,
-    };
-
-    const colliderId = this.physics.addFixture(bodyId, fixtureDef);
-    entity.colliderId = colliderId;
-
+  private initializePhysicsEntity(entity: RuntimeEntity, physicsConfig: PhysicsComponent): void {
     if (physicsConfig.initialVelocity) {
-      this.physics.setLinearVelocity(bodyId, physicsConfig.initialVelocity);
+      this.physics.setLinearVelocity(entity.id, physicsConfig.initialVelocity);
     }
     if (physicsConfig.initialAngularVelocity !== undefined) {
-      this.physics.setAngularVelocity(bodyId, physicsConfig.initialAngularVelocity);
+      this.physics.setAngularVelocity(entity.id, physicsConfig.initialAngularVelocity);
     }
   }
 
@@ -434,64 +367,6 @@ export class EntityManager {
     }
   }
 
-  private createZoneArea(entity: RuntimeEntity, zoneConfig: ZoneComponent): void {
-    console.warn('[DEPRECATED] createZoneArea is deprecated. Use collider with isSensor: true instead.');
-    const isKinematic = zoneConfig.movement === 'kinematic';
-    
-    const bodyDef: BodyDef = {
-      type: isKinematic ? 'kinematic' : 'static',
-      position: { x: entity.transform.x, y: entity.transform.y },
-      angle: entity.transform.angle,
-      userData: { entityId: entity.id, isZone: true },
-    };
-
-    const bodyId = this.physics.createBody(bodyDef);
-    entity.bodyId = bodyId;
-
-    const shapeDef = this.createZoneShapeDef(zoneConfig);
-    const fixtureDef: FixtureDef = {
-      shape: shapeDef,
-      density: 0,
-      friction: 0,
-      restitution: 0,
-      isSensor: true,
-    };
-
-    const colliderId = this.physics.addFixture(bodyId, fixtureDef);
-    entity.colliderId = colliderId;
-  }
-
-  private createZoneShapeDef(zone: ZoneComponent): ShapeDef {
-    console.warn('[DEPRECATED] createZoneShapeDef is deprecated. Use collider with isSensor: true instead.');
-    const shape = zone.shape;
-    switch (shape.type) {
-      case 'circle':
-        return {
-          type: 'circle',
-          radius: shape.radius,
-        };
-      case 'box':
-        return {
-          type: 'box',
-          halfWidth: shape.width / 2,
-          halfHeight: shape.height / 2,
-        };
-      case 'polygon':
-        return {
-          type: 'polygon',
-          vertices: shape.vertices,
-        };
-      default:
-        throw new Error(`Unknown zone shape: ${(shape as any).type}`);
-    }
-  }
-
-  /**
-   * Destroys an entity and optionally all its descendants.
-   * @param id - Entity ID to destroy
-   * @param options - Destruction options
-   *   - recursive: If true, destroys all descendants. If false (default), detaches children.
-   */
   destroyEntity(id: string, options: { recursive?: boolean } = {}): void {
     const entity = this.entities.get(id);
     if (!entity) return;
@@ -499,19 +374,16 @@ export class EntityManager {
     const { recursive = false } = options;
     
     if (recursive) {
-      // Destroy all descendants first (depth-first, bottom-up)
       const descendants = this.getDescendants(id);
       for (const descendant of descendants.reverse()) {
         this.destroyEntityInternal(descendant.id);
       }
     } else {
-      // Detach all children (they become root entities)
       for (const childId of [...entity.children]) {
         this.detachChild(childId);
       }
     }
     
-    // Detach from parent if any
     if (entity.parentId) {
       const parent = this.entities.get(entity.parentId);
       if (parent) {
@@ -519,32 +391,21 @@ export class EntityManager {
       }
     }
     
-    // Destroy the entity itself
     this.destroyEntityInternal(id);
   }
 
-  /**
-   * Internal method to destroy a single entity (no hierarchy handling).
-   */
    private destroyEntityInternal(id: string): void {
      const entity = this.entities.get(id);
      if (!entity) return;
 
-     // Destroy physics body if exists
-     if (entity.bodyId) {
-       this.physics.destroyBody(entity.bodyId);
+     if (entity.physics) {
+       this.physics.destroyBody(entity.id);
      }
 
-     // Remove from zones map if this is a zone
-     /** @deprecated Zones are deprecated. Use collider with isSensor: true instead. */
-     this.zones.delete(id);
-
-     // Remove from tag index
      for (const tagId of entity.tagBits) {
        this.entitiesByTagId.get(tagId)?.delete(id);
      }
 
-     // Reset and return to pool
      this.resetEntityForPooling(entity);
      this.entities.delete(id);
      this.returnEntityToPool(id);
@@ -555,14 +416,12 @@ export class EntityManager {
        entity.template = undefined;
        entity.visual = undefined;
        entity.physics = undefined;
-       entity.zone = undefined;
        entity.behaviors = [];
        entity.tags = [];
        entity.tagBits.clear();
        entity.layer = 0;
        entity.visible = true;
        entity.active = true;
-       entity.bodyId = null;
        entity.colliderId = null;
        entity.conditionalBehaviors = [];
        entity.activeConditionalGroupId = -1;
@@ -579,17 +438,7 @@ export class EntityManager {
     return this.entities.get(id);
   }
 
-  getZone(id: string): RuntimeEntity | undefined {
-    /** @deprecated Use collider with isSensor: true instead */
-    console.warn('[DEPRECATED] getZone is deprecated. Use collider with isSensor: true instead.');
-    return this.zones.get(id);
-  }
 
-  getAllZones(): RuntimeEntity[] {
-    /** @deprecated Use collider with isSensor: true instead */
-    console.warn('[DEPRECATED] getAllZones is deprecated. Use collider with isSensor: true instead.');
-    return Array.from(this.zones.values());
-  }
 
   getEntitiesByTag(tag: string): RuntimeEntity[] {
     const tagId = getGlobalTagRegistry().getId(tag);
@@ -616,10 +465,6 @@ export class EntityManager {
     return results;
   }
 
-  /**
-   * Adds a tag to an entity. Updates both tags array and tagBits set.
-   * Returns true if the tag was added, false if entity already had it.
-   */
   addTag(entityId: string, tag: string): boolean {
     const entity = this.entities.get(entityId);
     if (!entity) return false;
@@ -675,21 +520,15 @@ export class EntityManager {
     return true;
   }
 
-  /**
-   * Checks if an entity has a specific tag.
-   * Uses tagBits for O(1) lookup when possible.
-   */
   hasTag(entityId: string, tag: string): boolean {
     const entity = this.entities.get(entityId);
     if (!entity) return false;
     
-    // Use tagBits for O(1) lookup if tag is interned
     const tagId = getGlobalTagRegistry().getId(tag);
     if (tagId !== undefined) {
       return entity.tagBits.has(tagId);
     }
     
-    // Fallback to string array for non-interned tags
     return entity.tags.includes(tag);
   }
 
@@ -708,7 +547,7 @@ export class EntityManager {
   }
 
   private syncEntityTransformFromPhysics(entity: RuntimeEntity): void {
-    const transform = this.physics.getTransform(entity.bodyId!);
+    const transform = this.physics.getTransform(entity.id);
     entity.transform.x = transform.position.x;
     entity.transform.y = transform.position.y;
     entity.transform.angle = transform.angle;
@@ -728,7 +567,7 @@ export class EntityManager {
 
   syncTransformsFromPhysics(): void {
     this.entities.forEach((entity) => {
-      if (entity.bodyId && entity.active) {
+      if (entity.physics && entity.active) {
         this.syncEntityTransformFromPhysics(entity);
 
         if (entity.children.length > 0) {
@@ -759,16 +598,6 @@ export class EntityManager {
     this.entitiesByTagId.clear();
   }
 
-  getEntityByBodyId(bodyId: { value: number }): RuntimeEntity | undefined {
-    const entities = Array.from(this.entities.values());
-    for (const entity of entities) {
-      if (entity.bodyId && entity.bodyId.value === bodyId.value) {
-        return entity;
-      }
-    }
-    return undefined;
-  }
-
   getEntityCount(): number {
     return this.entities.size;
   }
@@ -778,11 +607,11 @@ export class EntityManager {
   }
 
   getEntitiesInAABB(min: { x: number; y: number }, max: { x: number; y: number }): RuntimeEntity[] {
-    const bodyIds = this.physics.queryAABB(min, max);
+    const entityIds = this.physics.queryAABB(min, max);
     
     const entities: RuntimeEntity[] = [];
-    for (const bodyId of bodyIds) {
-      const entity = this.getEntityByBodyId(bodyId);
+    for (const entityId of entityIds) {
+      const entity = this.entities.get(entityId);
       if (entity) {
         entities.push(entity);
       }
@@ -791,66 +620,37 @@ export class EntityManager {
     return entities;
   }
 
-  /**
-   * Component names that can be used in query({ has: [...] })
-   */
-  static readonly QUERYABLE_COMPONENTS = ['visual', 'physics', 'collider', 'zone', 'bodyId'] as const;
+  static readonly QUERYABLE_COMPONENTS = ['visual', 'physics', 'collider'] as const;
 
-  /**
-   * Flexible entity query supporting multiple filter criteria.
-   * Uses existing indexes for optimal performance:
-   * - tags: Uses entitiesByTagId for O(1) lookup per tag
-   * - withinAabb: Uses physics.queryAABB for spatial query
-   * - template/has: Applied as post-filters
-   * 
-   * @example
-   * // Find all dynamic physics entities with 'enemy' tag
-   * entityManager.query({ tags: ['enemy'], has: ['physics', 'bodyId'] })
-   * 
-   * // Find entities by template in an area
-   * entityManager.query({ template: 'coin', withinAabb: { min: {x: 0, y: 0}, max: {x: 10, y: 10} } })
-   */
-  query(options: {
-    /** Filter by tags (all must match) */
-    tags?: string[];
-    /** Filter by template name */
-    template?: string;
-    /** Filter by component presence */
-    has?: Array<'visual' | 'physics' | 'collider' | 'zone' | 'bodyId'>;
-    /** Filter by spatial region */
-    withinAabb?: { min: { x: number; y: number }; max: { x: number; y: number } };
-  }): RuntimeEntity[] {
+   query(options: {
+     tags?: string[];
+     template?: string;
+     has?: Array<'visual' | 'physics' | 'collider'>;
+     withinAabb?: { min: { x: number; y: number }; max: { x: number; y: number } };
+   }): RuntimeEntity[] {
     const { tags, template, has, withinAabb } = options;
 
-    // Start with the most selective filter to minimize iterations
     let candidates: RuntimeEntity[] | null = null;
 
-    // If withinAabb is specified, use it as the starting set (spatial queries are efficient)
     if (withinAabb) {
       candidates = this.getEntitiesInAABB(withinAabb.min, withinAabb.max);
     }
 
-    // If tags are specified and no spatial filter, use tag index as starting set
     if (tags && tags.length > 0 && candidates === null) {
-      // Use the first tag's entities as the base set
       candidates = this.getEntitiesByTag(tags[0]);
       
-      // Intersect with remaining tags
       for (let i = 1; i < tags.length && candidates.length > 0; i++) {
         const taggedIds = new Set(this.getEntitiesByTag(tags[i]).map(e => e.id));
         candidates = candidates.filter(e => taggedIds.has(e.id));
       }
     }
 
-    // If no indexed filter, iterate all entities
     if (candidates === null) {
       candidates = Array.from(this.entities.values());
     }
 
-    // Apply remaining filters
     let result = candidates;
 
-    // Filter by remaining tags (if we started with spatial query)
     if (tags && tags.length > 0 && withinAabb) {
       result = result.filter(entity => {
         for (const tag of tags) {
@@ -860,12 +660,10 @@ export class EntityManager {
       });
     }
 
-    // Filter by template
     if (template) {
       result = result.filter(entity => entity.template === template);
     }
 
-    // Filter by component presence
     if (has && has.length > 0) {
       result = result.filter(entity => {
         for (const component of has) {
@@ -879,12 +677,6 @@ export class EntityManager {
             case 'collider':
               if (!entity.collider) return false;
               break;
-            case 'zone':
-              if (!entity.zone) return false;
-              break;
-            case 'bodyId':
-              if (!entity.bodyId) return false;
-              break;
           }
         }
         return true;
@@ -894,10 +686,6 @@ export class EntityManager {
     return result;
   }
 
-  /**
-   * Recursively updates world transforms for an entity and all descendants.
-   * Call this when a parent entity moves.
-   */
   updateWorldTransforms(entityId: string): void {
     const entity = this.entities.get(entityId);
     if (!entity) return;
@@ -920,10 +708,6 @@ export class EntityManager {
     }
   }
 
-   /**
-    * Updates world transforms for ALL entities (call sparingly - expensive).
-    * Prefer updateWorldTransforms(entityId) for targeted updates.
-    */
    updateAllWorldTransforms(): void {
      for (const entity of this.entities.values()) {
        if (!entity.parentId) {
@@ -932,18 +716,12 @@ export class EntityManager {
      }
    }
 
-   /**
-    * Gets the parent entity of the given entity.
-    */
    getParent(entityId: string): RuntimeEntity | undefined {
      const entity = this.entities.get(entityId);
      if (!entity?.parentId) return undefined;
      return this.entities.get(entity.parentId);
    }
 
-   /**
-    * Gets direct children of the given entity.
-    */
    getChildren(entityId: string): RuntimeEntity[] {
      const entity = this.entities.get(entityId);
      if (!entity) return [];
@@ -956,27 +734,19 @@ export class EntityManager {
      return children;
    }
 
-   /**
-    * Gets the root ancestor of the given entity.
-    * Returns the entity itself if it has no parent.
-    */
    getRoot(entityId: string): RuntimeEntity | undefined {
      let entity = this.entities.get(entityId);
      if (!entity) return undefined;
      
-     // Walk up the hierarchy
      while (entity.parentId) {
        const parent = this.entities.get(entity.parentId);
-       if (!parent) break; // Orphaned - current is effectively root
+       if (!parent) break;
        entity = parent;
      }
      
      return entity;
    }
 
-   /**
-    * Gets all descendants of the given entity (children, grandchildren, etc.).
-    */
    getDescendants(entityId: string): RuntimeEntity[] {
      const entity = this.entities.get(entityId);
      if (!entity) return [];
@@ -996,10 +766,6 @@ export class EntityManager {
      return descendants;
    }
 
-   /**
-    * Gets all ancestors of the given entity (parent, grandparent, etc.).
-    * Returns array ordered from immediate parent to root.
-    */
    getAncestors(entityId: string): RuntimeEntity[] {
      const entity = this.entities.get(entityId);
      if (!entity) return [];
@@ -1017,12 +783,6 @@ export class EntityManager {
      return ancestors;
    }
 
-   /**
-    * Attaches an entity as a child of another entity.
-    * @param parentId - The parent entity ID
-    * @param childId - The entity to attach as child
-    * @param localTransform - Optional local transform (defaults to preserving world position)
-    */
    attachChild(
      parentId: string,
      childId: string,
@@ -1036,55 +796,37 @@ export class EntityManager {
        return;
      }
      
-     // Detach from current parent if any
      if (child.parentId) {
        this.detachChild(childId);
      }
      
-     // Set up hierarchy link
      child.parentId = parentId;
      parent.children.push(childId);
      
-     // Set local transform
      if (localTransform) {
        child.localTransform = { ...localTransform };
      } else {
-       // Preserve world position by computing new local transform
        child.localTransform = worldToLocal(child.worldTransform, parent.worldTransform);
      }
      
-     // Update world transforms
      this.updateWorldTransforms(childId);
    }
 
-   /**
-    * Detaches an entity from its parent, making it a root entity.
-    * The entity's world position is preserved.
-    */
    detachChild(childId: string): void {
      const child = this.entities.get(childId);
      if (!child || !child.parentId) return;
      
      const parent = this.entities.get(child.parentId);
      
-     // Remove from parent's children array
      if (parent) {
        parent.children = parent.children.filter(id => id !== childId);
      }
      
-     // Clear parent reference
      child.parentId = undefined;
      
-     // Local transform becomes world transform (entity is now root)
      child.localTransform = { ...child.worldTransform };
    }
 
-   /**
-    * Moves an entity to a new parent.
-    * @param childId - The entity to move
-    * @param newParentId - The new parent entity ID
-    * @param localTransform - Optional local transform (defaults to preserving world position)
-    */
    reparent(
      childId: string,
      newParentId: string,
@@ -1098,24 +840,18 @@ export class EntityManager {
        return;
      }
      
-     // Prevent circular references
      if (this.getAncestors(newParentId).some(a => a.id === childId)) {
        console.error(`reparent: Would create circular reference - ${childId} is ancestor of ${newParentId}`);
        return;
      }
      
-     // Detach from current parent
      if (child.parentId) {
        this.detachChild(childId);
      }
      
-     // Attach to new parent
      this.attachChild(newParentId, childId, localTransform);
    }
 
-   /**
-    * Sets entity visibility, optionally recursively.
-    */
    setEntityVisible(id: string, visible: boolean, options: { recursive?: boolean } = {}): void {
      const entity = this.entities.get(id);
      if (!entity) return;
@@ -1129,9 +865,6 @@ export class EntityManager {
      }
    }
 
-   /**
-    * Sets entity active state, optionally recursively.
-    */
    setEntityActive(id: string, active: boolean, options: { recursive?: boolean } = {}): void {
      const entity = this.entities.get(id);
      if (!entity) return;

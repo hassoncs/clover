@@ -13,8 +13,6 @@ import type {
   PrismaticJointDef,
   WeldJointDef,
   MouseJointDef,
-  BodyDef,
-  FixtureDef,
   DynamicShaderResult,
 } from "./types";
 import { injectGodotDebugBridge } from "./debug";
@@ -68,7 +66,9 @@ declare global {
       createPrismaticJoint: (...args: (string | number | boolean)[]) => number;
       createWeldJoint: (...args: (string | number)[]) => number;
       createMouseJoint: (...args: (string | number)[]) => number;
+      getLastJointId: () => number;
       destroyJoint: (jointId: number) => void;
+      destroyMouseJointForEntity: (entityId: string) => void;
       setMotorSpeed: (jointId: number, speed: number) => void;
       setMouseTarget: (jointId: number, x: number, y: number) => void;
       queryPoint: (x: number, y: number) => number | null;
@@ -86,12 +86,9 @@ declare global {
         dirY: number,
         maxDist: number,
       ) => RaycastHit | null;
-      createBody: (...args: (string | number | boolean | unknown)[]) => number;
-      addFixture: (...args: (number | string | boolean)[]) => number;
-      setSensor: (colliderId: number, isSensor: boolean) => void;
-      setUserData: (bodyId: number, data: unknown) => void;
-      getUserData: (bodyId: number) => unknown;
-      getAllBodies: () => number[];
+      setUserData: (entityId: string, data: unknown) => void;
+      getUserData: (entityId: string) => unknown;
+      getAllEntityIds: () => string[];
       sendInput: (type: string, x: number, y: number, entityId: string) => void;
       onCollision: (
         callback: (
@@ -104,16 +101,16 @@ declare global {
       onEntitySpawned?: (callback: (jsonStr: string) => void) => void;
       onSensorBegin: (
         callback: (
-          sensorId: number,
-          bodyId: number,
-          colliderId: number,
+          sensorShapeIndex: number,
+          entityId: string,
+          otherShapeIndex: number,
         ) => void,
       ) => void;
       onSensorEnd: (
         callback: (
-          sensorId: number,
-          bodyId: number,
-          colliderId: number,
+          sensorShapeIndex: number,
+          entityId: string,
+          otherShapeIndex: number,
         ) => void,
       ) => void;
       onInputEvent: (callback: (jsonStr: string) => void) => void;
@@ -356,20 +353,20 @@ export function createWebGodotBridge(): GodotBridge {
               }
             });
 
-            godotBridge.onSensorBegin((sensorId, bodyId, colliderId) => {
+            godotBridge.onSensorBegin((sensorShapeIndex, entityId, otherShapeIndex) => {
               const event: SensorEvent = {
-                sensorColliderId: sensorId,
-                otherBodyId: bodyId,
-                otherColliderId: colliderId,
+                sensorShapeIndex: sensorShapeIndex,
+                otherEntityId: entityId,
+                otherShapeIndex: otherShapeIndex,
               };
               for (const cb of sensorBeginCallbacks) cb(event);
             });
 
-            godotBridge.onSensorEnd((sensorId, bodyId, colliderId) => {
+            godotBridge.onSensorEnd((sensorShapeIndex, entityId, otherShapeIndex) => {
               const event: SensorEvent = {
-                sensorColliderId: sensorId,
-                otherBodyId: bodyId,
-                otherColliderId: colliderId,
+                sensorShapeIndex: sensorShapeIndex,
+                otherEntityId: entityId,
+                otherShapeIndex: otherShapeIndex,
               };
               for (const cb of sensorEndCallbacks) cb(event);
             });
@@ -612,6 +609,7 @@ export function createWebGodotBridge(): GodotBridge {
     createMouseJoint(def: MouseJointDef): number {
       const godotBridge = getGodotBridge();
       if (!godotBridge) return -1;
+      
       godotBridge.createMouseJoint(
         def.body,
         def.target.x,
@@ -620,7 +618,11 @@ export function createWebGodotBridge(): GodotBridge {
         def.stiffness ?? 5,
         def.damping ?? 0.7,
       );
-      return (godotBridge._lastResult as number) ?? -1;
+      
+      const fromLastResult = godotBridge._lastResult as number | undefined;
+      const fromWindow = (window as unknown as { _slopcadeLastJointId?: number })._slopcadeLastJointId;
+      console.log('[GodotBridge.web] createMouseJoint - _lastResult:', fromLastResult, 'window._slopcadeLastJointId:', fromWindow);
+      return fromLastResult ?? fromWindow ?? -1;
     },
 
     async createMouseJointAsync(def: MouseJointDef): Promise<number> {
@@ -678,64 +680,14 @@ export function createWebGodotBridge(): GodotBridge {
       );
     },
 
-    createBody(def: BodyDef): number {
-      return (
-        getGodotBridge()?.createBody(
-          def.type,
-          def.position.x,
-          def.position.y,
-          def.angle ?? 0,
-          def.linearDamping ?? 0,
-          def.angularDamping ?? 0,
-          def.fixedRotation ?? false,
-          def.bullet ?? false,
-          def.userData,
-          def.group,
-        ) ?? -1
-      );
+    setUserData(_entityId: string, _data: unknown) {},
+
+    async getUserData(_entityId: string): Promise<unknown> {
+      return null;
     },
 
-    addFixture(bodyId: number, def: FixtureDef): number {
-      const shape = def.shape;
-      let args: (number | string | boolean)[] = [bodyId, shape.type];
-
-      if (shape.type === "circle") {
-        args.push(shape.radius ?? 0.5);
-      } else if (shape.type === "box") {
-        args.push(shape.halfWidth ?? 0.5, shape.halfHeight ?? 0.5);
-      } else if (shape.type === "polygon" && shape.vertices) {
-        args.push(shape.vertices.length);
-        for (const v of shape.vertices) {
-          args.push(v.x, v.y);
-        }
-      }
-
-      args.push(
-        def.density ?? 1,
-        def.friction ?? 0.3,
-        def.restitution ?? 0,
-        def.isSensor ?? false,
-        def.categoryBits ?? 1,
-        def.maskBits ?? 0xffffffff,
-      );
-
-      return getGodotBridge()?.addFixture(...args) ?? -1;
-    },
-
-    setSensor(colliderId: number, isSensor: boolean) {
-      getGodotBridge()?.setSensor(colliderId, isSensor);
-    },
-
-    setUserData(bodyId: number, data: unknown) {
-      getGodotBridge()?.setUserData(bodyId, data);
-    },
-
-    async getUserData(bodyId: number): Promise<unknown> {
-      return getGodotBridge()?.getUserData(bodyId);
-    },
-
-    async getAllBodies(): Promise<number[]> {
-      return getGodotBridge()?.getAllBodies() ?? [];
+    async getAllEntities(): Promise<string[]> {
+      return [];
     },
 
     onCollision(callback: (event: CollisionEvent) => void): () => void {

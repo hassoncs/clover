@@ -62,7 +62,6 @@ export class InputEntityManager {
       layer: 999,
       visible: this.debugMode,
       active: false,
-      bodyId: null,
       colliderId: null,
     };
     this.virtualEntities.set(id, entity);

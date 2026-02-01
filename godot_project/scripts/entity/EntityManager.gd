@@ -6,10 +6,6 @@ var _bridge: Node
 
 # State ownership
 var entities: Dictionary = {}
-var body_id_map: Dictionary = {}
-var body_id_reverse: Dictionary = {}
-var entity_shape_map: Dictionary = {}
-var next_body_id: int = 1
 
 # Coordinate conversion helpers
 var _pixels_per_meter: float = 50.0
@@ -47,28 +43,11 @@ func _game_to_godot_vec(game_vec: Vector2) -> Vector2:
 # ============================================================================
 
 
-func register_entity(entity_id: String, node: Node2D) -> int:
+func register_entity(entity_id: String, node: Node2D) -> void:
 	entities[entity_id] = node
-	
-	var body_id = next_body_id
-	body_id_map[entity_id] = body_id
-	body_id_reverse[body_id] = entity_id
-	next_body_id += 1
-	
-	entity_shape_map[entity_id] = []
-	
-	return body_id
 
 
 func unregister_entity(entity_id: String) -> void:
-	if body_id_map.has(entity_id):
-		var body_id = body_id_map[entity_id]
-		body_id_reverse.erase(body_id)
-		body_id_map.erase(entity_id)
-	
-	if entity_shape_map.has(entity_id):
-		entity_shape_map.erase(entity_id)
-	
 	entities.erase(entity_id)
 
 
@@ -85,11 +64,7 @@ func has_entity(entity_id: String) -> bool:
 	return entities.has(entity_id)
 
 
-func get_entity_by_body_id(body_id: int) -> Node2D:
-	var entity_id = body_id_reverse.get(body_id)
-	if entity_id:
-		return entities.get(entity_id)
-	return null
+
 
 
 # ============================================================================
@@ -126,10 +101,14 @@ func spawn_entity(
 	if initial_velocity != null:
 		entity_data["physics"] = {"initialVelocity": initial_velocity}
 	
-	var node = _create_entity(entity_data)
+	var record = _bridge._entity_factory.create_entity(entity_data)
+	var node = record.node
 	
 	if node:
 		register_entity(entity_id, node)
+		# Add to entity_registry
+		if _bridge and "entity_registry" in _bridge:
+			_bridge.entity_registry[entity_id] = record
 	
 	return node
 
@@ -150,12 +129,7 @@ func _parse_velocity_json(velocity_json: String) -> Dictionary:
 	return {}
 
 
-func _create_entity(entity_data: Dictionary) -> Node2D:
-	if _bridge and _bridge.has_method("_create_entity"):
-		return _bridge._create_entity(entity_data)
-	
-	push_error("[EntityManager] Bridge does not have _create_entity method")
-	return null
+
 
 
 # ============================================================================
@@ -260,9 +234,6 @@ func _collect_entity_properties(entity_id: String, node: Node2D) -> Dictionary:
 	if behaviors:
 		props["behaviors"] = behaviors
 	
-	if body_id_map.has(entity_id):
-		props["body_id"] = body_id_map[entity_id]
-	
 	if node is RigidBody2D:
 		props["type"] = "rigid_body"
 		props["linear_velocity"] = node.linear_velocity
@@ -297,8 +268,6 @@ func get_entity_property(entity_id: String, property_name: String) -> Variant:
 			return _godot_to_game_pos(node.position).y
 		"template":
 			return node.get_meta("template", "")
-		"body_id":
-			return body_id_map.get(entity_id)
 		"linear_velocity":
 			if node is RigidBody2D:
 				return node.linear_velocity
@@ -309,27 +278,7 @@ func get_entity_property(entity_id: String, property_name: String) -> Variant:
 	return null
 
 
-# ============================================================================
-# SHAPE MANAGEMENT
-# ============================================================================
 
-
-func get_entity_shapes(entity_id: String) -> Array:
-	return entity_shape_map.get(entity_id, [])
-
-
-func add_entity_shape(entity_id: String, collider_id: int) -> void:
-	if not entity_shape_map.has(entity_id):
-		entity_shape_map[entity_id] = []
-	entity_shape_map[entity_id].append(collider_id)
-
-
-func remove_entity_shape(entity_id: String, collider_id: int) -> void:
-	if entity_shape_map.has(entity_id):
-		var shapes = entity_shape_map[entity_id]
-		shapes.erase(collider_id)
-		if shapes.is_empty():
-			entity_shape_map.erase(entity_id)
 
 
 # ============================================================================
@@ -339,10 +288,6 @@ func remove_entity_shape(entity_id: String, collider_id: int) -> void:
 
 func get_entity_count() -> int:
 	return entities.size()
-
-
-func get_body_id(entity_id: String) -> int:
-	return body_id_map.get(entity_id, -1)
 
 
 func get_all_entity_ids() -> Array:
@@ -355,7 +300,40 @@ func clear_all() -> void:
 		destroy_entity(entity_id)
 	
 	entities.clear()
-	body_id_map.clear()
-	body_id_reverse.clear()
-	entity_shape_map.clear()
-	next_body_id = 1
+
+# =============================================================================
+# JS HANDLERS (called from JavaScript bridge)
+# =============================================================================
+
+func _js_get_all_bodies(_args: Array) -> Array:
+	return get_all_entity_ids()
+
+func _js_spawn_entity(args: Array) -> void:
+	if args.size() < 4:
+		return
+	spawn_entity(str(args[0]), float(args[1]), float(args[2]), str(args[3]))
+
+func _js_destroy_entity(args: Array) -> void:
+	if args.size() < 1:
+		return
+	destroy_entity(str(args[0]))
+
+func _js_get_entity_transform(args: Array) -> Variant:
+	if args.size() < 1:
+		return null
+	return get_entity_transform(str(args[0]))
+
+var user_data: Dictionary = {}
+
+func _js_set_user_data(args: Array) -> void:
+	if args.size() < 2:
+		return
+	var body_id = int(args[0])
+	user_data[body_id] = args[1]
+
+
+func _js_get_user_data(args: Array) -> Variant:
+	if args.size() < 1:
+		return null
+	var body_id = int(args[0])
+	return user_data.get(body_id)

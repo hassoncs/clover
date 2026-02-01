@@ -83,14 +83,14 @@ export class GameLoader {
     const entityA = entityManager.getEntity(joint.entityA);
     const entityB = entityManager.getEntity(joint.entityB);
 
-    if (!entityA?.bodyId || !entityB?.bodyId) {
+    if (!entityA?.physics || !entityB?.physics) {
       console.warn(`Cannot create joint ${joint.id}: entities not found or missing physics bodies`);
       return null;
     }
 
     const baseProps = {
-      bodyA: entityA.bodyId,
-      bodyB: entityB.bodyId,
+      entityA: entityA.id,
+      entityB: entityB.id,
       collideConnected: joint.collideConnected,
     };
 

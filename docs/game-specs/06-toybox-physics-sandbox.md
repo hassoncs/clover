@@ -497,7 +497,7 @@ const SPHERE_ARCHETYPE: ObjectArchetype = {
 ### Joint System Stability
 
 #### Constraint Solving
-- **Iterative solver**: Box2D with 8 velocity iterations, 3 position iterations
+- **Iterative solver**: Godot physics with 8 velocity iterations, 3 position iterations
 - **Joint breaking**: Automatic failure at 10x design load
 - **Damping injection**: Prevent oscillation in spring systems
 - **Warm starting**: Reuse constraint solutions between frames
@@ -624,7 +624,7 @@ interface CreationSave {
 ### Phase 1: Core Sandbox (3 weeks)
 - [ ] Object spawning with basic archetypes
 - [ ] Joint creation system (fixed, hinge, spring)
-- [ ] Physics simulation with Box2D
+- [ ] Physics simulation with Godot physics
 - [ ] Save/load functionality
 - [ ] Basic UI for object creation and manipulation
 

@@ -38,7 +38,7 @@ function createMockEntity(id: string, tags: string[] = []): RuntimeEntity {
     name: id,
     tags,
     transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
-    bodyId: { value: parseInt(id.replace(/\D/g, '') || '1') },
+    physics: { bodyType: 'dynamic' },
   } as RuntimeEntity;
 }
 

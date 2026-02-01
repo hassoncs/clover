@@ -5,6 +5,8 @@ const IMPULSE_THRESHOLD: float = 0.1
 var _game_bridge: Node = null
 var _event_emitter: EventEmitter = null
 var _js_collision_callback: JavaScriptObject = null
+var _js_destroy_callback: JavaScriptObject = null
+var _js_entity_spawned_callback: JavaScriptObject = null
 
 func _init(game_bridge: Node, event_emitter: EventEmitter) -> void:
 	_game_bridge = game_bridge

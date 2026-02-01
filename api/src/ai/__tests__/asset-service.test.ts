@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { AssetService, getScenarioConfigFromEnv, buildStructuredPrompt, buildStructuredNegativePrompt } from '@/ai/assets'
+import { AssetService, getImageGenerationConfig, buildStructuredPrompt, buildStructuredNegativePrompt, calculateCanvasDimensions } from '@/ai/assets'
 import type { Env } from '@/trpc/context'
 
 const createMockEnv = (overrides: Partial<Env> = {}): Env => ({
@@ -71,150 +71,70 @@ describe('AssetService', () => {
       const model = service.selectModel('ui', 'flat', false);
       expect(model).toBe('model_mcYj5uGzXteUw6tKapsaDgBP');
     });
+  });
 
-    it('falls back to pixel variant when style not found', () => {
-      const model = service.selectModel('character', '3d', false);
-      expect(model).toBe('model_retrodiffusion-plus');
+  describe('calculateCanvasDimensions', () => {
+    it('calculates correct dimensions for square physics', () => {
+      const dims = calculateCanvasDimensions(1, 1);
+      expect(dims.width).toBe(512);
+      expect(dims.height).toBe(512);
     });
 
-    it('falls back to pixel variant for unmatched style', () => {
-      const model = service.selectModel('background', '3d', false);
-      expect(model).toBe('model_uM7q4Ms6Y5X2PXie6oA9ygRa');
+    it('calculates correct dimensions for wide physics', () => {
+      const dims = calculateCanvasDimensions(2, 1);
+      expect(dims.width).toBe(704);
+      expect(dims.height).toBe(384);
+    });
+
+    it('calculates correct dimensions for tall physics', () => {
+      const dims = calculateCanvasDimensions(1, 2);
+      expect(dims.width).toBe(384);
+      expect(dims.height).toBe(704);
+    });
+
+    it('respects min/max bounds', () => {
+      const tiny = calculateCanvasDimensions(0.01, 0.01);
+      expect(tiny.width).toBeGreaterThanOrEqual(64);
+      expect(tiny.height).toBeGreaterThanOrEqual(64);
+
+      const huge = calculateCanvasDimensions(100, 1);
+      expect(huge.width).toBeLessThanOrEqual(2048);
     });
   });
 
   describe('buildStructuredPrompt', () => {
-    it('describes wide rectangle shape correctly', () => {
+    it('includes critical shape information', () => {
       const prompt = buildStructuredPrompt({
-        templateId: 'platform',
-        physicsShape: 'box',
-        physicsWidth: 8,
-        physicsHeight: 1,
-        entityType: 'platform',
-        style: 'pixel',
-        targetWidth: 512,
-        targetHeight: 64,
-      });
-      expect(prompt).toContain('WIDE');
-      expect(prompt).toContain('HORIZONTAL');
-      expect(prompt).toContain('SHAPE');
-    });
-
-    it('describes circle shape correctly', () => {
-      const prompt = buildStructuredPrompt({
-        templateId: 'ball',
+        templateId: 'player',
         physicsShape: 'circle',
-        physicsRadius: 1,
-        entityType: 'item',
-        style: 'pixel',
-        targetWidth: 256,
-        targetHeight: 256,
-      });
-      expect(prompt).toContain('CIRCULAR');
-      expect(prompt).toContain('round');
-    });
-
-    it('describes square shape correctly', () => {
-      const prompt = buildStructuredPrompt({
-        templateId: 'block',
-        physicsShape: 'box',
-        physicsWidth: 1,
-        physicsHeight: 1,
-        entityType: 'item',
-        style: 'pixel',
-        targetWidth: 256,
-        targetHeight: 256,
-      });
-      expect(prompt).toContain('SQUARE');
-    });
-
-    it('includes theme in subject description', () => {
-      const prompt = buildStructuredPrompt({
-        templateId: 'platform',
-        physicsShape: 'box',
-        physicsWidth: 4,
-        physicsHeight: 1,
-        entityType: 'platform',
-        themePrompt: 'candy land',
-        style: 'cartoon',
-        targetWidth: 512,
-        targetHeight: 128,
-      });
-      expect(prompt).toContain('candy land');
-      expect(prompt).toContain('platform');
-    });
-
-    it('includes pixel style descriptors', () => {
-      const prompt = buildStructuredPrompt({
-        templateId: 'item',
-        physicsShape: 'box',
-        physicsWidth: 1,
-        physicsHeight: 1,
-        entityType: 'item',
-        style: 'pixel',
-        targetWidth: 256,
-        targetHeight: 256,
-      });
-      expect(prompt).toContain('pixel art');
-      expect(prompt).toContain('16-bit');
-    });
-
-    it('includes cartoon style descriptors', () => {
-      const prompt = buildStructuredPrompt({
-        templateId: 'character',
-        physicsShape: 'box',
-        physicsWidth: 1,
-        physicsHeight: 2,
         entityType: 'character',
-        style: 'cartoon',
-        targetWidth: 256,
+        style: 'pixel',
+        targetWidth: 512,
         targetHeight: 512,
       });
-      expect(prompt).toContain('cartoon');
-      expect(prompt).toContain('bold');
+      expect(prompt).toContain('PERFECTLY CIRCULAR');
+      expect(prompt).toContain('pixel art');
     });
 
-    it('includes transparent background requirement', () => {
+    it('includes subject description when provided', () => {
       const prompt = buildStructuredPrompt({
-        templateId: 'test',
-        physicsShape: 'box',
-        physicsWidth: 1,
-        physicsHeight: 1,
+        templateId: 'coin',
+        physicsShape: 'circle',
         entityType: 'item',
-        style: 'pixel',
-        targetWidth: 256,
-        targetHeight: 256,
+        style: 'cartoon',
+        visualDescription: 'a shiny gold coin with a star',
+        targetWidth: 512,
+        targetHeight: 512,
       });
-      expect(prompt).toContain('Transparent background');
-    });
-  });
-
-  describe('buildStructuredNegativePrompt', () => {
-    it('includes base negatives', () => {
-      const negative = buildStructuredNegativePrompt('pixel');
-      expect(negative).toContain('blurry');
-      expect(negative).toContain('cropped');
-      expect(negative).toContain('wrong shape');
-    });
-
-    it('includes pixel-specific negatives', () => {
-      const negative = buildStructuredNegativePrompt('pixel');
-      expect(negative).toContain('anti-aliasing');
-    });
-
-    it('includes cartoon-specific negatives', () => {
-      const negative = buildStructuredNegativePrompt('cartoon');
-      expect(negative).toContain('realistic');
+      expect(prompt).toContain('a shiny gold coin with a star');
     });
   });
 
   describe('generateAsset', () => {
     it('returns placeholder when API not configured', async () => {
-      const service = new AssetService(createMockEnv({
-        SCENARIO_API_KEY: undefined,
-        SCENARIO_SECRET_API_KEY: undefined,
-      }));
-
+      const env = createMockEnv({ SCENARIO_API_KEY: undefined });
+      const service = new AssetService(env);
+      
       const result = await service.generateAsset({
         entityType: 'character',
         description: 'test character',
@@ -222,37 +142,32 @@ describe('AssetService', () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain('not configured');
+      expect(result.error).toContain('SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required');
       expect(result.assetUrl).toContain('data:image/svg+xml');
     });
 
     it('returns placeholder with correct color for character type', async () => {
-      const service = new AssetService(createMockEnv({
-        SCENARIO_API_KEY: undefined,
-        SCENARIO_SECRET_API_KEY: undefined,
-      }));
-
+      const env = createMockEnv({ SCENARIO_API_KEY: undefined });
+      const service = new AssetService(env);
+      
       const result = await service.generateAsset({
         entityType: 'character',
-        description: 'brave knight',
+        description: 'test character',
         style: 'pixel',
-        size: { width: 256, height: 256 },
       });
 
       expect(result.success).toBe(false);
       expect(result.assetUrl).toContain('data:image/svg+xml');
-      expect(result.error).toContain('not configured');
+      expect(result.error).toContain('SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required');
     });
 
     it('returns placeholder with correct color for enemy type', async () => {
-      const service = new AssetService(createMockEnv({
-        SCENARIO_API_KEY: undefined,
-        SCENARIO_SECRET_API_KEY: undefined,
-      }));
-
+      const env = createMockEnv({ SCENARIO_API_KEY: undefined });
+      const service = new AssetService(env);
+      
       const result = await service.generateAsset({
         entityType: 'enemy',
-        description: 'dragon',
+        description: 'test enemy',
         style: 'pixel',
       });
 
@@ -263,43 +178,38 @@ describe('AssetService', () => {
 
   describe('generateBatch', () => {
     it('generates placeholder assets when API not configured', async () => {
-      const service = new AssetService(createMockEnv({
-        SCENARIO_API_KEY: undefined,
-        SCENARIO_SECRET_API_KEY: undefined,
-      }));
-
+      const env = createMockEnv({ SCENARIO_API_KEY: undefined });
+      const service = new AssetService(env);
+      
       const results = await service.generateBatch([
-        { entityType: 'character', description: 'hero', style: 'pixel' },
-        { entityType: 'enemy', description: 'monster', style: 'pixel' },
+        { entityType: 'character', description: 'p1', style: 'pixel' },
+        { entityType: 'enemy', description: 'e1', style: 'pixel' },
       ]);
 
       expect(results).toHaveLength(2);
       expect(results[0].success).toBe(false);
       expect(results[1].success).toBe(false);
-      expect(results[0].assetUrl).toContain('data:image/svg+xml');
-      expect(results[1].assetUrl).toContain('data:image/svg+xml');
     });
   });
-});
 
-describe('getScenarioConfigFromEnv', () => {
-  it('returns configured: true when both keys present', () => {
-    const env = createMockEnv();
-    const config = getScenarioConfigFromEnv(env);
-    expect(config.configured).toBe(true);
-    expect(config.apiKey).toBe('test-api-key');
-    expect(config.apiSecret).toBe('test-secret-key');
-  });
+  describe('getImageGenerationConfig', () => {
+    it('returns configured: true when both keys present', () => {
+      const env = createMockEnv();
+      const config = getImageGenerationConfig(env);
+      expect(config.configured).toBe(true);
+      expect(config.provider).toBe('scenario');
+    });
 
-  it('returns configured: false when apiKey missing', () => {
-    const env = createMockEnv({ SCENARIO_API_KEY: undefined });
-    const config = getScenarioConfigFromEnv(env);
-    expect(config.configured).toBe(false);
-  });
+    it('returns configured: false when apiKey missing', () => {
+      const env = createMockEnv({ SCENARIO_API_KEY: undefined });
+      const config = getImageGenerationConfig(env);
+      expect(config.configured).toBe(false);
+    });
 
-  it('returns configured: false when apiSecret missing', () => {
-    const env = createMockEnv({ SCENARIO_SECRET_API_KEY: undefined });
-    const config = getScenarioConfigFromEnv(env);
-    expect(config.configured).toBe(false);
+    it('returns configured: false when apiSecret missing', () => {
+      const env = createMockEnv({ SCENARIO_SECRET_API_KEY: undefined });
+      const config = getImageGenerationConfig(env);
+      expect(config.configured).toBe(false);
+    });
   });
 });

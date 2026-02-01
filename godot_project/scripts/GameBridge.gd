@@ -179,8 +179,10 @@ func _setup_js_bridge() -> void:
 		"applyTorque": _physics_controller._js_apply_torque, "createRevoluteJoint": _joint_manager._js_create_revolute_joint,
 		"createDistanceJoint": _joint_manager._js_create_distance_joint, "createPrismaticJoint": _joint_manager._js_create_prismatic_joint,
 		"createWeldJoint": _joint_manager._js_create_weld_joint, "createMouseJoint": _joint_manager._js_create_mouse_joint,
-		"destroyJoint": _joint_manager._js_destroy_joint, "setMotorSpeed": _joint_manager._js_set_motor_speed,
-		"setMouseTarget": _joint_manager._js_set_mouse_target, "queryPoint": _physics_queries._js_query_point,
+		"destroyJoint": _joint_manager._js_destroy_joint, "destroyMouseJointForEntity": _joint_manager._js_destroy_mouse_joint_for_entity,
+		"setMotorSpeed": _joint_manager._js_set_motor_speed,
+		"setMouseTarget": _joint_manager._js_set_mouse_target, "getLastJointId": _joint_manager._js_get_last_joint_id,
+		"queryPoint": _physics_queries._js_query_point,
 		"queryPointEntity": _physics_queries._js_query_point_entity, "queryAABB": _physics_queries._js_query_aabb,
 		"raycast": _physics_queries._js_raycast, "onSensorBegin": _event_emitter._js_on_sensor_begin,
 		"onSensorEnd": _event_emitter._js_on_sensor_end, "setUserData": _entity_manager._js_set_user_data,
@@ -240,6 +242,8 @@ func load_game_json(json_string: String) -> bool:
 	if _world_system: _world_system.setup_world(game_data.get("world", {}))
 	_visual_renderer.setup_background(game_data.get("background", {}))
 	templates = game_data.get("templates", {})
+	# Sync state to EntityFactory before creating entities
+	_entity_factory.update_state()
 	for entity_data in game_data.get("entities", []):
 		var record = _entity_factory.create_entity(entity_data)
 		if record: entity_registry[record.entity_id] = record

@@ -129,20 +129,11 @@ func _notify_js_input_event(input_type: String, x: float, y: float, entity_id: V
 
 
 func _get_entity_at_position(world_pos: Vector2, entities: Dictionary) -> Variant:
-	var viewport = _game_bridge.get_viewport()
-	var space = viewport.find_world_2d().direct_space_state
-	if space:
-		var query = PhysicsPointQueryParameters2D.new()
-		query.position = world_pos
-		query.collision_mask = 0xFFFFFFFF
-		query.collide_with_bodies = true
-		query.collide_with_areas = true
-		var results = space.intersect_point(query, 1)
-		if results.size() > 0:
-			var collider = results[0].collider
-			if collider and collider.name in entities:
-				return collider.name
-	return null
+    var game_pos = _game_bridge.godot_to_game_pos(world_pos)
+    var entity_id = _game_bridge._hit_test(game_pos.x, game_pos.y)
+    if entity_id != "":
+        return entity_id
+    return null
 
 
 func is_dragging() -> bool:

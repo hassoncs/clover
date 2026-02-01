@@ -2,13 +2,9 @@ import { Platform } from "react-native";
 import type { PropertySyncPayload } from "@slopcade/shared";
 import type { Physics2D } from "../physics2d/Physics2D";
 import type {
-  BodyId,
-  ColliderId,
   JointId,
   Vec2,
   Transform,
-  BodyDef,
-  FixtureDef,
   RevoluteJointDef,
   DistanceJointDef,
   PrismaticJointDef,
@@ -22,15 +18,12 @@ import type {
   SensorEvent,
 } from "../physics2d/types";
 import {
-  createBodyId,
-  createColliderId,
   createJointId,
 } from "../physics2d/types";
 import type {
   GodotBridge,
   EntityTransform,
   EntitySpawnedEvent,
-  FixtureDef as GodotFixtureDef,
 } from "./types";
 
 interface CachedBodyState {
@@ -40,21 +33,16 @@ interface CachedBodyState {
 }
 
 export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
-  const bodyIdToEntityId = new Map<number, string>();
-  const entityIdToBodyId = new Map<string, BodyId>();
-  const colliderIdMap = new Map<number, ColliderId>();
   const jointIdMap = new Map<number, JointId>();
 
-  const userDataStore = new Map<number, unknown>();
-  const groupStore = new Map<number, string>();
+  const userDataStore = new Map<string, unknown>();
+  const groupStore = new Map<string, string>();
 
-  const cachedStates = new Map<number, CachedBodyState>();
+  const cachedStates = new Map<string, CachedBodyState>();
 
-  // Track entity generations from Godot for pool safety
   const entityGenerations = new Map<string, number>();
+  const knownEntities = new Set<string>();
 
-  let nextBodyId = 1;
-  let nextColliderId = 1;
   let nextJointId = 1;
 
   const collisionBeginCallbacks: CollisionCallback[] = [];
@@ -64,22 +52,15 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
 
   function handleEntitySpawned(event: EntitySpawnedEvent) {
     entityGenerations.set(event.entityId, event.generation);
-    
-    if (event.bodyId !== undefined && event.bodyId >= 0) {
-      const bodyId = createBodyId(event.bodyId);
-      entityIdToBodyId.set(event.entityId, bodyId);
-      bodyIdToEntityId.set(event.bodyId, event.entityId);
-    }
+    knownEntities.add(event.entityId);
   }
 
   function handleEntityDestroyed(entityId: string) {
     entityGenerations.delete(entityId);
-    
-    const bodyId = entityIdToBodyId.get(entityId);
-    if (bodyId) {
-      bodyIdToEntityId.delete(bodyId.value);
-      entityIdToBodyId.delete(entityId);
-    }
+    knownEntities.delete(entityId);
+    cachedStates.delete(entityId);
+    userDataStore.delete(entityId);
+    groupStore.delete(entityId);
   }
 
   function handleTransformSync(transforms: Record<string, EntityTransform>) {
@@ -87,44 +68,38 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       if (!entityGenerations.has(entityId)) {
         continue;
       }
-      const bodyId = entityIdToBodyId.get(entityId);
-      if (bodyId) {
-        const cached = cachedStates.get(bodyId.value);
-        cachedStates.set(bodyId.value, {
-          transform: {
-            position: { x: transform.x, y: transform.y },
-            angle: transform.angle,
-          },
-          linearVelocity: cached?.linearVelocity ?? { x: 0, y: 0 },
-          angularVelocity: cached?.angularVelocity ?? 0,
-        });
-      }
+      const cached = cachedStates.get(entityId);
+      cachedStates.set(entityId, {
+        transform: {
+          position: { x: transform.x, y: transform.y },
+          angle: transform.angle,
+        },
+        linearVelocity: cached?.linearVelocity ?? { x: 0, y: 0 },
+        angularVelocity: cached?.angularVelocity ?? 0,
+      });
     }
   }
 
   function handlePropertySync(payload: PropertySyncPayload) {
     for (const [entityId, props] of Object.entries(payload.entities)) {
-      const bodyId = entityIdToBodyId.get(entityId);
-      if (bodyId) {
-        const cached = cachedStates.get(bodyId.value);
+      const cached = cachedStates.get(entityId);
 
-        const vx = props["velocity.x"];
-        const vy = props["velocity.y"];
-        const angVel = props["angularVelocity"];
+      const vx = props["velocity.x"];
+      const vy = props["velocity.y"];
+      const angVel = props["angularVelocity"];
 
-        if (vx !== undefined && vy !== undefined) {
-          if (cached) {
-            cached.linearVelocity = { x: vx, y: vy };
-            if (angVel !== undefined) {
-              cached.angularVelocity = angVel;
-            }
-          } else {
-            cachedStates.set(bodyId.value, {
-              transform: { position: { x: 0, y: 0 }, angle: 0 },
-              linearVelocity: { x: vx, y: vy },
-              angularVelocity: angVel ?? 0,
-            });
+      if (vx !== undefined && vy !== undefined) {
+        if (cached) {
+          cached.linearVelocity = { x: vx, y: vy };
+          if (angVel !== undefined) {
+            cached.angularVelocity = angVel;
           }
+        } else {
+          cachedStates.set(entityId, {
+            transform: { position: { x: 0, y: 0 }, angle: 0 },
+            linearVelocity: { x: vx, y: vy },
+            angularVelocity: angVel ?? 0,
+          });
         }
       }
     }
@@ -136,26 +111,11 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
   bridge.onEntityDestroyed(handleEntityDestroyed);
 
   bridge.onCollision((event) => {
-    const bodyA = entityIdToBodyId.get(event.entityA);
-    const bodyB = entityIdToBodyId.get(event.entityB);
-
-    // Debug logging for breakout collision issues
-    if (!bodyA || !bodyB) {
-      console.warn("[GodotPhysicsAdapter] Collision entity lookup failed:", {
-        entityA: event.entityA,
-        entityB: event.entityB,
-        bodyAFound: !!bodyA,
-        bodyBFound: !!bodyB,
-        knownEntityIds: Array.from(entityIdToBodyId.keys()).slice(0, 10),
-      });
-      return;
-    }
-
     const collisionEvent: CollisionEvent = {
-      bodyA,
-      bodyB,
-      colliderA: createColliderId(bodyA.value),
-      colliderB: createColliderId(bodyB.value),
+      entityA: event.entityA,
+      entityB: event.entityB,
+      colliderA: event.entityA,
+      colliderB: event.entityB,
       contacts: event.contacts,
     };
     for (const cb of collisionBeginCallbacks) {
@@ -165,9 +125,9 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
 
   bridge.onSensorBegin((event) => {
     const sensorEvent: SensorEvent = {
-      sensor: createColliderId(event.sensorColliderId),
-      otherBody: createBodyId(event.otherBodyId),
-      otherCollider: createColliderId(event.otherColliderId),
+      sensor: String(event.sensorShapeIndex),
+      otherEntity: event.otherEntityId,
+      otherCollider: String(event.otherShapeIndex),
     };
     for (const cb of sensorBeginCallbacks) {
       cb(sensorEvent);
@@ -176,9 +136,9 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
 
   bridge.onSensorEnd((event) => {
     const sensorEvent: SensorEvent = {
-      sensor: createColliderId(event.sensorColliderId),
-      otherBody: createBodyId(event.otherBodyId),
-      otherCollider: createColliderId(event.otherColliderId),
+      sensor: String(event.sensorShapeIndex),
+      otherEntity: event.otherEntityId,
+      otherCollider: String(event.otherShapeIndex),
     };
     for (const cb of sensorEndCallbacks) {
       cb(sensorEvent);
@@ -192,12 +152,12 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
 
     destroyWorld(): void {
       bridge.clearGame();
-      bodyIdToEntityId.clear();
-      entityIdToBodyId.clear();
-      colliderIdMap.clear();
+      knownEntities.clear();
+      entityGenerations.clear();
       jointIdMap.clear();
       userDataStore.clear();
       groupStore.clear();
+      cachedStates.clear();
     },
 
     step(
@@ -206,202 +166,116 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       _positionIterations?: number
     ): void {},
 
-    createBody(def: BodyDef): BodyId {
-      const bodyId = createBodyId(nextBodyId++);
-
-      const actualEntityId = (def.userData as { entityId?: string })?.entityId;
-      const entityId = actualEntityId ?? `body_${bodyId.value}_${Date.now()}`;
-
-      bodyIdToEntityId.set(bodyId.value, entityId);
-      entityIdToBodyId.set(entityId, bodyId);
-
-      if (def.userData !== undefined) {
-        userDataStore.set(bodyId.value, def.userData);
-      }
-      if (def.group) {
-        groupStore.set(bodyId.value, def.group);
-      }
-
-      // Don't call bridge.createBody() if entity already exists in Godot (loaded via loadGame)
-      // The entity was already created by Godot when parsing the game definition
-      if (!actualEntityId) {
-        bridge.createBody({
-          type: def.type,
-          position: def.position,
-          angle: def.angle,
-          linearDamping: def.linearDamping,
-          angularDamping: def.angularDamping,
-          fixedRotation: def.fixedRotation,
-          bullet: def.bullet,
-          userData: def.userData,
-          group: def.group,
-        });
-      }
-
-      return bodyId;
+    destroyBody(entityId: string): void {
+      bridge.destroyEntity(entityId);
+      knownEntities.delete(entityId);
+      entityGenerations.delete(entityId);
+      userDataStore.delete(entityId);
+      groupStore.delete(entityId);
+      cachedStates.delete(entityId);
     },
 
-    destroyBody(id: BodyId): void {
-      const entityId = bodyIdToEntityId.get(id.value);
-      if (entityId) {
-        bridge.destroyEntity(entityId);
-        bodyIdToEntityId.delete(id.value);
-        entityIdToBodyId.delete(entityId);
-        userDataStore.delete(id.value);
-        groupStore.delete(id.value);
-      }
-    },
+    removeFixture(_entityId: string): void {},
 
-    addFixture(bodyId: BodyId, def: FixtureDef): ColliderId {
-      const colliderId = createColliderId(nextColliderId++);
-      colliderIdMap.set(colliderId.value, colliderId);
-      
-      console.log('[GodotPhysicsAdapter] addFixture - bodyId:', bodyId.value, 'shape:', def.shape.type, 'def:', JSON.stringify(def));
-
-      bridge.addFixture(bodyId.value, def as GodotFixtureDef);
-
-      return colliderId;
-    },
-
-    removeFixture(_id: ColliderId): void {},
-
-    setSensor(id: ColliderId, isSensor: boolean): void {
-      bridge.setSensor(id.value, isSensor);
-    },
-
-    getTransform(id: BodyId): Transform {
-      const cached = cachedStates.get(id.value);
+    getTransform(entityId: string): Transform {
+      const cached = cachedStates.get(entityId);
       if (cached) {
         return cached.transform;
       }
       return { position: { x: 0, y: 0 }, angle: 0 };
     },
 
-    setTransform(id: BodyId, transform: Transform): void {
-      const entityId = bodyIdToEntityId.get(id.value);
-      if (entityId) {
-        bridge.setTransform(
-          entityId,
-          transform.position.x,
-          transform.position.y,
-          transform.angle
-        );
-      }
+    setTransform(entityId: string, transform: Transform): void {
+      bridge.setTransform(
+        entityId,
+        transform.position.x,
+        transform.position.y,
+        transform.angle
+      );
     },
 
-    getLinearVelocity(id: BodyId): Vec2 {
-      const cached = cachedStates.get(id.value);
+    getLinearVelocity(entityId: string): Vec2 {
+      const cached = cachedStates.get(entityId);
       if (cached) {
         return cached.linearVelocity;
       }
       return { x: 0, y: 0 };
     },
 
-    setLinearVelocity(id: BodyId, velocity: Vec2): void {
-      const entityId = bodyIdToEntityId.get(id.value);
-      if (entityId) {
-        bridge.setLinearVelocity(entityId, velocity);
+    setLinearVelocity(entityId: string, velocity: Vec2): void {
+      bridge.setLinearVelocity(entityId, velocity);
 
-        const cached = cachedStates.get(id.value);
-        if (cached) {
-          cached.linearVelocity = velocity;
-        } else {
-          cachedStates.set(id.value, {
-            transform: { position: { x: 0, y: 0 }, angle: 0 },
-            linearVelocity: velocity,
-            angularVelocity: 0,
-          });
-        }
+      const cached = cachedStates.get(entityId);
+      if (cached) {
+        cached.linearVelocity = velocity;
       } else {
-        console.warn(
-          "[GodotPhysicsAdapter] No entityId found for bodyId:",
-          id.value
-        );
+        cachedStates.set(entityId, {
+          transform: { position: { x: 0, y: 0 }, angle: 0 },
+          linearVelocity: velocity,
+          angularVelocity: 0,
+        });
       }
     },
 
-    getAngularVelocity(id: BodyId): number {
-      const cached = cachedStates.get(id.value);
+    getAngularVelocity(entityId: string): number {
+      const cached = cachedStates.get(entityId);
       if (cached) {
         return cached.angularVelocity;
       }
       return 0;
     },
 
-    setAngularVelocity(id: BodyId, velocity: number): void {
-      const entityId = bodyIdToEntityId.get(id.value);
-      if (entityId) {
-        bridge.setAngularVelocity(entityId, velocity);
+    setAngularVelocity(entityId: string, velocity: number): void {
+      bridge.setAngularVelocity(entityId, velocity);
 
-        const cached = cachedStates.get(id.value);
-        if (cached) {
-          cached.angularVelocity = velocity;
-        } else {
-          cachedStates.set(id.value, {
-            transform: { position: { x: 0, y: 0 }, angle: 0 },
-            linearVelocity: { x: 0, y: 0 },
-            angularVelocity: velocity,
-          });
-        }
+      const cached = cachedStates.get(entityId);
+      if (cached) {
+        cached.angularVelocity = velocity;
+      } else {
+        cachedStates.set(entityId, {
+          transform: { position: { x: 0, y: 0 }, angle: 0 },
+          linearVelocity: { x: 0, y: 0 },
+          angularVelocity: velocity,
+        });
       }
     },
 
-    applyForce(id: BodyId, force: Vec2, _worldPoint?: Vec2): void {
-      const entityId = bodyIdToEntityId.get(id.value);
-      if (entityId) {
-        bridge.applyForce(entityId, force);
-      }
+    applyForce(entityId: string, force: Vec2, _worldPoint?: Vec2): void {
+      bridge.applyForce(entityId, force);
     },
 
-    applyForceToCenter(id: BodyId, force: Vec2): void {
-      const entityId = bodyIdToEntityId.get(id.value);
-      if (entityId) {
-        bridge.applyForce(entityId, force);
-      }
+    applyForceToCenter(entityId: string, force: Vec2): void {
+      bridge.applyForce(entityId, force);
     },
 
-    applyImpulse(id: BodyId, impulse: Vec2, _worldPoint?: Vec2): void {
-      const entityId = bodyIdToEntityId.get(id.value);
-      if (entityId) {
-        bridge.applyImpulse(entityId, impulse);
-      }
+    applyImpulse(entityId: string, impulse: Vec2, _worldPoint?: Vec2): void {
+      bridge.applyImpulse(entityId, impulse);
     },
 
-    applyImpulseToCenter(id: BodyId, impulse: Vec2): void {
-      const entityId = bodyIdToEntityId.get(id.value);
-      if (entityId) {
-        bridge.applyImpulse(entityId, impulse);
-      }
+    applyImpulseToCenter(entityId: string, impulse: Vec2): void {
+      bridge.applyImpulse(entityId, impulse);
     },
 
-    applyTorque(id: BodyId, torque: number): void {
-      const entityId = bodyIdToEntityId.get(id.value);
-      if (entityId) {
-        bridge.applyTorque(entityId, torque);
-      }
+    applyTorque(entityId: string, torque: number): void {
+      bridge.applyTorque(entityId, torque);
     },
 
     createRevoluteJoint(def: RevoluteJointDef): JointId {
       const jointId = createJointId(nextJointId++);
       jointIdMap.set(jointId.value, jointId);
 
-      const entityA = bodyIdToEntityId.get(def.bodyA.value);
-      const entityB = bodyIdToEntityId.get(def.bodyB.value);
-
-      if (entityA && entityB) {
-        bridge.createRevoluteJoint({
-          type: "revolute",
-          bodyA: entityA,
-          bodyB: entityB,
-          anchor: def.anchor,
-          enableLimit: def.enableLimit,
-          lowerAngle: def.lowerAngle,
-          upperAngle: def.upperAngle,
-          enableMotor: def.enableMotor,
-          motorSpeed: def.motorSpeed,
-          maxMotorTorque: def.maxMotorTorque,
-        });
-      }
+      bridge.createRevoluteJoint({
+        type: "revolute",
+        bodyA: def.entityA,
+        bodyB: def.entityB,
+        anchor: def.anchor,
+        enableLimit: def.enableLimit,
+        lowerAngle: def.lowerAngle,
+        upperAngle: def.upperAngle,
+        enableMotor: def.enableMotor,
+        motorSpeed: def.motorSpeed,
+        maxMotorTorque: def.maxMotorTorque,
+      });
 
       return jointId;
     },
@@ -410,21 +284,16 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       const jointId = createJointId(nextJointId++);
       jointIdMap.set(jointId.value, jointId);
 
-      const entityA = bodyIdToEntityId.get(def.bodyA.value);
-      const entityB = bodyIdToEntityId.get(def.bodyB.value);
-
-      if (entityA && entityB) {
-        bridge.createDistanceJoint({
-          type: "distance",
-          bodyA: entityA,
-          bodyB: entityB,
-          anchorA: def.anchorA,
-          anchorB: def.anchorB,
-          length: def.length,
-          stiffness: def.stiffness,
-          damping: def.damping,
-        });
-      }
+      bridge.createDistanceJoint({
+        type: "distance",
+        bodyA: def.entityA,
+        bodyB: def.entityB,
+        anchorA: def.anchorA,
+        anchorB: def.anchorB,
+        length: def.length,
+        stiffness: def.stiffness,
+        damping: def.damping,
+      });
 
       return jointId;
     },
@@ -433,24 +302,19 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       const jointId = createJointId(nextJointId++);
       jointIdMap.set(jointId.value, jointId);
 
-      const entityA = bodyIdToEntityId.get(def.bodyA.value);
-      const entityB = bodyIdToEntityId.get(def.bodyB.value);
-
-      if (entityA && entityB) {
-        bridge.createPrismaticJoint({
-          type: "prismatic",
-          bodyA: entityA,
-          bodyB: entityB,
-          anchor: def.anchor,
-          axis: def.axis,
-          enableLimit: def.enableLimit,
-          lowerTranslation: def.lowerTranslation,
-          upperTranslation: def.upperTranslation,
-          enableMotor: def.enableMotor,
-          motorSpeed: def.motorSpeed,
-          maxMotorForce: def.maxMotorForce,
-        });
-      }
+      bridge.createPrismaticJoint({
+        type: "prismatic",
+        bodyA: def.entityA,
+        bodyB: def.entityB,
+        anchor: def.anchor,
+        axis: def.axis,
+        enableLimit: def.enableLimit,
+        lowerTranslation: def.lowerTranslation,
+        upperTranslation: def.upperTranslation,
+        enableMotor: def.enableMotor,
+        motorSpeed: def.motorSpeed,
+        maxMotorForce: def.maxMotorForce,
+      });
 
       return jointId;
     },
@@ -459,18 +323,14 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       const jointId = createJointId(nextJointId++);
       jointIdMap.set(jointId.value, jointId);
 
-      const entityId = bodyIdToEntityId.get(def.body.value);
-
-      if (entityId) {
-        bridge.createMouseJoint({
-          type: "mouse",
-          body: entityId,
-          target: def.target,
-          maxForce: def.maxForce,
-          stiffness: def.stiffness,
-          damping: def.damping,
-        });
-      }
+      bridge.createMouseJoint({
+        type: "mouse",
+        body: def.entity,
+        target: def.target,
+        maxForce: def.maxForce,
+        stiffness: def.stiffness,
+        damping: def.damping,
+      });
 
       return jointId;
     },
@@ -479,19 +339,14 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       const jointId = createJointId(nextJointId++);
       jointIdMap.set(jointId.value, jointId);
 
-      const entityA = bodyIdToEntityId.get(def.bodyA.value);
-      const entityB = bodyIdToEntityId.get(def.bodyB.value);
-
-      if (entityA && entityB) {
-        bridge.createWeldJoint({
-          type: "weld",
-          bodyA: entityA,
-          bodyB: entityB,
-          anchor: def.anchor,
-          stiffness: def.stiffness,
-          damping: def.damping,
-        });
-      }
+      bridge.createWeldJoint({
+        type: "weld",
+        bodyA: def.entityA,
+        bodyB: def.entityB,
+        anchor: def.anchor,
+        stiffness: def.stiffness,
+        damping: def.damping,
+      });
 
       return jointId;
     },
@@ -509,7 +364,7 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       bridge.setMouseTarget(id.value, target);
     },
 
-    queryPoint(_point: Vec2): BodyId | null {
+    queryPoint(_point: Vec2): string | null {
       if (Platform.OS !== "web") {
         console.warn(
           "[GodotPhysicsAdapter] queryPoint is async on native - use queryPointAsync instead"
@@ -518,7 +373,7 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       return null;
     },
 
-    queryAABB(_min: Vec2, _max: Vec2): BodyId[] {
+    queryAABB(_min: Vec2, _max: Vec2): string[] {
       if (Platform.OS !== "web") {
         console.warn(
           "[GodotPhysicsAdapter] queryAABB is async on native - use queryAABBAsync instead"
@@ -564,35 +419,30 @@ export function createGodotPhysicsAdapter(bridge: GodotBridge): Physics2D {
       };
     },
 
-    getUserData<T = unknown>(id: BodyId): T | undefined {
-      return userDataStore.get(id.value) as T | undefined;
+    getUserData<T = unknown>(entityId: string): T | undefined {
+      return userDataStore.get(entityId) as T | undefined;
     },
 
-    setUserData(id: BodyId, data: unknown): void {
-      userDataStore.set(id.value, data);
-      bridge.setUserData(id.value, data);
+    setUserData(entityId: string, data: unknown): void {
+      userDataStore.set(entityId, data);
     },
 
-    getGroup(id: BodyId): string | undefined {
-      return groupStore.get(id.value);
+    getGroup(entityId: string): string | undefined {
+      return groupStore.get(entityId);
     },
 
-    getAllBodies(): BodyId[] {
-      return Array.from(bodyIdToEntityId.keys()).map((id) => createBodyId(id));
+    getAllEntities(): string[] {
+      return Array.from(knownEntities);
     },
 
-    getBodiesInGroup(group: string): BodyId[] {
-      const result: BodyId[] = [];
-      for (const [bodyId, g] of groupStore) {
+    getEntitiesInGroup(group: string): string[] {
+      const result: string[] = [];
+      for (const [entityId, g] of groupStore) {
         if (g === group) {
-          result.push(createBodyId(bodyId));
+          result.push(entityId);
         }
       }
       return result;
-    },
-
-    getEntityId(bodyId: BodyId): string | undefined {
-      return bodyIdToEntityId.get(bodyId.value);
     },
   };
 

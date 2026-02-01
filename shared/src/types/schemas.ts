@@ -98,74 +98,55 @@ export const SpriteComponentSchema = z.discriminatedUnion('type', [
   ImageSpriteSchema,
 ]);
 
-const BasePhysicsSchema = z.object({
+export const PhysicsComponentSchema = z.object({
   bodyType: z.enum(['static', 'dynamic', 'kinematic']),
-  density: z.number().nonnegative(),
-  friction: z.number().nonnegative(),
-  restitution: z.number().nonnegative(),
-  fixedRotation: z.boolean().optional(),
-  bullet: z.boolean().optional(),
+  density: z.number().nonnegative().optional(),
+  mass: z.number().nonnegative().optional(),
+  gravityScale: z.number().optional(),
   linearDamping: z.number().optional(),
   angularDamping: z.number().optional(),
+  fixedRotation: z.boolean().optional(),
+  ccd: z.boolean().optional(),
   initialVelocity: Vec2Schema.optional(),
   initialAngularVelocity: z.number().optional(),
 });
 
-export const BoxPhysicsSchema = BasePhysicsSchema.extend({
+const BaseColliderSchema = z.object({
+  friction: z.number().nonnegative().optional(),
+  restitution: z.number().nonnegative().optional(),
+  isSensor: z.boolean().optional(),
+  categoryBits: z.number().optional(),
+  maskBits: z.number().optional(),
+});
+
+export const BoxColliderSchema = BaseColliderSchema.extend({
   shape: z.literal('box'),
   width: z.number().positive(),
   height: z.number().positive(),
 });
 
-export const CirclePhysicsSchema = BasePhysicsSchema.extend({
+export const CircleColliderSchema = BaseColliderSchema.extend({
   shape: z.literal('circle'),
   radius: z.number().positive(),
 });
 
-export const PolygonPhysicsSchema = BasePhysicsSchema.extend({
+export const PolygonColliderSchema = BaseColliderSchema.extend({
   shape: z.literal('polygon'),
   vertices: z.array(Vec2Schema).min(3),
 });
 
-export const PhysicsComponentSchema = z.discriminatedUnion('shape', [
-  BoxPhysicsSchema,
-  CirclePhysicsSchema,
-  PolygonPhysicsSchema,
-]);
-
-// ============================================================================
-// Zone Schemas
-// ============================================================================
-
-/**
- * @deprecated Use collider with isSensor: true instead.
- * Zones are now implemented as sensor colliders for unified rendering.
- */
-export const ZoneShapeSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('box'), width: z.number(), height: z.number() }),
-  z.object({ type: z.literal('circle'), radius: z.number() }),
-  z.object({ type: z.literal('polygon'), vertices: z.array(Vec2Schema).min(3) }),
-]);
-
-/**
- * @deprecated Use collider with isSensor: true instead.
- * Zones are now implemented as sensor colliders for unified rendering.
- */
-export const ZoneComponentSchema = z.object({
-  movement: z.enum(['static', 'kinematic']).optional(),
-  shape: ZoneShapeSchema,
-  categoryBits: z.number().optional(),
-  maskBits: z.number().optional(),
+export const CapsuleColliderSchema = BaseColliderSchema.extend({
+  shape: z.literal('capsule'),
+  radius: z.number().positive(),
+  height: z.number().positive(),
 });
 
-/**
- * @deprecated Use collider with isSensor: true instead.
- * Zones are now implemented as sensor colliders for unified rendering.
- */
-export const ZoneEntityDefinitionSchema = z.object({
-  type: z.literal('zone'),
-  zone: ZoneComponentSchema,
-});
+export const ColliderComponentSchema = z.discriminatedUnion('shape', [
+  BoxColliderSchema,
+  CircleColliderSchema,
+  PolygonColliderSchema,
+  CapsuleColliderSchema,
+]);
 
 const BaseBehaviorSchema = z.object({
   enabled: z.boolean().optional(),
@@ -583,6 +564,7 @@ export const ChildEntityDefinitionSchema: z.ZodType<any> = z.lazy(() =>
     slot: z.string().optional(),
     sprite: SpriteComponentSchema.optional(),
     physics: PhysicsComponentSchema.optional(),
+    collider: ColliderComponentSchema.optional(),
     behaviors: z.array(BehaviorSchema).optional(),
     tags: z.array(z.string()).optional(),
     visible: z.boolean().optional(),
@@ -599,6 +581,7 @@ export const ChildTemplateDefinitionSchema: z.ZodType<any> = z.lazy(() =>
     slot: z.string().optional(),
     sprite: SpriteComponentSchema.optional(),
     physics: PhysicsComponentSchema.optional(),
+    collider: ColliderComponentSchema.optional(),
     behaviors: z.array(BehaviorSchema).optional(),
     tags: z.array(z.string()).optional(),
     children: z.array(ChildTemplateDefinitionSchema).optional(),
@@ -610,7 +593,8 @@ export const BodyEntityTemplateSchema = z.object({
   id: z.string(),
   description: z.string().optional(),
   sprite: SpriteComponentSchema.optional(),
-  physics: PhysicsComponentSchema,
+  physics: PhysicsComponentSchema.optional(),
+  collider: ColliderComponentSchema.optional(),
   behaviors: z.array(BehaviorSchema).optional(),
   tags: z.array(z.string()).optional(),
   layer: z.number().optional(),
@@ -618,19 +602,7 @@ export const BodyEntityTemplateSchema = z.object({
   children: z.array(ChildTemplateDefinitionSchema).optional(),
 });
 
-export const EntityTemplateSchema = z.union([
-  BodyEntityTemplateSchema,
-  ZoneEntityDefinitionSchema,
-]).refine((data): data is z.infer<typeof BodyEntityTemplateSchema> => {
-  // If it has physics and no type, it's a body
-  if ('physics' in data && !('type' in data)) {
-    return true;
-  }
-  // If it has type: 'body' or type: 'zone', let the schema handle it
-  return 'type' in data;
-}, {
-  message: 'Invalid entity template - must have either physics (body) or zone',
-});
+export const EntityTemplateSchema = BodyEntityTemplateSchema;
 
 export const GameEntitySchema = z.object({
   id: z.string(),
@@ -639,6 +611,7 @@ export const GameEntitySchema = z.object({
   transform: TransformComponentSchema,
   sprite: SpriteComponentSchema.optional(),
   physics: PhysicsComponentSchema.optional(),
+  collider: ColliderComponentSchema.optional(),
   behaviors: z.array(BehaviorSchema).optional(),
   tags: z.array(z.string()).optional(),
   layer: z.number().optional(),

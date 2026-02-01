@@ -1,4 +1,3 @@
-import type { BodyId, ColliderId } from '../physics2d/types';
 import type {
   GameEntity,
   TransformComponent,
@@ -8,7 +7,6 @@ import type {
   EntityTemplate,
   EventBus,
   ConditionalBehavior,
-  ZoneComponent,
 } from '@slopcade/shared';
 
 /**
@@ -57,8 +55,7 @@ export interface RuntimeEntity {
     restitution?: number;
     vertices?: { x: number; y: number }[];
   };
-  /** @deprecated Use collider with isSensor: true instead */
-  zone?: ZoneComponent;
+
   behaviors: RuntimeBehavior[];
   tags: string[];
   /** Interned tag IDs for O(1) tag operations. Managed by EntityManager. */
@@ -72,8 +69,7 @@ export interface RuntimeEntity {
   layer: number;
   visible: boolean;
   active: boolean;
-  bodyId: BodyId | null;
-  colliderId: ColliderId | null;
+  colliderId: number | null;
   assetPackId?: string;
   markedForDestruction?: boolean;
   markedEffect?: MarkedEffect;

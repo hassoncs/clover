@@ -86,8 +86,7 @@ func process_physics(delta: float, entity_registry: Dictionary) -> void:
 			node.position += record.velocity * delta
 
 
-# JS HANDLERS
- (called from JavaScript bridge)
+# JS HANDLERS (called from JavaScript bridge)
 # =============================================================================
 
 func _js_set_linear_velocity(args: Array) -> void:
@@ -99,24 +98,19 @@ func _js_set_linear_velocity(args: Array) -> void:
 func _js_set_angular_velocity(args: Array) -> void:
 	if args.size() < 2:
 		return
-	var entity_id = str(args[0])
-	var omega = float(args[1])
-	set_angular_velocity(entity_id, omega)
+	set_angular_velocity(str(args[0]), float(args[1]))
 
 
 func _js_get_linear_velocity(args: Array) -> Variant:
 	if args.size() < 1:
 		return null
-	var entity_id = str(args[0])
-	var vel = get_linear_velocity(entity_id)
-	return {"x": vel.x, "y": vel.y}
+	return get_linear_velocity(str(args[0]))
 
 
 func _js_get_angular_velocity(args: Array) -> Variant:
 	if args.size() < 1:
 		return null
-	var entity_id = str(args[0])
-	return get_angular_velocity(entity_id)
+	return get_angular_velocity(str(args[0]))
 
 
 func _js_apply_impulse(args: Array) -> void:
@@ -135,14 +129,3 @@ func _js_apply_torque(args: Array) -> void:
 	if args.size() < 2:
 		return
 	apply_torque(str(args[0]), float(args[1]))
-
-func _js_get_linear_velocity(args: Array) -> Variant:
-	if args.size() < 1:
-		return null
-	return get_linear_velocity(str(args[0]))
-
-
-func _js_get_angular_velocity(args: Array) -> Variant:
-	if args.size() < 1:
-		return null
-	return get_angular_velocity(str(args[0]))

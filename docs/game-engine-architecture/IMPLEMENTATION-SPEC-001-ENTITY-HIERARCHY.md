@@ -126,7 +126,6 @@ export interface RuntimeEntity {
   layer: number;
   visible: boolean;
   active: boolean;
-  bodyId: BodyId | null;
   colliderId: ColliderId | null;
   assetPackId?: string;
   markedForDestruction?: boolean;
@@ -207,9 +206,9 @@ function updateWorldTransforms(entity: RuntimeEntity, manager: EntityManager): v
     }
   }
   
-  // Update physics if entity has body
-  if (entity.bodyId) {
-    physics.setTransform(entity.bodyId, {
+  // Update physics if entity has physics component
+  if (entity.physics) {
+    physics.setTransform(entity.id, {
       position: { x: entity.worldTransform.x, y: entity.worldTransform.y },
       angle: entity.worldTransform.angle,
     });

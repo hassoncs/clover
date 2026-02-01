@@ -63,7 +63,7 @@ export class BehaviorExecutorRuntimeSystem implements RuntimeSystem<BehaviorExec
       console.log('[BehaviorExecutor] Ball entity found:', {
         id: ballEntity.id,
         active: ballEntity.active,
-        hasBodyId: !!ballEntity.bodyId,
+        hasPhysics: !!ballEntity.physics,
         behaviorCount: ballEntity.behaviors.length,
         behaviors: ballEntity.behaviors.map(b => b.definition.type)
       });
@@ -149,8 +149,8 @@ export class BehaviorExecutorRuntimeSystem implements RuntimeSystem<BehaviorExec
       evalContext,
       createEvalContextForEntity: (entity) => {
         if (!entity) return evalContext;
-        const velocity = entity.bodyId 
-          ? this.systemContext!.physics.getLinearVelocity(entity.bodyId)
+        const velocity = entity.physics 
+          ? this.systemContext!.physics.getLinearVelocity(entity.id)
           : { x: 0, y: 0 };
         return {
           ...evalContext,

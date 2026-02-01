@@ -34,8 +34,8 @@ export class PhysicsConditionEvaluator implements ConditionEvaluator<EntityExist
       }
 
       case 'velocity': {
-         if (!context.currentEntity?.bodyId) return false;
-         const vel = context.physics.getLinearVelocity(context.currentEntity.bodyId);
+         if (!context.currentEntity?.physics) return false;
+         const vel = context.physics.getLinearVelocity(context.currentEntity.id);
          const v = condition.axis === 'x' ? vel.x : vel.y;
          switch (condition.comparison) {
              case 'gt': return v > condition.value;

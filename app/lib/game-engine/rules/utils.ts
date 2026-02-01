@@ -50,9 +50,9 @@ export function resolveValue(value: Value<number | string | boolean>, context: R
 }
 
 export function isEntityOnGround(entity: RuntimeEntity, context: RuleContext): boolean {
-  if (!entity.bodyId || !context.physics) return false;
+  if (!entity.physics || !context.physics) return false;
 
-  const transform = context.physics.getTransform(entity.bodyId);
+  const transform = context.physics.getTransform(entity.id);
   const { x, y } = transform.position;
   
   if (!entity.collider) return false;
@@ -68,8 +68,8 @@ export function isEntityOnGround(entity: RuntimeEntity, context: RuleContext): b
   
   const hit = context.physics.raycast({ x, y }, { x: 0, y: 1 }, dist);
   
-  if (hit && hit.bodyId.value !== entity.bodyId.value) {
-      const other = context.entityManager.getEntityByBodyId(hit.bodyId);
+  if (hit && hit.entityId !== entity.id) {
+      const other = context.entityManager.getEntity(hit.entityId);
       return !!other;
   }
   return false;
