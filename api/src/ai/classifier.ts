@@ -1,5 +1,13 @@
 import type { GameType } from '@/ai/templates'
-import type { WinConditionType, LoseConditionType } from '@slopcade/shared/types/rules'
+import type { LoseConditionType } from '@slopcade/shared/types/rules'
+
+// Local type for classifier - the actual WinCondition in game engine uses expressions
+export type WinConditionType =
+  | 'score'
+  | 'destroy_all'
+  | 'survive_time'
+  | 'collect_all'
+  | 'reach_entity';
 
 export type ControlIntent =
   | 'tap_to_jump'
