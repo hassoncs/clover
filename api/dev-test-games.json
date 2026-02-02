@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-02T17:37:54.819Z",
+  "generatedAt": "2026-02-02T18:21:47.392Z",
   "games": [
     {
       "id": "ballSort",
@@ -256,6 +256,22 @@
               "shape": "box",
               "width": 1.3199999999999998,
               "height": 6
+            }
+          },
+          "tubeHoverHighlight": {
+            "id": "tubeHoverHighlight",
+            "tags": [
+              "highlight",
+              "hover"
+            ],
+            "layer": 500,
+            "visual": {
+              "type": "rect",
+              "width": 1.764,
+              "height": 6.12,
+              "color": "#FFFFFF",
+              "opacity": 0.15,
+              "blendMode": "add"
             }
           },
           "ball0": {
@@ -1408,6 +1424,19 @@
               "scaleX": 1,
               "scaleY": 1
             }
+          },
+          {
+            "id": "tube-hover-highlight",
+            "name": "Tube Hover Highlight",
+            "template": "tubeHoverHighlight",
+            "visible": false,
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
           }
         ],
         "rules": [
@@ -1533,6 +1562,10 @@
             "onGameWin": true,
             "onBackground": true
           }
+        },
+        "hoverHighlight": {
+          "targetTag": "tube",
+          "highlightEntityId": "tube-hover-highlight"
         }
       }
     },
@@ -2546,7 +2579,7 @@
           "WALL_X_MIN": -3.7,
           "WALL_X_MAX": 3.6999999999999993
         },
-        "script": "\nlet launched = false;\n\nexports.onStart = function(ctx) {\n  console.log('[breakoutScripted] onStart called');\n  launched = false;\n  ctx.setVariable('launched', false);\n};\n\nexports.onUpdate = function(ctx, dt) {\n  const mouse = ctx.getMouse();\n  const paddleId = ctx.queryEntities({ tag: 'paddle' })[0];\n  const ballId = ctx.queryEntities({ tag: 'ball' })[0];\n  \n  if (!paddleId) return;\n  \n  if (mouse) {\n    const clampedX = ctx.clamp(\n      mouse.x,\n      ctx.getConstant('WALL_X_MIN'),\n      ctx.getConstant('WALL_X_MAX')\n    );\n    ctx.setEntityPosition(paddleId, { x: clampedX, y: ctx.getConstant('PADDLE_Y') });\n  }\n  \n  if (!launched && ballId) {\n    const paddlePos = ctx.getEntityPosition(paddleId);\n    if (paddlePos) {\n      ctx.setEntityPosition(ballId, { x: paddlePos.x, y: paddlePos.y + 0.5 });\n      ctx.setEntityVelocity(ballId, { x: 0, y: 0 });\n    }\n  }\n};\n\nexports.onInput = function(ctx, event) {\n  if (event.type === 'tap' && !launched) {\n    const ballId = ctx.queryEntities({ tag: 'ball' })[0];\n    if (ballId) {\n      const angle = ctx.randomInt(45, 135) * Math.PI / 180;\n      const speed = ctx.getConstant('BALL_SPEED');\n      ctx.setEntityVelocity(ballId, {\n        x: Math.cos(angle) * speed,\n        y: Math.sin(angle) * speed\n      });\n      launched = true;\n      ctx.setVariable('launched', true);\n    }\n  }\n};\n\nexports.onCollision = function(ctx, collision) {\n  if (ctx.hasTag(collision.entityA, 'drain') || ctx.hasTag(collision.entityB, 'drain')) {\n    const drainedBall = ctx.hasTag(collision.entityA, 'ball') ? collision.entityA : \n                        ctx.hasTag(collision.entityB, 'ball') ? collision.entityB : null;\n    if (drainedBall) {\n      ctx.addLives(-1);\n      \n      const paddleId = ctx.queryEntities({ tag: 'paddle' })[0];\n      if (paddleId) {\n        const paddlePos = ctx.getEntityPosition(paddleId);\n        ctx.destroyEntity(drainedBall);\n        ctx.spawnEntity('ball', { x: paddlePos.x, y: paddlePos.y + 0.5 });\n        launched = false;\n        ctx.setVariable('launched', false);\n      }\n    }\n  }\n  \n  const brickA = ctx.hasTag(collision.entityA, 'brick') ? collision.entityA : null;\n  const brickB = ctx.hasTag(collision.entityB, 'brick') ? collision.entityB : null;\n  const hitBrick = brickA || brickB;\n  \n  if (hitBrick) {\n    ctx.addScore(10);\n    ctx.destroyEntity(hitBrick);\n  }\n};\n",
+        "script": "\nlet launched = false;\n\nexports.onStart = function(ctx) {\n  launched = false;\n  ctx.setVariable('launched', false);\n};\n\nexports.onUpdate = function(ctx, dt) {\n  const mouse = ctx.getMouse();\n  const paddleId = ctx.queryEntities({ tag: 'paddle' })[0];\n  const ballId = ctx.queryEntities({ tag: 'ball' })[0];\n  \n  if (!paddleId) return;\n  \n  if (mouse) {\n    const clampedX = ctx.clamp(\n      mouse.x,\n      ctx.getConstant('WALL_X_MIN'),\n      ctx.getConstant('WALL_X_MAX')\n    );\n    ctx.setEntityPosition(paddleId, { x: clampedX, y: ctx.getConstant('PADDLE_Y') });\n  }\n  \n  if (!launched && ballId) {\n    const paddlePos = ctx.getEntityPosition(paddleId);\n    if (paddlePos) {\n      ctx.setEntityPosition(ballId, { x: paddlePos.x, y: paddlePos.y + 0.5 });\n      ctx.setEntityVelocity(ballId, { x: 0, y: 0 });\n    }\n  }\n};\n\nexports.onInput = function(ctx, event) {\n  if (event.type === 'tap' && !launched) {\n    const ballId = ctx.queryEntities({ tag: 'ball' })[0];\n    if (ballId) {\n      const angle = ctx.randomInt(45, 135) * Math.PI / 180;\n      const speed = ctx.getConstant('BALL_SPEED');\n      ctx.setEntityVelocity(ballId, {\n        x: Math.cos(angle) * speed,\n        y: Math.sin(angle) * speed\n      });\n      launched = true;\n      ctx.setVariable('launched', true);\n    }\n  }\n};\n\nexports.onCollision = function(ctx, collision) {\n  if (ctx.hasTag(collision.entityA, 'drain') || ctx.hasTag(collision.entityB, 'drain')) {\n    const drainedBall = ctx.hasTag(collision.entityA, 'ball') ? collision.entityA : \n                        ctx.hasTag(collision.entityB, 'ball') ? collision.entityB : null;\n    if (drainedBall) {\n      ctx.addLives(-1);\n      \n      const paddleId = ctx.queryEntities({ tag: 'paddle' })[0];\n      if (paddleId) {\n        const paddlePos = ctx.getEntityPosition(paddleId);\n        ctx.destroyEntity(drainedBall);\n        ctx.spawnEntity('ball', { x: paddlePos.x, y: paddlePos.y + 0.5 });\n        launched = false;\n        ctx.setVariable('launched', false);\n      }\n    }\n  }\n  \n  const brickA = ctx.hasTag(collision.entityA, 'brick') ? collision.entityA : null;\n  const brickB = ctx.hasTag(collision.entityB, 'brick') ? collision.entityB : null;\n  const hitBrick = brickA || brickB;\n  \n  if (hitBrick) {\n    ctx.addScore(10);\n    ctx.destroyEntity(hitBrick);\n  }\n};\n",
         "templates": {
           "ball": {
             "id": "ball",
