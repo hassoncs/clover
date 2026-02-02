@@ -104,6 +104,7 @@ import {
 } from "./systems/runner/wrappers";
 import * as StateHelpers from "./runtime/GameStateHelpers";
 import type { GameState as RuntimeGameState, GameEventBus } from "./runtime/types";
+import { subscribeToGameEvents, type ReactGameState } from "./runtime/GameEventSubscriber";
 
 export interface GameRuntimeGodotProps {
   definition: GameDefinition;
@@ -224,7 +225,7 @@ export function GameRuntimeGodot({
     paused: debugMode, // In inspect mode, start paused; in normal mode, start unpaused (ready state controls this)
     pendingSteps: 0,
   }));
-  const [gameState, setGameState] = useState<GameState>({
+  const [gameState, setGameState] = useState<ReactGameState>({
     time: 0,
     state: "loading",
     variables: {},
@@ -597,33 +598,11 @@ export function GameRuntimeGodot({
         // We still keep the CameraSystem for screen-to-world coordinate transforms
 
         // Subscribe to game events for React state updates
-        eventBusUnsubRef.current = game.events.subscribe((event) => {
-          switch (event.type) {
-            case 'gameStateChanged':
-              console.log(`[GameRuntime] onGameStateChange callback received: ${event.state}`);
-              setGameState((s) => {
-                console.log(`[GameRuntime] Updating React state: ${s.state} -> ${event.state}`);
-                return { ...s, state: event.state };
-              });
-              if (event.state === "won" || event.state === "lost") {
-                console.log(`[GameRuntime] Game ended with state: ${event.state}`);
-                onGameEnd?.(event.state);
-              }
-              break;
-            case 'varChanged':
-              if (event.key === 'score') {
-                setGameState((s) => ({ ...s, score: event.value as number }));
-                onScoreChange?.(event.value as number);
-              } else if (event.key === 'lives') {
-                setGameState((s) => ({ ...s, lives: event.value as number }));
-              } else {
-                setGameState((s) => ({
-                  ...s,
-                  variables: { ...s.variables, [event.key]: event.value }
-                }));
-              }
-              break;
-          }
+        eventBusUnsubRef.current = subscribeToGameEvents(game.events, {
+          onGameStateChange: onGameEnd,
+          onScoreChange,
+          setGameState,
+          debug: true,
         });
 
         // Get initial variables (filter out reserved vars)
@@ -1495,28 +1474,10 @@ export function GameRuntimeGodot({
       timeScaleTransitionRef.current = null;
 
       eventBusUnsubRef.current?.();
-      eventBusUnsubRef.current = newGame.events.subscribe((event) => {
-        switch (event.type) {
-          case 'gameStateChanged':
-            setGameState((s) => ({ ...s, state: event.state }));
-            if (event.state === "won" || event.state === "lost") {
-              onGameEnd?.(event.state);
-            }
-            break;
-          case 'varChanged':
-            if (event.key === 'score') {
-              setGameState((s) => ({ ...s, score: event.value as number }));
-              onScoreChange?.(event.value as number);
-            } else if (event.key === 'lives') {
-              setGameState((s) => ({ ...s, lives: event.value as number }));
-            } else {
-              setGameState((s) => ({
-                ...s,
-                variables: { ...s.variables, [event.key]: event.value }
-              }));
-            }
-            break;
-        }
+      eventBusUnsubRef.current = subscribeToGameEvents(newGame.events, {
+        onGameStateChange: onGameEnd,
+        onScoreChange,
+        setGameState,
       });
 
       const initialVariables: Record<string, number | string | boolean> = {};
