@@ -90,15 +90,13 @@ describe('RulesSystem', () => {
 
   const runUpdate = (inputEvents: InputEvents = {}, collisions: CollisionInfo[] = []) => {
     const evalContext: EvalContext = {
-      score: StateHelpers.getScore(gameState),
-      lives: StateHelpers.getLives(gameState),
       time: StateHelpers.getElapsed(gameState),
       wave: 1,
       dt: 0.016,
       frameId: 0,
       variables: Object.fromEntries(
-        Object.entries(gameState.vars).filter(([k]) => 
-          !['score', 'lives', 'gameState', 'elapsed'].includes(k)
+        Object.entries(gameState.vars).filter(([k]) =>
+          !['gameState', 'elapsed'].includes(k)
         )
       ),
       random: Math.random,
@@ -127,15 +125,15 @@ describe('RulesSystem', () => {
 
     it('resets all state correctly', () => {
       startGame();
-      StateHelpers.addScore(gameState, 100, eventBus);
-      StateHelpers.addLives(gameState, -2, eventBus);
+      StateHelpers.setVar(gameState, 'score', 100, eventBus);
+      StateHelpers.setVar(gameState, 'lives', 1, eventBus);
       StateHelpers.setVar(gameState, 'test', 42, eventBus);
       StateHelpers.setList(gameState, 'deck', [1, 2, 3]);
-      
+
       StateHelpers.resetGameState(gameState);
-      
-      expect(StateHelpers.getScore(gameState)).toBe(0);
-      expect(StateHelpers.getLives(gameState)).toBe(3);
+
+      expect(StateHelpers.getVar(gameState, 'score')).toBeUndefined();
+      expect(StateHelpers.getVar(gameState, 'lives')).toBeUndefined();
       expect(StateHelpers.getVar(gameState, 'test')).toBeUndefined();
       expect(StateHelpers.getList(gameState, 'deck')).toBeUndefined();
       expect(StateHelpers.getGameStateValue(gameState)).toBe('ready');
@@ -154,23 +152,23 @@ describe('RulesSystem', () => {
     beforeEach(() => startGame());
 
     it('adds score correctly', () => {
-      StateHelpers.addScore(gameState, 50, eventBus);
-      expect(StateHelpers.getScore(gameState)).toBe(50);
-      StateHelpers.addScore(gameState, 25, eventBus);
-      expect(StateHelpers.getScore(gameState)).toBe(75);
+      StateHelpers.setVar(gameState, 'score', 50, eventBus);
+      expect(StateHelpers.getVar(gameState, 'score')).toBe(50);
+      StateHelpers.setVar(gameState, 'score', 75, eventBus);
+      expect(StateHelpers.getVar(gameState, 'score')).toBe(75);
     });
 
     it('sets score directly', () => {
-      StateHelpers.addScore(gameState, 100, eventBus);
-      StateHelpers.setScore(gameState, 42, eventBus);
-      expect(StateHelpers.getScore(gameState)).toBe(42);
+      StateHelpers.setVar(gameState, 'score', 100, eventBus);
+      StateHelpers.setVar(gameState, 'score', 42, eventBus);
+      expect(StateHelpers.getVar(gameState, 'score')).toBe(42);
     });
 
     it('emits scoreChanged event on score change', () => {
       const handler = vi.fn();
       eventBus.subscribe(handler);
-      
-      StateHelpers.addScore(gameState, 10, eventBus);
+
+      StateHelpers.setVar(gameState, 'score', 10, eventBus);
       expect(handler).toHaveBeenCalledWith({ type: 'varChanged', key: 'score', value: 10 });
     });
   });
@@ -178,29 +176,29 @@ describe('RulesSystem', () => {
   describe('Lives System', () => {
     beforeEach(() => startGame());
 
-    it('starts with 3 lives by default', () => {
-      expect(StateHelpers.getLives(gameState)).toBe(3);
+    it('starts with no lives by default', () => {
+      expect(StateHelpers.getVar(gameState, 'lives')).toBeUndefined();
     });
 
     it('can set initial lives via game definition', () => {
       const customDef = createMinimalGameDefinition();
       customDef.variables = { ...customDef.variables, lives: 5 };
       const customState = createGameState(customDef);
-      expect(StateHelpers.getLives(customState)).toBe(5);
+      expect(StateHelpers.getVar(customState, 'lives')).toBe(5);
     });
 
     it('adds and subtracts lives', () => {
-      StateHelpers.addLives(gameState, 2, eventBus);
-      expect(StateHelpers.getLives(gameState)).toBe(5);
-      StateHelpers.addLives(gameState, -3, eventBus);
-      expect(StateHelpers.getLives(gameState)).toBe(2);
+      StateHelpers.setVar(gameState, 'lives', 3, eventBus);
+      expect(StateHelpers.getVar(gameState, 'lives')).toBe(3);
+      StateHelpers.setVar(gameState, 'lives', 2, eventBus);
+      expect(StateHelpers.getVar(gameState, 'lives')).toBe(2);
     });
 
     it('emits livesChanged event on lives change', () => {
       const handler = vi.fn();
       eventBus.subscribe(handler);
-      
-      StateHelpers.addLives(gameState, -1, eventBus);
+
+      StateHelpers.setVar(gameState, 'lives', 2, eventBus);
       expect(handler).toHaveBeenCalledWith({ type: 'varChanged', key: 'lives', value: 2 });
     });
   });

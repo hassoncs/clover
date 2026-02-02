@@ -143,8 +143,6 @@ export interface SandboxRuntimeContext {
     emitEvent(eventName: string, data?: Record<string, unknown>): void;
     win(): void;
     lose(): void;
-    addScore(points: number): void;
-    addLives(count: number): void;
   };
   inputSnapshot: InputSnapshot | null;
   mousePosition: { x: number; y: number } | null;

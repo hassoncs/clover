@@ -225,8 +225,6 @@ export function GameRuntimeGodot({
     pendingSteps: 0,
   }));
   const [gameState, setGameState] = useState<GameState>({
-    score: 0,
-    lives: 3,
     time: 0,
     state: "loading",
     variables: {},
@@ -491,7 +489,10 @@ export function GameRuntimeGodot({
             definition.match3 as Match3Config,
             game.entityManager,
             {
-              onScoreAdd: (points) => StateHelpers.addScore(game.gameState, points, game.events),
+              onScoreAdd: (points) => {
+                const currentScore = (StateHelpers.getVar(game.gameState, 'score') as number) ?? 0;
+                StateHelpers.setVar(game.gameState, 'score', currentScore + points, game.events);
+              },
               onMatchFound: () => {},
               onBoardReady: () => {},
             }
@@ -964,13 +965,11 @@ export function GameRuntimeGodot({
       }
 
       const fullGameState: GameState = {
-        score: StateHelpers.getScore(game.gameState),
-        lives: StateHelpers.getLives(game.gameState),
         time: StateHelpers.getElapsed(game.gameState),
         state: StateHelpers.getGameStateValue(game.gameState),
         variables: Object.fromEntries(
-          Object.entries(game.gameState.vars).filter(([k]) => 
-            !['score', 'lives', 'gameState', 'elapsed'].includes(k)
+          Object.entries(game.gameState.vars).filter(([k]) =>
+            !['gameState', 'elapsed'].includes(k)
           )
         ),
       };
@@ -1124,8 +1123,6 @@ export function GameRuntimeGodot({
         timeScaleTransitionRef.current = null;
       },
       getGameState: () => ({
-        score: gameState.score,
-        lives: gameState.lives,
         state: gameState.state as GameStateValue,
         variables: gameState.variables,
         frame: frameIdRef.current,
@@ -1526,8 +1523,6 @@ export function GameRuntimeGodot({
         }
       }
       setGameState({
-        score: StateHelpers.getScore(newGame.gameState),
-        lives: StateHelpers.getLives(newGame.gameState),
         time: 0,
         state: "ready",
         variables: initialVariables,
@@ -1908,7 +1903,7 @@ export function GameRuntimeGodot({
           <Text style={styles.overlayTitle}>
             {gameState.state === "won" ? "🎉 You Win!" : "💀 Game Over"}
           </Text>
-          <Text style={styles.finalScore}>Final Score: {gameState.score}</Text>
+          <Text style={styles.finalScore}>Final Score: {gameState.variables['score'] ?? 0}</Text>
           <TouchableOpacity style={styles.button} onPress={handleRestart}>
             <Text style={styles.buttonText}>Play Again</Text>
           </TouchableOpacity>

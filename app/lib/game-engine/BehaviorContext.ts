@@ -62,8 +62,6 @@ export interface InputEvents {
 }
 
 export interface GameState {
-  score: number;
-  lives: number;
   time: number;
   state: 'loading' | 'ready' | 'playing' | 'paused' | 'won' | 'lost';
   variables: Record<string, number | string | boolean>;
@@ -91,7 +89,6 @@ export interface BehaviorContext {
   evalContext: EvalContext;
   createEvalContextForEntity: CreateEvalContextForEntity;
 
-  addScore(points: number): void;
   setGameState(state: GameState['state']): void;
   spawnEntity(templateId: string, x: number, y: number): string | null;
   setEntityVelocity(entityId: string, velocity: Vec2): void;

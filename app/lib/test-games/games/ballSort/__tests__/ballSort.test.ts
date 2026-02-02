@@ -110,8 +110,6 @@ describe('ballSort', () => {
         input: {} as any,
         gameState: {
           state: StateHelpers.getGameStateValue(gameState),
-          score: StateHelpers.getScore(gameState),
-          lives: StateHelpers.getLives(gameState),
         } as any,
       }, {} as any);
     };

@@ -161,8 +161,6 @@ export type CustomFunction = (
 ) => ExpressionValueType;
 
 export interface EvalContext {
-  score: number;
-  lives: number;
   time: number;
   wave: number;
   frameId: number;
@@ -175,7 +173,7 @@ export interface EvalContext {
   random: () => number;
 
   entityManager?: EntityManagerLike;
-  
+
   customFunctions?: Record<string, CustomFunction>;
 }
 

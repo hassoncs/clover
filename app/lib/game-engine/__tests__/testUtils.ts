@@ -58,8 +58,6 @@ export interface GameTestHarness {
   runFrames: (count: number, inputEvents?: InputEvents) => void;
   getState: () => {
     gameState: string;
-    score: number;
-    lives: number;
     variables: Record<string, number | string | boolean>;
   };
   triggerEvent: (eventName: string, data?: unknown) => void;
@@ -117,8 +115,6 @@ export function createGameTestHarness(game: GameDefinition): GameTestHarness {
       input: {} as any,
       gameState: {
         state: StateHelpers.getGameStateValue(gameState),
-        score: StateHelpers.getScore(gameState),
-        lives: StateHelpers.getLives(gameState),
       } as any,
     }, {} as any);
   };
@@ -131,11 +127,9 @@ export function createGameTestHarness(game: GameDefinition): GameTestHarness {
 
   const getState = () => ({
     gameState: StateHelpers.getGameStateValue(gameState),
-    score: StateHelpers.getScore(gameState),
-    lives: StateHelpers.getLives(gameState),
     variables: Object.fromEntries(
       Object.entries(gameState.vars).filter(
-        ([key]) => !['score', 'lives', 'gameState', 'elapsed'].includes(key)
+        ([key]) => !['gameState', 'elapsed'].includes(key)
       )
     ),
   });

@@ -13,14 +13,14 @@ export class CheckpointActionExecutor implements ActionExecutor<CheckpointAction
     }
   }
 
-  private getState(context: RuleContext): { activeCheckpointId: string; savedState: { score: number; lives: number; variables: Record<string, number | string | boolean> } | null } {
+  private getState(context: RuleContext): { activeCheckpointId: string; savedState: { variables: Record<string, number | string | boolean> } | null } {
     const stateKey = '__checkpointState';
-    let state = context.mutator.getVariable(stateKey) as unknown as { activeCheckpointId: string; savedState: { score: number; lives: number; variables: Record<string, number | string | boolean> } | null } | undefined;
+    let state = context.mutator.getVariable(stateKey) as unknown as { activeCheckpointId: string; savedState: { variables: Record<string, number | string | boolean> } | null } | undefined;
     if (!state) state = { activeCheckpointId: '', savedState: null };
     return state;
   }
 
-  private saveStateToVar(state: { activeCheckpointId: string; savedState: { score: number; lives: number; variables: Record<string, number | string | boolean> } | null }, context: RuleContext): void {
+  private saveStateToVar(state: { activeCheckpointId: string; savedState: { variables: Record<string, number | string | boolean> } | null }, context: RuleContext): void {
     context.mutator.setVariable('__checkpointState', state as unknown as number);
   }
 
@@ -32,15 +32,13 @@ export class CheckpointActionExecutor implements ActionExecutor<CheckpointAction
 
   private executeSave(context: RuleContext): void {
     const state = this.getState(context);
-    state.savedState = { score: context.score, lives: context.lives, variables: {} };
+    state.savedState = { variables: {} };
     this.saveStateToVar(state, context);
   }
 
   private executeRestore(context: RuleContext): void {
     const state = this.getState(context);
     if (!state.savedState) return;
-    context.mutator.setScore(state.savedState.score);
-    context.mutator.setLives(state.savedState.lives);
     for (const [name, value] of Object.entries(state.savedState.variables)) {
       context.mutator.setVariable(name, value);
     }

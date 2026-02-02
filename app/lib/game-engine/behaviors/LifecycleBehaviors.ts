@@ -264,17 +264,19 @@ export function registerLifecycleBehaviors(executor: BehaviorExecutor): void {
       if (score.once && scored.has(other.id)) continue;
 
       const points = ctx.resolveNumber(score.points);
-      ctx.addScore(points);
+      const currentScore = (ctx.evalContext.variables['score'] as number) ?? 0;
+      ctx.evalContext.variables['score'] = currentScore + points;
       scored.add(other.id);
     }
   });
 
   executor.registerHandler('score_on_destroy', (behavior, ctx, runtime) => {
     const score = behavior as ScoreOnDestroyBehavior;
-    
+
     if (runtime.state.isBeingDestroyed) {
       const points = ctx.resolveNumber(score.points);
-      ctx.addScore(points);
+      const currentScore = (ctx.evalContext.variables['score'] as number) ?? 0;
+      ctx.evalContext.variables['score'] = currentScore + points;
     }
   });
 

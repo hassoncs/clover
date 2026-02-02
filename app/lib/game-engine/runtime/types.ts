@@ -12,8 +12,6 @@ export type VarValue = number | string | boolean;
 export type ListValue = Array<number | string | boolean>;
 
 export const RESERVED_VARS = {
-  SCORE: 'score',
-  LIVES: 'lives',
   GAME_STATE: 'gameState',
   ELAPSED: 'elapsed',
 } as const;

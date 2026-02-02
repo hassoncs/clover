@@ -639,10 +639,6 @@ function asBoolean(value: ExpressionValueType): boolean {
 
 function resolveIdentifier(name: string, ctx: EvalContext): ExpressionValueType {
   switch (name) {
-    case 'score':
-      return ctx.score;
-    case 'lives':
-      return ctx.lives;
     case 'time':
       return ctx.time;
     case 'wave':
@@ -952,10 +948,8 @@ export function createSeededRandom(initialSeed: number = 12345): () => number {
 
 export function createDefaultContext(overrides?: Partial<EvalContext> & { seed?: number }): EvalContext {
   const { seed = 12345, ...rest } = overrides ?? {};
-  
+
   return {
-    score: 0,
-    lives: 3,
     time: 0,
     wave: 1,
     frameId: 0,

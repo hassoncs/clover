@@ -71,8 +71,6 @@ export interface RulesSystemConfig {
 
 export interface RulesSystemState {
   gameState: string;
-  score: number;
-  lives: number;
   variables: Record<string, number | string | boolean>;
 }
 
@@ -292,8 +290,6 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
         setTimeScale: setTimeScale || (() => {}),
         playSound: playSound || ((soundId: string) => this.systemContext!.bridge.playSound(soundId)),
         setEntityTargetPosition: () => {},
-        score: StateHelpers.getScore(gameState),
-        lives: StateHelpers.getLives(gameState),
         elapsed,
         collisions,
         events: gameState.pendingEvents,
@@ -301,8 +297,6 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
         inputEvents,
         computedValues: this.computedValues,
         evalContext: evalContext || {
-          score: StateHelpers.getScore(gameState),
-          lives: StateHelpers.getLives(gameState),
           time: elapsed,
           wave: 1,
           dt,
@@ -370,7 +364,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
         
         const variablesObj: Record<string, number | string | boolean> = {};
         for (const [key, value] of Object.entries(this.runtimeState.vars)) {
-          if (key !== 'score' && key !== 'lives' && key !== 'gameState' && key !== 'elapsed') {
+          if (key !== 'gameState' && key !== 'elapsed') {
             variablesObj[key] = value;
           }
         }
@@ -386,8 +380,6 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
         const smDefs = this.smDefs;
         
         const evalContext: EvalContext = {
-          score: StateHelpers.getScore(this.runtimeState),
-          lives: StateHelpers.getLives(this.runtimeState),
           time: ctx.elapsed,
           wave: 1,
           dt: ctx.dt,
@@ -433,8 +425,6 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
               easing,
             };
           },
-          score: evalContext.score,
-          lives: evalContext.lives,
           elapsed,
           collisions: ctx.frame.collisions,
           events: this.runtimeState.pendingEvents,
@@ -502,23 +492,19 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
     if (!this.runtimeState) {
       return {
         gameState: 'ready',
-        score: 0,
-        lives: 3,
         variables: {},
       };
     }
-    
+
     const variables: Record<string, number | string | boolean> = {};
     for (const [key, value] of Object.entries(this.runtimeState.vars)) {
-      if (key !== 'score' && key !== 'lives' && key !== 'gameState' && key !== 'elapsed') {
+      if (key !== 'gameState' && key !== 'elapsed') {
         variables[key] = value;
       }
     }
-    
+
     return {
       gameState: StateHelpers.getGameStateValue(this.runtimeState),
-      score: StateHelpers.getScore(this.runtimeState),
-      lives: StateHelpers.getLives(this.runtimeState),
       variables,
     };
   }
@@ -529,37 +515,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
     }
     return this.currentState;
   }
-  
-  addScore(points: number): void {
-    const state = this.requireState();
-    StateHelpers.addScore(state, points, this.currentEvents ?? undefined);
-  }
-  
-  setScore(value: number): void {
-    const state = this.requireState();
-    StateHelpers.setScore(state, value, this.currentEvents ?? undefined);
-  }
-  
-  getScore(): number {
-    const state = this.requireState();
-    return StateHelpers.getScore(state);
-  }
-  
-  addLives(count: number): void {
-    const state = this.requireState();
-    StateHelpers.addLives(state, count, this.currentEvents ?? undefined);
-  }
-  
-  setLives(value: number): void {
-    const state = this.requireState();
-    StateHelpers.setLives(state, value, this.currentEvents ?? undefined);
-  }
-  
-  getLives(): number {
-    const state = this.requireState();
-    return StateHelpers.getLives(state);
-  }
-  
+
   getElapsed(): number {
     const state = this.requireState();
     return StateHelpers.getElapsed(state);
@@ -594,8 +550,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
     const state = this.requireState();
     const result: Record<string, VarValue> = {};
     for (const [key, value] of Object.entries(state.vars)) {
-      if (key !== RESERVED_VARS.SCORE && key !== RESERVED_VARS.LIVES && 
-          key !== RESERVED_VARS.GAME_STATE && key !== RESERVED_VARS.ELAPSED) {
+      if (key !== RESERVED_VARS.GAME_STATE && key !== RESERVED_VARS.ELAPSED) {
         result[key] = value;
       }
     }

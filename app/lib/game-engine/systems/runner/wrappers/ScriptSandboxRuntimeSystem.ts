@@ -219,12 +219,6 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
         lose: () => {
           this.systemContext!.eventQueue.emit('game_state_change', { state: 'lost' });
         },
-        addScore: (points: number) => {
-          this.systemContext!.eventQueue.emit('score_change', { delta: points });
-        },
-        addLives: (count: number) => {
-          this.systemContext!.eventQueue.emit('lives_change', { delta: count });
-        },
       },
       inputSnapshot,
       mousePosition: ctx.input.mouse

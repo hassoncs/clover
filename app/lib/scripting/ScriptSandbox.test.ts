@@ -28,8 +28,6 @@ function createMockRuntime(overrides: Partial<SandboxRuntimeContext> = {}): Sand
       emitEvent: vi.fn((name: string, data?: Record<string, unknown>) => { events.push({ name, data }); }),
       win: vi.fn(),
       lose: vi.fn(),
-      addScore: vi.fn(),
-      addLives: vi.fn(),
     },
     inputSnapshot: null,
     mousePosition: null,

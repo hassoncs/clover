@@ -13,11 +13,9 @@ export function createGameState(def: GameDefinition): GameState {
   const vars: Record<string, VarValue> = {};
   const initialVars: Record<string, VarValue> = {};
 
-  vars[RESERVED_VARS.SCORE] = (def.variables?.score as number) ?? 0;
-  vars[RESERVED_VARS.LIVES] = (def.variables?.lives as number) ?? 3;
   vars[RESERVED_VARS.GAME_STATE] = 'ready';
   vars[RESERVED_VARS.ELAPSED] = 0;
-  
+
   if (def.variables) {
     for (const [key, value] of Object.entries(def.variables)) {
       if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
@@ -32,9 +30,7 @@ export function createGameState(def: GameDefinition): GameState {
       }
     }
   }
-  
-  initialVars[RESERVED_VARS.SCORE] = vars[RESERVED_VARS.SCORE];
-  initialVars[RESERVED_VARS.LIVES] = vars[RESERVED_VARS.LIVES];
+
   initialVars[RESERVED_VARS.GAME_STATE] = 'ready';
   initialVars[RESERVED_VARS.ELAPSED] = 0;
   
@@ -91,38 +87,14 @@ export function getVar(state: GameState, key: string): VarValue | undefined {
 export function setVar(state: GameState, key: string, value: VarValue, events?: GameEventBus): void {
   state.vars[key] = value;
   state.changedVars.add(key);
-  
+
   if (events) {
     events.emit({ type: 'varChanged', key, value });
-    
+
     if (key === RESERVED_VARS.GAME_STATE) {
       events.emit({ type: 'gameStateChanged', state: value as GameStateValue });
     }
   }
-}
-
-export function getScore(state: GameState): number {
-  return (state.vars[RESERVED_VARS.SCORE] as number) ?? 0;
-}
-
-export function setScore(state: GameState, value: number, events?: GameEventBus): void {
-  setVar(state, RESERVED_VARS.SCORE, value, events);
-}
-
-export function addScore(state: GameState, points: number, events?: GameEventBus): void {
-  setScore(state, getScore(state) + points, events);
-}
-
-export function getLives(state: GameState): number {
-  return (state.vars[RESERVED_VARS.LIVES] as number) ?? 3;
-}
-
-export function setLives(state: GameState, value: number, events?: GameEventBus): void {
-  setVar(state, RESERVED_VARS.LIVES, value, events);
-}
-
-export function addLives(state: GameState, count: number, events?: GameEventBus): void {
-  setLives(state, getLives(state) + count, events);
 }
 
 export function getGameStateValue(state: GameState): GameStateValue {

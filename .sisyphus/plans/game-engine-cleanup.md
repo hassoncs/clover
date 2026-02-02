@@ -576,7 +576,7 @@ Phase 6 (After Phase 5): VALIDATION
 
 ---
 
-- [ ] 3.4. Migrate Game Definitions
+- [x] 3.4. Migrate Game Definitions
 
   **What to do**:
   - Audit all games in `app/lib/test-games/games/`

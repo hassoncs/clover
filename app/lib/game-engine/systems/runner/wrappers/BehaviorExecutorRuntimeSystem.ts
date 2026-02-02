@@ -122,8 +122,6 @@ export class BehaviorExecutorRuntimeSystem implements RuntimeSystem<BehaviorExec
     }
     
     const evalContext: EvalContext = {
-      score: ctx.gameState.score,
-      lives: ctx.gameState.lives,
       time: ctx.elapsed,
       wave: 1,
       dt: ctx.dt,
@@ -164,10 +162,7 @@ export class BehaviorExecutorRuntimeSystem implements RuntimeSystem<BehaviorExec
           },
         };
       },
-      
-      addScore: (points: number) => {
-        this.systemContext!.eventQueue.emit('score_changed', { delta: points });
-      },
+
       setGameState: (state: string) => {
         this.systemContext!.eventQueue.emit('game_state_changed', { state });
       },

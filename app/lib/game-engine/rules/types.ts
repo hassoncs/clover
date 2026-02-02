@@ -10,19 +10,13 @@ import type { GodotBridge } from '../../godot/types';
 export type ListValue = (number | string | boolean)[];
 
 export interface IGameStateMutator {
-  addScore(points: number): void;
-  setScore(value: number): void;
-  getScore(): number;
-  addLives(count: number): void;
-  setLives(value: number): void;
-  getLives(): number;
   getElapsed(): number;
   setGameState(state: GameState['state']): void;
   triggerEvent(name: string, data?: unknown): void;
   setVariable(name: string, value: number | string | boolean): void;
   getVariable(name: string): number | string | boolean | undefined;
   setCooldown(id: string, time: number): void;
-  
+
   getList(name: string): ListValue | undefined;
   setList(name: string, value: ListValue): void;
   pushToList(name: string, value: number | string | boolean): void;
@@ -38,8 +32,6 @@ export interface RuleContext {
   mutator: IGameStateMutator;
   camera?: CameraSystem;
   bridge?: GodotBridge;
-  score: number;
-  lives: number;
   elapsed: number;
   collisions: CollisionInfo[];
   events: Map<string, unknown>;

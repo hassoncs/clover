@@ -18,8 +18,14 @@ export function createScriptContext(runtime: SandboxRuntimeContext): ScriptConte
     emit: (eventName, data) => runtime.rulesEvaluator.emitEvent(eventName, data),
     win: () => runtime.rulesEvaluator.win(),
     lose: () => runtime.rulesEvaluator.lose(),
-    addScore: (points) => runtime.rulesEvaluator.addScore(points),
-    addLives: (count) => runtime.rulesEvaluator.addLives(count),
+    addScore: (points) => {
+      const currentScore = (runtime.rulesEvaluator.getVariable('score') as number) ?? 0;
+      runtime.rulesEvaluator.setVariable('score', currentScore + points);
+    },
+    addLives: (count) => {
+      const currentLives = (runtime.rulesEvaluator.getVariable('lives') as number) ?? 3;
+      runtime.rulesEvaluator.setVariable('lives', currentLives + count);
+    },
 
     spawnEntity: (templateId, position, opts) =>
       runtime.entityManager.spawnEntity(templateId, position, opts),

@@ -48,18 +48,12 @@ export function framesToAdvance(
 }
 
 export interface TimeState {
-  timeControl: TimeControl;
-  timeScale: number;
-  frame: number;
-  elapsed: number;
-  gameState: GameStateValue;
-  score: number;
-  lives: number;
+  state: GameStateValue;
+  paused: boolean;
+  pendingSteps: number;
 }
 
 export interface ReactGameState {
-  score: number;
-  lives: number;
   state: GameStateValue;
   variables: Record<string, unknown>;
   frame: number;
