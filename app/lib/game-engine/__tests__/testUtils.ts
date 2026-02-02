@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import { RulesEvaluator } from '../RulesEvaluator';
+import { RulesSystem } from '../systems/runner/wrappers/RulesSystem';
 import type { EntityManager } from '../EntityManager';
 import type { Physics2D } from '../../physics2d/Physics2D';
 import type { InputEvents, CollisionInfo } from '../BehaviorContext';
@@ -49,7 +49,7 @@ export function createMockEntity(id: string, tags: string[] = [], transform?: Pa
 }
 
 export interface GameTestHarness {
-  evaluator: RulesEvaluator;
+  evaluator: RulesSystem;
   entityManager: EntityManager;
   physics: Physics2D;
   gameState: GameState;
@@ -70,20 +70,57 @@ export interface GameTestHarness {
 export function createGameTestHarness(game: GameDefinition): GameTestHarness {
   const entityManager = createMockEntityManager();
   const physics = createMockPhysics();
-  const evaluator = new RulesEvaluator(entityManager);
-
+  
   const gameState = createGameState(game);
   const events = createGameEventBus();
 
-  evaluator.loadRules(game.rules ?? []);
-  evaluator.setWinCondition(game.winCondition);
-  evaluator.setLoseCondition(game.loseCondition);
-  evaluator.setStateMachineDefinitions(game.stateMachines);
+  const evaluator = new RulesSystem({
+    rules: game.rules ?? [],
+    winCondition: game.winCondition,
+    loseCondition: game.loseCondition,
+    stateMachines: game.stateMachines,
+    containers: game.containers,
+  });
+
+  evaluator.initialize({
+    entityManager,
+    physics,
+    bridge: {
+      playSound: vi.fn(),
+    } as any,
+    eventBus: {
+      emit: vi.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
+    } as any,
+    eventQueue: {
+      enqueue: vi.fn(),
+      process: vi.fn(),
+      clear: vi.fn(),
+    } as any,
+  }, {} as any);
+
+  evaluator.setRuntimeState(gameState);
+  evaluator.setEventBus(events);
 
   StateHelpers.setGameStateValue(gameState, 'playing', events);
 
   const runFrame = (inputEvents: InputEvents = {}, collisions: CollisionInfo[] = []) => {
-    evaluator.update(0.016, entityManager, collisions, {}, inputEvents, physics, gameState, events);
+    evaluator.update({
+      dt: 0.016,
+      elapsed: StateHelpers.getElapsed(gameState),
+      frameId: 0,
+      frame: {
+        inputEvents: [],
+        collisions,
+      },
+      input: {} as any,
+      gameState: {
+        state: StateHelpers.getGameStateValue(gameState),
+        score: StateHelpers.getScore(gameState),
+        lives: StateHelpers.getLives(gameState),
+      } as any,
+    }, {} as any);
   };
 
   const runFrames = (count: number, inputEvents: InputEvents = {}) => {

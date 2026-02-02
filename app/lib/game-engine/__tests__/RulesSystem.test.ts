@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { RulesEvaluator } from '../RulesEvaluator';
+import { RulesSystem } from '../systems/runner/wrappers/RulesSystem';
 import type { EntityManager } from '../EntityManager';
 import type { Physics2D } from '../../physics2d/Physics2D';
 import type { InputEvents, CollisionInfo } from '../BehaviorContext';
@@ -57,8 +57,8 @@ function createMinimalGameDefinition(): GameDefinition {
   };
 }
 
-describe('RulesEvaluator', () => {
-  let evaluator: RulesEvaluator;
+describe('RulesSystem', () => {
+  let evaluator: RulesSystem;
   let mockEntityManager: EntityManager;
   let mockPhysics: Physics2D;
   let gameState: RuntimeGameState;
@@ -67,7 +67,19 @@ describe('RulesEvaluator', () => {
   beforeEach(() => {
     mockEntityManager = createMockEntityManager();
     mockPhysics = createMockPhysics();
-    evaluator = new RulesEvaluator(mockEntityManager);
+    evaluator = new RulesSystem({ rules: [] });
+    evaluator.initialize({
+      entityManager: mockEntityManager,
+      physics: mockPhysics,
+      bridge: { 
+        playSound: vi.fn(),
+      } as any,
+      eventBus: { emit: vi.fn(), on: vi.fn(), off: vi.fn() } as any,
+      eventQueue: { enqueue: vi.fn(), process: vi.fn(), clear: vi.fn() } as any,
+    }, { rules: [] });
+    evaluator.setRuntimeState(createGameState(createMinimalGameDefinition()));
+    evaluator.setEventBus(createGameEventBus());
+    
     gameState = createGameState(createMinimalGameDefinition());
     eventBus = createGameEventBus();
   });

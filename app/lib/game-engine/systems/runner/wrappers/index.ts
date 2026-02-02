@@ -28,8 +28,8 @@ export type { Match3SystemConfig, Match3SystemState } from './Match3RuntimeSyste
 export { ContainerRuntimeSystem } from './ContainerRuntimeSystem';
 export type { ContainerSystemConfig, ContainerSystemState } from './ContainerRuntimeSystem';
 
-export { RulesRuntimeSystem } from './RulesRuntimeSystem';
-export type { RulesSystemConfig, RulesSystemState } from './RulesRuntimeSystem';
+export { RulesSystem } from './RulesSystem';
+export type { RulesSystemConfig, RulesSystemState } from './RulesSystem';
 
 export { ScriptSandboxRuntimeSystem } from './ScriptSandboxRuntimeSystem';
 export type { ScriptSandboxSystemConfig, ScriptSandboxSystemState } from './ScriptSandboxRuntimeSystem';

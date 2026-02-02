@@ -95,7 +95,7 @@ import {
   PropertySyncRuntimeSystem,
   BehaviorExecutorRuntimeSystem,
   ScriptSandboxRuntimeSystem,
-  RulesRuntimeSystem,
+  RulesSystem,
   TweenRuntimeSystem,
   TargetPositionRuntimeSystem,
   Match3RuntimeSystem,
@@ -754,7 +754,7 @@ export function GameRuntimeGodot({
         }
 
         runner.register(
-          new RulesRuntimeSystem({
+          new RulesSystem({
             rules: definition.rules ?? [],
             winCondition: definition.winCondition,
             loseCondition: definition.loseCondition,
@@ -802,7 +802,7 @@ export function GameRuntimeGodot({
 
         const behaviorSystem =
           runner.getSystem<BehaviorExecutorRuntimeSystem>("behavior-executor");
-        const rulesSystem = runner.getSystem<RulesRuntimeSystem>("rules");
+        const rulesSystem = runner.getSystem<RulesSystem>("rules");
         const computedValuesSystem =
           runner.getSystem<ComputedValuesRuntimeSystem>("computed-values");
         const cameraSystem = runner.getSystem<CameraRuntimeSystem>("camera");

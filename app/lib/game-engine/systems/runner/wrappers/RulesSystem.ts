@@ -228,137 +228,270 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
     }
   }
   
-  update(ctx: UpdateContext, _state: RulesSystemState): void {
-    if (!this.systemContext || !this.runtimeState || !this.eventBus) return;
-    
-    this.currentState = this.runtimeState;
-    this.currentEvents = this.eventBus;
-    
-    try {
-      if (StateHelpers.getGameStateValue(this.runtimeState) !== "playing") {
+  update(ctx: UpdateContext, state: RulesSystemState): void;
+  update(
+    dt: number,
+    entityManager: import('../../../EntityManager').EntityManager,
+    collisions: import('../../../BehaviorContext').CollisionInfo[],
+    input: import('../../../BehaviorContext').InputState,
+    inputEvents: InputEvents,
+    physics: import('../../../../physics2d/Physics2D').Physics2D,
+    gameState: RuntimeGameState,
+    events: GameEventBus,
+    computedValues?: ComputedValueSystem,
+    evalContext?: EvalContext,
+    camera?: CameraSystem,
+    setTimeScale?: (scale: number, duration?: number) => void,
+    inputEntityManager?: InputEntityManager,
+    playSound?: (soundId: string, volume?: number) => void,
+    bridge?: import('../../../../godot/types').GodotBridge
+  ): void;
+  update(ctxOrDt: UpdateContext | number, stateOrEntityManager: RulesSystemState | import('../../../EntityManager').EntityManager, ...args: any[]): void {
+    if (typeof ctxOrDt === 'number') {
+      const dt = ctxOrDt;
+      const entityManager = stateOrEntityManager as import('../../../EntityManager').EntityManager;
+      const [
+        collisions, 
+        input, 
+        inputEvents, 
+        physics, 
+        gameState, 
+        events, 
+        computedValues,
+        evalContext,
+        camera,
+        setTimeScale,
+        inputEntityManager,
+        playSound,
+        bridge
+      ] = args;
+
+      this.systemContext = {
+        entityManager,
+        physics,
+        bridge: bridge || this.systemContext?.bridge || ({ playSound: () => {} } as any),
+        eventBus: events || this.eventBus || ({ emit: () => {}, on: () => {}, off: () => {} } as any),
+        eventQueue: this.systemContext?.eventQueue || ({ enqueue: () => {}, process: () => {}, clear: () => {} } as any),
+      };
+      this.runtimeState = gameState;
+      this.eventBus = events;
+      this.camera = camera;
+      this.currentState = gameState;
+      this.currentEvents = events;
+      this.computedValues = computedValues;
+      this.inputEntityManager = inputEntityManager;
+
+      if (StateHelpers.getGameStateValue(gameState) !== "playing") {
         return;
       }
-      
-      const elapsed = StateHelpers.getElapsed(this.runtimeState) + ctx.dt;
-      StateHelpers.setElapsed(this.runtimeState, elapsed);
-      
-      const variablesObj: Record<string, number | string | boolean> = {};
-      for (const [key, value] of Object.entries(this.runtimeState.vars)) {
-        if (key !== 'score' && key !== 'lives' && key !== 'gameState' && key !== 'elapsed') {
-          variablesObj[key] = value;
-        }
-      }
-      
-      const smStates = Object.keys(this.runtimeState.stateMachines).length > 0 
-        ? Object.fromEntries(
-            Object.entries(this.runtimeState.stateMachines).map(([id, sm]) => [
-              id,
-              { currentState: sm.current, previousState: sm.previous, stateEnteredAt: sm.enteredAt, transitionCount: sm.transitionCount }
-            ])
-          )
-        : null;
-      const smDefs = this.smDefs;
-      
-      const evalContext: EvalContext = {
-        score: StateHelpers.getScore(this.runtimeState),
-        lives: StateHelpers.getLives(this.runtimeState),
-        time: ctx.elapsed,
-        wave: 1,
-        dt: ctx.dt,
-        frameId: ctx.frameId,
-        variables: {
-          ...variablesObj,
-          ...(smStates ? { __smStates: smStates as unknown as number } : {}),
-          ...(smDefs ? { __smDefs: smDefs as unknown as number } : {}),
-        },
-        random: Math.random,
-        entityManager: this.systemContext.entityManager,
-        customFunctions: getAllSystemExpressionFunctions(),
-      };
-      
-      const inputEvents = this.convertFrameInputEvents(ctx.frame.inputEvents);
-      
+
+      const elapsed = StateHelpers.getElapsed(gameState) + dt;
+      StateHelpers.setElapsed(gameState, elapsed);
+
       const ruleContext: RuleContext = {
-        entityManager: this.systemContext.entityManager,
+        entityManager,
         inputEntityManager: this.inputEntityManager,
-        physics: this.systemContext.physics,
+        physics,
         mutator: this,
-        camera: this.camera,
-        bridge: this.systemContext.bridge,
-        setTimeScale: () => {},
-        playSound: (soundId: string) => this.systemContext!.bridge.playSound(soundId),
-        setEntityTargetPosition: (entityId: string, x: number, y: number, config?: { duration?: number; easing?: string }) => {
-          const entity = this.systemContext!.entityManager.getEntity(entityId);
-          if (!entity) return;
-          
-          const distance = Math.sqrt(
-            Math.pow(x - entity.transform.x, 2) + Math.pow(y - entity.transform.y, 2)
-          );
-          const duration = config?.duration ?? Math.min(0.3, Math.max(0.1, distance / 10));
-          const easing = config?.easing ?? 'easeOutQuad';
-          
-          entity.movementTarget = {
-            x,
-            y,
-            startX: entity.transform.x,
-            startY: entity.transform.y,
-            startTime: elapsed,
-            duration,
-            easing,
-          };
-        },
-        score: evalContext.score,
-        lives: evalContext.lives,
+        camera,
+        bridge,
+        setTimeScale: setTimeScale || (() => {}),
+        playSound: playSound || ((soundId: string) => this.systemContext!.bridge.playSound(soundId)),
+        setEntityTargetPosition: () => {},
+        score: StateHelpers.getScore(gameState),
+        lives: StateHelpers.getLives(gameState),
         elapsed,
-        collisions: ctx.frame.collisions,
-        events: this.runtimeState.pendingEvents,
-        input: ctx.input as any,
+        collisions,
+        events: gameState.pendingEvents,
+        input: input as any,
         inputEvents,
         computedValues: this.computedValues,
-        evalContext,
+        evalContext: evalContext || {
+          score: StateHelpers.getScore(gameState),
+          lives: StateHelpers.getLives(gameState),
+          time: elapsed,
+          wave: 1,
+          dt,
+          frameId: 0,
+          variables: {},
+          random: Math.random,
+          entityManager,
+        },
       } as unknown as RuleContext & { cooldowns: Map<string, number> };
-      (ruleContext as any).cooldowns = this.runtimeState.cooldowns;
-      
+      (ruleContext as any).cooldowns = gameState.cooldowns;
+
       if (this.checkWinCondition(ruleContext)) {
         this.setGameState("won");
         return;
       }
-      
+
       if (this.checkLoseCondition(ruleContext)) {
         this.setGameState("lost");
         return;
       }
-      
+
       for (const rule of this.rules) {
         if (rule.enabled === false) continue;
-        if (rule.fireOnce && this.runtimeState.firedOnce.has(rule.id)) continue;
-        
-        const cooldownEnd = this.runtimeState.cooldowns.get(rule.id);
+        if (rule.fireOnce && gameState.firedOnce.has(rule.id)) continue;
+
+        const cooldownEnd = gameState.cooldowns.get(rule.id);
         if (cooldownEnd && elapsed < cooldownEnd) continue;
-        
+
         const triggerResult = this.evaluateTrigger(rule.trigger, ruleContext);
         if (triggerResult) {
           const conditionsResult = this.evaluateConditions(rule.conditions, ruleContext);
           if (conditionsResult) {
             this.executeActions(rule.actions, ruleContext);
-            
+
             if (rule.fireOnce) {
-              this.runtimeState.firedOnce.add(rule.id);
+              gameState.firedOnce.add(rule.id);
             }
-            
+
             if (rule.cooldown) {
-              this.runtimeState.cooldowns.set(rule.id, elapsed + rule.cooldown);
+              gameState.cooldowns.set(rule.id, elapsed + rule.cooldown);
             }
           }
         }
       }
-      
-      this.processStateMachineEvents(this.runtimeState);
-      
-      StateHelpers.clearPendingEvents(this.runtimeState);
-    } finally {
+
+      this.processStateMachineEvents(gameState);
+      StateHelpers.clearPendingEvents(gameState);
+
       this.currentState = null;
       this.currentEvents = null;
+    } else {
+      const ctx = ctxOrDt;
+      if (!this.systemContext || !this.runtimeState || !this.eventBus) return;
+      
+      this.currentState = this.runtimeState;
+      this.currentEvents = this.eventBus;
+      
+      try {
+        if (StateHelpers.getGameStateValue(this.runtimeState) !== "playing") {
+          return;
+        }
+        
+        const elapsed = StateHelpers.getElapsed(this.runtimeState) + ctx.dt;
+        StateHelpers.setElapsed(this.runtimeState, elapsed);
+        
+        const variablesObj: Record<string, number | string | boolean> = {};
+        for (const [key, value] of Object.entries(this.runtimeState.vars)) {
+          if (key !== 'score' && key !== 'lives' && key !== 'gameState' && key !== 'elapsed') {
+            variablesObj[key] = value;
+          }
+        }
+        
+        const smStates = Object.keys(this.runtimeState.stateMachines).length > 0 
+          ? Object.fromEntries(
+              Object.entries(this.runtimeState.stateMachines).map(([id, sm]) => [
+                id,
+                { currentState: sm.current, previousState: sm.previous, stateEnteredAt: sm.enteredAt, transitionCount: sm.transitionCount }
+              ])
+            )
+          : null;
+        const smDefs = this.smDefs;
+        
+        const evalContext: EvalContext = {
+          score: StateHelpers.getScore(this.runtimeState),
+          lives: StateHelpers.getLives(this.runtimeState),
+          time: ctx.elapsed,
+          wave: 1,
+          dt: ctx.dt,
+          frameId: ctx.frameId,
+          variables: {
+            ...variablesObj,
+            ...(smStates ? { __smStates: smStates as unknown as number } : {}),
+            ...(smDefs ? { __smDefs: smDefs as unknown as number } : {}),
+          },
+          random: Math.random,
+          entityManager: this.systemContext.entityManager,
+          customFunctions: getAllSystemExpressionFunctions(),
+        };
+        
+        const inputEvents = this.convertFrameInputEvents(ctx.frame.inputEvents);
+        
+        const ruleContext: RuleContext = {
+          entityManager: this.systemContext.entityManager,
+          inputEntityManager: this.inputEntityManager,
+          physics: this.systemContext.physics,
+          mutator: this,
+          camera: this.camera,
+          bridge: this.systemContext.bridge,
+          setTimeScale: () => {},
+          playSound: (soundId: string) => this.systemContext!.bridge.playSound(soundId),
+          setEntityTargetPosition: (entityId: string, x: number, y: number, config?: { duration?: number; easing?: string }) => {
+            const entity = this.systemContext!.entityManager.getEntity(entityId);
+            if (!entity) return;
+            
+            const distance = Math.sqrt(
+              Math.pow(x - entity.transform.x, 2) + Math.pow(y - entity.transform.y, 2)
+            );
+            const duration = config?.duration ?? Math.min(0.3, Math.max(0.1, distance / 10));
+            const easing = config?.easing ?? 'easeOutQuad';
+            
+            entity.movementTarget = {
+              x,
+              y,
+              startX: entity.transform.x,
+              startY: entity.transform.y,
+              startTime: elapsed,
+              duration,
+              easing,
+            };
+          },
+          score: evalContext.score,
+          lives: evalContext.lives,
+          elapsed,
+          collisions: ctx.frame.collisions,
+          events: this.runtimeState.pendingEvents,
+          input: ctx.input as any,
+          inputEvents,
+          computedValues: this.computedValues,
+          evalContext,
+        } as unknown as RuleContext & { cooldowns: Map<string, number> };
+        (ruleContext as any).cooldowns = this.runtimeState.cooldowns;
+        
+        if (this.checkWinCondition(ruleContext)) {
+          this.setGameState("won");
+          return;
+        }
+        
+        if (this.checkLoseCondition(ruleContext)) {
+          this.setGameState("lost");
+          return;
+        }
+        
+        for (const rule of this.rules) {
+          if (rule.enabled === false) continue;
+          if (rule.fireOnce && this.runtimeState.firedOnce.has(rule.id)) continue;
+          
+          const cooldownEnd = this.runtimeState.cooldowns.get(rule.id);
+          if (cooldownEnd && elapsed < cooldownEnd) continue;
+          
+          const triggerResult = this.evaluateTrigger(rule.trigger, ruleContext);
+          if (triggerResult) {
+            const conditionsResult = this.evaluateConditions(rule.conditions, ruleContext);
+            if (conditionsResult) {
+              this.executeActions(rule.actions, ruleContext);
+              
+              if (rule.fireOnce) {
+                this.runtimeState.firedOnce.add(rule.id);
+              }
+              
+              if (rule.cooldown) {
+                this.runtimeState.cooldowns.set(rule.id, elapsed + rule.cooldown);
+              }
+            }
+          }
+        }
+        
+        this.processStateMachineEvents(this.runtimeState);
+        
+        StateHelpers.clearPendingEvents(this.runtimeState);
+      } finally {
+        this.currentState = null;
+        this.currentEvents = null;
+      }
     }
   }
   
@@ -555,7 +688,31 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
   setScriptSandbox(scriptSandbox: ScriptSandbox): void {
     this.runScriptActionExecutor.setSandbox(scriptSandbox);
   }
-  
+
+  loadRules(rules: GameRule[]): void {
+    this.rules = rules;
+  }
+
+  setWinCondition(condition: WinCondition | undefined): void {
+    this.winCondition = condition ?? null;
+  }
+
+  setLoseCondition(condition: LoseCondition | undefined): void {
+    this.loseCondition = condition ?? null;
+  }
+
+  setStateMachineDefinitions(stateMachines: StateMachineDefinition[] | undefined): void {
+    if (!stateMachines || stateMachines.length === 0) {
+      this.smDefs = null;
+      return;
+    }
+    const smDefs: Record<string, StateMachineDefinition> = {};
+    for (const sm of stateMachines) {
+      smDefs[sm.id] = sm;
+    }
+    this.smDefs = smDefs;
+  }
+
   private convertFrameInputEvents(frameEvents: readonly import('../types').InputEvent[]): InputEvents {
     const result: InputEvents = {};
     const buttonPressed = new Set<string>();

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createBallSortGame } from '../game';
-import { RulesEvaluator } from '../../../../game-engine/RulesEvaluator';
+import { RulesSystem } from '../../../../game-engine/systems/runner/wrappers/RulesSystem';
 import type { EntityManager } from '../../../../game-engine/EntityManager';
 import type { Physics2D } from '../../../../physics2d/Physics2D';
 import type { InputEvents } from '../../../../game-engine/BehaviorContext';
@@ -91,7 +91,7 @@ describe('ballSort', () => {
   });
 
   describe('win condition simulation', () => {
-    let evaluator: RulesEvaluator;
+    let evaluator: RulesSystem;
     let mockEntityManager: EntityManager;
     let mockPhysics: Physics2D;
     let gameState: GameState;
@@ -99,21 +99,58 @@ describe('ballSort', () => {
     let game: ReturnType<typeof createBallSortGame>;
 
     const runUpdate = (inputEvents: InputEvents = {}) => {
-      evaluator.update(0.016, mockEntityManager, [], {}, inputEvents, mockPhysics, gameState, events);
+      evaluator.update({
+        dt: 0.016,
+        elapsed: StateHelpers.getElapsed(gameState),
+        frameId: 0,
+        frame: {
+          inputEvents: [],
+          collisions: [],
+        },
+        input: {} as any,
+        gameState: {
+          state: StateHelpers.getGameStateValue(gameState),
+          score: StateHelpers.getScore(gameState),
+          lives: StateHelpers.getLives(gameState),
+        } as any,
+      }, {} as any);
     };
 
     beforeEach(() => {
       game = createBallSortGame(1);
       mockEntityManager = createMockEntityManager();
       mockPhysics = createMockPhysics();
-      evaluator = new RulesEvaluator(mockEntityManager);
       
       gameState = createGameState(game);
       events = createGameEventBus();
+
+      evaluator = new RulesSystem({
+        rules: game.rules ?? [],
+        winCondition: game.winCondition,
+        stateMachines: game.stateMachines,
+        containers: game.containers,
+      });
       
-      evaluator.loadRules(game.rules ?? []);
-      evaluator.setWinCondition(game.winCondition);
-      evaluator.setStateMachineDefinitions(game.stateMachines);
+      evaluator.initialize({
+        entityManager: mockEntityManager,
+        physics: mockPhysics,
+        bridge: {
+          playSound: vi.fn(),
+        } as any,
+        eventBus: {
+          emit: vi.fn(),
+          on: vi.fn(),
+          off: vi.fn(),
+        } as any,
+        eventQueue: {
+          enqueue: vi.fn(),
+          process: vi.fn(),
+          clear: vi.fn(),
+        } as any,
+      }, {} as any);
+      
+      evaluator.setRuntimeState(gameState);
+      evaluator.setEventBus(events);
       
       StateHelpers.setGameStateValue(gameState, 'playing', events);
     });

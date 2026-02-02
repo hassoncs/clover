@@ -39,3 +39,12 @@ Conventions, patterns, and things that worked.
 - All IGameStateMutator methods use requireState() pattern for safety
 - Dependency setters (setRuntimeState, setEventBus, etc.) preserved for compatibility
 - TypeScript compiles with zero errors after merge
+
+## Task 2.2: Update imports and usages to RulesSystem
+
+- Successfully updated all imports and usages of `RulesEvaluator` and `RulesRuntimeSystem` to use the new unified `RulesSystem`.
+- `RulesSystem.ts` was updated to include missing methods (`loadRules`, `setWinCondition`, etc.) and support a legacy `update` signature to maintain compatibility with existing tests and avoid a massive test rewrite.
+- Renamed `app/lib/game-engine/__tests__/RulesEvaluator.test.ts` to `RulesSystem.test.ts`.
+- Updated `GameRuntime.godot.tsx` to use `RulesSystem`.
+- Verified that all 345 tests pass.
+- Verified that `pnpm tsc --noEmit` passes with zero errors.

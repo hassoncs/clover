@@ -227,7 +227,7 @@ Phase 6 (After Phase 5): VALIDATION
 
 ---
 
-- [ ] 1.2. Fix TypeScript Errors in GameRuntime
+- [x] 1.2. Fix TypeScript Errors in GameRuntime
 
   **What to do**:
   - Fix all remaining TypeScript errors in `GameRuntime.godot.tsx`
@@ -269,7 +269,7 @@ Phase 6 (After Phase 5): VALIDATION
 
 ---
 
-- [ ] 1.3. Baseline Test Verification
+- [x] 1.3. Baseline Test Verification
 
   **What to do**:
   - Run full test suite to establish baseline
@@ -311,7 +311,7 @@ Phase 6 (After Phase 5): VALIDATION
 
 ---
 
-- [ ] 2.1. Create Unified RulesSystem Class
+- [x] 2.1. Create Unified RulesSystem Class
 
   **What to do**:
   - Create new `RulesSystem.ts` by merging RulesRuntimeSystem + RulesEvaluator
