@@ -70,13 +70,9 @@ export class SlopcadeDebugBridge implements SlopcadeDebugBridgeInterface {
     const gameState = this.runtime.getGameState();
     const timeControl = this.runtime.getTimeControl();
     return {
-      timeControl,
-      timeScale: gameState.timeScale,
-      frame: gameState.frame,
-      elapsed: gameState.elapsed,
-      gameState: gameState.state,
-      score: gameState.score,
-      lives: gameState.lives,
+      state: gameState.state,
+      paused: timeControl?.paused ?? gameState.state !== 'playing',
+      pendingSteps: timeControl?.pendingSteps ?? 0,
     };
   }
 

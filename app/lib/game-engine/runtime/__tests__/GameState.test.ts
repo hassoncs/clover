@@ -1,13 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import type { GameDefinition } from '@slopcade/shared';
-import { 
+import {
   createGameState,
   resetGameState,
-  getScore,
-  setScore,
-  addScore,
-  getLives,
-  setLives,
   getGameStateValue,
   setGameStateValue,
   getVar,
@@ -32,9 +27,9 @@ const createMinimalDef = (overrides: Partial<GameDefinition> = {}): GameDefiniti
 describe('createGameState', () => {
   it('creates state with default values', () => {
     const state = createGameState(createMinimalDef());
-    
-    expect(getScore(state)).toBe(0);
-    expect(getLives(state)).toBe(3);
+
+    expect(getVar(state, 'score')).toBeUndefined();
+    expect(getVar(state, 'lives')).toBeUndefined();
     expect(getGameStateValue(state)).toBe('ready');
   });
 
@@ -45,9 +40,9 @@ describe('createGameState', () => {
         lives: 5,
       },
     }));
-    
-    expect(getScore(state)).toBe(100);
-    expect(getLives(state)).toBe(5);
+
+    expect(getVar(state, 'score')).toBe(100);
+    expect(getVar(state, 'lives')).toBe(5);
   });
 
   it('loads variables from definition', () => {
@@ -58,7 +53,7 @@ describe('createGameState', () => {
         isAlive: true,
       },
     }));
-    
+
     expect(getVar(state, 'health')).toBe(100);
     expect(getVar(state, 'name')).toBe('Player');
     expect(getVar(state, 'isAlive')).toBe(true);
@@ -73,7 +68,7 @@ describe('createGameState', () => {
         transitions: [],
       }],
     }));
-    
+
     expect(state.stateMachines['player'].current).toBe('idle');
     expect(state.stateMachines['player'].transitionCount).toBe(0);
   });
@@ -82,22 +77,22 @@ describe('createGameState', () => {
 describe('resetGameState', () => {
   it('resets all values to initial', () => {
     const state = createGameState(createMinimalDef({
-      variables: { 
+      variables: {
         score: 50,
         lives: 5,
-        health: 100 
+        health: 100
       },
     }));
-    
-    setScore(state, 999);
-    setLives(state, 1);
+
+    setVar(state, 'score', 999);
+    setVar(state, 'lives', 1);
     setVar(state, 'health', 10);
     setGameStateValue(state, 'playing');
-    
+
     resetGameState(state);
-    
-    expect(getScore(state)).toBe(50);
-    expect(getLives(state)).toBe(5);
+
+    expect(getVar(state, 'score')).toBe(50);
+    expect(getVar(state, 'lives')).toBe(5);
     expect(getVar(state, 'health')).toBe(100);
     expect(getGameStateValue(state)).toBe('ready');
   });
@@ -105,20 +100,22 @@ describe('resetGameState', () => {
 
 describe('score operations', () => {
   let state: ReturnType<typeof createGameState>;
-  
+
   beforeEach(() => {
-    state = createGameState(createMinimalDef());
+    state = createGameState(createMinimalDef({
+      variables: { score: 0 }
+    }));
   });
 
-  it('setScore updates score', () => {
-    setScore(state, 100);
-    expect(getScore(state)).toBe(100);
+  it('setVar updates score', () => {
+    setVar(state, 'score', 100);
+    expect(getVar(state, 'score')).toBe(100);
   });
 
-  it('addScore adds to current score', () => {
-    setScore(state, 50);
-    addScore(state, 25);
-    expect(getScore(state)).toBe(75);
+  it('setVar adds to current score', () => {
+    setVar(state, 'score', 50);
+    setVar(state, 'score', (getVar(state, 'score') as number) + 25);
+    expect(getVar(state, 'score')).toBe(75);
   });
 
   it('emits varChanged event for score', () => {
@@ -127,8 +124,8 @@ describe('score operations', () => {
     events.subscribe(e => {
       if (e.type === 'varChanged' && e.key === 'score') received.push(e.value);
     });
-    
-    setScore(state, 100, events);
+
+    setVar(state, 'score', 100, events);
     expect(received).toEqual([100]);
   });
 });
