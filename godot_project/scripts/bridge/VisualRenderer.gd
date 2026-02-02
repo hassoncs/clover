@@ -17,6 +17,7 @@ var _preload_pending_count: int = 0
 var _preload_completed_count: int = 0
 var _preload_failed_count: int = 0
 var _preload_progress_callback: Callable = Callable()
+var _js_preload_progress_callback: JavaScriptObject = null
 
 func _init(bridge: Node) -> void:
 	_bridge = bridge
@@ -97,13 +98,12 @@ func _js_preload_textures(args: Array) -> void:
 			_bridge._push_error("[VisualRenderer] preloadTextures: failed to parse URLs from JSON")
 		return
 
-	# Store callback if provided
-	var progress_callback: Callable = Callable()
+	# Store JavaScript callback if provided
+	_js_preload_progress_callback = null
 	if args.size() > 1 and args[1] != null:
-		# Handle JavaScript callback
-		pass
+		_js_preload_progress_callback = args[1]
 
-	preload_textures(urls, progress_callback)
+	preload_textures(urls, Callable())
 
 
 # ============================================================================
@@ -317,7 +317,9 @@ func set_entity_image_from_file(
 # ============================================================================
 
 func add_visual(node: Node2D, visual_data: Dictionary) -> void:
+	print("[VisualRenderer] add_visual for ", node.name, " visual_data=", visual_data, " keys=", visual_data.keys())
 	var visual_type = visual_data.get("type", "rect")
+	print("[VisualRenderer] visual_type=", visual_type)
 	var color = Color.from_string(visual_data.get("color", "#FF0000"), Color.RED)
 	var opacity = visual_data.get("opacity", 1.0)
 	var z_index_val = visual_data.get("zIndex", 0)
@@ -643,8 +645,12 @@ func _on_preload_complete(url: String, success: bool) -> void:
 	var total_done = _preload_completed_count + _preload_failed_count
 	var percent = int((float(total_done) / float(_preload_pending_count)) * 100.0)
 
+	# Call GDScript callback if set
 	if _preload_progress_callback.is_valid():
 		_preload_progress_callback.call(percent, _preload_completed_count, _preload_failed_count)
+	# Call JavaScript callback if set
+	elif _js_preload_progress_callback != null:
+		_js_preload_progress_callback.call("call", null, percent, _preload_completed_count, _preload_failed_count)
 	else:
 		print("[VisualRenderer] No progress callback registered!")
 

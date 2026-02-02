@@ -28,14 +28,21 @@ export class InputTriggerEvaluator
       case "tap": {
         if (!context.inputEvents.tap) return false;
         if (trigger.target === "self") {
-          return false; // Requires entity context handling in RulesEvaluator integration
+          return false;
         }
         if (trigger.target && trigger.target !== "screen") {
           const targetEntityId = context.inputEvents.tap.targetEntityId;
           
           if (targetEntityId) {
-            if (targetEntityId === trigger.target) return true;
-            if (context.entityManager.hasTag(targetEntityId, trigger.target)) return true;
+            if (targetEntityId === trigger.target) {
+              console.log('[Tap] ✓ Rule matched:', { rule: trigger.target, entity: targetEntityId });
+              return true;
+            }
+            const hasTag = context.entityManager.hasTag(targetEntityId, trigger.target);
+            if (hasTag) {
+              console.log('[Tap] ✓ Rule matched by tag:', { rule: trigger.target, entity: targetEntityId });
+              return true;
+            }
           }
           
           const tapX = context.inputEvents.tap.worldX;
@@ -46,6 +53,7 @@ export class InputTriggerEvaluator
             );
             if (matchingEntity) {
               context.inputEvents.tap.targetEntityId = matchingEntity.id;
+              console.log('[Tap] ✓ Rule matched by spatial query:', { rule: trigger.target, entity: matchingEntity.id });
               return true;
             }
           }

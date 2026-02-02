@@ -45,8 +45,7 @@ export const stateMachineSystem: GameSystemDefinition<Record<string, StateMachin
       const machineId = String(args[0]);
       const stateId = String(args[1]);
       const states = (ctx.variables['__smStates'] as unknown as Record<string, StateMachineState>) ?? {};
-      const currentState = states[machineId]?.currentState;
-      return currentState === stateId;
+      return states[machineId]?.currentState === stateId;
     },
     
     stateCanTransitionTo: (args, ctx) => {

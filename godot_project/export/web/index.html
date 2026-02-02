@@ -109,33 +109,6 @@ body {
 			<div id="status-notice"></div>
 		</div>
 
-		<script>
-			// Suppress godot_rapier registrant log spam during initialization
-			(function() {
-				const originalLog = console.log;
-				const originalWarn = console.warn;
-				const registrantPattern = /Running registrant __godot_rust_registrant__godot_rapier/;
-				
-				function filteredLog(...args) {
-					const message = args.join(' ');
-					if (registrantPattern.test(message)) {
-						return; // Skip registrant messages
-					}
-					originalLog.apply(console, args);
-				}
-				
-				function filteredWarn(...args) {
-					const message = args.join(' ');
-					if (registrantPattern.test(message)) {
-						return; // Skip registrant messages
-					}
-					originalWarn.apply(console, args);
-				}
-				
-				console.log = filteredLog;
-				console.warn = filteredWarn;
-			})();
-		</script>
 		<script src="index.js"></script>
 		<script>
 const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":460160,"index.wasm":1589584},"focusCanvas":true,"gdextensionLibs":["godot_rapier.wasm"],"godotPoolSize":4};

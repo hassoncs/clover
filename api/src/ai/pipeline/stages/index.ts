@@ -350,6 +350,17 @@ export const layeredDecomposeStage: Stage = {
   },
 };
 
+/**
+ * Ensure image is in PNG format.
+ * Some providers (Scenario.com) return JPEG for txt2img even when PNG is expected.
+ * This ensures consistent PNG format for all assets.
+ */
+async function ensurePng(imageBuffer: Uint8Array): Promise<Uint8Array> {
+  const sharp = (await import('sharp')).default;
+  const buffer = await sharp(Buffer.from(imageBuffer)).png().toBuffer();
+  return new Uint8Array(buffer);
+}
+
 export const uploadR2Stage: Stage = {
   id: 'upload-r2',
   name: 'Upload to R2',
@@ -364,7 +375,8 @@ export const uploadR2Stage: Stage = {
     if (run.spec.type === 'parallax' && run.artifacts.layerImages) {
       for (let i = 0; i < run.artifacts.layerImages.length; i++) {
         const key = buildAssetPath(run.meta.gameId, run.meta.packId, `${run.meta.assetId}-layer-${i}`);
-        await adapters.r2.put(key, run.artifacts.layerImages[i], { contentType: 'image/png' });
+        const pngImage = await ensurePng(run.artifacts.layerImages[i]);
+        await adapters.r2.put(key, pngImage, { contentType: 'image/png' });
         r2Keys.push(key);
         publicUrls.push(adapters.r2.getPublicUrl(key));
       }
@@ -375,7 +387,8 @@ export const uploadR2Stage: Stage = {
       }
 
       const key = buildAssetPath(run.meta.gameId, run.meta.packId, run.meta.assetId);
-      await adapters.r2.put(key, finalImage, { contentType: 'image/png' });
+      const pngImage = await ensurePng(finalImage);
+      await adapters.r2.put(key, pngImage, { contentType: 'image/png' });
       r2Keys.push(key);
       publicUrls.push(adapters.r2.getPublicUrl(key));
 

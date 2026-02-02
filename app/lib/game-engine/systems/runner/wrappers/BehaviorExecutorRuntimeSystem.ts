@@ -1,4 +1,4 @@
-import { SystemPhase } from '@slopcade/shared';
+import { SystemPhase, getAllSystemExpressionFunctions } from '@slopcade/shared';
 import type { RuntimeSystem, SystemContext, UpdateContext } from '../types';
 import { BehaviorExecutor, createBehaviorExecutor } from '../../../BehaviorExecutor';
 import type { BehaviorContext } from '../../../BehaviorContext';
@@ -131,7 +131,7 @@ export class BehaviorExecutorRuntimeSystem implements RuntimeSystem<BehaviorExec
       variables: ctx.gameState.variables,
       random: Math.random,
       entityManager: this.systemContext.entityManager,
-      customFunctions: {},
+      customFunctions: getAllSystemExpressionFunctions(),
     };
     
     return {

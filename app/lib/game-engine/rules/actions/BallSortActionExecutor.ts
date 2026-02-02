@@ -3,21 +3,7 @@ import type { BallSortPickupAction, BallSortDropAction, BallSortCheckWinAction }
 import type { RuleContext } from '../types';
 import type { RuntimeEntity } from '../../types';
 
-const WORLD_HEIGHT = 16;
-const HALF_H = WORLD_HEIGHT / 2;
-const cy = (y: number) => HALF_H - y;
-
-const TUBE_HEIGHT = 5.0;
-const TUBE_WALL_THICKNESS = 0.15;
-const BALL_RADIUS = 0.5;
-const BALL_SPACING = 1.1;
-const TUBE_Y = 10;
-const LIFT_HEIGHT = 3.0;
-
-interface TubeInfo {
-  count: number;
-  topColor: number;
-}
+const LIFT_HEIGHT = 2.0;
 
 export class BallSortActionExecutor implements ActionExecutor<BallSortPickupAction | BallSortDropAction | BallSortCheckWinAction> {
   execute(action: BallSortPickupAction | BallSortDropAction | BallSortCheckWinAction, context: RuleContext): void {
@@ -32,6 +18,65 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
         this.executeCheckWin(action, context);
         break;
     }
+  }
+
+  private getTubeDimensions(tubeIndex: number, context: RuleContext): { x: number; topY: number; bottomY: number; height: number } | null {
+    const tubeSensor = context.entityManager.getEntity(`tube-${tubeIndex}-sensor`);
+    const tubeBottom = context.entityManager.getEntity(`tube-${tubeIndex}-bottom`);
+    
+    if (!tubeSensor) return null;
+    
+    const tubeX = tubeSensor.transform.x;
+    const tubeCenterY = tubeSensor.transform.y;
+    
+    let tubeHeight = 6.0;
+    if (tubeSensor.collider?.height) {
+      tubeHeight = tubeSensor.collider.height;
+    } else if (tubeSensor.visual && 'height' in tubeSensor.visual) {
+      tubeHeight = (tubeSensor.visual as { height: number }).height;
+    }
+    
+    const tubeTopY = tubeCenterY + tubeHeight / 2;
+    let tubeBottomY = tubeCenterY - tubeHeight / 2;
+    
+    if (tubeBottom) {
+      let bottomThickness = 0.18;
+      if (tubeBottom.collider?.height) {
+        bottomThickness = tubeBottom.collider.height;
+      }
+      tubeBottomY = tubeBottom.transform.y + bottomThickness / 2;
+    }
+    
+    return { x: tubeX, topY: tubeTopY, bottomY: tubeBottomY, height: tubeHeight };
+  }
+
+  private getBallDimensions(context: RuleContext): { radius: number; spacing: number } {
+    const anyBall = context.entityManager.getEntitiesByTag('ball')[0];
+    if (!anyBall) {
+      return { radius: 0.6, spacing: 1.32 };
+    }
+    
+    let radius = 0.6;
+    if (anyBall.collider && 'radius' in anyBall.collider) {
+      radius = anyBall.collider.radius as number;
+    } else if (anyBall.visual && 'radius' in anyBall.visual) {
+      radius = (anyBall.visual as { radius: number }).radius;
+    } else if (anyBall.visual && 'imageWidth' in anyBall.visual) {
+      radius = (anyBall.visual as { imageWidth: number }).imageWidth / 2;
+    }
+    
+    const spacing = radius * 2.2;
+    return { radius, spacing };
+  }
+
+  private calculateBallPositionInTube(tubeIndex: number, slot: number, context: RuleContext): { x: number; y: number } | null {
+    const tubeDims = this.getTubeDimensions(tubeIndex, context);
+    if (!tubeDims) return null;
+    
+    const ballDims = this.getBallDimensions(context);
+    const y = tubeDims.bottomY + ballDims.radius + slot * ballDims.spacing;
+    
+    return { x: tubeDims.x, y };
   }
 
   private executePickup(action: BallSortPickupAction, context: RuleContext): void {
@@ -49,7 +94,6 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
     }
 
     const topColorVar = `tube${tubeIndex}_topColor`;
-    const topColor = (context.mutator.getVariable(topColorVar) as number) ?? 0;
 
     const ballId = this.findTopBallInTube(tubeIndex, context);
     if (!ballId) {
@@ -77,31 +121,21 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
     const newTopColor = this.getNewTopColor(tubeIndex, count - 1, context);
     context.mutator.setVariable(topColorVar, newTopColor);
 
-    const tubeSensor = context.entityManager.getEntity(`tube-${tubeIndex}-sensor`);
-    const tubeX = tubeSensor?.transform.x ?? ball.transform.x;
-    
-    // Derive tube height from runtime entity (robust to scale changes)
-    let tubeHeightWorld = TUBE_HEIGHT; // Fallback
-    if (tubeSensor?.collider?.height) {
-      tubeHeightWorld = tubeSensor.collider.height;
-    } else if (tubeSensor?.visual && 'height' in tubeSensor.visual) {
-      tubeHeightWorld = (tubeSensor.visual as { height: number }).height;
+    const tubeDims = this.getTubeDimensions(tubeIndex, context);
+    if (!tubeDims) {
+      context.mutator.triggerEvent('pickup_cancelled');
+      return;
     }
     
-    // Position ball above tube: tube center Y - half tube height - lift distance
-    const tubeWorldY = tubeSensor?.transform.y ?? cy(TUBE_Y);
-    const pickupWorldY = tubeWorldY - (tubeHeightWorld / 2 + LIFT_HEIGHT);
+    const pickupX = tubeDims.x;
+    const pickupY = tubeDims.topY + LIFT_HEIGHT;
 
     if (context.bridge) {
-      context.bridge.setPosition(ballId, tubeX, pickupWorldY);
-      ball.transform.x = tubeX;
-      ball.transform.y = pickupWorldY;
-      context.entityManager.updateWorldTransforms(ballId);
-    } else {
-      ball.transform.x = tubeX;
-      ball.transform.y = pickupWorldY;
-      context.entityManager.updateWorldTransforms(ballId);
+      context.bridge.setPosition(ballId, pickupX, pickupY);
     }
+    ball.transform.x = pickupX;
+    ball.transform.y = pickupY;
+    context.entityManager.updateWorldTransforms(ballId);
 
     context.mutator.triggerEvent('ball_picked');
   }
@@ -138,34 +172,24 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
       return;
     }
 
-
     const ball = context.entityManager.getEntity(heldBallId);
     if (!ball) {
       this.cancelPickup(context);
       return;
     }
 
-    const tubeSensor = context.entityManager.getEntity(`tube-${targetTubeIndex}-sensor`);
-    if (!tubeSensor) {
+    const dropPos = this.calculateBallPositionInTube(targetTubeIndex, targetCount, context);
+    if (!dropPos) {
       this.cancelPickup(context);
       return;
     }
 
-    const worldX = tubeSensor.transform.x;
-    const slot = targetCount;
-    const ballY = TUBE_Y + TUBE_HEIGHT / 2 - TUBE_WALL_THICKNESS - BALL_RADIUS - slot * BALL_SPACING;
-    const worldY = cy(ballY);
-
     if (context.bridge) {
-      context.bridge.setPosition(heldBallId, worldX, worldY);
-      ball.transform.x = worldX;
-      ball.transform.y = worldY;
-      context.entityManager.updateWorldTransforms(heldBallId);
-    } else {
-      ball.transform.x = worldX;
-      ball.transform.y = worldY;
-      context.entityManager.updateWorldTransforms(heldBallId);
+      context.bridge.setPosition(heldBallId, dropPos.x, dropPos.y);
     }
+    ball.transform.x = dropPos.x;
+    ball.transform.y = dropPos.y;
+    context.entityManager.updateWorldTransforms(heldBallId);
 
     for (const tag of ball.tags) {
       if (tag.startsWith('in-container-tube-')) {
@@ -201,9 +225,9 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
       const balls = this.getBallsInTube(i, context);
       if (balls.length === 0) return;
 
-      const firstColor = this.getBallColor(balls[0], context);
+      const firstColor = this.getBallColor(balls[0]);
       for (let j = 1; j < balls.length; j++) {
-        if (this.getBallColor(balls[j], context) !== firstColor) {
+        if (this.getBallColor(balls[j]) !== firstColor) {
           return;
         }
       }
@@ -219,8 +243,7 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
 
     const match = targetEntityId.match(/tube-(\d+)-sensor/);
     if (match) {
-      const tubeIndex = parseInt(match[1], 10);
-      return tubeIndex;
+      return parseInt(match[1], 10);
     }
     return -1;
   }
@@ -247,7 +270,7 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
     return allBalls.filter(ball => ball.tags.includes(`in-container-tube-${tubeIndex}`));
   }
 
-  private getBallColor(ball: RuntimeEntity, context: RuleContext): number {
+  private getBallColor(ball: RuntimeEntity): number {
     for (const tag of ball.tags) {
       if (tag.startsWith('color-')) {
         return parseInt(tag.substring(6), 10);
@@ -272,7 +295,7 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
       }
     }
 
-    return this.getBallColor(topBall, context);
+    return this.getBallColor(topBall);
   }
 
   private showInvalidFeedback(ballId: string, context: RuleContext): void {
@@ -290,25 +313,17 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
       const countVar = `tube${sourceTubeIndex}_count`;
       const count = (context.mutator.getVariable(countVar) as number) ?? 0;
       const topColorVar = `tube${sourceTubeIndex}_topColor`;
-      const topColor = (context.mutator.getVariable(topColorVar) as number) ?? -1;
 
       const ball = context.entityManager.getEntity(heldBallId);
-      const tubeSensor = context.entityManager.getEntity(`tube-${sourceTubeIndex}-sensor`);
       
-      if (ball && tubeSensor) {
-        const worldX = tubeSensor.transform.x;
-        const slot = count;
-        const ballY = TUBE_Y + TUBE_HEIGHT / 2 - TUBE_WALL_THICKNESS - BALL_RADIUS - slot * BALL_SPACING;
-        const worldY = cy(ballY);
-        
-        if (context.bridge) {
-          context.bridge.setPosition(heldBallId, worldX, worldY);
-          ball.transform.x = worldX;
-          ball.transform.y = worldY;
-          context.entityManager.updateWorldTransforms(heldBallId);
-        } else {
-          ball.transform.x = worldX;
-          ball.transform.y = worldY;
+      if (ball) {
+        const returnPos = this.calculateBallPositionInTube(sourceTubeIndex, count, context);
+        if (returnPos) {
+          if (context.bridge) {
+            context.bridge.setPosition(heldBallId, returnPos.x, returnPos.y);
+          }
+          ball.transform.x = returnPos.x;
+          ball.transform.y = returnPos.y;
           context.entityManager.updateWorldTransforms(heldBallId);
         }
         context.entityManager.removeTag(heldBallId, 'held');

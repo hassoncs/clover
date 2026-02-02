@@ -1,6 +1,6 @@
 72322a848ab928aa5c89f0cb78209805
 ::res://::1769968145
-export_presets.cfg::TextFile::-1::1769639815::0::1::::<><><>0<>0<><>::
+export_presets.cfg::TextFile::-1::1769989258::0::1::::<><><>0<>0<><>::
 icon.svg::CompressedTexture2D::8162193418698039025::1769538422::1769968145::1::::<><><>0<>0<>b60b07e3b7c5c7da747f33a9e77945db<>res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex::
 Main.tscn::PackedScene::-1::1769538422::0::1::::<><><>0<>0<><>::res://scripts/Main.gd
 README.md::TextFile::-1::1769538422::0::1::::<><><>0<>0<><>::
@@ -70,7 +70,8 @@ GLBLoader.gd::GDScript::5061860736730575181::1769538422::0::1::::GLBLoader<>RefC
 Viewport3D.gd::GDScript::8275118501428359890::1769538422::0::1::::Viewport3D<>Node2D<><>0<>0<><>::
 ::res://scripts/audio/::1769538422
 AudioManager.gd::GDScript::4749981179781063152::1769538422::0::1::::AudioManager<>RefCounted<><>0<>0<><>::
-::res://scripts/bridge/::1769981875
+::res://scripts/bridge/::1769991133
+BridgeCore.gd::GDScript::7587287273739677840::1769991129::0::1::::BridgeCore<>RefCounted<><>0<>0<><>::
 CameraController.gd::GDScript::4088958712734300544::1769981310::0::1::::CameraController<>RefCounted<><>0<>0<><>::
 CoordinateUtils.gd::GDScript::77064420195081458::1769538422::0::1::::CoordinateUtils<>RefCounted<><>0<>0<><>::
 DebugSystem.gd::GDScript::8224035403630779561::1769652858::0::1::::DebugSystem<>RefCounted<><>0<>0<><>::
@@ -80,7 +81,7 @@ JSBridge.gd::GDScript::5302051703392798855::1769972335::0::1::::JSBridge<>RefCou
 QuerySystem.gd::GDScript::4794659130339010814::1769719963::0::1::::QuerySystem<>RefCounted<><>0<>0<><>::
 SyncSystem.gd::GDScript::3903644578941350245::1769981414::0::1::::SyncSystem<>RefCounted<><>0<>0<><>::
 UIManager.gd::GDScript::2938340039645018513::1769981722::0::1::::UIManager<>RefCounted<><>0<>0<><>::
-VisualRenderer.gd::GDScript::3033702139520954300::1769981176::0::1::::VisualRenderer<>RefCounted<><>0<>0<><>::
+VisualRenderer.gd::GDScript::3033702139520954300::1769991015::0::1::::VisualRenderer<>RefCounted<><>0<>0<><>::
 WebSocketSystem.gd::GDScript::6579444550606019435::1769981871::0::1::::WebSocketSystem<>RefCounted<><>0<>0<><>::
 ::res://scripts/bridge/debug/::1769717226
 DebugBridge.gd::GDScript::576835227171242688::1769981392::0::1::::DebugBridge<>RefCounted<><>0<>0<><>::
@@ -101,7 +102,7 @@ GameBridgeEffects.gd::GDScript::3133696803429672124::1769538422::0::1::::<>Node<
 ParticleFactory.gd::GDScript::1028706586424653901::1769538422::0::1::::ParticleFactory<>Node<><>0<>0<><>::
 SplatMapSystem.gd::GDScript::5165869300938093194::1769981866::0::1::::SplatMapSystem<>RefCounted<><>0<>0<><>::
 ::res://scripts/entity/::1769973040
-EntityFactory.gd::GDScript::38841348357641075::1769984860::0::1::::EntityFactory<>RefCounted<><>0<>0<><>::
+EntityFactory.gd::GDScript::38841348357641075::1769991145::0::1::::EntityFactory<>RefCounted<><>0<>0<><>::
 EntityLifecycleSystem.gd::GDScript::3160000650113589081::1769973275::0::1::::EntityLifecycleSystem<>RefCounted<><>0<>0<><>::
 EntityManager.gd::GDScript::418805061965814239::1769981851::0::1::::EntityManager<>RefCounted<><>0<>0<><>::
 EntityRecord.gd::GDScript::3038143391968846502::1769973037::0::1::::EntityRecord<>RefCounted<><>0<>0<><>::

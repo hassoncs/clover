@@ -58,6 +58,15 @@ func create_entity(entity_data: Dictionary) -> EntityRecord:
 	var template_id = entity_data.get("template", "")
 	var transform_data = entity_data.get("transform", {})
 	print("[EntityFactory] create_entity: id=", entity_id, " template=", template_id, " _templates.has=", _templates.has(template_id))
+	
+	# DEBUG: Check what's in the template
+	if template_id != "" and _templates.has(template_id):
+		var tmpl_debug = _templates[template_id]
+		print("[EntityFactory] TEMPLATE KEYS: ", tmpl_debug.keys())
+		if tmpl_debug.has("visual"):
+			print("[EntityFactory] TEMPLATE VISUAL: ", tmpl_debug["visual"])
+		else:
+			print("[EntityFactory] TEMPLATE HAS NO VISUAL KEY")
 
 	# Merge template with entity data
 	var merged = entity_data.duplicate(true)
@@ -101,8 +110,11 @@ func create_entity(entity_data: Dictionary) -> EntityRecord:
 
 	# Add visual component
 	if visual_data:
-		# Apply smart defaults: visual inherits from collider
 		var resolved_visual = _resolve_visual_with_defaults(visual_data, collider_data)
+		# DEBUG: For ball entities, show exactly what we're passing
+		if entity_id.begins_with("ball"):
+			print("[EntityFactory] BALL visual_data=", visual_data, " type=", visual_data.get("type", "MISSING"))
+			print("[EntityFactory] BALL resolved_visual=", resolved_visual, " type=", resolved_visual.get("type", "MISSING"))
 		_add_visual(node, resolved_visual)
 	elif collider_data:
 		# Auto-generate visual from collider if no visual specified
@@ -547,8 +559,9 @@ func _merged_component(merged: Dictionary, tmpl: Dictionary, key: String) -> voi
 
 
 func _resolve_visual_with_defaults(
-	visual_data: Dictionary, collider_data: Dictionary
+	visual_data: Dictionary, collider_data
 ) -> Dictionary:
+	# collider_data can be null for visual-only entities
 	if not _bridge:
 		return visual_data
 	if _bridge.has_method("_resolve_visual_with_defaults"):

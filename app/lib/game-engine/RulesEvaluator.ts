@@ -195,7 +195,9 @@ export class RulesEvaluator implements IGameStateMutator {
   }
 
   setStateMachines(stateMachines: StateMachineDefinition[] | undefined): void {
-    if (!stateMachines || stateMachines.length === 0) return;
+    if (!stateMachines || stateMachines.length === 0) {
+      return;
+    }
 
     const smStates: Record<string, { currentState: string; previousState: string; stateEnteredAt: number; transitionCount: number }> = {};
     const smDefs: Record<string, StateMachineDefinition> = {};
@@ -529,6 +531,7 @@ export class RulesEvaluator implements IGameStateMutator {
   ): boolean {
     if (!conditions || conditions.length === 0) return true;
     return conditions.every((c) => {
+      let result = false;
       switch (c.type) {
         case "score":
         case "time":

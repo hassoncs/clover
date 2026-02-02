@@ -372,6 +372,7 @@ export function GameRuntimeGodot({
   viewportSystemRef.current = viewportSystem;
 
   const handleGodotReady = useCallback(() => {
+    console.log('🎮 [GameRuntime] GodotView ready');
     setGodotReady(true);
   }, []);
 
@@ -384,22 +385,30 @@ export function GameRuntimeGodot({
 
     const setup = async () => {
       try {
+        console.log('🎮 [GameRuntime] Starting setup...');
         const bridge = await createGodotBridge();
+        console.log('🎮 [GameRuntime] Bridge created');
         await bridge.initialize();
+        console.log('🎮 [GameRuntime] Bridge initialized');
         bridgeRef.current = bridge;
 
         if (preloadTextureUrls && preloadTextureUrls.length > 0) {
+          console.log('🎮 [GameRuntime] Preloading', preloadTextureUrls.length, 'textures...');
           await bridge.preloadTextures(preloadTextureUrls, onPreloadProgress);
+          console.log('🎮 [GameRuntime] Texture preload complete');
         }
 
         const physics = createGodotPhysicsAdapter(bridge);
         physicsRef.current = physics;
+        console.log('🎮 [GameRuntime] Physics adapter created');
 
         if (debugMode) {
           bridge.setInspectMode(true);
         }
 
+        console.log('🎮 [GameRuntime] Loading game definition...');
         await bridge.loadGame(definition);
+        console.log('🎮 [GameRuntime] Game definition loaded');
 
         bridge.pausePhysics();
 
@@ -447,6 +456,7 @@ export function GameRuntimeGodot({
         // Create ScriptSandbox early if game has scripts (for run_script actions)
         let scriptSandbox: ScriptSandbox | undefined;
         if (definition.script) {
+          console.log('🎮 [GameRuntime] Creating ScriptSandbox...');
           scriptSandbox = new ScriptSandbox({
             scriptCode: definition.script,
             scriptId: definition.metadata.id,
@@ -455,17 +465,23 @@ export function GameRuntimeGodot({
           scriptSandboxRef.current = scriptSandbox;
         }
 
+        console.log('🎮 [GameRuntime] Creating GameLoader...');
         const loader = new GameLoader({ physics, scriptSandbox });
         loaderRef.current = loader;
 
+        console.log('🎮 [GameRuntime] Loading game entities...');
         const game = loader.load(definition);
         gameRef.current = game;
+        console.log('🎮 [GameRuntime] Game loaded with', game.entityManager.getActiveEntities().length, 'entities');
         
         // Initialize script sandbox after game is loaded
         if (scriptSandbox) {
+          console.log('🎮 [GameRuntime] Initializing ScriptSandbox...');
           scriptSandbox.initialize().then((result) => {
             if (!result.success) {
-              console.error('[GameRuntime.godot] Script initialization failed:', result.error);
+              console.error('🎮 [GameRuntime] Script initialization failed:', result.error);
+            } else {
+              console.log('🎮 [GameRuntime] ScriptSandbox initialized successfully');
             }
           });
         }
@@ -649,6 +665,7 @@ export function GameRuntimeGodot({
         inputEventUnsubRef.current = bridge.onInputEvent(
           (type, x, y, entityId) => {
             if (type === "tap") {
+              console.log('[Godot→React] ✓ Tap received:', { x: x.toFixed(2), y: y.toFixed(2), entityId });
               const ppm = definition.world.pixelsPerMeter ?? 50;
               const screenX = x * ppm;
               const screenY = y * ppm;
@@ -734,6 +751,7 @@ export function GameRuntimeGodot({
         }
 
         if (debugMode) {
+          console.log('🎮 [GameRuntime] Debug mode - starting game immediately');
           game.rulesEvaluator.start();
           setGameState((s) => ({
             ...s,
@@ -741,12 +759,14 @@ export function GameRuntimeGodot({
             variables: mergedVariables,
           }));
         } else {
+          console.log('🎮 [GameRuntime] Normal mode - setting state to ready');
           setGameState((s) => ({
             ...s,
             state: "ready",
             variables: mergedVariables,
           }));
         }
+        console.log('🎮 [GameRuntime] Setup complete, calling onReady...');
         setIsReady(true);
         
         if (typeof window !== 'undefined') {
@@ -754,6 +774,7 @@ export function GameRuntimeGodot({
         }
         
         onReady?.();
+        console.log('🎮 [GameRuntime] onReady callback invoked');
 
         if (match3SystemRef.current) {
           const match3Config = definition.match3 as Match3Config;
@@ -832,6 +853,7 @@ export function GameRuntimeGodot({
           loseCondition: definition.loseCondition,
           variables: definition.variables as Record<string, number | string | boolean> | undefined,
           containers: definition.containers,
+          stateMachines: definition.stateMachines,
         }));
 
         if (definition.match3) {
@@ -866,6 +888,15 @@ export function GameRuntimeGodot({
         const computedValuesSystem = runner.getSystem<ComputedValuesRuntimeSystem>('computed-values');
         const cameraSystem = runner.getSystem<CameraRuntimeSystem>('camera');
         const inputSystem = runner.getSystem<InputRuntimeSystem>('input');
+        
+        // Set game to playing state immediately (even in inspect mode)
+        if (rulesSystem) {
+          const rulesEval = rulesSystem.getRulesEvaluator();
+          if (rulesEval) {
+            rulesEval.setGameState('playing');
+            console.log('[GameRuntime] Set initial game state to playing');
+          }
+        }
 
         if (behaviorSystem && computedValuesSystem) {
           const cvs = computedValuesSystem.getSystem();
@@ -894,7 +925,7 @@ export function GameRuntimeGodot({
 
         gameSystemRunnerRef.current = runner;
       } catch (error) {
-        console.error("[GameRuntime.godot] Failed to initialize game:", error);
+        console.error("🎮 [GameRuntime] Failed to initialize game:", error);
       }
     };
 
@@ -1027,20 +1058,6 @@ export function GameRuntimeGodot({
       const frameCollisions = collisionsRef.current.slice();
       collisionsRef.current = [];
       
-      const tap = inputRef.current.tap as { x: number; y: number; worldX: number; worldY: number; targetEntityId?: string } | undefined;
-      const frameInputEvents: import('./systems/runner/types').InputEvent[] = [];
-      if (tap) {
-        frameInputEvents.push({
-          type: 'tap',
-          x: tap.x,
-          y: tap.y,
-          worldX: tap.worldX,
-          worldY: tap.worldY,
-          targetEntityId: tap.targetEntityId,
-        });
-        inputRef.current = { ...inputRef.current, tap: undefined };
-      }
-      
       const updateContext: UpdateContext = {
         dt,
         elapsed: elapsedRef.current,
@@ -1048,10 +1065,14 @@ export function GameRuntimeGodot({
         input: inputRef.current as InputState,
         gameState: fullGameState,
         frame: {
-          inputEvents: frameInputEvents,
+          inputEvents: [],
           collisions: frameCollisions,
         },
       };
+      
+      if (inputRef.current.tap) {
+        inputRef.current = { ...inputRef.current, tap: undefined };
+      }
 
       runner.update(updateContext);
 

@@ -32,6 +32,20 @@ export class InputRuntimeSystem implements RuntimeSystem<InputSystemConfig, Inpu
     if (this.inputEntityManager) {
       this.inputEntityManager.syncFromInput(ctx.input);
     }
+    
+    const tap = (ctx.input as any).tap;
+    if (tap) {
+      console.log('[InputRuntimeSystem] ✓ TAP:', { worldX: tap.worldX.toFixed(2), worldY: tap.worldY.toFixed(2), target: tap.targetEntityId });
+      const tapEvent = {
+        type: 'tap' as const,
+        x: tap.x ?? 0,
+        y: tap.y ?? 0,
+        worldX: tap.worldX,
+        worldY: tap.worldY,
+        targetEntityId: tap.targetEntityId,
+      };
+      (ctx.frame.inputEvents as any).push(tapEvent);
+    }
   }
   
   destroy(): void {

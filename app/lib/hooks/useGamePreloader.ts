@@ -49,14 +49,18 @@ export function useGamePreloader(
   const startPreload = useCallback(async () => {
     if (!definition) return;
     
+    console.log('🎮 [preloader] Starting asset preload for:', definition.metadata.title);
+    
     const manifest = extractAssetManifest(definition, {
       resolvedPackEntries: options?.resolvedPackEntries,
     });
     
     const urls = manifest.images.map(img => img.url);
     setImageUrls(urls);
+    console.log('🎮 [preloader] Asset manifest:', manifest.totalCount, 'assets,', urls.length, 'images');
     
     if (manifest.totalCount === 0) {
+      console.log('🎮 [preloader] No assets to preload, transitioning to ready');
       setPhase('ready');
       setProgress({
         ...initialProgress,
@@ -73,6 +77,7 @@ export function useGamePreloader(
       return;
     }
     
+    console.log('🎮 [preloader] Phase: idle -> loading');
     setPhase('loading');
     setProgress({
       ...initialProgress,
@@ -88,24 +93,29 @@ export function useGamePreloader(
       
       if (preloadResult.failedCount > 0) {
         console.warn(
-          `Asset preload completed with ${preloadResult.failedCount} failures:`,
+          `🎮 [preloader] Completed with ${preloadResult.failedCount} failures:`,
           preloadResult.failedAssets
         );
       }
       
+      console.log('🎮 [preloader] Phase: loading -> ready (', preloadResult.durationMs, 'ms)');
       setPhase('ready');
     } catch (error) {
-      console.error('Asset preload error:', error);
+      console.error('🎮 [preloader] Error:', error);
+      console.log('🎮 [preloader] Phase: loading -> error');
       setPhase('error');
     }
   }, [definition, options?.resolvedPackEntries]);
 
   const preloadGodotTextures = useCallback(async (bridge: GodotBridge) => {
+    console.log('🎮 [preloader] preloadGodotTextures called, imageUrls:', imageUrls.length);
     if (imageUrls.length === 0) {
+      console.log('🎮 [preloader] No Godot textures to preload');
       setPhase('ready');
       return;
     }
     
+    console.log('🎮 [preloader] Starting Godot texture preload');
     setProgress(prev => ({
       ...prev,
       phase: 'images',
@@ -125,19 +135,22 @@ export function useGamePreloader(
         }));
       });
       
+      console.log('🎮 [preloader] Godot texture preload complete');
       setPhase('ready');
     } catch (error) {
-      console.error('Godot texture preload error:', error);
+      console.error('🎮 [preloader] Godot texture preload error:', error);
       setPhase('ready');
     }
   }, [imageUrls]);
 
   const skipPreload = useCallback(() => {
+    console.log('🎮 [preloader] Preload skipped by user');
     preloaderRef.current?.abort();
     setPhase('skipped');
   }, []);
 
   const reset = useCallback(() => {
+    console.log('🎮 [preloader] Reset called');
     preloaderRef.current?.abort();
     setPhase('idle');
     setProgress(initialProgress);

@@ -3046,7 +3046,7 @@ DEPENDENCIES:
   - "ExpoFileSystem (from `../../node_modules/.pnpm/expo-file-system@19.0.21_expo@54.0.32_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-route_cemnbmi42inq4zokqdu6onftqu/node_modules/expo-file-system/ios`)"
   - "ExpoFont (from `../../node_modules/.pnpm/expo-font@14.0.11_expo@54.0.32_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-router@6.0.2_jwdod7symz3mhozbzso4qg4q74/node_modules/expo-font/ios`)"
   - "ExpoHaptics (from `../../node_modules/.pnpm/expo-haptics@15.0.8_expo@54.0.32_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-router@6.0_h62pxfjtugoooyvyaqrieyeege/node_modules/expo-haptics/ios`)"
-  - "ExpoHead (from `../../node_modules/.pnpm/expo-router@6.0.22_@expo+metro-runtime@6.1.2_@types+react-dom@18.3.7_@types+react@19.1.17__@t_wb5qxkt7bgvz55h6c6nghzhdl4/node_modules/expo-router/ios`)"
+  - "ExpoHead (from `../../node_modules/.pnpm/expo-router@6.0.22_@expo+metro-runtime@6.1.2_@testing-library+react-native@13.3.3_react-nativ_5jzwug3u3gvqd2mbnw43gjpzp4/node_modules/expo-router/ios`)"
   - "ExpoKeepAwake (from `../../node_modules/.pnpm/expo-keep-awake@15.0.8_expo@54.0.32_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-router@_kbo44zkwphj3w6gtowd2xscada/node_modules/expo-keep-awake/ios`)"
   - "ExpoLinking (from `../../node_modules/.pnpm/expo-linking@8.0.11_expo@54.0.32_react-native@0.81.4_@babel+core@7.28.6_@types+react@19.1.17_react@19.1.0__react@19.1.0/node_modules/expo-linking/ios`)"
   - "ExpoModulesCore (from `../../node_modules/.pnpm/expo-modules-core@3.0.29_react-native@0.81.4_@babel+core@7.28.6_@types+react@19.1.17_react@19.1.0__react@19.1.0/node_modules/expo-modules-core`)"
@@ -3178,7 +3178,7 @@ EXTERNAL SOURCES:
   ExpoHaptics:
     :path: "../../node_modules/.pnpm/expo-haptics@15.0.8_expo@54.0.32_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-router@6.0_h62pxfjtugoooyvyaqrieyeege/node_modules/expo-haptics/ios"
   ExpoHead:
-    :path: "../../node_modules/.pnpm/expo-router@6.0.22_@expo+metro-runtime@6.1.2_@types+react-dom@18.3.7_@types+react@19.1.17__@t_wb5qxkt7bgvz55h6c6nghzhdl4/node_modules/expo-router/ios"
+    :path: "../../node_modules/.pnpm/expo-router@6.0.22_@expo+metro-runtime@6.1.2_@testing-library+react-native@13.3.3_react-nativ_5jzwug3u3gvqd2mbnw43gjpzp4/node_modules/expo-router/ios"
   ExpoKeepAwake:
     :path: "../../node_modules/.pnpm/expo-keep-awake@15.0.8_expo@54.0.32_@babel+core@7.28.6_@expo+metro-runtime@6.1.2_expo-router@_kbo44zkwphj3w6gtowd2xscada/node_modules/expo-keep-awake/ios"
   ExpoLinking:

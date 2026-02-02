@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-01T17:49:06.330Z",
+  "generatedAt": "2026-02-02T17:37:54.819Z",
   "games": [
     {
       "id": "ballSort",
@@ -218,15 +218,10 @@
               "height": 6,
               "color": "#888888"
             },
-            "physics": {
-              "bodyType": "static",
-              "density": 0
-            },
             "collider": {
               "shape": "box",
               "width": 0.18,
-              "height": 6,
-              "isSensor": true
+              "height": 6
             }
           },
           "tubeBottom": {
@@ -240,15 +235,10 @@
               "height": 0.18,
               "color": "#888888"
             },
-            "physics": {
-              "bodyType": "static",
-              "density": 0
-            },
             "collider": {
               "shape": "box",
               "width": 1.68,
-              "height": 0.18,
-              "isSensor": true
+              "height": 0.18
             }
           },
           "tubeSensor": {
@@ -262,15 +252,10 @@
               "height": 6,
               "color": "#00000022"
             },
-            "physics": {
-              "bodyType": "static",
-              "density": 0
-            },
             "collider": {
               "shape": "box",
               "width": 1.3199999999999998,
-              "height": 6,
-              "isSensor": true
+              "height": 6
             }
           },
           "ball0": {
@@ -779,14 +764,9 @@
               "radius": 0.72,
               "color": "#FFD700"
             },
-            "physics": {
-              "bodyType": "static",
-              "density": 0
-            },
             "collider": {
               "shape": "circle",
-              "radius": 0.72,
-              "isSensor": true
+              "radius": 0.72
             }
           }
         },

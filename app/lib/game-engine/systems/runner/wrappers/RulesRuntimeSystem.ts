@@ -1,4 +1,4 @@
-import { SystemPhase } from '@slopcade/shared';
+import { SystemPhase, getAllSystemExpressionFunctions } from '@slopcade/shared';
 import type { RuntimeSystem, SystemContext, UpdateContext } from '../types';
 import { RulesEvaluator } from '../../../RulesEvaluator';
 import type {
@@ -8,6 +8,7 @@ import type {
   ContainerConfig,
   EvalContext,
   GameVariable,
+  StateMachineDefinition,
 } from '@slopcade/shared';
 import type { ComputedValueSystem } from '@slopcade/shared';
 import type { CameraSystem } from '../../../CameraSystem';
@@ -19,6 +20,7 @@ export interface RulesSystemConfig {
   loseCondition?: LoseCondition;
   variables?: Record<string, GameVariable>;
   containers?: ContainerConfig[];
+  stateMachines?: StateMachineDefinition[];
 }
 
 export interface RulesSystemState {
@@ -54,15 +56,12 @@ export class RulesRuntimeSystem implements RuntimeSystem<RulesSystemConfig, Rule
     this.rulesEvaluator.setWinCondition(this.config.winCondition);
     this.rulesEvaluator.setLoseCondition(this.config.loseCondition);
     
-    // Convert GameVariable to primitive values
     if (this.config.variables) {
       const resolvedVars: Record<string, number | string | boolean> = {};
       for (const [key, value] of Object.entries(this.config.variables)) {
-        // Skip complex types like Vec2 and expressions - they'll be handled by computed values
         if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
           resolvedVars[key] = value;
         } else if (typeof value === 'object' && value !== null && 'value' in value) {
-          // Handle VariableWithTuning
           const varValue = (value as any).value;
           if (typeof varValue === 'number' || typeof varValue === 'string' || typeof varValue === 'boolean') {
             resolvedVars[key] = varValue;
@@ -71,10 +70,14 @@ export class RulesRuntimeSystem implements RuntimeSystem<RulesSystemConfig, Rule
       }
       this.rulesEvaluator.setInitialVariables(resolvedVars);
     }
+    
+    this.rulesEvaluator.setStateMachines(this.config.stateMachines);
   }
   
   update(ctx: UpdateContext, _state: RulesSystemState): void {
     if (!this.rulesEvaluator || !this.systemContext) return;
+    
+    const variablesObj = this.rulesEvaluator.getVariables();
     
     const evalContext: EvalContext = {
       score: this.rulesEvaluator.getScore(),
@@ -83,10 +86,10 @@ export class RulesRuntimeSystem implements RuntimeSystem<RulesSystemConfig, Rule
       wave: 1,
       dt: ctx.dt,
       frameId: ctx.frameId,
-      variables: this.rulesEvaluator.getVariables(),
+      variables: variablesObj,
       random: Math.random,
       entityManager: this.systemContext.entityManager,
-      customFunctions: {},
+      customFunctions: getAllSystemExpressionFunctions(),
     };
     
     const inputEvents = this.convertFrameInputEvents(ctx.frame.inputEvents);
@@ -95,8 +98,6 @@ export class RulesRuntimeSystem implements RuntimeSystem<RulesSystemConfig, Rule
       ctx.dt,
       this.systemContext.entityManager,
       ctx.frame.collisions,
-      // Cast: Readonly<InputState> → InputState
-      // Safe because RulesEvaluator only reads from input, never writes
       ctx.input as any,
       inputEvents,
       this.systemContext.physics,

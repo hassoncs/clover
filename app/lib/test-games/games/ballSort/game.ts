@@ -420,7 +420,6 @@ export function createBallSortGame(level: number = 1): GameDefinition {
  * Helper to create ball templates with conditional behaviors.
  */
 function createBallTemplate(colorIndex: number) {
-  // Ball diameter for image sizing
   const ballDiameter = BALL_RADIUS * 2;
   
   return {
@@ -432,8 +431,6 @@ function createBallTemplate(colorIndex: number) {
       imageWidth: ballDiameter,
       imageHeight: ballDiameter,
     },
-    // No physics component - balls are visual-only
-    // They don't need physics since they're positioned by game logic
     conditionalBehaviors: [
       {
         when: { hasTag: "held" },
