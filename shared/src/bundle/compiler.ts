@@ -9,7 +9,8 @@ import type {
   ConstantRef,
 } from './types';
 import type { GameDefinition, GameMetadata } from '../types/GameDefinition';
-import type { Match3Config, SlotMachineConfig, ContainerConfig, TetrisConfig } from '../types/GameDefinition';
+import type { Match3Config, TetrisConfig } from '../types/GameDefinition';
+import type { ContainerConfig } from '../types/container';
 import type { EntityTemplate } from '../types/entity';
 import type { GameRule } from '../types/rules';
 
@@ -302,7 +303,6 @@ function buildGameDefinition(
   assets: Record<string, { path: string; type: string }> | null,
   systems: {
     match3?: Match3Config;
-    slotMachine?: SlotMachineConfig;
     containers?: ContainerConfig[];
     tetris?: TetrisConfig;
   } | null
@@ -355,7 +355,6 @@ function buildGameDefinition(
     } : undefined,
     // Include system configs if provided
     ...(systems?.match3 && { match3: systems.match3 }),
-    ...(systems?.slotMachine && { slotMachine: systems.slotMachine }),
     ...(systems?.containers && { containers: systems.containers }),
     ...(systems?.tetris && { tetris: systems.tetris }),
   };
