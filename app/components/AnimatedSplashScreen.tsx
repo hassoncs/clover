@@ -3,7 +3,7 @@ import { Animated, View, StyleSheet, Image } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 
 interface AnimatedSplashScreenProps {
-  onAnimationComplete: () => void;
+  onAnimationComplete?: () => void;
   children: React.ReactNode;
 }
 
@@ -61,7 +61,7 @@ export function AnimatedSplashScreen({
       ]).start(async () => {
         await SplashScreen.hideAsync();
         setIsSplashAnimationComplete(true);
-        onAnimationComplete();
+        onAnimationComplete?.();
       });
     }
   }, [isAppReady, scaleAnim, opacityAnim, translateYAnim, contentOpacityAnim, onAnimationComplete]);

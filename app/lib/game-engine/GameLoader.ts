@@ -1,32 +1,32 @@
-import type { GameDefinition, GameEntity, GameJoint, ContainerConfig } from '@slopcade/shared';
+import type { GameDefinition, GameEntity, GameJoint } from '@slopcade/shared';
 import type { Physics2D } from '../physics2d/Physics2D';
 import type { JointId } from '../physics2d/types';
+import type { GodotBridge } from '../godot/types';
 import { EntityManager } from './EntityManager';
-import { RulesEvaluator } from './RulesEvaluator';
 import { createBehaviorExecutor, BehaviorExecutor } from './BehaviorExecutor';
-import type { ScriptSandbox } from '@/lib/scripting';
+import type { GameRuntime, GameState, GameEventBus } from './runtime/types';
+import { createGameState } from './runtime/GameStateHelpers';
+import { createGameEventBus } from './runtime/GameEventBus';
 
 export interface LoadedGame {
   definition: GameDefinition;
   entityManager: EntityManager;
-  rulesEvaluator: RulesEvaluator;
   behaviorExecutor: BehaviorExecutor;
   pixelsPerMeter: number;
   joints: Map<string, JointId>;
+  gameState: GameState;
+  events: GameEventBus;
 }
 
 export interface GameLoaderOptions {
   physics: Physics2D;
-  scriptSandbox?: ScriptSandbox;
 }
 
 export class GameLoader {
   private physics: Physics2D;
-  private scriptSandbox?: ScriptSandbox;
 
   constructor(options: GameLoaderOptions) {
     this.physics = options.physics;
-    this.scriptSandbox = options.scriptSandbox;
   }
 
   load(definition: GameDefinition): LoadedGame {
@@ -52,30 +52,18 @@ export class GameLoader {
       }
     }
 
-    const rulesEvaluator = new RulesEvaluator(entityManager, definition.containers);
-    rulesEvaluator.loadRules(definition.rules ?? []);
-    rulesEvaluator.setWinCondition(definition.winCondition);
-    rulesEvaluator.setLoseCondition(definition.loseCondition);
-    if (definition.initialLives !== undefined) {
-      rulesEvaluator.setInitialLives(definition.initialLives);
-    }
-    rulesEvaluator.setInitialVariables(definition.variables as Record<string, number | string | boolean> | undefined);
-    rulesEvaluator.setStateMachines(definition.stateMachines);
-    
-    // Connect script sandbox to rules evaluator for run_script actions
-    if (this.scriptSandbox) {
-      rulesEvaluator.setScriptSandbox(this.scriptSandbox);
-    }
-
     const behaviorExecutor = createBehaviorExecutor();
+    const gameState = createGameState(definition);
+    const events = createGameEventBus();
 
     return {
       definition,
       entityManager,
-      rulesEvaluator,
       behaviorExecutor,
       pixelsPerMeter,
       joints,
+      gameState,
+      events,
     };
   }
 

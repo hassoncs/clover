@@ -13,6 +13,9 @@ import type {
 import type { ComputedValueSystem } from '@slopcade/shared';
 import type { CameraSystem } from '../../../CameraSystem';
 import type { InputEntityManager } from '../../../InputEntityManager';
+import type { ScriptSandbox } from '@/lib/scripting';
+import type { GameState as RuntimeGameState, GameEventBus } from '../../../runtime/types';
+import * as StateHelpers from '../../../runtime/GameStateHelpers';
 
 export interface RulesSystemConfig {
   rules: GameRule[];
@@ -21,6 +24,7 @@ export interface RulesSystemConfig {
   variables?: Record<string, GameVariable>;
   containers?: ContainerConfig[];
   stateMachines?: StateMachineDefinition[];
+  initialLives?: number;
 }
 
 export interface RulesSystemState {
@@ -39,7 +43,9 @@ export class RulesRuntimeSystem implements RuntimeSystem<RulesSystemConfig, Rule
   private rulesEvaluator: RulesEvaluator | null = null;
   private systemContext: SystemContext | null = null;
   
-  // References to other systems (will be wired in Phase 8)
+  private runtimeState: RuntimeGameState | null = null;
+  private eventBus: GameEventBus | null = null;
+  
   private computedValues?: ComputedValueSystem;
   private camera?: CameraSystem;
   private inputEntityManager?: InputEntityManager;
@@ -55,36 +61,34 @@ export class RulesRuntimeSystem implements RuntimeSystem<RulesSystemConfig, Rule
     this.rulesEvaluator.loadRules(this.config.rules);
     this.rulesEvaluator.setWinCondition(this.config.winCondition);
     this.rulesEvaluator.setLoseCondition(this.config.loseCondition);
-    
-    if (this.config.variables) {
-      const resolvedVars: Record<string, number | string | boolean> = {};
-      for (const [key, value] of Object.entries(this.config.variables)) {
-        if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
-          resolvedVars[key] = value;
-        } else if (typeof value === 'object' && value !== null && 'value' in value) {
-          const varValue = (value as any).value;
-          if (typeof varValue === 'number' || typeof varValue === 'string' || typeof varValue === 'boolean') {
-            resolvedVars[key] = varValue;
-          }
-        }
-      }
-      this.rulesEvaluator.setInitialVariables(resolvedVars);
-    }
-    
-    this.rulesEvaluator.setStateMachines(this.config.stateMachines);
+    this.rulesEvaluator.setStateMachineDefinitions(this.config.stateMachines);
   }
   
   update(ctx: UpdateContext, _state: RulesSystemState): void {
-    if (!this.rulesEvaluator || !this.systemContext) return;
+    if (!this.rulesEvaluator || !this.systemContext || !this.runtimeState || !this.eventBus) return;
     
-    const variablesObj = this.rulesEvaluator.getVariables();
+    const score = StateHelpers.getScore(this.runtimeState);
+    const lives = StateHelpers.getLives(this.runtimeState);
+    const variablesObj: Record<string, number | string | boolean> = {};
+    for (const [key, value] of Object.entries(this.runtimeState.vars)) {
+      if (key !== 'score' && key !== 'lives' && key !== 'gameState' && key !== 'elapsed') {
+        variablesObj[key] = value;
+      }
+    }
     
-    const smStates = this.rulesEvaluator.getStateMachineStates();
+    const smStates = Object.keys(this.runtimeState.stateMachines).length > 0 
+      ? Object.fromEntries(
+          Object.entries(this.runtimeState.stateMachines).map(([id, sm]) => [
+            id,
+            { currentState: sm.current, previousState: sm.previous, stateEnteredAt: sm.enteredAt, transitionCount: sm.transitionCount }
+          ])
+        )
+      : null;
     const smDefs = this.rulesEvaluator.getStateMachineDefinitions();
     
     const evalContext: EvalContext = {
-      score: this.rulesEvaluator.getScore(),
-      lives: this.rulesEvaluator.getLives(),
+      score,
+      lives,
       time: ctx.elapsed,
       wave: 1,
       dt: ctx.dt,
@@ -108,6 +112,8 @@ export class RulesRuntimeSystem implements RuntimeSystem<RulesSystemConfig, Rule
       ctx.input as any,
       inputEvents,
       this.systemContext.physics,
+      this.runtimeState,
+      this.eventBus,
       this.computedValues,
       evalContext,
       this.camera,
@@ -155,13 +161,15 @@ export class RulesRuntimeSystem implements RuntimeSystem<RulesSystemConfig, Rule
   destroy(): void {
     this.rulesEvaluator = null;
     this.systemContext = null;
+    this.runtimeState = null;
+    this.eventBus = null;
     this.computedValues = undefined;
     this.camera = undefined;
     this.inputEntityManager = undefined;
   }
   
   getState(): RulesSystemState {
-    if (!this.rulesEvaluator) {
+    if (!this.runtimeState) {
       return {
         gameState: 'ready',
         score: 0,
@@ -170,11 +178,18 @@ export class RulesRuntimeSystem implements RuntimeSystem<RulesSystemConfig, Rule
       };
     }
     
+    const variables: Record<string, number | string | boolean> = {};
+    for (const [key, value] of Object.entries(this.runtimeState.vars)) {
+      if (key !== 'score' && key !== 'lives' && key !== 'gameState' && key !== 'elapsed') {
+        variables[key] = value;
+      }
+    }
+    
     return {
-      gameState: this.rulesEvaluator.getGameStateValue(),
-      score: this.rulesEvaluator.getScore(),
-      lives: this.rulesEvaluator.getLives(),
-      variables: this.rulesEvaluator.getVariables(),
+      gameState: StateHelpers.getGameStateValue(this.runtimeState),
+      score: StateHelpers.getScore(this.runtimeState),
+      lives: StateHelpers.getLives(this.runtimeState),
+      variables,
     };
   }
   
@@ -182,7 +197,14 @@ export class RulesRuntimeSystem implements RuntimeSystem<RulesSystemConfig, Rule
     return this.rulesEvaluator;
   }
   
-  // Methods to wire dependencies (will be used in Phase 8)
+  setRuntimeState(state: RuntimeGameState): void {
+    this.runtimeState = state;
+  }
+  
+  setEventBus(bus: GameEventBus): void {
+    this.eventBus = bus;
+  }
+  
   setComputedValues(computedValues: ComputedValueSystem): void {
     this.computedValues = computedValues;
   }
@@ -193,5 +215,11 @@ export class RulesRuntimeSystem implements RuntimeSystem<RulesSystemConfig, Rule
   
   setInputEntityManager(inputEntityManager: InputEntityManager): void {
     this.inputEntityManager = inputEntityManager;
+  }
+  
+  setScriptSandbox(scriptSandbox: ScriptSandbox): void {
+    if (this.rulesEvaluator) {
+      this.rulesEvaluator.setScriptSandbox(scriptSandbox);
+    }
   }
 }

@@ -133,8 +133,11 @@ function createMockUpdateContext(overrides: Partial<{
     dt: overrides.dt ?? 1/60,
     elapsed: 0,
     frameId: overrides.frameId ?? 1,
-    input: { keys: new Set(), buttons: new Set() },
-    gameState: { score: 0, lives: 3, time: 0, variables: {} },
+    input: {
+      keys: new Set<string>(),
+      buttons: { left: false, right: false, up: false, down: false, jump: false, action: false },
+    },
+    gameState: { score: 0, lives: 3, time: 0, state: 'playing', variables: {} },
     frame: {
       inputEvents: overrides.inputEvents ?? [],
       collisions: overrides.collisions ?? [],

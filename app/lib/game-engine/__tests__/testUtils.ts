@@ -5,6 +5,10 @@ import type { Physics2D } from '../../physics2d/Physics2D';
 import type { InputEvents, CollisionInfo } from '../BehaviorContext';
 import type { RuntimeEntity } from '../types';
 import type { GameDefinition } from '@slopcade/shared';
+import { createGameState } from '../runtime/GameStateHelpers';
+import { createGameEventBus } from '../runtime/GameEventBus';
+import * as StateHelpers from '../runtime/GameStateHelpers';
+import type { GameState, GameEventBus } from '../runtime/types';
 
 export function createMockEntityManager(): EntityManager {
   return {
@@ -48,6 +52,8 @@ export interface GameTestHarness {
   evaluator: RulesEvaluator;
   entityManager: EntityManager;
   physics: Physics2D;
+  gameState: GameState;
+  events: GameEventBus;
   runFrame: (inputEvents?: InputEvents, collisions?: CollisionInfo[]) => void;
   runFrames: (count: number, inputEvents?: InputEvents) => void;
   getState: () => {
@@ -66,20 +72,18 @@ export function createGameTestHarness(game: GameDefinition): GameTestHarness {
   const physics = createMockPhysics();
   const evaluator = new RulesEvaluator(entityManager);
 
+  const gameState = createGameState(game);
+  const events = createGameEventBus();
+
   evaluator.loadRules(game.rules ?? []);
   evaluator.setWinCondition(game.winCondition);
   evaluator.setLoseCondition(game.loseCondition);
-  evaluator.setInitialVariables(game.variables as Record<string, number | string | boolean> | undefined);
-  evaluator.setStateMachines(game.stateMachines);
-  
-  if (game.initialLives) {
-    evaluator.setInitialLives(game.initialLives);
-  }
+  evaluator.setStateMachineDefinitions(game.stateMachines);
 
-  evaluator.start();
+  StateHelpers.setGameStateValue(gameState, 'playing', events);
 
   const runFrame = (inputEvents: InputEvents = {}, collisions: CollisionInfo[] = []) => {
-    evaluator.update(0.016, entityManager, collisions, {}, inputEvents, physics);
+    evaluator.update(0.016, entityManager, collisions, {}, inputEvents, physics, gameState, events);
   };
 
   const runFrames = (count: number, inputEvents: InputEvents = {}) => {
@@ -89,18 +93,22 @@ export function createGameTestHarness(game: GameDefinition): GameTestHarness {
   };
 
   const getState = () => ({
-    gameState: evaluator.getGameStateValue(),
-    score: evaluator.getScore(),
-    lives: evaluator.getLives(),
-    variables: evaluator.getVariables(),
+    gameState: StateHelpers.getGameStateValue(gameState),
+    score: StateHelpers.getScore(gameState),
+    lives: StateHelpers.getLives(gameState),
+    variables: Object.fromEntries(
+      Object.entries(gameState.vars).filter(
+        ([key]) => !['score', 'lives', 'gameState', 'elapsed'].includes(key)
+      )
+    ),
   });
 
   const triggerEvent = (eventName: string, data?: unknown) => {
-    evaluator.triggerEvent(eventName, data);
+    StateHelpers.triggerEvent(gameState, eventName, data);
   };
 
   const setVariable = (name: string, value: number | string | boolean) => {
-    evaluator.setVariable(name, value);
+    StateHelpers.setVar(gameState, name, value, events);
   };
 
   const mockEntities = (tag: string, entities: RuntimeEntity[]) => {
@@ -121,6 +129,8 @@ export function createGameTestHarness(game: GameDefinition): GameTestHarness {
     evaluator,
     entityManager,
     physics,
+    gameState,
+    events,
     runFrame,
     runFrames,
     getState,

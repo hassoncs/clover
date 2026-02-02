@@ -5,7 +5,10 @@ import type { EntityManager } from '../../../../game-engine/EntityManager';
 import type { Physics2D } from '../../../../physics2d/Physics2D';
 import type { InputEvents } from '../../../../game-engine/BehaviorContext';
 import type { RuntimeEntity } from '../../../../game-engine/types';
-import type { EvalContext } from '@slopcade/shared';
+import { createGameState } from '../../../../game-engine/runtime/GameStateHelpers';
+import { createGameEventBus } from '../../../../game-engine/runtime/GameEventBus';
+import * as StateHelpers from '../../../../game-engine/runtime/GameStateHelpers';
+import type { GameState, GameEventBus } from '../../../../game-engine/runtime/types';
 
 function createMockEntityManager(): EntityManager {
   return {
@@ -91,10 +94,12 @@ describe('ballSort', () => {
     let evaluator: RulesEvaluator;
     let mockEntityManager: EntityManager;
     let mockPhysics: Physics2D;
+    let gameState: GameState;
+    let events: GameEventBus;
     let game: ReturnType<typeof createBallSortGame>;
 
     const runUpdate = (inputEvents: InputEvents = {}) => {
-      evaluator.update(0.016, mockEntityManager, [], {}, inputEvents, mockPhysics);
+      evaluator.update(0.016, mockEntityManager, [], {}, inputEvents, mockPhysics, gameState, events);
     };
 
     beforeEach(() => {
@@ -103,26 +108,29 @@ describe('ballSort', () => {
       mockPhysics = createMockPhysics();
       evaluator = new RulesEvaluator(mockEntityManager);
       
+      gameState = createGameState(game);
+      events = createGameEventBus();
+      
       evaluator.loadRules(game.rules ?? []);
       evaluator.setWinCondition(game.winCondition);
-      evaluator.setInitialVariables(game.variables as Record<string, number | string | boolean> | undefined);
-      evaluator.setStateMachines(game.stateMachines);
-      evaluator.start();
+      evaluator.setStateMachineDefinitions(game.stateMachines);
+      
+      StateHelpers.setGameStateValue(gameState, 'playing', events);
     });
 
     it('should NOT win with unsorted balls', () => {
-      evaluator.triggerEvent('ball_dropped');
+      StateHelpers.triggerEvent(gameState, 'ball_dropped');
       runUpdate();
-      expect(evaluator.getGameStateValue()).toBe('playing');
+      expect(StateHelpers.getGameStateValue(gameState)).toBe('playing');
     });
 
     it('should win when all tubes have same-color balls (simulated via variables)', () => {
       for (let i = 0; i < 4; i++) {
-        evaluator.setVariable(`tube${i}_count`, 4);
-        evaluator.setVariable(`tube${i}_topColor`, i);
+        StateHelpers.setVar(gameState, `tube${i}_count`, 4, events);
+        StateHelpers.setVar(gameState, `tube${i}_topColor`, i, events);
       }
-      evaluator.setVariable('tube4_count', 0);
-      evaluator.setVariable('tube5_count', 0);
+      StateHelpers.setVar(gameState, 'tube4_count', 0, events);
+      StateHelpers.setVar(gameState, 'tube5_count', 0, events);
 
       const sortedBalls: RuntimeEntity[] = [];
       for (let tubeIndex = 0; tubeIndex < 4; tubeIndex++) {
@@ -148,19 +156,19 @@ describe('ballSort', () => {
         return sortedBalls.find(b => b.id === id);
       });
 
-      evaluator.triggerEvent('ball_dropped');
+      StateHelpers.triggerEvent(gameState, 'ball_dropped');
       runUpdate();
       
-      expect(evaluator.getGameStateValue()).toBe('won');
+      expect(StateHelpers.getGameStateValue(gameState)).toBe('won');
     });
 
     it('should NOT win when any tube has mixed colors', () => {
       for (let i = 0; i < 4; i++) {
-        evaluator.setVariable(`tube${i}_count`, 4);
-        evaluator.setVariable(`tube${i}_topColor`, i);
+        StateHelpers.setVar(gameState, `tube${i}_count`, 4, events);
+        StateHelpers.setVar(gameState, `tube${i}_topColor`, i, events);
       }
-      evaluator.setVariable('tube4_count', 0);
-      evaluator.setVariable('tube5_count', 0);
+      StateHelpers.setVar(gameState, 'tube4_count', 0, events);
+      StateHelpers.setVar(gameState, 'tube5_count', 0, events);
 
       const mixedBalls: RuntimeEntity[] = [
         createMockBall('ball-0', 0, 0),
@@ -178,23 +186,23 @@ describe('ballSort', () => {
         return [];
       });
 
-      evaluator.triggerEvent('ball_dropped');
+      StateHelpers.triggerEvent(gameState, 'ball_dropped');
       runUpdate();
       
-      expect(evaluator.getGameStateValue()).toBe('playing');
+      expect(StateHelpers.getGameStateValue(gameState)).toBe('playing');
     });
 
     it('should NOT win when tube has less than 4 balls', () => {
-      evaluator.setVariable('tube0_count', 3);
-      evaluator.setVariable('tube0_topColor', 0);
-      evaluator.setVariable('tube1_count', 4);
-      evaluator.setVariable('tube1_topColor', 1);
-      evaluator.setVariable('tube2_count', 4);
-      evaluator.setVariable('tube2_topColor', 2);
-      evaluator.setVariable('tube3_count', 4);
-      evaluator.setVariable('tube3_topColor', 3);
-      evaluator.setVariable('tube4_count', 1);
-      evaluator.setVariable('tube5_count', 0);
+      StateHelpers.setVar(gameState, 'tube0_count', 3, events);
+      StateHelpers.setVar(gameState, 'tube0_topColor', 0, events);
+      StateHelpers.setVar(gameState, 'tube1_count', 4, events);
+      StateHelpers.setVar(gameState, 'tube1_topColor', 1, events);
+      StateHelpers.setVar(gameState, 'tube2_count', 4, events);
+      StateHelpers.setVar(gameState, 'tube2_topColor', 2, events);
+      StateHelpers.setVar(gameState, 'tube3_count', 4, events);
+      StateHelpers.setVar(gameState, 'tube3_topColor', 3, events);
+      StateHelpers.setVar(gameState, 'tube4_count', 1, events);
+      StateHelpers.setVar(gameState, 'tube5_count', 0, events);
 
       const partialBalls: RuntimeEntity[] = [];
       for (let i = 0; i < 3; i++) {
@@ -209,10 +217,10 @@ describe('ballSort', () => {
         return [];
       });
 
-      evaluator.triggerEvent('ball_dropped');
+      StateHelpers.triggerEvent(gameState, 'ball_dropped');
       runUpdate();
       
-      expect(evaluator.getGameStateValue()).toBe('playing');
+      expect(StateHelpers.getGameStateValue(gameState)).toBe('playing');
     });
   });
 });

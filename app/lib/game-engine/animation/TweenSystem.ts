@@ -63,9 +63,6 @@ export class TweenSystem {
     };
 
     this.tweens.set(id, tween);
-    
-    this.applyTweenValue(tween, 0);
-
     return id;
   }
 
@@ -74,16 +71,16 @@ export class TweenSystem {
     const completedIds: string[] = [];
 
     for (const [id, tween] of this.tweens) {
-      tween.elapsed += clampedDt;
-
+      // Apply BEFORE incrementing so first frame shows progress=0 (exact 'from' position)
       const progress = Math.min(tween.elapsed / tween.duration, 1);
       const easedProgress = tween.ease(progress);
-
       this.applyTweenValue(tween, easedProgress);
 
       if (progress >= 1) {
         completedIds.push(id);
       }
+
+      tween.elapsed += clampedDt;
     }
 
     for (const id of completedIds) {

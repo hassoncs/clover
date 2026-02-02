@@ -1,5 +1,5 @@
 import "react-native-get-random-values";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect } from "react";
 import { Platform } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -92,23 +92,13 @@ function RootLayoutContent() {
 }
 
 function RootLayout() {
-  const [isSplashComplete, setIsSplashComplete] = useState(false);
-
-  const handleSplashComplete = useCallback(() => {
-    setIsSplashComplete(true);
-  }, []);
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }} className={Platform.OS === "web" ? "no-select" : ""}>
       <TRPCProvider>
         <SafeAreaProvider>
-          {isSplashComplete ? (
+          <AnimatedSplashScreen>
             <RootLayoutContent />
-          ) : (
-            <AnimatedSplashScreen onAnimationComplete={handleSplashComplete}>
-              <RootLayoutContent />
-            </AnimatedSplashScreen>
-          )}
+          </AnimatedSplashScreen>
         </SafeAreaProvider>
       </TRPCProvider>
     </GestureHandlerRootView>

@@ -4,8 +4,12 @@ import type { EntityManager } from '../EntityManager';
 import type { Physics2D } from '../../physics2d/Physics2D';
 import type { InputEvents, CollisionInfo } from '../BehaviorContext';
 import type { RuntimeEntity } from '../types';
-import type { EvalContext } from '@slopcade/shared';
+import type { EvalContext, GameDefinition } from '@slopcade/shared';
 import { createSeededRandom } from '@slopcade/shared';
+import type { GameState as RuntimeGameState, GameEventBus } from '../runtime/types';
+import { createGameState } from '../runtime/GameStateHelpers';
+import { createGameEventBus } from '../runtime/GameEventBus';
+import * as StateHelpers from '../runtime/GameStateHelpers';
 
 function createMockEntityManager(): EntityManager {
   return {
@@ -43,228 +47,251 @@ function createMockEntity(id: string, tags: string[] = []): RuntimeEntity {
   } as RuntimeEntity;
 }
 
+function createMinimalGameDefinition(): GameDefinition {
+  return {
+    metadata: { id: 'test', title: 'Test', version: '1.0.0' },
+    world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50, bounds: { width: 20, height: 12 } },
+    templates: {},
+    entities: [],
+    rules: [],
+  };
+}
+
 describe('RulesEvaluator', () => {
   let evaluator: RulesEvaluator;
   let mockEntityManager: EntityManager;
   let mockPhysics: Physics2D;
+  let gameState: RuntimeGameState;
+  let eventBus: GameEventBus;
 
   beforeEach(() => {
     mockEntityManager = createMockEntityManager();
     mockPhysics = createMockPhysics();
     evaluator = new RulesEvaluator(mockEntityManager);
+    gameState = createGameState(createMinimalGameDefinition());
+    eventBus = createGameEventBus();
   });
+
+  const startGame = () => {
+    StateHelpers.setGameStateValue(gameState, 'playing', eventBus);
+  };
 
   const runUpdate = (inputEvents: InputEvents = {}, collisions: CollisionInfo[] = []) => {
     const evalContext: EvalContext = {
-      score: evaluator.getScore(),
-      lives: evaluator.getLives(),
-      time: evaluator.getElapsed(),
+      score: StateHelpers.getScore(gameState),
+      lives: StateHelpers.getLives(gameState),
+      time: StateHelpers.getElapsed(gameState),
       wave: 1,
       dt: 0.016,
       frameId: 0,
-      variables: evaluator.getVariables(),
+      variables: Object.fromEntries(
+        Object.entries(gameState.vars).filter(([k]) => 
+          !['score', 'lives', 'gameState', 'elapsed'].includes(k)
+        )
+      ),
       random: Math.random,
       entityManager: mockEntityManager,
     };
-    evaluator.update(0.016, mockEntityManager, collisions, {}, inputEvents, mockPhysics, undefined, evalContext);
+    evaluator.update(0.016, mockEntityManager, collisions, {}, inputEvents, mockPhysics, gameState, eventBus, undefined, evalContext);
   };
 
   describe('Game State Management', () => {
     it('starts in ready state', () => {
-      expect(evaluator.getGameStateValue()).toBe('ready');
+      expect(StateHelpers.getGameStateValue(gameState)).toBe('ready');
     });
 
     it('transitions to playing on start', () => {
-      evaluator.start();
-      expect(evaluator.getGameStateValue()).toBe('playing');
+      startGame();
+      expect(StateHelpers.getGameStateValue(gameState)).toBe('playing');
     });
 
     it('pauses and resumes correctly', () => {
-      evaluator.start();
-      evaluator.pause();
-      expect(evaluator.getGameStateValue()).toBe('paused');
-      evaluator.resume();
-      expect(evaluator.getGameStateValue()).toBe('playing');
+      startGame();
+      StateHelpers.setGameStateValue(gameState, 'paused', eventBus);
+      expect(StateHelpers.getGameStateValue(gameState)).toBe('paused');
+      StateHelpers.setGameStateValue(gameState, 'playing', eventBus);
+      expect(StateHelpers.getGameStateValue(gameState)).toBe('playing');
     });
 
     it('resets all state correctly', () => {
-      evaluator.start();
-      evaluator.addScore(100);
-      evaluator.addLives(-2);
-      evaluator.setVariable('test', 42);
-      evaluator.setList('deck', [1, 2, 3]);
+      startGame();
+      StateHelpers.addScore(gameState, 100, eventBus);
+      StateHelpers.addLives(gameState, -2, eventBus);
+      StateHelpers.setVar(gameState, 'test', 42, eventBus);
+      StateHelpers.setList(gameState, 'deck', [1, 2, 3]);
       
-      evaluator.reset();
+      StateHelpers.resetGameState(gameState);
       
-      expect(evaluator.getScore()).toBe(0);
-      expect(evaluator.getLives()).toBe(3);
-      expect(evaluator.getVariable('test')).toBeUndefined();
-      expect(evaluator.getList('deck')).toBeUndefined();
-      expect(evaluator.getGameStateValue()).toBe('ready');
+      expect(StateHelpers.getScore(gameState)).toBe(0);
+      expect(StateHelpers.getLives(gameState)).toBe(3);
+      expect(StateHelpers.getVar(gameState, 'test')).toBeUndefined();
+      expect(StateHelpers.getList(gameState, 'deck')).toBeUndefined();
+      expect(StateHelpers.getGameStateValue(gameState)).toBe('ready');
     });
 
-    it('fires onGameStateChange callback', () => {
-      const callback = vi.fn();
-      evaluator.setCallbacks({ onGameStateChange: callback });
+    it('emits gameStateChanged event on state change', () => {
+      const handler = vi.fn();
+      eventBus.subscribe(handler);
       
-      evaluator.start();
-      expect(callback).toHaveBeenCalledWith('playing');
+      startGame();
+      expect(handler).toHaveBeenCalledWith({ type: 'gameStateChanged', state: 'playing' });
     });
   });
 
   describe('Score System', () => {
-    beforeEach(() => evaluator.start());
+    beforeEach(() => startGame());
 
     it('adds score correctly', () => {
-      evaluator.addScore(50);
-      expect(evaluator.getScore()).toBe(50);
-      evaluator.addScore(25);
-      expect(evaluator.getScore()).toBe(75);
+      StateHelpers.addScore(gameState, 50, eventBus);
+      expect(StateHelpers.getScore(gameState)).toBe(50);
+      StateHelpers.addScore(gameState, 25, eventBus);
+      expect(StateHelpers.getScore(gameState)).toBe(75);
     });
 
     it('sets score directly', () => {
-      evaluator.addScore(100);
-      evaluator.setScore(42);
-      expect(evaluator.getScore()).toBe(42);
+      StateHelpers.addScore(gameState, 100, eventBus);
+      StateHelpers.setScore(gameState, 42, eventBus);
+      expect(StateHelpers.getScore(gameState)).toBe(42);
     });
 
-    it('fires onScoreChange callback', () => {
-      const callback = vi.fn();
-      evaluator.setCallbacks({ onScoreChange: callback });
+    it('emits scoreChanged event on score change', () => {
+      const handler = vi.fn();
+      eventBus.subscribe(handler);
       
-      evaluator.addScore(10);
-      expect(callback).toHaveBeenCalledWith(10);
+      StateHelpers.addScore(gameState, 10, eventBus);
+      expect(handler).toHaveBeenCalledWith({ type: 'scoreChanged', score: 10 });
     });
   });
 
   describe('Lives System', () => {
-    beforeEach(() => evaluator.start());
+    beforeEach(() => startGame());
 
     it('starts with 3 lives by default', () => {
-      expect(evaluator.getLives()).toBe(3);
+      expect(StateHelpers.getLives(gameState)).toBe(3);
     });
 
-    it('can set initial lives', () => {
-      const e = new RulesEvaluator(mockEntityManager);
-      e.setInitialLives(5);
-      expect(e.getLives()).toBe(5);
+    it('can set initial lives via game definition', () => {
+      const customDef = createMinimalGameDefinition();
+      customDef.initialLives = 5;
+      const customState = createGameState(customDef);
+      expect(StateHelpers.getLives(customState)).toBe(5);
     });
 
     it('adds and subtracts lives', () => {
-      evaluator.addLives(2);
-      expect(evaluator.getLives()).toBe(5);
-      evaluator.addLives(-3);
-      expect(evaluator.getLives()).toBe(2);
+      StateHelpers.addLives(gameState, 2, eventBus);
+      expect(StateHelpers.getLives(gameState)).toBe(5);
+      StateHelpers.addLives(gameState, -3, eventBus);
+      expect(StateHelpers.getLives(gameState)).toBe(2);
     });
 
-    it('fires onLivesChange callback', () => {
-      const callback = vi.fn();
-      evaluator.setCallbacks({ onLivesChange: callback });
+    it('emits livesChanged event on lives change', () => {
+      const handler = vi.fn();
+      eventBus.subscribe(handler);
       
-      evaluator.addLives(-1);
-      expect(callback).toHaveBeenCalledWith(2);
+      StateHelpers.addLives(gameState, -1, eventBus);
+      expect(handler).toHaveBeenCalledWith({ type: 'livesChanged', lives: 2 });
     });
   });
 
   describe('Variable System', () => {
-    beforeEach(() => evaluator.start());
+    beforeEach(() => startGame());
 
     it('sets and gets number variables', () => {
-      evaluator.setVariable('health', 100);
-      expect(evaluator.getVariable('health')).toBe(100);
+      StateHelpers.setVar(gameState, 'health', 100);
+      expect(StateHelpers.getVar(gameState, 'health')).toBe(100);
     });
 
     it('sets and gets string variables', () => {
-      evaluator.setVariable('playerName', 'Hero');
-      expect(evaluator.getVariable('playerName')).toBe('Hero');
+      StateHelpers.setVar(gameState, 'playerName', 'Hero');
+      expect(StateHelpers.getVar(gameState, 'playerName')).toBe('Hero');
     });
 
     it('sets and gets boolean variables', () => {
-      evaluator.setVariable('isInvincible', true);
-      expect(evaluator.getVariable('isInvincible')).toBe(true);
+      StateHelpers.setVar(gameState, 'isInvincible', true);
+      expect(StateHelpers.getVar(gameState, 'isInvincible')).toBe(true);
     });
 
     it('returns undefined for non-existent variables', () => {
-      expect(evaluator.getVariable('nonexistent')).toBeUndefined();
+      expect(StateHelpers.getVar(gameState, 'nonexistent')).toBeUndefined();
     });
 
     it('overwrites existing variables', () => {
-      evaluator.setVariable('counter', 1);
-      evaluator.setVariable('counter', 2);
-      expect(evaluator.getVariable('counter')).toBe(2);
+      StateHelpers.setVar(gameState, 'counter', 1);
+      StateHelpers.setVar(gameState, 'counter', 2);
+      expect(StateHelpers.getVar(gameState, 'counter')).toBe(2);
     });
   });
 
   describe('List System', () => {
-    beforeEach(() => evaluator.start());
+    beforeEach(() => startGame());
 
     it('creates and retrieves lists', () => {
-      evaluator.setList('inventory', [1, 2, 3]);
-      expect(evaluator.getList('inventory')).toEqual([1, 2, 3]);
+      StateHelpers.setList(gameState, 'inventory', [1, 2, 3]);
+      expect(StateHelpers.getList(gameState, 'inventory')).toEqual([1, 2, 3]);
     });
 
     it('pushes items to list', () => {
-      evaluator.setList('items', ['sword']);
-      evaluator.pushToList('items', 'shield');
-      expect(evaluator.getList('items')).toEqual(['sword', 'shield']);
+      StateHelpers.setList(gameState, 'items', ['sword']);
+      StateHelpers.pushToList(gameState, 'items', 'shield');
+      expect(StateHelpers.getList(gameState, 'items')).toEqual(['sword', 'shield']);
     });
 
     it('pushes to non-existent list creates it', () => {
-      evaluator.pushToList('newList', 'first');
-      expect(evaluator.getList('newList')).toEqual(['first']);
+      StateHelpers.pushToList(gameState, 'newList', 'first');
+      expect(StateHelpers.getList(gameState, 'newList')).toEqual(['first']);
     });
 
     it('pops from back of list', () => {
-      evaluator.setList('stack', [1, 2, 3]);
-      const popped = evaluator.popFromList('stack', 'back');
+      StateHelpers.setList(gameState, 'stack', [1, 2, 3]);
+      const popped = StateHelpers.popFromList(gameState, 'stack', 'back');
       expect(popped).toBe(3);
-      expect(evaluator.getList('stack')).toEqual([1, 2]);
+      expect(StateHelpers.getList(gameState, 'stack')).toEqual([1, 2]);
     });
 
     it('pops from front of list', () => {
-      evaluator.setList('queue', [1, 2, 3]);
-      const popped = evaluator.popFromList('queue', 'front');
+      StateHelpers.setList(gameState, 'queue', [1, 2, 3]);
+      const popped = StateHelpers.popFromList(gameState, 'queue', 'front');
       expect(popped).toBe(1);
-      expect(evaluator.getList('queue')).toEqual([2, 3]);
+      expect(StateHelpers.getList(gameState, 'queue')).toEqual([2, 3]);
     });
 
     it('returns undefined when popping from empty list', () => {
-      evaluator.setList('empty', []);
-      expect(evaluator.popFromList('empty', 'back')).toBeUndefined();
+      StateHelpers.setList(gameState, 'empty', []);
+      expect(StateHelpers.popFromList(gameState, 'empty', 'back')).toBeUndefined();
     });
 
     it('returns undefined when popping from non-existent list', () => {
-      expect(evaluator.popFromList('nonexistent', 'back')).toBeUndefined();
+      expect(StateHelpers.popFromList(gameState, 'nonexistent', 'back')).toBeUndefined();
     });
 
     it('shuffles list deterministically with seeded random', () => {
       const seededRandom = createSeededRandom(42);
-      evaluator.setList('deck', [1, 2, 3, 4, 5]);
-      evaluator.shuffleList('deck', seededRandom);
+      StateHelpers.setList(gameState, 'deck', [1, 2, 3, 4, 5]);
+      StateHelpers.shuffleList(gameState, 'deck', seededRandom);
       
       const seededRandom2 = createSeededRandom(42);
-      evaluator.setList('deck2', [1, 2, 3, 4, 5]);
-      evaluator.shuffleList('deck2', seededRandom2);
+      StateHelpers.setList(gameState, 'deck2', [1, 2, 3, 4, 5]);
+      StateHelpers.shuffleList(gameState, 'deck2', seededRandom2);
       
-      expect(evaluator.getList('deck')).toEqual(evaluator.getList('deck2'));
+      expect(StateHelpers.getList(gameState, 'deck')).toEqual(StateHelpers.getList(gameState, 'deck2'));
     });
 
     it('checks list contains correctly', () => {
-      evaluator.setList('colors', ['red', 'green', 'blue']);
-      expect(evaluator.listContains('colors', 'green')).toBe(true);
-      expect(evaluator.listContains('colors', 'yellow')).toBe(false);
+      StateHelpers.setList(gameState, 'colors', ['red', 'green', 'blue']);
+      expect(StateHelpers.listContains(gameState, 'colors', 'green')).toBe(true);
+      expect(StateHelpers.listContains(gameState, 'colors', 'yellow')).toBe(false);
     });
 
     it('returns false for contains on non-existent list', () => {
-      expect(evaluator.listContains('nonexistent', 'value')).toBe(false);
+      expect(StateHelpers.listContains(gameState, 'nonexistent', 'value')).toBe(false);
     });
   });
 
   describe('Cooldown System', () => {
-    beforeEach(() => evaluator.start());
+    beforeEach(() => startGame());
 
     it('sets and respects cooldowns', () => {
-      evaluator.setCooldown('jump', 1.0);
+      StateHelpers.setCooldown(gameState, 'jump', 1.0);
       
       evaluator.loadRules([{
         id: 'jump-rule',
@@ -274,15 +301,15 @@ describe('RulesEvaluator', () => {
       }]);
 
       runUpdate();
-      expect(evaluator.getScore()).toBe(10);
+      expect(StateHelpers.getScore(gameState)).toBe(10);
       
       runUpdate();
-      expect(evaluator.getScore()).toBe(10);
+      expect(StateHelpers.getScore(gameState)).toBe(10);
     });
   });
 
   describe('Triggers', () => {
-    beforeEach(() => evaluator.start());
+    beforeEach(() => startGame());
 
     describe('Score Trigger', () => {
       it('fires when score >= threshold', () => {
@@ -292,13 +319,13 @@ describe('RulesEvaluator', () => {
           actions: [{ type: 'lives', operation: 'add', value: 1 }],
         }]);
 
-        evaluator.setScore(99);
+        StateHelpers.setScore(gameState, 99);
         runUpdate();
-        expect(evaluator.getLives()).toBe(3);
+        expect(StateHelpers.getLives(gameState)).toBe(3);
 
-        evaluator.setScore(100);
+        StateHelpers.setScore(gameState, 100);
         runUpdate();
-        expect(evaluator.getLives()).toBe(4);
+        expect(StateHelpers.getLives(gameState)).toBe(4);
       });
 
       it('fires when score <= threshold', () => {
@@ -308,9 +335,9 @@ describe('RulesEvaluator', () => {
           actions: [{ type: 'game_state', state: 'lose' }],
         }]);
 
-        evaluator.setScore(5);
+        StateHelpers.setScore(gameState, 5);
         runUpdate();
-        expect(evaluator.getGameStateValue()).toBe('lost');
+        expect(StateHelpers.getGameStateValue(gameState)).toBe('lost');
       });
     });
 
@@ -328,7 +355,7 @@ describe('RulesEvaluator', () => {
         runUpdate();
         runUpdate();
         
-        expect(evaluator.getScore()).toBe(50);
+        expect(StateHelpers.getScore(gameState)).toBe(50);
       });
     });
 
@@ -341,7 +368,7 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate({ tap: { x: 100, y: 100, worldX: 5, worldY: 5 } });
-        expect(evaluator.getScore()).toBe(100);
+        expect(StateHelpers.getScore(gameState)).toBe(100);
       });
 
       it('does not fire without tap event', () => {
@@ -352,7 +379,7 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getScore()).toBe(0);
+        expect(StateHelpers.getScore(gameState)).toBe(0);
       });
     });
 
@@ -367,7 +394,7 @@ describe('RulesEvaluator', () => {
         runUpdate();
         runUpdate();
         runUpdate();
-        expect(evaluator.getScore()).toBe(3);
+        expect(StateHelpers.getScore(gameState)).toBe(3);
       });
     });
 
@@ -379,10 +406,10 @@ describe('RulesEvaluator', () => {
           actions: [{ type: 'score', operation: 'multiply', value: 2 }],
         }]);
 
-        evaluator.setScore(50);
-        evaluator.triggerEvent('powerup_collected');
+        StateHelpers.setScore(gameState, 50);
+        StateHelpers.triggerEvent(gameState, 'powerup_collected');
         runUpdate();
-        expect(evaluator.getScore()).toBe(100);
+        expect(StateHelpers.getScore(gameState)).toBe(100);
       });
     });
 
@@ -405,7 +432,7 @@ describe('RulesEvaluator', () => {
         };
 
         runUpdate({}, [collision]);
-        expect(evaluator.getScore()).toBe(10);
+        expect(StateHelpers.getScore(gameState)).toBe(10);
       });
     });
 
@@ -420,7 +447,7 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getGameStateValue()).toBe('won');
+        expect(StateHelpers.getGameStateValue(gameState)).toBe('won');
       });
     });
 
@@ -433,7 +460,7 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate({ buttonPressed: new Set(['jump']) });
-        expect(evaluator.getScore()).toBe(5);
+        expect(StateHelpers.getScore(gameState)).toBe(5);
       });
     });
 
@@ -447,13 +474,13 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate({ gameStarted: true });
-        expect(evaluator.getVariable('initialized')).toBe(true);
+        expect(StateHelpers.getVar(gameState, 'initialized')).toBe(true);
       });
     });
   });
 
   describe('Conditions', () => {
-    beforeEach(() => evaluator.start());
+    beforeEach(() => startGame());
 
     describe('Score Condition', () => {
       it('passes when score in range', () => {
@@ -464,9 +491,9 @@ describe('RulesEvaluator', () => {
           actions: [{ type: 'lives', operation: 'add', value: 1 }],
         }]);
 
-        evaluator.setScore(75);
+        StateHelpers.setScore(gameState, 75);
         runUpdate();
-        expect(evaluator.getLives()).toBe(4);
+        expect(StateHelpers.getLives(gameState)).toBe(4);
       });
 
       it('fails when score out of range', () => {
@@ -477,9 +504,9 @@ describe('RulesEvaluator', () => {
           actions: [{ type: 'lives', operation: 'add', value: 1 }],
         }]);
 
-        evaluator.setScore(25);
+        StateHelpers.setScore(gameState, 25);
         runUpdate();
-        expect(evaluator.getLives()).toBe(3);
+        expect(StateHelpers.getLives(gameState)).toBe(3);
       });
     });
 
@@ -493,7 +520,7 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getScore()).toBe(1);
+        expect(StateHelpers.getScore(gameState)).toBe(1);
       });
     });
 
@@ -506,9 +533,9 @@ describe('RulesEvaluator', () => {
           actions: [{ type: 'score', operation: 'add', value: 100 }],
         }]);
 
-        evaluator.setVariable('level', 5);
+        StateHelpers.setVar(gameState, 'level', 5);
         runUpdate();
-        expect(evaluator.getScore()).toBe(100);
+        expect(StateHelpers.getScore(gameState)).toBe(100);
       });
 
       it('evaluates greater than', () => {
@@ -519,13 +546,13 @@ describe('RulesEvaluator', () => {
           actions: [{ type: 'score', operation: 'add', value: 10 }],
         }]);
 
-        evaluator.setVariable('health', 75);
+        StateHelpers.setVar(gameState, 'health', 75);
         runUpdate();
-        expect(evaluator.getScore()).toBe(10);
+        expect(StateHelpers.getScore(gameState)).toBe(10);
 
-        evaluator.setVariable('health', 50);
+        StateHelpers.setVar(gameState, 'health', 50);
         runUpdate();
-        expect(evaluator.getScore()).toBe(10);
+        expect(StateHelpers.getScore(gameState)).toBe(10);
       });
 
       it('evaluates less than or equal', () => {
@@ -536,9 +563,9 @@ describe('RulesEvaluator', () => {
           actions: [{ type: 'game_state', state: 'lose' }],
         }]);
 
-        evaluator.setVariable('ammo', 0);
+        StateHelpers.setVar(gameState, 'ammo', 0);
         runUpdate();
-        expect(evaluator.getGameStateValue()).toBe('lost');
+        expect(StateHelpers.getGameStateValue(gameState)).toBe('lost');
       });
 
       it('evaluates not equal', () => {
@@ -549,9 +576,9 @@ describe('RulesEvaluator', () => {
           actions: [{ type: 'score', operation: 'add', value: 1 }],
         }]);
 
-        evaluator.setVariable('state', 'alive');
+        StateHelpers.setVar(gameState, 'state', 'alive');
         runUpdate();
-        expect(evaluator.getScore()).toBe(1);
+        expect(StateHelpers.getScore(gameState)).toBe(1);
       });
 
       it('evaluates boolean equality', () => {
@@ -562,10 +589,10 @@ describe('RulesEvaluator', () => {
           actions: [{ type: 'score', operation: 'multiply', value: 2 }],
         }]);
 
-        evaluator.setScore(50);
-        evaluator.setVariable('isBonus', true);
+        StateHelpers.setScore(gameState, 50);
+        StateHelpers.setVar(gameState, 'isBonus', true);
         runUpdate();
-        expect(evaluator.getScore()).toBe(100);
+        expect(StateHelpers.getScore(gameState)).toBe(100);
       });
     });
 
@@ -578,9 +605,9 @@ describe('RulesEvaluator', () => {
           actions: [{ type: 'score', operation: 'add', value: 100 }],
         }]);
 
-        evaluator.setList('inventory', ['sword', 'key', 'potion']);
+        StateHelpers.setList(gameState, 'inventory', ['sword', 'key', 'potion']);
         runUpdate();
-        expect(evaluator.getScore()).toBe(100);
+        expect(StateHelpers.getScore(gameState)).toBe(100);
       });
 
       it('fails when list does not contain value', () => {
@@ -591,9 +618,9 @@ describe('RulesEvaluator', () => {
           actions: [{ type: 'score', operation: 'add', value: 100 }],
         }]);
 
-        evaluator.setList('inventory', ['sword', 'potion']);
+        StateHelpers.setList(gameState, 'inventory', ['sword', 'potion']);
         runUpdate();
-        expect(evaluator.getScore()).toBe(0);
+        expect(StateHelpers.getScore(gameState)).toBe(0);
       });
 
       it('supports negated condition', () => {
@@ -604,9 +631,9 @@ describe('RulesEvaluator', () => {
           actions: [{ type: 'score', operation: 'add', value: 50 }],
         }]);
 
-        evaluator.setList('effects', ['buff', 'shield']);
+        StateHelpers.setList(gameState, 'effects', ['buff', 'shield']);
         runUpdate();
-        expect(evaluator.getScore()).toBe(50);
+        expect(StateHelpers.getScore(gameState)).toBe(50);
       });
     });
 
@@ -622,7 +649,7 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getScore()).toBe(10);
+        expect(StateHelpers.getScore(gameState)).toBe(10);
       });
     });
 
@@ -636,7 +663,7 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getScore()).toBe(25);
+        expect(StateHelpers.getScore(gameState)).toBe(25);
       });
     });
 
@@ -652,20 +679,20 @@ describe('RulesEvaluator', () => {
           actions: [{ type: 'game_state', state: 'win' }],
         }]);
 
-        evaluator.setVariable('hasKey', true);
-        evaluator.setScore(50);
+        StateHelpers.setVar(gameState, 'hasKey', true);
+        StateHelpers.setScore(gameState, 50);
         runUpdate();
-        expect(evaluator.getGameStateValue()).toBe('playing');
+        expect(StateHelpers.getGameStateValue(gameState)).toBe('playing');
 
-        evaluator.setScore(100);
+        StateHelpers.setScore(gameState, 100);
         runUpdate();
-        expect(evaluator.getGameStateValue()).toBe('won');
+        expect(StateHelpers.getGameStateValue(gameState)).toBe('won');
       });
     });
   });
 
   describe('Actions', () => {
-    beforeEach(() => evaluator.start());
+    beforeEach(() => startGame());
 
     describe('Score Action', () => {
       it('adds score', () => {
@@ -676,11 +703,11 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getScore()).toBe(10);
+        expect(StateHelpers.getScore(gameState)).toBe(10);
       });
 
       it('subtracts score', () => {
-        evaluator.setScore(100);
+        StateHelpers.setScore(gameState, 100);
         evaluator.loadRules([{
           id: 'sub-score',
           trigger: { type: 'frame' },
@@ -688,11 +715,11 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getScore()).toBe(75);
+        expect(StateHelpers.getScore(gameState)).toBe(75);
       });
 
       it('multiplies score', () => {
-        evaluator.setScore(50);
+        StateHelpers.setScore(gameState, 50);
         evaluator.loadRules([{
           id: 'mult-score',
           trigger: { type: 'frame' },
@@ -700,11 +727,11 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getScore()).toBe(100);
+        expect(StateHelpers.getScore(gameState)).toBe(100);
       });
 
       it('sets score directly', () => {
-        evaluator.setScore(999);
+        StateHelpers.setScore(gameState, 999);
         evaluator.loadRules([{
           id: 'set-score',
           trigger: { type: 'frame' },
@@ -712,7 +739,7 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getScore()).toBe(0);
+        expect(StateHelpers.getScore(gameState)).toBe(0);
       });
     });
 
@@ -725,7 +752,7 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getLives()).toBe(4);
+        expect(StateHelpers.getLives(gameState)).toBe(4);
       });
 
       it('subtracts lives', () => {
@@ -736,7 +763,7 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getLives()).toBe(2);
+        expect(StateHelpers.getLives(gameState)).toBe(2);
       });
 
       it('sets lives directly', () => {
@@ -747,7 +774,7 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getLives()).toBe(99);
+        expect(StateHelpers.getLives(gameState)).toBe(99);
       });
     });
 
@@ -760,11 +787,11 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getVariable('counter')).toBe(42);
+        expect(StateHelpers.getVar(gameState, 'counter')).toBe(42);
       });
 
       it('adds to variable', () => {
-        evaluator.setVariable('counter', 10);
+        StateHelpers.setVar(gameState, 'counter', 10);
         evaluator.loadRules([{
           id: 'add-var',
           trigger: { type: 'frame' },
@@ -772,11 +799,11 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getVariable('counter')).toBe(15);
+        expect(StateHelpers.getVar(gameState, 'counter')).toBe(15);
       });
 
       it('subtracts from variable', () => {
-        evaluator.setVariable('health', 100);
+        StateHelpers.setVar(gameState, 'health', 100);
         evaluator.loadRules([{
           id: 'sub-var',
           trigger: { type: 'frame' },
@@ -784,11 +811,11 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getVariable('health')).toBe(75);
+        expect(StateHelpers.getVar(gameState, 'health')).toBe(75);
       });
 
       it('multiplies variable', () => {
-        evaluator.setVariable('multiplier', 2);
+        StateHelpers.setVar(gameState, 'multiplier', 2);
         evaluator.loadRules([{
           id: 'mult-var',
           trigger: { type: 'frame' },
@@ -796,11 +823,11 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getVariable('multiplier')).toBe(6);
+        expect(StateHelpers.getVar(gameState, 'multiplier')).toBe(6);
       });
 
       it('toggles boolean variable', () => {
-        evaluator.setVariable('isActive', false);
+        StateHelpers.setVar(gameState, 'isActive', false);
         evaluator.loadRules([{
           id: 'toggle-var',
           trigger: { type: 'frame' },
@@ -808,13 +835,13 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getVariable('isActive')).toBe(true);
+        expect(StateHelpers.getVar(gameState, 'isActive')).toBe(true);
         runUpdate();
-        expect(evaluator.getVariable('isActive')).toBe(false);
+        expect(StateHelpers.getVar(gameState, 'isActive')).toBe(false);
       });
 
       it('concatenates strings with add', () => {
-        evaluator.setVariable('message', 'Hello');
+        StateHelpers.setVar(gameState, 'message', 'Hello');
         evaluator.loadRules([{
           id: 'concat-var',
           trigger: { type: 'frame' },
@@ -822,13 +849,13 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getVariable('message')).toBe('Hello World');
+        expect(StateHelpers.getVar(gameState, 'message')).toBe('Hello World');
       });
     });
 
     describe('List Actions', () => {
       it('pushes to list', () => {
-        evaluator.setList('items', ['a']);
+        StateHelpers.setList(gameState, 'items', ['a']);
         evaluator.loadRules([{
           id: 'push-list',
           trigger: { type: 'frame' },
@@ -836,11 +863,11 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getList('items')).toEqual(['a', 'b']);
+        expect(StateHelpers.getList(gameState, 'items')).toEqual(['a', 'b']);
       });
 
       it('pops from list and stores in variable', () => {
-        evaluator.setList('deck', [1, 2, 3]);
+        StateHelpers.setList(gameState, 'deck', [1, 2, 3]);
         evaluator.loadRules([{
           id: 'pop-list',
           trigger: { type: 'frame' },
@@ -848,12 +875,12 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getVariable('drawnCard')).toBe(3);
-        expect(evaluator.getList('deck')).toEqual([1, 2]);
+        expect(StateHelpers.getVar(gameState, 'drawnCard')).toBe(3);
+        expect(StateHelpers.getList(gameState, 'deck')).toEqual([1, 2]);
       });
 
       it('shuffles list', () => {
-        evaluator.setList('deck', [1, 2, 3, 4, 5]);
+        StateHelpers.setList(gameState, 'deck', [1, 2, 3, 4, 5]);
         evaluator.loadRules([{
           id: 'shuffle-list',
           trigger: { type: 'frame' },
@@ -861,7 +888,7 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        const shuffled = evaluator.getList('deck');
+        const shuffled = StateHelpers.getList(gameState, 'deck');
         expect(shuffled).toHaveLength(5);
         expect(shuffled?.sort()).toEqual([1, 2, 3, 4, 5]);
       });
@@ -876,7 +903,7 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getGameStateValue()).toBe('won');
+        expect(StateHelpers.getGameStateValue(gameState)).toBe('won');
       });
 
       it('sets lose state', () => {
@@ -887,7 +914,7 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getGameStateValue()).toBe('lost');
+        expect(StateHelpers.getGameStateValue(gameState)).toBe('lost');
       });
 
       it('pauses game', () => {
@@ -898,7 +925,7 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getGameStateValue()).toBe('paused');
+        expect(StateHelpers.getGameStateValue(gameState)).toBe('paused');
       });
     });
 
@@ -921,7 +948,7 @@ describe('RulesEvaluator', () => {
 
         runUpdate();
         runUpdate();
-        expect(evaluator.getScore()).toBe(999);
+        expect(StateHelpers.getScore(gameState)).toBe(999);
       });
     });
 
@@ -937,7 +964,7 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getScore()).toBe(10);
+        expect(StateHelpers.getScore(gameState)).toBe(10);
       });
     });
 
@@ -1013,7 +1040,7 @@ describe('RulesEvaluator', () => {
   });
 
   describe('Rule Modifiers', () => {
-    beforeEach(() => evaluator.start());
+    beforeEach(() => startGame());
 
     describe('fireOnce', () => {
       it('only fires rule once', () => {
@@ -1027,7 +1054,7 @@ describe('RulesEvaluator', () => {
         runUpdate();
         runUpdate();
         runUpdate();
-        expect(evaluator.getScore()).toBe(100);
+        expect(StateHelpers.getScore(gameState)).toBe(100);
       });
     });
 
@@ -1041,10 +1068,10 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getScore()).toBe(10);
+        expect(StateHelpers.getScore(gameState)).toBe(10);
         
         runUpdate();
-        expect(evaluator.getScore()).toBe(10);
+        expect(StateHelpers.getScore(gameState)).toBe(10);
       });
     });
 
@@ -1058,41 +1085,41 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getScore()).toBe(0);
+        expect(StateHelpers.getScore(gameState)).toBe(0);
       });
     });
   });
 
   describe('Win/Lose Conditions', () => {
-    beforeEach(() => evaluator.start());
+    beforeEach(() => startGame());
 
     describe('Win Conditions', () => {
       it('wins when score expression is satisfied', () => {
         evaluator.setWinCondition({ expr: 'score >= 100' });
-        evaluator.setScore(100);
+        StateHelpers.setScore(gameState, 100);
         runUpdate();
-        expect(evaluator.getGameStateValue()).toBe('won');
+        expect(StateHelpers.getGameStateValue(gameState)).toBe('won');
       });
 
       it('wins when all enemies destroyed (entityCount expression)', () => {
         mockEntityManager.getEntitiesByTag = vi.fn().mockReturnValue([]);
         evaluator.setWinCondition({ expr: "entityCount('enemy') == 0" });
         runUpdate();
-        expect(evaluator.getGameStateValue()).toBe('won');
+        expect(StateHelpers.getGameStateValue(gameState)).toBe('won');
       });
 
       it('wins after surviving time (elapsed expression)', () => {
         runUpdate();
         evaluator.setWinCondition({ expr: 'time >= 0.01' });
         runUpdate();
-        expect(evaluator.getGameStateValue()).toBe('won');
+        expect(StateHelpers.getGameStateValue(gameState)).toBe('won');
       });
 
       it('empty win condition does not auto-trigger', () => {
         evaluator.setWinCondition({});
-        evaluator.setScore(9999);
+        StateHelpers.setScore(gameState, 9999);
         runUpdate();
-        expect(evaluator.getGameStateValue()).toBe('playing');
+        expect(StateHelpers.getGameStateValue(gameState)).toBe('playing');
       });
 
       it('empty win condition allows rules to set win state', () => {
@@ -1104,11 +1131,11 @@ describe('RulesEvaluator', () => {
         }]);
 
         runUpdate();
-        expect(evaluator.getGameStateValue()).toBe('playing');
+        expect(StateHelpers.getGameStateValue(gameState)).toBe('playing');
 
-        evaluator.triggerEvent('check_win');
+        StateHelpers.triggerEvent(gameState, 'check_win');
         runUpdate();
-        expect(evaluator.getGameStateValue()).toBe('won');
+        expect(StateHelpers.getGameStateValue(gameState)).toBe('won');
       });
 
       it('empty win condition with event chain', () => {
@@ -1127,42 +1154,42 @@ describe('RulesEvaluator', () => {
         ]);
 
         runUpdate({ tap: { x: 0, y: 0, worldX: 0, worldY: 0 } });
-        expect(evaluator.getGameStateValue()).toBe('won');
+        expect(StateHelpers.getGameStateValue(gameState)).toBe('won');
       });
     });
 
     describe('Lose Conditions', () => {
       it('loses when lives reach zero', () => {
         evaluator.setLoseCondition({ type: 'lives_zero' });
-        evaluator.setLives(0);
+        StateHelpers.setLives(gameState, 0);
         runUpdate();
-        expect(evaluator.getGameStateValue()).toBe('lost');
+        expect(StateHelpers.getGameStateValue(gameState)).toBe('lost');
       });
 
       it('loses when player destroyed', () => {
         mockEntityManager.getEntitiesByTag = vi.fn().mockReturnValue([]);
         evaluator.setLoseCondition({ type: 'entity_destroyed', tag: 'player' });
         runUpdate();
-        expect(evaluator.getGameStateValue()).toBe('lost');
+        expect(StateHelpers.getGameStateValue(gameState)).toBe('lost');
       });
 
       it('loses when time runs out', () => {
         evaluator.setLoseCondition({ type: 'time_up', time: 0.01 });
         runUpdate();
-        expect(evaluator.getGameStateValue()).toBe('lost');
+        expect(StateHelpers.getGameStateValue(gameState)).toBe('lost');
       });
 
       it('loses when score drops below threshold', () => {
         evaluator.setLoseCondition({ type: 'score_below', score: 0 });
-        evaluator.setScore(-10);
+        StateHelpers.setScore(gameState, -10);
         runUpdate();
-        expect(evaluator.getGameStateValue()).toBe('lost');
+        expect(StateHelpers.getGameStateValue(gameState)).toBe('lost');
       });
     });
   });
 
   describe('Complex Scenarios', () => {
-    beforeEach(() => evaluator.start());
+    beforeEach(() => startGame());
 
     it('implements double jump with variable tracking', () => {
       evaluator.loadRules([
@@ -1184,19 +1211,19 @@ describe('RulesEvaluator', () => {
       ]);
 
       runUpdate({ gameStarted: true });
-      expect(evaluator.getVariable('jumpsRemaining')).toBe(2);
+      expect(StateHelpers.getVar(gameState, 'jumpsRemaining')).toBe(2);
 
       runUpdate({ tap: { x: 0, y: 0, worldX: 0, worldY: 0 } });
-      expect(evaluator.getVariable('jumpsRemaining')).toBe(1);
-      expect(evaluator.getScore()).toBe(10);
+      expect(StateHelpers.getVar(gameState, 'jumpsRemaining')).toBe(1);
+      expect(StateHelpers.getScore(gameState)).toBe(10);
 
       runUpdate({ tap: { x: 0, y: 0, worldX: 0, worldY: 0 } });
-      expect(evaluator.getVariable('jumpsRemaining')).toBe(0);
-      expect(evaluator.getScore()).toBe(20);
+      expect(StateHelpers.getVar(gameState, 'jumpsRemaining')).toBe(0);
+      expect(StateHelpers.getScore(gameState)).toBe(20);
 
       runUpdate({ tap: { x: 0, y: 0, worldX: 0, worldY: 0 } });
-      expect(evaluator.getVariable('jumpsRemaining')).toBe(0);
-      expect(evaluator.getScore()).toBe(20);
+      expect(StateHelpers.getVar(gameState, 'jumpsRemaining')).toBe(0);
+      expect(StateHelpers.getScore(gameState)).toBe(20);
     });
 
     it('implements combo system with timeout', () => {
@@ -1215,19 +1242,19 @@ describe('RulesEvaluator', () => {
       ]);
 
       runUpdate({ gameStarted: true });
-      expect(evaluator.getVariable('combo')).toBe(0);
+      expect(StateHelpers.getVar(gameState, 'combo')).toBe(0);
 
       runUpdate({ tap: { x: 0, y: 0, worldX: 0, worldY: 0 } });
       runUpdate({ tap: { x: 0, y: 0, worldX: 0, worldY: 0 } });
       runUpdate({ tap: { x: 0, y: 0, worldX: 0, worldY: 0 } });
-      expect(evaluator.getVariable('combo')).toBe(3);
+      expect(StateHelpers.getVar(gameState, 'combo')).toBe(3);
     });
 
     it('implements card draw from shuffled deck', () => {
       const seededRandom = createSeededRandom(12345);
       
-      evaluator.setList('deck', [1, 2, 3, 4, 5]);
-      evaluator.shuffleList('deck', seededRandom);
+      StateHelpers.setList(gameState, 'deck', [1, 2, 3, 4, 5]);
+      StateHelpers.shuffleList(gameState, 'deck', seededRandom);
       
       evaluator.loadRules([{
         id: 'draw-card',
@@ -1236,15 +1263,15 @@ describe('RulesEvaluator', () => {
       }]);
 
       runUpdate({ tap: { x: 0, y: 0, worldX: 0, worldY: 0 } });
-      const firstCard = evaluator.getVariable('currentCard');
+      const firstCard = StateHelpers.getVar(gameState, 'currentCard');
       expect(firstCard).toBeDefined();
-      expect(evaluator.getList('deck')).toHaveLength(4);
+      expect(StateHelpers.getList(gameState, 'deck')).toHaveLength(4);
 
       runUpdate({ tap: { x: 0, y: 0, worldX: 0, worldY: 0 } });
-      const secondCard = evaluator.getVariable('currentCard');
+      const secondCard = StateHelpers.getVar(gameState, 'currentCard');
       expect(secondCard).toBeDefined();
       expect(secondCard).not.toBe(firstCard);
-      expect(evaluator.getList('deck')).toHaveLength(3);
+      expect(StateHelpers.getList(gameState, 'deck')).toHaveLength(3);
     });
 
     it('implements inventory system with list conditions', () => {
@@ -1264,14 +1291,14 @@ describe('RulesEvaluator', () => {
       ]);
 
       runUpdate({ gameStarted: true });
-      expect(evaluator.getList('inventory')).toEqual(['sword']);
+      expect(StateHelpers.getList(gameState, 'inventory')).toEqual(['sword']);
 
       runUpdate({ tap: { x: 0, y: 0, worldX: 0, worldY: 0 } });
-      expect(evaluator.getGameStateValue()).toBe('playing');
+      expect(StateHelpers.getGameStateValue(gameState)).toBe('playing');
 
-      evaluator.pushToList('inventory', 'key');
+      StateHelpers.pushToList(gameState, 'inventory', 'key');
       runUpdate({ tap: { x: 0, y: 0, worldX: 0, worldY: 0 } });
-      expect(evaluator.getGameStateValue()).toBe('won');
+      expect(StateHelpers.getGameStateValue(gameState)).toBe('won');
     });
 
     it('chains rules via events (events processed in same frame if rule order allows)', () => {
@@ -1292,10 +1319,10 @@ describe('RulesEvaluator', () => {
         },
       ]);
 
-      evaluator.setScore(45);
+      StateHelpers.setScore(gameState, 45);
       runUpdate({ tap: { x: 0, y: 0, worldX: 0, worldY: 0 } });
-      expect(evaluator.getScore()).toBe(55);
-      expect(evaluator.getLives()).toBe(4);
+      expect(StateHelpers.getScore(gameState)).toBe(55);
+      expect(StateHelpers.getLives(gameState)).toBe(4);
     });
 
     it('events triggered late in frame are processed in same frame', () => {
@@ -1314,12 +1341,12 @@ describe('RulesEvaluator', () => {
       ]);
 
       runUpdate();
-      expect(evaluator.getScore()).toBe(100);
+      expect(StateHelpers.getScore(gameState)).toBe(100);
     });
   });
 
   describe('Edge Cases', () => {
-    beforeEach(() => evaluator.start());
+    beforeEach(() => startGame());
 
     it('handles empty rules array', () => {
       evaluator.loadRules([]);
@@ -1334,7 +1361,7 @@ describe('RulesEvaluator', () => {
       }]);
 
       runUpdate();
-      expect(evaluator.getScore()).toBe(1);
+      expect(StateHelpers.getScore(gameState)).toBe(1);
     });
 
     it('handles rule with empty conditions array', () => {
@@ -1346,7 +1373,7 @@ describe('RulesEvaluator', () => {
       }]);
 
       runUpdate();
-      expect(evaluator.getScore()).toBe(1);
+      expect(StateHelpers.getScore(gameState)).toBe(1);
     });
 
     it('does not process rules when paused', () => {
@@ -1356,9 +1383,9 @@ describe('RulesEvaluator', () => {
         actions: [{ type: 'score', operation: 'add', value: 1 }],
       }]);
 
-      evaluator.pause();
+      StateHelpers.setGameStateValue(gameState, 'paused', eventBus);
       runUpdate();
-      expect(evaluator.getScore()).toBe(0);
+      expect(StateHelpers.getScore(gameState)).toBe(0);
     });
 
     it('does not process rules when game ended', () => {
@@ -1370,11 +1397,11 @@ describe('RulesEvaluator', () => {
 
       evaluator.setWinCondition({ expr: 'score >= 0' });
       runUpdate();
-      expect(evaluator.getGameStateValue()).toBe('won');
+      expect(StateHelpers.getGameStateValue(gameState)).toBe('won');
       
       runUpdate();
       runUpdate();
-      expect(evaluator.getScore()).toBe(0);
+      expect(StateHelpers.getScore(gameState)).toBe(0);
     });
 
     it('clears pending events after each update', () => {
@@ -1384,12 +1411,12 @@ describe('RulesEvaluator', () => {
         actions: [{ type: 'score', operation: 'add', value: 100 }],
       }]);
 
-      evaluator.triggerEvent('test');
+      StateHelpers.triggerEvent(gameState, 'test');
       runUpdate();
-      expect(evaluator.getScore()).toBe(100);
+      expect(StateHelpers.getScore(gameState)).toBe(100);
 
       runUpdate();
-      expect(evaluator.getScore()).toBe(100);
+      expect(StateHelpers.getScore(gameState)).toBe(100);
     });
   });
 });

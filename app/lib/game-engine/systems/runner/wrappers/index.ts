@@ -25,9 +25,6 @@ export type { TargetPositionSystemConfig, TargetPositionSystemState } from './Ta
 export { Match3RuntimeSystem } from './Match3RuntimeSystem';
 export type { Match3SystemConfig, Match3SystemState } from './Match3RuntimeSystem';
 
-export { SlotMachineRuntimeSystem } from './SlotMachineRuntimeSystem';
-export type { SlotMachineSystemConfig, SlotMachineSystemState } from './SlotMachineRuntimeSystem';
-
 export { ContainerRuntimeSystem } from './ContainerRuntimeSystem';
 export type { ContainerSystemConfig, ContainerSystemState } from './ContainerRuntimeSystem';
 

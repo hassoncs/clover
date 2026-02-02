@@ -219,9 +219,15 @@ export const ballSortPersistence: PersistenceConfig<BallSortProgress> = {
  * This allows level-based progression with persistence.
  */
 export function createBallSortGame(level: number = 1): GameDefinition {
-  const puzzleConfig = getPuzzleConfigForLevel(level);
-  const generatedPuzzle = generateVerifiedPuzzle(puzzleConfig);
-  const tubeLayout = generatedPuzzle.tubes;
+  let tubeLayout: number[][];
+  
+  if (level === 1) {
+    tubeLayout = [[0, 0, 0], [0], [], [], [], []];
+  } else {
+    const puzzleConfig = getPuzzleConfigForLevel(level);
+    const generatedPuzzle = generateVerifiedPuzzle(puzzleConfig);
+    tubeLayout = generatedPuzzle.tubes;
+  }
 
   const tubeContainers = createTubeContainers();
   const tubeEntities = createTubeEntities();
