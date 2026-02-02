@@ -48,3 +48,10 @@ Conventions, patterns, and things that worked.
 - Updated `GameRuntime.godot.tsx` to use `RulesSystem`.
 - Verified that all 345 tests pass.
 - Verified that `pnpm tsc --noEmit` passes with zero errors.
+
+## Task 2.3: Delete old rules files
+- Successfully deleted `app/lib/game-engine/RulesEvaluator.ts` and `app/lib/game-engine/systems/runner/wrappers/RulesRuntimeSystem.ts`.
+- Verified that no barrel exports (`index.ts`) were referencing these files.
+- Confirmed that only one comment in `LogicActionExecutor.ts` remained, which is fine as it's historical context.
+- All 345 tests passed, confirming the unified `RulesSystem` correctly replaced the old components.
+- TypeScript check (`tsc --noEmit`) passed with zero errors.
