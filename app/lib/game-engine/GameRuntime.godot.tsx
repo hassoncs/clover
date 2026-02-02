@@ -461,6 +461,16 @@ export function GameRuntimeGodot({
         const game = loader.load(definition);
         gameRef.current = game;
 
+        // Create EventBus for Match3GameSystem
+        const { EventBus: SharedEventBus } = await import("@slopcade/shared");
+        const match3EventBus = new SharedEventBus();
+        
+        // Subscribe to Match3 events
+        match3EventBus.on('match3:score_add', (data: { points: number }) => {
+          const currentScore = (StateHelpers.getVar(game.gameState, 'score') as number) ?? 0;
+          StateHelpers.setVar(game.gameState, 'score', currentScore + data.points, game.events);
+        });
+
         // Initialize script sandbox after game is loaded
         if (scriptSandbox) {
           scriptSandbox.initialize().then((result) => {
@@ -488,14 +498,7 @@ export function GameRuntimeGodot({
           const match3System = new Match3GameSystem(
             definition.match3 as Match3Config,
             game.entityManager,
-            {
-              onScoreAdd: (points) => {
-                const currentScore = (StateHelpers.getVar(game.gameState, 'score') as number) ?? 0;
-                StateHelpers.setVar(game.gameState, 'score', currentScore + points, game.events);
-              },
-              onMatchFound: () => {},
-              onBoardReady: () => {},
-            }
+            match3EventBus,
           );
           match3System.setBridge(bridge);
           match3SystemRef.current = match3System;

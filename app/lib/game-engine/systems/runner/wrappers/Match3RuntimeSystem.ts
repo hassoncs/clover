@@ -1,6 +1,6 @@
 import { SystemPhase } from '@slopcade/shared';
 import type { RuntimeSystem, SystemContext, UpdateContext } from '../types';
-import { Match3GameSystem, type Match3Config, type Match3Phase, type Match3Callbacks } from '../../Match3GameSystem';
+import { Match3GameSystem, type Match3Config, type Match3Phase } from '../../Match3GameSystem';
 
 export interface Match3SystemConfig extends Match3Config {}
 
@@ -26,26 +26,10 @@ export class Match3RuntimeSystem implements RuntimeSystem<Match3SystemConfig, Ma
   initialize(ctx: SystemContext, _config: Match3SystemConfig): void {
     this.systemContext = ctx;
     
-    const callbacks: Match3Callbacks = {
-      onScoreAdd: (points) => {
-        ctx.eventQueue.emit('match3:score_add', { points });
-      },
-      onMatchFound: (count, cascadeLevel) => {
-        ctx.eventQueue.emit('match3:match_found', { count, cascadeLevel });
-      },
-      onBoardReady: () => {
-        ctx.eventQueue.emit('match3:board_ready', {});
-      },
-      onNoMoves: () => {
-        ctx.eventQueue.emit('match3:no_moves', {});
-      },
-    };
-    
     this.match3System = new Match3GameSystem(
       this.config,
       ctx.entityManager,
-      callbacks,
-      ctx.eventBus
+      ctx.eventBus,
     );
     this.match3System.setBridge(ctx.bridge);
     this.match3System.initialize();

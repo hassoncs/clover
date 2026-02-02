@@ -58,13 +58,6 @@ interface PendingAnimation {
   elapsed: number;
 }
 
-export interface Match3Callbacks {
-  onScoreAdd?: (points: number) => void;
-  onMatchFound?: (count: number, cascadeLevel: number) => void;
-  onBoardReady?: () => void;
-  onNoMoves?: () => void;
-}
-
 interface MatchDetectionInput {
   board: BoardCell[][];
   rows: number;
@@ -88,9 +81,8 @@ export class Match3GameSystem {
   private gridConfig: GridConfig;
   private entityManager: EntityManager;
   private bridge: GodotBridge | null = null;
-  private callbacks: Match3Callbacks;
   private sheetMetadata: AssetSheet | null = null;
-  private eventBus: EventBus | null = null;
+  private eventBus: EventBus;
 
   private board: BoardCell[][] = [];
   private phase: Match3Phase = "idle";
@@ -118,14 +110,12 @@ export class Match3GameSystem {
   constructor(
     config: Match3Config,
     entityManager: EntityManager,
-    callbacks: Match3Callbacks = {},
-    eventBus?: EventBus,
+    eventBus: EventBus,
   ) {
     this.config = config;
     this.gridConfig = gridConfigFromMatch3(config);
     this.entityManager = entityManager;
-    this.callbacks = callbacks;
-    this.eventBus = eventBus ?? null;
+    this.eventBus = eventBus;
 
     this.MIN_MATCH = config.minMatch ?? 3;
     this.SWAP_DURATION = config.swapDuration ?? 0.15;
@@ -172,7 +162,7 @@ export class Match3GameSystem {
 
     this.fillBoardWithoutMatches();
     this.phase = "idle";
-    this.callbacks.onBoardReady?.();
+    this.eventBus.emit('match3:board_ready');
   }
 
   private fillBoardWithoutMatches(): void {
@@ -598,8 +588,7 @@ export class Match3GameSystem {
       this.phase = "idle";
 
       if (!this.hasValidMoves()) {
-        this.callbacks.onNoMoves?.();
-        this.eventBus?.emit("match3:no_moves", {});
+        this.eventBus.emit('match3:no_moves', {});
       }
 
       return;
@@ -621,8 +610,7 @@ export class Match3GameSystem {
 
     const points = this.calculateScore(uniqueCells.length, this.cascadeCount);
     this.totalScoreThisTurn += points;
-    this.callbacks.onScoreAdd?.(points);
-    this.callbacks.onMatchFound?.(uniqueCells.length, this.cascadeCount);
+    this.eventBus.emit('match3:score_add', { points });
 
     const pieceIds = uniqueCells
       .map((cell) => this.board[cell.row][cell.col].entityId)
