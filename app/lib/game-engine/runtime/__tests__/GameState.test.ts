@@ -117,11 +117,11 @@ describe('score operations', () => {
     expect(getScore(state)).toBe(75);
   });
 
-  it('emits scoreChanged event', () => {
+  it('emits varChanged event for score', () => {
     const events = createGameEventBus();
-    const received: number[] = [];
+    const received: any[] = [];
     events.subscribe(e => {
-      if (e.type === 'scoreChanged') received.push(e.score);
+      if (e.type === 'varChanged' && e.key === 'score') received.push(e.value);
     });
     
     setScore(state, 100, events);

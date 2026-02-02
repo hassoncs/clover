@@ -62,9 +62,7 @@ export interface GameServices {
 
 export type GameEventType = 
   | { type: 'varChanged'; key: string; value: VarValue }
-  | { type: 'gameStateChanged'; state: GameStateValue }
-  | { type: 'scoreChanged'; score: number }
-  | { type: 'livesChanged'; lives: number };
+  | { type: 'gameStateChanged'; state: GameStateValue };
 
 export type GameEventHandler = (event: GameEventType) => void;
 

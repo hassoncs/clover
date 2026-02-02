@@ -95,11 +95,7 @@ export function setVar(state: GameState, key: string, value: VarValue, events?: 
   if (events) {
     events.emit({ type: 'varChanged', key, value });
     
-    if (key === RESERVED_VARS.SCORE) {
-      events.emit({ type: 'scoreChanged', score: value as number });
-    } else if (key === RESERVED_VARS.LIVES) {
-      events.emit({ type: 'livesChanged', lives: value as number });
-    } else if (key === RESERVED_VARS.GAME_STATE) {
+    if (key === RESERVED_VARS.GAME_STATE) {
       events.emit({ type: 'gameStateChanged', state: value as GameStateValue });
     }
   }

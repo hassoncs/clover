@@ -595,13 +595,6 @@ export function GameRuntimeGodot({
         // Subscribe to game events for React state updates
         eventBusUnsubRef.current = game.events.subscribe((event) => {
           switch (event.type) {
-            case 'scoreChanged':
-              setGameState((s) => ({ ...s, score: event.score }));
-              onScoreChange?.(event.score);
-              break;
-            case 'livesChanged':
-              setGameState((s) => ({ ...s, lives: event.lives }));
-              break;
             case 'gameStateChanged':
               console.log(`[GameRuntime] onGameStateChange callback received: ${event.state}`);
               setGameState((s) => {
@@ -614,10 +607,17 @@ export function GameRuntimeGodot({
               }
               break;
             case 'varChanged':
-              setGameState((s) => ({
-                ...s,
-                variables: { ...s.variables, [event.key]: event.value }
-              }));
+              if (event.key === 'score') {
+                setGameState((s) => ({ ...s, score: event.value as number }));
+                onScoreChange?.(event.value as number);
+              } else if (event.key === 'lives') {
+                setGameState((s) => ({ ...s, lives: event.value as number }));
+              } else {
+                setGameState((s) => ({
+                  ...s,
+                  variables: { ...s.variables, [event.key]: event.value }
+                }));
+              }
               break;
           }
         });
@@ -1497,13 +1497,6 @@ export function GameRuntimeGodot({
       eventBusUnsubRef.current?.();
       eventBusUnsubRef.current = newGame.events.subscribe((event) => {
         switch (event.type) {
-          case 'scoreChanged':
-            setGameState((s) => ({ ...s, score: event.score }));
-            onScoreChange?.(event.score);
-            break;
-          case 'livesChanged':
-            setGameState((s) => ({ ...s, lives: event.lives }));
-            break;
           case 'gameStateChanged':
             setGameState((s) => ({ ...s, state: event.state }));
             if (event.state === "won" || event.state === "lost") {
@@ -1511,10 +1504,17 @@ export function GameRuntimeGodot({
             }
             break;
           case 'varChanged':
-            setGameState((s) => ({
-              ...s,
-              variables: { ...s.variables, [event.key]: event.value }
-            }));
+            if (event.key === 'score') {
+              setGameState((s) => ({ ...s, score: event.value as number }));
+              onScoreChange?.(event.value as number);
+            } else if (event.key === 'lives') {
+              setGameState((s) => ({ ...s, lives: event.value as number }));
+            } else {
+              setGameState((s) => ({
+                ...s,
+                variables: { ...s.variables, [event.key]: event.value }
+              }));
+            }
             break;
         }
       });

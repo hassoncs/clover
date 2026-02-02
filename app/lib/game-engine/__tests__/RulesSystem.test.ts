@@ -171,7 +171,7 @@ describe('RulesSystem', () => {
       eventBus.subscribe(handler);
       
       StateHelpers.addScore(gameState, 10, eventBus);
-      expect(handler).toHaveBeenCalledWith({ type: 'scoreChanged', score: 10 });
+      expect(handler).toHaveBeenCalledWith({ type: 'varChanged', key: 'score', value: 10 });
     });
   });
 
@@ -201,7 +201,7 @@ describe('RulesSystem', () => {
       eventBus.subscribe(handler);
       
       StateHelpers.addLives(gameState, -1, eventBus);
-      expect(handler).toHaveBeenCalledWith({ type: 'livesChanged', lives: 2 });
+      expect(handler).toHaveBeenCalledWith({ type: 'varChanged', key: 'lives', value: 2 });
     });
   });
 
