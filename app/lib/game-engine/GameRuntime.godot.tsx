@@ -13,7 +13,6 @@ import type {
   TapZoneButton,
   VirtualButtonType,
   DPadDirection,
-  AssetSheet,
   GameVariable,
 } from "@slopcade/shared";
 import {
@@ -56,7 +55,6 @@ import {
 } from "../contexts/DevToolsContext";
 import { DevToolbar } from "@/components/game/DevToolbar";
 import {
-  Match3GameSystem,
   type Match3Config,
 } from "./systems/Match3GameSystem";
 import { TuningPanel, hasTunables } from "@/components/game";
@@ -135,7 +133,6 @@ export function GameRuntimeGodot({
   const cameraRef = useRef<CameraSystem | null>(null);
   const viewportSystemRef = useRef<ViewportSystem | null>(null);
   const inputEntityManagerRef = useRef<InputEntityManager | null>(null);
-  const match3SystemRef = useRef<Match3GameSystem | null>(null);
   const propertyCacheRef = useRef(new PropertyCache());
   const propertySyncManagerRef = useRef<PropertySyncManager | null>(null);
   const elapsedRef = useRef(0);
@@ -143,11 +140,8 @@ export function GameRuntimeGodot({
   const collisionsRef = useRef<CollisionInfo[]>([]);
   const collisionUnsubRef = useRef<Unsubscribe | null>(null);
   const inputEventUnsubRef = useRef<Unsubscribe | null>(null);
-  const gameLoopRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const lastTickRef = useRef(0);
   const screenSizeRef = useRef({ width: 0, height: 0 });
   const computedValuesRef = useRef(createComputedValueSystem());
-  const gameVariablesRef = useRef<Record<string, ExpressionValueType>>({});
   const inputRef = useRef<Record<string, unknown>>({});
   const buttonsRef = useRef<Record<string, boolean>>({
     left: false,
@@ -163,7 +157,6 @@ export function GameRuntimeGodot({
     magnitude: 0,
     angle: 0,
   });
-  const gameJustStartedRef = useRef(false);
   const lastKeyEventRef = useRef<{
     key: string;
     code: string;
@@ -172,7 +165,6 @@ export function GameRuntimeGodot({
   } | null>(null);
   const debugBridgeRef = useRef<SlopcadeDebugBridge | null>(null);
   const scriptSandboxRef = useRef<ScriptSandbox | null>(null);
-  const scriptStartedRef = useRef(false);
   const timeControlRef = useRef<TimeControl>({
     mode: debugMode ? "inspect" : "normal",
     paused: debugMode,
@@ -181,6 +173,122 @@ export function GameRuntimeGodot({
   const gameSystemRunnerRef = useRef<GameSystemRunner | null>(null);
   const eventBusUnsubRef = useRef<(() => void) | null>(null);
   const gameLoopControllerRef = useRef<GameLoopController | null>(null);
+  const subscriptionsRef = useRef<(() => void)[]>([]);
+  const match3EventBusRef = useRef<any>(null);
+
+  const cleanupSubscriptions = useCallback(() => {
+    subscriptionsRef.current.forEach((unsub) => {
+      unsub();
+    });
+    subscriptionsRef.current = [];
+  }, []);
+
+  const setupSubscriptions = useCallback(
+    (
+      bridge: GodotBridge,
+      physics: Physics2D,
+      game: LoadedGame,
+      match3EventBus: any
+    ) => {
+      cleanupSubscriptions();
+
+      subscriptionsRef.current.push(
+        match3EventBus.on("match3:score_add", (data: { points: number }) => {
+          const currentGame = gameRef.current;
+          if (!currentGame) return;
+          const currentScore =
+            (StateHelpers.getVar(currentGame.gameState, "score") as number) ??
+            0;
+          StateHelpers.setVar(
+            currentGame.gameState,
+            "score",
+            currentScore + data.points,
+            currentGame.events
+          );
+        })
+      );
+
+      subscriptionsRef.current.push(
+        bridge.onEntitySpawned((event) => {
+          gameRef.current?.entityManager.handleEntitySpawned(event);
+        })
+      );
+      subscriptionsRef.current.push(
+        bridge.onEntityDestroyed((entityId) => {
+          cancelTweensForEntity(entityId);
+          gameRef.current?.entityManager.handleEntityDestroyed(entityId);
+        })
+      );
+
+      collisionUnsubRef.current = physics.onCollision(
+        (event: CollisionEvent) => {
+          const currentGame = gameRef.current;
+          if (!currentGame) return;
+          const entityA = currentGame.entityManager.getEntity(event.entityA);
+          const entityB = currentGame.entityManager.getEntity(event.entityB);
+
+          if (!entityA || !entityB) {
+            return;
+          }
+
+          const impulse =
+            event.contacts?.reduce(
+              (sum: number, c: any) => sum + (c.normalImpulse || 0),
+              0
+            ) ?? 0;
+          const normal = event.contacts?.[0]?.normal ?? { x: 0, y: 0 };
+
+          collisionsRef.current.push({
+            entityA,
+            entityB,
+            normal,
+            impulse,
+          });
+        }
+      );
+      subscriptionsRef.current.push(collisionUnsubRef.current);
+
+      inputEventUnsubRef.current = bridge.onInputEvent(
+        (type, x, y, entityId) => {
+          if (type === "tap") {
+            const ppm = definition.world.pixelsPerMeter ?? 50;
+            const screenX = x * ppm;
+            const screenY = y * ppm;
+            inputRef.current = {
+              ...inputRef.current,
+              tap: {
+                x: screenX,
+                y: screenY,
+                worldX: x,
+                worldY: y,
+                targetEntityId: entityId ?? undefined,
+              },
+            };
+          } else if (type === "mouse_move") {
+            inputRef.current = {
+              ...inputRef.current,
+              mouse: { x: 0, y: 0, worldX: x, worldY: y },
+            };
+          }
+        }
+      );
+      subscriptionsRef.current.push(inputEventUnsubRef.current);
+
+      eventBusUnsubRef.current = subscribeToGameEvents(game.events, {
+        onGameStateChange: onGameEnd,
+        onScoreChange,
+        setGameState,
+        debug: true,
+      });
+      subscriptionsRef.current.push(eventBusUnsubRef.current);
+    },
+    [
+      cleanupSubscriptions,
+      definition.world.pixelsPerMeter,
+      onGameEnd,
+      onScoreChange,
+    ]
+  );
 
   const handleTiltUpdate = useCallback((tilt: { x: number; y: number }) => {
     inputRef.current.tilt = tilt;
@@ -196,14 +304,6 @@ export function GameRuntimeGodot({
   );
 
   const timeScaleRef = useRef(1.0);
-  const timeScaleTargetRef = useRef(1.0);
-  const timeScaleTransitionRef = useRef<{
-    startScale: number;
-    endScale: number;
-    duration: number;
-    elapsed: number;
-    restoreAfter?: number;
-  } | null>(null);
 
   const [isReady, setIsReady] = useState(false);
   const [godotReady, setGodotReady] = useState(false);
@@ -449,16 +549,6 @@ export function GameRuntimeGodot({
         const game = loader.load(definition);
         gameRef.current = game;
 
-        // Create EventBus for Match3GameSystem
-        const { EventBus: SharedEventBus } = await import("@slopcade/shared");
-        const match3EventBus = new SharedEventBus();
-        
-        // Subscribe to Match3 events
-        match3EventBus.on('match3:score_add', (data: { points: number }) => {
-          const currentScore = (StateHelpers.getVar(game.gameState, 'score') as number) ?? 0;
-          StateHelpers.setVar(game.gameState, 'score', currentScore + data.points, game.events);
-        });
-
         // Initialize script sandbox after game is loaded
         if (scriptSandbox) {
           scriptSandbox.initialize().then((result) => {
@@ -481,32 +571,6 @@ export function GameRuntimeGodot({
 
         const inputEntityManager = new InputEntityManager();
         inputEntityManagerRef.current = inputEntityManager;
-
-        if (definition.match3) {
-          const match3System = new Match3GameSystem(
-            definition.match3 as Match3Config,
-            game.entityManager,
-            match3EventBus,
-          );
-          match3System.setBridge(bridge);
-          match3SystemRef.current = match3System;
-        }
-
-        if (definition.variables) {
-          const resolvedVars: Record<string, ExpressionValueType> = {};
-          for (const [key, value] of Object.entries(definition.variables)) {
-            if (
-              typeof value === "object" &&
-              value !== null &&
-              "expr" in value
-            ) {
-              resolvedVars[key] = 0;
-            } else {
-              resolvedVars[key] = value as ExpressionValueType;
-            }
-          }
-          gameVariablesRef.current = resolvedVars;
-        }
 
         collisionUnsubRef.current = physics.onCollision(
           (event: CollisionEvent) => {
@@ -639,28 +703,6 @@ export function GameRuntimeGodot({
 
         onReady?.();
 
-        if (match3SystemRef.current) {
-          const match3Config = definition.match3 as Match3Config;
-          if (
-            match3Config.variantSheet?.enabled &&
-            match3Config.variantSheet.metadataUrl
-          ) {
-            try {
-              const response = await fetch(
-                match3Config.variantSheet.metadataUrl
-              );
-              const metadata = await response.json();
-              match3SystemRef.current.setSheetMetadata(metadata as AssetSheet);
-            } catch (error) {
-              console.error(
-                "[GameRuntime.godot] Failed to load variant sheet metadata:",
-                error
-              );
-            }
-          }
-          match3SystemRef.current.initialize();
-        }
-
         const runner = new GameSystemRunner();
 
         const presentationConfig = definition.presentation;
@@ -768,7 +810,13 @@ export function GameRuntimeGodot({
           eventQueue: (runner as any).eventQueue,
         };
 
+        const { EventBus: SharedEventBus } = await import("@slopcade/shared");
+        const match3EventBus = new SharedEventBus();
+        match3EventBusRef.current = match3EventBus;
+
         await runner.initialize(systemContext);
+
+        setupSubscriptions(bridge, physics, game, match3EventBus);
 
         const behaviorSystem =
           runner.getSystem<BehaviorExecutorRuntimeSystem>("behavior-executor");
@@ -817,21 +865,11 @@ export function GameRuntimeGodot({
     setup();
 
     return () => {
-      if (gameLoopRef.current) {
-        clearInterval(gameLoopRef.current);
-        gameLoopRef.current = null;
-      }
-      collisionUnsubRef.current?.();
-      collisionUnsubRef.current = null;
-      inputEventUnsubRef.current?.();
-      inputEventUnsubRef.current = null;
-      match3SystemRef.current?.destroy();
-      match3SystemRef.current = null;
+      cleanupSubscriptions();
       propertySyncManagerRef.current?.stop();
       propertySyncManagerRef.current = null;
       scriptSandboxRef.current?.dispose();
       scriptSandboxRef.current = null;
-      scriptStartedRef.current = false;
       gameSystemRunnerRef.current?.destroy();
       gameSystemRunnerRef.current = null;
       bridgeRef.current?.dispose();
@@ -850,6 +888,8 @@ export function GameRuntimeGodot({
     onPreloadProgress,
     onReady,
     debugMode,
+    cleanupSubscriptions,
+    setupSubscriptions,
   ]);
 
   const showInputDebug = devToolsCheck?.state?.showInputDebug ?? false;
@@ -875,21 +915,7 @@ export function GameRuntimeGodot({
       controller.setTimeScale(scale, duration);
       timeScaleRef.current = controller.getTimeScale();
     } else {
-      const currentScale = timeScaleRef.current;
-
-      if (duration && duration > 0) {
-        timeScaleTransitionRef.current = {
-          startScale: currentScale,
-          endScale: scale,
-          duration: 0.2,
-          elapsed: 0,
-          restoreAfter: duration,
-        };
-      } else {
-        timeScaleRef.current = scale;
-        timeScaleTargetRef.current = scale;
-        timeScaleTransitionRef.current = null;
-      }
+      timeScaleRef.current = scale;
     }
   }, []);
 
@@ -970,11 +996,6 @@ export function GameRuntimeGodot({
       startFrame: number;
       endFrame: number;
     }> => {
-      if (gameLoopRef.current) {
-        clearInterval(gameLoopRef.current);
-        gameLoopRef.current = null;
-      }
-
       const bridge = bridgeRef.current;
       if (!bridge) {
         return {
@@ -1007,10 +1028,6 @@ export function GameRuntimeGodot({
   useEffect(() => {
     if (timeControl.mode === "inspect") {
       gameLoopControllerRef.current?.stop();
-      if (gameLoopRef.current) {
-        clearInterval(gameLoopRef.current);
-        gameLoopRef.current = null;
-      }
       return;
     }
 
@@ -1020,10 +1037,6 @@ export function GameRuntimeGodot({
 
     if (!shouldRun) {
       gameLoopControllerRef.current?.stop();
-      if (gameLoopRef.current) {
-        clearInterval(gameLoopRef.current);
-        gameLoopRef.current = null;
-      }
       return;
     }
 
@@ -1047,10 +1060,6 @@ export function GameRuntimeGodot({
 
     return () => {
       controller.stop();
-      if (gameLoopRef.current) {
-        clearInterval(gameLoopRef.current);
-        gameLoopRef.current = null;
-      }
     };
   }, [isReady, gameState.state, stepGame, timeControl]);
 
@@ -1065,10 +1074,6 @@ export function GameRuntimeGodot({
         timeControlRef.current = newTc;
         setTimeControl(newTc);
         gameLoopControllerRef.current?.pause();
-        if (gameLoopRef.current) {
-          clearInterval(gameLoopRef.current);
-          gameLoopRef.current = null;
-        }
       },
       resumeGameLoop: () => {
         const newTc = { ...timeControlRef.current, paused: false };
@@ -1086,8 +1091,6 @@ export function GameRuntimeGodot({
           timeScaleRef.current = gameLoopControllerRef.current.getTimeScale();
         } else {
           timeScaleRef.current = scale;
-          timeScaleTargetRef.current = scale;
-          timeScaleTransitionRef.current = null;
         }
       },
       getGameState: () => ({
@@ -1429,7 +1432,6 @@ export function GameRuntimeGodot({
     if (gameRef.current) {
       StateHelpers.setGameStateValue(gameRef.current.gameState, 'playing', gameRef.current.events);
     }
-    gameJustStartedRef.current = true;
   }, []);
 
   const handleRestart = useCallback(() => {
@@ -1456,15 +1458,15 @@ export function GameRuntimeGodot({
       cameraRef.current.setZoom(definition.camera?.zoom ?? 1);
 
       timeScaleRef.current = 1.0;
-      timeScaleTargetRef.current = 1.0;
-      timeScaleTransitionRef.current = null;
 
-      eventBusUnsubRef.current?.();
-      eventBusUnsubRef.current = subscribeToGameEvents(newGame.events, {
-        onGameStateChange: onGameEnd,
-        onScoreChange,
-        setGameState,
-      });
+      if (match3EventBusRef.current) {
+        setupSubscriptions(
+          bridgeRef.current,
+          physicsRef.current!,
+          newGame,
+          match3EventBusRef.current
+        );
+      }
 
       const initialVariables: Record<string, number | string | boolean> = {};
       for (const [key, value] of Object.entries(newGame.gameState.vars)) {
@@ -1478,7 +1480,7 @@ export function GameRuntimeGodot({
         variables: initialVariables,
       });
     }
-  }, [onGameEnd, onScoreChange, onRequestRestart, definition]);
+  }, [onRequestRestart, definition, setupSubscriptions]);
 
   const handleLayout = useCallback(
     (event: { nativeEvent: { layout: { width: number; height: number } } }) => {
