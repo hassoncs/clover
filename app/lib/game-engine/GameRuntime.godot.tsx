@@ -9,22 +9,17 @@ import {
 } from "react-native";
 import type {
   GameDefinition,
-  ParticleEmitterType,
-  EvalContext,
   ExpressionValueType,
   TapZoneButton,
   VirtualButtonType,
   DPadDirection,
   AssetSheet,
-  PropertyWatchSpec,
   GameVariable,
 } from "@slopcade/shared";
 import {
   createComputedValueSystem,
-  getAllSystemExpressionFunctions,
   DependencyAnalyzer,
   PropertyCache,
-  EntityContextProxy,
   getValue,
 } from "@slopcade/shared";
 import {
@@ -36,20 +31,16 @@ import { PropertySyncManager } from "../godot/PropertySyncManager";
 import type { GodotBridge } from "../godot/types";
 import type { Physics2D } from "../physics2d/Physics2D";
 import type { Unsubscribe, CollisionEvent } from "../physics2d/types";
-import { GameLoader, type LoadedGame } from "./GameLoader";
-import type { RuntimeEntity } from "./types";
+import type { LoadedGame } from "./GameLoader";
+import { GameLoader } from "./GameLoader";
 import type {
-  BehaviorContext,
   GameState,
   CollisionInfo,
   InputState,
 } from "./BehaviorContext";
 import { CameraSystem } from "./CameraSystem";
 import { ViewportSystem, type ViewportRect } from "./ViewportSystem";
-import {
-  InputEntityManager,
-  type InputState as InputEntityState,
-} from "./InputEntityManager";
+import { InputEntityManager } from "./InputEntityManager";
 import { TapZoneOverlay } from "./TapZoneOverlay";
 import { VirtualButtonsOverlay } from "./VirtualButtonsOverlay";
 import {
@@ -71,21 +62,17 @@ import {
 import { TuningPanel, hasTunables } from "@/components/game";
 import {
   SlopcadeDebugBridge,
-  type SlopcadeDebugBridgeInterface,
   type GameStateValue,
   type TimeControl,
   type PlayerPhase,
-  framesToAdvance,
 } from "./debug";
 import {
   ScriptSandbox,
-  type SandboxRuntimeContext,
-  type ScriptInputEvent,
-  type ScriptCollisionEvent,
 } from "@/lib/scripting";
 import { cancelTweensForEntity } from "./behaviors/TweenBehaviors";
 import { GameSystemRunner } from "./systems/runner/GameSystemRunner";
 import type { SystemContext, UpdateContext } from "./systems/runner/types";
+import { GameLoopController } from "./GameLoopController";
 import {
   ViewportRuntimeSystem,
   InputRuntimeSystem,
@@ -103,7 +90,6 @@ import {
   HoverHighlightRuntimeSystem,
 } from "./systems/runner/wrappers";
 import * as StateHelpers from "./runtime/GameStateHelpers";
-import type { GameState as RuntimeGameState, GameEventBus } from "./runtime/types";
 import { subscribeToGameEvents, type ReactGameState } from "./runtime/GameEventSubscriber";
 
 export interface GameRuntimeGodotProps {
@@ -194,6 +180,7 @@ export function GameRuntimeGodot({
   });
   const gameSystemRunnerRef = useRef<GameSystemRunner | null>(null);
   const eventBusUnsubRef = useRef<(() => void) | null>(null);
+  const gameLoopControllerRef = useRef<GameLoopController | null>(null);
 
   const handleTiltUpdate = useCallback((tilt: { x: number; y: number }) => {
     inputRef.current.tilt = tilt;
@@ -883,25 +870,31 @@ export function GameRuntimeGodot({
   }, [showInputDebug, showPhysicsShapes, showZones, showFPS]);
 
   const setTimeScale = useCallback((scale: number, duration?: number) => {
-    const currentScale = timeScaleRef.current;
-
-    if (duration && duration > 0) {
-      timeScaleTransitionRef.current = {
-        startScale: currentScale,
-        endScale: scale,
-        duration: 0.2,
-        elapsed: 0,
-        restoreAfter: duration,
-      };
+    const controller = gameLoopControllerRef.current;
+    if (controller) {
+      controller.setTimeScale(scale, duration);
+      timeScaleRef.current = controller.getTimeScale();
     } else {
-      timeScaleRef.current = scale;
-      timeScaleTargetRef.current = scale;
-      timeScaleTransitionRef.current = null;
+      const currentScale = timeScaleRef.current;
+
+      if (duration && duration > 0) {
+        timeScaleTransitionRef.current = {
+          startScale: currentScale,
+          endScale: scale,
+          duration: 0.2,
+          elapsed: 0,
+          restoreAfter: duration,
+        };
+      } else {
+        timeScaleRef.current = scale;
+        timeScaleTargetRef.current = scale;
+        timeScaleTransitionRef.current = null;
+      }
     }
   }, []);
 
   const stepGame = useCallback(
-    (rawDt: number) => {
+    (dt: number) => {
       const physics = physicsRef.current;
       const game = gameRef.current;
       const camera = cameraRef.current;
@@ -912,31 +905,6 @@ export function GameRuntimeGodot({
 
       if (StateHelpers.getGameStateValue(game.gameState) !== "playing") return;
 
-      const transition = timeScaleTransitionRef.current;
-      if (transition) {
-        transition.elapsed += rawDt;
-        const t = Math.min(1, transition.elapsed / transition.duration);
-        const eased = t * t * (3 - 2 * t);
-        timeScaleRef.current =
-          transition.startScale +
-          (transition.endScale - transition.startScale) * eased;
-
-        if (t >= 1) {
-          timeScaleRef.current = transition.endScale;
-          if (transition.restoreAfter) {
-            timeScaleTransitionRef.current = {
-              startScale: transition.endScale,
-              endScale: 1.0,
-              duration: 0.2,
-              elapsed: -transition.restoreAfter,
-            };
-          } else {
-            timeScaleTransitionRef.current = null;
-          }
-        }
-      }
-
-      const dt = rawDt * timeScaleRef.current;
       if (dt <= 0) return;
 
       const frameStart = enablePerfLogging ? performance.now() : 0;
@@ -1037,8 +1005,8 @@ export function GameRuntimeGodot({
   );
 
   useEffect(() => {
-    // In inspect mode, game loop doesn't run - only manualStep() advances physics
     if (timeControl.mode === "inspect") {
+      gameLoopControllerRef.current?.stop();
       if (gameLoopRef.current) {
         clearInterval(gameLoopRef.current);
         gameLoopRef.current = null;
@@ -1046,12 +1014,12 @@ export function GameRuntimeGodot({
       return;
     }
 
-    // In normal mode, run game loop when playing and not paused
     const playerPhase = gameState.state as PlayerPhase;
     const shouldRun =
       isReady && playerPhase === "playing" && !timeControl.paused;
 
     if (!shouldRun) {
+      gameLoopControllerRef.current?.stop();
       if (gameLoopRef.current) {
         clearInterval(gameLoopRef.current);
         gameLoopRef.current = null;
@@ -1059,15 +1027,26 @@ export function GameRuntimeGodot({
       return;
     }
 
-    lastTickRef.current = performance.now();
-    gameLoopRef.current = setInterval(() => {
-      const now = performance.now();
-      const dt = Math.min((now - lastTickRef.current) / 1000, 0.1);
-      lastTickRef.current = now;
-      stepGame(dt);
-    }, GAME_LOOP_INTERVAL);
+    if (!gameLoopControllerRef.current) {
+      gameLoopControllerRef.current = new GameLoopController({
+        onUpdate: stepGame,
+        intervalMs: GAME_LOOP_INTERVAL,
+      });
+    }
+
+    const controller = gameLoopControllerRef.current;
+    if (timeControl.paused) {
+      controller.pause();
+    } else {
+      controller.resume();
+    }
+
+    if (!controller.isRunning()) {
+      controller.start();
+    }
 
     return () => {
+      controller.stop();
       if (gameLoopRef.current) {
         clearInterval(gameLoopRef.current);
         gameLoopRef.current = null;
@@ -1085,6 +1064,7 @@ export function GameRuntimeGodot({
         const newTc = { ...timeControlRef.current, paused: true };
         timeControlRef.current = newTc;
         setTimeControl(newTc);
+        gameLoopControllerRef.current?.pause();
         if (gameLoopRef.current) {
           clearInterval(gameLoopRef.current);
           gameLoopRef.current = null;
@@ -1094,22 +1074,28 @@ export function GameRuntimeGodot({
         const newTc = { ...timeControlRef.current, paused: false };
         timeControlRef.current = newTc;
         setTimeControl(newTc);
+        gameLoopControllerRef.current?.resume();
       },
       stepGame: (dt: number) => {
         stepGame(dt);
       },
       manualStep: (frames: number) => manualStep(frames),
       setTimeScale: (scale: number) => {
-        timeScaleRef.current = scale;
-        timeScaleTargetRef.current = scale;
-        timeScaleTransitionRef.current = null;
+        if (gameLoopControllerRef.current) {
+          gameLoopControllerRef.current.setTimeScale(scale);
+          timeScaleRef.current = gameLoopControllerRef.current.getTimeScale();
+        } else {
+          timeScaleRef.current = scale;
+          timeScaleTargetRef.current = scale;
+          timeScaleTransitionRef.current = null;
+        }
       },
       getGameState: () => ({
         state: gameState.state as GameStateValue,
         variables: gameState.variables,
         frame: frameIdRef.current,
         elapsed: elapsedRef.current,
-        timeScale: timeScaleRef.current,
+        timeScale: gameLoopControllerRef.current?.getTimeScale() ?? timeScaleRef.current,
       }),
       getGodotBridge: () => bridgeRef.current,
       getTimeControl: () => timeControlRef.current,
