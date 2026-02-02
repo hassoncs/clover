@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import type {
   GameDefinition,
-  ExpressionValueType,
   TapZoneButton,
   VirtualButtonType,
   DPadDirection,
@@ -26,7 +25,6 @@ import {
   createGodotBridge,
   createGodotPhysicsAdapter,
 } from "../godot";
-import { PropertySyncManager } from "../godot/PropertySyncManager";
 import type { GodotBridge } from "../godot/types";
 import type { Physics2D } from "../physics2d/Physics2D";
 import type { Unsubscribe, CollisionEvent } from "../physics2d/types";
@@ -39,7 +37,6 @@ import type {
 } from "./BehaviorContext";
 import { CameraSystem } from "./CameraSystem";
 import { ViewportSystem, type ViewportRect } from "./ViewportSystem";
-import { InputEntityManager } from "./InputEntityManager";
 import { TapZoneOverlay } from "./TapZoneOverlay";
 import { VirtualButtonsOverlay } from "./VirtualButtonsOverlay";
 import {
@@ -64,9 +61,6 @@ import {
   type TimeControl,
   type PlayerPhase,
 } from "./debug";
-import {
-  ScriptSandbox,
-} from "@/lib/scripting";
 import { cancelTweensForEntity } from "./behaviors/TweenBehaviors";
 import { GameSystemRunner } from "./systems/runner/GameSystemRunner";
 import type { SystemContext, UpdateContext } from "./systems/runner/types";
@@ -132,9 +126,7 @@ export function GameRuntimeGodot({
   const loaderRef = useRef<GameLoader | null>(null);
   const cameraRef = useRef<CameraSystem | null>(null);
   const viewportSystemRef = useRef<ViewportSystem | null>(null);
-  const inputEntityManagerRef = useRef<InputEntityManager | null>(null);
   const propertyCacheRef = useRef(new PropertyCache());
-  const propertySyncManagerRef = useRef<PropertySyncManager | null>(null);
   const elapsedRef = useRef(0);
   const frameIdRef = useRef(0);
   const collisionsRef = useRef<CollisionInfo[]>([]);
@@ -164,7 +156,6 @@ export function GameRuntimeGodot({
     timeStamp: number;
   } | null>(null);
   const debugBridgeRef = useRef<SlopcadeDebugBridge | null>(null);
-  const scriptSandboxRef = useRef<ScriptSandbox | null>(null);
   const timeControlRef = useRef<TimeControl>({
     mode: debugMode ? "inspect" : "normal",
     paused: debugMode,
@@ -528,99 +519,11 @@ export function GameRuntimeGodot({
 
         bridge.setWatchConfig(serializableConfig);
 
-        const propertySync = new PropertySyncManager(propertyCacheRef.current);
-        propertySync.start(bridge);
-        propertySyncManagerRef.current = propertySync;
-
-        // Create ScriptSandbox early if game has scripts (for run_script actions)
-        let scriptSandbox: ScriptSandbox | undefined;
-        if (definition.script) {
-          scriptSandbox = new ScriptSandbox({
-            scriptCode: definition.script,
-            scriptId: definition.metadata.id,
-            gameId: definition.metadata.id,
-          });
-          scriptSandboxRef.current = scriptSandbox;
-        }
-
         const loader = new GameLoader({ physics });
         loaderRef.current = loader;
 
         const game = loader.load(definition);
         gameRef.current = game;
-
-        // Initialize script sandbox after game is loaded
-        if (scriptSandbox) {
-          scriptSandbox.initialize().then((result) => {
-            if (!result.success) {
-              console.error(
-                "[GameRuntime] Script initialization failed:",
-                result.error
-              );
-            }
-          });
-        }
-
-        bridge.onEntitySpawned((event) => {
-          game.entityManager.handleEntitySpawned(event);
-        });
-        bridge.onEntityDestroyed((entityId) => {
-          cancelTweensForEntity(entityId);
-          game.entityManager.handleEntityDestroyed(entityId);
-        });
-
-        const inputEntityManager = new InputEntityManager();
-        inputEntityManagerRef.current = inputEntityManager;
-
-        collisionUnsubRef.current = physics.onCollision(
-          (event: CollisionEvent) => {
-            const entityA = game.entityManager.getEntity(event.entityA);
-            const entityB = game.entityManager.getEntity(event.entityB);
-
-            if (!entityA || !entityB) {
-              return;
-            }
-
-            const impulse =
-              event.contacts?.reduce(
-                (sum: number, c: any) => sum + (c.normalImpulse || 0),
-                0
-              ) ?? 0;
-            const normal = event.contacts?.[0]?.normal ?? { x: 0, y: 0 };
-
-            collisionsRef.current.push({
-              entityA,
-              entityB,
-              normal,
-              impulse,
-            });
-          }
-        );
-
-        inputEventUnsubRef.current = bridge.onInputEvent(
-          (type, x, y, entityId) => {
-            if (type === "tap") {
-              const ppm = definition.world.pixelsPerMeter ?? 50;
-              const screenX = x * ppm;
-              const screenY = y * ppm;
-              inputRef.current = {
-                ...inputRef.current,
-                tap: {
-                  x: screenX,
-                  y: screenY,
-                  worldX: x,
-                  worldY: y,
-                  targetEntityId: entityId ?? undefined,
-                },
-              };
-            } else if (type === "mouse_move") {
-              inputRef.current = {
-                ...inputRef.current,
-                mouse: { x: 0, y: 0, worldX: x, worldY: y },
-              };
-            }
-          }
-        );
 
         const camera = CameraSystem.fromGameConfig(
           definition.camera,
@@ -644,17 +547,6 @@ export function GameRuntimeGodot({
           const godotZoom = currentViewport.scale / godotPixelsPerMeter;
           bridge.setCameraZoom(godotZoom);
         }
-
-        // Camera stays at origin (0,0) - Godot owns camera positioning now
-        // We still keep the CameraSystem for screen-to-world coordinate transforms
-
-        // Subscribe to game events for React state updates
-        eventBusUnsubRef.current = subscribeToGameEvents(game.events, {
-          onGameStateChange: onGameEnd,
-          onScoreChange,
-          setGameState,
-          debug: true,
-        });
 
         // Get initial variables (filter out reserved vars)
         const initialVariables: Record<string, number | string | boolean> = {};
@@ -826,6 +718,10 @@ export function GameRuntimeGodot({
         const cameraSystem = runner.getSystem<CameraRuntimeSystem>("camera");
         const inputSystem = runner.getSystem<InputRuntimeSystem>("input");
 
+        if (cameraSystem) {
+          cameraRef.current = cameraSystem.getCamera();
+        }
+
         if (rulesSystem) {
           rulesSystem.setRuntimeState(game.gameState);
           rulesSystem.setEventBus(game.events);
@@ -866,10 +762,6 @@ export function GameRuntimeGodot({
 
     return () => {
       cleanupSubscriptions();
-      propertySyncManagerRef.current?.stop();
-      propertySyncManagerRef.current = null;
-      scriptSandboxRef.current?.dispose();
-      scriptSandboxRef.current = null;
       gameSystemRunnerRef.current?.destroy();
       gameSystemRunnerRef.current = null;
       bridgeRef.current?.dispose();
@@ -882,8 +774,6 @@ export function GameRuntimeGodot({
   }, [
     godotReady,
     definition,
-    onGameEnd,
-    onScoreChange,
     preloadTextureUrls,
     onPreloadProgress,
     onReady,
