@@ -161,6 +161,7 @@ export const BALL_LAUNCHER_TEMPLATE: GameDefinition = {
   ],
   winCondition: { expr: "entityCount('target') == 0" },
   loseCondition: {
-    type: 'lives_zero',
+    type: 'custom',
+    expr: 'lives <= 0',
   },
 };

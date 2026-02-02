@@ -1,10 +1,10 @@
 import type { ActionExecutor } from './ActionExecutor';
-import type { GameStateAction, EventAction, SetVariableAction, StartCooldownAction, LivesAction, PushToListAction, PopFromListAction, ShuffleListAction } from '@slopcade/shared';
+import type { GameStateAction, EventAction, SetVariableAction, StartCooldownAction, PushToListAction, PopFromListAction, ShuffleListAction } from '@slopcade/shared';
 import type { RuleContext } from '../types';
 import { resolveNumber, resolveValue } from '../utils';
 import type { GameState } from '../../BehaviorContext';
 
-type LogicAction = GameStateAction | EventAction | SetVariableAction | StartCooldownAction | LivesAction | PushToListAction | PopFromListAction | ShuffleListAction;
+type LogicAction = GameStateAction | EventAction | SetVariableAction | StartCooldownAction | PushToListAction | PopFromListAction | ShuffleListAction;
 
 export class LogicActionExecutor implements ActionExecutor<LogicAction> {
   execute(action: LogicAction, context: RuleContext): void {
@@ -20,9 +20,6 @@ export class LogicActionExecutor implements ActionExecutor<LogicAction> {
         break;
       case 'start_cooldown':
         this.executeStartCooldownAction(action, context);
-        break;
-      case 'lives':
-        this.executeLivesAction(action, context);
         break;
       case 'push_to_list':
         this.executePushToListAction(action, context);
@@ -81,21 +78,6 @@ export class LogicActionExecutor implements ActionExecutor<LogicAction> {
   private executeStartCooldownAction(action: StartCooldownAction, context: RuleContext): void {
     const duration = resolveNumber(action.duration, context);
     context.mutator.setCooldown(action.cooldownId, context.elapsed + duration);
-  }
-
-  private executeLivesAction(action: LivesAction, context: RuleContext): void {
-    const value = resolveNumber(action.value, context);
-    switch (action.operation) {
-      case 'add':
-        context.mutator.addLives(value);
-        break;
-      case 'subtract':
-        context.mutator.addLives(-value);
-        break;
-      case 'set':
-        context.mutator.setLives(value);
-        break;
-    }
   }
 
   private executePushToListAction(action: PushToListAction, context: RuleContext): void {

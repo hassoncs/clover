@@ -41,7 +41,8 @@ const game: GameDefinition = {
   },
   winCondition: { expr: "score >= 5000" },
   loseCondition: {
-    type: "lives_zero",
+    type: "custom",
+    expr: "lives <= 0",
   },
   initialLives: 3,
   templates: {
@@ -235,7 +236,7 @@ const game: GameDefinition = {
       name: "Ball drains - lose life and respawn",
       trigger: { type: "collision", entityATag: "ball", entityBTag: "drain" },
       actions: [
-        { type: "lives", operation: "subtract", value: 1 },
+        { type: "set_variable", name: "lives", operation: "subtract", value: 1 },
         { type: "destroy", target: { type: "by_tag", tag: "ball" } },
         { type: "spawn", template: "pinball", position: { type: "fixed", x: 0, y: 6 } },
       ],

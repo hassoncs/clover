@@ -301,12 +301,6 @@ export const TimerTriggerSchema = z.object({
   repeat: z.boolean().optional(),
 });
 
-export const ScoreTriggerSchema = z.object({
-  type: z.literal('score'),
-  threshold: z.number(),
-  comparison: z.enum(['gte', 'lte', 'eq']),
-});
-
 export const EntityCountTriggerSchema = z.object({
   type: z.literal('entity_count'),
   tag: z.string(),
@@ -322,7 +316,6 @@ export const EventTriggerSchema = z.object({
 export const RuleTriggerSchema = z.discriminatedUnion('type', [
   CollisionTriggerSchema,
   TimerTriggerSchema,
-  ScoreTriggerSchema,
   EntityCountTriggerSchema,
   EventTriggerSchema,
 ]);
@@ -351,12 +344,6 @@ export const DestroyActionSchema = z.object({
   }),
 });
 
-export const ScoreActionSchema = z.object({
-  type: z.literal('score'),
-  operation: z.enum(['add', 'subtract', 'set', 'multiply']),
-  value: z.number(),
-});
-
 export const GameStateActionSchema = z.object({
   type: z.literal('game_state'),
   state: z.enum(['win', 'lose', 'pause', 'restart', 'next_level']),
@@ -372,7 +359,6 @@ export const EventActionSchema = z.object({
 export const RuleActionSchema = z.discriminatedUnion('type', [
   SpawnActionSchema,
   DestroyActionSchema,
-  ScoreActionSchema,
   GameStateActionSchema,
   EventActionSchema,
 ]);
@@ -383,7 +369,7 @@ export const GameRuleSchema = z.object({
   enabled: z.boolean().optional(),
   trigger: RuleTriggerSchema,
   conditions: z.array(z.object({
-    type: z.enum(['score', 'time', 'entity_exists', 'entity_count', 'random']),
+    type: z.enum(['time', 'entity_exists', 'entity_count', 'random']),
     min: z.number().optional(),
     max: z.number().optional(),
     entityId: z.string().optional(),
@@ -401,11 +387,11 @@ export const WinConditionSchema = z.object({
 });
 
 export const LoseConditionSchema = z.object({
-  type: z.enum(['entity_destroyed', 'entity_exits_screen', 'time_up', 'score_below', 'lives_zero', 'custom']),
+  type: z.enum(['entity_destroyed', 'entity_exits_screen', 'time_up', 'custom']),
   tag: z.string().optional(),
   time: z.number().optional(),
   entityId: z.string().optional(),
-  score: z.number().optional(),
+  expr: z.string().optional(),
 });
 
 export const WorldConfigSchema = z.object({

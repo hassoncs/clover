@@ -1,21 +1,14 @@
 import type { ConditionEvaluator } from './ConditionEvaluator';
-import type { ScoreCondition, TimeCondition, EntityCountCondition, RandomCondition, VariableCondition, CooldownReadyCondition, ListContainsCondition, ExpressionCondition } from '@slopcade/shared';
+import type { TimeCondition, EntityCountCondition, RandomCondition, VariableCondition, CooldownReadyCondition, ListContainsCondition, ExpressionCondition } from '@slopcade/shared';
 import type { RuleContext } from '../types';
 import { resolveValue } from '../utils';
 import { evaluate } from '@slopcade/shared';
 
-type LogicCondition = ScoreCondition | TimeCondition | EntityCountCondition | RandomCondition | VariableCondition | CooldownReadyCondition | ListContainsCondition | ExpressionCondition;
+type LogicCondition = TimeCondition | EntityCountCondition | RandomCondition | VariableCondition | CooldownReadyCondition | ListContainsCondition | ExpressionCondition;
 
 export class LogicConditionEvaluator implements ConditionEvaluator<LogicCondition> {
   evaluate(condition: LogicCondition, context: RuleContext): boolean {
     switch (condition.type) {
-      case 'score': {
-        const currentScore = context.mutator.getScore();
-        if (condition.min !== undefined && currentScore < condition.min) return false;
-        if (condition.max !== undefined && currentScore > condition.max) return false;
-        return true;
-      }
-
       case 'time': {
         const currentElapsed = context.mutator.getElapsed();
         if (condition.min !== undefined && currentElapsed < condition.min) return false;

@@ -55,3 +55,9 @@ Conventions, patterns, and things that worked.
 - Confirmed that only one comment in `LogicActionExecutor.ts` remained, which is fine as it's historical context.
 - All 345 tests passed, confirming the unified `RulesSystem` correctly replaced the old components.
 - TypeScript check (`tsc --noEmit`) passed with zero errors.
+
+## Standardizing on varChanged Events
+- Removed redundant `scoreChanged` and `livesChanged` events in favor of the generic `varChanged` event.
+- The `varChanged` event now handles all variable updates, including reserved variables like `score` and `lives`.
+- React components (like `GameRuntime.godot.tsx`) now filter `varChanged` events by key to update specific UI elements.
+- This simplifies the `GameEventType` union and reduces the number of special cases in `GameStateHelpers.setVar`.

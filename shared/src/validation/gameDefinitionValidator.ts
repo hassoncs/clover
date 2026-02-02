@@ -547,7 +547,7 @@ function validateWinLoseConditions(
   errors: ValidationError[],
   warnings: ValidationWarning[]
 ): void {
-  const VALID_LOSE_TYPES = ['entity_destroyed', 'entity_exits_screen', 'time_up', 'score_below', 'lives_zero', 'custom'];
+  const VALID_LOSE_TYPES = ['entity_destroyed', 'entity_exits_screen', 'time_up', 'custom'];
 
   const hasWinExpr = game.winCondition?.expr;
   const hasWinTriggeringRule = game.rules?.some(rule =>
@@ -589,14 +589,12 @@ function validateWinLoseConditions(
       });
     }
 
-    if (game.loseCondition.type === 'lives_zero') {
-      if (!game.initialLives || game.initialLives <= 0) {
-        errors.push({
-          code: 'MISSING_INITIAL_LIVES',
-          message: 'lives_zero lose condition requires initialLives > 0',
-          path: 'initialLives',
-        });
-      }
+    if (game.loseCondition.type === 'custom' && !game.loseCondition.expr) {
+      errors.push({
+        code: 'MISSING_LOSE_EXPR',
+        message: 'Custom lose condition requires an expr field',
+        path: 'loseCondition.expr',
+      });
     }
 
     if (game.loseCondition.type === 'entity_destroyed' && !game.loseCondition.tag && !game.loseCondition.entityId) {

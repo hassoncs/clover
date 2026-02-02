@@ -1,6 +1,5 @@
 export * from './ActionExecutor';
 export * from './ActionRegistry';
-export * from './ScoreActionExecutor';
 export * from './SpawnActionExecutor';
 export * from './DestroyActionExecutor';
 export * from './PhysicsActionExecutor';

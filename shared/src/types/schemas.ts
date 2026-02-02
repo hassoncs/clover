@@ -319,12 +319,6 @@ export const TimerTriggerSchema = z.object({
   repeat: z.boolean().optional(),
 });
 
-export const ScoreTriggerSchema = z.object({
-  type: z.literal('score'),
-  threshold: z.number(),
-  comparison: z.enum(['gte', 'lte', 'eq']),
-});
-
 export const EntityCountTriggerSchema = z.object({
   type: z.literal('entity_count'),
   tag: z.string(),
@@ -346,17 +340,10 @@ export const RuleTriggerSchema = z.discriminatedUnion('type', [
   SensorEnterTriggerSchema,
   SensorExitTriggerSchema,
   TimerTriggerSchema,
-  ScoreTriggerSchema,
   EntityCountTriggerSchema,
   EventTriggerSchema,
   FrameTriggerSchema,
 ]);
-
-export const ScoreConditionSchema = z.object({
-  type: z.literal('score'),
-  min: z.number().optional(),
-  max: z.number().optional(),
-});
 
 export const TimeConditionSchema = z.object({
   type: z.literal('time'),
@@ -390,7 +377,6 @@ export const ListContainsConditionSchema = z.object({
 });
 
 export const RuleConditionSchema = z.discriminatedUnion('type', [
-  ScoreConditionSchema,
   TimeConditionSchema,
   EntityExistsConditionSchema,
   EntityCountConditionSchema,
@@ -441,12 +427,6 @@ export const DestroyActionSchema = z.object({
   target: DestroyTargetSchema,
 });
 
-export const ScoreActionSchema = z.object({
-  type: z.literal('score'),
-  operation: z.enum(['add', 'subtract', 'set', 'multiply']),
-  value: NumberValueSchema,
-});
-
 export const GameStateActionSchema = z.object({
   type: z.literal('game_state'),
   state: z.enum(['win', 'lose', 'pause', 'restart', 'next_level']),
@@ -476,12 +456,6 @@ export const ModifyActionSchema = z.object({
   value: NumberValueSchema,
 });
 
-export const LivesActionSchema = z.object({
-  type: z.literal('lives'),
-  operation: z.enum(['add', 'subtract', 'set']),
-  value: NumberValueSchema,
-});
-
 export const PushToListActionSchema = z.object({
   type: z.literal('push_to_list'),
   listName: z.string(),
@@ -503,12 +477,10 @@ export const ShuffleListActionSchema = z.object({
 export const RuleActionSchema = z.discriminatedUnion('type', [
   SpawnActionSchema,
   DestroyActionSchema,
-  ScoreActionSchema,
   GameStateActionSchema,
   SoundActionSchema,
   EventActionSchema,
   ModifyActionSchema,
-  LivesActionSchema,
   PushToListActionSchema,
   PopFromListActionSchema,
   ShuffleListActionSchema,
@@ -530,11 +502,11 @@ export const WinConditionSchema = z.object({
 });
 
 export const LoseConditionSchema = z.object({
-  type: z.enum(['entity_destroyed', 'entity_exits_screen', 'time_up', 'score_below', 'lives_zero', 'custom']),
+  type: z.enum(['entity_destroyed', 'entity_exits_screen', 'time_up', 'custom']),
   tag: z.string().optional(),
   time: z.number().optional(),
   entityId: z.string().optional(),
-  score: z.number().optional(),
+  expr: z.string().optional(),
 });
 
 export const TransformComponentSchema = z.object({

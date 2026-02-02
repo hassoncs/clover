@@ -15,7 +15,6 @@ import type { SetEntitySizeAction } from '../systems/dynamic-collider/types';
 export type RuleTriggerType =
   | 'collision'
   | 'timer'
-  | 'score'
   | 'entity_count'
   | 'event'
   | 'frame'
@@ -50,12 +49,6 @@ export interface TimerTrigger {
   type: 'timer';
   time: number;
   repeat?: boolean;
-}
-
-export interface ScoreTrigger {
-  type: 'score';
-  threshold: number;
-  comparison: 'gte' | 'lte' | 'eq';
 }
 
 export interface EntityCountTrigger {
@@ -115,7 +108,6 @@ export type RuleTrigger =
   | SensorEnterTrigger
   | SensorExitTrigger
   | TimerTrigger
-  | ScoreTrigger
   | EntityCountTrigger
   | EventTrigger
   | FrameTrigger
@@ -125,12 +117,6 @@ export type RuleTrigger =
   | ButtonTrigger
   | SwipeTrigger
   | GameStartTrigger;
-
-export interface ScoreCondition {
-  type: 'score';
-  min?: number;
-  max?: number;
-}
 
 export interface TimeCondition {
   type: 'time';
@@ -206,7 +192,6 @@ export interface StateCondition {
 }
 
 export type RuleCondition =
-  | ScoreCondition
   | TimeCondition
   | EntityExistsCondition
   | EntityCountCondition
@@ -276,12 +261,6 @@ export interface DestroyMarkedAction {
   tag?: string;
 }
 
-export interface ScoreAction {
-  type: 'score';
-  operation: 'add' | 'subtract' | 'set' | 'multiply';
-  value: number;
-}
-
 export interface GameStateAction {
   type: 'game_state';
   state: 'win' | 'lose' | 'pause' | 'restart' | 'next_level';
@@ -306,12 +285,6 @@ export interface ModifyAction {
   property: string;
   operation: 'set' | 'add' | 'multiply';
   value: Value<number>;
-}
-
-export interface LivesAction {
-  type: 'lives';
-  operation: 'add' | 'subtract' | 'set';
-  value: number;
 }
 
 export type EntityTarget =
@@ -558,12 +531,10 @@ export type RuleAction =
   | SpawnAction
   | DestroyAction
   | DestroyMarkedAction
-  | ScoreAction
   | GameStateAction
   | SoundAction
   | EventAction
   | ModifyAction
-  | LivesAction
   | ApplyImpulseAction
   | ApplyForceAction
   | SetVelocityAction
@@ -627,8 +598,6 @@ export type LoseConditionType =
   | 'entity_destroyed'
   | 'entity_exits_screen'
   | 'time_up'
-  | 'score_below'
-  | 'lives_zero'
   | 'custom';
 
 export interface LoseCondition {
@@ -636,5 +605,5 @@ export interface LoseCondition {
   tag?: string;
   time?: number;
   entityId?: string;
-  score?: number;
+  expr?: string;
 }

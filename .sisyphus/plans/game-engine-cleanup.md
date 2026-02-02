@@ -445,7 +445,7 @@ Phase 6 (After Phase 5): VALIDATION
 
 ---
 
-- [ ] 3.1. Remove Special Event Types
+- [x] 3.1. Remove Special Event Types
 
   **What to do**:
   - Remove `scoreChanged` and `livesChanged` from `GameEventType` union
@@ -486,7 +486,7 @@ Phase 6 (After Phase 5): VALIDATION
 
 ---
 
-- [ ] 3.2. Remove Special UI Config
+- [x] 3.2. Remove Special UI Config
 
   **What to do**:
   - Remove `showScore`, `showLives`, `livesLabel`, `scorePosition` from UIConfig

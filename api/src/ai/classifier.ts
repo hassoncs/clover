@@ -77,7 +77,7 @@ const LOSE_CONDITION_KEYWORDS: KeywordMatch[] = [
   { keywords: ['die', 'death', 'killed', 'destroyed'], value: 'entity_destroyed', weight: 8 },
   { keywords: ['fall', 'drop', 'off screen', 'out of bounds'], value: 'entity_exits_screen', weight: 8 },
   { keywords: ['time', 'timer', 'clock', 'seconds'], value: 'time_up', weight: 6 },
-  { keywords: ['lives', 'hearts', 'health', 'no more tries'], value: 'lives_zero', weight: 8 },
+  { keywords: ['lives', 'hearts', 'health', 'no more tries'], value: 'custom', weight: 8 },
 ];
 
 const THEME_KEYWORDS: Record<string, string[]> = {
@@ -302,11 +302,11 @@ function getDefaultWinCondition(gameType: GameType): WinConditionType {
 
 function getDefaultLoseCondition(gameType: GameType): LoseConditionType {
   const defaults: Record<GameType, LoseConditionType> = {
-    projectile: 'lives_zero',
+    projectile: 'custom',
     platformer: 'entity_destroyed',
     stacking: 'entity_destroyed',
     vehicle: 'entity_destroyed',
-    falling_objects: 'score_below',
+    falling_objects: 'custom',
     rope_physics: 'entity_destroyed',
     match3: 'time_up',
     tetris: 'custom',

@@ -1,7 +1,6 @@
 import type { RuleAction } from '@slopcade/shared';
 import type { RuleContext } from '../types';
 import type { ActionExecutor } from './ActionExecutor';
-import { ScoreActionExecutor } from './ScoreActionExecutor';
 import { SpawnActionExecutor } from './SpawnActionExecutor';
 import { DestroyActionExecutor } from './DestroyActionExecutor';
 import { PhysicsActionExecutor } from './PhysicsActionExecutor';
@@ -29,7 +28,6 @@ export class ActionRegistry {
   private registry: Map<ActionType, ActionExecutor<RuleAction>> = new Map();
 
   constructor(
-    private scoreActionExecutor: ScoreActionExecutor,
     private spawnActionExecutor: SpawnActionExecutor,
     private destroyActionExecutor: DestroyActionExecutor,
     private physicsActionExecutor: PhysicsActionExecutor,
@@ -55,7 +53,6 @@ export class ActionRegistry {
   }
 
   private registerAll(): void {
-    this.registry.set('score', this.scoreActionExecutor);
     this.registry.set('spawn', this.spawnActionExecutor);
     this.registry.set('destroy', this.destroyActionExecutor);
     this.registry.set('destroy_marked', this.destroyActionExecutor);
@@ -69,7 +66,6 @@ export class ActionRegistry {
     this.registry.set('event', this.logicActionExecutor);
     this.registry.set('set_variable', this.logicActionExecutor);
     this.registry.set('start_cooldown', this.logicActionExecutor);
-    this.registry.set('lives', this.logicActionExecutor);
     this.registry.set('push_to_list', this.logicActionExecutor);
     this.registry.set('pop_from_list', this.logicActionExecutor);
     this.registry.set('shuffle_list', this.logicActionExecutor);

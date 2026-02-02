@@ -82,7 +82,7 @@ Given a user's game description, generate a complete GameDefinition that can be 
 - spawn_on_event to create projectiles
 - Targets with destroy_on_collision and score_on_collision
 - Win: destroy_all targets
-- Lose: lives_zero (limited projectiles)
+- Lose: custom (limited projectiles)
 
 **Platformer** (Jumpy Cat style):
 - Player with Rules: tap -> apply_impulse (jump), tilt -> move
@@ -97,7 +97,7 @@ Given a user's game description, generate a complete GameDefinition that can be 
 - Spawner with spawn_on_event (timer) to create falling items
 - Good items give points, bad items lose points
 - Win: survive_time or reach score
-- Lose: score_below 0
+- Lose: custom 0
 
 **Stacking** (Tower building):
 - Moving spawner with oscillate and Rule: tap -> spawn block

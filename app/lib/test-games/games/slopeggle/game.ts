@@ -127,7 +127,8 @@ const game: GameDefinition = {
   },
   winCondition: { expr: "entityCount('orange-peg') == 0" },
   loseCondition: {
-    type: "lives_zero",
+    type: "custom",
+    expr: "lives <= 0",
   },
   initialLives: 10,
   templates: {
@@ -551,7 +552,7 @@ const game: GameDefinition = {
       actions: [
         { type: "event", eventName: "turn_end" },
         { type: "destroy_marked", tag: "peg" },
-        { type: "lives", operation: "subtract", value: 1 },
+        { type: "set_variable", name: "lives", operation: "subtract", value: 1 },
         { type: "destroy", target: { type: "by_tag", tag: "ball" } },
       ],
     },
@@ -562,8 +563,8 @@ const game: GameDefinition = {
       actions: [
         { type: "event", eventName: "turn_end" },
         { type: "destroy_marked", tag: "peg" },
-        { type: "score", operation: "add", value: 500 },
-        { type: "lives", operation: "add", value: 1 },
+        { type: "set_variable", name: "score", operation: "add", value: 500 },
+        { type: "set_variable", name: "lives", operation: "add", value: 1 },
         { type: "destroy", target: { type: "by_tag", tag: "ball" } },
         { type: "camera_shake", intensity: 0.15, duration: 0.2 },
       ],

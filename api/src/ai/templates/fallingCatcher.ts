@@ -178,7 +178,7 @@ export const FALLING_CATCHER_TEMPLATE: GameDefinition = {
       name: 'Caught bad item',
       trigger: { type: 'collision', entityATag: 'catcher', entityBTag: 'bad' },
       actions: [
-        { type: 'score', operation: 'subtract', value: 20 },
+        { type: 'set_variable', name: 'score', operation: 'subtract', value: 20 },
         { type: 'destroy', target: { type: 'collision_entities' } },
       ],
     },
@@ -191,7 +191,7 @@ export const FALLING_CATCHER_TEMPLATE: GameDefinition = {
   ],
   winCondition: { expr: 'elapsed >= 30' },
   loseCondition: {
-    type: 'score_below',
-    score: 0,
+    type: 'custom',
+    expr: 'score < 0',
   },
 };

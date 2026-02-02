@@ -55,7 +55,8 @@ const game: GameDefinition = {
   },
   winCondition: { expr: "entityCount('brick') == 0" },
   loseCondition: {
-    type: "lives_zero",
+    type: "custom",
+    expr: "lives <= 0",
   },
   initialLives: 3,
   constants: {

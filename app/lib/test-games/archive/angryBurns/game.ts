@@ -434,7 +434,8 @@ const game: GameDefinition = {
   ],
   winCondition: { expr: "entityCount('target') == 0" },
   loseCondition: {
-    type: "lives_zero",
+    type: "custom",
+    expr: "lives <= 0",
   },
   initialLives: 5,
   initialScore: 0,

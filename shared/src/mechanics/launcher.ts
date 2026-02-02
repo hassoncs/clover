@@ -1,4 +1,4 @@
-import type { GameRule, DragTrigger, ApplyImpulseAction, SpawnAction, LivesAction, SetVariableAction } from '../types/rules';
+import type { GameRule, DragTrigger, ApplyImpulseAction, SpawnAction, SetVariableAction } from '../types/rules';
 
 /**
  * Configuration for a pull-back launcher mechanic.
@@ -135,10 +135,11 @@ export function createLauncherRules(config: LauncherConfig): GameRule[] {
       
       // Optional: decrement lives
       ...(consumeLives ? [{
-        type: 'lives' as const,
+        type: 'set_variable' as const,
+        name: 'lives',
         operation: 'subtract' as const,
         value: livesPerShot,
-      } as LivesAction] : []),
+      } as SetVariableAction] : []),
       
       // Optional: start cooldown
       ...(cooldown > 0 ? [{
@@ -150,7 +151,7 @@ export function createLauncherRules(config: LauncherConfig): GameRule[] {
     cooldown,
   });
 
-  // Game over on lives zero: add loseCondition: { type: 'lives_zero' } to GameDefinition
+  // Game over on lives zero: add loseCondition: { type: 'custom' } to GameDefinition
 
   return rules;
 }

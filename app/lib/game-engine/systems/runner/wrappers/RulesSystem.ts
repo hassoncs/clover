@@ -26,7 +26,6 @@ import * as StateHelpers from '../../../runtime/GameStateHelpers';
 import { RESERVED_VARS } from '../../../runtime/types';
 
 import {
-  ScoreActionExecutor,
   SpawnActionExecutor,
   DestroyActionExecutor,
   PhysicsActionExecutor,
@@ -114,7 +113,6 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
   constructor(config: RulesSystemConfig) {
     this.config = config;
     
-    const scoreActionExecutor = new ScoreActionExecutor();
     const spawnActionExecutor = new SpawnActionExecutor();
     const destroyActionExecutor = new DestroyActionExecutor();
     const physicsActionExecutor = new PhysicsActionExecutor();
@@ -137,7 +135,6 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
     this.runScriptActionExecutor = new RunScriptActionExecutor();
     
     this.actionRegistry = new ActionRegistry(
-      scoreActionExecutor,
       spawnActionExecutor,
       destroyActionExecutor,
       physicsActionExecutor,
@@ -171,7 +168,6 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
     this.containerConditionEvaluator = new ContainerConditionEvaluator(containerSystem);
     
     const containerActionExecutor = new ContainerActionExecutor(containerSystem);
-    const scoreActionExecutor = new ScoreActionExecutor();
     const spawnActionExecutor = new SpawnActionExecutor();
     const destroyActionExecutor = new DestroyActionExecutor();
     const physicsActionExecutor = new PhysicsActionExecutor();
@@ -192,7 +188,6 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
     const ballSortActionExecutor = new BallSortActionExecutor();
     
     this.actionRegistry = new ActionRegistry(
-      scoreActionExecutor,
       spawnActionExecutor,
       destroyActionExecutor,
       physicsActionExecutor,
@@ -791,7 +786,6 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
       case "collision":
         return this.collisionTriggerEvaluator.evaluate(trigger, context);
       case "timer":
-      case "score":
       case "entity_count":
       case "event":
       case "frame":
@@ -815,7 +809,6 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
     if (!conditions || conditions.length === 0) return true;
     return conditions.every((c) => {
       switch (c.type) {
-        case "score":
         case "time":
         case "entity_count":
         case "random":
@@ -881,14 +874,21 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
       case "time_up":
         return context.elapsed >= (this.loseCondition.time ?? 0);
       
-      case "score_below":
-        return context.score < (this.loseCondition.score ?? 0);
-      
-      case "lives_zero":
-        return context.lives <= 0;
-      
       case "entity_exits_screen": {
         return false;
+      }
+      
+      case "custom": {
+        if (!this.loseCondition.expr || !context.evalContext) {
+          return false;
+        }
+        try {
+          const result = evaluate(this.loseCondition.expr, context.evalContext);
+          return Boolean(result);
+        } catch (e) {
+          console.warn('[LoseCondition] Failed to evaluate:', this.loseCondition.expr, e);
+          return false;
+        }
       }
       
       default:
