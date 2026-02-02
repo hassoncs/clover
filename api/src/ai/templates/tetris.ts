@@ -17,10 +17,11 @@ export const TETRIS_TEMPLATE: GameDefinition = {
     zoom: 1,
   },
   ui: {
-    showScore: true,
     showTimer: true,
-    scorePosition: 'top-right',
     backgroundColor: '#050505',
+    variableDisplays: [
+      { name: 'score', label: 'Score', position: 'top-right' },
+    ],
   },
   tetris: {
     gridId: 'main_grid',

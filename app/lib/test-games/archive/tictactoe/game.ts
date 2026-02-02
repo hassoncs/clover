@@ -69,14 +69,8 @@ const game: GameDefinition = {
     imageUrl: BACKGROUND_URL,
   },
   ui: {
-    showScore: false,
-    showLives: false,
     showTimer: false,
     backgroundColor: "#1a1a2e",
-    variableDisplays: [
-      { name: "currentPlayer", label: "Player", color: "#FFFFFF" },
-      { name: "statusText", label: "Status", color: "#AAAAAA" },
-    ],
   },
   variables: {
     cell00: 0,

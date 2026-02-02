@@ -682,6 +682,7 @@ export const EntityCountDisplaySchema = z.object({
 export const VariableDisplaySchema = z.object({
   name: z.string(),
   label: z.string(),
+  position: z.enum(['top-left', 'top-center', 'top-right']).optional(),
   color: z.string().optional(),
   format: z.string().optional(),
   showWhen: z.enum(['always', 'not_default']).optional(),
@@ -689,12 +690,8 @@ export const VariableDisplaySchema = z.object({
 });
 
 export const UIConfigSchema = z.object({
-  showScore: z.boolean().optional(),
   showTimer: z.boolean().optional(),
-  showLives: z.boolean().optional(),
-  livesLabel: z.string().optional(),
   timerCountdown: z.boolean().optional(),
-  scorePosition: z.enum(['top-left', 'top-center', 'top-right']).optional(),
   backgroundColor: z.string().optional(),
   entityCountDisplays: z.array(EntityCountDisplaySchema).optional(),
   variableDisplays: z.array(VariableDisplaySchema).optional(),

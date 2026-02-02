@@ -115,8 +115,6 @@ const game: GameDefinition = {
   },
   camera: { type: "fixed", zoom: 1 },
   ui: {
-    showScore: false,
-    showLives: false,
     showTimer: false,
     backgroundColor: COLORS.background,
   },

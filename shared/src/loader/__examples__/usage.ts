@@ -239,9 +239,11 @@ function createBaseSlopeggleGame(): GameDefinition {
       bounds: { width: 12, height: 16 },
     },
     ui: {
-      showScore: true,
-      showLives: true,
-      livesLabel: 'Balls',
+      backgroundColor: '#0a1628',
+      variableDisplays: [
+        { name: 'score', label: 'Score', position: 'top-right' },
+        { name: 'lives', label: 'Balls', position: 'top-right' },
+      ],
     },
     initialLives: 10,
     templates: {

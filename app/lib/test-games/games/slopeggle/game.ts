@@ -107,15 +107,14 @@ const game: GameDefinition = {
     turn: 0,
   },
   ui: {
-    showScore: true,
-    showLives: true,
-    livesLabel: "Balls",
     showTimer: false,
     backgroundColor: "#0a1628",
     entityCountDisplays: [
       { tag: "orange-peg", label: "Orange Pegs", color: "#F97316" },
     ],
     variableDisplays: [
+      { name: 'score', label: 'Score', position: 'top-right' },
+      { name: 'lives', label: 'Balls', position: 'top-right' },
       {
         name: "multiplier",
         label: "Multiplier",

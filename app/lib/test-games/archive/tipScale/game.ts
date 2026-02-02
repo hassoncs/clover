@@ -137,13 +137,8 @@ const game: GameDefinition = {
     beamAngle: 0,
   },
   ui: {
-    showScore: false,
-    showLives: false,
     showTimer: false,
-    backgroundColor: "#1a237e",
-    variableDisplays: [
-      { name: "weightsPlaced", label: "Placed", color: "#4CAF50" },
-    ],
+    backgroundColor: "#f0f0f0",
   },
   stateMachines: [
     {

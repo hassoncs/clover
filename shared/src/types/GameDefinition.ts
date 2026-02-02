@@ -93,6 +93,7 @@ export interface EntityCountDisplay {
 export interface VariableDisplay {
   name: string;
   label: string;
+  position?: 'top-left' | 'top-right' | 'top-center';
   color?: string;
   format?: string;
   showWhen?: 'always' | 'not_default';
@@ -100,12 +101,8 @@ export interface VariableDisplay {
 }
 
 export interface UIConfig {
-  showScore?: boolean;
   showTimer?: boolean;
-  showLives?: boolean;
-  livesLabel?: string;
   timerCountdown?: boolean;
-  scorePosition?: 'top-left' | 'top-center' | 'top-right';
   backgroundColor?: string;
   entityCountDisplays?: EntityCountDisplay[];
   variableDisplays?: VariableDisplay[];
@@ -512,9 +509,6 @@ export const DEFAULT_CAMERA_CONFIG: CameraConfig = {
 };
 
 export const DEFAULT_UI_CONFIG: UIConfig = {
-  showScore: true,
   showTimer: false,
-  showLives: false,
-  scorePosition: 'top-right',
   backgroundColor: '#87CEEB',
 };

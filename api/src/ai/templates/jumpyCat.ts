@@ -19,10 +19,11 @@ export const JUMPY_CAT_TEMPLATE: GameDefinition = {
     bounds: { minX: 0, maxX: 10, minY: 0, maxY: 100 },
   },
   ui: {
-    showScore: true,
-    showLives: true,
-    scorePosition: 'top-left',
     backgroundColor: '#87CEEB',
+    variableDisplays: [
+      { name: 'score', label: 'Score', position: 'top-left' },
+      { name: 'lives', label: 'Lives', position: 'top-left' },
+    ],
   },
   templates: {
     player: {

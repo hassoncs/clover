@@ -17,10 +17,11 @@ export const MATCH3_TEMPLATE: GameDefinition = {
     zoom: 1,
   },
   ui: {
-    showScore: true,
     showTimer: true,
-    scorePosition: 'top-right',
     backgroundColor: '#1a1a2e',
+    variableDisplays: [
+      { name: 'score', label: 'Score', position: 'top-right' },
+    ],
   },
   match3: {
     gridId: 'main_grid',

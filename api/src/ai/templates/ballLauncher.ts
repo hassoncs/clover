@@ -17,10 +17,11 @@ export const BALL_LAUNCHER_TEMPLATE: GameDefinition = {
     zoom: 1,
   },
   ui: {
-    showScore: true,
-    showLives: true,
-    scorePosition: 'top-right',
     backgroundColor: '#87CEEB',
+    variableDisplays: [
+      { name: 'score', label: 'Score', position: 'top-right' },
+      { name: 'lives', label: 'Lives', position: 'top-right' },
+    ],
   },
   templates: {
     projectile: {

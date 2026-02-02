@@ -87,13 +87,8 @@ const game: GameDefinition = {
   },
   camera: { type: "fixed", zoom: 1 },
   ui: {
-    showScore: false,
-    showLives: false,
     showTimer: false,
-    backgroundColor: "#0D47A1",
-    variableDisplays: [
-      { name: "currentPlayer", label: "Player", color: "#FFFFFF" },
-    ],
+    backgroundColor: BOARD_COLOR,
   },
   variables: {
     isPlayerTurn: 1,

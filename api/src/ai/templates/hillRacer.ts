@@ -19,11 +19,12 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
     bounds: { minX: 0, maxX: 100, minY: 0, maxY: 20 },
   },
   ui: {
-    showScore: true,
     showTimer: true,
     timerCountdown: false,
-    scorePosition: 'top-right',
     backgroundColor: '#87CEEB',
+    variableDisplays: [
+      { name: 'score', label: 'Score', position: 'top-right' },
+    ],
   },
   templates: {
     vehicle_body: {

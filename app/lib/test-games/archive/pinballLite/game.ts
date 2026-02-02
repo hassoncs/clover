@@ -32,10 +32,12 @@ const game: GameDefinition = {
   },
   camera: { type: "fixed", zoom: 1 },
   ui: {
-    showScore: true,
-    showLives: true,
     showTimer: false,
     backgroundColor: "#0a0a2e",
+    variableDisplays: [
+      { name: 'score', label: 'Score', position: 'top-right' },
+      { name: 'lives', label: 'Lives', position: 'top-right' },
+    ],
   },
   winCondition: { expr: "score >= 5000" },
   loseCondition: {

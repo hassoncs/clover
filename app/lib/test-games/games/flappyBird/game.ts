@@ -80,10 +80,11 @@ const game: GameDefinition = {
   },
   camera: { type: "fixed", zoom: 1 },
   ui: {
-    showScore: true,
-    showLives: false,
     showTimer: false,
     backgroundColor: "#70c5ce",
+    variableDisplays: [
+      { name: 'score', label: 'Score' },
+    ],
   },
   loseCondition: {
     type: "entity_destroyed",

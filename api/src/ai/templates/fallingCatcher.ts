@@ -17,11 +17,12 @@ export const FALLING_CATCHER_TEMPLATE: GameDefinition = {
     zoom: 1,
   },
   ui: {
-    showScore: true,
     showTimer: true,
     timerCountdown: true,
-    scorePosition: 'top-center',
     backgroundColor: '#2C3E50',
+    variableDisplays: [
+      { name: 'score', label: 'Score', position: 'top-center' },
+    ],
   },
   templates: {
     catcher: {

@@ -36,31 +36,6 @@ export function GameHUD({
       }
     ]}>
       <View style={styles.leftSection}>
-        {definition.ui?.showScore !== false && (
-          <View style={styles.statContainer}>
-            <Text style={styles.statLabel}>SCORE</Text>
-            <Text style={styles.scoreValue}>{gameState.score.toLocaleString()}</Text>
-          </View>
-        )}
-        
-        {definition.ui?.showLives && (
-          <View style={styles.statContainer}>
-            <Text style={styles.statLabel}>{(definition.ui?.livesLabel ?? 'LIVES').toUpperCase()}</Text>
-            <Text style={styles.livesValue}>
-              {Array.from({ length: gameState.lives }).map(() => '♥').join('')}
-            </Text>
-          </View>
-        )}
-        
-        {definition.ui?.showTimer && (
-          <View style={styles.statContainer}>
-            <Text style={styles.statLabel}>TIME</Text>
-            <Text style={styles.timerValue}>{Math.floor(gameState.time)}s</Text>
-          </View>
-        )}
-      </View>
-
-      <View style={styles.centerSection}>
         {definition.ui?.entityCountDisplays?.map((display) => {
           const count = getEntitiesByTag(display.tag).length;
           return (
@@ -72,7 +47,26 @@ export function GameHUD({
             </View>
           );
         })}
-        {definition.ui?.variableDisplays?.map((display) => {
+        {definition.ui?.variableDisplays?.filter(d => d.position === 'top-left' || !d.position).map((display) => {
+          const value = gameState.variables[display.name];
+          const shouldShow = display.showWhen !== 'not_default' || value !== display.defaultValue;
+          if (!shouldShow) return null;
+          const formattedValue = display.format
+            ? display.format.replace('{value}', String(value))
+            : String(value);
+          return (
+            <View key={display.name} style={styles.statContainer}>
+              <Text style={styles.statLabel}>{display.label.toUpperCase()}</Text>
+              <Text style={[styles.statValue, display.color ? { color: display.color } : undefined]}>
+                {formattedValue}
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+
+      <View style={styles.centerSection}>
+        {definition.ui?.variableDisplays?.filter(d => d.position === 'top-center').map((display) => {
           const value = gameState.variables[display.name];
           const shouldShow = display.showWhen !== 'not_default' || value !== display.defaultValue;
           if (!shouldShow) return null;
@@ -91,6 +85,22 @@ export function GameHUD({
       </View>
 
       <View style={styles.rightSection}>
+        {definition.ui?.variableDisplays?.filter(d => d.position === 'top-right').map((display) => {
+          const value = gameState.variables[display.name];
+          const shouldShow = display.showWhen !== 'not_default' || value !== display.defaultValue;
+          if (!shouldShow) return null;
+          const formattedValue = display.format
+            ? display.format.replace('{value}', String(value))
+            : String(value);
+          return (
+            <View key={display.name} style={styles.statContainer}>
+              <Text style={styles.statLabel}>{display.label.toUpperCase()}</Text>
+              <Text style={[styles.statValue, display.color ? { color: display.color } : undefined]}>
+                {formattedValue}
+              </Text>
+            </View>
+          );
+        })}
         {gameState.state === "playing" && (
           <TouchableOpacity
             style={styles.pauseButton}
@@ -122,7 +132,9 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   rightSection: {
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 16,
   },
   statContainer: {
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
@@ -139,15 +151,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     marginBottom: 2,
   },
-  scoreValue: {
-    color: '#FFD700',
-    fontSize: 22,
-    fontWeight: 'bold',
-    textShadowColor: '#000',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-    fontVariant: ['tabular-nums'],
-  },
   statValue: {
     color: '#fff',
     fontSize: 20,
@@ -156,25 +159,6 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
     fontVariant: ['tabular-nums'],
-  },
-  timerValue: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    textShadowColor: '#000',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-    fontVariant: ['tabular-nums'],
-  },
-
-  livesValue: {
-    color: '#ff4444',
-    fontSize: 18,
-    fontWeight: 'bold',
-    textShadowColor: '#000',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-    letterSpacing: 2,
   },
   pauseButton: {
     backgroundColor: 'rgba(0, 0, 0, 0.6)',

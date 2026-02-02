@@ -275,8 +275,6 @@ export function createBallSortGame(level: number = 1): GameDefinition {
     },
     containers: tubeContainers,
     ui: {
-      showScore: false,
-      showLives: false,
       showTimer: true,
       timerCountdown: false,
       backgroundColor: "#1a237e",

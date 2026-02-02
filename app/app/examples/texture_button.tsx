@@ -39,7 +39,6 @@ const GAME_DEFINITION: GameDefinition = {
   camera: { type: "fixed", zoom: 1 },
   ui: {
     backgroundColor: "#1a1a2e",
-    showScore: false,
   },
   templates: {},
   entities: [],

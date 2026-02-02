@@ -17,10 +17,11 @@ export const STACK_ATTACK_TEMPLATE: GameDefinition = {
     zoom: 1,
   },
   ui: {
-    showScore: true,
     showTimer: false,
-    scorePosition: 'top-center',
     backgroundColor: '#1a1a2e',
+    variableDisplays: [
+      { name: 'score', label: 'Score', position: 'top-center' },
+    ],
   },
   templates: {
     block: {

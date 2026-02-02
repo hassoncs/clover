@@ -1815,19 +1815,6 @@ export function GameRuntimeGodot({
             },
           ]}
         >
-          {definition.ui?.showScore !== false && (
-            <Text style={styles.scoreText}>Score: {gameState.score}</Text>
-          )}
-          {definition.ui?.showTimer && (
-            <Text style={styles.timerText}>
-              Time: {Math.floor(gameState.time)}s
-            </Text>
-          )}
-          {definition.ui?.showLives && (
-            <Text style={styles.livesText}>
-              {definition.ui?.livesLabel ?? "Lives"}: {gameState.lives}
-            </Text>
-          )}
           {definition.ui?.entityCountDisplays?.map((display) => {
             const count =
               gameRef.current?.entityManager.getEntitiesByTag(display.tag)
@@ -1836,7 +1823,7 @@ export function GameRuntimeGodot({
               <Text
                 key={display.tag}
                 style={[
-                  styles.livesText,
+                  styles.variableText,
                   display.color ? { color: display.color } : undefined,
                 ]}
               >
@@ -1857,7 +1844,7 @@ export function GameRuntimeGodot({
               <Text
                 key={display.name}
                 style={[
-                  styles.livesText,
+                  styles.variableText,
                   display.color ? { color: display.color } : undefined,
                 ]}
               >
@@ -1977,23 +1964,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  scoreText: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "bold",
-    textShadowColor: "#000",
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  },
-  timerText: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "bold",
-    textShadowColor: "#000",
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  },
-  livesText: {
+  variableText: {
     color: "#fff",
     fontSize: 20,
     fontWeight: "bold",

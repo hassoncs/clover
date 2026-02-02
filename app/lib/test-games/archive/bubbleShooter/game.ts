@@ -85,10 +85,11 @@ const game: GameDefinition = {
   },
   camera: { type: "fixed", zoom: 1 },
   ui: {
-    showScore: true,
-    showLives: false,
     showTimer: false,
     backgroundColor: "#1a1a2e",
+    variableDisplays: [
+      { name: 'score', label: 'Score' },
+    ],
   },
   winCondition: { expr: "entityCount('bubble') == 0" },
   loseCondition: {

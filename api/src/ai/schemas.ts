@@ -459,11 +459,8 @@ export const PresentationConfigSchema = z.object({
 });
 
 export const UIConfigSchema = z.object({
-  showScore: z.boolean().optional(),
   showTimer: z.boolean().optional(),
-  showLives: z.boolean().optional(),
   timerCountdown: z.boolean().optional(),
-  scorePosition: z.enum(['top-left', 'top-center', 'top-right']).optional(),
   backgroundColor: z.string().optional(),
 });
 

@@ -100,13 +100,11 @@ const game: GameDefinition = {
     matchedPairs: 0,
   },
   ui: {
-    showScore: true,
-    showLives: false,
     showTimer: true,
-    timerCountdown: false,
     backgroundColor: "#1a237e",
     variableDisplays: [
-      { name: "matchedPairs", label: "Pairs Found", color: "#4CAF50" },
+      { name: 'score', label: 'Matches', position: 'top-left' },
+      { name: 'timer', label: 'Time', position: 'top-right' },
     ],
   },
   winCondition: { expr: "score >= 800" },
