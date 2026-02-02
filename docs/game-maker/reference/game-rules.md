@@ -33,11 +33,13 @@ interface GameRule {
 
 Triggers define WHEN a rule is evaluated.
 
+> **Note**: `ScoreTrigger` is deprecated. Use `FrameTrigger` with an expression condition instead.
+
 ```typescript
 type RuleTrigger =
   | CollisionTrigger
   | TimerTrigger
-  | ScoreTrigger
+  | ScoreTrigger (deprecated)
   | EntityCountTrigger
   | EventTrigger
   | FrameTrigger;
@@ -89,18 +91,20 @@ interface FrameTrigger {
 
 Conditions provide additional filtering beyond the trigger.
 
+> **Note**: `ScoreCondition` is deprecated. Use `ExpressionCondition` instead.
+
 ```typescript
 type RuleCondition =
-  | ScoreCondition
+  | ScoreCondition (deprecated)
   | TimeCondition
   | EntityExistsCondition
   | EntityCountCondition
-  | RandomCondition;
+  | RandomCondition
+  | ExpressionCondition;
 
-interface ScoreCondition {
-  type: 'score';
-  min?: number;
-  max?: number;
+interface ExpressionCondition {
+  type: 'expression';
+  expr: string;                  // e.g., "score >= 100"
 }
 
 interface TimeCondition {
@@ -134,24 +138,29 @@ interface RandomCondition {
 
 Actions define WHAT happens when a rule triggers.
 
+> **Note**: `ScoreAction` is deprecated. Use `SetVariableAction` instead.
+
 ```typescript
 type RuleAction =
   | SpawnAction
   | DestroyAction
-  | ScoreAction
+  | ScoreAction (deprecated)
   | GameStateAction
   | SoundAction
   | EventAction
-  | ModifyAction;
+  | ModifyAction
+  | SetVariableAction;
 
-// Create an entity
-interface SpawnAction {
-  type: 'spawn';
-  template: string;
-  position: SpawnPosition;
-  count?: number;                // Spawn multiple
-  spread?: number;               // Random spread radius
+// ...
+
+// Modify variable (replaces ScoreAction)
+interface SetVariableAction {
+  type: 'set_variable';
+  name: string;                  // e.g., "score"
+  operation: 'set' | 'add' | 'subtract' | 'multiply';
+  value: number | string | boolean;
 }
+
 
 type SpawnPosition =
   | { type: 'fixed'; x: number; y: number }
@@ -215,16 +224,33 @@ interface ModifyAction {
 
 Special rules that end the game.
 
+> **Note**: Dedicated `score` and `lives` conditions are deprecated. Use `expr` (expressions) for all win/lose conditions.
+
 ```typescript
 interface WinCondition {
-  type: WinConditionType;
+  type?: WinConditionType;       // Optional if using expr
+  expr?: string;                 // e.g., "score >= 100"
   
-  // Type-specific parameters
-  score?: number;                // For 'score' type
-  tag?: string;                  // For 'destroy_all', 'reach_entity'
-  time?: number;                 // For 'survive_time'
-  entityId?: string;             // For 'reach_entity', 'protect_entity'
+  // Type-specific parameters (deprecated)
+  score?: number;
+  tag?: string;
+  time?: number;
+  entityId?: string;
 }
+
+// ...
+
+interface LoseCondition {
+  type?: LoseConditionType;      // Optional if using expr
+  expr?: string;                 // e.g., "lives <= 0"
+  
+  // Type-specific parameters (deprecated)
+  tag?: string;
+  time?: number;
+  entityId?: string;
+  score?: number;
+}
+
 
 type WinConditionType =
   | 'score'                      // Reach score threshold
@@ -274,7 +300,7 @@ type LoseConditionType =
       "id": "enemy_hit",
       "trigger": { "type": "collision", "entityATag": "projectile", "entityBTag": "enemy" },
       "actions": [
-        { "type": "score", "operation": "add", "value": 100 },
+        { "type": "set_variable", "name": "score", "operation": "add", "value": 100 },
         { "type": "sound", "soundId": "hit" },
         { "type": "destroy", "target": { "type": "collision_entities" } }
       ]
@@ -300,7 +326,7 @@ type LoseConditionType =
       "id": "collect_coin",
       "trigger": { "type": "collision", "entityATag": "player", "entityBTag": "coin" },
       "actions": [
-        { "type": "score", "operation": "add", "value": 10 },
+        { "type": "set_variable", "name": "score", "operation": "add", "value": 10 },
         { "type": "sound", "soundId": "coin" },
         { "type": "destroy", "target": { "type": "by_tag", "tag": "coin", "count": 1 } }
       ]
@@ -369,14 +395,14 @@ type LoseConditionType =
       "id": "hit_target",
       "trigger": { "type": "collision", "entityATag": "ball", "entityBTag": "target" },
       "actions": [
-        { "type": "score", "operation": "add", "value": 50 }
+        { "type": "set_variable", "name": "score", "operation": "add", "value": 50 }
       ]
     },
     {
       "id": "bonus_target",
       "trigger": { "type": "collision", "entityATag": "ball", "entityBTag": "bonus_target" },
       "actions": [
-        { "type": "score", "operation": "add", "value": 200 },
+        { "type": "set_variable", "name": "score", "operation": "add", "value": 200 },
         { "type": "destroy", "target": { "type": "collision_entities" } },
         { "type": "spawn", "template": "bonus_target", "position": { "type": "random", "bounds": { "minX": 2, "maxX": 8, "minY": 2, "maxY": 8 } } }
       ]
@@ -387,139 +413,22 @@ type LoseConditionType =
 
 ---
 
-## Rules Evaluator Implementation
+## Rules System Implementation
+
+The `RulesSystem` is a unified class that handles rule evaluation, win/lose conditions, and state machines. It implements the `RuntimeSystem` interface and is managed by the `GameSystemRunner`.
 
 ```typescript
-class RulesEvaluator {
-  private rules: GameRule[] = [];
-  private winCondition: WinCondition | null = null;
-  private loseCondition: LoseCondition | null = null;
+class RulesSystem implements RuntimeSystem, IGameStateMutator {
+  // ...
   
-  private gameState: 'playing' | 'won' | 'lost' = 'playing';
-  private score: number = 0;
-  private elapsedTime: number = 0;
-  
-  private firedOnce: Set<string> = new Set();
-  private cooldowns: Map<string, number> = new Map();
-  
-  loadRules(rules: GameRule[]): void {
-    this.rules = rules;
-  }
-  
-  setWinCondition(condition: WinCondition): void {
-    this.winCondition = condition;
-  }
-  
-  setLoseCondition(condition: LoseCondition): void {
-    this.loseCondition = condition;
-  }
-  
-  // Called each frame
-  update(dt: number, context: RuleContext): void {
-    if (this.gameState !== 'playing') return;
-    
-    this.elapsedTime += dt;
-    
-    // Check win/lose conditions first
-    if (this.checkWinCondition(context)) {
-      this.gameState = 'won';
-      return;
-    }
-    
-    if (this.checkLoseCondition(context)) {
-      this.gameState = 'lost';
-      return;
-    }
-    
-    // Evaluate each rule
-    for (const rule of this.rules) {
-      if (!rule.enabled) continue;
-      if (rule.fireOnce && this.firedOnce.has(rule.id)) continue;
-      
-      const cooldown = this.cooldowns.get(rule.id);
-      if (cooldown && this.elapsedTime < cooldown) continue;
-      
-      if (this.evaluateTrigger(rule.trigger, context)) {
-        if (this.evaluateConditions(rule.conditions, context)) {
-          this.executeActions(rule.actions, context);
-          
-          if (rule.fireOnce) {
-            this.firedOnce.add(rule.id);
-          }
-          
-          if (rule.cooldown) {
-            this.cooldowns.set(rule.id, this.elapsedTime + rule.cooldown);
-          }
-        }
-      }
-    }
-  }
-  
-  // Called when collision occurs
-  handleCollision(entityA: Entity, entityB: Entity, context: RuleContext): void {
-    // Find rules with collision triggers matching these entities
-    for (const rule of this.rules) {
-      if (rule.trigger.type !== 'collision') continue;
-      
-      const trigger = rule.trigger as CollisionTrigger;
-      const matches = 
-        (entityA.tags?.includes(trigger.entityATag) && entityB.tags?.includes(trigger.entityBTag)) ||
-        (entityA.tags?.includes(trigger.entityBTag) && entityB.tags?.includes(trigger.entityATag));
-      
-      if (matches) {
-        const collisionContext = { ...context, collisionEntityA: entityA, collisionEntityB: entityB };
-        if (this.evaluateConditions(rule.conditions, collisionContext)) {
-          this.executeActions(rule.actions, collisionContext);
-        }
-      }
-    }
-  }
-  
-  private checkWinCondition(context: RuleContext): boolean {
-    if (!this.winCondition) return false;
-    
-    switch (this.winCondition.type) {
-      case 'score':
-        return this.score >= (this.winCondition.score || 0);
-      case 'destroy_all':
-        return context.entityManager.getEntitiesByTag(this.winCondition.tag || '').length === 0;
-      case 'survive_time':
-        return this.elapsedTime >= (this.winCondition.time || 0);
-      // ... other conditions
-      default:
-        return false;
-    }
-  }
-  
-  private checkLoseCondition(context: RuleContext): boolean {
-    if (!this.loseCondition) return false;
-    
-    switch (this.loseCondition.type) {
-      case 'entity_destroyed':
-        const tag = this.loseCondition.tag;
-        return tag ? context.entityManager.getEntitiesByTag(tag).length === 0 : false;
-      case 'time_up':
-        return this.elapsedTime >= (this.loseCondition.time || 0);
-      // ... other conditions
-      default:
-        return false;
-    }
-  }
-  
-  addScore(points: number): void {
-    this.score += points;
-  }
-  
-  getScore(): number {
-    return this.score;
-  }
-  
-  getGameState(): 'playing' | 'won' | 'lost' {
-    return this.gameState;
-  }
-  
-  getElapsedTime(): number {
-    return this.elapsedTime;
+  // Called each frame by GameSystemRunner
+  update(ctx: UpdateContext, state: RulesSystemState): void {
+    // 1. Build EvalContext
+    // 2. Check Win/Lose conditions (expressions)
+    // 3. Evaluate Triggers
+    // 4. Evaluate Conditions
+    // 5. Execute Actions
+    // 6. Process State Machines
   }
 }
 ```
@@ -537,7 +446,7 @@ Rules are evaluated in the order they are defined. For complex interactions:
 ```json
 {
   "rules": [
-    { "id": "score_first", "trigger": "...", "actions": [{ "type": "score", "operation": "add", "value": 100 }] },
+    { "id": "score_first", "trigger": "...", "actions": [{ "type": "set_variable", "name": "score", "operation": "add", "value": 100 }] },
     { "id": "then_destroy", "trigger": "...", "actions": [{ "type": "destroy", "target": "..." }] },
     { "id": "then_spawn", "trigger": "...", "actions": [{ "type": "spawn", "template": "..." }] }
   ]

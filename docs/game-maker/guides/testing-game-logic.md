@@ -6,7 +6,7 @@
 
 ## Overview
 
-Game logic tests verify that rules, win conditions, and state machines behave correctly. These tests run fast (no physics or rendering) and focus on the RulesEvaluator and game definition structure.
+Game logic tests verify that rules, win conditions, and state machines behave correctly. These tests run fast (no physics or rendering) and focus on the RulesSystem and game definition structure.
 
 ---
 
@@ -27,7 +27,7 @@ Game logic tests verify that rules, win conditions, and state machines behave co
 
 ```typescript
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { RulesEvaluator } from '@/lib/game-engine/RulesEvaluator';
+import { RulesSystem } from '@/lib/game-engine/systems/runner/wrappers/RulesSystem';
 import type { EntityManager } from '@/lib/game-engine/EntityManager';
 import type { Physics2D } from '@/lib/physics2d/Physics2D';
 import type { RuntimeEntity } from '@/lib/game-engine/types';
@@ -120,36 +120,54 @@ For games with simple win conditions using expressions.
 
 ```typescript
 describe('expression win condition', () => {
-  let evaluator: RulesEvaluator;
+  let rulesSystem: RulesSystem;
   let mockEntityManager: EntityManager;
   let mockPhysics: Physics2D;
 
   const runUpdate = () => {
-    evaluator.update(0.016, mockEntityManager, [], {}, {}, mockPhysics);
+    rulesSystem.update({ dt: 0.016, elapsed: 0, frameId: 0, frame: { inputEvents: [], collisions: [] }, input: {} } as any, {} as any);
   };
 
   beforeEach(() => {
     const game = createMyGame();
     mockEntityManager = createMockEntityManager();
     mockPhysics = createMockPhysics();
-    evaluator = new RulesEvaluator(mockEntityManager);
+    rulesSystem = new RulesSystem({
+      rules: game.rules ?? [],
+      winCondition: game.winCondition,
+      loseCondition: game.loseCondition,
+      variables: game.variables,
+      containers: game.containers,
+      stateMachines: game.stateMachines,
+    });
     
-    evaluator.loadRules(game.rules ?? []);
-    evaluator.setWinCondition(game.winCondition); // { expr: "score >= 100" }
-    evaluator.setInitialVariables(game.variables);
-    evaluator.start();
+    rulesSystem.initialize({ 
+      entityManager: mockEntityManager, 
+      physics: mockPhysics,
+      bridge: {} as any,
+      eventBus: { emit: vi.fn(), subscribe: vi.fn() } as any,
+      eventQueue: {} as any
+    } as any, {} as any);
+    
+    rulesSystem.setRuntimeState({
+      vars: { ...game.variables },
+      firedOnce: new Set(),
+      cooldowns: new Map(),
+      pendingEvents: new Map(),
+      smStates: {}
+    } as any);
   });
 
   it('should NOT win when score is below threshold', () => {
-    evaluator.setVariable('score', 50);
+    rulesSystem.setVariable('score', 50);
     runUpdate();
-    expect(evaluator.getGameStateValue()).toBe('playing');
+    expect(rulesSystem.getState().gameState).toBe('playing');
   });
 
   it('should win when score reaches threshold', () => {
-    evaluator.setVariable('score', 100);
+    rulesSystem.setVariable('score', 100);
     runUpdate();
-    expect(evaluator.getGameStateValue()).toBe('won');
+    expect(rulesSystem.getState().gameState).toBe('won');
   });
 });
 ```
@@ -162,34 +180,45 @@ For complex games where win logic lives in custom rules/actions.
 
 ```typescript
 describe('rule-managed win condition', () => {
-  let evaluator: RulesEvaluator;
+  let rulesSystem: RulesSystem;
   let mockEntityManager: EntityManager;
 
   beforeEach(() => {
     const game = createBallSortGame(1);
     mockEntityManager = createMockEntityManager();
-    evaluator = new RulesEvaluator(mockEntityManager);
+    rulesSystem = new RulesSystem({
+      rules: game.rules ?? [],
+      winCondition: game.winCondition,
+      stateMachines: game.stateMachines,
+    });
     
-    evaluator.loadRules(game.rules ?? []);
-    evaluator.setWinCondition(game.winCondition); // {} - empty, managed by rules
-    evaluator.setStateMachines(game.stateMachines);
-    evaluator.start();
+    rulesSystem.initialize({ 
+      entityManager: mockEntityManager,
+      eventBus: { emit: vi.fn(), subscribe: vi.fn() } as any,
+    } as any, {} as any);
+    
+    rulesSystem.setRuntimeState({
+      vars: { ...game.variables },
+      firedOnce: new Set(),
+      cooldowns: new Map(),
+      pendingEvents: new Map(),
+    } as any);
   });
 
   it('should NOT win with unsorted state', () => {
-    // Trigger the check without proper setup
-    evaluator.triggerEvent('ball_dropped');
-    evaluator.update(0.016, mockEntityManager, [], {}, {}, mockPhysics);
-    expect(evaluator.getGameStateValue()).toBe('playing');
+    // Trigger the event
+    rulesSystem.triggerEvent('ball_dropped');
+    rulesSystem.update({ dt: 0.016 } as any, {} as any);
+    expect(rulesSystem.getState().gameState).toBe('playing');
   });
 
   it('should win when custom action calls ctx.win()', () => {
     // Set up the state that causes the custom action to call ctx.win()
-    setupSortedState(evaluator, mockEntityManager);
+    setupSortedState(rulesSystem, mockEntityManager);
     
-    evaluator.triggerEvent('ball_dropped');
-    evaluator.update(0.016, mockEntityManager, [], {}, {}, mockPhysics);
-    expect(evaluator.getGameStateValue()).toBe('won');
+    rulesSystem.triggerEvent('ball_dropped');
+    rulesSystem.update({ dt: 0.016 } as any, {} as any);
+    expect(rulesSystem.getState().gameState).toBe('won');
   });
 });
 ```
@@ -204,19 +233,98 @@ Test rules that respond to game events.
 describe('event-driven rules', () => {
   it('should increment score on enemy_destroyed event', () => {
     const game = createMyGame();
-    const evaluator = new RulesEvaluator(createMockEntityManager());
-    evaluator.loadRules(game.rules ?? []);
-    evaluator.setInitialVariables({ score: 0 });
-    evaluator.start();
+    const rulesSystem = new RulesSystem({ rules: game.rules ?? [] });
+    rulesSystem.initialize({ 
+      entityManager: createMockEntityManager(),
+      eventBus: { emit: vi.fn(), subscribe: vi.fn() } as any,
+    } as any, {} as any);
+    
+    rulesSystem.setRuntimeState({
+      vars: { score: 0 },
+      firedOnce: new Set(),
+      cooldowns: new Map(),
+      pendingEvents: new Map(),
+    } as any);
 
     // Trigger the event
-    evaluator.triggerEvent('enemy_destroyed');
-    evaluator.update(0.016, mockEntityManager, [], {}, {}, mockPhysics);
+    rulesSystem.triggerEvent('enemy_destroyed');
+    rulesSystem.update({ dt: 0.016 } as any, {} as any);
 
-    expect(evaluator.getVariable('score')).toBe(10);
+    expect(rulesSystem.getState().variables.score).toBe(10);
   });
 });
 ```
+
+---
+
+## Pattern 5: State Machine Transitions
+
+Test game flow state machines.
+
+```typescript
+describe('state machine transitions', () => {
+  it('should transition from idle to active on start event', () => {
+    const game = createMyGame();
+    const rulesSystem = new RulesSystem({ stateMachines: game.stateMachines });
+    rulesSystem.initialize({ 
+      entityManager: createMockEntityManager(),
+      eventBus: { emit: vi.fn(), subscribe: vi.fn() } as any,
+    } as any, {} as any);
+    
+    rulesSystem.setRuntimeState({
+      vars: {},
+      firedOnce: new Set(),
+      cooldowns: new Map(),
+      pendingEvents: new Map(),
+      smStates: { gameFlow: 'idle' }
+    } as any);
+
+    expect(rulesSystem.getStateMachineState('gameFlow')).toBe('idle');
+    
+    rulesSystem.triggerEvent('game_start');
+    rulesSystem.update({ dt: 0.016 } as any, {} as any);
+    
+    expect(rulesSystem.getStateMachineState('gameFlow')).toBe('active');
+  });
+});
+```
+
+---
+
+## Pattern 6: Mocking Entity State
+
+For tests that depend on entity positions or tags.
+
+```typescript
+describe('entity-dependent rules', () => {
+  it('should detect all enemies destroyed', () => {
+    const mockEntityManager = createMockEntityManager();
+    
+    // Initially 3 enemies
+    mockEntityManager.getEntityCountByTag = vi.fn().mockReturnValue(3);
+    
+    const rulesSystem = new RulesSystem({ winCondition: { expr: 'enemyCount == 0' } });
+    rulesSystem.initialize({ 
+      entityManager: mockEntityManager,
+      eventBus: { emit: vi.fn(), subscribe: vi.fn() } as any,
+    } as any, {} as any);
+    
+    rulesSystem.setRuntimeState({
+      vars: {},
+      firedOnce: new Set(),
+      cooldowns: new Map(),
+      pendingEvents: new Map(),
+    } as any);
+    
+    // Simulate destroying all enemies
+    mockEntityManager.getEntityCountByTag = vi.fn().mockReturnValue(0);
+    rulesSystem.update({ dt: 0.016 } as any, {} as any);
+    
+    expect(rulesSystem.getState().gameState).toBe('won');
+  });
+});
+```
+
 
 ---
 
@@ -283,7 +391,7 @@ describe('entity-dependent rules', () => {
 ### Don't
 
 - **Don't test physics**: Use the game-inspector MCP for physics verification
-- **Don't duplicate engine tests**: Trust RulesEvaluator internals, test your game's logic
+- **Don't duplicate engine tests**: Trust RulesSystem internals, test your game's logic
 - **Don't test rendering**: Visual testing is separate
 
 ---

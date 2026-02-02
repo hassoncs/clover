@@ -1,5 +1,7 @@
 # GameState Refactor - COMPLETED
 
+> **Note**: `RulesEvaluator` and `RulesRuntimeSystem` have since been merged into a single `RulesSystem` (Feb 2026).
+
 ## Overview
 
 We migrated from `RulesEvaluator` owning its own state to using an external `GameState` object managed by `GameLoader`. This enables:

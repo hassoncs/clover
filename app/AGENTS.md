@@ -121,6 +121,17 @@ See **[.opencode/skills/documentation.md](../.opencode/skills/documentation.md)*
 
 ---
 
+## Game Engine Architecture (Post-Cleanup)
+
+The game engine underwent a major cleanup in Feb 2026 to unify systems and simplify communication:
+
+- **Unified RulesSystem**: `RulesRuntimeSystem` and `RulesEvaluator` are merged into a single `RulesSystem`.
+- **Event-Based Communication**: All communication between the engine and React UI flows through the `GameEventBus`. Direct system access from UI is discouraged.
+- **Generic Variables**: `score` and `lives` are no longer "special" reserved fields. They are generic variables managed via the unified variables system.
+- **Single Ownership**: Each system (EntityManager, RulesSystem, etc.) has a single source of truth and is injected via `SystemContext`.
+
+---
+
 ## Development Workflow (DevMux)
 
 **Everything that opens a port runs via DevMux.**

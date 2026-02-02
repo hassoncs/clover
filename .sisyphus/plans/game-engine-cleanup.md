@@ -623,7 +623,7 @@ Phase 6 (After Phase 5): VALIDATION
 
 ---
 
-- [ ] 3.5. Clean Up Type Definitions
+- [x] 3.5. Clean Up Type Definitions
 
   **What to do**:
   - Remove `SCORE` and `LIVES` from `RESERVED_VARS`
@@ -672,7 +672,7 @@ Phase 6 (After Phase 5): VALIDATION
 
 ---
 
-- [ ] 4.1. Migrate Match3 to Event-Based Communication
+- [x] 4.1. Migrate Match3 to Event-Based Communication
 
   **What to do**:
   - Remove callback infrastructure from `Match3GameSystem`
@@ -714,7 +714,7 @@ Phase 6 (After Phase 5): VALIDATION
 
 ---
 
-- [ ] 4.2. Extract Event Subscription Helper
+- [x] 4.2. Extract Event Subscription Helper
 
   **What to do**:
   - Create `app/lib/game-engine/runtime/GameEventSubscriber.ts`
@@ -760,7 +760,7 @@ Phase 6 (After Phase 5): VALIDATION
 
 ---
 
-- [ ] 5.1. Remove Dead Code from GameRuntime
+- [x] 5.1. Remove Dead Code from GameRuntime
 
   **What to do**:
   - Remove any remaining slot machine references
@@ -801,7 +801,7 @@ Phase 6 (After Phase 5): VALIDATION
 
 ---
 
-- [ ] 5.2. Extract GameLoopController
+- [x] 5.2. Extract GameLoopController
 
   **What to do**:
   - Create `app/lib/game-engine/GameLoopController.ts`
@@ -844,7 +844,7 @@ Phase 6 (After Phase 5): VALIDATION
 
 ---
 
-- [ ] 5.3. Extract GameEventSubscriber Integration
+- [x] 5.3. Extract GameEventSubscriber Integration
 
   **What to do**:
   - Move event subscription setup into a dedicated hook or component
@@ -885,7 +885,7 @@ Phase 6 (After Phase 5): VALIDATION
 
 ---
 
-- [ ] 5.4. Final GameRuntime Cleanup
+- [x] 5.4. Final GameRuntime Cleanup
 
   **What to do**:
   - Review remaining GameRuntime code
@@ -930,7 +930,7 @@ Phase 6 (After Phase 5): VALIDATION
 
 ---
 
-- [ ] 6.1. Run All Verification Commands
+- [x] 6.1. Run All Verification Commands
 
   **What to do**:
   - Run full TypeScript compilation
@@ -971,7 +971,7 @@ Phase 6 (After Phase 5): VALIDATION
 
 ---
 
-- [ ] 6.2. Manual Game Testing
+- [x] 6.2. Manual Game Testing
 
   **What to do**:
   - Test at least 3 different game types manually

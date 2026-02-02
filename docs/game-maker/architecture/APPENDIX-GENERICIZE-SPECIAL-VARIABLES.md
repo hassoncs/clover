@@ -1,5 +1,9 @@
 # Appendix: Genericize Special Variables (Score, Lives, etc.)
 
+> **STATUS: IMPLEMENTED** ✅
+> This proposal has been fully implemented as part of the Game Engine Cleanup (Feb 2026). 
+> `score` and `lives` are now generic variables, and dedicated APIs/events have been removed in favor of the unified variables system.
+
 **Problem**: The engine has hardcoded "special" variables like `score` and `lives` with dedicated APIs, UI config, triggers, conditions, actions, and lose conditions. This violates the principle that **all variables should be generic**.
 
 **Goal**: Remove ALL special treatment. Everything should use the generic `variables` system with expression-based win/lose conditions.
