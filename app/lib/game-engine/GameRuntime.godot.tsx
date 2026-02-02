@@ -87,8 +87,7 @@ import {
   type ScriptInputEvent,
   type ScriptCollisionEvent,
 } from "@/lib/scripting";
-import { TweenSystem } from "./animation/TweenSystem";
-import { setGlobalTweenSystem, cancelTweensForEntity } from "./behaviors/TweenBehaviors";
+import { cancelTweensForEntity } from "./behaviors/TweenBehaviors";
 import { GameSystemRunner } from "./systems/runner/GameSystemRunner";
 import type { SystemContext, UpdateContext } from "./systems/runner/types";
 import {
@@ -102,6 +101,7 @@ import {
   ScriptSandboxRuntimeSystem,
   RulesRuntimeSystem,
   TweenRuntimeSystem,
+  TargetPositionRuntimeSystem,
   Match3RuntimeSystem,
   SlotMachineRuntimeSystem,
   ContainerRuntimeSystem,
@@ -153,7 +153,6 @@ export function GameRuntimeGodot({
   const inputEntityManagerRef = useRef<InputEntityManager | null>(null);
   const match3SystemRef = useRef<Match3GameSystem | null>(null);
   const slotMachineSystemRef = useRef<SlotMachineSystem | null>(null);
-  const tweenSystemRef = useRef<TweenSystem | null>(null);
   const propertyCacheRef = useRef(new PropertyCache());
   const propertySyncManagerRef = useRef<PropertySyncManager | null>(null);
   const elapsedRef = useRef(0);
@@ -481,15 +480,6 @@ export function GameRuntimeGodot({
 
         const inputEntityManager = new InputEntityManager();
         inputEntityManagerRef.current = inputEntityManager;
-
-        const tweenSystem = new TweenSystem({
-          setEntityPosition: (entityId, x, y) => bridge.setPosition(entityId, x, y),
-          setEntityRotation: (entityId, angle) => bridge.setRotation(entityId, angle),
-          setEntityScale: (entityId, scaleX, scaleY) => bridge.setScale(entityId, scaleX, scaleY),
-          setEntityOpacity: (entityId, opacity) => bridge.setOpacity(entityId, opacity),
-        });
-        tweenSystemRef.current = tweenSystem;
-        setGlobalTweenSystem(tweenSystem);
 
         if (definition.match3) {
           const match3System = new Match3GameSystem(
@@ -839,6 +829,7 @@ export function GameRuntimeGodot({
         }
 
         runner.register(new TweenRuntimeSystem());
+        runner.register(new TargetPositionRuntimeSystem());
 
         const { EventBus } = await import('@slopcade/shared');
         const eventBus = new EventBus();
@@ -913,8 +904,6 @@ export function GameRuntimeGodot({
       match3SystemRef.current = null;
       slotMachineSystemRef.current?.destroy();
       slotMachineSystemRef.current = null;
-      setGlobalTweenSystem(null);
-      tweenSystemRef.current = null;
       propertySyncManagerRef.current?.stop();
       propertySyncManagerRef.current = null;
       scriptSandboxRef.current?.dispose();

@@ -19,6 +19,9 @@ export type { CameraSystemConfig, CameraSystemState } from './CameraRuntimeSyste
 export { TweenRuntimeSystem } from './TweenRuntimeSystem';
 export type { TweenSystemConfig, TweenSystemState } from './TweenRuntimeSystem';
 
+export { TargetPositionRuntimeSystem } from './TargetPositionRuntimeSystem';
+export type { TargetPositionSystemConfig, TargetPositionSystemState } from './TargetPositionRuntimeSystem';
+
 export { Match3RuntimeSystem } from './Match3RuntimeSystem';
 export type { Match3SystemConfig, Match3SystemState } from './Match3RuntimeSystem';
 

@@ -22,6 +22,25 @@ import {
   getGodotBridge as getSharedGodotBridge,
   type GodotBridgeBase,
 } from "./query";
+import { BridgeCore, type BridgeMessage } from "./BridgeCore";
+
+class WebBridgeCore extends BridgeCore {
+  private getGodotBridge: () => Window["GodotBridge"] | null;
+
+  constructor(getGodotBridge: () => Window["GodotBridge"] | null) {
+    super();
+    this.getGodotBridge = getGodotBridge;
+  }
+
+  protected send(msg: BridgeMessage): void {
+    const bridge = this.getGodotBridge();
+    if (!bridge) return;
+
+    if (msg.id) {
+      bridge.query(msg.id, msg.type, JSON.stringify(msg.data ?? {}));
+    }
+  }
+}
 
 declare global {
   interface Window {
@@ -270,6 +289,8 @@ export function createWebGodotBridge(): GodotBridge {
     return window.GodotBridge ?? null;
   };
 
+  const bridgeCore = new WebBridgeCore(getGodotBridge);
+
   const queryAsync = <T>(
     method: string,
     args: unknown[] = [],
@@ -338,17 +359,20 @@ export function createWebGodotBridge(): GodotBridge {
                 }
 
                 for (const cb of collisionCallbacks) cb(event);
+                bridgeCore.dispatch({ type: 'collision', data: event });
               },
             );
 
             godotBridge.onEntityDestroyed((entityId) => {
               for (const cb of destroyCallbacks) cb(entityId);
+              bridgeCore.dispatch({ type: 'entity_destroyed', data: { entityId } });
             });
 
             godotBridge.onEntitySpawned?.((jsonStr: string) => {
               try {
                 const event = JSON.parse(jsonStr) as EntitySpawnedEvent;
                 for (const cb of entitySpawnedCallbacks) cb(event);
+                bridgeCore.dispatch({ type: 'entity_spawned', data: event });
               } catch {
                 console.warn("[GodotBridge.web] Failed to parse entity spawned event:", jsonStr);
               }
@@ -361,6 +385,7 @@ export function createWebGodotBridge(): GodotBridge {
                 otherShapeIndex: otherShapeIndex,
               };
               for (const cb of sensorBeginCallbacks) cb(event);
+              bridgeCore.dispatch({ type: 'sensor_begin', data: event });
             });
 
             godotBridge.onSensorEnd((sensorShapeIndex, entityId, otherShapeIndex) => {
@@ -370,6 +395,7 @@ export function createWebGodotBridge(): GodotBridge {
                 otherShapeIndex: otherShapeIndex,
               };
               for (const cb of sensorEndCallbacks) cb(event);
+              bridgeCore.dispatch({ type: 'sensor_end', data: event });
             });
 
             godotBridge.onInputEvent((jsonStr: unknown) => {

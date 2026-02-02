@@ -3,9 +3,129 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { GameInspectorState } from '../types.js'
 
 export function registerDebugTools(server: McpServer, state: GameInspectorState) {
+  // ============================================================================
+  // game_state - Zero-boilerplate game state access with tiered detail levels
+  // ============================================================================
+  server.tool(
+    "game_state",
+    "Get game runtime state (variables, score, lives, game state, entity counts). Use detail='tags' to include entity tag arrays.",
+    {
+      detail: z.enum(["summary", "tags", "full"]).optional()
+        .describe("Detail level: 'summary' (default) = variables + counts, 'tags' = adds entity tag arrays, 'full' = adds positions"),
+      tags: z.array(z.string()).optional()
+        .describe("Tags to include in entity counts/lists (default: auto-detect from game)"),
+    },
+    async (args) => {
+      const detail = (args.detail as "summary" | "tags" | "full" | undefined) ?? "summary";
+      const requestedTags = args.tags as string[] | undefined;
+
+      if (!state.page) {
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify({ error: "No game open. Call game_open first." }) }],
+        };
+      }
+
+      const result = await state.page.evaluate((opts: { detail: string; requestedTags?: string[] }) => {
+        const w = window as any;
+        const runtime = w.__GAME_RUNTIME__;
+        
+        if (!runtime) {
+          return { error: "No game runtime found. Is the game loaded?" };
+        }
+
+        const runner = runtime.refs?.gameSystemRunner?.current;
+        if (!runner) {
+          return { error: "No game system runner found. Is the game fully initialized?" };
+        }
+
+        const rules = runner.getSystem?.('rules')?.rulesEvaluator;
+        const em = runner.getSystem?.('entity-manager')?.entityManager;
+
+        const allTags = new Set<string>();
+        const allEntities = em?.getAllEntities?.() ?? [];
+        for (const entity of allEntities) {
+          if (Array.isArray(entity.tags)) {
+            for (const tag of entity.tags) {
+              allTags.add(tag);
+            }
+          }
+        }
+
+        const tagsToCount = opts.requestedTags ?? 
+          Array.from(allTags).filter(t => 
+            !t.startsWith('tube-') &&
+            !t.startsWith('in-container-') &&
+            t !== 'tube-wall' && 
+            t !== 'tube-bottom'
+          ).slice(0, 15);
+
+        const entityCounts: Record<string, number> = {};
+        for (const tag of tagsToCount) {
+          const entities = em?.getEntitiesByTag?.(tag) ?? [];
+          if (entities.length > 0) {
+            entityCounts[tag] = entities.length;
+          }
+        }
+
+        const response: Record<string, unknown> = {
+          gameState: rules?.getGameStateValue?.() ?? "unknown",
+          score: rules?.getScore?.() ?? 0,
+          lives: rules?.getLives?.() ?? 0,
+          elapsed: Math.round((rules?.getElapsed?.() ?? 0) * 100) / 100,
+          variables: rules?.getVariables?.() ?? {},
+          stateMachines: (() => {
+            const states = rules?.getStateMachineStates?.();
+            if (!states) return undefined;
+            const simplified: Record<string, string> = {};
+            for (const [id, state] of Object.entries(states)) {
+              simplified[id] = (state as { currentState: string }).currentState;
+            }
+            return simplified;
+          })(),
+          entityCounts,
+        };
+
+        if (opts.detail === "tags" || opts.detail === "full") {
+          const entitiesByTag: Record<string, Array<{ id: string; tags: string[]; template?: string; position?: { x: number; y: number } }>> = {};
+          
+          for (const tag of tagsToCount) {
+            const entities = em?.getEntitiesByTag?.(tag) ?? [];
+            if (entities.length > 0) {
+              entitiesByTag[tag] = entities.map((e: any) => {
+                const entry: { id: string; tags: string[]; template?: string; position?: { x: number; y: number } } = {
+                  id: e.id,
+                  tags: e.tags ?? [],
+                };
+                if (e.template) entry.template = e.template;
+                if (opts.detail === "full" && e.transform) {
+                  entry.position = { 
+                    x: Math.round(e.transform.x * 100) / 100, 
+                    y: Math.round(e.transform.y * 100) / 100 
+                  };
+                }
+                return entry;
+              });
+            }
+          }
+          
+          response.entitiesByTag = entitiesByTag;
+        }
+
+        return response;
+      }, { detail, requestedTags });
+
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+      };
+    }
+  );
+
+  // ============================================================================
+  // debug_eval - Fixed to return last expression value from multi-statement code
+  // ============================================================================
   server.tool(
     "debug_eval",
-    "Evaluate JavaScript in the game page context. Returns the result. Use for debugging game state, script systems, etc.",
+    "Evaluate JavaScript in the game page context. Returns the result. The last expression is automatically returned even in multi-statement code.",
     {
       code: z.string().describe("JavaScript code to evaluate in the page context"),
     },
@@ -20,25 +140,76 @@ export function registerDebugTools(server: McpServer, state: GameInspectorState)
 
       try {
         const result = await state.page.evaluate((evalCode: string) => {
-          try {
-            const fn = new Function(`return (${evalCode})`);
-            const value = fn();
+          const safeStringify = (value: unknown) => {
             return JSON.parse(JSON.stringify(value, (key, val) => {
               if (typeof val === 'function') return '[Function]';
               if (val instanceof Error) return { error: val.message, stack: val.stack };
+              if (val === undefined) return '__undefined__';
               return val;
             }));
-          } catch (evalError) {
-            try {
-              const fn = new Function(evalCode);
-              fn();
-              return { executed: true };
-            } catch (stmtError) {
-              return { 
-                error: evalError instanceof Error ? evalError.message : String(evalError),
-                statementError: stmtError instanceof Error ? stmtError.message : String(stmtError)
-              };
+          };
+
+          try {
+            const fn = new Function(`return (${evalCode})`);
+            const value = fn();
+            return safeStringify(value);
+          } catch {
+          }
+
+          try {
+            const wrappedCode = `
+              const runtime = window.__GAME_RUNTIME__;
+              const runner = runtime?.refs?.gameSystemRunner?.current;
+              const rules = runner?.getSystem?.('rules')?.rulesEvaluator;
+              const em = runner?.getSystem?.('entity-manager')?.entityManager;
+              const getVar = (name) => rules?.getVariable(name);
+              const setVar = (name, val) => rules?.setVariable(name, val);
+              const getEntitiesByTag = (tag) => em?.getEntitiesByTag(tag);
+              const getEntity = (id) => em?.getEntity(id);
+              
+              let __result__ = undefined;
+              ${evalCode}
+              return __result__;
+            `;
+            
+            const fn = new Function(wrappedCode);
+            const value = fn();
+            
+            if (value !== undefined) {
+              return safeStringify(value);
             }
+            
+            const lines = evalCode.trim().split('\n');
+            const lastLine = lines[lines.length - 1].trim();
+            const isStatement = lastLine.match(/^(return|if|for|while|try|const|let|var|function|class|switch|throw|import|export)\b/) || lastLine.endsWith('{');
+            
+            if (lastLine && !isStatement) {
+              try {
+                const codeWithReturn = lines.slice(0, -1).join('\n') + '\nreturn (' + lastLine + ')';
+                const wrappedWithReturn = `
+                  const runtime = window.__GAME_RUNTIME__;
+                  const runner = runtime?.refs?.gameSystemRunner?.current;
+                  const rules = runner?.getSystem?.('rules')?.rulesEvaluator;
+                  const em = runner?.getSystem?.('entity-manager')?.entityManager;
+                  const getVar = (name) => rules?.getVariable(name);
+                  const setVar = (name, val) => rules?.setVariable(name, val);
+                  const getEntitiesByTag = (tag) => em?.getEntitiesByTag(tag);
+                  const getEntity = (id) => em?.getEntity(id);
+                  
+                  ${codeWithReturn}
+                `;
+                const fnWithReturn = new Function(wrappedWithReturn);
+                const returnValue = fnWithReturn();
+                return safeStringify(returnValue);
+              } catch {
+              }
+            }
+            
+            return { executed: true, note: "Code executed. Set __result__ = value to return data." };
+          } catch (stmtError) {
+            return { 
+              error: stmtError instanceof Error ? stmtError.message : String(stmtError),
+            };
           }
         }, code);
 

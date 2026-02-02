@@ -51,10 +51,7 @@ const game: GameDefinition = {
     showTimer: false,
     backgroundColor: "#0a0a2e",
   },
-  winCondition: {
-    type: "destroy_all",
-    tag: "brick",
-  },
+  winCondition: { expr: "entityCount('brick') == 0" },
   loseCondition: {
     type: "lives_zero",
   },

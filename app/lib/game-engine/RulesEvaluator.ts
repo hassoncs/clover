@@ -12,6 +12,7 @@ import type {
   TransitionDefinition,
   ContainerConfig,
 } from "@slopcade/shared";
+import { evaluate } from "@slopcade/shared";
 import type { EntityManager } from "./EntityManager";
 import type { InputEntityManager } from "./InputEntityManager";
 import type { CollisionInfo, GameState, InputState } from "./BehaviorContext";
@@ -423,6 +424,26 @@ export class RulesEvaluator implements IGameStateMutator {
       bridge,
       setTimeScale,
       playSound,
+      setEntityTargetPosition: (entityId: string, x: number, y: number, config?: { duration?: number; easing?: string }) => {
+        const entity = entityManager.getEntity(entityId);
+        if (!entity) return;
+        
+        const distance = Math.sqrt(
+          Math.pow(x - entity.transform.x, 2) + Math.pow(y - entity.transform.y, 2)
+        );
+        const duration = config?.duration ?? Math.min(0.3, Math.max(0.1, distance / 10));
+        const easing = config?.easing ?? 'easeOutQuad';
+        
+        entity.movementTarget = {
+          x,
+          y,
+          startX: entity.transform.x,
+          startY: entity.transform.y,
+          startTime: this.elapsed,
+          duration,
+          easing,
+        };
+      },
       score: this.score,
       lives: this.lives,
       elapsed: this.elapsed,
@@ -578,48 +599,16 @@ export class RulesEvaluator implements IGameStateMutator {
     }
   }
 
-  // Keep checkWin/Lose condition for now (or move later)
   private checkWinCondition(context: RuleContext): boolean {
-    if (!this.winCondition) return false;
+    if (!this.winCondition?.expr) return false;
+    if (!context.evalContext) return false;
 
-    switch (this.winCondition.type) {
-      case "score":
-        return this.score >= (this.winCondition.score ?? 0);
-
-      case "destroy_all":
-        if (!this.winCondition.tag) return false;
-        return (
-          context.entityManager.getEntitiesByTag(this.winCondition.tag)
-            .length === 0
-        );
-
-      case "survive_time":
-        return this.elapsed >= (this.winCondition.time ?? 0);
-
-      case "collect_all":
-        if (!this.winCondition.tag) return false;
-        return (
-          context.entityManager.getEntitiesByTag(this.winCondition.tag)
-            .length === 0
-        );
-
-      case "reach_entity": {
-        if (!this.winCondition.entityId) return false;
-        const targetEntity = context.entityManager.getEntity(
-          this.winCondition.entityId,
-        );
-        if (!targetEntity) return false;
-        const playerEntities = context.entityManager.getEntitiesByTag("player");
-        if (playerEntities.length === 0) return false;
-        const player = playerEntities[0];
-        const dx = player.transform.x - targetEntity.transform.x;
-        const dy = player.transform.y - targetEntity.transform.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        return distance < 1.0;
-      }
-
-      default:
-        return false;
+    try {
+      const result = evaluate(this.winCondition.expr, context.evalContext);
+      return Boolean(result);
+    } catch (e) {
+      console.warn('[WinCondition] Failed to evaluate:', this.winCondition.expr, e);
+      return false;
     }
   }
 

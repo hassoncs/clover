@@ -90,10 +90,7 @@ const game: GameDefinition = {
     showTimer: false,
     backgroundColor: "#1a1a2e",
   },
-  winCondition: {
-    type: "destroy_all",
-    tag: "bubble",
-  },
+  winCondition: { expr: "entityCount('bubble') == 0" },
   loseCondition: {
     type: "custom",
   },

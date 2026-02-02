@@ -130,12 +130,12 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
     const pickupX = tubeDims.x;
     const pickupY = tubeDims.topY + LIFT_HEIGHT;
 
-    if (context.bridge) {
-      context.bridge.setPosition(ballId, pickupX, pickupY);
+    if (context.setEntityTargetPosition) {
+      context.setEntityTargetPosition(ballId, pickupX, pickupY, {
+        duration: 0.2,
+        easing: 'easeOutQuad',
+      });
     }
-    ball.transform.x = pickupX;
-    ball.transform.y = pickupY;
-    context.entityManager.updateWorldTransforms(ballId);
 
     context.mutator.triggerEvent('ball_picked');
   }
@@ -184,12 +184,12 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
       return;
     }
 
-    if (context.bridge) {
-      context.bridge.setPosition(heldBallId, dropPos.x, dropPos.y);
+    if (context.setEntityTargetPosition) {
+      context.setEntityTargetPosition(heldBallId, dropPos.x, dropPos.y, {
+        duration: 0.2,
+        easing: 'easeOutQuad',
+      });
     }
-    ball.transform.x = dropPos.x;
-    ball.transform.y = dropPos.y;
-    context.entityManager.updateWorldTransforms(heldBallId);
 
     for (const tag of ball.tags) {
       if (tag.startsWith('in-container-tube-')) {
@@ -318,13 +318,11 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
       
       if (ball) {
         const returnPos = this.calculateBallPositionInTube(sourceTubeIndex, count, context);
-        if (returnPos) {
-          if (context.bridge) {
-            context.bridge.setPosition(heldBallId, returnPos.x, returnPos.y);
-          }
-          ball.transform.x = returnPos.x;
-          ball.transform.y = returnPos.y;
-          context.entityManager.updateWorldTransforms(heldBallId);
+        if (returnPos && context.setEntityTargetPosition) {
+          context.setEntityTargetPosition(heldBallId, returnPos.x, returnPos.y, {
+            duration: 0.2,
+            easing: 'easeOutQuad',
+          });
         }
         context.entityManager.removeTag(heldBallId, 'held');
         context.entityManager.addTag(heldBallId, `in-container-tube-${sourceTubeIndex}`);

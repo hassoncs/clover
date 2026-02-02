@@ -188,10 +188,7 @@ export const FALLING_CATCHER_TEMPLATE: GameDefinition = {
       actions: [{ type: 'game_state', state: 'win', delay: 0 }],
     },
   ],
-  winCondition: {
-    type: 'survive_time',
-    time: 30,
-  },
+  winCondition: { expr: 'elapsed >= 30' },
   loseCondition: {
     type: 'score_below',
     score: 0,

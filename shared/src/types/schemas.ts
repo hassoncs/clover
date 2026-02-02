@@ -526,11 +526,7 @@ export const GameRuleSchema = z.object({
 });
 
 export const WinConditionSchema = z.object({
-  type: z.enum(['score', 'destroy_all', 'survive_time', 'reach_entity', 'collect_all', 'custom']),
-  score: z.number().optional(),
-  tag: z.string().optional(),
-  time: z.number().optional(),
-  entityId: z.string().optional(),
+  expr: z.string().optional(),
 });
 
 export const LoseConditionSchema = z.object({

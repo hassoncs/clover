@@ -619,20 +619,8 @@ export interface GameRule {
   cooldown?: number;
 }
 
-export type WinConditionType =
-  | 'score'
-  | 'destroy_all'
-  | 'survive_time'
-  | 'reach_entity'
-  | 'collect_all'
-  | 'custom';
-
 export interface WinCondition {
-  type: WinConditionType;
-  score?: number;
-  tag?: string;
-  time?: number;
-  entityId?: string;
+  expr?: string;
 }
 
 export type LoseConditionType =

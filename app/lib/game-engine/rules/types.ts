@@ -53,4 +53,10 @@ export interface RuleContext {
   timeScale?: number;
   setTimeScale?: (scale: number, duration?: number) => void;
   playSound?: (soundId: string, volume?: number) => void;
+  setEntityTargetPosition?: (
+    entityId: string,
+    x: number,
+    y: number,
+    config?: { duration?: number; easing?: string }
+  ) => void;
 }

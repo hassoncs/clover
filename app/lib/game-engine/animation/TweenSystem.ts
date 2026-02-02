@@ -63,6 +63,9 @@ export class TweenSystem {
     };
 
     this.tweens.set(id, tween);
+    
+    this.applyTweenValue(tween, 0);
+
     return id;
   }
 

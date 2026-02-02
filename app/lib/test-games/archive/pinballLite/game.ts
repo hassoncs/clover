@@ -37,10 +37,7 @@ const game: GameDefinition = {
     showTimer: false,
     backgroundColor: "#0a0a2e",
   },
-  winCondition: {
-    type: "score",
-    score: 5000,
-  },
+  winCondition: { expr: "score >= 5000" },
   loseCondition: {
     type: "lives_zero",
   },

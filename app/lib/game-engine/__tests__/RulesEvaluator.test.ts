@@ -4,6 +4,7 @@ import type { EntityManager } from '../EntityManager';
 import type { Physics2D } from '../../physics2d/Physics2D';
 import type { InputEvents, CollisionInfo } from '../BehaviorContext';
 import type { RuntimeEntity } from '../types';
+import type { EvalContext } from '@slopcade/shared';
 import { createSeededRandom } from '@slopcade/shared';
 
 function createMockEntityManager(): EntityManager {
@@ -54,7 +55,18 @@ describe('RulesEvaluator', () => {
   });
 
   const runUpdate = (inputEvents: InputEvents = {}, collisions: CollisionInfo[] = []) => {
-    evaluator.update(0.016, mockEntityManager, collisions, {}, inputEvents, mockPhysics);
+    const evalContext: EvalContext = {
+      score: evaluator.getScore(),
+      lives: evaluator.getLives(),
+      time: evaluator.getElapsed(),
+      wave: 1,
+      dt: 0.016,
+      frameId: 0,
+      variables: evaluator.getVariables(),
+      random: Math.random,
+      entityManager: mockEntityManager,
+    };
+    evaluator.update(0.016, mockEntityManager, collisions, {}, inputEvents, mockPhysics, undefined, evalContext);
   };
 
   describe('Game State Management', () => {
@@ -1055,23 +1067,66 @@ describe('RulesEvaluator', () => {
     beforeEach(() => evaluator.start());
 
     describe('Win Conditions', () => {
-      it('wins when score threshold reached', () => {
-        evaluator.setWinCondition({ type: 'score', score: 100 });
+      it('wins when score expression is satisfied', () => {
+        evaluator.setWinCondition({ expr: 'score >= 100' });
         evaluator.setScore(100);
         runUpdate();
         expect(evaluator.getGameStateValue()).toBe('won');
       });
 
-      it('wins when all enemies destroyed', () => {
+      it('wins when all enemies destroyed (entityCount expression)', () => {
         mockEntityManager.getEntitiesByTag = vi.fn().mockReturnValue([]);
-        evaluator.setWinCondition({ type: 'destroy_all', tag: 'enemy' });
+        evaluator.setWinCondition({ expr: "entityCount('enemy') == 0" });
         runUpdate();
         expect(evaluator.getGameStateValue()).toBe('won');
       });
 
-      it('wins after surviving time', () => {
-        evaluator.setWinCondition({ type: 'survive_time', time: 0.01 });
+      it('wins after surviving time (elapsed expression)', () => {
         runUpdate();
+        evaluator.setWinCondition({ expr: 'time >= 0.01' });
+        runUpdate();
+        expect(evaluator.getGameStateValue()).toBe('won');
+      });
+
+      it('empty win condition does not auto-trigger', () => {
+        evaluator.setWinCondition({});
+        evaluator.setScore(9999);
+        runUpdate();
+        expect(evaluator.getGameStateValue()).toBe('playing');
+      });
+
+      it('empty win condition allows rules to set win state', () => {
+        evaluator.setWinCondition({});
+        evaluator.loadRules([{
+          id: 'custom-win-rule',
+          trigger: { type: 'event', eventName: 'check_win' },
+          actions: [{ type: 'game_state', state: 'win' }],
+        }]);
+
+        runUpdate();
+        expect(evaluator.getGameStateValue()).toBe('playing');
+
+        evaluator.triggerEvent('check_win');
+        runUpdate();
+        expect(evaluator.getGameStateValue()).toBe('won');
+      });
+
+      it('empty win condition with event chain', () => {
+        evaluator.setWinCondition({});
+        evaluator.loadRules([
+          {
+            id: 'drop-ball',
+            trigger: { type: 'tap' },
+            actions: [{ type: 'event', eventName: 'ball_dropped' }],
+          },
+          {
+            id: 'check-win-on-drop',
+            trigger: { type: 'event', eventName: 'ball_dropped' },
+            actions: [{ type: 'game_state', state: 'win' }],
+          },
+        ]);
+
+        runUpdate({ tap: { x: 0, y: 0, worldX: 0, worldY: 0 } });
         expect(evaluator.getGameStateValue()).toBe('won');
       });
     });
@@ -1313,7 +1368,7 @@ describe('RulesEvaluator', () => {
         actions: [{ type: 'score', operation: 'add', value: 1 }],
       }]);
 
-      evaluator.setWinCondition({ type: 'score', score: 0 });
+      evaluator.setWinCondition({ expr: 'score >= 0' });
       runUpdate();
       expect(evaluator.getGameStateValue()).toBe('won');
       

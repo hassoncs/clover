@@ -109,10 +109,7 @@ const game: GameDefinition = {
       { name: "matchedPairs", label: "Pairs Found", color: "#4CAF50" },
     ],
   },
-  winCondition: {
-    type: "score",
-    score: 800,
-  },
+  winCondition: { expr: "score >= 800" },
   stateMachines: [
     {
       id: "gameFlow",

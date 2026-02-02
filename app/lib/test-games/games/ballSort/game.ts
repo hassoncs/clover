@@ -306,7 +306,7 @@ export function createBallSortGame(level: number = 1): GameDefinition {
         ],
       },
     ],
-    winCondition: { type: "custom" },
+    winCondition: {},
     templates: {
       tubeWall: {
         id: "tubeWall",

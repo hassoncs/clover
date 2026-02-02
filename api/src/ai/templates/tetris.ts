@@ -237,10 +237,7 @@ export const TETRIS_TEMPLATE: GameDefinition = {
   },
   entities: [],
   rules: [],
-  winCondition: {
-    type: 'score',
-    score: 5000,
-  },
+  winCondition: { expr: 'score >= 5000' },
   loseCondition: {
     type: 'custom',
   },

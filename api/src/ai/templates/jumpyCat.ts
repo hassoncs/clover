@@ -219,10 +219,7 @@ export const JUMPY_CAT_TEMPLATE: GameDefinition = {
       actions: [{ type: 'game_state', state: 'win', delay: 0.5 }],
     },
   ],
-  winCondition: {
-    type: 'reach_entity',
-    entityId: 'platform-goal',
-  },
+  winCondition: {},
   loseCondition: {
     type: 'entity_destroyed',
     tag: 'player',

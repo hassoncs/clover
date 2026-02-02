@@ -74,10 +74,7 @@ const game: GameDefinition = {
     timerCountdown: true,
     backgroundColor: "#2d1b4e",
   },
-  winCondition: {
-    type: "score",
-    score: 1000,
-  },
+  winCondition: { expr: "score >= 1000" },
   loseCondition: {
     type: "time_up",
     time: 120,

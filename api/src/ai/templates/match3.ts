@@ -177,10 +177,7 @@ export const MATCH3_TEMPLATE: GameDefinition = {
   },
   entities: [],
   rules: [],
-  winCondition: {
-    type: 'score',
-    score: 1000,
-  },
+  winCondition: { expr: 'score >= 1000' },
   loseCondition: {
     type: 'time_up',
     time: 60,

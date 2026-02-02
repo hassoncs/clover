@@ -186,9 +186,7 @@ const game: GameDefinition = {
       ],
     },
   ],
-  winCondition: {
-    type: "custom",
-  },
+  winCondition: {},
   templates: {
     pivot: {
       id: "pivot",

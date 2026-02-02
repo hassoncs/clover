@@ -547,63 +547,23 @@ function validateWinLoseConditions(
   errors: ValidationError[],
   warnings: ValidationWarning[]
 ): void {
-  const VALID_WIN_TYPES = ['score', 'destroy_all', 'survive_time', 'reach_entity', 'collect_all', 'custom'];
   const VALID_LOSE_TYPES = ['entity_destroyed', 'entity_exits_screen', 'time_up', 'score_below', 'lives_zero', 'custom'];
 
-  if (!game.winCondition) {
-    errors.push({
-      code: 'MISSING_WIN_CONDITION',
-      message: 'Game must have a win condition. See docs/game-maker/reference/playability-contract.md for requirements.',
+  const hasWinExpr = game.winCondition?.expr;
+  const hasWinTriggeringRule = game.rules?.some(rule =>
+    rule.actions?.some(action =>
+      (action.type === 'game_state' && (action as any).state === 'win') ||
+      action.type === 'ball_sort_check_win'
+    )
+  );
+  const hasWinScript = game.script?.includes('win(');
+
+  if (!hasWinExpr && !hasWinTriggeringRule && !hasWinScript) {
+    warnings.push({
+      code: 'NO_WIN_MECHANISM',
+      message: 'No win condition detected. Provide winCondition.expr, a rule with game_state action, or script calling ctx.win()',
       path: 'winCondition',
     });
-  } else {
-    if (!VALID_WIN_TYPES.includes(game.winCondition.type)) {
-      errors.push({
-        code: 'INVALID_WIN_CONDITION_TYPE',
-        message: `Invalid win condition type: ${game.winCondition.type}. Valid types: ${VALID_WIN_TYPES.join(', ')}`,
-        path: 'winCondition.type',
-      });
-    }
-
-    if (game.winCondition.type === 'score' && (!game.winCondition.score || game.winCondition.score <= 0)) {
-      errors.push({
-        code: 'INVALID_WIN_SCORE',
-        message: 'Score-based win condition must have a positive score target',
-        path: 'winCondition.score',
-      });
-    }
-
-    if (game.winCondition.type === 'survive_time' && (!game.winCondition.time || game.winCondition.time <= 0)) {
-      errors.push({
-        code: 'INVALID_WIN_TIME',
-        message: 'Survive time win condition must have a positive time value',
-        path: 'winCondition.time',
-      });
-    }
-
-    if (game.winCondition.type === 'destroy_all' && !game.winCondition.tag) {
-      errors.push({
-        code: 'MISSING_WIN_TAG',
-        message: 'destroy_all win condition must specify a tag',
-        path: 'winCondition.tag',
-      });
-    }
-
-    if (game.winCondition.type === 'collect_all' && !game.winCondition.tag) {
-      errors.push({
-        code: 'MISSING_WIN_TAG',
-        message: 'collect_all win condition must specify a tag',
-        path: 'winCondition.tag',
-      });
-    }
-
-    if (game.winCondition.type === 'reach_entity' && !game.winCondition.tag && !game.winCondition.entityId) {
-      errors.push({
-        code: 'MISSING_WIN_TARGET',
-        message: 'reach_entity win condition must specify a tag or entityId',
-        path: 'winCondition',
-      });
-    }
   }
 
   if (!game.loseCondition) {
@@ -654,39 +614,21 @@ function validateWinLoseConditions(
         path: 'loseCondition',
       });
     }
-  }
 
-  if (game.winCondition?.type === 'destroy_all' && game.winCondition.tag) {
-    const hasTaggedEntity = game.entities?.some(
-      (entity) =>
-        entity.tags?.includes(game.winCondition!.tag!) ||
-        (entity.template &&
-          game.templates?.[entity.template]?.tags?.includes(game.winCondition!.tag!))
-    );
+    if (game.loseCondition.type === 'custom') {
+      const hasLoseTriggeringRule = game.rules?.some(rule =>
+        rule.actions?.some(action =>
+          action.type === 'game_state' && (action as any).state === 'lose'
+        )
+      );
 
-    if (!hasTaggedEntity) {
-      errors.push({
-        code: 'WIN_CONDITION_TAG_NOT_FOUND',
-        message: `Win condition references tag "${game.winCondition.tag}" but no entities have it`,
-        path: 'winCondition.tag',
-      });
-    }
-  }
-
-  if (game.winCondition?.type === 'collect_all' && game.winCondition.tag) {
-    const hasTaggedEntity = game.entities?.some(
-      (entity) =>
-        entity.tags?.includes(game.winCondition!.tag!) ||
-        (entity.template &&
-          game.templates?.[entity.template]?.tags?.includes(game.winCondition!.tag!))
-    );
-
-    if (!hasTaggedEntity) {
-      errors.push({
-        code: 'WIN_CONDITION_TAG_NOT_FOUND',
-        message: `Win condition references tag "${game.winCondition.tag}" but no entities have it`,
-        path: 'winCondition.tag',
-      });
+      if (!hasLoseTriggeringRule) {
+        errors.push({
+          code: 'CUSTOM_LOSE_NO_RULE',
+          message: 'Custom lose condition requires a rule with action { type: "game_state", state: "lose" }',
+          path: 'loseCondition',
+        });
+      }
     }
   }
 

@@ -20,6 +20,15 @@ import type {
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import './react-native-godot.d';
+import { BridgeCore, type BridgeMessage } from './BridgeCore';
+
+class NativeBridgeCore extends BridgeCore {
+  protected send(msg: BridgeMessage): void {
+    if (msg.id) {
+      callGameBridge('handle_request', msg.id, msg.type, JSON.stringify(msg.data ?? {}));
+    }
+  }
+}
 
 type GodotModule = typeof import('@borndotcom/react-native-godot');
 
@@ -179,7 +188,15 @@ export function createNativeGodotBridge(): GodotBridge {
   const transformSyncCallbacks: ((transforms: Record<string, EntityTransform>) => void)[] = [];
   const propertySyncCallbacks: ((properties: PropertySyncPayload) => void)[] = [];
   const scoreCallbacks: ((points: number, entityId: string) => void)[] = [];
-  let eventPollIntervalId: ReturnType<typeof setInterval> | null = null;
+  let eventPollTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  let consecutiveEmptyPolls = 0;
+  const bridgeCore = new NativeBridgeCore();
+
+  function scheduleNextPoll() {
+    if (isDisposing) return;
+    const delay = consecutiveEmptyPolls === 0 ? 16 : Math.min(16 * Math.pow(2, consecutiveEmptyPolls), 100);
+    eventPollTimeoutId = setTimeout(pollAndDispatchEvents, delay);
+  }
 
   async function pollAndDispatchEvents() {
     if (!isGodotInitialized || isDisposing) return;
@@ -201,6 +218,12 @@ export function createNativeGodotBridge(): GodotBridge {
       });
       
       const events: QueuedEvent[] = JSON.parse(eventsJson);
+      
+      if (events.length === 0) {
+        consecutiveEmptyPolls++;
+      } else {
+        consecutiveEmptyPolls = 0;
+      }
 
       for (const event of events) {
         switch (event.type) {
@@ -217,6 +240,7 @@ export function createNativeGodotBridge(): GodotBridge {
               }],
             };
             for (const cb of collisionCallbacks) cb(collisionEvent);
+            bridgeCore.dispatch({ type: 'collision', data: collisionEvent });
             break;
           }
           case 'collision_detailed': {
@@ -227,16 +251,19 @@ export function createNativeGodotBridge(): GodotBridge {
               contacts: data.contacts,
             };
             for (const cb of collisionCallbacks) cb(collisionEvent);
+            bridgeCore.dispatch({ type: 'collision', data: collisionEvent });
             break;
           }
           case 'destroy': {
             const entityId = (event.data as { entityId: string }).entityId;
             for (const cb of destroyCallbacks) cb(entityId);
+            bridgeCore.dispatch({ type: 'entity_destroyed', data: { entityId } });
             break;
           }
           case 'entity_spawned': {
             const data = event.data as unknown as EntitySpawnedEvent;
             for (const cb of entitySpawnedCallbacks) cb(data);
+            bridgeCore.dispatch({ type: 'entity_spawned', data });
             break;
           }
           case 'sensor_begin': {
@@ -247,6 +274,7 @@ export function createNativeGodotBridge(): GodotBridge {
               otherShapeIndex: data.otherShapeIndex,
             };
             for (const cb of sensorBeginCallbacks) cb(sensorEvent);
+            bridgeCore.dispatch({ type: 'sensor_begin', data: sensorEvent });
             break;
           }
           case 'sensor_end': {
@@ -257,6 +285,7 @@ export function createNativeGodotBridge(): GodotBridge {
               otherShapeIndex: data.otherShapeIndex,
             };
             for (const cb of sensorEndCallbacks) cb(sensorEvent);
+            bridgeCore.dispatch({ type: 'sensor_end', data: sensorEvent });
             break;
           }
           case 'ui_button': {
@@ -290,6 +319,8 @@ export function createNativeGodotBridge(): GodotBridge {
         }
       }
     } catch (e) {}
+    
+    scheduleNextPoll();
   }
 
   const bridge: GodotBridge = {
@@ -356,8 +387,7 @@ export function createNativeGodotBridge(): GodotBridge {
             if (ready) {
               isGodotInitialized = true;
               
-              // Start event polling loop (60fps)
-              eventPollIntervalId = setInterval(pollAndDispatchEvents, 16);
+              scheduleNextPoll();
               
               resolve();
             } else if (attempts >= maxAttempts) {
@@ -382,10 +412,11 @@ export function createNativeGodotBridge(): GodotBridge {
       if (isDisposing) return;
       isDisposing = true;
       
-      if (eventPollIntervalId) {
-        clearInterval(eventPollIntervalId);
-        eventPollIntervalId = null;
+      if (eventPollTimeoutId) {
+        clearTimeout(eventPollTimeoutId);
+        eventPollTimeoutId = null;
       }
+      bridgeCore.cancelAllPending('Bridge disposed');
 
       collisionCallbacks.length = 0;
       destroyCallbacks.length = 0;

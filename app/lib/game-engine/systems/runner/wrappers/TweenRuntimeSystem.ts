@@ -1,6 +1,7 @@
 import { SystemPhase } from '@slopcade/shared';
 import type { RuntimeSystem, SystemContext, UpdateContext } from '../types';
 import { TweenSystem } from '../../../animation/TweenSystem';
+import { setGlobalTweenSystem } from '../../../behaviors/TweenBehaviors';
 
 export type TweenSystemConfig = Record<string, never>;
 
@@ -9,16 +10,6 @@ export interface TweenSystemState {
   tweenIds: string[];
 }
 
-/**
- * RuntimeSystem wrapper for TweenSystem.
- * 
- * Handles smooth animations for entity properties (position, rotation, scale, opacity).
- * Tweens are visual effects that interpolate properties over time, so they run in
- * the VISUAL phase after game logic and physics have completed.
- * 
- * Phase: VISUAL (runs after game logic and physics)
- * Priority: 100
- */
 export class TweenRuntimeSystem implements RuntimeSystem<TweenSystemConfig, TweenSystemState> {
   readonly id = 'tween';
   readonly phase = SystemPhase.VISUAL;
@@ -35,6 +26,7 @@ export class TweenRuntimeSystem implements RuntimeSystem<TweenSystemConfig, Twee
       setEntityScale: (entityId, scaleX, scaleY) => ctx.bridge.setScale(entityId, scaleX, scaleY),
       setEntityOpacity: (entityId, opacity) => ctx.bridge.setOpacity(entityId, opacity),
     });
+    setGlobalTweenSystem(this.tweenSystem);
   }
   
   update(ctx: UpdateContext, _state: TweenSystemState): void {
@@ -44,6 +36,7 @@ export class TweenRuntimeSystem implements RuntimeSystem<TweenSystemConfig, Twee
   }
   
   destroy(): void {
+    setGlobalTweenSystem(null);
     this.tweenSystem = null;
   }
   
@@ -53,14 +46,10 @@ export class TweenRuntimeSystem implements RuntimeSystem<TweenSystemConfig, Twee
     }
     return {
       activeTweenCount: this.tweenSystem.getTweenCount(),
-      tweenIds: [], // Could iterate all tweens if needed
+      tweenIds: [],
     };
   }
   
-  /**
-   * Expose underlying TweenSystem for direct access by other systems.
-   * This allows other systems to create and manage tweens programmatically.
-   */
   getTweenSystem(): TweenSystem | null {
     return this.tweenSystem;
   }

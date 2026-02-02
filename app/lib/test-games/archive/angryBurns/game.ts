@@ -431,10 +431,7 @@ const game: GameDefinition = {
       projectileTag: "projectile",
     }),
   ],
-  winCondition: {
-    type: "destroy_all",
-    tag: "target",
-  },
+  winCondition: { expr: "entityCount('target') == 0" },
   loseCondition: {
     type: "lives_zero",
   },

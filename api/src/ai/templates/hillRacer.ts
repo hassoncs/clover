@@ -230,10 +230,7 @@ export const HILL_RACER_TEMPLATE: GameDefinition = {
       actions: [],
     },
   ],
-  winCondition: {
-    type: 'reach_entity',
-    entityId: 'finish-line',
-  },
+  winCondition: {},
   loseCondition: {
     type: 'entity_destroyed',
     tag: 'vehicle',

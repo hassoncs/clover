@@ -147,10 +147,7 @@ export const STACK_ATTACK_TEMPLATE: GameDefinition = {
       actions: [{ type: 'game_state', state: 'lose', delay: 1 }],
     },
   ],
-  winCondition: {
-    type: 'score',
-    score: 100,
-  },
+  winCondition: { expr: 'score >= 100' },
   loseCondition: {
     type: 'entity_destroyed',
     tag: 'block',

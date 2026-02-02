@@ -126,10 +126,7 @@ const game: GameDefinition = {
       { name: "turn", label: "Shot", color: "#94A3B8" },
     ],
   },
-  winCondition: {
-    type: "destroy_all",
-    tag: "orange-peg",
-  },
+  winCondition: { expr: "entityCount('orange-peg') == 0" },
   loseCondition: {
     type: "lives_zero",
   },

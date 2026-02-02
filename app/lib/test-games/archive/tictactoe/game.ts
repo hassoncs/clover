@@ -94,9 +94,7 @@ const game: GameDefinition = {
     currentPlayer: 1,
     statusText: "Player X's turn",
   },
-  winCondition: {
-    type: "custom",
-  },
+  winCondition: {},
   loseCondition: {
     type: "custom",
   },

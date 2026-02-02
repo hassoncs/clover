@@ -143,9 +143,7 @@ const game: GameDefinition = {
       ],
     },
   ],
-  winCondition: {
-    type: "custom",
-  },
+  winCondition: {},
   loseCondition: {
     type: "custom",
   },

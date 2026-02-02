@@ -24,6 +24,16 @@ export interface EngineServices {
 
 export type MarkedEffect = 'glow' | 'pulse' | 'fade_partial';
 
+export interface MovementTarget {
+  x: number;
+  y: number;
+  startX: number;
+  startY: number;
+  startTime: number;
+  duration: number;
+  easing: string;
+}
+
 export interface PendingLifecycleTransition {
   oldGroupId: number;
   newGroupId: number;
@@ -75,6 +85,7 @@ export interface RuntimeEntity {
   markedEffect?: MarkedEffect;
   markedColor?: string;
   markedAt?: number;
+  movementTarget?: MovementTarget;
 }
 
 export interface RuntimeBehavior {

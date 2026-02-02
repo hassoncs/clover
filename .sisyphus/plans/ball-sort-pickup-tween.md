@@ -96,13 +96,15 @@ After extensive analysis of tween+physics interactions across Unity, Godot, and 
 
 ## Implementation Tasks
 
-### Task 1: Add target position data model
+### Task 1: Add target position data model [x]
+
+**Status**: ✅ COMPLETE (already implemented)
 
 **File**: `app/lib/game-engine/types.ts`
 
-**What to do**:
-- Add optional `movementTarget` field to `RuntimeEntity`
-- Include target position and animation config
+**What was done**:
+- `MovementTarget` interface exists (lines 27-35)
+- `movementTarget?: MovementTarget` field on `RuntimeEntity` (line 88)
 
 ```typescript
 interface MovementTarget {
@@ -122,30 +124,32 @@ interface RuntimeEntity {
 ```
 
 **Acceptance criteria**:
-- TypeScript compiles (`pnpm tsc --noEmit`)
-- No breaking changes to existing entity usage
+- [x] TypeScript compiles (`pnpm tsc --noEmit`)
+- [x] No breaking changes to existing entity usage
 
 ---
 
-### Task 2: Add `setEntityTargetPosition` to RuleContext
+### Task 2: Add `setEntityTargetPosition` to RuleContext [x]
+
+**Status**: ✅ COMPLETE (already implemented)
 
 **Files**: 
-- `app/lib/game-engine/rules/types.ts` (interface)
-- `app/lib/game-engine/RulesEvaluator.ts` (implementation)
+- `app/lib/game-engine/rules/types.ts` (interface - lines 56-61)
+- `app/lib/game-engine/RulesEvaluator.ts` (implementation - lines 426-445)
 
-**What to do**:
-- Add method to RuleContext interface
-- Implement in RulesEvaluator when constructing context
-- Method sets `movementTarget` on the entity
+**What was done**:
+- Method added to RuleContext interface
+- Implemented in RulesEvaluator when constructing context
+- Method sets `movementTarget` on the entity with distance-based duration
 
 ```typescript
-// In RuleContext interface
-setEntityTargetPosition(
-  entityId: string, 
-  x: number, 
-  y: number, 
+// In RuleContext interface (types.ts)
+setEntityTargetPosition?: (
+  entityId: string,
+  x: number,
+  y: number,
   config?: { duration?: number; easing?: string }
-): void;
+) => void;
 ```
 
 **Implementation details**:
@@ -154,20 +158,23 @@ setEntityTargetPosition(
 - Sets `movementTarget` with current position as start, records start time
 
 **Acceptance criteria**:
-- Can call from BallSortActionExecutor without errors
-- Entity's `movementTarget` is populated correctly
+- [x] Can call from BallSortActionExecutor without errors
+- [x] Entity's `movementTarget` is populated correctly
 
 ---
 
-### Task 3: Create TargetPositionRuntimeSystem
+### Task 3: Create TargetPositionRuntimeSystem [x]
+
+**Status**: ✅ COMPLETE (already implemented)
 
 **File**: `app/lib/game-engine/systems/runner/wrappers/TargetPositionRuntimeSystem.ts`
 
-**What to do**:
-- Create new RuntimeSystem that runs in VISUAL phase
-- Each frame: find entities with `movementTarget`, interpolate toward target
-- Update both `entity.transform` AND call `bridge.setPosition()`
-- Clear `movementTarget` when animation completes
+**What was done**:
+- Created RuntimeSystem that runs in VISUAL phase (priority 50)
+- Each frame: finds entities with `movementTarget`, interpolates toward target
+- Updates both `entity.transform` AND calls `bridge.setPosition()`
+- Clears `movementTarget` when animation completes
+- Supports multiple easing functions (linear, easeInQuad, easeOutQuad, easeInOutQuad, easeOutBounce)
 
 ```typescript
 export class TargetPositionRuntimeSystem implements RuntimeSystem {
@@ -182,7 +189,8 @@ export class TargetPositionRuntimeSystem implements RuntimeSystem {
       const target = entity.movementTarget;
       const elapsed = ctx.elapsed - target.startTime;
       const progress = Math.min(1, elapsed / target.duration);
-      const easedProgress = this.applyEasing(progress, target.easing);
+      const easingFn = EASING_FUNCTIONS[target.easing] || easeOutQuad;
+      const easedProgress = easingFn(progress);
       
       // Interpolate
       const x = target.startX + (target.x - target.startX) * easedProgress;
@@ -206,10 +214,10 @@ export class TargetPositionRuntimeSystem implements RuntimeSystem {
 ```
 
 **Acceptance criteria**:
-- System runs each frame in VISUAL phase
-- Entities with targets animate smoothly
-- Animation completes and clears target
-- Retargeting mid-animation works (setting new target restarts from current position)
+- [x] System runs each frame in VISUAL phase
+- [x] Entities with targets animate smoothly
+- [x] Animation completes and clears target
+- [x] Retargeting mid-animation works (setting new target restarts from current position)
 
 ---
 

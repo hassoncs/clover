@@ -1,401 +1,354 @@
-# Standardized Godot ↔ JavaScript Event Bridge (Web + Native)
+# Godot ↔ JavaScript Bridge Cleanup
 
 ## TL;DR
 
-Deliver a **single, standardized bidirectional message protocol** for Slopcade’s Godot engine and TypeScript frontends that:
+A **minimal refactor** to clean up the Godot↔JS bridge by:
 
-- Preserves **async, ordered JS→Godot calls** (Promise-based “callbacks” semantics)
-- Standardizes **Godot→JS events** via a typed, debuggable envelope
-- Works on **Web (WASM + JavaScriptBridge)** and **Native (react-native-godot JSI + runOnGodotThread)**
-- Enables incremental migration from today’s mix of direct callbacks + event queue + polling
+1. **Unifying message format** - One shape for all events: `{type, data, id?, error?, progress?}`
+2. **Extracting shared dispatch logic** - Dedupe the ~2000 lines across web/native bridges
+3. **Killing `_lastResult` hacks** - Proper request/response with correlation IDs
+4. **Adding progress callbacks** - For `preloadTextures` and similar long-running ops
+5. **Adaptive polling on native** - Back off when idle to reduce CPU waste
 
-**User direction (confirmed):** keep **GodotBridge as the “inbound” JS→Godot command surface**, and standardize/replace the ad-hoc Godot→JS side with a single **EventBridge** (“clean in/out construction”). Web and native must go through the **same system** (no divergence).
-
-This plan proposes a **simple outbound EventBridge**: one unified *event envelope* + *router* for Godot→JS, while preserving existing GodotBridge methods for JS→Godot.
-
-1) **Pub/Sub events** (fire-and-forget)
-2) **Optional request/response** (correlation IDs) for a small set of cases like progress streams (e.g. `preloadTextures`) — *not* a general “RPC framework”.
-
-### Simplicity guardrail (user preference)
-
-This is all in-process; we **avoid building a heavy RPC system**. The bridge is:
-
-- **Event-first**
-- “Request/response” is just a **Promise + correlation ID** pattern used sparingly
-- No extra networking concepts (no retries/circuit breakers/transport abstraction layers beyond web vs native)
-
-### Oracle guidance (incorporated)
-
-- Model “callbacks” semantics (Promise + ordering) as **request/response over the same envelope** only where needed (e.g. progress streams), while keeping existing GodotBridge methods as the canonical JS→Godot entrypoint.
-- Prefer **queue + poll parity** across web and native for consistent ordering/tracing/backpressure; keep direct web callbacks only as a temporary compatibility adapter.
-- Add **channels + drop/coalesce policies** so high-frequency state never blocks reliable RPC.
-- Add a simple **hello/handshake** capability negotiation (protocol version + caps).
+**What we're NOT doing** (deemed overengineered for our needs):
+- ~~TransportAdapter interface~~ - We have exactly 2 transports, no abstraction needed
+- ~~Protocol versioning/handshake~~ - Both sides ship together
+- ~~Channels/priorities/backpressure~~ - EventQueue cap of 100 works fine
+- ~~Complex envelope metadata~~ - `traceId`, `parentId`, `seq`, `dropped` etc. not needed
 
 ---
 
-## Context (Repo facts)
+## Current Pain Points
 
-### Today’s Godot→JS patterns (mixed)
-
-- Direct JS callbacks stored in Godot and invoked via `JavaScriptObject.call("call", null, ...)` (web only)
-  - Example: `godot_project/scripts/bridge/EventEmitter.gd` uses stored `_js_*_callback` objects and calls `.call("call", null, ...)`.
-- Event queue fallback in Godot:
-  - `godot_project/scripts/bridge/EventQueue.gd` stores `[{type, data}, ...]`, caps at `MAX_EVENT_QUEUE_SIZE = 100`, and `poll_events()` returns a JSON string.
-- Native (React Native) cannot receive Godot→JS callbacks, so it polls:
-  - `app/lib/godot/GodotBridge.native.ts` polls every 16ms, calls `GameBridge.poll_events()` via `runOnGodotThread`, parses JSON `QueuedEvent[]`, dispatches by `event.type`.
-
-### Today’s JS→Godot async request/response already exists (web)
-
-- `godot_project/scripts/bridge/QuerySystem.gd` implements `query(requestId, method, argsJson)` and responds by `JavaScriptBridge.eval("(window.parent||window)._godotQueryResolve(requestId, resultJson)")`.
-- `app/lib/godot/query.ts` implements a resolver map keyed by `requestId` and returns `Promise<T>`.
-
-### High-frequency path to protect
-
-- Transform sync uses JSON stringify/parse on both sides (and can run ~60fps). See:
-  - `godot_project/scripts/bridge/SyncSystem.gd` (tracked transforms; JSON stringify)
-  - `docs/refactoring/transform-sync-protocol.md` (event-driven vs on-demand vs tracked)
+| Problem | Location | Impact |
+|---------|----------|--------|
+| **Code duplication** | `GodotBridge.web.ts` (1200 lines), `GodotBridge.native.ts` (1000 lines) | Same dispatch logic written twice |
+| **Inconsistent event shapes** | Various - some JSON-stringified, some direct args | Confusing, error-prone |
+| **`_lastResult` hack** | `GodotBridge.web.ts:627`, `JointManager.gd:86` | Race conditions, `setTimeout(16)` waits |
+| **Constant polling** | `GodotBridge.native.ts:359` - 16ms interval | Wastes CPU when idle |
+| **No progress callbacks** | `preloadTextures` can't report progress | Poor UX for asset loading |
 
 ---
 
-## Recommended Architecture
+## Message Format
 
-### Goals
+One simple shape for everything:
 
-1) **One outbound event system** shared by web + native (same message format, same ordering semantics).
-2) **Event-first**: pub/sub for gameplay and engine signals.
-3) **Optional request/response semantics** (correlation IDs) for a small, explicit set of use-cases (progress/ack).
-4) Keep **GodotBridge** as the inbound JS→Godot command layer (existing methods, already async-friendly where needed).
-
-### Components
-
-#### A) Bridge Core (shared concept across platforms)
-
-- **Envelope**: versioned message format
-- **Router**: dispatch by `topic`/`type`
-- **RPC manager**: pending map + timeouts + cancellation token
-- **Trace hooks**: capture all crossings with correlation IDs
-
-#### B) Web Transport Adapter
-
-- JS→Godot: keep using existing `GodotBridge.web.ts` methods (and existing `QuerySystem.gd` where already used).
-- Godot→JS: **standardize on the same polling queue model as native** (EventQueue/poll_events) to avoid platform divergence.
-
-#### C) Native Transport Adapter
-
-- JS→Godot: use `runOnGodotThread` worklets and keep API **async**.
-- Godot→JS: **poll_events** with a standardized queue item format (already in place).
-
-### Architecture Diagram (text)
-
-```
-TypeScript                                   Godot
-──────────                                   ─────
-
-  EventBridge (TS)
-    ├─ publish(topic, payload) ──────────────►  BridgeIn (GDScript)
-    ├─ request(topic, payload) ──────────────►    ├─ routes to handlers
-    │     (id, timeout)                        │    └─ emits response
-    └─ subscribe(topic, handler) ◄────────────  BridgeOut (GDScript)
-           ▲                                     ├─ emits events
-           │                                     └─ emits progress
-   Trace/Log sink
-
-Web transport:
-  - request(): QuerySystem.gd (requestId + argsJson) + _godotQueryResolve
-  - events out: callback OR poll_events
-
-Native transport:
-  - request(): runOnGodotThread Promise
-  - events out: poll_events every ~16ms
+```typescript
+// The ONLY message format we need
+type BridgeMessage = {
+  type: string;                              // Event type: "collision", "entity_spawned", etc.
+  data?: unknown;                            // Payload
+  id?: string;                               // For request/response correlation (optional)
+  error?: { message: string; code?: string }; // For error responses
+  progress?: { current: number; total?: number }; // For progress updates
+};
 ```
 
----
+**That's it.** No `v`, `kind`, `topic`, `ts`, `seq`, `meta`, `channel`, `priority`, `dropped`.
 
-## Message Format Specification
-
-### Envelope (v1)
-
-All messages crossing the boundary MUST be JSON-serializable (for now), with a single canonical envelope.
-
-```ts
-type BridgeDirection = 'js->godot' | 'godot->js'
-type BridgeKind = 'event' | 'request' | 'response' | 'progress'
-
-type BridgeEnvelopeV1 = {
-  v: 1
-  kind: BridgeKind
-  id: string               // required for request/response/progress; optional for event but recommended
-  topic: string            // e.g. "physics/collision", "assets/preload", "sync/transforms"
-  ts: number               // epoch ms
-  seq?: number             // optional monotonic per-direction
-  payload?: unknown
-  error?: { code: string; message: string; data?: unknown }
-  meta?: {
-    dir: BridgeDirection
-    platform: 'web' | 'native'
-    traceId?: string
-    parentId?: string
-    channel?: 'realtime' | 'sync' | 'debug' | string
-    priority?: 0 | 1 | 2 | 3
-    dropped?: number       // for polling systems
-  }
-}
-
-### Handshake / capability negotiation (keep minimal)
-
-First round-trip after bridge init:
-
-- JS → Godot request: `topic: "bridge/hello"`, payload includes `{ protocol: { min: 1, max: 1 }, platform, buildId }`
-- Godot → JS response: `{ protocol: 1, caps: { batching: true, coalescing: true, priorities: true, batchMaxItems: N, ... } }`
-
-Unknown fields MUST be ignored for forward compatibility.
-```
-
-### Event vs RPC semantics
-
-- **event**: no response expected. `id` may be empty, but should be present for tracing.
-- **request**: receiver must send either:
-  - `response` with same `id`, or
-  - `error` in `response` with same `id`
-- **progress**: 0..N updates that share the request `id` and a `payload` describing progress state.
-
-### Batching
-
-Transport MAY batch by sending:
-
-```ts
-type BridgeBatchV1 = { v: 1; kind: 'batch'; ts: number; items: BridgeEnvelopeV1[] }
-
-### Backpressure policy (channel-aware)
-
-Define three default channels with explicit behavior (small and pragmatic):
-
-- **reliable** (RPC + critical events): bounded queue; on overflow, fail fast (error response / `bridge/overloaded` event), never silently drop.
-- **state** (high-frequency transforms/properties): coalesce per topic-defined key; last-write-wins; may drop intermediate updates.
-- **debug** (verbose traces): best-effort; drop when behind.
-```
-
-Native polling already returns an array; this becomes the natural batch container.
-
-### Channels / priorities
-
-Default channels:
-- `realtime`: high-frequency (transform sync); allow drop/coalesce
-- `sync`: normal gameplay events
-- `debug`: verbose tracing (can be disabled in prod)
-
-Priority defaults:
-- `realtime`: 3 (can drop)
-- `sync`: 1
-- `debug`: 0
-
----
-
-## Interface Definitions
-
-### TypeScript (public API)
-
-```ts
-type Unsubscribe = () => void
-
-export type BridgeTopic = string
-
-export interface EventBridge {
-  publish<TPayload>(topic: BridgeTopic, payload: TPayload, opts?: { channel?: string; priority?: number }): void
-
-  // request/response
-  request<TReq, TRes>(topic: BridgeTopic, payload: TReq, opts?: { timeoutMs?: number; signal?: AbortSignal }): Promise<TRes>
-
-  // progress stream (preloadTextures-like)
-  requestWithProgress<TReq, TProgress, TRes>(
-    topic: BridgeTopic,
-    payload: TReq,
-    onProgress: (p: TProgress) => void,
-    opts?: { timeoutMs?: number; signal?: AbortSignal }
-  ): Promise<TRes>
-
-  subscribe<TPayload>(topic: BridgeTopic, handler: (payload: TPayload, meta: BridgeEnvelopeV1) => void): Unsubscribe
-
-  // debugging/observability
-  setTracing(enabled: boolean, opts?: { sampleRate?: number; includePayloads?: boolean }): void
-}
-```
-
-Type-safety strategy (recommended):
-- Define a `BridgeTopics` map:
-  - `topic -> { req?: ..., res?: ..., event?: ..., progress?: ... }`
-- Generate strongly typed overloads from it.
-
-### GDScript (public API)
+### GDScript equivalent
 
 ```gdscript
-# BridgeCore.gd (autoload or owned by GameBridge)
+# All events use this shape
+var message = {
+  "type": "collision",
+  "data": { "entityA": "ball", "entityB": "wall", "impulse": 5.2 }
+}
 
-func emit_event(topic: String, payload: Variant, meta: Dictionary = {}) -> void
+# Request/response adds id
+var response = {
+  "type": "response",
+  "id": "req_123",
+  "data": { "result": 42 }
+}
 
-func handle_request(id: String, topic: String, payload: Variant, meta: Dictionary = {}) -> void
-  # routes to registered handler
-
-func send_response(id: String, topic: String, payload: Variant, meta: Dictionary = {}) -> void
-func send_error(id: String, topic: String, code: String, message: String, data: Variant = null) -> void
-
-func send_progress(id: String, topic: String, payload: Variant) -> void
-
-func register_handler(topic: String, handler: Callable) -> void
-func unregister_handler(topic: String) -> void
+# Progress updates
+var progress = {
+  "type": "progress",
+  "id": "req_123",
+  "progress": { "current": 3, "total": 10 }
+}
 ```
-
-Transport specifics:
-- Web: implement `emit_to_js(envelope_json)` via direct callback OR queue.
-- Native: always queue via `EventQueue` and return from `poll_events()`.
 
 ---
 
-## Examples (as required)
+## Architecture
 
-### 1) Simple event: collision occurred
-
-Topic: `physics/collision`
-
-Payload (typed on TS side via existing CollisionEvent types):
-```json
-{ "entityA": "ball", "entityB": "wall", "contacts": [{"point": {"x":0,"y":0},"normal": {"x":0,"y":1},"normalImpulse": 1.2,"tangentImpulse":0}] }
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     BridgeCore (shared TS)                  │
+│  - dispatch(msg) → routes to registered handlers            │
+│  - request(type, data, {onProgress?}) → Promise<result>     │
+│  - emit(type, data) → fire-and-forget                       │
+│  - pending requests map with timeouts                       │
+└─────────────────────┬───────────────────────────────────────┘
+                      │
+         ┌────────────┴────────────┐
+         │                         │
+┌────────▼────────┐      ┌────────▼────────┐
+│  Web Transport   │      │ Native Transport │
+│  (thin wrapper)  │      │  (thin wrapper)  │
+│                  │      │                  │
+│ - Callbacks for  │      │ - Adaptive poll  │
+│   Godot→JS       │      │   (backs off     │
+│ - Direct calls   │      │    when idle)    │
+│   for JS→Godot   │      │ - JSI worklets   │
+└──────────────────┘      └──────────────────┘
 ```
 
-Envelope:
-```json
-{ "v":1, "kind":"event", "id":"e_...", "topic":"physics/collision", "ts": 1700000000000, "payload": { ... } }
-```
-
-### 2) Request/response + progress: preload textures
-
-Topic: `assets/preload_textures`
-
-Request payload:
-```json
-{ "urls": ["https://.../a.png", "https://.../b.png"] }
-```
-
-Progress payload:
-```json
-{ "percent": 40, "completed": 2, "failed": 1 }
-```
-
-Final response payload:
-```json
-{ "completed": 9, "failed": 1 }
-```
-
-### 3) High-frequency sync: entity transforms
-
-Topic: `sync/transforms`
-
-Batching policy:
-- Prefer sending **one batch per poll/frame**
-- Payload: `Record<entityId, transform>`
-- Allow coalescing/dropping when behind (channel=`realtime`)
+**Key insight**: Web and native transports are thin (~100 lines each), not abstracted behind an interface. The shared logic lives in BridgeCore.
 
 ---
 
-## Migration Plan (incremental, backward compatible)
+## Implementation Plan
 
-### Phase 0 — Inventory and guardrails
+### Phase 1: Extract BridgeCore (~0.5 day)
 
-1) Map all current bridge entry/exit points:
-   - Godot→JS direct callbacks in `EventEmitter.gd`, `SyncSystem.gd`, `CollisionSystem.gd`.
-   - Godot queued events in `EventQueue.gd` and `GameBridge.gd:poll_events()`.
-   - Web async RPC in `QuerySystem.gd` + `app/lib/godot/query.ts`.
-   - Native polling + dispatch in `GodotBridge.native.ts`.
+Create `app/lib/godot/BridgeCore.ts`:
 
-2) Define perf guardrails:
-   - No new per-entity/per-frame JSON stringify/parse beyond current baseline.
-   - Keep transform sync bypass path if needed (see Phase 3).
+```typescript
+type MessageHandler = (data: unknown) => void;
+type PendingRequest = {
+  resolve: (result: unknown) => void;
+  reject: (error: Error) => void;
+  onProgress?: (progress: { current: number; total?: number }) => void;
+  timeout: ReturnType<typeof setTimeout>;
+};
 
-### Phase 1 — Introduce the envelope + TS EventBridge wrapper (no behavior changes)
+export class BridgeCore {
+  private handlers = new Map<string, Set<MessageHandler>>();
+  private pending = new Map<string, PendingRequest>();
 
-1) Add TS `EventBridge` implementation that can:
-   - Wrap current `poll_events` native events into `BridgeEnvelopeV1` and dispatch.
-   - Wrap current web callbacks/JSON payloads into `BridgeEnvelopeV1` and dispatch.
-2) Add tracing hooks that log:
-   - topic, id, kind, duration (for requests), and drop counts.
+  /** Dispatch incoming message to handlers */
+  dispatch(msg: BridgeMessage): void {
+    // Handle responses to pending requests
+    if (msg.id && (msg.type === 'response' || msg.type === 'error')) {
+      const req = this.pending.get(msg.id);
+      if (req) {
+        clearTimeout(req.timeout);
+        this.pending.delete(msg.id);
+        if (msg.error) {
+          req.reject(new Error(msg.error.message));
+        } else {
+          req.resolve(msg.data);
+        }
+      }
+      return;
+    }
 
-### Phase 2 — Standardize Godot→JS events through EventQueue everywhere
+    // Handle progress updates
+    if (msg.id && msg.progress) {
+      const req = this.pending.get(msg.id);
+      req?.onProgress?.(msg.progress);
+      return;
+    }
 
-Goal: remove the fragile “store JS callback in Godot and invoke it” pattern for production gameplay.
+    // Dispatch to event handlers
+    const handlers = this.handlers.get(msg.type);
+    handlers?.forEach(h => h(msg.data));
+  }
 
-1) Web: prefer queue/poll parity with native (optional to keep direct callback in debug builds).
-2) Update emitters (EventEmitter, SyncSystem, CollisionSystem) to emit envelopes into EventQueue.
-3) TS bridges (web + native) consume a single format: `BridgeBatchV1` / list of envelopes.
+  /** Subscribe to events */
+  on(type: string, handler: MessageHandler): () => void {
+    if (!this.handlers.has(type)) {
+      this.handlers.set(type, new Set());
+    }
+    this.handlers.get(type)!.add(handler);
+    return () => this.handlers.get(type)?.delete(handler);
+  }
 
-### Phase 3 — Standardize JS→Godot RPC under one API
+  /** Make a request with optional progress */
+  request<T>(
+    type: string,
+    data: unknown,
+    opts?: { timeoutMs?: number; onProgress?: (p: { current: number; total?: number }) => void }
+  ): Promise<T> {
+    const id = `req_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const timeoutMs = opts?.timeoutMs ?? 5000;
 
-We keep inbound as **GodotBridge methods** (per user preference). For the few places that need async correlation (like progress), we standardize on the envelope id and reuse existing patterns.
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        this.pending.delete(id);
+        reject(new Error(`Request timeout: ${type}`));
+      }, timeoutMs);
 
-1) Web: keep using `QuerySystem.gd` + `app/lib/godot/query.ts` for request/response.
-2) Native: keep using `runOnGodotThread` for request/response.
-3) Unify *outbound* progress streams via queued `progress` envelopes keyed by `id`.
+      this.pending.set(id, { resolve, reject, onProgress: opts?.onProgress, timeout });
+      
+      // Transport sends: { type, data, id }
+      this.send({ type, data, id });
+    });
+  }
 
-### Phase 4 — Deprecate old APIs and migrate call sites
+  /** Override in web/native transport */
+  protected send(_msg: BridgeMessage): void {
+    throw new Error('Transport must implement send()');
+  }
+}
+```
 
-Migrate features in this recommended order:
-1) Query-style features (low rate): debug snapshot queries, raycasts, AABB
-2) Asset preload (`preloadTextures`) to requestWithProgress
-3) Gameplay events: collision, sensor, destroy, spawn, score
-4) Transform sync: adopt transform-sync-protocol event-driven/tracked modes
+### Phase 2: Migrate Web Bridge (~0.5 day)
 
-Provide compatibility adapters so existing `GodotBridge.*` methods still work during migration.
+Update `GodotBridge.web.ts` to use BridgeCore:
+
+```typescript
+class WebBridgeTransport extends BridgeCore {
+  protected send(msg: BridgeMessage): void {
+    // Use existing QuerySystem for requests
+    if (msg.id) {
+      getGodotBridge()?.query(msg.id, msg.type, JSON.stringify(msg.data ?? {}));
+    } else {
+      // Fire-and-forget calls use existing methods
+      getGodotBridge()?.[msg.type]?.(msg.data);
+    }
+  }
+}
+```
+
+- Remove duplicate event dispatch switch statements
+- Remove `_lastResult` usage - all async results go through request/response
+- Keep existing `godotBridge.onCollision()` etc. callbacks working (they feed into `dispatch()`)
+
+### Phase 3: Migrate Native Bridge (~0.5 day)
+
+Update `GodotBridge.native.ts`:
+
+```typescript
+class NativeBridgeTransport extends BridgeCore {
+  private pollInterval: ReturnType<typeof setInterval> | null = null;
+  private consecutiveEmpty = 0;
+
+  startPolling(): void {
+    this.poll();
+  }
+
+  private async poll(): Promise<void> {
+    const events = await this.fetchEvents();
+    
+    if (events.length === 0) {
+      this.consecutiveEmpty++;
+      // Back off: 16ms → 33ms → 66ms → 100ms max
+      const delay = Math.min(16 * Math.pow(2, this.consecutiveEmpty), 100);
+      setTimeout(() => this.poll(), delay);
+    } else {
+      this.consecutiveEmpty = 0;
+      events.forEach(e => this.dispatch(e));
+      setTimeout(() => this.poll(), 16); // Back to 16ms when active
+    }
+  }
+
+  protected send(msg: BridgeMessage): void {
+    runOnGodotThread(() => {
+      'worklet';
+      const bridge = getGameBridge();
+      if (msg.id) {
+        bridge?.handle_request(msg.id, msg.type, JSON.stringify(msg.data ?? {}));
+      } else {
+        bridge?.[msg.type]?.(msg.data);
+      }
+    });
+  }
+}
+```
+
+### Phase 4: Update Godot Side (~0.5 day)
+
+Simplify `BridgeCore.gd` to use the minimal message format:
+
+```gdscript
+func emit_event(type: String, data: Variant) -> void:
+    var msg = {"type": type, "data": data}
+    _queue_event(msg)
+
+func send_response(id: String, result: Variant) -> void:
+    var msg = {"type": "response", "id": id, "data": result}
+    _send_to_js(msg)
+
+func send_error(id: String, message: String, code: String = "") -> void:
+    var msg = {"type": "error", "id": id, "error": {"message": message, "code": code}}
+    _send_to_js(msg)
+
+func send_progress(id: String, current: int, total: int = -1) -> void:
+    var progress = {"current": current}
+    if total >= 0:
+        progress["total"] = total
+    var msg = {"type": "progress", "id": id, "progress": progress}
+    _send_to_js(msg)
+```
+
+### Phase 5: Add Progress to Preload (~0.5 day)
+
+Update `preloadTextures` to report progress:
+
+```gdscript
+# TexturePreloader.gd
+func preload_textures(request_id: String, urls: Array) -> void:
+    var total = urls.size()
+    var completed = 0
+    
+    for url in urls:
+        # ... load texture ...
+        completed += 1
+        _bridge_core.send_progress(request_id, completed, total)
+    
+    _bridge_core.send_response(request_id, {"completed": completed})
+```
+
+TypeScript usage:
+
+```typescript
+const result = await bridge.request('preload_textures', { urls }, {
+  onProgress: (p) => console.log(`${p.current}/${p.total} loaded`)
+});
+```
 
 ---
 
-## Risk Assessment
+## What to Delete
 
-### Key risks
+After migration, remove:
 
-1) **Performance regression on transforms**
-   - Mitigation: allow `channel=realtime` to coalesce/drop; preserve tracked mode; keep fallback “legacy full sync” flag if needed.
-
-2) **Threading complexity on native**
-   - Mitigation: enforce **async-only** JS→Godot cross-thread calls; never block JS thread.
-
-3) **Protocol drift between platforms**
-   - Mitigation: identical envelope parsing + topic routing; add parity tests.
-
-4) **Migration stalls, dual systems linger**
-   - Mitigation: define “done” criteria: all events use envelopes; direct JS callbacks removed (except optional debug);
-     poll_events returns only envelopes.
-
-5) **Queue overflow** (currently max 100 in `EventQueue.gd`)
-   - Mitigation: define drop policy per channel; include `dropped` metrics in meta.
+| File/Code | Reason |
+|-----------|--------|
+| `app/lib/godot/EventBridge.ts` | Overengineered types |
+| `app/lib/godot/EventBridgeImpl.ts` | Overengineered implementation |
+| `_lastResult` patterns | Replaced by request/response |
+| `setTimeout(16)` waits | No longer needed |
+| Duplicate dispatch switches | Consolidated in BridgeCore |
 
 ---
 
-## Verification / Acceptance Criteria (for execution)
+## Verification
 
-### Functional
-
-- [ ] Web: collision event reaches TS subscribers via `EventBridge.subscribe('physics/collision')`.
-- [ ] Native: collision event reaches TS subscribers via the same API.
-- [ ] `request('assets/preload_textures')` resolves and progress callbacks fire.
-- [ ] Request timeout produces a typed error with correlation id.
-
-### Platform parity
-
-- [ ] Same test scenario emits the same ordered topics on web + native (allowing platform-specific timing but not reordering within a batch).
-
-### Performance
-
-- [ ] Under target workload (define entity count), frame time does not regress compared to baseline when bridge tracing is off.
-
-### Migration safety
-
-- [ ] Existing code paths still work during Phase 1/2 (backward compatible).
+- [ ] Collision events work on web
+- [ ] Collision events work on native  
+- [ ] `preloadTextures` reports progress
+- [ ] Request timeout produces error
+- [ ] Native CPU usage lower when idle (measure with profiler)
+- [ ] No `_lastResult` usage remains
+- [ ] Code size reduced (target: ~500 lines removed)
 
 ---
 
-## Open Decisions (must be answered before execution)
+## Effort Estimate
 
-Defaults applied (override if needed):
+| Phase | Effort |
+|-------|--------|
+| Extract BridgeCore | 0.5 day |
+| Migrate Web | 0.5 day |
+| Migrate Native + adaptive poll | 0.5 day |
+| Update Godot side | 0.5 day |
+| Add progress to preload | 0.5 day |
+| **Total** | **~2.5 days** |
 
-1) **Transform sync scope**: OUT of scope beyond wrapping existing events/protocol; no major sync redesign in this bridge work.
-2) **Web Godot→JS transport**: polling-only for parity with native.
-3) **Backpressure**: reliable never silently drops; state coalesces; debug drops-first.
+---
+
+## Future Escalation Triggers
+
+Only add complexity back if:
+
+- **Third transport added** (desktop, server relay, editor) - then consider abstraction
+- **Independent versioning** (Godot/JS ship separately) - then add protocol version
+- **Real QoS needs** (guaranteed delivery, replay) - then add channels/priorities
+
+Until then, keep it simple.

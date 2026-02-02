@@ -157,9 +157,7 @@ const game: GameDefinition = {
       ],
     },
   ],
-  winCondition: {
-    type: "custom",
-  },
+  winCondition: {},
   templates: {
     wall: {
       id: "wall",
