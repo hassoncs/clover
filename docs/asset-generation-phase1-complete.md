@@ -168,7 +168,6 @@ Update the test game files to use the new assets:
 Generate assets for the next tier:
 - connect4 (config exists)
 - game2048 (config exists)
-- slotMachine (config exists)
 - catsPlatformer (needs config)
 
 ### Phase 3: Polish & Coverage

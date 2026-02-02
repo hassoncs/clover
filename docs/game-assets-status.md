@@ -81,7 +81,6 @@ These games use only `type: "rect"`, `type: "circle"` sprites without images. Th
 
 | Game | Primitive Types | Asset Needs | Appeal |
 |------|-----------------|-------------|---------|
-| **slotMachine** | rect (machine frame, reels, symbols) | slot machine frame, reel symbols (7+ icons), background, effects | ⭐⭐ Medium |
 
 ### Sports
 
@@ -104,7 +103,6 @@ Based on appeal, popularity, and gallery showcase value:
 ### Phase 2: High Value
 5. **connect4** - Simple but needs visual polish
 6. **game2048** - Popular puzzle game
-7. **slotMachine** - Visually interesting
 8. **catsPlatformer** - Character-based, good for showing capabilities
 
 ### Phase 3: Polish & Coverage

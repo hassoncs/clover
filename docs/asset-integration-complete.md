@@ -284,7 +284,6 @@ ERROR [42:32] Type '"fade_out"' is not assignable to type 'SpriteEffectType'.
    - Apply same integration pattern to:
      - connect4
      - game2048
-     - slotMachine
      - catsPlatformer
 
 ---

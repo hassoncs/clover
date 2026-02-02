@@ -243,7 +243,6 @@ Summary:
 | Category | Count | Examples |
 |----------|-------|----------|
 | **Pure Declarative** | 18 | flappyBird, breakoutBouncer, pinballLite, angryBurns, etc. |
-| **Built-in System Only** | 4 | gemCrush (match3), slotMachine, blockDrop, stackMatch |
 | **Needs Generator** | 5 | memoryMatch, slopeggle, dungeonCrawler, bubbleShooter, ballSort |
 | **Needs Runtime Script** | 8 | tictactoe, connect4, towerDefense, puyoPuyo, game2048, etc. |
 | **Needs Both** | 2 | bubbleShooter, ballSort |

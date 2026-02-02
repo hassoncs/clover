@@ -836,7 +836,6 @@ Each game analyzed for what it needs in the bundle format:
 | **gemCrush** | 218 | No | No | `match3` | Engine handles match detection. |
 | **stackMatch** | 342 | No | No | `match3` variant | Stacking match system. |
 | **blockDrop** | 307 | No | No | Tetromino system | Engine handles block logic. |
-| **slotMachine** | 292 | No | No | `slotMachine` | Engine handles reels/payouts. |
 | **tictactoe** | 880 | Loop→Static | Yes (win check) | No | 9 cells can be static. Win detection needs script OR verbose rules (currently verbose). |
 | **connect4** | 393 | Loop→Static | Yes (win check) | No | 42 cells can be static. Win detection script. |
 | **memoryMatch** | 325 | **Yes** (shuffle) | No | No | Card positions fixed, pairs shuffled → generator. |
@@ -854,7 +853,6 @@ Each game analyzed for what it needs in the bundle format:
 | Category | Count | Games |
 |----------|-------|-------|
 | **Pure Declarative** | 18 | flappyBird, breakoutBouncer, pinballLite, simplePlatformer, sportsProjectile, angryBurns, catsPlatformer, catsFallingObjects, dominoChain, physicsStacker, iceSlide, tipScale, endlessScrollPlayground, renderTest, zoneTest, imageNoPhysicsTest, imageWithPhysicsTest, rpgProgressionDemo |
-| **Built-in System Only** | 4 | gemCrush, stackMatch, blockDrop, slotMachine |
 | **Needs Generator** | 5 | memoryMatch, slopeggle, dungeonCrawler, bubbleShooter, ballSort |
 | **Needs Runtime Script** | 8 | tictactoe, connect4, towerDefense, bubbleShooter, puyoPuyo, dropPop, game2048, ballSort |
 | **Needs Both** | 2 | bubbleShooter, ballSort |

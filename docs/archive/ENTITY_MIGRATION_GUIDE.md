@@ -105,7 +105,6 @@
 21. rpgProgressionDemo/game.ts
 22. simplePlatformer/game.ts
 23. slopeggle/game.ts
-24. slotMachine/game.ts
 25. sportsProjectile/game.ts
 26. stackMatch/game.ts
 27. tetris/game.ts
