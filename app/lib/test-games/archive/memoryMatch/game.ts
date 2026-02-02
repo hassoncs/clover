@@ -288,7 +288,7 @@ const game: GameDefinition = {
       name: "Handle matching pair",
       trigger: { type: "event", eventName: "match_success" },
       actions: [
-        { type: "score", operation: "add", value: 100 },
+        { type: "set_variable", name: "score", operation: "add", value: 100 },
         { type: "set_variable", name: "matchedPairs", operation: "add", value: 1 },
         { type: "destroy", target: { type: "by_tag", tag: "face-up" } },
         { type: "state_transition", machineId: "gameFlow", toState: "idle" },

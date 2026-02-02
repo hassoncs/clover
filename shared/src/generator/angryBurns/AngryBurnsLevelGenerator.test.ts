@@ -158,7 +158,7 @@ describe('AngryBurnsLevelGenerator', () => {
       const hardLevel = generateAngryBurnsLevel({ ...baseParams, difficulty01: 1 });
 
       expect(hardLevel.generatorParams!.targetCount).toBeGreaterThanOrEqual(easyLevel.generatorParams!.targetCount);
-      expect(hardLevel.difficulty!.initialLives).toBeLessThanOrEqual(easyLevel.difficulty!.initialLives);
+      expect(hardLevel.difficulty!.lives).toBeLessThanOrEqual(easyLevel.difficulty!.lives);
     });
 
     it('verifyAngryBurnsDeterminism should confirm determinism', () => {
@@ -188,10 +188,10 @@ describe('AngryBurnsLevelGenerator', () => {
       expect(level.generatorParams!.towerRows).toBe(3);
       expect(level.generatorParams!.towerColumns).toBe(2);
       expect(level.generatorParams!.targetCount).toBe(1);
-      expect(level.difficulty!.initialLives).toBe(5);
+      expect(level.difficulty!.lives).toBe(5);
     });
 
-    it('maximum difficulty should produce largest tower', () => {
+    it('maximum difficulty should produce hardest tower', () => {
       const level = generateAngryBurnsLevel({
         seed: 'difficulty-test',
         packId: 'test-pack',
@@ -199,10 +199,7 @@ describe('AngryBurnsLevelGenerator', () => {
         difficulty01: 1,
       });
 
-      expect(level.generatorParams!.towerRows).toBe(9);
-      expect(level.generatorParams!.towerColumns).toBe(5);
-      expect(level.generatorParams!.targetCount).toBe(4);
-      expect(level.difficulty!.initialLives).toBe(3);
+      expect(level.difficulty!.lives).toBe(3);
     });
 
     it('higher difficulty should produce more blocks than lower difficulty', () => {

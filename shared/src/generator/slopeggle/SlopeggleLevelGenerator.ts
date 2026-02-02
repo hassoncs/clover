@@ -126,7 +126,7 @@ export function generateSlopeggleLevel(params: GenerateSlopeggleLevelParams): Sl
     generatedAt: Date.now(),
     difficulty: {
       targetTier: difficultyTier,
-      initialLives: lives,
+      lives: lives,
       estimatedDurationSeconds: estimateLevelDuration(orangeCount, lives, difficultyTier),
     },
     generatorParams: {
@@ -149,7 +149,7 @@ export function generateSlopeggleLevel(params: GenerateSlopeggleLevelParams): Sl
       bucketAmplitude,
       bucketFrequency,
       minOrangeAccessibility,
-      initialLives: lives,
+      lives: lives,
     },
   };
 

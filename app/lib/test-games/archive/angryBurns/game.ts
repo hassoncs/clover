@@ -437,8 +437,10 @@ const game: GameDefinition = {
     type: "custom",
     expr: "lives <= 0",
   },
-  initialLives: 5,
-  initialScore: 0,
+  variables: {
+    lives: 5,
+    score: 0,
+  },
 };
 
 export default game;

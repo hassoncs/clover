@@ -58,7 +58,7 @@ export interface LevelDifficultyParams {
   /** Estimated time to complete in seconds */
   estimatedDurationSeconds?: number;
   /** Number of lives/balls player starts with */
-  initialLives?: number;
+  lives?: number;
   /** Score multiplier at start */
   initialMultiplier?: number;
   /** Difficulty curve within the level (progressive, constant, spike) */
@@ -210,7 +210,7 @@ export interface AngryBurnsLevelOverrides {
  *   "seed": "abc123",
  *   "difficulty": {
  *     "targetTier": "easy",
- *     "initialLives": 10
+ *     "lives": 10
  *   }
  * }
  * ```

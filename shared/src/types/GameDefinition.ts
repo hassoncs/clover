@@ -440,8 +440,6 @@ export interface GameDefinition {
   rules?: GameRule[];
   winCondition?: WinCondition;
   loseCondition?: LoseCondition;
-  initialLives?: number;
-  initialScore?: number;
   assetPacks?: Record<string, AssetPack>;
   activeAssetPackId?: string;
   assetSystem?: AssetSystemConfig;

@@ -358,7 +358,7 @@ Phase 6 (After Phase 5): VALIDATION
 
 ---
 
-- [ ] 2.2. Update All Imports and Usages
+- [x] 2.2. Update All Imports and Usages
 
   **What to do**:
   - Find all imports of `RulesRuntimeSystem` → change to `RulesSystem`
@@ -402,7 +402,7 @@ Phase 6 (After Phase 5): VALIDATION
 
 ---
 
-- [ ] 2.3. Delete Old Rules Files
+- [x] 2.3. Delete Old Rules Files
 
   **What to do**:
   - Delete `app/lib/game-engine/RulesEvaluator.ts`
@@ -527,7 +527,7 @@ Phase 6 (After Phase 5): VALIDATION
 
 ---
 
-- [ ] 3.3. Remove Special Actions, Triggers, and Conditions
+- [x] 3.3. Remove Special Actions, Triggers, and Conditions
 
   **What to do**:
   - Remove `ScoreAction` and `LivesAction` types

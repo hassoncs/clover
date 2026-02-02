@@ -184,7 +184,7 @@ describe('RulesSystem', () => {
 
     it('can set initial lives via game definition', () => {
       const customDef = createMinimalGameDefinition();
-      customDef.initialLives = 5;
+      customDef.variables = { ...customDef.variables, lives: 5 };
       const customState = createGameState(customDef);
       expect(StateHelpers.getLives(customState)).toBe(5);
     });
@@ -308,7 +308,7 @@ describe('RulesSystem', () => {
       evaluator.loadRules([{
         id: 'jump-rule',
         trigger: { type: 'frame' },
-        actions: [{ type: 'score', operation: 'add', value: 10 }],
+        actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 10 }],
         cooldown: 0.5,
       }]);
 
@@ -323,12 +323,14 @@ describe('RulesSystem', () => {
   describe('Triggers', () => {
     beforeEach(() => startGame());
 
-    describe('Score Trigger', () => {
+    describe('Score Trigger (via expression condition)', () => {
       it('fires when score >= threshold', () => {
         evaluator.loadRules([{
           id: 'score-rule',
-          trigger: { type: 'score', threshold: 100, comparison: 'gte' },
-          actions: [{ type: 'lives', operation: 'add', value: 1 }],
+          trigger: { type: 'frame' },
+          conditions: [{ type: 'expression', expr: 'score >= 100' }],
+          actions: [{ type: 'set_variable', name: 'lives', operation: 'add', value: 1 }],
+          fireOnce: true,
         }]);
 
         StateHelpers.setScore(gameState, 99);
@@ -343,8 +345,10 @@ describe('RulesSystem', () => {
       it('fires when score <= threshold', () => {
         evaluator.loadRules([{
           id: 'low-score',
-          trigger: { type: 'score', threshold: 10, comparison: 'lte' },
+          trigger: { type: 'frame' },
+          conditions: [{ type: 'expression', expr: 'score <= 10' }],
           actions: [{ type: 'game_state', state: 'lose' }],
+          fireOnce: true,
         }]);
 
         StateHelpers.setScore(gameState, 5);
@@ -358,7 +362,7 @@ describe('RulesSystem', () => {
         evaluator.loadRules([{
           id: 'timer-rule',
           trigger: { type: 'timer', time: 0.05 },
-          actions: [{ type: 'score', operation: 'add', value: 50 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 50 }],
           fireOnce: true,
         }]);
 
@@ -376,7 +380,7 @@ describe('RulesSystem', () => {
         evaluator.loadRules([{
           id: 'tap-rule',
           trigger: { type: 'tap' },
-          actions: [{ type: 'score', operation: 'add', value: 100 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 100 }],
         }]);
 
         runUpdate({ tap: { x: 100, y: 100, worldX: 5, worldY: 5 } });
@@ -387,7 +391,7 @@ describe('RulesSystem', () => {
         evaluator.loadRules([{
           id: 'tap-rule',
           trigger: { type: 'tap' },
-          actions: [{ type: 'score', operation: 'add', value: 100 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 100 }],
         }]);
 
         runUpdate();
@@ -400,7 +404,7 @@ describe('RulesSystem', () => {
         evaluator.loadRules([{
           id: 'frame-rule',
           trigger: { type: 'frame' },
-          actions: [{ type: 'score', operation: 'add', value: 1 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 1 }],
         }]);
 
         runUpdate();
@@ -415,7 +419,7 @@ describe('RulesSystem', () => {
         evaluator.loadRules([{
           id: 'event-rule',
           trigger: { type: 'event', eventName: 'powerup_collected' },
-          actions: [{ type: 'score', operation: 'multiply', value: 2 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'multiply', value: 2 }],
         }]);
 
         StateHelpers.setScore(gameState, 50);
@@ -433,7 +437,7 @@ describe('RulesSystem', () => {
         evaluator.loadRules([{
           id: 'collect-coin',
           trigger: { type: 'collision', entityATag: 'player', entityBTag: 'coin' },
-          actions: [{ type: 'score', operation: 'add', value: 10 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 10 }],
         }]);
 
         const collision: CollisionInfo = {
@@ -468,7 +472,7 @@ describe('RulesSystem', () => {
         evaluator.loadRules([{
           id: 'jump-button',
           trigger: { type: 'button', button: 'jump', state: 'pressed' },
-          actions: [{ type: 'score', operation: 'add', value: 5 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 5 }],
         }]);
 
         runUpdate({ buttonPressed: new Set(['jump']) });
@@ -494,13 +498,14 @@ describe('RulesSystem', () => {
   describe('Conditions', () => {
     beforeEach(() => startGame());
 
-    describe('Score Condition', () => {
+    describe('Score Condition (via expression)', () => {
       it('passes when score in range', () => {
         evaluator.loadRules([{
           id: 'score-cond',
           trigger: { type: 'frame' },
-          conditions: [{ type: 'score', min: 50, max: 100 }],
-          actions: [{ type: 'lives', operation: 'add', value: 1 }],
+          conditions: [{ type: 'expression', expr: 'score >= 50 && score <= 100' }],
+          actions: [{ type: 'set_variable', name: 'lives', operation: 'add', value: 1 }],
+          fireOnce: true,
         }]);
 
         StateHelpers.setScore(gameState, 75);
@@ -512,8 +517,8 @@ describe('RulesSystem', () => {
         evaluator.loadRules([{
           id: 'score-cond',
           trigger: { type: 'frame' },
-          conditions: [{ type: 'score', min: 50, max: 100 }],
-          actions: [{ type: 'lives', operation: 'add', value: 1 }],
+          conditions: [{ type: 'expression', expr: 'score >= 50 && score <= 100' }],
+          actions: [{ type: 'set_variable', name: 'lives', operation: 'add', value: 1 }],
         }]);
 
         StateHelpers.setScore(gameState, 25);
@@ -528,7 +533,7 @@ describe('RulesSystem', () => {
           id: 'time-cond',
           trigger: { type: 'frame' },
           conditions: [{ type: 'time', min: 0, max: 1 }],
-          actions: [{ type: 'score', operation: 'add', value: 1 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 1 }],
         }]);
 
         runUpdate();
@@ -542,7 +547,7 @@ describe('RulesSystem', () => {
           id: 'var-eq',
           trigger: { type: 'frame' },
           conditions: [{ type: 'variable', name: 'level', comparison: 'eq', value: 5 }],
-          actions: [{ type: 'score', operation: 'add', value: 100 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 100 }],
         }]);
 
         StateHelpers.setVar(gameState, 'level', 5);
@@ -555,7 +560,7 @@ describe('RulesSystem', () => {
           id: 'var-gt',
           trigger: { type: 'frame' },
           conditions: [{ type: 'variable', name: 'health', comparison: 'gt', value: 50 }],
-          actions: [{ type: 'score', operation: 'add', value: 10 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 10 }],
         }]);
 
         StateHelpers.setVar(gameState, 'health', 75);
@@ -585,7 +590,7 @@ describe('RulesSystem', () => {
           id: 'var-neq',
           trigger: { type: 'frame' },
           conditions: [{ type: 'variable', name: 'state', comparison: 'neq', value: 'dead' }],
-          actions: [{ type: 'score', operation: 'add', value: 1 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 1 }],
         }]);
 
         StateHelpers.setVar(gameState, 'state', 'alive');
@@ -598,7 +603,7 @@ describe('RulesSystem', () => {
           id: 'var-bool',
           trigger: { type: 'frame' },
           conditions: [{ type: 'variable', name: 'isBonus', comparison: 'eq', value: true }],
-          actions: [{ type: 'score', operation: 'multiply', value: 2 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'multiply', value: 2 }],
         }]);
 
         StateHelpers.setScore(gameState, 50);
@@ -614,7 +619,7 @@ describe('RulesSystem', () => {
           id: 'has-key',
           trigger: { type: 'frame' },
           conditions: [{ type: 'list_contains', listName: 'inventory', value: 'key' }],
-          actions: [{ type: 'score', operation: 'add', value: 100 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 100 }],
         }]);
 
         StateHelpers.setList(gameState, 'inventory', ['sword', 'key', 'potion']);
@@ -627,7 +632,7 @@ describe('RulesSystem', () => {
           id: 'has-key',
           trigger: { type: 'frame' },
           conditions: [{ type: 'list_contains', listName: 'inventory', value: 'key' }],
-          actions: [{ type: 'score', operation: 'add', value: 100 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 100 }],
         }]);
 
         StateHelpers.setList(gameState, 'inventory', ['sword', 'potion']);
@@ -640,7 +645,7 @@ describe('RulesSystem', () => {
           id: 'no-curse',
           trigger: { type: 'frame' },
           conditions: [{ type: 'list_contains', listName: 'effects', value: 'curse', negated: true }],
-          actions: [{ type: 'score', operation: 'add', value: 50 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 50 }],
         }]);
 
         StateHelpers.setList(gameState, 'effects', ['buff', 'shield']);
@@ -657,7 +662,7 @@ describe('RulesSystem', () => {
           id: 'enemy-count',
           trigger: { type: 'frame' },
           conditions: [{ type: 'entity_count', tag: 'enemy', min: 1, max: 5 }],
-          actions: [{ type: 'score', operation: 'add', value: 10 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 10 }],
         }]);
 
         runUpdate();
@@ -671,7 +676,7 @@ describe('RulesSystem', () => {
           id: 'ability',
           trigger: { type: 'frame' },
           conditions: [{ type: 'cooldown_ready', cooldownId: 'fireball' }],
-          actions: [{ type: 'score', operation: 'add', value: 25 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 25 }],
         }]);
 
         runUpdate();
@@ -686,9 +691,10 @@ describe('RulesSystem', () => {
           trigger: { type: 'frame' },
           conditions: [
             { type: 'variable', name: 'hasKey', comparison: 'eq', value: true },
-            { type: 'score', min: 100 },
+            { type: 'expression', expr: 'score >= 100' },
           ],
           actions: [{ type: 'game_state', state: 'win' }],
+          fireOnce: true,
         }]);
 
         StateHelpers.setVar(gameState, 'hasKey', true);
@@ -711,7 +717,7 @@ describe('RulesSystem', () => {
         evaluator.loadRules([{
           id: 'add-score',
           trigger: { type: 'frame' },
-          actions: [{ type: 'score', operation: 'add', value: 10 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 10 }],
         }]);
 
         runUpdate();
@@ -723,7 +729,7 @@ describe('RulesSystem', () => {
         evaluator.loadRules([{
           id: 'sub-score',
           trigger: { type: 'frame' },
-          actions: [{ type: 'score', operation: 'subtract', value: 25 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'subtract', value: 25 }],
         }]);
 
         runUpdate();
@@ -735,7 +741,7 @@ describe('RulesSystem', () => {
         evaluator.loadRules([{
           id: 'mult-score',
           trigger: { type: 'frame' },
-          actions: [{ type: 'score', operation: 'multiply', value: 2 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'multiply', value: 2 }],
         }]);
 
         runUpdate();
@@ -747,7 +753,7 @@ describe('RulesSystem', () => {
         evaluator.loadRules([{
           id: 'set-score',
           trigger: { type: 'frame' },
-          actions: [{ type: 'score', operation: 'set', value: 0 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'set', value: 0 }],
         }]);
 
         runUpdate();
@@ -760,7 +766,7 @@ describe('RulesSystem', () => {
         evaluator.loadRules([{
           id: 'add-life',
           trigger: { type: 'frame' },
-          actions: [{ type: 'lives', operation: 'add', value: 1 }],
+          actions: [{ type: 'set_variable', name: 'lives', operation: 'add', value: 1 }],
         }]);
 
         runUpdate();
@@ -771,7 +777,7 @@ describe('RulesSystem', () => {
         evaluator.loadRules([{
           id: 'lose-life',
           trigger: { type: 'frame' },
-          actions: [{ type: 'lives', operation: 'subtract', value: 1 }],
+          actions: [{ type: 'set_variable', name: 'lives', operation: 'subtract', value: 1 }],
         }]);
 
         runUpdate();
@@ -782,7 +788,7 @@ describe('RulesSystem', () => {
         evaluator.loadRules([{
           id: 'set-lives',
           trigger: { type: 'frame' },
-          actions: [{ type: 'lives', operation: 'set', value: 99 }],
+          actions: [{ type: 'set_variable', name: 'lives', operation: 'set', value: 99 }],
         }]);
 
         runUpdate();
@@ -954,7 +960,7 @@ describe('RulesSystem', () => {
           {
             id: 'handle-event',
             trigger: { type: 'event', eventName: 'custom_event' },
-            actions: [{ type: 'score', operation: 'add', value: 999 }],
+            actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 999 }],
           },
         ]);
 
@@ -970,7 +976,7 @@ describe('RulesSystem', () => {
           id: 'cooldown-rule',
           trigger: { type: 'frame' },
           actions: [
-            { type: 'score', operation: 'add', value: 10 },
+            { type: 'set_variable', name: 'score', operation: 'add', value: 10 },
             { type: 'start_cooldown', cooldownId: 'ability', duration: 1.0 },
           ],
         }]);
@@ -1059,7 +1065,7 @@ describe('RulesSystem', () => {
         evaluator.loadRules([{
           id: 'once-rule',
           trigger: { type: 'frame' },
-          actions: [{ type: 'score', operation: 'add', value: 100 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 100 }],
           fireOnce: true,
         }]);
 
@@ -1075,7 +1081,7 @@ describe('RulesSystem', () => {
         evaluator.loadRules([{
           id: 'cooldown-rule',
           trigger: { type: 'frame' },
-          actions: [{ type: 'score', operation: 'add', value: 10 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 10 }],
           cooldown: 0.1,
         }]);
 
@@ -1092,7 +1098,7 @@ describe('RulesSystem', () => {
         evaluator.loadRules([{
           id: 'disabled-rule',
           trigger: { type: 'frame' },
-          actions: [{ type: 'score', operation: 'add', value: 100 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 100 }],
           enabled: false,
         }]);
 
@@ -1172,7 +1178,7 @@ describe('RulesSystem', () => {
 
     describe('Lose Conditions', () => {
       it('loses when lives reach zero', () => {
-        evaluator.setLoseCondition({ type: 'lives_zero' });
+        evaluator.setLoseCondition({ type: 'custom', expr: 'lives <= 0' });
         StateHelpers.setLives(gameState, 0);
         runUpdate();
         expect(StateHelpers.getGameStateValue(gameState)).toBe('lost');
@@ -1192,7 +1198,7 @@ describe('RulesSystem', () => {
       });
 
       it('loses when score drops below threshold', () => {
-        evaluator.setLoseCondition({ type: 'score_below', score: 0 });
+        evaluator.setLoseCondition({ type: 'custom', expr: 'score < 0' });
         StateHelpers.setScore(gameState, -10);
         runUpdate();
         expect(StateHelpers.getGameStateValue(gameState)).toBe('lost');
@@ -1216,7 +1222,7 @@ describe('RulesSystem', () => {
           trigger: { type: 'tap' },
           conditions: [{ type: 'variable', name: 'jumpsRemaining', comparison: 'gt', value: 0 }],
           actions: [
-            { type: 'score', operation: 'add', value: 10 },
+            { type: 'set_variable', name: 'score', operation: 'add', value: 10 },
             { type: 'set_variable', name: 'jumpsRemaining', operation: 'subtract', value: 1 },
           ],
         },
@@ -1319,15 +1325,15 @@ describe('RulesSystem', () => {
           id: 'collect-coin',
           trigger: { type: 'tap' },
           actions: [
-            { type: 'score', operation: 'add', value: 10 },
+            { type: 'set_variable', name: 'score', operation: 'add', value: 10 },
             { type: 'event', eventName: 'coin_collected' },
           ],
         },
         {
           id: 'check-bonus',
           trigger: { type: 'event', eventName: 'coin_collected' },
-          conditions: [{ type: 'score', min: 50 }],
-          actions: [{ type: 'lives', operation: 'add', value: 1 }],
+          conditions: [{ type: 'variable', name: 'score', comparison: 'gte', value: 50 }],
+          actions: [{ type: 'set_variable', name: 'lives', operation: 'add', value: 1 }],
         },
       ]);
 
@@ -1348,7 +1354,7 @@ describe('RulesSystem', () => {
         {
           id: 'handle-event',
           trigger: { type: 'event', eventName: 'test_event' },
-          actions: [{ type: 'score', operation: 'add', value: 100 }],
+          actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 100 }],
         },
       ]);
 
@@ -1369,7 +1375,7 @@ describe('RulesSystem', () => {
       evaluator.loadRules([{
         id: 'no-cond',
         trigger: { type: 'frame' },
-        actions: [{ type: 'score', operation: 'add', value: 1 }],
+        actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 1 }],
       }]);
 
       runUpdate();
@@ -1381,7 +1387,7 @@ describe('RulesSystem', () => {
         id: 'empty-cond',
         trigger: { type: 'frame' },
         conditions: [],
-        actions: [{ type: 'score', operation: 'add', value: 1 }],
+        actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 1 }],
       }]);
 
       runUpdate();
@@ -1392,7 +1398,7 @@ describe('RulesSystem', () => {
       evaluator.loadRules([{
         id: 'frame-rule',
         trigger: { type: 'frame' },
-        actions: [{ type: 'score', operation: 'add', value: 1 }],
+        actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 1 }],
       }]);
 
       StateHelpers.setGameStateValue(gameState, 'paused', eventBus);
@@ -1404,7 +1410,7 @@ describe('RulesSystem', () => {
       evaluator.loadRules([{
         id: 'frame-rule',
         trigger: { type: 'frame' },
-        actions: [{ type: 'score', operation: 'add', value: 1 }],
+        actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 1 }],
       }]);
 
       evaluator.setWinCondition({ expr: 'score >= 0' });
@@ -1420,7 +1426,7 @@ describe('RulesSystem', () => {
       evaluator.loadRules([{
         id: 'event-rule',
         trigger: { type: 'event', eventName: 'test' },
-        actions: [{ type: 'score', operation: 'add', value: 100 }],
+        actions: [{ type: 'set_variable', name: 'score', operation: 'add', value: 100 }],
       }]);
 
       StateHelpers.triggerEvent(gameState, 'test');

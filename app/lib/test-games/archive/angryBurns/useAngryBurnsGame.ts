@@ -63,7 +63,10 @@ export function useAngryBurnsGame(): UseAngryBurnsGameReturn {
           ),
           ...(angryBurnsOverrides.entities ?? []),
         ],
-        initialLives: level.difficulty?.initialLives ?? baseGame.initialLives,
+        variables: {
+          ...baseGame.variables,
+          lives: level.difficulty?.lives ?? baseGame.variables?.lives ?? 3,
+        },
       };
     },
     []

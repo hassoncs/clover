@@ -24,7 +24,7 @@ function createMinimalGame(overrides: Partial<GameDefinition> = {}): GameDefinit
     ],
     winCondition: { expr: 'score >= 100' },
     loseCondition: { type: "custom", expr: "lives <= 0" },
-    initialLives: 3,
+    variables: { lives: 3 },
     ...overrides,
   } as GameDefinition;
 }

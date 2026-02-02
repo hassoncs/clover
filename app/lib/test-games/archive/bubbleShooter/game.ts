@@ -405,7 +405,7 @@ const game: GameDefinition = {
       name: "Projectile hits bubble - destroy both and add score",
       trigger: { type: "collision", entityATag: "projectile", entityBTag: "bubble" },
       actions: [
-        { type: "score", operation: "add", value: 100 },
+        { type: "set_variable", name: "score", operation: "add", value: 100 },
         { type: "destroy", target: { type: "collision_entities" } },
         { type: "camera_shake", intensity: 0.05, duration: 0.1 },
       ],

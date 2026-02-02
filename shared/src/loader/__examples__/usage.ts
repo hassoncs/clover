@@ -84,7 +84,7 @@ export async function exampleApplyLevel(): Promise<void> {
   const result = loader.applyLevel(pack, 0, baseGame);
 
   console.log('Merged game title:', result.game.metadata.title);
-  console.log('Initial lives:', result.game.initialLives);
+  console.log('Initial lives:', result.game.variables?.lives);
   console.log('Warnings:', result.warnings);
 }
 
@@ -165,7 +165,7 @@ export async function exampleSlopeggleOverrides(): Promise<void> {
 
   // Apply the level
   const result = loader.applyLevel(pack, 1, baseGame);
-  console.log('Merged lives:', result.game.initialLives);
+  console.log('Merged lives:', result.game.variables?.lives);
 }
 
 // ============================================================================
@@ -218,7 +218,7 @@ export async function exampleFullWorkflow(): Promise<void> {
   // Step 6: Use the resulting game definition
   const finalGame = result.game;
   console.log('Ready to play:', finalGame.metadata.title);
-  console.log('Starting lives:', finalGame.initialLives);
+  console.log('Starting lives:', finalGame.variables?.lives);
 }
 
 // ============================================================================
@@ -245,7 +245,7 @@ function createBaseSlopeggleGame(): GameDefinition {
         { name: 'lives', label: 'Balls', position: 'top-right' },
       ],
     },
-    initialLives: 10,
+    variables: { lives: 10 },
     templates: {
       ball: {
         id: 'ball',

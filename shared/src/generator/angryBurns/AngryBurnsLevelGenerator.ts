@@ -59,7 +59,7 @@ interface DerivedDifficulty {
   towerRows: number; // 3-9
   towerColumns: number; // 2-5
   targetCount: number; // 1-4
-  initialLives: number; // 5-3
+  lives: number; // 5-3
   stoneRatio: number; // 0.3-0.7 (more stone = harder)
   woodRatio: number; // 0.3-0.5
   glassRatio: number; // 0.2-0.4
@@ -97,7 +97,7 @@ function deriveDifficulty(difficulty01: number, levelIndex?: number): DerivedDif
     towerRows: Math.round(lerp(3, 9, adjustedT)),
     towerColumns: Math.round(lerp(2, 5, adjustedT)),
     targetCount: Math.round(lerp(1, 4, adjustedT)),
-    initialLives: Math.round(lerp(5, 3, adjustedT)),
+    lives: Math.round(lerp(5, 3, adjustedT)),
     stoneRatio: lerp(0.3, 0.7, adjustedT),
     woodRatio: lerp(0.4, 0.3, adjustedT),
     glassRatio: lerp(0.3, 0.2, adjustedT),
@@ -284,10 +284,10 @@ export function generateAngryBurnsLevel(params: GenerateAngryBurnsLevelParams): 
     generatorVersion: GENERATOR_VERSION,
     seed: String(seed),
     title: title ?? `Level ${levelId}`,
-    description: description ?? `Destroy all ${difficulty.targetCount} targets with ${difficulty.initialLives} shots`,
+    description: description ?? `Destroy all ${difficulty.targetCount} targets with ${difficulty.lives} shots`,
     generatedAt: Date.now(),
     difficulty: {
-      initialLives: difficulty.initialLives,
+      lives: difficulty.lives,
       estimatedDurationSeconds,
     },
     generatorParams: {
@@ -506,7 +506,7 @@ function createFallbackTower(params: GenerateAngryBurnsLevelParams): LevelDefini
     title: params.title ?? `Level ${params.levelId}`,
     description: params.description ?? 'Destroy the target with 5 shots',
     generatedAt: Date.now(),
-    difficulty: { initialLives: 5, estimatedDurationSeconds: 30 },
+    difficulty: { lives: 5, estimatedDurationSeconds: 30 },
     generatorParams: {
       difficulty01: params.difficulty01,
       levelIndex: params.levelIndex,

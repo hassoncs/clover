@@ -58,7 +58,7 @@ const game: GameDefinition = {
     type: "custom",
     expr: "lives <= 0",
   },
-  initialLives: 3,
+  variables: { lives: 3 },
   constants: {
     PADDLE_Y,
     BALL_SPEED: 6,

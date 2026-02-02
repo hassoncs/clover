@@ -68,8 +68,8 @@ const game: GameDefinition = {
     type: "custom",
     expr: "lives <= 0",
   },
-  initialLives: 3,
   variables: {
+    lives: 3,
     paddleForce: {
       value: 120,
       tuning: { min: 50, max: 200, step: 10 },

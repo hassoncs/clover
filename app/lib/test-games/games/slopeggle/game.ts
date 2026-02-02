@@ -103,6 +103,7 @@ const game: GameDefinition = {
   },
   camera: { type: "fixed", zoom: 1 },
   variables: {
+    lives: 10,
     multiplier: 1,
     turn: 0,
   },
@@ -130,7 +131,6 @@ const game: GameDefinition = {
     type: "custom",
     expr: "lives <= 0",
   },
-  initialLives: 10,
   templates: {
     ball: {
       id: "ball",

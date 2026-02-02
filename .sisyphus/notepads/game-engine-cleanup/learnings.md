@@ -61,3 +61,38 @@ Conventions, patterns, and things that worked.
 - The `varChanged` event now handles all variable updates, including reserved variables like `score` and `lives`.
 - React components (like `GameRuntime.godot.tsx`) now filter `varChanged` events by key to update specific UI elements.
 - This simplifies the `GameEventType` union and reduces the number of special cases in `GameStateHelpers.setVar`.
+
+## Test Migration for Score/Lives Removal
+
+Successfully migrated all tests in `RulesSystem.test.ts` from old score/lives actions to new set_variable pattern.
+
+### Migration Patterns Used:
+
+1. **Actions**: Simple sed replacement worked well
+   - `{ type: 'score', ... }` → `{ type: 'set_variable', name: 'score', ... }`
+   - `{ type: 'lives', ... }` → `{ type: 'set_variable', name: 'lives', ... }`
+
+2. **Triggers**: Converted to frame trigger + expression condition
+   - Old: `{ type: 'score', threshold: 100, comparison: 'gte' }`
+   - New: `{ trigger: { type: 'frame' }, conditions: [{ type: 'expression', expr: 'score >= 100' }], fireOnce: true }`
+
+3. **Conditions**: Converted to expression conditions
+   - Old: `{ type: 'score', min: 50, max: 100 }`
+   - New: `{ type: 'expression', expr: 'score >= 50 && score <= 100' }`
+
+4. **Lose Conditions**: Updated to custom with expr
+   - Old: `{ type: 'lives_zero' }`
+   - New: `{ type: 'custom', expr: 'lives <= 0' }`
+
+### Important Gotcha:
+
+When testing event-triggered rules with conditions on variables that are modified in the same frame, use `variable` condition instead of `expression` condition:
+- ✅ Works: `{ type: 'variable', name: 'score', comparison: 'gte', value: 50 }`
+- ❌ May fail: `{ type: 'expression', expr: 'score >= 50' }`
+
+This is because variable conditions evaluate at the right time in the event processing pipeline, while expression conditions might evaluate before the variable is updated.
+
+### Results:
+- Zero TypeScript errors
+- All 345 tests passing
+- Clean migration with no functionality loss

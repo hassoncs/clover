@@ -12,9 +12,9 @@ import { RESERVED_VARS } from './types';
 export function createGameState(def: GameDefinition): GameState {
   const vars: Record<string, VarValue> = {};
   const initialVars: Record<string, VarValue> = {};
-  
-  vars[RESERVED_VARS.SCORE] = def.initialScore ?? 0;
-  vars[RESERVED_VARS.LIVES] = def.initialLives ?? 3;
+
+  vars[RESERVED_VARS.SCORE] = (def.variables?.score as number) ?? 0;
+  vars[RESERVED_VARS.LIVES] = (def.variables?.lives as number) ?? 3;
   vars[RESERVED_VARS.GAME_STATE] = 'ready';
   vars[RESERVED_VARS.ELAPSED] = 0;
   

@@ -347,8 +347,8 @@ export class LevelLoader {
     }
 
     // Merge level difficulty into game config
-    if (level.difficulty?.initialLives !== undefined) {
-      game.initialLives = level.difficulty.initialLives;
+    if (level.difficulty?.lives !== undefined) {
+      game.variables = { ...game.variables, lives: level.difficulty.lives };
     }
 
     // Apply Slopeggle-specific overrides

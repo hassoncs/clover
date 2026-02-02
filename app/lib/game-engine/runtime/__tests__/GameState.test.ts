@@ -38,10 +38,12 @@ describe('createGameState', () => {
     expect(getGameStateValue(state)).toBe('ready');
   });
 
-  it('uses initialScore and initialLives from definition', () => {
+  it('uses variables from definition for score and lives', () => {
     const state = createGameState(createMinimalDef({
-      initialScore: 100,
-      initialLives: 5,
+      variables: {
+        score: 100,
+        lives: 5,
+      },
     }));
     
     expect(getScore(state)).toBe(100);
@@ -80,9 +82,11 @@ describe('createGameState', () => {
 describe('resetGameState', () => {
   it('resets all values to initial', () => {
     const state = createGameState(createMinimalDef({
-      initialScore: 50,
-      initialLives: 5,
-      variables: { health: 100 },
+      variables: { 
+        score: 50,
+        lives: 5,
+        health: 100 
+      },
     }));
     
     setScore(state, 999);

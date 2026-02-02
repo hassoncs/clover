@@ -67,7 +67,6 @@ export interface RulesSystemConfig {
   variables?: Record<string, GameVariable>;
   containers?: ContainerConfig[];
   stateMachines?: StateMachineDefinition[];
-  initialLives?: number;
 }
 
 export interface RulesSystemState {
