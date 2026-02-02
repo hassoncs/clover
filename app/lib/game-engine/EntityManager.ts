@@ -89,7 +89,6 @@ export class EntityManager {
     this.physics = physics;
     if (options.templates) {
       Object.entries(options.templates).forEach(([id, template]) => {
-        console.log('[EntityManager] Registering template:', id, 'collider:', JSON.stringify(template.collider));
         this.templates.set(id, structuredClone(template));
       });
     }
@@ -226,8 +225,6 @@ export class EntityManager {
       console.warn(`Template "${definition.template}" not found, using definition as-is`);
       return definition;
     }
-    
-    console.log('[EntityManager] resolveTemplate - entity:', definition.id, 'wants template:', definition.template, 'got collider:', JSON.stringify(template.collider));
 
     return {
       ...definition,
@@ -330,9 +327,6 @@ export class EntityManager {
   private createShapeDef(entity: RuntimeEntity): ShapeDef {
     const collider = entity.collider;
     const physics = entity.physics;
-    
-    console.log('[EntityManager] createShapeDef for entity:', entity.id, 'template:', entity.template, 'collider:', JSON.stringify(collider));
-    
     const shape = collider?.shape ?? (physics as any)?.shape;
     
     switch (shape) {

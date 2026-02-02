@@ -53,7 +53,6 @@ export class SpawnActionExecutor implements ActionExecutor<SpawnAction> {
         let initialVelocity: { x: number; y: number } | undefined;
         if (action.launch) {
           initialVelocity = this.calculateLaunchVelocity(action.launch, x, y, context);
-          console.log('[SpawnAction] Launch velocity:', initialVelocity, 'from tap:', context.inputEvents.tap?.worldX, context.inputEvents.tap?.worldY);
         }
 
         if (context.bridge) {

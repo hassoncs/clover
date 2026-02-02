@@ -47,10 +47,6 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
   }
   
   async initialize(ctx: SystemContext, _config: ScriptSandboxSystemConfig): Promise<void> {
-    console.log('[ScriptSandboxRuntimeSystem] Initializing with scriptId:', this.config.scriptId);
-    console.log('[ScriptSandboxRuntimeSystem] Script code length:', this.config.scriptCode.length);
-    console.log('[ScriptSandboxRuntimeSystem] Constants:', this.config.constants);
-    
     this.systemContext = ctx;
     this.constants = this.config.constants;
     
@@ -65,22 +61,11 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
     
     if (!result.success) {
       console.error('[ScriptSandboxRuntimeSystem] Failed to initialize sandbox:', result.error);
-    } else {
-      console.log('[ScriptSandboxRuntimeSystem] Sandbox initialized successfully');
-      console.log('[ScriptSandboxRuntimeSystem] Available hooks:', {
-        onStart: this.sandbox.hasHook('onStart'),
-        onUpdate: this.sandbox.hasHook('onUpdate'),
-        onInput: this.sandbox.hasHook('onInput'),
-        onCollision: this.sandbox.hasHook('onCollision'),
-      });
     }
   }
   
   update(ctx: UpdateContext, _state: ScriptSandboxSystemState): void {
     if (!this.sandbox || !this.systemContext) {
-      if (ctx.frameId % 60 === 0) {
-        console.log('[ScriptSandboxRuntimeSystem] update skipped: sandbox=', !!this.sandbox, 'systemContext=', !!this.systemContext);
-      }
       return;
     }
     
@@ -96,28 +81,18 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
     const runtimeContext = this.createRuntimeContext(ctx);
     
     if (!this.onStartCalled && this.sandbox.hasHook('onStart')) {
-      console.log('[ScriptSandboxRuntimeSystem] Calling onStart...');
       const result = this.sandbox.runStart(runtimeContext);
       if (!result.success) {
         console.error('[ScriptSandboxRuntimeSystem] onStart error:', result.error);
-      } else {
-        console.log('[ScriptSandboxRuntimeSystem] onStart completed successfully');
       }
       this.onStartCalled = true;
     }
     
     if (this.sandbox.hasHook('onUpdate')) {
-      if (ctx.frameId % 30 === 0) {
-        console.log('[ScriptSandboxRuntimeSystem] onUpdate frame:', ctx.frameId, 
-          'rawMouse:', ctx.input.mouse,
-          'mousePosition:', runtimeContext.mousePosition);
-      }
       const result = this.sandbox.runUpdate(runtimeContext, ctx.dt);
       if (!result.success) {
         console.error('[ScriptSandboxRuntimeSystem] onUpdate error:', result.error);
       }
-    } else if (ctx.frameId === 1) {
-      console.log('[ScriptSandboxRuntimeSystem] No onUpdate hook found');
     }
     
     if (this.sandbox.hasHook('onInput')) {
@@ -129,14 +104,12 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
             entityId: event.targetEntityId ?? null,
             timestamp: Date.now(),
           };
-          console.log('[ScriptSandboxRuntimeSystem] Processing tap event from frame:', tapEvent);
           this.runInput(ctx, tapEvent);
         }
       }
     }
     
     if (this.sandbox.hasHook('onCollision') && ctx.frame.collisions.length > 0) {
-      console.log('[ScriptSandboxRuntimeSystem] Processing', ctx.frame.collisions.length, 'collisions from frame');
       for (const collision of ctx.frame.collisions) {
         const collisionEvent: ScriptCollisionEvent = {
           entityA: collision.entityA.id,
@@ -195,7 +168,6 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
     if (!this.sandbox || !this.systemContext) return;
     if (!this.sandbox.hasHook('onInput')) return;
     
-    console.log('[ScriptSandboxRuntimeSystem] Running onInput:', event.type);
     const runtimeContext = this.createRuntimeContext(ctx);
     const result = this.sandbox.runInput(runtimeContext, event);
     if (!result.success) {
@@ -210,7 +182,6 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
     if (!this.sandbox || !this.systemContext) return;
     if (!this.sandbox.hasHook('onCollision')) return;
     
-    console.log('[ScriptSandboxRuntimeSystem] Running onCollision:', collision.entityA, 'vs', collision.entityB);
     const runtimeContext = this.createRuntimeContext(ctx);
     const result = this.sandbox.runCollision(runtimeContext, collision);
     if (!result.success) {
@@ -320,11 +291,8 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
       setEntityPosition: (entityId: string, position: { x: number; y: number }) => {
         const entity = em.getEntity(entityId);
         if (!entity) {
-          console.warn('[ScriptSandboxRuntimeSystem] setEntityPosition: entity not found:', entityId);
           return;
         }
-        
-        console.log('[ScriptSandboxRuntimeSystem] setEntityPosition:', entityId, 'to', position, 'hasPhysics:', !!entity.physics);
         
         entity.transform.x = position.x;
         entity.transform.y = position.y;
@@ -334,8 +302,6 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
             position,
             angle: entity.transform.angle,
           });
-        } else {
-          console.warn('[ScriptSandboxRuntimeSystem] setEntityPosition: entity has no physics:', entityId);
         }
       },
       getEntityVelocity: (entityId: string) => {
@@ -346,14 +312,11 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
       setEntityVelocity: (entityId: string, velocity: { x: number; y: number }) => {
         const entity = em.getEntity(entityId);
         if (!entity) {
-          console.warn('[ScriptSandboxRuntimeSystem] setEntityVelocity: entity not found:', entityId);
           return;
         }
         if (!entity.physics) {
-          console.warn('[ScriptSandboxRuntimeSystem] setEntityVelocity: entity has no physics:', entityId);
           return;
         }
-        console.log('[ScriptSandboxRuntimeSystem] setEntityVelocity:', entityId, 'to', velocity);
         physics.setLinearVelocity(entity.id, velocity);
       },
       applyImpulse: (entityId: string, impulse: { x: number; y: number }) => {
@@ -389,11 +352,6 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
           template: query.templateId,
           withinAabb,
         });
-        
-        if (results.length === 0 && query.tag) {
-          console.log('[ScriptSandboxRuntimeSystem] queryEntities: no results for tag:', query.tag, 
-            'active entities:', em.getActiveEntities().map(e => ({ id: e.id, tags: e.tags })).slice(0, 5));
-        }
         
         return results.map(e => e.id);
       },

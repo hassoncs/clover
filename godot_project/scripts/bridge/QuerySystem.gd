@@ -61,12 +61,10 @@ func _handle_async_query(request_id: String, method: String, method_args: Array)
 	send_response(request_id, result)
 
 func dispatch(method: String, args: Array) -> Variant:
-	print("[QuerySystem] dispatch: method=%s, args=%s" % [method, str(args)])
 	if _handlers.has(method):
 		var callback: Callable = _handlers[method]
 		if callback.is_valid():
 			var result = callback.call(args)
-			print("[QuerySystem] dispatch result: %s" % str(result))
 			return result
 	
 	push_error("[QuerySystem] Unknown query method: %s" % method)
@@ -74,7 +72,6 @@ func dispatch(method: String, args: Array) -> Variant:
 
 # Async dispatch that properly awaits coroutines
 func dispatch_async(method: String, args: Array) -> Variant:
-	print("[QuerySystem] dispatch_async: method=%s, args=%s" % [method, str(args)])
 	if _handlers.has(method):
 		var callback: Callable = _handlers[method]
 		if callback.is_valid():
@@ -82,7 +79,6 @@ func dispatch_async(method: String, args: Array) -> Variant:
 			# If result is a coroutine/signal, await it
 			if result is Object and result.has_signal("completed"):
 				result = await result
-			print("[QuerySystem] dispatch_async result: %s" % str(result))
 			return result
 	
 	push_error("[QuerySystem] Unknown query method: %s" % method)

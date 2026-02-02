@@ -64,7 +64,6 @@ func _download_background_texture(url: String) -> void:
 	_download_image_texture(url, func(texture: Texture2D):
 		if is_instance_valid(_background_rect):
 			_background_rect.texture = texture
-			print("[BG] Applied texture ", texture.get_width(), "x", texture.get_height(), " to TextureRect with STRETCH_KEEP_ASPECT_COVERED")
 	)
 
 func _apply_background_texture(texture: Texture2D) -> void:
@@ -72,7 +71,6 @@ func _apply_background_texture(texture: Texture2D) -> void:
 		return
 
 	_background_rect.texture = texture
-	print("[BG] Applied texture ", texture.get_width(), "x", texture.get_height(), " to TextureRect with STRETCH_KEEP_ASPECT_COVERED")
 
 func _apply_background_color(color: String) -> void:
 	if not is_instance_valid(_background_rect):
@@ -127,10 +125,7 @@ func _setup_parallax_background(bg_data: Dictionary) -> void:
 		_download_image_texture(image_url, func(texture: Texture2D):
 			if is_instance_valid(rect):
 				rect.texture = texture
-				print("[BG] Applied parallax layer texture ", texture.get_width(), "x", texture.get_height())
 		)
-
-	print("[BG] Setup ", _parallax_layers.size(), " parallax layers")
 
 func _download_image_texture(url: String, callback: Callable) -> void:
 	if _texture_cache.has(url):

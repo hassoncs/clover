@@ -2,6 +2,8 @@ import type { Vec2 } from './common';
 
 export type VisualType = 'rect' | 'circle' | 'polygon' | 'image' | 'text';
 
+export type VisualBlendMode = 'mix' | 'add' | 'sub' | 'mul';
+
 export interface ShadowEffect {
   color: string;
   offsetX: number;
@@ -17,6 +19,7 @@ interface BaseVisualComponent {
   offsetY?: number;
   opacity?: number;
   zIndex?: number;
+  blendMode?: VisualBlendMode;
   shadow?: ShadowEffect;
   effects?: EffectChain;
 }

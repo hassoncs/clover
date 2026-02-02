@@ -57,16 +57,6 @@ func create_entity(entity_data: Dictionary) -> EntityRecord:
 	var entity_id = entity_data.get("id", "entity_" + str(randi()))
 	var template_id = entity_data.get("template", "")
 	var transform_data = entity_data.get("transform", {})
-	print("[EntityFactory] create_entity: id=", entity_id, " template=", template_id, " _templates.has=", _templates.has(template_id))
-	
-	# DEBUG: Check what's in the template
-	if template_id != "" and _templates.has(template_id):
-		var tmpl_debug = _templates[template_id]
-		print("[EntityFactory] TEMPLATE KEYS: ", tmpl_debug.keys())
-		if tmpl_debug.has("visual"):
-			print("[EntityFactory] TEMPLATE VISUAL: ", tmpl_debug["visual"])
-		else:
-			print("[EntityFactory] TEMPLATE HAS NO VISUAL KEY")
 
 	# Merge template with entity data
 	var merged = entity_data.duplicate(true)
@@ -111,10 +101,6 @@ func create_entity(entity_data: Dictionary) -> EntityRecord:
 	# Add visual component
 	if visual_data:
 		var resolved_visual = _resolve_visual_with_defaults(visual_data, collider_data)
-		# DEBUG: For ball entities, show exactly what we're passing
-		if entity_id.begins_with("ball"):
-			print("[EntityFactory] BALL visual_data=", visual_data, " type=", visual_data.get("type", "MISSING"))
-			print("[EntityFactory] BALL resolved_visual=", resolved_visual, " type=", resolved_visual.get("type", "MISSING"))
 		_add_visual(node, resolved_visual)
 	elif collider_data:
 		# Auto-generate visual from collider if no visual specified
@@ -125,26 +111,26 @@ func create_entity(entity_data: Dictionary) -> EntityRecord:
 
 	# NOTE: Collider shape is now added by create_area2d_entity() for collider-only entities
 	# This block is no longer needed since we handle it in the Area2D creation path
-
-	print("[EntityFactory] Created node type=", node.get_class(), " physics_data=", physics_data != null, " collider_data=", collider_data != null, " visual_data=", visual_data != null)
 	
 	# Add to scene
 	if _game_root:
 		_game_root.add_child(node)
-		print("[EntityFactory] Added to game_root")
 	else:
 		var main = _bridge.get_tree().current_scene if _bridge else null
 		if main:
 			main.add_child(node)
-			print("[EntityFactory] Added to main scene (game_root was null)")
 		else:
-			print("[EntityFactory] ERROR: No parent to add node to!")
+			push_error("[EntityFactory] No parent to add node to!")
 
 	# Apply initial velocity if specified
 	if node is RigidBody2D and physics_data and physics_data.has("initialVelocity"):
 		var initial_vel = physics_data.initialVelocity
 		var game_vel = Vector2(initial_vel.get("x", 0), initial_vel.get("y", 0))
 		node.linear_velocity = game_to_godot_vec(game_vel)
+
+	# Set visibility (defaults to true if not specified)
+	if merged.has("visible") and merged.visible == false:
+		node.visible = false
 
 	# Set metadata for selectors
 	if template_id != "":

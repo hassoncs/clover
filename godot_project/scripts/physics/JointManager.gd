@@ -98,7 +98,6 @@ func _js_destroy_mouse_joint_for_entity(args: Array) -> void:
 	destroy_mouse_joint_for_entity(entity_id)
 
 func destroy_mouse_joint_for_entity(entity_id: String) -> void:
-	print("[JointManager] destroy_mouse_joint_for_entity: ", entity_id)
 	var to_remove: Array = []
 	for joint_id in joints:
 		var joint = joints[joint_id]
@@ -106,7 +105,6 @@ func destroy_mouse_joint_for_entity(entity_id: String) -> void:
 			to_remove.append(joint_id)
 	for joint_id in to_remove:
 		joints.erase(joint_id)
-		print("[JointManager] Removed mouse joint ", joint_id, " for entity ", entity_id)
 
 
 func _js_set_motor_speed(args: Array) -> void:
@@ -282,7 +280,6 @@ func create_mouse_joint(entity_id: String, target_x: float, target_y: float,
 
 	
 	if node == null:
-		print("[JointManager] Entity not found in registry! keys=", bridge.entity_registry.keys())
 		return -1
 	
 	joint_counter += 1

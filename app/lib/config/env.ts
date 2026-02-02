@@ -16,17 +16,12 @@ function getApiUrl(): string {
       (Constants?.manifest as any)?.debuggerHost ||
       (Constants?.manifest2 as any)?.extra?.expoGo?.debuggerHost;
 
-    console.log("[Config] Debugger Host:", debuggerHost);
-
     if (debuggerHost) {
       const host = debuggerHost.split(":")[0];
-      const url = `http://${host}:8789`;
-      console.log("[Config] API URL detected from debugger host:", url);
-      return url;
+      return `http://${host}:8789`;
     }
   }
 
-  console.log("[Config] API URL falling back to localhost");
   return "http://localhost:8789";
 }
 

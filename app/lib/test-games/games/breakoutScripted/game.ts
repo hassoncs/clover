@@ -72,7 +72,6 @@ const game: GameDefinition = {
 let launched = false;
 
 exports.onStart = function(ctx) {
-  console.log('[breakoutScripted] onStart called');
   launched = false;
   ctx.setVariable('launched', false);
 };

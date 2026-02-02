@@ -59,6 +59,14 @@ func _js_set_opacity(args: Array) -> void:
 	set_opacity(entity_id, opacity)
 
 
+func _js_set_visible(args: Array) -> void:
+	if args.size() < 2:
+		return
+	var entity_id = str(args[0])
+	var visible = bool(args[1])
+	set_visible(entity_id, visible)
+
+
 func _js_set_debug_show_shapes(args: Array) -> void:
 	if args.size() < 1:
 		if _bridge and "_push_error" in _bridge:
@@ -168,6 +176,15 @@ func set_opacity(entity_id: String, opacity: float) -> void:
 	var sprite = _find_sprite_in_entity(node)
 	if sprite:
 		sprite.modulate.a = opacity
+
+
+func set_visible(entity_id: String, visible: bool) -> void:
+	if not _has_entity(entity_id):
+		return
+
+	var node = _get_entity(entity_id)
+	if node:
+		node.visible = visible
 
 
 func set_debug_show_shapes(enabled: bool) -> void:
@@ -316,13 +333,29 @@ func set_entity_image_from_file(
 # VISUAL DISPATCHER
 # ============================================================================
 
+func _apply_blend_mode(canvas_item: CanvasItem, blend_mode_str: String) -> void:
+	print("[VisualRenderer] _apply_blend_mode called with: '", blend_mode_str, "'")
+	if blend_mode_str == "" or blend_mode_str == "mix":
+		return
+	var mat = CanvasItemMaterial.new()
+	match blend_mode_str:
+		"add":
+			mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+			print("[VisualRenderer] Applied ADD blend mode")
+		"sub":
+			mat.blend_mode = CanvasItemMaterial.BLEND_MODE_SUB
+		"mul":
+			mat.blend_mode = CanvasItemMaterial.BLEND_MODE_MUL
+		_:
+			return
+	canvas_item.material = mat
+
 func add_visual(node: Node2D, visual_data: Dictionary) -> void:
-	print("[VisualRenderer] add_visual for ", node.name, " visual_data=", visual_data, " keys=", visual_data.keys())
 	var visual_type = visual_data.get("type", "rect")
-	print("[VisualRenderer] visual_type=", visual_type)
 	var color = Color.from_string(visual_data.get("color", "#FF0000"), Color.RED)
 	var opacity = visual_data.get("opacity", 1.0)
 	var z_index_val = visual_data.get("zIndex", 0)
+	var blend_mode = visual_data.get("blendMode", "")
 
 	match visual_type:
 		"rect":
@@ -349,6 +382,7 @@ func add_visual(node: Node2D, visual_data: Dictionary) -> void:
 				Vector2(tex_size + padding, tex_size + padding),
 				Vector2(padding, tex_size + padding)
 			])
+			_apply_blend_mode(polygon, blend_mode)
 			node.add_child(polygon)
 		"circle":
 			var polygon = Polygon2D.new()
@@ -370,6 +404,7 @@ func add_visual(node: Node2D, visual_data: Dictionary) -> void:
 			polygon.texture = _create_polygon_texture(tex_size, tex_size, color, padding)
 			polygon.color = Color.WHITE
 			polygon.uv = uvs
+			_apply_blend_mode(polygon, blend_mode)
 			node.add_child(polygon)
 		"polygon":
 			var polygon = Polygon2D.new()
@@ -651,8 +686,6 @@ func _on_preload_complete(url: String, success: bool) -> void:
 	# Call JavaScript callback if set
 	elif _js_preload_progress_callback != null:
 		_js_preload_progress_callback.call("call", null, percent, _preload_completed_count, _preload_failed_count)
-	else:
-		print("[VisualRenderer] No progress callback registered!")
 
 
 # ============================================================================

@@ -752,7 +752,6 @@ export function injectGodotDebugBridge(): GodotDebugBridge | null {
   const bridge = createGodotDebugBridge();
   if (bridge) {
     win.GodotDebugBridge = bridge;
-    console.log(`[GodotDebugBridge] Injected v${DEBUG_BRIDGE_VERSION}`);
   }
 
   return bridge;

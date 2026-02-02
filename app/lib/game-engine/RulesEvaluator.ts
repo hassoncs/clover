@@ -76,6 +76,10 @@ export class RulesEvaluator implements IGameStateMutator {
   private initialVariables = new Map<string, number | string | boolean>();
   private lists = new Map<string, ListValue>();
   private pendingEvents = new Map<string, unknown>();
+  
+  private smStates: Record<string, { currentState: string; previousState: string; stateEnteredAt: number; transitionCount: number }> | null = null;
+  private smDefs: Record<string, StateMachineDefinition> | null = null;
+  private initialSmStates: Record<string, { currentState: string; previousState: string; stateEnteredAt: number; transitionCount: number }> | null = null;
 
   private onScoreChange?: (score: number) => void;
   private onLivesChange?: (lives: number) => void;
@@ -196,6 +200,9 @@ export class RulesEvaluator implements IGameStateMutator {
 
   setStateMachines(stateMachines: StateMachineDefinition[] | undefined): void {
     if (!stateMachines || stateMachines.length === 0) {
+      this.smStates = null;
+      this.smDefs = null;
+      this.initialSmStates = null;
       return;
     }
 
@@ -212,10 +219,9 @@ export class RulesEvaluator implements IGameStateMutator {
       smDefs[sm.id] = sm;
     }
 
-    this.variables.set('__smStates', smStates as unknown as number);
-    this.variables.set('__smDefs', smDefs as unknown as number);
-    this.initialVariables.set('__smStates', smStates as unknown as number);
-    this.initialVariables.set('__smDefs', smDefs as unknown as number);
+    this.smStates = smStates;
+    this.smDefs = smDefs;
+    this.initialSmStates = JSON.parse(JSON.stringify(smStates));
   }
 
   setCallbacks(callbacks: {
@@ -260,6 +266,9 @@ export class RulesEvaluator implements IGameStateMutator {
     }
     this.lists.clear();
     this.pendingEvents.clear();
+    if (this.initialSmStates) {
+      this.smStates = JSON.parse(JSON.stringify(this.initialSmStates));
+    }
     this.setGameState("ready");
     this.onVariablesChange?.(this.getVariables());
   }
@@ -307,6 +316,14 @@ export class RulesEvaluator implements IGameStateMutator {
 
   getVariable(name: string): number | string | boolean | undefined {
     return this.variables.get(name);
+  }
+
+  getStateMachineStates(): Record<string, { currentState: string; previousState: string; stateEnteredAt: number; transitionCount: number }> | null {
+    return this.smStates;
+  }
+
+  getStateMachineDefinitions(): Record<string, StateMachineDefinition> | null {
+    return this.smDefs;
   }
 
   setCooldown(id: string, time: number): void {
@@ -462,15 +479,11 @@ export class RulesEvaluator implements IGameStateMutator {
 
   private processStateMachineEvents(): void {
     if (this.pendingEvents.size === 0) return;
-
-    const smDefs = this.variables.get('__smDefs') as unknown as Record<string, StateMachineDefinition> | undefined;
-    const smStates = this.variables.get('__smStates') as unknown as Record<string, StateMachineState> | undefined;
-
-    if (!smDefs || !smStates) return;
+    if (!this.smDefs || !this.smStates) return;
 
     for (const [eventName] of this.pendingEvents) {
-      for (const [machineId, def] of Object.entries(smDefs)) {
-        const state = smStates[machineId];
+      for (const [machineId, def] of Object.entries(this.smDefs)) {
+        const state = this.smStates[machineId];
         if (!state) continue;
 
         for (const transition of def.transitions) {
@@ -485,8 +498,6 @@ export class RulesEvaluator implements IGameStateMutator {
         }
       }
     }
-
-    this.variables.set('__smStates', smStates as unknown as number);
   }
 
   private transitionMatches(

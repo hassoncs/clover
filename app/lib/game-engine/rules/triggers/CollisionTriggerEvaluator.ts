@@ -18,14 +18,6 @@ export class CollisionTriggerEvaluator
       const bHasTagA = c.entityB.tags.includes(trigger.entityATag);
       const bHasTagB = c.entityB.tags.includes(trigger.entityBTag);
       const matched = (aHasTagA && bHasTagB) || (aHasTagB && bHasTagA);
-      if (matched) {
-        console.log(
-          "[CollisionTrigger] MATCHED:",
-          trigger.entityATag,
-          "↔",
-          trigger.entityBTag,
-        );
-      }
       return matched;
     });
   }

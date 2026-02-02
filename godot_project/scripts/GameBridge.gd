@@ -174,7 +174,7 @@ func _setup_js_bridge() -> void:
 		"onInputEvent": _event_emitter._js_on_input_event, "onCollision": _event_emitter._js_on_collision,
 		"onEntityDestroyed": _event_emitter._js_on_entity_destroyed, "setTransform": _transform_system._js_set_transform,
 		"setPosition": _transform_system._js_set_position, "setRotation": _transform_system._js_set_rotation,
-		"setScale": _transform_system._js_set_scale, "setOpacity": _visual_renderer._js_set_opacity,
+		"setScale": _transform_system._js_set_scale, "setOpacity": _visual_renderer._js_set_opacity, "setVisible": _visual_renderer._js_set_visible,
 		"getLinearVelocity": _physics_controller._js_get_linear_velocity, "getAngularVelocity": _physics_controller._js_get_angular_velocity,
 		"applyTorque": _physics_controller._js_apply_torque, "createRevoluteJoint": _joint_manager._js_create_revolute_joint,
 		"createDistanceJoint": _joint_manager._js_create_distance_joint, "createPrismaticJoint": _joint_manager._js_create_prismatic_joint,

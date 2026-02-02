@@ -107,8 +107,6 @@ export class EventBridgeImpl implements EventBridge {
     });
 
     this.unsubscribers.add(unsubscribe);
-
-    console.log(`[EventBridge] Initialized with ${transport.platform} transport`);
   }
 
   /**
@@ -236,9 +234,6 @@ export class EventBridgeImpl implements EventBridge {
           : JSON.stringify(envelope.payload).slice(0, 50)
         : '';
 
-      console.log(
-        `[EventBridge] ${prefix} ${envelope.kind} ${envelope.topic}${errorMark} (${duration.toFixed(2)}ms)${payloadPreview ? ` ${payloadPreview}` : ''}`
-      );
     }
   }
 
@@ -462,8 +457,6 @@ export class EventBridgeImpl implements EventBridge {
     if (!enabled) {
       this.traceEvents = [];
     }
-
-    console.log(`[EventBridge] Tracing ${enabled ? 'enabled' : 'disabled'} (sample: ${(this.traceSampleRate * 100).toFixed(1)}%)`);
   }
 
   /**
@@ -507,8 +500,6 @@ export class EventBridgeImpl implements EventBridge {
       }
     }
     this.unsubscribers.clear();
-
-    console.log('[EventBridge] Disposed');
   }
 
   /**

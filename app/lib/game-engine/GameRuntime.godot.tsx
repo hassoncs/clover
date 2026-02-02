@@ -105,6 +105,7 @@ import {
   Match3RuntimeSystem,
   SlotMachineRuntimeSystem,
   ContainerRuntimeSystem,
+  HoverHighlightRuntimeSystem,
 } from "./systems/runner/wrappers";
 
 export interface GameRuntimeGodotProps {
@@ -372,7 +373,6 @@ export function GameRuntimeGodot({
   viewportSystemRef.current = viewportSystem;
 
   const handleGodotReady = useCallback(() => {
-    console.log('🎮 [GameRuntime] GodotView ready');
     setGodotReady(true);
   }, []);
 
@@ -385,30 +385,22 @@ export function GameRuntimeGodot({
 
     const setup = async () => {
       try {
-        console.log('🎮 [GameRuntime] Starting setup...');
         const bridge = await createGodotBridge();
-        console.log('🎮 [GameRuntime] Bridge created');
         await bridge.initialize();
-        console.log('🎮 [GameRuntime] Bridge initialized');
         bridgeRef.current = bridge;
 
         if (preloadTextureUrls && preloadTextureUrls.length > 0) {
-          console.log('🎮 [GameRuntime] Preloading', preloadTextureUrls.length, 'textures...');
           await bridge.preloadTextures(preloadTextureUrls, onPreloadProgress);
-          console.log('🎮 [GameRuntime] Texture preload complete');
         }
 
         const physics = createGodotPhysicsAdapter(bridge);
         physicsRef.current = physics;
-        console.log('🎮 [GameRuntime] Physics adapter created');
 
         if (debugMode) {
           bridge.setInspectMode(true);
         }
 
-        console.log('🎮 [GameRuntime] Loading game definition...');
         await bridge.loadGame(definition);
-        console.log('🎮 [GameRuntime] Game definition loaded');
 
         bridge.pausePhysics();
 
@@ -456,7 +448,6 @@ export function GameRuntimeGodot({
         // Create ScriptSandbox early if game has scripts (for run_script actions)
         let scriptSandbox: ScriptSandbox | undefined;
         if (definition.script) {
-          console.log('🎮 [GameRuntime] Creating ScriptSandbox...');
           scriptSandbox = new ScriptSandbox({
             scriptCode: definition.script,
             scriptId: definition.metadata.id,
@@ -465,23 +456,17 @@ export function GameRuntimeGodot({
           scriptSandboxRef.current = scriptSandbox;
         }
 
-        console.log('🎮 [GameRuntime] Creating GameLoader...');
         const loader = new GameLoader({ physics, scriptSandbox });
         loaderRef.current = loader;
 
-        console.log('🎮 [GameRuntime] Loading game entities...');
         const game = loader.load(definition);
         gameRef.current = game;
-        console.log('🎮 [GameRuntime] Game loaded with', game.entityManager.getActiveEntities().length, 'entities');
         
         // Initialize script sandbox after game is loaded
         if (scriptSandbox) {
-          console.log('🎮 [GameRuntime] Initializing ScriptSandbox...');
           scriptSandbox.initialize().then((result) => {
             if (!result.success) {
-              console.error('🎮 [GameRuntime] Script initialization failed:', result.error);
-            } else {
-              console.log('🎮 [GameRuntime] ScriptSandbox initialized successfully');
+              console.error('[GameRuntime] Script initialization failed:', result.error);
             }
           });
         }
@@ -628,22 +613,10 @@ export function GameRuntimeGodot({
 
         collisionUnsubRef.current = physics.onCollision(
           (event: CollisionEvent) => {
-            console.log('[GameRuntime] Collision received:', { entityA: event.entityA, entityB: event.entityB });
             const entityA = game.entityManager.getEntity(event.entityA);
             const entityB = game.entityManager.getEntity(event.entityB);
 
             if (!entityA || !entityB) {
-              const activeEntities = game.entityManager.getActiveEntities();
-              console.warn('[GameRuntime] Collision entity lookup failed:', {
-                entityAId: event.entityA,
-                entityBId: event.entityB,
-                entityAFound: !!entityA,
-                entityBFound: !!entityB,
-                activeEntityCount: activeEntities.length,
-                sampleEntities: activeEntities.slice(0, 5).map(e => ({
-                  id: e.id,
-                })),
-              });
               return;
             }
 
@@ -665,7 +638,6 @@ export function GameRuntimeGodot({
         inputEventUnsubRef.current = bridge.onInputEvent(
           (type, x, y, entityId) => {
             if (type === "tap") {
-              console.log('[Godot→React] ✓ Tap received:', { x: x.toFixed(2), y: y.toFixed(2), entityId });
               const ppm = definition.world.pixelsPerMeter ?? 50;
               const screenX = x * ppm;
               const screenY = y * ppm;
@@ -751,7 +723,6 @@ export function GameRuntimeGodot({
         }
 
         if (debugMode) {
-          console.log('🎮 [GameRuntime] Debug mode - starting game immediately');
           game.rulesEvaluator.start();
           setGameState((s) => ({
             ...s,
@@ -759,14 +730,12 @@ export function GameRuntimeGodot({
             variables: mergedVariables,
           }));
         } else {
-          console.log('🎮 [GameRuntime] Normal mode - setting state to ready');
           setGameState((s) => ({
             ...s,
             state: "ready",
             variables: mergedVariables,
           }));
         }
-        console.log('🎮 [GameRuntime] Setup complete, calling onReady...');
         setIsReady(true);
         
         if (typeof window !== 'undefined') {
@@ -774,7 +743,6 @@ export function GameRuntimeGodot({
         }
         
         onReady?.();
-        console.log('🎮 [GameRuntime] onReady callback invoked');
 
         if (match3SystemRef.current) {
           const match3Config = definition.match3 as Match3Config;
@@ -838,7 +806,6 @@ export function GameRuntimeGodot({
         }));
 
         if (definition.script) {
-          console.log('[GameRuntime] Registering ScriptSandboxRuntimeSystem with script:', definition.script.substring(0, 100) + '...');
           runner.register(new ScriptSandboxRuntimeSystem({
             scriptCode: definition.script,
             scriptId: definition.metadata.id,
@@ -867,6 +834,9 @@ export function GameRuntimeGodot({
             containers: definition.containers,
           }));
         }
+        if (definition.hoverHighlight) {
+          runner.register(new HoverHighlightRuntimeSystem(definition.hoverHighlight));
+        }
 
         runner.register(new TweenRuntimeSystem());
 
@@ -894,7 +864,6 @@ export function GameRuntimeGodot({
           const rulesEval = rulesSystem.getRulesEvaluator();
           if (rulesEval) {
             rulesEval.setGameState('playing');
-            console.log('[GameRuntime] Set initial game state to playing');
           }
         }
 
@@ -925,7 +894,7 @@ export function GameRuntimeGodot({
 
         gameSystemRunnerRef.current = runner;
       } catch (error) {
-        console.error("🎮 [GameRuntime] Failed to initialize game:", error);
+        console.error("[GameRuntime] Failed to initialize game:", error);
       }
     };
 
@@ -1049,7 +1018,6 @@ export function GameRuntimeGodot({
 
       const runner = gameSystemRunnerRef.current;
       if (!runner) {
-        console.error('[GameRuntime.godot] GameSystemRunner not initialized');
         return;
       }
 
@@ -1685,22 +1653,10 @@ export function GameRuntimeGodot({
       const { locationX: x, locationY: y } = event.nativeEvent;
       const world = screenToWorld(x, y);
 
-      console.log(
-        "[GameRuntime] TAP detected at screen:",
-        x,
-        y,
-        "world:",
-        world.x,
-        world.y,
-      );
       inputRef.current = {
         ...inputRef.current,
         tap: { x, y, worldX: world.x, worldY: world.y },
       };
-      console.log(
-        "[GameRuntime] inputRef.current.tap set:",
-        inputRef.current.tap,
-      );
 
       if (dragStart) {
         const VELOCITY_SCALE = 0.1;
@@ -1994,7 +1950,6 @@ export function GameRuntimeGodot({
 }
 
 export function GameRuntimeGodotWithDevTools(props: GameRuntimeGodotProps) {
-  console.log("[GameRuntimeGodotWithDevTools] Rendering with DevToolsProvider");
   return (
     <DevToolsProvider>
       <GameRuntimeGodot {...props} />

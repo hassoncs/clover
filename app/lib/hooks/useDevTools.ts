@@ -30,7 +30,6 @@ export function useDevTools() {
           STORAGE_KEY,
           DEFAULT_STATE,
         );
-        console.log("[useDevTools] Loaded from storage:", stored);
         setState(stored);
       } catch (error) {
         console.warn("Failed to load dev tools settings:", error);
@@ -60,14 +59,6 @@ export function useDevTools() {
   const toggleInputDebug = useCallback(() => {
     setState((prev) => {
       const next = { ...prev, showInputDebug: !prev.showInputDebug };
-      console.log(
-        "[DevTools] Toggle Input Debug:",
-        prev.showInputDebug,
-        "→",
-        next.showInputDebug,
-        "full next:",
-        next,
-      );
       saveSettings(next);
       return next;
     });
@@ -76,12 +67,6 @@ export function useDevTools() {
   const togglePhysicsShapes = useCallback(() => {
     setState((prev) => {
       const next = { ...prev, showPhysicsShapes: !prev.showPhysicsShapes };
-      console.log(
-        "[DevTools] Toggle Physics Shapes:",
-        prev.showPhysicsShapes,
-        "→",
-        next.showPhysicsShapes,
-      );
       saveSettings(next);
       return next;
     });
@@ -90,12 +75,6 @@ export function useDevTools() {
   const toggleZones = useCallback(() => {
     setState((prev) => {
       const next = { ...prev, showZones: !prev.showZones };
-      console.log(
-        "[DevTools] Toggle Zones:",
-        prev.showZones,
-        "→",
-        next.showZones,
-      );
       saveSettings(next);
       return next;
     });
@@ -104,7 +83,6 @@ export function useDevTools() {
   const toggleFPS = useCallback(() => {
     setState((prev) => {
       const next = { ...prev, showFPS: !prev.showFPS };
-      console.log("[DevTools] Toggle FPS:", prev.showFPS, "→", next.showFPS);
       saveSettings(next);
       return next;
     });

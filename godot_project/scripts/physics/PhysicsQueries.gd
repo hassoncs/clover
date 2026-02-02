@@ -37,11 +37,6 @@ func query_point_entity(x: float, y: float) -> Variant:
 	if space == null:
 		return null
 	
-	for eid in bridge.entities:
-		var node = bridge.entities[eid]
-		if node is RigidBody2D or node is StaticBody2D:
-			print("[PhysicsQueries]   %s at godot_pos=%s" % [eid, node.global_position])
-	
 	var query = PhysicsPointQueryParameters2D.new()
 	query.position = godot_pos
 	query.collision_mask = 0xFFFFFFFF

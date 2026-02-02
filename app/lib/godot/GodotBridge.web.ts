@@ -54,6 +54,7 @@ declare global {
       setRotation: (entityId: string, angle: number) => void;
       setScale: (entityId: string, scaleX: number, scaleY: number) => void;
       setOpacity: (entityId: string, opacity: number) => void;
+      setVisible: (entityId: string, visible: boolean) => void;
       getLinearVelocity: (entityId: string) => { x: number; y: number } | null;
       setLinearVelocity: (entityId: string, vx: number, vy: number) => void;
       getAngularVelocity: (entityId: string) => number | null;
@@ -513,6 +514,10 @@ export function createWebGodotBridge(): GodotBridge {
       getGodotBridge()?.setOpacity(entityId, opacity);
     },
 
+    setVisible(entityId: string, visible: boolean) {
+      getGodotBridge()?.setVisible(entityId, visible);
+    },
+
     async getLinearVelocity(entityId: string): Promise<Vec2 | null> {
       return getGodotBridge()?.getLinearVelocity(entityId) ?? null;
     },
@@ -621,7 +626,6 @@ export function createWebGodotBridge(): GodotBridge {
       
       const fromLastResult = godotBridge._lastResult as number | undefined;
       const fromWindow = (window as unknown as { _slopcadeLastJointId?: number })._slopcadeLastJointId;
-      console.log('[GodotBridge.web] createMouseJoint - _lastResult:', fromLastResult, 'window._slopcadeLastJointId:', fromWindow);
       return fromLastResult ?? fromWindow ?? -1;
     },
 

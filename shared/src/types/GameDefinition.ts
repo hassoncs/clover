@@ -526,6 +526,13 @@ export interface GameDefinition {
    * - onCollision(ctx, collision): Called on collision events
    */
   script?: string;
+
+  hoverHighlight?: HoverHighlightConfig;
+}
+
+export interface HoverHighlightConfig {
+  targetTag: string;
+  highlightEntityId: string;
 }
 
 export const DEFAULT_WORLD_CONFIG: WorldConfig = {

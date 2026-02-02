@@ -79,6 +79,9 @@ export class RulesRuntimeSystem implements RuntimeSystem<RulesSystemConfig, Rule
     
     const variablesObj = this.rulesEvaluator.getVariables();
     
+    const smStates = this.rulesEvaluator.getStateMachineStates();
+    const smDefs = this.rulesEvaluator.getStateMachineDefinitions();
+    
     const evalContext: EvalContext = {
       score: this.rulesEvaluator.getScore(),
       lives: this.rulesEvaluator.getLives(),
@@ -86,7 +89,11 @@ export class RulesRuntimeSystem implements RuntimeSystem<RulesSystemConfig, Rule
       wave: 1,
       dt: ctx.dt,
       frameId: ctx.frameId,
-      variables: variablesObj,
+      variables: {
+        ...variablesObj,
+        ...(smStates ? { __smStates: smStates as unknown as number } : {}),
+        ...(smDefs ? { __smDefs: smDefs as unknown as number } : {}),
+      },
       random: Math.random,
       entityManager: this.systemContext.entityManager,
       customFunctions: getAllSystemExpressionFunctions(),

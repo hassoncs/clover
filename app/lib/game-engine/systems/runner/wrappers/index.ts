@@ -36,3 +36,6 @@ export type { ScriptSandboxSystemConfig, ScriptSandboxSystemState } from './Scri
 
 export { BehaviorExecutorRuntimeSystem } from './BehaviorExecutorRuntimeSystem';
 export type { BehaviorExecutorSystemConfig, BehaviorExecutorSystemState } from './BehaviorExecutorRuntimeSystem';
+
+export { HoverHighlightRuntimeSystem } from './HoverHighlightRuntimeSystem';
+export type { HoverHighlightSystemConfig, HoverHighlightSystemState } from './HoverHighlightRuntimeSystem';

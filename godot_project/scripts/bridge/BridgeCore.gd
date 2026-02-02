@@ -86,12 +86,10 @@ func register_handler(topic: String, callback: Callable) -> void:
 		return
 	
 	_handlers[topic] = callback
-	print("[BridgeCore] Registered handler for topic: %s" % topic)
 
 func unregister_handler(topic: String) -> void:
 	if _handlers.has(topic):
 		_handlers.erase(topic)
-		print("[BridgeCore] Unregistered handler for topic: %s" % topic)
 
 func has_handler(topic: String) -> bool:
 	return _handlers.has(topic)
@@ -182,8 +180,6 @@ func emit_ui_button_event(event_type: String, button_id: String) -> void:
 # =============================================================================
 
 func handle_request(request_id: String, topic: String, args: Array) -> void:
-	print("[BridgeCore] Handling request: topic=%s, requestId=%s, args=%s" % [topic, request_id, str(args)])
-	
 	if _handlers.has(topic):
 		var callback: Callable = _handlers[topic]
 		if callback.is_valid():
@@ -195,8 +191,6 @@ func handle_request(request_id: String, topic: String, args: Array) -> void:
 		send_error(request_id, topic, "Unknown topic: %s" % topic)
 
 func handle_request_async(request_id: String, topic: String, args: Array) -> void:
-	print("[BridgeCore] Handling async request: topic=%s, requestId=%s" % [topic, request_id])
-	
 	if _handlers.has(topic):
 		var callback: Callable = _handlers[topic]
 		if callback.is_valid():
@@ -233,7 +227,6 @@ func send_error(request_id: String, topic: String, error_message: String) -> voi
 	}
 	var envelope = _create_envelope(KIND_RESPONSE, topic, payload, CHANNEL_QUERY, PRIORITY_HIGH)
 	_send_envelope_to_js(envelope)
-	print("[BridgeCore] Sent error response: %s for request %s" % [error_message, request_id])
 
 # =============================================================================
 # PROGRESS UPDATES
@@ -367,16 +360,12 @@ func _handle_response_envelope(envelope: Dictionary) -> void:
 	var request_id = envelope.get("meta", {}).get("requestId", "")
 	var result = envelope.get("payload", {}).get("result", null)
 	var error = envelope.get("payload", {}).get("error", null)
-	
-	print("[BridgeCore] Received response for request %s: result=%s, error=%s" % [request_id, str(result), str(error)])
 
 func _handle_progress_envelope(envelope: Dictionary) -> void:
 	# Progress updates from JS
 	var request_id = envelope.get("meta", {}).get("requestId", "")
 	var progress = envelope.get("payload", {}).get("progress", 0.0)
 	var message = envelope.get("payload", {}).get("message", "")
-	
-	print("[BridgeCore] Progress update for request %s: %.1f%% - %s" % [request_id, progress * 100.0, message])
 
 # =============================================================================
 # UTILITY METHODS
@@ -400,9 +389,4 @@ func get_registered_topics() -> Array[String]:
 	return _handlers.keys()
 
 func print_status() -> void:
-	print("[BridgeCore] Status:")
-	print("  - Registered handlers: %d" % _handlers.size())
-	print("  - Queued events: %d" % get_queued_event_count())
-	print("  - JS callback active: %s" % ("Yes" if _js_callback != null else "No"))
-	print("  - Default channel: %s" % _default_channel)
-	print("  - Default priority: %d" % _default_priority)
+	pass

@@ -35,12 +35,10 @@ export class InputTriggerEvaluator
           
           if (targetEntityId) {
             if (targetEntityId === trigger.target) {
-              console.log('[Tap] ✓ Rule matched:', { rule: trigger.target, entity: targetEntityId });
               return true;
             }
             const hasTag = context.entityManager.hasTag(targetEntityId, trigger.target);
             if (hasTag) {
-              console.log('[Tap] ✓ Rule matched by tag:', { rule: trigger.target, entity: targetEntityId });
               return true;
             }
           }
@@ -53,7 +51,6 @@ export class InputTriggerEvaluator
             );
             if (matchingEntity) {
               context.inputEvents.tap.targetEntityId = matchingEntity.id;
-              console.log('[Tap] ✓ Rule matched by spatial query:', { rule: trigger.target, entity: matchingEntity.id });
               return true;
             }
           }

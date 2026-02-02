@@ -35,7 +35,6 @@ export class InputRuntimeSystem implements RuntimeSystem<InputSystemConfig, Inpu
     
     const tap = (ctx.input as any).tap;
     if (tap) {
-      console.log('[InputRuntimeSystem] ✓ TAP:', { worldX: tap.worldX.toFixed(2), worldY: tap.worldY.toFixed(2), target: tap.targetEntityId });
       const tapEvent = {
         type: 'tap' as const,
         x: tap.x ?? 0,

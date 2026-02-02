@@ -342,13 +342,10 @@ func fade_from_color(duration: float = 0.5, layer_name: String = "fade") -> void
 # ============================================================
 
 func screen_shake(intensity: float, duration: float = 0.3) -> void:
-	print("[EffectsManager] screen_shake called: camera=", _camera, " intensity=", intensity)
 	if _camera and _camera.has_method("add_trauma"):
 		_camera.add_trauma(intensity)
 	elif _camera:
 		_do_simple_shake(_camera, intensity * 20.0, duration)
-	else:
-		print("[EffectsManager] No camera for shake!")
 
 func _do_simple_shake(cam: Camera2D, strength: float, duration: float) -> void:
 	var original_offset = cam.offset
@@ -365,9 +362,7 @@ func _do_simple_shake(cam: Camera2D, strength: float, duration: float) -> void:
 	shake_tween.tween_callback(func(): cam.offset = original_offset)
 
 func zoom_punch(intensity: float = 0.1, duration: float = 0.15) -> void:
-	print("[EffectsManager] zoom_punch called: camera=", _camera, " intensity=", intensity)
 	if not _camera:
-		print("[EffectsManager] No camera for zoom_punch!")
 		return
 	
 	var original_zoom = _camera.zoom

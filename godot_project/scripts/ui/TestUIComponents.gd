@@ -91,8 +91,8 @@ func _create_checkbox(pos: Vector2, size: Vector2, checked: bool, disabled: bool
 	if disabled:
 		cb.call_deferred("set_disabled", true)
 	
-	cb.toggled.connect(func(is_checked): 
-		print("[Test] Checkbox toggled: ", is_checked)
+	cb.toggled.connect(func(_is_checked): 
+		pass
 	)
 	
 	checkboxes.append(cb)

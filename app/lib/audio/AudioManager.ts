@@ -160,8 +160,6 @@ class AudioManagerClass {
         clone.volume = effectiveVolume;
         clone.play().catch(() => {});
       }
-    } else {
-      console.log(`[AudioManager] Would play SFX: ${soundId} at volume ${effectiveVolume}`);
     }
   }
 
@@ -188,8 +186,6 @@ class AudioManagerClass {
         webAudio.audio.currentTime = 0;
         webAudio.audio.play().catch(() => {});
       }
-    } else {
-      console.log(`[AudioManager] Would play music: ${soundId} at volume ${effectiveVolume}`);
     }
   }
 

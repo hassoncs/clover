@@ -353,6 +353,19 @@ export function createBallSortGame(level: number = 1): GameDefinition {
           height: TUBE_HEIGHT,
         },
       },
+      tubeHoverHighlight: {
+        id: "tubeHoverHighlight",
+        tags: ["highlight", "hover"],
+        layer: 500,
+        visual: {
+          type: "rect",
+          width: TUBE_WIDTH * 1.05,
+          height: TUBE_HEIGHT * 1.02,
+          color: "#FFFFFF",
+          opacity: 0.15,
+          blendMode: "add",
+        },
+      },
       ball0: createBallTemplate(0) as EntityTemplate,
       ball1: createBallTemplate(1) as EntityTemplate,
       ball2: createBallTemplate(2) as EntityTemplate,
@@ -375,7 +388,23 @@ export function createBallSortGame(level: number = 1): GameDefinition {
         },
       },
     },
-    entities: [...tubeEntities, ...ballEntities],
+    entities: [
+      ...tubeEntities,
+      ...ballEntities,
+      {
+        id: "tube-hover-highlight",
+        name: "Tube Hover Highlight",
+        template: "tubeHoverHighlight",
+        visible: false,
+        transform: {
+          x: 0,
+          y: 0,
+          angle: 0,
+          scaleX: 1,
+          scaleY: 1,
+        },
+      },
+    ],
     rules: [
       {
         id: "init_start_time",
@@ -411,6 +440,10 @@ export function createBallSortGame(level: number = 1): GameDefinition {
       },
     ],
     persistence: ballSortPersistence,
+    hoverHighlight: {
+      targetTag: "tube",
+      highlightEntityId: "tube-hover-highlight",
+    },
   };
 
   return game;

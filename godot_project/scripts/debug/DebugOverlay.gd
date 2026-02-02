@@ -33,15 +33,11 @@ var _fps_label: Label = null
 # Draw node (for custom drawing)
 var _draw_node: Control = null
 
-# Logging throttle
-var _last_log_time: int = 0
-
 func _init() -> void:
 	layer = 100  # High z-index to be on top
 	name = "DebugOverlay"
 
 func setup(game_bridge: Node) -> void:
-	print("[DebugOverlay] setup() called")
 	_game_bridge = game_bridge
 	
 	# Create a Control node for custom drawing
@@ -51,7 +47,6 @@ func setup(game_bridge: Node) -> void:
 	_draw_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_draw_node.connect("draw", _on_draw)
 	add_child(_draw_node)
-	print("[DebugOverlay] Draw node created and connected")
 	
 	# Create FPS label
 	_fps_label = Label.new()
@@ -140,12 +135,6 @@ func end_drag(world_pos: Vector2) -> void:
 		_draw_node.queue_redraw()
 
 func _on_draw() -> void:
-	# Log current state (only once per second to avoid spam)
-	var now = Time.get_ticks_msec()
-	if now - _last_log_time > 1000:
-		print("[DebugOverlay] _on_draw: physics=", _show_physics_shapes, " zones=", _show_zones, " input=", _show_input_debug, " fps=", _show_fps)
-		_last_log_time = now
-	
 	if not _game_bridge:
 		return
 	

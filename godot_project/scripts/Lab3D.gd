@@ -50,7 +50,6 @@ func _setup_js_bridge() -> void:
 	_js_bridge_obj["setCameraDistance"] = set_camera_cb
 	
 	window["Lab3DBridge"] = _js_bridge_obj
-	print("[Lab3D] JS bridge initialized")
 
 func _js_load_glb(args: Array) -> void:
 	if args.size() < 1:
@@ -75,8 +74,6 @@ func _js_set_camera(args: Array) -> void:
 	camera.look_at(Vector3.ZERO, Vector3.UP)
 
 func load_glb(path: String) -> Node3D:
-	print("[Lab3D] Loading GLB: ", path)
-	
 	# Clear existing model
 	if current_model:
 		current_model.queue_free()
@@ -102,12 +99,9 @@ func load_glb(path: String) -> Node3D:
 	# Center and scale the model
 	_center_model(scene)
 	
-	print("[Lab3D] GLB loaded successfully: ", path)
 	return scene
 
 func load_glb_from_buffer(buffer: PackedByteArray, base_path: String = "") -> Node3D:
-	print("[Lab3D] Loading GLB from buffer, size: ", buffer.size())
-	
 	if current_model:
 		current_model.queue_free()
 		current_model = null
@@ -129,7 +123,6 @@ func load_glb_from_buffer(buffer: PackedByteArray, base_path: String = "") -> No
 	current_model = scene
 	_center_model(scene)
 	
-	print("[Lab3D] GLB loaded from buffer successfully")
 	return scene
 
 func _center_model(model: Node3D) -> void:
@@ -149,8 +142,6 @@ func _center_model(model: Node3D) -> void:
 		var target_size = 2.0
 		var scale_factor = target_size / max_dim
 		model.scale = Vector3.ONE * scale_factor
-	
-	print("[Lab3D] Model centered. AABB: ", aabb, " Scale: ", model.scale)
 
 func _calculate_aabb(node: Node3D) -> AABB:
 	var aabb = AABB()

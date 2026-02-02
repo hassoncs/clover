@@ -29,18 +29,15 @@ export default function TestGameRunScreen() {
     if (!entry) return;
     
     const load = async () => {
-      console.log('🎮 [test-games] Starting definition load for:', entry.id);
       setIsLoadingDefinition(true);
       try {
         const definition = await loadTestGame(entry.id);
-        console.log('🎮 [test-games] Definition loaded:', definition.metadata.title);
         loadedDefinitionRef.current = definition;
         setGameDefinition(definition);
       } catch (err) {
-        console.error('🎮 [test-games] Failed to load test game:', err);
+        console.error('[test-games] Failed to load test game:', err);
       } finally {
         setIsLoadingDefinition(false);
-        console.log('🎮 [test-games] Definition load complete');
       }
     };
     
@@ -49,20 +46,17 @@ export default function TestGameRunScreen() {
 
   useEffect(() => {
     if (gameDefinition && !isLoadingDefinition && phase === 'idle') {
-      console.log('🎮 [test-games] Starting preload, phase:', phase);
       startPreload();
     }
   }, [gameDefinition, isLoadingDefinition, phase, startPreload]);
 
   const handleGodotReady = useCallback(() => {
-    console.log('🎮 [test-games] Godot ready callback fired');
     setGodotReady(true);
     Animated.timing(loadingOpacity, {
       toValue: 0,
       duration: 500,
       useNativeDriver: true,
     }).start(() => {
-      console.log('🎮 [test-games] Loading overlay dismissed');
       setLoadingDismissed(true);
     });
   }, [loadingOpacity]);
@@ -179,9 +173,7 @@ function GameRuntimeWrapper({ definition, imageUrls, onBackToMenu, onRequestRest
   }> | null>(null);
 
   useEffect(() => {
-      console.log('🎮 [test-games] Loading GameRuntime module...');
       import("@/lib/game-engine/GameRuntime.godot").then((mod) => {
-        console.log('🎮 [test-games] GameRuntime module loaded');
         setGameRuntime(() => mod.GameRuntimeGodotWithDevTools);
       });
   }, []);
