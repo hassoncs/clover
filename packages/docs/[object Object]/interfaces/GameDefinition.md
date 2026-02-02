@@ -230,13 +230,6 @@ Defined in: [types/GameDefinition.ts:494](https://github.com/hassoncs/clover/blo
 
 ***
 
-### slotMachine?
-
-> `optional` **slotMachine**: [`SlotMachineConfig`](SlotMachineConfig.md)
-
-Defined in: [types/GameDefinition.ts:495](https://github.com/hassoncs/clover/blob/cee41593876c0ca0fbde75075f3d9c52884dee1e/shared/src/types/GameDefinition.ts#L495)
-
-***
 
 ### stateMachines?
 
