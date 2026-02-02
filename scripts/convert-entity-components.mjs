@@ -33,7 +33,6 @@ const FILES_TO_CONVERT = [
   'app/lib/test-games/games/rpgProgressionDemo/game.ts',
   'app/lib/test-games/games/simplePlatformer/game.ts',
   'app/lib/test-games/games/slopeggle/game.ts',
-  'app/lib/test-games/games/slotMachine/game.ts',
   'app/lib/test-games/games/sportsProjectile/game.ts',
   'app/lib/test-games/games/stackAttack/game.ts',
   'app/lib/test-games/games/stackMatch/game.ts',
