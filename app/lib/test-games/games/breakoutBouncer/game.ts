@@ -1,12 +1,9 @@
 import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
-const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/breakout-bouncer";
-
 export const metadata: TestGameMeta = {
   title: "Breakout Bouncer",
   description: "Classic brick-breaker with sci-fi neon assets",
-  titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
 };
 
 const BRICK_WIDTH = 1.2;
@@ -25,17 +22,17 @@ const cx = (x: number) => x - HALF_W;
 const cy = (y: number) => HALF_H - y;
 
 const game: GameDefinition = {
+  activeAssetPackId: "breakoutBouncer-default",
   metadata: {
     id: "test-breakout-bouncer",
     title: "Breakout Bouncer",
     description: "Classic brick-breaker with sci-fi neon assets",
     instructions: "Drag the paddle left/right to bounce the ball. Destroy all bricks to win!",
     version: "1.0.0",
-    titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
   },
   background: {
     type: "static",
-    imageUrl: `${ASSET_BASE}/background.png`,
+    whatDescription: "a dark arcade game background",
   },
   world: {
     gravity: { x: 0, y: 0 },
@@ -122,7 +119,7 @@ const game: GameDefinition = {
       tags: ["paddle"],
       visual: {
         type: "image",
-        imageUrl: `${ASSET_BASE}/paddle.png`,
+        whatDescription: "a horizontal paddle that bounces the ball",
         imageWidth: PADDLE_WIDTH,
         imageHeight: PADDLE_HEIGHT,
       },
@@ -146,7 +143,7 @@ const game: GameDefinition = {
       tags: ["brick"],
       visual: {
         type: "image",
-        imageUrl: `${ASSET_BASE}/brickRed.png`,
+        whatDescription: "a red breakable brick",
         imageWidth: BRICK_WIDTH,
         imageHeight: BRICK_HEIGHT,
       },
@@ -171,7 +168,7 @@ const game: GameDefinition = {
       tags: ["brick"],
       visual: {
         type: "image",
-        imageUrl: `${ASSET_BASE}/brickBlue.png`,
+        whatDescription: "a blue breakable brick",
         imageWidth: BRICK_WIDTH,
         imageHeight: BRICK_HEIGHT,
       },
@@ -196,7 +193,7 @@ const game: GameDefinition = {
       tags: ["brick"],
       visual: {
         type: "image",
-        imageUrl: `${ASSET_BASE}/brickGreen.png`,
+        whatDescription: "a green breakable brick",
         imageWidth: BRICK_WIDTH,
         imageHeight: BRICK_HEIGHT,
       },
@@ -221,7 +218,7 @@ const game: GameDefinition = {
       tags: ["brick"],
       visual: {
         type: "image",
-        imageUrl: `${ASSET_BASE}/brickYellow.png`,
+        whatDescription: "a yellow breakable brick",
         imageWidth: BRICK_WIDTH,
         imageHeight: BRICK_HEIGHT,
       },
