@@ -4,8 +4,14 @@ Documentation and strategy for the Slopcade virtual economy.
 
 ## Contents
 
-- [**Gems Economy Strategy**](./STRATEGY.md)  
+- [**Gems Economy Strategy**](./STRATEGY.md)
   Comprehensive strategy for soft and hard currencies, creator incentives, and social prestige.
+
+- [**Gems Economy Strategy (Extended)**](./gems-economy-strategy.md)
+  Detailed gems acquisition and spending design with formulas and tables.
+
+- [**Credit System Implementation**](./credit-system-implementation.md)
+  Complete implementation spec for the credit/currency system.
 
 ## Currency Overview
 
