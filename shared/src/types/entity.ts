@@ -79,6 +79,12 @@ export interface ChildTemplateDefinition {
 export interface BaseEntityTemplate {
   id: string;
   description?: string;
+  /**
+   * Short description of WHAT this entity is, used for AI asset generation.
+   * Format: lowercase, with article (e.g., "a bouncing ball", "a glass tube container")
+   * This describes the functional nature, NOT the visual style (style comes from pack theme).
+   */
+  whatDescription?: string;
   archetype?: EntityArchetype;
   visual?: VisualComponent;
   physics?: PhysicsComponent;

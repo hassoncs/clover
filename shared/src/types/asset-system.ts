@@ -4,6 +4,7 @@ import type { AssetSource } from './GameDefinition';
 export const PromptDefaultsSchema = z.object({
   themePrompt: z.string().optional(),
   styleOverride: z.string().optional(),
+  theme: z.string().optional(),
   modelId: z.string().optional(),
   negativePrompt: z.string().optional(),
   customPrompts: z.record(z.string()).optional(),
@@ -16,6 +17,7 @@ export const DEFAULT_THEMES = [
   'Cozy cottage interior',
 ] as const;
 
+/** @deprecated Use themePrompt string instead of enum-based styling */
 export const DEFAULT_STYLES = [
   'pixel',
   'cartoon',
@@ -48,7 +50,9 @@ export interface AssetPlacement {
 
 export interface PromptDefaults {
   themePrompt?: string;
+  /** @deprecated Use themePrompt for hierarchical string-based styling */
   styleOverride?: string;
+  theme?: string;
   modelId?: string;
   negativePrompt?: string;
   customPrompts?: Record<string, string>; // templateId -> custom prompt override

@@ -86,7 +86,7 @@ export const PolygonSpriteSchema = BaseSpriteSchema.extend({
 
 export const ImageSpriteSchema = BaseSpriteSchema.extend({
   type: z.literal('image'),
-  imageUrl: z.string(),
+  imageUrl: z.string().optional(),
   imageWidth: z.number().positive(),
   imageHeight: z.number().positive(),
 });
@@ -560,6 +560,7 @@ export const BodyEntityTemplateSchema = z.object({
   type: z.literal('body').optional(),
   id: z.string(),
   description: z.string().optional(),
+  whatDescription: z.string().optional(),
   sprite: SpriteComponentSchema.optional(),
   physics: PhysicsComponentSchema.optional(),
   collider: ColliderComponentSchema.optional(),
@@ -705,6 +706,7 @@ export const AssetPackSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
   style: SpriteStyleSchema.optional(),
+  theme: z.string().optional(),
   assets: z.record(z.string(), AssetConfigSchema),
 });
 

@@ -49,7 +49,12 @@ export interface PolygonVisualComponent extends BaseVisualComponent {
 
 export interface ImageVisualComponent extends BaseVisualComponent {
   type: 'image';
-  imageUrl: string;
+  /**
+   * @deprecated Image URL now comes from asset pack at runtime.
+   * Keep only for backward compatibility during migration.
+   * Will be removed in Task 11 after all games are migrated.
+   */
+  imageUrl?: string;
   tint?: string;
   imageWidth?: number;
   imageHeight?: number;

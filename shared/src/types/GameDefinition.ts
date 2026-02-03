@@ -145,7 +145,9 @@ export interface AssetPack {
   id: string;
   name: string;
   description?: string;
+  /** @deprecated Use theme string instead of enum-based styling */
   style?: 'pixel' | 'cartoon' | '3d' | 'flat';
+  theme?: string;
   assets: Record<string, AssetConfig>;
 }
 
