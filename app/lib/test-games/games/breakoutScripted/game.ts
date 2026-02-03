@@ -1,13 +1,6 @@
 import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
-const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/breakout-bouncer";
-
-export const metadata: TestGameMeta = {
-  title: "Breakout (Scripted)",
-  description: "Breakout using direct script control - mouse follows paddle",
-};
-
 const BRICK_WIDTH = 1.15;
 const BRICK_HEIGHT = 0.48;
 const BRICK_GAP = 0.05;
@@ -34,9 +27,9 @@ const game: GameDefinition = {
     instructions: "Move mouse/finger to control paddle. Tap to launch ball.",
     version: "1.0.0",
   },
+  activeAssetPackId: "breakoutBouncer-default",
   background: {
     type: "static",
-    imageUrl: `${ASSET_BASE}/background.png`,
   },
   world: {
     gravity: { x: 0, y: 0 },
@@ -171,9 +164,9 @@ exports.onCollision = function(ctx, collision) {
     paddle: {
       id: "paddle",
       tags: ["paddle"],
+      whatDescription: "a horizontal paddle that bounces the ball",
       visual: {
         type: "image",
-        imageUrl: `${ASSET_BASE}/paddle.png`,
         imageWidth: PADDLE_WIDTH,
         imageHeight: PADDLE_HEIGHT,
       },
@@ -193,9 +186,9 @@ exports.onCollision = function(ctx, collision) {
     brick: {
       id: "brick",
       tags: ["brick"],
+      whatDescription: "a breakable brick block",
       visual: {
         type: "image",
-        imageUrl: `${ASSET_BASE}/brickBlue.png`,
         imageWidth: BRICK_WIDTH,
         imageHeight: BRICK_HEIGHT,
       },
