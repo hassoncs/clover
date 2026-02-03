@@ -17,7 +17,7 @@ import {
 } from '@/ai'
 import { validateGame, getValidationReportJson } from '@/validation/gameValidator';
 import type { GameValidationReport } from '@slopcade/shared/validation';
-import { isTestGameId, getTestGame } from '@/dev/templateLoader';
+import { isTestGameId, getTestGameAsync } from '@/dev/templateLoader';
 
 interface GameRow {
   id: string;
@@ -78,8 +78,8 @@ function toClientGame(row: GameRow) {
   };
 }
 
-function createDevTemplateResponse(id: string) {
-  const game = getTestGame(id);
+async function createDevTemplateResponse(id: string) {
+  const game = await getTestGameAsync(id);
   if (!game) return null;
 
   const definition = JSON.stringify(game.definition);
@@ -124,7 +124,7 @@ export const gamesRouter = router({
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       if (isTestGameId(input.id)) {
-        const devGame = createDevTemplateResponse(input.id);
+        const devGame = await createDevTemplateResponse(input.id);
         if (devGame) {
           return devGame;
         }
@@ -155,7 +155,7 @@ export const gamesRouter = router({
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       if (isTestGameId(input.id)) {
-        const devGame = createDevTemplateResponse(input.id);
+        const devGame = await createDevTemplateResponse(input.id);
         if (devGame) {
           return devGame;
         }

@@ -27,26 +27,26 @@ export function subscribeToGameEvents(
 ): () => void {
   const { onGameStateChange, onScoreChange, setGameState, debug } = options;
 
+  console.log("[GameEventSubscriber] Setting up subscription");
+
   return eventBus.subscribe((event) => {
+    console.log(`[GameEventSubscriber] Received event: ${event.type}`);
     switch (event.type) {
       case 'gameStateChanged':
-        if (debug) {
-          console.log(`[GameRuntime] onGameStateChange callback received: ${event.state}`);
-        }
+        console.log(`[GameEventSubscriber] gameStateChanged to: ${event.state}`);
         setGameState((s) => {
-          if (debug) {
-            console.log(`[GameRuntime] Updating React state: ${s.state} -> ${event.state}`);
-          }
+          console.log(`[GameEventSubscriber] setGameState updater called: ${s.state} -> ${event.state}`);
           return { ...s, state: event.state };
         });
+        console.log(`[GameEventSubscriber] setGameState call returned`);
         if (event.state === 'won' || event.state === 'lost') {
-          if (debug) {
-            console.log(`[GameRuntime] Game ended with state: ${event.state}`);
-          }
+          console.log(`[GameEventSubscriber] Game ended, calling onGameStateChange`);
           onGameStateChange?.(event.state);
         }
+        console.log(`[GameEventSubscriber] gameStateChanged handling complete`);
         break;
       case 'varChanged':
+        console.log(`[GameEventSubscriber] varChanged: ${event.key} = ${event.value}`);
         if (event.key === 'score') {
           setGameState((s) => ({ ...s, score: event.value as number }));
           onScoreChange?.(event.value as number);
@@ -58,7 +58,9 @@ export function subscribeToGameEvents(
             variables: { ...s.variables, [event.key]: event.value }
           }));
         }
+        console.log(`[GameEventSubscriber] varChanged handling complete`);
         break;
     }
+    console.log(`[GameEventSubscriber] Event handling complete`);
   });
 }

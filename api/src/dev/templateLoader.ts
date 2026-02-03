@@ -1,13 +1,12 @@
 /**
  * Development-only template loader.
- * 
- * In local development, test games are loaded directly from source files
- * to enable instant refresh without DB sync. This bypasses the database
- * for template game content while still using the DB for browse listings.
+ *
+ * In local development, test games are loaded directly from TypeScript source files.
+ * This file must be manually updated when adding new test games.
+ *
+ * The games are dynamically imported to avoid bundling issues.
  */
 
-import { existsSync } from 'fs';
-import { resolve } from 'path';
 import type { GameDefinition } from '@slopcade/shared';
 
 interface TestGameEntry {
@@ -17,63 +16,59 @@ interface TestGameEntry {
   definition: GameDefinition;
 }
 
-let gamesCache: Map<string, TestGameEntry> | null = null;
+// Registry of available test games
+// Add new games here when creating them
+const GAME_REGISTRY: Record<string, () => Promise<{ default: GameDefinition; metadata?: { title: string; description?: string } }>> = {
+  ballSort: () => import('../../../app/lib/test-games/games/ballSort/game'),
+  breakoutBouncer: () => import('../../../app/lib/test-games/games/breakoutBouncer/game'),
+  breakoutScripted: () => import('../../../app/lib/test-games/games/breakoutScripted/game'),
+  gemCrush: () => import('../../../app/lib/test-games/games/gemCrush/game'),
+  slopeggle: () => import('../../../app/lib/test-games/games/slopeggle/game'),
+};
 
-function findRegistryJson(): string | null {
-  const possiblePaths = [
-    resolve(process.cwd(), 'dev-test-games.json'),
-    resolve(process.cwd(), '../api/dev-test-games.json'),
-    resolve(process.cwd(), '../../api/dev-test-games.json'),
-  ];
+// Cache loaded games to avoid repeated imports
+const gameCache = new Map<string, TestGameEntry>();
 
-  for (const path of possiblePaths) {
-    if (existsSync(path)) {
-      return path;
-    }
-  }
-
-  return null;
+export function isTestGameId(id: string): boolean {
+  return id in GAME_REGISTRY;
 }
 
-function loadRegistry(): Map<string, TestGameEntry> | null {
-  if (gamesCache) {
-    return gamesCache;
+export async function getTestGameAsync(id: string): Promise<TestGameEntry | null> {
+  if (!isTestGameId(id)) {
+    return null;
   }
 
-  const registryPath = findRegistryJson();
-  if (!registryPath) {
-    return null;
+  // Check cache first
+  const cached = gameCache.get(id);
+  if (cached) {
+    return cached;
   }
 
   try {
-    const { readFileSync } = require('fs');
-    const data = JSON.parse(readFileSync(registryPath, 'utf-8'));
-    
-    gamesCache = new Map();
-    for (const game of data.games) {
-      gamesCache.set(game.id, game);
-    }
-    
-    return gamesCache;
-  } catch {
+    const loader = GAME_REGISTRY[id];
+    const module = await loader();
+    const game = module.default;
+    const metadata = module.metadata;
+
+    const entry: TestGameEntry = {
+      id,
+      title: metadata?.title ?? game.metadata?.title ?? id,
+      description: metadata?.description ?? game.metadata?.description ?? '',
+      definition: game,
+    };
+
+    gameCache.set(id, entry);
+    return entry;
+  } catch (error) {
+    console.error(`[templateLoader] Failed to load game ${id}:`, error);
     return null;
   }
 }
 
-export function isTestGameId(id: string): boolean {
-  const registry = loadRegistry();
-  if (!registry) {
-    return false;
-  }
-  return registry.has(id);
-}
-
+// Synchronous wrapper - returns cached value or null
+// For initial loads, use getTestGameAsync
 export function getTestGame(id: string): TestGameEntry | null {
-  const registry = loadRegistry();
-  if (!registry) {
-    return null;
-  }
-  return registry.get(id) || null;
+  return gameCache.get(id) ?? null;
 }
 
 export function getTestGameMetadata(id: string): { title: string; description?: string } | null {
@@ -85,5 +80,5 @@ export function getTestGameMetadata(id: string): { title: string; description?: 
 }
 
 export function clearTemplateCache(): void {
-  gamesCache = null;
+  gameCache.clear();
 }

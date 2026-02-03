@@ -876,17 +876,30 @@ export function GameRuntimeGodot({
     }
   }, []);
 
+  const stepGameFrameCountRef = useRef(0);
+
   const stepGame = useCallback(
     (dt: number) => {
+      stepGameFrameCountRef.current++;
+      const frameNum = stepGameFrameCountRef.current;
+
+      // Only log first 5 frames to avoid spam
+      const shouldLog = frameNum <= 5;
+      if (shouldLog) console.log(`[stepGame] frame ${frameNum} starting`);
+
       const physics = physicsRef.current;
       const game = gameRef.current;
       const camera = cameraRef.current;
       const bridge = bridgeRef.current;
       if (!physics || !game || !camera || !bridge) {
+        if (shouldLog) console.log(`[stepGame] frame ${frameNum} - missing refs, returning`);
         return;
       }
 
-      if (StateHelpers.getGameStateValue(game.gameState) !== "playing") return;
+      if (StateHelpers.getGameStateValue(game.gameState) !== "playing") {
+        if (shouldLog) console.log(`[stepGame] frame ${frameNum} - not playing, returning`);
+        return;
+      }
 
       if (dt <= 0) return;
 
@@ -894,8 +907,11 @@ export function GameRuntimeGodot({
 
       const runner = gameSystemRunnerRef.current;
       if (!runner) {
+        if (shouldLog) console.log(`[stepGame] frame ${frameNum} - no runner, returning`);
         return;
       }
+
+      if (shouldLog) console.log(`[stepGame] frame ${frameNum} - building game state`);
 
       const fullGameState: GameState = {
         time: StateHelpers.getElapsed(game.gameState),
@@ -926,12 +942,15 @@ export function GameRuntimeGodot({
         inputRef.current = { ...inputRef.current, tap: undefined };
       }
 
+      if (shouldLog) console.log(`[stepGame] frame ${frameNum} - calling runner.update`);
       runner.update(updateContext);
+      if (shouldLog) console.log(`[stepGame] frame ${frameNum} - runner.update complete`);
 
       elapsedRef.current += dt;
       frameIdRef.current += 1;
 
       setGameState((s) => ({ ...s, time: elapsedRef.current }));
+      if (shouldLog) console.log(`[stepGame] frame ${frameNum} - complete`);
 
       if (enablePerfLogging) {
         const frameEnd = performance.now();
@@ -983,7 +1002,10 @@ export function GameRuntimeGodot({
   );
 
   useEffect(() => {
+    console.log(`[GameLoop Effect] isReady=${isReady}, state=${gameState.state}, mode=${timeControl.mode}, paused=${timeControl.paused}`);
+
     if (timeControl.mode === "inspect") {
+      console.log("[GameLoop Effect] Inspect mode - stopping");
       gameLoopControllerRef.current?.stop();
       return;
     }
@@ -993,11 +1015,13 @@ export function GameRuntimeGodot({
       isReady && playerPhase === "playing" && !timeControl.paused;
 
     if (!shouldRun) {
+      console.log("[GameLoop Effect] shouldRun=false - stopping");
       gameLoopControllerRef.current?.stop();
       return;
     }
 
     if (!gameLoopControllerRef.current) {
+      console.log("[GameLoop Effect] Creating new GameLoopController");
       gameLoopControllerRef.current = new GameLoopController({
         onUpdate: stepGame,
         intervalMs: GAME_LOOP_INTERVAL,
@@ -1012,10 +1036,12 @@ export function GameRuntimeGodot({
     }
 
     if (!controller.isRunning()) {
+      console.log("[GameLoop Effect] Starting game loop");
       controller.start();
     }
 
     return () => {
+      console.log("[GameLoop Effect] Cleanup - stopping");
       controller.stop();
     };
   }, [isReady, gameState.state, stepGame, timeControl]);
@@ -1385,10 +1411,16 @@ export function GameRuntimeGodot({
   }, []);
 
   const handleStart = useCallback(() => {
+    console.log("[handleStart] Called");
+    console.log("[handleStart] Calling resumePhysics...");
     bridgeRef.current?.resumePhysics();
+    console.log("[handleStart] resumePhysics complete");
     if (gameRef.current) {
+      console.log("[handleStart] Setting game state to playing...");
       StateHelpers.setGameStateValue(gameRef.current.gameState, 'playing', gameRef.current.events);
+      console.log("[handleStart] setGameStateValue complete");
     }
+    console.log("[handleStart] Done");
   }, []);
 
   const handleRestart = useCallback(() => {

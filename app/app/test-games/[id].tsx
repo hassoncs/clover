@@ -1,66 +1,51 @@
-import { useMemo, useState, useCallback, useRef, useEffect } from "react";
-import { View, Text, Pressable, ActivityIndicator, Alert, Animated } from "react-native";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { View, Text, Pressable, ActivityIndicator, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
 import { AssetLoadingScreen } from "@/components/game";
-import { TESTGAMES_BY_ID, loadTestGame, type TestGameId } from "@/lib/registry/generated/testGames";
 import { trpc } from "@/lib/trpc/client";
 import { useGamePreloader } from "@/lib/hooks/useGamePreloader";
-import { useGameProgressFromDefinition } from "@/lib/game-engine/progress";
 import type { GameDefinition } from "@slopcade/shared";
-import type { BallSortProgress } from "@slopcade/shared";
 
 export default function TestGameRunScreen() {
   const router = useRouter();
   const { id, debug } = useLocalSearchParams<{ id: string; debug?: string }>();
   const isDebugMode = debug === "true" || debug === "1";
-  const entry = useMemo(() => (id && id in TESTGAMES_BY_ID ? TESTGAMES_BY_ID[id as TestGameId] : undefined), [id]);
 
   const [runtimeKey, setRuntimeKey] = useState(0);
   const [isLoadingDefinition, setIsLoadingDefinition] = useState(true);
   const [gameDefinition, setGameDefinition] = useState<GameDefinition | null>(null);
-  const loadedDefinitionRef = useRef<GameDefinition | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [godotReady, setGodotReady] = useState(false);
   const [loadingDismissed, setLoadingDismissed] = useState(false);
   const loadingOpacity = useRef(new Animated.Value(1)).current;
 
   const { phase, progress, imageUrls, startPreload, skipPreload, reset } = useGamePreloader(gameDefinition);
 
+  // Fetch game from API (works for both test games and DB games)
   useEffect(() => {
-    if (!entry) return;
-    
+    if (!id) return;
+
     const load = async () => {
       setIsLoadingDefinition(true);
+      setError(null);
       try {
-        const definition = await loadTestGame(entry.id);
-        loadedDefinitionRef.current = definition;
+        console.log('[test-games] Fetching game from API:', id);
+        const game = await trpc.games.getPublic.query({ id });
+        const definition = JSON.parse(game.definition) as GameDefinition;
+        console.log('[test-games] Loaded game:', definition.metadata.title);
         setGameDefinition(definition);
       } catch (err) {
-        console.error('[test-games] Failed to load test game:', err);
+        console.error('[test-games] Failed to load game:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load game');
       } finally {
         setIsLoadingDefinition(false);
       }
     };
-    
+
     load();
-  }, [entry]);
-
-  const progressResult = useGameProgressFromDefinition<BallSortProgress>(gameDefinition ?? {} as GameDefinition);
-
-  useEffect(() => {
-    if (!progressResult || !loadedDefinitionRef.current) return;
-    
-    const { progress, isLoading } = progressResult;
-    if (isLoading) return;
-
-    if (loadedDefinitionRef.current.metadata.id === 'test-ball-sort') {
-      import('@/lib/test-games/games/ballSort/game').then((mod) => {
-        const newDefinition = mod.createBallSortGame(progress.currentLevel);
-        setGameDefinition(newDefinition);
-      });
-    }
-  }, [progressResult]);
+  }, [id]);
 
   useEffect(() => {
     if (gameDefinition && !isLoadingDefinition && phase === 'idle') {
@@ -94,10 +79,10 @@ export default function TestGameRunScreen() {
     // Auto-save logic moved to GameRuntime "Next Level" button
   }, []);
 
-  if (!entry) {
+  if (error) {
     return (
       <SafeAreaView className="flex-1 bg-gray-900 items-center justify-center p-6">
-        <Text className="text-red-400 text-center text-lg">Unknown test game: {id}</Text>
+        <Text className="text-red-400 text-center text-lg">{error}</Text>
         <Pressable className="mt-6 py-3 px-6 bg-gray-700 rounded-lg" onPress={handleBack}>
           <Text className="text-white font-semibold">← Go Back</Text>
         </Pressable>
@@ -105,7 +90,7 @@ export default function TestGameRunScreen() {
     );
   }
 
-  if (isLoadingDefinition || progressResult?.isLoading) {
+  if (isLoadingDefinition) {
     return (
       <SafeAreaView className="flex-1 bg-gray-900 items-center justify-center">
         <ActivityIndicator size="large" color="#4CAF50" />
@@ -125,8 +110,9 @@ export default function TestGameRunScreen() {
     );
   }
 
-  const canMountGame = phase === 'ready' || phase === 'skipped';
-  const showLoadingOverlay = !loadingDismissed;
+  // TEMP: Skip preloading to debug freeze issue
+  const canMountGame = !isLoadingDefinition && gameDefinition !== null;
+  const showLoadingOverlay = false; // Disabled for debugging
 
   return (
     <View className="flex-1 bg-gray-900">

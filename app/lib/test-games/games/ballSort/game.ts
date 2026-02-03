@@ -194,6 +194,11 @@ export function createBallSortGame(level: number = 1): GameDefinition {
   const tubeEntities = createTubeEntities();
   const ballEntities = createBallEntitiesFromLayout(tubeLayout);
 
+  // DEBUG: Minimal version to isolate freeze issue
+  // Remove features one by one to find the culprit
+  const MINIMAL_DEBUG = false; // Set to false to restore full features
+  const SKIP_PERSISTENCE = true; // Keep persistence disabled for now
+
   const game: GameDefinition = {
     metadata: {
       id: "test-ball-sort",
@@ -213,14 +218,16 @@ export function createBallSortGame(level: number = 1): GameDefinition {
     },
     camera: { type: "fixed", zoom: 1 },
     input: { debugInputs: true },
-    variables: {
+    // DEBUG: Minimal variables only
+    variables: MINIMAL_DEBUG ? {
+      currentLevel: level,
+    } : {
       currentLevel: level,
       heldBallColor: -1,
       sourceTubeIndex: -1,
       heldBallId: "",
       moveCount: 0,
       startTime: 0,
-      // Track tube state for win condition
       ...Object.fromEntries(
         Array.from({ length: NUM_TUBES }, (_, i) => [
           `tube${i}_count`,
@@ -234,8 +241,12 @@ export function createBallSortGame(level: number = 1): GameDefinition {
         ])
       ),
     },
-    containers: tubeContainers,
-    ui: {
+    // DEBUG: No containers in minimal mode
+    ...(MINIMAL_DEBUG ? {} : { containers: tubeContainers }),
+    // DEBUG: Minimal UI
+    ui: MINIMAL_DEBUG ? {
+      backgroundColor: "#1a237e",
+    } : {
       showTimer: true,
       timerCountdown: false,
       backgroundColor: "#1a237e",
@@ -244,33 +255,36 @@ export function createBallSortGame(level: number = 1): GameDefinition {
         { name: "currentLevel", label: "Level", color: "#FFD700" },
       ],
     },
-    stateMachines: [
-      {
-        id: "gameFlow",
-        initialState: "idle",
-        states: [{ id: "idle" }, { id: "holding" }],
-        transitions: [
-          {
-            id: "pickup",
-            from: "idle",
-            to: "holding",
-            trigger: { type: "event", eventName: "ball_picked" },
-          },
-          {
-            id: "drop",
-            from: "holding",
-            to: "idle",
-            trigger: { type: "event", eventName: "ball_dropped" },
-          },
-          {
-            id: "cancel",
-            from: "holding",
-            to: "idle",
-            trigger: { type: "event", eventName: "pickup_cancelled" },
-          },
-        ],
-      },
-    ],
+    // DEBUG: No state machines in minimal mode
+    ...(MINIMAL_DEBUG ? {} : {
+      stateMachines: [
+        {
+          id: "gameFlow",
+          initialState: "idle",
+          states: [{ id: "idle" }, { id: "holding" }],
+          transitions: [
+            {
+              id: "pickup",
+              from: "idle",
+              to: "holding",
+              trigger: { type: "event", eventName: "ball_picked" },
+            },
+            {
+              id: "drop",
+              from: "holding",
+              to: "idle",
+              trigger: { type: "event", eventName: "ball_dropped" },
+            },
+            {
+              id: "cancel",
+              from: "holding",
+              to: "idle",
+              trigger: { type: "event", eventName: "pickup_cancelled" },
+            },
+          ],
+        },
+      ],
+    }),
     winCondition: {},
     templates: {
       tube: {
@@ -278,7 +292,7 @@ export function createBallSortGame(level: number = 1): GameDefinition {
         tags: ["tube"],
         visual: {
           type: "image",
-          imageUrl: `${ASSET_BASE}/tube.png`,
+          imageUrl: `${ASSET_BASE}/ball0.png`, // TEMP: tube.png is missing, using ball0 to test
           imageWidth: TUBE_WIDTH,
           imageHeight: TUBE_HEIGHT,
         },
@@ -289,42 +303,57 @@ export function createBallSortGame(level: number = 1): GameDefinition {
           isSensor: true,
         },
       },
-      tubeHoverHighlight: {
-        id: "tubeHoverHighlight",
-        tags: ["highlight", "hover"],
-        layer: 500,
-        visual: {
-          type: "rect",
-          width: TUBE_WIDTH * 1.05,
-          height: TUBE_HEIGHT * 1.02,
-          color: "#FFFFFF",
-          opacity: 0.15,
-          blendMode: "add",
+      // DEBUG: Minimal ball templates without conditionalBehaviors
+      ...(MINIMAL_DEBUG ? {
+        ball0: createMinimalBallTemplate(0) as EntityTemplate,
+        ball1: createMinimalBallTemplate(1) as EntityTemplate,
+        ball2: createMinimalBallTemplate(2) as EntityTemplate,
+        ball3: createMinimalBallTemplate(3) as EntityTemplate,
+        ball4: createMinimalBallTemplate(4) as EntityTemplate,
+        ball5: createMinimalBallTemplate(5) as EntityTemplate,
+        ball6: createMinimalBallTemplate(6) as EntityTemplate,
+        ball7: createMinimalBallTemplate(7) as EntityTemplate,
+      } : {
+        tubeHoverHighlight: {
+          id: "tubeHoverHighlight",
+          tags: ["highlight", "hover"],
+          layer: 500,
+          visual: {
+            type: "rect",
+            width: TUBE_WIDTH * 1.05,
+            height: TUBE_HEIGHT * 1.02,
+            color: "#FFFFFF",
+            opacity: 0.15,
+            blendMode: "add",
+          },
         },
-      },
-      ball0: createBallTemplate(0) as EntityTemplate,
-      ball1: createBallTemplate(1) as EntityTemplate,
-      ball2: createBallTemplate(2) as EntityTemplate,
-      ball3: createBallTemplate(3) as EntityTemplate,
-      ball4: createBallTemplate(4) as EntityTemplate,
-      ball5: createBallTemplate(5) as EntityTemplate,
-      ball6: createBallTemplate(6) as EntityTemplate,
-      ball7: createBallTemplate(7) as EntityTemplate,
-      heldBallIndicator: {
-        id: "heldBallIndicator",
-        tags: ["held-indicator"],
-        visual: {
-          type: "circle",
-          radius: BALL_RADIUS * 1.2,
-          color: "#FFD700",
+        ball0: createBallTemplate(0) as EntityTemplate,
+        ball1: createBallTemplate(1) as EntityTemplate,
+        ball2: createBallTemplate(2) as EntityTemplate,
+        ball3: createBallTemplate(3) as EntityTemplate,
+        ball4: createBallTemplate(4) as EntityTemplate,
+        ball5: createBallTemplate(5) as EntityTemplate,
+        ball6: createBallTemplate(6) as EntityTemplate,
+        ball7: createBallTemplate(7) as EntityTemplate,
+        heldBallIndicator: {
+          id: "heldBallIndicator",
+          tags: ["held-indicator"],
+          visual: {
+            type: "circle",
+            radius: BALL_RADIUS * 1.2,
+            color: "#FFD700",
+          },
+          collider: {
+            shape: "circle" as const,
+            radius: BALL_RADIUS * 1.2,
+          },
         },
-        collider: {
-          shape: "circle" as const,
-          radius: BALL_RADIUS * 1.2,
-        },
-      },
+      }),
     },
-    entities: [
+    entities: MINIMAL_DEBUG ? [
+      ...tubeEntities,
+      ...ballEntities,
+    ] : [
       ...tubeEntities,
       ...ballEntities,
       {
@@ -341,45 +370,49 @@ export function createBallSortGame(level: number = 1): GameDefinition {
         },
       },
     ],
-    rules: [
-      {
-        id: "init_start_time",
-        name: "Initialize start time",
-        trigger: { type: "gameStart" },
-        actions: [{ type: "set_variable", name: "startTime", operation: "set", value: { expr: "now()" } }],
+    // DEBUG: No rules in minimal mode
+    ...(MINIMAL_DEBUG ? {} : {
+      rules: [
+        {
+          id: "init_start_time",
+          name: "Initialize start time",
+          trigger: { type: "gameStart" },
+          actions: [{ type: "set_variable", name: "startTime", operation: "set", value: { expr: "now()" } }],
+        },
+        {
+          id: "tap_tube_idle",
+          name: "Pick up ball from tube when in idle state",
+          trigger: { type: "tap", target: "tube" },
+          conditions: [{ type: "expression", expr: "stateIs('gameFlow', 'idle')" }],
+          actions: [{ type: "ball_sort_pickup" }],
+        },
+        {
+          id: "tap_tube_holding",
+          name: "Drop ball into tube when holding",
+          trigger: { type: "tap", target: "tube" },
+          conditions: [{ type: "expression", expr: "stateIs('gameFlow', 'holding')" }],
+          actions: [{ type: "ball_sort_drop" }],
+        },
+        {
+          id: "cancel_pickup_same_tube",
+          name: "Cancel pickup when tapping same tube",
+          trigger: { type: "event", eventName: "pickup_cancelled" },
+          actions: [{ type: "event", eventName: "pickup_cancelled" }],
+        },
+        {
+          id: "check_win",
+          name: "Check win condition after each move",
+          trigger: { type: "event", eventName: "ball_dropped" },
+          actions: [{ type: "ball_sort_check_win" }],
+        },
+      ],
+      // DEBUG: Skip persistence to test if it's causing the freeze
+      ...(SKIP_PERSISTENCE ? {} : { persistence: ballSortPersistence }),
+      hoverHighlight: {
+        targetTag: "tube",
+        highlightEntityId: "tube-hover-highlight",
       },
-      {
-        id: "tap_tube_idle",
-        name: "Pick up ball from tube when in idle state",
-        trigger: { type: "tap", target: "tube" },
-        conditions: [{ type: "expression", expr: "stateIs('gameFlow', 'idle')" }],
-        actions: [{ type: "ball_sort_pickup" }],
-      },
-      {
-        id: "tap_tube_holding",
-        name: "Drop ball into tube when holding",
-        trigger: { type: "tap", target: "tube" },
-        conditions: [{ type: "expression", expr: "stateIs('gameFlow', 'holding')" }],
-        actions: [{ type: "ball_sort_drop" }],
-      },
-      {
-        id: "cancel_pickup_same_tube",
-        name: "Cancel pickup when tapping same tube",
-        trigger: { type: "event", eventName: "pickup_cancelled" },
-        actions: [{ type: "event", eventName: "pickup_cancelled" }],
-      },
-      {
-        id: "check_win",
-        name: "Check win condition after each move",
-        trigger: { type: "event", eventName: "ball_dropped" },
-        actions: [{ type: "ball_sort_check_win" }],
-      },
-    ],
-    persistence: ballSortPersistence,
-    hoverHighlight: {
-      targetTag: "tube",
-      highlightEntityId: "tube-hover-highlight",
-    },
+    }),
   };
 
   return game;
@@ -390,7 +423,7 @@ export function createBallSortGame(level: number = 1): GameDefinition {
  */
 function createBallTemplate(colorIndex: number) {
   const ballDiameter = BALL_RADIUS * 2;
-  
+
   return {
     id: `ball${colorIndex}`,
     tags: ["ball", `color-${colorIndex}`],
@@ -418,6 +451,24 @@ function createBallTemplate(colorIndex: number) {
         ],
       },
     ],
+  };
+}
+
+/**
+ * Minimal ball template without conditional behaviors (for debugging).
+ */
+function createMinimalBallTemplate(colorIndex: number) {
+  const ballDiameter = BALL_RADIUS * 2;
+
+  return {
+    id: `ball${colorIndex}`,
+    tags: ["ball", `color-${colorIndex}`],
+    visual: {
+      type: "image" as const,
+      imageUrl: `${ASSET_BASE}/ball${colorIndex}.png`,
+      imageWidth: ballDiameter,
+      imageHeight: ballDiameter,
+    },
   };
 }
 
