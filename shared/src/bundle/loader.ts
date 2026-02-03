@@ -1,8 +1,8 @@
-import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { compileBundle } from './compiler';
 import type { BundleCompileResult } from './types';
 import type { GameDefinition } from '../types/GameDefinition';
+import { FileReader, NodeFileReader } from './FileReader';
 
 const BUNDLE_SUBDIR = '.bundle';
 
@@ -34,13 +34,16 @@ export interface LoadBundleResult {
  * Check if a directory path contains a .bundle subdirectory.
  * Used to identify directories that may contain game bundles.
  */
-export function isBundleDirectory(dirPath: string): boolean {
-  if (!fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory()) {
+export function isBundleDirectory(
+  dirPath: string,
+  fileReader: FileReader = new NodeFileReader()
+): boolean {
+  if (!fileReader.existsSync(dirPath) || !fileReader.statSync(dirPath).isDirectory()) {
     return false;
   }
 
   const bundlePath = path.join(dirPath, BUNDLE_SUBDIR);
-  return fs.existsSync(bundlePath) && fs.statSync(bundlePath).isDirectory();
+  return fileReader.existsSync(bundlePath) && fileReader.statSync(bundlePath).isDirectory();
 }
 
 /**
@@ -68,8 +71,11 @@ function extractMetadata(rawData: BundleCompileResult['rawData']): BundleMetadat
  * Synchronously load and compile a game bundle.
  * Returns the compiled game definition and extracted metadata, or null on failure.
  */
-export function loadBundleSync(bundlePath: string): LoadBundleResult | null {
-  const result = compileBundle(bundlePath);
+export function loadBundleSync(
+  bundlePath: string,
+  options?: { fileReader?: FileReader }
+): LoadBundleResult | null {
+  const result = compileBundle(bundlePath, options);
 
   if (!result.success || !result.gameDefinition) {
     const errorMessages = result.errors.map(e => e.message).join('; ');

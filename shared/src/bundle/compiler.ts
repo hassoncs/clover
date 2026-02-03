@@ -13,6 +13,7 @@ import type { Match3Config, TetrisConfig } from '../types/GameDefinition';
 import type { ContainerConfig } from '../types/container';
 import type { EntityTemplate } from '../types/entity';
 import type { GameRule } from '../types/rules';
+import { FileReader, NodeFileReader } from './FileReader';
 
 function isConstantRef(value: unknown): value is ConstantRef {
   return (
@@ -30,13 +31,13 @@ interface ResolvedConstant {
   path: string[];
 }
 
-function scanForJsonFiles(dir: string, files: string[] = []): string[] {
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
+function scanForJsonFiles(dir: string, fileReader: FileReader, files: string[] = []): string[] {
+  const entries = fileReader.readdirSync(dir);
 
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      scanForJsonFiles(fullPath, files);
+      scanForJsonFiles(fullPath, fileReader, files);
     } else if (entry.isFile() && entry.name.endsWith('.json')) {
       files.push(fullPath);
     }
@@ -45,9 +46,9 @@ function scanForJsonFiles(dir: string, files: string[] = []): string[] {
   return files;
 }
 
-function readJsonFile(filePath: string): { data: unknown; error?: CompileError } | null {
+function readJsonFile(filePath: string, fileReader: FileReader): { data: unknown; error?: CompileError } | null {
   try {
-    const content = fs.readFileSync(filePath, 'utf-8');
+    const content = fileReader.readFileSync(filePath);
     const data = JSON.parse(content);
     return { data };
   } catch (error) {
@@ -360,7 +361,11 @@ function buildGameDefinition(
   };
 }
 
-export function compileBundle(bundlePath: string): BundleCompileResult {
+export function compileBundle(
+  bundlePath: string,
+  options?: { fileReader?: FileReader }
+): BundleCompileResult {
+  const fileReader = options?.fileReader ?? new NodeFileReader();
   const errors: CompileError[] = [];
   const warnings: CompileWarning[] = [];
   const processedFiles: string[] = [];
@@ -377,7 +382,7 @@ export function compileBundle(bundlePath: string): BundleCompileResult {
     schemas: undefined,
   };
 
-  if (!fs.existsSync(bundlePath)) {
+  if (!fileReader.existsSync(bundlePath)) {
     errors.push({
       code: 'MISSING_FILE',
       message: `Bundle directory does not exist: ${bundlePath}`,
@@ -393,7 +398,7 @@ export function compileBundle(bundlePath: string): BundleCompileResult {
     };
   }
 
-  const bundleStat = fs.statSync(bundlePath);
+  const bundleStat = fileReader.statSync(bundlePath);
   if (!bundleStat.isDirectory()) {
     errors.push({
       code: 'INVALID_BUNDLE_STRUCTURE',
@@ -410,11 +415,11 @@ export function compileBundle(bundlePath: string): BundleCompileResult {
     };
   }
 
-  const jsonFiles = scanForJsonFiles(bundlePath);
+  const jsonFiles = scanForJsonFiles(bundlePath, fileReader);
 
   for (const filePath of jsonFiles) {
     const relativePath = path.relative(bundlePath, filePath);
-    const result = readJsonFile(filePath);
+    const result = readJsonFile(filePath, fileReader);
 
     if (!result) {
       errors.push({
@@ -465,15 +470,15 @@ export function compileBundle(bundlePath: string): BundleCompileResult {
 
   // Load schemas from schemas/ directory
   const schemasDir = path.join(bundlePath, 'schemas');
-  if (fs.existsSync(schemasDir) && fs.statSync(schemasDir).isDirectory()) {
+  if (fileReader.existsSync(schemasDir) && fileReader.statSync(schemasDir).isDirectory()) {
     rawData.schemas = {};
 
     const schemaFiles = ['level.json', 'persistence.json'] as const;
     for (const schemaFile of schemaFiles) {
       const schemaPath = path.join(schemasDir, schemaFile);
-      if (fs.existsSync(schemaPath)) {
+      if (fileReader.existsSync(schemaPath)) {
         processedFiles.push(path.relative(bundlePath, schemaPath));
-        const result = readJsonFile(schemaPath);
+        const result = readJsonFile(schemaPath, fileReader);
         if (result && result.data && typeof result.data === 'object') {
           const schemaName = schemaFile.replace('.json', '') as 'level' | 'persistence';
           rawData.schemas[schemaName] = result.data as object;
