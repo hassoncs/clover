@@ -19,6 +19,7 @@ import type { ContainerConfig } from './container';
 export type ImageField = {
   imageUrl?: string;
   assetRef?: string;
+  localPath?: string;
 };
 
 export interface WorldConfig {

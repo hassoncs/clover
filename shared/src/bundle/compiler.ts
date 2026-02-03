@@ -300,7 +300,7 @@ function buildGameDefinition(
   templates: Map<string, Record<string, unknown>>,
   entities: Array<Record<string, unknown>>,
   rules: GameRule[],
-  assets: Record<string, { path: string; type: string }> | null,
+  assets: Record<string, { path?: string; remoteUrl?: string; localPath?: string; type: string }> | null,
   systems: {
     match3?: Match3Config;
     containers?: ContainerConfig[];
@@ -370,6 +370,7 @@ export function compileBundle(bundlePath: string): BundleCompileResult {
     constants: null,
     editor: null,
     assets: null,
+    scripts: null,
     templates: [],
     entities: [],
     rules: [],
@@ -444,7 +445,11 @@ export function compileBundle(bundlePath: string): BundleCompileResult {
       }
     } else if (relativePath === 'assets.json') {
       if (typeof data === 'object' && data !== null) {
-        rawData.assets = data as Record<string, { path: string; type: string }>;
+        rawData.assets = data as Record<string, { path?: string; remoteUrl?: string; localPath?: string; type: string }>;
+      }
+    } else if (relativePath === 'scripts.json') {
+      if (typeof data === 'object' && data !== null) {
+        rawData.scripts = data as Record<string, string>;
       }
     } else if (relativePath.startsWith('templates')) {
       const items = normalizeToArray(data);

@@ -34,7 +34,11 @@ export type CompileErrorCode =
   | 'CONSTANT_CYCLE'
   | 'INVALID_BUNDLE_STRUCTURE'
   | 'INVALID_MANIFEST'
-  | 'SCHEMA_VALIDATION_FAILED';
+  | 'SCHEMA_VALIDATION_FAILED'
+  | 'INVALID_SCRIPT'
+  | 'SCRIPT_SYNTAX_ERROR'
+  | 'MISSING_LOCAL_ASSET'
+  | 'INVALID_ASSET_REFERENCE';
 
 /**
  * Warning codes for compile warnings
@@ -43,7 +47,9 @@ export type CompileWarningCode =
   | 'UNUSED_CONSTANT'
   | 'UNUSED_ASSET'
   | 'MISSING_OPTIONAL_FILE'
-  | 'EDITOR_CONSTANT_MISMATCH';
+  | 'EDITOR_CONSTANT_MISMATCH'
+  | 'DUPLICATE_EXPORT'
+  | 'NESTED_SCRIPTS_IGNORED';
 
 /**
  * Structured compile error with AI-actionable details
@@ -90,9 +96,12 @@ export interface RawBundleData {
   constants: Record<string, number | string | boolean> | null;
   editor: EditorMetadata | null;
   assets: Record<string, {
-    path: string;
+    path?: string;      // Legacy field (backwards compat)
+    remoteUrl?: string; // New: CDN URL
+    localPath?: string; // New: local bundle path
     type: string;
   }> | null;
+  scripts: Record<string, string> | null;
   templates: Array<Record<string, unknown>>;
   entities: Array<Record<string, unknown>>;
   rules: Array<Record<string, unknown>>;
