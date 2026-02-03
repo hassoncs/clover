@@ -88,9 +88,9 @@ Design decisions favor what AI can generate reliably over developer convenience.
 │ • Nested template instantiation                             │
 │ • Cascade operations (destroy parent → children destroyed) │
 │                                                             │
-│ Status: ❌ NOT YET IMPLEMENTED (Critical Gap)              │
+│ Status: ✅ IMPLEMENTED                                     │
 │ Example: Boss entity with arm, leg, core children          │
-│ Doc: [00-HIERARCHY-AND-COMPOSABILITY-ANALYSIS.md]          │
+│ Uses: parentId, children[], localTransform, worldTransform │
 └─────────────┬───────────────────────────────────────────────┘
               ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -582,10 +582,10 @@ If you know Unity, here's the mapping:
 | Unity Concept | Slopcade Equivalent |
 |---------------|---------------------|
 | **GameObject** | `GameEntity` |
-| **Prefab** | `EntityTemplate` + Children (proposed) |
-| **Component** | `SpriteComponent`, `PhysicsComponent`, `Behavior` |
+| **Prefab** | `EntityTemplate` + `children[]` |
+| **Component** | `VisualComponent`, `PhysicsComponent`, `Behavior` |
 | **MonoBehaviour** | `Behavior` (declarative) + `Rule` (event-driven) |
-| **Transform Hierarchy** | Proposed (not yet implemented) |
+| **Transform Hierarchy** | `parentId`, `children[]`, `localTransform`, `worldTransform` |
 | **Inspector Variables** | `variables` + `variableMetadata` |
 | **Rigidbody** | `PhysicsComponent` → Godot RigidBody2D |
 | **Joint** | `GameJoint` (revolute, distance, weld, prismatic) |

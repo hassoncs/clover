@@ -61,8 +61,11 @@ describe('ballSort', () => {
       expect(game.templates).toBeDefined();
       expect(game.templates?.ball0).toBeDefined();
       expect(game.templates?.ball1).toBeDefined();
-      expect(game.templates?.tubeSensor).toBeDefined();
-      expect(game.templates?.tubeWall).toBeDefined();
+      expect(game.templates?.tube).toBeDefined();
+      // Verify old templates are removed
+      expect(game.templates?.tubeSensor).toBeUndefined();
+      expect(game.templates?.tubeWall).toBeUndefined();
+      expect(game.templates?.tubeBottom).toBeUndefined();
     });
 
     it('should have rule-managed win condition (no expr)', () => {

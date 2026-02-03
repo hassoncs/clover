@@ -14,6 +14,15 @@ export const ballSortConfig: GameAssetConfig = {
   assets: [
     {
       type: 'entity',
+      id: 'tube',
+      shape: 'box',
+      width: TUBE_WIDTH,
+      height: TUBE_HEIGHT,
+      entityType: 'platform',
+      description: 'colorful glass bottle or test tube container, cartoon style, fun casual game aesthetic',
+    } as EntitySpec,
+    {
+      type: 'entity',
       id: 'tubeWall',
       shape: 'box',
       width: TUBE_WALL_THICKNESS,

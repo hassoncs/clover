@@ -28,32 +28,15 @@ Step-by-step instructions for common tasks.
 |----------|-------------|
 | [Expo Development Guide](shared/guides/expo-development.md) | Setting up and running the Expo app |
 | [Storybook Setup](shared/guides/storybook-setup.md) | Component development with Storybook |
-| [App Template Guide](shared/guides/app-template-setup.md) | Creating new apps from template |
 
 ### Reference
 Quick-lookup documentation for tools and configurations.
 
 | Document | Description |
 |----------|-------------|
-| [Waypoint Architecture Reference](shared/reference/waypoint-architecture.md) | Full infrastructure patterns |
 | [Metro Port Configuration](shared/reference/metro-port-configuration.md) | Custom Metro port setup |
 | [Registry System](shared/reference/registry-system.md) | Auto-discovered lazy loading |
 | [Platform-Specific Modules](shared/reference/platform-specific-modules.md) | .native.ts/.web.ts patterns |
-| [Sound Generation](shared/reference/sound-generation.md) | ElevenLabs sound effects API |
-
-### Troubleshooting
-Known issues and their solutions.
-
-| Document | Description |
-|----------|-------------|
-| [D1 Testing Issues](shared/troubleshooting/d1-testing-setup.md) | Cloudflare D1 test environment setup |
-
-### Log
-Temporal status updates and completion notes.
-
-| Document | Description |
-|----------|-------------|
-| [2026-01-21 Scenario Setup Complete](shared/log/2026/2026-01-21-scenario-setup.md) | Scenario.com integration verified |
 
 ### Plans
 Future migration and feature plans.
@@ -73,7 +56,8 @@ Documentation for the Godot 4 game engine integration.
 |----------|-------------|
 | [Godot 4 Integration](godot/) | Godot 4 physics and rendering backend |
 | [Coordinate System Guide](godot/COORDINATE_SYSTEM_GUIDE.md) | Center-origin coordinate system |
-| [Native Bridge TODO](godot/NATIVE_BRIDGE_TODO.md) | Outstanding native work |
+| [3D Rendering](godot/3d-rendering.md) | GLB model rendering in Godot |
+| [Web Input Handling](godot/WEB_INPUT_HANDLING.md) | Browser input event flow |
 
 ---
 

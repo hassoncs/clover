@@ -23,7 +23,7 @@ When viewing a game on a wide monitor:
 | Layer | What You See | Source | Purpose |
 |-------|--------------|--------|---------|
 | **Black letterbox** | Black bars on sides | React Native `letterboxColor` | Outside the viewport container |
-| **Gray canvas** | Godot's background color | Godot viewport (700x900 fixed) | Godot's canvas stretched to fit |
+| **Gray canvas** | Godot's background color | Godot viewport (720x1280 fixed) | Godot's canvas stretched to fit |
 | **Game world** | Red/colored game area | Game entities and background | The actual game content |
 
 ---
@@ -35,18 +35,18 @@ Godot is configured with a **fixed viewport size** that gets stretched:
 ```ini
 # project.godot
 [display]
-window/size/viewport_width=700
-window/size/viewport_height=900
+window/size/viewport_width=720
+window/size/viewport_height=1280
 window/stretch/mode="canvas_items"
 ```
 
-- **viewport_width/height**: The internal canvas size (700x900 pixels)
-- **stretch/mode="canvas_items"**: Godot stretches this 700x900 to fill the browser/app window
+- **viewport_width/height**: The internal canvas size (720x1280 pixels)
+- **stretch/mode="canvas_items"**: Godot stretches this 720x1280 to fill the browser/app window
 
 This means:
-1. All Godot rendering happens in a 700x900 pixel space
+1. All Godot rendering happens in a 720x1280 pixel space
 2. The browser/app then scales this to fit the actual window
-3. Camera zoom inside Godot determines how much world fits in the 700x900
+3. Camera zoom inside Godot determines how much world fits in the 720x1280
 
 ---
 
@@ -58,20 +58,20 @@ When a game loads, Godot automatically calculates camera zoom to fit the world:
 # GameBridge.gd:_setup_world()
 var world_width = bounds.width * pixels_per_meter   # e.g., 8.4m * 50 = 420px
 var world_height = bounds.height * pixels_per_meter # e.g., 8.4m * 50 = 420px
-var viewport_size = get_viewport().get_visible_rect().size  # 700x900
+var viewport_size = get_viewport().get_visible_rect().size  # 720x1280
 
-var zoom_x = viewport_size.x / world_width  # 700/420 = 1.67
-var zoom_y = viewport_size.y / world_height # 900/420 = 2.14
-camera.zoom = Vector2(min(zoom_x, zoom_y), min(zoom_x, zoom_y))  # Use smaller = 1.67
+var zoom_x = viewport_size.x / world_width  # 720/420 = 1.71
+var zoom_y = viewport_size.y / world_height # 1280/420 = 3.05
+camera.zoom = Vector2(min(zoom_x, zoom_y), min(zoom_x, zoom_y))  # Use smaller = 1.71
 camera.global_position = Vector2.ZERO
 ```
 
 **Result for Candy Crush (8.4m x 8.4m world):**
 - World in pixels: 420 x 420
 - Godot viewport: 700 x 900
-- Auto-zoom: min(700/420, 900/420) = 1.67
-- The 420x420 world scales to 700x700, centered in the 700x900 viewport
-- Gray bars appear above/below (100px each side)
+- Auto-zoom: min(720/420, 1280/420) = 1.71
+- The 420x420 world scales to ~720x720, centered in the 720x1280 viewport
+- Gray bars appear above/below (~280px each side)
 
 ---
 
@@ -104,7 +104,7 @@ camera.global_position = Vector2.ZERO
 - **Note:** Includes black letterbox margins
 
 ### 5. **Canvas Coordinates (Godot Internal)**
-- **Origin:** Top-left of Godot's 700x900 canvas
+- **Origin:** Top-left of Godot's 720x1280 canvas
 - **Y-Axis:** Y+ is DOWN
 - **Scale:** Godot pixels (before stretch)
 
@@ -139,10 +139,10 @@ class ViewportSystem {
 ```gdscript
 # GameBridge.gd
 func _setup_world(world_data):
-    # Determines camera zoom so world fills Godot's 700x900 viewport
+    # Determines camera zoom so world fills Godot's 720x1280 viewport
     
     var world_pixels = bounds.width * pixels_per_meter
-    var viewport = get_viewport().get_visible_rect().size  # 700x900
+    var viewport = get_viewport().get_visible_rect().size  # 720x1280
     var zoom = min(viewport.x / world_pixels, viewport.y / world_pixels)
     camera.zoom = Vector2(zoom, zoom)
 ```
@@ -204,7 +204,7 @@ func _setup_world(world_data):
 | `app/lib/game-engine/GameRuntime.godot.tsx` | Main game component, input handling |
 | `godot_project/scripts/GameBridge.gd` | Godot-side game loading, coordinate conversion |
 | `godot_project/scripts/effects/CameraEffects.gd` | Camera shake/zoom effects |
-| `godot_project/project.godot` | Godot viewport config (700x900) |
+| `godot_project/project.godot` | Godot viewport config (720x1280) |
 
 ---
 
@@ -259,7 +259,7 @@ func _setup_world(world_data):
 
 ## Debugging Checklist
 
-1. **Verify Godot viewport**: Should be 700x900 (check project.godot)
+1. **Verify Godot viewport**: Should be 720x1280 (check project.godot)
 2. **Verify camera zoom**: Log `camera.zoom` after `_setup_world()` - should be ~1.67 for Candy Crush
 3. **Verify viewportRect**: Log in `updateScreenSize()` - scale should be close to Godot's effective PPM
 4. **Verify input coords**: Log raw screen, viewport, and world coordinates at tap

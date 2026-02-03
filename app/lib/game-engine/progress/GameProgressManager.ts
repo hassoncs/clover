@@ -1,110 +1,96 @@
+/**
+ * GameProgressManager - Manages game progress persistence with validation and migration
+ * 
+ * Responsibilities:
+ * - Load progress from storage with validation
+ * - Save progress with metadata updates
+ * - Handle corrupted data gracefully (reset to defaults)
+ * - Support schema version migrations
+ * - Provide synchronous access to current progress
+ */
+
 import type {
   PersistenceConfig,
   LoadProgressResult,
   ProgressManagerOptions,
-} from "@slopcade/shared";
-import { getStorageItem, setStorageItem } from "@/lib/utils/storage";
-import { z } from "zod";
+} from '@slopcade/shared';
+import { getStorageItem, setStorageItem } from '@/lib/utils/storage';
 
-/**
- * Manages persistent game progress with schema validation and migration.
- *
- * This class handles loading, saving, and validating game progress
- * using the storage layer (localStorage on web, AsyncStorage on native).
- *
- * @example
- * ```typescript
- * const manager = new GameProgressManager({
- *   gameId: "my-game",
- *   config: {
- *     schema: MyGameProgressSchema,
- *     version: 1,
- *     defaultProgress: { highScore: 0 },
- *   },
- * });
- *
- * const result = await manager.loadProgress();
- * console.log("Current progress:", result.data);
- *
- * await manager.updateProgress({ highScore: 100 });
- * await manager.saveProgress();
- * ```
- */
-export class GameProgressManager<T extends Record<string, unknown>> {
+export class GameProgressManager<T = unknown> {
   private gameId: string;
   private config: PersistenceConfig<T>;
   private storageKey: string;
   private currentProgress: T;
-  private isDirty = false;
+  private isDirty: boolean = false;
   private autoSaveInterval?: ReturnType<typeof setInterval>;
 
   constructor(options: ProgressManagerOptions<T>) {
     this.gameId = options.gameId;
     this.config = options.config;
     this.storageKey = options.config.storageKey ?? `game-progress-${options.gameId}`;
-    this.currentProgress = structuredClone(options.config.defaultProgress);
+    this.currentProgress = { ...options.config.defaultProgress };
   }
 
   /**
-   * Load progress from storage with validation and migration.
+   * Load progress from storage with validation and migration
    */
   async loadProgress(): Promise<LoadProgressResult<T>> {
     try {
       const stored = await getStorageItem<unknown>(this.storageKey, null);
-
+      
       if (!stored) {
+        // No saved progress, use defaults
         return {
           success: true,
-          data: structuredClone(this.config.defaultProgress),
+          data: { ...this.config.defaultProgress },
           migrated: false,
         };
       }
 
-      const storedVersion = this.extractVersion(stored);
+      const storedVersion = typeof (stored as Record<string, unknown>)?.version === 'number' 
+        ? (stored as Record<string, unknown>).version as number
+        : 0;
       let migratedData: unknown = stored;
-
+      
       if (storedVersion < this.config.version) {
         migratedData = this.migrateSchema(stored, storedVersion);
       }
 
+      // Validate against schema
       const parseResult = this.config.schema.safeParse(migratedData);
-
+      
       if (!parseResult.success) {
-        console.error(
-          `[GameProgressManager] Invalid progress data for ${this.gameId}:`,
-          parseResult.error.flatten()
-        );
+        console.error(`[ProgressManager] Invalid progress data for ${this.gameId}:`, parseResult.error);
+        // Fall back to defaults on validation failure
         return {
           success: false,
-          data: structuredClone(this.config.defaultProgress),
+          data: { ...this.config.defaultProgress },
           migrated: storedVersion < this.config.version,
-          errors: parseResult.error.errors.map((e) => e.message),
+          errors: parseResult.error.errors.map(e => e.message),
         };
       }
 
       this.currentProgress = parseResult.data;
-
+      
       return {
         success: true,
         data: parseResult.data,
         migrated: storedVersion < this.config.version,
       };
     } catch (error) {
-      console.error(
-        `[GameProgressManager] Failed to load progress for ${this.gameId}:`,
-        error
-      );
+      console.error(`[ProgressManager] Failed to load progress for ${this.gameId}:`, error);
       return {
         success: false,
-        data: structuredClone(this.config.defaultProgress),
+        data: { ...this.config.defaultProgress },
         migrated: false,
-        errors: [error instanceof Error ? error.message : "Unknown error"],
+        errors: [error instanceof Error ? error.message : 'Unknown error'],
       };
     }
   }
 
   /**
-   * Save current progress to storage.
+   * Save current progress to storage
+   * @param progress - Optional partial progress to merge before saving
    */
   async saveProgress(progress?: Partial<T>): Promise<boolean> {
     try {
@@ -112,6 +98,7 @@ export class GameProgressManager<T extends Record<string, unknown>> {
         this.currentProgress = { ...this.currentProgress, ...progress };
       }
 
+      // Update metadata
       const progressWithMeta = {
         ...this.currentProgress,
         lastPlayedAt: Date.now(),
@@ -119,20 +106,31 @@ export class GameProgressManager<T extends Record<string, unknown>> {
 
       await setStorageItem(this.storageKey, progressWithMeta);
       this.isDirty = false;
-
+      
       return true;
     } catch (error) {
-      console.error(
-        `[GameProgressManager] Failed to save progress for ${this.gameId}:`,
-        error
-      );
+      console.error(`[ProgressManager] Failed to save progress for ${this.gameId}:`, error);
       return false;
     }
   }
 
   /**
-   * Update progress fields without saving to storage.
-   * Use saveProgress() to persist changes.
+   * Reset progress to defaults
+   */
+  async resetProgress(): Promise<void> {
+    this.currentProgress = { ...this.config.defaultProgress };
+    await this.saveProgress();
+  }
+
+  /**
+   * Get current progress (synchronous)
+   */
+  getProgress(): T {
+    return { ...this.currentProgress };
+  }
+
+  /**
+   * Update a subset of progress fields (marks as dirty for auto-save)
    */
   updateProgress(updates: Partial<T>): void {
     this.currentProgress = { ...this.currentProgress, ...updates };
@@ -140,35 +138,19 @@ export class GameProgressManager<T extends Record<string, unknown>> {
   }
 
   /**
-   * Get current progress (synchronous, returns copy).
+   * Start auto-save interval
    */
-  getProgress(): T {
-    return structuredClone(this.currentProgress);
-  }
-
-  /**
-   * Reset progress to defaults.
-   */
-  async resetProgress(): Promise<boolean> {
-    this.currentProgress = structuredClone(this.config.defaultProgress);
-    this.isDirty = false;
-    return this.saveProgress();
-  }
-
-  /**
-   * Start auto-save interval.
-   */
-  startAutoSave(intervalMs = 30000): void {
+  startAutoSave(intervalMs: number = 30000): void {
     this.stopAutoSave();
     this.autoSaveInterval = setInterval(() => {
       if (this.isDirty) {
-        void this.saveProgress();
+        this.saveProgress();
       }
     }, intervalMs);
   }
 
   /**
-   * Stop auto-save interval.
+   * Stop auto-save interval
    */
   stopAutoSave(): void {
     if (this.autoSaveInterval) {
@@ -178,59 +160,30 @@ export class GameProgressManager<T extends Record<string, unknown>> {
   }
 
   /**
-   * Clean up resources. Saves pending changes.
+   * Clean up resources
    */
   dispose(): void {
     this.stopAutoSave();
     if (this.isDirty) {
-      void this.saveProgress();
+      this.saveProgress();
     }
   }
 
   /**
-   * Extract version number from stored data.
+   * Migrate data from old schema version to current
+   * This is a placeholder - actual migrations would be game-specific
    */
-  private extractVersion(data: unknown): number {
-    if (typeof data === "object" && data !== null && "version" in data) {
-      const version = (data as Record<string, unknown>).version;
-      return typeof version === "number" ? version : 0;
-    }
-    return 0;
-  }
-
-  /**
-   * Migrate data from old schema version to current.
-   * Override this method in subclasses for custom migrations.
-   */
-  protected migrateSchema(oldData: unknown, fromVersion: number): unknown {
+  private migrateSchema(oldData: unknown, fromVersion: number): unknown {
     let migrated = oldData as Record<string, unknown>;
-
+    
+    // Example: version 0 → 1 migration
     if (fromVersion < 1) {
       migrated = {
         ...migrated,
         version: 1,
-        sessionsCompleted: 0,
       };
     }
 
     return migrated;
   }
-}
-
-/**
- * Factory function to create a progress manager for a game definition.
- * Returns null if the game doesn't have persistence configured.
- */
-export function createProgressManager<T extends Record<string, unknown>>(
-  gameId: string,
-  config: PersistenceConfig<T> | undefined
-): GameProgressManager<T> | null {
-  if (!config) {
-    return null;
-  }
-
-  return new GameProgressManager<T>({
-    gameId,
-    config,
-  });
 }

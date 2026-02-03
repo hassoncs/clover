@@ -55,6 +55,8 @@ import {
   type Match3Config,
 } from "./systems/Match3GameSystem";
 import { TuningPanel, hasTunables } from "@/components/game";
+import { GameDialog } from "@/components/game/GameDialog";
+import { getStorageItem, setStorageItem } from "@/lib/utils/storage";
 import {
   SlopcadeDebugBridge,
   type GameStateValue,
@@ -83,6 +85,7 @@ import {
 } from "./systems/runner/wrappers";
 import * as StateHelpers from "./runtime/GameStateHelpers";
 import { subscribeToGameEvents, type ReactGameState } from "./runtime/GameEventSubscriber";
+import { useGameProgressFromDefinition } from "./progress/useGameProgress";
 
 export interface GameRuntimeGodotProps {
   definition: GameDefinition;
@@ -101,6 +104,8 @@ export interface GameRuntimeGodotProps {
   ) => void;
   /** Called when Godot is fully initialized and textures are preloaded - safe to show the game */
   onReady?: () => void;
+  /** Called when the player requests the next level (for games with persistence) */
+  onNextLevel?: () => void;
 }
 
 const GAME_LOOP_INTERVAL = 16;
@@ -118,7 +123,9 @@ export function GameRuntimeGodot({
   preloadTextureUrls = [],
   onPreloadProgress,
   onReady,
+  onNextLevel,
 }: GameRuntimeGodotProps) {
+  const progressHook = useGameProgressFromDefinition(definition);
   const devToolsCheck = useDevToolsOptional();
   const bridgeRef = useRef<GodotBridge | null>(null);
   const physicsRef = useRef<Physics2D | null>(null);
@@ -266,7 +273,31 @@ export function GameRuntimeGodot({
       subscriptionsRef.current.push(inputEventUnsubRef.current);
 
       eventBusUnsubRef.current = subscribeToGameEvents(game.events, {
-        onGameStateChange: onGameEnd,
+        onGameStateChange: (state) => {
+          if (state === "won" && definition.persistence) {
+            const vars = game.gameState.vars;
+            const moveCount = (vars['moveCount'] as number) || 0;
+            const startTime = (vars['startTime'] as number) || 0;
+            
+            const stats = [];
+            
+            if (startTime > 0) {
+              const duration = (Date.now() - startTime) / 1000;
+              const minutes = Math.floor(duration / 60);
+              const seconds = Math.floor(duration % 60);
+              const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+              stats.push({ label: "Time", value: timeStr });
+            }
+            
+            if (moveCount > 0) {
+              stats.push({ label: "Moves", value: moveCount.toString() });
+            }
+            
+            setWinStats(stats);
+            setShowWinDialog(true);
+          }
+          onGameEnd?.(state);
+        },
         onScoreChange,
         setGameState,
         debug: true,
@@ -276,6 +307,7 @@ export function GameRuntimeGodot({
     [
       cleanupSubscriptions,
       definition.world.pixelsPerMeter,
+      definition.persistence,
       onGameEnd,
       onScoreChange,
     ]
@@ -316,6 +348,9 @@ export function GameRuntimeGodot({
     height: 0,
     scale: 1,
   });
+
+  const [showWinDialog, setShowWinDialog] = useState(false);
+  const [winStats, setWinStats] = useState<Array<{ label: string; value: string }>>([]);
 
   const handleVariableChange = useCallback((key: string, value: number) => {
     setGameState((prev) => ({
@@ -1325,6 +1360,7 @@ export function GameRuntimeGodot({
   }, []);
 
   const handleRestart = useCallback(() => {
+    setShowWinDialog(false);
     if (onRequestRestart) {
       onRequestRestart();
       return;
@@ -1364,13 +1400,67 @@ export function GameRuntimeGodot({
           initialVariables[key] = value;
         }
       }
+
+      let mergedVariables = { ...initialVariables };
+      if (progressHook?.progress) {
+        mergedVariables = {
+          ...mergedVariables,
+          ...(progressHook.progress as Record<string, any>),
+        };
+      }
+
       setGameState({
         time: 0,
         state: "ready",
-        variables: initialVariables,
+        variables: mergedVariables,
       });
     }
-  }, [onRequestRestart, definition, setupSubscriptions]);
+  }, [onRequestRestart, definition, setupSubscriptions, progressHook]);
+
+  const handleNextLevel = useCallback(async () => {
+    if (!definition.persistence) return;
+    
+    setShowWinDialog(false);
+    
+    try {
+      if (progressHook?.saveProgress && progressHook.progress) {
+        const progress = progressHook.progress as any;
+        const currentLevel = progress.currentLevel || 1;
+        const nextLevel = currentLevel + 1;
+        
+        await progressHook.saveProgress({
+          currentLevel: nextLevel,
+          highestLevelCompleted: Math.max(progress.highestLevelCompleted || 0, currentLevel),
+          totalLevelsCompleted: (progress.totalLevelsCompleted || 0) + 1,
+        });
+      } else if (definition.persistence.storageKey) {
+        const key = definition.persistence.storageKey;
+        const defaultProgress = definition.persistence.defaultProgress || {};
+        
+        const stored = (await getStorageItem(key, defaultProgress)) as Record<string, any>;
+        const currentLevel = (stored.currentLevel as number) || 1;
+        const nextLevel = currentLevel + 1;
+        
+        const newProgress = {
+          ...stored,
+          currentLevel: nextLevel,
+          highestLevelCompleted: Math.max((stored.highestLevelCompleted as number) || 0, currentLevel),
+          totalLevelsCompleted: ((stored.totalLevelsCompleted as number) || 0) + 1,
+        };
+        
+        await setStorageItem(key, newProgress);
+      }
+      
+      if (onNextLevel) {
+        onNextLevel();
+      } else if (onRequestRestart) {
+        onRequestRestart();
+      }
+    } catch (e) {
+      console.error("Failed to save progress for next level:", e);
+      if (onRequestRestart) onRequestRestart();
+    }
+  }, [definition.persistence, onNextLevel, onRequestRestart, progressHook]);
 
   const handleLayout = useCallback(
     (event: { nativeEvent: { layout: { width: number; height: number } } }) => {
@@ -1717,12 +1807,51 @@ export function GameRuntimeGodot({
           >
             <Text style={styles.buttonText}>Resume</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: "#888", marginTop: 12 }]}
-            onPress={handleRestart}
-          >
-            <Text style={styles.buttonText}>Restart</Text>
-          </TouchableOpacity>
+          {progressHook ? (
+            <>
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  { backgroundColor: "#888", marginTop: 12 },
+                ]}
+                onPress={handleRestart}
+              >
+                <Text style={styles.buttonText}>Reset Level</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  { backgroundColor: "#888", marginTop: 12 },
+                  ((progressHook.progress as any)?.level ?? 1) <= 1 && {
+                    opacity: 0.5,
+                  },
+                ]}
+                disabled={((progressHook.progress as any)?.level ?? 1) <= 1}
+                onPress={async () => {
+                  const currentLevel = (progressHook.progress as any)?.level;
+                  if (typeof currentLevel === "number" && currentLevel > 1) {
+                    await progressHook.saveProgress({
+                      level: currentLevel - 1,
+                    } as any);
+                    handleRestart();
+                  }
+                }}
+              >
+                <Text style={styles.buttonText}>Previous Level</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <TouchableOpacity
+              style={[
+                styles.button,
+                { backgroundColor: "#888", marginTop: 12 },
+              ]}
+              onPress={handleRestart}
+            >
+              <Text style={styles.buttonText}>Restart</Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
 
@@ -1740,7 +1869,7 @@ export function GameRuntimeGodot({
         </View>
       )}
 
-      {(gameState.state === "won" || gameState.state === "lost") && (
+      {(gameState.state === "won" || gameState.state === "lost") && !showWinDialog && (
         <View style={styles.overlay}>
           <Text style={styles.overlayTitle}>
             {gameState.state === "won" ? "🎉 You Win!" : "💀 Game Over"}
@@ -1759,6 +1888,25 @@ export function GameRuntimeGodot({
           )}
         </View>
       )}
+
+      <GameDialog
+        visible={showWinDialog}
+        title="Level Complete!"
+        message="Great job!"
+        stats={winStats}
+        buttons={[
+          {
+            label: "Next Level",
+            onPress: handleNextLevel,
+            variant: "primary",
+          },
+          {
+            label: "Replay Level",
+            onPress: handleRestart,
+            variant: "secondary",
+          },
+        ]}
+      />
 
       {__DEV__ && hasTunables(definition.variables as any) && (
         <TuningPanel

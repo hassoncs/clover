@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm vitest:*)",
+      "Bash(z:*)",
+      "Bash(wc:*)",
+      "Bash(ln:*)",
+      "Bash(find:*)",
+      "Bash(git add:*)",
+      "Bash(godot_project/scripts/utils/ )",
+      "Bash(godot_project/scripts/3d/GLBLoader.gd )",
+      "Bash(godot_project/scripts/bridge/CoordinateUtils.gd )",
+      "Bash(godot_project/scripts/bridge/UIManager.gd )",
+      "Bash(godot_project/scripts/bridge/VisualRenderer.gd )",
+      "Bash(godot_project/scripts/gamebridge/ )",
+      "Bash(godot_project/scripts/ui/ThemedCheckbox.gd )",
+      "Bash(godot_project/scripts/ui/ThemedUIComponent.gd )",
+      "Bash(godot_project/scripts/ui/UIButtonSystem.gd )",
+      "Bash(godot_project/scripts/world/BackgroundSystem.gd)",
+      "Bash(git commit:*)",
+      "Bash(/Applications/Godot.app/Contents/MacOS/Godot --headless --quit)",
+      "Bash(/Applications/Godot.app/Contents/MacOS/Godot:*)",
+      "Bash(godot_project/scripts/utils/EntityUtils.gd )",
+      "Bash(godot_project/scripts/utils/EntityUtils.gd.uid )",
+      "Bash(godot_project/scripts/entity/EntityFactory.gd )",
+      "Bash(godot_project/scripts/entity/EntityManager.gd )",
+      "Bash(godot_project/scripts/entity/TransformSystem.gd)"
+    ]
+  }
+}

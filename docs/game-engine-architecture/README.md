@@ -83,13 +83,11 @@ docs/game-engine-architecture/          (18 docs total)
 
 ## 🔥 Critical Findings
 
-### 1. **Entity Hierarchy Missing** 🔴 URGENT
+### 1. **Entity Hierarchy** ✅ IMPLEMENTED
 
-**Status**: Not implemented  
-**Impact**: Can't build complex multi-part entities  
-**Spec**: [IMPLEMENTATION-SPEC-001](./IMPLEMENTATION-SPEC-001-ENTITY-HIERARCHY.md)  
-**Effort**: 10 days  
-**Priority**: Must implement before Q2 2026
+**Status**: Implemented
+**Features**: `parentId`, `children[]`, `localTransform`, `worldTransform`
+**Spec**: [IMPLEMENTATION-SPEC-001](./IMPLEMENTATION-SPEC-001-ENTITY-HIERARCHY.md)
 
 ### 2. **Variable Tuning Metadata** 🟡 HIGH
 

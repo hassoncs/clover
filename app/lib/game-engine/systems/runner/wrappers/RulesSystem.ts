@@ -420,7 +420,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
               y,
               startX: entity.transform.x,
               startY: entity.transform.y,
-              startTime: elapsed,
+              startTime: ctx.elapsed,
               duration,
               easing,
             };

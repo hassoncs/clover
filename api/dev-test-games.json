@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-03T00:36:59.361Z",
+  "generatedAt": "2026-02-03T16:04:02.013Z",
   "games": [
     {
       "id": "ballSort",
@@ -42,15 +42,15 @@
           "heldBallId": "",
           "moveCount": 0,
           "startTime": 0,
-          "tube0_count": 3,
-          "tube1_count": 1,
-          "tube2_count": 0,
+          "tube0_count": 2,
+          "tube1_count": 2,
+          "tube2_count": 4,
           "tube3_count": 0,
           "tube4_count": 0,
           "tube5_count": 0,
           "tube0_topColor": 0,
           "tube1_topColor": 0,
-          "tube2_topColor": -1,
+          "tube2_topColor": 0,
           "tube3_topColor": -1,
           "tube4_topColor": -1,
           "tube5_topColor": -1
@@ -203,55 +203,22 @@
         ],
         "winCondition": {},
         "templates": {
-          "tubeWall": {
-            "id": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "visual": {
-              "type": "rect",
-              "width": 0.18,
-              "height": 6,
-              "color": "#888888"
-            },
-            "collider": {
-              "shape": "box",
-              "width": 0.18,
-              "height": 6
-            }
-          },
-          "tubeBottom": {
-            "id": "tubeBottom",
-            "tags": [
-              "tube-bottom"
-            ],
-            "visual": {
-              "type": "rect",
-              "width": 1.68,
-              "height": 0.18,
-              "color": "#888888"
-            },
-            "collider": {
-              "shape": "box",
-              "width": 1.68,
-              "height": 0.18
-            }
-          },
-          "tubeSensor": {
-            "id": "tubeSensor",
+          "tube": {
+            "id": "tube",
             "tags": [
               "tube"
             ],
             "visual": {
-              "type": "rect",
-              "width": 1.3199999999999998,
-              "height": 6,
-              "color": "#00000022"
+              "type": "image",
+              "imageUrl": "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort/tube.png",
+              "imageWidth": 1.68,
+              "imageHeight": 6
             },
             "collider": {
               "shape": "box",
               "width": 1.3199999999999998,
-              "height": 6
+              "height": 6,
+              "isSensor": true
             }
           },
           "tubeHoverHighlight": {
@@ -784,54 +751,9 @@
         },
         "entities": [
           {
-            "id": "tube-0-left",
-            "name": "Tube 0 Left Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": -6.235714285714286,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-0-right",
-            "name": "Tube 0 Right Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": -4.735714285714286,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-0-bottom",
-            "name": "Tube 0 Bottom",
-            "template": "tubeBottom",
-            "tags": [
-              "tube-bottom"
-            ],
-            "transform": {
-              "x": -5.485714285714286,
-              "y": -6.109999999999999,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-0-sensor",
-            "name": "Tube 0 Sensor",
-            "template": "tubeSensor",
+            "id": "tube-0",
+            "name": "Tube 0",
+            "template": "tube",
             "tags": [
               "tube",
               "tube-0"
@@ -845,54 +767,9 @@
             }
           },
           {
-            "id": "tube-1-left",
-            "name": "Tube 1 Left Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": -4.041428571428572,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-1-right",
-            "name": "Tube 1 Right Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": -2.541428571428572,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-1-bottom",
-            "name": "Tube 1 Bottom",
-            "template": "tubeBottom",
-            "tags": [
-              "tube-bottom"
-            ],
-            "transform": {
-              "x": -3.291428571428572,
-              "y": -6.109999999999999,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-1-sensor",
-            "name": "Tube 1 Sensor",
-            "template": "tubeSensor",
+            "id": "tube-1",
+            "name": "Tube 1",
+            "template": "tube",
             "tags": [
               "tube",
               "tube-1"
@@ -906,54 +783,9 @@
             }
           },
           {
-            "id": "tube-2-left",
-            "name": "Tube 2 Left Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": -1.8471428571428576,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-2-right",
-            "name": "Tube 2 Right Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": -0.34714285714285786,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-2-bottom",
-            "name": "Tube 2 Bottom",
-            "template": "tubeBottom",
-            "tags": [
-              "tube-bottom"
-            ],
-            "transform": {
-              "x": -1.0971428571428579,
-              "y": -6.109999999999999,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-2-sensor",
-            "name": "Tube 2 Sensor",
-            "template": "tubeSensor",
+            "id": "tube-2",
+            "name": "Tube 2",
+            "template": "tube",
             "tags": [
               "tube",
               "tube-2"
@@ -967,54 +799,9 @@
             }
           },
           {
-            "id": "tube-3-left",
-            "name": "Tube 3 Left Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": 0.3471428571428561,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-3-right",
-            "name": "Tube 3 Right Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": 1.8471428571428559,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-3-bottom",
-            "name": "Tube 3 Bottom",
-            "template": "tubeBottom",
-            "tags": [
-              "tube-bottom"
-            ],
-            "transform": {
-              "x": 1.097142857142856,
-              "y": -6.109999999999999,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-3-sensor",
-            "name": "Tube 3 Sensor",
-            "template": "tubeSensor",
+            "id": "tube-3",
+            "name": "Tube 3",
+            "template": "tube",
             "tags": [
               "tube",
               "tube-3"
@@ -1028,54 +815,9 @@
             }
           },
           {
-            "id": "tube-4-left",
-            "name": "Tube 4 Left Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": 2.54142857142857,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-4-right",
-            "name": "Tube 4 Right Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": 4.04142857142857,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-4-bottom",
-            "name": "Tube 4 Bottom",
-            "template": "tubeBottom",
-            "tags": [
-              "tube-bottom"
-            ],
-            "transform": {
-              "x": 3.29142857142857,
-              "y": -6.109999999999999,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-4-sensor",
-            "name": "Tube 4 Sensor",
-            "template": "tubeSensor",
+            "id": "tube-4",
+            "name": "Tube 4",
+            "template": "tube",
             "tags": [
               "tube",
               "tube-4"
@@ -1089,54 +831,9 @@
             }
           },
           {
-            "id": "tube-5-left",
-            "name": "Tube 5 Left Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": 4.735714285714284,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-5-right",
-            "name": "Tube 5 Right Wall",
-            "template": "tubeWall",
-            "tags": [
-              "tube-wall"
-            ],
-            "transform": {
-              "x": 6.235714285714284,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-5-bottom",
-            "name": "Tube 5 Bottom",
-            "template": "tubeBottom",
-            "tags": [
-              "tube-bottom"
-            ],
-            "transform": {
-              "x": 5.485714285714284,
-              "y": -6.109999999999999,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-5-sensor",
-            "name": "Tube 5 Sensor",
-            "template": "tubeSensor",
+            "id": "tube-5",
+            "name": "Tube 5",
+            "template": "tube",
             "tags": [
               "tube",
               "tube-5"
@@ -1186,15 +883,15 @@
           {
             "id": "ball-2",
             "name": "Ball 2",
-            "template": "ball0",
+            "template": "ball1",
             "tags": [
               "ball",
-              "color-0",
-              "in-container-tube-0"
+              "color-1",
+              "in-container-tube-1"
             ],
             "transform": {
-              "x": -5.485714285714286,
-              "y": -2.7799999999999976,
+              "x": -3.291428571428572,
+              "y": -5.419999999999998,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1211,7 +908,75 @@
             ],
             "transform": {
               "x": -3.291428571428572,
+              "y": -4.099999999999998,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "ball-4",
+            "name": "Ball 4",
+            "template": "ball1",
+            "tags": [
+              "ball",
+              "color-1",
+              "in-container-tube-2"
+            ],
+            "transform": {
+              "x": -1.0971428571428579,
               "y": -5.419999999999998,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "ball-5",
+            "name": "Ball 5",
+            "template": "ball1",
+            "tags": [
+              "ball",
+              "color-1",
+              "in-container-tube-2"
+            ],
+            "transform": {
+              "x": -1.0971428571428579,
+              "y": -4.099999999999998,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "ball-6",
+            "name": "Ball 6",
+            "template": "ball1",
+            "tags": [
+              "ball",
+              "color-1",
+              "in-container-tube-2"
+            ],
+            "transform": {
+              "x": -1.0971428571428579,
+              "y": -2.7799999999999976,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            }
+          },
+          {
+            "id": "ball-7",
+            "name": "Ball 7",
+            "template": "ball0",
+            "tags": [
+              "ball",
+              "color-0",
+              "in-container-tube-2"
+            ],
+            "transform": {
+              "x": -1.0971428571428579,
+              "y": -1.4599999999999973,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1

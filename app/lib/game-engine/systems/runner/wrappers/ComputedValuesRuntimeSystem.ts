@@ -3,7 +3,8 @@ import type { RuntimeSystem, SystemContext, UpdateContext } from '../types';
 import { ComputedValueSystem } from '@slopcade/shared';
 
 export interface ComputedValuesSystemConfig {
-  system?: ComputedValueSystem;
+  /** The ComputedValueSystem instance to use. Required - no fallback creation. */
+  system: ComputedValueSystem;
 }
 
 export interface ComputedValuesSystemState {
@@ -32,7 +33,7 @@ export class ComputedValuesRuntimeSystem implements RuntimeSystem<ComputedValues
   }
   
   initialize(_ctx: SystemContext, _config: ComputedValuesSystemConfig): void {
-    this.system = this.config.system ?? new ComputedValueSystem();
+    this.system = this.config.system;
   }
   
   update(_ctx: UpdateContext, _state: ComputedValuesSystemState): void {

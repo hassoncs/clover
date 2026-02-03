@@ -4,6 +4,8 @@ import type { RuleContext } from '../types';
 import type { RuntimeEntity } from '../../types';
 
 const LIFT_HEIGHT = 2.0;
+// Bottom padding matches Ball Sort tube wall thickness for slot positioning
+const TUBE_BOTTOM_PADDING = 0.18;  // = TUBE_WALL_THICKNESS * WORLD_SCALE from game.ts
 
 export class BallSortActionExecutor implements ActionExecutor<BallSortPickupAction | BallSortDropAction | BallSortCheckWinAction> {
   execute(action: BallSortPickupAction | BallSortDropAction | BallSortCheckWinAction, context: RuleContext): void {
@@ -21,31 +23,22 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
   }
 
   private getTubeDimensions(tubeIndex: number, context: RuleContext): { x: number; topY: number; bottomY: number; height: number } | null {
-    const tubeSensor = context.entityManager.getEntity(`tube-${tubeIndex}-sensor`);
-    const tubeBottom = context.entityManager.getEntity(`tube-${tubeIndex}-bottom`);
+    const tube = context.entityManager.getEntity(`tube-${tubeIndex}`);
     
-    if (!tubeSensor) return null;
+    if (!tube) return null;
     
-    const tubeX = tubeSensor.transform.x;
-    const tubeCenterY = tubeSensor.transform.y;
+    const tubeX = tube.transform.x;
+    const tubeCenterY = tube.transform.y;
     
     let tubeHeight = 6.0;
-    if (tubeSensor.collider?.height) {
-      tubeHeight = tubeSensor.collider.height;
-    } else if (tubeSensor.visual && 'height' in tubeSensor.visual) {
-      tubeHeight = (tubeSensor.visual as { height: number }).height;
+    if (tube.collider?.height) {
+      tubeHeight = tube.collider.height;
+    } else if (tube.visual && 'height' in tube.visual) {
+      tubeHeight = (tube.visual as { height: number }).height;
     }
     
     const tubeTopY = tubeCenterY + tubeHeight / 2;
-    let tubeBottomY = tubeCenterY - tubeHeight / 2;
-    
-    if (tubeBottom) {
-      let bottomThickness = 0.18;
-      if (tubeBottom.collider?.height) {
-        bottomThickness = tubeBottom.collider.height;
-      }
-      tubeBottomY = tubeBottom.transform.y + bottomThickness / 2;
-    }
+    const tubeBottomY = tubeCenterY - tubeHeight / 2 + TUBE_BOTTOM_PADDING;
     
     return { x: tubeX, topY: tubeTopY, bottomY: tubeBottomY, height: tubeHeight };
   }
@@ -241,7 +234,7 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
     const targetEntityId = tapEvent?.targetEntityId;
     if (!targetEntityId) return -1;
 
-    const match = targetEntityId.match(/tube-(\d+)-sensor/);
+    const match = targetEntityId.match(/^tube-(\d+)$/);
     if (match) {
       return parseInt(match[1], 10);
     }

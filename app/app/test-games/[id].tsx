@@ -7,7 +7,9 @@ import { AssetLoadingScreen } from "@/components/game";
 import { TESTGAMES_BY_ID, loadTestGame, type TestGameId } from "@/lib/registry/generated/testGames";
 import { trpc } from "@/lib/trpc/client";
 import { useGamePreloader } from "@/lib/hooks/useGamePreloader";
+import { useGameProgressFromDefinition } from "@/lib/game-engine/progress";
 import type { GameDefinition } from "@slopcade/shared";
+import type { BallSortProgress } from "@slopcade/shared";
 
 export default function TestGameRunScreen() {
   const router = useRouter();
@@ -44,6 +46,22 @@ export default function TestGameRunScreen() {
     load();
   }, [entry]);
 
+  const progressResult = useGameProgressFromDefinition<BallSortProgress>(gameDefinition ?? {} as GameDefinition);
+
+  useEffect(() => {
+    if (!progressResult || !loadedDefinitionRef.current) return;
+    
+    const { progress, isLoading } = progressResult;
+    if (isLoading) return;
+
+    if (loadedDefinitionRef.current.metadata.id === 'test-ball-sort') {
+      import('@/lib/test-games/games/ballSort/game').then((mod) => {
+        const newDefinition = mod.createBallSortGame(progress.currentLevel);
+        setGameDefinition(newDefinition);
+      });
+    }
+  }, [progressResult]);
+
   useEffect(() => {
     if (gameDefinition && !isLoadingDefinition && phase === 'idle') {
       startPreload();
@@ -72,6 +90,10 @@ export default function TestGameRunScreen() {
     startPreload();
   }, [reset, startPreload, loadingOpacity]);
 
+  const handleGameEnd = useCallback(async (state: "won" | "lost") => {
+    // Auto-save logic moved to GameRuntime "Next Level" button
+  }, []);
+
   if (!entry) {
     return (
       <SafeAreaView className="flex-1 bg-gray-900 items-center justify-center p-6">
@@ -83,7 +105,7 @@ export default function TestGameRunScreen() {
     );
   }
 
-  if (isLoadingDefinition) {
+  if (isLoadingDefinition || progressResult?.isLoading) {
     return (
       <SafeAreaView className="flex-1 bg-gray-900 items-center justify-center">
         <ActivityIndicator size="large" color="#4CAF50" />
@@ -120,6 +142,8 @@ export default function TestGameRunScreen() {
           imageUrls={imageUrls}
           onBackToMenu={handleBack}
           onRequestRestart={handleReset}
+          onGameEnd={handleGameEnd}
+          onNextLevel={handleReset}
           debugMode={isDebugMode}
           onReady={handleGodotReady}
         />
@@ -157,16 +181,20 @@ interface GameRuntimeWrapperProps {
   imageUrls: string[];
   onBackToMenu: () => void;
   onRequestRestart: () => void;
+  onGameEnd?: (state: "won" | "lost") => void;
+  onNextLevel?: () => void;
   debugMode: boolean;
   onReady?: () => void;
 }
 
-function GameRuntimeWrapper({ definition, imageUrls, onBackToMenu, onRequestRestart, debugMode, onReady }: GameRuntimeWrapperProps) {
+function GameRuntimeWrapper({ definition, imageUrls, onBackToMenu, onRequestRestart, onGameEnd, onNextLevel, debugMode, onReady }: GameRuntimeWrapperProps) {
   const [GameRuntime, setGameRuntime] = useState<React.ComponentType<{
     definition: GameDefinition;
     showHUD: boolean;
     onBackToMenu: () => void;
     onRequestRestart: () => void;
+    onGameEnd?: (state: "won" | "lost") => void;
+    onNextLevel?: () => void;
     debugMode: boolean;
     preloadTextureUrls?: string[];
     onReady?: () => void;
@@ -188,6 +216,8 @@ function GameRuntimeWrapper({ definition, imageUrls, onBackToMenu, onRequestRest
       showHUD={!debugMode}
       onBackToMenu={onBackToMenu}
       onRequestRestart={onRequestRestart}
+      onGameEnd={onGameEnd}
+      onNextLevel={onNextLevel}
       debugMode={debugMode}
       preloadTextureUrls={imageUrls}
       onReady={onReady}

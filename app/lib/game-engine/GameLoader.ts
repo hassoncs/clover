@@ -1,17 +1,14 @@
 import type { GameDefinition, GameEntity, GameJoint } from '@slopcade/shared';
 import type { Physics2D } from '../physics2d/Physics2D';
 import type { JointId } from '../physics2d/types';
-import type { GodotBridge } from '../godot/types';
 import { EntityManager } from './EntityManager';
-import { createBehaviorExecutor, BehaviorExecutor } from './BehaviorExecutor';
-import type { GameRuntime, GameState, GameEventBus } from './runtime/types';
+import type { GameState, GameEventBus } from './runtime/types';
 import { createGameState } from './runtime/GameStateHelpers';
 import { createGameEventBus } from './runtime/GameEventBus';
 
 export interface LoadedGame {
   definition: GameDefinition;
   entityManager: EntityManager;
-  behaviorExecutor: BehaviorExecutor;
   pixelsPerMeter: number;
   joints: Map<string, JointId>;
   gameState: GameState;
@@ -52,14 +49,12 @@ export class GameLoader {
       }
     }
 
-    const behaviorExecutor = createBehaviorExecutor();
     const gameState = createGameState(definition);
     const events = createGameEventBus();
 
     return {
       definition,
       entityManager,
-      behaviorExecutor,
       pixelsPerMeter,
       joints,
       gameState,

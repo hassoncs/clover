@@ -38,7 +38,7 @@ export function registerDebugTools(server: McpServer, state: GameInspectorState)
           return { error: "No game system runner found. Is the game fully initialized?" };
         }
 
-        const rules = runner.getSystem?.('rules')?.rulesEvaluator;
+        const rules = runner.getSystem?.('rules');
         const em = runner.getSystem?.('entity-manager')?.entityManager;
 
         const allTags = new Set<string>();
@@ -67,21 +67,22 @@ export function registerDebugTools(server: McpServer, state: GameInspectorState)
           }
         }
 
+        const runtimeState = rules?.runtimeState;
+        const variables = runtimeState?.vars ?? {};
+        const stateMachines = runtimeState?.stateMachines;
         const response: Record<string, unknown> = {
-          gameState: rules?.getGameStateValue?.() ?? "unknown",
-          score: rules?.getScore?.() ?? 0,
-          lives: rules?.getLives?.() ?? 0,
-          elapsed: Math.round((rules?.getElapsed?.() ?? 0) * 100) / 100,
-          variables: rules?.getVariables?.() ?? {},
-          stateMachines: (() => {
-            const states = rules?.getStateMachineStates?.();
-            if (!states) return undefined;
+          gameState: (variables as Record<string, unknown>).gameState ?? runtimeState?.gameState ?? "unknown",
+          score: (variables as Record<string, unknown>).score ?? 0,
+          lives: (variables as Record<string, unknown>).lives ?? 0,
+          elapsed: 0,
+          variables,
+          stateMachines: stateMachines ? (() => {
             const simplified: Record<string, string> = {};
-            for (const [id, state] of Object.entries(states)) {
-              simplified[id] = (state as { currentState: string }).currentState;
+            for (const [id, sm] of Object.entries(stateMachines)) {
+              simplified[id] = (sm as { currentState: string }).currentState;
             }
             return simplified;
-          })(),
+          })() : undefined,
           entityCounts,
         };
 
@@ -160,7 +161,7 @@ export function registerDebugTools(server: McpServer, state: GameInspectorState)
             const wrappedCode = `
               const runtime = window.__GAME_RUNTIME__;
               const runner = runtime?.refs?.gameSystemRunner?.current;
-              const rules = runner?.getSystem?.('rules')?.rulesEvaluator;
+              const rules = runner?.getSystem?.('rules');
               const em = runner?.getSystem?.('entity-manager')?.entityManager;
               const getVar = (name) => rules?.getVariable(name);
               const setVar = (name, val) => rules?.setVariable(name, val);
@@ -189,7 +190,7 @@ export function registerDebugTools(server: McpServer, state: GameInspectorState)
                 const wrappedWithReturn = `
                   const runtime = window.__GAME_RUNTIME__;
                   const runner = runtime?.refs?.gameSystemRunner?.current;
-                  const rules = runner?.getSystem?.('rules')?.rulesEvaluator;
+                  const rules = runner?.getSystem?.('rules');
                   const em = runner?.getSystem?.('entity-manager')?.entityManager;
                   const getVar = (name) => rules?.getVariable(name);
                   const setVar = (name, val) => rules?.setVariable(name, val);
@@ -383,6 +384,54 @@ export function registerDebugTools(server: McpServer, state: GameInspectorState)
               ? "Script logs found in sandbox buffer (reliable)" 
               : "No script logs in sandbox buffer yet",
           },
+        }, null, 2) }],
+      };
+    }
+  );
+
+  server.tool(
+    "get_console_logs",
+    "Get captured console logs from the game. Essential for debugging - returns all console.log, console.warn, console.error output from the game code.",
+    {
+      filter: z.string().optional().describe("Filter logs containing this string (case-insensitive)"),
+      limit: z.number().optional().describe("Maximum number of logs to return (default: 100, most recent first)"),
+      since: z.number().optional().describe("Only return logs since this timestamp (ms since epoch)"),
+      clear: z.boolean().optional().describe("Clear logs after retrieving (default: false)"),
+    },
+    async (args) => {
+      const filter = args.filter as string | undefined;
+      const limit = (args.limit as number | undefined) ?? 100;
+      const since = args.since as number | undefined;
+      const clear = (args.clear as boolean | undefined) ?? false;
+
+      let logs = [...state.consoleLogs];
+      
+      if (since !== undefined) {
+        logs = logs.filter(log => log.timestamp >= since);
+      }
+      
+      if (filter) {
+        const lowerFilter = filter.toLowerCase();
+        logs = logs.filter(log => log.text.toLowerCase().includes(lowerFilter));
+      }
+      
+      const recentLogs = logs.slice(-limit);
+      
+      if (clear) {
+        state.consoleLogs.length = 0;
+      }
+
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify({
+          totalCaptured: state.consoleLogs.length,
+          returned: recentLogs.length,
+          filtered: filter ? true : false,
+          logs: recentLogs.map(log => ({
+            type: log.type,
+            text: log.text,
+            timestamp: log.timestamp,
+            relativeTime: `${((log.timestamp - (recentLogs[0]?.timestamp ?? log.timestamp)) / 1000).toFixed(3)}s`,
+          })),
         }, null, 2) }],
       };
     }

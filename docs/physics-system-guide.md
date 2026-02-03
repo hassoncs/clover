@@ -45,7 +45,7 @@ ball: {
     density: 2,
     friction: 0.1,
     restitution: 0.6,
-    bullet: true,  // Prevent tunneling at high speeds
+    ccd: true,  // Continuous collision detection - prevents tunneling at high speeds
   }
 }
 ```
@@ -259,7 +259,7 @@ ball: {
   density: 2,        // Heavy
   friction: 0.1,     // Low friction for sliding
   restitution: 0.6,  // Medium bouncy
-  bullet: true,      // Prevent tunneling
+  ccd: true,      // Prevent tunneling
 }
 
 // Bumper - static, super bouncy
@@ -295,7 +295,7 @@ ball: {
   density: 1,
   friction: 0,       // No friction = slides forever
   restitution: 1,    // Perfect bounce
-  bullet: true,
+  ccd: true,
 }
 
 // Brick - static, bouncy
@@ -449,7 +449,7 @@ The AI validator ensures physics configs are valid:
 
 ### ❌ "Fast projectile goes through walls!"
 **Cause**: Tunneling at high speeds
-**Fix**: Add `bullet: true`
+**Fix**: Add `ccd: true`
 
 ### ❌ "Sensor doesn't detect collision!"
 **Cause**: Sensors only detect—they don't physically collide
@@ -490,7 +490,7 @@ The AI validator ensures physics configs are valid:
 { bodyType: "dynamic", shape: "circle", density: 1, restitution: 0.8 }
 
 // Fast projectile - prevents tunneling
-{ bodyType: "dynamic", density: 1, bullet: true }
+{ bodyType: "dynamic", density: 1, ccd: true }
 
 // Bouncy bumper - kicks objects away
 { bodyType: "static", density: 0, restitution: 1.5 }

@@ -446,6 +446,9 @@ export function createWebGodotBridge(): GodotBridge {
     },
 
     dispose() {
+      // Clear game state in Godot to prevent stale state on remount
+      getGodotBridge()?.clearGame();
+      
       collisionCallbacks.length = 0;
       destroyCallbacks.length = 0;
       entitySpawnedCallbacks.length = 0;

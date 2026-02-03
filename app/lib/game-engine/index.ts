@@ -17,4 +17,3 @@ export type { CameraConfig, ViewportSize, CameraTransform } from './CameraSystem
 export type { ViewportRect, ViewportConfig } from './ViewportSystem';
 export * from './BehaviorContext';
 export * from './types';
-export * from './progress';

@@ -47,16 +47,29 @@ const tubePositions = distributeRow({
  * Difficulty scales with level progression.
  */
 export function getPuzzleConfigForLevel(level: number): PuzzleConfig {
-  // Difficulty increases every 5 levels, max at 10
-  const difficulty = Math.min(10, 1 + Math.floor((level - 1) / 5));
+  // Level 1: Easy start with 2 colors
+  // Levels 2-3: 3 colors
+  // Levels 4+: Scale with level (max 8 colors)
+  let numColors: number;
+  if (level === 1) {
+    numColors = 2;
+  } else if (level <= 3) {
+    numColors = 3;
+  } else {
+    numColors = Math.min(8, 4 + Math.floor((level - 4) / 10));
+  }
 
-  // More colors unlock at higher levels (max 8 colors)
-  const numColors = Math.min(8, 4 + Math.floor((level - 1) / 10));
+  // Levels 1-3: 1 extra tube
+  // Levels 4+: 2 extra tubes
+  const extraTubes = level <= 3 ? 1 : 2;
+
+  // Difficulty: Level 1 starts at 1, then increases every 5 levels (max 10)
+  const difficulty = Math.min(10, 1 + Math.floor((level - 1) / 5));
 
   return {
     numColors,
     ballsPerColor: BALLS_PER_TUBE,
-    extraTubes: NUM_TUBES - numColors,
+    extraTubes,
     difficulty,
     seed: level * 1000, // Deterministic seed for each level
   };
@@ -124,56 +137,10 @@ function createTubeEntities(): GameEntity[] {
     const x = tubePositions[i].x;
     const tubeY = cy(TUBE_Y);
 
-    // Left wall
     entities.push({
-      id: `tube-${i}-left`,
-      name: `Tube ${i} Left Wall`,
-      template: "tubeWall",
-      tags: ["tube-wall"],
-      transform: {
-        x: x - TUBE_WIDTH / 2 + TUBE_WALL_THICKNESS / 2,
-        y: tubeY,
-        angle: 0,
-        scaleX: 1,
-        scaleY: 1,
-      },
-    });
-
-    // Right wall
-    entities.push({
-      id: `tube-${i}-right`,
-      name: `Tube ${i} Right Wall`,
-      template: "tubeWall",
-      tags: ["tube-wall"],
-      transform: {
-        x: x + TUBE_WIDTH / 2 - TUBE_WALL_THICKNESS / 2,
-        y: tubeY,
-        angle: 0,
-        scaleX: 1,
-        scaleY: 1,
-      },
-    });
-
-    // Bottom
-    entities.push({
-      id: `tube-${i}-bottom`,
-      name: `Tube ${i} Bottom`,
-      template: "tubeBottom",
-      tags: ["tube-bottom"],
-      transform: {
-        x: x,
-        y: cy(TUBE_Y + TUBE_HEIGHT / 2 - TUBE_WALL_THICKNESS / 2),
-        angle: 0,
-        scaleX: 1,
-        scaleY: 1,
-      },
-    });
-
-    // Sensor
-    entities.push({
-      id: `tube-${i}-sensor`,
-      name: `Tube ${i} Sensor`,
-      template: "tubeSensor",
+      id: `tube-${i}`,
+      name: `Tube ${i}`,
+      template: "tube",
       tags: ["tube", `tube-${i}`],
       transform: {
         x: x,
@@ -219,15 +186,9 @@ export const ballSortPersistence: PersistenceConfig<BallSortProgress> = {
  * This allows level-based progression with persistence.
  */
 export function createBallSortGame(level: number = 1): GameDefinition {
-  let tubeLayout: number[][];
-  
-  if (level === 1) {
-    tubeLayout = [[0, 0, 0], [0], [], [], [], []];
-  } else {
-    const puzzleConfig = getPuzzleConfigForLevel(level);
-    const generatedPuzzle = generateVerifiedPuzzle(puzzleConfig);
-    tubeLayout = generatedPuzzle.tubes;
-  }
+  const puzzleConfig = getPuzzleConfigForLevel(level);
+  const generatedPuzzle = generateVerifiedPuzzle(puzzleConfig);
+  const tubeLayout = generatedPuzzle.tubes;
 
   const tubeContainers = createTubeContainers();
   const tubeEntities = createTubeEntities();
@@ -312,49 +273,20 @@ export function createBallSortGame(level: number = 1): GameDefinition {
     ],
     winCondition: {},
     templates: {
-      tubeWall: {
-        id: "tubeWall",
-        tags: ["tube-wall"],
-        visual: {
-          type: "rect",
-          width: TUBE_WALL_THICKNESS,
-          height: TUBE_HEIGHT,
-          color: "#888888",
-        },
-        collider: {
-          shape: "box" as const,
-          width: TUBE_WALL_THICKNESS,
-          height: TUBE_HEIGHT,
-        },
-      },
-      tubeBottom: {
-        id: "tubeBottom",
-        tags: ["tube-bottom"],
-        visual: {
-          type: "rect",
-          width: TUBE_WIDTH,
-          height: TUBE_WALL_THICKNESS,
-          color: "#888888",
-        },
-        collider: {
-          shape: "box" as const,
-          width: TUBE_WIDTH,
-          height: TUBE_WALL_THICKNESS,
-        },
-      },
-      tubeSensor: {
-        id: "tubeSensor",
+      tube: {
+        id: "tube",
         tags: ["tube"],
         visual: {
-          type: "rect",
-          width: TUBE_WIDTH - TUBE_WALL_THICKNESS * 2,
-          height: TUBE_HEIGHT,
-          color: "#00000022",
+          type: "image",
+          imageUrl: `${ASSET_BASE}/tube.png`,
+          imageWidth: TUBE_WIDTH,
+          imageHeight: TUBE_HEIGHT,
         },
         collider: {
           shape: "box" as const,
           width: TUBE_WIDTH - TUBE_WALL_THICKNESS * 2,
           height: TUBE_HEIGHT,
+          isSensor: true,
         },
       },
       tubeHoverHighlight: {
