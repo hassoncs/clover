@@ -20,7 +20,7 @@ describe('Asset Resolution', () => {
     const result = compileBundle('/bundle', { fileReader });
 
     expect(result.success).toBe(true);
-    expect(result.gameDefinition?.assetPacks?.default?.assets.ball).toMatchObject({
+    expect(result.rawData.assets?.ball).toMatchObject({
       localPath: 'ball.png',
       type: 'image',
     });
@@ -38,14 +38,13 @@ describe('Asset Resolution', () => {
     const result = compileBundle('/bundle', { fileReader });
 
     expect(result.success).toBe(true);
-    expect(result.gameDefinition?.assetPacks?.default?.assets.background).toMatchObject({
-      imageUrl: 'https://cdn.example.com/bg.png',
+    expect(result.rawData.assets?.background).toMatchObject({
+      remoteUrl: 'https://cdn.example.com/bg.png',
       type: 'image',
     });
-    expect(result.gameDefinition?.assetPacks?.default?.assets.background.localPath).toBeUndefined();
   });
 
-  it('outputs both localPath and imageUrl when both provided', () => {
+  it('outputs both localPath and remoteUrl when both provided', () => {
     const files = new Map<string, string>([
       ['manifest.json', JSON.stringify({ name: 'test-game', version: '1.0.0' })],
       ['assets.json', JSON.stringify({
@@ -62,8 +61,8 @@ describe('Asset Resolution', () => {
     const result = compileBundle('/bundle', { fileReader });
 
     expect(result.success).toBe(true);
-    expect(result.gameDefinition?.assetPacks?.default?.assets.ball).toMatchObject({
-      imageUrl: 'https://cdn.example.com/ball.png',
+    expect(result.rawData.assets?.ball).toMatchObject({
+      remoteUrl: 'https://cdn.example.com/ball.png',
       localPath: 'ball.png',
       type: 'image',
     });
@@ -121,8 +120,8 @@ describe('Asset Resolution', () => {
     const result = compileBundle('/bundle', { fileReader });
 
     expect(result.success).toBe(true);
-    expect(result.gameDefinition?.assetPacks?.default?.assets.ball).toMatchObject({
-      imageUrl: 'https://cdn.example.com/ball.png',
+    expect(result.rawData.assets?.ball).toMatchObject({
+      path: 'https://cdn.example.com/ball.png',
       type: 'image',
     });
   });
@@ -143,7 +142,7 @@ describe('Asset Resolution', () => {
     const result = compileBundle('/bundle', { fileReader });
 
     expect(result.success).toBe(true);
-    expect(result.gameDefinition?.assetPacks?.default?.assets.ball).toBeDefined();
-    expect(result.gameDefinition?.assetPacks?.default?.assets.paddle).toBeDefined();
+    expect(result.rawData.assets?.ball).toBeDefined();
+    expect(result.rawData.assets?.paddle).toBeDefined();
   });
 });

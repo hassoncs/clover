@@ -1,5 +1,5 @@
 import { resolveAssetReference } from './asset-url';
-import type { GameDefinition, ImageField, GameMetadata, AssetPack, ParallaxLayer, StaticBackground, BackgroundConfig } from '../types/GameDefinition';
+import type { GameDefinition, ImageField, GameMetadata, ParallaxLayer, StaticBackground, BackgroundConfig } from '../types/GameDefinition';
 
 export interface AssetResolverContext {
   baseUrl: string;
@@ -55,19 +55,6 @@ function resolveMetadataAssets(
   return result;
 }
 
-function resolveAssetPack(
-  pack: AssetPack,
-  context: AssetResolverContext
-): AssetPack {
-  const resolvedAssets: Record<string, typeof pack.assets[string]> = {};
-
-  for (const [key, asset] of Object.entries(pack.assets)) {
-    resolvedAssets[key] = resolveImageField(asset, context);
-  }
-
-  return { ...pack, assets: resolvedAssets };
-}
-
 function resolveParallaxLayer(
   layer: ParallaxLayer,
   context: AssetResolverContext
@@ -100,13 +87,6 @@ export function resolveGameDefinitionAssets(
   const result: GameDefinition = { ...definition };
 
   result.metadata = resolveMetadataAssets(definition.metadata, context);
-
-  if (definition.assetPacks) {
-    result.assetPacks = {};
-    for (const [packKey, pack] of Object.entries(definition.assetPacks)) {
-      result.assetPacks[packKey] = resolveAssetPack(pack, context);
-    }
-  }
 
   if (definition.background) {
     result.background = resolveBackground(definition.background, context);

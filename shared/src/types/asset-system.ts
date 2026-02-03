@@ -1,253 +1,108 @@
 import { z } from 'zod';
-import type { AssetSource } from './GameDefinition';
-
-export const PromptDefaultsSchema = z.object({
-  themePrompt: z.string().optional(),
-  styleOverride: z.string().optional(),
-  theme: z.string().optional(),
-  modelId: z.string().optional(),
-  negativePrompt: z.string().optional(),
-  customPrompts: z.record(z.string()).optional(),
-});
-
-export const DEFAULT_THEMES = [
-  'Dark fantasy medieval castle',
-  'Bright cartoon forest',
-  'Sci-fi space station',
-  'Cozy cottage interior',
-] as const;
-
-/** @deprecated Use themePrompt string instead of enum-based styling */
-export const DEFAULT_STYLES = [
-  'pixel',
-  'cartoon',
-  '3d',
-  'flat',
-] as const;
 
 export const AssetSourceSchema = z.enum(['generated', 'uploaded', 'none']);
+export type AssetSource = z.infer<typeof AssetSourceSchema>;
 
-export type GenerationStatus = 'queued' | 'running' | 'succeeded' | 'failed' | 'canceled';
+export const ThemeSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  promptModifier: z.string(),
+  style: z.enum(['pixel', 'cartoon', '3d', 'flat']).optional(),
+  creatorUserId: z.string().optional(),
+  isPublic: z.boolean(),
+  createdAt: z.number(),
+  updatedAt: z.number().optional(),
+});
 
-export interface GameAsset {
-  id: string;
-  ownerGameId?: string;
-  source: AssetSource;
-  imageUrl: string;
-  width?: number;
-  height?: number;
-  contentHash?: string;
-  createdAt: number;
-  deletedAt?: number;
-}
+export type Theme = z.infer<typeof ThemeSchema>;
 
-export interface AssetPlacement {
-  scale: number;
-  offsetX: number;
-  offsetY: number;
-  anchor?: { x: number; y: number };
-}
+export const AssetSchema = z.object({
+  id: z.string(),
+  r2Key: z.string(),
+  width: z.number().optional(),
+  height: z.number().optional(),
+  creatorUserId: z.string().optional(),
+  source: z.enum(['generated', 'uploaded']),
+  themeId: z.string().optional(),
+  compiledPrompt: z.string().optional(),
+  modelId: z.string().optional(),
+  createdAt: z.number(),
+});
 
-export interface PromptDefaults {
-  themePrompt?: string;
-  /** @deprecated Use themePrompt for hierarchical string-based styling */
-  styleOverride?: string;
-  theme?: string;
-  modelId?: string;
-  negativePrompt?: string;
-  customPrompts?: Record<string, string>; // templateId -> custom prompt override
-}
+export type Asset = z.infer<typeof AssetSchema>;
 
-export interface PromptComponents {
-  themePrompt?: string;
-  entityPrompt: string;
-  styleOverride?: string;
-  negativePrompt?: string;
-  positioningHint?: string;
-}
+export const AssetPackSchema = z.object({
+  id: z.string(),
+  baseGameId: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  themeId: z.string().optional(),
+  creatorUserId: z.string().optional(),
+  isComplete: z.boolean(),
+  createdAt: z.number(),
+  updatedAt: z.number().optional(),
+});
 
-export interface PhysicsContext {
-  shape: 'box' | 'circle' | 'polygon';
-  width?: number;
-  height?: number;
-  radius?: number;
-}
-
-export interface AssetPackV2 {
-  id: string;
-  gameId: string;
-  name: string;
-  description?: string;
-  promptDefaults?: PromptDefaults;
-  createdAt: number;
-  deletedAt?: number;
-}
-
-export interface AssetPackEntry {
-  id: string;
-  packId: string;
-  templateId: string;
-  assetId: string;
-  placement?: AssetPlacement;
-  lastGeneration?: GenerationResultSnapshot;
-}
-
-export interface GenerationResultSnapshot {
-  jobId: string;
-  taskId: string;
-  compiledPrompt: string;
-  createdAt: number;
-}
-
-export interface GenerationJob {
-  id: string;
-  gameId: string;
-  packId?: string;
-  status: GenerationStatus;
-  promptDefaults: PromptDefaults;
-  createdAt: number;
-  startedAt?: number;
-  finishedAt?: number;
-}
-
-export interface GenerationTask {
-  id: string;
-  jobId: string;
-  templateId: string;
-  status: GenerationStatus;
-  promptComponents: PromptComponents;
-  compiledPrompt: string;
-  compiledNegativePrompt?: string;
-  modelId?: string;
-  targetWidth: number;
-  targetHeight: number;
-  aspectRatio: string;
-  physicsContext: PhysicsContext;
-  scenarioRequestId?: string;
-  assetId?: string;
-  errorCode?: string;
-  errorMessage?: string;
-  createdAt: number;
-  startedAt?: number;
-  finishedAt?: number;
-}
-
-export interface AssetBindingRef {
-  assetId: string;
-  placement?: AssetPlacement;
-}
-
-export interface AssetSystemConfig {
-  activeAssetPackId?: string;
-  entityAssetOverrides?: Record<string, AssetBindingRef>;
-  baseAssetUrl?: string;
-}
-
-export const GenerationStatusSchema = z.enum(['queued', 'running', 'succeeded', 'failed', 'canceled']);
+export type AssetPack = z.infer<typeof AssetPackSchema>;
 
 export const AssetPlacementSchema = z.object({
   scale: z.number(),
   offsetX: z.number(),
   offsetY: z.number(),
-  anchor: z.object({ x: z.number(), y: z.number() }).optional(),
 });
 
-export const PromptComponentsSchema = z.object({
-  themePrompt: z.string().optional(),
-  entityPrompt: z.string(),
-  styleOverride: z.string().optional(),
-  negativePrompt: z.string().optional(),
-  positioningHint: z.string().optional(),
-});
+export type AssetPlacement = z.infer<typeof AssetPlacementSchema>;
 
-export const PhysicsContextSchema = z.object({
-  shape: z.enum(['box', 'circle', 'polygon']),
-  width: z.number().optional(),
-  height: z.number().optional(),
-  radius: z.number().optional(),
-});
-
-export const GameAssetSchema = z.object({
-  id: z.string(),
-  ownerGameId: z.string().optional(),
-  source: AssetSourceSchema,
-  imageUrl: z.string(),
-  width: z.number().optional(),
-  height: z.number().optional(),
-  contentHash: z.string().optional(),
-  createdAt: z.number(),
-  deletedAt: z.number().optional(),
-});
-
-export const GenerationResultSnapshotSchema = z.object({
-  jobId: z.string(),
-  taskId: z.string(),
-  compiledPrompt: z.string(),
-  createdAt: z.number(),
-});
-
-export const AssetPackEntrySchema = z.object({
+export const PackEntrySchema = z.object({
   id: z.string(),
   packId: z.string(),
   templateId: z.string(),
   assetId: z.string(),
   placement: AssetPlacementSchema.optional(),
-  lastGeneration: GenerationResultSnapshotSchema.optional(),
 });
 
-export const AssetPackV2Schema = z.object({
-  id: z.string(),
-  gameId: z.string(),
-  name: z.string(),
-  description: z.string().optional(),
-  promptDefaults: PromptDefaultsSchema.optional(),
-  createdAt: z.number(),
-  deletedAt: z.number().optional(),
-});
+export type PackEntry = z.infer<typeof PackEntrySchema>;
+
+export const GenerationStatusSchema = z.enum(['queued', 'running', 'succeeded', 'failed', 'canceled']);
+export type GenerationStatus = z.infer<typeof GenerationStatusSchema>;
 
 export const GenerationJobSchema = z.object({
   id: z.string(),
   gameId: z.string(),
-  packId: z.string().optional(),
+  packId: z.string(),
+  themeId: z.string().optional(),
   status: GenerationStatusSchema,
-  promptDefaults: PromptDefaultsSchema,
+  style: z.string().optional(),
   createdAt: z.number(),
   startedAt: z.number().optional(),
   finishedAt: z.number().optional(),
 });
+
+export type GenerationJob = z.infer<typeof GenerationJobSchema>;
 
 export const GenerationTaskSchema = z.object({
   id: z.string(),
   jobId: z.string(),
   templateId: z.string(),
   status: GenerationStatusSchema,
-  promptComponents: PromptComponentsSchema,
-  compiledPrompt: z.string(),
-  compiledNegativePrompt: z.string().optional(),
+  compiledPrompt: z.string().optional(),
   modelId: z.string().optional(),
-  targetWidth: z.number(),
-  targetHeight: z.number(),
-  aspectRatio: z.string(),
-  physicsContext: PhysicsContextSchema,
-  scenarioRequestId: z.string().optional(),
+  targetWidth: z.number().optional(),
+  targetHeight: z.number().optional(),
   assetId: z.string().optional(),
-  errorCode: z.string().optional(),
   errorMessage: z.string().optional(),
   createdAt: z.number(),
-  startedAt: z.number().optional(),
-  finishedAt: z.number().optional(),
 });
 
-export const AssetBindingRefSchema = z.object({
-  assetId: z.string(),
-  placement: AssetPlacementSchema.optional(),
-});
+export type GenerationTask = z.infer<typeof GenerationTaskSchema>;
 
 export const AssetSystemConfigSchema = z.object({
-  activeAssetPackId: z.string().optional(),
-  entityAssetOverrides: z.record(z.string(), AssetBindingRefSchema).optional(),
-  baseAssetUrl: z.string().optional(),
+  activePackId: z.string().optional(),
 });
+
+export interface AssetSystemConfig {
+  activePackId?: string;
+}
 
 export const DEFAULT_ASSET_PLACEMENT: AssetPlacement = {
   scale: 1,

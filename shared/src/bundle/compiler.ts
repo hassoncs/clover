@@ -458,29 +458,6 @@ function buildGameDefinition(
     entities: entities as unknown as GameDefinition['entities'],
     rules,
     constants: rawConstants || undefined,
-    assetPacks: assets ? {
-      default: {
-        id: 'default',
-        name: 'Default Assets',
-        assets: Object.fromEntries(
-          Object.entries(assets).map(([id, asset]) => {
-            // Support legacy format: path field only
-            // Support new format: remoteUrl and/or localPath
-            const imageUrl = asset.remoteUrl || asset.path;
-            const localPath = asset.localPath;
-            
-            return [
-              id,
-              {
-                imageUrl,
-                ...(localPath && { localPath }),
-                type: asset.type as 'image' | 'sound',
-              },
-            ];
-          })
-        ),
-      },
-    } : undefined,
     // Include system configs if provided
     ...(systems?.match3 && { match3: systems.match3 }),
     ...(systems?.containers && { containers: systems.containers }),

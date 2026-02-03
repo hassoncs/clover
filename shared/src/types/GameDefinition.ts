@@ -2,7 +2,7 @@ import type { Vec2 } from './common';
 import type { GameEntity, EntityTemplate } from './entity';
 import type { GameRule, WinCondition, LoseCondition } from './rules';
 import type { TileSheet, TileMap } from './tilemap';
-import type { AssetSystemConfig } from './asset-system';
+import type { AssetSystemConfig, AssetSource } from './asset-system';
 import type { Value, ExpressionValueType } from '../expressions/types';
 import type { StateMachineDefinition } from '../systems/state-machine/types';
 import type { ContainerConfig } from './container';
@@ -128,8 +128,6 @@ export interface GameMetadata {
   titleHeroAssetRef?: string;
 }
 
-export type AssetSource = 'generated' | 'uploaded' | 'none';
-
 export interface AssetConfig extends ImageField {
   source?: AssetSource;
   localPath?: string;
@@ -141,16 +139,6 @@ export interface AssetConfig extends ImageField {
     fps: number;
     loop?: boolean;
   }>;
-}
-
-export interface AssetPack {
-  id: string;
-  name: string;
-  description?: string;
-  /** @deprecated Use theme string instead of enum-based styling */
-  style?: 'pixel' | 'cartoon' | '3d' | 'flat';
-  theme?: string;
-  assets: Record<string, AssetConfig>;
 }
 
 export type ParallaxDepth = 'sky' | 'far' | 'mid' | 'near';
@@ -449,8 +437,6 @@ export interface GameDefinition {
   rules?: GameRule[];
   winCondition?: WinCondition;
   loseCondition?: LoseCondition;
-  assetPacks?: Record<string, AssetPack>;
-  activeAssetPackId?: string;
   assetSystem?: AssetSystemConfig;
   /** @deprecated Use background with type: 'parallax' instead */
   parallaxConfig?: ParallaxConfig;

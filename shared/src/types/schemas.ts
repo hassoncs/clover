@@ -10,7 +10,7 @@ import {
   VariableCategorySchema,
   VariableWithTuningSchema,
 } from '../expressions/schema-helpers';
-import { AssetSystemConfigSchema, AssetSourceSchema, PromptDefaultsSchema } from './asset-system';
+import { AssetSystemConfigSchema, AssetSourceSchema } from './asset-system';
 
 // ============================================================================
 // Constant Reference Types (for bundle format)
@@ -701,15 +701,6 @@ export const AssetConfigSchema = z.object({
 
 export const SpriteStyleSchema = z.string();
 
-export const AssetPackSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  description: z.string().optional(),
-  style: SpriteStyleSchema.optional(),
-  theme: z.string().optional(),
-  assets: z.record(z.string(), AssetConfigSchema),
-});
-
 export const ParallaxDepthSchema = z.enum(['sky', 'far', 'mid', 'near']);
 
 export const ParallaxLayerSchema = z.object({
@@ -1019,8 +1010,6 @@ export const GameDefinitionSchema = z.object({
   rules: z.array(GameRuleSchema).optional(),
   winCondition: WinConditionSchema.optional(),
   loseCondition: LoseConditionSchema.optional(),
-  assetPacks: z.record(z.string(), AssetPackSchema).optional(),
-  activeAssetPackId: z.string().optional(),
   assetSystem: AssetSystemConfigSchema.optional(),
   parallaxConfig: ParallaxConfigSchema.optional(),
   tileSheets: z.array(TileSheetSchema).optional(),

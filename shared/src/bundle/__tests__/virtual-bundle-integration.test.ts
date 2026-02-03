@@ -141,10 +141,10 @@ describe('Virtual Bundle Integration', () => {
 
     expect(result.success).toBe(true);
     expect(result.errors).toHaveLength(0);
-    expect(result.gameDefinition?.assetPacks?.default.assets).toHaveProperty('ball');
-    expect(result.gameDefinition?.assetPacks?.default.assets).toHaveProperty('background');
-    expect(result.gameDefinition?.assetPacks?.default.assets.ball.localPath).toBe('ball.png');
-    expect(result.gameDefinition?.assetPacks?.default.assets.background.imageUrl).toBe(
+    expect(result.rawData.assets).toHaveProperty('ball');
+    expect(result.rawData.assets).toHaveProperty('background');
+    expect(result.rawData.assets?.ball.localPath).toBe('ball.png');
+    expect(result.rawData.assets?.background.remoteUrl).toBe(
       'https://example.com/bg.png'
     );
   });
@@ -257,8 +257,8 @@ describe('Virtual Bundle Integration', () => {
     expect(result.gameDefinition!.script).toContain('// --- update ---');
 
     // Verify assets loaded
-    expect(result.gameDefinition!.assetPacks?.default.assets.player.localPath).toBe('sprites/player.png');
-    expect(result.gameDefinition!.assetPacks?.default.assets.enemy.localPath).toBe('sprites/enemy.png');
+    expect(result.rawData.assets?.player.localPath).toBe('sprites/player.png');
+    expect(result.rawData.assets?.enemy.localPath).toBe('sprites/enemy.png');
   });
 
   it('handles missing local asset files', () => {
@@ -336,9 +336,9 @@ describe('Virtual Bundle Integration', () => {
     expect(result.success).toBe(true);
     expect(result.errors).toHaveLength(0);
     
-    const asset = result.gameDefinition?.assetPacks?.default.assets['player-sprite'];
+    const asset = result.rawData.assets?.['player-sprite'];
     expect(asset).toBeDefined();
-    expect(asset?.imageUrl).toBe('https://cdn.example.com/player.png');
+    expect(asset?.remoteUrl).toBe('https://cdn.example.com/player.png');
     expect(asset?.localPath).toBe('player.png');
   });
 
@@ -510,6 +510,6 @@ describe('Virtual Bundle Integration', () => {
     expect(result.gameDefinition?.rules).toHaveLength(1);
     expect(result.gameDefinition?.script).toContain('exports.onInit');
     expect(result.gameDefinition?.script).toContain('exports.onUpdate');
-    expect(result.gameDefinition?.assetPacks?.default.assets.background).toBeDefined();
+    expect(result.rawData.assets?.background).toBeDefined();
   });
 });

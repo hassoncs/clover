@@ -1,5 +1,5 @@
 import type { Vec2 } from './common';
-import type { AssetSource } from './GameDefinition';
+import type { AssetSource } from './asset-system';
 
 export interface TileMetadata {
   name?: string;
