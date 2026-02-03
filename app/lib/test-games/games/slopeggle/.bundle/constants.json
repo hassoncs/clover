@@ -1,0 +1,7 @@
+{
+  "WORLD_WIDTH": 12,
+  "WORLD_HEIGHT": 16,
+  "GRAVITY_Y": -5,
+  "PIXELS_PER_METER": 50,
+  "ASSET_BASE": "https://slopcade-api.hassoncs.workers.dev/assets/generated/test-slopeggle"
+}

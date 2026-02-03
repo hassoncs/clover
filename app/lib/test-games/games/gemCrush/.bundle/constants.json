@@ -1,0 +1,6 @@
+{
+  "WORLD_WIDTH": 8.4,
+  "WORLD_HEIGHT": 8.4,
+  "PIXELS_PER_METER": 50,
+  "ASSET_BASE": "https://slopcade-api.hassoncs.workers.dev/assets/generated/gem-crush"
+}

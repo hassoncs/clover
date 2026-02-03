@@ -1,0 +1,50 @@
+[
+  {
+    "id": "bird",
+    "name": "Bird",
+    "template": "bird",
+    "transform": {
+      "x": -3,
+      "y": 0,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  },
+  {
+    "id": "ground",
+    "name": "Ground",
+    "template": "ground",
+    "transform": {
+      "x": 0,
+      "y": -7.25,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  },
+  {
+    "id": "ceiling",
+    "name": "Ceiling",
+    "template": "ceiling",
+    "transform": {
+      "x": 0,
+      "y": 7.75,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  },
+  {
+    "id": "initial_pipe_group",
+    "name": "Initial Pipe Group",
+    "template": "pipeGroup",
+    "transform": {
+      "x": 2,
+      "y": 0,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  }
+]

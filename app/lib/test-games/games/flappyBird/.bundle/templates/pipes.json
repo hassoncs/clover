@@ -1,0 +1,134 @@
+[
+  {
+    "id": "pipeTop",
+    "tags": [
+      "pipe",
+      "pipe-top"
+    ],
+    "visual": {
+      "type": "image",
+      "whatDescription": "a green pipe obstacle pointing downward",
+      "imageWidth": 1.2,
+      "imageHeight": 6
+    },
+    "physics": {
+      "bodyType": "kinematic",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 1.2,
+      "height": 6,
+      "friction": 0,
+      "restitution": 0
+    }
+  },
+  {
+    "id": "pipeBottom",
+    "tags": [
+      "pipe",
+      "pipe-bottom"
+    ],
+    "visual": {
+      "type": "image",
+      "whatDescription": "a green pipe obstacle pointing upward",
+      "imageWidth": 1.2,
+      "imageHeight": 6
+    },
+    "physics": {
+      "bodyType": "kinematic",
+      "density": 0
+    },
+    "collider": {
+      "shape": "box",
+      "width": 1.2,
+      "height": 6,
+      "friction": 0,
+      "restitution": 0
+    }
+  },
+  {
+    "id": "pipeGroup",
+    "tags": [
+      "pipe-group",
+      "obstacle"
+    ],
+    "behaviors": [
+      {
+        "type": "translate",
+        "direction": {
+          "type": "vector",
+          "x": -1,
+          "y": 0
+        },
+        "speed": 15
+      },
+      {
+        "type": "destroy_when_off_screen",
+        "edge": "left",
+        "buffer": 2,
+        "recursive": true
+      },
+      {
+        "type": "configure_children_at_spawn",
+        "configs": [
+          {
+            "childName": "pipeTop",
+            "property": "localTransform.y",
+            "randomRange": [
+              0.5,
+              6.5
+            ]
+          },
+          {
+            "childName": "pipeBottom",
+            "property": "localTransform.y",
+            "offsetFrom": "pipeTop",
+            "offset": -9
+          },
+          {
+            "childName": "scoreZone",
+            "property": "localTransform.y",
+            "offsetFrom": "pipeTop",
+            "offset": -4.5
+          }
+        ]
+      }
+    ],
+    "children": [
+      {
+        "name": "pipeTop",
+        "template": "pipeTop",
+        "localTransform": {
+          "x": 0,
+          "y": 0,
+          "angle": 0,
+          "scaleX": 1,
+          "scaleY": 1
+        }
+      },
+      {
+        "name": "pipeBottom",
+        "template": "pipeBottom",
+        "localTransform": {
+          "x": 0,
+          "y": 0,
+          "angle": 0,
+          "scaleX": 1,
+          "scaleY": 1
+        }
+      },
+      {
+        "name": "scoreZone",
+        "template": "scoreZone",
+        "localTransform": {
+          "x": 0,
+          "y": 0,
+          "angle": 0,
+          "scaleX": 1,
+          "scaleY": 1
+        }
+      }
+    ]
+  }
+]

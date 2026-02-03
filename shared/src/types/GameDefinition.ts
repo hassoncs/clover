@@ -132,6 +132,7 @@ export type AssetSource = 'generated' | 'uploaded' | 'none';
 
 export interface AssetConfig extends ImageField {
   source?: AssetSource;
+  localPath?: string;
   scale?: number;
   offsetX?: number;
   offsetY?: number;

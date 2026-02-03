@@ -46,6 +46,81 @@ function scanForJsonFiles(dir: string, fileReader: FileReader, files: string[] =
   return files;
 }
 
+function scanForScriptFiles(dir: string, fileReader: FileReader, warnings: CompileWarning[]): string[] {
+  const scriptsDir = path.join(dir, 'scripts');
+  
+  if (!fileReader.existsSync(scriptsDir)) {
+    return [];
+  }
+
+  const stat = fileReader.statSync(scriptsDir);
+  if (!stat.isDirectory()) {
+    return [];
+  }
+
+  const entries = fileReader.readdirSync(scriptsDir);
+  const scriptFiles: string[] = [];
+
+  for (const entry of entries) {
+    if (entry.isDirectory()) {
+      warnings.push({
+        code: 'NESTED_SCRIPTS_IGNORED',
+        message: `Nested script directories are not supported: scripts/${entry.name}`,
+        file: `scripts/${entry.name}`,
+      });
+      continue;
+    }
+
+    if (entry.isFile() && entry.name.endsWith('.js')) {
+      scriptFiles.push(path.join(scriptsDir, entry.name));
+    }
+  }
+
+  // Sort alphabetically by basename
+  return scriptFiles.sort((a, b) => {
+    const baseA = path.basename(a);
+    const baseB = path.basename(b);
+    return baseA.localeCompare(baseB);
+  });
+}
+
+function scanForAssetFiles(dir: string, fileReader: FileReader): string[] {
+  const assetsDir = path.join(dir, 'assets');
+  
+  if (!fileReader.existsSync(assetsDir)) {
+    return [];
+  }
+
+  const stat = fileReader.statSync(assetsDir);
+  if (!stat.isDirectory()) {
+    return [];
+  }
+
+  const assetExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.mp3', '.wav', '.ogg'];
+  const assetFiles: string[] = [];
+
+  function scanDirectory(currentDir: string): void {
+    const entries = fileReader.readdirSync(currentDir);
+    
+    for (const entry of entries) {
+      const fullPath = path.join(currentDir, entry.name);
+      
+      if (entry.isDirectory()) {
+        scanDirectory(fullPath);
+      } else if (entry.isFile()) {
+        const ext = path.extname(entry.name).toLowerCase();
+        if (assetExtensions.includes(ext)) {
+          const relativePath = path.relative(assetsDir, fullPath);
+          assetFiles.push(relativePath);
+        }
+      }
+    }
+  }
+
+  scanDirectory(assetsDir);
+  return assetFiles.sort();
+}
+
 function readJsonFile(filePath: string, fileReader: FileReader): { data: unknown; error?: CompileError } | null {
   try {
     const content = fileReader.readFileSync(filePath);
@@ -68,6 +143,50 @@ function readJsonFile(filePath: string, fileReader: FileReader): { data: unknown
       error: {
         code: 'MISSING_FILE',
         message: `Failed to read file: ${filePath}`,
+        file: filePath,
+        context: { error: (error as Error).message },
+      },
+    };
+  }
+}
+
+function readScriptFile(filePath: string, fileReader: FileReader): { content: string; error?: CompileError } {
+  try {
+    const content = fileReader.readFileSync(filePath);
+    
+    const exportsPattern = /exports\.\w+\s*=/;
+    if (!exportsPattern.test(content)) {
+      return {
+        content: '',
+        error: {
+          code: 'SCRIPT_SYNTAX_ERROR',
+          message: `Script file must contain at least one export (exports.name = ...)`,
+          file: filePath,
+          context: { reason: 'missing_exports' },
+        },
+      };
+    }
+
+    const topLevelReturnPattern = /^\s*return\s/m;
+    if (topLevelReturnPattern.test(content)) {
+      return {
+        content: '',
+        error: {
+          code: 'SCRIPT_SYNTAX_ERROR',
+          message: `Script file contains top-level return statement`,
+          file: filePath,
+          context: { reason: 'top_level_return' },
+        },
+      };
+    }
+
+    return { content };
+  } catch (error) {
+    return {
+      content: '',
+      error: {
+        code: 'MISSING_FILE',
+        message: `Failed to read script file: ${filePath}`,
         file: filePath,
         context: { error: (error as Error).message },
       },
@@ -344,13 +463,21 @@ function buildGameDefinition(
         id: 'default',
         name: 'Default Assets',
         assets: Object.fromEntries(
-          Object.entries(assets).map(([id, asset]) => [
-            id,
-            {
-              imageUrl: asset.path,
-              type: asset.type as 'image' | 'sound',
-            },
-          ])
+          Object.entries(assets).map(([id, asset]) => {
+            // Support legacy format: path field only
+            // Support new format: remoteUrl and/or localPath
+            const imageUrl = asset.remoteUrl || asset.path;
+            const localPath = asset.localPath;
+            
+            return [
+              id,
+              {
+                imageUrl,
+                ...(localPath && { localPath }),
+                type: asset.type as 'image' | 'sound',
+              },
+            ];
+          })
         ),
       },
     } : undefined,
@@ -468,6 +595,48 @@ export function compileBundle(
     }
   }
 
+  const scriptFiles = scanForScriptFiles(bundlePath, fileReader, warnings);
+  const scriptContents: Record<string, string> = {};
+  const scriptParts: string[] = [];
+  const exportTracker = new Map<string, string>();
+
+  for (const scriptPath of scriptFiles) {
+    const relativePath = path.relative(bundlePath, scriptPath);
+    const basename = path.basename(scriptPath, '.js');
+    const result = readScriptFile(scriptPath, fileReader);
+
+    if (result.error) {
+      errors.push(result.error);
+      continue;
+    }
+
+    processedFiles.push(relativePath);
+    scriptContents[basename] = result.content;
+
+    const exportsInFile = result.content.match(/exports\.(\w+)\s*=/g) || [];
+    for (const match of exportsInFile) {
+      const exportName = match.match(/exports\.(\w+)/)?.[1];
+      if (exportName) {
+        const existingFile = exportTracker.get(exportName);
+        if (existingFile) {
+          warnings.push({
+            code: 'DUPLICATE_EXPORT',
+            message: `Export "${exportName}" defined in multiple files: ${existingFile}, ${basename}`,
+            file: relativePath,
+            context: { exportName, files: [existingFile, basename] },
+          });
+        }
+        exportTracker.set(exportName, basename);
+      }
+    }
+
+    scriptParts.push(`// --- ${basename} ---\n${result.content}`);
+  }
+
+  if (scriptParts.length > 0) {
+    rawData.scripts = scriptContents;
+  }
+
   // Load schemas from schemas/ directory
   const schemasDir = path.join(bundlePath, 'schemas');
   if (fileReader.existsSync(schemasDir) && fileReader.statSync(schemasDir).isDirectory()) {
@@ -574,6 +743,30 @@ export function compileBundle(
   validateAssetRefs(resolvedTemplates, assetIds, 'templates', errors);
   validateAssetRefs(resolvedEntities, assetIds, 'entities', errors);
 
+  if (rawData.assets) {
+    for (const [assetId, asset] of Object.entries(rawData.assets)) {
+      if (!asset.path && !asset.remoteUrl && !asset.localPath) {
+        errors.push({
+          code: 'INVALID_ASSET_REFERENCE',
+          message: `Asset "${assetId}" must have either "path", "remoteUrl", or "localPath"`,
+          path: `assets.${assetId}`,
+        });
+      }
+
+      if (asset.localPath) {
+        const assetPath = path.join(bundlePath, asset.localPath);
+        if (!fileReader.existsSync(assetPath)) {
+          errors.push({
+            code: 'MISSING_LOCAL_ASSET',
+            message: `Asset "${assetId}" references missing local file: ${asset.localPath}`,
+            path: `assets.${assetId}.localPath`,
+            context: { localPath: asset.localPath },
+          });
+        }
+      }
+    }
+  }
+
   // Resolve constants in systems config
   const systemsConfig = (rawData.manifest as any)?.systems;
   const resolvedSystems = systemsConfig 
@@ -589,6 +782,10 @@ export function compileBundle(
     rawData.assets,
     resolvedSystems
   );
+
+  if (scriptParts.length > 0) {
+    gameDefinition.script = scriptParts.join('\n\n');
+  }
 
   return {
     success: errors.length === 0,

@@ -1,0 +1,6 @@
+{
+  "WORLD_WIDTH": 14.4,
+  "WORLD_HEIGHT": 25.6,
+  "PIXELS_PER_METER": 50,
+  "ASSET_BASE": "https://slopcade-api.hassoncs.workers.dev/assets/generated/test-ball-sort"
+}

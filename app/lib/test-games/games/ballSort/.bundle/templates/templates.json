@@ -1,0 +1,547 @@
+[
+  {
+    "id": "tube",
+    "tags": [
+      "tube"
+    ],
+    "whatDescription": "a transparent glass cylinder tube container",
+    "visual": {
+      "type": "image",
+      "imageWidth": 1.68,
+      "imageHeight": 6
+    },
+    "collider": {
+      "shape": "box",
+      "width": 1.3199999999999998,
+      "height": 6,
+      "isSensor": true
+    }
+  },
+  {
+    "id": "tubeHoverHighlight",
+    "tags": [
+      "highlight",
+      "hover"
+    ],
+    "layer": 500,
+    "visual": {
+      "type": "rect",
+      "width": 1.764,
+      "height": 6.12,
+      "color": "#FFFFFF",
+      "opacity": 0.15,
+      "blendMode": "add"
+    }
+  },
+  {
+    "id": "ball0",
+    "tags": [
+      "ball",
+      "color-0"
+    ],
+    "whatDescription": "a shiny red gumball candy",
+    "visual": {
+      "type": "image",
+      "imageWidth": 1.2,
+      "imageHeight": 1.2
+    },
+    "conditionalBehaviors": [
+      {
+        "when": {
+          "hasTag": "held"
+        },
+        "priority": 1,
+        "behaviors": [
+          {
+            "type": "scale_oscillate",
+            "min": 0.95,
+            "max": 1.15,
+            "speed": 4
+          },
+          {
+            "type": "sprite_effect",
+            "effect": "glow",
+            "params": {
+              "pulse": true
+            }
+          }
+        ]
+      },
+      {
+        "when": {
+          "hasTag": "invalid"
+        },
+        "priority": 2,
+        "behaviors": [
+          {
+            "type": "scale_oscillate",
+            "min": 0.85,
+            "max": 1.15,
+            "speed": 25
+          },
+          {
+            "type": "sprite_effect",
+            "effect": "flash",
+            "params": {
+              "color": [
+                255,
+                80,
+                80
+              ],
+              "intensity": 0.7
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ball1",
+    "tags": [
+      "ball",
+      "color-1"
+    ],
+    "whatDescription": "a shiny blue gumball candy",
+    "visual": {
+      "type": "image",
+      "imageWidth": 1.2,
+      "imageHeight": 1.2
+    },
+    "conditionalBehaviors": [
+      {
+        "when": {
+          "hasTag": "held"
+        },
+        "priority": 1,
+        "behaviors": [
+          {
+            "type": "scale_oscillate",
+            "min": 0.95,
+            "max": 1.15,
+            "speed": 4
+          },
+          {
+            "type": "sprite_effect",
+            "effect": "glow",
+            "params": {
+              "pulse": true
+            }
+          }
+        ]
+      },
+      {
+        "when": {
+          "hasTag": "invalid"
+        },
+        "priority": 2,
+        "behaviors": [
+          {
+            "type": "scale_oscillate",
+            "min": 0.85,
+            "max": 1.15,
+            "speed": 25
+          },
+          {
+            "type": "sprite_effect",
+            "effect": "flash",
+            "params": {
+              "color": [
+                255,
+                80,
+                80
+              ],
+              "intensity": 0.7
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ball2",
+    "tags": [
+      "ball",
+      "color-2"
+    ],
+    "whatDescription": "a shiny green gumball candy",
+    "visual": {
+      "type": "image",
+      "imageWidth": 1.2,
+      "imageHeight": 1.2
+    },
+    "conditionalBehaviors": [
+      {
+        "when": {
+          "hasTag": "held"
+        },
+        "priority": 1,
+        "behaviors": [
+          {
+            "type": "scale_oscillate",
+            "min": 0.95,
+            "max": 1.15,
+            "speed": 4
+          },
+          {
+            "type": "sprite_effect",
+            "effect": "glow",
+            "params": {
+              "pulse": true
+            }
+          }
+        ]
+      },
+      {
+        "when": {
+          "hasTag": "invalid"
+        },
+        "priority": 2,
+        "behaviors": [
+          {
+            "type": "scale_oscillate",
+            "min": 0.85,
+            "max": 1.15,
+            "speed": 25
+          },
+          {
+            "type": "sprite_effect",
+            "effect": "flash",
+            "params": {
+              "color": [
+                255,
+                80,
+                80
+              ],
+              "intensity": 0.7
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ball3",
+    "tags": [
+      "ball",
+      "color-3"
+    ],
+    "whatDescription": "a shiny yellow gumball candy",
+    "visual": {
+      "type": "image",
+      "imageWidth": 1.2,
+      "imageHeight": 1.2
+    },
+    "conditionalBehaviors": [
+      {
+        "when": {
+          "hasTag": "held"
+        },
+        "priority": 1,
+        "behaviors": [
+          {
+            "type": "scale_oscillate",
+            "min": 0.95,
+            "max": 1.15,
+            "speed": 4
+          },
+          {
+            "type": "sprite_effect",
+            "effect": "glow",
+            "params": {
+              "pulse": true
+            }
+          }
+        ]
+      },
+      {
+        "when": {
+          "hasTag": "invalid"
+        },
+        "priority": 2,
+        "behaviors": [
+          {
+            "type": "scale_oscillate",
+            "min": 0.85,
+            "max": 1.15,
+            "speed": 25
+          },
+          {
+            "type": "sprite_effect",
+            "effect": "flash",
+            "params": {
+              "color": [
+                255,
+                80,
+                80
+              ],
+              "intensity": 0.7
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ball4",
+    "tags": [
+      "ball",
+      "color-4"
+    ],
+    "whatDescription": "a shiny purple gumball candy",
+    "visual": {
+      "type": "image",
+      "imageWidth": 1.2,
+      "imageHeight": 1.2
+    },
+    "conditionalBehaviors": [
+      {
+        "when": {
+          "hasTag": "held"
+        },
+        "priority": 1,
+        "behaviors": [
+          {
+            "type": "scale_oscillate",
+            "min": 0.95,
+            "max": 1.15,
+            "speed": 4
+          },
+          {
+            "type": "sprite_effect",
+            "effect": "glow",
+            "params": {
+              "pulse": true
+            }
+          }
+        ]
+      },
+      {
+        "when": {
+          "hasTag": "invalid"
+        },
+        "priority": 2,
+        "behaviors": [
+          {
+            "type": "scale_oscillate",
+            "min": 0.85,
+            "max": 1.15,
+            "speed": 25
+          },
+          {
+            "type": "sprite_effect",
+            "effect": "flash",
+            "params": {
+              "color": [
+                255,
+                80,
+                80
+              ],
+              "intensity": 0.7
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ball5",
+    "tags": [
+      "ball",
+      "color-5"
+    ],
+    "whatDescription": "a shiny orange gumball candy",
+    "visual": {
+      "type": "image",
+      "imageWidth": 1.2,
+      "imageHeight": 1.2
+    },
+    "conditionalBehaviors": [
+      {
+        "when": {
+          "hasTag": "held"
+        },
+        "priority": 1,
+        "behaviors": [
+          {
+            "type": "scale_oscillate",
+            "min": 0.95,
+            "max": 1.15,
+            "speed": 4
+          },
+          {
+            "type": "sprite_effect",
+            "effect": "glow",
+            "params": {
+              "pulse": true
+            }
+          }
+        ]
+      },
+      {
+        "when": {
+          "hasTag": "invalid"
+        },
+        "priority": 2,
+        "behaviors": [
+          {
+            "type": "scale_oscillate",
+            "min": 0.85,
+            "max": 1.15,
+            "speed": 25
+          },
+          {
+            "type": "sprite_effect",
+            "effect": "flash",
+            "params": {
+              "color": [
+                255,
+                80,
+                80
+              ],
+              "intensity": 0.7
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ball6",
+    "tags": [
+      "ball",
+      "color-6"
+    ],
+    "whatDescription": "a shiny pink gumball candy",
+    "visual": {
+      "type": "image",
+      "imageWidth": 1.2,
+      "imageHeight": 1.2
+    },
+    "conditionalBehaviors": [
+      {
+        "when": {
+          "hasTag": "held"
+        },
+        "priority": 1,
+        "behaviors": [
+          {
+            "type": "scale_oscillate",
+            "min": 0.95,
+            "max": 1.15,
+            "speed": 4
+          },
+          {
+            "type": "sprite_effect",
+            "effect": "glow",
+            "params": {
+              "pulse": true
+            }
+          }
+        ]
+      },
+      {
+        "when": {
+          "hasTag": "invalid"
+        },
+        "priority": 2,
+        "behaviors": [
+          {
+            "type": "scale_oscillate",
+            "min": 0.85,
+            "max": 1.15,
+            "speed": 25
+          },
+          {
+            "type": "sprite_effect",
+            "effect": "flash",
+            "params": {
+              "color": [
+                255,
+                80,
+                80
+              ],
+              "intensity": 0.7
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ball7",
+    "tags": [
+      "ball",
+      "color-7"
+    ],
+    "whatDescription": "a shiny cyan gumball candy",
+    "visual": {
+      "type": "image",
+      "imageWidth": 1.2,
+      "imageHeight": 1.2
+    },
+    "conditionalBehaviors": [
+      {
+        "when": {
+          "hasTag": "held"
+        },
+        "priority": 1,
+        "behaviors": [
+          {
+            "type": "scale_oscillate",
+            "min": 0.95,
+            "max": 1.15,
+            "speed": 4
+          },
+          {
+            "type": "sprite_effect",
+            "effect": "glow",
+            "params": {
+              "pulse": true
+            }
+          }
+        ]
+      },
+      {
+        "when": {
+          "hasTag": "invalid"
+        },
+        "priority": 2,
+        "behaviors": [
+          {
+            "type": "scale_oscillate",
+            "min": 0.85,
+            "max": 1.15,
+            "speed": 25
+          },
+          {
+            "type": "sprite_effect",
+            "effect": "flash",
+            "params": {
+              "color": [
+                255,
+                80,
+                80
+              ],
+              "intensity": 0.7
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "heldBallIndicator",
+    "tags": [
+      "held-indicator"
+    ],
+    "visual": {
+      "type": "circle",
+      "radius": 0.72,
+      "color": "#FFD700"
+    },
+    "collider": {
+      "shape": "circle",
+      "radius": 0.72
+    }
+  }
+]

@@ -473,7 +473,7 @@ Parallel Speedup: ~40% faster than sequential
 
 ### Task 1: Create FileReader Interface and Implementations
 
-- [ ] 1. FileReader Interface + NodeFileReader + VirtualFileReader
+- [x] 1. FileReader Interface + NodeFileReader + VirtualFileReader
 
   **What to do**:
   - Create `shared/src/bundle/FileReader.ts` with:
@@ -752,7 +752,7 @@ Parallel Speedup: ~40% faster than sequential
 
 ### Task 2: Refactor Bundle Compiler to Use FileReader
 
-- [ ] 2. Refactor compiler.ts to accept FileReader dependency
+- [x] 2. Refactor compiler.ts to accept FileReader dependency
 
   **What to do**:
   - Modify `compileBundle(bundlePath: string, options?: { fileReader?: FileReader })` signature
@@ -885,7 +885,7 @@ Parallel Speedup: ~40% faster than sequential
 
 ### Task 3: Update RawBundleData Types for Scripts and Assets
 
-- [ ] 3. Add scripts and asset resolution types to RawBundleData
+- [x] 3. Add scripts and asset resolution types to RawBundleData
 
   **What to do**:
   - Add `scripts: Record<string, string> | null` to `RawBundleData` interface
@@ -1541,7 +1541,7 @@ Parallel Speedup: ~40% faster than sequential
 
 ### Task 6: Update Build Script for Script Compilation
 
-- [ ] 6. Extend build-game-bundles.mjs to compile script.ts → scripts/game.js
+- [x] 6. Extend build-game-bundles.mjs to compile script.ts → scripts/game.js
 
   **What to do**:
   - Add check for `{gameDir}/script.ts` file (in game root, NOT in scripts/)

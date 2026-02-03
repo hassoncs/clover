@@ -1,0 +1,347 @@
+[
+  {
+    "id": "show_trajectory",
+    "name": "Show trajectory line when aiming starts",
+    "trigger": {
+      "type": "drag",
+      "phase": "start"
+    },
+    "conditions": [
+      {
+        "type": "entity_count",
+        "tag": "ball",
+        "max": 0
+      }
+    ],
+    "actions": [
+      {
+        "type": "spawn",
+        "template": "trajectoryLine",
+        "position": {
+          "type": "fixed",
+          "x": 0,
+          "y": 7
+        }
+      }
+    ]
+  },
+  {
+    "id": "hide_trajectory",
+    "name": "Hide trajectory line when aiming ends",
+    "trigger": {
+      "type": "drag",
+      "phase": "end"
+    },
+    "actions": [
+      {
+        "type": "destroy",
+        "target": {
+          "type": "by_tag",
+          "tag": "trajectory-line"
+        }
+      }
+    ]
+  },
+  {
+    "id": "fire_ball",
+    "name": "Fire ball on release (only if no ball in play)",
+    "trigger": {
+      "type": "drag",
+      "phase": "end"
+    },
+    "conditions": [
+      {
+        "type": "entity_count",
+        "tag": "ball",
+        "max": 0
+      }
+    ],
+    "actions": [
+      {
+        "type": "spawn",
+        "template": "ball",
+        "position": {
+          "type": "fixed",
+          "x": 0,
+          "y": 7
+        },
+        "launch": {
+          "direction": "toward_touch",
+          "force": 15,
+          "sourceEntityId": "cannon"
+        }
+      },
+      {
+        "type": "set_variable",
+        "name": "turn",
+        "operation": "add",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "id": "fire_ball_tap",
+    "name": "Fire ball on tap/click (only if no ball in play)",
+    "trigger": {
+      "type": "tap"
+    },
+    "conditions": [
+      {
+        "type": "entity_count",
+        "tag": "ball",
+        "max": 0
+      }
+    ],
+    "actions": [
+      {
+        "type": "spawn",
+        "template": "ball",
+        "position": {
+          "type": "fixed",
+          "x": 0,
+          "y": 7
+        },
+        "launch": {
+          "direction": "toward_touch",
+          "force": 15,
+          "sourceEntityId": "cannon"
+        }
+      },
+      {
+        "type": "set_variable",
+        "name": "turn",
+        "operation": "add",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "id": "ball_drain",
+    "name": "Ball falls through drain - lose a life, destroy marked pegs",
+    "trigger": {
+      "type": "collision",
+      "entityATag": "drain",
+      "entityBTag": "ball"
+    },
+    "actions": [
+      {
+        "type": "event",
+        "eventName": "turn_end"
+      },
+      {
+        "type": "destroy_marked",
+        "tag": "peg"
+      },
+      {
+        "type": "set_variable",
+        "name": "lives",
+        "operation": "subtract",
+        "value": 1
+      },
+      {
+        "type": "destroy",
+        "target": {
+          "type": "by_tag",
+          "tag": "ball"
+        }
+      }
+    ]
+  },
+  {
+    "id": "bucket_catch",
+    "name": "Bucket catches ball - free ball bonus!",
+    "trigger": {
+      "type": "collision",
+      "entityATag": "bucket",
+      "entityBTag": "ball"
+    },
+    "actions": [
+      {
+        "type": "event",
+        "eventName": "turn_end"
+      },
+      {
+        "type": "destroy_marked",
+        "tag": "peg"
+      },
+      {
+        "type": "set_variable",
+        "name": "score",
+        "operation": "add",
+        "value": 500
+      },
+      {
+        "type": "set_variable",
+        "name": "lives",
+        "operation": "add",
+        "value": 1
+      },
+      {
+        "type": "destroy",
+        "target": {
+          "type": "by_tag",
+          "tag": "ball"
+        }
+      },
+      {
+        "type": "camera_shake",
+        "intensity": 0.15,
+        "duration": 0.2
+      }
+    ]
+  },
+  {
+    "id": "blue_peg_hit_shake",
+    "name": "Camera shake on blue peg hit",
+    "trigger": {
+      "type": "collision",
+      "entityATag": "ball",
+      "entityBTag": "blue-peg"
+    },
+    "actions": [
+      {
+        "type": "camera_shake",
+        "intensity": 0.03,
+        "duration": 0.1
+      }
+    ]
+  },
+  {
+    "id": "orange_peg_hit_shake",
+    "name": "Stronger camera shake on orange peg hit",
+    "trigger": {
+      "type": "collision",
+      "entityATag": "ball",
+      "entityBTag": "orange-peg"
+    },
+    "actions": [
+      {
+        "type": "camera_shake",
+        "intensity": 0.08,
+        "duration": 0.15
+      }
+    ]
+  },
+  {
+    "id": "last_orange_peg_slowmo",
+    "name": "Dramatic slow-mo when hitting the last orange peg",
+    "trigger": {
+      "type": "collision",
+      "entityATag": "ball",
+      "entityBTag": "orange-peg"
+    },
+    "conditions": [
+      {
+        "type": "entity_count",
+        "tag": "orange-peg",
+        "max": 1
+      }
+    ],
+    "actions": [
+      {
+        "type": "set_time_scale",
+        "scale": 0.25,
+        "duration": 2.5
+      },
+      {
+        "type": "camera_shake",
+        "intensity": 0.12,
+        "duration": 0.3
+      }
+    ],
+    "fireOnce": true
+  },
+  {
+    "id": "peg_hit_multiplier",
+    "name": "Increment score multiplier on peg hit",
+    "trigger": {
+      "type": "collision",
+      "entityATag": "ball",
+      "entityBTag": "peg"
+    },
+    "actions": [
+      {
+        "type": "set_variable",
+        "name": "multiplier",
+        "operation": "add",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "id": "reset_multiplier",
+    "name": "Reset score multiplier at turn end",
+    "trigger": {
+      "type": "event",
+      "eventName": "turn_end"
+    },
+    "actions": [
+      {
+        "type": "set_variable",
+        "name": "multiplier",
+        "operation": "set",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "id": "proximity_slowmo",
+    "name": "Slow time and zoom when ball is near orange peg",
+    "trigger": {
+      "type": "frame"
+    },
+    "conditions": [
+      {
+        "type": "entity_count",
+        "tag": "ball",
+        "min": 1
+      },
+      {
+        "type": "expression",
+        "expr": "minDistanceToTag('orange-peg', entityPos('ball')) < 1.2"
+      }
+    ],
+    "actions": [
+      {
+        "type": "set_time_scale",
+        "scale": 0.5
+      },
+      {
+        "type": "camera_zoom",
+        "scale": 1.4,
+        "duration": 0.15,
+        "focusTag": "ball"
+      }
+    ]
+  },
+  {
+    "id": "proximity_normal_speed",
+    "name": "Restore normal time and zoom when ball is far from orange pegs",
+    "trigger": {
+      "type": "frame"
+    },
+    "conditions": [
+      {
+        "type": "entity_count",
+        "tag": "ball",
+        "min": 1
+      },
+      {
+        "type": "expression",
+        "expr": "minDistanceToTag('orange-peg', entityPos('ball')) >= 1.2"
+      }
+    ],
+    "actions": [
+      {
+        "type": "set_time_scale",
+        "scale": 1
+      },
+      {
+        "type": "camera_zoom",
+        "scale": 1,
+        "duration": 0.2,
+        "focusTag": "ball"
+      }
+    ]
+  }
+]

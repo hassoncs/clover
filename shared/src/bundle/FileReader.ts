@@ -101,7 +101,7 @@ export class VirtualFileReader implements FileReader {
       throw new Error(`ENOENT: no such directory: ${dir}`);
     }
 
-    const dirPrefix = relDir === '.' ? '' : relDir + path.sep;
+    const dirPrefix = relDir === '.' ? '' : relDir + '/';
     const entries = new Map<string, { isFile: boolean; isDir: boolean }>();
 
     for (const key of this.files.keys()) {
@@ -109,7 +109,7 @@ export class VirtualFileReader implements FileReader {
         const remaining = key.slice(dirPrefix.length);
         if (remaining === '') continue;
         
-        const parts = remaining.split(path.sep);
+        const parts = remaining.split('/');
         const name = parts[0];
         const isDir = parts.length > 1;
         

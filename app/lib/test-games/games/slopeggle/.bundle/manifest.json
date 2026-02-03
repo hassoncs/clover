@@ -1,0 +1,65 @@
+{
+  "name": "test-slopeggle",
+  "version": "1.0.0",
+  "title": "Slopeggle",
+  "description": "Clear all orange pegs by bouncing a ball through the board",
+  "instructions": "Touch and hold to aim the cannon, then release to fire! Clear all 10 orange pegs to win. You have 10 balls.",
+  "world": {
+    "gravity": {
+      "x": 0,
+      "y": -5
+    },
+    "pixelsPerMeter": 50,
+    "bounds": {
+      "width": 12,
+      "height": 16
+    }
+  },
+  "background": {
+    "type": "static",
+    "whatDescription": "a colorful peggle-style background with soft lighting and geometric patterns"
+  },
+  "camera": {
+    "type": "fixed",
+    "zoom": 1
+  },
+  "ui": {
+    "showTimer": false,
+    "backgroundColor": "#0a1628",
+    "entityCountDisplays": [
+      {
+        "tag": "orange-peg",
+        "label": "Orange Pegs",
+        "color": "#F97316"
+      }
+    ],
+    "variableDisplays": [
+      {
+        "name": "score",
+        "label": "Score",
+        "position": "top-right"
+      },
+      {
+        "name": "lives",
+        "label": "Balls",
+        "position": "top-right"
+      },
+      {
+        "name": "multiplier",
+        "label": "Multiplier",
+        "color": "#FBBF24",
+        "showWhen": "not_default",
+        "defaultValue": 1
+      },
+      {
+        "name": "turn",
+        "label": "Shot",
+        "color": "#94A3B8"
+      }
+    ]
+  },
+  "loseCondition": {
+    "type": "custom",
+    "expr": "lives <= 0"
+  }
+}

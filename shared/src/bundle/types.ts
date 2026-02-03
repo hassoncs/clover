@@ -9,6 +9,13 @@ export interface ConstantRef {
   const: string;
 }
 
+export interface AssetReference {
+  id: string;
+  type: 'image' | 'sound';
+  remoteUrl?: string;
+  localPath?: string;
+}
+
 /**
  * Check if a value is a constant reference
  */
@@ -96,9 +103,9 @@ export interface RawBundleData {
   constants: Record<string, number | string | boolean> | null;
   editor: EditorMetadata | null;
   assets: Record<string, {
-    path?: string;      // Legacy field (backwards compat)
-    remoteUrl?: string; // New: CDN URL
-    localPath?: string; // New: local bundle path
+    path?: string;
+    remoteUrl?: string;
+    localPath?: string;
     type: string;
   }> | null;
   scripts: Record<string, string> | null;
