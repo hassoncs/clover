@@ -94,20 +94,9 @@ func set_scale(entity_id: String, scale_x: float, scale_y: float) -> void:
 	if not _game_bridge.entities.has(entity_id):
 		return
 	var entity = _game_bridge.entities[entity_id]
-	var sprite = _find_sprite_in_entity(entity)
+	var sprite = EntityUtils.find_sprite_in_entity(entity)
 	if sprite:
 		sprite.global_scale = Vector2(scale_x, scale_y)
-
-
-func _find_sprite_in_entity(node: Node) -> Node:
-	var children = node.get_children()
-	for child in children:
-		if child is Sprite2D or child is AnimatedSprite2D:
-			return child
-		var nested = _find_sprite_in_entity(child)
-		if nested:
-			return nested
-	return null
 
 
 func get_transform(entity_id: String) -> Dictionary:

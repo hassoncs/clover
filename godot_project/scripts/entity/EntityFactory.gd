@@ -37,15 +37,15 @@ func update_state():
 
 
 func game_to_godot_pos(game_pos: Vector2) -> Vector2:
-	return Vector2(game_pos.x * _pixels_per_meter, -game_pos.y * _pixels_per_meter)
+	return CoordinateUtils.game_to_godot_pos(game_pos, _pixels_per_meter)
 
 
 func godot_to_game_pos(godot_pos: Vector2) -> Vector2:
-	return Vector2(godot_pos.x / _pixels_per_meter, -godot_pos.y / _pixels_per_meter)
+	return CoordinateUtils.godot_to_game_pos(godot_pos, _pixels_per_meter)
 
 
 func game_to_godot_vec(game_vec: Vector2) -> Vector2:
-	return Vector2(game_vec.x * _pixels_per_meter, -game_vec.y * _pixels_per_meter)
+	return CoordinateUtils.game_to_godot_vec(game_vec, _pixels_per_meter)
 
 
 # ============================================================================

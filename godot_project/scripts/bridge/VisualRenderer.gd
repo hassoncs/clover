@@ -125,7 +125,7 @@ func set_entity_image(entity_id: String, url: String, width: float, height: floa
 		return
 
 	var node = _get_entity(entity_id)
-	var sprite: Sprite2D = _find_sprite_in_entity(node)
+	var sprite: Sprite2D = EntityUtils.find_sprite_in_entity(node)
 
 	if sprite == null:
 		sprite = Sprite2D.new()
@@ -152,7 +152,7 @@ func set_entity_atlas_region(
 		return
 
 	var node = _get_entity(entity_id)
-	var sprite: Sprite2D = _find_sprite_in_entity(node)
+	var sprite: Sprite2D = EntityUtils.find_sprite_in_entity(node)
 
 	if sprite == null:
 		sprite = Sprite2D.new()
@@ -173,7 +173,7 @@ func set_opacity(entity_id: String, opacity: float) -> void:
 		return
 
 	var node = _get_entity(entity_id)
-	var sprite = _find_sprite_in_entity(node)
+	var sprite = EntityUtils.find_sprite_in_entity(node)
 	if sprite:
 		sprite.modulate.a = opacity
 
@@ -260,7 +260,7 @@ func set_entity_image_base64(
 		return
 
 	var node = _get_entity(entity_id)
-	var sprite: Sprite2D = _find_sprite_in_entity(node)
+	var sprite: Sprite2D = EntityUtils.find_sprite_in_entity(node)
 
 	if sprite == null:
 		sprite = Sprite2D.new()
@@ -294,7 +294,7 @@ func set_entity_image_from_file(
 		return
 
 	var node = _get_entity(entity_id)
-	var sprite: Sprite2D = _find_sprite_in_entity(node)
+	var sprite: Sprite2D = EntityUtils.find_sprite_in_entity(node)
 
 	if sprite == null:
 		sprite = Sprite2D.new()
@@ -720,18 +720,6 @@ func _create_polygon_texture(width: int, height: int, color: Color, padding: int
 		for x in range(padding, tex_w - padding):
 			image.set_pixel(x, y, color)
 	return ImageTexture.create_from_image(image)
-
-
-func _find_sprite_in_entity(node: Node) -> CanvasItem:
-	if node is Sprite2D or node is AnimatedSprite2D:
-		return node
-	for child in node.get_children():
-		if child is Sprite2D or child is AnimatedSprite2D:
-			return child
-		var found = _find_sprite_in_entity(child)
-		if found:
-			return found
-	return null
 
 
 func _has_entity(entity_id: String) -> bool:
