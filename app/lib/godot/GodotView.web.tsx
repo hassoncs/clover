@@ -101,12 +101,23 @@ export function GodotViewWeb({
     };
 
     const handleLoad = () => {
+      console.log("[GodotView.web] Iframe loaded, waiting for GodotBridge...");
+      let checkCount = 0;
       checkInterval = setInterval(() => {
+        checkCount++;
         try {
           const contentWindow = iframe.contentWindow as Window & {
             GodotBridge?: unknown;
           };
+          if (checkCount % 20 === 0) {
+            console.log("[GodotView.web] Still waiting for GodotBridge... (check #%d, hasWindow=%s, hasBridge=%s)",
+              checkCount,
+              !!contentWindow,
+              !!(contentWindow?.GodotBridge)
+            );
+          }
           if (contentWindow?.GodotBridge) {
+            console.log("[GodotView.web] GodotBridge found! Calling onReady...");
             if (checkInterval) clearInterval(checkInterval);
             if (timeoutId) clearTimeout(timeoutId);
             isLoadedRef.current = true;
@@ -116,6 +127,7 @@ export function GodotViewWeb({
             onReady?.();
           }
         } catch (err) {
+          console.error("[GodotView.web] Error checking for GodotBridge:", err);
           if (checkInterval) clearInterval(checkInterval);
           if (timeoutId) clearTimeout(timeoutId);
           onError?.(
@@ -127,6 +139,7 @@ export function GodotViewWeb({
       }, 100);
 
       timeoutId = setTimeout(() => {
+        console.error("[GodotView.web] Timeout waiting for GodotBridge!");
         if (checkInterval) clearInterval(checkInterval);
         if (!isLoadedRef.current) {
           onError?.(new Error("Godot WASM load timeout"));

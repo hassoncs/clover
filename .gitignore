@@ -84,6 +84,9 @@ plan.json
 test-results/
 **/__tests__/output/
 
+# Asset generation debug output
+api/debug-output/
+
 # Python
 __pycache__/
 *.py[cod]

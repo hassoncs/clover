@@ -197,10 +197,15 @@ export interface ComfyAsset {
  * Default configuration values
  */
 export const COMFYUI_DEFAULTS = {
-  WIDTH: 1024,
-  HEIGHT: 1024,
+  /** @deprecated Use PROVIDER_DEFAULTS.WIDTH from provider-contract.ts */
+  WIDTH: 512,
+  /** @deprecated Use PROVIDER_DEFAULTS.HEIGHT from provider-contract.ts */
+  HEIGHT: 512,
+  /** @deprecated Use PROVIDER_DEFAULTS.STEPS from provider-contract.ts */
   STEPS: 28,
+  /** @deprecated Use PROVIDER_DEFAULTS.GUIDANCE from provider-contract.ts */
   GUIDANCE: 3.5,
+  /** @deprecated Use PROVIDER_DEFAULTS.IMG2IMG_STRENGTH from provider-contract.ts */
   STRENGTH: 0.95,
   LAYER_COUNT: 4,
   TIMEOUT_MS: 300000,

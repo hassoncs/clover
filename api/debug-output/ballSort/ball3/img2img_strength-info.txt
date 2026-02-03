@@ -1,3 +1,0 @@
-color: #FDD835
-colorBasedStrength: 0.8809456470588235
-finalStrength: 0.8809456470588235

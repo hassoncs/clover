@@ -327,7 +327,6 @@ func _apply_blend_mode(canvas_item: CanvasItem, blend_mode_str: String) -> void:
 	match blend_mode_str:
 		"add":
 			mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
-			print("[VisualRenderer] Applied ADD blend mode")
 		"sub":
 			mat.blend_mode = CanvasItemMaterial.BLEND_MODE_SUB
 		"mul":
@@ -337,6 +336,11 @@ func _apply_blend_mode(canvas_item: CanvasItem, blend_mode_str: String) -> void:
 	canvas_item.material = mat
 
 func add_visual(node: Node2D, visual_data: Dictionary) -> void:
+	# Skip if node already has visual children (prevents duplicate visuals)
+	for child in node.get_children():
+		if child is Polygon2D or child is Sprite2D or child is Label:
+			return
+
 	var visual_type = visual_data.get("type", "rect")
 	var color = Color.from_string(visual_data.get("color", "#FF0000"), Color.RED)
 	var opacity = visual_data.get("opacity", 1.0)
@@ -557,10 +561,13 @@ func _download_atlas_texture(
 
 func _download_texture(sprite: Sprite2D, url: String, sprite_data: Dictionary, callback: Callable = Callable()) -> void:
 	_texture_loader.load_texture(url, func(texture: ImageTexture, fetched_url: String, success: bool):
-		if not success or texture == null:
-			if _bridge and "_push_error" in _bridge:
-				_bridge._push_error("[VisualRenderer] Failed to load texture: " + fetched_url)
+		# TextureLoader now always returns a texture (fallback on failure)
+		if texture == null:
 			return
+
+		if not success:
+			if _bridge and "_push_error" in _bridge:
+				_bridge._push_error("[VisualRenderer] Using fallback texture for: " + fetched_url)
 
 		if is_instance_valid(sprite):
 			sprite.texture = texture
@@ -874,6 +881,7 @@ func _download_texture_generic(url: String, callback: Callable) -> void:
 		return
 
 	_texture_loader.load_texture(url, func(texture: ImageTexture, fetched_url: String, success: bool):
-		if success and texture != null:
+		# TextureLoader now always returns a texture (fallback on failure)
+		if texture != null:
 			callback.call(texture)
 	)

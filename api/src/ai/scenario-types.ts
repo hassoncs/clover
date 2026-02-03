@@ -178,9 +178,13 @@ export const SCENARIO_DEFAULTS = {
   MODEL: 'flux.1-dev',
   POLL_INTERVAL_MS: 3000,
   MAX_POLL_ATTEMPTS: 200,
-  DEFAULT_WIDTH: 1024,
-  DEFAULT_HEIGHT: 1024,
+  /** @deprecated Use PROVIDER_DEFAULTS.WIDTH from provider-contract.ts */
+  DEFAULT_WIDTH: 512,
+  /** @deprecated Use PROVIDER_DEFAULTS.HEIGHT from provider-contract.ts */
+  DEFAULT_HEIGHT: 512,
+  /** @deprecated Use PROVIDER_DEFAULTS.GUIDANCE from provider-contract.ts */
   DEFAULT_GUIDANCE: 3.5,
+  /** @deprecated Use PROVIDER_DEFAULTS.STEPS from provider-contract.ts */
   DEFAULT_STEPS: 28,
 } as const;
 

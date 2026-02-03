@@ -1,3 +1,0 @@
-color: #2a2a4a
-colorBasedStrength: 0.9192592941176471
-finalStrength: 0.9192592941176471

@@ -134,6 +134,67 @@ export class ProviderError extends Error {
 // Helpers
 // =============================================================================
 
+// =============================================================================
+// Unified adapter interface
+// =============================================================================
+
+/**
+ * Unified image generation adapter interface.
+ *
+ * All provider adapters (Scenario, ComfyUI/Modal) implement this interface.
+ * Pipeline stages and AssetService use this interface for provider-agnostic operations.
+ */
+export interface ImageGenerationAdapter {
+  /** Upload an image buffer, returns provider asset ID */
+  uploadImage: (png: Uint8Array) => Promise<string>;
+  /** Generate image from text prompt */
+  txt2img: (params: {
+    prompt: string;
+    width?: number;
+    height?: number;
+    negativePrompt?: string;
+    guidance?: number;
+    seed?: number;
+  }) => Promise<{ assetId: string }>;
+  /** Generate image from image + prompt (silhouette-guided) */
+  img2img: (params: {
+    imageAssetId: string;
+    prompt: string;
+    strength?: number;
+    guidance?: number;
+  }) => Promise<{ assetId: string }>;
+  /** Download image buffer */
+  downloadImage: (assetId: string) => Promise<{ buffer: Uint8Array; extension: string }>;
+  /** Remove background from image */
+  removeBackground: (assetId: string) => Promise<{ assetId: string }>;
+  /** Decompose image into layers (for parallax) - optional, not all providers support */
+  layeredDecompose?: (params: {
+    imageAssetId: string;
+    layerCount: number;
+    description?: string;
+  }) => Promise<{ assetIds: string[] }>;
+}
+
+// =============================================================================
+// Standardized defaults
+// =============================================================================
+
+/**
+ * Standardized defaults for all providers.
+ * Use these when creating adapters to ensure consistent behavior.
+ */
+export const PROVIDER_DEFAULTS = {
+  WIDTH: 512,
+  HEIGHT: 512,
+  IMG2IMG_STRENGTH: 0.95,
+  GUIDANCE: 3.5,
+  STEPS: 28,
+} as const;
+
+// =============================================================================
+// Helpers
+// =============================================================================
+
 export function tryGetPngDimensions(buffer: Uint8Array): { width: number; height: number } | null {
   // PNG signature (8 bytes)
   if (buffer.length < 24) return null;

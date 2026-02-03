@@ -14,8 +14,8 @@ import {
   MIME_TO_EXT,
 } from '@/ai/comfyui-types'
 
-import type { ImageGenerationResult, LayeredImageGenerationResult } from '@/ai/provider-contract'
-import { ProviderError, ProviderErrorCode, tryGetPngDimensions } from '@/ai/provider-contract'
+import type { ImageGenerationResult, LayeredImageGenerationResult, ImageGenerationAdapter } from '@/ai/provider-contract'
+import { ProviderError, ProviderErrorCode, tryGetPngDimensions, PROVIDER_DEFAULTS } from '@/ai/provider-contract'
 
 import * as workflows from '@/ai/workflows'
 
@@ -618,4 +618,56 @@ export function createComfyUIClient(env: {
     endpoint,
     isServerless: false,
   });
+}
+
+/**
+ * Create an ImageGenerationAdapter that wraps ComfyUIClient.
+ *
+ * This is the canonical adapter factory for ComfyUI/Modal provider.
+ * Use this in pipeline stages and AssetService.
+ */
+export function createComfyUIAdapter(config: ComfyUIConfig): ImageGenerationAdapter {
+  const client = new ComfyUIClient(config);
+
+  return {
+    async uploadImage(png: Uint8Array): Promise<string> {
+      return client.uploadImage(png);
+    },
+
+    async txt2img(params): Promise<{ assetId: string }> {
+      return client.txt2img({
+        prompt: params.prompt,
+        width: params.width ?? PROVIDER_DEFAULTS.WIDTH,
+        height: params.height ?? PROVIDER_DEFAULTS.HEIGHT,
+        negativePrompt: params.negativePrompt,
+        guidance: params.guidance ?? PROVIDER_DEFAULTS.GUIDANCE,
+        seed: params.seed,
+      });
+    },
+
+    async img2img(params): Promise<{ assetId: string }> {
+      return client.img2img({
+        image: params.imageAssetId,
+        prompt: params.prompt,
+        strength: params.strength ?? PROVIDER_DEFAULTS.IMG2IMG_STRENGTH,
+        guidance: params.guidance ?? PROVIDER_DEFAULTS.GUIDANCE,
+      });
+    },
+
+    async downloadImage(assetId: string): Promise<{ buffer: Uint8Array; extension: string }> {
+      return client.downloadImage(assetId);
+    },
+
+    async removeBackground(assetId: string): Promise<{ assetId: string }> {
+      return client.removeBackground({ image: assetId });
+    },
+
+    async layeredDecompose(params): Promise<{ assetIds: string[] }> {
+      return client.layeredDecompose({
+        image: params.imageAssetId,
+        layerCount: params.layerCount,
+        description: params.description,
+      });
+    },
+  };
 }

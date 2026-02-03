@@ -14,7 +14,7 @@ import { buildAssetPath } from '@slopcade/shared';
 
 type SheetSpec = SpriteSheetSpec | TileSheetSpec | VariationSheetSpec;
 
-const DEFAULT_IMG2IMG_STRENGTH = 0.925;
+const DEFAULT_IMG2IMG_STRENGTH = 0.88;
 const MIN_DYNAMIC_STRENGTH = 0.87;
 const MAX_DYNAMIC_STRENGTH = 0.93;
 

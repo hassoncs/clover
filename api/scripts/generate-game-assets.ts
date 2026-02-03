@@ -16,6 +16,7 @@ interface CliOptions {
   help: boolean;
   strength?: number;
   packId?: string;
+  skipStages: string[];
 }
 
 function parseArgs(): CliOptions {
@@ -24,6 +25,7 @@ function parseArgs(): CliOptions {
     dryRun: false,
     debugDir: path.join(__dirname, '..', 'debug-output'),
     help: false,
+    skipStages: [],
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -50,6 +52,8 @@ function parseArgs(): CliOptions {
       }
     } else if (arg.startsWith('--pack-id=')) {
       options.packId = arg.split('=').slice(1).join('=');
+    } else if (arg.startsWith('--skip-stage=')) {
+      options.skipStages.push(arg.split('=')[1]);
     } else if (!arg.startsWith('--') && !options.gameId) {
       options.gameId = arg;
     }
@@ -70,7 +74,9 @@ Options:
   --asset=ID           Only generate specific asset by ID
   --type=TYPE          Only generate assets of specific type (entity, background, title_hero, parallax, sheet)
   --strength=N         img2img strength (0-1, default: 0.925). Lower = more faithful to silhouette
-  --pack-id=UUID        Asset pack UUID to use for this run (default: auto-generate)
+  --pack-id=UUID       Asset pack UUID to use for this run (default: auto-generate)
+  --skip-stage=ID      Skip a pipeline stage (can be used multiple times)
+                       Stages: silhouette, build-prompt, upload-provider, img2img, txt2img, remove-bg, upload-r2
   --debug-dir=PATH     Directory for debug output (default: api/debug-output)
   -h, --help           Show this help message
 
@@ -208,17 +214,7 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
-  const provider = (process.env.IMAGE_GENERATION_PROVIDER as 'scenario' | 'runpod' | 'comfyui') ?? 'scenario';
-  
   const adapters = await createNodeAdapters({
-    provider,
-    scenarioApiKey: apiKey!,
-    scenarioApiSecret: apiSecret!,
-    runpodApiKey: process.env.RUNPOD_API_KEY,
-    runpodSdxlEndpointId: process.env.RUNPOD_SDXL_ENDPOINT_ID,
-    runpodFluxEndpointId: process.env.RUNPOD_FLUX_ENDPOINT_ID,
-    runpodBgRemovalEndpointId: process.env.RUNPOD_BG_REMOVAL_ENDPOINT_ID,
-    comfyuiEndpoint: process.env.COMFYUI_ENDPOINT,
     r2Bucket: 'slopcade-assets',
     wranglerCwd: path.join(__dirname, '..'),
     publicUrlBase: 'https://slopcade-api.hassoncs.workers.dev/assets',
@@ -230,10 +226,14 @@ async function main(): Promise<void> {
   if (options.strength !== undefined) {
     console.log(`Using strength override: ${options.strength}\n`);
   }
+  if (options.skipStages.length > 0) {
+    console.log(`Skipping stages: ${options.skipStages.join(', ')}\n`);
+  }
 
   const result = await executeGameAssets(config, adapters, debugSink, {
     strength: options.strength,
     packId,
+    skipStages: options.skipStages.length > 0 ? options.skipStages : undefined,
   });
 
   console.log('');

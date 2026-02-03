@@ -19,7 +19,7 @@ export const ballSortConfig: GameAssetConfig = {
       width: TUBE_WIDTH,
       height: TUBE_HEIGHT,
       entityType: 'platform',
-      description: 'colorful glass bottle or test tube container, cartoon style, fun casual game aesthetic',
+      description: 'EMPTY glass cylinder vase with OPEN TOP, completely hollow inside showing only air, NO cork NO lid NO stopper, NO balls NO candy NO contents, just a simple clear glass container outline, cartoon style game asset',
     } as EntitySpec,
     {
       type: 'entity',

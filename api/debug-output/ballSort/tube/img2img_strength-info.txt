@@ -1,3 +1,0 @@
-color: none
-colorBasedStrength: N/A
-finalStrength: 0.925

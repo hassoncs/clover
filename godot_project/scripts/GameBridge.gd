@@ -81,9 +81,13 @@ var _js_bridge_obj: JavaScriptObject = null
 var _debug_show_shapes: bool = false
 
 func _ready() -> void:
+	print("[GameBridge] _ready() starting...")
 	_init_modules()
+	print("[GameBridge] Modules initialized")
 	_camera_controller.setup_camera()
+	print("[GameBridge] Camera setup complete")
 	_setup_js_bridge()
+	print("[GameBridge] JS Bridge setup complete")
 
 func set_inspect_mode(enabled: bool) -> void:
 	if _debug_bridge: _debug_bridge.get_time_module().set_inspect_mode(enabled)
@@ -216,6 +220,7 @@ func _setup_js_bridge() -> void:
 		_js_bridge_obj[key] = cb
 	
 	window["GodotBridge"] = _js_bridge_obj
+	print("[GameBridge] window.GodotBridge is now available")
 
 func _js_load_game(args: Array) -> bool: return load_game_json(str(args[0])) if args.size() > 0 else false
 func _js_clear_game(_args: Array) -> void: clear_game()

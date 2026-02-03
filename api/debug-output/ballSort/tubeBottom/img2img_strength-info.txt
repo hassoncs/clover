@@ -1,3 +1,0 @@
-color: #81D4FA
-colorBasedStrength: 0.8849376470588235
-finalStrength: 0.8849376470588235

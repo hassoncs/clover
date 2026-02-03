@@ -21,6 +21,8 @@ export interface ExecutionOptions {
   strength?: number;
   /** UUID of the asset pack for this execution */
   packId?: string;
+  /** Stage IDs to skip (e.g., ['remove-bg'] to skip background removal) */
+  skipStages?: string[];
 }
 
 export async function executeAsset(
@@ -69,6 +71,16 @@ export async function executeAsset(
 
   try {
     for (const stage of stages) {
+      if (options.skipStages?.includes(stage.id)) {
+        await debugSink({
+          type: 'stage:skipped',
+          runId,
+          assetId: spec.id,
+          stageId: stage.id,
+        });
+        continue;
+      }
+
       const stageStart = Date.now();
       
       await debugSink({

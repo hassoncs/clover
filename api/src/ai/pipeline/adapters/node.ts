@@ -1,137 +1,19 @@
 import type { PipelineAdapters, ImageGenerationAdapter, R2Adapter, SilhouetteAdapter, DebugSink, DebugEvent } from '@/ai/pipeline/types'
-import { ComfyUIClient } from '@/ai/comfyui'
+import { createScenarioAdapter } from '@/ai/scenario'
+import { createComfyUIAdapter } from '@/ai/comfyui'
+import { PROVIDER_DEFAULTS } from '@/ai/provider-contract'
 
-const SCENARIO_API_URL = 'https://api.cloud.scenario.com/v1';
-
-interface NodeScenarioConfig {
-  apiKey: string;
-  apiSecret: string;
-}
-
-function getAuthHeader(config: NodeScenarioConfig): string {
-  return `Basic ${Buffer.from(`${config.apiKey}:${config.apiSecret}`).toString('base64')}`;
-}
-
-async function scenarioRequest<T>(
-  config: NodeScenarioConfig,
-  method: 'GET' | 'POST',
-  endpoint: string,
-  body?: Record<string, unknown>
-): Promise<T> {
-  const response = await fetch(`${SCENARIO_API_URL}${endpoint}`, {
-    method,
-    headers: {
-      Authorization: getAuthHeader(config),
-      'Content-Type': 'application/json',
-    },
-    body: body ? JSON.stringify(body) : undefined,
+/**
+ * Create a Scenario ImageGenerationAdapter for Node.js pipeline usage.
+ *
+ * This is a thin wrapper around createScenarioAdapter from scenario.ts,
+ * providing the same interface used by the rest of the codebase.
+ */
+export function createNodeScenarioAdapter(config: { apiKey: string; apiSecret: string }): ImageGenerationAdapter {
+  return createScenarioAdapter({
+    apiKey: config.apiKey,
+    apiSecret: config.apiSecret,
   });
-
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({})) as { error?: { message?: string }; message?: string };
-    throw new Error(`Scenario API: ${err.error?.message ?? err.message ?? response.status}`);
-  }
-
-  return response.json() as Promise<T>;
-}
-
-async function pollJob(config: NodeScenarioConfig, jobId: string, maxAttempts = 120): Promise<string[]> {
-  for (let i = 0; i < maxAttempts; i++) {
-    const res = await scenarioRequest<{ job?: { status?: string; metadata?: { assetIds?: string[] }; error?: string } }>(
-      config,
-      'GET',
-      `/jobs/${jobId}`
-    );
-    const status = res.job?.status;
-
-    if (status === 'success') {
-      return res.job?.metadata?.assetIds ?? [];
-    }
-    if (status === 'failed' || status === 'cancelled') {
-      throw new Error(res.job?.error ?? `Job ${status}`);
-    }
-
-    await new Promise(r => setTimeout(r, 2000));
-  }
-  throw new Error(`Job timed out after ${maxAttempts * 2} seconds`);
-}
-
-export function createNodeScenarioAdapter(config: NodeScenarioConfig): ImageGenerationAdapter {
-  return {
-    async uploadImage(png: Uint8Array): Promise<string> {
-      const res = await scenarioRequest<{ asset?: { id?: string } }>(config, 'POST', '/assets', {
-        image: Buffer.from(png).toString('base64'),
-        name: `silhouette-${Date.now()}`,
-      });
-      if (!res.asset?.id) throw new Error('No asset ID from upload');
-      return res.asset.id;
-    },
-
-    async txt2img(params): Promise<{ assetId: string }> {
-      const res = await scenarioRequest<{ job?: { jobId?: string } }>(config, 'POST', '/generate/txt2img', {
-        modelId: 'flux.1-dev',
-        prompt: params.prompt,
-        numSamples: 1,
-        guidance: 3.5,
-        numInferenceSteps: 28,
-        width: params.width ?? 1024,
-        height: params.height ?? 1024,
-      });
-      if (!res.job?.jobId) throw new Error('No jobId returned');
-      const assetIds = await pollJob(config, res.job.jobId);
-      return { assetId: assetIds[0] };
-    },
-
-    async img2img(params): Promise<{ assetId: string }> {
-      const res = await scenarioRequest<{ job?: { jobId?: string } }>(config, 'POST', '/generate/img2img', {
-        modelId: 'flux.1-dev',
-        prompt: params.prompt,
-        image: params.imageAssetId,
-        strength: params.strength ?? 0.95,
-        numSamples: 1,
-        guidance: 3.5,
-        numInferenceSteps: 28,
-      });
-      if (!res.job?.jobId) throw new Error('No jobId returned');
-      const assetIds = await pollJob(config, res.job.jobId);
-      return { assetId: assetIds[0] };
-    },
-
-    async downloadImage(assetId: string): Promise<{ buffer: Uint8Array; extension: string }> {
-      const res = await scenarioRequest<{ asset?: { url?: string; mimeType?: string } }>(
-        config,
-        'GET',
-        `/assets/${assetId}`
-      );
-      if (!res.asset?.url) throw new Error('No URL');
-      const imgRes = await fetch(res.asset.url);
-      if (!imgRes.ok) throw new Error(`Download failed: ${imgRes.status}`);
-      const buffer = new Uint8Array(await imgRes.arrayBuffer());
-      const ext = res.asset.mimeType?.includes('webp') ? '.webp' : res.asset.mimeType?.includes('jpeg') ? '.jpg' : '.png';
-      return { buffer, extension: ext };
-    },
-
-    async removeBackground(assetId: string): Promise<{ assetId: string }> {
-      const res = await scenarioRequest<{ job?: { jobId?: string } }>(config, 'POST', '/generate/remove-background', {
-        image: assetId,
-        format: 'png',
-      });
-      if (!res.job?.jobId) throw new Error('No jobId');
-      const assetIds = await pollJob(config, res.job.jobId, 60);
-      return { assetId: assetIds[0] };
-    },
-
-    async layeredDecompose(params): Promise<{ assetIds: string[] }> {
-      const res = await scenarioRequest<{ job?: { jobId?: string } }>(config, 'POST', '/generate/layered', {
-        image: params.imageAssetId,
-        layersCount: params.layerCount,
-        description: params.description,
-      });
-      if (!res.job?.jobId) throw new Error('No jobId');
-      const assetIds = await pollJob(config, res.job.jobId, 120);
-      return { assetIds };
-    },
-  };
 }
 
 interface NodeR2Config {
@@ -456,10 +338,10 @@ export function createNodeModalAdapter(config: ModalAdapterConfig): ImageGenerat
 
       const result = await modalRequest({
         prompt: params.prompt,
-        width: params.width ?? 512,
-        height: params.height ?? 512,
-        steps: 20,
-        guidance: 3.5
+        width: params.width ?? PROVIDER_DEFAULTS.WIDTH,
+        height: params.height ?? PROVIDER_DEFAULTS.HEIGHT,
+        steps: PROVIDER_DEFAULTS.STEPS,
+        guidance: PROVIDER_DEFAULTS.GUIDANCE
       });
 
       if (!result.success || !result.image_base64) {
@@ -485,9 +367,9 @@ export function createNodeModalAdapter(config: ModalAdapterConfig): ImageGenerat
       const result = await modalRequest({
         prompt: params.prompt,
         image_base64: asset.data,
-        strength: params.strength ?? 0.5,
-        steps: 20,
-        guidance: 3.5
+        strength: params.strength ?? PROVIDER_DEFAULTS.IMG2IMG_STRENGTH,
+        steps: PROVIDER_DEFAULTS.STEPS,
+        guidance: PROVIDER_DEFAULTS.GUIDANCE
       });
 
       if (!result.success || !result.image_base64) {
@@ -521,50 +403,17 @@ export function createNodeModalAdapter(config: ModalAdapterConfig): ImageGenerat
   };
 }
 
+/**
+ * Create a ComfyUI ImageGenerationAdapter for Node.js pipeline usage.
+ *
+ * This is a thin wrapper around createComfyUIAdapter from comfyui.ts,
+ * providing the same interface used by the rest of the codebase.
+ */
 export function createNodeComfyUIAdapter(config: ComfyUIAdapterConfig): ImageGenerationAdapter {
-  const client = new ComfyUIClient({
+  return createComfyUIAdapter({
     endpoint: config.endpoint,
     apiKey: config.apiKey,
   });
-
-  return {
-    async uploadImage(png: Uint8Array): Promise<string> {
-      return client.uploadImage(png);
-    },
-
-    async txt2img(params): Promise<{ assetId: string }> {
-      return client.txt2img({
-        prompt: params.prompt,
-        negativePrompt: params.negativePrompt,
-        width: params.width ?? 1024,
-        height: params.height ?? 1024,
-      });
-    },
-
-    async img2img(params): Promise<{ assetId: string }> {
-      return client.img2img({
-        image: params.imageAssetId,
-        prompt: params.prompt,
-        strength: params.strength ?? 0.95,
-      });
-    },
-
-    async downloadImage(assetId: string): Promise<{ buffer: Uint8Array; extension: string }> {
-      return client.downloadImage(assetId);
-    },
-
-    async removeBackground(assetId: string): Promise<{ assetId: string }> {
-      return client.removeBackground({ image: assetId });
-    },
-
-    async layeredDecompose(params): Promise<{ assetIds: string[] }> {
-      return client.layeredDecompose({
-        image: params.imageAssetId,
-        layerCount: params.layerCount,
-        description: params.description,
-      });
-    },
-  };
 }
 
 export interface NodeAdaptersOptions {
@@ -629,6 +478,8 @@ export function createFileDebugSink(outputDir: string): DebugSink {
       console.log(`  [DEBUG] Saved: ${filepath}`);
     } else if (event.type === 'stage:start') {
       console.log(`  [STAGE] ${event.stageId} starting...`);
+    } else if (event.type === 'stage:skipped') {
+      console.log(`  [STAGE] ${event.stageId} ⏭️ SKIPPED`);
     } else if (event.type === 'stage:end') {
       const status = event.ok ? '✅' : '❌';
       console.log(`  [STAGE] ${event.stageId} ${status} (${event.durationMs}ms)${event.error ? ` - ${event.error}` : ''}`);

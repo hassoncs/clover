@@ -373,6 +373,7 @@ export type DebugEvent =
       generatedAssetId?: string;
     }
   | { type: 'stage:start'; runId: string; assetId: string; stageId: string }
+  | { type: 'stage:skipped'; runId: string; assetId: string; stageId: string }
   | {
       type: 'artifact';
       runId: string;
@@ -418,33 +419,10 @@ export interface Stage {
 // PIPELINE ADAPTERS - Platform-specific implementations injected into stages
 // =============================================================================
 
-export interface ImageGenerationAdapter {
-  /** Upload an image buffer, returns provider asset ID */
-  uploadImage: (png: Uint8Array) => Promise<string>;
-  /** Generate image from text prompt */
-  txt2img: (params: {
-    prompt: string;
-    width?: number;
-    height?: number;
-    negativePrompt?: string;
-  }) => Promise<{ assetId: string }>;
-  /** Generate image from image + prompt (silhouette-guided) */
-  img2img: (params: {
-    imageAssetId: string;
-    prompt: string;
-    strength?: number;
-  }) => Promise<{ assetId: string }>;
-  /** Download image buffer */
-  downloadImage: (assetId: string) => Promise<{ buffer: Uint8Array; extension: string }>;
-  /** Remove background from image */
-  removeBackground: (assetId: string) => Promise<{ assetId: string }>;
-  /** Decompose image into layers (for parallax) */
-  layeredDecompose?: (params: {
-    imageAssetId: string;
-    layerCount: number;
-    description?: string;
-  }) => Promise<{ assetIds: string[] }>;
-}
+// Re-export the canonical ImageGenerationAdapter and defaults from provider-contract
+import type { ImageGenerationAdapter as _ImageGenerationAdapter } from '@/ai/provider-contract'
+export type ImageGenerationAdapter = _ImageGenerationAdapter
+export { PROVIDER_DEFAULTS } from '@/ai/provider-contract'
 
 export interface R2Adapter {
   /** Upload buffer to R2 storage */

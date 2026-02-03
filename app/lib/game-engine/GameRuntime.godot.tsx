@@ -174,6 +174,20 @@ export function GameRuntimeGodot({
   const subscriptionsRef = useRef<(() => void)[]>([]);
   const match3EventBusRef = useRef<any>(null);
 
+  // Store callback props in refs to prevent useEffect re-triggering when parent re-renders
+  const onReadyRef = useRef(onReady);
+  const onPreloadProgressRef = useRef(onPreloadProgress);
+  const onGameEndRef = useRef(onGameEnd);
+  const onScoreChangeRef = useRef(onScoreChange);
+
+  // Keep refs up to date (intentionally no deps - runs every render to sync refs)
+  useEffect(() => {
+    onReadyRef.current = onReady;
+    onPreloadProgressRef.current = onPreloadProgress;
+    onGameEndRef.current = onGameEnd;
+    onScoreChangeRef.current = onScoreChange;
+  });
+
   const cleanupSubscriptions = useCallback(() => {
     subscriptionsRef.current.forEach((unsub) => {
       unsub();
@@ -278,9 +292,9 @@ export function GameRuntimeGodot({
             const vars = game.gameState.vars;
             const moveCount = (vars['moveCount'] as number) || 0;
             const startTime = (vars['startTime'] as number) || 0;
-            
+
             const stats = [];
-            
+
             if (startTime > 0) {
               const duration = (Date.now() - startTime) / 1000;
               const minutes = Math.floor(duration / 60);
@@ -288,17 +302,17 @@ export function GameRuntimeGodot({
               const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
               stats.push({ label: "Time", value: timeStr });
             }
-            
+
             if (moveCount > 0) {
               stats.push({ label: "Moves", value: moveCount.toString() });
             }
-            
+
             setWinStats(stats);
             setShowWinDialog(true);
           }
-          onGameEnd?.(state);
+          onGameEndRef.current?.(state);
         },
-        onScoreChange,
+        onScoreChange: (score) => onScoreChangeRef.current?.(score),
         setGameState,
         debug: true,
       });
@@ -308,8 +322,6 @@ export function GameRuntimeGodot({
       cleanupSubscriptions,
       definition.world.pixelsPerMeter,
       definition.persistence,
-      onGameEnd,
-      onScoreChange,
     ]
   );
 
@@ -486,6 +498,7 @@ export function GameRuntimeGodot({
   viewportSystemRef.current = viewportSystem;
 
   const handleGodotReady = useCallback(() => {
+    console.log("[GameRuntime] 1. GodotView ready callback received");
     setGodotReady(true);
   }, []);
 
@@ -493,17 +506,34 @@ export function GameRuntimeGodot({
     console.error("[GameRuntime.godot] Godot error:", error);
   }, []);
 
+  const setupStartedRef = useRef(false);
+
   useEffect(() => {
     if (!godotReady) return;
+    if (setupStartedRef.current) {
+      return; // Already started setup, skip silently
+    }
+    setupStartedRef.current = true;
+
+    console.log("[GameRuntime] Setup starting - godotReady is true");
 
     const setup = async () => {
       try {
+        console.log("[GameRuntime] 3. Creating Godot bridge...");
         const bridge = await createGodotBridge();
+        console.log("[GameRuntime] 4. Bridge created, initializing...");
         await bridge.initialize();
+        console.log("[GameRuntime] 5. Bridge initialized");
         bridgeRef.current = bridge;
 
         if (preloadTextureUrls && preloadTextureUrls.length > 0) {
-          await bridge.preloadTextures(preloadTextureUrls, onPreloadProgress);
+          console.log("[GameRuntime] 6. Preloading %d textures...", preloadTextureUrls.length);
+          await bridge.preloadTextures(preloadTextureUrls, (percent, completed, failed) => {
+            onPreloadProgressRef.current?.(percent, completed, failed);
+          });
+          console.log("[GameRuntime] 7. Textures preloaded");
+        } else {
+          console.log("[GameRuntime] 6. No textures to preload");
         }
 
         const physics = createGodotPhysicsAdapter(bridge);
@@ -513,7 +543,9 @@ export function GameRuntimeGodot({
           bridge.setInspectMode(true);
         }
 
+        console.log("[GameRuntime] 8. Loading game definition...");
         await bridge.loadGame(definition);
+        console.log("[GameRuntime] 9. Game loaded into Godot");
 
         bridge.pausePhysics();
 
@@ -620,6 +652,7 @@ export function GameRuntimeGodot({
             variables: mergedVariables,
           }));
         }
+        console.log("[GameRuntime] 10. Setting isReady=true");
         setIsReady(true);
 
         if (typeof window !== "undefined") {
@@ -628,7 +661,8 @@ export function GameRuntimeGodot({
           ).slopcadeGameReady = true;
         }
 
-        onReady?.();
+        console.log("[GameRuntime] 11. Calling onReady callback");
+        onReadyRef.current?.();
 
         const runner = new GameSystemRunner();
 
@@ -810,8 +844,6 @@ export function GameRuntimeGodot({
     godotReady,
     definition,
     preloadTextureUrls,
-    onPreloadProgress,
-    onReady,
     debugMode,
     cleanupSubscriptions,
     setupSubscriptions,

@@ -57,8 +57,8 @@ test_ui_components.tscn::PackedScene::2912554897160530627::1769538422::0::1::::<
 VFXShowcase.tscn::PackedScene::2855297431937620752::1769538422::0::1::::<><><>0<>0<><>::res://scripts/VFXShowcase.gd
 ::res://scenes/lab/::1769538422
 ui_components_demo.tscn::PackedScene::5962763572750761863::1769538422::0::1::::<><><>0<>0<><>::res://scripts/lab/UIComponentsDemo.gd
-::res://scripts/::1770136724
-GameBridge.gd::GDScript::3857439177254699610::1770055865::0::1::::<>Node<><>0<>0<><>::
+::res://scripts/::1770140050
+GameBridge.gd::GDScript::3857439177254699610::1770140050::0::1::::<>Node<><>0<>0<><>::
 Lab3D.gd::GDScript::2743172060191353031::1770054883::0::1::::<>Node3D<><>0<>0<><>::
 Main.gd::GDScript::4927831078751178685::1769538422::0::1::::<>Node2D<><>0<>0<><>::
 PhysicsBody.gd::GDScript::3101094749307879933::1769982447::0::1::::<>RigidBody2D<><>0<>0<><>::
@@ -70,7 +70,7 @@ GLBLoader.gd::GDScript::5061860736730575181::1770136666::0::1::::GLBLoader<>RefC
 Viewport3D.gd::GDScript::8275118501428359890::1769538422::0::1::::Viewport3D<>Node2D<><>0<>0<><>::
 ::res://scripts/audio/::1769538422
 AudioManager.gd::GDScript::4749981179781063152::1769538422::0::1::::AudioManager<>RefCounted<><>0<>0<><>::
-::res://scripts/bridge/::1770137277
+::res://scripts/bridge/::1770139685
 CameraController.gd::GDScript::4088958712734300544::1769981310::0::1::::CameraController<>RefCounted<><>0<>0<><>::
 DebugSystem.gd::GDScript::8224035403630779561::1769652858::0::1::::DebugSystem<>RefCounted<><>0<>0<><>::
 EventEmitter.gd::GDScript::1817812207212483753::1769982638::0::1::::EventEmitter<>RefCounted<><>0<>0<><>::
@@ -79,7 +79,7 @@ JSBridge.gd::GDScript::5302051703392798855::1769972335::0::1::::JSBridge<>RefCou
 QuerySystem.gd::GDScript::4794659130339010814::1770054186::0::1::::QuerySystem<>RefCounted<><>0<>0<><>::
 SyncSystem.gd::GDScript::3903644578941350245::1769981414::0::1::::SyncSystem<>RefCounted<><>0<>0<><>::
 UIManager.gd::GDScript::2938340039645018513::1770136688::0::1::::UIManager<>RefCounted<><>0<>0<><>::
-VisualRenderer.gd::GDScript::3033702139520954300::1770137277::0::1::::VisualRenderer<>RefCounted<><>0<>0<><>::
+VisualRenderer.gd::GDScript::3033702139520954300::1770139685::0::1::::VisualRenderer<>RefCounted<><>0<>0<><>::
 WebSocketSystem.gd::GDScript::6579444550606019435::1769981871::0::1::::WebSocketSystem<>RefCounted<><>0<>0<><>::
 ::res://scripts/bridge/debug/::1769717226
 DebugBridge.gd::GDScript::576835227171242688::1769981392::0::1::::DebugBridge<>RefCounted<><>0<>0<><>::
@@ -123,12 +123,12 @@ TestUIComponents.gd::GDScript::1812308515672171160::1770054911::0::1::::<>Contro
 ThemedCheckbox.gd::GDScript::4244886539141142883::1770136647::0::1::::ThemedCheckbox<>Control<><>0<>0<><>::
 ThemedUIComponent.gd::GDScript::8085600949968827971::1770136621::0::1::::ThemedUIComponent<>Control<><>0<>0<><>::
 UIButtonSystem.gd::GDScript::4546060244504347790::1770136592::0::1::::UIButtonSystem<>RefCounted<><>0<>0<><>::
-::res://scripts/utils/::1770137210
+::res://scripts/utils/::1770139298
 CoordinateUtils.gd::GDScript::8119686888193694251::1769538422::0::1::::CoordinateUtils<>RefCounted<><>0<>0<><>::
 EntityUtils.gd::GDScript::7274210162928600081::1770137208::0::1::::EntityUtils<>RefCounted<><>0<>0<><>::
 HTTPFetcher.gd::GDScript::5684943706445092715::1770136376::0::1::::HTTPFetcher<>RefCounted<><>0<>0<><>::
 ImageLoader.gd::GDScript::1348176550535554584::1770136385::0::1::::ImageLoader<>RefCounted<><>0<>0<><>::
-TextureLoader.gd::GDScript::4710411096634701084::1770136400::0::1::::TextureLoader<>RefCounted<><>0<>0<><>::
+TextureLoader.gd::GDScript::4710411096634701084::1770139298::0::1::::TextureLoader<>RefCounted<><>0<>0<><>::
 ::res://scripts/world/::1770136757
 WorldSystem.gd::GDScript::8664438311181979239::1769982624::0::1::::WorldSystem<>RefCounted<><>0<>0<><>::
 ::res://shaders/::1769538423

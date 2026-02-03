@@ -18,8 +18,8 @@ import {
   MIME_TO_EXT,
 } from '@/ai/scenario-types'
 
-import type { ImageGenerationResult } from '@/ai/provider-contract'
-import { ProviderError, ProviderErrorCode, tryGetPngDimensions } from '@/ai/provider-contract'
+import type { ImageGenerationResult, ImageGenerationAdapter } from '@/ai/provider-contract'
+import { ProviderError, ProviderErrorCode, tryGetPngDimensions, PROVIDER_DEFAULTS } from '@/ai/provider-contract'
 
 // Log level utility for production-safe debugging
 const LOG_LEVEL = process.env.LOG_LEVEL || 'INFO';
@@ -223,6 +223,34 @@ export class ScenarioClient {
     const response = await this.request<{ job?: { jobId?: string } }>(
       'POST',
       '/generate/remove-background',
+      payload
+    );
+
+    const jobId = response.job?.jobId;
+    if (!jobId) {
+      throw new Error('No jobId returned from API');
+    }
+
+    return jobId;
+  }
+
+  async createLayeredDecomposeJob(params: {
+    image: string;
+    layerCount: number;
+    description?: string;
+  }): Promise<string> {
+    const payload: Record<string, unknown> = {
+      image: params.image,
+      layersCount: params.layerCount,
+    };
+
+    if (params.description) {
+      payload.description = params.description;
+    }
+
+    const response = await this.request<{ job?: { jobId?: string } }>(
+      'POST',
+      '/generate/layered',
       payload
     );
 
@@ -533,4 +561,75 @@ export function createScenarioClient(env: {
     apiSecret,
     apiUrl: env.SCENARIO_API_URL,
   });
+}
+
+/**
+ * Create an ImageGenerationAdapter that wraps ScenarioClient.
+ *
+ * This is the canonical adapter factory for Scenario provider.
+ * Use this in pipeline stages and AssetService.
+ */
+export function createScenarioAdapter(config: ScenarioConfig): ImageGenerationAdapter {
+  const client = new ScenarioClient(config);
+
+  return {
+    async uploadImage(png: Uint8Array): Promise<string> {
+      const arrayBuffer = png.buffer.slice(
+        png.byteOffset,
+        png.byteOffset + png.byteLength
+      ) as ArrayBuffer;
+      return client.uploadAsset(arrayBuffer);
+    },
+
+    async txt2img(params): Promise<{ assetId: string }> {
+      const result = await client.generate({
+        prompt: params.prompt,
+        width: params.width ?? PROVIDER_DEFAULTS.WIDTH,
+        height: params.height ?? PROVIDER_DEFAULTS.HEIGHT,
+        negativePrompt: params.negativePrompt,
+        guidance: params.guidance ?? PROVIDER_DEFAULTS.GUIDANCE,
+        seed: params.seed !== undefined ? String(params.seed) : undefined,
+      });
+      if (result.assetIds.length === 0) {
+        throw new Error('No assets generated');
+      }
+      return { assetId: result.assetIds[0] };
+    },
+
+    async img2img(params): Promise<{ assetId: string }> {
+      const result = await client.generateImg2Img({
+        image: params.imageAssetId,
+        prompt: params.prompt,
+        strength: params.strength ?? PROVIDER_DEFAULTS.IMG2IMG_STRENGTH,
+        guidance: params.guidance ?? PROVIDER_DEFAULTS.GUIDANCE,
+      });
+      if (result.assetIds.length === 0) {
+        throw new Error('No assets generated');
+      }
+      return { assetId: result.assetIds[0] };
+    },
+
+    async downloadImage(assetId: string): Promise<{ buffer: Uint8Array; extension: string }> {
+      const result = await client.downloadAsset(assetId);
+      return {
+        buffer: new Uint8Array(result.buffer),
+        extension: result.extension,
+      };
+    },
+
+    async removeBackground(assetId: string): Promise<{ assetId: string }> {
+      const resultAssetId = await client.removeBackground({ image: assetId });
+      return { assetId: resultAssetId };
+    },
+
+    async layeredDecompose(params): Promise<{ assetIds: string[] }> {
+      const jobId = await client.createLayeredDecomposeJob({
+        image: params.imageAssetId,
+        layerCount: params.layerCount,
+        description: params.description,
+      });
+      const assetIds = await client.pollJobUntilComplete(jobId);
+      return { assetIds };
+    },
+  };
 }

@@ -1,6 +1,8 @@
 import type { Env } from '@/trpc/context'
-import { ComfyUIClient, createComfyUIClient } from '@/ai/comfyui'
-import { createScenarioClient } from '@/ai/scenario'
+import type { ImageGenerationAdapter } from '@/ai/provider-contract'
+import { PROVIDER_DEFAULTS } from '@/ai/provider-contract'
+import { createScenarioAdapter, createScenarioClient } from '@/ai/scenario'
+import { createComfyUIAdapter } from '@/ai/comfyui'
 import { buildAssetPath } from '@slopcade/shared';
 
 const DEBUG_ASSET_GENERATION = process.env.DEBUG_ASSET_GENERATION === 'true';
@@ -493,139 +495,6 @@ export function buildStructuredNegativePrompt(style: SpriteStyle): string {
   return [...baseNegatives, ...styleSpecific[style]].join(', ');
 }
 
-export interface ProviderClient {
-  uploadImage(imageBuffer: Uint8Array): Promise<string>;
-  txt2img(params: {
-    prompt: string;
-    negativePrompt?: string;
-    width: number;
-    height: number;
-    strength?: number;
-    guidance?: number;
-    seed?: number;
-  }): Promise<{ assetId: string }>;
-  img2img(params: {
-    image: string;
-    prompt: string;
-    negativePrompt?: string;
-    strength?: number;
-    guidance?: number;
-    seed?: number;
-  }): Promise<{ assetId: string }>;
-  downloadImage(assetId: string): Promise<{ buffer: Uint8Array; extension: string }>;
-  removeBackground(params: { image: string; format?: string }): Promise<{ assetId: string }>;
-}
-
-function createComfyUIProviderClient(env: Env): ProviderClient {
-  // Use Modal's deployed endpoint by default, or allow custom endpoint via env
-  const endpoint = env.MODAL_ENDPOINT ?? 'https://hassoncs--slopcade-comfyui-web-img2img.modal.run';
-  
-  const client = createComfyUIClient({
-    COMFYUI_ENDPOINT: endpoint,
-  });
-
-  return {
-    uploadImage: async (png: Uint8Array): Promise<string> => {
-      return client.uploadImage(png);
-    },
-
-    txt2img: async (params): Promise<{ assetId: string }> => {
-      return client.txt2img({
-        prompt: params.prompt,
-        negativePrompt: params.negativePrompt,
-        width: params.width,
-        height: params.height,
-        guidance: params.guidance,
-        seed: params.seed,
-      });
-    },
-
-    img2img: async (params): Promise<{ assetId: string }> => {
-      return client.img2img({
-        image: params.image,
-        prompt: params.prompt,
-        strength: params.strength ?? 0.95,
-        guidance: params.guidance,
-        seed: params.seed,
-      });
-    },
-
-    downloadImage: async (assetId: string): Promise<{ buffer: Uint8Array; extension: string }> => {
-      return client.downloadImage(assetId);
-    },
-
-    removeBackground: async (params): Promise<{ assetId: string }> => {
-      return client.removeBackground({ image: params.image });
-    },
-  };
-}
-
-function createScenarioProviderClient(env: Env): ProviderClient {
-  if (!env.SCENARIO_API_KEY || !env.SCENARIO_SECRET_API_KEY) {
-    throw new Error('SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using Scenario provider');
-  }
-  
-  const client = createScenarioClient({
-    SCENARIO_API_KEY: env.SCENARIO_API_KEY,
-    SCENARIO_SECRET_API_KEY: env.SCENARIO_SECRET_API_KEY,
-    SCENARIO_API_URL: env.SCENARIO_API_URL,
-  });
-
-  return {
-    uploadImage: async (png: Uint8Array): Promise<string> => {
-      const arrayBuffer = png.buffer.slice(
-        png.byteOffset,
-        png.byteOffset + png.byteLength
-      ) as ArrayBuffer;
-      return client.uploadAsset(arrayBuffer);
-    },
-
-    txt2img: async (params): Promise<{ assetId: string }> => {
-      const result = await client.generate({
-        prompt: params.prompt,
-        width: params.width,
-        height: params.height,
-        negativePrompt: params.negativePrompt,
-        seed: params.seed !== undefined ? String(params.seed) : undefined,
-      });
-      if (result.assetIds.length === 0) {
-        throw new Error('No assets generated');
-      }
-      return { assetId: result.assetIds[0] };
-    },
-
-    img2img: async (params): Promise<{ assetId: string }> => {
-      const result = await client.generateImg2Img({
-        image: params.image,
-        prompt: params.prompt,
-        strength: params.strength ?? 0.95,
-        guidance: params.guidance ?? 3.5,
-        seed: params.seed !== undefined ? String(params.seed) : undefined,
-      });
-      if (result.assetIds.length === 0) {
-        throw new Error('No assets generated');
-      }
-      return { assetId: result.assetIds[0] };
-    },
-
-    downloadImage: async (assetId: string): Promise<{ buffer: Uint8Array; extension: string }> => {
-      const result = await client.downloadAsset(assetId);
-      return {
-        buffer: new Uint8Array(result.buffer),
-        extension: result.extension,
-      };
-    },
-
-    removeBackground: async (params): Promise<{ assetId: string }> => {
-      const resultAssetId = await client.removeBackground({
-        image: params.image,
-        format: params.format as 'png' | 'jpg' | 'webp' | undefined,
-      });
-      return { assetId: resultAssetId };
-    },
-  };
-}
-
 export type ImageGenerationProvider = 'modal' | 'scenario';
 
 export function getImageGenerationConfig(env: Env): {
@@ -649,17 +518,34 @@ export function getImageGenerationConfig(env: Env): {
   return { configured: true, provider: 'modal' };
 }
 
-export function getProviderClient(env: Env): ProviderClient {
+/**
+ * Get the unified ImageGenerationAdapter for the configured provider.
+ *
+ * Uses the canonical adapter factories from scenario.ts and comfyui.ts.
+ */
+export function getProviderClient(env: Env): ImageGenerationAdapter {
   const provider = env.IMAGE_GENERATION_PROVIDER ?? 'scenario';
-  
+
   if (provider === 'scenario') {
-    return createScenarioProviderClient(env);
+    if (!env.SCENARIO_API_KEY || !env.SCENARIO_SECRET_API_KEY) {
+      throw new Error('SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using Scenario provider');
+    }
+    return createScenarioAdapter({
+      apiKey: env.SCENARIO_API_KEY,
+      apiSecret: env.SCENARIO_SECRET_API_KEY,
+      apiUrl: env.SCENARIO_API_URL,
+    });
   }
-  
-  return createComfyUIProviderClient(env);
+
+  const endpoint = env.MODAL_ENDPOINT ?? 'https://hassoncs--slopcade-comfyui-web-img2img.modal.run';
+  return createComfyUIAdapter({ endpoint });
 }
 
-export interface ImageGenerationAdapter {
+/**
+ * Legacy adapter interface for AssetService.
+ * @deprecated Use ImageGenerationAdapter from provider-contract.ts instead.
+ */
+export interface AssetServiceAdapter {
   configured: boolean;
   uploadImage?: (imageBuffer: Uint8Array, filename?: string) => Promise<{ assetId: string }>;
   img2img?: (params: {
@@ -672,18 +558,22 @@ export interface ImageGenerationAdapter {
   downloadImage?: (assetId: string) => Promise<{ buffer: Uint8Array; mimeType: string }>;
 }
 
+/**
+ * Create a legacy AssetServiceAdapter.
+ * @deprecated Use getProviderClient() with ImageGenerationAdapter instead.
+ */
 export async function createImageGenerationAdapter({
   provider,
   env,
 }: {
   provider: 'scenario' | 'modal';
   env: Env;
-}): Promise<ImageGenerationAdapter> {
+}): Promise<AssetServiceAdapter> {
   if (provider === 'scenario') {
     if (!env.SCENARIO_API_KEY || !env.SCENARIO_SECRET_API_KEY) {
       return { configured: false };
     }
-    
+
     const client = createScenarioClient({
       SCENARIO_API_KEY: env.SCENARIO_API_KEY,
       SCENARIO_SECRET_API_KEY: env.SCENARIO_SECRET_API_KEY,
@@ -703,14 +593,14 @@ export async function createImageGenerationAdapter({
         const result = await client.generateImg2Img({
           image: params.image,
           prompt: params.prompt,
-          strength: params.strength ?? 0.75,
+          strength: params.strength ?? PROVIDER_DEFAULTS.IMG2IMG_STRENGTH,
         });
         return { assetId: result.assetIds[0] };
       },
       downloadImage: async (assetId: string) => {
         const result = await client.downloadAsset(assetId);
-        return { 
-          buffer: new Uint8Array(result.buffer), 
+        return {
+          buffer: new Uint8Array(result.buffer),
           mimeType: result.mimeType,
         };
       },
@@ -718,25 +608,25 @@ export async function createImageGenerationAdapter({
   }
 
   // Modal/ComfyUI provider
-  const client = createComfyUIProviderClient(env);
-  
+  const adapter = getProviderClient(env);
+
   return {
     configured: true,
     uploadImage: async (imageBuffer: Uint8Array) => {
-      const assetId = await client.uploadImage(imageBuffer);
+      const assetId = await adapter.uploadImage(imageBuffer);
       return { assetId };
     },
     img2img: async (params) => {
-      return client.img2img({
-        image: params.image,
+      return adapter.img2img({
+        imageAssetId: params.image,
         prompt: params.prompt,
         strength: params.strength,
       });
     },
     downloadImage: async (assetId: string) => {
-      const result = await client.downloadImage(assetId);
-      const mimeType = result.extension === 'png' ? 'image/png' : 
-                       result.extension === 'jpg' || result.extension === 'jpeg' ? 'image/jpeg' : 
+      const result = await adapter.downloadImage(assetId);
+      const mimeType = result.extension === '.png' ? 'image/png' :
+                       result.extension === '.jpg' || result.extension === '.jpeg' ? 'image/jpeg' :
                        'image/webp';
       return { buffer: result.buffer, mimeType };
     },
@@ -744,7 +634,7 @@ export async function createImageGenerationAdapter({
 }
 
 export class AssetService {
-  private providerClient: ProviderClient | null = null;
+  private providerClient: ImageGenerationAdapter | null = null;
   private env: Env;
   private debugMode: boolean;
 
@@ -782,7 +672,7 @@ export class AssetService {
     return `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
   }
 
-  private getProviderClient(): ProviderClient {
+  private getProviderClient(): ImageGenerationAdapter {
     if (!this.providerClient) {
       this.providerClient = getProviderClient(this.env);
     }
@@ -845,10 +735,9 @@ export class AssetService {
 
       const result = await provider.img2img({
         prompt,
-        image: uploadedAssetId,
+        imageAssetId: uploadedAssetId,
         strength,
         guidance,
-        seed: seed !== undefined ? parseInt(seed, 10) : undefined,
       });
 
         const assetId = result.assetId;
@@ -945,9 +834,9 @@ export class AssetService {
 
       const result = await provider.img2img({
         prompt,
-        image: uploadedAssetId,
-        strength: 0.95,
-        guidance: 3.5,
+        imageAssetId: uploadedAssetId,
+        strength: PROVIDER_DEFAULTS.IMG2IMG_STRENGTH,
+        guidance: PROVIDER_DEFAULTS.GUIDANCE,
       });
 
       const assetId = result.assetId;
@@ -1014,9 +903,9 @@ export class AssetService {
 
       const result = await provider.img2img({
         prompt: description,
-        image: uploadedAssetId,
-        strength: 0.95,
-        guidance: 3.5,
+        imageAssetId: uploadedAssetId,
+        strength: PROVIDER_DEFAULTS.IMG2IMG_STRENGTH,
+        guidance: PROVIDER_DEFAULTS.GUIDANCE,
       });
 
       const assetId = result.assetId;
@@ -1053,10 +942,7 @@ export class AssetService {
 
       const uploadedAssetId = await provider.uploadImage(new Uint8Array(imageBuffer));
 
-      const result = await provider.removeBackground({
-        image: uploadedAssetId,
-        format: 'png',
-      });
+      const result = await provider.removeBackground(uploadedAssetId);
 
       const { buffer, extension } = await provider.downloadImage(result.assetId);
       const r2Key = await this.uploadToR2(buffer, extension, entityType, context);

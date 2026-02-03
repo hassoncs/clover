@@ -1,3 +1,0 @@
-color: #FFEAA7
-colorBasedStrength: 0.8752609411764706
-finalStrength: 0.8752609411764706

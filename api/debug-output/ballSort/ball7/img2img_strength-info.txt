@@ -1,3 +1,0 @@
-color: #F7DC6F
-colorBasedStrength: 0.8792595294117647
-finalStrength: 0.8792595294117647
