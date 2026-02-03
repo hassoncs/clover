@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-03T20:59:38.618Z",
+  "generatedAt": "2026-02-03T21:05:11.701Z",
   "games": [
     {
       "id": "ballSort",
@@ -955,203 +955,20 @@
     {
       "id": "ballSortScripted",
       "title": "Ball Sort (Scripted)",
-      "description": "Sort colored balls into tubes - using the generic scripting system",
+      "description": "A Ball Sort (Scripted) game",
       "definition": {
         "metadata": {
           "id": "test-ball-sort-scripted",
           "title": "Ball Sort (Scripted)",
-          "description": "Sort colored balls into tubes - using the generic scripting system",
           "version": "1.0.0"
         },
         "world": {
           "gravity": {
             "x": 0,
-            "y": 0
+            "y": 10
           },
-          "pixelsPerMeter": 50,
-          "bounds": {
-            "width": 14.4,
-            "height": 25.6
-          }
+          "pixelsPerMeter": 50
         },
-        "camera": {
-          "type": "fixed",
-          "zoom": 1
-        },
-        "background": {
-          "type": "static"
-        },
-        "input": {
-          "debugInputs": true
-        },
-        "ui": {
-          "showTimer": true,
-          "timerCountdown": false,
-          "backgroundColor": "#1a237e",
-          "variableDisplays": [
-            {
-              "name": "moveCount",
-              "label": "Moves",
-              "color": "#4CAF50"
-            },
-            {
-              "name": "currentLevel",
-              "label": "Level",
-              "color": "#FFD700"
-            }
-          ]
-        },
-        "variables": {
-          "currentLevel": 1,
-          "heldBallColor": -1,
-          "sourceTubeIndex": -1,
-          "heldBallId": "",
-          "moveCount": 0,
-          "startTime": 0,
-          "_winAtElapsed": 0,
-          "_invalidFeedbackStart": 0,
-          "tube0_count": 2,
-          "tube1_count": 2,
-          "tube2_count": 4,
-          "tube3_count": 0,
-          "tube4_count": 0,
-          "tube5_count": 0,
-          "tube0_topColor": 0,
-          "tube1_topColor": 1,
-          "tube2_topColor": 1,
-          "tube3_topColor": -1,
-          "tube4_topColor": -1,
-          "tube5_topColor": -1
-        },
-        "containers": [
-          {
-            "id": "tube-0",
-            "type": "stack",
-            "capacity": 4,
-            "layout": {
-              "direction": "vertical",
-              "spacing": 1.32,
-              "basePosition": {
-                "x": -5.485714285714286,
-                "y": -3.1999999999999993
-              },
-              "anchor": "bottom"
-            }
-          },
-          {
-            "id": "tube-1",
-            "type": "stack",
-            "capacity": 4,
-            "layout": {
-              "direction": "vertical",
-              "spacing": 1.32,
-              "basePosition": {
-                "x": -3.291428571428572,
-                "y": -3.1999999999999993
-              },
-              "anchor": "bottom"
-            }
-          },
-          {
-            "id": "tube-2",
-            "type": "stack",
-            "capacity": 4,
-            "layout": {
-              "direction": "vertical",
-              "spacing": 1.32,
-              "basePosition": {
-                "x": -1.0971428571428579,
-                "y": -3.1999999999999993
-              },
-              "anchor": "bottom"
-            }
-          },
-          {
-            "id": "tube-3",
-            "type": "stack",
-            "capacity": 4,
-            "layout": {
-              "direction": "vertical",
-              "spacing": 1.32,
-              "basePosition": {
-                "x": 1.097142857142856,
-                "y": -3.1999999999999993
-              },
-              "anchor": "bottom"
-            }
-          },
-          {
-            "id": "tube-4",
-            "type": "stack",
-            "capacity": 4,
-            "layout": {
-              "direction": "vertical",
-              "spacing": 1.32,
-              "basePosition": {
-                "x": 3.29142857142857,
-                "y": -3.1999999999999993
-              },
-              "anchor": "bottom"
-            }
-          },
-          {
-            "id": "tube-5",
-            "type": "stack",
-            "capacity": 4,
-            "layout": {
-              "direction": "vertical",
-              "spacing": 1.32,
-              "basePosition": {
-                "x": 5.485714285714284,
-                "y": -3.1999999999999993
-              },
-              "anchor": "bottom"
-            }
-          }
-        ],
-        "stateMachines": [
-          {
-            "id": "gameFlow",
-            "initialState": "idle",
-            "states": [
-              {
-                "id": "idle"
-              },
-              {
-                "id": "holding"
-              }
-            ],
-            "transitions": [
-              {
-                "id": "pickup",
-                "from": "idle",
-                "to": "holding",
-                "trigger": {
-                  "type": "event",
-                  "eventName": "ball_picked"
-                }
-              },
-              {
-                "id": "drop",
-                "from": "holding",
-                "to": "idle",
-                "trigger": {
-                  "type": "event",
-                  "eventName": "ball_dropped"
-                }
-              },
-              {
-                "id": "cancel",
-                "from": "holding",
-                "to": "idle",
-                "trigger": {
-                  "type": "event",
-                  "eventName": "pickup_cancelled"
-                }
-              }
-            ]
-          }
-        ],
         "templates": {
           "tube": {
             "id": "tube",
@@ -1165,25 +982,9 @@
             },
             "collider": {
               "shape": "box",
-              "width": 1.3199999999999998,
+              "width": 1.32,
               "height": 6,
               "isSensor": true
-            }
-          },
-          "tubeHoverHighlight": {
-            "id": "tubeHoverHighlight",
-            "tags": [
-              "highlight",
-              "hover"
-            ],
-            "layer": 500,
-            "visual": {
-              "type": "rect",
-              "width": 1.764,
-              "height": 6.12,
-              "color": "#FFFFFF",
-              "opacity": 0.15,
-              "blendMode": "add"
             }
           },
           "ball0": {
@@ -1209,13 +1010,6 @@
                     "min": 0.95,
                     "max": 1.15,
                     "speed": 4
-                  },
-                  {
-                    "type": "sprite_effect",
-                    "effect": "glow",
-                    "params": {
-                      "pulse": true
-                    }
                   }
                 ]
               },
@@ -1230,18 +1024,6 @@
                     "min": 0.85,
                     "max": 1.15,
                     "speed": 25
-                  },
-                  {
-                    "type": "sprite_effect",
-                    "effect": "flash",
-                    "params": {
-                      "color": [
-                        255,
-                        80,
-                        80
-                      ],
-                      "intensity": 0.7
-                    }
                   }
                 ]
               }
@@ -1270,13 +1052,6 @@
                     "min": 0.95,
                     "max": 1.15,
                     "speed": 4
-                  },
-                  {
-                    "type": "sprite_effect",
-                    "effect": "glow",
-                    "params": {
-                      "pulse": true
-                    }
                   }
                 ]
               },
@@ -1291,403 +1066,10 @@
                     "min": 0.85,
                     "max": 1.15,
                     "speed": 25
-                  },
-                  {
-                    "type": "sprite_effect",
-                    "effect": "flash",
-                    "params": {
-                      "color": [
-                        255,
-                        80,
-                        80
-                      ],
-                      "intensity": 0.7
-                    }
                   }
                 ]
               }
             ]
-          },
-          "ball2": {
-            "id": "ball2",
-            "tags": [
-              "ball",
-              "color-2"
-            ],
-            "visual": {
-              "type": "image",
-              "imageWidth": 1.2,
-              "imageHeight": 1.2
-            },
-            "conditionalBehaviors": [
-              {
-                "when": {
-                  "hasTag": "held"
-                },
-                "priority": 1,
-                "behaviors": [
-                  {
-                    "type": "scale_oscillate",
-                    "min": 0.95,
-                    "max": 1.15,
-                    "speed": 4
-                  },
-                  {
-                    "type": "sprite_effect",
-                    "effect": "glow",
-                    "params": {
-                      "pulse": true
-                    }
-                  }
-                ]
-              },
-              {
-                "when": {
-                  "hasTag": "invalid"
-                },
-                "priority": 2,
-                "behaviors": [
-                  {
-                    "type": "scale_oscillate",
-                    "min": 0.85,
-                    "max": 1.15,
-                    "speed": 25
-                  },
-                  {
-                    "type": "sprite_effect",
-                    "effect": "flash",
-                    "params": {
-                      "color": [
-                        255,
-                        80,
-                        80
-                      ],
-                      "intensity": 0.7
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          "ball3": {
-            "id": "ball3",
-            "tags": [
-              "ball",
-              "color-3"
-            ],
-            "visual": {
-              "type": "image",
-              "imageWidth": 1.2,
-              "imageHeight": 1.2
-            },
-            "conditionalBehaviors": [
-              {
-                "when": {
-                  "hasTag": "held"
-                },
-                "priority": 1,
-                "behaviors": [
-                  {
-                    "type": "scale_oscillate",
-                    "min": 0.95,
-                    "max": 1.15,
-                    "speed": 4
-                  },
-                  {
-                    "type": "sprite_effect",
-                    "effect": "glow",
-                    "params": {
-                      "pulse": true
-                    }
-                  }
-                ]
-              },
-              {
-                "when": {
-                  "hasTag": "invalid"
-                },
-                "priority": 2,
-                "behaviors": [
-                  {
-                    "type": "scale_oscillate",
-                    "min": 0.85,
-                    "max": 1.15,
-                    "speed": 25
-                  },
-                  {
-                    "type": "sprite_effect",
-                    "effect": "flash",
-                    "params": {
-                      "color": [
-                        255,
-                        80,
-                        80
-                      ],
-                      "intensity": 0.7
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          "ball4": {
-            "id": "ball4",
-            "tags": [
-              "ball",
-              "color-4"
-            ],
-            "visual": {
-              "type": "image",
-              "imageWidth": 1.2,
-              "imageHeight": 1.2
-            },
-            "conditionalBehaviors": [
-              {
-                "when": {
-                  "hasTag": "held"
-                },
-                "priority": 1,
-                "behaviors": [
-                  {
-                    "type": "scale_oscillate",
-                    "min": 0.95,
-                    "max": 1.15,
-                    "speed": 4
-                  },
-                  {
-                    "type": "sprite_effect",
-                    "effect": "glow",
-                    "params": {
-                      "pulse": true
-                    }
-                  }
-                ]
-              },
-              {
-                "when": {
-                  "hasTag": "invalid"
-                },
-                "priority": 2,
-                "behaviors": [
-                  {
-                    "type": "scale_oscillate",
-                    "min": 0.85,
-                    "max": 1.15,
-                    "speed": 25
-                  },
-                  {
-                    "type": "sprite_effect",
-                    "effect": "flash",
-                    "params": {
-                      "color": [
-                        255,
-                        80,
-                        80
-                      ],
-                      "intensity": 0.7
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          "ball5": {
-            "id": "ball5",
-            "tags": [
-              "ball",
-              "color-5"
-            ],
-            "visual": {
-              "type": "image",
-              "imageWidth": 1.2,
-              "imageHeight": 1.2
-            },
-            "conditionalBehaviors": [
-              {
-                "when": {
-                  "hasTag": "held"
-                },
-                "priority": 1,
-                "behaviors": [
-                  {
-                    "type": "scale_oscillate",
-                    "min": 0.95,
-                    "max": 1.15,
-                    "speed": 4
-                  },
-                  {
-                    "type": "sprite_effect",
-                    "effect": "glow",
-                    "params": {
-                      "pulse": true
-                    }
-                  }
-                ]
-              },
-              {
-                "when": {
-                  "hasTag": "invalid"
-                },
-                "priority": 2,
-                "behaviors": [
-                  {
-                    "type": "scale_oscillate",
-                    "min": 0.85,
-                    "max": 1.15,
-                    "speed": 25
-                  },
-                  {
-                    "type": "sprite_effect",
-                    "effect": "flash",
-                    "params": {
-                      "color": [
-                        255,
-                        80,
-                        80
-                      ],
-                      "intensity": 0.7
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          "ball6": {
-            "id": "ball6",
-            "tags": [
-              "ball",
-              "color-6"
-            ],
-            "visual": {
-              "type": "image",
-              "imageWidth": 1.2,
-              "imageHeight": 1.2
-            },
-            "conditionalBehaviors": [
-              {
-                "when": {
-                  "hasTag": "held"
-                },
-                "priority": 1,
-                "behaviors": [
-                  {
-                    "type": "scale_oscillate",
-                    "min": 0.95,
-                    "max": 1.15,
-                    "speed": 4
-                  },
-                  {
-                    "type": "sprite_effect",
-                    "effect": "glow",
-                    "params": {
-                      "pulse": true
-                    }
-                  }
-                ]
-              },
-              {
-                "when": {
-                  "hasTag": "invalid"
-                },
-                "priority": 2,
-                "behaviors": [
-                  {
-                    "type": "scale_oscillate",
-                    "min": 0.85,
-                    "max": 1.15,
-                    "speed": 25
-                  },
-                  {
-                    "type": "sprite_effect",
-                    "effect": "flash",
-                    "params": {
-                      "color": [
-                        255,
-                        80,
-                        80
-                      ],
-                      "intensity": 0.7
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          "ball7": {
-            "id": "ball7",
-            "tags": [
-              "ball",
-              "color-7"
-            ],
-            "visual": {
-              "type": "image",
-              "imageWidth": 1.2,
-              "imageHeight": 1.2
-            },
-            "conditionalBehaviors": [
-              {
-                "when": {
-                  "hasTag": "held"
-                },
-                "priority": 1,
-                "behaviors": [
-                  {
-                    "type": "scale_oscillate",
-                    "min": 0.95,
-                    "max": 1.15,
-                    "speed": 4
-                  },
-                  {
-                    "type": "sprite_effect",
-                    "effect": "glow",
-                    "params": {
-                      "pulse": true
-                    }
-                  }
-                ]
-              },
-              {
-                "when": {
-                  "hasTag": "invalid"
-                },
-                "priority": 2,
-                "behaviors": [
-                  {
-                    "type": "scale_oscillate",
-                    "min": 0.85,
-                    "max": 1.15,
-                    "speed": 25
-                  },
-                  {
-                    "type": "sprite_effect",
-                    "effect": "flash",
-                    "params": {
-                      "color": [
-                        255,
-                        80,
-                        80
-                      ],
-                      "intensity": 0.7
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          "heldBallIndicator": {
-            "id": "heldBallIndicator",
-            "tags": [
-              "held-indicator"
-            ],
-            "visual": {
-              "type": "circle",
-              "radius": 0.72,
-              "color": "#FFD700"
-            },
-            "collider": {
-              "shape": "circle",
-              "radius": 0.72
-            }
           }
         },
         "entities": [
@@ -1700,8 +1082,8 @@
               "tube-0"
             ],
             "transform": {
-              "x": -5.485714285714286,
-              "y": -3.1999999999999993,
+              "x": -5.48,
+              "y": -3.2,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1716,72 +1098,8 @@
               "tube-1"
             ],
             "transform": {
-              "x": -3.291428571428572,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-2",
-            "name": "Tube 2",
-            "template": "tube",
-            "tags": [
-              "tube",
-              "tube-2"
-            ],
-            "transform": {
-              "x": -1.0971428571428579,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-3",
-            "name": "Tube 3",
-            "template": "tube",
-            "tags": [
-              "tube",
-              "tube-3"
-            ],
-            "transform": {
-              "x": 1.097142857142856,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-4",
-            "name": "Tube 4",
-            "template": "tube",
-            "tags": [
-              "tube",
-              "tube-4"
-            ],
-            "transform": {
-              "x": 3.29142857142857,
-              "y": -3.1999999999999993,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-5",
-            "name": "Tube 5",
-            "template": "tube",
-            "tags": [
-              "tube",
-              "tube-5"
-            ],
-            "transform": {
-              "x": 5.485714285714284,
-              "y": -3.1999999999999993,
+              "x": -3.29,
+              "y": -3.2,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1793,12 +1111,11 @@
             "template": "ball0",
             "tags": [
               "ball",
-              "color-0",
-              "in-container-tube-0"
+              "color-0"
             ],
             "transform": {
-              "x": -5.485714285714286,
-              "y": -5.419999999999998,
+              "x": -5.48,
+              "y": -5.42,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1810,127 +1127,11 @@
             "template": "ball0",
             "tags": [
               "ball",
-              "color-0",
-              "in-container-tube-0"
+              "color-0"
             ],
             "transform": {
-              "x": -5.485714285714286,
-              "y": -4.099999999999998,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "ball-2",
-            "name": "Ball 2",
-            "template": "ball1",
-            "tags": [
-              "ball",
-              "color-1",
-              "in-container-tube-1"
-            ],
-            "transform": {
-              "x": -3.291428571428572,
-              "y": -5.419999999999998,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "ball-3",
-            "name": "Ball 3",
-            "template": "ball0",
-            "tags": [
-              "ball",
-              "color-0",
-              "in-container-tube-1"
-            ],
-            "transform": {
-              "x": -3.291428571428572,
-              "y": -4.099999999999998,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "ball-4",
-            "name": "Ball 4",
-            "template": "ball1",
-            "tags": [
-              "ball",
-              "color-1",
-              "in-container-tube-2"
-            ],
-            "transform": {
-              "x": -1.0971428571428579,
-              "y": -5.419999999999998,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "ball-5",
-            "name": "Ball 5",
-            "template": "ball1",
-            "tags": [
-              "ball",
-              "color-1",
-              "in-container-tube-2"
-            ],
-            "transform": {
-              "x": -1.0971428571428579,
-              "y": -4.099999999999998,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "ball-6",
-            "name": "Ball 6",
-            "template": "ball1",
-            "tags": [
-              "ball",
-              "color-1",
-              "in-container-tube-2"
-            ],
-            "transform": {
-              "x": -1.0971428571428579,
-              "y": -2.7799999999999976,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "ball-7",
-            "name": "Ball 7",
-            "template": "ball0",
-            "tags": [
-              "ball",
-              "color-0",
-              "in-container-tube-2"
-            ],
-            "transform": {
-              "x": -1.0971428571428579,
-              "y": -1.4599999999999973,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "tube-hover-highlight",
-            "name": "Tube Hover Highlight",
-            "template": "tubeHoverHighlight",
-            "visible": false,
-            "transform": {
-              "x": 0,
-              "y": 0,
+              "x": -5.48,
+              "y": -4.1,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1940,7 +1141,6 @@
         "rules": [
           {
             "id": "init_start_time",
-            "name": "Initialize start time",
             "trigger": {
               "type": "gameStart"
             },
@@ -1957,7 +1157,6 @@
           },
           {
             "id": "tap_tube_idle",
-            "name": "Pick up ball from tube when in idle state",
             "trigger": {
               "type": "tap",
               "target": "tube"
@@ -1965,20 +1164,19 @@
             "conditions": [
               {
                 "type": "expression",
-                "expr": "stateIs('gameFlow', 'idle')"
+                "expr": "stateIs('gameFlow','idle')"
               }
             ],
             "actions": [
               {
                 "type": "run_script",
-                "script": "\n// Ball Sort Game Logic - 100% Script-Based\n// This script handles all game logic through the generic scripting system\n\n// Helper: Get tube index from entity ID\nfunction getTubeIndex(entityId) {\n  if (!entityId) return -1;\n  var match = entityId.match(/^tube-(\\d+)$/);\n  return match ? parseInt(match[1], 10) : -1;\n}\n\n// Helper: Find the top ball in a tube (highest Y position)\nfunction findTopBallInTube(ctx, tubeIndex) {\n  var balls = ctx.queryEntitiesWithData({ tag: 'in-container-tube-' + tubeIndex });\n  if (balls.length === 0) return null;\n\n  var topBall = balls[0];\n  for (var i = 1; i < balls.length; i++) {\n    if (balls[i].position.y > topBall.position.y) {\n      topBall = balls[i];\n    }\n  }\n  return topBall;\n}\n\n// Helper: Get ball color from tags\nfunction getBallColor(ball) {\n  for (var i = 0; i < ball.tags.length; i++) {\n    if (ball.tags[i].indexOf('color-') === 0) {\n      return parseInt(ball.tags[i].substring(6), 10);\n    }\n  }\n  return -1;\n}\n\n// Helper: Calculate ball drop position in tube\nfunction calculateDropPosition(ctx, tubeIndex, slot) {\n  var tubeData = ctx.getEntityData('tube-' + tubeIndex);\n  if (!tubeData) return null;\n\n  var tubeX = tubeData.position.x;\n  var tubeY = tubeData.position.y;\n  var tubeHeight = 6;\n  var ballRadius = 0.6;\n  var ballSpacing = 1.32;\n  var bottomPadding = 0.18;\n\n  var y = tubeY - tubeHeight / 2 + bottomPadding + ballRadius + slot * ballSpacing;\n  return { x: tubeX, y: y };\n}\n\n// Pickup handler - called when tapping a tube in idle state\nexports.onPickup = function(ctx, args) {\n  var tapTarget = ctx.getTapTargetId();\n  var tubeIndex = getTubeIndex(tapTarget);\n\n  if (tubeIndex < 0) {\n    ctx.emit('pickup_cancelled');\n    return;\n  }\n\n  var count = ctx.getVariable('tube' + tubeIndex + '_count') || 0;\n  if (count === 0) {\n    ctx.emit('pickup_cancelled');\n    return;\n  }\n\n  var topBall = findTopBallInTube(ctx, tubeIndex);\n  if (!topBall) {\n    ctx.emit('pickup_cancelled');\n    return;\n  }\n\n  var ballColor = getBallColor(topBall);\n\n  // Store pickup state\n  ctx.setVariable('heldBallId', topBall.id);\n  ctx.setVariable('heldBallColor', ballColor);\n  ctx.setVariable('sourceTubeIndex', tubeIndex);\n\n  // Update tube state\n  ctx.setVariable('tube' + tubeIndex + '_count', count - 1);\n\n  // Update top color for source tube\n  var remainingBalls = ctx.queryEntitiesWithData({ tag: 'in-container-tube-' + tubeIndex });\n  remainingBalls = remainingBalls.filter(function(b) { return b.id !== topBall.id; });\n  if (remainingBalls.length > 0) {\n    var newTop = remainingBalls[0];\n    for (var i = 1; i < remainingBalls.length; i++) {\n      if (remainingBalls[i].position.y > newTop.position.y) {\n        newTop = remainingBalls[i];\n      }\n    }\n    ctx.setVariable('tube' + tubeIndex + '_topColor', getBallColor(newTop));\n  } else {\n    ctx.setVariable('tube' + tubeIndex + '_topColor', -1);\n  }\n\n  // Update tags\n  ctx.addTag(topBall.id, 'held');\n  ctx.removeTag(topBall.id, 'in-container-tube-' + tubeIndex);\n\n  // Animate ball up above tube\n  var tubeData = ctx.getEntityData('tube-' + tubeIndex);\n  if (tubeData) {\n    var liftY = tubeData.position.y + 3 + 2;\n    ctx.animateEntity(topBall.id, {\n      x: tubeData.position.x,\n      y: liftY,\n      duration: 0.2,\n      easing: 'easeOutQuad'\n    });\n  }\n\n  ctx.emit('ball_picked');\n};\n\n// Drop handler - called when tapping a tube in holding state\nexports.onDrop = function(ctx, args) {\n  var tapTarget = ctx.getTapTargetId();\n  var targetTubeIndex = getTubeIndex(tapTarget);\n  var sourceTubeIndex = ctx.getVariable('sourceTubeIndex');\n  var heldBallId = ctx.getVariable('heldBallId');\n  var heldBallColor = ctx.getVariable('heldBallColor');\n\n  if (targetTubeIndex < 0 || sourceTubeIndex < 0 || !heldBallId) {\n    ctx.emit('pickup_cancelled');\n    return;\n  }\n\n  // Same tube = cancel\n  if (targetTubeIndex === sourceTubeIndex) {\n    cancelPickup(ctx);\n    return;\n  }\n\n  var targetCount = ctx.getVariable('tube' + targetTubeIndex + '_count') || 0;\n  var targetTopColor = ctx.getVariable('tube' + targetTubeIndex + '_topColor');\n\n  // Check if tube is full\n  if (targetCount >= 4) {\n    showInvalidFeedback(ctx, heldBallId);\n    return;\n  }\n\n  // Check color match (or empty tube)\n  if (targetCount > 0 && targetTopColor !== heldBallColor) {\n    showInvalidFeedback(ctx, heldBallId);\n    return;\n  }\n\n  // Valid drop - animate ball to position\n  var dropPos = calculateDropPosition(ctx, targetTubeIndex, targetCount);\n  if (!dropPos) {\n    cancelPickup(ctx);\n    return;\n  }\n\n  ctx.animateEntity(heldBallId, {\n    x: dropPos.x,\n    y: dropPos.y,\n    duration: 0.2,\n    easing: 'easeOutQuad'\n  });\n\n  // Update tags\n  ctx.removeTag(heldBallId, 'held');\n  ctx.addTag(heldBallId, 'in-container-tube-' + targetTubeIndex);\n\n  // Update tube state\n  ctx.setVariable('tube' + targetTubeIndex + '_count', targetCount + 1);\n  ctx.setVariable('tube' + targetTubeIndex + '_topColor', heldBallColor);\n\n  // Clear held state\n  ctx.setVariable('heldBallId', '');\n  ctx.setVariable('sourceTubeIndex', -1);\n  ctx.setVariable('heldBallColor', -1);\n\n  // Increment move count\n  var moveCount = ctx.getVariable('moveCount') || 0;\n  ctx.setVariable('moveCount', moveCount + 1);\n\n  ctx.emit('ball_dropped');\n};\n\n// Check win - called after each drop\nexports.checkWin = function(ctx, args) {\n  // Check each tube: must be empty or have 4 balls of same color\n  for (var i = 0; i < 6; i++) {\n    var count = ctx.getVariable('tube' + i + '_count') || 0;\n\n    // Empty tubes are OK\n    if (count === 0) continue;\n\n    // Must be full (4 balls)\n    if (count !== 4) return;\n\n    // Check all balls are same color\n    var balls = ctx.queryEntitiesWithData({ tag: 'in-container-tube-' + i });\n    if (balls.length === 0) return;\n\n    var firstColor = getBallColor(balls[0]);\n    for (var j = 1; j < balls.length; j++) {\n      if (getBallColor(balls[j]) !== firstColor) return;\n    }\n  }\n\n  // All tubes pass the check - schedule win after animation\n  ctx.setVariable('_winAtElapsed', ctx.elapsed + 0.3);\n};\n\n// Helper: Cancel pickup and return ball to source\nfunction cancelPickup(ctx) {\n  var heldBallId = ctx.getVariable('heldBallId');\n  var sourceTubeIndex = ctx.getVariable('sourceTubeIndex');\n  var heldBallColor = ctx.getVariable('heldBallColor');\n\n  if (heldBallId && sourceTubeIndex >= 0) {\n    var count = ctx.getVariable('tube' + sourceTubeIndex + '_count') || 0;\n\n    // Calculate return position\n    var returnPos = calculateDropPosition(ctx, sourceTubeIndex, count);\n    if (returnPos) {\n      ctx.animateEntity(heldBallId, {\n        x: returnPos.x,\n        y: returnPos.y,\n        duration: 0.2,\n        easing: 'easeOutQuad'\n      });\n    }\n\n    // Restore tags\n    ctx.removeTag(heldBallId, 'held');\n    ctx.addTag(heldBallId, 'in-container-tube-' + sourceTubeIndex);\n\n    // Restore tube state\n    ctx.setVariable('tube' + sourceTubeIndex + '_count', count + 1);\n    ctx.setVariable('tube' + sourceTubeIndex + '_topColor', heldBallColor);\n  }\n\n  // Clear held state\n  ctx.setVariable('heldBallId', '');\n  ctx.setVariable('sourceTubeIndex', -1);\n  ctx.setVariable('heldBallColor', -1);\n\n  ctx.emit('pickup_cancelled');\n}\n\n// Helper: Show invalid move feedback\nfunction showInvalidFeedback(ctx, ballId) {\n  ctx.addTag(ballId, 'invalid');\n  // The 'invalid' tag will be removed by a frame rule after 300ms\n}\n",
+                "script": "game",
                 "export": "onPickup"
               }
             ]
           },
           {
             "id": "tap_tube_holding",
-            "name": "Drop ball into tube when holding",
             "trigger": {
               "type": "tap",
               "target": "tube"
@@ -1986,20 +1184,19 @@
             "conditions": [
               {
                 "type": "expression",
-                "expr": "stateIs('gameFlow', 'holding')"
+                "expr": "stateIs('gameFlow','holding')"
               }
             ],
             "actions": [
               {
                 "type": "run_script",
-                "script": "\n// Ball Sort Game Logic - 100% Script-Based\n// This script handles all game logic through the generic scripting system\n\n// Helper: Get tube index from entity ID\nfunction getTubeIndex(entityId) {\n  if (!entityId) return -1;\n  var match = entityId.match(/^tube-(\\d+)$/);\n  return match ? parseInt(match[1], 10) : -1;\n}\n\n// Helper: Find the top ball in a tube (highest Y position)\nfunction findTopBallInTube(ctx, tubeIndex) {\n  var balls = ctx.queryEntitiesWithData({ tag: 'in-container-tube-' + tubeIndex });\n  if (balls.length === 0) return null;\n\n  var topBall = balls[0];\n  for (var i = 1; i < balls.length; i++) {\n    if (balls[i].position.y > topBall.position.y) {\n      topBall = balls[i];\n    }\n  }\n  return topBall;\n}\n\n// Helper: Get ball color from tags\nfunction getBallColor(ball) {\n  for (var i = 0; i < ball.tags.length; i++) {\n    if (ball.tags[i].indexOf('color-') === 0) {\n      return parseInt(ball.tags[i].substring(6), 10);\n    }\n  }\n  return -1;\n}\n\n// Helper: Calculate ball drop position in tube\nfunction calculateDropPosition(ctx, tubeIndex, slot) {\n  var tubeData = ctx.getEntityData('tube-' + tubeIndex);\n  if (!tubeData) return null;\n\n  var tubeX = tubeData.position.x;\n  var tubeY = tubeData.position.y;\n  var tubeHeight = 6;\n  var ballRadius = 0.6;\n  var ballSpacing = 1.32;\n  var bottomPadding = 0.18;\n\n  var y = tubeY - tubeHeight / 2 + bottomPadding + ballRadius + slot * ballSpacing;\n  return { x: tubeX, y: y };\n}\n\n// Pickup handler - called when tapping a tube in idle state\nexports.onPickup = function(ctx, args) {\n  var tapTarget = ctx.getTapTargetId();\n  var tubeIndex = getTubeIndex(tapTarget);\n\n  if (tubeIndex < 0) {\n    ctx.emit('pickup_cancelled');\n    return;\n  }\n\n  var count = ctx.getVariable('tube' + tubeIndex + '_count') || 0;\n  if (count === 0) {\n    ctx.emit('pickup_cancelled');\n    return;\n  }\n\n  var topBall = findTopBallInTube(ctx, tubeIndex);\n  if (!topBall) {\n    ctx.emit('pickup_cancelled');\n    return;\n  }\n\n  var ballColor = getBallColor(topBall);\n\n  // Store pickup state\n  ctx.setVariable('heldBallId', topBall.id);\n  ctx.setVariable('heldBallColor', ballColor);\n  ctx.setVariable('sourceTubeIndex', tubeIndex);\n\n  // Update tube state\n  ctx.setVariable('tube' + tubeIndex + '_count', count - 1);\n\n  // Update top color for source tube\n  var remainingBalls = ctx.queryEntitiesWithData({ tag: 'in-container-tube-' + tubeIndex });\n  remainingBalls = remainingBalls.filter(function(b) { return b.id !== topBall.id; });\n  if (remainingBalls.length > 0) {\n    var newTop = remainingBalls[0];\n    for (var i = 1; i < remainingBalls.length; i++) {\n      if (remainingBalls[i].position.y > newTop.position.y) {\n        newTop = remainingBalls[i];\n      }\n    }\n    ctx.setVariable('tube' + tubeIndex + '_topColor', getBallColor(newTop));\n  } else {\n    ctx.setVariable('tube' + tubeIndex + '_topColor', -1);\n  }\n\n  // Update tags\n  ctx.addTag(topBall.id, 'held');\n  ctx.removeTag(topBall.id, 'in-container-tube-' + tubeIndex);\n\n  // Animate ball up above tube\n  var tubeData = ctx.getEntityData('tube-' + tubeIndex);\n  if (tubeData) {\n    var liftY = tubeData.position.y + 3 + 2;\n    ctx.animateEntity(topBall.id, {\n      x: tubeData.position.x,\n      y: liftY,\n      duration: 0.2,\n      easing: 'easeOutQuad'\n    });\n  }\n\n  ctx.emit('ball_picked');\n};\n\n// Drop handler - called when tapping a tube in holding state\nexports.onDrop = function(ctx, args) {\n  var tapTarget = ctx.getTapTargetId();\n  var targetTubeIndex = getTubeIndex(tapTarget);\n  var sourceTubeIndex = ctx.getVariable('sourceTubeIndex');\n  var heldBallId = ctx.getVariable('heldBallId');\n  var heldBallColor = ctx.getVariable('heldBallColor');\n\n  if (targetTubeIndex < 0 || sourceTubeIndex < 0 || !heldBallId) {\n    ctx.emit('pickup_cancelled');\n    return;\n  }\n\n  // Same tube = cancel\n  if (targetTubeIndex === sourceTubeIndex) {\n    cancelPickup(ctx);\n    return;\n  }\n\n  var targetCount = ctx.getVariable('tube' + targetTubeIndex + '_count') || 0;\n  var targetTopColor = ctx.getVariable('tube' + targetTubeIndex + '_topColor');\n\n  // Check if tube is full\n  if (targetCount >= 4) {\n    showInvalidFeedback(ctx, heldBallId);\n    return;\n  }\n\n  // Check color match (or empty tube)\n  if (targetCount > 0 && targetTopColor !== heldBallColor) {\n    showInvalidFeedback(ctx, heldBallId);\n    return;\n  }\n\n  // Valid drop - animate ball to position\n  var dropPos = calculateDropPosition(ctx, targetTubeIndex, targetCount);\n  if (!dropPos) {\n    cancelPickup(ctx);\n    return;\n  }\n\n  ctx.animateEntity(heldBallId, {\n    x: dropPos.x,\n    y: dropPos.y,\n    duration: 0.2,\n    easing: 'easeOutQuad'\n  });\n\n  // Update tags\n  ctx.removeTag(heldBallId, 'held');\n  ctx.addTag(heldBallId, 'in-container-tube-' + targetTubeIndex);\n\n  // Update tube state\n  ctx.setVariable('tube' + targetTubeIndex + '_count', targetCount + 1);\n  ctx.setVariable('tube' + targetTubeIndex + '_topColor', heldBallColor);\n\n  // Clear held state\n  ctx.setVariable('heldBallId', '');\n  ctx.setVariable('sourceTubeIndex', -1);\n  ctx.setVariable('heldBallColor', -1);\n\n  // Increment move count\n  var moveCount = ctx.getVariable('moveCount') || 0;\n  ctx.setVariable('moveCount', moveCount + 1);\n\n  ctx.emit('ball_dropped');\n};\n\n// Check win - called after each drop\nexports.checkWin = function(ctx, args) {\n  // Check each tube: must be empty or have 4 balls of same color\n  for (var i = 0; i < 6; i++) {\n    var count = ctx.getVariable('tube' + i + '_count') || 0;\n\n    // Empty tubes are OK\n    if (count === 0) continue;\n\n    // Must be full (4 balls)\n    if (count !== 4) return;\n\n    // Check all balls are same color\n    var balls = ctx.queryEntitiesWithData({ tag: 'in-container-tube-' + i });\n    if (balls.length === 0) return;\n\n    var firstColor = getBallColor(balls[0]);\n    for (var j = 1; j < balls.length; j++) {\n      if (getBallColor(balls[j]) !== firstColor) return;\n    }\n  }\n\n  // All tubes pass the check - schedule win after animation\n  ctx.setVariable('_winAtElapsed', ctx.elapsed + 0.3);\n};\n\n// Helper: Cancel pickup and return ball to source\nfunction cancelPickup(ctx) {\n  var heldBallId = ctx.getVariable('heldBallId');\n  var sourceTubeIndex = ctx.getVariable('sourceTubeIndex');\n  var heldBallColor = ctx.getVariable('heldBallColor');\n\n  if (heldBallId && sourceTubeIndex >= 0) {\n    var count = ctx.getVariable('tube' + sourceTubeIndex + '_count') || 0;\n\n    // Calculate return position\n    var returnPos = calculateDropPosition(ctx, sourceTubeIndex, count);\n    if (returnPos) {\n      ctx.animateEntity(heldBallId, {\n        x: returnPos.x,\n        y: returnPos.y,\n        duration: 0.2,\n        easing: 'easeOutQuad'\n      });\n    }\n\n    // Restore tags\n    ctx.removeTag(heldBallId, 'held');\n    ctx.addTag(heldBallId, 'in-container-tube-' + sourceTubeIndex);\n\n    // Restore tube state\n    ctx.setVariable('tube' + sourceTubeIndex + '_count', count + 1);\n    ctx.setVariable('tube' + sourceTubeIndex + '_topColor', heldBallColor);\n  }\n\n  // Clear held state\n  ctx.setVariable('heldBallId', '');\n  ctx.setVariable('sourceTubeIndex', -1);\n  ctx.setVariable('heldBallColor', -1);\n\n  ctx.emit('pickup_cancelled');\n}\n\n// Helper: Show invalid move feedback\nfunction showInvalidFeedback(ctx, ballId) {\n  ctx.addTag(ballId, 'invalid');\n  // The 'invalid' tag will be removed by a frame rule after 300ms\n}\n",
+                "script": "game",
                 "export": "onDrop"
               }
             ]
           },
           {
             "id": "check_win",
-            "name": "Check win condition after each move",
             "trigger": {
               "type": "event",
               "eventName": "ball_dropped"
@@ -2007,21 +1204,20 @@
             "actions": [
               {
                 "type": "run_script",
-                "script": "\n// Ball Sort Game Logic - 100% Script-Based\n// This script handles all game logic through the generic scripting system\n\n// Helper: Get tube index from entity ID\nfunction getTubeIndex(entityId) {\n  if (!entityId) return -1;\n  var match = entityId.match(/^tube-(\\d+)$/);\n  return match ? parseInt(match[1], 10) : -1;\n}\n\n// Helper: Find the top ball in a tube (highest Y position)\nfunction findTopBallInTube(ctx, tubeIndex) {\n  var balls = ctx.queryEntitiesWithData({ tag: 'in-container-tube-' + tubeIndex });\n  if (balls.length === 0) return null;\n\n  var topBall = balls[0];\n  for (var i = 1; i < balls.length; i++) {\n    if (balls[i].position.y > topBall.position.y) {\n      topBall = balls[i];\n    }\n  }\n  return topBall;\n}\n\n// Helper: Get ball color from tags\nfunction getBallColor(ball) {\n  for (var i = 0; i < ball.tags.length; i++) {\n    if (ball.tags[i].indexOf('color-') === 0) {\n      return parseInt(ball.tags[i].substring(6), 10);\n    }\n  }\n  return -1;\n}\n\n// Helper: Calculate ball drop position in tube\nfunction calculateDropPosition(ctx, tubeIndex, slot) {\n  var tubeData = ctx.getEntityData('tube-' + tubeIndex);\n  if (!tubeData) return null;\n\n  var tubeX = tubeData.position.x;\n  var tubeY = tubeData.position.y;\n  var tubeHeight = 6;\n  var ballRadius = 0.6;\n  var ballSpacing = 1.32;\n  var bottomPadding = 0.18;\n\n  var y = tubeY - tubeHeight / 2 + bottomPadding + ballRadius + slot * ballSpacing;\n  return { x: tubeX, y: y };\n}\n\n// Pickup handler - called when tapping a tube in idle state\nexports.onPickup = function(ctx, args) {\n  var tapTarget = ctx.getTapTargetId();\n  var tubeIndex = getTubeIndex(tapTarget);\n\n  if (tubeIndex < 0) {\n    ctx.emit('pickup_cancelled');\n    return;\n  }\n\n  var count = ctx.getVariable('tube' + tubeIndex + '_count') || 0;\n  if (count === 0) {\n    ctx.emit('pickup_cancelled');\n    return;\n  }\n\n  var topBall = findTopBallInTube(ctx, tubeIndex);\n  if (!topBall) {\n    ctx.emit('pickup_cancelled');\n    return;\n  }\n\n  var ballColor = getBallColor(topBall);\n\n  // Store pickup state\n  ctx.setVariable('heldBallId', topBall.id);\n  ctx.setVariable('heldBallColor', ballColor);\n  ctx.setVariable('sourceTubeIndex', tubeIndex);\n\n  // Update tube state\n  ctx.setVariable('tube' + tubeIndex + '_count', count - 1);\n\n  // Update top color for source tube\n  var remainingBalls = ctx.queryEntitiesWithData({ tag: 'in-container-tube-' + tubeIndex });\n  remainingBalls = remainingBalls.filter(function(b) { return b.id !== topBall.id; });\n  if (remainingBalls.length > 0) {\n    var newTop = remainingBalls[0];\n    for (var i = 1; i < remainingBalls.length; i++) {\n      if (remainingBalls[i].position.y > newTop.position.y) {\n        newTop = remainingBalls[i];\n      }\n    }\n    ctx.setVariable('tube' + tubeIndex + '_topColor', getBallColor(newTop));\n  } else {\n    ctx.setVariable('tube' + tubeIndex + '_topColor', -1);\n  }\n\n  // Update tags\n  ctx.addTag(topBall.id, 'held');\n  ctx.removeTag(topBall.id, 'in-container-tube-' + tubeIndex);\n\n  // Animate ball up above tube\n  var tubeData = ctx.getEntityData('tube-' + tubeIndex);\n  if (tubeData) {\n    var liftY = tubeData.position.y + 3 + 2;\n    ctx.animateEntity(topBall.id, {\n      x: tubeData.position.x,\n      y: liftY,\n      duration: 0.2,\n      easing: 'easeOutQuad'\n    });\n  }\n\n  ctx.emit('ball_picked');\n};\n\n// Drop handler - called when tapping a tube in holding state\nexports.onDrop = function(ctx, args) {\n  var tapTarget = ctx.getTapTargetId();\n  var targetTubeIndex = getTubeIndex(tapTarget);\n  var sourceTubeIndex = ctx.getVariable('sourceTubeIndex');\n  var heldBallId = ctx.getVariable('heldBallId');\n  var heldBallColor = ctx.getVariable('heldBallColor');\n\n  if (targetTubeIndex < 0 || sourceTubeIndex < 0 || !heldBallId) {\n    ctx.emit('pickup_cancelled');\n    return;\n  }\n\n  // Same tube = cancel\n  if (targetTubeIndex === sourceTubeIndex) {\n    cancelPickup(ctx);\n    return;\n  }\n\n  var targetCount = ctx.getVariable('tube' + targetTubeIndex + '_count') || 0;\n  var targetTopColor = ctx.getVariable('tube' + targetTubeIndex + '_topColor');\n\n  // Check if tube is full\n  if (targetCount >= 4) {\n    showInvalidFeedback(ctx, heldBallId);\n    return;\n  }\n\n  // Check color match (or empty tube)\n  if (targetCount > 0 && targetTopColor !== heldBallColor) {\n    showInvalidFeedback(ctx, heldBallId);\n    return;\n  }\n\n  // Valid drop - animate ball to position\n  var dropPos = calculateDropPosition(ctx, targetTubeIndex, targetCount);\n  if (!dropPos) {\n    cancelPickup(ctx);\n    return;\n  }\n\n  ctx.animateEntity(heldBallId, {\n    x: dropPos.x,\n    y: dropPos.y,\n    duration: 0.2,\n    easing: 'easeOutQuad'\n  });\n\n  // Update tags\n  ctx.removeTag(heldBallId, 'held');\n  ctx.addTag(heldBallId, 'in-container-tube-' + targetTubeIndex);\n\n  // Update tube state\n  ctx.setVariable('tube' + targetTubeIndex + '_count', targetCount + 1);\n  ctx.setVariable('tube' + targetTubeIndex + '_topColor', heldBallColor);\n\n  // Clear held state\n  ctx.setVariable('heldBallId', '');\n  ctx.setVariable('sourceTubeIndex', -1);\n  ctx.setVariable('heldBallColor', -1);\n\n  // Increment move count\n  var moveCount = ctx.getVariable('moveCount') || 0;\n  ctx.setVariable('moveCount', moveCount + 1);\n\n  ctx.emit('ball_dropped');\n};\n\n// Check win - called after each drop\nexports.checkWin = function(ctx, args) {\n  // Check each tube: must be empty or have 4 balls of same color\n  for (var i = 0; i < 6; i++) {\n    var count = ctx.getVariable('tube' + i + '_count') || 0;\n\n    // Empty tubes are OK\n    if (count === 0) continue;\n\n    // Must be full (4 balls)\n    if (count !== 4) return;\n\n    // Check all balls are same color\n    var balls = ctx.queryEntitiesWithData({ tag: 'in-container-tube-' + i });\n    if (balls.length === 0) return;\n\n    var firstColor = getBallColor(balls[0]);\n    for (var j = 1; j < balls.length; j++) {\n      if (getBallColor(balls[j]) !== firstColor) return;\n    }\n  }\n\n  // All tubes pass the check - schedule win after animation\n  ctx.setVariable('_winAtElapsed', ctx.elapsed + 0.3);\n};\n\n// Helper: Cancel pickup and return ball to source\nfunction cancelPickup(ctx) {\n  var heldBallId = ctx.getVariable('heldBallId');\n  var sourceTubeIndex = ctx.getVariable('sourceTubeIndex');\n  var heldBallColor = ctx.getVariable('heldBallColor');\n\n  if (heldBallId && sourceTubeIndex >= 0) {\n    var count = ctx.getVariable('tube' + sourceTubeIndex + '_count') || 0;\n\n    // Calculate return position\n    var returnPos = calculateDropPosition(ctx, sourceTubeIndex, count);\n    if (returnPos) {\n      ctx.animateEntity(heldBallId, {\n        x: returnPos.x,\n        y: returnPos.y,\n        duration: 0.2,\n        easing: 'easeOutQuad'\n      });\n    }\n\n    // Restore tags\n    ctx.removeTag(heldBallId, 'held');\n    ctx.addTag(heldBallId, 'in-container-tube-' + sourceTubeIndex);\n\n    // Restore tube state\n    ctx.setVariable('tube' + sourceTubeIndex + '_count', count + 1);\n    ctx.setVariable('tube' + sourceTubeIndex + '_topColor', heldBallColor);\n  }\n\n  // Clear held state\n  ctx.setVariable('heldBallId', '');\n  ctx.setVariable('sourceTubeIndex', -1);\n  ctx.setVariable('heldBallColor', -1);\n\n  ctx.emit('pickup_cancelled');\n}\n\n// Helper: Show invalid move feedback\nfunction showInvalidFeedback(ctx, ballId) {\n  ctx.addTag(ballId, 'invalid');\n  // The 'invalid' tag will be removed by a frame rule after 300ms\n}\n",
+                "script": "game",
                 "export": "checkWin"
               }
             ]
           },
           {
             "id": "handle_delayed_win",
-            "name": "Trigger win after animation delay",
             "trigger": {
               "type": "frame"
             },
             "conditions": [
               {
                 "type": "expression",
-                "expr": "_winAtElapsed > 0 && elapsed() >= _winAtElapsed"
+                "expr": "_winAtElapsed>0&&elapsed()>=_winAtElapsed"
               }
             ],
             "actions": [
@@ -2036,30 +1232,8 @@
                 "state": "win"
               }
             ]
-          },
-          {
-            "id": "clear_invalid_feedback",
-            "name": "Clear invalid feedback after delay",
-            "trigger": {
-              "type": "frame"
-            },
-            "conditions": [
-              {
-                "type": "expression",
-                "expr": "_invalidFeedbackStart > 0 && elapsed() >= _invalidFeedbackStart + 0.3"
-              }
-            ],
-            "actions": [
-              {
-                "type": "set_variable",
-                "name": "_invalidFeedbackStart",
-                "operation": "set",
-                "value": 0
-              }
-            ]
           }
-        ],
-        "winCondition": {}
+        ]
       }
     },
     {

@@ -365,10 +365,10 @@ Create a FileReader abstraction that allows the bundle compiler to work with bot
 - `shared/src/bundle/__tests__/` - Comprehensive tests for virtual bundle compilation
 
 ### Definition of Done
-- [ ] `cd shared && pnpm test` → All tests pass
-- [ ] Existing games with embedded scripts continue to work (backwards compatible)
-- [ ] New game with separate `script.js` file compiles and runs
-- [ ] VirtualFileReader creates bundle identical to real files
+- [x] `cd shared && pnpm test` → All tests pass
+- [x] Existing games with embedded scripts continue to work (backwards compatible)
+- [x] New game with separate `script.js` file compiles and runs
+- [x] VirtualFileReader creates bundle identical to real files
 
 ### Must Have
 - FileReader interface with `readFile`, `exists`, `readdir` methods
@@ -1051,7 +1051,7 @@ Parallel Speedup: ~40% faster than sequential
 
 ### Task 4: Add Script File Scanning to Compiler
 
-- [ ] 4. Extend compiler to discover and process `.js` script files
+- [x] 4. Extend compiler to discover and process `.js` script files
 
   **What to do**:
   - Add `scanForScriptFiles(dir: string, fileReader: FileReader)` function
@@ -1317,7 +1317,7 @@ Parallel Speedup: ~40% faster than sequential
 
 ### Task 5: Convert ballSortScripted to Pure Bundle Format
 
-- [ ] 5. Convert ballSortScripted from TypeScript to pure bundle (JSON + .js)
+- [x] 5. Convert ballSortScripted from TypeScript to pure bundle (JSON + .js)
 
   **What to do**:
   - **Delete** `app/lib/test-games/games/ballSortScripted/game.ts` (the TypeScript source)
@@ -1638,7 +1638,7 @@ Parallel Speedup: ~40% faster than sequential
 
 ### Task 7: Add Asset Resolution to Compiler
 
-- [ ] 7. Extend compiler to resolve assets from local `assets/` directory or remote URLs
+- [x] 7. Extend compiler to resolve assets from local `assets/` directory or remote URLs
 
   **What to do**:
   - Add `scanForAssetFiles(dir: string, fileReader: FileReader)` function
@@ -1866,7 +1866,7 @@ Parallel Speedup: ~40% faster than sequential
 
 ### Task 8: Integration Tests with Virtual Bundles
 
-- [ ] 8. Create comprehensive integration tests for virtual bundle compilation
+- [x] 8. Create comprehensive integration tests for virtual bundle compilation
 
   **What to do**:
   - Create `shared/src/bundle/__tests__/virtual-bundle-integration.test.ts`
@@ -2080,12 +2080,12 @@ bun test
 ```
 
 ### Final Checklist
-- [ ] All "Must Have" present (FileReader abstraction, script scanning, asset resolution, backwards compat)
-- [ ] All "Must NOT Have" absent (no TypeScript scripts, no execution at compile time, no auto-download)
-- [ ] All tests pass
-- [ ] VirtualFileReader produces identical output to real files
-- [ ] Existing games continue to work
-- [ ] New game with external script works
-- [ ] Assets resolve from local `assets/` directory when present
-- [ ] Assets fall back to remote URL when no local file
-- [ ] Bundle structure supports future zip + CDN distribution
+- [x] All "Must Have" present (FileReader abstraction, script scanning, asset resolution, backwards compat)
+- [x] All "Must NOT Have" absent (no TypeScript scripts, no execution at compile time, no auto-download)
+- [x] All tests pass
+- [x] VirtualFileReader produces identical output to real files
+- [x] Existing games continue to work
+- [x] New game with external script works
+- [x] Assets resolve from local `assets/` directory when present
+- [x] Assets fall back to remote URL when no local file
+- [x] Bundle structure supports future zip + CDN distribution
