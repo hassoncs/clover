@@ -17,8 +17,14 @@ describe('Asset Resolution', () => {
     ]);
 
     const fileReader = new VirtualFileReader('/bundle', files);
+    
+    console.log('File exists check:', fileReader.existsSync('/bundle/assets/ball.png'));
+    
     const result = compileBundle('/bundle', { fileReader });
 
+    if (!result.success) {
+      console.log('Errors:', JSON.stringify(result.errors, null, 2));
+    }
     expect(result.success).toBe(true);
     expect(result.gameDefinition?.assetPacks?.default?.assets.ball).toMatchObject({
       localPath: 'ball.png',

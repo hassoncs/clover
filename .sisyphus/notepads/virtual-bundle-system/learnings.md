@@ -87,3 +87,111 @@ The refactoring maintains a clean separation: `fs` import remains in compiler.ts
 - Removed direct `fs` import from `loader.ts` (now uses FileReader abstraction).
 - All tests pass with no breaking changes to existing API.
 - Grep verification confirms zero direct `fs.` calls remain (except import statement).
+
+## Script File Scanning (Task 4)
+
+### Implementation Details
+- Added `scanForScriptFiles(dir, fileReader, warnings)` function
+  - Scans `scripts/` subdirectory for `.js` files
+  - Returns array sorted alphabetically by basename
+  - Emits `NESTED_SCRIPTS_IGNORED` warning for subdirectories
+  
+- Added `readScriptFile(filePath, fileReader)` function
+  - Validates UTF-8 encoding (implicit via readFileSync)
+  - HARD FAIL: Missing exports pattern (`/exports\.\w+\s*=/`)
+  - HARD FAIL: Top-level return statement (`/^\s*return\s/m`)
+  - Returns `{ content: string; error?: CompileError }`
+
+- Updated `compileBundle` to process scripts:
+  - Calls `scanForScriptFiles` after JSON scanning
+  - Populates `rawData.scripts` with script contents (keyed by filename without extension)
+  - Detects duplicate exports across files (emits `DUPLICATE_EXPORT` warning)
+  - Concatenates scripts with separator format: `// --- ${basename} ---\n`
+  - Sets `gameDefinition.script` field with concatenated content
+
+### Script Concatenation Rules
+- Sort alphabetically by basename (case-sensitive via `localeCompare`)
+- Separator: `// --- ${basename} ---\n` BEFORE each script
+- Duplicate export detection: warns but includes both files
+
+### Test Coverage
+All 8 tests pass:
+1. Single script file processing
+2. Script without exports (SCRIPT_SYNTAX_ERROR)
+3. Empty scripts directory
+4. Multiple scripts concatenated alphabetically
+5. Duplicate export warning
+6. Nested directory warning
+7. Top-level return rejection
+8. Multiple exports in single file
+
+### Key Patterns
+- Script validation is read-only (no execution)
+- Flat `scripts/` directory only (no nesting)
+- `.js` files only (no TypeScript)
+- Regex-based validation (no JavaScript parser)
+- Processed files tracked in `processedFiles` array
+
+
+## Script File Scanning (Task 4 - 2026-02-03)
+
+### Implementation
+- Added `scanForScriptFiles()` to discover `.js` files in `scripts/` directory
+- Scans only top-level `scripts/` directory (no nested directories)
+- Returns files sorted alphabetically by basename
+- Emits `NESTED_SCRIPTS_IGNORED` warning for subdirectories
+
+### Script Validation
+- `readScriptFile()` validates scripts using regex patterns (no parsing)
+- Required: At least one `exports.` pattern (`/exports\.\w+\s*=/`)
+- Forbidden: Top-level return statements (`/^\s*return\s/m`)
+- UTF-8 validation via `readFileSync` success
+
+### Script Processing
+- Scripts concatenated into `gameDefinition.script` with separators
+- Separator format: `// --- ${basename} ---\n`
+- `rawData.scripts` populated with Map of basename → content
+- Export conflict detection tracks which file defines each export
+- Duplicate exports emit `DUPLICATE_EXPORT` warning (last file wins)
+
+### Test Coverage
+- 8 comprehensive tests covering all scenarios
+- All tests pass using `VirtualFileReader` with relative path keys
+- Tests verify: single script, multiple scripts, validation errors, warnings, empty directory
+
+### Key Patterns
+- Map keys in `VirtualFileReader` must be relative paths (e.g., `'scripts/game.js'`, not `'/bundle/scripts/game.js'`)
+- Script processing happens after JSON scanning but before final GameDefinition build
+- Processed script files added to `processedFiles` array for tracking
+
+## Asset Resolution Implementation (2026-02-03)
+
+### Key Implementation Details
+- Added `scanForAssetFiles()` function to scan `assets/` directory for image/sound files
+- Supported extensions: `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.mp3`, `.wav`, `.ogg`
+- Function returns relative paths sorted alphabetically
+
+### Asset Path Convention
+- `localPath` in `assets.json` is relative to the `assets/` directory
+- Example: `{ localPath: "ball.png" }` refers to `assets/ball.png` in the bundle
+- Compiler validates by checking `path.join(bundlePath, 'assets', asset.localPath)`
+
+### Dual-Field Asset Support
+- `buildGameDefinition()` now outputs both `imageUrl` and `localPath` when available
+- Legacy `path` field treated as `remoteUrl` for backwards compatibility
+- Output format: `{ imageUrl: asset.remoteUrl || asset.path, localPath: asset.localPath }`
+
+### Asset Validation Rules
+1. **INVALID_ASSET_REFERENCE**: Asset must have at least one of `path`, `remoteUrl`, or `localPath`
+2. **MISSING_LOCAL_ASSET**: If `localPath` declared, file must exist in `assets/` directory
+3. Validation happens after JSON loading, before `buildGameDefinition()`
+
+### Test Coverage
+- Created comprehensive test suite in `asset-resolution.test.ts`
+- Tests cover: local-only, remote-only, dual-mode, missing files, invalid references, legacy format
+- All 7 tests pass, including VirtualFileReader integration
+
+### Forward Compatibility
+- Runtime does not yet support `localPath` - will use `imageUrl` until future update
+- Compiler outputs both fields to enable independent deployment
+- Games built with `localPath` will work (using remote) until runtime update

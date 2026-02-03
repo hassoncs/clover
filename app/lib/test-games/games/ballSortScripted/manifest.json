@@ -192,5 +192,6 @@
   "hoverHighlight": {
     "targetTag": "tube",
     "highlightEntityId": "tube-hover-highlight"
-  }
+  },
+  "winCondition": {}
 }

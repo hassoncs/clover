@@ -87,7 +87,7 @@ export class VirtualFileReader implements FileReader {
     
     if (this.files.has(relPath)) return true;
 
-    const dirPrefix = relPath === '.' ? '' : relPath + path.sep;
+    const dirPrefix = relPath === '.' ? '' : relPath + '/';
     for (const key of this.files.keys()) {
       if (key.startsWith(dirPrefix)) return true;
     }

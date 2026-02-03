@@ -1,0 +1,247 @@
+[
+  {
+    "id": "tube-0",
+    "name": "Tube 0",
+    "template": "tube",
+    "tags": [
+      "tube",
+      "tube-0"
+    ],
+    "transform": {
+      "x": -5.485714285714286,
+      "y": -3.1999999999999993,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  },
+  {
+    "id": "tube-1",
+    "name": "Tube 1",
+    "template": "tube",
+    "tags": [
+      "tube",
+      "tube-1"
+    ],
+    "transform": {
+      "x": -3.291428571428572,
+      "y": -3.1999999999999993,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  },
+  {
+    "id": "tube-2",
+    "name": "Tube 2",
+    "template": "tube",
+    "tags": [
+      "tube",
+      "tube-2"
+    ],
+    "transform": {
+      "x": -1.0971428571428579,
+      "y": -3.1999999999999993,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  },
+  {
+    "id": "tube-3",
+    "name": "Tube 3",
+    "template": "tube",
+    "tags": [
+      "tube",
+      "tube-3"
+    ],
+    "transform": {
+      "x": 1.097142857142856,
+      "y": -3.1999999999999993,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  },
+  {
+    "id": "tube-4",
+    "name": "Tube 4",
+    "template": "tube",
+    "tags": [
+      "tube",
+      "tube-4"
+    ],
+    "transform": {
+      "x": 3.29142857142857,
+      "y": -3.1999999999999993,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  },
+  {
+    "id": "tube-5",
+    "name": "Tube 5",
+    "template": "tube",
+    "tags": [
+      "tube",
+      "tube-5"
+    ],
+    "transform": {
+      "x": 5.485714285714284,
+      "y": -3.1999999999999993,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  },
+  {
+    "id": "ball-0",
+    "name": "Ball 0",
+    "template": "ball0",
+    "tags": [
+      "ball",
+      "color-0",
+      "in-container-tube-0"
+    ],
+    "transform": {
+      "x": -5.485714285714286,
+      "y": -5.419999999999998,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  },
+  {
+    "id": "ball-1",
+    "name": "Ball 1",
+    "template": "ball0",
+    "tags": [
+      "ball",
+      "color-0",
+      "in-container-tube-0"
+    ],
+    "transform": {
+      "x": -5.485714285714286,
+      "y": -4.099999999999998,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  },
+  {
+    "id": "ball-2",
+    "name": "Ball 2",
+    "template": "ball1",
+    "tags": [
+      "ball",
+      "color-1",
+      "in-container-tube-1"
+    ],
+    "transform": {
+      "x": -3.291428571428572,
+      "y": -5.419999999999998,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  },
+  {
+    "id": "ball-3",
+    "name": "Ball 3",
+    "template": "ball0",
+    "tags": [
+      "ball",
+      "color-0",
+      "in-container-tube-1"
+    ],
+    "transform": {
+      "x": -3.291428571428572,
+      "y": -4.099999999999998,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  },
+  {
+    "id": "ball-4",
+    "name": "Ball 4",
+    "template": "ball1",
+    "tags": [
+      "ball",
+      "color-1",
+      "in-container-tube-2"
+    ],
+    "transform": {
+      "x": -1.0971428571428579,
+      "y": -5.419999999999998,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  },
+  {
+    "id": "ball-5",
+    "name": "Ball 5",
+    "template": "ball1",
+    "tags": [
+      "ball",
+      "color-1",
+      "in-container-tube-2"
+    ],
+    "transform": {
+      "x": -1.0971428571428579,
+      "y": -4.099999999999998,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  },
+  {
+    "id": "ball-6",
+    "name": "Ball 6",
+    "template": "ball1",
+    "tags": [
+      "ball",
+      "color-1",
+      "in-container-tube-2"
+    ],
+    "transform": {
+      "x": -1.0971428571428579,
+      "y": -2.7799999999999976,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  },
+  {
+    "id": "ball-7",
+    "name": "Ball 7",
+    "template": "ball0",
+    "tags": [
+      "ball",
+      "color-0",
+      "in-container-tube-2"
+    ],
+    "transform": {
+      "x": -1.0971428571428579,
+      "y": -1.4599999999999973,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  },
+  {
+    "id": "tube-hover-highlight",
+    "name": "Tube Hover Highlight",
+    "template": "tubeHoverHighlight",
+    "visible": false,
+    "transform": {
+      "x": 0,
+      "y": 0,
+      "angle": 0,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  }
+]

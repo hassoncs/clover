@@ -754,11 +754,11 @@ export function compileBundle(
       }
 
       if (asset.localPath) {
-        const assetPath = path.join(bundlePath, asset.localPath);
+        const assetPath = path.join(bundlePath, 'assets', asset.localPath);
         if (!fileReader.existsSync(assetPath)) {
           errors.push({
             code: 'MISSING_LOCAL_ASSET',
-            message: `Asset "${assetId}" references missing local file: ${asset.localPath}`,
+            message: `Asset "${assetId}" references missing local file: assets/${asset.localPath}`,
             path: `assets.${assetId}.localPath`,
             context: { localPath: asset.localPath },
           });
