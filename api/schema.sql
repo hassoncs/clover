@@ -69,150 +69,97 @@ CREATE INDEX IF NOT EXISTS idx_games_browse ON games(is_public, validation_valid
 CREATE TABLE IF NOT EXISTS themes (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
-  prompt_modifier TEXT,
+  prompt_modifier TEXT NOT NULL,
+  style TEXT,
   creator_user_id TEXT REFERENCES users(id),
+  is_public INTEGER DEFAULT 0,
   created_at INTEGER NOT NULL,
-  updated_at INTEGER
+  updated_at INTEGER,
+  deleted_at INTEGER
 );
 
-CREATE INDEX IF NOT EXISTS idx_themes_creator ON themes(creator_user_id);
+CREATE INDEX IF NOT EXISTS idx_themes_creator ON themes(creator_user_id) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_themes_public ON themes(is_public) WHERE deleted_at IS NULL AND is_public = 1;
 
--- Assets table (AI-generated sprites stored in R2)
 CREATE TABLE IF NOT EXISTS assets (
   id TEXT PRIMARY KEY,
-  user_id TEXT REFERENCES users(id),
-  install_id TEXT,
-  entity_type TEXT NOT NULL,
-  description TEXT NOT NULL,
-  style TEXT NOT NULL,
-  r2_key TEXT NOT NULL,
-  scenario_job_id TEXT,
-  scenario_asset_id TEXT,
+  r2_key TEXT NOT NULL UNIQUE,
   width INTEGER,
   height INTEGER,
-  is_animated INTEGER DEFAULT 0,
-  frame_count INTEGER,
-  created_at INTEGER NOT NULL,
-  prompt TEXT,
-  parent_asset_id TEXT REFERENCES assets(id),
-  game_id TEXT REFERENCES games(id),
-  slot_id TEXT,
-  shape TEXT,
+  creator_user_id TEXT REFERENCES users(id),
+  source TEXT NOT NULL DEFAULT 'generated' CHECK (source IN ('generated', 'uploaded')),
   theme_id TEXT REFERENCES themes(id),
-  deleted_at INTEGER
-);
-
-CREATE INDEX IF NOT EXISTS idx_assets_user_id ON assets(user_id);
-CREATE INDEX IF NOT EXISTS idx_assets_install_id ON assets(install_id);
-CREATE INDEX IF NOT EXISTS idx_assets_entity_type ON assets(entity_type);
-CREATE INDEX IF NOT EXISTS idx_assets_game_slot ON assets(game_id, slot_id, created_at DESC) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_assets_parent ON assets(parent_asset_id) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_assets_theme ON assets(theme_id) WHERE deleted_at IS NULL;
-CREATE INDEX IF NOT EXISTS idx_assets_structural ON assets(shape, width, height) WHERE deleted_at IS NULL;
-
--- Game asset selections (which asset is active for each slot)
-CREATE TABLE IF NOT EXISTS game_asset_selections (
-  game_id TEXT NOT NULL REFERENCES games(id),
-  slot_id TEXT NOT NULL,
-  asset_id TEXT NOT NULL REFERENCES assets(id),
-  selected_at INTEGER NOT NULL,
-  PRIMARY KEY (game_id, slot_id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_game_asset_selections_asset ON game_asset_selections(asset_id);
-
--- =============================================================================
--- NEW ASSET SYSTEM TABLES (v2)
--- Replaces embedded assetPacks in GameDefinition with proper relational model
--- =============================================================================
-
--- Game assets (v2) - Independent, reusable image records
--- Can be generated via AI or uploaded by user
-CREATE TABLE IF NOT EXISTS game_assets (
-  id TEXT PRIMARY KEY,
-  owner_game_id TEXT REFERENCES games(id),
-  source TEXT NOT NULL CHECK (source IN ('generated', 'uploaded')),
-  image_url TEXT NOT NULL,
-  width INTEGER,
-  height INTEGER,
-  content_hash TEXT,
-  metadata_json TEXT,
+  compiled_prompt TEXT,
+  model_id TEXT,
   created_at INTEGER NOT NULL,
   deleted_at INTEGER
 );
 
-CREATE INDEX IF NOT EXISTS idx_game_assets_owner ON game_assets(owner_game_id);
-CREATE INDEX IF NOT EXISTS idx_game_assets_source ON game_assets(source);
+CREATE INDEX IF NOT EXISTS idx_assets_theme ON assets(theme_id) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_assets_creator ON assets(creator_user_id) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_assets_r2_key ON assets(r2_key) WHERE deleted_at IS NULL;
 
 -- Asset packs - Named collections of assets shared across a game family
 CREATE TABLE IF NOT EXISTS asset_packs (
   id TEXT PRIMARY KEY,
   base_game_id TEXT NOT NULL REFERENCES games(id),
-  source_game_id TEXT REFERENCES games(id),
-  creator_user_id TEXT REFERENCES users(id),
   name TEXT NOT NULL,
   description TEXT,
-  prompt_defaults_json TEXT,
+  theme_id TEXT REFERENCES themes(id),
+  creator_user_id TEXT REFERENCES users(id),
   is_complete INTEGER DEFAULT 0,
   created_at INTEGER NOT NULL,
-  deleted_at INTEGER
+  updated_at INTEGER,
+  deleted_at INTEGER,
+  UNIQUE(base_game_id, name)
 );
 
-CREATE INDEX IF NOT EXISTS idx_asset_packs_base_game ON asset_packs(base_game_id);
-CREATE INDEX IF NOT EXISTS idx_asset_packs_creator ON asset_packs(creator_user_id);
+CREATE INDEX IF NOT EXISTS idx_asset_packs_game ON asset_packs(base_game_id) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_asset_packs_theme ON asset_packs(theme_id) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_asset_packs_creator ON asset_packs(creator_user_id) WHERE deleted_at IS NULL;
 
--- Asset pack entries - Which asset fills each template slot in a pack
--- Includes placement data (scale, offset) for aligning with physics bodies
-CREATE TABLE IF NOT EXISTS asset_pack_entries (
+CREATE TABLE IF NOT EXISTS pack_entries (
   id TEXT PRIMARY KEY,
-  pack_id TEXT NOT NULL REFERENCES asset_packs(id),
+  pack_id TEXT NOT NULL REFERENCES asset_packs(id) ON DELETE CASCADE,
   template_id TEXT NOT NULL,
-  asset_id TEXT NOT NULL REFERENCES game_assets(id),
-  entry_id TEXT,
-  placement_json TEXT,         -- JSON: { scale, offsetX, offsetY, anchor }
-  last_generation_json TEXT,   -- JSON: { jobId, taskId, compiledPrompt, createdAt }
-  UNIQUE(pack_id, template_id, entry_id)
+  asset_id TEXT NOT NULL REFERENCES assets(id),
+  placement_json TEXT,
+  UNIQUE(pack_id, template_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_asset_pack_entries_pack ON asset_pack_entries(pack_id);
-CREATE INDEX IF NOT EXISTS idx_asset_pack_entries_asset ON asset_pack_entries(asset_id);
+CREATE INDEX IF NOT EXISTS idx_pack_entries_pack ON pack_entries(pack_id);
+CREATE INDEX IF NOT EXISTS idx_pack_entries_asset ON pack_entries(asset_id);
 
 -- Generation jobs - Batch generation requests
--- Tracks overall status of generating assets for multiple templates
 CREATE TABLE IF NOT EXISTS generation_jobs (
   id TEXT PRIMARY KEY,
   game_id TEXT NOT NULL REFERENCES games(id),
-  pack_id TEXT REFERENCES asset_packs(id),
-  status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'canceled')),
-  prompt_defaults_json TEXT,   -- JSON: snapshot of PromptDefaults used
+  pack_id TEXT NOT NULL REFERENCES asset_packs(id),
+  theme_id TEXT REFERENCES themes(id),
+  status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'canceled')),
+  style TEXT,
   created_at INTEGER NOT NULL,
   started_at INTEGER,
   finished_at INTEGER
 );
 
-CREATE INDEX IF NOT EXISTS idx_generation_jobs_game ON generation_jobs(game_id);
 CREATE INDEX IF NOT EXISTS idx_generation_jobs_pack ON generation_jobs(pack_id);
-CREATE INDEX IF NOT EXISTS idx_generation_jobs_status ON generation_jobs(status);
+CREATE INDEX IF NOT EXISTS idx_generation_jobs_status ON generation_jobs(status) WHERE status IN ('queued', 'running');
 
 -- Generation tasks - Per-template generation tracking
--- Each task generates one asset for one template
 CREATE TABLE IF NOT EXISTS generation_tasks (
   id TEXT PRIMARY KEY,
-  job_id TEXT NOT NULL REFERENCES generation_jobs(id),
+  job_id TEXT NOT NULL REFERENCES generation_jobs(id) ON DELETE CASCADE,
   template_id TEXT NOT NULL,
-  status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'canceled')),
-  prompt_components_json TEXT, -- JSON: { themePrompt, entityPrompt, styleOverride, negativePrompt, positioningHint }
+  status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'canceled')),
   compiled_prompt TEXT,
   compiled_negative_prompt TEXT,
   model_id TEXT,
   target_width INTEGER,
   target_height INTEGER,
-  aspect_ratio TEXT,
-  physics_context_json TEXT,   -- JSON: { shape, width, height, radius }
-  scenario_request_id TEXT,
-  asset_id TEXT REFERENCES game_assets(id),
-  error_code TEXT,
+  asset_id TEXT REFERENCES assets(id),
   error_message TEXT,
+  scenario_request_id TEXT,
   created_at INTEGER NOT NULL,
   started_at INTEGER,
   finished_at INTEGER,
@@ -220,8 +167,7 @@ CREATE TABLE IF NOT EXISTS generation_tasks (
 );
 
 CREATE INDEX IF NOT EXISTS idx_generation_tasks_job ON generation_tasks(job_id);
-CREATE INDEX IF NOT EXISTS idx_generation_tasks_status ON generation_tasks(status);
-CREATE INDEX IF NOT EXISTS idx_generation_tasks_asset ON generation_tasks(asset_id);
+CREATE INDEX idx_generation_tasks_status ON generation_tasks(status) WHERE status IN ('queued', 'running');
 
 -- =============================================================================
 -- ECONOMY SYSTEM TABLES
