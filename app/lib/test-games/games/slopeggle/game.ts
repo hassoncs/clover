@@ -1,12 +1,9 @@
 import type { GameDefinition } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
-const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/slopeggle";
-
 export const metadata: TestGameMeta = {
   title: "Slopeggle",
   description: "Clear all orange pegs by bouncing a ball through the board",
-  titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
 };
 
 const WORLD_WIDTH = 12;
@@ -83,6 +80,7 @@ const orangePegEntities = pegLayout
   }));
 
 const game: GameDefinition = {
+  activeAssetPackId: "slopeggle-default",
   metadata: {
     id: "test-slopeggle",
     title: "Slopeggle",
@@ -90,7 +88,6 @@ const game: GameDefinition = {
     instructions:
       "Touch and hold to aim the cannon, then release to fire! Clear all 10 orange pegs to win. You have 10 balls.",
     version: "1.0.0",
-    titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
   },
   world: {
     gravity: { x: 0, y: -5 },
@@ -99,7 +96,7 @@ const game: GameDefinition = {
   },
   background: {
     type: "static",
-    imageUrl: `${ASSET_BASE}/background.png`,
+    whatDescription: "a colorful peggle-style background with soft lighting and geometric patterns",
   },
   camera: { type: "fixed", zoom: 1 },
   variables: {
@@ -137,7 +134,7 @@ const game: GameDefinition = {
       tags: ["ball"],
       visual: {
         type: "image",
-        imageUrl: `${ASSET_BASE}/ball.png`,
+        whatDescription: "a shiny metal pinball",
         imageWidth: BALL_RADIUS * 2,
         imageHeight: BALL_RADIUS * 2,
       },
@@ -158,7 +155,7 @@ const game: GameDefinition = {
       tags: ["cannon"],
       visual: {
         type: "image",
-        imageUrl: `${ASSET_BASE}/cannon.png`,
+        whatDescription: "a ball cannon barrel that launches projectiles",
         imageWidth: 0.6,
         imageHeight: 0.25,
       },
@@ -177,7 +174,7 @@ const game: GameDefinition = {
       tags: ["cannon-base"],
       visual: {
         type: "image",
-        imageUrl: `${ASSET_BASE}/cannonBase.png`,
+        whatDescription: "the rotating base mount of a cannon",
         imageWidth: 0.6,
         imageHeight: 0.6,
       },
@@ -192,7 +189,7 @@ const game: GameDefinition = {
       tags: ["peg", "blue-peg"],
       visual: {
         type: "image",
-        imageUrl: `${ASSET_BASE}/bluePeg.png`,
+        whatDescription: "a round blue peg target",
         imageWidth: PEG_RADIUS * 2,
         imageHeight: PEG_RADIUS * 2,
       },
@@ -227,7 +224,7 @@ const game: GameDefinition = {
       tags: ["peg", "orange-peg"],
       visual: {
         type: "image",
-        imageUrl: `${ASSET_BASE}/orangePeg.png`,
+        whatDescription: "a round orange peg target",
         imageWidth: PEG_RADIUS * 2,
         imageHeight: PEG_RADIUS * 2,
       },
@@ -293,7 +290,7 @@ const game: GameDefinition = {
       tags: ["bucket"],
       visual: {
         type: "image",
-        imageUrl: `${ASSET_BASE}/bucket.png`,
+        whatDescription: "a moving bucket that catches balls",
         imageWidth: 1.2,
         imageHeight: 0.35,
       },
@@ -312,7 +309,7 @@ const game: GameDefinition = {
       tags: ["portal"],
       visual: {
         type: "image",
-        imageUrl: `${ASSET_BASE}/portalA.png`,
+        whatDescription: "a glowing blue portal entrance",
         imageWidth: 0.8,
         imageHeight: 0.8,
       },
@@ -341,7 +338,7 @@ const game: GameDefinition = {
       tags: ["portal"],
       visual: {
         type: "image",
-        imageUrl: `${ASSET_BASE}/portalB.png`,
+        whatDescription: "a glowing orange portal exit",
         imageWidth: 0.8,
         imageHeight: 0.8,
       },
