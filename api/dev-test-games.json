@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-02T18:21:47.392Z",
+  "generatedAt": "2026-02-03T00:36:59.361Z",
   "games": [
     {
       "id": "ballSort",
@@ -43,17 +43,17 @@
           "moveCount": 0,
           "startTime": 0,
           "tube0_count": 3,
-          "tube1_count": 2,
-          "tube2_count": 4,
-          "tube3_count": 3,
-          "tube4_count": 1,
-          "tube5_count": 3,
+          "tube1_count": 1,
+          "tube2_count": 0,
+          "tube3_count": 0,
+          "tube4_count": 0,
+          "tube5_count": 0,
           "tube0_topColor": 0,
-          "tube1_topColor": 1,
-          "tube2_topColor": 0,
-          "tube3_topColor": 3,
-          "tube4_topColor": 1,
-          "tube5_topColor": 1
+          "tube1_topColor": 0,
+          "tube2_topColor": -1,
+          "tube3_topColor": -1,
+          "tube4_topColor": -1,
+          "tube5_topColor": -1
         },
         "containers": [
           {
@@ -142,8 +142,6 @@
           }
         ],
         "ui": {
-          "showScore": false,
-          "showLives": false,
           "showTimer": true,
           "timerCountdown": false,
           "backgroundColor": "#1a237e",
@@ -203,9 +201,7 @@
             ]
           }
         ],
-        "winCondition": {
-          "type": "custom"
-        },
+        "winCondition": {},
         "templates": {
           "tubeWall": {
             "id": "tubeWall",
@@ -1207,219 +1203,15 @@
           {
             "id": "ball-3",
             "name": "Ball 3",
-            "template": "ball1",
-            "tags": [
-              "ball",
-              "color-1",
-              "in-container-tube-1"
-            ],
-            "transform": {
-              "x": -3.291428571428572,
-              "y": -5.419999999999998,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "ball-4",
-            "name": "Ball 4",
-            "template": "ball1",
-            "tags": [
-              "ball",
-              "color-1",
-              "in-container-tube-1"
-            ],
-            "transform": {
-              "x": -3.291428571428572,
-              "y": -4.099999999999998,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "ball-5",
-            "name": "Ball 5",
-            "template": "ball2",
-            "tags": [
-              "ball",
-              "color-2",
-              "in-container-tube-2"
-            ],
-            "transform": {
-              "x": -1.0971428571428579,
-              "y": -5.419999999999998,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "ball-6",
-            "name": "Ball 6",
-            "template": "ball2",
-            "tags": [
-              "ball",
-              "color-2",
-              "in-container-tube-2"
-            ],
-            "transform": {
-              "x": -1.0971428571428579,
-              "y": -4.099999999999998,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "ball-7",
-            "name": "Ball 7",
-            "template": "ball2",
-            "tags": [
-              "ball",
-              "color-2",
-              "in-container-tube-2"
-            ],
-            "transform": {
-              "x": -1.0971428571428579,
-              "y": -2.7799999999999976,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "ball-8",
-            "name": "Ball 8",
             "template": "ball0",
             "tags": [
               "ball",
               "color-0",
-              "in-container-tube-2"
+              "in-container-tube-1"
             ],
             "transform": {
-              "x": -1.0971428571428579,
-              "y": -1.4599999999999973,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "ball-9",
-            "name": "Ball 9",
-            "template": "ball3",
-            "tags": [
-              "ball",
-              "color-3",
-              "in-container-tube-3"
-            ],
-            "transform": {
-              "x": 1.097142857142856,
+              "x": -3.291428571428572,
               "y": -5.419999999999998,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "ball-10",
-            "name": "Ball 10",
-            "template": "ball3",
-            "tags": [
-              "ball",
-              "color-3",
-              "in-container-tube-3"
-            ],
-            "transform": {
-              "x": 1.097142857142856,
-              "y": -4.099999999999998,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "ball-11",
-            "name": "Ball 11",
-            "template": "ball3",
-            "tags": [
-              "ball",
-              "color-3",
-              "in-container-tube-3"
-            ],
-            "transform": {
-              "x": 1.097142857142856,
-              "y": -2.7799999999999976,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "ball-12",
-            "name": "Ball 12",
-            "template": "ball1",
-            "tags": [
-              "ball",
-              "color-1",
-              "in-container-tube-4"
-            ],
-            "transform": {
-              "x": 3.29142857142857,
-              "y": -5.419999999999998,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "ball-13",
-            "name": "Ball 13",
-            "template": "ball2",
-            "tags": [
-              "ball",
-              "color-2",
-              "in-container-tube-5"
-            ],
-            "transform": {
-              "x": 5.485714285714284,
-              "y": -5.419999999999998,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "ball-14",
-            "name": "Ball 14",
-            "template": "ball3",
-            "tags": [
-              "ball",
-              "color-3",
-              "in-container-tube-5"
-            ],
-            "transform": {
-              "x": 5.485714285714284,
-              "y": -4.099999999999998,
-              "angle": 0,
-              "scaleX": 1,
-              "scaleY": 1
-            }
-          },
-          {
-            "id": "ball-15",
-            "name": "Ball 15",
-            "template": "ball1",
-            "tags": [
-              "ball",
-              "color-1",
-              "in-container-tube-5"
-            ],
-            "transform": {
-              "x": 5.485714285714284,
-              "y": -2.7799999999999976,
               "angle": 0,
               "scaleX": 1,
               "scaleY": 1
@@ -1624,20 +1416,30 @@
           }
         },
         "ui": {
-          "showScore": true,
-          "showLives": true,
           "showTimer": false,
-          "backgroundColor": "#0a0a2e"
+          "backgroundColor": "#0a0a2e",
+          "variableDisplays": [
+            {
+              "name": "score",
+              "label": "Score",
+              "position": "top-right"
+            },
+            {
+              "name": "lives",
+              "label": "Lives",
+              "position": "top-right"
+            }
+          ]
         },
         "winCondition": {
-          "type": "destroy_all",
-          "tag": "brick"
+          "expr": "entityCount('brick') == 0"
         },
         "loseCondition": {
-          "type": "lives_zero"
+          "type": "custom",
+          "expr": "lives <= 0"
         },
-        "initialLives": 3,
         "variables": {
+          "lives": 3,
           "paddleForce": {
             "value": 120,
             "tuning": {
@@ -2374,7 +2176,8 @@
             },
             "actions": [
               {
-                "type": "lives",
+                "type": "set_variable",
+                "name": "lives",
                 "operation": "subtract",
                 "value": 1
               },
@@ -2557,19 +2360,31 @@
         },
         "input": {},
         "ui": {
-          "showScore": true,
-          "showLives": true,
           "showTimer": false,
-          "backgroundColor": "#0a0a2e"
+          "backgroundColor": "#0a0a2e",
+          "variableDisplays": [
+            {
+              "name": "score",
+              "label": "Score",
+              "position": "top-right"
+            },
+            {
+              "name": "lives",
+              "label": "Lives",
+              "position": "top-right"
+            }
+          ]
         },
         "winCondition": {
-          "type": "destroy_all",
-          "tag": "brick"
+          "expr": "entityCount('brick') == 0"
         },
         "loseCondition": {
-          "type": "lives_zero"
+          "type": "custom",
+          "expr": "lives <= 0"
         },
-        "initialLives": 3,
+        "variables": {
+          "lives": 3
+        },
         "constants": {
           "PADDLE_Y": -8,
           "BALL_SPEED": 6,
@@ -3075,10 +2890,14 @@
           "zoom": 1
         },
         "ui": {
-          "showScore": true,
-          "showLives": false,
           "showTimer": false,
-          "backgroundColor": "#70c5ce"
+          "backgroundColor": "#70c5ce",
+          "variableDisplays": [
+            {
+              "name": "score",
+              "label": "Score"
+            }
+          ]
         },
         "loseCondition": {
           "type": "entity_destroyed",
@@ -3490,15 +3309,18 @@
           "zoom": 1
         },
         "ui": {
-          "showScore": true,
-          "showLives": false,
           "showTimer": true,
           "timerCountdown": true,
-          "backgroundColor": "#2d1b4e"
+          "backgroundColor": "#2d1b4e",
+          "variableDisplays": [
+            {
+              "name": "score",
+              "label": "Score"
+            }
+          ]
         },
         "winCondition": {
-          "type": "score",
-          "score": 1000
+          "expr": "score >= 1000"
         },
         "loseCondition": {
           "type": "time_up",
@@ -4600,13 +4422,11 @@
           "zoom": 1
         },
         "variables": {
+          "lives": 10,
           "multiplier": 1,
           "turn": 0
         },
         "ui": {
-          "showScore": true,
-          "showLives": true,
-          "livesLabel": "Balls",
           "showTimer": false,
           "backgroundColor": "#0a1628",
           "entityCountDisplays": [
@@ -4617,6 +4437,16 @@
             }
           ],
           "variableDisplays": [
+            {
+              "name": "score",
+              "label": "Score",
+              "position": "top-right"
+            },
+            {
+              "name": "lives",
+              "label": "Balls",
+              "position": "top-right"
+            },
             {
               "name": "multiplier",
               "label": "Multiplier",
@@ -4632,13 +4462,12 @@
           ]
         },
         "winCondition": {
-          "type": "destroy_all",
-          "tag": "orange-peg"
+          "expr": "entityCount('orange-peg') == 0"
         },
         "loseCondition": {
-          "type": "lives_zero"
+          "type": "custom",
+          "expr": "lives <= 0"
         },
-        "initialLives": 10,
         "templates": {
           "ball": {
             "id": "ball",
@@ -6574,7 +6403,8 @@
                 "tag": "peg"
               },
               {
-                "type": "lives",
+                "type": "set_variable",
+                "name": "lives",
                 "operation": "subtract",
                 "value": 1
               },
@@ -6605,12 +6435,14 @@
                 "tag": "peg"
               },
               {
-                "type": "score",
+                "type": "set_variable",
+                "name": "score",
                 "operation": "add",
                 "value": 500
               },
               {
-                "type": "lives",
+                "type": "set_variable",
+                "name": "lives",
                 "operation": "add",
                 "value": 1
               },

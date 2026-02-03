@@ -1,12 +1,22 @@
-import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet } from 'react-native';
-import type { GodotViewProps } from './types';
+import React, { useEffect, useRef } from "react";
+import { View, StyleSheet } from "react-native";
+import type { GodotViewProps } from "./types";
 
-const GODOT_WASM_PATH = process.env.NODE_ENV === 'production'
-  ? '/godot/index.html'
-  : '/godot/index.html';
+const GODOT_WASM_PATH =
+  process.env.NODE_ENV === "production"
+    ? "/godot/index.html"
+    : "/godot/index.html";
 
-export function GodotViewWeb({ style, onReady, onError, onKeyDown, onKeyUp, onMouseMove, onMouseLeave, onClick }: GodotViewProps) {
+export function GodotViewWeb({
+  style,
+  onReady,
+  onError,
+  onKeyDown,
+  onKeyUp,
+  onMouseMove,
+  onMouseLeave,
+  onClick,
+}: GodotViewProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const isLoadedRef = useRef(false);
   const contentWindowRef = useRef<Window | null>(null);
@@ -38,9 +48,6 @@ export function GodotViewWeb({ style, onReady, onError, onKeyDown, onKeyUp, onMo
       let mouseMoveCount = 0;
       const handleIframeMouseMove = (e: MouseEvent) => {
         mouseMoveCount++;
-        if (mouseMoveCount % 60 === 1) {
-          console.log('[GodotView.web] iframe mousemove #' + mouseMoveCount, e.clientX, e.clientY, 'callback?', !!onMouseMove);
-        }
         onMouseMove?.(e);
       };
 
@@ -52,17 +59,32 @@ export function GodotViewWeb({ style, onReady, onError, onKeyDown, onKeyUp, onMo
         onClick?.(e);
       };
 
-      win.addEventListener('keydown', handleIframeKeyDown, { capture: true });
-      win.addEventListener('keyup', handleIframeKeyUp, { capture: true });
-      win.addEventListener('mousemove', handleIframeMouseMove, { capture: true });
-      win.addEventListener('mouseleave', handleIframeMouseLeave, { capture: true });
-      win.addEventListener('click', handleIframeClick, { capture: true });
+      win.addEventListener("keydown", handleIframeKeyDown, { capture: true });
+      win.addEventListener("keyup", handleIframeKeyUp, { capture: true });
+      win.addEventListener("mousemove", handleIframeMouseMove, {
+        capture: true,
+      });
+      win.addEventListener("mouseleave", handleIframeMouseLeave, {
+        capture: true,
+      });
+      win.addEventListener("click", handleIframeClick, { capture: true });
 
-      iframeKeyDownListener = () => win.removeEventListener('keydown', handleIframeKeyDown, { capture: true });
-      iframeKeyUpListener = () => win.removeEventListener('keyup', handleIframeKeyUp, { capture: true });
-      iframeMouseMoveListener = () => win.removeEventListener('mousemove', handleIframeMouseMove, { capture: true });
-      iframeMouseLeaveListener = () => win.removeEventListener('mouseleave', handleIframeMouseLeave, { capture: true });
-      iframeClickListener = () => win.removeEventListener('click', handleIframeClick, { capture: true });
+      iframeKeyDownListener = () =>
+        win.removeEventListener("keydown", handleIframeKeyDown, {
+          capture: true,
+        });
+      iframeKeyUpListener = () =>
+        win.removeEventListener("keyup", handleIframeKeyUp, { capture: true });
+      iframeMouseMoveListener = () =>
+        win.removeEventListener("mousemove", handleIframeMouseMove, {
+          capture: true,
+        });
+      iframeMouseLeaveListener = () =>
+        win.removeEventListener("mouseleave", handleIframeMouseLeave, {
+          capture: true,
+        });
+      iframeClickListener = () =>
+        win.removeEventListener("click", handleIframeClick, { capture: true });
     };
 
     const detachListeners = () => {
@@ -81,7 +103,9 @@ export function GodotViewWeb({ style, onReady, onError, onKeyDown, onKeyUp, onMo
     const handleLoad = () => {
       checkInterval = setInterval(() => {
         try {
-          const contentWindow = iframe.contentWindow as Window & { GodotBridge?: unknown };
+          const contentWindow = iframe.contentWindow as Window & {
+            GodotBridge?: unknown;
+          };
           if (contentWindow?.GodotBridge) {
             if (checkInterval) clearInterval(checkInterval);
             if (timeoutId) clearTimeout(timeoutId);
@@ -94,22 +118,26 @@ export function GodotViewWeb({ style, onReady, onError, onKeyDown, onKeyUp, onMo
         } catch (err) {
           if (checkInterval) clearInterval(checkInterval);
           if (timeoutId) clearTimeout(timeoutId);
-          onError?.(err instanceof Error ? err : new Error('Failed to access Godot iframe'));
+          onError?.(
+            err instanceof Error
+              ? err
+              : new Error("Failed to access Godot iframe")
+          );
         }
       }, 100);
 
       timeoutId = setTimeout(() => {
         if (checkInterval) clearInterval(checkInterval);
         if (!isLoadedRef.current) {
-          onError?.(new Error('Godot WASM load timeout'));
+          onError?.(new Error("Godot WASM load timeout"));
         }
       }, 30000);
     };
 
-    iframe.addEventListener('load', handleLoad);
+    iframe.addEventListener("load", handleLoad);
 
     return () => {
-      iframe.removeEventListener('load', handleLoad);
+      iframe.removeEventListener("load", handleLoad);
       if (checkInterval) clearInterval(checkInterval);
       if (timeoutId) clearTimeout(timeoutId);
       if (cleanupRef.current) cleanupRef.current();
@@ -117,7 +145,15 @@ export function GodotViewWeb({ style, onReady, onError, onKeyDown, onKeyUp, onMo
         contentWindowRef.current = null;
       }
     };
-  }, [onReady, onError, onKeyDown, onKeyUp, onMouseMove, onMouseLeave, onClick]);
+  }, [
+    onReady,
+    onError,
+    onKeyDown,
+    onKeyUp,
+    onMouseMove,
+    onMouseLeave,
+    onClick,
+  ]);
 
   return (
     <View style={[styles.container, style]}>
@@ -137,14 +173,14 @@ export function GodotViewWeb({ style, onReady, onError, onKeyDown, onKeyUp, onMo
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
 });
 
 const iframeStyles: React.CSSProperties = {
-  width: '100%',
-  height: '100%',
-  border: 'none',
-  touchAction: 'none',  // Prevent browser gestures, allow Godot to handle input
-  cursor: 'default',
+  width: "100%",
+  height: "100%",
+  border: "none",
+  touchAction: "none", // Prevent browser gestures, allow Godot to handle input
+  cursor: "default",
 };
