@@ -33,10 +33,7 @@ function buildGameBundle(gameDir) {
   
   try {
     // Use tsx to execute the TypeScript and capture the exported game definition
-    const script = `
-      import game from '${gameTsPath.replace(/\\/g, '\\\\')}';
-      console.log(JSON.stringify(game, null, 2));
-    `;
+    const script = `import game from '${gameTsPath.replace(/\\/g, '\\\\')}'; console.log(JSON.stringify(game, null, 2));`;
     
     const output = execSync('npx tsx --eval ' + JSON.stringify(script), {
       cwd: path.resolve(__dirname, '..'),
@@ -134,6 +131,44 @@ function buildGameBundle(gameDir) {
       path.join(bundleDir, 'assets.json'),
       JSON.stringify({}, null, 2)
     );
+
+    // Compile script.ts if it exists
+    const scriptTsPath = path.join(gameDir, 'script.ts');
+    if (fs.existsSync(scriptTsPath)) {
+      console.log(`[script] ${gameName}: Compiling script.ts...`);
+      const scriptsDir = path.join(bundleDir, 'scripts');
+      if (!fs.existsSync(scriptsDir)) {
+        fs.mkdirSync(scriptsDir, { recursive: true });
+      }
+
+      try {
+        execSync(`npx tsc \
+          --outDir ${scriptsDir} \
+          --module commonjs \
+          --target es2020 \
+          --moduleResolution node \
+          --esModuleInterop \
+          --skipLibCheck \
+          --declaration false \
+          --sourceMap false \
+          ${scriptTsPath}`, {
+          cwd: path.resolve(__dirname, '..'),
+          stdio: 'inherit'
+        });
+        
+        // Rename script.js to game.js if needed (tsc might output script.js)
+        const compiledJsPath = path.join(scriptsDir, 'script.js');
+        const targetJsPath = path.join(scriptsDir, 'game.js');
+        if (fs.existsSync(compiledJsPath)) {
+          fs.renameSync(compiledJsPath, targetJsPath);
+        }
+        
+        console.log(`[script] ${gameName}: Compiled to scripts/game.js`);
+      } catch (err) {
+        console.error(`[script] ${gameName}: Compilation failed: ${err.message}`);
+        // Don't fail the whole build, just this game's script
+      }
+    }
     
     console.log(`[done] ${gameName} bundle updated`);
     return true;
@@ -188,15 +223,21 @@ function watchGames() {
   // Watch for changes
   gameDirs.forEach(gameDir => {
     const gameTsPath = path.join(gameDir, 'game.ts');
+    const scriptTsPath = path.join(gameDir, 'script.ts');
     
-    if (fs.existsSync(gameTsPath)) {
-      fs.watchFile(gameTsPath, { interval: 1000 }, (curr, prev) => {
-        if (curr.mtime !== prev.mtime) {
-          console.log(`\n[change] ${path.basename(gameDir)}/game.ts`);
-          buildGameBundle(gameDir);
-        }
-      });
-    }
+    const watchFile = (filePath, label) => {
+      if (fs.existsSync(filePath)) {
+        fs.watchFile(filePath, { interval: 1000 }, (curr, prev) => {
+          if (curr.mtime !== prev.mtime) {
+            console.log(`\n[change] ${path.basename(gameDir)}/${label}`);
+            buildGameBundle(gameDir);
+          }
+        });
+      }
+    };
+
+    watchFile(gameTsPath, 'game.ts');
+    watchFile(scriptTsPath, 'script.ts');
   });
   
   console.log('\n[watch] Watching... (Ctrl+C to stop)');
