@@ -220,6 +220,7 @@ export function createBallSortGame(level: number = 1): GameDefinition {
       heldBallId: "",
       moveCount: 0,
       startTime: 0,
+      _winAtElapsed: 0,
       ...Object.fromEntries(
         Array.from({ length: NUM_TUBES }, (_, i) => [
           `tube${i}_count`,
@@ -372,6 +373,18 @@ export function createBallSortGame(level: number = 1): GameDefinition {
         name: "Check win condition after each move",
         trigger: { type: "event", eventName: "ball_dropped" },
         actions: [{ type: "ball_sort_check_win" }],
+      },
+      {
+        id: "handle_delayed_win",
+        name: "Trigger win after animation delay",
+        trigger: { type: "frame" },
+        conditions: [
+          { type: "expression", expr: "_winAtElapsed > 0 && elapsed() >= _winAtElapsed" },
+        ],
+        actions: [
+          { type: "set_variable", name: "_winAtElapsed", operation: "set", value: 0 },
+          { type: "game_state", state: "win" },
+        ],
       },
     ],
     persistence: ballSortPersistence,

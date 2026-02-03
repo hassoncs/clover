@@ -208,25 +208,34 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
   }
 
   private executeCheckWin(action: BallSortCheckWinAction, context: RuleContext): void {
+    if (!this.isWinConditionMet(context)) {
+      return;
+    }
+
+    // Schedule win by setting a target time - a frame rule will check this
+    const winAtElapsed = context.mutator.getElapsed() + 0.3;
+    context.mutator.setVariable('_winAtElapsed', winAtElapsed);
+  }
+
+  private isWinConditionMet(context: RuleContext): boolean {
     for (let i = 0; i < 6; i++) {
       const countVar = `tube${i}_count`;
       const count = (context.mutator.getVariable(countVar) as number) ?? 0;
 
       if (count === 0) continue;
-      if (count !== 4) return;
+      if (count !== 4) return false;
 
       const balls = this.getBallsInTube(i, context);
-      if (balls.length === 0) return;
+      if (balls.length === 0) return false;
 
       const firstColor = this.getBallColor(balls[0]);
       for (let j = 1; j < balls.length; j++) {
         if (this.getBallColor(balls[j]) !== firstColor) {
-          return;
+          return false;
         }
       }
     }
-
-    context.mutator.setGameState('won');
+    return true;
   }
 
   private getTubeIndexFromInput(context: RuleContext): number {
