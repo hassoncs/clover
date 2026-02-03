@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { RuntimeEntity } from '../types';
 import type { AssetPack, AssetConfig, AssetPlacement, GameDefinition, EntityTemplate, ColliderComponent } from '@slopcade/shared';
 import { trpcReact } from '@/lib/trpc/react';
+import { resolveAssetUrl } from '@/lib/config/env';
 
 export interface ResolvedAsset {
   assetId?: string;
@@ -35,26 +36,24 @@ interface DatabasePack {
 /**
  * Fetch asset pack from database with React Query caching
  */
-function useAssetPackFromDatabase(packId: string | undefined) {
-  return trpcReact.assetSystem.getPack.useQuery(
-    { id: packId! },
+function useAssetPackFromDatabase(packName: string | undefined) {
+  return trpcReact.assetSystem.getPackByName.useQuery(
+    { name: packName! },
     { 
-      enabled: !!packId,
+      enabled: !!packName,
       staleTime: 5 * 60 * 1000, // 5 minutes
       gcTime: 30 * 60 * 1000,   // 30 minutes
     }
   );
 }
 
-/**
- * Convert database pack format to embedded AssetPack format
- */
 function convertDbPackToEmbedded(dbPack: DatabasePack): AssetPack {
   const assets: Record<string, AssetConfig> = {};
   for (const entry of dbPack.entries) {
     if (entry.imageUrl) {
+      const fullUrl = resolveAssetUrl(entry.imageUrl);
       assets[entry.templateId] = {
-        imageUrl: entry.imageUrl,
+        imageUrl: fullUrl ?? entry.imageUrl,
         source: 'generated' as const,
         scale: entry.placement?.scale ?? 1,
         offsetX: entry.placement?.offsetX ?? 0,
@@ -167,7 +166,7 @@ export function useAssetResolution(
 
     if (dbPackQuery.data) {
       const dbPack = convertDbPackToEmbedded(dbPackQuery.data);
-      mergedPacks[dbPack.id] = dbPack;
+      mergedPacks[dbPack.name] = dbPack;
     }
 
     if (activePackId && mergedPacks[activePackId] && definition.templates) {

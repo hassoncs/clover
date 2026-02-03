@@ -1,13 +1,16 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { View, Text, Pressable, ActivityIndicator, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
 import { AssetLoadingScreen } from "@/components/game";
 import { trpc } from "@/lib/trpc/client";
+import { trpcReact } from "@/lib/trpc/react";
 import { useGamePreloader } from "@/lib/hooks/useGamePreloader";
 import { getStorageItem } from "@/lib/utils/storage";
+import { resolveAssetUrl } from "@/lib/config/env";
 import type { GameDefinition } from "@slopcade/shared";
+import type { ResolvedPackEntry } from "@/lib/assets/AssetManifest";
 
 export default function TestGameRunScreen() {
   const router = useRouter();
@@ -23,7 +26,69 @@ export default function TestGameRunScreen() {
   const [loadingDismissed, setLoadingDismissed] = useState(false);
   const loadingOpacity = useRef(new Animated.Value(1)).current;
 
-  const { phase, progress, imageUrls, startPreload, skipPreload, reset } = useGamePreloader(gameDefinition);
+  // Get active pack ID from game definition
+  const activePackId = gameDefinition?.assetSystem?.activeAssetPackId ?? gameDefinition?.activeAssetPackId;
+
+  // Fetch asset pack from database
+  const packQuery = trpcReact.assetSystem.getPackByName.useQuery(
+    { name: activePackId! },
+    { 
+      enabled: !!activePackId,
+      staleTime: 5 * 60 * 1000,
+    }
+  );
+
+  // Convert pack entries to ResolvedPackEntry format with full URLs
+  const resolvedPackEntries = useMemo(() => {
+    if (!packQuery.data?.entries) return undefined;
+    const result: Record<string, ResolvedPackEntry> = {};
+    for (const entry of packQuery.data.entries) {
+      if (entry.imageUrl) {
+        // Resolve R2 key to full URL (prepends base URL from env)
+        const fullUrl = resolveAssetUrl(entry.imageUrl);
+        result[entry.templateId] = {
+          imageUrl: fullUrl ?? entry.imageUrl,
+          placement: entry.placement ?? undefined,
+        };
+      }
+    }
+    return result;
+  }, [packQuery.data]);
+
+  // Create enriched definition with resolved pack data
+  const enrichedDefinition = useMemo(() => {
+    if (!gameDefinition) return null;
+    if (!resolvedPackEntries || !activePackId) return gameDefinition;
+    
+    // Convert resolvedPackEntries to AssetPack format
+    const assets: Record<string, import('@slopcade/shared').AssetConfig> = {};
+    for (const [templateId, entry] of Object.entries(resolvedPackEntries)) {
+      assets[templateId] = {
+        imageUrl: entry.imageUrl,
+        source: 'generated' as const,
+        scale: entry.placement?.scale ?? 1,
+        offsetX: entry.placement?.offsetX ?? 0,
+        offsetY: entry.placement?.offsetY ?? 0,
+      };
+    }
+    
+    return {
+      ...gameDefinition,
+      assetPacks: {
+        ...gameDefinition.assetPacks,
+        [activePackId]: {
+          id: activePackId,
+          name: activePackId,
+          assets,
+        },
+      },
+    };
+  }, [gameDefinition, resolvedPackEntries, activePackId]);
+
+  const { phase, progress, imageUrls, startPreload, skipPreload, reset } = useGamePreloader(
+    gameDefinition,
+    { resolvedPackEntries }
+  );
 
   // Load saved level from storage on mount
   useEffect(() => {
@@ -69,10 +134,10 @@ export default function TestGameRunScreen() {
   }, [id, currentLevel]);
 
   useEffect(() => {
-    if (gameDefinition && !isLoadingDefinition && phase === 'idle') {
+    if (gameDefinition && !isLoadingDefinition && !packQuery.isLoading && phase === 'idle') {
       startPreload();
     }
-  }, [gameDefinition, isLoadingDefinition, phase, startPreload]);
+  }, [gameDefinition, isLoadingDefinition, packQuery.isLoading, phase, startPreload]);
 
   const handleGodotReady = useCallback(() => {
     setGodotReady(true);
@@ -137,7 +202,7 @@ export default function TestGameRunScreen() {
     );
   }
 
-  if (isLoadingDefinition) {
+  if (isLoadingDefinition || packQuery.isLoading) {
     return (
       <SafeAreaView className="flex-1 bg-gray-900 items-center justify-center">
         <ActivityIndicator size="large" color="#4CAF50" />
@@ -146,7 +211,7 @@ export default function TestGameRunScreen() {
     );
   }
 
-  if (!gameDefinition) {
+  if (!enrichedDefinition) {
     return (
       <SafeAreaView className="flex-1 bg-gray-900 items-center justify-center p-6">
         <Text className="text-red-400 text-center text-lg">Failed to load game</Text>
@@ -158,7 +223,7 @@ export default function TestGameRunScreen() {
   }
 
   // TEMP: Skip preloading to debug freeze issue
-  const canMountGame = !isLoadingDefinition && gameDefinition !== null;
+  const canMountGame = !isLoadingDefinition && enrichedDefinition !== null;
   const showLoadingOverlay = false; // Disabled for debugging
 
   return (
@@ -171,7 +236,7 @@ export default function TestGameRunScreen() {
       {canMountGame && (
         <GameRuntimeWrapper
           key={runtimeKey}
-          definition={gameDefinition}
+          definition={enrichedDefinition!}
           imageUrls={imageUrls}
           onBackToMenu={handleBack}
           onRequestRestart={handleReset}
@@ -197,11 +262,11 @@ export default function TestGameRunScreen() {
           pointerEvents={godotReady ? 'none' : 'auto'}
         >
           <AssetLoadingScreen
-            gameTitle={gameDefinition.metadata.title}
+            gameTitle={enrichedDefinition!.metadata.title}
             progress={progress}
-            config={gameDefinition.loadingScreen}
-            titleHeroImageUrl={gameDefinition.metadata.titleHeroImageUrl}
-            instructions={gameDefinition.metadata.instructions}
+            config={enrichedDefinition!.loadingScreen}
+            titleHeroImageUrl={enrichedDefinition!.metadata.titleHeroImageUrl}
+            instructions={enrichedDefinition!.metadata.instructions}
             onSkip={godotReady ? undefined : skipPreload}
           />
         </Animated.View>

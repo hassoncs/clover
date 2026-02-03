@@ -1,7 +1,9 @@
 #!/usr/bin/env npx tsx
 import * as path from 'path';
 import * as crypto from 'node:crypto';
-import { executeGameAssets } from '../src/ai/pipeline';
+import * as fs from 'fs';
+import { execSync } from 'child_process';
+import { executeGameAssets } from '../src/ai/pipeline/executor';
 import { createNodeAdapters, createFileDebugSink } from '../src/ai/pipeline/adapters/node';
 import { getGameConfig, listGameIds } from './game-configs';
 import type { GameAssetConfig } from '../src/ai/pipeline/types';
@@ -136,6 +138,52 @@ Assets to generate: ${config.assets.length}
   console.log('');
 }
 
+async function writeDatabaseRecords(
+  config: GameAssetConfig,
+  packId: string,
+  result: Awaited<ReturnType<typeof executeGameAssets>>
+): Promise<void> {
+  const now = Date.now();
+  let sql = 'BEGIN TRANSACTION;\n';
+
+  sql += `INSERT OR IGNORE INTO games (id, title, definition, created_at, updated_at) 
+          VALUES ('${config.gameId}', '${config.gameTitle}', '{}', ${now}, ${now});\n`;
+
+  const packName = `${config.gameId}-default`;
+  sql += `INSERT OR REPLACE INTO asset_packs (id, base_game_id, name, is_complete, created_at) 
+          VALUES ('${packId}', '${config.gameId}', '${packName}', 1, ${now});\n`;
+
+  for (const r of result.results.filter(r => r.success)) {
+    const templateId = r.assetId;
+    const imageUrl = r.publicUrls[0];
+    
+    const r2Key = imageUrl.replace('https://slopcade-api.hassoncs.workers.dev/assets/', '');
+    
+    const assetUuid = r2Key.split('/').pop()?.replace('.png', '') ?? crypto.randomUUID();
+    
+    sql += `INSERT OR REPLACE INTO game_assets (id, owner_game_id, source, image_url, created_at) 
+            VALUES ('${assetUuid}', '${config.gameId}', 'generated', '${r2Key}', ${now});\n`;
+    
+    const entryId = crypto.randomUUID();
+    sql += `INSERT OR REPLACE INTO asset_pack_entries (id, pack_id, template_id, asset_id) 
+            VALUES ('${entryId}', '${packId}', '${templateId}', '${assetUuid}');\n`;
+  }
+
+  sql += 'COMMIT;\n';
+
+  const tempFile = '/tmp/generate-assets-db.sql';
+  fs.writeFileSync(tempFile, sql);
+  
+  try {
+    execSync(`npx wrangler d1 execute slopcade-db --file=${tempFile} --local`, {
+      stdio: 'inherit',
+      cwd: path.join(__dirname, '..'),
+    });
+  } finally {
+    fs.unlinkSync(tempFile);
+  }
+}
+
 async function main(): Promise<void> {
   const options = parseArgs();
 
@@ -263,6 +311,20 @@ Duration: ${(result.durationMs / 1000).toFixed(1)}s
   }
 
   console.log(`\nDebug files saved to: ${debugDir}`);
+
+  if (result.successful > 0) {
+    console.log('\n' + '═'.repeat(60));
+    console.log('  WRITING DATABASE RECORDS');
+    console.log('═'.repeat(60));
+    
+    try {
+      await writeDatabaseRecords(config, packId, result);
+      console.log('✅ Database records created successfully');
+    } catch (dbErr) {
+      console.error('❌ Failed to write database records:', dbErr);
+      process.exit(1);
+    }
+  }
 
   process.exit(result.failed > 0 ? 1 : 0);
 }

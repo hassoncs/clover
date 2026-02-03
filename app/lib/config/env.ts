@@ -31,12 +31,14 @@ export const env = {
   apiUrl: getApiUrl(),
 };
 
+const ASSET_CDN_URL = 'https://slopcade-api.hassoncs.workers.dev/assets';
+
 export function resolveAssetUrl(url: string | undefined | null): string | undefined {
   if (!url) return undefined;
   if (url.startsWith('data:')) return url;
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
   if (url.startsWith('/assets/')) {
-    return `${env.apiUrl}${url}`;
+    return `${ASSET_CDN_URL}${url.slice('/assets'.length)}`;
   }
-  return `${env.apiUrl}/assets/${url}`;
+  return `${ASSET_CDN_URL}/${url}`;
 }

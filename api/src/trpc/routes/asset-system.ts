@@ -1,4 +1,4 @@
-import { protectedProcedure, router } from '../index'
+import { protectedProcedure, publicProcedure, router } from '../index'
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import {
@@ -349,7 +349,7 @@ export const assetSystemRouter = router({
       return { success: true };
     }),
 
-  getPack: protectedProcedure
+  getPack: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const packRow = await ctx.env.DB.prepare(
@@ -378,7 +378,36 @@ export const assetSystemRouter = router({
       };
     }),
 
-  listPacks: protectedProcedure
+  getPackByName: publicProcedure
+    .input(z.object({ name: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const packRow = await ctx.env.DB.prepare(
+        'SELECT * FROM asset_packs WHERE name = ? AND deleted_at IS NULL'
+      ).bind(input.name).first<AssetPackRow>();
+
+      if (!packRow) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Asset pack not found' });
+      }
+
+      const entriesResult = await ctx.env.DB.prepare(
+        `SELECT e.*, a.image_url, a.width as asset_width, a.height as asset_height
+         FROM asset_pack_entries e
+         LEFT JOIN game_assets a ON e.asset_id = a.id
+         WHERE e.pack_id = ?`
+      ).bind(packRow.id).all<AssetPackEntryRow & { image_url: string | null; asset_width: number | null; asset_height: number | null }>();
+
+      return {
+        ...toClientPack(packRow),
+        entries: entriesResult.results.map(row => ({
+          ...toClientEntry(row),
+          imageUrl: resolveStoredAssetUrl(row.image_url, ctx.env.ASSET_HOST),
+          assetWidth: row.asset_width,
+          assetHeight: row.asset_height,
+        })),
+      };
+    }),
+
+  listPacks: publicProcedure
     .input(z.object({ gameId: z.string() }))
     .query(async ({ ctx, input }) => {
       const gameRow = await ctx.env.DB.prepare(
