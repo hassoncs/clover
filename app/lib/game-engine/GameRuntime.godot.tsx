@@ -1887,17 +1887,20 @@ export function GameRuntimeGodot({
                 style={[
                   styles.button,
                   { backgroundColor: "#888", marginTop: 12 },
-                  ((progressHook.progress as any)?.level ?? 1) <= 1 && {
+                  ((progressHook.progress as any)?.currentLevel ?? (progressHook.progress as any)?.level ?? 1) <= 1 && {
                     opacity: 0.5,
                   },
                 ]}
-                disabled={((progressHook.progress as any)?.level ?? 1) <= 1}
+                disabled={((progressHook.progress as any)?.currentLevel ?? (progressHook.progress as any)?.level ?? 1) <= 1}
                 onPress={async () => {
-                  const currentLevel = (progressHook.progress as any)?.level;
+                  const progress = progressHook.progress as any;
+                  const currentLevel = progress?.currentLevel ?? progress?.level;
                   if (typeof currentLevel === "number" && currentLevel > 1) {
-                    await progressHook.saveProgress({
-                      level: currentLevel - 1,
-                    } as any);
+                    // Support both field names
+                    const update = progress?.currentLevel !== undefined
+                      ? { currentLevel: currentLevel - 1 }
+                      : { level: currentLevel - 1 };
+                    await progressHook.saveProgress(update as any);
                     handleRestart();
                   }
                 }}
