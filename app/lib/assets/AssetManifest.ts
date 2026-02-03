@@ -142,19 +142,6 @@ export function extractAssetManifest(
     });
   }
 
-  // --- Template Sprites ---
-
-  Object.entries(definition.templates).forEach(([templateId, template]) => {
-    if (template.visual?.type === 'image' && 'imageUrl' in template.visual) {
-      addImage(
-        template.visual.imageUrl,
-        `template-${templateId}`,
-        templateId,
-        'normal'
-      );
-    }
-  });
-
   // --- Asset Pack Images ---
   // Priority: resolvedPackEntries (from DB) > embedded assetPacks > template visuals
   
