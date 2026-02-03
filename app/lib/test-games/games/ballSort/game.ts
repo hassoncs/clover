@@ -8,13 +8,6 @@ import {
 } from "@slopcade/shared";
 import { generateVerifiedPuzzle, type PuzzleConfig, type GeneratedPuzzle } from "./puzzleGenerator";
 
-const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/ballSort";
-
-export const metadata: TestGameMeta = {
-  title: "Ball Sort",
-  description: "Sort colored balls into tubes - each tube should contain only one color",
-};
-
 const BASE_WORLD_WIDTH = 12;
 const WORLD_WIDTH = 14.4;
 const WORLD_HEIGHT = 25.6;
@@ -202,6 +195,7 @@ export function createBallSortGame(level: number = 1): GameDefinition {
       instructions: "Tap a tube to pick up the top ball, then tap another tube to drop it. You can only drop on the same color or an empty tube.",
       version: "1.1.0",
     },
+    activeAssetPackId: "ballSort-default",
     world: {
       gravity: { x: 0, y: 0 },
       pixelsPerMeter: 50,
@@ -209,7 +203,6 @@ export function createBallSortGame(level: number = 1): GameDefinition {
     },
     background: {
       type: "static",
-      imageUrl: `${ASSET_BASE}/background.png`,
     },
     camera: { type: "fixed", zoom: 1 },
     input: { debugInputs: true },
@@ -276,9 +269,9 @@ export function createBallSortGame(level: number = 1): GameDefinition {
       tube: {
         id: "tube",
         tags: ["tube"],
+        whatDescription: "a transparent glass cylinder tube container",
         visual: {
           type: "image",
-          imageUrl: `${ASSET_BASE}/ball0.png`, // TEMP: tube.png is missing, using ball0 to test
           imageWidth: TUBE_WIDTH,
           imageHeight: TUBE_HEIGHT,
         },
@@ -406,9 +399,18 @@ function createBallTemplate(colorIndex: number) {
   return {
     id: `ball${colorIndex}`,
     tags: ["ball", `color-${colorIndex}`],
+    whatDescription: [
+      "a shiny red gumball candy",
+      "a shiny blue gumball candy",
+      "a shiny green gumball candy",
+      "a shiny yellow gumball candy",
+      "a shiny purple gumball candy",
+      "a shiny orange gumball candy",
+      "a shiny pink gumball candy",
+      "a shiny cyan gumball candy",
+    ][colorIndex] || "a shiny colored gumball candy",
     visual: {
       type: "image" as const,
-      imageUrl: `${ASSET_BASE}/ball${colorIndex}.png`,
       imageWidth: ballDiameter,
       imageHeight: ballDiameter,
     },
