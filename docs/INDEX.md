@@ -1,8 +1,25 @@
 # Documentation Index
 
 > **Navigation hub for all project documentation**
->
-> This index provides a structured path through all documentation. Start here to find what you need.
+
+---
+
+## 🎮 Start Here: Building Games
+
+| Document | Description |
+|----------|-------------|
+| **[Game Engine Guide](./GAME-ENGINE-GUIDE.md)** | **How to build games** - entities, physics, behaviors, rules, complete examples |
+| **[Bundle System](./game-maker/reference/bundle-system.md)** | **Build & bundle format** - JSON structure, file organization, compilation |
+| **[Physics System Guide](./physics-system-guide.md)** | Deep dive into physics - body types, sensors, collisions |
+| **[Game Patterns](./game-maker/reference/game-patterns.md)** | 7 reusable patterns - Choice, Pick&Place, Physics Drop, etc. |
+
+### Architecture Reference
+| Document | Description |
+|----------|-------------|
+| [Master Architecture](./game-engine-architecture/00-MASTER-ARCHITECTURE.md) | High-level system design and principles |
+| [Entity System](./game-engine-architecture/01-core-concepts/entity-system.md) | Entity structure, components, hierarchy |
+| [Behavior System](./game-engine-architecture/01-core-concepts/behavior-system.md) | All behavior types and usage |
+| [Rules System](./game-engine-architecture/01-core-concepts/rules-system.md) | Triggers, conditions, actions |
 
 ---
 
@@ -10,10 +27,10 @@
 
 | Component | Description | Entry Point |
 |-----------|-------------|-------------|
-| **Game Engine** | Godot 4 physics and rendering for React Native | [godot/](../godot/) |
-| **Game Maker** | AI-powered game generation, entity/behavior systems | [game-maker/INDEX.md](game-maker/INDEX.md) |
-| **Economy** | Virtual currency strategy, Sparks/Gems, monetization | [economy/INDEX.md](economy/INDEX.md) |
-| **Shared** | Cross-cutting guides, tooling, project-wide docs | [shared/](#shared-documentation) |
+| **Game Engine** | Godot 4 physics and rendering | [game-engine-architecture/](./game-engine-architecture/) |
+| **Game Maker** | AI generation, templates, validation | [game-maker/INDEX.md](game-maker/INDEX.md) |
+| **Economy** | Virtual currency, Sparks/Gems | [economy/INDEX.md](economy/INDEX.md) |
+| **Godot** | Bridge, coordinates, input | [godot/](./godot/) |
 
 ---
 
