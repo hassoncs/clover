@@ -69,11 +69,11 @@ Decouple game engine definitions from asset URL management. Games declare what t
 - Database entries - Asset packs for each test game referencing existing R2 URLs
 
 ### Definition of Done
-- [ ] `tsc --noEmit` passes with zero errors
-- [ ] All 9 test games render correctly in browser
-- [ ] No `ASSET_BASE` constants remain in test games (verified via grep)
-- [ ] Each template with `visual.type: 'image'` has `whatDescription`
-- [ ] Missing pack asset throws clear error with template ID
+- [x] `tsc --noEmit` passes with zero errors
+- [x] All 6 test games render correctly in browser
+- [x] No `ASSET_BASE` constants remain in test games (verified via grep)
+- [x] Each template with `visual.type: 'image'` has `whatDescription`
+- [x] Missing pack asset throws clear error with template ID
 
 ### Must Have
 - Clean separation: game JSON knows nothing about CDN URLs
@@ -164,7 +164,7 @@ Parallel Speedup: ~50% faster than sequential (6 games can migrate in parallel)
 
 ## TODOs
 
-- [ ] 1. Validate Database Schema and Existing Infrastructure
+- [x] 1. Validate Database Schema and Existing Infrastructure
 
   **What to do**:
   - Use tRPC to verify database connectivity and schema:
@@ -273,7 +273,7 @@ Parallel Speedup: ~50% faster than sequential (6 games can migrate in parallel)
 
 ---
 
-- [ ] 2. Update TypeScript Types for New Asset Model
+- [x] 2. Update TypeScript Types for New Asset Model
 
   **Type Changes with BEFORE/AFTER**:
 
@@ -395,7 +395,7 @@ Parallel Speedup: ~50% faster than sequential (6 games can migrate in parallel)
 
 ---
 
-- [ ] 3. Update Runtime Asset Resolution Hook
+- [x] 3. Update Runtime Asset Resolution Hook
 
   **Complete Implementation** (add to `app/lib/game-engine/hooks/useAssetResolution.ts`):
 
@@ -673,7 +673,7 @@ Parallel Speedup: ~50% faster than sequential (6 games can migrate in parallel)
 
 ---
 
-- [ ] 4. Migrate Ball Sort Test Game
+- [x] 4. Migrate Ball Sort Test Game
 
   **Migration Pattern** (apply to ALL game migrations):
 
@@ -789,7 +789,7 @@ Parallel Speedup: ~50% faster than sequential (6 games can migrate in parallel)
 
 ---
 
-- [ ] 5. Migrate Flappy Bird Test Game
+- [x] 5. Migrate Flappy Bird Test Game
 
   **What to do**: Same migration pattern as Task 4
   - Remove `ASSET_BASE` constant
@@ -813,7 +813,7 @@ Parallel Speedup: ~50% faster than sequential (6 games can migrate in parallel)
 
 ---
 
-- [ ] 6. Migrate Slopeggle Test Game
+- [x] 6. Migrate Slopeggle Test Game
 
   **What to do**: Same migration pattern as Task 4
   - Remove `ASSET_BASE`
@@ -832,7 +832,7 @@ Parallel Speedup: ~50% faster than sequential (6 games can migrate in parallel)
 
 ---
 
-- [ ] 7. Migrate Breakout Bouncer Test Game
+- [x] 7. Migrate Breakout Bouncer Test Game
 
   **What to do**: Same migration pattern as Task 4
   - Add `whatDescription` to: paddle, brickRed, brickBlue, brickGreen, brickYellow, background
@@ -850,7 +850,7 @@ Parallel Speedup: ~50% faster than sequential (6 games can migrate in parallel)
 
 ---
 
-- [ ] 8. Migrate Breakout Scripted Test Game
+- [x] 8. Migrate Breakout Scripted Test Game
 
   **What to do**: Same migration pattern as Task 4
   - Note: Uses same assets as breakoutBouncer (`breakout-bouncer` R2 path)
@@ -868,7 +868,7 @@ Parallel Speedup: ~50% faster than sequential (6 games can migrate in parallel)
 
 ---
 
-- [ ] 9. Migrate Gem Crush Test Game
+- [x] 9. Migrate Gem Crush Test Game
 
   **What to do**: Same migration pattern as Task 4
   - Add `whatDescription` to gem templates and background
@@ -885,7 +885,7 @@ Parallel Speedup: ~50% faster than sequential (6 games can migrate in parallel)
 
 ---
 
-- [ ] 10. Final Verification and Documentation Update
+- [x] 10. Final Verification and Documentation Update
 
   **What to do**:
   - Run full TypeScript compilation: `pnpm tsc --noEmit`
@@ -935,7 +935,7 @@ Parallel Speedup: ~50% faster than sequential (6 games can migrate in parallel)
 
 ---
 
-- [ ] 11. Remove Deprecated imageUrl Field (Final Cleanup)
+- [x] 11. Remove Deprecated imageUrl Field (Final Cleanup)
 
   **IMPORTANT: Two Different imageUrl Fields**
   
@@ -1115,18 +1115,18 @@ pnpm dev
 ```
 
 ### Final Checklist
-- [ ] All "Must Have" present:
+- [x] All "Must Have" present:
   - Clean separation (games don't know URLs)
   - `whatDescription` on all image templates
   - Database-backed resolution with React Query caching
   - Strict error on missing assets
   - `imageUrl` removed from visual types (Task 11 complete)
-- [ ] All "Must NOT Have" absent:
+- [x] All "Must NOT Have" absent:
   - No changed physics
   - No pack management UI
   - No pack versioning
   - No fuzzy matching
-- [ ] All TypeScript compilation passes (`pnpm tsc --noEmit`)
-- [ ] All 6 test games render correctly in browser
-- [ ] No deprecated code remaining (clean codebase)
-- [ ] `grep -r "ASSET_BASE" app/lib/test-games/games/` returns empty
+- [x] All TypeScript compilation passes (`pnpm tsc --noEmit`)
+- [x] All 6 test games render correctly in browser
+- [x] No deprecated code remaining (clean codebase)
+- [x] `grep -r "ASSET_BASE" app/lib/test-games/games/` returns empty
