@@ -195,3 +195,65 @@ All 8 tests pass:
 - Runtime does not yet support `localPath` - will use `imageUrl` until future update
 - Compiler outputs both fields to enable independent deployment
 - Games built with `localPath` will work (using remote) until runtime update
+
+## Asset Resolution Implementation (Task 7)
+
+### Implementation Summary
+Added comprehensive asset resolution to the bundle compiler supporting both local and remote assets:
+
+1. **scanForAssetFiles() function**:
+   - Scans `assets/` subdirectory recursively
+   - Supports image formats: `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`
+   - Supports audio formats: `.mp3`, `.wav`, `.ogg`
+   - Returns sorted array of relative paths (relative to `assets/` directory)
+
+2. **Asset Format Support**:
+   - **Legacy format**: `path` field (treated as `remoteUrl` for backwards compatibility)
+   - **New format**: `remoteUrl` and/or `localPath` fields
+   - Output includes both `imageUrl` and `localPath` when available
+
+3. **Validation**:
+   - `INVALID_ASSET_REFERENCE`: Asset must have `path`, `remoteUrl`, or `localPath`
+   - `MISSING_LOCAL_ASSET`: When `localPath` declared but file doesn't exist at `assets/{localPath}`
+   - Validation checks actual file existence using FileReader abstraction
+
+4. **Test Coverage**:
+   - 7 comprehensive tests covering all scenarios
+   - Tests use VirtualFileReader for isolated testing
+   - All tests passing
+
+### Key Design Decisions
+
+**localPath is relative to assets/ directory**:
+- Asset declares: `localPath: 'ball.png'`
+- Compiler checks: `{bundlePath}/assets/ball.png`
+- This keeps asset declarations clean and portable
+
+**Backwards compatibility maintained**:
+- Old bundles with `path` field continue to work
+- `path` is treated as `remoteUrl` in output
+- No breaking changes to existing games
+
+**Non-fatal errors**:
+- Asset validation errors don't stop compilation
+- Missing assets are excluded from output
+- Allows partial compilation for debugging
+
+### Testing Notes
+
+**VirtualFileReader path handling**:
+- Files stored with normalized paths (no leading slash)
+- `existsSync()` correctly handles absolute paths via `getRelativePath()`
+- Directory existence inferred from file paths
+
+**Test file structure**:
+```
+files.set('assets/ball.png', 'data')  // File in virtual FS
+localPath: 'ball.png'                  // Relative to assets/
+Check: /bundle/assets/ball.png         // Absolute path for validation
+```
+
+### Commit
+- Commit: ac08efb5
+- Message: `feat(bundle): add asset resolution for local and remote assets`
+- All bundle tests passing (28 tests)

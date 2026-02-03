@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-03T20:46:37.047Z",
+  "generatedAt": "2026-02-03T20:59:38.618Z",
   "games": [
     {
       "id": "ballSort",
@@ -981,6 +981,9 @@
         "background": {
           "type": "static"
         },
+        "input": {
+          "debugInputs": true
+        },
         "ui": {
           "showTimer": true,
           "timerCountdown": false,
@@ -998,6 +1001,157 @@
             }
           ]
         },
+        "variables": {
+          "currentLevel": 1,
+          "heldBallColor": -1,
+          "sourceTubeIndex": -1,
+          "heldBallId": "",
+          "moveCount": 0,
+          "startTime": 0,
+          "_winAtElapsed": 0,
+          "_invalidFeedbackStart": 0,
+          "tube0_count": 2,
+          "tube1_count": 2,
+          "tube2_count": 4,
+          "tube3_count": 0,
+          "tube4_count": 0,
+          "tube5_count": 0,
+          "tube0_topColor": 0,
+          "tube1_topColor": 1,
+          "tube2_topColor": 1,
+          "tube3_topColor": -1,
+          "tube4_topColor": -1,
+          "tube5_topColor": -1
+        },
+        "containers": [
+          {
+            "id": "tube-0",
+            "type": "stack",
+            "capacity": 4,
+            "layout": {
+              "direction": "vertical",
+              "spacing": 1.32,
+              "basePosition": {
+                "x": -5.485714285714286,
+                "y": -3.1999999999999993
+              },
+              "anchor": "bottom"
+            }
+          },
+          {
+            "id": "tube-1",
+            "type": "stack",
+            "capacity": 4,
+            "layout": {
+              "direction": "vertical",
+              "spacing": 1.32,
+              "basePosition": {
+                "x": -3.291428571428572,
+                "y": -3.1999999999999993
+              },
+              "anchor": "bottom"
+            }
+          },
+          {
+            "id": "tube-2",
+            "type": "stack",
+            "capacity": 4,
+            "layout": {
+              "direction": "vertical",
+              "spacing": 1.32,
+              "basePosition": {
+                "x": -1.0971428571428579,
+                "y": -3.1999999999999993
+              },
+              "anchor": "bottom"
+            }
+          },
+          {
+            "id": "tube-3",
+            "type": "stack",
+            "capacity": 4,
+            "layout": {
+              "direction": "vertical",
+              "spacing": 1.32,
+              "basePosition": {
+                "x": 1.097142857142856,
+                "y": -3.1999999999999993
+              },
+              "anchor": "bottom"
+            }
+          },
+          {
+            "id": "tube-4",
+            "type": "stack",
+            "capacity": 4,
+            "layout": {
+              "direction": "vertical",
+              "spacing": 1.32,
+              "basePosition": {
+                "x": 3.29142857142857,
+                "y": -3.1999999999999993
+              },
+              "anchor": "bottom"
+            }
+          },
+          {
+            "id": "tube-5",
+            "type": "stack",
+            "capacity": 4,
+            "layout": {
+              "direction": "vertical",
+              "spacing": 1.32,
+              "basePosition": {
+                "x": 5.485714285714284,
+                "y": -3.1999999999999993
+              },
+              "anchor": "bottom"
+            }
+          }
+        ],
+        "stateMachines": [
+          {
+            "id": "gameFlow",
+            "initialState": "idle",
+            "states": [
+              {
+                "id": "idle"
+              },
+              {
+                "id": "holding"
+              }
+            ],
+            "transitions": [
+              {
+                "id": "pickup",
+                "from": "idle",
+                "to": "holding",
+                "trigger": {
+                  "type": "event",
+                  "eventName": "ball_picked"
+                }
+              },
+              {
+                "id": "drop",
+                "from": "holding",
+                "to": "idle",
+                "trigger": {
+                  "type": "event",
+                  "eventName": "ball_dropped"
+                }
+              },
+              {
+                "id": "cancel",
+                "from": "holding",
+                "to": "idle",
+                "trigger": {
+                  "type": "event",
+                  "eventName": "pickup_cancelled"
+                }
+              }
+            ]
+          }
+        ],
         "templates": {
           "tube": {
             "id": "tube",
@@ -1904,7 +2058,8 @@
               }
             ]
           }
-        ]
+        ],
+        "winCondition": {}
       }
     },
     {
@@ -3701,16 +3856,1088 @@
       }
     },
     {
+      "id": "gemCrush",
+      "title": "Gem Crush",
+      "description": "Match 3 or more gems to clear them!",
+      "definition": {
+        "metadata": {
+          "id": "gem-crush",
+          "title": "Gem Crush",
+          "description": "Match 3 or more gems to clear them!",
+          "version": "1.0.0"
+        },
+        "world": {
+          "gravity": {
+            "x": 0,
+            "y": 0
+          },
+          "pixelsPerMeter": 50,
+          "bounds": {
+            "width": 8.4,
+            "height": 8.4
+          }
+        },
+        "camera": {
+          "type": "fixed",
+          "zoom": 1
+        },
+        "background": {
+          "type": "static",
+          "whatDescription": "a mystical treasure cave background with glowing crystals"
+        },
+        "ui": {
+          "showTimer": true,
+          "timerCountdown": true,
+          "backgroundColor": "#2d1b4e",
+          "variableDisplays": [
+            {
+              "name": "score",
+              "label": "Score"
+            }
+          ]
+        },
+        "templates": {
+          "gem_red": {
+            "id": "gem_red",
+            "tags": [
+              "gem",
+              "gem_red"
+            ],
+            "visual": {
+              "type": "image",
+              "whatDescription": "a sparkling red gemstone"
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.51,
+              "isSensor": true
+            },
+            "conditionalBehaviors": [
+              {
+                "when": {
+                  "hasTag": "sys.match3:hovered"
+                },
+                "priority": 1,
+                "behaviors": [
+                  {
+                    "type": "sprite_effect",
+                    "effect": "rim_light"
+                  }
+                ]
+              },
+              {
+                "when": {
+                  "hasTag": "sys.match3:selected"
+                },
+                "priority": 2,
+                "behaviors": [
+                  {
+                    "type": "scale_oscillate",
+                    "min": 0.97,
+                    "max": 1.06,
+                    "speed": 5
+                  },
+                  {
+                    "type": "sprite_effect",
+                    "effect": "glow",
+                    "params": {
+                      "pulse": true
+                    }
+                  }
+                ]
+              },
+              {
+                "when": {
+                  "hasTag": "sys.match3:matched"
+                },
+                "priority": 3,
+                "behaviors": [
+                  {
+                    "type": "sprite_effect",
+                    "effect": "fade_out",
+                    "params": {
+                      "duration": 0.4
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gem_blue": {
+            "id": "gem_blue",
+            "tags": [
+              "gem",
+              "gem_blue"
+            ],
+            "visual": {
+              "type": "image",
+              "whatDescription": "a sparkling blue sapphire"
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.51,
+              "isSensor": true
+            },
+            "conditionalBehaviors": [
+              {
+                "when": {
+                  "hasTag": "sys.match3:hovered"
+                },
+                "priority": 1,
+                "behaviors": [
+                  {
+                    "type": "sprite_effect",
+                    "effect": "rim_light"
+                  }
+                ]
+              },
+              {
+                "when": {
+                  "hasTag": "sys.match3:selected"
+                },
+                "priority": 2,
+                "behaviors": [
+                  {
+                    "type": "scale_oscillate",
+                    "min": 0.97,
+                    "max": 1.06,
+                    "speed": 5
+                  },
+                  {
+                    "type": "sprite_effect",
+                    "effect": "glow",
+                    "params": {
+                      "pulse": true
+                    }
+                  }
+                ]
+              },
+              {
+                "when": {
+                  "hasTag": "sys.match3:matched"
+                },
+                "priority": 3,
+                "behaviors": [
+                  {
+                    "type": "sprite_effect",
+                    "effect": "fade_out",
+                    "params": {
+                      "duration": 0.4
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gem_green": {
+            "id": "gem_green",
+            "tags": [
+              "gem",
+              "gem_green"
+            ],
+            "visual": {
+              "type": "image",
+              "whatDescription": "a sparkling green emerald"
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.51,
+              "isSensor": true
+            },
+            "conditionalBehaviors": [
+              {
+                "when": {
+                  "hasTag": "sys.match3:hovered"
+                },
+                "priority": 1,
+                "behaviors": [
+                  {
+                    "type": "sprite_effect",
+                    "effect": "rim_light"
+                  }
+                ]
+              },
+              {
+                "when": {
+                  "hasTag": "sys.match3:selected"
+                },
+                "priority": 2,
+                "behaviors": [
+                  {
+                    "type": "scale_oscillate",
+                    "min": 0.97,
+                    "max": 1.06,
+                    "speed": 5
+                  },
+                  {
+                    "type": "sprite_effect",
+                    "effect": "glow",
+                    "params": {
+                      "pulse": true
+                    }
+                  }
+                ]
+              },
+              {
+                "when": {
+                  "hasTag": "sys.match3:matched"
+                },
+                "priority": 3,
+                "behaviors": [
+                  {
+                    "type": "sprite_effect",
+                    "effect": "fade_out",
+                    "params": {
+                      "duration": 0.4
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gem_yellow": {
+            "id": "gem_yellow",
+            "tags": [
+              "gem",
+              "gem_yellow"
+            ],
+            "visual": {
+              "type": "image",
+              "whatDescription": "a sparkling yellow diamond"
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.51,
+              "isSensor": true
+            },
+            "conditionalBehaviors": [
+              {
+                "when": {
+                  "hasTag": "sys.match3:hovered"
+                },
+                "priority": 1,
+                "behaviors": [
+                  {
+                    "type": "sprite_effect",
+                    "effect": "rim_light"
+                  }
+                ]
+              },
+              {
+                "when": {
+                  "hasTag": "sys.match3:selected"
+                },
+                "priority": 2,
+                "behaviors": [
+                  {
+                    "type": "scale_oscillate",
+                    "min": 0.97,
+                    "max": 1.06,
+                    "speed": 5
+                  },
+                  {
+                    "type": "sprite_effect",
+                    "effect": "glow",
+                    "params": {
+                      "pulse": true
+                    }
+                  }
+                ]
+              },
+              {
+                "when": {
+                  "hasTag": "sys.match3:matched"
+                },
+                "priority": 3,
+                "behaviors": [
+                  {
+                    "type": "sprite_effect",
+                    "effect": "fade_out",
+                    "params": {
+                      "duration": 0.4
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gem_purple": {
+            "id": "gem_purple",
+            "tags": [
+              "gem",
+              "gem_purple"
+            ],
+            "visual": {
+              "type": "image",
+              "whatDescription": "a sparkling purple amethyst"
+            },
+            "collider": {
+              "shape": "circle",
+              "radius": 0.51,
+              "isSensor": true
+            },
+            "conditionalBehaviors": [
+              {
+                "when": {
+                  "hasTag": "sys.match3:hovered"
+                },
+                "priority": 1,
+                "behaviors": [
+                  {
+                    "type": "sprite_effect",
+                    "effect": "rim_light"
+                  }
+                ]
+              },
+              {
+                "when": {
+                  "hasTag": "sys.match3:selected"
+                },
+                "priority": 2,
+                "behaviors": [
+                  {
+                    "type": "scale_oscillate",
+                    "min": 0.97,
+                    "max": 1.06,
+                    "speed": 5
+                  },
+                  {
+                    "type": "sprite_effect",
+                    "effect": "glow",
+                    "params": {
+                      "pulse": true
+                    }
+                  }
+                ]
+              },
+              {
+                "when": {
+                  "hasTag": "sys.match3:matched"
+                },
+                "priority": 3,
+                "behaviors": [
+                  {
+                    "type": "sprite_effect",
+                    "effect": "fade_out",
+                    "params": {
+                      "duration": 0.4
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "selection_highlight": {
+            "id": "selection_highlight",
+            "tags": [
+              "highlight"
+            ],
+            "visual": {
+              "type": "rect",
+              "width": 1.38,
+              "height": 1.38,
+              "color": "#FFFF00CC"
+            },
+            "collider": {
+              "shape": "box",
+              "width": 1.38,
+              "height": 1.38,
+              "isSensor": true
+            }
+          },
+          "hover_highlight": {
+            "id": "hover_highlight",
+            "tags": [
+              "highlight",
+              "hover"
+            ],
+            "visual": {
+              "type": "rect",
+              "width": 1.32,
+              "height": 1.32,
+              "color": "#FFFFFF66"
+            },
+            "collider": {
+              "shape": "box",
+              "width": 1.32,
+              "height": 1.32,
+              "isSensor": true
+            }
+          },
+          "grid_cell": {
+            "id": "grid_cell",
+            "tags": [
+              "grid"
+            ],
+            "visual": {
+              "type": "rect",
+              "width": 1.14,
+              "height": 1.14,
+              "color": "#3d2b5e"
+            },
+            "collider": {
+              "shape": "box",
+              "width": 1.14,
+              "height": 1.14,
+              "isSensor": true
+            }
+          }
+        },
+        "entities": [
+          {
+            "id": "grid_0_0",
+            "name": "Grid Cell 0,0",
+            "template": "grid_cell",
+            "transform": {
+              "x": -3.6,
+              "y": 3.6,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_0_1",
+            "name": "Grid Cell 0,1",
+            "template": "grid_cell",
+            "transform": {
+              "x": -2.4,
+              "y": 3.6,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_0_2",
+            "name": "Grid Cell 0,2",
+            "template": "grid_cell",
+            "transform": {
+              "x": -1.2000000000000002,
+              "y": 3.6,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_0_3",
+            "name": "Grid Cell 0,3",
+            "template": "grid_cell",
+            "transform": {
+              "x": -5.551115123125783e-16,
+              "y": 3.6,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_0_4",
+            "name": "Grid Cell 0,4",
+            "template": "grid_cell",
+            "transform": {
+              "x": 1.1999999999999997,
+              "y": 3.6,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_0_5",
+            "name": "Grid Cell 0,5",
+            "template": "grid_cell",
+            "transform": {
+              "x": 2.4,
+              "y": 3.6,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_0_6",
+            "name": "Grid Cell 0,6",
+            "template": "grid_cell",
+            "transform": {
+              "x": 3.599999999999999,
+              "y": 3.6,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_1_0",
+            "name": "Grid Cell 1,0",
+            "template": "grid_cell",
+            "transform": {
+              "x": -3.6,
+              "y": 2.4,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_1_1",
+            "name": "Grid Cell 1,1",
+            "template": "grid_cell",
+            "transform": {
+              "x": -2.4,
+              "y": 2.4,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_1_2",
+            "name": "Grid Cell 1,2",
+            "template": "grid_cell",
+            "transform": {
+              "x": -1.2000000000000002,
+              "y": 2.4,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_1_3",
+            "name": "Grid Cell 1,3",
+            "template": "grid_cell",
+            "transform": {
+              "x": -5.551115123125783e-16,
+              "y": 2.4,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_1_4",
+            "name": "Grid Cell 1,4",
+            "template": "grid_cell",
+            "transform": {
+              "x": 1.1999999999999997,
+              "y": 2.4,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_1_5",
+            "name": "Grid Cell 1,5",
+            "template": "grid_cell",
+            "transform": {
+              "x": 2.4,
+              "y": 2.4,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_1_6",
+            "name": "Grid Cell 1,6",
+            "template": "grid_cell",
+            "transform": {
+              "x": 3.599999999999999,
+              "y": 2.4,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_2_0",
+            "name": "Grid Cell 2,0",
+            "template": "grid_cell",
+            "transform": {
+              "x": -3.6,
+              "y": 1.2000000000000002,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_2_1",
+            "name": "Grid Cell 2,1",
+            "template": "grid_cell",
+            "transform": {
+              "x": -2.4,
+              "y": 1.2000000000000002,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_2_2",
+            "name": "Grid Cell 2,2",
+            "template": "grid_cell",
+            "transform": {
+              "x": -1.2000000000000002,
+              "y": 1.2000000000000002,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_2_3",
+            "name": "Grid Cell 2,3",
+            "template": "grid_cell",
+            "transform": {
+              "x": -5.551115123125783e-16,
+              "y": 1.2000000000000002,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_2_4",
+            "name": "Grid Cell 2,4",
+            "template": "grid_cell",
+            "transform": {
+              "x": 1.1999999999999997,
+              "y": 1.2000000000000002,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_2_5",
+            "name": "Grid Cell 2,5",
+            "template": "grid_cell",
+            "transform": {
+              "x": 2.4,
+              "y": 1.2000000000000002,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_2_6",
+            "name": "Grid Cell 2,6",
+            "template": "grid_cell",
+            "transform": {
+              "x": 3.599999999999999,
+              "y": 1.2000000000000002,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_3_0",
+            "name": "Grid Cell 3,0",
+            "template": "grid_cell",
+            "transform": {
+              "x": -3.6,
+              "y": 5.551115123125783e-16,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_3_1",
+            "name": "Grid Cell 3,1",
+            "template": "grid_cell",
+            "transform": {
+              "x": -2.4,
+              "y": 5.551115123125783e-16,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_3_2",
+            "name": "Grid Cell 3,2",
+            "template": "grid_cell",
+            "transform": {
+              "x": -1.2000000000000002,
+              "y": 5.551115123125783e-16,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_3_3",
+            "name": "Grid Cell 3,3",
+            "template": "grid_cell",
+            "transform": {
+              "x": -5.551115123125783e-16,
+              "y": 5.551115123125783e-16,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_3_4",
+            "name": "Grid Cell 3,4",
+            "template": "grid_cell",
+            "transform": {
+              "x": 1.1999999999999997,
+              "y": 5.551115123125783e-16,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_3_5",
+            "name": "Grid Cell 3,5",
+            "template": "grid_cell",
+            "transform": {
+              "x": 2.4,
+              "y": 5.551115123125783e-16,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_3_6",
+            "name": "Grid Cell 3,6",
+            "template": "grid_cell",
+            "transform": {
+              "x": 3.599999999999999,
+              "y": 5.551115123125783e-16,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_4_0",
+            "name": "Grid Cell 4,0",
+            "template": "grid_cell",
+            "transform": {
+              "x": -3.6,
+              "y": -1.1999999999999997,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_4_1",
+            "name": "Grid Cell 4,1",
+            "template": "grid_cell",
+            "transform": {
+              "x": -2.4,
+              "y": -1.1999999999999997,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_4_2",
+            "name": "Grid Cell 4,2",
+            "template": "grid_cell",
+            "transform": {
+              "x": -1.2000000000000002,
+              "y": -1.1999999999999997,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_4_3",
+            "name": "Grid Cell 4,3",
+            "template": "grid_cell",
+            "transform": {
+              "x": -5.551115123125783e-16,
+              "y": -1.1999999999999997,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_4_4",
+            "name": "Grid Cell 4,4",
+            "template": "grid_cell",
+            "transform": {
+              "x": 1.1999999999999997,
+              "y": -1.1999999999999997,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_4_5",
+            "name": "Grid Cell 4,5",
+            "template": "grid_cell",
+            "transform": {
+              "x": 2.4,
+              "y": -1.1999999999999997,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_4_6",
+            "name": "Grid Cell 4,6",
+            "template": "grid_cell",
+            "transform": {
+              "x": 3.599999999999999,
+              "y": -1.1999999999999997,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_5_0",
+            "name": "Grid Cell 5,0",
+            "template": "grid_cell",
+            "transform": {
+              "x": -3.6,
+              "y": -2.4,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_5_1",
+            "name": "Grid Cell 5,1",
+            "template": "grid_cell",
+            "transform": {
+              "x": -2.4,
+              "y": -2.4,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_5_2",
+            "name": "Grid Cell 5,2",
+            "template": "grid_cell",
+            "transform": {
+              "x": -1.2000000000000002,
+              "y": -2.4,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_5_3",
+            "name": "Grid Cell 5,3",
+            "template": "grid_cell",
+            "transform": {
+              "x": -5.551115123125783e-16,
+              "y": -2.4,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_5_4",
+            "name": "Grid Cell 5,4",
+            "template": "grid_cell",
+            "transform": {
+              "x": 1.1999999999999997,
+              "y": -2.4,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_5_5",
+            "name": "Grid Cell 5,5",
+            "template": "grid_cell",
+            "transform": {
+              "x": 2.4,
+              "y": -2.4,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_5_6",
+            "name": "Grid Cell 5,6",
+            "template": "grid_cell",
+            "transform": {
+              "x": 3.599999999999999,
+              "y": -2.4,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_6_0",
+            "name": "Grid Cell 6,0",
+            "template": "grid_cell",
+            "transform": {
+              "x": -3.6,
+              "y": -3.599999999999999,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_6_1",
+            "name": "Grid Cell 6,1",
+            "template": "grid_cell",
+            "transform": {
+              "x": -2.4,
+              "y": -3.599999999999999,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_6_2",
+            "name": "Grid Cell 6,2",
+            "template": "grid_cell",
+            "transform": {
+              "x": -1.2000000000000002,
+              "y": -3.599999999999999,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_6_3",
+            "name": "Grid Cell 6,3",
+            "template": "grid_cell",
+            "transform": {
+              "x": -5.551115123125783e-16,
+              "y": -3.599999999999999,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_6_4",
+            "name": "Grid Cell 6,4",
+            "template": "grid_cell",
+            "transform": {
+              "x": 1.1999999999999997,
+              "y": -3.599999999999999,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_6_5",
+            "name": "Grid Cell 6,5",
+            "template": "grid_cell",
+            "transform": {
+              "x": 2.4,
+              "y": -3.599999999999999,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          },
+          {
+            "id": "grid_6_6",
+            "name": "Grid Cell 6,6",
+            "template": "grid_cell",
+            "transform": {
+              "x": 3.599999999999999,
+              "y": -3.599999999999999,
+              "angle": 0,
+              "scaleX": 1,
+              "scaleY": 1
+            },
+            "layer": -1
+          }
+        ],
+        "rules": [],
+        "loseCondition": {
+          "type": "time_up",
+          "time": 120
+        }
+      }
+    },
+    {
       "id": "slopeggle",
       "title": "Slopeggle",
       "description": "Clear all orange pegs by bouncing a ball through the board",
       "definition": {
-        "activeAssetPackId": "slopeggle-default",
         "metadata": {
           "id": "test-slopeggle",
           "title": "Slopeggle",
           "description": "Clear all orange pegs by bouncing a ball through the board",
-          "instructions": "Touch and hold to aim the cannon, then release to fire! Clear all 10 orange pegs to win. You have 10 balls.",
           "version": "1.0.0"
         },
         "world": {
@@ -3724,18 +4951,13 @@
             "height": 16
           }
         },
-        "background": {
-          "type": "static",
-          "whatDescription": "a colorful peggle-style background with soft lighting and geometric patterns"
-        },
         "camera": {
           "type": "fixed",
           "zoom": 1
         },
-        "variables": {
-          "lives": 10,
-          "multiplier": 1,
-          "turn": 0
+        "background": {
+          "type": "static",
+          "whatDescription": "a colorful peggle-style background with soft lighting and geometric patterns"
         },
         "ui": {
           "showTimer": false,
@@ -3771,13 +4993,6 @@
               "color": "#94A3B8"
             }
           ]
-        },
-        "winCondition": {
-          "expr": "entityCount('orange-peg') == 0"
-        },
-        "loseCondition": {
-          "type": "custom",
-          "expr": "lives <= 0"
         },
         "templates": {
           "ball": {
@@ -5925,7 +7140,11 @@
               }
             ]
           }
-        ]
+        ],
+        "loseCondition": {
+          "type": "custom",
+          "expr": "lives <= 0"
+        }
       }
     }
   ]

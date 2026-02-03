@@ -53,8 +53,31 @@ function isBundleDirectory(dirPath) {
   if (!existsSync(dirPath) || !statSync(dirPath).isDirectory()) {
     return false;
   }
+
+  // Check for .bundle subdirectory (legacy format)
   const bundlePath = join(dirPath, BUNDLE_SUBDIR);
-  return existsSync(bundlePath) && statSync(bundlePath).isDirectory();
+  if (existsSync(bundlePath) && statSync(bundlePath).isDirectory()) {
+    return true;
+  }
+
+  // Check for manifest.json at root (new pure bundle format)
+  const manifestPath = join(dirPath, 'manifest.json');
+  if (existsSync(manifestPath) && statSync(manifestPath).isFile()) {
+    return true;
+  }
+
+  return false;
+}
+
+function getBundlePath(dirPath) {
+  // Check for .bundle subdirectory first (legacy format)
+  const bundlePath = join(dirPath, BUNDLE_SUBDIR);
+  if (existsSync(bundlePath) && statSync(bundlePath).isDirectory()) {
+    return bundlePath;
+  }
+
+  // Return the directory itself (new pure bundle format)
+  return dirPath;
 }
 
 // Simplified bundle compiler functions (inline from shared/src/bundle/compiler.ts)
@@ -322,7 +345,7 @@ function scanForGames(sourceDir, extensions, exclude) {
           gameEntries.push({
             type: 'bundle',
             path: fullPath,
-            bundlePath: join(fullPath, BUNDLE_SUBDIR),
+            bundlePath: getBundlePath(fullPath),
             id: entry.replace(/[^a-zA-Z0-9_]/g, ''),
           });
         } else {
