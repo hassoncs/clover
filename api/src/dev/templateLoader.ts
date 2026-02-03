@@ -16,9 +16,16 @@ interface TestGameEntry {
   definition: GameDefinition;
 }
 
+type GameModule = {
+  default: GameDefinition;
+  metadata?: { title: string; description?: string };
+  // Optional level-based game creator (e.g., ballSort)
+  createBallSortGame?: (level: number) => GameDefinition;
+};
+
 // Registry of available test games
 // Add new games here when creating them
-const GAME_REGISTRY: Record<string, () => Promise<{ default: GameDefinition; metadata?: { title: string; description?: string } }>> = {
+const GAME_REGISTRY: Record<string, () => Promise<GameModule>> = {
   ballSort: () => import('../../../app/lib/test-games/games/ballSort/game'),
   breakoutBouncer: () => import('../../../app/lib/test-games/games/breakoutBouncer/game'),
   breakoutScripted: () => import('../../../app/lib/test-games/games/breakoutScripted/game'),
@@ -26,28 +33,35 @@ const GAME_REGISTRY: Record<string, () => Promise<{ default: GameDefinition; met
   slopeggle: () => import('../../../app/lib/test-games/games/slopeggle/game'),
 };
 
-// Cache loaded games to avoid repeated imports
-const gameCache = new Map<string, TestGameEntry>();
+// Cache loaded modules (not games, since level can vary)
+const moduleCache = new Map<string, GameModule>();
 
 export function isTestGameId(id: string): boolean {
   return id in GAME_REGISTRY;
 }
 
-export async function getTestGameAsync(id: string): Promise<TestGameEntry | null> {
+export async function getTestGameAsync(id: string, level?: number): Promise<TestGameEntry | null> {
   if (!isTestGameId(id)) {
     return null;
   }
 
-  // Check cache first
-  const cached = gameCache.get(id);
-  if (cached) {
-    return cached;
-  }
-
   try {
-    const loader = GAME_REGISTRY[id];
-    const module = await loader();
-    const game = module.default;
+    // Check module cache
+    let module = moduleCache.get(id);
+    if (!module) {
+      const loader = GAME_REGISTRY[id];
+      module = await loader();
+      moduleCache.set(id, module);
+    }
+
+    // For level-based games like ballSort, use the creator function
+    let game: GameDefinition;
+    if (id === 'ballSort' && module.createBallSortGame && level !== undefined) {
+      game = module.createBallSortGame(level);
+    } else {
+      game = module.default;
+    }
+
     const metadata = module.metadata;
 
     const entry: TestGameEntry = {
@@ -57,7 +71,6 @@ export async function getTestGameAsync(id: string): Promise<TestGameEntry | null
       definition: game,
     };
 
-    gameCache.set(id, entry);
     return entry;
   } catch (error) {
     console.error(`[templateLoader] Failed to load game ${id}:`, error);
@@ -65,20 +78,6 @@ export async function getTestGameAsync(id: string): Promise<TestGameEntry | null
   }
 }
 
-// Synchronous wrapper - returns cached value or null
-// For initial loads, use getTestGameAsync
-export function getTestGame(id: string): TestGameEntry | null {
-  return gameCache.get(id) ?? null;
-}
-
-export function getTestGameMetadata(id: string): { title: string; description?: string } | null {
-  const game = getTestGame(id);
-  if (!game) {
-    return null;
-  }
-  return { title: game.title, description: game.description };
-}
-
-export function clearTemplateCache(): void {
-  gameCache.clear();
+export function clearModuleCache(): void {
+  moduleCache.clear();
 }

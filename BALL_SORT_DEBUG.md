@@ -48,18 +48,33 @@ Games are now loaded directly from TypeScript source files via dynamic imports:
 | `variables` (all 18) | ✅ NOT the cause | Works when enabled |
 | `ui` config | ✅ NOT the cause | Works when enabled |
 
-## Suspected Cause
+## Root Cause Found
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| `persistence` | 🔴 **SUSPECTED** | Only feature still disabled; game works without it |
+| `persistence.schema` | ✅ **FIXED** | Zod schema was serialized as plain object via JSON, causing `safeParse()` to fail |
 
----
+### The Fix
+In `GameProgressManager.ts`, added check for valid Zod schema before calling `safeParse()`:
+```typescript
+if (!this.config.schema || typeof this.config.schema.safeParse !== 'function') {
+  // Skip validation, use data directly
+}
+```
 
-## Next Steps
-1. Add console logging to persistence code path
-2. Enable persistence and identify exactly where the freeze occurs
-3. Fix the root cause
+## Level Progression Issue (Separate)
+
+After fixing the freeze, level progression wasn't working:
+- Beating level 1 → shows "Level unknown" → goes back to level 1
+
+### Cause
+- Game definition is fetched once with level 1's puzzle baked in
+- "Next Level" saved progress but reloaded same definition
+
+### Fix
+- API now accepts `level` parameter: `getPublic({ id, level })`
+- `templateLoader` calls `createBallSortGame(level)` for level-specific puzzles
+- Test games page tracks `currentLevel` state and re-fetches on level change
 
 ---
 

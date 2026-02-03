@@ -6,6 +6,7 @@ import { FullScreenHeader } from "@/components/FullScreenHeader";
 import { AssetLoadingScreen } from "@/components/game";
 import { trpc } from "@/lib/trpc/client";
 import { useGamePreloader } from "@/lib/hooks/useGamePreloader";
+import { getStorageItem } from "@/lib/utils/storage";
 import type { GameDefinition } from "@slopcade/shared";
 
 export default function TestGameRunScreen() {
@@ -14,6 +15,7 @@ export default function TestGameRunScreen() {
   const isDebugMode = debug === "true" || debug === "1";
 
   const [runtimeKey, setRuntimeKey] = useState(0);
+  const [currentLevel, setCurrentLevel] = useState(1);
   const [isLoadingDefinition, setIsLoadingDefinition] = useState(true);
   const [gameDefinition, setGameDefinition] = useState<GameDefinition | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -23,6 +25,25 @@ export default function TestGameRunScreen() {
 
   const { phase, progress, imageUrls, startPreload, skipPreload, reset } = useGamePreloader(gameDefinition);
 
+  // Load saved level from storage on mount
+  useEffect(() => {
+    const loadSavedLevel = async () => {
+      if (!id) return;
+      try {
+        // Check for saved progress to get current level
+        const storageKey = id === 'ballSort' ? 'ball-sort-progress' : `game-progress-${id}`;
+        const saved = await getStorageItem<{ currentLevel?: number }>(storageKey, {});
+        if (saved?.currentLevel && saved.currentLevel > 0) {
+          console.log('[test-games] Loaded saved level:', saved.currentLevel);
+          setCurrentLevel(saved.currentLevel);
+        }
+      } catch (err) {
+        console.warn('[test-games] Could not load saved level:', err);
+      }
+    };
+    loadSavedLevel();
+  }, [id]);
+
   // Fetch game from API (works for both test games and DB games)
   useEffect(() => {
     if (!id) return;
@@ -31,10 +52,10 @@ export default function TestGameRunScreen() {
       setIsLoadingDefinition(true);
       setError(null);
       try {
-        console.log('[test-games] Fetching game from API:', id);
-        const game = await trpc.games.getPublic.query({ id });
+        console.log('[test-games] Fetching game from API:', id, 'level:', currentLevel);
+        const game = await trpc.games.getPublic.query({ id, level: currentLevel });
         const definition = JSON.parse(game.definition) as GameDefinition;
-        console.log('[test-games] Loaded game:', definition.metadata.title);
+        console.log('[test-games] Loaded game:', definition.metadata.title, 'level:', currentLevel);
         setGameDefinition(definition);
       } catch (err) {
         console.error('[test-games] Failed to load game:', err);
@@ -45,7 +66,7 @@ export default function TestGameRunScreen() {
     };
 
     load();
-  }, [id]);
+  }, [id, currentLevel]);
 
   useEffect(() => {
     if (gameDefinition && !isLoadingDefinition && phase === 'idle') {
@@ -65,7 +86,7 @@ export default function TestGameRunScreen() {
   }, [loadingOpacity]);
 
   const handleBack = useCallback(() => router.back(), [router]);
-  
+
   const handleReset = useCallback(() => {
     reset();
     setGodotReady(false);
@@ -74,6 +95,18 @@ export default function TestGameRunScreen() {
     setRuntimeKey((k) => k + 1);
     startPreload();
   }, [reset, startPreload, loadingOpacity]);
+
+  const handleNextLevel = useCallback(() => {
+    console.log('[test-games] Next level requested, current:', currentLevel);
+    // Increment level - this will trigger a re-fetch of the game definition
+    setCurrentLevel((prev) => prev + 1);
+    // Reset game state for the new level
+    reset();
+    setGodotReady(false);
+    setLoadingDismissed(false);
+    loadingOpacity.setValue(1);
+    setRuntimeKey((k) => k + 1);
+  }, [currentLevel, reset, loadingOpacity]);
 
   const handleGameEnd = useCallback(async (state: "won" | "lost") => {
     // Auto-save logic moved to GameRuntime "Next Level" button
@@ -129,7 +162,7 @@ export default function TestGameRunScreen() {
           onBackToMenu={handleBack}
           onRequestRestart={handleReset}
           onGameEnd={handleGameEnd}
-          onNextLevel={handleReset}
+          onNextLevel={handleNextLevel}
           debugMode={isDebugMode}
           onReady={handleGodotReady}
         />

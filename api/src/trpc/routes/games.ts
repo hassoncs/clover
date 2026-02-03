@@ -78,8 +78,8 @@ function toClientGame(row: GameRow) {
   };
 }
 
-async function createDevTemplateResponse(id: string) {
-  const game = await getTestGameAsync(id);
+async function createDevTemplateResponse(id: string, level?: number) {
+  const game = await getTestGameAsync(id, level);
   if (!game) return null;
 
   const definition = JSON.stringify(game.definition);
@@ -121,10 +121,10 @@ export const gamesRouter = router({
   }),
 
   getPublic: publicProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: z.string(), level: z.number().optional() }))
     .query(async ({ ctx, input }) => {
       if (isTestGameId(input.id)) {
-        const devGame = await createDevTemplateResponse(input.id);
+        const devGame = await createDevTemplateResponse(input.id, input.level);
         if (devGame) {
           return devGame;
         }

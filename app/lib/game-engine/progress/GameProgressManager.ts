@@ -57,8 +57,21 @@ export class GameProgressManager<T = unknown> {
       }
 
       // Validate against schema
+      // NOTE: schema may be a plain object if loaded from JSON API (not a Zod schema)
+      // In that case, skip validation
+      if (!this.config.schema || typeof this.config.schema.safeParse !== 'function') {
+        console.warn(`[ProgressManager] Schema not a valid Zod schema for ${this.gameId}, skipping validation`);
+        // Assume data is valid and merge with defaults
+        this.currentProgress = { ...this.config.defaultProgress, ...migratedData as T };
+        return {
+          success: true,
+          data: this.currentProgress,
+          migrated: storedVersion < this.config.version,
+        };
+      }
+
       const parseResult = this.config.schema.safeParse(migratedData);
-      
+
       if (!parseResult.success) {
         console.error(`[ProgressManager] Invalid progress data for ${this.gameId}:`, parseResult.error);
         // Fall back to defaults on validation failure
