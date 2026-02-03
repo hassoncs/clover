@@ -9,8 +9,7 @@ extends RefCounted
 var _bridge: Node = null
 var _pixels_per_meter: float = 50.0
 var _debug_show_shapes: bool = false
-var _texture_cache: Dictionary = {}
-var _pending_textures: Array = []
+var _texture_loader: TextureLoader = null
 
 # Preload tracking
 var _preload_pending_count: int = 0
@@ -21,6 +20,7 @@ var _js_preload_progress_callback: JavaScriptObject = null
 
 func _init(bridge: Node) -> void:
 	_bridge = bridge
+	_texture_loader = TextureLoader.new(bridge)
 
 
 # ============================================================================
@@ -133,8 +133,8 @@ func set_entity_image(entity_id: String, url: String, width: float, height: floa
 
 	var sprite_data = {"width": width, "height": height}
 
-	if _texture_cache.has(url):
-		var texture = _texture_cache[url]
+	if _texture_loader.is_cached(url):
+		var texture = _texture_loader.get_cached(url)
 		sprite.texture = texture
 		_apply_sprite_scale(sprite, sprite_data, texture)
 		_hide_shape_children(node)
@@ -161,8 +161,8 @@ func set_entity_atlas_region(
 	var sprite_data = {"width": width, "height": height}
 	var region_dict = {"x": x, "y": y, "w": w, "h": h}
 
-	if _texture_cache.has(atlas_url):
-		_apply_atlas_region(sprite, _texture_cache[atlas_url], region_dict, sprite_data)
+	if _texture_loader.is_cached(atlas_url):
+		_apply_atlas_region(sprite, _texture_loader.get_cached(atlas_url), region_dict, sprite_data)
 		_hide_shape_children(node)
 	else:
 		_download_atlas_texture(sprite, atlas_url, region_dict, sprite_data)
@@ -219,11 +219,7 @@ func set_debug_settings(json_str: String) -> void:
 
 
 func clear_texture_cache(url: String = "") -> void:
-	if url != "":
-		if _texture_cache.has(url):
-			_texture_cache.erase(url)
-	else:
-		_texture_cache.clear()
+	_texture_loader.clear_cache(url)
 
 
 func preload_textures(urls: Array, progress_callback: Callable = Callable()) -> void:
@@ -244,7 +240,7 @@ func preload_textures(urls: Array, progress_callback: Callable = Callable()) -> 
 			continue
 
 		# Skip if already cached
-		if _texture_cache.has(url):
+		if _texture_loader.is_cached(url):
 			_on_preload_complete(url, true)
 			continue
 
@@ -276,19 +272,11 @@ func set_entity_image_base64(
 			_bridge._push_error("[VisualRenderer] set_entity_image_base64: failed to decode base64")
 		return
 
-	var image = Image.new()
-	var err = image.load_png_from_buffer(raw_data)
-	if err != OK:
-		err = image.load_jpg_from_buffer(raw_data)
-	if err != OK:
-		err = image.load_webp_from_buffer(raw_data)
-	if err != OK:
+	var texture = ImageLoader.load_texture_from_buffer(raw_data)
+	if texture == null:
 		if _bridge and "_push_error" in _bridge:
 			_bridge._push_error("[VisualRenderer] set_entity_image_base64: failed to parse image data")
 		return
-
-	var texture = ImageTexture.create_from_image(image)
-	_texture_cache[entity_id] = texture
 
 	if is_instance_valid(sprite):
 		sprite.texture = texture
@@ -320,7 +308,6 @@ func set_entity_image_from_file(
 		return
 
 	var texture = ImageTexture.create_from_image(image)
-	_texture_cache[entity_id] = texture
 
 	if is_instance_valid(sprite):
 		sprite.texture = texture
@@ -334,7 +321,6 @@ func set_entity_image_from_file(
 # ============================================================================
 
 func _apply_blend_mode(canvas_item: CanvasItem, blend_mode_str: String) -> void:
-	print("[VisualRenderer] _apply_blend_mode called with: '", blend_mode_str, "'")
 	if blend_mode_str == "" or blend_mode_str == "mix":
 		return
 	var mat = CanvasItemMaterial.new()
@@ -548,48 +534,9 @@ func add_sprite(node: Node2D, sprite_data: Dictionary, physics_data: Dictionary,
 # ============================================================================
 
 func _download_texture_for_preload(url: String) -> void:
-	var http = HTTPRequest.new()
-	if _bridge:
-		_bridge.add_child(http)
-
-	http.request_completed.connect(
-		func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
-			http.queue_free()
-			if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
-				if _bridge and "_push_warning" in _bridge:
-					_bridge._push_warning("[VisualRenderer] Failed to preload texture: " + url + " (result: " + str(result) + ", code: " + str(response_code) + ")")
-				_on_preload_complete(url, false)
-				return
-
-			if body.size() == 0:
-				if _bridge and "_push_warning" in _bridge:
-					_bridge._push_warning("[VisualRenderer] Empty body for texture: " + url)
-				_on_preload_complete(url, false)
-				return
-
-			var image = Image.new()
-			var err = image.load_png_from_buffer(body)
-			if err != OK:
-				err = image.load_jpg_from_buffer(body)
-			if err != OK:
-				err = image.load_webp_from_buffer(body)
-			if err != OK:
-				if _bridge and "_push_warning" in _bridge:
-					_bridge._push_warning("[VisualRenderer] All image formats failed for: " + url + " (size: " + str(body.size()) + ")")
-				_on_preload_complete(url, false)
-				return
-
-			var texture = ImageTexture.create_from_image(image)
-			_texture_cache[url] = texture
-			_on_preload_complete(url, true)
+	_texture_loader.load_texture(url, func(texture: ImageTexture, fetched_url: String, success: bool):
+		_on_preload_complete(fetched_url, success)
 	)
-
-	var err = http.request(url)
-	if err != OK:
-		if _bridge and "_push_warning" in _bridge:
-			_bridge._push_warning("[VisualRenderer] Failed to start preload request: " + url)
-		http.queue_free()
-		_on_preload_complete(url, false)
 
 
 func _download_atlas_texture(
@@ -609,47 +556,21 @@ func _download_atlas_texture(
 
 
 func _download_texture(sprite: Sprite2D, url: String, sprite_data: Dictionary, callback: Callable = Callable()) -> void:
-	var http = HTTPRequest.new()
-	if _bridge:
-		_bridge.add_child(http)
+	_texture_loader.load_texture(url, func(texture: ImageTexture, fetched_url: String, success: bool):
+		if not success or texture == null:
+			if _bridge and "_push_error" in _bridge:
+				_bridge._push_error("[VisualRenderer] Failed to load texture: " + fetched_url)
+			return
 
-	http.request_completed.connect(
-		func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
-			http.queue_free()
-			if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
-				if _bridge and "_push_error" in _bridge:
-					_bridge._push_error("[VisualRenderer] Failed to download texture: " + url + " (code: " + str(response_code) + ")")
-				return
-
-			var image = Image.new()
-			var err = image.load_png_from_buffer(body)
-			if err != OK:
-				err = image.load_jpg_from_buffer(body)
-			if err != OK:
-				err = image.load_webp_from_buffer(body)
-			if err != OK:
-				if _bridge and "_push_error" in _bridge:
-					_bridge._push_error("[VisualRenderer] Failed to parse image: " + url)
-				return
-
-			var texture = ImageTexture.create_from_image(image)
-			_texture_cache[url] = texture
-
-			if is_instance_valid(sprite):
-				sprite.texture = texture
-				_apply_sprite_scale(sprite, sprite_data, texture)
-				var parent_node = sprite.get_parent()
-				if parent_node:
-					_hide_shape_children(parent_node)
-				if callback.is_valid():
-					callback.call(texture)
+		if is_instance_valid(sprite):
+			sprite.texture = texture
+			_apply_sprite_scale(sprite, sprite_data, texture)
+			var parent_node = sprite.get_parent()
+			if parent_node:
+				_hide_shape_children(parent_node)
+			if callback.is_valid():
+				callback.call(texture)
 	)
-
-	var err = http.request(url)
-	if err != OK:
-		if _bridge and "_push_error" in _bridge:
-			_bridge._push_error("[VisualRenderer] Failed to start texture download: " + url)
-		http.queue_free()
 
 
 func _apply_atlas_region(
@@ -960,28 +881,11 @@ func _setup_parallax_background(bg_data: Dictionary) -> void:
 
 
 func _download_texture_generic(url: String, callback: Callable) -> void:
-	if _texture_cache.has(url):
-		callback.call(_texture_cache[url])
+	if _texture_loader.is_cached(url):
+		callback.call(_texture_loader.get_cached(url))
 		return
 
-	var http = HTTPRequest.new()
-	_bridge.add_child(http)
-
-	http.request_completed.connect(
-		func(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
-			http.queue_free()
-			if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
-				return
-
-			var image = Image.new()
-			var err = image.load_png_from_buffer(body)
-			if err != OK: err = image.load_jpg_from_buffer(body)
-			if err != OK: err = image.load_webp_from_buffer(body)
-			if err != OK: return
-
-			var texture = ImageTexture.create_from_image(image)
-			_texture_cache[url] = texture
+	_texture_loader.load_texture(url, func(texture: ImageTexture, fetched_url: String, success: bool):
+		if success and texture != null:
 			callback.call(texture)
 	)
-
-	http.request(url)

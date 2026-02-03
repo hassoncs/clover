@@ -113,29 +113,21 @@ func _create_control_node() -> void:
 		base_btn.mouse_exited.connect(_on_mouse_exited)
 
 func _load_metadata(url: String) -> void:
-	var http = HTTPRequest.new()
-	add_child(http)
-	
-	http.request_completed.connect(func(result: int, code: int, headers: PackedStringArray, body: PackedByteArray):
-		http.queue_free()
-		if result != HTTPRequest.RESULT_SUCCESS or code != 200:
-			push_error("[ThemedUIComponent] Failed to load metadata from: " + url)
+	HTTPFetcher.fetch(self, url, func(body: PackedByteArray, fetched_url: String, success: bool):
+		if not success:
+			push_error("[ThemedUIComponent] Failed to load metadata from: " + fetched_url)
 			_is_loading = false
 			return
-		
+
 		var json = JSON.new()
 		if json.parse(body.get_string_from_utf8()) != OK:
 			push_error("[ThemedUIComponent] Invalid JSON in metadata")
 			_is_loading = false
 			return
-		
+
 		_metadata = json.get_data()
 		_load_state_textures()
 	)
-	
-	if http.request(url) != OK:
-		http.queue_free()
-		push_error("[ThemedUIComponent] HTTP request failed for: " + url)
 
 func _load_state_textures() -> void:
 	if not _metadata.has("states"):
@@ -155,33 +147,17 @@ func _load_state_textures() -> void:
 		_load_texture_for_state(state_name, texture_url)
 
 func _load_texture_for_state(state_name: String, url: String) -> void:
-	var http = HTTPRequest.new()
-	add_child(http)
-	
-	http.request_completed.connect(func(result: int, code: int, headers: PackedStringArray, body: PackedByteArray):
-		http.queue_free()
+	TextureLoader.fetch_texture(self, url, func(texture: ImageTexture, fetched_url: String, success: bool):
 		_pending_loads -= 1
-		
-		if result != HTTPRequest.RESULT_SUCCESS or code != 200:
+
+		if not success or texture == null:
 			push_warning("[ThemedUIComponent] Failed to load texture for state: " + state_name)
 			_check_loading_complete()
 			return
-		
-		var image = Image.new()
-		if image.load_png_from_buffer(body) != OK:
-			push_warning("[ThemedUIComponent] Failed to parse PNG for state: " + state_name)
-			_check_loading_complete()
-			return
-		
-		var texture = ImageTexture.create_from_image(image)
+
 		_create_stylebox_for_state(state_name, texture)
 		_check_loading_complete()
 	)
-	
-	if http.request(url) != OK:
-		http.queue_free()
-		_pending_loads -= 1
-		_check_loading_complete()
 
 func _create_stylebox_for_state(state_name: String, texture: Texture2D) -> void:
 	var style_box = StyleBoxTexture.new()

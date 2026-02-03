@@ -4,14 +4,9 @@ extends RefCounted
 var _bridge: Node
 var _ui_buttons: Dictionary = {}
 var _audio_cache: Dictionary = {}
-var _http_request: HTTPRequest
 
 func _init(bridge: Node) -> void:
 	_bridge = bridge
-	_http_request = HTTPRequest.new()
-	_http_request.timeout = 10
-	if _bridge.has_method("add_child"):
-		_bridge.add_child(_http_request)
 
 
 # =============================================================================

@@ -149,31 +149,14 @@ func _get_or_create_ui_layer() -> CanvasLayer:
 
 ## Load button texture from URL
 func _load_button_texture(btn: TextureButton, url: String, texture_type: String) -> void:
-	var http = HTTPRequest.new()
-	bridge.add_child(http)
-	
-	http.request_completed.connect(func(result: int, code: int, headers: PackedStringArray, body: PackedByteArray):
-		http.queue_free()
-		if result != HTTPRequest.RESULT_SUCCESS or code != 200:
-			if is_instance_valid(btn):
-				btn.set("texture_" + texture_type, _create_placeholder_texture(url, int(btn.custom_minimum_size.x), int(btn.custom_minimum_size.y)))
+	TextureLoader.fetch_texture(bridge, url, func(texture: ImageTexture, fetched_url: String, success: bool):
+		if not is_instance_valid(btn):
 			return
-		
-		var image = Image.new()
-		if image.load_png_from_buffer(body) != OK:
-			if image.load_jpg_from_buffer(body) != OK:
-				if image.load_webp_from_buffer(body) != OK:
-					return
-		
-		var texture = ImageTexture.create_from_image(image)
-		if is_instance_valid(btn):
+		if success and texture != null:
 			btn.set("texture_" + texture_type, texture)
+		else:
+			btn.set("texture_" + texture_type, _create_placeholder_texture(fetched_url, int(btn.custom_minimum_size.x), int(btn.custom_minimum_size.y)))
 	)
-	
-	if http.request(url) != OK:
-		http.queue_free()
-		if is_instance_valid(btn):
-			btn.set("texture_" + texture_type, _create_placeholder_texture(url, int(btn.custom_minimum_size.x), int(btn.custom_minimum_size.y)))
 
 ## Create placeholder texture when image loading fails
 func _create_placeholder_texture(url: String, width: int, height: int) -> ImageTexture:

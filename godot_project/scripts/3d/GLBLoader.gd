@@ -59,29 +59,17 @@ func load_glb_from_buffer(buffer: PackedByteArray, base_path: String = "", paren
 	return scene
 
 func load_glb_async(url: String, parent: Node3D = null, callback: Callable = Callable()) -> void:
-	var http = HTTPRequest.new()
-	bridge.add_child(http)
-	
-	http.request_completed.connect(func(result: int, code: int, headers: PackedStringArray, body: PackedByteArray):
-		http.queue_free()
-		
-		if result != HTTPRequest.RESULT_SUCCESS or code != 200:
-			push_error("[GLBLoader] Failed to download GLB: " + url + " result=" + str(result) + " code=" + str(code))
+	HTTPFetcher.fetch(bridge, url, func(body: PackedByteArray, fetched_url: String, success: bool):
+		if not success:
+			push_error("[GLBLoader] Failed to download GLB: " + fetched_url)
 			if callback.is_valid():
 				callback.call(null)
 			return
-		
+
 		var model = load_glb_from_buffer(body, "", parent)
 		if callback.is_valid():
 			callback.call(model)
 	)
-	
-	var err = http.request(url)
-	if err != OK:
-		http.queue_free()
-		push_error("[GLBLoader] Failed to start GLB download: " + url + " error=" + str(err))
-		if callback.is_valid():
-			callback.call(null)
 
 func unload_model(model_id: String) -> void:
 	if loaded_models.has(model_id):
