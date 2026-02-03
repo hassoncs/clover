@@ -108,6 +108,20 @@ export default function TestGameRunScreen() {
     setRuntimeKey((k) => k + 1);
   }, [currentLevel, reset, loadingOpacity]);
 
+  const handlePreviousLevel = useCallback(() => {
+    console.log('[test-games] Previous level requested, current:', currentLevel);
+    if (currentLevel > 1) {
+      // Decrement level - this will trigger a re-fetch of the game definition
+      setCurrentLevel((prev) => Math.max(1, prev - 1));
+      // Reset game state for the new level
+      reset();
+      setGodotReady(false);
+      setLoadingDismissed(false);
+      loadingOpacity.setValue(1);
+      setRuntimeKey((k) => k + 1);
+    }
+  }, [currentLevel, reset, loadingOpacity]);
+
   const handleGameEnd = useCallback(async (state: "won" | "lost") => {
     // Auto-save logic moved to GameRuntime "Next Level" button
   }, []);
@@ -163,6 +177,7 @@ export default function TestGameRunScreen() {
           onRequestRestart={handleReset}
           onGameEnd={handleGameEnd}
           onNextLevel={handleNextLevel}
+          onPreviousLevel={handlePreviousLevel}
           debugMode={isDebugMode}
           onReady={handleGodotReady}
         />
@@ -202,11 +217,12 @@ interface GameRuntimeWrapperProps {
   onRequestRestart: () => void;
   onGameEnd?: (state: "won" | "lost") => void;
   onNextLevel?: () => void;
+  onPreviousLevel?: () => void;
   debugMode: boolean;
   onReady?: () => void;
 }
 
-function GameRuntimeWrapper({ definition, imageUrls, onBackToMenu, onRequestRestart, onGameEnd, onNextLevel, debugMode, onReady }: GameRuntimeWrapperProps) {
+function GameRuntimeWrapper({ definition, imageUrls, onBackToMenu, onRequestRestart, onGameEnd, onNextLevel, onPreviousLevel, debugMode, onReady }: GameRuntimeWrapperProps) {
   const [GameRuntime, setGameRuntime] = useState<React.ComponentType<{
     definition: GameDefinition;
     showHUD: boolean;
@@ -214,6 +230,7 @@ function GameRuntimeWrapper({ definition, imageUrls, onBackToMenu, onRequestRest
     onRequestRestart: () => void;
     onGameEnd?: (state: "won" | "lost") => void;
     onNextLevel?: () => void;
+    onPreviousLevel?: () => void;
     debugMode: boolean;
     preloadTextureUrls?: string[];
     onReady?: () => void;
@@ -237,6 +254,7 @@ function GameRuntimeWrapper({ definition, imageUrls, onBackToMenu, onRequestRest
       onRequestRestart={onRequestRestart}
       onGameEnd={onGameEnd}
       onNextLevel={onNextLevel}
+      onPreviousLevel={onPreviousLevel}
       debugMode={debugMode}
       preloadTextureUrls={imageUrls}
       onReady={onReady}

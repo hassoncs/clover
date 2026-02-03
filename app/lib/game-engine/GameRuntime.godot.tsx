@@ -106,6 +106,8 @@ export interface GameRuntimeGodotProps {
   onReady?: () => void;
   /** Called when the player requests the next level (for games with persistence) */
   onNextLevel?: () => void;
+  /** Called when the player requests the previous level (for games with persistence) */
+  onPreviousLevel?: () => void;
 }
 
 const GAME_LOOP_INTERVAL = 16;
@@ -124,6 +126,7 @@ export function GameRuntimeGodot({
   onPreloadProgress,
   onReady,
   onNextLevel,
+  onPreviousLevel,
 }: GameRuntimeGodotProps) {
   const progressHook = useGameProgressFromDefinition(definition);
   const devToolsCheck = useDevToolsOptional();
@@ -1887,21 +1890,14 @@ export function GameRuntimeGodot({
                 style={[
                   styles.button,
                   { backgroundColor: "#888", marginTop: 12 },
-                  ((progressHook.progress as any)?.currentLevel ?? (progressHook.progress as any)?.level ?? 1) <= 1 && {
+                  (!onPreviousLevel || (Number(definition.variables?.currentLevel) || 1) <= 1) && {
                     opacity: 0.5,
                   },
                 ]}
-                disabled={((progressHook.progress as any)?.currentLevel ?? (progressHook.progress as any)?.level ?? 1) <= 1}
-                onPress={async () => {
-                  const progress = progressHook.progress as any;
-                  const currentLevel = progress?.currentLevel ?? progress?.level;
-                  if (typeof currentLevel === "number" && currentLevel > 1) {
-                    // Support both field names
-                    const update = progress?.currentLevel !== undefined
-                      ? { currentLevel: currentLevel - 1 }
-                      : { level: currentLevel - 1 };
-                    await progressHook.saveProgress(update as any);
-                    handleRestart();
+                disabled={!onPreviousLevel || (Number(definition.variables?.currentLevel) || 1) <= 1}
+                onPress={() => {
+                  if (onPreviousLevel) {
+                    onPreviousLevel();
                   }
                 }}
               >
