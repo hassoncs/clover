@@ -34,7 +34,8 @@
       "Bash(cat:*)",
       "Bash(tmux respawn-pane:*)",
       "Bash(curl:*)",
-      "Bash(pnpm tsc:*)"
+      "Bash(pnpm tsc:*)",
+      "Bash(python3:*)"
     ]
   }
 }

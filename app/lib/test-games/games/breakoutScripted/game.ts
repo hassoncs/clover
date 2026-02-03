@@ -164,7 +164,7 @@ exports.onCollision = function(ctx, collision) {
     paddle: {
       id: "paddle",
       tags: ["paddle"],
-      whatDescription: "a horizontal paddle that bounces the ball",
+      whatDescription: "a horizontal neon paddle",
       visual: {
         type: "image",
         imageWidth: PADDLE_WIDTH,
@@ -186,7 +186,7 @@ exports.onCollision = function(ctx, collision) {
     brick: {
       id: "brick",
       tags: ["brick"],
-      whatDescription: "a breakable brick block",
+      whatDescription: "a glowing breakable brick",
       visual: {
         type: "image",
         imageWidth: BRICK_WIDTH,

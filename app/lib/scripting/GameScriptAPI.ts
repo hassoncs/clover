@@ -1,6 +1,7 @@
 import type {
   ScriptContext,
   SandboxRuntimeContext,
+  AnimateConfig,
 } from './types';
 
 export function createScriptContext(runtime: SandboxRuntimeContext): ScriptContext {
@@ -42,9 +43,25 @@ export function createScriptContext(runtime: SandboxRuntimeContext): ScriptConte
     removeTag: (entityId, tag) => runtime.entityManager.removeTag(entityId, tag),
     hasTag: (entityId, tag) => runtime.entityManager.hasTag(entityId, tag),
     queryEntities: (query) => runtime.entityManager.queryEntities(query),
+    getEntityData: (entityId) => runtime.entityManager.getEntityData(entityId),
+    queryEntitiesWithData: (query) => runtime.entityManager.queryEntitiesWithData(query),
+    animateEntity: (entityId: string, config: AnimateConfig) => {
+      if (runtime.animateEntity) {
+        runtime.animateEntity(entityId, config);
+      } else {
+        const pos = runtime.entityManager.getEntityPosition(entityId);
+        if (pos) {
+          runtime.entityManager.setEntityPosition(entityId, {
+            x: config.x ?? pos.x,
+            y: config.y ?? pos.y,
+          });
+        }
+      }
+    },
     getInput: () => runtime.inputSnapshot,
     getMouse: () => runtime.mousePosition,
     getDrag: () => runtime.dragState,
+    getTapTargetId: () => runtime.inputSnapshot?.entityId ?? null,
 
     random: () => seededRandom(),
     randomInt: (min, max) => Math.floor(seededRandom() * (max - min + 1)) + min,
@@ -89,9 +106,13 @@ export function contextToPlainObject(ctx: ScriptContext): Record<string, unknown
     removeTag: ctx.removeTag,
     hasTag: ctx.hasTag,
     queryEntities: ctx.queryEntities,
+    getEntityData: ctx.getEntityData,
+    queryEntitiesWithData: ctx.queryEntitiesWithData,
+    animateEntity: ctx.animateEntity,
     getInput: ctx.getInput,
     getMouse: ctx.getMouse,
     getDrag: ctx.getDrag,
+    getTapTargetId: ctx.getTapTargetId,
     random: ctx.random,
     randomInt: ctx.randomInt,
     randomChoice: ctx.randomChoice,

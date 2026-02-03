@@ -49,7 +49,6 @@ const game: GameDefinition = {
     pinball: {
       id: "pinball",
       tags: ["ball"],
-      visual: { type: "image", imageUrl: `${ASSET_BASE}/pinball.png`, imageWidth: 0.6, imageHeight: 0.6 },
       physics: {
         bodyType: "dynamic",
         density: 2,
@@ -64,7 +63,6 @@ const game: GameDefinition = {
     bumper: {
       id: "bumper",
       tags: ["bumper"],
-      visual: { type: "image", imageUrl: `${ASSET_BASE}/bumper.png`, imageWidth: 1.2, imageHeight: 1.2 },
       physics: {
         bodyType: "static",
         density: 0,
@@ -82,7 +80,6 @@ const game: GameDefinition = {
     smallBumper: {
       id: "smallBumper",
       tags: ["bumper"],
-      visual: { type: "image", imageUrl: `${ASSET_BASE}/smallBumper.png`, imageWidth: 0.8, imageHeight: 0.8 },
       physics: {
         bodyType: "static",
         density: 0,
@@ -100,7 +97,6 @@ const game: GameDefinition = {
     target: {
       id: "target",
       tags: ["target"],
-      visual: { type: "image", imageUrl: `${ASSET_BASE}/target.png`, imageWidth: 0.8, imageHeight: 0.3 },
       physics: {
         bodyType: "static",
         density: 0,
@@ -135,7 +131,6 @@ const game: GameDefinition = {
     flipper: {
       id: "flipper",
       tags: ["flipper"],
-      visual: { type: "image", imageUrl: `${ASSET_BASE}/flipper.png`, imageWidth: 1.5, imageHeight: 0.3 },
       physics: {
         bodyType: "dynamic",
         density: 5,

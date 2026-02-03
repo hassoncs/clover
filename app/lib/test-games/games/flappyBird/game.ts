@@ -2,12 +2,9 @@ import type { GameDefinition, PersistenceConfig } from "@slopcade/shared";
 import { FlappyBirdProgressSchema, type FlappyBirdProgress } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
-const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/flappyBird";
-
 export const metadata: TestGameMeta = {
   title: "Flappy Bird",
   description: "Tap to fly through the pipes without hitting them",
-  titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
   status: "active",
 };
 
@@ -61,13 +58,13 @@ export const flappyBirdPersistence: PersistenceConfig<FlappyBirdProgress> = {
 };
 
 const game: GameDefinition = {
+  activeAssetPackId: "flappyBird-default",
   metadata: {
     id: "test-flappy-bird",
     title: "Flappy Bird",
     description: "Tap to fly through the pipes without hitting them",
     instructions: "Tap anywhere to flap! Avoid the pipes and ground.",
     version: "1.1.0",
-    titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
   },
   world: {
     gravity: { x: 0, y: -15 },
@@ -76,7 +73,6 @@ const game: GameDefinition = {
   },
   background: {
     type: "static",
-    imageUrl: `${ASSET_BASE}/background.png`,
   },
   camera: { type: "fixed", zoom: 1 },
   ui: {
@@ -96,7 +92,7 @@ const game: GameDefinition = {
       tags: ["bird"],
       visual: {
         type: "image",
-        imageUrl: `${ASSET_BASE}/bird.png`,
+        whatDescription: "a small yellow bird with wings",
         imageWidth: BIRD_RADIUS * 2,
         imageHeight: BIRD_RADIUS * 2,
       },
@@ -120,7 +116,7 @@ const game: GameDefinition = {
       tags: ["pipe", "pipe-top"],
       visual: {
         type: "image",
-        imageUrl: `${ASSET_BASE}/pipeTop.png`,
+        whatDescription: "a green pipe obstacle pointing downward",
         imageWidth: PIPE_WIDTH,
         imageHeight: PIPE_HEIGHT,
       },
@@ -142,7 +138,7 @@ const game: GameDefinition = {
       tags: ["pipe", "pipe-bottom"],
       visual: {
         type: "image",
-        imageUrl: `${ASSET_BASE}/pipeBottom.png`,
+        whatDescription: "a green pipe obstacle pointing upward",
         imageWidth: PIPE_WIDTH,
         imageHeight: PIPE_HEIGHT,
       },
@@ -226,7 +222,7 @@ const game: GameDefinition = {
       tags: ["ground"],
       visual: { 
         type: "image", 
-        imageUrl: `${ASSET_BASE}/ground.png`,
+        whatDescription: "a grassy ground floor",
         imageWidth: WORLD_WIDTH + 4,
         imageHeight: GROUND_HEIGHT,
       },
@@ -247,7 +243,7 @@ const game: GameDefinition = {
       tags: ["ceiling"],
       visual: { 
         type: "image", 
-        imageUrl: `${ASSET_BASE}/ceiling.png`,
+        whatDescription: "a sky ceiling boundary",
         imageWidth: WORLD_WIDTH + 4,
         imageHeight: 0.5,
       },

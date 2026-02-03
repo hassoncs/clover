@@ -81,7 +81,6 @@ const game: GameDefinition = {
   },
   background: {
     type: "static",
-    imageUrl: `${ASSET_BASE}/background.png`,
   },
   camera: { type: "fixed", zoom: 1 },
   ui: {
@@ -101,7 +100,6 @@ const game: GameDefinition = {
       tags: ["bubble", "bubble-red"],
       visual: { 
         type: "image", 
-        imageUrl: `${ASSET_BASE}/bubble_red.png`,
         imageWidth: BUBBLE_DIAMETER,
         imageHeight: BUBBLE_DIAMETER,
       },
@@ -121,7 +119,6 @@ const game: GameDefinition = {
       tags: ["bubble", "bubble-blue"],
       visual: { 
         type: "image", 
-        imageUrl: `${ASSET_BASE}/bubble_blue.png`,
         imageWidth: BUBBLE_DIAMETER,
         imageHeight: BUBBLE_DIAMETER,
       },
@@ -141,7 +138,6 @@ const game: GameDefinition = {
       tags: ["bubble", "bubble-green"],
       visual: { 
         type: "image", 
-        imageUrl: `${ASSET_BASE}/bubble_green.png`,
         imageWidth: BUBBLE_DIAMETER,
         imageHeight: BUBBLE_DIAMETER,
       },
@@ -161,7 +157,6 @@ const game: GameDefinition = {
       tags: ["bubble", "bubble-yellow"],
       visual: { 
         type: "image", 
-        imageUrl: `${ASSET_BASE}/bubble_yellow.png`,
         imageWidth: BUBBLE_DIAMETER,
         imageHeight: BUBBLE_DIAMETER,
       },
@@ -181,7 +176,6 @@ const game: GameDefinition = {
       tags: ["bubble", "bubble-purple"],
       visual: { 
         type: "image", 
-        imageUrl: `${ASSET_BASE}/bubble_purple.png`,
         imageWidth: BUBBLE_DIAMETER,
         imageHeight: BUBBLE_DIAMETER,
       },
@@ -201,7 +195,6 @@ const game: GameDefinition = {
       tags: ["projectile"],
       visual: { 
         type: "image", 
-        imageUrl: `${ASSET_BASE}/projectile.png`,
         imageWidth: BUBBLE_DIAMETER,
         imageHeight: BUBBLE_DIAMETER,
       },
@@ -223,7 +216,6 @@ const game: GameDefinition = {
       tags: ["shooter"],
       visual: { 
         type: "image", 
-        imageUrl: `${ASSET_BASE}/shooter.png`,
         imageWidth: SHOOTER_WIDTH,
         imageHeight: SHOOTER_HEIGHT,
       },
@@ -248,7 +240,6 @@ const game: GameDefinition = {
       tags: ["shooter-base"],
       visual: { 
         type: "image", 
-        imageUrl: `${ASSET_BASE}/shooterBase.png`,
         imageWidth: 1.0,
         imageHeight: 1.0,
       },

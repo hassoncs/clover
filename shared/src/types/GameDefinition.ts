@@ -172,6 +172,11 @@ export interface ParallaxBackground {
 export interface StaticBackground extends ImageField {
   type: 'static';
   color?: string;
+  /**
+   * Description of what the background should look like.
+   * Used by the AI asset generation pipeline.
+   */
+  whatDescription?: string;
 }
 
 export type BackgroundConfig = StaticBackground | ParallaxBackground;

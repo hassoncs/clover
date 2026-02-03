@@ -824,6 +824,17 @@ export function GameRuntimeGodot({
           if (iem) rulesSystem.setInputEntityManager(iem);
         }
 
+        // Connect ScriptSandbox to RulesSystem for run_script actions
+        if (rulesSystem && definition.script) {
+          const scriptSystem = runner.getSystem<ScriptSandboxRuntimeSystem>("script-sandbox");
+          if (scriptSystem) {
+            const sandbox = scriptSystem.getSandbox();
+            if (sandbox) {
+              rulesSystem.setScriptSandbox(sandbox);
+            }
+          }
+        }
+
         gameSystemRunnerRef.current = runner;
       } catch (error) {
         console.error("[GameRuntime] Failed to initialize game:", error);

@@ -32,7 +32,7 @@ const game: GameDefinition = {
   },
   background: {
     type: "static",
-    whatDescription: "a dark arcade game background",
+    whatDescription: "a dark neon arcade game background",
   },
   world: {
     gravity: { x: 0, y: 0 },
@@ -117,9 +117,9 @@ const game: GameDefinition = {
     paddle: {
       id: "paddle",
       tags: ["paddle"],
+      whatDescription: "a horizontal neon paddle that bounces the ball",
       visual: {
         type: "image",
-        whatDescription: "a horizontal paddle that bounces the ball",
         imageWidth: PADDLE_WIDTH,
         imageHeight: PADDLE_HEIGHT,
       },
@@ -141,9 +141,9 @@ const game: GameDefinition = {
     brickRed: {
       id: "brickRed",
       tags: ["brick"],
+      whatDescription: "a glowing red breakable brick",
       visual: {
         type: "image",
-        whatDescription: "a red breakable brick",
         imageWidth: BRICK_WIDTH,
         imageHeight: BRICK_HEIGHT,
       },
@@ -166,9 +166,9 @@ const game: GameDefinition = {
     brickBlue: {
       id: "brickBlue",
       tags: ["brick"],
+      whatDescription: "a glowing blue breakable brick",
       visual: {
         type: "image",
-        whatDescription: "a blue breakable brick",
         imageWidth: BRICK_WIDTH,
         imageHeight: BRICK_HEIGHT,
       },
@@ -191,9 +191,9 @@ const game: GameDefinition = {
     brickGreen: {
       id: "brickGreen",
       tags: ["brick"],
+      whatDescription: "a glowing green breakable brick",
       visual: {
         type: "image",
-        whatDescription: "a green breakable brick",
         imageWidth: BRICK_WIDTH,
         imageHeight: BRICK_HEIGHT,
       },
@@ -216,9 +216,9 @@ const game: GameDefinition = {
     brickYellow: {
       id: "brickYellow",
       tags: ["brick"],
+      whatDescription: "a glowing yellow breakable brick",
       visual: {
         type: "image",
-        whatDescription: "a yellow breakable brick",
         imageWidth: BRICK_WIDTH,
         imageHeight: BRICK_HEIGHT,
       },

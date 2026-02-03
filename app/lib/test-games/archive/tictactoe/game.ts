@@ -66,7 +66,6 @@ const game: GameDefinition = {
   camera: { type: "fixed", zoom: 1 },
   background: {
     type: "static",
-    imageUrl: BACKGROUND_URL,
   },
   ui: {
     showTimer: false,
@@ -98,7 +97,6 @@ const game: GameDefinition = {
       tags: ["board"],
       visual: {
         type: "image",
-        imageUrl: BOARD_URL,
         imageWidth: 5.2,
         imageHeight: 5.2,
       },
@@ -126,7 +124,6 @@ const game: GameDefinition = {
       tags: ["piece", "x"],
       visual: {
         type: "image",
-        imageUrl: PIECE_X_URL,
         imageWidth: CELL_SIZE * 0.8,
         imageHeight: CELL_SIZE * 0.8,
       },
@@ -142,7 +139,6 @@ const game: GameDefinition = {
       tags: ["piece", "o"],
       visual: {
         type: "image",
-        imageUrl: PIECE_O_URL,
         imageWidth: CELL_SIZE * 0.8,
         imageHeight: CELL_SIZE * 0.8,
       },

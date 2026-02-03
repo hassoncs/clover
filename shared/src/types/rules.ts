@@ -522,8 +522,11 @@ export interface ContainerIsOccupiedCondition {
 
 export interface RunScriptAction {
   type: 'run_script';
-  script: string;
+  /** Optional script override. If not provided, uses GameDefinition.script */
+  script?: string;
+  /** Function name to call from the script. Defaults to 'default' */
   export?: string;
+  /** Arguments passed to the script function */
   args?: Record<string, unknown>;
 }
 

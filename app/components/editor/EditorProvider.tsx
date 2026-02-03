@@ -416,7 +416,6 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
           
           template.visual = {
             type: 'image',
-            imageUrl: entry.imageUrl,
             imageWidth,
             imageHeight,
           };

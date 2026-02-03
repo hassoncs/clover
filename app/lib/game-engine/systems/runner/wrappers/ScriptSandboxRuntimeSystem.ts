@@ -9,6 +9,7 @@ import type {
   DragSnapshot,
   SpawnOptions,
   EntityQuery,
+  EntityData,
   ScriptInputEvent,
   ScriptCollisionEvent,
 } from '../../../../scripting/types';
@@ -335,19 +336,45 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
         if (!query) {
           return em.getActiveEntities().map(e => e.id);
         }
-        
+
         const withinAabb = query.inAabb ? {
           min: { x: query.inAabb.minX, y: query.inAabb.minY },
           max: { x: query.inAabb.maxX, y: query.inAabb.maxY },
         } : undefined;
-        
+
         const results = em.query({
           tags: query.tag ? [query.tag] : undefined,
           template: query.templateId,
           withinAabb,
         });
-        
+
         return results.map(e => e.id);
+      },
+      getEntityData: (entityId: string): EntityData | null => {
+        const entity = em.getEntity(entityId);
+        if (!entity) return null;
+        return {
+          id: entity.id,
+          tags: [...entity.tags],
+          position: { x: entity.transform.x, y: entity.transform.y },
+          template: entity.templateId,
+        };
+      },
+      queryEntitiesWithData: (query?: EntityQuery): EntityData[] => {
+        let entities = em.getActiveEntities();
+        if (query?.tag) {
+          entities = em.query({ tags: [query.tag] });
+        }
+        return entities.map(e => ({
+          id: e.id,
+          tags: [...e.tags],
+          position: { x: e.transform.x, y: e.transform.y },
+          template: e.templateId,
+        }));
+      },
+      getEntityTemplate: (entityId: string) => {
+        const entity = em.getEntity(entityId);
+        return entity?.templateId;
       },
     };
   }

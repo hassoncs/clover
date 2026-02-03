@@ -6,15 +6,6 @@ import {
 } from "@slopcade/shared";
 import type { TestGameMeta } from "@/lib/registry/types";
 
-const ASSET_BASE = "https://slopcade-api.hassoncs.workers.dev/assets/generated/gem-crush";
-
-export const metadata: TestGameMeta = {
-  title: "Gem Crush",
-  description: "Match 3 or more gems to clear them and score points!",
-  titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
-  status: "active",
-};
-
 const GRID_COLS = 7;
 const GRID_ROWS = 7;
 const CELL_SIZE = 1.2;
@@ -48,6 +39,7 @@ const gemConditionalBehaviors: ConditionalBehavior[] = [
 const gridConfig = createGridConfig(GRID_ROWS, GRID_COLS, CELL_SIZE);
 
 const game: GameDefinition = {
+  activeAssetPackId: "gemCrush-default",
   metadata: {
     id: "gem-crush",
     title: "Gem Crush",
@@ -55,11 +47,11 @@ const game: GameDefinition = {
     instructions:
       "Tap two adjacent gems to swap them. Match 3 or more of the same color to clear!",
     version: "1.0.0",
-    titleHeroImageUrl: `${ASSET_BASE}/title_hero.png`,
+    titleHeroImageUrl: `title_hero.png`,
   },
   background: {
     type: "static",
-    imageUrl: `${ASSET_BASE}/background.png`,
+    whatDescription: "a mystical treasure cave background with glowing crystals",
   },
   world: {
     gravity: { x: 0, y: 0 },
@@ -111,9 +103,8 @@ const game: GameDefinition = {
       id: "gem_red",
       tags: ["gem", "gem_red"],
       visual: {
-        type: "circle",
-        radius: GEM_SIZE / 2,
-        color: "#FF4444",
+        type: "image",
+        whatDescription: "a sparkling red gemstone",
       },
       collider: { shape: "circle", radius: GEM_SIZE / 2, isSensor: true },
       conditionalBehaviors: gemConditionalBehaviors,
@@ -122,9 +113,8 @@ const game: GameDefinition = {
       id: "gem_blue",
       tags: ["gem", "gem_blue"],
       visual: {
-        type: "circle",
-        radius: GEM_SIZE / 2,
-        color: "#4444FF",
+        type: "image",
+        whatDescription: "a sparkling blue sapphire",
       },
       collider: { shape: "circle", radius: GEM_SIZE / 2, isSensor: true },
       conditionalBehaviors: gemConditionalBehaviors,
@@ -133,9 +123,8 @@ const game: GameDefinition = {
       id: "gem_green",
       tags: ["gem", "gem_green"],
       visual: {
-        type: "circle",
-        radius: GEM_SIZE / 2,
-        color: "#44FF44",
+        type: "image",
+        whatDescription: "a sparkling green emerald",
       },
       collider: { shape: "circle", radius: GEM_SIZE / 2, isSensor: true },
       conditionalBehaviors: gemConditionalBehaviors,
@@ -144,9 +133,8 @@ const game: GameDefinition = {
       id: "gem_yellow",
       tags: ["gem", "gem_yellow"],
       visual: {
-        type: "circle",
-        radius: GEM_SIZE / 2,
-        color: "#FFFF44",
+        type: "image",
+        whatDescription: "a sparkling yellow diamond",
       },
       collider: { shape: "circle", radius: GEM_SIZE / 2, isSensor: true },
       conditionalBehaviors: gemConditionalBehaviors,
@@ -155,9 +143,8 @@ const game: GameDefinition = {
       id: "gem_purple",
       tags: ["gem", "gem_purple"],
       visual: {
-        type: "circle",
-        radius: GEM_SIZE / 2,
-        color: "#AA44FF",
+        type: "image",
+        whatDescription: "a sparkling purple amethyst",
       },
       collider: { shape: "circle", radius: GEM_SIZE / 2, isSensor: true },
       conditionalBehaviors: gemConditionalBehaviors,

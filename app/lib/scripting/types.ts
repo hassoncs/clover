@@ -21,6 +21,20 @@ export interface DragSnapshot {
   entityId: string | null;
 }
 
+export interface AnimateConfig {
+  x?: number;
+  y?: number;
+  duration: number;
+  easing?: 'linear' | 'easeInQuad' | 'easeOutQuad' | 'easeInOutQuad';
+}
+
+export interface EntityData {
+  id: string;
+  tags: string[];
+  position: { x: number; y: number };
+  template?: string;
+}
+
 export interface ScriptContext {
   getVariable(name: string): unknown;
   setVariable(name: string, value: unknown): void;
@@ -42,9 +56,13 @@ export interface ScriptContext {
   removeTag(entityId: string, tag: string): boolean;
   hasTag(entityId: string, tag: string): boolean;
   queryEntities(query?: EntityQuery): string[];
+  getEntityData(entityId: string): EntityData | null;
+  queryEntitiesWithData(query?: EntityQuery): EntityData[];
+  animateEntity(entityId: string, config: AnimateConfig): void;
   getInput(): InputSnapshot | null;
   getMouse(): { x: number; y: number } | null;
   getDrag(): DragSnapshot | null;
+  getTapTargetId(): string | null;
   random(): number;
   randomInt(min: number, max: number): number;
   randomChoice<T>(array: readonly T[]): T;
@@ -135,6 +153,9 @@ export interface SandboxRuntimeContext {
     removeTag(entityId: string, tag: string): boolean;
     hasTag(entityId: string, tag: string): boolean;
     queryEntities(query?: EntityQuery): string[];
+    getEntityData(entityId: string): EntityData | null;
+    queryEntitiesWithData(query?: EntityQuery): EntityData[];
+    getEntityTemplate(entityId: string): string | undefined;
   };
   rulesEvaluator: {
     getVariable(name: string): unknown;
@@ -144,6 +165,7 @@ export interface SandboxRuntimeContext {
     win(): void;
     lose(): void;
   };
+  animateEntity?(entityId: string, config: AnimateConfig): void;
   inputSnapshot: InputSnapshot | null;
   mousePosition: { x: number; y: number } | null;
   dragState: DragSnapshot | null;

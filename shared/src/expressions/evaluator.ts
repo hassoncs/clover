@@ -596,6 +596,10 @@ const BUILTIN_FUNCTIONS: Record<string, BuiltinFunction> = {
     const index = Math.floor(ctx.random() * list.length);
     return list[index];
   },
+
+  elapsed: (_args, ctx) => {
+    return ctx.time;
+  },
 };
 
 function assertArgCount(name: string, args: ExpressionValueType[], expected: number): void {

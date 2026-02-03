@@ -43,7 +43,6 @@ const GAME_DEFINITION: GameDefinition = {
       tags: ["image-entity"],
       visual: {
         type: "image",
-        imageUrl: IMAGE_URLS[0],
         imageWidth: 2,
         imageHeight: 2,
       },

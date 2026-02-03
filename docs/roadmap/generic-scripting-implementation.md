@@ -8,15 +8,117 @@
 
 ## Table of Contents
 
-1. [Current State](#current-state)
-2. [Target State](#target-state)
-3. [Implementation Tasks](#implementation-tasks)
-4. [Phase 1: Wire Up Script Execution](#phase-1-wire-up-script-execution)
-5. [Phase 2: Add Missing APIs](#phase-2-add-missing-apis)
-6. [Phase 3: Ball Sort Generic](#phase-3-ball-sort-generic)
-7. [Phase 4: AI Generation Ready](#phase-4-ai-generation-ready)
-8. [Testing Strategy](#testing-strategy)
-9. [File Reference](#file-reference)
+1. [Sandbox Architecture](#sandbox-architecture)
+2. [Current State](#current-state)
+3. [Target State](#target-state)
+4. [Implementation Tasks](#implementation-tasks)
+5. [Phase 1: Wire Up Script Execution](#phase-1-wire-up-script-execution)
+6. [Phase 2: Add Missing APIs](#phase-2-add-missing-apis)
+7. [Phase 3: Ball Sort Scripted](#phase-3-ball-sort-scripted)
+8. [Phase 4: AI Generation Ready](#phase-4-ai-generation-ready)
+9. [Testing Strategy](#testing-strategy)
+10. [File Reference](#file-reference)
+
+---
+
+## Sandbox Architecture
+
+### Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                       SCRIPT EXECUTION LAYER                         │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │  GameScriptHost (app/lib/scripting/ScriptSandbox.ts)          │  │
+│  │  ─────────────────────────────────────────────────────────────│  │
+│  │  HIGH-LEVEL GAME INTERFACE                                    │  │
+│  │  • Lifecycle hooks: onStart, onUpdate, onInput, onCollision   │  │
+│  │  • callFunction(runtime, name, args) for rule actions         │  │
+│  │  • Log capture, error reporting, hot reload                   │  │
+│  └───────────────────────────┬───────────────────────────────────┘  │
+│                              │                                       │
+│              Uses one of these execution backends:                   │
+│              ┌───────────────┴───────────────┐                      │
+│              ▼                               ▼                      │
+│  ┌─────────────────────────┐    ┌──────────────────────────────┐   │
+│  │  TrustedScriptRunner    │    │  IsolatedScriptRunner        │   │
+│  │  (EvalSandbox)          │    │  (QuickJSSandbox)            │   │
+│  │  ───────────────────    │    │  ─────────────────────       │   │
+│  │  DEV / TRUSTED CODE     │    │  PRODUCTION / USER CODE      │   │
+│  │                         │    │                              │   │
+│  │  Implementation:        │    │  Implementation:             │   │
+│  │  • new Function()       │    │  • QuickJS WASM runtime      │   │
+│  │                         │    │                              │   │
+│  │  Characteristics:       │    │  Characteristics:            │   │
+│  │  • NO isolation         │    │  • Full memory isolation     │   │
+│  │  • Works everywhere     │    │  • Instruction limits        │   │
+│  │  • Fast startup         │    │  • Execution timeout         │   │
+│  │  • Full JS features     │    │  • Safe for untrusted code   │   │
+│  │                         │    │                              │   │
+│  │  Use when:              │    │  Use when:                   │   │
+│  │  • AI-generated games   │    │  • User-submitted games      │   │
+│  │  • Internal dev/test    │    │  • Untrusted content         │   │
+│  │                         │    │                              │   │
+│  │  Status: ✅ WORKING     │    │  Status: ⚠️ WASM ISSUES      │   │
+│  └─────────────────────────┘    └──────────────────────────────┘   │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### File Locations
+
+| Layer | Current Name | File | Role |
+|-------|--------------|------|------|
+| Interface | `ScriptSandbox` | `app/lib/scripting/ScriptSandbox.ts` | High-level game script host with lifecycle hooks |
+| Backend | `EvalSandbox` | `shared/src/scripting/EvalSandbox.ts` | Trusted execution via `new Function()` |
+| Backend | `QuickJSSandbox` | `shared/src/scripting/QuickJSSandbox.ts` | Isolated execution via QuickJS WASM |
+| Runtime | `ScriptSandboxRuntimeSystem` | `app/lib/game-engine/systems/runner/wrappers/...` | Integrates scripts into game loop |
+| API | `GameScriptAPI` | `app/lib/scripting/GameScriptAPI.ts` | Creates ScriptContext from runtime |
+
+### Execution Flow
+
+```
+GameDefinition.script (string)
+         │
+         ▼
+┌─────────────────────────┐
+│  Game Initialization    │
+│  (GameLoader)           │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│  ScriptSandbox          │
+│  • Compiles script      │
+│  • Detects hooks        │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐     ┌─────────────────────────┐
+│  Rule: tap on tube      │────▶│  RunScriptActionExecutor│
+│  action: run_script     │     │  • Builds ScriptContext │
+└─────────────────────────┘     │  • Calls exported func  │
+                                └───────────┬─────────────┘
+                                            │
+                                            ▼
+                                ┌─────────────────────────┐
+                                │  EvalSandbox.evaluate() │
+                                │  • Executes JS code     │
+                                │  • Returns result       │
+                                └─────────────────────────┘
+```
+
+### Design Decisions
+
+1. **Use EvalSandbox for AI-generated games** - AI code is reviewed before deployment, so we don't need full isolation. This avoids WASM complexity.
+
+2. **Keep QuickJSSandbox for future user-generated content** - When users can submit their own games, we'll need isolation.
+
+3. **Single ScriptContext interface** - Both backends expose the same API, making it easy to swap.
+
+4. **Scripts embedded in GameDefinition** - The `script` field contains the full script as a string. No external file loading needed.
 
 ---
 
