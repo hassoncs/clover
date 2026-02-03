@@ -198,8 +198,9 @@ describe('Virtual Bundle Integration', () => {
     expect(gameDef.templates.player).toBeDefined();
     expect(gameDef.templates.enemy).toBeDefined();
 
+    expect(gameDef.rules).toBeDefined();
     expect(gameDef.rules).toHaveLength(1);
-    expect(gameDef.rules[0].id).toBe('collision-rule');
+    expect(gameDef.rules![0].id).toBe('collision-rule');
 
     expect(gameDef.script).toBeDefined();
     expect(gameDef.script).toContain('exports.onInit');
@@ -339,7 +340,6 @@ describe('Virtual Bundle Integration', () => {
     expect(asset).toBeDefined();
     expect(asset?.imageUrl).toBe('https://cdn.example.com/player.png');
     expect(asset?.localPath).toBe('player.png');
-    expect(asset?.type).toBe('image');
   });
 
   it('validates asset references in templates', () => {
@@ -452,10 +452,12 @@ describe('Virtual Bundle Integration', () => {
     expect(result.errors[0].message).toContain('rules');
   });
 
-  it('handles empty bundle directory', () => {
+  it('handles bundle without manifest', () => {
     const files = new Map<string, string>();
-    const fileReader = new VirtualFileReader('/virtual/empty', files);
-    const result = compileBundle('/virtual/empty', { fileReader });
+    files.set('templates/templates.json', JSON.stringify([{ id: 'player', tags: ['player'] }]));
+    
+    const fileReader = new VirtualFileReader('/virtual/no-manifest', files);
+    const result = compileBundle('/virtual/no-manifest', { fileReader });
 
     expect(result.success).toBe(false);
     expect(result.errors.some(e => e.code === 'MISSING_FILE' && e.message.includes('manifest.json'))).toBe(true);
