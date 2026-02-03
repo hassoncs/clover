@@ -375,16 +375,117 @@ Modal uses Flux model, Scenario uses proprietary models. Add style keywords to p
 
 ---
 
+---
+
+## Technical Details
+
+### Model: Flux.1-dev-fp8
+
+- **Type:** Text-to-image diffusion model
+- **Size:** ~17GB (UNet) + 5GB (CLIP) + 300MB (VAE) = ~23GB total
+- **Format:** FP8 quantized (2x faster than FP16)
+- **VRAM Usage:** ~12GB during inference
+- **License:** Open source (Apache 2.0)
+
+**Advantages over SDXL:**
+- Better text rendering
+- More coherent compositions
+- Better at following complex prompts
+- Superior for game art/pixel art
+
+### Custom Nodes Installed
+
+- **ComfyUI-RMBG** - Background removal
+- **ComfyUI_essentials** - Utility nodes
+
+---
+
+## Performance
+
+### Generation Times
+
+| Operation | Size | Steps | Time |
+|-----------|------|-------|------|
+| txt2img | 512×512 | 20 | ~35s |
+| txt2img | 1024×1024 | 20 | ~55s |
+| img2img | 512×512 | 20 | ~38s |
+| removeBackground | 512×512 | - | ~15s |
+| generateLayered | 1024×512 | 15 | ~40s/layer |
+
+### Cold Start
+
+- **First request:** 2-3 minutes (downloads 23GB of models)
+- **Subsequent requests:** ~30-40s (models cached)
+- **Container idle:** 60s (kept warm)
+
+**Optimization:** Batch requests to avoid cold starts.
+
+---
+
+## Development
+
+### Modal App
+
+**Location:** `api/modal/comfyui.py`
+**Endpoint:** `https://hassoncs--slopcade-comfyui-web-img2img.modal.run`
+**GPU:** NVIDIA A10G (24GB VRAM)
+
+### Local Testing
+
+```bash
+# Deploy to dev environment
+cd api/modal
+modal deploy comfyui.py --env dev
+
+# Run locally
+modal run comfyui.py
+```
+
+### Monitoring
+
+View at: https://modal.com/apps/hassoncs/main/deployed/slopcade-comfyui
+
+```bash
+# View logs
+modal logs slopcade-comfyui
+
+# Stream logs
+modal logs slopcade-comfyui --follow
+```
+
+---
+
+## Recommended Image Sizes
+
+### Entity Sprites
+- **256×256** - Small items (coins, power-ups)
+- **512×512** - Standard entities (characters, enemies)
+- **1024×1024** - Hero/large entities
+
+### Backgrounds
+- **1024×512** - Wide backgrounds (side-scrollers)
+- **1024×1024** - Square backgrounds
+- **1024×1792** - Tall backgrounds (vertical)
+
+### UI Elements
+- **256×256** - Large buttons
+- **256×64** - Standard buttons
+- **256×32** - Small controls
+
+---
+
 ## Summary
 
-✅ **Single Entry Point:** All image generation goes through `AssetService`  
-✅ **Provider Switching:** Set `IMAGE_GENERATION_PROVIDER` env var  
-✅ **No Direct Clients:** Don't instantiate ScenarioClient or ComfyUIClient  
-✅ **Consistent Interface:** Same API regardless of provider  
-✅ **Zero Config Default:** Modal works out of the box  
+✅ **Single Entry Point:** All image generation goes through `AssetService`
+✅ **Provider Switching:** Set `IMAGE_GENERATION_PROVIDER` env var
+✅ **No Direct Clients:** Don't instantiate ScenarioClient or ComfyUIClient
+✅ **Consistent Interface:** Same API regardless of provider
+✅ **Zero Config Default:** Modal works out of the box
 
 **Key Files:**
 - `api/src/ai/assets.ts` - AssetService (single entry point)
+- `api/modal/comfyui.py` - Modal ComfyUI application
+- `api/src/ai/comfyui.ts` - TypeScript client
 - `api/src/ai/pipeline/adapters/workers.ts` - Workers adapter
 - `api/src/ai/pipeline/adapters/node.ts` - Node.js/CLI adapter
 - `api/src/trpc/context.ts` - Environment types
