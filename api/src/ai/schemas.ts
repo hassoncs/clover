@@ -562,8 +562,7 @@ export const TileMapSchema = z.object({
 });
 
 export const AssetSystemConfigSchema = z.object({
-  activeAssetPackId: z.string().optional(),
-  baseAssetUrl: z.string().optional(),
+  activePackId: z.string().optional(),
 });
 
 export const GameDefinitionSchema = z.object({
@@ -577,8 +576,6 @@ export const GameDefinitionSchema = z.object({
   rules: z.array(GameRuleSchema).optional(),
   winCondition: WinConditionSchema.optional(),
   loseCondition: LoseConditionSchema.optional(),
-  assetPacks: z.record(z.string(), AssetPackSchema).optional(),
-  activeAssetPackId: z.string().optional(),
   assetSystem: AssetSystemConfigSchema.optional(),
   parallaxConfig: ParallaxConfigSchema.optional(),
   tileSheets: z.array(TileSheetSchema).optional(),

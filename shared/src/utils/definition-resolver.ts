@@ -1,10 +1,23 @@
-import { resolveAssetReference } from './asset-url';
 import type { GameDefinition, ImageField, GameMetadata, ParallaxLayer, StaticBackground, BackgroundConfig } from '../types/GameDefinition';
+import { buildR2Key, getAssetUrl } from './asset-url';
 
 export interface AssetResolverContext {
   baseUrl: string;
   gameId: string;
   packId: string;
+}
+
+/**
+ * Resolves an asset reference (assetId) to a full URL using V3 R2 key pattern.
+ */
+function resolveAssetReference(
+  assetRef: string,
+  baseUrl: string,
+  gameId: string,
+  packId: string
+): string {
+  const r2Key = buildR2Key(gameId, packId, assetRef);
+  return getAssetUrl(r2Key, baseUrl);
 }
 
 function resolveImageField<T extends ImageField>(

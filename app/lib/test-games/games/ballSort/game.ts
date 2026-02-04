@@ -1,6 +1,6 @@
 import type { GameDefinition, GameEntity, StackContainerConfig, EntityTemplate } from "@slopcade/shared";
 import { distributeRow } from "@slopcade/shared";
-import type { TestGameMeta } from "@/lib/registry/types";
+import type { TestGameMeta } from "../../../registry/types";
 import {
   BallSortProgressSchema,
   type BallSortProgress,
@@ -195,7 +195,7 @@ export function createBallSortGame(level: number = 1): GameDefinition {
       instructions: "Tap a tube to pick up the top ball, then tap another tube to drop it. You can only drop on the same color or an empty tube.",
       version: "1.1.0",
     },
-    activeAssetPackId: "ballSort-default",
+    assetSystem: { activePackId: "ballSort-default" },
     world: {
       gravity: { x: 0, y: 0 },
       pixelsPerMeter: 50,

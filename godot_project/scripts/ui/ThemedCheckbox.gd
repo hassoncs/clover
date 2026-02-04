@@ -9,6 +9,7 @@ var _style_boxes: Dictionary = {}  # state -> StyleBoxTexture
 var _checkmark_texture: Texture2D = null
 var _is_loading: bool = true
 var _pending_loads: int = 0
+var _bridge: Node = null
 
 @export var metadata_url: String = ""
 @export var checkmark_texture_path: String = "res://icons/checkmark.png"
@@ -35,15 +36,16 @@ func _ready() -> void:
 	
 	# Start loading metadata if URL is set
 	if metadata_url != "":
-		_load_metadata(metadata_url)
+		_load_metadata(AssetUtils.get_asset_url(metadata_url, _bridge))
 
-func setup(p_metadata_url: String, p_checkmark_path: String = "") -> void:
+func setup(p_metadata_url: String, p_checkmark_path: String = "", bridge: Node = null) -> void:
+	_bridge = bridge
 	metadata_url = p_metadata_url
 	if p_checkmark_path != "":
-		checkmark_texture_path = p_checkmark_path
-		if ResourceLoader.exists(checkmark_texture_path):
-			_checkmark_texture = load(checkmark_texture_path)
-	_load_metadata(metadata_url)
+		_checkmark_texture = load(p_checkmark_path)
+	
+	_load_metadata(AssetUtils.get_asset_url(metadata_url, _bridge))
+
 
 func _load_metadata(url: String) -> void:
 	HTTPFetcher.fetch(self, url, func(body: PackedByteArray, fetched_url: String, success: bool):
@@ -72,12 +74,12 @@ func _load_state_textures() -> void:
 	
 	for state_name in states:
 		var state_data = states[state_name]
-		var texture_url = state_data.get("publicUrl", "")
+		var texture_url = state_data.get("publicUrl", state_data.get("r2Key", ""))
 		if texture_url == "":
 			_pending_loads -= 1
 			continue
 		
-		_load_texture_for_state(state_name, texture_url)
+		_load_texture_for_state(state_name, AssetUtils.get_asset_url(texture_url, _bridge))
 
 func _load_texture_for_state(state_name: String, url: String) -> void:
 	TextureLoader.fetch_texture(self, url, func(texture: ImageTexture, fetched_url: String, success: bool):

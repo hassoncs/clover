@@ -32,6 +32,7 @@ export async function executeAsset(
     gameId: string;
     packId: string;
     assetId?: string;
+    themeId?: string;
     gameTitle: string;
     theme: string;
     style: SpriteStyle;
@@ -185,6 +186,7 @@ export async function executeGameAssets(
   const meta = {
     gameId: config.gameId,
     packId,
+    themeId: config.themeId,
     gameTitle: config.gameTitle,
     theme: config.theme,
     style: config.style,

@@ -1,8 +1,11 @@
 import { useMemo } from 'react';
 import type { RuntimeEntity } from '../types';
-import type { AssetPack, AssetConfig, AssetPlacement, GameDefinition, EntityTemplate, ColliderComponent } from '@slopcade/shared';
+import type { AssetPack, AssetConfig, AssetPlacement, GameDefinition, EntityTemplate, ColliderComponent, AssetUrlConfig } from '@slopcade/shared';
+import { getAssetUrl } from '@slopcade/shared';
 import { trpcReact } from '@/lib/trpc/react';
-import { resolveAssetUrl } from '@/lib/config/env';
+import { env } from '@/lib/config/env';
+import { useOfflineMode } from '@/lib/offline/settings';
+import { getServerUrl } from '@/lib/offline/local-asset-server';
 
 export interface ResolvedAsset {
   assetId?: string;
@@ -12,7 +15,7 @@ export interface ResolvedAsset {
 
 export interface AssetResolutionContext {
   activePackId?: string;
-  assetPacks?: Record<string, AssetPack>;
+  assetPacks?: Record<string, any>;
   entityAssetOverrides?: Record<string, { assetId: string; placement?: AssetPlacement }>;
 }
 
@@ -28,7 +31,7 @@ interface DatabasePack {
   description?: string | null;
   entries: Array<{
     templateId: string;
-    imageUrl: string | null;
+    r2Key: string | null;
     placement?: AssetPlacement | null;
   }>;
 }
@@ -47,13 +50,14 @@ function useAssetPackFromDatabase(packName: string | undefined) {
   );
 }
 
-function convertDbPackToEmbedded(dbPack: DatabasePack): AssetPack {
+function convertDbPackToEmbedded(dbPack: DatabasePack, config?: AssetUrlConfig): any {
   const assets: Record<string, AssetConfig> = {};
   for (const entry of dbPack.entries) {
-    if (entry.imageUrl) {
-      const fullUrl = resolveAssetUrl(entry.imageUrl);
+    if (entry.r2Key) {
+      const fullUrl = getAssetUrl(entry.r2Key, env.assetCdnUrl, config);
       assets[entry.templateId] = {
-        imageUrl: fullUrl ?? entry.imageUrl,
+        imageUrl: fullUrl,
+        assetRef: entry.r2Key,
         source: 'generated' as const,
         scale: entry.placement?.scale ?? 1,
         offsetX: entry.placement?.offsetX ?? 0,
@@ -61,7 +65,7 @@ function convertDbPackToEmbedded(dbPack: DatabasePack): AssetPack {
       };
     }
   }
-  return { id: dbPack.id, name: dbPack.name, assets };
+  return { ...dbPack, assets };
 }
 
 /**
@@ -69,7 +73,7 @@ function convertDbPackToEmbedded(dbPack: DatabasePack): AssetPack {
  */
 function validatePackCoverage(
   templates: Record<string, EntityTemplate>,
-  pack: AssetPack
+  pack: any
 ): void {
   const imageTemplates = Object.entries(templates)
     .filter(([_, t]) => t.visual?.type === 'image')
@@ -88,7 +92,7 @@ function validatePackCoverage(
 /**
  * Derive dimensions from collider component for image sizing
  */
-function getDimensionsFromCollider(collider: ColliderComponent): { width: number; height: number } | null {
+export function getDimensionsFromCollider(collider: ColliderComponent): { width: number; height: number } | null {
   switch (collider.shape) {
     case 'box': return { width: collider.width, height: collider.height };
     case 'circle': return { width: collider.radius * 2, height: collider.radius * 2 };
@@ -107,11 +111,11 @@ export function resolveAssetForEntity(
   if (entityAssetOverrides?.[entity.id]) {
     const override = entityAssetOverrides[entity.id];
     const pack = Object.values(assetPacks ?? {}).find(p => 
-      Object.values(p.assets).some(a => a.imageUrl && override.assetId)
+      Object.values(p.assets as Record<string, AssetConfig>).some((a: any) => a.imageUrl && override.assetId)
     );
     
     if (pack && override.assetId) {
-      const asset = Object.entries(pack.assets).find(([_, a]) => a.imageUrl)?.[1];
+      const asset = Object.entries(pack.assets as Record<string, AssetConfig>).find(([_, a]) => a.imageUrl)?.[1];
       if (asset?.imageUrl) {
         return {
           assetId: override.assetId,
@@ -153,7 +157,8 @@ export function useAssetResolution(
   entities: RuntimeEntity[],
   definition: GameDefinition
 ): Map<string, ResolvedAsset | null> {
-  const activePackId = definition.assetSystem?.activeAssetPackId ?? definition.activeAssetPackId;
+  const activePackId = definition.assetSystem?.activePackId;
+  const { isOffline } = useOfflineMode();
   
   const dbPackQuery = useAssetPackFromDatabase(activePackId);
 
@@ -162,10 +167,14 @@ export function useAssetResolution(
       return new Map<string, ResolvedAsset | null>();
     }
 
-    let mergedPacks = { ...definition.assetPacks };
+    let mergedPacks: Record<string, any> = {};
 
     if (dbPackQuery.data) {
-      const dbPack = convertDbPackToEmbedded(dbPackQuery.data);
+      const dbPack = convertDbPackToEmbedded(dbPackQuery.data, {
+        offlineMode: isOffline,
+        localServerUrl: getServerUrl(),
+        gameId: definition.metadata.id,
+      });
       mergedPacks[dbPack.name] = dbPack;
     }
 
@@ -181,7 +190,7 @@ export function useAssetResolution(
     const context: AssetResolutionContext = {
       activePackId,
       assetPacks: mergedPacks,
-      entityAssetOverrides: definition.assetSystem?.entityAssetOverrides,
+      entityAssetOverrides: (definition.assetSystem as any)?.entityAssetOverrides,
     };
 
     const resolutionMap = new Map<string, ResolvedAsset | null>();
@@ -194,8 +203,9 @@ export function useAssetResolution(
   }, [
     entities,
     activePackId,
-    definition.assetPacks,
-    definition.assetSystem?.entityAssetOverrides,
+    isOffline,
+    definition.metadata.id,
+    definition.assetSystem,
     definition.templates,
     dbPackQuery.isLoading,
     dbPackQuery.data,
@@ -204,7 +214,7 @@ export function useAssetResolution(
 
 export function getAssetOverridesFromPack(
   packId: string | undefined,
-  assetPacks: Record<string, AssetPack> | undefined
+  assetPacks: Record<string, any> | undefined
 ): Record<string, AssetConfig> | undefined {
   if (!packId || !assetPacks?.[packId]) {
     return undefined;

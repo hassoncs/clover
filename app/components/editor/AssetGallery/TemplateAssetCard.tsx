@@ -6,19 +6,11 @@ import { resolveAssetUrl } from '@/lib/config/env';
 
 type ViewMode = 'primitive' | 'generated';
 
-interface LastGenerationInfo {
-  compiledPrompt?: string;
-  backgroundRemoved?: boolean;
-  silhouetteUrl?: string;
-  createdAt?: number;
-}
-
 interface TemplateAssetCardProps {
   templateId: string;
   template: EntityTemplate;
   imageUrl?: string;
   placement?: AssetPlacement;
-  lastGeneration?: LastGenerationInfo;
   isGenerating?: boolean;
   onPress?: () => void;
 }
@@ -28,14 +20,12 @@ export function TemplateAssetCard({
   template,
   imageUrl,
   placement,
-  lastGeneration,
   isGenerating = false,
   onPress,
 }: TemplateAssetCardProps) {
   const resolvedImageUrl = useMemo(() => resolveAssetUrl(imageUrl), [imageUrl]);
   const [viewMode, setViewMode] = useState<ViewMode>(resolvedImageUrl ? 'generated' : 'primitive');
   const [imageError, setImageError] = useState(false);
-  const [showSilhouette, setShowSilhouette] = useState(false);
 
   useEffect(() => {
     if (resolvedImageUrl) {
@@ -61,48 +51,19 @@ export function TemplateAssetCard({
     return '#6B7280';
   };
 
-  const handleShowPrompt = () => {
-    if (!lastGeneration?.compiledPrompt) return;
-    
-    const createdDate = lastGeneration.createdAt 
-      ? new Date(lastGeneration.createdAt).toLocaleString()
-      : 'Unknown';
-    
-    const bgInfo = lastGeneration.backgroundRemoved 
-      ? '\n\nBackground: Removed' 
-      : '';
-    
-    Alert.alert(
-      'Generation Details',
-      `Prompt:\n${lastGeneration.compiledPrompt}\n\nGenerated: ${createdDate}${bgInfo}`,
-      [{ text: 'OK' }]
-    );
-  };
-
   return (
     <Pressable style={styles.card} onPress={onPress}>
       <View style={styles.previewContainer}>
         {showGeneratedView ? (
           <View style={styles.generatedImageContainer}>
-            <Pressable
-              onPressIn={() => setShowSilhouette(true)}
-              onPressOut={() => setShowSilhouette(false)}
-              style={styles.resultImageWrapper}
-            >
+            <View style={styles.resultImageWrapper}>
               <Image
-                source={{ uri: lastGeneration?.silhouetteUrl && showSilhouette ? lastGeneration.silhouetteUrl : resolvedImageUrl }}
+                source={{ uri: resolvedImageUrl }}
                 style={styles.resultImage}
                 resizeMode="contain"
                 onError={() => setImageError(true)}
               />
-            </Pressable>
-            {lastGeneration?.silhouetteUrl && (
-              <View style={styles.resultImageLabel}>
-                <Text style={styles.resultImageLabelText}>
-                  {showSilhouette ? "IN" : "OUT"}
-                </Text>
-              </View>
-            )}
+            </View>
           </View>
         ) : (
           <PrimitivePreview
@@ -126,15 +87,6 @@ export function TemplateAssetCard({
             {templateId}
           </Text>
           <View style={styles.headerActions}>
-            {lastGeneration?.compiledPrompt && (
-              <Pressable 
-                style={styles.infoButton} 
-                onPress={handleShowPrompt}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <Text style={styles.infoButtonText}>ℹ</Text>
-              </Pressable>
-            )}
             <Text style={[styles.statusIndicator, { color: getStatusColor() }]}>
               {getStatusIndicator()}
             </Text>
@@ -274,19 +226,5 @@ const styles = StyleSheet.create({
   resultImage: {
     width: '100%',
     height: '100%',
-  },
-  resultImageLabel: {
-    position: 'absolute',
-    bottom: 4,
-    right: 4,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  resultImageLabelText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '600',
   },
 });

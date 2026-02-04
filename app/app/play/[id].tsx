@@ -100,14 +100,14 @@ export default function PlayScreen() {
           const parsed = JSON.parse(definitionParam) as GameDefinition;
           setGameDefinition(parsed);
           if (!packId) {
-            setActiveAssetPackId(parsed.activeAssetPackId);
+            setActiveAssetPackId(parsed.assetSystem?.activePackId);
           }
         } else if (id && id !== "preview") {
           const game = await trpc.games.get.query({ id });
           const parsed = JSON.parse(game.definition) as GameDefinition;
           setGameDefinition(parsed);
           if (!packId) {
-            setActiveAssetPackId(parsed.activeAssetPackId);
+            setActiveAssetPackId(parsed.assetSystem?.activePackId);
           }
 
           await trpc.games.incrementPlayCount.mutate({ id });
@@ -190,19 +190,21 @@ export default function PlayScreen() {
     
     setIsGenerating(true);
     try {
-      const result = await trpc.assets.generateForGame.mutate({
+      const result = await trpc.assetSystem.applyThemeToGame.mutate({
         gameId: id,
-        prompt: genPrompt || gameDefinition.metadata.title,
+        newTheme: {
+          name: genPrompt || gameDefinition.metadata.title,
+          promptModifier: genPrompt || gameDefinition.metadata.title,
+        },
         style: selectedStyle,
+        setAsActive: true,
       });
 
-      if (result.success && result.generatedAssets.length > 0) {
-        const entries: Record<string, ResolvedPackEntry> = {};
-        result.generatedAssets.forEach(asset => {
-          entries[asset.slotId] = { imageUrl: asset.url };
-        });
-        setResolvedPackEntries(entries);
-        setShowAssetMenu(false);
+      if (result.jobId) {
+        // Refresh available packs and select the new one
+        const packsResult = await trpc.assetSystem.getCompatiblePacks.query({ gameId: id });
+        setAvailablePacks(packsResult.packs);
+        handlePackSelect(result.packId);
       }
     } catch (e) {
       console.error("Asset generation failed", e);
@@ -288,11 +290,7 @@ export default function PlayScreen() {
     if (!id || id === "preview" || !gameDefinition) return;
     
     try {
-      await trpc.assets.updateParallaxConfig.mutate({
-        gameId: id,
-        enabled,
-      });
-
+      // Note: trpc.assets.updateParallaxConfig removed in V3
       const newDef = { ...gameDefinition };
       if (!newDef.parallaxConfig) {
         newDef.parallaxConfig = { enabled, layers: [] };
@@ -310,27 +308,8 @@ export default function PlayScreen() {
     
     setGeneratingLayer(depth);
     try {
-      const result = await trpc.assets.generateBackgroundLayer.mutate({
-        gameId: id,
-        layerId: `${depth}-layer`,
-        depth,
-        style: selectedStyle,
-        promptHints: genPrompt || gameDefinition.metadata.title,
-      });
-
-      if (result.success && result.layer) {
-        const newDef = { ...gameDefinition };
-        if (!newDef.parallaxConfig) {
-          newDef.parallaxConfig = { enabled: true, layers: [] };
-        }
-        const existingIdx = newDef.parallaxConfig.layers?.findIndex(l => l.depth === depth) ?? -1;
-        if (existingIdx >= 0 && newDef.parallaxConfig.layers) {
-          newDef.parallaxConfig.layers[existingIdx] = result.layer;
-        } else {
-          newDef.parallaxConfig.layers = [...(newDef.parallaxConfig.layers || []), result.layer];
-        }
-        setGameDefinition(newDef);
-      }
+      // Note: trpc.assets.generateBackgroundLayer removed in V3
+      alert("Background layer generation is not yet supported in V3");
     } catch (e) {
       console.error("Generate layer failed", e);
       alert("Failed to generate layer: " + (e instanceof Error ? e.message : String(e)));
@@ -365,10 +344,7 @@ export default function PlayScreen() {
       layer.visible = visible;
       
       try {
-        await trpc.assets.updateParallaxConfig.mutate({
-          gameId: id,
-          layers: newDef.parallaxConfig.layers,
-        });
+        // Note: trpc.assets.updateParallaxConfig removed in V3
         setGameDefinition(newDef);
       } catch (e) {
         console.error("Update layer visibility failed", e);
@@ -481,35 +457,11 @@ export default function PlayScreen() {
               ))}
             </View>
 
-            {gameDefinition?.assetPacks && Object.keys(gameDefinition.assetPacks).length > 0 && (
-              <View className="mb-4">
-                <Text className="text-gray-400 mb-2">Select Existing Pack</Text>
-                <ScrollView className="max-h-32">
-                  {Object.values(gameDefinition.assetPacks).map(pack => (
-                    <View key={pack.id} className="flex-row mb-2">
-                      <Pressable
-                        className={`flex-1 p-3 rounded-l-lg ${activeAssetPackId === pack.id ? 'bg-green-600' : 'bg-gray-700'}`}
-                        onPress={() => setActiveAssetPackId(pack.id)}
-                      >
-                        <Text className="text-white font-semibold">{pack.name}</Text>
-                      </Pressable>
-                      <Pressable
-                        className="p-3 bg-red-600 rounded-r-lg"
-                        onPress={() => handleDeletePack(pack.id)}
-                      >
-                        <Text className="text-white">Del</Text>
-                      </Pressable>
-                    </View>
-                  ))}
-                </ScrollView>
-              </View>
-            )}
-
-            {activeAssetPackId && gameDefinition?.assetPacks?.[activeAssetPackId] && (
+            {activeAssetPackId && (
               <View className="mb-4">
                 <EntityAssetList
                   gameDefinition={gameDefinition}
-                  activePack={gameDefinition.assetPacks[activeAssetPackId]}
+                  assets={resolvedPackEntries || null}
                   onRegenerateAsset={handleRegenerateAsset}
                   onClearAsset={handleClearAsset}
                   regeneratingTemplateId={regeneratingTemplateId}

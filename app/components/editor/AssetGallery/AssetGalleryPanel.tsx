@@ -70,7 +70,7 @@ export function AssetGalleryPanel({
   
   const [mode, setMode] = useState<Mode>('entities');
   const [selectedPackId, setSelectedPackId] = useState<string | undefined>(
-    document.assetSystem?.activeAssetPackId
+    document.assetSystem?.activePackId
   );
   const [packSelectorVisible, setPackSelectorVisible] = useState(false);
   const [alignmentEditor, setAlignmentEditor] = useState<AlignmentEditorState>({
@@ -115,13 +115,12 @@ export function AssetGalleryPanel({
   const processJobMutation = trpcReact.assetSystem.processGenerationJob.useMutation();
 
   const entriesByTemplateId = useMemo(() => {
-    if (!activePack?.entries) return new Map<string, { imageUrl?: string; placement?: AssetPlacement; lastGeneration?: { compiledPrompt?: string; backgroundRemoved?: boolean; createdAt?: number } }>();
-    const map = new Map<string, { imageUrl?: string; placement?: AssetPlacement; lastGeneration?: { compiledPrompt?: string; backgroundRemoved?: boolean; createdAt?: number } }>();
+    if (!activePack?.entries) return new Map<string, { imageUrl?: string; placement?: AssetPlacement }>();
+    const map = new Map<string, { imageUrl?: string; placement?: AssetPlacement }>();
     for (const entry of activePack.entries) {
       map.set(entry.templateId, {
         imageUrl: entry.imageUrl ?? undefined,
         placement: entry.placement,
-        lastGeneration: entry.lastGeneration,
       });
     }
     return map;
@@ -290,15 +289,13 @@ export function AssetGalleryPanel({
     }
 
     const templateIds = templates.map(t => t.id);
-    const packStyle = activePack?.promptDefaults?.styleOverride as 'pixel' | 'cartoon' | '3d' | 'flat' | undefined;
 
     generateAll({
       packId: selectedPackId,
       templateIds,
       themePrompt: document.metadata?.description,
-      style: packStyle,
     });
-  }, [selectedPackId, templates, activePack?.promptDefaults?.styleOverride, document.metadata?.description, generateAll]);
+  }, [selectedPackId, templates, document.metadata?.description, generateAll]);
 
   const updatePlacementMutation = useUpdatePlacement();
 

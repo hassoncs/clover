@@ -29,9 +29,10 @@ export const env = {
   supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
   supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
   apiUrl: getApiUrl(),
+  assetCdnUrl: 'https://slopcade-api.hassoncs.workers.dev/assets',
 };
 
-const ASSET_CDN_URL = 'https://slopcade-api.hassoncs.workers.dev/assets';
+const ASSET_CDN_URL = env.assetCdnUrl;
 
 export function resolveAssetUrl(url: string | undefined | null): string | undefined {
   if (!url) return undefined;

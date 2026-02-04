@@ -279,6 +279,8 @@ export interface GameAssetConfig {
   gameTitle: string;
   /** Theme description applied to all assets */
   theme: string;
+  /** Optional theme ID from the database */
+  themeId?: string;
   /** Visual style for all assets */
   style: SpriteStyle;
   /** R2 storage prefix (e.g., "generated/slopeggle") */
@@ -344,6 +346,8 @@ export interface AssetRun<T extends AssetSpec = AssetSpec> {
     packId: string;
     /** UUID for this specific generated asset (NOT spec.id) */
     assetId: string;
+    /** Optional theme ID from the database */
+    themeId?: string;
     gameTitle: string;
     theme: string;
     style: SpriteStyle;

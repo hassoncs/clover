@@ -156,21 +156,6 @@ export function extractAssetManifest(
         );
       }
     });
-  } else {
-    const activePackId = definition.assetSystem?.activeAssetPackId ?? definition.activeAssetPackId;
-    if (activePackId && definition.assetPacks?.[activePackId]) {
-      const pack = definition.assetPacks[activePackId];
-      Object.entries(pack.assets).forEach(([templateId, asset]) => {
-        if (asset.imageUrl && asset.source !== 'none') {
-          addImage(
-            asset.imageUrl,
-            `pack-${templateId}`,
-            templateId,
-            'normal'
-          );
-        }
-      });
-    }
   }
 
   // --- Tile Sheets ---

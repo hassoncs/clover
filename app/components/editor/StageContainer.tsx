@@ -12,7 +12,7 @@ export function StageContainer() {
     setRuntimeKey((k) => k + 1);
   }, []);
 
-  const activePackId = document.assetSystem?.activeAssetPackId;
+  const activePackId = document.assetSystem?.activePackId;
   const worldBounds = document.world.bounds ?? { width: 20, height: 12 };
   const pixelsPerMeter = document.world.pixelsPerMeter ?? 50;
 

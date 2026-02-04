@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 interface AssetPackInfo {
   id: string;
-  gameId: string;
+  baseGameId: string;
   name: string;
   description?: string | null;
   promptDefaults?: {

@@ -1,5 +1,5 @@
 import type { GameDefinition } from "@slopcade/shared";
-import type { TestGameMeta } from "@/lib/registry/types";
+import type { TestGameMeta } from "../../../registry/types";
 
 export const metadata: TestGameMeta = {
   title: "Slopeggle",
@@ -80,7 +80,7 @@ const orangePegEntities = pegLayout
   }));
 
 const game: GameDefinition = {
-  activeAssetPackId: "slopeggle-default",
+  assetSystem: { activePackId: "slopeggle-default" },
   metadata: {
     id: "test-slopeggle",
     title: "Slopeggle",

@@ -1,5 +1,5 @@
 import type { GameDefinition } from "@slopcade/shared";
-import type { TestGameMeta } from "@/lib/registry/types";
+import type { TestGameMeta } from "../../../registry/types";
 
 const BRICK_WIDTH = 1.15;
 const BRICK_HEIGHT = 0.48;
@@ -27,7 +27,7 @@ const game: GameDefinition = {
     instructions: "Move mouse/finger to control paddle. Tap to launch ball.",
     version: "1.0.0",
   },
-  activeAssetPackId: "breakoutBouncer-default",
+  assetSystem: { activePackId: "breakoutBouncer-default" },
   background: {
     type: "static",
   },

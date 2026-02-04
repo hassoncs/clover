@@ -13,6 +13,7 @@ var _style_boxes: Dictionary = {}
 var _icon_texture: Texture2D = null
 var _is_loading: bool = true
 var _pending_loads: int = 0
+var _bridge: Node = null
 
 @export var metadata_url: String = ""
 @export var component_type: ComponentType = ComponentType.BUTTON
@@ -30,10 +31,11 @@ func _ready() -> void:
 		_icon_texture = load(icon_texture_path)
 	
 	if metadata_url != "":
-		_load_metadata(metadata_url)
+		_load_metadata(AssetUtils.get_asset_url(metadata_url, _bridge))
 
-func setup(p_type: ComponentType, p_metadata_url: String, p_text: String = "", p_icon_path: String = "") -> void:
+func setup(p_type: ComponentType, p_metadata_url: String, p_text: String = "", p_icon_path: String = "", bridge: Node = null) -> void:
 	_component_type = p_type
+	_bridge = bridge
 	metadata_url = p_metadata_url
 	text = p_text
 	if p_icon_path != "":
@@ -43,7 +45,7 @@ func setup(p_type: ComponentType, p_metadata_url: String, p_text: String = "", p
 	
 	if is_node_ready():
 		_create_control_node()
-		_load_metadata(metadata_url)
+		_load_metadata(AssetUtils.get_asset_url(metadata_url, _bridge))
 
 func _create_control_node() -> void:
 	if _control_node:
@@ -139,12 +141,12 @@ func _load_state_textures() -> void:
 	
 	for state_name in states:
 		var state_data = states[state_name]
-		var texture_url = state_data.get("publicUrl", "")
+		var texture_url = state_data.get("publicUrl", state_data.get("r2Key", ""))
 		if texture_url == "":
 			_pending_loads -= 1
 			continue
 		
-		_load_texture_for_state(state_name, texture_url)
+		_load_texture_for_state(state_name, AssetUtils.get_asset_url(texture_url, _bridge))
 
 func _load_texture_for_state(state_name: String, url: String) -> void:
 	TextureLoader.fetch_texture(self, url, func(texture: ImageTexture, fetched_url: String, success: bool):

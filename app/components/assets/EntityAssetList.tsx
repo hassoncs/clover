@@ -1,10 +1,15 @@
 import { View, Text, Image, Pressable, ScrollView, ActivityIndicator } from 'react-native';
-import type { GameDefinition, AssetPack, EntityTemplate } from '@slopcade/shared';
+import type { GameDefinition, EntityTemplate, AssetPlacement } from '@slopcade/shared';
 import { resolveAssetUrl } from '@/lib/config/env';
+
+export interface ResolvedPackEntry {
+  imageUrl: string;
+  placement?: AssetPlacement;
+}
 
 interface Props {
   gameDefinition: GameDefinition;
-  activePack: AssetPack | null;
+  assets: Record<string, ResolvedPackEntry> | null;
   onRegenerateAsset: (templateId: string) => void;
   onClearAsset: (templateId: string) => void;
   regeneratingTemplateId?: string;
@@ -12,7 +17,7 @@ interface Props {
 
 export function EntityAssetList({ 
   gameDefinition, 
-  activePack, 
+  assets, 
   onRegenerateAsset, 
   onClearAsset,
   regeneratingTemplateId 
@@ -32,7 +37,7 @@ export function EntityAssetList({
       <Text className="text-gray-400 mb-2">Entity Assets</Text>
       <ScrollView className="max-h-48">
         {templates.map(([templateId, template]) => {
-          const asset = activePack?.assets?.[templateId];
+          const asset = assets?.[templateId];
           const isRegenerating = regeneratingTemplateId === templateId;
           const visualColor = (template.visual && 'color' in template.visual) ? template.visual.color : '#666';
           

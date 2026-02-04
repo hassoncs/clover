@@ -334,3 +334,44 @@ When testing missing assets, must manually construct files Map instead of using 
 
 ### Commit
 Message: `test(bundle): add virtual bundle integration tests`
+
+## Integration Test Patterns (2026-02-03)
+
+### Test File Structure
+- Created comprehensive integration tests at `shared/src/bundle/__tests__/virtual-bundle-integration.test.ts`
+- 18 test cases covering all major compilation scenarios
+- All tests use VirtualFileReader (no disk I/O)
+
+### Helper Function Pattern
+```typescript
+const createMinimalBundle = (overrides?: {
+  manifest?: Record<string, unknown>;
+  templates?: unknown;
+  rules?: unknown;
+  scripts?: Record<string, string>;
+  assets?: Record<string, unknown>;
+}): Map<string, string>
+```
+- Provides minimal valid bundle structure
+- Accepts overrides for specific test scenarios
+- Automatically creates dummy asset files when localPath is specified
+
+### Key Test Coverage
+1. **Basic Compilation**: Minimal bundle → valid GameDefinition
+2. **Script Concatenation**: Alphabetical ordering with separators
+3. **Warnings**: Duplicate exports detection
+4. **Errors**: Missing exports, malformed JSON, missing files
+5. **Asset Resolution**: Both remoteUrl and localPath support
+6. **Constant Resolution**: Reference resolution and error handling
+7. **Validation**: Duplicate IDs, unknown templates, unknown assets
+8. **Complex Structures**: Nested directories, multiple file types
+
+### TypeScript Considerations
+- AssetConfig extends ImageField (no `type` property directly)
+- GameDefinition.rules is optional (use `rules!` after checking defined)
+- VirtualFileReader requires absolute bundleRoot path
+
+### Test Execution
+- All 46 bundle tests pass (4 test files)
+- No TypeScript errors in new test file
+- Tests run in ~50ms total

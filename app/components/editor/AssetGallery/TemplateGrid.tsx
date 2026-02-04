@@ -7,7 +7,6 @@ interface TemplateGridProps {
   entriesByTemplateId: Map<string, {
     imageUrl?: string;
     placement?: { scale: number; offsetX: number; offsetY: number };
-    lastGeneration?: { compiledPrompt?: string; backgroundRemoved?: boolean; createdAt?: number };
   }>;
   generatingTemplates: Set<string>;
   isLoading: boolean;
@@ -51,7 +50,6 @@ export function TemplateGrid({
             template={template}
             imageUrl={entryData?.imageUrl}
             placement={entryData?.placement}
-            lastGeneration={entryData?.lastGeneration}
             isGenerating={generatingTemplates.has(id)}
             onPress={() => onTemplatePress(id)}
           />

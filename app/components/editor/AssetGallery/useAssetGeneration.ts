@@ -1,9 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { trpcReact } from '@/lib/trpc/react';
-import { DEFAULT_THEMES, DEFAULT_STYLES } from '@slopcade/shared';
-
-export const THEME_OPTIONS = DEFAULT_THEMES.map(theme => ({ value: theme, label: theme }));
-export const STYLE_OPTIONS = DEFAULT_STYLES.map(style => ({ value: style, label: style }));
 
 export type GenerationStatus = 'idle' | 'creating-job' | 'generating' | 'succeeded' | 'failed';
 
@@ -198,16 +194,10 @@ export function useCreateAssetPack(gameId: string) {
     style?: 'pixel' | 'cartoon' | '3d' | 'flat';
     themePrompt?: string;
   }) => {
-    const promptDefaults = (params.style || params.themePrompt) ? {
-      styleOverride: params.style,
-      themePrompt: params.themePrompt,
-    } : undefined;
-    
     return mutation.mutateAsync({
       gameId,
       name: params.name,
       description: params.description,
-      promptDefaults,
     });
   }, [gameId, mutation]);
 

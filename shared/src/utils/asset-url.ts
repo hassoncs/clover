@@ -1,84 +1,29 @@
-const PASSTHROUGH_PREFIXES = [
-  'http://',
-  'https://',
-  'data:',
-  'res://',
-] as const;
+const R2_PREFIX = 'generated/';
 
-const RELATIVE_PATH_PREFIXES = ['/assets/'] as const;
-
-const R2_KEY_PREFIX = 'generated/' as const;
-
-export function isPassthroughUrl(value: string): boolean {
-  if (!value || typeof value !== 'string') {
-    return false;
-  }
-
-  const lowerValue = value.toLowerCase();
-  return PASSTHROUGH_PREFIXES.some(prefix => lowerValue.startsWith(prefix));
+export interface AssetUrlConfig {
+  offlineMode?: boolean;
+  localServerUrl?: string;   // "http://localhost:8765" or file:// path
+  gameId?: string;
 }
 
-export function isRelativePath(value: string): boolean {
-  if (!value || typeof value !== 'string') {
-    return false;
-  }
-
-  return RELATIVE_PATH_PREFIXES.some(prefix => value.startsWith(prefix));
+export function buildR2Key(gameId: string, packId: string, assetId: string): string {
+  return `${R2_PREFIX}${gameId}/${packId}/${assetId}.png`;
 }
 
-export function isStoredR2Key(value: string): boolean {
-  if (!value || typeof value !== 'string') {
-    return false;
-  }
-
-  return value.startsWith(R2_KEY_PREFIX);
-}
-
-export function isLegacyUrl(value: string): boolean {
-  return isPassthroughUrl(value) || isRelativePath(value);
-}
-
-export function constructAssetUrl(
-  baseUrl: string,
-  gameId: string,
-  packId: string,
-  assetId: string
+export function getAssetUrl(
+  r2Key: string, 
+  cdnBaseUrl: string,
+  config?: AssetUrlConfig
 ): string {
-  const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-  return `${cleanBaseUrl}/generated/${gameId}/${packId}/${assetId}.png`;
+  if (config?.offlineMode && config.gameId && config.localServerUrl) {
+    // Return local URL for offline mode
+    // Ensure localServerUrl doesn't have trailing slash
+    const base = config.localServerUrl.replace(/\/$/, '');
+    return `${base}/${config.gameId}/${r2Key}`;
+  }
+  return `${cdnBaseUrl.replace(/\/$/, '')}/${r2Key}`;
 }
 
-export function buildAssetPath(
-  gameId: string,
-  packId: string,
-  assetId: string
-): string {
-  return `generated/${gameId}/${packId}/${assetId}.png`;
-}
-
-export function resolveAssetReference(
-  value: string,
-  baseUrl: string,
-  gameId?: string,
-  packId?: string
-): string {
-  if (isPassthroughUrl(value)) {
-    return value;
-  }
-
-  const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-
-  if (isRelativePath(value)) {
-    return `${cleanBaseUrl}${value}`;
-  }
-
-  if (isStoredR2Key(value)) {
-    return `${cleanBaseUrl}/${value}`;
-  }
-
-  if (!gameId || !packId) {
-    throw new Error('gameId and packId are required when resolving asset IDs');
-  }
-
-  return constructAssetUrl(baseUrl, gameId, packId, value);
+export function isR2Key(value: string): boolean {
+  return value.startsWith(R2_PREFIX);
 }

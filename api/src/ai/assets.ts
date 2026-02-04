@@ -3,7 +3,7 @@ import type { ImageGenerationAdapter } from '@/ai/provider-contract'
 import { PROVIDER_DEFAULTS } from '@/ai/provider-contract'
 import { createScenarioAdapter, createScenarioClient } from '@/ai/scenario'
 import { createComfyUIAdapter } from '@/ai/comfyui'
-import { buildAssetPath } from '@slopcade/shared';
+import { buildR2Key } from '@slopcade/shared';
 
 const DEBUG_ASSET_GENERATION = process.env.DEBUG_ASSET_GENERATION === 'true';
 const DEBUG_OUTPUT_DIR = 'debug-output';
@@ -974,7 +974,7 @@ export class AssetService {
     
     let r2Key: string;
     if (context?.gameId && context?.packId) {
-      const basePath = buildAssetPath(context.gameId, context.packId, assetId);
+      const basePath = buildR2Key(context.gameId, context.packId, assetId);
       r2Key = suffix ? basePath.replace(extension, `${fileSuffix}${extension}`) : basePath;
     } else {
       r2Key = `generated/${entityType}/${assetId}${fileSuffix}${extension}`;

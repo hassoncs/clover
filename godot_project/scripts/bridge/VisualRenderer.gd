@@ -622,7 +622,7 @@ func _on_preload_complete(url: String, success: bool) -> void:
 
 func _add_image_sprite(node: Node2D, sprite_data: Dictionary, opacity: float, z_index_val: int) -> void:
 	var sprite = Sprite2D.new()
-	var url = sprite_data.get("imageUrl", sprite_data.get("url", ""))
+	var url = AssetUtils.resolve_url(sprite_data, _bridge)
 	var img_width = sprite_data.get("imageWidth", sprite_data.get("width", 1.0))
 	var img_height = sprite_data.get("imageHeight", sprite_data.get("height", 1.0))
 	var asset_scale = sprite_data.get("scale", 1.0)
@@ -794,7 +794,7 @@ func setup_background(bg_data: Dictionary) -> void:
 	if bg_type != "static":
 		return
 
-	var image_url = bg_data.get("imageUrl", "")
+	var image_url = AssetUtils.resolve_url(bg_data, _bridge)
 	var color = bg_data.get("color", "")
 
 	_background_layer = CanvasLayer.new()
@@ -842,7 +842,7 @@ func _setup_parallax_background(bg_data: Dictionary) -> void:
 
 	for layer_data in layers_data:
 		var layer_id = layer_data.get("id", "")
-		var image_url = layer_data.get("imageUrl", "")
+		var image_url = AssetUtils.resolve_url(layer_data, _bridge)
 		var depth = layer_data.get("depth", "mid")
 		var parallax_factor = layer_data.get("parallaxFactor", 0.5)
 		var visible = layer_data.get("visible", true)

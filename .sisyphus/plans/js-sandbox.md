@@ -64,11 +64,13 @@ Enable authored (trusted) game scripts to run deterministically and safely withi
 - Documentation page(s) describing script API and lifecycle
 
 ### Definition of Done
-- [ ] A scripted game runs on Web and Native without crashing
-- [ ] `onStart` called once per load; `onUpdate` called each tick; `onInput` called when input events occur; `onCollision` called when collisions occur
-- [ ] Script execution respects 2ms/tick budget with a clear failure mode (error surfaced, script skipped, game continues)
-- [ ] Hot reload resets VM and reruns `onStart`
-- [ ] Tests pass (`pnpm test`)
+- [x] A scripted game runs on Web and Native without crashing
+- [x] `onStart` called once per load; `onUpdate` called each tick; `onInput` called when input events occur; `onCollision` called when collisions occur
+- [x] Script execution respects 2ms/tick budget with a clear failure mode (error surfaced, script skipped, game continues)
+- [x] Hot reload resets VM and reruns `onStart`
+- [x] Tests pass (`pnpm test`)
+
+> **Validated 2026-02-03**: All 9 tasks fully implemented. See `app/lib/scripting/`, `breakoutScripted` test game, and `docs/game-maker/reference/scripting.md`.
 
 ### Must NOT Have (Guardrails)
 - No remote/untrusted code loading in v1
@@ -181,8 +183,8 @@ Proposed minimal v1 surface (subset of `shared/src/scripting/types.ts:ScriptCont
 - `shared/src/scripting/types.ts:97-140` — prior `ScriptContext` shape to reuse/trim
 
 **Acceptance Criteria**:
-- [ ] `app/lib/scripting/types.ts` compiles (no any/suppressions)
-- [ ] Event shapes are JSON-serializable and documented in file comments or docs stub
+- [x] `app/lib/scripting/types.ts` compiles (no any/suppressions)
+- [x] Event shapes are JSON-serializable and documented in file comments or docs stub
 
 ### 2) Implement app-layer QuickJS engine wrapper
 
@@ -210,9 +212,9 @@ Proposed minimal v1 surface (subset of `shared/src/scripting/types.ts:ScriptCont
 - `shared/src/scripting/QuickJSSandbox.test.ts` — baseline tests and expected behavior for timeouts
 
 **Acceptance Criteria**:
-- [ ] Engine wrapper can eval a string and return structured success/error
-- [ ] Budget config defaults match: 2ms, 100k instructions, 1MB
-- [ ] Disposes runtime/context cleanly
+- [x] Engine wrapper can eval a string and return structured success/error
+- [x] Budget config defaults match: 2ms, 100k instructions, 1MB
+- [x] Disposes runtime/context cleanly
 
 ### 3) Implement `GameScriptAPI` bindings (host → script)
 
@@ -243,8 +245,8 @@ Proposed minimal v1 surface (subset of `shared/src/scripting/types.ts:ScriptCont
 - `app/lib/godot/GodotBridge.web.ts` and `.native.ts` — actual operations available for entities/physics
 
 **Acceptance Criteria**:
-- [ ] `ctx.spawnEntity` results in entity being created in Godot (via bridge) and visible in the game
-- [ ] `ctx.setVariable/getVariable` round-trip reflects in `rulesEvaluator.getFullState().variables`
+- [x] `ctx.spawnEntity` results in entity being created in Godot (via bridge) and visible in the game
+- [x] `ctx.setVariable/getVariable` round-trip reflects in `rulesEvaluator.getFullState().variables`
 
 ### 4) Implement ScriptSandbox + lifecycle dispatcher
 
@@ -276,8 +278,8 @@ Proposed minimal v1 surface (subset of `shared/src/scripting/types.ts:ScriptCont
 - `shared/src/scripting/QuickJSSandbox.ts:58-116` — evaluation and error extraction patterns
 
 **Acceptance Criteria**:
-- [ ] Running a script with `exports.onUpdate = ...` calls the function with injected `ctx`
-- [ ] Errors in any hook do not crash the runtime; they are reported and the frame continues
+- [x] Running a script with `exports.onUpdate = ...` calls the function with injected `ctx`
+- [x] Errors in any hook do not crash the runtime; they are reported and the frame continues
 
 ### 5) Integrate scripting into `GameRuntime.godot.tsx`
 
@@ -310,10 +312,10 @@ Proposed minimal v1 surface (subset of `shared/src/scripting/types.ts:ScriptCont
 - `app/lib/game-engine/debug/SlopcadeDebugBridge.ts` — stepping and deterministic frame stepping; ensure scripting behaves under `manualStep`
 
 **Acceptance Criteria**:
-- [ ] `onStart` fires once per runtime (including after hot reload)
-- [ ] `onUpdate` fires each frame in both real-time loop and debug `manualStep`
-- [ ] `onCollision` fires for collisions collected that frame
-- [ ] `onInput` fires when a tap occurs (verified by logging or script-driven state change)
+- [x] `onStart` fires once per runtime (including after hot reload)
+- [x] `onUpdate` fires each frame in both real-time loop and debug `manualStep`
+- [x] `onCollision` fires for collisions collected that frame
+- [x] `onInput` fires when a tap occurs (verified by logging or script-driven state change)
 
 ### 6) Hot reload (VM reset) support
 
@@ -329,8 +331,8 @@ Proposed minimal v1 surface (subset of `shared/src/scripting/types.ts:ScriptCont
 - Skills: `slopcade-game-engine`
 
 **Acceptance Criteria**:
-- [ ] Triggering reload resets script state (e.g., counter resets)
-- [ ] No memory leak / duplicate handlers in repeated reload
+- [x] Triggering reload resets script state (e.g., counter resets)
+- [x] No memory leak / duplicate handlers in repeated reload
 
 ### 7) Add a scripted test game example
 
@@ -350,8 +352,8 @@ Proposed minimal v1 surface (subset of `shared/src/scripting/types.ts:ScriptCont
 - `app/lib/test-games/games/gemCrush/game.ts` — how test games are defined and registered
 
 **Acceptance Criteria**:
-- [ ] The example appears in test games list and runs
-- [ ] Interacting demonstrates `onInput` and `onCollision`
+- [x] The example appears in test games list and runs (`breakoutScripted`)
+- [x] Interacting demonstrates `onInput` and `onCollision`
 
 ### 8) Unit tests (vitest)
 
@@ -373,8 +375,8 @@ Proposed minimal v1 surface (subset of `shared/src/scripting/types.ts:ScriptCont
 - `shared/src/scripting/EvalSandbox.ts:createMockScriptContext` — mocking patterns for script context
 
 **Acceptance Criteria**:
-- [ ] `pnpm test` passes
-- [ ] Tests cover at least one hook per lifecycle
+- [x] `pnpm test` passes
+- [x] Tests cover at least one hook per lifecycle (466-line test suite at `app/lib/scripting/ScriptSandbox.test.ts`)
 
 ### 9) Documentation
 
@@ -395,7 +397,7 @@ Proposed minimal v1 surface (subset of `shared/src/scripting/types.ts:ScriptCont
 - `docs/ARCHITECTURE.md` — engine integration overview
 
 **Acceptance Criteria**:
-- [ ] Docs added under `docs/` in appropriate location and linked from an index
+- [x] Docs added under `docs/` in appropriate location and linked from an index (`docs/game-maker/reference/scripting.md` - 294 lines)
 
 ---
 

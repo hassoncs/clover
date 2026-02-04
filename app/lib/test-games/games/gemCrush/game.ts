@@ -4,7 +4,7 @@ import {
   type GameDefinition,
   type ConditionalBehavior,
 } from "@slopcade/shared";
-import type { TestGameMeta } from "@/lib/registry/types";
+import type { TestGameMeta } from "../../../registry/types";
 
 const GRID_COLS = 7;
 const GRID_ROWS = 7;
@@ -39,7 +39,7 @@ const gemConditionalBehaviors: ConditionalBehavior[] = [
 const gridConfig = createGridConfig(GRID_ROWS, GRID_COLS, CELL_SIZE);
 
 const game: GameDefinition = {
-  activeAssetPackId: "gemCrush-default",
+  assetSystem: { activePackId: "gemCrush-default" },
   metadata: {
     id: "gem-crush",
     title: "Gem Crush",

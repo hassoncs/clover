@@ -1,5 +1,5 @@
 import type { GameDefinition } from "@slopcade/shared";
-import type { TestGameMeta } from "@/lib/registry/types";
+import type { TestGameMeta } from "../../../registry/types";
 
 export const metadata: TestGameMeta = {
   title: "Breakout Bouncer",
@@ -22,7 +22,7 @@ const cx = (x: number) => x - HALF_W;
 const cy = (y: number) => HALF_H - y;
 
 const game: GameDefinition = {
-  activeAssetPackId: "breakoutBouncer-default",
+  assetSystem: { activePackId: "breakoutBouncer-default" },
   metadata: {
     id: "test-breakout-bouncer",
     title: "Breakout Bouncer",

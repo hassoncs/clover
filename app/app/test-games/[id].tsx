@@ -27,7 +27,7 @@ export default function TestGameRunScreen() {
   const loadingOpacity = useRef(new Animated.Value(1)).current;
 
   // Get active pack ID from game definition
-  const activePackId = gameDefinition?.assetSystem?.activeAssetPackId ?? gameDefinition?.activeAssetPackId;
+  const activePackId = gameDefinition?.assetSystem?.activePackId;
 
   // Fetch asset pack from database
   const packQuery = trpcReact.assetSystem.getPackByName.useQuery(
@@ -43,11 +43,11 @@ export default function TestGameRunScreen() {
     if (!packQuery.data?.entries) return undefined;
     const result: Record<string, ResolvedPackEntry> = {};
     for (const entry of packQuery.data.entries) {
-      if (entry.imageUrl) {
+      if (entry.r2Key) {
         // Resolve R2 key to full URL (prepends base URL from env)
-        const fullUrl = resolveAssetUrl(entry.imageUrl);
+        const fullUrl = resolveAssetUrl(entry.r2Key);
         result[entry.templateId] = {
-          imageUrl: fullUrl ?? entry.imageUrl,
+          imageUrl: fullUrl ?? entry.r2Key,
           placement: entry.placement ?? undefined,
         };
       }
@@ -58,32 +58,8 @@ export default function TestGameRunScreen() {
   // Create enriched definition with resolved pack data
   const enrichedDefinition = useMemo(() => {
     if (!gameDefinition) return null;
-    if (!resolvedPackEntries || !activePackId) return gameDefinition;
-    
-    // Convert resolvedPackEntries to AssetPack format
-    const assets: Record<string, import('@slopcade/shared').AssetConfig> = {};
-    for (const [templateId, entry] of Object.entries(resolvedPackEntries)) {
-      assets[templateId] = {
-        imageUrl: entry.imageUrl,
-        source: 'generated' as const,
-        scale: entry.placement?.scale ?? 1,
-        offsetX: entry.placement?.offsetX ?? 0,
-        offsetY: entry.placement?.offsetY ?? 0,
-      };
-    }
-    
-    return {
-      ...gameDefinition,
-      assetPacks: {
-        ...gameDefinition.assetPacks,
-        [activePackId]: {
-          id: activePackId,
-          name: activePackId,
-          assets,
-        },
-      },
-    };
-  }, [gameDefinition, resolvedPackEntries, activePackId]);
+    return gameDefinition;
+  }, [gameDefinition]);
 
   const { phase, progress, imageUrls, startPreload, skipPreload, reset } = useGamePreloader(
     gameDefinition,

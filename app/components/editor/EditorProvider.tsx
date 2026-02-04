@@ -387,7 +387,7 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
       
       newDocument.assetSystem = {
         ...newDocument.assetSystem,
-        activeAssetPackId: action.packId,
+        activePackId: action.packId,
       };
 
       for (const [templateId, entry] of Object.entries(action.entries)) {

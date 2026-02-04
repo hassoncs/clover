@@ -77,8 +77,8 @@ func create_ui_button(
 	button.ignore_texture_size = true
 	button.stretch_mode = TextureButton.STRETCH_SCALE
 
-	var normal_tex = _create_placeholder_texture(normal_url, int(btn_width), int(btn_height))
-	var pressed_tex = _create_placeholder_texture(pressed_url, int(btn_width), int(btn_height))
+	var normal_tex = _create_placeholder_texture(AssetUtils.get_asset_url(normal_url, _bridge), int(btn_width), int(btn_height))
+	var pressed_tex = _create_placeholder_texture(AssetUtils.get_asset_url(pressed_url, _bridge), int(btn_width), int(btn_height))
 
 	button.texture_normal = normal_tex
 	button.texture_pressed = pressed_tex
@@ -294,7 +294,7 @@ func create_themed_ui_component(
 	themed_comp.name = component_id
 	themed_comp.position = Vector2(pos_x, pos_y)
 	themed_comp.custom_minimum_size = Vector2(width, height)
-	themed_comp.setup(component_type, metadata_url, label_text)
+	themed_comp.setup(component_type, metadata_url, label_text, "", _bridge)
 
 	ui_layer.add_child(themed_comp)
 	_ui_buttons[component_id] = themed_comp

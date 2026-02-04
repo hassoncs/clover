@@ -21,14 +21,12 @@ type GameModule = {
   metadata?: { title: string; description?: string };
   // Optional level-based game creator functions
   createBallSortGame?: (level: number) => GameDefinition;
-  createBallSortScriptedGame?: (level: number) => GameDefinition;
 };
 
 // Registry of available test games
 // Add new games here when creating them
 const GAME_REGISTRY: Record<string, () => Promise<GameModule>> = {
   ballSort: () => import('../../../app/lib/test-games/games/ballSort/game'),
-  ballSortScripted: () => import('../../../app/lib/test-games/games/ballSortScripted/game'),
   breakoutBouncer: () => import('../../../app/lib/test-games/games/breakoutBouncer/game'),
   breakoutScripted: () => import('../../../app/lib/test-games/games/breakoutScripted/game'),
   gemCrush: () => import('../../../app/lib/test-games/games/gemCrush/game'),
@@ -60,8 +58,6 @@ export async function getTestGameAsync(id: string, level?: number): Promise<Test
     let game: GameDefinition;
     if (id === 'ballSort' && module.createBallSortGame && level !== undefined) {
       game = module.createBallSortGame(level);
-    } else if (id === 'ballSortScripted' && module.createBallSortScriptedGame && level !== undefined) {
-      game = module.createBallSortScriptedGame(level);
     } else {
       game = module.default;
     }
