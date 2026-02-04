@@ -17,7 +17,7 @@ import {
 } from '@/ai'
 import { validateGame, getValidationReportJson } from '@/validation/gameValidator';
 import type { GameValidationReport } from '@slopcade/shared/validation';
-import { isTestGameId, getTestGameAsync } from '@/dev/templateLoader';
+import { isTestGameId, getTestGameAsync, listTemplateGames } from '@/dev/templateLoader';
 
 interface GameRow {
   id: string;
@@ -51,7 +51,9 @@ function parseValidationReport(json: string | null): GameValidationReport | null
   }
 }
 
-function toClientGame(row: GameRow) {
+type GameSource = 'database' | 'template';
+
+function toClientGame(row: GameRow, source: GameSource = 'database') {
   const validationReport = parseValidationReport(row.validation_report);
 
   return {
@@ -67,6 +69,7 @@ function toClientGame(row: GameRow) {
     updatedAt: new Date(row.updated_at),
     baseGameId: row.base_game_id,
     forkedFromId: row.forked_from_id,
+    source,
     validation: validationReport ? {
       valid: row.validation_valid === 1,
       score: row.validation_score ?? 0,
@@ -117,7 +120,7 @@ export const gamesRouter = router({
       .bind(ctx.user.id)
       .all<GameRow>();
 
-    return result.results.map(toClientGame);
+    return result.results.map(row => toClientGame(row, 'database'));
   }),
 
   getPublic: publicProcedure
@@ -418,6 +421,31 @@ export const gamesRouter = router({
       const offset = input?.offset ?? 0;
       const includeCritical = input?.includeCritical ?? false;
 
+      let templateGames: ReturnType<typeof toClientGame>[] = [];
+      if (offset === 0) {
+        try {
+          const templates = await listTemplateGames();
+          templateGames = templates.map(t => ({
+            id: t.id,
+            userId: null,
+            title: t.title,
+            description: t.description,
+            definition: '',
+            thumbnailUrl: t.thumbnailUrl,
+            isPublic: true,
+            playCount: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            baseGameId: t.id,
+            forkedFromId: null,
+            source: 'template' as const,
+            validation: null,
+          }));
+        } catch (err) {
+          console.error('[games] Failed to load template games:', err);
+        }
+      }
+
       let query = `SELECT * FROM games WHERE is_public = 1 AND deleted_at IS NULL`;
       
       if (!includeCritical) {
@@ -430,7 +458,9 @@ export const gamesRouter = router({
         .bind(limit, offset)
         .all<GameRow>();
 
-      return result.results.map(toClientGame);
+      const dbGames = result.results.map(row => toClientGame(row, 'database'));
+
+      return [...templateGames, ...dbGames];
     }),
 
   validate: protectedProcedure
@@ -809,10 +839,10 @@ export const gamesRouter = router({
           const validationReport = validateGame(gameDefinition);
 
           const existing = await ctx.env.DB.prepare(
-            `SELECT id FROM games WHERE id = ? AND user_id = ? AND deleted_at IS NULL`
+            `SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL`
           )
-            .bind(template.id, SYSTEM_USER_ID)
-            .first<{ id: string }>();
+            .bind(template.id)
+            .first<{ id: string; user_id: string }>();
 
           if (existing) {
             await ctx.env.DB.prepare(
@@ -829,7 +859,7 @@ export const gamesRouter = router({
                 validation_valid = ?,
                 validation_updated_at = ?,
                 validator_version = ?
-              WHERE id = ? AND user_id = ?`
+              WHERE id = ?`
             )
               .bind(
                 template.title,
@@ -844,8 +874,7 @@ export const gamesRouter = router({
                 validationReport.valid ? 1 : 0,
                 now,
                 validationReport.validatorVersion,
-                template.id,
-                SYSTEM_USER_ID
+                template.id
               )
               .run();
 

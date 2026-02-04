@@ -1,258 +1,706 @@
-# Games Package Migration
-
-## TL;DR
-
-> **Quick Summary**: Move all test games to a new top-level `games/` package (`@slopcade/games`), update all consumers (API, Game Inspector MCP, app), and enable support for pre-bundled JSON/JS game definitions that can be loaded by the game engine.
-> 
-> **Deliverables**:
-> - `games/` package with all TypeScript game definitions
-> - Support for `.bundle/` directories with pre-compiled JSON/JS
-> - API live-scans games, bundles them, serves via `/test-games/:id` endpoint
-> - Game Inspector MCP updated to use new package
-> - All references to old `app/lib/test-games/` path removed
-> 
-> **Estimated Effort**: Medium (~1 day)
-> **Parallel Execution**: YES - 3 waves
-
----
+# Games Package Migration Plan: Standalone `@slopcade/games`
 
 ## Context
 
-### Current State (What We've Done)
+### User request summary
+Migrate test games into a standalone workspace package `games/` (`@slopcade/games`) and fix the currently broken pieces:
+- pnpm workspace registration (package resolution)
+- broken `TestGameMeta` imports inside game modules
+- inconsistent `metadata` exports across games
+- Game Inspector MCP registry pointing to the deleted old location
+- API missing `@slopcade/games` dependency
+- Future-proof: allow `games/src/registry.ts` to load from `.bundle/` when present and add a bundle compilation script.
 
-1. **Created `games/` directory** at project root
-2. **Moved games** from `app/lib/test-games/games/` to `games/`:
-   - `ballSort/` - Ball sorting puzzle with levels
-   - `breakoutBouncer/` - Breakout with bouncing mechanics
-   - `breakoutScripted/` - Scripted breakout variant
-   - `flappyBird/` - Flappy Bird clone
-   - `gemCrush/` - Match-3 style game
-   - `slopeggle/` - Peggle-style physics game
-3. **Created package structure**:
-   - `games/package.json` - `@slopcade/games` workspace package
-   - `games/src/registry.ts` - Game registry with dynamic imports
-   - `games/src/index.ts` - Package exports
-   - `games/tsconfig.json` - TypeScript config
-4. **Updated API templateLoader** to import from `@slopcade/games`
+### Codebase facts (verified)
+- `pnpm-workspace.yaml` currently does **not** include `games`.
+- `games/package.json` exists with name `@slopcade/games`, exports `./registry` and `./*/game.ts`, but no scripts.
+- `games/src/registry.ts` provides dynamic imports of `../<game>/game` and expects optional `GameModule.metadata?: { title; description? }` and optional `createLevelGame`.
+- Broken type imports exist in all 6 game modules:
+  - 5/6: `import type { TestGameMeta } from "../../../registry/types"`
+  - 1/6: `import type { TestGameMeta } from "@/lib/registry/types"`
+- `packages/game-inspector-mcp/src/registry.ts` (line ~27) points to `app/lib/test-games/games`.
+- `api/src/dev/templateLoader.ts` already imports from `@slopcade/games`, but `api/package.json` is missing the dependency.
 
-### What Still Needs Work
+### Guardrails (scope control)
+- Do **not** delete or refactor `api/scripts/sync-templates.ts`; it references `test-games.json` and an export script, but no direct path changes are required for this migration.
+- Do **not** change the Cloudflare Workers runtime behavior for the API; keep API’s dynamic import loading path working.
+- Bundle loading support in `@slopcade/games` must be **best-effort / Node-only** (fs-based) and must **fall back** to TS dynamic import when fs is unavailable (e.g., workers/browser runtimes).
 
-| Component | Status | Issue |
-|-----------|--------|-------|
-| pnpm workspace | NOT REGISTERED | `games/` not in `pnpm-workspace.yaml` |
-| API imports | BROKEN | Cannot resolve `@slopcade/games` |
-| Game Inspector MCP | BROKEN | Still references `app/lib/test-games/games` |
-| Old game.ts imports | BROKEN | Reference `../../../registry/types` which no longer exists |
-| Bundle support | NOT IMPLEMENTED | Games should support `.bundle/` directories |
-| API bundling | NEEDS UPDATE | Should compile TypeScript games to GameDefinition |
+## Task Dependency Graph
 
----
+| Task | Depends On | Reason |
+|------|------------|--------|
+| 1. Register `games` workspace | None | Package resolution must work before downstream consumers can type-check/install.
+| 2–7. Normalize each game module (imports + metadata + exports) | 1 | Type-checking the `@slopcade/games` package requires it to be a workspace package.
+| 8. Add `@slopcade/games` dependency to API | 1 | API dependency must resolve via pnpm workspace.
+| 9. Fix API dev templateLoader export mismatch (`isTestGameId`) | 8 | API must compile; routes import `isTestGameId` today.
+| 10. Fix Game Inspector MCP registry path | None | Independent change; can be done in parallel.
+| 11. Consumer verification (API + MCP) | 9, 10 | Requires consumer updates complete.
+| 12. Add bundle loading support in `games/src/registry.ts` | 2–7 | Bundle loader should not mask basic module import problems.
+| 13. Create bundle compiler script | 2–7 | Script imports/serializes game modules; needs normalized exports and metadata.
+| 14. Add `compile` script to `games/package.json` | 13 | Script must exist before wiring it into package scripts.
+| 15. Wave 3 verification (bundle compile + load) | 12–14 | Needs bundle load path and compile script wired.
 
-## Work Objectives
+## Parallel Execution Graph
 
-### Core Objective
-Create a standalone `@slopcade/games` package that:
-1. Contains all TypeScript game definitions
-2. Exports a registry for discovering/loading games
-3. Supports optional `.bundle/` directories for pre-compiled games
-4. Can be imported by API, app, and Game Inspector MCP
+Wave 1 (Foundation — start immediately after Task 1):
+├── Task 1: Register workspace package (`pnpm-workspace.yaml`)
+└── Tasks 2–7: Normalize each game module (can run in parallel per-game)
 
-### Concrete Deliverables
-- `pnpm-workspace.yaml` updated with `games` package
-- All game `game.ts` files fixed to not import from app paths
-- `games/src/registry.ts` working with dynamic imports
-- `packages/game-inspector-mcp/src/registry.ts` using new path
-- API serving games from `@slopcade/games`
-- Support for bundled JSON/JS game definitions
+Wave 2 (Consumer Updates — after Wave 1):
+├── Task 8: Add API dependency (`api/package.json`)
+├── Task 9: Fix API dev templateLoader export mismatch (`api/src/dev/templateLoader.ts`)
+├── Task 10: Fix MCP registry path (`packages/game-inspector-mcp/src/registry.ts`)
+└── Task 11: Verify API + MCP flows (depends on 9 & 10)
 
-### Definition of Done
+Wave 3 (Bundle Support — after Wave 1, but best after Wave 2 to reduce churn):
+├── Task 12: Add bundle-loading support (`games/src/registry.ts`)
+├── Task 13: Add bundle compilation script (`games/scripts/compile-bundles.ts`)
+├── Task 14: Wire `compile` script (`games/package.json`)
+└── Task 15: Verify bundle compile + load
+
+Critical Path: Task 1 → Tasks 2–7 → Task 8 → Task 9 → Task 11
+Estimated Parallel Speedup: ~35–45% vs fully sequential
+
+## Tasks
+
+### Task 1: Register `games` in pnpm workspace
+**Description**: Add `games` to the `packages:` list in `pnpm-workspace.yaml` so `@slopcade/games` resolves as a workspace package.
+
+**Exact change**:
+- File: `pnpm-workspace.yaml`
+- Add a new entry under `packages:`:
+  - `'games'`
+  - Keep ordering consistent (e.g., near `app`, `api`, etc.).
+
+**Delegation Recommendation**:
+- Category: `quick` — single-file config change.
+- Skills: [`git-master`] — safe small diff + verification commands.
+
+**Skills Evaluation**:
+- ✅ INCLUDED `git-master`: helps keep change atomic and verified.
+- ❌ OMITTED `agent-browser`: no browser automation required.
+- ❌ OMITTED `frontend-ui-ux`: no UI work.
+- ❌ OMITTED `dev-browser`: no web navigation needed.
+- ❌ OMITTED `typescript-programmer`: no TS code changes.
+- ❌ OMITTED `python-programmer`: not relevant.
+- ❌ OMITTED `svelte-programmer`: not relevant.
+- ❌ OMITTED `golang-tui-programmer`: not relevant.
+- ❌ OMITTED `python-debugger`: not relevant.
+- ❌ OMITTED `data-scientist`: not relevant.
+- ❌ OMITTED `prompt-engineer`: not relevant.
+
+**Depends On**: None
+
+**Parallelization**:
+- Can Run In Parallel: NO (this unblocks Wave 1 per-game tasks)
+
+**Acceptance Criteria**:
 - [ ] `pnpm install` succeeds
+- [ ] `pnpm list -r | grep @slopcade/games` shows `@slopcade/games`
+
+**Wave 1 Verification (after Task 1)**:
+- [ ] `pnpm install` (or `pnpm -w install`) completes cleanly
+
+---
+
+### Task 2: Normalize `games/ballSort/game.ts`
+**Description**: Remove broken `TestGameMeta` import and add consistent module-level `metadata` export. Ensure level support works with `games/src/registry.ts` by exporting `createLevelGame`.
+
+**Exact changes** (file: `games/ballSort/game.ts`):
+- Remove: `import type { TestGameMeta } from "../../../registry/types"`
+- Add near top-level:
+  - `export const metadata: { title: string; description?: string } = { title: "Ball Sort", description: "Sort colored balls into tubes - each tube should contain only one color" };`
+- Bridge level loading:
+  - Export `createLevelGame` that maps to the existing `createBallSortGame(level)`.
+  - Keep existing `export default` intact.
+
+**Delegation Recommendation**:
+- Category: `unspecified-low` — single file, but needs careful export wiring (level support).
+- Skills: [`slopcade-game-engine`] — TS export hygiene + game registry conventions.
+
+**Skills Evaluation**:
+- ✅ INCLUDED `slopcade-game-engine`: understands game module shape (`default`, `metadata`, `createLevelGame`) expected by `games/src/registry.ts`.
+- ❌ OMITTED `git-master`: no complex git needed (optional).
+- ❌ OMITTED `agent-browser`: no browser automation.
+- ❌ OMITTED `frontend-ui-ux`: no UI.
+- ❌ OMITTED `dev-browser`: not needed.
+- ❌ OMITTED `python-programmer`: not relevant.
+- ❌ OMITTED `svelte-programmer`: not relevant.
+- ❌ OMITTED `golang-tui-programmer`: not relevant.
+- ❌ OMITTED `python-debugger`: not relevant.
+- ❌ OMITTED `data-scientist`: not relevant.
+- ❌ OMITTED `prompt-engineer`: not relevant.
+
+**Depends On**: Task 1
+
+**Parallelization**:
+- Can Run In Parallel: YES (Wave 1)
+- With: Tasks 3, 4, 5, 6, 7
+
+**Acceptance Criteria**:
+- [ ] `games/ballSort/game.ts` has **no** imports from `registry/types` or app aliases
+- [ ] Exports include: `default`, `metadata`, and `createLevelGame`
 - [ ] `pnpm --filter @slopcade/games tsc --noEmit` passes
+
+---
+
+### Task 3: Normalize `games/breakoutBouncer/game.ts`
+**Description**: Remove broken `TestGameMeta` import and inline the metadata type, keeping only `{ title, description }`.
+
+**Exact changes** (file: `games/breakoutBouncer/game.ts`):
+- Remove: `import type { TestGameMeta } from "../../../registry/types"`
+- Change `export const metadata: TestGameMeta = { ... }` to:
+  - `export const metadata: { title: string; description?: string } = { ... }`
+- Ensure the metadata object contains only `title` and `description`.
+
+**Delegation Recommendation**:
+- Category: `quick` — simple type cleanup.
+- Skills: [`slopcade-game-engine`]
+
+**Skills Evaluation**:
+- ✅ INCLUDED `slopcade-game-engine`: aligns module-level `metadata` shape with `GameModule`.
+- ❌ OMITTED `git-master`: optional.
+- ❌ OMITTED `agent-browser`: none.
+- ❌ OMITTED `frontend-ui-ux`: none.
+- ❌ OMITTED `dev-browser`: none.
+- ❌ OMITTED `python-programmer`: none.
+- ❌ OMITTED `svelte-programmer`: none.
+- ❌ OMITTED `golang-tui-programmer`: none.
+- ❌ OMITTED `python-debugger`: none.
+- ❌ OMITTED `data-scientist`: none.
+- ❌ OMITTED `prompt-engineer`: none.
+
+**Depends On**: Task 1
+
+**Parallelization**:
+- Can Run In Parallel: YES (Wave 1)
+- With: Tasks 2, 4, 5, 6, 7
+
+**Acceptance Criteria**:
+- [ ] No `TestGameMeta` import remains
+- [ ] `export const metadata` exists and matches `{ title, description? }`
+- [ ] `pnpm --filter @slopcade/games tsc --noEmit` passes
+
+---
+
+### Task 4: Normalize `games/breakoutScripted/game.ts`
+**Description**: Remove broken `TestGameMeta` import and add module-level `metadata` export.
+
+**Exact changes** (file: `games/breakoutScripted/game.ts`):
+- Remove: `import type { TestGameMeta } from "../../../registry/types"`
+- Add near top-level:
+  - `export const metadata: { title: string; description?: string } = { title: "Breakout (Scripted)", description: "Breakout using direct script control - paddle follows mouse" };`
+
+**Delegation Recommendation**:
+- Category: `quick`
+- Skills: [`slopcade-game-engine`]
+
+**Skills Evaluation**:
+- ✅ INCLUDED `slopcade-game-engine`: ensures metadata aligns with registry conventions.
+- ❌ OMITTED `git-master`: optional.
+- ❌ OMITTED `agent-browser`: none.
+- ❌ OMITTED `frontend-ui-ux`: none.
+- ❌ OMITTED `dev-browser`: none.
+- ❌ OMITTED `python-programmer`: none.
+- ❌ OMITTED `svelte-programmer`: none.
+- ❌ OMITTED `golang-tui-programmer`: none.
+- ❌ OMITTED `python-debugger`: none.
+- ❌ OMITTED `data-scientist`: none.
+- ❌ OMITTED `prompt-engineer`: none.
+
+**Depends On**: Task 1
+
+**Parallelization**:
+- Can Run In Parallel: YES (Wave 1)
+- With: Tasks 2, 3, 5, 6, 7
+
+**Acceptance Criteria**:
+- [ ] `export const metadata` exists
+- [ ] No `TestGameMeta` import remains
+- [ ] `pnpm --filter @slopcade/games tsc --noEmit` passes
+
+---
+
+### Task 5: Normalize `games/flappyBird/game.ts`
+**Description**: Remove broken app-alias import for `TestGameMeta` and standardize `metadata` export shape.
+
+**Exact changes** (file: `games/flappyBird/game.ts`):
+- Remove: `import type { TestGameMeta } from "@/lib/registry/types"`
+- Update `export const metadata: TestGameMeta = { ... }` to:
+  - `export const metadata: { title: string; description?: string } = { title: "Flappy Bird", description: "Tap to fly through the pipes without hitting them" };`
+- Remove non-supported fields from module-level metadata export (e.g., `status`) to match registry’s `metadata` type.
+
+**Delegation Recommendation**:
+- Category: `quick`
+- Skills: [`slopcade-game-engine`]
+
+**Skills Evaluation**:
+- ✅ INCLUDED `slopcade-game-engine`: ensures the alias removal + metadata normalization match package conventions.
+- ❌ OMITTED `git-master`: optional.
+- ❌ OMITTED `agent-browser`: none.
+- ❌ OMITTED `frontend-ui-ux`: none.
+- ❌ OMITTED `dev-browser`: none.
+- ❌ OMITTED `python-programmer`: none.
+- ❌ OMITTED `svelte-programmer`: none.
+- ❌ OMITTED `golang-tui-programmer`: none.
+- ❌ OMITTED `python-debugger`: none.
+- ❌ OMITTED `data-scientist`: none.
+- ❌ OMITTED `prompt-engineer`: none.
+
+**Depends On**: Task 1
+
+**Parallelization**:
+- Can Run In Parallel: YES (Wave 1)
+- With: Tasks 2, 3, 4, 6, 7
+
+**Acceptance Criteria**:
+- [ ] No `@/lib/...` imports remain in this game module
+- [ ] `metadata` export is `{ title, description? }` only
+- [ ] `pnpm --filter @slopcade/games tsc --noEmit` passes
+
+---
+
+### Task 6: Normalize `games/gemCrush/game.ts`
+**Description**: Remove broken `TestGameMeta` import and add module-level `metadata` export.
+
+**Exact changes** (file: `games/gemCrush/game.ts`):
+- Remove: `import type { TestGameMeta } from "../../../registry/types"`
+- Add near top-level:
+  - `export const metadata: { title: string; description?: string } = { title: "Gem Crush", description: "Match 3 or more gems to clear them!" };`
+
+**Delegation Recommendation**:
+- Category: `quick`
+- Skills: [`slopcade-game-engine`]
+
+**Skills Evaluation**:
+- ✅ INCLUDED `slopcade-game-engine`
+- ❌ OMITTED `git-master`: optional.
+- ❌ OMITTED `agent-browser`: none.
+- ❌ OMITTED `frontend-ui-ux`: none.
+- ❌ OMITTED `dev-browser`: none.
+- ❌ OMITTED `python-programmer`: none.
+- ❌ OMITTED `svelte-programmer`: none.
+- ❌ OMITTED `golang-tui-programmer`: none.
+- ❌ OMITTED `python-debugger`: none.
+- ❌ OMITTED `data-scientist`: none.
+- ❌ OMITTED `prompt-engineer`: none.
+
+**Depends On**: Task 1
+
+**Parallelization**:
+- Can Run In Parallel: YES (Wave 1)
+- With: Tasks 2, 3, 4, 5, 7
+
+**Acceptance Criteria**:
+- [ ] `export const metadata` exists
+- [ ] No `TestGameMeta` import remains
+- [ ] `pnpm --filter @slopcade/games tsc --noEmit` passes
+
+---
+
+### Task 7: Normalize `games/slopeggle/game.ts`
+**Description**: Remove broken `TestGameMeta` import and inline metadata type.
+
+**Exact changes** (file: `games/slopeggle/game.ts`):
+- Remove: `import type { TestGameMeta } from "../../../registry/types"`
+- Change `export const metadata: TestGameMeta = { ... }` to:
+  - `export const metadata: { title: string; description?: string } = { ... }`
+
+**Delegation Recommendation**:
+- Category: `quick`
+- Skills: [`slopcade-game-engine`]
+
+**Skills Evaluation**:
+- ✅ INCLUDED `slopcade-game-engine`
+- ❌ OMITTED `git-master`: optional.
+- ❌ OMITTED `agent-browser`: none.
+- ❌ OMITTED `frontend-ui-ux`: none.
+- ❌ OMITTED `dev-browser`: none.
+- ❌ OMITTED `python-programmer`: none.
+- ❌ OMITTED `svelte-programmer`: none.
+- ❌ OMITTED `golang-tui-programmer`: none.
+- ❌ OMITTED `python-debugger`: none.
+- ❌ OMITTED `data-scientist`: none.
+- ❌ OMITTED `prompt-engineer`: none.
+
+**Depends On**: Task 1
+
+**Parallelization**:
+- Can Run In Parallel: YES (Wave 1)
+- With: Tasks 2, 3, 4, 5, 6
+
+**Acceptance Criteria**:
+- [ ] No `TestGameMeta` import remains
+- [ ] `metadata` export is `{ title, description? }`
+- [ ] `pnpm --filter @slopcade/games tsc --noEmit` passes
+
+---
+
+### Wave 1 Verification (after Tasks 1–7)
+- [ ] `pnpm install`
+- [ ] `pnpm --filter @slopcade/games tsc --noEmit`
+- [ ] `grep -r "app/lib/test-games" --include="*.ts" . | grep -v node_modules` returns empty
+
+---
+
+### Task 8: Add `@slopcade/games` dependency to API
+**Description**: Ensure API workspace explicitly depends on the games package.
+
+**Exact change**:
+- File: `api/package.json`
+- Add under `dependencies`:
+  - `"@slopcade/games": "workspace:*"`
+
+**Delegation Recommendation**:
+- Category: `quick`
+- Skills: [`git-master`] — dependency hygiene + verification.
+
+**Skills Evaluation**:
+- ✅ INCLUDED `git-master`: safe dependency edit + verify lock/workspace.
+- ❌ OMITTED `typescript-programmer`: no TS change needed.
+- ❌ OMITTED `agent-browser`: none.
+- ❌ OMITTED `frontend-ui-ux`: none.
+- ❌ OMITTED `dev-browser`: none.
+- ❌ OMITTED `python-programmer`: none.
+- ❌ OMITTED `svelte-programmer`: none.
+- ❌ OMITTED `golang-tui-programmer`: none.
+- ❌ OMITTED `python-debugger`: none.
+- ❌ OMITTED `data-scientist`: none.
+- ❌ OMITTED `prompt-engineer`: none.
+
+**Depends On**: Task 1
+
+**Parallelization**:
+- Can Run In Parallel: YES (Wave 2)
+- With: Task 10
+
+**Acceptance Criteria**:
+- [ ] `pnpm install` succeeds
 - [ ] `pnpm --filter @slopcade/api tsc --noEmit` passes
-- [ ] Game Inspector MCP can list/open all games
-- [ ] `curl localhost:8789/test-games` returns list of games
-- [ ] Opening any game in browser works
 
 ---
 
-## TODOs
+### Task 9: Fix API dev templateLoader export mismatch (`isTestGameId`)
+**Description**: `api/src/trpc/routes/games.ts` imports `isTestGameId` from `@/dev/templateLoader`, but `api/src/dev/templateLoader.ts` currently exports `isValidGameId` and `TEST_GAME_IDS` only. Align exports so API compiles.
 
-### WAVE 1: Package Setup (Foundation)
+**Exact changes**:
+- File: `api/src/dev/templateLoader.ts`
+- Ensure it exports:
+  - `export { GAME_IDS as TEST_GAME_IDS }` (already present)
+  - `export function isTestGameId(id: string): boolean` that delegates to `isValidGameId(id)`
+  - Keep `getTestGameAsync()` unchanged.
 
-- [ ] 1. Register games package in pnpm workspace
+**Delegation Recommendation**:
+- Category: `quick` — tiny TS export fix.
+- Skills: [`slopcade-game-engine`]
 
-  **What to do**:
-  1. Add `'games'` to `pnpm-workspace.yaml` packages list
-  2. Run `pnpm install` to link the package
-  3. Verify `@slopcade/games` is resolvable
+**Skills Evaluation**:
+- ✅ INCLUDED `slopcade-game-engine`: understands the dev-template loading flow and required exports.
+- ❌ OMITTED `git-master`: optional.
+- ❌ OMITTED `agent-browser`: none.
+- ❌ OMITTED `frontend-ui-ux`: none.
+- ❌ OMITTED `dev-browser`: none.
+- ❌ OMITTED `python-programmer`: none.
+- ❌ OMITTED `svelte-programmer`: none.
+- ❌ OMITTED `golang-tui-programmer`: none.
+- ❌ OMITTED `python-debugger`: none.
+- ❌ OMITTED `data-scientist`: none.
+- ❌ OMITTED `prompt-engineer`: none.
 
-  **Acceptance Criteria**:
-  - [ ] `pnpm install` completes without error
-  - [ ] `pnpm list -r | grep @slopcade/games` shows package
+**Depends On**: Task 8
 
----
+**Parallelization**:
+- Can Run In Parallel: YES (Wave 2)
+- With: Task 10 (after Task 8)
 
-- [ ] 2. Fix game.ts import paths
-
-  **What to do**:
-  1. Remove broken imports from `games/ballSort/game.ts`:
-     - `import type { TestGameMeta } from "../../../registry/types"` - DELETE this, TestGameMeta not needed
-  2. Ensure all games only import from `@slopcade/shared`
-  3. Verify each game.ts exports:
-     - `default` - GameDefinition
-     - `metadata` (optional) - { title, description }
-     - `createLevelGame` (optional) - For level-based games like ballSort
-
-  **Files to check**:
-  - `games/ballSort/game.ts`
-  - `games/breakoutBouncer/game.ts`
-  - `games/breakoutScripted/game.ts`
-  - `games/flappyBird/game.ts`
-  - `games/gemCrush/game.ts`
-  - `games/slopeggle/game.ts`
-
-  **Acceptance Criteria**:
-  - [ ] No imports reference `../../../registry/` or other app paths
-  - [ ] All games export `default: GameDefinition`
-  - [ ] `pnpm --filter @slopcade/games tsc --noEmit` passes
+**Acceptance Criteria**:
+- [ ] `api/src/dev/templateLoader.ts` exports `isTestGameId`
+- [ ] `pnpm --filter @slopcade/api tsc --noEmit` passes
 
 ---
 
-- [ ] 3. Add metadata exports to all games
+### Task 10: Fix Game Inspector MCP discovery path
+**Description**: Update MCP registry to discover games from `PROJECT_ROOT/games`.
 
-  **What to do**:
-  1. Each game.ts should export metadata for the registry:
-     ```typescript
-     export const metadata = {
-       title: "Ball Sort",
-       description: "Sort colored balls into tubes"
-     };
-     ```
-  2. This allows the registry to show titles without loading full game
+**Exact change**:
+- File: `packages/game-inspector-mcp/src/registry.ts`
+- Update line ~27:
+  - From: `join(PROJECT_ROOT, "app/lib/test-games/games")`
+  - To: `join(PROJECT_ROOT, "games")`
 
-  **Acceptance Criteria**:
-  - [ ] All 6 games export `metadata` object
+**Delegation Recommendation**:
+- Category: `quick`
+- Skills: [`slopcade-game-engine`]
 
----
+**Skills Evaluation**:
+- ✅ INCLUDED `slopcade-game-engine`: understands game discovery conventions and expected file layout.
+- ❌ OMITTED `git-master`: optional.
+- ❌ OMITTED `agent-browser`: not needed for this code change.
+- ❌ OMITTED `frontend-ui-ux`: none.
+- ❌ OMITTED `dev-browser`: none.
+- ❌ OMITTED `python-programmer`: none.
+- ❌ OMITTED `svelte-programmer`: none.
+- ❌ OMITTED `golang-tui-programmer`: none.
+- ❌ OMITTED `python-debugger`: none.
+- ❌ OMITTED `data-scientist`: none.
+- ❌ OMITTED `prompt-engineer`: none.
 
-### WAVE 2: Consumer Updates
+**Depends On**: None
 
-- [ ] 4. Update Game Inspector MCP registry
+**Parallelization**:
+- Can Run In Parallel: YES (Wave 2)
+- With: Task 8
 
-  **What to do**:
-  1. Update `packages/game-inspector-mcp/src/registry.ts`:
-     - Change `gamesDir` from `app/lib/test-games/games` to `games`
-  2. Update `packages/game-inspector-mcp/src/utils.ts`:
-     - Update URL patterns if needed
-  3. Update `packages/game-inspector-mcp/src/cli.ts`:
-     - Update any hardcoded paths
-
-  **Acceptance Criteria**:
-  - [ ] `discoverTestGames()` returns all 6 games
-  - [ ] Game paths resolve correctly
-
----
-
-- [ ] 5. Fix API templateLoader imports
-
-  **What to do**:
-  1. Verify `api/src/dev/templateLoader.ts` correctly imports from `@slopcade/games`
-  2. Add `@slopcade/games` to `api/package.json` dependencies:
-     ```json
-     "dependencies": {
-       "@slopcade/games": "workspace:*"
-     }
-     ```
-  3. Ensure the test games API endpoint works
-
-  **Acceptance Criteria**:
-  - [ ] `pnpm --filter @slopcade/api tsc --noEmit` passes
-  - [ ] API can load games via `getTestGameAsync()`
+**Acceptance Criteria**:
+- [ ] Grep shows no remaining `app/lib/test-games/games` in MCP package
+- [ ] MCP `discoverTestGames()` returns all directories that contain `games/<id>/game.ts`
 
 ---
 
-- [ ] 6. Delete old test-games references and files
+### Task 11: Consumer verification (API + MCP)
+**Description**: Verify consumers compile and can enumerate/load games.
 
-  **What to do**:
-  1. Delete `api/scripts/sync-templates.ts` (references old path)
-  2. Remove any remaining `test-games.json` files
-  3. Update `app/lib/registry/index.ts` if it exports test game types
-  4. Delete `app/lib/registry/types.ts` if only used for test games (already gone based on grep)
-  5. Search and remove any remaining references:
-     ```bash
-     grep -r "test-games" --include="*.ts" . | grep -v node_modules | grep -v games/
-     ```
+**What to do**:
+- Type-check:
+  - `pnpm --filter @slopcade/api tsc --noEmit`
+- Validate API template route via running API (dev):
+  - Start service: `pnpm dev:api` (via devmux)
+  - Verify endpoint:
+    - `curl http://localhost:8789/test-games`
+    - Expect: 200 + list that includes the 6 game IDs.
+- MCP smoke:
+  - Run MCP registry listing command(s) used by the Game Inspector toolchain (project-specific).
 
-  **Acceptance Criteria**:
-  - [ ] No references to old `app/lib/test-games/` path remain
-  - [ ] No broken imports in codebase
+**Delegation Recommendation**:
+- Category: `unspecified-low` — involves running services + smoke checks.
+- Skills: [`dev-browser`, `agent-browser`] — if verification needs browser-based Game Inspector checks.
 
----
+**Skills Evaluation**:
+- ✅ INCLUDED `dev-browser`: persistent browser checks if needed.
+- ✅ INCLUDED `agent-browser`: automate clicks/smoke if Game Inspector UI is involved.
+- ❌ OMITTED `git-master`: not core to verification.
+- ❌ OMITTED `frontend-ui-ux`: none.
+- ❌ OMITTED `typescript-programmer`: verification-only.
+- ❌ OMITTED `python-programmer`: none.
+- ❌ OMITTED `svelte-programmer`: none.
+- ❌ OMITTED `golang-tui-programmer`: none.
+- ❌ OMITTED `python-debugger`: none.
+- ❌ OMITTED `data-scientist`: none.
+- ❌ OMITTED `prompt-engineer`: none.
 
-### WAVE 3: Bundle Support (Future-Proofing)
+**Depends On**: Tasks 9, 10
 
-- [ ] 7. Add bundle loading support to games package
+**Parallelization**:
+- Can Run In Parallel: NO (verification step)
 
-  **What to do**:
-  1. Update `games/src/registry.ts` to support two loading modes:
-     - TypeScript mode (current): Dynamic import of `game.ts`
-     - Bundle mode: Load from `.bundle/` directory if it exists
-  2. Add helper function:
-     ```typescript
-     export async function loadGameFromBundle(gameId: string): Promise<GameEntry | null> {
-       // Check if .bundle/ directory exists
-       // If so, use compileBundle() from @slopcade/shared
-       // Otherwise fall back to TypeScript import
-     }
-     ```
-  3. This prepares for AI-generated pre-bundled games
-
-  **Structure for bundled games**:
-  ```
-  games/
-  ├── ballSort/
-  │   ├── game.ts           # TypeScript definition (source of truth)
-  │   └── .bundle/          # Optional pre-compiled bundle
-  │       ├── manifest.json
-  │       ├── templates/
-  │       ├── entities/
-  │       ├── rules/
-  │       └── scripts/      # Optional JS scripts
-  ```
-
-  **Acceptance Criteria**:
-  - [ ] Games with only `game.ts` still work
-  - [ ] Games with `.bundle/` directory can be loaded
-  - [ ] Bundle compilation uses `@slopcade/shared` compileBundle
+**Acceptance Criteria**:
+- [ ] `pnpm --filter @slopcade/api tsc --noEmit` passes
+- [ ] `curl http://localhost:8789/test-games` returns successfully
+- [ ] MCP discovery does not log “Games directory not found” for `PROJECT_ROOT/games`
 
 ---
 
-- [ ] 8. Add bundle compilation option to games package
-
-  **What to do**:
-  1. Create `games/scripts/compile-bundles.ts`:
-     ```typescript
-     // Compiles TypeScript games to .bundle/ format
-     // Useful for:
-     // - Performance (pre-compiled)
-     // - Testing bundle format
-     // - Generating examples for AI
-     ```
-  2. Add to `games/package.json`:
-     ```json
-     "scripts": {
-       "compile": "tsx scripts/compile-bundles.ts"
-     }
-     ```
-
-  **Acceptance Criteria**:
-  - [ ] `pnpm --filter @slopcade/games compile` generates bundles
-  - [ ] Generated bundles can be loaded by the engine
+### Wave 2 Verification (after Tasks 8–10)
+- [ ] `pnpm --filter @slopcade/api tsc --noEmit`
+- [ ] `curl http://localhost:8789/test-games` includes: `ballSort`, `breakoutBouncer`, `breakoutScripted`, `flappyBird`, `gemCrush`, `slopeggle`
 
 ---
 
-## Verification Commands
+### Task 12: Add bundle loading support to `@slopcade/games` registry
+**Description**: In `games/src/registry.ts`, prefer a precompiled bundle when `.bundle/manifest.json` and `.bundle/game.json` exist inside `games/<id>/.bundle/`, otherwise fall back to existing TS dynamic imports.
 
+**Exact changes** (file: `games/src/registry.ts`):
+- Add a `tryLoadBundledGame(id, level?)` path that:
+  - Only runs in Node-like environments (guard with `typeof process !== 'undefined' && !!process.versions?.node`).
+  - Uses dynamic `import('node:fs')` + `import('node:path')` to avoid bundler hard dependencies.
+  - Reads:
+    - `games/<id>/.bundle/manifest.json` for metadata
+    - `games/<id>/.bundle/game.json` for the `GameDefinition`
+  - Returns a `GameEntry` using manifest title/description.
+- Update `loadGame(id, level?)` to:
+  1) Attempt `tryLoadBundledGame(id, level)`
+  2) If null → existing module dynamic import path
+
+**Important edge cases / rules**:
+- If `level` is provided and the bundled format does not support levels, fall back to TS module loading (to keep Ball Sort level support working).
+- If bundle read/parse fails, log once and fall back (do not crash).
+
+**Delegation Recommendation**:
+- Category: `unspecified-low` — careful runtime-guarded fs usage.
+- Skills: [`slopcade-game-engine`] — safe dynamic imports/types + familiarity with existing shared bundle conventions.
+
+**Skills Evaluation**:
+- ✅ INCLUDED `slopcade-game-engine`: aligns bundle loading behavior with existing `shared/src/bundle/*` conventions and game registry expectations.
+- ❌ OMITTED `git-master`: optional.
+- ❌ OMITTED `agent-browser`: none.
+- ❌ OMITTED `frontend-ui-ux`: none.
+- ❌ OMITTED `dev-browser`: none.
+- ❌ OMITTED `python-programmer`: none.
+- ❌ OMITTED `svelte-programmer`: none.
+- ❌ OMITTED `golang-tui-programmer`: none.
+- ❌ OMITTED `python-debugger`: none.
+- ❌ OMITTED `data-scientist`: none.
+- ❌ OMITTED `prompt-engineer`: none.
+
+**Depends On**: Tasks 2–7
+
+**Parallelization**:
+- Can Run In Parallel: YES (Wave 3)
+- With: Tasks 13, 14
+
+**Acceptance Criteria**:
+- [ ] `pnpm --filter @slopcade/games tsc --noEmit` passes
+- [ ] In Node runtime, if `.bundle/game.json` exists for a game, `loadGame(id)` returns successfully without importing TS module
+- [ ] In non-Node runtime (or if bundle missing), TS dynamic import behavior is unchanged
+
+---
+
+### Task 13: Create bundle compilation script
+**Description**: Create a Node script to generate per-game bundles as:
+```
+games/<id>/.bundle/
+  manifest.json
+  game.json
+```
+
+**Exact changes**:
+- Create: `games/scripts/compile-bundles.ts`
+- Behavior:
+  - Enumerate game IDs from `games/src/registry.ts` (or hardcode the same list to avoid circular import).
+  - For each id:
+    - Dynamically import the TS module `../<id>/game`.
+    - Extract:
+      - `definition` from `default`
+      - module-level `metadata` export (preferred), else `definition.metadata.title/description`.
+    - Write `.bundle/manifest.json` (title/description/id/version fields).
+    - Write `.bundle/game.json` = JSON serialized `GameDefinition`.
+  - Allow a `--clean` option to remove existing `.bundle` directories before regenerating (optional but recommended).
+
+**Delegation Recommendation**:
+- Category: `unspecified-low` — new script + file IO.
+- Skills: [`slopcade-game-engine`] — TS + Node ESM + game definition serialization awareness.
+
+**Skills Evaluation**:
+- ✅ INCLUDED `slopcade-game-engine`
+- ❌ OMITTED `git-master`: optional.
+- ❌ OMITTED `agent-browser`: none.
+- ❌ OMITTED `frontend-ui-ux`: none.
+- ❌ OMITTED `dev-browser`: none.
+- ❌ OMITTED `python-programmer`: none.
+- ❌ OMITTED `svelte-programmer`: none.
+- ❌ OMITTED `golang-tui-programmer`: none.
+- ❌ OMITTED `python-debugger`: none.
+- ❌ OMITTED `data-scientist`: none.
+- ❌ OMITTED `prompt-engineer`: none.
+
+**Depends On**: Tasks 2–7
+
+**Parallelization**:
+- Can Run In Parallel: YES (Wave 3)
+- With: Task 12
+
+**Acceptance Criteria**:
+- [ ] Script runs end-to-end without throwing
+- [ ] For each game id, `.bundle/manifest.json` and `.bundle/game.json` are created
+
+---
+
+### Task 14: Add `compile` script to `games/package.json`
+**Description**: Add a `compile` script entry and ensure required dev deps are available.
+
+**Exact changes** (file: `games/package.json`):
+- Add:
+  - `"scripts": { "compile": "tsx scripts/compile-bundles.ts" }`
+- If execution fails due to missing `tsx` in package scope, add to `devDependencies`:
+  - `"tsx": "workspace:*"` (or a pinned version matching root)
+
+**Delegation Recommendation**:
+- Category: `quick`
+- Skills: [`git-master`]
+
+**Skills Evaluation**:
+- ✅ INCLUDED `git-master`
+- ❌ OMITTED `typescript-programmer`: json edit only.
+- ❌ OMITTED `agent-browser`: none.
+- ❌ OMITTED `frontend-ui-ux`: none.
+- ❌ OMITTED `dev-browser`: none.
+- ❌ OMITTED `python-programmer`: none.
+- ❌ OMITTED `svelte-programmer`: none.
+- ❌ OMITTED `golang-tui-programmer`: none.
+- ❌ OMITTED `python-debugger`: none.
+- ❌ OMITTED `data-scientist`: none.
+- ❌ OMITTED `prompt-engineer`: none.
+
+**Depends On**: Task 13
+
+**Parallelization**:
+- Can Run In Parallel: NO (blocks on Task 13 existing)
+
+**Acceptance Criteria**:
+- [ ] `pnpm --filter @slopcade/games compile` runs successfully
+
+---
+
+### Task 15: Wave 3 verification (bundle compile + bundle load)
+**Description**: Validate that bundles can be compiled and that registry prefers bundles in Node.
+
+**What to do**:
+- Generate bundles:
+  - `pnpm --filter @slopcade/games compile`
+- Verify `@slopcade/games` type-check still passes:
+  - `pnpm --filter @slopcade/games tsc --noEmit`
+- Bundle-load smoke (Node):
+  - Run a small `tsx` one-liner that imports `loadGame` and calls `await loadGame('breakoutBouncer')`.
+
+**Delegation Recommendation**:
+- Category: `unspecified-low`
+- Skills: [`slopcade-game-engine`]
+
+**Skills Evaluation**:
+- ✅ INCLUDED `slopcade-game-engine`
+- ❌ OMITTED `git-master`: optional.
+- ❌ OMITTED `agent-browser`: none.
+- ❌ OMITTED `frontend-ui-ux`: none.
+- ❌ OMITTED `dev-browser`: none.
+- ❌ OMITTED `python-programmer`: none.
+- ❌ OMITTED `svelte-programmer`: none.
+- ❌ OMITTED `golang-tui-programmer`: none.
+- ❌ OMITTED `python-debugger`: none.
+- ❌ OMITTED `data-scientist`: none.
+- ❌ OMITTED `prompt-engineer`: none.
+
+**Depends On**: Tasks 12–14
+
+**Parallelization**:
+- Can Run In Parallel: NO (verification step)
+
+**Acceptance Criteria**:
+- [ ] Bundles exist on disk under `games/*/.bundle/`
+- [ ] `loadGame(id)` succeeds when bundle exists (Node)
+
+## Commit Strategy
+
+Make atomic commits per wave:
+
+1) `fix(workspace): register games package`  
+   - Files: `pnpm-workspace.yaml`
+
+2) `fix(games): normalize game module metadata exports`  
+   - Files: `games/*/game.ts`
+
+3) `fix(mcp): discover games from top-level games dir`  
+   - Files: `packages/game-inspector-mcp/src/registry.ts`
+
+4) `fix(api): add @slopcade/games workspace dependency`  
+   - Files: `api/package.json`
+
+5) `feat(games): add bundle loading and compile script`  
+   - Files: `games/src/registry.ts`, `games/scripts/compile-bundles.ts`, `games/package.json`
+
+## Success Criteria
+
+Final verification commands:
 ```bash
 # 1. Package registration
 pnpm install
@@ -264,46 +712,7 @@ pnpm --filter @slopcade/api tsc --noEmit
 
 # 3. No old references
 grep -r "app/lib/test-games" --include="*.ts" . | grep -v node_modules
-# Should return empty
 
-# 4. Game Inspector can discover games
-# (Test after MCP is updated)
-
-# 5. API serves games
+# 4. API serves games (after starting api)
 curl http://localhost:8789/test-games
-# Should return list of games
 ```
-
----
-
-## File Summary
-
-### Files to Create/Modify
-
-| File | Action | Description |
-|------|--------|-------------|
-| `pnpm-workspace.yaml` | MODIFY | Add `games` to packages |
-| `games/ballSort/game.ts` | MODIFY | Remove broken imports |
-| `games/*/game.ts` | MODIFY | Add metadata exports |
-| `api/package.json` | MODIFY | Add `@slopcade/games` dependency |
-| `packages/game-inspector-mcp/src/registry.ts` | MODIFY | Update games path |
-| `packages/game-inspector-mcp/src/utils.ts` | MODIFY | Update URL patterns |
-| `games/scripts/compile-bundles.ts` | CREATE | Bundle compiler script |
-
-### Files to Delete
-
-| File | Reason |
-|------|--------|
-| `api/scripts/sync-templates.ts` | References old test-games path |
-| Any `.bundle/` dirs in `games/` | Will be regenerated if needed |
-
----
-
-## Success Criteria
-
-1. **Package Works**: `@slopcade/games` is a proper workspace package
-2. **TypeScript Passes**: All packages compile without errors
-3. **Games Load**: API can serve all 6 games
-4. **MCP Works**: Game Inspector can discover and open games
-5. **No Legacy**: Zero references to old `app/lib/test-games/` path
-6. **Future Ready**: Bundle loading infrastructure in place

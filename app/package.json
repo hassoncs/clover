@@ -32,6 +32,7 @@
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/slider": "^5.1.2",
     "@sentry/react-native": "~7.2.0",
+    "@slopcade/game-bundler": "workspace:*",
     "@slopcade/shared": "workspace:*",
     "@slopcade/theme": "workspace:*",
     "@slopcade/ui": "workspace:*",

@@ -1,0 +1,44 @@
+{
+  "name": "@chriscode/reggie",
+  "version": "0.1.0",
+  "description": "Auto-discover modules and generate type-safe lazy registries",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "reggie": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "registry",
+    "codegen",
+    "lazy-loading",
+    "react",
+    "metro"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "glob": "^10.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

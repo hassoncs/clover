@@ -20,17 +20,21 @@
       "cwd": ".",
       "command": "node scripts/export-godot.mjs --watch"
     },
+    "registry": {
+      "cwd": "app",
+      "command": "npx reggie --watch"
+    },
     "metro": {
       "cwd": "app",
       "command": "node ../scripts/export-godot.mjs --once && RCT_METRO_PORT=8085 npx hush run -t app -- npx expo start --dev-client --port 8085",
       "health": { "type": "port", "port": 8085 },
-      "dependsOn": ["api", "godot", "game-inspector", "game-inspector-tsc"]
+      "dependsOn": ["api", "godot", "registry", "game-inspector", "game-inspector-tsc"]
     },
     "web": {
       "cwd": "app",
       "command": "node ../scripts/export-godot.mjs --once && npx hush run -t app -- npx expo start --web --port 8085",
       "health": { "type": "port", "port": 8085 },
-      "dependsOn": ["api", "godot", "game-inspector", "game-inspector-tsc"]
+      "dependsOn": ["api", "godot", "registry", "game-inspector", "game-inspector-tsc"]
     },
     "storybook": {
       "cwd": "apps/storybook",

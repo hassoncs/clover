@@ -1,0 +1,56 @@
+[
+  {
+    "id": "ball-hits-brick",
+    "description": "Ball destroys brick and adds score",
+    "trigger": {
+      "type": "collision",
+      "entityA": { "tag": "ball" },
+      "entityB": { "tag": "brick" }
+    },
+    "actions": [
+      { "type": "destroy", "target": "entityB" },
+      { "type": "addScore", "amount": 10 },
+      { "type": "playSound", "sound": "hit" }
+    ]
+  },
+  {
+    "id": "ball-enters-death-zone",
+    "description": "Ball falls below paddle - lose a life",
+    "trigger": {
+      "type": "collision",
+      "entityA": { "tag": "ball" },
+      "entityB": { "tag": "deathZone" }
+    },
+    "actions": [
+      { "type": "subtractLife", "amount": 1 },
+      { "type": "respawnEntity", "entityId": "ball", "position": { "x": 0, "y": 0 }, "velocity": { "x": 4, "y": -6 } },
+      { "type": "playSound", "sound": "lose" }
+    ]
+  },
+  {
+    "id": "win-condition",
+    "description": "Win when all bricks destroyed",
+    "trigger": {
+      "type": "entityCount",
+      "tag": "brick",
+      "comparison": "equals",
+      "value": 0
+    },
+    "actions": [
+      { "type": "win" }
+    ]
+  },
+  {
+    "id": "lose-condition",
+    "description": "Lose when out of lives",
+    "trigger": {
+      "type": "variableCompare",
+      "variable": "lives",
+      "comparison": "lessThanOrEqual",
+      "value": 0
+    },
+    "actions": [
+      { "type": "lose" }
+    ]
+  }
+]

@@ -1,0 +1,78 @@
+[
+  {
+    "id": "paddle",
+    "template": "paddle",
+    "transform": { "x": 0, "y": -7 }
+  },
+  {
+    "id": "ball",
+    "template": "ball",
+    "transform": { "x": 0, "y": 0 },
+    "initialVelocity": { "x": 4, "y": -6 }
+  },
+  {
+    "id": "leftWall",
+    "template": "wall",
+    "transform": { "x": -6.25, "y": 0 }
+  },
+  {
+    "id": "rightWall",
+    "template": "wall",
+    "transform": { "x": 6.25, "y": 0 }
+  },
+  {
+    "id": "topWall",
+    "template": "topWall",
+    "transform": { "x": 0, "y": 8.25 }
+  },
+  {
+    "id": "deathZone",
+    "template": "deathZone",
+    "transform": { "x": 0, "y": -8.5 }
+  },
+  {
+    "id": "brick-1",
+    "template": "brick",
+    "transform": { "x": -4, "y": 5 }
+  },
+  {
+    "id": "brick-2",
+    "template": "brick",
+    "transform": { "x": -2, "y": 5 }
+  },
+  {
+    "id": "brick-3",
+    "template": "brick",
+    "transform": { "x": 0, "y": 5 }
+  },
+  {
+    "id": "brick-4",
+    "template": "brick",
+    "transform": { "x": 2, "y": 5 }
+  },
+  {
+    "id": "brick-5",
+    "template": "brick",
+    "transform": { "x": 4, "y": 5 }
+  },
+  {
+    "id": "brick-6",
+    "template": "brick",
+    "transform": { "x": -3, "y": 4 }
+  },
+  {
+    "id": "brick-7",
+    "template": "brick",
+    "transform": { "x": -1, "y": 4 }
+  },
+  {
+    "id": "brick-8",
+    "template": "brick",
+    "transform": { "x": 1, "y": 4 }
+  },
+  {
+    "id": "brick-9",
+    "template": "brick",
+    "transform": { "x": 3, "y": 4 }
+  }
+]

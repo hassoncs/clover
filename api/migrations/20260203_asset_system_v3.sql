@@ -21,6 +21,7 @@ CREATE TABLE assets (
   width INTEGER,
   height INTEGER,
   creator_user_id TEXT REFERENCES users(id),
+  owner_game_id TEXT REFERENCES games(id),
   source TEXT NOT NULL DEFAULT 'generated' CHECK (source IN ('generated', 'uploaded')),
   theme_id TEXT REFERENCES themes(id),
   compiled_prompt TEXT,
@@ -32,6 +33,7 @@ CREATE TABLE assets (
 CREATE INDEX idx_assets_theme ON assets(theme_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_assets_creator ON assets(creator_user_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_assets_r2_key ON assets(r2_key) WHERE deleted_at IS NULL;
+CREATE INDEX idx_assets_owner_game ON assets(owner_game_id) WHERE deleted_at IS NULL;
 
 CREATE TABLE asset_packs (
   id TEXT PRIMARY KEY,

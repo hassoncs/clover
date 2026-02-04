@@ -1,12 +1,17 @@
 {
-  "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": ".",
-    "composite": true,
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "declaration": true,
-    "declarationMap": true
+    "declarationMap": true,
+    "outDir": "./dist",
+    "rootDir": "."
   },
-  "include": ["src/**/*", "*/game.ts", "*/__tests__/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*", "*/*.ts"],
+  "exclude": ["node_modules", "dist", "*/__tests__/**"]
 }

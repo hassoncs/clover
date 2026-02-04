@@ -4,12 +4,12 @@ import type { GameCategory, GameStatus, PlayerCount } from '@/lib/registry/types
 interface FilterBarProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
-  statusFilter: GameStatus | "all";
-  onStatusFilterChange: (status: GameStatus | "all") => void;
-  categoryFilter: GameCategory | "all";
-  onCategoryFilterChange: (category: GameCategory | "all") => void;
-  playerFilter: PlayerCount | "all";
-  onPlayerFilterChange: (players: PlayerCount | "all") => void;
+  statusFilter?: GameStatus | "all";
+  onStatusFilterChange?: (status: GameStatus | "all") => void;
+  categoryFilter?: GameCategory | "all";
+  onCategoryFilterChange?: (category: GameCategory | "all") => void;
+  playerFilter?: PlayerCount | "all";
+  onPlayerFilterChange?: (players: PlayerCount | "all") => void;
   sortBy: "newest" | "popular" | "alphabetical" | "rating";
   onSortByChange: (sort: "newest" | "popular" | "alphabetical" | "rating") => void;
   showFilters: boolean;
@@ -73,11 +73,11 @@ function FilterChip({ label, selected, onPress, compact = false }: FilterChipPro
 export function FilterBar({
   searchQuery,
   onSearchChange,
-  statusFilter,
+  statusFilter = "all",
   onStatusFilterChange,
-  categoryFilter,
+  categoryFilter = "all",
   onCategoryFilterChange,
-  playerFilter,
+  playerFilter = "all",
   onPlayerFilterChange,
   sortBy,
   onSortByChange,
@@ -86,10 +86,10 @@ export function FilterBar({
   onClearFilters,
 }: FilterBarProps) {
   const activeFilterCount = 
-    (statusFilter !== "active" ? 1 : 0) + 
+    (statusFilter !== "all" && statusFilter !== "active" ? 1 : 0) + 
     (categoryFilter !== "all" ? 1 : 0) + 
     (playerFilter !== "all" ? 1 : 0) +
-    (sortBy !== "newest" ? 1 : 0);
+    (sortBy !== "popular" ? 1 : 0);
 
   return (
     <View>
@@ -148,50 +148,56 @@ export function FilterBar({
             </View>
           </View>
 
-          <View className="mb-3">
-            <Text className="text-gray-400 text-xs mb-2 uppercase tracking-wide">Status</Text>
-            <View className="flex-row flex-wrap">
-              {STATUS_OPTIONS.map((option) => (
-                <FilterChip
-                  key={option.value}
-                  label={option.label}
-                  selected={statusFilter === option.value}
-                  onPress={() => onStatusFilterChange(option.value)}
-                  compact
-                />
-              ))}
+          {onStatusFilterChange && (
+            <View className="mb-3">
+              <Text className="text-gray-400 text-xs mb-2 uppercase tracking-wide">Status</Text>
+              <View className="flex-row flex-wrap">
+                {STATUS_OPTIONS.map((option) => (
+                  <FilterChip
+                    key={option.value}
+                    label={option.label}
+                    selected={statusFilter === option.value}
+                    onPress={() => onStatusFilterChange(option.value)}
+                    compact
+                  />
+                ))}
+              </View>
             </View>
-          </View>
+          )}
 
-          <View className="mb-3">
-            <Text className="text-gray-400 text-xs mb-2 uppercase tracking-wide">Category</Text>
-            <View className="flex-row flex-wrap">
-              {CATEGORY_OPTIONS.map((option) => (
-                <FilterChip
-                  key={option.value}
-                  label={option.label}
-                  selected={categoryFilter === option.value}
-                  onPress={() => onCategoryFilterChange(option.value)}
-                  compact
-                />
-              ))}
+          {onCategoryFilterChange && (
+            <View className="mb-3">
+              <Text className="text-gray-400 text-xs mb-2 uppercase tracking-wide">Category</Text>
+              <View className="flex-row flex-wrap">
+                {CATEGORY_OPTIONS.map((option) => (
+                  <FilterChip
+                    key={option.value}
+                    label={option.label}
+                    selected={categoryFilter === option.value}
+                    onPress={() => onCategoryFilterChange(option.value)}
+                    compact
+                  />
+                ))}
+              </View>
             </View>
-          </View>
+          )}
 
-          <View>
-            <Text className="text-gray-400 text-xs mb-2 uppercase tracking-wide">Players</Text>
-            <View className="flex-row flex-wrap">
-              {PLAYER_OPTIONS.map((option) => (
-                <FilterChip
-                  key={String(option.value)}
-                  label={option.label}
-                  selected={playerFilter === option.value}
-                  onPress={() => onPlayerFilterChange(option.value)}
-                  compact
-                />
-              ))}
+          {onPlayerFilterChange && (
+            <View>
+              <Text className="text-gray-400 text-xs mb-2 uppercase tracking-wide">Players</Text>
+              <View className="flex-row flex-wrap">
+                {PLAYER_OPTIONS.map((option) => (
+                  <FilterChip
+                    key={String(option.value)}
+                    label={option.label}
+                    selected={playerFilter === option.value}
+                    onPress={() => onPlayerFilterChange(option.value)}
+                    compact
+                  />
+                ))}
+              </View>
             </View>
-          </View>
+          )}
         </View>
       )}
     </View>

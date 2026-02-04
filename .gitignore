@@ -86,6 +86,29 @@ test-results/
 
 # Asset generation debug output
 api/debug-output/
+api/api/debug-output/
+app/debug-output/
+**/debug-output/
+
+# Debug screenshots in packages
+packages/game-inspector-mcp/*.png
+packages/game-inspector-mcp/tmp/
+packages/game-inspector-mcp/.sisyphus/evidence/
+
+# Visual test outputs
+api/src/ai/__tests__/output/
+
+# Game assets (served from CDN)
+app/assets/games/
+app/public/assets/games/
+
+# Deleted demo/example assets
+app/assets/parallax-themes/
+app/assets/examples/
+app/assets/gallery-previews/
+app/assets/tilesets/
+app/assets/generated-test/
+app/app/examples/ui_textures/
 
 # Python
 __pycache__/

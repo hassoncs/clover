@@ -1,38 +1,20 @@
 import { View, Text, Pressable, ScrollView, ActivityIndicator, RefreshControl } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { GameCategory, GameStatus, PlayerCount } from "@/lib/registry/types";
-
-const TESTGAMES: Array<{ id: string; meta: { title: string; description?: string; status?: GameStatus; category?: GameCategory; players?: PlayerCount; rating?: number; titleHeroImageUrl?: string } }> = [];
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useMemo } from "react";
 import { FilterBar } from "@/components/browse/FilterBar";
 import { GameGridCard } from "@/components/browse/GameCard";
 import { useBrowseGames } from "@/hooks/useBrowseGames";
 
-function usePrevious<T>(value: T): T | undefined {
-  const ref = useRef<T | undefined>(undefined);
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
-
-type StatusFilter = GameStatus | "all";
-type CategoryFilter = GameCategory | "all";
-type PlayerFilter = PlayerCount | "all";
 type SortOption = "newest" | "popular" | "alphabetical" | "rating";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 20;
 
 export default function BrowseScreen() {
   const router = useRouter();
   
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("active");
-  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
-  const [playerFilter, setPlayerFilter] = useState<PlayerFilter>("all");
-  const [sortBy, setSortBy] = useState<SortOption>("newest");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState<SortOption>("popular");
   const [showFilters, setShowFilters] = useState(false);
 
   const {
@@ -45,60 +27,33 @@ export default function BrowseScreen() {
     handleRefresh,
   } = useBrowseGames({ pageSize: PAGE_SIZE });
 
-  const filteredAndSortedGames = useMemo(() => {
-    let games = TESTGAMES.filter((game) => {
-      const gameStatus = game.meta.status ?? "active";
-      const gameCategory = game.meta.category;
-      const gamePlayers = game.meta.players;
+  const filteredGames = useMemo(() => {
+    let games = publicGames;
 
-      if (statusFilter !== "all" && gameStatus !== statusFilter) return false;
-      if (categoryFilter !== "all" && gameCategory !== categoryFilter) return false;
-      if (playerFilter !== "all" && gamePlayers !== playerFilter) return false;
-      
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        const matchesTitle = game.meta.title.toLowerCase().includes(query);
-        const matchesDescription = game.meta.description?.toLowerCase().includes(query);
-        if (!matchesTitle && !matchesDescription) return false;
-      }
-      
-      return true;
-    });
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      games = games.filter(game => {
+        const matchesTitle = game.title.toLowerCase().includes(query);
+        const matchesDescription = game.description?.toLowerCase().includes(query);
+        return matchesTitle || matchesDescription;
+      });
+    }
 
-    games = [...games].sort((a, b) => {
+    return [...games].sort((a, b) => {
       switch (sortBy) {
         case "alphabetical":
-          return a.meta.title.localeCompare(b.meta.title);
+          return a.title.localeCompare(b.title);
         case "popular":
-          return 0;
-        case "rating":
-          return (b.meta.rating ?? 0) - (a.meta.rating ?? 0);
+          return b.playCount - a.playCount;
         case "newest":
         default:
-          return 0;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }
     });
-
-    return games;
-  }, [statusFilter, categoryFilter, playerFilter, searchQuery, sortBy]);
-
-  const paginatedGames = useMemo(() => {
-    const startIndex = (currentPage - 1) * PAGE_SIZE;
-    return filteredAndSortedGames.slice(startIndex, startIndex + PAGE_SIZE);
-  }, [filteredAndSortedGames, currentPage]);
-
-  const filterKey = `${statusFilter}-${categoryFilter}-${playerFilter}-${searchQuery}-${sortBy}`;
-  const prevFilterKey = usePrevious(filterKey);
-  
-  if (filterKey !== prevFilterKey && currentPage !== 1) {
-    setCurrentPage(1);
-  }
+  }, [publicGames, searchQuery, sortBy]);
 
   const clearFilters = () => {
-    setStatusFilter("active");
-    setCategoryFilter("all");
-    setPlayerFilter("all");
-    setSortBy("newest");
+    setSortBy("popular");
     setSearchQuery("");
   };
 
@@ -125,12 +80,6 @@ export default function BrowseScreen() {
           <FilterBar
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
-            statusFilter={statusFilter}
-            onStatusFilterChange={setStatusFilter}
-            categoryFilter={categoryFilter}
-            onCategoryFilterChange={setCategoryFilter}
-            playerFilter={playerFilter}
-            onPlayerFilterChange={setPlayerFilter}
             sortBy={sortBy}
             onSortByChange={setSortBy}
             showFilters={showFilters}
@@ -140,48 +89,10 @@ export default function BrowseScreen() {
 
           <View className="mb-6">
             <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-lg font-semibold text-white">Template Games</Text>
-              <Text className="text-gray-500 text-sm">
-                {filteredAndSortedGames.length} {filteredAndSortedGames.length === 1 ? "game" : "games"}
-              </Text>
-            </View>
-
-            {filteredAndSortedGames.length === 0 ? (
-              <View className="p-6 bg-gray-800 rounded-xl border border-gray-700 items-center">
-                <Text className="text-4xl mb-3">🎮</Text>
-                <Text className="text-gray-400 text-center">
-                  No games match your filters.
-                </Text>
-                <Pressable onPress={clearFilters} className="mt-3">
-                  <Text className="text-indigo-400 font-medium">Clear filters</Text>
-                </Pressable>
-              </View>
-            ) : (
-              <View className="flex-row flex-wrap justify-between">
-                {filteredAndSortedGames.map((game) => (
-                  <GameGridCard
-                    key={game.id}
-                    title={game.meta.title}
-                    status={game.meta.status}
-                    category={game.meta.category}
-                    players={game.meta.players}
-                    thumbnailUrl={game.meta.titleHeroImageUrl}
-                    onPress={() => router.push({ 
-                      pathname: "/game-detail/[id]", 
-                      params: { id: game.id, source: "template" } 
-                    })}
-                  />
-                ))}
-              </View>
-            )}
-          </View>
-
-          <View className="mb-6">
-            <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-lg font-semibold text-white">Community Games</Text>
-              {!isLoadingPublic && publicGames.length > 0 && (
+              <Text className="text-lg font-semibold text-white">Games</Text>
+              {!isLoadingPublic && filteredGames.length > 0 && (
                 <Text className="text-gray-500 text-sm">
-                  {publicGames.length} {publicGames.length === 1 ? "game" : "games"}
+                  {filteredGames.length} {filteredGames.length === 1 ? "game" : "games"}
                 </Text>
               )}
             </View>
@@ -189,27 +100,32 @@ export default function BrowseScreen() {
             {isLoadingPublic ? (
               <View className="items-center py-12">
                 <ActivityIndicator size="large" color="#4CAF50" />
-                <Text className="text-gray-400 mt-4">Loading community games...</Text>
+                <Text className="text-gray-400 mt-4">Loading games...</Text>
               </View>
-            ) : publicGames.length === 0 ? (
+            ) : filteredGames.length === 0 ? (
               <View className="p-6 bg-gray-800 rounded-xl border border-gray-700 items-center">
-                <Text className="text-4xl mb-3">🌟</Text>
+                <Text className="text-4xl mb-3">🎮</Text>
                 <Text className="text-gray-400 text-center">
-                  No public games yet.{"\n"}Be the first to publish!
+                  {searchQuery ? "No games match your search." : "No games available yet."}
                 </Text>
+                {searchQuery && (
+                  <Pressable onPress={clearFilters} className="mt-3">
+                    <Text className="text-indigo-400 font-medium">Clear search</Text>
+                  </Pressable>
+                )}
               </View>
             ) : (
               <View className="flex-row flex-wrap justify-between">
-                {publicGames.map((game) => (
+                {filteredGames.map((game) => (
                   <GameGridCard
                     key={game.id}
                     title={game.title}
                     thumbnailUrl={game.thumbnailUrl}
-                    thumbnailEmoji="🌟"
-                    thumbnailBgClass="bg-green-900/30"
+                    thumbnailEmoji={game.source === 'template' ? '🎮' : '🌟'}
+                    thumbnailBgClass={game.source === 'template' ? 'bg-indigo-900/30' : 'bg-green-900/30'}
                     onPress={() => router.push({ 
                       pathname: "/game-detail/[id]", 
-                      params: { id: game.id, source: "database" } 
+                      params: { id: game.id, source: game.source } 
                     })}
                   />
                 ))}

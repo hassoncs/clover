@@ -49,7 +49,7 @@ interface ThemeRow {
   id: string;
   name: string;
   prompt_modifier: string;
-  style: string | null;
+  thumbnail_url: string | null;
   creator_user_id: string | null;
   is_public: number;
   created_at: number;
@@ -130,7 +130,7 @@ interface GenerationTaskRow {
 
 const assetSourceSchema = z.enum(['generated', 'uploaded']);
 
-const styleSchema = z.enum(['pixel', 'cartoon', '3d', 'flat']);
+
 
 const placementSchema = z.object({
   scale: z.number().default(1),
@@ -159,7 +159,7 @@ function toClientTheme(row: ThemeRow) {
     id: row.id,
     name: row.name,
     promptModifier: row.prompt_modifier,
-    style: row.style as 'pixel' | 'cartoon' | '3d' | 'flat' | null,
+    thumbnailUrl: row.thumbnail_url,
     creatorUserId: row.creator_user_id,
     isPublic: Boolean(row.is_public),
     createdAt: row.created_at,
@@ -1549,16 +1549,15 @@ export const assetSystemRouter = router({
       .input(z.object({
         name: z.string().min(1).max(100),
         promptModifier: z.string().min(1),
-        style: styleSchema.optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const id = crypto.randomUUID();
         const now = Date.now();
 
         await ctx.env.DB.prepare(
-          `INSERT INTO themes (id, name, prompt_modifier, style, creator_user_id, is_public, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, 0, ?, ?)`
-        ).bind(id, input.name, input.promptModifier, input.style ?? null, ctx.user.id, now, now).run();
+          `INSERT INTO themes (id, name, prompt_modifier, creator_user_id, is_public, created_at, updated_at)
+           VALUES (?, ?, ?, ?, 0, ?, ?)`
+        ).bind(id, input.name, input.promptModifier, ctx.user.id, now, now).run();
 
         return { id, createdAt: now };
       }),
@@ -1568,11 +1567,10 @@ export const assetSystemRouter = router({
         id: z.string(),
         name: z.string().min(1).max(100).optional(),
         promptModifier: z.string().min(1).optional(),
-        style: styleSchema.optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const updates: string[] = [];
-        const values: (string | null | number)[] = [];
+        const values: (string | number)[] = [];
 
         if (input.name !== undefined) {
           updates.push('name = ?');
@@ -1581,10 +1579,6 @@ export const assetSystemRouter = router({
         if (input.promptModifier !== undefined) {
           updates.push('prompt_modifier = ?');
           values.push(input.promptModifier);
-        }
-        if (input.style !== undefined) {
-          updates.push('style = ?');
-          values.push(input.style);
         }
 
         if (updates.length === 0) {
@@ -1595,9 +1589,14 @@ export const assetSystemRouter = router({
         values.push(Date.now());
 
         values.push(input.id);
-        await ctx.env.DB.prepare(
-          `UPDATE themes SET ${updates.join(', ')} WHERE id = ? AND deleted_at IS NULL`
+        values.push(ctx.user.id);
+        const result = await ctx.env.DB.prepare(
+          `UPDATE themes SET ${updates.join(', ')} WHERE id = ? AND creator_user_id = ? AND deleted_at IS NULL`
         ).bind(...values).run();
+
+        if (result.meta.changes === 0) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Theme not found or not owned by you' });
+        }
 
         return { success: true };
       }),
@@ -1606,9 +1605,14 @@ export const assetSystemRouter = router({
       .input(z.object({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
         const now = Date.now();
-        await ctx.env.DB.prepare(
-          'UPDATE themes SET deleted_at = ? WHERE id = ?'
-        ).bind(now, input.id).run();
+        const result = await ctx.env.DB.prepare(
+          'UPDATE themes SET deleted_at = ? WHERE id = ? AND creator_user_id = ?'
+        ).bind(now, input.id, ctx.user.id).run();
+
+        if (result.meta.changes === 0) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Theme not found or not owned by you' });
+        }
+
         return { success: true };
       }),
 
@@ -1626,22 +1630,143 @@ export const assetSystemRouter = router({
         return toClientTheme(row);
       }),
 
-    list: protectedProcedure
-      .query(async ({ ctx }) => {
-        const result = await ctx.env.DB.prepare(
-          'SELECT * FROM themes WHERE creator_user_id = ? AND deleted_at IS NULL ORDER BY created_at DESC'
-        ).bind(ctx.user.id).all<ThemeRow>();
+    getMine: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .query(async ({ ctx, input }) => {
+        const row = await ctx.env.DB.prepare(
+          'SELECT * FROM themes WHERE id = ? AND creator_user_id = ? AND deleted_at IS NULL'
+        ).bind(input.id, ctx.user.id).first<ThemeRow>();
 
+        if (!row) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Theme not found' });
+        }
+
+        return toClientTheme(row);
+      }),
+
+    list: protectedProcedure
+      .input(z.object({
+        limit: z.number().min(1).max(100).default(20),
+        offset: z.number().min(0).default(0),
+        query: z.string().optional()
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        const limit = input?.limit ?? 20;
+        const offset = input?.offset ?? 0;
+        const query = input?.query?.toLowerCase();
+
+        let sql = 'SELECT * FROM themes WHERE creator_user_id = ? AND deleted_at IS NULL';
+        const params: any[] = [ctx.user.id];
+
+        if (query) {
+          sql += ' AND (LOWER(name) LIKE ? OR LOWER(prompt_modifier) LIKE ?)';
+          params.push(`%${query}%`, `%${query}%`);
+        }
+
+        sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+        params.push(limit, offset);
+
+        const result = await ctx.env.DB.prepare(sql).bind(...params).all<ThemeRow>();
         return result.results.map(toClientTheme);
       }),
 
     listPublic: publicProcedure
-      .query(async ({ ctx }) => {
-        const result = await ctx.env.DB.prepare(
-          'SELECT * FROM themes WHERE is_public = 1 AND deleted_at IS NULL ORDER BY created_at DESC'
-        ).all<ThemeRow>();
+      .input(z.object({
+        limit: z.number().min(1).max(100).default(20),
+        offset: z.number().min(0).default(0),
+        query: z.string().optional()
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        const limit = input?.limit ?? 20;
+        const offset = input?.offset ?? 0;
+        const query = input?.query?.toLowerCase();
 
+        let sql = 'SELECT * FROM themes WHERE is_public = 1 AND deleted_at IS NULL';
+        const params: any[] = [];
+
+        if (query) {
+          sql += ' AND (LOWER(name) LIKE ? OR LOWER(prompt_modifier) LIKE ?)';
+          params.push(`%${query}%`, `%${query}%`);
+        }
+
+        sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+        params.push(limit, offset);
+
+        const result = await ctx.env.DB.prepare(sql).bind(...params).all<ThemeRow>();
         return result.results.map(toClientTheme);
+      }),
+
+    enhancePrompt: protectedProcedure
+      .input(z.object({
+        prompt: z.string().min(1).max(1000),
+        name: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const openrouterKey = ctx.env.OPENROUTER_API_KEY;
+        if (!openrouterKey) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'AI enhancement is not configured. Please contact support.',
+          });
+        }
+
+        const systemPrompt = `You are a game art director. Given a brief theme description, expand it into a detailed, evocative prompt that would guide AI image generation for game assets.
+
+The enhanced prompt should:
+- Be 2-3 sentences
+- Include specific visual details (colors, textures, lighting, mood)
+- Reference art styles or eras if appropriate
+- Be suitable for generating game UI elements, sprites, and backgrounds
+
+Only output the enhanced prompt, nothing else.`;
+
+        const userPrompt = input.name 
+          ? `Theme name: "${input.name}"\nOriginal prompt: "${input.prompt}"`
+          : `Original prompt: "${input.prompt}"`;
+
+        try {
+          const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${openrouterKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'openai/gpt-4o-mini',
+              messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt },
+              ],
+              max_tokens: 300,
+              temperature: 0.7,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new TRPCError({
+              code: 'INTERNAL_SERVER_ERROR',
+              message: 'Failed to enhance prompt. Please try again.',
+            });
+          }
+
+          const data = await response.json() as { choices: Array<{ message: { content: string } }> };
+          const enhancedPrompt = data.choices[0]?.message?.content?.trim();
+
+          if (!enhancedPrompt) {
+            throw new TRPCError({
+              code: 'INTERNAL_SERVER_ERROR',
+              message: 'AI returned empty response. Please try again.',
+            });
+          }
+
+          return { enhancedPrompt };
+        } catch (error) {
+          if (error instanceof TRPCError) throw error;
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to enhance prompt. Please try again.',
+          });
+        }
       }),
   }),
 
@@ -1671,7 +1796,6 @@ export const assetSystemRouter = router({
         name: z.string().min(1).max(100),
         promptModifier: z.string().min(1),
       }).optional(),
-      style: styleSchema.optional(),
       setAsActive: z.boolean().default(true),
     }))
     .mutation(async ({ ctx, input }) => {
@@ -1681,15 +1805,14 @@ export const assetSystemRouter = router({
 
       let themeId = input.themeId;
 
-      // Create new theme if requested
       if (input.newTheme) {
         const id = crypto.randomUUID();
         const now = Date.now();
 
         await ctx.env.DB.prepare(
-          `INSERT INTO themes (id, name, prompt_modifier, style, creator_user_id, is_public, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, 0, ?, ?)`
-        ).bind(id, input.newTheme.name, input.newTheme.promptModifier, input.style ?? null, ctx.user.id, now, now).run();
+          `INSERT INTO themes (id, name, prompt_modifier, creator_user_id, is_public, created_at, updated_at)
+           VALUES (?, ?, ?, ?, 0, ?, ?)`
+        ).bind(id, input.newTheme.name, input.newTheme.promptModifier, ctx.user.id, now, now).run();
 
         themeId = id;
       }
@@ -1792,7 +1915,7 @@ export const assetSystemRouter = router({
         await ctx.env.DB.prepare(
           `INSERT INTO generation_jobs (id, game_id, pack_id, theme_id, status, style, created_at)
            VALUES (?, ?, ?, ?, 'queued', ?, ?)`
-        ).bind(jobId, input.gameId, packId, themeId, input.style ?? null, now).run();
+        ).bind(jobId, input.gameId, packId, themeId, 'pixel', now).run();
 
         for (const templateId of templateIds) {
           const template = definition.templates?.[templateId];
@@ -1819,7 +1942,7 @@ export const assetSystemRouter = router({
             physicsContext.height
           );
 
-          const style = (input.style ?? 'pixel') as SpriteStyle;
+          const style: SpriteStyle = 'pixel';
 
           const compiledPrompt = buildStructuredPrompt({
             templateId,

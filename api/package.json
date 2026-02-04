@@ -15,6 +15,7 @@
     "generate:ui": "npx tsx src/cli/generate-ui.ts"
   },
   "dependencies": {
+    "@slopcade/games": "workspace:*",
     "@ai-sdk/anthropic": "^3.0.17",
     "@ai-sdk/openai": "^3.0.13",
     "@ai-sdk/provider": "^3.0.4",

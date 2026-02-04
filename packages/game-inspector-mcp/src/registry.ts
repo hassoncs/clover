@@ -24,7 +24,7 @@ export interface GameInfo {
 }
 
 export function discoverTestGames(): GameInfo[] {
-  const gamesDir = join(PROJECT_ROOT, "app/lib/test-games/games");
+  const gamesDir = join(PROJECT_ROOT, "games");
   
   if (!existsSync(gamesDir)) {
     console.error(`[registry] Games directory not found: ${gamesDir}`);

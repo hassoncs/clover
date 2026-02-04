@@ -1,0 +1,98 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`bundle compilation snapshots > produces consistent output for a simple game > pong-game-definition 1`] = `
+{
+  "constants": {
+    "BALL_SPEED": 5,
+    "PADDLE_WIDTH": 2,
+  },
+  "entities": [
+    {
+      "id": "paddle1",
+      "template": "paddle",
+      "transform": {
+        "x": 0,
+        "y": -7,
+      },
+    },
+    {
+      "id": "ball1",
+      "template": "ball",
+      "transform": {
+        "x": 0,
+        "y": 0,
+      },
+    },
+  ],
+  "metadata": {
+    "description": "Classic pong game",
+    "id": "pong",
+    "title": "Pong",
+    "version": "1.0.0",
+  },
+  "rules": [
+    {
+      "actions": [
+        {
+          "amount": 1,
+          "type": "addScore",
+        },
+      ],
+      "id": "ball-paddle-collision",
+      "trigger": {
+        "entityA": {
+          "tag": "ball",
+        },
+        "entityB": {
+          "tag": "paddle",
+        },
+        "type": "collision",
+      },
+    },
+  ],
+  "templates": {
+    "ball": {
+      "id": "ball",
+      "physics": {
+        "bodyType": "dynamic",
+        "shapes": [
+          {
+            "radius": 0.2,
+            "type": "circle",
+          },
+        ],
+      },
+      "tags": [
+        "ball",
+      ],
+    },
+    "paddle": {
+      "id": "paddle",
+      "physics": {
+        "bodyType": "kinematic",
+        "shapes": [
+          {
+            "height": 0.3,
+            "type": "box",
+            "width": 2,
+          },
+        ],
+      },
+      "tags": [
+        "paddle",
+      ],
+    },
+  },
+  "world": {
+    "bounds": {
+      "height": 16,
+      "width": 12,
+    },
+    "gravity": {
+      "x": 0,
+      "y": 0,
+    },
+    "pixelsPerMeter": 50,
+  },
+}
+`;

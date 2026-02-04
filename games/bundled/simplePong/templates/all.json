@@ -1,0 +1,141 @@
+[
+  {
+    "id": "paddle",
+    "tags": ["paddle", "player"],
+    "physics": {
+      "bodyType": "kinematic",
+      "shapes": [
+        {
+          "type": "box",
+          "width": { "const": "PADDLE_WIDTH" },
+          "height": { "const": "PADDLE_HEIGHT" }
+        }
+      ],
+      "restitution": 1,
+      "friction": 0
+    },
+    "visual": {
+      "type": "box",
+      "width": { "const": "PADDLE_WIDTH" },
+      "height": { "const": "PADDLE_HEIGHT" },
+      "fillColor": "#4ecdc4"
+    },
+    "behaviors": [
+      {
+        "type": "followPointerX",
+        "clampToWorld": true
+      }
+    ]
+  },
+  {
+    "id": "ball",
+    "tags": ["ball"],
+    "physics": {
+      "bodyType": "dynamic",
+      "shapes": [
+        {
+          "type": "circle",
+          "radius": { "const": "BALL_RADIUS" }
+        }
+      ],
+      "restitution": 1,
+      "friction": 0,
+      "linearDamping": 0,
+      "gravityScale": 0,
+      "bullet": true
+    },
+    "visual": {
+      "type": "circle",
+      "radius": { "const": "BALL_RADIUS" },
+      "fillColor": "#ff6b6b"
+    }
+  },
+  {
+    "id": "wall",
+    "tags": ["wall"],
+    "physics": {
+      "bodyType": "static",
+      "shapes": [
+        {
+          "type": "box",
+          "width": 0.5,
+          "height": 16
+        }
+      ],
+      "restitution": 1,
+      "friction": 0
+    },
+    "visual": {
+      "type": "box",
+      "width": 0.5,
+      "height": 16,
+      "fillColor": "#2d3436"
+    }
+  },
+  {
+    "id": "topWall",
+    "tags": ["wall"],
+    "physics": {
+      "bodyType": "static",
+      "shapes": [
+        {
+          "type": "box",
+          "width": 12,
+          "height": 0.5
+        }
+      ],
+      "restitution": 1,
+      "friction": 0
+    },
+    "visual": {
+      "type": "box",
+      "width": 12,
+      "height": 0.5,
+      "fillColor": "#2d3436"
+    }
+  },
+  {
+    "id": "deathZone",
+    "tags": ["deathZone"],
+    "physics": {
+      "bodyType": "static",
+      "shapes": [
+        {
+          "type": "box",
+          "width": 12,
+          "height": 0.5,
+          "isSensor": true
+        }
+      ]
+    },
+    "visual": {
+      "type": "box",
+      "width": 12,
+      "height": 0.5,
+      "fillColor": "#c0392b",
+      "opacity": 0.5
+    }
+  },
+  {
+    "id": "brick",
+    "tags": ["brick", "target"],
+    "physics": {
+      "bodyType": "static",
+      "shapes": [
+        {
+          "type": "box",
+          "width": 1,
+          "height": 0.4
+        }
+      ],
+      "restitution": 1,
+      "friction": 0
+    },
+    "visual": {
+      "type": "box",
+      "width": 1,
+      "height": 0.4,
+      "fillColor": "#e17055"
+    }
+  }
+]

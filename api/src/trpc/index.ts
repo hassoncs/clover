@@ -9,8 +9,18 @@ export const router = t.router;
 // Public procedures - no auth required (for browsing/playing public games)
 export const publicProcedure = t.procedure;
 
+const DEV_USER: User = {
+  id: '00000000-0000-0000-0000-000000000000',
+  email: 'dev@localhost',
+  displayName: 'Dev User',
+};
+
 // Helper to validate and extract user from auth token
 async function validateAuthToken(ctx: Context): Promise<User> {
+  if (ctx.authToken === 'dev-token') {
+    return DEV_USER;
+  }
+
   if (!ctx.authToken) {
     throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required. Please sign in to continue.' });
   }

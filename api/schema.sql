@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS themes (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   prompt_modifier TEXT NOT NULL,
-  style TEXT,
+  thumbnail_url TEXT,
   creator_user_id TEXT REFERENCES users(id),
   is_public INTEGER DEFAULT 0,
   created_at INTEGER NOT NULL,

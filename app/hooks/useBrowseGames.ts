@@ -12,6 +12,7 @@ interface PublicGame {
   definition: string;
   thumbnailUrl: string | null;
   isPublic: boolean;
+  source: 'database' | 'template';
 }
 
 interface UseBrowseGamesOptions {

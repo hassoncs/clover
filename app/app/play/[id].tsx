@@ -196,7 +196,6 @@ export default function PlayScreen() {
           name: genPrompt || gameDefinition.metadata.title,
           promptModifier: genPrompt || gameDefinition.metadata.title,
         },
-        style: selectedStyle,
         setAsActive: true,
       });
 

@@ -358,7 +358,7 @@ const Example = getExampleComponent("pinball"); // TS validates ID!
 |------|---------|
 | `lib/registry/types.ts` | Type definitions |
 | `lib/registry/generated/examples.ts` | Auto-generated registry (checked in) |
-| `scripts/generate-registry.mjs` | Scanner/generator script |
+| `reggie.config.ts` | Registry configuration |
 
 **Full documentation**: [docs/shared/reference/registry-system.md](../docs/shared/reference/registry-system.md)
 

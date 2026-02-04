@@ -7,7 +7,7 @@ export const ThemeSchema = z.object({
   id: z.string(),
   name: z.string(),
   promptModifier: z.string(),
-  style: z.enum(['pixel', 'cartoon', '3d', 'flat']).optional(),
+  thumbnailUrl: z.string().optional().nullable(),
   creatorUserId: z.string().optional(),
   isPublic: z.boolean(),
   createdAt: z.number(),

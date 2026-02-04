@@ -1,0 +1,26 @@
+{
+  "name": "simplePong",
+  "title": "Simple Pong",
+  "description": "A classic paddle-and-ball game. Bounce the ball to score!",
+  "version": "1.0.0",
+  "status": "active",
+  "category": "arcade",
+  "players": 1,
+  "world": {
+    "gravity": { "x": 0, "y": 0 },
+    "pixelsPerMeter": 50,
+    "bounds": { "width": 12, "height": 16 }
+  },
+  "background": {
+    "type": "solid",
+    "color": "#1a1a2e"
+  },
+  "variables": {
+    "score": 0,
+    "lives": 3
+  },
+  "ui": {
+    "showScore": true,
+    "showLives": true
+  }
+}

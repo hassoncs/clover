@@ -1,13 +1,30 @@
-/**
- * Game Registry - exports all available games and utilities for loading them.
- */
-
 import type { GameDefinition } from '@slopcade/shared';
+import { readdirSync, existsSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+// Lazy import to avoid pulling Node.js modules in Workers environment
+let _compileBundle: typeof import('@slopcade/game-bundler').compileBundle | null = null;
+async function getCompileBundle() {
+  if (!_compileBundle) {
+    const mod = await import('@slopcade/game-bundler');
+    _compileBundle = mod.compileBundle;
+  }
+  return _compileBundle;
+}
+
+const isWorkersEnv = typeof import.meta.url === 'undefined' || !import.meta.url;
+
+const __dirname = isWorkersEnv ? '' : dirname(fileURLToPath(import.meta.url));
+const GAMES_ROOT = isWorkersEnv ? '' : join(__dirname, '..');
+const COMPILED_DIR = isWorkersEnv ? '' : join(GAMES_ROOT, 'compiled');
+const BUNDLED_DIR = isWorkersEnv ? '' : join(GAMES_ROOT, 'bundled');
+
+export type GameType = 'compiled' | 'bundled';
 
 export interface GameModule {
   default: GameDefinition;
   metadata?: { title: string; description?: string };
-  /** Optional level-based game creator (e.g., ballSort) */
   createLevelGame?: (level: number) => GameDefinition;
 }
 
@@ -16,54 +33,133 @@ export interface GameEntry {
   title: string;
   description: string;
   definition: GameDefinition;
+  type: GameType;
 }
 
-/**
- * Registry of all available games.
- * Each entry maps a game ID to a dynamic import function.
- */
-export const GAME_REGISTRY: Record<string, () => Promise<GameModule>> = {
-  ballSort: () => import('../ballSort/game'),
-  breakoutBouncer: () => import('../breakoutBouncer/game'),
-  breakoutScripted: () => import('../breakoutScripted/game'),
-  flappyBird: () => import('../flappyBird/game'),
-  gemCrush: () => import('../gemCrush/game'),
-  slopeggle: () => import('../slopeggle/game'),
-};
+export interface GameRegistryEntry {
+  id: string;
+  type: GameType;
+  path: string;
+  loader: () => Promise<GameModule>;
+}
 
-/**
- * List of all available game IDs.
- */
-export const GAME_IDS = Object.keys(GAME_REGISTRY) as ReadonlyArray<string>;
+function scanCompiledGames(): GameRegistryEntry[] {
+  if (isWorkersEnv || !existsSync(COMPILED_DIR)) return [];
+  
+  const entries: GameRegistryEntry[] = [];
+  const dirs = readdirSync(COMPILED_DIR, { withFileTypes: true });
+  
+  for (const dir of dirs) {
+    if (!dir.isDirectory()) continue;
+    const gamePath = join(COMPILED_DIR, dir.name, 'game.ts');
+    if (!existsSync(gamePath)) continue;
+    
+    entries.push({
+      id: dir.name,
+      type: 'compiled',
+      path: gamePath,
+      loader: () => import(`../compiled/${dir.name}/game`),
+    });
+  }
+  
+  return entries;
+}
 
-/**
- * Check if a game ID is valid.
- */
+function scanBundledGames(): GameRegistryEntry[] {
+  if (isWorkersEnv || !existsSync(BUNDLED_DIR)) return [];
+  
+  const entries: GameRegistryEntry[] = [];
+  const dirs = readdirSync(BUNDLED_DIR, { withFileTypes: true });
+  
+  for (const dir of dirs) {
+    if (!dir.isDirectory()) continue;
+    const manifestPath = join(BUNDLED_DIR, dir.name, 'manifest.json');
+    if (!existsSync(manifestPath)) continue;
+    
+    const bundlePath = join(BUNDLED_DIR, dir.name);
+    
+    entries.push({
+      id: dir.name,
+      type: 'bundled',
+      path: bundlePath,
+      loader: async () => {
+        const compileBundle = await getCompileBundle();
+        const result = compileBundle(bundlePath);
+        if (!result.success || !result.gameDefinition) {
+          throw new Error(`Failed to compile bundle ${dir.name}: ${result.errors.map((e: { message: string }) => e.message).join(', ')}`);
+        }
+        
+        const manifest = result.rawData.manifest || {};
+        return {
+          default: result.gameDefinition,
+          metadata: {
+            title: (manifest.title as string) || dir.name,
+            description: manifest.description as string | undefined,
+          },
+        };
+      },
+    });
+  }
+  
+  return entries;
+}
+
+function buildRegistry(): Map<string, GameRegistryEntry> {
+  const registry = new Map<string, GameRegistryEntry>();
+  
+  for (const entry of scanCompiledGames()) {
+    registry.set(entry.id, entry);
+  }
+  
+  for (const entry of scanBundledGames()) {
+    if (registry.has(entry.id)) {
+      console.warn(`[games] Duplicate game ID: ${entry.id} (bundled version shadows compiled)`);
+    }
+    registry.set(entry.id, entry);
+  }
+  
+  return registry;
+}
+
+let _registry: Map<string, GameRegistryEntry> | null = null;
+
+function getRegistry(): Map<string, GameRegistryEntry> {
+  if (!_registry) {
+    _registry = buildRegistry();
+  }
+  return _registry;
+}
+
+export function getGameIds(): string[] {
+  return Array.from(getRegistry().keys()).sort();
+}
+
+export const GAME_IDS = getGameIds();
+
 export function isValidGameId(id: string): boolean {
-  return id in GAME_REGISTRY;
+  return getRegistry().has(id);
 }
 
-// Module cache for loaded games
+export function getGameType(id: string): GameType | null {
+  const entry = getRegistry().get(id);
+  return entry?.type ?? null;
+}
+
 const moduleCache = new Map<string, GameModule>();
 
-/**
- * Load a game by ID, with optional level support.
- */
 export async function loadGame(id: string, level?: number): Promise<GameEntry | null> {
-  if (!isValidGameId(id)) {
+  const entry = getRegistry().get(id);
+  if (!entry) {
     return null;
   }
 
   try {
-    // Check module cache
     let module = moduleCache.get(id);
     if (!module) {
-      const loader = GAME_REGISTRY[id];
-      module = await loader();
+      module = await entry.loader();
       moduleCache.set(id, module);
     }
 
-    // For level-based games, use the creator function
     let game: GameDefinition;
     if (module.createLevelGame && level !== undefined) {
       game = module.createLevelGame(level);
@@ -78,6 +174,7 @@ export async function loadGame(id: string, level?: number): Promise<GameEntry | 
       title: metadata?.title ?? game.metadata?.title ?? id,
       description: metadata?.description ?? game.metadata?.description ?? '',
       definition: game,
+      type: entry.type,
     };
   } catch (error) {
     console.error(`[games] Failed to load game ${id}:`, error);
@@ -85,13 +182,10 @@ export async function loadGame(id: string, level?: number): Promise<GameEntry | 
   }
 }
 
-/**
- * Load all games (useful for listing).
- */
 export async function loadAllGames(): Promise<GameEntry[]> {
   const entries: GameEntry[] = [];
   
-  for (const id of GAME_IDS) {
+  for (const id of getGameIds()) {
     const entry = await loadGame(id);
     if (entry) {
       entries.push(entry);
@@ -101,9 +195,11 @@ export async function loadAllGames(): Promise<GameEntry[]> {
   return entries;
 }
 
-/**
- * Clear the module cache (useful for hot reloading in dev).
- */
 export function clearCache(): void {
   moduleCache.clear();
+  _registry = null;
+}
+
+export function refreshRegistry(): void {
+  _registry = buildRegistry();
 }

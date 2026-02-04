@@ -108,13 +108,12 @@ const Component = await loadExample("pinball");
 
 ```
 app/
+├── reggie.config.ts          # Registry configuration (uses reggie package)
 ├── lib/registry/
 │   ├── types.ts              # Type definitions
 │   ├── index.ts              # Central export
 │   └── generated/
 │       └── examples.ts       # Auto-generated (checked in)
-├── scripts/
-│   └── generate-registry.mjs # The scanner/generator
 └── app/examples/
     ├── pinball.tsx           # Each exports metadata
     ├── avalanche.tsx
@@ -182,23 +181,26 @@ export interface ShaderEntry extends RegistryEntryBase {
 
 ### 2. Add Config
 
-```javascript
-// scripts/generate-registry.mjs
-const REGISTRY_CONFIG = [
+```typescript
+// reggie.config.ts
+import { defineConfig } from 'reggie';
+
+export default defineConfig({
   // ... existing examples config
-  {
-    name: 'shaders',
+  shaders: {
     sourceDir: 'lib/shaders',
-    outputFile: 'lib/registry/generated/shaders.ts',
-    metaType: 'ShaderMeta',
-    entryType: 'ShaderEntry',
-    idType: 'ShaderId',
-    hrefPrefix: '/shaders',
-    moduleType: 'component', // or 'data' for non-React exports
-    extensions: ['.ts'],
+    include: '**/*.ts',
     exclude: ['_registry.ts', '*.test.ts'],
+    output: 'lib/registry/generated/shaders.ts',
+    importAlias: '@/lib/shaders',
+    urlPrefix: '/shaders',
+    types: {
+      id: 'ShaderId',
+      entry: 'ShaderEntry',
+      meta: 'ShaderMeta',
+    },
   },
-];
+});
 ```
 
 ### 3. Add Metadata to Source Files
