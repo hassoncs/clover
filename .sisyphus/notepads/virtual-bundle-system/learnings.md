@@ -375,3 +375,209 @@ const createMinimalBundle = (overrides?: {
 - All 46 bundle tests pass (4 test files)
 - No TypeScript errors in new test file
 - Tests run in ~50ms total
+
+## Research Summary: Virtual Bundling System (2026-02-03)
+
+### Core Architecture
+
+The virtual bundling system converts TypeScript games to JSON bundles through a two-stage pipeline:
+
+**Stage 1: TypeScript → Bundle (Build Time)**
+- `app/scripts/build-game-bundles.mjs` executes TypeScript game files and outputs JSON to `.bundle/` directories
+- Uses `tsx --eval` to dynamically import `game.ts` and capture the exported GameDefinition
+- Optional `script.ts` is compiled via `tsc` to `scripts/game.js` in CommonJS format
+
+**Stage 2: Bundle → GameDefinition (Runtime/Compile Time)**
+- `shared/src/bundle/compiler.ts` reads `.bundle/` directory structure
+- Outputs `GameDefinition` object with all references resolved
+- Supports both `NodeFileReader` (real filesystem) and `VirtualFileReader` (in-memory)
+
+### Key Files Location
+
+| File | Purpose |
+|------|---------|
+| `/Users/hassoncs/Workspaces/Personal/slopcade/shared/src/bundle/compiler.ts` | Main bundling logic - 777 lines |
+| `/Users/hassoncs/Workspaces/Personal/slopcade/shared/src/bundle/FileReader.ts` | Filesystem abstraction (Node + Virtual) - 163 lines |
+| `/Users/hassoncs/Workspaces/Personal/slopcade/shared/src/bundle/types.ts` | Type definitions for compile results - 135 lines |
+| `/Users/hassoncs/Workspaces/Personal/slopcade/shared/src/bundle/loader.ts` | High-level bundle loading utilities - 93 lines |
+| `/Users/hassoncs/Workspaces/Personal/slopcade/app/scripts/build-game-bundles.mjs` | Build script for TypeScript → bundle conversion - 265 lines |
+
+### Bundle Output Format
+
+**Directory Structure:**
+```
+game/.bundle/
+├── manifest.json          # Game metadata (name, version, title, world config)
+├── constants.json         # Extracted constants for reference resolution
+├── assets.json           # Asset references (remoteUrl, localPath, type)
+├── templates/
+│   ├── templates.json    # Entity templates (player, enemies, etc.)
+│   └── pipes.json        # Grouped templates by type
+├── entities/
+│   └── initial.json      # Initial entity instances
+├── rules/
+│   └── gameplay.json    # Game rules (triggers, conditions, actions)
+├── scripts/
+│   └── game.js          # Compiled JavaScript (optional)
+└── assets/              # Local asset files (images, sounds)
+```
+
+**manifest.json Example:**
+```json
+{
+  "name": "ballSortScripted",
+  "version": "1.0.0",
+  "title": "Ball Sort Puzzle",
+  "description": "Sort colored balls by tapping tubes",
+  "world": { "gravity": { "x": 0, "y": 10 }, "bounds": { "width": 20, "height": 12 } },
+  "ui": { "showScore": true, "showLives": true, "backgroundColor": "#1a1a2e" }
+}
+```
+
+### How TypeScript Games Get Compiled
+
+**Step-by-step process in `build-game-bundles.mjs`:**
+
+1. **Discover games**: Scan `app/lib/test-games/games/` for directories with `game.ts`
+2. **Execute TypeScript**: Use `tsx --eval` to dynamically import the game.ts file
+3. **Parse output**: Capture the JSON output and parse it as GameDefinition
+4. **Extract metadata**: Create `manifest.json` from `gameDefinition.metadata`
+5. **Extract constants**: Create `constants.json` with world values
+6. **Write templates**: Group templates by type, write to `templates/`
+7. **Write entities**: Write initial entity instances to `entities/`
+8. **Write rules**: Write game rules to `rules/`
+9. **Compile scripts**: If `script.ts` exists, compile with `tsc` to `scripts/game.js`
+
+**Script compilation command:**
+```bash
+npx tsc \
+  --outDir .bundle/scripts \
+  --module commonjs \
+  --target es2020 \
+  --moduleResolution node \
+  --esModuleInterop \
+  --skipLibCheck \
+  --declaration false \
+  --sourceMap false \
+  script.ts
+```
+
+### Bundle Compilation API
+
+**Main entry point:**
+```typescript
+import { compileBundle } from '@slopcade/shared/bundle/compiler';
+import { VirtualFileReader, NodeFileReader } from '@slopcade/shared/bundle/FileReader';
+
+const result = compileBundle('/path/to/.bundle', {
+  fileReader: new VirtualFileReader('/virtual', filesMap)  // or NodeFileReader()
+});
+
+console.log(result.success);           // boolean
+console.log(result.gameDefinition);    // GameDefinition | null
+console.log(result.errors);            // CompileError[]
+console.log(result.warnings);          // CompileWarning[]
+console.log(result.rawData);           // RawBundleData (debugging)
+console.log(result.processedFiles);     // string[]
+```
+
+### Validation System
+
+**Two-pass validation:**
+
+1. **Pass 1 - Structural (Hard Fails):**
+   - JSON validity
+   - Required manifest.json exists
+   - Script files have exports
+   - No top-level return statements
+   - Asset references have path/remoteUrl/localPath
+   - Local asset files exist
+
+2. **Pass 2 - Semantic (Warnings):**
+   - Duplicate entity/template/rule IDs
+   - Unknown template references
+   - Unknown asset references
+   - Duplicate script exports
+   - Constant resolution cycles
+
+**Error codes:**
+- `INVALID_JSON` - JSON parse failed
+- `MISSING_FILE` - Required file missing
+- `UNKNOWN_TEMPLATE` - Entity references non-existent template
+- `UNKNOWN_ASSET` - Template references non-existent asset
+- `SCRIPT_SYNTAX_ERROR` - Script missing exports
+- `DUPLICATE_ID` - Duplicate ID in templates/entities/rules
+- `MISSING_LOCAL_ASSET` - Declared local asset file missing
+- `CONSTANT_CYCLE` - Circular constant references
+
+### Existing Tests
+
+**Test files:**
+- `/Users/hassoncs/Workspaces/Personal/slopcade/shared/src/bundle/__tests__/FileReader.test.ts` - FileReader interface tests (14 tests)
+- `/Users/hassoncs/Workspaces/Personal/slopcade/shared/src/bundle/__tests__/script-scanning.test.ts` - Script processing tests (8 tests)
+- `/Users/hassoncs/Workspaces/Personal/slopcade/shared/src/bundle/__tests__/asset-resolution.test.ts` - Asset handling tests (7 tests)
+- `/Users/hassoncs/Workspaces/Personal/slopcade/shared/src/bundle/__tests__/virtual-bundle-integration.test.ts` - Full integration tests (18 tests)
+
+**Running tests:**
+```bash
+cd shared && pnpm test                           # All tests
+cd shared && pnpm test FileReader.test.ts       # Specific file
+cd shared && pnpm test -- --run                 # Single run (no watch)
+```
+
+**Test patterns:**
+```typescript
+// Virtual bundle test pattern
+const files = new Map([
+  ['manifest.json', JSON.stringify({ name: 'test', version: '1.0.0' })],
+  ['templates/templates.json', JSON.stringify([{ id: 'player' }])],
+]);
+const reader = new VirtualFileReader('/virtual/test', files);
+const result = compileBundle('/virtual/test', { fileReader: reader });
+
+expect(result.success).toBe(true);
+expect(result.errors).toHaveLength(0);
+expect(result.gameDefinition?.metadata.id).toBe('test');
+```
+
+### Triggering Bundling
+
+**Development:**
+```bash
+pnpm build:games           # Build all test game bundles once
+pnpm build:games --watch   # Watch mode - auto-rebuild on changes
+```
+
+**Programmatic:**
+```typescript
+import { loadBundleSync } from '@slopcade/shared/bundle/loader';
+
+const result = loadBundleSync('/path/to/game/.bundle');
+if (result) {
+  console.log(result.gameDefinition);   // Ready for game engine
+  console.log(result.metadata);         // Bundle metadata
+}
+```
+
+### Key Design Patterns
+
+**FileReader Abstraction:**
+- Enables same compiler to work with real filesystem or virtual in-memory data
+- `VirtualFileReader` used for AI-generated content (no disk I/O)
+- All paths are absolute, Map keys are relative to bundle root
+
+**Script Concatenation:**
+- Scripts sorted alphabetically by basename
+- Each script preceded by separator: `// --- basename ---`
+- Last export wins on duplicates (warning emitted)
+
+**Asset Resolution:**
+- Dual support: `remoteUrl` (CDN) and `localPath` (bundled assets)
+- `localPath` relative to `assets/` directory
+- Runtime prefers `localPath` if present, falls back to `remoteUrl`
+
+**Constant References:**
+- Templates/rules can use `{ const: "CONSTANT_NAME" }` syntax
+- Resolved at compile time to actual values
+- Prevents magic numbers and enables editor-driven tweaking
+

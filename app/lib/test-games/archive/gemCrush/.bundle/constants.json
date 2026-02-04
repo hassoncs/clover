@@ -1,9 +1,0 @@
-{
-  "ASSET_BASE": "https://slopcade-api.hassoncs.workers.dev/assets/generated/gem-crush",
-  "GRID_COLS": 7,
-  "GRID_ROWS": 7,
-  "CELL_SIZE": 1.2,
-  "WORLD_WIDTH": 8.4,
-  "WORLD_HEIGHT": 8.4,
-  "GEM_SIZE": 1.02
-}

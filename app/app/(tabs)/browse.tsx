@@ -1,8 +1,9 @@
 import { View, Text, Pressable, ScrollView, ActivityIndicator, RefreshControl } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { TESTGAMES } from "@/lib/registry/generated/testGames";
 import type { GameCategory, GameStatus, PlayerCount } from "@/lib/registry/types";
+
+const TESTGAMES: Array<{ id: string; meta: { title: string; description?: string; status?: GameStatus; category?: GameCategory; players?: PlayerCount; rating?: number; titleHeroImageUrl?: string } }> = [];
 import { useState, useEffect, useMemo, useRef } from "react";
 import { FilterBar } from "@/components/browse/FilterBar";
 import { GameGridCard } from "@/components/browse/GameCard";

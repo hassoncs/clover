@@ -23,28 +23,14 @@ Physics-based game engine and AI-powered game maker built with React Native.
 
 ## Documentation
 
-### Interactive Documentation Site
-- **Live Docs**: `pnpm docs` → http://localhost:3000
-  - Auto-updating TypeScript documentation
-  - 5 interactive pages: Behaviors, Effects, Particles, Rules, Examples
-  - 7 comprehensive guides
-  - Full TypeDoc API reference
-
-### Static Documentation
 - **Project Guide**: [app/AGENTS.md](./app/AGENTS.md)
 - **Documentation Hub**: [docs/INDEX.md](./docs/INDEX.md)
 
 ## Quick Start
 
 ```bash
-# Start all development servers (Metro + API + Docs)
+# Start development (Metro + API)
 pnpm dev
-
-# Start just the documentation site
-pnpm docs
-
-# Build documentation for production
-pnpm docs:build
 
 # Run on device
 pnpm ios
