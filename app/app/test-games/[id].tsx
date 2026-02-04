@@ -2,15 +2,14 @@ import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { View, Text, Pressable, ActivityIndicator, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useQuery } from "@tanstack/react-query";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
 import { AssetLoadingScreen } from "@/components/game";
-import { trpc } from "@/lib/trpc/client";
-import { trpcReact } from "@/lib/trpc/react";
 import { useGamePreloader } from "@/lib/hooks/useGamePreloader";
 import { getStorageItem } from "@/lib/utils/storage";
-import { resolveAssetUrl } from "@/lib/config/env";
 import type { GameDefinition } from "@slopcade/shared";
 import type { ResolvedPackEntry } from "@/lib/assets/AssetManifest";
+import { mergeAssetsIntoTemplates } from "@/lib/assets/mergeAssetsIntoTemplates";
 
 export default function TestGameRunScreen() {
   const router = useRouter();
@@ -26,40 +25,56 @@ export default function TestGameRunScreen() {
   const [loadingDismissed, setLoadingDismissed] = useState(false);
   const loadingOpacity = useRef(new Animated.Value(1)).current;
 
-  // Get active pack ID from game definition
   const activePackId = gameDefinition?.assetSystem?.activePackId;
 
-  // Fetch asset pack from database
-  const packQuery = trpcReact.assetSystem.getPackByName.useQuery(
-    { name: activePackId! },
-    { 
-      enabled: !!activePackId,
-      staleTime: 5 * 60 * 1000,
-    }
-  );
+  const packQuery = useQuery({
+    queryKey: ['localPack', activePackId],
+    queryFn: async () => {
+      if (!activePackId) return null;
+      const response = await fetch(`http://localhost:8789/local-packs/${activePackId}`);
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: !!activePackId,
+    staleTime: 5 * 60 * 1000,
+  });
 
-  // Convert pack entries to ResolvedPackEntry format with full URLs
   const resolvedPackEntries = useMemo(() => {
-    if (!packQuery.data?.entries) return undefined;
+    if (!packQuery.data?.entries) {
+      console.log('[test-games] No pack entries found');
+      return undefined;
+    }
     const result: Record<string, ResolvedPackEntry> = {};
+    const { getAssetUrl } = require('@slopcade/shared');
+    const { getServerUrl } = require('@/lib/offline/local-asset-server');
+    
+    console.log('[test-games] Resolving asset pack entries:', packQuery.data.entries.length);
     for (const entry of packQuery.data.entries) {
       if (entry.r2Key) {
-        // Resolve R2 key to full URL (prepends base URL from env)
-        const fullUrl = resolveAssetUrl(entry.r2Key);
+        const fullUrl = getAssetUrl(entry.r2Key, '', {
+          offlineMode: true,
+          localServerUrl: getServerUrl(),
+          gameId: id,
+        });
         result[entry.templateId] = {
-          imageUrl: fullUrl ?? entry.r2Key,
+          imageUrl: fullUrl,
           placement: entry.placement ?? undefined,
         };
+        console.log(`[test-games] ✅ Resolved ${entry.templateId}: ${fullUrl.slice(-40)}`);
       }
     }
+    console.log('[test-games] Total resolved assets:', Object.keys(result).length);
     return result;
-  }, [packQuery.data]);
+  }, [packQuery.data, id]);
 
-  // Create enriched definition with resolved pack data
   const enrichedDefinition = useMemo(() => {
     if (!gameDefinition) return null;
-    return gameDefinition;
-  }, [gameDefinition]);
+    console.log('[test-games] 🔄 Merging assets into game definition...', {
+      hasAssets: !!resolvedPackEntries,
+      assetCount: resolvedPackEntries ? Object.keys(resolvedPackEntries).length : 0,
+    });
+    return mergeAssetsIntoTemplates(gameDefinition, resolvedPackEntries);
+  }, [gameDefinition, resolvedPackEntries]);
 
   const { phase, progress, imageUrls, startPreload, skipPreload, reset } = useGamePreloader(
     gameDefinition,
@@ -85,7 +100,7 @@ export default function TestGameRunScreen() {
     loadSavedLevel();
   }, [id]);
 
-  // Fetch game from API (works for both test games and DB games)
+  // Fetch game from local file server (template games only)
   useEffect(() => {
     if (!id) return;
 
@@ -93,10 +108,14 @@ export default function TestGameRunScreen() {
       setIsLoadingDefinition(true);
       setError(null);
       try {
-        console.log('[test-games] Fetching game from API:', id, 'level:', currentLevel);
-        const game = await trpc.games.getPublic.query({ id, level: currentLevel });
+        console.log('[test-games] Fetching game from local files:', id, 'level:', currentLevel);
+        const response = await fetch(`http://localhost:8789/local-games/${id}`);
+        if (!response.ok) {
+          throw new Error(`Failed to load game: ${response.statusText}`);
+        }
+        const game = await response.json();
         const definition = JSON.parse(game.definition) as GameDefinition;
-        console.log('[test-games] Loaded game:', definition.metadata.title, 'level:', currentLevel);
+        console.log('[test-games] Loaded game:', definition.metadata.title);
         setGameDefinition(definition);
       } catch (err) {
         console.error('[test-games] Failed to load game:', err);
@@ -163,8 +182,7 @@ export default function TestGameRunScreen() {
     }
   }, [currentLevel, reset, loadingOpacity]);
 
-  const handleGameEnd = useCallback(async (state: "won" | "lost") => {
-    // Auto-save logic moved to GameRuntime "Next Level" button
+  const handleGameEnd = useCallback(async () => {
   }, []);
 
   if (error) {
@@ -209,20 +227,23 @@ export default function TestGameRunScreen() {
         showBackground
       />
 
-      {canMountGame && (
-        <GameRuntimeWrapper
-          key={runtimeKey}
-          definition={enrichedDefinition!}
-          imageUrls={imageUrls}
-          onBackToMenu={handleBack}
-          onRequestRestart={handleReset}
-          onGameEnd={handleGameEnd}
-          onNextLevel={handleNextLevel}
-          onPreviousLevel={handlePreviousLevel}
-          debugMode={isDebugMode}
-          onReady={handleGodotReady}
-        />
-      )}
+      {canMountGame && (() => {
+        console.log('[test-games] 🚀 Mounting GameRuntime (assets merged into definition)');
+        return (
+          <GameRuntimeWrapper
+            key={runtimeKey}
+            definition={enrichedDefinition!}
+            imageUrls={imageUrls}
+            onBackToMenu={handleBack}
+            onRequestRestart={handleReset}
+            onGameEnd={handleGameEnd}
+            onNextLevel={handleNextLevel}
+            onPreviousLevel={handlePreviousLevel}
+            debugMode={isDebugMode}
+            onReady={handleGodotReady}
+          />
+        );
+      })()}
 
       {showLoadingOverlay && (
         <Animated.View 

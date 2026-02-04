@@ -228,6 +228,7 @@ func preload_textures(urls: Array, progress_callback: Callable = Callable()) -> 
 			progress_callback.call(100, 0, 0)
 		return
 
+	print("[VisualRenderer] 🔄 Starting preload for ", urls.size(), " textures")
 	_preload_progress_callback = progress_callback
 	_preload_pending_count = urls.size()
 	_preload_completed_count = 0
@@ -239,8 +240,8 @@ func preload_textures(urls: Array, progress_callback: Callable = Callable()) -> 
 			_on_preload_complete(url, false)
 			continue
 
-		# Skip if already cached
 		if _texture_loader.is_cached(url):
+			print("[VisualRenderer] ✅ Already cached: ", TextureLoader._short_url(url))
 			_on_preload_complete(url, true)
 			continue
 
@@ -539,6 +540,10 @@ func add_sprite(node: Node2D, sprite_data: Dictionary, physics_data: Dictionary,
 
 func _download_texture_for_preload(url: String) -> void:
 	_texture_loader.load_texture(url, func(texture: ImageTexture, fetched_url: String, success: bool):
+		if success:
+			print("[VisualRenderer] ✅ Preload complete: ", TextureLoader._short_url(fetched_url), " (cached=", _texture_loader.is_cached(fetched_url), ")")
+		else:
+			print("[VisualRenderer] ❌ Preload failed: ", TextureLoader._short_url(fetched_url))
 		_on_preload_complete(fetched_url, success)
 	)
 
@@ -630,10 +635,13 @@ func _add_image_sprite(node: Node2D, sprite_data: Dictionary, opacity: float, z_
 	var offset_y = sprite_data.get("offsetY", 0.0)
 
 	if url == "":
+		print("[VisualRenderer] ⚠️  Image sprite has no URL for entity: ", node.name)
 		sprite.modulate.a = opacity
 		sprite.z_index = z_index_val
 		node.add_child(sprite)
 		return
+	
+	print("[VisualRenderer] 🖼️  Adding image sprite to ", node.name, ": ", TextureLoader._short_url(url))
 
 	if url.begins_with("res://"):
 		var texture = load(url)

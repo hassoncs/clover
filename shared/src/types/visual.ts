@@ -57,6 +57,8 @@ export interface ImageVisualComponent extends BaseVisualComponent {
   tint?: string;
   imageWidth?: number;
   imageHeight?: number;
+  url?: string;
+  scale?: number;
 }
 
 export interface TextVisualComponent extends BaseVisualComponent {

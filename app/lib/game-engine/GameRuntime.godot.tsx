@@ -880,6 +880,8 @@ export function GameRuntimeGodot({
     });
   }, [showInputDebug, showPhysicsShapes, showZones, showFPS]);
 
+
+
   const setTimeScale = useCallback((scale: number, duration?: number) => {
     const controller = gameLoopControllerRef.current;
     if (controller) {

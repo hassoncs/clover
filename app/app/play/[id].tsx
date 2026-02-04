@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { View, Text, Pressable, ActivityIndicator, TextInput, Modal, ScrollView, Animated } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -10,6 +10,7 @@ import { EntityAssetList, ParallaxAssetPanel } from "../../components/assets";
 import { AssetLoadingScreen } from "../../components/game";
 import { useGamePreloader } from "@/lib/hooks/useGamePreloader";
 import type { ResolvedPackEntry } from "@/lib/assets";
+import { mergeAssetsIntoTemplates } from "@/lib/assets/mergeAssetsIntoTemplates";
 
 export default function PlayScreen() {
   const router = useRouter();
@@ -39,7 +40,16 @@ export default function PlayScreen() {
   const [loadingDismissed, setLoadingDismissed] = useState(false);
   const loadingOpacity = useRef(new Animated.Value(1)).current;
 
-  const { phase, progress, imageUrls, startPreload, skipPreload, reset } = useGamePreloader(gameDefinition, {
+  const enrichedDefinition = useMemo(() => {
+    if (!gameDefinition) return null;
+    console.log('[play] 🔄 Merging assets into game definition...', {
+      hasAssets: !!resolvedPackEntries,
+      assetCount: resolvedPackEntries ? Object.keys(resolvedPackEntries).length : 0,
+    });
+    return mergeAssetsIntoTemplates(gameDefinition, resolvedPackEntries);
+  }, [gameDefinition, resolvedPackEntries]);
+
+  const { phase, progress, imageUrls, startPreload, skipPreload, reset } = useGamePreloader(enrichedDefinition, {
     resolvedPackEntries,
   });
 
@@ -509,7 +519,7 @@ export default function PlayScreen() {
           import("@/lib/game-engine/GameRuntime.godot").then((mod) => ({
             default: () => (
               <mod.GameRuntimeGodotWithDevTools
-                  definition={gameDefinition!}
+                  definition={enrichedDefinition!}
                   onGameEnd={handleGameEnd}
                   onRequestRestart={handleRequestRestart}
                   showHUD
