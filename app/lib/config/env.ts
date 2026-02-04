@@ -30,6 +30,8 @@ export const env = {
   supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
   apiUrl: getApiUrl(),
   assetCdnUrl: 'https://slopcade-api.hassoncs.workers.dev/assets',
+  /** When true, bundled games are copied to offline storage on startup (native only) */
+  embedGames: process.env.EXPO_PUBLIC_EMBED_GAMES === 'true',
 };
 
 const ASSET_CDN_URL = env.assetCdnUrl;

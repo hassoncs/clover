@@ -17,6 +17,7 @@
   "dependencies": {
     "@slopcade/games": "workspace:*",
     "@ai-sdk/anthropic": "^3.0.17",
+    "nanoid": "^5.1.5",
     "@ai-sdk/openai": "^3.0.13",
     "@ai-sdk/provider": "^3.0.4",
     "@hono/trpc-server": "^0.3.4",

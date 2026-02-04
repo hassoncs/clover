@@ -1,111 +1,30 @@
 import type { GameDefinition, GameEntity, StackContainerConfig, EntityTemplate } from "@slopcade/shared";
-import { distributeRow } from "@slopcade/shared";
 import {
   BallSortProgressSchema,
   type BallSortProgress,
   type PersistenceConfig,
 } from "@slopcade/shared";
-import { generateVerifiedPuzzle, type PuzzleConfig, type GeneratedPuzzle } from "./puzzleGenerator";
+import {
+  WORLD_WIDTH,
+  WORLD_HEIGHT,
+  TUBE_WIDTH,
+  TUBE_HEIGHT,
+  TUBE_WALL_THICKNESS,
+  BALL_RADIUS,
+  BALL_SPACING,
+  NUM_TUBES,
+  BALLS_PER_TUBE,
+  TUBE_Y,
+  tubePositions,
+  cy,
+} from "./layout";
 
 export const metadata = {
   title: "Ball Sort",
   description: "Sort colored balls into tubes - each tube should contain only one color",
 };
 
-const BASE_WORLD_WIDTH = 12;
-const WORLD_WIDTH = 14.4;
-const WORLD_HEIGHT = 25.6;
-const WORLD_SCALE = WORLD_WIDTH / BASE_WORLD_WIDTH;
 
-const HALF_W = WORLD_WIDTH / 2;
-const HALF_H = WORLD_HEIGHT / 2;
-const cx = (x: number) => x - HALF_W;
-const cy = (y: number) => HALF_H - y;
-
-const TUBE_WIDTH = 1.4 * WORLD_SCALE;
-const TUBE_HEIGHT = 5.0 * WORLD_SCALE;
-const TUBE_WALL_THICKNESS = 0.15 * WORLD_SCALE;
-const BALL_RADIUS = 0.5 * WORLD_SCALE;
-const BALL_SPACING = 1.1 * WORLD_SCALE;
-const NUM_TUBES = 6;
-const BALLS_PER_TUBE = 4;
-const TUBE_Y = WORLD_HEIGHT * 0.625;
-
-const tubePositions = distributeRow({
-  count: NUM_TUBES,
-  containerWidth: WORLD_WIDTH,
-  itemWidth: TUBE_WIDTH,
-  align: "space-evenly",
-  padding: 0.3 * WORLD_SCALE,
-});
-
-/**
- * Generate puzzle configuration based on current level.
- * Difficulty scales with level progression.
- */
-export function getPuzzleConfigForLevel(level: number): PuzzleConfig {
-  // Level 1: Easy start with 2 colors
-  // Levels 2-3: 3 colors
-  // Levels 4+: Scale with level (max 8 colors)
-  let numColors: number;
-  if (level === 1) {
-    numColors = 2;
-  } else if (level <= 3) {
-    numColors = 3;
-  } else {
-    numColors = Math.min(8, 4 + Math.floor((level - 4) / 10));
-  }
-
-  // Levels 1-3: 1 extra tube
-  // Levels 4+: 2 extra tubes
-  const extraTubes = level <= 3 ? 1 : 2;
-
-  // Difficulty: Level 1 starts at 1, then increases every 5 levels (max 10)
-  const difficulty = Math.min(10, 1 + Math.floor((level - 1) / 5));
-
-  return {
-    numColors,
-    ballsPerColor: BALLS_PER_TUBE,
-    extraTubes,
-    difficulty,
-    seed: level * 1000, // Deterministic seed for each level
-  };
-}
-
-/**
- * Generate ball entities from puzzle layout.
- */
-function createBallEntitiesFromLayout(tubeLayout: number[][]): GameEntity[] {
-  const entities: GameEntity[] = [];
-  let ballId = 0;
-
-  for (let tubeIndex = 0; tubeIndex < NUM_TUBES; tubeIndex++) {
-    const tubeX = tubePositions[tubeIndex].x;
-    const balls = tubeLayout[tubeIndex] ?? [];
-
-    for (let slot = 0; slot < balls.length; slot++) {
-      const colorIndex = balls[slot];
-      const ballY = TUBE_Y + TUBE_HEIGHT / 2 - TUBE_WALL_THICKNESS - BALL_RADIUS - slot * BALL_SPACING;
-
-      entities.push({
-        id: `ball-${ballId}`,
-        name: `Ball ${ballId}`,
-        template: `ball${colorIndex}`,
-        tags: ["ball", `color-${colorIndex}`, `in-container-tube-${tubeIndex}`],
-        transform: {
-          x: tubeX,
-          y: cy(ballY),
-          angle: 0,
-          scaleX: 1,
-          scaleY: 1,
-        },
-      });
-      ballId++;
-    }
-  }
-
-  return entities;
-}
 
 /**
  * Create tube container configs.
@@ -178,18 +97,9 @@ export const ballSortPersistence: PersistenceConfig<BallSortProgress> = {
   },
 };
 
-/**
- * Generate the Ball Sort game definition for a specific level.
- * This allows level-based progression with persistence.
- */
-export function createBallSortGame(level: number = 1): GameDefinition {
-  const puzzleConfig = getPuzzleConfigForLevel(level);
-  const generatedPuzzle = generateVerifiedPuzzle(puzzleConfig);
-  const tubeLayout = generatedPuzzle.tubes;
-
+export function createBallSortGame(): GameDefinition {
   const tubeContainers = createTubeContainers();
   const tubeEntities = createTubeEntities();
-  const ballEntities = createBallEntitiesFromLayout(tubeLayout);
 
   const game: GameDefinition = {
     metadata: {
@@ -197,7 +107,7 @@ export function createBallSortGame(level: number = 1): GameDefinition {
       title: "Ball Sort",
       description: "Sort colored balls into tubes - each tube should contain only one color",
       instructions: "Tap a tube to pick up the top ball, then tap another tube to drop it. You can only drop on the same color or an empty tube.",
-      version: "1.1.0",
+      version: "2.0.0",
     },
     assetSystem: { activePackId: "ballSort-default" },
     world: {
@@ -211,7 +121,7 @@ export function createBallSortGame(level: number = 1): GameDefinition {
     camera: { type: "fixed", zoom: 1 },
     input: { debugInputs: true },
     variables: {
-      currentLevel: level,
+      currentLevel: 1,
       heldBallColor: -1,
       sourceTubeIndex: -1,
       heldBallId: "",
@@ -219,16 +129,10 @@ export function createBallSortGame(level: number = 1): GameDefinition {
       startTime: 0,
       _winAtElapsed: 0,
       ...Object.fromEntries(
-        Array.from({ length: NUM_TUBES }, (_, i) => [
-          `tube${i}_count`,
-          tubeLayout[i]?.length ?? 0,
-        ])
+        Array.from({ length: NUM_TUBES }, (_, i) => [`tube${i}_count`, 0])
       ),
       ...Object.fromEntries(
-        Array.from({ length: NUM_TUBES }, (_, i) => [
-          `tube${i}_topColor`,
-          tubeLayout[i]?.length > 0 ? tubeLayout[i][tubeLayout[i].length - 1] : -1,
-        ])
+        Array.from({ length: NUM_TUBES }, (_, i) => [`tube${i}_topColor`, -1])
       ),
     },
     containers: tubeContainers,
@@ -323,7 +227,6 @@ export function createBallSortGame(level: number = 1): GameDefinition {
     },
     entities: [
       ...tubeEntities,
-      ...ballEntities,
       {
         id: "tube-hover-highlight",
         name: "Tube Hover Highlight",
@@ -340,10 +243,10 @@ export function createBallSortGame(level: number = 1): GameDefinition {
     ],
     rules: [
       {
-        id: "init_start_time",
-        name: "Initialize start time",
+        id: "generate_level",
+        name: "Generate level on game start",
         trigger: { type: "gameStart" },
-        actions: [{ type: "set_variable", name: "startTime", operation: "set", value: { expr: "now()" } }],
+        actions: [{ type: "run_script", export: "generateLevel" }],
       },
       {
         id: "tap_tube_idle",
@@ -440,6 +343,5 @@ function createBallTemplate(colorIndex: number) {
 }
 
 
-// Export default game at level 1 for backward compatibility
-const defaultGame = createBallSortGame(1);
+const defaultGame = createBallSortGame();
 export default defaultGame;

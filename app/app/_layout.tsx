@@ -9,6 +9,7 @@ import * as Sentry from "@sentry/react-native";
 import { TRPCProvider } from "@/lib/trpc/react";
 import { handleNativeAuthCallback } from "@/lib/supabase/auth";
 import { AnimatedSplashScreen } from "@/components/AnimatedSplashScreen";
+import { needsInstallation, installEmbeddedGames } from "@/lib/offline/embedded-games";
 import "../global.css";
 
 Sentry.init({
@@ -21,6 +22,22 @@ Sentry.init({
 
 if (typeof window !== "undefined" && typeof global === "undefined") {
   (globalThis as any).global = globalThis;
+}
+
+function useEmbeddedGamesInstaller() {
+  useEffect(() => {
+    async function install() {
+      try {
+        if (await needsInstallation()) {
+          console.log("[EmbeddedGames] Starting installation...");
+          await installEmbeddedGames();
+        }
+      } catch (error) {
+        console.error("[EmbeddedGames] Installation failed:", error);
+      }
+    }
+    install();
+  }, []);
 }
 
 function useDeepLinkHandler() {
@@ -59,6 +76,7 @@ function useDeepLinkHandler() {
 
 function RootLayoutContent() {
   useDeepLinkHandler();
+  useEmbeddedGamesInstaller();
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />

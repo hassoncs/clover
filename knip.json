@@ -1,0 +1,38 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": "scripts/*.{js,mjs,ts}",
+      "project": "scripts/**/*.{js,mjs,ts}",
+      "expo": false
+    },
+    "app": {
+      "expo": false,
+      "entry": ["app/**/*.{ts,tsx}", "lib/**/*.{ts,tsx}", "src/**/*.{ts,tsx}"],
+      "project": ["app/**/*.{ts,tsx}", "lib/**/*.{ts,tsx}", "src/**/*.{ts,tsx}"]
+    },
+    "api": {
+      "ignoreDependencies": ["cloudflare"]
+    },
+    "landing": {},
+    "shared": {},
+    "games": {},
+    "packages/game-inspector-mcp": {
+      "entry": ["src/index.ts", "src/cli.ts", "src/http-server.ts", "src/tools/*.ts"],
+      "project": ["src/**/*.ts"]
+    },
+    "packages/*": {},
+    "apps/storybook": {
+      "expo": false
+    }
+  },
+  "ignore": [
+    "**/node_modules/**",
+    "**/*.d.ts",
+    "**/metro.config.js",
+    "**/babel.config.js"
+  ],
+  "ignoreDependencies": [
+    "typescript"
+  ]
+}

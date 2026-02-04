@@ -3,7 +3,6 @@ import { View, Text, Pressable, ActivityIndicator, ScrollView, Alert, Image } fr
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc/client";
-import { TESTGAMES_BY_ID, loadTestGame, type TestGameId } from "@/lib/registry/generated/testGames";
 import type { GameDefinition } from "@slopcade/shared";
 
 type GameSource = "template" | "database";
@@ -64,17 +63,17 @@ export default function GameDetailScreen() {
       try {
         const gameSource: GameSource = source === "database" ? "database" : "template";
 
-        if (gameSource === "template" && id && id in TESTGAMES_BY_ID) {
-          const entry = TESTGAMES_BY_ID[id as TestGameId];
-          const gameDef = await loadTestGame(id as TestGameId);
+        if (gameSource === "template" && id) {
+          const game = await trpc.games.getPublic.query({ id });
+          const definition = JSON.parse(game.definition) as GameDefinition;
           setGameInfo({
-            id: entry.id,
-            title: entry.meta.title,
-            description: entry.meta.description ?? null,
-            titleHeroImageUrl: gameDef?.metadata?.titleHeroImageUrl,
+            id: game.id,
+            title: game.title,
+            description: game.description,
+            titleHeroImageUrl: definition.metadata?.titleHeroImageUrl,
             source: "template",
           });
-        } else if (gameSource === "database") {
+        } else if (gameSource === "database" && id) {
           const game = await trpc.games.get.query({ id: id! });
           setGameInfo({
             id: game.id,
@@ -116,11 +115,12 @@ export default function GameDetailScreen() {
     setIsForking(true);
     try {
       if (gameInfo.source === "template") {
-        const definition = await loadTestGame(gameInfo.id as TestGameId);
+        const game = await trpc.games.getPublic.query({ id: gameInfo.id });
+        const definition = JSON.parse(game.definition) as GameDefinition;
         const result = await trpc.games.create.mutate({
           title: definition.metadata.title,
           description: definition.metadata.description,
-          definition: JSON.stringify(definition),
+          definition: game.definition,
           isPublic: false,
         });
         router.push(`/editor/${result.id}`);
@@ -149,7 +149,8 @@ export default function GameDetailScreen() {
       let definition: GameDefinition;
       
       if (gameInfo.source === "template") {
-        definition = await loadTestGame(gameInfo.id as TestGameId);
+        const game = await trpc.games.getPublic.query({ id: gameInfo.id });
+        definition = JSON.parse(game.definition) as GameDefinition;
       } else {
         const game = await trpc.games.get.query({ id: gameInfo.id });
         definition = JSON.parse(game.definition) as GameDefinition;

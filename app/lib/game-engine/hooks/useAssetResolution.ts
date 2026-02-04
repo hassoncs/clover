@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import type { RuntimeEntity } from '../types';
-import type { AssetPack, AssetConfig, AssetPlacement, GameDefinition, EntityTemplate, ColliderComponent, AssetUrlConfig } from '@slopcade/shared';
+import type { AssetConfig, AssetPlacement, GameDefinition, EntityTemplate, ColliderComponent, AssetUrlConfig } from '@slopcade/shared';
 import { getAssetUrl } from '@slopcade/shared';
 import { trpcReact } from '@/lib/trpc/react';
 import { env } from '@/lib/config/env';
-import { useOfflineMode } from '@/lib/offline/settings';
 import { getServerUrl } from '@/lib/offline/local-asset-server';
 
 export interface ResolvedAsset {
@@ -103,8 +103,7 @@ export function getDimensionsFromCollider(collider: ColliderComponent): { width:
 
 export function resolveAssetForEntity(
   entity: RuntimeEntity,
-  context: AssetResolutionContext,
-  templates?: Record<string, EntityTemplate>
+  context: AssetResolutionContext
 ): ResolvedAsset | null {
   const { activePackId, assetPacks, entityAssetOverrides } = context;
 
@@ -155,23 +154,38 @@ export function resolveAssetForEntity(
 
 export function useAssetResolution(
   entities: RuntimeEntity[],
-  definition: GameDefinition
+  definition: GameDefinition,
+  options?: { source?: 'template' | 'database' }
 ): Map<string, ResolvedAsset | null> {
   const activePackId = definition.assetSystem?.activePackId;
-  const { isOffline } = useOfflineMode();
+  const source = options?.source ?? 'database';
   
   const dbPackQuery = useAssetPackFromDatabase(activePackId);
+  
+  const localPackQuery = useQuery({
+    queryKey: ['localPack', activePackId],
+    queryFn: async () => {
+      if (!activePackId) return null;
+      const response = await fetch(`http://localhost:8789/local-packs/${activePackId}`);
+      if (!response.ok) return null;
+      return response.json() as Promise<DatabasePack>;
+    },
+    enabled: !!activePackId && source === 'template',
+    staleTime: 5 * 60 * 1000,
+  });
 
   return useMemo(() => {
-    if (dbPackQuery.isLoading) {
+    const packQuery = source === 'template' ? localPackQuery : dbPackQuery;
+    
+    if (packQuery.isLoading) {
       return new Map<string, ResolvedAsset | null>();
     }
 
     let mergedPacks: Record<string, any> = {};
 
-    if (dbPackQuery.data) {
-      const dbPack = convertDbPackToEmbedded(dbPackQuery.data, {
-        offlineMode: isOffline,
+    if (packQuery.data) {
+      const dbPack = convertDbPackToEmbedded(packQuery.data, {
+        offlineMode: true,
         localServerUrl: getServerUrl(),
         gameId: definition.metadata.id,
       });
@@ -196,19 +210,19 @@ export function useAssetResolution(
     const resolutionMap = new Map<string, ResolvedAsset | null>();
     
     for (const entity of entities) {
-      resolutionMap.set(entity.id, resolveAssetForEntity(entity, context, definition.templates));
+      resolutionMap.set(entity.id, resolveAssetForEntity(entity, context));
     }
 
     return resolutionMap;
   }, [
     entities,
     activePackId,
-    isOffline,
+    source,
     definition.metadata.id,
     definition.assetSystem,
     definition.templates,
-    dbPackQuery.isLoading,
-    dbPackQuery.data,
+    dbPackQuery,
+    localPackQuery,
   ]);
 }
 

@@ -336,3 +336,28 @@ export function generateVerifiedPuzzle(
   console.error("Failed to generate solvable puzzle, returning minimal state");
   return generatePuzzle({ ...config, difficulty: 1, seed: 12345 });
 }
+
+export function generateWithMinimumTubes(
+  config: Omit<PuzzleConfig, 'extraTubes'>,
+  maxAttempts: number = 3
+): GeneratedPuzzle {
+  for (let extraTubes = 1; extraTubes <= 3; extraTubes++) {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const puzzle = generatePuzzle({
+        ...config,
+        extraTubes,
+        seed: config.seed ? config.seed + attempt * 100 : undefined,
+      });
+
+      const result = isPuzzleSolvable(puzzle.tubes, config.ballsPerColor);
+      if (result.solvable) {
+        return {
+          ...puzzle,
+          minMoves: result.movesRequired ?? puzzle.minMoves,
+        };
+      }
+    }
+  }
+
+  return generatePuzzle({ ...config, extraTubes: 2, difficulty: 1, seed: 12345 });
+}

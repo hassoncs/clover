@@ -44,19 +44,24 @@
     "generate:ui": "pnpm --filter @slopcade/api generate:ui",
     "generate:registry": "cd app && npx reggie",
     "generate:registry:watch": "cd app && npx reggie --watch",
-    "generate:registry:check": "cd app && npx reggie --check"
+    "generate:registry:check": "cd app && npx reggie --check",
+    "knip": "knip"
   },
   "devDependencies": {
     "@chriscode/devmux": "link:/Users/hassoncs/Workspaces/Personal/devmux/devmux-cli",
     "@chriscode/hush": "^5.0.3",
+    "@chriscode/reggie": "workspace:*",
     "@gltf-transform/cli": "^4.3.0",
     "@types/node": "^25.0.10",
     "chokidar": "^5.0.0",
-    "@chriscode/reggie": "workspace:*",
+    "glob": "^11.0.0",
+    "knip": "^5.83.0",
     "simple-git-hooks": "^2.11.1",
     "ts-morph": "^27.0.2",
     "tsx": "^4.21.0",
-    "turbo": "^2.3.0"
+    "turbo": "^2.3.0",
+    "typescript": "^5.9.3",
+    "ws": "^8.18.0"
   },
   "simple-git-hooks": {
     "pre-commit": "./scripts/pre-commit.sh"

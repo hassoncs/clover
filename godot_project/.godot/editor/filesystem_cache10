@@ -79,7 +79,7 @@ JSBridge.gd::GDScript::5302051703392798855::1769972335::0::1::::JSBridge<>RefCou
 QuerySystem.gd::GDScript::4794659130339010814::1770054186::0::1::::QuerySystem<>RefCounted<><>0<>0<><>::
 SyncSystem.gd::GDScript::3903644578941350245::1769981414::0::1::::SyncSystem<>RefCounted<><>0<>0<><>::
 UIManager.gd::GDScript::2938340039645018513::1770158499::0::1::::UIManager<>RefCounted<><>0<>0<><>::
-VisualRenderer.gd::GDScript::3033702139520954300::1770158450::0::1::::VisualRenderer<>RefCounted<><>0<>0<><>::
+VisualRenderer.gd::GDScript::3033702139520954300::1770227764::0::1::::VisualRenderer<>RefCounted<><>0<>0<><>::
 WebSocketSystem.gd::GDScript::6579444550606019435::1769981871::0::1::::WebSocketSystem<>RefCounted<><>0<>0<><>::
 ::res://scripts/bridge/debug/::1769717226
 DebugBridge.gd::GDScript::576835227171242688::1769981392::0::1::::DebugBridge<>RefCounted<><>0<>0<><>::
@@ -129,7 +129,7 @@ CoordinateUtils.gd::GDScript::8119686888193694251::1769538422::0::1::::Coordinat
 EntityUtils.gd::GDScript::7274210162928600081::1770137208::0::1::::EntityUtils<>RefCounted<><>0<>0<><>::
 HTTPFetcher.gd::GDScript::5684943706445092715::1770136376::0::1::::HTTPFetcher<>RefCounted<><>0<>0<><>::
 ImageLoader.gd::GDScript::1348176550535554584::1770136385::0::1::::ImageLoader<>RefCounted<><>0<>0<><>::
-TextureLoader.gd::GDScript::4710411096634701084::1770139298::0::1::::TextureLoader<>RefCounted<><>0<>0<><>::
+TextureLoader.gd::GDScript::4710411096634701084::1770227225::0::1::::TextureLoader<>RefCounted<><>0<>0<><>::
 ::res://scripts/world/::1770136757
 WorldSystem.gd::GDScript::8664438311181979239::1769982624::0::1::::WorldSystem<>RefCounted<><>0<>0<><>::
 ::res://shaders/::1769538423

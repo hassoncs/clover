@@ -9,7 +9,9 @@
     "./tokens": "./src/tokens.ts",
     "./tailwind": "./src/tailwind.ts"
   },
-  "dependencies": {},
+  "dependencies": {
+    "nativewind": "^4.2.1"
+  },
   "devDependencies": {
     "typescript": "^5.4.5"
   }

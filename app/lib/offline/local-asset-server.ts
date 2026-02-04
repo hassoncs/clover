@@ -128,7 +128,10 @@ export function isServerRunning(): boolean {
  * @returns string
  */
 export function getServerUrl(): string {
-  return `http://${LOCAL_SERVER_HOST}:${LOCAL_SERVER_PORT}`;
+  if (Platform.OS === 'web') {
+    return 'http://localhost:8789/local-assets';
+  }
+  return `file://${getBaseDirectory()}`;
 }
 
 /**

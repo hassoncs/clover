@@ -6,7 +6,10 @@
   "build": {
     "base": {
       "node": "20.18.0",
-      "pnpm": "9.0.0"
+      "pnpm": "9.0.0",
+      "env": {
+        "EXPO_PUBLIC_EMBED_GAMES": "true"
+      }
     },
     "production": {
       "extends": "base",
@@ -17,10 +20,17 @@
       }
     },
     "preview": {
+      "extends": "base",
       "channel": "preview",
       "distribution": "internal",
       "ios": {
         "simulator": true
+      }
+    },
+    "development": {
+      "extends": "base",
+      "env": {
+        "EXPO_PUBLIC_EMBED_GAMES": "false"
       }
     }
   },

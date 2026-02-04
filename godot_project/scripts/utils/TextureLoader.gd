@@ -75,7 +75,6 @@ func load_texture(url: String, callback: Callable) -> void:
 
 	# Start new fetch - create callback queue
 	_in_flight[url] = [callback]
-	print("[TextureLoader] Fetching: %s" % short_url)
 
 	HTTPFetcher.fetch(_parent, url, func(body: PackedByteArray, fetched_url: String, success: bool):
 		var s_url = _short_url(fetched_url)

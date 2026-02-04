@@ -32,13 +32,32 @@ interface UseBrowseGamesReturn {
 
 export function useBrowseGames(options: UseBrowseGamesOptions = {}): UseBrowseGamesReturn {
   const pageSize = options.pageSize ?? 10;
+  const isDev = __DEV__;
 
   const [publicGames, setPublicGames] = useState<PublicGame[]>([]);
+  const [localGames, setLocalGames] = useState<PublicGame[]>([]);
   const [isLoadingPublic, setIsLoadingPublic] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [publicGamesPage, setPublicGamesPage] = useState(1);
   const [hasMorePublicGames, setHasMorePublicGames] = useState(true);
   const [totalPublicGames, setTotalPublicGames] = useState(0);
+
+  useEffect(() => {
+    if (!isDev) return;
+    
+    const fetchLocalGames = async () => {
+      try {
+        const response = await fetch('http://localhost:8789/local-games');
+        const data = await response.json();
+        setLocalGames(data.games);
+      } catch (err) {
+        console.warn('Failed to load local template games:', err);
+        setLocalGames([]);
+      }
+    };
+    
+    fetchLocalGames();
+  }, [isDev]);
 
   const fetchPublicGames = useCallback(async (page: number, showRefresh = false) => {
     if (showRefresh) setIsRefreshing(true);
@@ -51,21 +70,22 @@ export function useBrowseGames(options: UseBrowseGamesOptions = {}): UseBrowseGa
       });
       
       if (page === 1) {
-        setPublicGames(result);
+        const combined = [...localGames, ...result];
+        setPublicGames(combined);
       } else {
         setPublicGames(prev => [...prev, ...result]);
       }
       
       setHasMorePublicGames(result.length === pageSize);
-      setTotalPublicGames(prev => page === 1 ? result.length : prev);
+      setTotalPublicGames(prev => page === 1 ? result.length + localGames.length : prev);
     } catch (err) {
       console.error("Failed to load public games:", err);
-      if (page === 1) setPublicGames([]);
+      if (page === 1) setPublicGames(localGames);
     } finally {
       setIsLoadingPublic(false);
       setIsRefreshing(false);
     }
-  }, [pageSize]);
+  }, [pageSize, localGames]);
 
   const handleRefresh = useCallback(() => {
     setPublicGamesPage(1);
