@@ -3,12 +3,10 @@ import { Button } from '@slopcade/ui';
 
 export default function Index() {
   return (
-    <View className="flex-1 items-center justify-center bg-background">
-      <Text className="text-2xl font-bold mb-4 text-primary">Storybook</Text>
-      <Text className="text-base mb-8 text-secondary">Component development environment</Text>
-      <Button variant="primary" size="md">
-        Get Started
-      </Button>
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 16 }}>Storybook</Text>
+      <Text style={{ fontSize: 16, marginBottom: 32 }}>Component development environment</Text>
+      <Button variant="default" size="default" label="Get Started" />
     </View>
   );
 }
