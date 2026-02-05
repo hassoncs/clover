@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { trpc } from '@/lib/trpc/client';
-import { EMBEDDED_MANIFEST, EMBEDDED_GAME_JSONS } from '@/lib/offline/embedded-games-registry';
+import { EMBEDDED_MANIFEST, EMBEDDED_METADATA } from '@/lib/offline/embedded-games-registry';
 
 interface PublicGame {
   id: string;
@@ -10,7 +10,6 @@ interface PublicGame {
   createdAt: Date | string;
   updatedAt: Date | string;
   userId: string | null;
-  definition: string;
   thumbnailUrl: string | null;
   isPublic: boolean;
   source: 'database' | 'template';
@@ -45,16 +44,15 @@ export function useBrowseGames(options: UseBrowseGamesOptions = {}): UseBrowseGa
     try {
       const manifest = EMBEDDED_MANIFEST as { games?: Array<{ gameId: string }> };
       return (manifest.games || []).map((g) => {
-        const gameJson = EMBEDDED_GAME_JSONS[g.gameId] as { title?: string; description?: string } | undefined;
+        const meta = EMBEDDED_METADATA[g.gameId] as { title?: string; description?: string } | undefined;
         return {
           id: g.gameId,
-          title: gameJson?.title ?? g.gameId,
-          description: gameJson?.description ?? '',
+          title: meta?.title ?? g.gameId,
+          description: meta?.description ?? '',
           playCount: 0,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           userId: null,
-          definition: '',
           thumbnailUrl: null,
           isPublic: true,
           source: 'template' as const,

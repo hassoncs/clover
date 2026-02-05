@@ -9,7 +9,7 @@ import { getStorageItem } from "@/lib/utils/storage";
 import type { GameDefinition } from "@slopcade/shared";
 import type { ResolvedPackEntry } from "@/lib/assets/AssetManifest";
 import { mergeAssetsIntoTemplates } from "@/lib/assets/mergeAssetsIntoTemplates";
-import { EMBEDDED_GAME_JSONS, EMBEDDED_ASSET_MANIFESTS } from "@/lib/offline/embedded-games-registry";
+import { EMBEDDED_DEFINITIONS, EMBEDDED_PACK_MANIFESTS } from "@/lib/offline/embedded-games-registry";
 
 export default function TestGameRunScreen() {
   const router = useRouter();
@@ -27,20 +27,33 @@ export default function TestGameRunScreen() {
 
   const activePackId = gameDefinition?.assetSystem?.activePackId;
 
-  // Get pack data from embedded asset manifests (synchronous)
+  // Get pack data from embedded pack manifests (synchronous)
   const packData = useMemo(() => {
     if (!id || !activePackId) return null;
-    const manifest = EMBEDDED_ASSET_MANIFESTS[id as string];
-    if (!manifest) return null;
-    
-    const entries = Object.entries(manifest).map(([templateId, entry]) => ({
+    const gameManifests = EMBEDDED_PACK_MANIFESTS[id as string];
+    if (!gameManifests) return null;
+
+    // Find the pack matching the activePackId (check by packId in manifests)
+    let packManifest: { assets?: Record<string, { file: string }> } | null = null;
+    let packName: string | null = null;
+    for (const [name, manifest] of Object.entries(gameManifests)) {
+      const m = manifest as { packId?: string; assets?: Record<string, { file: string }> };
+      if (m.packId === activePackId || name === activePackId) {
+        packManifest = m;
+        packName = name;
+        break;
+      }
+    }
+    if (!packManifest?.assets || !packName) return null;
+
+    const entries = Object.entries(packManifest.assets).map(([templateId, assetEntry]) => ({
       templateId,
-      r2Key: entry.r2Key,
-      file: entry.file,
+      r2Key: `packs/${packName}/${assetEntry.file}`,
+      file: `packs/${packName}/${assetEntry.file}`,
       imageUrl: null,
       placement: null,
     }));
-    
+
     return { id: activePackId, entries };
   }, [id, activePackId]);
 
@@ -114,11 +127,10 @@ export default function TestGameRunScreen() {
       setError(null);
       try {
         console.log('[test-games] Loading game from embedded registry:', id, 'level:', currentLevel);
-        const gameJson = EMBEDDED_GAME_JSONS[id] as { title?: string; definition?: GameDefinition } | undefined;
-        if (!gameJson) {
+        const definition = EMBEDDED_DEFINITIONS[id] as GameDefinition | undefined;
+        if (!definition) {
           throw new Error(`Game not found: ${id}`);
         }
-        const definition = gameJson.definition as GameDefinition;
         console.log('[test-games] Loaded game:', definition.metadata.title);
         setGameDefinition(definition);
       } catch (err) {

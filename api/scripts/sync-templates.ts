@@ -50,15 +50,44 @@ async function main() {
   
   // Process each template and generate SQL
   let sql = `-- Sync template games\n-- Generated at ${new Date().toISOString()}\n\n`;
-  
+
   for (const template of templates) {
     try {
       const gameDefinition = JSON.parse(template.definition) as GameDefinition;
       const validationReport = validateGame(gameDefinition);
-      
+      const r2Prefix = `games/${template.id}`;
+
+      // Upload definition.json and metadata.json to R2 via wrangler
+      const definitionFile = `/tmp/sync-def-${template.id}.json`;
+      const metadataFile = `/tmp/sync-meta-${template.id}.json`;
+      writeFileSync(definitionFile, template.definition);
+      writeFileSync(metadataFile, JSON.stringify({
+        id: template.id,
+        title: template.title,
+        description: template.description || null,
+        version: '1.0.0',
+        thumbnailUrl: null,
+        packs: [],
+        activePackId: null,
+        updatedAt: now,
+      }));
+
+      const cwd = process.cwd().includes('/api') ? process.cwd() : resolve(process.cwd(), 'api');
+      try {
+        execSync(`npx wrangler r2 object put slopcade-assets-dev/${r2Prefix}/definition.json --file=${definitionFile} --content-type=application/json`, {
+          stdio: 'pipe', cwd,
+        });
+        execSync(`npx wrangler r2 object put slopcade-assets-dev/${r2Prefix}/metadata.json --file=${metadataFile} --content-type=application/json`, {
+          stdio: 'pipe', cwd,
+        });
+      } finally {
+        try { unlinkSync(definitionFile); } catch {}
+        try { unlinkSync(metadataFile); } catch {}
+      }
+
       // Use INSERT OR REPLACE to handle both create and update
       sql += `INSERT OR REPLACE INTO games (
-  id, user_id, title, description, definition, is_public, play_count,
+  id, user_id, title, description, r2_prefix, is_public, play_count,
   created_at, updated_at, base_game_id,
   validation_report, validation_score, validation_critical_count,
   validation_warning_count, validation_valid, validation_updated_at, validator_version
@@ -67,7 +96,7 @@ async function main() {
   '${SYSTEM_USER_ID}',
   '${template.title.replace(/'/g, "''")}',
   ${template.description ? `'${template.description.replace(/'/g, "''")}'` : 'NULL'},
-  '${template.definition.replace(/'/g, "''")}',
+  '${r2Prefix}',
   ${template.isPublic ? 1 : 0},
   0,
   ${now},
@@ -81,7 +110,7 @@ async function main() {
   ${now},
   '${validationReport.validatorVersion}'
 );\n\n`;
-      
+
       results.push({ id: template.id, title: template.title, action: 'synced' });
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';

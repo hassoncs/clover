@@ -34,10 +34,9 @@ const game: GameDefinition = {
       id: "cube",
       tags: ["cube"],
       visual: {
-        type: "rect",
-        width: CUBE_SIZE,
-        height: CUBE_SIZE,
-        color: "#4ade80",
+        type: "image",
+        imageWidth: CUBE_SIZE,
+        imageHeight: CUBE_SIZE,
       },
       physics: {
         bodyType: "static",

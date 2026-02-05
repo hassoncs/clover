@@ -32,11 +32,6 @@ interface PackInfo {
   assets: Record<string, { file: string; fullPath: string }>;
 }
 
-interface AssetManifestEntry {
-  file: string;
-  r2Key: string;
-}
-
 interface EmbeddedGameEntry {
   gameId: string;
   packs: Array<{ name: string; packId: string; assetCount: number }>;
@@ -113,35 +108,26 @@ function discoverPacks(gameId: string): PackInfo[] {
 function copyPackAssets(
   packs: PackInfo[],
   gameOutputDir: string,
-): { manifest: Record<string, AssetManifestEntry>; totalBytes: number } {
-  const manifest: Record<string, AssetManifestEntry> = {};
+): { totalBytes: number } {
   let totalBytes = 0;
 
   for (const pack of packs) {
-    for (const [templateId, assetEntry] of Object.entries(pack.assets)) {
-      const destRelative = `packs/${pack.name}/${assetEntry.file}`;
-      const destPath = join(gameOutputDir, destRelative);
+    const packDir = join(gameOutputDir, 'packs', pack.name);
+    mkdirSync(packDir, { recursive: true });
+
+    // Copy pack manifest.json
+    copyFileSync(pack.manifestPath, join(packDir, 'manifest.json'));
+
+    for (const [, assetEntry] of Object.entries(pack.assets)) {
+      const destPath = join(packDir, assetEntry.file);
 
       mkdirSync(dirname(destPath), { recursive: true });
       copyFileSync(assetEntry.fullPath, destPath);
       totalBytes += statSync(assetEntry.fullPath).size;
-
-      const r2Key = `${pack.packId}/${templateId}.png`;
-      manifest[`${pack.name}/${templateId}`] = {
-        file: destRelative,
-        r2Key,
-      };
     }
   }
 
-  if (Object.keys(manifest).length > 0) {
-    writeFileSync(
-      join(gameOutputDir, 'asset-manifest.json'),
-      JSON.stringify(manifest, null, 2),
-    );
-  }
-
-  return { manifest, totalBytes };
+  return { totalBytes };
 }
 
 function createSymlink(target: string, linkPath: string): void {
@@ -170,29 +156,34 @@ function setupSymlinks(embeddedGames: EmbeddedGameEntry[]): void {
 }
 
 function generateEmbeddedRegistry(embeddedGames: EmbeddedGameEntry[]): void {
-  const gameJsonLines: string[] = [];
-  const assetManifestLines: string[] = [];
+  const definitionLines: string[] = [];
+  const metadataLines: string[] = [];
+  const packManifestLines: string[] = [];
   const assetLines: string[] = [];
 
   for (const game of embeddedGames) {
-    gameJsonLines.push(
-      `  '${game.gameId}': require('@/assets/embedded-games/${game.gameId}/game.json'),`,
+    definitionLines.push(
+      `  '${game.gameId}': require('@/assets/embedded-games/${game.gameId}/definition.json'),`,
+    );
+    metadataLines.push(
+      `  '${game.gameId}': require('@/assets/embedded-games/${game.gameId}/metadata.json'),`,
     );
 
-    if (game.assetCount > 0) {
-      assetManifestLines.push(
-        `  '${game.gameId}': require('@/assets/embedded-games/${game.gameId}/asset-manifest.json'),`,
+    if (game.packs.length > 0) {
+      const packEntries = game.packs.map(p =>
+        `    '${p.name}': require('@/assets/embedded-games/${game.gameId}/packs/${p.name}/manifest.json'),`
       );
+      packManifestLines.push(`  '${game.gameId}': {\n${packEntries.join('\n')}\n  },`);
 
-      const manifestPath = join(EMBED_DIR, game.gameId, 'asset-manifest.json');
-      if (existsSync(manifestPath)) {
-        const manifest: Record<string, AssetManifestEntry> = JSON.parse(
-          readFileSync(manifestPath, 'utf-8'),
-        );
-        for (const [, entry] of Object.entries(manifest)) {
-          assetLines.push(
-            `  '${game.gameId}/${entry.file}': require('@/assets/embedded-games/${game.gameId}/${entry.file}'),`,
-          );
+      for (const pack of game.packs) {
+        const manifestPath = join(EMBED_DIR, game.gameId, 'packs', pack.name, 'manifest.json');
+        if (existsSync(manifestPath)) {
+          const manifest: PackManifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
+          for (const [, assetEntry] of Object.entries(manifest.assets)) {
+            assetLines.push(
+              `  '${game.gameId}/packs/${pack.name}/${assetEntry.file}': require('@/assets/embedded-games/${game.gameId}/packs/${pack.name}/${assetEntry.file}'),`,
+            );
+          }
         }
       }
     }
@@ -203,12 +194,16 @@ function generateEmbeddedRegistry(embeddedGames: EmbeddedGameEntry[]): void {
 
 export const EMBEDDED_MANIFEST = require('@/assets/embedded-games/manifest.json');
 
-export const EMBEDDED_GAME_JSONS: Record<string, unknown> = {
-${gameJsonLines.join('\n')}
+export const EMBEDDED_DEFINITIONS: Record<string, unknown> = {
+${definitionLines.join('\n')}
 };
 
-export const EMBEDDED_ASSET_MANIFESTS: Record<string, Record<string, { file: string; r2Key: string }>> = {
-${assetManifestLines.join('\n')}
+export const EMBEDDED_METADATA: Record<string, unknown> = {
+${metadataLines.join('\n')}
+};
+
+export const EMBEDDED_PACK_MANIFESTS: Record<string, Record<string, unknown>> = {
+${packManifestLines.join('\n')}
 };
 
 export const EMBEDDED_ASSETS: Record<string, number> = {
@@ -255,8 +250,8 @@ async function build(): Promise<void> {
       let assetBytes = 0;
       const packs = discoverPacks(id);
       if (packs.length > 0) {
-        const { manifest, totalBytes } = copyPackAssets(packs, gameEmbedDir);
-        assetCount = Object.keys(manifest).length;
+        const { totalBytes } = copyPackAssets(packs, gameEmbedDir);
+        assetCount = packs.reduce((sum, p) => sum + Object.keys(p.assets).length, 0);
         assetBytes = totalBytes;
       }
 
@@ -270,18 +265,28 @@ async function build(): Promise<void> {
         }
       }
 
-      // Re-serialize with resolved activePackId
-      const resolvedJson = JSON.stringify({
+      // Write definition.json (raw GameDefinition)
+      const definitionJson = JSON.stringify(entry.definition, null, 2);
+      writeFileSync(join(gameEmbedDir, 'definition.json'), definitionJson);
+
+      // Write metadata.json (lightweight summary)
+      const packEntries = packs.map(p => ({ name: p.name, packId: p.packId, assetCount: Object.keys(p.assets).length }));
+      const metadata = {
         id: entry.id,
         title: entry.title,
         description: entry.description,
-        definition: entry.definition,
-      }, null, 2);
-      writeFileSync(join(DIST_DIR, `${id}.json`), resolvedJson);
-      writeFileSync(join(gameEmbedDir, 'game.json'), resolvedJson);
+        version: (entry.definition.metadata as { version?: string })?.version ?? '1.0.0',
+        thumbnailUrl: null,
+        packs: packEntries,
+        activePackId: (definition.assetSystem?.activePackId) ?? null,
+        updatedAt: Date.now(),
+      };
+      writeFileSync(join(gameEmbedDir, 'metadata.json'), JSON.stringify(metadata, null, 2));
 
-      const gameTotalBytes = Buffer.byteLength(resolvedJson) + assetBytes;
-      const packEntries = packs.map(p => ({ name: p.name, packId: p.packId, assetCount: Object.keys(p.assets).length }));
+      // Write dist file (definition.json per game)
+      writeFileSync(join(DIST_DIR, `${id}.json`), definitionJson);
+
+      const gameTotalBytes = Buffer.byteLength(definitionJson) + assetBytes;
       embeddedGames.push({ gameId: id, packs: packEntries, assetCount, totalBytes: gameTotalBytes });
       results.push({ id, success: true, assetCount, totalBytes: gameTotalBytes, hasScript: !!scriptCode });
 

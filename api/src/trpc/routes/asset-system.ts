@@ -1260,16 +1260,22 @@ export const assetSystemRouter = router({
     }))
     .query(async ({ ctx, input }) => {
       const gameRow = await ctx.env.DB.prepare(
-        'SELECT definition FROM games WHERE id = ? AND deleted_at IS NULL'
-      ).bind(input.gameId).first<{ definition: string }>();
+        'SELECT r2_prefix FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(input.gameId).first<{ r2_prefix: string }>();
 
       if (!gameRow) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
       }
 
+      const defKey = `${gameRow.r2_prefix}/definition.json`;
+      const defObj = await ctx.env.ASSETS.get(defKey);
+      if (!defObj) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game definition not found in R2' });
+      }
+
       let definition: GameDefinition;
       try {
-        definition = JSON.parse(gameRow.definition);
+        definition = JSON.parse(await defObj.text());
       } catch {
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Invalid game definition' });
       }

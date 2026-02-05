@@ -3,30 +3,52 @@
 
 export const EMBEDDED_MANIFEST = require('@/assets/embedded-games/manifest.json');
 
-export const EMBEDDED_GAME_JSONS: Record<string, unknown> = {
-  'asteroids': require('@/assets/embedded-games/asteroids/game.json'),
-  'ballSort': require('@/assets/embedded-games/ballSort/game.json'),
-  'breakoutBouncer': require('@/assets/embedded-games/breakoutBouncer/game.json'),
-  'chess': require('@/assets/embedded-games/chess/game.json'),
-  'flappyBird': require('@/assets/embedded-games/flappyBird/game.json'),
-  'game2048': require('@/assets/embedded-games/game2048/game.json'),
-  'gemCrush': require('@/assets/embedded-games/gemCrush/game.json'),
-  'minefield': require('@/assets/embedded-games/minefield/game.json'),
-  'pacman': require('@/assets/embedded-games/pacman/game.json'),
-  'pong': require('@/assets/embedded-games/pong/game.json'),
-  'sequenceDemo': require('@/assets/embedded-games/sequenceDemo/game.json'),
-  'simon': require('@/assets/embedded-games/simon/game.json'),
-  'simple': require('@/assets/embedded-games/simple/game.json'),
-  'simplePong': require('@/assets/embedded-games/simplePong/game.json'),
-  'slopeggle': require('@/assets/embedded-games/slopeggle/game.json'),
-  'snake': require('@/assets/embedded-games/snake/game.json'),
-  'sokoban': require('@/assets/embedded-games/sokoban/game.json'),
-  'spaceInvaders': require('@/assets/embedded-games/spaceInvaders/game.json'),
-  'tetris': require('@/assets/embedded-games/tetris/game.json'),
+export const EMBEDDED_DEFINITIONS: Record<string, unknown> = {
+  'asteroids': require('@/assets/embedded-games/asteroids/definition.json'),
+  'ballSort': require('@/assets/embedded-games/ballSort/definition.json'),
+  'breakoutBouncer': require('@/assets/embedded-games/breakoutBouncer/definition.json'),
+  'chess': require('@/assets/embedded-games/chess/definition.json'),
+  'flappyBird': require('@/assets/embedded-games/flappyBird/definition.json'),
+  'game2048': require('@/assets/embedded-games/game2048/definition.json'),
+  'gemCrush': require('@/assets/embedded-games/gemCrush/definition.json'),
+  'minefield': require('@/assets/embedded-games/minefield/definition.json'),
+  'pacman': require('@/assets/embedded-games/pacman/definition.json'),
+  'pong': require('@/assets/embedded-games/pong/definition.json'),
+  'sequenceDemo': require('@/assets/embedded-games/sequenceDemo/definition.json'),
+  'simon': require('@/assets/embedded-games/simon/definition.json'),
+  'simplePong': require('@/assets/embedded-games/simplePong/definition.json'),
+  'slopeggle': require('@/assets/embedded-games/slopeggle/definition.json'),
+  'snake': require('@/assets/embedded-games/snake/definition.json'),
+  'sokoban': require('@/assets/embedded-games/sokoban/definition.json'),
+  'spaceInvaders': require('@/assets/embedded-games/spaceInvaders/definition.json'),
+  'tetris': require('@/assets/embedded-games/tetris/definition.json'),
 };
 
-export const EMBEDDED_ASSET_MANIFESTS: Record<string, Record<string, { file: string; r2Key: string }>> = {
-  'ballSort': require('@/assets/embedded-games/ballSort/asset-manifest.json'),
+export const EMBEDDED_METADATA: Record<string, unknown> = {
+  'asteroids': require('@/assets/embedded-games/asteroids/metadata.json'),
+  'ballSort': require('@/assets/embedded-games/ballSort/metadata.json'),
+  'breakoutBouncer': require('@/assets/embedded-games/breakoutBouncer/metadata.json'),
+  'chess': require('@/assets/embedded-games/chess/metadata.json'),
+  'flappyBird': require('@/assets/embedded-games/flappyBird/metadata.json'),
+  'game2048': require('@/assets/embedded-games/game2048/metadata.json'),
+  'gemCrush': require('@/assets/embedded-games/gemCrush/metadata.json'),
+  'minefield': require('@/assets/embedded-games/minefield/metadata.json'),
+  'pacman': require('@/assets/embedded-games/pacman/metadata.json'),
+  'pong': require('@/assets/embedded-games/pong/metadata.json'),
+  'sequenceDemo': require('@/assets/embedded-games/sequenceDemo/metadata.json'),
+  'simon': require('@/assets/embedded-games/simon/metadata.json'),
+  'simplePong': require('@/assets/embedded-games/simplePong/metadata.json'),
+  'slopeggle': require('@/assets/embedded-games/slopeggle/metadata.json'),
+  'snake': require('@/assets/embedded-games/snake/metadata.json'),
+  'sokoban': require('@/assets/embedded-games/sokoban/metadata.json'),
+  'spaceInvaders': require('@/assets/embedded-games/spaceInvaders/metadata.json'),
+  'tetris': require('@/assets/embedded-games/tetris/metadata.json'),
+};
+
+export const EMBEDDED_PACK_MANIFESTS: Record<string, Record<string, unknown>> = {
+  'ballSort': {
+    'default': require('@/assets/embedded-games/ballSort/packs/default/manifest.json'),
+  },
 };
 
 export const EMBEDDED_ASSETS: Record<string, number> = {

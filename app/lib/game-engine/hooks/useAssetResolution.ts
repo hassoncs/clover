@@ -5,7 +5,7 @@ import { getAssetUrl } from '@slopcade/shared';
 import { trpcReact } from '@/lib/trpc/react';
 import { env } from '@/lib/config/env';
 import { getServerUrl } from '@/lib/offline/local-asset-server';
-import { EMBEDDED_ASSET_MANIFESTS } from '@/lib/offline/embedded-games-registry';
+import { EMBEDDED_PACK_MANIFESTS } from '@/lib/offline/embedded-games-registry';
 
 export interface ResolvedAsset {
   assetId?: string;
@@ -65,24 +65,32 @@ function convertDbPackToEmbedded(dbPack: DatabasePack, config?: AssetUrlConfig):
   return { ...dbPack, assets };
 }
 
-function convertEmbeddedManifestToPack(
+function convertEmbeddedPackManifestsToPack(
   gameId: string,
-  manifest: Record<string, { file: string; r2Key: string }>,
+  packManifests: Record<string, unknown>,
   config?: AssetUrlConfig
-): any {
-  const assets: Record<string, AssetConfig> = {};
-  for (const [templateId, entry] of Object.entries(manifest)) {
-    const fullUrl = getAssetUrl(entry.file, env.assetCdnUrl, config);
-    assets[templateId] = {
-      imageUrl: fullUrl,
-      assetRef: entry.file,
-      source: 'generated' as const,
-      scale: 1,
-      offsetX: 0,
-      offsetY: 0,
-    };
+): { id: string; name: string; assets: Record<string, AssetConfig> } | null {
+  // Find the first pack (usually 'default')
+  for (const [packName, manifest] of Object.entries(packManifests)) {
+    const m = manifest as { packId?: string; assets?: Record<string, { file: string }> };
+    if (!m.assets) continue;
+
+    const assets: Record<string, AssetConfig> = {};
+    for (const [templateId, assetEntry] of Object.entries(m.assets)) {
+      const filePath = `packs/${packName}/${assetEntry.file}`;
+      const fullUrl = getAssetUrl(filePath, env.assetCdnUrl, config);
+      assets[templateId] = {
+        imageUrl: fullUrl,
+        assetRef: filePath,
+        source: 'generated' as const,
+        scale: 1,
+        offsetX: 0,
+        offsetY: 0,
+      };
+    }
+    return { id: m.packId ?? gameId, name: packName, assets };
   }
-  return { id: gameId, name: gameId, assets };
+  return null;
 }
 
 function validatePackCoverage(
@@ -177,9 +185,9 @@ export function useAssetResolution(
   // Get embedded asset manifest synchronously for template games
   const embeddedPackData = useMemo(() => {
     if (source !== 'template' || !gameId) return null;
-    const manifest = EMBEDDED_ASSET_MANIFESTS[gameId];
-    if (!manifest) return null;
-    return convertEmbeddedManifestToPack(gameId, manifest, {
+    const packManifests = EMBEDDED_PACK_MANIFESTS[gameId];
+    if (!packManifests) return null;
+    return convertEmbeddedPackManifestsToPack(gameId, packManifests, {
       offlineMode: true,
       localServerUrl: getServerUrl(),
       gameId,

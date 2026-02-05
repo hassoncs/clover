@@ -23,8 +23,8 @@ interface GameRow {
   user_id: string | null;
   title: string;
   description: string | null;
-  definition: string;
   thumbnail_url: string | null;
+  r2_prefix: string;
   is_public: number;
   play_count: number;
   created_at: number;
@@ -50,15 +50,25 @@ function parseValidationReport(json: string | null): GameValidationReport | null
   }
 }
 
-function toClientGame(row: GameRow) {
+function validationFromRow(row: GameRow) {
   const validationReport = parseValidationReport(row.validation_report);
+  if (!validationReport) return null;
+  return {
+    valid: row.validation_valid === 1,
+    score: row.validation_score ?? 0,
+    criticalCount: row.validation_critical_count,
+    warningCount: row.validation_warning_count,
+    topIssues: validationReport.summary.topIssues,
+    isStale: validationReport.validatorVersion !== '1.0.0',
+  };
+}
 
+function toClientGameIndex(row: GameRow) {
   return {
     id: row.id,
     userId: row.user_id,
     title: row.title,
     description: row.description,
-    definition: row.definition,
     thumbnailUrl: row.thumbnail_url,
     isPublic: Boolean(row.is_public),
     playCount: row.play_count,
@@ -67,15 +77,50 @@ function toClientGame(row: GameRow) {
     baseGameId: row.base_game_id,
     forkedFromId: row.forked_from_id,
     source: 'database' as const,
-    validation: validationReport ? {
-      valid: row.validation_valid === 1,
-      score: row.validation_score ?? 0,
-      criticalCount: row.validation_critical_count,
-      warningCount: row.validation_warning_count,
-      topIssues: validationReport.summary.topIssues,
-      isStale: validationReport.validatorVersion !== '1.0.0',
-    } : null,
+    validation: validationFromRow(row),
   };
+}
+
+function toClientGameFull(row: GameRow, definition: string) {
+  return {
+    ...toClientGameIndex(row),
+    definition,
+  };
+}
+
+async function readDefinitionFromR2(assets: R2Bucket, r2Prefix: string): Promise<string> {
+  const key = `${r2Prefix}/definition.json`;
+  const obj = await assets.get(key);
+  if (!obj) {
+    throw new TRPCError({ code: 'NOT_FOUND', message: `Definition not found in R2: ${key}` });
+  }
+  return await obj.text();
+}
+
+async function writeDefinitionToR2(assets: R2Bucket, r2Prefix: string, definition: string): Promise<void> {
+  await assets.put(`${r2Prefix}/definition.json`, definition, {
+    httpMetadata: { contentType: 'application/json' },
+  });
+}
+
+async function writeMetadataToR2(
+  assets: R2Bucket,
+  r2Prefix: string,
+  meta: { id: string; title: string; description: string | null; thumbnailUrl: string | null; updatedAt: number },
+): Promise<void> {
+  const metadata = {
+    id: meta.id,
+    title: meta.title,
+    description: meta.description,
+    version: '1.0.0',
+    thumbnailUrl: meta.thumbnailUrl,
+    packs: [],
+    activePackId: null,
+    updatedAt: meta.updatedAt,
+  };
+  await assets.put(`${r2Prefix}/metadata.json`, JSON.stringify(metadata), {
+    httpMetadata: { contentType: 'application/json' },
+  });
 }
 
 export const gamesRouter = router({
@@ -86,7 +131,7 @@ export const gamesRouter = router({
       .bind(ctx.user.id)
       .all<GameRow>();
 
-    return result.results.map(row => toClientGame(row));
+    return result.results.map(row => toClientGameIndex(row));
   }),
 
   getPublic: publicProcedure
@@ -106,7 +151,8 @@ export const gamesRouter = router({
         throw new TRPCError({ code: 'FORBIDDEN', message: 'This game is private. Sign in to access your games.' });
       }
 
-      return toClientGame(result);
+      const definition = await readDefinitionFromR2(ctx.env.ASSETS, result.r2_prefix);
+      return toClientGameFull(result, definition);
     }),
 
   get: protectedProcedure
@@ -123,12 +169,13 @@ export const gamesRouter = router({
       }
 
       const isOwner = result.user_id === ctx.user.id;
-      
+
       if (!result.is_public && !isOwner) {
         throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
       }
 
-      return toClientGame(result);
+      const definition = await readDefinitionFromR2(ctx.env.ASSETS, result.r2_prefix);
+      return toClientGameFull(result, definition);
     }),
 
   create: protectedProcedure
@@ -154,12 +201,18 @@ export const gamesRouter = router({
       const validationReport = validateGame(gameDefinition);
       const now = Date.now();
       const id = crypto.randomUUID();
+      const r2Prefix = `games/${id}`;
+
+      await writeDefinitionToR2(ctx.env.ASSETS, r2Prefix, input.definition);
+      await writeMetadataToR2(ctx.env.ASSETS, r2Prefix, {
+        id, title: input.title, description: input.description ?? null, thumbnailUrl: null, updatedAt: now,
+      });
 
       await ctx.env.DB.prepare(
         `INSERT INTO games (
-          id, user_id, title, description, definition, is_public, play_count, 
+          id, user_id, title, description, r2_prefix, is_public, play_count,
           created_at, updated_at, base_game_id,
-          validation_report, validation_score, validation_critical_count, 
+          validation_report, validation_score, validation_critical_count,
           validation_warning_count, validation_valid, validation_updated_at, validator_version
         ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
@@ -168,7 +221,7 @@ export const gamesRouter = router({
           ctx.user.id,
           input.title,
           input.description ?? null,
-          input.definition,
+          r2Prefix,
           input.isPublic ? 1 : 0,
           now,
           now,
@@ -246,9 +299,6 @@ export const gamesRouter = router({
       let validationReport: GameValidationReport | null = null;
 
       if (input.definition !== undefined) {
-        updates.push('definition = ?');
-        values.push(input.definition);
-
         let gameDefinition: GameDefinition;
         try {
           gameDefinition = JSON.parse(input.definition) as GameDefinition;
@@ -259,6 +309,8 @@ export const gamesRouter = router({
             message: 'Invalid game definition JSON',
           });
         }
+
+        await writeDefinitionToR2(ctx.env.ASSETS, existing.r2_prefix, input.definition);
 
         updates.push('validation_report = ?');
         updates.push('validation_score = ?');
@@ -377,7 +429,7 @@ export const gamesRouter = router({
         .bind(limit, offset)
         .all<GameRow>();
 
-      return result.results.map(row => toClientGame(row));
+      return result.results.map(row => toClientGameIndex(row));
     }),
 
   validate: protectedProcedure
@@ -397,9 +449,10 @@ export const gamesRouter = router({
         throw new TRPCError({ code: 'FORBIDDEN', message: 'Cannot validate games you do not own' });
       }
 
+      const definitionStr = await readDefinitionFromR2(ctx.env.ASSETS, existing.r2_prefix);
       let gameDefinition: GameDefinition;
       try {
-        gameDefinition = JSON.parse(existing.definition) as GameDefinition;
+        gameDefinition = JSON.parse(definitionStr) as GameDefinition;
       } catch {
         throw new TRPCError({
           code: 'BAD_REQUEST',
@@ -477,13 +530,21 @@ export const gamesRouter = router({
         const id = crypto.randomUUID();
         const now = Date.now();
         const definition = JSON.stringify(result.game);
+        const r2Prefix = `games/${id}`;
         const validationReport = validateGame(result.game);
+
+        await writeDefinitionToR2(ctx.env.ASSETS, r2Prefix, definition);
+        await writeMetadataToR2(ctx.env.ASSETS, r2Prefix, {
+          id, title: result.game.metadata.title,
+          description: result.game.metadata.description ?? input.prompt,
+          thumbnailUrl: null, updatedAt: now,
+        });
 
         await ctx.env.DB.prepare(
           `INSERT INTO games (
-            id, user_id, title, description, definition, is_public, play_count, 
+            id, user_id, title, description, r2_prefix, is_public, play_count,
             created_at, updated_at, base_game_id,
-            validation_report, validation_score, validation_critical_count, 
+            validation_report, validation_score, validation_critical_count,
             validation_warning_count, validation_valid, validation_updated_at, validator_version
           ) VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         )
@@ -492,7 +553,7 @@ export const gamesRouter = router({
             ctx.user.id,
             result.game.metadata.title,
             result.game.metadata.description ?? input.prompt,
-            definition,
+            r2Prefix,
             now,
             now,
             id,
@@ -637,9 +698,10 @@ export const gamesRouter = router({
         throw new TRPCError({ code: 'FORBIDDEN', message: 'Cannot fork private game' });
       }
 
+      const sourceDefinitionStr = await readDefinitionFromR2(ctx.env.ASSETS, existing.r2_prefix);
       let definition: Record<string, unknown>;
       try {
-        definition = JSON.parse(existing.definition);
+        definition = JSON.parse(sourceDefinitionStr);
       } catch {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
@@ -649,6 +711,7 @@ export const gamesRouter = router({
 
       const newId = crypto.randomUUID();
       const now = Date.now();
+      const newR2Prefix = `games/${newId}`;
 
       if (definition.metadata && typeof definition.metadata === 'object') {
         const metadata = definition.metadata as Record<string, unknown>;
@@ -667,13 +730,19 @@ export const gamesRouter = router({
       const newDefinition = JSON.stringify(definition);
       const validationReport = validateGame(definition as unknown as GameDefinition);
 
+      await writeDefinitionToR2(ctx.env.ASSETS, newR2Prefix, newDefinition);
+      await writeMetadataToR2(ctx.env.ASSETS, newR2Prefix, {
+        id: newId, title: `${existing.title} (Fork)`,
+        description: existing.description, thumbnailUrl: existing.thumbnail_url, updatedAt: now,
+      });
+
       const parentBaseGameId = existing.base_game_id ?? existing.id;
 
       await ctx.env.DB.prepare(
         `INSERT INTO games (
-          id, user_id, title, description, definition, is_public, play_count, 
+          id, user_id, title, description, r2_prefix, is_public, play_count,
           created_at, updated_at, base_game_id, forked_from_id,
-          validation_report, validation_score, validation_critical_count, 
+          validation_report, validation_score, validation_critical_count,
           validation_warning_count, validation_valid, validation_updated_at, validator_version
         ) VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
@@ -682,7 +751,7 @@ export const gamesRouter = router({
           ctx.user.id,
           `${existing.title} (Fork)`,
           existing.description,
-          newDefinition,
+          newR2Prefix,
           now,
           now,
           parentBaseGameId,
@@ -754,6 +823,13 @@ export const gamesRouter = router({
           }
 
           const validationReport = validateGame(gameDefinition);
+          const r2Prefix = `games/${template.id}`;
+
+          await writeDefinitionToR2(ctx.env.ASSETS, r2Prefix, template.definition);
+          await writeMetadataToR2(ctx.env.ASSETS, r2Prefix, {
+            id: template.id, title: template.title,
+            description: template.description ?? null, thumbnailUrl: null, updatedAt: now,
+          });
 
           const existing = await ctx.env.DB.prepare(
             `SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL`
@@ -763,10 +839,10 @@ export const gamesRouter = router({
 
           if (existing) {
             await ctx.env.DB.prepare(
-              `UPDATE games SET 
+              `UPDATE games SET
                 title = ?,
                 description = ?,
-                definition = ?,
+                r2_prefix = ?,
                 is_public = ?,
                 updated_at = ?,
                 validation_report = ?,
@@ -781,7 +857,7 @@ export const gamesRouter = router({
               .bind(
                 template.title,
                 template.description ?? null,
-                template.definition,
+                r2Prefix,
                 template.isPublic ? 1 : 0,
                 now,
                 getValidationReportJson(validationReport),
@@ -803,7 +879,7 @@ export const gamesRouter = router({
           } else {
             await ctx.env.DB.prepare(
               `INSERT INTO games (
-                id, user_id, title, description, definition, is_public, play_count,
+                id, user_id, title, description, r2_prefix, is_public, play_count,
                 created_at, updated_at, base_game_id,
                 validation_report, validation_score, validation_critical_count,
                 validation_warning_count, validation_valid, validation_updated_at, validator_version
@@ -814,7 +890,7 @@ export const gamesRouter = router({
                 SYSTEM_USER_ID,
                 template.title,
                 template.description ?? null,
-                template.definition,
+                r2Prefix,
                 template.isPublic ? 1 : 0,
                 now,
                 now,

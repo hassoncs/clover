@@ -35,8 +35,8 @@ CREATE TABLE IF NOT EXISTS games (
   install_id TEXT,
   title TEXT NOT NULL,
   description TEXT,
-  definition TEXT NOT NULL,  -- JSON blob containing GameDefinition
   thumbnail_url TEXT,
+  r2_prefix TEXT NOT NULL,  -- "games/{gameId}" — definition.json lives at this prefix in R2
   is_public INTEGER DEFAULT 0,
   play_count INTEGER DEFAULT 0,
   created_at INTEGER NOT NULL,

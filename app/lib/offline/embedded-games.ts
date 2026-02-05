@@ -5,8 +5,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { env } from '@/lib/config/env';
 import {
   EMBEDDED_MANIFEST,
-  EMBEDDED_GAME_JSONS,
-  EMBEDDED_ASSET_MANIFESTS,
+  EMBEDDED_DEFINITIONS,
+  EMBEDDED_PACK_MANIFESTS,
   EMBEDDED_ASSETS,
 } from './embedded-games-registry';
 
@@ -19,20 +19,6 @@ interface DownloadedGame {
   downloadedAt: number;
   totalBytes: number;
   assetCount: number;
-}
-
-interface OfflineManifest {
-  gameId: string;
-  packId: string;
-  definition: unknown;
-  assets: Array<{
-    r2Key: string;
-    url: string;
-    width: number;
-    height: number;
-    templateId: string;
-  }>;
-  totalBytes: number;
 }
 
 interface EmbeddedGameEntry {
@@ -99,39 +85,63 @@ async function installGame(
   downloadedGames: Record<string, DownloadedGame>
 ): Promise<void> {
   const gameDir = getGameDirectory(game.gameId);
-  
+
   await FileSystem.makeDirectoryAsync(gameDir, { intermediates: true });
-  
-  const gameJson = EMBEDDED_GAME_JSONS[game.gameId] as { definition?: unknown } | undefined;
-  if (!gameJson) {
-    throw new Error(`Game JSON not found for ${game.gameId}`);
+
+  const definition = EMBEDDED_DEFINITIONS[game.gameId];
+  if (!definition) {
+    throw new Error(`Game definition not found for ${game.gameId}`);
   }
-  
-  const assetManifest = EMBEDDED_ASSET_MANIFESTS[game.gameId] || {};
-  
-  const offlineManifest: OfflineManifest = {
-    gameId: game.gameId,
-    packId: game.packId,
-    definition: gameJson.definition || gameJson,
-    assets: Object.entries(assetManifest).map(([templateId, entry]) => ({
-      r2Key: entry.r2Key,
-      url: '',
-      width: 0,
-      height: 0,
-      templateId,
-    })),
-    totalBytes: game.totalBytes,
-  };
-  
+
+  // Write definition.json to local storage
   await FileSystem.writeAsStringAsync(
-    `${gameDir}manifest.json`,
-    JSON.stringify(offlineManifest)
+    `${gameDir}definition.json`,
+    JSON.stringify(definition)
   );
-  
+
+  // Copy pack assets
   if (game.assetCount > 0) {
-    await copyAssets(game.gameId, assetManifest, gameDir);
+    const packManifests = EMBEDDED_PACK_MANIFESTS[game.gameId] || {};
+    for (const [packName, manifest] of Object.entries(packManifests)) {
+      const m = manifest as { assets?: Record<string, { file: string }> };
+      if (!m.assets) continue;
+
+      // Write pack manifest
+      const packDir = `${gameDir}packs/${packName}/`;
+      await FileSystem.makeDirectoryAsync(packDir, { intermediates: true });
+      await FileSystem.writeAsStringAsync(
+        `${packDir}manifest.json`,
+        JSON.stringify(manifest)
+      );
+
+      // Copy asset files
+      for (const [, assetEntry] of Object.entries(m.assets)) {
+        const assetKey = `${game.gameId}/packs/${packName}/${assetEntry.file}`;
+        const assetModule = EMBEDDED_ASSETS[assetKey];
+        if (!assetModule) {
+          console.warn(`[EmbeddedGames] Asset not found in registry: ${assetKey}`);
+          continue;
+        }
+
+        const asset = Asset.fromModule(assetModule);
+        await asset.downloadAsync();
+
+        if (!asset.localUri) {
+          console.warn(`[EmbeddedGames] No localUri for asset: ${assetKey}`);
+          continue;
+        }
+
+        const targetPath = `${packDir}${assetEntry.file}`;
+        const targetDir = targetPath.substring(0, targetPath.lastIndexOf('/'));
+        await FileSystem.makeDirectoryAsync(targetDir, { intermediates: true });
+        await FileSystem.copyAsync({
+          from: asset.localUri,
+          to: targetPath,
+        });
+      }
+    }
   }
-  
+
   downloadedGames[game.gameId] = {
     gameId: game.gameId,
     packId: game.packId,
@@ -139,40 +149,6 @@ async function installGame(
     totalBytes: game.totalBytes,
     assetCount: game.assetCount,
   };
-}
-
-async function copyAssets(
-  gameId: string,
-  assetManifest: Record<string, { file: string; r2Key: string }>,
-  gameDir: string
-): Promise<void> {
-  for (const [_templateId, entry] of Object.entries(assetManifest)) {
-    const filename = entry.file.replace('assets/', '');
-    const assetKey = `${gameId}/${filename}`;
-    const assetModule = EMBEDDED_ASSETS[assetKey];
-    
-    if (!assetModule) {
-      console.warn(`[EmbeddedGames] Asset not found in registry: ${assetKey}`);
-      continue;
-    }
-    
-    const asset = Asset.fromModule(assetModule);
-    await asset.downloadAsync();
-    
-    if (!asset.localUri) {
-      console.warn(`[EmbeddedGames] No localUri for asset: ${assetKey}`);
-      continue;
-    }
-    
-    const targetPath = `${gameDir}${entry.r2Key}`;
-    const targetDir = targetPath.substring(0, targetPath.lastIndexOf('/'));
-    
-    await FileSystem.makeDirectoryAsync(targetDir, { intermediates: true });
-    await FileSystem.copyAsync({
-      from: asset.localUri,
-      to: targetPath,
-    });
-  }
 }
 
 async function loadDownloadedGames(): Promise<Record<string, DownloadedGame>> {
