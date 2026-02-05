@@ -15,7 +15,9 @@ const API_ROOT = resolve(__dirname, '..');
 const R2_DIR = resolve(__dirname, '..', '..', 'r2');
 const APP_ROOT = resolve(__dirname, '..', '..', 'app');
 const R2_GAMES_DIR = join(R2_DIR, 'games');
+const R2_PACKS_DIR = join(R2_DIR, 'packs');
 const EMBED_DIR = join(APP_ROOT, 'assets', 'embedded-games');
+const EMBED_PACKS_DIR = join(EMBED_DIR, 'packs');
 const REGISTRY_PATH = join(APP_ROOT, 'lib', 'offline', 'embedded-games-registry.ts');
 
 interface PackManifest {
@@ -27,6 +29,7 @@ interface PackManifest {
 
 interface EmbeddedGameEntry {
   gameId: string;
+  uuid: string;
   packs: Array<{ name: string; packId: string; assetCount: number }>;
   assetCount: number;
   totalBytes: number;
@@ -64,16 +67,15 @@ async function bundleGameScript(gameId: string): Promise<string | undefined> {
   }
 }
 
-function discoverPacks(gameId: string): Array<{ name: string; packId: string; assetCount: number }> {
-  const packsDir = join(R2_GAMES_DIR, gameId, 'packs');
-  if (!existsSync(packsDir)) return [];
-
+function discoverPacks(packIds: string[]): Array<{ name: string; packId: string; assetCount: number }> {
   const packs: Array<{ name: string; packId: string; assetCount: number }> = [];
-  for (const entry of readdirSync(packsDir, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue;
 
-    const manifestPath = join(packsDir, entry.name, 'manifest.json');
-    if (!existsSync(manifestPath)) continue;
+  for (const packId of packIds) {
+    const manifestPath = join(R2_PACKS_DIR, packId, 'manifest.json');
+    if (!existsSync(manifestPath)) {
+      console.warn(`  ⚠ Pack ${packId} not found at ${manifestPath}`);
+      continue;
+    }
 
     const manifest: PackManifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
     packs.push({
@@ -122,19 +124,19 @@ function generateEmbeddedRegistry(embeddedGames: EmbeddedGameEntry[]): void {
 
     if (game.packs.length > 0) {
       const packEntries = game.packs.map(p =>
-        `    '${p.name}': require('@/assets/embedded-games/${game.gameId}/packs/${p.name}/manifest.json'),`
+        `    '${p.packId}': require('@/assets/embedded-games/packs/${p.packId}/manifest.json'),`
       );
       packManifestLines.push(`  '${game.gameId}': {\n${packEntries.join('\n')}\n  },`);
 
       for (const pack of game.packs) {
-        const manifestPath = join(EMBED_DIR, game.gameId, 'packs', pack.name, 'manifest.json');
+        const manifestPath = join(EMBED_PACKS_DIR, pack.packId, 'manifest.json');
         if (existsSync(manifestPath)) {
           const manifest: PackManifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
           for (const [, assetEntry] of Object.entries(manifest.assets)) {
-            const assetFilePath = join(EMBED_DIR, game.gameId, 'packs', pack.name, assetEntry.file);
+            const assetFilePath = join(EMBED_PACKS_DIR, pack.packId, assetEntry.file);
             if (!existsSync(assetFilePath)) continue;
             assetLines.push(
-              `  '${game.gameId}/packs/${pack.name}/${assetEntry.file}': require('@/assets/embedded-games/${game.gameId}/packs/${pack.name}/${assetEntry.file}'),`,
+              `  'packs/${pack.packId}/${assetEntry.file}': require('@/assets/embedded-games/packs/${pack.packId}/${assetEntry.file}'),`,
             );
           }
         }
@@ -167,19 +169,6 @@ ${assetLines.join('\n')}
   mkdirSync(dirname(REGISTRY_PATH), { recursive: true });
   writeFileSync(REGISTRY_PATH, content);
   console.log(`✓ Generated embedded-games-registry.ts`);
-}
-
-const SLOPCADE_NAMESPACE = 'slopcade-game-seed';
-
-function slugToUuid(slug: string): string {
-  const hash = createHash('sha256').update(`${SLOPCADE_NAMESPACE}:${slug}`).digest('hex');
-  return [
-    hash.slice(0, 8),
-    hash.slice(8, 12),
-    '4' + hash.slice(13, 16),
-    ((parseInt(hash[16], 16) & 0x3) | 0x8).toString(16) + hash.slice(17, 20),
-    hash.slice(20, 32),
-  ].join('-');
 }
 
 const SYSTEM_USER_ID = '00000000-0000-0000-0000-000000000000';
@@ -285,7 +274,6 @@ function seedLocalD1(games: EmbeddedGameEntry[]): void {
   );
 
   for (const game of games) {
-    const gameUuid = slugToUuid(game.gameId);
     const metadataPath = join(R2_GAMES_DIR, game.gameId, 'metadata.json');
     const metadata = JSON.parse(readFileSync(metadataPath, 'utf-8'));
     const title = escapeSql(metadata.title ?? game.gameId);
@@ -297,9 +285,9 @@ function seedLocalD1(games: EmbeddedGameEntry[]): void {
       `is_public, play_count, created_at, updated_at, base_game_id, ` +
       `validation_valid` +
       `) VALUES (` +
-      `'${gameUuid}', '${SYSTEM_USER_ID}', ` +
+      `'${game.uuid}', '${SYSTEM_USER_ID}', ` +
       `'${title}', '${description}', 'games/${game.gameId}', ` +
-      `1, 0, ${now}, ${now}, '${gameUuid}', ` +
+      `1, 0, ${now}, ${now}, '${game.uuid}', ` +
       `1` +
       `);`
     );
@@ -362,18 +350,11 @@ async function build(): Promise<void> {
         entry.definition.script = scriptCode;
       }
 
-      const packs = discoverPacks(id);
-
-      const definition = entry.definition as { assetSystem?: { activePackId?: string } };
-      if (definition.assetSystem?.activePackId && packs.length > 0) {
-        const activeName = definition.assetSystem.activePackId;
-        const matchingPack = packs.find(p => p.name === activeName);
-        if (matchingPack) {
-          definition.assetSystem.activePackId = matchingPack.packId;
-        }
-      }
+      const packIds = entry.definition.assetSystem?.packIds ?? [];
+      const packs = discoverPacks(packIds);
 
       const definitionJson = JSON.stringify(entry.definition, null, 2);
+      const gameUuid = entry.definition.metadata.id;
 
       // Write to r2/games/{id}/ (the local R2 mirror)
       const r2GameDir = join(R2_GAMES_DIR, id);
@@ -382,24 +363,33 @@ async function build(): Promise<void> {
 
       const packEntries = packs.map(p => ({ name: p.name, packId: p.packId, assetCount: p.assetCount }));
       const metadata = {
-        id: entry.id,
+        id: gameUuid,
+        slug: id,
         title: entry.title,
         description: entry.description,
         version: (entry.definition.metadata as { version?: string })?.version ?? '1.0.0',
         thumbnailUrl: null,
         packs: packEntries,
-        activePackId: (definition.assetSystem?.activePackId) ?? null,
+        activePackId: entry.definition.assetSystem?.activePackId ?? null,
         updatedAt: Date.now(),
       };
       writeFileSync(join(r2GameDir, 'metadata.json'), JSON.stringify(metadata, null, 2));
 
-      // Recursively copy r2/games/{id}/ → app/assets/embedded-games/{id}/ excluding src/
+      // Copy r2/games/{id}/ → app/assets/embedded-games/{id}/ excluding src/
       const gameEmbedDir = join(EMBED_DIR, id);
       const assetBytes = copyDirRecursive(r2GameDir, gameEmbedDir, excludeDirs);
-      const assetCount = packs.reduce((sum, p) => sum + p.assetCount, 0);
 
-      const gameTotalBytes = Buffer.byteLength(definitionJson) + assetBytes;
-      embeddedGames.push({ gameId: id, packs: packEntries, assetCount, totalBytes: gameTotalBytes });
+      // Copy packs to app/assets/embedded-games/packs/{packId}/
+      let packBytes = 0;
+      for (const pack of packs) {
+        const packSrc = join(R2_PACKS_DIR, pack.packId);
+        const packDest = join(EMBED_PACKS_DIR, pack.packId);
+        packBytes += copyDirRecursive(packSrc, packDest, new Set());
+      }
+
+      const assetCount = packs.reduce((sum, p) => sum + p.assetCount, 0);
+      const gameTotalBytes = Buffer.byteLength(definitionJson) + assetBytes + packBytes;
+      embeddedGames.push({ gameId: id, uuid: gameUuid, packs: packEntries, assetCount, totalBytes: gameTotalBytes });
       results.push({ id, success: true, assetCount, totalBytes: gameTotalBytes, hasScript: !!scriptCode });
 
       const parts = [id];

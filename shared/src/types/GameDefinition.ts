@@ -111,6 +111,7 @@ export interface UIConfig {
 
 export interface GameMetadata {
   id: string;
+  slug?: string;
   title: string;
   description?: string;
   instructions?: string;

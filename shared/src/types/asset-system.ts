@@ -98,10 +98,12 @@ export type GenerationTask = z.infer<typeof GenerationTaskSchema>;
 
 export const AssetSystemConfigSchema = z.object({
   activePackId: z.string().optional(),
+  packIds: z.array(z.string()).optional(),
 });
 
 export interface AssetSystemConfig {
   activePackId?: string;
+  packIds?: string[];
 }
 
 export const DEFAULT_ASSET_PLACEMENT: AssetPlacement = {

@@ -8,7 +8,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const GAMES_ROOT = join(__dirname, '../../games/compiled');
+const PACKS_ROOT = join(__dirname, '../../r2/packs');
 
 async function main() {
   const argv = await yargs(hideBin(process.argv))
@@ -46,7 +46,7 @@ async function main() {
     ],
   });
 
-  const outputDir = join(GAMES_ROOT, argv.template, 'assets');
+  const outputDir = join(PACKS_ROOT, argv.pack);
   await mkdir(outputDir, { recursive: true });
 
   console.log(`\n📦 Fetching pack: ${argv.pack}`);
@@ -87,7 +87,7 @@ async function main() {
       await writeFile(filepath, buffer);
 
       manifest[templateId] = {
-        file: `assets/${filename}`,
+        file: filename,
         r2Key: entry.r2Key || '',
       };
 

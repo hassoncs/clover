@@ -1,11 +1,10 @@
 export interface AssetUrlConfig {
   offlineMode?: boolean;
-  localServerUrl?: string;   // "http://localhost:8765" or file:// path
-  gameId?: string;
+  localServerUrl?: string;
 }
 
 export function buildR2Key(packId: string, assetId: string): string {
-  return `${packId}/${assetId}.png`;
+  return `packs/${packId}/${assetId}.png`;
 }
 
 export function getAssetUrl(
@@ -13,9 +12,9 @@ export function getAssetUrl(
   cdnBaseUrl: string,
   config?: AssetUrlConfig
 ): string {
-  if (config?.offlineMode && config.gameId && config.localServerUrl) {
+  if (config?.offlineMode && config.localServerUrl) {
     const base = config.localServerUrl.replace(/\/$/, '');
-    return `${base}/${config.gameId}/${r2Key}`;
+    return `${base}/${r2Key}`;
   }
   return `${cdnBaseUrl.replace(/\/$/, '')}/${r2Key}`;
 }

@@ -130,7 +130,7 @@ export function isServerRunning(): boolean {
 export function getServerUrl(): string {
   if (Platform.OS === 'web') {
     const { env } = require('@/lib/config/env');
-    return `${env.apiUrl}/assets/games`;
+    return `${env.apiUrl}/assets`;
   }
   return `file://${getBaseDirectory()}`;
 }

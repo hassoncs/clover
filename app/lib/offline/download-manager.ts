@@ -132,12 +132,14 @@ export async function downloadGameForOffline(
   // 4. For each pack: download manifest, then asset files
   const assetFiles: Array<{ url: string; localPath: string }> = [];
 
+  const packsBaseUrl = `${cdnBaseUrl.replace(/\/$/, '')}/packs`;
+
   for (const pack of metadata.packs) {
-    const packDir = `${gameDir}packs/${pack.name}/`;
+    const packDir = `${gameDir}packs/${pack.packId}/`;
     await FileSystem.makeDirectoryAsync(packDir, { intermediates: true });
 
     // Download pack manifest
-    const manifestUrl = `${gameBaseUrl}/packs/${pack.name}/manifest.json`;
+    const manifestUrl = `${packsBaseUrl}/${pack.packId}/manifest.json`;
     const manifestPath = `${packDir}manifest.json`;
     await downloadFile(manifestUrl, manifestPath);
 
@@ -147,7 +149,7 @@ export async function downloadGameForOffline(
 
     for (const [, assetEntry] of Object.entries(packManifest.assets)) {
       assetFiles.push({
-        url: `${gameBaseUrl}/packs/${pack.name}/${assetEntry.file}`,
+        url: `${packsBaseUrl}/${pack.packId}/${assetEntry.file}`,
         localPath: `${packDir}${assetEntry.file}`,
       });
     }

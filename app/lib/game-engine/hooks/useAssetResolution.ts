@@ -70,14 +70,15 @@ function convertEmbeddedPackManifestsToPack(
   packManifests: Record<string, unknown>,
   config?: AssetUrlConfig
 ): { id: string; name: string; assets: Record<string, AssetConfig> } | null {
-  // Find the first pack (usually 'default')
-  for (const [packName, manifest] of Object.entries(packManifests)) {
-    const m = manifest as { packId?: string; assets?: Record<string, { file: string }> };
+  // Find the first pack (keyed by packId)
+  for (const [packId, manifest] of Object.entries(packManifests)) {
+    const m = manifest as { packId?: string; name?: string; assets?: Record<string, { file: string }> };
     if (!m.assets) continue;
 
+    const resolvedPackId = m.packId ?? packId;
     const assets: Record<string, AssetConfig> = {};
     for (const [templateId, assetEntry] of Object.entries(m.assets)) {
-      const filePath = `packs/${packName}/${assetEntry.file}`;
+      const filePath = `packs/${resolvedPackId}/${assetEntry.file}`;
       const fullUrl = getAssetUrl(filePath, env.assetCdnUrl, config);
       assets[templateId] = {
         imageUrl: fullUrl,
@@ -88,7 +89,7 @@ function convertEmbeddedPackManifestsToPack(
         offsetY: 0,
       };
     }
-    return { id: m.packId ?? gameId, name: packName, assets };
+    return { id: resolvedPackId, name: m.name ?? packId, assets };
   }
   return null;
 }
@@ -178,21 +179,20 @@ export function useAssetResolution(
 ): Map<string, ResolvedAsset | null> {
   const activePackId = definition.assetSystem?.activePackId;
   const source = options?.source ?? 'database';
-  const gameId = definition.metadata.id;
-  
+  const gameSlug = definition.metadata.slug ?? definition.metadata.id;
+
   const dbPackQuery = useAssetPackFromDatabase(activePackId);
-  
+
   // Get embedded asset manifest synchronously for template games
   const embeddedPackData = useMemo(() => {
-    if (source !== 'template' || !gameId) return null;
-    const packManifests = EMBEDDED_PACK_MANIFESTS[gameId];
+    if (source !== 'template' || !gameSlug) return null;
+    const packManifests = EMBEDDED_PACK_MANIFESTS[gameSlug];
     if (!packManifests) return null;
-    return convertEmbeddedPackManifestsToPack(gameId, packManifests, {
+    return convertEmbeddedPackManifestsToPack(gameSlug, packManifests, {
       offlineMode: true,
       localServerUrl: getServerUrl(),
-      gameId,
     });
-  }, [source, gameId]);
+  }, [source, gameSlug]);
 
   return useMemo(() => {
     let mergedPacks: Record<string, any> = {};
@@ -203,7 +203,6 @@ export function useAssetResolution(
       const dbPack = convertDbPackToEmbedded(dbPackQuery.data, {
         offlineMode: true,
         localServerUrl: getServerUrl(),
-        gameId,
       });
       mergedPacks[dbPack.name] = dbPack;
     }
@@ -234,7 +233,7 @@ export function useAssetResolution(
     entities,
     activePackId,
     source,
-    gameId,
+    gameSlug,
     definition.assetSystem,
     definition.templates,
     embeddedPackData,

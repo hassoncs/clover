@@ -102,12 +102,14 @@ async function installGame(
   // Copy pack assets
   if (game.assetCount > 0) {
     const packManifests = EMBEDDED_PACK_MANIFESTS[game.gameId] || {};
-    for (const [packName, manifest] of Object.entries(packManifests)) {
-      const m = manifest as { assets?: Record<string, { file: string }> };
+    for (const [packId, manifest] of Object.entries(packManifests)) {
+      const m = manifest as { packId?: string; assets?: Record<string, { file: string }> };
       if (!m.assets) continue;
 
+      const resolvedPackId = m.packId ?? packId;
+
       // Write pack manifest
-      const packDir = `${gameDir}packs/${packName}/`;
+      const packDir = `${gameDir}packs/${resolvedPackId}/`;
       await FileSystem.makeDirectoryAsync(packDir, { intermediates: true });
       await FileSystem.writeAsStringAsync(
         `${packDir}manifest.json`,
@@ -116,7 +118,7 @@ async function installGame(
 
       // Copy asset files
       for (const [, assetEntry] of Object.entries(m.assets)) {
-        const assetKey = `${game.gameId}/packs/${packName}/${assetEntry.file}`;
+        const assetKey = `packs/${resolvedPackId}/${assetEntry.file}`;
         const assetModule = EMBEDDED_ASSETS[assetKey];
         if (!assetModule) {
           console.warn(`[EmbeddedGames] Asset not found in registry: ${assetKey}`);

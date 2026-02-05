@@ -33,23 +33,15 @@ export default function TestGameRunScreen() {
     const gameManifests = EMBEDDED_PACK_MANIFESTS[id as string];
     if (!gameManifests) return null;
 
-    // Find the pack matching the activePackId (check by packId in manifests)
-    let packManifest: { assets?: Record<string, { file: string }> } | null = null;
-    let packName: string | null = null;
-    for (const [name, manifest] of Object.entries(gameManifests)) {
-      const m = manifest as { packId?: string; assets?: Record<string, { file: string }> };
-      if (m.packId === activePackId || name === activePackId) {
-        packManifest = m;
-        packName = name;
-        break;
-      }
-    }
-    if (!packManifest?.assets || !packName) return null;
+    // Find the pack matching the activePackId (keyed by packId)
+    const packManifest = gameManifests[activePackId] as { packId?: string; assets?: Record<string, { file: string }> } | undefined;
+    if (!packManifest?.assets) return null;
 
+    const packId = packManifest.packId ?? activePackId;
     const entries = Object.entries(packManifest.assets).map(([templateId, assetEntry]) => ({
       templateId,
-      r2Key: `packs/${packName}/${assetEntry.file}`,
-      file: `packs/${packName}/${assetEntry.file}`,
+      r2Key: `packs/${packId}/${assetEntry.file}`,
+      file: `packs/${packId}/${assetEntry.file}`,
       imageUrl: null,
       placement: null,
     }));
@@ -72,7 +64,6 @@ export default function TestGameRunScreen() {
         const fullUrl = getAssetUrl(entry.file, '', {
           offlineMode: true,
           localServerUrl: getServerUrl(),
-          gameId: id,
         });
         result[entry.templateId] = {
           imageUrl: fullUrl,
