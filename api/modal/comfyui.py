@@ -438,7 +438,7 @@ def build_layered_workflow(base_prompt: str, layers: list, width: int, height: i
     timeout=600,
     volumes={"/models": models_volume},
     scaledown_window=300,
-    keep_warm=1,
+    keep_warm=0,  # Scale to zero when idle - cold starts take ~2 min
 )
 class ComfyUIWorker:
     # Container lifecycle state tracking

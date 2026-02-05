@@ -21,8 +21,8 @@ This document describes our unified image generation system that supports both *
 ┌─────────────────────────────────────────────────────────────┐
 │           PROVIDER SELECTION                                │
 │  IMAGE_GENERATION_PROVIDER env var                          │
-│  - 'modal' (default) → Modal ComfyUI                        │
-│  - 'scenario' → Scenario.com                                │
+│  - 'scenario' (default) → Scenario.com                      │
+│  - 'modal' → Modal ComfyUI                                  │
 └──────────────────────┬──────────────────────────────────────┘
                        │
         ┌──────────────┴──────────────┐
@@ -72,30 +72,25 @@ const client = new ComfyUIClient({ endpoint }); // ❌
 
 | Variable | Required For | Description |
 |----------|--------------|-------------|
-| `IMAGE_GENERATION_PROVIDER` | Optional | `'modal'` (default) or `'scenario'` |
-| `MODAL_ENDPOINT` | Optional | Custom Modal endpoint URL |
-| `SCENARIO_API_KEY` | Scenario only | Scenario API key |
-| `SCENARIO_SECRET_API_KEY` | Scenario only | Scenario API secret |
+| `IMAGE_GENERATION_PROVIDER` | Optional | `'scenario'` (default) or `'modal'` |
+| `SCENARIO_API_KEY` | Scenario (default) | Scenario API key |
+| `SCENARIO_SECRET_API_KEY` | Scenario (default) | Scenario API secret |
 | `SCENARIO_API_URL` | Optional | Custom Scenario API URL |
+| `MODAL_ENDPOINT` | Optional | Custom Modal endpoint URL |
 
 ### Configuration Examples
 
-**Using Modal (Default - Zero Config):**
+**Using Scenario (Default):**
 ```bash
-# No env vars needed - works out of the box
-# Uses: https://hassoncs--slopcade-comfyui-web-img2img.modal.run
-```
-
-**Using Modal (Custom Endpoint):**
-```bash
-export MODAL_ENDPOINT="https://your-endpoint.modal.run"
-```
-
-**Using Scenario:**
-```bash
-export IMAGE_GENERATION_PROVIDER="scenario"
 export SCENARIO_API_KEY="your-api-key"
 export SCENARIO_SECRET_API_KEY="your-api-secret"
+```
+
+**Using Modal:**
+```bash
+export IMAGE_GENERATION_PROVIDER="modal"
+# Optional: custom endpoint (defaults to hassoncs--slopcade-comfyui-web-img2img.modal.run)
+export MODAL_ENDPOINT="https://your-endpoint.modal.run"
 ```
 
 ---

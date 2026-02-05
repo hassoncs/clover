@@ -5,7 +5,36 @@ import { useRouter } from "expo-router";
 import type { ExampleMeta } from "@/lib/registry/types";
 import type { GodotBridge } from "@/lib/godot/types";
 import type { GameDefinition } from "@slopcade/shared";
-import { TextureButton } from "@slopcade/ui";
+import { Image, ImageSourcePropType } from "react-native";
+
+function TextureButton({ 
+  normalImage, 
+  pressedImage, 
+  width, 
+  height, 
+  onPressIn, 
+  onPressOut, 
+  onPress 
+}: { 
+  normalImage: ImageSourcePropType;
+  pressedImage: ImageSourcePropType;
+  width: number;
+  height: number;
+  onPressIn?: () => void;
+  onPressOut?: () => void;
+  onPress?: () => void;
+}) {
+  const [pressed, setPressed] = useState(false);
+  return (
+    <Pressable 
+      onPressIn={() => { setPressed(true); onPressIn?.(); }}
+      onPressOut={() => { setPressed(false); onPressOut?.(); }}
+      onPress={onPress}
+    >
+      <Image source={pressed ? pressedImage : normalImage} style={{ width, height }} />
+    </Pressable>
+  );
+}
 import { FullScreenHeader } from "../../components/FullScreenHeader";
 
 export const metadata: ExampleMeta = {

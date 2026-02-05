@@ -7,8 +7,7 @@ module.exports = function (api) {
     ],
     plugins: [
       'babel-plugin-transform-import-meta',
-      'react-native-worklets-core/plugin',
-      'react-native-reanimated/plugin',
+      'react-native-reanimated/plugin',  // must be last
     ],
   };
 };
