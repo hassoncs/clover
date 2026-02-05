@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "packId": "f661beb6-1e5e-4b9e-a01f-314c87248b75",
+  "name": "default",
+  "assets": {
+    "tube": {
+      "file": "tube.png"
+    },
+    "tubeHoverHighlight": {
+      "file": "tubeHoverHighlight.png"
+    },
+    "ball0": {
+      "file": "ball0.png"
+    },
+    "ball1": {
+      "file": "ball1.png"
+    },
+    "ball2": {
+      "file": "ball2.png"
+    },
+    "ball3": {
+      "file": "ball3.png"
+    },
+    "ball4": {
+      "file": "ball4.png"
+    },
+    "ball5": {
+      "file": "ball5.png"
+    },
+    "ball6": {
+      "file": "ball6.png"
+    },
+    "ball7": {
+      "file": "ball7.png"
+    },
+    "heldBallIndicator": {
+      "file": "heldBallIndicator.png"
+    }
+  }
+}

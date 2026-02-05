@@ -17,6 +17,8 @@ export * from './godot-bridge';
 export * from './progress';
 export * from './LevelDefinition';
 export * from './LevelPack';
+export * from './world-ops';
+export * from './debug-ops';
 export type {
   ContainerConfig,
   ContainerMatchRule,

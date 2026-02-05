@@ -25,7 +25,7 @@ const game: GameDefinition = {
     instructions: "Watch the buttons light up, then tap them in the same order. Each round adds one more to the pattern!",
     version: "1.0.0",
   },
-  assetSystem: { activePackId: "simon-default" },
+  assetSystem: { activePackId: "default" },
   background: {
     type: "static",
     whatDescription: "a dark gradient background with subtle glow effects",

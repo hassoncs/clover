@@ -36,7 +36,7 @@ const game: GameDefinition = {
     instructions: "Move with arrow keys or tap sides. Space/tap center to shoot. Don't let invaders reach the bottom!",
     version: "1.0.0",
   },
-  assetSystem: { activePackId: "spaceInvaders-default" },
+  assetSystem: { activePackId: "default" },
   background: {
     type: "static",
     color: "#000000",

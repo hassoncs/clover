@@ -36,6 +36,7 @@ export default function TestGameRunScreen() {
     const entries = Object.entries(manifest).map(([templateId, entry]) => ({
       templateId,
       r2Key: entry.r2Key,
+      file: entry.file,
       imageUrl: null,
       placement: null,
     }));
@@ -54,8 +55,8 @@ export default function TestGameRunScreen() {
     
     console.log('[test-games] Resolving asset pack entries:', packData.entries.length);
     for (const entry of packData.entries) {
-      if (entry.r2Key) {
-        const fullUrl = getAssetUrl(entry.r2Key, '', {
+      if (entry.file) {
+        const fullUrl = getAssetUrl(entry.file, '', {
           offlineMode: true,
           localServerUrl: getServerUrl(),
           gameId: id,

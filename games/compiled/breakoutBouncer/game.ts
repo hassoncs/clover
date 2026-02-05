@@ -21,7 +21,7 @@ const cx = (x: number) => x - HALF_W;
 const cy = (y: number) => HALF_H - y;
 
 const game: GameDefinition = {
-  assetSystem: { activePackId: "breakoutBouncer-default" },
+  assetSystem: { activePackId: "default" },
   metadata: {
     id: "test-breakout-bouncer",
     title: "Breakout Bouncer",

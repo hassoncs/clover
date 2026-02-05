@@ -374,7 +374,7 @@ export const uploadR2Stage: Stage = {
 
     if (run.spec.type === 'parallax' && run.artifacts.layerImages) {
       for (let i = 0; i < run.artifacts.layerImages.length; i++) {
-        const key = buildR2Key(run.meta.gameId, run.meta.packId, `${run.meta.assetId}-layer-${i}`);
+        const key = buildR2Key(run.meta.packId, `${run.meta.assetId}-layer-${i}`);
         const pngImage = await ensurePng(run.artifacts.layerImages[i]);
         await adapters.r2.put(key, pngImage, { contentType: 'image/png' });
         r2Keys.push(key);
@@ -386,14 +386,14 @@ export const uploadR2Stage: Stage = {
         throw new Error('No final image to upload');
       }
 
-      const key = buildR2Key(run.meta.gameId, run.meta.packId, run.meta.assetId);
+      const key = buildR2Key(run.meta.packId, run.meta.assetId);
       const pngImage = await ensurePng(finalImage);
       await adapters.r2.put(key, pngImage, { contentType: 'image/png' });
       r2Keys.push(key);
       publicUrls.push(adapters.r2.getPublicUrl(key));
 
       if (run.artifacts.sheetMetadataJson && run.spec.type === 'sheet') {
-        const metadataKey = buildR2Key(run.meta.gameId, run.meta.packId, run.meta.assetId).replace(/\.png$/, '.json');
+        const metadataKey = buildR2Key(run.meta.packId, run.meta.assetId).replace(/\.png$/, '.json');
         const metadataBuffer = new Uint8Array(Buffer.from(run.artifacts.sheetMetadataJson));
         await adapters.r2.put(metadataKey, metadataBuffer, { 
           contentType: 'application/json' 

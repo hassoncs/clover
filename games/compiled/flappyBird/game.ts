@@ -57,7 +57,7 @@ export const flappyBirdPersistence: PersistenceConfig<FlappyBirdProgress> = {
 };
 
 const game: GameDefinition = {
-  assetSystem: { activePackId: "flappyBird-default" },
+  assetSystem: { activePackId: "default" },
   metadata: {
     id: "test-flappy-bird",
     title: "Flappy Bird",

@@ -84,7 +84,11 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
             break;
         }
       }
-      context.physics.applyImpulseToCenter(entity.id, { x: impulseX, y: impulseY });
+      if (context.worldOps) {
+        context.worldOps.applyImpulse(entity.id, { x: impulseX, y: impulseY });
+      } else {
+        context.physics.applyImpulseToCenter(entity.id, { x: impulseX, y: impulseY });
+      }
     }
   }
 
@@ -142,10 +146,15 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
       const vy = action.y ? resolveNumber(action.y, context) : undefined;
       
       const current = context.physics.getLinearVelocity(entity.id);
-      context.physics.setLinearVelocity(entity.id, {
-          x: vx ?? current.x,
-          y: vy ?? current.y
-      });
+      const newVelocity = {
+        x: vx ?? current.x,
+        y: vy ?? current.y
+      };
+      if (context.worldOps) {
+        context.worldOps.setVelocity(entity.id, newVelocity);
+      } else {
+        context.physics.setLinearVelocity(entity.id, newVelocity);
+      }
     }
   }
 
@@ -216,7 +225,11 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
                   break;
               }
           }
-          context.physics.setLinearVelocity(entity.id, { x: vx, y: vy });
+          if (context.worldOps) {
+            context.worldOps.setVelocity(entity.id, { x: vx, y: vy });
+          } else {
+            context.physics.setLinearVelocity(entity.id, { x: vx, y: vy });
+          }
       }
   }
 
@@ -268,7 +281,11 @@ export class PhysicsActionExecutor implements ActionExecutor<PhysicsAction> {
         }
       }
 
-      context.physics.setLinearVelocity(entity.id, { x: vx, y: vy });
+      if (context.worldOps) {
+        context.worldOps.setVelocity(entity.id, { x: vx, y: vy });
+      } else {
+        context.physics.setLinearVelocity(entity.id, { x: vx, y: vy });
+      }
     }
   }
 }

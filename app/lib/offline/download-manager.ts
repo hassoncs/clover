@@ -10,7 +10,7 @@
  * Storage structure:
  * {documentDirectory}/slopcade/games/{gameId}/
  *   ├── manifest.json
- *   └── generated/{gameId}/{packId}/*.png
+ *   └── {packId}/*.png
  */
 
 import * as FileSystem from 'expo-file-system/legacy';

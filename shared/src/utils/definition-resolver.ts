@@ -13,10 +13,10 @@ export interface AssetResolverContext {
 function resolveAssetReference(
   assetRef: string,
   baseUrl: string,
-  gameId: string,
+  _gameId: string,
   packId: string
 ): string {
-  const r2Key = buildR2Key(gameId, packId, assetRef);
+  const r2Key = buildR2Key(packId, assetRef);
   return getAssetUrl(r2Key, baseUrl);
 }
 

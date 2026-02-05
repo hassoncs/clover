@@ -63,10 +63,12 @@ import {
   type PlayerPhase,
   logger,
 } from "./debug";
-import { cancelTweensForEntity } from "./behaviors/TweenBehaviors";
+import { cancelTweensForEntity, getGlobalTweenSystem } from "./behaviors/TweenBehaviors";
 import { GameSystemRunner } from "./systems/runner/GameSystemRunner";
 import type { SystemContext, UpdateContext } from "./systems/runner/types";
 import { GameLoopController } from "./GameLoopController";
+import { WorldOpsImpl } from "./WorldOpsImpl";
+import { DebugOpsImpl } from "./DebugOpsImpl";
 import {
   ViewportRuntimeSystem,
   InputRuntimeSystem,
@@ -839,6 +841,49 @@ export function GameRuntimeGodot({
         }
 
         gameSystemRunnerRef.current = runner;
+
+        if (Platform.OS === 'web' && debugMode) {
+          const tweenSystem = getGlobalTweenSystem();
+          if (tweenSystem) {
+            const worldOps = new WorldOpsImpl(
+              game.entityManager,
+              physics,
+              bridge,
+              tweenSystem,
+              (runner as any).eventQueue,
+              () => ({
+                variables: (game.gameState as any).variables ?? {},
+                constants: definition.constants as Record<string, number | string | boolean> | undefined,
+              })
+            );
+
+            (window as any).worldOps = worldOps;
+
+            const checkDebugBridges = () => {
+              const godotDebugBridge = (window as any).GodotDebugBridge;
+              if (godotDebugBridge && debugBridgeRef.current) {
+                const debugOps = new DebugOpsImpl(
+                  godotDebugBridge,
+                  debugBridgeRef.current,
+                  game.entityManager,
+                  physics,
+                  bridge,
+                  tweenSystem,
+                  (runner as any).eventQueue,
+                  () => ({
+                    variables: (game.gameState as any).variables ?? {},
+                    constants: definition.constants as Record<string, number | string | boolean> | undefined,
+                  })
+                );
+                (window as any).debugOps = debugOps;
+                logger.info("lifecycle", "Exposed window.worldOps and window.debugOps");
+              } else {
+                setTimeout(checkDebugBridges, 100);
+              }
+            };
+            checkDebugBridges();
+          }
+        }
 
         logger.info("lifecycle", "Emitting gameLoaded lifecycle event");
         logger.debug("lifecycle", "Pushing game_loaded to eventQueue");

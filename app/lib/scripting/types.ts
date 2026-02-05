@@ -1,4 +1,6 @@
 import type { InputEvents } from '@/lib/game-engine/BehaviorContext';
+import type { WorldOps, SequenceHandle, WorldEntityQuery, WorldEntityData } from '@slopcade/shared/types/world-ops';
+import type { Vec2 } from '@slopcade/shared/types/common';
 
 export interface ScriptBudgetConfig {
   maxExecutionTimeMs: number;
@@ -21,74 +23,57 @@ export interface DragSnapshot {
   entityId: string | null;
 }
 
-export interface AnimateConfig {
-  x?: number;
-  y?: number;
-  duration: number;
-  easing?: 'linear' | 'easeInQuad' | 'easeOutQuad' | 'easeInOutQuad';
-}
-
-export interface EntityData {
-  id: string;
-  tags: string[];
-  position: { x: number; y: number };
-  template?: string;
-}
-
+/**
+ * ScriptContext with sync reads + WorldOps for writes + startSequence for multi-frame work.
+ * This is the canonical interface for script hooks.
+ */
 export interface ScriptContext {
-  getVariable(name: string): unknown;
-  setVariable(name: string, value: unknown): void;
-  getConstant(name: string): number | string | boolean | undefined;
-  emit(eventName: string, data?: Record<string, unknown>): void;
-  win(): void;
-  lose(): void;
-  addScore(points: number): void;
-  addLives(count: number): void;
-  spawnEntity(templateId: string, position: { x: number; y: number }, opts?: SpawnOptions): string | null;
-  destroyEntity(entityId: string): void;
-  getEntityPosition(entityId: string): { x: number; y: number } | null;
-  setEntityPosition(entityId: string, position: { x: number; y: number }): void;
-  getEntityVelocity(entityId: string): { x: number; y: number } | null;
-  setEntityVelocity(entityId: string, velocity: { x: number; y: number }): void;
-  applyImpulse(entityId: string, impulse: { x: number; y: number }): void;
-  getEntityTags(entityId: string): string[];
-  addTag(entityId: string, tag: string): void;
-  removeTag(entityId: string, tag: string): boolean;
+  // ═══════════════════════════════════════════════════════════════
+  // SYNC READS — from frame cache, safe in onUpdate
+  // ═══════════════════════════════════════════════════════════════
+  getPosition(entityId: string): Vec2 | null;
+  getVelocity(entityId: string): Vec2 | null;
+  getRotation(entityId: string): number | null;
+  getTags(entityId: string): string[];
   hasTag(entityId: string, tag: string): boolean;
-  queryEntities(query?: EntityQuery): string[];
-  getEntityData(entityId: string): EntityData | null;
-  queryEntitiesWithData(query?: EntityQuery): EntityData[];
-  animateEntity(entityId: string, config: AnimateConfig): void;
-  getInput(): InputSnapshot | null;
-  getMouse(): { x: number; y: number } | null;
-  getDrag(): DragSnapshot | null;
-  getTapTargetId(): string | null;
+  getTemplate(entityId: string): string | undefined;
+  getVariable(name: string): unknown;
+  getConstant(name: string): number | string | boolean | undefined;
+  queryEntities(query?: WorldEntityQuery): string[];
+  getEntityData(entityId: string): WorldEntityData | null;
+  queryEntitiesWithData(query?: WorldEntityQuery): WorldEntityData[];
+
+  // ═══════════════════════════════════════════════════════════════
+  // ASYNC WORLD OPS — full API, for writes + animations + sequences
+  // ═══════════════════════════════════════════════════════════════
+  world: WorldOps;
+
+  // ═══════════════════════════════════════════════════════════════
+  // SEQUENCE MANAGEMENT — bridge from sync onUpdate to async work
+  // ═══════════════════════════════════════════════════════════════
+  startSequence(name: string, fn: (world: WorldOps) => Promise<void>): SequenceHandle;
+  isSequenceRunning(name: string): boolean;
+  cancelSequence(name: string): void;
+
+  // ═══════════════════════════════════════════════════════════════
+  // FRAME INFO + INPUT (sync, per-frame)
+  // ═══════════════════════════════════════════════════════════════
+  readonly dt: number;
+  readonly elapsed: number;
+  readonly frameId: number;
+  input: InputSnapshot | null;
+  mouse: Vec2 | null;
+  drag: DragSnapshot | null;
+
+  // ═══════════════════════════════════════════════════════════════
+  // UTILITIES (sync, pure functions)
+  // ═══════════════════════════════════════════════════════════════
   random(): number;
   randomInt(min: number, max: number): number;
   randomChoice<T>(array: readonly T[]): T;
   clamp(value: number, min: number, max: number): number;
   lerp(a: number, b: number, t: number): number;
-  distance(a: { x: number; y: number }, b: { x: number; y: number }): number;
-  readonly frameId: number;
-  readonly elapsed: number;
-  readonly dt: number;
-}
-
-export interface SpawnOptions {
-  velocity?: { x: number; y: number };
-  angle?: number;
-  data?: Record<string, unknown>;
-}
-
-export interface EntityQuery {
-  tag?: string;
-  templateId?: string;
-  inAabb?: {
-    minX: number;
-    minY: number;
-    maxX: number;
-    maxY: number;
-  };
+  distance(a: Vec2, b: Vec2): number;
 }
 
 export interface InputSnapshot {
@@ -98,6 +83,10 @@ export interface InputSnapshot {
   timestamp: number;
 }
 
+/**
+ * Script lifecycle exports.
+ * All hooks return void — no async hooks allowed.
+ */
 export interface ScriptLifecycleExports {
   onStart?(ctx: ScriptContext): void;
   onUpdate?(ctx: ScriptContext, dt: number): void;
@@ -137,44 +126,6 @@ export interface ScriptResult<T = unknown> {
   success: boolean;
   value?: T;
   error?: ScriptErrorReport;
-}
-
-export interface SandboxRuntimeContext {
-  entityManager: {
-    spawnEntity(templateId: string, position: { x: number; y: number }, opts?: SpawnOptions): string | null;
-    destroyEntity(entityId: string): void;
-    getEntityPosition(entityId: string): { x: number; y: number } | null;
-    setEntityPosition(entityId: string, position: { x: number; y: number }): void;
-    getEntityVelocity(entityId: string): { x: number; y: number } | null;
-    setEntityVelocity(entityId: string, velocity: { x: number; y: number }): void;
-    applyImpulse(entityId: string, impulse: { x: number; y: number }): void;
-    getEntityTags(entityId: string): string[];
-    addTag(entityId: string, tag: string): void;
-    removeTag(entityId: string, tag: string): boolean;
-    hasTag(entityId: string, tag: string): boolean;
-    queryEntities(query?: EntityQuery): string[];
-    getEntityData(entityId: string): EntityData | null;
-    queryEntitiesWithData(query?: EntityQuery): EntityData[];
-    getEntityTemplate(entityId: string): string | undefined;
-  };
-  rulesEvaluator: {
-    getVariable(name: string): unknown;
-    setVariable(name: string, value: unknown): void;
-    getConstant(name: string): number | string | boolean | undefined;
-    emitEvent(eventName: string, data?: Record<string, unknown>): void;
-    win(): void;
-    lose(): void;
-  };
-  animateEntity?(entityId: string, config: AnimateConfig): void;
-  inputSnapshot: InputSnapshot | null;
-  mousePosition: { x: number; y: number } | null;
-  dragState: DragSnapshot | null;
-  frameInfo: {
-    frameId: number;
-    elapsed: number;
-    dt: number;
-  };
-  constants?: Record<string, number | string | boolean>;
 }
 
 export interface ScriptSandboxConfig {

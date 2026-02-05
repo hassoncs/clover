@@ -17,7 +17,6 @@ import {
 } from '@/ai'
 import { validateGame, getValidationReportJson } from '@/validation/gameValidator';
 import type { GameValidationReport } from '@slopcade/shared/validation';
-import { isTestGameId, getTestGameAsync, listTemplateGames } from '@/dev/templateLoader';
 
 interface GameRow {
   id: string;
@@ -51,9 +50,7 @@ function parseValidationReport(json: string | null): GameValidationReport | null
   }
 }
 
-type GameSource = 'database' | 'template';
-
-function toClientGame(row: GameRow, source: GameSource = 'database') {
+function toClientGame(row: GameRow) {
   const validationReport = parseValidationReport(row.validation_report);
 
   return {
@@ -69,7 +66,7 @@ function toClientGame(row: GameRow, source: GameSource = 'database') {
     updatedAt: new Date(row.updated_at),
     baseGameId: row.base_game_id,
     forkedFromId: row.forked_from_id,
-    source,
+    source: 'database' as const,
     validation: validationReport ? {
       valid: row.validation_valid === 1,
       score: row.validation_score ?? 0,
@@ -81,37 +78,6 @@ function toClientGame(row: GameRow, source: GameSource = 'database') {
   };
 }
 
-async function createDevTemplateResponse(id: string, level?: number) {
-  const game = await getTestGameAsync(id, level);
-  if (!game) return null;
-
-  const definition = JSON.stringify(game.definition);
-  const validationReport = validateGame(game.definition);
-
-  return {
-    id,
-    userId: '00000000-0000-0000-0000-000000000000',
-    title: game.title,
-    description: game.description,
-    definition,
-    thumbnailUrl: null,
-    isPublic: true,
-    playCount: 0,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    baseGameId: id,
-    forkedFromId: null,
-    validation: {
-      valid: validationReport.valid,
-      score: validationReport.summary.score,
-      criticalCount: validationReport.summary.criticalCount,
-      warningCount: validationReport.summary.warningCount,
-      topIssues: validationReport.summary.topIssues,
-      isStale: false,
-    },
-  };
-}
-
 export const gamesRouter = router({
   list: protectedProcedure.query(async ({ ctx }) => {
     const result = await ctx.env.DB.prepare(
@@ -120,23 +86,12 @@ export const gamesRouter = router({
       .bind(ctx.user.id)
       .all<GameRow>();
 
-    return result.results.map(row => toClientGame(row, 'database'));
+    return result.results.map(row => toClientGame(row));
   }),
 
   getPublic: publicProcedure
-    .input(z.object({ id: z.string(), level: z.number().optional() }))
+    .input(z.object({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
-      if (isTestGameId(input.id)) {
-        const devGame = await createDevTemplateResponse(input.id, input.level);
-        if (devGame) {
-          return devGame;
-        }
-      }
-
-      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.id)) {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Invalid game ID format' });
-      }
-
       const result = await ctx.env.DB.prepare(
         `SELECT * FROM games WHERE id = ? AND deleted_at IS NULL`
       )
@@ -155,19 +110,8 @@ export const gamesRouter = router({
     }),
 
   get: protectedProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
-      if (isTestGameId(input.id)) {
-        const devGame = await createDevTemplateResponse(input.id);
-        if (devGame) {
-          return devGame;
-        }
-      }
-
-      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input.id)) {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Invalid game ID format' });
-      }
-
       const result = await ctx.env.DB.prepare(
         `SELECT * FROM games WHERE id = ? AND deleted_at IS NULL`
       )
@@ -421,31 +365,6 @@ export const gamesRouter = router({
       const offset = input?.offset ?? 0;
       const includeCritical = input?.includeCritical ?? false;
 
-      let templateGames: ReturnType<typeof toClientGame>[] = [];
-      if (offset === 0) {
-        try {
-          const templates = await listTemplateGames();
-          templateGames = templates.map(t => ({
-            id: t.id,
-            userId: null,
-            title: t.title,
-            description: t.description,
-            definition: '',
-            thumbnailUrl: t.thumbnailUrl,
-            isPublic: true,
-            playCount: 0,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            baseGameId: t.id,
-            forkedFromId: null,
-            source: 'template' as const,
-            validation: null,
-          }));
-        } catch (err) {
-          console.error('[games] Failed to load template games:', err);
-        }
-      }
-
       let query = `SELECT * FROM games WHERE is_public = 1 AND deleted_at IS NULL`;
       
       if (!includeCritical) {
@@ -458,9 +377,7 @@ export const gamesRouter = router({
         .bind(limit, offset)
         .all<GameRow>();
 
-      const dbGames = result.results.map(row => toClientGame(row, 'database'));
-
-      return [...templateGames, ...dbGames];
+      return result.results.map(row => toClientGame(row));
     }),
 
   validate: protectedProcedure

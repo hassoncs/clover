@@ -71,7 +71,7 @@ const game: GameDefinition = {
     instructions: "Swipe up/down/left/right to control the snake. Eat red food to grow!",
     version: "1.0.0",
   },
-  assetSystem: { activePackId: "snake-default" },
+  assetSystem: { activePackId: "default" },
   background: {
     type: "static",
     color: "#1a1a2e",

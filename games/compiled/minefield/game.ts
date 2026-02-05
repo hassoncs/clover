@@ -26,7 +26,7 @@ const game: GameDefinition = {
     instructions: "Tap to reveal cells. Long press to flag mines. Clear all safe cells to win!",
     version: "1.0.0",
   },
-  assetSystem: { activePackId: "minefield-default" },
+  assetSystem: { activePackId: "default" },
   background: {
     type: "static",
     color: "#2c3e50",

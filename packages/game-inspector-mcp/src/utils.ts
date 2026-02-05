@@ -192,39 +192,24 @@ export async function queryGodot<T>(page: Page | null, method: string, args: unk
   }
 
   return page.evaluate(async (evalArgs: { method: string; args: unknown[] }) => {
-    const iframe = document.querySelector('iframe[title="Godot Game Engine"]') as HTMLIFrameElement | null;
-    if (!iframe?.contentWindow) return { error: "Godot iframe not found" };
+    type DebugOpsWindow = Window & { debugOps?: any };
+    const win = window as DebugOpsWindow;
     
-    const bridge = (iframe.contentWindow as { GodotBridge?: { query?: (id: string, method: string, argsJson: string) => void } }).GodotBridge;
-    if (!bridge?.query) return { error: "Godot bridge not available" };
+    if (!win.debugOps) {
+      return { error: "debugOps not available. Ensure game is loaded with ?debug=true" };
+    }
 
-    const requestId = `mcp_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    
-    return new Promise<unknown>((resolve) => {
-      const timeout = setTimeout(() => resolve({ error: `Query timeout: ${evalArgs.method}` }), 5000);
-      
-      type GodotQueryWindow = Window & { 
-        _godotPendingQueries?: Map<string, { resolve: (r: unknown) => void; timeout: ReturnType<typeof setTimeout> }>;
-        _godotQueryResolve?: (id: string, json: string) => void;
-      };
-      const win = window as GodotQueryWindow;
-      
-      if (!win._godotPendingQueries) win._godotPendingQueries = new Map();
-      if (!win._godotQueryResolve) {
-        win._godotQueryResolve = (id: string, json: string) => {
-          const pending = win._godotPendingQueries?.get(id);
-          if (pending) {
-            clearTimeout(pending.timeout);
-            win._godotPendingQueries?.delete(id);
-            try { pending.resolve(JSON.parse(json)); } 
-            catch { pending.resolve({ error: "Parse error" }); }
-          }
-        };
-      }
-      
-      win._godotPendingQueries.set(requestId, { resolve, timeout });
-      bridge.query!(requestId, evalArgs.method, JSON.stringify(evalArgs.args));
-    });
+    const methodFn = win.debugOps[evalArgs.method];
+    if (typeof methodFn !== "function") {
+      return { error: `Method ${evalArgs.method} not found on debugOps` };
+    }
+
+    try {
+      const result = await methodFn.apply(win.debugOps, evalArgs.args);
+      return result ?? { success: true };
+    } catch (err) {
+      return { error: `Error calling ${evalArgs.method}: ${String(err)}` };
+    }
   }, { method, args }) as Promise<T | { error: string }>;
 }
 
@@ -234,33 +219,21 @@ export async function querySlopcade<T>(page: Page | null, method: string, args: 
   }
 
   return page.evaluate(async (evalArgs: { method: string; args: unknown[] }) => {
-    type SlopcadeWindow = Window & {
-      SlopcadeDebugBridge?: {
-        ready?: boolean;
-        pause?: () => void;
-        resume?: () => void;
-        step?: (frames?: number) => Promise<unknown>;
-        setTimeScale?: (scale: number) => void;
-        getTimeState?: () => unknown;
-        getSnapshot?: (options?: unknown) => unknown;
-      };
-    };
-    const w = window as SlopcadeWindow;
-    const bridge = w.SlopcadeDebugBridge;
-
-    if (!bridge?.ready) {
-      return { error: "SlopcadeDebugBridge not available or not ready" };
+    type DebugOpsWindow = Window & { debugOps?: any };
+    const win = window as DebugOpsWindow;
+    
+    if (!win.debugOps) {
+      return { error: "debugOps not available. Ensure game is loaded with ?debug=true" };
     }
 
-    const methodFn = bridge[evalArgs.method as keyof typeof bridge];
+    const methodFn = win.debugOps[evalArgs.method];
     if (typeof methodFn !== "function") {
-      return { error: `Method ${evalArgs.method} not found on SlopcadeDebugBridge` };
+      return { error: `Method ${evalArgs.method} not found on debugOps` };
     }
 
     try {
-      const result = (methodFn as (...args: unknown[]) => unknown | Promise<unknown>).apply(bridge, evalArgs.args);
-      const resolvedResult = result instanceof Promise ? await result : result;
-      return resolvedResult ?? { success: true };
+      const result = await methodFn.apply(win.debugOps, evalArgs.args);
+      return result ?? { success: true };
     } catch (err) {
       return { error: `Error calling ${evalArgs.method}: ${String(err)}` };
     }

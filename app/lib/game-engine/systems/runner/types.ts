@@ -19,6 +19,7 @@ import type { EntityManager } from '../../EntityManager';
 import type { EventBus } from '@slopcade/shared';
 import type { InputState, GameState, CollisionInfo } from '../../BehaviorContext';
 import type { EventQueue } from './EventQueue';
+import type { WorldOps } from '@slopcade/shared/types/world-ops';
 
 export type { CollisionInfo };
 
@@ -269,6 +270,9 @@ export interface SystemContext {
   
   /** Event queue for next-frame event delivery (prevents same-frame side effects) */
   eventQueue: EventQueue;
+  
+  /** WorldOps interface for unified entity manipulation (optional for backward compatibility) */
+  worldOps?: WorldOps;
 }
 
 /**

@@ -72,10 +72,10 @@ function convertEmbeddedManifestToPack(
 ): any {
   const assets: Record<string, AssetConfig> = {};
   for (const [templateId, entry] of Object.entries(manifest)) {
-    const fullUrl = getAssetUrl(entry.r2Key, env.assetCdnUrl, config);
+    const fullUrl = getAssetUrl(entry.file, env.assetCdnUrl, config);
     assets[templateId] = {
       imageUrl: fullUrl,
-      assetRef: entry.r2Key,
+      assetRef: entry.file,
       source: 'generated' as const,
       scale: 1,
       offsetX: 0,

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { trpc } from '@/lib/trpc/client';
 import { EMBEDDED_MANIFEST, EMBEDDED_GAME_JSONS } from '@/lib/offline/embedded-games-registry';
 
@@ -33,47 +33,38 @@ interface UseBrowseGamesReturn {
 
 export function useBrowseGames(options: UseBrowseGamesOptions = {}): UseBrowseGamesReturn {
   const pageSize = options.pageSize ?? 10;
-  const isDev = __DEV__;
 
   const [publicGames, setPublicGames] = useState<PublicGame[]>([]);
-  const [localGames, setLocalGames] = useState<PublicGame[]>([]);
   const [isLoadingPublic, setIsLoadingPublic] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [publicGamesPage, setPublicGamesPage] = useState(1);
   const [hasMorePublicGames, setHasMorePublicGames] = useState(true);
   const [totalPublicGames, setTotalPublicGames] = useState(0);
 
-  useEffect(() => {
-    if (!isDev) return;
-    
-    const loadLocalGames = () => {
-      try {
-        const manifest = EMBEDDED_MANIFEST as { games?: Array<{ gameId: string }> };
-        const localGamesList = (manifest.games || []).map((g) => {
-          const gameJson = EMBEDDED_GAME_JSONS[g.gameId] as { title?: string; description?: string } | undefined;
-          return {
-            id: g.gameId,
-            title: gameJson?.title ?? g.gameId,
-            description: gameJson?.description ?? '',
-            playCount: 0,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            userId: null,
-            definition: '',
-            thumbnailUrl: null,
-            isPublic: true,
-            source: 'template' as const,
-          };
-        });
-        setLocalGames(localGamesList);
-      } catch (err) {
-        console.warn('Failed to load local template games:', err);
-        setLocalGames([]);
-      }
-    };
-    
-    loadLocalGames();
-  }, [isDev]);
+  const embeddedGames = useMemo<PublicGame[]>(() => {
+    try {
+      const manifest = EMBEDDED_MANIFEST as { games?: Array<{ gameId: string }> };
+      return (manifest.games || []).map((g) => {
+        const gameJson = EMBEDDED_GAME_JSONS[g.gameId] as { title?: string; description?: string } | undefined;
+        return {
+          id: g.gameId,
+          title: gameJson?.title ?? g.gameId,
+          description: gameJson?.description ?? '',
+          playCount: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          userId: null,
+          definition: '',
+          thumbnailUrl: null,
+          isPublic: true,
+          source: 'template' as const,
+        };
+      });
+    } catch (err) {
+      console.warn('Failed to load embedded template games:', err);
+      return [];
+    }
+  }, []);
 
   const fetchPublicGames = useCallback(async (page: number, showRefresh = false) => {
     if (showRefresh) setIsRefreshing(true);
@@ -86,22 +77,21 @@ export function useBrowseGames(options: UseBrowseGamesOptions = {}): UseBrowseGa
       });
       
       if (page === 1) {
-        const combined = [...localGames, ...result];
-        setPublicGames(combined);
+        setPublicGames([...embeddedGames, ...result]);
       } else {
         setPublicGames(prev => [...prev, ...result]);
       }
       
       setHasMorePublicGames(result.length === pageSize);
-      setTotalPublicGames(prev => page === 1 ? result.length + localGames.length : prev);
+      setTotalPublicGames(prev => page === 1 ? result.length + embeddedGames.length : prev);
     } catch (err) {
       console.error("Failed to load public games:", err);
-      if (page === 1) setPublicGames(localGames);
+      if (page === 1) setPublicGames(embeddedGames);
     } finally {
       setIsLoadingPublic(false);
       setIsRefreshing(false);
     }
-  }, [pageSize, localGames]);
+  }, [pageSize, embeddedGames]);
 
   const handleRefresh = useCallback(() => {
     setPublicGamesPage(1);

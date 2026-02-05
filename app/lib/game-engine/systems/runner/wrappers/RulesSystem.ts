@@ -25,6 +25,8 @@ import type { GameState as RuntimeGameState, GameEventBus, GameStateValue, VarVa
 import * as StateHelpers from '../../../runtime/GameStateHelpers';
 import { RESERVED_VARS } from '../../../runtime/types';
 import { logger } from '../../../debug/Logger';
+import { WorldOpsImpl } from '../../../WorldOpsImpl';
+import { getGlobalTweenSystem } from '../../../behaviors/TweenBehaviors';
 
 import {
   SpawnActionExecutor,
@@ -159,6 +161,20 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
   initialize(ctx: SystemContext, _config: RulesSystemConfig): void {
     this.systemContext = ctx;
     
+    const tweenSystem = getGlobalTweenSystem();
+    if (tweenSystem) {
+      const worldOps = new WorldOpsImpl(
+        ctx.entityManager,
+        ctx.physics,
+        ctx.bridge,
+        tweenSystem,
+        ctx.eventQueue,
+        () => this.getCurrentGameState()
+      );
+      
+      (ctx as any).worldOps = worldOps;
+    }
+    
     const containerSystem = new ContainerSystem(ctx.entityManager, { 
       containers: this.config.containers 
     });
@@ -219,6 +235,13 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
       }
       this.smDefs = smDefs;
     }
+  }
+  
+  private getCurrentGameState() {
+    return {
+      variables: this.runtimeState?.vars ?? {},
+      constants: undefined,
+    };
   }
   
   update(ctx: UpdateContext, state: RulesSystemState): void;
@@ -407,6 +430,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
           mutator: this,
           camera: this.camera,
           bridge: this.systemContext.bridge,
+          worldOps: this.systemContext.worldOps,
           setTimeScale: () => {},
           playSound: (soundId: string) => this.systemContext!.bridge.playSound(soundId),
           setEntityTargetPosition: (entityId: string, x: number, y: number, config?: { duration?: number; easing?: string }) => {

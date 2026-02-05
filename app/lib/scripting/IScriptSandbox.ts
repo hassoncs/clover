@@ -11,8 +11,14 @@ import type {
   ScriptErrorReport,
   ScriptInputEvent,
   ScriptCollisionEvent,
-  SandboxRuntimeContext,
+  ScriptContext,
 } from './types';
+
+/**
+ * The runtime context passed to script hooks.
+ * This is the ScriptContext with sync reads + WorldOps + sequence management.
+ */
+export type ScriptRuntimeContext = ScriptContext;
 
 export interface ScriptLogEntry {
   level: 'log' | 'warn' | 'error';
@@ -72,28 +78,28 @@ export interface IScriptSandbox {
   /**
    * Run the onStart hook (called once when game starts).
    */
-  runStart(runtime: SandboxRuntimeContext): ScriptResult<void>;
+  runStart(runtime: ScriptRuntimeContext): ScriptResult<void>;
 
   /**
    * Run the onUpdate hook (called every frame).
    */
-  runUpdate(runtime: SandboxRuntimeContext, dt: number): ScriptResult<void>;
+  runUpdate(runtime: ScriptRuntimeContext, dt: number): ScriptResult<void>;
 
   /**
    * Run the onInput hook (called on user input events).
    */
-  runInput(runtime: SandboxRuntimeContext, event: ScriptInputEvent): ScriptResult<void>;
+  runInput(runtime: ScriptRuntimeContext, event: ScriptInputEvent): ScriptResult<void>;
 
   /**
    * Run the onCollision hook (called on physics collisions).
    */
-  runCollision(runtime: SandboxRuntimeContext, collision: ScriptCollisionEvent): ScriptResult<void>;
+  runCollision(runtime: ScriptRuntimeContext, collision: ScriptCollisionEvent): ScriptResult<void>;
 
   /**
    * Call an arbitrary exported function by name.
    */
   callFunction(
-    runtime: SandboxRuntimeContext,
+    runtime: ScriptRuntimeContext,
     functionName: string,
     args?: Record<string, unknown>
   ): ScriptResult<unknown>;

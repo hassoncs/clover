@@ -6,6 +6,7 @@ import type { Physics2D } from '../../physics2d/Physics2D';
 import type { RuntimeEntity } from '../types';
 import type { CameraSystem } from '../CameraSystem';
 import type { GodotBridge } from '../../godot/types';
+import type { WorldOps } from '@slopcade/shared/types/world-ops';
 
 export type ListValue = (number | string | boolean)[];
 
@@ -32,6 +33,7 @@ export interface RuleContext {
   mutator: IGameStateMutator;
   camera?: CameraSystem;
   bridge?: GodotBridge;
+  worldOps?: WorldOps;
   elapsed: number;
   collisions: CollisionInfo[];
   events: Map<string, unknown>;

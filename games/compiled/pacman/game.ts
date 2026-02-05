@@ -85,7 +85,7 @@ const game: GameDefinition = {
     instructions: "Swipe to move Pac-Man. Eat all dots to win. Avoid ghosts! Power pellets make ghosts vulnerable.",
     version: "1.0.0",
   },
-  assetSystem: { activePackId: "pacman-default" },
+  assetSystem: { activePackId: "default" },
   background: {
     type: "static",
     color: "#000000",

@@ -26,7 +26,7 @@ const game: GameDefinition = {
     instructions: "Drag left/right to move your paddle. Keep the ball in play!",
     version: "1.0.0",
   },
-  assetSystem: { activePackId: "pong-default" },
+  assetSystem: { activePackId: "default" },
   background: {
     type: "static",
     color: "#0a0a1a",

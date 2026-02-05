@@ -43,7 +43,7 @@ const gemConditionalBehaviors: ConditionalBehavior[] = [
 const gridConfig = createGridConfig(GRID_ROWS, GRID_COLS, CELL_SIZE);
 
 const game: GameDefinition = {
-  assetSystem: { activePackId: "gemCrush-default" },
+  assetSystem: { activePackId: "default" },
   metadata: {
     id: "gem-crush",
     title: "Gem Crush",

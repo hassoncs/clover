@@ -109,7 +109,7 @@ export function createBallSortGame(): GameDefinition {
       instructions: "Tap a tube to pick up the top ball, then tap another tube to drop it. You can only drop on the same color or an empty tube.",
       version: "2.0.0",
     },
-    assetSystem: { activePackId: "ballSort-default" },
+    assetSystem: { activePackId: "default" },
     world: {
       gravity: { x: 0, y: 0 },
       pixelsPerMeter: 50,

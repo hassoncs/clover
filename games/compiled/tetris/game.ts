@@ -24,7 +24,7 @@ const game: GameDefinition = {
     instructions: "Swipe left/right to move, tap to rotate, swipe down to drop faster",
     version: "1.0.0",
   },
-  assetSystem: { activePackId: "tetris-default" },
+  assetSystem: { activePackId: "default" },
   background: {
     type: "static",
     color: "#1a1a2e",

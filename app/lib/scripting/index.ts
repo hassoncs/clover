@@ -2,5 +2,4 @@ export type { IScriptSandbox, ScriptReloadResult, ScriptLogEntry, ScriptHookName
 export { UnsafeScriptSandbox } from './UnsafeScriptSandbox';
 export { QuickJSScriptSandbox } from './QuickJSScriptSandbox';
 export { createScriptSandbox, USE_SAFE_SANDBOX } from './createScriptSandbox';
-export { createScriptContext, contextToPlainObject } from './GameScriptAPI';
 export * from './types';

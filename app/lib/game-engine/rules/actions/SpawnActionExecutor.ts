@@ -48,26 +48,27 @@ export class SpawnActionExecutor implements ActionExecutor<SpawnAction> {
         ? action.template[Math.floor(Math.random() * action.template.length)]
         : action.template;
 
-      const template = context.entityManager.getTemplate(templateId);
-      if (template) {
-        let initialVelocity: { x: number; y: number } | undefined;
-        if (action.launch) {
-          initialVelocity = this.calculateLaunchVelocity(action.launch, x, y, context);
-        }
+        const template = context.entityManager.getTemplate(templateId);
+        if (template) {
+          let initialVelocity: { x: number; y: number } | undefined;
+          if (action.launch) {
+            initialVelocity = this.calculateLaunchVelocity(action.launch, x, y, context);
+          }
 
-        if (context.bridge) {
-          context.bridge.spawnEntity(templateId, x, y, initialVelocity);
-        } else {
-          // Fallback for tests/mock scenarios without bridge
-          const entityId = `spawned_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-          context.entityManager.createEntity({
-            id: entityId,
-            name: template.id,
-            template: templateId,
-            transform: { x, y, angle: 0, scaleX: 1, scaleY: 1 },
-          });
+          if (context.worldOps) {
+            context.worldOps.spawn(templateId, { x, y }, { velocity: initialVelocity });
+          } else if (context.bridge) {
+            context.bridge.spawnEntity(templateId, x, y, initialVelocity);
+          } else {
+            const entityId = `spawned_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+            context.entityManager.createEntity({
+              id: entityId,
+              name: template.id,
+              template: templateId,
+              transform: { x, y, angle: 0, scaleX: 1, scaleY: 1 },
+            });
+          }
         }
-      }
     }
   }
 

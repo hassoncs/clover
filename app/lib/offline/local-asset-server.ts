@@ -5,9 +5,9 @@
  * provides a file:// URL resolver for locally stored game assets.
  * 
  * Storage structure:
- * {APP_DATA}/slopcade/games/{gameId}/generated/{gameId}/{packId}/{assetId}.png
+ * {APP_DATA}/slopcade/games/{gameId}/{packId}/{assetId}.png
  * 
- * R2 key format: generated/{gameId}/{packId}/{assetId}.png
+ * R2 key format: {packId}/{assetId}.png
  */
 
 import { Platform } from 'react-native';
@@ -39,7 +39,7 @@ function getBaseDirectory(): string {
  * Convert R2 key to local file path
  * 
  * @param gameId - Game identifier
- * @param r2Key - R2 key format: generated/{gameId}/{packId}/{assetId}.png
+ * @param r2Key - R2 key format: {packId}/{assetId}.png
  * @returns Local file:// URL
  */
 export function getLocalAssetPath(gameId: string, r2Key: string): string {
@@ -51,7 +51,7 @@ export function getLocalAssetPath(gameId: string, r2Key: string): string {
  * Check if a local asset exists
  * 
  * @param gameId - Game identifier
- * @param r2Key - R2 key format
+ * @param r2Key - R2 key format: {packId}/{assetId}.png
  * @returns Promise<boolean>
  */
 export async function localAssetExists(gameId: string, r2Key: string): Promise<boolean> {
@@ -140,7 +140,7 @@ export function getServerUrl(): string {
  * This is the primary method for getting asset URLs in offline mode.
  * 
  * @param gameId - Game identifier
- * @param r2Key - R2 key format: generated/{gameId}/{packId}/{assetId}.png
+ * @param r2Key - R2 key format: {packId}/{assetId}.png
  * @returns Local file:// URL
  */
 export function getAssetUrl(gameId: string, r2Key: string): string {

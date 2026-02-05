@@ -167,7 +167,7 @@ describeWithCredentials('AssetService Integration Tests (Real API)', () => {
 
       expect(result.success).toBe(true);
       expect(result.scenarioAssetId).toBeDefined();
-      expect(result.r2Key).toContain('generated/character/');
+      expect(result.r2Key).toContain('character/');
     }, 180000);
 
     it('generates item sprite', async () => {

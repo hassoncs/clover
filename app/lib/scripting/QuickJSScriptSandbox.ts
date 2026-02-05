@@ -1,6 +1,4 @@
-import type { QuickJSHandle } from 'quickjs-emscripten-core';
 import { QuickJSEngine } from './engine/QuickJSEngine';
-import { createScriptContext, contextToPlainObject } from './GameScriptAPI';
 import type {
   IScriptSandbox,
   ScriptReloadResult,
@@ -13,26 +11,13 @@ import type {
   ScriptErrorReport,
   ScriptInputEvent,
   ScriptCollisionEvent,
-  SandboxRuntimeContext,
+  ScriptContext,
 } from './types';
-
-interface HookHandles {
-  onStart: QuickJSHandle | null;
-  onUpdate: QuickJSHandle | null;
-  onInput: QuickJSHandle | null;
-  onCollision: QuickJSHandle | null;
-}
+import type { ScriptRuntimeContext } from './IScriptSandbox';
 
 export class QuickJSScriptSandbox implements IScriptSandbox {
   private config: ScriptSandboxConfig;
   private engine: QuickJSEngine;
-  private hookHandles: HookHandles = {
-    onStart: null,
-    onUpdate: null,
-    onInput: null,
-    onCollision: null,
-  };
-  private exportedFunctions: Map<string, QuickJSHandle> = new Map();
   private isInitialized = false;
   private isDisposed = false;
   private lastError: ScriptErrorReport | null = null;
@@ -90,6 +75,7 @@ export class QuickJSScriptSandbox implements IScriptSandbox {
         "use strict";
         const exports = {};
         ${scriptCode}
+        globalThis.__exports = exports;
         return exports;
       })()
     `;
@@ -100,43 +86,10 @@ export class QuickJSScriptSandbox implements IScriptSandbox {
       return evalResult as ScriptResult<void>;
     }
 
-    const exportsHandle = this.engine.getGlobal('__lastResult');
-    if (!exportsHandle) {
-      const wrappedCode2 = `
-        (function() {
-          "use strict";
-          const exports = {};
-          ${scriptCode}
-          globalThis.__exports = exports;
-        })()
-      `;
-      const evalResult2 = this.engine.evaluate(wrappedCode2, 'load');
-      if (!evalResult2.success) {
-        this.lastError = evalResult2.error ?? null;
-        return evalResult2 as ScriptResult<void>;
-      }
-    }
-
-    this.extractHooks();
     return { success: true };
   }
 
-  private extractHooks(): void {
-    const hookNames: ScriptHookName[] = ['onStart', 'onUpdate', 'onInput', 'onCollision'];
 
-    for (const hookName of hookNames) {
-      const checkCode = `typeof globalThis.__exports?.${hookName} === 'function'`;
-      const checkResult = this.engine.evaluate(checkCode, 'load');
-      
-      if (checkResult.success && checkResult.value === true) {
-        const getCode = `globalThis.__exports.${hookName}`;
-        const handle = this.engine.getGlobal('__exports');
-        if (handle) {
-          this.hookHandles[hookName] = handle;
-        }
-      }
-    }
-  }
 
   async reload(newScriptCode: string): Promise<ScriptReloadResult> {
     const previousHooks = {
@@ -146,7 +99,6 @@ export class QuickJSScriptSandbox implements IScriptSandbox {
       onCollision: this.hasHook('onCollision'),
     };
 
-    this.disposeHooks();
     this.config = { ...this.config, scriptCode: newScriptCode };
     this.isInitialized = false;
     this.lastError = null;
@@ -176,23 +128,7 @@ export class QuickJSScriptSandbox implements IScriptSandbox {
     return { success: true, previousHooks, newHooks };
   }
 
-  private disposeHooks(): void {
-    for (const handle of Object.values(this.hookHandles)) {
-      if (handle) {
-        handle.dispose();
-      }
-    }
-    this.hookHandles = {
-      onStart: null,
-      onUpdate: null,
-      onInput: null,
-      onCollision: null,
-    };
-    for (const handle of this.exportedFunctions.values()) {
-      handle.dispose();
-    }
-    this.exportedFunctions.clear();
-  }
+
 
   getReloadCount(): number {
     return this.reloadCount;
@@ -202,7 +138,7 @@ export class QuickJSScriptSandbox implements IScriptSandbox {
     return this.config.scriptCode;
   }
 
-  runStart(runtime: SandboxRuntimeContext): ScriptResult<void> {
+  runStart(runtime: ScriptRuntimeContext): ScriptResult<void> {
     if (!this.isInitialized || this.isDisposed) {
       return { success: false, error: this.createNotReadyError('start') };
     }
@@ -214,7 +150,7 @@ export class QuickJSScriptSandbox implements IScriptSandbox {
     return this.callHook('onStart', runtime, 'start');
   }
 
-  runUpdate(runtime: SandboxRuntimeContext, dt: number): ScriptResult<void> {
+  runUpdate(runtime: ScriptRuntimeContext, dt: number): ScriptResult<void> {
     if (!this.isInitialized || this.isDisposed) {
       return { success: false, error: this.createNotReadyError('update') };
     }
@@ -226,7 +162,7 @@ export class QuickJSScriptSandbox implements IScriptSandbox {
     return this.callHook('onUpdate', runtime, 'update', dt);
   }
 
-  runInput(runtime: SandboxRuntimeContext, event: ScriptInputEvent): ScriptResult<void> {
+  runInput(runtime: ScriptRuntimeContext, event: ScriptInputEvent): ScriptResult<void> {
     if (!this.isInitialized || this.isDisposed) {
       return { success: false, error: this.createNotReadyError('input') };
     }
@@ -238,7 +174,7 @@ export class QuickJSScriptSandbox implements IScriptSandbox {
     return this.callHook('onInput', runtime, 'input', event);
   }
 
-  runCollision(runtime: SandboxRuntimeContext, collision: ScriptCollisionEvent): ScriptResult<void> {
+  runCollision(runtime: ScriptRuntimeContext, collision: ScriptCollisionEvent): ScriptResult<void> {
     if (!this.isInitialized || this.isDisposed) {
       return { success: false, error: this.createNotReadyError('collision') };
     }
@@ -252,20 +188,43 @@ export class QuickJSScriptSandbox implements IScriptSandbox {
 
   private callHook(
     hookName: ScriptHookName,
-    runtime: SandboxRuntimeContext,
+    runtime: ScriptRuntimeContext,
     phase: ScriptErrorReport['phase'],
     ...extraArgs: unknown[]
   ): ScriptResult<void> {
     try {
-      const ctx = createScriptContext(runtime);
-      const ctxObj = contextToPlainObject(ctx);
+      const ctxObj = this.createContextObject(runtime);
 
-      const callCode = `globalThis.__exports.${hookName}(${JSON.stringify(ctxObj)}${extraArgs.length > 0 ? ', ' + extraArgs.map(a => JSON.stringify(a)).join(', ') : ''})`;
+      const callCode = `
+        (function() {
+          const result = globalThis.__exports.${hookName}(${JSON.stringify(ctxObj)}${extraArgs.length > 0 ? ', ' + extraArgs.map(a => JSON.stringify(a)).join(', ') : ''});
+          if (result && typeof result === 'object' && typeof result.then === 'function') {
+            return "__ASYNC_PROMISE_DETECTED__";
+          }
+          return result;
+        })()
+      `;
       
       const result = this.engine.evaluate(callCode, phase);
       if (!result.success) {
         this.lastError = result.error ?? null;
         return result as ScriptResult<void>;
+      }
+
+      if (result.value === "__ASYNC_PROMISE_DETECTED__") {
+        const message = `[ScriptSandbox] Hook "${hookName}" returned a Promise. Async hooks are not allowed. Script disabled.`;
+        console.error(message);
+        this.dispose();
+        
+        const errorReport: ScriptErrorReport = {
+          message,
+          type: 'runtime',
+          phase,
+          frameId: 0,
+          timestamp: Date.now(),
+        };
+        this.lastError = errorReport;
+        return { success: false, error: errorReport };
       }
 
       return { success: true };
@@ -277,7 +236,7 @@ export class QuickJSScriptSandbox implements IScriptSandbox {
   }
 
   callFunction(
-    runtime: SandboxRuntimeContext,
+    runtime: ScriptRuntimeContext,
     functionName: string,
     args?: Record<string, unknown>
   ): ScriptResult<unknown> {
@@ -292,8 +251,7 @@ export class QuickJSScriptSandbox implements IScriptSandbox {
     }
 
     try {
-      const ctx = createScriptContext(runtime);
-      const ctxObj = contextToPlainObject(ctx);
+      const ctxObj = this.createContextObject(runtime);
 
       const callCode = `globalThis.__exports.${functionName}(${JSON.stringify(ctxObj)}, ${JSON.stringify(args ?? {})})`;
       const result = this.engine.evaluate(callCode, 'update');
@@ -309,6 +267,10 @@ export class QuickJSScriptSandbox implements IScriptSandbox {
       this.lastError = errorReport;
       return { success: false, error: errorReport };
     }
+  }
+
+  private createContextObject(runtime: ScriptRuntimeContext): Record<string, unknown> {
+    return runtime as unknown as Record<string, unknown>;
   }
 
   getLastError(): ScriptErrorReport | null {
@@ -332,7 +294,6 @@ export class QuickJSScriptSandbox implements IScriptSandbox {
 
   dispose(): void {
     if (this.isDisposed) return;
-    this.disposeHooks();
     this.engine.dispose();
     this.isDisposed = true;
     this.isInitialized = false;

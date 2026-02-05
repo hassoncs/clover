@@ -79,7 +79,7 @@ const orangePegEntities = pegLayout
   }));
 
 const game: GameDefinition = {
-  assetSystem: { activePackId: "slopeggle-default" },
+  assetSystem: { activePackId: "default" },
   metadata: {
     id: "test-slopeggle",
     title: "Slopeggle",

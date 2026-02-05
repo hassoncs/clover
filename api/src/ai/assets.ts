@@ -974,10 +974,10 @@ export class AssetService {
     
     let r2Key: string;
     if (context?.gameId && context?.packId) {
-      const basePath = buildR2Key(context.gameId, context.packId, assetId);
+      const basePath = buildR2Key(context.packId, assetId);
       r2Key = suffix ? basePath.replace(extension, `${fileSuffix}${extension}`) : basePath;
     } else {
-      r2Key = `generated/${entityType}/${assetId}${fileSuffix}${extension}`;
+      r2Key = `${entityType}/${assetId}${fileSuffix}${extension}`;
     }
 
     await this.env.ASSETS.put(r2Key, buffer, {

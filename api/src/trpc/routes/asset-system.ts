@@ -8,7 +8,7 @@ import {
   type EntityType,
   type SpriteStyle,
 } from '@/ai/assets'
-import { buildR2Key, isR2Key, getAssetUrl, type GameDefinition } from '@slopcade/shared';
+import { buildR2Key, getAssetUrl, type GameDefinition } from '@slopcade/shared';
 import { WalletService, InsufficientBalanceError } from '@/economy/wallet-service'
 import { PROVIDER_COSTS, RATE_LIMITS, microsToSparks, USER_COSTS } from '@/economy/pricing'
 import { createWorkersAdapters as createWorkersAdaptersImpl } from '@/ai/pipeline/adapters/workers'

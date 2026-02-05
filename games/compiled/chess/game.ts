@@ -19,7 +19,7 @@ const game: GameDefinition = {
     instructions: "Tap a piece to select it, tap a highlighted square to move. White moves first.",
     version: "1.0.0",
   },
-  assetSystem: { activePackId: "chess-default" },
+  assetSystem: { activePackId: "default" },
   background: {
     type: "static",
     color: "#312e2b",

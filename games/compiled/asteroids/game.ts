@@ -32,7 +32,7 @@ const game: GameDefinition = {
     instructions: "Arrow keys to rotate. Up arrow to thrust. Space to shoot.",
     version: "1.0.0",
   },
-  assetSystem: { activePackId: "asteroids-default" },
+  assetSystem: { activePackId: "default" },
   background: {
     type: "static",
   },

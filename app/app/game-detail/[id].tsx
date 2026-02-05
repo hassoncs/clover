@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc/client";
 import type { GameDefinition } from "@slopcade/shared";
+import { EMBEDDED_GAME_JSONS } from "@/lib/offline/embedded-games-registry";
 
 type GameSource = "template" | "database";
 
@@ -64,13 +65,16 @@ export default function GameDetailScreen() {
         const gameSource: GameSource = source === "database" ? "database" : "template";
 
         if (gameSource === "template" && id) {
-          const game = await trpc.games.getPublic.query({ id });
-          const definition = JSON.parse(game.definition) as GameDefinition;
+          const gameJson = EMBEDDED_GAME_JSONS[id] as { title?: string; description?: string; definition?: GameDefinition } | undefined;
+          if (!gameJson) {
+            throw new Error(`Embedded game not found: ${id}`);
+          }
+          const definition = gameJson.definition as GameDefinition;
           setGameInfo({
-            id: game.id,
-            title: game.title,
-            description: game.description,
-            titleHeroImageUrl: definition.metadata?.titleHeroImageUrl,
+            id,
+            title: gameJson.title ?? definition?.metadata?.title ?? id,
+            description: gameJson.description ?? definition?.metadata?.description ?? null,
+            titleHeroImageUrl: definition?.metadata?.titleHeroImageUrl,
             source: "template",
           });
         } else if (gameSource === "database" && id) {
@@ -115,12 +119,13 @@ export default function GameDetailScreen() {
     setIsForking(true);
     try {
       if (gameInfo.source === "template") {
-        const game = await trpc.games.getPublic.query({ id: gameInfo.id });
-        const definition = JSON.parse(game.definition) as GameDefinition;
+        const gameJson = EMBEDDED_GAME_JSONS[gameInfo.id] as { definition?: GameDefinition } | undefined;
+        if (!gameJson?.definition) throw new Error(`Embedded game not found: ${gameInfo.id}`);
+        const definition = gameJson.definition;
         const result = await trpc.games.create.mutate({
           title: definition.metadata.title,
           description: definition.metadata.description,
-          definition: game.definition,
+          definition: JSON.stringify(definition),
           isPublic: false,
         });
         router.push(`/editor/${result.id}`);
@@ -149,8 +154,9 @@ export default function GameDetailScreen() {
       let definition: GameDefinition;
       
       if (gameInfo.source === "template") {
-        const game = await trpc.games.getPublic.query({ id: gameInfo.id });
-        definition = JSON.parse(game.definition) as GameDefinition;
+        const gameJson = EMBEDDED_GAME_JSONS[gameInfo.id] as { definition?: GameDefinition } | undefined;
+        if (!gameJson?.definition) throw new Error(`Embedded game not found: ${gameInfo.id}`);
+        definition = gameJson.definition;
       } else {
         const game = await trpc.games.get.query({ id: gameInfo.id });
         definition = JSON.parse(game.definition) as GameDefinition;

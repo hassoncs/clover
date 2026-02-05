@@ -8,7 +8,7 @@ The scripting system allows game logic to be defined in JavaScript, executed in 
 GameDefinition.script → ScriptSandbox → QuickJSEngine → Game Logic
 ```
 
-Scripts are embedded in `GameDefinition.script` and executed via lifecycle hooks that receive a context object with full access to game state.
+Scripts are embedded in `GameDefinition.script` and executed via lifecycle hooks that receive a `ScriptContext` object.
 
 ## Quick Start
 
@@ -30,12 +30,12 @@ const gameDefinition: GameDefinition = {
   rules: [],
   script: `
     exports.onStart = function(ctx) {
-      ctx.setVariable('score', 0);
+      ctx.world.setVariable('score', 0);
     };
 
     exports.onInput = function(ctx, event) {
       if (event.type === 'tap') {
-        ctx.spawnEntity('ball', event.position);
+        ctx.world.spawn('ball', event.position);
       }
     };
   `,
@@ -44,7 +44,7 @@ const gameDefinition: GameDefinition = {
 
 ## Lifecycle Hooks
 
-Scripts export functions that are called at specific points in the game loop:
+Scripts export functions that are called at specific points in the game loop. **All hooks must be synchronous** (they return `void`). Multi-frame work must use `startSequence()`.
 
 | Hook | Signature | When Called |
 |------|-----------|-------------|
@@ -53,83 +53,91 @@ Scripts export functions that are called at specific points in the game loop:
 | `onInput` | `(ctx, event) => void` | On user input events |
 | `onCollision` | `(ctx, collision) => void` | On physics collisions |
 
+> **Safety Guard**: If a hook returns a Promise (e.g. it was marked `async`), the script will be disabled with a warning to prevent frame budget overruns.
+
 ## Script Context API
 
-The `ctx` object provides access to game state and actions:
+The `ctx` object provides access to game state and actions. It is split into two layers:
+1. **Sync Reads**: Direct methods on `ctx` for reading state from the per-frame cache.
+2. **WorldOps**: The `ctx.world` object for issuing commands (writes, spawns, animations).
 
-### Variables
+### Sync Reads (Safe in onUpdate)
 
-```javascript
-ctx.getVariable('score')           // Get a game variable
-ctx.setVariable('score', 100)      // Set a game variable
-ctx.getConstant('gravity')         // Get a constant (read-only)
-```
-
-### Entity Management
+These methods read from a per-frame cache and are extremely fast.
 
 ```javascript
-// Spawn entities
-var id = ctx.spawnEntity('ball', { x: 5, y: 10 });
-ctx.spawnEntity('ball', { x: 5, y: 10 }, { velocity: { x: 1, y: 0 } });
+// Entity State
+ctx.getPosition(id)          // { x, y } | null
+ctx.getVelocity(id)          // { x, y } | null
+ctx.getRotation(id)          // number | null
+ctx.getTags(id)              // string[]
+ctx.hasTag(id, 'ball')       // boolean
+ctx.getTemplate(id)          // string | undefined
 
-// Destroy entities
-ctx.destroyEntity(id);
+// Queries
+ctx.queryEntities({ tag: 'ball' })           // string[]
+ctx.getEntityData(id)                        // WorldEntityData | null
+ctx.queryEntitiesWithData({ tag: 'ball' })   // WorldEntityData[]
 
-// Query entities
-var balls = ctx.queryEntities({ tag: 'ball' });
-var player = ctx.queryEntities({ templateId: 'player' })[0];
+// Game State
+ctx.getVariable('score')                     // unknown
+ctx.getConstant('gravity')                   // number | string | boolean | undefined
+
+// Frame Info
+ctx.dt                                       // Delta time (seconds)
+ctx.elapsed                                  // Total elapsed time (seconds)
+ctx.frameId                                  // Current frame number
 ```
 
-### Entity Properties
+### WorldOps (ctx.world)
+
+The `ctx.world` object provides the full `WorldOps` interface. All methods are **async** (return Promises). 
+
+- **In Hooks**: Call these fire-and-forget (do NOT `await`).
+- **In Sequences**: Use `await` to chain operations across frames.
 
 ```javascript
-// Position
-var pos = ctx.getEntityPosition(id);      // { x, y }
-ctx.setEntityPosition(id, { x: 5, y: 10 });
+// Entity Lifecycle
+ctx.world.spawn('ball', { x: 0, y: 0 })
+ctx.world.destroy(id)
+ctx.world.clone(id, { position: { x: 5, y: 5 } })
+ctx.world.reparent(id, parentId)
 
-// Velocity
-var vel = ctx.getEntityVelocity(id);      // { x, y }
-ctx.setEntityVelocity(id, { x: 10, y: 0 });
+// Physics & Transform
+ctx.world.setPosition(id, { x: 10, y: 10 })
+ctx.world.setVelocity(id, { x: 5, y: 0 })
+ctx.world.applyImpulse(id, { x: 0, y: 10 })
+ctx.world.applyForce(id, { x: 0, y: 100 })
 
-// Impulse
-ctx.applyImpulse(id, { x: 0, y: 100 });
+// Game State
+ctx.world.setVariable('score', 100)
+ctx.world.win()
+ctx.world.lose()
+ctx.world.emit('customEvent', { data: 123 })
+
+// Queries (Async)
+await ctx.world.raycast(from, to)
+await ctx.world.queryPoint(point)
 ```
 
-### Tags
+## Sequences (Multi-frame Work)
+
+`ctx.startSequence(name, fn)` is the escape hatch for work that spans multiple frames, such as animations or delayed actions.
 
 ```javascript
-ctx.getEntityTags(id)          // ['ball', 'bouncy']
-ctx.addTag(id, 'selected')
-ctx.removeTag(id, 'selected')
-ctx.hasTag(id, 'ball')         // true/false
+ctx.startSequence('death-anim', async (world) => {
+  // We can use await here!
+  await world.animate('player', { opacity: 0, y: -5 }, { duration: 500 });
+  await world.wait(200);
+  await world.destroy('player');
+  await world.lose();
+});
 ```
 
-### Game State
-
-```javascript
-ctx.win()                      // End game with win
-ctx.lose()                     // End game with loss
-ctx.emit('levelComplete', { level: 1 })  // Emit custom event
-```
-
-### Utilities
-
-```javascript
-ctx.random()                   // 0-1 random (seeded)
-ctx.randomInt(1, 10)           // Random integer in range
-ctx.randomChoice(['a', 'b'])   // Random array element
-ctx.clamp(value, 0, 100)       // Clamp to range
-ctx.lerp(0, 100, 0.5)          // Linear interpolation
-ctx.distance(posA, posB)       // Distance between points
-```
-
-### Frame Info
-
-```javascript
-ctx.frameId                    // Current frame number
-ctx.elapsed                    // Total elapsed time (seconds)
-ctx.dt                         // Delta time this frame
-```
+### Sequence Rules
+- **Auto-cancel**: Starting a sequence with the same `name` cancels the previous one.
+- **Game Time**: `wait()` and `animate()` use game time by default (affected by pause/timeScale).
+- **Cancellation**: If a sequence is cancelled, any pending `await` will throw a `SequenceCancelledError`, exiting the function cleanly.
 
 ## Input Events
 
@@ -137,24 +145,11 @@ The `onInput` hook receives events with this structure:
 
 ```typescript
 interface ScriptInputEvent {
-  type: 'tap' | 'dragStart' | 'dragMove' | 'dragEnd' | 'gameStarted';
+  type: 'tap' | 'dragStart' | 'dragMove' | 'dragEnd' | 'gameStarted' | 'gameRestarted';
   position?: { x: number; y: number };
-  entityId?: string;           // Entity tapped (if any)
+  entityId?: string | null;
   timestamp: number;
 }
-```
-
-Example:
-
-```javascript
-exports.onInput = function(ctx, event) {
-  if (event.type === 'tap') {
-    console.log('Tapped at', event.position.x, event.position.y);
-    if (event.entityId) {
-      ctx.destroyEntity(event.entityId);
-    }
-  }
-};
 ```
 
 ## Collision Events
@@ -163,8 +158,8 @@ The `onCollision` hook receives collision data:
 
 ```typescript
 interface ScriptCollisionEvent {
-  entityA: string;             // First entity ID
-  entityB: string;             // Second entity ID
+  entityA: string;
+  entityB: string;
   normal: { x: number; y: number };
   impulse: number;
   contactPoint: { x: number; y: number };
@@ -172,122 +167,97 @@ interface ScriptCollisionEvent {
 }
 ```
 
-Example:
+## Utilities (Sync)
+
+Pure utility functions available on `ctx`:
 
 ```javascript
-exports.onCollision = function(ctx, collision) {
-  // Check if ball hit the ground
-  if (collision.entityA === 'ground' || collision.entityB === 'ground') {
-    var ballId = collision.entityA === 'ground' 
-      ? collision.entityB 
-      : collision.entityA;
-    
-    if (ctx.hasTag(ballId, 'ball')) {
-      ctx.destroyEntity(ballId);
-      var score = ctx.getVariable('score') || 0;
-      ctx.setVariable('score', score + 10);
-    }
-  }
-};
+ctx.random()                   // 0-1 random (seeded)
+ctx.randomInt(min, max)        // Random integer
+ctx.randomChoice(array)        // Random element from array
+ctx.clamp(val, min, max)       // Clamp value
+ctx.lerp(a, b, t)              // Linear interpolation
+ctx.distance(posA, posB)       // Distance between points
 ```
 
-## Security
+## Security & Limits
 
 Scripts run in a QuickJS WASM sandbox with:
 
 - **Memory limits**: 1MB default
 - **Execution time limits**: 2ms per hook invocation
-- **No network access**: Cannot make HTTP requests
-- **No file system**: Cannot read/write files
-- **No global pollution**: Each script has isolated scope
-
-## Hot Reload
-
-Scripts support hot reload during development:
-
-```typescript
-const sandbox = new ScriptSandbox({ scriptCode, scriptId, gameId });
-await sandbox.initialize();
-
-// Later, reload with new code
-const result = await sandbox.reload(newScriptCode);
-if (result.success) {
-  console.log('Reloaded! Hooks changed:', result.previousHooks, '->', result.newHooks);
-}
-```
+- **No network/file access**: Completely isolated
+- **Instruction limits**: 100,000 per invocation
 
 ## Example: Complete Game Script
 
 ```javascript
-// Tap-to-spawn ball game with scoring
-
-var maxBalls = 10;
+// Tap-to-spawn ball game with scoring and animations
 
 exports.onStart = function(ctx) {
-  ctx.setVariable('score', 0);
-  ctx.setVariable('ballCount', 0);
-};
-
-exports.onUpdate = function(ctx, dt) {
-  // Check win condition
-  var score = ctx.getVariable('score') || 0;
-  if (score >= 100) {
-    ctx.win();
-  }
+  ctx.world.setVariable('score', 0);
+  
+  // Start an intro sequence
+  ctx.startSequence('intro', async (world) => {
+    await world.setVariable('inputEnabled', false);
+    await world.wait(1000);
+    await world.setVariable('inputEnabled', true);
+  });
 };
 
 exports.onInput = function(ctx, event) {
-  if (event.type !== 'tap') return;
+  if (event.type !== 'tap' || !ctx.getVariable('inputEnabled')) return;
   
-  var ballCount = ctx.getVariable('ballCount') || 0;
-  if (ballCount >= maxBalls) return;
-  
-  var ball = ctx.spawnEntity('ball', event.position, {
+  ctx.world.spawn('ball', event.position, {
     velocity: { x: ctx.randomInt(-5, 5), y: 10 }
   });
-  
-  if (ball) {
-    ctx.setVariable('ballCount', ballCount + 1);
-  }
 };
 
 exports.onCollision = function(ctx, collision) {
-  var groundId = 'ground';
-  
-  if (collision.entityA !== groundId && collision.entityB !== groundId) {
-    return;
+  // Check if ball hit a "goal"
+  const ballId = ctx.hasTag(collision.entityA, 'ball') ? collision.entityA : 
+                 ctx.hasTag(collision.entityB, 'ball') ? collision.entityB : null;
+  const goalId = ctx.hasTag(collision.entityA, 'goal') ? collision.entityA :
+                 ctx.hasTag(collision.entityB, 'goal') ? collision.entityB : null;
+
+  if (ballId && goalId) {
+    // Start a scoring sequence
+    ctx.startSequence('score-' + ballId, async (world) => {
+      await world.animate(ballId, { scaleX: 1.5, scaleY: 1.5, opacity: 0 }, { duration: 200 });
+      await world.destroy(ballId);
+      const score = await world.getVariable('score');
+      await world.setVariable('score', score + 10);
+    });
   }
-  
-  var ballId = collision.entityA === groundId 
-    ? collision.entityB 
-    : collision.entityA;
-  
-  if (!ctx.hasTag(ballId, 'ball')) return;
-  
-  ctx.destroyEntity(ballId);
-  
-  var ballCount = ctx.getVariable('ballCount') || 0;
-  ctx.setVariable('ballCount', Math.max(0, ballCount - 1));
-  
-  var score = ctx.getVariable('score') || 0;
-  ctx.setVariable('score', score + 10);
 };
 ```
 
-## File Structure
+## QuickJS Sandbox Limitations
 
-```
-app/lib/scripting/
-├── ScriptSandbox.ts      # Main sandbox wrapper
-├── GameScriptAPI.ts      # Context object creation
-├── types.ts              # TypeScript types
-├── index.ts              # Exports
-└── engine/
-    └── QuickJSEngine.ts  # QuickJS WASM wrapper
-```
+The scripting system supports two sandbox implementations:
+
+1. **UnsafeScriptSandbox** (default): Full JavaScript runtime with complete async/await support
+2. **QuickJSScriptSandbox**: Secure WASM-based sandbox with memory and execution limits
+
+### Sequence Support in QuickJS
+
+`startSequence()` uses async/await internally, which requires Promise interop between the host JavaScript runtime and the QuickJS WASM sandbox. This interop is complex and not yet implemented.
+
+**Current Status:**
+- ✅ All sync reads work in QuickJS (`getPosition`, `getVelocity`, `getTags`, etc.)
+- ✅ All fire-and-forget writes work in QuickJS (`ctx.world.spawn`, `ctx.world.setPosition`, etc.)
+- ❌ `startSequence()` requires async/await, which is not yet supported in QuickJS sandbox
+
+**Workaround:**
+- Use UnsafeScriptSandbox for games that need sequences
+- Use QuickJS for games that only need sync reads and fire-and-forget writes
+
+**Future Enhancement:**
+- QuickJS Promise interop is planned but requires bridging async operations across the WASM boundary
+- This will enable full sequence support in the secure sandbox
 
 ## Related Documentation
 
-- [Game Rules](./game-rules.md) - Declarative rule system (alternative to scripts)
+- [Game Rules](./game-rules.md) - Declarative rule system
 - [Entity System](./entity-system.md) - Entity structure and templates
 - [Input Methods](./input-methods-catalog.md) - Input handling patterns

@@ -1,46 +1,78 @@
 import { describe, it, expect, beforeEach, afterEach, vi, type MockInstance } from 'vitest';
 import { UnsafeScriptSandbox } from './UnsafeScriptSandbox';
-import type { SandboxRuntimeContext, ScriptInputEvent, ScriptCollisionEvent } from './types';
+import type { ScriptContext, ScriptInputEvent, ScriptCollisionEvent } from './types';
+import type { WorldOps, SequenceHandle } from '@slopcade/shared/types/world-ops';
 
-function createMockRuntime(overrides: Partial<SandboxRuntimeContext> = {}): SandboxRuntimeContext {
+function createMockScriptContext(overrides: Partial<ScriptContext> = {}): ScriptContext {
   const variables: Record<string, unknown> = {};
-  const events: Array<{ name: string; data?: Record<string, unknown> }> = [];
+  
+  const mockWorldOps: WorldOps = {
+    spawn: vi.fn().mockResolvedValue('entity_1'),
+    destroy: vi.fn().mockResolvedValue(undefined),
+    clone: vi.fn().mockResolvedValue(null),
+    reparent: vi.fn().mockResolvedValue(undefined),
+    getPosition: vi.fn().mockResolvedValue({ x: 0, y: 0 }),
+    setPosition: vi.fn().mockResolvedValue(undefined),
+    getRotation: vi.fn().mockResolvedValue(0),
+    setRotation: vi.fn().mockResolvedValue(undefined),
+    getScale: vi.fn().mockResolvedValue({ x: 1, y: 1 }),
+    setScale: vi.fn().mockResolvedValue(undefined),
+    setVisible: vi.fn().mockResolvedValue(undefined),
+    getVelocity: vi.fn().mockResolvedValue({ x: 0, y: 0 }),
+    setVelocity: vi.fn().mockResolvedValue(undefined),
+    getAngularVelocity: vi.fn().mockResolvedValue(0),
+    setAngularVelocity: vi.fn().mockResolvedValue(undefined),
+    applyImpulse: vi.fn().mockResolvedValue(undefined),
+    applyForce: vi.fn().mockResolvedValue(undefined),
+    getTags: vi.fn().mockResolvedValue([]),
+    addTag: vi.fn().mockResolvedValue(undefined),
+    removeTag: vi.fn().mockResolvedValue(true),
+    hasTag: vi.fn().mockResolvedValue(false),
+    getTemplate: vi.fn().mockResolvedValue(undefined),
+    getEntityData: vi.fn().mockResolvedValue(null),
+    queryEntities: vi.fn().mockResolvedValue([]),
+    queryEntitiesWithData: vi.fn().mockResolvedValue([]),
+    queryPoint: vi.fn().mockResolvedValue(null),
+    queryAABB: vi.fn().mockResolvedValue([]),
+    raycast: vi.fn().mockResolvedValue(null),
+    animate: vi.fn().mockResolvedValue(undefined),
+    wait: vi.fn().mockResolvedValue(undefined),
+    getVariable: vi.fn((name: string) => Promise.resolve(variables[name])),
+    setVariable: vi.fn((name: string, value: unknown) => { variables[name] = value; return Promise.resolve(); }),
+    getConstant: vi.fn().mockResolvedValue(undefined),
+    emit: vi.fn().mockResolvedValue(undefined),
+    win: vi.fn().mockResolvedValue(undefined),
+    lose: vi.fn().mockResolvedValue(undefined),
+  };
   
   return {
-    entityManager: {
-      spawnEntity: vi.fn().mockReturnValue('entity_1'),
-      destroyEntity: vi.fn(),
-      getEntityPosition: vi.fn().mockReturnValue({ x: 0, y: 0 }),
-      setEntityPosition: vi.fn(),
-      getEntityVelocity: vi.fn().mockReturnValue({ x: 0, y: 0 }),
-      setEntityVelocity: vi.fn(),
-      applyImpulse: vi.fn(),
-      getEntityTags: vi.fn().mockReturnValue([]),
-      addTag: vi.fn(),
-      removeTag: vi.fn().mockReturnValue(true),
-      hasTag: vi.fn().mockReturnValue(false),
-      queryEntities: vi.fn().mockReturnValue([]),
-      getEntityData: vi.fn().mockReturnValue(null),
-      queryEntitiesWithData: vi.fn().mockReturnValue([]),
-      getEntityTemplate: vi.fn().mockReturnValue(undefined),
-    },
-    rulesEvaluator: {
-      getVariable: vi.fn((name: string) => variables[name]),
-      setVariable: vi.fn((name: string, value: unknown) => { variables[name] = value; }),
-      getConstant: vi.fn().mockReturnValue(undefined),
-      emitEvent: vi.fn((name: string, data?: Record<string, unknown>) => { events.push({ name, data }); }),
-      win: vi.fn(),
-      lose: vi.fn(),
-    },
-    inputSnapshot: null,
-    mousePosition: null,
-    dragState: null,
-    frameInfo: {
-      frameId: 1,
-      elapsed: 0.016,
-      dt: 0.016,
-    },
-    constants: {},
+    getPosition: vi.fn().mockReturnValue({ x: 0, y: 0 }),
+    getVelocity: vi.fn().mockReturnValue({ x: 0, y: 0 }),
+    getRotation: vi.fn().mockReturnValue(0),
+    getTags: vi.fn().mockReturnValue([]),
+    hasTag: vi.fn().mockReturnValue(false),
+    getTemplate: vi.fn().mockReturnValue(undefined),
+    getVariable: vi.fn((name: string) => variables[name]),
+    getConstant: vi.fn().mockReturnValue(undefined),
+    queryEntities: vi.fn().mockReturnValue([]),
+    getEntityData: vi.fn().mockReturnValue(null),
+    queryEntitiesWithData: vi.fn().mockReturnValue([]),
+    world: mockWorldOps,
+    startSequence: vi.fn().mockReturnValue({ name: 'test', isRunning: true, cancel: vi.fn() } as unknown as SequenceHandle),
+    isSequenceRunning: vi.fn().mockReturnValue(false),
+    cancelSequence: vi.fn(),
+    dt: 0.016,
+    elapsed: 0.016,
+    frameId: 1,
+    input: null,
+    mouse: null,
+    drag: null,
+    random: vi.fn().mockReturnValue(0.5),
+    randomInt: vi.fn().mockReturnValue(5),
+    randomChoice: vi.fn().mockReturnValue('choice'),
+    clamp: vi.fn().mockReturnValue(0.5),
+    lerp: vi.fn().mockReturnValue(0.5),
+    distance: vi.fn().mockReturnValue(1),
     ...overrides,
   };
 }
@@ -114,12 +146,10 @@ describe('UnsafeScriptSandbox', () => {
 
   describe('runStart', () => {
     it('should call onStart hook', async () => {
-      const startCalled = { value: false };
-      
       sandbox = new UnsafeScriptSandbox({
         scriptCode: `
           exports.onStart = function(ctx) {
-            ctx.setVariable('started', true);
+            ctx.world.setVariable('started', true);
           };
         `,
         scriptId: 'test-script',
@@ -127,11 +157,11 @@ describe('UnsafeScriptSandbox', () => {
       });
       
       await sandbox.initialize();
-      const runtime = createMockRuntime();
+      const runtime = createMockScriptContext();
       const result = sandbox.runStart(runtime);
       
       expect(result.success).toBe(true);
-      expect(runtime.rulesEvaluator.setVariable).toHaveBeenCalledWith('started', true);
+      expect(runtime.world.setVariable).toHaveBeenCalledWith('started', true);
     });
 
     it('should succeed when no onStart hook exists', async () => {
@@ -142,7 +172,7 @@ describe('UnsafeScriptSandbox', () => {
       });
       
       await sandbox.initialize();
-      const runtime = createMockRuntime();
+      const runtime = createMockScriptContext();
       const result = sandbox.runStart(runtime);
       
       expect(result.success).toBe(true);
@@ -154,7 +184,7 @@ describe('UnsafeScriptSandbox', () => {
       sandbox = new UnsafeScriptSandbox({
         scriptCode: `
           exports.onUpdate = function(ctx, dt) {
-            ctx.setVariable('lastDt', dt);
+            ctx.world.setVariable('lastDt', dt);
           };
         `,
         scriptId: 'test-script',
@@ -162,11 +192,11 @@ describe('UnsafeScriptSandbox', () => {
       });
       
       await sandbox.initialize();
-      const runtime = createMockRuntime();
+      const runtime = createMockScriptContext();
       const result = sandbox.runUpdate(runtime, 0.016);
       
       expect(result.success).toBe(true);
-      expect(runtime.rulesEvaluator.setVariable).toHaveBeenCalledWith('lastDt', 0.016);
+      expect(runtime.world.setVariable).toHaveBeenCalledWith('lastDt', 0.016);
     });
   });
 
@@ -176,7 +206,7 @@ describe('UnsafeScriptSandbox', () => {
         scriptCode: `
           exports.onInput = function(ctx, event) {
             if (event.type === 'tap') {
-              ctx.setVariable('tapped', true);
+              ctx.world.setVariable('tapped', true);
             }
           };
         `,
@@ -185,7 +215,7 @@ describe('UnsafeScriptSandbox', () => {
       });
       
       await sandbox.initialize();
-      const runtime = createMockRuntime();
+      const runtime = createMockScriptContext();
       const event: ScriptInputEvent = {
         type: 'tap',
         position: { x: 5, y: 10 },
@@ -194,7 +224,7 @@ describe('UnsafeScriptSandbox', () => {
       const result = sandbox.runInput(runtime, event);
       
       expect(result.success).toBe(true);
-      expect(runtime.rulesEvaluator.setVariable).toHaveBeenCalledWith('tapped', true);
+      expect(runtime.world.setVariable).toHaveBeenCalledWith('tapped', true);
     });
   });
 
@@ -203,8 +233,8 @@ describe('UnsafeScriptSandbox', () => {
       sandbox = new UnsafeScriptSandbox({
         scriptCode: `
           exports.onCollision = function(ctx, collision) {
-            ctx.setVariable('collisionA', collision.entityA);
-            ctx.setVariable('collisionB', collision.entityB);
+            ctx.world.setVariable('collisionA', collision.entityA);
+            ctx.world.setVariable('collisionB', collision.entityB);
           };
         `,
         scriptId: 'test-script',
@@ -212,7 +242,7 @@ describe('UnsafeScriptSandbox', () => {
       });
       
       await sandbox.initialize();
-      const runtime = createMockRuntime();
+      const runtime = createMockScriptContext();
       const collision: ScriptCollisionEvent = {
         entityA: 'ball_1',
         entityB: 'ground',
@@ -224,15 +254,15 @@ describe('UnsafeScriptSandbox', () => {
       const result = sandbox.runCollision(runtime, collision);
       
       expect(result.success).toBe(true);
-      expect(runtime.rulesEvaluator.setVariable).toHaveBeenCalledWith('collisionA', 'ball_1');
-      expect(runtime.rulesEvaluator.setVariable).toHaveBeenCalledWith('collisionB', 'ground');
+      expect(runtime.world.setVariable).toHaveBeenCalledWith('collisionA', 'ball_1');
+      expect(runtime.world.setVariable).toHaveBeenCalledWith('collisionB', 'ground');
     });
   });
 
   describe('hot reload', () => {
     it('should reload script with new code', async () => {
       sandbox = new UnsafeScriptSandbox({
-        scriptCode: 'exports.onStart = function(ctx) { ctx.setVariable("v", 1); };',
+        scriptCode: 'exports.onStart = function(ctx) { ctx.world.setVariable("v", 1); };',
         scriptId: 'test-script',
         gameId: 'test-game',
       });
@@ -242,7 +272,7 @@ describe('UnsafeScriptSandbox', () => {
       expect(sandbox.hasHook('onUpdate')).toBe(false);
       
       const reloadResult = await sandbox.reload(
-        'exports.onUpdate = function(ctx, dt) { ctx.setVariable("v", 2); };'
+        'exports.onUpdate = function(ctx, dt) { ctx.world.setVariable("v", 2); };'
       );
       
       expect(reloadResult.success).toBe(true);
@@ -306,7 +336,7 @@ describe('UnsafeScriptSandbox', () => {
       sandbox = new UnsafeScriptSandbox({
         scriptCode: `
           exports.onStart = function(ctx) {
-            ctx.spawnEntity('ball', { x: 5, y: 10 });
+            ctx.world.spawn('ball', { x: 5, y: 10 });
           };
         `,
         scriptId: 'test-script',
@@ -314,17 +344,17 @@ describe('UnsafeScriptSandbox', () => {
       });
       
       await sandbox.initialize();
-      const runtime = createMockRuntime();
+      const runtime = createMockScriptContext();
       sandbox.runStart(runtime);
       
-      expect(runtime.entityManager.spawnEntity).toHaveBeenCalledWith('ball', { x: 5, y: 10 }, undefined);
+      expect(runtime.world.spawn).toHaveBeenCalledWith('ball', { x: 5, y: 10 });
     });
 
     it('should destroy entities via script', async () => {
       sandbox = new UnsafeScriptSandbox({
         scriptCode: `
           exports.onStart = function(ctx) {
-            ctx.destroyEntity('entity_1');
+            ctx.world.destroy('entity_1');
           };
         `,
         scriptId: 'test-script',
@@ -332,10 +362,10 @@ describe('UnsafeScriptSandbox', () => {
       });
       
       await sandbox.initialize();
-      const runtime = createMockRuntime();
+      const runtime = createMockScriptContext();
       sandbox.runStart(runtime);
       
-      expect(runtime.entityManager.destroyEntity).toHaveBeenCalledWith('entity_1');
+      expect(runtime.world.destroy).toHaveBeenCalledWith('entity_1');
     });
   });
 
@@ -350,7 +380,7 @@ describe('UnsafeScriptSandbox', () => {
       await sandbox.initialize();
       sandbox.dispose();
       
-      const runtime = createMockRuntime();
+      const runtime = createMockScriptContext();
       const result = sandbox.runStart(runtime);
       
       expect(result.success).toBe(false);
@@ -387,7 +417,7 @@ describe('UnsafeScriptSandbox', () => {
       });
       
       await sandbox.initialize();
-      const runtime = createMockRuntime();
+      const runtime = createMockScriptContext();
       sandbox.runStart(runtime);
       
       expect(consoleLogSpy).toHaveBeenCalledWith('[Script]', 'Hello from script!');
@@ -405,7 +435,7 @@ describe('UnsafeScriptSandbox', () => {
       });
       
       await sandbox.initialize();
-      const runtime = createMockRuntime();
+      const runtime = createMockScriptContext();
       sandbox.runStart(runtime);
       
       expect(consoleLogSpy).toHaveBeenCalledWith('[Script]', 'Value:', 42, { key: 'test' });
@@ -423,7 +453,7 @@ describe('UnsafeScriptSandbox', () => {
       });
       
       await sandbox.initialize();
-      const runtime = createMockRuntime();
+      const runtime = createMockScriptContext();
       sandbox.runStart(runtime);
       
       expect(consoleWarnSpy).toHaveBeenCalledWith('[Script]', 'Warning message');
@@ -441,7 +471,7 @@ describe('UnsafeScriptSandbox', () => {
       });
       
       await sandbox.initialize();
-      const runtime = createMockRuntime();
+      const runtime = createMockScriptContext();
       sandbox.runStart(runtime);
       
       expect(consoleErrorSpy).toHaveBeenCalledWith('[Script]', 'Error message');
@@ -459,10 +489,74 @@ describe('UnsafeScriptSandbox', () => {
       });
       
       await sandbox.initialize();
-      const runtime = createMockRuntime();
+      const runtime = createMockScriptContext();
       sandbox.runUpdate(runtime, 0.016);
       
       expect(consoleLogSpy).toHaveBeenCalledWith('[Script]', 'Frame update, dt:', 0.016);
+    });
+  });
+
+  describe('async safety guard', () => {
+    it('should disable script if onUpdate is async', async () => {
+      sandbox = new UnsafeScriptSandbox({
+        scriptCode: `
+          exports.onUpdate = async function(ctx, dt) {
+            // This should trigger the guard
+          };
+        `,
+        scriptId: 'test-script',
+        gameId: 'test-game',
+      });
+      
+      await sandbox.initialize();
+      const runtime = createMockScriptContext();
+      const result = sandbox.runUpdate(runtime, 0.016);
+      
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toContain('Async hooks are not allowed');
+      
+      // Subsequent calls should also fail because script is disabled
+      const result2 = sandbox.runUpdate(runtime, 0.016);
+      expect(result2.success).toBe(false);
+      expect(result2.error?.message).toContain('disposed');
+    });
+
+    it('should disable script if onStart is async', async () => {
+      sandbox = new UnsafeScriptSandbox({
+        scriptCode: `
+          exports.onStart = async function(ctx) {
+            // This should trigger the guard
+          };
+        `,
+        scriptId: 'test-script',
+        gameId: 'test-game',
+      });
+      
+      await sandbox.initialize();
+      const runtime = createMockScriptContext();
+      const result = sandbox.runStart(runtime);
+      
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toContain('Async hooks are not allowed');
+    });
+
+    it('should allow normal sync hooks', async () => {
+      sandbox = new UnsafeScriptSandbox({
+        scriptCode: `
+          exports.onUpdate = function(ctx, dt) {
+            ctx.world.setVariable('updated', true);
+          };
+        `,
+        scriptId: 'test-script',
+        gameId: 'test-game',
+      });
+      
+      await sandbox.initialize();
+      const runtime = createMockScriptContext();
+      const result = sandbox.runUpdate(runtime, 0.016);
+      
+      expect(result.success).toBe(true);
+      expect(runtime.world.setVariable).toHaveBeenCalledWith('updated', true);
     });
   });
 });

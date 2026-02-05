@@ -7,7 +7,6 @@
  * Will be replaced by QuickJSScriptSandbox before production launch.
  */
 
-import { createScriptContext, contextToPlainObject } from './GameScriptAPI';
 import type {
   IScriptSandbox,
   ScriptReloadResult,
@@ -20,9 +19,10 @@ import type {
   ScriptErrorReport,
   ScriptInputEvent,
   ScriptCollisionEvent,
-  SandboxRuntimeContext,
+  ScriptContext,
   ScriptErrorType,
 } from './types';
+import type { ScriptRuntimeContext } from './IScriptSandbox';
 
 const _nativeConsole = globalThis.console;
 
@@ -140,7 +140,7 @@ export class UnsafeScriptSandbox implements IScriptSandbox {
     return this.config.scriptCode;
   }
 
-  runStart(runtime: SandboxRuntimeContext): ScriptResult<void> {
+  runStart(runtime: ScriptRuntimeContext): ScriptResult<void> {
     if (!this.isInitialized || this.isDisposed) {
       return { success: false, error: this.createNotReadyError('start') };
     }
@@ -152,7 +152,7 @@ export class UnsafeScriptSandbox implements IScriptSandbox {
     return this.callHook('onStart', runtime);
   }
 
-  runUpdate(runtime: SandboxRuntimeContext, dt: number): ScriptResult<void> {
+  runUpdate(runtime: ScriptRuntimeContext, dt: number): ScriptResult<void> {
     if (!this.isInitialized || this.isDisposed) {
       return { success: false, error: this.createNotReadyError('update') };
     }
@@ -164,7 +164,7 @@ export class UnsafeScriptSandbox implements IScriptSandbox {
     return this.callHook('onUpdate', runtime, dt);
   }
 
-  runInput(runtime: SandboxRuntimeContext, event: ScriptInputEvent): ScriptResult<void> {
+  runInput(runtime: ScriptRuntimeContext, event: ScriptInputEvent): ScriptResult<void> {
     if (!this.isInitialized || this.isDisposed) {
       return { success: false, error: this.createNotReadyError('input') };
     }
@@ -176,7 +176,7 @@ export class UnsafeScriptSandbox implements IScriptSandbox {
     return this.callHook('onInput', runtime, event);
   }
 
-  runCollision(runtime: SandboxRuntimeContext, collision: ScriptCollisionEvent): ScriptResult<void> {
+  runCollision(runtime: ScriptRuntimeContext, collision: ScriptCollisionEvent): ScriptResult<void> {
     if (!this.isInitialized || this.isDisposed) {
       return { success: false, error: this.createNotReadyError('collision') };
     }
@@ -189,7 +189,7 @@ export class UnsafeScriptSandbox implements IScriptSandbox {
   }
 
   callFunction(
-    runtime: SandboxRuntimeContext,
+    runtime: ScriptRuntimeContext,
     functionName: string,
     args?: Record<string, unknown>
   ): ScriptResult<unknown> {
@@ -203,8 +203,7 @@ export class UnsafeScriptSandbox implements IScriptSandbox {
     }
 
     try {
-      const ctx = createScriptContext(runtime);
-      const ctxObj = contextToPlainObject(ctx);
+      const ctxObj = this.createContextObject(runtime);
       const result = fn(ctxObj, args ?? {});
       return { success: true, value: result };
     } catch (error) {
@@ -216,17 +215,40 @@ export class UnsafeScriptSandbox implements IScriptSandbox {
 
   private callHook(
     hookName: 'onStart' | 'onUpdate' | 'onInput' | 'onCollision',
-    runtime: SandboxRuntimeContext,
+    runtime: ScriptRuntimeContext,
     ...extraArgs: unknown[]
   ): ScriptResult<void> {
     try {
-      const ctx = createScriptContext(runtime);
-      const ctxObj = contextToPlainObject(ctx);
+      const ctxObj = this.createContextObject(runtime);
       const fn = this.exports[hookName] as HookFunction;
-      fn(ctxObj, ...extraArgs);
+      const result = fn(ctxObj, ...extraArgs) as unknown;
+
+      // Async safety guard: detect and disable scripts that return a Promise
+      if (result && typeof result === 'object' && 'then' in result && typeof result.then === 'function') {
+        const message = `[ScriptSandbox] Hook "${hookName}" returned a Promise. Async hooks are not allowed. Script disabled.`;
+        this.sandboxConsole.error(message);
+        this.isDisposed = true;
+        
+        const phase = hookName === 'onStart' ? 'start'
+          : hookName === 'onUpdate' ? 'update'
+          : hookName === 'onInput' ? 'input'
+          : 'collision';
+
+        return {
+          success: false,
+          error: {
+            message,
+            type: 'runtime',
+            phase,
+            frameId: 0,
+            timestamp: Date.now(),
+          },
+        };
+      }
+
       return { success: true };
     } catch (error) {
-      const phase = hookName === 'onStart' ? 'start' 
+      const phase = hookName === 'onStart' ? 'start'
         : hookName === 'onUpdate' ? 'update'
         : hookName === 'onInput' ? 'input'
         : 'collision';
@@ -234,6 +256,10 @@ export class UnsafeScriptSandbox implements IScriptSandbox {
       this.lastError = errorReport;
       return { success: false, error: errorReport };
     }
+  }
+
+  private createContextObject(runtime: ScriptRuntimeContext): Record<string, unknown> {
+    return runtime as unknown as Record<string, unknown>;
   }
 
   getLastError(): ScriptErrorReport | null {

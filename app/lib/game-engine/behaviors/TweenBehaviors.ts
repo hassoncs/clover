@@ -10,6 +10,10 @@ export function setGlobalTweenSystem(system: TweenSystem | null): void {
   globalTweenSystem = system;
 }
 
+export function getGlobalTweenSystem(): TweenSystem | null {
+  return globalTweenSystem;
+}
+
 interface TweenBehaviorState {
   tweenId?: string;
   originalFrom?: number | { x: number; y: number };

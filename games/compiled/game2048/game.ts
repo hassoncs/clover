@@ -25,7 +25,7 @@ const game: GameDefinition = {
     instructions: "Swipe up/down/left/right to slide tiles. Merge matching numbers to reach 2048!",
     version: "1.0.0",
   },
-  assetSystem: { activePackId: "2048-default" },
+  assetSystem: { activePackId: "default" },
   background: {
     type: "static",
     color: "#faf8ef",

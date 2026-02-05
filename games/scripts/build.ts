@@ -18,6 +18,20 @@ const REGISTRY_PATH = join(APP_ROOT, 'lib', 'offline', 'embedded-games-registry.
 const PUBLIC_GAMES = join(APP_ROOT, 'public', 'games');
 const PUBLIC_SLOPCADE_GAMES = join(APP_ROOT, 'public', 'slopcade', 'games');
 
+interface PackManifest {
+  version: number;
+  packId: string;
+  name: string;
+  assets: Record<string, { file: string }>;
+}
+
+interface PackInfo {
+  name: string;
+  packId: string;
+  manifestPath: string;
+  assets: Record<string, { file: string; fullPath: string }>;
+}
+
 interface AssetManifestEntry {
   file: string;
   r2Key: string;
@@ -25,7 +39,7 @@ interface AssetManifestEntry {
 
 interface EmbeddedGameEntry {
   gameId: string;
-  packId: string;
+  packs: Array<{ name: string; packId: string; assetCount: number }>;
   assetCount: number;
   totalBytes: number;
 }
@@ -62,57 +76,62 @@ async function bundleGameScript(gameId: string): Promise<string | undefined> {
   }
 }
 
-function findPngFiles(dir: string, basePath = ''): string[] {
-  if (!existsSync(dir)) return [];
-  const result: string[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const relPath = basePath ? `${basePath}/${entry.name}` : entry.name;
-    if (entry.isDirectory()) {
-      result.push(...findPngFiles(join(dir, entry.name), relPath));
-    } else if (entry.isFile() && entry.name.endsWith('.png')) {
-      result.push(relPath);
+
+function discoverPacks(gameId: string): PackInfo[] {
+  const packsDir = join(COMPILED_DIR, gameId, 'packs');
+  if (!existsSync(packsDir)) return [];
+
+  const packs: PackInfo[] = [];
+  for (const entry of readdirSync(packsDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+
+    const manifestPath = join(packsDir, entry.name, 'manifest.json');
+    if (!existsSync(manifestPath)) continue;
+
+    const manifest: PackManifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
+    const packDir = join(packsDir, entry.name);
+
+    const assets: Record<string, { file: string; fullPath: string }> = {};
+    for (const [templateId, assetEntry] of Object.entries(manifest.assets)) {
+      assets[templateId] = {
+        file: assetEntry.file,
+        fullPath: join(packDir, assetEntry.file),
+      };
     }
+
+    packs.push({
+      name: manifest.name,
+      packId: manifest.packId,
+      manifestPath,
+      assets,
+    });
   }
-  return result;
+
+  return packs;
 }
 
-function discoverAssets(gameId: string): { files: string[]; sourceDir: string } | null {
-  const assetsDir = join(COMPILED_DIR, gameId, 'assets');
-  if (existsSync(assetsDir)) {
-    const files = findPngFiles(assetsDir);
-    if (files.length > 0) return { files, sourceDir: assetsDir };
-  }
-
-  const generatedDir = join(COMPILED_DIR, gameId, 'generated');
-  if (existsSync(generatedDir)) {
-    const files = findPngFiles(generatedDir);
-    if (files.length > 0) return { files, sourceDir: generatedDir };
-  }
-
-  return null;
-}
-
-function copyGameAssets(
-  gameId: string,
-  assetInfo: { files: string[]; sourceDir: string },
+function copyPackAssets(
+  packs: PackInfo[],
   gameOutputDir: string,
 ): { manifest: Record<string, AssetManifestEntry>; totalBytes: number } {
-  const assetsOutputDir = join(gameOutputDir, 'assets');
   const manifest: Record<string, AssetManifestEntry> = {};
   let totalBytes = 0;
 
-  for (const file of assetInfo.files) {
-    const srcPath = join(assetInfo.sourceDir, file);
-    const destPath = join(assetsOutputDir, file);
+  for (const pack of packs) {
+    for (const [templateId, assetEntry] of Object.entries(pack.assets)) {
+      const destRelative = `packs/${pack.name}/${assetEntry.file}`;
+      const destPath = join(gameOutputDir, destRelative);
 
-    mkdirSync(dirname(destPath), { recursive: true });
-    copyFileSync(srcPath, destPath);
-    totalBytes += statSync(srcPath).size;
+      mkdirSync(dirname(destPath), { recursive: true });
+      copyFileSync(assetEntry.fullPath, destPath);
+      totalBytes += statSync(assetEntry.fullPath).size;
 
-    manifest[file] = {
-      file: `assets/${file}`,
-      r2Key: `generated/${gameId}/${file}`,
-    };
+      const r2Key = `${pack.packId}/${templateId}.png`;
+      manifest[`${pack.name}/${templateId}`] = {
+        file: destRelative,
+        r2Key,
+      };
+    }
   }
 
   if (Object.keys(manifest).length > 0) {
@@ -171,9 +190,8 @@ function generateEmbeddedRegistry(embeddedGames: EmbeddedGameEntry[]): void {
           readFileSync(manifestPath, 'utf-8'),
         );
         for (const [, entry] of Object.entries(manifest)) {
-          const filename = entry.file.replace('assets/', '');
           assetLines.push(
-            `  '${game.gameId}/${filename}': require('@/assets/embedded-games/${game.gameId}/assets/${filename}'),`,
+            `  '${game.gameId}/${entry.file}': require('@/assets/embedded-games/${game.gameId}/${entry.file}'),`,
           );
         }
       }
@@ -229,33 +247,42 @@ async function build(): Promise<void> {
         entry.definition.script = scriptCode;
       }
 
-      const json = JSON.stringify({
+      const gameEmbedDir = join(EMBED_DIR, id);
+      mkdirSync(gameEmbedDir, { recursive: true });
+
+      // Discover and copy pack assets
+      let assetCount = 0;
+      let assetBytes = 0;
+      const packs = discoverPacks(id);
+      if (packs.length > 0) {
+        const { manifest, totalBytes } = copyPackAssets(packs, gameEmbedDir);
+        assetCount = Object.keys(manifest).length;
+        assetBytes = totalBytes;
+      }
+
+      // Resolve activePackId: human-readable name → UUID
+      const definition = entry.definition as { assetSystem?: { activePackId?: string } };
+      if (definition.assetSystem?.activePackId && packs.length > 0) {
+        const activeName = definition.assetSystem.activePackId;
+        const matchingPack = packs.find(p => p.name === activeName);
+        if (matchingPack) {
+          definition.assetSystem.activePackId = matchingPack.packId;
+        }
+      }
+
+      // Re-serialize with resolved activePackId
+      const resolvedJson = JSON.stringify({
         id: entry.id,
         title: entry.title,
         description: entry.description,
         definition: entry.definition,
       }, null, 2);
+      writeFileSync(join(DIST_DIR, `${id}.json`), resolvedJson);
+      writeFileSync(join(gameEmbedDir, 'game.json'), resolvedJson);
 
-      // Write to games/dist/ (build cache)
-      writeFileSync(join(DIST_DIR, `${id}.json`), json);
-
-      // Write to app/assets/embedded-games/{id}/
-      const gameEmbedDir = join(EMBED_DIR, id);
-      mkdirSync(gameEmbedDir, { recursive: true });
-      writeFileSync(join(gameEmbedDir, 'game.json'), json);
-
-      // Discover and copy assets
-      let assetCount = 0;
-      let assetBytes = 0;
-      const assetInfo = discoverAssets(id);
-      if (assetInfo) {
-        const { manifest, totalBytes } = copyGameAssets(id, assetInfo, gameEmbedDir);
-        assetCount = Object.keys(manifest).length;
-        assetBytes = totalBytes;
-      }
-
-      const gameTotalBytes = Buffer.byteLength(json) + assetBytes;
-      embeddedGames.push({ gameId: id, packId: 'embedded', assetCount, totalBytes: gameTotalBytes });
+      const gameTotalBytes = Buffer.byteLength(resolvedJson) + assetBytes;
+      const packEntries = packs.map(p => ({ name: p.name, packId: p.packId, assetCount: Object.keys(p.assets).length }));
+      embeddedGames.push({ gameId: id, packs: packEntries, assetCount, totalBytes: gameTotalBytes });
       results.push({ id, success: true, assetCount, totalBytes: gameTotalBytes, hasScript: !!scriptCode });
 
       const parts = [id];

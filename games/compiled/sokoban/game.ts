@@ -104,7 +104,7 @@ const game: GameDefinition = {
     instructions: "Swipe up/down/left/right to move. Push all boxes onto the glowing targets!",
     version: "1.0.0",
   },
-  assetSystem: { activePackId: "sokoban-default" },
+  assetSystem: { activePackId: "default" },
   background: {
     type: "static",
     color: "#2c3e50",
