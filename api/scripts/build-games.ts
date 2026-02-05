@@ -195,7 +195,7 @@ function wrangler(args: string): void {
 }
 
 const R2_SYNC_MANIFEST = join(API_ROOT, '.r2-sync-manifest.json');
-const R2_BUCKET_NAME = 'slopcade-assets';
+const R2_BUCKET_NAME = 'slopcade-assets-dev';
 
 function contentTypeForExt(ext: string): string {
   switch (ext) {

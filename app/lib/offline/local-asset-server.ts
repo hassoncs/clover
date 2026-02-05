@@ -129,7 +129,8 @@ export function isServerRunning(): boolean {
  */
 export function getServerUrl(): string {
   if (Platform.OS === 'web') {
-    return '/slopcade/games';
+    const { env } = require('@/lib/config/env');
+    return `${env.apiUrl}/assets/games`;
   }
   return `file://${getBaseDirectory()}`;
 }
