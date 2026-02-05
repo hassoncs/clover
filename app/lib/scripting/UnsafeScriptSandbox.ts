@@ -1,4 +1,19 @@
+/**
+ * UNSAFE: Eval-based script sandbox. Uses new Function() with NO SECURITY ISOLATION.
+ *
+ * This is a TEMPORARY implementation for development only.
+ * DO NOT use in production - user scripts can access the full JS runtime.
+ *
+ * Will be replaced by QuickJSScriptSandbox before production launch.
+ */
+
 import { createScriptContext, contextToPlainObject } from './GameScriptAPI';
+import type {
+  IScriptSandbox,
+  ScriptReloadResult,
+  ScriptLogEntry,
+  ScriptHookName,
+} from './IScriptSandbox';
 import type {
   ScriptSandboxConfig,
   ScriptResult,
@@ -11,23 +26,6 @@ import type {
 
 const _nativeConsole = globalThis.console;
 
-export interface ScriptReloadResult {
-  success: boolean;
-  error?: ScriptErrorReport;
-  previousHooks: {
-    onStart: boolean;
-    onUpdate: boolean;
-    onInput: boolean;
-    onCollision: boolean;
-  };
-  newHooks: {
-    onStart: boolean;
-    onUpdate: boolean;
-    onInput: boolean;
-    onCollision: boolean;
-  };
-}
-
 type HookFunction = (ctx: Record<string, unknown>, ...args: unknown[]) => void;
 
 interface CompiledExports {
@@ -38,13 +36,7 @@ interface CompiledExports {
   [key: string]: unknown;
 }
 
-export interface ScriptLogEntry {
-  level: 'log' | 'warn' | 'error';
-  args: unknown[];
-  timestamp: number;
-}
-
-export class ScriptSandbox {
+export class UnsafeScriptSandbox implements IScriptSandbox {
   private config: ScriptSandboxConfig;
   private exports: CompiledExports = {};
   private isInitialized = false;
@@ -99,6 +91,7 @@ export class ScriptSandbox {
       })(exports, console);
     `;
 
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
     const factory = new Function('exports', 'console', wrappedCode);
     const exports: CompiledExports = {};
     return factory(exports, this.sandboxConsole) ?? exports;
@@ -247,7 +240,7 @@ export class ScriptSandbox {
     return this.lastError;
   }
 
-  hasHook(hookName: 'onStart' | 'onUpdate' | 'onInput' | 'onCollision'): boolean {
+  hasHook(hookName: ScriptHookName): boolean {
     return typeof this.exports[hookName] === 'function';
   }
 

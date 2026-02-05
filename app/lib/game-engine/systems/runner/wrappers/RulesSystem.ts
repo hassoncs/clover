@@ -20,7 +20,7 @@ import type { IGameStateMutator, RuleContext, ListValue } from '../../../rules/t
 import type { InputEvents } from '../../../BehaviorContext';
 import type { CameraSystem } from '../../../CameraSystem';
 import type { InputEntityManager } from '../../../InputEntityManager';
-import type { ScriptSandbox } from '@/lib/scripting';
+import type { IScriptSandbox } from '@/lib/scripting';
 import type { GameState as RuntimeGameState, GameEventBus, GameStateValue, VarValue } from '../../../runtime/types';
 import * as StateHelpers from '../../../runtime/GameStateHelpers';
 import { RESERVED_VARS } from '../../../runtime/types';
@@ -395,6 +395,9 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
         };
         
         const inputEvents = this.convertFrameInputEvents(ctx.frame.inputEvents);
+        if (inputEvents.gameLoaded || inputEvents.gameStarted) {
+          console.log("[Lifecycle] RulesSystem received lifecycle events:", { gameLoaded: inputEvents.gameLoaded, gameStarted: inputEvents.gameStarted });
+        }
         
         const ruleContext: RuleContext = {
           entityManager: this.systemContext.entityManager,
@@ -452,10 +455,15 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
           const cooldownEnd = this.runtimeState.cooldowns.get(rule.id);
           if (cooldownEnd && elapsed < cooldownEnd) continue;
           
+          if (rule.trigger.type === 'gameLoaded' || rule.trigger.type === 'gameStart') {
+            console.log(`[Lifecycle] Evaluating rule "${rule.id}" with trigger type: ${rule.trigger.type}`);
+          }
+          
           const triggerResult = this.evaluateTrigger(rule.trigger, ruleContext);
           if (triggerResult) {
             const conditionsResult = this.evaluateConditions(rule.conditions, ruleContext);
             if (conditionsResult) {
+              console.log(`[Lifecycle] Rule "${rule.id}" FIRED, executing ${rule.actions.length} actions:`, rule.actions.map(a => a.type));
               this.executeActions(rule.actions, ruleContext);
               
               if (rule.fireOnce) {
@@ -634,7 +642,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
     this.inputEntityManager = inputEntityManager;
   }
   
-  setScriptSandbox(scriptSandbox: ScriptSandbox): void {
+  setScriptSandbox(scriptSandbox: IScriptSandbox): void {
     this.runScriptActionExecutor.setSandbox(scriptSandbox);
   }
 
@@ -663,6 +671,9 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
   }
 
   private convertFrameInputEvents(frameEvents: readonly import('../types').InputEvent[]): InputEvents {
+    if (frameEvents.length > 0) {
+      console.log("[Lifecycle] convertFrameInputEvents called with", frameEvents.length, "events:", frameEvents.map(e => e.type));
+    }
     const result: InputEvents = {};
     const buttonPressed = new Set<string>();
     const buttonReleased = new Set<string>();
@@ -686,6 +697,10 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
           break;
         case 'game_started':
           result.gameStarted = true;
+          break;
+        case 'game_loaded':
+          console.log("[Lifecycle] convertFrameInputEvents: Found game_loaded event");
+          result.gameLoaded = true;
           break;
       }
     }
@@ -744,6 +759,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
       case "event":
       case "frame":
       case "gameStart":
+      case "gameLoaded":
         return this.logicTriggerEvaluator.evaluate(trigger, context);
       case "tap":
       case "drag":

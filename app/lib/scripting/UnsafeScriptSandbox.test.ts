@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi, type MockInstance } from 'vitest';
-import { ScriptSandbox } from './ScriptSandbox';
+import { UnsafeScriptSandbox } from './UnsafeScriptSandbox';
 import type { SandboxRuntimeContext, ScriptInputEvent, ScriptCollisionEvent } from './types';
 
 function createMockRuntime(overrides: Partial<SandboxRuntimeContext> = {}): SandboxRuntimeContext {
@@ -20,6 +20,9 @@ function createMockRuntime(overrides: Partial<SandboxRuntimeContext> = {}): Sand
       removeTag: vi.fn().mockReturnValue(true),
       hasTag: vi.fn().mockReturnValue(false),
       queryEntities: vi.fn().mockReturnValue([]),
+      getEntityData: vi.fn().mockReturnValue(null),
+      queryEntitiesWithData: vi.fn().mockReturnValue([]),
+      getEntityTemplate: vi.fn().mockReturnValue(undefined),
     },
     rulesEvaluator: {
       getVariable: vi.fn((name: string) => variables[name]),
@@ -42,8 +45,8 @@ function createMockRuntime(overrides: Partial<SandboxRuntimeContext> = {}): Sand
   };
 }
 
-describe('ScriptSandbox', () => {
-  let sandbox: ScriptSandbox;
+describe('UnsafeScriptSandbox', () => {
+  let sandbox: UnsafeScriptSandbox;
   
   afterEach(() => {
     sandbox?.dispose();
@@ -51,7 +54,7 @@ describe('ScriptSandbox', () => {
 
   describe('initialization', () => {
     it('should initialize with valid script', async () => {
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: 'exports.onStart = function(ctx) {};',
         scriptId: 'test-script',
         gameId: 'test-game',
@@ -62,7 +65,7 @@ describe('ScriptSandbox', () => {
     });
 
     it('should detect exported hooks', async () => {
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: `
           exports.onStart = function(ctx) {};
           exports.onUpdate = function(ctx, dt) {};
@@ -82,7 +85,7 @@ describe('ScriptSandbox', () => {
     });
 
     it('should report missing hooks correctly', async () => {
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: 'exports.onStart = function(ctx) {};',
         scriptId: 'test-script',
         gameId: 'test-game',
@@ -97,7 +100,7 @@ describe('ScriptSandbox', () => {
     });
 
     it('should report syntax errors', async () => {
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: 'exports.onStart = function( { broken syntax',
         scriptId: 'test-script',
         gameId: 'test-game',
@@ -113,7 +116,7 @@ describe('ScriptSandbox', () => {
     it('should call onStart hook', async () => {
       const startCalled = { value: false };
       
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: `
           exports.onStart = function(ctx) {
             ctx.setVariable('started', true);
@@ -132,7 +135,7 @@ describe('ScriptSandbox', () => {
     });
 
     it('should succeed when no onStart hook exists', async () => {
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: '// No hooks defined',
         scriptId: 'test-script',
         gameId: 'test-game',
@@ -148,7 +151,7 @@ describe('ScriptSandbox', () => {
 
   describe('runUpdate', () => {
     it('should call onUpdate hook with dt', async () => {
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: `
           exports.onUpdate = function(ctx, dt) {
             ctx.setVariable('lastDt', dt);
@@ -169,7 +172,7 @@ describe('ScriptSandbox', () => {
 
   describe('runInput', () => {
     it('should call onInput hook with event', async () => {
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: `
           exports.onInput = function(ctx, event) {
             if (event.type === 'tap') {
@@ -197,7 +200,7 @@ describe('ScriptSandbox', () => {
 
   describe('runCollision', () => {
     it('should call onCollision hook with collision data', async () => {
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: `
           exports.onCollision = function(ctx, collision) {
             ctx.setVariable('collisionA', collision.entityA);
@@ -228,7 +231,7 @@ describe('ScriptSandbox', () => {
 
   describe('hot reload', () => {
     it('should reload script with new code', async () => {
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: 'exports.onStart = function(ctx) { ctx.setVariable("v", 1); };',
         scriptId: 'test-script',
         gameId: 'test-game',
@@ -250,7 +253,7 @@ describe('ScriptSandbox', () => {
     });
 
     it('should track reload count', async () => {
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: 'exports.onStart = function(ctx) {};',
         scriptId: 'test-script',
         gameId: 'test-game',
@@ -267,7 +270,7 @@ describe('ScriptSandbox', () => {
     });
 
     it('should return error on reload with invalid script', async () => {
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: 'exports.onStart = function(ctx) {};',
         scriptId: 'test-script',
         gameId: 'test-game',
@@ -283,7 +286,7 @@ describe('ScriptSandbox', () => {
 
     it('should return current script code', async () => {
       const originalCode = 'exports.onStart = function(ctx) {};';
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: originalCode,
         scriptId: 'test-script',
         gameId: 'test-game',
@@ -300,7 +303,7 @@ describe('ScriptSandbox', () => {
 
   describe('entity operations', () => {
     it('should spawn entities via script', async () => {
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: `
           exports.onStart = function(ctx) {
             ctx.spawnEntity('ball', { x: 5, y: 10 });
@@ -318,7 +321,7 @@ describe('ScriptSandbox', () => {
     });
 
     it('should destroy entities via script', async () => {
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: `
           exports.onStart = function(ctx) {
             ctx.destroyEntity('entity_1');
@@ -338,7 +341,7 @@ describe('ScriptSandbox', () => {
 
   describe('dispose', () => {
     it('should prevent execution after dispose', async () => {
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: 'exports.onStart = function(ctx) {};',
         scriptId: 'test-script',
         gameId: 'test-game',
@@ -373,7 +376,7 @@ describe('ScriptSandbox', () => {
     });
 
     it('should prefix console.log with [Script]', async () => {
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: `
           exports.onStart = function(ctx) {
             console.log('Hello from script!');
@@ -391,7 +394,7 @@ describe('ScriptSandbox', () => {
     });
 
     it('should handle multiple console.log arguments', async () => {
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: `
           exports.onStart = function(ctx) {
             console.log('Value:', 42, { key: 'test' });
@@ -409,7 +412,7 @@ describe('ScriptSandbox', () => {
     });
 
     it('should prefix console.warn with [Script]', async () => {
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: `
           exports.onStart = function(ctx) {
             console.warn('Warning message');
@@ -427,7 +430,7 @@ describe('ScriptSandbox', () => {
     });
 
     it('should prefix console.error with [Script]', async () => {
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: `
           exports.onStart = function(ctx) {
             console.error('Error message');
@@ -445,7 +448,7 @@ describe('ScriptSandbox', () => {
     });
 
     it('should allow console.log in onUpdate', async () => {
-      sandbox = new ScriptSandbox({
+      sandbox = new UnsafeScriptSandbox({
         scriptCode: `
           exports.onUpdate = function(ctx, dt) {
             console.log('Frame update, dt:', dt);

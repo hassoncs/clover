@@ -1,6 +1,6 @@
 import { SystemPhase } from '@slopcade/shared';
 import type { RuntimeSystem, SystemContext, UpdateContext } from '../types';
-import { ScriptSandbox } from '../../../../scripting/ScriptSandbox';
+import { createScriptSandbox, type IScriptSandbox } from '../../../../scripting';
 import type {
   ScriptSandboxConfig,
   SandboxRuntimeContext,
@@ -37,7 +37,7 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
   readonly priority = 40;
   
   private config: ScriptSandboxSystemConfig;
-  private sandbox: ScriptSandbox | null = null;
+  private sandbox: IScriptSandbox | null = null;
   private systemContext: SystemContext | null = null;
   private constants?: Record<string, number | string | boolean>;
   private onStartCalled = false;
@@ -57,7 +57,7 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
       gameId: this.config.gameId,
     };
     
-    this.sandbox = new ScriptSandbox(sandboxConfig);
+    this.sandbox = createScriptSandbox(sandboxConfig);
     const result = await this.sandbox.initialize();
     
     if (!result.success) {
@@ -158,7 +158,7 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
     };
   }
   
-  getSandbox(): ScriptSandbox | null {
+  getSandbox(): IScriptSandbox | null {
     return this.sandbox;
   }
   

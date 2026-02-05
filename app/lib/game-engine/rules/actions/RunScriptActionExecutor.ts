@@ -1,23 +1,25 @@
 import type { ActionExecutor } from './ActionExecutor';
 import type { RunScriptAction } from '@slopcade/shared';
 import type { RuleContext } from '../types';
-import type { ScriptSandbox } from '@/lib/scripting/ScriptSandbox';
+import type { IScriptSandbox } from '@/lib/scripting';
 import type { SandboxRuntimeContext, EntityQuery, SpawnOptions, EntityData, AnimateConfig } from '@/lib/scripting/types';
 
 export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> {
-  private sandbox: ScriptSandbox | null = null;
+  private sandbox: IScriptSandbox | null = null;
 
-  setSandbox(sandbox: ScriptSandbox): void {
+  setSandbox(sandbox: IScriptSandbox): void {
     this.sandbox = sandbox;
   }
 
   execute(action: RunScriptAction, context: RuleContext): void {
+    console.log("[Lifecycle] RunScriptActionExecutor.execute called with action:", action);
     if (!this.sandbox) {
-      console.warn('[RunScriptActionExecutor] No script sandbox available');
+      console.warn('[RunScriptActionExecutor] No script sandbox available - sandbox not set!');
       return;
     }
 
     const functionName = action.export ?? 'default';
+    console.log("[Lifecycle] Calling sandbox.callFunction:", functionName);
     const runtimeContext = this.createRuntimeContext(context);
 
     const result = this.sandbox.callFunction(runtimeContext, functionName, action.args);
