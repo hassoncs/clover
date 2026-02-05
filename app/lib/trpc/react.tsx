@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
-import type { AppRouter } from "../../../api/src/trpc/router";
+import type { AppRouter } from "@slopcade/api/trpc";
 import { supabase } from "../supabase/client";
 import { env } from "../config/env";
 

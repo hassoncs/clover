@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { downloadGameForOffline, deleteOfflineGame, isGameDownloaded } from '@/lib/offline/download-manager';
+import { env } from '@/lib/config/env';
 
 interface Props {
   gameId: string;
@@ -31,7 +32,7 @@ export function DownloadForOfflineButton({ gameId, size = 'md' }: Props) {
       setStatus('downloading');
       setProgress(0);
       
-      await downloadGameForOffline(gameId, (downloaded, total) => {
+      await downloadGameForOffline(gameId, env.assetCdnUrl, (downloaded: number, total: number) => {
         setProgress(downloaded / total);
       });
       

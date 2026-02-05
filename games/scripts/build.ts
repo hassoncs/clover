@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 import {
   writeFileSync, readFileSync, mkdirSync, existsSync, rmSync,
-  readdirSync, copyFileSync, statSync, symlinkSync, unlinkSync, lstatSync,
+  readdirSync, copyFileSync, statSync,
 } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -15,8 +15,6 @@ const COMPILED_DIR = join(GAMES_ROOT, 'compiled');
 const DIST_DIR = join(GAMES_ROOT, 'dist');
 const EMBED_DIR = join(APP_ROOT, 'assets', 'embedded-games');
 const REGISTRY_PATH = join(APP_ROOT, 'lib', 'offline', 'embedded-games-registry.ts');
-const PUBLIC_GAMES = join(APP_ROOT, 'public', 'games');
-const PUBLIC_SLOPCADE_GAMES = join(APP_ROOT, 'public', 'slopcade', 'games');
 
 interface PackManifest {
   version: number;
@@ -128,31 +126,6 @@ function copyPackAssets(
   }
 
   return { totalBytes };
-}
-
-function createSymlink(target: string, linkPath: string): void {
-  try {
-    const stats = lstatSync(linkPath);
-    if (stats) unlinkSync(linkPath);
-  } catch {}
-  try {
-    symlinkSync(target, linkPath, 'dir');
-  } catch (err) {
-    console.error(`  ⚠ Symlink failed: ${linkPath} -> ${target}`, err);
-  }
-}
-
-function setupSymlinks(embeddedGames: EmbeddedGameEntry[]): void {
-  mkdirSync(PUBLIC_GAMES, { recursive: true });
-  mkdirSync(PUBLIC_SLOPCADE_GAMES, { recursive: true });
-
-  for (const game of embeddedGames) {
-    const source = join(EMBED_DIR, game.gameId);
-    if (!existsSync(source)) continue;
-    createSymlink(source, join(PUBLIC_GAMES, game.gameId));
-    createSymlink(source, join(PUBLIC_SLOPCADE_GAMES, game.gameId));
-  }
-  console.log(`✓ Symlinks created in app/public/games/ and app/public/slopcade/games/`);
 }
 
 function generateEmbeddedRegistry(embeddedGames: EmbeddedGameEntry[]): void {
@@ -320,9 +293,6 @@ async function build(): Promise<void> {
 
   // Generate the app's TypeScript registry
   generateEmbeddedRegistry(embeddedGames);
-
-  // Create symlinks for web development
-  setupSymlinks(embeddedGames);
 
   const succeeded = results.filter(r => r.success).length;
   const failed = results.filter(r => !r.success).length;

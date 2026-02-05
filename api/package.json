@@ -2,6 +2,12 @@
   "name": "@slopcade/api",
   "version": "1.0.0",
   "private": true,
+  "types": "./dist-types/trpc/router.d.ts",
+  "exports": {
+    "./trpc": {
+      "types": "./dist-types/trpc/router.d.ts"
+    }
+  },
   "scripts": {
     "dev": "wrangler dev",
     "start": "wrangler dev",
@@ -10,6 +16,7 @@
     "db:push:remote": "npx wrangler d1 execute slopcade-db --file=./schema.sql --remote",
     "db:reset": "rm -rf .wrangler/state/v3/d1 && pnpm db:push",
     "type-check": "tsc --noEmit",
+    "build:types": "tsc -b tsconfig.build.json",
     "test": "vitest",
     "test:run": "vitest run",
     "generate:ui": "npx tsx src/cli/generate-ui.ts"

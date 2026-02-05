@@ -1,5 +1,5 @@
 import { createTRPCClient, httpLink } from "@trpc/client";
-import type { AppRouter } from "../../../api/src/trpc/router";
+import type { AppRouter } from "@slopcade/api/trpc";
 import { supabase } from "../supabase/client";
 import { env } from "../config/env";
 

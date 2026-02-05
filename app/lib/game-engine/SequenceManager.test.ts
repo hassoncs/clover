@@ -104,7 +104,7 @@ describe('SequenceManager', () => {
   
   describe('cancel sequence — rejects with SequenceCancelledError', () => {
     it('should cancel sequence and reject with SequenceCancelledError', async () => {
-      let caughtError: Error | null = null;
+      let caughtError: unknown = null;
       
       const sequenceFn = async (world: WorldOps) => {
         try {
@@ -112,7 +112,7 @@ describe('SequenceManager', () => {
           await world.wait(200);
           await world.destroy('ball');
         } catch (err) {
-          caughtError = err as Error;
+          caughtError = err;
           throw err;
         }
       };
@@ -129,8 +129,8 @@ describe('SequenceManager', () => {
       expect(handle.isRunning).toBe(false);
       expect(manager.isRunning('death')).toBe(false);
       expect(caughtError).toBeInstanceOf(SequenceCancelledError);
-      expect(caughtError?.name).toBe('SequenceCancelledError');
-      expect(caughtError?.message).toContain('death');
+      expect(caughtError).toHaveProperty('name', 'SequenceCancelledError');
+      expect(caughtError).toHaveProperty('message', expect.stringContaining('death'));
     });
   });
   
