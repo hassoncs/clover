@@ -68,7 +68,7 @@ Replace fragmented event handling and inconsistent entity lifecycle communicatio
 ### Definition of Done
 - [x] `pnpm test` passes (stale tests deleted, new tests added)
 - [x] `pnpm tsc --noEmit` passes (no type errors)
-- [ ] Ball Sort game loads and plays correctly (smoke test via game inspector)
+- [x] Ball Sort game loads and plays correctly (smoke test via game inspector)
 - [x] Game inspector: `simulate_input(tap)` auto-advances frame without manual `step(1)`
 - [x] Visual-only entities can be spawned and destroyed without leaking in Godot
 
@@ -873,16 +873,16 @@ pnpm test                # Expected: exit 0, all tests pass, includes new test f
 ```
 
 ### Final Checklist
-- [ ] Single `GameEventQueue` handles all discrete events (lifecycle, collision, tap, drag_end)
-- [ ] `inputRef` retains only continuous state (buttons, drag, mouse, tilt)
-- [ ] `pendingLifecycleEventsRef` removed
-- [ ] `collisionsRef` removed
-- [ ] Logger with levels and categories replaces raw console.log in GameRuntime + RulesSystem
-- [ ] MCP `set_log_level` tool works
-- [ ] Auto-step fires in inspector mode on event, rate-limited to 60/sec
-- [ ] `simulate_input` works without manual `step(1)` in inspector mode
-- [ ] All entities (physics AND visual-only) destroyed correctly in Godot
-- [ ] Script `setEntityPosition` reaches Godot via bridge
-- [ ] ballSort game loads and plays correctly (smoke test)
-- [ ] 3 new test files: event-queue, logger, entity-lifecycle
-- [ ] All "Must NOT Have" guardrails respected
+- [x] Single `GameEventQueue` handles all discrete events (lifecycle, collision, tap, drag_end)
+- [x] `inputRef` retains only continuous state (buttons, drag, mouse, tilt)
+- [x] `pendingLifecycleEventsRef` removed
+- [x] `collisionsRef` removed
+- [x] Logger with levels and categories replaces raw console.log in GameRuntime + RulesSystem
+- [x] MCP `set_log_level` tool works
+- [x] Auto-step fires in inspector mode on event, rate-limited to 60/sec
+- [x] `simulate_input` works without manual `step(1)` in inspector mode
+- [x] All entities (physics AND visual-only) destroyed correctly in Godot
+- [x] Script `setEntityPosition` reaches Godot via bridge
+- [x] ballSort game loads and plays correctly (smoke test)
+- [x] 3 new test files: event-queue, logger, entity-lifecycle
+- [x] All "Must NOT Have" guardrails respected
