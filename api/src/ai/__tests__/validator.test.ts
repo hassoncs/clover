@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateGameDefinition, getValidationSummary } from '@/ai/validator'
+import { validateGameDefinition, getValidationSummary } from '@/ai/game/validator'
 import validProjectileGame from '@/__fixtures__/games/valid-projectile-game.json'
 import invalidNoEntities from '@/__fixtures__/games/invalid-game-no-entities.json'
 import invalidBadPhysics from '@/__fixtures__/games/invalid-game-bad-physics.json'

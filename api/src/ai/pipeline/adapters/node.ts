@@ -1,7 +1,7 @@
 import type { PipelineAdapters, ImageGenerationAdapter, R2Adapter, SilhouetteAdapter, DebugSink, DebugEvent } from '@/ai/pipeline/types'
-import { createScenarioAdapter } from '@/ai/scenario'
-import { createComfyUIAdapter } from '@/ai/comfyui'
-import { PROVIDER_DEFAULTS } from '@/ai/provider-contract'
+import { createScenarioAdapter } from '@/ai/providers/scenario/client'
+import { createComfyUIAdapter } from '@/ai/providers/comfyui/client'
+import { PROVIDER_DEFAULTS } from '@/ai/providers/contract'
 
 /**
  * Create a Scenario ImageGenerationAdapter for Node.js pipeline usage.

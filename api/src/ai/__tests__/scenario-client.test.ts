@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ScenarioClient } from '@/ai/scenario'
-import { SCENARIO_DEFAULTS, CUSTOM_MODEL_PREFIXES } from '@/ai/scenario-types'
+import { ScenarioClient } from '@/ai/providers/scenario/client'
+import { SCENARIO_DEFAULTS, CUSTOM_MODEL_PREFIXES } from '@/ai/providers/scenario/types'
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch;

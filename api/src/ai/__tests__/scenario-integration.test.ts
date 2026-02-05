@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { ScenarioClient } from '@/ai/scenario'
+import { ScenarioClient } from '@/ai/providers/scenario/client'
 import { AssetService, buildStructuredPrompt } from '@/ai/assets'
 import type { Env } from '@/trpc/context'
 

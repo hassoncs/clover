@@ -2,10 +2,7 @@ import type { OverlayOptions } from 'sharp';
 import { createTextHint, createIconHint } from '@/ai/pipeline/silhouettes/text-hint'
 import type { TextHintParams, IconHintParams } from '@/ai/pipeline/silhouettes/text-hint'
 
-async function getSharp() {
-  const mod = await import('sharp');
-  return mod.default;
-}
+import { getSharp } from '@/utils/sharp'
 
 export const UI_COMPONENT_MARGINS = {
   small: 8,

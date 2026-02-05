@@ -1,8 +1,8 @@
 import type { Env } from '@/trpc/context'
-import type { ImageGenerationAdapter } from '@/ai/provider-contract'
-import { PROVIDER_DEFAULTS } from '@/ai/provider-contract'
-import { createScenarioAdapter, createScenarioClient } from '@/ai/scenario'
-import { createComfyUIAdapter } from '@/ai/comfyui'
+import type { ImageGenerationAdapter } from '@/ai/providers/contract'
+import { PROVIDER_DEFAULTS } from '@/ai/providers/contract'
+import { createScenarioAdapter, createScenarioClient } from '@/ai/providers/scenario/client'
+import { createComfyUIAdapter } from '@/ai/providers/comfyui/client'
 import { buildR2Key } from '@slopcade/shared';
 
 const DEBUG_ASSET_GENERATION = process.env.DEBUG_ASSET_GENERATION === 'true';

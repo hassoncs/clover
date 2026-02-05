@@ -1,5 +1,6 @@
-import type { GameType } from '@/ai/templates'
 import type { LoseConditionType } from '@slopcade/shared/types/rules'
+
+export type GameType = 'projectile' | 'platformer' | 'stacking' | 'vehicle' | 'falling_objects' | 'rope_physics' | 'match3' | 'tetris';
 
 // Local type for classifier - the actual WinCondition in game engine uses expressions
 export type WinConditionType =

@@ -3,11 +3,10 @@ import { createAnthropic } from '@ai-sdk/anthropic';
 import { generateObject } from 'ai';
 import type { LanguageModel } from 'ai';
 import type { GameDefinition } from '@slopcade/shared/types/GameDefinition'
-import type { GameIntent } from '@/ai/classifier'
-import { classifyPrompt } from '@/ai/classifier'
-import { getTemplateForGameType } from '@/ai/templates'
-import { validateGameDefinition, type GameDefinitionValidationResult } from '@/ai/validator'
-import { GameDefinitionSchema } from '@/ai/schemas'
+import type { GameIntent } from '@/ai/game/classifier'
+import { classifyPrompt } from '@/ai/game/classifier'
+import { validateGameDefinition, type GameDefinitionValidationResult } from '@/ai/game/validator'
+import { GameDefinitionSchema } from '@/ai/game/schemas'
 
 export type AIProvider = 'openai' | 'openrouter' | 'anthropic';
 
@@ -312,16 +311,15 @@ export async function generateGame(
           };
         }
 
-        const fallbackGame = getTemplateForGameType(intent.gameType);
-        fallbackGame.metadata.title = `${intent.theme.charAt(0).toUpperCase() + intent.theme.slice(1)} ${intent.gameType.replace('_', ' ')}`;
-        fallbackGame.metadata.description = prompt;
-        fallbackGame.metadata.id = `game-${Date.now()}`;
-
         return {
-          success: true,
-          game: fallbackGame,
+          success: false,
           intent,
           validationResult,
+          error: {
+            code: 'VALIDATION_FAILED' as const,
+            message: 'Generated game has too many validation errors. Please try a different prompt.',
+            suggestions: ['Try being more specific about the gameplay'],
+          },
           retryCount: attempt,
         };
       }
@@ -352,30 +350,28 @@ export async function generateGame(
           };
         }
 
-        const fallbackGame = getTemplateForGameType(intent.gameType);
-        fallbackGame.metadata.title = `${intent.theme.charAt(0).toUpperCase() + intent.theme.slice(1)} ${intent.gameType.replace('_', ' ')}`;
-        fallbackGame.metadata.description = prompt;
-        fallbackGame.metadata.id = `game-${Date.now()}`;
-
         return {
-          success: true,
-          game: fallbackGame,
+          success: false,
           intent,
+          error: {
+            code: 'GENERATION_FAILED' as const,
+            message: `Generation failed after ${attempt + 1} attempts`,
+            suggestions: ['Try again in a moment', 'Try a different game description'],
+          },
           retryCount: attempt,
         };
       }
     }
   }
 
-  const fallbackGame = getTemplateForGameType(intent.gameType);
-  fallbackGame.metadata.title = `${intent.theme.charAt(0).toUpperCase() + intent.theme.slice(1)} Game`;
-  fallbackGame.metadata.description = prompt;
-  fallbackGame.metadata.id = `game-${Date.now()}`;
-
   return {
-    success: true,
-    game: fallbackGame,
+    success: false,
     intent,
+    error: {
+      code: 'GENERATION_FAILED' as const,
+      message: 'Generation failed after all retries',
+      suggestions: ['Try again', 'Try a simpler game description'],
+    },
     retryCount: maxRetries,
   };
 }

@@ -1,4 +1,9 @@
 import { nanoid } from 'nanoid';
+import type { GemWallet, GemTransaction } from '@slopcade/shared/schema/economy';
+
+export type { GemWallet, GemTransaction };
+
+type D1Database = import('@cloudflare/workers-types').D1Database;
 
 export type GemTransactionType =
   | 'signup_bonus'
@@ -16,30 +21,6 @@ export interface GemTransactionParams {
   idempotencyKey?: string;
   description?: string;
   metadata?: Record<string, unknown>;
-}
-
-export interface GemWallet {
-  userId: string;
-  balance: number;
-  lifetimeEarned: number;
-  lifetimeSpent: number;
-  createdAt: number;
-  updatedAt: number;
-}
-
-export interface GemTransaction {
-  id: string;
-  userId: string;
-  type: GemTransactionType;
-  amount: number;
-  balanceBefore: number;
-  balanceAfter: number;
-  referenceType: string | null;
-  referenceId: string | null;
-  idempotencyKey: string | null;
-  description: string | null;
-  metadataJson: string | null;
-  createdAt: number;
 }
 
 export class InsufficientGemsError extends Error {
@@ -76,6 +57,7 @@ export class GemService {
         balance: existing.balance,
         lifetimeEarned: existing.lifetime_earned,
         lifetimeSpent: existing.lifetime_spent,
+        lifetimePurchased: existing.lifetime_purchased,
         createdAt: existing.created_at,
         updatedAt: existing.updated_at,
       };
@@ -92,6 +74,7 @@ export class GemService {
       balance: 0,
       lifetimeEarned: 0,
       lifetimeSpent: 0,
+      lifetimePurchased: 0,
       createdAt: now,
       updatedAt: now,
     };

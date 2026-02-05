@@ -1,6 +1,9 @@
 import { nanoid } from 'nanoid';
+import type { UserWallet, CreditTransaction } from '@slopcade/shared/schema/economy';
 
 type D1Database = import('@cloudflare/workers-types').D1Database;
+
+export type { UserWallet, CreditTransaction };
 
 export type TransactionType =
   | 'signup_code_grant'
@@ -19,31 +22,6 @@ export interface TransactionParams {
   idempotencyKey?: string;
   description?: string;
   metadata?: Record<string, unknown>;
-}
-
-export interface Wallet {
-  userId: string;
-  balanceMicros: number;
-  lifetimeEarnedMicros: number;
-  lifetimeSpentMicros: number;
-  lastDailyClaimAt: number | null;
-  createdAt: number;
-  updatedAt: number;
-}
-
-export interface CreditTransaction {
-  id: string;
-  userId: string;
-  type: TransactionType;
-  amountMicros: number;
-  balanceBeforeMicros: number;
-  balanceAfterMicros: number;
-  referenceType: string | null;
-  referenceId: string | null;
-  idempotencyKey: string | null;
-  description: string | null;
-  metadataJson: string | null;
-  createdAt: number;
 }
 
 export class InsufficientBalanceError extends Error {
@@ -65,7 +43,7 @@ export class WalletService {
    * NOTE: New wallets start with ZERO balance
    * Credits are granted via signup code redemption, NOT automatically
    */
-  async getOrCreateWallet(userId: string): Promise<Wallet> {
+  async getOrCreateWallet(userId: string): Promise<UserWallet> {
     const now = Date.now();
     
     // Try to get existing wallet

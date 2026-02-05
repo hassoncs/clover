@@ -8,16 +8,16 @@ import type {
   ComfyWorkflow,
   ComfyAsset,
   RunPodResponse,
-} from '@/ai/comfyui-types'
+} from '@/ai/providers/comfyui/types'
 import {
   COMFYUI_DEFAULTS,
   MIME_TO_EXT,
-} from '@/ai/comfyui-types'
+} from '@/ai/providers/comfyui/types'
 
-import type { ImageGenerationResult, LayeredImageGenerationResult, ImageGenerationAdapter } from '@/ai/provider-contract'
-import { ProviderError, ProviderErrorCode, tryGetPngDimensions, PROVIDER_DEFAULTS } from '@/ai/provider-contract'
+import type { ImageGenerationResult, LayeredImageGenerationResult, ImageGenerationAdapter } from '@/ai/providers/contract'
+import { ProviderError, ProviderErrorCode, tryGetPngDimensions, PROVIDER_DEFAULTS } from '@/ai/providers/contract'
 
-import * as workflows from '@/ai/workflows'
+import * as workflows from '@/ai/providers/comfyui/workflows'
 
 export class ComfyUIClient {
   private endpoint: string;

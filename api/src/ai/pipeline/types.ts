@@ -5,7 +5,7 @@
  * This is the core type system - runtime-agnostic, no Node.js or Workers APIs.
  */
 
-import type { ImageProvider } from '@/ai/provider-contract'
+import type { ImageProvider } from '@/ai/providers/contract'
 
 // =============================================================================
 // ASSET TYPES - The discriminator for pipeline flow
@@ -19,7 +19,7 @@ export type AssetType = 'entity' | 'background' | 'title_hero' | 'title_hero_no_
 
 export type SpriteStyle = 'pixel' | 'cartoon' | '3d' | 'flat';
 
-export type { ImageProvider } from '@/ai/provider-contract'
+export type { ImageProvider } from '@/ai/providers/contract'
 
 export const STYLE_DESCRIPTORS: Record<SpriteStyle, { aesthetic: string; technical: string }> = {
   pixel: {
@@ -424,9 +424,9 @@ export interface Stage {
 // =============================================================================
 
 // Re-export the canonical ImageGenerationAdapter and defaults from provider-contract
-import type { ImageGenerationAdapter as _ImageGenerationAdapter } from '@/ai/provider-contract'
+import type { ImageGenerationAdapter as _ImageGenerationAdapter } from '@/ai/providers/contract'
 export type ImageGenerationAdapter = _ImageGenerationAdapter
-export { PROVIDER_DEFAULTS } from '@/ai/provider-contract'
+export { PROVIDER_DEFAULTS } from '@/ai/providers/contract'
 
 export interface R2Adapter {
   /** Upload buffer to R2 storage */

@@ -2,7 +2,7 @@ export {
   classifyPrompt,
   getClassificationConfidence,
   type GameIntent,
-} from '@/ai/classifier'
+} from '@/ai/game/classifier'
 
 export {
   generateGame,
@@ -13,9 +13,9 @@ export {
   type GenerationOptions,
   type GenerationResult,
   type RefinementResult,
-} from '@/ai/generator'
+} from '@/ai/game/generator'
 
-export { GameDefinitionSchema } from '@/ai/schemas'
+export { GameDefinitionSchema } from '@/ai/game/schemas'
 
 export {
   validateGameDefinition,
@@ -23,29 +23,17 @@ export {
   type GameDefinitionValidationResult,
   type ValidationError,
   type ValidationWarning,
-} from '@/ai/validator'
-
-export {
-  GAME_TEMPLATES,
-  getTemplateForGameType,
-  getRandomTemplate,
-  BALL_LAUNCHER_TEMPLATE,
-  STACK_ATTACK_TEMPLATE,
-  JUMPY_CAT_TEMPLATE,
-  HILL_RACER_TEMPLATE,
-  FALLING_CATCHER_TEMPLATE,
-  type GameType,
-} from '@/ai/templates'
+} from '@/ai/game/validator'
 
 export {
   ScenarioClient,
   createScenarioClient,
-} from '@/ai/scenario'
+} from '@/ai/providers/scenario/client'
 
 export {
   ComfyUIClient,
   createComfyUIClient,
-} from '@/ai/comfyui'
+} from '@/ai/providers/comfyui/client'
 
 export {
   AssetService,
@@ -59,7 +47,7 @@ export type {
   ScenarioConfig,
   GenerationParams,
   GenerationResult as ScenarioGenerationResult,
-} from '@/ai/scenario-types'
+} from '@/ai/providers/scenario/types'
 
 export type {
   ComfyUIConfig,
@@ -68,33 +56,5 @@ export type {
   ComfyGenerateLayeredParams,
   ParallaxLayerConfig,
   ComfyLayeredResult,
-} from '@/ai/comfyui-types'
+} from '@/ai/providers/comfyui/types'
 
-export {
-  evaluateGame,
-  evaluateGameStructure,
-  runImprovementLoop,
-  quickEvaluate,
-  type EvaluationRequest,
-  type EvaluationConfig,
-  type EvaluationResult,
-  type GameEvaluation,
-  type GameEvaluationDimensions,
-  type GameEvaluationStructural,
-  type ImprovementLoopConfig,
-  type ImprovementLoopResult,
-  type IterationRecord,
-} from '@/ai/evaluator'
-
-export {
-  runExperiment,
-  formatExperimentReport,
-  BENCHMARK_PROMPTS,
-  type ExperimentConfig,
-  type ExperimentResult,
-  type ExperimentSummary,
-  type RunResult,
-  type ModelConfig,
-  type ModelStats,
-  type PromptStats,
-} from '@/ai/experiments'

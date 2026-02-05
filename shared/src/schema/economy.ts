@@ -195,3 +195,65 @@ export const insertPromoCodeRedemptionSchema = createInsertSchema(promoCodeRedem
 export const selectPromoCodeRedemptionSchema = createSelectSchema(promoCodeRedemptions);
 export type PromoCodeRedemption = z.infer<typeof selectPromoCodeRedemptionSchema>;
 export type NewPromoCodeRedemption = z.infer<typeof insertPromoCodeRedemptionSchema>;
+
+// Gem Wallets
+export const userGems = sqliteTable('user_gems', {
+  userId: text('user_id').primaryKey().references(() => users.id),
+  balance: integer('balance').notNull().default(0),
+  lifetimeEarned: integer('lifetime_earned').notNull().default(0),
+  lifetimeSpent: integer('lifetime_spent').notNull().default(0),
+  lifetimePurchased: integer('lifetime_purchased').notNull().default(0),
+  createdAt: integer('created_at').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+});
+
+export const insertUserGemSchema = createInsertSchema(userGems);
+export const selectUserGemSchema = createSelectSchema(userGems);
+export type GemWallet = z.infer<typeof selectUserGemSchema>;
+export type NewGemWallet = z.infer<typeof insertUserGemSchema>;
+
+// Gem Transactions
+export const gemTransactions = sqliteTable('gem_transactions', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id),
+  type: text('type').notNull(),
+  amount: integer('amount').notNull(),
+  balanceBefore: integer('balance_before').notNull(),
+  balanceAfter: integer('balance_after').notNull(),
+  referenceType: text('reference_type'),
+  referenceId: text('reference_id'),
+  idempotencyKey: text('idempotency_key'),
+  description: text('description'),
+  metadataJson: text('metadata_json'),
+  createdAt: integer('created_at').notNull(),
+}, (table) => ({
+  userIdx: index('idx_gem_transactions_user').on(table.userId),
+  typeIdx: index('idx_gem_transactions_type').on(table.type),
+  idempotencyIdx: uniqueIndex('idx_gem_transactions_idempotency').on(table.idempotencyKey),
+}));
+
+export const insertGemTransactionSchema = createInsertSchema(gemTransactions);
+export const selectGemTransactionSchema = createSelectSchema(gemTransactions);
+export type GemTransaction = z.infer<typeof selectGemTransactionSchema>;
+export type NewGemTransaction = z.infer<typeof insertGemTransactionSchema>;
+
+// Gem Products
+export const gemProducts = sqliteTable('gem_products', {
+  id: text('id').primaryKey(),
+  sku: text('sku').notNull().unique(),
+  name: text('name').notNull(),
+  description: text('description'),
+  priceCents: integer('price_cents').notNull(),
+  currency: text('currency').notNull().default('USD'),
+  gemAmount: integer('gem_amount').notNull(),
+  bonusPercent: integer('bonus_percent').default(0),
+  isActive: integer('is_active').notNull().default(1),
+  platform: text('platform'),
+  createdAt: integer('created_at').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+});
+
+export const insertGemProductSchema = createInsertSchema(gemProducts);
+export const selectGemProductSchema = createSelectSchema(gemProducts);
+export type GemProduct = z.infer<typeof selectGemProductSchema>;
+export type NewGemProduct = z.infer<typeof insertGemProductSchema>;

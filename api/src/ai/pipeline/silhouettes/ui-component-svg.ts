@@ -1,7 +1,5 @@
-async function getSharp() {
-  const mod = await import('sharp');
-  return mod.default;
-}
+import { getSharp } from '@/utils/sharp'
+
 
 export interface PanelSilhouetteParams {
   width: number;

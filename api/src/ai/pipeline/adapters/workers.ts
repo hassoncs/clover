@@ -1,6 +1,6 @@
 import type { PipelineAdapters, ImageGenerationAdapter, R2Adapter, SilhouetteAdapter } from '@/ai/pipeline/adapters/types'
-import { createComfyUIClient } from '@/ai/comfyui'
-import { createScenarioClient, type ScenarioClient } from '@/ai/scenario'
+import { createComfyUIClient } from '@/ai/providers/comfyui/client'
+import { createScenarioClient, type ScenarioClient } from '@/ai/providers/scenario/client'
 import { createSilhouettePng } from '@/ai/assets'
 import type { Env } from '@/trpc/context'
 import type { R2Bucket } from '@cloudflare/workers-types';

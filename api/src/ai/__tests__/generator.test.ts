@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { validateGameDefinition } from '@/ai/validator'
-import { classifyPrompt } from '@/ai/classifier'
+import { validateGameDefinition } from '@/ai/game/validator'
+import { classifyPrompt } from '@/ai/game/classifier'
 import validProjectileGame from '@/__fixtures__/games/valid-projectile-game.json'
 import type { GameDefinition } from '@slopcade/shared/types/GameDefinition'
 
