@@ -167,7 +167,7 @@ CREATE TABLE IF NOT EXISTS generation_tasks (
 );
 
 CREATE INDEX IF NOT EXISTS idx_generation_tasks_job ON generation_tasks(job_id);
-CREATE INDEX idx_generation_tasks_status ON generation_tasks(status) WHERE status IN ('queued', 'running');
+CREATE INDEX IF NOT EXISTS idx_generation_tasks_status ON generation_tasks(status) WHERE status IN ('queued', 'running');
 
 -- =============================================================================
 -- ECONOMY SYSTEM TABLES

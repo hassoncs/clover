@@ -59,6 +59,8 @@ landing/.dev.vars
 
 # Wrangler local state
 **/.wrangler/
+.seed-local.sql
+.seed-state.json
 
 # typescript
 *.tsbuildinfo
