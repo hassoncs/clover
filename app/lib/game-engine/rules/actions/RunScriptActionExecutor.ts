@@ -43,7 +43,7 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
         id: entity.id,
         tags: [...entity.tags],
         position: { x: entity.transform.x, y: entity.transform.y },
-        template: entity.templateId,
+        template: entity.template,
       };
     };
 
@@ -56,14 +56,21 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
         id: e.id,
         tags: [...e.tags],
         position: { x: e.transform.x, y: e.transform.y },
-        template: e.templateId,
+        template: e.template,
       }));
     };
 
     return {
       entityManager: {
-        spawnEntity: (templateId: string, position: { x: number; y: number }, opts?: SpawnOptions) =>
-          entityManager.spawnEntity(templateId, position, opts),
+        spawnEntity: (templateId: string, position: { x: number; y: number }, opts?: SpawnOptions) => {
+          const entity = entityManager.createEntity({
+            id: `spawned_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+            name: templateId,
+            template: templateId,
+            transform: { x: position.x, y: position.y, angle: opts?.angle ?? 0, scaleX: 1, scaleY: 1 },
+          });
+          return entity.id;
+        },
         destroyEntity: (entityId: string) => entityManager.destroyEntity(entityId),
         getEntityPosition: (entityId: string) => {
           const entity = entityManager.getEntity(entityId);
@@ -77,21 +84,18 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
           }
         },
         getEntityVelocity: (entityId: string) => {
-          const entity = entityManager.getEntity(entityId);
-          return entity?.velocity ? { x: entity.velocity.x, y: entity.velocity.y } : null;
+          if (!context.physics) return null;
+          const vel = context.physics.getLinearVelocity(entityId);
+          return vel ? { x: vel.x, y: vel.y } : null;
         },
         setEntityVelocity: (entityId: string, velocity: { x: number; y: number }) => {
-          const entity = entityManager.getEntity(entityId);
-          if (entity) {
-            entity.velocity = velocity;
-            if (context.physics) {
-              context.physics.setVelocity(entityId, velocity.x, velocity.y);
-            }
+          if (context.physics) {
+            context.physics.setLinearVelocity(entityId, velocity);
           }
         },
         applyImpulse: (entityId: string, impulse: { x: number; y: number }) => {
           if (context.physics) {
-            context.physics.applyImpulse(entityId, impulse.x, impulse.y);
+            context.physics.applyImpulseToCenter(entityId, impulse);
           }
         },
         getEntityTags: (entityId: string) => {
@@ -117,7 +121,7 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
         queryEntitiesWithData,
         getEntityTemplate: (entityId: string) => {
           const entity = entityManager.getEntity(entityId);
-          return entity?.templateId;
+          return entity?.template;
         },
       },
       rulesEvaluator: {
@@ -162,14 +166,10 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
       } : null,
       mousePosition: context.input?.mouse ? { x: context.input.mouse.x, y: context.input.mouse.y } : null,
       dragState: context.input?.drag ? {
-        isDragging: context.input.drag.isDragging,
-        startPosition: context.input.drag.startX !== undefined && context.input.drag.startY !== undefined
-          ? { x: context.input.drag.startX, y: context.input.drag.startY }
-          : null,
-        currentPosition: context.input.drag.currentX !== undefined && context.input.drag.currentY !== undefined
-          ? { x: context.input.drag.currentX, y: context.input.drag.currentY }
-          : null,
-        entityId: context.input.drag.entityId ?? null,
+        isDragging: true,
+        startPosition: { x: context.input.drag.startWorldX, y: context.input.drag.startWorldY },
+        currentPosition: { x: context.input.drag.currentWorldX, y: context.input.drag.currentWorldY },
+        entityId: context.input.drag.targetEntityId ?? null,
       } : null,
       frameInfo: {
         frameId: context.evalContext?.frameId ?? 0,

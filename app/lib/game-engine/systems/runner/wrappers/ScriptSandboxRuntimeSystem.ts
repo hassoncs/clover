@@ -357,7 +357,7 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
           id: entity.id,
           tags: [...entity.tags],
           position: { x: entity.transform.x, y: entity.transform.y },
-          template: entity.templateId,
+          template: entity.template,
         };
       },
       queryEntitiesWithData: (query?: EntityQuery): EntityData[] => {
@@ -369,12 +369,12 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
           id: e.id,
           tags: [...e.tags],
           position: { x: e.transform.x, y: e.transform.y },
-          template: e.templateId,
+          template: e.template,
         }));
       },
       getEntityTemplate: (entityId: string) => {
         const entity = em.getEntity(entityId);
-        return entity?.templateId;
+        return entity?.template;
       },
     };
   }
