@@ -4,7 +4,7 @@ import { generatePuzzle, type PuzzleConfig } from './puzzleGenerator';
 const BALLS_PER_TUBE = 4;
 const EXTRA_TUBES = 2;
 
-function getPuzzleConfigForLevel(level: number): PuzzleConfig {
+export function getPuzzleConfigForLevel(level: number): PuzzleConfig {
   let numColors: number;
   if (level === 1) {
     numColors = 2;

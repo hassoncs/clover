@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generatePuzzle, isPuzzleSolvable } from '../puzzleGenerator';
-import { getPuzzleConfigForLevel } from '../game';
+import { getPuzzleConfigForLevel } from '../generateLevels';
 
 describe('puzzleGenerator', () => {
   describe('generatePuzzle', () => {
