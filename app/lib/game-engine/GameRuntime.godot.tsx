@@ -342,6 +342,9 @@ export function GameRuntimeGodot({
 
   const timeScaleRef = useRef(1.0);
   const eventQueueRef = useRef(new GameEventQueue());
+  const isSteppingRef = useRef(false);
+  const autoStepTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastAutoStepTimeRef = useRef(0);
 
   const [isReady, setIsReady] = useState(false);
   const [godotReady, setGodotReady] = useState(false);
@@ -1022,12 +1025,17 @@ export function GameRuntimeGodot({
       }
 
       const startFrame = frameIdRef.current;
+      isSteppingRef.current = true;
 
-      // Step Godot physics (Rapier's space_step is synchronous)
-      await bridge.stepPhysics(frames);
+      try {
+        // Step Godot physics (Rapier's space_step is synchronous)
+        await bridge.stepPhysics(frames);
 
-      for (let i = 0; i < frames; i++) {
-        stepGame(FIXED_DT);
+        for (let i = 0; i < frames; i++) {
+          stepGame(FIXED_DT);
+        }
+      } finally {
+        isSteppingRef.current = false;
       }
 
       return {
@@ -1149,6 +1157,39 @@ export function GameRuntimeGodot({
     manualStep,
     gameState,
   ]);
+
+  useEffect(() => {
+    if (!isReady) return;
+
+    const AUTO_STEP_RATE_LIMIT_MS = 16.67;
+
+    eventQueueRef.current.setOnEventQueued(() => {
+      const tc = timeControlRef.current;
+
+      if (tc.mode !== 'inspect' || !tc.paused) return;
+      if (isSteppingRef.current) return;
+
+      const now = performance.now();
+      if (now - lastAutoStepTimeRef.current < AUTO_STEP_RATE_LIMIT_MS) return;
+
+      if (!autoStepTimerRef.current) {
+        autoStepTimerRef.current = setTimeout(() => {
+          autoStepTimerRef.current = null;
+          lastAutoStepTimeRef.current = performance.now();
+          logger.debug('inspector', 'auto-step triggered');
+          manualStep(1);
+        }, 0);
+      }
+    });
+
+    return () => {
+      if (autoStepTimerRef.current) {
+        clearTimeout(autoStepTimerRef.current);
+        autoStepTimerRef.current = null;
+      }
+      eventQueueRef.current.setOnEventQueued(() => {});
+    };
+  }, [isReady, manualStep]);
 
   // Keyboard input handling (web only) - shared handlers with deduplication
   const sharedHandleKeyDown = useCallback((e: KeyboardEvent) => {

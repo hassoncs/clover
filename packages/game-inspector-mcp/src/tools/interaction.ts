@@ -280,10 +280,8 @@ export function registerInteractionTools(server: McpServer, state: GameInspector
       );
 
       const timestampBeforeWait = Date.now();
-      
-      if (waitMs > 0) {
-        await new Promise(resolve => setTimeout(resolve, waitMs));
-      }
+
+      await new Promise(resolve => setTimeout(resolve, Math.max(waitMs, 50)));
 
       let screenshotPath: string | undefined;
       if (!skipScreenshot && state.page) {
