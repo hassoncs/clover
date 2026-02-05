@@ -1,64 +1,116 @@
+# Task 7: Fix setEntityPosition to reach Godot via bridge
 
+## Summary
+Fixed `setEntityPosition` in both `RunScriptActionExecutor` and `ScriptSandboxRuntimeSystem` to call `bridge.setPosition()` after updating the TypeScript entity state. This ensures position changes persist after `syncTransformsFromPhysics`.
 
-## Task 3: GameEventQueue Implementation - Completed
+## Changes Made
 
-### Files Created/Modified
+### 1. RunScriptActionExecutor.ts (lines 111-120)
+Added `bridge.setPosition()` call after updating entity transform:
+```typescript
+setEntityPosition: (entityId: string, position: { x: number; y: number }) => {
+  const entity = entityManager.getEntity(entityId);
+  if (entity) {
+    entity.transform.x = position.x;
+    entity.transform.y = position.y;
+    if (context.bridge) {
+      context.bridge.setPosition(entityId, position.x, position.y);
+    }
+  }
+},
+```
 
-#### New Files
-- `app/lib/game-engine/GameEventQueue.ts` - Unified event queue with GameEvent union type and GameEventQueue class
+### 2. ScriptSandboxRuntimeSystem.ts (lines 249-304)
+Added bridge reference and `bridge.setPosition()` call:
+```typescript
+private createEntityManagerAdapter(): SandboxRuntimeContext['entityManager'] {
+  const em = this.systemContext!.entityManager;
+  const physics = this.systemContext!.physics;
+  const bridge = this.systemContext!.bridge;  // Added bridge reference
+  
+  // ... other methods ...
+  
+  setEntityPosition: (entityId: string, position: { x: number; y: number }) => {
+    const entity = em.getEntity(entityId);
+    if (!entity) {
+      return;
+    }
 
-#### Modified Files
-- `app/lib/game-engine/GameRuntime.godot.tsx` - Migrated lifecycle events from `pendingLifecycleEventsRef` to `eventQueueRef`
+    entity.transform.x = position.x;
+    entity.transform.y = position.y;
 
-### Implementation Details
+    if (entity.physics) {
+      physics.setTransform(entity.id, {
+        position,
+        angle: entity.transform.angle,
+      });
+    }
 
-#### GameEvent Union Type
-Includes all event types organized by category:
-- **Lifecycle**: `game_loaded`, `game_started`
-- **Input**: `tap`, `drag_start`, `drag_end`, `mouse_move`, `mouse_leave`, `button_pressed`, `button_released`
-- **Physics**: `collision`, `sensor_begin`, `sensor_end`
+    bridge.setPosition(entityId, position.x, position.y);  // Added bridge call
+  },
+```
 
-#### GameEventQueue Class
-- `push(event)` - Add event to queue, triggers onEventQueued callback
-- `drain()` - O(1) array swap to retrieve and clear all events
-- `peek()` - Readonly view of queued events without draining
-- `length` - Current queue size
-- `setOnEventQueued(callback)` - For auto-advance in inspector mode (future use)
+## Verification
+- `pnpm tsc --noEmit` passes (no type errors)
+- Test failures are pre-existing issues in expression evaluation system (unrelated to these changes)
+- No existing tests for these specific files
 
-#### Migration from pendingLifecycleEventsRef
-Changed 3 locations in GameRuntime.godot.tsx:
-1. Line ~843: `pendingLifecycleEventsRef.current.push('game_loaded')` -> `eventQueueRef.current.push({ type: 'game_loaded' })`
-2. Line ~1446: `pendingLifecycleEventsRef.current.push('game_started')` -> `eventQueueRef.current.push({ type: 'game_started' })`
-3. Line ~1515: `pendingLifecycleEventsRef.current.push('game_loaded')` -> `eventQueueRef.current.push({ type: 'game_loaded' })`
+## Pattern Notes
+- SpawnActionExecutor uses Godot-authoritative pattern (calls bridge.spawnEntity directly)
+- RunScriptActionExecutor uses TS-optimistic pattern (creates entity in TS first, defers bridge call)
+- ScriptSandboxRuntimeSystem uses physics interface for physics entities, now also calls bridge for all position changes
 
-#### stepGame() Changes
-- Replaced: `pendingLifecycleEventsRef.current.map(type => ({ type }))`
-- With: `eventQueueRef.current.drain().filter(isLifecycleEvent)`
-- Maintains same output shape for `UpdateContext.frame.inputEvents`
-- `collisionsRef` and `inputRef` remain untouched (migrated in Task 4)
+---
 
-#### Type Guards
-- `isLifecycleEvent(event)` - Filter for lifecycle events
-- `isInputEvent(event)` - Filter for input events
-- `isPhysicsEvent(event)` - Filter for physics events
+# Task 6: Auto-Step in Inspector Mode
 
-### Design Decisions
+## Summary
+Implemented auto-step functionality that automatically advances one frame when a discrete event is queued while the game is paused in inspector mode.
 
-1. **Array Swap for Drain**: Uses `const events = this.queue; this.queue = []; return events;` for O(1) operation instead of copying.
+## Changes Made
 
-2. **Event Shape Alignment**: GameEvent type aligns with existing `InputEvent` union in `systems/runner/types.ts` to ensure compatibility with `RulesSystem.convertFrameInputEvents()`.
+### 1. GameRuntime.godot.tsx
+- Added `isSteppingRef` to track when manual step is in progress
+- Added `autoStepTimerRef` to prevent duplicate auto-step scheduling
+- Added `lastAutoStepTimeRef` for rate limiting (60fps max)
+- Modified `manualStep()` to set `isSteppingRef.current = true` at start and reset to `false` when done
+- Added useEffect that wires `eventQueueRef.current.setOnEventQueued()` callback
+  - Checks `timeControl.mode === 'inspect'` AND `paused === true`
+  - Checks `isSteppingRef.current === false`
+  - Uses `setTimeout(0)` to debounce/batch rapid events
+  - Rate limits to max 60 auto-steps per second (16.67ms gap)
+  - Logs via `logger.debug('inspector', 'auto-step triggered')`
 
-3. **Incremental Migration**: Only lifecycle events migrated now. Input and collision events stay in their existing refs until Task 4.
+### 2. packages/game-inspector-mcp/src/tools/interaction.ts
+- Updated `simulate_input` tool to wait at least 50ms for auto-step to complete
+- Changed from `waitMs` default to `Math.max(waitMs, 50)` to ensure auto-step has time to process
 
-4. **Logger Integration**: Used `logger.debug('lifecycle', ...)` for event queue logging as specified.
+## Key Implementation Details
 
-### Verification
-- `pnpm tsc --noEmit` passes with no errors
-- LSP diagnostics clean on modified files
-- Test failures in @slopcade/shared are pre-existing (expression evaluator) - not related to this change
-- No tests exist for the migrated lifecycle event functionality (integration test was deleted in Task 2)
+### Auto-Step Conditions
+Auto-step only fires when ALL of the following are true:
+1. Game is in inspect mode (`timeControl.mode === 'inspect'`)
+2. Game is paused (`timeControl.paused === true`)
+3. Not already processing a manual step (`isSteppingRef.current === false`)
+4. Rate limit not exceeded (16.67ms since last auto-step)
+5. No auto-step already scheduled (`autoStepTimerRef.current === null`)
 
-### Next Steps (Task 4)
-- Migrate collision events from `collisionsRef` to `eventQueueRef`
-- Migrate discrete input events (tap, drag_end) from `inputRef` to `eventQueueRef`
-- Keep continuous state (buttons, drag position, mouse, tilt) in `inputRef`
+### Rate Limiting
+- Max 60 auto-steps per second (16.67ms minimum gap)
+- Prevents infinite loops from cascading events
+- Uses `performance.now()` for high-resolution timing
+
+### Debouncing
+- Uses `setTimeout(0)` to batch rapid events
+- All events queued in the same microtask will trigger only one auto-step
+- Timer is cleared on cleanup to prevent memory leaks
+
+## Testing
+- TypeScript check passes (`pnpm tsc --noEmit`)
+- No breaking changes to existing APIs
+- `manualStep()` still works explicitly
+- `simulate_input` tool backward compatible
+
+## Files Modified
+- `app/lib/game-engine/GameRuntime.godot.tsx`
+- `packages/game-inspector-mcp/src/tools/interaction.ts`
