@@ -1,44 +1,62 @@
-# Engine Event Logging Communication Unification - Learnings
 
-## Conventions
 
-### Logger Pattern
-- Use `logger.debug('category', message)` for development-only logging
-- Use `logger.info('category', message)` for important lifecycle events
-- Use `logger.warn('category', message)` for recoverable issues
-- Use `logger.error('category', message)` for errors
-- TRACE level for per-frame hot path logging (must be opt-in)
+## Task 1: GameLogger Implementation - Completed
 
-### Event Queue Pattern
-- All discrete events go through GameEventQueue
-- Continuous state (drag position, held buttons) stays in inputRef
-- Drain uses array swap: `const events = this.queue; this.queue = []; return events;`
-- No per-frame allocations in hot paths
+### Files Created/Modified
 
-### Bridge Communication
-- All entity destroys must call `bridge.destroyEntity(id)` regardless of physics
-- Script position changes must call `bridge.setPosition()` to reach Godot
-- Two spawn patterns are acceptable: Godot-authoritative (SpawnActionExecutor) and TS-optimistic (RunScriptActionExecutor)
+#### New Files
+- `app/lib/game-engine/debug/Logger.ts` - TypeScript Logger with LogLevel enum, LogCategory type, and GameLogger class
+- `godot_project/scripts/utils/Logger.gd` - GDScript Logger with matching Level enum
+- `packages/game-inspector-mcp/src/tools/logging.ts` - MCP tools for `set_log_level` and `get_log_config`
 
-## Guardrails (Must NOT Have)
-- NO changes to native bridge (GodotBridge.native.ts)
-- NO rewriting the input system - only migrate discrete events
-- NO error handling on all 72 bridge methods - only spawn/destroy
-- NO changing event timing semantics - events still process on next frame
-- NO production auto-step - only in inspect mode
-- NO comprehensive test suite - max 5-7 focused tests
-- NO refactoring game state machine
-- NO GDScript Logger migration of existing prints
+#### Modified Files
+- `app/lib/game-engine/debug/index.ts` - Added logger exports
+- `app/lib/game-engine/GameRuntime.godot.tsx` - Migrated ~40 console.log statements to logger calls
+- `app/lib/game-engine/systems/runner/wrappers/RulesSystem.ts` - Migrated 7 console.log statements to logger calls
 
-## File Locations
-- Logger: `app/lib/game-engine/debug/Logger.ts`
-- GDScript Logger: `godot_project/scripts/utils/Logger.gd`
-- Event Queue: `app/lib/game-engine/GameEventQueue.ts`
-- MCP Tools: `packages/game-inspector-mcp/src/tools/`
+### Implementation Details
 
-## Dependencies Between Tasks
-- Task 1 (Logger) and Task 2 (Delete tests) can run in parallel
-- Task 3 (EventQueue) depends on Task 1 and 2
-- Task 4 (Collisions/input) and Task 5 (Destroy) can run in parallel after Task 3
-- Task 6 (Auto-step) and Task 7 (SetPosition) can run in parallel after Task 4
-- Task 8 (Tests) depends on Tasks 4, 5, 6, 7
+#### Log Levels (0-5)
+- SILENT = 0 - No output
+- ERROR = 1 - Errors only
+- WARN = 2 - Warnings and errors (DEFAULT)
+- INFO = 3 - Important lifecycle events
+- DEBUG = 4 - Development debugging
+- TRACE = 5 - Per-frame hot path logging
+
+#### Log Categories
+- `lifecycle` - game_loaded, game_started, state transitions
+- `input` - tap, drag, keyboard events
+- `physics` - collisions, forces, velocities
+- `rules` - rule evaluation, trigger matching, action execution
+- `entities` - spawn, destroy, property changes
+- `bridge` - Godot↔TS communication
+- `assets` - image loading, texture preloading
+- `render` - visual updates, camera, viewport
+- `state` - game state changes, variable updates
+- `loop` - game loop, frame timing
+- `inspector` - debug bridge, MCP tools
+
+#### Migration Patterns Applied
+- `console.log('[Lifecycle] ...')` → `logger.debug('lifecycle', ...)`
+- `console.log('[stepGame] frame ...')` → `logger.trace('loop', ...)`
+- `console.log('[GameRuntime] ...')` → `logger.info('lifecycle', ...)`
+- `console.warn('[WinCondition] ...')` → `logger.warn('rules', ...)`
+- `console.error(...)` → `logger.error('lifecycle', ...)`
+
+#### MCP Tools
+- `set_log_level` - Sets global or per-category log level via `window.__GAME_RUNTIME__.logger.configure()`
+- `get_log_config` - Retrieves current logger configuration
+
+### Verification
+- `pnpm tsc --noEmit` passes with no errors
+- All modified files have clean LSP diagnostics
+- Logger exposed on `window.__GAME_RUNTIME__.logger` for MCP access
+
+### Default Behavior
+With default `LogLevel.WARN`, most existing console.log noise is now suppressed. To see lifecycle debug output:
+```typescript
+logger.configure({
+  categories: { lifecycle: LogLevel.DEBUG }
+});
+```
