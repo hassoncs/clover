@@ -12,3 +12,4 @@ export type {
   TimeControl,
 } from "./types";
 export { framesToAdvance } from "./types";
+export { logger, LogLevel, type LogCategory, type LoggerConfig } from "./Logger";
