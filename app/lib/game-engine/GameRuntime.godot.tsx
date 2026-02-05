@@ -87,6 +87,7 @@ import {
 import * as StateHelpers from "./runtime/GameStateHelpers";
 import { subscribeToGameEvents, type ReactGameState } from "./runtime/GameEventSubscriber";
 import { useGameProgressFromDefinition } from "./progress/useGameProgress";
+import { GameEventQueue, isLifecycleEvent } from "./GameEventQueue";
 
 export interface GameRuntimeGodotProps {
   definition: GameDefinition;
@@ -343,7 +344,7 @@ export function GameRuntimeGodot({
   );
 
   const timeScaleRef = useRef(1.0);
-  const pendingLifecycleEventsRef = useRef<Array<'game_loaded' | 'game_started'>>([]);
+  const eventQueueRef = useRef(new GameEventQueue());
 
   const [isReady, setIsReady] = useState(false);
   const [godotReady, setGodotReady] = useState(false);
@@ -840,9 +841,9 @@ export function GameRuntimeGodot({
         gameSystemRunnerRef.current = runner;
 
         logger.info("lifecycle", "Emitting gameLoaded lifecycle event");
-        logger.debug("lifecycle", "Pushing game_loaded to pendingLifecycleEventsRef");
-        pendingLifecycleEventsRef.current.push('game_loaded');
-        logger.trace("lifecycle", "pendingLifecycleEventsRef now has:", pendingLifecycleEventsRef.current);
+        logger.debug("lifecycle", "Pushing game_loaded to eventQueue");
+        eventQueueRef.current.push({ type: 'game_loaded' });
+        logger.trace("lifecycle", "eventQueue now has length:", eventQueueRef.current.length);
       } catch (error) {
         logger.error("lifecycle", "Failed to initialize game:", error);
       }
@@ -948,11 +949,11 @@ export function GameRuntimeGodot({
       const frameCollisions = collisionsRef.current.slice();
       collisionsRef.current = [];
 
-      const lifecycleEvents = pendingLifecycleEventsRef.current.map(type => ({ type }));
+      const frameEvents = eventQueueRef.current.drain();
+      const lifecycleEvents = frameEvents.filter(isLifecycleEvent);
       if (lifecycleEvents.length > 0) {
         logger.debug("lifecycle", "stepGame processing lifecycle events:", lifecycleEvents);
       }
-      pendingLifecycleEventsRef.current = [];
 
       const updateContext: UpdateContext = {
         dt,
@@ -1442,7 +1443,7 @@ export function GameRuntimeGodot({
   const handleStart = useCallback(() => {
     logger.info("lifecycle", "handleStart called");
     logger.debug("lifecycle", "Emitting gameStart lifecycle event");
-    pendingLifecycleEventsRef.current.push('game_started');
+    eventQueueRef.current.push({ type: 'game_started' });
     logger.debug("lifecycle", "Calling resumePhysics...");
     bridgeRef.current?.resumePhysics();
     logger.debug("lifecycle", "resumePhysics complete");
@@ -1511,7 +1512,7 @@ export function GameRuntimeGodot({
       });
 
       logger.info("lifecycle", "handleRestart emitting gameLoaded lifecycle event");
-      pendingLifecycleEventsRef.current.push('game_loaded');
+      eventQueueRef.current.push({ type: 'game_loaded' });
     }
   }, [onRequestRestart, definition, setupSubscriptions, progressHook]);
 
