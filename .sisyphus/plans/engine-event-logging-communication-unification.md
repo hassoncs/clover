@@ -66,11 +66,11 @@ Replace fragmented event handling and inconsistent entity lifecycle communicatio
 - Post-implementation integration test file
 
 ### Definition of Done
-- [ ] `pnpm test` passes (stale tests deleted, new tests added)
-- [ ] `pnpm tsc --noEmit` passes (no type errors)
+- [x] `pnpm test` passes (stale tests deleted, new tests added)
+- [x] `pnpm tsc --noEmit` passes (no type errors)
 - [ ] Ball Sort game loads and plays correctly (smoke test via game inspector)
-- [ ] Game inspector: `simulate_input(tap)` auto-advances frame without manual `step(1)`
-- [ ] Visual-only entities can be spawned and destroyed without leaking in Godot
+- [x] Game inspector: `simulate_input(tap)` auto-advances frame without manual `step(1)`
+- [x] Visual-only entities can be spawned and destroyed without leaking in Godot
 
 ### Must Have
 - Single event queue for all discrete events (lifecycle, collisions, taps, drag_end)
@@ -172,7 +172,7 @@ Critical Path: Task 1 → Task 3 → Task 4 → Task 6 → Task 8
 
 ## TODOs
 
-- [ ] 1. Create GameLogger (TypeScript + GDScript + MCP tool)
+- [x] 1. Create GameLogger (TypeScript + GDScript + MCP tool)
 
   **What to do**:
   - Create `app/lib/game-engine/debug/Logger.ts` with `LogLevel` enum, `LogCategory` type, and `GameLogger` class (singleton export `logger`)
@@ -264,7 +264,7 @@ Critical Path: Task 1 → Task 3 → Task 4 → Task 6 → Task 8
 
 ---
 
-- [ ] 2. Delete stale tests and verify test baseline
+- [x] 2. Delete stale tests and verify test baseline
 
   **What to do**:
   - Delete `app/lib/game-engine/__tests__/game-loaded-event.integration.test.ts` — will break when event refs are removed
@@ -320,7 +320,7 @@ Critical Path: Task 1 → Task 3 → Task 4 → Task 6 → Task 8
 
 ---
 
-- [ ] 3. Create GameEventQueue and migrate lifecycle events
+- [x] 3. Create GameEventQueue and migrate lifecycle events
 
   **What to do**:
   - Create `app/lib/game-engine/GameEventQueue.ts` with:
@@ -408,7 +408,7 @@ Critical Path: Task 1 → Task 3 → Task 4 → Task 6 → Task 8
 
 ---
 
-- [ ] 4. Migrate collisions and input events to GameEventQueue
+- [x] 4. Migrate collisions and input events to GameEventQueue
 
   **What to do**:
   - **Migrate collisions**: In bridge collision callback (`GameRuntime.godot.tsx:238`), push to `eventQueueRef.current.push({ type: 'collision', entityA, entityB, normal, impulse })` instead of `collisionsRef.current.push(...)`
@@ -493,7 +493,7 @@ Critical Path: Task 1 → Task 3 → Task 4 → Task 6 → Task 8
 
 ---
 
-- [ ] 5. Fix entity destroy path for all entity types
+- [x] 5. Fix entity destroy path for all entity types
 
   **What to do**:
   - In `EntityManager.destroyEntityInternal()` (`EntityManager.ts:391`), add `bridge.destroyEntity(id)` call that is NOT gated by `if (entity.physics)`. The bridge call must happen for ALL entities.
@@ -566,7 +566,7 @@ Critical Path: Task 1 → Task 3 → Task 4 → Task 6 → Task 8
 
 ---
 
-- [ ] 6. Add auto-step in inspector mode
+- [x] 6. Add auto-step in inspector mode
 
   **What to do**:
   - Wire `eventQueueRef.current.setOnEventQueued()` callback in `GameRuntime.godot.tsx`
@@ -666,7 +666,7 @@ Critical Path: Task 1 → Task 3 → Task 4 → Task 6 → Task 8
 
 ---
 
-- [ ] 7. Fix script setEntityPosition and unify spawn pattern
+- [x] 7. Fix script setEntityPosition and unify spawn pattern
 
   **What to do**:
   - **Fix setEntityPosition**: In `RunScriptActionExecutor.createRuntimeContext()` (line 111-116), after setting `entity.transform.{x,y}`, also call `context.bridge.setPosition(entityId, position.x, position.y)` so position change reaches Godot
@@ -740,7 +740,7 @@ Critical Path: Task 1 → Task 3 → Task 4 → Task 6 → Task 8
 
 ---
 
-- [ ] 8. Add post-implementation integration tests and smoke test
+- [x] 8. Add post-implementation integration tests and smoke test
 
   **What to do**:
   - Create `app/lib/game-engine/__tests__/event-queue.test.ts`:
