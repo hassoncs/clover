@@ -1,6 +1,7 @@
 import type { GameDefinition, GameEntity, GameJoint } from '@slopcade/shared';
 import type { Physics2D } from '../physics2d/Physics2D';
 import type { JointId } from '../physics2d/types';
+import type { GodotBridge } from '../godot/types';
 import { EntityManager } from './EntityManager';
 import type { GameState, GameEventBus } from './runtime/types';
 import { createGameState } from './runtime/GameStateHelpers';
@@ -17,13 +18,16 @@ export interface LoadedGame {
 
 export interface GameLoaderOptions {
   physics: Physics2D;
+  bridge?: GodotBridge;
 }
 
 export class GameLoader {
   private physics: Physics2D;
+  private bridge: GodotBridge | undefined;
 
   constructor(options: GameLoaderOptions) {
     this.physics = options.physics;
+    this.bridge = options.bridge;
   }
 
   load(definition: GameDefinition): LoadedGame {
@@ -33,6 +37,7 @@ export class GameLoader {
 
     const entityManager = new EntityManager(this.physics, {
       templates: definition.templates,
+      bridge: this.bridge,
     });
 
     for (const entity of definition.entities) {

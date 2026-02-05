@@ -703,6 +703,9 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
           logger.debug("rules", "convertFrameInputEvents: Found game_loaded event");
           result.gameLoaded = true;
           break;
+        case 'mouse_leave':
+          // Mouse leave events are handled by InputEntityManager, no rule action needed
+          break;
       }
     }
     

@@ -83,6 +83,10 @@ export interface GameLoadedInputEvent {
   type: 'game_loaded';
 }
 
+export interface MouseLeaveInputEvent {
+  type: 'mouse_leave';
+}
+
 /**
  * Union of all input event types that can occur during a frame.
  */
@@ -94,7 +98,8 @@ export type InputEvent =
   | ButtonPressedInputEvent
   | ButtonReleasedInputEvent
   | GameStartedInputEvent
-  | GameLoadedInputEvent;
+  | GameLoadedInputEvent
+  | MouseLeaveInputEvent;
 
 /**
  * Per-frame data buffers owned by the runner.

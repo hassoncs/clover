@@ -10,6 +10,7 @@ import type {
   ChildEntityDefinition,
 } from '@slopcade/shared';
 import type { RuntimeEntity, RuntimeBehavior, EntityManagerOptions } from './types';
+import type { GodotBridge } from '../godot/types';
 import { getGlobalTagRegistry } from '@slopcade/shared';
 import { recomputeActiveConditionalGroup } from './behaviors/conditional';
 
@@ -76,6 +77,7 @@ export class EntityManager {
   private entities = new Map<string, RuntimeEntity>();
   private templates = new Map<string, EntityTemplate>();
   private physics: Physics2D;
+  private bridge: GodotBridge | null = null;
 
   private entityPool: PooledEntitySlot[] = [];
   private freeSlots: number[] = [];
@@ -87,11 +89,16 @@ export class EntityManager {
 
   constructor(physics: Physics2D, options: EntityManagerOptions = {}) {
     this.physics = physics;
+    this.bridge = options.bridge ?? null;
     if (options.templates) {
       Object.entries(options.templates).forEach(([id, template]) => {
         this.templates.set(id, structuredClone(template));
       });
     }
+  }
+
+  setBridge(bridge: GodotBridge): void {
+    this.bridge = bridge;
   }
 
   registerTemplate(template: EntityTemplate): void {
@@ -388,22 +395,29 @@ export class EntityManager {
     this.destroyEntityInternal(id);
   }
 
-   private destroyEntityInternal(id: string): void {
-     const entity = this.entities.get(id);
-     if (!entity) return;
+    private destroyEntityInternal(id: string): void {
+      const entity = this.entities.get(id);
+      if (!entity) return;
 
-     if (entity.physics) {
-       this.physics.destroyBody(entity.id);
-     }
+      // Always destroy in Godot first (for ALL entity types, not just physics)
+      // This ensures visual-only entities are properly cleaned up in the scene tree
+      if (this.bridge) {
+        this.bridge.destroyEntity(entity.id);
+      }
 
-     for (const tagId of entity.tagBits) {
-       this.entitiesByTagId.get(tagId)?.delete(id);
-     }
+      // Physics cleanup only for entities with physics components
+      if (entity.physics) {
+        this.physics.destroyBody(entity.id);
+      }
 
-     this.resetEntityForPooling(entity);
-     this.entities.delete(id);
-     this.returnEntityToPool(id);
-   }
+      for (const tagId of entity.tagBits) {
+        this.entitiesByTagId.get(tagId)?.delete(id);
+      }
+
+      this.resetEntityForPooling(entity);
+      this.entities.delete(id);
+      this.returnEntityToPool(id);
+    }
 
      private resetEntityForPooling(entity: RuntimeEntity): void {
        entity.transform = { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 };

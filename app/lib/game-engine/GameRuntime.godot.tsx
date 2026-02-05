@@ -32,7 +32,6 @@ import type { LoadedGame } from "./GameLoader";
 import { GameLoader } from "./GameLoader";
 import type {
   GameState,
-  CollisionInfo,
   InputState,
 } from "./BehaviorContext";
 import { CameraSystem } from "./CameraSystem";
@@ -87,7 +86,7 @@ import {
 import * as StateHelpers from "./runtime/GameStateHelpers";
 import { subscribeToGameEvents, type ReactGameState } from "./runtime/GameEventSubscriber";
 import { useGameProgressFromDefinition } from "./progress/useGameProgress";
-import { GameEventQueue, isLifecycleEvent } from "./GameEventQueue";
+import { GameEventQueue, isLifecycleEvent, isInputEvent, isPhysicsEvent } from "./GameEventQueue";
 
 export interface GameRuntimeGodotProps {
   definition: GameDefinition;
@@ -141,7 +140,6 @@ export function GameRuntimeGodot({
   const propertyCacheRef = useRef(new PropertyCache());
   const elapsedRef = useRef(0);
   const frameIdRef = useRef(0);
-  const collisionsRef = useRef<CollisionInfo[]>([]);
   const collisionUnsubRef = useRef<Unsubscribe | null>(null);
   const inputEventUnsubRef = useRef<Unsubscribe | null>(null);
   const screenSizeRef = useRef({ width: 0, height: 0 });
@@ -255,9 +253,10 @@ export function GameRuntimeGodot({
             ) ?? 0;
           const normal = event.contacts?.[0]?.normal ?? { x: 0, y: 0 };
 
-          collisionsRef.current.push({
-            entityA,
-            entityB,
+          eventQueueRef.current.push({
+            type: 'collision',
+            entityA: event.entityA,
+            entityB: event.entityB,
             normal,
             impulse,
           });
@@ -271,16 +270,14 @@ export function GameRuntimeGodot({
             const ppm = definition.world.pixelsPerMeter ?? 50;
             const screenX = x * ppm;
             const screenY = y * ppm;
-            inputRef.current = {
-              ...inputRef.current,
-              tap: {
-                x: screenX,
-                y: screenY,
-                worldX: x,
-                worldY: y,
-                targetEntityId: entityId ?? undefined,
-              },
-            };
+            eventQueueRef.current.push({
+              type: 'tap',
+              x: screenX,
+              y: screenY,
+              worldX: x,
+              worldY: y,
+              targetEntityId: entityId ?? undefined,
+            });
           } else if (type === "mouse_move") {
             inputRef.current = {
               ...inputRef.current,
@@ -592,7 +589,7 @@ export function GameRuntimeGodot({
 
         bridge.setWatchConfig(serializableConfig);
 
-        const loader = new GameLoader({ physics });
+        const loader = new GameLoader({ physics, bridge });
         loaderRef.current = loader;
 
         const game = loader.load(definition);
@@ -946,14 +943,31 @@ export function GameRuntimeGodot({
         ),
       };
 
-      const frameCollisions = collisionsRef.current.slice();
-      collisionsRef.current = [];
-
       const frameEvents = eventQueueRef.current.drain();
       const lifecycleEvents = frameEvents.filter(isLifecycleEvent);
+      const inputEvents = frameEvents.filter(isInputEvent);
+      const collisionEvents = frameEvents.filter(isPhysicsEvent);
+
       if (lifecycleEvents.length > 0) {
         logger.debug("lifecycle", "stepGame processing lifecycle events:", lifecycleEvents);
       }
+
+      const currentGame = gameRef.current;
+      const frameCollisions = collisionEvents.map((event) => {
+        if (event.type === 'collision') {
+          const entityA = currentGame?.entityManager.getEntity(event.entityA);
+          const entityB = currentGame?.entityManager.getEntity(event.entityB);
+          if (entityA && entityB) {
+            return {
+              entityA,
+              entityB,
+              normal: event.normal,
+              impulse: event.impulse,
+            };
+          }
+        }
+        return null;
+      }).filter((c): c is NonNullable<typeof c> => c !== null);
 
       const updateContext: UpdateContext = {
         dt,
@@ -962,14 +976,10 @@ export function GameRuntimeGodot({
         input: inputRef.current as InputState,
         gameState: fullGameState,
         frame: {
-          inputEvents: lifecycleEvents,
+          inputEvents: [...lifecycleEvents, ...inputEvents],
           collisions: frameCollisions,
         },
       };
-
-      if (inputRef.current.tap) {
-        inputRef.current = { ...inputRef.current, tap: undefined };
-      }
 
       if (shouldLog) logger.trace("loop", `frame ${frameNum} - calling runner.update`);
       runner.update(updateContext);
@@ -1208,18 +1218,20 @@ export function GameRuntimeGodot({
             const targetX = cannon.transform.x + Math.cos(angle) * distance;
             const targetY = cannon.transform.y + Math.sin(angle) * distance;
 
-            inputRef.current.tap = {
+            eventQueueRef.current.push({
+              type: 'tap',
               x: 0,
               y: 0,
               worldX: targetX,
               worldY: targetY,
-            };
-            inputRef.current.dragEnd = {
+            });
+            eventQueueRef.current.push({
+              type: 'drag_end',
               velocityX: 0,
               velocityY: 0,
               worldVelocityX: 0,
               worldVelocityY: 0,
-            };
+            });
           }
         }
         break;
@@ -1371,16 +1383,14 @@ export function GameRuntimeGodot({
         }
       }
 
-      inputRef.current = {
-        ...inputRef.current,
-        tap: {
-          x: viewportX,
-          y: viewportY,
-          worldX: world.x,
-          worldY: world.y,
-          targetEntityId,
-        },
-      };
+      eventQueueRef.current.push({
+        type: 'tap',
+        x: viewportX,
+        y: viewportY,
+        worldX: world.x,
+        worldY: world.y,
+        targetEntityId,
+      });
     },
     [viewportRect.width, viewportRect.height]
   );
@@ -1678,19 +1688,23 @@ export function GameRuntimeGodot({
       const { locationX: x, locationY: y } = event.nativeEvent;
       const world = screenToWorld(x, y);
 
-      inputRef.current = {
-        ...inputRef.current,
-        tap: { x, y, worldX: world.x, worldY: world.y },
-      };
+      eventQueueRef.current.push({
+        type: 'tap',
+        x,
+        y,
+        worldX: world.x,
+        worldY: world.y,
+      });
 
       if (dragStart) {
         const VELOCITY_SCALE = 0.1;
-        inputRef.current.dragEnd = {
+        eventQueueRef.current.push({
+          type: 'drag_end',
           velocityX: (x - dragStart.x) * VELOCITY_SCALE,
           velocityY: (y - dragStart.y) * VELOCITY_SCALE,
           worldVelocityX: (world.x - dragStart.worldX) * VELOCITY_SCALE,
           worldVelocityY: (world.y - dragStart.worldY) * VELOCITY_SCALE,
-        };
+        });
       }
 
       bridge.sendInput("tap", { x: world.x, y: world.y });

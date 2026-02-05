@@ -1,62 +1,64 @@
 
 
-## Task 1: GameLogger Implementation - Completed
+## Task 3: GameEventQueue Implementation - Completed
 
 ### Files Created/Modified
 
 #### New Files
-- `app/lib/game-engine/debug/Logger.ts` - TypeScript Logger with LogLevel enum, LogCategory type, and GameLogger class
-- `godot_project/scripts/utils/Logger.gd` - GDScript Logger with matching Level enum
-- `packages/game-inspector-mcp/src/tools/logging.ts` - MCP tools for `set_log_level` and `get_log_config`
+- `app/lib/game-engine/GameEventQueue.ts` - Unified event queue with GameEvent union type and GameEventQueue class
 
 #### Modified Files
-- `app/lib/game-engine/debug/index.ts` - Added logger exports
-- `app/lib/game-engine/GameRuntime.godot.tsx` - Migrated ~40 console.log statements to logger calls
-- `app/lib/game-engine/systems/runner/wrappers/RulesSystem.ts` - Migrated 7 console.log statements to logger calls
+- `app/lib/game-engine/GameRuntime.godot.tsx` - Migrated lifecycle events from `pendingLifecycleEventsRef` to `eventQueueRef`
 
 ### Implementation Details
 
-#### Log Levels (0-5)
-- SILENT = 0 - No output
-- ERROR = 1 - Errors only
-- WARN = 2 - Warnings and errors (DEFAULT)
-- INFO = 3 - Important lifecycle events
-- DEBUG = 4 - Development debugging
-- TRACE = 5 - Per-frame hot path logging
+#### GameEvent Union Type
+Includes all event types organized by category:
+- **Lifecycle**: `game_loaded`, `game_started`
+- **Input**: `tap`, `drag_start`, `drag_end`, `mouse_move`, `mouse_leave`, `button_pressed`, `button_released`
+- **Physics**: `collision`, `sensor_begin`, `sensor_end`
 
-#### Log Categories
-- `lifecycle` - game_loaded, game_started, state transitions
-- `input` - tap, drag, keyboard events
-- `physics` - collisions, forces, velocities
-- `rules` - rule evaluation, trigger matching, action execution
-- `entities` - spawn, destroy, property changes
-- `bridge` - Godot↔TS communication
-- `assets` - image loading, texture preloading
-- `render` - visual updates, camera, viewport
-- `state` - game state changes, variable updates
-- `loop` - game loop, frame timing
-- `inspector` - debug bridge, MCP tools
+#### GameEventQueue Class
+- `push(event)` - Add event to queue, triggers onEventQueued callback
+- `drain()` - O(1) array swap to retrieve and clear all events
+- `peek()` - Readonly view of queued events without draining
+- `length` - Current queue size
+- `setOnEventQueued(callback)` - For auto-advance in inspector mode (future use)
 
-#### Migration Patterns Applied
-- `console.log('[Lifecycle] ...')` → `logger.debug('lifecycle', ...)`
-- `console.log('[stepGame] frame ...')` → `logger.trace('loop', ...)`
-- `console.log('[GameRuntime] ...')` → `logger.info('lifecycle', ...)`
-- `console.warn('[WinCondition] ...')` → `logger.warn('rules', ...)`
-- `console.error(...)` → `logger.error('lifecycle', ...)`
+#### Migration from pendingLifecycleEventsRef
+Changed 3 locations in GameRuntime.godot.tsx:
+1. Line ~843: `pendingLifecycleEventsRef.current.push('game_loaded')` -> `eventQueueRef.current.push({ type: 'game_loaded' })`
+2. Line ~1446: `pendingLifecycleEventsRef.current.push('game_started')` -> `eventQueueRef.current.push({ type: 'game_started' })`
+3. Line ~1515: `pendingLifecycleEventsRef.current.push('game_loaded')` -> `eventQueueRef.current.push({ type: 'game_loaded' })`
 
-#### MCP Tools
-- `set_log_level` - Sets global or per-category log level via `window.__GAME_RUNTIME__.logger.configure()`
-- `get_log_config` - Retrieves current logger configuration
+#### stepGame() Changes
+- Replaced: `pendingLifecycleEventsRef.current.map(type => ({ type }))`
+- With: `eventQueueRef.current.drain().filter(isLifecycleEvent)`
+- Maintains same output shape for `UpdateContext.frame.inputEvents`
+- `collisionsRef` and `inputRef` remain untouched (migrated in Task 4)
+
+#### Type Guards
+- `isLifecycleEvent(event)` - Filter for lifecycle events
+- `isInputEvent(event)` - Filter for input events
+- `isPhysicsEvent(event)` - Filter for physics events
+
+### Design Decisions
+
+1. **Array Swap for Drain**: Uses `const events = this.queue; this.queue = []; return events;` for O(1) operation instead of copying.
+
+2. **Event Shape Alignment**: GameEvent type aligns with existing `InputEvent` union in `systems/runner/types.ts` to ensure compatibility with `RulesSystem.convertFrameInputEvents()`.
+
+3. **Incremental Migration**: Only lifecycle events migrated now. Input and collision events stay in their existing refs until Task 4.
+
+4. **Logger Integration**: Used `logger.debug('lifecycle', ...)` for event queue logging as specified.
 
 ### Verification
 - `pnpm tsc --noEmit` passes with no errors
-- All modified files have clean LSP diagnostics
-- Logger exposed on `window.__GAME_RUNTIME__.logger` for MCP access
+- LSP diagnostics clean on modified files
+- Test failures in @slopcade/shared are pre-existing (expression evaluator) - not related to this change
+- No tests exist for the migrated lifecycle event functionality (integration test was deleted in Task 2)
 
-### Default Behavior
-With default `LogLevel.WARN`, most existing console.log noise is now suppressed. To see lifecycle debug output:
-```typescript
-logger.configure({
-  categories: { lifecycle: LogLevel.DEBUG }
-});
-```
+### Next Steps (Task 4)
+- Migrate collision events from `collisionsRef` to `eventQueueRef`
+- Migrate discrete input events (tap, drag_end) from `inputRef` to `eventQueueRef`
+- Keep continuous state (buttons, drag position, mouse, tilt) in `inputRef`

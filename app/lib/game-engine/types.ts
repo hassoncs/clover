@@ -8,6 +8,7 @@ import type {
   EventBus,
   ConditionalBehavior,
 } from '@slopcade/shared';
+import type { GodotBridge } from '../godot/types';
 
 /**
  * EngineServices - Core primitives available to all game systems.
@@ -96,4 +97,5 @@ export interface RuntimeBehavior {
 
 export interface EntityManagerOptions {
   templates?: Record<string, EntityTemplate>;
+  bridge?: GodotBridge;
 }
