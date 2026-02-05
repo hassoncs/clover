@@ -33,13 +33,13 @@ export class LogicTriggerEvaluator implements TriggerEvaluator<TimerTrigger | En
       case 'frame':
         return true;
 
-      case 'gameStart':
+      case 'game_started':
         return context.inputEvents.gameStarted ?? false;
 
-      case 'gameLoaded': {
+      case 'game_loaded': {
         const result = context.inputEvents.gameLoaded ?? false;
         if (result) {
-          console.log("[Lifecycle] LogicTriggerEvaluator: gameLoaded trigger FIRED");
+          console.log("[Lifecycle] LogicTriggerEvaluator: game_loaded trigger FIRED");
         }
         return result;
       }

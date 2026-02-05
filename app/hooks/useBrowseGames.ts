@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { trpc } from '@/lib/trpc/client';
+import { EMBEDDED_MANIFEST, EMBEDDED_GAME_JSONS } from '@/lib/offline/embedded-games-registry';
 
 interface PublicGame {
   id: string;
@@ -45,18 +46,33 @@ export function useBrowseGames(options: UseBrowseGamesOptions = {}): UseBrowseGa
   useEffect(() => {
     if (!isDev) return;
     
-    const fetchLocalGames = async () => {
+    const loadLocalGames = () => {
       try {
-        const response = await fetch('http://localhost:8789/local-games');
-        const data = await response.json();
-        setLocalGames(data.games);
+        const manifest = EMBEDDED_MANIFEST as { games?: Array<{ gameId: string }> };
+        const localGamesList = (manifest.games || []).map((g) => {
+          const gameJson = EMBEDDED_GAME_JSONS[g.gameId] as { title?: string; description?: string } | undefined;
+          return {
+            id: g.gameId,
+            title: gameJson?.title ?? g.gameId,
+            description: gameJson?.description ?? '',
+            playCount: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            userId: null,
+            definition: '',
+            thumbnailUrl: null,
+            isPublic: true,
+            source: 'template' as const,
+          };
+        });
+        setLocalGames(localGamesList);
       } catch (err) {
         console.warn('Failed to load local template games:', err);
         setLocalGames([]);
       }
     };
     
-    fetchLocalGames();
+    loadLocalGames();
   }, [isDev]);
 
   const fetchPublicGames = useCallback(async (page: number, showRefresh = false) => {

@@ -2,7 +2,6 @@ import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { View, Text, Pressable, ActivityIndicator, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useQuery } from "@tanstack/react-query";
 import { FullScreenHeader } from "@/components/FullScreenHeader";
 import { AssetLoadingScreen } from "@/components/game";
 import { useGamePreloader } from "@/lib/hooks/useGamePreloader";
@@ -10,6 +9,7 @@ import { getStorageItem } from "@/lib/utils/storage";
 import type { GameDefinition } from "@slopcade/shared";
 import type { ResolvedPackEntry } from "@/lib/assets/AssetManifest";
 import { mergeAssetsIntoTemplates } from "@/lib/assets/mergeAssetsIntoTemplates";
+import { EMBEDDED_GAME_JSONS, EMBEDDED_ASSET_MANIFESTS } from "@/lib/offline/embedded-games-registry";
 
 export default function TestGameRunScreen() {
   const router = useRouter();
@@ -27,20 +27,24 @@ export default function TestGameRunScreen() {
 
   const activePackId = gameDefinition?.assetSystem?.activePackId;
 
-  const packQuery = useQuery({
-    queryKey: ['localPack', activePackId],
-    queryFn: async () => {
-      if (!activePackId) return null;
-      const response = await fetch(`http://localhost:8789/local-packs/${activePackId}`);
-      if (!response.ok) return null;
-      return response.json();
-    },
-    enabled: !!activePackId,
-    staleTime: 5 * 60 * 1000,
-  });
+  // Get pack data from embedded asset manifests (synchronous)
+  const packData = useMemo(() => {
+    if (!id || !activePackId) return null;
+    const manifest = EMBEDDED_ASSET_MANIFESTS[id as string];
+    if (!manifest) return null;
+    
+    const entries = Object.entries(manifest).map(([templateId, entry]) => ({
+      templateId,
+      r2Key: entry.r2Key,
+      imageUrl: null,
+      placement: null,
+    }));
+    
+    return { id: activePackId, entries };
+  }, [id, activePackId]);
 
   const resolvedPackEntries = useMemo(() => {
-    if (!packQuery.data?.entries) {
+    if (!packData?.entries) {
       console.log('[test-games] No pack entries found');
       return undefined;
     }
@@ -48,8 +52,8 @@ export default function TestGameRunScreen() {
     const { getAssetUrl } = require('@slopcade/shared');
     const { getServerUrl } = require('@/lib/offline/local-asset-server');
     
-    console.log('[test-games] Resolving asset pack entries:', packQuery.data.entries.length);
-    for (const entry of packQuery.data.entries) {
+    console.log('[test-games] Resolving asset pack entries:', packData.entries.length);
+    for (const entry of packData.entries) {
       if (entry.r2Key) {
         const fullUrl = getAssetUrl(entry.r2Key, '', {
           offlineMode: true,
@@ -65,7 +69,7 @@ export default function TestGameRunScreen() {
     }
     console.log('[test-games] Total resolved assets:', Object.keys(result).length);
     return result;
-  }, [packQuery.data, id]);
+  }, [packData, id]);
 
   const enrichedDefinition = useMemo(() => {
     if (!gameDefinition) return null;
@@ -100,21 +104,20 @@ export default function TestGameRunScreen() {
     loadSavedLevel();
   }, [id]);
 
-  // Fetch game from local file server (template games only)
+  // Load game from embedded game JSONs (template games only)
   useEffect(() => {
     if (!id) return;
 
-    const load = async () => {
+    const load = () => {
       setIsLoadingDefinition(true);
       setError(null);
       try {
-        console.log('[test-games] Fetching game from local files:', id, 'level:', currentLevel);
-        const response = await fetch(`http://localhost:8789/local-games/${id}`);
-        if (!response.ok) {
-          throw new Error(`Failed to load game: ${response.statusText}`);
+        console.log('[test-games] Loading game from embedded registry:', id, 'level:', currentLevel);
+        const gameJson = EMBEDDED_GAME_JSONS[id] as { title?: string; definition?: GameDefinition } | undefined;
+        if (!gameJson) {
+          throw new Error(`Game not found: ${id}`);
         }
-        const game = await response.json();
-        const definition = JSON.parse(game.definition) as GameDefinition;
+        const definition = gameJson.definition as GameDefinition;
         console.log('[test-games] Loaded game:', definition.metadata.title);
         setGameDefinition(definition);
       } catch (err) {
@@ -129,10 +132,10 @@ export default function TestGameRunScreen() {
   }, [id, currentLevel]);
 
   useEffect(() => {
-    if (gameDefinition && !isLoadingDefinition && !packQuery.isLoading && phase === 'idle') {
+    if (gameDefinition && !isLoadingDefinition && phase === 'idle') {
       startPreload();
     }
-  }, [gameDefinition, isLoadingDefinition, packQuery.isLoading, phase, startPreload]);
+  }, [gameDefinition, isLoadingDefinition, phase, startPreload]);
 
   const handleGodotReady = useCallback(() => {
     setGodotReady(true);
@@ -196,7 +199,7 @@ export default function TestGameRunScreen() {
     );
   }
 
-  if (isLoadingDefinition || packQuery.isLoading) {
+  if (isLoadingDefinition) {
     return (
       <SafeAreaView className="flex-1 bg-gray-900 items-center justify-center">
         <ActivityIndicator size="large" color="#4CAF50" />

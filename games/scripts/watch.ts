@@ -56,7 +56,7 @@ runBuild();
 
 watch(COMPILED_DIR, { recursive: true }, (eventType, filename) => {
   if (!filename) return;
-  if (filename.endsWith('.ts') || filename.endsWith('.json')) {
+  if (filename.endsWith('.ts') || filename.endsWith('.json') || filename.endsWith('.png')) {
     console.log(`[games-watcher] ${eventType}: ${filename}`);
     debouncedBuild();
   }

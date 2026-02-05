@@ -23,7 +23,6 @@
     "godot:export": "node ../scripts/export-godot.mjs --once",
     "godot:watch": "node ../scripts/export-godot.mjs --watch",
     "godot:check": "node ../scripts/export-godot.mjs --check",
-    "embed:games": "tsx scripts/embed-games.ts",
     "test": "vitest run"
   },
   "dependencies": {

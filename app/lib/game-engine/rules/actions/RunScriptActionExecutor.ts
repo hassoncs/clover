@@ -4,6 +4,14 @@ import type { RuleContext } from '../types';
 import type { IScriptSandbox } from '@/lib/scripting';
 import type { SandboxRuntimeContext, EntityQuery, SpawnOptions, EntityData, AnimateConfig } from '@/lib/scripting/types';
 
+interface DeferredSpawn {
+  entityId: string;
+  templateId: string;
+  x: number;
+  y: number;
+  velocity?: { x: number; y: number };
+}
+
 export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> {
   private sandbox: IScriptSandbox | null = null;
 
@@ -20,9 +28,17 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
 
     const functionName = action.export ?? 'default';
     console.log("[Lifecycle] Calling sandbox.callFunction:", functionName);
-    const runtimeContext = this.createRuntimeContext(context);
+
+    const deferredSpawns: DeferredSpawn[] = [];
+    const runtimeContext = this.createRuntimeContext(context, deferredSpawns);
 
     const result = this.sandbox.callFunction(runtimeContext, functionName, action.args);
+
+    for (const spawn of deferredSpawns) {
+      if (context.bridge) {
+        context.bridge.spawnEntity(spawn.templateId, spawn.x, spawn.y, spawn.velocity);
+      }
+    }
 
     if (!result.success && result.error) {
       console.error(`[RunScriptActionExecutor] Script error in '${functionName}':`, result.error.message);
@@ -32,7 +48,10 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
     }
   }
 
-  private createRuntimeContext(context: RuleContext): SandboxRuntimeContext {
+  private createRuntimeContext(
+    context: RuleContext,
+    deferredSpawns: DeferredSpawn[]
+  ): SandboxRuntimeContext {
     const entityManager = context.entityManager;
     const mutator = context.mutator;
 
@@ -63,13 +82,26 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
     return {
       entityManager: {
         spawnEntity: (templateId: string, position: { x: number; y: number }, opts?: SpawnOptions) => {
-          const entity = entityManager.createEntity({
-            id: `spawned_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+          const entityId = `spawned_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+
+          if (context.bridge) {
+            deferredSpawns.push({
+              entityId,
+              templateId,
+              x: position.x,
+              y: position.y,
+              velocity: opts?.velocity,
+            });
+          }
+
+          entityManager.createEntity({
+            id: entityId,
             name: templateId,
             template: templateId,
             transform: { x: position.x, y: position.y, angle: opts?.angle ?? 0, scaleX: 1, scaleY: 1 },
           });
-          return entity.id;
+
+          return entityId;
         },
         destroyEntity: (entityId: string) => entityManager.destroyEntity(entityId),
         getEntityPosition: (entityId: string) => {

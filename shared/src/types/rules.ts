@@ -23,8 +23,8 @@ export type RuleTriggerType =
   | 'tilt'
   | 'button'
   | 'swipe'
-  | 'gameStart'
-  | 'gameLoaded'
+  | 'game_started'
+  | 'game_loaded'
   | 'sensor_enter'
   | 'sensor_exit';
 
@@ -101,11 +101,11 @@ export interface SwipeTrigger {
 }
 
 export interface GameStartTrigger {
-  type: 'gameStart';
+  type: 'game_started';
 }
 
 export interface GameLoadedTrigger {
-  type: 'gameLoaded';
+  type: 'game_loaded';
 }
 
 export type RuleTrigger =

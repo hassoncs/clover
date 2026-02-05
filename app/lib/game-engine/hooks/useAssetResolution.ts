@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import type { RuntimeEntity } from '../types';
 import type { AssetConfig, AssetPlacement, GameDefinition, EntityTemplate, ColliderComponent, AssetUrlConfig } from '@slopcade/shared';
 import { getAssetUrl } from '@slopcade/shared';
 import { trpcReact } from '@/lib/trpc/react';
 import { env } from '@/lib/config/env';
 import { getServerUrl } from '@/lib/offline/local-asset-server';
+import { EMBEDDED_ASSET_MANIFESTS } from '@/lib/offline/embedded-games-registry';
 
 export interface ResolvedAsset {
   assetId?: string;
@@ -36,16 +36,13 @@ interface DatabasePack {
   }>;
 }
 
-/**
- * Fetch asset pack from database with React Query caching
- */
 function useAssetPackFromDatabase(packName: string | undefined) {
   return trpcReact.assetSystem.getPackByName.useQuery(
     { name: packName! },
     { 
       enabled: !!packName,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 30 * 60 * 1000,   // 30 minutes
+      staleTime: 5 * 60 * 1000,
+      gcTime: 30 * 60 * 1000,
     }
   );
 }
@@ -68,9 +65,26 @@ function convertDbPackToEmbedded(dbPack: DatabasePack, config?: AssetUrlConfig):
   return { ...dbPack, assets };
 }
 
-/**
- * Validate that all templates with visual.type='image' have corresponding assets
- */
+function convertEmbeddedManifestToPack(
+  gameId: string,
+  manifest: Record<string, { file: string; r2Key: string }>,
+  config?: AssetUrlConfig
+): any {
+  const assets: Record<string, AssetConfig> = {};
+  for (const [templateId, entry] of Object.entries(manifest)) {
+    const fullUrl = getAssetUrl(entry.r2Key, env.assetCdnUrl, config);
+    assets[templateId] = {
+      imageUrl: fullUrl,
+      assetRef: entry.r2Key,
+      source: 'generated' as const,
+      scale: 1,
+      offsetX: 0,
+      offsetY: 0,
+    };
+  }
+  return { id: gameId, name: gameId, assets };
+}
+
 function validatePackCoverage(
   templates: Record<string, EntityTemplate>,
   pack: any
@@ -89,9 +103,6 @@ function validatePackCoverage(
   }
 }
 
-/**
- * Derive dimensions from collider component for image sizing
- */
 export function getDimensionsFromCollider(collider: ColliderComponent): { width: number; height: number } | null {
   switch (collider.shape) {
     case 'box': return { width: collider.width, height: collider.height };
@@ -159,35 +170,32 @@ export function useAssetResolution(
 ): Map<string, ResolvedAsset | null> {
   const activePackId = definition.assetSystem?.activePackId;
   const source = options?.source ?? 'database';
+  const gameId = definition.metadata.id;
   
   const dbPackQuery = useAssetPackFromDatabase(activePackId);
   
-  const localPackQuery = useQuery({
-    queryKey: ['localPack', activePackId],
-    queryFn: async () => {
-      if (!activePackId) return null;
-      const response = await fetch(`http://localhost:8789/local-packs/${activePackId}`);
-      if (!response.ok) return null;
-      return response.json() as Promise<DatabasePack>;
-    },
-    enabled: !!activePackId && source === 'template',
-    staleTime: 5 * 60 * 1000,
-  });
+  // Get embedded asset manifest synchronously for template games
+  const embeddedPackData = useMemo(() => {
+    if (source !== 'template' || !gameId) return null;
+    const manifest = EMBEDDED_ASSET_MANIFESTS[gameId];
+    if (!manifest) return null;
+    return convertEmbeddedManifestToPack(gameId, manifest, {
+      offlineMode: true,
+      localServerUrl: getServerUrl(),
+      gameId,
+    });
+  }, [source, gameId]);
 
   return useMemo(() => {
-    const packQuery = source === 'template' ? localPackQuery : dbPackQuery;
-    
-    if (packQuery.isLoading) {
-      return new Map<string, ResolvedAsset | null>();
-    }
-
     let mergedPacks: Record<string, any> = {};
 
-    if (packQuery.data) {
-      const dbPack = convertDbPackToEmbedded(packQuery.data, {
+    if (source === 'template' && embeddedPackData) {
+      mergedPacks[embeddedPackData.name] = embeddedPackData;
+    } else if (dbPackQuery.data) {
+      const dbPack = convertDbPackToEmbedded(dbPackQuery.data, {
         offlineMode: true,
         localServerUrl: getServerUrl(),
-        gameId: definition.metadata.id,
+        gameId,
       });
       mergedPacks[dbPack.name] = dbPack;
     }
@@ -218,11 +226,11 @@ export function useAssetResolution(
     entities,
     activePackId,
     source,
-    definition.metadata.id,
+    gameId,
     definition.assetSystem,
     definition.templates,
-    dbPackQuery,
-    localPackQuery,
+    embeddedPackData,
+    dbPackQuery.data,
   ]);
 }
 

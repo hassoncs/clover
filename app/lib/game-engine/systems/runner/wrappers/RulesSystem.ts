@@ -455,7 +455,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
           const cooldownEnd = this.runtimeState.cooldowns.get(rule.id);
           if (cooldownEnd && elapsed < cooldownEnd) continue;
           
-          if (rule.trigger.type === 'gameLoaded' || rule.trigger.type === 'gameStart') {
+          if (rule.trigger.type === 'game_loaded' || rule.trigger.type === 'game_started') {
             console.log(`[Lifecycle] Evaluating rule "${rule.id}" with trigger type: ${rule.trigger.type}`);
           }
           
@@ -758,8 +758,8 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
       case "entity_count":
       case "event":
       case "frame":
-      case "gameStart":
-      case "gameLoaded":
+      case "game_started":
+      case "game_loaded":
         return this.logicTriggerEvaluator.evaluate(trigger, context);
       case "tap":
       case "drag":

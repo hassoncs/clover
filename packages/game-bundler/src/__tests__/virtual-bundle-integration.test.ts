@@ -438,8 +438,8 @@ describe('Virtual Bundle Integration', () => {
     files.set('manifest.json', JSON.stringify({ name: 'test', version: '1.0.0' }));
     files.set('templates/templates.json', JSON.stringify([{ id: 'player', tags: ['player'] }]));
     files.set('rules/gameplay.json', JSON.stringify([
-      { id: 'rule1', trigger: { type: 'gameStart' }, actions: [] },
-      { id: 'rule1', trigger: { type: 'gameStart' }, actions: [] },
+      { id: 'rule1', trigger: { type: 'game_started' }, actions: [] },
+      { id: 'rule1', trigger: { type: 'game_started' }, actions: [] },
     ]));
 
     const fileReader = new VirtualFileReader('/virtual/test', files);

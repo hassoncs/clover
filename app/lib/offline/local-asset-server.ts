@@ -129,7 +129,7 @@ export function isServerRunning(): boolean {
  */
 export function getServerUrl(): string {
   if (Platform.OS === 'web') {
-    return 'http://localhost:8789/local-assets';
+    return '/slopcade/games';
   }
   return `file://${getBaseDirectory()}`;
 }

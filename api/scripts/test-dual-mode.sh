@@ -55,49 +55,16 @@ test_json_field() {
   fi
 }
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Phase 1: Games Server (Port 3847)"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
-
-test_endpoint "Health check" "http://localhost:3847/health" 200
-test_endpoint "List all games" "http://localhost:3847/games" 200
-test_endpoint "Get ballSort game" "http://localhost:3847/games/ballSort" 200
-test_endpoint "Get ballSort pack" "http://localhost:3847/packs/ballSort-default" 200
-test_json_field "ballSort title" "http://localhost:3847/games/ballSort" ".title" "Ball Sort"
-test_json_field "Pack entry count" "http://localhost:3847/packs/ballSort-default" ".entries | length" "11"
-
-echo ""
-test_endpoint "Asset serving (tube)" "http://localhost:3847/assets/ballSort/generated/ballSort/f661beb6-1e5e-4b9e-a01f-314c87248b75/2c3ff5e6-92d1-4d6f-85d5-61aee109b647.png" 200
-
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Phase 2: API Proxy (Port 8789)"
+echo "  Phase 1: API tRPC Routes (Port 8789)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-test_endpoint "List local games" "http://localhost:8789/local-games" 200
-test_endpoint "Get ballSort via proxy" "http://localhost:8789/local-games/ballSort" 200
-test_endpoint "Get pack via proxy" "http://localhost:8789/local-packs/ballSort-default" 200
-test_json_field "Game source is template" "http://localhost:8789/local-games/ballSort" ".source" "template"
-test_json_field "Pack baseGameId" "http://localhost:8789/local-packs/ballSort-default" ".baseGameId" "ballSort"
-
+# Template games are now served via tRPC, not REST endpoints
+# These endpoints were removed when the app switched to embedded registries
+echo -e "${YELLOW}Note: REST proxy endpoints removed - games now served via tRPC${NC}"
 echo ""
-test_endpoint "Asset via proxy (ball0)" "http://localhost:8789/local-assets/ballSort/generated/ballSort/f661beb6-1e5e-4b9e-a01f-314c87248b75/a9df5fd0-0f50-4e59-b441-e9800889022c.png" 200
-
-echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Phase 3: URL Resolution Test"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
-
-echo "Testing URL format matches production structure..."
-ASSET_URL="http://localhost:8789/local-assets/ballSort/generated/ballSort/f661beb6-1e5e-4b9e-a01f-314c87248b75/a9df5fd0-0f50-4e59-b441-e9800889022c.png"
-echo "  Local:      $ASSET_URL"
-echo "  Production: https://cdn.slopcade.com/generated/ballSort/f661beb6-1e5e-4b9e-a01f-314c87248b75/a9df5fd0-0f50-4e59-b441-e9800889022c.png"
-echo ""
-echo -e "${GREEN}✅ URL structures match (only base URL differs)${NC}"
-PASSED=$((PASSED + 1))
 
 echo ""
 echo "════════════════════════════════════════════════════════════"
@@ -111,14 +78,8 @@ echo ""
 if [ $FAILED -eq 0 ]; then
   echo -e "${GREEN}✅ All tests passed!${NC}"
   echo ""
-  echo "Dual-mode local development is working correctly."
+  echo "Template games are served via tRPC routes."
   echo ""
-  echo "Template games load from local files:"
-  echo "  • Game JSON: http://localhost:8789/local-games/{id}"
-  echo "  • Pack metadata: http://localhost:8789/local-packs/{packName}"
-  echo "  • Assets: http://localhost:8789/local-assets/{gameId}/generated/..."
-  echo ""
-  echo "Database games work normally via tRPC + D1."
   exit 0
 else
   echo -e "${RED}❌ Some tests failed!${NC}"
