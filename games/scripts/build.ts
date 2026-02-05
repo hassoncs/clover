@@ -1,16 +1,18 @@
 #!/usr/bin/env tsx
 import {
   writeFileSync, readFileSync, mkdirSync, existsSync, rmSync,
-  readdirSync, copyFileSync, statSync,
+  readdirSync, copyFileSync, statSync, unlinkSync,
 } from 'fs';
-import { join, dirname } from 'path';
+import { join, dirname, extname, resolve } from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 import { build as esbuild } from 'esbuild';
 import { GAME_IDS, loadGame } from '../src/registry';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const GAMES_ROOT = join(__dirname, '..');
 const APP_ROOT = join(GAMES_ROOT, '..', 'app');
+const API_ROOT = resolve(GAMES_ROOT, '..', 'api');
 const COMPILED_DIR = join(GAMES_ROOT, 'compiled');
 const DIST_DIR = join(GAMES_ROOT, 'dist');
 const EMBED_DIR = join(APP_ROOT, 'assets', 'embedded-games');
@@ -189,6 +191,135 @@ ${assetLines.join('\n')}
   console.log(`✓ Generated embedded-games-registry.ts`);
 }
 
+const SYSTEM_USER_ID = '00000000-0000-0000-0000-000000000000';
+const SKIP_SEED = process.argv.includes('--skip-seed');
+
+function escapeSql(value: string): string {
+  return value.replace(/'/g, "''");
+}
+
+function contentTypeForExt(filePath: string): string {
+  const ext = extname(filePath).toLowerCase();
+  switch (ext) {
+    case '.json': return 'application/json';
+    case '.png': return 'image/png';
+    case '.jpg': case '.jpeg': return 'image/jpeg';
+    case '.svg': return 'image/svg+xml';
+    case '.webp': return 'image/webp';
+    default: return 'application/octet-stream';
+  }
+}
+
+function seedLocalD1(embeddedGames: EmbeddedGameEntry[]): void {
+  const now = Date.now();
+
+  const statements: string[] = [];
+
+  statements.push(
+    `INSERT OR IGNORE INTO users (id, email, display_name, created_at, updated_at) ` +
+    `VALUES ('${SYSTEM_USER_ID}', 'system@slopcade.local', 'System', ${now}, ${now});`
+  );
+
+  for (const game of embeddedGames) {
+    const metadataPath = join(EMBED_DIR, game.gameId, 'metadata.json');
+    const metadata = JSON.parse(readFileSync(metadataPath, 'utf-8'));
+
+    const title = escapeSql(metadata.title ?? game.gameId);
+    const description = escapeSql(metadata.description ?? '');
+
+    statements.push(
+      `INSERT OR REPLACE INTO games (` +
+      `id, user_id, title, description, r2_prefix, ` +
+      `is_public, play_count, created_at, updated_at, base_game_id` +
+      `) VALUES (` +
+      `'${game.gameId}', '${SYSTEM_USER_ID}', ` +
+      `'${title}', '${description}', 'games/${game.gameId}', ` +
+      `1, COALESCE((SELECT play_count FROM games WHERE id = '${game.gameId}'), 0), ` +
+      `COALESCE((SELECT created_at FROM games WHERE id = '${game.gameId}'), ${now}), ` +
+      `${now}, '${game.gameId}'` +
+      `);`
+    );
+  }
+
+  const tmpFile = join(API_ROOT, '.seed-local.sql');
+  writeFileSync(tmpFile, statements.join('\n'));
+
+  try {
+    execSync(`npx wrangler d1 execute slopcade-db --local --file=.seed-local.sql`, {
+      cwd: API_ROOT,
+      stdio: 'pipe',
+    });
+    console.log(`✓ Seeded local D1 with ${embeddedGames.length} games`);
+  } finally {
+    unlinkSync(tmpFile);
+  }
+}
+
+function seedLocalR2(embeddedGames: EmbeddedGameEntry[]): void {
+  let objectCount = 0;
+
+  for (const game of embeddedGames) {
+    const gameDir = join(EMBED_DIR, game.gameId);
+    const r2Prefix = `games/${game.gameId}`;
+
+    const putObject = (r2Key: string, localPath: string) => {
+      const ct = contentTypeForExt(localPath);
+      execSync(
+        `npx wrangler r2 object put "slopcade-assets/${r2Key}" --file="${localPath}" --content-type="${ct}" --local`,
+        { cwd: API_ROOT, stdio: 'pipe' },
+      );
+      objectCount++;
+    };
+
+    putObject(`${r2Prefix}/definition.json`, join(gameDir, 'definition.json'));
+    putObject(`${r2Prefix}/metadata.json`, join(gameDir, 'metadata.json'));
+
+    const packsDir = join(gameDir, 'packs');
+    if (existsSync(packsDir)) {
+      for (const packEntry of readdirSync(packsDir, { withFileTypes: true })) {
+        if (!packEntry.isDirectory()) continue;
+        const packName = packEntry.name;
+        const packDir = join(packsDir, packName);
+
+        const manifestFile = join(packDir, 'manifest.json');
+        if (existsSync(manifestFile)) {
+          putObject(`${r2Prefix}/packs/${packName}/manifest.json`, manifestFile);
+        }
+
+        const manifest: Pick<PackManifest, 'assets'> = existsSync(manifestFile)
+          ? JSON.parse(readFileSync(manifestFile, 'utf-8'))
+          : { assets: {} };
+
+        for (const [, assetEntry] of Object.entries(manifest.assets)) {
+          const assetPath = join(packDir, assetEntry.file);
+          if (existsSync(assetPath)) {
+            putObject(`${r2Prefix}/packs/${packName}/${assetEntry.file}`, assetPath);
+          }
+        }
+      }
+    }
+  }
+
+  console.log(`✓ Seeded local R2 with ${objectCount} objects`);
+}
+
+function seedLocal(embeddedGames: EmbeddedGameEntry[]): void {
+  if (SKIP_SEED) {
+    console.log('⏭ Skipping local seed (--skip-seed)');
+    return;
+  }
+
+  console.log('\nSeeding local Wrangler state...');
+
+  try {
+    seedLocalD1(embeddedGames);
+    seedLocalR2(embeddedGames);
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.warn(`⚠ Local seed failed (non-fatal): ${msg}`);
+  }
+}
+
 async function build(): Promise<void> {
   console.log('Building games...\n');
 
@@ -293,6 +424,9 @@ async function build(): Promise<void> {
 
   // Generate the app's TypeScript registry
   generateEmbeddedRegistry(embeddedGames);
+
+  // Seed local Wrangler D1 + R2 with built game data
+  seedLocal(embeddedGames);
 
   const succeeded = results.filter(r => r.success).length;
   const failed = results.filter(r => !r.success).length;
