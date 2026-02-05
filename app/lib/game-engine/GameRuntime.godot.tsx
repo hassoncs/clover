@@ -342,6 +342,7 @@ export function GameRuntimeGodot({
   );
 
   const timeScaleRef = useRef(1.0);
+  const pendingLifecycleEventsRef = useRef<Array<'game_loaded' | 'game_started'>>([]);
 
   const [isReady, setIsReady] = useState(false);
   const [godotReady, setGodotReady] = useState(false);
@@ -836,6 +837,11 @@ export function GameRuntimeGodot({
         }
 
         gameSystemRunnerRef.current = runner;
+
+        console.log("[GameRuntime] 12. Emitting gameLoaded lifecycle event");
+        console.log("[Lifecycle] Pushing game_loaded to pendingLifecycleEventsRef");
+        pendingLifecycleEventsRef.current.push('game_loaded');
+        console.log("[Lifecycle] pendingLifecycleEventsRef now has:", pendingLifecycleEventsRef.current);
       } catch (error) {
         console.error("[GameRuntime] Failed to initialize game:", error);
       }
@@ -942,6 +948,12 @@ export function GameRuntimeGodot({
       const frameCollisions = collisionsRef.current.slice();
       collisionsRef.current = [];
 
+      const lifecycleEvents = pendingLifecycleEventsRef.current.map(type => ({ type }));
+      if (lifecycleEvents.length > 0) {
+        console.log("[Lifecycle] stepGame processing lifecycle events:", lifecycleEvents);
+      }
+      pendingLifecycleEventsRef.current = [];
+
       const updateContext: UpdateContext = {
         dt,
         elapsed: elapsedRef.current,
@@ -949,7 +961,7 @@ export function GameRuntimeGodot({
         input: inputRef.current as InputState,
         gameState: fullGameState,
         frame: {
-          inputEvents: [],
+          inputEvents: lifecycleEvents,
           collisions: frameCollisions,
         },
       };
@@ -1428,6 +1440,8 @@ export function GameRuntimeGodot({
 
   const handleStart = useCallback(() => {
     console.log("[handleStart] Called");
+    console.log("[handleStart] Emitting gameStart lifecycle event");
+    pendingLifecycleEventsRef.current.push('game_started');
     console.log("[handleStart] Calling resumePhysics...");
     bridgeRef.current?.resumePhysics();
     console.log("[handleStart] resumePhysics complete");
@@ -1494,6 +1508,9 @@ export function GameRuntimeGodot({
         state: "ready",
         variables: mergedVariables,
       });
+
+      console.log("[handleRestart] Emitting gameLoaded lifecycle event");
+      pendingLifecycleEventsRef.current.push('game_loaded');
     }
   }, [onRequestRestart, definition, setupSubscriptions, progressHook]);
 

@@ -11,10 +11,15 @@
       "cwd": "packages/game-inspector-mcp",
       "command": "pnpm build && tsc --watch --preserveWatchOutput"
     },
+    "games-watcher": {
+      "cwd": "games",
+      "command": "pnpm watch"
+    },
     "games-server": {
       "cwd": "games",
       "command": "pnpm serve",
-      "health": { "type": "port", "port": 3847 }
+      "health": { "type": "port", "port": 3847 },
+      "dependsOn": ["games-watcher"]
     },
     "api": {
       "cwd": ".",

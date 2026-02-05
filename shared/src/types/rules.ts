@@ -24,6 +24,7 @@ export type RuleTriggerType =
   | 'button'
   | 'swipe'
   | 'gameStart'
+  | 'gameLoaded'
   | 'sensor_enter'
   | 'sensor_exit';
 
@@ -103,6 +104,10 @@ export interface GameStartTrigger {
   type: 'gameStart';
 }
 
+export interface GameLoadedTrigger {
+  type: 'gameLoaded';
+}
+
 export type RuleTrigger =
   | CollisionTrigger
   | SensorEnterTrigger
@@ -116,7 +121,8 @@ export type RuleTrigger =
   | TiltTrigger
   | ButtonTrigger
   | SwipeTrigger
-  | GameStartTrigger;
+  | GameStartTrigger
+  | GameLoadedTrigger;
 
 export interface TimeCondition {
   type: 'time';

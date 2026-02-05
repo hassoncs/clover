@@ -1,9 +1,9 @@
 import type { TriggerEvaluator } from './TriggerEvaluator';
-import type { TimerTrigger, EntityCountTrigger, EventTrigger, FrameTrigger, GameStartTrigger } from '@slopcade/shared';
+import type { TimerTrigger, EntityCountTrigger, EventTrigger, FrameTrigger, GameStartTrigger, GameLoadedTrigger } from '@slopcade/shared';
 import type { RuleContext } from '../types';
 
-export class LogicTriggerEvaluator implements TriggerEvaluator<TimerTrigger | EntityCountTrigger | EventTrigger | FrameTrigger | GameStartTrigger> {
-  evaluate(trigger: TimerTrigger | EntityCountTrigger | EventTrigger | FrameTrigger | GameStartTrigger, context: RuleContext): boolean {
+export class LogicTriggerEvaluator implements TriggerEvaluator<TimerTrigger | EntityCountTrigger | EventTrigger | FrameTrigger | GameStartTrigger | GameLoadedTrigger> {
+  evaluate(trigger: TimerTrigger | EntityCountTrigger | EventTrigger | FrameTrigger | GameStartTrigger | GameLoadedTrigger, context: RuleContext): boolean {
     switch (trigger.type) {
       case 'timer':
         if (trigger.repeat) {
@@ -35,6 +35,14 @@ export class LogicTriggerEvaluator implements TriggerEvaluator<TimerTrigger | En
 
       case 'gameStart':
         return context.inputEvents.gameStarted ?? false;
+
+      case 'gameLoaded': {
+        const result = context.inputEvents.gameLoaded ?? false;
+        if (result) {
+          console.log("[Lifecycle] LogicTriggerEvaluator: gameLoaded trigger FIRED");
+        }
+        return result;
+      }
 
       default:
         return false;

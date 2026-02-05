@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "tsx scripts/build.ts",
+    "watch": "tsx scripts/watch.ts",
     "serve": "tsx scripts/serve.ts",
     "test": "vitest run",
     "type-check": "tsc --noEmit"

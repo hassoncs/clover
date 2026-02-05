@@ -59,6 +59,7 @@ export interface InputEvents {
   buttonPressed?: Set<string>;
   buttonReleased?: Set<string>;
   gameStarted?: boolean;
+  gameLoaded?: boolean;
 }
 
 export interface GameState {

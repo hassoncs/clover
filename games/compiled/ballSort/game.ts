@@ -244,8 +244,8 @@ export function createBallSortGame(): GameDefinition {
     rules: [
       {
         id: "generate_level",
-        name: "Generate level on game start",
-        trigger: { type: "gameStart" },
+        name: "Generate level when game loads",
+        trigger: { type: "gameLoaded" },
         actions: [{ type: "run_script", export: "generateLevel" }],
       },
       {

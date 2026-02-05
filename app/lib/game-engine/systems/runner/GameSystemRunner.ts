@@ -91,6 +91,13 @@ export class GameSystemRunner {
 
     this.eventQueue.flush();
 
+    if (ctx.frame?.inputEvents) {
+      this.inputEvents.push(...ctx.frame.inputEvents);
+    }
+    if (ctx.frame?.collisions) {
+      this.collisions.push(...ctx.frame.collisions);
+    }
+
     const frame: FrameData = {
       inputEvents: this.inputEvents,
       collisions: this.collisions,

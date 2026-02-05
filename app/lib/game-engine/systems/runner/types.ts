@@ -76,6 +76,14 @@ export interface GameStartedInputEvent {
 }
 
 /**
+ * Lifecycle event fired after all systems are initialized but before the Play button is shown.
+ * Scripts can use this to set up initial game state (e.g., spawn dynamic entities, initialize level).
+ */
+export interface GameLoadedInputEvent {
+  type: 'game_loaded';
+}
+
+/**
  * Union of all input event types that can occur during a frame.
  */
 export type InputEvent =
@@ -85,7 +93,8 @@ export type InputEvent =
   | DragEndInputEvent
   | ButtonPressedInputEvent
   | ButtonReleasedInputEvent
-  | GameStartedInputEvent;
+  | GameStartedInputEvent
+  | GameLoadedInputEvent;
 
 /**
  * Per-frame data buffers owned by the runner.
