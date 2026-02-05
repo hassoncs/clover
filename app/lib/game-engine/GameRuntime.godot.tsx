@@ -62,6 +62,7 @@ import {
   type GameStateValue,
   type TimeControl,
   type PlayerPhase,
+  logger,
 } from "./debug";
 import { cancelTweensForEntity } from "./behaviors/TweenBehaviors";
 import { GameSystemRunner } from "./systems/runner/GameSystemRunner";
@@ -404,7 +405,7 @@ export function GameRuntimeGodot({
       ),
     };
     const json = JSON.stringify(exported, null, 2);
-    console.log("Exported game definition:", json);
+    logger.info("lifecycle", "Exported game definition:", json);
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(json);
     }
@@ -477,10 +478,9 @@ export function GameRuntimeGodot({
     if (typeof window !== "undefined" && window.localStorage) {
       window.localStorage.setItem(storageKey, JSON.stringify(tunableOverrides));
       setSavedValues(tunableOverrides);
-      console.log(
-        `[Tuning] Saved ${
-          Object.keys(tunableOverrides).length
-        } variable overrides for "${gameId}"`
+      logger.info(
+        "state",
+        `Saved ${Object.keys(tunableOverrides).length} variable overrides for "${gameId}"`
       );
     }
   }, [definition.variables, gameState.variables, storageKey, gameId]);
@@ -502,12 +502,12 @@ export function GameRuntimeGodot({
   viewportSystemRef.current = viewportSystem;
 
   const handleGodotReady = useCallback(() => {
-    console.log("[GameRuntime] 1. GodotView ready callback received");
+    logger.info("lifecycle", "GodotView ready callback received");
     setGodotReady(true);
   }, []);
 
   const handleGodotError = useCallback((error: Error) => {
-    console.error("[GameRuntime.godot] Godot error:", error);
+    logger.error("lifecycle", "Godot error:", error);
   }, []);
 
   const setupStartedRef = useRef(false);
@@ -519,25 +519,25 @@ export function GameRuntimeGodot({
     }
     setupStartedRef.current = true;
 
-    console.log("[GameRuntime] Setup starting - godotReady is true");
+    logger.info("lifecycle", "Setup starting - godotReady is true");
 
     const setup = async () => {
       try {
-        console.log("[GameRuntime] 3. Creating Godot bridge...");
+        logger.info("bridge", "Creating Godot bridge...");
         const bridge = await createGodotBridge();
-        console.log("[GameRuntime] 4. Bridge created, initializing...");
+        logger.info("bridge", "Bridge created, initializing...");
         await bridge.initialize();
-        console.log("[GameRuntime] 5. Bridge initialized");
+        logger.info("bridge", "Bridge initialized");
         bridgeRef.current = bridge;
 
         if (preloadTextureUrls && preloadTextureUrls.length > 0) {
-          console.log("[GameRuntime] 6. Preloading %d textures...", preloadTextureUrls.length);
+          logger.info("assets", `Preloading ${preloadTextureUrls.length} textures...`);
           await bridge.preloadTextures(preloadTextureUrls, (percent, completed, failed) => {
             onPreloadProgressRef.current?.(percent, completed, failed);
           });
-          console.log("[GameRuntime] 7. Textures preloaded");
+          logger.info("assets", "Textures preloaded");
         } else {
-          console.log("[GameRuntime] 6. No textures to preload");
+          logger.debug("assets", "No textures to preload");
         }
 
         const physics = createGodotPhysicsAdapter(bridge);
@@ -547,9 +547,9 @@ export function GameRuntimeGodot({
           bridge.setInspectMode(true);
         }
 
-        console.log("[GameRuntime] 8. Loading game definition...");
+        logger.info("lifecycle", "Loading game definition...");
         await bridge.loadGame(definition);
-        console.log("[GameRuntime] 9. Game loaded into Godot");
+        logger.info("lifecycle", "Game loaded into Godot");
 
         bridge.pausePhysics();
 
@@ -558,8 +558,9 @@ export function GameRuntimeGodot({
         const watches = analyzer.getWatchSpecs();
 
         if (report.errors.length > 0) {
-          console.warn(
-            "[GameRuntime.godot] Property watching validation errors:",
+          logger.warn(
+            "lifecycle",
+            "Property watching validation errors:",
             report.errors
           );
         }
@@ -656,7 +657,7 @@ export function GameRuntimeGodot({
             variables: mergedVariables,
           }));
         }
-        console.log("[GameRuntime] 10. Setting isReady=true");
+        logger.info("lifecycle", "Setting isReady=true");
         setIsReady(true);
 
         if (typeof window !== "undefined") {
@@ -665,7 +666,7 @@ export function GameRuntimeGodot({
           ).slopcadeGameReady = true;
         }
 
-        console.log("[GameRuntime] 11. Calling onReady callback");
+        logger.info("lifecycle", "Calling onReady callback");
         onReadyRef.current?.();
 
         const runner = new GameSystemRunner();
@@ -838,12 +839,12 @@ export function GameRuntimeGodot({
 
         gameSystemRunnerRef.current = runner;
 
-        console.log("[GameRuntime] 12. Emitting gameLoaded lifecycle event");
-        console.log("[Lifecycle] Pushing game_loaded to pendingLifecycleEventsRef");
+        logger.info("lifecycle", "Emitting gameLoaded lifecycle event");
+        logger.debug("lifecycle", "Pushing game_loaded to pendingLifecycleEventsRef");
         pendingLifecycleEventsRef.current.push('game_loaded');
-        console.log("[Lifecycle] pendingLifecycleEventsRef now has:", pendingLifecycleEventsRef.current);
+        logger.trace("lifecycle", "pendingLifecycleEventsRef now has:", pendingLifecycleEventsRef.current);
       } catch (error) {
-        console.error("[GameRuntime] Failed to initialize game:", error);
+        logger.error("lifecycle", "Failed to initialize game:", error);
       }
     };
 
@@ -905,21 +906,20 @@ export function GameRuntimeGodot({
       stepGameFrameCountRef.current++;
       const frameNum = stepGameFrameCountRef.current;
 
-      // Only log first 5 frames to avoid spam
       const shouldLog = frameNum <= 5;
-      if (shouldLog) console.log(`[stepGame] frame ${frameNum} starting`);
+      if (shouldLog) logger.trace("loop", `frame ${frameNum} starting`);
 
       const physics = physicsRef.current;
       const game = gameRef.current;
       const camera = cameraRef.current;
       const bridge = bridgeRef.current;
       if (!physics || !game || !camera || !bridge) {
-        if (shouldLog) console.log(`[stepGame] frame ${frameNum} - missing refs, returning`);
+        if (shouldLog) logger.trace("loop", `frame ${frameNum} - missing refs, returning`);
         return;
       }
 
       if (StateHelpers.getGameStateValue(game.gameState) !== "playing") {
-        if (shouldLog) console.log(`[stepGame] frame ${frameNum} - not playing, returning`);
+        if (shouldLog) logger.trace("loop", `frame ${frameNum} - not playing, returning`);
         return;
       }
 
@@ -929,11 +929,11 @@ export function GameRuntimeGodot({
 
       const runner = gameSystemRunnerRef.current;
       if (!runner) {
-        if (shouldLog) console.log(`[stepGame] frame ${frameNum} - no runner, returning`);
+        if (shouldLog) logger.trace("loop", `frame ${frameNum} - no runner, returning`);
         return;
       }
 
-      if (shouldLog) console.log(`[stepGame] frame ${frameNum} - building game state`);
+      if (shouldLog) logger.trace("loop", `frame ${frameNum} - building game state`);
 
       const fullGameState: GameState = {
         time: StateHelpers.getElapsed(game.gameState),
@@ -950,7 +950,7 @@ export function GameRuntimeGodot({
 
       const lifecycleEvents = pendingLifecycleEventsRef.current.map(type => ({ type }));
       if (lifecycleEvents.length > 0) {
-        console.log("[Lifecycle] stepGame processing lifecycle events:", lifecycleEvents);
+        logger.debug("lifecycle", "stepGame processing lifecycle events:", lifecycleEvents);
       }
       pendingLifecycleEventsRef.current = [];
 
@@ -970,21 +970,21 @@ export function GameRuntimeGodot({
         inputRef.current = { ...inputRef.current, tap: undefined };
       }
 
-      if (shouldLog) console.log(`[stepGame] frame ${frameNum} - calling runner.update`);
+      if (shouldLog) logger.trace("loop", `frame ${frameNum} - calling runner.update`);
       runner.update(updateContext);
-      if (shouldLog) console.log(`[stepGame] frame ${frameNum} - runner.update complete`);
+      if (shouldLog) logger.trace("loop", `frame ${frameNum} - runner.update complete`);
 
       elapsedRef.current += dt;
       frameIdRef.current += 1;
 
       setGameState((s) => ({ ...s, time: elapsedRef.current }));
-      if (shouldLog) console.log(`[stepGame] frame ${frameNum} - complete`);
+      if (shouldLog) logger.trace("loop", `frame ${frameNum} - complete`);
 
       if (enablePerfLogging) {
         const frameEnd = performance.now();
         const frameMs = frameEnd - frameStart;
         if (frameIdRef.current % 60 === 0) {
-          console.log(`[Perf.godot] frame=${frameMs.toFixed(2)}ms`);
+          logger.info("loop", `frame=${frameMs.toFixed(2)}ms`);
         }
       }
     },
@@ -1030,10 +1030,10 @@ export function GameRuntimeGodot({
   );
 
   useEffect(() => {
-    console.log(`[GameLoop Effect] isReady=${isReady}, state=${gameState.state}, mode=${timeControl.mode}, paused=${timeControl.paused}`);
+    logger.trace("loop", `isReady=${isReady}, state=${gameState.state}, mode=${timeControl.mode}, paused=${timeControl.paused}`);
 
     if (timeControl.mode === "inspect") {
-      console.log("[GameLoop Effect] Inspect mode - stopping");
+      logger.debug("loop", "Inspect mode - stopping");
       gameLoopControllerRef.current?.stop();
       return;
     }
@@ -1043,13 +1043,13 @@ export function GameRuntimeGodot({
       isReady && playerPhase === "playing" && !timeControl.paused;
 
     if (!shouldRun) {
-      console.log("[GameLoop Effect] shouldRun=false - stopping");
+      logger.trace("loop", "shouldRun=false - stopping");
       gameLoopControllerRef.current?.stop();
       return;
     }
 
     if (!gameLoopControllerRef.current) {
-      console.log("[GameLoop Effect] Creating new GameLoopController");
+      logger.debug("loop", "Creating new GameLoopController");
       gameLoopControllerRef.current = new GameLoopController({
         onUpdate: stepGame,
         intervalMs: GAME_LOOP_INTERVAL,
@@ -1064,12 +1064,12 @@ export function GameRuntimeGodot({
     }
 
     if (!controller.isRunning()) {
-      console.log("[GameLoop Effect] Starting game loop");
+      logger.debug("loop", "Starting game loop");
       controller.start();
     }
 
     return () => {
-      console.log("[GameLoop Effect] Cleanup - stopping");
+      logger.trace("loop", "Cleanup - stopping");
       controller.stop();
     };
   }, [isReady, gameState.state, stepGame, timeControl]);
@@ -1431,6 +1431,7 @@ export function GameRuntimeGodot({
         input: inputRef,
         bridge: bridgeRef,
       },
+      logger,
     };
 
     return () => {
@@ -1439,18 +1440,18 @@ export function GameRuntimeGodot({
   }, []);
 
   const handleStart = useCallback(() => {
-    console.log("[handleStart] Called");
-    console.log("[handleStart] Emitting gameStart lifecycle event");
+    logger.info("lifecycle", "handleStart called");
+    logger.debug("lifecycle", "Emitting gameStart lifecycle event");
     pendingLifecycleEventsRef.current.push('game_started');
-    console.log("[handleStart] Calling resumePhysics...");
+    logger.debug("lifecycle", "Calling resumePhysics...");
     bridgeRef.current?.resumePhysics();
-    console.log("[handleStart] resumePhysics complete");
+    logger.debug("lifecycle", "resumePhysics complete");
     if (gameRef.current) {
-      console.log("[handleStart] Setting game state to playing...");
+      logger.debug("lifecycle", "Setting game state to playing...");
       StateHelpers.setGameStateValue(gameRef.current.gameState, 'playing', gameRef.current.events);
-      console.log("[handleStart] setGameStateValue complete");
+      logger.debug("lifecycle", "setGameStateValue complete");
     }
-    console.log("[handleStart] Done");
+    logger.debug("lifecycle", "handleStart done");
   }, []);
 
   const handleRestart = useCallback(() => {
@@ -1509,7 +1510,7 @@ export function GameRuntimeGodot({
         variables: mergedVariables,
       });
 
-      console.log("[handleRestart] Emitting gameLoaded lifecycle event");
+      logger.info("lifecycle", "handleRestart emitting gameLoaded lifecycle event");
       pendingLifecycleEventsRef.current.push('game_loaded');
     }
   }, [onRequestRestart, definition, setupSubscriptions, progressHook]);
@@ -1554,7 +1555,7 @@ export function GameRuntimeGodot({
         onRequestRestart();
       }
     } catch (e) {
-      console.error("Failed to save progress for next level:", e);
+      logger.error("state", "Failed to save progress for next level:", e);
       if (onRequestRestart) onRequestRestart();
     }
   }, [definition.persistence, onNextLevel, onRequestRestart, progressHook]);

@@ -24,6 +24,7 @@ import type { IScriptSandbox } from '@/lib/scripting';
 import type { GameState as RuntimeGameState, GameEventBus, GameStateValue, VarValue } from '../../../runtime/types';
 import * as StateHelpers from '../../../runtime/GameStateHelpers';
 import { RESERVED_VARS } from '../../../runtime/types';
+import { logger } from '../../../debug/Logger';
 
 import {
   SpawnActionExecutor,
@@ -396,7 +397,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
         
         const inputEvents = this.convertFrameInputEvents(ctx.frame.inputEvents);
         if (inputEvents.gameLoaded || inputEvents.gameStarted) {
-          console.log("[Lifecycle] RulesSystem received lifecycle events:", { gameLoaded: inputEvents.gameLoaded, gameStarted: inputEvents.gameStarted });
+          logger.debug("rules", "RulesSystem received lifecycle events:", { gameLoaded: inputEvents.gameLoaded, gameStarted: inputEvents.gameStarted });
         }
         
         const ruleContext: RuleContext = {
@@ -456,14 +457,14 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
           if (cooldownEnd && elapsed < cooldownEnd) continue;
           
           if (rule.trigger.type === 'game_loaded' || rule.trigger.type === 'game_started') {
-            console.log(`[Lifecycle] Evaluating rule "${rule.id}" with trigger type: ${rule.trigger.type}`);
+            logger.debug("rules", `Evaluating rule "${rule.id}" with trigger type: ${rule.trigger.type}`);
           }
           
           const triggerResult = this.evaluateTrigger(rule.trigger, ruleContext);
           if (triggerResult) {
             const conditionsResult = this.evaluateConditions(rule.conditions, ruleContext);
             if (conditionsResult) {
-              console.log(`[Lifecycle] Rule "${rule.id}" FIRED, executing ${rule.actions.length} actions:`, rule.actions.map(a => a.type));
+              logger.debug("rules", `Rule "${rule.id}" FIRED, executing ${rule.actions.length} actions:`, rule.actions.map(a => a.type));
               this.executeActions(rule.actions, ruleContext);
               
               if (rule.fireOnce) {
@@ -672,7 +673,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
 
   private convertFrameInputEvents(frameEvents: readonly import('../types').InputEvent[]): InputEvents {
     if (frameEvents.length > 0) {
-      console.log("[Lifecycle] convertFrameInputEvents called with", frameEvents.length, "events:", frameEvents.map(e => e.type));
+      logger.debug("rules", `convertFrameInputEvents called with ${frameEvents.length} events:`, frameEvents.map(e => e.type));
     }
     const result: InputEvents = {};
     const buttonPressed = new Set<string>();
@@ -699,7 +700,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
           result.gameStarted = true;
           break;
         case 'game_loaded':
-          console.log("[Lifecycle] convertFrameInputEvents: Found game_loaded event");
+          logger.debug("rules", "convertFrameInputEvents: Found game_loaded event");
           result.gameLoaded = true;
           break;
       }
@@ -820,7 +821,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
       const result = evaluate(this.winCondition.expr, context.evalContext);
       return Boolean(result);
     } catch (e) {
-      console.warn('[WinCondition] Failed to evaluate:', this.winCondition.expr, e);
+      logger.warn('rules', `WinCondition failed to evaluate: ${this.winCondition.expr}`, e);
       return false;
     }
   }
@@ -856,7 +857,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
           const result = evaluate(this.loseCondition.expr, context.evalContext);
           return Boolean(result);
         } catch (e) {
-          console.warn('[LoseCondition] Failed to evaluate:', this.loseCondition.expr, e);
+          logger.warn('rules', `LoseCondition failed to evaluate: ${this.loseCondition.expr}`, e);
           return false;
         }
       }
