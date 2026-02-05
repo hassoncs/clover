@@ -1,16 +1,7 @@
 {
   "files": [],
   "references": [
-    {
-      "path": "./shared"
-    },
-    {
-      "path": "./api"
-    },
-    {
-      "path": "./app"
-    }
-  ],
-  "compilerOptions": {},
-  "extends": "expo/tsconfig.base"
+    { "path": "./shared" },
+    { "path": "./api/tsconfig.build.json" }
+  ]
 }

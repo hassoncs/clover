@@ -10,8 +10,8 @@ if ! pnpm generate:registry:check 2>/dev/null; then
   echo "Registry files regenerated and staged."
 fi
 
-echo "Building API type declarations..."
-cd api && pnpm build:types && cd ..
+echo "Building type declarations..."
+pnpm build:types
 
 echo "Running TypeScript type check..."
 cd app && pnpm tsc --noEmit && cd ..

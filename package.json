@@ -45,7 +45,7 @@
     "generate:registry": "cd app && npx reggie",
     "generate:registry:watch": "cd app && npx reggie --watch",
     "generate:registry:check": "cd app && npx reggie --check",
-    "build:types": "cd shared && pnpm tsc -b && cd ../api && pnpm build:types",
+    "build:types": "tsc -b",
     "knip": "knip"
   },
   "devDependencies": {

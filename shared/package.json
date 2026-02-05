@@ -11,11 +11,16 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./expressions/*": "./src/expressions/*.ts",
     "./mechanics": "./src/mechanics/index.ts",
     "./schema": "./src/schema/index.ts",
     "./schema/*": "./src/schema/*.ts",
+    "./types": "./src/types/index.ts",
+    "./types/*": "./src/types/*.ts",
     "./utils/asset-url": "./src/utils/asset-url.ts",
-    "./utils/*": "./src/utils/*.ts"
+    "./utils/*": "./src/utils/*.ts",
+    "./validation": "./src/validation/index.ts",
+    "./validation/*": "./src/validation/*.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.38.3",

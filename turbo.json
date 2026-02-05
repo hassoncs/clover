@@ -6,6 +6,10 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**", "web-build/**", ".expo/**"]
     },
+    "build:types": {
+      "dependsOn": ["^build:types"],
+      "outputs": ["dist/**", "dist-types/**"]
+    },
     "dev": {
       "cache": false,
       "persistent": true
