@@ -249,6 +249,7 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
   private createEntityManagerAdapter(): SandboxRuntimeContext['entityManager'] {
     const em = this.systemContext!.entityManager;
     const physics = this.systemContext!.physics;
+    const bridge = this.systemContext!.bridge;
     
     return {
       spawnEntity: (templateId: string, position: { x: number; y: number }, opts?: SpawnOptions) => {
@@ -288,16 +289,18 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
         if (!entity) {
           return;
         }
-        
+
         entity.transform.x = position.x;
         entity.transform.y = position.y;
-        
+
         if (entity.physics) {
           physics.setTransform(entity.id, {
             position,
             angle: entity.transform.angle,
           });
         }
+
+        bridge.setPosition(entityId, position.x, position.y);
       },
       getEntityVelocity: (entityId: string) => {
         const entity = em.getEntity(entityId);

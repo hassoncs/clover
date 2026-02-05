@@ -113,6 +113,9 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
           if (entity) {
             entity.transform.x = position.x;
             entity.transform.y = position.y;
+            if (context.bridge) {
+              context.bridge.setPosition(entityId, position.x, position.y);
+            }
           }
         },
         getEntityVelocity: (entityId: string) => {
