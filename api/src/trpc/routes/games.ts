@@ -17,8 +17,7 @@ import {
 } from '@/ai'
 import { validateGame, getValidationReportJson } from '@/validation/gameValidator';
 import type { GameValidationReport } from '@slopcade/shared/validation';
-
-type R2Bucket = import('@cloudflare/workers-types').R2Bucket;
+type R2Bucket = import("@cloudflare/workers-types").R2Bucket;
 
 interface GameRow {
   id: string;

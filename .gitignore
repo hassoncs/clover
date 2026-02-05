@@ -61,6 +61,7 @@ landing/.dev.vars
 **/.wrangler/
 .seed-local.sql
 .seed-state.json
+.r2-sync-manifest.json
 
 # typescript
 *.tsbuildinfo
