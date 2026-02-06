@@ -112,7 +112,7 @@ async function main() {
         const config = getControlConfig(controlType);
         const { width } = config.dimensions;
 
-        const { prompt: basePrompt, negativePrompt } = buildUIComponentPrompt({
+        const { prompt: basePrompt } = buildUIComponentPrompt({
           componentType: controlType,
           state: baseState,
           theme: theme,
@@ -120,7 +120,7 @@ async function main() {
         });
 
         const fullPrompt = modifier ? `${basePrompt} ${modifier}` : basePrompt;
-        const promptContent = `=== POSITIVE ===\n${fullPrompt}\n\n=== NEGATIVE ===\n${negativePrompt}`;
+        const promptContent = fullPrompt;
         const promptPath = path.join(runDir, 'prompt.txt');
         fs.writeFileSync(promptPath, promptContent);
 

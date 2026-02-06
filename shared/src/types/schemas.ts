@@ -842,7 +842,6 @@ export const SheetPromptConfigSchema = z.object({
   basePrompt: z.string(),
   commonModifiers: z.array(z.string()).optional(),
   stylePreset: z.string().optional(),
-  negativePrompt: z.string().optional(),
 });
 
 export const AssetSheetEntrySchema = z.object({

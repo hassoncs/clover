@@ -77,7 +77,6 @@ export interface AssetGenerationRequest {
 
 export interface DirectGenerationRequest {
   prompt: string;
-  negativePrompt: string;
   entityType: EntityType;
   width: number;
   height: number;
@@ -426,14 +425,6 @@ export function buildStructuredPrompt(params: StructuredPromptParams): string {
   return lines.join('\n');
 }
 
-export function buildNegativePrompt(): string {
-  return 'blurry, low quality, watermark, signature, text, logo, deformed, disfigured, bad anatomy, extra limbs, duplicate, copy, multi, two, mutilated, poorly drawn';
-}
-
-export function buildStructuredNegativePrompt(): string {
-  return buildNegativePrompt();
-}
-
 export type ImageGenerationProvider = 'modal' | 'scenario';
 
 export function getImageGenerationConfig(env: Env): {
@@ -715,11 +706,8 @@ export class AssetService {
 
   async generateFromStructuredParams(params: StructuredPromptParams): Promise<AssetGenerationResult> {
     const prompt = buildStructuredPrompt(params);
-    const negativePrompt = buildNegativePrompt();
-
     return this.generateDirect({
       prompt,
-      negativePrompt,
       entityType: params.entityType,
       width: params.targetWidth,
       height: params.targetHeight,

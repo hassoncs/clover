@@ -65,8 +65,6 @@ export interface SheetPromptConfig {
   // Optional: style preset (can affect model selection)
   stylePreset?: string;
   
-  // Optional: negative prompt applied to all entries
-  negativePrompt?: string;
 }
 
 // =============================================================================

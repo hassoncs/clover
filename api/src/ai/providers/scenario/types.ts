@@ -23,7 +23,6 @@ export interface GenerationParams {
   height?: number;
   guidance?: number;
   numInferenceSteps?: number;
-  negativePrompt?: string;
   seed?: string;
 }
 

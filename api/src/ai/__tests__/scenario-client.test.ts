@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ScenarioClient } from '@/ai/providers/scenario/client'
-import { SCENARIO_DEFAULTS, CUSTOM_MODEL_PREFIXES } from '@/ai/providers/scenario/types'
+import { ScenarioClient } from '../providers/scenario/client'
+import { SCENARIO_DEFAULTS, CUSTOM_MODEL_PREFIXES } from '../providers/scenario/types'
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
@@ -54,10 +54,12 @@ describe('ScenarioClient', () => {
       expect(client.usesCustomEndpoint('some-random-model')).toBe(false);
     });
 
-    it.each(CUSTOM_MODEL_PREFIXES)('returns true for custom prefix: %s', (prefix) => {
-      const modelId = `${prefix}-test`;
-      expect(client.usesCustomEndpoint(modelId)).toBe(true);
-    });
+    for (const prefix of CUSTOM_MODEL_PREFIXES) {
+      it(`returns true for custom prefix: ${prefix}`, () => {
+        const modelId = `${prefix}-test`;
+        expect(client.usesCustomEndpoint(modelId)).toBe(true);
+      });
+    }
 
     it('returns false for model_ prefix not in custom list', () => {
       expect(client.usesCustomEndpoint('model_retrodiffusion-plus')).toBe(true);
@@ -136,39 +138,6 @@ describe('ScenarioClient', () => {
 
       const body = JSON.parse(mockFetch.mock.calls[0][1].body);
       expect(body.guidance).toBe(5);
-    });
-
-    it('excludes negativePrompt for flux models', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ job: { jobId: 'job-flux' } }),
-      });
-
-      await client.createGenerationJob({
-        prompt: 'test',
-        modelId: 'flux.1-dev',
-        negativePrompt: 'should be excluded',
-      });
-
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.negativePrompt).toBeUndefined();
-    });
-
-    it('includes negativePrompt for non-flux models', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ job: { jobId: 'job-non-flux' } }),
-      });
-
-      await client.createGenerationJob({
-        prompt: 'test',
-        modelId: 'model_retrodiffusion-plus',
-        negativePrompt: 'blur, noise',
-      });
-
-      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.negativePrompt).toBe('blur, noise');
-      expect(body.negativePromptStrength).toBe(1.0);
     });
 
     it('throws error when no jobId returned', async () => {

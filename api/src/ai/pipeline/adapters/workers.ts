@@ -20,7 +20,6 @@ export function createWorkersScenarioAdapter(client: ScenarioClient): ImageGener
         prompt: params.prompt,
         width: params.width,
         height: params.height,
-        negativePrompt: params.negativePrompt,
       });
       return { assetId: result.assetIds[0] };
     },
@@ -64,7 +63,6 @@ export function createWorkersComfyUIAdapter(env: Env): ImageGenerationAdapter {
     async txt2img(params): Promise<{ assetId: string }> {
       return client.txt2img({
         prompt: params.prompt,
-        negativePrompt: params.negativePrompt,
         width: params.width ?? 1024,
         height: params.height ?? 1024,
       });

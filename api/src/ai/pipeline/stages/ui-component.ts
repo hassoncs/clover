@@ -116,7 +116,7 @@ export const uiBaseStateStage: Stage = {
 
     const baseState = getControlBaseState(spec.componentType);
     
-    const { prompt, negativePrompt } = buildUIComponentPrompt({
+    const { prompt } = buildUIComponentPrompt({
       componentType: spec.componentType,
       state: baseState,
       theme: run.meta.theme,
@@ -130,7 +130,7 @@ export const uiBaseStateStage: Stage = {
       stageId: 'ui-base-state',
       name: '2-prompt-normal.txt',
       contentType: 'text/plain',
-      data: `=== POSITIVE ===\n${prompt}\n\n=== NEGATIVE ===\n${negativePrompt}`,
+      data: prompt,
     });
 
     const img2imgResult = await adapters.provider.img2img({
@@ -199,7 +199,7 @@ export const uiVariationStatesStage: Stage = {
     const baseAssetId = await adapters.provider.uploadImage(run.artifacts.baseStateImage);
 
     for (const state of statesToGenerate) {
-      const { prompt, negativePrompt } = buildUIComponentPrompt({
+      const { prompt } = buildUIComponentPrompt({
         componentType: spec.componentType,
         state,
         theme: run.meta.theme,
@@ -213,7 +213,7 @@ export const uiVariationStatesStage: Stage = {
         stageId: 'ui-variation-states',
         name: `2-prompt-${state}.txt`,
         contentType: 'text/plain',
-        data: `=== POSITIVE ===\n${prompt}\n\n=== NEGATIVE ===\n${negativePrompt}`,
+        data: prompt,
       });
 
       const img2imgResult = await adapters.provider.img2img({

@@ -135,7 +135,7 @@ export const buildPromptStage: Stage = {
   id: 'build-prompt',
   name: 'Build Prompt',
   async run(run: AssetRun, _adapters: PipelineAdapters, debug: DebugSink): Promise<AssetRun> {
-    const { prompt, negativePrompt } = buildPromptForSpec(run.spec, { theme: run.meta.theme, style: run.meta.style });
+    const { prompt } = buildPromptForSpec(run.spec, { theme: run.meta.theme, style: run.meta.style });
 
     await debug({
       type: 'artifact',
@@ -144,12 +144,12 @@ export const buildPromptStage: Stage = {
       stageId: 'build-prompt',
       name: 'prompt.txt',
       contentType: 'text/plain',
-      data: `=== POSITIVE PROMPT ===\n${prompt}\n\n=== NEGATIVE PROMPT ===\n${negativePrompt}`,
+      data: prompt,
     });
 
     return {
       ...run,
-      artifacts: { ...run.artifacts, prompt, negativePrompt },
+      artifacts: { ...run.artifacts, prompt },
     };
   },
 };
@@ -247,7 +247,6 @@ export const txt2imgStage: Stage = {
       prompt: run.artifacts.prompt,
       width,
       height,
-      negativePrompt: run.artifacts.negativePrompt,
     });
 
     const { buffer } = await adapters.provider.downloadImage(result.assetId);

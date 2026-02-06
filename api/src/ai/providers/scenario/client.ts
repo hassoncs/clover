@@ -119,12 +119,6 @@ export class ScenarioClient {
       numInferenceSteps,
     };
 
-    const isFluxModel = modelId.includes('flux');
-    if (params.negativePrompt && !isFluxModel) {
-      payload.negativePrompt = params.negativePrompt;
-      payload.negativePromptStrength = 1.0;
-    }
-
     if (params.seed) {
       payload.seed = params.seed;
     }
@@ -586,7 +580,6 @@ export function createScenarioAdapter(config: ScenarioConfig): ImageGenerationAd
         prompt: params.prompt,
         width: params.width ?? PROVIDER_DEFAULTS.WIDTH,
         height: params.height ?? PROVIDER_DEFAULTS.HEIGHT,
-        negativePrompt: params.negativePrompt,
         guidance: params.guidance ?? PROVIDER_DEFAULTS.GUIDANCE,
         seed: params.seed !== undefined ? String(params.seed) : undefined,
       });

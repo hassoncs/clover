@@ -53,7 +53,7 @@ export function buildParallaxPrompt(spec: ParallaxSpec): string {
 
 function buildSheetPrompt(spec: SheetSpec): string {
   const { promptConfig } = spec;
-  
+
   const lines: string[] = [];
 
   lines.push('Transform each colored shape into a detailed sprite.');
@@ -67,7 +67,7 @@ function buildSheetPrompt(spec: SheetSpec): string {
   }
 
   lines.push('Transparent background. No borders, no grid lines, no text.');
-  
+
   if (promptConfig?.commonModifiers && promptConfig.commonModifiers.length > 0) {
     for (const modifier of promptConfig.commonModifiers) {
       lines.push(modifier);
@@ -123,14 +123,10 @@ export function buildSheetEntryPrompt(params: {
       lines.push(modifier);
     }
   }
-  if (promptConfig?.negativePrompt) {
-    lines.push(`NEGATIVE: ${promptConfig.negativePrompt}`);
-  }
 
   return lines.join('\n');
 }
 
-// UI Component state descriptions for prompt generation
 const UI_STATE_DESCRIPTIONS: Record<string, string> = {
   normal: 'Default resting state, clean and neutral appearance',
   hover: 'Subtle highlight effect, slightly brighter or elevated',
@@ -158,7 +154,7 @@ const CONTROL_SPECIFIC_FEATURES: Record<string, string> = {
   tab_bar: 'Navigation tab with rounded top corners and flat bottom edge',
 };
 
-export function buildUIComponentPrompt(params: UIComponentPromptParams): { prompt: string; negativePrompt: string } {
+export function buildUIComponentPrompt(params: UIComponentPromptParams): { prompt: string } {
   const { componentType, state, theme } = params;
 
   const stateDescriptions: Record<string, string> = {
@@ -176,18 +172,12 @@ export function buildUIComponentPrompt(params: UIComponentPromptParams): { promp
 
   const prompt = `A ${componentType} UI background for a game interface. ${controlFeature}. Theme: ${theme}. State: ${stateDesc}. Front view, flat 2D element with transparent background. Decorative borders and clean center area suitable for nine-patch scaling. Professional game UI style, functional and thematic.`;
 
-  const negativePrompt = 'text, labels, icons, checkmarks, letters, numbers, watermark, signature, grid lines, measurement marks, multiple elements, 3D perspective, angled view, blurry, low quality';
-
-  return { prompt, negativePrompt };
+  return { prompt };
 }
 
-export function buildNegativePrompt(): string {
-  return 'blurry, low quality, watermark, signature, text, logo, deformed, disfigured, bad anatomy, extra limbs, duplicate, copy, multi, two, mutilated, poorly drawn';
-}
-
-export function buildPromptForSpec(spec: AssetSpec, ctx: PromptContext): { prompt: string; negativePrompt: string } {
+export function buildPromptForSpec(spec: AssetSpec, ctx: PromptContext): { prompt: string } {
   let prompt: string;
-  
+
   switch (spec.type) {
     case 'entity':
       prompt = buildEntityPrompt(spec, ctx);
@@ -211,8 +201,5 @@ export function buildPromptForSpec(spec: AssetSpec, ctx: PromptContext): { promp
       prompt = '';
   }
 
-  return {
-    prompt,
-    negativePrompt: buildNegativePrompt(),
-  };
+  return { prompt };
 }

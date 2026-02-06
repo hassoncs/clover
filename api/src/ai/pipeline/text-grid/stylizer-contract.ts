@@ -10,7 +10,7 @@ import type { LayoutDoc, SilhouetteSpec, TextStyleSpec } from '@/ai/pipeline/typ
  *   - Format: PNG/WebP
  *   - Must include transparency (alpha).
  *   - Dimensions MUST match the original layout dimensions.
- * - `prompt`/`negativePrompt`: Style guidance for img2img.
+ * - `prompt`: Style guidance for img2img.
  *
  * ## Output
  * - `stylizedAssetId`: A stylized raster atlas.
@@ -34,7 +34,6 @@ export interface StylizerInput {
   height: number;
   /** Style specification */
   prompt: string;
-  negativePrompt?: string;
   seed?: number;
   /** Model configuration */
   model?: string;
@@ -84,7 +83,6 @@ export function createStylizerInput(params: {
     width,
     height,
     prompt: styleSpec.prompt,
-    negativePrompt: styleSpec.negativePrompt,
     seed: styleSpec.seed,
     model: styleSpec.model,
     strength: params.strength ?? 0.75,

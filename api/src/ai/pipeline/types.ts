@@ -101,7 +101,6 @@ export interface SheetPromptConfig {
   basePrompt: string;
   commonModifiers?: string[];
   stylePreset?: string;
-  negativePrompt?: string;
 }
 
 export interface SheetSpecBase {
@@ -208,7 +207,6 @@ export interface TextStyleSpec {
   prompt: string;
   seed?: number;
   model?: string;
-  negativePrompt?: string;
   palette?: string[];
 }
 
@@ -304,8 +302,6 @@ export interface Artifacts {
   silhouettePng?: Uint8Array;
   /** Constructed prompt text */
   prompt?: string;
-  /** Negative prompt text */
-  negativePrompt?: string;
   /** Provider asset ID after upload/generation */
   providerAssetId?: string;
   /** Provider job/request ID when available */

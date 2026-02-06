@@ -23,7 +23,6 @@ export interface ComfyUIConfig {
  */
 export interface ComfyTxt2ImgParams {
   prompt: string;
-  negativePrompt?: string;
   width?: number;
   height?: number;
   steps?: number;
@@ -40,7 +39,6 @@ export interface ComfyImg2ImgParams {
   /** Base64-encoded image or image ID from previous upload */
   image: string;
   prompt: string;
-  negativePrompt?: string;
   /** Denoising strength (0-1, higher = more change). Default: 0.95 */
   strength?: number;
   steps?: number;

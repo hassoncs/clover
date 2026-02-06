@@ -1,7 +1,6 @@
 export {
   AssetService,
   buildStructuredPrompt,
-  buildStructuredNegativePrompt,
   calculateCanvasDimensions,
   createSilhouettePng,
   createImageGenerationAdapter,

@@ -30,7 +30,6 @@ export type ImageInputRef =
 export interface ImageGenerationInput {
   operation: ImageGenerationOperation;
   prompt?: string;
-  negativePrompt?: string;
   width?: number;
   height?: number;
   seed?: string | number;
@@ -152,8 +151,7 @@ export interface ImageGenerationAdapter {
     prompt: string;
     width?: number;
     height?: number;
-    negativePrompt?: string;
-    guidance?: number;
+      guidance?: number;
     seed?: number;
   }) => Promise<{ assetId: string }>;
   /** Generate image from image + prompt (silhouette-guided) */

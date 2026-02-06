@@ -4,7 +4,6 @@ import { TRPCError } from '@trpc/server';
 import {
   AssetService,
   buildStructuredPrompt,
-  buildStructuredNegativePrompt,
   type EntityType,
 } from '@/ai/assets'
 import { buildR2Key, getAssetUrl, type GameDefinition } from '@slopcade/shared';
@@ -115,7 +114,6 @@ interface GenerationTaskRow {
   template_id: string;
   status: string;
   compiled_prompt: string | null;
-  compiled_negative_prompt: string | null;
   model_id: string | null;
   target_width: number | null;
   target_height: number | null;
@@ -143,7 +141,6 @@ const promptDefaultsSchema = z.object({
   themePrompt: z.string().optional(),
   styleOverride: z.string().optional(),
   modelId: z.string().optional(),
-  negativePrompt: z.string().optional(),
   removeBackground: z.boolean().optional(),
   strength: z.number().min(0.1).max(0.99).optional(),
   guidance: z.number().min(2).max(12).optional(),
@@ -229,7 +226,6 @@ function toClientTask(row: GenerationTaskRow) {
     templateId: row.template_id,
     status: row.status as 'queued' | 'running' | 'succeeded' | 'failed' | 'canceled',
     compiledPrompt: row.compiled_prompt,
-    compiledNegativePrompt: row.compiled_negative_prompt,
     modelId: row.model_id,
     targetWidth: row.target_width,
     targetHeight: row.target_height,
@@ -735,19 +731,16 @@ export const assetSystemRouter = router({
             targetHeight: dimensions.height,
           });
 
-          const compiledNegativePrompt = buildStructuredNegativePrompt();
-
           const taskId = crypto.randomUUID();
 
           await ctx.env.DB.prepare(
-            `INSERT INTO generation_tasks (id, job_id, template_id, status, compiled_prompt, compiled_negative_prompt, model_id, target_width, target_height, created_at)
-             VALUES (?, ?, ?, 'queued', ?, ?, ?, ?, ?, ?)`
+            `INSERT INTO generation_tasks (id, job_id, template_id, status, compiled_prompt, model_id, target_width, target_height, created_at)
+             VALUES (?, ?, ?, 'queued', ?, ?, ?, ?, ?)`
           ).bind(
             taskId,
             jobId,
             templateId,
             compiledPrompt,
-            compiledNegativePrompt,
             input.promptDefaults.modelId ?? null,
             dimensions.width,
             dimensions.height,
@@ -916,19 +909,16 @@ export const assetSystemRouter = router({
             targetHeight: dimensions.height,
           });
 
-          const compiledNegativePrompt = buildStructuredNegativePrompt();
-
           const taskId = crypto.randomUUID();
 
           await ctx.env.DB.prepare(
-            `INSERT INTO generation_tasks (id, job_id, template_id, status, compiled_prompt, compiled_negative_prompt, target_width, target_height, created_at)
-             VALUES (?, ?, ?, 'queued', ?, ?, ?, ?, ?)`
+            `INSERT INTO generation_tasks (id, job_id, template_id, status, compiled_prompt, target_width, target_height, created_at)
+             VALUES (?, ?, ?, 'queued', ?, ?, ?, ?)`
           ).bind(
             taskId,
             jobId,
             templateId,
             compiledPrompt,
-            compiledNegativePrompt,
             dimensions.width,
             dimensions.height,
             now
@@ -994,7 +984,6 @@ export const assetSystemRouter = router({
           
           let result = await assetService.generateDirect({
             prompt: task.compiled_prompt ?? '',
-            negativePrompt: task.compiled_negative_prompt ?? buildStructuredNegativePrompt(),
             entityType,
             width: task.target_width ?? 512,
             height: task.target_height ?? 512,
@@ -1319,8 +1308,7 @@ export const assetSystemRouter = router({
         }),
         promptConfig: z.object({
           basePrompt: z.string().optional(),
-          negativePrompt: z.string().optional(),
-          stylePreset: z.string().optional(),
+                  stylePreset: z.string().optional(),
         }).optional(),
         variants: z.array(z.object({
           key: z.string(),
@@ -1503,19 +1491,16 @@ export const assetSystemRouter = router({
             targetHeight: dimensions.height,
           });
 
-          const compiledNegativePrompt = buildStructuredNegativePrompt();
-
           const taskId = crypto.randomUUID();
 
           await ctx.env.DB.prepare(
-            `INSERT INTO generation_tasks (id, job_id, template_id, status, compiled_prompt, compiled_negative_prompt, target_width, target_height, created_at)
-             VALUES (?, ?, ?, 'queued', ?, ?, ?, ?, ?)`
+            `INSERT INTO generation_tasks (id, job_id, template_id, status, compiled_prompt, target_width, target_height, created_at)
+             VALUES (?, ?, ?, 'queued', ?, ?, ?, ?)`
           ).bind(
             taskId,
             jobId,
             templateId,
             compiledPrompt,
-            compiledNegativePrompt,
             dimensions.width,
             dimensions.height,
             now
@@ -1953,19 +1938,16 @@ Only output the enhanced prompt, nothing else.`;
             targetHeight: dimensions.height,
           });
 
-          const compiledNegativePrompt = buildStructuredNegativePrompt();
-
           const taskId = crypto.randomUUID();
 
           await ctx.env.DB.prepare(
-            `INSERT INTO generation_tasks (id, job_id, template_id, status, compiled_prompt, compiled_negative_prompt, target_width, target_height, created_at)
-             VALUES (?, ?, ?, 'queued', ?, ?, ?, ?, ?)`
+            `INSERT INTO generation_tasks (id, job_id, template_id, status, compiled_prompt, target_width, target_height, created_at)
+             VALUES (?, ?, ?, 'queued', ?, ?, ?, ?)`
           ).bind(
             taskId,
             jobId,
             templateId,
             compiledPrompt,
-            compiledNegativePrompt,
             dimensions.width,
             dimensions.height,
             now

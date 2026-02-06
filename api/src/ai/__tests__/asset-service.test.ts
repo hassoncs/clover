@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
-import { AssetService, getImageGenerationConfig, buildStructuredPrompt, buildStructuredNegativePrompt, calculateCanvasDimensions } from '@/ai/assets'
-import type { Env } from '@/trpc/context'
+import type { D1Database, R2Bucket } from '@cloudflare/workers-types';
+import { AssetService, getImageGenerationConfig, buildStructuredPrompt, calculateCanvasDimensions } from '../assets'
+import type { Env } from '../../trpc/context'
 
 const createMockEnv = (overrides: Partial<Env> = {}): Env => ({
   DB: {} as D1Database,

@@ -273,7 +273,6 @@ export class ComfyUIClient {
   async txt2img(params: ComfyTxt2ImgParams): Promise<{ assetId: string }> {
     const workflow = workflows.buildTxt2ImgWorkflow({
       prompt: params.prompt,
-      negativePrompt: params.negativePrompt,
       width: params.width ?? COMFYUI_DEFAULTS.WIDTH,
       height: params.height ?? COMFYUI_DEFAULTS.HEIGHT,
       steps: params.steps ?? COMFYUI_DEFAULTS.STEPS,
@@ -300,8 +299,7 @@ export class ComfyUIClient {
 
       const workflow = workflows.buildTxt2ImgWorkflow({
         prompt: params.prompt,
-        negativePrompt: params.negativePrompt,
-        width,
+          width,
         height,
         steps: params.steps ?? COMFYUI_DEFAULTS.STEPS,
         guidance: params.guidance ?? COMFYUI_DEFAULTS.GUIDANCE,
@@ -351,7 +349,6 @@ export class ComfyUIClient {
     const workflow = workflows.buildImg2ImgWorkflow({
       inputImage: inputFilename,
       prompt: params.prompt,
-      negativePrompt: params.negativePrompt,
       strength: params.strength ?? COMFYUI_DEFAULTS.STRENGTH,
       steps: params.steps ?? COMFYUI_DEFAULTS.STEPS,
       guidance: params.guidance ?? COMFYUI_DEFAULTS.GUIDANCE,
@@ -383,8 +380,7 @@ export class ComfyUIClient {
       const workflow = workflows.buildImg2ImgWorkflow({
         inputImage: inputFilename,
         prompt: params.prompt,
-        negativePrompt: params.negativePrompt,
-        strength: params.strength ?? COMFYUI_DEFAULTS.STRENGTH,
+          strength: params.strength ?? COMFYUI_DEFAULTS.STRENGTH,
         steps: params.steps ?? COMFYUI_DEFAULTS.STEPS,
         guidance: params.guidance ?? COMFYUI_DEFAULTS.GUIDANCE,
         seed,
@@ -639,8 +635,7 @@ export function createComfyUIAdapter(config: ComfyUIConfig): ImageGenerationAdap
         prompt: params.prompt,
         width: params.width ?? PROVIDER_DEFAULTS.WIDTH,
         height: params.height ?? PROVIDER_DEFAULTS.HEIGHT,
-        negativePrompt: params.negativePrompt,
-        guidance: params.guidance ?? PROVIDER_DEFAULTS.GUIDANCE,
+          guidance: params.guidance ?? PROVIDER_DEFAULTS.GUIDANCE,
         seed: params.seed,
       });
     },

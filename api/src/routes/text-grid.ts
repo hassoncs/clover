@@ -149,7 +149,6 @@ function parseTextGridSpec(body: unknown): { ok: true; spec: TextGridSpec } | { 
       prompt: style.prompt as string,
       ...(typeof style.seed === 'number' ? { seed: style.seed } : {}),
       ...(typeof style.model === 'string' ? { model: style.model } : {}),
-      ...(typeof style.negativePrompt === 'string' ? { negativePrompt: style.negativePrompt } : {}),
       ...(Array.isArray(style.palette) && style.palette.every((p: unknown) => typeof p === 'string') ? { palette: style.palette as string[] } : {}),
     },
     output: {

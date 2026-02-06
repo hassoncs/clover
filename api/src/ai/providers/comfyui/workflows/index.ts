@@ -6,7 +6,6 @@ import removeBackgroundWorkflow from '@/ai/providers/comfyui/workflows/remove-ba
 
 interface Txt2ImgParams {
   prompt: string;
-  negativePrompt?: string;
   width: number;
   height: number;
   steps: number;
@@ -17,7 +16,6 @@ interface Txt2ImgParams {
 interface Img2ImgParams {
   inputImage: string;
   prompt: string;
-  negativePrompt?: string;
   strength: number;
   steps: number;
   guidance: number;
