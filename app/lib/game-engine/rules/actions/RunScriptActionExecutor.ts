@@ -172,7 +172,7 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
     let spawnCounter = 0;
 
     const spawnEntity = (templateId: string, position: Vec2, opts?: SpawnOptions): string | null => {
-      const entityId = `spawned_${frameId}_${spawnCounter}`;
+      const entityId = opts?.entityId ?? `spawned_${frameId}_${spawnCounter}`;
       spawnCounter += 1;
 
       if (context.bridge) {

@@ -29,6 +29,9 @@
     },
     "ball7": {
       "file": "ball7.png"
+    },
+    "background": {
+      "file": "background.png"
     }
   }
 }

@@ -218,7 +218,10 @@ export class BallSortActionExecutor implements ActionExecutor<BallSortPickupActi
   }
 
   private isWinConditionMet(context: RuleContext): boolean {
-    for (let i = 0; i < 6; i++) {
+    const activeTubeCount = (context.mutator.getVariable('activeTubeCount') as number) || 0;
+    if (activeTubeCount === 0) return false;
+
+    for (let i = 0; i < activeTubeCount; i++) {
       const countVar = `tube${i}_count`;
       const count = (context.mutator.getVariable(countVar) as number) ?? 0;
 

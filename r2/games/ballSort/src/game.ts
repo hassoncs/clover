@@ -1,4 +1,4 @@
-import type { GameDefinition, GameEntity, StackContainerConfig, EntityTemplate } from "@slopcade/shared";
+import type { GameDefinition, EntityTemplate } from "@slopcade/shared";
 import {
   BallSortProgressSchema,
   type BallSortProgress,
@@ -11,12 +11,7 @@ import {
   TUBE_HEIGHT,
   TUBE_WALL_THICKNESS,
   BALL_RADIUS,
-  BALL_SPACING,
   NUM_TUBES,
-  BALLS_PER_TUBE,
-  TUBE_Y,
-  tubePositions,
-  cy,
 } from "./layout";
 
 export const metadata = {
@@ -25,51 +20,6 @@ export const metadata = {
 };
 
 
-
-/**
- * Create tube container configs.
- */
-function createTubeContainers(): StackContainerConfig[] {
-  return tubePositions.map((pos, index) => ({
-    id: `tube-${index}`,
-    type: "stack" as const,
-    capacity: BALLS_PER_TUBE,
-    layout: {
-      direction: "vertical" as const,
-      spacing: BALL_SPACING,
-      basePosition: { x: pos.x, y: cy(TUBE_Y) },
-      anchor: "bottom" as const,
-    },
-  }));
-}
-
-/**
- * Create tube entities (walls, bottom, sensor).
- */
-function createTubeEntities(): GameEntity[] {
-  const entities: GameEntity[] = [];
-
-  for (let i = 0; i < NUM_TUBES; i++) {
-    const x = tubePositions[i].x;
-    const tubeY = cy(TUBE_Y);
-
-    entities.push({
-      id: `tube-${i}`,
-      name: `Tube ${i}`,
-      template: "tube",
-      tags: ["tube", `tube-${i}`],
-      transform: {
-        x: x,
-        y: tubeY,
-        angle: 0,
-        scaleX: 1,
-        scaleY: 1,
-      },
-    });
-  }
-
-  return entities;
-}
 
 /**
  * Persistence configuration for Ball Sort.
@@ -98,9 +48,6 @@ export const ballSortPersistence: PersistenceConfig<BallSortProgress> = {
 };
 
 export function createBallSortGame(): GameDefinition {
-  const tubeContainers = createTubeContainers();
-  const tubeEntities = createTubeEntities();
-
   const game: GameDefinition = {
     metadata: {
       id: "03c70657-5789-4550-b38d-787d4219a91b",
@@ -111,10 +58,12 @@ export function createBallSortGame(): GameDefinition {
       version: "2.0.0",
     },
     assetSystem: {
-      activePackId: "a1d20e15-bc78-47bb-b0d4-01b75dfcbf35",
+      activePackId: "865c8006-ab66-4ddb-8ffd-b791beb6780a",
       packIds: [
         "f661beb6-1e5e-4b9e-a01f-314c87248b75",
         "a1d20e15-bc78-47bb-b0d4-01b75dfcbf35",
+        "12e102fa-b833-4735-82ab-1c609b4a4fa6",
+        "865c8006-ab66-4ddb-8ffd-b791beb6780a",
       ],
     },
     world: {
@@ -132,6 +81,7 @@ export function createBallSortGame(): GameDefinition {
       heldBallColor: -1,
       sourceTubeIndex: -1,
       heldBallId: "",
+      activeTubeCount: 0,
       moveCount: 0,
       startTime: 0,
       _winAtElapsed: 0,
@@ -142,7 +92,6 @@ export function createBallSortGame(): GameDefinition {
         Array.from({ length: NUM_TUBES }, (_, i) => [`tube${i}_topColor`, -1])
       ),
     },
-    containers: tubeContainers,
     ui: {
       showTimer: true,
       timerCountdown: false,
@@ -181,10 +130,21 @@ export function createBallSortGame(): GameDefinition {
     ],
     winCondition: {},
     templates: {
+      background: {
+        id: "background",
+        tags: ["background"],
+        layer: -100,
+        whatDescription: "a gradient puzzle game background with subtle patterns and soft lighting",
+        visual: {
+          type: "image",
+          imageWidth: WORLD_WIDTH,
+          imageHeight: WORLD_HEIGHT,
+        },
+      },
       tube: {
         id: "tube",
         tags: ["tube"],
-        whatDescription: "a transparent glass cylinder tube container",
+        whatDescription: "a transparent cylindrical container tube",
         visual: {
           type: "image",
           imageWidth: TUBE_WIDTH,
@@ -233,7 +193,18 @@ export function createBallSortGame(): GameDefinition {
       },
     },
     entities: [
-      ...tubeEntities,
+      {
+        id: "background",
+        name: "Background",
+        template: "background",
+        transform: {
+          x: 0,
+          y: 0,
+          angle: 0,
+          scaleX: 1,
+          scaleY: 1,
+        },
+      },
       {
         id: "tube-hover-highlight",
         name: "Tube Hover Highlight",
@@ -314,16 +285,7 @@ function createBallTemplate(colorIndex: number) {
   return {
     id: `ball${colorIndex}`,
     tags: ["ball", `color-${colorIndex}`],
-    whatDescription: [
-      "a shiny red gumball candy",
-      "a shiny blue gumball candy",
-      "a shiny green gumball candy",
-      "a shiny yellow gumball candy",
-      "a shiny purple gumball candy",
-      "a shiny orange gumball candy",
-      "a shiny pink gumball candy",
-      "a shiny cyan gumball candy",
-    ][colorIndex] || "a shiny colored gumball candy",
+    whatDescription: "a small round droppable ball object",
     visual: {
       type: "image" as const,
       imageWidth: ballDiameter,

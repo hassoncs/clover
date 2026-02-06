@@ -138,6 +138,7 @@ CREATE TABLE IF NOT EXISTS generation_jobs (
   theme_id TEXT REFERENCES themes(id),
   status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'canceled')),
   style TEXT,
+  theme_plan_json TEXT,
   created_at INTEGER NOT NULL,
   started_at INTEGER,
   finished_at INTEGER

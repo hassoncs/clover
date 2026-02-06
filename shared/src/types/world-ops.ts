@@ -5,6 +5,7 @@ export interface SpawnOptions {
   angle?: number;
   tags?: string[];
   parentId?: string;
+  entityId?: string;
 }
 
 export interface CloneOptions {

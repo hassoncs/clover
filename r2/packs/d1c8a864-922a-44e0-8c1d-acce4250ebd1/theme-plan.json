@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "theme": "spooky Halloween",
+  "style": "cartoon",
+  "globalPalette": [
+    "#4B0082",
+    "#FF7518",
+    "#A52A2A",
+    "#FFD700",
+    "#6A5ACD"
+  ],
+  "templatePlans": {
+    "background": {
+      "templateId": "background",
+      "conceptName": "Haunted Gradient",
+      "prompt": "a gradient puzzle game background with subtle patterns of ghosts and bats, soft lighting in shades of purple and orange",
+      "negativePrompt": "no bright colors, avoid modern styles",
+      "silhouetteColor": "#4B0082",
+      "rationale": "The haunted gradient sets a spooky atmosphere that complements the Halloween theme."
+    },
+    "tube": {
+      "templateId": "tube",
+      "conceptName": "Witch's Cauldron Tube",
+      "prompt": "a transparent cylindrical container tube designed like a witch's cauldron, with bubbling green liquid inside and spooky accents",
+      "negativePrompt": "avoid realistic designs, no bright colors",
+      "silhouetteColor": "#A52A2A",
+      "rationale": "The cauldron design aligns with Halloween motifs while ensuring functionality as a tube."
+    },
+    "ball0": {
+      "templateId": "ball0",
+      "conceptName": "Pumpkin Ball",
+      "prompt": "a small round droppable ball object designed like a pumpkin with carved face, in bright orange color",
+      "negativePrompt": "no other fruit designs",
+      "silhouetteColor": "#FF7518",
+      "rationale": "The pumpkin ball fits the Halloween theme perfectly and adds a playful element."
+    },
+    "ball1": {
+      "templateId": "ball1",
+      "conceptName": "Ghostly Orb",
+      "prompt": "a small round droppable ball object resembling a ghost with a friendly face, in soft white color",
+      "negativePrompt": "no scary designs",
+      "silhouetteColor": "#FFFFFF",
+      "rationale": "The friendly ghost design adds to the spooky yet fun atmosphere of Halloween."
+    },
+    "ball2": {
+      "templateId": "ball2",
+      "conceptName": "Witch Hat Ball",
+      "prompt": "a small round droppable ball object shaped like a witch's hat, in dark purple color with a yellow band",
+      "negativePrompt": "no other hat styles",
+      "silhouetteColor": "#6A5ACD",
+      "rationale": "The witch hat ball reinforces the witchcraft theme, making it visually cohesive."
+    },
+    "ball3": {
+      "templateId": "ball3",
+      "conceptName": "Skull Ball",
+      "prompt": "a small round droppable ball object designed like a cartoon skull, in pale gray color",
+      "negativePrompt": "avoid realistic skulls",
+      "silhouetteColor": "#D3D3D3",
+      "rationale": "The skull design adds a spooky element while maintaining a cartoonish style."
+    },
+    "ball4": {
+      "templateId": "ball4",
+      "conceptName": "Spider Web Ball",
+      "prompt": "a small round droppable ball object with a spider web design, in dark green color with a spider figure",
+      "negativePrompt": "no other insects",
+      "silhouetteColor": "#006400",
+      "rationale": "The spider web concept fits perfectly with Halloween while remaining fun."
+    },
+    "ball5": {
+      "templateId": "ball5",
+      "conceptName": "Candy Corn Ball",
+      "prompt": "a small round droppable ball object resembling candy corn, in gradient of yellow, orange, and white",
+      "negativePrompt": "no other candy shapes",
+      "silhouetteColor": "#FFD700",
+      "rationale": "The candy corn ball enhances the playful Halloween theme through a popular treat."
+    },
+    "ball6": {
+      "templateId": "ball6",
+      "conceptName": "Bat Ball",
+      "prompt": "a small round droppable ball object designed like a cartoon bat, in black with cute eyes",
+      "negativePrompt": "no realistic bat designs",
+      "silhouetteColor": "#000000",
+      "rationale": "The bat ball adds a classic Halloween character while being playful and engaging."
+    },
+    "ball7": {
+      "templateId": "ball7",
+      "conceptName": "Zombie Brain Ball",
+      "prompt": "a small round droppable ball object shaped like a cartoon zombie brain, in light pink color",
+      "negativePrompt": "avoid scary designs",
+      "silhouetteColor": "#FFC0CB",
+      "rationale": "The zombie brain adds a humorous twist to the spooky theme, keeping it engaging."
+    }
+  },
+  "cohesionAnchors": {
+    "motifFamily": "Halloween characters and symbols",
+    "colorHarmony": "dark and playful colors",
+    "moodDescriptor": "spooky yet fun"
+  },
+  "generatedAt": "2023-10-05T12:00:00Z",
+  "providerModel": "GPT-4"
+}

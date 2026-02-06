@@ -15,6 +15,8 @@ import type { AssetRun, DebugEvent, UIComponentSheetSpec } from '@/ai/pipeline/t
 import { uiBaseStateStage, uiVariationStatesStage } from '@/ai/pipeline/stages/ui-component'
 import { getControlBaseState, getControlConfig } from '@/ai/pipeline/ui-control-config'
 import type { Env } from '../context'
+import { generateThemePlan, type ThemePlannerInput } from '@/ai/pipeline/theme-planner'
+import { parseThemePlan, type ThemePlan } from '@/ai/pipeline/theme-plan'
 
 const createWorkersAdapters = (env: Env) => createWorkersAdaptersImpl(env, env.ASSETS);
 
@@ -103,6 +105,7 @@ interface GenerationJobRow {
   theme_id: string | null;
   status: string;
   style: string | null;
+  theme_plan_json: string | null;
   created_at: number;
   started_at: number | null;
   finished_at: number | null;
@@ -213,6 +216,7 @@ function toClientJob(row: GenerationJobRow) {
     themeId: row.theme_id,
     status: row.status as 'queued' | 'running' | 'succeeded' | 'failed' | 'canceled',
     style: row.style,
+    themePlanJson: row.theme_plan_json,
     createdAt: row.created_at,
     startedAt: row.started_at,
     finishedAt: row.finished_at,
@@ -271,6 +275,83 @@ function getTargetDimensions(physicsShape: string, width?: number, height?: numb
   const ratioStr = `${targetWidth / divisor}:${targetHeight / divisor}`;
 
   return { width: targetWidth, height: targetHeight, aspectRatio: ratioStr };
+}
+
+function checkPartialPlanCoherence(
+  newPlan: ThemePlan,
+  existingPlan: ThemePlan,
+  regeneratedTemplateIds: string[],
+): { warnings: string[] } {
+  const warnings: string[] = [];
+  const regeneratedSet = new Set(regeneratedTemplateIds);
+
+  const unchangedConceptNames = new Set<string>();
+  const unchangedColors = new Set<string>();
+
+  for (const [templateId, templatePlan] of Object.entries(existingPlan.templatePlans)) {
+    if (!regeneratedSet.has(templateId)) {
+      unchangedConceptNames.add(templatePlan.conceptName.toLowerCase());
+      unchangedColors.add(templatePlan.silhouetteColor.toUpperCase());
+    }
+  }
+
+  for (const [templateId, templatePlan] of Object.entries(newPlan.templatePlans)) {
+    const conceptLower = templatePlan.conceptName.toLowerCase();
+    const colorUpper = templatePlan.silhouetteColor.toUpperCase();
+
+    if (unchangedConceptNames.has(conceptLower)) {
+      warnings.push(
+        `Template "${templateId}" has concept name "${templatePlan.conceptName}" which duplicates an unchanged template`
+      );
+    }
+
+    if (unchangedColors.has(colorUpper)) {
+      warnings.push(
+        `Template "${templateId}" has silhouette color "${templatePlan.silhouetteColor}" which duplicates an unchanged template`
+      );
+    }
+  }
+
+  return { warnings };
+}
+
+function buildPlannerInput(
+  definition: { templates?: Record<string, any> },
+  templateIds: string[],
+  theme: string,
+  style?: string,
+  gameTitle?: string,
+): ThemePlannerInput {
+  const templates = templateIds.map((templateId) => {
+    const template = definition.templates?.[templateId];
+    const physics = template?.physics;
+    const tags = template?.tags ?? [];
+    const whatDescription = template?.whatDescription;
+
+    let entityType: EntityType = 'item';
+    if (tags.includes('player') || tags.includes('character')) entityType = 'character';
+    else if (tags.includes('enemy')) entityType = 'enemy';
+    else if (tags.includes('platform') || tags.includes('wall') || tags.includes('ground')) entityType = 'platform';
+    else if (tags.includes('background')) entityType = 'background';
+    else if (tags.includes('ui')) entityType = 'ui';
+
+    const physicsShape: 'box' | 'circle' = physics?.shape === 'circle' ? 'circle' : 'box';
+
+    return {
+      templateId,
+      whatDescription,
+      entityType,
+      physicsShape,
+      tags,
+    };
+  });
+
+  return {
+    templates,
+    theme,
+    style,
+    gameTitle,
+  };
 }
 
 export const assetSystemRouter = router({
@@ -693,6 +774,32 @@ export const assetSystemRouter = router({
           now
         ).run();
 
+        // Generate holistic theme plan if API key is available
+        let themePlan: ThemePlan | null = null;
+        const plannerEnabled = ctx.env.THEME_PLANNER_ENABLED !== 'false';
+        if (!plannerEnabled) {
+          console.log('[AssetSystem] Theme planner: disabled via THEME_PLANNER_ENABLED=false');
+        }
+        if (plannerEnabled && ctx.env.OPENROUTER_API_KEY && input.promptDefaults.themePrompt) {
+          console.log('[AssetSystem] Theme planner: generating plan for createGenerationJob');
+          const plannerInput = buildPlannerInput(
+            definition,
+            input.templateIds,
+            input.promptDefaults.themePrompt,
+            input.promptDefaults.styleOverride,
+          );
+          themePlan = await generateThemePlan(plannerInput, ctx.env.OPENROUTER_API_KEY);
+          
+          if (themePlan) {
+            console.log('[AssetSystem] Theme planner: plan generated successfully');
+            await ctx.env.DB.prepare(
+              `UPDATE generation_jobs SET theme_plan_json = ? WHERE id = ?`
+            ).bind(JSON.stringify(themePlan), jobId).run();
+          } else {
+            console.log('[AssetSystem] Theme planner: plan generation failed, falling back to buildStructuredPrompt');
+          }
+        }
+
         for (const templateId of input.templateIds) {
           const template = definition.templates?.[templateId];
           const physics = template?.physics;
@@ -718,18 +825,23 @@ export const assetSystemRouter = router({
             physicsContext.height
           );
 
-          const compiledPrompt = buildStructuredPrompt({
-            templateId,
-            physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
-            physicsWidth: physicsContext.width,
-            physicsHeight: physicsContext.height,
-            physicsRadius: physicsContext.radius,
-            entityType,
-            themePrompt: input.promptDefaults.themePrompt,
-            style: input.promptDefaults.styleOverride,
-            targetWidth: dimensions.width,
-            targetHeight: dimensions.height,
-          });
+          let compiledPrompt: string;
+          if (themePlan && themePlan.templatePlans[templateId]) {
+            compiledPrompt = themePlan.templatePlans[templateId].prompt;
+          } else {
+            compiledPrompt = buildStructuredPrompt({
+              templateId,
+              physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
+              physicsWidth: physicsContext.width,
+              physicsHeight: physicsContext.height,
+              physicsRadius: physicsContext.radius,
+              entityType,
+              themePrompt: input.promptDefaults.themePrompt,
+              style: input.promptDefaults.styleOverride,
+              targetWidth: dimensions.width,
+              targetHeight: dimensions.height,
+            });
+          }
 
           const taskId = crypto.randomUUID();
 
@@ -871,6 +983,31 @@ export const assetSystemRouter = router({
            VALUES (?, ?, ?, 'queued', ?, ?)`
         ).bind(jobId, packRow.base_game_id, input.packId, input.newStyle, now).run();
 
+        let themePlan: ThemePlan | null = null;
+        const plannerEnabled = ctx.env.THEME_PLANNER_ENABLED !== 'false';
+        if (!plannerEnabled) {
+          console.log('[AssetSystem] Theme planner: disabled via THEME_PLANNER_ENABLED=false');
+        }
+        if (plannerEnabled && ctx.env.OPENROUTER_API_KEY && input.newTheme) {
+          console.log('[AssetSystem] Theme planner: generating plan for regeneratePack');
+          const plannerInput = buildPlannerInput(
+            definition,
+            templateIds,
+            input.newTheme,
+            input.newStyle,
+          );
+          themePlan = await generateThemePlan(plannerInput, ctx.env.OPENROUTER_API_KEY);
+          
+          if (themePlan) {
+            console.log('[AssetSystem] Theme planner: plan generated successfully');
+            await ctx.env.DB.prepare(
+              `UPDATE generation_jobs SET theme_plan_json = ? WHERE id = ?`
+            ).bind(JSON.stringify(themePlan), jobId).run();
+          } else {
+            console.log('[AssetSystem] Theme planner: plan generation failed, falling back to buildStructuredPrompt');
+          }
+        }
+
         for (const templateId of templateIds) {
           const template = definition.templates?.[templateId];
           const physics = template?.physics;
@@ -896,18 +1033,23 @@ export const assetSystemRouter = router({
             physicsContext.height
           );
 
-          const compiledPrompt = buildStructuredPrompt({
-            templateId,
-            physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
-            physicsWidth: physicsContext.width,
-            physicsHeight: physicsContext.height,
-            physicsRadius: physicsContext.radius,
-            entityType,
-            themePrompt: input.newTheme,
-            style: input.newStyle,
-            targetWidth: dimensions.width,
-            targetHeight: dimensions.height,
-          });
+          let compiledPrompt: string;
+          if (themePlan && themePlan.templatePlans[templateId]) {
+            compiledPrompt = themePlan.templatePlans[templateId].prompt;
+          } else {
+            compiledPrompt = buildStructuredPrompt({
+              templateId,
+              physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
+              physicsWidth: physicsContext.width,
+              physicsHeight: physicsContext.height,
+              physicsRadius: physicsContext.radius,
+              entityType,
+              themePrompt: input.newTheme,
+              style: input.newStyle,
+              targetWidth: dimensions.width,
+              targetHeight: dimensions.height,
+            });
+          }
 
           const taskId = crypto.randomUUID();
 
@@ -1450,6 +1592,72 @@ export const assetSystemRouter = router({
            VALUES (?, ?, ?, 'queued', ?, ?)`
         ).bind(jobId, packRow.base_game_id, input.packId, input.newStyle ?? null, now).run();
 
+        let themePlan: ThemePlan | null = null;
+        let existingPlan: ThemePlan | null = null;
+
+        const plannerEnabled = ctx.env.THEME_PLANNER_ENABLED !== 'false';
+        if (!plannerEnabled) {
+          console.log('[AssetSystem] Theme planner: disabled via THEME_PLANNER_ENABLED=false');
+        }
+        if (plannerEnabled && ctx.env.OPENROUTER_API_KEY && input.newTheme) {
+          console.log('[AssetSystem] Theme planner: generating plan for regenerateAssets (partial)');
+
+          const existingPlanRow = await ctx.env.DB.prepare(
+            `SELECT theme_plan_json FROM generation_jobs 
+             WHERE pack_id = ? AND theme_plan_json IS NOT NULL 
+             ORDER BY created_at DESC LIMIT 1`
+          ).bind(input.packId).first<{ theme_plan_json: string }>();
+
+          if (existingPlanRow) {
+            try {
+              existingPlan = parseThemePlan(JSON.parse(existingPlanRow.theme_plan_json));
+              console.log('[AssetSystem] Theme planner: loaded existing plan with anchors');
+            } catch (parseErr) {
+              console.log('[AssetSystem] Theme planner: failed to parse existing plan, proceeding without anchors');
+            }
+          }
+
+          const plannerInput = buildPlannerInput(
+            definition,
+            input.templateIds,
+            input.newTheme,
+            input.newStyle,
+          );
+
+          if (existingPlan) {
+            plannerInput.existingAnchors = existingPlan.cohesionAnchors;
+          }
+
+          const newPlan = await generateThemePlan(plannerInput, ctx.env.OPENROUTER_API_KEY);
+
+          if (newPlan) {
+            console.log('[AssetSystem] Theme planner: plan generated successfully');
+
+            if (existingPlan) {
+              const coherenceCheck = checkPartialPlanCoherence(newPlan, existingPlan, input.templateIds);
+              if (coherenceCheck.warnings.length > 0) {
+                console.log('[AssetSystem] Theme planner: coherence warnings:', coherenceCheck.warnings);
+              }
+
+              themePlan = {
+                ...newPlan,
+                templatePlans: {
+                  ...existingPlan.templatePlans,
+                  ...newPlan.templatePlans,
+                },
+              };
+            } else {
+              themePlan = newPlan;
+            }
+
+            await ctx.env.DB.prepare(
+              `UPDATE generation_jobs SET theme_plan_json = ? WHERE id = ?`
+            ).bind(JSON.stringify(themePlan), jobId).run();
+          } else {
+            console.log('[AssetSystem] Theme planner: plan generation failed, falling back to buildStructuredPrompt');
+          }
+        }
+
         for (const templateId of input.templateIds) {
           const template = definition.templates?.[templateId];
           const physics = template?.physics;
@@ -1476,20 +1684,26 @@ export const assetSystemRouter = router({
           );
 
           const customPrompt = input.customPrompts?.[templateId];
-          const themePrompt = input.newTheme;
 
-          const compiledPrompt = customPrompt ?? buildStructuredPrompt({
-            templateId,
-            physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
-            physicsWidth: physicsContext.width,
-            physicsHeight: physicsContext.height,
-            physicsRadius: physicsContext.radius,
-            entityType,
-            themePrompt,
-            style: input.newStyle,
-            targetWidth: dimensions.width,
-            targetHeight: dimensions.height,
-          });
+          let compiledPrompt: string;
+          if (customPrompt) {
+            compiledPrompt = customPrompt;
+          } else if (themePlan && themePlan.templatePlans[templateId]) {
+            compiledPrompt = themePlan.templatePlans[templateId].prompt;
+          } else {
+            compiledPrompt = buildStructuredPrompt({
+              templateId,
+              physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
+              physicsWidth: physicsContext.width,
+              physicsHeight: physicsContext.height,
+              physicsRadius: physicsContext.radius,
+              entityType,
+              themePrompt: input.newTheme,
+              style: input.newStyle,
+              targetWidth: dimensions.width,
+              targetHeight: dimensions.height,
+            });
+          }
 
           const taskId = crypto.randomUUID();
 
@@ -1900,6 +2114,37 @@ Only output the enhanced prompt, nothing else.`;
            VALUES (?, ?, ?, ?, 'queued', ?, ?)`
         ).bind(jobId, input.gameId, packId, themeId, input.styleOverride ?? null, now).run();
 
+        let themePlan: ThemePlan | null = null;
+        const plannerEnabled = ctx.env.THEME_PLANNER_ENABLED !== 'false';
+        if (!plannerEnabled) {
+          console.log('[AssetSystem] Theme planner: disabled via THEME_PLANNER_ENABLED=false');
+        }
+        if (plannerEnabled && ctx.env.OPENROUTER_API_KEY) {
+          const themeRow = await ctx.env.DB.prepare(
+            'SELECT prompt_modifier FROM themes WHERE id = ? AND deleted_at IS NULL'
+          ).bind(themeId).first<{ prompt_modifier: string }>();
+          
+          if (themeRow) {
+            console.log('[AssetSystem] Theme planner: generating plan for applyThemeToGame');
+            const plannerInput = buildPlannerInput(
+              definition,
+              templateIds,
+              themeRow.prompt_modifier,
+              input.styleOverride,
+            );
+            themePlan = await generateThemePlan(plannerInput, ctx.env.OPENROUTER_API_KEY);
+            
+            if (themePlan) {
+              console.log('[AssetSystem] Theme planner: plan generated successfully');
+              await ctx.env.DB.prepare(
+                `UPDATE generation_jobs SET theme_plan_json = ? WHERE id = ?`
+              ).bind(JSON.stringify(themePlan), jobId).run();
+            } else {
+              console.log('[AssetSystem] Theme planner: plan generation failed, falling back to buildStructuredPrompt');
+            }
+          }
+        }
+
         for (const templateId of templateIds) {
           const template = definition.templates?.[templateId];
           const physics = template?.physics;
@@ -1925,18 +2170,23 @@ Only output the enhanced prompt, nothing else.`;
             physicsContext.height
           );
 
-          const compiledPrompt = buildStructuredPrompt({
-            templateId,
-            physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
-            physicsWidth: physicsContext.width,
-            physicsHeight: physicsContext.height,
-            physicsRadius: physicsContext.radius,
-            entityType,
-            themePrompt: undefined,
-            style: input.styleOverride,
-            targetWidth: dimensions.width,
-            targetHeight: dimensions.height,
-          });
+          let compiledPrompt: string;
+          if (themePlan && themePlan.templatePlans[templateId]) {
+            compiledPrompt = themePlan.templatePlans[templateId].prompt;
+          } else {
+            compiledPrompt = buildStructuredPrompt({
+              templateId,
+              physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
+              physicsWidth: physicsContext.width,
+              physicsHeight: physicsContext.height,
+              physicsRadius: physicsContext.radius,
+              entityType,
+              themePrompt: undefined,
+              style: input.styleOverride,
+              targetWidth: dimensions.width,
+              targetHeight: dimensions.height,
+            });
+          }
 
           const taskId = crypto.randomUUID();
 

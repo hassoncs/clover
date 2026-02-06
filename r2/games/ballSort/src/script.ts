@@ -10,23 +10,29 @@ exports.generateLevel = function(ctx: ScriptContext) {
 
   console.log(`[BallSort] Loading level ${levelNum} (index ${levelIndex}, ${activeTubeCount} tubes)`);
 
+  // --- Nuke everything from previous level ---
+  const existingTubes = ctx.queryEntities({ tag: 'tube' });
+  for (const tubeId of existingTubes) {
+    ctx.destroyEntity(tubeId);
+  }
   const existingBalls = ctx.queryEntities({ tag: 'ball' });
   for (const ballId of existingBalls) {
     ctx.destroyEntity(ballId);
   }
 
+  // --- Spawn fresh tubes at computed positions ---
   const positions = computeTubePositions(activeTubeCount);
+  const tubeY = cy(TUBE_Y);
 
-  for (let i = 0; i < MAX_TUBES; i++) {
-    const tubeId = `tube-${i}`;
-    if (i < activeTubeCount) {
-      ctx.setEntityVisible(tubeId, true);
-      ctx.setEntityPosition(tubeId, { x: positions[i].x, y: cy(TUBE_Y) });
-    } else {
-      ctx.setEntityVisible(tubeId, false);
-    }
+  for (let i = 0; i < activeTubeCount; i++) {
+    ctx.spawnEntity('tube', { x: positions[i].x, y: tubeY }, {
+      entityId: `tube-${i}`,
+    });
   }
 
+  ctx.setVariable('activeTubeCount', activeTubeCount);
+
+  // --- Spawn balls into tubes ---
   let ballIndex = 0;
   for (let tubeIdx = 0; tubeIdx < activeTubeCount; tubeIdx++) {
     const balls = level.tubes[tubeIdx];
@@ -43,6 +49,7 @@ exports.generateLevel = function(ctx: ScriptContext) {
     }
   }
 
+  // --- Set tube tracking variables ---
   for (let i = 0; i < MAX_TUBES; i++) {
     const tubeCount = level.tubes[i]?.length ?? 0;
     ctx.setVariable(`tube${i}_count`, tubeCount);

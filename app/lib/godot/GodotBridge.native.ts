@@ -368,37 +368,48 @@ export function createNativeGodotBridge(): GodotBridge {
             'worklet';
             try {
               const instance = RTNGodot.getInstance();
-              if (instance) {
-                const api = RTNGodot.API();
-                if (api && api.Engine) {
-                  const mainLoop = api.Engine.get_main_loop();
-                  if (mainLoop) {
-                    const root = mainLoop.get_root();
-                    if (root) {
-                      return true;
-                    }
-                  }
-                }
+              if (!instance) {
+                return { ready: false, stage: 'no_instance' };
               }
+              const api = RTNGodot.API();
+              if (!api) {
+                return { ready: false, stage: 'no_api' };
+              }
+              if (!api.Engine) {
+                return { ready: false, stage: 'no_engine' };
+              }
+              const mainLoop = api.Engine.get_main_loop();
+              if (!mainLoop) {
+                return { ready: false, stage: 'no_main_loop' };
+              }
+              const root = mainLoop.get_root();
+              if (!root) {
+                return { ready: false, stage: 'no_root' };
+              }
+              return { ready: true, stage: 'ready' };
             } catch (e) {
-              return false;
+              return { ready: false, stage: 'exception', error: String(e) };
             }
-            return false;
-          }).then((ready) => {
-            if (ready) {
+          }).then((result: { ready: boolean; stage: string; error?: string }) => {
+            if (attempts % 10 === 1 || result.ready) {
+              console.log(`[GodotBridge] checkReady attempt ${attempts}/${maxAttempts}: stage=${result.stage}${result.error ? ` error=${result.error}` : ''}`);
+            }
+            if (result.ready) {
               isGodotInitialized = true;
               
               scheduleNextPoll();
               
               resolve();
             } else if (attempts >= maxAttempts) {
-              reject(new Error('Godot engine failed to initialize after 10 seconds'));
+              console.error(`[GodotBridge] TIMEOUT: Godot never reached ready state. Last stage: ${result.stage}${result.error ? `, error: ${result.error}` : ''}`);
+              reject(new Error(`Godot engine failed to initialize after 10 seconds (stuck at: ${result.stage})`));
             } else {
               setTimeout(checkReady, 100);
             }
           }).catch((err) => {
+            console.warn(`[GodotBridge] checkReady attempt ${attempts} threw: ${err}`);
             if (attempts >= maxAttempts) {
-              reject(new Error('Godot engine failed to initialize'));
+              reject(new Error(`Godot engine failed to initialize (runOnGodotThread error: ${err})`));
             } else {
               setTimeout(checkReady, 100);
             }

@@ -14,9 +14,19 @@
     {
       "name": "default",
       "packId": "a1d20e15-bc78-47bb-b0d4-01b75dfcbf35",
-      "assetCount": 9
+      "assetCount": 10
+    },
+    {
+      "name": "halloween",
+      "packId": "12e102fa-b833-4735-82ab-1c609b4a4fa6",
+      "assetCount": 10
+    },
+    {
+      "name": "halloween",
+      "packId": "865c8006-ab66-4ddb-8ffd-b791beb6780a",
+      "assetCount": 10
     }
   ],
-  "activePackId": "a1d20e15-bc78-47bb-b0d4-01b75dfcbf35",
-  "updatedAt": 1770349649941
+  "activePackId": "865c8006-ab66-4ddb-8ffd-b791beb6780a",
+  "updatedAt": 1770359026985
 }

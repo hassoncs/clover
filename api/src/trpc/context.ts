@@ -20,6 +20,8 @@ export interface Env {
   AI_MODEL?: string;
   AI_BASE_URL?: string;
 
+  THEME_PLANNER_ENABLED?: string;
+
   // Image generation provider selection
   IMAGE_GENERATION_PROVIDER?: 'modal' | 'scenario';
 

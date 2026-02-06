@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "packId": "12e102fa-b833-4735-82ab-1c609b4a4fa6",
+  "name": "halloween",
+  "assets": {
+    "background": {
+      "file": "background.png"
+    },
+    "tube": {
+      "file": "tube.png"
+    },
+    "ball0": {
+      "file": "ball0.png"
+    },
+    "ball1": {
+      "file": "ball1.png"
+    },
+    "ball2": {
+      "file": "ball2.png"
+    },
+    "ball3": {
+      "file": "ball3.png"
+    },
+    "ball4": {
+      "file": "ball4.png"
+    },
+    "ball5": {
+      "file": "ball5.png"
+    },
+    "ball6": {
+      "file": "ball6.png"
+    },
+    "ball7": {
+      "file": "ball7.png"
+    }
+  }
+}

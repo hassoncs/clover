@@ -353,6 +353,7 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
           angle: opts?.angle,
           tags: opts?.tags,
           parentId: opts?.parentId,
+          entityId: opts?.entityId,
         });
       },
 

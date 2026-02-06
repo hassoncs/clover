@@ -11,13 +11,20 @@ export interface PromptContext {
 export function buildEntityPrompt(spec: EntitySpec, ctx: PromptContext): string {
   const resolvedStyle = ctx.style ? resolveStyle(ctx.style) : '';
 
-  const lines = [
-    `${spec.description}.`,
-    ctx.theme ? `Theme: ${ctx.theme}.` : '',
-    resolvedStyle ? `Style: ${resolvedStyle}.` : '',
-    'Front view, flat 2D perspective.',
-    'Single object, no duplicates, no text.',
-  ].filter(Boolean);
+  const lines: string[] = [];
+
+  if (ctx.theme) {
+    lines.push(`A ${ctx.theme} themed ${spec.description}.`);
+  } else {
+    lines.push(`${spec.description}.`);
+  }
+
+  if (resolvedStyle) {
+    lines.push(`Style: ${resolvedStyle}.`);
+  }
+
+  lines.push('Front view, flat 2D perspective.');
+  lines.push('Single object, no duplicates, no text.');
 
   return lines.join(' ');
 }

@@ -22,27 +22,44 @@ async function main() {
   const { values } = parseArgs({
     options: {
       game: { type: 'string' },
+      'pack-id': { type: 'string' },
       pack: { type: 'string', default: 'default' },
       theme: { type: 'string', default: '' },
       style: { type: 'string', default: '' },
       templates: { type: 'string' },
       debug: { type: 'boolean', default: false },
       'dry-run': { type: 'boolean', default: false },
+      'plan-only': { type: 'boolean', default: false },
+      'reuse-plan': { type: 'string' },
+      'planner-disable': { type: 'boolean', default: false },
     },
     strict: true,
   });
 
   if (!values.game) {
-    console.error('Usage: hush run -- pnpm generate:assets --game=<gameId> [--pack=<packName>] [--theme="..."] [--style="3d|pixel|cartoon|..."] [--templates=a,b] [--debug] [--dry-run]');
+    console.error('Usage: hush run -- pnpm generate:assets --game=<gameId> [--pack-id=<existingPackUUID>] [--pack=<packName>] [--theme="..."] [--style="3d|pixel|cartoon|..."] [--templates=a,b] [--debug] [--dry-run] [--plan-only] [--reuse-plan=<path>] [--planner-disable]');
     process.exit(1);
   }
 
   const gameId = values.game;
+  const existingPackId = values['pack-id'];
   const packName = values.pack ?? 'default';
   const theme = values.theme ?? '';
   const style = values.style ?? '';
   const dryRun = values['dry-run'] ?? false;
   const debug = values.debug ?? false;
+  const planOnly = values['plan-only'] ?? false;
+  const reusePlanPath = values['reuse-plan'];
+  const plannerDisable = values['planner-disable'] ?? false;
+
+  if (existingPackId) {
+    const existingPackDir = join(R2_DIR, 'packs', existingPackId);
+    const existingManifestPath = join(existingPackDir, 'manifest.json');
+    if (!existsSync(existingManifestPath)) {
+      console.error(`No manifest.json found at ${existingManifestPath}. Check the pack-id.`);
+      process.exit(1);
+    }
+  }
 
   const defPath = join(R2_DIR, 'games', gameId, 'definition.json');
   if (!existsSync(defPath)) {
@@ -107,16 +124,26 @@ async function main() {
   console.log(`  Style: ${style || '(none)'}`);
   console.log(`  Templates: ${imageTemplates.join(', ')} (${imageTemplates.length} total)`);
 
+  const isExistingPack = !!existingPackId;
+  if (isExistingPack) {
+    console.log(`  Target: existing pack ${existingPackId}`);
+  }
+
   if (dryRun) {
     console.log('\n(dry run — no assets generated)');
     return;
   }
 
-  const packId = randomUUID();
+  const packId = existingPackId ?? randomUUID();
   const packDir = join(R2_DIR, 'packs', packId);
   mkdirSync(packDir, { recursive: true });
 
-  console.log(`  Pack ID: ${packId}`);
+  console.log(`  Pack ID: ${packId}${isExistingPack ? ' (existing)' : ''}`);
+
+  let existingManifest: PackManifest | undefined;
+  if (isExistingPack) {
+    existingManifest = JSON.parse(readFileSync(join(packDir, 'manifest.json'), 'utf-8'));
+  }
 
   type EntityType = 'character' | 'enemy' | 'item' | 'platform' | 'background' | 'ui';
   type EntitySpec = {
@@ -153,7 +180,21 @@ async function main() {
     const width = visualW ?? colliderW ?? 1;
     const height = visualH ?? colliderH ?? 1;
 
-    const color = extractColorFromDescription(description);
+    const INDEXED_COLORS = [
+      '#FF4444', '#4444FF', '#44FF44', '#FFFF44',
+      '#AA44FF', '#FF8844', '#FF44AA', '#44FFFF',
+    ];
+
+    let color = extractColorFromDescription(description);
+    if (!color) {
+      const colorTag = tags.find((tag: string) => tag.startsWith('color-'));
+      if (colorTag) {
+        const idx = parseInt(colorTag.split('-')[1], 10);
+        if (!isNaN(idx) && idx < INDEXED_COLORS.length) {
+          color = INDEXED_COLORS[idx];
+        }
+      }
+    }
 
     let entityType: EntityType = 'item';
     if (tags.includes('player') || tags.includes('character')) entityType = 'character';
@@ -173,6 +214,96 @@ async function main() {
       color,
     });
   }
+
+  // ── Theme Planner (runs BEFORE heavy pipeline init) ──────────────────────────
+
+  const { generateThemePlan } = await import(
+    '../src/ai/pipeline/theme-planner'
+  );
+  const { parseThemePlan } = await import(
+    '../src/ai/pipeline/theme-plan'
+  );
+
+  type ThemePlan = {
+    templatePlans: Record<string, {
+      prompt: string;
+      silhouetteColor?: string;
+    }>;
+  };
+
+  let themePlan: ThemePlan | null = null;
+
+  if (!plannerDisable) {
+    if (reusePlanPath) {
+      console.log(`\nTheme Planner: Loading plan from ${reusePlanPath}`);
+      try {
+        const planJson = JSON.parse(readFileSync(reusePlanPath, 'utf-8'));
+        themePlan = parseThemePlan(planJson);
+        console.log(`Theme Planner: Plan loaded successfully (${Object.keys(themePlan.templatePlans).length} templates)`);
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error);
+        console.error(`Theme Planner: Failed to load plan: ${msg}`);
+        if (planOnly) {
+          console.error('\n(plan-only mode — cannot continue without a valid plan)');
+          process.exit(1);
+        }
+        console.log('Theme Planner: Falling back to legacy prompt building');
+      }
+    } else if (theme && process.env.OPENROUTER_API_KEY) {
+      console.log(`\nTheme Planner: Generating plan for theme "${theme}"...`);
+
+      const plannerInput = {
+        templates: specs.map(spec => ({
+          templateId: spec.id,
+          whatDescription: spec.description,
+          entityType: spec.entityType as EntityType,
+          physicsShape: spec.shape,
+          tags: templates[spec.id]?.tags ?? [],
+        })),
+        theme,
+        style: style || undefined,
+        gameTitle: definition.metadata?.title ?? gameId,
+      };
+
+      try {
+        themePlan = await generateThemePlan(plannerInput, process.env.OPENROUTER_API_KEY);
+
+        if (themePlan) {
+          console.log(`Theme Planner: Plan generated successfully (${Object.keys(themePlan.templatePlans).length} templates)`);
+
+          const planPath = join(packDir, 'theme-plan.json');
+          writeFileSync(planPath, JSON.stringify(themePlan, null, 2));
+          console.log(`Theme Planner: Plan saved to ${planPath}`);
+        } else {
+          console.log('Theme Planner: Plan generation failed, falling back to legacy prompt building');
+        }
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error);
+        console.error(`Theme Planner: Error during generation: ${msg}`);
+        console.log('Theme Planner: Falling back to legacy prompt building');
+      }
+    } else if (theme) {
+      console.log('\nTheme Planner: Disabled (OPENROUTER_API_KEY not set)');
+    }
+  } else {
+    console.log('\nTheme Planner: Disabled (--planner-disable flag set)');
+  }
+
+  // ── Plan-only: print and exit BEFORE initializing heavy adapters ────────────
+
+  if (planOnly) {
+    if (themePlan) {
+      console.log('\n=== Theme Plan ===');
+      console.log(JSON.stringify(themePlan, null, 2));
+      console.log('\n(plan-only mode — exiting without generating images)');
+    } else {
+      console.error('\n(plan-only mode — no plan was generated or loaded)');
+      process.exit(1);
+    }
+    return;
+  }
+
+  // ── Initialize pipeline adapters (heavy — only when actually generating) ────
 
   console.log(`\nInitializing pipeline adapters...`);
 
@@ -213,14 +344,28 @@ async function main() {
     ? createFileDebugSink(join(DEBUG_DIR, gameId))
     : () => {};
 
-  console.log(`\nGenerating ${specs.length} assets...\n`);
+  if (themePlan) {
+    for (const spec of specs) {
+      if (themePlan.templatePlans[spec.id]) {
+        spec.description = themePlan.templatePlans[spec.id].prompt;
+        if (themePlan.templatePlans[spec.id].silhouetteColor) {
+          spec.color = themePlan.templatePlans[spec.id].silhouetteColor;
+        }
+      }
+    }
+  }
 
-  const manifest: PackManifest = { version: 1, packId, name: packName, assets: {} };
+  const CONCURRENCY = 10;
+  console.log(`\nGenerating ${specs.length} assets (concurrency: ${CONCURRENCY})...\n`);
+
+  const manifest: PackManifest = existingManifest
+    ? { ...existingManifest }
+    : { version: 1, packId, name: packName, assets: {} };
 
   let successCount = 0;
   let failCount = 0;
 
-  for (const spec of specs) {
+  async function generateOne(spec: EntitySpec): Promise<void> {
     try {
       console.log(`[${spec.id}] Generating...`);
 
@@ -243,7 +388,7 @@ async function main() {
         const filename = `${spec.id}.png`;
         manifest.assets[spec.id] = { file: filename };
         successCount++;
-        console.log(`[${spec.id}] Done`);
+        console.log(`[${spec.id}] Done (${(result.durationMs / 1000).toFixed(1)}s)`);
       } else {
         failCount++;
         const errMsg = result.error ? `: ${result.error}` : '';
@@ -256,36 +401,56 @@ async function main() {
     }
   }
 
+  const pool: Promise<void>[] = [];
+  const queue = [...specs];
+
+  async function runPool(): Promise<void> {
+    while (queue.length > 0) {
+      const spec = queue.shift()!;
+      await generateOne(spec);
+    }
+  }
+
+  const workers = Math.min(CONCURRENCY, specs.length);
+  for (let i = 0; i < workers; i++) {
+    pool.push(runPool());
+  }
+  await Promise.all(pool);
+
   writeFileSync(join(packDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
   console.log(`\nResults: ${successCount} succeeded, ${failCount} failed`);
   console.log(`Manifest: ${join(packDir, 'manifest.json')}`);
 
   if (successCount > 0) {
-    const gameSourcePath = join(R2_DIR, 'games', gameId, 'src', 'game.ts');
-    if (existsSync(gameSourcePath)) {
-      let source = readFileSync(gameSourcePath, 'utf-8');
+    if (!isExistingPack) {
+      const gameSourcePath = join(R2_DIR, 'games', gameId, 'src', 'game.ts');
+      if (existsSync(gameSourcePath)) {
+        let source = readFileSync(gameSourcePath, 'utf-8');
 
-      source = source.replace(
-        /activePackId:\s*"[^"]*"/,
-        `activePackId: "${packId}"`,
-      );
-
-      const packIdsMatch = source.match(/packIds:\s*\[([\s\S]*?)\]/);
-      if (packIdsMatch) {
-        const existingIds = [...packIdsMatch[1].matchAll(/"([^"]+)"/g)].map(m => m[1]);
-        if (!existingIds.includes(packId)) {
-          existingIds.push(packId);
-        }
-        const formatted = existingIds.map(id => `\n        "${id}",`).join('');
         source = source.replace(
-          /packIds:\s*\[([\s\S]*?)\]/,
-          `packIds: [${formatted}\n      ]`,
+          /activePackId:\s*"[^"]*"/,
+          `activePackId: "${packId}"`,
         );
-      }
 
-      writeFileSync(gameSourcePath, source);
-      console.log(`\nUpdated source: ${gameSourcePath}`);
-      console.log(`  activePackId: ${packId}`);
+        const packIdsMatch = source.match(/packIds:\s*\[([\s\S]*?)\]/);
+        if (packIdsMatch) {
+          const existingIds = [...packIdsMatch[1].matchAll(/"([^"]+)"/g)].map(m => m[1]);
+          if (!existingIds.includes(packId)) {
+            existingIds.push(packId);
+          }
+          const formatted = existingIds.map(id => `\n        "${id}",`).join('');
+          source = source.replace(
+            /packIds:\s*\[([\s\S]*?)\]/,
+            `packIds: [${formatted}\n      ]`,
+          );
+        }
+
+        writeFileSync(gameSourcePath, source);
+        console.log(`\nUpdated source: ${gameSourcePath}`);
+        console.log(`  activePackId: ${packId}`);
+      }
+    } else {
+      console.log(`\nExisting pack updated — no source changes needed.`);
     }
 
     console.log(`\nRebuilding games...`);
