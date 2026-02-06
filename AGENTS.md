@@ -57,12 +57,14 @@ This project uses **`hush`** for secrets management. API keys and credentials ar
 
 **Any command that needs secrets (AI generation, external APIs) must be prefixed with `hush run --`:**
 ```bash
-# Asset generation
+# Asset generation (run from repo root — NOT from api/ directory)
 hush run -- pnpm generate:assets --game=ballSort --debug
 
 # Any script needing SCENARIO_API_KEY, MODAL_ENDPOINT, etc.
 hush run -- npx tsx api/scripts/some-script.ts
 ```
+
+**IMPORTANT: Always run `pnpm generate:assets` from the repo root.** The root package.json delegates to the api workspace automatically.
 
 If a command fails with "API key required" or similar, the fix is almost always to prefix with `hush run --`.
 

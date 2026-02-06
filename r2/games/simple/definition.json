@@ -45,14 +45,21 @@
         "imageHeight": 1
       },
       "physics": {
-        "bodyType": "static",
+        "bodyType": "kinematic",
         "density": 0
       },
       "collider": {
         "shape": "box",
         "width": 1,
         "height": 1
-      }
+      },
+      "behaviors": [
+        {
+          "type": "draggable",
+          "mode": "kinematic",
+          "requireDirectHit": true
+        }
+      ]
     }
   },
   "entities": [

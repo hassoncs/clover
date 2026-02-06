@@ -280,6 +280,40 @@ export function GameRuntimeGodot({
               worldY: y,
               targetEntityId: entityId ?? undefined,
             });
+          } else if (type === "drag_start") {
+            const target = entityId ?? undefined;
+            if (dragStartRef.current) {
+              dragStartRef.current.targetEntityId = target;
+            } else {
+              dragStartRef.current = { x: 0, y: 0, worldX: x, worldY: y, targetEntityId: target };
+            }
+            inputRef.current = {
+              ...inputRef.current,
+              drag: {
+                ...(inputRef.current.drag ?? { startX: 0, startY: 0, currentX: 0, currentY: 0, startWorldX: x, startWorldY: y }),
+                currentWorldX: x,
+                currentWorldY: y,
+                targetEntityId: target,
+              },
+            };
+          } else if (type === "drag_move") {
+            const dragStart = dragStartRef.current;
+            if (dragStart && inputRef.current.drag) {
+              inputRef.current = {
+                ...inputRef.current,
+                drag: {
+                  ...inputRef.current.drag,
+                  currentWorldX: x,
+                  currentWorldY: y,
+                },
+              };
+            }
+          } else if (type === "drag_end") {
+            dragStartRef.current = null;
+            inputRef.current = {
+              ...inputRef.current,
+              drag: undefined,
+            };
           } else if (type === "mouse_move") {
             inputRef.current = {
               ...inputRef.current,
@@ -931,7 +965,7 @@ export function GameRuntimeGodot({
       showZones,
       showFPS,
     });
-  }, [showInputDebug, showPhysicsShapes, showZones, showFPS]);
+  }, [showInputDebug, showPhysicsShapes, showZones, showFPS, godotReady]);
 
 
 
@@ -1208,7 +1242,7 @@ export function GameRuntimeGodot({
 
     const AUTO_STEP_RATE_LIMIT_MS = 16.67;
 
-    eventQueueRef.current.setOnEventQueued(() => {
+    const tryAutoStep = () => {
       const tc = timeControlRef.current;
 
       if (tc.mode !== 'inspect' || !tc.paused) return;
@@ -1225,7 +1259,17 @@ export function GameRuntimeGodot({
           manualStep(1);
         }, 0);
       }
-    });
+    };
+
+    eventQueueRef.current.setOnEventQueued(tryAutoStep);
+
+    // If events were queued before this handler registered (e.g. game_loaded
+    // pushed during setup, before isReady triggered this effect), kick off
+    // an auto-step now so they aren't stranded.
+    if (eventQueueRef.current.length > 0) {
+      logger.debug('inspector', `Found ${eventQueueRef.current.length} pre-queued event(s), triggering auto-step`);
+      tryAutoStep();
+    }
 
     return () => {
       if (autoStepTimerRef.current) {
@@ -1689,6 +1733,7 @@ export function GameRuntimeGodot({
     y: number;
     worldX: number;
     worldY: number;
+    targetEntityId?: string;
   } | null>(null);
   const viewportContainerRef = useRef<View>(null);
 
@@ -1716,7 +1761,9 @@ export function GameRuntimeGodot({
       const { locationX: x, locationY: y } = event.nativeEvent;
       const world = screenToWorld(x, y);
 
-      dragStartRef.current = { x, y, worldX: world.x, worldY: world.y };
+      const existingTargetEntityId = dragStartRef.current?.targetEntityId;
+
+      dragStartRef.current = { x, y, worldX: world.x, worldY: world.y, targetEntityId: existingTargetEntityId };
 
       inputRef.current = {
         ...inputRef.current,
@@ -1729,6 +1776,7 @@ export function GameRuntimeGodot({
           startWorldY: world.y,
           currentWorldX: world.x,
           currentWorldY: world.y,
+          targetEntityId: existingTargetEntityId,
         },
       };
 
@@ -1757,6 +1805,7 @@ export function GameRuntimeGodot({
           startWorldY: dragStart.worldY,
           currentWorldX: world.x,
           currentWorldY: world.y,
+          targetEntityId: dragStart.targetEntityId,
         },
       };
 

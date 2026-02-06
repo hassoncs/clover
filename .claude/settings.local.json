@@ -51,7 +51,8 @@
       "Bash(hush --help:*)",
       "Bash(sqlite3:*)",
       "Bash(xxd:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "WebFetch(domain:localhost)"
     ]
   }
 }

@@ -46,7 +46,7 @@ const game: GameDefinition = {
         imageHeight: CUBE_SIZE,
       },
       physics: {
-        bodyType: "static",
+        bodyType: "kinematic",
         density: 0,
       },
       collider: {
@@ -54,6 +54,9 @@ const game: GameDefinition = {
         width: CUBE_SIZE,
         height: CUBE_SIZE,
       },
+      behaviors: [
+        { type: "draggable", mode: "kinematic", requireDirectHit: true },
+      ],
     },
   },
   entities: [

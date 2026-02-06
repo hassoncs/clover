@@ -246,6 +246,7 @@ export function createBallSortGame(): GameDefinition {
           scaleY: 1,
         },
       },
+
     ],
     rules: [
       {

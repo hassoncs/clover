@@ -88,9 +88,6 @@ func spawn_entity(
 		push_error("[EntityManager] Template not found: " + template_id)
 		return null
 	
-	var game_pos = Vector2(x, y)
-	var godot_pos = _game_to_godot_pos(game_pos)
-	
 	var entity_data = {
 		"id": entity_id,
 		"template": template_id,
@@ -98,7 +95,7 @@ func spawn_entity(
 	}
 	
 	var initial_velocity = _parse_velocity_json(initial_velocity_json)
-	if initial_velocity != null:
+	if initial_velocity.size() > 0:
 		entity_data["physics"] = {"initialVelocity": initial_velocity}
 	
 	var record = _bridge._entity_factory.create_entity(entity_data)
@@ -106,7 +103,6 @@ func spawn_entity(
 	
 	if node:
 		register_entity(entity_id, node)
-		# Add to entity_registry
 		if _bridge and "entity_registry" in _bridge:
 			_bridge.entity_registry[entity_id] = record
 	

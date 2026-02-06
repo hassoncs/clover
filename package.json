@@ -41,6 +41,7 @@
     "ship:web": "node scripts/ship.mjs web",
     "ship:iaps": "cd app/ios && hush run -- fastlane sync_iaps",
     "fix:hermes-dsym": "node scripts/fix-hermes-dsym.mjs",
+    "generate:assets": "pnpm --filter @slopcade/api generate:assets",
     "generate:ui": "pnpm --filter @slopcade/api generate:ui",
     "generate:registry": "cd app && npx reggie",
     "generate:registry:watch": "cd app && npx reggie --watch",

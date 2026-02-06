@@ -1,5 +1,12 @@
 import type { InputEvents } from '@/lib/game-engine/BehaviorContext';
-import type { WorldOps, SequenceHandle, WorldEntityQuery, WorldEntityData } from '@slopcade/shared/types/world-ops';
+import type {
+  WorldOps,
+  SequenceHandle,
+  WorldEntityQuery,
+  WorldEntityData,
+  SyncWorldOps,
+  AsyncWorldOps,
+} from '@slopcade/shared/types';
 import type { Vec2 } from '@slopcade/shared/types/common';
 
 export interface ScriptBudgetConfig {
@@ -24,29 +31,14 @@ export interface DragSnapshot {
 }
 
 /**
- * ScriptContext with sync reads + WorldOps for writes + startSequence for multi-frame work.
+ * ScriptContext with flat sync operations + worldAsync for multi-frame work.
  * This is the canonical interface for script hooks.
  */
-export interface ScriptContext {
+export interface ScriptContext extends SyncWorldOps {
   // ═══════════════════════════════════════════════════════════════
-  // SYNC READS — from frame cache, safe in onUpdate
+  // ASYNC WORLD OPS — animate + wait only
   // ═══════════════════════════════════════════════════════════════
-  getPosition(entityId: string): Vec2 | null;
-  getVelocity(entityId: string): Vec2 | null;
-  getRotation(entityId: string): number | null;
-  getTags(entityId: string): string[];
-  hasTag(entityId: string, tag: string): boolean;
-  getTemplate(entityId: string): string | undefined;
-  getVariable(name: string): unknown;
-  getConstant(name: string): number | string | boolean | undefined;
-  queryEntities(query?: WorldEntityQuery): string[];
-  getEntityData(entityId: string): WorldEntityData | null;
-  queryEntitiesWithData(query?: WorldEntityQuery): WorldEntityData[];
-
-  // ═══════════════════════════════════════════════════════════════
-  // ASYNC WORLD OPS — full API, for writes + animations + sequences
-  // ═══════════════════════════════════════════════════════════════
-  world: WorldOps;
+  worldAsync: AsyncWorldOps;
 
   // ═══════════════════════════════════════════════════════════════
   // SEQUENCE MANAGEMENT — bridge from sync onUpdate to async work

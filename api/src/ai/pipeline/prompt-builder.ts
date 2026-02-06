@@ -12,11 +12,10 @@ export function buildEntityPrompt(spec: EntitySpec, ctx: PromptContext): string 
   const resolvedStyle = ctx.style ? resolveStyle(ctx.style) : '';
 
   const lines = [
-    `${spec.description} for a video game.`,
+    `${spec.description}.`,
     ctx.theme ? `Theme: ${ctx.theme}.` : '',
     resolvedStyle ? `Style: ${resolvedStyle}.` : '',
     'Front view, flat 2D perspective.',
-    'Transparent background.',
     'Single object, no duplicates, no text.',
   ].filter(Boolean);
 

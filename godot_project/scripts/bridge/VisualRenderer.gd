@@ -540,10 +540,6 @@ func add_sprite(node: Node2D, sprite_data: Dictionary, physics_data: Dictionary,
 
 func _download_texture_for_preload(url: String) -> void:
 	_texture_loader.load_texture(url, func(texture: ImageTexture, fetched_url: String, success: bool):
-		if success:
-			print("[VisualRenderer] ✅ Preload complete: ", TextureLoader._short_url(fetched_url), " (cached=", _texture_loader.is_cached(fetched_url), ")")
-		else:
-			print("[VisualRenderer] ❌ Preload failed: ", TextureLoader._short_url(fetched_url))
 		_on_preload_complete(fetched_url, success)
 	)
 
@@ -640,8 +636,6 @@ func _add_image_sprite(node: Node2D, sprite_data: Dictionary, opacity: float, z_
 		sprite.z_index = z_index_val
 		node.add_child(sprite)
 		return
-	
-	print("[VisualRenderer] 🖼️  Adding image sprite to ", node.name, ": ", TextureLoader._short_url(url))
 
 	if url.begins_with("res://"):
 		var texture = load(url)

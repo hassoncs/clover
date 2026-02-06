@@ -3,7 +3,16 @@ import type { RunScriptAction } from '@slopcade/shared';
 import type { RuleContext } from '../types';
 import type { IScriptSandbox } from '@/lib/scripting';
 import type { ScriptContext, InputSnapshot, DragSnapshot } from '@/lib/scripting/types';
-import type { WorldOps, WorldEntityQuery, WorldEntityData, SequenceHandle } from '@slopcade/shared/types/world-ops';
+import type {
+  WorldEntityQuery,
+  WorldEntityData,
+  SequenceHandle,
+  AsyncWorldOps,
+  SpawnOptions,
+  CloneOptions,
+  ReparentOptions,
+  RaycastOptions,
+} from '@slopcade/shared/types';
 import type { Vec2 } from '@slopcade/shared/types/common';
 
 interface DeferredSpawn {
@@ -29,7 +38,6 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
     }
 
     const functionName = action.export ?? 'default';
-    console.log("[Lifecycle] Calling sandbox.callFunction:", functionName);
 
     const deferredSpawns: DeferredSpawn[] = [];
     const scriptContext = this.createScriptContext(context, deferredSpawns);
@@ -61,7 +69,6 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
   ): ScriptContext {
     const entityManager = context.entityManager;
     const mutator = context.mutator;
-    const worldOps = context.worldOps;
 
     const getEntityData = (entityId: string): WorldEntityData | null => {
       const entity = entityManager.getEntity(entityId);
@@ -101,22 +108,40 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
       return entityManager.getAllEntities().map(e => e.id);
     };
 
-    const getPosition = (entityId: string): Vec2 | null => {
+    const getEntityPosition = (entityId: string): Vec2 | null => {
       const entity = entityManager.getEntity(entityId);
       return entity ? { x: entity.transform.x, y: entity.transform.y } : null;
     };
 
-    const getVelocity = (entityId: string): Vec2 | null => {
+    const setEntityPosition = (entityId: string, position: Vec2): void => {
+      const entity = entityManager.getEntity(entityId);
+      if (!entity) return;
+
+      entity.transform.x = position.x;
+      entity.transform.y = position.y;
+
+      if (context.bridge) {
+        context.bridge.setPosition(entityId, position.x, position.y);
+      }
+    };
+
+    const getEntityVelocity = (entityId: string): Vec2 | null => {
       if (!context.physics) return null;
       return context.physics.getLinearVelocity(entityId);
     };
 
-    const getRotation = (entityId: string): number | null => {
+    const setEntityVelocity = (entityId: string, velocity: Vec2): void => {
+      if (context.physics) {
+        context.physics.setLinearVelocity(entityId, velocity);
+      }
+    };
+
+    const getEntityRotation = (entityId: string): number | null => {
       const entity = entityManager.getEntity(entityId);
       return entity ? entity.transform.angle : null;
     };
 
-    const getTags = (entityId: string): string[] => {
+    const getEntityTags = (entityId: string): string[] => {
       const entity = entityManager.getEntity(entityId);
       return entity ? [...entity.tags] : [];
     };
@@ -125,7 +150,7 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
       return entityManager.hasTag(entityId, tag);
     };
 
-    const getTemplate = (entityId: string): string | undefined => {
+    const getEntityTemplate = (entityId: string): string | undefined => {
       return entityManager.getEntity(entityId)?.template;
     };
 
@@ -143,127 +168,71 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
       return undefined;
     };
 
-    const minimalWorldOps: WorldOps = {
-      spawn: (templateId: string, position: Vec2, opts?: { velocity?: Vec2; angle?: number; data?: Record<string, unknown> }) => {
-        if (worldOps) {
-          return worldOps.spawn(templateId, position, opts);
-        }
+    const frameId = context.evalContext?.frameId ?? 0;
+    let spawnCounter = 0;
 
-        const entityId = `spawned_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const spawnEntity = (templateId: string, position: Vec2, opts?: SpawnOptions): string | null => {
+      const entityId = `spawned_${frameId}_${spawnCounter}`;
+      spawnCounter += 1;
 
-        if (context.bridge) {
-          deferredSpawns.push({
-            entityId,
-            templateId,
-            x: position.x,
-            y: position.y,
-            velocity: opts?.velocity,
-          });
-        }
-
-        entityManager.cacheEntity(
+      if (context.bridge) {
+        deferredSpawns.push({
           entityId,
           templateId,
-          { x: position.x, y: position.y, angle: opts?.angle ?? 0, scaleX: 1, scaleY: 1 },
-        );
+          x: position.x,
+          y: position.y,
+          velocity: opts?.velocity,
+        });
+      }
 
-        return Promise.resolve(entityId);
-      },
-      destroy: (entityId: string) => {
-        if (worldOps) {
-          return worldOps.destroy(entityId);
-        }
-        entityManager.destroyEntity(entityId);
-        return Promise.resolve();
-      },
-      clone: () => Promise.resolve(null),
-      reparent: () => Promise.resolve(),
-      getPosition: (entityId: string) => Promise.resolve(getPosition(entityId)),
-      setPosition: (entityId: string, position: Vec2) => {
-        if (worldOps) {
-          return worldOps.setPosition(entityId, position);
-        }
-        const entity = entityManager.getEntity(entityId);
-        if (entity) {
-          entity.transform.x = position.x;
-          entity.transform.y = position.y;
-          if (context.bridge) {
-            context.bridge.setPosition(entityId, position.x, position.y);
-          }
-        }
-        return Promise.resolve();
-      },
-      getRotation: (entityId: string) => Promise.resolve(getRotation(entityId)),
-      setRotation: () => Promise.resolve(),
-      getScale: () => Promise.resolve(null),
-      setScale: () => Promise.resolve(),
-      setVisible: () => Promise.resolve(),
-      getVelocity: (entityId: string) => Promise.resolve(getVelocity(entityId)),
-      getAngularVelocity: () => Promise.resolve(null),
-      setAngularVelocity: () => Promise.resolve(),
-      setVelocity: (entityId: string, velocity: Vec2) => {
-        if (worldOps) {
-          return worldOps.setVelocity(entityId, velocity);
-        }
-        if (context.physics) {
-          context.physics.setLinearVelocity(entityId, velocity);
-        }
-        return Promise.resolve();
-      },
-      applyImpulse: (entityId: string, impulse: Vec2) => {
-        if (worldOps) {
-          return worldOps.applyImpulse(entityId, impulse);
-        }
-        if (context.physics) {
-          context.physics.applyImpulseToCenter(entityId, impulse);
-        }
-        return Promise.resolve();
-      },
-      applyForce: () => Promise.resolve(),
-      getTags: (entityId: string) => Promise.resolve(getTags(entityId)),
-      addTag: (entityId: string, tag: string) => {
-        if (worldOps) {
-          return worldOps.addTag(entityId, tag);
-        }
-        entityManager.addTag(entityId, tag);
-        return Promise.resolve();
-      },
-      removeTag: (entityId: string, tag: string) => {
-        if (worldOps) {
-          return worldOps.removeTag(entityId, tag);
-        }
-        return Promise.resolve(entityManager.removeTag(entityId, tag));
-      },
-      hasTag: (entityId: string, tag: string) => Promise.resolve(hasTag(entityId, tag)),
-      getTemplate: (entityId: string) => Promise.resolve(getTemplate(entityId)),
-      getEntityData: (entityId: string) => Promise.resolve(getEntityData(entityId)),
-      queryEntities: (query?: WorldEntityQuery) => Promise.resolve(queryEntities(query)),
-      queryEntitiesWithData: (query?: WorldEntityQuery) => Promise.resolve(queryEntitiesWithData(query)),
-      queryPoint: () => Promise.resolve(null),
-      queryAABB: () => Promise.resolve([]),
-      raycast: () => Promise.resolve(null),
-      animate: () => Promise.resolve(),
-      wait: () => Promise.resolve(),
-      getVariable: (name: string) => Promise.resolve(getVariable(name)),
-      setVariable: (name: string, value: unknown) => {
-        if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
-          mutator.setVariable(name, value);
-        }
-        return Promise.resolve();
-      },
-      getConstant: (name: string) => Promise.resolve(getConstant(name)),
-      emit: (eventName: string) => {
-        mutator.triggerEvent(eventName);
-        return Promise.resolve();
-      },
-      win: () => {
-        mutator.setGameState('won');
-        return Promise.resolve();
-      },
-      lose: () => {
-        mutator.setGameState('lost');
-        return Promise.resolve();
-      },
+      entityManager.cacheEntity(
+        entityId,
+        templateId,
+        { x: position.x, y: position.y, angle: opts?.angle ?? 0, scaleX: 1, scaleY: 1 },
+      );
+
+      return entityId;
+    };
+
+    const destroyEntity = (entityId: string): void => {
+      entityManager.destroyEntity(entityId);
+    };
+
+    const setVariable = (name: string, value: unknown): void => {
+      if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
+        mutator.setVariable(name, value);
+      }
+    };
+
+    const applyImpulse = (entityId: string, impulse: Vec2): void => {
+      if (context.physics) {
+        context.physics.applyImpulseToCenter(entityId, impulse);
+      }
+    };
+
+    const addTag = (entityId: string, tag: string): void => {
+      entityManager.addTag(entityId, tag);
+    };
+
+    const removeTag = (entityId: string, tag: string): boolean => {
+      return entityManager.removeTag(entityId, tag);
+    };
+
+    const emit = (eventName: string, data?: Record<string, unknown>): void => {
+      mutator.triggerEvent(eventName, data);
+    };
+
+    const win = (): void => {
+      mutator.setGameState('won');
+    };
+
+    const lose = (): void => {
+      mutator.setGameState('lost');
+    };
+
+    const worldAsync: AsyncWorldOps = {
+      animate: async () => {},
+      wait: async () => {},
     };
 
     const inputSnapshot: InputSnapshot | null = context.inputEvents?.tap ? {
@@ -283,18 +252,41 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
     const seededRandom = this.createSeededRandom(Date.now());
 
     return {
-      getPosition,
-      getVelocity,
-      getRotation,
-      getTags,
+      spawnEntity,
+      destroyEntity,
+      cloneEntity: (_entityId: string, _opts?: CloneOptions) => null,
+      reparentEntity: (_entityId: string, _newParentId: string, _opts?: ReparentOptions) => {},
+      getEntityPosition,
+      setEntityPosition,
+      getEntityRotation,
+      setEntityRotation: (_entityId: string, _angle: number) => {},
+      getEntityScale: (_entityId: string) => null,
+      setEntityScale: (_entityId: string, _scale: Vec2) => {},
+      setEntityVisible: (_entityId: string, _visible: boolean) => {},
+      getEntityVelocity,
+      setEntityVelocity,
+      getEntityAngularVelocity: (_entityId: string) => null,
+      setEntityAngularVelocity: (_entityId: string, _velocity: number) => {},
+      applyImpulse,
+      applyForce: (_entityId: string, _force: Vec2) => {},
+      getEntityTags,
+      addTag,
+      removeTag,
       hasTag,
-      getTemplate,
-      getVariable,
-      getConstant,
-      queryEntities,
+      getEntityTemplate,
       getEntityData,
+      queryEntities,
       queryEntitiesWithData,
-      world: minimalWorldOps,
+      queryPoint: (_point: Vec2) => null,
+      queryAABB: (_min: Vec2, _max: Vec2) => [],
+      raycast: (_from: Vec2, _to: Vec2, _opts?: RaycastOptions) => null,
+      getVariable,
+      setVariable,
+      getConstant,
+      emit,
+      win,
+      lose,
+      worldAsync,
       startSequence: () => ({ name: '', isRunning: false, cancel: () => {} } as SequenceHandle),
       isSequenceRunning: () => false,
       cancelSequence: () => {},

@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { parseArgs } from 'util';
+import { randomUUID } from 'crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const R2_DIR = resolve(__dirname, '..', '..', 'r2');
@@ -50,7 +51,7 @@ async function main() {
 
   const definition = JSON.parse(readFileSync(defPath, 'utf-8'));
   const templates = definition.templates as Record<string, {
-    visual?: { type: string };
+    visual?: { type: string; imageWidth?: number; imageHeight?: number };
     physics?: { shape: string; width?: number; height?: number; radius?: number };
     collider?: { shape: string; width?: number; height?: number; radius?: number };
     tags?: string[];
@@ -60,6 +61,31 @@ async function main() {
   if (!templates) {
     console.error(`Game ${gameId} has no templates.`);
     process.exit(1);
+  }
+
+  const COLOR_NAME_TO_HEX: Record<string, string> = {
+    red: '#FF4444',
+    blue: '#4444FF',
+    green: '#44FF44',
+    yellow: '#FFFF44',
+    purple: '#AA44FF',
+    orange: '#FF8844',
+    pink: '#FF44AA',
+    cyan: '#44FFFF',
+    white: '#FFFFFF',
+    black: '#222222',
+    gold: '#FFD700',
+    silver: '#C0C0C0',
+    transparent: '#AADDFF',
+    glass: '#AADDFF',
+  };
+
+  function extractColorFromDescription(description: string): string | undefined {
+    const lower = description.toLowerCase();
+    for (const [name, hex] of Object.entries(COLOR_NAME_TO_HEX)) {
+      if (lower.includes(name)) return hex;
+    }
+    return undefined;
   }
 
   const requestedIds = values.templates?.split(',').map(s => s.trim()) ?? Object.keys(templates);
@@ -85,16 +111,11 @@ async function main() {
     return;
   }
 
-  // Find existing pack manifest to get packId, or create new one
-  let packId = packName;
-  const existingManifestPath = join(R2_DIR, 'packs', packName, 'manifest.json');
-  if (existsSync(existingManifestPath)) {
-    const existing = JSON.parse(readFileSync(existingManifestPath, 'utf-8'));
-    packId = existing.packId ?? packName;
-  }
-
+  const packId = randomUUID();
   const packDir = join(R2_DIR, 'packs', packId);
   mkdirSync(packDir, { recursive: true });
+
+  console.log(`  Pack ID: ${packId}`);
 
   type EntityType = 'character' | 'enemy' | 'item' | 'platform' | 'background' | 'ui';
   type EntitySpec = {
@@ -112,8 +133,26 @@ async function main() {
 
   for (const templateId of imageTemplates) {
     const t = templates[templateId];
-    const shapeSource = t.collider ?? t.physics ?? { shape: 'box', width: 1, height: 1 };
     const tags = t.tags ?? [];
+    const description = t.whatDescription ?? templateId;
+
+    let shape: 'box' | 'circle' = 'box';
+    if (t.collider?.shape === 'circle' || t.physics?.shape === 'circle') {
+      shape = 'circle';
+    } else if (tags.includes('ball') || tags.includes('round') || tags.includes('circle')) {
+      shape = 'circle';
+    } else if (t.collider?.shape || t.physics?.shape) {
+      shape = 'box';
+    }
+
+    const visualW = t.visual?.imageWidth;
+    const visualH = t.visual?.imageHeight;
+    const colliderW = t.collider?.width ?? t.physics?.width;
+    const colliderH = t.collider?.height ?? t.physics?.height;
+    const width = visualW ?? colliderW ?? 1;
+    const height = visualH ?? colliderH ?? 1;
+
+    const color = extractColorFromDescription(description);
 
     let entityType: EntityType = 'item';
     if (tags.includes('player') || tags.includes('character')) entityType = 'character';
@@ -125,11 +164,12 @@ async function main() {
     specs.push({
       type: 'entity',
       id: templateId,
-      shape: (shapeSource.shape === 'circle' ? 'circle' : 'box') as 'box' | 'circle',
-      width: shapeSource.width ?? 1,
-      height: shapeSource.height ?? 1,
+      shape,
+      width,
+      height,
       entityType,
-      description: t.whatDescription ?? templateId,
+      description,
+      color,
     });
   }
 
@@ -143,7 +183,6 @@ async function main() {
   );
 
   const r2Prefix = `packs/${packId}`;
-  const r2PackId = r2Prefix;
 
   const adapters = await createNodeAdapters({
     r2Bucket: 'slopcade-assets',
@@ -175,9 +214,7 @@ async function main() {
 
   console.log(`\nGenerating ${specs.length} assets...\n`);
 
-  const manifest: PackManifest = existsSync(join(packDir, 'manifest.json'))
-    ? JSON.parse(readFileSync(join(packDir, 'manifest.json'), 'utf-8'))
-    : { version: 1, packId: packName, name: packName, assets: {} };
+  const manifest: PackManifest = { version: 1, packId, name: packName, assets: {} };
 
   let successCount = 0;
   let failCount = 0;
@@ -191,7 +228,7 @@ async function main() {
         localAdapters,
         {
           gameId,
-          packId: r2PackId,
+          packId,
           assetId: spec.id,
           gameTitle: definition.metadata?.title ?? gameId,
           theme,
@@ -221,6 +258,22 @@ async function main() {
   writeFileSync(join(packDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
   console.log(`\nResults: ${successCount} succeeded, ${failCount} failed`);
   console.log(`Manifest: ${join(packDir, 'manifest.json')}`);
+
+  if (successCount > 0) {
+    definition.assetSystem = definition.assetSystem ?? {};
+    definition.assetSystem.activePackId = packId;
+
+    const existingPackIds: string[] = definition.assetSystem.packIds ?? [];
+    if (!existingPackIds.includes(packId)) {
+      existingPackIds.push(packId);
+    }
+    definition.assetSystem.packIds = existingPackIds;
+
+    writeFileSync(defPath, JSON.stringify(definition, null, 2));
+    console.log(`\nUpdated ${defPath}:`);
+    console.log(`  activePackId: ${packId}`);
+    console.log(`  packIds: [${definition.assetSystem.packIds.join(', ')}]`);
+  }
 }
 
 main().catch(err => {

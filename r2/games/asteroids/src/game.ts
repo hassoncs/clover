@@ -217,15 +217,15 @@ exports.onCollision = function(ctx, collision) {
     ctx.destroyEntity(asteroid);
     
     if (size === 'large') {
-      ctx.addScore(20);
+      ctx.setVariable('score', ((ctx.getVariable('score') as number) || 0) + 20);
       spawnAsteroidFragment(ctx, pos, 'medium');
       spawnAsteroidFragment(ctx, pos, 'medium');
     } else if (size === 'medium') {
-      ctx.addScore(50);
+      ctx.setVariable('score', ((ctx.getVariable('score') as number) || 0) + 50);
       spawnAsteroidFragment(ctx, pos, 'small');
       spawnAsteroidFragment(ctx, pos, 'small');
     } else if (size === 'small') {
-      ctx.addScore(100);
+      ctx.setVariable('score', ((ctx.getVariable('score') as number) || 0) + 100);
     }
     return;
   }
@@ -239,7 +239,7 @@ exports.onCollision = function(ctx, collision) {
     const invuln = ctx.getVariable('shipInvuln');
     if (!invuln) {
       ctx.destroyEntity(ship);
-      ctx.addLives(-1);
+      ctx.setVariable('lives', ((ctx.getVariable('lives') as number) || 0) - 1);
       
       if (ctx.getVariable('lives') > 0) {
         shipRespawning = true;

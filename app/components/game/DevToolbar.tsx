@@ -2,15 +2,23 @@ import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
 import { useDevToolsOptional } from '@/lib/contexts/DevToolsContext';
 import { useState } from 'react';
 
+function Checkbox({ checked }: { checked: boolean }) {
+  return (
+    <View style={[styles.checkboxBox, checked && styles.checkboxBoxChecked]}>
+      {checked && <View style={styles.checkboxCheck} />}
+    </View>
+  );
+}
+
 export function DevToolbar() {
   const devTools = useDevToolsOptional();
   const [frame, setFrame] = useState(0);
   const [isStepping, setIsStepping] = useState(false);
-  
+
   if (!devTools) {
     return null;
   }
-  
+
   const { state, isLoading, toggleInputDebug, togglePhysicsShapes, toggleZones, toggleFPS, toggleExpanded } = devTools;
 
   if (isLoading) return null;
@@ -38,7 +46,7 @@ export function DevToolbar() {
         onPress={toggleExpanded}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
-        <Text style={styles.headerText}>🛠️ Dev Tools</Text>
+        <Text style={styles.headerText}>Dev Tools</Text>
         <Text style={styles.headerIcon}>{state.isExpanded ? '−' : '+'}</Text>
       </Pressable>
 
@@ -49,22 +57,22 @@ export function DevToolbar() {
               <Text style={styles.sectionTitle}>Frame Stepping</Text>
               <Text style={styles.frameCounter}>Frame: {frame}</Text>
               <View style={styles.buttonRow}>
-                <Pressable 
-                  style={[styles.stepButton, isStepping && styles.stepButtonDisabled]} 
+                <Pressable
+                  style={[styles.stepButton, isStepping && styles.stepButtonDisabled]}
                   onPress={() => handleStep(1)}
                   disabled={isStepping}
                 >
                   <Text style={styles.stepButtonText}>+1</Text>
                 </Pressable>
-                <Pressable 
-                  style={[styles.stepButton, isStepping && styles.stepButtonDisabled]} 
+                <Pressable
+                  style={[styles.stepButton, isStepping && styles.stepButtonDisabled]}
                   onPress={() => handleStep(10)}
                   disabled={isStepping}
                 >
                   <Text style={styles.stepButtonText}>+10</Text>
                 </Pressable>
-                <Pressable 
-                  style={[styles.stepButton, isStepping && styles.stepButtonDisabled]} 
+                <Pressable
+                  style={[styles.stepButton, isStepping && styles.stepButtonDisabled]}
                   onPress={() => handleStep(60)}
                   disabled={isStepping}
                 >
@@ -75,22 +83,22 @@ export function DevToolbar() {
           )}
 
           <Pressable style={styles.toggleRow} onPress={toggleInputDebug}>
-            <Text style={styles.checkbox}>{state.showInputDebug ? '☑' : '☐'}</Text>
+            <Checkbox checked={state.showInputDebug} />
             <Text style={styles.label}>Input Debug</Text>
           </Pressable>
 
           <Pressable style={styles.toggleRow} onPress={togglePhysicsShapes}>
-            <Text style={styles.checkbox}>{state.showPhysicsShapes ? '☑' : '☐'}</Text>
+            <Checkbox checked={state.showPhysicsShapes} />
             <Text style={styles.label}>Physics Shapes</Text>
           </Pressable>
 
           <Pressable style={styles.toggleRow} onPress={toggleZones}>
-            <Text style={styles.checkbox}>{state.showZones ? '☑' : '☐'}</Text>
+            <Checkbox checked={state.showZones} />
             <Text style={styles.label}>Show Zones</Text>
           </Pressable>
 
           <Pressable style={styles.toggleRow} onPress={toggleFPS}>
-            <Text style={styles.checkbox}>{state.showFPS ? '☑' : '☐'}</Text>
+            <Checkbox checked={state.showFPS} />
             <Text style={styles.label}>Show FPS</Text>
           </Pressable>
         </View>
@@ -116,6 +124,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
     zIndex: 9999,
+    ...(Platform.OS === 'web' ? { userSelect: 'none' } as any : {}),
   },
   containerExpanded: {
     minWidth: 200,
@@ -130,13 +139,15 @@ const styles = StyleSheet.create({
     borderBottomColor: '#374151',
   },
   headerText: {
-    color: '#FFFFFF',
-    fontSize: 14,
+    color: '#9CA3AF',
+    fontSize: 11,
     fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   headerIcon: {
     color: '#9CA3AF',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
   },
   content: {
@@ -145,17 +156,31 @@ const styles = StyleSheet.create({
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 6,
     paddingHorizontal: 4,
   },
-  checkbox: {
-    fontSize: 16,
-    marginRight: 8,
-    width: 20,
-    textAlign: 'center',
+  checkboxBox: {
+    width: 14,
+    height: 14,
+    borderRadius: 3,
+    borderWidth: 1.5,
+    borderColor: '#6B7280',
+    marginRight: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxBoxChecked: {
+    borderColor: '#3B82F6',
+    backgroundColor: '#3B82F6',
+  },
+  checkboxCheck: {
+    width: 6,
+    height: 6,
+    borderRadius: 1,
+    backgroundColor: '#FFFFFF',
   },
   label: {
-    color: '#FFFFFF',
+    color: '#D1D5DB',
     fontSize: 13,
   },
   section: {

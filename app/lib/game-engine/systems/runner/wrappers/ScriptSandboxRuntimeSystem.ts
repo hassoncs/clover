@@ -14,7 +14,17 @@ import type {
   ScriptCollisionEvent,
 } from '../../../../scripting/types';
 import type { Vec2 } from '@slopcade/shared/types/common';
-import type { WorldOps } from '@slopcade/shared/types/world-ops';
+import type {
+  WorldOps,
+  WorldEntityQuery,
+  WorldEntityData,
+  SpawnOptions,
+  CloneOptions,
+  ReparentOptions,
+  RaycastOptions,
+  RaycastHit,
+} from '@slopcade/shared/types/world-ops';
+import type { AsyncWorldOps } from '@slopcade/shared/types/async-world-ops';
 
 export interface ScriptSandboxSystemConfig {
   scriptCode: string;
@@ -232,6 +242,8 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
   private createScriptContext(ctx: UpdateContext): ScriptContext {
     const em = this.systemContext!.entityManager;
     const physics = this.systemContext!.physics;
+    const bridge = this.systemContext!.bridge;
+    const eventQueue = this.systemContext!.eventQueue;
     const worldOps = this.worldOps!;
     const seqMgr = this.sequenceManager!;
     const seededRandom = this.seededRandom!;
@@ -244,99 +256,297 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
         }
       : null;
 
+    const queryEntities = (query?: WorldEntityQuery): string[] => {
+      if (!query) return em.getActiveEntities().map((e) => e.id);
+      const withinAabb = query.inAABB
+        ? {
+            min: { x: query.inAABB.minX, y: query.inAABB.minY },
+            max: { x: query.inAABB.maxX, y: query.inAABB.maxY },
+          }
+        : undefined;
+      return em
+        .query({
+          tags: query.tag ? [query.tag] : undefined,
+          template: query.templateId,
+          withinAabb,
+        })
+        .map((e) => e.id);
+    };
+
+    const getEntityData = (entityId: string): WorldEntityData | null => {
+      const entity = em.getEntity(entityId);
+      if (!entity) return null;
+
+      const velocity = entity.physics ? physics.getLinearVelocity(entityId) : undefined;
+      const angularVelocity = entity.physics ? physics.getAngularVelocity(entityId) : undefined;
+
+      return {
+        id: entity.id,
+        template: entity.template,
+        tags: [...entity.tags],
+        position: { x: entity.transform.x, y: entity.transform.y },
+        rotation: entity.transform.angle,
+        scale: { x: entity.transform.scaleX, y: entity.transform.scaleY },
+        velocity,
+        angularVelocity,
+      };
+    };
+
+    const queryEntitiesWithData = (query?: WorldEntityQuery): WorldEntityData[] => {
+      const entityIds = queryEntities(query);
+      const results: WorldEntityData[] = [];
+      for (const entityId of entityIds) {
+        const data = getEntityData(entityId);
+        if (data) {
+          results.push(data);
+        }
+      }
+      return results;
+    };
+
+    const cloneEntityRecursive = (
+      sourceEntityId: string,
+      parentId?: string,
+      positionOverride?: Vec2,
+      includeChildren?: boolean
+    ): string | null => {
+      const source = em.getEntity(sourceEntityId);
+      if (!source || !source.template) return null;
+
+      const newEntityId = em.spawnEntity({
+        templateId: source.template,
+        position: positionOverride ?? { x: source.transform.x, y: source.transform.y },
+        angle: source.transform.angle,
+        tags: [...source.tags],
+        parentId,
+      });
+
+      if (!newEntityId) return null;
+
+      const newEntity = em.getEntity(newEntityId);
+      if (!newEntity) return null;
+
+      newEntity.transform.scaleX = source.transform.scaleX;
+      newEntity.transform.scaleY = source.transform.scaleY;
+      bridge.setScale(newEntityId, newEntity.transform.scaleX, newEntity.transform.scaleY);
+
+      if (includeChildren) {
+        for (const childId of source.children) {
+          cloneEntityRecursive(childId, newEntityId, undefined, true);
+        }
+      }
+
+      return newEntityId;
+    };
+
+    const worldAsync: AsyncWorldOps = {
+      animate: (entityId, target, opts) => worldOps.animate(entityId, target, opts),
+      wait: (ms, opts) => worldOps.wait(ms, opts),
+    };
+
     return {
-      getPosition: (entityId: string): Vec2 | null => {
+      spawnEntity: (templateId: string, position: Vec2, opts?: SpawnOptions): string | null => {
+        return em.spawnEntity({
+          templateId,
+          position,
+          velocity: opts?.velocity,
+          angle: opts?.angle,
+          tags: opts?.tags,
+          parentId: opts?.parentId,
+        });
+      },
+
+      destroyEntity: (entityId: string): void => {
+        em.destroyEntity(entityId);
+      },
+
+      cloneEntity: (entityId: string, opts?: CloneOptions): string | null => {
+        return cloneEntityRecursive(entityId, undefined, opts?.position, opts?.withChildren);
+      },
+
+      reparentEntity: (entityId: string, newParentId: string, opts?: ReparentOptions): void => {
+        em.reparent(
+          entityId,
+          newParentId,
+          opts?.keepGlobalTransform
+            ? undefined
+            : em.getEntity(entityId)?.localTransform
+        );
+      },
+
+      getEntityPosition: (entityId: string): Vec2 | null => {
         const entity = em.getEntity(entityId);
         if (!entity) return null;
         return { x: entity.transform.x, y: entity.transform.y };
       },
 
-      getVelocity: (entityId: string): Vec2 | null => {
+      setEntityPosition: (entityId: string, position: Vec2): void => {
+        const entity = em.getEntity(entityId);
+        if (!entity) return;
+
+        entity.transform.x = position.x;
+        entity.transform.y = position.y;
+
+        if (entity.physics) {
+          physics.setTransform(entity.id, {
+            position,
+            angle: entity.transform.angle,
+          });
+        }
+
+        bridge.setPosition(entityId, position.x, position.y);
+      },
+
+      getEntityRotation: (entityId: string): number | null => {
+        const entity = em.getEntity(entityId);
+        return entity ? entity.transform.angle : null;
+      },
+
+      setEntityRotation: (entityId: string, angle: number): void => {
+        const entity = em.getEntity(entityId);
+        if (!entity) return;
+
+        entity.transform.angle = angle;
+
+        if (entity.physics) {
+          physics.setTransform(entity.id, {
+            position: { x: entity.transform.x, y: entity.transform.y },
+            angle,
+          });
+        }
+
+        bridge.setRotation(entityId, (angle * 180) / Math.PI);
+      },
+
+      getEntityScale: (entityId: string): Vec2 | null => {
+        const entity = em.getEntity(entityId);
+        if (!entity) return null;
+        return { x: entity.transform.scaleX, y: entity.transform.scaleY };
+      },
+
+      setEntityScale: (entityId: string, scale: Vec2): void => {
+        const entity = em.getEntity(entityId);
+        if (!entity) return;
+
+        entity.transform.scaleX = scale.x;
+        entity.transform.scaleY = scale.y;
+        bridge.setScale(entityId, scale.x, scale.y);
+      },
+
+      setEntityVisible: (entityId: string, visible: boolean): void => {
+        em.setEntityVisible(entityId, visible);
+        bridge.setVisible(entityId, visible);
+      },
+
+      getEntityVelocity: (entityId: string): Vec2 | null => {
         const entity = em.getEntity(entityId);
         if (!entity || !entity.physics) return null;
         return physics.getLinearVelocity(entityId);
       },
 
-      getRotation: (entityId: string): number | null => {
+      setEntityVelocity: (entityId: string, velocity: Vec2): void => {
         const entity = em.getEntity(entityId);
-        if (!entity) return null;
-        return entity.transform.angle;
+        if (!entity || !entity.physics) return;
+        physics.setLinearVelocity(entityId, velocity);
       },
 
-      getTags: (entityId: string): string[] => em.getEntity(entityId)?.tags ?? [],
+      getEntityAngularVelocity: (entityId: string): number | null => {
+        const entity = em.getEntity(entityId);
+        if (!entity || !entity.physics) return null;
+        return physics.getAngularVelocity(entityId);
+      },
+
+      setEntityAngularVelocity: (entityId: string, velocity: number): void => {
+        const entity = em.getEntity(entityId);
+        if (!entity || !entity.physics) return;
+        physics.setAngularVelocity(entityId, velocity);
+      },
+
+      applyImpulse: (entityId: string, impulse: Vec2): void => {
+        const entity = em.getEntity(entityId);
+        if (!entity || !entity.physics) return;
+        physics.applyImpulseToCenter(entityId, impulse);
+        bridge.applyImpulse(entityId, impulse);
+      },
+
+      applyForce: (entityId: string, force: Vec2): void => {
+        const entity = em.getEntity(entityId);
+        if (!entity || !entity.physics) return;
+        physics.applyForceToCenter(entityId, force);
+        bridge.applyForce(entityId, force);
+      },
+
+      getEntityTags: (entityId: string): string[] => em.getEntity(entityId)?.tags ?? [],
+
+      addTag: (entityId: string, tag: string): void => {
+        em.addTag(entityId, tag);
+      },
+
+      removeTag: (entityId: string, tag: string): boolean => em.removeTag(entityId, tag),
 
       hasTag: (entityId: string, tag: string): boolean => em.hasTag(entityId, tag),
 
-      getTemplate: (entityId: string): string | undefined => em.getEntity(entityId)?.template,
+      getEntityTemplate: (entityId: string): string | undefined => em.getEntity(entityId)?.template,
 
-      getVariable: (name: string): unknown => ctx.gameState.variables[name],
+      getEntityData,
 
-      getConstant: (name: string): number | string | boolean | undefined => this.constants?.[name],
+      queryEntities,
 
-      queryEntities: (query?: { tag?: string; templateId?: string; inAABB?: { minX: number; minY: number; maxX: number; maxY: number } }) => {
-        if (!query) return em.getActiveEntities().map(e => e.id);
-        const withinAabb = query.inAABB
-          ? {
-              min: { x: query.inAABB.minX, y: query.inAABB.minY },
-              max: { x: query.inAABB.maxX, y: query.inAABB.maxY },
-            }
-          : undefined;
-        return em
-          .query({
-            tags: query.tag ? [query.tag] : undefined,
-            template: query.templateId,
-            withinAabb,
-          })
-          .map(e => e.id);
+      queryEntitiesWithData,
+
+      queryPoint: (point: Vec2): string | null => {
+        return physics.queryPoint(point);
       },
 
-      getEntityData: (entityId: string) => {
-        const entity = em.getEntity(entityId);
-        if (!entity) return null;
+      queryAABB: (min: Vec2, max: Vec2): string[] => {
+        return physics.queryAABB(min, max);
+      },
+
+      raycast: (from: Vec2, to: Vec2, _opts?: RaycastOptions): RaycastHit | null => {
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance === 0) return null;
+
+        const direction = { x: dx / distance, y: dy / distance };
+        const hit = physics.raycast(from, direction, distance);
+
+        if (!hit) return null;
+
         return {
-          id: entity.id,
-          template: entity.template,
-          tags: [...entity.tags],
-          position: { x: entity.transform.x, y: entity.transform.y },
-          rotation: entity.transform.angle,
-          scale: { x: entity.transform.scaleX, y: entity.transform.scaleY },
+          entityId: hit.entityId,
+          point: hit.point,
+          normal: hit.normal,
+          distance: hit.fraction * distance,
         };
       },
 
-      queryEntitiesWithData: (query?: { tag?: string; templateId?: string; inAABB?: { minX: number; minY: number; maxX: number; maxY: number } }) => {
-        if (!query) {
-          return em.getActiveEntities().map(e => ({
-            id: e.id,
-            template: e.template,
-            tags: [...e.tags],
-            position: { x: e.transform.x, y: e.transform.y },
-            rotation: e.transform.angle,
-            scale: { x: e.transform.scaleX, y: e.transform.scaleY },
-          }));
+      getVariable: (name: string): unknown => ctx.gameState.variables[name],
+
+      setVariable: (name: string, value: unknown): void => {
+        if (typeof value !== 'number' && typeof value !== 'string' && typeof value !== 'boolean') {
+          return;
         }
-        const withinAabb = query.inAABB
-          ? {
-              min: { x: query.inAABB.minX, y: query.inAABB.minY },
-              max: { x: query.inAABB.maxX, y: query.inAABB.maxY },
-            }
-          : undefined;
-        return em
-          .query({
-            tags: query.tag ? [query.tag] : undefined,
-            template: query.templateId,
-            withinAabb,
-          })
-          .map(e => ({
-            id: e.id,
-            template: e.template,
-            tags: [...e.tags],
-            position: { x: e.transform.x, y: e.transform.y },
-            rotation: e.transform.angle,
-            scale: { x: e.transform.scaleX, y: e.transform.scaleY },
-          }));
+        ctx.gameState.variables[name] = value;
+        eventQueue.emit('variable_change', { name, value });
       },
 
-      world: worldOps,
+      getConstant: (name: string): unknown => this.constants?.[name],
+
+      emit: (eventName: string, data?: Record<string, unknown>): void => {
+        eventQueue.emit(eventName, data);
+      },
+
+      win: (): void => {
+        eventQueue.emit('game_state_change', { state: 'won' });
+      },
+
+      lose: (): void => {
+        eventQueue.emit('game_state_change', { state: 'lost' });
+      },
+
+      worldAsync,
 
       startSequence: (name: string, fn: (world: WorldOps) => Promise<void>) =>
         seqMgr.start(name, fn, worldOps as WorldOps),

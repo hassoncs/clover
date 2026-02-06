@@ -310,21 +310,24 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
 
   executor.registerHandler('draggable', (behavior, ctx) => {
     const b = behavior as DraggableBehavior;
-    if (!ctx.entity.physics) return;
+    if (!ctx.input.drag || ctx.input.drag.targetEntityId !== ctx.entity.id) return;
 
-    if (ctx.input.drag && ctx.input.drag.targetEntityId === ctx.entity.id) {
-        const stiffness = ctx.resolveNumber(b.stiffness ?? 0.5);
-        const damping = ctx.resolveNumber(b.damping ?? 0.5);
-        
-        const targetX = ctx.input.drag.currentWorldX;
-        const targetY = ctx.input.drag.currentWorldY;
-        const currentX = ctx.entity.transform.x;
-        const currentY = ctx.entity.transform.y;
-        
-        const vx = (targetX - currentX) * stiffness * 60;
-        const vy = (targetY - currentY) * stiffness * 60;
-        
-        ctx.physics.setLinearVelocity(ctx.entity.id, { x: vx, y: vy });
+    const targetX = ctx.input.drag.currentWorldX;
+    const targetY = ctx.input.drag.currentWorldY;
+
+    if (b.mode === 'kinematic') {
+      ctx.setEntityPosition(ctx.entity.id, targetX, targetY);
+    } else {
+      if (!ctx.entity.physics) return;
+
+      const stiffness = ctx.resolveNumber(b.stiffness ?? 0.5);
+      const currentX = ctx.entity.transform.x;
+      const currentY = ctx.entity.transform.y;
+
+      const vx = (targetX - currentX) * stiffness * 60;
+      const vy = (targetY - currentY) * stiffness * 60;
+
+      ctx.physics.setLinearVelocity(ctx.entity.id, { x: vx, y: vy });
     }
   });
 

@@ -157,12 +157,38 @@ func _js_send_input(args: Array) -> void:
 	var input_type = str(args[0])
 	var x = float(args[1])
 	var y = float(args[2])
-	# provided_entity_id = str(args[3]) if args[3] != null else ""
 
-	if input_type == "tap":
+	if input_type == "tap" or input_type == "drag_start":
 		var hit_entity_id: Variant = hit_test(x, y)
 		if hit_entity_id == "":
 			hit_entity_id = null
 
+		if input_type == "drag_start":
+			_is_dragging = true
+			_drag_entity_id = hit_entity_id
+
 		if _game_bridge._event_emitter:
 			_game_bridge._event_emitter.emit_input_event(input_type, x, y, hit_entity_id)
+
+		var world_pos = _game_bridge.game_to_godot_pos(Vector2(x, y))
+		if input_type == "drag_start" and _game_bridge._devtools_overlay:
+			_game_bridge._devtools_overlay.start_drag(world_pos, str(hit_entity_id) if hit_entity_id else "")
+
+	elif input_type == "drag_move":
+		if _game_bridge._event_emitter:
+			_game_bridge._event_emitter.emit_input_event(input_type, x, y, _drag_entity_id)
+
+		var world_pos = _game_bridge.game_to_godot_pos(Vector2(x, y))
+		if _game_bridge._devtools_overlay:
+			_game_bridge._devtools_overlay.update_drag(world_pos)
+
+	elif input_type == "drag_end":
+		if _game_bridge._event_emitter:
+			_game_bridge._event_emitter.emit_input_event(input_type, x, y, _drag_entity_id)
+
+		var world_pos = _game_bridge.game_to_godot_pos(Vector2(x, y))
+		if _game_bridge._devtools_overlay:
+			_game_bridge._devtools_overlay.end_drag(world_pos)
+
+		_is_dragging = false
+		_drag_entity_id = null

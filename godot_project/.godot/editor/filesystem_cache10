@@ -58,7 +58,7 @@ VFXShowcase.tscn::PackedScene::2855297431937620752::1769538422::0::1::::<><><>0<
 ::res://scenes/lab/::1769538422
 ui_components_demo.tscn::PackedScene::5962763572750761863::1769538422::0::1::::<><><>0<>0<><>::res://scripts/lab/UIComponentsDemo.gd
 ::res://scripts/::1770260790
-GameBridge.gd::GDScript::3857439177254699610::1770260790::0::1::::<>Node<><>0<>0<><>::
+GameBridge.gd::GDScript::3857439177254699610::1770347476::0::1::::<>Node<><>0<>0<><>::
 Lab3D.gd::GDScript::2743172060191353031::1770054883::0::1::::<>Node3D<><>0<>0<><>::
 Main.gd::GDScript::4927831078751178685::1769538422::0::1::::<>Node2D<><>0<>0<><>::
 PhysicsBody.gd::GDScript::3101094749307879933::1769982447::0::1::::<>RigidBody2D<><>0<>0<><>::
@@ -79,7 +79,7 @@ JSBridge.gd::GDScript::5302051703392798855::1769972335::0::1::::JSBridge<>RefCou
 QuerySystem.gd::GDScript::4794659130339010814::1770054186::0::1::::QuerySystem<>RefCounted<><>0<>0<><>::
 SyncSystem.gd::GDScript::3903644578941350245::1769981414::0::1::::SyncSystem<>RefCounted<><>0<>0<><>::
 UIManager.gd::GDScript::2938340039645018513::1770158499::0::1::::UIManager<>RefCounted<><>0<>0<><>::
-VisualRenderer.gd::GDScript::3033702139520954300::1770260790::0::1::::VisualRenderer<>RefCounted<><>0<>0<><>::
+VisualRenderer.gd::GDScript::3033702139520954300::1770345508::0::1::::VisualRenderer<>RefCounted<><>0<>0<><>::
 WebSocketSystem.gd::GDScript::6579444550606019435::1769981871::0::1::::WebSocketSystem<>RefCounted<><>0<>0<><>::
 ::res://scripts/bridge/debug/::1769717226
 DebugBridge.gd::GDScript::576835227171242688::1769981392::0::1::::DebugBridge<>RefCounted<><>0<>0<><>::
@@ -100,14 +100,14 @@ GameBridgeEffects.gd::GDScript::3133696803429672124::1769538422::0::1::::<>Node<
 ParticleFactory.gd::GDScript::1028706586424653901::1769538422::0::1::::ParticleFactory<>Node<><>0<>0<><>::
 SplatMapSystem.gd::GDScript::5165869300938093194::1769981866::0::1::::SplatMapSystem<>RefCounted<><>0<>0<><>::
 ::res://scripts/entity/::1770260790
-EntityFactory.gd::GDScript::38841348357641075::1770260790::0::1::::EntityFactory<>RefCounted<><>0<>0<><>::
+EntityFactory.gd::GDScript::38841348357641075::1770347527::0::1::::EntityFactory<>RefCounted<><>0<>0<><>::
 EntityLifecycleSystem.gd::GDScript::3160000650113589081::1769973275::0::1::::EntityLifecycleSystem<>RefCounted<><>0<>0<><>::
-EntityManager.gd::GDScript::418805061965814239::1770260790::0::1::::EntityManager<>RefCounted<><>0<>0<><>::
+EntityManager.gd::GDScript::418805061965814239::1770347488::0::1::::EntityManager<>RefCounted<><>0<>0<><>::
 EntityRecord.gd::GDScript::3038143391968846502::1769973037::0::1::::EntityRecord<>RefCounted<><>0<>0<><>::
 ImageSystem.gd::GDScript::4287088875152274307::1769652858::0::1::::ImageSystem<>RefCounted<><>0<>0<><>::
 TransformSystem.gd::GDScript::5148412927370052613::1770137285::0::1::::TransformSystem<>RefCounted<><>0<>0<><>::
-::res://scripts/input/::1769976144
-InputRouter.gd::GDScript::1483226930285642457::1769982576::0::1::::InputRouter<>RefCounted<><>0<>0<><>::
+::res://scripts/input/::1770345307
+InputRouter.gd::GDScript::1483226930285642457::1770345307::0::1::::InputRouter<>RefCounted<><>0<>0<><>::
 InputSystem.gd::GDScript::553410771390946411::1769972532::0::1::::InputSystem<>RefCounted<><>0<>0<><>::
 ::res://scripts/lab/::1769538422
 UIComponentsDemo.gd::GDScript::3717383566519205682::1769538422::0::1::::<>Control<><>0<>0<><>::
