@@ -206,7 +206,7 @@ export function generatePuzzle(config: PuzzleConfig): GeneratedPuzzle {
     }
 
     let selectedMove: Move;
-    if (difficulty >= 5 && rng.next() < 0.7) {
+    if (difficulty >= 3 && rng.next() < 0.7) {
       let bestMove = candidateMoves[0];
       let bestScore = -1;
 

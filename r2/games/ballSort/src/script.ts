@@ -62,6 +62,18 @@ exports.generateLevel = function(ctx: ScriptContext) {
   console.log(`[BallSort] Level ${levelNum} loaded with ${ballIndex} balls, ${activeTubeCount} tubes (min moves: ${level.minMoves})`);
 };
 
+exports.nextLevel = function(ctx: ScriptContext) {
+  const currentLevel = (ctx.getVariable('currentLevel') as number) || 1;
+  ctx.setVariable('currentLevel', currentLevel + 1);
+  ctx.setVariable('startTime', Date.now());
+  exports.generateLevel(ctx);
+};
+
+exports.replayLevel = function(ctx: ScriptContext) {
+  ctx.setVariable('startTime', Date.now());
+  exports.generateLevel(ctx);
+};
+
 exports.onStart = function(ctx: ScriptContext) {
   ctx.setVariable('startTime', Date.now());
 };

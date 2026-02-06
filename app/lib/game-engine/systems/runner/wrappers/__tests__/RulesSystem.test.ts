@@ -745,7 +745,7 @@ describe('RulesSystem', () => {
       rulesSystem.setRuntimeState(gameStateWithSM);
       rulesSystem.setEventBus(eventBus);
 
-      expect(gameStateWithSM.stateMachines['player'].current).toBe('idle');
+      expect(gameStateWithSM.vars['sm.player']).toBe('idle');
     });
 
     it('should transition state machines on events', () => {
@@ -820,7 +820,7 @@ describe('RulesSystem', () => {
 
       rulesSystem.update(updateContext, { gameState: 'playing', variables: {} });
 
-      expect(gameStateWithSM.stateMachines['player'].current).toBe('running');
+      expect(gameStateWithSM.vars['sm.player']).toBe('running');
       expect(gameStateWithSM.stateMachines['player'].previous).toBe('idle');
       expect(gameStateWithSM.stateMachines['player'].transitionCount).toBe(1);
     });

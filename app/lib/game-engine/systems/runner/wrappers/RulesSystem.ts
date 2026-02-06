@@ -14,6 +14,7 @@ import type {
   TransitionDefinition,
   ComputedValueSystem,
 } from '@slopcade/shared';
+import { getStateVar } from '@slopcade/shared';
 import { evaluate } from '@slopcade/shared';
 import type { GameState as BehaviorGameState, InputState } from '../../../BehaviorContext';
 import type { IGameStateMutator, RuleContext, ListValue } from '../../../rules/types';
@@ -393,13 +394,8 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
           }
         }
         
-        const smStates = Object.keys(this.runtimeState.stateMachines).length > 0 
-          ? Object.fromEntries(
-              Object.entries(this.runtimeState.stateMachines).map(([id, sm]) => [
-                id,
-                { currentState: sm.current, previousState: sm.previous, stateEnteredAt: sm.enteredAt, transitionCount: sm.transitionCount }
-              ])
-            )
+        const smMeta = Object.keys(this.runtimeState.stateMachines).length > 0 
+          ? this.runtimeState.stateMachines
           : null;
         const smDefs = this.smDefs;
         
@@ -410,7 +406,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
           frameId: ctx.frameId,
           variables: {
             ...variablesObj,
-            ...(smStates ? { __smStates: smStates as unknown as number } : {}),
+            ...(smMeta ? { __smMeta: smMeta as unknown as number } : {}),
             ...(smDefs ? { __smDefs: smDefs as unknown as number } : {}),
           },
           random: Math.random,
@@ -595,8 +591,10 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
     if (Object.keys(state.stateMachines).length === 0) return null;
     const result: Record<string, { currentState: string; previousState: string; stateEnteredAt: number; transitionCount: number }> = {};
     for (const [id, sm] of Object.entries(state.stateMachines)) {
+      const def = this.smDefs?.[id];
+      const varKey = def ? getStateVar(def) : `sm.${id}`;
       result[id] = {
-        currentState: sm.current,
+        currentState: (state.vars[varKey] as string) ?? '',
         previousState: sm.previous,
         stateEnteredAt: sm.enteredAt,
         transitionCount: sm.transitionCount,
@@ -748,16 +746,20 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
     
     for (const [eventName] of gameState.pendingEvents) {
       for (const [machineId, def] of Object.entries(this.smDefs)) {
-        const smState = gameState.stateMachines[machineId];
-        if (!smState) continue;
+        const smMeta = gameState.stateMachines[machineId];
+        if (!smMeta) continue;
+        
+        const varKey = getStateVar(def);
+        const currentState = gameState.vars[varKey] as string;
+        if (!currentState) continue;
         
         for (const transition of def.transitions) {
-          if (!this.transitionMatches(transition, smState.current, eventName)) continue;
+          if (!this.transitionMatches(transition, currentState, eventName)) continue;
           
-          smState.previous = smState.current;
-          smState.current = transition.to;
-          smState.enteredAt = elapsed;
-          smState.transitionCount += 1;
+          smMeta.previous = currentState;
+          gameState.vars[varKey] = transition.to;
+          smMeta.enteredAt = elapsed;
+          smMeta.transitionCount += 1;
           
           break;
         }

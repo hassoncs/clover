@@ -1,36 +1,48 @@
 #!/usr/bin/env tsx
-import { generatePuzzle, type PuzzleConfig } from './puzzleGenerator';
+import { generatePuzzle, generateWithMinimumTubes, type PuzzleConfig, type GeneratedPuzzle } from './puzzleGenerator';
 
 const BALLS_PER_TUBE = 4;
-const EXTRA_TUBES = 2;
 
 export function getPuzzleConfigForLevel(level: number): PuzzleConfig {
   let numColors: number;
   if (level === 1) {
     numColors = 2;
-  } else if (level <= 3) {
+  } else if (level === 2) {
     numColors = 3;
-  } else if (level <= 10) {
+  } else if (level <= 5) {
     numColors = 4;
-  } else if (level <= 30) {
+  } else if (level <= 12) {
     numColors = 5;
-  } else if (level <= 60) {
+  } else if (level <= 25) {
     numColors = 6;
-  } else if (level <= 120) {
+  } else if (level <= 50) {
     numColors = 7;
   } else {
     numColors = 8;
   }
 
-  const difficulty = Math.min(10, 1 + Math.floor((level - 1) / 25));
+  let extraTubes: number;
+  if (level <= 3) {
+    extraTubes = 2;
+  } else if (level <= 20) {
+    extraTubes = 1;
+  } else {
+    extraTubes = 1;
+  }
+
+  const difficulty = Math.min(10, 1 + Math.floor((level - 1) / 8));
 
   return {
     numColors,
     ballsPerColor: BALLS_PER_TUBE,
-    extraTubes: EXTRA_TUBES,
+    extraTubes,
     difficulty,
     seed: level * 1000,
   };
+}
+
+export function shouldUseMinimumTubes(level: number): boolean {
+  return level <= 30;
 }
 
 export interface PreGeneratedLevel {
@@ -43,7 +55,15 @@ export function generateAllLevels(count: number): PreGeneratedLevel[] {
   
   for (let level = 1; level <= count; level++) {
     const config = getPuzzleConfigForLevel(level);
-    const puzzle = generatePuzzle(config);
+    
+    let puzzle: GeneratedPuzzle;
+    if (shouldUseMinimumTubes(level)) {
+      const { extraTubes: _, ...configWithoutExtra } = config;
+      puzzle = generateWithMinimumTubes(configWithoutExtra);
+    } else {
+      puzzle = generatePuzzle(config);
+    }
+    
     levels.push({
       tubes: puzzle.tubes,
       minMoves: puzzle.minMoves,

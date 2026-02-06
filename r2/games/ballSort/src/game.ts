@@ -1,4 +1,4 @@
-import type { GameDefinition, EntityTemplate } from "@slopcade/shared";
+import type { GameDefinition, EntityTemplate, GameDialogsConfig } from "@slopcade/shared";
 import {
   BallSortProgressSchema,
   type BallSortProgress,
@@ -78,6 +78,7 @@ export function createBallSortGame(): GameDefinition {
     input: { debugInputs: true },
     variables: {
       currentLevel: 1,
+      activeDialog: "",
       heldBallColor: -1,
       sourceTubeIndex: -1,
       heldBallId: "",
@@ -255,18 +256,53 @@ export function createBallSortGame(): GameDefinition {
       },
       {
         id: "handle_delayed_win",
-        name: "Trigger win after animation delay",
+        name: "Show level complete dialog after animation delay",
         trigger: { type: "frame" },
         conditions: [
           { type: "expression", expr: "_winAtElapsed > 0 && elapsed() >= _winAtElapsed" },
         ],
         actions: [
           { type: "set_variable", name: "_winAtElapsed", operation: "set", value: 0 },
-          { type: "game_state", state: "win" },
+          { type: "set_variable", name: "activeDialog", operation: "set", value: "levelComplete" },
+        ],
+      },
+      {
+        id: "dialog_next_level",
+        name: "Advance to next level when Next Level clicked",
+        trigger: { type: "event", eventName: "dialog_next_level" },
+        actions: [
+          { type: "set_variable", name: "activeDialog", operation: "set", value: "" },
+          { type: "run_script", export: "nextLevel" },
+        ],
+      },
+      {
+        id: "dialog_replay_level",
+        name: "Replay current level when Replay clicked",
+        trigger: { type: "event", eventName: "dialog_replay_level" },
+        actions: [
+          { type: "set_variable", name: "activeDialog", operation: "set", value: "" },
+          { type: "run_script", export: "replayLevel" },
         ],
       },
     ],
     persistence: ballSortPersistence,
+    dialogs: {
+      activeDialogVariable: "activeDialog",
+      dialogs: [
+        {
+          id: "levelComplete",
+          title: "Level Complete!",
+          message: "Great job!",
+          stats: [
+            { label: "Moves", variable: "moveCount" },
+          ],
+          buttons: [
+            { label: "Next Level", eventName: "dialog_next_level", variant: "primary" },
+            { label: "Replay Level", eventName: "dialog_replay_level", variant: "secondary" },
+          ],
+        },
+      ],
+    },
     hoverHighlight: {
       targetTag: "tube",
       highlightEntityId: "tube-hover-highlight",

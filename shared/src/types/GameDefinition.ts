@@ -484,11 +484,48 @@ export interface GameDefinition {
   script?: string;
 
   hoverHighlight?: HoverHighlightConfig;
+
+  dialogs?: GameDialogsConfig;
 }
 
 export interface HoverHighlightConfig {
   targetTag: string;
   highlightEntityId: string;
+}
+
+// ============================================================================
+// Game-Defined Dialog System
+// ============================================================================
+
+export type GameButtonVariant = 'primary' | 'secondary';
+
+export interface GameButtonDefinition {
+  label: string;
+  eventName: string;
+  data?: Record<string, unknown>;
+  variant?: GameButtonVariant;
+}
+
+export interface GameDialogStatDefinition {
+  label: string;
+  variable: string;
+  format?: string;
+}
+
+export interface GameDialogDefinition {
+  id: string;
+  title: string;
+  message?: string;
+  stats?: GameDialogStatDefinition[];
+  dismissible?: boolean;
+  dismissEventName?: string;
+  buttons: GameButtonDefinition[];
+}
+
+export interface GameDialogsConfig {
+  activeDialogVariable?: string;
+  dialogs: GameDialogDefinition[];
+  legacyWinDialogFallback?: boolean;
 }
 
 export const DEFAULT_WORLD_CONFIG: WorldConfig = {

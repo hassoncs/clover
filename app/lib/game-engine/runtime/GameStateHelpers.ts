@@ -7,6 +7,7 @@ import type {
   StateMachineRuntimeState,
   GameEventBus,
 } from './types';
+import { getStateVar } from '@slopcade/shared';
 import { RESERVED_VARS } from './types';
 
 export function createGameState(def: GameDefinition): GameState {
@@ -39,14 +40,17 @@ export function createGameState(def: GameDefinition): GameState {
   
   if (def.stateMachines) {
     for (const sm of def.stateMachines) {
-      const state: StateMachineRuntimeState = {
-        current: sm.initialState,
+      const varKey = getStateVar(sm);
+      vars[varKey] = sm.initialState;
+      initialVars[varKey] = sm.initialState;
+      
+      const metadata: StateMachineRuntimeState = {
         previous: '',
         enteredAt: 0,
         transitionCount: 0,
       };
-      stateMachines[sm.id] = state;
-      initialStateMachines[sm.id] = { ...state };
+      stateMachines[sm.id] = metadata;
+      initialStateMachines[sm.id] = { ...metadata };
     }
   }
   

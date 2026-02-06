@@ -69,7 +69,7 @@ describe('createGameState', () => {
       }],
     }));
 
-    expect(state.stateMachines['player'].current).toBe('idle');
+    expect(state.vars['sm.player']).toBe('idle');
     expect(state.stateMachines['player'].transitionCount).toBe(0);
   });
 });
@@ -160,6 +160,76 @@ describe('list operations', () => {
     const popped = popFromList(state, 'items', 'front');
     expect(popped).toBe(1);
     expect(getList(state, 'items')).toEqual([2, 3]);
+  });
+});
+
+describe('state machine variable integration', () => {
+  it('state machine initial state is a regular variable', () => {
+    const state = createGameState(createMinimalDef({
+      stateMachines: [{
+        id: 'gameFlow',
+        initialState: 'idle',
+        states: [{ id: 'idle' }, { id: 'holding' }],
+        transitions: [],
+      }],
+    }));
+
+    expect(state.vars['sm.gameFlow']).toBe('idle');
+  });
+
+  it('custom stateVar overrides default sm.<id> key', () => {
+    const state = createGameState(createMinimalDef({
+      stateMachines: [{
+        id: 'combat',
+        stateVar: 'unitState',
+        initialState: 'patrol',
+        states: [{ id: 'patrol' }, { id: 'attack' }],
+        transitions: [],
+      }],
+    }));
+
+    expect(state.vars['unitState']).toBe('patrol');
+    expect(state.vars['sm.combat']).toBeUndefined();
+  });
+
+  it('reset restores state machine variable to initial', () => {
+    const state = createGameState(createMinimalDef({
+      stateMachines: [{
+        id: 'gameFlow',
+        initialState: 'idle',
+        states: [{ id: 'idle' }, { id: 'holding' }],
+        transitions: [],
+      }],
+    }));
+
+    state.vars['sm.gameFlow'] = 'holding';
+    resetGameState(state);
+
+    expect(state.vars['sm.gameFlow']).toBe('idle');
+  });
+});
+
+describe('dialog variable integration', () => {
+  it('activeDialog variable controls dialog visibility', () => {
+    const state = createGameState(createMinimalDef({
+      variables: { activeDialog: '' },
+    }));
+
+    expect(state.vars['activeDialog']).toBe('');
+
+    setVar(state, 'activeDialog', 'levelComplete');
+    expect(state.vars['activeDialog']).toBe('levelComplete');
+
+    setVar(state, 'activeDialog', '');
+    expect(state.vars['activeDialog']).toBe('');
+  });
+
+  it('dialog button events flow through pendingEvents', () => {
+    const state = createGameState(createMinimalDef());
+
+    triggerEvent(state, 'dialog_next_level', { source: 'button' });
+    expect(state.pendingEvents.has('dialog_next_level')).toBe(true);
+    expect(state.pendingEvents.get('dialog_next_level')).toEqual({ source: 'button' });
   });
 });
 

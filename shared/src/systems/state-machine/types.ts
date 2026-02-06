@@ -26,9 +26,14 @@ export interface TransitionDefinition {
 export interface StateMachineDefinition {
   id: string;
   owner?: string;
+  stateVar?: string;
   initialState: string;
   states: StateDefinition[];
   transitions: TransitionDefinition[];
+}
+
+export function getStateVar(def: StateMachineDefinition): string {
+  return def.stateVar ?? `sm.${def.id}`;
 }
 
 export interface StateMachineState {

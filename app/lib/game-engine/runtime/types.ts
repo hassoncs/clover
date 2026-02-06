@@ -23,7 +23,6 @@ export type GameStateValue = 'ready' | 'playing' | 'paused' | 'won' | 'lost';
 // =============================================================================
 
 export interface StateMachineRuntimeState {
-  current: string;
   previous: string;
   enteredAt: number;
   transitionCount: number;

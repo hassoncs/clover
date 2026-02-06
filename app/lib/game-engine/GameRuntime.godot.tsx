@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import type {
   GameDefinition,
+  GameDialogDefinition,
   TapZoneButton,
   VirtualButtonType,
   DPadDirection,
@@ -332,28 +333,6 @@ export function GameRuntimeGodot({
 
       eventBusUnsubRef.current = subscribeToGameEvents(game.events, {
         onGameStateChange: (state) => {
-          if (state === "won" && definition.persistence) {
-            const vars = game.gameState.vars;
-            const moveCount = (vars['moveCount'] as number) || 0;
-            const startTime = (vars['startTime'] as number) || 0;
-
-            const stats = [];
-
-            if (startTime > 0) {
-              const duration = (Date.now() - startTime) / 1000;
-              const minutes = Math.floor(duration / 60);
-              const seconds = Math.floor(duration % 60);
-              const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-              stats.push({ label: "Time", value: timeStr });
-            }
-
-            if (moveCount > 0) {
-              stats.push({ label: "Moves", value: moveCount.toString() });
-            }
-
-            setWinStats(stats);
-            setShowWinDialog(true);
-          }
           onGameEndRef.current?.(state);
         },
         onScoreChange: (score) => onScoreChangeRef.current?.(score),
@@ -409,8 +388,33 @@ export function GameRuntimeGodot({
     scale: 1,
   });
 
-  const [showWinDialog, setShowWinDialog] = useState(false);
-  const [winStats, setWinStats] = useState<Array<{ label: string; value: string }>>([]);
+  const activeDialogVariable = definition.dialogs?.activeDialogVariable ?? "activeDialog";
+
+  const resolveActiveDialog = useCallback((): GameDialogDefinition | null => {
+    const game = gameRef.current;
+    if (!game || !definition.dialogs?.dialogs) return null;
+    const activeId = game.gameState.vars[activeDialogVariable] as string;
+    if (!activeId) return null;
+    return definition.dialogs.dialogs.find(d => d.id === activeId) ?? null;
+  }, [definition.dialogs, activeDialogVariable]);
+
+  const handleDialogButtonPress = useCallback((eventName: string, data?: Record<string, unknown>) => {
+    const game = gameRef.current;
+    if (!game) return;
+    StateHelpers.triggerEvent(game.gameState, eventName, data);
+  }, []);
+
+  const handleDialogDismiss = useCallback((dismissEventName?: string) => {
+    const game = gameRef.current;
+    if (!game) return;
+    if (dismissEventName) {
+      StateHelpers.triggerEvent(game.gameState, dismissEventName);
+    } else {
+      game.gameState.vars[activeDialogVariable] = "";
+    }
+  }, [activeDialogVariable]);
+
+
 
   const handleVariableChange = useCallback((key: string, value: number) => {
     setGameState((prev) => ({
@@ -1617,7 +1621,6 @@ export function GameRuntimeGodot({
   }, []);
 
   const handleRestart = useCallback(() => {
-    setShowWinDialog(false);
     if (onRequestRestart) {
       onRequestRestart();
       return;
@@ -1683,50 +1686,41 @@ export function GameRuntimeGodot({
     }
   }, [onRequestRestart, definition, setupSubscriptions]);
 
-  const handleNextLevel = useCallback(async () => {
-    if (!definition.persistence) return;
-    
-    setShowWinDialog(false);
-    
-    try {
-      if (progressHook?.saveProgress && progressHook.progress) {
-        const progress = progressHook.progress as any;
-        const currentLevel = progress.currentLevel || 1;
-        const nextLevel = currentLevel + 1;
-        
-        await progressHook.saveProgress({
-          currentLevel: nextLevel,
-          highestLevelCompleted: Math.max(progress.highestLevelCompleted || 0, currentLevel),
-          totalLevelsCompleted: (progress.totalLevelsCompleted || 0) + 1,
-        });
-      } else if (definition.persistence.storageKey) {
-        const key = definition.persistence.storageKey;
-        const defaultProgress = definition.persistence.defaultProgress || {};
-        
-        const stored = (await getStorageItem(key, defaultProgress)) as Record<string, any>;
-        const currentLevel = (stored.currentLevel as number) || 1;
-        const nextLevel = currentLevel + 1;
-        
-        const newProgress = {
-          ...stored,
-          currentLevel: nextLevel,
-          highestLevelCompleted: Math.max((stored.highestLevelCompleted as number) || 0, currentLevel),
-          totalLevelsCompleted: ((stored.totalLevelsCompleted as number) || 0) + 1,
-        };
-        
-        await setStorageItem(key, newProgress);
-      }
-      
-      if (onNextLevel) {
-        onNextLevel();
-      } else if (onRequestRestart) {
-        onRequestRestart();
-      }
-    } catch (e) {
-      logger.error("state", "Failed to save progress for next level:", e);
-      if (onRequestRestart) onRequestRestart();
+  const handleSaveProgress = useCallback(async () => {
+    const game = gameRef.current;
+    if (!game || !definition.persistence) return;
+
+    const vars = game.gameState.vars;
+    const currentLevel = (vars['currentLevel'] as number) || 1;
+
+    if (progressHook?.saveProgress) {
+      const progress = (progressHook.progress ?? {}) as Record<string, unknown>;
+      await progressHook.saveProgress({
+        currentLevel,
+        highestLevelCompleted: Math.max((progress.highestLevelCompleted as number) || 0, currentLevel - 1),
+        totalLevelsCompleted: ((progress.totalLevelsCompleted as number) || 0) + 1,
+      } as Partial<unknown>);
+    } else if (definition.persistence.storageKey) {
+      const key = definition.persistence.storageKey;
+      const defaultProgress = definition.persistence.defaultProgress || {};
+      const stored = (await getStorageItem(key, defaultProgress)) as Record<string, unknown>;
+      await setStorageItem(key, {
+        ...stored,
+        currentLevel,
+        highestLevelCompleted: Math.max((stored.highestLevelCompleted as number) || 0, currentLevel - 1),
+        totalLevelsCompleted: ((stored.totalLevelsCompleted as number) || 0) + 1,
+      });
     }
-  }, [definition.persistence, onNextLevel, onRequestRestart, progressHook]);
+  }, [definition.persistence, progressHook]);
+
+  const prevLevelRef = useRef<number | null>(null);
+  useEffect(() => {
+    const currentLevel = gameState.variables['currentLevel'] as number | undefined;
+    if (currentLevel != null && prevLevelRef.current != null && currentLevel !== prevLevelRef.current) {
+      handleSaveProgress();
+    }
+    prevLevelRef.current = currentLevel ?? null;
+  }, [gameState.variables, handleSaveProgress]);
 
   const handleLayout = useCallback(
     (event: { nativeEvent: { layout: { width: number; height: number } } }) => {
@@ -2140,7 +2134,7 @@ export function GameRuntimeGodot({
         </View>
       )}
 
-      {(gameState.state === "won" || gameState.state === "lost") && !showWinDialog && (
+      {(gameState.state === "won" || gameState.state === "lost") && !resolveActiveDialog() && (
         <View style={styles.overlay}>
           <Text style={styles.overlayTitle}>
             {gameState.state === "won" ? "🎉 You Win!" : "💀 Game Over"}
@@ -2160,24 +2154,30 @@ export function GameRuntimeGodot({
         </View>
       )}
 
-      <GameDialog
-        visible={showWinDialog}
-        title="Level Complete!"
-        message="Great job!"
-        stats={winStats}
-        buttons={[
-          {
-            label: "Next Level",
-            onPress: handleNextLevel,
-            variant: "primary",
-          },
-          {
-            label: "Replay Level",
-            onPress: handleRestart,
-            variant: "secondary",
-          },
-        ]}
-      />
+      {(() => {
+        const dialog = resolveActiveDialog();
+        if (!dialog) return null;
+        const vars = gameRef.current?.gameState.vars ?? {};
+        return (
+          <GameDialog
+            visible={true}
+            title={dialog.title}
+            message={dialog.message}
+            stats={dialog.stats?.map(s => ({
+              label: s.label,
+              value: s.format
+                ? s.format.replace('{value}', String(vars[s.variable] ?? ''))
+                : String(vars[s.variable] ?? ''),
+            }))}
+            buttons={dialog.buttons.map(b => ({
+              label: b.label,
+              variant: b.variant,
+              onPress: () => handleDialogButtonPress(b.eventName, b.data),
+            }))}
+            onClose={dialog.dismissible ? () => handleDialogDismiss(dialog.dismissEventName) : undefined}
+          />
+        );
+      })()}
 
       {__DEV__ && hasTunables(definition.variables as any) && (
         <TuningPanel

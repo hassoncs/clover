@@ -1,5 +1,6 @@
 export * from './common';
 export * from './visual';
+export { getStateVar } from '../systems/state-machine/types';
 export * from './physics';
 export * from './collider';
 export * from './character';
@@ -22,6 +23,7 @@ export * from './sync-world-ops';
 export * from './async-world-ops';
 export * from './debug-ops';
 export * from './style-presets';
+export * from './agent-run';
 export type {
   ContainerConfig,
   ContainerMatchRule,
