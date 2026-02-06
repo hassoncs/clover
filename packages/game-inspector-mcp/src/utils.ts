@@ -11,7 +11,7 @@ export function normalizeGameName(name: string): GameInfo | null {
 }
 
 export function buildGameUrl(gameId: string, baseUrl: string): string {
-  return `${baseUrl}/test-games/${gameId}?debug=true`;
+  return `${baseUrl}/game/${gameId}?debug=true`;
 }
 
 export function buildExampleUrl(exampleId: string, baseUrl: string): string {

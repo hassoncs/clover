@@ -6,7 +6,7 @@ const DEFAULT_BASE_URL = "http://localhost:8085";
 
 async function main() {
   const gameId = process.argv[2] || "candyCrush";
-  const url = `${DEFAULT_BASE_URL}/test-games/${gameId}?debug=true`;
+  const url = `${DEFAULT_BASE_URL}/game/${gameId}?debug=true`;
   
   console.log(`Opening ${url}...`);
   

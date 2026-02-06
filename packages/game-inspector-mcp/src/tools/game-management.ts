@@ -89,7 +89,7 @@ export function registerGameManagementTools(server: McpServer, state: GameInspec
                 examples: examples.map((e: GameInfo) => ({ name: e.id, path: e.path })),
                 totalGames: games.length,
                 totalExamples: examples.length,
-                usage: "Pass the game name or path to 'open' to open that game/example. Examples: 'slopeggle', '/test-games/candyCrush', '/examples/draggable_cubes'",
+                usage: "Pass the game name or path to 'open' to open that game/example. Examples: 'slopeggle', '/game/candyCrush', '/examples/draggable_cubes'",
               },
               null,
               2

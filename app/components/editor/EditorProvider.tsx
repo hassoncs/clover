@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useRef,
   useMemo,
+  useState,
   type ReactNode,
 } from "react";
 import type { GameDefinition, GameEntity, AssetPlacement } from "@slopcade/shared";
@@ -459,9 +460,11 @@ interface EditorContextValue {
   canRedo: boolean;
   isEphemeral: boolean;
   ephemeralSource: EphemeralSource | undefined;
+  showAIRunPanel: boolean;
 
   setMode: (mode: EditorMode) => void;
   toggleMode: () => void;
+  toggleAIRunPanel: () => void;
   selectEntity: (id: string | null) => void;
   setActiveTab: (tab: EditorTab) => void;
   setSheetSnapPoint: (point: SheetSnapPoint) => void;
@@ -517,6 +520,7 @@ export function EditorProvider({
     cameraZoom: initialDefinition.camera?.zoom ?? 1,
   };
 
+  const [showAIRunPanel, setShowAIRunPanel] = useState(false);
   const [state, dispatch] = useReducer(editorReducer, initialState);
 
   const setMode = useCallback((mode: EditorMode) => {
@@ -526,6 +530,10 @@ export function EditorProvider({
   const toggleMode = useCallback(() => {
     dispatch({ type: "SET_MODE", mode: state.mode === "edit" ? "playtest" : "edit" });
   }, [state.mode]);
+
+  const toggleAIRunPanel = useCallback(() => {
+    setShowAIRunPanel(prev => !prev);
+  }, []);
 
   const selectEntity = useCallback((id: string | null) => {
     dispatch({ type: "SELECT_ENTITY", entityId: id });
@@ -610,9 +618,11 @@ export function EditorProvider({
       canRedo: state.redoStack.length > 0,
       isEphemeral,
       ephemeralSource,
+      showAIRunPanel,
 
       setMode,
       toggleMode,
+      toggleAIRunPanel,
       selectEntity,
       setActiveTab,
       setSheetSnapPoint,
@@ -658,6 +668,8 @@ export function EditorProvider({
       selectedEntity,
       isEphemeral,
       ephemeralSource,
+      showAIRunPanel,
+      toggleAIRunPanel,
     ]
   );
 

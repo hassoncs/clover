@@ -1,0 +1,547 @@
+{
+  "metadata": {
+    "id": "02b87353-0c1f-45a3-8868-f75ea5362778",
+    "slug": "mrPotatoHead",
+    "title": "Mr. Potato Head",
+    "description": "Drag and drop pieces onto the potato to build your own Mr. Potato Head!",
+    "instructions": "Drag pieces from the drawer onto the potato. Tap Reset to start over!",
+    "version": "1.0.0"
+  },
+  "assetSystem": {
+    "activePackId": "b3f4a5d6-0001-4000-8000-potato000001",
+    "packIds": [
+      "b3f4a5d6-0001-4000-8000-potato000001"
+    ]
+  },
+  "background": {
+    "type": "static",
+    "whatDescription": "A soft, blurry, colorful children's bedroom background with warm lighting, toys on shelves, pastel walls, and a cozy playful atmosphere, out of focus bokeh effect"
+  },
+  "world": {
+    "gravity": {
+      "x": 0,
+      "y": 0
+    },
+    "pixelsPerMeter": 50,
+    "bounds": {
+      "width": 12,
+      "height": 16
+    }
+  },
+  "camera": {
+    "type": "fixed",
+    "zoom": 1
+  },
+  "templates": {
+    "potatoBody": {
+      "id": "potatoBody",
+      "tags": [
+        "potato"
+      ],
+      "whatDescription": "A large, blank, smooth brown potato body shape for Mr. Potato Head, simple and clean with no facial features, slightly oval, cartoon style, front-facing",
+      "visual": {
+        "type": "image",
+        "imageWidth": 5,
+        "imageHeight": 6
+      }
+    },
+    "drawer": {
+      "id": "drawer",
+      "tags": [
+        "drawer"
+      ],
+      "whatDescription": "A wooden toy drawer or tray with a flat bottom, cartoon style, warm brown wood grain, slightly rounded edges, viewed from the front, open top",
+      "visual": {
+        "type": "image",
+        "imageWidth": 11,
+        "imageHeight": 5
+      }
+    },
+    "leftEye": {
+      "id": "leftEye",
+      "tags": [
+        "piece",
+        "eye",
+        "leftEye"
+      ],
+      "whatDescription": "A single cartoon googly eye for Mr. Potato Head, round white with black pupil, plastic toy style, left eye",
+      "visual": {
+        "type": "image",
+        "imageWidth": 0.8,
+        "imageHeight": 0.8
+      },
+      "physics": {
+        "bodyType": "kinematic",
+        "density": 0
+      },
+      "collider": {
+        "shape": "box",
+        "width": 0.7200000000000001,
+        "height": 0.7200000000000001
+      },
+      "behaviors": [
+        {
+          "type": "draggable",
+          "mode": "kinematic",
+          "requireDirectHit": true
+        }
+      ]
+    },
+    "rightEye": {
+      "id": "rightEye",
+      "tags": [
+        "piece",
+        "eye",
+        "rightEye"
+      ],
+      "whatDescription": "A single cartoon googly eye for Mr. Potato Head, round white with black pupil, plastic toy style, right eye",
+      "visual": {
+        "type": "image",
+        "imageWidth": 0.8,
+        "imageHeight": 0.8
+      },
+      "physics": {
+        "bodyType": "kinematic",
+        "density": 0
+      },
+      "collider": {
+        "shape": "box",
+        "width": 0.7200000000000001,
+        "height": 0.7200000000000001
+      },
+      "behaviors": [
+        {
+          "type": "draggable",
+          "mode": "kinematic",
+          "requireDirectHit": true
+        }
+      ]
+    },
+    "nose": {
+      "id": "nose",
+      "tags": [
+        "piece",
+        "nose"
+      ],
+      "whatDescription": "A big orange carrot-shaped nose for Mr. Potato Head, cartoon plastic toy style, pointing forward",
+      "visual": {
+        "type": "image",
+        "imageWidth": 0.8,
+        "imageHeight": 1
+      },
+      "physics": {
+        "bodyType": "kinematic",
+        "density": 0
+      },
+      "collider": {
+        "shape": "box",
+        "width": 0.7200000000000001,
+        "height": 0.9
+      },
+      "behaviors": [
+        {
+          "type": "draggable",
+          "mode": "kinematic",
+          "requireDirectHit": true
+        }
+      ]
+    },
+    "mouth": {
+      "id": "mouth",
+      "tags": [
+        "piece",
+        "mouth"
+      ],
+      "whatDescription": "A wide red smiling mouth with white teeth for Mr. Potato Head, plastic toy style, cartoon, happy expression",
+      "visual": {
+        "type": "image",
+        "imageWidth": 1.4,
+        "imageHeight": 0.7
+      },
+      "physics": {
+        "bodyType": "kinematic",
+        "density": 0
+      },
+      "collider": {
+        "shape": "box",
+        "width": 1.26,
+        "height": 0.63
+      },
+      "behaviors": [
+        {
+          "type": "draggable",
+          "mode": "kinematic",
+          "requireDirectHit": true
+        }
+      ]
+    },
+    "mustache": {
+      "id": "mustache",
+      "tags": [
+        "piece",
+        "mustache"
+      ],
+      "whatDescription": "A thick black handlebar mustache for Mr. Potato Head, plastic toy style, cartoon, curled ends",
+      "visual": {
+        "type": "image",
+        "imageWidth": 1.6,
+        "imageHeight": 0.6
+      },
+      "physics": {
+        "bodyType": "kinematic",
+        "density": 0
+      },
+      "collider": {
+        "shape": "box",
+        "width": 1.4400000000000002,
+        "height": 0.54
+      },
+      "behaviors": [
+        {
+          "type": "draggable",
+          "mode": "kinematic",
+          "requireDirectHit": true
+        }
+      ]
+    },
+    "leftArm": {
+      "id": "leftArm",
+      "tags": [
+        "piece",
+        "arm",
+        "leftArm"
+      ],
+      "whatDescription": "A small blue plastic left arm and hand for Mr. Potato Head, cartoon toy style, open palm, waving gesture",
+      "visual": {
+        "type": "image",
+        "imageWidth": 1.2,
+        "imageHeight": 0.8
+      },
+      "physics": {
+        "bodyType": "kinematic",
+        "density": 0
+      },
+      "collider": {
+        "shape": "box",
+        "width": 1.08,
+        "height": 0.7200000000000001
+      },
+      "behaviors": [
+        {
+          "type": "draggable",
+          "mode": "kinematic",
+          "requireDirectHit": true
+        }
+      ]
+    },
+    "rightArm": {
+      "id": "rightArm",
+      "tags": [
+        "piece",
+        "arm",
+        "rightArm"
+      ],
+      "whatDescription": "A small blue plastic right arm and hand for Mr. Potato Head, cartoon toy style, open palm, waving gesture",
+      "visual": {
+        "type": "image",
+        "imageWidth": 1.2,
+        "imageHeight": 0.8
+      },
+      "physics": {
+        "bodyType": "kinematic",
+        "density": 0
+      },
+      "collider": {
+        "shape": "box",
+        "width": 1.08,
+        "height": 0.7200000000000001
+      },
+      "behaviors": [
+        {
+          "type": "draggable",
+          "mode": "kinematic",
+          "requireDirectHit": true
+        }
+      ]
+    },
+    "hat": {
+      "id": "hat",
+      "tags": [
+        "piece",
+        "hat"
+      ],
+      "whatDescription": "A small black bowler hat or derby hat for Mr. Potato Head, classic style, plastic toy, cartoon, shiny",
+      "visual": {
+        "type": "image",
+        "imageWidth": 1.8,
+        "imageHeight": 1
+      },
+      "physics": {
+        "bodyType": "kinematic",
+        "density": 0
+      },
+      "collider": {
+        "shape": "box",
+        "width": 1.62,
+        "height": 0.9
+      },
+      "behaviors": [
+        {
+          "type": "draggable",
+          "mode": "kinematic",
+          "requireDirectHit": true
+        }
+      ]
+    },
+    "ears": {
+      "id": "ears",
+      "tags": [
+        "piece",
+        "ears"
+      ],
+      "whatDescription": "A pair of large pink plastic ears for Mr. Potato Head, attached by a headband piece, cartoon toy style",
+      "visual": {
+        "type": "image",
+        "imageWidth": 2,
+        "imageHeight": 0.8
+      },
+      "physics": {
+        "bodyType": "kinematic",
+        "density": 0
+      },
+      "collider": {
+        "shape": "box",
+        "width": 1.8,
+        "height": 0.7200000000000001
+      },
+      "behaviors": [
+        {
+          "type": "draggable",
+          "mode": "kinematic",
+          "requireDirectHit": true
+        }
+      ]
+    },
+    "resetButton": {
+      "id": "resetButton",
+      "tags": [
+        "resetButton"
+      ],
+      "visual": {
+        "type": "rect",
+        "width": 2.4,
+        "height": 0.8,
+        "color": "#e74c3c"
+      },
+      "physics": {
+        "bodyType": "static",
+        "density": 0
+      },
+      "collider": {
+        "shape": "box",
+        "width": 2.4,
+        "height": 0.8
+      }
+    },
+    "resetLabel": {
+      "id": "resetLabel",
+      "tags": [
+        "resetLabel"
+      ],
+      "visual": {
+        "type": "text",
+        "text": "Reset",
+        "fontSize": 18,
+        "color": "#ffffff"
+      }
+    }
+  },
+  "entities": [
+    {
+      "id": "potatoBody",
+      "name": "Potato Body",
+      "template": "potatoBody",
+      "transform": {
+        "x": 0,
+        "y": 2.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      },
+      "layer": 0
+    },
+    {
+      "id": "drawer",
+      "name": "Drawer",
+      "template": "drawer",
+      "transform": {
+        "x": 0,
+        "y": -4.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      },
+      "layer": 0
+    },
+    {
+      "id": "leftEye",
+      "name": "Left Eye",
+      "template": "leftEye",
+      "transform": {
+        "x": -3.5,
+        "y": -3.2,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      },
+      "layer": 2
+    },
+    {
+      "id": "rightEye",
+      "name": "Right Eye",
+      "template": "rightEye",
+      "transform": {
+        "x": -2,
+        "y": -3.2,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      },
+      "layer": 2
+    },
+    {
+      "id": "nose",
+      "name": "Nose",
+      "template": "nose",
+      "transform": {
+        "x": -0.5,
+        "y": -3.2,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      },
+      "layer": 2
+    },
+    {
+      "id": "ears",
+      "name": "Ears",
+      "template": "ears",
+      "transform": {
+        "x": 1.5,
+        "y": -3.2,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      },
+      "layer": 2
+    },
+    {
+      "id": "hat",
+      "name": "Hat",
+      "template": "hat",
+      "transform": {
+        "x": 3.5,
+        "y": -3.2,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      },
+      "layer": 2
+    },
+    {
+      "id": "mouth",
+      "name": "Mouth",
+      "template": "mouth",
+      "transform": {
+        "x": -3,
+        "y": -5.2,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      },
+      "layer": 2
+    },
+    {
+      "id": "mustache",
+      "name": "Mustache",
+      "template": "mustache",
+      "transform": {
+        "x": -0.5,
+        "y": -5.2,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      },
+      "layer": 2
+    },
+    {
+      "id": "leftArm",
+      "name": "Left Arm",
+      "template": "leftArm",
+      "transform": {
+        "x": 2,
+        "y": -5.2,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      },
+      "layer": 2
+    },
+    {
+      "id": "rightArm",
+      "name": "Right Arm",
+      "template": "rightArm",
+      "transform": {
+        "x": 4,
+        "y": -5.2,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      },
+      "layer": 2
+    },
+    {
+      "id": "resetButton",
+      "name": "Reset Button",
+      "template": "resetButton",
+      "transform": {
+        "x": 0,
+        "y": -7.2,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      },
+      "layer": 3
+    },
+    {
+      "id": "resetLabel",
+      "name": "Reset Label",
+      "template": "resetLabel",
+      "transform": {
+        "x": 0,
+        "y": -7.2,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      },
+      "layer": 4
+    }
+  ],
+  "rules": [
+    {
+      "id": "reset_pieces",
+      "name": "Reset all pieces when reset button tapped",
+      "trigger": {
+        "type": "tap",
+        "target": "resetButton"
+      },
+      "actions": [
+        {
+          "type": "run_script",
+          "export": "resetPieces"
+        }
+      ]
+    }
+  ],
+  "script": "\nvar INITIAL_POSITIONS = {\n  leftEye:   { x: -3.5, y: -3.2 },\n  rightEye:  { x: -2.0, y: -3.2 },\n  nose:      { x: -0.5, y: -3.2 },\n  ears:      { x:  1.5, y: -3.2 },\n  hat:       { x:  3.5, y: -3.2 },\n  mouth:     { x: -3.0, y: -5.2 },\n  mustache:  { x: -0.5, y: -5.2 },\n  leftArm:   { x:  2.0, y: -5.2 },\n  rightArm:  { x:  4.0, y: -5.2 },\n};\n\nexports.resetPieces = function(ctx) {\n  if (ctx.isSequenceRunning('reset')) return;\n\n  ctx.startSequence('reset', async function(world) {\n    var keys = Object.keys(INITIAL_POSITIONS);\n    var last;\n    for (var i = 0; i < keys.length; i++) {\n      var id = keys[i];\n      var pos = INITIAL_POSITIONS[id];\n      last = world.animate(id, { x: pos.x, y: pos.y }, { duration: 350, easing: 'ease-in-out' });\n    }\n    await last;\n  });\n};\n"
+}

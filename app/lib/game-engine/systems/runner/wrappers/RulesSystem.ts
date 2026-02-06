@@ -27,7 +27,6 @@ import * as StateHelpers from '../../../runtime/GameStateHelpers';
 import { RESERVED_VARS } from '../../../runtime/types';
 import { logger } from '../../../debug/Logger';
 import { WorldOpsImpl } from '../../../WorldOpsImpl';
-import { getGlobalTweenSystem } from '../../../behaviors/TweenBehaviors';
 
 import {
   SpawnActionExecutor,
@@ -98,6 +97,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
   
   private actionRegistry: ActionRegistry;
   private runScriptActionExecutor: RunScriptActionExecutor;
+  private worldOps: WorldOpsImpl | null = null;
   
   private logicConditionEvaluator = new LogicConditionEvaluator();
   private physicsConditionEvaluator = new PhysicsConditionEvaluator();
@@ -161,20 +161,11 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
   
   initialize(ctx: SystemContext, _config: RulesSystemConfig): void {
     this.systemContext = ctx;
-    
-    const tweenSystem = getGlobalTweenSystem();
-    if (tweenSystem) {
-      const worldOps = new WorldOpsImpl(
-        ctx.entityManager,
-        ctx.physics,
-        ctx.bridge,
-        tweenSystem,
-        ctx.eventQueue,
-        () => this.getCurrentGameState()
-      );
-      
-      (ctx as any).worldOps = worldOps;
+
+    if (!ctx.worldOps) {
+      throw new Error('[RulesSystem] Missing worldOps in SystemContext');
     }
+    this.worldOps = ctx.worldOps;
     
     const containerSystem = new ContainerSystem(ctx.entityManager, { 
       containers: this.config.containers 
@@ -238,142 +229,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
     }
   }
   
-  private getCurrentGameState() {
-    return {
-      variables: this.runtimeState?.vars ?? {},
-      constants: undefined,
-    };
-  }
-  
-  update(ctx: UpdateContext, state: RulesSystemState): void;
-  update(
-    dt: number,
-    entityManager: import('../../../EntityManager').EntityManager,
-    collisions: import('../../../BehaviorContext').CollisionInfo[],
-    input: import('../../../BehaviorContext').InputState,
-    inputEvents: InputEvents,
-    physics: import('../../../../physics2d/Physics2D').Physics2D,
-    gameState: RuntimeGameState,
-    events: GameEventBus,
-    computedValues?: ComputedValueSystem,
-    evalContext?: EvalContext,
-    camera?: CameraSystem,
-    setTimeScale?: (scale: number, duration?: number) => void,
-    inputEntityManager?: InputEntityManager,
-    playSound?: (soundId: string, volume?: number) => void,
-    bridge?: import('../../../../godot/types').GodotBridge
-  ): void;
-  update(ctxOrDt: UpdateContext | number, stateOrEntityManager: RulesSystemState | import('../../../EntityManager').EntityManager, ...args: any[]): void {
-    if (typeof ctxOrDt === 'number') {
-      const dt = ctxOrDt;
-      const entityManager = stateOrEntityManager as import('../../../EntityManager').EntityManager;
-      const [
-        collisions, 
-        input, 
-        inputEvents, 
-        physics, 
-        gameState, 
-        events, 
-        computedValues,
-        evalContext,
-        camera,
-        setTimeScale,
-        inputEntityManager,
-        playSound,
-        bridge
-      ] = args;
-
-      this.systemContext = {
-        entityManager,
-        physics,
-        bridge: bridge || this.systemContext?.bridge || ({ playSound: () => {} } as any),
-        eventBus: events || this.eventBus || ({ emit: () => {}, on: () => {}, off: () => {} } as any),
-        eventQueue: this.systemContext?.eventQueue || ({ enqueue: () => {}, process: () => {}, clear: () => {} } as any),
-      };
-      this.runtimeState = gameState;
-      this.eventBus = events;
-      this.camera = camera;
-      this.currentState = gameState;
-      this.currentEvents = events;
-      this.computedValues = computedValues;
-      this.inputEntityManager = inputEntityManager;
-
-      if (StateHelpers.getGameStateValue(gameState) !== "playing") {
-        return;
-      }
-
-      const elapsed = StateHelpers.getElapsed(gameState) + dt;
-      StateHelpers.setElapsed(gameState, elapsed);
-
-      const ruleContext: RuleContext = {
-        entityManager,
-        inputEntityManager: this.inputEntityManager,
-        physics,
-        mutator: this,
-        camera,
-        bridge,
-        setTimeScale: setTimeScale || (() => {}),
-        playSound: playSound || ((soundId: string) => this.systemContext!.bridge.playSound(soundId)),
-        setEntityTargetPosition: () => {},
-        elapsed,
-        collisions,
-        events: gameState.pendingEvents,
-        input: input as any,
-        inputEvents,
-        computedValues: this.computedValues,
-        evalContext: evalContext || {
-          time: elapsed,
-          wave: 1,
-          dt,
-          frameId: 0,
-          variables: {},
-          random: Math.random,
-          entityManager,
-        },
-      } as unknown as RuleContext & { cooldowns: Map<string, number> };
-      (ruleContext as any).cooldowns = gameState.cooldowns;
-
-      if (this.checkWinCondition(ruleContext)) {
-        this.setGameState("won");
-        return;
-      }
-
-      if (this.checkLoseCondition(ruleContext)) {
-        this.setGameState("lost");
-        return;
-      }
-
-      for (const rule of this.rules) {
-        if (rule.enabled === false) continue;
-        if (rule.fireOnce && gameState.firedOnce.has(rule.id)) continue;
-
-        const cooldownEnd = gameState.cooldowns.get(rule.id);
-        if (cooldownEnd && elapsed < cooldownEnd) continue;
-
-        const triggerResult = this.evaluateTrigger(rule.trigger, ruleContext);
-        if (triggerResult) {
-          const conditionsResult = this.evaluateConditions(rule.conditions, ruleContext);
-          if (conditionsResult) {
-            this.executeActions(rule.actions, ruleContext);
-
-            if (rule.fireOnce) {
-              gameState.firedOnce.add(rule.id);
-            }
-
-            if (rule.cooldown) {
-              gameState.cooldowns.set(rule.id, elapsed + rule.cooldown);
-            }
-          }
-        }
-      }
-
-      this.processStateMachineEvents(gameState);
-      StateHelpers.clearPendingEvents(gameState);
-
-      this.currentState = null;
-      this.currentEvents = null;
-    } else {
-      const ctx = ctxOrDt;
+  update(ctx: UpdateContext, _state: RulesSystemState): void {
       if (!this.systemContext || !this.runtimeState || !this.eventBus) return;
       
       this.currentState = this.runtimeState;
@@ -386,6 +242,8 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
         
         const elapsed = StateHelpers.getElapsed(this.runtimeState) + ctx.dt;
         StateHelpers.setElapsed(this.runtimeState, elapsed);
+        
+        this.worldOps?.updateTimers(ctx.dt);
         
         const variablesObj: Record<string, number | string | boolean> = {};
         for (const [key, value] of Object.entries(this.runtimeState.vars)) {
@@ -426,7 +284,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
           mutator: this,
           camera: this.camera,
           bridge: this.systemContext.bridge,
-          worldOps: this.systemContext.worldOps,
+          worldOps: this.worldOps,
           setTimeScale: () => {},
           playSound: (soundId: string) => this.systemContext!.bridge.playSound(soundId),
           setEntityTargetPosition: (entityId: string, x: number, y: number, config?: { duration?: number; easing?: string }) => {
@@ -505,7 +363,6 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
         this.currentState = null;
         this.currentEvents = null;
       }
-    }
   }
   
   destroy(): void {

@@ -39,7 +39,7 @@ export interface LoggerConfig {
 
 class GameLogger {
   private config: LogConfig = {
-    level: LogLevel.WARN,
+    level: LogLevel.DEBUG,
     categories: {},
   };
 

@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { View, Text } from "react-native";
+import { Platform, View, Text } from "react-native";
 
 function TabIcon({ name }: { name: string }) {
   const icons: Record<string, string> = {
@@ -26,10 +26,14 @@ export default function TabLayout() {
           backgroundColor: "#111",
           borderTopWidth: 1,
           borderTopColor: "#333",
-          height: 85,
-          paddingBottom: 30,
+          height: Platform.OS === "web" ? 75 : 85,
+          paddingBottom: Platform.OS === "web" ? 0 : 30,
           paddingTop: 10,
         },
+        ...(Platform.OS === "web" && {
+          tabBarHideOnKeyboard: false,
+          safeAreaInsets: { bottom: 0 },
+        }),
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: "600",

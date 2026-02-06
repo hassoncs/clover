@@ -17,15 +17,17 @@ export class TweenRuntimeSystem implements RuntimeSystem<TweenSystemConfig, Twee
   
   private tweenSystem: TweenSystem | null = null;
   
-  constructor() {}
+  constructor(private injectedTweenSystem?: TweenSystem) {}
   
   initialize(ctx: SystemContext, _config: TweenSystemConfig): void {
-    this.tweenSystem = new TweenSystem({
-      setEntityPosition: (entityId, x, y) => ctx.bridge.setPosition(entityId, x, y),
-      setEntityRotation: (entityId, angle) => ctx.bridge.setRotation(entityId, angle),
-      setEntityScale: (entityId, scaleX, scaleY) => ctx.bridge.setScale(entityId, scaleX, scaleY),
-      setEntityOpacity: (entityId, opacity) => ctx.bridge.setOpacity(entityId, opacity),
-    });
+    this.tweenSystem =
+      this.injectedTweenSystem ??
+      new TweenSystem({
+        setEntityPosition: (entityId, x, y) => ctx.bridge.setPosition(entityId, x, y),
+        setEntityRotation: (entityId, angle) => ctx.bridge.setRotation(entityId, angle),
+        setEntityScale: (entityId, scaleX, scaleY) => ctx.bridge.setScale(entityId, scaleX, scaleY),
+        setEntityOpacity: (entityId, opacity) => ctx.bridge.setOpacity(entityId, opacity),
+      });
     setGlobalTweenSystem(this.tweenSystem);
   }
   

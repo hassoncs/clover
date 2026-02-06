@@ -167,7 +167,7 @@ export default function MakerScreen() {
 
   const handleOpenTemplate = useCallback((templateId: string) => {
     setShowNewGameModal(false);
-    router.push({ pathname: "/test-games/[id]", params: { id: templateId } });
+    router.push({ pathname: "/game/[id]", params: { id: templateId } });
   }, [router]);
 
   const handleGoogleSignIn = useCallback(async () => {

@@ -79,15 +79,25 @@ func get_entity_node(entity_id: String) -> Node2D:
 var _js_callbacks: Array = []
 var _js_bridge_obj: JavaScriptObject = null
 var _debug_show_shapes: bool = false
+var _method_map: Dictionary = {}
+
+var _diag_process_frames: int = 0
+var _diag_physics_frames: int = 0
+var _diag_logged: bool = false
 
 func _ready() -> void:
 	print("[GameBridge] _ready() starting...")
+	print("[GameBridge] Platform: ", OS.get_name())
+	print("[GameBridge] Is web: ", OS.has_feature("web"))
+	print("[GameBridge] Physics engine setting: ", ProjectSettings.get_setting("physics/2d/physics_engine", "DEFAULT"))
 	_init_modules()
 	print("[GameBridge] Modules initialized")
 	_camera_controller.setup_camera()
 	print("[GameBridge] Camera setup complete")
+	_build_method_map()
 	_setup_js_bridge()
 	print("[GameBridge] JS Bridge setup complete")
+	_log_physics_diagnostics()
 
 func set_inspect_mode(enabled: bool) -> void:
 	if _debug_bridge: _debug_bridge.get_time_module().set_inspect_mode(enabled)
@@ -139,8 +149,119 @@ func _register_core_query_handlers() -> void:
 	_query_system.register_handler("screenToWorld", func(args): return _screen_to_world_impl(float(args[0]), float(args[1])) if args.size() >= 2 else null)
 	_query_system.register_handler("getSplatTexture", func(_args): return get_splat_texture())
 
+func _build_method_map() -> void:
+	_method_map = {
+		# Core lifecycle
+		"load_game_json": func(args): return load_game_json(str(args[0])) if args.size() > 0 else false,
+		"clear_game": func(_args): clear_game(),
+		"set_inspect_mode": func(args): set_inspect_mode(bool(args[0])) if args.size() >= 1 else null,
+		"pause_physics": func(_args): pause_physics(),
+		"resume_physics": func(_args): resume_physics(),
+		"load_custom_scene": func(args): return load_custom_scene(str(args[0])) if args.size() > 0 else false,
+		# Entity management
+		"spawn_entity": _entity_manager._js_spawn_entity,
+		"spawn_entity_with_id": func(args): return spawn_entity_with_id(str(args[0]), float(args[1]), float(args[2]), str(args[3])) if args.size() >= 4 else null,
+		"destroy_entity": _entity_manager._js_destroy_entity,
+		"get_entity_transform": _entity_manager._js_get_entity_transform,
+		"get_all_transforms": _transform_system._js_get_all_transforms,
+		"get_all_properties": _property_collector._js_get_all_properties,
+		"get_all_bodies": _entity_manager._js_get_all_bodies,
+		"set_user_data": _entity_manager._js_set_user_data,
+		"get_user_data": _entity_manager._js_get_user_data,
+		# Sync
+		"on_transform_sync": _sync_system._js_on_transform_sync,
+		"on_property_sync": _sync_system._js_on_property_sync,
+		"set_watch_config": _property_collector._js_set_watch_config,
+		"get_transform": _sync_system._js_get_transform,
+		"get_transforms": _sync_system._js_get_transforms,
+		"set_tracked_entities": _sync_system._js_set_tracked_entities,
+		# Physics
+		"set_linear_velocity": _physics_controller._js_set_linear_velocity,
+		"set_angular_velocity": _physics_controller._js_set_angular_velocity,
+		"apply_impulse": _physics_controller._js_apply_impulse,
+		"apply_force": _physics_controller._js_apply_force,
+		"apply_torque": _physics_controller._js_apply_torque,
+		"get_linear_velocity": _physics_controller._js_get_linear_velocity,
+		"get_angular_velocity": _physics_controller._js_get_angular_velocity,
+		# Transform
+		"set_transform": _transform_system._js_set_transform,
+		"set_position": _transform_system._js_set_position,
+		"set_rotation": _transform_system._js_set_rotation,
+		"set_scale": _transform_system._js_set_scale,
+		# Visual
+		"set_opacity": _visual_renderer._js_set_opacity,
+		"set_visible": _visual_renderer._js_set_visible,
+		"set_entity_image": _visual_renderer._js_set_entity_image,
+		"set_entity_image_from_file": func(args): _visual_renderer.set_entity_image_from_file(str(args[0]), str(args[1]), float(args[2]), float(args[3])) if args.size() >= 4 else null,
+		"set_entity_atlas_region": _visual_renderer._js_set_entity_atlas_region,
+		"set_entity_atlas_region_from_file": func(args): _visual_renderer.set_entity_atlas_region_from_file(str(args[0]), str(args[1]), float(args[2]), float(args[3]), float(args[4]), float(args[5]), float(args[6]), float(args[7])) if args.size() >= 8 else null,
+		"preload_textures": _visual_renderer._js_preload_textures,
+		"set_debug_show_shapes": _visual_renderer._js_set_debug_show_shapes,
+		"set_debug_settings": _visual_renderer._js_set_debug_settings,
+		"clear_texture_cache": func(args): _visual_renderer.clear_texture_cache(str(args[0]) if args.size() > 0 else ""),
+		# Joints
+		"create_revolute_joint": _joint_manager._js_create_revolute_joint,
+		"create_distance_joint": _joint_manager._js_create_distance_joint,
+		"create_prismatic_joint": _joint_manager._js_create_prismatic_joint,
+		"create_weld_joint": _joint_manager._js_create_weld_joint,
+		"create_mouse_joint": _joint_manager._js_create_mouse_joint,
+		"destroy_joint": _joint_manager._js_destroy_joint,
+		"destroy_mouse_joint_for_entity": _joint_manager._js_destroy_mouse_joint_for_entity,
+		"set_motor_speed": _joint_manager._js_set_motor_speed,
+		"set_mouse_target": _joint_manager._js_set_mouse_target,
+		"get_last_joint_id": _joint_manager._js_get_last_joint_id,
+		# Queries
+		"query_point": _physics_queries._js_query_point,
+		"query_point_entity": _physics_queries._js_query_point_entity,
+		"query_aabb": _physics_queries._js_query_aabb,
+		"raycast": _physics_queries._js_raycast,
+		"screen_to_world": func(args): return _screen_to_world_impl(float(args[0]), float(args[1])) if args.size() >= 2 else {"x": 0, "y": 0},
+		# Input
+		"send_input": _input_router._js_send_input,
+		"on_input_event": _event_emitter._js_on_input_event,
+		"on_collision": _event_emitter._js_on_collision,
+		"on_entity_destroyed": _event_emitter._js_on_entity_destroyed,
+		"on_sensor_begin": _event_emitter._js_on_sensor_begin,
+		"on_sensor_end": _event_emitter._js_on_sensor_end,
+		# Camera
+		"set_camera_target": _camera_controller._js_set_camera_target,
+		"set_camera_position": _camera_controller._js_set_camera_position,
+		"set_camera_zoom": _camera_controller._js_set_camera_zoom,
+		# UI
+		"spawn_particle": _ui_manager._js_spawn_particle,
+		"play_sound": _ui_manager._js_play_sound,
+		"create_ui_button": _ui_manager._js_create_ui_button,
+		"destroy_ui_button": _ui_manager._js_destroy_ui_button,
+		"on_ui_button_event": _ui_manager._js_on_ui_button_event,
+		"create_themed_ui_component": func(args): _ui_manager.create_themed_ui_component(str(args[0]), int(args[1]), str(args[2]), float(args[3]), float(args[4]), float(args[5]), float(args[6]), str(args[7]) if args.size() > 7 else "") if args.size() >= 7 else null,
+		"destroy_themed_ui_component": func(args): _ui_manager.destroy_themed_ui_component(str(args[0])) if args.size() >= 1 else null,
+		# 3D
+		"show_3d_model": func(args): return _viewport_3d.load_glb(str(args[0])) != null if _viewport_3d and args.size() > 0 else false,
+		"show_3d_model_from_url": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.load_glb_async(str(args[0])),
+		"set_3d_viewport_position": func(args): if _viewport_3d and args.size() >= 2: _viewport_3d.position = game_to_godot_pos(Vector2(float(args[0]), float(args[1]))),
+		"set_3d_viewport_size": func(args): if _viewport_3d and args.size() >= 2: _viewport_3d.set_viewport_size(int(args[0]), int(args[1])),
+		"rotate_3d_model": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_model_rotation(Vector3(float(args[0]), float(args[1]), float(args[2]))),
+		"set_3d_camera_distance": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_distance(float(args[0])),
+		"clear_3d_models": func(_args): if _viewport_3d: _viewport_3d.clear_models(),
+	}
+
+func native_dispatch(method_name: String, args_json: String) -> Variant:
+	print("[GameBridge][DISPATCH] ", method_name, " args=", args_json.substr(0, 200))
+	if not _method_map.has(method_name):
+		push_warning("[GameBridge] Unknown native method: " + method_name)
+		return null
+	var args: Array = []
+	if args_json != "[]" and args_json != "":
+		var json = JSON.new()
+		if json.parse(args_json) == OK:
+			args = json.data if json.data is Array else [json.data]
+	var result = _method_map[method_name].call(args)
+	if method_name == "load_game_json":
+		print("[GameBridge][DISPATCH] load_game_json returned: ", result)
+	return result
+
 func _input(event: InputEvent) -> void:
-	if not OS.has_feature("web") or not _input_router: return
+	if not _input_router: return
 	var input_data = _input_router.process_input_event(event)
 	if input_data.has("type"):
 		var input_type = input_data["type"]
@@ -229,29 +350,73 @@ func _js_pause_physics(_args: Array) -> void: pause_physics()
 func _js_resume_physics(_args: Array) -> void: resume_physics()
 func _js_load_custom_scene(args: Array) -> bool: return load_custom_scene(str(args[0])) if args.size() > 0 else false
 
+func _log_physics_diagnostics() -> void:
+	print("[GameBridge][DIAG] === PHYSICS DIAGNOSTICS ===")
+	var space = get_viewport().find_world_2d().space
+	var gravity = PhysicsServer2D.area_get_param(space, PhysicsServer2D.AREA_PARAM_GRAVITY)
+	var gravity_vec = PhysicsServer2D.area_get_param(space, PhysicsServer2D.AREA_PARAM_GRAVITY_VECTOR)
+	print("[GameBridge][DIAG] Gravity magnitude: ", gravity)
+	print("[GameBridge][DIAG] Gravity vector: ", gravity_vec)
+	print("[GameBridge][DIAG] Engine physics FPS: ", Engine.physics_ticks_per_second)
+	print("[GameBridge][DIAG] Engine time scale: ", Engine.time_scale)
+	print("[GameBridge][DIAG] Engine physics frames so far: ", Engine.get_physics_frames())
+	# Check if Rapier2D is loaded by looking for its classes
+	var rapier_loaded = ClassDB.class_exists("RapierPhysicsServer2D") or ClassDB.class_exists("Rapier2D")
+	print("[GameBridge][DIAG] Rapier2D class exists: ", rapier_loaded)
+	# Check available physics server
+	var physics_server = PhysicsServer2D
+	print("[GameBridge][DIAG] PhysicsServer2D class: ", physics_server.get_class())
+	# List registered GDExtension classes that contain 'rapier' or 'Rapier'
+	var rapier_classes = []
+	for cls in ClassDB.get_class_list():
+		if "rapier" in cls.to_lower():
+			rapier_classes.append(cls)
+	print("[GameBridge][DIAG] Rapier-related classes: ", rapier_classes)
+	print("[GameBridge][DIAG] === END DIAGNOSTICS ===")
+
 func enable_splat_map() -> void: if _splat_map_system: _splat_map_system.enable()
 func disable_splat_map() -> void: if _splat_map_system: _splat_map_system.disable()
 func get_splat_texture() -> Texture2D: return _splat_map_system.get_texture() if _splat_map_system else null
 
 func _process(delta: float) -> void:
+	_diag_process_frames += 1
+	if _diag_process_frames == 1 or _diag_process_frames % 120 == 0:
+		print("[GameBridge][DIAG] _process frame #", _diag_process_frames, " delta=", delta)
 	if _splat_map_system: _splat_map_system.process(delta)
 	if _ws_system: _ws_system.process(delta)
 
 func connect_to_server(url: String = "") -> void: if _ws_system: _ws_system.connect_to_server(url)
 
 func load_game_json(json_string: String) -> bool:
+	print("[GameBridge][DIAG] load_game_json called, json length=", json_string.length())
 	var json = JSON.new()
-	if json.parse(json_string) != OK: return false
+	if json.parse(json_string) != OK:
+		print("[GameBridge][DIAG] JSON parse FAILED")
+		return false
 	game_data = json.data
+	print("[GameBridge][DIAG] JSON parsed OK. World: ", game_data.get("world", {}))
+	print("[GameBridge][DIAG] Templates: ", game_data.get("templates", {}).keys())
+	print("[GameBridge][DIAG] Entity count: ", game_data.get("entities", []).size())
 	clear_game()
-	if _world_system: _world_system.setup_world(game_data.get("world", {}))
+	if _world_system:
+		_world_system.setup_world(game_data.get("world", {}))
+		print("[GameBridge][DIAG] World setup complete")
 	_visual_renderer.setup_background(game_data.get("background", {}))
 	templates = game_data.get("templates", {})
-	# Sync state to EntityFactory before creating entities
 	_entity_factory.update_state()
+	var created_count = 0
 	for entity_data in game_data.get("entities", []):
 		var record = _entity_factory.create_entity(entity_data)
-		if record: entity_registry[record.entity_id] = record
+		if record:
+			entity_registry[record.entity_id] = record
+			created_count += 1
+			print("[GameBridge][DIAG] Created entity '", record.entity_id, "' archetype=", record.archetype, " node_type=", record.node.get_class())
+	print("[GameBridge][DIAG] Total entities created: ", created_count)
+	# Log post-creation physics state
+	var space = get_viewport().find_world_2d().space
+	var gravity = PhysicsServer2D.area_get_param(space, PhysicsServer2D.AREA_PARAM_GRAVITY)
+	var gravity_vec = PhysicsServer2D.area_get_param(space, PhysicsServer2D.AREA_PARAM_GRAVITY_VECTOR)
+	print("[GameBridge][DIAG] Post-load gravity: ", gravity, " vec: ", gravity_vec)
 	game_loaded.emit(game_data)
 	return true
 
@@ -280,6 +445,20 @@ func clear_game() -> void:
 	templates.clear()
 
 func _physics_process(delta: float) -> void:
+	_diag_physics_frames += 1
+	if _diag_physics_frames == 1 or _diag_physics_frames % 120 == 0:
+		print("[GameBridge][DIAG] _physics_process frame #", _diag_physics_frames, " delta=", delta, " entities=", entity_registry.size())
+		if _diag_physics_frames == 1 or _diag_physics_frames % 600 == 0:
+			for entity_id in entity_registry:
+				var record = entity_registry[entity_id]
+				if record and record.is_valid():
+					var node = record.node
+					var node_type = node.get_class()
+					var pos = node.position
+					var vel_str = ""
+					if node is RigidBody2D:
+						vel_str = " vel=" + str(node.linear_velocity) + " sleeping=" + str(node.sleeping)
+					print("[GameBridge][DIAG]   Entity '", entity_id, "' type=", node_type, " pos=", pos, vel_str)
 	if _sync_system: _sync_system.process_sync()
 	if _joint_manager: _joint_manager.process_mouse_joints(delta)
 	if _physics_controller: _physics_controller.process_physics(delta, entity_registry)

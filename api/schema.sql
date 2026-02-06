@@ -199,7 +199,10 @@ CREATE TABLE IF NOT EXISTS credit_transactions (
     'purchase',           -- IAP purchase (RevenueCat)
     'generation_debit',   -- AI asset generation cost
     'generation_refund',  -- Refund for failed generation
-    'admin_adjustment'    -- Manual adjustment by admin
+    'admin_adjustment',   -- Manual adjustment by admin
+    'agent_reservation_hold',    -- Reserve max budget before run starts
+    'agent_step_settlement',     -- Step-level settlement record marker
+    'agent_reservation_release'  -- Release unspent reservation at run end
     -- 'daily_bonus' - DISABLED for launch
   )),
   amount_micros INTEGER NOT NULL,  -- Positive = credit, Negative = debit
@@ -532,3 +535,96 @@ CREATE TABLE IF NOT EXISTS ui_gen_results (
 CREATE INDEX IF NOT EXISTS idx_ui_gen_results_created ON ui_gen_results(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_ui_gen_results_control ON ui_gen_results(control_type);
 CREATE INDEX IF NOT EXISTS idx_ui_gen_results_deleted ON ui_gen_results(deleted_at);
+
+-- =============================================================================
+-- AI GAME DEV LIFECYCLE ORCHESTRATION SYSTEM
+-- Agent runs, steps, events, checkpoints, and cost tracking
+-- =============================================================================
+
+-- Agent Runs - Top-level orchestration of AI game development
+CREATE TABLE IF NOT EXISTS agent_runs (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  game_id TEXT NOT NULL REFERENCES games(id),
+  source TEXT NOT NULL CHECK (source IN ('scratch', 'fork')),
+  source_game_id TEXT,
+  tier TEXT NOT NULL CHECK (tier IN ('free', 'standard', 'pro')),
+  status TEXT NOT NULL CHECK (status IN ('planning', 'queued', 'running', 'waiting_for_input', 'paused', 'succeeded', 'failed', 'canceled')),
+  planning_doc_json TEXT,
+  estimated_cost_micros INTEGER,
+  actual_cost_micros INTEGER NOT NULL DEFAULT 0,
+  reserved_micros INTEGER NOT NULL DEFAULT 0,
+  current_step_index INTEGER NOT NULL DEFAULT 0,
+  total_steps INTEGER NOT NULL DEFAULT 0,
+  error_message TEXT,
+  created_at INTEGER NOT NULL,
+  started_at INTEGER,
+  finished_at INTEGER,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_agent_runs_user ON agent_runs(user_id);
+CREATE INDEX IF NOT EXISTS idx_agent_runs_game ON agent_runs(game_id);
+CREATE INDEX IF NOT EXISTS idx_agent_runs_status ON agent_runs(status) WHERE status IN ('planning', 'queued', 'running', 'waiting_for_input', 'paused');
+
+-- Agent Steps - Individual stages within a run
+CREATE TABLE IF NOT EXISTS agent_steps (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL REFERENCES agent_runs(id) ON DELETE CASCADE,
+  step_index INTEGER NOT NULL,
+  stage TEXT NOT NULL CHECK (stage IN ('planning', 'build', 'refine', 'theme', 'asset')),
+  status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'skipped')),
+  input_hash TEXT,
+  output_artifact_key TEXT,
+  cost_micros INTEGER NOT NULL DEFAULT 0,
+  error_message TEXT,
+  created_at INTEGER NOT NULL,
+  started_at INTEGER,
+  finished_at INTEGER,
+  UNIQUE(run_id, step_index)
+);
+
+CREATE INDEX IF NOT EXISTS idx_agent_steps_run ON agent_steps(run_id);
+CREATE INDEX IF NOT EXISTS idx_agent_steps_status ON agent_steps(status) WHERE status IN ('queued', 'running');
+
+-- Agent Events - Event stream for run lifecycle
+CREATE TABLE IF NOT EXISTS agent_events (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL REFERENCES agent_runs(id) ON DELETE CASCADE,
+  seq INTEGER NOT NULL,
+  event_type TEXT NOT NULL,
+  payload_json TEXT,
+  created_at INTEGER NOT NULL,
+  UNIQUE(run_id, seq)
+);
+
+CREATE INDEX IF NOT EXISTS idx_agent_events_run_seq ON agent_events(run_id, seq);
+
+-- Agent Checkpoints - Resumable state snapshots
+CREATE TABLE IF NOT EXISTS agent_checkpoints (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL REFERENCES agent_runs(id) ON DELETE CASCADE,
+  step_index INTEGER NOT NULL,
+  state_json TEXT NOT NULL,
+  artifact_keys_json TEXT,
+  created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_agent_checkpoints_run ON agent_checkpoints(run_id);
+
+-- Agent Costs - LLM token usage and cost tracking
+CREATE TABLE IF NOT EXISTS agent_costs (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL REFERENCES agent_runs(id) ON DELETE CASCADE,
+  step_id TEXT REFERENCES agent_steps(id),
+  provider TEXT NOT NULL,
+  model TEXT NOT NULL,
+  input_tokens INTEGER NOT NULL DEFAULT 0,
+  output_tokens INTEGER NOT NULL DEFAULT 0,
+  cost_micros INTEGER NOT NULL DEFAULT 0,
+  idempotency_key TEXT UNIQUE,
+  created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_agent_costs_run ON agent_costs(run_id);
+CREATE INDEX IF NOT EXISTS idx_agent_costs_idempotency ON agent_costs(idempotency_key);

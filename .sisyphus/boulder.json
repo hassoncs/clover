@@ -1,9 +1,10 @@
 {
-  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/holistic-theme-planning.md",
-  "started_at": "2026-02-06T05:21:12.659Z",
+  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/ask-user-tool.md",
+  "started_at": "2026-02-06T20:30:26.381Z",
   "session_ids": [
-    "ses_3cebf07dfffel7XT6lOzHZrJPK"
+    "ses_3cb59e7d6ffeqYfas8CTgGVANW",
+    "ses_3cbb81ee9ffe6dHtDw420NtZUP"
   ],
-  "plan_name": "holistic-theme-planning",
+  "plan_name": "ask-user-tool",
   "agent": "atlas"
 }

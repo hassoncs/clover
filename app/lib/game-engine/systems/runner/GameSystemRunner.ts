@@ -1,5 +1,6 @@
 import { SystemPhase } from '@slopcade/shared';
 import type { RuntimeSystem, SystemContext, UpdateContext, InputEvent, FrameData, CollisionInfo } from './types';
+import type { EventQueue } from './EventQueue';
 import { EventQueueImpl } from './EventQueue';
 
 export class GameSystemRunner {
@@ -139,6 +140,10 @@ export class GameSystemRunner {
 
   getSystem<T extends RuntimeSystem>(id: string): T | undefined {
     return this.systems.find(s => s.id === id) as T | undefined;
+  }
+
+  getEventQueue(): EventQueue {
+    return this.eventQueue;
   }
 
   private sortSystemsByPriority(): void {

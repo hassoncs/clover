@@ -6,6 +6,7 @@ import {
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import type { GameDefinition } from '@slopcade/shared/types/GameDefinition';
+import { ArtifactManager } from '@/ai/agent/artifact-manager';
 import {
   generateGame,
   refineGame,
@@ -177,6 +178,43 @@ export const gamesRouter = router({
 
       const definition = await readDefinitionFromR2(ctx.env.ASSETS, result.r2_prefix);
       return toClientGameFull(result, definition);
+    }),
+
+  getVersionHistory: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        limit: z.number().int().min(1).max(100).default(50),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const game = await ctx.env.DB.prepare(
+        `SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL`
+      )
+        .bind(input.id)
+        .first<{ id: string; user_id: string | null }>();
+
+      if (!game) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
+      }
+
+      if (game.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Cannot view versions for game you do not own' });
+      }
+
+      const artifactManager = new ArtifactManager(ctx.env.ASSETS);
+      const versions = await artifactManager.listVersions(input.id, input.limit);
+
+      return {
+        gameId: input.id,
+        versions: versions.map((version) => ({
+          versionId: version.versionId,
+          key: version.key,
+          url: artifactManager.getAssetUrl(ctx.env.APP_URL, version.key),
+          uploadedAt: version.uploadedAt,
+          size: version.size,
+        })),
+      };
     }),
 
   create: protectedProcedure

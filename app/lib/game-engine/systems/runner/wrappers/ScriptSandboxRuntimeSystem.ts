@@ -3,7 +3,6 @@ import type { RuntimeSystem, SystemContext, UpdateContext } from '../types';
 import { createScriptSandbox, type IScriptSandbox } from '../../../../scripting';
 import { WorldOpsImpl } from '../../../WorldOpsImpl';
 import { SequenceManager } from '../../../SequenceManager';
-import { getGlobalTweenSystem } from '../../../behaviors/TweenBehaviors';
 import type {
   ScriptSandboxConfig,
   ScriptContext,
@@ -79,20 +78,10 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
       console.error('[ScriptSandboxRuntimeSystem] Failed to initialize sandbox:', result.error);
     }
 
-    const tweenSystem = getGlobalTweenSystem();
-    if (!tweenSystem) {
-      console.warn('[ScriptSandboxRuntimeSystem] TweenSystem not available');
-      return;
+    if (!ctx.worldOps) {
+      throw new Error('[ScriptSandboxRuntimeSystem] Missing worldOps in SystemContext');
     }
-
-    this.worldOps = new WorldOpsImpl(
-      ctx.entityManager,
-      ctx.physics,
-      ctx.bridge,
-      tweenSystem,
-      ctx.eventQueue,
-      () => this.getCurrentGameState()
-    );
+    this.worldOps = ctx.worldOps;
 
     this.sequenceManager = new SequenceManager();
     this.seededRandom = this.createSeededRandom(Date.now());
@@ -246,7 +235,7 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
     const eventQueue = this.systemContext!.eventQueue;
     const worldOps = this.worldOps!;
     const seqMgr = this.sequenceManager!;
-    const seededRandom = this.seededRandom!;
+    const seededRandom = this.seededRandom ?? this.createSeededRandom(Date.now());
 
     const inputSnapshot: InputSnapshot | null = ctx.input.tap
       ? {
@@ -549,12 +538,13 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
 
       worldAsync,
 
-      startSequence: (name: string, fn: (world: WorldOps) => Promise<void>) =>
-        seqMgr.start(name, fn, worldOps as WorldOps),
+      startSequence: (name: string, fn: (world: WorldOps) => Promise<void>) => {
+        return seqMgr.start(name, fn, worldOps as WorldOps);
+      },
 
-      isSequenceRunning: (name: string): boolean => seqMgr.isRunning(name),
+      isSequenceRunning: (name: string): boolean => seqMgr?.isRunning(name) ?? false,
 
-      cancelSequence: (name: string): void => seqMgr.cancel(name),
+      cancelSequence: (name: string): void => seqMgr?.cancel(name),
 
       dt: ctx.dt,
       elapsed: ctx.elapsed,

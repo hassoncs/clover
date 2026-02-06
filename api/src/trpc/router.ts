@@ -5,6 +5,7 @@ import { assetSystemRouter } from './routes/asset-system'
 import { uiComponentsRouter } from './routes/ui-components'
 import { economyRouter } from './routes/economy'
 import { invitesRouter } from './routes/invites'
+import { agentRunsRouter } from './routes/agent-runs'
 
 export const appRouter = router({
   games: gamesRouter,
@@ -13,6 +14,7 @@ export const appRouter = router({
   uiComponents: uiComponentsRouter,
   economy: economyRouter,
   invites: invitesRouter,
+  agentRuns: agentRunsRouter,
 
   health: publicProcedure.query(() => ({
     status: 'ok',

@@ -3330,7 +3330,7 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.29.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  BluetoothPeripheral: 257be2332a53432623d217edcc559692816199c3
+  BluetoothPeripheral: 6a1dd9cf8bc9e9070b35f8233a7fb64141a54531
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   borndotcom-react-native-godot: b060f68de77acf4ed80e8072b15315619e14c4c4
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
@@ -3440,6 +3440,6 @@ SPEC CHECKSUMS:
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: a3ed390a19db0459bd6839823a6ac6d9c6db198d
 
-PODFILE CHECKSUM: 94a3c5e732aa37ef7807001b5bd1079d46a5aa34
+PODFILE CHECKSUM: 41592031475ab300b93f43a0e9fe10a5191ed164
 
 COCOAPODS: 1.16.2

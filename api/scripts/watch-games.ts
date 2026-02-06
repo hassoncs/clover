@@ -54,10 +54,16 @@ console.log('[games-watcher] Watching', WATCH_DIR);
 console.log('[games-watcher] Running initial build...');
 runBuild();
 
+// Build outputs written back into r2/games/{id}/ — skip to prevent rebuild loops.
+// Source .ts and .png changes, plus directory-level events (deletions), all trigger builds.
+const BUILD_OUTPUTS = new Set(['definition.json', 'metadata.json']);
+
 watch(WATCH_DIR, { recursive: true }, (eventType, filename) => {
   if (!filename) return;
-  if (filename.endsWith('.ts') || filename.endsWith('.json') || filename.endsWith('.png')) {
-    console.log(`[games-watcher] ${eventType}: ${filename}`);
-    debouncedBuild();
-  }
+
+  const basename = filename.split('/').pop() ?? filename;
+  if (BUILD_OUTPUTS.has(basename)) return;
+
+  console.log(`[games-watcher] ${eventType}: ${filename}`);
+  debouncedBuild();
 });

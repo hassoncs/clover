@@ -2,10 +2,13 @@ import type { Context as HonoContext } from "hono";
 
 type D1Database = import("@cloudflare/workers-types").D1Database;
 type R2Bucket = import("@cloudflare/workers-types").R2Bucket;
+type DurableObjectNamespace = import("@cloudflare/workers-types").DurableObjectNamespace;
 
 export interface Env {
   DB: D1Database;
   ASSETS: R2Bucket;
+  RUN_COORDINATOR: DurableObjectNamespace;
+  RUN_STEP_WORKER: DurableObjectNamespace;
 
   SUPABASE_URL: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
@@ -38,6 +41,11 @@ export interface Env {
   DEBUG_ASSET_GENERATION?: string;
 
   REVENUECAT_WEBHOOK_SECRET?: string;
+
+  AI_EDITING_ENABLED?: string;
+  AI_EDITING_ALLOWED_USERS?: string;
+  AI_EDITING_MAX_CONCURRENT_RUNS?: string;
+  AI_EDITING_MAX_RUNS_PER_DAY?: string;
 }
 
 export interface User {

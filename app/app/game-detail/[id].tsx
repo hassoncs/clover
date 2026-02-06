@@ -122,7 +122,7 @@ export default function GameDetailScreen() {
     if (gameInfo.source === "template") {
       const params: Record<string, string> = { id: gameInfo.id };
       if (selectedPackId) params.packId = selectedPackId;
-      router.push({ pathname: "/test-games/[id]", params });
+      router.push({ pathname: "/game/[id]", params });
     } else {
       router.push({ pathname: "/play/[id]", params: { id: gameInfo.id } });
     }

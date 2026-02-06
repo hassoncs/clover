@@ -1,0 +1,34 @@
+# AI Planning Gates Configuration
+#
+# This file defines the required planning fields that must be completed
+# before an agent run can be started. These gates ensure the AI has
+# sufficient context to generate a high-quality game.
+#
+# Each gate field has:
+#   - id: Unique identifier (used in code and validation)
+#   - label: Human-readable name (displayed in UI)
+#   - description: Help text explaining what this field should contain
+#   - required: Whether this field must be filled before starting the run
+#
+# To add or modify gates, simply edit this file - no code changes needed.
+
+gates:
+  - id: core_game_loop
+    label: Core Game Loop
+    description: Describe the main gameplay loop - what does the player do repeatedly? (e.g., "Match 3 candies to clear them and score points")
+    required: true
+
+  - id: win_lose_conditions
+    label: Win/Lose Conditions
+    description: Define how the player wins or loses the game (e.g., "Win by reaching 1000 points, lose if time runs out")
+    required: true
+
+  - id: theme_style
+    label: Theme & Style
+    description: Describe the visual theme and art style (e.g., "Candy-themed with bright colors and cartoon style")
+    required: true
+
+  - id: game_type_category
+    label: Game Type/Category
+    description: What type of game is this? (e.g., "Match-3 puzzle", "Physics platformer", "Endless runner")
+    required: true

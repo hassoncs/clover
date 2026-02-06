@@ -11,7 +11,10 @@ export type TransactionType =
   | 'purchase'
   | 'generation_debit'
   | 'generation_refund'
-  | 'admin_adjustment';
+  | 'admin_adjustment'
+  | 'agent_reservation_hold'
+  | 'agent_step_settlement'
+  | 'agent_reservation_release';
 
 export interface TransactionParams {
   userId: string;

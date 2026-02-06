@@ -1,0 +1,22 @@
+stage: planning
+gates:
+  - id: core_game_loop
+    label: Core Game Loop
+    description: Describe the main gameplay loop - what does the player do repeatedly?
+    required: true
+    ai_extraction_hint: Look for descriptions of the main player action, game mechanics, or what happens on each turn/frame
+  - id: win_lose_conditions
+    label: Win/Lose Conditions
+    description: Define how the player wins or loses the game
+    required: true
+    ai_extraction_hint: Look for win/loss conditions, scoring rules, victory requirements, or failure states
+  - id: theme_style
+    label: Theme & Style
+    description: Describe the visual theme and art style
+    required: true
+    ai_extraction_hint: Look for visual descriptions, color schemes, art style preferences, or aesthetic references
+  - id: game_type_category
+    label: Game Type/Category
+    description: What type of game is this?
+    required: true
+    ai_extraction_hint: Look for genre mentions, gameplay style references, or comparisons to existing games

@@ -17,6 +17,18 @@ binding = "ASSETS"
 bucket_name = "slopcade-assets"
 preview_bucket_name = "slopcade-assets-dev"
 
+[[durable_objects.bindings]]
+name = "RUN_COORDINATOR"
+class_name = "RunCoordinatorDO"
+
+[[durable_objects.bindings]]
+name = "RUN_STEP_WORKER"
+class_name = "RunStepWorkerDO"
+
+[[migrations]]
+tag = "v2"
+new_classes = ["RunCoordinatorDO", "RunStepWorkerDO"]
+
 # TODO: Configure custom domain
 # [[routes]]
 # pattern = "api.slopcade.app"

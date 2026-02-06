@@ -1,6 +1,6 @@
 import { env as cloudflareEnv } from 'cloudflare:test';
-import { appRouter } from '@/trpc/router'
-import type { Context, AuthenticatedContext, User, Env } from '@/trpc/context'
+import { appRouter } from '../trpc/router'
+import type { Context, AuthenticatedContext, User, Env } from '../trpc/context'
 
 // Cast the cloudflare test env to our Env type
 const env = cloudflareEnv as Env;
@@ -85,7 +85,17 @@ CREATE TABLE IF NOT EXISTS user_wallets (
 CREATE TABLE IF NOT EXISTS credit_transactions (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id),
-  type TEXT NOT NULL,
+  type TEXT NOT NULL CHECK (type IN (
+    'signup_code_grant',
+    'promo_code_grant',
+    'purchase',
+    'generation_debit',
+    'generation_refund',
+    'admin_adjustment',
+    'agent_reservation_hold',
+    'agent_step_settlement',
+    'agent_reservation_release'
+  )),
   amount_micros INTEGER NOT NULL,
   balance_before_micros INTEGER NOT NULL,
   balance_after_micros INTEGER NOT NULL,
@@ -205,6 +215,94 @@ CREATE TABLE IF NOT EXISTS iap_purchases (
 );
 
 CREATE INDEX IF NOT EXISTS idx_iap_purchases_user ON iap_purchases(user_id);
+
+-- Agent Runs
+CREATE TABLE IF NOT EXISTS agent_runs (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  game_id TEXT NOT NULL REFERENCES games(id),
+  source TEXT NOT NULL CHECK (source IN ('scratch', 'fork')),
+  source_game_id TEXT,
+  tier TEXT NOT NULL CHECK (tier IN ('free', 'standard', 'pro')),
+  status TEXT NOT NULL CHECK (status IN ('planning', 'queued', 'running', 'paused', 'succeeded', 'failed', 'canceled')),
+  planning_doc_json TEXT,
+  estimated_cost_micros INTEGER,
+  actual_cost_micros INTEGER NOT NULL DEFAULT 0,
+  reserved_micros INTEGER NOT NULL DEFAULT 0,
+  current_step_index INTEGER NOT NULL DEFAULT 0,
+  total_steps INTEGER NOT NULL DEFAULT 0,
+  error_message TEXT,
+  created_at INTEGER NOT NULL,
+  started_at INTEGER,
+  finished_at INTEGER,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_agent_runs_user ON agent_runs(user_id);
+CREATE INDEX IF NOT EXISTS idx_agent_runs_game ON agent_runs(game_id);
+CREATE INDEX IF NOT EXISTS idx_agent_runs_status ON agent_runs(status);
+
+-- Agent Steps
+CREATE TABLE IF NOT EXISTS agent_steps (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL REFERENCES agent_runs(id) ON DELETE CASCADE,
+  step_index INTEGER NOT NULL,
+  stage TEXT NOT NULL CHECK (stage IN ('planning', 'build', 'refine', 'theme', 'asset')),
+  status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'skipped')),
+  input_hash TEXT,
+  output_artifact_key TEXT,
+  cost_micros INTEGER NOT NULL DEFAULT 0,
+  error_message TEXT,
+  created_at INTEGER NOT NULL,
+  started_at INTEGER,
+  finished_at INTEGER,
+  UNIQUE(run_id, step_index)
+);
+
+CREATE INDEX IF NOT EXISTS idx_agent_steps_run ON agent_steps(run_id);
+CREATE INDEX IF NOT EXISTS idx_agent_steps_status ON agent_steps(status);
+
+-- Agent Events
+CREATE TABLE IF NOT EXISTS agent_events (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL REFERENCES agent_runs(id) ON DELETE CASCADE,
+  seq INTEGER NOT NULL,
+  event_type TEXT NOT NULL,
+  payload_json TEXT,
+  created_at INTEGER NOT NULL,
+  UNIQUE(run_id, seq)
+);
+
+CREATE INDEX IF NOT EXISTS idx_agent_events_run_seq ON agent_events(run_id, seq);
+
+-- Agent Checkpoints
+CREATE TABLE IF NOT EXISTS agent_checkpoints (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL REFERENCES agent_runs(id) ON DELETE CASCADE,
+  step_index INTEGER NOT NULL,
+  state_json TEXT NOT NULL,
+  artifact_keys_json TEXT,
+  created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_agent_checkpoints_run ON agent_checkpoints(run_id);
+
+-- Agent Costs
+CREATE TABLE IF NOT EXISTS agent_costs (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL REFERENCES agent_runs(id) ON DELETE CASCADE,
+  step_id TEXT REFERENCES agent_steps(id),
+  provider TEXT NOT NULL,
+  model TEXT NOT NULL,
+  input_tokens INTEGER NOT NULL DEFAULT 0,
+  output_tokens INTEGER NOT NULL DEFAULT 0,
+  cost_micros INTEGER NOT NULL DEFAULT 0,
+  idempotency_key TEXT UNIQUE,
+  created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_agent_costs_run ON agent_costs(run_id);
+CREATE INDEX IF NOT EXISTS idx_agent_costs_idempotency ON agent_costs(idempotency_key);
 `;
 
 export async function initTestDatabase(): Promise<void> {

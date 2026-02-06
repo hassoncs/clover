@@ -4,26 +4,24 @@
 export const EMBEDDED_MANIFEST = require('@/assets/embedded-games/manifest.json');
 
 export const EMBEDDED_DEFINITIONS: Record<string, unknown> = {
-  'asteroids': require('@/assets/embedded-games/asteroids/definition.json'),
   'ballSort': require('@/assets/embedded-games/ballSort/definition.json'),
   'breakoutBouncer': require('@/assets/embedded-games/breakoutBouncer/definition.json'),
   'flappyBird': require('@/assets/embedded-games/flappyBird/definition.json'),
   'gemCrush': require('@/assets/embedded-games/gemCrush/definition.json'),
   'minefield': require('@/assets/embedded-games/minefield/definition.json'),
-  'simple': require('@/assets/embedded-games/simple/definition.json'),
+  'mrPotatoHead': require('@/assets/embedded-games/mrPotatoHead/definition.json'),
   'slopeggle': require('@/assets/embedded-games/slopeggle/definition.json'),
   'snake': require('@/assets/embedded-games/snake/definition.json'),
   'sokoban': require('@/assets/embedded-games/sokoban/definition.json'),
 };
 
 export const EMBEDDED_METADATA: Record<string, unknown> = {
-  'asteroids': require('@/assets/embedded-games/asteroids/metadata.json'),
   'ballSort': require('@/assets/embedded-games/ballSort/metadata.json'),
   'breakoutBouncer': require('@/assets/embedded-games/breakoutBouncer/metadata.json'),
   'flappyBird': require('@/assets/embedded-games/flappyBird/metadata.json'),
   'gemCrush': require('@/assets/embedded-games/gemCrush/metadata.json'),
   'minefield': require('@/assets/embedded-games/minefield/metadata.json'),
-  'simple': require('@/assets/embedded-games/simple/metadata.json'),
+  'mrPotatoHead': require('@/assets/embedded-games/mrPotatoHead/metadata.json'),
   'slopeggle': require('@/assets/embedded-games/slopeggle/metadata.json'),
   'snake': require('@/assets/embedded-games/snake/metadata.json'),
   'sokoban': require('@/assets/embedded-games/sokoban/metadata.json'),
@@ -36,9 +34,8 @@ export const EMBEDDED_PACK_MANIFESTS: Record<string, Record<string, unknown>> = 
     '12e102fa-b833-4735-82ab-1c609b4a4fa6': require('@/assets/embedded-games/packs/12e102fa-b833-4735-82ab-1c609b4a4fa6/manifest.json'),
     '865c8006-ab66-4ddb-8ffd-b791beb6780a': require('@/assets/embedded-games/packs/865c8006-ab66-4ddb-8ffd-b791beb6780a/manifest.json'),
   },
-  'simple': {
-    'a1b2c3d4-0001-4000-8000-000000000001': require('@/assets/embedded-games/packs/a1b2c3d4-0001-4000-8000-000000000001/manifest.json'),
-    'a1b2c3d4-0002-4000-8000-000000000002': require('@/assets/embedded-games/packs/a1b2c3d4-0002-4000-8000-000000000002/manifest.json'),
+  'mrPotatoHead': {
+    'b3f4a5d6-0001-4000-8000-potato000001': require('@/assets/embedded-games/packs/b3f4a5d6-0001-4000-8000-potato000001/manifest.json'),
   },
 };
 
@@ -84,6 +81,16 @@ export const EMBEDDED_ASSETS: Record<string, number> = {
   'packs/865c8006-ab66-4ddb-8ffd-b791beb6780a/ball1.png': require('@/assets/embedded-games/packs/865c8006-ab66-4ddb-8ffd-b791beb6780a/ball1.png'),
   'packs/865c8006-ab66-4ddb-8ffd-b791beb6780a/ball5.png': require('@/assets/embedded-games/packs/865c8006-ab66-4ddb-8ffd-b791beb6780a/ball5.png'),
   'packs/865c8006-ab66-4ddb-8ffd-b791beb6780a/ball3.png': require('@/assets/embedded-games/packs/865c8006-ab66-4ddb-8ffd-b791beb6780a/ball3.png'),
-  'packs/a1b2c3d4-0001-4000-8000-000000000001/cube.png': require('@/assets/embedded-games/packs/a1b2c3d4-0001-4000-8000-000000000001/cube.png'),
-  'packs/a1b2c3d4-0002-4000-8000-000000000002/cube.png': require('@/assets/embedded-games/packs/a1b2c3d4-0002-4000-8000-000000000002/cube.png'),
+  'packs/b3f4a5d6-0001-4000-8000-potato000001/potatoBody.png': require('@/assets/embedded-games/packs/b3f4a5d6-0001-4000-8000-potato000001/potatoBody.png'),
+  'packs/b3f4a5d6-0001-4000-8000-potato000001/drawer.png': require('@/assets/embedded-games/packs/b3f4a5d6-0001-4000-8000-potato000001/drawer.png'),
+  'packs/b3f4a5d6-0001-4000-8000-potato000001/leftEye.png': require('@/assets/embedded-games/packs/b3f4a5d6-0001-4000-8000-potato000001/leftEye.png'),
+  'packs/b3f4a5d6-0001-4000-8000-potato000001/rightEye.png': require('@/assets/embedded-games/packs/b3f4a5d6-0001-4000-8000-potato000001/rightEye.png'),
+  'packs/b3f4a5d6-0001-4000-8000-potato000001/nose.png': require('@/assets/embedded-games/packs/b3f4a5d6-0001-4000-8000-potato000001/nose.png'),
+  'packs/b3f4a5d6-0001-4000-8000-potato000001/mouth.png': require('@/assets/embedded-games/packs/b3f4a5d6-0001-4000-8000-potato000001/mouth.png'),
+  'packs/b3f4a5d6-0001-4000-8000-potato000001/mustache.png': require('@/assets/embedded-games/packs/b3f4a5d6-0001-4000-8000-potato000001/mustache.png'),
+  'packs/b3f4a5d6-0001-4000-8000-potato000001/leftArm.png': require('@/assets/embedded-games/packs/b3f4a5d6-0001-4000-8000-potato000001/leftArm.png'),
+  'packs/b3f4a5d6-0001-4000-8000-potato000001/rightArm.png': require('@/assets/embedded-games/packs/b3f4a5d6-0001-4000-8000-potato000001/rightArm.png'),
+  'packs/b3f4a5d6-0001-4000-8000-potato000001/hat.png': require('@/assets/embedded-games/packs/b3f4a5d6-0001-4000-8000-potato000001/hat.png'),
+  'packs/b3f4a5d6-0001-4000-8000-potato000001/ears.png': require('@/assets/embedded-games/packs/b3f4a5d6-0001-4000-8000-potato000001/ears.png'),
+  'packs/b3f4a5d6-0001-4000-8000-potato000001/background.png': require('@/assets/embedded-games/packs/b3f4a5d6-0001-4000-8000-potato000001/background.png'),
 };

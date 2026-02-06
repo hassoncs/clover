@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "theme": "Classic Mr. Potato Head toy, colorful plastic pieces, bright primary colors, children's toy box",
+  "style": "cartoon",
+  "globalPalette": [
+    "#FF4F00",
+    "#00BFFF",
+    "#FFFF00",
+    "#FF69B4",
+    "#32CD32",
+    "#FF4500"
+  ],
+  "templatePlans": {
+    "ears": {
+      "templateId": "ears",
+      "conceptName": "Cheerful Pink Ears",
+      "prompt": "A pair of large pink plastic ears for Mr. Potato Head, cartoon toy style, brightly colored, with a shiny surface to suggest plastic, attached by a fun headband piece, emphasizing a playful and whimsical design.",
+      "negativePrompt": "Avoid any realistic textures or dark colors.",
+      "silhouetteColor": "#FF69B4",
+      "rationale": "This concept fits the theme by capturing the playful essence of a classic toy, using bright colors and a simple cartoon style that aligns with the overall aesthetic of Mr. Potato Head."
+    }
+  },
+  "cohesionAnchors": {
+    "motifFamily": "Playful toy elements",
+    "colorHarmony": "Bright primary and secondary colors that evoke joy and creativity",
+    "moodDescriptor": "Fun and whimsical"
+  },
+  "generatedAt": "2023-10-06T12:00:00Z",
+  "providerModel": "GPT-3.5"
+}

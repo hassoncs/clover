@@ -49,6 +49,33 @@ elif [ -f "$GODOT_FALLBACK/main.pck" ]; then
 else
   echo "WARNING: main.pck not found! Run: node scripts/export-godot.mjs --native"
 fi
+
+# Copy GDExtension native frameworks (e.g. Rapier2D physics)
+# Godot resolves res:// relative to the main.pck directory
+GODOT_PROJECT="$SRCROOT/../../godot_project"
+ADDONS_DST="$GODOT_DST/addons"
+
+for gdext_file in "$GODOT_PROJECT"/addons/*/*.gdextension; do
+  [ -f "$gdext_file" ] || continue
+  ADDON_DIR=$(dirname "$gdext_file")
+  ADDON_NAME=$(basename "$ADDON_DIR")
+
+  # Find iOS frameworks referenced in the .gdextension file
+  while IFS= read -r line; do
+    case "$line" in
+      ios.*.arm64*=*|ios.*.x86_64*=*)
+        FW_REL=$(echo "$line" | sed 's/.*= *"\\{0,1\\}//;s/".*$//')
+        FW_SRC="$ADDON_DIR/$FW_REL"
+        if [ -d "$FW_SRC" ]; then
+          FW_DST_DIR="$ADDONS_DST/$ADDON_NAME/$(dirname "$FW_REL")"
+          mkdir -p "$FW_DST_DIR"
+          cp -R "$FW_SRC" "$FW_DST_DIR/"
+          echo "Copied $FW_REL to $FW_DST_DIR"
+        fi
+        ;;
+    esac
+  done < "$gdext_file"
+done
 `;
     
     const scriptName = 'Copy Godot Assets';

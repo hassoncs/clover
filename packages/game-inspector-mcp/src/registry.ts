@@ -24,7 +24,7 @@ export interface GameInfo {
 }
 
 export function discoverTestGames(): GameInfo[] {
-  const gamesDir = join(PROJECT_ROOT, "games");
+  const gamesDir = join(PROJECT_ROOT, "r2", "games");
   
   if (!existsSync(gamesDir)) {
     console.error(`[registry] Games directory not found: ${gamesDir}`);
@@ -36,11 +36,11 @@ export function discoverTestGames(): GameInfo[] {
   
   for (const entry of entries) {
     if (entry.isDirectory()) {
-      const gameFile = join(gamesDir, entry.name, "game.ts");
+      const gameFile = join(gamesDir, entry.name, "src", "game.ts");
       if (existsSync(gameFile)) {
         games.push({
           id: entry.name,
-          path: `/test-games/${entry.name}`,
+          path: `/game/${entry.name}`,
           type: "game",
         });
       }

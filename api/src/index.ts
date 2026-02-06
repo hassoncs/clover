@@ -5,6 +5,8 @@ import { appRouter } from '@/trpc/router'
 import { createContext, type Env } from '@/trpc/context'
 import revenuecatWebhookRouter from '@/routes/webhooks/revenuecat'
 import textGridRouter from '@/routes/text-grid'
+import { RunCoordinatorDO } from '@/agent/RunCoordinatorDO'
+import { RunStepWorkerDO } from '@/agent/RunStepWorkerDO'
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -17,6 +19,18 @@ app.use(
 );
 
 app.get("/health", (c) => c.json({ status: "ok", timestamp: Date.now() }));
+
+app.get('/ws/agent-run/:runId', async (c) => {
+  const runId = c.req.param('runId');
+  const upgrade = c.req.header('Upgrade');
+  if (!upgrade || upgrade.toLowerCase() !== 'websocket') {
+    return c.text('Expected websocket upgrade', 426);
+  }
+
+  const id = c.env.RUN_COORDINATOR.idFromName(runId);
+  const stub = c.env.RUN_COORDINATOR.get(id);
+  return stub.fetch(c.req.raw);
+});
 
 app.get("/assets/*", async (c) => {
   const key = c.req.path.replace("/assets/", "");
@@ -53,3 +67,4 @@ app.use(
 );
 
 export default app;
+export { RunCoordinatorDO, RunStepWorkerDO };

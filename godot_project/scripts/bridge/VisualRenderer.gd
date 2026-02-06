@@ -317,6 +317,35 @@ func set_entity_image_from_file(
 		_hide_shape_children(node)
 
 
+func set_entity_atlas_region_from_file(
+	entity_id: String, file_path: String, x: float, y: float, w: float, h: float, width: float, height: float
+) -> void:
+	if not _has_entity(entity_id):
+		if _bridge and "_push_error" in _bridge:
+			_bridge._push_error("[VisualRenderer] set_entity_atlas_region_from_file: entity not found: " + entity_id)
+		return
+
+	var node = _get_entity(entity_id)
+	var sprite: Sprite2D = EntityUtils.find_sprite_in_entity(node)
+
+	if sprite == null:
+		sprite = Sprite2D.new()
+		node.add_child(sprite)
+
+	var image = Image.new()
+	var err = image.load(file_path)
+	if err != OK:
+		if _bridge and "_push_error" in _bridge:
+			_bridge._push_error("[VisualRenderer] set_entity_atlas_region_from_file: failed to load image from " + file_path + " error=" + str(err))
+		return
+
+	var texture = ImageTexture.create_from_image(image)
+	var region_dict = {"x": x, "y": y, "w": w, "h": h}
+	var sprite_data = {"width": width, "height": height}
+	_apply_atlas_region(sprite, texture, region_dict, sprite_data)
+	_hide_shape_children(node)
+
+
 # ============================================================================
 # VISUAL DISPATCHER
 # ============================================================================

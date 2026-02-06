@@ -64,12 +64,13 @@ import {
   type PlayerPhase,
   logger,
 } from "./debug";
-import { cancelTweensForEntity, getGlobalTweenSystem } from "./behaviors/TweenBehaviors";
+import { cancelTweensForEntity } from "./behaviors/TweenBehaviors";
 import { GameSystemRunner } from "./systems/runner/GameSystemRunner";
 import type { SystemContext, UpdateContext } from "./systems/runner/types";
 import { GameLoopController } from "./GameLoopController";
 import { WorldOpsImpl } from "./WorldOpsImpl";
 import { DebugOpsImpl } from "./DebugOpsImpl";
+import { TweenSystem } from "./animation/TweenSystem";
 import {
   ViewportRuntimeSystem,
   InputRuntimeSystem,
@@ -717,6 +718,26 @@ export function GameRuntimeGodot({
         onReadyRef.current?.();
 
         const runner = new GameSystemRunner();
+        const eventQueue = runner.getEventQueue();
+        const tweenSystem = new TweenSystem({
+          setEntityPosition: (entityId, x, y) => bridge.setPosition(entityId, x, y),
+          setEntityRotation: (entityId, angle) => bridge.setRotation(entityId, angle),
+          setEntityScale: (entityId, scaleX, scaleY) => bridge.setScale(entityId, scaleX, scaleY),
+          setEntityOpacity: (entityId, opacity) => bridge.setOpacity(entityId, opacity),
+        });
+        const worldOps = new WorldOpsImpl(
+          game.entityManager,
+          physics,
+          bridge,
+          tweenSystem,
+          eventQueue,
+          () => ({
+            variables: game.gameState.vars,
+            constants: definition.constants as
+              | Record<string, number | string | boolean>
+              | undefined,
+          })
+        );
 
         const presentationConfig = definition.presentation;
         runner.register(
@@ -758,6 +779,8 @@ export function GameRuntimeGodot({
             propertyCache: propertyCacheRef.current,
           })
         );
+
+        runner.register(new TweenRuntimeSystem(tweenSystem));
 
         runner.register(
           new BehaviorExecutorRuntimeSystem({
@@ -809,7 +832,6 @@ export function GameRuntimeGodot({
           );
         }
 
-        runner.register(new TweenRuntimeSystem());
         runner.register(new TargetPositionRuntimeSystem());
 
         const { EventBus } = await import("@slopcade/shared");
@@ -820,7 +842,8 @@ export function GameRuntimeGodot({
           physics,
           entityManager: game.entityManager,
           eventBus,
-          eventQueue: (runner as any).eventQueue,
+          eventQueue,
+          worldOps,
         };
 
         const { EventBus: SharedEventBus } = await import("@slopcade/shared");
@@ -873,60 +896,42 @@ export function GameRuntimeGodot({
           if (iem) rulesSystem.setInputEntityManager(iem);
         }
 
-        // Connect ScriptSandbox to RulesSystem for run_script actions
-        if (rulesSystem && definition.script) {
+        if (definition.script) {
           const scriptSystem = runner.getSystem<ScriptSandboxRuntimeSystem>("script-sandbox");
-          if (scriptSystem) {
+          if (scriptSystem && rulesSystem) {
             const sandbox = scriptSystem.getSandbox();
-            if (sandbox) {
-              rulesSystem.setScriptSandbox(sandbox);
-            }
+            if (sandbox) rulesSystem.setScriptSandbox(sandbox);
           }
         }
 
         gameSystemRunnerRef.current = runner;
 
         if (Platform.OS === 'web' && debugMode) {
-          const tweenSystem = getGlobalTweenSystem();
-          if (tweenSystem) {
-            const worldOps = new WorldOpsImpl(
-              game.entityManager,
-              physics,
-              bridge,
-              tweenSystem,
-              (runner as any).eventQueue,
-              () => ({
-                variables: (game.gameState as any).variables ?? {},
-                constants: definition.constants as Record<string, number | string | boolean> | undefined,
-              })
-            );
+          (window as any).worldOps = worldOps;
 
-            (window as any).worldOps = worldOps;
-
-            const checkDebugBridges = () => {
-              const godotDebugBridge = (window as any).GodotDebugBridge;
-              if (godotDebugBridge && debugBridgeRef.current) {
-                const debugOps = new DebugOpsImpl(
-                  godotDebugBridge,
-                  debugBridgeRef.current,
-                  game.entityManager,
-                  physics,
-                  bridge,
-                  tweenSystem,
-                  (runner as any).eventQueue,
-                  () => ({
-                    variables: (game.gameState as any).variables ?? {},
-                    constants: definition.constants as Record<string, number | string | boolean> | undefined,
-                  })
-                );
-                (window as any).debugOps = debugOps;
-                logger.info("lifecycle", "Exposed window.worldOps and window.debugOps");
-              } else {
-                setTimeout(checkDebugBridges, 100);
-              }
-            };
-            checkDebugBridges();
-          }
+          const checkDebugBridges = () => {
+            const godotDebugBridge = (window as any).GodotDebugBridge;
+            if (godotDebugBridge && debugBridgeRef.current) {
+              const debugOps = new DebugOpsImpl(
+                godotDebugBridge,
+                debugBridgeRef.current,
+                game.entityManager,
+                physics,
+                bridge,
+                tweenSystem,
+                eventQueue,
+                () => ({
+                  variables: game.gameState.vars,
+                  constants: definition.constants as Record<string, number | string | boolean> | undefined,
+                })
+              );
+              (window as any).debugOps = debugOps;
+              logger.info("lifecycle", "Exposed window.worldOps and window.debugOps");
+            } else {
+              setTimeout(checkDebugBridges, 100);
+            }
+          };
+          checkDebugBridges();
         }
 
         if (progressHookRef.current?.progress && definition.persistence) {

@@ -37,6 +37,8 @@ Design an end-to-end AI game development lifecycle where users can start from sc
 - Existing job/task orchestration and polling pattern: `api/src/trpc/routes/asset-system.ts`, `app/components/editor/AssetGallery/useAssetGeneration.ts`.
 - Existing Spark billing primitives: `api/src/economy/wallet-service.ts`, `api/src/economy/pricing.ts`, `api/src/economy/cost-estimator.ts`.
 - Existing asset/theming pipeline and adapters: `api/src/ai/pipeline/*`, `api/src/ai/pipeline/adapters/workers.ts`.
+- Reference architecture patterns from `cloudflare-unified-agent`: coordinator/worker Durable Object split, `ctx.waitUntil(...)` kickoff, per-step checkpoint persistence, policy-constrained tool execution.
+- Explicitly **out of scope** from reference repo: GitHub webhook/event-envelope flows and repo automation handlers.
 
 ### Metis Review
 **Identified Gaps (addressed in this plan)**:
@@ -61,15 +63,18 @@ Implement a production-ready AI editing lifecycle in the API layer that reliably
 - Resume/cancel/retry flows and reconciliation jobs.
 
 ### Definition of Done
-- [ ] User can create/fork game and complete planning-doc loop before execution begins.
-- [ ] Agent run streams progress and file patch events live to editor over WebSocket.
-- [ ] Run survives disconnect/reconnect and can resume from checkpoint.
-- [ ] Billing uses reservation + step settlement with deterministic ledger records.
-- [ ] `Free / Standard / Pro` model routing works from server config.
-- [ ] End-to-end run can produce and publish updated game definition + pack metadata in R2.
+- [x] User can create/fork game and complete planning-doc loop before execution begins.
+- [x] Agent run streams progress and file patch events live to editor over WebSocket.
+- [x] Run survives disconnect/reconnect and can resume from checkpoint.
+- [x] Billing uses reservation + step settlement with deterministic ledger records.
+- [x] `Free / Standard / Pro` model routing works from server config.
+- [x] End-to-end run can produce and publish updated game definition + pack metadata in R2.
 
 ### Must Have
 - Durable Object based run coordination with ordered event stream.
+- Coordinator + WorkItem/StepWorker split for single-writer orchestration.
+- `ctx.waitUntil(...)` background kickoff for long-lived run processing.
+- Lease + alarm based recovery for stalled/evicted run workers.
 - Idempotent step execution + idempotent billing writes.
 - Immutable run-versioned R2 artifacts, publish-by-pointer.
 - Polling fallback for run status if socket unavailable.
@@ -80,6 +85,8 @@ Implement a production-ready AI editing lifecycle in the API layer that reliably
 - No v1 multi-user collaborative editing semantics.
 - No custom model training/fine-tuning in v1.
 - No unmanaged long-running in single HTTP request loops.
+- No webhook-driven orchestration as a primary trigger model for editor runs.
+- No repository-policy approval gates (run controls only: start/pause/resume/cancel).
 
 ---
 
@@ -154,7 +161,7 @@ Critical Path: 1 -> 3 -> 4 -> 6 -> 7 -> 10
 
 ## TODOs
 
-- [ ] 1. Create Agent Run Data Model (DB + types)
+- [x] 1. Create Agent Run Data Model (DB + types)
 
   **What to do**:
   - Add tables for `agent_runs`, `agent_steps`, `agent_events`, `agent_checkpoints`, `agent_costs`.
@@ -214,11 +221,11 @@ Critical Path: 1 -> 3 -> 4 -> 6 -> 7 -> 10
     Evidence: .sisyphus/evidence/task-1-idempotency.txt
   ```
 
-- [ ] 2. Implement Tiered Model Routing Config (`Free/Standard/Pro`)
+- [x] 2. Implement Tiered Model Routing Config (`Free/Standard/Pro`)
 
   **What to do**:
   - Add server-side model tier config mapping (provider + model + fallback chain + max budget hints).
-  - Add API contract for selecting tier per run with policy validation.
+  - Add API contract for selecting tier per run with server-side tier validation.
   - Add default fallback policy for provider outage.
 
   **Must NOT do**:
@@ -266,16 +273,20 @@ Critical Path: 1 -> 3 -> 4 -> 6 -> 7 -> 10
     Evidence: .sisyphus/evidence/task-2-invalid-override.txt
   ```
 
-- [ ] 3. Build Durable Object Run Coordinator + WebSocket Session Protocol
+- [x] 3. Build Durable Object Run Coordinator + WebSocket Session Protocol
 
   **What to do**:
+  - Implement `RunCoordinatorDO` + `RunStepWorkerDO` split (coordinator/worker pattern) with coordinator as single writer.
   - Implement DO per run (or per game active run) as authoritative run state coordinator.
+  - Kick off worker execution using `ctx.waitUntil(...)` from coordinator/worker transition points.
   - Add ordered event sequence numbers and replay window on reconnect.
-  - Support control messages: `pause`, `resume`, `cancel`, `approve_checkpoint`, `request_snapshot`.
+  - Support control messages: `pause`, `resume`, `cancel`, `request_snapshot`.
+  - Add durable command ledger for control dedupe by `command_id`.
 
   **Must NOT do**:
   - Do not allow run mutation from multiple concurrent coordinators.
   - Do not emit non-ordered events.
+  - Do not use in-memory-only dedupe for billing/control commands.
 
   **Recommended Agent Profile**:
   - **Category**: `deep`
@@ -295,6 +306,7 @@ Critical Path: 1 -> 3 -> 4 -> 6 -> 7 -> 10
   - [ ] Client receives monotonically increasing event sequence IDs.
   - [ ] Reconnect with last sequence ID replays missing events only.
   - [ ] Pause/resume/cancel controls change run state atomically.
+  - [ ] Duplicate `command_id` control messages are no-op (exactly-once semantics).
 
   **Agent-Executed QA Scenarios**:
   ```text
@@ -319,9 +331,19 @@ Critical Path: 1 -> 3 -> 4 -> 6 -> 7 -> 10
       3. Assert loser gets deterministic conflict response
     Expected Result: single writer guarantee
     Evidence: .sisyphus/evidence/task-3-single-writer.txt
+
+  Scenario: Duplicate control command dedupe
+    Tool: Bash + websocket client
+    Preconditions: active run and command ledger enabled
+    Steps:
+      1. Send `pause` with command_id="cmd-123"
+      2. Send same `pause` with command_id="cmd-123" again
+      3. Assert run transitions to paused once and only one event is emitted
+    Expected Result: command dedupe prevents repeated state mutation
+    Evidence: .sisyphus/evidence/task-3-command-dedupe.txt
   ```
 
-- [ ] 4. Extend Spark Billing: Reservation + Step Settlement + Final Reconcile
+- [x] 4. Extend Spark Billing: Reservation + Step Settlement + Final Reconcile
 
   **What to do**:
   - Add `agent_reservation_hold`, `agent_step_settlement`, `agent_reservation_release` transaction types.
@@ -379,7 +401,7 @@ Critical Path: 1 -> 3 -> 4 -> 6 -> 7 -> 10
     Evidence: .sisyphus/evidence/task-4-idempotent-step.txt
   ```
 
-- [ ] 5. Implement Execution Engine (Planning -> Build -> Refine -> Theme -> Asset)
+- [x] 5. Implement Execution Engine (Planning -> Build -> Refine -> Theme -> Asset)
 
   **What to do**:
   - Build agent execution graph with explicit stages and checkpoints.
@@ -436,7 +458,7 @@ Critical Path: 1 -> 3 -> 4 -> 6 -> 7 -> 10
     Evidence: .sisyphus/evidence/task-5-schema-fail.txt
   ```
 
-- [ ] 6. Add Realtime Run APIs (WebSocket + Poll Fallback + Snapshot)
+- [x] 6. Add Realtime Run APIs (WebSocket + Poll Fallback + Snapshot)
 
   **What to do**:
   - Add APIs for: create run, connect stream, fetch snapshot, poll status fallback.
@@ -490,15 +512,15 @@ Critical Path: 1 -> 3 -> 4 -> 6 -> 7 -> 10
     Evidence: .sisyphus/evidence/task-6-snapshot-consistency.txt
   ```
 
-- [ ] 7. Build Editor Planning-Doc Loop + Run Controls
+- [x] 7. Build Editor Planning-Doc Loop + Run Controls
 
   **What to do**:
-  - Add planning doc UI flow in editor mode (iterative Q/A, plan refine, approval gate).
-  - Add run control UX (`start`, `pause`, `resume`, `cancel`, `approve checkpoint`).
+  - Add planning doc UI flow in editor mode (iterative Q/A, plan refine, start confirmation).
+  - Add run control UX (`start`, `pause`, `resume`, `cancel`).
   - Surface estimated Spark cost range before start and settled spend after completion.
 
   **Must NOT do**:
-  - Do not start execution before explicit plan approval.
+  - Do not start execution before user confirms start from planning doc.
   - Do not hide current wallet shortfall when reserve cannot be held.
 
   **Recommended Agent Profile**:
@@ -519,13 +541,13 @@ Critical Path: 1 -> 3 -> 4 -> 6 -> 7 -> 10
   - `app/components/economy/InsufficientBalanceModal.tsx` - insufficient-funds UX.
 
   **Acceptance Criteria**:
-  - [ ] User can iterate planning doc and explicitly approve before run start.
+  - [ ] User can iterate planning doc and confirm start before run creation.
   - [ ] User sees tier selection and cost estimate before reserve.
   - [ ] Live run controls and status updates are reflected in UI within 2s.
 
   **Agent-Executed QA Scenarios**:
   ```text
-  Scenario: Planning approval gate
+  Scenario: Planning start confirmation
     Tool: Playwright
     Preconditions: editor page loaded, authenticated user
     Steps:
@@ -533,12 +555,12 @@ Critical Path: 1 -> 3 -> 4 -> 6 -> 7 -> 10
       2. Open AI editing panel
       3. Enter prompt: "physics puzzle with 3 mechanics"
       4. Assert planning doc appears with editable sections
-      5. Attempt start without approval
-      6. Assert blocked with message "Approve plan first"
-      7. Click Approve Plan then Start Run
+      5. Attempt start without required planning fields
+      6. Assert blocked with message indicating missing planning input
+      7. Complete required planning fields and click Start Run
       8. Assert run status badge shows "Running"
       9. Screenshot: .sisyphus/evidence/task-7-planning-gate.png
-    Expected Result: execution gated by explicit approval
+    Expected Result: execution starts only after planning completion + start confirmation
     Evidence: .sisyphus/evidence/task-7-planning-gate.png
 
   Scenario: Insufficient reserve handling
@@ -554,12 +576,12 @@ Critical Path: 1 -> 3 -> 4 -> 6 -> 7 -> 10
     Evidence: .sisyphus/evidence/task-7-insufficient.png
   ```
 
-- [ ] 8. Implement Artifact Versioning + Publish Pointer Promotion
+- [x] 8. Implement Artifact Versioning + Publish Pointer Promotion
 
   **What to do**:
   - Store intermediate artifacts under run-versioned keys.
   - Keep active game pointer separate from intermediate outputs.
-  - Promote pointer only after checkpoint acceptance.
+  - Promote pointer only after publish-stage validation succeeds.
 
   **Must NOT do**:
   - Do not overwrite active definition during intermediate stages.
@@ -587,12 +609,12 @@ Critical Path: 1 -> 3 -> 4 -> 6 -> 7 -> 10
 
   **Agent-Executed QA Scenarios**:
   ```text
-  Scenario: Promote pointer after checkpoint
+  Scenario: Promote pointer after publish validation
     Tool: Bash
     Preconditions: run has generated staged artifacts
     Steps:
       1. Confirm active pointer references old definition
-      2. Approve checkpoint event
+      2. Complete publish-stage validation event
       3. Assert active pointer now references run artifact key
       4. Assert previous version still retrievable
     Expected Result: atomic promotion, immutable history
@@ -609,10 +631,11 @@ Critical Path: 1 -> 3 -> 4 -> 6 -> 7 -> 10
     Evidence: .sisyphus/evidence/task-8-fail-safe.txt
   ```
 
-- [ ] 9. Add Resume/Recovery/Reconciliation Flows
+- [x] 9. Add Resume/Recovery/Reconciliation Flows
 
   **What to do**:
   - Implement checkpoint resume from last successful step.
+  - Implement lease + heartbeat + alarm-driven stale-run recovery (`lease_expires_at`, takeover rules).
   - Add dead-run recovery and stuck-run timeout policy.
   - Add reconciliation process for billing drift and run/event mismatch.
 
@@ -636,6 +659,7 @@ Critical Path: 1 -> 3 -> 4 -> 6 -> 7 -> 10
 
   **Acceptance Criteria**:
   - [ ] Resume starts from checkpointed step, not from run start.
+  - [ ] Stale lease alarm resumes or reassigns execution within configured SLA (e.g., 60s).
   - [ ] Recovered run preserves settlement integrity.
   - [ ] Reconciliation report identifies and flags all mismatches.
 
@@ -652,6 +676,17 @@ Critical Path: 1 -> 3 -> 4 -> 6 -> 7 -> 10
     Expected Result: precise continuation without double billing
     Evidence: .sisyphus/evidence/task-9-resume.txt
 
+  Scenario: Lease expiry takeover
+    Tool: Bash
+    Preconditions: worker lease intentionally expired while run is executing
+    Steps:
+      1. Stop worker heartbeat
+      2. Trigger alarm tick
+      3. Assert coordinator marks lease stale and re-dispatches worker
+      4. Assert resumed from last checkpoint and no duplicate settlement
+    Expected Result: eviction/stall recovery without financial drift
+    Evidence: .sisyphus/evidence/task-9-lease-takeover.txt
+
   Scenario: Billing drift detection
     Tool: Bash
     Preconditions: inject mismatch between ledger and agent_costs
@@ -663,7 +698,7 @@ Critical Path: 1 -> 3 -> 4 -> 6 -> 7 -> 10
     Evidence: .sisyphus/evidence/task-9-reconcile.txt
   ```
 
-- [ ] 10. End-to-End Validation, Metrics, and Feature-Flagged Rollout
+- [x] 10. End-to-End Validation, Metrics, and Feature-Flagged Rollout
 
   **What to do**:
   - Add integration tests for full run lifecycle, reconnect, cancellation, and settlement.
@@ -702,7 +737,7 @@ Critical Path: 1 -> 3 -> 4 -> 6 -> 7 -> 10
     Preconditions: feature flag enabled for test user
     Steps:
       1. Create/fork game
-      2. Complete planning loop approval
+      2. Complete planning loop and confirm start
       3. Start run and wait for completion
       4. Assert editor reflects published artifact
       5. Assert wallet ledger contains hold + settlements + release
@@ -746,8 +781,8 @@ pnpm --filter app typecheck
 ```
 
 ### Final Checklist
-- [ ] All must-have capabilities implemented.
-- [ ] All guardrails enforced (billing idempotency, run idempotency, no premature publish).
-- [ ] WebSocket reconnect + poll fallback both verified.
-- [ ] Settlement arithmetic verified for success, partial failure, and cancel.
-- [ ] Feature flag rollout path validated.
+- [x] All must-have capabilities implemented.
+- [x] All guardrails enforced (billing idempotency, run idempotency, no premature publish).
+- [x] WebSocket reconnect + poll fallback both verified.
+- [x] Settlement arithmetic verified for success, partial failure, and cancel.
+- [x] Feature flag rollout path validated.

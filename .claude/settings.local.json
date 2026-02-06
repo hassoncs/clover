@@ -53,7 +53,9 @@
       "Bash(xxd:*)",
       "Bash(node -e:*)",
       "WebFetch(domain:localhost)",
-      "Bash(hush run:*)"
+      "Bash(hush run:*)",
+      "Bash(pkill:*)",
+      "Bash(xcrun xctrace:*)"
     ]
   }
 }

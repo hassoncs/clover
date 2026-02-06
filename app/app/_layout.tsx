@@ -94,7 +94,7 @@ function RootLayoutContent() {
         }}
       />
       <Stack.Screen
-        name="test-games/[id]"
+        name="game/[id]"
         options={{
           presentation: "fullScreenModal",
         }}

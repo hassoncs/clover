@@ -28,12 +28,12 @@ func setup(
 
 
 func update_state():
-	# Update state from bridge (called when game data changes)
 	if _bridge:
 		_entities = _bridge.entities
 		_templates = _bridge.templates
 		_pixels_per_meter = _bridge.pixels_per_meter
 		_game_root = _bridge.game_root
+		print("[EntityFactory][DIAG] update_state: game_root=", _game_root, " ppm=", _pixels_per_meter, " templates=", _templates.keys())
 
 
 func game_to_godot_pos(game_pos: Vector2) -> Vector2:
@@ -97,6 +97,7 @@ func create_entity(entity_data: Dictionary) -> EntityRecord:
 	var angle = transform_data.get("angle", 0)
 	node.position = godot_pos
 	node.rotation = -angle
+	node.z_index = int(merged.get("layer", 0))
 
 	# Add visual component
 	if visual_data:
@@ -313,6 +314,7 @@ func create_physics_body(
 	transform_data: Dictionary
 ) -> Node2D:
 	var body_type = physics_data.get("bodyType", "dynamic")
+	print("[EntityFactory][DIAG] create_physics_body '", entity_id, "' bodyType=", body_type, " collider=", collider_data)
 	var node: Node2D
 
 	# Extract physics properties (needed outside match block)
@@ -358,6 +360,7 @@ func create_physics_body(
 			node = rigid
 
 	node.name = entity_id
+	print("[EntityFactory][DIAG] Created node type=", node.get_class(), " for '", entity_id, "'")
 
 	# Add collision shape from collider data
 	if collider_data:

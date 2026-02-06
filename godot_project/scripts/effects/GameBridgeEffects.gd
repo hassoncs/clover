@@ -23,10 +23,44 @@ func _ready() -> void:
 	
 	# Find GameBridge
 	_game_bridge = get_node_or_null("/root/GameBridge")
-	
+
+	_build_effects_method_map()
+
 	# If running in web, set up JS bridge methods
 	if OS.has_feature("web"):
 		_setup_js_effects_bridge()
+
+var _method_map: Dictionary = {}
+
+func _build_effects_method_map() -> void:
+	_method_map = {
+		"apply_sprite_effect": _js_apply_sprite_effect,
+		"update_sprite_effect_param": _js_update_sprite_effect_param,
+		"clear_sprite_effect": _js_clear_sprite_effect,
+		"set_post_effect": _js_set_post_effect,
+		"update_post_effect_param": _js_update_post_effect_param,
+		"clear_post_effect": _js_clear_post_effect,
+		"screen_shake": _js_screen_shake,
+		"zoom_punch": _js_zoom_punch,
+		"trigger_shockwave": _js_trigger_shockwave,
+		"flash_screen": _js_flash_screen,
+		"create_dynamic_shader": _js_create_dynamic_shader,
+		"apply_dynamic_shader_to_entity": _js_apply_dynamic_shader,
+		"apply_dynamic_post_shader": _js_apply_dynamic_post_shader,
+		"spawn_particle_preset": _js_spawn_particle_preset,
+		"get_available_effects": _js_get_available_effects,
+	}
+
+func native_dispatch(method_name: String, args_json: String) -> Variant:
+	if not _method_map.has(method_name):
+		push_warning("[GameBridgeEffects] Unknown native method: " + method_name)
+		return null
+	var args: Array = []
+	if args_json != "[]" and args_json != "":
+		var json = JSON.new()
+		if json.parse(args_json) == OK:
+			args = json.data if json.data is Array else [json.data]
+	return _method_map[method_name].call(args)
 
 func _setup_js_effects_bridge() -> void:
 	var window = JavaScriptBridge.get_interface("window")

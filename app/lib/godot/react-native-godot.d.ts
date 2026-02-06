@@ -18,6 +18,7 @@ declare module '@borndotcom/react-native-godot' {
     get(property: string): unknown;
     set(property: string, value: unknown): void;
     connect(signal: string, callback: (...args: unknown[]) => void): void;
+    native_dispatch(methodName: string, argsJson: string): unknown;
     query_result: GodotSignal;
     joint_created: GodotSignal;
     query_point_entity(x: number, y: number): string | null;

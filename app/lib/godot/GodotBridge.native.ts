@@ -37,27 +37,10 @@ interface GodotGameBridge {
   entities: Record<string, {
     position: { x: number; y: number };
     rotation: number;
-    linear_velocity?: { x: number; y: number };
-    angular_velocity?: number;
   }>;
   pixels_per_meter: number;
-  user_data: Record<string, unknown>;
-  get_all_transforms(): Record<string, EntityTransform>;
-  get_all_properties(): PropertySyncPayload;
-  _screen_to_world_impl(screenX: number, screenY: number): { x: number; y: number };
-  query_point_entity(x: number, y: number): string | null;
-  create_mouse_joint(body: string, targetX: number, targetY: number, maxForce: number, stiffness: number, damping: number): number;
-  destroy_joint(jointId: number): void;
-  set_mouse_target(jointId: number, x: number, y: number): void;
-  query_point(x: number, y: number): number | null;
-  query_aabb(minX: number, minY: number, maxX: number, maxY: number): string;
-  raycast(originX: number, originY: number, dirX: number, dirY: number, maxDistance: number): string | null;
   poll_events(): string;
-  set_linear_velocity(entityId: string, vx: number, vy: number): void;
-  set_angular_velocity(entityId: string, velocity: number): void;
-  apply_impulse(entityId: string, ix: number, iy: number): void;
-  apply_force(entityId: string, fx: number, fy: number): void;
-  apply_torque(entityId: string, torque: number): void;
+  native_dispatch(method_name: string, args_json: string): unknown;
 }
 let godotModule: GodotModule | null = null;
 let isGodotInitialized = false;
@@ -77,7 +60,8 @@ async function getGodotModule(): Promise<GodotModule> {
 
 function callGameBridge(methodName: string, ...args: unknown[]) {
   if (isDisposing || !isGodotInitialized) return;
-  
+
+  const argsJson = JSON.stringify(args);
   getGodotModule().then(({ RTNGodot, runOnGodotThread }) => {
     if (isDisposing) return;
     runOnGodotThread(() => {
@@ -85,14 +69,7 @@ function callGameBridge(methodName: string, ...args: unknown[]) {
       const Godot = RTNGodot.API();
       const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge');
       if (gameBridge) {
-        const method = gameBridge[methodName];
-        if (typeof method === 'function') {
-          // react-native-godot doesn't support JS Array bindings
-          // All methods must be called with individual args spread out
-          method.apply(gameBridge, args);
-        } else {
-          // Method not found on GameBridge
-        }
+        gameBridge.native_dispatch(methodName, argsJson);
       }
     });
   });
@@ -104,27 +81,21 @@ function callGameBridgeAsync(methodName: string, ...args: unknown[]): Promise<an
       reject(new Error('Godot not initialized'));
       return;
     }
-    
+
+    const argsJson = JSON.stringify(args);
     getGodotModule().then(({ RTNGodot, runOnGodotThread }) => {
       if (isDisposing) {
         reject(new Error('Godot is disposing'));
         return;
       }
-      
+
       runOnGodotThread(() => {
         'worklet';
         try {
           const Godot = RTNGodot.API();
           const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge');
           if (gameBridge) {
-            const method = gameBridge[methodName];
-            if (typeof method === 'function') {
-              const result = method.apply(gameBridge, args);
-              return result;
-            } else {
-              // Method not found on GameBridge
-              return null;
-            }
+            return gameBridge.native_dispatch(methodName, argsJson);
           }
           return null;
         } catch (e) {
@@ -137,7 +108,8 @@ function callGameBridgeAsync(methodName: string, ...args: unknown[]): Promise<an
 
 function callEffectsBridge(methodName: string, ...args: unknown[]) {
   if (isDisposing || !isGodotInitialized) return;
-  
+
+  const argsJson = JSON.stringify(args);
   getGodotModule().then(({ RTNGodot, runOnGodotThread }) => {
     if (isDisposing) return;
     runOnGodotThread(() => {
@@ -145,13 +117,7 @@ function callEffectsBridge(methodName: string, ...args: unknown[]) {
       const Godot = RTNGodot.API();
       const effectsBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridgeEffects');
       if (effectsBridge) {
-        const method = effectsBridge[methodName];
-        if (typeof method === 'function') {
-          // Spread args individually - react-native-godot doesn't support array bindings
-          method.apply(effectsBridge, args);
-        } else {
-          // Method not found on GameBridgeEffects
-        }
+        effectsBridge.native_dispatch(methodName, argsJson);
       }
     });
   });
@@ -448,16 +414,13 @@ export function createNativeGodotBridge(): GodotBridge {
             const Godot = RTNGodot.API();
             const gameBridge = Godot.Engine.get_main_loop()?.get_root()?.get_node('GameBridge');
             if (gameBridge) {
-              const clearFn = (gameBridge as Record<string, unknown>)['clear_game'];
-              if (typeof clearFn === 'function') {
-                clearFn.call(gameBridge);
-              }
+              gameBridge.native_dispatch('clear_game', '[]');
             }
           } catch (e) {
             // Error during dispose
           }
         });
-        
+
         setTimeout(() => {
           runOnGodotThread(() => {
             'worklet';
@@ -575,19 +538,11 @@ export function createNativeGodotBridge(): GodotBridge {
     },
 
     async getAllProperties(): Promise<PropertySyncPayload> {
-      const { RTNGodot, runOnGodotThread } = await getGodotModule();
-      
-      return runOnGodotThread(() => {
-        'worklet';
-        try {
-          const Godot = RTNGodot.API();
-          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
-          if (gameBridge?.get_all_properties) {
-            return gameBridge.get_all_properties();
-          }
-        } catch (e) {}
-        return { frameId: 0, timestamp: 0, entities: {} };
-      });
+      const result = await callGameBridgeAsync('get_all_properties');
+      if (result && typeof result === 'object') {
+        return result as PropertySyncPayload;
+      }
+      return { frameId: 0, timestamp: 0, entities: {} };
     },
 
     setTransform(entityId: string, x: number, y: number, angle: number) {
@@ -615,117 +570,36 @@ export function createNativeGodotBridge(): GodotBridge {
     },
 
     async getLinearVelocity(entityId: string): Promise<Vec2 | null> {
-      const { RTNGodot, runOnGodotThread } = await getGodotModule();
-      
-      return runOnGodotThread(() => {
-        'worklet';
-        try {
-          const Godot = RTNGodot.API();
-          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
-          if (gameBridge?.entities?.[entityId]) {
-            const node = gameBridge.entities[entityId];
-            if (node.linear_velocity) {
-              const ppm = gameBridge.pixels_per_meter || 50.0;
-              return {
-                x: node.linear_velocity.x / ppm,
-                y: node.linear_velocity.y / ppm
-              } as Vec2;
-            }
-          }
-        } catch (e) {
-          // Error getting velocity
-        }
-        return null;
-      });
+      const result = await callGameBridgeAsync('get_linear_velocity', entityId);
+      if (result && typeof result === 'object' && 'x' in result) {
+        return result as Vec2;
+      }
+      return null;
     },
 
     setLinearVelocity(entityId: string, velocity: Vec2) {
-      getGodotModule().then(({ RTNGodot, runOnGodotThread }) => {
-        if (isDisposing) return;
-        runOnGodotThread(() => {
-          'worklet';
-          const Godot = RTNGodot.API();
-          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
-          if (gameBridge) {
-            gameBridge.set_linear_velocity(entityId, velocity.x, velocity.y);
-          }
-        });
-      });
+      callGameBridge('set_linear_velocity', entityId, velocity.x, velocity.y);
     },
 
     async getAngularVelocity(entityId: string): Promise<number | null> {
-      const { RTNGodot, runOnGodotThread } = await getGodotModule();
-      
-      return runOnGodotThread(() => {
-        'worklet';
-        try {
-          const Godot = RTNGodot.API();
-          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
-          if (gameBridge?.entities?.[entityId]) {
-            const node = gameBridge.entities[entityId];
-            if (typeof node.angular_velocity === 'number') {
-              return node.angular_velocity;
-            }
-          }
-        } catch (e) {}
-        return null;
-      });
+      const result = await callGameBridgeAsync('get_angular_velocity', entityId);
+      return typeof result === 'number' ? result : null;
     },
 
     setAngularVelocity(entityId: string, velocity: number) {
-      getGodotModule().then(({ RTNGodot, runOnGodotThread }) => {
-        if (isDisposing) return;
-        runOnGodotThread(() => {
-          'worklet';
-          const Godot = RTNGodot.API();
-          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
-          if (gameBridge) {
-            gameBridge.set_angular_velocity(entityId, velocity);
-          }
-        });
-      });
+      callGameBridge('set_angular_velocity', entityId, velocity);
     },
 
     applyImpulse(entityId: string, impulse: Vec2) {
-      getGodotModule().then(({ RTNGodot, runOnGodotThread }) => {
-        if (isDisposing) return;
-        runOnGodotThread(() => {
-          'worklet';
-          const Godot = RTNGodot.API();
-          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
-          if (gameBridge) {
-            gameBridge.apply_impulse(entityId, impulse.x, impulse.y);
-          }
-        });
-      });
+      callGameBridge('apply_impulse', entityId, impulse.x, impulse.y);
     },
 
     applyForce(entityId: string, force: Vec2) {
-      getGodotModule().then(({ RTNGodot, runOnGodotThread }) => {
-        if (isDisposing) return;
-        runOnGodotThread(() => {
-          'worklet';
-          const Godot = RTNGodot.API();
-          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
-          if (gameBridge) {
-            gameBridge.apply_force(entityId, force.x, force.y);
-          }
-        });
-      });
+      callGameBridge('apply_force', entityId, force.x, force.y);
     },
 
     applyTorque(entityId: string, torque: number) {
-      getGodotModule().then(({ RTNGodot, runOnGodotThread }) => {
-        if (isDisposing) return;
-        runOnGodotThread(() => {
-          'worklet';
-          const Godot = RTNGodot.API();
-          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
-          if (gameBridge) {
-            gameBridge.apply_torque(entityId, torque);
-          }
-        });
-      });
+      callGameBridge('apply_torque', entityId, torque);
     },
 
     createRevoluteJoint(def: RevoluteJointDef): number {
@@ -785,39 +659,17 @@ export function createNativeGodotBridge(): GodotBridge {
     },
 
     async createMouseJointAsync(def: MouseJointDef): Promise<number> {
-      const { RTNGodot, runOnGodotThread } = await getGodotModule();
-      
-      return runOnGodotThread(() => {
-        'worklet';
-        try {
-          const Godot = RTNGodot.API();
-          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge');
-          if (gameBridge) {
-            const jointId = gameBridge.create_mouse_joint(
-              def.body,
-              def.target.x, def.target.y,
-              def.maxForce,
-              def.stiffness ?? 5, def.damping ?? 0.7
-            ) as number;
-            return jointId ?? -1;
-          }
-        } catch (e) {}
-        return -1;
-      });
+      const result = await callGameBridgeAsync('create_mouse_joint',
+        def.body,
+        def.target.x, def.target.y,
+        def.maxForce,
+        def.stiffness ?? 5, def.damping ?? 0.7
+      );
+      return typeof result === 'number' ? result : -1;
     },
 
     destroyJoint(jointId: number) {
-      getGodotModule().then(({ RTNGodot, runOnGodotThread }) => {
-        if (isDisposing) return;
-        runOnGodotThread(() => {
-          'worklet';
-          const Godot = RTNGodot.API();
-          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge');
-          if (gameBridge) {
-            gameBridge.destroy_joint(jointId);
-          }
-        });
-      });
+      callGameBridge('destroy_joint', jointId);
     },
 
     setMotorSpeed(jointId: number, speed: number) {
@@ -825,46 +677,28 @@ export function createNativeGodotBridge(): GodotBridge {
     },
 
     setMouseTarget(jointId: number, target: Vec2) {
-      getGodotModule().then(({ RTNGodot, runOnGodotThread }) => {
-        if (isDisposing) return;
-        runOnGodotThread(() => {
-          'worklet';
-          const Godot = RTNGodot.API();
-          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge');
-          if (gameBridge) {
-            gameBridge.set_mouse_target(jointId, target.x, target.y);
-          }
-        });
-      });
+      callGameBridge('set_mouse_target', jointId, target.x, target.y);
     },
 
     async queryPoint(point: Vec2): Promise<number | null> {
-      const { RTNGodot, runOnGodotThread } = await getGodotModule();
-      
-      return runOnGodotThread(() => {
-        'worklet';
-        try {
-          const Godot = RTNGodot.API();
-          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
-          if (gameBridge) {
-            return gameBridge.query_point(point.x, point.y);
-          }
-        } catch (e) {}
-        return null;
-      });
+      const result = await callGameBridgeAsync('query_point', point.x, point.y);
+      return typeof result === 'number' ? result : null;
     },
 
     async screenToWorld(screenX: number, screenY: number): Promise<Vec2> {
       const { RTNGodot, runOnGodotThread } = await getGodotModule();
-      
+
       return runOnGodotThread(() => {
         'worklet';
         try {
           const Godot = RTNGodot.API();
-          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
-          if (gameBridge && typeof gameBridge._screen_to_world_impl === 'function') {
-            const result = gameBridge._screen_to_world_impl(screenX, screenY) as { x: number; y: number };
-            return result;
+          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge');
+          if (gameBridge) {
+            const argsJson = JSON.stringify([screenX, screenY]);
+            const result = gameBridge.native_dispatch('screen_to_world', argsJson);
+            if (result && typeof result === 'object') {
+              return result as Vec2;
+            }
           }
         } catch (e) {}
         return { x: 0, y: 0 };
@@ -872,54 +706,24 @@ export function createNativeGodotBridge(): GodotBridge {
     },
 
     async queryPointEntity(point: Vec2): Promise<string | null> {
-      const { RTNGodot, runOnGodotThread } = await getGodotModule();
-      
-      return runOnGodotThread(() => {
-        'worklet';
-        try {
-          const Godot = RTNGodot.API();
-          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
-          if (gameBridge) {
-            const entityId = gameBridge.query_point_entity(point.x, point.y);
-            return entityId;
-          }
-        } catch (e) {}
-        return null;
-      });
+      const result = await callGameBridgeAsync('query_point_entity', point.x, point.y);
+      return typeof result === 'string' ? result : null;
     },
 
     async queryAABB(min: Vec2, max: Vec2): Promise<number[]> {
-      const { RTNGodot, runOnGodotThread } = await getGodotModule();
-      
-      return runOnGodotThread(() => {
-        'worklet';
-        try {
-          const Godot = RTNGodot.API();
-          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
-          if (gameBridge) {
-            const jsonResult = gameBridge.query_aabb(min.x, min.y, max.x, max.y);
-            return jsonResult ? JSON.parse(jsonResult) as number[] : [];
-          }
-        } catch (e) {}
-        return [];
-      });
+      const result = await callGameBridgeAsync('query_aabb', min.x, min.y, max.x, max.y);
+      if (typeof result === 'string') {
+        return JSON.parse(result) as number[];
+      }
+      return Array.isArray(result) ? result : [];
     },
 
     async raycast(origin: Vec2, direction: Vec2, maxDistance: number): Promise<RaycastHit | null> {
-      const { RTNGodot, runOnGodotThread } = await getGodotModule();
-      
-      return runOnGodotThread(() => {
-        'worklet';
-        try {
-          const Godot = RTNGodot.API();
-          const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge') as unknown as GodotGameBridge | null;
-          if (gameBridge) {
-            const jsonResult = gameBridge.raycast(origin.x, origin.y, direction.x, direction.y, maxDistance);
-            return jsonResult ? JSON.parse(jsonResult) as RaycastHit : null;
-          }
-        } catch (e) {}
-        return null;
-      });
+      const result = await callGameBridgeAsync('raycast', origin.x, origin.y, direction.x, direction.y, maxDistance);
+      if (typeof result === 'string') {
+        return JSON.parse(result) as RaycastHit;
+      }
+      return result as RaycastHit | null;
     },
 
 

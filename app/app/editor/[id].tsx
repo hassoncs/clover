@@ -10,6 +10,7 @@ import { EditorTopBar } from "@/components/editor/EditorTopBar";
 import { BottomDock } from "@/components/editor/BottomDock";
 import { StageContainer } from "@/components/editor/StageContainer";
 import { BottomSheetHost } from "@/components/editor/BottomSheetHost";
+import { AIRunPanelHost } from "@/components/editor/AIRunPanelHost";
 
 export default function EditorScreen() {
   const router = useRouter();
@@ -98,6 +99,7 @@ export default function EditorScreen() {
           <StageContainer />
           <BottomDock />
           <BottomSheetHost />
+          <AIRunPanelHost />
         </EditorProvider>
       </View>
     </GestureHandlerRootView>

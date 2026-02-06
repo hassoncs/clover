@@ -12,8 +12,11 @@ import type {
   CloneOptions,
   ReparentOptions,
   RaycastOptions,
+  RaycastHit,
+  WorldOps,
 } from '@slopcade/shared/types';
 import type { Vec2 } from '@slopcade/shared/types/common';
+import { SequenceManager } from '../../SequenceManager';
 
 interface DeferredSpawn {
   entityId: string;
@@ -25,6 +28,7 @@ interface DeferredSpawn {
 
 export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> {
   private sandbox: IScriptSandbox | null = null;
+  private sequenceManager = new SequenceManager();
 
   setSandbox(sandbox: IScriptSandbox): void {
     this.sandbox = sandbox;
@@ -230,10 +234,13 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
       mutator.setGameState('lost');
     };
 
-    const worldAsync: AsyncWorldOps = {
-      animate: async () => {},
-      wait: async () => {},
-    };
+    const wOps = context.worldOps;
+
+    const worldAsync: AsyncWorldOps = wOps
+      ? { animate: wOps.animate.bind(wOps), wait: wOps.wait.bind(wOps) }
+      : { animate: async () => {}, wait: async () => {} };
+
+    const seqMgr = this.sequenceManager;
 
     const inputSnapshot: InputSnapshot | null = context.inputEvents?.tap ? {
       type: 'tap',
@@ -259,16 +266,53 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
       getEntityPosition,
       setEntityPosition,
       getEntityRotation,
-      setEntityRotation: (_entityId: string, _angle: number) => {},
-      getEntityScale: (_entityId: string) => null,
-      setEntityScale: (_entityId: string, _scale: Vec2) => {},
-      setEntityVisible: (_entityId: string, _visible: boolean) => {},
+      setEntityRotation: (entityId: string, angle: number): void => {
+        const entity = entityManager.getEntity(entityId);
+        if (!entity) return;
+        entity.transform.angle = angle;
+        if (entity.physics && context.physics) {
+          context.physics.setTransform(entityId, {
+            position: { x: entity.transform.x, y: entity.transform.y },
+            angle,
+          });
+        }
+        context.bridge?.setRotation(entityId, (angle * 180) / Math.PI);
+      },
+      getEntityScale: (entityId: string): Vec2 | null => {
+        const entity = entityManager.getEntity(entityId);
+        if (!entity) return null;
+        return { x: entity.transform.scaleX, y: entity.transform.scaleY };
+      },
+      setEntityScale: (entityId: string, scale: Vec2): void => {
+        const entity = entityManager.getEntity(entityId);
+        if (!entity) return;
+        entity.transform.scaleX = scale.x;
+        entity.transform.scaleY = scale.y;
+        context.bridge?.setScale(entityId, scale.x, scale.y);
+      },
+      setEntityVisible: (entityId: string, visible: boolean): void => {
+        entityManager.setEntityVisible(entityId, visible);
+        context.bridge?.setVisible(entityId, visible);
+      },
       getEntityVelocity,
       setEntityVelocity,
-      getEntityAngularVelocity: (_entityId: string) => null,
-      setEntityAngularVelocity: (_entityId: string, _velocity: number) => {},
+      getEntityAngularVelocity: (entityId: string): number | null => {
+        const entity = entityManager.getEntity(entityId);
+        if (!entity?.physics || !context.physics) return null;
+        return context.physics.getAngularVelocity(entityId);
+      },
+      setEntityAngularVelocity: (entityId: string, velocity: number): void => {
+        const entity = entityManager.getEntity(entityId);
+        if (!entity?.physics || !context.physics) return;
+        context.physics.setAngularVelocity(entityId, velocity);
+      },
       applyImpulse,
-      applyForce: (_entityId: string, _force: Vec2) => {},
+      applyForce: (entityId: string, force: Vec2): void => {
+        const entity = entityManager.getEntity(entityId);
+        if (!entity?.physics || !context.physics) return;
+        context.physics.applyForceToCenter(entityId, force);
+        context.bridge?.applyForce(entityId, force);
+      },
       getEntityTags,
       addTag,
       removeTag,
@@ -277,9 +321,28 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
       getEntityData,
       queryEntities,
       queryEntitiesWithData,
-      queryPoint: (_point: Vec2) => null,
-      queryAABB: (_min: Vec2, _max: Vec2) => [],
-      raycast: (_from: Vec2, _to: Vec2, _opts?: RaycastOptions) => null,
+      queryPoint: (point: Vec2): string | null => {
+        return context.physics?.queryPoint(point) ?? null;
+      },
+      queryAABB: (min: Vec2, max: Vec2): string[] => {
+        return context.physics?.queryAABB(min, max) ?? [];
+      },
+      raycast: (from: Vec2, to: Vec2, _opts?: RaycastOptions): RaycastHit | null => {
+        if (!context.physics) return null;
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance === 0) return null;
+        const direction = { x: dx / distance, y: dy / distance };
+        const hit = context.physics.raycast(from, direction, distance);
+        if (!hit) return null;
+        return {
+          entityId: hit.entityId,
+          point: hit.point,
+          normal: hit.normal,
+          distance: hit.fraction * distance,
+        };
+      },
       getVariable,
       setVariable,
       getConstant,
@@ -287,9 +350,15 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
       win,
       lose,
       worldAsync,
-      startSequence: () => ({ name: '', isRunning: false, cancel: () => {} } as SequenceHandle),
-      isSequenceRunning: () => false,
-      cancelSequence: () => {},
+      startSequence: (name: string, fn: (world: WorldOps) => Promise<void>): SequenceHandle => {
+        if (!wOps) {
+          console.warn('[RunScriptActionExecutor] startSequence unavailable: no worldOps on RuleContext');
+          return { name, get isRunning() { return false; }, cancel: () => {} };
+        }
+        return seqMgr.start(name, fn, wOps as WorldOps);
+      },
+      isSequenceRunning: (name: string): boolean => seqMgr.isRunning(name),
+      cancelSequence: (name: string): void => seqMgr.cancel(name),
       dt: context.evalContext?.dt ?? 1/60,
       elapsed: context.elapsed,
       frameId: context.evalContext?.frameId ?? 0,

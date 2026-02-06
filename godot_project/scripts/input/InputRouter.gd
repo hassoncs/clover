@@ -122,18 +122,24 @@ func hit_test(x: float, y: float) -> String:
 	if results.is_empty():
 		return ""
 	
-	# Sort by layer priority: hitboxes first (L4), then bodies (L1)
+	# Priority: hitboxes (L4) > bodies (L1). Within same priority, prefer highest z_index.
 	var best_hit: String = ""
-	var best_layer: int = 0
+	var best_z: int = -9999
+	var found_hitbox: bool = false
 	for result in results:
 		var collider = result.collider
 		if collider and _game_bridge.entity_registry.has(collider.name):
-			var layer = collider.collision_layer
-			if layer & CollisionLayers.LAYER_HITBOXES:  # Hitbox has priority
-				return collider.name
-			elif layer & CollisionLayers.LAYER_BODIES and best_layer == 0:
-				best_hit = collider.name
-				best_layer = layer
+			var col_layer = collider.collision_layer
+			var z = collider.z_index
+			if col_layer & CollisionLayers.LAYER_HITBOXES:
+				if not found_hitbox or z > best_z:
+					found_hitbox = true
+					best_hit = collider.name
+					best_z = z
+			elif col_layer & CollisionLayers.LAYER_BODIES and not found_hitbox:
+				if z > best_z:
+					best_hit = collider.name
+					best_z = z
 	
 	return best_hit
 

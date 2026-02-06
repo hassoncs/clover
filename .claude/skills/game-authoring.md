@@ -1,0 +1,532 @@
+# Game Authoring
+
+> **Skill for AI Agents**: Building and modifying games using the Slopcade game engine.
+
+## When to Use This Skill
+
+Load this skill when:
+- Creating a new game definition
+- Modifying an existing game (entities, templates, behaviors, rules)
+- Debugging game logic (collisions, rules, scripts)
+- Adding features (scoring, win/lose conditions, state machines, scripts)
+
+## Architecture Overview
+
+Games are TypeScript files that export a `GameDefinition` object. The engine runs on Godot 4 with a React Native shell. Games are declarative: you define templates, entities, rules, and behaviors — the engine handles rendering, physics, and game loop.
+
+**Coordinate system**: Origin at world center. X increases right, Y increases up (physics convention). Use helper functions to convert from screen-space (top-left origin):
+
+```typescript
+const HALF_W = WORLD_WIDTH / 2;
+const HALF_H = WORLD_HEIGHT / 2;
+const cx = (x: number) => x - HALF_W;   // screen X → world X
+const cy = (y: number) => HALF_H - y;   // screen Y → world Y (flipped)
+```
+
+## File Structure
+
+```
+r2/games/{gameSlug}/
+  src/game.ts       ← Main game definition (TypeScript)
+  src/script.ts     ← Optional external script file
+  metadata.json     ← Auto-generated (do not edit)
+  definition.json   ← Compiled output (do not edit)
+```
+
+## Minimal Game Example
+
+```typescript
+import type { GameDefinition } from "@slopcade/shared";
+
+export const metadata = {
+  title: "My Game",
+  description: "A simple game",
+};
+
+const WORLD_WIDTH = 12;
+const WORLD_HEIGHT = 16;
+
+const game: GameDefinition = {
+  metadata: {
+    id: "uuid-here",          // Generate a real UUID
+    slug: "myGame",
+    title: "My Game",
+    description: "A simple game",
+    instructions: "Tap to play!",
+    version: "1.0.0",
+  },
+  world: {
+    gravity: { x: 0, y: -10 },
+    pixelsPerMeter: 50,
+    bounds: { width: WORLD_WIDTH, height: WORLD_HEIGHT },
+  },
+  background: { type: "static", color: "#1a1a2e" },
+  camera: { type: "fixed", zoom: 1 },
+  templates: {
+    ball: {
+      id: "ball",
+      tags: ["ball"],
+      visual: { type: "circle", radius: 0.3, color: "#ff0000" },
+      physics: { bodyType: "dynamic", density: 1 },
+      collider: { shape: "circle", radius: 0.3, restitution: 0.8 },
+    },
+  },
+  entities: [
+    {
+      id: "ball1",
+      name: "Ball",
+      template: "ball",
+      transform: { x: 0, y: 3, angle: 0, scaleX: 1, scaleY: 1 },
+    },
+  ],
+};
+
+export default game;
+```
+
+## Core Concepts
+
+### Templates vs Entities
+
+**Templates** (`Record<string, EntityTemplate>`) define blueprints — visual, physics, collider, behaviors, tags. **Entities** (`GameEntity[]`) are instances placed in the world, referencing a template by string key.
+
+```typescript
+templates: {
+  brick: {                              // Template key
+    id: "brick",                        // Must match key
+    tags: ["brick"],
+    visual: { type: "rect", width: 1.2, height: 0.5, color: "#ff0000" },
+    physics: { bodyType: "static", density: 0 },
+    collider: { shape: "box", width: 1.2, height: 0.5 },
+  },
+},
+entities: [
+  { id: "brick1", name: "Brick 1", template: "brick",           // ← References template KEY
+    transform: { x: 0, y: 2, angle: 0, scaleX: 1, scaleY: 1 } },
+],
+```
+
+### Physics + Collider (Separate Components)
+
+Physics bodies need BOTH `physics` AND `collider` components:
+
+| Body Type | Use Case |
+|-----------|----------|
+| `dynamic` | Moves under forces/gravity (balls, characters) |
+| `static` | Never moves (walls, ground) |
+| `kinematic` | Moves programmatically, not affected by forces (platforms, paddles) |
+
+Collider shapes: `box`, `circle`, `polygon`, `capsule`
+
+```typescript
+physics: { bodyType: "dynamic", density: 1, fixedRotation: true },
+collider: { shape: "circle", radius: 0.3, friction: 0.5, restitution: 0.8 },
+```
+
+Sensors (`isSensor: true`) detect overlap without physical collision.
+
+### Visual Types
+
+| Type | Required Fields |
+|------|----------------|
+| `rect` | `width`, `height`, `color` |
+| `circle` | `radius`, `color` |
+| `image` | `imageWidth`, `imageHeight` (resolved via asset system) |
+| `text` | `text`, optional `fontSize`, `color`, `align` |
+| `polygon` | `vertices`, `color` |
+
+For `image` type, add `whatDescription` for AI asset generation: `"a bouncing red ball"`.
+
+### Variables
+
+Game-level state accessible in expressions and scripts:
+
+```typescript
+variables: {
+  score: 0,                    // Simple value
+  lives: 3,
+  paddleForce: {               // Value with tuning metadata
+    value: 120,
+    tuning: { min: 50, max: 200, step: 10 },
+    category: 'physics',
+    label: 'Paddle Push Force',
+  },
+},
+```
+
+### Expressions (`Value<T>`)
+
+Many fields accept `Value<number>` — either a literal or an expression:
+
+```typescript
+// Literal
+points: 10,
+
+// Expression
+points: { expr: "score * 2 + 1" },
+force: { expr: "-variables.paddleForce" },
+```
+
+Built-in expression context: `time`, `dt`, `frameId`, `score`, `random()`, `entityCount('tag')`, `variables.NAME`, `self.transform.x`, etc.
+
+### Win/Lose Conditions
+
+```typescript
+winCondition: { expr: "entityCount('brick') == 0" },
+loseCondition: { type: "entity_destroyed", tag: "bird" },
+// or
+loseCondition: { type: "custom", expr: "lives <= 0" },
+// or
+loseCondition: { type: "time_up", time: 60 },
+```
+
+## Rules System
+
+Rules are the primary declarative logic: **trigger** → optional **conditions** → **actions**.
+
+```typescript
+rules: [
+  {
+    id: "tap_to_flap",
+    name: "Tap to flap upward",
+    trigger: { type: "tap" },
+    actions: [
+      { type: "set_velocity", target: { type: "by_tag", tag: "bird" }, y: 7 },
+    ],
+  },
+  {
+    id: "spawn_pipes",
+    trigger: { type: "timer", time: 2.5, repeat: true },
+    actions: [
+      { type: "spawn", template: "pipeGroup", position: { type: "fixed", x: 8, y: 0 } },
+    ],
+  },
+],
+```
+
+### Triggers
+
+| Type | Key Fields |
+|------|-----------|
+| `collision` | `entityATag`, `entityBTag` |
+| `sensor_enter` / `sensor_exit` | `sensorTag`, `entityTag` |
+| `timer` | `time` (seconds), `repeat?` |
+| `tap` | `target?` (`'screen'`, `'self'`, tag), `xMinPercent?`, `xMaxPercent?` |
+| `swipe` | `direction` (`'left'`, `'right'`, `'up'`, `'down'`, `'any'`) |
+| `button` | `button` (`'left'`, `'right'`, `'jump'`, etc.), `state` (`'pressed'`, `'held'`, `'released'`) |
+| `drag` | `phase` (`'start'`, `'move'`, `'end'`), `target?` |
+| `tilt` | `axis?` (`'x'`, `'y'`, `'both'`), `threshold?` |
+| `frame` | Fires every frame |
+| `event` | `eventName` |
+| `entity_count` | `tag`, `count`, `comparison` |
+| `game_started` / `game_loaded` | No fields |
+
+### Core Actions
+
+| Type | Key Fields |
+|------|-----------|
+| `spawn` | `template` (string or string[]), `position`, optional `launch`, `count` |
+| `destroy` | `target`: `{type:'by_id',entityId}`, `{type:'by_tag',tag}`, `{type:'collision_entities'}`, `{type:'all'}` |
+| `set_variable` | `name`, `operation` (`'set'`/`'add'`/`'subtract'`/`'multiply'`/`'toggle'`), `value` |
+| `game_state` | `state` (`'win'`/`'lose'`/`'pause'`/`'restart'`/`'next_level'`), `delay?` |
+| `apply_impulse` | `target` (EntityTarget), `x?`, `y?`, `direction?`, `force?` |
+| `apply_force` | `target`, `x?`, `y?`, `direction?`, `force?` |
+| `set_velocity` | `target`, `x?`, `y?` |
+| `move` | `target`, `direction`, `speed` |
+| `modify` | `target`, `property`, `operation` (`'set'`/`'add'`/`'multiply'`), `value` |
+| `event` | `eventName`, `data?` |
+| `sound` | `soundId`, `volume?` |
+| `camera_shake` | `intensity`, `duration` |
+| `camera_zoom` | `scale`, `duration`, `restoreDelay?` |
+| `set_time_scale` | `scale`, `duration?` |
+| `state_transition` | `machineId`, `toState`, `force?` |
+| `run_script` | `script?`, `export?`, `args?` |
+| `container_push` / `container_pop` / `container_transfer` | See container reference |
+
+### EntityTarget (used by many actions)
+
+```typescript
+{ type: 'self' }
+{ type: 'by_id', entityId: 'paddle' }
+{ type: 'by_tag', tag: 'ball' }
+{ type: 'touched' }
+{ type: 'player' }
+{ type: 'other' }   // Other entity in collision
+```
+
+### Conditions
+
+| Type | Key Fields |
+|------|-----------|
+| `variable` | `name`, `comparison` (`'eq'`/`'gt'`/`'lt'`/`'gte'`/`'lte'`/`'neq'`), `value` |
+| `expression` | `expr` (string) |
+| `entity_count` | `tag`, `min?`, `max?` |
+| `entity_exists` | `entityId?`, `entityTag?` |
+| `random` | `probability` (0-1) |
+| `on_ground` | `value` (boolean) |
+| `velocity` | `axis`, `comparison`, `value` |
+| `state` | `machineId`, `state`, `negated?` |
+| `cooldown_ready` | `cooldownId` |
+| `container_is_empty` / `container_is_full` / `container_count` | See container reference |
+
+## Behaviors
+
+Behaviors are per-entity logic attached to templates. Key types:
+
+| Behavior | Purpose | Key Fields |
+|----------|---------|-----------|
+| `translate` | Transform-based movement (no physics needed) | `direction` (MovementDirection), `speed` |
+| `set_velocity` | Set physics velocity | `direction`, `speed` |
+| `apply_impulse` | One-shot physics impulse | `direction`, `magnitude` |
+| `maintain_speed` | Keep constant speed | `speed`, `mode?` (`'constant'`/`'minimum'`) |
+| `draggable` | Drag entity with touch | `mode?` (`'force'`/`'kinematic'`), `requireDirectHit?` |
+| `destroy_on_collision` | Destroy on collision | `withTags`, `effect?`, `destroyOther?`, `delay?` |
+| `destroy_when_off_screen` | Destroy when off screen | `edge`, `buffer?`, `recursive?` |
+| `score_on_collision` | Add score on collision | `withTags`, `points`, `once?` |
+| `oscillate` | Oscillate position | `axis`, `amplitude`, `frequency` |
+| `rotate` | Constant rotation | `speed`, `direction` |
+| `tween` | Animate property | `property`, `to`, `duration`, `ease?`, `loop?`, `yoyo?` |
+| `health` | Hit points | `maxHealth`, `damageFromTags?`, `destroyOnDeath?` |
+| `stick_to_entity` | Follow another entity | `targetTag`, `offset?` |
+| `launch_on_input` | Launch on tap/click | `speed`, `minAngle?`, `maxAngle?` |
+| `move` | Physics-based movement | `direction`, `speed`, `target?` |
+| `follow` | Follow target entity | `target` (tag), `speed` |
+| `spawn_on_event` | Spawn on events | `event`, `entityTemplate`, `spawnPosition` |
+| `timer` | Timed action | `duration`, `action`, `repeat?` |
+| `configure_children_at_spawn` | Randomize children | `configs[]` |
+
+**MovementDirection** (for translate/set_velocity/apply_impulse):
+```typescript
+{ type: 'vector', x: -1, y: 0 }     // Direction vector
+{ type: 'toward_target', targetTag?: string }
+{ type: 'away_from_target', targetTag?: string }
+{ type: 'random' }
+```
+
+## Custom Scripts
+
+For logic beyond declarative rules, embed JavaScript in the `script` field. Scripts run in a QuickJS sandbox.
+
+```typescript
+script: `
+exports.onStart = function(ctx) {
+  ctx.setVariable('score', 0);
+};
+
+exports.onUpdate = function(ctx, dt) {
+  const entities = ctx.queryEntities({ tag: 'enemy' });
+  for (const id of entities) {
+    const pos = ctx.getEntityPosition(id);
+    if (pos && pos.y < -10) ctx.destroyEntity(id);
+  }
+};
+
+exports.onInput = function(ctx, event) {
+  if (event.type === 'tap') {
+    ctx.spawnEntity('bullet', { x: 0, y: 0 });
+  }
+};
+
+exports.onCollision = function(ctx, collision) {
+  if (ctx.hasTag(collision.entityA, 'bullet') && ctx.hasTag(collision.entityB, 'enemy')) {
+    ctx.destroyEntity(collision.entityB);
+    ctx.setVariable('score', (ctx.getVariable('score') || 0) + 10);
+  }
+};
+`,
+```
+
+See `.claude/skills/game-authoring/scripting-api-reference.md` for complete ScriptContext API.
+
+## Child Entities (Hierarchies)
+
+Templates can define children that move with the parent:
+
+```typescript
+templates: {
+  pipeGroup: {
+    id: "pipeGroup",
+    tags: ["pipe-group"],
+    behaviors: [
+      { type: "translate", direction: { type: "vector", x: -1, y: 0 }, speed: 15 },
+      { type: "destroy_when_off_screen", edge: "left", buffer: 2, recursive: true },
+      { type: "configure_children_at_spawn", configs: [
+        { childName: "pipeTop", property: "localTransform.y", randomRange: [-6, -2] },
+        { childName: "pipeBottom", property: "localTransform.y", offsetFrom: "pipeTop", offset: -9 },
+      ]},
+    ],
+    children: [
+      { name: "pipeTop", template: "pipeTop",
+        localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+      { name: "pipeBottom", template: "pipeBottom",
+        localTransform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+    ],
+  },
+},
+```
+
+## State Machines
+
+For managing game phases (menu → playing → paused → game_over):
+
+```typescript
+stateMachines: [
+  {
+    id: "gamePhase",
+    initialState: "playing",
+    states: [
+      { id: "playing", onEnter: [/* actions */] },
+      { id: "paused", onEnter: [{ type: "set_time_scale", scale: 0 }] },
+      { id: "game_over" },
+    ],
+    transitions: [
+      { id: "pause", from: "playing", to: "paused",
+        trigger: { type: "event", eventName: "pause_pressed" } },
+      { id: "resume", from: "paused", to: "playing",
+        trigger: { type: "event", eventName: "resume_pressed" } },
+    ],
+  },
+],
+```
+
+## Containers
+
+For stack/grid-based games (Ball Sort, Connect 4, Match-3):
+
+```typescript
+containers: [
+  {
+    id: "tube0",
+    type: "stack",
+    capacity: 4,
+    layout: {
+      direction: "vertical",
+      spacing: 0.6,
+      basePosition: { x: -3, y: -2 },
+    },
+  },
+],
+```
+
+Container types: `stack` (Ball Sort tubes), `grid` (Match-3 boards), `slots` (inventory).
+
+## Game-Defined Dialogs
+
+```typescript
+dialogs: {
+  activeDialogVariable: "activeDialog",
+  dialogs: [
+    {
+      id: "level_complete",
+      title: "Level Complete!",
+      stats: [{ label: "Moves", variable: "moveCount" }],
+      buttons: [
+        { label: "Next Level", eventName: "next_level", variant: "primary" },
+        { label: "Replay", eventName: "replay", variant: "secondary" },
+      ],
+    },
+  ],
+},
+```
+
+Show a dialog: `{ type: "set_variable", name: "activeDialog", operation: "set", value: "level_complete" }`
+
+## Input Configuration
+
+```typescript
+input: {
+  tapZones: [
+    { id: "left", edge: "left", size: 0.5, button: "left" },
+    { id: "right", edge: "right", size: 0.5, button: "right" },
+  ],
+  tilt: { enabled: true, sensitivity: 2 },
+  virtualButtons: [
+    { id: "jump", button: "jump", label: "Jump", size: 60 },
+  ],
+},
+```
+
+## Asset System
+
+For AI-generated image packs:
+
+```typescript
+assetSystem: {
+  activePackId: "a1d20e15-...",
+  packIds: ["a1d20e15-...", "12e102fa-..."],
+},
+```
+
+Templates with `visual.type: "image"` get their images from the active asset pack. Add `whatDescription` to templates for AI generation hints.
+
+## Build & Test
+
+```bash
+# Build all games (compiles game.ts → definition.json)
+pnpm --filter @slopcade/games build
+
+# Type-check
+pnpm tsc --noEmit
+```
+
+## Validation Checklist
+
+Before committing a game definition:
+1. All entity `template` references match a key in `templates`
+2. All tags referenced in rules/behaviors are assigned to entities
+3. Physics entities have BOTH `physics` AND `collider` components
+4. Every `transform` has all 5 fields: `x`, `y`, `angle`, `scaleX`, `scaleY`
+5. Template `id` matches its key in the `templates` object
+6. `pnpm tsc --noEmit` passes
+
+## Common Field Name Mistakes
+
+| Wrong | Correct |
+|-------|---------|
+| `templateId` | `template` (on entity) |
+| `physics.shape` | Shape is on `collider`, not `physics` |
+| `fill` | `color` (on visual) |
+| `tagA` / `tagB` | `entityATag` / `entityBTag` (collision trigger) |
+| `destroy_entity` | `destroy` (action type) |
+| `emit_event` | `event` (action type) |
+| `game_start` | `game_started` (trigger type) |
+| `velocity` on behaviors | `speed` + `direction` |
+
+## Reference Files
+
+For detailed API docs, read these files in `.claude/skills/game-authoring/`:
+
+| File | Contents |
+|------|----------|
+| `game-definition-reference.md` | Complete GameDefinition field reference |
+| `scripting-api-reference.md` | ScriptContext API, SyncWorldOps, AsyncWorldOps |
+| `examples.md` | Patterns extracted from production games |
+
+## Source of Truth (Type Definitions)
+
+| What | File |
+|------|------|
+| GameDefinition | `shared/src/types/GameDefinition.ts` |
+| Entity/Template | `shared/src/types/entity.ts` |
+| Behaviors (35 types) | `shared/src/types/behavior.ts` |
+| Rules (triggers, conditions, actions) | `shared/src/types/rules.ts` |
+| Visual components | `shared/src/types/visual.ts` |
+| Physics + Collider | `shared/src/types/physics.ts` |
+| Container system | `shared/src/types/container.ts` |
+| State machines | `shared/src/systems/state-machine/types.ts` |
+| Scripting API | `shared/src/scripting/script-authoring-types.ts` |
+| Expressions | `shared/src/expressions/types.ts` |
+
+## Existing Games (Study These)
+
+| Game | Slug | Key Patterns |
+|------|------|-------------|
+| Flappy Bird | `flappyBird` | Tap input, timer spawning, child entities, persistence |
+| Breakout Bouncer | `breakoutBouncer` | Multi-input (tap zones, tilt, buttons), tunable variables |
+| Ball Sort | `ballSort` | Script-driven, containers, state machines, dialogs |
+| Snake | `snake` | Script-based game loop, swipe input, grid movement |
+| Slopeggle | `slopeggle` | Physics cannon, expressions, collision scoring |
+| Gem Crush | `gemCrush` | Match-3 grid system |
+| Minefield | `minefield` | Tap-based puzzle, hidden state |
+| Sokoban | `sokoban` | Grid puzzle, push mechanics |
+| Simple | `simple` | Minimal reference (one draggable cube) |
