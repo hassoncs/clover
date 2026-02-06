@@ -85,6 +85,7 @@ import {
   ContainerRuntimeSystem,
   HoverHighlightRuntimeSystem,
 } from "./systems/runner/wrappers";
+import type { VarValue } from "./runtime/types";
 import * as StateHelpers from "./runtime/GameStateHelpers";
 import { subscribeToGameEvents, type ReactGameState } from "./runtime/GameEventSubscriber";
 import { useGameProgressFromDefinition } from "./progress/useGameProgress";
@@ -111,6 +112,8 @@ export interface GameRuntimeGodotProps {
   onNextLevel?: () => void;
   /** Called when the player requests the previous level (for games with persistence) */
   onPreviousLevel?: () => void;
+  /** Skip the "ready" screen and start playing immediately */
+  autoStart?: boolean;
 }
 
 const GAME_LOOP_INTERVAL = 16;
@@ -130,8 +133,11 @@ export function GameRuntimeGodot({
   onReady,
   onNextLevel,
   onPreviousLevel,
+  autoStart = false,
 }: GameRuntimeGodotProps) {
   const progressHook = useGameProgressFromDefinition(definition);
+  const progressHookRef = useRef(progressHook);
+  progressHookRef.current = progressHook;
   const devToolsCheck = useDevToolsOptional();
   const bridgeRef = useRef<GodotBridge | null>(null);
   const physicsRef = useRef<Physics2D | null>(null);
@@ -690,7 +696,7 @@ export function GameRuntimeGodot({
         } else {
           setGameState((s) => ({
             ...s,
-            state: "ready",
+            state: autoStart ? "playing" : "ready",
             variables: mergedVariables,
           }));
         }
@@ -919,6 +925,21 @@ export function GameRuntimeGodot({
           }
         }
 
+        if (progressHookRef.current?.progress && definition.persistence) {
+          const progress = progressHookRef.current.progress as Record<string, unknown>;
+          for (const key of Object.keys(definition.variables || {})) {
+            if (key in progress && progress[key] !== undefined) {
+              game.gameState.vars[key] = progress[key] as VarValue;
+            }
+          }
+        }
+
+        if (autoStart && !debugMode) {
+          StateHelpers.setGameStateValue(game.gameState, 'playing', game.events);
+          bridge.resumePhysics();
+          eventQueueRef.current.push({ type: 'game_started' });
+        }
+
         logger.info("lifecycle", "Emitting gameLoaded lifecycle event");
         logger.debug("lifecycle", "Pushing game_loaded to eventQueue");
         eventQueueRef.current.push({ type: 'game_loaded' });
@@ -965,7 +986,7 @@ export function GameRuntimeGodot({
       showZones,
       showFPS,
     });
-  }, [showInputDebug, showPhysicsShapes, showZones, showFPS, godotReady]);
+  }, [showInputDebug, showPhysicsShapes, showZones, showFPS, godotReady, isReady]);
 
 
 
@@ -1638,11 +1659,17 @@ export function GameRuntimeGodot({
       }
 
       let mergedVariables = { ...initialVariables };
-      if (progressHook?.progress) {
+      if (progressHookRef.current?.progress) {
+        const progress = progressHookRef.current.progress as Record<string, unknown>;
         mergedVariables = {
           ...mergedVariables,
-          ...(progressHook.progress as Record<string, any>),
+          ...(progress as Record<string, any>),
         };
+        for (const key of Object.keys(definition.variables || {})) {
+          if (key in progress && progress[key] !== undefined) {
+            newGame.gameState.vars[key] = progress[key] as VarValue;
+          }
+        }
       }
 
       setGameState({
@@ -1654,7 +1681,7 @@ export function GameRuntimeGodot({
       logger.info("lifecycle", "handleRestart emitting gameLoaded lifecycle event");
       eventQueueRef.current.push({ type: 'game_loaded' });
     }
-  }, [onRequestRestart, definition, setupSubscriptions, progressHook]);
+  }, [onRequestRestart, definition, setupSubscriptions]);
 
   const handleNextLevel = useCallback(async () => {
     if (!definition.persistence) return;

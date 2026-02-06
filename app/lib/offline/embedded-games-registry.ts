@@ -32,6 +32,7 @@ export const EMBEDDED_METADATA: Record<string, unknown> = {
 export const EMBEDDED_PACK_MANIFESTS: Record<string, Record<string, unknown>> = {
   'ballSort': {
     'f661beb6-1e5e-4b9e-a01f-314c87248b75': require('@/assets/embedded-games/packs/f661beb6-1e5e-4b9e-a01f-314c87248b75/manifest.json'),
+    'a1d20e15-bc78-47bb-b0d4-01b75dfcbf35': require('@/assets/embedded-games/packs/a1d20e15-bc78-47bb-b0d4-01b75dfcbf35/manifest.json'),
   },
   'simple': {
     'a1b2c3d4-0001-4000-8000-000000000001': require('@/assets/embedded-games/packs/a1b2c3d4-0001-4000-8000-000000000001/manifest.json'),
@@ -51,6 +52,15 @@ export const EMBEDDED_ASSETS: Record<string, number> = {
   'packs/f661beb6-1e5e-4b9e-a01f-314c87248b75/ball6.png': require('@/assets/embedded-games/packs/f661beb6-1e5e-4b9e-a01f-314c87248b75/ball6.png'),
   'packs/f661beb6-1e5e-4b9e-a01f-314c87248b75/ball7.png': require('@/assets/embedded-games/packs/f661beb6-1e5e-4b9e-a01f-314c87248b75/ball7.png'),
   'packs/f661beb6-1e5e-4b9e-a01f-314c87248b75/heldBallIndicator.png': require('@/assets/embedded-games/packs/f661beb6-1e5e-4b9e-a01f-314c87248b75/heldBallIndicator.png'),
+  'packs/a1d20e15-bc78-47bb-b0d4-01b75dfcbf35/tube.png': require('@/assets/embedded-games/packs/a1d20e15-bc78-47bb-b0d4-01b75dfcbf35/tube.png'),
+  'packs/a1d20e15-bc78-47bb-b0d4-01b75dfcbf35/ball0.png': require('@/assets/embedded-games/packs/a1d20e15-bc78-47bb-b0d4-01b75dfcbf35/ball0.png'),
+  'packs/a1d20e15-bc78-47bb-b0d4-01b75dfcbf35/ball1.png': require('@/assets/embedded-games/packs/a1d20e15-bc78-47bb-b0d4-01b75dfcbf35/ball1.png'),
+  'packs/a1d20e15-bc78-47bb-b0d4-01b75dfcbf35/ball2.png': require('@/assets/embedded-games/packs/a1d20e15-bc78-47bb-b0d4-01b75dfcbf35/ball2.png'),
+  'packs/a1d20e15-bc78-47bb-b0d4-01b75dfcbf35/ball3.png': require('@/assets/embedded-games/packs/a1d20e15-bc78-47bb-b0d4-01b75dfcbf35/ball3.png'),
+  'packs/a1d20e15-bc78-47bb-b0d4-01b75dfcbf35/ball4.png': require('@/assets/embedded-games/packs/a1d20e15-bc78-47bb-b0d4-01b75dfcbf35/ball4.png'),
+  'packs/a1d20e15-bc78-47bb-b0d4-01b75dfcbf35/ball5.png': require('@/assets/embedded-games/packs/a1d20e15-bc78-47bb-b0d4-01b75dfcbf35/ball5.png'),
+  'packs/a1d20e15-bc78-47bb-b0d4-01b75dfcbf35/ball6.png': require('@/assets/embedded-games/packs/a1d20e15-bc78-47bb-b0d4-01b75dfcbf35/ball6.png'),
+  'packs/a1d20e15-bc78-47bb-b0d4-01b75dfcbf35/ball7.png': require('@/assets/embedded-games/packs/a1d20e15-bc78-47bb-b0d4-01b75dfcbf35/ball7.png'),
   'packs/a1b2c3d4-0001-4000-8000-000000000001/cube.png': require('@/assets/embedded-games/packs/a1b2c3d4-0001-4000-8000-000000000001/cube.png'),
   'packs/a1b2c3d4-0002-4000-8000-000000000002/cube.png': require('@/assets/embedded-games/packs/a1b2c3d4-0002-4000-8000-000000000002/cube.png'),
 };

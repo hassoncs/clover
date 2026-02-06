@@ -111,9 +111,10 @@ export function createBallSortGame(): GameDefinition {
       version: "2.0.0",
     },
     assetSystem: {
-      activePackId: "f661beb6-1e5e-4b9e-a01f-314c87248b75",
+      activePackId: "a1d20e15-bc78-47bb-b0d4-01b75dfcbf35",
       packIds: [
         "f661beb6-1e5e-4b9e-a01f-314c87248b75",
+        "a1d20e15-bc78-47bb-b0d4-01b75dfcbf35",
       ],
     },
     world: {

@@ -321,8 +321,9 @@ export function registerMovementBehaviors(executor: BehaviorExecutor): void {
       if (!ctx.entity.physics) return;
 
       const stiffness = ctx.resolveNumber(b.stiffness ?? 0.5);
-      const currentX = ctx.entity.transform.x;
-      const currentY = ctx.entity.transform.y;
+      const physicsTransform = ctx.physics.getTransform(ctx.entity.id);
+      const currentX = physicsTransform.position.x;
+      const currentY = physicsTransform.position.y;
 
       const vx = (targetX - currentX) * stiffness * 60;
       const vy = (targetY - currentY) * stiffness * 60;

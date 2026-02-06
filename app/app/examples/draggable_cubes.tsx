@@ -1,16 +1,14 @@
-import { useCallback, useRef, useState, useEffect } from "react";
-import { View, Text, Pressable } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useState, useEffect, useCallback } from "react";
+import { View, Text } from "react-native";
 import { useRouter } from "expo-router";
 import type { ExampleMeta } from "@/lib/registry/types";
-import type { GodotBridge } from "@/lib/godot/types";
 import type { GameDefinition } from "@slopcade/shared";
 import { FullScreenHeader } from "../../components/FullScreenHeader";
 
 export const metadata: ExampleMeta = {
   title: "Draggable Cubes",
   description:
-    "Drag physics bodies with mouse/touch. Tests Godot input handling.",
+    "Drag physics bodies with mouse/touch. Uses the draggable behavior system.",
 };
 
 const WORLD_BOUNDS = { width: 14, height: 18 };
@@ -45,6 +43,9 @@ const GAME_DEFINITION: GameDefinition = {
         friction: 0.3,
         restitution: 0.2,
       },
+      behaviors: [
+        { type: "draggable", mode: "force", stiffness: 0.5 },
+      ],
     },
     ground: {
       id: "ground",
@@ -121,247 +122,55 @@ const GAME_DEFINITION: GameDefinition = {
       transform: { x: 4, y: 5, angle: 0, scaleX: 1, scaleY: 1 },
     },
   ],
+  joints: [
+    {
+      id: "spring1",
+      type: "distance",
+      entityA: "anchor1",
+      entityB: "cube1",
+      anchorA: { x: 0, y: 7 },
+      anchorB: { x: 0, y: 5 },
+      length: 2,
+      stiffness: 50,
+      damping: 5,
+    },
+  ],
   rules: [],
 };
 
-interface DragState {
-  entityId: string;
-  jointId: number;
-}
-
-interface DebugInfo {
-  worldX: number;
-  worldY: number;
-  hitEntity: string | null;
-  isDragging: boolean;
-}
-
 export default function DraggableCubesExample() {
   const router = useRouter();
-  const [bridge, setBridge] = useState<GodotBridge | null>(null);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">(
-    "loading"
-  );
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [GodotView, setGodotView] = useState<React.ComponentType<{
-    style?: object;
+  const [GameRuntime, setGameRuntime] = useState<React.ComponentType<{
+    definition: GameDefinition;
+    showHUD?: boolean;
+    autoStart?: boolean;
+    onBackToMenu?: () => void;
   }> | null>(null);
 
-  const dragStateRef = useRef<DragState | null>(null);
-  const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null);
-  const [logs, setLogs] = useState<string[]>([]);
-
-  const addLog = useCallback((message: string) => {
-    setLogs((prev) => [
-      ...prev.slice(-9),
-      `${new Date().toLocaleTimeString()}: ${message}`,
-    ]);
+  useEffect(() => {
+    import("@/lib/game-engine/GameRuntime.godot").then((mod) => {
+      setGameRuntime(() => mod.GameRuntimeGodotWithDevTools);
+    });
   }, []);
 
-  useEffect(() => {
-    let mounted = true;
-
-    addLog("Loading Godot module...");
-
-    import("@/lib/godot")
-      .then(async (mod) => {
-        if (!mounted) return;
-
-        addLog("Creating bridge...");
-        const newBridge = await mod.createGodotBridge();
-
-        if (!mounted) return;
-        setBridge(newBridge);
-        setGodotView(() => mod.GodotView);
-        addLog("GodotView ready, waiting for WASM...");
-      })
-      .catch((err) => {
-        if (!mounted) return;
-        setStatus("error");
-        setErrorMsg(
-          err instanceof Error ? err.message : "Failed to load Godot module"
-        );
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, [addLog]);
-
-  useEffect(() => {
-    if (!bridge || !GodotView) return;
-
-    let mounted = true;
-
-    addLog("Initializing bridge (waiting for WASM)...");
-    bridge
-      .initialize()
-      .then(() => {
-        if (!mounted) return;
-        addLog("Bridge initialized!");
-
-        addLog("Loading game definition...");
-        return bridge.loadGame(GAME_DEFINITION);
-      })
-      .then(() => {
-        if (!mounted) return;
-        addLog("Game loaded successfully!");
-        bridge.setDebugSettings({
-          showInputDebug: true,
-          showPhysicsShapes: true,
-          showZones: false,
-          showFPS: true,
-        });
-
-        // Test: Create a spring joint between anchor and cube1
-        const springJointId = bridge.createDistanceJoint({
-          type: "distance",
-          bodyA: "anchor1",
-          bodyB: "cube1",
-          anchorA: { x: 0, y: 7 },
-          anchorB: { x: 0, y: 5 },
-          length: 2,
-          stiffness: 50,
-          damping: 5,
-        });
-        addLog(`Spring joint created: ${springJointId}`);
-
-        setStatus("ready");
-
-        // Set slopcadeGameReady flag for game-inspector MCP
-        if (typeof window !== "undefined") {
-          (
-            window as unknown as { slopcadeGameReady?: boolean }
-          ).slopcadeGameReady = true;
-        }
-      })
-      .catch((err) => {
-        if (!mounted) return;
-        addLog(`Error: ${err.message}`);
-        setStatus("error");
-        setErrorMsg(
-          err instanceof Error ? err.message : "Failed to initialize"
-        );
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, [bridge, GodotView, addLog]);
-
-  useEffect(() => {
-    if (!bridge || status !== "ready") return;
-
-    const unsubscribe = bridge.onInputEvent(async (type, x, y, entityId) => {
-      addLog(
-        `Input: ${type} at (${x.toFixed(2)}, ${y.toFixed(2)}) entity=${
-          entityId ?? "none"
-        }`
-      );
-
-      if (type === "drag_start") {
-        setDebugInfo({
-          worldX: x,
-          worldY: y,
-          hitEntity: entityId,
-          isDragging: false,
-        });
-
-        if (entityId && entityId.startsWith("cube")) {
-          addLog(`Creating mouse joint for ${entityId}`);
-          const jointId = await bridge.createMouseJointAsync({
-            type: "mouse",
-            body: entityId,
-            target: { x, y },
-            maxForce: 500000,
-            stiffness: 300,
-            damping: 10,
-          });
-          addLog(`Joint created: ${jointId}`);
-          dragStateRef.current = { entityId, jointId };
-          setDebugInfo((prev) => (prev ? { ...prev, isDragging: true } : null));
-        }
-      } else if (type === "drag_move") {
-        setDebugInfo((prev) =>
-          prev ? { ...prev, worldX: x, worldY: y } : null
-        );
-
-        const dragState = dragStateRef.current;
-        if (dragState) {
-          bridge.setMouseTarget(dragState.jointId, { x, y });
-        }
-      } else if (type === "drag_end") {
-        const dragState = dragStateRef.current;
-        if (dragState) {
-          addLog(`Destroying joint ${dragState.jointId}`);
-          bridge.destroyJoint(dragState.jointId);
-          dragStateRef.current = null;
-        }
-        setDebugInfo(null);
-      }
-    });
-
-    return unsubscribe;
-  }, [bridge, status, addLog]);
-
-  if (status === "error") {
-    return (
-      <SafeAreaView className="flex-1 bg-gray-900 items-center justify-center">
-        <Text className="text-red-400 text-lg mb-4">{errorMsg}</Text>
-        <Pressable
-          onPress={() => router.back()}
-          className="py-2 px-4 bg-gray-700 rounded-lg"
-        >
-          <Text className="text-white font-semibold">← Back</Text>
-        </Pressable>
-      </SafeAreaView>
-    );
-  }
+  const handleBack = useCallback(() => router.back(), [router]);
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-900" edges={["top"]}>
-      <FullScreenHeader
-        title="Draggable Cubes"
-        rightContent={
-          status === "loading" ? (
-            <Text className="text-yellow-400 text-xs">Loading...</Text>
-          ) : null
-        }
-      />
+    <View style={{ flex: 1, backgroundColor: "#111827" }}>
+      <FullScreenHeader onBack={handleBack} showBackground />
 
-      <View className="flex-1 bg-gray-900">
-        {GodotView ? (
-          <GodotView style={{ flex: 1 }} />
-        ) : (
-          <View className="flex-1 items-center justify-center">
-            <Text className="text-white">Loading Godot...</Text>
-          </View>
-        )}
-      </View>
-
-      <View className="bg-black/80 p-3 max-h-48">
-        <Text className="text-green-400 font-mono text-xs mb-2">
-          {status === "loading"
-            ? "Initializing..."
-            : debugInfo
-            ? `Touch: (${debugInfo.worldX.toFixed(
-                2
-              )}, ${debugInfo.worldY.toFixed(2)}) | Hit: ${
-                debugInfo.hitEntity ?? "none"
-              } | Dragging: ${debugInfo.isDragging}`
-            : "Touch cubes to drag them"}
-        </Text>
-        <View className="border-t border-gray-700 pt-2">
-          {logs.map((log, idx) => (
-            <Text
-              key={`log-${idx}-${log.slice(0, 10)}`}
-              className="text-gray-400 font-mono text-xs"
-            >
-              {log}
-            </Text>
-          ))}
+      {GameRuntime ? (
+        <GameRuntime
+          definition={GAME_DEFINITION}
+          showHUD={false}
+          autoStart
+          onBackToMenu={handleBack}
+        />
+      ) : (
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <Text style={{ color: "#FFFFFF" }}>Loading Godot...</Text>
         </View>
-      </View>
-    </SafeAreaView>
+      )}
+    </View>
   );
 }

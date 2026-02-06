@@ -4,6 +4,7 @@ import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { parseArgs } from 'util';
 import { randomUUID } from 'crypto';
+import { execSync } from 'child_process';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const R2_DIR = resolve(__dirname, '..', '..', 'r2');
@@ -260,19 +261,38 @@ async function main() {
   console.log(`Manifest: ${join(packDir, 'manifest.json')}`);
 
   if (successCount > 0) {
-    definition.assetSystem = definition.assetSystem ?? {};
-    definition.assetSystem.activePackId = packId;
+    const gameSourcePath = join(R2_DIR, 'games', gameId, 'src', 'game.ts');
+    if (existsSync(gameSourcePath)) {
+      let source = readFileSync(gameSourcePath, 'utf-8');
 
-    const existingPackIds: string[] = definition.assetSystem.packIds ?? [];
-    if (!existingPackIds.includes(packId)) {
-      existingPackIds.push(packId);
+      source = source.replace(
+        /activePackId:\s*"[^"]*"/,
+        `activePackId: "${packId}"`,
+      );
+
+      const packIdsMatch = source.match(/packIds:\s*\[([\s\S]*?)\]/);
+      if (packIdsMatch) {
+        const existingIds = [...packIdsMatch[1].matchAll(/"([^"]+)"/g)].map(m => m[1]);
+        if (!existingIds.includes(packId)) {
+          existingIds.push(packId);
+        }
+        const formatted = existingIds.map(id => `\n        "${id}",`).join('');
+        source = source.replace(
+          /packIds:\s*\[([\s\S]*?)\]/,
+          `packIds: [${formatted}\n      ]`,
+        );
+      }
+
+      writeFileSync(gameSourcePath, source);
+      console.log(`\nUpdated source: ${gameSourcePath}`);
+      console.log(`  activePackId: ${packId}`);
     }
-    definition.assetSystem.packIds = existingPackIds;
 
-    writeFileSync(defPath, JSON.stringify(definition, null, 2));
-    console.log(`\nUpdated ${defPath}:`);
-    console.log(`  activePackId: ${packId}`);
-    console.log(`  packIds: [${definition.assetSystem.packIds.join(', ')}]`);
+    console.log(`\nRebuilding games...`);
+    execSync('pnpm --filter @slopcade/api build:games', {
+      stdio: 'inherit',
+      cwd: resolve(API_ROOT, '..'),
+    });
   }
 }
 

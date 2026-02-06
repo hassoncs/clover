@@ -2,7 +2,7 @@ import {
   newQuickJSWASMModuleFromVariant,
   shouldInterruptAfterDeadline,
 } from 'quickjs-emscripten-core';
-import releaseVariant from '@jitl/quickjs-singlefile-cjs-release-sync';
+import releaseVariant from '@jitl/quickjs-singlefile-browser-release-sync';
 import type {
   QuickJSWASMModule,
   QuickJSRuntime,

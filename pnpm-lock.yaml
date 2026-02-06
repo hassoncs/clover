@@ -171,8 +171,8 @@ importers:
       '@gorhom/bottom-sheet':
         specifier: ^5.2.8
         version: 5.2.8(@types/react@19.1.17)(react-native-gesture-handler@2.30.0(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native-reanimated@4.2.1(react-native-worklets@0.7.2(@babel/core@7.29.0)(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
-      '@jitl/quickjs-singlefile-cjs-release-sync':
-        specifier: ^0.31.0
+      '@jitl/quickjs-singlefile-browser-release-sync':
+        specifier: 0.31.0
         version: 0.31.0
       '@react-native-async-storage/async-storage':
         specifier: ^2.2.0
@@ -2708,8 +2708,8 @@ packages:
   '@jitl/quickjs-ffi-types@0.31.0':
     resolution: {integrity: sha512-1yrgvXlmXH2oNj3eFTrkwacGJbmM0crwipA3ohCrjv52gBeDaD7PsTvFYinlAnqU8iPME3LGP437yk05a2oejw==}
 
-  '@jitl/quickjs-singlefile-cjs-release-sync@0.31.0':
-    resolution: {integrity: sha512-TQ6WUsmdcdlXQKPyyGE/qNAoWY83mvjn+VNru6ug5ILv1D3Y+yaFXnMx+QyNX0onx9xSRGgVNZxXN0V0U+ZKpQ==}
+  '@jitl/quickjs-singlefile-browser-release-sync@0.31.0':
+    resolution: {integrity: sha512-JctBiLmRpxEp83gJWhDcBuFqm5X7T683OLmncN9g0chAHkC8+y5cJmgknaAk5Rb/ANDR3pXMMnGdnGXDdysfBQ==}
 
   '@jitl/quickjs-wasmfile-debug-asyncify@0.31.0':
     resolution: {integrity: sha512-YkdzQdr1uaftFhgEnTRjTTZHk2SFZdpWO7XhOmRVbi6CEVsH9g5oNF8Ta1q3OuSJHRwwT8YsuR1YzEiEIJEk6w==}
@@ -11549,7 +11549,7 @@ snapshots:
 
   '@jitl/quickjs-ffi-types@0.31.0': {}
 
-  '@jitl/quickjs-singlefile-cjs-release-sync@0.31.0':
+  '@jitl/quickjs-singlefile-browser-release-sync@0.31.0':
     dependencies:
       '@jitl/quickjs-ffi-types': 0.31.0
 

@@ -10,8 +10,13 @@
       "name": "default",
       "packId": "f661beb6-1e5e-4b9e-a01f-314c87248b75",
       "assetCount": 11
+    },
+    {
+      "name": "default",
+      "packId": "a1d20e15-bc78-47bb-b0d4-01b75dfcbf35",
+      "assetCount": 9
     }
   ],
-  "activePackId": "f661beb6-1e5e-4b9e-a01f-314c87248b75",
-  "updatedAt": 1770347534659
+  "activePackId": "a1d20e15-bc78-47bb-b0d4-01b75dfcbf35",
+  "updatedAt": 1770349649941
 }
