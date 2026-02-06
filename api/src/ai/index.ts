@@ -38,7 +38,6 @@ export {
 export {
   AssetService,
   type EntityType,
-  type SpriteStyle,
   type AssetGenerationRequest,
   type AssetGenerationResult,
 } from '@/ai/assets'

@@ -6,7 +6,6 @@ import type {
   PipelineResult,
   BatchPipelineResult,
   GameAssetConfig,
-  SpriteStyle,
 } from '@/ai/pipeline/types'
 import { getStagesForAssetType } from '@/ai/pipeline/registry'
 import * as crypto from 'crypto';
@@ -35,7 +34,7 @@ export async function executeAsset(
     themeId?: string;
     gameTitle: string;
     theme: string;
-    style: SpriteStyle;
+    style?: string;
     r2Prefix: string;
   },
   debugSink: DebugSink = noopDebugSink,

@@ -37,20 +37,20 @@ function createMockEntityManager(): EntityManager {
   
   return {
     getEntity: vi.fn((id: string) => entities.get(id)),
-    createEntity: vi.fn((def) => {
+    spawnEntity: vi.fn((opts) => {
       const entity: RuntimeEntity = {
         id: 'entity_2',
-        name: def.name,
-        template: def.template,
+        name: opts.templateId,
+        template: opts.templateId,
         parentId: undefined,
         children: [],
-        localTransform: { ...def.transform },
-        worldTransform: { ...def.transform },
-        transform: { ...def.transform },
+        localTransform: { x: opts.position.x, y: opts.position.y, angle: opts.angle ?? 0, scaleX: 1, scaleY: 1 },
+        worldTransform: { x: opts.position.x, y: opts.position.y, angle: opts.angle ?? 0, scaleX: 1, scaleY: 1 },
+        transform: { x: opts.position.x, y: opts.position.y, angle: opts.angle ?? 0, scaleX: 1, scaleY: 1 },
         visual: undefined,
         physics: { bodyType: 'dynamic', density: 1 },
         behaviors: [],
-        tags: def.tags ?? [],
+        tags: opts.tags ?? [],
         tagBits: new Set(),
         layer: 0,
         visible: true,
@@ -60,8 +60,10 @@ function createMockEntityManager(): EntityManager {
         activeConditionalGroupId: -1,
       };
       entities.set(entity.id, entity);
-      return entity;
+      return entity.id;
     }),
+    handleEntitySpawned: vi.fn(),
+    cacheEntity: vi.fn(),
     getTemplate: vi.fn((id: string) => {
       if (id === 'ball') {
         return { id: 'ball', name: 'Ball', transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } };
@@ -157,11 +159,11 @@ describe('WorldOpsImpl', () => {
       const entityId = await worldOps.spawn('ball', { x: 5, y: 10 });
       
       expect(entityId).toBe('entity_2');
-      expect(mockEntityManager.createEntity).toHaveBeenCalledWith({
-        id: '',
-        name: 'ball',
-        template: 'ball',
-        transform: { x: 5, y: 10, angle: 0, scaleX: 1, scaleY: 1 },
+      expect(mockEntityManager.spawnEntity).toHaveBeenCalledWith({
+        templateId: 'ball',
+        position: { x: 5, y: 10 },
+        velocity: undefined,
+        angle: undefined,
         tags: undefined,
       });
     });

@@ -44,8 +44,6 @@ export type EntityType =
   | 'background'
   | 'ui';
 
-export type SpriteStyle = 'pixel' | 'cartoon' | '3d' | 'flat';
-
 export interface StructuredPromptParams {
   templateId: string;
   physicsShape: 'box' | 'circle' | 'polygon';
@@ -55,7 +53,6 @@ export interface StructuredPromptParams {
   entityType: EntityType;
   themePrompt?: string;
   visualDescription?: string;
-  style: SpriteStyle;
   targetWidth: number;
   targetHeight: number;
   context?: AssetContext;
@@ -69,7 +66,6 @@ export interface AssetContext {
 export interface AssetGenerationRequest {
   entityType: EntityType;
   description: string;
-  style: SpriteStyle;
   size?: { width: number; height: number };
   animated?: boolean;
   frameCount?: number;
@@ -81,7 +77,6 @@ export interface DirectGenerationRequest {
   prompt: string;
   negativePrompt: string;
   entityType: EntityType;
-  style: SpriteStyle;
   width: number;
   height: number;
   strength?: number;
@@ -101,42 +96,7 @@ export interface AssetGenerationResult {
   error?: string;
 }
 
-const MODEL_MATRIX: Record<string, string> = {
-  'character:pixel:static': 'model_retrodiffusion-plus',
-  'character:pixel:animated': 'model_retrodiffusion-animation',
-  'character:cartoon:static': 'model_c8zak5M1VGboxeMd8kJBr2fn',
-  'enemy:pixel:static': 'model_retrodiffusion-plus',
-  'enemy:pixel:animated': 'model_retrodiffusion-animation',
-  'enemy:cartoon:static': 'model_c8zak5M1VGboxeMd8kJBr2fn',
-  'item:pixel:static': 'model_retrodiffusion-plus',
-  'item:3d:static': 'model_7v2vV6NRvm8i8jJm6DWHf6DM',
-  'platform:pixel:static': 'model_retrodiffusion-tile',
-  'background:pixel:static': 'model_uM7q4Ms6Y5X2PXie6oA9ygRa',
-  'background:cartoon:static': 'model_hHuMquQ1QvEGHS1w7tGuYXud',
-  'ui:pixel:static': 'model_mcYj5uGzXteUw6tKapsaDgBP',
-  'ui:flat:static': 'model_mcYj5uGzXteUw6tKapsaDgBP',
-};
-
 const FALLBACK_MODEL = 'model_retrodiffusion-plus';
-
-const STYLE_DESCRIPTORS: Record<SpriteStyle, { aesthetic: string; technical: string }> = {
-  pixel: {
-    aesthetic: 'pixel art, 16-bit retro game style, crisp pixels',
-    technical: 'no anti-aliasing, sharp pixel edges, limited color palette',
-  },
-  cartoon: {
-    aesthetic: 'cartoon style, bold black outlines, vibrant saturated colors',
-    technical: 'cel-shaded, clean vector-like edges, flat color fills',
-  },
-  '3d': {
-    aesthetic: '3D rendered, stylized low-poly, soft ambient occlusion',
-    technical: 'clean geometry, subtle shadows, matte materials',
-  },
-  flat: {
-    aesthetic: 'flat design, geometric shapes, modern minimal',
-    technical: 'no gradients, solid colors, clean vector shapes',
-  },
-};
 
 const FALLBACK_COLORS: Record<EntityType, string> = {
   character: '#4CAF50',
@@ -424,11 +384,9 @@ export function buildStructuredPrompt(params: StructuredPromptParams): string {
     entityType,
     themePrompt,
     visualDescription,
-    style,
   } = params;
 
   const readableName = camelToWords(templateId);
-  const styleDesc = STYLE_DESCRIPTORS[style];
   const shapeDesc = describeShapeSilhouette(physicsShape, physicsWidth, physicsHeight);
   const compositionDesc = describeComposition(physicsShape, entityType);
 
@@ -452,13 +410,9 @@ export function buildStructuredPrompt(params: StructuredPromptParams): string {
     entityType === 'character' ? 'This is a playable character sprite, shown in idle pose.' : '',
     entityType === 'enemy' ? 'This is an enemy character, shown in threatening pose.' : '',
     '',
-    '=== STYLE ===',
-    styleDesc.aesthetic,
-    '',
     '=== TECHNICAL REQUIREMENTS ===',
     'Transparent background (alpha channel).',
     'Game sprite asset.',
-    styleDesc.technical,
     'Single object only, no duplicates.',
     'No text, watermarks, or signatures.',
   ].filter(Boolean);
@@ -466,33 +420,12 @@ export function buildStructuredPrompt(params: StructuredPromptParams): string {
   return lines.join('\n');
 }
 
-export function buildStructuredNegativePrompt(style: SpriteStyle): string {
-  const baseNegatives = [
-    'blurry',
-    'low quality',
-    'text',
-    'watermark',
-    'signature',
-    'cropped',
-    'cut off',
-    'partial object',
-    'out of frame',
-    'duplicate objects',
-    'multiple objects',
-    'empty space around object',
-    'object too small',
-    'wrong aspect ratio',
-    'wrong shape',
-  ];
+export function buildNegativePrompt(): string {
+  return 'blurry, low quality, watermark, signature, text, logo, deformed, disfigured, bad anatomy, extra limbs, duplicate, copy, multi, two, mutilated, poorly drawn';
+}
 
-  const styleSpecific: Record<SpriteStyle, string[]> = {
-    pixel: ['anti-aliasing', 'smooth gradients', '3d render', 'realistic', 'photo'],
-    cartoon: ['realistic', 'photo', 'noisy', 'grainy'],
-    '3d': ['2d flat', 'sketch', 'drawing'],
-    flat: ['gradients', 'shadows', '3d', 'realistic', 'detailed textures'],
-  };
-
-  return [...baseNegatives, ...styleSpecific[style]].join(', ');
+export function buildStructuredNegativePrompt(): string {
+  return buildNegativePrompt();
 }
 
 export type ImageGenerationProvider = 'modal' | 'scenario';
@@ -681,21 +614,10 @@ export class AssetService {
 
   selectModel(
     entityType: EntityType,
-    style: SpriteStyle,
     animated: boolean
   ): string {
-    const animKey = animated ? 'animated' : 'static';
-    const key = `${entityType}:${style}:${animKey}`;
-
-    if (MODEL_MATRIX[key]) {
-      return MODEL_MATRIX[key];
-    }
-
-    const fallbackKey = `${entityType}:pixel:${animKey}`;
-    if (MODEL_MATRIX[fallbackKey]) {
-      return MODEL_MATRIX[fallbackKey];
-    }
-
+    void entityType;
+    void animated;
     return FALLBACK_MODEL;
   }
 
@@ -703,7 +625,6 @@ export class AssetService {
     const {
       prompt,
       entityType,
-      style,
       width,
       height,
       strength = 0.95,
@@ -751,7 +672,7 @@ export class AssetService {
         debugId,
         timestamp: new Date().toISOString(),
         durationMs: Date.now() - startTime,
-        request: { prompt: prompt.substring(0, 500), entityType, style, width, height },
+        request: { prompt: prompt.substring(0, 500), entityType, width, height },
         silhouette: { shape: physicsShape, width, height },
         result: { scenarioAssetId: assetId, extension },
       }, null, 2));
@@ -778,7 +699,7 @@ export class AssetService {
         debugId,
         timestamp: new Date().toISOString(),
         durationMs: Date.now() - startTime,
-        request: { prompt: prompt.substring(0, 500), entityType, style, width, height },
+        request: { prompt: prompt.substring(0, 500), entityType, width, height },
         error: errorMessage,
       }, null, 2));
 
@@ -788,13 +709,12 @@ export class AssetService {
 
   async generateFromStructuredParams(params: StructuredPromptParams): Promise<AssetGenerationResult> {
     const prompt = buildStructuredPrompt(params);
-    const negativePrompt = buildStructuredNegativePrompt(params.style);
+    const negativePrompt = buildNegativePrompt();
 
     return this.generateDirect({
       prompt,
       negativePrompt,
       entityType: params.entityType,
-      style: params.style,
       width: params.targetWidth,
       height: params.targetHeight,
       context: params.context,
@@ -807,7 +727,6 @@ export class AssetService {
       physicsWidth = 1,
       physicsHeight = 1,
       entityType,
-      style,
     } = params;
 
     const debugId = this.generateDebugId();

@@ -699,8 +699,6 @@ export const AssetConfigSchema = z.object({
   })).optional(),
 });
 
-export const SpriteStyleSchema = z.string();
-
 export const ParallaxDepthSchema = z.enum(['sky', 'far', 'mid', 'near']);
 
 export const ParallaxLayerSchema = z.object({
@@ -895,7 +893,6 @@ export const TileSheetSchema = z.object({
   margin: z.number().optional(),
   tiles: z.record(z.number(), SheetTileMetadataSchema).optional(),
   source: AssetSourceSchema.optional(),
-  style: SpriteStyleSchema.optional(),
 });
 
 export const VariationVariantSchema = z.object({

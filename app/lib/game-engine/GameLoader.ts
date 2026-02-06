@@ -35,14 +35,12 @@ export class GameLoader {
 
     this.physics.createWorld(definition.world.gravity);
 
-    const entityManager = new EntityManager(this.physics, {
+    const entityManager = new EntityManager({
       templates: definition.templates,
       bridge: this.bridge,
     });
 
-    for (const entity of definition.entities) {
-      entityManager.createEntity(entity);
-    }
+    entityManager.loadEntities(definition.entities);
 
     const joints = new Map<string, JointId>();
     if (definition.joints) {

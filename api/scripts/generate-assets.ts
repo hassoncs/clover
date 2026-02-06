@@ -22,7 +22,7 @@ async function main() {
       game: { type: 'string' },
       pack: { type: 'string', default: 'default' },
       theme: { type: 'string', default: '' },
-      style: { type: 'string', default: 'pixel' },
+      style: { type: 'string', default: '' },
       templates: { type: 'string' },
       debug: { type: 'boolean', default: false },
       'dry-run': { type: 'boolean', default: false },
@@ -31,14 +31,14 @@ async function main() {
   });
 
   if (!values.game) {
-    console.error('Usage: generate-assets --game=<gameId> [--pack=<packName>] [--theme="..."] [--style=pixel|cartoon|3d|flat] [--templates=a,b] [--debug] [--dry-run]');
+    console.error('Usage: hush run -- pnpm generate:assets --game=<gameId> [--pack=<packName>] [--theme="..."] [--style="3d|pixel|cartoon|..."] [--templates=a,b] [--debug] [--dry-run]');
     process.exit(1);
   }
 
   const gameId = values.game;
   const packName = values.pack ?? 'default';
   const theme = values.theme ?? '';
-  const style = values.style ?? 'pixel';
+  const style = values.style ?? '';
   const dryRun = values['dry-run'] ?? false;
   const debug = values.debug ?? false;
 
@@ -54,6 +54,7 @@ async function main() {
     physics?: { shape: string; width?: number; height?: number; radius?: number };
     collider?: { shape: string; width?: number; height?: number; radius?: number };
     tags?: string[];
+    whatDescription?: string;
   }> | undefined;
 
   if (!templates) {
@@ -76,7 +77,7 @@ async function main() {
   console.log(`  Game: ${gameId}`);
   console.log(`  Pack: ${packName}`);
   console.log(`  Theme: ${theme || '(none)'}`);
-  console.log(`  Style: ${style}`);
+  console.log(`  Style: ${style || '(none)'}`);
   console.log(`  Templates: ${imageTemplates.join(', ')} (${imageTemplates.length} total)`);
 
   if (dryRun) {
@@ -96,7 +97,6 @@ async function main() {
   mkdirSync(packDir, { recursive: true });
 
   type EntityType = 'character' | 'enemy' | 'item' | 'platform' | 'background' | 'ui';
-  type SpriteStyle = 'pixel' | 'cartoon' | '3d' | 'flat';
   type EntitySpec = {
     type: 'entity';
     id: string;
@@ -129,7 +129,7 @@ async function main() {
       width: shapeSource.width ?? 1,
       height: shapeSource.height ?? 1,
       entityType,
-      description: templateId,
+      description: t.whatDescription ?? templateId,
     });
   }
 
@@ -195,7 +195,7 @@ async function main() {
           assetId: spec.id,
           gameTitle: definition.metadata?.title ?? gameId,
           theme,
-          style: style as SpriteStyle,
+          style: style || undefined,
           r2Prefix,
         },
         debugSink,

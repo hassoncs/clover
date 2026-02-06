@@ -135,7 +135,7 @@ export const buildPromptStage: Stage = {
   id: 'build-prompt',
   name: 'Build Prompt',
   async run(run: AssetRun, _adapters: PipelineAdapters, debug: DebugSink): Promise<AssetRun> {
-    const { prompt, negativePrompt } = buildPromptForSpec(run.spec, run.meta.theme, run.meta.style);
+    const { prompt, negativePrompt } = buildPromptForSpec(run.spec, { theme: run.meta.theme, style: run.meta.style });
 
     await debug({
       type: 'artifact',

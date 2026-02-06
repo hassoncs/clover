@@ -1,19 +1,24 @@
-import type { AssetSpec, EntitySpec, BackgroundSpec, TitleHeroSpec, TitleHeroNoBgSpec, ParallaxSpec, SpriteStyle, SpriteSheetSpec, TileSheetSpec, VariationSheetSpec, UIComponentSheetSpec, SheetPromptConfig } from '@/ai/pipeline/types'
-import { STYLE_DESCRIPTORS } from '@/ai/pipeline/types'
+import type { AssetSpec, EntitySpec, BackgroundSpec, TitleHeroSpec, TitleHeroNoBgSpec, ParallaxSpec, SpriteSheetSpec, TileSheetSpec, VariationSheetSpec, UIComponentSheetSpec, SheetPromptConfig } from '@/ai/pipeline/types'
+import { resolveStyle } from '@/ai/pipeline/types'
 
 type SheetSpec = SpriteSheetSpec | TileSheetSpec | VariationSheetSpec | UIComponentSheetSpec;
 
-export function buildEntityPrompt(spec: EntitySpec, theme: string, style: SpriteStyle): string {
-  const styleDesc = STYLE_DESCRIPTORS[style];
+export interface PromptContext {
+  theme?: string;
+  style?: string;
+}
+
+export function buildEntityPrompt(spec: EntitySpec, ctx: PromptContext): string {
+  const resolvedStyle = ctx.style ? resolveStyle(ctx.style) : '';
 
   const lines = [
     `${spec.description} for a video game.`,
-    `Theme: ${theme}`,
-    `Style: ${styleDesc.aesthetic}`,
+    ctx.theme ? `Theme: ${ctx.theme}.` : '',
+    resolvedStyle ? `Style: ${resolvedStyle}.` : '',
     'Front view, flat 2D perspective.',
     'Transparent background.',
     'Single object, no duplicates, no text.',
-  ];
+  ].filter(Boolean);
 
   return lines.join(' ');
 }
@@ -78,9 +83,8 @@ export function buildSheetEntryPrompt(params: {
   kind: 'sprite' | 'tile' | 'variation' | 'ui_component';
   promptConfig?: SheetPromptConfig;
   theme?: string;
-  style?: SpriteStyle;
 }): string {
-  const { entryPromptOverride, kind, promptConfig, style } = params;
+  const { entryPromptOverride, kind, promptConfig } = params;
 
   const basePrompt = entryPromptOverride ?? promptConfig?.basePrompt ?? '';
 
@@ -118,10 +122,6 @@ export function buildSheetEntryPrompt(params: {
     for (const modifier of promptConfig.commonModifiers) {
       lines.push(modifier);
     }
-  }
-  if (style) {
-    const styleDesc = STYLE_DESCRIPTORS[style];
-    lines.push(styleDesc.technical);
   }
   if (promptConfig?.negativePrompt) {
     lines.push(`NEGATIVE: ${promptConfig.negativePrompt}`);
@@ -181,23 +181,16 @@ export function buildUIComponentPrompt(params: UIComponentPromptParams): { promp
   return { prompt, negativePrompt };
 }
 
-export function buildNegativePrompt(style: SpriteStyle): string {
-  const base = ['blurry', 'low quality', 'text', 'watermark', 'signature', 'cropped', 'multiple objects'];
-  const styleSpecific: Record<SpriteStyle, string[]> = {
-    pixel: ['anti-aliasing', 'smooth gradients', '3d render', 'realistic'],
-    cartoon: ['realistic', 'photo', 'noisy', 'grainy'],
-    '3d': ['2d flat', 'sketch', 'drawing'],
-    flat: ['gradients', 'shadows', '3d', 'realistic'],
-  };
-  return [...base, ...styleSpecific[style]].join(', ');
+export function buildNegativePrompt(): string {
+  return 'blurry, low quality, watermark, signature, text, logo, deformed, disfigured, bad anatomy, extra limbs, duplicate, copy, multi, two, mutilated, poorly drawn';
 }
 
-export function buildPromptForSpec(spec: AssetSpec, theme: string, style: SpriteStyle): { prompt: string; negativePrompt: string } {
+export function buildPromptForSpec(spec: AssetSpec, ctx: PromptContext): { prompt: string; negativePrompt: string } {
   let prompt: string;
   
   switch (spec.type) {
     case 'entity':
-      prompt = buildEntityPrompt(spec, theme, style);
+      prompt = buildEntityPrompt(spec, ctx);
       break;
     case 'background':
       prompt = buildBackgroundPrompt(spec);
@@ -220,6 +213,6 @@ export function buildPromptForSpec(spec: AssetSpec, theme: string, style: Sprite
 
   return {
     prompt,
-    negativePrompt: buildNegativePrompt(style),
+    negativePrompt: buildNegativePrompt(),
   };
 }

@@ -57,15 +57,11 @@ export class SpawnActionExecutor implements ActionExecutor<SpawnAction> {
 
           if (context.worldOps) {
             context.worldOps.spawn(templateId, { x, y }, { velocity: initialVelocity });
-          } else if (context.bridge) {
-            context.bridge.spawnEntity(templateId, x, y, initialVelocity);
           } else {
-            const entityId = `spawned_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-            context.entityManager.createEntity({
-              id: entityId,
-              name: template.id,
-              template: templateId,
-              transform: { x, y, angle: 0, scaleX: 1, scaleY: 1 },
+            context.entityManager.spawnEntity({
+              templateId,
+              position: { x, y },
+              velocity: initialVelocity,
             });
           }
         }

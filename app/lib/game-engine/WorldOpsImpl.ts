@@ -54,29 +54,18 @@ export class WorldOpsImpl implements WorldOps {
     const template = this.entityManager.getTemplate(templateId);
     if (!template) return null;
 
-    const entityId = this.bridge.spawnEntity(
+    const entityId = this.entityManager.spawnEntity({
       templateId,
-      position.x,
-      position.y,
-      opts?.velocity,
-    );
+      position,
+      velocity: opts?.velocity,
+      angle: opts?.angle,
+      tags: opts?.tags,
+      parentId: opts?.parentId,
+    });
 
     if (!entityId) return null;
 
-    const entity = this.entityManager.handleEntitySpawned({
-      entityId,
-      template: templateId,
-      generation: 0,
-      tags: opts?.tags ?? [],
-      transform: {
-        x: position.x,
-        y: position.y,
-        angle: opts?.angle ?? 0,
-        scaleX: 1,
-        scaleY: 1,
-      },
-    });
-
+    const entity = this.entityManager.getEntity(entityId);
     if (!entity) return null;
 
     if (opts?.angle) {

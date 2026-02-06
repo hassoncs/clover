@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as crypto from 'node:crypto';
 import { createNodeAdapters, createFileDebugSink } from '@/ai/pipeline/adapters/node'
 import { uiBaseStateStage, uiVariationStatesStage, uiUploadR2Stage } from '@/ai/pipeline/stages/ui-component'
-import type { AssetRun, UIComponentSheetSpec, SpriteStyle } from '@/ai/pipeline/types'
+import type { AssetRun, UIComponentSheetSpec } from '@/ai/pipeline/types'
 import { UI_CONTROL_CONFIG } from '@/ai/pipeline/ui-control-config'
 import { getPresetTheme, listPresets, THEME_PRESETS } from '@/cli/theme-presets'
 
@@ -103,7 +103,6 @@ async function generateControl(
       assetId: crypto.randomUUID(),
       gameTitle: 'UI CLI Generation',
       theme,
-      style: 'flat' as SpriteStyle,
       r2Prefix: `generated/ui-cli/${controlType}`,
       startedAt: Date.now(),
       runId: crypto.randomUUID(),

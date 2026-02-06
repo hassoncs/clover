@@ -211,7 +211,7 @@ export default function GodotTestScreen() {
     if (!bridge) return;
     const x = 7 + (Math.random() - 0.5) * 6;
     const y = 2 + Math.random() * 2;
-    bridge.spawnEntity(templateId, x, y);
+    bridge.spawnEntity({ entityId: `test_${Date.now()}`, templateId, position: { x, y } });
     setScore((s) => s + 5);
   }, [bridge]);
 

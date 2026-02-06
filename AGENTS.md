@@ -51,6 +51,23 @@ Load the `slopcade-documentation` skill to determine:
 
 ---
 
+## Secrets Management (Hush)
+
+This project uses **`hush`** for secrets management. API keys and credentials are stored in the hush vault — never in `.env` files.
+
+**Any command that needs secrets (AI generation, external APIs) must be prefixed with `hush run --`:**
+```bash
+# Asset generation
+hush run -- pnpm generate:assets --game=ballSort --debug
+
+# Any script needing SCENARIO_API_KEY, MODAL_ENDPOINT, etc.
+hush run -- npx tsx api/scripts/some-script.ts
+```
+
+If a command fails with "API key required" or similar, the fix is almost always to prefix with `hush run --`.
+
+---
+
 ## Established Patterns
 
 ### Platform-Specific Modules

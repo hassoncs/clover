@@ -473,13 +473,10 @@ export const AssetConfigSchema = z.object({
   })).optional(),
 });
 
-export const SpriteStyleSchema = z.enum(['pixel', 'cartoon', '3d', 'flat']);
-
 export const AssetPackSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string().optional(),
-  style: SpriteStyleSchema.optional(),
   assets: z.record(z.string(), AssetConfigSchema),
 });
 
@@ -536,7 +533,6 @@ export const TileSheetSchema = z.object({
   margin: z.number().optional(),
   tiles: z.record(z.number(), TileMetadataSchema).optional(),
   source: AssetSourceSchema.optional(),
-  style: SpriteStyleSchema.optional(),
 });
 
 export const TileLayerTypeSchema = z.enum(['background', 'collision', 'foreground', 'decoration']);

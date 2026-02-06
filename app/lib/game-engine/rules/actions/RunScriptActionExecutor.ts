@@ -38,7 +38,12 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
 
     for (const spawn of deferredSpawns) {
       if (context.bridge) {
-        context.bridge.spawnEntity(spawn.templateId, spawn.x, spawn.y, spawn.velocity);
+        context.bridge.spawnEntity({
+          entityId: spawn.entityId,
+          templateId: spawn.templateId,
+          position: { x: spawn.x, y: spawn.y },
+          velocity: spawn.velocity,
+        });
       }
     }
 
@@ -156,12 +161,11 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
           });
         }
 
-        entityManager.createEntity({
-          id: entityId,
-          name: templateId,
-          template: templateId,
-          transform: { x: position.x, y: position.y, angle: opts?.angle ?? 0, scaleX: 1, scaleY: 1 },
-        });
+        entityManager.cacheEntity(
+          entityId,
+          templateId,
+          { x: position.x, y: position.y, angle: opts?.angle ?? 0, scaleX: 1, scaleY: 1 },
+        );
 
         return Promise.resolve(entityId);
       },

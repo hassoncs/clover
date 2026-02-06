@@ -167,9 +167,10 @@ export class BehaviorExecutorRuntimeSystem implements RuntimeSystem<BehaviorExec
         this.systemContext!.eventQueue.emit('game_state_changed', { state });
       },
       spawnEntity: (templateId: string, x: number, y: number) => {
-        const template = this.systemContext!.entityManager.getTemplate(templateId);
-        if (!template) return null;
-        return this.systemContext!.bridge.spawnEntity(templateId, x, y);
+        return this.systemContext!.entityManager.spawnEntity({
+          templateId,
+          position: { x, y },
+        });
       },
       setEntityVelocity: (entityId: string, velocity: { x: number; y: number }) => {
         this.systemContext!.bridge.setLinearVelocity(entityId, velocity);

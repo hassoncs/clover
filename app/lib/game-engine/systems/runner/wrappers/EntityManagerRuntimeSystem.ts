@@ -24,7 +24,7 @@ export class EntityManagerRuntimeSystem implements RuntimeSystem<EntityManagerSy
   
   update(_ctx: UpdateContext, _state: EntityManagerSystemState): void {
     if (this.entityManager) {
-      this.entityManager.syncTransformsFromPhysics();
+      this.entityManager.updateAllWorldTransforms();
     }
   }
   

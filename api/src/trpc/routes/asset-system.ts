@@ -6,7 +6,6 @@ import {
   buildStructuredPrompt,
   buildStructuredNegativePrompt,
   type EntityType,
-  type SpriteStyle,
 } from '@/ai/assets'
 import { buildR2Key, getAssetUrl, type GameDefinition } from '@slopcade/shared';
 import { WalletService, InsufficientBalanceError } from '@/economy/wallet-service'
@@ -723,9 +722,6 @@ export const assetSystemRouter = router({
             physicsContext.height
           );
 
-          const overrides = input.templateOverrides?.[templateId];
-          const styleOverride = (overrides?.styleOverride ?? input.promptDefaults.styleOverride ?? 'pixel') as SpriteStyle;
-
           const compiledPrompt = buildStructuredPrompt({
             templateId,
             physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
@@ -734,12 +730,11 @@ export const assetSystemRouter = router({
             physicsRadius: physicsContext.radius,
             entityType,
             themePrompt: input.promptDefaults.themePrompt,
-            style: styleOverride,
             targetWidth: dimensions.width,
             targetHeight: dimensions.height,
           });
 
-          const compiledNegativePrompt = buildStructuredNegativePrompt(styleOverride);
+          const compiledNegativePrompt = buildStructuredNegativePrompt();
 
           const taskId = crypto.randomUUID();
 
@@ -907,8 +902,6 @@ export const assetSystemRouter = router({
             physicsContext.height
           );
 
-          const styleOverride = input.newStyle as SpriteStyle;
-
           const compiledPrompt = buildStructuredPrompt({
             templateId,
             physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
@@ -917,12 +910,11 @@ export const assetSystemRouter = router({
             physicsRadius: physicsContext.radius,
             entityType,
             themePrompt: input.newTheme,
-            style: styleOverride,
             targetWidth: dimensions.width,
             targetHeight: dimensions.height,
           });
 
-          const compiledNegativePrompt = buildStructuredNegativePrompt(styleOverride);
+          const compiledNegativePrompt = buildStructuredNegativePrompt();
 
           const taskId = crypto.randomUUID();
 
@@ -995,15 +987,13 @@ export const assetSystemRouter = router({
 
         try {
           const entityType = 'item' as EntityType; // Default
-          const style = (jobRow.style ?? 'pixel') as SpriteStyle;
 
           const assetContext = jobRow.pack_id ? { gameId: jobRow.game_id, packId: jobRow.pack_id } : undefined;
           
           let result = await assetService.generateDirect({
             prompt: task.compiled_prompt ?? '',
-            negativePrompt: task.compiled_negative_prompt ?? buildStructuredNegativePrompt(style),
+            negativePrompt: task.compiled_negative_prompt ?? buildStructuredNegativePrompt(),
             entityType,
-            style,
             width: task.target_width ?? 512,
             height: task.target_height ?? 512,
             context: assetContext,
@@ -1497,7 +1487,6 @@ export const assetSystemRouter = router({
 
           const customPrompt = input.customPrompts?.[templateId];
           const themePrompt = input.newTheme;
-          const styleOverride = (input.newStyle ?? 'pixel') as SpriteStyle;
 
           const compiledPrompt = customPrompt ?? buildStructuredPrompt({
             templateId,
@@ -1507,12 +1496,11 @@ export const assetSystemRouter = router({
             physicsRadius: physicsContext.radius,
             entityType,
             themePrompt,
-            style: styleOverride,
             targetWidth: dimensions.width,
             targetHeight: dimensions.height,
           });
 
-          const compiledNegativePrompt = buildStructuredNegativePrompt(styleOverride);
+          const compiledNegativePrompt = buildStructuredNegativePrompt();
 
           const taskId = crypto.randomUUID();
 
@@ -1948,8 +1936,6 @@ Only output the enhanced prompt, nothing else.`;
             physicsContext.height
           );
 
-          const style: SpriteStyle = 'pixel';
-
           const compiledPrompt = buildStructuredPrompt({
             templateId,
             physicsShape: physicsContext.shape as 'box' | 'circle' | 'polygon',
@@ -1958,12 +1944,11 @@ Only output the enhanced prompt, nothing else.`;
             physicsRadius: physicsContext.radius,
             entityType,
             themePrompt: undefined,
-            style,
             targetWidth: dimensions.width,
             targetHeight: dimensions.height,
           });
 
-          const compiledNegativePrompt = buildStructuredNegativePrompt(style);
+          const compiledNegativePrompt = buildStructuredNegativePrompt();
 
           const taskId = crypto.randomUUID();
 

@@ -434,7 +434,7 @@ export async function createNodeAdapters(options: NodeAdaptersOptions): Promise<
     const apiSecret = process.env.SCENARIO_SECRET_API_KEY;
     
     if (!apiKey || !apiSecret) {
-      throw new Error('SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using Scenario provider');
+      throw new Error('SCENARIO_API_KEY and SCENARIO_SECRET_API_KEY required when using Scenario provider. Use `hush run -- <command>` to inject secrets from the hush vault.');
     }
     
     imageAdapter = createNodeScenarioAdapter({ apiKey, apiSecret });

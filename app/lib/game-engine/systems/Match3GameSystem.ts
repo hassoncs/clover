@@ -226,29 +226,13 @@ export class Match3GameSystem {
     const topOfGrid = gridHeight / 2;
     const spawnY = aboveBoard ? topOfGrid + this.config.cellSize : pos.y;
 
-    let entityId: string;
-
-    if (this.bridge) {
-      entityId = this.bridge.spawnEntity(template, pos.x, spawnY);
-    } else {
-      entityId = `match3_${row}_${col}_${Date.now()}_${Math.random()
-        .toString(36)
-        .slice(2, 6)}`;
-    }
-
-    this.entityManager.createEntity({
-      id: entityId,
-      name: `Piece ${row},${col}`,
-      template,
-      transform: {
-        x: pos.x,
-        y: spawnY,
-        angle: 0,
-        scaleX: 1,
-        scaleY: 1,
-      },
+    const entityId = this.entityManager.spawnEntity({
+      templateId: template,
+      position: { x: pos.x, y: spawnY },
       tags: ["match3_piece"],
     });
+
+    if (!entityId) return;
 
     if (
       this.config.variantSheet?.enabled &&

@@ -11,7 +11,6 @@ export {
   formatLog,
   assetLog,
   type EntityType,
-  type SpriteStyle,
   type StructuredPromptParams,
   type AssetContext,
   type AssetGenerationRequest,

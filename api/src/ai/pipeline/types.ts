@@ -5,40 +5,14 @@
  * This is the core type system - runtime-agnostic, no Node.js or Workers APIs.
  */
 
-import type { ImageProvider } from '@/ai/providers/contract'
-
 // =============================================================================
 // ASSET TYPES - The discriminator for pipeline flow
 // =============================================================================
 
 export type AssetType = 'entity' | 'background' | 'title_hero' | 'title_hero_no_bg' | 'parallax' | 'sheet' | 'text_grid';
 
-// =============================================================================
-// SPRITE STYLES - Visual style for generated assets
-// =============================================================================
-
-export type SpriteStyle = 'pixel' | 'cartoon' | '3d' | 'flat';
-
 export type { ImageProvider } from '@/ai/providers/contract'
-
-export const STYLE_DESCRIPTORS: Record<SpriteStyle, { aesthetic: string; technical: string }> = {
-  pixel: {
-    aesthetic: 'pixel art, 16-bit retro game style, crisp pixels',
-    technical: 'no anti-aliasing, sharp pixel edges, limited color palette',
-  },
-  cartoon: {
-    aesthetic: 'cartoon style, bold black outlines, vibrant saturated colors',
-    technical: 'cel-shaded, clean vector-like edges, flat color fills',
-  },
-  '3d': {
-    aesthetic: '3D rendered, stylized low-poly, soft ambient occlusion',
-    technical: 'clean geometry, subtle shadows, matte materials',
-  },
-  flat: {
-    aesthetic: 'flat design, geometric shapes, modern minimal',
-    technical: 'no gradients, solid colors, clean vector shapes',
-  },
-};
+type ImageProvider = import('@/ai/providers/contract').ImageProvider
 
 // =============================================================================
 // ENTITY TYPES - Game entity classification for model selection
@@ -269,6 +243,36 @@ export type AssetSpec =
   | TextGridSpec;
 
 // =============================================================================
+// STYLE PRESETS - Convenience shortcuts for common rendering styles
+// =============================================================================
+
+/**
+ * Style presets map short keys to descriptive prompt fragments.
+ * Pass a key like "3d" and it expands to the full descriptor.
+ * Pass any other string and it's used as-is (free-text style).
+ */
+export const STYLE_PRESETS: Record<string, string> = {
+  '3d': '3D rendered, smooth shading, volumetric lighting, soft shadows',
+  'pixel': 'pixel art, 8-bit aesthetic, crisp edges, limited color palette',
+  'cartoon': 'cartoon illustration, bold outlines, vibrant flat colors, cel-shaded',
+  'flat': 'flat vector illustration, minimal shading, clean geometric shapes',
+  'sketch': 'hand-drawn pencil sketch, crosshatch shading, rough lines',
+  'photorealistic': 'photorealistic, highly detailed, natural lighting, physically accurate materials',
+  'watercolor': 'watercolor painting, soft bleeding edges, translucent washes, paper texture',
+  'low-poly': 'low-poly 3D style, faceted surfaces, geometric, minimal detail',
+  'voxel': 'voxel art, 3D cubic blocks, isometric perspective, colorful',
+  'retro': 'retro 16-bit SNES style, detailed pixel art, rich color palette',
+};
+
+/**
+ * Resolve a style string: if it matches a preset key, expand it.
+ * Otherwise return the raw string as-is (free-text style).
+ */
+export function resolveStyle(style: string): string {
+  return STYLE_PRESETS[style] ?? style;
+}
+
+// =============================================================================
 // GAME CONFIG - Configuration for generating all assets for a game
 // =============================================================================
 
@@ -279,10 +283,10 @@ export interface GameAssetConfig {
   gameTitle: string;
   /** Theme description applied to all assets */
   theme: string;
+  /** Rendering style — a preset key (e.g. "3d") or free-text prompt fragment */
+  style?: string;
   /** Optional theme ID from the database */
   themeId?: string;
-  /** Visual style for all assets */
-  style: SpriteStyle;
   /** R2 storage prefix (e.g., "generated/slopeggle") */
   r2Prefix: string;
   /** Local output directory for debug files */
@@ -350,7 +354,7 @@ export interface AssetRun<T extends AssetSpec = AssetSpec> {
     themeId?: string;
     gameTitle: string;
     theme: string;
-    style: SpriteStyle;
+    style?: string;
     /** @deprecated Use buildAssetPath(gameId, packId, assetId) */
     r2Prefix: string;
     startedAt: number;
