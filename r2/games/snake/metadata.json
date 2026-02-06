@@ -1,0 +1,11 @@
+{
+  "id": "f596586c-a857-44d3-be97-46149daf60b3",
+  "slug": "snake",
+  "title": "Snake",
+  "description": "Classic snake game. Eat food, grow longer, don't hit the walls!",
+  "version": "1.0.0",
+  "thumbnailUrl": null,
+  "packs": [],
+  "activePackId": "default",
+  "updatedAt": 1770329924826
+}

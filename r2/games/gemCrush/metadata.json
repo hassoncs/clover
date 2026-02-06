@@ -1,0 +1,11 @@
+{
+  "id": "955c4c55-24e8-49a4-8e73-b65bbd85d8e7",
+  "slug": "gemCrush",
+  "title": "Gem Crush",
+  "description": "Match-3 puzzle game with colorful gems",
+  "version": "1.0.0",
+  "thumbnailUrl": null,
+  "packs": [],
+  "activePackId": "default",
+  "updatedAt": 1770329924816
+}

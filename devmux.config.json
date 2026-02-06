@@ -12,8 +12,8 @@
       "command": "pnpm build && tsc --watch --preserveWatchOutput"
     },
     "games-watcher": {
-      "cwd": "games",
-      "command": "pnpm watch"
+      "cwd": "api",
+      "command": "pnpm watch:games"
     },
     "api": {
       "cwd": ".",

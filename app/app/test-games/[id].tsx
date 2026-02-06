@@ -13,7 +13,7 @@ import { EMBEDDED_DEFINITIONS, EMBEDDED_PACK_MANIFESTS } from "@/lib/offline/emb
 
 export default function TestGameRunScreen() {
   const router = useRouter();
-  const { id, debug } = useLocalSearchParams<{ id: string; debug?: string }>();
+  const { id, debug, packId: packIdParam } = useLocalSearchParams<{ id: string; debug?: string; packId?: string }>();
   const isDebugMode = debug === "true" || debug === "1";
 
   const [runtimeKey, setRuntimeKey] = useState(0);
@@ -27,17 +27,18 @@ export default function TestGameRunScreen() {
 
   const activePackId = gameDefinition?.assetSystem?.activePackId;
 
+  const selectedPackId = packIdParam || activePackId;
+
   // Get pack data from embedded pack manifests (synchronous)
   const packData = useMemo(() => {
-    if (!id || !activePackId) return null;
+    if (!id || !selectedPackId) return null;
     const gameManifests = EMBEDDED_PACK_MANIFESTS[id as string];
     if (!gameManifests) return null;
 
-    // Find the pack matching the activePackId (keyed by packId)
-    const packManifest = gameManifests[activePackId] as { packId?: string; assets?: Record<string, { file: string }> } | undefined;
+    const packManifest = gameManifests[selectedPackId] as { packId?: string; assets?: Record<string, { file: string }> } | undefined;
     if (!packManifest?.assets) return null;
 
-    const packId = packManifest.packId ?? activePackId;
+    const packId = packManifest.packId ?? selectedPackId;
     const entries = Object.entries(packManifest.assets).map(([templateId, assetEntry]) => ({
       templateId,
       r2Key: `packs/${packId}/${assetEntry.file}`,
@@ -46,8 +47,8 @@ export default function TestGameRunScreen() {
       placement: null,
     }));
 
-    return { id: activePackId, entries };
-  }, [id, activePackId]);
+    return { id: selectedPackId, entries };
+  }, [id, selectedPackId]);
 
   const resolvedPackEntries = useMemo(() => {
     if (!packData?.entries) {
@@ -153,6 +154,7 @@ export default function TestGameRunScreen() {
   }, [loadingOpacity]);
 
   const handleBack = useCallback(() => router.back(), [router]);
+
 
   const handleReset = useCallback(() => {
     reset();
@@ -330,3 +332,4 @@ function GameRuntimeWrapper({ definition, imageUrls, onBackToMenu, onRequestRest
     />
   );
 }
+

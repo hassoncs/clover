@@ -27,7 +27,7 @@ export function createMockGodotBridge(): GodotBridge {
     stepPhysics: vi.fn().mockResolvedValue({ ok: true, framesAdvanced: 1, endFrame: 1 }),
     callRpc: vi.fn().mockResolvedValue({ success: true }),
 
-    spawnEntity: vi.fn().mockReturnValue('mock-entity-1'),
+    spawnEntity: vi.fn(),
     destroyEntity: vi.fn(),
 
     getEntityTransform: vi.fn().mockResolvedValue({ x: 0, y: 0, angle: 0 }),

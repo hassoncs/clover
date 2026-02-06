@@ -30,6 +30,13 @@ export interface SensorEvent {
   otherShapeIndex: number;
 }
 
+export interface SpawnEntityRequest {
+  entityId: string;
+  templateId: string;
+  position: Vec2;
+  velocity?: Vec2;
+}
+
 export interface EntitySpawnedEvent {
   entityId: string;
   template: string;
@@ -218,7 +225,7 @@ export interface GodotBridge {
   callRpc(method: string, params?: unknown): Promise<any>;
 
   // Entity management (high-level)
-  spawnEntity(templateId: string, x: number, y: number, initialVelocity?: Vec2): string;
+  spawnEntity(request: SpawnEntityRequest): void;
   destroyEntity(entityId: string): void;
 
   // Transform queries (async - native requires worklet communication)

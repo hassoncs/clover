@@ -1,0 +1,11 @@
+{
+  "id": "b3f08df4-1a94-49ca-b080-6f157c953864",
+  "slug": "flappyBird",
+  "title": "Flappy Bird",
+  "description": "Tap to fly through the pipes without hitting them",
+  "version": "1.1.0",
+  "thumbnailUrl": null,
+  "packs": [],
+  "activePackId": "default",
+  "updatedAt": 1770329924813
+}

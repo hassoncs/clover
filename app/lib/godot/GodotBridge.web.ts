@@ -7,6 +7,7 @@ import type {
   EntitySpawnedEvent,
   EntityTransform,
   Vec2,
+  SpawnEntityRequest,
   RaycastHit,
   RevoluteJointDef,
   DistanceJointDef,
@@ -484,15 +485,9 @@ export function createWebGodotBridge(): GodotBridge {
       );
     },
 
-    spawnEntity(templateId: string, x: number, y: number, initialVelocity?: Vec2): string {
-      const entityId = `${templateId}_${Date.now()}_${Math.random()
-        .toString(36)
-        .slice(2, 7)}`;
-      
-      // Pass initial velocity as JSON directly to Godot
-      const velocityJson = initialVelocity ? JSON.stringify(initialVelocity) : "";
-      getGodotBridge()?.spawnEntity(templateId, x, y, entityId, velocityJson);
-      return entityId;
+    spawnEntity(request: SpawnEntityRequest): void {
+      const velocityJson = request.velocity ? JSON.stringify(request.velocity) : "";
+      getGodotBridge()?.spawnEntity(request.templateId, request.position.x, request.position.y, request.entityId, velocityJson);
     },
 
     destroyEntity(entityId: string) {

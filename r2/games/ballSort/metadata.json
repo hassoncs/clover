@@ -1,0 +1,17 @@
+{
+  "id": "03c70657-5789-4550-b38d-787d4219a91b",
+  "slug": "ballSort",
+  "title": "Ball Sort",
+  "description": "Sort colored balls into tubes - each tube should contain only one color",
+  "version": "2.0.0",
+  "thumbnailUrl": null,
+  "packs": [
+    {
+      "name": "default",
+      "packId": "f661beb6-1e5e-4b9e-a01f-314c87248b75",
+      "assetCount": 11
+    }
+  ],
+  "activePackId": "f661beb6-1e5e-4b9e-a01f-314c87248b75",
+  "updatedAt": 1770329924806
+}

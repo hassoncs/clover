@@ -67,6 +67,7 @@ func spawn(request: Dictionary) -> Dictionary:
 		return {"ok": false, "error": "Failed to create entity"}
 	
 	node.name = name_hint
+	_game_bridge.entities[entity_id] = node
 	
 	if tags.size() > 0:
 		node.set_meta("tags", tags)

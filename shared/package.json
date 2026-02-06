@@ -20,7 +20,8 @@
     "./utils/asset-url": "./src/utils/asset-url.ts",
     "./utils/*": "./src/utils/*.ts",
     "./validation": "./src/validation/index.ts",
-    "./validation/*": "./src/validation/*.ts"
+    "./validation/*": "./src/validation/*.ts",
+    "./scripting/authoring": "./src/scripting/script-authoring-types.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.38.3",

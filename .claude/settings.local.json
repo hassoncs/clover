@@ -36,7 +36,22 @@
       "Bash(curl:*)",
       "Bash(pnpm tsc:*)",
       "Bash(python3:*)",
-      "Bash(file:*)"
+      "Bash(file:*)",
+      "Bash(test:*)",
+      "Bash(for game in asteroids ballSort breakoutBouncer flappyBird gemCrush minefield simple slopeggle snake sokoban)",
+      "Bash(do)",
+      "Bash(def=\"r2/games/$game/definition.json\")",
+      "Bash(meta=\"r2/games/$game/metadata.json\")",
+      "Bash(if [ -f \"$def\" ])",
+      "Bash([ -f \"$meta\" ])",
+      "Bash(then)",
+      "Bash(else)",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(hush --help:*)",
+      "Bash(sqlite3:*)",
+      "Bash(xxd:*)",
+      "Bash(node -e:*)"
     ]
   }
 }

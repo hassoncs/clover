@@ -1,0 +1,11 @@
+{
+  "id": "3c6616ac-d60b-4ff5-b85b-1a6aae5c6725",
+  "slug": "sokoban",
+  "title": "Sokoban",
+  "description": "Push boxes onto target spots to win!",
+  "version": "1.0.0",
+  "thumbnailUrl": null,
+  "packs": [],
+  "activePackId": "default",
+  "updatedAt": 1770329924853
+}

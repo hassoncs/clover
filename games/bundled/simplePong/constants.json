@@ -1,9 +1,0 @@
-{
-  "WORLD_WIDTH": 12,
-  "WORLD_HEIGHT": 16,
-  "PADDLE_WIDTH": 2,
-  "PADDLE_HEIGHT": 0.3,
-  "BALL_RADIUS": 0.2,
-  "BALL_SPEED": 8,
-  "PADDLE_Y": -7
-}

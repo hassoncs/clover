@@ -1,12 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { GameInspectorState, AssertParams, ConsoleLogEntry } from '../types.js'
-import { queryGodot, querySlopcade, getRecentLogs, takeScreenshot } from '../utils.js'
-
-interface QueryPointResult {
-  entities: Array<{ entityId: string; shapeIndex: number }>;
-  point: { x: number; y: number };
-}
+import { getRecentLogs, takeScreenshot } from '../utils.js'
 
 export function registerInteractionTools(server: McpServer, state: GameInspectorState) {
   server.tool(
@@ -67,23 +62,25 @@ export function registerInteractionTools(server: McpServer, state: GameInspector
       let resolvedWorldY: number | undefined;
 
       if (inputType === "tap" && targetEntityId && (worldX === undefined || worldY === undefined)) {
-        interface EntityDetails {
-          entityId: string;
-          transform?: { position?: { x: number; y: number } };
-          template?: string;
-        }
-        const entityResult = await queryGodot<EntityDetails | { error?: string }>(
-          state.page,
-          "getEntityDetails",
-          [targetEntityId]
-        );
+        const entityResult = await state.page.evaluate(async (eid: string) => {
+          const ops = (window as any).debugOps;
+          if (!ops) return null;
+          try {
+            const data = await ops.getEntityData(eid);
+            if (!data) return null;
+            const pos = await ops.getPosition(eid);
+            return { entityId: data.id, position: pos };
+          } catch (e) {
+            return null;
+          }
+        }, targetEntityId);
 
-        if (!entityResult || "error" in entityResult || !("transform" in entityResult)) {
+        if (!entityResult || !entityResult.position) {
           return {
             content: [{
               type: "text" as const,
               text: JSON.stringify({
-                error: `Cannot tap entity: ${targetEntityId} - entity not found`,
+                error: `Cannot tap entity: ${targetEntityId} - entity not found or has no position`,
                 targetEntityId,
                 resolved: false,
               })
@@ -91,35 +88,26 @@ export function registerInteractionTools(server: McpServer, state: GameInspector
           };
         }
 
-        const entity = entityResult as EntityDetails;
-        if (!entity.transform?.position) {
-          return {
-            content: [{
-              type: "text" as const,
-              text: JSON.stringify({
-                error: `Cannot tap entity: ${targetEntityId} - entity has no position`,
-                targetEntityId,
-                resolved: false,
-              })
-            }]
-          };
-        }
-
-        worldX = entity.transform.position.x;
-        worldY = entity.transform.position.y;
+        worldX = entityResult.position.x;
+        worldY = entityResult.position.y;
         resolvedFromEntityId = targetEntityId;
         resolvedWorldX = worldX;
         resolvedWorldY = worldY;
       }
 
       if (inputType === "tap" && worldX !== undefined && worldY !== undefined && !targetEntityId) {
-        const queryResult = await queryGodot<QueryPointResult>(
-          state.page,
-          "queryPoint",
-          [worldX, worldY, { includeSensors: true }]
-        );
-        if (queryResult && !("error" in queryResult) && queryResult.entities?.length > 0) {
-          targetEntityId = queryResult.entities[0].entityId;
+        const queryResult = await state.page.evaluate(async (p: {x: number, y: number}) => {
+          const ops = (window as any).debugOps;
+          if (!ops) return null;
+          try {
+            return await ops.queryPoint({x: p.x, y: p.y});
+          } catch (e) {
+            return null;
+          }
+        }, {x: worldX, y: worldY});
+
+        if (queryResult) {
+          targetEntityId = queryResult;
         }
       }
 
@@ -343,9 +331,21 @@ export function registerInteractionTools(server: McpServer, state: GameInspector
 
       const params = { entityId, timeout, epsilon };
       const result = await state.page.evaluate(async (p: typeof params) => {
-        const w = window as any;
-        if (!w.GodotDebugBridge) return { error: "GodotDebugBridge not available" };
-        return w.GodotDebugBridge.waitForStationary(p.entityId, p.timeout, p.epsilon);
+        const ops = (window as any).debugOps;
+        if (!ops) return { error: "debugOps not available" };
+
+        const startTime = Date.now();
+        const pollInterval = 50;
+
+        while (Date.now() - startTime < p.timeout) {
+          const vel = await ops.getVelocity(p.entityId);
+          if (!vel) return { success: true, elapsedMs: Date.now() - startTime, timedOut: false, lastValue: true };
+          const speed = Math.sqrt(vel.x * vel.x + vel.y * vel.y);
+          if (speed < p.epsilon) return { success: true, elapsedMs: Date.now() - startTime, timedOut: false, lastValue: true };
+          await new Promise(r => setTimeout(r, pollInterval));
+        }
+
+        return { success: false, elapsedMs: Date.now() - startTime, timedOut: true, lastValue: false };
       }, params);
 
       return {
@@ -420,25 +420,77 @@ export function registerInteractionTools(server: McpServer, state: GameInspector
       }
 
       const result = await state.page.evaluate(async (p: AssertParams) => {
-        const w = window as any;
-        if (!w.GodotDebugBridge) return { error: "GodotDebugBridge not available" };
+        const ops = (window as any).debugOps;
+        const bridge = (window as any).GodotDebugBridge;
+        if (!ops) return { error: "debugOps not available" };
 
-        const bridge = w.GodotDebugBridge;
+        const ts = Date.now();
+
         switch (p.type) {
-          case "exists":
-            return bridge.assert.exists(p.entityId!);
-          case "nearPosition":
-            return bridge.assert.nearPosition(p.entityId!, p.position!, p.tolerance ?? 0.5);
-          case "hasVelocity":
-            return bridge.assert.hasVelocity(p.entityId!, p.threshold ?? 1.0);
-          case "isStationary":
-            return bridge.assert.isStationary(p.entityId!, p.threshold ?? 0.1);
-          case "collisionOccurred":
-            return bridge.assert.collisionOccurred(p.entityA!, p.entityB!);
-          case "hasTag":
-            return bridge.assert.hasTag(p.entityId!, p.tag!);
-          case "entityCount":
-            return bridge.assert.entityCount(p.tag!, p.count!);
+          case "exists": {
+            const data = await ops.getEntityData(p.entityId!);
+            return data
+              ? { passed: true, message: `Entity "${p.entityId}" exists`, assertionType: "exists", entityId: p.entityId, timestamp: ts }
+              : { passed: false, message: `Entity "${p.entityId}" not found`, assertionType: "exists", entityId: p.entityId, timestamp: ts };
+          }
+
+          case "nearPosition": {
+            const pos = await ops.getPosition(p.entityId!);
+            if (!pos) return { passed: false, message: `Entity "${p.entityId}" not found`, assertionType: "nearPosition", entityId: p.entityId, timestamp: ts };
+            const dx = pos.x - p.position!.x;
+            const dy = pos.y - p.position!.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const epsilon = p.tolerance ?? 0.5;
+            return dist <= epsilon
+              ? { passed: true, message: `Entity "${p.entityId}" is within ${epsilon}m of target (distance: ${dist.toFixed(2)}m)`, assertionType: "nearPosition", expected: p.position, actual: pos, entityId: p.entityId, timestamp: ts }
+              : { passed: false, message: `Entity "${p.entityId}" is ${dist.toFixed(2)}m from target (expected within ${epsilon}m)`, assertionType: "nearPosition", expected: p.position, actual: pos, entityId: p.entityId, timestamp: ts };
+          }
+
+          case "hasVelocity": {
+            const vel = await ops.getVelocity(p.entityId!);
+            if (!vel) return { passed: false, message: `Entity "${p.entityId}" has no velocity data`, assertionType: "hasVelocity", expected: p.threshold ?? 1.0, entityId: p.entityId, timestamp: ts };
+            const speed = Math.sqrt(vel.x * vel.x + vel.y * vel.y);
+            const min = p.threshold ?? 1.0;
+            return speed >= min
+              ? { passed: true, message: `Entity "${p.entityId}" is moving at ${speed.toFixed(2)}m/s`, assertionType: "hasVelocity", expected: min, actual: speed, entityId: p.entityId, timestamp: ts }
+              : { passed: false, message: `Entity "${p.entityId}" speed ${speed.toFixed(2)}m/s is below minimum ${min}m/s`, assertionType: "hasVelocity", expected: min, actual: speed, entityId: p.entityId, timestamp: ts };
+          }
+
+          case "isStationary": {
+            const vel = await ops.getVelocity(p.entityId!);
+            const epsilon = p.threshold ?? 0.1;
+            if (!vel) return { passed: true, message: `Entity "${p.entityId}" has no velocity (stationary)`, assertionType: "isStationary", entityId: p.entityId, timestamp: ts };
+            const speed = Math.sqrt(vel.x * vel.x + vel.y * vel.y);
+            return speed < epsilon
+              ? { passed: true, message: `Entity "${p.entityId}" is stationary (speed: ${speed.toFixed(3)}m/s)`, assertionType: "isStationary", entityId: p.entityId, timestamp: ts }
+              : { passed: false, message: `Entity "${p.entityId}" is moving at ${speed.toFixed(2)}m/s`, assertionType: "isStationary", entityId: p.entityId, timestamp: ts };
+          }
+
+          case "collisionOccurred": {
+            if (bridge?.assert?.collisionOccurred) {
+              return bridge.assert.collisionOccurred(p.entityA!, p.entityB!);
+            }
+            return { passed: false, message: "Collision tracking not available", assertionType: "collisionOccurred", timestamp: ts };
+          }
+
+          case "hasTag": {
+            const has = await ops.hasTag(p.entityId!, p.tag!);
+            return has
+              ? { passed: true, message: `Entity "${p.entityId}" has tag "${p.tag}"`, assertionType: "hasTag", entityId: p.entityId, timestamp: ts }
+              : { passed: false, message: `Entity "${p.entityId}" does not have tag "${p.tag}"`, assertionType: "hasTag", entityId: p.entityId, timestamp: ts };
+          }
+
+          case "entityCount": {
+            const query: Record<string, unknown> = {};
+            if (p.tag) query.tag = p.tag;
+            const ids: string[] = await ops.queryEntities(Object.keys(query).length > 0 ? query : undefined);
+            const actual = ids.length;
+            const expected = p.count!;
+            return actual === expected
+              ? { passed: true, message: `Entity count is ${actual}`, assertionType: "entityCount", expected, actual, timestamp: ts }
+              : { passed: false, message: `Entity count is ${actual}, expected ${expected}`, assertionType: "entityCount", expected, actual, timestamp: ts };
+          }
+
           default:
             return { error: `Unknown assertion type: ${p.type}` };
         }

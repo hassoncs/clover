@@ -1,0 +1,1327 @@
+{
+  "metadata": {
+    "id": "f596586c-a857-44d3-be97-46149daf60b3",
+    "slug": "snake",
+    "title": "Snake",
+    "description": "Classic snake game. Eat food, grow longer, don't hit the walls!",
+    "instructions": "Swipe up/down/left/right to control the snake. Eat red food to grow!",
+    "version": "1.0.0"
+  },
+  "assetSystem": {
+    "activePackId": "default"
+  },
+  "background": {
+    "type": "static",
+    "color": "#1a1a2e"
+  },
+  "world": {
+    "gravity": {
+      "x": 0,
+      "y": 0
+    },
+    "pixelsPerMeter": 50,
+    "bounds": {
+      "width": 12,
+      "height": 16
+    }
+  },
+  "camera": {
+    "type": "fixed",
+    "zoom": 1
+  },
+  "ui": {
+    "showTimer": false,
+    "backgroundColor": "#1a1a2e",
+    "variableDisplays": [
+      {
+        "name": "score",
+        "label": "Score",
+        "position": "top-center"
+      }
+    ]
+  },
+  "loseCondition": {
+    "type": "custom",
+    "expr": "gameOver == 1"
+  },
+  "variables": {
+    "score": 0,
+    "gameOver": 0,
+    "snakeX": 9,
+    "snakeY": 12,
+    "direction": 1,
+    "nextDirection": 1,
+    "moveTimer": 0,
+    "foodX": 15,
+    "foodY": 12
+  },
+  "templates": {
+    "snakeHead": {
+      "id": "snakeHead",
+      "tags": [
+        "snake",
+        "player"
+      ],
+      "visual": {
+        "type": "rect",
+        "width": 0.54,
+        "height": 0.54,
+        "color": "#4ade80"
+      },
+      "physics": {
+        "bodyType": "kinematic",
+        "density": 0
+      },
+      "collider": {
+        "shape": "box",
+        "width": 0.54,
+        "height": 0.54,
+        "isSensor": true
+      }
+    },
+    "snakeBody": {
+      "id": "snakeBody",
+      "tags": [
+        "snake",
+        "body"
+      ],
+      "visual": {
+        "type": "rect",
+        "width": 0.51,
+        "height": 0.51,
+        "color": "#22c55e"
+      },
+      "physics": {
+        "bodyType": "kinematic",
+        "density": 0
+      },
+      "collider": {
+        "shape": "box",
+        "width": 0.51,
+        "height": 0.51,
+        "isSensor": true
+      }
+    },
+    "food": {
+      "id": "food",
+      "tags": [
+        "food"
+      ],
+      "visual": {
+        "type": "circle",
+        "radius": 0.21,
+        "color": "#ef4444"
+      },
+      "physics": {
+        "bodyType": "static",
+        "density": 0
+      },
+      "collider": {
+        "shape": "circle",
+        "radius": 0.21,
+        "isSensor": true
+      }
+    },
+    "wall": {
+      "id": "wall",
+      "tags": [
+        "wall"
+      ],
+      "visual": {
+        "type": "rect",
+        "width": 0.6,
+        "height": 0.6,
+        "color": "#374151"
+      },
+      "physics": {
+        "bodyType": "static",
+        "density": 0
+      },
+      "collider": {
+        "shape": "box",
+        "width": 0.6,
+        "height": 0.6,
+        "isSensor": true
+      }
+    }
+  },
+  "entities": [
+    {
+      "id": "snake-head",
+      "name": "Snake Head",
+      "template": "snakeHead",
+      "transform": {
+        "x": 0.39999999999999947,
+        "y": -0.1999999999999993,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "food",
+      "name": "Food",
+      "template": "food",
+      "transform": {
+        "x": 4,
+        "y": -0.1999999999999993,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-0",
+      "name": "Wall Left 0",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": 7,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-0",
+      "name": "Wall Right 0",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": 7,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-1",
+      "name": "Wall Left 1",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": 6.4,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-1",
+      "name": "Wall Right 1",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": 6.4,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-2",
+      "name": "Wall Left 2",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": 5.8,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-2",
+      "name": "Wall Right 2",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": 5.8,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-3",
+      "name": "Wall Left 3",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": 5.2,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-3",
+      "name": "Wall Right 3",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": 5.2,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-4",
+      "name": "Wall Left 4",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": 4.6,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-4",
+      "name": "Wall Right 4",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": 4.6,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-5",
+      "name": "Wall Left 5",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": 4,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-5",
+      "name": "Wall Right 5",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": 4,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-6",
+      "name": "Wall Left 6",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": 3.4000000000000004,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-6",
+      "name": "Wall Right 6",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": 3.4000000000000004,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-7",
+      "name": "Wall Left 7",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": 2.8,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-7",
+      "name": "Wall Right 7",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": 2.8,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-8",
+      "name": "Wall Left 8",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": 2.2,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-8",
+      "name": "Wall Right 8",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": 2.2,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-9",
+      "name": "Wall Left 9",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": 1.6000000000000005,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-9",
+      "name": "Wall Right 9",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": 1.6000000000000005,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-10",
+      "name": "Wall Left 10",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": 1,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-10",
+      "name": "Wall Right 10",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": 1,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-11",
+      "name": "Wall Left 11",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": 0.40000000000000036,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-11",
+      "name": "Wall Right 11",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": 0.40000000000000036,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-12",
+      "name": "Wall Left 12",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": -0.1999999999999993,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-12",
+      "name": "Wall Right 12",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": -0.1999999999999993,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-13",
+      "name": "Wall Left 13",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": -0.8000000000000007,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-13",
+      "name": "Wall Right 13",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": -0.8000000000000007,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-14",
+      "name": "Wall Left 14",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": -1.4000000000000004,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-14",
+      "name": "Wall Right 14",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": -1.4000000000000004,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-15",
+      "name": "Wall Left 15",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": -2,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-15",
+      "name": "Wall Right 15",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": -2,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-16",
+      "name": "Wall Left 16",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": -2.5999999999999996,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-16",
+      "name": "Wall Right 16",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": -2.5999999999999996,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-17",
+      "name": "Wall Left 17",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": -3.1999999999999993,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-17",
+      "name": "Wall Right 17",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": -3.1999999999999993,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-18",
+      "name": "Wall Left 18",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": -3.799999999999999,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-18",
+      "name": "Wall Right 18",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": -3.799999999999999,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-19",
+      "name": "Wall Left 19",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": -4.4,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-19",
+      "name": "Wall Right 19",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": -4.4,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-20",
+      "name": "Wall Left 20",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": -5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-20",
+      "name": "Wall Right 20",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": -5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-21",
+      "name": "Wall Left 21",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": -5.6,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-21",
+      "name": "Wall Right 21",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": -5.6,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-22",
+      "name": "Wall Left 22",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": -6.199999999999999,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-22",
+      "name": "Wall Right 22",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": -6.199999999999999,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-left-23",
+      "name": "Wall Left 23",
+      "template": "wall",
+      "transform": {
+        "x": -5.5,
+        "y": -6.799999999999999,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-right-23",
+      "name": "Wall Right 23",
+      "template": "wall",
+      "transform": {
+        "x": 5.5,
+        "y": -6.799999999999999,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-top-0",
+      "name": "Wall Top 0",
+      "template": "wall",
+      "transform": {
+        "x": -5,
+        "y": 7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-bottom-0",
+      "name": "Wall Bottom 0",
+      "template": "wall",
+      "transform": {
+        "x": -5,
+        "y": -7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-top-1",
+      "name": "Wall Top 1",
+      "template": "wall",
+      "transform": {
+        "x": -4.4,
+        "y": 7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-bottom-1",
+      "name": "Wall Bottom 1",
+      "template": "wall",
+      "transform": {
+        "x": -4.4,
+        "y": -7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-top-2",
+      "name": "Wall Top 2",
+      "template": "wall",
+      "transform": {
+        "x": -3.8,
+        "y": 7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-bottom-2",
+      "name": "Wall Bottom 2",
+      "template": "wall",
+      "transform": {
+        "x": -3.8,
+        "y": -7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-top-3",
+      "name": "Wall Top 3",
+      "template": "wall",
+      "transform": {
+        "x": -3.2,
+        "y": 7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-bottom-3",
+      "name": "Wall Bottom 3",
+      "template": "wall",
+      "transform": {
+        "x": -3.2,
+        "y": -7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-top-4",
+      "name": "Wall Top 4",
+      "template": "wall",
+      "transform": {
+        "x": -2.6,
+        "y": 7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-bottom-4",
+      "name": "Wall Bottom 4",
+      "template": "wall",
+      "transform": {
+        "x": -2.6,
+        "y": -7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-top-5",
+      "name": "Wall Top 5",
+      "template": "wall",
+      "transform": {
+        "x": -2,
+        "y": 7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-bottom-5",
+      "name": "Wall Bottom 5",
+      "template": "wall",
+      "transform": {
+        "x": -2,
+        "y": -7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-top-6",
+      "name": "Wall Top 6",
+      "template": "wall",
+      "transform": {
+        "x": -1.4000000000000004,
+        "y": 7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-bottom-6",
+      "name": "Wall Bottom 6",
+      "template": "wall",
+      "transform": {
+        "x": -1.4000000000000004,
+        "y": -7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-top-7",
+      "name": "Wall Top 7",
+      "template": "wall",
+      "transform": {
+        "x": -0.7999999999999998,
+        "y": 7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-bottom-7",
+      "name": "Wall Bottom 7",
+      "template": "wall",
+      "transform": {
+        "x": -0.7999999999999998,
+        "y": -7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-top-8",
+      "name": "Wall Top 8",
+      "template": "wall",
+      "transform": {
+        "x": -0.20000000000000018,
+        "y": 7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-bottom-8",
+      "name": "Wall Bottom 8",
+      "template": "wall",
+      "transform": {
+        "x": -0.20000000000000018,
+        "y": -7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-top-9",
+      "name": "Wall Top 9",
+      "template": "wall",
+      "transform": {
+        "x": 0.39999999999999947,
+        "y": 7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-bottom-9",
+      "name": "Wall Bottom 9",
+      "template": "wall",
+      "transform": {
+        "x": 0.39999999999999947,
+        "y": -7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-top-10",
+      "name": "Wall Top 10",
+      "template": "wall",
+      "transform": {
+        "x": 1,
+        "y": 7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-bottom-10",
+      "name": "Wall Bottom 10",
+      "template": "wall",
+      "transform": {
+        "x": 1,
+        "y": -7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-top-11",
+      "name": "Wall Top 11",
+      "template": "wall",
+      "transform": {
+        "x": 1.5999999999999996,
+        "y": 7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-bottom-11",
+      "name": "Wall Bottom 11",
+      "template": "wall",
+      "transform": {
+        "x": 1.5999999999999996,
+        "y": -7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-top-12",
+      "name": "Wall Top 12",
+      "template": "wall",
+      "transform": {
+        "x": 2.1999999999999993,
+        "y": 7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-bottom-12",
+      "name": "Wall Bottom 12",
+      "template": "wall",
+      "transform": {
+        "x": 2.1999999999999993,
+        "y": -7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-top-13",
+      "name": "Wall Top 13",
+      "template": "wall",
+      "transform": {
+        "x": 2.8000000000000007,
+        "y": 7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-bottom-13",
+      "name": "Wall Bottom 13",
+      "template": "wall",
+      "transform": {
+        "x": 2.8000000000000007,
+        "y": -7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-top-14",
+      "name": "Wall Top 14",
+      "template": "wall",
+      "transform": {
+        "x": 3.4000000000000004,
+        "y": 7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-bottom-14",
+      "name": "Wall Bottom 14",
+      "template": "wall",
+      "transform": {
+        "x": 3.4000000000000004,
+        "y": -7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-top-15",
+      "name": "Wall Top 15",
+      "template": "wall",
+      "transform": {
+        "x": 4,
+        "y": 7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-bottom-15",
+      "name": "Wall Bottom 15",
+      "template": "wall",
+      "transform": {
+        "x": 4,
+        "y": -7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-top-16",
+      "name": "Wall Top 16",
+      "template": "wall",
+      "transform": {
+        "x": 4.6,
+        "y": 7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-bottom-16",
+      "name": "Wall Bottom 16",
+      "template": "wall",
+      "transform": {
+        "x": 4.6,
+        "y": -7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-top-17",
+      "name": "Wall Top 17",
+      "template": "wall",
+      "transform": {
+        "x": 5.199999999999999,
+        "y": 7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    },
+    {
+      "id": "wall-bottom-17",
+      "name": "Wall Bottom 17",
+      "template": "wall",
+      "transform": {
+        "x": 5.199999999999999,
+        "y": -7.5,
+        "angle": 0,
+        "scaleX": 1,
+        "scaleY": 1
+      }
+    }
+  ],
+  "rules": [
+    {
+      "id": "swipe_up",
+      "name": "Swipe up",
+      "trigger": {
+        "type": "swipe",
+        "direction": "up"
+      },
+      "conditions": [
+        {
+          "type": "expression",
+          "expr": "direction != 2"
+        }
+      ],
+      "actions": [
+        {
+          "type": "set_variable",
+          "name": "nextDirection",
+          "operation": "set",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "swipe_right",
+      "name": "Swipe right",
+      "trigger": {
+        "type": "swipe",
+        "direction": "right"
+      },
+      "conditions": [
+        {
+          "type": "expression",
+          "expr": "direction != 3"
+        }
+      ],
+      "actions": [
+        {
+          "type": "set_variable",
+          "name": "nextDirection",
+          "operation": "set",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "swipe_down",
+      "name": "Swipe down",
+      "trigger": {
+        "type": "swipe",
+        "direction": "down"
+      },
+      "conditions": [
+        {
+          "type": "expression",
+          "expr": "direction != 0"
+        }
+      ],
+      "actions": [
+        {
+          "type": "set_variable",
+          "name": "nextDirection",
+          "operation": "set",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "swipe_left",
+      "name": "Swipe left",
+      "trigger": {
+        "type": "swipe",
+        "direction": "left"
+      },
+      "conditions": [
+        {
+          "type": "expression",
+          "expr": "direction != 1"
+        }
+      ],
+      "actions": [
+        {
+          "type": "set_variable",
+          "name": "nextDirection",
+          "operation": "set",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "eat_food",
+      "name": "Eat food",
+      "trigger": {
+        "type": "collision",
+        "entityATag": "snake",
+        "entityBTag": "food"
+      },
+      "actions": [
+        {
+          "type": "set_variable",
+          "name": "score",
+          "operation": "add",
+          "value": 10
+        },
+        {
+          "type": "destroy",
+          "target": {
+            "type": "by_tag",
+            "tag": "food"
+          }
+        },
+        {
+          "type": "spawn",
+          "template": "food",
+          "position": {
+            "type": "random",
+            "bounds": {
+              "minX": -4,
+              "maxX": 10,
+              "minY": 6,
+              "maxY": -14
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "hit_wall",
+      "name": "Hit wall - game over",
+      "trigger": {
+        "type": "collision",
+        "entityATag": "snake",
+        "entityBTag": "wall"
+      },
+      "actions": [
+        {
+          "type": "set_variable",
+          "name": "gameOver",
+          "operation": "set",
+          "value": 1
+        }
+      ]
+    }
+  ],
+  "script": "\nconst GRID_SIZE = 0.6;\nconst MOVE_DELAY = 0.15;\nconst WORLD_WIDTH = 12;\nconst WORLD_HEIGHT = 16;\nconst HALF_W = WORLD_WIDTH / 2;\nconst HALF_H = WORLD_HEIGHT / 2;\nconst cx = (x) => x - HALF_W;\nconst cy = (y) => HALF_H - y;\n\nlet snake = [{ x: 9, y: 12 }];\nlet moveAccumulator = 0;\n\nexports.onStart = function(ctx) {\n  snake = [{ x: 9, y: 12 }];\n  moveAccumulator = 0;\n  ctx.setVariable('score', 0);\n  ctx.setVariable('gameOver', 0);\n  ctx.setVariable('direction', 1);\n  ctx.setVariable('nextDirection', 1);\n};\n\nexports.onUpdate = function(ctx, dt) {\n  if (ctx.getVariable('gameOver') === 1) return;\n  \n  moveAccumulator += dt;\n  if (moveAccumulator < MOVE_DELAY) return;\n  moveAccumulator = 0;\n  \n  const nextDir = ctx.getVariable('nextDirection');\n  ctx.setVariable('direction', nextDir);\n  \n  const head = snake[0];\n  let newX = head.x;\n  let newY = head.y;\n  \n  if (nextDir === 0) newY -= 1;\n  else if (nextDir === 1) newX += 1;\n  else if (nextDir === 2) newY += 1;\n  else if (nextDir === 3) newX -= 1;\n  \n  if (newX < 1 || newX >= 17 || newY < 1 || newY >= 23) {\n    ctx.setVariable('gameOver', 1);\n    return;\n  }\n  \n  for (let i = 0; i < snake.length; i++) {\n    if (snake[i].x === newX && snake[i].y === newY) {\n      ctx.setVariable('gameOver', 1);\n      return;\n    }\n  }\n  \n  snake.unshift({ x: newX, y: newY });\n  \n  const foodX = ctx.getVariable('foodX');\n  const foodY = ctx.getVariable('foodY');\n  if (newX === foodX && newY === foodY) {\n    ctx.setVariable('score', (ctx.getVariable('score') || 0) + 10);\n    ctx.setVariable('foodX', Math.floor(Math.random() * 16) + 1);\n    ctx.setVariable('foodY', Math.floor(Math.random() * 22) + 1);\n  } else {\n    snake.pop();\n  }\n  \n  const headEntity = ctx.queryEntities({ tag: 'snake' })[0];\n  if (headEntity) {\n    ctx.setEntityPosition(headEntity, { x: cx(newX * GRID_SIZE + 1), y: cy(newY * GRID_SIZE + 1) });\n  }\n};\n"
+}

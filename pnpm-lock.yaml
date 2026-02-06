@@ -92,9 +92,6 @@ importers:
       '@hono/trpc-server':
         specifier: ^0.3.4
         version: 0.3.4(@trpc/server@11.8.1(typescript@5.9.3))(hono@4.11.7)
-      '@slopcade/games':
-        specifier: workspace:*
-        version: link:../games
       '@slopcade/shared':
         specifier: workspace:*
         version: link:../shared
@@ -147,6 +144,9 @@ importers:
       '@types/yargs':
         specifier: ^17.0.35
         version: 17.0.35
+      esbuild:
+        specifier: ^0.27.2
+        version: 0.27.2
       typescript:
         specifier: ^5.4.5
         version: 5.9.3
@@ -467,25 +467,6 @@ importers:
       webpack:
         specifier: ^5.99.9
         version: 5.105.0(esbuild@0.25.12)
-
-  games:
-    dependencies:
-      '@slopcade/game-bundler':
-        specifier: workspace:*
-        version: link:../packages/game-bundler
-      '@slopcade/shared':
-        specifier: workspace:*
-        version: link:../shared
-    devDependencies:
-      esbuild:
-        specifier: ^0.27.2
-        version: 0.27.2
-      typescript:
-        specifier: ~5.9.3
-        version: 5.9.3
-      vitest:
-        specifier: ^2.1.9
-        version: 2.1.9(@types/node@25.2.0)(jsdom@27.4.0)(lightningcss@1.31.1)(terser@5.46.0)
 
   landing:
     dependencies:

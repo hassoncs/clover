@@ -27,6 +27,7 @@ export default function GameDetailScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isForking, setIsForking] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [selectedPackId, setSelectedPackId] = useState<string | null>(null);
 
   const [packsData, setPacksData] = useState<{
     packs: {
@@ -55,6 +56,18 @@ export default function GameDetailScreen() {
         });
     }
   }, [gameInfo]);
+
+  const embeddedMeta = id ? EMBEDDED_METADATA[id] as {
+    packs?: Array<{ name: string; packId: string; assetCount: number }>;
+    activePackId?: string;
+  } | undefined : undefined;
+  const embeddedPacks = embeddedMeta?.packs ?? [];
+
+  useEffect(() => {
+    if (embeddedPacks.length > 0 && !selectedPackId) {
+      setSelectedPackId(embeddedMeta?.activePackId ?? embeddedPacks[0].packId);
+    }
+  }, [embeddedPacks, selectedPackId, embeddedMeta?.activePackId]);
 
   useEffect(() => {
     const loadGameInfo = async () => {
@@ -107,11 +120,13 @@ export default function GameDetailScreen() {
     if (!gameInfo) return;
 
     if (gameInfo.source === "template") {
-      router.push({ pathname: "/test-games/[id]", params: { id: gameInfo.id } });
+      const params: Record<string, string> = { id: gameInfo.id };
+      if (selectedPackId) params.packId = selectedPackId;
+      router.push({ pathname: "/test-games/[id]", params });
     } else {
       router.push({ pathname: "/play/[id]", params: { id: gameInfo.id } });
     }
-  }, [gameInfo, router]);
+  }, [gameInfo, router, selectedPackId]);
 
   const handleFork = useCallback(async () => {
     if (!gameInfo) return;
@@ -263,7 +278,7 @@ export default function GameDetailScreen() {
 
           <View className="flex-row gap-3 mb-8">
             <Pressable
-              className={`flex-1 py-3 rounded-xl items-center ${
+              className={`flex-1 py-4 rounded-xl items-center justify-center ${
                 isForking ? "bg-gray-600" : "bg-green-600 active:bg-green-700"
               }`}
               onPress={handleFork}
@@ -280,7 +295,7 @@ export default function GameDetailScreen() {
             </Pressable>
 
             <Pressable
-              className={`flex-1 py-3 rounded-xl items-center ${
+              className={`flex-1 py-4 rounded-xl items-center justify-center ${
                 isEditing ? "bg-gray-600" : "bg-purple-600 active:bg-purple-700"
               }`}
               onPress={handleEdit}
@@ -297,12 +312,37 @@ export default function GameDetailScreen() {
             </Pressable>
 
             <Pressable
-              className="flex-[2] py-4 bg-blue-600 rounded-xl items-center active:bg-blue-700"
+              className="flex-[2] py-4 bg-blue-600 rounded-xl items-center justify-center active:bg-blue-700"
               onPress={handlePlay}
             >
               <Text className="text-white font-bold text-lg">Play</Text>
             </Pressable>
           </View>
+
+          {gameInfo.source === "template" && embeddedPacks.length > 1 && (
+            <View className="mb-4">
+              <Text className="text-white text-sm font-semibold mb-2">Theme</Text>
+              <View className="flex-row gap-2">
+                {embeddedPacks.map(pack => (
+                  <Pressable
+                    key={pack.packId}
+                    onPress={() => setSelectedPackId(pack.packId)}
+                    className={`py-2 px-4 rounded-lg ${
+                      selectedPackId === pack.packId
+                        ? "bg-blue-600"
+                        : "bg-gray-800 active:bg-gray-700"
+                    }`}
+                  >
+                    <Text className={`text-sm font-medium ${
+                      selectedPackId === pack.packId ? "text-white" : "text-gray-300"
+                    }`}>
+                      {pack.name}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          )}
 
           <View className="mb-8">
             <View className="flex-row items-center mb-4">

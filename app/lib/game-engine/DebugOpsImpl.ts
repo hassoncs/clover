@@ -95,8 +95,12 @@ export class DebugOpsImpl extends WorldOpsImpl implements DebugOps {
   }
 
   async getOverlaps(entityId: string): Promise<string[]> {
-    const result = await this.godotDebugBridge.getOverlaps(entityId);
-    return result.overlaps.map((o) => o.entityId);
+    try {
+      const result = await this.godotDebugBridge.getOverlaps(entityId);
+      return (result?.overlaps ?? []).map((o) => o.entityId);
+    } catch {
+      return [];
+    }
   }
 
   async subscribe(eventType: string, selector?: string): Promise<string> {

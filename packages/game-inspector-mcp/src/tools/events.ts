@@ -1,7 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { GameInspectorState } from '../types.js'
-import { queryGodot } from '../utils.js'
 
 export function registerEventsTools(server: McpServer, state: GameInspectorState) {
   server.tool(
@@ -13,13 +12,27 @@ export function registerEventsTools(server: McpServer, state: GameInspectorState
       properties: z.array(z.string()).optional().describe("Properties to watch (for propertyChange events)"),
     },
     async (args) => {
-      const request = {
-        eventType: args.eventType as string,
-        selector: args.selector as string | undefined,
-        properties: args.properties as string[] | undefined,
-      };
-      const result = await queryGodot(state.page, "subscribe", [request]);
-      return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
+      if (!state.page) return { content: [{ type: "text" as const, text: "No game page open" }] };
+      try {
+        const result = await state.page.evaluate(async ({ eventType, selector }) => {
+          const ops = (window as any).debugOps;
+          if (!ops) return { error: "debugOps not available" };
+          try {
+            const subId = await ops.subscribe(eventType, selector);
+            return { subId };
+          } catch (e: any) {
+            return { error: e.message || String(e) };
+          }
+        }, { eventType: args.eventType, selector: args.selector });
+
+        if ('error' in result) {
+          return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
+        }
+
+        return { content: [{ type: "text" as const, text: JSON.stringify({ ok: true, subId: result.subId }, null, 2) }] };
+      } catch (e: any) {
+        return { content: [{ type: "text" as const, text: JSON.stringify({ error: e.message || String(e) }, null, 2) }] };
+      }
     }
   );
 
@@ -30,9 +43,27 @@ export function registerEventsTools(server: McpServer, state: GameInspectorState
       subscriptionId: z.string().describe("Subscription ID returned from subscribe"),
     },
     async (args) => {
-      const subId = args.subscriptionId as string;
-      const result = await queryGodot(state.page, "unsubscribe", [subId]);
-      return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
+      if (!state.page) return { content: [{ type: "text" as const, text: "No game page open" }] };
+      try {
+        const result = await state.page.evaluate(async ({ subId }) => {
+          const ops = (window as any).debugOps;
+          if (!ops) return { error: "debugOps not available" };
+          try {
+            await ops.unsubscribe(subId);
+            return { ok: true };
+          } catch (e: any) {
+            return { error: e.message || String(e) };
+          }
+        }, { subId: args.subscriptionId });
+
+        if ('error' in result) {
+          return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
+        }
+
+        return { content: [{ type: "text" as const, text: JSON.stringify({ ok: true, subId: args.subscriptionId }, null, 2) }] };
+      } catch (e: any) {
+        return { content: [{ type: "text" as const, text: JSON.stringify({ error: e.message || String(e) }, null, 2) }] };
+      }
     }
   );
 
@@ -44,12 +75,28 @@ export function registerEventsTools(server: McpServer, state: GameInspectorState
       limit: z.number().optional().describe("Max events to return (default: 100)"),
     },
     async (args) => {
-      const options = {
-        subscriptionId: args.subscriptionId as string | undefined,
-        limit: args.limit as number | undefined,
-      };
-      const result = await queryGodot(state.page, "pollEvents", [options]);
-      return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
+      if (!state.page) return { content: [{ type: "text" as const, text: "No game page open" }] };
+      try {
+        const result = await state.page.evaluate(async ({ subscriptionId }) => {
+          const ops = (window as any).debugOps;
+          if (!ops) return { error: "debugOps not available" };
+          try {
+            const events = await ops.pollEvents(subscriptionId);
+            return { events };
+          } catch (e: any) {
+            return { error: e.message || String(e) };
+          }
+        }, { subscriptionId: args.subscriptionId });
+
+        if ('error' in result) {
+          return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
+        }
+
+        const events = result.events || [];
+        return { content: [{ type: "text" as const, text: JSON.stringify({ count: events.length, dropped: 0, events }, null, 2) }] };
+      } catch (e: any) {
+        return { content: [{ type: "text" as const, text: JSON.stringify({ error: e.message || String(e) }, null, 2) }] };
+      }
     }
   );
 }

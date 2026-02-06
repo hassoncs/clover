@@ -1,0 +1,11 @@
+{
+  "id": "46e5a13e-46c3-48d7-a668-063ea2b57cfe",
+  "slug": "minefield",
+  "title": "Minefield",
+  "description": "Classic Minesweeper puzzle game",
+  "version": "1.0.0",
+  "thumbnailUrl": null,
+  "packs": [],
+  "activePackId": "default",
+  "updatedAt": 1770329924818
+}

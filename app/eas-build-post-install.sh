@@ -5,7 +5,7 @@ echo "🔧 Running eas-build-post-install.sh"
 echo "📍 Current directory: $(pwd)"
 
 echo "🎮 Building and embedding games (EXPO_PUBLIC_EMBED_GAMES=$EXPO_PUBLIC_EMBED_GAMES)..."
-pnpm --filter @slopcade/games build
+pnpm --filter @slopcade/api build:games
 pnpm embed:games
 
 echo "📂 Listing node_modules/@borndotcom:"

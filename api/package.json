@@ -19,10 +19,12 @@
     "build:types": "tsc -b tsconfig.build.json",
     "test": "vitest",
     "test:run": "vitest run",
-    "generate:ui": "npx tsx src/cli/generate-ui.ts"
+    "generate:ui": "npx tsx src/cli/generate-ui.ts",
+    "build:games": "tsx scripts/build-games.ts",
+    "watch:games": "tsx scripts/watch-games.ts",
+    "generate:assets": "tsx scripts/generate-assets.ts"
   },
   "dependencies": {
-    "@slopcade/games": "workspace:*",
     "@ai-sdk/anthropic": "^3.0.17",
     "nanoid": "^5.1.5",
     "@ai-sdk/openai": "^3.0.13",
@@ -46,6 +48,7 @@
     "@types/pngjs": "^6.0.5",
     "@types/sharp": "^0.32.0",
     "@types/yargs": "^17.0.35",
+    "esbuild": "^0.27.2",
     "typescript": "^5.4.5",
     "vitest": "^2.1.9",
     "wrangler": "^4.59.2",

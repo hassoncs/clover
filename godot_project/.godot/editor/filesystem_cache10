@@ -84,7 +84,7 @@ WebSocketSystem.gd::GDScript::6579444550606019435::1769981871::0::1::::WebSocket
 ::res://scripts/bridge/debug/::1769717226
 DebugBridge.gd::GDScript::576835227171242688::1769981392::0::1::::DebugBridge<>RefCounted<><>0<>0<><>::
 DebugEvents.gd::GDScript::902416114620322173::1769979313::0::1::::DebugEvents<>RefCounted<><>0<>0<><>::
-DebugLifecycle.gd::GDScript::2459095375678203847::1769979325::0::1::::DebugLifecycle<>RefCounted<><>0<>0<><>::
+DebugLifecycle.gd::GDScript::2459095375678203847::1770337803::0::1::::DebugLifecycle<>RefCounted<><>0<>0<><>::
 DebugPhysics.gd::GDScript::2325521010436117967::1769981004::0::1::::DebugPhysics<>RefCounted<><>0<>0<><>::
 DebugProps.gd::GDScript::4891004605017099441::1769538422::0::1::::DebugProps<>RefCounted<><>0<>0<><>::
 DebugSelector.gd::GDScript::4146464479291421755::1769538422::0::1::::DebugSelector<>RefCounted<><>0<>0<><>::
@@ -123,7 +123,7 @@ TestUIComponents.gd::GDScript::1812308515672171160::1770054911::0::1::::<>Contro
 ThemedCheckbox.gd::GDScript::4244886539141142883::1770158641::0::1::::ThemedCheckbox<>Control<><>0<>0<><>::
 ThemedUIComponent.gd::GDScript::8085600949968827971::1770158495::0::1::::ThemedUIComponent<>Control<><>0<>0<><>::
 UIButtonSystem.gd::GDScript::4546060244504347790::1770136592::0::1::::UIButtonSystem<>RefCounted<><>0<>0<><>::
-::res://scripts/utils/::1770270424
+::res://scripts/utils/::1770270428
 AssetUtils.gd::GDScript::4621832659428628721::1770158596::0::1::::AssetUtils<>RefCounted<><>0<>0<><>::
 CoordinateUtils.gd::GDScript::8119686888193694251::1769538422::0::1::::CoordinateUtils<>RefCounted<><>0<>0<><>::
 EntityUtils.gd::GDScript::7274210162928600081::1770137208::0::1::::EntityUtils<>RefCounted<><>0<>0<><>::

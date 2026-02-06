@@ -3,7 +3,6 @@ packages:
   - 'api'
   - 'landing'
   - 'shared'
-  - 'games'
   - 'packages/*'
   - 'apps/storybook'
 

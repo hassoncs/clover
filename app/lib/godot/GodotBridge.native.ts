@@ -6,6 +6,7 @@ import type {
   EntitySpawnedEvent,
   EntityTransform,
   Vec2,
+  SpawnEntityRequest,
   RaycastHit,
   RevoluteJointDef,
   DistanceJointDef,
@@ -498,12 +499,9 @@ export function createNativeGodotBridge(): GodotBridge {
       return parsed.result ?? parsed;
     },
 
-    spawnEntity(templateId: string, x: number, y: number, initialVelocity?: { x: number; y: number }): string {
-      const entityId = `${templateId}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-      // Pass initial velocity as JSON string since react-native-godot doesn't support object bindings
-      const velocityJson = initialVelocity ? JSON.stringify(initialVelocity) : '';
-      callGameBridge('spawn_entity_with_id', templateId, x, y, entityId, velocityJson);
-      return entityId;
+    spawnEntity(request: SpawnEntityRequest): void {
+      const velocityJson = request.velocity ? JSON.stringify(request.velocity) : '';
+      callGameBridge('spawn_entity_with_id', request.templateId, request.position.x, request.position.y, request.entityId, velocityJson);
     },
 
     destroyEntity(entityId: string) {

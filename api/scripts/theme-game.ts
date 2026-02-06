@@ -3,7 +3,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { createTRPCClient, httpLink } from '@trpc/client';
 import type { AppRouter } from '../src/trpc/router';
-import { loadGame, GAME_IDS } from '@slopcade/games';
+import { loadGame, GAME_IDS } from '../src/lib/game-registry';
 
 /**
  * CLI tool to apply a theme to a game via tRPC API.

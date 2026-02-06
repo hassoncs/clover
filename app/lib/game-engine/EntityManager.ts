@@ -1,16 +1,13 @@
-import type { Physics2D } from '../physics2d/Physics2D';
-import type { ShapeDef } from '../physics2d/types';
 import type {
   GameEntity,
   EntityTemplate,
-  PhysicsComponent,
   Behavior,
   TransformComponent,
   VisualComponent,
   ChildEntityDefinition,
 } from '@slopcade/shared';
 import type { RuntimeEntity, RuntimeBehavior, EntityManagerOptions } from './types';
-import type { GodotBridge } from '../godot/types';
+import type { GodotBridge, Vec2 } from '../godot/types';
 import { getGlobalTagRegistry } from '@slopcade/shared';
 import { recomputeActiveConditionalGroup } from './behaviors/conditional';
 
@@ -63,32 +60,29 @@ export function worldToLocal(
   };
 }
 
-interface PooledEntitySlot {
-  id: string;
-  generation: number;
-  entity: RuntimeEntity | null;
+export interface SpawnEntityOptions {
+  templateId: string;
+  position: Vec2;
+  velocity?: Vec2;
+  angle?: number;
+  tags?: string[];
+  parentId?: string;
+  /** Explicit ID — if omitted, a UUID is generated */
+  entityId?: string;
 }
 
-function generateId(): string {
-  return `entity_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+function generateEntityId(): string {
+  return `e_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
 export class EntityManager {
   private entities = new Map<string, RuntimeEntity>();
   private templates = new Map<string, EntityTemplate>();
-  private physics: Physics2D;
   private bridge: GodotBridge | null = null;
-
-  private entityPool: PooledEntitySlot[] = [];
-  private freeSlots: number[] = [];
-  private nextGeneration = 1;
 
   private entitiesByTagId = new Map<number, Set<string>>();
 
-  private godotGenerations = new Map<string, number>();
-
-  constructor(physics: Physics2D, options: EntityManagerOptions = {}) {
-    this.physics = physics;
+  constructor(options: EntityManagerOptions = {}) {
     this.bridge = options.bridge ?? null;
     if (options.templates) {
       Object.entries(options.templates).forEach(([id, template]) => {
@@ -109,61 +103,96 @@ export class EntityManager {
     return this.templates.get(id);
   }
 
-  createEntity(definition: GameEntity): RuntimeEntity {
-    const id = definition.id || this.getPooledEntityId();
-
-    if (this.entities.has(id)) {
-      throw new Error(`Entity with id "${id}" already exists`);
+  /**
+   * The ONE canonical way to create an entity at runtime.
+   * 1. JS generates the ID
+   * 2. Tells Godot to create the node (synchronous on web WASM)
+   * 3. Caches the RuntimeEntity locally
+   *
+   * Returns the entityId, or null if the template doesn't exist.
+   */
+  spawnEntity(opts: SpawnEntityOptions): string | null {
+    const template = this.templates.get(opts.templateId);
+    if (!template) {
+      console.warn(`[EntityManager] Template "${opts.templateId}" not found`);
+      return null;
     }
 
-    const resolved = this.resolveTemplate(definition);
-    const runtime = this.createRuntimeEntity(id, resolved);
+    const entityId = opts.entityId ?? generateEntityId();
 
-    runtime.active = true;
-
-    if (resolved.physics) {
-      this.initializePhysicsEntity(runtime, resolved.physics);
+    if (this.entities.has(entityId)) {
+      console.warn(`[EntityManager] Entity "${entityId}" already exists`);
+      return entityId;
     }
 
-    this.entities.set(id, runtime);
+    if (this.bridge) {
+      this.bridge.spawnEntity({
+        entityId,
+        templateId: opts.templateId,
+        position: opts.position,
+        velocity: opts.velocity,
+      });
+    }
 
-    this.spawnChildEntities(runtime, resolved.children || [], resolved.slots);
+    const runtime = this.cacheEntity(entityId, opts.templateId, {
+      x: opts.position.x,
+      y: opts.position.y,
+      angle: opts.angle ?? 0,
+      scaleX: 1,
+      scaleY: 1,
+    }, opts.tags);
 
-    return runtime;
+    if (opts.parentId && runtime) {
+      this.attachChild(opts.parentId, entityId);
+    }
+
+    return entityId;
   }
 
-  handleEntitySpawned(snapshot: EntitySpawnedSnapshot): RuntimeEntity | null {
-    if (this.entities.has(snapshot.entityId)) {
-      return this.entities.get(snapshot.entityId)!;
+  /**
+   * Cache a RuntimeEntity from external notification (e.g. Godot's entity_spawned event,
+   * or the initial game load). This is the internal bookkeeping — it does NOT create
+   * anything in Godot.
+   */
+  cacheEntity(
+    entityId: string,
+    templateId: string,
+    transform: { x: number; y: number; angle: number; scaleX: number; scaleY: number },
+    extraTags?: string[],
+  ): RuntimeEntity | null {
+    if (this.entities.has(entityId)) {
+      return this.entities.get(entityId)!;
     }
 
-    this.godotGenerations.set(snapshot.entityId, snapshot.generation);
+    const template = this.templates.get(templateId);
+    const tags = [...(template?.tags ?? []), ...(extraTags ?? [])];
 
-    const template = this.templates.get(snapshot.template);
-    const tags = [...(template?.tags ?? []), ...snapshot.tags];
+    const behaviors: RuntimeBehavior[] = (template?.behaviors ?? []).map((b: Behavior) => ({
+      definition: b,
+      enabled: b.enabled !== false,
+      state: {},
+    }));
 
     const runtime: RuntimeEntity = {
-      id: snapshot.entityId,
-      name: template?.id ?? snapshot.template,
-      template: snapshot.template,
+      id: entityId,
+      name: template?.id ?? templateId,
+      template: templateId,
       parentId: undefined,
       children: [],
-      localTransform: { ...snapshot.transform },
-      worldTransform: { ...snapshot.transform },
-      transform: { ...snapshot.transform },
-      visual: template?.visual,
-      physics: template?.physics,
-      behaviors: (template?.behaviors ?? []).map((b: Behavior) => ({
-        definition: b,
-        enabled: b.enabled !== false,
-        state: {},
-      })),
+      localTransform: { ...transform },
+      worldTransform: { ...transform },
+      transform: { ...transform },
+      visual: template?.visual ? structuredClone(template.visual) : undefined,
+      physics: template?.physics ? structuredClone(template.physics) : undefined,
+      collider: template?.collider ? structuredClone(template.collider) : undefined,
+      behaviors,
       tags,
       tagBits: new Set(),
       layer: template?.layer ?? 0,
       visible: true,
       active: true,
-      colliderId: snapshot.colliderId ? snapshot.colliderId.value : null,
+      colliderId: null,
+      assetPackId: (template as any)?.assetPackId,
       conditionalBehaviors: template?.conditionalBehaviors ?? [],
       activeConditionalGroupId: -1,
     };
@@ -174,11 +203,24 @@ export class EntityManager {
       if (!this.entitiesByTagId.has(tagId)) {
         this.entitiesByTagId.set(tagId, new Set());
       }
-      this.entitiesByTagId.get(tagId)!.add(snapshot.entityId);
+      this.entitiesByTagId.get(tagId)!.add(entityId);
     }
 
-    this.entities.set(snapshot.entityId, runtime);
+    this.entities.set(entityId, runtime);
     return runtime;
+  }
+
+  /**
+   * Handle the legacy EntitySpawnedSnapshot from Godot callbacks.
+   * Delegates to cacheEntity.
+   */
+  handleEntitySpawned(snapshot: EntitySpawnedSnapshot): RuntimeEntity | null {
+    return this.cacheEntity(
+      snapshot.entityId,
+      snapshot.template,
+      snapshot.transform,
+      snapshot.tags,
+    );
   }
 
   handleEntityDestroyed(entityId: string): void {
@@ -190,182 +232,6 @@ export class EntityManager {
     }
 
     this.entities.delete(entityId);
-    this.godotGenerations.delete(entityId);
-  }
-
-  getGodotGeneration(entityId: string): number | undefined {
-    return this.godotGenerations.get(entityId);
-  }
-
-  private getPooledEntityId(): string {
-    let slotIndex: number;
-    
-    if (this.freeSlots.length > 0) {
-      slotIndex = this.freeSlots.pop()!;
-      const slot = this.entityPool[slotIndex];
-      slot.generation = this.nextGeneration++;
-      slot.entity = null;
-      return slot.id;
-    } else {
-      slotIndex = this.entityPool.length;
-      const id = `pooled_${slotIndex}_${this.nextGeneration}`;
-      this.entityPool.push({
-        id,
-        generation: this.nextGeneration++,
-        entity: null,
-      });
-      return id;
-    }
-  }
-
-  private getSlotIndex(id: string): number {
-    return this.entityPool.findIndex(slot => slot.id === id);
-  }
-
-  private resolveTemplate(definition: GameEntity): GameEntity & { slots?: Record<string, { x: number; y: number; layer?: number }> } {
-    if (!definition.template) {
-      return definition;
-    }
-
-    const template = this.templates.get(definition.template);
-    if (!template) {
-      console.warn(`Template "${definition.template}" not found, using definition as-is`);
-      return definition;
-    }
-
-    return {
-      ...definition,
-      visual: definition.visual ?? (template.visual ? structuredClone(template.visual) : undefined),
-      physics: definition.physics ?? (template.physics ? structuredClone(template.physics) : undefined),
-      collider: definition.collider ?? (template.collider ? structuredClone(template.collider) : undefined),
-      behaviors: definition.behaviors ?? template.behaviors,
-      conditionalBehaviors: definition.conditionalBehaviors ?? template.conditionalBehaviors,
-      tags: [...(template.tags ?? []), ...(definition.tags ?? [])],
-      layer: definition.layer ?? template.layer ?? 0,
-      children: [
-        ...(template.children || []),
-        ...(definition.children || []),
-      ],
-      slots: template.slots,
-    };
-  }
-
-    private createRuntimeEntity(id: string, resolved: GameEntity): RuntimeEntity {
-      const behaviors: RuntimeBehavior[] = (resolved.behaviors ?? []).map((b: Behavior) => ({
-        definition: b,
-        enabled: b.enabled !== false,
-        state: {},
-      }));
-  
-      return {
-        id,
-        name: resolved.name,
-        template: resolved.template,
-        parentId: undefined,
-        children: [],
-        localTransform: { ...resolved.transform },
-        worldTransform: { ...resolved.transform },
-        transform: { ...resolved.transform },
-        visual: resolved.visual ? structuredClone(resolved.visual) : undefined,
-        physics: resolved.physics ? structuredClone(resolved.physics) : undefined,
-        collider: resolved.collider ? structuredClone(resolved.collider) : undefined,
-        behaviors,
-        tags: resolved.tags ?? [],
-        tagBits: new Set(),
-        layer: resolved.layer ?? 0,
-        visible: resolved.visible !== false,
-        active: resolved.active !== false,
-        colliderId: null,
-        assetPackId: resolved.assetPackId,
-        conditionalBehaviors: resolved.conditionalBehaviors ?? [],
-        activeConditionalGroupId: -1,
-      };
-    }
-
-  private spawnChildEntities(
-    parent: RuntimeEntity,
-    childDefs: ChildEntityDefinition[],
-    slots?: Record<string, { x: number; y: number; layer?: number }>
-  ): void {
-    for (const childDef of childDefs) {
-      const childId = childDef.id || `${parent.id}_${childDef.name}`;
-      
-      let childLocalTransform = { ...childDef.localTransform };
-      if (childDef.slot && slots?.[childDef.slot]) {
-        const slot = slots[childDef.slot];
-        childLocalTransform.x = childDef.localTransform.x ?? slot.x;
-        childLocalTransform.y = childDef.localTransform.y ?? slot.y;
-      }
-      
-      const childEntity: GameEntity = {
-        id: childId,
-        name: childDef.name,
-        template: childDef.template,
-        transform: childLocalTransform,
-        visual: childDef.visual as VisualComponent | undefined,
-        physics: childDef.physics as PhysicsComponent | undefined,
-        behaviors: childDef.behaviors,
-        tags: childDef.tags,
-        visible: childDef.visible,
-        assetPackId: childDef.assetPackId,
-        children: childDef.children as ChildEntityDefinition[] | undefined,
-      };
-      
-      const childRuntime = this.createEntity(childEntity);
-      
-      if (childRuntime) {
-        childRuntime.parentId = parent.id;
-        childRuntime.localTransform = { ...childLocalTransform };
-        parent.children.push(childRuntime.id);
-        this.updateWorldTransforms(childRuntime.id);
-      }
-    }
-  }
-
-  private initializePhysicsEntity(entity: RuntimeEntity, physicsConfig: PhysicsComponent): void {
-    if (physicsConfig.initialVelocity) {
-      this.physics.setLinearVelocity(entity.id, physicsConfig.initialVelocity);
-    }
-    if (physicsConfig.initialAngularVelocity !== undefined) {
-      this.physics.setAngularVelocity(entity.id, physicsConfig.initialAngularVelocity);
-    }
-  }
-
-  private createShapeDef(entity: RuntimeEntity): ShapeDef {
-    const collider = entity.collider;
-    const physics = entity.physics;
-    const shape = collider?.shape ?? (physics as any)?.shape;
-    
-    switch (shape) {
-      case 'circle': {
-        const radius = collider?.radius ?? (physics as any)?.radius ?? 0.5;
-        return {
-          type: 'circle',
-          radius,
-        };
-      }
-      case 'box': {
-        const width = collider?.width ?? (physics as any)?.width ?? 1;
-        const height = collider?.height ?? (physics as any)?.height ?? 1;
-        return {
-          type: 'box',
-          halfWidth: width / 2,
-          halfHeight: height / 2,
-        };
-      }
-      case 'polygon': {
-        const vertices = collider?.vertices ?? (physics as any)?.vertices;
-        if (!vertices) {
-          throw new Error('Polygon shape requires vertices');
-        }
-        return {
-          type: 'polygon',
-          vertices,
-        };
-      }
-      default:
-        throw new Error(`Unknown physics shape: ${shape}. Entity must have collider.shape or physics.shape defined.`);
-    }
   }
 
   destroyEntity(id: string, options: { recursive?: boolean } = {}): void {
@@ -395,51 +261,19 @@ export class EntityManager {
     this.destroyEntityInternal(id);
   }
 
-    private destroyEntityInternal(id: string): void {
-      const entity = this.entities.get(id);
-      if (!entity) return;
+  private destroyEntityInternal(id: string): void {
+    const entity = this.entities.get(id);
+    if (!entity) return;
 
-      // Always destroy in Godot first (for ALL entity types, not just physics)
-      // This ensures visual-only entities are properly cleaned up in the scene tree
-      if (this.bridge) {
-        this.bridge.destroyEntity(entity.id);
-      }
-
-      // Physics cleanup only for entities with physics components
-      if (entity.physics) {
-        this.physics.destroyBody(entity.id);
-      }
-
-      for (const tagId of entity.tagBits) {
-        this.entitiesByTagId.get(tagId)?.delete(id);
-      }
-
-      this.resetEntityForPooling(entity);
-      this.entities.delete(id);
-      this.returnEntityToPool(id);
+    if (this.bridge) {
+      this.bridge.destroyEntity(entity.id);
     }
 
-     private resetEntityForPooling(entity: RuntimeEntity): void {
-       entity.transform = { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 };
-       entity.template = undefined;
-       entity.visual = undefined;
-       entity.physics = undefined;
-       entity.behaviors = [];
-       entity.tags = [];
-       entity.tagBits.clear();
-       entity.layer = 0;
-       entity.visible = true;
-       entity.active = true;
-       entity.colliderId = null;
-       entity.conditionalBehaviors = [];
-       entity.activeConditionalGroupId = -1;
-     }
-
-  private returnEntityToPool(id: string): void {
-    const slotIndex = this.getSlotIndex(id);
-    if (slotIndex >= 0) {
-      this.freeSlots.push(slotIndex);
+    for (const tagId of entity.tagBits) {
+      this.entitiesByTagId.get(tagId)?.delete(id);
     }
+
+    this.entities.delete(id);
   }
 
   getEntity(id: string): RuntimeEntity | undefined {
@@ -554,48 +388,11 @@ export class EntityManager {
       .sort((a, b) => a.layer - b.layer);
   }
 
-  private syncEntityTransformFromPhysics(entity: RuntimeEntity): void {
-    const transform = this.physics.getTransform(entity.id);
-    entity.transform.x = transform.position.x;
-    entity.transform.y = transform.position.y;
-    entity.transform.angle = transform.angle;
-  }
-
-  private syncHierarchyTransformsForRoot(entity: RuntimeEntity): void {
-    entity.worldTransform = { ...entity.transform };
-    entity.localTransform = { ...entity.transform };
-  }
-
-  private syncHierarchyTransformsForChildWithPhysics(entity: RuntimeEntity): void {
-    const parent = this.entities.get(entity.parentId!);
-    if (parent) {
-      entity.localTransform = worldToLocal(entity.transform, parent.worldTransform);
-    }
-  }
-
-  syncTransformsFromPhysics(): void {
-    this.entities.forEach((entity) => {
-      if (entity.physics && entity.active) {
-        this.syncEntityTransformFromPhysics(entity);
-
-        if (entity.children.length > 0) {
-          if (!entity.parentId) {
-            this.syncHierarchyTransformsForRoot(entity);
-          } else {
-            this.syncHierarchyTransformsForChildWithPhysics(entity);
-          }
-          this.updateWorldTransforms(entity.id);
-        } else if (!entity.parentId) {
-          this.syncHierarchyTransformsForRoot(entity);
-        }
-      }
-    });
-  }
-
   loadEntities(entities: GameEntity[]): void {
-    entities.forEach((e) => {
-      this.createEntity(e);
-    });
+    for (const e of entities) {
+      const entityId = e.id || generateEntityId();
+      this.cacheEntity(entityId, e.template ?? '', e.transform, e.tags);
+    }
   }
 
   clearAll(): void {
@@ -615,17 +412,14 @@ export class EntityManager {
   }
 
   getEntitiesInAABB(min: { x: number; y: number }, max: { x: number; y: number }): RuntimeEntity[] {
-    const entityIds = this.physics.queryAABB(min, max);
-    
-    const entities: RuntimeEntity[] = [];
-    for (const entityId of entityIds) {
-      const entity = this.entities.get(entityId);
-      if (entity) {
-        entities.push(entity);
+    const results: RuntimeEntity[] = [];
+    for (const entity of this.entities.values()) {
+      const { x, y } = entity.transform;
+      if (x >= min.x && x <= max.x && y >= min.y && y <= max.y) {
+        results.push(entity);
       }
     }
-    
-    return entities;
+    return results;
   }
 
   static readonly QUERYABLE_COMPONENTS = ['visual', 'physics', 'collider'] as const;

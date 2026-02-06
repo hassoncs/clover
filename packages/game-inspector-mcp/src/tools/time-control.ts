@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { GameInspectorState } from "../types.js";
-import { queryGodot, querySlopcade, takeScreenshot, getScreenshotsDir } from "../utils.js";
+import { takeScreenshot, getScreenshotsDir } from "../utils.js";
 import { createFilmstrip, type FilmstripFrame } from "../filmstrip.js";
 
 export function registerTimeControlTools(server: McpServer, state: GameInspectorState) {
@@ -10,7 +10,14 @@ export function registerTimeControlTools(server: McpServer, state: GameInspector
     "Get current time control state (paused, timeScale, frame, etc.)",
     {},
     async () => {
-      const result = await querySlopcade(state.page, "getTimeState", []);
+      if (!state.page) {
+        return { content: [{ type: "text" as const, text: JSON.stringify({ error: "No game open." }) }] };
+      }
+      const result = await state.page.evaluate(async () => {
+        const ops = (window as any).debugOps;
+        if (!ops) return { error: "debugOps not available" };
+        return ops.getTimeState();
+      });
       return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
     }
   );
@@ -20,8 +27,14 @@ export function registerTimeControlTools(server: McpServer, state: GameInspector
     "Pause game simulation",
     {},
     async () => {
-      const result = await querySlopcade(state.page, "pause", []);
-      return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
+      if (!state.page) {
+        return { content: [{ type: "text" as const, text: JSON.stringify({ error: "No game open." }) }] };
+      }
+      await state.page.evaluate(async () => {
+        const ops = (window as any).debugOps;
+        if (ops) await ops.pause();
+      });
+      return { content: [{ type: "text" as const, text: JSON.stringify({ success: true }, null, 2) }] };
     }
   );
 
@@ -30,8 +43,14 @@ export function registerTimeControlTools(server: McpServer, state: GameInspector
     "Resume game simulation",
     {},
     async () => {
-      const result = await querySlopcade(state.page, "resume", []);
-      return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
+      if (!state.page) {
+        return { content: [{ type: "text" as const, text: JSON.stringify({ error: "No game open." }) }] };
+      }
+      await state.page.evaluate(async () => {
+        const ops = (window as any).debugOps;
+        if (ops) await ops.resume();
+      });
+      return { content: [{ type: "text" as const, text: JSON.stringify({ success: true }, null, 2) }] };
     }
   );
 
@@ -47,22 +66,28 @@ export function registerTimeControlTools(server: McpServer, state: GameInspector
       const frames = (args.frames as number | undefined) ?? 1;
       const shouldScreenshot = (args.screenshot as boolean | undefined) ?? false;
       const screenshotFilename = args.screenshotFilename as string | undefined;
-      
-      const timeState = await querySlopcade(state.page, "getTimeState", []) as { paused?: boolean };
-      if (timeState && !timeState.paused) {
-        await querySlopcade(state.page, "pause", []);
+
+      if (!state.page) {
+        return { content: [{ type: "text" as const, text: JSON.stringify({ error: "No game open." }) }] };
       }
-      
-      const result = await querySlopcade(state.page, "step", [frames]);
-      
+
+      const result = await state.page.evaluate(async (n: number) => {
+        const ops = (window as any).debugOps;
+        if (!ops) return { error: "debugOps not available" };
+        const ts = await ops.getTimeState();
+        if (ts && !ts.paused) await ops.pause();
+        await ops.step(n);
+        return { success: true, framesAdvanced: n };
+      }, frames);
+
       const response: Record<string, unknown> = { ...result as object };
-      
+
       if (shouldScreenshot && state.page) {
         const prefix = screenshotFilename ?? `step-${frames}`;
         const screenshotResult = await takeScreenshot(state.page, { prefix });
         response.screenshot = screenshotResult.filepath;
       }
-      
+
       return { content: [{ type: "text" as const, text: JSON.stringify(response, null, 2) }] };
     }
   );
@@ -75,8 +100,14 @@ export function registerTimeControlTools(server: McpServer, state: GameInspector
     },
     async (args) => {
       const scale = args.scale as number;
-      const result = await querySlopcade(state.page, "setTimeScale", [scale]);
-      return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
+      if (!state.page) {
+        return { content: [{ type: "text" as const, text: JSON.stringify({ error: "No game open." }) }] };
+      }
+      await state.page.evaluate(async (s: number) => {
+        const ops = (window as any).debugOps;
+        if (ops) await ops.setTimeScale(s);
+      }, scale);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ success: true, scale }, null, 2) }] };
     }
   );
 
@@ -89,8 +120,20 @@ export function registerTimeControlTools(server: McpServer, state: GameInspector
     },
     async (args) => {
       const seed = args.seed as number;
-      const options = { enableDeterministic: args.enableDeterministic as boolean | undefined };
-      const result = await queryGodot(state.page, "setSeed", [seed, options]);
+      const enableDeterministic = (args.enableDeterministic as boolean | undefined) ?? true;
+      if (!state.page) {
+        return { content: [{ type: "text" as const, text: JSON.stringify({ error: "No game open." }) }] };
+      }
+      const result = await state.page.evaluate(async (p: { seed: number; enableDeterministic: boolean }) => {
+        const bridge = (window as any).GodotDebugBridge;
+        if (!bridge?.setSeed) return { error: "setSeed not available on bridge" };
+        try {
+          bridge.setSeed(p.seed, { enableDeterministic: p.enableDeterministic });
+          return { success: true, seed: p.seed, enableDeterministic: p.enableDeterministic };
+        } catch (e: any) {
+          return { error: e.message };
+        }
+      }, { seed, enableDeterministic });
       return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
     }
   );
@@ -134,7 +177,10 @@ export function registerTimeControlTools(server: McpServer, state: GameInspector
 
       for (let stepped = 0; stepped < totalFrames; stepped += captureEvery) {
         const framesToStep = Math.min(captureEvery, totalFrames - stepped);
-        await querySlopcade(state.page, "step", [framesToStep]);
+        await state.page.evaluate(async (n: number) => {
+          const ops = (window as any).debugOps;
+          if (ops) await ops.step(n);
+        }, framesToStep);
         currentFrame += framesToStep;
 
         const framePath = `${screenshotsDir}/seq-${sessionId}-frame-${currentFrame}.png`;

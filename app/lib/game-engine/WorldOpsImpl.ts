@@ -54,10 +54,20 @@ export class WorldOpsImpl implements WorldOps {
     const template = this.entityManager.getTemplate(templateId);
     if (!template) return null;
 
-    const entity = this.entityManager.createEntity({
-      id: '',
-      name: templateId,
+    const entityId = this.bridge.spawnEntity(
+      templateId,
+      position.x,
+      position.y,
+      opts?.velocity,
+    );
+
+    if (!entityId) return null;
+
+    const entity = this.entityManager.handleEntitySpawned({
+      entityId,
       template: templateId,
+      generation: 0,
+      tags: opts?.tags ?? [],
       transform: {
         x: position.x,
         y: position.y,
@@ -65,13 +75,12 @@ export class WorldOpsImpl implements WorldOps {
         scaleX: 1,
         scaleY: 1,
       },
-      tags: opts?.tags,
     });
 
     if (!entity) return null;
 
-    if (opts?.velocity && entity.physics) {
-      this.physics.setLinearVelocity(entity.id, opts.velocity);
+    if (opts?.angle) {
+      await this.setRotation(entityId, opts.angle);
     }
 
     if (opts?.parentId) {
@@ -187,7 +196,7 @@ export class WorldOpsImpl implements WorldOps {
       });
     }
 
-    this.bridge.setRotation(entityId, angle);
+    this.bridge.setRotation(entityId, (angle * 180) / Math.PI);
   }
 
   async getScale(entityId: string): Promise<Vec2 | null> {
