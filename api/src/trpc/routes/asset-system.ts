@@ -730,6 +730,7 @@ export const assetSystemRouter = router({
             physicsRadius: physicsContext.radius,
             entityType,
             themePrompt: input.promptDefaults.themePrompt,
+            style: input.promptDefaults.styleOverride,
             targetWidth: dimensions.width,
             targetHeight: dimensions.height,
           });
@@ -773,7 +774,7 @@ export const assetSystemRouter = router({
     .input(z.object({
       packId: z.string(),
       newTheme: z.string(),
-      newStyle: z.enum(['pixel', 'cartoon', '3d', 'flat']),
+      newStyle: z.string(),
     }))
     .mutation(async ({ ctx, input }) => {
       const walletService = new WalletService(ctx.env.DB);
@@ -910,6 +911,7 @@ export const assetSystemRouter = router({
             physicsRadius: physicsContext.radius,
             entityType,
             themePrompt: input.newTheme,
+            style: input.newStyle,
             targetWidth: dimensions.width,
             targetHeight: dimensions.height,
           });
@@ -1496,6 +1498,7 @@ export const assetSystemRouter = router({
             physicsRadius: physicsContext.radius,
             entityType,
             themePrompt,
+            style: input.newStyle,
             targetWidth: dimensions.width,
             targetHeight: dimensions.height,
           });
@@ -1790,6 +1793,7 @@ Only output the enhanced prompt, nothing else.`;
         name: z.string().min(1).max(100),
         promptModifier: z.string().min(1),
       }).optional(),
+      styleOverride: z.string().optional(),
       setAsActive: z.boolean().default(true),
     }))
     .mutation(async ({ ctx, input }) => {
@@ -1909,7 +1913,7 @@ Only output the enhanced prompt, nothing else.`;
         await ctx.env.DB.prepare(
           `INSERT INTO generation_jobs (id, game_id, pack_id, theme_id, status, style, created_at)
            VALUES (?, ?, ?, ?, 'queued', ?, ?)`
-        ).bind(jobId, input.gameId, packId, themeId, 'pixel', now).run();
+        ).bind(jobId, input.gameId, packId, themeId, input.styleOverride ?? null, now).run();
 
         for (const templateId of templateIds) {
           const template = definition.templates?.[templateId];
@@ -1944,6 +1948,7 @@ Only output the enhanced prompt, nothing else.`;
             physicsRadius: physicsContext.radius,
             entityType,
             themePrompt: undefined,
+            style: input.styleOverride,
             targetWidth: dimensions.width,
             targetHeight: dimensions.height,
           });

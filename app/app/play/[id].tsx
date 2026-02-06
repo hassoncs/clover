@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { trpc } from "@/lib/trpc/client";
 import type { GameDefinition } from "@slopcade/shared";
+import { STYLE_PRESET_OPTIONS } from "@slopcade/shared/types/style-presets";
 import { WithGodot } from "../../components/WithGodot";
 import { FullScreenHeader } from "../../components/FullScreenHeader";
 import { EntityAssetList, ParallaxAssetPanel } from "../../components/assets";
@@ -26,7 +27,7 @@ export default function PlayScreen() {
   const [runtimeKey, setRuntimeKey] = useState(0);
   const [showAssetMenu, setShowAssetMenu] = useState(false);
   const [genPrompt, setGenPrompt] = useState("");
-  const [selectedStyle, setSelectedStyle] = useState<'pixel' | 'cartoon' | '3d' | 'flat'>('pixel');
+  const [selectedStyle, setSelectedStyle] = useState<string>('pixel');
   const [isGenerating, setIsGenerating] = useState(false);
   const [regeneratingTemplateId, setRegeneratingTemplateId] = useState<string | undefined>(undefined);
   const [generatingLayer, setGeneratingLayer] = useState<'sky' | 'far' | 'mid' | 'near' | 'all' | undefined>(undefined);
@@ -454,17 +455,36 @@ export default function PlayScreen() {
             />
 
             <Text className="text-gray-400 mb-2">Art Style</Text>
-            <View className="flex-row gap-2 mb-4">
-              {(['pixel', 'cartoon', '3d', 'flat'] as const).map(style => (
+            <View className="flex-row flex-wrap gap-2 mb-4">
+              {STYLE_PRESET_OPTIONS.map(style => (
                 <Pressable
-                  key={style}
-                  className={`flex-1 py-2 rounded-lg items-center ${selectedStyle === style ? 'bg-indigo-600' : 'bg-gray-700'}`}
-                  onPress={() => setSelectedStyle(style)}
+                  key={style.id}
+                  className={`py-2 px-3 rounded-lg items-center ${selectedStyle === style.id ? 'bg-indigo-600' : 'bg-gray-700'}`}
+                  onPress={() => setSelectedStyle(style.id)}
                 >
-                  <Text className="text-white text-xs font-medium capitalize">{style}</Text>
+                  <Text className="text-white text-xs font-medium capitalize">{style.emoji} {style.label}</Text>
                 </Pressable>
               ))}
+              <Pressable
+                className={`py-2 px-3 rounded-lg items-center ${!STYLE_PRESET_OPTIONS.some(s => s.id === selectedStyle) ? 'bg-indigo-600' : 'bg-gray-700'}`}
+                onPress={() => {
+                  if (STYLE_PRESET_OPTIONS.some(s => s.id === selectedStyle)) {
+                    setSelectedStyle('');
+                  }
+                }}
+              >
+                <Text className="text-white text-xs font-medium capitalize">✨ Custom</Text>
+              </Pressable>
             </View>
+            {!STYLE_PRESET_OPTIONS.some(s => s.id === selectedStyle) && (
+              <TextInput
+                className="bg-gray-700 text-white p-3 rounded-lg mb-4"
+                placeholder="e.g. Cyberpunk Neon"
+                placeholderTextColor="#666"
+                value={selectedStyle}
+                onChangeText={setSelectedStyle}
+              />
+            )}
 
             {activeAssetPackId && (
               <View className="mb-4">

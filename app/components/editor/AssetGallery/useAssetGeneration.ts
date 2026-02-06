@@ -106,7 +106,7 @@ export function useAssetGeneration({ gameId, onComplete, onError }: UseAssetGene
     packId?: string;
     templateIds: string[];
     themePrompt?: string;
-    style?: 'pixel' | 'cartoon' | '3d' | 'flat';
+    style?: string;
     removeBackground?: boolean;
   }) => {
     if (params.templateIds.length === 0) {
@@ -191,7 +191,7 @@ export function useCreateAssetPack(gameId: string) {
   const createPack = useCallback(async (params: {
     name: string;
     description?: string;
-    style?: 'pixel' | 'cartoon' | '3d' | 'flat';
+    style?: string;
     themePrompt?: string;
   }) => {
     return mutation.mutateAsync({
@@ -260,7 +260,7 @@ export function useRegenerateAssetPack(gameId: string) {
   const regeneratePack = useCallback(async (params: {
     packId: string;
     newTheme: string;
-    newStyle: 'pixel' | 'cartoon' | '3d' | 'flat';
+    newStyle: string;
   }) => {
     return mutation.mutateAsync(params);
   }, [mutation]);

@@ -34,7 +34,7 @@ export interface TileSheet {
   
   tiles?: Record<number, TileMetadata>;
   source?: AssetSource;
-  style?: 'pixel' | 'cartoon' | '3d' | 'flat';
+  style?: string;
 }
 
 export type TileLayerType = 'background' | 'collision' | 'foreground' | 'decoration';

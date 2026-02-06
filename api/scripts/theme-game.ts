@@ -43,8 +43,8 @@ async function main() {
       description: 'Theme prompt modifier (required if --theme-name is used)',
     })
     .option('style', {
-      choices: ['pixel', 'cartoon', '3d', 'flat'] as const,
-      description: 'Style override',
+      type: 'string',
+      description: 'Style override (presets: pixel, cartoon, 3d, flat, sketch, photorealistic, watercolor, low-poly, voxel, retro — or any custom text)',
     })
     .option('process', {
       type: 'boolean',

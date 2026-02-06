@@ -111,7 +111,7 @@ describeWithCredentials('AssetService Integration Tests (Real API)', () => {
   });
 
   describe('selectModel', () => {
-    const testCases: Array<{ entityType: 'character' | 'enemy' | 'item' | 'platform' | 'background' | 'ui'; style: 'pixel' | 'cartoon' | '3d' | 'flat'; animated: boolean; expected: string }> = [
+    const testCases: Array<{ entityType: 'character' | 'enemy' | 'item' | 'platform' | 'background' | 'ui'; style: string; animated: boolean; expected: string }> = [
       { entityType: 'character', style: 'pixel', animated: false, expected: 'model_retrodiffusion-plus' },
       { entityType: 'character', style: 'pixel', animated: true, expected: 'model_retrodiffusion-animation' },
       { entityType: 'character', style: 'cartoon', animated: false, expected: 'model_c8zak5M1VGboxeMd8kJBr2fn' },
@@ -123,6 +123,9 @@ describeWithCredentials('AssetService Integration Tests (Real API)', () => {
       { entityType: 'background', style: 'cartoon', animated: false, expected: 'model_hHuMquQ1QvEGHS1w7tGuYXud' },
       { entityType: 'ui', style: 'pixel', animated: false, expected: 'model_mcYj5uGzXteUw6tKapsaDgBP' },
       { entityType: 'ui', style: 'flat', animated: false, expected: 'model_mcYj5uGzXteUw6tKapsaDgBP' },
+      { entityType: 'character', style: 'watercolor', animated: false, expected: 'model_c8zak5M1VGboxeMd8kJBr2fn' },
+      { entityType: 'item', style: 'voxel', animated: false, expected: 'model_7v2vV6NRvm8i8jJm6DWHf6DM' },
+      { entityType: 'character', style: 'dreamy papercraft diorama', animated: false, expected: 'model_c8zak5M1VGboxeMd8kJBr2fn' },
     ];
 
     it.each(testCases)(

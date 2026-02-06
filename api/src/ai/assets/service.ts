@@ -4,6 +4,7 @@ import { PROVIDER_DEFAULTS } from '@/ai/providers/contract'
 import { createScenarioAdapter, createScenarioClient } from '@/ai/providers/scenario/client'
 import { createComfyUIAdapter } from '@/ai/providers/comfyui/client'
 import { buildR2Key } from '@slopcade/shared';
+import { resolveStyle } from '@/ai/pipeline/types';
 
 const DEBUG_ASSET_GENERATION = process.env.DEBUG_ASSET_GENERATION === 'true';
 const DEBUG_OUTPUT_DIR = 'debug-output';
@@ -53,6 +54,7 @@ export interface StructuredPromptParams {
   entityType: EntityType;
   themePrompt?: string;
   visualDescription?: string;
+  style?: string;
   targetWidth: number;
   targetHeight: number;
   context?: AssetContext;
@@ -384,6 +386,7 @@ export function buildStructuredPrompt(params: StructuredPromptParams): string {
     entityType,
     themePrompt,
     visualDescription,
+    style,
   } = params;
 
   const readableName = camelToWords(templateId);
@@ -395,6 +398,8 @@ export function buildStructuredPrompt(params: StructuredPromptParams): string {
     : themePrompt 
       ? `${themePrompt} themed ${readableName}` 
       : readableName;
+
+  const resolvedStyle = style ? resolveStyle(style) : '';
 
   const lines = [
     '=== SHAPE (CRITICAL - MUST MATCH EXACTLY) ===',
@@ -409,6 +414,7 @@ export function buildStructuredPrompt(params: StructuredPromptParams): string {
     entityType === 'item' ? 'This is a collectible object in the game.' : '',
     entityType === 'character' ? 'This is a playable character sprite, shown in idle pose.' : '',
     entityType === 'enemy' ? 'This is an enemy character, shown in threatening pose.' : '',
+    resolvedStyle ? `Style: ${resolvedStyle}.` : '',
     '',
     '=== TECHNICAL REQUIREMENTS ===',
     'Transparent background (alpha channel).',

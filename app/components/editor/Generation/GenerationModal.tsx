@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { GenerationProgressTracker } from './GenerationProgressTracker';
 import type { EntityTemplate } from '@slopcade/shared';
+import { STYLE_PRESET_OPTIONS } from '@slopcade/shared/types/style-presets';
 
 type GenerationPhase = 'configure' | 'generating' | 'complete';
 
@@ -34,11 +35,11 @@ interface GenerationModalProps {
   onClose: () => void;
   templates: Record<string, EntityTemplate>;
   packName?: string;
-  packStyle?: 'pixel' | 'cartoon' | '3d' | 'flat';
+  packStyle?: string;
   gameDescription?: string;
   onGenerate: (config: {
     themePrompt: string;
-    style: 'pixel' | 'cartoon' | '3d' | 'flat';
+    style: string;
     templateOverrides: Record<string, { entityPrompt?: string }>;
     templateIds: string[];
     strength?: number;
@@ -59,13 +60,6 @@ interface GenerationModalProps {
   coldStartState?: ModalLifecycleState;
 }
 
-const STYLE_OPTIONS: { id: 'pixel' | 'cartoon' | '3d' | 'flat'; label: string }[] = [
-  { id: 'pixel', label: 'Pixel Art' },
-  { id: 'cartoon', label: 'Cartoon' },
-  { id: '3d', label: '3D Render' },
-  { id: 'flat', label: 'Flat Design' },
-];
-
 export function GenerationModal({
   visible,
   onClose,
@@ -81,7 +75,7 @@ export function GenerationModal({
   coldStartState,
 }: GenerationModalProps) {
   const [themePrompt, setThemePrompt] = useState(gameDescription ?? '');
-  const [selectedStyle, setSelectedStyle] = useState<'pixel' | 'cartoon' | '3d' | 'flat'>(
+  const [selectedStyle, setSelectedStyle] = useState<string>(
     packStyle ?? 'pixel'
   );
   const [templateConfigs, setTemplateConfigs] = useState<TemplateConfig[]>(() =>
@@ -161,7 +155,7 @@ export function GenerationModal({
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>ART STYLE</Text>
         <View style={styles.styleGrid}>
-          {STYLE_OPTIONS.map(style => (
+          {STYLE_PRESET_OPTIONS.map(style => (
             <Pressable
               key={style.id}
               style={[
@@ -176,11 +170,40 @@ export function GenerationModal({
                   selectedStyle === style.id && styles.styleOptionTextSelected,
                 ]}
               >
-                {style.label}
+                {style.emoji} {style.label}
               </Text>
             </Pressable>
           ))}
+          <Pressable
+            style={[
+              styles.styleOption,
+              !STYLE_PRESET_OPTIONS.some(s => s.id === selectedStyle) && styles.styleOptionSelected,
+            ]}
+            onPress={() => {
+              if (STYLE_PRESET_OPTIONS.some(s => s.id === selectedStyle)) {
+                setSelectedStyle('');
+              }
+            }}
+          >
+            <Text
+              style={[
+                styles.styleOptionText,
+                !STYLE_PRESET_OPTIONS.some(s => s.id === selectedStyle) && styles.styleOptionTextSelected,
+              ]}
+            >
+              ✨ Custom
+            </Text>
+          </Pressable>
         </View>
+        {!STYLE_PRESET_OPTIONS.some(s => s.id === selectedStyle) && (
+          <TextInput
+            style={[styles.themeInput, { marginTop: 12, minHeight: 40 }]}
+            placeholder="Describe the art style (e.g., 'cyberpunk neon', 'oil painting')"
+            placeholderTextColor="#6B7280"
+            value={selectedStyle}
+            onChangeText={setSelectedStyle}
+          />
+        )}
       </View>
 
       <View style={styles.section}>
@@ -421,7 +444,7 @@ export function GenerationModal({
                         setSeed(lastGeneration.seed);
                       }
                       if (lastGeneration.style) {
-                        setSelectedStyle(lastGeneration.style as 'pixel' | 'cartoon' | '3d' | 'flat');
+                        setSelectedStyle(lastGeneration.style);
                       }
                     }}
                   >

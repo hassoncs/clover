@@ -18,7 +18,10 @@ export * from './progress';
 export * from './LevelDefinition';
 export * from './LevelPack';
 export * from './world-ops';
+export * from './sync-world-ops';
+export * from './async-world-ops';
 export * from './debug-ops';
+export * from './style-presets';
 export type {
   ContainerConfig,
   ContainerMatchRule,

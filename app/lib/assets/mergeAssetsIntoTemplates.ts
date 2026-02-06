@@ -1,5 +1,5 @@
-import type { GameDefinition } from '@slopcade/shared';
-import type { ResolvedPackEntry } from './AssetManifest';
+import type { GameDefinition } from "@slopcade/shared";
+import type { ResolvedPackEntry } from "./AssetManifest";
 
 export function mergeAssetsIntoTemplates(
   definition: GameDefinition,
@@ -10,14 +10,14 @@ export function mergeAssetsIntoTemplates(
   }
 
   const cloned = structuredClone(definition);
-  
+
   let mergedCount = 0;
   for (const [templateId, template] of Object.entries(cloned.templates)) {
-    if (template.visual?.type === 'image') {
+    if (template.visual?.type === "image") {
       const asset = assets[templateId];
       if (asset?.imageUrl) {
         template.visual.url = asset.imageUrl;
-        
+
         if (asset.placement) {
           if (asset.placement.scale !== undefined) {
             template.visual.scale = asset.placement.scale;
@@ -29,15 +29,18 @@ export function mergeAssetsIntoTemplates(
             template.visual.offsetY = asset.placement.offsetY;
           }
         }
-        
+
         mergedCount++;
-        console.log(`[mergeAssetsIntoTemplates] ✅ Merged ${templateId}: ${asset.imageUrl.slice(-40)}`);
       } else {
-        console.warn(`[mergeAssetsIntoTemplates] ⚠️  Template ${templateId} has visual.type='image' but no asset found`);
+        console.warn(
+          `[mergeAssetsIntoTemplates] ⚠️  Template ${templateId} has visual.type='image' but no asset found`
+        );
       }
     }
   }
-  
-  console.log(`[mergeAssetsIntoTemplates] 📦 Merged ${mergedCount} asset URLs into templates`);
+
+  console.log(
+    `[mergeAssetsIntoTemplates] 📦 Merged ${mergedCount} asset URLs into templates`
+  );
   return cloned;
 }

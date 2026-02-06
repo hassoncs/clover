@@ -7,6 +7,7 @@ import { TemplateGrid } from './TemplateGrid';
 import { useAssetGeneration, useCreateAssetPack, useAssetPacks, useAssetPackWithEntries, useUpdatePlacement, useDeleteAssetPack } from './useAssetGeneration';
 import { useEditor, type ResolvedPackEntry } from '../EditorProvider';
 import type { AssetPlacement, EntityTemplate } from '@slopcade/shared';
+import { STYLE_PRESET_OPTIONS } from '@slopcade/shared/types/style-presets';
 import { trpcReact } from '@/lib/trpc/react';
 
 interface AssetGalleryPanelProps {
@@ -55,13 +56,6 @@ const UI_STATES: { id: UIState; label: string }[] = [
   { id: 'unselected', label: 'Unselected' },
 ];
 
-const STYLE_OPTIONS = [
-  { id: 'pixel' as const, label: 'Pixel', emoji: '🎮' },
-  { id: 'cartoon' as const, label: 'Cartoon', emoji: '🎨' },
-  { id: '3d' as const, label: '3D', emoji: '🧊' },
-  { id: 'flat' as const, label: 'Flat', emoji: '📐' },
-];
-
 export function AssetGalleryPanel({
   onTemplatePress,
 }: AssetGalleryPanelProps) {
@@ -80,7 +74,7 @@ export function AssetGalleryPanel({
   });
 
   const [quickCreateTheme, setQuickCreateTheme] = useState('');
-  const [quickCreateStyle, setQuickCreateStyle] = useState<'pixel' | 'cartoon' | '3d' | 'flat'>('pixel');
+  const [quickCreateStyle, setQuickCreateStyle] = useState<string>('pixel');
   const [removeBackground, setRemoveBackground] = useState(true);
   const [isQuickCreating, setIsQuickCreating] = useState(false);
 
@@ -208,7 +202,7 @@ export function AssetGalleryPanel({
 
   const handleCreatePack = useCallback(async (params: {
     name: string;
-    style?: 'pixel' | 'cartoon' | '3d' | 'flat';
+    style?: string;
     themePrompt?: string;
   }) => {
     try {
@@ -252,7 +246,7 @@ export function AssetGalleryPanel({
     setIsQuickCreating(true);
 
     try {
-      const styleName = STYLE_OPTIONS.find(s => s.id === quickCreateStyle)?.label ?? 'Custom';
+      const styleName = STYLE_PRESET_OPTIONS.find(s => s.id === quickCreateStyle)?.label ?? 'Custom';
       const packName = quickCreateTheme.trim() 
         ? `${quickCreateTheme.trim().slice(0, 20)} (${styleName})`
         : `${styleName} Style`;

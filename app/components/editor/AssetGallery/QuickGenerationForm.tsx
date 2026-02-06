@@ -1,12 +1,13 @@
 import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import { CostPreview } from '../../economy/CostPreview';
+import { STYLE_PRESET_OPTIONS } from '@slopcade/shared/types/style-presets';
 
 interface QuickGenerationFormProps {
   gameId?: string;
   theme: string;
   onThemeChange: (theme: string) => void;
-  style: 'pixel' | 'cartoon' | '3d' | 'flat';
-  onStyleChange: (style: 'pixel' | 'cartoon' | '3d' | 'flat') => void;
+  style: string;
+  onStyleChange: (style: string) => void;
   removeBackground: boolean;
   onRemoveBackgroundToggle: () => void;
   templateCount: number;
@@ -15,13 +16,6 @@ interface QuickGenerationFormProps {
   progress: { completed: number; total: number };
   onGenerate: () => void;
 }
-
-const STYLE_OPTIONS = [
-  { id: 'pixel' as const, label: 'Pixel', emoji: '🎮' },
-  { id: 'cartoon' as const, label: 'Cartoon', emoji: '🎨' },
-  { id: '3d' as const, label: '3D', emoji: '🧊' },
-  { id: 'flat' as const, label: 'Flat', emoji: '📐' },
-];
 
 export function QuickGenerationForm({
   gameId,
@@ -58,7 +52,7 @@ export function QuickGenerationForm({
       />
 
       <View style={styles.styleRow}>
-        {STYLE_OPTIONS.map((option) => (
+        {STYLE_PRESET_OPTIONS.map((option) => (
           <Pressable
             key={option.id}
             style={[
@@ -76,7 +70,35 @@ export function QuickGenerationForm({
             </Text>
           </Pressable>
         ))}
+        <Pressable
+          style={[
+            styles.styleChip,
+            !STYLE_PRESET_OPTIONS.some(s => s.id === style) && styles.styleChipActive,
+          ]}
+          onPress={() => {
+            if (STYLE_PRESET_OPTIONS.some(s => s.id === style)) {
+              onStyleChange('');
+            }
+          }}
+        >
+          <Text style={styles.styleChipEmoji}>✨</Text>
+          <Text style={[
+            styles.styleChipText,
+            !STYLE_PRESET_OPTIONS.some(s => s.id === style) && styles.styleChipTextActive,
+          ]}>
+            Custom
+          </Text>
+        </Pressable>
       </View>
+      {!STYLE_PRESET_OPTIONS.some(s => s.id === style) && (
+        <TextInput
+          style={[styles.themeInput, { marginBottom: 16, minHeight: 40 }]}
+          placeholder="Describe style (e.g., 'cyberpunk neon')"
+          placeholderTextColor="#6B7280"
+          value={style}
+          onChangeText={onStyleChange}
+        />
+      )}
 
       <Pressable
         style={styles.bgRemoveToggle}

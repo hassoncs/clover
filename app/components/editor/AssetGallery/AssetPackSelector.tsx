@@ -1,5 +1,6 @@
 import { View, Text, Pressable, TextInput, StyleSheet, Modal, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useState } from 'react';
+import { STYLE_PRESET_OPTIONS } from '@slopcade/shared/types/style-presets';
 
 interface AssetPackInfo {
   id: string;
@@ -18,7 +19,7 @@ interface AssetPackInfo {
 
 interface CreatePackParams {
   name: string;
-  style?: 'pixel' | 'cartoon' | '3d' | 'flat';
+  style?: string;
   themePrompt?: string;
 }
 
@@ -35,13 +36,6 @@ interface AssetPackSelectorProps {
   isDeleting?: boolean;
 }
 
-const STYLE_OPTIONS: { id: 'pixel' | 'cartoon' | '3d' | 'flat'; label: string; emoji: string }[] = [
-  { id: 'pixel', label: 'Pixel Art', emoji: '🎮' },
-  { id: 'cartoon', label: 'Cartoon', emoji: '🎨' },
-  { id: '3d', label: '3D Render', emoji: '🧊' },
-  { id: 'flat', label: 'Flat Design', emoji: '📐' },
-];
-
 export function AssetPackSelector({
   visible,
   onClose,
@@ -56,7 +50,7 @@ export function AssetPackSelector({
 }: AssetPackSelectorProps) {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newPackName, setNewPackName] = useState('');
-  const [newPackStyle, setNewPackStyle] = useState<'pixel' | 'cartoon' | '3d' | 'flat'>('pixel');
+  const [newPackStyle, setNewPackStyle] = useState<string>('pixel');
   const [newPackTheme, setNewPackTheme] = useState('');
 
   const handleCreatePack = () => {
@@ -72,7 +66,7 @@ export function AssetPackSelector({
   };
 
   const getStyleEmoji = (style?: string) => {
-    const option = STYLE_OPTIONS.find(s => s.id === style);
+    const option = STYLE_PRESET_OPTIONS.find(s => s.id === style);
     return option?.emoji ?? '🎨';
   };
 
@@ -186,7 +180,7 @@ export function AssetPackSelector({
 
                 <Text style={styles.inputLabel}>Style</Text>
                 <View style={styles.styleGrid}>
-                  {STYLE_OPTIONS.map(style => (
+                  {STYLE_PRESET_OPTIONS.map(style => (
                     <Pressable
                       key={style.id}
                       style={styles.styleOption}
@@ -206,7 +200,37 @@ export function AssetPackSelector({
                       </View>
                     </Pressable>
                   ))}
+                  <Pressable
+                    style={styles.styleOption}
+                    onPress={() => {
+                      if (STYLE_PRESET_OPTIONS.some(s => s.id === newPackStyle)) {
+                        setNewPackStyle('');
+                      }
+                    }}
+                  >
+                    <View style={[
+                      styles.styleOptionInner,
+                      !STYLE_PRESET_OPTIONS.some(s => s.id === newPackStyle) && styles.styleOptionInnerSelected,
+                    ]}>
+                      <Text style={styles.styleEmoji}>✨</Text>
+                      <Text style={[
+                        styles.styleLabel,
+                        !STYLE_PRESET_OPTIONS.some(s => s.id === newPackStyle) && styles.styleLabelSelected,
+                      ]}>
+                        Custom
+                      </Text>
+                    </View>
+                  </Pressable>
                 </View>
+                {!STYLE_PRESET_OPTIONS.some(s => s.id === newPackStyle) && (
+                  <TextInput
+                    style={[styles.textInput, { marginBottom: 16 }]}
+                    placeholder="Describe style (e.g., 'cyberpunk neon')"
+                    placeholderTextColor="#6B7280"
+                    value={newPackStyle}
+                    onChangeText={setNewPackStyle}
+                  />
+                )}
 
                 <Text style={styles.inputLabel}>Theme Prompt (Optional)</Text>
                 <TextInput
