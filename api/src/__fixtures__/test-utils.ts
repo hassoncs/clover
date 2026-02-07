@@ -224,7 +224,7 @@ CREATE TABLE IF NOT EXISTS agent_runs (
   source TEXT NOT NULL CHECK (source IN ('scratch', 'fork')),
   source_game_id TEXT,
   tier TEXT NOT NULL CHECK (tier IN ('free', 'standard', 'pro')),
-  status TEXT NOT NULL CHECK (status IN ('planning', 'queued', 'running', 'paused', 'succeeded', 'failed', 'canceled')),
+  status TEXT NOT NULL CHECK (status IN ('planning', 'queued', 'running', 'waiting_for_input', 'paused', 'succeeded', 'failed', 'canceled')),
   planning_doc_json TEXT,
   estimated_cost_micros INTEGER,
   actual_cost_micros INTEGER NOT NULL DEFAULT 0,
@@ -240,7 +240,7 @@ CREATE TABLE IF NOT EXISTS agent_runs (
 
 CREATE INDEX IF NOT EXISTS idx_agent_runs_user ON agent_runs(user_id);
 CREATE INDEX IF NOT EXISTS idx_agent_runs_game ON agent_runs(game_id);
-CREATE INDEX IF NOT EXISTS idx_agent_runs_status ON agent_runs(status);
+CREATE INDEX IF NOT EXISTS idx_agent_runs_status ON agent_runs(status) WHERE status IN ('planning', 'queued', 'running', 'waiting_for_input', 'paused');
 
 -- Agent Steps
 CREATE TABLE IF NOT EXISTS agent_steps (

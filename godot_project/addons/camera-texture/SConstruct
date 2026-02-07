@@ -13,7 +13,7 @@ import sys
 
 env = SConscript("godot-cpp/SConstruct")
 
-env.Append(CPPPATH=["src/"])
+env.Append(CPPPATH=["src/", "../../../app/lib/camera/native/shared/"])
 sources = Glob("src/*.cpp")
 
 suffix = env["suffix"].replace(".dev", "").replace(".universal", "")

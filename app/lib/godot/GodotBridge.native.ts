@@ -852,10 +852,12 @@ export function createNativeGodotBridge(): GodotBridge {
       callGameBridge('set_camera_zoom', zoom);
     },
 
-    startCamera(_entityId: string, _width?: number, _height?: number) {
+    startCamera(entityId: string, width?: number, height?: number) {
+      callGameBridge('start_camera', entityId, width ?? 1280, height ?? 720);
     },
 
     stopCamera() {
+      callGameBridge('stop_camera');
     },
 
     spawnParticle(type: string, x: number, y: number) {

@@ -1,10 +1,15 @@
 72322a848ab928aa5c89f0cb78209805
-::res://::1769968145
+::res://::1770497449
 export_presets.cfg::TextFile::-1::1769989258::0::1::::<><><>0<>0<><>::
 icon.svg::CompressedTexture2D::8162193418698039025::1769538422::1769968145::1::::<><><>0<>0<>b60b07e3b7c5c7da747f33a9e77945db<>res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex::
 Main.tscn::PackedScene::-1::1769538422::0::1::::<><><>0<>0<><>::res://scripts/Main.gd
 README.md::TextFile::-1::1769538422::0::1::::<><><>0<>0<><>::
-::res://addons/::1769629997
+::res://addons/::1770497057
+::res://addons/camera-texture/::1770499055
+camera_texture.gdextension::GDExtension::356448400471427174::1770497529::0::1::::<><><>0<>0<><>::
+::res://addons/camera-texture/bin/::1770497459
+::res://addons/camera-texture/bin/macos/::1770498947
+::res://addons/camera-texture/src/::1770498947
 ::res://addons/godot-rapier2d/::1769968145
 circle_mesh.tres::ArrayMesh::7174673425048804142::1765726544::0::1::::<><><>0<>0<><>::
 faucet_2d.gd::GDScript::9216407355742322844::1765726544::0::1::::Faucet2D<>Fluid2D<><>0<>0<><>::
@@ -49,7 +54,6 @@ index.png::CompressedTexture2D::8308857111999474707::1769656304::1769968145::1::
 ::res://export_templates/::1769639608
 ::res://models/::1769633767
 test_model.glb::::-1::1769538422::1769633767::0::::<><><>0<>0<>b9b133cf4e800c93b8956f6acbfdee9e<>::
-::res://particles/::1769205175
 ::res://scenes/::1769538422
 Lab3D.tscn::PackedScene::-1::1769538422::0::1::::<><><>0<>0<><>::res://scripts/Lab3D.gd
 SplatProxy.tscn::PackedScene::7137659713785792436::1769538422::0::1::::<><><>0<>0<><>::
@@ -57,8 +61,8 @@ test_ui_components.tscn::PackedScene::2912554897160530627::1769538422::0::1::::<
 VFXShowcase.tscn::PackedScene::2855297431937620752::1769538422::0::1::::<><><>0<>0<><>::res://scripts/VFXShowcase.gd
 ::res://scenes/lab/::1769538422
 ui_components_demo.tscn::PackedScene::5962763572750761863::1769538422::0::1::::<><><>0<>0<><>::res://scripts/lab/UIComponentsDemo.gd
-::res://scripts/::1770414239
-GameBridge.gd::GDScript::3857439177254699610::1770483940::0::1::::<>Node<><>0<>0<><>::
+::res://scripts/::1770497459
+GameBridge.gd::GDScript::3857439177254699610::1770499195::0::1::::<>Node<><>0<>0<><>::
 Lab3D.gd::GDScript::2743172060191353031::1770054883::0::1::::<>Node3D<><>0<>0<><>::
 Main.gd::GDScript::4927831078751178685::1770414104::0::1::::<>Node2D<><>0<>0<><>::
 PhysicsBody.gd::GDScript::3101094749307879933::1769982447::0::1::::<>RigidBody2D<><>0<>0<><>::
@@ -89,6 +93,9 @@ DebugPhysics.gd::GDScript::2325521010436117967::1769981004::0::1::::DebugPhysics
 DebugProps.gd::GDScript::4891004605017099441::1769538422::0::1::::DebugProps<>RefCounted<><>0<>0<><>::
 DebugSelector.gd::GDScript::4146464479291421755::1769538422::0::1::::DebugSelector<>RefCounted<><>0<>0<><>::
 DebugTime.gd::GDScript::5403663126197881566::1769719248::0::1::::DebugTime<>RefCounted<><>0<>0<><>::
+::res://scripts/camera/::1770499169
+CameraManager.gd::GDScript::5736649760931255875::1770499166::0::1::::<>Node<><>0<>0<><>::
+WebCameraReceiver.gd::GDScript::8455012372705821098::1770497459::0::1::::<>Node<><>0<>0<><>::
 ::res://scripts/constants/::1769972592
 CollisionLayers.gd::GDScript::4352411344212624997::1769972729::0::1::::CollisionLayers<>RefCounted<><>0<>0<><>::
 ::res://scripts/debug/::1769538422

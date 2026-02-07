@@ -35,6 +35,7 @@ var _ws_system: WebSocketSystem = null
 var _collision_system: CollisionSystem = null
 var _world_system: WorldSystem = null
 var _camera_receiver: Node = null
+var _camera_manager: Node = null
 
 # ============================================================================
 # CORE STATE
@@ -139,6 +140,10 @@ func _init_modules() -> void:
 	_camera_receiver = load("res://scripts/camera/WebCameraReceiver.gd").new()
 	_camera_receiver.name = "WebCameraReceiver"
 	add_child(_camera_receiver)
+	
+	_camera_manager = load("res://scripts/camera/CameraManager.gd").new()
+	_camera_manager.name = "CameraManager"
+	add_child(_camera_manager)
 
 	_devtools_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_devtools_overlay)
@@ -364,20 +369,30 @@ func _js_start_camera(args: Array) -> void:
 	var width = int(args[1]) if args.size() > 1 else 640
 	var height = int(args[2]) if args.size() > 2 else 480
 	
-	if _camera_receiver:
-		_camera_receiver.setup(entity_id)
-		
-	var window = JavaScriptBridge.get_interface("window")
-	if window:
-		window.startCamera(entity_id, width, height)
+	if OS.has_feature("web"):
+		# Web path: use WebCameraReceiver + JS bridge
+		if _camera_receiver:
+			_camera_receiver.setup(entity_id)
+		var window = JavaScriptBridge.get_interface("window")
+		if window:
+			window.startCamera(entity_id, width, height)
+	else:
+		# Native path: use CameraManager
+		if _camera_manager:
+			_camera_manager.start_camera(entity_id, width, height)
 
 func _js_stop_camera(_args: Array) -> void:
-	if _camera_receiver:
-		_camera_receiver.stop()
-		
-	var window = JavaScriptBridge.get_interface("window")
-	if window:
-		window.stopCamera()
+	if OS.has_feature("web"):
+		# Web path: use WebCameraReceiver + JS bridge
+		if _camera_receiver:
+			_camera_receiver.stop()
+		var window = JavaScriptBridge.get_interface("window")
+		if window:
+			window.stopCamera()
+	else:
+		# Native path: use CameraManager
+		if _camera_manager:
+			_camera_manager.stop_camera()
 
 func _log_physics_diagnostics() -> void:
 	print("[GameBridge][DIAG] === PHYSICS DIAGNOSTICS ===")

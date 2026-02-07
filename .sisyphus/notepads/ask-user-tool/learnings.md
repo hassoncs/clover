@@ -36,3 +36,12 @@
 - Worker routing for resume uses run-level naming (`RUN_STEP_WORKER.idFromName(runId)`) consistent with `dispatchNextStep()`.
 - `updateStepStatus()` maps suspended worker results to DB step status `running` so suspended steps stay in-progress rather than terminal.
 - Added `submitUserAnswer` protected tRPC mutation that proxies answers to coordinator `/internal/submit-user-answer` while preserving existing `submitAnswer` clarification flow.
+
+## Integration Test Notes (Task 6)
+- Created `api/src/agent/__tests__/ask-user-integration.test.ts` with 20 tests across 5 describe blocks.
+- Tests use `vitest.node.config.ts` (not workers config) since they mock `ai` module directly.
+- Test file covers worker-level orchestration and data contracts, complementing `stage-executor-suspend.test.ts` which tests StageExecutor internals.
+- Answer formatting tests validate the OpenCode pattern: `User answered your questions: "Header"="Label1, Label2"` — derived from `handleSubmitUserAnswer` in RunCoordinatorDO.
+- ConversationCheckpoint data structure tests verify all 9 fields including cost tracking (`promptTokensSoFar`, `completionTokensSoFar`, `costMicrosSoFar`).
+- Cost accounting tests verify the accumulation pattern: `checkpoint.*SoFar + execution.*` used in `handleResume`.
+- Recursive suspension tests verify that `resumeStage` can return `suspended` again with fresh conversation messages and accumulated costs.

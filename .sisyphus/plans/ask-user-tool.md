@@ -113,7 +113,7 @@ cd api && npx vitest run src/agent/engine/__tests__/
 
 ## Tasks
 
-- [ ] 1. Define shared question/answer schemas
+- [x] 1. Define shared question/answer schemas
   **What to do**:
   - Create `shared/src/types/user-question.ts` with zod schemas:
     - `QuestionOptionSchema` — `{ label, description, iconKey? }`
@@ -155,7 +155,7 @@ cd api && npx vitest run src/agent/engine/__tests__/
   - [ ] New event types added to `agent-run.ts`
   - [ ] `pnpm --filter @slopcade/shared exec tsc --noEmit` passes
 
-- [ ] 2. Define the askUser tool (no execute function)
+- [x] 2. Define the askUser tool (no execute function)
   **What to do**:
   - Add the `askUser` tool to `api/src/agent/engine/tools.ts` inside `createStageTools()`:
     ```typescript
@@ -206,7 +206,7 @@ cd api && npx vitest run src/agent/engine/__tests__/
   - [ ] Tool description guides the LLM on usage patterns
   - [ ] `pnpm --filter api exec tsc --noEmit` passes
 
-- [ ] 3. Add suspend/resume to StageExecutor
+- [x] 3. Add suspend/resume to StageExecutor
   **What to do**:
   - Modify `api/src/agent/engine/stage-executor.ts` to detect pending `askUser` tool calls and suspend execution.
   - Add a new result status: `'suspended'` alongside `'succeeded'` and `'failed'`:
@@ -326,7 +326,7 @@ cd api && npx vitest run src/agent/engine/__tests__/
   - [ ] Existing stage execution (without askUser) works unchanged
   - [ ] `pnpm --filter api exec tsc --noEmit` passes
 
-- [ ] 4. Worker: checkpoint conversation and report suspension
+- [x] 4. Worker: checkpoint conversation and report suspension
   **What to do**:
   - Modify `api/src/agent/RunStepWorkerDO.ts` to handle `suspended` results from StageExecutor.
   - Add a new result status to `RunStepResult` in `api/src/agent/types.ts`:
@@ -453,7 +453,7 @@ cd api && npx vitest run src/agent/engine/__tests__/
   - [ ] Cost tokens from before suspension are preserved
   - [ ] `pnpm --filter api exec tsc --noEmit` passes
 
-- [ ] 5. Coordinator: handle suspension, emit events, forward answers
+- [x] 5. Coordinator: handle suspension, emit events, forward answers
   **What to do**:
   - Modify `api/src/agent/RunCoordinatorDO.ts` to handle `suspended` step results.
   - In `handleStepResult()`, when `result.status === 'suspended'`:
@@ -598,7 +598,7 @@ cd api && npx vitest run src/agent/engine/__tests__/
   - [ ] Existing Q/A flow (gate loop) still works
   - [ ] `pnpm --filter api exec tsc --noEmit` passes
 
-- [ ] 6. Build rich question UI component
+- [x] 6. Build rich question UI component
   **What to do**:
   - Create `app/components/editor/AIEditor/UserQuestionCard.tsx` — renders a single question with the appropriate input type:
     - **Options list**: Tappable cards with `label` + `description`. If question has `multiple: true`, show checkboxes. Otherwise, show radio-style selection (tapping one deselects others).
@@ -639,7 +639,7 @@ cd api && npx vitest run src/agent/engine/__tests__/
   - [ ] Questions appear in wizard when agent is waiting for input
   - [ ] `pnpm --filter slopcade exec tsc --noEmit` passes
 
-- [ ] 7. Tests for suspend/resume flow
+- [x] 7. Tests for suspend/resume flow
   **What to do**:
   - Create `api/src/agent/engine/__tests__/stage-executor-suspend.test.ts`:
     - Test that `executeStage` returns `suspended` when askUser is called

@@ -6,6 +6,7 @@
 #include <godot_cpp/godot.hpp>
 
 #include "spike_test_node.h"
+#include "camera_texture_provider.h"
 
 using namespace godot;
 
@@ -14,6 +15,7 @@ void initialize_camera_texture_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 	GDREGISTER_CLASS(SpikeTestNode);
+	GDREGISTER_CLASS(CameraTextureProvider);
 }
 
 void uninitialize_camera_texture_module(ModuleInitializationLevel p_level) {
