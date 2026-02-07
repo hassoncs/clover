@@ -1,18 +1,13 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import {
-  StyleSheet,
   View,
   Text,
   TouchableOpacity,
-  Platform,
-  type GestureResponderEvent,
+  Platform
 } from "react-native";
 import type {
   GameDefinition,
   GameDialogDefinition,
-  TapZoneButton,
-  VirtualButtonType,
-  DPadDirection,
   GameVariable,
 } from "@slopcade/shared";
 import {
@@ -39,10 +34,7 @@ import { CameraSystem } from "./CameraSystem";
 import { ViewportSystem, type ViewportRect } from "./ViewportSystem";
 import { TapZoneOverlay } from "./TapZoneOverlay";
 import { VirtualButtonsOverlay } from "./VirtualButtonsOverlay";
-import {
-  VirtualJoystickOverlay,
-  type JoystickState,
-} from "./VirtualJoystickOverlay";
+import { VirtualJoystickOverlay } from "./VirtualJoystickOverlay";
 import { VirtualDPadOverlay } from "./VirtualDPadOverlay";
 import { InputDebugOverlay } from "./InputDebugOverlay";
 import { useTiltInput } from "./hooks/useTiltInput";
@@ -92,6 +84,8 @@ import * as StateHelpers from "./runtime/GameStateHelpers";
 import { subscribeToGameEvents, type ReactGameState } from "./runtime/GameEventSubscriber";
 import { useGameProgressFromDefinition } from "./progress/useGameProgress";
 import { GameEventQueue, isLifecycleEvent, isInputEvent, isPhysicsEvent } from "./GameEventQueue";
+import { styles } from "./GameRuntimeStyles";
+import { useInputHandlers } from "./useInputHandlers";
 
 export interface GameRuntimeGodotProps {
   definition: GameDefinition;
@@ -155,26 +149,6 @@ export function GameRuntimeGodot({
   const screenSizeRef = useRef({ width: 0, height: 0 });
   const computedValuesRef = useRef(createComputedValueSystem());
   const inputRef = useRef<Record<string, unknown>>({});
-  const buttonsRef = useRef<Record<string, boolean>>({
-    left: false,
-    right: false,
-    up: false,
-    down: false,
-    jump: false,
-    action: false,
-  });
-  const joystickRef = useRef<JoystickState>({
-    x: 0,
-    y: 0,
-    magnitude: 0,
-    angle: 0,
-  });
-  const lastKeyEventRef = useRef<{
-    key: string;
-    code: string;
-    type: "keydown" | "keyup";
-    timeStamp: number;
-  } | null>(null);
   const debugBridgeRef = useRef<SlopcadeDebugBridge | null>(null);
   const timeControlRef = useRef<TimeControl>({
     mode: debugMode ? "inspect" : "normal",
@@ -388,6 +362,28 @@ export function GameRuntimeGodot({
     height: 0,
     scale: 1,
   });
+
+  const inputHandlers = useInputHandlers(
+    { bridgeRef, gameRef, cameraRef, viewportSystemRef, eventQueueRef, inputRef },
+    viewportRect,
+  );
+  const {
+    buttonsRef,
+    dragStartRef,
+    sharedHandleKeyDown,
+    sharedHandleKeyUp,
+    handleMouseMove,
+    handleMouseLeave,
+    handleClick,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+    handleZonePress,
+    handleVirtualButtonPress,
+    handleJoystickMove,
+    handleJoystickRelease,
+    handleDPadPress,
+  } = inputHandlers;
 
   const activeDialogVariable = definition.dialogs?.activeDialogVariable ?? "activeDialog";
 
@@ -1311,250 +1307,6 @@ export function GameRuntimeGodot({
     };
   }, [isReady, manualStep]);
 
-  // Keyboard input handling (web only) - shared handlers with deduplication
-  const sharedHandleKeyDown = useCallback((e: KeyboardEvent) => {
-    // Deduplication: ignore if same key/code received within 20ms
-    if (
-      lastKeyEventRef.current?.key === e.key &&
-      lastKeyEventRef.current?.code === e.code &&
-      lastKeyEventRef.current?.type === "keydown" &&
-      Math.abs(e.timeStamp - lastKeyEventRef.current.timeStamp) < 20
-    ) {
-      return;
-    }
-    lastKeyEventRef.current = {
-      key: e.key,
-      code: e.code,
-      type: "keydown",
-      timeStamp: e.timeStamp,
-    };
-
-    let changed = false;
-    switch (e.key) {
-      case "ArrowLeft":
-      case "a":
-      case "A":
-        if (!buttonsRef.current.left) {
-          buttonsRef.current.left = true;
-          changed = true;
-        }
-        break;
-      case "ArrowRight":
-      case "d":
-      case "D":
-        if (!buttonsRef.current.right) {
-          buttonsRef.current.right = true;
-          changed = true;
-        }
-        break;
-      case "ArrowUp":
-      case "w":
-      case "W":
-        if (!buttonsRef.current.up) {
-          buttonsRef.current.up = true;
-          changed = true;
-        }
-        break;
-      case "ArrowDown":
-      case "s":
-      case "S":
-        if (!buttonsRef.current.down) {
-          buttonsRef.current.down = true;
-          changed = true;
-        }
-        break;
-      case " ": {
-        if (!buttonsRef.current.jump) {
-          buttonsRef.current.jump = true;
-          changed = true;
-        }
-        const game = gameRef.current;
-        if (game) {
-          const cannon = game.entityManager
-            .getActiveEntities()
-            .find((entity) => game.entityManager.hasTag(entity.id, "cannon"));
-          if (cannon) {
-            const angle = cannon.transform.angle;
-            const distance = 10;
-            const targetX = cannon.transform.x + Math.cos(angle) * distance;
-            const targetY = cannon.transform.y + Math.sin(angle) * distance;
-
-            eventQueueRef.current.push({
-              type: 'tap',
-              x: 0,
-              y: 0,
-              worldX: targetX,
-              worldY: targetY,
-            });
-            eventQueueRef.current.push({
-              type: 'drag_end',
-              velocityX: 0,
-              velocityY: 0,
-              worldVelocityX: 0,
-              worldVelocityY: 0,
-            });
-          }
-        }
-        break;
-      }
-    }
-    if (changed) {
-      inputRef.current.buttons = { ...buttonsRef.current };
-    }
-  }, []);
-
-  const sharedHandleKeyUp = useCallback((e: KeyboardEvent) => {
-    // Deduplication: ignore if same key/code received within 20ms
-    if (
-      lastKeyEventRef.current?.key === e.key &&
-      lastKeyEventRef.current?.code === e.code &&
-      lastKeyEventRef.current?.type === "keyup" &&
-      Math.abs(e.timeStamp - lastKeyEventRef.current.timeStamp) < 20
-    ) {
-      return;
-    }
-    lastKeyEventRef.current = {
-      key: e.key,
-      code: e.code,
-      type: "keyup",
-      timeStamp: e.timeStamp,
-    };
-
-    switch (e.key) {
-      case "ArrowLeft":
-      case "a":
-      case "A":
-        buttonsRef.current.left = false;
-        break;
-      case "ArrowRight":
-      case "d":
-      case "D":
-        buttonsRef.current.right = false;
-        break;
-      case "ArrowUp":
-      case "w":
-      case "W":
-        buttonsRef.current.up = false;
-        break;
-      case "ArrowDown":
-      case "s":
-      case "S":
-        buttonsRef.current.down = false;
-        break;
-      case " ":
-        buttonsRef.current.jump = false;
-        break;
-    }
-    inputRef.current.buttons = { ...buttonsRef.current };
-  }, []);
-
-  useEffect(() => {
-    if (Platform.OS !== "web") return;
-
-    // Use capture phase to catch events before iframe steals focus
-    window.addEventListener("keydown", sharedHandleKeyDown, { capture: true });
-    window.addEventListener("keyup", sharedHandleKeyUp, { capture: true });
-
-    return () => {
-      window.removeEventListener("keydown", sharedHandleKeyDown, {
-        capture: true,
-      });
-      window.removeEventListener("keyup", sharedHandleKeyUp, { capture: true });
-    };
-  }, [sharedHandleKeyDown, sharedHandleKeyUp]);
-
-  // Iframe events: e.clientX/Y are already iframe-local (0,0 = top-left of canvas)
-  const mouseMoveCountRef = useRef(0);
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      mouseMoveCountRef.current++;
-      const shouldLog = mouseMoveCountRef.current % 30 === 1;
-
-      const viewportX = e.clientX;
-      const viewportY = e.clientY;
-
-      if (
-        viewportX < 0 ||
-        viewportX > viewportRect.width ||
-        viewportY < 0 ||
-        viewportY > viewportRect.height
-      ) {
-        inputRef.current.mouse = undefined;
-        return;
-      }
-
-      const camera = cameraRef.current;
-      const viewportSystem = viewportSystemRef.current;
-      if (!camera || !viewportSystem) {
-        return;
-      }
-
-      const world = viewportSystem.viewportToWorld(
-        viewportX,
-        viewportY,
-        camera.getPosition(),
-        camera.getZoom()
-      );
-
-      inputRef.current.mouse = {
-        x: viewportX,
-        y: viewportY,
-        worldX: world.x,
-        worldY: world.y,
-      };
-    },
-    [viewportRect.width, viewportRect.height]
-  );
-
-  const handleMouseLeave = useCallback(() => {
-    inputRef.current.mouse = undefined;
-  }, []);
-
-  const handleClick = useCallback(
-    async (e: MouseEvent) => {
-      const viewportX = e.clientX;
-      const viewportY = e.clientY;
-
-      if (
-        viewportX < 0 ||
-        viewportX > viewportRect.width ||
-        viewportY < 0 ||
-        viewportY > viewportRect.height
-      ) {
-        return;
-      }
-
-      const camera = cameraRef.current;
-      const viewportSystem = viewportSystemRef.current;
-      const bridge = bridgeRef.current;
-      if (!camera || !viewportSystem) return;
-
-      const world = viewportSystem.viewportToWorld(
-        viewportX,
-        viewportY,
-        camera.getPosition(),
-        camera.getZoom()
-      );
-
-      let targetEntityId: string | undefined;
-      if (bridge) {
-        const entityId = await bridge.queryPointEntity(world);
-        if (entityId) {
-          targetEntityId = entityId;
-        }
-      }
-
-      eventQueueRef.current.push({
-        type: 'tap',
-        x: viewportX,
-        y: viewportY,
-        worldX: world.x,
-        worldY: world.y,
-        targetEntityId,
-      });
-    },
-    [viewportRect.width, viewportRect.height]
-  );
 
   // Expose input API for external tools (game-inspector)
   useEffect(() => {
@@ -1755,177 +1507,7 @@ export function GameRuntimeGodot({
     [definition.world.pixelsPerMeter]
   );
 
-  const dragStartRef = useRef<{
-    x: number;
-    y: number;
-    worldX: number;
-    worldY: number;
-    targetEntityId?: string;
-  } | null>(null);
   const viewportContainerRef = useRef<View>(null);
-
-  const screenToWorld = useCallback((screenX: number, screenY: number) => {
-    const camera = cameraRef.current;
-    const vs = viewportSystemRef.current;
-    if (!camera) return { x: 0, y: 0 };
-
-    if (vs) {
-      return vs.viewportToWorld(
-        screenX,
-        screenY,
-        camera.getPosition(),
-        camera.getZoom()
-      );
-    }
-    return camera.screenToWorld(screenX, screenY);
-  }, []);
-
-  const handleTouchStart = useCallback(
-    (event: GestureResponderEvent) => {
-      const bridge = bridgeRef.current;
-      if (!bridge) return;
-
-      const { locationX: x, locationY: y } = event.nativeEvent;
-      const world = screenToWorld(x, y);
-
-      const existingTargetEntityId = dragStartRef.current?.targetEntityId;
-
-      dragStartRef.current = { x, y, worldX: world.x, worldY: world.y, targetEntityId: existingTargetEntityId };
-
-      inputRef.current = {
-        ...inputRef.current,
-        drag: {
-          startX: x,
-          startY: y,
-          currentX: x,
-          currentY: y,
-          startWorldX: world.x,
-          startWorldY: world.y,
-          currentWorldX: world.x,
-          currentWorldY: world.y,
-          targetEntityId: existingTargetEntityId,
-        },
-      };
-
-      bridge.sendInput("drag_start", { x: world.x, y: world.y });
-    },
-    [screenToWorld]
-  );
-
-  const handleTouchMove = useCallback(
-    (event: GestureResponderEvent) => {
-      const bridge = bridgeRef.current;
-      const dragStart = dragStartRef.current;
-      if (!bridge || !dragStart) return;
-
-      const { locationX: x, locationY: y } = event.nativeEvent;
-      const world = screenToWorld(x, y);
-
-      inputRef.current = {
-        ...inputRef.current,
-        drag: {
-          startX: dragStart.x,
-          startY: dragStart.y,
-          currentX: x,
-          currentY: y,
-          startWorldX: dragStart.worldX,
-          startWorldY: dragStart.worldY,
-          currentWorldX: world.x,
-          currentWorldY: world.y,
-          targetEntityId: dragStart.targetEntityId,
-        },
-      };
-
-      bridge.sendInput("drag_move", { x: world.x, y: world.y });
-    },
-    [screenToWorld]
-  );
-
-  const handleTouchEnd = useCallback(
-    (event: GestureResponderEvent) => {
-      const bridge = bridgeRef.current;
-      const dragStart = dragStartRef.current;
-      if (!bridge) return;
-
-      const { locationX: x, locationY: y } = event.nativeEvent;
-      const world = screenToWorld(x, y);
-
-      eventQueueRef.current.push({
-        type: 'tap',
-        x,
-        y,
-        worldX: world.x,
-        worldY: world.y,
-      });
-
-      if (dragStart) {
-        const VELOCITY_SCALE = 0.1;
-        eventQueueRef.current.push({
-          type: 'drag_end',
-          velocityX: (x - dragStart.x) * VELOCITY_SCALE,
-          velocityY: (y - dragStart.y) * VELOCITY_SCALE,
-          worldVelocityX: (world.x - dragStart.worldX) * VELOCITY_SCALE,
-          worldVelocityY: (world.y - dragStart.worldY) * VELOCITY_SCALE,
-        });
-      }
-
-      bridge.sendInput("tap", { x: world.x, y: world.y });
-      bridge.sendInput("drag_end", { x: world.x, y: world.y });
-
-      dragStartRef.current = null;
-      inputRef.current.drag = undefined;
-    },
-    [screenToWorld]
-  );
-
-  const handleZonePress = useCallback(
-    (button: TapZoneButton, pressed: boolean) => {
-      buttonsRef.current[button] = pressed;
-      inputRef.current.buttons = { ...buttonsRef.current };
-    },
-    []
-  );
-
-  const handleVirtualButtonPress = useCallback(
-    (button: VirtualButtonType, pressed: boolean) => {
-      buttonsRef.current[button] = pressed;
-      inputRef.current.buttons = { ...buttonsRef.current };
-    },
-    []
-  );
-
-  const handleJoystickMove = useCallback((state: JoystickState) => {
-    joystickRef.current = state;
-
-    const threshold = 0.5;
-    buttonsRef.current.left = state.x < -threshold;
-    buttonsRef.current.right = state.x > threshold;
-    buttonsRef.current.up = state.y < -threshold;
-    buttonsRef.current.down = state.y > threshold;
-
-    inputRef.current.buttons = { ...buttonsRef.current };
-    inputRef.current.joystick = { ...joystickRef.current };
-  }, []);
-
-  const handleJoystickRelease = useCallback(() => {
-    joystickRef.current = { x: 0, y: 0, magnitude: 0, angle: 0 };
-
-    buttonsRef.current.left = false;
-    buttonsRef.current.right = false;
-    buttonsRef.current.up = false;
-    buttonsRef.current.down = false;
-
-    inputRef.current.buttons = { ...buttonsRef.current };
-    inputRef.current.joystick = { ...joystickRef.current };
-  }, []);
-
-  const handleDPadPress = useCallback(
-    (direction: DPadDirection, pressed: boolean) => {
-      buttonsRef.current[direction] = pressed;
-      inputRef.current.buttons = { ...buttonsRef.current };
-    },
-    []
-  );
 
   const letterboxColor = definition.presentation?.letterboxColor ?? "#000000";
   const hasViewport = viewportRect.width > 0 && viewportRect.height > 0;
@@ -2210,80 +1792,3 @@ export function GameRuntimeGodotWithDevTools(props: GameRuntimeGodotProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  viewportContainer: {
-    position: "absolute",
-    overflow: "hidden",
-  },
-  godotView: {
-    flex: 1,
-  },
-  hud: {
-    position: "absolute",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  variableText: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "bold",
-    textShadowColor: "#000",
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  },
-  pauseButton: {
-    backgroundColor: "rgba(0,0,0,0.5)",
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  pauseButtonText: {
-    color: "#fff",
-    fontSize: 20,
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.7)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  overlayTitle: {
-    color: "#fff",
-    fontSize: 36,
-    fontWeight: "bold",
-    marginBottom: 12,
-  },
-  instructions: {
-    color: "#ccc",
-    fontSize: 18,
-    textAlign: "center",
-    marginBottom: 24,
-    paddingHorizontal: 30,
-    lineHeight: 24,
-  },
-  finalScore: {
-    color: "#fff",
-    fontSize: 24,
-    marginBottom: 30,
-  },
-  button: {
-    backgroundColor: "#4CAF50",
-    paddingHorizontal: 40,
-    paddingVertical: 15,
-    borderRadius: 10,
-  },
-  secondaryButton: {
-    backgroundColor: "#666",
-    marginTop: 12,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-});
