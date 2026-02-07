@@ -117,6 +117,13 @@ ctx.win()                          // Trigger win state
 ctx.lose()                         // Trigger lose state
 ```
 
+### Haptics
+```javascript
+ctx.haptic(style?)                 // Impact feedback: 'Light', 'Medium' (default), 'Heavy', 'Rigid', 'Soft'
+ctx.hapticNotification(style?)     // Notification feedback: 'Success' (default), 'Warning', 'Error'
+ctx.hapticSelection()              // Selection feedback (subtle tap)
+```
+
 ## Input Snapshots (per-frame, on ctx)
 
 ```javascript

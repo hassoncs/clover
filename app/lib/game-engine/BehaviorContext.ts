@@ -103,6 +103,9 @@ export interface BehaviorContext {
   updateEmitterPosition(emitterId: string, x: number, y: number): void;
   stopEmitter(emitterId: string): void;
   playSound(soundId: string): void;
+  haptic(style?: string): void;
+  hapticNotification(style?: string): void;
+  hapticSelection(): void;
 
   applySpriteEffect(entityId: string, effect: SpriteEffectType, params?: Record<string, unknown>): void;
   clearSpriteEffect(entityId: string): void;

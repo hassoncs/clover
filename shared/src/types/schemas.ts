@@ -439,6 +439,13 @@ export const SoundActionSchema = z.object({
   volume: z.number().min(0).max(1).optional(),
 });
 
+export const HapticActionSchema = z.object({
+  type: z.literal('haptic'),
+  hapticType: z.enum(['impact', 'notification', 'selection']).optional(),
+  style: z.enum(['Light', 'Medium', 'Heavy', 'Rigid', 'Soft']).optional(),
+  notificationStyle: z.enum(['Success', 'Warning', 'Error']).optional(),
+});
+
 export const EventActionSchema = z.object({
   type: z.literal('event'),
   eventName: z.string(),
@@ -479,6 +486,7 @@ export const RuleActionSchema = z.discriminatedUnion('type', [
   DestroyActionSchema,
   GameStateActionSchema,
   SoundActionSchema,
+  HapticActionSchema,
   EventActionSchema,
   ModifyActionSchema,
   PushToListActionSchema,

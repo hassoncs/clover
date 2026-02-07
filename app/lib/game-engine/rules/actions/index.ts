@@ -7,6 +7,7 @@ export * from './LogicActionExecutor';
 export * from './EntityActionExecutor';
 export * from './CameraActionExecutor';
 export * from './SoundActionExecutor';
+export * from './HapticActionExecutor';
 export * from './SetEntitySizeActionExecutor';
 export * from './ComboActionExecutor';
 export * from './CheckpointActionExecutor';

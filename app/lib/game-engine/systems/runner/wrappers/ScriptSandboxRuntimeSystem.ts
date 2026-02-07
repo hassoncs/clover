@@ -13,6 +13,8 @@ import type {
   ScriptCollisionEvent,
 } from '../../../../scripting/types';
 import type { Vec2 } from '@slopcade/shared/types/common';
+import type { HapticStyle, NotificationStyle } from '@slopcade/shared/types/rules';
+import * as Haptics from '@/lib/haptics';
 import type {
   WorldOps,
   WorldEntityQuery,
@@ -581,6 +583,18 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
       createPixelBuffer: () => {},
       pixelBufferDraw: () => {},
       pixelBufferClear: () => {},
+
+      haptic: (style?: HapticStyle): void => {
+        Haptics.impactAsync((style as Haptics.ImpactFeedbackStyle) ?? 'Medium');
+      },
+
+      hapticNotification: (style?: NotificationStyle): void => {
+        Haptics.notificationAsync(style ?? 'Success');
+      },
+
+      hapticSelection: (): void => {
+        Haptics.selectionAsync();
+      },
     };
   }
 

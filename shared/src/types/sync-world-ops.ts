@@ -8,6 +8,7 @@ import type {
   ReparentOptions,
   RaycastOptions,
 } from './world-ops';
+import type { HapticStyle, NotificationStyle } from './rules';
 
 /**
  * Synchronous world operations for game scripts.
@@ -79,4 +80,11 @@ export interface SyncWorldOps {
   emit(eventName: string, data?: Record<string, unknown>): void;
   win(): void;
   lose(): void;
+
+  // ═══════════════════════════════════════════════════════════════
+  // Haptics
+  // ═══════════════════════════════════════════════════════════════
+  haptic(style?: HapticStyle): void;
+  hapticNotification(style?: NotificationStyle): void;
+  hapticSelection(): void;
 }

@@ -236,6 +236,7 @@ rules: [
 | `modify` | `target`, `property`, `operation` (`'set'`/`'add'`/`'multiply'`), `value` |
 | `event` | `eventName`, `data?` |
 | `sound` | `soundId`, `volume?` |
+| `haptic` | `hapticType?` (`'impact'`/`'notification'`/`'selection'`), `style?` (`'Light'`/`'Medium'`/`'Heavy'`/`'Rigid'`/`'Soft'`), `notificationStyle?` (`'Success'`/`'Warning'`/`'Error'`) |
 | `camera_shake` | `intensity`, `duration` |
 | `camera_zoom` | `scale`, `duration`, `restoreDelay?` |
 | `set_time_scale` | `scale`, `duration?` |

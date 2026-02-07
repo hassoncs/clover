@@ -279,6 +279,17 @@ export interface SoundAction {
   volume?: number;
 }
 
+export type HapticStyle = 'Light' | 'Medium' | 'Heavy' | 'Rigid' | 'Soft';
+export type HapticType = 'impact' | 'notification' | 'selection';
+export type NotificationStyle = 'Success' | 'Warning' | 'Error';
+
+export interface HapticAction {
+  type: 'haptic';
+  hapticType?: HapticType;
+  style?: HapticStyle;
+  notificationStyle?: NotificationStyle;
+}
+
 export interface EventAction {
   type: 'event';
   eventName: string;
@@ -542,6 +553,7 @@ export type RuleAction =
   | DestroyMarkedAction
   | GameStateAction
   | SoundAction
+  | HapticAction
   | EventAction
   | ModifyAction
   | ApplyImpulseAction

@@ -28,6 +28,7 @@ import * as StateHelpers from '../../../runtime/GameStateHelpers';
 import { RESERVED_VARS } from '../../../runtime/types';
 import { logger } from '../../../debug/Logger';
 import { WorldOpsImpl } from '../../../WorldOpsImpl';
+import * as Haptics from '@/lib/haptics';
 
 import {
   SpawnActionExecutor,
@@ -37,6 +38,7 @@ import {
   EntityActionExecutor,
   CameraActionExecutor,
   SoundActionExecutor,
+  HapticActionExecutor,
   SetEntitySizeActionExecutor,
   ComboActionExecutor,
   CheckpointActionExecutor,
@@ -140,6 +142,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
     const entityActionExecutor = new EntityActionExecutor();
     const cameraActionExecutor = new CameraActionExecutor();
     const soundActionExecutor = new SoundActionExecutor();
+    const hapticActionExecutor = new HapticActionExecutor();
     const setEntitySizeActionExecutor = new SetEntitySizeActionExecutor();
     const comboActionExecutor = new ComboActionExecutor();
     const checkpointActionExecutor = new CheckpointActionExecutor();
@@ -160,6 +163,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
       entityActionExecutor,
       cameraActionExecutor,
       soundActionExecutor,
+      hapticActionExecutor,
       setEntitySizeActionExecutor,
       comboActionExecutor,
       checkpointActionExecutor,
@@ -246,6 +250,9 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
           worldOps: this.worldOps,
           setTimeScale: () => {},
           playSound: (soundId: string) => this.systemContext!.bridge.playSound(soundId),
+          haptic: (style?: string) => Haptics.impactAsync((style as Haptics.ImpactFeedbackStyle) ?? 'Medium'),
+          hapticNotification: (style?: string) => Haptics.notificationAsync((style as 'Success' | 'Warning' | 'Error') ?? 'Success'),
+          hapticSelection: () => Haptics.selectionAsync(),
           setEntityTargetPosition: (entityId: string, x: number, y: number, config?: { duration?: number; easing?: string }) => {
             const entity = this.systemContext!.entityManager.getEntity(entityId);
             if (!entity) return;

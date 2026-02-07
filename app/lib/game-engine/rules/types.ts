@@ -47,6 +47,9 @@ export interface RuleContext {
   timeScale?: number;
   setTimeScale?: (scale: number, duration?: number) => void;
   playSound?: (soundId: string, volume?: number) => void;
+  haptic?: (style?: string) => void;
+  hapticNotification?: (style?: string) => void;
+  hapticSelection?: () => void;
   setEntityTargetPosition?: (
     entityId: string,
     x: number,

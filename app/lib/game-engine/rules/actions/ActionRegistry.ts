@@ -8,6 +8,7 @@ import { LogicActionExecutor } from './LogicActionExecutor';
 import { EntityActionExecutor } from './EntityActionExecutor';
 import { CameraActionExecutor } from './CameraActionExecutor';
 import { SoundActionExecutor } from './SoundActionExecutor';
+import { HapticActionExecutor } from './HapticActionExecutor';
 import { SetEntitySizeActionExecutor } from './SetEntitySizeActionExecutor';
 import { ComboActionExecutor } from './ComboActionExecutor';
 import { CheckpointActionExecutor } from './CheckpointActionExecutor';
@@ -35,6 +36,7 @@ export class ActionRegistry {
     private entityActionExecutor: EntityActionExecutor,
     private cameraActionExecutor: CameraActionExecutor,
     private soundActionExecutor: SoundActionExecutor,
+    private hapticActionExecutor: HapticActionExecutor,
     private setEntitySizeActionExecutor: SetEntitySizeActionExecutor,
     private comboActionExecutor: ComboActionExecutor,
     private checkpointActionExecutor: CheckpointActionExecutor,
@@ -73,6 +75,7 @@ export class ActionRegistry {
     this.registry.set('camera_zoom', this.cameraActionExecutor);
     this.registry.set('set_time_scale', this.cameraActionExecutor);
     this.registry.set('sound', this.soundActionExecutor);
+    this.registry.set('haptic', this.hapticActionExecutor);
     this.registry.set('set_entity_size', this.setEntitySizeActionExecutor);
     this.registry.set('combo_increment', this.comboActionExecutor);
     this.registry.set('combo_reset', this.comboActionExecutor);

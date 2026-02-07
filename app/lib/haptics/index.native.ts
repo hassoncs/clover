@@ -1,11 +1,13 @@
 import * as ExpoHaptics from "expo-haptics";
 
-export type ImpactFeedbackStyle = "Light" | "Medium" | "Heavy";
+export type ImpactFeedbackStyle = "Light" | "Medium" | "Heavy" | "Rigid" | "Soft";
 
 const styleMap = {
   Light: ExpoHaptics.ImpactFeedbackStyle.Light,
   Medium: ExpoHaptics.ImpactFeedbackStyle.Medium,
   Heavy: ExpoHaptics.ImpactFeedbackStyle.Heavy,
+  Rigid: ExpoHaptics.ImpactFeedbackStyle.Rigid,
+  Soft: ExpoHaptics.ImpactFeedbackStyle.Soft,
 };
 
 const typeMap = {

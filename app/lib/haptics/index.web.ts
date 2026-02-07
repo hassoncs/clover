@@ -1,4 +1,4 @@
-export type ImpactFeedbackStyle = "Light" | "Medium" | "Heavy";
+export type ImpactFeedbackStyle = "Light" | "Medium" | "Heavy" | "Rigid" | "Soft";
 
 export async function impactAsync(_style: ImpactFeedbackStyle = "Light"): Promise<void> {
   return;

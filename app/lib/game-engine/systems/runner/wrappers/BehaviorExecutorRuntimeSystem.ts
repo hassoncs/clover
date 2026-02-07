@@ -6,6 +6,7 @@ import type { RuntimeEntity } from '../../../types';
 import type { ComputedValueSystem, EvalContext } from '@slopcade/shared';
 import type { CameraSystem } from '../../../CameraSystem';
 import type { InputEntityManager } from '../../../InputEntityManager';
+import * as Haptics from '@/lib/haptics';
 
 export interface BehaviorExecutorSystemConfig {
   pixelsPerMeter: number;
@@ -205,6 +206,15 @@ export class BehaviorExecutorRuntimeSystem implements RuntimeSystem<BehaviorExec
       stopEmitter: (_emitterId: string) => {},
       playSound: (soundId: string) => {
         this.systemContext!.bridge.playSound(soundId);
+      },
+      haptic: (style?: string) => {
+        Haptics.impactAsync((style as Haptics.ImpactFeedbackStyle) ?? 'Medium');
+      },
+      hapticNotification: (style?: string) => {
+        Haptics.notificationAsync((style as 'Success' | 'Warning' | 'Error') ?? 'Success');
+      },
+      hapticSelection: () => {
+        Haptics.selectionAsync();
       },
       applySpriteEffect: (entityId: string, effect: any, params?: Record<string, unknown>) => {
         this.systemContext!.bridge.applySpriteEffect(entityId, effect, params);
