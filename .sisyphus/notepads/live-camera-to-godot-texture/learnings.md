@@ -195,3 +195,11 @@ Created `CameraManager.gd` to integrate `CameraTextureProvider` GDExtension with
 - **Key Learning**: The `useCameraTexture` hook expects a non-null `GodotBridge`. Since the bridge is initialized asynchronously, we must cast `bridge as GodotBridge` when passing it to the hook, but ensure we guard any calls to `start()`/`stop()` with a check for `bridge` existence and readiness.
 - **Registry**: The registry uses the filename (snake_case) as the ID (`camera_feed`), while the GameDefinition can use any string ID (`camera-feed`).
 - **Verification**: `pnpm generate:registry` successfully picked up the new example, and `tsc` passed.
+
+## Task 10: Web Camera Feed Rendering Bugfixes
+
+- `window._cameraFrameData` can arrive in GDScript as `JavaScriptObject` even when JS writes a `Uint8Array`; relying on `data is PackedByteArray` alone drops frames.
+- Godot 4.3 provides `JavaScriptBridge.is_js_buffer()` and `JavaScriptBridge.js_buffer_to_packed_byte_array()` for explicit conversion from JS typed arrays.
+- A safe fallback is to re-read the frame via `JavaScriptBridge.eval("window._cameraFrameData", true)` and apply the same JS buffer conversion check.
+- Camera target entities need an explicit `visual` block in template data; collider-only entities may not provide a `Sprite2D` render surface for texture assignment.
+- Marking `cameraTarget` as `physics.bodyType = "static"` keeps it as a stable display surface.

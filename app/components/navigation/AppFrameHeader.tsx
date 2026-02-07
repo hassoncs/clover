@@ -101,5 +101,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     letterSpacing: 0.2,
     textAlign: "center",
+    pointerEvents: "none" as const,
   },
 });

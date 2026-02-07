@@ -163,7 +163,7 @@ declare global {
           failed: number,
         ) => void,
       ) => void;
-      createPixelBuffer: (entityId: string, width: number, height: number, clearColor: string) => void;
+      createPixelBuffer: (entityId: string, width: number, height: number, clearColor: string, worldWidth?: number, worldHeight?: number) => void;
       pixelBufferDraw: (entityId: string, commandsJson: string) => void;
       pixelBufferClear: (entityId: string, color: string) => void;
       destroyPixelBuffer: (entityId: string) => void;
@@ -239,6 +239,7 @@ declare global {
       set_3d_viewport_size: (width: number, height: number) => void;
       rotate_3d_model: (x: number, y: number, z: number) => void;
       set_3d_camera_distance: (distance: number) => void;
+      set_3d_camera_size: (size: number) => void;
       clear_3d_models: () => void;
       captureScreenshot: (
         withOverlays: boolean,
@@ -711,8 +712,8 @@ export function createWebGodotBridge(): GodotBridge {
       getGodotBridge()?.sendInput(type, data.x, data.y, data.entityId ?? "");
     },
 
-    createPixelBuffer(entityId: string, width: number, height: number, clearColor: string) {
-      getGodotBridge()?.createPixelBuffer(entityId, width, height, clearColor);
+    createPixelBuffer(entityId: string, width: number, height: number, clearColor: string, worldWidth?: number, worldHeight?: number) {
+      getGodotBridge()?.createPixelBuffer(entityId, width, height, clearColor, worldWidth ?? 0, worldHeight ?? 0);
     },
     pixelBufferDraw(entityId: string, commands: DrawCommand[]) {
       getGodotBridge()?.pixelBufferDraw(entityId, JSON.stringify(commands));
@@ -1149,6 +1150,11 @@ export function createWebGodotBridge(): GodotBridge {
     set3DCameraDistance(distance: number): void {
       const godotBridge = getGodotBridge();
       godotBridge?.set_3d_camera_distance?.(distance);
+    },
+
+    set3DCameraSize(size: number): void {
+      const godotBridge = getGodotBridge();
+      godotBridge?.set_3d_camera_size?.(size);
     },
 
     clear3DModels(): void {

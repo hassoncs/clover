@@ -138,11 +138,11 @@ func _init_modules() -> void:
 	_collision_system = CollisionSystem.new(self, _event_emitter)
 	_world_system = WorldSystem.new(self)
 	_pixel_buffer_manager = PixelBufferManager.new(self)
-	
+
 	_camera_receiver = load("res://scripts/camera/WebCameraReceiver.gd").new()
 	_camera_receiver.name = "WebCameraReceiver"
 	add_child(_camera_receiver)
-	
+
 	_camera_manager = load("res://scripts/camera/CameraManager.gd").new()
 	_camera_manager.name = "CameraManager"
 	add_child(_camera_manager)
@@ -261,6 +261,7 @@ func _build_method_map() -> void:
 		"set_3d_viewport_size": func(args): if _viewport_3d and args.size() >= 2: _viewport_3d.set_viewport_size(int(args[0]), int(args[1])),
 		"rotate_3d_model": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_model_rotation(Vector3(float(args[0]), float(args[1]), float(args[2]))),
 		"set_3d_camera_distance": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_distance(float(args[0])),
+		"set_3d_camera_size": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_size(float(args[0])),
 		"clear_3d_models": func(_args): if _viewport_3d: _viewport_3d.clear_models(),
 	}
 
@@ -357,6 +358,7 @@ func _setup_js_bridge() -> void:
 		"set_3d_viewport_size": func(args): if _viewport_3d and args.size() >= 2: _viewport_3d.set_viewport_size(int(args[0]), int(args[1])),
 		"rotate_3d_model": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_model_rotation(Vector3(float(args[0]), float(args[1]), float(args[2]))),
 		"set_3d_camera_distance": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_distance(float(args[0])),
+		"set_3d_camera_size": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_size(float(args[0])),
 		"clear_3d_models": func(_args): if _viewport_3d: _viewport_3d.clear_models()
 	}
 	for key in extra_callbacks:
@@ -379,7 +381,7 @@ func _js_start_camera(args: Array) -> void:
 	var entity_id = str(args[0])
 	var width = int(args[1]) if args.size() > 1 else 640
 	var height = int(args[2]) if args.size() > 2 else 480
-	
+
 	if OS.has_feature("web"):
 		# Web path: use WebCameraReceiver + JS bridge
 		if _camera_receiver:
@@ -500,7 +502,6 @@ func clear_game() -> void:
 func _physics_process(delta: float) -> void:
 	_diag_physics_frames += 1
 	if _diag_physics_frames == 1 or _diag_physics_frames % 120 == 0:
-		print("[GameBridge][DIAG] _physics_process frame #", _diag_physics_frames, " delta=", delta, " entities=", entity_registry.size())
 		if _diag_physics_frames == 1 or _diag_physics_frames % 600 == 0:
 			for entity_id in entity_registry:
 				var record = entity_registry[entity_id]

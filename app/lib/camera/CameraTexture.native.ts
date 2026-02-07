@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { Camera } from 'react-native-vision-camera';
 import type { GodotBridge } from '@/lib/godot/types';
 import type { CameraTextureOptions, CameraTextureController } from './types';
 
@@ -11,15 +12,20 @@ export function useCameraTexture(bridge: GodotBridge): CameraTextureController {
   const [isActive, setIsActive] = useState(false);
 
   const start = useCallback(async (options: CameraTextureOptions) => {
+    const permission = await Camera.requestCameraPermission();
+    if (permission !== 'granted') {
+      throw new Error(`Camera permission denied: ${permission}`);
+    }
+
     const resolution = options.resolution ?? '720p';
     const { width, height } = RESOLUTION_MAP[resolution];
 
-    await bridge.startCamera(options.targetEntityId, width, height);
+    bridge.startCamera(options.targetEntityId, width, height);
     setIsActive(true);
   }, [bridge]);
 
   const stop = useCallback(async () => {
-    await bridge.stopCamera();
+    bridge.stopCamera();
     setIsActive(false);
   }, [bridge]);
 

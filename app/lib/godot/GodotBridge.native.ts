@@ -739,8 +739,8 @@ export function createNativeGodotBridge(): GodotBridge {
       callGameBridge('send_input', type, data.x, data.y, data.entityId ?? '');
     },
 
-    createPixelBuffer(entityId: string, width: number, height: number, clearColor: string) {
-      callGameBridge('createPixelBuffer', entityId, width, height, clearColor);
+    createPixelBuffer(entityId: string, width: number, height: number, clearColor: string, worldWidth?: number, worldHeight?: number) {
+      callGameBridge('createPixelBuffer', entityId, width, height, clearColor, worldWidth ?? 0, worldHeight ?? 0);
     },
     pixelBufferDraw(entityId: string, commands: DrawCommand[]) {
       callGameBridge('pixelBufferDraw', entityId, JSON.stringify(commands));
@@ -1007,6 +1007,10 @@ export function createNativeGodotBridge(): GodotBridge {
 
     set3DCameraDistance(distance: number): void {
       callGameBridge('set_3d_camera_distance', distance);
+    },
+
+    set3DCameraSize(size: number): void {
+      callGameBridge('set_3d_camera_size', size);
     },
 
     clear3DModels(): void {

@@ -3000,6 +3000,18 @@ PODS:
     - Yoga
   - Sentry/HybridSDK (8.56.1)
   - SocketRocket (0.7.1)
+  - VisionCamera (4.7.3):
+    - VisionCamera/Core (= 4.7.3)
+    - VisionCamera/FrameProcessors (= 4.7.3)
+    - VisionCamera/React (= 4.7.3)
+  - VisionCamera/Core (4.7.3)
+  - VisionCamera/FrameProcessors (4.7.3):
+    - React
+    - React-callinvoker
+    - react-native-worklets-core
+  - VisionCamera/React (4.7.3):
+    - React-Core
+    - VisionCamera/FrameProcessors
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -3108,6 +3120,7 @@ DEPENDENCIES:
   - "RNSentry (from `../../node_modules/.pnpm/@sentry+react-native@7.2.0_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-rou_joenwzjufcqjdtie4u2gx6ccrm/node_modules/@sentry/react-native`)"
   - "RNWorklets (from `../../node_modules/.pnpm/react-native-worklets@0.7.2_@babel+core@7.29.0_react-native@0.81.4_@babel+core@7.29.0_@types+_c2dqr7sl4iiel73efckna7czjq/node_modules/react-native-worklets`)"
   - SocketRocket (~> 0.7.1)
+  - "VisionCamera (from `../../node_modules/.pnpm/react-native-vision-camera@4.7.3_react-native-reanimated@4.2.1_react-native-worklets@0.7.2_@b_zg2nfi4vqudmnvf7nmn6pofpdm/node_modules/react-native-vision-camera`)"
   - "Yoga (from `../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.29.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon/yoga`)"
 
 SPEC REPOS:
@@ -3326,6 +3339,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/.pnpm/@sentry+react-native@7.2.0_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-rou_joenwzjufcqjdtie4u2gx6ccrm/node_modules/@sentry/react-native"
   RNWorklets:
     :path: "../../node_modules/.pnpm/react-native-worklets@0.7.2_@babel+core@7.29.0_react-native@0.81.4_@babel+core@7.29.0_@types+_c2dqr7sl4iiel73efckna7czjq/node_modules/react-native-worklets"
+  VisionCamera:
+    :path: "../../node_modules/.pnpm/react-native-vision-camera@4.7.3_react-native-reanimated@4.2.1_react-native-worklets@0.7.2_@b_zg2nfi4vqudmnvf7nmn6pofpdm/node_modules/react-native-vision-camera"
   Yoga:
     :path: "../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.29.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon/yoga"
 
@@ -3438,6 +3453,7 @@ SPEC CHECKSUMS:
   RNWorklets: b75db1e321e57abd4e973bc519e515331ebe2953
   Sentry: b3ec44d01708fce73f99b544beb57e890eca4406
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
+  VisionCamera: 0044a94f7489f19e19d5938e97dfc36f4784af3c
   Yoga: a3ed390a19db0459bd6839823a6ac6d9c6db198d
 
 PODFILE CHECKSUM: 41592031475ab300b93f43a0e9fe10a5191ed164

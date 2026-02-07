@@ -58,3 +58,8 @@ body {
 html {
   scroll-behavior: smooth;
 }
+
+/* Remove default focus outline on web */
+*:focus {
+  outline: none;
+}

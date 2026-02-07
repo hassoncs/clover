@@ -6,7 +6,7 @@ import type { ExampleMeta } from "@/lib/registry/types";
 import type { GodotBridge } from "@/lib/godot/types";
 import type { GameDefinition } from "@slopcade/shared";
 import { FullScreenHeader } from "../../components/FullScreenHeader";
-import { useCameraTexture } from "@/lib/camera";
+import { useCameraTexture, CameraCapture } from "@/lib/camera";
 
 export const metadata: ExampleMeta = {
   title: "Camera Feed",
@@ -36,6 +36,8 @@ const GAME_DEFINITION: GameDefinition = {
     cameraTarget: {
       id: "cameraTarget",
       tags: ["camera-target"],
+      visual: { type: "rect", width: 6, height: 4, color: "#808080" },
+      physics: { bodyType: "static" },
       collider: { shape: "box", width: 6, height: 4 },
     },
     ground: {
@@ -183,6 +185,7 @@ export default function CameraFeedExample() {
               <Text className="text-white">Loading Godot...</Text>
             </View>
           )}
+          <CameraCapture isActive={camera.isActive} />
         </View>
 
         <View className="bg-black/80 p-3">

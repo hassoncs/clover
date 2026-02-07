@@ -60,16 +60,25 @@ for gdext_file in "$GODOT_PROJECT"/addons/*/*.gdextension; do
   ADDON_DIR=$(dirname "$gdext_file")
   ADDON_NAME=$(basename "$ADDON_DIR")
 
-  # Find iOS frameworks referenced in the .gdextension file
+  # Copy the .gdextension file itself (Godot needs it to discover the extension)
+  mkdir -p "$ADDONS_DST/$ADDON_NAME"
+  cp "$gdext_file" "$ADDONS_DST/$ADDON_NAME/"
+  echo "Copied $(basename "$gdext_file") to $ADDONS_DST/$ADDON_NAME/"
+
+  # Find iOS frameworks/dylibs referenced in the .gdextension file
   while IFS= read -r line; do
     case "$line" in
       ios.*.arm64*=*|ios.*.x86_64*=*)
         FW_REL=$(echo "$line" | sed 's/.*= *"\\{0,1\\}//;s/".*$//')
         FW_SRC="$ADDON_DIR/$FW_REL"
+        FW_DST_DIR="$ADDONS_DST/$ADDON_NAME/$(dirname "$FW_REL")"
         if [ -d "$FW_SRC" ]; then
-          FW_DST_DIR="$ADDONS_DST/$ADDON_NAME/$(dirname "$FW_REL")"
           mkdir -p "$FW_DST_DIR"
           cp -R "$FW_SRC" "$FW_DST_DIR/"
+          echo "Copied $FW_REL to $FW_DST_DIR"
+        elif [ -f "$FW_SRC" ]; then
+          mkdir -p "$FW_DST_DIR"
+          cp "$FW_SRC" "$FW_DST_DIR/"
           echo "Copied $FW_REL to $FW_DST_DIR"
         fi
         ;;

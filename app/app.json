@@ -14,7 +14,14 @@
     "plugins": [
       "expo-router",
       "./plugins/withGodotAssets",
-      "./plugins/withMetroPort"
+      "./plugins/withMetroPort",
+      "./plugins/withCameraFrameProcessor",
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "Slopcade uses your camera for game features"
+        }
+      ]
     ],
     "name": "Slopcade",
     "slug": "slopcade",

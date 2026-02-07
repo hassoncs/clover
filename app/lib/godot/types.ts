@@ -314,7 +314,7 @@ export interface GodotBridge {
    clearTextureCache(url?: string): void;
    
    // Pixel Buffer operations
-   createPixelBuffer(entityId: string, width: number, height: number, clearColor: string): void;
+   createPixelBuffer(entityId: string, width: number, height: number, clearColor: string, worldWidth?: number, worldHeight?: number): void;
    pixelBufferDraw(entityId: string, commands: DrawCommand[]): void;
    pixelBufferClear(entityId: string, color: string): void;
    destroyPixelBuffer(entityId: string): void;
@@ -410,6 +410,7 @@ export interface GodotBridge {
   set3DViewportSize(width: number, height: number): void;
   rotate3DModel(x: number, y: number, z: number): void;
   set3DCameraDistance(distance: number): void;
+  set3DCameraSize(size: number): void;
   clear3DModels(): void;
 }
 

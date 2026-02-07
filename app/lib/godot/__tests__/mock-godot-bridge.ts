@@ -134,6 +134,7 @@ export function createMockGodotBridge(): GodotBridge {
     set3DViewportSize: vi.fn(),
     rotate3DModel: vi.fn(),
     set3DCameraDistance: vi.fn(),
+    set3DCameraSize: vi.fn(),
     clear3DModels: vi.fn(),
 
     // Extended methods from handler inventory

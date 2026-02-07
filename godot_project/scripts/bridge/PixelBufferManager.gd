@@ -12,7 +12,9 @@ func _init(bridge: Node) -> void:
 func _js_create_pixel_buffer(args: Array) -> void:
 	if args.size() < 4:
 		return
-	create_pixel_buffer(str(args[0]), int(args[1]), int(args[2]), str(args[3]))
+	var world_w: float = float(args[4]) if args.size() >= 5 else 0.0
+	var world_h: float = float(args[5]) if args.size() >= 6 else 0.0
+	create_pixel_buffer(str(args[0]), int(args[1]), int(args[2]), str(args[3]), world_w, world_h)
 
 
 func _js_draw_commands(args: Array) -> void:
@@ -36,7 +38,7 @@ func _js_destroy(args: Array) -> void:
 	destroy_pixel_buffer(str(args[0]))
 
 
-func create_pixel_buffer(entity_id: String, width: int, height: int, clear_color: String) -> void:
+func create_pixel_buffer(entity_id: String, width: int, height: int, clear_color: String, world_w: float = 0.0, world_h: float = 0.0) -> void:
 	if not _has_entity(entity_id):
 		return
 
@@ -64,9 +66,9 @@ func create_pixel_buffer(entity_id: String, width: int, height: int, clear_color
 	sprite.texture = texture
 	_hide_shape_children(node)
 
-	var world_size = _resolve_world_size(node, sprite)
-	var world_width = world_size.get("width", 1.0)
-	var world_height = world_size.get("height", 1.0)
+	var world_width: float = world_w if world_w > 0.0 else 1.0
+	var world_height: float = world_h if world_h > 0.0 else 1.0
+
 	var ppm = _get_pixels_per_meter()
 	var scale_x = (world_width * ppm) / float(safe_width)
 	var scale_y = (world_height * ppm) / float(safe_height)

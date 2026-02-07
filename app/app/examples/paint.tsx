@@ -19,16 +19,16 @@ const GAME_DEFINITION: GameDefinition = {
   world: {
     gravity: { x: 0, y: 0 },
     pixelsPerMeter: 50,
-    bounds: { width: 12, height: 16 },
+    bounds: { width: 24, height: 32 },
   },
   camera: { type: "fixed", zoom: 1 },
-  ui: { backgroundColor: "#f5f5f5" },
+  ui: { backgroundColor: "#FFFFFF" },
   templates: {
     canvas: {
       id: "canvas",
-      visual: { type: "rect", width: 10, height: 14, color: "#FFFFFF" },
+      visual: { type: "rect", width: 24, height: 32, color: "#FFFFFF" },
       physics: { bodyType: "static" },
-      collider: { shape: "box", width: 10, height: 14, friction: 0, restitution: 0 },
+      collider: { shape: "box", width: 24, height: 32, friction: 0, restitution: 0 },
     },
   },
   entities: [
@@ -36,7 +36,7 @@ const GAME_DEFINITION: GameDefinition = {
       id: "canvas",
       name: "Canvas",
       template: "canvas",
-      transform: { x: 6, y: 8, angle: 0, scaleX: 1, scaleY: 1 },
+      transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
     },
   ],
   rules: [],
@@ -100,7 +100,7 @@ export default function PaintExample() {
         gameLoadedRef.current = true;
         setStatus("ready");
         
-        bridge.createPixelBuffer("canvas", 256, 256, "#FFFFFF");
+        bridge.createPixelBuffer("canvas", 512, 512, "#FFFFFF", 24, 32);
       } catch (err) {
         setStatus("error");
         console.error("Failed to init game:", err);
@@ -115,8 +115,8 @@ export default function PaintExample() {
   }, [bridge]);
 
   const worldToPixel = useCallback((wx: number, wy: number) => {
-    const px = Math.max(0, Math.min(255, Math.round((wx - 1) / 10 * 255)));
-    const py = Math.max(0, Math.min(255, Math.round((15 - wy) / 14 * 255)));
+    const px = Math.max(0, Math.min(511, Math.round((wx + 12) / 24 * 511)));
+    const py = Math.max(0, Math.min(511, Math.round((16 - wy) / 32 * 511)));
     return { x: px, y: py };
   }, []);
 

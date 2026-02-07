@@ -58,6 +58,10 @@ export default function TabLayout() {
     router.push("/discover");
   }, [router]);
 
+  const goToImageSearch = useCallback(() => {
+    router.push("/image-search");
+  }, [router]);
+
   return (
     <View style={{ flex: 1, backgroundColor: "#050608" }}>
       <Tabs
@@ -75,10 +79,16 @@ export default function TabLayout() {
                     icon === "menu"
                       ? openSidebar
                       : icon === "search"
-                        ? goToDiscover
+                        ? goToImageSearch
                         : () => {},
                 }))}
-                rightActions={config.rightIcons.map((icon) => ({ icon, onPress: () => {} }))}
+                rightActions={config.rightIcons.map((icon) => ({
+                  icon,
+                  onPress:
+                    icon === "person-add-outline"
+                      ? goToDiscover
+                      : () => {},
+                }))}
               />
             );
           },

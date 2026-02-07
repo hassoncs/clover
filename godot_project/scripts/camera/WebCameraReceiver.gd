@@ -38,15 +38,17 @@ func _process(_delta: float) -> void:
 	if w <= 0 or h <= 0:
 		return
 		
-	# data should be a PackedByteArray (Uint8Array in JS)
+	# Uint8Array may arrive as JavaScriptObject wrapper; convert it explicitly.
 	if not (data is PackedByteArray):
-		# If it's not PackedByteArray, we might need to convert it or it might be a JavaScriptObject
-		if data is JavaScriptObject:
-			# This is tricky, JavaScriptBridge might not auto-convert Uint8ClampedArray to PackedByteArray
-			# Let's try to use eval to get it as a PackedByteArray if possible, 
-			# or use a helper in JS to return it in a way Godot likes.
-			pass
-		return
+		if data is JavaScriptObject and JavaScriptBridge.is_js_buffer(data):
+			data = JavaScriptBridge.js_buffer_to_packed_byte_array(data)
+		else:
+			data = JavaScriptBridge.eval("window._cameraFrameData", true)
+			if data is JavaScriptObject and JavaScriptBridge.is_js_buffer(data):
+				data = JavaScriptBridge.js_buffer_to_packed_byte_array(data)
+
+		if not (data is PackedByteArray):
+			return
 
 	if _image == null or _width != w or _height != h:
 		_width = w
