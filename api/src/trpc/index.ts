@@ -5,6 +5,7 @@ import type { Context, AuthenticatedContext, User } from './context'
 const t = initTRPC.context<Context>().create();
 
 export const router = t.router;
+export const mergeRouters = t.mergeRouters;
 
 // Public procedures - no auth required (for browsing/playing public games)
 export const publicProcedure = t.procedure;
