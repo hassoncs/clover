@@ -120,7 +120,7 @@ func _init_modules() -> void:
 	_debug_bridge = DebugBridge.new(self, _query_system)
 	_devtools_overlay = DebugOverlay.new()
 	_devtools_overlay.setup(self)
-	
+
 	_physics_controller = PhysicsController.new(self)
 	_entity_manager = EntityManager.new(self)
 	_entity_factory = EntityFactory.new(self)
@@ -134,7 +134,7 @@ func _init_modules() -> void:
 	_ws_system = WebSocketSystem.new(self)
 	_collision_system = CollisionSystem.new(self, _event_emitter)
 	_world_system = WorldSystem.new(self)
-	
+
 	_devtools_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_devtools_overlay)
 
@@ -324,7 +324,7 @@ func _setup_js_bridge() -> void:
 		var cb = JavaScriptBridge.create_callback(callbacks[key])
 		_js_callbacks.append(cb)
 		_js_bridge_obj[key] = cb
-	
+
 	var extra_callbacks = {
 		"clearTextureCache": func(args): _visual_renderer.clear_texture_cache(str(args[0]) if args.size() > 0 else ""),
 		"show_3d_model": func(args): return _viewport_3d.load_glb(str(args[0])) != null if _viewport_3d and args.size() > 0 else false,
@@ -339,7 +339,7 @@ func _setup_js_bridge() -> void:
 		var cb = JavaScriptBridge.create_callback(extra_callbacks[key])
 		_js_callbacks.append(cb)
 		_js_bridge_obj[key] = cb
-	
+
 	window["GodotBridge"] = _js_bridge_obj
 	print("[GameBridge] window.GodotBridge is now available")
 
@@ -380,8 +380,6 @@ func get_splat_texture() -> Texture2D: return _splat_map_system.get_texture() if
 
 func _process(delta: float) -> void:
 	_diag_process_frames += 1
-	if _diag_process_frames == 1 or _diag_process_frames % 120 == 0:
-		print("[GameBridge][DIAG] _process frame #", _diag_process_frames, " delta=", delta)
 	if _splat_map_system: _splat_map_system.process(delta)
 	if _ws_system: _ws_system.process(delta)
 
