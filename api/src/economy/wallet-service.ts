@@ -201,8 +201,6 @@ export class WalletService {
     return balanceAfter;
   }
 
-  // Daily bonus DISABLED for launch
-  // async claimDailyBonus() { ... }
 
   /**
     * Get transaction history

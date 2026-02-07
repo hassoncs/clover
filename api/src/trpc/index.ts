@@ -66,7 +66,3 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
   });
 });
 
-// DEPRECATED: installedProcedure is now an alias for protectedProcedure
-// All operations that modify data require authentication
-// Keeping this alias temporarily to minimize code changes during migration
-export const installedProcedure = protectedProcedure;

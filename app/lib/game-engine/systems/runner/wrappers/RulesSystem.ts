@@ -16,7 +16,7 @@ import type {
 } from '@slopcade/shared';
 import { getStateVar } from '@slopcade/shared';
 import { evaluate } from '@slopcade/shared';
-import type { GameState as BehaviorGameState, InputState } from '../../../BehaviorContext';
+import type { GameState as BehaviorGameState } from '../../../BehaviorContext';
 import type { IGameStateMutator, RuleContext, ListValue } from '../../../rules/types';
 import type { InputEvents } from '../../../BehaviorContext';
 import type { CameraSystem } from '../../../CameraSystem';
@@ -96,7 +96,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
   private currentState: RuntimeGameState | null = null;
   private currentEvents: GameEventBus | null = null;
   
-  private actionRegistry: ActionRegistry;
+  private actionRegistry!: ActionRegistry;
   private runScriptActionExecutor: RunScriptActionExecutor;
   private scriptSystem: ScriptSandboxRuntimeSystem | null = null;
   private worldOps: WorldOpsImpl | null = null;
@@ -115,50 +115,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
   
   constructor(config: RulesSystemConfig) {
     this.config = config;
-    
-    const spawnActionExecutor = new SpawnActionExecutor();
-    const destroyActionExecutor = new DestroyActionExecutor();
-    const physicsActionExecutor = new PhysicsActionExecutor();
-    const logicActionExecutor = new LogicActionExecutor();
-    const entityActionExecutor = new EntityActionExecutor();
-    const cameraActionExecutor = new CameraActionExecutor();
-    const soundActionExecutor = new SoundActionExecutor();
-    const setEntitySizeActionExecutor = new SetEntitySizeActionExecutor();
-    const comboActionExecutor = new ComboActionExecutor();
-    const checkpointActionExecutor = new CheckpointActionExecutor();
-    const gridActionExecutor = new GridActionExecutor();
-    const inventoryActionExecutor = new InventoryActionExecutor();
-    const pathActionExecutor = new PathActionExecutor();
-    const progressionActionExecutor = new ProgressionActionExecutor();
-    const spatialQueryActionExecutor = new SpatialQueryActionExecutor();
-    const stateMachineActionExecutor = new StateMachineActionExecutor();
-    const waveActionExecutor = new WaveActionExecutor();
-    const ballSortActionExecutor = new BallSortActionExecutor();
-    
     this.runScriptActionExecutor = new RunScriptActionExecutor();
-    
-    this.actionRegistry = new ActionRegistry(
-      spawnActionExecutor,
-      destroyActionExecutor,
-      physicsActionExecutor,
-      logicActionExecutor,
-      entityActionExecutor,
-      cameraActionExecutor,
-      soundActionExecutor,
-      setEntitySizeActionExecutor,
-      comboActionExecutor,
-      checkpointActionExecutor,
-      gridActionExecutor,
-      inventoryActionExecutor,
-      pathActionExecutor,
-      progressionActionExecutor,
-      spatialQueryActionExecutor,
-      stateMachineActionExecutor,
-      waveActionExecutor,
-      ballSortActionExecutor,
-      {} as ContainerActionExecutor,
-      this.runScriptActionExecutor,
-    );
   }
   
   initialize(ctx: SystemContext, _config: RulesSystemConfig): void {

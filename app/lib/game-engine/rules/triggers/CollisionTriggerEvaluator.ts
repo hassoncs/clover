@@ -6,12 +6,6 @@ export class CollisionTriggerEvaluator
   implements TriggerEvaluator<CollisionTrigger>
 {
   evaluate(trigger: CollisionTrigger, context: RuleContext): boolean {
-    // if (context.collisions.length > 0) {
-    //   console.log('[CollisionTrigger] Checking', context.collisions.length, 'collisions for', trigger.entityATag, '↔', trigger.entityBTag);
-    //   context.collisions.forEach((c, i) => {
-    //     console.log(`  [${i}] entityA tags:`, c.entityA.tags, '| entityB tags:', c.entityB.tags);
-    //   });
-    // }
     return context.collisions.some((c) => {
       const aHasTagA = c.entityA.tags.includes(trigger.entityATag);
       const aHasTagB = c.entityA.tags.includes(trigger.entityBTag);
