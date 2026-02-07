@@ -86,6 +86,7 @@ function RootLayoutContent() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="discover" />
       <Stack.Screen
         name="play/[id]"
         options={{

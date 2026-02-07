@@ -89,22 +89,16 @@ export function getVar(state: GameState, key: string): VarValue | undefined {
 }
 
 export function setVar(state: GameState, key: string, value: VarValue, events?: GameEventBus): void {
-  console.log(`[StateHelpers.setVar] key=${key}, value=${value}, hasEvents=${!!events}`);
   state.vars[key] = value;
   state.changedVars.add(key);
 
   if (events) {
-    console.log(`[StateHelpers.setVar] emitting varChanged`);
     events.emit({ type: 'varChanged', key, value });
-    console.log(`[StateHelpers.setVar] varChanged emitted`);
 
     if (key === RESERVED_VARS.GAME_STATE) {
-      console.log(`[StateHelpers.setVar] emitting gameStateChanged`);
       events.emit({ type: 'gameStateChanged', state: value as GameStateValue });
-      console.log(`[StateHelpers.setVar] gameStateChanged emitted`);
     }
   }
-  console.log(`[StateHelpers.setVar] complete`);
 }
 
 export function getGameStateValue(state: GameState): GameStateValue {
@@ -112,13 +106,10 @@ export function getGameStateValue(state: GameState): GameStateValue {
 }
 
 export function setGameStateValue(state: GameState, value: GameStateValue, events?: GameEventBus): void {
-  console.log(`[StateHelpers.setGameStateValue] value=${value}`);
   const current = getGameStateValue(state);
-  console.log(`[StateHelpers.setGameStateValue] current=${current}, changing=${current !== value}`);
   if (current !== value) {
     setVar(state, RESERVED_VARS.GAME_STATE, value, events);
   }
-  console.log(`[StateHelpers.setGameStateValue] complete`);
 }
 
 export function getElapsed(state: GameState): number {

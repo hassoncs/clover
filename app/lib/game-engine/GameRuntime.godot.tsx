@@ -87,6 +87,8 @@ import { GameEventQueue, isLifecycleEvent, isInputEvent, isPhysicsEvent } from "
 import { styles } from "./GameRuntimeStyles";
 import { useInputHandlers } from "./useInputHandlers";
 
+const EMPTY_TEXTURE_URLS: string[] = [];
+
 export interface GameRuntimeGodotProps {
   definition: GameDefinition;
   onGameEnd?: (state: "won" | "lost") => void;
@@ -124,13 +126,14 @@ export function GameRuntimeGodot({
   showHUD = true,
   enablePerfLogging = false,
   debugMode = false,
-  preloadTextureUrls = [],
+  preloadTextureUrls,
   onPreloadProgress,
   onReady,
   onNextLevel,
   onPreviousLevel,
   autoStart = false,
 }: GameRuntimeGodotProps) {
+  const stablePreloadTextureUrls = preloadTextureUrls ?? EMPTY_TEXTURE_URLS;
   const progressHook = useGameProgressFromDefinition(definition);
   const progressHookRef = useRef(progressHook);
   progressHookRef.current = progressHook;
@@ -312,7 +315,6 @@ export function GameRuntimeGodot({
         },
         onScoreChange: (score) => onScoreChangeRef.current?.(score),
         setGameState,
-        debug: true,
       });
       subscriptionsRef.current.push(eventBusUnsubRef.current);
     },
@@ -559,7 +561,7 @@ export function GameRuntimeGodot({
   useEffect(() => {
     if (!godotReady) return;
     if (setupStartedRef.current) {
-      return; // Already started setup, skip silently
+      return;
     }
     setupStartedRef.current = true;
 
@@ -574,9 +576,9 @@ export function GameRuntimeGodot({
         logger.info("bridge", "Bridge initialized");
         bridgeRef.current = bridge;
 
-        if (preloadTextureUrls && preloadTextureUrls.length > 0) {
-          logger.info("assets", `Preloading ${preloadTextureUrls.length} textures...`);
-          await bridge.preloadTextures(preloadTextureUrls, (percent, completed, failed) => {
+    if (stablePreloadTextureUrls.length > 0) {
+      logger.info("assets", `Preloading ${stablePreloadTextureUrls.length} textures...`);
+      await bridge.preloadTextures(stablePreloadTextureUrls, (percent, completed, failed) => {
             onPreloadProgressRef.current?.(percent, completed, failed);
           });
           logger.info("assets", "Textures preloaded");
@@ -701,7 +703,6 @@ export function GameRuntimeGodot({
             variables: mergedVariables,
           }));
         }
-        logger.info("lifecycle", "Setting isReady=true");
         setIsReady(true);
 
         if (typeof window !== "undefined") {
@@ -710,7 +711,6 @@ export function GameRuntimeGodot({
           ).slopcadeGameReady = true;
         }
 
-        logger.info("lifecycle", "Calling onReady callback");
         onReadyRef.current?.();
 
         const runner = new GameSystemRunner();
@@ -946,10 +946,7 @@ export function GameRuntimeGodot({
           eventQueueRef.current.push({ type: 'game_started' });
         }
 
-        logger.info("lifecycle", "Emitting gameLoaded lifecycle event");
-        logger.debug("lifecycle", "Pushing game_loaded to eventQueue");
         eventQueueRef.current.push({ type: 'game_loaded' });
-        logger.trace("lifecycle", "eventQueue now has length:", eventQueueRef.current.length);
       } catch (error) {
         logger.error("lifecycle", "Failed to initialize game:", error);
       }
@@ -958,6 +955,7 @@ export function GameRuntimeGodot({
     setup();
 
     return () => {
+      setupStartedRef.current = false;
       cleanupSubscriptions();
       gameSystemRunnerRef.current?.destroy();
       gameSystemRunnerRef.current = null;
@@ -971,7 +969,7 @@ export function GameRuntimeGodot({
   }, [
     godotReady,
     definition,
-    preloadTextureUrls,
+    stablePreloadTextureUrls,
     debugMode,
     cleanupSubscriptions,
     setupSubscriptions,
@@ -1364,18 +1362,11 @@ export function GameRuntimeGodot({
   }, []);
 
   const handleStart = useCallback(() => {
-    logger.info("lifecycle", "handleStart called");
-    logger.debug("lifecycle", "Emitting gameStart lifecycle event");
     eventQueueRef.current.push({ type: 'game_started' });
-    logger.debug("lifecycle", "Calling resumePhysics...");
     bridgeRef.current?.resumePhysics();
-    logger.debug("lifecycle", "resumePhysics complete");
     if (gameRef.current) {
-      logger.debug("lifecycle", "Setting game state to playing...");
       StateHelpers.setGameStateValue(gameRef.current.gameState, 'playing', gameRef.current.events);
-      logger.debug("lifecycle", "setGameStateValue complete");
     }
-    logger.debug("lifecycle", "handleStart done");
   }, []);
 
   const handleRestart = useCallback(() => {

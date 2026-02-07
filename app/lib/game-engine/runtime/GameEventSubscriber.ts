@@ -14,7 +14,6 @@ export interface GameEventSubscriberOptions {
   onGameStateChange?: (state: 'won' | 'lost') => void;
   onScoreChange?: (score: number) => void;
   setGameState: (updater: (prev: ReactGameState) => ReactGameState) => void;
-  debug?: boolean;
 }
 
 /**
@@ -25,28 +24,17 @@ export function subscribeToGameEvents(
   eventBus: GameEventBus,
   options: GameEventSubscriberOptions
 ): () => void {
-  const { onGameStateChange, onScoreChange, setGameState, debug } = options;
-
-  console.log("[GameEventSubscriber] Setting up subscription");
+  const { onGameStateChange, onScoreChange, setGameState } = options;
 
   return eventBus.subscribe((event) => {
-    console.log(`[GameEventSubscriber] Received event: ${event.type}`);
     switch (event.type) {
       case 'gameStateChanged':
-        console.log(`[GameEventSubscriber] gameStateChanged to: ${event.state}`);
-        setGameState((s) => {
-          console.log(`[GameEventSubscriber] setGameState updater called: ${s.state} -> ${event.state}`);
-          return { ...s, state: event.state };
-        });
-        console.log(`[GameEventSubscriber] setGameState call returned`);
+        setGameState((s) => ({ ...s, state: event.state }));
         if (event.state === 'won' || event.state === 'lost') {
-          console.log(`[GameEventSubscriber] Game ended, calling onGameStateChange`);
           onGameStateChange?.(event.state);
         }
-        console.log(`[GameEventSubscriber] gameStateChanged handling complete`);
         break;
       case 'varChanged':
-        console.log(`[GameEventSubscriber] varChanged: ${event.key} = ${event.value}`);
         if (event.key === 'score') {
           setGameState((s) => ({ ...s, score: event.value as number }));
           onScoreChange?.(event.value as number);
@@ -58,9 +46,7 @@ export function subscribeToGameEvents(
             variables: { ...s.variables, [event.key]: event.value }
           }));
         }
-        console.log(`[GameEventSubscriber] varChanged handling complete`);
         break;
     }
-    console.log(`[GameEventSubscriber] Event handling complete`);
   });
 }

@@ -60,11 +60,15 @@ async function getGodotModule(): Promise<GodotModule> {
 }
 
 function callGameBridge(methodName: string, ...args: unknown[]) {
-  if (isDisposing || !isGodotInitialized) return;
+  if (isDisposing || !isGodotInitialized) {
+    return;
+  }
 
   const argsJson = JSON.stringify(args);
   getGodotModule().then(({ RTNGodot, runOnGodotThread }) => {
-    if (isDisposing) return;
+    if (isDisposing) {
+      return;
+    }
     runOnGodotThread(() => {
       'worklet';
       const Godot = RTNGodot.API();
@@ -286,7 +290,9 @@ export function createNativeGodotBridge(): GodotBridge {
     async initialize() {
       const { RTNGodot, runOnGodotThread } = await getGodotModule();
 
-      if (isGodotInitialized) return;
+      if (isGodotInitialized) {
+        return;
+      }
 
       const bundleDir = FileSystem.bundleDirectory ?? '';
       const pckPath = bundleDir + 'godot/main.pck';
@@ -349,9 +355,6 @@ export function createNativeGodotBridge(): GodotBridge {
               return { ready: false, stage: 'exception', error: String(e) };
             }
           }).then((result: { ready: boolean; stage: string; error?: string }) => {
-            if (attempts % 10 === 1 || result.ready) {
-              console.log(`[GodotBridge] checkReady attempt ${attempts}/${maxAttempts}: stage=${result.stage}${result.error ? ` error=${result.error}` : ''}`);
-            }
             if (result.ready) {
               isGodotInitialized = true;
               
@@ -365,7 +368,6 @@ export function createNativeGodotBridge(): GodotBridge {
               setTimeout(checkReady, 100);
             }
           }).catch((err) => {
-            console.warn(`[GodotBridge] checkReady attempt ${attempts} threw: ${err}`);
             if (attempts >= maxAttempts) {
               reject(new Error(`Godot engine failed to initialize (runOnGodotThread error: ${err})`));
             } else {

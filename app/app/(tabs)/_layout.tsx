@@ -1,84 +1,64 @@
-import { Tabs } from "expo-router";
-import { Platform, View, Text } from "react-native";
+import { Tabs, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import { View } from "react-native";
+import { AppFrameHeader } from "@/components/navigation/AppFrameHeader";
+import { FloatingTabBar } from "@/components/navigation/FloatingTabBar";
+import { SidebarPlaceholder } from "@/components/navigation/SidebarPlaceholder";
 
-function TabIcon({ name }: { name: string }) {
-  const icons: Record<string, string> = {
-    lab: "🔬",
-    maker: "🎮",
-    browse: "🔍",
-    themes: "🎨",
-  };
-
-  return (
-    <View className="items-center justify-center">
-      <Text className="text-2xl">{icons[name] ?? "•"}</Text>
-    </View>
-  );
-}
+const TAB_TITLES: Record<string, string> = {
+  browse: "Slopcade",
+  lab: "Slopcade",
+  maker: "Slopcade",
+  themes: "Slopcade",
+};
 
 export default function TabLayout() {
+  const router = useRouter();
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+
+  const openSidebar = useCallback(() => {
+    setSidebarVisible(true);
+  }, []);
+
+  const closeSidebar = useCallback(() => {
+    setSidebarVisible(false);
+  }, []);
+
+  const goToMaker = useCallback(() => {
+    router.push("/maker");
+  }, [router]);
+
+  const goToDiscover = useCallback(() => {
+    router.push("/discover");
+  }, [router]);
+
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: "#4CAF50",
-        tabBarInactiveTintColor: "#888",
-        tabBarStyle: {
-          backgroundColor: "#111",
-          borderTopWidth: 1,
-          borderTopColor: "#333",
-          height: Platform.OS === "web" ? 75 : 85,
-          paddingBottom: Platform.OS === "web" ? 0 : 30,
-          paddingTop: 10,
-        },
-        ...(Platform.OS === "web" && {
-          tabBarHideOnKeyboard: false,
-          safeAreaInsets: { bottom: 0 },
-        }),
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: "600",
-        },
-        headerStyle: {
-          backgroundColor: "#111",
-        },
-        headerTintColor: "#fff",
-        headerTitleStyle: {
-          fontWeight: "bold",
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="lab"
-        options={{
-          title: "Lab",
-          tabBarIcon: () => <TabIcon name="lab" />,
-          headerTitle: "Physics Lab",
-        }}
-      />
-      <Tabs.Screen
-        name="maker"
-        options={{
-          title: "Maker",
-          tabBarIcon: () => <TabIcon name="maker" />,
-          headerTitle: "Game Maker",
-        }}
-      />
-      <Tabs.Screen
-        name="browse"
-        options={{
-          title: "Browse",
-          tabBarIcon: () => <TabIcon name="browse" />,
-          headerTitle: "Discover Games",
-        }}
-      />
-      <Tabs.Screen
-        name="themes"
-        options={{
-          title: "Themes",
-          tabBarIcon: () => <TabIcon name="themes" />,
-          headerTitle: "Themes",
-        }}
-      />
-    </Tabs>
+    <View style={{ flex: 1, backgroundColor: "#050608" }}>
+      <Tabs
+        tabBar={(props) => <FloatingTabBar {...props} onPrimaryPress={goToMaker} />}
+        screenOptions={({ route }) => ({
+          header: () => (
+            <AppFrameHeader
+              title={TAB_TITLES[route.name] ?? "Slopcade"}
+              onMenuPress={openSidebar}
+              onSearchPress={goToDiscover}
+              onNotificationsPress={() => {}}
+              onInvitePress={() => {}}
+            />
+          ),
+          sceneStyle: {
+            backgroundColor: "#050608",
+          },
+          tabBarShowLabel: false,
+        })}
+      >
+        <Tabs.Screen name="browse" options={{ title: "Browse" }} />
+        <Tabs.Screen name="lab" options={{ title: "Lab" }} />
+        <Tabs.Screen name="maker" options={{ title: "Maker" }} />
+        <Tabs.Screen name="themes" options={{ title: "Themes" }} />
+      </Tabs>
+
+      <SidebarPlaceholder visible={sidebarVisible} onClose={closeSidebar} />
+    </View>
   );
 }
