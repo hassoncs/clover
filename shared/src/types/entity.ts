@@ -1,6 +1,6 @@
 import type { VisualComponent } from './visual';
 import type { PhysicsComponent, EntityArchetype } from './physics';
-import type { ColliderComponent } from './collider';
+import type { ColliderComponent } from './physics';
 import type { CharacterComponent } from './character';
 import type { Behavior, ConditionalBehavior } from './behavior';
 
