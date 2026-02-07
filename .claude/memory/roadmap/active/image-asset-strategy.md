@@ -49,7 +49,7 @@ Kids' search vocabulary is surprisingly predictable. Pre-generate or license the
 | **Game-icons.net** | ~4,170 game SVGs | CC BY 3.0 | Free | ★★★☆ Monochrome silhouettes, game-themed | GitHub bulk download |
 | **Pre-generated (our own)** | 500+ top terms | We own them | ~$5-15 one-time | ★★★★★ Matches our style presets | Batch generate with FLUX Schnell |
 
-**Kenney is the #1 move.** Clean, consistent, designed for game engines, CC0 (zero attribution needed), covers platformer tiles, characters, UI, vehicles, food, nature, and more. No API — download all packs, build a keyword-tagged SQLite/JSON index, bundle the most common ones in-app.
+**Kenney is the #1 move.** Clean, consistent, designed for game engines, CC0 (zero attribution needed), covers platformer tiles, characters, UI, vehicles, food, nature, and more. No official API, but the full collection is on GitHub at `github.com/KenneyNL/Kenney-Assets` for bulk clone. Download all packs, build a keyword-tagged SQLite/JSON index, bundle the most common ones in-app.
 
 **Game-icons.net** is a nice complement — ~4,170 SVGs of weapons, potions, creatures, GUI elements, all on GitHub for bulk download. CC BY 3.0 (attribution required but manageable).
 
