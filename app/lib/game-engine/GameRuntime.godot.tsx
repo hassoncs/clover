@@ -899,6 +899,7 @@ export function GameRuntimeGodot({
         if (definition.script) {
           const scriptSystem = runner.getSystem<ScriptSandboxRuntimeSystem>("script-sandbox");
           if (scriptSystem && rulesSystem) {
+            rulesSystem.setScriptSystem(scriptSystem);
             const sandbox = scriptSystem.getSandbox();
             if (sandbox) rulesSystem.setScriptSandbox(sandbox);
           }

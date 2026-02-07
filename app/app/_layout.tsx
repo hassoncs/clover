@@ -12,13 +12,18 @@ import { AnimatedSplashScreen } from "@/components/AnimatedSplashScreen";
 import { needsInstallation, installEmbeddedGames } from "@/lib/offline/embedded-games";
 import "../global.css";
 
-Sentry.init({
-  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
-  debug: __DEV__,
-  enabled: !__DEV__,
-  enableNative: true,
-  tracesSampleRate: __DEV__ ? 0 : 0.2,
-});
+const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
+const SENTRY_ENABLED = !!SENTRY_DSN && !__DEV__;
+
+if (SENTRY_DSN) {
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    debug: __DEV__,
+    enabled: SENTRY_ENABLED,
+    enableNative: SENTRY_ENABLED,
+    tracesSampleRate: __DEV__ ? 0 : 0.2,
+  });
+}
 
 if (typeof window !== "undefined" && typeof global === "undefined") {
   (globalThis as any).global = globalThis;
@@ -123,4 +128,4 @@ function RootLayout() {
   );
 }
 
-export default Sentry.wrap(RootLayout);
+export default SENTRY_DSN ? Sentry.wrap(RootLayout) : RootLayout;

@@ -179,6 +179,11 @@ export class BehaviorExecutorRuntimeSystem implements RuntimeSystem<BehaviorExec
         this.systemContext!.bridge.setRotation(entityId, angle);
       },
       setEntityPosition: (entityId: string, x: number, y: number) => {
+        const entity = this.systemContext!.entityManager.getEntity(entityId);
+        if (entity) {
+          entity.transform.x = x;
+          entity.transform.y = y;
+        }
         this.systemContext!.bridge.setPosition(entityId, x, y);
       },
       setEntityOpacity: (entityId: string, opacity: number) => {

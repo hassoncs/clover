@@ -396,8 +396,10 @@ export class WorldOpsImpl implements WorldOps {
     opts: AnimateOptions
   ): Promise<void> {
     const entity = this.entityManager.getEntity(entityId);
-    if (!entity) return;
-
+    if (!entity) {
+      console.warn(`[WorldOpsImpl.animate] Entity not found: ${entityId}`);
+      return;
+    }
     const promises: Promise<void>[] = [];
     const easing = this.resolveEasing(opts.easing);
     const durationSeconds = opts.duration / 1000;

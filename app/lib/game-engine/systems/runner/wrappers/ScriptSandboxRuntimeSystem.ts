@@ -45,7 +45,7 @@ export interface ScriptSandboxSystemState {
 export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSystemConfig, ScriptSandboxSystemState> {
   readonly id = 'script-sandbox';
   readonly phase = SystemPhase.GAME_LOGIC;
-  readonly priority = 40;
+  readonly priority = 60;
 
   private config: ScriptSandboxSystemConfig;
   private sandbox: IScriptSandbox | null = null;
@@ -56,6 +56,7 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
   private worldOps: WorldOpsImpl | null = null;
   private sequenceManager: SequenceManager | null = null;
   private seededRandom: (() => number) | null = null;
+  private lastUpdateCtx: UpdateContext | null = null;
 
   constructor(config: ScriptSandboxSystemConfig) {
     this.config = config;
@@ -101,6 +102,7 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
       return;
     }
 
+    this.lastUpdateCtx = ctx;
     this.currentGameState = { variables: ctx.gameState.variables };
 
     const em = this.systemContext.entityManager;
@@ -204,6 +206,20 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
 
   getSandbox(): IScriptSandbox | null {
     return this.sandbox;
+  }
+
+  callExport(functionName: string, args?: Record<string, unknown>): { success: boolean; error?: { message: string; stack?: string } } {
+    if (!this.sandbox || !this.systemContext || !this.lastUpdateCtx) {
+      console.warn(`[ScriptSandboxRuntimeSystem] callExport("${functionName}") failed: system not ready`);
+      return { success: false, error: { message: 'Script system not ready' } };
+    }
+
+    const scriptContext = this.createScriptContext(this.lastUpdateCtx);
+    const result = this.sandbox.callFunction(scriptContext, functionName, args);
+    if (!result.success && result.error) {
+      console.error(`[ScriptSandboxRuntimeSystem] callExport("${functionName}") error:`, result.error.message);
+    }
+    return result;
   }
 
   runInput(ctx: UpdateContext, event: ScriptInputEvent): void {

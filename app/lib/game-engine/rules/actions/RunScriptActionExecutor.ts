@@ -35,7 +35,6 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
   }
 
   execute(action: RunScriptAction, context: RuleContext): void {
-    console.log("[Lifecycle] RunScriptActionExecutor.execute called with action:", action);
     if (!this.sandbox) {
       console.warn('[RunScriptActionExecutor] No script sandbox available - sandbox not set!');
       return;
@@ -238,7 +237,7 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
 
     const worldAsync: AsyncWorldOps = wOps
       ? { animate: wOps.animate.bind(wOps), wait: wOps.wait.bind(wOps) }
-      : { animate: async () => {}, wait: async () => {} };
+      : { animate: async () => { console.warn('[RunScriptActionExecutor] animate called but no worldOps!'); }, wait: async () => { console.warn('[RunScriptActionExecutor] wait called but no worldOps!'); } };
 
     const seqMgr = this.sequenceManager;
 

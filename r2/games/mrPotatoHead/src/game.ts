@@ -307,17 +307,23 @@ var INITIAL_POSITIONS = {
 };
 
 exports.resetPieces = function(ctx) {
+  console.log('[MrPotatoHead] resetPieces called, isSequenceRunning:', ctx.isSequenceRunning('reset'));
   if (ctx.isSequenceRunning('reset')) return;
 
   ctx.startSequence('reset', async function(world) {
+    console.log('[MrPotatoHead] reset sequence started');
     var keys = Object.keys(INITIAL_POSITIONS);
     var last;
     for (var i = 0; i < keys.length; i++) {
       var id = keys[i];
-      var pos = INITIAL_POSITIONS[id];
-      last = world.animate(id, { x: pos.x, y: pos.y }, { duration: 350, easing: 'ease-in-out' });
+      var randX = (Math.random() - 0.5) * 8;
+      var randY = (Math.random() - 0.5) * 10;
+      console.log('[MrPotatoHead] animating', id, 'to', randX, randY);
+      last = world.animate(id, { x: randX, y: randY }, { duration: 500, easing: 'ease-in-out' });
     }
+    console.log('[MrPotatoHead] awaiting last animation');
     await last;
+    console.log('[MrPotatoHead] reset sequence complete');
   });
 };
 `,

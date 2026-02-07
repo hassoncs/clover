@@ -22,6 +22,7 @@ import type { InputEvents } from '../../../BehaviorContext';
 import type { CameraSystem } from '../../../CameraSystem';
 import type { InputEntityManager } from '../../../InputEntityManager';
 import type { IScriptSandbox } from '@/lib/scripting';
+import type { ScriptSandboxRuntimeSystem } from './ScriptSandboxRuntimeSystem';
 import type { GameState as RuntimeGameState, GameEventBus, GameStateValue, VarValue } from '../../../runtime/types';
 import * as StateHelpers from '../../../runtime/GameStateHelpers';
 import { RESERVED_VARS } from '../../../runtime/types';
@@ -97,6 +98,7 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
   
   private actionRegistry: ActionRegistry;
   private runScriptActionExecutor: RunScriptActionExecutor;
+  private scriptSystem: ScriptSandboxRuntimeSystem | null = null;
   private worldOps: WorldOpsImpl | null = null;
   
   private logicConditionEvaluator = new LogicConditionEvaluator();
@@ -526,6 +528,10 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
     this.runScriptActionExecutor.setSandbox(scriptSandbox);
   }
 
+  setScriptSystem(scriptSystem: ScriptSandboxRuntimeSystem): void {
+    this.scriptSystem = scriptSystem;
+  }
+
   loadRules(rules: GameRule[]): void {
     this.rules = rules;
   }
@@ -695,7 +701,13 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
   
   private executeActions(actions: RuleAction[], context: RuleContext): void {
     for (const a of actions) {
-      this.actionRegistry.execute(a, context);
+      if (a.type === 'run_script' && this.scriptSystem) {
+        const exportName = (a as { export?: string }).export ?? 'default';
+        const args = (a as { args?: Record<string, unknown> }).args;
+        this.scriptSystem.callExport(exportName, args);
+      } else {
+        this.actionRegistry.execute(a, context);
+      }
     }
   }
   
