@@ -34,6 +34,7 @@ var _splat_map_system: SplatMapSystem = null
 var _ws_system: WebSocketSystem = null
 var _collision_system: CollisionSystem = null
 var _world_system: WorldSystem = null
+var _camera_receiver: Node = null
 
 # ============================================================================
 # CORE STATE
@@ -134,6 +135,10 @@ func _init_modules() -> void:
 	_ws_system = WebSocketSystem.new(self)
 	_collision_system = CollisionSystem.new(self, _event_emitter)
 	_world_system = WorldSystem.new(self)
+	
+	_camera_receiver = load("res://scripts/camera/WebCameraReceiver.gd").new()
+	_camera_receiver.name = "WebCameraReceiver"
+	add_child(_camera_receiver)
 
 	_devtools_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_devtools_overlay)
@@ -227,6 +232,8 @@ func _build_method_map() -> void:
 		"set_camera_target": _camera_controller._js_set_camera_target,
 		"set_camera_position": _camera_controller._js_set_camera_position,
 		"set_camera_zoom": _camera_controller._js_set_camera_zoom,
+		"start_camera": _js_start_camera,
+		"stop_camera": _js_stop_camera,
 		# UI
 		"spawn_particle": _ui_manager._js_spawn_particle,
 		"play_sound": _ui_manager._js_play_sound,
@@ -316,6 +323,7 @@ func _setup_js_bridge() -> void:
 		"preloadTextures": _visual_renderer._js_preload_textures, "setDebugShowShapes": _visual_renderer._js_set_debug_show_shapes,
 		"setDebugSettings": _visual_renderer._js_set_debug_settings, "setCameraTarget": _camera_controller._js_set_camera_target,
 		"setCameraPosition": _camera_controller._js_set_camera_position, "setCameraZoom": _camera_controller._js_set_camera_zoom,
+		"startCamera": _js_start_camera, "stopCamera": _js_stop_camera,
 		"spawnParticle": _ui_manager._js_spawn_particle, "playSound": _ui_manager._js_play_sound,
 		"createUIButton": _ui_manager._js_create_ui_button, "destroyUIButton": _ui_manager._js_destroy_ui_button,
 		"onUIButtonEvent": _ui_manager._js_on_ui_button_event
@@ -349,6 +357,27 @@ func _js_set_inspect_mode(args: Array) -> void: if args.size() >= 1: set_inspect
 func _js_pause_physics(_args: Array) -> void: pause_physics()
 func _js_resume_physics(_args: Array) -> void: resume_physics()
 func _js_load_custom_scene(args: Array) -> bool: return load_custom_scene(str(args[0])) if args.size() > 0 else false
+
+func _js_start_camera(args: Array) -> void:
+	if args.size() < 1: return
+	var entity_id = str(args[0])
+	var width = int(args[1]) if args.size() > 1 else 640
+	var height = int(args[2]) if args.size() > 2 else 480
+	
+	if _camera_receiver:
+		_camera_receiver.setup(entity_id)
+		
+	var window = JavaScriptBridge.get_interface("window")
+	if window:
+		window.startCamera(entity_id, width, height)
+
+func _js_stop_camera(_args: Array) -> void:
+	if _camera_receiver:
+		_camera_receiver.stop()
+		
+	var window = JavaScriptBridge.get_interface("window")
+	if window:
+		window.stopCamera()
 
 func _log_physics_diagnostics() -> void:
 	print("[GameBridge][DIAG] === PHYSICS DIAGNOSTICS ===")

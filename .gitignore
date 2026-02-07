@@ -134,3 +134,10 @@ test_*.py
 # Work in progress / drafts
 .sisyphus/drafts/
 *.draft.md
+
+# GDExtension build artifacts
+godot_project/addons/camera-texture/godot-cpp/
+godot_project/addons/camera-texture/bin/
+godot_project/addons/camera-texture/.sconsign.dblite
+godot_project/addons/camera-texture/src/*.os
+godot_project/addons/camera-texture/src/*.o

@@ -792,6 +792,8 @@ export function createNativeGodotBridge(): GodotBridge {
       callGameBridge('clear_texture_cache', url ?? '');
     },
 
+
+
     async preloadTextures(urls: string[], onProgress?: (percent: number, completed: number, failed: number) => void): Promise<{ completed: number; failed: number }> {
       if (urls.length === 0) {
         onProgress?.(100, 0, 0);
@@ -848,6 +850,12 @@ export function createNativeGodotBridge(): GodotBridge {
 
     setCameraZoom(zoom: number) {
       callGameBridge('set_camera_zoom', zoom);
+    },
+
+    startCamera(_entityId: string, _width?: number, _height?: number) {
+    },
+
+    stopCamera() {
     },
 
     spawnParticle(type: string, x: number, y: number) {

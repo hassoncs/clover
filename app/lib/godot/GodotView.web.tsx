@@ -175,7 +175,7 @@ export function GodotViewWeb({
         src={GODOT_WASM_PATH}
         style={iframeStyles}
         title="Godot Game Engine"
-        allow="autoplay; fullscreen"
+        allow="autoplay; fullscreen; camera"
         sandbox="allow-scripts allow-same-origin allow-pointer-lock"
         tabIndex={-1}
       />

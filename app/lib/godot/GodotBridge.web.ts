@@ -167,6 +167,8 @@ declare global {
       setCameraTarget: (entityId: string) => void;
       setCameraPosition: (x: number, y: number) => void;
       setCameraZoom: (zoom: number) => void;
+      startCamera: (entityId: string, width?: number, height?: number) => void;
+      stopCamera: () => void;
       spawnParticle: (type: string, x: number, y: number) => void;
       playSound: (resourcePath: string) => void;
       applySpriteEffect: (
@@ -739,6 +741,8 @@ export function createWebGodotBridge(): GodotBridge {
       getGodotBridge()?.clearTextureCache(url ?? "");
     },
 
+
+
     preloadTextures(
       urls: string[],
       onProgress?: (percent: number, completed: number, failed: number) => void,
@@ -795,6 +799,14 @@ export function createWebGodotBridge(): GodotBridge {
 
     setCameraZoom(zoom: number) {
       getGodotBridge()?.setCameraZoom(zoom);
+    },
+
+    startCamera(entityId: string, width?: number, height?: number) {
+      getGodotBridge()?.startCamera(entityId, width, height);
+    },
+
+    stopCamera() {
+      getGodotBridge()?.stopCamera();
     },
 
     spawnParticle(type: string, x: number, y: number) {

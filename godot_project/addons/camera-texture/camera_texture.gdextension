@@ -1,0 +1,13 @@
+[configuration]
+
+entry_symbol = "camera_texture_init"
+compatibility_minimum = 4.3
+
+[libraries]
+
+macos.debug = "bin/macos/libcamera_texture.macos.template_debug.dylib"
+macos.release = "bin/macos/libcamera_texture.macos.template_release.dylib"
+web.debug.wasm32 = "bin/wasm-nothreads/libcamera_texture.wasm"
+web.release.wasm32 = "bin/wasm-nothreads/libcamera_texture.wasm"
+ios.debug.arm64 = "bin/ios/libcamera_texture.ios.template_debug.arm64.dylib"
+ios.release.arm64 = "bin/ios/libcamera_texture.ios.template_release.arm64.dylib"

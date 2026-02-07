@@ -191,7 +191,7 @@ Parallel Speedup: ~50% faster than sequential
 
 ---
 
-- [ ] 1. Spike: Validate Core Assumptions (GDExtension + dlsym + Shared Memory + ImageTexture Perf)
+- [x] 1. Spike: Validate Core Assumptions (GDExtension + dlsym + Shared Memory + ImageTexture Perf)
 
   **What to do**:
   This is the CRITICAL GATE task. Build the absolute minimum to validate four assumptions before investing in the full pipeline.
@@ -290,7 +290,7 @@ Parallel Speedup: ~50% faster than sequential
 
 ---
 
-- [ ] 2. SharedFrameBuffer C++ Header-Only Library
+- [x] 2. SharedFrameBuffer C++ Header-Only Library
 
   **What to do**:
   Create a thread-safe double-buffered frame sharing mechanism in a single C++ header. This is the data plane between the camera capture side (FPP) and the Godot rendering side (GDExtension).
@@ -553,7 +553,7 @@ Parallel Speedup: ~50% faster than sequential
 
 ---
 
-- [ ] 5. Web Camera Helper (getUserMedia → Godot WASM)
+- [x] 5. Web Camera Helper (getUserMedia → Godot WASM)
 
   **What to do**:
   Create a JavaScript helper that runs inside the Godot WASM iframe and captures camera frames via the Web API, feeding them directly into Godot's rendering.

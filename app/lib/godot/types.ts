@@ -315,9 +315,10 @@ export interface GodotBridge {
     * @param onProgress Optional callback for progress updates (percent, completed, failed)
     * @returns Promise that resolves when all textures are loaded
     */
-   preloadTextures(urls: string[], onProgress?: (percent: number, completed: number, failed: number) => void): Promise<{ completed: number; failed: number }>;
+    preloadTextures(urls: string[], onProgress?: (percent: number, completed: number, failed: number) => void): Promise<{ completed: number; failed: number }>;
 
-   // Debug mode
+    // Debug mode
+
    setDebugShowShapes(show: boolean): void;
     setDebugSettings(settings: { showInputDebug: boolean; showPhysicsShapes: boolean; showZones: boolean; showFPS: boolean }): void;
 
@@ -325,6 +326,8 @@ export interface GodotBridge {
   setCameraTarget(entityId: string | null): void;
   setCameraPosition(x: number, y: number): void;
   setCameraZoom(zoom: number): void;
+  startCamera(entityId: string, width?: number, height?: number): void;
+  stopCamera(): void;
 
   // Particle effects
   spawnParticle(type: string, x: number, y: number): void;

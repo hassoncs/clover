@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+"""
+SETUP:
+  cd godot_project/addons/camera-texture
+  git clone --branch 4.3 --depth 1 https://github.com/godotengine/godot-cpp.git
+  scons platform=macos target=template_debug
+
+WASM (requires Emscripten SDK):
+  scons platform=web target=template_debug
+"""
+import os
+import sys
+
+env = SConscript("godot-cpp/SConstruct")
+
+env.Append(CPPPATH=["src/"])
+sources = Glob("src/*.cpp")
+
+suffix = env["suffix"].replace(".dev", "").replace(".universal", "")
+shlibsuffix = env.subst("$SHLIBSUFFIX")
+
+if env["platform"] == "web":
+    output_path = "bin/wasm-nothreads/libcamera_texture"
+else:
+    output_path = "bin/{platform}/libcamera_texture{suffix}{ext}".format(
+        platform=env["platform"], suffix=suffix, ext=shlibsuffix)
+
+library = env.SharedLibrary(output_path, source=sources)
+
+Default(library)
