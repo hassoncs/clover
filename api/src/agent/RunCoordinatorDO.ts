@@ -1,8 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 
 import type { AgentEventPayload, AgentRunStatus, ClarificationQuestion } from '@slopcade/shared/types/agent-run';
-import { AgentBillingService } from '@/economy/agent-billing-service';
-import { WalletService } from '@/economy/wallet-service';
 import { logAgentEvent } from '@/agent/observability';
 import { processGates } from '@/agent/engine/gate-processor';
 import { getStageGateConfig, type StageGateConfig } from '@/agent/stage-gates';
@@ -17,6 +15,29 @@ import type {
   ServerMessage,
 } from './types';
 
+import type { RunState, RunAnswerLedgerEntry, RunExecutionContextRow } from './run-state-machine';
+import {
+  STATE_KEY,
+  MAX_REPLAY_EVENTS,
+  COMMAND_KEY_PREFIX,
+  ANSWER_KEY_PREFIX,
+  LEASE_MS,
+  MAX_RECOVERY_ATTEMPTS,
+  PLANNING_STAGE_GATES_YAML,
+  transitionStatus as transitionStatusFn,
+  getStage as getStageFn,
+  toSnapshot as toSnapshotFn,
+  parseClientMessage as parseClientMessageFn,
+} from './run-state-machine';
+import { RunEventStore } from './run-event-store';
+import { RunBillingBridge } from './run-billing-bridge';
+import {
+  refreshLease as refreshLeaseFn,
+  getLastSuccessfulWorkerCheckpoint,
+  settleCompletedUnsettledSteps,
+  loadRunExecutionContext,
+} from './run-recovery';
+
 type DurableObjectNamespace = import('@cloudflare/workers-types').DurableObjectNamespace;
 
 interface Env {
@@ -29,97 +50,18 @@ interface Env {
 
 type D1Database = import('@cloudflare/workers-types').D1Database;
 
-interface RunExecutionContextRow {
-  user_id: string;
-  game_id: string;
-  tier: 'free' | 'standard' | 'pro';
-  planning_doc_json: string | null;
-  game_title: string;
-  game_description: string | null;
-}
-
-interface WorkerCheckpointResponse {
-  checkpointId: string | null;
-  stepIndex: number | null;
-  stateJson: string | null;
-}
-
-interface UnsettledSucceededStepRow {
-  step_id: string;
-  step_index: number;
-  cost_micros: number;
-  finished_at: number | null;
-}
-
-interface RunAnswerLedgerEntry {
-  submissionId: string;
-  questionId: string;
-  result: 'accepted' | 'rejected';
-  reason?: string;
-  processedAt: number;
-}
-
-interface RunState {
-  runId: string;
-  status: AgentRunStatus;
-  stateVersion: number;
-  currentStepIndex: number;
-  totalSteps: number;
-  lastSeq: number;
-  totalCostMicros: number;
-  heartbeatAt: number | null;
-  leaseExpiresAt: number | null;
-  recoveryAttempts: number;
-  clarificationQuestions: ClarificationQuestion[];
-  pendingQuestionId: string | null;
-  pendingQuestionBatchId: string | null;
-  pendingQuestionsJson: string | null;
-  suspendedStepIndex: number | null;
-  rawPrompt: string | null;
-  gateValues: Record<string, string>;
-  gateLoopIteration: number;
-  gateAnswers: Array<{ question: string; answer: string }>;
-  updatedAt: number;
-}
-
-const STATE_KEY = 'run:state';
-const MAX_REPLAY_EVENTS = 1000;
-const EVENT_KEY_PREFIX = 'event:';
-const COMMAND_KEY_PREFIX = 'control:';
-const ANSWER_KEY_PREFIX = 'answer:';
-const LEASE_MS = 30_000;
-const MAX_RECOVERY_ATTEMPTS = 3;
-const PLANNING_STAGE_GATES_YAML = `stage: planning
-gates:
-  - id: core_game_loop
-    label: Core Game Loop
-    description: Describe the main gameplay loop - what does the player do repeatedly?
-    required: true
-    ai_extraction_hint: Look for descriptions of the main player action, game mechanics, or what happens on each turn/frame
-  - id: win_lose_conditions
-    label: Win/Lose Conditions
-    description: Define how the player wins or loses the game
-    required: true
-    ai_extraction_hint: Look for win/loss conditions, scoring rules, victory requirements, or failure states
-  - id: theme_style
-    label: Theme & Style
-    description: Describe the visual theme and art style
-    required: true
-    ai_extraction_hint: Look for visual descriptions, color schemes, art style preferences, or aesthetic references
-  - id: game_type_category
-    label: Game Type/Category
-    description: What type of game is this?
-    required: true
-    ai_extraction_hint: Look for genre mentions, gameplay style references, or comparisons to existing games`;
-
 export class RunCoordinatorDO extends DurableObject<Env> {
   private clients = new Set<WebSocket>();
   private initialized = false;
   private state!: RunState;
+  private eventStore!: RunEventStore;
+  private billing!: RunBillingBridge;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     this.clients = new Set(this.ctx.getWebSockets());
+    this.eventStore = new RunEventStore(this.ctx.storage, this.env.DB);
+    this.billing = new RunBillingBridge(this.env.DB);
   }
 
   async fetch(request: Request): Promise<Response> {
@@ -953,91 +895,15 @@ export class RunCoordinatorDO extends DurableObject<Env> {
   }
 
   private async persistCheckpointRecord(result: RunStepResult): Promise<void> {
-    await this.env.DB.prepare(
-      `INSERT OR REPLACE INTO agent_checkpoints
-       (id, run_id, step_index, state_json, artifact_keys_json, created_at)
-       VALUES (?, ?, ?, ?, ?, ?)`
-    )
-      .bind(
-        result.checkpointId,
-        result.runId,
-        result.stepIndex,
-        result.checkpointStateJson ?? JSON.stringify({ status: result.status, stepIndex: result.stepIndex }),
-        result.checkpointArtifactKeysJson ?? null,
-        result.completedAt
-      )
-      .run();
+    await this.billing.persistCheckpoint(result);
   }
 
   private async updateStepStatus(result: RunStepResult): Promise<void> {
-    let dbStatus: 'succeeded' | 'running' | 'failed';
-    if (result.status === 'succeeded') {
-      dbStatus = 'succeeded';
-    } else if (result.status === 'suspended') {
-      dbStatus = 'running';
-    } else {
-      dbStatus = 'failed';
-    }
-    await this.env.DB.prepare(
-      `UPDATE agent_steps
-       SET status = ?,
-           output_artifact_key = COALESCE(?, output_artifact_key),
-           cost_micros = ?,
-           error_message = ?,
-           finished_at = ?,
-           started_at = COALESCE(started_at, ?)
-       WHERE run_id = ? AND step_index = ?`
-    )
-      .bind(
-        dbStatus,
-        result.outputArtifactKey ?? null,
-        result.costMicros,
-        result.errorMessage ?? null,
-        result.status === 'suspended' ? null : result.completedAt,
-        result.completedAt,
-        result.runId,
-        result.stepIndex
-      )
-      .run();
+    await this.billing.updateStepStatus(result);
   }
 
   private async settleStepBilling(result: RunStepResult): Promise<void> {
-    const run = await this.env.DB
-      .prepare('SELECT user_id, tier FROM agent_runs WHERE id = ?')
-      .bind(result.runId)
-      .first<{ user_id: string; tier: string }>();
-
-    if (!run) {
-      throw new Error(`Missing run row for billing settle: ${result.runId}`);
-    }
-
-    const billingService = new AgentBillingService(this.env.DB, new WalletService(this.env.DB));
-    await billingService.settleStep({
-      userId: run.user_id,
-      runId: result.runId,
-      stepId: result.stepId,
-      stepIndex: result.stepIndex,
-      provider: result.provider,
-      model: result.model,
-      inputTokens: result.inputTokens ?? 0,
-      outputTokens: result.outputTokens ?? 0,
-      costMicros: result.costMicros,
-    });
-
-    logAgentEvent({
-      event: 'agent_run.billing_settled',
-      runId: result.runId,
-      userId: run.user_id,
-      tier: run.tier,
-      stepIndex: result.stepIndex,
-      costMicros: result.costMicros,
-      metadata: {
-        provider: result.provider,
-        model: result.model,
-        inputTokens: result.inputTokens ?? 0,
-        outputTokens: result.outputTokens ?? 0,
-      },
-    });
+    await this.billing.settleStep(result);
   }
 
   private async handleHeartbeat(): Promise<Response> {
@@ -1046,18 +912,7 @@ export class RunCoordinatorDO extends DurableObject<Env> {
   }
 
   private parseClientMessage(rawMessage: string | ArrayBuffer): ClientMessage | null {
-    if (typeof rawMessage !== 'string') {
-      return null;
-    }
-    try {
-      const parsed = JSON.parse(rawMessage) as ClientMessage;
-      if (!parsed || typeof parsed !== 'object' || !('type' in parsed)) {
-        return null;
-      }
-      return parsed;
-    } catch {
-      return null;
-    }
+    return parseClientMessageFn(rawMessage);
   }
 
   private async handleConnect(
@@ -1291,72 +1146,12 @@ export class RunCoordinatorDO extends DurableObject<Env> {
     });
   }
 
-  private async getLastSuccessfulWorkerCheckpoint(): Promise<WorkerCheckpointResponse | null> {
-    const workerId = this.env.RUN_STEP_WORKER.idFromName(this.state.runId);
-    const workerStub = this.env.RUN_STEP_WORKER.get(workerId);
-    const response = await workerStub.fetch('https://run-step/internal/last-successful-checkpoint', {
-      method: 'POST',
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const body = (await response.json().catch(() => null)) as WorkerCheckpointResponse | null;
-    if (!body) {
-      return null;
-    }
-
-    return body;
+  private async getLastSuccessfulWorkerCheckpoint() {
+    return getLastSuccessfulWorkerCheckpoint(this.state.runId, this.env.RUN_STEP_WORKER);
   }
 
   private async settleCompletedUnsettledSteps(throughStepIndex: number): Promise<void> {
-    if (throughStepIndex < 0) {
-      return;
-    }
-
-    const unsettled = await this.env.DB
-      .prepare(
-        `SELECT
-          s.id AS step_id,
-          s.step_index,
-          s.cost_micros,
-          s.finished_at
-         FROM agent_steps s
-         LEFT JOIN agent_costs ac
-           ON ac.run_id = s.run_id
-          AND (
-            ac.step_id = s.id
-            OR ac.idempotency_key = ('agent-step-settle:' || s.run_id || ':' || s.step_index)
-          )
-         WHERE s.run_id = ?
-           AND s.status = 'succeeded'
-           AND s.step_index <= ?
-           AND ac.id IS NULL
-         ORDER BY s.step_index ASC`
-      )
-      .bind(this.state.runId, throughStepIndex)
-      .all<UnsettledSucceededStepRow>();
-
-    for (const step of unsettled.results) {
-      const recoveredResult: RunStepResult = {
-        type: 'step_result',
-        runId: this.state.runId,
-        stepId: step.step_id,
-        stepIndex: step.step_index,
-        stage: this.getStage(step.step_index),
-        status: 'succeeded',
-        costMicros: step.cost_micros,
-        checkpointId: `${this.state.runId}:checkpoint:${step.step_index}`,
-        provider: 'unknown',
-        model: 'unknown',
-        inputTokens: 0,
-        outputTokens: 0,
-        completedAt: step.finished_at ?? Date.now(),
-      };
-
-      await this.settleStepBilling(recoveredResult);
-    }
+    return settleCompletedUnsettledSteps(this.state, this.env.DB, this.billing, throughStepIndex);
   }
 
   private async runGateLoop(): Promise<void> {
@@ -1605,136 +1400,38 @@ export class RunCoordinatorDO extends DurableObject<Env> {
   }
 
   private async loadRunExecutionContext(): Promise<RunExecutionContextRow | null> {
-    return this.env.DB.prepare(
-      `SELECT
-        ar.user_id as user_id,
-        ar.game_id as game_id,
-        ar.tier as tier,
-        ar.planning_doc_json as planning_doc_json,
-        g.title as game_title,
-        g.description as game_description
-      FROM agent_runs ar
-      INNER JOIN games g ON g.id = ar.game_id
-      WHERE ar.id = ?`
-    )
-      .bind(this.state.runId)
-      .first<RunExecutionContextRow>();
+    return loadRunExecutionContext(this.state.runId, this.env.DB);
   }
 
   private getStage(stepIndex: number): RunStepRequest['stage'] {
-    const order: RunStepRequest['stage'][] = ['planning', 'build', 'refine', 'theme', 'asset'];
-    return order[stepIndex % order.length];
+    return getStageFn(stepIndex);
   }
 
   private async emitEvent(
     eventType: AgentEvent['eventType'],
     payload: AgentEventPayload
   ): Promise<void> {
-    const nextSeq = this.state.lastSeq + 1;
-    const stateVersion = this.state.stateVersion;
-    const event: AgentEvent = {
-      seq: nextSeq,
-      stateVersion,
-      eventType,
-      payload,
-      timestamp: Date.now(),
-    };
-
-    this.state.lastSeq = nextSeq;
-    this.state.updatedAt = event.timestamp;
-
-    await this.ctx.storage.put(this.eventKey(nextSeq), event);
-    await this.env.DB
-      .prepare(
-        `INSERT OR IGNORE INTO agent_events (id, run_id, seq, event_type, payload_json, created_at)
-         VALUES (?, ?, ?, ?, ?, ?)`
-      )
-      .bind(
-        `${this.state.runId}:event:${event.seq}`,
-        this.state.runId,
-        event.seq,
-        event.eventType,
-        JSON.stringify(event.payload),
-        event.timestamp
-      )
-      .run();
+    const event = await this.eventStore.append(this.state, eventType, payload);
     await this.persistState();
-    await this.pruneEvents(nextSeq);
-
-    const message: ServerMessage = {
-      type: 'event',
-      seq: event.seq,
-      stateVersion: event.stateVersion,
-      eventType: event.eventType,
-      payload: event.payload,
-      timestamp: event.timestamp,
-    };
-    this.broadcast(message);
-  }
-
-  private async pruneEvents(lastSeq: number): Promise<void> {
-    const cutoff = Math.max(1, lastSeq - MAX_REPLAY_EVENTS + 1);
-    const allEvents = await this.ctx.storage.list<AgentEvent>({ prefix: EVENT_KEY_PREFIX });
-    const keysToDelete: string[] = [];
-
-    for (const [key, value] of allEvents) {
-      if (value.seq < cutoff) {
-        keysToDelete.push(key);
-      }
-    }
-
-    if (keysToDelete.length > 0) {
-      await this.ctx.storage.delete(keysToDelete);
-    }
+    await this.eventStore.prune(event.seq);
+    this.broadcast(this.eventStore.toServerMessage(event));
   }
 
   private async getEventsAfter(lastSeq: number): Promise<AgentEvent[]> {
-    const allEvents = await this.ctx.storage.list<AgentEvent>({ prefix: EVENT_KEY_PREFIX });
-    const events: AgentEvent[] = [];
-    for (const [, value] of allEvents) {
-      if (value.seq > lastSeq) {
-        events.push(value);
-      }
-    }
-    return events.sort((a, b) => a.seq - b.seq);
+    return this.eventStore.getAfter(lastSeq);
   }
 
   private async refreshLease(): Promise<void> {
-    const now = Date.now();
-    this.state.heartbeatAt = now;
-    this.state.leaseExpiresAt = now + LEASE_MS;
-    this.state.recoveryAttempts = 0;
-    this.state.updatedAt = now;
-    await this.ctx.storage.setAlarm(this.state.leaseExpiresAt);
+    await refreshLeaseFn(this.state, this.ctx.storage);
     await this.persistState();
   }
 
   private toSnapshot(): AgentRunSnapshot {
-    return {
-      runId: this.state.runId,
-      status: this.state.status,
-      stateVersion: this.state.stateVersion,
-      currentStepIndex: this.state.currentStepIndex,
-      totalSteps: this.state.totalSteps,
-      lastSeq: this.state.lastSeq,
-      totalCostMicros: this.state.totalCostMicros,
-      heartbeatAt: this.state.heartbeatAt,
-      leaseExpiresAt: this.state.leaseExpiresAt,
-      updatedAt: this.state.updatedAt,
-    };
+    return toSnapshotFn(this.state);
   }
 
   private transitionStatus(nextStatus: AgentRunStatus): void {
-    if (this.state.status === nextStatus) {
-      return;
-    }
-
-    this.state.status = nextStatus;
-    this.state.stateVersion += 1;
-  }
-
-  private eventKey(seq: number): string {
-    return `${EVENT_KEY_PREFIX}${seq.toString().padStart(12, '0')}`;
+    transitionStatusFn(this.state, nextStatus);
   }
 
   private broadcast(message: ServerMessage): void {
