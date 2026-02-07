@@ -103,6 +103,11 @@ export interface TextSprite {
   zIndex?: number;
 }
 
+export type DrawCommand =
+  | { type: 'pixel'; x: number; y: number; color: string }
+  | { type: 'line'; x1: number; y1: number; x2: number; y2: number; color: string; width?: number }
+  | { type: 'fill'; color: string };
+
 export type SpriteDefinition =
   | RectSprite
   | CircleSprite
@@ -307,6 +312,12 @@ export interface GodotBridge {
      height: number
    ): void;
    clearTextureCache(url?: string): void;
+   
+   // Pixel Buffer operations
+   createPixelBuffer(entityId: string, width: number, height: number, clearColor: string): void;
+   pixelBufferDraw(entityId: string, commands: DrawCommand[]): void;
+   pixelBufferClear(entityId: string, color: string): void;
+   destroyPixelBuffer(entityId: string): void;
    
    /**
     * Preload textures into Godot's internal texture cache before game starts.

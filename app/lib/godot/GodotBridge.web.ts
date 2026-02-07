@@ -15,6 +15,7 @@ import type {
   WeldJointDef,
   MouseJointDef,
   DynamicShaderResult,
+  DrawCommand,
 } from "./types";
 import { injectGodotDebugBridge } from "./debug";
 import {
@@ -162,6 +163,10 @@ declare global {
           failed: number,
         ) => void,
       ) => void;
+      createPixelBuffer: (entityId: string, width: number, height: number, clearColor: string) => void;
+      pixelBufferDraw: (entityId: string, commandsJson: string) => void;
+      pixelBufferClear: (entityId: string, color: string) => void;
+      destroyPixelBuffer: (entityId: string) => void;
       setDebugShowShapes: (show: boolean) => void;
       setDebugSettings: (settingsJson: string) => void;
       setCameraTarget: (entityId: string) => void;
@@ -704,6 +709,19 @@ export function createWebGodotBridge(): GodotBridge {
 
     sendInput(type, data) {
       getGodotBridge()?.sendInput(type, data.x, data.y, data.entityId ?? "");
+    },
+
+    createPixelBuffer(entityId: string, width: number, height: number, clearColor: string) {
+      getGodotBridge()?.createPixelBuffer(entityId, width, height, clearColor);
+    },
+    pixelBufferDraw(entityId: string, commands: DrawCommand[]) {
+      getGodotBridge()?.pixelBufferDraw(entityId, JSON.stringify(commands));
+    },
+    pixelBufferClear(entityId: string, color: string) {
+      getGodotBridge()?.pixelBufferClear(entityId, color);
+    },
+    destroyPixelBuffer(entityId: string) {
+      getGodotBridge()?.destroyPixelBuffer(entityId);
     },
 
     setEntityImage(

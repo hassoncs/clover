@@ -17,6 +17,7 @@ import type {
   ColliderConfig,
   ContactInfo,
   DynamicShaderResult,
+  DrawCommand,
 } from './types';
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -736,6 +737,19 @@ export function createNativeGodotBridge(): GodotBridge {
 
     sendInput(type, data) {
       callGameBridge('send_input', type, data.x, data.y, data.entityId ?? '');
+    },
+
+    createPixelBuffer(entityId: string, width: number, height: number, clearColor: string) {
+      callGameBridge('createPixelBuffer', entityId, width, height, clearColor);
+    },
+    pixelBufferDraw(entityId: string, commands: DrawCommand[]) {
+      callGameBridge('pixelBufferDraw', entityId, JSON.stringify(commands));
+    },
+    pixelBufferClear(entityId: string, color: string) {
+      callGameBridge('pixelBufferClear', entityId, color);
+    },
+    destroyPixelBuffer(entityId: string) {
+      callGameBridge('destroyPixelBuffer', entityId);
     },
 
     async setEntityImage(entityId: string, url: string, width: number, height: number) {

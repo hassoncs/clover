@@ -390,6 +390,26 @@ export class WorldOpsImpl implements WorldOps {
     this.eventQueue.emit('game_state_change', { state: 'lost' });
   }
 
+  async createPixelBuffer(
+    entityId: string,
+    width: number,
+    height: number,
+    clearColor: string
+  ): Promise<void> {
+    this.bridge.createPixelBuffer(entityId, width, height, clearColor);
+  }
+
+  async pixelBufferDraw(
+    entityId: string,
+    commands: Array<{ type: string; [key: string]: unknown }>
+  ): Promise<void> {
+    this.bridge.pixelBufferDraw(entityId, commands as import("@/lib/godot/types").DrawCommand[]);
+  }
+
+  async pixelBufferClear(entityId: string, color: string): Promise<void> {
+    this.bridge.pixelBufferClear(entityId, color);
+  }
+
   async animate(
     entityId: string,
     target: AnimateTarget,

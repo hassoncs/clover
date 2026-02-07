@@ -578,6 +578,9 @@ export class ScriptSandboxRuntimeSystem implements RuntimeSystem<ScriptSandboxSy
       clamp: (value: number, min: number, max: number) => Math.max(min, Math.min(max, value)),
       lerp: (a: number, b: number, t: number) => a + (b - a) * t,
       distance: (a: Vec2, b: Vec2) => Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2),
+      createPixelBuffer: () => {},
+      pixelBufferDraw: () => {},
+      pixelBufferClear: () => {},
     };
   }
 

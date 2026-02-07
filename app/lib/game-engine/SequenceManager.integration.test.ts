@@ -111,6 +111,9 @@ function createFrameBasedMockWorldOps(): {
     emit: vi.fn().mockResolvedValue(undefined),
     win: vi.fn().mockResolvedValue(undefined),
     lose: vi.fn().mockResolvedValue(undefined),
+    createPixelBuffer: vi.fn().mockResolvedValue(undefined),
+    pixelBufferDraw: vi.fn().mockResolvedValue(undefined),
+    pixelBufferClear: vi.fn().mockResolvedValue(undefined),
   };
 
   function advanceTime(dt: number): void {
