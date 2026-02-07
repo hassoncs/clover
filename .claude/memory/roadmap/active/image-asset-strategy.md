@@ -248,3 +248,96 @@ Since this is a kids' app:
 **Total cost to implement Phases 0-3:** ~$6 in generation costs + engineering time.  
 **Result:** 90%+ of asset requests resolve in <500ms. Remaining 10% in 1-3 seconds.  
 **Cost reduction:** 85-100% reduction in per-image generation costs for most requests.
+
+---
+
+## Phase 1 Deep Dive: Kenney Ingestion Technical Plan
+
+> Research completed 2026-02-07. No code written yet.
+
+### Scope (Narrowed)
+
+**Only sprite sheets and tile sheets** from Kenney. Not individual PNGs, not 3D, not audio, not vectors.
+
+- **439 sheets** identified across all Kenney 2D/Icon/UI packs (PNG + XML atlas pairs)
+- Source: `~/Downloads/Kenney Game Assets All-in-1 3.3.0`
+- Skip: `@2x`/`Retina`/`HD` resolution variants, legacy/archive packs, SWF files
+
+### Cost
+
+Effectively **$0/month** on Cloudflare R2 free tier:
+- Storage: ~200MB (well under 10GB free)
+- Class A ops (writes): one-time ingest (~1,000 ops, free tier is 1M/month)
+- Class B ops (reads): depends on usage but free tier is 10M/month
+- Egress: free (R2 has zero egress fees)
+
+### Database Schema (D1 with FTS5)
+
+```sql
+-- Source packs (e.g., "Kenney Platformer Pack")
+CREATE TABLE library_packs (
+  id TEXT PRIMARY KEY,          -- e.g., "kenney-platformer"
+  source TEXT NOT NULL,         -- e.g., "kenney"
+  name TEXT NOT NULL,
+  description TEXT,
+  license TEXT NOT NULL,        -- e.g., "CC0"
+  version TEXT,
+  pack_url TEXT,                -- link to source
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
+-- Individual sheets (sprite sheets + tile sheets)
+CREATE TABLE library_sheets (
+  id TEXT PRIMARY KEY,          -- e.g., "kenney-platformer/spritesheet_tiles"
+  pack_id TEXT NOT NULL REFERENCES library_packs(id),
+  name TEXT NOT NULL,           -- display name
+  type TEXT NOT NULL,           -- "spritesheet" | "tilesheet"
+  r2_key TEXT NOT NULL,         -- R2 object key for PNG
+  atlas_r2_key TEXT,            -- R2 object key for XML atlas
+  width INTEGER,
+  height INTEGER,
+  frame_count INTEGER,          -- number of sprites/tiles in sheet
+  tags TEXT,                    -- comma-separated searchable tags
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
+-- Full-text search index
+CREATE VIRTUAL TABLE library_sheets_fts USING fts5(
+  name, tags, content='library_sheets', content_rowid='rowid'
+);
+```
+
+### Ingestion Pipeline
+
+1. Walk Kenney download directory, find all PNG+XML pairs
+2. Parse XML atlas to extract frame count and metadata
+3. Generate tags from filename, directory path, and atlas frame names
+4. Upload PNG and XML to R2 under `library/{source}/{pack}/{filename}`
+5. Insert rows into `library_packs` and `library_sheets`
+6. Rebuild FTS5 index
+
+Script: `api/scripts/ingest-asset-library.ts` (to be created)
+
+### API (tRPC)
+
+```
+library.search({ query, type?, limit?, offset? })  → paginated sheet results
+library.browse({ packId?, type?, limit?, offset? }) → browse by pack
+library.sheet({ id })                                → single sheet detail
+```
+
+### UI
+
+Asset browser with:
+- Search bar with instant FTS5 results
+- Type filter (sprite sheet / tile sheet)
+- Infinite scroll grid of sheet thumbnails
+- Tap to preview → see individual frames from atlas
+- "Use in game" action
+
+### What's NOT in scope yet
+
+- **3D assets**: ~50 Kenney packs, deferred until Godot format finalized
+- **Individual sprite PNGs**: Only compound sheet assets for now
+- **Audio**: Kenney has audio packs but not prioritized
+- **Non-Kenney sources**: Schema is source-agnostic but only Kenney data for Phase 1

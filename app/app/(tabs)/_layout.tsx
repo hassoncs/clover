@@ -5,11 +5,37 @@ import { AppFrameHeader } from "@/components/navigation/AppFrameHeader";
 import { FloatingTabBar } from "@/components/navigation/FloatingTabBar";
 import { SidebarPlaceholder } from "@/components/navigation/SidebarPlaceholder";
 
-const TAB_TITLES: Record<string, string> = {
-  browse: "Slopcade",
-  lab: "Slopcade",
-  maker: "Slopcade",
-  themes: "Slopcade",
+const TAB_HEADER_CONFIG: Record<
+  string,
+  {
+    title?: string;
+    showHeader: boolean;
+    leftIcons: ("menu" | "search" | "swap-vertical-outline")[];
+    rightIcons: ("notifications-outline" | "person-add-outline")[];
+  }
+> = {
+  browse: {
+    title: "Slopcade",
+    showHeader: true,
+    leftIcons: ["menu", "search"],
+    rightIcons: ["notifications-outline", "person-add-outline"],
+  },
+  lab: {
+    title: "Chat",
+    showHeader: true,
+    leftIcons: [],
+    rightIcons: ["person-add-outline"],
+  },
+  maker: {
+    showHeader: true,
+    leftIcons: ["swap-vertical-outline"],
+    rightIcons: ["person-add-outline"],
+  },
+  profile: {
+    showHeader: false,
+    leftIcons: [],
+    rightIcons: [],
+  },
 };
 
 export default function TabLayout() {
@@ -37,15 +63,25 @@ export default function TabLayout() {
       <Tabs
         tabBar={(props) => <FloatingTabBar {...props} onPrimaryPress={goToMaker} />}
         screenOptions={({ route }) => ({
-          header: () => (
-            <AppFrameHeader
-              title={TAB_TITLES[route.name] ?? "Slopcade"}
-              onMenuPress={openSidebar}
-              onSearchPress={goToDiscover}
-              onNotificationsPress={() => {}}
-              onInvitePress={() => {}}
-            />
-          ),
+          headerShown: TAB_HEADER_CONFIG[route.name]?.showHeader ?? true,
+          header: () => {
+            const config = TAB_HEADER_CONFIG[route.name] ?? TAB_HEADER_CONFIG.browse;
+            return (
+              <AppFrameHeader
+                title={config.title}
+                leftActions={config.leftIcons.map((icon) => ({
+                  icon,
+                  onPress:
+                    icon === "menu"
+                      ? openSidebar
+                      : icon === "search"
+                        ? goToDiscover
+                        : () => {},
+                }))}
+                rightActions={config.rightIcons.map((icon) => ({ icon, onPress: () => {} }))}
+              />
+            );
+          },
           sceneStyle: {
             backgroundColor: "#050608",
           },
@@ -55,7 +91,7 @@ export default function TabLayout() {
         <Tabs.Screen name="browse" options={{ title: "Browse" }} />
         <Tabs.Screen name="lab" options={{ title: "Lab" }} />
         <Tabs.Screen name="maker" options={{ title: "Maker" }} />
-        <Tabs.Screen name="themes" options={{ title: "Themes" }} />
+        <Tabs.Screen name="profile" options={{ title: "Profile" }} />
       </Tabs>
 
       <SidebarPlaceholder visible={sidebarVisible} onClose={closeSidebar} />

@@ -10,7 +10,7 @@ const ROUTE_ICON_MAP: Record<
   browse: { active: "home", inactive: "home-outline" },
   lab: { active: "chatbubble", inactive: "chatbubble-outline" },
   maker: { active: "color-palette", inactive: "color-palette-outline" },
-  themes: { active: "person", inactive: "person-outline" },
+  profile: { active: "person", inactive: "person-outline" },
 };
 
 interface FloatingTabBarProps extends BottomTabBarProps {

@@ -16,8 +16,6 @@ import { trpc } from "@/lib/trpc/client";
 import { trpcReact } from "@/lib/trpc/react";
 import { TESTGAMES } from "@/lib/registry/generated/testGames";
 import { useAuth } from "@/hooks/useAuth";
-import { CreditBalance } from "@/components/economy/CreditBalance";
-import { CurrencySheet } from "@/components/economy/CurrencySheet";
 import type { GameDefinition } from "@slopcade/shared";
 import { Image } from "react-native";
 
@@ -34,19 +32,13 @@ interface GameItem {
 
 export default function MakerScreen() {
   const router = useRouter();
-  const { isAuthenticated, isLoading: isAuthLoading, user, signInWithGoogle, sendMagicLink, signOut } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading, signInWithGoogle, sendMagicLink } = useAuth();
   
   const [myGames, setMyGames] = useState<GameItem[]>([]);
   const [isLoadingGames, setIsLoadingGames] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [showNewGameModal, setShowNewGameModal] = useState(false);
-  const [showCurrencySheet, setShowCurrencySheet] = useState(false);
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [isInviting, setIsInviting] = useState(false);
-  const [inviteSuccess, setInviteSuccess] = useState<string | null>(null);
-  const createInvite = trpcReact.invites.create.useMutation();
 
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -207,11 +199,6 @@ export default function MakerScreen() {
       setIsLoggingIn(false);
     }
   }, [loginEmail, sendMagicLink, inviteStatus]);
-
-  const handleSignOut = useCallback(async () => {
-    await signOut();
-    setMyGames([]);
-  }, [signOut]);
 
   const renderLoginScreen = () => (
     <ScrollView className="flex-1">
@@ -528,83 +515,6 @@ export default function MakerScreen() {
     </Modal>
   );
 
-  const renderInviteModal = () => (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={showInviteModal}
-      onRequestClose={() => setShowInviteModal(false)}
-    >
-      <SafeAreaView className="flex-1 bg-gray-900" edges={["bottom"]}>
-        <View className="flex-1 p-6">
-          <View className="flex-row justify-between items-center mb-6">
-            <Text className="text-2xl font-bold text-white">Invite Friend</Text>
-            <Pressable onPress={() => setShowInviteModal(false)}>
-              <Text className="text-gray-400 text-lg">✕</Text>
-            </Pressable>
-          </View>
-
-          <Text className="text-gray-400 mb-4">
-            Invite someone to join Slopcade by email. They'll be able to sign in once invited.
-          </Text>
-
-          <TextInput
-            className="w-full bg-gray-800 text-white p-4 rounded-xl border border-gray-700"
-            placeholder="friend@example.com"
-            placeholderTextColor="#6b7280"
-            value={inviteEmail}
-            onChangeText={setInviteEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            editable={!isInviting}
-          />
-
-          <Pressable
-            className={`mt-4 py-4 rounded-xl items-center ${
-              isInviting || !inviteEmail.includes('@')
-                ? "bg-gray-600"
-                : "bg-green-600 active:bg-green-700"
-            }`}
-            onPress={async () => {
-              if (!inviteEmail.includes('@')) return;
-              setIsInviting(true);
-              setInviteSuccess(null);
-              try {
-                await createInvite.mutateAsync({ email: inviteEmail });
-                setInviteSuccess(`Invited ${inviteEmail}`);
-                setInviteEmail("");
-              } catch (err) {
-                setInviteSuccess(null);
-                Alert.alert(
-                  "Invite Failed",
-                  err instanceof Error ? err.message : "Failed to send invite"
-                );
-              } finally {
-                setIsInviting(false);
-              }
-            }}
-            disabled={isInviting || !inviteEmail.includes('@')}
-          >
-            {isInviting ? (
-              <View className="flex-row items-center">
-                <ActivityIndicator color="white" size="small" />
-                <Text className="text-white font-bold text-lg ml-2">Sending...</Text>
-              </View>
-            ) : (
-              <Text className="text-white font-bold text-lg">Send Invite</Text>
-            )}
-          </Pressable>
-
-          {inviteSuccess && (
-            <View className="mt-4 p-4 bg-green-900/30 rounded-xl border border-green-700">
-              <Text className="text-green-400 text-center">{inviteSuccess}</Text>
-            </View>
-          )}
-        </View>
-      </SafeAreaView>
-    </Modal>
-  );
-
   if (isAuthLoading) {
     return (
       <SafeAreaView className="flex-1 bg-gray-900 items-center justify-center" edges={["bottom"]}>
@@ -625,25 +535,9 @@ export default function MakerScreen() {
   return (
     <SafeAreaView className="flex-1 bg-gray-900" edges={["bottom"]}>
       <View className="px-4 py-3 flex-row justify-between items-center border-b border-gray-800">
-        <View className="flex-row items-center">
-          <Text className="text-gray-400 text-sm">
-            {user?.email}
-          </Text>
-          <View className="mx-3">
-            <CreditBalance onPress={() => setShowCurrencySheet(true)} />
-          </View>
-          <Pressable
-            className="ml-2 py-1 px-2"
-            onPress={() => setShowInviteModal(true)}
-          >
-            <Text className="text-green-400 text-sm">Invite</Text>
-          </Pressable>
-          <Pressable
-            className="ml-3 py-1 px-2"
-            onPress={handleSignOut}
-          >
-            <Text className="text-red-400 text-sm">Sign Out</Text>
-          </Pressable>
+        <View>
+          <Text className="text-white text-lg font-semibold">Maker</Text>
+          <Text className="text-gray-400 text-sm">Build and manage your games</Text>
         </View>
         <Pressable
           className="py-2 px-4 bg-green-600 rounded-lg active:bg-green-700"
@@ -655,12 +549,6 @@ export default function MakerScreen() {
 
       {renderProjects()}
       {renderNewGameModal()}
-      {renderInviteModal()}
-      
-      <CurrencySheet 
-        visible={showCurrencySheet}
-        onClose={() => setShowCurrencySheet(false)}
-      />
     </SafeAreaView>
   );
 }

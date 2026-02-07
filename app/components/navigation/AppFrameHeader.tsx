@@ -2,12 +2,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+interface AppHeaderAction {
+  icon: keyof typeof Ionicons.glyphMap;
+  onPress?: () => void;
+}
+
 interface AppFrameHeaderProps {
-  title: string;
-  onMenuPress: () => void;
-  onSearchPress?: () => void;
-  onNotificationsPress?: () => void;
-  onInvitePress?: () => void;
+  title?: string;
+  leftActions?: AppHeaderAction[];
+  rightActions?: AppHeaderAction[];
 }
 
 function HeaderIconButton({
@@ -26,28 +29,32 @@ function HeaderIconButton({
 
 export function AppFrameHeader({
   title,
-  onMenuPress,
-  onSearchPress,
-  onNotificationsPress,
-  onInvitePress,
+  leftActions,
+  rightActions,
 }: AppFrameHeaderProps) {
   const insets = useSafeAreaInsets();
+  const resolvedLeftActions = leftActions ?? [];
+  const resolvedRightActions = rightActions ?? [];
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 6 }]}>
       <View style={styles.row}>
         <View style={styles.sideRow}>
-          <HeaderIconButton icon="menu" onPress={onMenuPress} />
-          <HeaderIconButton icon="search" onPress={onSearchPress} />
+          {resolvedLeftActions.map((action) => (
+            <HeaderIconButton key={action.icon} icon={action.icon} onPress={action.onPress} />
+          ))}
         </View>
 
-        <Text style={styles.title} numberOfLines={1}>
-          {title}
-        </Text>
+        {!!title && (
+          <Text style={styles.title} numberOfLines={1}>
+            {title}
+          </Text>
+        )}
 
         <View style={[styles.sideRow, styles.rightRow]}>
-          <HeaderIconButton icon="notifications-outline" onPress={onNotificationsPress} />
-          <HeaderIconButton icon="person-add-outline" onPress={onInvitePress} />
+          {resolvedRightActions.map((action) => (
+            <HeaderIconButton key={action.icon} icon={action.icon} onPress={action.onPress} />
+          ))}
         </View>
       </View>
     </View>
@@ -85,12 +92,14 @@ const styles = StyleSheet.create({
     borderRadius: 17,
   },
   title: {
+    position: "absolute",
+    left: 0,
+    right: 0,
     color: "#F4F4F5",
     fontSize: 22,
     lineHeight: 26,
     fontWeight: "700",
     letterSpacing: 0.2,
     textAlign: "center",
-    flex: 1,
   },
 });

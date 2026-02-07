@@ -26,8 +26,6 @@ export default function ThemesScreen() {
     loadMoreMyThemes,
     loadMorePublicThemes,
     handleRefresh,
-    fetchMyThemes,
-    fetchPublicThemes,
   } = useBrowseThemes();
 
   const handleCreate = () => {
@@ -41,25 +39,21 @@ export default function ThemesScreen() {
   };
 
   const handleDelete = (theme: Theme) => {
-    Alert.alert(
-      "Delete Theme",
-      "Are you sure you want to delete this theme? This action cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await trpc.assetSystem.themes.delete.mutate({ id: theme.id });
-              handleRefresh();
-            } catch (error) {
-              Alert.alert("Error", "Failed to delete theme");
-            }
-          },
+    Alert.alert("Delete Theme", "Are you sure you want to delete this theme? This action cannot be undone.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await trpc.assetSystem.themes.delete.mutate({ id: theme.id });
+            handleRefresh();
+          } catch {
+            Alert.alert("Error", "Failed to delete theme");
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const handleModalClose = () => {
@@ -75,26 +69,15 @@ export default function ThemesScreen() {
     <SafeAreaView className="flex-1 bg-gray-900" edges={["bottom"]}>
       <ScrollView
         className="flex-1"
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={handleRefresh}
-            tintColor="#4CAF50"
-          />
-        }
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor="#4CAF50" />}
       >
         <View className="p-4">
           <View className="mb-4">
             <Text className="text-2xl font-bold text-white">Themes</Text>
-            <Text className="text-gray-400 mt-1">
-              Create and discover visual styles for your games
-            </Text>
+            <Text className="text-gray-400 mt-1">Create and discover visual styles for your games</Text>
           </View>
 
-          <ThemeFilterBar
-            searchQuery={searchQuery}
-            onSearchChange={handleSearchChange}
-          />
+          <ThemeFilterBar searchQuery={searchQuery} onSearchChange={handleSearchChange} />
 
           <Pressable
             onPress={handleCreate}
@@ -103,10 +86,9 @@ export default function ThemesScreen() {
             <Text className="text-white font-semibold text-lg">+ Create New Theme</Text>
           </Pressable>
 
-          {/* My Themes Section */}
           <View className="mb-8">
             <Text className="text-xl font-bold text-white mb-3">My Themes</Text>
-            
+
             {isLoadingMy && myThemes.length === 0 ? (
               <ActivityIndicator size="large" color="#818CF8" />
             ) : myThemes.length === 0 ? (
@@ -121,13 +103,13 @@ export default function ThemesScreen() {
                   <ThemeCard
                     key={theme.id}
                     {...theme}
-                    isOwned={true}
+                    isOwned
                     onPress={() => router.push({ pathname: "/themes/[id]", params: { id: theme.id } })}
                     onEdit={() => handleEdit(theme)}
                     onDelete={() => handleDelete(theme)}
                   />
                 ))}
-                
+
                 {hasMoreMyThemes && (
                   <Pressable
                     onPress={loadMoreMyThemes}
@@ -140,10 +122,9 @@ export default function ThemesScreen() {
             )}
           </View>
 
-          {/* Public Themes Section */}
           <View className="mb-6">
             <Text className="text-xl font-bold text-white mb-3">Public Themes</Text>
-            
+
             {isLoadingPublic && publicThemes.length === 0 ? (
               <ActivityIndicator size="large" color="#818CF8" />
             ) : publicThemes.length === 0 ? (
@@ -162,7 +143,7 @@ export default function ThemesScreen() {
                     onPress={() => router.push({ pathname: "/themes/[id]", params: { id: theme.id } })}
                   />
                 ))}
-                
+
                 {hasMorePublicThemes && (
                   <Pressable
                     onPress={loadMorePublicThemes}
