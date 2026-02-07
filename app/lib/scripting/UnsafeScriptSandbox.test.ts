@@ -68,6 +68,9 @@ function createMockScriptContext(overrides: Partial<ScriptContext> = {}): Script
     createPixelBuffer: vi.fn(),
     pixelBufferDraw: vi.fn(),
     pixelBufferClear: vi.fn(),
+    haptic: vi.fn(),
+    hapticNotification: vi.fn(),
+    hapticSelection: vi.fn(),
     ...overrides,
   };
 }

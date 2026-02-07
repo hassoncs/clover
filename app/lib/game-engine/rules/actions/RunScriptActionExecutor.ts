@@ -3,6 +3,8 @@ import type { RunScriptAction } from '@slopcade/shared';
 import type { RuleContext } from '../types';
 import type { IScriptSandbox } from '@/lib/scripting';
 import type { ScriptContext, InputSnapshot, DragSnapshot } from '@/lib/scripting/types';
+import * as Haptics from '@/lib/haptics';
+import type { HapticStyle, NotificationStyle } from '@slopcade/shared/types/rules';
 import type {
   WorldEntityQuery,
   WorldEntityData,
@@ -373,6 +375,15 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
       createPixelBuffer: () => {},
       pixelBufferDraw: () => {},
       pixelBufferClear: () => {},
+      haptic: (style?: HapticStyle): void => {
+        Haptics.impactAsync((style as Haptics.ImpactFeedbackStyle) ?? 'Medium');
+      },
+      hapticNotification: (style?: NotificationStyle): void => {
+        Haptics.notificationAsync(style ?? 'Success');
+      },
+      hapticSelection: (): void => {
+        Haptics.selectionAsync();
+      },
     };
   }
 
