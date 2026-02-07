@@ -34,6 +34,7 @@ var _splat_map_system: SplatMapSystem = null
 var _ws_system: WebSocketSystem = null
 var _collision_system: CollisionSystem = null
 var _world_system: WorldSystem = null
+var _pixel_buffer_manager: PixelBufferManager = null
 
 # ============================================================================
 # CORE STATE
@@ -134,6 +135,7 @@ func _init_modules() -> void:
 	_ws_system = WebSocketSystem.new(self)
 	_collision_system = CollisionSystem.new(self, _event_emitter)
 	_world_system = WorldSystem.new(self)
+	_pixel_buffer_manager = PixelBufferManager.new(self)
 
 	_devtools_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_devtools_overlay)
@@ -199,6 +201,11 @@ func _build_method_map() -> void:
 		"set_debug_show_shapes": _visual_renderer._js_set_debug_show_shapes,
 		"set_debug_settings": _visual_renderer._js_set_debug_settings,
 		"clear_texture_cache": func(args): _visual_renderer.clear_texture_cache(str(args[0]) if args.size() > 0 else ""),
+		# Pixel Buffer
+		"createPixelBuffer": _pixel_buffer_manager._js_create_pixel_buffer,
+		"pixelBufferDraw": _pixel_buffer_manager._js_draw_commands,
+		"pixelBufferClear": _pixel_buffer_manager._js_clear,
+		"destroyPixelBuffer": _pixel_buffer_manager._js_destroy,
 		# Joints
 		"create_revolute_joint": _joint_manager._js_create_revolute_joint,
 		"create_distance_joint": _joint_manager._js_create_distance_joint,
@@ -315,6 +322,10 @@ func _setup_js_bridge() -> void:
 		"setEntityImage": _visual_renderer._js_set_entity_image, "setEntityAtlasRegion": _visual_renderer._js_set_entity_atlas_region,
 		"preloadTextures": _visual_renderer._js_preload_textures, "setDebugShowShapes": _visual_renderer._js_set_debug_show_shapes,
 		"setDebugSettings": _visual_renderer._js_set_debug_settings, "setCameraTarget": _camera_controller._js_set_camera_target,
+		"createPixelBuffer": _pixel_buffer_manager._js_create_pixel_buffer,
+		"pixelBufferDraw": _pixel_buffer_manager._js_draw_commands,
+		"pixelBufferClear": _pixel_buffer_manager._js_clear,
+		"destroyPixelBuffer": _pixel_buffer_manager._js_destroy,
 		"setCameraPosition": _camera_controller._js_set_camera_position, "setCameraZoom": _camera_controller._js_set_camera_zoom,
 		"spawnParticle": _ui_manager._js_spawn_particle, "playSound": _ui_manager._js_play_sound,
 		"createUIButton": _ui_manager._js_create_ui_button, "destroyUIButton": _ui_manager._js_destroy_ui_button,

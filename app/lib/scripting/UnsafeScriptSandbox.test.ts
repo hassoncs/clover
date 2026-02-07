@@ -65,6 +65,9 @@ function createMockScriptContext(overrides: Partial<ScriptContext> = {}): Script
     clamp: vi.fn().mockReturnValue(0.5),
     lerp: vi.fn().mockReturnValue(0.5),
     distance: vi.fn().mockReturnValue(1),
+    createPixelBuffer: vi.fn(),
+    pixelBufferDraw: vi.fn(),
+    pixelBufferClear: vi.fn(),
     ...overrides,
   };
 }

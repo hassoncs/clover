@@ -66,6 +66,11 @@ function createMockWorldOps(): WorldOps {
     emit: vi.fn().mockResolvedValue(undefined),
     win: vi.fn().mockResolvedValue(undefined),
     lose: vi.fn().mockResolvedValue(undefined),
+    
+    // Pixel Buffer
+    createPixelBuffer: vi.fn().mockResolvedValue(undefined),
+    pixelBufferDraw: vi.fn().mockResolvedValue(undefined),
+    pixelBufferClear: vi.fn().mockResolvedValue(undefined),
   };
   
   return mock;

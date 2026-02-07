@@ -64,6 +64,13 @@ export interface SyncWorldOps {
   raycast(from: Vec2, to: Vec2, opts?: RaycastOptions): RaycastHit | null;
 
   // ═══════════════════════════════════════════════════════════════
+  // Pixel Buffer
+  // ═══════════════════════════════════════════════════════════════
+  createPixelBuffer(entityId: string, width: number, height: number, clearColor: string): void;
+  pixelBufferDraw(entityId: string, commands: Array<{ type: string; [key: string]: unknown }>): void;
+  pixelBufferClear(entityId: string, color: string): void;
+
+  // ═══════════════════════════════════════════════════════════════
   // Game State
   // ═══════════════════════════════════════════════════════════════
   getVariable(name: string): unknown;

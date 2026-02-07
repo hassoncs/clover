@@ -128,6 +128,11 @@ export interface WorldOps {
   win(): Promise<void>;
   lose(): Promise<void>;
 
+  // --- Pixel Buffer ---
+  createPixelBuffer(entityId: string, width: number, height: number, clearColor: string): Promise<void>;
+  pixelBufferDraw(entityId: string, commands: Array<{ type: string; [key: string]: unknown }>): Promise<void>;
+  pixelBufferClear(entityId: string, color: string): Promise<void>;
+
   // --- Animation / Timing (multi-frame, coroutine-safe) ---
   animate(entityId: string, target: AnimateTarget, opts: AnimateOptions): Promise<void>;
   wait(ms: number, opts?: WaitOptions): Promise<void>;
