@@ -293,10 +293,6 @@ export class RulesSystem implements RuntimeSystem<RulesSystemConfig, RulesSystem
           const cooldownEnd = this.runtimeState.cooldowns.get(rule.id);
           if (cooldownEnd && elapsed < cooldownEnd) continue;
           
-          if (rule.trigger.type === 'game_loaded' || rule.trigger.type === 'game_started') {
-            logger.debug("rules", `Evaluating rule "${rule.id}" with trigger type: ${rule.trigger.type}`);
-          }
-          
           const triggerResult = this.evaluateTrigger(rule.trigger, ruleContext);
           if (triggerResult) {
             const conditionsResult = this.evaluateConditions(rule.conditions, ruleContext);

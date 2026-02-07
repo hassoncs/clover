@@ -13,10 +13,10 @@ export function buildEntityPrompt(spec: EntitySpec, ctx: PromptContext): string 
 
   const lines: string[] = [];
 
+  lines.push(spec.description);
+
   if (ctx.theme) {
-    lines.push(`A ${ctx.theme} themed ${spec.description}.`);
-  } else {
-    lines.push(`${spec.description}.`);
+    lines.push(`Theme: ${ctx.theme}.`);
   }
 
   if (resolvedStyle) {
@@ -25,6 +25,10 @@ export function buildEntityPrompt(spec: EntitySpec, ctx: PromptContext): string 
 
   lines.push('Front view, flat 2D perspective.');
   lines.push('Single object, no duplicates, no text.');
+
+  if (spec.skipSilhouette) {
+    lines.push('Isolated object on transparent background. Do NOT include any other characters, bodies, or objects.');
+  }
 
   return lines.join(' ');
 }

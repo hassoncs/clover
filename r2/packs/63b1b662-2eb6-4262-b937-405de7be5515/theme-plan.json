@@ -1,0 +1,122 @@
+{
+  "version": 1,
+  "theme": "Classic Mr. Potato Head toy, colorful plastic pieces, bright primary colors",
+  "style": "cartoon",
+  "globalPalette": [
+    "#D2691E",
+    "#FFD700",
+    "#FF4500",
+    "#00BFFF",
+    "#FF69B4",
+    "#FFFFFF",
+    "#000000"
+  ],
+  "templatePlans": {
+    "potatoBody": {
+      "templateId": "potatoBody",
+      "conceptName": "Smooth Potato Base",
+      "prompt": "An isolated smooth brown potato body piece, standalone, no facial features, slightly oval, cartoon style, transparent background",
+      "negativePrompt": "",
+      "silhouetteColor": "#D2691E",
+      "rationale": "The smooth brown potato body serves as the central character piece and fits perfectly with the playful theme.",
+      "skipSilhouette": true
+    },
+    "drawer": {
+      "templateId": "drawer",
+      "conceptName": "Toy Part Drawer",
+      "prompt": "An isolated wooden toy drawer piece, cartoon style, warm brown wood grain, slightly rounded edges, viewed from the front, transparent background",
+      "negativePrompt": "",
+      "silhouetteColor": "#8B4513",
+      "rationale": "The drawer represents the storage for various parts, enhancing the playful interaction with Mr. Potato Head.",
+      "skipSilhouette": false
+    },
+    "leftEye": {
+      "templateId": "leftEye",
+      "conceptName": "Googly Left Eye",
+      "prompt": "An isolated cartoon googly left eye piece, round white with black pupil, plastic toy style, transparent background",
+      "negativePrompt": "",
+      "silhouetteColor": "#FFFFFF",
+      "rationale": "The googly eye adds character and fits the whimsical theme of the toy.",
+      "skipSilhouette": false
+    },
+    "rightEye": {
+      "templateId": "rightEye",
+      "conceptName": "Googly Right Eye",
+      "prompt": "An isolated cartoon googly right eye piece, round white with black pupil, plastic toy style, transparent background",
+      "negativePrompt": "",
+      "silhouetteColor": "#FFFFFF",
+      "rationale": "The second eye complements the first and maintains the playful character design.",
+      "skipSilhouette": false
+    },
+    "nose": {
+      "templateId": "nose",
+      "conceptName": "Carrot Nose",
+      "prompt": "An isolated big orange carrot-shaped nose piece, cartoon plastic toy style, pointing forward, transparent background",
+      "negativePrompt": "",
+      "silhouetteColor": "#FF4500",
+      "rationale": "The carrot nose adds a fun and humorous element to the character's design.",
+      "skipSilhouette": true
+    },
+    "mouth": {
+      "templateId": "mouth",
+      "conceptName": "Happy Red Mouth",
+      "prompt": "An isolated wide red smiling mouth piece with white teeth, cartoon style, transparent background",
+      "negativePrompt": "",
+      "silhouetteColor": "#FF69B4",
+      "rationale": "The happy mouth enhances the joyful expression and overall character appeal.",
+      "skipSilhouette": false
+    },
+    "mustache": {
+      "templateId": "mustache",
+      "conceptName": "Handlebar Mustache",
+      "prompt": "An isolated thick black handlebar mustache piece, cartoon plastic toy style, curled ends, transparent background",
+      "negativePrompt": "",
+      "silhouetteColor": "#000000",
+      "rationale": "The mustache adds a quirky and classic touch to Mr. Potato Head's face.",
+      "skipSilhouette": true
+    },
+    "leftArm": {
+      "templateId": "leftArm",
+      "conceptName": "Plastic Left Arm",
+      "prompt": "An isolated small blue plastic left arm piece with open palm, cartoon toy style, waving gesture, transparent background",
+      "negativePrompt": "",
+      "silhouetteColor": "#00BFFF",
+      "rationale": "The left arm piece emphasizes playfulness and dynamic interaction.",
+      "skipSilhouette": true
+    },
+    "rightArm": {
+      "templateId": "rightArm",
+      "conceptName": "Plastic Right Arm",
+      "prompt": "An isolated small blue plastic right arm piece with open palm, cartoon toy style, waving gesture, transparent background",
+      "negativePrompt": "",
+      "silhouetteColor": "#00BFFF",
+      "rationale": "The right arm piece complements the left and enhances the character's playful demeanor.",
+      "skipSilhouette": true
+    },
+    "hat": {
+      "templateId": "hat",
+      "conceptName": "Classic Bowler Hat",
+      "prompt": "An isolated small black bowler hat piece, classic style, plastic toy, cartoon, shiny, transparent background",
+      "negativePrompt": "",
+      "silhouetteColor": "#000000",
+      "rationale": "The bowler hat adds a distinctive and stylish character to Mr. Potato Head.",
+      "skipSilhouette": false
+    },
+    "ears": {
+      "templateId": "ears",
+      "conceptName": "Pink Plastic Ears",
+      "prompt": "An isolated pair of large pink plastic ears piece, attached by headband, cartoon toy style, transparent background",
+      "negativePrompt": "",
+      "silhouetteColor": "#FF69B4",
+      "rationale": "The ears add to the playful nature and complete the character's look.",
+      "skipSilhouette": true
+    }
+  },
+  "cohesionAnchors": {
+    "motifFamily": "Colorful Plastic Toys",
+    "colorHarmony": "Bright primary colors with playful contrasts",
+    "moodDescriptor": "Whimsical and cheerful"
+  },
+  "generatedAt": "2023-10-06T12:00:00Z",
+  "providerModel": "GPT-4"
+}

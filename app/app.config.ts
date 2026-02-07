@@ -8,11 +8,18 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...(baseConfig.plugins ?? []),
   ];
 
-  if (process.env.SENTRY_AUTH_TOKEN || process.env.EXPO_PUBLIC_SENTRY_DSN) {
+  if (process.env.SENTRY_AUTH_TOKEN) {
     plugins.push([
       "@sentry/react-native",
       {
-        disableAutoUploadSourceMaps: !process.env.SENTRY_AUTH_TOKEN,
+        disableAutoUploadSourceMaps: false,
+      },
+    ]);
+  } else if (process.env.EXPO_PUBLIC_SENTRY_DSN) {
+    plugins.push([
+      "@sentry/react-native",
+      {
+        disableAutoUploadSourceMaps: true,
       },
     ]);
   }

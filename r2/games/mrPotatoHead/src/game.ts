@@ -9,7 +9,7 @@ export const metadata = {
 const WORLD_WIDTH = 12;
 const WORLD_HEIGHT = 16;
 
-const PACK_ID = "b3f4a5d6-0001-4000-8000-potato000001";
+const PACK_ID = "7f789206-4ced-462e-8c96-e9774c9e7553";
 
 const PIECE_COLLIDER_SCALE = 0.9;
 
@@ -57,7 +57,10 @@ const game: GameDefinition = {
   },
   assetSystem: {
     activePackId: PACK_ID,
-    packIds: [PACK_ID],
+    packIds: [
+        "63b1b662-2eb6-4262-b937-405de7be5515",
+        "7f789206-4ced-462e-8c96-e9774c9e7553",
+      ],
   },
   background: {
     type: "static",
@@ -307,23 +310,19 @@ var INITIAL_POSITIONS = {
 };
 
 exports.resetPieces = function(ctx) {
-  console.log('[MrPotatoHead] resetPieces called, isSequenceRunning:', ctx.isSequenceRunning('reset'));
   if (ctx.isSequenceRunning('reset')) return;
 
   ctx.startSequence('reset', async function(world) {
-    console.log('[MrPotatoHead] reset sequence started');
     var keys = Object.keys(INITIAL_POSITIONS);
-    var last;
+    var animations = [];
     for (var i = 0; i < keys.length; i++) {
       var id = keys[i];
-      var randX = (Math.random() - 0.5) * 8;
-      var randY = (Math.random() - 0.5) * 10;
-      console.log('[MrPotatoHead] animating', id, 'to', randX, randY);
-      last = world.animate(id, { x: randX, y: randY }, { duration: 500, easing: 'ease-in-out' });
+      var target = INITIAL_POSITIONS[id];
+      animations.push(
+        world.animate(id, { x: target.x, y: target.y }, { duration: 500, easing: 'ease-in-out' })
+      );
     }
-    console.log('[MrPotatoHead] awaiting last animation');
-    await last;
-    console.log('[MrPotatoHead] reset sequence complete');
+    await Promise.all(animations);
   });
 };
 `,

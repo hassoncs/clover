@@ -38,6 +38,8 @@ export interface EntitySpec {
   description: string;
   /** Optional color hint */
   color?: string;
+  /** Skip silhouette-guided generation — use txt2img instead (for irregular/organic shapes) */
+  skipSilhouette?: boolean;
 }
 
 export interface BackgroundSpec {

@@ -377,14 +377,6 @@ export function useInputHandlers(
       const { locationX: x, locationY: y } = event.nativeEvent;
       const world = screenToWorld(x, y);
 
-      eventQueueRef.current.push({
-        type: 'tap',
-        x,
-        y,
-        worldX: world.x,
-        worldY: world.y,
-      });
-
       if (dragStart) {
         const VELOCITY_SCALE = 0.1;
         eventQueueRef.current.push({

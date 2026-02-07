@@ -723,6 +723,12 @@
       "trigger": {
         "type": "game_loaded"
       },
+      "conditions": [
+        {
+          "type": "expression",
+          "expr": "activeTubeCount == 0"
+        }
+      ],
       "actions": [
         {
           "type": "run_script",

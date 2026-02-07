@@ -8,10 +8,15 @@
   "packs": [
     {
       "name": "default",
-      "packId": "b3f4a5d6-0001-4000-8000-potato000001",
-      "assetCount": 12
+      "packId": "63b1b662-2eb6-4262-b937-405de7be5515",
+      "assetCount": 7
+    },
+    {
+      "name": "default",
+      "packId": "7f789206-4ced-462e-8c96-e9774c9e7553",
+      "assetCount": 11
     }
   ],
-  "activePackId": "b3f4a5d6-0001-4000-8000-potato000001",
-  "updatedAt": 1770428412274
+  "activePackId": "7f789206-4ced-462e-8c96-e9774c9e7553",
+  "updatedAt": 1770431399197
 }

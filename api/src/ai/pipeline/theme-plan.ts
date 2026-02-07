@@ -27,6 +27,8 @@ export interface TemplatePlan {
   silhouetteColor: string;
   /** Rationale for this concept choice (for debugging/review) */
   rationale: string;
+  /** Skip silhouette-guided generation for irregular/organic shapes (use txt2img instead) */
+  skipSilhouette?: boolean;
 }
 
 export const TemplatePlanSchema = z.object({
@@ -36,6 +38,7 @@ export const TemplatePlanSchema = z.object({
   negativePrompt: z.string().optional(),
   silhouetteColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color'),
   rationale: z.string(),
+  skipSilhouette: z.boolean().optional(),
 });
 
 // =============================================================================

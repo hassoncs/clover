@@ -155,6 +155,7 @@ async function main() {
     entityType: EntityType;
     description: string;
     color?: string;
+    skipSilhouette?: boolean;
   };
 
   const specs: EntitySpec[] = [];
@@ -228,6 +229,7 @@ async function main() {
     templatePlans: Record<string, {
       prompt: string;
       silhouetteColor?: string;
+      skipSilhouette?: boolean;
     }>;
   };
 
@@ -344,18 +346,23 @@ async function main() {
     ? createFileDebugSink(join(DEBUG_DIR, gameId))
     : () => {};
 
+  const themePlanApplied = !!themePlan;
   if (themePlan) {
     for (const spec of specs) {
-      if (themePlan.templatePlans[spec.id]) {
-        spec.description = themePlan.templatePlans[spec.id].prompt;
-        if (themePlan.templatePlans[spec.id].silhouetteColor) {
-          spec.color = themePlan.templatePlans[spec.id].silhouetteColor;
+      const plan = themePlan.templatePlans[spec.id];
+      if (plan) {
+        spec.description = plan.prompt;
+        if (plan.silhouetteColor) {
+          spec.color = plan.silhouetteColor;
+        }
+        if (plan.skipSilhouette) {
+          spec.skipSilhouette = true;
         }
       }
     }
   }
 
-  const CONCURRENCY = 10;
+  const CONCURRENCY = 5;
   console.log(`\nGenerating ${specs.length} assets (concurrency: ${CONCURRENCY})...\n`);
 
   const manifest: PackManifest = existingManifest
@@ -377,8 +384,8 @@ async function main() {
           packId,
           assetId: spec.id,
           gameTitle: definition.metadata?.title ?? gameId,
-          theme,
-          style: style || undefined,
+          theme: themePlanApplied ? '' : theme,
+          style: themePlanApplied ? '' : (style || undefined),
           r2Prefix,
         },
         debugSink,
@@ -427,10 +434,33 @@ async function main() {
       if (existsSync(gameSourcePath)) {
         let source = readFileSync(gameSourcePath, 'utf-8');
 
-        source = source.replace(
-          /activePackId:\s*"[^"]*"/,
-          `activePackId: "${packId}"`,
-        );
+        let activePackUpdated = false;
+
+        // Case 1: activePackId uses an inline string literal
+        if (/activePackId:\s*"[^"]*"/.test(source)) {
+          source = source.replace(
+            /activePackId:\s*"[^"]*"/,
+            `activePackId: "${packId}"`,
+          );
+          activePackUpdated = true;
+        }
+
+        // Case 2: activePackId uses a variable reference (e.g. `activePackId: PACK_ID`)
+        if (!activePackUpdated) {
+          const varRefMatch = source.match(/activePackId:\s*([A-Z_][A-Z_0-9]*)/);
+          if (varRefMatch) {
+            const varName = varRefMatch[1];
+            const constPattern = new RegExp(`(const\\s+${varName}\\s*=\\s*)"[^"]*"`);
+            if (constPattern.test(source)) {
+              source = source.replace(constPattern, `$1"${packId}"`);
+              activePackUpdated = true;
+            }
+          }
+        }
+
+        if (!activePackUpdated) {
+          console.warn(`\n⚠️  Could not update activePackId in ${gameSourcePath} — update manually`);
+        }
 
         const packIdsMatch = source.match(/packIds:\s*\[([\s\S]*?)\]/);
         if (packIdsMatch) {

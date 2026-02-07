@@ -107,6 +107,12 @@ export const silhouetteStage: Stage = {
     }
     
     const entitySpec = run.spec as EntitySpec;
+
+    if (entitySpec.skipSilhouette) {
+      console.log(`  [silhouette] Skipping silhouette for ${entitySpec.id} (skipSilhouette=true, will use txt2img)`);
+      return run;
+    }
+
     const silhouettePng = await adapters.silhouette.createSilhouette({
       shape: entitySpec.shape,
       width: entitySpec.width,
@@ -158,10 +164,10 @@ export const uploadToProviderStage: Stage = {
   id: 'upload-provider',
   name: 'Upload to Provider',
   async run(run: AssetRun, adapters: PipelineAdapters, _debug: DebugSink): Promise<AssetRun> {
-    // Accept either silhouette (for entities) or sheet guide (for sheets)
     const imageToUpload = run.artifacts.silhouettePng ?? run.artifacts.sheetGuidePng;
     if (!imageToUpload) {
-      throw new Error('silhouette or sheet-guide stage must run before upload-provider');
+      console.log(`  [upload-provider] No silhouette/guide image — skipping upload (will use txt2img)`);
+      return run;
     }
 
     const providerAssetId = await adapters.provider.uploadImage(imageToUpload);
@@ -181,8 +187,63 @@ export const img2imgStage: Stage = {
   name: 'Generate via img2img',
   async run(run: AssetRun, adapters: PipelineAdapters, debug: DebugSink): Promise<AssetRun> {
     const imageAssetId = run.artifacts.providerAssetId;
-    if (!imageAssetId || !run.artifacts.prompt) {
-      throw new Error('upload-provider and build-prompt stages must run before img2img');
+
+    if (!run.artifacts.prompt) {
+      throw new Error('build-prompt stage must run before img2img');
+    }
+
+    if (!imageAssetId) {
+      console.log(`  [img2img] No silhouette uploaded — falling back to txt2img`);
+      const entitySpec = run.spec.type === 'entity' ? (run.spec as EntitySpec) : null;
+      const aspectRatio = entitySpec ? entitySpec.width / entitySpec.height : 1;
+      let width = 1024;
+      let height = 1024;
+      if (aspectRatio > 1.2) {
+        width = 1024;
+        height = Math.round(1024 / aspectRatio);
+        height = Math.round(height / 64) * 64;
+      } else if (aspectRatio < 0.8) {
+        height = 1024;
+        width = Math.round(1024 * aspectRatio);
+        width = Math.round(width / 64) * 64;
+      }
+
+      await debug({
+        type: 'artifact',
+        runId: run.meta.runId,
+        assetId: run.spec.id,
+        stageId: 'img2img',
+        name: 'strength-info.txt',
+        contentType: 'text/plain',
+        data: `mode: txt2img (skipSilhouette)\nwidth: ${width}\nheight: ${height}\naspectRatio: ${aspectRatio.toFixed(2)}`,
+      });
+
+      const result = await adapters.provider.txt2img({
+        prompt: run.artifacts.prompt,
+        width,
+        height,
+      });
+
+      const { buffer } = await adapters.provider.downloadImage(result.assetId);
+
+      await debug({
+        type: 'artifact',
+        runId: run.meta.runId,
+        assetId: run.spec.id,
+        stageId: 'img2img',
+        name: 'generated.png',
+        contentType: 'image/png',
+        data: buffer,
+      });
+
+      return {
+        ...run,
+        artifacts: {
+          ...run.artifacts,
+          providerAssetId: result.assetId,
+          generatedImage: buffer,
+        },
+      };
     }
 
     const entityColor = run.spec.type === 'entity' ? (run.spec as EntitySpec).color : undefined;
