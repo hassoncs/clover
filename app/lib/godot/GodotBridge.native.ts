@@ -22,6 +22,7 @@ import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import './react-native-godot.d';
 import { BridgeCore, type BridgeMessage } from './BridgeCore';
+import { createCallbackArrays, createCallbackMethods, clearAllCallbacks } from './callback-registry';
 
 class NativeBridgeCore extends BridgeCore {
   protected send(msg: BridgeMessage): void {
@@ -145,16 +146,7 @@ interface QueuedEvent {
 }
 
 export function createNativeGodotBridge(): GodotBridge {
-  const collisionCallbacks: ((event: CollisionEvent) => void)[] = [];
-  const destroyCallbacks: ((entityId: string) => void)[] = [];
-  const entitySpawnedCallbacks: ((event: EntitySpawnedEvent) => void)[] = [];
-  const sensorBeginCallbacks: ((event: SensorEvent) => void)[] = [];
-  const sensorEndCallbacks: ((event: SensorEvent) => void)[] = [];
-  const inputEventCallbacks: ((type: string, x: number, y: number, entityId: string | null) => void)[] = [];
-  const uiButtonCallbacks: ((eventType: 'button_down' | 'button_up' | 'button_pressed', buttonId: string) => void)[] = [];
-  const transformSyncCallbacks: ((transforms: Record<string, EntityTransform>) => void)[] = [];
-  const propertySyncCallbacks: ((properties: PropertySyncPayload) => void)[] = [];
-  const scoreCallbacks: ((points: number, entityId: string) => void)[] = [];
+  const cbs = createCallbackArrays();
   let eventPollTimeoutId: ReturnType<typeof setTimeout> | null = null;
   let consecutiveEmptyPolls = 0;
   const bridgeCore = new NativeBridgeCore();
@@ -206,7 +198,7 @@ export function createNativeGodotBridge(): GodotBridge {
                 tangentImpulse: 0,
               }],
             };
-            for (const cb of collisionCallbacks) cb(collisionEvent);
+            for (const cb of cbs.collision) cb(collisionEvent);
             bridgeCore.dispatch({ type: 'collision', data: collisionEvent });
             break;
           }
@@ -217,19 +209,19 @@ export function createNativeGodotBridge(): GodotBridge {
               entityB: data.entityB,
               contacts: data.contacts,
             };
-            for (const cb of collisionCallbacks) cb(collisionEvent);
+            for (const cb of cbs.collision) cb(collisionEvent);
             bridgeCore.dispatch({ type: 'collision', data: collisionEvent });
             break;
           }
           case 'destroy': {
             const entityId = (event.data as { entityId: string }).entityId;
-            for (const cb of destroyCallbacks) cb(entityId);
+            for (const cb of cbs.destroy) cb(entityId);
             bridgeCore.dispatch({ type: 'entity_destroyed', data: { entityId } });
             break;
           }
           case 'entity_spawned': {
             const data = event.data as unknown as EntitySpawnedEvent;
-            for (const cb of entitySpawnedCallbacks) cb(data);
+            for (const cb of cbs.entitySpawned) cb(data);
             bridgeCore.dispatch({ type: 'entity_spawned', data });
             break;
           }
@@ -240,7 +232,7 @@ export function createNativeGodotBridge(): GodotBridge {
               otherEntityId: data.otherEntityId,
               otherShapeIndex: data.otherShapeIndex,
             };
-            for (const cb of sensorBeginCallbacks) cb(sensorEvent);
+            for (const cb of cbs.sensorBegin) cb(sensorEvent);
             bridgeCore.dispatch({ type: 'sensor_begin', data: sensorEvent });
             break;
           }
@@ -251,34 +243,34 @@ export function createNativeGodotBridge(): GodotBridge {
               otherEntityId: data.otherEntityId,
               otherShapeIndex: data.otherShapeIndex,
             };
-            for (const cb of sensorEndCallbacks) cb(sensorEvent);
+            for (const cb of cbs.sensorEnd) cb(sensorEvent);
             bridgeCore.dispatch({ type: 'sensor_end', data: sensorEvent });
             break;
           }
           case 'ui_button': {
             const data = event.data as { eventType: string; buttonId: string };
-            for (const cb of uiButtonCallbacks) {
+            for (const cb of cbs.uiButton) {
               cb(data.eventType as 'button_down' | 'button_up' | 'button_pressed', data.buttonId);
             }
             break;
           }
           case 'input': {
             const data = event.data as { type: string; x: number; y: number; entityId: string | null };
-            for (const cb of inputEventCallbacks) {
+            for (const cb of cbs.inputEvent) {
               cb(data.type, data.x, data.y, data.entityId);
             }
             break;
           }
           case 'property_sync': {
             const data = event.data as unknown as PropertySyncPayload;
-            for (const cb of propertySyncCallbacks) {
+            for (const cb of cbs.propertySync) {
               cb(data);
             }
             break;
           }
           case 'score': {
             const data = event.data as { points: number; entityId: string };
-            for (const cb of scoreCallbacks) {
+            for (const cb of cbs.score) {
               cb(data.points, data.entityId);
             }
             break;
@@ -396,11 +388,7 @@ export function createNativeGodotBridge(): GodotBridge {
       }
       bridgeCore.cancelAllPending('Bridge disposed');
 
-      collisionCallbacks.length = 0;
-      destroyCallbacks.length = 0;
-      sensorBeginCallbacks.length = 0;
-      sensorEndCallbacks.length = 0;
-      inputEventCallbacks.length = 0;
+      clearAllCallbacks(cbs);
 
       if (!isGodotInitialized) {
         isDisposing = false;
@@ -738,69 +726,7 @@ export function createNativeGodotBridge(): GodotBridge {
       return [];
     },
 
-    onCollision(callback: (event: CollisionEvent) => void): () => void {
-      collisionCallbacks.push(callback);
-      return () => {
-        const index = collisionCallbacks.indexOf(callback);
-        if (index >= 0) collisionCallbacks.splice(index, 1);
-      };
-    },
-
-    onEntityDestroyed(callback: (entityId: string) => void): () => void {
-      destroyCallbacks.push(callback);
-      return () => {
-        const index = destroyCallbacks.indexOf(callback);
-        if (index >= 0) destroyCallbacks.splice(index, 1);
-      };
-    },
-
-    onEntitySpawned(callback: (event: EntitySpawnedEvent) => void): () => void {
-      entitySpawnedCallbacks.push(callback);
-      return () => {
-        const index = entitySpawnedCallbacks.indexOf(callback);
-        if (index >= 0) entitySpawnedCallbacks.splice(index, 1);
-      };
-    },
-
-    onSensorBegin(callback: (event: SensorEvent) => void): () => void {
-      sensorBeginCallbacks.push(callback);
-      return () => {
-        const index = sensorBeginCallbacks.indexOf(callback);
-        if (index >= 0) sensorBeginCallbacks.splice(index, 1);
-      };
-    },
-
-    onSensorEnd(callback: (event: SensorEvent) => void): () => void {
-      sensorEndCallbacks.push(callback);
-      return () => {
-        const index = sensorEndCallbacks.indexOf(callback);
-        if (index >= 0) sensorEndCallbacks.splice(index, 1);
-      };
-    },
-
-    onTransformSync(callback: (transforms: Record<string, EntityTransform>) => void): () => void {
-      transformSyncCallbacks.push(callback);
-      return () => {
-        const index = transformSyncCallbacks.indexOf(callback);
-        if (index >= 0) transformSyncCallbacks.splice(index, 1);
-      };
-    },
-
-    onPropertySync(callback: (properties: PropertySyncPayload) => void): () => void {
-      propertySyncCallbacks.push(callback);
-      return () => {
-        const index = propertySyncCallbacks.indexOf(callback);
-        if (index >= 0) propertySyncCallbacks.splice(index, 1);
-      };
-    },
-
-    onScore(callback: (points: number, entityId: string) => void): () => void {
-      scoreCallbacks.push(callback);
-      return () => {
-        const index = scoreCallbacks.indexOf(callback);
-        if (index >= 0) scoreCallbacks.splice(index, 1);
-      };
-    },
+    ...createCallbackMethods(cbs),
 
     setWatchConfig(config: unknown): void {
       callGameBridge('set_watch_config', JSON.stringify(config));
@@ -808,14 +734,6 @@ export function createNativeGodotBridge(): GodotBridge {
 
     sendInput(type, data) {
       callGameBridge('send_input', type, data.x, data.y, data.entityId ?? '');
-    },
-
-    onInputEvent(callback: (type: string, x: number, y: number, entityId: string | null) => void): () => void {
-      inputEventCallbacks.push(callback);
-      return () => {
-        const index = inputEventCallbacks.indexOf(callback);
-        if (index >= 0) inputEventCallbacks.splice(index, 1);
-      };
     },
 
     async setEntityImage(entityId: string, url: string, width: number, height: number) {
@@ -1021,14 +939,6 @@ export function createNativeGodotBridge(): GodotBridge {
 
     destroyUIButton(buttonId: string) {
       callGameBridge('destroy_ui_button', buttonId);
-    },
-
-    onUIButtonEvent(callback: (eventType: 'button_down' | 'button_up' | 'button_pressed', buttonId: string) => void): () => void {
-      uiButtonCallbacks.push(callback);
-      return () => {
-        const index = uiButtonCallbacks.indexOf(callback);
-        if (index >= 0) uiButtonCallbacks.splice(index, 1);
-      };
     },
 
     createThemedUIComponent(

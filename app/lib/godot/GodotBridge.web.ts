@@ -24,6 +24,7 @@ import {
   type GodotBridgeBase,
 } from "./query";
 import { BridgeCore, type BridgeMessage } from "./BridgeCore";
+import { createCallbackArrays, createCallbackMethods, clearAllCallbacks } from "./callback-registry";
 
 class WebBridgeCore extends BridgeCore {
   private getGodotBridge: () => Window["GodotBridge"] | null;
@@ -258,27 +259,7 @@ declare global {
 }
 
 export function createWebGodotBridge(): GodotBridge {
-  const collisionCallbacks: ((event: CollisionEvent) => void)[] = [];
-  const destroyCallbacks: ((entityId: string) => void)[] = [];
-  const entitySpawnedCallbacks: ((event: EntitySpawnedEvent) => void)[] = [];
-  const sensorBeginCallbacks: ((event: SensorEvent) => void)[] = [];
-  const sensorEndCallbacks: ((event: SensorEvent) => void)[] = [];
-  const inputEventCallbacks: ((
-    type: string,
-    x: number,
-    y: number,
-    entityId: string | null,
-  ) => void)[] = [];
-  const uiButtonCallbacks: ((
-    eventType: "button_down" | "button_up" | "button_pressed",
-    buttonId: string,
-  ) => void)[] = [];
-  const transformSyncCallbacks: ((
-    transforms: Record<string, EntityTransform>,
-  ) => void)[] = [];
-  const propertySyncCallbacks: ((properties: PropertySyncPayload) => void)[] =
-    [];
-  const scoreCallbacks: ((points: number, entityId: string) => void)[] = [];
+  const cbs = createCallbackArrays();
 
   const getGodotBridge = (): Window["GodotBridge"] | null => {
     const iframe = document.querySelector(
@@ -359,20 +340,20 @@ export function createWebGodotBridge(): GodotBridge {
                   };
                 }
 
-                for (const cb of collisionCallbacks) cb(event);
+                for (const cb of cbs.collision) cb(event);
                 bridgeCore.dispatch({ type: 'collision', data: event });
               },
             );
 
             godotBridge.onEntityDestroyed((entityId) => {
-              for (const cb of destroyCallbacks) cb(entityId);
+              for (const cb of cbs.destroy) cb(entityId);
               bridgeCore.dispatch({ type: 'entity_destroyed', data: { entityId } });
             });
 
             godotBridge.onEntitySpawned?.((jsonStr: string) => {
               try {
                 const event = JSON.parse(jsonStr) as EntitySpawnedEvent;
-                for (const cb of entitySpawnedCallbacks) cb(event);
+                for (const cb of cbs.entitySpawned) cb(event);
                 bridgeCore.dispatch({ type: 'entity_spawned', data: event });
               } catch {
                 console.warn("[GodotBridge.web] Failed to parse entity spawned event:", jsonStr);
@@ -385,7 +366,7 @@ export function createWebGodotBridge(): GodotBridge {
                 otherEntityId: entityId,
                 otherShapeIndex: otherShapeIndex,
               };
-              for (const cb of sensorBeginCallbacks) cb(event);
+              for (const cb of cbs.sensorBegin) cb(event);
               bridgeCore.dispatch({ type: 'sensor_begin', data: event });
             });
 
@@ -395,7 +376,7 @@ export function createWebGodotBridge(): GodotBridge {
                 otherEntityId: entityId,
                 otherShapeIndex: otherShapeIndex,
               };
-              for (const cb of sensorEndCallbacks) cb(event);
+              for (const cb of cbs.sensorEnd) cb(event);
               bridgeCore.dispatch({ type: 'sensor_end', data: event });
             });
 
@@ -407,7 +388,7 @@ export function createWebGodotBridge(): GodotBridge {
                   y: number;
                   entityId: string | null;
                 };
-                for (const cb of inputEventCallbacks)
+                for (const cb of cbs.inputEvent)
                   cb(data.type, data.x, data.y, data.entityId);
               } catch {}
             });
@@ -418,7 +399,7 @@ export function createWebGodotBridge(): GodotBridge {
                   string,
                   EntityTransform
                 >;
-                for (const cb of transformSyncCallbacks) cb(transforms);
+                for (const cb of cbs.transformSync) cb(transforms);
               } catch {}
             });
 
@@ -427,7 +408,7 @@ export function createWebGodotBridge(): GodotBridge {
                 const properties = JSON.parse(
                   propertiesJson,
                 ) as PropertySyncPayload;
-                for (const cb of propertySyncCallbacks) cb(properties);
+                for (const cb of cbs.propertySync) cb(properties);
               } catch {}
             });
 
@@ -450,12 +431,7 @@ export function createWebGodotBridge(): GodotBridge {
       // Clear game state in Godot to prevent stale state on remount
       getGodotBridge()?.clearGame();
       
-      collisionCallbacks.length = 0;
-      destroyCallbacks.length = 0;
-      entitySpawnedCallbacks.length = 0;
-      sensorBeginCallbacks.length = 0;
-      sensorEndCallbacks.length = 0;
-      inputEventCallbacks.length = 0;
+      clearAllCallbacks(cbs);
     },
 
     async loadGame(definition: GameDefinition) {
@@ -718,73 +694,7 @@ export function createWebGodotBridge(): GodotBridge {
       return [];
     },
 
-    onCollision(callback: (event: CollisionEvent) => void): () => void {
-      collisionCallbacks.push(callback);
-      return () => {
-        const index = collisionCallbacks.indexOf(callback);
-        if (index >= 0) collisionCallbacks.splice(index, 1);
-      };
-    },
-
-    onEntityDestroyed(callback: (entityId: string) => void): () => void {
-      destroyCallbacks.push(callback);
-      return () => {
-        const index = destroyCallbacks.indexOf(callback);
-        if (index >= 0) destroyCallbacks.splice(index, 1);
-      };
-    },
-
-    onEntitySpawned(callback: (event: EntitySpawnedEvent) => void): () => void {
-      entitySpawnedCallbacks.push(callback);
-      return () => {
-        const index = entitySpawnedCallbacks.indexOf(callback);
-        if (index >= 0) entitySpawnedCallbacks.splice(index, 1);
-      };
-    },
-
-    onSensorBegin(callback: (event: SensorEvent) => void): () => void {
-      sensorBeginCallbacks.push(callback);
-      return () => {
-        const index = sensorBeginCallbacks.indexOf(callback);
-        if (index >= 0) sensorBeginCallbacks.splice(index, 1);
-      };
-    },
-
-    onSensorEnd(callback: (event: SensorEvent) => void): () => void {
-      sensorEndCallbacks.push(callback);
-      return () => {
-        const index = sensorEndCallbacks.indexOf(callback);
-        if (index >= 0) sensorEndCallbacks.splice(index, 1);
-      };
-    },
-
-    onTransformSync(
-      callback: (transforms: Record<string, EntityTransform>) => void,
-    ): () => void {
-      transformSyncCallbacks.push(callback);
-      return () => {
-        const index = transformSyncCallbacks.indexOf(callback);
-        if (index >= 0) transformSyncCallbacks.splice(index, 1);
-      };
-    },
-
-    onPropertySync(
-      callback: (properties: PropertySyncPayload) => void,
-    ): () => void {
-      propertySyncCallbacks.push(callback);
-      return () => {
-        const index = propertySyncCallbacks.indexOf(callback);
-        if (index >= 0) propertySyncCallbacks.splice(index, 1);
-      };
-    },
-
-    onScore(callback: (points: number, entityId: string) => void): () => void {
-      scoreCallbacks.push(callback);
-      return () => {
-        const index = scoreCallbacks.indexOf(callback);
-        if (index >= 0) scoreCallbacks.splice(index, 1);
-      };
-    },
+    ...createCallbackMethods(cbs),
 
     setWatchConfig(config: unknown): void {
       getGodotBridge()?.setWatchConfig(JSON.stringify(config));
@@ -792,21 +702,6 @@ export function createWebGodotBridge(): GodotBridge {
 
     sendInput(type, data) {
       getGodotBridge()?.sendInput(type, data.x, data.y, data.entityId ?? "");
-    },
-
-    onInputEvent(
-      callback: (
-        type: string,
-        x: number,
-        y: number,
-        entityId: string | null,
-      ) => void,
-    ): () => void {
-      inputEventCallbacks.push(callback);
-      return () => {
-        const index = inputEventCallbacks.indexOf(callback);
-        if (index >= 0) inputEventCallbacks.splice(index, 1);
-      };
     },
 
     setEntityImage(
@@ -1132,10 +1027,10 @@ export function createWebGodotBridge(): GodotBridge {
         buttonId: string,
       ) => void,
     ): () => void {
-      uiButtonCallbacks.push(callback);
+      cbs.uiButton.push(callback);
 
       const godotBridge = getGodotBridge();
-      if (godotBridge?.onUIButtonEvent && uiButtonCallbacks.length === 1) {
+      if (godotBridge?.onUIButtonEvent && cbs.uiButton.length === 1) {
         godotBridge.onUIButtonEvent((...args: unknown[]) => {
           let eventType: string;
           let buttonId: string;
@@ -1149,7 +1044,7 @@ export function createWebGodotBridge(): GodotBridge {
             buttonId = args[1] as string;
           }
 
-          for (const cb of uiButtonCallbacks) {
+          for (const cb of cbs.uiButton) {
             cb(
               eventType as "button_down" | "button_up" | "button_pressed",
               buttonId,
@@ -1159,8 +1054,8 @@ export function createWebGodotBridge(): GodotBridge {
       }
 
       return () => {
-        const index = uiButtonCallbacks.indexOf(callback);
-        if (index >= 0) uiButtonCallbacks.splice(index, 1);
+        const index = cbs.uiButton.indexOf(callback);
+        if (index >= 0) cbs.uiButton.splice(index, 1);
       };
     },
 
