@@ -1,4 +1,11 @@
-import type { GameDefinition, PropertySyncPayload } from "@slopcade/shared";
+import type {
+  EffectPipelineSpec,
+  GameDefinition,
+  MultiPassEffectSpec,
+  PipelineSnapshot,
+  PropertySyncPayload,
+} from "@slopcade/shared";
+import { serializePipelineSpec } from "@slopcade/shared/effects/pipeline-serialization";
 import type {
   GodotBridge,
   CollisionEvent,
@@ -213,6 +220,20 @@ declare global {
         paramsJson?: string,
       ) => void;
       applyDynamicPostShader: (shaderCode: string, paramsJson?: string) => void;
+      applyPipeline: (specJson: string) => void;
+      clearPipeline: () => void;
+      updatePipelinePassParam: (
+        passId: string,
+        paramName: string,
+        value: unknown,
+      ) => void;
+      startPipeline: () => void;
+      pausePipeline: () => void;
+      resumePipeline: () => void;
+      stopPipeline: () => void;
+      resetPipeline: () => void;
+      capturePipelineSnapshot: () => void;
+      restorePipelineSnapshot: (snapshotJson: string) => void;
       spawnParticlePreset: (
         presetName: string,
         worldX: number,
@@ -262,8 +283,120 @@ declare global {
         labelText: string,
       ) => void;
       destroyThemedUIComponent: (componentId: string) => void;
+      applyMultiPassEffect: (entityId: string, specJson: string) => void;
+      startMultiPassEffect: () => void;
+      stopMultiPassEffect: () => void;
+      setMultiPassInput: (passId: string, inputsJson: string) => void;
+      clearMultiPassEffect: () => void;
     };
   }
+}
+
+function getGodotIframeWindow(): Window | null {
+  const iframe = document.querySelector(
+    'iframe[title="Godot Game Engine"]',
+  ) as HTMLIFrameElement | null;
+  return iframe?.contentWindow ?? null;
+}
+
+function injectCameraHelpers(): void {
+  const iframeWindow = getGodotIframeWindow();
+  if (!iframeWindow) return;
+
+  let video: HTMLVideoElement | null = null;
+  let canvas: HTMLCanvasElement | null = null;
+  let ctx: CanvasRenderingContext2D | null = null;
+  let stream: MediaStream | null = null;
+  let animationFrameId: number | null = null;
+  let lastFrameTime = 0;
+  const frameRate = 20;
+
+  const iframeWin = iframeWindow as Window & {
+    _cameraFrameData: Uint8Array | null;
+    _cameraFrameWidth: number;
+    _cameraFrameHeight: number;
+    startCamera: (entityId: string, width?: number, height?: number) => void;
+    stopCamera: () => void;
+  };
+
+  iframeWin._cameraFrameData = null;
+  iframeWin._cameraFrameWidth = 0;
+  iframeWin._cameraFrameHeight = 0;
+
+  function captureLoop(): void {
+    if (!stream) return;
+
+    const now = performance.now();
+    if (now - lastFrameTime >= 1000 / frameRate) {
+      lastFrameTime = now;
+      if (video && ctx && canvas && video.readyState === video.HAVE_ENOUGH_DATA) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        iframeWin._cameraFrameData = new Uint8Array(imageData.data.buffer);
+      }
+    }
+
+    animationFrameId = requestAnimationFrame(captureLoop);
+  }
+
+  function stopCamera(): void {
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+    }
+    if (stream) {
+      for (const track of stream.getTracks()) track.stop();
+      stream = null;
+    }
+    if (video) {
+      video.srcObject = null;
+    }
+    iframeWin._cameraFrameData = null;
+  }
+
+  async function startCamera(
+    entityId: string,
+    width = 640,
+    height = 480,
+  ): Promise<void> {
+    if (stream) stopCamera();
+
+    iframeWin._cameraFrameWidth = width;
+    iframeWin._cameraFrameHeight = height;
+
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { width, height, facingMode: "user" },
+      });
+
+      if (!video) {
+        video = document.createElement("video");
+        video.autoplay = true;
+        video.playsInline = true;
+      }
+      video.srcObject = stream;
+
+      if (!canvas) {
+        canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        ctx = canvas.getContext("2d", { willReadFrequently: true });
+      }
+
+      video.onloadedmetadata = () => {
+        video!.play();
+        lastFrameTime = performance.now();
+        captureLoop();
+      };
+
+      console.log(`[CameraHelper] Camera started for entity: ${entityId}`);
+    } catch (err) {
+      console.error("[CameraHelper] Failed to start camera:", err);
+    }
+  }
+
+  iframeWin.startCamera = startCamera as typeof iframeWin.startCamera;
+  iframeWin.stopCamera = stopCamera;
 }
 
 export function createWebGodotBridge(): GodotBridge {
@@ -419,6 +552,9 @@ export function createWebGodotBridge(): GodotBridge {
                 for (const cb of cbs.propertySync) cb(properties);
               } catch {}
             });
+
+            // GDScript calls window.startCamera() via JavaScriptBridge
+            injectCameraHelpers();
 
             // Auto-inject debug bridge in dev mode or when ?debug=true
             if (
@@ -982,6 +1118,95 @@ export function createWebGodotBridge(): GodotBridge {
           params ? JSON.stringify(params) : undefined,
         );
       }
+    },
+
+    applyPipeline(spec: EffectPipelineSpec) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.applyPipeline) {
+        const specJson = serializePipelineSpec(spec);
+        godotBridge.applyPipeline(specJson);
+      }
+    },
+
+    clearPipeline() {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.clearPipeline) {
+        godotBridge.clearPipeline();
+      }
+    },
+
+    updatePipelinePassParam(passId: string, paramName: string, value: unknown) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.updatePipelinePassParam) {
+        godotBridge.updatePipelinePassParam(passId, paramName, value);
+      }
+    },
+
+    startPipeline() {
+      getGodotBridge()?.startPipeline?.();
+    },
+
+    pausePipeline() {
+      getGodotBridge()?.pausePipeline?.();
+    },
+
+    resumePipeline() {
+      getGodotBridge()?.resumePipeline?.();
+    },
+
+    stopPipeline() {
+      getGodotBridge()?.stopPipeline?.();
+    },
+
+    resetPipeline() {
+      getGodotBridge()?.resetPipeline?.();
+    },
+
+    async captureSnapshot(): Promise<PipelineSnapshot> {
+      const godotBridge = getGodotBridge();
+      if (!godotBridge?.capturePipelineSnapshot) {
+        return { pipelineId: '', passes: [], lifecycleState: 'idle', timestamp: 0 };
+      }
+      godotBridge.capturePipelineSnapshot();
+      await new Promise((resolve) => setTimeout(resolve, 16));
+      const result = godotBridge._lastResult as PipelineSnapshot | undefined;
+      if (result && typeof result === 'object' && 'pipelineId' in result) {
+        return result;
+      }
+      return { pipelineId: '', passes: [], lifecycleState: 'idle', timestamp: 0 };
+    },
+
+    restoreSnapshot(snapshot: PipelineSnapshot) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.restorePipelineSnapshot) {
+        godotBridge.restorePipelineSnapshot(JSON.stringify(snapshot));
+      }
+    },
+
+    applyMultiPassEffect(entityId: string, spec: MultiPassEffectSpec) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.applyMultiPassEffect) {
+        godotBridge.applyMultiPassEffect(entityId, JSON.stringify(spec));
+      }
+    },
+
+    startMultiPassEffect() {
+      getGodotBridge()?.startMultiPassEffect?.();
+    },
+
+    stopMultiPassEffect() {
+      getGodotBridge()?.stopMultiPassEffect?.();
+    },
+
+    setMultiPassInput(passId: string, inputs: Record<string, unknown>) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.setMultiPassInput) {
+        godotBridge.setMultiPassInput(passId, JSON.stringify(inputs));
+      }
+    },
+
+    clearMultiPassEffect() {
+      getGodotBridge()?.clearMultiPassEffect?.();
     },
 
     spawnParticlePreset(

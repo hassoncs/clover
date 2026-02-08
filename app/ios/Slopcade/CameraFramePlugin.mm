@@ -3,40 +3,39 @@
 #import <VisionCamera/Frame.h>
 #import <CoreMedia/CMSampleBuffer.h>
 #import <CoreVideo/CVPixelBuffer.h>
+#import <os/log.h>
 
-#include <dlfcn.h>
 #include <vector>
-// When built in-tree the header is one level up; the Expo config plugin
-// copies both files into the same Xcode group so "SharedFrameBuffer.h" works
-// in both cases thanks to the include search path.
 #if __has_include("SharedFrameBuffer.h")
 #include "SharedFrameBuffer.h"
 #else
 #include "../shared/SharedFrameBuffer.h"
 #endif
 
-using GetSharedFrameBufferFn = slopcade::SharedFrameBuffer* (*)();
+static os_log_t slopcade_log() {
+  static os_log_t log = nil;
+  if (!log) log = os_log_create("com.slopcade", "camera");
+  return log;
+}
+
+// Canonical definition — compiled into main app binary.
+// The GDExtension dylib finds this via dlsym(RTLD_DEFAULT, "get_shared_frame_buffer").
+extern "C" __attribute__((visibility("default")))
+slopcade::SharedFrameBuffer* get_shared_frame_buffer() {
+  static slopcade::SharedFrameBuffer* instance = nullptr;
+  if (instance == nullptr) {
+    instance = new slopcade::SharedFrameBuffer();
+    instance->init();
+    os_log_error(slopcade_log(), "[SharedFrameBuffer] Created instance at %{public}p", instance);
+  }
+  return instance;
+}
 
 static slopcade::SharedFrameBuffer* resolveSharedBuffer() {
   static slopcade::SharedFrameBuffer* cached = nullptr;
-  if (cached) {
-    return cached;
-  }
-
-  // Use dlsym to find the canonical instance shared with the GDExtension.
-  // Both this plugin (in the app binary) and the GDExtension dylib include
-  // SharedFrameBuffer.h, but the inline static local creates separate instances
-  // per shared library. dlsym(RTLD_DEFAULT, ...) resolves to the first exported
-  // symbol, ensuring both sides share the same buffer.
-  void* sym = dlsym(RTLD_DEFAULT, "get_shared_frame_buffer");
-  if (sym) {
-    auto fn = reinterpret_cast<GetSharedFrameBufferFn>(sym);
-    cached = fn();
-  } else {
-    // Fallback: call the inline function directly. This works if both the FPP
-    // and GDExtension are linked into the same binary (e.g., static linking).
-    cached = get_shared_frame_buffer();
-  }
+  if (cached) return cached;
+  cached = get_shared_frame_buffer();
+  os_log_error(slopcade_log(), "[CameraFramePlugin] SharedFrameBuffer resolved at %{public}p", cached);
   return cached;
 }
 
@@ -53,14 +52,25 @@ static slopcade::SharedFrameBuffer* resolveSharedBuffer() {
 
 - (id _Nullable)callback:(Frame* _Nonnull)frame
            withArguments:(NSDictionary* _Nullable)arguments {
+  static int frameCount = 0;
+  frameCount++;
+  if (frameCount == 1) {
+    os_log_error(slopcade_log(), "[CameraFramePlugin] First callback invoked");
+  }
+  if (frameCount % 60 == 0) {
+    os_log_error(slopcade_log(), "[CameraFramePlugin] Frame %{public}d received", frameCount);
+  }
+
   CMSampleBufferRef sampleBuffer = frame.buffer;
   CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
   if (!pixelBuffer) {
+    os_log_error(slopcade_log(), "[CameraFramePlugin] No pixelBuffer!");
     return nil;
   }
 
   slopcade::SharedFrameBuffer* sharedBuffer = resolveSharedBuffer();
   if (!sharedBuffer) {
+    os_log_error(slopcade_log(), "[CameraFramePlugin] No sharedBuffer!");
     return nil;
   }
 
@@ -71,12 +81,28 @@ static slopcade::SharedFrameBuffer* resolveSharedBuffer() {
   size_t height = CVPixelBufferGetHeight(pixelBuffer);
   size_t bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer);
 
+  if (frameCount == 1) {
+    char fourCC[5] = {0};
+    OSType fmt = CVPixelBufferGetPixelFormatType(pixelBuffer);
+    fourCC[0] = (fmt >> 24) & 0xFF;
+    fourCC[1] = (fmt >> 16) & 0xFF;
+    fourCC[2] = (fmt >> 8) & 0xFF;
+    fourCC[3] = fmt & 0xFF;
+    os_log_error(slopcade_log(),
+      "[CameraFramePlugin] First frame: %{public}zux%{public}zu stride=%{public}zu fmt=%{public}s base=%{public}p",
+      width, height, bytesPerRow, fourCC, baseAddress);
+  }
+
   if (!baseAddress || width == 0 || height == 0) {
     CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
     return nil;
   }
 
   if (width > slopcade::MAX_FRAME_WIDTH || height > slopcade::MAX_FRAME_HEIGHT) {
+    if (frameCount <= 3) {
+      os_log_error(slopcade_log(), "[CameraFramePlugin] Frame too large: %{public}zux%{public}zu (max %{public}dx%{public}d)",
+        width, height, slopcade::MAX_FRAME_WIDTH, slopcade::MAX_FRAME_HEIGHT);
+    }
     CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
     return nil;
   }
@@ -123,6 +149,12 @@ static slopcade::SharedFrameBuffer* resolveSharedBuffer() {
   }
 
   CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
+
+  if (frameCount == 1) {
+    uint64_t seq = sharedBuffer->global_sequence.load(std::memory_order_relaxed);
+    os_log_error(slopcade_log(), "[CameraFramePlugin] Wrote first frame to SharedFrameBuffer, seq=%{public}llu", seq);
+  }
+
   return nil;
 }
 

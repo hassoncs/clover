@@ -10,7 +10,8 @@ import { useCameraTexture, CameraCapture } from "@/lib/camera";
 
 export const metadata: ExampleMeta = {
   title: "Camera Feed",
-  description: "Live camera feed on a Godot entity. Tests native camera integration.",
+  description:
+    "Live camera feed on a Godot entity. Tests native camera integration.",
 };
 
 const WORLD_BOUNDS = { width: 14, height: 18 };
@@ -44,20 +45,52 @@ const GAME_DEFINITION: GameDefinition = {
       id: "ground",
       visual: { type: "rect", width: 14, height: 1, color: "#2C3E50" },
       physics: { bodyType: "static" },
-      collider: { shape: "box", width: 14, height: 1, friction: 0.5, restitution: 0 },
+      collider: {
+        shape: "box",
+        width: 14,
+        height: 1,
+        friction: 0.5,
+        restitution: 0,
+      },
     },
     wall: {
       id: "wall",
       visual: { type: "rect", width: 0.5, height: 18, color: "#2C3E50" },
       physics: { bodyType: "static" },
-      collider: { shape: "box", width: 0.5, height: 18, friction: 0.5, restitution: 0.3 },
+      collider: {
+        shape: "box",
+        width: 0.5,
+        height: 18,
+        friction: 0.5,
+        restitution: 0.3,
+      },
     },
   },
   entities: [
-    { id: "ground", name: "Ground", template: "ground", transform: { x: 0, y: -8.5, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "wall-left", name: "Left Wall", template: "wall", transform: { x: -6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "wall-right", name: "Right Wall", template: "wall", transform: { x: 6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "camera_sprite", name: "Camera Feed", template: "cameraTarget", transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+    {
+      id: "ground",
+      name: "Ground",
+      template: "ground",
+      transform: { x: 0, y: -8.5, angle: 0, scaleX: 1, scaleY: 1 },
+    },
+    {
+      id: "wall-left",
+      name: "Left Wall",
+      template: "wall",
+      transform: { x: -6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+    },
+    {
+      id: "wall-right",
+      name: "Right Wall",
+      template: "wall",
+      transform: { x: 6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+    },
+    {
+      id: "camera_sprite",
+      name: "Camera Feed",
+      template: "cameraTarget",
+      transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
+    },
   ],
   rules: [],
 };
@@ -65,92 +98,121 @@ const GAME_DEFINITION: GameDefinition = {
 export default function CameraFeedExample() {
   const router = useRouter();
   const [bridge, setBridge] = useState<GodotBridge | null>(null);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "ready" | "error">(
+    "loading"
+  );
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [GodotView, setGodotView] = useState<React.ComponentType<{ style?: object }> | null>(null);
+  const [GodotView, setGodotView] = useState<React.ComponentType<{
+    style?: object;
+  }> | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
 
   const camera = useCameraTexture(bridge as GodotBridge);
 
   const addLog = useCallback((message: string) => {
     console.log(`[CameraFeed] ${message}`);
-    setLogs((prev) => [...prev.slice(-9), `${new Date().toLocaleTimeString()}: ${message}`]);
+    setLogs((prev) => [
+      ...prev.slice(-9),
+      `${new Date().toLocaleTimeString()}: ${message}`,
+    ]);
   }, []);
 
   useEffect(() => {
     let mounted = true;
-    
-    addLog("Loading Godot module...");
-    
-    import("@/lib/godot").then(async (mod) => {
-      if (!mounted) return;
-      
-      addLog("Creating bridge...");
-      const newBridge = await mod.createGodotBridge();
-      
-      if (!mounted) return;
-      setBridge(newBridge);
-      setGodotView(() => mod.GodotView);
-      addLog("GodotView ready, waiting for WASM...");
-    }).catch((err) => {
-      if (!mounted) return;
-      setStatus("error");
-      setErrorMsg(err instanceof Error ? err.message : "Failed to load Godot module");
-    });
 
-    return () => { mounted = false; };
+    addLog("Loading Godot module...");
+
+    import("@/lib/godot")
+      .then(async (mod) => {
+        if (!mounted) return;
+
+        addLog("Creating bridge...");
+        const newBridge = await mod.createGodotBridge();
+
+        if (!mounted) return;
+        setBridge(newBridge);
+        setGodotView(() => mod.GodotView);
+        addLog("GodotView ready, waiting for WASM...");
+      })
+      .catch((err) => {
+        if (!mounted) return;
+        setStatus("error");
+        setErrorMsg(
+          err instanceof Error ? err.message : "Failed to load Godot module"
+        );
+      });
+
+    return () => {
+      mounted = false;
+    };
   }, [addLog]);
 
   useEffect(() => {
     if (!bridge || !GodotView) return;
-    
-    let mounted = true;
-    
-    addLog("Initializing bridge (waiting for WASM)...");
-    bridge.initialize().then(() => {
-      if (!mounted) return;
-      addLog("Bridge initialized!");
-      
-      addLog("Loading game definition...");
-      return bridge.loadGame(GAME_DEFINITION);
-    }).then(() => {
-      if (!mounted) return;
-      addLog("Game loaded successfully!");
-      setStatus("ready");
-    }).catch((err) => {
-      if (!mounted) return;
-      addLog(`Error: ${err.message}`);
-      setStatus("error");
-      setErrorMsg(err instanceof Error ? err.message : "Failed to initialize");
-    });
 
-    return () => { mounted = false; };
+    let mounted = true;
+
+    addLog("Initializing bridge (waiting for WASM)...");
+    bridge
+      .initialize()
+      .then(() => {
+        if (!mounted) return;
+        addLog("Bridge initialized!");
+
+        addLog("Loading game definition...");
+        return bridge.loadGame(GAME_DEFINITION);
+      })
+      .then(() => {
+        if (!mounted) return;
+        addLog("Game loaded successfully!");
+        setStatus("ready");
+      })
+      .catch((err) => {
+        if (!mounted) return;
+        addLog(`Error: ${err.message}`);
+        setStatus("error");
+        setErrorMsg(
+          err instanceof Error ? err.message : "Failed to initialize"
+        );
+      });
+
+    return () => {
+      mounted = false;
+    };
   }, [bridge, GodotView, addLog]);
 
   const handleStartCamera = useCallback(async () => {
     if (!bridge || status !== "ready") return;
-    
+
     try {
       addLog("Starting camera feed...");
       await camera.start({
         targetEntityId: "camera_sprite",
-        resolution: "480p"
+        resolution: "480p",
       });
       addLog("Camera started!");
     } catch (err) {
-      addLog(`Failed to start camera: ${err instanceof Error ? err.message : String(err)}`);
+      addLog(
+        `Failed to start camera: ${
+          err instanceof Error ? err.message : String(err)
+        }`
+      );
     }
   }, [bridge, status, camera, addLog]);
 
   const handleStopCamera = useCallback(async () => {
     if (!bridge || status !== "ready") return;
-    
+
     try {
       addLog("Stopping camera feed...");
       await camera.stop();
       addLog("Camera stopped!");
     } catch (err) {
-      addLog(`Failed to stop camera: ${err instanceof Error ? err.message : String(err)}`);
+      addLog(
+        `Failed to stop camera: ${
+          err instanceof Error ? err.message : String(err)
+        }`
+      );
     }
   }, [bridge, status, camera, addLog]);
 
@@ -158,7 +220,10 @@ export default function CameraFeedExample() {
     return (
       <SafeAreaView className="flex-1 bg-gray-900 items-center justify-center">
         <Text className="text-red-400 text-lg mb-4">{errorMsg}</Text>
-        <Pressable onPress={() => router.back()} className="py-2 px-4 bg-gray-700 rounded-lg">
+        <Pressable
+          onPress={() => router.back()}
+          className="py-2 px-4 bg-gray-700 rounded-lg"
+        >
           <Text className="text-white font-semibold">← Back</Text>
         </Pressable>
       </SafeAreaView>
@@ -193,28 +258,43 @@ export default function CameraFeedExample() {
             <Pressable
               onPress={handleStartCamera}
               disabled={status !== "ready" || camera.isActive}
-              className={`py-2 px-4 rounded-lg ${status === "ready" && !camera.isActive ? "bg-green-600" : "bg-gray-600"}`}
+              className={`py-2 px-4 rounded-lg ${
+                status === "ready" && !camera.isActive
+                  ? "bg-green-600"
+                  : "bg-gray-600"
+              }`}
             >
               <Text className="text-white font-semibold">Start Camera</Text>
             </Pressable>
             <Pressable
               onPress={handleStopCamera}
               disabled={status !== "ready" || !camera.isActive}
-              className={`py-2 px-4 rounded-lg ${status === "ready" && camera.isActive ? "bg-red-600" : "bg-gray-600"}`}
+              className={`py-2 px-4 rounded-lg ${
+                status === "ready" && camera.isActive
+                  ? "bg-red-600"
+                  : "bg-gray-600"
+              }`}
             >
               <Text className="text-white font-semibold">Stop Camera</Text>
             </Pressable>
           </View>
 
           <View className="items-center mb-2">
-            <Text className={`text-xs font-bold ${camera.isActive ? "text-green-400" : "text-gray-400"}`}>
+            <Text
+              className={`text-xs font-bold ${
+                camera.isActive ? "text-green-400" : "text-gray-400"
+              }`}
+            >
               Status: {camera.isActive ? "ACTIVE" : "INACTIVE"}
             </Text>
           </View>
 
           <View className="border-t border-gray-700 pt-2">
             {logs.map((log, idx) => (
-              <Text key={`log-${idx}-${log.slice(0, 10)}`} className="text-gray-400 font-mono text-xs">
+              <Text
+                key={`log-${idx}-${log.slice(0, 10)}`}
+                className="text-gray-400 font-mono text-xs"
+              >
                 {log}
               </Text>
             ))}

@@ -1,4 +1,10 @@
-import type { GameDefinition, PropertySyncPayload } from '@slopcade/shared';
+import type {
+  EffectPipelineSpec,
+  GameDefinition,
+  MultiPassEffectSpec,
+  PipelineSnapshot,
+  PropertySyncPayload,
+} from '@slopcade/shared';
 
 export interface Vec2 {
   x: number;
@@ -366,6 +372,25 @@ export interface GodotBridge {
   createDynamicShader(shaderId: string, shaderCode: string): Promise<DynamicShaderResult>;
   applyDynamicShader(entityId: string, shaderId: string, params?: Record<string, unknown>): void;
   applyDynamicPostShader(shaderCode: string, params?: Record<string, unknown>): void;
+
+  // Visual Effects - Composable Pipeline
+  applyPipeline(spec: EffectPipelineSpec): void;
+  clearPipeline(): void;
+  updatePipelinePassParam(passId: string, paramName: string, value: unknown): void;
+  startPipeline(): void;
+  pausePipeline(): void;
+  resumePipeline(): void;
+  stopPipeline(): void;
+  resetPipeline(): void;
+  captureSnapshot(): Promise<PipelineSnapshot>;
+  restoreSnapshot(snapshot: PipelineSnapshot): void;
+
+  // Multi-Pass Effects
+  applyMultiPassEffect(entityId: string, spec: MultiPassEffectSpec): void;
+  startMultiPassEffect(): void;
+  stopMultiPassEffect(): void;
+  setMultiPassInput(passId: string, inputs: Record<string, unknown>): void;
+  clearMultiPassEffect(): void;
 
   // Visual Effects - Particles
   spawnParticlePreset(presetName: string, worldX: number, worldY: number, params?: Record<string, unknown>): void;

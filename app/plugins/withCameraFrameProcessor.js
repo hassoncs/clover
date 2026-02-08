@@ -35,7 +35,7 @@ function withCameraFrameProcessor(config) {
     if (appGroupEntry) {
       const appGroupKey = appGroupEntry.value;
       xcodeProject.addSourceFile(
-        'CameraFramePlugin.mm',
+        `${projectName}/CameraFramePlugin.mm`,
         { target: targetUuid },
         appGroupKey
       );
@@ -43,6 +43,14 @@ function withCameraFrameProcessor(config) {
     } else {
       console.warn('[withCameraFrameProcessor] Could not find app group in Xcode project');
     }
+
+    // Add VisionCamera header search paths so CameraFramePlugin.mm can find
+    // <VisionCamera/FrameProcessorPlugin.h> etc.
+    xcodeProject.addToHeaderSearchPaths('"$(PODS_ROOT)/Headers/Public"');
+    xcodeProject.addToHeaderSearchPaths('"$(PODS_ROOT)/Headers/Private"');
+    xcodeProject.addToHeaderSearchPaths('"$(PODS_ROOT)/Headers/Private/VisionCamera"');
+    xcodeProject.addToHeaderSearchPaths('"$(PODS_ROOT)/Headers/Private/react-native-worklets-core"');
+    console.log('[withCameraFrameProcessor] Added VisionCamera header search paths');
 
     return config;
   });

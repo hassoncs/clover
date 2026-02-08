@@ -88,10 +88,14 @@ PODS:
   - DoubleConversion (1.1.6)
   - EASClient (1.0.8):
     - ExpoModulesCore
+  - EXApplication (7.0.8):
+    - ExpoModulesCore
   - EXConstants (18.0.13):
     - ExpoModulesCore
   - EXJSONUtils (0.15.0)
   - EXManifests (1.0.10):
+    - ExpoModulesCore
+  - EXNotifications (0.32.16):
     - ExpoModulesCore
   - Expo (54.0.33):
     - boost
@@ -125,6 +129,8 @@ PODS:
     - SocketRocket
     - Yoga
   - ExpoAsset (12.0.12):
+    - ExpoModulesCore
+  - ExpoDevice (8.0.10):
     - ExpoModulesCore
   - ExpoFileSystem (19.0.21):
     - ExpoModulesCore
@@ -3020,11 +3026,14 @@ DEPENDENCIES:
   - "borndotcom-react-native-godot (from `../../node_modules/.pnpm/@borndotcom+react-native-godot@1.0.1_react-native-worklets-core@1.6.2_react-native@0.81.4_@ba_hq6zbpbcs6mcbflm4kb4mgiahu/node_modules/@borndotcom/react-native-godot`)"
   - "DoubleConversion (from `../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.29.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)"
   - "EASClient (from `../../node_modules/.pnpm/expo-eas-client@1.0.8/node_modules/expo-eas-client/ios`)"
+  - "EXApplication (from `../../node_modules/.pnpm/expo-application@7.0.8_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@_4pyjpizdziy3bdbt3qdqkxg7z4/node_modules/expo-application/ios`)"
   - "EXConstants (from `../../node_modules/.pnpm/expo-constants@18.0.13_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@_q3kjweahw5t2ibdqjrmtmq52he/node_modules/expo-constants/ios`)"
   - "EXJSONUtils (from `../../node_modules/.pnpm/expo-json-utils@0.15.0/node_modules/expo-json-utils/ios`)"
   - "EXManifests (from `../../node_modules/.pnpm/expo-manifests@1.0.10_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@6_546hps2t34stet5nkjzgch3jka/node_modules/expo-manifests/ios`)"
+  - "EXNotifications (from `../../node_modules/.pnpm/expo-notifications@0.32.16_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-rou_id7v4aoqpxjdzpoycacmgw7zbu/node_modules/expo-notifications/ios`)"
   - "Expo (from `../../node_modules/.pnpm/expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@6.0.23_react-native@0.8_zgdtckswabid3mkmyukcmfglcm/node_modules/expo`)"
   - "ExpoAsset (from `../../node_modules/.pnpm/expo-asset@12.0.12_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@6.0._thouje7iq5wd3rmq2whxapijxa/node_modules/expo-asset/ios`)"
+  - "ExpoDevice (from `../../node_modules/.pnpm/expo-device@8.0.10_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@6.0._5yl7eyayobrpavaevem7lpln5a/node_modules/expo-device/ios`)"
   - "ExpoFileSystem (from `../../node_modules/.pnpm/expo-file-system@19.0.21_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-route_nmghf42uhkvldwlqnxxdpztvgy/node_modules/expo-file-system/ios`)"
   - "ExpoFont (from `../../node_modules/.pnpm/expo-font@14.0.11_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@6.0.2_uei7dd264cem4gb7xevuzkpkcm/node_modules/expo-font/ios`)"
   - "ExpoHaptics (from `../../node_modules/.pnpm/expo-haptics@15.0.8_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@6.0_pxkcqxfsyefx3rfbrytk3bwqpi/node_modules/expo-haptics/ios`)"
@@ -3142,16 +3151,22 @@ EXTERNAL SOURCES:
     :podspec: "../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.29.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
   EASClient:
     :path: "../../node_modules/.pnpm/expo-eas-client@1.0.8/node_modules/expo-eas-client/ios"
+  EXApplication:
+    :path: "../../node_modules/.pnpm/expo-application@7.0.8_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@_4pyjpizdziy3bdbt3qdqkxg7z4/node_modules/expo-application/ios"
   EXConstants:
     :path: "../../node_modules/.pnpm/expo-constants@18.0.13_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@_q3kjweahw5t2ibdqjrmtmq52he/node_modules/expo-constants/ios"
   EXJSONUtils:
     :path: "../../node_modules/.pnpm/expo-json-utils@0.15.0/node_modules/expo-json-utils/ios"
   EXManifests:
     :path: "../../node_modules/.pnpm/expo-manifests@1.0.10_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@6_546hps2t34stet5nkjzgch3jka/node_modules/expo-manifests/ios"
+  EXNotifications:
+    :path: "../../node_modules/.pnpm/expo-notifications@0.32.16_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-rou_id7v4aoqpxjdzpoycacmgw7zbu/node_modules/expo-notifications/ios"
   Expo:
     :path: "../../node_modules/.pnpm/expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@6.0.23_react-native@0.8_zgdtckswabid3mkmyukcmfglcm/node_modules/expo"
   ExpoAsset:
     :path: "../../node_modules/.pnpm/expo-asset@12.0.12_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@6.0._thouje7iq5wd3rmq2whxapijxa/node_modules/expo-asset/ios"
+  ExpoDevice:
+    :path: "../../node_modules/.pnpm/expo-device@8.0.10_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-router@6.0._5yl7eyayobrpavaevem7lpln5a/node_modules/expo-device/ios"
   ExpoFileSystem:
     :path: "../../node_modules/.pnpm/expo-file-system@19.0.21_expo@54.0.33_@babel+core@7.29.0_@expo+metro-runtime@6.1.2_expo-route_nmghf42uhkvldwlqnxxdpztvgy/node_modules/expo-file-system/ios"
   ExpoFont:
@@ -3350,11 +3365,14 @@ SPEC CHECKSUMS:
   borndotcom-react-native-godot: b060f68de77acf4ed80e8072b15315619e14c4c4
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EASClient: 40dd9e740684782610c49becab2643782ea1a20c
+  EXApplication: 1e98d4b1dccdf30627f92917f4b2c5a53c330e5f
   EXConstants: fce59a631a06c4151602843667f7cfe35f81e271
   EXJSONUtils: 1d3e4590438c3ee593684186007028a14b3686cd
   EXManifests: a8d97683e5c7a3b026ffbd58559c64dc655b747b
+  EXNotifications: 9eec98712cc814ceff916d876cb53859003b0597
   Expo: ffcd2fb31776b663b84501a2568cab7dd7c0f9cb
   ExpoAsset: f867e55ceb428aab99e1e8c082b5aee7c159ea18
+  ExpoDevice: 6327c3c200816795708885adf540d26ecab83d1a
   ExpoFileSystem: 858a44267a3e6e9057e0888ad7c7cfbf55d52063
   ExpoFont: f543ce20a228dd702813668b1a07b46f51878d47
   ExpoHaptics: d3a6375d8dcc3a1083d003bc2298ff654fafb536

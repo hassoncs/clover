@@ -8,6 +8,7 @@
     "dev:web": "expo start --web --port 8085",
     "ios": "RCT_METRO_PORT=8085 expo run:ios --port 8085",
     "ios:device": "RCT_METRO_PORT=8085 expo run:ios --configuration Release --device --port 8085",
+    "ios:device:local": "RCT_METRO_PORT=8085 expo run:ios --device --port 8085",
     "android": "RCT_METRO_PORT=8085 expo run:android --port 8085",
     "doctor": "expo doctor",
     "clean:js": "rimraf node_modules .expo .expo-shared dist web-build",

@@ -1,4 +1,11 @@
-import type { GameDefinition, PropertySyncPayload } from '@slopcade/shared';
+import type {
+  EffectPipelineSpec,
+  GameDefinition,
+  MultiPassEffectSpec,
+  PipelineSnapshot,
+  PropertySyncPayload,
+} from '@slopcade/shared';
+import { serializePipelineSpec } from '@slopcade/shared/effects/pipeline-serialization';
 import type {
   GodotBridge,
   CollisionEvent,
@@ -937,6 +944,76 @@ export function createNativeGodotBridge(): GodotBridge {
 
     applyDynamicPostShader(shaderCode: string, params?: Record<string, unknown>) {
       callEffectsBridge('apply_dynamic_post_shader', shaderCode, JSON.stringify(params ?? {}));
+    },
+
+    applyPipeline(spec: EffectPipelineSpec) {
+      const specJson = serializePipelineSpec(spec);
+      callEffectsBridge('apply_pipeline', specJson);
+    },
+
+    clearPipeline() {
+      callEffectsBridge('clear_pipeline');
+    },
+
+    updatePipelinePassParam(passId: string, paramName: string, value: unknown) {
+      callEffectsBridge('update_pipeline_pass_param', passId, paramName, value);
+    },
+
+    startPipeline() {
+      callEffectsBridge('start_pipeline');
+    },
+
+    pausePipeline() {
+      callEffectsBridge('pause_pipeline');
+    },
+
+    resumePipeline() {
+      callEffectsBridge('resume_pipeline');
+    },
+
+    stopPipeline() {
+      callEffectsBridge('stop_pipeline');
+    },
+
+    resetPipeline() {
+      callEffectsBridge('reset_pipeline');
+    },
+
+    async captureSnapshot(): Promise<PipelineSnapshot> {
+      const result = await callGameBridgeAsync('capture_pipeline_snapshot');
+      if (result && typeof result === 'object' && 'pipelineId' in (result as Record<string, unknown>)) {
+        return result as PipelineSnapshot;
+      }
+      if (typeof result === 'string') {
+        try {
+          return JSON.parse(result) as PipelineSnapshot;
+        } catch {}
+      }
+      return { pipelineId: '', passes: [], lifecycleState: 'idle', timestamp: 0 };
+    },
+
+    restoreSnapshot(snapshot: PipelineSnapshot) {
+      callEffectsBridge('restore_pipeline_snapshot', JSON.stringify(snapshot));
+    },
+
+    applyMultiPassEffect(entityId: string, spec: MultiPassEffectSpec) {
+      callEffectsBridge('apply_multi_pass_effect', entityId, JSON.stringify(spec));
+    },
+
+    startMultiPassEffect() {
+      callEffectsBridge('start_multi_pass_effect');
+    },
+
+    stopMultiPassEffect() {
+      callEffectsBridge('stop_multi_pass_effect');
+    },
+
+    setMultiPassInput(passId: string, inputs: Record<string, unknown>) {
+      callEffectsBridge('set_multi_pass_input', passId, JSON.stringify(inputs));
+    },
+
+    clearMultiPassEffect() {
+      callEffectsBridge('clear_multi_pass_effect');
     },
 
     spawnParticlePreset(presetName: string, worldX: number, worldY: number, params?: Record<string, unknown>) {

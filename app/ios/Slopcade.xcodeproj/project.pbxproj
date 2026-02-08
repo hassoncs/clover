@@ -7,31 +7,31 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		10C930ADC3AC4258AB64D8E4 /* CameraFramePlugin.mm in Sources */ = {isa = PBXBuildFile; fileRef = BF44F5D4780F4978A619B287 /* CameraFramePlugin.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		33CB26E64C3A440693695843 /* libPods-Slopcade.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 972FFFC56BE41690D64323CA /* libPods-Slopcade.a */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		4B08AB4B268E18D244BA521D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 767CF90D05F02A599B887417 /* ExpoModulesProvider.swift */; };
-		647E29394D6DED3F77A13EAF /* libPods-Slopcade.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B750041D1093D878271D871 /* libPods-Slopcade.a */; };
+		A41F8A0D372EF05E21C8737C /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE925C07B20156C14F3D23D4 /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		CB85A639867A480CAB7C5566 /* CameraFramePlugin.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0A3D2AF9EB634B628ADCA54A /* CameraFramePlugin.mm */; };
-		D7DBE6C28A716322D3AEDE0E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 72A3A2C4E8F8D4CDB5D750B1 /* PrivacyInfo.xcprivacy */; };
+		DC46DB7E5BE50CAF3E0C3851 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D301E018F0B90E786DF5097F /* PrivacyInfo.xcprivacy */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0A3D2AF9EB634B628ADCA54A /* CameraFramePlugin.mm */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = CameraFramePlugin.mm; path = CameraFramePlugin.mm; sourceTree = "<group>"; };
+		00EA88DC9E2072DB3D0200F9 /* Pods-Slopcade.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Slopcade.debug.xcconfig"; path = "Target Support Files/Pods-Slopcade/Pods-Slopcade.debug.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Slopcade.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Slopcade.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Slopcade/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Slopcade/Info.plist; sourceTree = "<group>"; };
-		1B750041D1093D878271D871 /* libPods-Slopcade.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Slopcade.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		677C59068D193C4682C4A76D /* Pods-Slopcade.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Slopcade.release.xcconfig"; path = "Target Support Files/Pods-Slopcade/Pods-Slopcade.release.xcconfig"; sourceTree = "<group>"; };
-		72A3A2C4E8F8D4CDB5D750B1 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Slopcade/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		767CF90D05F02A599B887417 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Slopcade/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		35B8500EFE159341B8DF8A1B /* Pods-Slopcade.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Slopcade.release.xcconfig"; path = "Target Support Files/Pods-Slopcade/Pods-Slopcade.release.xcconfig"; sourceTree = "<group>"; };
+		972FFFC56BE41690D64323CA /* libPods-Slopcade.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Slopcade.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Slopcade/SplashScreen.storyboard; sourceTree = "<group>"; };
+		AE925C07B20156C14F3D23D4 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Slopcade/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
+		BF44F5D4780F4978A619B287 /* CameraFramePlugin.mm */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = CameraFramePlugin.mm; path = Slopcade/CameraFramePlugin.mm; sourceTree = "<group>"; };
+		D301E018F0B90E786DF5097F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Slopcade/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Slopcade/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* Slopcade-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Slopcade-Bridging-Header.h"; path = "Slopcade/Slopcade-Bridging-Header.h"; sourceTree = "<group>"; };
-		F654732E41C0A1955FABC333 /* Pods-Slopcade.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Slopcade.debug.xcconfig"; path = "Target Support Files/Pods-Slopcade/Pods-Slopcade.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,7 +39,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				647E29394D6DED3F77A13EAF /* libPods-Slopcade.a in Frameworks */,
+				33CB26E64C3A440693695843 /* libPods-Slopcade.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -55,35 +55,25 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				0A3D2AF9EB634B628ADCA54A /* CameraFramePlugin.mm */,
-				72A3A2C4E8F8D4CDB5D750B1 /* PrivacyInfo.xcprivacy */,
+				BF44F5D4780F4978A619B287 /* CameraFramePlugin.mm */,
+				D301E018F0B90E786DF5097F /* PrivacyInfo.xcprivacy */,
 			);
 			name = Slopcade;
-			sourceTree = "<group>";
-		};
-		2050DCDF52494A2DFAEA5F5E /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				F654732E41C0A1955FABC333 /* Pods-Slopcade.debug.xcconfig */,
-				677C59068D193C4682C4A76D /* Pods-Slopcade.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				1B750041D1093D878271D871 /* libPods-Slopcade.a */,
+				972FFFC56BE41690D64323CA /* libPods-Slopcade.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		4EEEF9E38E930E34402AA6EF /* Slopcade */ = {
+		59C5D6C6D67C462C7A67B52B /* Slopcade */ = {
 			isa = PBXGroup;
 			children = (
-				767CF90D05F02A599B887417 /* ExpoModulesProvider.swift */,
+				AE925C07B20156C14F3D23D4 /* ExpoModulesProvider.swift */,
 			);
 			name = Slopcade;
 			sourceTree = "<group>";
@@ -102,8 +92,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				2050DCDF52494A2DFAEA5F5E /* Pods */,
-				BB5E2074593F10EDC1C16560 /* ExpoModulesProviders */,
+				88FFF479A615B90145988EA7 /* Pods */,
+				B1BEC6D000E4A514FBFEF714 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -118,6 +108,24 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		88FFF479A615B90145988EA7 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				00EA88DC9E2072DB3D0200F9 /* Pods-Slopcade.debug.xcconfig */,
+				35B8500EFE159341B8DF8A1B /* Pods-Slopcade.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		B1BEC6D000E4A514FBFEF714 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				59C5D6C6D67C462C7A67B52B /* Slopcade */,
+			);
+			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -125,14 +133,6 @@
 			);
 			name = Supporting;
 			path = Slopcade/Supporting;
-			sourceTree = "<group>";
-		};
-		BB5E2074593F10EDC1C16560 /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				4EEEF9E38E930E34402AA6EF /* Slopcade */,
-			);
-			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -143,14 +143,14 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Slopcade" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				1FEDB87EF70BC5A3A745451C /* [Expo] Configure project */,
+				4950BCE4AEFC646212D1702A /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				017A1BD8EC0E45D2BADA0FBC /* Copy Godot Assets */,
-				82723557433A24C650AC17F2 /* [CP] Embed Pods Frameworks */,
+				1DECDACC6AF7444D95AF8719 /* Copy Godot Assets */,
+				03462E4A5A340AC24321B1C7 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -171,8 +171,6 @@
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1250;
-						DevelopmentTeam = "24T4GAP365";
-						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -202,7 +200,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				D7DBE6C28A716322D3AEDE0E /* PrivacyInfo.xcprivacy in Resources */,
+				DC46DB7E5BE50CAF3E0C3851 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -226,19 +224,25 @@
 			shellPath = /bin/sh;
 			shellScript = "if [[ -f \"$PODS_ROOT/../.xcode.env\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env\"\nfi\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n# The project root by default is one level up from the ios directory\nexport PROJECT_ROOT=\"$PROJECT_DIR\"/..\n\nif [[ \"$CONFIGURATION\" = *Debug* ]]; then\n  export SKIP_BUNDLING=1\nfi\nif [[ -z \"$ENTRY_FILE\" ]]; then\n  # Set the entry JS file using the bundler's entry resolution.\n  export ENTRY_FILE=\"$(\"$NODE_BINARY\" -e \"require('expo/scripts/resolveAppEntry')\" \"$PROJECT_ROOT\" ios absolute | tail -n 1)\"\nfi\n\nif [[ -z \"$CLI_PATH\" ]]; then\n  # Use Expo CLI\n  export CLI_PATH=\"$(\"$NODE_BINARY\" --print \"require.resolve('@expo/cli', { paths: [require.resolve('expo/package.json')] })\")\"\nfi\nif [[ -z \"$BUNDLE_COMMAND\" ]]; then\n  # Default Expo CLI command for bundling\n  export BUNDLE_COMMAND=\"export:embed\"\nfi\n\n# Source .xcode.env.updates if it exists to allow\n# SKIP_BUNDLING to be unset if needed\nif [[ -f \"$PODS_ROOT/../.xcode.env.updates\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.updates\"\nfi\n# Source local changes to allow overrides\n# if needed\nif [[ -f \"$PODS_ROOT/../.xcode.env.local\" ]]; then\n  source \"$PODS_ROOT/../.xcode.env.local\"\nfi\n\n`\"$NODE_BINARY\" --print \"require('path').dirname(require.resolve('react-native/package.json')) + '/scripts/react-native-xcode.sh'\"`\n\n";
 		};
-		017A1BD8EC0E45D2BADA0FBC /* Copy Godot Assets */ = {
+		03462E4A5A340AC24321B1C7 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Slopcade/Pods-Slopcade-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/borndotcom-react-native-godot/libgodot.framework/libgodot",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
 			);
-			name = "Copy Godot Assets";
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/libgodot.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\n# Copy Godot assets to app bundle\n# Primary source: app/godot (always fresh from export script)\n# Fallback: ios/Slopcade/godot (prebuild copy)\nGODOT_PRIMARY=\"$SRCROOT/../godot\"\nGODOT_FALLBACK=\"$SRCROOT/$PRODUCT_NAME/godot\"\nGODOT_DST=\"$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.app/godot\"\n\nmkdir -p \"$GODOT_DST\"\n\nif [ -f \"$GODOT_PRIMARY/main.pck\" ]; then\n  cp \"$GODOT_PRIMARY/main.pck\" \"$GODOT_DST/\"\n  echo \"Copied main.pck from $GODOT_PRIMARY to $GODOT_DST\"\nelif [ -f \"$GODOT_FALLBACK/main.pck\" ]; then\n  cp \"$GODOT_FALLBACK/main.pck\" \"$GODOT_DST/\"\n  echo \"Copied main.pck from $GODOT_FALLBACK to $GODOT_DST\"\nelse\n  echo \"WARNING: main.pck not found! Run: node scripts/export-godot.mjs --native\"\nfi\n\n# Copy GDExtension native frameworks (e.g. Rapier2D physics)\n# Godot resolves res:// relative to the main.pck directory\nGODOT_PROJECT=\"$SRCROOT/../../godot_project\"\nADDONS_DST=\"$GODOT_DST/addons\"\n\nfor gdext_file in \"$GODOT_PROJECT\"/addons/*/*.gdextension; do\n  [ -f \"$gdext_file\" ] || continue\n  ADDON_DIR=$(dirname \"$gdext_file\")\n  ADDON_NAME=$(basename \"$ADDON_DIR\")\n\n  # Copy the .gdextension file itself (Godot needs it to discover the extension)\n  mkdir -p \"$ADDONS_DST/$ADDON_NAME\"\n  cp \"$gdext_file\" \"$ADDONS_DST/$ADDON_NAME/\"\n  echo \"Copied $(basename \"$gdext_file\") to $ADDONS_DST/$ADDON_NAME/\"\n\n  # Find iOS frameworks/dylibs referenced in the .gdextension file\n  while IFS= read -r line; do\n    case \"$line\" in\n      ios.*.arm64*=*|ios.*.x86_64*=*)\n        FW_REL=$(echo \"$line\" | sed 's/.*= *\"\\{0,1\\}//;s/\".*$//')\n        FW_SRC=\"$ADDON_DIR/$FW_REL\"\n        FW_DST_DIR=\"$ADDONS_DST/$ADDON_NAME/$(dirname \"$FW_REL\")\"\n        if [ -d \"$FW_SRC\" ]; then\n          mkdir -p \"$FW_DST_DIR\"\n          cp -R \"$FW_SRC\" \"$FW_DST_DIR/\"\n          echo \"Copied $FW_REL to $FW_DST_DIR\"\n        elif [ -f \"$FW_SRC\" ]; then\n          mkdir -p \"$FW_DST_DIR\"\n          cp \"$FW_SRC\" \"$FW_DST_DIR/\"\n          echo \"Copied $FW_REL to $FW_DST_DIR\"\n        fi\n        ;;\n    esac\n  done < \"$gdext_file\"\ndone\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Slopcade/Pods-Slopcade-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
 		08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -262,7 +266,21 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		1FEDB87EF70BC5A3A745451C /* [Expo] Configure project */ = {
+		1DECDACC6AF7444D95AF8719 /* Copy Godot Assets */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Godot Assets";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\n# Copy Godot assets to app bundle\n# Primary source: app/godot (always fresh from export script)\n# Fallback: ios/Slopcade/godot (prebuild copy)\nGODOT_PRIMARY=\"$SRCROOT/../godot\"\nGODOT_FALLBACK=\"$SRCROOT/$PRODUCT_NAME/godot\"\nGODOT_DST=\"$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.app/godot\"\n\nmkdir -p \"$GODOT_DST\"\n\nif [ -f \"$GODOT_PRIMARY/main.pck\" ]; then\n  cp \"$GODOT_PRIMARY/main.pck\" \"$GODOT_DST/\"\n  echo \"Copied main.pck from $GODOT_PRIMARY to $GODOT_DST\"\nelif [ -f \"$GODOT_FALLBACK/main.pck\" ]; then\n  cp \"$GODOT_FALLBACK/main.pck\" \"$GODOT_DST/\"\n  echo \"Copied main.pck from $GODOT_FALLBACK to $GODOT_DST\"\nelse\n  echo \"WARNING: main.pck not found! Run: node scripts/export-godot.mjs --native\"\nfi\n\n# Copy GDExtension native frameworks (e.g. Rapier2D physics)\n# Godot resolves res:// relative to the main.pck directory\nGODOT_PROJECT=\"$SRCROOT/../../godot_project\"\nADDONS_DST=\"$GODOT_DST/addons\"\n\nfor gdext_file in \"$GODOT_PROJECT\"/addons/*/*.gdextension; do\n  [ -f \"$gdext_file\" ] || continue\n  ADDON_DIR=$(dirname \"$gdext_file\")\n  ADDON_NAME=$(basename \"$ADDON_DIR\")\n\n  # Copy the .gdextension file itself (Godot needs it to discover the extension)\n  mkdir -p \"$ADDONS_DST/$ADDON_NAME\"\n  cp \"$gdext_file\" \"$ADDONS_DST/$ADDON_NAME/\"\n  echo \"Copied $(basename \"$gdext_file\") to $ADDONS_DST/$ADDON_NAME/\"\n\n  # Find iOS frameworks/dylibs referenced in the .gdextension file\n  while IFS= read -r line; do\n    case \"$line\" in\n      ios.*.arm64*=*|ios.*.x86_64*=*)\n        FW_REL=$(echo \"$line\" | sed 's/.*= *\"\\{0,1\\}//;s/\".*$//')\n        FW_SRC=\"$ADDON_DIR/$FW_REL\"\n        FW_DST_DIR=\"$ADDONS_DST/$ADDON_NAME/$(dirname \"$FW_REL\")\"\n        if [ -d \"$FW_SRC\" ]; then\n          mkdir -p \"$FW_DST_DIR\"\n          cp -R \"$FW_SRC\" \"$FW_DST_DIR/\"\n          echo \"Copied $FW_REL to $FW_DST_DIR\"\n        elif [ -f \"$FW_SRC\" ]; then\n          mkdir -p \"$FW_DST_DIR\"\n          cp \"$FW_SRC\" \"$FW_DST_DIR/\"\n          echo \"Copied $FW_REL to $FW_DST_DIR\"\n        fi\n        ;;\n    esac\n  done < \"$gdext_file\"\ndone\n\n# iOS requires dylibs/frameworks in Frameworks/ (signed) for dlopen to work.\n# Godot's OS_AppleEmbedded::open_dynamic_library has a fallback that checks\n# Frameworks/ for the library filename. Copy iOS dylibs there so they load.\nFRAMEWORKS_DST=\"$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.app/Frameworks\"\nmkdir -p \"$FRAMEWORKS_DST\"\nfor dylib in \"$GODOT_DST\"/addons/*/bin/ios/*.dylib; do\n  [ -f \"$dylib\" ] || continue\n  DYLIB_NAME=$(basename \"$dylib\")\n  cp \"$dylib\" \"$FRAMEWORKS_DST/$DYLIB_NAME\"\n  echo \"Copied $DYLIB_NAME to Frameworks/ for iOS dlopen\"\ndone\n\n";
+		};
+		4950BCE4AEFC646212D1702A /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -293,9 +311,12 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Slopcade/Pods-Slopcade-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXApplication/ExpoApplication_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/EXConstants.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/ExpoConstants_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXNotifications/ExpoNotifications_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/EXUpdates/EXUpdates.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoDevice/ExpoDevice_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoFileSystem/ExpoFileSystem_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/PurchasesHybridCommon/PurchasesHybridCommon.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/RCT-Folly/RCT-Folly_privacy.bundle",
@@ -310,9 +331,12 @@
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoApplication_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXConstants.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoConstants_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoNotifications_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXUpdates.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoDevice_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoFileSystem_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/PurchasesHybridCommon.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RCT-Folly_privacy.bundle",
@@ -330,26 +354,6 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Slopcade/Pods-Slopcade-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		82723557433A24C650AC17F2 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Slopcade/Pods-Slopcade-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/borndotcom-react-native-godot/libgodot.framework/libgodot",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/libgodot.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Slopcade/Pods-Slopcade-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -358,8 +362,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				CB85A639867A480CAB7C5566 /* CameraFramePlugin.mm in Sources */,
-				4B08AB4B268E18D244BA521D /* ExpoModulesProvider.swift in Sources */,
+				10C930ADC3AC4258AB64D8E4 /* CameraFramePlugin.mm in Sources */,
+				A41F8A0D372EF05E21C8737C /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -368,7 +372,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F654732E41C0A1955FABC333 /* Pods-Slopcade.debug.xcconfig */;
+			baseConfigurationReference = 00EA88DC9E2072DB3D0200F9 /* Pods-Slopcade.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -378,6 +382,13 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"FB_SONARKIT_ENABLED=1",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PODS_ROOT)/Headers/Public",
+					"$(PODS_ROOT)/Headers/Private",
+					"$(PODS_ROOT)/Headers/Private/VisionCamera",
+					"$(PODS_ROOT)/Headers/Private/react-native-worklets-core",
 				);
 				INFOPLIST_FILE = Slopcade/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -399,20 +410,24 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				VERSIONING_SYSTEM = "apple-generic";
-				DEVELOPMENT_TEAM = "24T4GAP365";
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Debug;
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 677C59068D193C4682C4A76D /* Pods-Slopcade.release.xcconfig */;
+			baseConfigurationReference = 35B8500EFE159341B8DF8A1B /* Pods-Slopcade.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Slopcade/Slopcade.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PODS_ROOT)/Headers/Public",
+					"$(PODS_ROOT)/Headers/Private",
+					"$(PODS_ROOT)/Headers/Private/VisionCamera",
+					"$(PODS_ROOT)/Headers/Private/react-native-worklets-core",
+				);
 				INFOPLIST_FILE = Slopcade/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -432,9 +447,6 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				VERSIONING_SYSTEM = "apple-generic";
-				DEVELOPMENT_TEAM = "24T4GAP365";
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Release;
 		};

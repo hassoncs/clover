@@ -4,6 +4,18 @@
 #include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#ifdef __APPLE__
+#include <os/log.h>
+static os_log_t _ctp_log() {
+	static os_log_t log = nullptr;
+	if (!log) log = os_log_create("com.slopcade", "gdext");
+	return log;
+}
+#define CTP_LOG(fmt, ...) os_log_error(_ctp_log(), fmt, ##__VA_ARGS__)
+#else
+#define CTP_LOG(fmt, ...) ((void)0)
+#endif
+
 using namespace godot;
 
 CameraTextureProvider::CameraTextureProvider() {}
@@ -44,16 +56,30 @@ void CameraTextureProvider::lookup_shared_buffer() {
 	if (sym) {
 		get_buffer_fn = reinterpret_cast<GetSharedFrameBufferFn>(sym);
 		shared_buffer = get_buffer_fn();
-		UtilityFunctions::print("[CameraTextureProvider] SharedFrameBuffer found via dlsym");
+		CTP_LOG("[CameraTextureProvider] dlsym OK: sym=%{public}p buf=%{public}p", sym, (void*)shared_buffer);
+		UtilityFunctions::print(
+			String("[CameraTextureProvider] SharedFrameBuffer found via dlsym: sym={0} buf={1}").format(
+				Array::make((uint64_t)sym, (uint64_t)shared_buffer)
+			)
+		);
 	} else {
-		UtilityFunctions::print("[CameraTextureProvider] SharedFrameBuffer not available (camera not started)");
+		const char *err = dlerror();
+		CTP_LOG("[CameraTextureProvider] dlsym FAILED: %{public}s", err ? err : "no error info");
+		UtilityFunctions::print(
+			String("[CameraTextureProvider] dlsym failed: {0}").format(
+				Array::make(err ? String(err) : String("no error info"))
+			)
+		);
 	}
 }
 
 void CameraTextureProvider::_ready() {
+	CTP_LOG("[CameraTextureProvider] _ready() called");
 	create_placeholder_texture();
 	lookup_shared_buffer();
 
+	CTP_LOG("[CameraTextureProvider] Ready %{public}dx%{public}d buffer=%{public}s",
+		frame_width, frame_height, shared_buffer != nullptr ? "connected" : "pending");
 	UtilityFunctions::print(
 		String("[CameraTextureProvider] Ready - {0}x{1}, buffer {2}").format(
 			Array::make(frame_width, frame_height, shared_buffer != nullptr ? "connected" : "pending")
@@ -62,11 +88,20 @@ void CameraTextureProvider::_ready() {
 }
 
 void CameraTextureProvider::_process(double delta) {
+	static int process_count = 0;
+	process_count++;
+	if (process_count == 1) {
+		CTP_LOG("[CameraTextureProvider] _process() first call, shared_buffer=%{public}p", (void*)shared_buffer);
+	}
+
 	if (!shared_buffer) {
 		lookup_shared_buffer();
 		if (!shared_buffer) {
 			if (is_active) {
 				is_active = false;
+			}
+			if (process_count % 300 == 0) {
+				CTP_LOG("[CameraTextureProvider] Still no shared_buffer after %{public}d frames", process_count);
 			}
 			return;
 		}
@@ -81,6 +116,15 @@ void CameraTextureProvider::_process(double delta) {
 		return;
 	}
 
+	if (!is_active) {
+		CTP_LOG("[CameraTextureProvider] First frame: %{public}ux%{public}u seq=%{public}llu",
+			slot->width, slot->height, slot->sequence);
+		UtilityFunctions::print(
+			String("[CameraTextureProvider] First frame received: {0}x{1} seq={2}").format(
+				Array::make((int)slot->width, (int)slot->height, (int64_t)slot->sequence)
+			)
+		);
+	}
 	is_active = true;
 
 	int w = static_cast<int>(slot->width);

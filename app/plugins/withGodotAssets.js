@@ -85,13 +85,31 @@ for gdext_file in "$GODOT_PROJECT"/addons/*/*.gdextension; do
     esac
   done < "$gdext_file"
 done
+
+# iOS requires dylibs/frameworks in Frameworks/ (signed) for dlopen to work.
+# Godot's OS_AppleEmbedded::open_dynamic_library has a fallback that checks
+# Frameworks/ for the library filename. Copy iOS dylibs there so they load.
+FRAMEWORKS_DST="$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.app/Frameworks"
+mkdir -p "$FRAMEWORKS_DST"
+for dylib in "$GODOT_DST"/addons/*/bin/ios/*.dylib; do
+  [ -f "$dylib" ] || continue
+  DYLIB_NAME=$(basename "$dylib")
+  cp "$dylib" "$FRAMEWORKS_DST/$DYLIB_NAME"
+  echo "Copied $DYLIB_NAME to Frameworks/ for iOS dlopen"
+done
+
 `;
     
     const scriptName = 'Copy Godot Assets';
-    const existingPhase = Object.values(xcodeProject.hash.project.objects['PBXShellScriptBuildPhase'] || {})
-      .find(p => p.name === `"${scriptName}"`);
+    const phases = xcodeProject.hash.project.objects['PBXShellScriptBuildPhase'] || {};
+    const existingPhaseEntry = Object.entries(phases)
+      .find(([key, p]) => !key.endsWith('_comment') && p.name === `"${scriptName}"`);
     
-    if (!existingPhase) {
+    if (existingPhaseEntry) {
+      // Always update the script content (fixes stale build phases from previous prebuilds)
+      existingPhaseEntry[1].shellScript = JSON.stringify(shellScript);
+      console.log('[withGodotAssets] Updated Copy Godot Assets build phase script');
+    } else {
       const scriptUuid = xcodeProject.generateUuid();
       xcodeProject.hash.project.objects['PBXShellScriptBuildPhase'] = 
         xcodeProject.hash.project.objects['PBXShellScriptBuildPhase'] || {};

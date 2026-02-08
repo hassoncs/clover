@@ -50,8 +50,8 @@ export default function TabLayout() {
     setSidebarVisible(false);
   }, []);
 
-  const goToMaker = useCallback(() => {
-    router.push("/maker");
+  const goToCreateGame = useCallback(() => {
+    router.push("/create-game");
   }, [router]);
 
   const goToDiscover = useCallback(() => {
@@ -65,7 +65,7 @@ export default function TabLayout() {
   return (
     <View style={{ flex: 1, backgroundColor: "#050608" }}>
       <Tabs
-        tabBar={(props) => <FloatingTabBar {...props} onPrimaryPress={goToMaker} />}
+        tabBar={(props) => <FloatingTabBar {...props} onPrimaryPress={goToCreateGame} />}
         screenOptions={({ route }) => ({
           headerShown: TAB_HEADER_CONFIG[route.name]?.showHeader ?? true,
           header: () => {

@@ -18,6 +18,7 @@
     "web": "devmux ensure web",
     "ios": "devmux ensure metro && npx hush run -- pnpm --filter slopcade ios",
     "ios:device": "devmux ensure metro && npx hush run -- pnpm --filter slopcade ios:device",
+    "ios:device:local": "devmux ensure metro && devmux ensure api && npx hush run -- pnpm --filter slopcade ios:device:local",
     "android": "devmux ensure metro && npx hush run -- pnpm --filter slopcade android",
     "android:device": "cd app && npx expo run:android --variant release --device",
     "svc:ensure": "devmux ensure",

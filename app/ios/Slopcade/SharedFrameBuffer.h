@@ -86,13 +86,6 @@ struct SharedFrameBuffer {
 
 } // namespace slopcade
 
-extern "C" __attribute__((visibility("default"))) inline slopcade::SharedFrameBuffer* get_shared_frame_buffer() {
-    static slopcade::SharedFrameBuffer* instance = nullptr;
-    if (instance == nullptr) {
-        instance = new slopcade::SharedFrameBuffer();
-        instance->init();
-    }
-    return instance;
-}
+extern "C" __attribute__((visibility("default"))) slopcade::SharedFrameBuffer* get_shared_frame_buffer();
 
 #endif // SHARED_FRAME_BUFFER_H

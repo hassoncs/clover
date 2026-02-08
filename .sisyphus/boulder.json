@@ -1,9 +1,6 @@
 {
-  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/live-camera-to-godot-texture.md",
-  "started_at": "2026-02-07T21:10:00.000Z",
-  "session_ids": [
-    "ses_3c6a376a2ffeP4tWd1UdXJ5aLn"
-  ],
-  "plan_name": "live-camera-to-godot-texture",
-  "agent": "atlas"
+  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/composable-gpu-effects-system.md",
+  "started_at": "2026-02-08T00:02:53.707Z",
+  "session_ids": ["ses_3c590587fffeFbKqUjzsP69oCQ"],
+  "plan_name": "composable-gpu-effects-system"
 }

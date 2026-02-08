@@ -6,6 +6,8 @@ extends Node
 
 var effects_manager: EffectsManager
 var particle_factory: ParticleFactory
+var pipeline_executor: PipelineExecutor
+var multi_pass_executor: MultiPassExecutor
 var _game_bridge: Node = null
 
 # Dynamic shader cache
@@ -20,9 +22,20 @@ func _ready() -> void:
 	particle_factory = ParticleFactory.new()
 	particle_factory.name = "ParticleFactory"
 	add_child(particle_factory)
-	
+
+	pipeline_executor = PipelineExecutor.new()
+	pipeline_executor.name = "PipelineExecutor"
+	add_child(pipeline_executor)
+	pipeline_executor.configure(effects_manager, Callable(self, "_get_entity_sprite"))
+
+	multi_pass_executor = MultiPassExecutor.new()
+	multi_pass_executor.name = "MultiPassExecutor"
+	add_child(multi_pass_executor)
+
 	# Find GameBridge
 	_game_bridge = get_node_or_null("/root/GameBridge")
+	if _game_bridge and "_pixel_buffer_manager" in _game_bridge:
+		multi_pass_executor.setup(_game_bridge, _game_bridge._pixel_buffer_manager)
 
 	_build_effects_method_map()
 
@@ -47,8 +60,23 @@ func _build_effects_method_map() -> void:
 		"create_dynamic_shader": _js_create_dynamic_shader,
 		"apply_dynamic_shader_to_entity": _js_apply_dynamic_shader,
 		"apply_dynamic_post_shader": _js_apply_dynamic_post_shader,
+		"apply_pipeline": _js_apply_pipeline,
+		"clear_pipeline": _js_clear_pipeline,
+		"update_pipeline_pass_param": _js_update_pipeline_pass_param,
+		"start_pipeline": _js_start_pipeline,
+		"pause_pipeline": _js_pause_pipeline,
+		"resume_pipeline": _js_resume_pipeline,
+		"stop_pipeline": _js_stop_pipeline,
+		"reset_pipeline": _js_reset_pipeline,
 		"spawn_particle_preset": _js_spawn_particle_preset,
 		"get_available_effects": _js_get_available_effects,
+		"capture_pipeline_snapshot": _js_capture_pipeline_snapshot,
+		"restore_pipeline_snapshot": _js_restore_pipeline_snapshot,
+		"apply_multi_pass_effect": _js_apply_multi_pass_effect,
+		"start_multi_pass_effect": _js_start_multi_pass_effect,
+		"stop_multi_pass_effect": _js_stop_multi_pass_effect,
+		"set_multi_pass_input": _js_set_multi_pass_input,
+		"clear_multi_pass_effect": _js_clear_multi_pass_effect,
 	}
 
 func native_dispatch(method_name: String, args_json: String) -> Variant:
@@ -132,7 +160,47 @@ func _setup_js_effects_bridge() -> void:
 	var apply_dynamic_post_shader_cb = JavaScriptBridge.create_callback(_js_apply_dynamic_post_shader)
 	callbacks.append(apply_dynamic_post_shader_cb)
 	bridge["applyDynamicPostShader"] = apply_dynamic_post_shader_cb
-	
+
+	var apply_pipeline_cb = JavaScriptBridge.create_callback(_js_apply_pipeline)
+	callbacks.append(apply_pipeline_cb)
+	bridge["applyPipeline"] = apply_pipeline_cb
+
+	var clear_pipeline_cb = JavaScriptBridge.create_callback(_js_clear_pipeline)
+	callbacks.append(clear_pipeline_cb)
+	bridge["clearPipeline"] = clear_pipeline_cb
+
+	var update_pipeline_pass_param_cb = JavaScriptBridge.create_callback(_js_update_pipeline_pass_param)
+	callbacks.append(update_pipeline_pass_param_cb)
+	bridge["updatePipelinePassParam"] = update_pipeline_pass_param_cb
+
+	var start_pipeline_cb = JavaScriptBridge.create_callback(_js_start_pipeline)
+	callbacks.append(start_pipeline_cb)
+	bridge["startPipeline"] = start_pipeline_cb
+
+	var pause_pipeline_cb = JavaScriptBridge.create_callback(_js_pause_pipeline)
+	callbacks.append(pause_pipeline_cb)
+	bridge["pausePipeline"] = pause_pipeline_cb
+
+	var resume_pipeline_cb = JavaScriptBridge.create_callback(_js_resume_pipeline)
+	callbacks.append(resume_pipeline_cb)
+	bridge["resumePipeline"] = resume_pipeline_cb
+
+	var stop_pipeline_cb = JavaScriptBridge.create_callback(_js_stop_pipeline)
+	callbacks.append(stop_pipeline_cb)
+	bridge["stopPipeline"] = stop_pipeline_cb
+
+	var reset_pipeline_cb = JavaScriptBridge.create_callback(_js_reset_pipeline)
+	callbacks.append(reset_pipeline_cb)
+	bridge["resetPipeline"] = reset_pipeline_cb
+
+	var capture_snapshot_cb = JavaScriptBridge.create_callback(_js_capture_pipeline_snapshot)
+	callbacks.append(capture_snapshot_cb)
+	bridge["capturePipelineSnapshot"] = capture_snapshot_cb
+
+	var restore_snapshot_cb = JavaScriptBridge.create_callback(_js_restore_pipeline_snapshot)
+	callbacks.append(restore_snapshot_cb)
+	bridge["restorePipelineSnapshot"] = restore_snapshot_cb
+
 	# Particles
 	var spawn_particle_preset_cb = JavaScriptBridge.create_callback(_js_spawn_particle_preset)
 	callbacks.append(spawn_particle_preset_cb)
@@ -143,9 +211,29 @@ func _setup_js_effects_bridge() -> void:
 	callbacks.append(get_available_effects_cb)
 	bridge["getAvailableEffects"] = get_available_effects_cb
 	
+	var apply_multi_pass_effect_cb = JavaScriptBridge.create_callback(_js_apply_multi_pass_effect)
+	callbacks.append(apply_multi_pass_effect_cb)
+	bridge["applyMultiPassEffect"] = apply_multi_pass_effect_cb
+
+	var start_multi_pass_effect_cb = JavaScriptBridge.create_callback(_js_start_multi_pass_effect)
+	callbacks.append(start_multi_pass_effect_cb)
+	bridge["startMultiPassEffect"] = start_multi_pass_effect_cb
+
+	var stop_multi_pass_effect_cb = JavaScriptBridge.create_callback(_js_stop_multi_pass_effect)
+	callbacks.append(stop_multi_pass_effect_cb)
+	bridge["stopMultiPassEffect"] = stop_multi_pass_effect_cb
+
+	var set_multi_pass_input_cb = JavaScriptBridge.create_callback(_js_set_multi_pass_input)
+	callbacks.append(set_multi_pass_input_cb)
+	bridge["setMultiPassInput"] = set_multi_pass_input_cb
+
+	var clear_multi_pass_effect_cb = JavaScriptBridge.create_callback(_js_clear_multi_pass_effect)
+	callbacks.append(clear_multi_pass_effect_cb)
+	bridge["clearMultiPassEffect"] = clear_multi_pass_effect_cb
+
 	# Store callbacks to prevent garbage collection
 	set_meta("_js_callbacks", callbacks)
-	
+
 	# Signal that effects bridge is ready
 	bridge["_effectsReady"] = true
 
@@ -247,6 +335,46 @@ func _js_apply_dynamic_post_shader(args: Array) -> void:
 	var shader_code = str(args[0])
 	var params = _parse_params(args[1] if args.size() > 1 else {})
 	apply_dynamic_post_shader(shader_code, params)
+
+func _js_apply_pipeline(args: Array) -> void:
+	if args.size() < 1:
+		return
+	apply_pipeline(args[0])
+
+func _js_clear_pipeline(args: Array) -> void:
+	clear_pipeline()
+
+func _js_update_pipeline_pass_param(args: Array) -> void:
+	if args.size() < 3:
+		return
+	update_pipeline_pass_param(str(args[0]), str(args[1]), args[2])
+
+func _js_start_pipeline(args: Array) -> void:
+	start_pipeline()
+
+func _js_pause_pipeline(args: Array) -> void:
+	pause_pipeline()
+
+func _js_resume_pipeline(args: Array) -> void:
+	resume_pipeline()
+
+func _js_stop_pipeline(args: Array) -> void:
+	stop_pipeline()
+
+func _js_reset_pipeline(args: Array) -> void:
+	reset_pipeline()
+
+func _js_capture_pipeline_snapshot(args: Array) -> void:
+	var result = capture_pipeline_snapshot()
+	_set_last_result(result)
+
+func _js_restore_pipeline_snapshot(args: Array) -> void:
+	if args.size() < 1:
+		_set_last_result({"success": false, "error": "Missing snapshot argument"})
+		return
+	var snapshot = _parse_params(args[0])
+	var success = restore_pipeline_snapshot(snapshot)
+	_set_last_result({"success": success})
 
 func _js_spawn_particle_preset(args: Array) -> void:
 	if args.size() < 3:
@@ -362,6 +490,58 @@ func apply_dynamic_post_shader(shader_code: String, params = {}) -> void:
 	var parsed_params = _parse_params(params)
 	effects_manager.apply_dynamic_post_shader(shader_code, parsed_params)
 
+func apply_pipeline(spec_json) -> void:
+	if pipeline_executor == null:
+		return
+
+	var spec_dict: Dictionary = {}
+	if spec_json is Dictionary:
+		spec_dict = spec_json
+	elif spec_json is String:
+		var json = JSON.new()
+		if json.parse(spec_json) == OK and json.data is Dictionary:
+			spec_dict = json.data
+
+	pipeline_executor.apply_pipeline(spec_dict)
+
+func clear_pipeline() -> void:
+	if pipeline_executor:
+		pipeline_executor.clear_pipeline()
+
+func update_pipeline_pass_param(pass_id: String, param_name: String, value) -> void:
+	if pipeline_executor:
+		pipeline_executor.update_pass_param(pass_id, param_name, value)
+
+func start_pipeline() -> void:
+	if pipeline_executor:
+		pipeline_executor.start_pipeline()
+
+func pause_pipeline() -> void:
+	if pipeline_executor:
+		pipeline_executor.pause_pipeline()
+
+func resume_pipeline() -> void:
+	if pipeline_executor:
+		pipeline_executor.resume_pipeline()
+
+func stop_pipeline() -> void:
+	if pipeline_executor:
+		pipeline_executor.stop_pipeline()
+
+func reset_pipeline() -> void:
+	if pipeline_executor:
+		pipeline_executor.reset_pipeline()
+
+func capture_pipeline_snapshot() -> Dictionary:
+	if pipeline_executor:
+		return pipeline_executor.capture_snapshot()
+	return {}
+
+func restore_pipeline_snapshot(snapshot: Dictionary) -> bool:
+	if pipeline_executor:
+		return pipeline_executor.restore_snapshot(snapshot)
+	return false
+
 # ============================================================
 # PUBLIC API - PARTICLES
 # ============================================================
@@ -380,6 +560,65 @@ func spawn_particle_preset(preset_name: String, world_x: float, world_y: float, 
 	return particles
 
 # ============================================================
+# PUBLIC API - MULTI-PASS EFFECTS
+# ============================================================
+
+func _js_apply_multi_pass_effect(args: Array) -> void:
+	if args.size() < 2:
+		return
+	var entity_id = str(args[0])
+	var spec = args[1]
+	var spec_dict: Dictionary = {}
+	if spec is Dictionary:
+		spec_dict = spec
+	elif spec is String:
+		var json = JSON.new()
+		if json.parse(spec) == OK and json.data is Dictionary:
+			spec_dict = json.data
+	apply_multi_pass_effect(entity_id, spec_dict)
+
+func _js_start_multi_pass_effect(args: Array) -> void:
+	start_multi_pass_effect()
+
+func _js_stop_multi_pass_effect(args: Array) -> void:
+	stop_multi_pass_effect()
+
+func _js_set_multi_pass_input(args: Array) -> void:
+	if args.size() < 2:
+		return
+	var pass_id = str(args[0])
+	var inputs = _parse_params(args[1])
+	set_multi_pass_input(pass_id, inputs)
+
+func _js_clear_multi_pass_effect(args: Array) -> void:
+	clear_multi_pass_effect()
+
+func apply_multi_pass_effect(entity_id: String, spec_dict: Dictionary) -> void:
+	if multi_pass_executor == null:
+		return
+	if _game_bridge == null:
+		_game_bridge = get_node_or_null("/root/GameBridge")
+	if _game_bridge and multi_pass_executor._game_bridge == null:
+		multi_pass_executor.setup(_game_bridge, _game_bridge._pixel_buffer_manager if "_pixel_buffer_manager" in _game_bridge else null)
+	multi_pass_executor.apply_effect(entity_id, spec_dict)
+
+func start_multi_pass_effect() -> void:
+	if multi_pass_executor:
+		multi_pass_executor.start_effect()
+
+func stop_multi_pass_effect() -> void:
+	if multi_pass_executor:
+		multi_pass_executor.stop_effect()
+
+func set_multi_pass_input(pass_id: String, inputs: Dictionary) -> void:
+	if multi_pass_executor:
+		multi_pass_executor.set_pass_inputs(pass_id, inputs)
+
+func clear_multi_pass_effect() -> void:
+	if multi_pass_executor:
+		multi_pass_executor.clear_effect()
+
+# ============================================================
 # UTILITY
 # ============================================================
 
@@ -393,9 +632,14 @@ func _get_entity_sprite(entity_id: String) -> CanvasItem:
 	if not entity:
 		return null
 	
-	# Look for Sprite2D or Polygon2D child
+	# Prefer Sprite2D (used by pixel buffers and image entities)
 	for child in entity.get_children():
-		if child is Sprite2D or child is Polygon2D:
+		if child is Sprite2D:
+			return child
+	
+	# Fall back to Polygon2D (shape-based rendering)
+	for child in entity.get_children():
+		if child is Polygon2D:
 			return child
 	
 	# Fallback to entity itself if it's a CanvasItem
