@@ -63,3 +63,15 @@
 - Godot PipelineExecutor.gd uses `current_read_index` with `1 - read_idx` pattern — TypeScript version uses explicit swap
 - Godot MultiPassExecutor.gd uses `write_to_a` boolean — TypeScript version uses explicit 0/1 indices for clarity
 - 36 tests: registration (3), unregister (2), initialize (3), swap (5), stop-freeze (1), stop-clear (1), resume (3), reset (2), isReadable (6), getAllIds (2), validate (3), getFrameCount (3), determinism (2)
+
+## T4: Deterministic Graph Compiler
+- `compileGraph()` validates first via `validateGraph()`, then resolves resources via `buildResourceGraph()`, then topologically sorts with Kahn's algorithm
+- Stable tie-breaking: when multiple nodes have in-degree 0, sorted alphabetically by node ID; new ready nodes inserted via binary search into sorted queue
+- Ordering constraints (`before`/`after`) converted to additional DAG edges before topological sort; contradictory constraints detected as cycles → `E_ORDER_CONFLICT`
+- Feedback edges excluded from DAG (same pattern as validator's cycle detection)
+- Deterministic hash: FNV-1a over stable JSON serialization (recursive sorted keys) — no crypto dependency
+- `compiledAt` uses `new Date().toISOString()` but is excluded from hash computation for determinism
+- `ShaderSource` defaults to `{ type: 'custom', glsl: '' }` since actual shader comes from registry lookup later
+- Stateful nodes get `persistence: 'pingPong'`; non-stateful get `persistence: 'none'`
+- Resource map built by converting `ResourceNode` → `ResourceRef` (feedback kind → 'buffer' type, all others → 'texture')
+- 22 tests: 3 happy paths, 2 deterministic hash, 2 stable tie-break, 3 feedback edge, 2 ordering constraints, 1 E_ORDER_CONFLICT, 2 validation passthrough, 1 resource passthrough, 2 resource map, 4 metadata

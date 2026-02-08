@@ -1,0 +1,14 @@
+=== tsc --noEmit ===
+PASS: zero errors
+
+=== vitest compiler tests ===
+
+ RUN  v2.1.9 /Users/hassoncs/Workspaces/Personal/slopcade/shared
+
+ ✓ src/effects-v2/__tests__/compiler.test.ts (22 tests) 17ms
+
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+   Start at  20:19:11
+   Duration  284ms (transform 42ms, setup 0ms, collect 81ms, tests 17ms, environment 0ms, prepare 40ms)
+
