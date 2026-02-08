@@ -121,10 +121,9 @@ export default function ShaderTestExample() {
     if (!bridge || status !== "ready") return;
     
     if (effectName === "none") {
-      bridge.clearSpriteEffect("test-entity");
+      bridge.clearGraph();
     } else {
       const params = EFFECT_PARAMS[effectName] || {};
-      bridge.applySpriteEffect("test-entity", effectName, params);
     }
     setAppliedEffect(effectName);
   }, [bridge, status]);

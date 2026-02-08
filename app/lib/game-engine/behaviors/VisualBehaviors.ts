@@ -2,6 +2,8 @@ import type { ScaleOscillateBehavior, SpriteEffectBehavior } from '@slopcade/sha
 import type { BehaviorContext } from '../BehaviorContext';
 import type { BehaviorExecutor, BehaviorHandlerSet } from '../BehaviorExecutor';
 import type { RuntimeBehavior } from '../types';
+import type { ParamValue } from '@slopcade/shared/effects';
+import { compileSingleEffect } from '../effects-helpers';
 
 interface ScaleOscillateState {
   elapsed?: number;
@@ -27,6 +29,7 @@ function handleScaleOscillate(
 interface SpriteEffectState {
   applied?: boolean;
   elapsed?: number;
+  passId?: string;
 }
 
 const spriteEffectHandler: BehaviorHandlerSet = {
@@ -36,20 +39,37 @@ const spriteEffectHandler: BehaviorHandlerSet = {
 
     if (b.params?.pulse) {
       state.elapsed = (state.elapsed ?? 0) + context.dt;
-      const pulseIntensity = b.params.intensity ?? 1;
+      const pulseIntensity = (b.params.intensity as number) ?? 1;
       const pulsedIntensity = pulseIntensity * (0.5 + 0.5 * Math.sin(state.elapsed * Math.PI * 4));
-      context.applySpriteEffect(context.entity.id, b.effect, {
-        ...b.params,
-        intensity: pulsedIntensity,
-      });
+      
+      if (state.passId) {
+        context.updateSpriteEffectParamsV2(context.entity.id, state.passId, {
+          intensity: pulsedIntensity,
+        }).catch(err => {
+          console.error('[SpriteEffect] Failed to update params:', err);
+        });
+      }
     }
   },
-  onActivate: (behavior, context) => {
+  onActivate: (behavior, context, runtimeBehavior) => {
     const b = behavior as SpriteEffectBehavior;
-    context.applySpriteEffect(context.entity.id, b.effect, b.params ?? {});
+    const state = runtimeBehavior.state as SpriteEffectState;
+    
+    try {
+      const plan = compileSingleEffect(b.effect, b.params as Record<string, ParamValue> ?? {});
+      state.passId = plan.passes[0]?.id;
+      
+      context.applySpriteEffectV2(context.entity.id, plan).catch(err => {
+        console.error('[SpriteEffect] Failed to apply effect:', err);
+      });
+    } catch (err) {
+      console.error('[SpriteEffect] Failed to compile effect:', err);
+    }
   },
   onDeactivate: (behavior, context) => {
-    context.clearSpriteEffect(context.entity.id);
+    context.clearSpriteEffectV2(context.entity.id).catch(err => {
+      console.error('[SpriteEffect] Failed to clear effect:', err);
+    });
   },
 };
 

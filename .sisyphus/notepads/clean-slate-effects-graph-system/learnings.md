@@ -84,3 +84,22 @@
 - `EffectsV2PingPongManager` centralizes feedback lifecycle (register/initialize/swap/stop/reset/release) and exposes read texture + current write viewport deterministically.
 - Ping-pong passes in `GraphExecutor` create dual materials/rects (A/B), bind `historyTex` from managed read texture, swap buffers each frame, and rebind downstream inputs after write-target changes.
 - Snapshot API stores/restores pass params with plan-hash compatibility checks (`planHash` must match active plan hash).
+
+## T8: Effects-V2 Bridge API Parity (Web + Native)
+- Added bridge contract types in `app/lib/godot/types.ts`: `EffectsV2Error`, `EffectsV2Result<T>`, `EffectsV2PipelineSnapshot`, and `EffectsV2Bridge`; `GodotBridge` now extends `EffectsV2Bridge`.
+- Added shared normalization/serialization helpers in `app/lib/godot/GodotBridgeBase.ts` to keep web/native error and snapshot semantics identical (`normalizeEffectsV2Result`, `normalizeEffectsV2Snapshot`, `createEffectsV2SnapshotPayload`).
+- Web bridge now routes all effects-v2 calls through async query RPC methods (`effectsV2.applyGraph|clearGraph|updateParams|start|pause|resume|stop|reset|snapshot|restore`) and returns typed `EffectsV2Result`.
+- Native bridge now routes the same effects-v2 methods through `callRpc` transport with identical method names and uses the same normalization helpers, ensuring parity with web.
+- Snapshot normalization supports both runtime-pass-array format (`passes[]`) and bridge-contract format (`passParams`), producing stable `planHash`, `passParams`, `feedbackStates`, `lifecycleState`, `timestamp` fields.
+- Added `app/lib/godot/__tests__/effects-v2-bridge.test.ts` to verify web/native type-level contract implementation and shared result/snapshot/error shape behavior.
+
+## T9: Snapshot/Restore V2 + Compatibility
+- Created `shared/src/effects-v2/snapshot.ts` with `SnapshotManager` class — capture, checkCompatibility, restore, validate
+- `EffectsV2Snapshot` captures: planHash, graphId, graphVersion, passParams, feedbackStates, lifecycleState, timestamp, snapshotVersion (always 1)
+- `FeedbackSnapshotState` mirrors `FeedbackBufferState` fields (readIndex, writeIndex, frameCount, frozen, initialized) without policy reference
+- Compatibility checks 6 error codes: E_HASH_MISMATCH, E_VERSION_MISMATCH, E_MISSING_PASS, E_EXTRA_PASS, E_MISSING_FEEDBACK, E_SNAPSHOT_CORRUPT
+- Restore is all-or-nothing: incompatible → errors only (no partial data), compatible → full passParams + feedbackStates
+- `validate()` is a type guard checking structural integrity (all required fields, correct types)
+- `structuredClone()` used for deep copying passParams and feedbackStates on capture and restore — prevents mutation leaks
+- `ShaderSource` in tests must use discriminated union `{ type: 'builtin', effectType: 'glow' }` not `{ vertex, fragment }`
+- 23 tests cover: capture (2), checkCompatibility (5), restore (3), validate (10 + 3 integration with corrupt snapshots)

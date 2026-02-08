@@ -1,5 +1,6 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { SvgPreview } from "./SvgPreview";
 
 interface ImageSearchResultCardProps {
   id: string;
@@ -7,6 +8,23 @@ interface ImageSearchResultCardProps {
   previewUrl: string;
   collection?: string;
   onPress?: (id: string) => void;
+}
+
+function PreviewImage({ uri }: { uri: string }) {
+  const [error, setError] = useState(false);
+  const isSvg = uri.includes(".svg");
+
+  if (isSvg && !error) {
+    return <SvgPreview uri={uri} onError={() => setError(true)} />;
+  }
+
+  return (
+    <Image
+      source={{ uri }}
+      style={styles.image}
+      resizeMode="contain"
+    />
+  );
 }
 
 export const ImageSearchResultCard = memo(function ImageSearchResultCard({
@@ -22,11 +40,7 @@ export const ImageSearchResultCard = memo(function ImageSearchResultCard({
       onPress={() => onPress?.(id)}
     >
       <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: previewUrl }}
-          style={styles.image}
-          resizeMode="contain"
-        />
+        <PreviewImage uri={previewUrl} />
       </View>
       <Text style={styles.name} numberOfLines={1}>
         {name}

@@ -1,0 +1,10 @@
+
+ RUN  v2.1.9 /Users/hassoncs/Workspaces/Personal/slopcade/shared
+
+ ✓ src/effects-v2/__tests__/registry.test.ts (23 tests) 11ms
+
+ Test Files  1 passed (1)
+      Tests  23 passed (23)
+   Start at  20:07:26
+   Duration  207ms (transform 22ms, setup 0ms, collect 24ms, tests 11ms, environment 0ms, prepare 30ms)
+

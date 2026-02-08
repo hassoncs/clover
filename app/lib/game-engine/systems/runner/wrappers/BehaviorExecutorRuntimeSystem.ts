@@ -222,6 +222,15 @@ export class BehaviorExecutorRuntimeSystem implements RuntimeSystem<BehaviorExec
       clearSpriteEffect: (entityId: string) => {
         this.systemContext!.bridge.clearSpriteEffect(entityId);
       },
+      applySpriteEffectV2: async (entityId: string, plan: any) => {
+        await this.systemContext!.bridge.applyGraph(plan);
+      },
+      clearSpriteEffectV2: async (entityId: string) => {
+        await this.systemContext!.bridge.clearGraph();
+      },
+      updateSpriteEffectParamsV2: async (entityId: string, passId: string, params: Record<string, unknown>) => {
+        await this.systemContext!.bridge.updateParams(passId, params);
+      },
     };
   }
 }

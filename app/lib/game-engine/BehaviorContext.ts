@@ -10,6 +10,7 @@ import type {
   ParticleEmitterType,
   SpriteEffectType,
 } from '@slopcade/shared';
+import type { CompiledPlan } from '@slopcade/shared/effects';
 
 export type CreateEvalContextForEntity = (entity?: RuntimeEntity) => EvalContext;
 
@@ -109,6 +110,10 @@ export interface BehaviorContext {
 
   applySpriteEffect(entityId: string, effect: SpriteEffectType, params?: Record<string, unknown>): void;
   clearSpriteEffect(entityId: string): void;
+
+  applySpriteEffectV2(entityId: string, plan: CompiledPlan): Promise<void>;
+  clearSpriteEffectV2(entityId: string): Promise<void>;
+  updateSpriteEffectParamsV2(entityId: string, passId: string, params: Record<string, unknown>): Promise<void>;
 
   resolveNumber(value: Value<number>): number;
   resolveVec2(value: Value<ExprVec2>): ExprVec2;

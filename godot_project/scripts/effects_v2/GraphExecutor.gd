@@ -1,4 +1,4 @@
-class_name EffectsV2GraphExecutor
+class_name EffectsGraphExecutor
 extends Node
 
 enum State { IDLE, READY, RUNNING, PAUSED, STOPPED }
@@ -38,8 +38,11 @@ const SPRITE_SHADER_PATHS = {
 	"outline": "res://shaders/sprite/outline.gdshader",
 	"glow": "res://shaders/sprite/glow.gdshader",
 	"tint": "res://shaders/sprite/tint.gdshader",
+	"flash": "res://shaders/sprite/flash.gdshader",
 	"pixelate": "res://shaders/sprite/pixelate.gdshader",
 	"posterize": "res://shaders/sprite/posterize.gdshader",
+	"silhouette": "res://shaders/sprite/silhouette.gdshader",
+	"rainbow": "res://shaders/sprite/rainbow.gdshader",
 	"dissolve": "res://shaders/sprite/dissolve.gdshader",
 	"holographic": "res://shaders/sprite/holographic.gdshader",
 	"wave": "res://shaders/sprite/wave.gdshader",
@@ -65,13 +68,19 @@ const POST_SHADER_PATHS = {
 	"chromatic_aberration": "res://shaders/post_process/chromatic_aberration.gdshader",
 	"shockwave": "res://shaders/post_process/shockwave.gdshader",
 	"blur": "res://shaders/post_process/blur.gdshader",
+	"crt": "res://shaders/post_process/crt.gdshader",
+	"color_grading": "res://shaders/post_process/color_grading.gdshader",
+	"color_grade": "res://shaders/post_process/color_grading.gdshader",
+	"glitch": "res://shaders/post_process/glitch.gdshader",
 	"motion_blur": "res://shaders/post_process/motion_blur.gdshader",
+	"pixelate_screen": "res://shaders/post_process/pixelate_screen.gdshader",
+	"shimmer": "res://shaders/post_process/shimmer.gdshader",
 }
 
 var _state: State = State.IDLE
 var _plan: Dictionary = {}
-var _resource_graph: EffectsV2ResourceGraph = null
-var _ping_pong_manager: EffectsV2PingPongManager = null
+	var _resource_graph: EffectsResourceGraph = null
+	var _ping_pong_manager: EffectsPingPongManager = null
 var _pass_entries: Array = []
 var _pass_index: Dictionary = {}
 var _plan_hash: String = ""
@@ -89,17 +98,17 @@ func apply_plan(plan_json: Dictionary) -> Dictionary:
 	_plan_hash = str(_plan.get("hash", ""))
 
 	var viewport_size: Vector2i = _resolve_base_size()
-	_resource_graph = EffectsV2ResourceGraph.new()
+	_resource_graph = EffectsResourceGraph.new()
 	_resource_graph.configure(self, viewport_size)
 
 	if not _resource_graph.allocate(_plan.get("resourceMap", {}), str(_plan.get("scope", "screen"))):
-		push_error("[EffectsV2GraphExecutor] Resource allocation failed")
+		push_error("[EffectsGraphExecutor] Resource allocation failed")
 		clear()
 		return {"success": false, "error": "Resource allocation failed"}
 
 	_bind_implicit_inputs()
 
-	_ping_pong_manager = EffectsV2PingPongManager.new()
+	_ping_pong_manager = EffectsPingPongManager.new()
 	_ping_pong_manager.configure(self, viewport_size)
 
 	if not _build_passes(_plan.get("passes", [])):
@@ -158,7 +167,7 @@ func update_params(pass_id: String, params: Dictionary) -> Dictionary:
 
 func start() -> void:
 	if _state != State.READY and _state != State.STOPPED:
-		push_warning("[EffectsV2GraphExecutor] Cannot start from state %s" % _state_name(_state))
+		push_warning("[EffectsGraphExecutor] Cannot start from state %s" % _state_name(_state))
 		return
 
 	for entry in _pass_entries:
@@ -169,7 +178,7 @@ func start() -> void:
 
 func pause() -> void:
 	if _state != State.RUNNING:
-		push_warning("[EffectsV2GraphExecutor] Cannot pause from state %s" % _state_name(_state))
+		push_warning("[EffectsGraphExecutor] Cannot pause from state %s" % _state_name(_state))
 		return
 
 	for entry in _pass_entries:
@@ -180,7 +189,7 @@ func pause() -> void:
 
 func resume() -> void:
 	if _state != State.PAUSED:
-		push_warning("[EffectsV2GraphExecutor] Cannot resume from state %s" % _state_name(_state))
+		push_warning("[EffectsGraphExecutor] Cannot resume from state %s" % _state_name(_state))
 		return
 
 	for entry in _pass_entries:
@@ -191,7 +200,7 @@ func resume() -> void:
 
 func stop() -> void:
 	if _state != State.RUNNING and _state != State.PAUSED:
-		push_warning("[EffectsV2GraphExecutor] Cannot stop from state %s" % _state_name(_state))
+		push_warning("[EffectsGraphExecutor] Cannot stop from state %s" % _state_name(_state))
 		return
 
 	for entry in _pass_entries:
@@ -293,22 +302,22 @@ func _process(_delta: float) -> void:
 
 func _build_passes(passes: Array) -> bool:
 	if not (passes is Array):
-		push_error("[EffectsV2GraphExecutor] passes must be an Array")
+		push_error("[EffectsGraphExecutor] passes must be an Array")
 		return false
 
 	for pass_data in passes:
 		if not (pass_data is Dictionary):
-			push_error("[EffectsV2GraphExecutor] pass entry must be a Dictionary")
+			push_error("[EffectsGraphExecutor] pass entry must be a Dictionary")
 			return false
 
 		var pass_id: String = str(pass_data.get("id", ""))
 		if pass_id == "":
-			push_error("[EffectsV2GraphExecutor] pass missing id")
+			push_error("[EffectsGraphExecutor] pass missing id")
 			return false
 
 		var shader: Shader = _resolve_shader(pass_data)
 		if shader == null:
-			push_error("[EffectsV2GraphExecutor] Failed to resolve shader for pass '%s'" % pass_id)
+			push_error("[EffectsGraphExecutor] Failed to resolve shader for pass '%s'" % pass_id)
 			return false
 
 		var entry: Dictionary = {
@@ -332,7 +341,7 @@ func _build_passes(passes: Array) -> bool:
 func _setup_single_pass(entry: Dictionary, pass_data: Dictionary, shader: Shader) -> bool:
 	var viewport := _resolve_output_viewport(pass_data)
 	if viewport == null:
-		push_error("[EffectsV2GraphExecutor] Missing output viewport for pass '%s'" % str(pass_data.get("id", "")))
+		push_error("[EffectsGraphExecutor] Missing output viewport for pass '%s'" % str(pass_data.get("id", "")))
 		return false
 
 	var rect := ColorRect.new()
@@ -366,7 +375,7 @@ func _setup_ping_pong_pass(entry: Dictionary, pass_data: Dictionary, shader: Sha
 	var viewport_a: SubViewport = pair.get("a")
 	var viewport_b: SubViewport = pair.get("b")
 	if viewport_a == null or viewport_b == null:
-		push_error("[EffectsV2GraphExecutor] Failed to initialize ping-pong viewports for pass '%s'" % pass_id)
+		push_error("[EffectsGraphExecutor] Failed to initialize ping-pong viewports for pass '%s'" % pass_id)
 		return false
 
 	var material_a := ShaderMaterial.new()
@@ -596,7 +605,7 @@ func _update_ping_pong_write_mode(entry: Dictionary) -> void:
 func _transition_to(next_state: State) -> void:
 	if _state == next_state:
 		return
-	push_warning("[EffectsV2GraphExecutor] State %s -> %s" % [_state_name(_state), _state_name(next_state)])
+	push_warning("[EffectsGraphExecutor] State %s -> %s" % [_state_name(_state), _state_name(next_state)])
 	_state = next_state
 
 func _state_name(state: State) -> String:

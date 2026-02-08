@@ -1,8 +1,9 @@
 import { useCallback, useRef, useState, useEffect } from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, ScrollView } from "react-native";
 import type { ExampleMeta } from "@/lib/registry/types";
 import type { GodotBridge, DrawCommand } from "@/lib/godot/types";
-import type { GameDefinition, MultiPassEffectSpec } from "@slopcade/shared";
+import type { GameDefinition } from "@slopcade/shared";
+import type { EffectGraphSpec } from "@slopcade/shared/effects";
 
 export const metadata: ExampleMeta = {
   title: "Finger Paint",
@@ -66,7 +67,6 @@ uniform vec2 texel_size;
 uniform float dt;
 
 void fragment() {
-    // 9-tap blur of feedback buffer
     vec4 c = texture(current_buffer, UV);
     vec4 l = texture(current_buffer, UV + vec2(-texel_size.x, 0.0));
     vec4 r = texture(current_buffer, UV + vec2( texel_size.x, 0.0));
@@ -78,7 +78,6 @@ void fragment() {
     vec4 br = texture(current_buffer, UV + vec2( texel_size.x,  texel_size.y));
     vec4 blurred = c * 0.25 + (l + r + u + d) * 0.125 + (tl + tr + bl + br) * 0.0625;
 
-    // Composite live drawing on top: non-white entity pixels show through
     vec4 entity = texture(entity_input, UV);
     float brightness = (entity.r + entity.g + entity.b) / 3.0;
     float is_drawn = 1.0 - smoothstep(0.9, 1.0, brightness);
@@ -86,22 +85,159 @@ void fragment() {
 }
 `.trim();
 
-const INK_SPREAD_SPEC: MultiPassEffectSpec = {
-  id: "ink-spread",
-  buffers: {
-    canvas: { initFrom: "entity" },
-  },
-  passes: [
-    {
-      id: "spread",
-      shader: INK_SPREAD_SHADER,
-      reads: { current_buffer: "canvas" },
-      writes: "canvas",
-    },
-  ],
-  displayBuffer: "canvas",
-  lifecycle: { autoStart: false, stopMode: "freeze" },
-};
+const MELT_SHADER = `
+shader_type canvas_item;
+
+uniform sampler2D current_buffer : filter_linear;
+uniform sampler2D entity_input : filter_nearest;
+uniform vec2 texel_size;
+uniform float dt;
+
+void fragment() {
+    // Sample neighbors to find "heaviest" (darkest) direction, then shift down
+    vec4 c = texture(current_buffer, UV);
+    vec4 below = texture(current_buffer, UV + vec2(0.0, texel_size.y * 2.0));
+    vec4 bl_s = texture(current_buffer, UV + vec2(-texel_size.x, texel_size.y));
+    vec4 br_s = texture(current_buffer, UV + vec2( texel_size.x, texel_size.y));
+
+    // Gravity: pull color downward by blending with pixel below
+    float weight_c = (c.r + c.g + c.b) / 3.0;
+    float weight_below = (below.r + below.g + below.b) / 3.0;
+    // Darker pixels are "heavier" — they sink, lighter pixels float up
+    float gravity = 0.15;
+    vec4 melted = mix(c, (c * 0.4 + below * 0.3 + bl_s * 0.15 + br_s * 0.15), gravity);
+
+    vec4 entity = texture(entity_input, UV);
+    float brightness = (entity.r + entity.g + entity.b) / 3.0;
+    float is_drawn = 1.0 - smoothstep(0.9, 1.0, brightness);
+    COLOR = mix(melted, entity, is_drawn);
+}
+`.trim();
+
+const SWIRL_SHADER = `
+shader_type canvas_item;
+
+uniform sampler2D current_buffer : filter_linear;
+uniform sampler2D entity_input : filter_nearest;
+uniform vec2 texel_size;
+uniform float dt;
+
+void fragment() {
+    vec2 center = vec2(0.5, 0.5);
+    vec2 delta = UV - center;
+    float dist = length(delta);
+    // Stronger rotation near center, fades at edges
+    float angle = 0.006 * smoothstep(0.5, 0.0, dist);
+    float cs = cos(angle);
+    float sn = sin(angle);
+    vec2 rotated = center + vec2(delta.x * cs - delta.y * sn, delta.x * sn + delta.y * cs);
+    vec4 c = texture(current_buffer, rotated);
+
+    vec4 entity = texture(entity_input, UV);
+    float brightness = (entity.r + entity.g + entity.b) / 3.0;
+    float is_drawn = 1.0 - smoothstep(0.9, 1.0, brightness);
+    COLOR = mix(c, entity, is_drawn);
+}
+`.trim();
+
+const RAINBOW_SHADER = `
+shader_type canvas_item;
+
+uniform sampler2D current_buffer : filter_linear;
+uniform sampler2D entity_input : filter_nearest;
+uniform vec2 texel_size;
+uniform float dt;
+
+vec3 rgb2hsv(vec3 c) {
+    vec4 K = vec4(0.0, -1.0/3.0, 2.0/3.0, -1.0);
+    vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+    vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+    float d = q.x - min(q.w, q.y);
+    float e = 1.0e-10;
+    return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+}
+
+vec3 hsv2rgb(vec3 c) {
+    vec4 K = vec4(1.0, 2.0/3.0, 1.0/3.0, 3.0);
+    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+
+void fragment() {
+    // Blur + hue shift: spread the colors AND rotate hue
+    vec4 c = texture(current_buffer, UV);
+    vec4 l = texture(current_buffer, UV + vec2(-texel_size.x, 0.0));
+    vec4 r = texture(current_buffer, UV + vec2( texel_size.x, 0.0));
+    vec4 u = texture(current_buffer, UV + vec2(0.0, -texel_size.y));
+    vec4 d = texture(current_buffer, UV + vec2(0.0,  texel_size.y));
+    vec4 blurred = c * 0.5 + (l + r + u + d) * 0.125;
+
+    float brightness = (blurred.r + blurred.g + blurred.b) / 3.0;
+    if (brightness < 0.95) {
+        vec3 hsv = rgb2hsv(blurred.rgb);
+        hsv.x = fract(hsv.x + 0.008);
+        hsv.y = min(hsv.y + 0.01, 1.0);
+        blurred.rgb = hsv2rgb(hsv);
+    }
+
+    vec4 entity = texture(entity_input, UV);
+    float ent_brightness = (entity.r + entity.g + entity.b) / 3.0;
+    float is_drawn = 1.0 - smoothstep(0.9, 1.0, ent_brightness);
+    COLOR = mix(blurred, entity, is_drawn);
+}
+`.trim();
+
+interface ShaderOption {
+  label: string;
+  spec: EffectGraphSpec;
+}
+
+function makeSpec(id: string, shader: string): EffectGraphSpec {
+  return {
+    id,
+    version: "1.0.0",
+    engineApiVersion: "2.0.0",
+    scope: "entity",
+    nodes: [
+      {
+        id: "fx",
+        type: "custom",
+        family: "filter",
+        inputSlots: [
+          { name: "current_buffer", dataType: "texture", connectedTo: null },
+        ],
+        params: {},
+        outputTarget: {
+          bufferId: "canvas",
+          format: "rgba8",
+          resolution: "full",
+        },
+        flags: { stateful: true, fusible: "never" },
+      },
+    ],
+    connections: [],
+    feedbackEdges: [
+      {
+        from: { nodeId: "fx", output: "canvas" },
+        to: { nodeId: "fx", input: "current_buffer" },
+        policy: {
+          initMode: "seedFromInput",
+          swapPolicy: "pingPong",
+          stopBehavior: "freeze",
+          bufferFormat: "rgba8",
+        },
+      },
+    ],
+    lifecycle: { autoStart: false, stopMode: "freeze" },
+  };
+}
+
+const SHADER_OPTIONS: ShaderOption[] = [
+  { label: "Spread", spec: makeSpec("ink-spread", INK_SPREAD_SHADER) },
+  { label: "Melt", spec: makeSpec("melt", MELT_SHADER) },
+  { label: "Swirl", spec: makeSpec("swirl", SWIRL_SHADER) },
+  { label: "Rainbow", spec: makeSpec("rainbow", RAINBOW_SHADER) },
+];
 
 export default function PaintExample() {
   const [bridge, setBridge] = useState<GodotBridge | null>(null);
@@ -110,16 +246,19 @@ export default function PaintExample() {
   const [selectedColor, setSelectedColor] = useState(COLORS[0]);
   const [brushSize, setBrushSize] = useState(3);
   const [fluidActive, setFluidActive] = useState(false);
+  const [selectedShader, setSelectedShader] = useState(0);
 
   const gameLoadedRef = useRef(false);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
   const colorRef = useRef(selectedColor);
   const brushSizeRef = useRef(brushSize);
   const fluidActiveRef = useRef(false);
+  const selectedShaderRef = useRef(selectedShader);
 
   colorRef.current = selectedColor;
   brushSizeRef.current = brushSize;
   fluidActiveRef.current = fluidActive;
+  selectedShaderRef.current = selectedShader;
 
   useEffect(() => {
     let mounted = true;
@@ -150,7 +289,7 @@ export default function PaintExample() {
         setStatus("ready");
 
         bridge.createPixelBuffer("canvas", 512, 512, "#FFFFFF", 24, 32);
-        bridge.applyMultiPassEffect("canvas", INK_SPREAD_SPEC);
+        // TODO: Apply v2 effect graph via bridge.applyGraph()
       } catch (err) {
         setStatus("error");
         console.error("Failed to init game:", err);
@@ -208,11 +347,23 @@ export default function PaintExample() {
 
   const handleClear = useCallback(() => {
     if (bridge && status === "ready") {
-      bridge.stopMultiPassEffect();
-      bridge.clearMultiPassEffect();
+      bridge.stop();
+      bridge.clearGraph();
       bridge.pixelBufferClear("canvas", "#FFFFFF");
-      bridge.applyMultiPassEffect("canvas", INK_SPREAD_SPEC);
+      // TODO: Apply v2 effect graph via bridge.applyGraph()
       setFluidActive(false);
+    }
+  }, [bridge, status]);
+
+  const handleShaderChange = useCallback((index: number) => {
+    if (!bridge || status !== "ready") return;
+    const wasActive = fluidActiveRef.current;
+    bridge.stop();
+    bridge.clearGraph();
+    // TODO: Apply v2 effect graph via bridge.applyGraph()
+    setSelectedShader(index);
+    if (wasActive) {
+      bridge.start();
     }
   }, [bridge, status]);
 
@@ -222,17 +373,17 @@ export default function PaintExample() {
     }
 
     if (fluidActive) {
-      bridge.stopMultiPassEffect();
+      bridge.stop();
       setFluidActive(false);
     } else {
-      bridge.startMultiPassEffect();
+      bridge.start();
       setFluidActive(true);
     }
   }, [bridge, fluidActive, status]);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#e0e0e0" }}>
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, flexShrink: 1 }}>
         {GodotView && <GodotView style={{ flex: 1 }} />}
 
         {status === "loading" && (
@@ -242,16 +393,18 @@ export default function PaintExample() {
         )}
       </View>
 
-      <View style={{
-        height: 100,
-        backgroundColor: "#fff",
-        borderTopWidth: 1,
-        borderTopColor: "#ccc",
-        padding: 10,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between"
-      }}>
+      <ScrollView
+        style={{ flexShrink: 0, backgroundColor: "#fff", borderTopWidth: 1, borderTopColor: "#ccc" }}
+        contentContainerStyle={{
+          paddingTop: 10,
+          paddingHorizontal: 10,
+          paddingBottom: 32,
+          flexDirection: "row",
+          flexWrap: "wrap",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
         <View style={{ flexDirection: "row", gap: 8 }}>
           {COLORS.map(color => (
             <Pressable
@@ -269,7 +422,7 @@ export default function PaintExample() {
           ))}
         </View>
 
-        <View style={{ flexDirection: "row", gap: 8, marginLeft: 16 }}>
+        <View style={{ flexDirection: "row", gap: 8 }}>
           {BRUSH_SIZES.map(size => (
             <Pressable
               key={size.label}
@@ -293,19 +446,42 @@ export default function PaintExample() {
           ))}
         </View>
 
-        <View style={{ flexDirection: "row", gap: 8, marginLeft: 16 }}>
+        <View style={{ flexDirection: "row", gap: 4 }}>
+          {SHADER_OPTIONS.map((opt, i) => (
+            <Pressable
+              key={opt.label}
+              onPress={() => handleShaderChange(i)}
+              style={{
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                backgroundColor: selectedShader === i ? "#555" : "#eee",
+                borderRadius: 4,
+                borderWidth: 1,
+                borderColor: selectedShader === i ? "#333" : "#ccc",
+              }}
+            >
+              <Text style={{
+                fontSize: 12,
+                fontWeight: "bold",
+                color: selectedShader === i ? "#fff" : "#333",
+              }}>
+                {opt.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        <View style={{ flexDirection: "row", gap: 8 }}>
           <Pressable
             onPress={handleToggleFluid}
-            style={({ pressed }) => ({
+            style={{
               paddingHorizontal: 16,
               paddingVertical: 8,
-              backgroundColor: pressed
-                ? (fluidActive ? "#b33" : "#3a3")
-                : (fluidActive ? "#d44" : "#4c4"),
+              backgroundColor: fluidActive ? "#d44" : "#4c4",
               borderRadius: 4,
               borderWidth: 1,
               borderColor: fluidActive ? "#a22" : "#393",
-            })}
+            }}
           >
             <Text style={{ fontWeight: "bold", color: "#fff" }}>
               {fluidActive ? "Stop" : "Start"}
@@ -314,19 +490,19 @@ export default function PaintExample() {
 
           <Pressable
             onPress={handleClear}
-            style={({ pressed }) => ({
+            style={{
               paddingHorizontal: 16,
               paddingVertical: 8,
-              backgroundColor: pressed ? "#ddd" : "#f0f0f0",
+              backgroundColor: "#f0f0f0",
               borderRadius: 4,
               borderWidth: 1,
               borderColor: "#ccc",
-            })}
+            }}
           >
             <Text style={{ fontWeight: "bold" }}>Clear</Text>
           </Pressable>
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }

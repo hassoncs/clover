@@ -117,7 +117,7 @@ func _get_viewport_size() -> Vector2:
 	return Vector2(1152, 648)
 
 func setup_camera() -> void:
-	var camera_script = load("res://scripts/effects/CameraEffects.gd")
+	var camera_script = load("res://scripts/camera/CameraEffects.gd")
 	var camera = Camera2D.new()
 	camera.set_script(camera_script)
 	camera.name = "GameCamera"

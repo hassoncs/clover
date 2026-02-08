@@ -4,6 +4,7 @@ import { View } from "react-native";
 import { AppFrameHeader } from "@/components/navigation/AppFrameHeader";
 import { FloatingTabBar } from "@/components/navigation/FloatingTabBar";
 import { SidebarPlaceholder } from "@/components/navigation/SidebarPlaceholder";
+import { useAuth } from "@/hooks/useAuth";
 
 const TAB_HEADER_CONFIG: Record<
   string,
@@ -20,11 +21,17 @@ const TAB_HEADER_CONFIG: Record<
     leftIcons: ["menu", "search"],
     rightIcons: ["notifications-outline", "person-add-outline"],
   },
+  // chat: {
+  //   title: "Chat",
+  //   showHeader: true,
+  //   leftIcons: [],
+  //   rightIcons: [],
+  // },
   lab: {
-    title: "Chat",
+    title: "Lab",
     showHeader: true,
     leftIcons: [],
-    rightIcons: ["person-add-outline"],
+    rightIcons: [],
   },
   maker: {
     showHeader: true,
@@ -40,6 +47,7 @@ const TAB_HEADER_CONFIG: Record<
 
 export default function TabLayout() {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [sidebarVisible, setSidebarVisible] = useState(false);
 
   const openSidebar = useCallback(() => {
@@ -65,11 +73,18 @@ export default function TabLayout() {
   return (
     <View style={{ flex: 1, backgroundColor: "#050608" }}>
       <Tabs
-        tabBar={(props) => <FloatingTabBar {...props} onPrimaryPress={goToCreateGame} />}
+        tabBar={(props) => (
+          <FloatingTabBar
+            {...props}
+            onPrimaryPress={goToCreateGame}
+            isAuthenticated={isAuthenticated}
+          />
+        )}
         screenOptions={({ route }) => ({
           headerShown: TAB_HEADER_CONFIG[route.name]?.showHeader ?? true,
           header: () => {
-            const config = TAB_HEADER_CONFIG[route.name] ?? TAB_HEADER_CONFIG.browse;
+            const config =
+              TAB_HEADER_CONFIG[route.name] ?? TAB_HEADER_CONFIG.browse;
             return (
               <AppFrameHeader
                 title={config.title}
@@ -79,15 +94,13 @@ export default function TabLayout() {
                     icon === "menu"
                       ? openSidebar
                       : icon === "search"
-                        ? goToImageSearch
-                        : () => {},
+                      ? goToImageSearch
+                      : () => {},
                 }))}
                 rightActions={config.rightIcons.map((icon) => ({
                   icon,
                   onPress:
-                    icon === "person-add-outline"
-                      ? goToDiscover
-                      : () => {},
+                    icon === "person-add-outline" ? goToDiscover : () => {},
                 }))}
               />
             );
@@ -99,8 +112,12 @@ export default function TabLayout() {
         })}
       >
         <Tabs.Screen name="browse" options={{ title: "Browse" }} />
+        <Tabs.Screen name="chat" options={{ title: "Chat", href: null }} />
         <Tabs.Screen name="lab" options={{ title: "Lab" }} />
-        <Tabs.Screen name="maker" options={{ title: "Maker" }} />
+        <Tabs.Screen
+          name="maker"
+          options={{ title: "Maker", href: isAuthenticated ? "/maker" : null }}
+        />
         <Tabs.Screen name="profile" options={{ title: "Profile" }} />
       </Tabs>
 

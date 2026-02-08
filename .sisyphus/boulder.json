@@ -1,6 +1,9 @@
 {
-  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/composable-gpu-effects-system.md",
-  "started_at": "2026-02-08T00:02:53.707Z",
-  "session_ids": ["ses_3c590587fffeFbKqUjzsP69oCQ"],
-  "plan_name": "composable-gpu-effects-system"
+  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/effects-v1-to-v2-migration.md",
+  "started_at": "2026-02-08T21:47:38.328Z",
+  "session_ids": [
+    "ses_3c0c68247ffeLfiNX1sECUvqds"
+  ],
+  "plan_name": "effects-v1-to-v2-migration",
+  "agent": "atlas"
 }

@@ -1,15 +1,14 @@
 import type {
-  EffectPipelineSpec,
   GameDefinition,
-  MultiPassEffectSpec,
-  PipelineSnapshot,
   PropertySyncPayload,
 } from "@slopcade/shared";
-import { serializePipelineSpec } from "@slopcade/shared/effects/pipeline-serialization";
+
 import type {
   GodotBridge,
   CollisionEvent,
   ContactInfo,
+  EffectsV2PipelineSnapshot,
+  EffectsV2Result,
   SensorEvent,
   EntitySpawnedEvent,
   EntityTransform,
@@ -25,6 +24,11 @@ import type {
   DrawCommand,
 } from "./types";
 import { injectGodotDebugBridge } from "./debug";
+import {
+  createEffectsV2SnapshotPayload,
+  normalizeEffectsV2Result,
+  normalizeEffectsV2Snapshot,
+} from "./GodotBridgeBase";
 import {
   queryAsync as sharedQueryAsync,
   setupQueryResolver,
@@ -183,28 +187,7 @@ declare global {
       stopCamera: () => void;
       spawnParticle: (type: string, x: number, y: number) => void;
       playSound: (resourcePath: string) => void;
-      applySpriteEffect: (
-        entityId: string,
-        effectName: string,
-        paramsJson?: string,
-      ) => void;
-      updateSpriteEffectParam: (
-        entityId: string,
-        paramName: string,
-        value: unknown,
-      ) => void;
-      clearSpriteEffect: (entityId: string) => void;
-      setPostEffect: (
-        effectName: string,
-        paramsJson?: string,
-        layer?: string,
-      ) => void;
-      updatePostEffectParam: (
-        paramName: string,
-        value: unknown,
-        layer?: string,
-      ) => void;
-      clearPostEffect: (layer?: string) => void;
+
       screenShake: (intensity: number, duration?: number) => void;
       zoomPunch: (intensity?: number, duration?: number) => void;
       triggerShockwave: (
@@ -220,20 +203,7 @@ declare global {
         paramsJson?: string,
       ) => void;
       applyDynamicPostShader: (shaderCode: string, paramsJson?: string) => void;
-      applyPipeline: (specJson: string) => void;
-      clearPipeline: () => void;
-      updatePipelinePassParam: (
-        passId: string,
-        paramName: string,
-        value: unknown,
-      ) => void;
-      startPipeline: () => void;
-      pausePipeline: () => void;
-      resumePipeline: () => void;
-      stopPipeline: () => void;
-      resetPipeline: () => void;
-      capturePipelineSnapshot: () => void;
-      restorePipelineSnapshot: (snapshotJson: string) => void;
+
       spawnParticlePreset: (
         presetName: string,
         worldX: number,
@@ -283,11 +253,7 @@ declare global {
         labelText: string,
       ) => void;
       destroyThemedUIComponent: (componentId: string) => void;
-      applyMultiPassEffect: (entityId: string, specJson: string) => void;
-      startMultiPassEffect: () => void;
-      stopMultiPassEffect: () => void;
-      setMultiPassInput: (passId: string, inputsJson: string) => void;
-      clearMultiPassEffect: () => void;
+
     };
   }
 }
@@ -424,6 +390,19 @@ export function createWebGodotBridge(): GodotBridge {
       return Promise.reject(new Error("Godot bridge not available"));
     }
     return sharedQueryAsync<T>(bridge, method, args, { timeoutMs });
+  };
+
+  const executeEffectsV2 = async <T = void>(
+    method: string,
+    params?: Record<string, unknown>,
+    mapData?: (rawData: unknown) => T,
+  ): Promise<EffectsV2Result<T>> => {
+    try {
+      const raw = await queryAsync<unknown>(method, params ? [params] : []);
+      return normalizeEffectsV2Result<T>(raw, mapData);
+    } catch (error) {
+      return normalizeEffectsV2Result<T>({ success: false, error });
+    }
   };
 
   const bridge: GodotBridge = {
@@ -972,68 +951,6 @@ export function createWebGodotBridge(): GodotBridge {
       getGodotBridge()?.playSound(resourcePath);
     },
 
-    applySpriteEffect(
-      entityId: string,
-      effectName: string,
-      params?: Record<string, unknown>,
-    ) {
-      const godotBridge = getGodotBridge();
-      if (godotBridge?.applySpriteEffect) {
-        godotBridge.applySpriteEffect(
-          entityId,
-          effectName,
-          params ? JSON.stringify(params) : undefined,
-        );
-      }
-    },
-
-    updateSpriteEffectParam(
-      entityId: string,
-      paramName: string,
-      value: unknown,
-    ) {
-      const godotBridge = getGodotBridge();
-      if (godotBridge?.updateSpriteEffectParam) {
-        godotBridge.updateSpriteEffectParam(entityId, paramName, value);
-      }
-    },
-
-    clearSpriteEffect(entityId: string) {
-      const godotBridge = getGodotBridge();
-      if (godotBridge?.clearSpriteEffect) {
-        godotBridge.clearSpriteEffect(entityId);
-      }
-    },
-
-    setPostEffect(
-      effectName: string,
-      params?: Record<string, unknown>,
-      layer?: string,
-    ) {
-      const godotBridge = getGodotBridge();
-      if (godotBridge?.setPostEffect) {
-        godotBridge.setPostEffect(
-          effectName,
-          params ? JSON.stringify(params) : undefined,
-          layer,
-        );
-      }
-    },
-
-    updatePostEffectParam(paramName: string, value: unknown, layer?: string) {
-      const godotBridge = getGodotBridge();
-      if (godotBridge?.updatePostEffectParam) {
-        godotBridge.updatePostEffectParam(paramName, value, layer);
-      }
-    },
-
-    clearPostEffect(layer?: string) {
-      const godotBridge = getGodotBridge();
-      if (godotBridge?.clearPostEffect) {
-        godotBridge.clearPostEffect(layer);
-      }
-    },
-
     screenShake(intensity: number, duration?: number) {
       const godotBridge = getGodotBridge();
       if (godotBridge?.screenShake) {
@@ -1118,95 +1035,6 @@ export function createWebGodotBridge(): GodotBridge {
           params ? JSON.stringify(params) : undefined,
         );
       }
-    },
-
-    applyPipeline(spec: EffectPipelineSpec) {
-      const godotBridge = getGodotBridge();
-      if (godotBridge?.applyPipeline) {
-        const specJson = serializePipelineSpec(spec);
-        godotBridge.applyPipeline(specJson);
-      }
-    },
-
-    clearPipeline() {
-      const godotBridge = getGodotBridge();
-      if (godotBridge?.clearPipeline) {
-        godotBridge.clearPipeline();
-      }
-    },
-
-    updatePipelinePassParam(passId: string, paramName: string, value: unknown) {
-      const godotBridge = getGodotBridge();
-      if (godotBridge?.updatePipelinePassParam) {
-        godotBridge.updatePipelinePassParam(passId, paramName, value);
-      }
-    },
-
-    startPipeline() {
-      getGodotBridge()?.startPipeline?.();
-    },
-
-    pausePipeline() {
-      getGodotBridge()?.pausePipeline?.();
-    },
-
-    resumePipeline() {
-      getGodotBridge()?.resumePipeline?.();
-    },
-
-    stopPipeline() {
-      getGodotBridge()?.stopPipeline?.();
-    },
-
-    resetPipeline() {
-      getGodotBridge()?.resetPipeline?.();
-    },
-
-    async captureSnapshot(): Promise<PipelineSnapshot> {
-      const godotBridge = getGodotBridge();
-      if (!godotBridge?.capturePipelineSnapshot) {
-        return { pipelineId: '', passes: [], lifecycleState: 'idle', timestamp: 0 };
-      }
-      godotBridge.capturePipelineSnapshot();
-      await new Promise((resolve) => setTimeout(resolve, 16));
-      const result = godotBridge._lastResult as PipelineSnapshot | undefined;
-      if (result && typeof result === 'object' && 'pipelineId' in result) {
-        return result;
-      }
-      return { pipelineId: '', passes: [], lifecycleState: 'idle', timestamp: 0 };
-    },
-
-    restoreSnapshot(snapshot: PipelineSnapshot) {
-      const godotBridge = getGodotBridge();
-      if (godotBridge?.restorePipelineSnapshot) {
-        godotBridge.restorePipelineSnapshot(JSON.stringify(snapshot));
-      }
-    },
-
-    applyMultiPassEffect(entityId: string, spec: MultiPassEffectSpec) {
-      const godotBridge = getGodotBridge();
-      if (godotBridge?.applyMultiPassEffect) {
-        godotBridge.applyMultiPassEffect(entityId, JSON.stringify(spec));
-      }
-    },
-
-    startMultiPassEffect() {
-      getGodotBridge()?.startMultiPassEffect?.();
-    },
-
-    stopMultiPassEffect() {
-      getGodotBridge()?.stopMultiPassEffect?.();
-    },
-
-    setMultiPassInput(passId: string, inputs: Record<string, unknown>) {
-      const godotBridge = getGodotBridge();
-      if (godotBridge?.setMultiPassInput) {
-        godotBridge.setMultiPassInput(passId, JSON.stringify(inputs));
-      }
-    },
-
-    clearMultiPassEffect() {
-      getGodotBridge()?.clearMultiPassEffect?.();
     },
 
     spawnParticlePreset(
@@ -1390,6 +1218,52 @@ export function createWebGodotBridge(): GodotBridge {
     async callRpc(method: string, params?: unknown): Promise<unknown> {
       const result = await queryAsync<unknown>(method, params ? [params] : []);
       return result;
+    },
+
+    async applyGraph(plan) {
+      return executeEffectsV2("effectsV2.applyGraph", { plan });
+    },
+
+    async clearGraph() {
+      return executeEffectsV2("effectsV2.clearGraph");
+    },
+
+    async updateParams(passId: string, params: Record<string, unknown>) {
+      return executeEffectsV2("effectsV2.updateParams", { passId, params });
+    },
+
+    async start() {
+      return executeEffectsV2("effectsV2.start");
+    },
+
+    async pause() {
+      return executeEffectsV2("effectsV2.pause");
+    },
+
+    async resume() {
+      return executeEffectsV2("effectsV2.resume");
+    },
+
+    async stop() {
+      return executeEffectsV2("effectsV2.stop");
+    },
+
+    async reset() {
+      return executeEffectsV2("effectsV2.reset");
+    },
+
+    async snapshot() {
+      return executeEffectsV2<EffectsV2PipelineSnapshot>(
+        "effectsV2.snapshot",
+        undefined,
+        normalizeEffectsV2Snapshot,
+      );
+    },
+
+    async restore(snapshot: EffectsV2PipelineSnapshot) {
+      return executeEffectsV2("effectsV2.restore", {
+        snapshot: createEffectsV2SnapshotPayload(snapshot),
+      });
     },
   };
 

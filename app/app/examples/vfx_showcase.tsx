@@ -147,7 +147,7 @@ export default function VFXShowcaseExample() {
     setSelectedSpriteEffect(effectName);
     
     if (effectName === "none") {
-      bridge.clearSpriteEffect(selectedEntity);
+      bridge.clearGraph();
     } else {
       const params: Record<string, unknown> = {};
       if (effectName === "outline") {
@@ -166,16 +166,15 @@ export default function VFXShowcaseExample() {
         params.dissolve_amount = 0.3;
         params.edge_color = [1, 0.5, 0, 1];
       }
-      bridge.applySpriteEffect(selectedEntity, effectName, params);
     }
-  }, [bridge, status, selectedEntity]);
+  }, [bridge, status]);
 
   const applyPostEffect = useCallback((effectName: string) => {
     if (!bridge || status !== "ready") return;
     setSelectedPostEffect(effectName);
     
     if (effectName === "none") {
-      bridge.clearPostEffect();
+      bridge.clearGraph();
     } else {
       const params: Record<string, unknown> = {};
       if (effectName === "vignette") {
@@ -188,7 +187,6 @@ export default function VFXShowcaseExample() {
       } else if (effectName === "glitch") {
         params.glitch_intensity = 0.3;
       }
-      bridge.setPostEffect(effectName, params);
     }
   }, [bridge, status]);
 

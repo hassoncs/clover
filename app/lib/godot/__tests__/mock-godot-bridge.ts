@@ -100,13 +100,26 @@ export function createMockGodotBridge(): GodotBridge {
 
     playSound: vi.fn(),
 
-    applySpriteEffect: vi.fn(),
-    updateSpriteEffectParam: vi.fn(),
-    clearSpriteEffect: vi.fn(),
-
-    setPostEffect: vi.fn(),
-    updatePostEffectParam: vi.fn(),
-    clearPostEffect: vi.fn(),
+    // Effects V2 methods
+    applyGraph: vi.fn().mockResolvedValue({ success: true, data: undefined }),
+    clearGraph: vi.fn().mockResolvedValue({ success: true, data: undefined }),
+    updateParams: vi.fn().mockResolvedValue({ success: true, data: undefined }),
+    start: vi.fn().mockResolvedValue({ success: true, data: undefined }),
+    pause: vi.fn().mockResolvedValue({ success: true, data: undefined }),
+    resume: vi.fn().mockResolvedValue({ success: true, data: undefined }),
+    stop: vi.fn().mockResolvedValue({ success: true, data: undefined }),
+    reset: vi.fn().mockResolvedValue({ success: true, data: undefined }),
+    snapshot: vi.fn().mockResolvedValue({ 
+      success: true, 
+      data: { 
+        planHash: 'mock-hash', 
+        passParams: {}, 
+        feedbackStates: {}, 
+        lifecycleState: 'stopped', 
+        timestamp: Date.now() 
+      } 
+    }),
+    restore: vi.fn().mockResolvedValue({ success: true, data: undefined }),
 
     screenShake: vi.fn(),
     zoomPunch: vi.fn(),
@@ -121,26 +134,10 @@ export function createMockGodotBridge(): GodotBridge {
 
     getAvailableEffects: vi.fn().mockResolvedValue({ sprite: [], post: [], particles: [] }),
 
-    applyPipeline: vi.fn(),
-    clearPipeline: vi.fn(),
-    updatePipelinePassParam: vi.fn(),
-    startPipeline: vi.fn(),
-    pausePipeline: vi.fn(),
-    resumePipeline: vi.fn(),
-    stopPipeline: vi.fn(),
-    resetPipeline: vi.fn(),
-    capturePipelineSnapshot: vi.fn().mockResolvedValue({}),
-    restorePipelineSnapshot: vi.fn().mockResolvedValue(true),
-
     createPixelBuffer: vi.fn(),
     pixelBufferDraw: vi.fn(),
     pixelBufferClear: vi.fn(),
-
-    applyMultiPassEffect: vi.fn(),
-    startMultiPassEffect: vi.fn(),
-    stopMultiPassEffect: vi.fn(),
-    setMultiPassInput: vi.fn(),
-    clearMultiPassEffect: vi.fn(),
+    destroyPixelBuffer: vi.fn(),
 
     createUIButton: vi.fn(),
     destroyUIButton: vi.fn(),

@@ -70,7 +70,7 @@ async function searchIconify(
       type: "icon" as const,
       source: "iconify" as const,
       name,
-      previewUrl: `https://api.iconify.design/${prefix}/${name}.svg?height=128`,
+      previewUrl: `https://api.iconify.design/${prefix}/${name}.svg?height=128&color=%23E8E9EC`,
       metadata: {
         collection: collection?.name,
         license: collection?.license?.title,

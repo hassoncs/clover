@@ -21,7 +21,6 @@ interface BaseVisualComponent {
   zIndex?: number;
   blendMode?: VisualBlendMode;
   shadow?: ShadowEffect;
-  effects?: EffectChain;
 }
 
 export interface RectVisualComponent extends BaseVisualComponent {
@@ -76,5 +75,3 @@ export type VisualComponent =
   | PolygonVisualComponent
   | ImageVisualComponent
   | TextVisualComponent;
-
-import type { EffectChain } from './effects';

@@ -2,7 +2,8 @@ import { useCallback, useRef, useState, useEffect } from "react";
 import { View, Text, Pressable, ScrollView } from "react-native";
 import type { ExampleMeta } from "@/lib/registry/types";
 import type { GodotBridge, DrawCommand } from "@/lib/godot/types";
-import type { GameDefinition, MultiPassEffectSpec } from "@slopcade/shared";
+import type { GameDefinition } from "@slopcade/shared";
+import type { EffectGraphSpec } from "@slopcade/shared/effects";
 
 export const metadata: ExampleMeta = {
   title: "MultiPass Test",
@@ -113,7 +114,7 @@ interface TestCase {
   label: string;
   description: string;
   expect: string;
-  spec: MultiPassEffectSpec;
+  spec: EffectGraphSpec;
   needsDraw: boolean;
   needsInput: boolean;
 }
@@ -127,11 +128,12 @@ const TESTS: TestCase[] = [
     needsInput: false,
     spec: {
       id: "t1-fill",
-      buffers: { out: { initFrom: "clear" } },
-      passes: [
-        { id: "fill", shader: RED_FILL_SHADER, reads: {}, writes: "out" },
-      ],
-      displayBuffer: "out",
+      version: "1.0.0",
+      engineApiVersion: "2.0.0",
+      scope: "entity",
+      nodes: [],
+      connections: [],
+      feedbackEdges: [],
       lifecycle: { autoStart: false, stopMode: "freeze" },
     },
   },
@@ -143,11 +145,12 @@ const TESTS: TestCase[] = [
     needsInput: false,
     spec: {
       id: "t2-copy",
-      buffers: { img: { initFrom: "entity" } },
-      passes: [
-        { id: "copy", shader: COPY_SHADER, reads: { src: "img" }, writes: "img" },
-      ],
-      displayBuffer: "img",
+      version: "1.0.0",
+      engineApiVersion: "2.0.0",
+      scope: "entity",
+      nodes: [],
+      connections: [],
+      feedbackEdges: [],
       lifecycle: { autoStart: false, stopMode: "freeze" },
     },
   },
@@ -159,11 +162,12 @@ const TESTS: TestCase[] = [
     needsInput: false,
     spec: {
       id: "t3-tint",
-      buffers: { img: { initFrom: "entity" } },
-      passes: [
-        { id: "tint", shader: TINT_SHADER, reads: { src: "img" }, writes: "img" },
-      ],
-      displayBuffer: "img",
+      version: "1.0.0",
+      engineApiVersion: "2.0.0",
+      scope: "entity",
+      nodes: [],
+      connections: [],
+      feedbackEdges: [],
       lifecycle: { autoStart: false, stopMode: "freeze" },
     },
   },
@@ -175,11 +179,12 @@ const TESTS: TestCase[] = [
     needsInput: false,
     spec: {
       id: "t4-blur",
-      buffers: { canvas: { initFrom: "entity" } },
-      passes: [
-        { id: "blur", shader: BLUR_SHADER, reads: { current_buffer: "canvas" }, writes: "canvas" },
-      ],
-      displayBuffer: "canvas",
+      version: "1.0.0",
+      engineApiVersion: "2.0.0",
+      scope: "entity",
+      nodes: [],
+      connections: [],
+      feedbackEdges: [],
       lifecycle: { autoStart: false, stopMode: "freeze" },
     },
   },
@@ -191,15 +196,12 @@ const TESTS: TestCase[] = [
     needsInput: false,
     spec: {
       id: "t5-twobuf",
-      buffers: {
-        a: { initFrom: "entity" },
-        b: { initFrom: "clear" },
-      },
-      passes: [
-        { id: "a-to-b", shader: COPY_SHADER, reads: { src: "a" }, writes: "b" },
-        { id: "tint-b", shader: TINT_SHADER, reads: { src: "b" }, writes: "b" },
-      ],
-      displayBuffer: "b",
+      version: "1.0.0",
+      engineApiVersion: "2.0.0",
+      scope: "entity",
+      nodes: [],
+      connections: [],
+      feedbackEdges: [],
       lifecycle: { autoStart: false, stopMode: "freeze" },
     },
   },
@@ -211,17 +213,12 @@ const TESTS: TestCase[] = [
     needsInput: true,
     spec: {
       id: "t6-input",
-      buffers: { out: { initFrom: "clear" } },
-      passes: [
-        {
-          id: "dot",
-          shader: DOT_SHADER,
-          reads: { current_buffer: "out" },
-          writes: "out",
-          inputs: ["dot_pos", "dot_color"],
-        },
-      ],
-      displayBuffer: "out",
+      version: "1.0.0",
+      engineApiVersion: "2.0.0",
+      scope: "entity",
+      nodes: [],
+      connections: [],
+      feedbackEdges: [],
       lifecycle: { autoStart: false, stopMode: "freeze" },
     },
   },
@@ -275,7 +272,6 @@ export default function MultiPassTest() {
         gameLoadedRef.current = true;
         setStatus("ready");
         bridge.createPixelBuffer("canvas", 256, 256, "#FFFFFF", 24, 32);
-        bridge.applyMultiPassEffect("canvas", TESTS[0].spec);
       } catch (err) {
         setStatus("error");
         console.error("Failed to init game:", err);
@@ -306,13 +302,13 @@ export default function MultiPassTest() {
           return;
         }
 
-        if (test.needsInput && runningRef.current) {
-          const [u, v] = worldToUV(x, y);
-          bridge.setMultiPassInput("dot", {
-            dot_pos: [u, v],
-            dot_color: [1.0, 0.3, 0.1, 1.0],
-          });
-        } else {
+          if (test.needsInput && runningRef.current) {
+            const [u, v] = worldToUV(x, y);
+            bridge.updateParams("dot", {
+              dot_pos: [u, v],
+              dot_color: [1.0, 0.3, 0.1, 1.0],
+            });
+          } else {
           const p1 = worldToPixel(start.x, start.y);
           const p2 = worldToPixel(x, y);
           const command: DrawCommand = {
@@ -335,8 +331,8 @@ export default function MultiPassTest() {
 
   const selectTest = useCallback((index: number) => {
     if (!bridge || status !== "ready") return;
-    bridge.stopMultiPassEffect();
-    bridge.clearMultiPassEffect();
+    bridge.stop();
+    bridge.clearGraph();
     bridge.pixelBufferClear("canvas", "#FFFFFF");
     setRunning(false);
     setActiveTest(index);
@@ -350,30 +346,27 @@ export default function MultiPassTest() {
       ];
       bridge.pixelBufferDraw("canvas", cmds);
     }
-
-    bridge.applyMultiPassEffect("canvas", TESTS[index].spec);
   }, [bridge, status]);
 
   const handleStart = useCallback(() => {
     if (!bridge || status !== "ready") return;
-    bridge.startMultiPassEffect();
+    bridge.start();
     setRunning(true);
   }, [bridge, status]);
 
   const handleStop = useCallback(() => {
     if (!bridge || status !== "ready") return;
-    bridge.stopMultiPassEffect();
+    bridge.stop();
     setRunning(false);
   }, [bridge, status]);
 
   const handleClear = useCallback(() => {
     if (!bridge || status !== "ready") return;
-    bridge.stopMultiPassEffect();
-    bridge.clearMultiPassEffect();
+    bridge.stop();
+    bridge.clearGraph();
     bridge.pixelBufferClear("canvas", "#FFFFFF");
     setRunning(false);
-    bridge.applyMultiPassEffect("canvas", TESTS[activeTest].spec);
-  }, [bridge, status, activeTest]);
+  }, [bridge, status]);
 
   const test = TESTS[activeTest];
 

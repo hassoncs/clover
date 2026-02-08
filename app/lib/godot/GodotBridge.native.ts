@@ -1,14 +1,13 @@
 import type {
-  EffectPipelineSpec,
   GameDefinition,
-  MultiPassEffectSpec,
-  PipelineSnapshot,
   PropertySyncPayload,
 } from '@slopcade/shared';
-import { serializePipelineSpec } from '@slopcade/shared/effects/pipeline-serialization';
+
 import type {
   GodotBridge,
   CollisionEvent,
+  EffectsV2PipelineSnapshot,
+  EffectsV2Result,
   SensorEvent,
   EntitySpawnedEvent,
   EntityTransform,
@@ -31,6 +30,11 @@ import * as FileSystem from 'expo-file-system/legacy';
 import './react-native-godot.d';
 import { BridgeCore, type BridgeMessage } from './BridgeCore';
 import { createCallbackArrays, createCallbackMethods, clearAllCallbacks } from './callback-registry';
+import {
+  createEffectsV2SnapshotPayload,
+  normalizeEffectsV2Result,
+  normalizeEffectsV2Snapshot,
+} from './GodotBridgeBase';
 
 class NativeBridgeCore extends BridgeCore {
   protected send(msg: BridgeMessage): void {
@@ -294,6 +298,24 @@ export function createNativeGodotBridge(): GodotBridge {
     scheduleNextPoll();
   }
 
+  const executeEffectsV2 = async <T = void>(
+    method: string,
+    params?: Record<string, unknown>,
+    mapData?: (rawData: unknown) => T,
+  ): Promise<EffectsV2Result<T>> => {
+    try {
+      const response = await callGameBridgeAsync('callRpc', JSON.stringify({ method, params }));
+      const parsed = typeof response === 'string' ? JSON.parse(response) : response;
+      const raw = parsed && typeof parsed === 'object' && 'result' in parsed
+        ? (parsed as { result: unknown }).result
+        : parsed;
+
+      return normalizeEffectsV2Result<T>(raw, mapData);
+    } catch (error) {
+      return normalizeEffectsV2Result<T>({ success: false, error });
+    }
+  };
+
   const bridge: GodotBridge = {
     async initialize() {
       const { RTNGodot, runOnGodotThread } = await getGodotModule();
@@ -469,6 +491,52 @@ export function createNativeGodotBridge(): GodotBridge {
         throw new Error(parsed.error.message);
       }
       return parsed.result ?? parsed;
+    },
+
+    async applyGraph(plan) {
+      return executeEffectsV2('effectsV2.applyGraph', { plan });
+    },
+
+    async clearGraph() {
+      return executeEffectsV2('effectsV2.clearGraph');
+    },
+
+    async updateParams(passId: string, params: Record<string, unknown>) {
+      return executeEffectsV2('effectsV2.updateParams', { passId, params });
+    },
+
+    async start() {
+      return executeEffectsV2('effectsV2.start');
+    },
+
+    async pause() {
+      return executeEffectsV2('effectsV2.pause');
+    },
+
+    async resume() {
+      return executeEffectsV2('effectsV2.resume');
+    },
+
+    async stop() {
+      return executeEffectsV2('effectsV2.stop');
+    },
+
+    async reset() {
+      return executeEffectsV2('effectsV2.reset');
+    },
+
+    async snapshot() {
+      return executeEffectsV2<EffectsV2PipelineSnapshot>(
+        'effectsV2.snapshot',
+        undefined,
+        normalizeEffectsV2Snapshot,
+      );
+    },
+
+    async restore(snapshot: EffectsV2PipelineSnapshot) {
+      return executeEffectsV2('effectsV2.restore', {
+        snapshot: createEffectsV2SnapshotPayload(snapshot),
+      });
     },
 
     spawnEntity(request: SpawnEntityRequest): void {
@@ -889,30 +957,6 @@ export function createNativeGodotBridge(): GodotBridge {
       callGameBridge('play_sound', resourcePath);
     },
 
-    applySpriteEffect(entityId: string, effectName: string, params?: Record<string, unknown>) {
-      callEffectsBridge('apply_sprite_effect', entityId, effectName, JSON.stringify(params ?? {}));
-    },
-
-    updateSpriteEffectParam(entityId: string, paramName: string, value: unknown) {
-      callEffectsBridge('update_sprite_effect_param', entityId, paramName, value);
-    },
-
-    clearSpriteEffect(entityId: string) {
-      callEffectsBridge('clear_sprite_effect', entityId);
-    },
-
-    setPostEffect(effectName: string, params?: Record<string, unknown>, layer?: string) {
-      callEffectsBridge('set_post_effect', effectName, JSON.stringify(params ?? {}), layer ?? 'main');
-    },
-
-    updatePostEffectParam(paramName: string, value: unknown, layer?: string) {
-      callEffectsBridge('update_post_effect_param', paramName, value, layer ?? 'main');
-    },
-
-    clearPostEffect(layer?: string) {
-      callEffectsBridge('clear_post_effect', layer ?? 'main');
-    },
-
     screenShake(intensity: number, duration?: number) {
       callEffectsBridge('screen_shake', intensity, duration ?? 0.3);
     },
@@ -944,76 +988,6 @@ export function createNativeGodotBridge(): GodotBridge {
 
     applyDynamicPostShader(shaderCode: string, params?: Record<string, unknown>) {
       callEffectsBridge('apply_dynamic_post_shader', shaderCode, JSON.stringify(params ?? {}));
-    },
-
-    applyPipeline(spec: EffectPipelineSpec) {
-      const specJson = serializePipelineSpec(spec);
-      callEffectsBridge('apply_pipeline', specJson);
-    },
-
-    clearPipeline() {
-      callEffectsBridge('clear_pipeline');
-    },
-
-    updatePipelinePassParam(passId: string, paramName: string, value: unknown) {
-      callEffectsBridge('update_pipeline_pass_param', passId, paramName, value);
-    },
-
-    startPipeline() {
-      callEffectsBridge('start_pipeline');
-    },
-
-    pausePipeline() {
-      callEffectsBridge('pause_pipeline');
-    },
-
-    resumePipeline() {
-      callEffectsBridge('resume_pipeline');
-    },
-
-    stopPipeline() {
-      callEffectsBridge('stop_pipeline');
-    },
-
-    resetPipeline() {
-      callEffectsBridge('reset_pipeline');
-    },
-
-    async captureSnapshot(): Promise<PipelineSnapshot> {
-      const result = await callGameBridgeAsync('capture_pipeline_snapshot');
-      if (result && typeof result === 'object' && 'pipelineId' in (result as Record<string, unknown>)) {
-        return result as PipelineSnapshot;
-      }
-      if (typeof result === 'string') {
-        try {
-          return JSON.parse(result) as PipelineSnapshot;
-        } catch {}
-      }
-      return { pipelineId: '', passes: [], lifecycleState: 'idle', timestamp: 0 };
-    },
-
-    restoreSnapshot(snapshot: PipelineSnapshot) {
-      callEffectsBridge('restore_pipeline_snapshot', JSON.stringify(snapshot));
-    },
-
-    applyMultiPassEffect(entityId: string, spec: MultiPassEffectSpec) {
-      callEffectsBridge('apply_multi_pass_effect', entityId, JSON.stringify(spec));
-    },
-
-    startMultiPassEffect() {
-      callEffectsBridge('start_multi_pass_effect');
-    },
-
-    stopMultiPassEffect() {
-      callEffectsBridge('stop_multi_pass_effect');
-    },
-
-    setMultiPassInput(passId: string, inputs: Record<string, unknown>) {
-      callEffectsBridge('set_multi_pass_input', passId, JSON.stringify(inputs));
-    },
-
-    clearMultiPassEffect() {
-      callEffectsBridge('clear_multi_pass_effect');
     },
 
     spawnParticlePreset(presetName: string, worldX: number, worldY: number, params?: Record<string, unknown>) {

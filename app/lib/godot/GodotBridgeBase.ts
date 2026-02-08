@@ -1,10 +1,203 @@
 import type { PropertySyncPayload } from "@slopcade/shared";
 import type {
   CollisionEvent,
+  EffectsV2Error,
+  EffectsV2PipelineSnapshot,
+  EffectsV2Result,
   SensorEvent,
   EntitySpawnedEvent,
   EntityTransform,
 } from "./types";
+
+type EffectsV2RawPassSnapshot = {
+  id?: string;
+  passId?: string;
+  params?: Record<string, unknown>;
+};
+
+type EffectsV2RawFeedbackState = {
+  frameCount?: unknown;
+  frozen?: unknown;
+};
+
+const EFFECTS_V2_ERROR_CODE = "E_EFFECTS_V2_EXECUTION";
+
+function toEffectsV2Error(error: unknown): EffectsV2Error {
+  if (typeof error === "string") {
+    return { code: EFFECTS_V2_ERROR_CODE, message: error };
+  }
+
+  if (error && typeof error === "object") {
+    const err = error as {
+      code?: unknown;
+      message?: unknown;
+      details?: unknown;
+      error?: unknown;
+    };
+
+    if (err.error !== undefined) {
+      return toEffectsV2Error(err.error);
+    }
+
+    return {
+      code:
+        typeof err.code === "string" && err.code.length > 0
+          ? err.code
+          : EFFECTS_V2_ERROR_CODE,
+      message:
+        typeof err.message === "string" && err.message.length > 0
+          ? err.message
+          : "Effects v2 operation failed",
+      details:
+        err.details && typeof err.details === "object"
+          ? (err.details as Record<string, unknown>)
+          : undefined,
+    };
+  }
+
+  return {
+    code: EFFECTS_V2_ERROR_CODE,
+    message: "Effects v2 operation failed",
+  };
+}
+
+export function normalizeEffectsV2Result<T = void>(
+  raw: unknown,
+  mapData?: (rawData: unknown) => T,
+): EffectsV2Result<T> {
+  if (raw && typeof raw === "object") {
+    const payload = raw as {
+      success?: unknown;
+      error?: unknown;
+      data?: unknown;
+      message?: unknown;
+    };
+
+    if (payload.success === false || payload.error !== undefined) {
+      return {
+        success: false,
+        error: toEffectsV2Error(payload.error ?? payload.message),
+      };
+    }
+
+    if (payload.success === true) {
+      const dataSource = payload.data !== undefined ? payload.data : raw;
+      return {
+        success: true,
+        data: mapData ? mapData(dataSource) : (undefined as T),
+      };
+    }
+  }
+
+  if (raw === null || raw === undefined) {
+    return {
+      success: false,
+      error: {
+        code: "E_EFFECTS_V2_EMPTY_RESPONSE",
+        message: "Effects v2 operation returned no response",
+      },
+    };
+  }
+
+  return {
+    success: true,
+    data: mapData ? mapData(raw) : (undefined as T),
+  };
+}
+
+export function normalizeEffectsV2Snapshot(raw: unknown): EffectsV2PipelineSnapshot {
+  const payload = (raw && typeof raw === "object"
+    ? (raw as Record<string, unknown>)
+    : {}) as {
+    planHash?: unknown;
+    hash?: unknown;
+    passParams?: unknown;
+    passes?: EffectsV2RawPassSnapshot[];
+    feedbackStates?: Record<string, EffectsV2RawFeedbackState>;
+    lifecycleState?: unknown;
+    state?: unknown;
+    timestamp?: unknown;
+  };
+
+  const passParams: Record<string, Record<string, unknown>> = {};
+  if (payload.passParams && typeof payload.passParams === "object") {
+    for (const [passId, params] of Object.entries(payload.passParams)) {
+      if (params && typeof params === "object") {
+        passParams[passId] = params as Record<string, unknown>;
+      }
+    }
+  }
+
+  if (Array.isArray(payload.passes)) {
+    for (const pass of payload.passes) {
+      if (!pass || typeof pass !== "object") {
+        continue;
+      }
+      const passId =
+        typeof pass.id === "string"
+          ? pass.id
+          : typeof pass.passId === "string"
+            ? pass.passId
+            : "";
+      if (!passId) {
+        continue;
+      }
+      passParams[passId] =
+        pass.params && typeof pass.params === "object"
+          ? pass.params
+          : {};
+    }
+  }
+
+  const feedbackStates: EffectsV2PipelineSnapshot["feedbackStates"] = {};
+  if (payload.feedbackStates && typeof payload.feedbackStates === "object") {
+    for (const [feedbackId, state] of Object.entries(payload.feedbackStates)) {
+      feedbackStates[feedbackId] = {
+        frameCount:
+          state && typeof state.frameCount === "number"
+            ? state.frameCount
+            : 0,
+        frozen: !!(state && typeof state.frozen === "boolean" ? state.frozen : false),
+      };
+    }
+  }
+
+  return {
+    planHash:
+      typeof payload.planHash === "string"
+        ? payload.planHash
+        : typeof payload.hash === "string"
+          ? payload.hash
+          : "",
+    passParams,
+    feedbackStates,
+    lifecycleState:
+      typeof payload.lifecycleState === "string"
+        ? payload.lifecycleState
+        : typeof payload.state === "string"
+          ? payload.state
+          : "idle",
+    timestamp:
+      typeof payload.timestamp === "number" ? payload.timestamp : Date.now(),
+  };
+}
+
+export function createEffectsV2SnapshotPayload(
+  snapshot: EffectsV2PipelineSnapshot,
+): Record<string, unknown> {
+  const passes = Object.entries(snapshot.passParams).map(([id, params]) => ({
+    id,
+    params,
+  }));
+
+  return {
+    planHash: snapshot.planHash,
+    state: snapshot.lifecycleState,
+    timestamp: snapshot.timestamp,
+    feedbackStates: snapshot.feedbackStates,
+    passes,
+  };
+}
 
 export abstract class GodotBridgeBase {
   protected collisionCallbacks: ((event: CollisionEvent) => void)[] = [];

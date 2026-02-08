@@ -8,16 +8,17 @@ const ROUTE_ICON_MAP: Record<
   { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }
 > = {
   browse: { active: "home", inactive: "home-outline" },
-  lab: { active: "chatbubble", inactive: "chatbubble-outline" },
+  lab: { active: "flask", inactive: "flask-outline" },
   maker: { active: "color-palette", inactive: "color-palette-outline" },
   profile: { active: "person", inactive: "person-outline" },
 };
 
 interface FloatingTabBarProps extends BottomTabBarProps {
   onPrimaryPress: () => void;
+  isAuthenticated: boolean;
 }
 
-export function FloatingTabBar({ state, descriptors, navigation, onPrimaryPress }: FloatingTabBarProps) {
+export function FloatingTabBar({ state, descriptors, navigation, onPrimaryPress, isAuthenticated }: FloatingTabBarProps) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -28,6 +29,8 @@ export function FloatingTabBar({ state, descriptors, navigation, onPrimaryPress 
             const descriptor = descriptors[route.key];
             const isFocused = state.index === index;
             const icon = ROUTE_ICON_MAP[route.name];
+
+            if (!icon) return null;
 
             const onPress = () => {
               const event = navigation.emit({

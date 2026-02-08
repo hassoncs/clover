@@ -79,6 +79,9 @@
       "react-native-safe-area-context": "5.6.2",
       "nativewind": "4.2.1",
       "react-native-css-interop": "0.2.1"
+    },
+    "patchedDependencies": {
+      "munim-bluetooth-peripheral@0.4.4": "patches/munim-bluetooth-peripheral@0.4.4.patch"
     }
   },
   "dependencies": {

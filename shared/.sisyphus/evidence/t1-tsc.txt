@@ -1,0 +1,14 @@
+--- tsc --noEmit ---
+Exit code: 0
+
+--- vitest run ---
+
+ RUN  v2.1.9 /Users/hassoncs/Workspaces/Personal/slopcade/shared
+
+ ✓ src/effects-v2/__tests__/types.test.ts (11 tests) 1ms
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  20:06:21
+   Duration  170ms (transform 17ms, setup 0ms, collect 20ms, tests 1ms, environment 0ms, prepare 36ms)
+

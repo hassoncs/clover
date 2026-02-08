@@ -1,10 +1,8 @@
 import type {
-  EffectPipelineSpec,
   GameDefinition,
-  MultiPassEffectSpec,
-  PipelineSnapshot,
   PropertySyncPayload,
 } from '@slopcade/shared';
+import type { CompiledPlan } from '@slopcade/shared/effects';
 
 export interface Vec2 {
   x: number;
@@ -63,6 +61,37 @@ export interface DynamicShaderResult {
   success: boolean;
   shader_id: string;
   error?: string;
+}
+
+export interface EffectsV2Error {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
+export type EffectsV2Result<T = void> =
+  | { success: true; data: T }
+  | { success: false; error: EffectsV2Error };
+
+export interface EffectsV2PipelineSnapshot {
+  planHash: string;
+  passParams: Record<string, Record<string, unknown>>;
+  feedbackStates: Record<string, { frameCount: number; frozen: boolean }>;
+  lifecycleState: string;
+  timestamp: number;
+}
+
+export interface EffectsBridge {
+  applyGraph(plan: CompiledPlan): Promise<EffectsV2Result>;
+  clearGraph(): Promise<EffectsV2Result>;
+  updateParams(passId: string, params: Record<string, unknown>): Promise<EffectsV2Result>;
+  start(): Promise<EffectsV2Result>;
+  pause(): Promise<EffectsV2Result>;
+  resume(): Promise<EffectsV2Result>;
+  stop(): Promise<EffectsV2Result>;
+  reset(): Promise<EffectsV2Result>;
+  snapshot(): Promise<EffectsV2Result<EffectsV2PipelineSnapshot>>;
+  restore(snapshot: EffectsV2PipelineSnapshot): Promise<EffectsV2Result>;
 }
 
 // Sprite types
@@ -213,7 +242,7 @@ export interface ColliderConfig {
   maskBits?: number;
 }
 
-export interface GodotBridge {
+export interface GodotBridge extends EffectsBridge {
   // Lifecycle
   initialize(): Promise<void>;
   dispose(): void;
@@ -373,24 +402,7 @@ export interface GodotBridge {
   applyDynamicShader(entityId: string, shaderId: string, params?: Record<string, unknown>): void;
   applyDynamicPostShader(shaderCode: string, params?: Record<string, unknown>): void;
 
-  // Visual Effects - Composable Pipeline
-  applyPipeline(spec: EffectPipelineSpec): void;
-  clearPipeline(): void;
-  updatePipelinePassParam(passId: string, paramName: string, value: unknown): void;
-  startPipeline(): void;
-  pausePipeline(): void;
-  resumePipeline(): void;
-  stopPipeline(): void;
-  resetPipeline(): void;
-  captureSnapshot(): Promise<PipelineSnapshot>;
-  restoreSnapshot(snapshot: PipelineSnapshot): void;
 
-  // Multi-Pass Effects
-  applyMultiPassEffect(entityId: string, spec: MultiPassEffectSpec): void;
-  startMultiPassEffect(): void;
-  stopMultiPassEffect(): void;
-  setMultiPassInput(passId: string, inputs: Record<string, unknown>): void;
-  clearMultiPassEffect(): void;
 
   // Visual Effects - Particles
   spawnParticlePreset(presetName: string, worldX: number, worldY: number, params?: Record<string, unknown>): void;
