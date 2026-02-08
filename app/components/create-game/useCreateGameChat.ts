@@ -1,11 +1,21 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
+import { atom, useAtom } from 'jotai';
 import { useAgentRun } from '@/components/editor/AIEditor/useAgentRun';
+import { useAgentNotifications } from '@/lib/notifications';
+import type { AgentEventPayload } from '@slopcade/shared';
 import { ChatMessage } from './types';
 
+type PayloadOf<T extends AgentEventPayload['type']> = Extract<AgentEventPayload, { type: T }>;
+
+const runIdAtom = atom<string | undefined>(undefined);
+const messagesAtom = atom<ChatMessage[]>([]);
+const processedSeqsAtom = atom(new Set<number>());
+
 export function useCreateGameChat() {
-  const [runId, setRunId] = useState<string | undefined>(undefined);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const processedEventSeqs = useRef<Set<number>>(new Set());
+  const [runId, setRunId] = useAtom(runIdAtom);
+  const [messages, setMessages] = useAtom(messagesAtom);
+  const [processedSeqs] = useAtom(processedSeqsAtom);
+  const processedEventSeqs = useRef(processedSeqs);
   
   const { 
     run, 
@@ -14,14 +24,16 @@ export function useCreateGameChat() {
     error, 
     createRun, 
     startRun,
+    cancelRun,
     pendingQuestions,
     questions,
     submitAnswer,
     submitUserAnswer
   } = useAgentRun(runId);
 
+  useAgentNotifications(events);
+
   const sendMessage = useCallback(async (text: string) => {
-    // Add user message immediately
     const userMsg: ChatMessage = {
       id: crypto.randomUUID(),
       role: 'user',
@@ -50,7 +62,7 @@ export function useCreateGameChat() {
       };
       setMessages(prev => [...prev, errorMsg]);
     }
-  }, [createRun, startRun]);
+  }, [createRun, startRun, setMessages, setRunId]);
 
   useEffect(() => {
     if (!events.length) return;
@@ -60,7 +72,6 @@ export function useCreateGameChat() {
       const processed = processedEventSeqs.current;
       let hasChanges = false;
 
-      // Sort events by sequence to ensure order
       const sortedEvents = [...events].sort((a, b) => a.seq - b.seq);
 
       for (const event of sortedEvents) {
@@ -72,29 +83,33 @@ export function useCreateGameChat() {
         const id = event.id || `evt-${event.seq}`;
 
         switch (event.eventType) {
-          case 'step_started':
+          case 'step_started': {
+            const p = event.payload as PayloadOf<'step_started'>;
             nextMessages.push({
               id,
               role: 'system',
               type: 'status',
-              text: `Starting ${(event.payload as any).stage} phase...`,
+              text: `Starting ${p.stage} phase...`,
               timestamp,
             });
             break;
-          case 'step_completed':
-             nextMessages.push({
+          }
+          case 'step_completed': {
+            const p = event.payload as PayloadOf<'step_completed'>;
+            nextMessages.push({
               id,
               role: 'system',
               type: 'status',
-              text: `Completed step ${(event.payload as any).stepIndex}`,
+              text: `Completed step ${p.stepIndex}`,
               timestamp,
             });
             break;
+          }
           case 'gate_values_updated': {
-            const gPayload = event.payload as any;
-            const satisfied = gPayload.satisfiedFields?.length || 0;
+            const p = event.payload as PayloadOf<'gate_values_updated'>;
+            const satisfied = p.satisfiedFields.length;
             if (satisfied > 0) {
-               nextMessages.push({
+              nextMessages.push({
                 id,
                 role: 'system',
                 type: 'status',
@@ -114,59 +129,61 @@ export function useCreateGameChat() {
             });
             break;
           case 'user_question': {
-            const qPayload = event.payload as any;
+            const p = event.payload as PayloadOf<'user_question'>;
             nextMessages.push({
               id,
               role: 'agent',
               type: 'user_question',
-              text: qPayload.questions?.[0]?.header || "I have some questions...",
+              text: p.questions[0]?.header ?? "I have some questions...",
               timestamp,
-              payload: qPayload,
+              payload: p,
               pending: true,
             });
             break;
           }
           case 'clarification_requested': {
-            const cPayload = event.payload as any;
+            const p = event.payload as PayloadOf<'clarification_requested'>;
             nextMessages.push({
               id,
               role: 'agent',
               type: 'clarification',
-              text: cPayload.question,
+              text: p.question,
               timestamp,
-              payload: cPayload,
+              payload: p,
               pending: true,
             });
             break;
           }
           case 'clarification_answered': {
-             const answerPayload = event.payload as any;
-             const qIndex = nextMessages.findIndex(m => 
-               m.type === 'clarification' && (m.payload as any)?.questionId === answerPayload.questionId
-             );
-             if (qIndex !== -1) {
-               nextMessages[qIndex] = { ...nextMessages[qIndex], pending: false };
-             }
-             
-             // Add the user's answer as a message
-             nextMessages.push({
-               id: `ans-${event.seq}`,
-               role: 'user',
-               type: 'text',
-               text: answerPayload.answer,
-               timestamp,
-             });
-             break;
+            const p = event.payload as PayloadOf<'clarification_answered'>;
+            const qIndex = nextMessages.findIndex(m => {
+              if (m.type !== 'clarification') return false;
+              const mp = m.payload as PayloadOf<'clarification_requested'> | undefined;
+              return mp?.questionId === p.questionId;
+            });
+            if (qIndex !== -1) {
+              nextMessages[qIndex] = { ...nextMessages[qIndex], pending: false };
+            }
+            nextMessages.push({
+              id: `ans-${event.seq}`,
+              role: 'user',
+              type: 'text',
+              text: p.answer,
+              timestamp,
+            });
+            break;
           }
           case 'user_answer': {
-             const uaPayload = event.payload as any;
-             const uqIndex = nextMessages.findIndex(m => 
-               m.type === 'user_question' && (m.payload as any)?.batchId === uaPayload.batchId
-             );
-             if (uqIndex !== -1) {
-               nextMessages[uqIndex] = { ...nextMessages[uqIndex], pending: false };
-             }
-             break;
+            const p = event.payload as PayloadOf<'user_answer'>;
+            const uqIndex = nextMessages.findIndex(m => {
+              if (m.type !== 'user_question') return false;
+              const mp = m.payload as PayloadOf<'user_question'> | undefined;
+              return mp?.batchId === p.batchId;
+            });
+            if (uqIndex !== -1) {
+              nextMessages[uqIndex] = { ...nextMessages[uqIndex], pending: false };
+            }
+            break;
           }
           case 'run_completed':
             nextMessages.push({
@@ -177,15 +194,17 @@ export function useCreateGameChat() {
               timestamp,
             });
             break;
-          case 'run_failed':
+          case 'run_failed': {
+            const p = event.payload as PayloadOf<'run_failed'>;
             nextMessages.push({
               id,
               role: 'system',
               type: 'error',
-              text: (event.payload as any).errorMessage || "Run failed",
+              text: p.errorMessage || "Run failed",
               timestamp,
             });
             break;
+          }
           case 'run_canceled':
             nextMessages.push({
               id,
@@ -195,21 +214,55 @@ export function useCreateGameChat() {
               timestamp,
             });
             break;
-          case 'error':
-             nextMessages.push({
+          case 'error': {
+            const p = event.payload as PayloadOf<'error'>;
+            nextMessages.push({
               id,
               role: 'system',
               type: 'error',
-              text: (event.payload as any).errorMessage || "An error occurred",
+              text: p.errorMessage || "An error occurred",
               timestamp,
             });
             break;
+          }
         }
       }
       
       return hasChanges ? nextMessages : prevMessages;
     });
-  }, [events]);
+  }, [events, setMessages]);
+
+  const cancelBuild = useCallback(async () => {
+    if (!runId) return;
+
+    const status = run?.status;
+    if (status === 'succeeded' || status === 'failed' || status === 'canceled') {
+      return;
+    }
+
+    try {
+      await cancelRun(runId);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg.includes('WebSocket not connected')) {
+        setMessages(prev => [...prev, {
+          id: crypto.randomUUID(),
+          role: 'system',
+          type: 'status',
+          text: 'Connection lost. The run may still be processing on the server.',
+          timestamp: Date.now(),
+        }]);
+      } else {
+        console.error('Failed to cancel run:', e);
+      }
+    }
+  }, [runId, run?.status, cancelRun, setMessages]);
+
+  const resetSession = useCallback(() => {
+    setRunId(undefined);
+    setMessages([]);
+    processedEventSeqs.current = new Set<number>();
+  }, [setRunId, setMessages]);
 
   return {
     messages,
@@ -217,6 +270,8 @@ export function useCreateGameChat() {
     isConnected,
     error,
     sendMessage,
+    cancelBuild,
+    resetSession,
     pendingQuestions,
     questions,
     submitAnswer,

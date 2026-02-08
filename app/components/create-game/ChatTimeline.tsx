@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState, useEffect } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import { FlatList, StyleSheet, View, Text, NativeSyntheticEvent, NativeScrollEvent, Animated, LayoutAnimation, Platform, UIManager } from 'react-native';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -59,10 +59,13 @@ function TypingIndicator() {
   );
 }
 
+const MAINTAIN_POSITION = { minIndexForVisible: 0 };
+
 export function ChatTimeline({ messages, onSubmitUserAnswer, onSubmitClarification, onRetry, isRunning, hasPendingQuestion }: Props) {
   const listRef = useRef<FlatList>(null);
   const isNearBottom = useRef(true);
   const prevMessageCount = useRef(messages.length);
+  const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (messages.length !== prevMessageCount.current) {
@@ -77,9 +80,11 @@ export function ChatTimeline({ messages, onSubmitUserAnswer, onSubmitClarificati
   }, []);
 
   const handleContentSizeChange = useCallback(() => {
-    if (isNearBottom.current) {
+    if (!isNearBottom.current) return;
+    if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
+    scrollTimerRef.current = setTimeout(() => {
       listRef.current?.scrollToEnd({ animated: true });
-    }
+    }, 50);
   }, []);
 
   return (
@@ -99,6 +104,7 @@ export function ChatTimeline({ messages, onSubmitUserAnswer, onSubmitClarificati
       onScroll={handleScroll}
       scrollEventThrottle={16}
       onContentSizeChange={handleContentSizeChange}
+      maintainVisibleContentPosition={MAINTAIN_POSITION}
       keyboardShouldPersistTaps="handled"
       ListEmptyComponent={
         <View style={styles.emptyContainer}>

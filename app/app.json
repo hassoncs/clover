@@ -21,6 +21,13 @@
         {
           "cameraPermissionText": "Slopcade uses your camera for game features"
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#2563EB"
+        }
       ]
     ],
     "name": "Slopcade",

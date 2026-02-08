@@ -10,10 +10,16 @@ import { Composer } from "@/components/create-game/Composer";
 export default function CreateGameScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { messages, sendMessage, submitAnswer, submitUserAnswer, run, isRunning } = useCreateGameChat();
+  const { messages, sendMessage, cancelBuild, resetSession, submitAnswer, submitUserAnswer, run, isRunning } = useCreateGameChat();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const hasNavigated = useRef(false);
   const lastPromptRef = useRef<string>('');
+
+  const handleNewChat = useCallback(() => {
+    resetSession();
+    hasNavigated.current = false;
+    lastPromptRef.current = '';
+  }, [resetSession]);
 
   const hasPendingQuestion = messages.some(m => m.pending === true);
 
@@ -55,14 +61,38 @@ export default function CreateGameScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <Text style={styles.title}>Create Game</Text>
-        <Pressable
-          onPress={handleDismiss}
-          style={styles.closeButton}
-          accessibilityRole="button"
-          accessibilityLabel="Close"
-        >
-          <Ionicons name="close" size={24} color="#A1A1AA" />
-        </Pressable>
+        <View style={styles.headerActions}>
+          {!isRunning && messages.length > 0 && (
+            <Pressable
+              onPress={handleNewChat}
+              style={styles.newChatButton}
+              accessibilityRole="button"
+              accessibilityLabel="Start new chat"
+            >
+              <Ionicons name="add-circle-outline" size={18} color="#60A5FA" />
+              <Text style={styles.newChatButtonText}>New</Text>
+            </Pressable>
+          )}
+          {isRunning && (
+            <Pressable
+              onPress={cancelBuild}
+              style={styles.cancelButton}
+              accessibilityRole="button"
+              accessibilityLabel="Cancel build"
+            >
+              <Ionicons name="stop-circle-outline" size={18} color="#F87171" />
+              <Text style={styles.cancelButtonText}>Stop</Text>
+            </Pressable>
+          )}
+          <Pressable
+            onPress={handleDismiss}
+            style={styles.closeButton}
+            accessibilityRole="button"
+            accessibilityLabel="Close"
+          >
+            <Ionicons name="close" size={24} color="#A1A1AA" />
+          </Pressable>
+        </View>
       </View>
 
       <KeyboardAvoidingView 
@@ -107,13 +137,46 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#FFFFFF",
   },
+  headerActions: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 8,
+  },
+  newChatButton: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 4,
+    backgroundColor: "rgba(96,165,250,0.12)",
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  newChatButtonText: {
+    color: "#60A5FA",
+    fontSize: 13,
+    fontWeight: "600" as const,
+  },
+  cancelButton: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 4,
+    backgroundColor: "rgba(248,113,113,0.12)",
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  cancelButtonText: {
+    color: "#F87171",
+    fontSize: 13,
+    fontWeight: "600" as const,
+  },
   closeButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
     backgroundColor: "rgba(255,255,255,0.08)",
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
   },
   keyboardAvoiding: {
     flex: 1,

@@ -1,4 +1,5 @@
 import "react-native-get-random-values";
+import "@/lib/notifications/setup";
 import { useEffect } from "react";
 import { Platform } from "react-native";
 import { Stack, useRouter } from "expo-router";
@@ -10,6 +11,7 @@ import { TRPCProvider } from "@/lib/trpc/react";
 import { handleNativeAuthCallback } from "@/lib/supabase/auth";
 import { AnimatedSplashScreen } from "@/components/AnimatedSplashScreen";
 import { needsInstallation, installEmbeddedGames } from "@/lib/offline/embedded-games";
+import { requestNotificationPermissions } from "@/lib/notifications";
 import "../global.css";
 
 const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
@@ -27,6 +29,14 @@ if (SENTRY_DSN) {
 
 if (typeof window !== "undefined" && typeof global === "undefined") {
   (globalThis as any).global = globalThis;
+}
+
+function useNotificationSetup() {
+  useEffect(() => {
+    requestNotificationPermissions().catch((error) => {
+      console.warn("[Notifications] Permission request failed:", error);
+    });
+  }, []);
 }
 
 function useEmbeddedGamesInstaller() {
@@ -82,6 +92,7 @@ function useDeepLinkHandler() {
 function RootLayoutContent() {
   useDeepLinkHandler();
   useEmbeddedGamesInstaller();
+  useNotificationSetup();
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
@@ -110,6 +121,12 @@ function RootLayoutContent() {
         options={{ 
           presentation: "fullScreenModal",
         }} 
+      />
+      <Stack.Screen
+        name="create-game"
+        options={{
+          presentation: "modal",
+        }}
       />
     </Stack>
   );

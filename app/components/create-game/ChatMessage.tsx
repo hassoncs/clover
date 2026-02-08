@@ -1,7 +1,145 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Pressable, TextInput, type TextStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ChatMessage as ChatMessageModel } from './types';
+
+type TextSegment =
+  | { kind: 'text'; value: string }
+  | { kind: 'bold'; value: string }
+  | { kind: 'italic'; value: string }
+  | { kind: 'code'; value: string }
+  | { kind: 'codeblock'; value: string }
+  | { kind: 'list'; items: string[] };
+
+function parseInlineMarkdown(raw: string): TextSegment[] {
+  const segments: TextSegment[] = [];
+
+  const listBlockPattern = /(?:^|\n)((?:[-*] .+(?:\n|$))+)/g;
+  let outerCursor = 0;
+  let listMatch = listBlockPattern.exec(raw);
+
+  const parseInline = (text: string) => {
+    const inlinePattern = /```([\s\S]*?)```|`([^`]+)`|\*\*(.+?)\*\*|_(.+?)_/g;
+    let cursor = 0;
+    let match = inlinePattern.exec(text);
+
+    while (match !== null) {
+      if (match.index > cursor) {
+        segments.push({ kind: 'text', value: text.slice(cursor, match.index) });
+      }
+      if (match[1] !== undefined) {
+        segments.push({ kind: 'codeblock', value: match[1].trim() });
+      } else if (match[2] !== undefined) {
+        segments.push({ kind: 'code', value: match[2] });
+      } else if (match[3] !== undefined) {
+        segments.push({ kind: 'bold', value: match[3] });
+      } else if (match[4] !== undefined) {
+        segments.push({ kind: 'italic', value: match[4] });
+      }
+      cursor = match.index + match[0].length;
+      match = inlinePattern.exec(text);
+    }
+
+    if (cursor < text.length) {
+      segments.push({ kind: 'text', value: text.slice(cursor) });
+    }
+  };
+
+  while (listMatch !== null) {
+    if (listMatch.index > outerCursor) {
+      parseInline(raw.slice(outerCursor, listMatch.index));
+    }
+    const items = listMatch[1]
+      .split('\n')
+      .map(line => line.replace(/^[-*] /, '').trim())
+      .filter(Boolean);
+    segments.push({ kind: 'list', items });
+    outerCursor = listMatch.index + listMatch[0].length;
+    listMatch = listBlockPattern.exec(raw);
+  }
+
+  if (outerCursor < raw.length) {
+    parseInline(raw.slice(outerCursor));
+  }
+
+  return segments;
+}
+
+function FormattedText({ text, baseStyle }: { text: string; baseStyle: TextStyle }) {
+  const segments = parseInlineMarkdown(text);
+
+  if (segments.length === 1 && segments[0].kind === 'text') {
+    return <Text style={baseStyle}>{text}</Text>;
+  }
+
+  const hasBlockElement = segments.some(s => s.kind === 'codeblock' || s.kind === 'list');
+
+  const segKey = (seg: TextSegment, i: number) =>
+    `${seg.kind}-${i}-${'value' in seg ? seg.value.slice(0, 16) : 'list'}`;
+
+  if (hasBlockElement) {
+    return (
+      <View>
+        {segments.map((seg, i) => {
+          const k = segKey(seg, i);
+          switch (seg.kind) {
+            case 'text':
+              return <Text key={k} style={baseStyle}>{seg.value}</Text>;
+            case 'bold':
+              return <Text key={k} style={[baseStyle, { fontWeight: '700' }]}>{seg.value}</Text>;
+            case 'italic':
+              return <Text key={k} style={[baseStyle, { fontStyle: 'italic' }]}>{seg.value}</Text>;
+            case 'code':
+              return <Text key={k} style={[baseStyle, styles.inlineCode]}>{seg.value}</Text>;
+            case 'codeblock':
+              return (
+                <View key={k} style={styles.codeBlock}>
+                  <Text style={styles.codeBlockText}>{seg.value}</Text>
+                </View>
+              );
+            case 'list':
+              return (
+                <View key={k} style={styles.listContainer}>
+                  {seg.items.map((item, j) => (
+                    <View key={`${k}-item-${item.slice(0, 16)}`} style={styles.listItem}>
+                      <Text style={styles.listBullet}>{'\u2022'}</Text>
+                      <Text style={[baseStyle, styles.listItemText]}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
+              );
+            default:
+              return null;
+          }
+        })}
+      </View>
+    );
+  }
+
+  const children: React.ReactNode[] = [];
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i];
+    const k = segKey(seg, i);
+    switch (seg.kind) {
+      case 'text':
+        children.push(<Text key={k}>{seg.value}</Text>);
+        break;
+      case 'bold':
+        children.push(<Text key={k} style={{ fontWeight: '700' }}>{seg.value}</Text>);
+        break;
+      case 'italic':
+        children.push(<Text key={k} style={{ fontStyle: 'italic' }}>{seg.value}</Text>);
+        break;
+      case 'code':
+        children.push(
+          <Text key={k} style={styles.inlineCode}>{seg.value}</Text>
+        );
+        break;
+    }
+  }
+
+  return <Text style={baseStyle}>{children}</Text>;
+}
 
 interface UserQuestion {
   header: string;
@@ -282,12 +420,11 @@ export function ChatMessage({ message, onSubmitUserAnswer, onSubmitClarification
         styles.bubble,
         isUser ? styles.userBubble : styles.agentBubble
       ]}>
-        <Text style={[
-          styles.text,
-          isUser ? styles.userText : styles.agentText
-        ]}>
-          {message.text}
-        </Text>
+        {isUser ? (
+          <Text style={[styles.text, styles.userText]}>{message.text}</Text>
+        ) : (
+          <FormattedText text={message.text} baseStyle={StyleSheet.flatten([styles.text, styles.agentText])} />
+        )}
       </View>
       <Text style={[
         styles.timestamp,
@@ -531,5 +668,43 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#A1A1AA',
     fontStyle: 'italic',
+  },
+  inlineCode: {
+    fontFamily: 'monospace',
+    fontSize: 14,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 4,
+    borderRadius: 3,
+    color: '#E4E4E7',
+  },
+  codeBlock: {
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 8,
+  },
+  codeBlockText: {
+    fontFamily: 'monospace',
+    fontSize: 13,
+    color: '#A1A1AA',
+    lineHeight: 20,
+  },
+  listContainer: {
+    marginVertical: 6,
+    paddingLeft: 4,
+  },
+  listItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 4,
+  },
+  listBullet: {
+    fontSize: 14,
+    color: '#71717A',
+    marginRight: 8,
+    lineHeight: 22,
+  },
+  listItemText: {
+    flex: 1,
   },
 });
