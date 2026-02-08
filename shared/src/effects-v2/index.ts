@@ -55,3 +55,14 @@ export {
   resolveEffectiveResolution,
   buildResourceGraph,
 } from './resources';
+
+export type { FeedbackBufferState } from './feedback';
+export { FeedbackManager } from './feedback';
+
+export type {
+  OrderingConstraints,
+  CompilerOptions,
+  CompileError,
+  CompileResult,
+} from './compiler';
+export { compileGraph } from './compiler';

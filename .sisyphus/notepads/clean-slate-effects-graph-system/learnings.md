@@ -38,3 +38,28 @@
 - Budget check: uses `BUDGET_TIER_PRESETS` from v1 types; only enforced when `platformTier` option provided
 - Disconnected node check exempts generators (they can be standalone)
 - 20 tests: 3 happy paths, 14 error-specific, 1 multiple-errors, 2 budget edge cases
+
+## T5: Resource Graph + Scope Target Model
+- `buildResourceGraph()` takes `EffectGraphSpec` and produces a `ResourceGraph` with explicit `ResourceNode` entries for every resource (implicit inputs, intermediates, feedback)
+- Resource IDs are deterministic: `{nodeId}:{bufferId}` for intermediates, `__screenColor`/`__entityTexture` for implicit inputs, `__feedback:{from}->{to}` for feedback
+- Format compatibility: same→same OK, rgba16f→rgba8 OK (downcast), rgba8→rgba16f NOT OK (upcast loses precision context)
+- Resolution compatibility: same→same OK, higher→lower OK (downscale), lower→higher NOT OK (implicit upscale forbidden), custom only with custom
+- `ScopeTarget` is a discriminated union `{ type: 'screen' } | { type: 'entity'; entityId: string }` — enriches the raw string `scope` from `EffectGraphSpec`
+- `ResourceBinding` explicitly maps every pass input/output to a resource ID — no implicit texture lookups
+- Error codes: `E_RESOURCE_UNRESOLVED`, `E_FORMAT_MISMATCH`, `E_RESOLUTION_MISMATCH`, `E_DUPLICATE_PROVIDER`
+- 28 tests cover: format compat (4), resolution compat (8), effective resolution (5), graph building (11 including happy paths, error cases, determinism)
+- The `EffectGraphSpec.scope` is `'screen' | 'entity'` (string literal), not the `ScopeTarget` union — `buildResourceGraph` converts
+
+## T6: Feedback/Ping-Pong Policy Manager
+- `FeedbackManager` is a centralized lifecycle manager for all feedback buffers — no per-pass ad-hoc ping-pong
+- `FeedbackBufferState` tracks: `currentReadIndex` (0|1), `currentWriteIndex` (0|1), `initialized`, `frameCount`, `frozen`
+- Initial state is always deterministic: readIndex=0, writeIndex=1, frameCount=0
+- Swap alternates deterministically: prevRead becomes writeIndex, prevWrite becomes readIndex
+- 1000-swap stability verified: even swaps return to initial index positions, frameCount accumulates correctly
+- `seedFromInput` mode: `isReadable()` returns false until first swap completes (no reading uninitialized data)
+- Stop with `freeze`: sets `frozen=true`, preserves all state, `swap()` throws while frozen
+- Stop with `clear`: resets to uninitialized state (readIndex=0, writeIndex=1, frameCount=0)
+- `validate()` checks: read/write index collision, frozen+uninitialized, invalid indices, negative frameCount
+- Godot PipelineExecutor.gd uses `current_read_index` with `1 - read_idx` pattern — TypeScript version uses explicit swap
+- Godot MultiPassExecutor.gd uses `write_to_a` boolean — TypeScript version uses explicit 0/1 indices for clarity
+- 36 tests: registration (3), unregister (2), initialize (3), swap (5), stop-freeze (1), stop-clear (1), resume (3), reset (2), isReadable (6), getAllIds (2), validate (3), getFrameCount (3), determinism (2)
