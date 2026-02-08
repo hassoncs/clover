@@ -121,6 +121,27 @@ export function createMockGodotBridge(): GodotBridge {
 
     getAvailableEffects: vi.fn().mockResolvedValue({ sprite: [], post: [], particles: [] }),
 
+    applyPipeline: vi.fn(),
+    clearPipeline: vi.fn(),
+    updatePipelinePassParam: vi.fn(),
+    startPipeline: vi.fn(),
+    pausePipeline: vi.fn(),
+    resumePipeline: vi.fn(),
+    stopPipeline: vi.fn(),
+    resetPipeline: vi.fn(),
+    capturePipelineSnapshot: vi.fn().mockResolvedValue({}),
+    restorePipelineSnapshot: vi.fn().mockResolvedValue(true),
+
+    createPixelBuffer: vi.fn(),
+    pixelBufferDraw: vi.fn(),
+    pixelBufferClear: vi.fn(),
+
+    applyMultiPassEffect: vi.fn(),
+    startMultiPassEffect: vi.fn(),
+    stopMultiPassEffect: vi.fn(),
+    setMultiPassInput: vi.fn(),
+    clearMultiPassEffect: vi.fn(),
+
     createUIButton: vi.fn(),
     destroyUIButton: vi.fn(),
     onUIButtonEvent: vi.fn().mockReturnValue(() => {}),

@@ -57,7 +57,7 @@ const BRUSH_SIZES = [
   { label: "L", size: 6 },
 ];
 
-const BLUR_SHADER = `
+const RED_SHIFT_SHADER = `
 shader_type canvas_item;
 
 uniform sampler2D current_buffer;
@@ -66,11 +66,7 @@ uniform float dt;
 
 void fragment() {
     vec4 c = texture(current_buffer, UV);
-    vec4 l = texture(current_buffer, UV + vec2(-texel_size.x, 0.0));
-    vec4 r = texture(current_buffer, UV + vec2(texel_size.x, 0.0));
-    vec4 u = texture(current_buffer, UV + vec2(0.0, -texel_size.y));
-    vec4 d = texture(current_buffer, UV + vec2(0.0, texel_size.y));
-    COLOR = (c * 0.5 + l * 0.125 + r * 0.125 + u * 0.125 + d * 0.125);
+    COLOR = vec4(min(c.r + 0.003, 1.0), c.g * 0.997, c.b * 0.997, c.a);
 }
 `.trim();
 
@@ -82,7 +78,7 @@ const SIMPLE_BLUR_SPEC: MultiPassEffectSpec = {
   passes: [
     {
       id: "blur",
-      shader: BLUR_SHADER,
+      shader: RED_SHIFT_SHADER,
       reads: { current_buffer: "canvas" },
       writes: "canvas",
     },
@@ -90,21 +86,6 @@ const SIMPLE_BLUR_SPEC: MultiPassEffectSpec = {
   displayBuffer: "canvas",
   lifecycle: { autoStart: false, stopMode: "freeze" },
 };
-
-function hexToRgb(hex: string): [number, number, number] {
-  const h = hex.replace("#", "");
-  return [
-    parseInt(h.substring(0, 2), 16) / 255,
-    parseInt(h.substring(2, 4), 16) / 255,
-    parseInt(h.substring(4, 6), 16) / 255,
-  ];
-}
-
-function worldToUV(wx: number, wy: number): [number, number] {
-  const u = (wx + 12) / 24;
-  const v = (16 - wy) / 32;
-  return [Math.max(0, Math.min(1, u)), Math.max(0, Math.min(1, v))];
-}
 
 export default function PaintExample() {
   const [bridge, setBridge] = useState<GodotBridge | null>(null);
