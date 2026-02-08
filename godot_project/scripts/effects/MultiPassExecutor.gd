@@ -116,7 +116,6 @@ func apply_effect(entity_id: String, spec_dict: Dictionary) -> void:
 		var rect = ColorRect.new()
 		rect.name = "Rect"
 		rect.set_anchors_preset(Control.PRESET_FULL_RECT)
-		rect.size = Vector2(vp_size)
 		rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 		var shader = Shader.new()
@@ -247,7 +246,6 @@ func _setup_ping_pong() -> void:
 		var rect_b := ColorRect.new()
 		rect_b.name = "Rect"
 		rect_b.set_anchors_preset(Control.PRESET_FULL_RECT)
-		rect_b.size = Vector2(vp_size)
 		rect_b.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 		var material_b: ShaderMaterial = pass_entry["material"].duplicate()
@@ -368,7 +366,6 @@ func _render_texture_into_viewport(vp: SubViewport, tex: ImageTexture) -> void:
 	blit_rect.texture = tex
 	blit_rect.stretch_mode = TextureRect.STRETCH_SCALE
 	blit_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
-	blit_rect.size = Vector2(vp.size)
 	blit_rect.name = "_seed_blit"
 
 	var shader_rect = vp.get_node_or_null("Rect")

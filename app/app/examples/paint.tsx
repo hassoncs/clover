@@ -60,13 +60,13 @@ const BRUSH_SIZES = [
 const RED_SHIFT_SHADER = `
 shader_type canvas_item;
 
-uniform sampler2D current_buffer;
+uniform sampler2D current_buffer : filter_nearest;
 uniform vec2 texel_size;
 uniform float dt;
 
 void fragment() {
     vec4 c = texture(current_buffer, UV);
-    COLOR = vec4(min(c.r + 0.003, 1.0), c.g * 0.997, c.b * 0.997, c.a);
+    COLOR = vec4(min(c.r + 0.005, 1.0), c.g * 0.995, c.b * 0.995, c.a);
 }
 `.trim();
 
