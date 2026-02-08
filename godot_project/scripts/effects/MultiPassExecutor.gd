@@ -292,6 +292,10 @@ func start_effect() -> void:
 					pass_entry["material"].set_shader_parameter(s, entity_tex)
 				pass_entry["_entity_tex_samplers"] = samplers.duplicate()
 
+				# Bind live entity texture so shader can composite new drawings
+				pass_entry["material"].set_shader_parameter("entity_input", entity_tex)
+				pass_entry["material_b"].set_shader_parameter("entity_input", entity_tex)
+
 			vp_a.render_target_clear_mode = SubViewport.CLEAR_MODE_NEVER
 			vp_b.render_target_clear_mode = SubViewport.CLEAR_MODE_NEVER
 			# Start with A rendering
@@ -354,6 +358,15 @@ func set_pass_inputs(pass_id: String, inputs: Dictionary) -> void:
 # ---------------------------------------------------------------------------
 # Entity texture seeding
 # ---------------------------------------------------------------------------
+
+func _rebind_entity_input() -> void:
+	var entity_tex = _get_entity_texture()
+	if entity_tex == null:
+		return
+	for pass_entry in _passes:
+		if pass_entry.has("viewport_b"):
+			pass_entry["material"].set_shader_parameter("entity_input", entity_tex)
+			pass_entry["material_b"].set_shader_parameter("entity_input", entity_tex)
 
 func _get_entity_texture() -> ImageTexture:
 	var pb_buf = _get_pixel_buffer(_entity_id)
@@ -440,6 +453,7 @@ func _process(delta: float) -> void:
 		if pass_entry.has("material_b"):
 			pass_entry["material_b"].set_shader_parameter("dt", delta)
 
+	_rebind_entity_input()
 	_apply_pending_inputs()
 
 	if _warmup_frames >= 0:

@@ -57,28 +57,44 @@ const BRUSH_SIZES = [
   { label: "L", size: 6 },
 ];
 
-const RED_SHIFT_SHADER = `
+const INK_SPREAD_SHADER = `
 shader_type canvas_item;
 
-uniform sampler2D current_buffer : filter_nearest;
+uniform sampler2D current_buffer : filter_linear;
+uniform sampler2D entity_input : filter_nearest;
 uniform vec2 texel_size;
 uniform float dt;
 
 void fragment() {
+    // 9-tap blur of feedback buffer
     vec4 c = texture(current_buffer, UV);
-    COLOR = vec4(min(c.r + 0.005, 1.0), c.g * 0.995, c.b * 0.995, c.a);
+    vec4 l = texture(current_buffer, UV + vec2(-texel_size.x, 0.0));
+    vec4 r = texture(current_buffer, UV + vec2( texel_size.x, 0.0));
+    vec4 u = texture(current_buffer, UV + vec2(0.0, -texel_size.y));
+    vec4 d = texture(current_buffer, UV + vec2(0.0,  texel_size.y));
+    vec4 tl = texture(current_buffer, UV + vec2(-texel_size.x, -texel_size.y));
+    vec4 tr = texture(current_buffer, UV + vec2( texel_size.x, -texel_size.y));
+    vec4 bl = texture(current_buffer, UV + vec2(-texel_size.x,  texel_size.y));
+    vec4 br = texture(current_buffer, UV + vec2( texel_size.x,  texel_size.y));
+    vec4 blurred = c * 0.25 + (l + r + u + d) * 0.125 + (tl + tr + bl + br) * 0.0625;
+
+    // Composite live drawing on top: non-white entity pixels show through
+    vec4 entity = texture(entity_input, UV);
+    float brightness = (entity.r + entity.g + entity.b) / 3.0;
+    float is_drawn = 1.0 - smoothstep(0.9, 1.0, brightness);
+    COLOR = mix(blurred, entity, is_drawn);
 }
 `.trim();
 
-const SIMPLE_BLUR_SPEC: MultiPassEffectSpec = {
-  id: "simple-blur",
+const INK_SPREAD_SPEC: MultiPassEffectSpec = {
+  id: "ink-spread",
   buffers: {
     canvas: { initFrom: "entity" },
   },
   passes: [
     {
-      id: "blur",
-      shader: RED_SHIFT_SHADER,
+      id: "spread",
+      shader: INK_SPREAD_SHADER,
       reads: { current_buffer: "canvas" },
       writes: "canvas",
     },
@@ -134,7 +150,7 @@ export default function PaintExample() {
         setStatus("ready");
 
         bridge.createPixelBuffer("canvas", 512, 512, "#FFFFFF", 24, 32);
-        bridge.applyMultiPassEffect("canvas", SIMPLE_BLUR_SPEC);
+        bridge.applyMultiPassEffect("canvas", INK_SPREAD_SPEC);
       } catch (err) {
         setStatus("error");
         console.error("Failed to init game:", err);
@@ -195,7 +211,7 @@ export default function PaintExample() {
       bridge.stopMultiPassEffect();
       bridge.clearMultiPassEffect();
       bridge.pixelBufferClear("canvas", "#FFFFFF");
-      bridge.applyMultiPassEffect("canvas", SIMPLE_BLUR_SPEC);
+      bridge.applyMultiPassEffect("canvas", INK_SPREAD_SPEC);
       setFluidActive(false);
     }
   }, [bridge, status]);
