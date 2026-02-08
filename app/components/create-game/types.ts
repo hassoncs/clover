@@ -1,11 +1,12 @@
 export type ChatMessageRole = 'user' | 'agent' | 'system';
 export type ChatMessageType = 
   | 'text'           // plain text message
-  | 'user_question'  // structured question batch (will be rendered by Task 6)
-  | 'clarification'  // clarification request (will be rendered by Task 7)
+  | 'user_question'  // structured question batch
+  | 'clarification'  // clarification request
   | 'status'         // system status (step started, completed, etc.)
   | 'error'          // error message
-  | 'completion';    // run completed successfully
+  | 'completion'     // run completed successfully
+  | 'asset_preview'; // generated asset image preview
 
 export interface ChatMessage {
   id: string;

@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useCreateGameChat } from "@/components/create-game/useCreateGameChat";
 import { ChatTimeline } from "@/components/create-game/ChatTimeline";
 import { Composer } from "@/components/create-game/Composer";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 
 export default function CreateGameScreen() {
   const router = useRouter();
@@ -100,14 +101,16 @@ export default function CreateGameScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        <ChatTimeline 
-          messages={messages} 
-          onSubmitUserAnswer={submitUserAnswer}
-          onSubmitClarification={submitAnswer}
-          onRetry={handleRetry}
-          isRunning={isRunning}
-          hasPendingQuestion={hasPendingQuestion}
-        />
+        <ErrorBoundary>
+          <ChatTimeline 
+            messages={messages} 
+            onSubmitUserAnswer={submitUserAnswer}
+            onSubmitClarification={submitAnswer}
+            onRetry={handleRetry}
+            isRunning={isRunning}
+            hasPendingQuestion={hasPendingQuestion}
+          />
+        </ErrorBoundary>
         <View style={{ paddingBottom: insets.bottom }}>
           <Composer onSend={handleSend} isSubmitting={isSubmitting} />
         </View>

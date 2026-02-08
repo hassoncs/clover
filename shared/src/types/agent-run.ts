@@ -44,6 +44,7 @@ export const AgentEventTypeSchema = z.enum([
   'cost_recorded',
   'user_question',
   'user_answer',
+  'asset_preview',
 ]);
 export type AgentEventType = z.infer<typeof AgentEventTypeSchema>;
 
@@ -195,6 +196,13 @@ export const AgentEventPayloadSchema = z.discriminatedUnion('type', [
     type: z.literal('user_answer'),
     batchId: z.string(),
     answers: z.array(z.array(z.string())),
+  }),
+  z.object({
+    type: z.literal('asset_preview'),
+    assetId: z.string(),
+    assetType: z.enum(['entity', 'background', 'title_hero', 'title_hero_no_bg', 'parallax', 'sheet', 'text_grid']),
+    publicUrl: z.string(),
+    thumbnailUrl: z.string().optional(),
   }),
 ]);
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput, type TextStyle } from 'react-native';
+import { View, Text, Image, StyleSheet, Pressable, TextInput, type TextStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ChatMessage as ChatMessageModel } from './types';
 
@@ -367,6 +367,36 @@ function ClarificationCard({ message, onSubmit }: { message: ChatMessageModel, o
   );
 }
 
+function AssetPreviewCard({ message }: { message: ChatMessageModel }) {
+  const payload = message.payload as {
+    assetId: string;
+    assetType: string;
+    publicUrl: string;
+    thumbnailUrl?: string;
+  };
+
+  const displayType = payload.assetType.replace(/_/g, ' ');
+
+  return (
+    <View style={styles.agentContainer}>
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <Ionicons name="image-outline" size={20} color="#A1A1AA" />
+          <Text style={styles.cardTitle}>{displayType}</Text>
+        </View>
+        <Image
+          source={{ uri: payload.thumbnailUrl ?? payload.publicUrl }}
+          style={assetPreviewStyles.image}
+          resizeMode="contain"
+          accessibilityLabel={`Generated ${displayType}: ${payload.assetId}`}
+        />
+        <Text style={assetPreviewStyles.assetId}>{payload.assetId}</Text>
+      </View>
+      <Text style={styles.timestamp}>{formatTimeAgo(message.timestamp)}</Text>
+    </View>
+  );
+}
+
 export function ChatMessage({ message, onSubmitUserAnswer, onSubmitClarification, onRetry }: Props) {
   const isUser = message.role === 'user';
   const isSystem = message.role === 'system';
@@ -409,6 +439,10 @@ export function ChatMessage({ message, onSubmitUserAnswer, onSubmitClarification
 
   if (message.type === 'clarification') {
     return <ClarificationCard message={message} onSubmit={onSubmitClarification} />;
+  }
+
+  if (message.type === 'asset_preview') {
+    return <AssetPreviewCard message={message} />;
   }
 
   return (
@@ -706,5 +740,20 @@ const styles = StyleSheet.create({
   },
   listItemText: {
     flex: 1,
+  },
+});
+
+const assetPreviewStyles = StyleSheet.create({
+  image: {
+    width: '100%',
+    height: 180,
+    borderRadius: 8,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    marginBottom: 8,
+  },
+  assetId: {
+    fontSize: 12,
+    color: '#71717A',
+    fontFamily: 'monospace',
   },
 });

@@ -225,6 +225,18 @@ export function useCreateGameChat() {
             });
             break;
           }
+          case 'asset_preview': {
+            const p = event.payload as PayloadOf<'asset_preview'>;
+            nextMessages.push({
+              id,
+              role: 'agent',
+              type: 'asset_preview',
+              text: p.assetId,
+              timestamp,
+              payload: p,
+            });
+            break;
+          }
         }
       }
       
