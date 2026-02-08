@@ -1,0 +1,14 @@
+=== tsc --noEmit ===
+PASS: zero errors
+
+=== vitest run ===
+
+ RUN  v2.1.9 /Users/hassoncs/Workspaces/Personal/slopcade/shared
+
+ ✓ src/effects-v2/__tests__/validator.test.ts (20 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  20:12:44
+   Duration  223ms (transform 28ms, setup 0ms, collect 28ms, tests 4ms, environment 0ms, prepare 42ms)
+
