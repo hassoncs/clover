@@ -75,3 +75,12 @@
 - Stateful nodes get `persistence: 'pingPong'`; non-stateful get `persistence: 'none'`
 - Resource map built by converting `ResourceNode` → `ResourceRef` (feedback kind → 'buffer' type, all others → 'texture')
 - 22 tests: 3 happy paths, 2 deterministic hash, 2 stable tie-break, 3 feedback edge, 2 ordering constraints, 1 E_ORDER_CONFLICT, 2 validation passthrough, 1 resource passthrough, 2 resource map, 4 metadata
+
+## T7: Godot Effects-V2 Runtime Executor
+- Added new isolated runtime scripts under `godot_project/scripts/effects_v2/` without modifying legacy executors.
+- `EffectsV2GraphExecutor` implements deterministic lifecycle state machine (`IDLE -> READY -> RUNNING -> PAUSED/STOPPED`) with transition logging via `push_warning()`.
+- `apply_plan()` validates `CompiledPlan` shape (`id`, `scope`, `passes[]`, `resourceMap{}`), allocates resources, resolves shaders (`builtin` mapping + `custom` GLSL), and builds per-pass SubViewport + ColorRect + ShaderMaterial.
+- `EffectsV2ResourceGraph` allocates explicit resource nodes from `resourceMap`, binds pass inputs without implicit lookups, supports explicit `params.inputBindings` and fallback binding by resource ID.
+- `EffectsV2PingPongManager` centralizes feedback lifecycle (register/initialize/swap/stop/reset/release) and exposes read texture + current write viewport deterministically.
+- Ping-pong passes in `GraphExecutor` create dual materials/rects (A/B), bind `historyTex` from managed read texture, swap buffers each frame, and rebind downstream inputs after write-target changes.
+- Snapshot API stores/restores pass params with plan-hash compatibility checks (`planHash` must match active plan hash).
