@@ -7,6 +7,10 @@ import { economyRouter } from './routes/economy'
 import { invitesRouter } from './routes/invites'
 import { agentRunsRouter } from './routes/agent-runs'
 import { searchRouter } from './routes/search'
+import { socialRouter } from './routes/social'
+import { socialExtraRouter } from './routes/social-extra'
+import { notificationsRouter } from './routes/notifications'
+import { moderationRouter } from './routes/moderation'
 
 export const appRouter = router({
   games: gamesRouter,
@@ -17,6 +21,10 @@ export const appRouter = router({
   invites: invitesRouter,
   agentRuns: agentRunsRouter,
   search: searchRouter,
+  social: socialRouter,
+  socialExtra: socialExtraRouter,
+  notifications: notificationsRouter,
+  moderation: moderationRouter,
 
   health: publicProcedure.query(() => ({
     status: 'ok',

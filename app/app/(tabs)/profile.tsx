@@ -223,6 +223,11 @@ export default function ProfileScreen() {
   const [isInviting, setIsInviting] = useState(false);
   const createInvite = trpcReact.invites.create.useMutation();
 
+  const { data: profileData } = trpcReact.social.getUserProfile.useQuery(
+    { userId: user?.id ?? "" },
+    { enabled: isAuthenticated && !!user?.id }
+  );
+
   const [myGames, setMyGames] = useState<MyGameItem[]>([]);
   const [isLoadingGames, setIsLoadingGames] = useState(false);
   const [isRefreshingGames, setIsRefreshingGames] = useState(false);
@@ -325,18 +330,41 @@ export default function ProfileScreen() {
           </View>
 
           <View className="flex-row items-center justify-around mt-8">
-            <View className="items-center">
-              <Text className="text-zinc-100 text-4xl font-semibold">0</Text>
+            <Pressable
+              className="items-center"
+              onPress={() =>
+                router.push({
+                  pathname: "/user/followers",
+                  params: { userId: user!.id, tab: "followers" },
+                })
+              }
+            >
+              <Text className="text-zinc-100 text-4xl font-semibold">
+                {profileData?.followerCount ?? 0}
+              </Text>
               <Text className="text-zinc-500 text-2xl mt-1">followers</Text>
-            </View>
-            <View className="items-center">
-              <Text className="text-zinc-100 text-4xl font-semibold">0</Text>
+            </Pressable>
+            <Pressable
+              className="items-center"
+              onPress={() =>
+                router.push({
+                  pathname: "/user/followers",
+                  params: { userId: user!.id, tab: "following" },
+                })
+              }
+            >
+              <Text className="text-zinc-100 text-4xl font-semibold">
+                {profileData?.followingCount ?? 0}
+              </Text>
               <Text className="text-zinc-500 text-2xl mt-1">following</Text>
-            </View>
+            </Pressable>
           </View>
 
           <View className="flex-row mt-8 gap-3">
-            <Pressable className="flex-1 h-14 rounded-full bg-zinc-700 items-center justify-center">
+            <Pressable
+              className="flex-1 h-14 rounded-full bg-zinc-700 items-center justify-center"
+              onPress={() => router.push("/settings/edit-profile")}
+            >
               <Text className="text-zinc-100 text-2xl font-semibold">Edit</Text>
             </Pressable>
             <Pressable className="flex-1 h-14 rounded-full bg-zinc-100 items-center justify-center">

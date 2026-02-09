@@ -12,7 +12,7 @@ const PAGE_SIZE = 20;
 
 export default function BrowseScreen() {
   const router = useRouter();
-  
+
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("popular");
   const [showFilters, setShowFilters] = useState(false);
@@ -96,7 +96,7 @@ export default function BrowseScreen() {
                 </Text>
               )}
             </View>
-            
+
             {isLoadingPublic ? (
               <View className="items-center py-12">
                 <ActivityIndicator size="large" color="#4CAF50" />
@@ -123,13 +123,13 @@ export default function BrowseScreen() {
                     thumbnailUrl={game.thumbnailUrl}
                     thumbnailEmoji={game.source === 'template' ? '🎮' : '🌟'}
                     thumbnailBgClass={game.source === 'template' ? 'bg-indigo-900/30' : 'bg-green-900/30'}
-                    onPress={() => router.push({ 
-                      pathname: "/game-detail/[id]", 
-                      params: { id: game.id, source: game.source } 
+                    onPress={() => router.push({
+                      pathname: "/game-detail/[id]",
+                      params: { id: game.id, source: game.source }
                     })}
                   />
                 ))}
-                
+
                 {hasMorePublicGames && (
                   <Pressable
                     onPress={() => {

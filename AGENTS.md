@@ -1,5 +1,15 @@
 # Project Agents Configuration
 
+## General Principles
+
+- When asked to implement something, start building immediately. Do not over-plan, over-research, or over-analyze before writing code. If clarification is needed, ask — otherwise start coding.
+- When the user describes an architecture or design direction, confirm understanding before implementing. Pay close attention to directionality (e.g., which entity references which, which file is canonical vs symlinked). If unsure, ask rather than guess.
+- When cleaning up or deleting code/UI, be conservative. Only remove what was explicitly requested. Do not opportunistically delete adjacent code, UI sections, or features that weren't mentioned.
+
+## Git & Commits
+
+- When asked to commit, just commit. Do not review, analyze, or summarize changes before committing unless explicitly asked to review first.
+
 ## Terminal Command Execution
 
 **ALWAYS use the `interactive_bash` tool for running terminal commands**, unless:
@@ -20,11 +30,17 @@ The `interactive_bash` tool runs commands in a persistent tmux session, which pr
 - **NEVER** run `pnpm start` or `node server.js` directly for long-running processes.
 - **NEVER** try to construct raw `tmux` commands manually. Use `devmux` abstraction.
 
-## Codebase Context
-- This is a monorepo using `pnpm` workspaces.
+## Project Context
+
+- This is a TypeScript monorepo using `pnpm` workspaces. Primary language is TypeScript. Do not use plain JavaScript unless explicitly asked.
 - `app/` contains the Expo/React Native app.
 - `packages/` contains shared UI, logic, and configuration.
 - `apps/storybook` contains the component library documentation.
+- This project has a dual game system: bundled TypeScript test games and API-served JSON game definitions. Understand which system you're modifying before editing files.
+
+## Infrastructure
+
+- The project uses Cloudflare Workers with R2 and D1. Local development uses Wrangler/miniflare. Asset URLs must use the correct bucket name (check for -dev suffix). Do not assume Node.js filesystem APIs work in the Workers runtime.
 
 ## Roadmap System
 

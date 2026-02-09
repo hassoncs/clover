@@ -5,6 +5,10 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc/client";
 import type { GameDefinition } from "@slopcade/shared";
 import { EMBEDDED_DEFINITIONS, EMBEDDED_METADATA } from "@/lib/offline/embedded-games-registry";
+import { GameComments } from "@/components/social/GameComments";
+import { LikeButton } from "@/components/social/LikeButton";
+import { StarRating } from "@/components/social/StarRating";
+import { useAuth } from "@/hooks/useAuth";
 
 type GameSource = "template" | "database";
 
@@ -21,6 +25,7 @@ interface GameInfo {
 export default function GameDetailScreen() {
   const router = useRouter();
   const { id, source } = useLocalSearchParams<{ id: string; source?: string }>();
+  const { user } = useAuth();
 
   const [gameInfo, setGameInfo] = useState<GameInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -344,98 +349,23 @@ export default function GameDetailScreen() {
             </View>
           )}
 
-          <View className="mb-8">
-            <View className="flex-row flex-wrap gap-2 mb-6">
-              {["Arcade", "Casual", "Physics"].map((tag) => (
-                <View key={tag} className="bg-gray-800 px-3 py-1 rounded-full">
-                  <Text className="text-gray-300 text-sm">{tag}</Text>
-                </View>
-              ))}
-            </View>
+          <View className="flex-row items-center gap-6 mb-6">
+            <LikeButton
+              gameId={gameInfo.id}
+              likeCount={0}
+              currentUserId={user?.id ?? null}
+            />
+            <StarRating
+              gameId={gameInfo.id}
+              currentUserId={user?.id ?? null}
+            />
+          </View>
 
-            <View className="flex-row justify-between mb-6 p-4 bg-gray-800/50 rounded-xl">
-              <View className="items-center">
-                <Text className="text-white font-bold text-lg">#12</Text>
-                <Text className="text-gray-400 text-xs">Arcade</Text>
-              </View>
-              <View className="items-center">
-                <Text className="text-white font-bold text-lg">4+</Text>
-                <Text className="text-gray-400 text-xs">Age Rating</Text>
-              </View>
-              <View className="items-center">
-                <Text className="text-white font-bold text-lg">1.2.0</Text>
-                <Text className="text-gray-400 text-xs">Version</Text>
-              </View>
-              <View className="items-center">
-                <Text className="text-white font-bold text-lg">45MB</Text>
-                <Text className="text-gray-400 text-xs">Size</Text>
-              </View>
-            </View>
-
-            <View>
-              <Text className="text-white text-xl font-bold mb-4">Reviews</Text>
-
-              <View className="bg-gray-800/50 p-4 rounded-xl mb-3">
-                <View className="flex-row items-center mb-2">
-                  <View className="w-8 h-8 bg-indigo-600 rounded-full items-center justify-center mr-3">
-                    <Text className="text-white font-bold text-sm">JD</Text>
-                  </View>
-                  <View>
-                    <Text className="text-white font-semibold">JohnDoe42</Text>
-                    <View className="flex-row">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Text key={star} className="text-yellow-400 text-xs">★</Text>
-                      ))}
-                    </View>
-                  </View>
-                  <Text className="text-gray-500 text-xs ml-auto">2 days ago</Text>
-                </View>
-                <Text className="text-gray-300 text-sm">
-                  Absolutely love this game! The physics are so satisfying and the art style is beautiful. Can not stop playing!
-                </Text>
-              </View>
-
-              <View className="bg-gray-800/50 p-4 rounded-xl mb-3">
-                <View className="flex-row items-center mb-2">
-                  <View className="w-8 h-8 bg-pink-600 rounded-full items-center justify-center mr-3">
-                    <Text className="text-white font-bold text-sm">SG</Text>
-                  </View>
-                  <View>
-                    <Text className="text-white font-semibold">SarahGamer</Text>
-                    <View className="flex-row">
-                      {[1, 2, 3, 4].map((star) => (
-                        <Text key={star} className="text-yellow-400 text-xs">★</Text>
-                      ))}
-                      <Text className="text-gray-600 text-xs">★</Text>
-                    </View>
-                  </View>
-                  <Text className="text-gray-500 text-xs ml-auto">1 week ago</Text>
-                </View>
-                <Text className="text-gray-300 text-sm">
-                  Great concept and fun gameplay. Would love to see more levels added in future updates!
-                </Text>
-              </View>
-
-              <View className="bg-gray-800/50 p-4 rounded-xl">
-                <View className="flex-row items-center mb-2">
-                  <View className="w-8 h-8 bg-green-600 rounded-full items-center justify-center mr-3">
-                    <Text className="text-white font-bold text-sm">MX</Text>
-                  </View>
-                  <View>
-                    <Text className="text-white font-semibold">MikeXplorer</Text>
-                    <View className="flex-row">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Text key={star} className="text-yellow-400 text-xs">★</Text>
-                      ))}
-                    </View>
-                  </View>
-                  <Text className="text-gray-500 text-xs ml-auto">2 weeks ago</Text>
-                </View>
-                <Text className="text-gray-300 text-sm">
-                  Perfect game for short breaks. Smooth controls and no bugs. Highly recommend!
-                </Text>
-              </View>
-            </View>
+          <View className="mb-8 bg-gray-800/50 rounded-xl overflow-hidden">
+            <GameComments
+              gameId={gameInfo.id}
+              currentUserId={user?.id ?? null}
+            />
           </View>
 
           {gameInfo.source === "database" && (
