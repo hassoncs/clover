@@ -7,9 +7,9 @@ const ROUTE_ICON_MAP: Record<
   string,
   { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }
 > = {
-  browse: { active: "home", inactive: "home-outline" },
+  feed: { active: "flame", inactive: "flame-outline" },
+  browse: { active: "compass", inactive: "compass-outline" },
   lab: { active: "flask", inactive: "flask-outline" },
-  maker: { active: "color-palette", inactive: "color-palette-outline" },
   profile: { active: "person", inactive: "person-outline" },
 };
 

@@ -15,28 +15,22 @@ const TAB_HEADER_CONFIG: Record<
     rightIcons: ("notifications-outline" | "person-add-outline")[];
   }
 > = {
+  feed: {
+    showHeader: false,
+    leftIcons: [],
+    rightIcons: [],
+  },
   browse: {
     title: "Slopcade",
     showHeader: true,
     leftIcons: ["menu", "search"],
     rightIcons: ["notifications-outline", "person-add-outline"],
   },
-  // chat: {
-  //   title: "Chat",
-  //   showHeader: true,
-  //   leftIcons: [],
-  //   rightIcons: [],
-  // },
   lab: {
     title: "Lab",
     showHeader: true,
     leftIcons: [],
     rightIcons: [],
-  },
-  maker: {
-    showHeader: true,
-    leftIcons: ["swap-vertical-outline"],
-    rightIcons: ["person-add-outline"],
   },
   profile: {
     showHeader: false,
@@ -111,13 +105,11 @@ export default function TabLayout() {
           tabBarShowLabel: false,
         })}
       >
+        <Tabs.Screen name="feed" options={{ title: "Feed" }} />
         <Tabs.Screen name="browse" options={{ title: "Browse" }} />
         <Tabs.Screen name="chat" options={{ title: "Chat", href: null }} />
         <Tabs.Screen name="lab" options={{ title: "Lab" }} />
-        <Tabs.Screen
-          name="maker"
-          options={{ title: "Maker", href: isAuthenticated ? "/maker" : null }}
-        />
+        <Tabs.Screen name="maker" options={{ title: "Maker", href: null }} />
         <Tabs.Screen name="profile" options={{ title: "Profile" }} />
       </Tabs>
 

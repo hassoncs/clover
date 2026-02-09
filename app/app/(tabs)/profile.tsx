@@ -1,10 +1,11 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Image,
   Modal,
   Pressable,
+  RefreshControl,
   ScrollView,
   Text,
   TextInput,
@@ -17,6 +18,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { CreditBalance } from "@/components/economy/CreditBalance";
 import { CurrencySheet } from "@/components/economy/CurrencySheet";
 import { trpcReact } from "@/lib/trpc/react";
+import { trpc } from "@/lib/trpc/client";
 
 const heroImage = require("@/assets/slopcade-title-hero.jpg");
 
@@ -202,6 +204,15 @@ function LoginScreen() {
   );
 }
 
+interface MyGameItem {
+  id: string;
+  title: string;
+  description: string | null;
+  playCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: isAuthLoading, signOut } = useAuth();
@@ -211,6 +222,49 @@ export default function ProfileScreen() {
   const [inviteSuccess, setInviteSuccess] = useState<string | null>(null);
   const [isInviting, setIsInviting] = useState(false);
   const createInvite = trpcReact.invites.create.useMutation();
+
+  const [myGames, setMyGames] = useState<MyGameItem[]>([]);
+  const [isLoadingGames, setIsLoadingGames] = useState(false);
+  const [isRefreshingGames, setIsRefreshingGames] = useState(false);
+
+  const fetchMyGames = useCallback(async (showRefresh = false) => {
+    if (showRefresh) setIsRefreshingGames(true);
+    else setIsLoadingGames(true);
+    try {
+      const result = await trpc.games.list.query();
+      setMyGames(result);
+    } catch {
+      setMyGames([]);
+    } finally {
+      setIsLoadingGames(false);
+      setIsRefreshingGames(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchMyGames();
+    }
+  }, [isAuthenticated, fetchMyGames]);
+
+  const handleDeleteGame = useCallback((game: MyGameItem) => {
+    Alert.alert("Delete Game", `Are you sure you want to delete "${game.title}"?`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await trpc.games.delete.mutate({ id: game.id });
+            setMyGames((prev) => prev.filter((g) => g.id !== game.id));
+          } catch (err) {
+            const message = err instanceof Error ? err.message : "Failed to delete";
+            Alert.alert("Error", message);
+          }
+        },
+      },
+    ]);
+  }, []);
 
   const displayName = useMemo(() => {
     const emailName = user?.email?.split("@")[0] ?? "Slopcade Creator";
@@ -241,7 +295,17 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-black" edges={["bottom"]}>
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 130 }}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 130 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshingGames}
+            onRefresh={() => fetchMyGames(true)}
+            tintColor="#4CAF50"
+          />
+        }
+      >
         <View className="px-5 pt-5">
           <View className="flex-row items-center justify-between">
             <Pressable className="h-10 w-10 items-center justify-center rounded-full bg-zinc-900/70">
@@ -320,9 +384,51 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          <View className="mt-6 rounded-3xl bg-zinc-950 border border-zinc-900 p-4 min-h-[260px] items-center justify-center">
-            <Text className="text-zinc-100 text-4xl font-semibold">Your Posts</Text>
-            <Text className="text-zinc-500 text-2xl mt-2">Nothing to see here, yet!</Text>
+          <View className="mt-6">
+            <Text className="text-zinc-100 text-2xl font-semibold mb-4">My Games</Text>
+            {isLoadingGames ? (
+              <View className="items-center py-12">
+                <ActivityIndicator size="large" color="#4CAF50" />
+                <Text className="text-zinc-500 mt-4">Loading games...</Text>
+              </View>
+            ) : myGames.length === 0 ? (
+              <View className="rounded-3xl bg-zinc-950 border border-zinc-900 p-6 min-h-[200px] items-center justify-center">
+                <Text className="text-5xl mb-4">🎮</Text>
+                <Text className="text-zinc-100 text-xl font-semibold">No games yet</Text>
+                <Text className="text-zinc-500 text-base mt-2 text-center">
+                  Tap the + button to create your first game!
+                </Text>
+              </View>
+            ) : (
+              <View>
+                <Text className="text-zinc-500 text-sm mb-3">
+                  {myGames.length} game{myGames.length !== 1 ? "s" : ""} · Long press to delete
+                </Text>
+                {myGames.map((game) => (
+                  <Pressable
+                    key={game.id}
+                    className="bg-zinc-900 p-4 rounded-2xl border border-zinc-800 mb-3 active:bg-zinc-800"
+                    onPress={() => router.push({ pathname: "/editor/[id]", params: { id: game.id } })}
+                    onLongPress={() => handleDeleteGame(game)}
+                  >
+                    <View className="flex-row items-center justify-between">
+                      <View className="flex-1">
+                        <Text className="text-lg font-semibold text-zinc-100">{game.title}</Text>
+                        {game.description && (
+                          <Text className="text-zinc-400 mt-1" numberOfLines={2}>
+                            {game.description}
+                          </Text>
+                        )}
+                        <Text className="text-xs text-zinc-600 mt-2">
+                          {game.playCount} plays · {new Date(game.createdAt).toLocaleDateString()}
+                        </Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={18} color="#52525B" />
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+            )}
           </View>
         </View>
       </ScrollView>

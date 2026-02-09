@@ -65,7 +65,7 @@ function useDeepLinkHandler() {
       try {
         const handled = await handleNativeAuthCallback(url);
         if (handled) {
-          router.replace("/maker");
+          router.replace("/profile");
         }
       } catch (error) {
         console.error("Deep link auth error:", error);
