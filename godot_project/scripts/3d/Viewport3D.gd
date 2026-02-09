@@ -103,3 +103,36 @@ func set_camera_size(size: float) -> void:
 
 func get_model_container() -> Node3D:
 	return model_container
+
+# Bridge methods - auto-registered by GameBridge
+func _js_show_3d_model(args: Array) -> Variant:
+	if args.size() > 0:
+		return load_glb(str(args[0])) != null
+	return false
+
+func _js_show_3d_model_from_url(args: Array) -> void:
+	if args.size() > 0:
+		load_glb_async(str(args[0]))
+
+func _js_set_3d_viewport_position(args: Array) -> void:
+	if args.size() >= 2:
+		position = Vector2(float(args[0]), float(args[1]))
+
+func _js_set_3d_viewport_size(args: Array) -> void:
+	if args.size() >= 2:
+		set_viewport_size(int(args[0]), int(args[1]))
+
+func _js_rotate_3d_model(args: Array) -> void:
+	if args.size() >= 3:
+		set_model_rotation(Vector3(float(args[0]), float(args[1]), float(args[2])))
+
+func _js_set_3d_camera_distance(args: Array) -> void:
+	if args.size() > 0:
+		set_camera_distance(float(args[0]))
+
+func _js_set_3d_camera_size(args: Array) -> void:
+	if args.size() > 0:
+		set_camera_size(float(args[0]))
+
+func _js_clear_3d_models(args: Array) -> void:
+	clear_models()
