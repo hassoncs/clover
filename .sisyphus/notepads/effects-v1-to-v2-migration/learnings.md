@@ -120,3 +120,19 @@
 **Notes**:
 - RPC method names like `"effectsV2.applyGraph"` remain unchanged (protocol strings)
 - Pre-existing TypeScript errors in GodotBridge.{native,web}.ts are unrelated to this task
+
+## Paint Example Graph Wiring Fix (2026-02-08)
+
+- `app/app/examples/paint.tsx` needed explicit graph compilation + bridge application in three places: init, shader switch, and clear.
+- `compileGraph()` currently compiles custom passes with empty `shaderSource.glsl`, so custom shader text must be patched into compiled pass payloads before `bridge.applyGraph(plan)`.
+- For custom graph nodes, carrying `shader` on the node object (local extension type) provides a reliable source of GLSL for plan patching.
+- Start/stop behavior remains controlled by `lifecycle.autoStart: false`; graph should be applied first, then `bridge.start()`/`bridge.stop()` only toggles execution.
+- Ping-pong feedback is preserved by the existing feedback edge policy (`swapPolicy: pingPong`) when the compiled plan is re-applied after clear/shader change.
+
+## Effects v1->v2 Cleanup Completion (2026-02-08)
+
+- Final migration cleanup required coordinated renames across bridge types, bridge helpers, bridge protocol strings, behavior context APIs, and tests; partial rename passes leave compile-safe but runtime-broken call paths.
+- Godot bridge has two valid effects paths that must coexist: query/RPC (`effects.*`) for graph operations and direct callbacks/native dispatch for convenience methods (`applySpriteEffect`, `setPostEffect`, etc.).
+- `GodotBridge.web.ts` must include convenience methods in both the runtime bridge object and the `Window.GodotBridge` interface declaration, otherwise examples compile but fail at runtime due to missing callback typings.
+- `BehaviorContext` is now graph-first for sprite effects (`applySpriteEffect(entityId, plan)` + async clear/update methods), with old v1-style sprite effect signatures removed to prevent accidental fallback usage.
+- Verification that mattered for this migration: `pnpm tsc --noEmit` clean, grep zero `EffectsV2` in `.ts`, grep zero `effectsV2` in `.ts`/`.gd`, and updated budget test imports to `../budget` + `../types` after v1 type-file deletion.
