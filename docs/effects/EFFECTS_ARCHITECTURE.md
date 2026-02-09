@@ -344,6 +344,95 @@ EffectTuningPanel
        → Uniform hot-path (no graph rebuild)
 ```
 
+## Capabilities & Limitations
+
+### What's Possible
+
+After Phase 4 (multi-pass chains with multiple named buffers and feedback edges), the architecture is structurally equivalent to ShaderToy's multi-buffer system — actually more flexible, since ShaderToy caps at 4 buffers and we have no hard cap. Everything expressible as "for each pixel, compute a color from input textures" is supported.
+
+| Effect Type | Complexity | How It Maps |
+|-------------|-----------|-------------|
+| Mandelbrot / Julia sets | Single node | Pure math on UV coords. Animate zoom/palette via uniforms. Trivial. |
+| Animated fractal zoom | Single node | Same shader, `time` + `zoom_center` + `scale` uniforms driven by hot-path |
+| Ray marching (SDF scenes) | Single node | Per-pixel ray march in fragment shader. Spheres, Menger sponges, fractal landscapes, soft shadows — all single-pass. This is exactly what ShaderToy excels at. |
+| Reaction-diffusion | Single feedback node | Two-chemical system (Gray-Scott, Turing patterns). Reads previous frame, computes diffusion + reaction, writes new frame. Like our paint example but with reaction terms. |
+| Game of Life / cellular automata | Single feedback node | Read neighbor pixels from previous frame, apply rules, write new state. |
+| GPU particle systems | Single feedback node | Encode particle positions/velocities in texture pixels. Each frame: read position, integrate velocity, write new position. Separate pass renders particles as sprites from the position texture. |
+| Kaleidoscope / mirror effects | Single node | UV remapping math. No buffers needed. |
+| Bloom | 3-node chain | Threshold → blur → composite. Standard multi-pass, Phase 4. |
+| Fluid simulation (Navier-Stokes) | Multi-buffer graph | See detailed breakdown below. |
+| Audio-reactive visuals | Single node + external input | Need audio FFT data as a uniform or 1D texture. Requires a bridge method to pipe audio data — not in the current plan but straightforward to add. |
+
+### Fluid Simulation: Detailed Breakdown
+
+A 2D Navier-Stokes fluid sim is the most architecturally demanding use case. It requires multiple named buffers with cross-references and feedback:
+
+**Buffers needed:**
+```
+velocity   (rg = vx, vy)        ── ping-pong feedback
+pressure   (r = pressure)       ── ping-pong feedback
+divergence (r = div)            ── intermediate (no feedback)
+dye        (rgb = visible color) ── ping-pong feedback
+```
+
+**Per-frame pass order:**
+```
+1. Advect velocity    reads: velocity(prev)              writes: velocity(next)
+2. Compute divergence reads: velocity                    writes: divergence
+3. Jacobi solve (x2-4) reads: divergence + pressure(prev) writes: pressure(next)
+4. Pressure projection reads: pressure + velocity         writes: velocity(corrected)
+5. Advect dye         reads: velocity + dye(prev)        writes: dye(next)
+6. Inject forces      reads: mouse input                 writes: velocity + dye
+```
+
+**Graph spec sketch:**
+```
+velocity ──feedback──> advect_velocity ──> divergence_pass ──> jacobi_1 ──> jacobi_2 ──> projection
+pressure ──feedback──> jacobi_1 ──> jacobi_2 ──> (consumed by projection)
+dye ──feedback──> advect_dye ──> screen
+mouse_input ──> force_injection ──> velocity + dye
+```
+
+This maps directly to `EffectGraphSpec` — nodes, connections, feedbackEdges. The compiler topologically sorts it, allocates viewports from the pool, and the executor runs each pass in order.
+
+**Jacobi iteration count:** A textbook solver wants 20-50 iterations per frame. Our graph runs each node once per frame. The standard real-time solution is **temporal convergence** — do only 2-4 Jacobi iterations per frame. At 60fps, the pressure field converges over multiple frames. This is the approach used by Jos Stam's "Stable Fluids" paper, GPU Gems, and virtually every WebGL/ShaderToy fluid demo. 2-4 nodes in the graph is trivial. Visually indistinguishable from 50 iterations for interactive use.
+
+**Precision:** SubViewport defaults to 8-bit RGBA. Pressure and velocity values near zero get quantized. Two mitigations:
+- Enable `use_hdr_2d = true` on the SubViewport for higher precision (configurable per viewport in the pool)
+- Encode values with bias and scale (map [-1, 1] to [0, 1] in the texture) — standard technique used by every WebGL fluid demo
+
+Neither requires architecture changes.
+
+### Hard Limitations
+
+These are things the system **cannot** do, due to Godot's `canvas_item` shader model (fragment-only):
+
+| Limitation | Why | Workaround |
+|-----------|-----|-----------|
+| Compute shaders | `canvas_item` shaders are fragment-only. No shared memory, work groups, or atomic ops. | Encode compute-like operations as texture read/write passes (which is what we do for fluid sim). Slower than true compute but sufficient for 2D effects. |
+| 3D volume textures | SubViewport produces 2D textures. No 3D texture render targets. | Slice-based volume rendering is possible (render 2D slices and composite), but true volumetric effects are out of scope. |
+| Multi-bounce ray tracing | No access to scene geometry BVH from fragment shader. | Single-bounce reflections via ray marching against SDFs work fine. Multi-bounce with scene geometry does not. |
+| Geometry / tessellation shaders | Godot canvas_item pipeline is rasterize-quad → fragment only. | Not applicable — our system is pixel-processing, not geometry-generation. |
+| Transform feedback | No way to write vertex data from a shader pass. | Particle positions are encoded in textures instead (GPU particle approach). |
+| Multi-resolution passes | Nodes currently inherit their viewport's resolution. No per-node resolution override. | Could be added (per-node resolution config in EffectGraphSpec) if downsampled blur or LOD effects are needed. Not architecturally hard, just not planned yet. |
+
+### Comparison to ShaderToy
+
+| Feature | ShaderToy | Our System (Phase 4+) |
+|---------|-----------|----------------------|
+| Fragment shader per pixel | Yes | Yes |
+| Named persistent buffers | 4 (Buffer A-D) | Unlimited (named in graph spec) |
+| Buffer feedback (read previous frame) | Yes (implicit) | Yes (explicit feedbackEdges) |
+| Multi-pass chains | Yes (buffer ordering) | Yes (topological sort) |
+| Cross-buffer reads | Yes (any buffer reads any other) | Yes (connections in graph spec) |
+| External inputs | iChannel (textures, audio, video) | External inputs (Phase 3), extensible via bridge |
+| Time/mouse uniforms | Built-in (iTime, iMouse) | Built-in (time, dt) + custom params via hot-path |
+| Resolution per buffer | Fixed (match screen) | Configurable per node (future) |
+| Live editing | Yes (edit + recompile) | Yes (Phase 7 shader hot-swap) |
+| Parameter sliders | No (hardcoded in shader) | Yes (EffectParamSchema → auto-generated UI) |
+
+The main advantage over ShaderToy: our system has structured parameter metadata with auto-generated UI controls, AI-assisted authoring, and no 4-buffer limit.
+
 ## File Map
 
 ### TypeScript (authoring + compilation)
