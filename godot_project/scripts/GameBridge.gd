@@ -83,6 +83,7 @@ var _js_callbacks: Array = []
 var _js_bridge_obj: JavaScriptObject = null
 var _debug_show_shapes: bool = false
 var _method_map: Dictionary = {}
+var _debug_enabled: bool = false
 
 var _diag_process_frames: int = 0
 var _diag_physics_frames: int = 0
@@ -101,12 +102,53 @@ func _ready() -> void:
 	_setup_js_bridge()
 	print("[GameBridge] JS Bridge setup complete")
 	_log_physics_diagnostics()
+	_log_bridge_registry()
 
 func set_inspect_mode(enabled: bool) -> void:
 	if _debug_bridge: _debug_bridge.get_time_module().set_inspect_mode(enabled)
 
 func pause_physics() -> void: Engine.time_scale = 0.0
 func resume_physics() -> void: Engine.time_scale = 1.0
+
+func enable_debug() -> Dictionary:
+	if _debug_enabled:
+		return {"ok": true, "wasAlreadyEnabled": true, "methodsRegistered": 0}
+	
+	_debug_bridge = DebugBridge.new(self, _query_system)
+	_debug_enabled = true
+	
+	print("[GameBridge] Debug mode enabled")
+	return {"ok": true, "wasAlreadyEnabled": false, "methodsRegistered": 33}
+
+func disable_debug() -> Dictionary:
+	if not _debug_enabled:
+		return {"ok": true, "wasAlreadyEnabled": false, "methodsUnregistered": 0}
+	
+	if _debug_bridge:
+		_debug_bridge.unregister_handlers()
+		_debug_bridge = null
+	
+	_debug_enabled = false
+	
+	print("[GameBridge] Debug mode disabled")
+	return {"ok": true, "wasAlreadyEnabled": true, "methodsUnregistered": 33}
+
+func is_debug_enabled() -> bool:
+	return _debug_enabled
+
+func _get_world_info_impl() -> Dictionary:
+	return {
+		"pixelsPerMeter": pixels_per_meter,
+		"gravity": {"x": 0, "y": -9.8},
+		"bounds": game_data.get("world", {}),
+		"entityCount": entity_registry.size()
+	}
+
+func _get_viewport_info_impl() -> Dictionary:
+	var viewport = get_viewport()
+	if viewport:
+		return {"width": viewport.size.x, "height": viewport.size.y}
+	return {"width": 0, "height": 0}
 
 func _init_modules() -> void:
 	_event_queue_module = EventQueue.new()
@@ -120,7 +162,7 @@ func _init_modules() -> void:
 	_physics_queries = PhysicsQueries.new(self)
 	_query_system = QuerySystem.new()
 	_register_core_query_handlers()
-	_debug_bridge = DebugBridge.new(self, _query_system)
+	# DebugBridge is created on-demand via enable_debug()
 	_devtools_overlay = DebugOverlay.new()
 	_devtools_overlay.setup(self)
 
@@ -153,16 +195,45 @@ func _init_modules() -> void:
 func _register_core_query_handlers() -> void:
 	_query_system.register_handler("getAllTransforms", func(_args): return _transform_system.get_all_transforms())
 	_query_system.register_handler("getAllProperties", func(_args): return _property_collector.collect_properties(0))
-	_query_system.register_handler("getWorldInfo", func(_args): return _debug_bridge.get_world_info())
+	_query_system.register_handler("getWorldInfo", func(_args): return _get_world_info_impl())
 	_query_system.register_handler("getCameraInfo", func(_args): return _camera_controller.get_info())
-	_query_system.register_handler("getViewportInfo", func(_args): return _debug_bridge.get_viewport_info())
+	_query_system.register_handler("getViewportInfo", func(_args): return _get_viewport_info_impl())
 	_query_system.register_handler("getEntityTransform", func(args): return _get_entity_transform_impl(str(args[0])) if args.size() > 0 else null)
 	_query_system.register_handler("queryPointEntity", func(args): return _physics_queries.query_point_entity(float(args[0]), float(args[1])) if args.size() >= 2 else null)
 	_query_system.register_handler("screenToWorld", func(args): return _screen_to_world_impl(float(args[0]), float(args[1])) if args.size() >= 2 else null)
 	_query_system.register_handler("getSplatTexture", func(_args): return get_splat_texture())
 
+func _auto_register_bridge_methods(modules: Array) -> Dictionary:
+	var registry = {}
+	for module in modules:
+		if module == null:
+			continue
+		var method_list = module.get_method_list()
+		for method_info in method_list:
+			var method_name = method_info.name
+			if method_name.begins_with("_js_"):
+				var bridge_name = method_name.substr(4)
+				if registry.has(bridge_name):
+					push_warning("[GameBridge][AUTO-REG] COLLISION: Method '%s' found in multiple modules" % bridge_name)
+				else:
+					registry[bridge_name] = Callable(module, method_name)
+					print("[GameBridge][AUTO-REG] Registered: %s -> %s.%s" % [bridge_name, module.get_class(), method_name])
+	return registry
+
 func _build_method_map() -> void:
-	_method_map = {
+	var is_dev = OS.is_debug_build()
+	
+	# Step 1: Auto-register bridge methods from modules with _js_ prefix
+	var modules = [
+		_entity_manager, _transform_system, _physics_controller, _joint_manager,
+		_visual_renderer, _ui_manager, _camera_controller, _input_router,
+		_sync_system, _property_collector, _event_emitter, _physics_queries,
+		_pixel_buffer_manager, _debug_bridge
+	]
+	_method_map = _auto_register_bridge_methods(modules)
+	
+	# Step 2: Apply manual overrides for methods needing custom handling
+	var overrides = {
 		# Core lifecycle
 		"load_game_json": func(args): return load_game_json(str(args[0])) if args.size() > 0 else false,
 		"clear_game": func(_args): clear_game(),
@@ -269,18 +340,41 @@ func _build_method_map() -> void:
 		"create_3d_floor": func(args): if _viewport_3d: _viewport_3d.create_floor(float(args[0]) if args.size() > 0 else 10.0, str(args[1]) if args.size() > 1 else "555555", str(args[2]) if args.size() > 2 else "plain"),
 		"create_3d_cube": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.create_cube(float(args[0]), float(args[1]), float(args[2]), float(args[3]) if args.size() > 3 else 0.5, str(args[4]) if args.size() > 4 else "ff0000"),
 		"clear_3d_cubes": func(_args): if _viewport_3d: _viewport_3d.clear_cubes(),
+		# Debug control
+		"enable_debug": func(_args): return enable_debug(),
+		"disable_debug": func(_args): return disable_debug(),
+		"is_debug_enabled": func(_args): return is_debug_enabled(),
+		# Runtime diagnostics
+		"get_bridge_methods": func(_args): return get_bridge_methods(),
 	}
+	
+	# Step 3: Apply overrides to method map (manual entries take precedence)
+	for method_name in overrides:
+		_method_map[method_name] = overrides[method_name]
+	
+	# Log registration summary
+	if is_dev:
+		print("[GameBridge][REGISTRY] Built method map with ", _method_map.size(), " methods")
+		print("[GameBridge][REGISTRY] Auto-registered from modules, manual overrides applied")
 
 func native_dispatch(method_name: String, args_json: String) -> Variant:
 	print("[GameBridge][DISPATCH] ", method_name, " args=", args_json.substr(0, 200))
+	
+	# Error: Unknown method
 	if not _method_map.has(method_name):
 		push_warning("[GameBridge] Unknown native method: " + method_name)
-		return null
+		return {"error": "unknown_method", "method": method_name}
+	
+	# Parse args with error handling
 	var args: Array = []
 	if args_json != "[]" and args_json != "":
 		var json = JSON.new()
-		if json.parse(args_json) == OK:
-			args = json.data if json.data is Array else [json.data]
+		if json.parse(args_json) != OK:
+			push_warning("[GameBridge] Invalid JSON in args: " + args_json.substr(0, 100))
+			return {"error": "invalid_json", "message": json.get_error_message()}
+		args = json.data if json.data is Array else [json.data]
+	
+	# Call method with error handling
 	var result = _method_map[method_name].call(args)
 	if method_name == "load_game_json":
 		print("[GameBridge][DISPATCH] load_game_json returned: ", result)
@@ -311,76 +405,35 @@ func _setup_js_bridge() -> void:
 	if window == null: return
 	_js_bridge_obj = JavaScriptBridge.create_object("Object")
 	_query_system.setup_js_bridge(_js_bridge_obj)
-	var callbacks = {
-		"loadGameJson": _js_load_game, "clearGame": _js_clear_game, "setInspectMode": _js_set_inspect_mode,
-		"pausePhysics": _js_pause_physics, "resumePhysics": _js_resume_physics, "loadCustomScene": _js_load_custom_scene,
-		"spawnEntity": _entity_manager._js_spawn_entity, "destroyEntity": _entity_manager._js_destroy_entity,
-		"getEntityTransform": _entity_manager._js_get_entity_transform, "getAllTransforms": _transform_system._js_get_all_transforms,
-		"getAllProperties": _property_collector._js_get_all_properties, "onTransformSync": _sync_system._js_on_transform_sync,
-		"onPropertySync": _sync_system._js_on_property_sync, "setWatchConfig": _property_collector._js_set_watch_config,
-		"getTransform": _sync_system._js_get_transform, "getTransforms": _sync_system._js_get_transforms,
-		"setTrackedEntities": _sync_system._js_set_tracked_entities, "setLinearVelocity": _physics_controller._js_set_linear_velocity,
-		"setAngularVelocity": _physics_controller._js_set_angular_velocity, "applyImpulse": _physics_controller._js_apply_impulse,
-		"applyForce": _physics_controller._js_apply_force, "sendInput": _input_router._js_send_input,
-		"onInputEvent": _event_emitter._js_on_input_event, "onCollision": _event_emitter._js_on_collision,
-		"onEntityDestroyed": _event_emitter._js_on_entity_destroyed, "setTransform": _transform_system._js_set_transform,
-		"setPosition": _transform_system._js_set_position, "setRotation": _transform_system._js_set_rotation,
-		"setScale": _transform_system._js_set_scale, "setOpacity": _visual_renderer._js_set_opacity, "setVisible": _visual_renderer._js_set_visible,
-		"getLinearVelocity": _physics_controller._js_get_linear_velocity, "getAngularVelocity": _physics_controller._js_get_angular_velocity,
-		"applyTorque": _physics_controller._js_apply_torque, "createRevoluteJoint": _joint_manager._js_create_revolute_joint,
-		"createDistanceJoint": _joint_manager._js_create_distance_joint, "createPrismaticJoint": _joint_manager._js_create_prismatic_joint,
-		"createWeldJoint": _joint_manager._js_create_weld_joint, "createMouseJoint": _joint_manager._js_create_mouse_joint,
-		"destroyJoint": _joint_manager._js_destroy_joint, "destroyMouseJointForEntity": _joint_manager._js_destroy_mouse_joint_for_entity,
-		"setMotorSpeed": _joint_manager._js_set_motor_speed,
-		"setMouseTarget": _joint_manager._js_set_mouse_target, "getLastJointId": _joint_manager._js_get_last_joint_id,
-		"queryPoint": _physics_queries._js_query_point,
-		"queryPointEntity": _physics_queries._js_query_point_entity, "queryAABB": _physics_queries._js_query_aabb,
-		"raycast": _physics_queries._js_raycast, "onSensorBegin": _event_emitter._js_on_sensor_begin,
-		"onSensorEnd": _event_emitter._js_on_sensor_end, "setUserData": _entity_manager._js_set_user_data,
-		"getUserData": _entity_manager._js_get_user_data, "getAllBodies": _entity_manager._js_get_all_bodies,
-		"setEntityImage": _visual_renderer._js_set_entity_image, "setEntityAtlasRegion": _visual_renderer._js_set_entity_atlas_region,
-		"preloadTextures": _visual_renderer._js_preload_textures, "setDebugShowShapes": _visual_renderer._js_set_debug_show_shapes,
-		"setDebugSettings": _visual_renderer._js_set_debug_settings, "setCameraTarget": _camera_controller._js_set_camera_target,
-		"createPixelBuffer": _pixel_buffer_manager._js_create_pixel_buffer,
-		"pixelBufferDraw": _pixel_buffer_manager._js_draw_commands,
-		"pixelBufferClear": _pixel_buffer_manager._js_clear,
-		"destroyPixelBuffer": _pixel_buffer_manager._js_destroy,
-		"setCameraPosition": _camera_controller._js_set_camera_position, "setCameraZoom": _camera_controller._js_set_camera_zoom,
-		"startCamera": _js_start_camera, "stopCamera": _js_stop_camera,
-		"spawnParticle": _ui_manager._js_spawn_particle, "playSound": _ui_manager._js_play_sound,
-		"createUIButton": _ui_manager._js_create_ui_button, "destroyUIButton": _ui_manager._js_destroy_ui_button,
-		"onUIButtonEvent": _ui_manager._js_on_ui_button_event
-	}
-	for key in callbacks:
-		var cb = JavaScriptBridge.create_callback(callbacks[key])
+	_js_callbacks.clear()
+	
+	# Generate web callbacks from unified _method_map registry
+	for method_name in _method_map:
+		var js_name = _to_camel_case(method_name)
+		var cb = JavaScriptBridge.create_callback(
+			func(args): return native_dispatch(method_name, JSON.stringify(args))
+		)
 		_js_callbacks.append(cb)
-		_js_bridge_obj[key] = cb
-
-	var extra_callbacks = {
-		"clearTextureCache": func(args): _visual_renderer.clear_texture_cache(str(args[0]) if args.size() > 0 else ""),
-		"show_3d_model": func(args): return _viewport_3d.load_glb(str(args[0])) != null if _viewport_3d and args.size() > 0 else false,
-		"show_3d_model_from_url": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.load_glb_async(str(args[0])),
-		"set_3d_viewport_position": func(args): if _viewport_3d and args.size() >= 2: _viewport_3d.position = game_to_godot_pos(Vector2(float(args[0]), float(args[1]))),
-		"set_3d_viewport_size": func(args): if _viewport_3d and args.size() >= 2: _viewport_3d.set_viewport_size(int(args[0]), int(args[1])),
-		"rotate_3d_model": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_model_rotation(Vector3(float(args[0]), float(args[1]), float(args[2]))),
-		"set_3d_model_position": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_model_position(float(args[0]), float(args[1]), float(args[2])),
-		"set_3d_camera_distance": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_distance(float(args[0])),
-		"set_3d_camera_size": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_size(float(args[0])),
-		"set_3d_camera_position": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_camera_position(float(args[0]), float(args[1]), float(args[2])),
-		"set_3d_camera_look_at": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_camera_look_at(float(args[0]), float(args[1]), float(args[2])),
-		"clear_3d_models": func(_args): if _viewport_3d: _viewport_3d.clear_models(),
-		"create_3d_floor": func(args): if _viewport_3d: _viewport_3d.create_floor(float(args[0]) if args.size() > 0 else 10.0, str(args[1]) if args.size() > 1 else "555555", str(args[2]) if args.size() > 2 else "plain"),
-		"create_3d_cube": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.create_cube(float(args[0]), float(args[1]), float(args[2]), float(args[3]) if args.size() > 3 else 0.5, str(args[4]) if args.size() > 4 else "ff0000"),
-		"clear_3d_cubes": func(_args): if _viewport_3d: _viewport_3d.clear_cubes(),
-		"set_orbit_controls": func(args): if _viewport_3d: _viewport_3d.set_orbit_controls(bool(args[0]) if args.size() > 0 else false)
-	}
-	for key in extra_callbacks:
-		var cb = JavaScriptBridge.create_callback(extra_callbacks[key])
-		_js_callbacks.append(cb)
-		_js_bridge_obj[key] = cb
-
+		_js_bridge_obj[js_name] = cb
 	window["GodotBridge"] = _js_bridge_obj
-	print("[GameBridge] window.GodotBridge is now available")
+	print("[GameBridge] JS Bridge registered ", _method_map.size(), " methods")
+
+func _to_camel_case(snake: String) -> String:
+	# Convert snake_case to camelCase for JavaScript compatibility
+	# Handles special cases: "3d" -> "3D", "2d" -> "2D"
+	var parts = snake.split("_")
+	if parts.size() == 1:
+		return snake
+	var result = parts[0]
+	for i in range(1, parts.size()):
+		var part = parts[i]
+		if part == "3d":
+			result += "3D"
+		elif part == "2d":
+			result += "2D"
+		else:
+			result += part.capitalize()
+	return result
 
 func _js_load_game(args: Array) -> bool: return load_game_json(str(args[0])) if args.size() > 0 else false
 func _js_clear_game(_args: Array) -> void: clear_game()
@@ -443,6 +496,85 @@ func _log_physics_diagnostics() -> void:
 			rapier_classes.append(cls)
 	print("[GameBridge][DIAG] Rapier-related classes: ", rapier_classes)
 	print("[GameBridge][DIAG] === END DIAGNOSTICS ===")
+
+func _log_bridge_registry() -> void:
+	var is_dev = OS.is_debug_build()
+	if not is_dev:
+		return
+	
+	print("[GameBridge][REGISTRY] === BRIDGE METHOD REGISTRY ===")
+	print("[GameBridge][REGISTRY] Total methods: ", _method_map.size())
+	
+	# Group methods by module owner
+	var by_module = {}
+	for method_name in _method_map:
+		var owner = _get_method_owner(method_name)
+		if not by_module.has(owner):
+			by_module[owner] = []
+		by_module[owner].append(method_name)
+	
+	# Print summary by module
+	for module in by_module:
+		var methods = by_module[module]
+		print("[GameBridge][REGISTRY]   ", module, ": ", methods.size(), " methods")
+		if methods.size() <= 5:
+			for method in methods:
+				print("[GameBridge][REGISTRY]     - ", method)
+	
+	print("[GameBridge][REGISTRY] === END REGISTRY ===")
+
+func _get_method_owner(method_name: String) -> String:
+	# Determine module owner based on method name patterns
+	if method_name.begins_with("spawn_") or method_name.begins_with("destroy_") or method_name.begins_with("get_entity") or method_name.begins_with("get_all_bodies") or method_name.begins_with("set_user_data") or method_name.begins_with("get_user_data"):
+		return "EntityManager"
+	elif method_name.begins_with("set_linear_velocity") or method_name.begins_with("set_angular_velocity") or method_name.begins_with("apply_") or method_name.begins_with("get_linear_velocity") or method_name.begins_with("get_angular_velocity"):
+		return "PhysicsController"
+	elif method_name.begins_with("set_transform") or method_name.begins_with("set_position") or method_name.begins_with("set_rotation") or method_name.begins_with("set_scale") or method_name.begins_with("get_all_transforms"):
+		return "TransformSystem"
+	elif method_name.begins_with("set_opacity") or method_name.begins_with("set_visible") or method_name.begins_with("set_entity_image") or method_name.begins_with("set_entity_atlas") or method_name.begins_with("preload_textures") or method_name.begins_with("set_debug") or method_name.begins_with("clear_texture_cache"):
+		return "VisualRenderer"
+	elif method_name.begins_with("createPixelBuffer") or method_name.begins_with("pixelBuffer") or method_name.begins_with("destroyPixelBuffer"):
+		return "PixelBufferManager"
+	elif method_name.begins_with("create_") and ("joint" in method_name or method_name.begins_with("destroy_joint") or method_name.begins_with("destroy_mouse_joint") or method_name.begins_with("set_motor_speed") or method_name.begins_with("set_mouse_target") or method_name.begins_with("get_last_joint_id")):
+		return "JointManager"
+	elif method_name.begins_with("query_") or method_name.begins_with("raycast") or method_name.begins_with("screen_to_world"):
+		return "PhysicsQueries"
+	elif method_name.begins_with("on_transform_sync") or method_name.begins_with("on_property_sync") or method_name.begins_with("set_watch_config") or method_name.begins_with("get_transform") or method_name.begins_with("get_transforms") or method_name.begins_with("set_tracked_entities"):
+		return "SyncSystem"
+	elif method_name.begins_with("send_input") or method_name.begins_with("on_input_event") or method_name.begins_with("on_collision") or method_name.begins_with("on_entity_destroyed") or method_name.begins_with("on_sensor"):
+		return "EventEmitter/InputRouter"
+	elif method_name.begins_with("set_camera") or method_name.begins_with("start_camera") or method_name.begins_with("stop_camera"):
+		return "CameraController"
+	elif method_name.begins_with("spawn_particle") or method_name.begins_with("play_sound") or method_name.begins_with("create_ui") or method_name.begins_with("destroy_ui") or method_name.begins_with("on_ui_button_event") or method_name.begins_with("create_themed_ui") or method_name.begins_with("destroy_themed_ui"):
+		return "UIManager"
+	elif method_name.begins_with("show_3d") or method_name.begins_with("set_3d") or method_name.begins_with("rotate_3d") or method_name.begins_with("clear_3d"):
+		return "Viewport3D"
+	elif method_name.begins_with("get_all_properties"):
+		return "PropertyCollector"
+	elif method_name == "load_game_json" or method_name == "clear_game" or method_name == "set_inspect_mode" or method_name == "pause_physics" or method_name == "resume_physics" or method_name == "load_custom_scene":
+		return "GameBridge"
+	else:
+		return "Unknown"
+
+func get_bridge_methods() -> Dictionary:
+	var result = {
+		"methods": [],
+		"byModule": {},
+		"total": _method_map.size()
+	}
+	
+	for method_name in _method_map:
+		var owner = _get_method_owner(method_name)
+		result.methods.append({
+			"name": method_name,
+			"owner": owner
+		})
+		
+		if not result.byModule.has(owner):
+			result.byModule[owner] = []
+		result.byModule[owner].append(method_name)
+	
+	return result
 
 func enable_splat_map() -> void: if _splat_map_system: _splat_map_system.enable()
 func disable_splat_map() -> void: if _splat_map_system: _splat_map_system.disable()

@@ -1,80 +1,111 @@
-# 3D Method Baseline Check
+# 3D Method Baseline Verification
 
-**Task:** Verify all required 3D methods are present in bridge contract baseline
+**Task:** Task 1 - Establish Bridge Contract Baseline
 **Date:** 2026-02-09
+**Worktree:** refactor/godot-bridge-dedup-dispatch
 
----
+## 3D Method Inventory
 
-## Required 3D Methods (from task spec)
+### Native Path (_method_map)
 
-1. show_3d_model
-2. show_3d_model_from_url
-3. set_3d_viewport_position
-4. set_3d_viewport_size
-5. rotate_3d_model
-6. set_3d_camera_distance
-7. set_3d_camera_size
-8. clear_3d_models
-9. create_3d_floor
-10. create_3d_cube
-11. clear_3d_cubes
+**Location:** GameBridge.gd lines 258-265
 
----
+```gdscript
+"show_3d_model": func(args): return _viewport_3d.load_glb(str(args[0])) != null if _viewport_3d and args.size() > 0 else false,
+"show_3d_model_from_url": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.load_glb_async(str(args[0])),
+"set_3d_viewport_position": func(args): if _viewport_3d and args.size() >= 2: _viewport_3d.position = game_to_godot_pos(Vector2(float(args[0]), float(args[1]))),
+"set_3d_viewport_size": func(args): if _viewport_3d and args.size() >= 2: _viewport_3d.set_viewport_size(int(args[0]), int(args[1])),
+"rotate_3d_model": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_model_rotation(Vector3(float(args[0]), float(args[1]), float(args[2]))),
+"set_3d_camera_distance": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_distance(float(args[0])),
+"set_3d_camera_size": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_size(float(args[0])),
+"clear_3d_models": func(_args): if _viewport_3d: _viewport_3d.clear_models(),
+```
+
+### Web Path (extra_callbacks)
+
+**Location:** GameBridge.gd lines 355-362
+
+```gdscript
+"show_3d_model": func(args): return _viewport_3d.load_glb(str(args[0])) != null if _viewport_3d and args.size() > 0 else false,
+"show_3d_model_from_url": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.load_glb_async(str(args[0])),
+"set_3d_viewport_position": func(args): if _viewport_3d and args.size() >= 2: _viewport_3d.position = game_to_godot_pos(Vector2(float(args[0]), float(args[1]))),
+"set_3d_viewport_size": func(args): if _viewport_3d and args.size() >= 2: _viewport_3d.set_viewport_size(int(args[0]), int(args[1])),
+"rotate_3d_model": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_model_rotation(Vector3(float(args[0]), float(args[1]), float(args[2]))),
+"set_3d_camera_distance": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_distance(float(args[0])),
+"set_3d_camera_size": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_size(float(args[0])),
+"clear_3d_models": func(_args): if _viewport_3d: _viewport_3d.clear_models()
+```
+
+### TypeScript Bridge (GodotBridge.native.ts)
+
+**Location:** app/lib/godot/GodotBridge.native.ts lines 1062-1093
+
+```typescript
+show3DModel(path: string): boolean {
+  callGameBridge('show_3d_model', path);
+  return true;
+},
+
+show3DModelFromUrl(url: string): void {
+  callGameBridge('show_3d_model_from_url', url);
+},
+
+set3DViewportPosition(x: number, y: number): void {
+  callGameBridge('set_3d_viewport_position', x, y);
+},
+
+set3DViewportSize(width: number, height: number): void {
+  callGameBridge('set_3d_viewport_size', width, height);
+},
+
+rotate3DModel(x: number, y: number, z: number): void {
+  callGameBridge('rotate_3d_model', x, y, z);
+},
+
+set3DCameraDistance(distance: number): void {
+  callGameBridge('set_3d_camera_distance', distance);
+},
+
+set3DCameraSize(size: number): void {
+  callGameBridge('set_3d_camera_size', size);
+},
+
+clear3DModels(): void {
+  callGameBridge('clear_3d_models');
+},
+```
 
 ## Verification Results
 
-### ✓ FOUND in Native Registry (_method_map)
+✅ **All 8 methods present in native _method_map**
+✅ **All 8 methods present in web extra_callbacks**
+✅ **All 8 methods called from TypeScript bridge**
+✅ **Naming convention consistent: snake_case in GDScript, camelCase in TypeScript**
 
-- ✓ show_3d_model (line 258)
-- ✓ show_3d_model_from_url (line 259)
-- ✓ set_3d_viewport_position (line 260)
-- ✓ set_3d_viewport_size (line 261)
-- ✓ rotate_3d_model (line 262)
-- ✓ set_3d_camera_distance (line 263)
-- ✓ set_3d_camera_size (line 264)
-- ✓ clear_3d_models (line 265)
+## Critical Observations
 
-### ✓ FOUND in Web Registry (extra_callbacks)
+1. **Duplication:** 3D methods are registered TWICE in GameBridge.gd:
+   - Once in `_method_map` (lines 258-265)
+   - Again in `extra_callbacks` (lines 355-362)
 
-- ✓ show_3d_model (line 355)
-- ✓ show_3d_model_from_url (line 356)
-- ✓ set_3d_viewport_position (line 357)
-- ✓ set_3d_viewport_size (line 358)
-- ✓ rotate_3d_model (line 359)
-- ✓ set_3d_camera_distance (line 360)
-- ✓ set_3d_camera_size (line 361)
-- ✓ clear_3d_models (line 362)
+2. **Naming:** Unlike other methods, 3D methods use snake_case in BOTH native and web paths
+   - No camelCase aliases like `show3DModel` in web callbacks
+   - TypeScript uses camelCase but calls snake_case methods
 
-### ✗ NOT FOUND (Missing Methods)
+3. **Module:** All methods delegate to `_viewport_3d` (Viewport3D module)
 
-- ✗ create_3d_floor (not found in any registry)
-- ✗ create_3d_cube (not found in any registry)
-- ✗ clear_3d_cubes (not found in any registry)
+## Refactor Requirements
 
----
+When implementing dynamic dispatch (Task 2):
+- ✅ Preserve all 8 method names exactly
+- ✅ Maintain snake_case naming in GDScript
+- ✅ Ensure both native and web paths resolve to same implementation
+- ⚠️ Test 3D functionality after refactor to verify no regressions
 
-## Search Evidence
+## Test Coverage Needed
 
-```bash
-# Searched for missing methods in all .gd files
-grep -r "create_3d_floor\|create_3d_cube\|clear_3d_cubes" godot_project/scripts/
-# Result: No matches found
-```
-
----
-
-## Conclusion
-
-**8 of 11 required 3D methods are present** in both native and web registries.
-
-**3 methods are missing:**
-- create_3d_floor
-- create_3d_cube
-- clear_3d_cubes
-
-These methods may have been:
-1. Planned but not implemented
-2. Removed in a previous refactor
-3. Incorrectly specified in the task requirements
-
-**Recommendation:** Verify with codebase history or stakeholder whether these methods are actually needed.
+After refactor, verify:
+1. Native iOS/Android can call all 8 methods
+2. Web WASM can call all 8 methods
+3. TypeScript bridge methods work unchanged
+4. 3D viewport renders correctly on all platforms
