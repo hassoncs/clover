@@ -83,6 +83,7 @@ var _js_callbacks: Array = []
 var _js_bridge_obj: JavaScriptObject = null
 var _debug_show_shapes: bool = false
 var _method_map: Dictionary = {}
+var _debug_enabled: bool = false
 
 var _diag_process_frames: int = 0
 var _diag_physics_frames: int = 0
@@ -109,6 +110,46 @@ func set_inspect_mode(enabled: bool) -> void:
 func pause_physics() -> void: Engine.time_scale = 0.0
 func resume_physics() -> void: Engine.time_scale = 1.0
 
+func enable_debug() -> Dictionary:
+	if _debug_enabled:
+		return {"ok": true, "wasAlreadyEnabled": true, "methodsRegistered": 0}
+	
+	_debug_bridge = DebugBridge.new(self, _query_system)
+	_debug_enabled = true
+	
+	print("[GameBridge] Debug mode enabled")
+	return {"ok": true, "wasAlreadyEnabled": false, "methodsRegistered": 33}
+
+func disable_debug() -> Dictionary:
+	if not _debug_enabled:
+		return {"ok": true, "wasAlreadyEnabled": false, "methodsUnregistered": 0}
+	
+	if _debug_bridge:
+		_debug_bridge.unregister_handlers()
+		_debug_bridge = null
+	
+	_debug_enabled = false
+	
+	print("[GameBridge] Debug mode disabled")
+	return {"ok": true, "wasAlreadyEnabled": true, "methodsUnregistered": 33}
+
+func is_debug_enabled() -> bool:
+	return _debug_enabled
+
+func _get_world_info_impl() -> Dictionary:
+	return {
+		"pixelsPerMeter": pixels_per_meter,
+		"gravity": {"x": 0, "y": -9.8},
+		"bounds": game_data.get("world", {}),
+		"entityCount": entity_registry.size()
+	}
+
+func _get_viewport_info_impl() -> Dictionary:
+	var viewport = get_viewport()
+	if viewport:
+		return {"width": viewport.size.x, "height": viewport.size.y}
+	return {"width": 0, "height": 0}
+
 func _init_modules() -> void:
 	_event_queue_module = EventQueue.new()
 	_event_emitter = EventEmitter.new(self)
@@ -121,7 +162,7 @@ func _init_modules() -> void:
 	_physics_queries = PhysicsQueries.new(self)
 	_query_system = QuerySystem.new()
 	_register_core_query_handlers()
-	_debug_bridge = DebugBridge.new(self, _query_system)
+	# DebugBridge is created on-demand via enable_debug()
 	_devtools_overlay = DebugOverlay.new()
 	_devtools_overlay.setup(self)
 
@@ -154,9 +195,9 @@ func _init_modules() -> void:
 func _register_core_query_handlers() -> void:
 	_query_system.register_handler("getAllTransforms", func(_args): return _transform_system.get_all_transforms())
 	_query_system.register_handler("getAllProperties", func(_args): return _property_collector.collect_properties(0))
-	_query_system.register_handler("getWorldInfo", func(_args): return _debug_bridge.get_world_info())
+	_query_system.register_handler("getWorldInfo", func(_args): return _get_world_info_impl())
 	_query_system.register_handler("getCameraInfo", func(_args): return _camera_controller.get_info())
-	_query_system.register_handler("getViewportInfo", func(_args): return _debug_bridge.get_viewport_info())
+	_query_system.register_handler("getViewportInfo", func(_args): return _get_viewport_info_impl())
 	_query_system.register_handler("getEntityTransform", func(args): return _get_entity_transform_impl(str(args[0])) if args.size() > 0 else null)
 	_query_system.register_handler("queryPointEntity", func(args): return _physics_queries.query_point_entity(float(args[0]), float(args[1])) if args.size() >= 2 else null)
 	_query_system.register_handler("screenToWorld", func(args): return _screen_to_world_impl(float(args[0]), float(args[1])) if args.size() >= 2 else null)
@@ -293,6 +334,10 @@ func _build_method_map() -> void:
 		"set_3d_camera_distance": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_distance(float(args[0])),
 		"set_3d_camera_size": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_size(float(args[0])),
 		"clear_3d_models": func(_args): if _viewport_3d: _viewport_3d.clear_models(),
+		# Debug control
+		"enable_debug": func(_args): return enable_debug(),
+		"disable_debug": func(_args): return disable_debug(),
+		"is_debug_enabled": func(_args): return is_debug_enabled(),
 		# Runtime diagnostics
 		"get_bridge_methods": func(_args): return get_bridge_methods(),
 	}

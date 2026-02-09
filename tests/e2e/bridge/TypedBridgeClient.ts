@@ -715,11 +715,19 @@ export class TypedBridgeClient {
     await this.driver.call("clear_3d_models", []);
   }
 
-  // =========================================================================
-  // Diagnostics
-  // =========================================================================
-
   async getBridgeMethods(): Promise<BridgeMethodRegistry> {
     return this.driver.call("get_bridge_methods", []) as Promise<BridgeMethodRegistry>;
+  }
+
+  async enableDebug(): Promise<{ ok: boolean; wasAlreadyEnabled: boolean; methodsRegistered: number }> {
+    return this.driver.call("enable_debug", []) as Promise<{ ok: boolean; wasAlreadyEnabled: boolean; methodsRegistered: number }>;
+  }
+
+  async disableDebug(): Promise<{ ok: boolean; wasAlreadyEnabled: boolean; methodsUnregistered: number }> {
+    return this.driver.call("disable_debug", []) as Promise<{ ok: boolean; wasAlreadyEnabled: boolean; methodsUnregistered: number }>;
+  }
+
+  async isDebugEnabled(): Promise<boolean> {
+    return this.driver.call("is_debug_enabled", []) as Promise<boolean>;
   }
 }

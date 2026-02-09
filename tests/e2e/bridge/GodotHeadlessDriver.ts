@@ -173,7 +173,10 @@ export default class GodotHeadlessDriver extends EventEmitter {
     return this.call("_ping");
   }
 
-  /** Current lifecycle state. */
+  async query<T = unknown>(method: string, args: unknown[] = []): Promise<T> {
+    return this.call("_query", [method, ...args]) as Promise<T>;
+  }
+
   getState(): DriverState {
     return this.state;
   }
