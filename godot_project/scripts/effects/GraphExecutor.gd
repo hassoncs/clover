@@ -84,6 +84,7 @@ var _ping_pong_manager: EffectsPingPongManager = null
 var _pass_entries: Array = []
 var _pass_index: Dictionary = {}
 var _plan_hash: String = ""
+var _seed_feedback_on_next_frame: bool = false
 
 func _ready() -> void:
 	set_process(false)
@@ -182,6 +183,19 @@ func start() -> void:
 				_ping_pong_manager.reset(ping_pong_buffer)
 			# skip_feedback=true — _process handles feedback bindings correctly
 			_rebind_entry_inputs(entry, true)
+		# On the first frame after reset the ping-pong viewports are empty.
+		# If we let the shader read from them, it will treat every non-white
+		# pixel in entity_input as "newly drawn" and pin it — preventing
+		# previously-evolved content from continuing to evolve.
+		# By seeding the feedback uniform with the entity texture on frame 1,
+		# the shader sees the same content in both inputs and evolves
+		# everything uniformly.
+		_seed_feedback_on_next_frame = true
+
+	# Also seed on initial start from READY — the ping-pong viewports
+	# are empty on first run too.
+	if _state == State.READY:
+		_seed_feedback_on_next_frame = true
 
 	for entry in _pass_entries:
 		_enable_entry_updates(entry, true)
@@ -312,12 +326,22 @@ func _process(delta: float) -> void:
 			else:
 				write_material = entry.get("material_b")
 
+			# On the first frame after reset, the read viewport is empty.
+			# Use the entity texture as feedback instead, so the shader
+			# sees current canvas content in both inputs and evolves
+			# everything — not just newly-drawn pixels.
+			var feedback_tex: Texture2D = read_tex
+			if _seed_feedback_on_next_frame:
+				var entity_tex: Texture2D = _resource_graph.get_texture("__entityTexture")
+				if entity_tex != null:
+					feedback_tex = entity_tex
+
 			var input_bindings: Dictionary = pass_data.get("params", {}).get("inputBindings", {})
 			for uniform_name in input_bindings.keys():
 				var resource_id = str(input_bindings[uniform_name])
 				if resource_id.begins_with("__feedback:"):
 					if write_material != null:
-						write_material.set_shader_parameter(str(uniform_name), read_tex)
+						write_material.set_shader_parameter(str(uniform_name), feedback_tex)
 
 		# Auto-set common shader uniforms on both materials
 		var vp_a: SubViewport = _ping_pong_manager.get_viewports(ping_pong_buffer).get("a")
@@ -338,6 +362,9 @@ func _process(delta: float) -> void:
 		for pass_entry in _pass_entries:
 			var has_ping_pong: bool = str(pass_entry.get("ping_pong_buffer", "")) != ""
 			_rebind_entry_inputs(pass_entry, has_ping_pong)
+
+	if _seed_feedback_on_next_frame:
+		_seed_feedback_on_next_frame = false
 
 func _build_passes(passes: Array) -> bool:
 	if not (passes is Array):
@@ -543,6 +570,13 @@ func _validate_plan(plan_json: Dictionary) -> bool:
 	return true
 
 func _resolve_base_size() -> Vector2i:
+	# For entity-scoped effects, match the entity texture size so the
+	# ping-pong viewports operate at the same resolution as the pixel
+	# buffer.  This avoids a quality change when baking back on stop.
+	if str(_plan.get("scope", "screen")) == "entity" and entity_texture != null:
+		var tex_size: Vector2i = entity_texture.get_size()
+		if tex_size.x > 0 and tex_size.y > 0:
+			return tex_size
 	var viewport = get_viewport()
 	if viewport:
 		var size = viewport.get_visible_rect().size

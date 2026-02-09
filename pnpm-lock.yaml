@@ -324,6 +324,9 @@ importers:
         specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
+      '@rozenite/metro':
+        specifier: ^1.2.0
+        version: 1.2.0
       '@testing-library/jest-native':
         specifier: ^5.4.3
         version: 5.4.3(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react-test-renderer@19.2.4(react@19.1.0))(react@19.1.0)
@@ -3472,6 +3475,21 @@ packages:
     resolution: {integrity: sha512-mxRFDdHIWRxg3UfIIAwCm6NzvxG0jDX/wBN6KsQFTvKFqqg9vTrWUE68qEjHt19A5wwx5X5aUi2zuZT7YR0jrA==}
     cpu: [x64]
     os: [win32]
+
+  '@rozenite/metro@1.2.0':
+    resolution: {integrity: sha512-SY9rZ0JtGsGSmJFC/thXoMcnYsP3DchVBdUGeLOtM7ZrBuHw3RlwtZYcKDMxGlAcufD4XUPkkhR53/hN/VmJXA==}
+    engines: {node: '>=20'}
+
+  '@rozenite/middleware@1.2.0':
+    resolution: {integrity: sha512-iMESes1NpLuPk05cQ9MMrkdqoGO977HkbyL/Pjn4IDPwDej3qIRzoI6htP1nogrn+SOI41FOJXOuP51TLo1BDw==}
+    engines: {node: '>=20'}
+
+  '@rozenite/runtime@1.2.0':
+    resolution: {integrity: sha512-37oqM/zfe53g9GCqjzGgCKGquOCKiw/h8Ydiqh3kRfdKUWiXWZTHRgPuo6UV0HIACIJBWEKuJUpnGyO6DNBxzw==}
+    engines: {node: '>=20'}
+
+  '@rozenite/tools@1.2.0':
+    resolution: {integrity: sha512-I5E4az+EWq2xRf9aKDg02bubm+2l6fvbQG63DmIOykjQtQ50uFR9t65UMv0/nvdwDlK2aSIyXCr8aJF/O6GA6g==}
 
   '@sentry-internal/browser-utils@10.12.0':
     resolution: {integrity: sha512-dozbx389jhKynj0d657FsgbBVOar7pX3mb6GjqCxslXF0VKpZH2Xks0U32RgDY/nK27O+o095IWz7YvjVmPkDw==}
@@ -12459,6 +12477,30 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.57.1':
     optional: true
+
+  '@rozenite/metro@1.2.0':
+    dependencies:
+      '@rozenite/middleware': 1.2.0
+      '@rozenite/tools': 1.2.0
+      tslib: 2.8.1
+    transitivePeerDependencies:
+      - supports-color
+
+  '@rozenite/middleware@1.2.0':
+    dependencies:
+      '@rozenite/runtime': 1.2.0
+      '@rozenite/tools': 1.2.0
+      express: 5.2.1
+      semver: 7.7.3
+      tslib: 2.8.1
+    transitivePeerDependencies:
+      - supports-color
+
+  '@rozenite/runtime@1.2.0':
+    dependencies:
+      tslib: 2.8.1
+
+  '@rozenite/tools@1.2.0': {}
 
   '@sentry-internal/browser-utils@10.12.0':
     dependencies:

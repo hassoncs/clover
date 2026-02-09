@@ -25,6 +25,34 @@
 
 The `interactive_bash` tool runs commands in a persistent tmux session, which provides better output handling and allows for ongoing interaction.
 
+## Expo & Native Build Commands (CRITICAL)
+
+**NEVER run raw `expo` commands directly.** Always use the project's `pnpm` scripts from the **repo root**.
+
+This project uses Metro port 8085 (not the default 8081). The port must be configured at multiple layers (Metro config, Podfile, native binary compilation). Raw expo commands bypass these safeguards and produce broken builds.
+
+| Goal | Correct Command (from repo root) | NEVER Do This |
+|------|----------------------------------|---------------|
+| Start dev server | `pnpm dev` | `expo start`, `npx expo start` |
+| Run iOS | `pnpm ios` | `expo run:ios`, `npx expo run:ios` |
+| Run Android | `pnpm android` | `expo run:android`, `npx expo run:android` |
+| Run web | `pnpm web` | `expo start --web` |
+| Install pods | `cd app && pnpm pods` | `cd app/ios && pod install` |
+| Prebuild | `cd app && npx expo prebuild` | OK, but must be from `app/` dir |
+
+**Why this matters:**
+- The root scripts ensure Metro is running via devmux before building
+- The app scripts include `--no-bundler` (prevents duplicate Metro instances)
+- The app scripts set `RCT_METRO_PORT=8085` env var and `--port 8085` flag
+- A preflight check validates port configuration before every native build
+- Running raw `expo run:ios` without these flags produces a binary that connects to port 8081
+
+**If you must run expo commands directly**, always include ALL of:
+```bash
+RCT_METRO_PORT=8085 npx expo run:ios --no-bundler
+```
+Note: `--port` and `--no-bundler` are mutually exclusive. The port is communicated via `RCT_METRO_PORT` env var and baked into the binary at build time.
+
 ## Service Management (Devmux)
 - **ALWAYS** use the `devmux` skill for starting, stopping, or debugging services (api, metro, storybook).
 - **NEVER** run `pnpm start` or `node server.js` directly for long-running processes.

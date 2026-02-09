@@ -2,11 +2,19 @@ const path = require("path");
 const fs = require("fs");
 const { getDefaultConfig } = require("expo/metro-config");
 const { withNativeWind } = require("nativewind/metro");
+const { withRozenite } = require("@rozenite/metro");
+
+const METRO_PORT = 8085;
 
 const projectRoot = __dirname;
 const monorepoRoot = path.resolve(projectRoot, "..");
 
 const baseConfig = getDefaultConfig(__dirname);
+
+baseConfig.server = {
+  ...baseConfig.server,
+  port: METRO_PORT,
+};
 
 baseConfig.watchFolders = [monorepoRoot];
 
@@ -59,4 +67,12 @@ baseConfig.resolver.resolveRequest = (context, moduleName, platform) => {
   return context.resolveRequest(context, moduleName, platform);
 };
 
-module.exports = withNativeWind(baseConfig, { input: "./global.css" });
+const nativeWindConfig = withNativeWind(baseConfig, { input: "./global.css" });
+
+// Auto-enable Rozenite in development, require explicit opt-in for production
+const isDev = process.env.NODE_ENV !== "production";
+const rozeniteEnabled = process.env.WITH_ROZENITE === "true" || (isDev && process.env.WITH_ROZENITE !== "false");
+
+module.exports = withRozenite(nativeWindConfig, {
+  enabled: rozeniteEnabled,
+});
