@@ -79,8 +79,8 @@ const POST_SHADER_PATHS = {
 
 var _state: State = State.IDLE
 var _plan: Dictionary = {}
-	var _resource_graph: EffectsResourceGraph = null
-	var _ping_pong_manager: EffectsPingPongManager = null
+var _resource_graph: EffectsResourceGraph = null
+var _ping_pong_manager: EffectsPingPongManager = null
 var _pass_entries: Array = []
 var _pass_index: Dictionary = {}
 var _plan_hash: String = ""
@@ -345,7 +345,7 @@ func _setup_single_pass(entry: Dictionary, pass_data: Dictionary, shader: Shader
 		return false
 
 	var rect := ColorRect.new()
-	rect.name = "EffectsV2Rect_%s" % str(pass_data.get("id", ""))
+	rect.name = "EffectsRect_%s" % str(pass_data.get("id", ""))
 	rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
@@ -389,14 +389,14 @@ func _setup_ping_pong_pass(entry: Dictionary, pass_data: Dictionary, shader: Sha
 	_apply_material_params(material_b, pass_data.get("params", {}))
 
 	var rect_a := ColorRect.new()
-	rect_a.name = "EffectsV2RectA_%s" % pass_id
+	rect_a.name = "EffectsRectA_%s" % pass_id
 	rect_a.set_anchors_preset(Control.PRESET_FULL_RECT)
 	rect_a.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	rect_a.material = material_a
 	viewport_a.add_child(rect_a)
 
 	var rect_b := ColorRect.new()
-	rect_b.name = "EffectsV2RectB_%s" % pass_id
+	rect_b.name = "EffectsRectB_%s" % pass_id
 	rect_b.set_anchors_preset(Control.PRESET_FULL_RECT)
 	rect_b.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	rect_b.material = material_b

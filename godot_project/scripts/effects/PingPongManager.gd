@@ -1,4 +1,4 @@
-class_name EffectsV2PingPongManager
+class_name EffectsPingPongManager
 extends RefCounted
 
 var _host: Node = null
@@ -12,11 +12,11 @@ func configure(host: Node, default_size: Vector2i) -> void:
 
 func register(buffer_id: String, policy: Dictionary) -> void:
 	if buffer_id == "":
-		push_error("[EffectsV2PingPongManager] register called with empty buffer_id")
+		push_error("[EffectsPingPongManager] register called with empty buffer_id")
 		return
 
 	if _buffers.has(buffer_id):
-		push_warning("[EffectsV2PingPongManager] Overwriting existing buffer: %s" % buffer_id)
+		push_warning("[EffectsPingPongManager] Overwriting existing buffer: %s" % buffer_id)
 		_release_entry(_buffers[buffer_id])
 
 	_buffers[buffer_id] = {
@@ -31,19 +31,19 @@ func register(buffer_id: String, policy: Dictionary) -> void:
 
 func initialize(buffer_id: String) -> void:
 	if not _buffers.has(buffer_id):
-		push_error("[EffectsV2PingPongManager] initialize called for unknown buffer: %s" % buffer_id)
+		push_error("[EffectsPingPongManager] initialize called for unknown buffer: %s" % buffer_id)
 		return
 
 	if _host == null or not is_instance_valid(_host):
-		push_error("[EffectsV2PingPongManager] Host node not configured")
+		push_error("[EffectsPingPongManager] Host node not configured")
 		return
 
 	var entry: Dictionary = _buffers[buffer_id]
 	_release_entry(entry)
 
 	var size := _resolve_size(entry.get("policy", {}))
-	var viewport_a := _create_viewport("EffectsV2PPA_%s" % buffer_id, size)
-	var viewport_b := _create_viewport("EffectsV2PPB_%s" % buffer_id, size)
+	var viewport_a := _create_viewport("EffectsPPA_%s" % buffer_id, size)
+	var viewport_b := _create_viewport("EffectsPPB_%s" % buffer_id, size)
 
 	_host.add_child(viewport_a)
 	_host.add_child(viewport_b)
@@ -57,12 +57,12 @@ func initialize(buffer_id: String) -> void:
 
 func swap(buffer_id: String) -> void:
 	if not _buffers.has(buffer_id):
-		push_error("[EffectsV2PingPongManager] swap called for unknown buffer: %s" % buffer_id)
+		push_error("[EffectsPingPongManager] swap called for unknown buffer: %s" % buffer_id)
 		return
 
 	var entry: Dictionary = _buffers[buffer_id]
 	if not bool(entry.get("initialized", false)):
-		push_warning("[EffectsV2PingPongManager] swap ignored for uninitialized buffer: %s" % buffer_id)
+		push_warning("[EffectsPingPongManager] swap ignored for uninitialized buffer: %s" % buffer_id)
 		return
 
 	if bool(entry.get("frozen", false)):

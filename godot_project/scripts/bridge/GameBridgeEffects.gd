@@ -22,6 +22,7 @@ func _ready() -> void:
 	_game_bridge = get_node_or_null("/root/GameBridge")
 
 	_build_effects_method_map()
+	_register_query_handlers()
 
 	# If running in web, set up JS bridge methods
 	if OS.has_feature("web"):
@@ -58,6 +59,70 @@ func _build_effects_method_map() -> void:
 		"restore_snapshot": _js_restore_snapshot,
 
 	}
+
+func _register_query_handlers() -> void:
+	if _game_bridge == null:
+		return
+
+	var qs = _game_bridge._query_system
+	if qs == null:
+		return
+
+	qs.register_handler("effectsV2.applyGraph", func(args):
+		if args.size() > 0 and args[0] is Dictionary:
+			return apply_plan(args[0].get("plan", args[0]))
+		return {"success": false, "error": "Missing plan argument"}
+	)
+
+	qs.register_handler("effectsV2.clearGraph", func(_args):
+		clear_plan()
+		return {"success": true}
+	)
+
+	qs.register_handler("effectsV2.updateParams", func(args):
+		if args.size() > 0 and args[0] is Dictionary:
+			var pass_id = str(args[0].get("passId", ""))
+			var params = args[0].get("params", {})
+			if not (params is Dictionary):
+				params = {}
+			return update_params(pass_id, params)
+		return {"success": false, "error": "Missing arguments"}
+	)
+
+	qs.register_handler("effectsV2.start", func(_args):
+		start_graph()
+		return {"success": true}
+	)
+
+	qs.register_handler("effectsV2.pause", func(_args):
+		pause_graph()
+		return {"success": true}
+	)
+
+	qs.register_handler("effectsV2.resume", func(_args):
+		resume_graph()
+		return {"success": true}
+	)
+
+	qs.register_handler("effectsV2.stop", func(_args):
+		stop_graph()
+		return {"success": true}
+	)
+
+	qs.register_handler("effectsV2.reset", func(_args):
+		reset_graph()
+		return {"success": true}
+	)
+
+	qs.register_handler("effectsV2.snapshot", func(_args):
+		return get_snapshot()
+	)
+
+	qs.register_handler("effectsV2.restore", func(args):
+		if args.size() > 0 and args[0] is Dictionary:
+			return restore_snapshot(args[0].get("snapshot", args[0]))
+		return {"success": false, "error": "Missing snapshot argument"}
+	)
 
 func native_dispatch(method_name: String, args_json: String) -> Variant:
 	if not _method_map.has(method_name):

@@ -1,4 +1,4 @@
-class_name EffectsV2ResourceGraph
+class_name EffectsResourceGraph
 extends RefCounted
 
 var _host: Node = null
@@ -17,18 +17,18 @@ func allocate(resource_map: Dictionary, scope: String) -> bool:
 	_scope = scope
 
 	if _host == null or not is_instance_valid(_host):
-		push_error("[EffectsV2ResourceGraph] Host node not configured")
+		push_error("[EffectsResourceGraph] Host node not configured")
 		return false
 
 	for resource_id in resource_map.keys():
 		var resource = resource_map[resource_id]
 		if not (resource is Dictionary):
-			push_error("[EffectsV2ResourceGraph] Resource '%s' is not a dictionary" % str(resource_id))
+			push_error("[EffectsResourceGraph] Resource '%s' is not a dictionary" % str(resource_id))
 			return false
 
 		var type_str: String = str(resource.get("type", ""))
 		if type_str != "texture" and type_str != "buffer":
-			push_error("[EffectsV2ResourceGraph] Resource '%s' has unsupported type '%s'" % [str(resource_id), type_str])
+			push_error("[EffectsResourceGraph] Resource '%s' has unsupported type '%s'" % [str(resource_id), type_str])
 			return false
 
 		var entry := {
@@ -46,7 +46,7 @@ func allocate(resource_map: Dictionary, scope: String) -> bool:
 
 		var viewport := _create_resource_viewport(str(resource_id), entry["resolution"], resource)
 		if viewport == null:
-			push_error("[EffectsV2ResourceGraph] Failed to allocate viewport for resource '%s'" % str(resource_id))
+			push_error("[EffectsResourceGraph] Failed to allocate viewport for resource '%s'" % str(resource_id))
 			return false
 
 		_host.add_child(viewport)
@@ -108,7 +108,7 @@ func bind_pass_inputs(pass_data: Dictionary, material: ShaderMaterial) -> void:
 		var resource_id = str(explicit_bindings[uniform_name])
 		var tex = get_texture(resource_id)
 		if tex == null:
-			push_warning("[EffectsV2ResourceGraph] Missing input texture '%s' for uniform '%s'" % [resource_id, str(uniform_name)])
+			push_warning("[EffectsResourceGraph] Missing input texture '%s' for uniform '%s'" % [resource_id, str(uniform_name)])
 			continue
 		material.set_shader_parameter(str(uniform_name), tex)
 
@@ -126,7 +126,7 @@ func bind_pass_inputs(pass_data: Dictionary, material: ShaderMaterial) -> void:
 
 		var tex = get_texture(resource_id)
 		if tex == null:
-			push_warning("[EffectsV2ResourceGraph] Missing input texture '%s'" % resource_id)
+			push_warning("[EffectsResourceGraph] Missing input texture '%s'" % resource_id)
 			continue
 
 		material.set_shader_parameter(resource_id, tex)
@@ -167,7 +167,7 @@ func _create_resource_viewport(resource_id: String, resolution: String, resource
 		return null
 
 	var viewport := SubViewport.new()
-	viewport.name = "EffectsV2Resource_%s" % resource_id
+	viewport.name = "EffectsResource_%s" % resource_id
 	viewport.size = size
 	viewport.transparent_bg = true
 	viewport.render_target_clear_mode = SubViewport.CLEAR_MODE_ONCE

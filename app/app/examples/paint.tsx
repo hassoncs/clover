@@ -1,9 +1,10 @@
 import { useCallback, useRef, useState, useEffect } from "react";
-import { View, Text, Pressable, ScrollView } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import type { ExampleMeta } from "@/lib/registry/types";
 import type { GodotBridge, DrawCommand } from "@/lib/godot/types";
 import type { GameDefinition } from "@slopcade/shared";
-import type { EffectGraphSpec } from "@slopcade/shared/effects";
+import { compileGraph } from "@slopcade/shared/effects";
+import type { EffectGraphSpec, CompiledPlan } from "@slopcade/shared/effects";
 
 export const metadata: ExampleMeta = {
   title: "Finger Paint",
@@ -192,29 +193,32 @@ interface ShaderOption {
   spec: EffectGraphSpec;
 }
 
+type ShaderNode = EffectGraphSpec["nodes"][number] & { shader?: string };
+
 function makeSpec(id: string, shader: string): EffectGraphSpec {
+  const node: ShaderNode = {
+    id: "fx",
+    type: "custom",
+    shader,
+    family: "filter",
+    inputSlots: [
+      { name: "current_buffer", dataType: "texture", connectedTo: null },
+    ],
+    params: {},
+    outputTarget: {
+      bufferId: "canvas",
+      format: "rgba8",
+      resolution: "full",
+    },
+    flags: { stateful: true, fusible: "never" },
+  };
+
   return {
     id,
     version: "1.0.0",
     engineApiVersion: "2.0.0",
     scope: "entity",
-    nodes: [
-      {
-        id: "fx",
-        type: "custom",
-        family: "filter",
-        inputSlots: [
-          { name: "current_buffer", dataType: "texture", connectedTo: null },
-        ],
-        params: {},
-        outputTarget: {
-          bufferId: "canvas",
-          format: "rgba8",
-          resolution: "full",
-        },
-        flags: { stateful: true, fusible: "never" },
-      },
-    ],
+    nodes: [node],
     connections: [],
     feedbackEdges: [
       {
@@ -229,6 +233,35 @@ function makeSpec(id: string, shader: string): EffectGraphSpec {
       },
     ],
     lifecycle: { autoStart: false, stopMode: "freeze" },
+  };
+}
+
+function compileShaderPlan(option: ShaderOption): CompiledPlan {
+  const compileResult = compileGraph(option.spec);
+  if (!compileResult.success || !compileResult.plan) {
+    const details = compileResult.errors.map((error) => error.message).join(", ");
+    throw new Error(`Failed to compile ${option.label} shader graph: ${details}`);
+  }
+
+  const nodeShaders = new Map(
+    option.spec.nodes.map((node) => [node.id, (node as ShaderNode).shader ?? ""]),
+  );
+
+  const passes = compileResult.plan.passes.map((pass) => {
+    const glsl = nodeShaders.get(pass.id);
+    if (!glsl) {
+      return pass;
+    }
+
+    return {
+      ...pass,
+      shaderSource: { type: "custom" as const, glsl },
+    };
+  });
+
+  return {
+    ...compileResult.plan,
+    passes,
   };
 }
 
@@ -289,7 +322,8 @@ export default function PaintExample() {
         setStatus("ready");
 
         bridge.createPixelBuffer("canvas", 512, 512, "#FFFFFF", 24, 32);
-        // TODO: Apply v2 effect graph via bridge.applyGraph()
+        const defaultPlan = compileShaderPlan(SHADER_OPTIONS[selectedShaderRef.current]);
+        await bridge.applyGraph(defaultPlan);
       } catch (err) {
         setStatus("error");
         console.error("Failed to init game:", err);
@@ -345,25 +379,36 @@ export default function PaintExample() {
     };
   }, [bridge, status, worldToPixel]);
 
-  const handleClear = useCallback(() => {
+  const handleClear = useCallback(async () => {
     if (bridge && status === "ready") {
-      bridge.stop();
-      bridge.clearGraph();
-      bridge.pixelBufferClear("canvas", "#FFFFFF");
-      // TODO: Apply v2 effect graph via bridge.applyGraph()
-      setFluidActive(false);
+      try {
+        await bridge.stop();
+        await bridge.clearGraph();
+        bridge.pixelBufferClear("canvas", "#FFFFFF");
+        const plan = compileShaderPlan(SHADER_OPTIONS[selectedShaderRef.current]);
+        await bridge.applyGraph(plan);
+        setFluidActive(false);
+      } catch (error) {
+        console.error("Failed to clear paint canvas:", error);
+      }
     }
   }, [bridge, status]);
 
-  const handleShaderChange = useCallback((index: number) => {
+  const handleShaderChange = useCallback(async (index: number) => {
     if (!bridge || status !== "ready") return;
-    const wasActive = fluidActiveRef.current;
-    bridge.stop();
-    bridge.clearGraph();
-    // TODO: Apply v2 effect graph via bridge.applyGraph()
-    setSelectedShader(index);
-    if (wasActive) {
-      bridge.start();
+    try {
+      const wasActive = fluidActiveRef.current;
+      await bridge.stop();
+      await bridge.clearGraph();
+      selectedShaderRef.current = index;
+      setSelectedShader(index);
+      const plan = compileShaderPlan(SHADER_OPTIONS[index]);
+      await bridge.applyGraph(plan);
+      if (wasActive) {
+        await bridge.start();
+      }
+    } catch (error) {
+      console.error("Failed to switch shader:", error);
     }
   }, [bridge, status]);
 
@@ -393,12 +438,14 @@ export default function PaintExample() {
         )}
       </View>
 
-      <ScrollView
-        style={{ flexShrink: 0, backgroundColor: "#fff", borderTopWidth: 1, borderTopColor: "#ccc" }}
-        contentContainerStyle={{
+      <View
+        style={{
+          backgroundColor: "#fff",
+          borderTopWidth: 1,
+          borderTopColor: "#ccc",
           paddingTop: 10,
           paddingHorizontal: 10,
-          paddingBottom: 32,
+          paddingBottom: 10,
           flexDirection: "row",
           flexWrap: "wrap",
           alignItems: "center",
@@ -502,7 +549,7 @@ export default function PaintExample() {
             <Text style={{ fontWeight: "bold" }}>Clear</Text>
           </Pressable>
         </View>
-      </ScrollView>
+      </View>
     </View>
   );
 }
