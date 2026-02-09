@@ -162,9 +162,37 @@ func _register_core_query_handlers() -> void:
 	_query_system.register_handler("screenToWorld", func(args): return _screen_to_world_impl(float(args[0]), float(args[1])) if args.size() >= 2 else null)
 	_query_system.register_handler("getSplatTexture", func(_args): return get_splat_texture())
 
+func _auto_register_bridge_methods(modules: Array) -> Dictionary:
+	var registry = {}
+	for module in modules:
+		if module == null:
+			continue
+		var method_list = module.get_method_list()
+		for method_info in method_list:
+			var method_name = method_info.name
+			if method_name.begins_with("_js_"):
+				var bridge_name = method_name.substr(4)
+				if registry.has(bridge_name):
+					push_warning("[GameBridge][AUTO-REG] COLLISION: Method '%s' found in multiple modules" % bridge_name)
+				else:
+					registry[bridge_name] = Callable(module, method_name)
+					print("[GameBridge][AUTO-REG] Registered: %s -> %s.%s" % [bridge_name, module.get_class(), method_name])
+	return registry
+
 func _build_method_map() -> void:
 	var is_dev = OS.is_debug_build()
-	_method_map = {
+	
+	# Step 1: Auto-register bridge methods from modules with _js_ prefix
+	var modules = [
+		_entity_manager, _transform_system, _physics_controller, _joint_manager,
+		_visual_renderer, _ui_manager, _camera_controller, _input_router,
+		_sync_system, _property_collector, _event_emitter, _physics_queries,
+		_pixel_buffer_manager, _debug_bridge
+	]
+	_method_map = _auto_register_bridge_methods(modules)
+	
+	# Step 2: Apply manual overrides for methods needing custom handling
+	var overrides = {
 		# Core lifecycle
 		"load_game_json": func(args): return load_game_json(str(args[0])) if args.size() > 0 else false,
 		"clear_game": func(_args): clear_game(),
@@ -269,13 +297,14 @@ func _build_method_map() -> void:
 		"get_bridge_methods": func(_args): return get_bridge_methods(),
 	}
 	
-	# Log any collisions/overrides during registration
+	# Step 3: Apply overrides to method map (manual entries take precedence)
+	for method_name in overrides:
+		_method_map[method_name] = overrides[method_name]
+	
+	# Log registration summary
 	if is_dev:
-		var seen_methods = {}
-		for method_name in _method_map:
-			if seen_methods.has(method_name):
-				push_warning("[GameBridge][REGISTRY] COLLISION: Method '%s' registered multiple times" % method_name)
-			seen_methods[method_name] = true
+		print("[GameBridge][REGISTRY] Built method map with ", _method_map.size(), " methods")
+		print("[GameBridge][REGISTRY] Auto-registered from modules, manual overrides applied")
 
 func native_dispatch(method_name: String, args_json: String) -> Variant:
 	print("[GameBridge][DISPATCH] ", method_name, " args=", args_json.substr(0, 200))
