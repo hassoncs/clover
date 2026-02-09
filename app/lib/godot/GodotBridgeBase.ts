@@ -1,30 +1,30 @@
 import type { PropertySyncPayload } from "@slopcade/shared";
 import type {
   CollisionEvent,
-  EffectsV2Error,
-  EffectsV2PipelineSnapshot,
-  EffectsV2Result,
+  EffectsError,
+  EffectsPipelineSnapshot,
+  EffectsResult,
   SensorEvent,
   EntitySpawnedEvent,
   EntityTransform,
 } from "./types";
 
-type EffectsV2RawPassSnapshot = {
+type EffectsRawPassSnapshot = {
   id?: string;
   passId?: string;
   params?: Record<string, unknown>;
 };
 
-type EffectsV2RawFeedbackState = {
+type EffectsRawFeedbackState = {
   frameCount?: unknown;
   frozen?: unknown;
 };
 
-const EFFECTS_V2_ERROR_CODE = "E_EFFECTS_V2_EXECUTION";
+const EFFECTS_ERROR_CODE = "E_EFFECTS_EXECUTION";
 
-function toEffectsV2Error(error: unknown): EffectsV2Error {
+function toEffectsError(error: unknown): EffectsError {
   if (typeof error === "string") {
-    return { code: EFFECTS_V2_ERROR_CODE, message: error };
+    return { code: EFFECTS_ERROR_CODE, message: error };
   }
 
   if (error && typeof error === "object") {
@@ -36,18 +36,18 @@ function toEffectsV2Error(error: unknown): EffectsV2Error {
     };
 
     if (err.error !== undefined) {
-      return toEffectsV2Error(err.error);
+      return toEffectsError(err.error);
     }
 
     return {
       code:
         typeof err.code === "string" && err.code.length > 0
           ? err.code
-          : EFFECTS_V2_ERROR_CODE,
+          : EFFECTS_ERROR_CODE,
       message:
         typeof err.message === "string" && err.message.length > 0
           ? err.message
-          : "Effects v2 operation failed",
+          : "Effects operation failed",
       details:
         err.details && typeof err.details === "object"
           ? (err.details as Record<string, unknown>)
@@ -56,15 +56,15 @@ function toEffectsV2Error(error: unknown): EffectsV2Error {
   }
 
   return {
-    code: EFFECTS_V2_ERROR_CODE,
-    message: "Effects v2 operation failed",
+    code: EFFECTS_ERROR_CODE,
+    message: "Effects operation failed",
   };
 }
 
-export function normalizeEffectsV2Result<T = void>(
+export function normalizeEffectsResult<T = void>(
   raw: unknown,
   mapData?: (rawData: unknown) => T,
-): EffectsV2Result<T> {
+): EffectsResult<T> {
   if (raw && typeof raw === "object") {
     const payload = raw as {
       success?: unknown;
@@ -76,7 +76,7 @@ export function normalizeEffectsV2Result<T = void>(
     if (payload.success === false || payload.error !== undefined) {
       return {
         success: false,
-        error: toEffectsV2Error(payload.error ?? payload.message),
+        error: toEffectsError(payload.error ?? payload.message),
       };
     }
 
@@ -93,8 +93,8 @@ export function normalizeEffectsV2Result<T = void>(
     return {
       success: false,
       error: {
-        code: "E_EFFECTS_V2_EMPTY_RESPONSE",
-        message: "Effects v2 operation returned no response",
+        code: "E_EFFECTS_EMPTY_RESPONSE",
+        message: "Effects operation returned no response",
       },
     };
   }
@@ -105,15 +105,15 @@ export function normalizeEffectsV2Result<T = void>(
   };
 }
 
-export function normalizeEffectsV2Snapshot(raw: unknown): EffectsV2PipelineSnapshot {
+export function normalizeEffectsSnapshot(raw: unknown): EffectsPipelineSnapshot {
   const payload = (raw && typeof raw === "object"
     ? (raw as Record<string, unknown>)
     : {}) as {
     planHash?: unknown;
     hash?: unknown;
     passParams?: unknown;
-    passes?: EffectsV2RawPassSnapshot[];
-    feedbackStates?: Record<string, EffectsV2RawFeedbackState>;
+    passes?: EffectsRawPassSnapshot[];
+    feedbackStates?: Record<string, EffectsRawFeedbackState>;
     lifecycleState?: unknown;
     state?: unknown;
     timestamp?: unknown;
@@ -149,7 +149,7 @@ export function normalizeEffectsV2Snapshot(raw: unknown): EffectsV2PipelineSnaps
     }
   }
 
-  const feedbackStates: EffectsV2PipelineSnapshot["feedbackStates"] = {};
+  const feedbackStates: EffectsPipelineSnapshot["feedbackStates"] = {};
   if (payload.feedbackStates && typeof payload.feedbackStates === "object") {
     for (const [feedbackId, state] of Object.entries(payload.feedbackStates)) {
       feedbackStates[feedbackId] = {
@@ -182,8 +182,8 @@ export function normalizeEffectsV2Snapshot(raw: unknown): EffectsV2PipelineSnaps
   };
 }
 
-export function createEffectsV2SnapshotPayload(
-  snapshot: EffectsV2PipelineSnapshot,
+export function createEffectsSnapshotPayload(
+  snapshot: EffectsPipelineSnapshot,
 ): Record<string, unknown> {
   const passes = Object.entries(snapshot.passParams).map(([id, params]) => ({
     id,

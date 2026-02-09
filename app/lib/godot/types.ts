@@ -63,17 +63,17 @@ export interface DynamicShaderResult {
   error?: string;
 }
 
-export interface EffectsV2Error {
+export interface EffectsError {
   code: string;
   message: string;
   details?: Record<string, unknown>;
 }
 
-export type EffectsV2Result<T = void> =
+export type EffectsResult<T = void> =
   | { success: true; data: T }
-  | { success: false; error: EffectsV2Error };
+  | { success: false; error: EffectsError };
 
-export interface EffectsV2PipelineSnapshot {
+export interface EffectsPipelineSnapshot {
   planHash: string;
   passParams: Record<string, Record<string, unknown>>;
   feedbackStates: Record<string, { frameCount: number; frozen: boolean }>;
@@ -82,16 +82,16 @@ export interface EffectsV2PipelineSnapshot {
 }
 
 export interface EffectsBridge {
-  applyGraph(plan: CompiledPlan): Promise<EffectsV2Result>;
-  clearGraph(): Promise<EffectsV2Result>;
-  updateParams(passId: string, params: Record<string, unknown>): Promise<EffectsV2Result>;
-  start(): Promise<EffectsV2Result>;
-  pause(): Promise<EffectsV2Result>;
-  resume(): Promise<EffectsV2Result>;
-  stop(): Promise<EffectsV2Result>;
-  reset(): Promise<EffectsV2Result>;
-  snapshot(): Promise<EffectsV2Result<EffectsV2PipelineSnapshot>>;
-  restore(snapshot: EffectsV2PipelineSnapshot): Promise<EffectsV2Result>;
+  applyGraph(plan: CompiledPlan): Promise<EffectsResult>;
+  clearGraph(): Promise<EffectsResult>;
+  updateParams(passId: string, params: Record<string, unknown>): Promise<EffectsResult>;
+  start(): Promise<EffectsResult>;
+  pause(): Promise<EffectsResult>;
+  resume(): Promise<EffectsResult>;
+  stop(): Promise<EffectsResult>;
+  reset(): Promise<EffectsResult>;
+  snapshot(): Promise<EffectsResult<EffectsPipelineSnapshot>>;
+  restore(snapshot: EffectsPipelineSnapshot): Promise<EffectsResult>;
 }
 
 // Sprite types

@@ -7,8 +7,8 @@ import type {
   GodotBridge,
   CollisionEvent,
   ContactInfo,
-  EffectsV2PipelineSnapshot,
-  EffectsV2Result,
+  EffectsPipelineSnapshot,
+  EffectsResult,
   SensorEvent,
   EntitySpawnedEvent,
   EntityTransform,
@@ -25,9 +25,9 @@ import type {
 } from "./types";
 import { injectGodotDebugBridge } from "./debug";
 import {
-  createEffectsV2SnapshotPayload,
-  normalizeEffectsV2Result,
-  normalizeEffectsV2Snapshot,
+  createEffectsSnapshotPayload,
+  normalizeEffectsResult,
+  normalizeEffectsSnapshot,
 } from "./GodotBridgeBase";
 import {
   queryAsync as sharedQueryAsync,
@@ -211,6 +211,12 @@ declare global {
         paramsJson?: string,
       ) => void;
       getAvailableEffects: () => void;
+      applySpriteEffect: (entityId: string, effectName: string, paramsJson: string) => void;
+      updateSpriteEffectParam: (entityId: string, paramName: string, value: unknown) => void;
+      clearSpriteEffect: (entityId: string) => void;
+      setPostEffect: (effectName: string, paramsJson: string, layer: string) => void;
+      updatePostEffectParam: (paramName: string, value: unknown, layer: string) => void;
+      clearPostEffect: (layer: string) => void;
       createUIButton: (
         buttonId: string,
         normalUrl: string,
@@ -392,16 +398,16 @@ export function createWebGodotBridge(): GodotBridge {
     return sharedQueryAsync<T>(bridge, method, args, { timeoutMs });
   };
 
-  const executeEffectsV2 = async <T = void>(
+  const executeEffects = async <T = void>(
     method: string,
     params?: Record<string, unknown>,
     mapData?: (rawData: unknown) => T,
-  ): Promise<EffectsV2Result<T>> => {
+  ): Promise<EffectsResult<T>> => {
     try {
       const raw = await queryAsync<unknown>(method, params ? [params] : []);
-      return normalizeEffectsV2Result<T>(raw, mapData);
+      return normalizeEffectsResult<T>(raw, mapData);
     } catch (error) {
-      return normalizeEffectsV2Result<T>({ success: false, error });
+      return normalizeEffectsResult<T>({ success: false, error });
     }
   };
 
@@ -1075,6 +1081,48 @@ export function createWebGodotBridge(): GodotBridge {
       return { sprite: [], post: [], particles: [] };
     },
 
+    applySpriteEffect(entityId: string, effectName: string, params?: Record<string, unknown>) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.applySpriteEffect) {
+        godotBridge.applySpriteEffect(entityId, effectName, params ? JSON.stringify(params) : '{}');
+      }
+    },
+
+    updateSpriteEffectParam(entityId: string, paramName: string, value: unknown) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.updateSpriteEffectParam) {
+        godotBridge.updateSpriteEffectParam(entityId, paramName, value);
+      }
+    },
+
+    clearSpriteEffect(entityId: string) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.clearSpriteEffect) {
+        godotBridge.clearSpriteEffect(entityId);
+      }
+    },
+
+    setPostEffect(effectName: string, params?: Record<string, unknown>, layer?: string) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.setPostEffect) {
+        godotBridge.setPostEffect(effectName, params ? JSON.stringify(params) : '{}', layer ?? 'main');
+      }
+    },
+
+    updatePostEffectParam(paramName: string, value: unknown, layer?: string) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.updatePostEffectParam) {
+        godotBridge.updatePostEffectParam(paramName, value, layer ?? 'main');
+      }
+    },
+
+    clearPostEffect(layer?: string) {
+      const godotBridge = getGodotBridge();
+      if (godotBridge?.clearPostEffect) {
+        godotBridge.clearPostEffect(layer ?? 'main');
+      }
+    },
+
     createUIButton(
       buttonId: string,
       normalImageUrl: string,
@@ -1221,48 +1269,48 @@ export function createWebGodotBridge(): GodotBridge {
     },
 
     async applyGraph(plan) {
-      return executeEffectsV2("effectsV2.applyGraph", { plan });
+      return executeEffects("effects.applyGraph", { plan });
     },
 
     async clearGraph() {
-      return executeEffectsV2("effectsV2.clearGraph");
+      return executeEffects("effects.clearGraph");
     },
 
     async updateParams(passId: string, params: Record<string, unknown>) {
-      return executeEffectsV2("effectsV2.updateParams", { passId, params });
+      return executeEffects("effects.updateParams", { passId, params });
     },
 
     async start() {
-      return executeEffectsV2("effectsV2.start");
+      return executeEffects("effects.start");
     },
 
     async pause() {
-      return executeEffectsV2("effectsV2.pause");
+      return executeEffects("effects.pause");
     },
 
     async resume() {
-      return executeEffectsV2("effectsV2.resume");
+      return executeEffects("effects.resume");
     },
 
     async stop() {
-      return executeEffectsV2("effectsV2.stop");
+      return executeEffects("effects.stop");
     },
 
     async reset() {
-      return executeEffectsV2("effectsV2.reset");
+      return executeEffects("effects.reset");
     },
 
     async snapshot() {
-      return executeEffectsV2<EffectsV2PipelineSnapshot>(
-        "effectsV2.snapshot",
+      return executeEffects<EffectsPipelineSnapshot>(
+        "effects.snapshot",
         undefined,
-        normalizeEffectsV2Snapshot,
+        normalizeEffectsSnapshot,
       );
     },
 
-    async restore(snapshot: EffectsV2PipelineSnapshot) {
-      return executeEffectsV2("effectsV2.restore", {
-        snapshot: createEffectsV2SnapshotPayload(snapshot),
+    async restore(snapshot: EffectsPipelineSnapshot) {
+      return executeEffects("effects.restore", {
+        snapshot: createEffectsSnapshotPayload(snapshot),
       });
     },
   };

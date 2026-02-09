@@ -8,7 +8,6 @@ import type {
   Value,
   Vec2 as ExprVec2,
   ParticleEmitterType,
-  SpriteEffectType,
 } from '@slopcade/shared';
 import type { CompiledPlan } from '@slopcade/shared/effects';
 
@@ -108,12 +107,9 @@ export interface BehaviorContext {
   hapticNotification(style?: string): void;
   hapticSelection(): void;
 
-  applySpriteEffect(entityId: string, effect: SpriteEffectType, params?: Record<string, unknown>): void;
-  clearSpriteEffect(entityId: string): void;
-
-  applySpriteEffectV2(entityId: string, plan: CompiledPlan): Promise<void>;
-  clearSpriteEffectV2(entityId: string): Promise<void>;
-  updateSpriteEffectParamsV2(entityId: string, passId: string, params: Record<string, unknown>): Promise<void>;
+  applySpriteEffect(entityId: string, plan: CompiledPlan): Promise<void>;
+  clearSpriteEffect(entityId: string): Promise<void>;
+  updateSpriteEffectParams(entityId: string, passId: string, params: Record<string, unknown>): Promise<void>;
 
   resolveNumber(value: Value<number>): number;
   resolveVec2(value: Value<ExprVec2>): ExprVec2;

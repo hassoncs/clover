@@ -3,14 +3,9 @@ import {
   checkBudget,
   PerformanceHarness,
 } from '../budget';
-import type {
-  BudgetCheckResult,
-  BudgetViolation,
-  BudgetMetrics,
-} from '../budget';
 import type { CompiledPlan, CompiledPass, ResourceRef, FeedbackPolicy } from '../types';
-import { BUDGET_TIER_PRESETS } from '../../types/effect-budget';
-import type { PlatformTier } from '../../types/effect-budget';
+import { BUDGET_TIER_PRESETS } from '../budget';
+import type { PlatformTier } from '../types';
 
 function makeResourceRef(overrides: Partial<ResourceRef> & { id: string }): ResourceRef {
   return {

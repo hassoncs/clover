@@ -43,7 +43,7 @@ const spriteEffectHandler: BehaviorHandlerSet = {
       const pulsedIntensity = pulseIntensity * (0.5 + 0.5 * Math.sin(state.elapsed * Math.PI * 4));
       
       if (state.passId) {
-        context.updateSpriteEffectParamsV2(context.entity.id, state.passId, {
+        context.updateSpriteEffectParams(context.entity.id, state.passId, {
           intensity: pulsedIntensity,
         }).catch(err => {
           console.error('[SpriteEffect] Failed to update params:', err);
@@ -59,15 +59,15 @@ const spriteEffectHandler: BehaviorHandlerSet = {
       const plan = compileSingleEffect(b.effect, b.params as Record<string, ParamValue> ?? {});
       state.passId = plan.passes[0]?.id;
       
-      context.applySpriteEffectV2(context.entity.id, plan).catch(err => {
+      context.applySpriteEffect(context.entity.id, plan).catch(err => {
         console.error('[SpriteEffect] Failed to apply effect:', err);
       });
     } catch (err) {
       console.error('[SpriteEffect] Failed to compile effect:', err);
     }
   },
-  onDeactivate: (behavior, context) => {
-    context.clearSpriteEffectV2(context.entity.id).catch(err => {
+  onDeactivate: (_behavior, context) => {
+    context.clearSpriteEffect(context.entity.id).catch(err => {
       console.error('[SpriteEffect] Failed to clear effect:', err);
     });
   },

@@ -38,6 +38,7 @@ export function createMockGodotBridge(): GodotBridge {
     setRotation: vi.fn(),
     setScale: vi.fn(),
     setOpacity: vi.fn(),
+    setVisible: vi.fn(),
 
     getLinearVelocity: vi.fn().mockResolvedValue({ x: 0, y: 0 }),
     setLinearVelocity: vi.fn(),
@@ -67,7 +68,7 @@ export function createMockGodotBridge(): GodotBridge {
 
     setUserData: vi.fn(),
     getUserData: vi.fn().mockResolvedValue(null),
-    getAllBodies: vi.fn().mockResolvedValue([]),
+    getAllEntities: vi.fn().mockResolvedValue([]),
 
     onCollision: vi.fn().mockReturnValue(() => {}),
     onEntityDestroyed: vi.fn().mockReturnValue(() => {}),
@@ -95,12 +96,14 @@ export function createMockGodotBridge(): GodotBridge {
     setCameraTarget: vi.fn(),
     setCameraPosition: vi.fn(),
     setCameraZoom: vi.fn(),
+    startCamera: vi.fn(),
+    stopCamera: vi.fn(),
 
     spawnParticle: vi.fn(),
 
     playSound: vi.fn(),
 
-    // Effects V2 methods
+    // Effects Graph methods
     applyGraph: vi.fn().mockResolvedValue({ success: true, data: undefined }),
     clearGraph: vi.fn().mockResolvedValue({ success: true, data: undefined }),
     updateParams: vi.fn().mockResolvedValue({ success: true, data: undefined }),
@@ -133,6 +136,12 @@ export function createMockGodotBridge(): GodotBridge {
     spawnParticlePreset: vi.fn(),
 
     getAvailableEffects: vi.fn().mockResolvedValue({ sprite: [], post: [], particles: [] }),
+    applySpriteEffect: vi.fn(),
+    updateSpriteEffectParam: vi.fn(),
+    clearSpriteEffect: vi.fn(),
+    setPostEffect: vi.fn(),
+    updatePostEffectParam: vi.fn(),
+    clearPostEffect: vi.fn(),
 
     createPixelBuffer: vi.fn(),
     pixelBufferDraw: vi.fn(),

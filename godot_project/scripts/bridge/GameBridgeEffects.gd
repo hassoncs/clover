@@ -68,18 +68,18 @@ func _register_query_handlers() -> void:
 	if qs == null:
 		return
 
-	qs.register_handler("effectsV2.applyGraph", func(args):
+	qs.register_handler("effects.applyGraph", func(args):
 		if args.size() > 0 and args[0] is Dictionary:
 			return apply_plan(args[0].get("plan", args[0]))
 		return {"success": false, "error": "Missing plan argument"}
 	)
 
-	qs.register_handler("effectsV2.clearGraph", func(_args):
+	qs.register_handler("effects.clearGraph", func(_args):
 		clear_plan()
 		return {"success": true}
 	)
 
-	qs.register_handler("effectsV2.updateParams", func(args):
+	qs.register_handler("effects.updateParams", func(args):
 		if args.size() > 0 and args[0] is Dictionary:
 			var pass_id = str(args[0].get("passId", ""))
 			var params = args[0].get("params", {})
@@ -89,36 +89,36 @@ func _register_query_handlers() -> void:
 		return {"success": false, "error": "Missing arguments"}
 	)
 
-	qs.register_handler("effectsV2.start", func(_args):
+	qs.register_handler("effects.start", func(_args):
 		start_graph()
 		return {"success": true}
 	)
 
-	qs.register_handler("effectsV2.pause", func(_args):
+	qs.register_handler("effects.pause", func(_args):
 		pause_graph()
 		return {"success": true}
 	)
 
-	qs.register_handler("effectsV2.resume", func(_args):
+	qs.register_handler("effects.resume", func(_args):
 		resume_graph()
 		return {"success": true}
 	)
 
-	qs.register_handler("effectsV2.stop", func(_args):
+	qs.register_handler("effects.stop", func(_args):
 		stop_graph()
 		return {"success": true}
 	)
 
-	qs.register_handler("effectsV2.reset", func(_args):
+	qs.register_handler("effects.reset", func(_args):
 		reset_graph()
 		return {"success": true}
 	)
 
-	qs.register_handler("effectsV2.snapshot", func(_args):
+	qs.register_handler("effects.snapshot", func(_args):
 		return get_snapshot()
 	)
 
-	qs.register_handler("effectsV2.restore", func(args):
+	qs.register_handler("effects.restore", func(args):
 		if args.size() > 0 and args[0] is Dictionary:
 			return restore_snapshot(args[0].get("snapshot", args[0]))
 		return {"success": false, "error": "Missing snapshot argument"}

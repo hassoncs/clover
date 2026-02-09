@@ -2,13 +2,13 @@ import { describe, expect, it, expectTypeOf } from 'vitest';
 
 import type {
   EffectsBridge,
-  EffectsV2PipelineSnapshot,
-  EffectsV2Result,
+  EffectsPipelineSnapshot,
+  EffectsResult,
 } from '../types';
 import {
-  createEffectsV2SnapshotPayload,
-  normalizeEffectsV2Result,
-  normalizeEffectsV2Snapshot,
+  createEffectsSnapshotPayload,
+  normalizeEffectsResult,
+  normalizeEffectsSnapshot,
 } from '../GodotBridgeBase';
 
 type WebBridge = ReturnType<typeof import('../GodotBridge.web').createWebGodotBridge>;
@@ -24,19 +24,19 @@ describe('effects bridge contracts', () => {
   });
 
   it('normalizes error result shape consistently', () => {
-    const result = normalizeEffectsV2Result({ success: false, error: 'boom' });
+    const result = normalizeEffectsResult({ success: false, error: 'boom' });
 
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error).toEqual({
-        code: 'E_EFFECTS_V2_EXECUTION',
+        code: 'E_EFFECTS_EXECUTION',
         message: 'boom',
       });
     }
   });
 
   it('normalizes snapshot result with required fields', () => {
-    const snapshot = normalizeEffectsV2Snapshot({
+    const snapshot = normalizeEffectsSnapshot({
       planHash: 'abc123',
       passes: [
         { id: 'pass-a', params: { intensity: 0.7 } },
@@ -57,7 +57,7 @@ describe('effects bridge contracts', () => {
   });
 
   it('creates restore payload compatible with runtime snapshots', () => {
-    const snapshot: EffectsV2PipelineSnapshot = {
+    const snapshot: EffectsPipelineSnapshot = {
       planHash: 'hash',
       passParams: {
         p1: { amount: 0.5 },
@@ -69,7 +69,7 @@ describe('effects bridge contracts', () => {
       timestamp: 42,
     };
 
-    expect(createEffectsV2SnapshotPayload(snapshot)).toEqual({
+    expect(createEffectsSnapshotPayload(snapshot)).toEqual({
       planHash: 'hash',
       state: 'paused',
       timestamp: 42,
@@ -81,9 +81,9 @@ describe('effects bridge contracts', () => {
   });
 
   it('effects result type preserves payload type', () => {
-    type SnapshotResult = EffectsV2Result<EffectsV2PipelineSnapshot>;
+    type SnapshotResult = EffectsResult<EffectsPipelineSnapshot>;
     expectTypeOf<SnapshotResult>().toEqualTypeOf<
-      | { success: true; data: EffectsV2PipelineSnapshot }
+      | { success: true; data: EffectsPipelineSnapshot }
       | { success: false; error: { code: string; message: string; details?: Record<string, unknown> } }
     >();
   });

@@ -6,8 +6,8 @@ import type {
 import type {
   GodotBridge,
   CollisionEvent,
-  EffectsV2PipelineSnapshot,
-  EffectsV2Result,
+  EffectsPipelineSnapshot,
+  EffectsResult,
   SensorEvent,
   EntitySpawnedEvent,
   EntityTransform,
@@ -31,9 +31,9 @@ import './react-native-godot.d';
 import { BridgeCore, type BridgeMessage } from './BridgeCore';
 import { createCallbackArrays, createCallbackMethods, clearAllCallbacks } from './callback-registry';
 import {
-  createEffectsV2SnapshotPayload,
-  normalizeEffectsV2Result,
-  normalizeEffectsV2Snapshot,
+  createEffectsSnapshotPayload,
+  normalizeEffectsResult,
+  normalizeEffectsSnapshot,
 } from './GodotBridgeBase';
 
 class NativeBridgeCore extends BridgeCore {
@@ -298,11 +298,11 @@ export function createNativeGodotBridge(): GodotBridge {
     scheduleNextPoll();
   }
 
-  const executeEffectsV2 = async <T = void>(
+  const executeEffects = async <T = void>(
     method: string,
     params?: Record<string, unknown>,
     mapData?: (rawData: unknown) => T,
-  ): Promise<EffectsV2Result<T>> => {
+  ): Promise<EffectsResult<T>> => {
     try {
       const response = await callGameBridgeAsync('callRpc', JSON.stringify({ method, params }));
       const parsed = typeof response === 'string' ? JSON.parse(response) : response;
@@ -310,9 +310,9 @@ export function createNativeGodotBridge(): GodotBridge {
         ? (parsed as { result: unknown }).result
         : parsed;
 
-      return normalizeEffectsV2Result<T>(raw, mapData);
+      return normalizeEffectsResult<T>(raw, mapData);
     } catch (error) {
-      return normalizeEffectsV2Result<T>({ success: false, error });
+      return normalizeEffectsResult<T>({ success: false, error });
     }
   };
 
@@ -494,48 +494,48 @@ export function createNativeGodotBridge(): GodotBridge {
     },
 
     async applyGraph(plan) {
-      return executeEffectsV2('effectsV2.applyGraph', { plan });
+      return executeEffects('effects.applyGraph', { plan });
     },
 
     async clearGraph() {
-      return executeEffectsV2('effectsV2.clearGraph');
+      return executeEffects('effects.clearGraph');
     },
 
     async updateParams(passId: string, params: Record<string, unknown>) {
-      return executeEffectsV2('effectsV2.updateParams', { passId, params });
+      return executeEffects('effects.updateParams', { passId, params });
     },
 
     async start() {
-      return executeEffectsV2('effectsV2.start');
+      return executeEffects('effects.start');
     },
 
     async pause() {
-      return executeEffectsV2('effectsV2.pause');
+      return executeEffects('effects.pause');
     },
 
     async resume() {
-      return executeEffectsV2('effectsV2.resume');
+      return executeEffects('effects.resume');
     },
 
     async stop() {
-      return executeEffectsV2('effectsV2.stop');
+      return executeEffects('effects.stop');
     },
 
     async reset() {
-      return executeEffectsV2('effectsV2.reset');
+      return executeEffects('effects.reset');
     },
 
     async snapshot() {
-      return executeEffectsV2<EffectsV2PipelineSnapshot>(
-        'effectsV2.snapshot',
+      return executeEffects<EffectsPipelineSnapshot>(
+        'effects.snapshot',
         undefined,
-        normalizeEffectsV2Snapshot,
+        normalizeEffectsSnapshot,
       );
     },
 
-    async restore(snapshot: EffectsV2PipelineSnapshot) {
-      return executeEffectsV2('effectsV2.restore', {
-        snapshot: createEffectsV2SnapshotPayload(snapshot),
+    async restore(snapshot: EffectsPipelineSnapshot) {
+      return executeEffects('effects.restore', {
+        snapshot: createEffectsSnapshotPayload(snapshot),
       });
     },
 
@@ -1000,6 +1000,30 @@ export function createNativeGodotBridge(): GodotBridge {
         post: ['vignette', 'scanlines', 'chromatic_aberration', 'shockwave', 'blur', 'crt', 'color_grading', 'glitch', 'motion_blur', 'pixelate_screen', 'shimmer'],
         particles: ['fire', 'smoke', 'sparks', 'magic', 'explosion', 'rain', 'snow', 'bubbles', 'confetti', 'dust', 'leaves', 'stars', 'blood', 'coins'],
       };
+    },
+
+    applySpriteEffect(entityId: string, effectName: string, params?: Record<string, unknown>) {
+      callEffectsBridge('apply_sprite_effect', entityId, effectName, params ?? {});
+    },
+
+    updateSpriteEffectParam(entityId: string, paramName: string, value: unknown) {
+      callEffectsBridge('update_sprite_effect_param', entityId, paramName, value);
+    },
+
+    clearSpriteEffect(entityId: string) {
+      callEffectsBridge('clear_sprite_effect', entityId);
+    },
+
+    setPostEffect(effectName: string, params?: Record<string, unknown>, layer?: string) {
+      callEffectsBridge('set_post_effect', effectName, params ?? {}, layer ?? 'main');
+    },
+
+    updatePostEffectParam(paramName: string, value: unknown, layer?: string) {
+      callEffectsBridge('update_post_effect_param', paramName, value, layer ?? 'main');
+    },
+
+    clearPostEffect(layer?: string) {
+      callEffectsBridge('clear_post_effect', layer ?? 'main');
     },
 
     createUIButton(
