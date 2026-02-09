@@ -1,0 +1,48 @@
+# Bridge Contract Diff Report
+
+**Task:** Task 1 - Establish Bridge Contract Baseline
+**Date:** 2026-02-09
+**Worktree:** refactor/godot-bridge-dedup-dispatch
+
+## Changes from Previous Baseline
+
+### File: bridge-contract-baseline.md
+
+**Status:** Updated with comprehensive method enumeration
+
+**Key Additions:**
+1. Detailed method inventory by category (13 categories)
+2. Explicit argument counts and module ownership
+3. Platform parity analysis (native vs web)
+4. Query system handler enumeration
+5. 3D method verification (8 methods confirmed present)
+
+**Method Count:**
+- Native methods: 83
+- Web methods: 76
+- Query handlers: 46
+- Total unique methods: 129
+
+**Platform Gaps Identified:**
+- 6 native-only methods (spawn_entity_with_id, *_from_file variants, themed UI)
+- All 8 3D viewport methods present in both paths
+
+**Naming Conventions:**
+- Native: snake_case
+- Web: camelCase (except 3D methods and pixel buffer)
+- 3D methods: snake_case in BOTH paths
+- Pixel buffer: camelCase in BOTH paths
+
+## Verification Status
+
+✅ All 3D methods present in native _method_map (lines 258-265)
+✅ All 3D methods present in web extra_callbacks (lines 355-362)
+✅ TypeScript bridge calls match native method names
+✅ No missing critical methods detected
+
+## Next Task Dependencies
+
+Task 2 can proceed with:
+- Full method inventory available
+- Platform differences documented
+- 3D method preservation requirements clear

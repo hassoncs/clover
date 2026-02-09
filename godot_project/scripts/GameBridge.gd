@@ -101,6 +101,7 @@ func _ready() -> void:
 	_setup_js_bridge()
 	print("[GameBridge] JS Bridge setup complete")
 	_log_physics_diagnostics()
+	_log_bridge_registry()
 
 func set_inspect_mode(enabled: bool) -> void:
 	if _debug_bridge: _debug_bridge.get_time_module().set_inspect_mode(enabled)
@@ -162,6 +163,7 @@ func _register_core_query_handlers() -> void:
 	_query_system.register_handler("getSplatTexture", func(_args): return get_splat_texture())
 
 func _build_method_map() -> void:
+	var is_dev = OS.is_debug_build()
 	_method_map = {
 		# Core lifecycle
 		"load_game_json": func(args): return load_game_json(str(args[0])) if args.size() > 0 else false,
@@ -263,7 +265,17 @@ func _build_method_map() -> void:
 		"set_3d_camera_distance": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_distance(float(args[0])),
 		"set_3d_camera_size": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_size(float(args[0])),
 		"clear_3d_models": func(_args): if _viewport_3d: _viewport_3d.clear_models(),
+		# Runtime diagnostics
+		"get_bridge_methods": func(_args): return get_bridge_methods(),
 	}
+	
+	# Log any collisions/overrides during registration
+	if is_dev:
+		var seen_methods = {}
+		for method_name in _method_map:
+			if seen_methods.has(method_name):
+				push_warning("[GameBridge][REGISTRY] COLLISION: Method '%s' registered multiple times" % method_name)
+			seen_methods[method_name] = true
 
 func native_dispatch(method_name: String, args_json: String) -> Variant:
 	print("[GameBridge][DISPATCH] ", method_name, " args=", args_json.substr(0, 200))
@@ -430,6 +442,85 @@ func _log_physics_diagnostics() -> void:
 			rapier_classes.append(cls)
 	print("[GameBridge][DIAG] Rapier-related classes: ", rapier_classes)
 	print("[GameBridge][DIAG] === END DIAGNOSTICS ===")
+
+func _log_bridge_registry() -> void:
+	var is_dev = OS.is_debug_build()
+	if not is_dev:
+		return
+	
+	print("[GameBridge][REGISTRY] === BRIDGE METHOD REGISTRY ===")
+	print("[GameBridge][REGISTRY] Total methods: ", _method_map.size())
+	
+	# Group methods by module owner
+	var by_module = {}
+	for method_name in _method_map:
+		var owner = _get_method_owner(method_name)
+		if not by_module.has(owner):
+			by_module[owner] = []
+		by_module[owner].append(method_name)
+	
+	# Print summary by module
+	for module in by_module:
+		var methods = by_module[module]
+		print("[GameBridge][REGISTRY]   ", module, ": ", methods.size(), " methods")
+		if methods.size() <= 5:
+			for method in methods:
+				print("[GameBridge][REGISTRY]     - ", method)
+	
+	print("[GameBridge][REGISTRY] === END REGISTRY ===")
+
+func _get_method_owner(method_name: String) -> String:
+	# Determine module owner based on method name patterns
+	if method_name.begins_with("spawn_") or method_name.begins_with("destroy_") or method_name.begins_with("get_entity") or method_name.begins_with("get_all_bodies") or method_name.begins_with("set_user_data") or method_name.begins_with("get_user_data"):
+		return "EntityManager"
+	elif method_name.begins_with("set_linear_velocity") or method_name.begins_with("set_angular_velocity") or method_name.begins_with("apply_") or method_name.begins_with("get_linear_velocity") or method_name.begins_with("get_angular_velocity"):
+		return "PhysicsController"
+	elif method_name.begins_with("set_transform") or method_name.begins_with("set_position") or method_name.begins_with("set_rotation") or method_name.begins_with("set_scale") or method_name.begins_with("get_all_transforms"):
+		return "TransformSystem"
+	elif method_name.begins_with("set_opacity") or method_name.begins_with("set_visible") or method_name.begins_with("set_entity_image") or method_name.begins_with("set_entity_atlas") or method_name.begins_with("preload_textures") or method_name.begins_with("set_debug") or method_name.begins_with("clear_texture_cache"):
+		return "VisualRenderer"
+	elif method_name.begins_with("createPixelBuffer") or method_name.begins_with("pixelBuffer") or method_name.begins_with("destroyPixelBuffer"):
+		return "PixelBufferManager"
+	elif method_name.begins_with("create_") and ("joint" in method_name or method_name.begins_with("destroy_joint") or method_name.begins_with("destroy_mouse_joint") or method_name.begins_with("set_motor_speed") or method_name.begins_with("set_mouse_target") or method_name.begins_with("get_last_joint_id")):
+		return "JointManager"
+	elif method_name.begins_with("query_") or method_name.begins_with("raycast") or method_name.begins_with("screen_to_world"):
+		return "PhysicsQueries"
+	elif method_name.begins_with("on_transform_sync") or method_name.begins_with("on_property_sync") or method_name.begins_with("set_watch_config") or method_name.begins_with("get_transform") or method_name.begins_with("get_transforms") or method_name.begins_with("set_tracked_entities"):
+		return "SyncSystem"
+	elif method_name.begins_with("send_input") or method_name.begins_with("on_input_event") or method_name.begins_with("on_collision") or method_name.begins_with("on_entity_destroyed") or method_name.begins_with("on_sensor"):
+		return "EventEmitter/InputRouter"
+	elif method_name.begins_with("set_camera") or method_name.begins_with("start_camera") or method_name.begins_with("stop_camera"):
+		return "CameraController"
+	elif method_name.begins_with("spawn_particle") or method_name.begins_with("play_sound") or method_name.begins_with("create_ui") or method_name.begins_with("destroy_ui") or method_name.begins_with("on_ui_button_event") or method_name.begins_with("create_themed_ui") or method_name.begins_with("destroy_themed_ui"):
+		return "UIManager"
+	elif method_name.begins_with("show_3d") or method_name.begins_with("set_3d") or method_name.begins_with("rotate_3d") or method_name.begins_with("clear_3d"):
+		return "Viewport3D"
+	elif method_name.begins_with("get_all_properties"):
+		return "PropertyCollector"
+	elif method_name == "load_game_json" or method_name == "clear_game" or method_name == "set_inspect_mode" or method_name == "pause_physics" or method_name == "resume_physics" or method_name == "load_custom_scene":
+		return "GameBridge"
+	else:
+		return "Unknown"
+
+func get_bridge_methods() -> Dictionary:
+	var result = {
+		"methods": [],
+		"byModule": {},
+		"total": _method_map.size()
+	}
+	
+	for method_name in _method_map:
+		var owner = _get_method_owner(method_name)
+		result.methods.append({
+			"name": method_name,
+			"owner": owner
+		})
+		
+		if not result.byModule.has(owner):
+			result.byModule[owner] = []
+		result.byModule[owner].append(method_name)
+	
+	return result
 
 func enable_splat_map() -> void: if _splat_map_system: _splat_map_system.enable()
 func disable_splat_map() -> void: if _splat_map_system: _splat_map_system.disable()
