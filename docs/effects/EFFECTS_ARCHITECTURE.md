@@ -150,69 +150,84 @@ Operations:
 - `stop()` — freeze (preserve content) or clear based on policy
 - `reset()` — clear both viewports, reset indices to 0/1
 
-## Ping-Pong: The Three-Texture Model
+## Ping-Pong: The Two-Buffer Scene-Graph Model
 
-For a feedback effect (like paint spreading), there are **three textures** in play:
+> **Design Principle**: TypeScript is the Director, Godot is the Artist.
+> TS sends high-level draw commands (normalized coords). Godot creates GPU scene-graph nodes.
+> No per-frame CPU→GPU texture uploads.
+
+For a feedback effect (like paint spreading), there are **two viewports** that ping-pong, plus scene-graph draw nodes:
 
 ```
 ┌──────────────────────┐
-│  Pixel Buffer        │  ◀── User draws here (Image + ImageTexture)
-│  (entity_input)      │      Always live, always the "source of truth"
-└──────────┬───────────┘      for what the user has painted
-           │
-           │  shader reads via "entity_input" uniform
+│  Pixel Buffer        │  ◀── Source of truth when STOPPED
+│  (Image+ImageTexture)│      User draws here via CPU Image ops (infrequent)
+└──────────┬───────────┘
+           │  one-shot seed on Start
            ▼
 ┌──────────────────────┐     ┌──────────────────────┐
 │  Viewport A          │◀───▸│  Viewport B          │
-│  (ping-pong buffer)  │     │  (ping-pong buffer)  │
+│  ├── ColorRect       │     │  ├── ColorRect       │
+│  │   (shader)        │     │  │   (shader)        │
+│  └── Node2D          │     │  └── Node2D          │
+│      (draw container)│     │      (draw container)│
+│      ├── Line2D      │     │      └── (empty)     │
+│      └── Line2D      │     │                      │
 └──────────────────────┘     └──────────────────────┘
      One is READ                  One is WRITE
      (previous frame)             (current frame renders here)
      They swap each frame
 ```
 
-The shader runs inside the WRITE viewport and reads from:
+The shader runs inside the WRITE viewport's ColorRect and reads from:
 1. `current_buffer` — the READ viewport's texture (previous frame's output)
-2. `entity_input` — the pixel buffer's ImageTexture (live user drawings)
 
-The shader combines them:
+New draw commands from TypeScript are converted from normalized (0–1) coordinates to viewport-local pixel positions and injected as **`Line2D`/`Sprite2D` children** of the WRITE viewport's draw container. These render on the GPU in tree order — on top of the shader's output — compositing seamlessly. No `ImageTexture.update()` needed.
+
+The shader is pure feedback — one input, one output:
 ```glsl
-// Blur/spread the previous frame
+// Blur/spread the previous frame (includes last frame's draws, already composited)
 vec4 blurred = blur(current_buffer, UV);
-
-// Check if the user drew something here
-float is_drawn = 1.0 - smoothstep(0.9, 1.0, brightness(entity_input));
-
-// Drawn pixels override, undrawn pixels show the evolved feedback
-COLOR = mix(blurred, entity, is_drawn);
+COLOR = blurred;
 ```
 
 ### Lifecycle: Draw → Start → Draw → Stop → Draw → Start
 
 | Step | Pixel Buffer | Ping-Pong Viewports | Sprite Shows |
 |------|-------------|---------------------|--------------|
-| **Draw** | User modifies Image → ImageTexture.update() | — | Pixel buffer |
-| **Start** | Unchanged | Cleared, begin rendering | Viewport output (after 2-frame delay) |
-| **Draw while running** | User modifies Image → ImageTexture.update() | Shader reads live entity_input | Viewport output (new draws visible in shader) |
-| **Stop** | Baked: viewport output → Image + ImageTexture | Frozen | Pixel buffer (now contains baked evolved state) |
-| **Draw after stop** | User draws on top of baked content | Still frozen | Pixel buffer |
-| **Start again** | Unchanged | **Reset** (cleared), begin fresh | Viewport output |
+| **Draw** | User draws (CPU Image, `set_pixel()`) | — | Pixel buffer |
+| **Start** | Unchanged | Seeded from pixel buffer (one-shot upload), begin rendering | Viewport output (after 2-frame delay) |
+| **Draw while running** | Unchanged | Draw commands → `Line2D`/`Sprite2D` nodes in write viewport (GPU, no upload) | Viewport output (new draws composited by scene graph) |
+| **Stop** | Baked: viewport output → Image + ImageTexture (one-shot download) | Frozen | Pixel buffer (now contains baked evolved state) |
+| **Draw after stop** | User draws on top of baked content (CPU Image) | Still frozen | Pixel buffer |
+| **Start again** | Unchanged | **Reset** (cleared), seed from pixel buffer, begin fresh | Viewport output |
 
-The key insight: **Stop bakes the evolved state back into the pixel buffer**, so the user is always drawing on top of whatever the shader produced. **Start always begins fresh** from the current pixel buffer state — stale ping-pong content is cleared.
+The key insight: **Stop bakes the evolved state back into the pixel buffer**, so the user is always drawing on top of whatever the shader produced. **Start always begins fresh** from the current pixel buffer state. CPU↔GPU transfers only happen at start (seed) and stop (bake) — never per-frame.
+
+### Per-Frame Draw Node Lifecycle
+
+After each swap:
+1. The old WRITE viewport (now READ) has rendered — its draw nodes are composited into its texture
+2. Those draw nodes are detached (`remove_child()`) then freed (`queue_free()`). Using `remove_child()` first is critical — `queue_free()` alone leaves nodes in the scene tree until end-of-frame, which breaks `get_children()` checks and may cause the viewport to render stale nodes.
+3. The new WRITE viewport's draw container is empty and ready for fresh draws
+4. New `Line2D`/`Sprite2D` nodes are added for this frame's draw commands
+
+### Bridge Data Protocol
+
+Draw commands from TypeScript use **normalized coordinates (0.0–1.0)** with **flat arrays** for point data to minimize JSON parse overhead:
+
+```typescript
+// Flat [x,y,x,y,...] — parsed into PackedVector2Array on Godot side
+{ type: "stroke", points: [0.2, 0.4, 0.21, 0.41, 0.22, 0.42], color: "#f00", width: 0.006 }
+```
+
+- **Positions**: `x` and `y` are 0.0–1.0 relative to the viewport dimensions
+- **Width**: Relative to **viewport height** (not width) — ensures circular brushes on non-square viewports
+- **One `Line2D` per stroke**: Prefer one node with many points over many nodes with few points
 
 ### Alpha Handling
 
-Ping-pong viewports use `transparent_bg = true`, which means they clear to `rgba(0,0,0,0)`. On the first frame after start/reset, the feedback buffer is empty. The shaders handle this with an alpha fallback:
-
-```glsl
-vec4 result = mix(blurred, entity, is_drawn);
-// When buffer is uninitialized (alpha==0), fall back to entity texture
-result.rgb = mix(entity.rgb, result.rgb, c.a);
-result.a = 1.0;
-COLOR = result;
-```
-
-This ensures white areas stay white on frame 1 (instead of turning black from empty-buffer reads), and the evolution begins naturally from frame 2 onward.
+Ping-pong viewports use `transparent_bg = true`, which means they clear to `rgba(0,0,0,0)`. On the first frame after start/reset, the feedback buffer is empty. The seeding mechanism copies the pixel buffer content into the ping-pong pair so the shader sees existing content on frame 1.
 
 ## Future: Shader Fusion (Mega-Shaders)
 
@@ -222,6 +237,112 @@ Each EffectNode has a `fusible` flag:
 - `"never"` — must remain a separate pass (e.g., needs its own viewport for resolution changes)
 
 The compiler could eventually fuse compatible adjacent nodes into a single "mega-shader" pass, reducing the number of SubViewports and texture reads. This is the "compose shaders into a unified shader" capability. The infrastructure for this exists in the type system but the fusion pass isn't implemented yet.
+
+### Parameter Introspection & Unified Schema
+
+Effect parameters are currently defined in three separate locations, which causes drift and makes it impossible for a downstream consumer (like a tuning panel) to get complete metadata from a single place.
+
+**Current state (three sources of truth)**:
+```
+EffectParamMeta (metadata.ts)         — UI: displayName, type (number/color/boolean/select), min/max/step
+NodeTypeRegistration.paramsSchema     — Registry: name, type (float/int/vec2/.../bool), range, defaultValue  
+EffectNode.params (types.ts)          — Runtime: Record<string, ParamValue> (values only, no metadata)
+```
+
+**Target state (single source of truth)**:
+```
+EffectParamSchema (types.ts)          — Unified: key, uniformName, type (UniformType), defaultValue, ui hints
+  │
+  ├── Used by: EffectNode.paramsSchema (attached to each node)
+  ├── Used by: CompiledPass.paramsSchema (carried through compilation)
+  ├── Used by: NodeTypeRegistration.paramsSchema (registry)
+  └── Used by: EffectTuningPanel (React UI auto-generates controls)
+```
+
+The unified type:
+```typescript
+export interface EffectParamSchema {
+  key: string;
+  uniformName: string;
+  type: UniformType;          // 'float' | 'int' | 'vec2' | 'vec3' | 'vec4' | 'color' | 'bool'
+  defaultValue: ParamValue;
+  ui?: {
+    displayName: string;
+    category?: string;
+    min?: number;
+    max?: number;
+    step?: number;
+    options?: string[];
+    description?: string;
+  };
+}
+```
+
+Note that this follows the same pattern as the game engine's `VariableWithTuning` which has `{ value, tuning: { min, max, step }, category, label, description }` and auto-generates `TunableSlider` controls in the `TuningPanel`. The effect system's `EffectParamSchema` is the equivalent — it carries enough metadata to auto-generate UI controls.
+
+### Uniform Hot-Path (Live Editing)
+
+Two paths exist for updating effect parameters — the normal path (full graph rebuild) and the hot path (direct uniform update):
+
+```
+Normal path (graph rebuild):
+  TS: change param value in spec → recompile → send new CompiledPlan → Godot rebuilds viewports
+  Cost: ~50-100ms, visible flicker
+
+Hot path (uniform update):
+  TS: bridge.effectsUpdateParams(nodeId, { intensity: 0.7 })
+     → GameBridgeEffects._js_effects_update_params()
+     → GraphExecutor.update_params(pass_id, params)
+     → shader_material.set_shader_parameter("intensity", 0.7)
+  Cost: <1ms, no flicker, no rebuild
+```
+
+Note that `_apply_params()` in GraphExecutor.gd already does `set_shader_parameter()` — the hot-path method is just a public entry point that reuses this logic on an existing material without rebuilding.
+
+### Live Shader Compilation (No Pre-Baked Files)
+
+The architecture moves all shader source code from pre-baked `.gdshader` files on disk into the TypeScript registry as inline GLSL strings, creating a single code path for all shader compilation:
+
+**Current flow**:
+```
+EffectGraphSpec node with { type: "builtin", effectType: "blur" }
+  → Compiler passes through unchanged
+  → Godot: _resolve_shader() → _resolve_builtin_shader_path()
+  → load("res://shaders/post_process/blur.gdshader")
+```
+
+**Target flow**:
+```
+EffectGraphSpec node with { type: "builtin", effectType: "blur" }
+  → Compiler looks up GLSL from shaderLibrary.ts
+  → Converts to { type: "custom", glsl: "shader_type canvas_item;..." }
+  → Godot: _resolve_shader() → _build_custom_shader(glsl)
+  → All shaders go through one code path
+```
+
+Key architectural points:
+- TypeScript registry becomes the single source of truth for ALL shader code
+- No .gdshader files on disk — everything is inline GLSL in the TS shader library
+- AI can generate and modify shaders without touching the file system
+- Hot reload: change GLSL in registry → recompile plan → hot-swap (Phase 7)
+- `SPRITE_SHADER_PATHS`, `POST_SHADER_PATHS`, `EFFECT_TYPE_TO_SHADER`, and `_resolve_builtin_shader_path()` are removed from GraphExecutor.gd
+
+### Effect Tuning Panel
+
+Brief description of the React component that mirrors the game engine's TuningPanel:
+
+```
+EffectTuningPanel
+  ├── Receives: active EffectGraphSpec + EffectParamSchema[]
+  ├── Groups params by ui.category
+  ├── Per param type:
+  │   ├── number → Slider (min/max/step from schema)
+  │   ├── color  → Color Picker
+  │   ├── bool   → Toggle Switch
+  │   └── select → Dropdown (options from schema)
+  └── On change: bridge.effectsUpdateParams(nodeId, { key: value })
+       → Uniform hot-path (no graph rebuild)
+```
 
 ## File Map
 
@@ -240,16 +361,26 @@ The compiler could eventually fuse compatible adjacent nodes into a single "mega
 | `shared/src/effects/registry.ts` | Registry of available effects |
 | `shared/src/effects/authoring.ts` | Helpers for constructing EffectGraphSpec |
 | `shared/src/effects/normalizer.ts` | Normalize legacy specs |
+| `shared/src/effects/shaderLibrary.ts` | Inline GLSL source strings for all builtin effects (replaces .gdshader files) |
 
 ### GDScript (runtime)
 
 | File | Purpose |
 |------|---------|
-| `godot_project/scripts/effects/GraphExecutor.gd` | State machine, per-frame loop, pass orchestration |
+| `godot_project/scripts/effects/GraphExecutor.gd` | State machine, per-frame loop, pass orchestration, render ordering |
 | `godot_project/scripts/effects/ResourceGraph.gd` | Texture allocation, uniform binding |
-| `godot_project/scripts/effects/PingPongManager.gd` | SubViewport pair management for feedback |
+| `godot_project/scripts/effects/PingPongManager.gd` | SubViewport pair management for feedback + scene-graph draw containers |
+| `godot_project/scripts/effects/ViewportPool.gd` | Pre-allocated SubViewport pool (acquire/release, no mid-effect instantiation) |
+| `godot_project/scripts/effects/ShaderWarmer.gd` | Pre-compile builtin shaders at startup, warm custom shaders at apply_plan |
 | `godot_project/scripts/bridge/GameBridgeEffects.gd` | Bridge between React/TS and Godot effects system |
 | `godot_project/scripts/bridge/PixelBufferManager.gd` | Creates pixel buffer entities (Image + ImageTexture + Sprite2D) |
+
+### React (UI)
+
+| File | Purpose |
+|------|---------|
+| `app/components/effects/EffectTuningPanel.tsx` | Live param editing panel (auto-generated from EffectParamSchema) |
+| `app/components/effects/EffectParamControl.tsx` | Individual param control (slider, color picker, toggle, dropdown) |
 
 ### Tests
 

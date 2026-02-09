@@ -69,8 +69,6 @@ uniform float dt;
 
 void fragment() {
     vec4 c = texture(current_buffer, UV);
-
-    // Blur the entire feedback buffer — no pixel discrimination
     vec4 l = texture(current_buffer, UV + vec2(-texel_size.x, 0.0));
     vec4 r = texture(current_buffer, UV + vec2( texel_size.x, 0.0));
     vec4 u = texture(current_buffer, UV + vec2(0.0, -texel_size.y));
@@ -80,20 +78,8 @@ void fragment() {
     vec4 bl = texture(current_buffer, UV + vec2(-texel_size.x,  texel_size.y));
     vec4 br = texture(current_buffer, UV + vec2( texel_size.x,  texel_size.y));
     vec4 blurred = c * 0.25 + (l + r + u + d) * 0.125 + (tl + tr + bl + br) * 0.0625;
-
-    // Inject entity draws as persistent color sources — they feed in
-    // each frame but don't create walls that block the blur
-    vec4 entity = texture(entity_input, UV);
-    float brightness = (entity.r + entity.g + entity.b) / 3.0;
-    float is_drawn = 1.0 - smoothstep(0.9, 1.0, brightness);
-    // Drawn pixels nudge the blur toward entity color (source injection)
-    // The 0.3 mix keeps drawn pixels vivid without blocking evolution
-    vec4 result = mix(blurred, entity, is_drawn * 0.3);
-
-    // When the ping-pong buffer is uninitialised (alpha==0) seed from entity
-    result.rgb = mix(entity.rgb, result.rgb, c.a);
-    result.a = 1.0;
-    COLOR = result;
+    blurred.a = 1.0;
+    COLOR = blurred;
 }
 `.trim();
 
@@ -113,14 +99,8 @@ void fragment() {
 
     float gravity = 0.15;
     vec4 melted = mix(c, (c * 0.4 + below * 0.3 + bl_s * 0.15 + br_s * 0.15), gravity);
-
-    vec4 entity = texture(entity_input, UV);
-    float brightness = (entity.r + entity.g + entity.b) / 3.0;
-    float is_drawn = 1.0 - smoothstep(0.9, 1.0, brightness);
-    vec4 result = mix(melted, entity, is_drawn * 0.3);
-    result.rgb = mix(entity.rgb, result.rgb, c.a);
-    result.a = 1.0;
-    COLOR = result;
+    melted.a = 1.0;
+    COLOR = melted;
 }
 `.trim();
 
@@ -141,14 +121,8 @@ void fragment() {
     float sn = sin(angle);
     vec2 rotated = center + vec2(delta.x * cs - delta.y * sn, delta.x * sn + delta.y * cs);
     vec4 c = texture(current_buffer, rotated);
-
-    vec4 entity = texture(entity_input, UV);
-    float brightness = (entity.r + entity.g + entity.b) / 3.0;
-    float is_drawn = 1.0 - smoothstep(0.9, 1.0, brightness);
-    vec4 result = mix(c, entity, is_drawn * 0.3);
-    result.rgb = mix(entity.rgb, result.rgb, c.a);
-    result.a = 1.0;
-    COLOR = result;
+    c.a = 1.0;
+    COLOR = c;
 }
 `.trim();
 
@@ -191,13 +165,8 @@ void fragment() {
         blurred.rgb = hsv2rgb(hsv);
     }
 
-    vec4 entity = texture(entity_input, UV);
-    float ent_brightness = (entity.r + entity.g + entity.b) / 3.0;
-    float is_drawn = 1.0 - smoothstep(0.9, 1.0, ent_brightness);
-    vec4 result = mix(blurred, entity, is_drawn * 0.3);
-    result.rgb = mix(entity.rgb, result.rgb, c.a);
-    result.a = 1.0;
-    COLOR = result;
+    blurred.a = 1.0;
+    COLOR = blurred;
 }
 `.trim();
 

@@ -38,14 +38,18 @@ Godot's model is straightforward: every scene has a root node type that determin
 
 ```
 Viewport (2D game)                  Viewport (3D game)
-└── Node2D (2D world)               ├── Node3D (3D world)
-    ├── Camera2D                     │   ├── Camera3D
-    ├── RigidBody2D (ball)           │   ├── RigidBody3D (player)
-    ├── StaticBody2D (wall)          │   ├── StaticBody3D (wall)
-    └── CanvasLayer (HUD)            │   └── MeshInstance3D (floor)
-        ├── ScoreLabel               └── CanvasLayer (HUD)
-        └── PauseButton                  ├── ScoreLabel
-                                         └── HealthBar
+└── Node2D (2D world)               └── SubViewport (3D world)
+    ├── Camera2D                         ├── Camera3D
+    ├── RigidBody2D (ball)               ├── RigidBody3D (player)
+    └── StaticBody2D (wall)              ├── StaticBody3D (wall)
+                                         └── MeshInstance3D (floor)
+
+HUD Layer (BOTH 2D and 3D):         Entity-Attached UI (Godot only):
+React Native OverlayRenderer         └── RigidBody3D (enemy)
+├── Score text                            └── Sprite3D (health bar, billboard)
+├── Lives counter
+└── Health bar
+(See UI Overlay Plan for details)
 ```
 
 ### Design Constraints
@@ -143,54 +147,76 @@ Systems register for a phase and receive `UpdateContext`. This runner is **3D-ag
 | Component | Shared? | Notes |
 |-----------|---------|-------|
 | Rules Engine | **Yes** | Coordinate-agnostic (tag-based triggers) |
-| Scripting (QuickJS) | **Yes** | Abstract API, Vec3-aware in 3D context |
+| Scripting (QuickJS) | **Yes** | Abstract API, Vec3-aware in 3D context via context flag |
 | Event System | **Yes** | String event names, no coordinates |
 | State Machines | **Yes** | |
 | Variables / Expressions | **Yes** | |
 | Input Processing | **Yes** | Screen-space; 3D adds raycast for world mapping |
 | Containers | **Yes** | Logical, not spatial |
-| Entity Factory | **No** | Node2D vs Node3D creation |
-| Physics | **No** | Rapier2D vs GodotPhysics3D |
-| Camera | **No** | Camera2D vs Camera3D |
-| Visual Renderer | **No** | Sprite2D/shapes vs Mesh/Voxels/GLB |
-| World Setup | **No** | 2D bounds vs 3D floor/sky/lighting |
-| Collision Shapes | **No** | 2D shapes vs 3D shapes |
+| Overlay / HUD | **Yes** | Screen-space UI, scene-type agnostic (see [UI Overlay Plan](./ui-overlay-system-plan.md)) |
+| Entity Factory | **Split** | `EntityFactory.gd` (2D) vs `EntityFactory3D.gd` (3D) — same `entities` field, different inner types |
+| Physics | **Split** | Rapier2D (current 2D) vs GodotPhysics3D (new 3D) |
+| Camera | **Split** | Camera2D vs Camera3D |
+| Visual Renderer | **Split** | Sprite2D/shapes vs Mesh/Voxels/GLB |
+| World Setup | **Split** | 2D bounds vs 3D floor/sky/lighting |
+| Collision Shapes | **Split** | 2D shapes vs 3D shapes |
 
 ---
 
 ## 4. Type System Changes
 
-### Strategy: Parallel Fields with Scene-Level Discriminant
+### Strategy: Unified Scene Wrapper with Discriminant
 
-A new `sceneType` field on `GameDefinition` determines the runtime path. 3D-specific fields live alongside 2D fields as separate optional properties. Zero changes to existing fields.
+A `sceneType` discriminant on `GameDefinition` determines the runtime path. Scene-specific fields (`world`, `camera`, `templates`, `entities`, `joints`) use **different inner types** based on scene type — wrapped in a discriminated structure so there's exactly one set of fields, not two parallel sets.
 
 ```typescript
-// shared/src/types/GameDefinition.ts — additions only
+// shared/src/types/GameDefinition.ts
 
 interface GameDefinition {
-  // ... all existing fields unchanged ...
+  // ... all existing non-scene fields unchanged (metadata, variables, rules, scripts, input, overlay, dialogs, etc.) ...
 
   /**
    * Determines coordinate system, physics engine, and rendering pipeline.
-   * Default: "2d" when omitted (backward compatible).
+   * Default: "2d" when omitted (backward compatible during migration).
+   * After migration: required field.
    */
   sceneType?: '2d' | '3d';
 
-  // 3D fields (used when sceneType is '3d')
-  world3d?: World3DConfig;
-  camera3d?: Camera3DConfig;
-  templates3d?: Record<string, EntityTemplate3D>;
-  entities3d?: Entity3D[];
-  joints3d?: Joint3D[];
+  // Scene-geometry fields — shape depends on sceneType
+  world?: WorldConfig | World3DConfig;
+  camera?: CameraConfig | Camera3DConfig;
+  templates?: Record<string, EntityTemplate | EntityTemplate3D>;
+  entities?: Array<GameEntity | Entity3D>;
+  joints?: Array<Joint | Joint3D>;
 }
 ```
 
-**Why parallel fields instead of polymorphic `world`?**
+At runtime, the engine reads `sceneType` and narrows the types:
 
-1. **Backward compatibility**: Zero changes to existing games
-2. **TypeScript clarity**: No discriminated unions at field level
-3. **Validation simplicity**: `sceneType: "3d"` → require `world3d` + `entities3d`
-4. **AI simplicity**: "Use `sceneType: '3d'` and fill in the 3D variants"
+```typescript
+function loadScene(def: GameDefinition) {
+  const sceneType = def.sceneType ?? '2d';
+  if (sceneType === '3d') {
+    const world = def.world as World3DConfig;
+    const entities = def.entities as Entity3D[];
+    // ... 3D runtime path
+  } else {
+    const world = def.world as WorldConfig;
+    const entities = def.entities as GameEntity[];
+    // ... existing 2D runtime path (unchanged)
+  }
+}
+```
+
+**Why a unified field set instead of parallel `world3d`/`entities3d`?**
+
+1. **No permanent duplication**: One `entities` field, one `templates` field — not two parallel systems to maintain forever
+2. **Impossible invalid states**: Can't accidentally set both `entities` and `entities3d`
+3. **Shared systems work naturally**: Rules, scripts, and behaviors reference `entities` regardless of scene type
+4. **Clean migration**: When all games specify `sceneType`, remove the `?` optional marker — done
+5. **AI simplicity**: "Set `sceneType: '3d'` and your `entities`/`templates`/`world` use the 3D shapes"
+
+**Validation**: A Zod schema (or runtime validator) checks that when `sceneType: "3d"`, the `world` matches `World3DConfig`, `entities` entries match `Entity3D`, etc. Invalid combinations are caught at load time, not at render time.
 
 ### New Type Files
 
@@ -203,13 +229,15 @@ shared/src/types/
 ├── physics3d.ts       ← NEW
 ├── camera3d.ts        ← NEW
 ├── joints3d.ts        ← NEW
-├── GameDefinition.ts  ← Add optional sceneType, world3d, camera3d, templates3d, entities3d, joints3d
+├── GameDefinition.ts  ← Add sceneType discriminant, widen world/camera/templates/entities/joints to accept 3D variants
 └── index.ts           ← Export new types
 ```
 
 ---
 
 ## 5. World3D Configuration
+
+> **Units convention (all 3D types)**: Distances are in **meters**. Angles are in **degrees** (converted to radians in Godot). This applies to transforms, camera config, lighting rotation, orbit angles, joint limits, and physics values. AI generates degrees because they're human-readable; Godot converts internally.
 
 ```typescript
 // shared/src/types/world3d.ts
@@ -224,9 +252,11 @@ export interface World3DConfig {
   gravity?: Vec3;                    // Default: { x: 0, y: -9.8, z: 0 }
 
   bounds?: {
-    width: number;                   // X extent
+    width: number;                   // X extent (total, centered on origin)
     height: number;                  // Y extent
     depth: number;                   // Z extent
+    enforcement?: 'walls' | 'kill' | 'none';  // Default: 'walls'
+    killY?: number;                  // Y threshold for kill plane (default: -bounds.height)
   };
 
   floor?: {
@@ -241,6 +271,16 @@ export interface World3DConfig {
   lighting?: LightingConfig | LightingPreset;
   fog?: FogConfig;
 }
+
+/**
+ * Bounds enforcement behaviors:
+ * - 'walls': Create invisible StaticBody3D walls on all 6 faces (default). Entities bounce off.
+ * - 'kill': Entities below killY are destroyed. No walls. Good for platformers with pits.
+ * - 'none': Bounds are informational only (used for camera framing). No physics.
+ *
+ * When enforcement is 'walls', the floor face is only created if floor.enabled is false
+ * (to avoid double collision). When floor.enabled is true, the floor IS the bottom wall.
+ */
 
 export type SkyConfig =
   | { type: 'color'; color: string }
@@ -263,7 +303,7 @@ export interface LightingConfig {
   directional?: {
     color?: string;
     energy?: number;                 // Default: 1.0
-    direction?: Vec3;                // Euler angles
+    rotation?: Vec3;                 // Euler angles in DEGREES (converted to radians in Godot)
     shadows?: boolean;               // Default: true on desktop, false on mobile
   };
 }
@@ -283,37 +323,46 @@ export interface FogConfig {
 const PRESETS: Record<LightingPreset, LightingConfig> = {
   'bright-day': {
     ambient: { color: '#FFFFFF', energy: 0.4 },
-    directional: { color: '#FFFAF0', energy: 1.0, direction: { x: -45, y: -45, z: 0 }, shadows: true }
+    directional: { color: '#FFFAF0', energy: 1.0, rotation: { x: -45, y: -45, z: 0 }, shadows: true }
   },
   'overcast': {
     ambient: { color: '#E0E0E0', energy: 0.7 },
-    directional: { color: '#C0C0C0', energy: 0.5, direction: { x: -60, y: -30, z: 0 }, shadows: false }
+    directional: { color: '#C0C0C0', energy: 0.5, rotation: { x: -60, y: -30, z: 0 }, shadows: false }
   },
   'sunset': {
     ambient: { color: '#FFE4C4', energy: 0.3 },
-    directional: { color: '#FF8C00', energy: 0.8, direction: { x: -15, y: -60, z: 0 }, shadows: true }
+    directional: { color: '#FF8C00', energy: 0.8, rotation: { x: -15, y: -60, z: 0 }, shadows: true }
   },
   'night': {
     ambient: { color: '#1A1A3E', energy: 0.2 },
-    directional: { color: '#8888CC', energy: 0.3, direction: { x: -50, y: -30, z: 0 }, shadows: false }
+    directional: { color: '#8888CC', energy: 0.3, rotation: { x: -50, y: -30, z: 0 }, shadows: false }
   },
   'studio': {
     ambient: { color: '#FFFFFF', energy: 0.6 },
-    directional: { color: '#FFFFFF', energy: 0.8, direction: { x: -45, y: -45, z: 0 }, shadows: true }
+    directional: { color: '#FFFFFF', energy: 0.8, rotation: { x: -45, y: -45, z: 0 }, shadows: true }
   },
   'dramatic': {
     ambient: { color: '#222222', energy: 0.15 },
-    directional: { color: '#FFFFFF', energy: 1.2, direction: { x: -30, y: -70, z: 0 }, shadows: true }
+    directional: { color: '#FFFFFF', energy: 1.2, rotation: { x: -30, y: -70, z: 0 }, shadows: true }
   },
 };
 ```
 
 ### Coordinate System
 
-Matches Godot 3D conventions — **no coordinate flipping** (unlike the 2D system):
+**3D games use raw meters with Godot 3D conventions — no coordinate conversion.**
+
+Unlike the 2D system (which uses center-origin Y-up with a `game_to_godot_pos` conversion at 50 px/meter), 3D games operate directly in Godot's 3D coordinate space:
+
 - **X** → right
 - **Y** → up
 - **Z** → toward camera (out of screen in default view)
+- **Unit** → meters (1 unit = 1 meter, no px/meter scaling)
+- **Origin** → world origin (0, 0, 0) — no center-origin offset
+
+The `GameBridge.gd` coordinate conversion (`game_to_godot_pos` / `godot_to_game_pos`) is **skipped entirely** for 3D entities. The 3D bridge methods pass coordinates through unchanged.
+
+This simplifies everything: `{ x: 5, y: 2, z: 0 }` in the game definition = `Vector3(5, 2, 0)` in Godot. No math.
 
 ### Godot Mapping
 
@@ -325,7 +374,7 @@ Matches Godot 3D conventions — **no coordinate flipping** (unlike the 2D syste
 | `sky.type: 'gradient'` | `Environment.background_mode = BG_SKY` with procedural sky |
 | `sky.type: 'hdri'` | `Environment.background_mode = BG_SKY` with `PanoramaSkyMaterial` |
 | `lighting.ambient` | `Environment.ambient_light_source = COLOR`, set color + energy |
-| `lighting.directional` | `DirectionalLight3D` node with shadow toggle |
+| `lighting.directional` | `DirectionalLight3D` node; `rotation` euler degrees → radians for `rotation_degrees` property; shadow toggle |
 | `fog` | `Environment.fog_enabled`, density/start/end params |
 
 ---
@@ -379,7 +428,7 @@ export interface EntityTemplate3D {
 export interface Entity3D {
   id: string;
   name: string;
-  template?: string;               // References key in templates3d
+  template?: string;               // References key in templates
   transform: Transform3D;
   visual?: VisualComponent3D;      // Override template
   physics?: PhysicsComponent3D;
@@ -389,10 +438,110 @@ export interface Entity3D {
   visible?: boolean;
   active?: boolean;
   children?: ChildEntity3D[];
+  worldUI?: EntityWorldUI;         // Attached world-space UI (health bars, labels)
 }
 ```
 
-### 6.4. Child Entities
+### 6.4. Entity-Attached World-Space UI
+
+> **This is NOT part of the overlay system.** The [UI Overlay Plan](./ui-overlay-system-plan.md) handles screen-space HUD elements rendered by React Native. World-space UI is attached to entities and rendered by Godot because it must track entity positions every frame without bridge traffic.
+
+```typescript
+export interface EntityWorldUI {
+  elements: WorldUIElement[];
+}
+
+export type WorldUIElement =
+  | WorldUIHealthBar
+  | WorldUILabel
+  | WorldUIIcon;
+
+interface WorldUIBase {
+  type: string;
+  offset?: Vec3;                   // Position offset from entity origin (default: above entity)
+  billboard?: boolean;             // Always face camera (default: true)
+  visibleWhen?: string;            // Expression (same grammar as overlay)
+  scale?: number;                  // Size multiplier (default: 1)
+}
+
+export interface WorldUIHealthBar extends WorldUIBase {
+  type: 'health_bar';
+  width?: number;                  // World units (default: 1.0)
+  height?: number;                 // World units (default: 0.1)
+  color?: string;                  // Fill color (default: #4CAF50)
+  backgroundColor?: string;       // Track color (default: rgba(0,0,0,0.5))
+  binding: {
+    value: string;                 // e.g., "variables.health" or entity-scoped variable
+    max: string;                   // e.g., "variables.maxHealth"
+  };
+}
+
+export interface WorldUILabel extends WorldUIBase {
+  type: 'label';
+  text?: string;                   // Static text
+  binding?: string;                // Dynamic text binding
+  fontSize?: number;               // Default: 14
+  color?: string;                  // Default: #FFFFFF
+  outline?: boolean;               // Dark outline for readability (default: true)
+}
+
+export interface WorldUIIcon extends WorldUIBase {
+  type: 'icon';
+  emoji?: string;                  // e.g., "!" for alert
+  assetRef?: string;               // Image asset
+  size?: number;                   // World units
+}
+```
+
+**Godot implementation**: Each `WorldUIElement` becomes a child node of the entity:
+- `health_bar` → `Sprite3D` with a custom shader (two-color fill based on value/max ratio)
+- `label` → `Label3D` with billboard mode
+- `icon` → `Sprite3D` with billboard mode
+
+These nodes update locally inside Godot — no bridge traffic for per-frame position tracking.
+
+**Binding resolution for worldUI:**
+
+| Binding Root | Resolution | Example |
+|-------------|-----------|---------|
+| `variables.*` | Global game variables, synced to Godot via `SyncSystem` every frame | `"variables.enemy1_hp"` |
+| Literal number/string | Static value | `"100"` |
+
+Entity-scoped variables (per-entity HP) are stored as global variables with entity ID prefixes (e.g., `variables.enemy1_hp`). There are no entity-local variable scopes in v1.
+
+**Expression evaluation in Godot** (`visibleWhen` on worldUI):
+
+Expressions are evaluated **on the TypeScript side**, not in Godot. The flow:
+
+1. TS evaluates all worldUI `visibleWhen` expressions once per frame (using the same `expr-eval` engine as the overlay system)
+2. TS sends resolved boolean visibility + resolved numeric values to Godot via the normal sync path: `{ entityId: "enemy1", worldUI: { 0: { visible: true, value: 75, max: 100 } } }`
+3. Godot applies the resolved values to the `Sprite3D`/`Label3D` nodes — no expression parsing in GDScript
+
+This means **one expression engine** (expr-eval in TS) for both overlay `visibleWhen` and worldUI `visibleWhen`. Godot receives pre-computed results only.
+
+**Sync frequency**: WorldUI values are included in the per-frame state sync batch. Only changed values are sent (dirty-flag). For a game with 10 enemies with health bars, that's ~10 numbers per frame when health changes, zero traffic when health is stable.
+
+**Example**: Enemy with floating health bar:
+```json
+{
+  "id": "enemy1",
+  "template": "goblin",
+  "transform": { "x": 5, "y": 0, "z": 3 },
+  "worldUI": {
+    "elements": [
+      {
+        "type": "health_bar",
+        "offset": { "x": 0, "y": 2.0, "z": 0 },
+        "width": 1.2,
+        "binding": { "value": "variables.enemy1_hp", "max": "100" },
+        "visibleWhen": "variables.enemy1_hp < 100"
+      }
+    ]
+  }
+}
+```
+
+### 6.5. Child Entities
 
 ```typescript
 export interface ChildTemplate3D {
@@ -418,10 +567,10 @@ export interface ChildEntity3D {
 }
 ```
 
-### 6.5. Entity Creation Pipeline
+### 6.6. Entity Creation Pipeline
 
 ```
-templates3d["player"]  +  entities3d[{ template: "player", transform: {...} }]
+templates["player"]  +  entities[{ template: "player", transform: {...} }]    // (sceneType: "3d")
          │                              │
          └──────────┬───────────────────┘
                     │
@@ -624,7 +773,7 @@ export interface ColliderComponent3D {
   height?: number;               // box, capsule, cylinder
   depth?: number;                // box
   radius?: number;               // sphere, capsule, cylinder
-  fromVisual?: boolean;          // Auto-generate from visual geometry
+  fromVisual?: boolean;          // Auto-generate from visual geometry (see rules below)
 
   friction?: number;
   restitution?: number;
@@ -632,7 +781,26 @@ export interface ColliderComponent3D {
 }
 ```
 
-### 8.4. Collision Shape Mapping
+### 8.4. `fromVisual` Rules
+
+When `fromVisual: true`, the collider shape is auto-generated from the visual geometry. The rules depend on the visual type and physics body type:
+
+| Visual Type | Dynamic Body | Static Body | Kinematic Body |
+|-------------|-------------|-------------|----------------|
+| `primitive: box` | `BoxShape3D` matching size | Same | Same |
+| `primitive: sphere` | `SphereShape3D` matching radius | Same | Same |
+| `primitive: cylinder` | `CylinderShape3D` matching dims | Same | Same |
+| `primitive: capsule` | `CapsuleShape3D` matching dims | Same | Same |
+| `voxels` | **Bounding box** `BoxShape3D` | **Compound** per-voxel boxes (up to 50; beyond that, bounding box) | Bounding box |
+| `model` (GLB) | **Convex hull** `ConvexPolygonShape3D` | **Trimesh** `ConcavePolygonShape3D` | Convex hull |
+| `sprite3d` | `BoxShape3D` matching billboard dims | Same | Same |
+| `particles3d` | **Invalid** — validator rejects | Invalid | Invalid |
+
+**Fallback**: If `fromVisual` fails (e.g., model hasn't loaded yet), generate a 1x1x1 `BoxShape3D` and log a warning.
+
+**Validation**: `fromVisual: true` on a `particles3d` visual is a validation error (particles have no geometry).
+
+### 8.5. Collision Shape Mapping
 
 | ColliderComponent3D | Godot Shape |
 |---------------------|-------------|
@@ -643,7 +811,7 @@ export interface ColliderComponent3D {
 | `shape: 'convex'` | `ConvexPolygonShape3D` (from mesh vertices) |
 | `shape: 'trimesh'` | `ConcavePolygonShape3D` (static only) |
 
-### 8.5. Collision Events
+### 8.6. Collision Events
 
 ```typescript
 interface CollisionEvent3D {
@@ -689,8 +857,8 @@ export interface Camera3DConfig {
     enabled: boolean;
     minDistance?: number;
     maxDistance?: number;
-    minPolarAngle?: number;       // Radians
-    maxPolarAngle?: number;
+    minPolarAngle?: number;       // Degrees (converted to radians in Godot)
+    maxPolarAngle?: number;       // Degrees
     autoRotate?: boolean;
     autoRotateSpeed?: number;     // Degrees/second
     damping?: number;
@@ -787,15 +955,32 @@ export type Joint3D = HingeJoint3D | BallJoint3D | SliderJoint3D | FixedJoint3D;
 
 ## 11. Scripting API Extensions
 
-### 11.1. Automatic Vec3 in 3D Context
+### 11.1. Scene-Type Context Flag
 
-For 3D scenes, position/rotation/scale methods return/accept Vec3:
+The QuickJS sandbox receives `sceneType` at initialization. This flag is set once when the game loads and determines the shape of all position/rotation/scale values:
+
+```javascript
+// Sandbox initialization (TypeScript side):
+sandbox.setGlobal('__sceneType', definition.sceneType ?? '2d');
+
+// ScriptContext constructor reads this flag:
+class ScriptContext {
+  private is3D: boolean;
+  constructor() {
+    this.is3D = globalThis.__sceneType === '3d';
+  }
+}
+```
+
+### 11.2. Vec3 in 3D Context
+
+For 3D scenes, position/rotation/scale methods return/accept Vec3. For 2D, they return Vec2 as before. The `is3D` flag determines which bridge methods are called:
 
 ```javascript
 // 2D (unchanged):
 ctx.getEntityPosition('player')  // → { x: 2, y: 5 }
 
-// 3D (automatic when sceneType is '3d'):
+// 3D (when sceneType is '3d'):
 ctx.getEntityPosition('player')  // → { x: 2, y: 5, z: 0 }
 ctx.setEntityPosition('player', { x: 2, y: 5, z: 0 })
 
@@ -806,7 +991,19 @@ ctx.getEntityRotation('player')  // → { x: 0, y: 45, z: 0 }
 ctx.getEntityScale('player')     // → { x: 1, y: 1, z: 1 }
 ```
 
-### 11.2. New 3D Methods
+**Backward compatibility**: Scripts that destructure `const { x, y } = ctx.getEntityPosition('p')` work in both 2D and 3D — `z` is simply ignored. Scripts that pass `{ x, y }` to `setEntityPosition` in 3D will default `z` to `0`.
+
+**Implementation**: Each position method internally branches:
+```javascript
+getEntityPosition(id) {
+  if (this.is3D) {
+    return this.bridge.getPosition3D(id); // → { x, y, z }
+  }
+  return this.bridge.getPosition(id);     // → { x, y }
+}
+```
+
+### 11.3. New 3D Methods
 
 ```javascript
 // Camera
@@ -823,7 +1020,7 @@ ctx.isOnGround('player');        // Downward raycast
 ctx.distance3D(vecA, vecB);      // √(dx²+dy²+dz²)
 ```
 
-### 11.3. Backward Compatibility
+### 11.4. Backward Compatibility
 
 Scripts using `{ x, y }` still work in 3D — `z` defaults to 0. Many scripts run unmodified in both 2D and 3D.
 
@@ -841,13 +1038,36 @@ Every rule component that operates on tags, variables, events, or time:
 
 ### What Needs Extension
 
-Position-related actions gain an optional `z` field:
+All spatial actions/triggers gain an optional `z` field. When omitted, `z` defaults to `0`. This means all existing 2D game definitions work in 3D without modification (entities spawn at z=0).
+
+**Full list of spatial actions and their 3D behavior:**
+
+| Action | 2D Fields | 3D Extension | Default `z` |
+|--------|-----------|-------------|-------------|
+| `set_velocity` | `x`, `y` | Add optional `z` | `0` (preserves current z velocity) |
+| `apply_impulse` | `x`, `y` | Add optional `z` | `0` |
+| `apply_force` | `x`, `y` | Add optional `z` | `0` |
+| `set_position` / `teleport` | `x`, `y` | Add optional `z` | `0` |
+| `spawn` | `position: {x, y}` | `position: {x, y, z?}` | `0` |
+| `move_to` | `x`, `y` | Add optional `z` | `0` |
+| `set_gravity` | `x`, `y` | Add optional `z` | `0` |
+| `camera_shake` | `intensity`, `duration` | Unchanged (random 3D offset in 3D mode) | N/A |
+| `camera_move` | `x`, `y` | Add optional `z` | `0` |
+
+**Spatial triggers in 3D:**
+
+| Trigger | 2D Behavior | 3D Behavior |
+|---------|------------|-------------|
+| `tap` | Screen-space hit test | Screen-space raycast into 3D world |
+| `drag` | 2D entity drag | 3D drag on configurable plane (see §12, dragMode3d) |
+| `collision` / `sensor_enter` | Tag-based, coordinate-agnostic | Identical — tag-based matching |
+| `position` (if exists) | `x`, `y` bounds check | Add optional `z` bounds |
 
 ```typescript
-// Existing (works in 3D, z defaults to 0):
+// Example: works in both 2D and 3D (z defaults to 0)
 { type: 'set_velocity', target: { type: 'by_tag', tag: 'ball' }, x: 0, y: 7 }
 
-// Extended for 3D:
+// Explicit 3D usage:
 { type: 'set_velocity', target: { type: 'by_tag', tag: 'ball' }, x: 0, y: 7, z: -3 }
 { type: 'spawn', template: 'bullet', position: { type: 'fixed', x: 5, y: 0, z: 2 } }
 ```
@@ -907,48 +1127,85 @@ func _load_game_3d(data: Dictionary) -> bool:
     game_root.visible = false
     _viewport_3d.visible = true
 
-    _world_3d_system.setup(data.get("world3d", {}))
-    _camera_3d.setup(data.get("camera3d", {}))
+    _world_3d_system.setup(data.get("world", {}))
+    _camera_3d.setup(data.get("camera", {}))
 
-    var templates = data.get("templates3d", {})
-    for entity_data in data.get("entities3d", []):
+    var templates = data.get("templates", {})
+    for entity_data in data.get("entities", []):
         _entity_factory_3d.create_entity(entity_data, templates)
 
     return true
 ```
 
-### 13.3. Viewport3D Changes
+### 13.3. Viewport3D Changes — SubViewport Decision
 
-Currently renders to a `Sprite2D` overlay. For full 3D games, expand the SubViewport to fill the entire screen. Keep the SubViewport architecture — just resize to match the window.
+**Decision: Keep SubViewport, expand to fullscreen.**
+
+Currently renders to a `Sprite2D` overlay. For full 3D games, the SubViewport expands to fill the entire screen.
+
+**Why SubViewport instead of root Node3D:**
+- **Isolation**: SubViewport gives a clean separation between the 2D shell (CanvasLayer for UI, input debug) and the 3D world. Mixing Node2D and Node3D as siblings causes z-ordering and rendering pipeline issues in Godot.
+- **Existing pattern**: The current `Viewport3D.gd` already uses SubViewport — this is an expansion, not a rewrite.
+- **Performance**: SubViewport overhead is negligible when it's the only viewport rendering. Godot optimizes single-SubViewport setups to near-zero overhead.
+- **React overlay compatibility**: The React Native overlay sits on top of the native view. Whether Godot renders via SubViewport or root Node3D is invisible to React.
+
+**Implementation**:
+```gdscript
+# In _load_game_3d:
+_viewport_3d.size = get_viewport().get_visible_rect().size
+_viewport_3d.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+# The Sprite2D displaying the SubViewport texture stretches to fill screen
+_viewport_sprite.texture = _viewport_3d.get_texture()
+_viewport_sprite.centered = false
+_viewport_sprite.scale = Vector2.ONE  # 1:1 pixel mapping
+```
 
 ### 13.4. Method Map Extension
 
 ```gdscript
 # 3D Entity Management
+# spawn_entity_3d(template_key: String, x: float, y: float, z: float) → String (entity_id)
 "spawn_entity_3d": _entity_factory_3d.spawn_entity,
-"destroy_entity_3d": _entity_manager_3d.destroy_entity,
+# destroy_entity_3d(entity_id: String) → void
+"destroy_entity_3d": _entity_manager.destroy_entity,  # EntityManager is shared (ID-based)
 
 # 3D Physics
+# set_linear_velocity_3d(entity_id: String, x: float, y: float, z: float) → void
 "set_linear_velocity_3d": _physics_controller_3d.set_velocity,
+# apply_impulse_3d(entity_id: String, x: float, y: float, z: float) → void
 "apply_impulse_3d": _physics_controller_3d.apply_impulse,
+# apply_force_3d(entity_id: String, x: float, y: float, z: float) → void
 "apply_force_3d": _physics_controller_3d.apply_force,
 
-# 3D Transform
-"set_position_3d": _transform_3d.set_position,
-"set_rotation_3d": _transform_3d.set_rotation,
-"set_scale_3d": _transform_3d.set_scale,
+# 3D Transform (handled by EntityFactory3D — no separate TransformSystem module needed)
+# set_position_3d(entity_id: String, x: float, y: float, z: float) → void
+"set_position_3d": _entity_factory_3d.set_position,
+# set_rotation_3d(entity_id: String, x: float, y: float, z: float) → void (euler degrees)
+"set_rotation_3d": _entity_factory_3d.set_rotation,
+# set_scale_3d(entity_id: String, x: float, y: float, z: float) → void
+"set_scale_3d": _entity_factory_3d.set_scale,
 
 # 3D Camera
+# set_camera_3d_position(x: float, y: float, z: float) → void
 "set_camera_3d_position": _camera_3d.set_position,
+# set_camera_3d_look_at(x: float, y: float, z: float) → void
 "set_camera_3d_look_at": _camera_3d.set_look_at,
+# set_camera_3d_fov(fov: float) → void (degrees)
 "set_camera_3d_fov": _camera_3d.set_fov,
 
 # 3D Input
+# raycast_from_screen(screen_x: float, screen_y: float) → Dictionary {entity_id, point, normal, distance} or null
 "raycast_from_screen": _input_router_3d.raycast_from_screen,
 
 # 3D Queries
-"query_point_3d": _physics_queries_3d.query_point,
-"raycast_3d": _physics_queries_3d.raycast,
+# query_point_3d(x: float, y: float, z: float) → Array[String] (entity_ids)
+"query_point_3d": _collision_system_3d.query_point,
+# raycast_3d(from_x, from_y, from_z, to_x, to_y, to_z) → Dictionary or null
+"raycast_3d": _collision_system_3d.raycast,
+
+# 3D World UI (resolved values from TS)
+# update_world_ui(entity_id: String, element_index: int, values: Dictionary) → void
+"update_world_ui": _entity_factory_3d.update_world_ui,
 ```
 
 ---
@@ -978,12 +1235,12 @@ export interface GodotBridge {
 
 ### 14.2. System Runner — Swappable Systems
 
-The `GameSystemRunner` registers different implementations based on `sceneType`:
+The `GameSystemRunner` registers different implementations based on `sceneType`. The unified `entities`/`templates` fields mean the runner reads the same GameDefinition structure — only the system implementations differ:
 
-- **2D**: existing `EntityManager2DSystem`, `Physics2DSystem` (unchanged)
-- **3D**: new `EntityManager3DSystem`, `Physics3DSystem` (call 3D bridge methods)
+- **2D** (`sceneType: "2d"`): existing `EntityManager2DSystem`, `Physics2DSystem` (unchanged)
+- **3D** (`sceneType: "3d"`): new `EntityManager3DSystem`, `Physics3DSystem` (call 3D bridge methods)
 
-`RulesSystem`, `ScriptSystem`, `StateMachineSystem`, `EventSystem` are shared.
+`RulesSystem`, `ScriptSystem`, `StateMachineSystem`, `EventSystem` are shared — they operate on entity IDs and tags, not coordinates.
 
 ---
 
@@ -1019,13 +1276,13 @@ The existing `assetSystem` config works unchanged — packs are asset collection
 {
   "metadata": { "id": "voxel-jump", "slug": "voxelJump", "title": "Voxel Jump", "version": "1.0.0" },
   "sceneType": "3d",
-  "world3d": {
+  "world": {
     "gravity": { "x": 0, "y": -15, "z": 0 },
     "floor": { "enabled": false },
     "sky": { "type": "gradient", "topColor": "#4A90D9", "bottomColor": "#87CEEB" },
     "lighting": "bright-day"
   },
-  "camera3d": {
+  "camera": {
     "type": "perspective",
     "position": { "x": 0, "y": 5, "z": 12 },
     "lookAt": { "x": 0, "y": 2, "z": 0 },
@@ -1033,7 +1290,7 @@ The existing `assetSystem` config works unchanged — packs are asset collection
     "follow": { "target": "player", "offset": { "x": 0, "y": 3, "z": 10 }, "smoothing": 0.1, "mode": "fixed-offset" }
   },
   "variables": { "score": 0, "lives": 3 },
-  "templates3d": {
+  "templates": {
     "player": {
       "id": "player", "tags": ["player"],
       "visual": { "type": "voxels", "voxels": [
@@ -1060,7 +1317,7 @@ The existing `assetSystem` config works unchanged — packs are asset collection
       ]
     }
   },
-  "entities3d": [
+  "entities": [
     { "id": "player", "name": "Player", "template": "player", "transform": { "x": 0, "y": 2, "z": 0 } },
     { "id": "plat1", "name": "Start", "template": "platform", "transform": { "x": 0, "y": 0, "z": 0 } },
     { "id": "plat2", "name": "Mid", "template": "platform", "transform": { "x": 5, "y": 1.5, "z": 0 } },
@@ -1093,50 +1350,64 @@ The existing `assetSystem` config works unchanged — packs are asset collection
 
 ## 17. Phased Implementation Plan
 
+> **Implementation order**: The [UI Overlay System](./ui-overlay-system-plan.md) should be implemented **before** this 3D plan. The overlay provides the HUD/binding system that 3D games will use from day one. Implementing overlay first means 3D ships with proper game UI rather than bolting it on later.
+
 ### Phase 0: Foundation Types (1–2 days)
+
+> **Prerequisite**: Overlay Plan Phase 1 must be complete and schema v1 frozen before starting this phase.
 
 - [ ] Add `Vec3` to `common.ts`
 - [ ] Create `world3d.ts`, `entity3d.ts`, `visual3d.ts`, `physics3d.ts`, `camera3d.ts`, `joints3d.ts`
-- [ ] Add optional 3D fields to `GameDefinition`
+- [ ] Add `sceneType` discriminant to `GameDefinition`
+- [ ] Widen `world`, `camera`, `templates`, `entities`, `joints` to accept 3D variant types
+- [ ] Add Zod validation: `sceneType: "3d"` requires 3D-shaped inner types
 - [ ] Export from index, `tsc --noEmit` passes
+- [ ] **Test**: Existing 2D game JSONs still validate. New 3D example JSON validates.
 - **Deliverable**: Complete type system, zero runtime impact
 
 ### Phase 1: 3D Viewer Modules (2–3 days)
 
-- [ ] Refactor `Viewport3D.gd` for fullscreen mode
-- [ ] `World3DSystem.gd` — floor, sky, lighting, fog setup
+- [ ] Refactor `Viewport3D.gd` for fullscreen SubViewport mode
+- [ ] `World3DSystem.gd` — floor, sky, lighting (presets + custom), fog setup
 - [ ] `VisualRenderer3D.gd` — primitive, voxel, model creation
 - [ ] `CameraController3D.gd` — perspective/ortho, follow, orbit
-- [ ] React: `VoxelScene3D`, `VoxelObject`, `GLBModel` components
+- [ ] **Benchmark gate**: Test SubViewport fullscreen render-to-texture on iOS + Android. If FPS < 30 or memory overhead > 50MB, switch to root Node3D rendering before proceeding to Phase 2.
+- [ ] **Test**: Load a 3D game JSON with world + camera + static entities → renders correctly in Godot
 - **Deliverable**: Clean 3D rendering, no game logic
 
 ### Phase 2: 3D Entity Runtime (5–7 days)
 
-- [ ] `EntityFactory3D.gd` — create 3D bodies from definition
+- [ ] `EntityFactory3D.gd` — create 3D bodies from definition (template merge, archetype routing)
 - [ ] `PhysicsController3D.gd` — velocity, impulse, force
 - [ ] `CollisionSystem3D.gd` — collision events → EventEmitter
-- [ ] `InputRouter3D.gd` — screen raycast for tap/drag
+- [ ] `InputRouter3D.gd` — screen raycast for tap/drag (XZ plane default)
 - [ ] Scene-type routing in `GameBridge.load_game_json`
-- [ ] TypeScript: 3D bridge methods
-- [ ] Scripting: Vec3-aware ScriptContext
-- [ ] Test game: 3D platformer with physics + rules
+- [ ] TypeScript: 3D bridge methods on GodotBridge interface
+- [ ] Scripting: Vec3-aware ScriptContext with `__sceneType` flag
+- [ ] 3D joint support (hinge, ball, slider, fixed)
+- [ ] Behaviors: add optional `z` to oscillate, follow, patrol; add 3D-specific orbit behavior
+- [ ] **Test**: 3D platformer game — player moves, collects coins, physics works, rules fire, score updates
+- [ ] **Test**: Existing 2D games still work identically (regression)
 - **Deliverable**: Playable 3D game from GameDefinition JSON
 
 ### Phase 3: Asset Pipeline & AI (3–5 days)
 
-- [ ] 3D asset types in pipeline
-- [ ] AI prompt templates for 3D
-- [ ] Voxel model generation
+- [ ] 3D asset types in pipeline (voxel_model, glb_model, texture_3d, hdri_sky)
+- [ ] AI prompt templates for 3D game generation
+- [ ] Voxel model generation from AI descriptions
 - [ ] End-to-end: prompt → AI → 3D game
+- [ ] **Test**: AI generates a valid 3D game definition that loads and plays
 - **Deliverable**: AI-generated 3D games
 
-### Phase 4: Polish (2–3 days)
+### Phase 4: Polish & Skills (2–3 days)
 
-- [ ] Voxel optimization (MultiMesh)
-- [ ] Shadow quality per platform
-- [ ] Mobile perf profiling
-- [ ] Additional camera modes
-- [ ] Update game-authoring skills docs
+- [ ] Voxel optimization (MultiMesh for 50+ voxels per entity)
+- [ ] Shadow quality per platform (desktop ON, mobile OFF)
+- [ ] Mobile perf profiling and optimization
+- [ ] Additional camera modes if needed
+- [ ] **Update game-authoring skills** (`game-authoring/game-definition-reference`, `game-authoring/scripting-api-reference`, `game-authoring/examples`) with 3D types, examples, and API methods
+- [ ] **Gate**: Skills update must be reviewed before marking Phase 4 complete — AI can't generate 3D games if skills are stale
+- [ ] **Test**: Full regression — all existing 2D games, all new 3D test games, AI generation pipeline
 
 ---
 
@@ -1157,18 +1428,13 @@ The existing `assetSystem` config works unchanged — packs are asset collection
 
 ### Decided
 
-| Question | Decision |
-|----------|----------|
-| Multi-scene? | No — single scene per definition |
-| Polymorphic `world`? | No — parallel `world3d` field |
-| Physics engine? | GodotPhysics3D initially |
-
-### Still Open
-
-| Question | Options | Decide By |
-|----------|---------|-----------|
-| Behaviors: add `z` or create 3D variants? | A) Optional `z` on existing B) Parallel types | Phase 2 |
-| 3D joints from day one? | A) Phase 2 B) Defer | Phase 2 |
-| Camera orbit: touch or button? | A) Touch B) Button C) Configurable | Phase 2 |
-| Isometric games? | A) Ortho 3D B) Angled 2D C) Both | Future |
-| Voxel format: array vs compressed? | A) VoxelCube[] B) RLE C) Octree | Phase 3 |
+| Question | Decision | Rationale |
+|----------|----------|-----------|
+| Multi-scene? | No — single scene per definition | Simplicity for AI generation |
+| Type strategy? | Unified fields with `sceneType` discriminant | No parallel duplication (see Section 4) |
+| Physics engine? | GodotPhysics3D initially | Zero dependencies; swap to Jolt later if perf requires |
+| Behaviors: add `z` or create 3D variants? | **Add optional `z`** to existing behavior types | Most behaviors (oscillate, rotate, follow) work with an extra axis. Keeps one behavior system. New 3D-only behaviors (e.g., orbit3d) get their own type added to the union. |
+| 3D joints from day one? | **Phase 2** — ship with entity runtime | Joints are essential for interesting 3D games (hinges, ragdolls). Deferring them means re-testing entity creation later. |
+| Camera orbit: touch or button? | **Configurable** — touch by default, disable via `orbit.touchEnabled: false` | Most 3D viewers want touch orbit. Games that use touch for gameplay disable it. |
+| Isometric games? | **Orthographic 3D** (`camera3d.type: "orthographic"` with angled position) | True isometric is a camera angle on a 3D scene, not a 2D hack. This falls out naturally from the 3D camera system. |
+| Voxel format? | **`VoxelCube[]` array** (Phase 2), compressed format deferred to Phase 4 if needed | Simple array is AI-friendly and sufficient for < 500 voxels per entity. Optimization is a Phase 4 concern. |

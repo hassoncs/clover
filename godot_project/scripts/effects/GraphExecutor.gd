@@ -85,6 +85,7 @@ var _pass_entries: Array = []
 var _pass_index: Dictionary = {}
 var _plan_hash: String = ""
 var _seed_feedback_on_next_frame: bool = false
+var _entity_texture: Texture2D = null
 
 func _ready() -> void:
 	set_process(false)
@@ -97,6 +98,7 @@ func apply_plan(plan_json: Dictionary, entity_texture: Texture2D = null) -> Dict
 
 	_plan = plan_json.duplicate(true)
 	_plan_hash = str(_plan.get("hash", ""))
+	_entity_texture = entity_texture
 
 	var viewport_size: Vector2i = _resolve_base_size()
 	_resource_graph = EffectsResourceGraph.new()
@@ -150,6 +152,7 @@ func clear() -> void:
 
 	_plan = {}
 	_plan_hash = ""
+	_entity_texture = null
 	_transition_to(State.IDLE)
 
 func update_params(pass_id: String, params: Dictionary) -> Dictionary:
@@ -573,8 +576,8 @@ func _resolve_base_size() -> Vector2i:
 	# For entity-scoped effects, match the entity texture size so the
 	# ping-pong viewports operate at the same resolution as the pixel
 	# buffer.  This avoids a quality change when baking back on stop.
-	if str(_plan.get("scope", "screen")) == "entity" and entity_texture != null:
-		var tex_size: Vector2i = entity_texture.get_size()
+	if str(_plan.get("scope", "screen")) == "entity" and _entity_texture != null:
+		var tex_size: Vector2i = _entity_texture.get_size()
 		if tex_size.x > 0 and tex_size.y > 0:
 			return tex_size
 	var viewport = get_viewport()
@@ -597,6 +600,7 @@ func _bind_implicit_inputs() -> void:
 		_resource_graph.set_external_texture("__entityTexture", null)
 
 func set_entity_texture(texture: Texture2D) -> void:
+	_entity_texture = texture
 	if _resource_graph != null:
 		_resource_graph.set_external_texture("__entityTexture", texture)
 		for entry in _pass_entries:
@@ -700,7 +704,7 @@ func get_output_texture() -> Texture2D:
 func _transition_to(next_state: State) -> void:
 	if _state == next_state:
 		return
-	push_warning("[EffectsGraphExecutor] State %s -> %s" % [_state_name(_state), _state_name(next_state)])
+	print("[EffectsGraphExecutor] State %s -> %s" % [_state_name(_state), _state_name(next_state)])
 	_state = next_state
 
 func _state_name(state: State) -> String:

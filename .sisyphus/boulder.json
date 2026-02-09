@@ -1,7 +1,9 @@
 {
   "active_plan": null,
   "started_at": null,
-  "session_ids": [],
+  "session_ids": [
+    "ses_3bcd3ca83ffeX2YNV5xwFOM8H0"
+  ],
   "plan_name": null,
   "agent": null
 }
