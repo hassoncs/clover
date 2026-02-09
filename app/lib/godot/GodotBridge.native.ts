@@ -1080,6 +1080,10 @@ export function createNativeGodotBridge(): GodotBridge {
       callGameBridge('rotate_3d_model', x, y, z);
     },
 
+    set3DModelPosition(x: number, y: number, z: number): void {
+      callGameBridge('set_3d_model_position', x, y, z);
+    },
+
     set3DCameraDistance(distance: number): void {
       callGameBridge('set_3d_camera_distance', distance);
     },

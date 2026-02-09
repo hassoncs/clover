@@ -235,6 +235,7 @@ declare global {
       set_3d_viewport_position: (x: number, y: number) => void;
       set_3d_viewport_size: (width: number, height: number) => void;
       rotate_3d_model: (x: number, y: number, z: number) => void;
+      set_3d_model_position: (x: number, y: number, z: number) => void;
       set_3d_camera_distance: (distance: number) => void;
       set_3d_camera_size: (size: number) => void;
       clear_3d_models: () => void;
@@ -1252,6 +1253,11 @@ export function createWebGodotBridge(): GodotBridge {
     rotate3DModel(x: number, y: number, z: number): void {
       const godotBridge = getGodotBridge();
       godotBridge?.rotate_3d_model?.(x, y, z);
+    },
+
+    set3DModelPosition(x: number, y: number, z: number): void {
+      const godotBridge = getGodotBridge();
+      godotBridge?.set_3d_model_position?.(x, y, z);
     },
 
     set3DCameraDistance(distance: number): void {

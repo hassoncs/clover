@@ -103,6 +103,9 @@ func set_model_rotation(rotation_deg: Vector3) -> void:
 func rotate_model(delta_deg: Vector3) -> void:
 	glb_model_container.rotation_degrees += delta_deg
 
+func set_model_position(x: float, y: float, z: float) -> void:
+	glb_model_container.position = Vector3(x, y, z)
+
 func set_camera_distance(distance: float) -> void:
 	camera.position.z = distance
 

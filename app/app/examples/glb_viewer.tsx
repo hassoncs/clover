@@ -34,17 +34,6 @@ const MINIMAL_GAME: GameDefinition = {
   rules: [],
 };
 
-// Random colorful cubes scattered around the duck
-// Each entry: [x, y, z, size, colorHex] - smaller cubes so duck is visible
-const RANDOM_CUBES: Array<[number, number, number, number, string]> = [
-  // A few cubes around the duck - smaller and spread out
-  [1.2, 0, 0.5, 0.35, "#FF0000"],
-  [-1.2, 0.2, -0.3, 0.4, "#00FF00"],
-  [0, 0.8, 1.0, 0.45, "#0000FF"],
-  [-0.5, -0.4, 0.8, 0.3, "#FFFF00"],
-  [0.8, -0.3, -0.8, 0.35, "#FF00FF"],
-];
-
 export default function GLBViewerExample() {
   const router = useRouter();
   const [bridge, setBridge] = useState<GodotBridge | null>(null);
@@ -109,7 +98,11 @@ export default function GLBViewerExample() {
     };
   }, [bridge, GodotView]);
 
-  // Auto-load scene when ready
+  const jumpAnimRef = useRef<number | null>(null);
+  const jumpStartTimeRef = useRef<number>(0);
+  const isJumpingRef = useRef(false);
+  const baseYRef = useRef(0);
+
   useEffect(() => {
     if (status !== "ready" || !bridge || sceneReady) return;
 
@@ -123,23 +116,14 @@ export default function GLBViewerExample() {
     console.log("[GLBViewer] Creating floor...");
     bridge.create3DFloor(100, "6B7280", "grid");
 
-    // Create random colorful cubes around the duck
-    console.log("[GLBViewer] Creating cubes... count:", RANDOM_CUBES.length);
-    RANDOM_CUBES.forEach(([x, y, z, size, color], index) => {
-      const colorHex = color.replace("#", "");
-      console.log(`[GLBViewer] Creating cube ${index}: pos=(${x},${y},${z}) size=${size} color=${colorHex}`);
-      bridge?.create3DCube(x, y, z, size, colorHex);
-    });
-    console.log("[GLBViewer] Done creating cubes");
-
     // Load the duck
     console.log("[GLBViewer] Loading 3D duck model...");
     bridge.show3DModelFromUrl(DUCK_URL);
 
-    // Position camera to see the duck, floor, and cubes
-    // Camera is at an angle looking down at the scene
+    baseYRef.current = 0.8;
+    bridge.set3DModelPosition(0, baseYRef.current, 0);
     bridge.set3DCameraPosition(3, 5, 5);
-    bridge.set3DCameraLookAt(0, 0, 0);
+    bridge.set3DCameraLookAt(0, 0.5, 0);
     // Increase camera size so we see more of the scene
     bridge.set3DCameraSize(8);
 
@@ -174,10 +158,40 @@ export default function GLBViewerExample() {
       if (animFrameRef.current !== null) {
         cancelAnimationFrame(animFrameRef.current);
       }
+      if (jumpAnimRef.current !== null) {
+        cancelAnimationFrame(jumpAnimRef.current);
+      }
     };
   }, [bridge, modelLoaded]);
 
   const handleBack = useCallback(() => router.back(), [router]);
+
+  const handleJump = useCallback(() => {
+    if (!bridge || !modelLoaded || isJumpingRef.current) return;
+
+    isJumpingRef.current = true;
+    jumpStartTimeRef.current = performance.now();
+
+    const jumpDuration = 600;
+    const jumpHeight = 1.5;
+
+    const animateJump = (now: number) => {
+      const elapsed = now - jumpStartTimeRef.current;
+      const progress = elapsed / jumpDuration;
+
+      if (progress >= 1) {
+        bridge.set3DModelPosition(0, baseYRef.current, 0);
+        isJumpingRef.current = false;
+        return;
+      }
+
+      const height = Math.sin(progress * Math.PI) * jumpHeight;
+      bridge.set3DModelPosition(0, baseYRef.current + height, 0);
+      jumpAnimRef.current = requestAnimationFrame(animateJump);
+    };
+
+    jumpAnimRef.current = requestAnimationFrame(animateJump);
+  }, [bridge, modelLoaded]);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#111827" }}>
@@ -207,7 +221,9 @@ export default function GLBViewerExample() {
             </Pressable>
           </View>
         ) : GodotView ? (
-          <GodotView style={{ flex: 1 }} />
+          <Pressable style={{ flex: 1 }} onPress={handleJump}>
+            <GodotView style={{ flex: 1 }} />
+          </Pressable>
         ) : (
           <View
             style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
@@ -287,10 +303,29 @@ export default function GLBViewerExample() {
             </Text>
           </Pressable>
           <Pressable
+            onPress={handleJump}
+            style={{
+              flex: 1,
+              backgroundColor: "#3B82F6",
+              borderRadius: 8,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+            }}
+          >
+            <Text
+              style={{
+                color: "#FFFFFF",
+                textAlign: "center",
+                fontWeight: "600",
+              }}
+            >
+              Jump
+            </Text>
+          </Pressable>
+          <Pressable
             onPress={() => {
               if (!bridge) return;
               bridge.clear3DModels();
-              bridge.clear3DCubes();
               setSceneReady(false);
               setModelLoaded(false);
             }}

@@ -446,6 +446,7 @@ export interface GodotBridge extends EffectsBridge {
   set3DViewportPosition(x: number, y: number): void;
   set3DViewportSize(width: number, height: number): void;
   rotate3DModel(x: number, y: number, z: number): void;
+  set3DModelPosition(x: number, y: number, z: number): void;
   set3DCameraDistance(distance: number): void;
   set3DCameraSize(size: number): void;
   clear3DModels(): void;
