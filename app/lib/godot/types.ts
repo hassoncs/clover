@@ -449,6 +449,16 @@ export interface GodotBridge extends EffectsBridge {
   set3DCameraDistance(distance: number): void;
   set3DCameraSize(size: number): void;
   clear3DModels(): void;
+
+  // 3D Primitives
+  create3DFloor(size?: number, colorHex?: string, style?: 'plain' | 'grid'): void;
+  create3DCube(x: number, y: number, z: number, size?: number, colorHex?: string): void;
+  clear3DCubes(): void;
+
+  // 3D Camera
+  set3DCameraPosition(x: number, y: number, z: number): void;
+  set3DCameraLookAt(x: number, y: number, z: number): void;
+  setOrbitControls(enabled: boolean): void;
 }
 
 export interface GodotViewProps {

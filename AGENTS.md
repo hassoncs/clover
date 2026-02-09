@@ -29,49 +29,19 @@ The `interactive_bash` tool runs commands in a persistent tmux session, which pr
 - **ALWAYS** use the `devmux` skill for starting, stopping, or debugging services (api, metro, storybook).
 - **NEVER** run `pnpm start` or `node server.js` directly for long-running processes.
 - **NEVER** try to construct raw `tmux` commands manually. Use `devmux` abstraction.
+- **Binary Path**: `devmux` is available directly in the shell via `.envrc` (pointing to `node_modules/.bin`).
+- **Auto-loading**: The project uses `direnv` to automatically add project binaries to your PATH. If your shell doesn't load it on startup, ensure `eval "$(direnv export zsh)"` is in your shell config (already added to `~/.hassoncsShell/index.zsh`).
 
 ## Project Context
-
-- This is a TypeScript monorepo using `pnpm` workspaces. Primary language is TypeScript. Do not use plain JavaScript unless explicitly asked.
-- `app/` contains the Expo/React Native app.
-- `packages/` contains shared UI, logic, and configuration.
-- `apps/storybook` contains the component library documentation.
-- This project has a dual game system: bundled TypeScript test games and API-served JSON game definitions. Understand which system you're modifying before editing files.
-
-## Infrastructure
-
-- The project uses Cloudflare Workers with R2 and D1. Local development uses Wrangler/miniflare. Asset URLs must use the correct bucket name (check for -dev suffix). Do not assume Node.js filesystem APIs work in the Workers runtime.
-
-## Roadmap System
-
-The project uses a distributed roadmap managed by the **Chronicler** agent.
-
-**Full documentation**: `.opencode/skills/slopcade-documentation.md` (load with `/slopcade-documentation`)
-
-### Quick Reference
-
-| Path | Purpose |
-|------|---------|
-| `.opencode/memory/ROADMAP.md` | Master roadmap (single source of truth) |
-| `.opencode/memory/roadmap/active/` | Features currently being built |
-| `.opencode/memory/roadmap/completed/{date}/` | Completed features (archived by date) |
-| `.opencode/memory/human-tasks/` | Blockers requiring human decision |
-| `.opencode/memory/graph.yaml` | Master knowledge graph (auto-generated) |
-
-### When User Says "Add to Roadmap"
-
-Load the `slopcade-documentation` skill to determine:
-- Active Feature vs Human Task vs Oracle Plan
-- Proper file location and template
-- Cross-referencing and lifecycle management
-
----
-
+...
 ## Secrets Management (Hush)
 
 This project uses **`hush`** for secrets management. API keys and credentials are stored in the hush vault — never in `.env` files.
+- **Binary Path**: `hush` is available directly in the shell via `.envrc` (pointing to `node_modules/.bin`).
+- **Automatic PATH**: Local binaries are preferred over global ones thanks to `direnv`.
 
 **Any command that needs secrets (AI generation, external APIs) must be prefixed with `hush run --`:**
+
 ```bash
 # Asset generation (run from repo root — NOT from api/ directory)
 hush run -- pnpm generate:assets --game=ballSort --debug

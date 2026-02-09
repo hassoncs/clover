@@ -238,6 +238,12 @@ declare global {
       set_3d_camera_distance: (distance: number) => void;
       set_3d_camera_size: (size: number) => void;
       clear_3d_models: () => void;
+      create_3d_floor: (size?: number, colorHex?: string, style?: string) => void;
+      create_3d_cube: (x: number, y: number, z: number, size?: number, colorHex?: string) => void;
+      clear_3d_cubes: () => void;
+      set_orbit_controls: (enabled: boolean) => void;
+      set_3d_camera_position: (x: number, y: number, z: number) => void;
+      set_3d_camera_look_at: (x: number, y: number, z: number) => void;
       captureScreenshot: (
         withOverlays: boolean,
         overlayTypesJson: string,
@@ -1261,6 +1267,36 @@ export function createWebGodotBridge(): GodotBridge {
     clear3DModels(): void {
       const godotBridge = getGodotBridge();
       godotBridge?.clear_3d_models?.();
+    },
+
+    create3DFloor(size?: number, colorHex?: string, style?: 'plain' | 'grid'): void {
+      const godotBridge = getGodotBridge();
+      godotBridge?.create_3d_floor?.(size ?? 10.0, colorHex ?? "555555", style ?? "plain");
+    },
+
+    create3DCube(x: number, y: number, z: number, size?: number, colorHex?: string): void {
+      const godotBridge = getGodotBridge();
+      godotBridge?.create_3d_cube?.(x, y, z, size ?? 0.5, colorHex ?? "ff0000");
+    },
+
+    clear3DCubes(): void {
+      const godotBridge = getGodotBridge();
+      godotBridge?.clear_3d_cubes?.();
+    },
+
+    set3DCameraPosition(x: number, y: number, z: number): void {
+      const godotBridge = getGodotBridge();
+      godotBridge?.set_3d_camera_position?.(x, y, z);
+    },
+
+    set3DCameraLookAt(x: number, y: number, z: number): void {
+      const godotBridge = getGodotBridge();
+      godotBridge?.set_3d_camera_look_at?.(x, y, z);
+    },
+
+    setOrbitControls(enabled: boolean): void {
+      const godotBridge = getGodotBridge();
+      godotBridge?.set_orbit_controls?.(enabled);
     },
 
     async callRpc(method: string, params?: unknown): Promise<unknown> {

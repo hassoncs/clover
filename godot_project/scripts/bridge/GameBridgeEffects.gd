@@ -10,6 +10,7 @@ var _game_bridge: Node = null
 var _entity_sprite: Sprite2D = null
 var _entity_original_texture: Texture2D = null
 var _entity_original_scale: Vector2 = Vector2.ONE
+var _display_swap_delay: int = 0
 
 func _ready() -> void:
 	# Create subsystems
@@ -35,6 +36,12 @@ func _process(_delta: float) -> void:
 	if graph_executor == null or _entity_sprite == null or _entity_original_texture == null:
 		return
 	if graph_executor._state == EffectsGraphExecutor.State.RUNNING:
+		# Skip the first frame after start so the shader has a chance to
+		# render content before we swap the display texture — avoids a
+		# single-frame flash of the empty ping-pong buffer.
+		if _display_swap_delay > 0:
+			_display_swap_delay -= 1
+			return
 		var output_tex: Texture2D = graph_executor.get_output_texture()
 		if output_tex != null and _entity_sprite.texture != output_tex:
 			_entity_sprite.texture = output_tex
@@ -561,6 +568,9 @@ func update_params(pass_id: String, params: Dictionary) -> Dictionary:
 
 func start_graph() -> void:
 	if graph_executor:
+		# Wait 2 frames before swapping the display texture so the shader
+		# has rendered at least one full frame of content.
+		_display_swap_delay = 2
 		graph_executor.start()
 
 func pause_graph() -> void:
@@ -572,7 +582,7 @@ func resume_graph() -> void:
 		graph_executor.resume()
 
 func stop_graph() -> void:
-	_restore_entity_display()
+	_bake_output_to_entity()
 	if graph_executor:
 		graph_executor.stop()
 
@@ -638,6 +648,52 @@ func _find_entity_texture() -> Texture2D:
 		if sprite != null and sprite.texture != null:
 			return sprite.texture
 	return null
+
+func _bake_output_to_entity() -> void:
+	# Capture the current shader output and bake it into the entity's
+	# ImageTexture so the sprite keeps showing the evolved state after stop.
+	if _entity_sprite == null or _entity_original_texture == null:
+		return
+	if graph_executor == null:
+		_restore_entity_display()
+		return
+
+	var output_tex: Texture2D = graph_executor.get_output_texture()
+	if output_tex == null:
+		_restore_entity_display()
+		return
+
+	var output_image: Image = output_tex.get_image()
+	if output_image == null:
+		_restore_entity_display()
+		return
+
+	# Resize to match the original entity texture dimensions so the
+	# sprite scale can be restored to its original value.
+	var orig_size: Vector2i = _entity_original_texture.get_image().get_size()
+	if output_image.get_size() != orig_size:
+		output_image.resize(orig_size.x, orig_size.y, Image.INTERPOLATE_BILINEAR)
+
+	# Update the existing ImageTexture in-place if possible, otherwise create new.
+	if _entity_original_texture is ImageTexture:
+		(_entity_original_texture as ImageTexture).update(output_image)
+		_entity_sprite.texture = _entity_original_texture
+	else:
+		var baked := ImageTexture.create_from_image(output_image)
+		_entity_sprite.texture = baked
+
+	_entity_sprite.scale = _entity_original_scale
+
+	# Also update the PixelBufferManager's stored Image so that subsequent
+	# draw commands operate on the baked content, not the pre-shader original.
+	if _game_bridge and "_pixel_buffer_manager" in _game_bridge:
+		var pbm = _game_bridge._pixel_buffer_manager
+		if pbm != null and "_buffers" in pbm:
+			for buf_id in pbm._buffers.keys():
+				var buf: Dictionary = pbm._buffers[buf_id]
+				if buf.get("texture") == _entity_original_texture:
+					buf["image"] = output_image.duplicate()
+					break
 
 func _restore_entity_display() -> void:
 	if _entity_sprite != null and _entity_original_texture != null:

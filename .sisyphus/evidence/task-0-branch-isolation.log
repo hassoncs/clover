@@ -1,0 +1,4 @@
+Branch: refactor/godot-bridge-dedup-dispatch
+Base commit: ec9fe1d0 feat(social): add complete social platform - comments, likes, follows, notifications, moderation
+Status:
+?? .envrc.backup

@@ -262,7 +262,12 @@ func _build_method_map() -> void:
 		"rotate_3d_model": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_model_rotation(Vector3(float(args[0]), float(args[1]), float(args[2]))),
 		"set_3d_camera_distance": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_distance(float(args[0])),
 		"set_3d_camera_size": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_size(float(args[0])),
+		"set_3d_camera_position": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_camera_position(float(args[0]), float(args[1]), float(args[2])),
+		"set_3d_camera_look_at": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_camera_look_at(float(args[0]), float(args[1]), float(args[2])),
 		"clear_3d_models": func(_args): if _viewport_3d: _viewport_3d.clear_models(),
+		"create_3d_floor": func(args): if _viewport_3d: _viewport_3d.create_floor(float(args[0]) if args.size() > 0 else 10.0, str(args[1]) if args.size() > 1 else "555555", str(args[2]) if args.size() > 2 else "plain"),
+		"create_3d_cube": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.create_cube(float(args[0]), float(args[1]), float(args[2]), float(args[3]) if args.size() > 3 else 0.5, str(args[4]) if args.size() > 4 else "ff0000"),
+		"clear_3d_cubes": func(_args): if _viewport_3d: _viewport_3d.clear_cubes(),
 	}
 
 func native_dispatch(method_name: String, args_json: String) -> Variant:
@@ -359,7 +364,13 @@ func _setup_js_bridge() -> void:
 		"rotate_3d_model": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_model_rotation(Vector3(float(args[0]), float(args[1]), float(args[2]))),
 		"set_3d_camera_distance": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_distance(float(args[0])),
 		"set_3d_camera_size": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_size(float(args[0])),
-		"clear_3d_models": func(_args): if _viewport_3d: _viewport_3d.clear_models()
+		"set_3d_camera_position": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_camera_position(float(args[0]), float(args[1]), float(args[2])),
+		"set_3d_camera_look_at": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_camera_look_at(float(args[0]), float(args[1]), float(args[2])),
+		"clear_3d_models": func(_args): if _viewport_3d: _viewport_3d.clear_models(),
+		"create_3d_floor": func(args): if _viewport_3d: _viewport_3d.create_floor(float(args[0]) if args.size() > 0 else 10.0, str(args[1]) if args.size() > 1 else "555555", str(args[2]) if args.size() > 2 else "plain"),
+		"create_3d_cube": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.create_cube(float(args[0]), float(args[1]), float(args[2]), float(args[3]) if args.size() > 3 else 0.5, str(args[4]) if args.size() > 4 else "ff0000"),
+		"clear_3d_cubes": func(_args): if _viewport_3d: _viewport_3d.clear_cubes(),
+		"set_orbit_controls": func(args): if _viewport_3d: _viewport_3d.set_orbit_controls(bool(args[0]) if args.size() > 0 else false)
 	}
 	for key in extra_callbacks:
 		var cb = JavaScriptBridge.create_callback(extra_callbacks[key])

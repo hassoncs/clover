@@ -2,12 +2,14 @@ import { useEffect, useState, useCallback } from "react";
 import { View, Text, Pressable, ActivityIndicator, ScrollView, Alert, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { trpc } from "@/lib/trpc/client";
 import type { GameDefinition } from "@slopcade/shared";
 import { EMBEDDED_DEFINITIONS, EMBEDDED_METADATA } from "@/lib/offline/embedded-games-registry";
 import { GameComments } from "@/components/social/GameComments";
 import { LikeButton } from "@/components/social/LikeButton";
 import { StarRating } from "@/components/social/StarRating";
+import { ReportModal } from "@/components/social/ReportModal";
 import { useAuth } from "@/hooks/useAuth";
 
 type GameSource = "template" | "database";
@@ -32,6 +34,7 @@ export default function GameDetailScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isForking, setIsForking] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showReport, setShowReport] = useState(false);
   const [selectedPackId, setSelectedPackId] = useState<string | null>(null);
 
   const [packsData, setPacksData] = useState<{
@@ -231,6 +234,12 @@ export default function GameDetailScreen() {
         <Pressable onPress={handleBack} className="mr-4">
           <Text className="text-white text-lg">← Back</Text>
         </Pressable>
+        <View className="flex-1" />
+        {user && (
+          <Pressable onPress={() => setShowReport(true)} className="p-2">
+            <Ionicons name="flag-outline" size={20} color="#9CA3AF" />
+          </Pressable>
+        )}
       </View>
 
       <ScrollView className="flex-1">
@@ -424,6 +433,13 @@ export default function GameDetailScreen() {
           )}
         </View>
       </ScrollView>
+
+      <ReportModal
+        visible={showReport}
+        targetType="game"
+        targetId={gameInfo.id}
+        onClose={() => setShowReport(false)}
+      />
     </SafeAreaView>
   );
 }

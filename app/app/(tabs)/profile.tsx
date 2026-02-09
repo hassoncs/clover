@@ -313,10 +313,16 @@ export default function ProfileScreen() {
       >
         <View className="px-5 pt-5">
           <View className="flex-row items-center justify-between">
-            <Pressable className="h-10 w-10 items-center justify-center rounded-full bg-zinc-900/70">
-              <Ionicons name="settings-outline" size={20} color="#E4E4E7" />
+            <Pressable
+              className="h-10 w-10 items-center justify-center rounded-full bg-zinc-900/70"
+              onPress={() => router.push("/notifications")}
+            >
+              <Ionicons name="notifications-outline" size={20} color="#E4E4E7" />
             </Pressable>
-            <Pressable className="h-10 w-10 items-center justify-center rounded-full bg-zinc-900/70">
+            <Pressable
+              className="h-10 w-10 items-center justify-center rounded-full bg-zinc-900/70"
+              onPress={() => router.push("/discover")}
+            >
               <Ionicons name="person-add-outline" size={20} color="#E4E4E7" />
             </Pressable>
           </View>
@@ -398,6 +404,12 @@ export default function ProfileScreen() {
               onPress={() => router.push("/themes")}
             >
               <Text className="text-zinc-100 text-base font-semibold">Open Themes Library</Text>
+            </Pressable>
+            <Pressable
+              className="mb-3 bg-zinc-800 h-12 rounded-full items-center justify-center border border-zinc-700"
+              onPress={() => router.push("/settings/blocked-users")}
+            >
+              <Text className="text-zinc-100 text-base font-semibold">Blocked Users</Text>
             </Pressable>
             <View className="flex-row gap-3">
               <Pressable

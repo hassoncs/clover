@@ -1,0 +1,80 @@
+# 3D Method Baseline Check
+
+**Task:** Verify all required 3D methods are present in bridge contract baseline
+**Date:** 2026-02-09
+
+---
+
+## Required 3D Methods (from task spec)
+
+1. show_3d_model
+2. show_3d_model_from_url
+3. set_3d_viewport_position
+4. set_3d_viewport_size
+5. rotate_3d_model
+6. set_3d_camera_distance
+7. set_3d_camera_size
+8. clear_3d_models
+9. create_3d_floor
+10. create_3d_cube
+11. clear_3d_cubes
+
+---
+
+## Verification Results
+
+### ✓ FOUND in Native Registry (_method_map)
+
+- ✓ show_3d_model (line 258)
+- ✓ show_3d_model_from_url (line 259)
+- ✓ set_3d_viewport_position (line 260)
+- ✓ set_3d_viewport_size (line 261)
+- ✓ rotate_3d_model (line 262)
+- ✓ set_3d_camera_distance (line 263)
+- ✓ set_3d_camera_size (line 264)
+- ✓ clear_3d_models (line 265)
+
+### ✓ FOUND in Web Registry (extra_callbacks)
+
+- ✓ show_3d_model (line 355)
+- ✓ show_3d_model_from_url (line 356)
+- ✓ set_3d_viewport_position (line 357)
+- ✓ set_3d_viewport_size (line 358)
+- ✓ rotate_3d_model (line 359)
+- ✓ set_3d_camera_distance (line 360)
+- ✓ set_3d_camera_size (line 361)
+- ✓ clear_3d_models (line 362)
+
+### ✗ NOT FOUND (Missing Methods)
+
+- ✗ create_3d_floor (not found in any registry)
+- ✗ create_3d_cube (not found in any registry)
+- ✗ clear_3d_cubes (not found in any registry)
+
+---
+
+## Search Evidence
+
+```bash
+# Searched for missing methods in all .gd files
+grep -r "create_3d_floor\|create_3d_cube\|clear_3d_cubes" godot_project/scripts/
+# Result: No matches found
+```
+
+---
+
+## Conclusion
+
+**8 of 11 required 3D methods are present** in both native and web registries.
+
+**3 methods are missing:**
+- create_3d_floor
+- create_3d_cube
+- clear_3d_cubes
+
+These methods may have been:
+1. Planned but not implemented
+2. Removed in a previous refactor
+3. Incorrectly specified in the task requirements
+
+**Recommendation:** Verify with codebase history or stakeholder whether these methods are actually needed.

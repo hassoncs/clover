@@ -172,6 +172,17 @@ func start() -> void:
 		push_warning("[EffectsGraphExecutor] Cannot start from state %s" % _state_name(_state))
 		return
 
+	# When restarting from STOPPED, clear the stale ping-pong content
+	# and rebind non-feedback inputs so the shader picks up the current
+	# entity texture (which may have been baked + drawn on since last stop).
+	if _state == State.STOPPED:
+		for entry in _pass_entries:
+			var ping_pong_buffer: String = str(entry.get("ping_pong_buffer", ""))
+			if ping_pong_buffer != "" and _ping_pong_manager != null:
+				_ping_pong_manager.reset(ping_pong_buffer)
+			# skip_feedback=true — _process handles feedback bindings correctly
+			_rebind_entry_inputs(entry, true)
+
 	for entry in _pass_entries:
 		_enable_entry_updates(entry, true)
 

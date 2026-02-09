@@ -51,8 +51,8 @@
     "knip": "knip"
   },
   "devDependencies": {
-    "@chriscode/devmux": "link:/Users/hassoncs/Workspaces/Personal/devmux/devmux-cli",
-    "@chriscode/hush": "^5.0.3",
+    "@chriscode/devmux": "^1.2.0",
+    "@chriscode/hush": "^5.0.6",
     "@chriscode/reggie": "workspace:*",
     "@gltf-transform/cli": "^4.3.0",
     "@types/node": "^25.0.10",

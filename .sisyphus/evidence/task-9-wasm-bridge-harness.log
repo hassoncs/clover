@@ -1,0 +1,135 @@
+# Task 9: WASM Bridge Harness Research Findings
+# Date: 2026-02-09
+# Purpose: Evidence log for automated Godot WASM↔TS bridge E2E testing research
+
+## Research Method
+- Direct source analysis of Godot web export artifacts
+- Web API dependency audit of Emscripten-generated glue code
+- External research on Emscripten environment settings, Deno WASM support, Godot headless mode
+- Cross-reference with existing bridge contract baseline (129 methods, 14 categories)
+
+## Key Finding: Godot WASM Binary is Web-Only
+
+### Source: godot_project/export/web/index.js (line 7)
+The Emscripten-generated glue code explicitly checks runtime environment:
+
+```
+ENVIRONMENT_IS_WEB = typeof window == "object"
+ENVIRONMENT_IS_WORKER = typeof WorkerGlobalScope != "undefined"
+ENVIRONMENT_IS_NODE = typeof process == "object" && process.versions?.node
+ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIRONMENT_IS_WORKER
+```
+
+If `ENVIRONMENT_IS_SHELL` (no window, no process): throws "not compiled for this environment"
+If not `ENVIRONMENT_IS_WEB` and not `ENVIRONMENT_IS_WORKER`: throws "environment detection error"
+
+### Conclusion: Standard Godot web export CANNOT load in Node.js or Deno without environment spoofing.
+
+## Approach 1 Analysis: Node.js + WASM + DOM Shims
+
+### DOM API Dependencies Found in index.js
+1. `window` object (environment detection)
+2. `document.createElement('canvas')` (WebGL context creation)
+3. `WebGL2RenderingContext` / `WebGLRenderingContext` (rendering init)
+4. `fetch` API (loading .pck, .wasm files)
+5. `AudioContext` / `AudioWorklet` (audio system)
+6. `requestAnimationFrame` (game loop)
+7. `ResizeObserver` (canvas sizing)
+8. `URL` / `Blob` (asset loading)
+9. `performance.now()` (timing)
+10. `Worker` / `SharedArrayBuffer` (threading, optional)
+
+### Blocker: WebGL
+- happy-dom provides: window, document, fetch, URL, Blob, performance ✅
+- happy-dom does NOT provide: Canvas 2D context, WebGL context ❌
+- jsdom provides: window, document (more complete DOM) ✅
+- jsdom does NOT provide: WebGL context ❌
+- headless-gl (stackgl/headless-gl): provides WebGL 1.0 only, often fails to compile, unmaintained ❌
+- Godot requires WebGL 2.0 (or WebGL 1.0 with extensions) ❌
+
+### Verdict: INFEASIBLE without maintained WebGL2 implementation for Node.js
+
+## Approach 2 Analysis: Deno + WASM
+
+### Deno Built-in Web APIs (relevant)
+- fetch ✅
+- WebSocket ✅
+- URL, URLSearchParams ✅
+- TextEncoder/TextDecoder ✅
+- crypto ✅
+- Performance API ✅
+- Request/Response ✅
+- WebAssembly (first-class, .wasm imports) ✅
+
+### Deno Missing APIs (required by Godot)
+- window (not a global by default; needs --unstable or polyfill)
+- document (no DOM at all)
+- Canvas / WebGL ❌ (same blocker as Node.js)
+- AudioContext ❌
+- requestAnimationFrame ❌
+
+### Additional Cost
+- Project uses Node.js/pnpm exclusively; Deno adds toolchain fragmentation
+- No existing Deno infrastructure in CI
+- Emscripten glue code would need patching for Deno environment
+
+### Verdict: INFEASIBLE for same reason as Node.js (WebGL), with added toolchain cost
+
+## Approach 3 Analysis: Godot Headless + IPC
+
+### Godot --headless Mode
+- Officially supported since Godot 4.0
+- Uses Dummy display server (no GPU required)
+- Full GDScript execution including physics (Rapier plugin works headless)
+- Can load .pck files and run scenes
+- Available for all platforms (Linux, macOS, Windows)
+- Used in production for dedicated game servers
+
+### IPC Options Evaluated
+1. stdin/stdout JSON-RPC: Simplest, works everywhere, synchronous-ish
+2. TCP socket: More robust, async-friendly, protocol closer to real bridge
+3. WebSocket: Closest to real web bridge communication pattern
+4. Named pipes: Platform-specific, no clear advantage
+
+### Recommended: TCP or WebSocket
+- Matches the async nature of the real bridge
+- JSON-RPC protocol maps cleanly to bridge method dispatch
+- Well-supported in both GDScript (TCPServer, WebSocketServer) and Node.js
+
+### CI Feasibility
+- GitHub Actions: chickensoft-games/setup-godot@v2 action available
+- Godot binary download: ~50MB, cached between runs
+- No GPU requirement for headless mode
+- Linux runners sufficient (no macOS runner needed)
+
+### Coverage Estimate
+- 96 of 129 methods testable headless (~75%)
+- All physics, entity, transform, joint, query, lifecycle methods covered
+- Visual rendering, 3D viewport, pixel buffer methods NOT testable (33 methods)
+- Debug/Inspector handlers mostly testable (35 of 41)
+
+### What's NOT Tested
+- Emscripten WASM↔JS glue layer marshalling
+- Web-specific callback registration aliases (camelCase↔snake_case)
+- Actual WASM binary compilation correctness
+- WebGL rendering pipeline
+
+### Verdict: FEASIBLE and RECOMMENDED
+- Best effort-to-coverage ratio
+- Only approach that works today without solving WebGL-in-Node
+- Tests the highest-value code paths (dispatch, physics, entity management)
+- Aligns with existing Node.js/Vitest toolchain
+
+## POC Effort Estimate
+- IPC Adapter (GDScript): 1-2 days
+- Node.js Test Driver: 1 day  
+- CI Integration: 0.5 days
+- Initial test suite (20-30 methods): 1 day
+- Total: ~4-5 days for working E2E tests
+
+## Summary
+| Approach | Feasible | Effort | Coverage |
+|----------|----------|--------|----------|
+| Node.js + WASM + Shims | NO (WebGL blocker) | High | High (theoretical) |
+| Deno + WASM | NO (WebGL blocker) | High | High (theoretical) |
+| Godot Headless + IPC | YES | Low-Medium | 75% of methods |

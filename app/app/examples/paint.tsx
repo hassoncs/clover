@@ -82,7 +82,11 @@ void fragment() {
     vec4 entity = texture(entity_input, UV);
     float brightness = (entity.r + entity.g + entity.b) / 3.0;
     float is_drawn = 1.0 - smoothstep(0.9, 1.0, brightness);
-    COLOR = mix(blurred, entity, is_drawn);
+    vec4 result = mix(blurred, entity, is_drawn);
+    // When the ping-pong buffer is uninitialised (alpha==0) fall back to entity
+    result.rgb = mix(entity.rgb, result.rgb, c.a);
+    result.a = 1.0;
+    COLOR = result;
 }
 `.trim();
 
@@ -95,23 +99,21 @@ uniform vec2 texel_size;
 uniform float dt;
 
 void fragment() {
-    // Sample neighbors to find "heaviest" (darkest) direction, then shift down
     vec4 c = texture(current_buffer, UV);
     vec4 below = texture(current_buffer, UV + vec2(0.0, texel_size.y * 2.0));
     vec4 bl_s = texture(current_buffer, UV + vec2(-texel_size.x, texel_size.y));
     vec4 br_s = texture(current_buffer, UV + vec2( texel_size.x, texel_size.y));
 
-    // Gravity: pull color downward by blending with pixel below
-    float weight_c = (c.r + c.g + c.b) / 3.0;
-    float weight_below = (below.r + below.g + below.b) / 3.0;
-    // Darker pixels are "heavier" — they sink, lighter pixels float up
     float gravity = 0.15;
     vec4 melted = mix(c, (c * 0.4 + below * 0.3 + bl_s * 0.15 + br_s * 0.15), gravity);
 
     vec4 entity = texture(entity_input, UV);
     float brightness = (entity.r + entity.g + entity.b) / 3.0;
     float is_drawn = 1.0 - smoothstep(0.9, 1.0, brightness);
-    COLOR = mix(melted, entity, is_drawn);
+    vec4 result = mix(melted, entity, is_drawn);
+    result.rgb = mix(entity.rgb, result.rgb, c.a);
+    result.a = 1.0;
+    COLOR = result;
 }
 `.trim();
 
@@ -127,7 +129,6 @@ void fragment() {
     vec2 center = vec2(0.5, 0.5);
     vec2 delta = UV - center;
     float dist = length(delta);
-    // Stronger rotation near center, fades at edges
     float angle = 0.006 * smoothstep(0.5, 0.0, dist);
     float cs = cos(angle);
     float sn = sin(angle);
@@ -137,7 +138,10 @@ void fragment() {
     vec4 entity = texture(entity_input, UV);
     float brightness = (entity.r + entity.g + entity.b) / 3.0;
     float is_drawn = 1.0 - smoothstep(0.9, 1.0, brightness);
-    COLOR = mix(c, entity, is_drawn);
+    vec4 result = mix(c, entity, is_drawn);
+    result.rgb = mix(entity.rgb, result.rgb, c.a);
+    result.a = 1.0;
+    COLOR = result;
 }
 `.trim();
 
@@ -165,7 +169,6 @@ vec3 hsv2rgb(vec3 c) {
 }
 
 void fragment() {
-    // Blur + hue shift: spread the colors AND rotate hue
     vec4 c = texture(current_buffer, UV);
     vec4 l = texture(current_buffer, UV + vec2(-texel_size.x, 0.0));
     vec4 r = texture(current_buffer, UV + vec2( texel_size.x, 0.0));
@@ -184,7 +187,10 @@ void fragment() {
     vec4 entity = texture(entity_input, UV);
     float ent_brightness = (entity.r + entity.g + entity.b) / 3.0;
     float is_drawn = 1.0 - smoothstep(0.9, 1.0, ent_brightness);
-    COLOR = mix(blurred, entity, is_drawn);
+    vec4 result = mix(blurred, entity, is_drawn);
+    result.rgb = mix(entity.rgb, result.rgb, c.a);
+    result.a = 1.0;
+    COLOR = result;
 }
 `.trim();
 

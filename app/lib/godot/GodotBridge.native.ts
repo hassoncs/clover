@@ -1091,6 +1091,30 @@ export function createNativeGodotBridge(): GodotBridge {
     clear3DModels(): void {
       callGameBridge('clear_3d_models');
     },
+
+    create3DFloor(size?: number, colorHex?: string, style?: 'plain' | 'grid'): void {
+      callGameBridge('create_3d_floor', size ?? 10.0, colorHex ?? "555555", style ?? "plain");
+    },
+
+    create3DCube(x: number, y: number, z: number, size?: number, colorHex?: string): void {
+      callGameBridge('create_3d_cube', x, y, z, size ?? 0.5, colorHex ?? "ff0000");
+    },
+
+    clear3DCubes(): void {
+      callGameBridge('clear_3d_cubes');
+    },
+
+    set3DCameraPosition(x: number, y: number, z: number): void {
+      callGameBridge('set_3d_camera_position', x, y, z);
+    },
+
+    set3DCameraLookAt(x: number, y: number, z: number): void {
+      callGameBridge('set_3d_camera_look_at', x, y, z);
+    },
+
+    setOrbitControls(enabled: boolean): void {
+      callGameBridge('set_orbit_controls', enabled);
+    },
   };
 
   return bridge;

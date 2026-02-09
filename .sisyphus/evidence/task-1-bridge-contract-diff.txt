@@ -1,0 +1,307 @@
+--- /dev/null	2026-02-09 08:47:57
++++ .sisyphus/evidence/bridge-contract-baseline.md	2026-02-09 08:47:48
+@@ -0,0 +1,304 @@
++# Bridge Contract Baseline
++
++**Generated:** 2026-02-09  
++**Purpose:** Enumerate all currently exposed bridge methods across native and web paths to establish a compatibility manifest.
++
++---
++
++## Registration Sources
++
++1. **Native Dispatch Registry**: `_method_map` in `GameBridge.gd` (lines 164-266)
++2. **Web Callbacks Registry**: `callbacks` in `_setup_js_bridge()` (lines 308-347)
++3. **Web Extra Callbacks**: `extra_callbacks` in `_setup_js_bridge()` (lines 353-363)
++4. **Query System Handlers**: `_query_system.register_handler(...)` calls (GameBridge.gd + DebugBridge.gd)
++5. **TypeScript Call Sites**: `callGameBridge(...)` in `GodotBridge.native.ts`
++
++---
++
++## Method Inventory by Category
++
++### Lifecycle (6 methods)
++
++| Method (snake_case) | Web Alias (camelCase) | Args | Module | Native | Web |
++|---------------------|----------------------|------|--------|--------|-----|
++| `load_game_json` | `loadGameJson` | 1 | GameBridge | ✓ | ✓ |
++| `clear_game` | `clearGame` | 0 | GameBridge | ✓ | ✓ |
++| `set_inspect_mode` | `setInspectMode` | 1 | GameBridge | ✓ | ✓ |
++| `pause_physics` | `pausePhysics` | 0 | GameBridge | ✓ | ✓ |
++| `resume_physics` | `resumePhysics` | 0 | GameBridge | ✓ | ✓ |
++| `load_custom_scene` | `loadCustomScene` | 1 | GameBridge | ✓ | ✓ |
++
++### Entity Management (8 methods)
++
++| Method (snake_case) | Web Alias (camelCase) | Args | Module | Native | Web |
++|---------------------|----------------------|------|--------|--------|-----|
++| `spawn_entity` | `spawnEntity` | varies | EntityManager | ✓ | ✓ |
++| `spawn_entity_with_id` | — | 4+ | GameBridge | ✓ | ✗ |
++| `destroy_entity` | `destroyEntity` | varies | EntityManager | ✓ | ✓ |
++| `get_entity_transform` | `getEntityTransform` | varies | EntityManager | ✓ | ✓ |
++| `get_all_bodies` | `getAllBodies` | varies | EntityManager | ✓ | ✓ |
++| `set_user_data` | `setUserData` | varies | EntityManager | ✓ | ✓ |
++| `get_user_data` | `getUserData` | varies | EntityManager | ✓ | ✓ |
++| `screen_to_world` | — | 2 | GameBridge | ✓ | ✗ |
++
++### Transform (4 methods)
++
++| Method (snake_case) | Web Alias (camelCase) | Args | Module | Native | Web |
++|---------------------|----------------------|------|--------|--------|-----|
++| `set_transform` | `setTransform` | varies | TransformSystem | ✓ | ✓ |
++| `set_position` | `setPosition` | varies | TransformSystem | ✓ | ✓ |
++| `set_rotation` | `setRotation` | varies | TransformSystem | ✓ | ✓ |
++| `set_scale` | `setScale` | varies | TransformSystem | ✓ | ✓ |
++
++### Physics (7 methods)
++
++| Method (snake_case) | Web Alias (camelCase) | Args | Module | Native | Web |
++|---------------------|----------------------|------|--------|--------|-----|
++| `set_linear_velocity` | `setLinearVelocity` | varies | PhysicsController | ✓ | ✓ |
++| `set_angular_velocity` | `setAngularVelocity` | varies | PhysicsController | ✓ | ✓ |
++| `apply_impulse` | `applyImpulse` | varies | PhysicsController | ✓ | ✓ |
++| `apply_force` | `applyForce` | varies | PhysicsController | ✓ | ✓ |
++| `apply_torque` | `applyTorque` | varies | PhysicsController | ✓ | ✓ |
++| `get_linear_velocity` | `getLinearVelocity` | varies | PhysicsController | ✓ | ✓ |
++| `get_angular_velocity` | `getAngularVelocity` | varies | PhysicsController | ✓ | ✓ |
++
++### Sync System (6 methods)
++
++| Method (snake_case) | Web Alias (camelCase) | Args | Module | Native | Web |
++|---------------------|----------------------|------|--------|--------|-----|
++| `on_transform_sync` | `onTransformSync` | varies | SyncSystem | ✓ | ✓ |
++| `on_property_sync` | `onPropertySync` | varies | SyncSystem | ✓ | ✓ |
++| `set_watch_config` | `setWatchConfig` | varies | PropertyCollector | ✓ | ✓ |
++| `get_transform` | `getTransform` | varies | SyncSystem | ✓ | ✓ |
++| `get_transforms` | `getTransforms` | varies | SyncSystem | ✓ | ✓ |
++| `set_tracked_entities` | `setTrackedEntities` | varies | SyncSystem | ✓ | ✓ |
++
++### Visual (10 methods)
++
++| Method (snake_case) | Web Alias (camelCase) | Args | Module | Native | Web |
++|---------------------|----------------------|------|--------|--------|-----|
++| `set_opacity` | `setOpacity` | varies | VisualRenderer | ✓ | ✓ |
++| `set_visible` | `setVisible` | varies | VisualRenderer | ✓ | ✓ |
++| `set_entity_image` | `setEntityImage` | varies | VisualRenderer | ✓ | ✓ |
++| `set_entity_image_from_file` | — | 4+ | VisualRenderer | ✓ | ✗ |
++| `set_entity_atlas_region` | `setEntityAtlasRegion` | varies | VisualRenderer | ✓ | ✓ |
++| `set_entity_atlas_region_from_file` | — | 8+ | VisualRenderer | ✓ | ✗ |
++| `preload_textures` | `preloadTextures` | varies | VisualRenderer | ✓ | ✓ |
++| `set_debug_show_shapes` | `setDebugShowShapes` | varies | VisualRenderer | ✓ | ✓ |
++| `set_debug_settings` | `setDebugSettings` | varies | VisualRenderer | ✓ | ✓ |
++| `clear_texture_cache` | `clearTextureCache` | 0-1 | VisualRenderer | ✓ | ✓ |
++
++### Pixel Buffer (4 methods)
++
++| Method (snake_case) | Web Alias (camelCase) | Args | Module | Native | Web |
++|---------------------|----------------------|------|--------|--------|-----|
++| `createPixelBuffer` | `createPixelBuffer` | varies | PixelBufferManager | ✓ | ✓ |
++| `pixelBufferDraw` | `pixelBufferDraw` | varies | PixelBufferManager | ✓ | ✓ |
++| `pixelBufferClear` | `pixelBufferClear` | varies | PixelBufferManager | ✓ | ✓ |
++| `destroyPixelBuffer` | `destroyPixelBuffer` | varies | PixelBufferManager | ✓ | ✓ |
++
++### Joints (9 methods)
++
++| Method (snake_case) | Web Alias (camelCase) | Args | Module | Native | Web |
++|---------------------|----------------------|------|--------|--------|-----|
++| `create_revolute_joint` | `createRevoluteJoint` | varies | JointManager | ✓ | ✓ |
++| `create_distance_joint` | `createDistanceJoint` | varies | JointManager | ✓ | ✓ |
++| `create_prismatic_joint` | `createPrismaticJoint` | varies | JointManager | ✓ | ✓ |
++| `create_weld_joint` | `createWeldJoint` | varies | JointManager | ✓ | ✓ |
++| `create_mouse_joint` | `createMouseJoint` | varies | JointManager | ✓ | ✓ |
++| `destroy_joint` | `destroyJoint` | varies | JointManager | ✓ | ✓ |
++| `destroy_mouse_joint_for_entity` | `destroyMouseJointForEntity` | varies | JointManager | ✓ | ✓ |
++| `set_motor_speed` | `setMotorSpeed` | varies | JointManager | ✓ | ✓ |
++| `set_mouse_target` | `setMouseTarget` | varies | JointManager | ✓ | ✓ |
++| `get_last_joint_id` | `getLastJointId` | varies | JointManager | ✓ | ✓ |
++
++### Queries (4 methods)
++
++| Method (snake_case) | Web Alias (camelCase) | Args | Module | Native | Web |
++|---------------------|----------------------|------|--------|--------|-----|
++| `query_point` | `queryPoint` | varies | PhysicsQueries | ✓ | ✓ |
++| `query_point_entity` | `queryPointEntity` | varies | PhysicsQueries | ✓ | ✓ |
++| `query_aabb` | `queryAABB` | varies | PhysicsQueries | ✓ | ✓ |
++| `raycast` | `raycast` | varies | PhysicsQueries | ✓ | ✓ |
++
++### Input/Events (5 methods)
++
++| Method (snake_case) | Web Alias (camelCase) | Args | Module | Native | Web |
++|---------------------|----------------------|------|--------|--------|-----|
++| `send_input` | `sendInput` | varies | InputRouter | ✓ | ✓ |
++| `on_input_event` | `onInputEvent` | varies | EventEmitter | ✓ | ✓ |
++| `on_collision` | `onCollision` | varies | EventEmitter | ✓ | ✓ |
++| `on_entity_destroyed` | `onEntityDestroyed` | varies | EventEmitter | ✓ | ✓ |
++| `on_sensor_begin` | `onSensorBegin` | varies | EventEmitter | ✓ | ✓ |
++| `on_sensor_end` | `onSensorEnd` | varies | EventEmitter | ✓ | ✓ |
++
++### Camera (6 methods)
++
++| Method (snake_case) | Web Alias (camelCase) | Args | Module | Native | Web |
++|---------------------|----------------------|------|--------|--------|-----|
++| `set_camera_target` | `setCameraTarget` | varies | CameraController | ✓ | ✓ |
++| `set_camera_position` | `setCameraPosition` | varies | CameraController | ✓ | ✓ |
++| `set_camera_zoom` | `setCameraZoom` | varies | CameraController | ✓ | ✓ |
++| `start_camera` | `startCamera` | varies | GameBridge | ✓ | ✓ |
++| `stop_camera` | `stopCamera` | varies | GameBridge | ✓ | ✓ |
++
++### UI (7 methods)
++
++| Method (snake_case) | Web Alias (camelCase) | Args | Module | Native | Web |
++|---------------------|----------------------|------|--------|--------|-----|
++| `spawn_particle` | `spawnParticle` | varies | UIManager | ✓ | ✓ |
++| `play_sound` | `playSound` | varies | UIManager | ✓ | ✓ |
++| `create_ui_button` | `createUIButton` | varies | UIManager | ✓ | ✓ |
++| `destroy_ui_button` | `destroyUIButton` | varies | UIManager | ✓ | ✓ |
++| `on_ui_button_event` | `onUIButtonEvent` | varies | UIManager | ✓ | ✓ |
++| `create_themed_ui_component` | — | 7-8 | UIManager | ✓ | ✗ |
++| `destroy_themed_ui_component` | — | 1 | UIManager | ✓ | ✗ |
++
++### 3D Viewport (8 methods)
++
++| Method (snake_case) | Web Alias (camelCase) | Args | Module | Native | Web |
++|---------------------|----------------------|------|--------|--------|-----|
++| `show_3d_model` | `show_3d_model` | 1 | Viewport3D | ✓ | ✓ |
++| `show_3d_model_from_url` | `show_3d_model_from_url` | 1 | Viewport3D | ✓ | ✓ |
++| `set_3d_viewport_position` | `set_3d_viewport_position` | 2 | Viewport3D | ✓ | ✓ |
++| `set_3d_viewport_size` | `set_3d_viewport_size` | 2 | Viewport3D | ✓ | ✓ |
++| `rotate_3d_model` | `rotate_3d_model` | 3 | Viewport3D | ✓ | ✓ |
++| `set_3d_camera_distance` | `set_3d_camera_distance` | 1 | Viewport3D | ✓ | ✓ |
++| `set_3d_camera_size` | `set_3d_camera_size` | 1 | Viewport3D | ✓ | ✓ |
++| `clear_3d_models` | `clear_3d_models` | 0 | Viewport3D | ✓ | ✓ |
++
++**NOTE:** 3D methods use snake_case in BOTH native and web (no camelCase aliases).
++
++### Query System Handlers (GameBridge.gd)
++
++| Handler Name | Args | Module | Registered In |
++|--------------|------|--------|---------------|
++| `getAllTransforms` | 0 | TransformSystem | GameBridge.gd:154 |
++| `getAllProperties` | 0 | PropertyCollector | GameBridge.gd:155 |
++| `getWorldInfo` | 0 | DebugBridge | GameBridge.gd:156 |
++| `getCameraInfo` | 0 | CameraController | GameBridge.gd:157 |
++| `getViewportInfo` | 0 | DebugBridge | GameBridge.gd:158 |
++| `getEntityTransform` | 1 | GameBridge | GameBridge.gd:159 |
++| `queryPointEntity` | 2 | PhysicsQueries | GameBridge.gd:160 |
++| `screenToWorld` | 2 | GameBridge | GameBridge.gd:161 |
++| `getSplatTexture` | 0 | GameBridge | GameBridge.gd:162 |
++
++### Query System Handlers (DebugBridge.gd)
++
++| Handler Name | Args | Module | Registered In |
++|--------------|------|--------|---------------|
++| `getSceneSnapshot` | varies | DebugBridge | DebugBridge.gd:38 |
++| `findEntities` | varies | DebugBridge | DebugBridge.gd:39 |
++| `getEntityDetails` | varies | DebugBridge | DebugBridge.gd:40 |
++| `getEntitiesAtPoint` | varies | DebugBridge | DebugBridge.gd:41 |
++| `getEntitiesInRect` | varies | DebugBridge | DebugBridge.gd:42 |
++| `getEntityCount` | varies | DebugBridge | DebugBridge.gd:43 |
++| `query` | varies | DebugBridge | DebugBridge.gd:44 |
++| `queryAst` | varies | DebugBridge | DebugBridge.gd:45 |
++| `getProps` | varies | DebugBridge | DebugBridge.gd:48 |
++| `getAllProps` | varies | DebugBridge | DebugBridge.gd:49 |
++| `setProps` | varies | DebugBridge | DebugBridge.gd:50 |
++| `patchProps` | varies | DebugBridge | DebugBridge.gd:51 |
++| `spawn` | varies | DebugBridge | DebugBridge.gd:54 |
++| `destroy` | varies | DebugBridge | DebugBridge.gd:55 |
++| `clone` | varies | DebugBridge | DebugBridge.gd:56 |
++| `reparent` | varies | DebugBridge | DebugBridge.gd:57 |
++| `lifecycleBatch` | varies | DebugBridge | DebugBridge.gd:58 |
++| `getTimeState` | varies | DebugBridge | DebugBridge.gd:61 |
++| `step` | varies | DebugBridge | DebugBridge.gd:62 |
++| `setTimeScale` | varies | DebugBridge | DebugBridge.gd:63 |
++| `setSeed` | varies | DebugBridge | DebugBridge.gd:64 |
++| `subscribe` | varies | DebugBridge | DebugBridge.gd:67 |
++| `unsubscribe` | varies | DebugBridge | DebugBridge.gd:68 |
++| `pollEvents` | varies | DebugBridge | DebugBridge.gd:69 |
++| `listSubscriptions` | varies | DebugBridge | DebugBridge.gd:70 |
++| `raycast` | varies | DebugBridge | DebugBridge.gd:73 |
++| `raycastAll` | varies | DebugBridge | DebugBridge.gd:74 |
++| `getShapes` | varies | DebugBridge | DebugBridge.gd:75 |
++| `getJoints` | varies | DebugBridge | DebugBridge.gd:76 |
++| `getEntityJoints` | varies | DebugBridge | DebugBridge.gd:77 |
++| `getOverlaps` | varies | DebugBridge | DebugBridge.gd:78 |
++| `getAllOverlaps` | varies | DebugBridge | DebugBridge.gd:79 |
++| `queryPoint` | varies | DebugBridge | DebugBridge.gd:80 |
++| `queryAABB` | varies | DebugBridge | DebugBridge.gd:81 |
++
++---
++
++## Summary Statistics
++
++| Category | Native Methods | Web Methods | Query Handlers | Total |
++|----------|----------------|-------------|----------------|-------|
++| Lifecycle | 6 | 6 | 0 | 6 |
++| Entity | 8 | 6 | 1 | 9 |
++| Transform | 4 | 4 | 1 | 5 |
++| Physics | 7 | 7 | 0 | 7 |
++| Sync | 6 | 6 | 0 | 6 |
++| Visual | 10 | 7 | 0 | 10 |
++| Pixel Buffer | 4 | 4 | 0 | 4 |
++| Joints | 9 | 9 | 0 | 9 |
++| Queries | 4 | 4 | 2 | 6 |
++| Input/Events | 5 | 5 | 0 | 5 |
++| Camera | 5 | 5 | 1 | 6 |
++| UI | 7 | 5 | 0 | 7 |
++| 3D Viewport | 8 | 8 | 0 | 8 |
++| Debug/Inspector | 0 | 0 | 41 | 41 |
++| **TOTAL** | **83** | **76** | **46** | **129** |
++
++---
++
++## Parity Gaps (Native-Only Methods)
++
++The following methods are registered in `_method_map` but NOT in web `callbacks` or `extra_callbacks`:
++
++1. `spawn_entity_with_id` (4+ args) - Native only
++2. `screen_to_world` (2 args) - Native only (but exists as query handler)
++3. `set_entity_image_from_file` (4+ args) - Native only
++4. `set_entity_atlas_region_from_file` (8+ args) - Native only
++5. `create_themed_ui_component` (7-8 args) - Native only
++6. `destroy_themed_ui_component` (1 arg) - Native only
++
++**Total Native-Only:** 6 methods
++
++---
++
++## Naming Convention Observations
++
++1. **Native dispatch** uses `snake_case` keys exclusively
++2. **Web callbacks** use `camelCase` for most methods
++3. **3D methods** use `snake_case` in BOTH native and web (no camelCase aliases)
++4. **Pixel buffer methods** use `camelCase` in BOTH native and web
++5. **Query system handlers** use `camelCase` exclusively
++6. **Module bridge methods** use `_js_` prefix convention (e.g., `_js_spawn_entity`)
++
++---
++
++## 3D Method Verification
++
++All required 3D methods are present in BOTH native and web registries:
++
++- ✓ `show_3d_model`
++- ✓ `show_3d_model_from_url`
++- ✓ `set_3d_viewport_position`
++- ✓ `set_3d_viewport_size`
++- ✓ `rotate_3d_model`
++- ✓ `set_3d_camera_distance`
++- ✓ `set_3d_camera_size`
++- ✓ `clear_3d_models`
++
++**Missing 3D methods:** `create_3d_floor`, `create_3d_cube`, `clear_3d_cubes` (not found in any registry)
++
++---
++
++## TypeScript Call Sites
++
++All `callGameBridge(...)` invocations in `GodotBridge.native.ts` use snake_case method names matching the native `_method_map` keys. No mismatches detected.
++
++---
++
++## Next Steps
++
++1. Decide on canonical naming convention (snake_case vs camelCase)
++2. Implement dynamic dispatch to eliminate dual registration
++3. Add missing 3D methods if needed (`create_3d_floor`, `create_3d_cube`, `clear_3d_cubes`)
++4. Unify native-only methods or document why they're platform-specific
++5. Consolidate query system handlers into main dispatch if appropriate

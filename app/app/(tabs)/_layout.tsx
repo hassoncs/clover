@@ -64,6 +64,10 @@ export default function TabLayout() {
     router.push("/image-search");
   }, [router]);
 
+  const goToNotifications = useCallback(() => {
+    router.push("/notifications");
+  }, [router]);
+
   return (
     <View style={{ flex: 1, backgroundColor: "#050608" }}>
       <Tabs
@@ -94,7 +98,11 @@ export default function TabLayout() {
                 rightActions={config.rightIcons.map((icon) => ({
                   icon,
                   onPress:
-                    icon === "person-add-outline" ? goToDiscover : () => {},
+                    icon === "notifications-outline"
+                      ? goToNotifications
+                      : icon === "person-add-outline"
+                      ? goToDiscover
+                      : () => {},
                 }))}
               />
             );

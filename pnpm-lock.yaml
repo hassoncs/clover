@@ -41,11 +41,11 @@ importers:
         version: 0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)
     devDependencies:
       '@chriscode/devmux':
-        specifier: link:/Users/hassoncs/Workspaces/Personal/devmux/devmux-cli
-        version: link:../devmux/devmux-cli
+        specifier: ^1.2.0
+        version: 1.2.0
       '@chriscode/hush':
-        specifier: ^5.0.3
-        version: 5.0.5
+        specifier: ^5.0.6
+        version: 5.0.6
       '@chriscode/reggie':
         specifier: workspace:*
         version: link:packages/reggie
@@ -1496,8 +1496,13 @@ packages:
       react-native: '*'
       react-native-worklets-core: '*'
 
-  '@chriscode/hush@5.0.5':
-    resolution: {integrity: sha512-qsizibwxLAVu9DBdIqNLbe1/epOEomNhLND/FMVFUr7UMsuOo5d7nu1ja9l4PNOI2l8Tvtpy/b1pcij/FNLOXQ==}
+  '@chriscode/devmux@1.2.0':
+    resolution: {integrity: sha512-ZdMYlyC3ls2YkYLJlkcVlqveqPIc8n388KwisA/mHSv3qxDOEQP3GvTpaEBMGWIswLq8lTZkPdZOKL52VQSy3w==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  '@chriscode/hush@5.0.6':
+    resolution: {integrity: sha512-oFyZAQJhA0lFCSoEnrxxUgGqQQpysZ11wRjJ4v4uL2LQxdweDtVPvqdabH8zLBdqt8a9wv6ueGZVICgzOs380A==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -4801,6 +4806,9 @@ packages:
     resolution: {integrity: sha512-77PSwercCZU2Fc4sX94eF8k8Pxte6JAwL4/ICZLFjJLqegs7kCuAsqqj/70NQF6TvDpgFjkubQB2FW2ZZddvQg==}
     engines: {node: '>=8'}
 
+  citty@0.1.6:
+    resolution: {integrity: sha512-tskPPKEs8D2KPafUypv2gxwJP8h/OaJmC82QQGGDQcHvXX43xF2VDACcJVmZ0EuSxkpO9Kc4MlrA3q0+FG58AQ==}
+
   cjs-module-lexer@1.4.3:
     resolution: {integrity: sha512-9z8TZaGM1pfswYeXrUpzPrkx8UnWYdhJclsiYMm6x/w5+nN+8Tf/LnAgfLGQCm59qAOxU8WwHEq2vNwF6i4j+Q==}
 
@@ -4946,6 +4954,10 @@ packages:
   connect@3.7.0:
     resolution: {integrity: sha512-ZqRXc+tZukToSNmh5C2iWMSoV3X1YUcPbqEM4DkEG5tNQXrQUZCNVGGv3IuicnkMtPfGf3Xtp8WCXs295iQ1pQ==}
     engines: {node: '>= 0.10.0'}
+
+  consola@3.4.2:
+    resolution: {integrity: sha512-5IKcdX0nnYavi6G7TtOhwkYzyjfJlatbjMjuLSfE2kYT5pMDOilZ4OvMhi637CcDICTmz3wARPoyhqyX1Y+XvA==}
+    engines: {node: ^14.18.0 || >=16.10.0}
 
   constants-browserify@1.0.0:
     resolution: {integrity: sha512-xFxOwqIzR/e1k1gLiWEophSCMqXcwVHIH7akf7b/vxcUeGunlj3hvZaaqxwHsTgn+IndtkQJgSztIDWeumWJDQ==}
@@ -10434,7 +10446,11 @@ snapshots:
       react-native: 0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)
       react-native-worklets-core: 1.6.2(react-native@0.81.4(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
 
-  '@chriscode/hush@5.0.5':
+  '@chriscode/devmux@1.2.0':
+    dependencies:
+      citty: 0.1.6
+
+  '@chriscode/hush@5.0.6':
     dependencies:
       picocolors: 1.1.1
       yaml: 2.8.2
@@ -14207,6 +14223,10 @@ snapshots:
 
   ci-info@4.4.0: {}
 
+  citty@0.1.6:
+    dependencies:
+      consola: 3.4.2
+
   cjs-module-lexer@1.4.3: {}
 
   class-variance-authority@0.7.1:
@@ -14351,6 +14371,8 @@ snapshots:
       utils-merge: 1.0.1
     transitivePeerDependencies:
       - supports-color
+
+  consola@3.4.2: {}
 
   constants-browserify@1.0.0: {}
 

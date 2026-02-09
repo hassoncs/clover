@@ -1,0 +1,23 @@
+Total messages: 123 (Errors: 20, Warnings: 6)
+Returning 20 messages for level "error"
+
+[ERROR] ERROR: No GDExtension library found for current OS and architecture (web.wasm32) in configuration file: res://addons/camera-texture/camera_texture.gdextension @ http://localhost:8085/godot/index.js:484
+[ERROR]    at: parse_gdextension_file (core/extension/gdextension_library_loader.cpp:360) @ http://localhost:8085/godot/index.js:484
+[ERROR] ERROR: GDExtension dynamic library not found: 'res://addons/camera-texture/camera_texture.gdextension'. @ http://localhost:8085/godot/index.js:484
+[ERROR]    at: open_library (core/extension/gdextension.cpp:738) @ http://localhost:8085/godot/index.js:484
+[ERROR] ERROR: Error loading extension: 'res://addons/camera-texture/camera_texture.gdextension'. @ http://localhost:8085/godot/index.js:484
+[ERROR]    at: load_extensions (core/extension/gdextension_manager.cpp:321) @ http://localhost:8085/godot/index.js:484
+[ERROR] WARNING: [EffectsGraphExecutor] State idle -> ready @ http://localhost:8085/godot/index.js:484
+[ERROR]    at: push_warning (core/variant/variant_utility.cpp:1034) @ http://localhost:8085/godot/index.js:484
+[ERROR] ERROR: No GDExtension library found for current OS and architecture (web.wasm32) in configuration file: res://addons/camera-texture/camera_texture.gdextension @ http://localhost:8085/godot/index.js:484
+[ERROR]    at: parse_gdextension_file (core/extension/gdextension_library_loader.cpp:360) @ http://localhost:8085/godot/index.js:484
+[ERROR] ERROR: GDExtension dynamic library not found: 'res://addons/camera-texture/camera_texture.gdextension'. @ http://localhost:8085/godot/index.js:484
+[ERROR]    at: open_library (core/extension/gdextension.cpp:738) @ http://localhost:8085/godot/index.js:484
+[ERROR] ERROR: Error loading extension: 'res://addons/camera-texture/camera_texture.gdextension'. @ http://localhost:8085/godot/index.js:484
+[ERROR]    at: load_extensions (core/extension/gdextension_manager.cpp:321) @ http://localhost:8085/godot/index.js:484
+[ERROR] WARNING: [EffectsGraphExecutor] State idle -> ready @ http://localhost:8085/godot/index.js:484
+[ERROR]    at: push_warning (core/variant/variant_utility.cpp:1034) @ http://localhost:8085/godot/index.js:484
+[ERROR] WARNING: [EffectsGraphExecutor] State ready -> running @ http://localhost:8085/godot/index.js:484
+[ERROR]    at: push_warning (core/variant/variant_utility.cpp:1034) @ http://localhost:8085/godot/index.js:484
+[ERROR] WARNING: [EffectsGraphExecutor] State running -> stopped @ http://localhost:8085/godot/index.js:484
+[ERROR]    at: push_warning (core/variant/variant_utility.cpp:1034) @ http://localhost:8085/godot/index.js:484
