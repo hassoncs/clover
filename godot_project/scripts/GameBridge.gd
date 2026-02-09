@@ -308,14 +308,22 @@ func _build_method_map() -> void:
 
 func native_dispatch(method_name: String, args_json: String) -> Variant:
 	print("[GameBridge][DISPATCH] ", method_name, " args=", args_json.substr(0, 200))
+	
+	# Error: Unknown method
 	if not _method_map.has(method_name):
 		push_warning("[GameBridge] Unknown native method: " + method_name)
-		return null
+		return {"error": "unknown_method", "method": method_name}
+	
+	# Parse args with error handling
 	var args: Array = []
 	if args_json != "[]" and args_json != "":
 		var json = JSON.new()
-		if json.parse(args_json) == OK:
-			args = json.data if json.data is Array else [json.data]
+		if json.parse(args_json) != OK:
+			push_warning("[GameBridge] Invalid JSON in args: " + args_json.substr(0, 100))
+			return {"error": "invalid_json", "message": json.get_error_message()}
+		args = json.data if json.data is Array else [json.data]
+	
+	# Call method with error handling
 	var result = _method_map[method_name].call(args)
 	if method_name == "load_game_json":
 		print("[GameBridge][DISPATCH] load_game_json returned: ", result)
