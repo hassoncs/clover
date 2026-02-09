@@ -62,7 +62,7 @@ test_ui_components.tscn::PackedScene::2912554897160530627::1769538422::0::1::::<
 VFXShowcase.tscn::PackedScene::2855297431937620752::1769538422::0::1::::<><><>0<>0<><>::res://scripts/VFXShowcase.gd
 ::res://scenes/lab/::1769538422
 ui_components_demo.tscn::PackedScene::5962763572750761863::1769538422::0::1::::<><><>0<>0<><>::res://scripts/lab/UIComponentsDemo.gd
-::res://scripts/::1770588988
+::res://scripts/::1770591086
 GameBridge.gd::GDScript::3857439177254699610::1770505221::0::1::::<>Node<><>0<>0<><>::
 Lab3D.gd::GDScript::2743172060191353031::1770054883::0::1::::<>Node3D<><>0<>0<><>::
 Main.gd::GDScript::4927831078751178685::1770414104::0::1::::<>Node2D<><>0<>0<><>::
@@ -103,7 +103,7 @@ WebCameraReceiver.gd::GDScript::8455012372705821098::1770501250::0::1::::<>Node<
 CollisionLayers.gd::GDScript::4352411344212624997::1769972729::0::1::::CollisionLayers<>RefCounted<><>0<>0<><>::
 ::res://scripts/debug/::1769538422
 DebugOverlay.gd::GDScript::2525373150256143966::1770054919::0::1::::DebugOverlay<>CanvasLayer<><>0<>0<><>::
-::res://scripts/effects_v2/::1770524724
+::res://scripts/effects/::1770524724
 GraphExecutor.gd::GDScript::4523063860599030749::1770589290::0::1::::EffectsGraphExecutor<>Node<><>0<>0<><>::
 PingPongManager.gd::GDScript::6707934407586062479::1770524729::0::1::::EffectsV2PingPongManager<>RefCounted<><>0<>0<><>::
 ResourceGraph.gd::GDScript::2261484931766872069::1770524772::0::1::::EffectsV2ResourceGraph<>RefCounted<><>0<>0<><>::
