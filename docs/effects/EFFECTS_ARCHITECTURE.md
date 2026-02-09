@@ -41,7 +41,7 @@ EffectGraphSpec {
 ```
 
 Each **EffectNode** has:
-- `inputSlots` — what textures/data it reads (can be connected to another node's output, or left unconnected for implicit binding like `__entityTexture`)
+- `inputSlots` — what textures/data it reads (can be connected to another node's output, or left unconnected for implicit binding like `__screenColor`; entity-scoped graphs use `externalInputs` after Phase 3)
 - `outputTarget` — which buffer it writes to
 - `params` — shader uniforms (floats, vecs, colors)
 - `flags.stateful` — whether this node participates in feedback
@@ -72,7 +72,8 @@ Resources are identified by string IDs with conventions:
 
 | Pattern | Meaning | Example |
 |---------|---------|---------|
-| `__entityTexture` | The pixel buffer's ImageTexture | Always available for entity-scoped effects |
+| `__screenColor` | The screen's current render | Always available for screen-scoped effects |
+| `__entityTexture` | The pixel buffer's ImageTexture | ⚠️ Legacy — replaced by `externalInputs` + `set_input_buffer()` in Phase 3 |
 | `{nodeId}:{bufferId}` | An intermediate buffer | `"fx:canvas"` |
 | `__feedback:{from}->{to}` | A feedback connection | `"__feedback:fx->fx"` |
 | `__pingpong:{passId}` | Internal ping-pong buffer pair | Created by PingPongManager |
@@ -95,7 +96,7 @@ EffectGraphSpec
  CompiledPlan             — JSON-serializable, sent to Godot
 ```
 
-The compiler resolves implicit inputs: if a node has an unconnected input slot, the compiler infers the binding from the slot's `dataType` and the graph's scope (e.g., an unconnected `texture` input on an entity-scoped graph binds to `__entityTexture`).
+The compiler resolves implicit inputs: if a node has an unconnected input slot, the compiler infers the binding from the slot's `dataType` and the graph's scope (e.g., an unconnected `texture` input on a screen-scoped graph binds to `__screenColor`). Entity-scoped graphs should declare their inputs via `externalInputs` after Phase 3.
 
 ## Runtime Execution (Godot)
 
@@ -450,7 +451,7 @@ The main advantage over ShaderToy: our system has structured parameter metadata 
 | `shared/src/effects/registry.ts` | Registry of available effects |
 | `shared/src/effects/authoring.ts` | Helpers for constructing EffectGraphSpec |
 | `shared/src/effects/normalizer.ts` | Normalize legacy specs |
-| `shared/src/effects/shaderLibrary.ts` | Inline GLSL source strings for all builtin effects (replaces .gdshader files) |
+| `shared/src/effects/shaderLibrary.ts` | Inline GLSL source strings for all builtin effects (replaces .gdshader files) — **Phase 5, not yet created** |
 
 ### GDScript (runtime)
 
@@ -459,8 +460,8 @@ The main advantage over ShaderToy: our system has structured parameter metadata 
 | `godot_project/scripts/effects/GraphExecutor.gd` | State machine, per-frame loop, pass orchestration, render ordering |
 | `godot_project/scripts/effects/ResourceGraph.gd` | Texture allocation, uniform binding |
 | `godot_project/scripts/effects/PingPongManager.gd` | SubViewport pair management for feedback + scene-graph draw containers |
-| `godot_project/scripts/effects/ViewportPool.gd` | Pre-allocated SubViewport pool (acquire/release, no mid-effect instantiation) |
-| `godot_project/scripts/effects/ShaderWarmer.gd` | Pre-compile builtin shaders at startup, warm custom shaders at apply_plan |
+| `godot_project/scripts/effects/ViewportPool.gd` | Pre-allocated SubViewport pool (acquire/release, no mid-effect instantiation) — **Phase 2, not yet created** |
+| `godot_project/scripts/effects/ShaderWarmer.gd` | Pre-compile builtin shaders at startup, warm custom shaders at apply_plan — **Phase 2, not yet created** |
 | `godot_project/scripts/bridge/GameBridgeEffects.gd` | Bridge between React/TS and Godot effects system |
 | `godot_project/scripts/bridge/PixelBufferManager.gd` | Creates pixel buffer entities (Image + ImageTexture + Sprite2D) |
 
@@ -468,8 +469,8 @@ The main advantage over ShaderToy: our system has structured parameter metadata 
 
 | File | Purpose |
 |------|---------|
-| `app/components/effects/EffectTuningPanel.tsx` | Live param editing panel (auto-generated from EffectParamSchema) |
-| `app/components/effects/EffectParamControl.tsx` | Individual param control (slider, color picker, toggle, dropdown) |
+| `app/components/effects/EffectTuningPanel.tsx` | Live param editing panel (auto-generated from EffectParamSchema) — **Phase 5, not yet created** |
+| `app/components/effects/EffectParamControl.tsx` | Individual param control (slider, color picker, toggle, dropdown) — **Phase 5, not yet created** |
 
 ### Tests
 
