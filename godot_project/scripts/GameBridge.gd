@@ -354,69 +354,36 @@ func _setup_js_bridge() -> void:
 	if window == null: return
 	_js_bridge_obj = JavaScriptBridge.create_object("Object")
 	_query_system.setup_js_bridge(_js_bridge_obj)
-	var callbacks = {
-		"loadGameJson": _js_load_game, "clearGame": _js_clear_game, "setInspectMode": _js_set_inspect_mode,
-		"pausePhysics": _js_pause_physics, "resumePhysics": _js_resume_physics, "loadCustomScene": _js_load_custom_scene,
-		"spawnEntity": _entity_manager._js_spawn_entity, "destroyEntity": _entity_manager._js_destroy_entity,
-		"getEntityTransform": _entity_manager._js_get_entity_transform, "getAllTransforms": _transform_system._js_get_all_transforms,
-		"getAllProperties": _property_collector._js_get_all_properties, "onTransformSync": _sync_system._js_on_transform_sync,
-		"onPropertySync": _sync_system._js_on_property_sync, "setWatchConfig": _property_collector._js_set_watch_config,
-		"getTransform": _sync_system._js_get_transform, "getTransforms": _sync_system._js_get_transforms,
-		"setTrackedEntities": _sync_system._js_set_tracked_entities, "setLinearVelocity": _physics_controller._js_set_linear_velocity,
-		"setAngularVelocity": _physics_controller._js_set_angular_velocity, "applyImpulse": _physics_controller._js_apply_impulse,
-		"applyForce": _physics_controller._js_apply_force, "sendInput": _input_router._js_send_input,
-		"onInputEvent": _event_emitter._js_on_input_event, "onCollision": _event_emitter._js_on_collision,
-		"onEntityDestroyed": _event_emitter._js_on_entity_destroyed, "setTransform": _transform_system._js_set_transform,
-		"setPosition": _transform_system._js_set_position, "setRotation": _transform_system._js_set_rotation,
-		"setScale": _transform_system._js_set_scale, "setOpacity": _visual_renderer._js_set_opacity, "setVisible": _visual_renderer._js_set_visible,
-		"getLinearVelocity": _physics_controller._js_get_linear_velocity, "getAngularVelocity": _physics_controller._js_get_angular_velocity,
-		"applyTorque": _physics_controller._js_apply_torque, "createRevoluteJoint": _joint_manager._js_create_revolute_joint,
-		"createDistanceJoint": _joint_manager._js_create_distance_joint, "createPrismaticJoint": _joint_manager._js_create_prismatic_joint,
-		"createWeldJoint": _joint_manager._js_create_weld_joint, "createMouseJoint": _joint_manager._js_create_mouse_joint,
-		"destroyJoint": _joint_manager._js_destroy_joint, "destroyMouseJointForEntity": _joint_manager._js_destroy_mouse_joint_for_entity,
-		"setMotorSpeed": _joint_manager._js_set_motor_speed,
-		"setMouseTarget": _joint_manager._js_set_mouse_target, "getLastJointId": _joint_manager._js_get_last_joint_id,
-		"queryPoint": _physics_queries._js_query_point,
-		"queryPointEntity": _physics_queries._js_query_point_entity, "queryAABB": _physics_queries._js_query_aabb,
-		"raycast": _physics_queries._js_raycast, "onSensorBegin": _event_emitter._js_on_sensor_begin,
-		"onSensorEnd": _event_emitter._js_on_sensor_end, "setUserData": _entity_manager._js_set_user_data,
-		"getUserData": _entity_manager._js_get_user_data, "getAllBodies": _entity_manager._js_get_all_bodies,
-		"setEntityImage": _visual_renderer._js_set_entity_image, "setEntityAtlasRegion": _visual_renderer._js_set_entity_atlas_region,
-		"preloadTextures": _visual_renderer._js_preload_textures, "setDebugShowShapes": _visual_renderer._js_set_debug_show_shapes,
-		"setDebugSettings": _visual_renderer._js_set_debug_settings, "setCameraTarget": _camera_controller._js_set_camera_target,
-		"createPixelBuffer": _pixel_buffer_manager._js_create_pixel_buffer,
-		"pixelBufferDraw": _pixel_buffer_manager._js_draw_commands,
-		"pixelBufferClear": _pixel_buffer_manager._js_clear,
-		"destroyPixelBuffer": _pixel_buffer_manager._js_destroy,
-		"setCameraPosition": _camera_controller._js_set_camera_position, "setCameraZoom": _camera_controller._js_set_camera_zoom,
-		"startCamera": _js_start_camera, "stopCamera": _js_stop_camera,
-		"spawnParticle": _ui_manager._js_spawn_particle, "playSound": _ui_manager._js_play_sound,
-		"createUIButton": _ui_manager._js_create_ui_button, "destroyUIButton": _ui_manager._js_destroy_ui_button,
-		"onUIButtonEvent": _ui_manager._js_on_ui_button_event
-	}
-	for key in callbacks:
-		var cb = JavaScriptBridge.create_callback(callbacks[key])
+	_js_callbacks.clear()
+	
+	# Generate web callbacks from unified _method_map registry
+	for method_name in _method_map:
+		var js_name = _to_camel_case(method_name)
+		var cb = JavaScriptBridge.create_callback(
+			func(args): return native_dispatch(method_name, JSON.stringify(args))
+		)
 		_js_callbacks.append(cb)
-		_js_bridge_obj[key] = cb
-
-	var extra_callbacks = {
-		"clearTextureCache": func(args): _visual_renderer.clear_texture_cache(str(args[0]) if args.size() > 0 else ""),
-		"show_3d_model": func(args): return _viewport_3d.load_glb(str(args[0])) != null if _viewport_3d and args.size() > 0 else false,
-		"show_3d_model_from_url": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.load_glb_async(str(args[0])),
-		"set_3d_viewport_position": func(args): if _viewport_3d and args.size() >= 2: _viewport_3d.position = game_to_godot_pos(Vector2(float(args[0]), float(args[1]))),
-		"set_3d_viewport_size": func(args): if _viewport_3d and args.size() >= 2: _viewport_3d.set_viewport_size(int(args[0]), int(args[1])),
-		"rotate_3d_model": func(args): if _viewport_3d and args.size() >= 3: _viewport_3d.set_model_rotation(Vector3(float(args[0]), float(args[1]), float(args[2]))),
-		"set_3d_camera_distance": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_distance(float(args[0])),
-		"set_3d_camera_size": func(args): if _viewport_3d and args.size() > 0: _viewport_3d.set_camera_size(float(args[0])),
-		"clear_3d_models": func(_args): if _viewport_3d: _viewport_3d.clear_models()
-	}
-	for key in extra_callbacks:
-		var cb = JavaScriptBridge.create_callback(extra_callbacks[key])
-		_js_callbacks.append(cb)
-		_js_bridge_obj[key] = cb
-
+		_js_bridge_obj[js_name] = cb
+	
 	window["GodotBridge"] = _js_bridge_obj
-	print("[GameBridge] window.GodotBridge is now available")
+	print("[GameBridge] JS Bridge registered ", _method_map.size(), " methods")
+
+func _to_camel_case(snake: String) -> String:
+	# Convert snake_case to camelCase for JavaScript compatibility
+	# Handles special cases: "3d" -> "3D", "2d" -> "2D"
+	var parts = snake.split("_")
+	if parts.size() == 1:
+		return snake
+	var result = parts[0]
+	for i in range(1, parts.size()):
+		var part = parts[i]
+		if part == "3d":
+			result += "3D"
+		elif part == "2d":
+			result += "2D"
+		else:
+			result += part.capitalize()
+	return result
 
 func _js_load_game(args: Array) -> bool: return load_game_json(str(args[0])) if args.size() > 0 else false
 func _js_clear_game(_args: Array) -> void: clear_game()
