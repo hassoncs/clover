@@ -1,8 +1,58 @@
 import { env } from 'cloudflare:test';
-import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 import { WalletService } from '@/economy/wallet-service';
 import { AgentBillingService } from '@/economy/agent-billing-service';
 import { initTestDatabase, TEST_USER, TEST_USER_2, createTestUser, createAuthenticatedCaller } from '@/__fixtures__/test-utils';
+
+vi.mock('@/agent/planning-gates', async () => {
+  const actual = await vi.importActual<typeof import('@/agent/planning-gates')>('@/agent/planning-gates');
+
+  const gates = [
+    { id: 'core_game_loop', label: 'Core Game Loop', description: '', required: true },
+    { id: 'win_lose_conditions', label: 'Win/Lose Conditions', description: '', required: true },
+    { id: 'theme_style', label: 'Theme & Style', description: '', required: true },
+    { id: 'game_type_category', label: 'Game Type/Category', description: '', required: true },
+  ];
+
+  return {
+    ...actual,
+    loadGatesConfig: vi.fn(() => ({ gates })),
+    validatePlanningDoc: vi.fn((planningDocJson: string | null | undefined) => {
+      if (!planningDocJson) {
+        return {
+          valid: false,
+          missingFields: gates.map((gate) => ({ id: gate.id, label: gate.label })),
+        };
+      }
+
+      let planningDoc: Record<string, unknown>;
+      try {
+        planningDoc = JSON.parse(planningDocJson) as Record<string, unknown>;
+      } catch {
+        return {
+          valid: false,
+          missingFields: gates.map((gate) => ({ id: gate.id, label: gate.label })),
+        };
+      }
+
+      const missingFields = gates
+        .filter((gate) => {
+          if (!gate.required) {
+            return false;
+          }
+
+          const value = planningDoc[gate.id];
+          return typeof value !== 'string' || value.trim().length === 0;
+        })
+        .map((gate) => ({ id: gate.id, label: gate.label }));
+
+      return {
+        valid: missingFields.length === 0,
+        missingFields,
+      };
+    }),
+  };
+});
 
 describe('Agent Runs Router', () => {
   let walletService: WalletService;
@@ -400,8 +450,8 @@ describe('Agent Runs Router', () => {
       const listResult = await caller.agentRuns.listRuns({});
 
       expect(listResult.runs).toHaveLength(2);
-      expect(listResult.runs.map(r => r.id)).toContain(run1.runId);
-      expect(listResult.runs.map(r => r.id)).toContain(run2.runId);
+      expect(listResult.runs.map((r: { id: string }) => r.id)).toContain(run1.runId);
+      expect(listResult.runs.map((r: { id: string }) => r.id)).toContain(run2.runId);
     });
 
     it('filters runs by gameId', async () => {
@@ -519,6 +569,9 @@ describe('Agent Runs Router', () => {
         // Coordinator may fail due to test environment, but we're testing gate validation
       }
 
+      // Wait for any background DO operations to settle before checking balance
+      await new Promise(resolve => setTimeout(resolve, 200));
+
       const balanceAfter = await walletService.getBalance(TEST_USER.id);
 
       // Budget should have been reserved (balance decreased)
@@ -635,11 +688,27 @@ describe('Agent Runs Router', () => {
         ) VALUES (?, ?, ?, 'scratch', NULL, 'free', 'waiting_for_input', NULL, 500000, 0, 0, 1, 5, NULL, ?, ?, NULL, ?)`
       ).bind(runId, TEST_USER.id, testGameId, now, now, now).run();
 
-      const result = await caller.agentRuns.submitAnswer({
-        runId,
-        questionId: 'test-question',
-        answer: 'test answer',
-      });
+      const coordinatorId = env.RUN_COORDINATOR.idFromName(runId);
+      const coordinator = env.RUN_COORDINATOR.get(coordinatorId);
+      const getSpy = vi.spyOn(env.RUN_COORDINATOR, 'get').mockReturnValue(coordinator);
+      const fetchSpy = vi.spyOn(coordinator, 'fetch').mockResolvedValue(
+        new Response('{}', {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        })
+      );
+
+      let result: { success: boolean };
+      try {
+        result = await caller.agentRuns.submitAnswer({
+          runId,
+          questionId: 'test-question',
+          answer: 'test answer',
+        });
+      } finally {
+        fetchSpy.mockRestore();
+        getSpy.mockRestore();
+      }
 
       expect(result.success).toBe(true);
     });

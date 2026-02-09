@@ -336,8 +336,12 @@ describe('PromoCodeService', () => {
     it('allows code requiring purchase history when user has purchase', async () => {
       const now = Date.now();
       await env.DB.prepare(
-        `INSERT INTO iap_purchases (id, user_id, product_id, status, created_at) VALUES (?, ?, ?, ?, ?)`
-      ).bind('purchase-1', TEST_USER.id, 'com.test.product', 'completed', now).run();
+        `INSERT INTO iap_products (id, sku, name, price_cents, credit_amount_micros, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind('com.test.product', 'com.test.product', 'Test Product', 499, 5000000, 1, now, now).run();
+
+      await env.DB.prepare(
+        `INSERT INTO iap_purchases (id, user_id, product_id, platform, price_cents, credits_granted_micros, status, purchased_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind('purchase-1', TEST_USER.id, 'com.test.product', 'ios', 499, 5000000, 'completed', now).run();
 
       await insertPromoCode({
         code: 'VIP',
@@ -397,14 +401,14 @@ describe('PromoCodeService', () => {
     it('returns all promo codes ordered by created_at DESC', async () => {
       const now = Date.now();
       await env.DB.prepare(`
-        INSERT INTO promo_codes (id, code, name, grant_amount_micros, current_uses, is_active, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `).bind('code-1', 'CODEA', 'Code A', 1000000, 0, 1, now - 1000, now).run();
+        INSERT INTO promo_codes (code, name, grant_amount_micros, current_uses, is_active, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).bind('CODEA', 'Code A', 1000000, 0, 1, now - 1000, now).run();
 
       await env.DB.prepare(`
-        INSERT INTO promo_codes (id, code, name, grant_amount_micros, current_uses, is_active, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `).bind('code-2', 'CODEB', 'Code B', 2000000, 0, 1, now, now).run();
+        INSERT INTO promo_codes (code, name, grant_amount_micros, current_uses, is_active, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).bind('CODEB', 'Code B', 2000000, 0, 1, now, now).run();
 
       const codes = await promoCodeService.listCodes();
 
@@ -433,15 +437,13 @@ async function insertPromoCode(params: {
   requiresPurchaseHistory?: boolean;
 }): Promise<void> {
   const now = Date.now();
-  const id = `promo-${params.code.toLowerCase()}`;
 
   await env.DB.prepare(`
     INSERT INTO promo_codes 
-    (id, code, name, grant_amount_micros, max_uses, current_uses, starts_at, expires_at, 
+    (code, name, grant_amount_micros, max_uses, current_uses, starts_at, expires_at, 
      is_active, min_account_age_days, requires_purchase_history, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
-    id,
     params.code.toUpperCase(),
     params.name,
     params.grantAmountMicros,

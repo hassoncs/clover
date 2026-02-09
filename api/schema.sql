@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT NOT NULL,
   display_name TEXT,
   avatar_url TEXT,
+  bio TEXT,
   created_at INTEGER NOT NULL,
   updated_at INTEGER
 );
@@ -39,6 +40,11 @@ CREATE TABLE IF NOT EXISTS games (
   r2_prefix TEXT NOT NULL,  -- "games/{gameId}" — definition.json lives at this prefix in R2
   is_public INTEGER DEFAULT 0,
   play_count INTEGER DEFAULT 0,
+  like_count INTEGER NOT NULL DEFAULT 0,
+  comment_count INTEGER NOT NULL DEFAULT 0,
+  follower_count INTEGER NOT NULL DEFAULT 0,
+  rating_average REAL NOT NULL DEFAULT 0,
+  rating_count INTEGER NOT NULL DEFAULT 0,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
   deleted_at INTEGER,
@@ -706,3 +712,53 @@ CREATE TABLE IF NOT EXISTS bookmarks (
 
 CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON bookmarks(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_bookmarks_game ON bookmarks(game_id);
+
+-- =============================================================================
+-- MODERATION: Reports, Blocks
+-- =============================================================================
+
+-- Reports - User-submitted content reports
+CREATE TABLE IF NOT EXISTS reports (
+  id TEXT PRIMARY KEY,
+  reporter_id TEXT NOT NULL,
+  target_type TEXT NOT NULL,
+  target_id TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  description TEXT,
+  status TEXT NOT NULL DEFAULT 'pending',
+  created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_reports_status ON reports(status, created_at);
+CREATE INDEX IF NOT EXISTS idx_reports_reporter ON reports(reporter_id);
+
+-- Blocks - User-to-user blocking
+CREATE TABLE IF NOT EXISTS blocks (
+  id TEXT PRIMARY KEY,
+  blocker_id TEXT NOT NULL,
+  blocked_id TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_blocks_unique ON blocks(blocker_id, blocked_id);
+CREATE INDEX IF NOT EXISTS idx_blocks_blocker ON blocks(blocker_id);
+
+-- =============================================================================
+-- NOTIFICATIONS
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS notifications (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  type TEXT NOT NULL,
+  actor_id TEXT NOT NULL,
+  target_type TEXT,
+  target_id TEXT,
+  game_id TEXT,
+  message TEXT,
+  is_read INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_notifications_actor ON notifications(actor_id);

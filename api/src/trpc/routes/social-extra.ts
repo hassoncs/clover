@@ -35,9 +35,10 @@ export const socialExtraRouter = router({
         LEFT JOIN users u ON g.user_id = u.id
         WHERE g.is_public = 1 AND g.deleted_at IS NULL
           AND g.user_id IN (SELECT target_id FROM follows WHERE follower_id = ? AND target_type = 'user')
+          AND (g.user_id IS NULL OR g.user_id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = ?))
         ORDER BY g.created_at DESC
         LIMIT ? OFFSET ?
-      `).bind(userId, input.limit + 1, input.offset).all<{
+      `).bind(userId, userId, input.limit + 1, input.offset).all<{
         id: string; title: string; description: string | null; thumbnail_url: string | null;
         play_count: number; like_count: number; comment_count: number;
         rating_average: number; rating_count: number; created_at: number;

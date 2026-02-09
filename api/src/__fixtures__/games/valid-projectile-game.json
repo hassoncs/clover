@@ -158,7 +158,8 @@
     "tag": "target"
   },
   "loseCondition": {
-    "type": "lives_zero"
+    "type": "time_up",
+    "time": 60
   },
   "initialState": {
     "score": 0,

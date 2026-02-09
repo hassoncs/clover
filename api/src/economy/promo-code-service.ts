@@ -159,11 +159,10 @@ export class PromoCodeService {
     
     await this.db.prepare(`
       INSERT INTO promo_codes 
-      (id, code, name, grant_amount_micros, max_uses, starts_at, expires_at, 
+      (code, name, grant_amount_micros, max_uses, starts_at, expires_at, 
        min_account_age_days, requires_purchase_history, created_by, notes, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
-      nanoid(),
       params.code.toUpperCase(),
       params.name,
       params.grantAmountMicros,

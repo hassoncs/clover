@@ -351,14 +351,12 @@ async function insertSignupCode(params: {
   isActive: number;
 }): Promise<void> {
   const now = Date.now();
-  const id = `code-${params.code.toLowerCase()}`;
   
   await env.DB.prepare(`
     INSERT INTO signup_codes 
-    (id, code, name, max_uses, current_uses, grant_amount_micros, expires_at, is_active, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    (code, name, max_uses, current_uses, grant_amount_micros, expires_at, is_active, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
-    id,
     params.code.toUpperCase(),
     params.name,
     params.maxUses,

@@ -17,6 +17,8 @@ import {
 } from '@/social/rating-service';
 import { FollowService } from '@/social/follow-service';
 import { BookmarkService } from '@/social/bookmark-service';
+import { BlockService } from '@/social/block-service';
+import { NotificationService } from '@/social/notification-service';
 
 type D1 = import('@cloudflare/workers-types').D1Database;
 
@@ -24,6 +26,7 @@ function getCommentService(db: D1) { return new CommentService(db); }
 function getRatingService(db: D1) { return new RatingService(db); }
 function getFollowService(db: D1) { return new FollowService(db); }
 function getBookmarkService(db: D1) { return new BookmarkService(db); }
+function getNotificationService(db: D1) { return new NotificationService(db); }
 
 export const socialRouter = router({
   // ─── Comments ─────────────────────────────────────────────
@@ -38,13 +41,50 @@ export const socialRouter = router({
     .mutation(async ({ ctx, input }) => {
       const svc = getCommentService(ctx.env.DB);
       try {
-        return await svc.createComment({
+        const comment = await svc.createComment({
           gameId: input.gameId,
           userId: ctx.user.id,
           body: input.body,
           bodyJson: input.bodyJson,
           parentId: input.parentId,
         });
+
+        const notifSvc = getNotificationService(ctx.env.DB);
+        if (input.parentId) {
+          const parent = await ctx.env.DB
+            .prepare('SELECT user_id FROM comments WHERE id = ?')
+            .bind(input.parentId)
+            .first<{ user_id: string }>();
+          if (parent && parent.user_id !== ctx.user.id) {
+            await notifSvc.createNotification({
+              userId: parent.user_id,
+              type: 'comment_reply',
+              actorId: ctx.user.id,
+              targetType: 'comment',
+              targetId: input.parentId,
+              gameId: input.gameId,
+              message: `replied to your comment`,
+            }).catch(() => {});
+          }
+        } else {
+          const game = await ctx.env.DB
+            .prepare('SELECT user_id FROM games WHERE id = ?')
+            .bind(input.gameId)
+            .first<{ user_id: string | null }>();
+          if (game?.user_id && game.user_id !== ctx.user.id) {
+            await notifSvc.createNotification({
+              userId: game.user_id,
+              type: 'comment',
+              actorId: ctx.user.id,
+              targetType: 'game',
+              targetId: input.gameId,
+              gameId: input.gameId,
+              message: `commented on your game`,
+            }).catch(() => {});
+          }
+        }
+
+        return comment;
       } catch (e) {
         if (e instanceof CommentNotFoundError) throw new TRPCError({ code: 'NOT_FOUND', message: e.message });
         if (e instanceof CommentValidationError) throw new TRPCError({ code: 'BAD_REQUEST', message: e.message });
@@ -62,13 +102,23 @@ export const socialRouter = router({
     .query(async ({ ctx, input }) => {
       const svc = getCommentService(ctx.env.DB);
       const userId = (ctx as { user?: { id: string } }).user?.id;
-      return svc.listComments({
+      const result = await svc.listComments({
         gameId: input.gameId,
         parentId: input.parentId,
         limit: input.limit,
         cursor: input.cursor,
         userId,
       });
+
+      if (userId) {
+        const blockedIds = await new BlockService(ctx.env.DB).getBlockedIds(userId);
+        if (blockedIds.length > 0) {
+          const blockedSet = new Set(blockedIds);
+          result.comments = result.comments.filter(c => !blockedSet.has(c.userId));
+        }
+      }
+
+      return result;
     }),
 
   editComment: protectedProcedure
@@ -112,7 +162,39 @@ export const socialRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const svc = getCommentService(ctx.env.DB);
-      return svc.addReaction(ctx.user.id, input.targetType, input.targetId, input.reactionType);
+      const result = await svc.addReaction(ctx.user.id, input.targetType, input.targetId, input.reactionType);
+
+      if (result.added) {
+        const notifSvc = getNotificationService(ctx.env.DB);
+        let ownerId: string | null = null;
+
+        if (input.targetType === 'game') {
+          const game = await ctx.env.DB
+            .prepare('SELECT user_id FROM games WHERE id = ?')
+            .bind(input.targetId)
+            .first<{ user_id: string | null }>();
+          ownerId = game?.user_id ?? null;
+        } else {
+          const comment = await ctx.env.DB
+            .prepare('SELECT user_id, game_id FROM comments WHERE id = ?')
+            .bind(input.targetId)
+            .first<{ user_id: string; game_id: string }>();
+          ownerId = comment?.user_id ?? null;
+        }
+
+        if (ownerId && ownerId !== ctx.user.id) {
+          await notifSvc.createNotification({
+            userId: ownerId,
+            type: 'like',
+            actorId: ctx.user.id,
+            targetType: input.targetType,
+            targetId: input.targetId,
+            message: `liked your ${input.targetType}`,
+          }).catch(() => {});
+        }
+      }
+
+      return result;
     }),
 
   removeReaction: protectedProcedure
@@ -172,7 +254,19 @@ export const socialRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const svc = getFollowService(ctx.env.DB);
-      return svc.follow(ctx.user.id, input.targetType, input.targetId);
+      const result = await svc.follow(ctx.user.id, input.targetType, input.targetId);
+
+      if (result.followed && input.targetType === 'user') {
+        const notifSvc = getNotificationService(ctx.env.DB);
+        await notifSvc.createNotification({
+          userId: input.targetId,
+          type: 'follow',
+          actorId: ctx.user.id,
+          message: `started following you`,
+        }).catch(() => {});
+      }
+
+      return result;
     }),
 
   unfollow: protectedProcedure
@@ -313,6 +407,15 @@ export const socialRouter = router({
     }))
     .query(async ({ ctx, input }) => {
       const db = ctx.env.DB;
+      const currentUserId = (ctx as { user?: { id: string } }).user?.id;
+
+      let blockedFilter = '';
+      const binds: (string | number)[] = [];
+
+      if (currentUserId) {
+        blockedFilter = 'AND (g.user_id IS NULL OR g.user_id NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = ?))';
+        binds.push(currentUserId);
+      }
 
       const result = await db.prepare(`
         SELECT g.id, g.title, g.description, g.thumbnail_url, g.play_count,
@@ -322,9 +425,10 @@ export const socialRouter = router({
         FROM games g
         LEFT JOIN users u ON g.user_id = u.id
         WHERE g.is_public = 1 AND g.deleted_at IS NULL
+        ${blockedFilter}
         ORDER BY g.created_at DESC
         LIMIT ? OFFSET ?
-      `).bind(input.limit + 1, input.offset).all<{
+      `).bind(...binds, input.limit + 1, input.offset).all<{
         id: string; title: string; description: string | null; thumbnail_url: string | null;
         play_count: number; like_count: number; comment_count: number;
         rating_average: number; rating_count: number; created_at: number;
@@ -337,18 +441,16 @@ export const socialRouter = router({
 
       const gameIds = page.map(g => g.id);
       const creatorIds = [...new Set(page.map(g => g.user_id).filter(Boolean))] as string[];
-
-      const userId = (ctx as { user?: { id: string } }).user?.id;
       let likedSet = new Set<string>();
       let bookmarkedSet = new Set<string>();
       let followingSet = new Set<string>();
 
-      if (userId && gameIds.length > 0) {
+      if (currentUserId && gameIds.length > 0) {
         const [likes, bookmarks, follows] = await Promise.all([
-          getCommentService(db).getReactionStatus(userId, 'game', gameIds),
-          getBookmarkService(db).isBookmarked(userId, gameIds),
+          getCommentService(db).getReactionStatus(currentUserId, 'game', gameIds),
+          getBookmarkService(db).isBookmarked(currentUserId, gameIds),
           creatorIds.length > 0
-            ? getFollowService(db).isFollowing(userId, 'user', creatorIds)
+            ? getFollowService(db).isFollowing(currentUserId, 'user', creatorIds)
             : Promise.resolve({} as Record<string, boolean>),
         ]);
         likedSet = new Set(Object.entries(likes).filter(([, v]) => v).map(([k]) => k));

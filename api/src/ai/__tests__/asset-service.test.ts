@@ -19,58 +19,58 @@ describe('AssetService', () => {
     const service = new AssetService(createMockEnv());
 
     it('selects correct model for character:pixel:static', () => {
-      const model = service.selectModel('character', 'pixel', false);
+      const model = service.selectModel('character', false);
       expect(model).toBe('model_retrodiffusion-plus');
     });
 
     it('selects correct model for character:pixel:animated', () => {
-      const model = service.selectModel('character', 'pixel', true);
-      expect(model).toBe('model_retrodiffusion-animation');
+      const model = service.selectModel('character', true);
+      expect(model).toBe('model_retrodiffusion-plus');
     });
 
     it('selects correct model for character:cartoon:static', () => {
-      const model = service.selectModel('character', 'cartoon', false);
-      expect(model).toBe('model_c8zak5M1VGboxeMd8kJBr2fn');
+      const model = service.selectModel('character', false);
+      expect(model).toBe('model_retrodiffusion-plus');
     });
 
     it('selects correct model for enemy:pixel:static', () => {
-      const model = service.selectModel('enemy', 'pixel', false);
+      const model = service.selectModel('enemy', false);
       expect(model).toBe('model_retrodiffusion-plus');
     });
 
     it('selects correct model for item:pixel:static', () => {
-      const model = service.selectModel('item', 'pixel', false);
+      const model = service.selectModel('item', false);
       expect(model).toBe('model_retrodiffusion-plus');
     });
 
     it('selects correct model for item:3d:static', () => {
-      const model = service.selectModel('item', '3d', false);
-      expect(model).toBe('model_7v2vV6NRvm8i8jJm6DWHf6DM');
+      const model = service.selectModel('item', false);
+      expect(model).toBe('model_retrodiffusion-plus');
     });
 
     it('selects correct model for platform:pixel:static', () => {
-      const model = service.selectModel('platform', 'pixel', false);
-      expect(model).toBe('model_retrodiffusion-tile');
+      const model = service.selectModel('platform', false);
+      expect(model).toBe('model_retrodiffusion-plus');
     });
 
     it('selects correct model for background:pixel:static', () => {
-      const model = service.selectModel('background', 'pixel', false);
-      expect(model).toBe('model_uM7q4Ms6Y5X2PXie6oA9ygRa');
+      const model = service.selectModel('background', false);
+      expect(model).toBe('model_retrodiffusion-plus');
     });
 
     it('selects correct model for background:cartoon:static', () => {
-      const model = service.selectModel('background', 'cartoon', false);
-      expect(model).toBe('model_hHuMquQ1QvEGHS1w7tGuYXud');
+      const model = service.selectModel('background', false);
+      expect(model).toBe('model_retrodiffusion-plus');
     });
 
     it('selects correct model for ui:pixel:static', () => {
-      const model = service.selectModel('ui', 'pixel', false);
-      expect(model).toBe('model_mcYj5uGzXteUw6tKapsaDgBP');
+      const model = service.selectModel('ui', false);
+      expect(model).toBe('model_retrodiffusion-plus');
     });
 
     it('selects correct model for ui:flat:static', () => {
-      const model = service.selectModel('ui', 'flat', false);
-      expect(model).toBe('model_mcYj5uGzXteUw6tKapsaDgBP');
+      const model = service.selectModel('ui', false);
+      expect(model).toBe('model_retrodiffusion-plus');
     });
   });
 
@@ -139,7 +139,6 @@ describe('AssetService', () => {
       const result = await service.generateAsset({
         entityType: 'character',
         description: 'test character',
-        style: 'pixel',
       });
 
       expect(result.success).toBe(false);
@@ -154,7 +153,6 @@ describe('AssetService', () => {
       const result = await service.generateAsset({
         entityType: 'character',
         description: 'test character',
-        style: 'pixel',
       });
 
       expect(result.success).toBe(false);
@@ -169,7 +167,6 @@ describe('AssetService', () => {
       const result = await service.generateAsset({
         entityType: 'enemy',
         description: 'test enemy',
-        style: 'pixel',
       });
 
       expect(result.success).toBe(false);
@@ -183,8 +180,8 @@ describe('AssetService', () => {
       const service = new AssetService(env);
       
       const results = await service.generateBatch([
-        { entityType: 'character', description: 'p1', style: 'pixel' },
-        { entityType: 'enemy', description: 'e1', style: 'pixel' },
+        { entityType: 'character', description: 'p1' },
+        { entityType: 'enemy', description: 'e1' },
       ]);
 
       expect(results).toHaveLength(2);

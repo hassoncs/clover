@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { validateGameDefinition, getValidationSummary } from '@/ai/game/validator'
-import validProjectileGame from '@/__fixtures__/games/valid-projectile-game.json'
-import invalidNoEntities from '@/__fixtures__/games/invalid-game-no-entities.json'
-import invalidBadPhysics from '@/__fixtures__/games/invalid-game-bad-physics.json'
+import { validateGameDefinition, getValidationSummary } from '../game/validator'
+import validProjectileGame from '../../__fixtures__/games/valid-projectile-game.json'
+import invalidNoEntities from '../../__fixtures__/games/invalid-game-no-entities.json'
+import invalidBadPhysics from '../../__fixtures__/games/invalid-game-bad-physics.json'
 
 describe('validateGameDefinition', () => {
   describe('valid games', () => {
@@ -389,7 +389,7 @@ describe('validateGameDefinition', () => {
   });
 
   describe('win/lose condition validation', () => {
-    it('should error on missing win condition', () => {
+    it('should warn on missing win mechanism', () => {
       const game = {
         metadata: { id: 'test' },
         world: { gravity: { x: 0, y: 10 }, pixelsPerMeter: 50 },
@@ -410,7 +410,7 @@ describe('validateGameDefinition', () => {
       };
 
       const result = validateGameDefinition(game as any);
-      expect(result.errors.some(e => e.code === 'MISSING_WIN_CONDITION')).toBe(true);
+      expect(result.warnings.some(w => w.code === 'NO_WIN_MECHANISM')).toBe(true);
     });
 
     it('should error on missing lose condition', () => {
