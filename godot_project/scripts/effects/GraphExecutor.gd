@@ -88,7 +88,7 @@ var _plan_hash: String = ""
 func _ready() -> void:
 	set_process(false)
 
-func apply_plan(plan_json: Dictionary) -> Dictionary:
+func apply_plan(plan_json: Dictionary, entity_texture: Texture2D = null) -> Dictionary:
 	clear()
 
 	if not _validate_plan(plan_json):
@@ -107,6 +107,8 @@ func apply_plan(plan_json: Dictionary) -> Dictionary:
 		return {"success": false, "error": "Resource allocation failed"}
 
 	_bind_implicit_inputs()
+	if entity_texture != null:
+		_resource_graph.set_external_texture("__entityTexture", entity_texture)
 
 	_ping_pong_manager = EffectsPingPongManager.new()
 	_ping_pong_manager.configure(self, viewport_size)
@@ -268,7 +270,7 @@ func restore_snapshot(snapshot: Dictionary) -> Dictionary:
 
 	return {"success": true}
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if _state != State.RUNNING:
 		return
 
@@ -280,25 +282,51 @@ func _process(_delta: float) -> void:
 		if ping_pong_buffer == "" or _ping_pong_manager == null:
 			continue
 
-		var read_tex: Texture2D = _ping_pong_manager.get_read_texture(ping_pong_buffer)
-		if read_tex != null:
-			var material_a: ShaderMaterial = entry.get("material_a")
-			var material_b: ShaderMaterial = entry.get("material_b")
-			if material_a != null:
-				material_a.set_shader_parameter("historyTex", read_tex)
-			if material_b != null:
-				material_b.set_shader_parameter("historyTex", read_tex)
-
-		_ping_pong_manager.swap(ping_pong_buffer)
-		var next_write_vp: SubViewport = _ping_pong_manager.get_write_viewport(ping_pong_buffer)
 		var pass_data: Dictionary = entry.get("pass_data", {})
-		_resource_graph.register_pass_output(str(entry.get("id", "")), next_write_vp, pass_data.get("provides", []))
+
+		# Swap FIRST — the previous write viewport just rendered,
+		# so it becomes the new read source.
+		_ping_pong_manager.swap(ping_pong_buffer)
+
+		var write_vp: SubViewport = _ping_pong_manager.get_write_viewport(ping_pong_buffer)
+		var read_tex: Texture2D = _ping_pong_manager.get_read_texture(ping_pong_buffer)
+
+		if read_tex != null:
+			# Determine which material belongs to the NEW write viewport.
+			# Only set the feedback texture on this material to prevent
+			# a feedback loop (reading from a viewport we are writing to).
+			var write_material: ShaderMaterial = null
+			if write_vp == entry.get("viewport_a"):
+				write_material = entry.get("material_a")
+			else:
+				write_material = entry.get("material_b")
+
+			var input_bindings: Dictionary = pass_data.get("params", {}).get("inputBindings", {})
+			for uniform_name in input_bindings.keys():
+				var resource_id = str(input_bindings[uniform_name])
+				if resource_id.begins_with("__feedback:"):
+					if write_material != null:
+						write_material.set_shader_parameter(str(uniform_name), read_tex)
+
+		# Auto-set common shader uniforms on both materials
+		var vp_a: SubViewport = _ping_pong_manager.get_viewports(ping_pong_buffer).get("a")
+		if vp_a != null:
+			var vp_size: Vector2i = vp_a.size
+			var texel := Vector2(1.0 / float(vp_size.x), 1.0 / float(vp_size.y))
+			for mat_key in ["material_a", "material_b"]:
+				var mat: ShaderMaterial = entry.get(mat_key)
+				if mat != null:
+					mat.set_shader_parameter("texel_size", texel)
+					mat.set_shader_parameter("dt", delta)
+
+		_resource_graph.register_pass_output(str(entry.get("id", "")), write_vp, pass_data.get("provides", []))
 		_update_ping_pong_write_mode(entry)
 		should_rebind_inputs = true
 
 	if should_rebind_inputs:
 		for pass_entry in _pass_entries:
-			_rebind_entry_inputs(pass_entry)
+			var has_ping_pong: bool = str(pass_entry.get("ping_pong_buffer", "")) != ""
+			_rebind_entry_inputs(pass_entry, has_ping_pong)
 
 func _build_passes(passes: Array) -> bool:
 	if not (passes is Array):
@@ -378,6 +406,16 @@ func _setup_ping_pong_pass(entry: Dictionary, pass_data: Dictionary, shader: Sha
 		push_error("[EffectsGraphExecutor] Failed to initialize ping-pong viewports for pass '%s'" % pass_id)
 		return false
 
+	# Point feedback resources at the ping-pong read texture so that
+	# bind_pass_inputs below gets the correct initial binding instead
+	# of a stale / missing ResourceGraph viewport.
+	var init_read_tex: Texture2D = _ping_pong_manager.get_read_texture(buffer_id)
+	var pp_input_bindings: Dictionary = pass_data.get("params", {}).get("inputBindings", {})
+	for _uniform_name in pp_input_bindings.keys():
+		var _res_id = str(pp_input_bindings[_uniform_name])
+		if _res_id.begins_with("__feedback:"):
+			_resource_graph.set_external_texture(_res_id, init_read_tex)
+
 	var material_a := ShaderMaterial.new()
 	material_a.shader = shader
 	var material_b := ShaderMaterial.new()
@@ -412,7 +450,6 @@ func _setup_ping_pong_pass(entry: Dictionary, pass_data: Dictionary, shader: Sha
 
 	var write_viewport: SubViewport = _ping_pong_manager.get_write_viewport(buffer_id)
 	_resource_graph.register_pass_output(pass_id, write_viewport, pass_data.get("provides", []))
-	_update_ping_pong_write_mode(entry)
 	return true
 
 func _resolve_output_viewport(pass_data: Dictionary) -> SubViewport:
@@ -518,7 +555,8 @@ func set_entity_texture(texture: Texture2D) -> void:
 	if _resource_graph != null:
 		_resource_graph.set_external_texture("__entityTexture", texture)
 		for entry in _pass_entries:
-			_rebind_entry_inputs(entry)
+			var has_ping_pong: bool = str(entry.get("ping_pong_buffer", "")) != ""
+			_rebind_entry_inputs(entry, has_ping_pong)
 
 func _find_feedback_policy(pass_id: String) -> Dictionary:
 	var feedback_policies: Dictionary = _plan.get("feedbackPolicies", {})
@@ -554,17 +592,17 @@ func _convert_param(value):
 		return value
 	return value
 
-func _rebind_entry_inputs(entry: Dictionary) -> void:
+func _rebind_entry_inputs(entry: Dictionary, skip_feedback: bool = false) -> void:
 	var pass_data: Dictionary = entry.get("pass_data", {})
 	var material: ShaderMaterial = entry.get("material")
 	var material_a: ShaderMaterial = entry.get("material_a")
 	var material_b: ShaderMaterial = entry.get("material_b")
 	if material != null:
-		_resource_graph.bind_pass_inputs(pass_data, material)
+		_resource_graph.bind_pass_inputs(pass_data, material, skip_feedback)
 	if material_a != null:
-		_resource_graph.bind_pass_inputs(pass_data, material_a)
+		_resource_graph.bind_pass_inputs(pass_data, material_a, skip_feedback)
 	if material_b != null:
-		_resource_graph.bind_pass_inputs(pass_data, material_b)
+		_resource_graph.bind_pass_inputs(pass_data, material_b, skip_feedback)
 
 func _enable_entry_updates(entry: Dictionary, enabled: bool) -> void:
 	var mode: int = SubViewport.UPDATE_ALWAYS if enabled else SubViewport.UPDATE_DISABLED
@@ -601,6 +639,18 @@ func _update_ping_pong_write_mode(entry: Dictionary) -> void:
 		viewport_a.render_target_update_mode = SubViewport.UPDATE_ALWAYS if write_vp == viewport_a else SubViewport.UPDATE_DISABLED
 	if viewport_b != null:
 		viewport_b.render_target_update_mode = SubViewport.UPDATE_ALWAYS if write_vp == viewport_b else SubViewport.UPDATE_DISABLED
+
+func get_output_texture() -> Texture2D:
+	if _pass_entries.size() == 0:
+		return null
+	var last_entry: Dictionary = _pass_entries[_pass_entries.size() - 1]
+	var ping_pong_buffer: String = str(last_entry.get("ping_pong_buffer", ""))
+	if ping_pong_buffer != "" and _ping_pong_manager != null:
+		return _ping_pong_manager.get_read_texture(ping_pong_buffer)
+	var viewport: SubViewport = last_entry.get("viewport")
+	if viewport != null and is_instance_valid(viewport):
+		return viewport.get_texture()
+	return null
 
 func _transition_to(next_state: State) -> void:
 	if _state == next_state:

@@ -282,8 +282,6 @@ export function buildResourceGraph(spec: EffectGraphSpec): ResourceResolutionRes
 
   for (const node of spec.nodes) {
     for (const slot of node.inputSlots) {
-      if (slot.connectedTo === null) continue;
-
       const isFeedbackInput = spec.feedbackEdges.some(
         (fb) => fb.to.nodeId === node.id && fb.to.input === slot.name,
       );

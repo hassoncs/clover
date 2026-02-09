@@ -203,6 +203,7 @@ function makeSpec(id: string, shader: string): EffectGraphSpec {
     family: "filter",
     inputSlots: [
       { name: "current_buffer", dataType: "texture", connectedTo: null },
+      { name: "entity_input", dataType: "texture", connectedTo: null },
     ],
     params: {},
     outputTarget: {

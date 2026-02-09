@@ -7,6 +7,9 @@ extends Node
 var particle_factory: ParticleFactory
 var graph_executor: EffectsGraphExecutor
 var _game_bridge: Node = null
+var _entity_sprite: Sprite2D = null
+var _entity_original_texture: Texture2D = null
+var _entity_original_scale: Vector2 = Vector2.ONE
 
 func _ready() -> void:
 	# Create subsystems
@@ -27,6 +30,18 @@ func _ready() -> void:
 	# If running in web, set up JS bridge methods
 	if OS.has_feature("web"):
 		_setup_js_effects_bridge()
+
+func _process(_delta: float) -> void:
+	if graph_executor == null or _entity_sprite == null or _entity_original_texture == null:
+		return
+	if graph_executor._state == EffectsGraphExecutor.State.RUNNING:
+		var output_tex: Texture2D = graph_executor.get_output_texture()
+		if output_tex != null and _entity_sprite.texture != output_tex:
+			_entity_sprite.texture = output_tex
+			var orig_size: Vector2 = _entity_original_texture.get_size()
+			var out_size: Vector2 = output_tex.get_size()
+			if out_size.x > 0 and out_size.y > 0:
+				_entity_sprite.scale = _entity_original_scale * (orig_size / out_size)
 
 var _method_map: Dictionary = {}
 
@@ -520,9 +535,22 @@ func apply_plan(plan_json) -> Dictionary:
 	else:
 		return {"success": false, "error": "Invalid plan format"}
 
-	return graph_executor.apply_plan(plan_dict)
+	# For entity-scoped graphs, find the entity texture up front so it is
+	# available during bind_pass_inputs (avoids "Missing input texture" warning).
+	var entity_tex: Texture2D = null
+	if str(plan_dict.get("scope", "")) == "entity":
+		entity_tex = _find_entity_texture()
+
+	var result = graph_executor.apply_plan(plan_dict, entity_tex)
+
+	# Store sprite reference for display swapping while the graph runs.
+	if bool(result.get("success", false)) and str(plan_dict.get("scope", "")) == "entity":
+		_bind_entity_textures()
+
+	return result
 
 func clear_plan() -> void:
+	_restore_entity_display()
 	if graph_executor:
 		graph_executor.clear()
 
@@ -544,6 +572,7 @@ func resume_graph() -> void:
 		graph_executor.resume()
 
 func stop_graph() -> void:
+	_restore_entity_display()
 	if graph_executor:
 		graph_executor.stop()
 
@@ -585,6 +614,89 @@ func spawn_particle_preset(preset_name: String, world_x: float, world_y: float, 
 # ============================================================
 # UTILITY
 # ============================================================
+
+var _entity_texture_retries: int = 0
+
+func _find_entity_texture() -> Texture2D:
+	if _game_bridge == null:
+		return null
+	if "_pixel_buffer_manager" in _game_bridge:
+		var pbm = _game_bridge._pixel_buffer_manager
+		if pbm != null and "_buffers" in pbm:
+			var buffers: Dictionary = pbm._buffers
+			for buf_id in buffers.keys():
+				var buf: Dictionary = buffers[buf_id]
+				var tex = buf.get("texture")
+				if tex is Texture2D:
+					return tex
+	var entities: Dictionary = _game_bridge.entities if "entities" in _game_bridge else {}
+	for entity_id in entities.keys():
+		var node = entities[entity_id]
+		if node == null or not is_instance_valid(node):
+			continue
+		var sprite: Sprite2D = _find_sprite_in_tree(node, 3)
+		if sprite != null and sprite.texture != null:
+			return sprite.texture
+	return null
+
+func _restore_entity_display() -> void:
+	if _entity_sprite != null and _entity_original_texture != null:
+		_entity_sprite.texture = _entity_original_texture
+		_entity_sprite.scale = _entity_original_scale
+
+func _bind_entity_textures() -> void:
+	if graph_executor == null or _game_bridge == null:
+		return
+
+	# Prefer the PixelBufferManager's stored texture — it is available
+	# immediately after createPixelBuffer runs, before deferred tree updates.
+	if "_pixel_buffer_manager" in _game_bridge:
+		var pbm = _game_bridge._pixel_buffer_manager
+		if pbm != null and "_buffers" in pbm:
+			var buffers: Dictionary = pbm._buffers
+			for buf_id in buffers.keys():
+				var buf: Dictionary = buffers[buf_id]
+				var tex = buf.get("texture")
+				if tex is Texture2D:
+					graph_executor.set_entity_texture(tex)
+					var spr = buf.get("sprite")
+					if spr is Sprite2D:
+						_entity_sprite = spr
+						_entity_original_texture = tex
+						_entity_original_scale = spr.scale
+					_entity_texture_retries = 0
+					return
+
+	# Fallback: walk the entity tree looking for a Sprite2D with a texture.
+	var entities: Dictionary = _game_bridge.entities if "entities" in _game_bridge else {}
+	for entity_id in entities.keys():
+		var node = entities[entity_id]
+		if node == null or not is_instance_valid(node):
+			continue
+		var sprite: Sprite2D = _find_sprite_in_tree(node, 3)
+		if sprite != null and sprite.texture != null:
+			graph_executor.set_entity_texture(sprite.texture)
+			_entity_sprite = sprite
+			_entity_original_texture = sprite.texture
+			_entity_original_scale = sprite.scale
+			_entity_texture_retries = 0
+			return
+
+	# Sprite2D may not be ready yet (deferred creation). Retry a few times.
+	if _entity_texture_retries < 10:
+		_entity_texture_retries += 1
+		get_tree().create_timer(0.1).timeout.connect(_bind_entity_textures, CONNECT_ONE_SHOT)
+
+func _find_sprite_in_tree(node: Node, max_depth: int) -> Sprite2D:
+	if max_depth <= 0:
+		return null
+	for child in node.get_children():
+		if child is Sprite2D:
+			return child
+		var found := _find_sprite_in_tree(child, max_depth - 1)
+		if found != null:
+			return found
+	return null
 
 func _get_entity_sprite(entity_id: String) -> CanvasItem:
 	if not _game_bridge:

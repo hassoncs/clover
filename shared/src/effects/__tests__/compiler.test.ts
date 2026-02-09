@@ -105,7 +105,11 @@ describe('compileGraph', () => {
       expect(result.success).toBe(true);
 
       const blurPass = result.plan!.passes.find((p) => p.id === 'blur1')!;
-      expect(blurPass.params).toEqual({ radius: 5, intensity: 0.8 });
+      expect(blurPass.params).toEqual({
+        radius: 5,
+        intensity: 0.8,
+        inputBindings: { input: 'gen:gen-out' },
+      });
       expect(blurPass.paramsSchema).toEqual([]);
       expect(blurPass.persistence).toBe('none');
       expect(blurPass.qualityTier).toBe('medium');
@@ -257,6 +261,144 @@ describe('compileGraph', () => {
       const result = compileGraph(graph);
       const statefulPass = result.plan!.passes.find((p) => p.id === 'stateful1')!;
       expect(statefulPass.persistence).toBe('pingPong');
+    });
+  });
+
+  describe('inputBindings', () => {
+    it('generates inputBindings mapping slot names to resource IDs for connections', () => {
+      const graph = makeGraph({
+        nodes: [
+          makeGenerator('gen'),
+          makeNode({ id: 'blur1' }),
+        ],
+        connections: [
+          { from: { nodeId: 'gen', output: 'gen-out' }, to: { nodeId: 'blur1', input: 'input' } },
+        ],
+      });
+
+      const result = compileGraph(graph);
+      expect(result.success).toBe(true);
+
+      const blurPass = result.plan!.passes.find((p) => p.id === 'blur1')!;
+      expect(blurPass.params.inputBindings).toBeDefined();
+      const bindings = blurPass.params.inputBindings as Record<string, string>;
+      expect(bindings['input']).toBe('gen:gen-out');
+    });
+
+    it('generates inputBindings for feedback edges with correct slot name', () => {
+      const graph = makeGraph({
+        nodes: [
+          makeNode({
+            id: 'fx',
+            inputSlots: [
+              { name: 'current_buffer', dataType: 'texture', connectedTo: null },
+            ],
+            outputTarget: { bufferId: 'canvas', format: 'rgba8', resolution: 'full' },
+            flags: { stateful: true, fusible: 'never' },
+          }),
+        ],
+        connections: [],
+        feedbackEdges: [
+          {
+            from: { nodeId: 'fx', output: 'canvas' },
+            to: { nodeId: 'fx', input: 'current_buffer' },
+            policy: {
+              initMode: 'clear',
+              swapPolicy: 'pingPong',
+              stopBehavior: 'freeze',
+              bufferFormat: 'rgba8',
+            },
+          },
+        ],
+      });
+
+      const result = compileGraph(graph);
+      expect(result.success).toBe(true);
+
+      const fxPass = result.plan!.passes.find((p) => p.id === 'fx')!;
+      const bindings = fxPass.params.inputBindings as Record<string, string>;
+      expect(bindings['current_buffer']).toBe('__feedback:fx->fx');
+    });
+
+    it('generates inputBindings for explicit connection inputs', () => {
+      const graph = makeGraph({
+        scope: 'entity',
+        nodes: [
+          makeGenerator('gen'),
+          makeNode({
+            id: 'fx',
+            inputSlots: [
+              { name: 'entity_input', dataType: 'texture', connectedTo: null },
+            ],
+            flags: { stateful: false, fusible: 'conditional' },
+          }),
+        ],
+        connections: [
+          { from: { nodeId: 'gen', output: 'gen-out' }, to: { nodeId: 'fx', input: 'entity_input' } },
+        ],
+        feedbackEdges: [],
+      });
+
+      const result = compileGraph(graph);
+      expect(result.success).toBe(true);
+
+      const fxPass = result.plan!.passes.find((p) => p.id === 'fx')!;
+      const bindings = fxPass.params.inputBindings as Record<string, string>;
+      expect(bindings['entity_input']).toBe('gen:gen-out');
+    });
+
+    it('generates empty inputBindings for generator nodes with no inputs', () => {
+      const graph = makeGraph({
+        nodes: [makeGenerator('gen')],
+        connections: [],
+      });
+
+      const result = compileGraph(graph);
+      expect(result.success).toBe(true);
+
+      const genPass = result.plan!.passes.find((p) => p.id === 'gen')!;
+      const bindings = genPass.params.inputBindings as Record<string, string>;
+      expect(bindings).toEqual({});
+    });
+
+    it('paint-like graph: feedback + entity implicit input both get correct bindings', () => {
+      const graph = makeGraph({
+        scope: 'entity',
+        nodes: [
+          makeNode({
+            id: 'fx',
+            type: 'custom',
+            inputSlots: [
+              { name: 'current_buffer', dataType: 'texture', connectedTo: null },
+              { name: 'entity_input', dataType: 'texture', connectedTo: null },
+            ],
+            outputTarget: { bufferId: 'canvas', format: 'rgba8', resolution: 'full' },
+            flags: { stateful: true, fusible: 'never' },
+          }),
+        ],
+        connections: [],
+        feedbackEdges: [
+          {
+            from: { nodeId: 'fx', output: 'canvas' },
+            to: { nodeId: 'fx', input: 'current_buffer' },
+            policy: {
+              initMode: 'seedFromInput',
+              swapPolicy: 'pingPong',
+              stopBehavior: 'freeze',
+              bufferFormat: 'rgba8',
+            },
+          },
+        ],
+      });
+
+      const result = compileGraph(graph);
+      expect(result.success).toBe(true);
+
+      const fxPass = result.plan!.passes.find((p) => p.id === 'fx')!;
+      const bindings = fxPass.params.inputBindings as Record<string, string>;
+      expect(bindings['current_buffer']).toBe('__feedback:fx->fx');
+      expect(bindings['entity_input']).toBe('__entityTexture');
+      expect(fxPass.persistence).toBe('pingPong');
     });
   });
 

@@ -81,6 +81,8 @@ func register_pass_output(pass_id: String, viewport: SubViewport, provided_resou
 		var resource_id: String = str(ref.get("id", ""))
 		if resource_id == "" or not _resources.has(resource_id):
 			continue
+		if resource_id.begins_with("__feedback:"):
+			continue
 		var entry: Dictionary = _resources[resource_id]
 		entry["viewport"] = viewport
 
@@ -99,13 +101,15 @@ func get_texture(resource_id: String) -> Texture2D:
 
 	return null
 
-func bind_pass_inputs(pass_data: Dictionary, material: ShaderMaterial) -> void:
+func bind_pass_inputs(pass_data: Dictionary, material: ShaderMaterial, skip_feedback: bool = false) -> void:
 	if material == null:
 		return
 
 	var explicit_bindings = _extract_explicit_input_bindings(pass_data)
 	for uniform_name in explicit_bindings.keys():
 		var resource_id = str(explicit_bindings[uniform_name])
+		if skip_feedback and resource_id.begins_with("__feedback:"):
+			continue
 		var tex = get_texture(resource_id)
 		if tex == null:
 			push_warning("[EffectsResourceGraph] Missing input texture '%s' for uniform '%s'" % [resource_id, str(uniform_name)])
@@ -120,6 +124,8 @@ func bind_pass_inputs(pass_data: Dictionary, material: ShaderMaterial) -> void:
 
 		var resource_id = str(ref.get("id", ""))
 		if resource_id == "":
+			continue
+		if skip_feedback and resource_id.begins_with("__feedback:"):
 			continue
 		if explicit_bindings.values().has(resource_id):
 			continue
@@ -158,6 +164,8 @@ func _is_implicit_input(resource_id: String) -> bool:
 	if resource_id == "__screenColor":
 		return true
 	if resource_id == "__entityTexture":
+		return true
+	if resource_id.begins_with("__feedback:"):
 		return true
 	return false
 

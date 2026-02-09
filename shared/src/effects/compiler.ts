@@ -207,6 +207,7 @@ function buildCompiledPass(
 ): CompiledPass {
   const requires: ResourceRef[] = [];
   const provides: ResourceRef[] = [];
+  const inputBindings: Record<string, string> = {};
 
   for (const binding of resourceGraph.bindings) {
     if (binding.passId !== node.id) continue;
@@ -217,6 +218,7 @@ function buildCompiledPass(
     const ref = toResourceRef(resource);
     if (binding.direction === 'input') {
       requires.push(ref);
+      inputBindings[binding.slotName] = binding.resourceId;
     } else {
       provides.push(ref);
     }
@@ -232,7 +234,7 @@ function buildCompiledPass(
     shaderSource,
     requires,
     provides,
-    params: { ...node.params },
+    params: { ...node.params, inputBindings },
     paramsSchema: [],
     persistence: node.flags.stateful ? 'pingPong' : 'none',
     qualityTier: 'medium',
