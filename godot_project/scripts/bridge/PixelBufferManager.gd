@@ -26,6 +26,15 @@ func _js_draw_commands(args: Array) -> void:
 	draw_commands(str(args[0]), commands)
 
 
+func _js_draw_commands_normalized(args: Array) -> void:
+	if args.size() < 2:
+		return
+	var commands = JSON.parse_string(str(args[1]))
+	if commands == null or not (commands is Array):
+		return
+	draw_commands_normalized(str(args[0]), commands)
+
+
 func _js_clear(args: Array) -> void:
 	if args.size() < 2:
 		return
@@ -108,6 +117,55 @@ func draw_commands(entity_id: String, commands: Array) -> void:
 			_draw_line(image, cmd)
 		elif cmd_type == "fill":
 			_draw_fill(image, cmd)
+
+	var texture: ImageTexture = buf["texture"]
+	if texture:
+		texture.update(image)
+
+
+func draw_commands_normalized(entity_id: String, commands: Array) -> void:
+	if not _buffers.has(entity_id):
+		return
+
+	var buf: Dictionary = _buffers[entity_id]
+	var image: Image = buf["image"]
+	if image == null:
+		return
+
+	var img_width := image.get_width()
+	var img_height := image.get_height()
+
+	for cmd in commands:
+		if not (cmd is Dictionary):
+			continue
+		var cmd_type = str(cmd.get("type", ""))
+		
+		# Convert normalized coordinates to pixel coordinates
+		var pixel_cmd: Dictionary = cmd.duplicate()
+		
+		if cmd_type == "pixel":
+			if "x" in cmd:
+				pixel_cmd["x"] = int(float(cmd["x"]) * float(img_width))
+			if "y" in cmd:
+				pixel_cmd["y"] = int(float(cmd["y"]) * float(img_height))
+			_draw_pixel(image, pixel_cmd)
+			
+		elif cmd_type == "line":
+			if "x1" in cmd:
+				pixel_cmd["x1"] = int(float(cmd["x1"]) * float(img_width))
+			if "y1" in cmd:
+				pixel_cmd["y1"] = int(float(cmd["y1"]) * float(img_height))
+			if "x2" in cmd:
+				pixel_cmd["x2"] = int(float(cmd["x2"]) * float(img_width))
+			if "y2" in cmd:
+				pixel_cmd["y2"] = int(float(cmd["y2"]) * float(img_height))
+			# Width uses image height for normalization
+			if "width" in cmd:
+				pixel_cmd["width"] = int(float(cmd["width"]) * float(img_height))
+			_draw_line(image, pixel_cmd)
+			
+		elif cmd_type == "fill":
+			_draw_fill(image, pixel_cmd)
 
 	var texture: ImageTexture = buf["texture"]
 	if texture:

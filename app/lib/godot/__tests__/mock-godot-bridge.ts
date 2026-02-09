@@ -147,6 +147,7 @@ export function createMockGodotBridge(): GodotBridge {
     pixelBufferDraw: vi.fn(),
     pixelBufferClear: vi.fn(),
     destroyPixelBuffer: vi.fn(),
+    drawToActiveBuffer: vi.fn(),
 
     createUIButton: vi.fn(),
     destroyUIButton: vi.fn(),

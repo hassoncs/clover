@@ -143,6 +143,12 @@ export type DrawCommand =
   | { type: 'line'; x1: number; y1: number; x2: number; y2: number; color: string; width?: number }
   | { type: 'fill'; color: string };
 
+export type NormalizedDrawCommand =
+  | { type: 'stroke'; points: number[]; color: string; width: number }
+  | { type: 'line'; x1: number; y1: number; x2: number; y2: number; color: string; width?: number }
+  | { type: 'pixel'; x: number; y: number; color: string }
+  | { type: 'fill'; color: string };
+
 export type SpriteDefinition =
   | RectSprite
   | CircleSprite
@@ -246,6 +252,9 @@ export interface GodotBridge extends EffectsBridge {
   // Lifecycle
   initialize(): Promise<void>;
   dispose(): void;
+  
+  // Normalized coordinate drawing
+  drawToActiveBuffer(entityId: string, commands: NormalizedDrawCommand[]): void;
 
   // Game management
   loadGame(definition: GameDefinition): Promise<void>;

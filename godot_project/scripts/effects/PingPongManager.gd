@@ -48,8 +48,18 @@ func initialize(buffer_id: String) -> void:
 	_host.add_child(viewport_a)
 	_host.add_child(viewport_b)
 
+	var draw_container_a := Node2D.new()
+	draw_container_a.name = "DrawContainer_A"
+	viewport_a.add_child(draw_container_a)
+
+	var draw_container_b := Node2D.new()
+	draw_container_b.name = "DrawContainer_B"
+	viewport_b.add_child(draw_container_b)
+
 	entry["viewport_a"] = viewport_a
 	entry["viewport_b"] = viewport_b
+	entry["draw_container_a"] = draw_container_a
+	entry["draw_container_b"] = draw_container_b
 	entry["read_index"] = 0
 	entry["write_index"] = 1
 	entry["initialized"] = true
@@ -183,13 +193,127 @@ func _clear_viewports(entry: Dictionary) -> void:
 		viewport_b.render_target_clear_mode = SubViewport.CLEAR_MODE_ALWAYS
 		viewport_b.render_target_update_mode = SubViewport.UPDATE_ONCE
 
+func add_stroke(buffer_id: String, flat_points: Array, color: Color, width_norm: float) -> void:
+	if not _buffers.has(buffer_id):
+		push_error("[EffectsPingPongManager] add_stroke called for unknown buffer: %s" % buffer_id)
+		return
+	
+	var entry: Dictionary = _buffers[buffer_id]
+	if not bool(entry.get("initialized", false)):
+		push_error("[EffectsPingPongManager] add_stroke called for uninitialized buffer: %s" % buffer_id)
+		return
+	
+	var write_vp: SubViewport = _get_viewport(entry, int(entry.get("write_index", 1)))
+	if write_vp == null:
+		return
+	
+	var draw_container: Node2D = entry.get("draw_container_b") if int(entry.get("write_index", 1)) == 1 else entry.get("draw_container_a")
+	if draw_container == null or not is_instance_valid(draw_container):
+		return
+	
+	var viewport_size := write_vp.size
+	var points := _parse_flat_points(flat_points, viewport_size)
+	var width_pixels := _normalized_width_to_pixels(width_norm, viewport_size)
+	
+	var line := Line2D.new()
+	line.points = points
+	line.default_color = color
+	line.width = width_pixels
+	line.joint_mode = Line2D.LINE_JOINT_ROUND
+	line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	line.end_cap_mode = Line2D.LINE_CAP_ROUND
+	draw_container.add_child(line)
+
+func add_stamp(buffer_id: String, uv: Vector2, texture: Texture2D, color: Color) -> void:
+	if not _buffers.has(buffer_id):
+		push_error("[EffectsPingPongManager] add_stamp called for unknown buffer: %s" % buffer_id)
+		return
+	
+	var entry: Dictionary = _buffers[buffer_id]
+	if not bool(entry.get("initialized", false)):
+		push_error("[EffectsPingPongManager] add_stamp called for uninitialized buffer: %s" % buffer_id)
+		return
+	
+	var write_vp: SubViewport = _get_viewport(entry, int(entry.get("write_index", 1)))
+	if write_vp == null:
+		return
+	
+	var draw_container: Node2D = entry.get("draw_container_b") if int(entry.get("write_index", 1)) == 1 else entry.get("draw_container_a")
+	if draw_container == null or not is_instance_valid(draw_container):
+		return
+	
+	var viewport_size := write_vp.size
+	var pos := _normalized_to_viewport(uv, viewport_size)
+	
+	var sprite := Sprite2D.new()
+	sprite.texture = texture
+	sprite.modulate = color
+	sprite.position = pos
+	draw_container.add_child(sprite)
+
+func clear_draw_container(buffer_id: String) -> void:
+	if not _buffers.has(buffer_id):
+		return
+	
+	var entry: Dictionary = _buffers[buffer_id]
+	if not bool(entry.get("initialized", false)):
+		return
+	
+	var draw_container: Node2D = entry.get("draw_container_b") if int(entry.get("write_index", 1)) == 1 else entry.get("draw_container_a")
+	if draw_container == null or not is_instance_valid(draw_container):
+		return
+	
+	for child in draw_container.get_children():
+		draw_container.remove_child(child)
+		child.queue_free()
+
+func get_draw_container(buffer_id: String) -> Node2D:
+	if not _buffers.has(buffer_id):
+		return null
+	
+	var entry: Dictionary = _buffers[buffer_id]
+	if not bool(entry.get("initialized", false)):
+		return null
+	
+	return entry.get("draw_container_b") if int(entry.get("write_index", 1)) == 1 else entry.get("draw_container_a")
+
+func _normalized_to_viewport(uv: Vector2, viewport_size: Vector2i) -> Vector2:
+	return Vector2(uv.x * viewport_size.x, uv.y * viewport_size.y)
+
+func _normalized_width_to_pixels(width_norm: float, viewport_size: Vector2i) -> float:
+	return width_norm * viewport_size.y
+
+func _parse_flat_points(flat: Array, viewport_size: Vector2i) -> PackedVector2Array:
+	var result := PackedVector2Array()
+	var i := 0
+	while i < flat.size() - 1:
+		var uv := Vector2(float(flat[i]), float(flat[i + 1]))
+		result.append(_normalized_to_viewport(uv, viewport_size))
+		i += 2
+	return result
+
 func _release_entry(entry: Dictionary) -> void:
+	var draw_container_a: Node2D = entry.get("draw_container_a")
+	if draw_container_a and is_instance_valid(draw_container_a):
+		if draw_container_a.get_parent():
+			draw_container_a.get_parent().remove_child(draw_container_a)
+		draw_container_a.queue_free()
+	
+	var draw_container_b: Node2D = entry.get("draw_container_b")
+	if draw_container_b and is_instance_valid(draw_container_b):
+		if draw_container_b.get_parent():
+			draw_container_b.get_parent().remove_child(draw_container_b)
+		draw_container_b.queue_free()
+	
 	var viewport_a: SubViewport = entry.get("viewport_a")
 	if viewport_a and is_instance_valid(viewport_a):
 		viewport_a.queue_free()
 	var viewport_b: SubViewport = entry.get("viewport_b")
 	if viewport_b and is_instance_valid(viewport_b):
 		viewport_b.queue_free()
+	
+	entry["draw_container_a"] = null
+	entry["draw_container_b"] = null
 	entry["viewport_a"] = null
 	entry["viewport_b"] = null
 	entry["initialized"] = false

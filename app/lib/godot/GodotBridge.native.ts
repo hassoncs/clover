@@ -24,6 +24,7 @@ import type {
   ContactInfo,
   DynamicShaderResult,
   DrawCommand,
+  NormalizedDrawCommand,
 } from './types';
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -825,6 +826,10 @@ export function createNativeGodotBridge(): GodotBridge {
     },
     destroyPixelBuffer(entityId: string) {
       callGameBridge('destroyPixelBuffer', entityId);
+    },
+    
+    drawToActiveBuffer(entityId: string, commands: NormalizedDrawCommand[]) {
+      callGameBridge('draw_to_active_buffer', entityId, JSON.stringify(commands));
     },
 
     async setEntityImage(entityId: string, url: string, width: number, height: number) {

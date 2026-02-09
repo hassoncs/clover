@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState, useEffect } from "react";
 import { View, Text, Pressable } from "react-native";
 import type { ExampleMeta } from "@/lib/registry/types";
-import type { GodotBridge, DrawCommand } from "@/lib/godot/types";
+import type { GodotBridge, NormalizedDrawCommand } from "@/lib/godot/types";
 import type { GameDefinition } from "@slopcade/shared";
 import { compileGraph } from "@slopcade/shared/effects";
 import type { EffectGraphSpec, CompiledPlan } from "@slopcade/shared/effects";
@@ -320,10 +320,16 @@ export default function PaintExample() {
     };
   }, [bridge]);
 
-  const worldToPixel = useCallback((wx: number, wy: number) => {
-    const px = Math.max(0, Math.min(511, Math.round((wx + 12) / 24 * 511)));
-    const py = Math.max(0, Math.min(511, Math.round((16 - wy) / 32 * 511)));
-    return { x: px, y: py };
+  const worldToNormalized = useCallback((wx: number, wy: number) => {
+    const entityLeft = -12;
+    const entityTop = 16;
+    const entityWidth = 24;
+    const entityHeight = 32;
+    
+    const nx = (wx - entityLeft) / entityWidth;
+    const ny = (entityTop - wy) / entityHeight;
+    
+    return { x: Math.max(0, Math.min(1, nx)), y: Math.max(0, Math.min(1, ny)) };
   }, []);
 
   useEffect(() => {
@@ -336,20 +342,23 @@ export default function PaintExample() {
         const start = lastPointRef.current;
 
         if (start) {
-          const p1 = worldToPixel(start.x, start.y);
-          const p2 = worldToPixel(x, y);
+          const p1 = worldToNormalized(start.x, start.y);
+          const p2 = worldToNormalized(x, y);
 
-          const command: DrawCommand = {
+          const viewportHeight = 32;
+          const normalizedWidth = brushSizeRef.current / viewportHeight;
+
+          const command: NormalizedDrawCommand = {
             type: "line",
             x1: p1.x,
             y1: p1.y,
             x2: p2.x,
             y2: p2.y,
             color: colorRef.current,
-            width: brushSizeRef.current,
+            width: normalizedWidth,
           };
 
-          bridge.pixelBufferDraw("canvas", [command]);
+          bridge.drawToActiveBuffer("canvas", [command]);
         }
         lastPointRef.current = { x, y };
       } else if (type === "drag_end") {
@@ -360,7 +369,7 @@ export default function PaintExample() {
     return () => {
       unsubscribe();
     };
-  }, [bridge, status, worldToPixel]);
+  }, [bridge, status, worldToNormalized]);
 
   const handleClear = useCallback(async () => {
     if (bridge && status === "ready") {

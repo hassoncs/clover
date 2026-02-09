@@ -11,6 +11,7 @@ var _entity_sprite: Sprite2D = null
 var _entity_original_texture: Texture2D = null
 var _entity_original_scale: Vector2 = Vector2.ONE
 var _display_swap_delay: int = 0
+var _frames_since_start: int = 0
 
 func _ready() -> void:
 	# Create subsystems
@@ -36,6 +37,7 @@ func _process(_delta: float) -> void:
 	if graph_executor == null or _entity_sprite == null or _entity_original_texture == null:
 		return
 	if graph_executor._state == EffectsGraphExecutor.State.RUNNING:
+		_frames_since_start += 1
 		# Skip the first frame after start so the shader has a chance to
 		# render content before we swap the display texture — avoids a
 		# single-frame flash of the empty ping-pong buffer.
@@ -79,6 +81,7 @@ func _build_effects_method_map() -> void:
 		"get_available_effects": _js_get_available_effects,
 		"get_snapshot": _js_get_snapshot,
 		"restore_snapshot": _js_restore_snapshot,
+		"draw_to_active_buffer": _js_draw_to_active_buffer,
 
 	}
 
@@ -144,6 +147,14 @@ func _register_query_handlers() -> void:
 		if args.size() > 0 and args[0] is Dictionary:
 			return restore_snapshot(args[0].get("snapshot", args[0]))
 		return {"success": false, "error": "Missing snapshot argument"}
+	)
+
+	qs.register_handler("effects.drawToActiveBuffer", func(args):
+		if args.size() > 0 and args[0] is Dictionary:
+			var entity_id = str(args[0].get("entityId", ""))
+			var commands = args[0].get("commands", "")
+			return draw_to_active_buffer(entity_id, commands)
+		return {"success": false, "error": "Missing entityId or commands"}
 	)
 
 func native_dispatch(method_name: String, args_json: String) -> Variant:
@@ -267,6 +278,10 @@ func _setup_js_effects_bridge() -> void:
 	var restore_snapshot_cb = JavaScriptBridge.create_callback(_js_restore_snapshot)
 	callbacks.append(restore_snapshot_cb)
 	bridge["restoreSnapshot"] = restore_snapshot_cb
+
+	var draw_to_active_buffer_cb = JavaScriptBridge.create_callback(_js_draw_to_active_buffer)
+	callbacks.append(draw_to_active_buffer_cb)
+	bridge["drawToActiveBuffer"] = draw_to_active_buffer_cb
 
 	# Particles
 	var spawn_particle_preset_cb = JavaScriptBridge.create_callback(_js_spawn_particle_preset)
@@ -426,6 +441,15 @@ func _js_restore_snapshot(args: Array) -> void:
 	var result = restore_snapshot(_parse_params(args[0]))
 	_set_last_result(result)
 
+func _js_draw_to_active_buffer(args: Array) -> void:
+	if args.size() < 2:
+		_set_last_result({"success": false, "error": "Missing entity_id or commands"})
+		return
+	var entity_id = str(args[0])
+	var commands_json = args[1]
+	var result = draw_to_active_buffer(entity_id, commands_json)
+	_set_last_result(result)
+
 func _js_spawn_particle_preset(args: Array) -> void:
 	if args.size() < 3:
 		return
@@ -571,6 +595,7 @@ func start_graph() -> void:
 		# Wait 2 frames before swapping the display texture so the shader
 		# has rendered at least one full frame of content.
 		_display_swap_delay = 2
+		_frames_since_start = 0
 		graph_executor.start()
 
 func pause_graph() -> void:
@@ -582,6 +607,7 @@ func resume_graph() -> void:
 		graph_executor.resume()
 
 func stop_graph() -> void:
+	_clear_all_draw_containers()
 	_bake_output_to_entity()
 	if graph_executor:
 		graph_executor.stop()
@@ -599,6 +625,97 @@ func restore_snapshot(snapshot: Dictionary) -> Dictionary:
 	if graph_executor:
 		return graph_executor.restore_snapshot(snapshot)
 	return {"success": false, "error": "GraphExecutor not initialized"}
+
+# ============================================================
+# PUBLIC API - DRAW ROUTING
+# ============================================================
+
+func draw_to_active_buffer(entity_id: String, commands_json) -> Dictionary:
+	# Route drawing commands to the appropriate backend based on graph state
+	if graph_executor == null:
+		return {"success": false, "error": "GraphExecutor not initialized"}
+	
+	# Parse commands
+	var commands: Array = []
+	if commands_json is Array:
+		commands = commands_json
+	elif commands_json is String:
+		var json = JSON.new()
+		if json.parse(commands_json) == OK and json.data is Array:
+			commands = json.data
+		else:
+			return {"success": false, "error": "Invalid commands JSON"}
+	else:
+		return {"success": false, "error": "Commands must be Array or JSON string"}
+	
+	# Route based on graph state
+	if graph_executor._state == EffectsGraphExecutor.State.RUNNING:
+		return _draw_to_ping_pong(entity_id, commands)
+	else:
+		return _draw_to_pixel_buffer(entity_id, commands)
+
+func _draw_to_ping_pong(entity_id: String, commands: Array) -> Dictionary:
+	# Forward to PingPongManager for scene-graph drawing
+	if graph_executor == null or graph_executor._ping_pong_manager == null:
+		return {"success": false, "error": "PingPongManager not available"}
+	
+	var ping_pong_mgr = graph_executor._ping_pong_manager
+	
+	for cmd in commands:
+		if not (cmd is Dictionary):
+			continue
+		
+		var cmd_type = str(cmd.get("type", ""))
+		
+		if cmd_type == "stroke":
+			var points = cmd.get("points", [])
+			var color_data = cmd.get("color", [1.0, 1.0, 1.0, 1.0])
+			var width_norm = float(cmd.get("width", 0.01))
+			
+			# Convert color array to Color
+			var color := Color.WHITE
+			if color_data is Array and color_data.size() >= 3:
+				color = Color(color_data[0], color_data[1], color_data[2], 
+					color_data[3] if color_data.size() > 3 else 1.0)
+			
+			# Convert points array to flat array
+			var flat_points: Array = []
+			for pt in points:
+				if pt is Dictionary:
+					flat_points.append(float(pt.get("x", 0.0)))
+					flat_points.append(float(pt.get("y", 0.0)))
+			
+			if flat_points.size() >= 4:  # At least 2 points
+				ping_pong_mgr.add_stroke(entity_id, flat_points, color, width_norm)
+		
+		elif cmd_type == "stamp":
+			# Stamp support (if texture available)
+			var uv_data = cmd.get("uv", {"x": 0.5, "y": 0.5})
+			var uv := Vector2(float(uv_data.get("x", 0.5)), float(uv_data.get("y", 0.5)))
+			var color_data = cmd.get("color", [1.0, 1.0, 1.0, 1.0])
+			
+			var color := Color.WHITE
+			if color_data is Array and color_data.size() >= 3:
+				color = Color(color_data[0], color_data[1], color_data[2], 
+					color_data[3] if color_data.size() > 3 else 1.0)
+			
+			# For now, skip stamp if no texture provided
+			# TODO: Support texture loading for stamps
+			push_warning("[GameBridgeEffects] Stamp command not fully implemented for ping-pong")
+	
+	return {"success": true}
+
+func _draw_to_pixel_buffer(entity_id: String, commands: Array) -> Dictionary:
+	# Forward to PixelBufferManager for pixel buffer drawing
+	if _game_bridge == null or not ("_pixel_buffer_manager" in _game_bridge):
+		return {"success": false, "error": "PixelBufferManager not available"}
+	
+	var pbm = _game_bridge._pixel_buffer_manager
+	if pbm == null:
+		return {"success": false, "error": "PixelBufferManager not initialized"}
+	
+	pbm.draw_commands_normalized(entity_id, commands)
+	return {"success": true}
 
 # ============================================================
 # PUBLIC API - PARTICLES
@@ -626,6 +743,20 @@ func spawn_particle_preset(preset_name: String, world_x: float, world_y: float, 
 # ============================================================
 
 var _entity_texture_retries: int = 0
+
+func _clear_all_draw_containers() -> void:
+	# Clear draw containers for all active ping-pong graphs to prevent
+	# orphaned Line2D nodes from appearing in the baked output.
+	if graph_executor == null or graph_executor._ping_pong_manager == null:
+		return
+	
+	var ping_pong_manager = graph_executor._ping_pong_manager
+	for entry in graph_executor._pass_entries:
+		if not (entry is Dictionary):
+			continue
+		var ping_pong_buffer: String = str(entry.get("ping_pong_buffer", ""))
+		if ping_pong_buffer != "":
+			ping_pong_manager.clear_draw_container(ping_pong_buffer)
 
 func _find_entity_texture() -> Texture2D:
 	if _game_bridge == null:
@@ -660,6 +791,13 @@ func _bake_output_to_entity() -> void:
 
 	var output_tex: Texture2D = graph_executor.get_output_texture()
 	if output_tex == null:
+		_restore_entity_display()
+		return
+
+	# Debounce guard: skip get_image() if the user rapidly toggles start/stop.
+	# get_image() causes a 50-100ms main-thread stall on the first call after
+	# start because the GPU texture hasn't been downloaded yet.
+	if _frames_since_start < 3:
 		_restore_entity_display()
 		return
 

@@ -315,6 +315,7 @@ func _process(delta: float) -> void:
 		# Swap FIRST — the previous write viewport just rendered,
 		# so it becomes the new read source.
 		_ping_pong_manager.swap(ping_pong_buffer)
+		_ping_pong_manager.clear_draw_container(ping_pong_buffer)
 
 		var write_vp: SubViewport = _ping_pong_manager.get_write_viewport(ping_pong_buffer)
 		var read_tex: Texture2D = _ping_pong_manager.get_read_texture(ping_pong_buffer)

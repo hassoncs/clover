@@ -22,6 +22,7 @@ import type {
   MouseJointDef,
   DynamicShaderResult,
   DrawCommand,
+  NormalizedDrawCommand,
 } from "./types";
 import { injectGodotDebugBridge } from "./debug";
 import {
@@ -266,6 +267,7 @@ declare global {
         labelText: string,
       ) => void;
       destroyThemedUIComponent: (componentId: string) => void;
+      drawToActiveBuffer: (entityId: string, commandsJson: string) => void;
 
     };
   }
@@ -851,6 +853,10 @@ export function createWebGodotBridge(): GodotBridge {
     },
     destroyPixelBuffer(entityId: string) {
       getGodotBridge()?.destroyPixelBuffer(entityId);
+    },
+    
+    drawToActiveBuffer(entityId: string, commands: NormalizedDrawCommand[]) {
+      getGodotBridge()?.drawToActiveBuffer(entityId, JSON.stringify(commands));
     },
 
     setEntityImage(
