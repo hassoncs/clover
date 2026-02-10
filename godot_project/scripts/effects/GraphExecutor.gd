@@ -3,80 +3,6 @@ extends Node
 
 enum State { IDLE, READY, RUNNING, PAUSED, STOPPED }
 
-const EFFECT_TYPE_TO_SHADER = {
-	"glow": "glow",
-	"innerGlow": "inner_glow",
-	"outline": "outline",
-	"dropShadow": "drop_shadow",
-	"tint": "tint",
-	"holographic": "holographic",
-	"pixelate": "pixelate",
-	"dissolve": "dissolve",
-	"waveDistortion": "wave",
-	"shockwave": "shockwave",
-	"chromaticAberration": "chromatic_aberration",
-	"vignette": "vignette",
-	"scanlines": "scanlines",
-	"posterize": "posterize",
-	"blur": "blur",
-	"motionBlur": "motion_blur",
-	"rimLight": "rim_light",
-	"colorMatrix": "color_matrix",
-	"bloom": "bloom",
-	"nightVision": "night_vision",
-	"speedLines": "speed_lines",
-	"underwater": "underwater",
-	"halftone": "halftone",
-	"oldFilm": "old_film",
-	"thermalVision": "thermal_vision",
-	"ascii": "ascii",
-	"ripple": "ripple",
-	"fogOfWar": "fog_of_war",
-}
-
-const SPRITE_SHADER_PATHS = {
-	"outline": "res://shaders/sprite/outline.gdshader",
-	"glow": "res://shaders/sprite/glow.gdshader",
-	"tint": "res://shaders/sprite/tint.gdshader",
-	"flash": "res://shaders/sprite/flash.gdshader",
-	"pixelate": "res://shaders/sprite/pixelate.gdshader",
-	"posterize": "res://shaders/sprite/posterize.gdshader",
-	"silhouette": "res://shaders/sprite/silhouette.gdshader",
-	"rainbow": "res://shaders/sprite/rainbow.gdshader",
-	"dissolve": "res://shaders/sprite/dissolve.gdshader",
-	"holographic": "res://shaders/sprite/holographic.gdshader",
-	"wave": "res://shaders/sprite/wave.gdshader",
-	"rim_light": "res://shaders/sprite/rim_light.gdshader",
-	"color_matrix": "res://shaders/sprite/color_matrix.gdshader",
-	"inner_glow": "res://shaders/sprite/inner_glow.gdshader",
-	"drop_shadow": "res://shaders/sprite/drop_shadow.gdshader",
-}
-
-const POST_SHADER_PATHS = {
-	"vignette": "res://shaders/post_process/vignette.gdshader",
-	"bloom": "res://shaders/post_process/bloom.gdshader",
-	"night_vision": "res://shaders/post_process/night_vision.gdshader",
-	"speed_lines": "res://shaders/post_process/speed_lines.gdshader",
-	"underwater": "res://shaders/post_process/underwater.gdshader",
-	"halftone": "res://shaders/post_process/halftone.gdshader",
-	"old_film": "res://shaders/post_process/old_film.gdshader",
-	"thermal_vision": "res://shaders/post_process/thermal_vision.gdshader",
-	"ascii": "res://shaders/post_process/ascii.gdshader",
-	"ripple": "res://shaders/post_process/ripple.gdshader",
-	"fog_of_war": "res://shaders/post_process/fog_of_war.gdshader",
-	"scanlines": "res://shaders/post_process/scanlines.gdshader",
-	"chromatic_aberration": "res://shaders/post_process/chromatic_aberration.gdshader",
-	"shockwave": "res://shaders/post_process/shockwave.gdshader",
-	"blur": "res://shaders/post_process/blur.gdshader",
-	"crt": "res://shaders/post_process/crt.gdshader",
-	"color_grading": "res://shaders/post_process/color_grading.gdshader",
-	"color_grade": "res://shaders/post_process/color_grading.gdshader",
-	"glitch": "res://shaders/post_process/glitch.gdshader",
-	"motion_blur": "res://shaders/post_process/motion_blur.gdshader",
-	"pixelate_screen": "res://shaders/post_process/pixelate_screen.gdshader",
-	"shimmer": "res://shaders/post_process/shimmer.gdshader",
-}
-
 var _state: State = State.IDLE
 var _plan: Dictionary = {}
 var _resource_graph: EffectsResourceGraph = null
@@ -571,40 +497,13 @@ func _resolve_shader(pass_data: Dictionary) -> Shader:
 		return _build_custom_shader(glsl)
 
 	if source_type == "builtin":
-		var effect_type: String = str(shader_source.get("effectType", ""))
-		if not EFFECT_TYPE_TO_SHADER.has(effect_type):
+		var glsl: String = str(shader_source.get("glsl", ""))
+		if glsl == "":
+			push_error("[EffectsGraphExecutor] Builtin shader missing GLSL code")
 			return null
-		var shader_name: String = EFFECT_TYPE_TO_SHADER[effect_type]
-		var shader_path: String = _resolve_builtin_shader_path(shader_name)
-		if shader_path == "":
-			return null
-		
-		# Use shader warmer if available, otherwise fallback to direct load
-		if _shader_warmer != null:
-			var shader = _shader_warmer.get_warmed_shader(shader_path)
-			if shader is Shader:
-				return shader
-		else:
-			var shader = load(shader_path)
-			if shader is Shader:
-				return shader
+		return _build_custom_shader(glsl)
 
 	return null
-
-func _resolve_builtin_shader_path(shader_name: String) -> String:
-	var scope: String = str(_plan.get("scope", "screen"))
-	if scope == "entity":
-		if SPRITE_SHADER_PATHS.has(shader_name):
-			return SPRITE_SHADER_PATHS[shader_name]
-		if POST_SHADER_PATHS.has(shader_name):
-			return POST_SHADER_PATHS[shader_name]
-		return ""
-
-	if POST_SHADER_PATHS.has(shader_name):
-		return POST_SHADER_PATHS[shader_name]
-	if SPRITE_SHADER_PATHS.has(shader_name):
-		return SPRITE_SHADER_PATHS[shader_name]
-	return ""
 
 func _build_custom_shader(glsl: String) -> Shader:
 	# Use shader warmer if available for custom shaders (caches by hash)

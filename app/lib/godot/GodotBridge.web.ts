@@ -1371,6 +1371,10 @@ export function createWebGodotBridge(): GodotBridge {
         snapshot: createEffectsSnapshotPayload(snapshot),
       });
     },
+
+    effectsUpdateParams(passId: string, params: Record<string, number | boolean | string>) {
+      getGodotBridge()?.query?.('effects_update_params', 'effects.updateParams', JSON.stringify({ passId, params }));
+    },
   };
 
   return bridge;

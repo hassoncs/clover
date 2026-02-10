@@ -253,6 +253,9 @@ export interface GodotBridge extends EffectsBridge {
   initialize(): Promise<void>;
   dispose(): void;
   
+  // Effects hot-path (convenience wrapper for updateParams)
+  effectsUpdateParams(passId: string, params: Record<string, number | boolean | string>): void;
+  
   // Normalized coordinate drawing
   drawToActiveBuffer(entityId: string, commands: NormalizedDrawCommand[]): void;
 

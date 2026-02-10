@@ -161,7 +161,7 @@ describe('CompiledPlan', () => {
 
     const pass: CompiledPass = {
       id: 'pass-blur',
-      shaderSource: { type: 'builtin', effectType: 'blur' },
+      shaderSource: { glsl: 'shader_type canvas_item;\nvoid fragment() { COLOR = vec4(1.0); }' },
       requires: [resource],
       provides: [{ id: 'tex-output', type: 'buffer', format: 'rgba16f', resolution: 'half' }],
       params: { radius: 5 },

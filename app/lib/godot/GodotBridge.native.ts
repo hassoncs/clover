@@ -1132,6 +1132,10 @@ export function createNativeGodotBridge(): GodotBridge {
     setScreenInput(enable: boolean) {
       callGameBridge('set_screen_input', enable);
     },
+
+    effectsUpdateParams(passId: string, params: Record<string, number | boolean | string>) {
+      callGameBridge('handle_request', 'effects_update_params', 'effects.updateParams', JSON.stringify({ passId, params }));
+    },
   };
 
   return bridge;

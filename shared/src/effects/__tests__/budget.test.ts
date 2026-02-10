@@ -18,7 +18,7 @@ function makeResourceRef(overrides: Partial<ResourceRef> & { id: string }): Reso
 
 function makePass(overrides: Partial<CompiledPass> & { id: string }): CompiledPass {
   return {
-    shaderSource: { type: 'builtin', effectType: 'bloom' },
+    shaderSource: { glsl: 'shader_type canvas_item;\nvoid fragment() { COLOR = vec4(1.0); }' },
     requires: [],
     provides: [makeResourceRef({ id: `${overrides.id}-out` })],
     params: {},

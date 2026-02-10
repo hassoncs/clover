@@ -11,6 +11,7 @@ import type { PlatformTier } from './types';
 import { validateGraph } from './validator';
 import { buildResourceGraph } from './resources';
 import type { ResourceGraph, ResourceNode } from './resources';
+import { getShaderGlsl } from './shaderLibrary';
 
 // ---------------------------------------------------------------------------
 // Public API types
@@ -198,6 +199,15 @@ function toResourceRef(node: ResourceNode): ResourceRef {
 }
 
 // ---------------------------------------------------------------------------
+// Shader source resolution — builtin effectType → inline GLSL
+// ---------------------------------------------------------------------------
+
+function resolveShaderSource(node: EffectNode): ShaderSource {
+  const glsl = getShaderGlsl(node.type);
+  return { glsl: glsl || '' };
+}
+
+// ---------------------------------------------------------------------------
 // Compiled pass builder
 // ---------------------------------------------------------------------------
 
@@ -227,7 +237,7 @@ function buildCompiledPass(
   requires.sort((a, b) => a.id.localeCompare(b.id));
   provides.sort((a, b) => a.id.localeCompare(b.id));
 
-  const shaderSource: ShaderSource = { type: 'custom', glsl: '' };
+  const shaderSource: ShaderSource = resolveShaderSource(node);
 
   return {
     id: node.id,

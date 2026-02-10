@@ -40,9 +40,9 @@ export interface UniformDeclaration {
   defaultValue?: number | number[] | string | boolean;
 }
 
-export type ShaderSource =
-  | { type: 'builtin'; effectType: EffectType }
-  | { type: 'custom'; glsl: string };
+export type ShaderSource = {
+  glsl: string;
+};
 
 export type PersistenceMode = 'none' | 'pingPong';
 
@@ -101,6 +101,26 @@ export interface OutputTarget {
 export type ParamValue = number | string | boolean | number[];
 
 // ---------------------------------------------------------------------------
+// Parameter schema — unified metadata for UI and compilation
+// ---------------------------------------------------------------------------
+
+export interface EffectParamSchema {
+  key: string;
+  uniformName: string;
+  type: UniformType;
+  defaultValue: ParamValue;
+  ui?: {
+    displayName: string;
+    category?: string;
+    min?: number;
+    max?: number;
+    step?: number;
+    options?: string[];
+    description?: string;
+  };
+}
+
+// ---------------------------------------------------------------------------
 // EffectNode — atomic unit of the graph
 // ---------------------------------------------------------------------------
 
@@ -110,6 +130,7 @@ export interface EffectNode {
   family: NodeFamily;
   inputSlots: InputSlot[];
   params: Record<string, ParamValue>;
+  paramsSchema?: EffectParamSchema[];
   outputTarget: OutputTarget;
   outputs?: Array<{
     name: string;

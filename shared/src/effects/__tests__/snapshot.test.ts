@@ -27,7 +27,7 @@ function makePlan(overrides: Partial<CompiledPlan> = {}): CompiledPlan {
     passes: [
       {
         id: 'pass-a',
-        shaderSource: { type: 'builtin', effectType: 'glow' },
+        shaderSource: { glsl: 'shader_type canvas_item;\nvoid fragment() { COLOR = vec4(1.0); }' },
         requires: [],
         provides: [],
         params: { intensity: 0.5 },
@@ -38,7 +38,7 @@ function makePlan(overrides: Partial<CompiledPlan> = {}): CompiledPlan {
       },
       {
         id: 'pass-b',
-        shaderSource: { type: 'builtin', effectType: 'blur' },
+        shaderSource: { glsl: 'shader_type canvas_item;\nvoid fragment() { COLOR = vec4(1.0); }' },
         requires: [],
         provides: [],
         params: { blur: 2 },

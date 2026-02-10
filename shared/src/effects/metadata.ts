@@ -2,10 +2,13 @@
 // Effect Metadata — UI parameter definitions for test page
 // ---------------------------------------------------------------------------
 
-import type { EffectType } from './types';
+import type { EffectType, EffectParamSchema, UniformType } from './types';
 
 export type EffectCategory = 'glow' | 'distortion' | 'color' | 'postProcess' | 'artistic';
 
+/**
+ * @deprecated Use EffectParamSchema from types.ts instead
+ */
 export interface EffectParamMeta {
   key: string;
   type: 'number' | 'color' | 'boolean' | 'select';
@@ -379,3 +382,38 @@ export const EFFECT_METADATA: Record<EffectType, EffectMetadata> = {
     },
   },
 };
+
+function mapParamMetaTypeToUniformType(type: EffectParamMeta['type']): UniformType {
+  switch (type) {
+    case 'number':
+      return 'float';
+    case 'color':
+      return 'color';
+    case 'boolean':
+      return 'bool';
+    case 'select':
+      return 'int';
+    default:
+      return 'float';
+  }
+}
+
+export function convertEffectParamMetaToSchema(meta: EffectParamMeta): EffectParamSchema {
+  return {
+    key: meta.key,
+    uniformName: `u_${meta.key}`,
+    type: mapParamMetaTypeToUniformType(meta.type),
+    defaultValue: meta.defaultValue,
+    ui: {
+      displayName: meta.displayName,
+      min: meta.min,
+      max: meta.max,
+      step: meta.step,
+      options: meta.options,
+    },
+  };
+}
+
+export function convertEffectMetadataToSchemas(metadata: EffectMetadata): EffectParamSchema[] {
+  return metadata.params.map(convertEffectParamMetaToSchema);
+}

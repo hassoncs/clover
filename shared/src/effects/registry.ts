@@ -1,9 +1,12 @@
-import type { QualityTier } from './types';
+import type { QualityTier, EffectParamSchema, ParamValue } from './types';
 
 // ---------------------------------------------------------------------------
 // Package manifest
 // ---------------------------------------------------------------------------
 
+/**
+ * @deprecated Use EffectParamSchema from types.ts instead
+ */
 export interface ParamSummary {
   name: string;
   type: 'float' | 'int' | 'vec2' | 'vec3' | 'vec4' | 'color' | 'bool';
@@ -39,12 +42,12 @@ export interface NodeTypeRegistration {
   inputSlots: { name: string; dataType: string; required: boolean }[];
   outputType: 'texture';
   defaultParams: Record<string, unknown>;
-  paramsSchema: {
+  paramsSchema: Array<{
     name: string;
     type: string;
     range?: { min: number; max: number };
     defaultValue: unknown;
-  }[];
+  }>;
   tags: string[];
   performanceTier: QualityTier;
   constraints: {
@@ -228,4 +231,20 @@ export class ManifestRegistry {
 
     return score;
   }
+}
+
+export function convertRegistrationParamsToEffectParamSchema(
+  reg: NodeTypeRegistration,
+): EffectParamSchema[] {
+  return reg.paramsSchema.map((param) => ({
+    key: param.name,
+    uniformName: `u_${param.name}`,
+    type: param.type as EffectParamSchema['type'],
+    defaultValue: param.defaultValue as ParamValue,
+    ui: {
+      displayName: param.name,
+      min: param.range?.min,
+      max: param.range?.max,
+    },
+  }));
 }

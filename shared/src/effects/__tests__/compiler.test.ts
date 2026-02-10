@@ -545,6 +545,33 @@ describe('compileGraph', () => {
     });
   });
 
+  describe('inline GLSL generation', () => {
+    it('generates inline GLSL for builtin effects', () => {
+      const graph = makeGraph({
+        nodes: [
+          makeGenerator('gen'),
+          makeNode({ id: 'blur', type: 'blur' }),
+        ],
+        connections: [
+          { from: { nodeId: 'gen', output: 'gen-out' }, to: { nodeId: 'blur', input: 'input' } },
+        ],
+      });
+      
+      const result = compileGraph(graph);
+      expect(result.success).toBe(true);
+      
+      // Check that blur pass has inline GLSL
+      const blurPass = result.plan!.passes.find((p) => p.id === 'blur')!;
+      expect(blurPass.shaderSource.glsl).toBeDefined();
+      expect(blurPass.shaderSource.glsl).toContain('shader_type');
+      expect(blurPass.shaderSource.glsl).not.toContain('.gdshader');
+      
+      // Verify no builtin references
+      expect(blurPass.shaderSource).not.toHaveProperty('type');
+      expect(blurPass.shaderSource).not.toHaveProperty('effectType');
+    });
+  });
+
   describe('metadata', () => {
     it('populates graphId, graphVersion, engineApiVersion', () => {
       const graph = makeGraph({

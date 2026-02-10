@@ -6,6 +6,7 @@ export type {
   InputSlot,
   OutputTarget,
   ParamValue,
+  EffectParamSchema,
   EffectNode,
   Connection,
   FeedbackEdge,
@@ -24,7 +25,7 @@ export type {
 } from './types';
 
 export type { EffectCategory, EffectParamMeta, EffectMetadata } from './metadata';
-export { EFFECT_METADATA } from './metadata';
+export { EFFECT_METADATA, convertEffectParamMetaToSchema, convertEffectMetadataToSchemas } from './metadata';
 
 export type {
   ParamSummary,
@@ -137,3 +138,5 @@ export {
 } from './catalog-api';
 
 export { getBuiltInSeeds, registerBuiltInSeeds } from './seeds/index';
+
+export { SHADER_LIBRARY, getShaderGlsl, getShaderGlslStrict, getAvailableShaderKeys } from './shaderLibrary';
