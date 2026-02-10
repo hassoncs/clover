@@ -98,6 +98,7 @@ function chatEventToMessage(event: { id: string; eventType: string; payload: Cha
 export function useCreateGameChat(threadId: string | null, gameId: string | null) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [runId, setRunId] = useState<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
   
   const eventsQuery = trpc.chatThreads.getEvents.useQuery(
     { threadId: threadId! },
@@ -157,8 +158,24 @@ export function useCreateGameChat(threadId: string | null, gameId: string | null
         }
       }
       setMessages(newMessages);
+
+      if (runId) {
+        const hasResponseForRun = sortedEvents.some(e => {
+          const p = e.payload as any;
+          const type = e.eventType as string;
+          
+          if (type === 'assistant_message' && p?.runId === runId) return true;
+          if (type === 'run_completed' && p?.runId === runId) return true;
+          if (type === 'run_failed' && p?.runId === runId) return true;
+          return false;
+        });
+
+        if (hasResponseForRun) {
+          setRunId(null);
+        }
+      }
     }
-  }, [eventsQuery.data]);
+  }, [eventsQuery.data, runId]);
 
   const sendMessage = useCallback(async (text: string, overrideThreadId?: string, overrideGameId?: string) => {
     const targetThreadId = overrideThreadId ?? threadId;
@@ -166,6 +183,7 @@ export function useCreateGameChat(threadId: string | null, gameId: string | null
 
     if (!targetThreadId || !targetGameId) return;
 
+    setIsSending(true);
     const tempId = crypto.randomUUID();
     setMessages(prev => [...prev, {
       id: tempId,
@@ -198,6 +216,8 @@ export function useCreateGameChat(threadId: string | null, gameId: string | null
         text: 'Failed to send message. Please try again.',
         timestamp: Date.now(),
       }]);
+    } finally {
+      setIsSending(false);
     }
   }, [threadId, gameId, appendUserMessageMutation, createRunMutation, startRunMutation, eventsQuery]);
 
@@ -241,6 +261,7 @@ export function useCreateGameChat(threadId: string | null, gameId: string | null
     submitUserAnswer,
     run: runId ? { status: 'running', gameId } : null,
     isRunning: !!runId,
+    isSending,
     documentContent: documentQuery.data?.content ?? null,
     pendingQuestions,
     questions,

@@ -1,4 +1,4 @@
-import { useRef, useMemo, useCallback, useState } from "react";
+import { useRef, useMemo, useCallback, useEffect } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { useEditor, type EditorTab } from "./EditorProvider";
@@ -7,9 +7,15 @@ import { PropertiesPanel } from "./panels/PropertiesPanel";
 import { DebugPanel } from "./panels/DebugPanel";
 import { AssetsPanel } from "./panels/AssetsPanel";
 import { AssetGalleryPanel } from "./AssetGallery/AssetGalleryPanel";
-import { AIGenerateModal } from "./AIGenerateModal";
+import { ChatTimeline } from "@/components/create-game/ChatTimeline";
+import { Composer } from "@/components/create-game/Composer";
+import { ThreadList } from "@/components/create-game/ThreadList";
+import { useCreateGameChat } from "@/components/create-game/useCreateGameChat";
+import { useThreads } from "@/components/create-game/useThreads";
+
 
 const TABS: { id: EditorTab; label: string }[] = [
+  { id: "chat", label: "Chat" },
   { id: "gallery", label: "Gallery" },
   { id: "assets", label: "Add" },
   { id: "properties", label: "Properties" },
@@ -25,10 +31,12 @@ export function BottomSheetHost() {
     sheetSnapPoint,
     setSheetSnapPoint,
     selectedEntityId,
+    gameId,
+    threadId,
+    setThreadId,
   } = useEditor();
 
   const sheetRef = useRef<BottomSheet>(null);
-  const [aiModalVisible, setAiModalVisible] = useState(false);
 
   const snapPoints = useMemo(() => ["12%", "50%", "90%"], []);
 
@@ -37,6 +45,40 @@ export function BottomSheetHost() {
       setSheetSnapPoint(index as 0 | 1 | 2);
     },
     [setSheetSnapPoint]
+  );
+
+  const effectiveGameId = gameId !== "preview" ? gameId : null;
+
+  const { threads, createThread, initForGame, isLoading: isThreadsLoading } = useThreads();
+
+  useEffect(() => {
+    if (effectiveGameId) {
+      initForGame(effectiveGameId);
+    }
+  }, [effectiveGameId, initForGame]);
+
+  const {
+    messages,
+    sendMessage,
+    isRunning,
+    isSending,
+    submitAnswer,
+    submitUserAnswer,
+    pendingQuestions,
+  } = useCreateGameChat(threadId ?? null, effectiveGameId);
+
+  useEffect(() => {
+    if (activeTab === "chat" && sheetSnapPoint < 2) {
+      setSheetSnapPoint(2);
+      sheetRef.current?.snapToIndex(2);
+    }
+  }, [activeTab, sheetSnapPoint, setSheetSnapPoint]);
+
+  const handleSendMessage = useCallback(
+    (text: string) => {
+      sendMessage(text, threadId ?? undefined, effectiveGameId ?? undefined);
+    },
+    [sendMessage, threadId, effectiveGameId]
   );
 
   if (mode === "playtest") {
@@ -83,26 +125,53 @@ export function BottomSheetHost() {
         })}
       </View>
 
-      <BottomSheetScrollView style={styles.content}>
-        {activeTab === "gallery" && (
-          <AssetGalleryPanel
-            onTemplatePress={(templateId) => {
-              console.log("Template pressed:", templateId);
-            }}
-          />
-        )}
-        {activeTab === "assets" && (
-          <AssetsPanel onOpenAIModal={() => setAiModalVisible(true)} />
-        )}
-        {activeTab === "properties" && <PropertiesPanel />}
-        {activeTab === "layers" && <LayersPanel />}
-        {activeTab === "debug" && <DebugPanel />}
-      </BottomSheetScrollView>
-
-      <AIGenerateModal
-        visible={aiModalVisible}
-        onClose={() => setAiModalVisible(false)}
-      />
+      {activeTab === "chat" ? (
+        threadId ? (
+          <View style={styles.chatContainer}>
+            <Pressable onPress={() => setThreadId(null)} style={styles.backButton}>
+              <Text style={styles.backButtonText}>All chats</Text>
+            </Pressable>
+            <ChatTimeline
+              messages={messages}
+              onSubmitUserAnswer={submitUserAnswer}
+              onSubmitClarification={submitAnswer}
+              onRetry={() => {}}
+              isRunning={isRunning}
+              hasPendingQuestion={!!pendingQuestions}
+            />
+            <Composer onSend={handleSendMessage} isSubmitting={isSending} />
+          </View>
+        ) : (
+          <View style={styles.threadListContainer}>
+            <ThreadList
+              threads={threads}
+              activeThreadId={null}
+              onSelect={(id) => setThreadId(id)}
+              onCreateNew={async () => {
+                if (effectiveGameId) {
+                  const newThreadId = await createThread(effectiveGameId);
+                  setThreadId(newThreadId);
+                }
+              }}
+              isLoading={isThreadsLoading}
+            />
+          </View>
+        )
+      ) : (
+        <BottomSheetScrollView style={styles.content}>
+          {activeTab === "gallery" && (
+            <AssetGalleryPanel
+              onTemplatePress={(templateId) => {
+                console.log("Template pressed:", templateId);
+              }}
+            />
+          )}
+          {activeTab === "assets" && <AssetsPanel />}
+          {activeTab === "properties" && <PropertiesPanel />}
+          {activeTab === "layers" && <LayersPanel />}
+          {activeTab === "debug" && <DebugPanel />}
+        </BottomSheetScrollView>
+      )}
     </BottomSheet>
   );
 }
@@ -145,5 +214,22 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  chatContainer: {
+    flex: 1,
+  },
+  threadListContainer: {
+    flex: 1,
+  },
+  backButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#374151",
+  },
+  backButtonText: {
+    color: "#6366F1",
+    fontSize: 13,
+    fontWeight: "500",
   },
 });
