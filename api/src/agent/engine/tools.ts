@@ -11,14 +11,14 @@ export interface StageExecutionContext {
   runId: string;
   stepId: string;
   stepIndex: number;
-  stage: 'planning' | 'build' | 'refine' | 'theme' | 'asset';
+  stage: 'planning' | 'build' | 'refine' | 'theme' | 'asset' | 'chat';
   userPrompt?: string;
   planningDoc: string;
   gameDefinition: GameDefinition | null;
   gameId?: string;
   templates: string[];
   existingGames: Array<{ id: string; title: string; summary?: string }>;
-  previousOutputs: Partial<Record<'planning' | 'build' | 'refine' | 'theme' | 'asset', unknown>>;
+  previousOutputs: Partial<Record<'planning' | 'build' | 'refine' | 'theme' | 'asset' | 'chat', unknown>>;
   artifactService?: ArtifactService;
 }
 
@@ -250,6 +250,48 @@ export function createStageTools(context: StageExecutionContext) {
           ok: true,
           planningDoc: context.planningDoc,
         };
+      },
+    }),
+
+    readFile: tool({
+      description: 'Read a file from the workspace. Returns the current content of the file.',
+      inputSchema: z.object({
+        filename: z.string().min(1).describe('The filename to read (e.g., "document.md", "notes.txt")'),
+      }),
+      execute: async ({ filename }) => {
+        if (!context.artifactService) {
+          return { ok: false, error: 'Storage not available' };
+        }
+        const result = await context.artifactService.readStepArtifact({
+          runId: context.runId,
+          stepIndex: context.stepIndex,
+          filename,
+        });
+        if (!result) {
+          return { ok: true, exists: false, content: null };
+        }
+        return { ok: true, exists: true, content: result.data };
+      },
+    }),
+
+    writeFile: tool({
+      description: 'Write content to a file in the workspace. Creates or overwrites the file.',
+      inputSchema: z.object({
+        filename: z.string().min(1).describe('The filename to write (e.g., "document.md", "notes.txt")'),
+        content: z.string().describe('The full content to write to the file'),
+      }),
+      execute: async ({ filename, content }) => {
+        if (!context.artifactService) {
+          return { ok: false, error: 'Storage not available' };
+        }
+        const { key } = await context.artifactService.storeStepArtifact({
+          runId: context.runId,
+          stepIndex: context.stepIndex,
+          filename,
+          data: content,
+          contentType: 'text/plain',
+        });
+        return { ok: true, key, bytesWritten: content.length };
       },
     }),
 

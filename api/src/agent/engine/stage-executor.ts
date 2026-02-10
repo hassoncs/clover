@@ -74,7 +74,7 @@ function extractUsage(usage: unknown): StageUsage {
 }
 
 function getStageOutput(stage: AgentStepStage, context: StageExecutionContext): unknown {
-  if (stage === 'planning') {
+  if (stage === 'planning' || stage === 'chat') {
     return context.planningDoc;
   }
   return context.gameDefinition;
@@ -94,6 +94,10 @@ function createPrompt(stage: AgentStepStage, context: StageExecutionContext): st
 
   if (stage === 'planning') {
     return `${baseContext.join('\n')}\n\nUpdate the planning document using tools. Return a short completion note.`;
+  }
+
+  if (stage === 'chat') {
+    return `${baseContext.join('\n')}\n\nRespond to the user and use tools as needed to read or write shared documents.`;
   }
 
   return `${baseContext.join('\n')}\n\nUse tools to produce a valid updated GameDefinition for this stage. Return a short completion note.`;

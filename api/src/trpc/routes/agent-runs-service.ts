@@ -33,7 +33,7 @@ export interface AgentStepRow {
   id: string;
   run_id: string;
   step_index: number;
-  stage: 'planning' | 'build' | 'refine' | 'theme' | 'asset';
+  stage: 'planning' | 'build' | 'refine' | 'theme' | 'asset' | 'chat';
   status: 'queued' | 'running' | 'succeeded' | 'failed' | 'skipped';
   input_hash: string | null;
   output_artifact_key: string | null;

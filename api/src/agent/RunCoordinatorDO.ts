@@ -796,7 +796,8 @@ export class RunCoordinatorDO extends DurableObject<Env> {
     });
 
     if (result.ok) {
-      if (this.state.currentStepIndex === 0 && this.state.rawPrompt !== null) {
+      const stage = this.getStage(this.state.currentStepIndex);
+      if (this.state.currentStepIndex === 0 && this.state.rawPrompt !== null && stage === 'planning') {
         this.ctx.waitUntil(this.runGateLoop());
       } else {
         this.ctx.waitUntil(this.dispatchNextStep());
@@ -1327,7 +1328,7 @@ export class RunCoordinatorDO extends DurableObject<Env> {
     const stepId = `${this.state.runId}:step:${stepIndex}`;
     const stage: RunStepRequest['stage'] = this.getStage(stepIndex);
 
-    if (stepIndex === 0 && this.state.rawPrompt !== null) {
+    if (stepIndex === 0 && this.state.rawPrompt !== null && stage === 'planning') {
       await this.runGateLoop();
       return;
     }

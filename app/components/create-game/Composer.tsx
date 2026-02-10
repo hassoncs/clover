@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, TextInput, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, TextInput, Pressable, StyleSheet, ActivityIndicator, Platform, type NativeSyntheticEvent, type TextInputKeyPressEventData } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 interface Props {
@@ -10,11 +10,20 @@ interface Props {
 export function Composer({ onSend, isSubmitting }: Props) {
   const [text, setText] = useState('');
 
-  const handleSend = () => {
+  const handleSend = useCallback(() => {
     if (!text.trim() || isSubmitting) return;
     onSend(text.trim());
     setText('');
-  };
+  }, [text, isSubmitting, onSend]);
+
+  const handleKeyPress = useCallback((e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+    if (Platform.OS !== 'web') return;
+    const nativeEvent = e.nativeEvent as TextInputKeyPressEventData & { shiftKey?: boolean };
+    if (nativeEvent.key === 'Enter' && !nativeEvent.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  }, [handleSend]);
 
   const isDisabled = !text.trim() || isSubmitting;
 
@@ -24,13 +33,13 @@ export function Composer({ onSend, isSubmitting }: Props) {
         style={styles.input}
         value={text}
         onChangeText={setText}
-        placeholder="Describe your game idea..."
+        placeholder="Describe what you'd like to create..."
         placeholderTextColor="#71717A"
         multiline
         maxLength={1000}
-        onSubmitEditing={handleSend}
+        onKeyPress={handleKeyPress}
         blurOnSubmit={false}
-        accessibilityLabel="Game description"
+        accessibilityLabel="Message input"
       />
       <Pressable
         onPress={handleSend}

@@ -350,7 +350,7 @@ export const assetPacksRouter = router({
       return { success: true };
     }),
 
-  getResolvedForGame: protectedProcedure
+  getResolvedForGame: publicProcedure
     .input(z.object({
       gameId: z.string(),
       packId: z.string(),
@@ -392,20 +392,26 @@ export const assetPacksRouter = router({
       };
     }),
 
-  getCompatiblePacks: protectedProcedure
+  getCompatiblePacks: publicProcedure
     .input(z.object({ gameId: z.string() }))
     .query(async ({ ctx, input }) => {
       const gameRow = await ctx.env.DB.prepare(
-        'SELECT id, base_game_id, definition FROM games WHERE id = ? AND deleted_at IS NULL'
-      ).bind(input.gameId).first<GameRowForAssets>();
+        'SELECT id, base_game_id, r2_prefix FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(input.gameId).first<{ id: string; base_game_id: string | null; r2_prefix: string }>();
 
       if (!gameRow) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
       }
 
+      const defKey = `${gameRow.r2_prefix}/definition.json`;
+      const defObj = await ctx.env.ASSETS.get(defKey);
+      if (!defObj) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game definition not found' });
+      }
+
       let definition: { templates?: Record<string, unknown> };
       try {
-        definition = JSON.parse(gameRow.definition);
+        definition = JSON.parse(await defObj.text());
       } catch {
         throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Invalid game definition' });
       }

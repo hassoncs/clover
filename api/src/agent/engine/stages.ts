@@ -7,6 +7,7 @@ import type { GameDefinition } from '@slopcade/shared/types/GameDefinition';
 import {
   ASSET_STAGE_PROMPT,
   BUILD_STAGE_PROMPT,
+  CHAT_STAGE_PROMPT,
   PLANNING_STAGE_PROMPT,
   REFINE_STAGE_PROMPT,
   THEME_STAGE_PROMPT,
@@ -96,6 +97,15 @@ export const assetStage: StageConfig = {
   validateOutput: validateGameOutput,
 };
 
+export const chatStage: StageConfig = {
+  stage: 'chat',
+  displayName: 'Chat',
+  systemPrompt: CHAT_STAGE_PROMPT,
+  tools: EMPTY_TOOLS,
+  maxRetries: 1,
+  validateOutput: () => ({ valid: true }),
+};
+
 export const STAGE_PIPELINE: StageConfig[] = [
   planningStage,
   buildStage,
@@ -105,7 +115,7 @@ export const STAGE_PIPELINE: StageConfig[] = [
 ];
 
 export function getStageConfig(stage: AgentStepStage, tools: Record<string, CoreTool>): StageConfig {
-  const base = STAGE_PIPELINE.find(item => item.stage === stage);
+  const base = [chatStage, ...STAGE_PIPELINE].find(item => item.stage === stage);
   if (!base) {
     throw new Error(`Unknown stage: ${stage}`);
   }

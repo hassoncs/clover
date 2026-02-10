@@ -94,8 +94,11 @@ export function transitionStatus(state: RunState, nextStatus: AgentRunStatus): v
 }
 
 export function getStage(stepIndex: number): RunStepRequest['stage'] {
+  if (stepIndex === 0) {
+    return 'chat';
+  }
   const order: RunStepRequest['stage'][] = ['planning', 'build', 'refine', 'theme', 'asset'];
-  return order[stepIndex % order.length];
+  return order[(stepIndex - 1) % order.length];
 }
 
 export function toSnapshot(state: RunState): AgentRunSnapshot {

@@ -2,7 +2,6 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
 import { ArtifactManager } from '@/ai/agent/artifact-manager';
-import { isAIEditingEnabled } from '@/ai/agent/feature-flags';
 import { AgentRunReconciliationService } from '@/ai/agent/reconciliation';
 import { estimateRunCost, resolveTierConfig } from '@/ai/agent/tier-config';
 import { GameDefinitionSchema } from '@/ai/game/schemas';
@@ -20,7 +19,6 @@ import {
   type AgentStepRow,
   type AgentEventRow,
   type GameOwnerRow,
-  STAGES,
   toRun,
   toStep,
   toEvent,
@@ -51,13 +49,6 @@ export const agentRunsRouter = router({
         })
     )
     .mutation(async ({ ctx, input }) => {
-      if (!isAIEditingEnabled(ctx.user.id, ctx.env)) {
-        throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'AI editing is not enabled for your account',
-        });
-      }
-
       const flags = getAgentFeatureFlags(ctx.env);
       const activeRunsResult = await ctx.env.DB
         .prepare(
@@ -89,7 +80,9 @@ export const agentRunsRouter = router({
       }
 
       resolveTierConfig(input.tier);
-      const estimatedCost = estimateRunCost(input.tier, STAGES.length);
+      const totalSteps = 1;
+      const runStages: AgentStepRow['stage'][] = ['chat'];
+      const estimatedCost = estimateRunCost(input.tier, totalSteps);
       const now = Date.now();
       const runId = crypto.randomUUID();
 
@@ -108,20 +101,20 @@ export const agentRunsRouter = router({
           input.sourceGameId ?? null,
           input.tier,
           estimatedCost.totalMicros,
-          STAGES.length,
+          totalSteps,
           now,
           now
         )
         .run();
 
-      for (let stepIndex = 0; stepIndex < STAGES.length; stepIndex += 1) {
+      for (let stepIndex = 0; stepIndex < runStages.length; stepIndex += 1) {
         await ctx.env.DB.prepare(
           `INSERT INTO agent_steps (
             id, run_id, step_index, stage, status,
             input_hash, output_artifact_key, cost_micros, error_message, created_at, started_at, finished_at
           ) VALUES (?, ?, ?, ?, 'queued', NULL, NULL, 0, NULL, ?, NULL, NULL)`
         )
-          .bind(crypto.randomUUID(), runId, stepIndex, STAGES[stepIndex], now)
+          .bind(crypto.randomUUID(), runId, stepIndex, runStages[stepIndex], now)
           .run();
       }
 
@@ -224,6 +217,7 @@ export const agentRunsRouter = router({
         throw new TRPCError({ code: 'PRECONDITION_FAILED', message: 'Run must be in planning status to start' });
       }
 
+      const totalSteps = 1;
       const gatesConfigYaml = `gates:
   - id: core_game_loop
     label: Core Game Loop
@@ -245,27 +239,29 @@ export const agentRunsRouter = router({
     description: What type of game is this? (e.g., "Match-3 puzzle", "Physics platformer", "Endless runner")
     required: true`;
 
-      const gatesConfig = loadGatesConfig(gatesConfigYaml);
-      const validation = validatePlanningDoc(run.planning_doc_json, gatesConfig);
+      if (totalSteps > 1) {
+        const gatesConfig = loadGatesConfig(gatesConfigYaml);
+        const validation = validatePlanningDoc(run.planning_doc_json, gatesConfig);
 
-      if (!validation.valid) {
-        console.log('[agent-runs] Gate validation failed', {
-          runId: run.id,
-          userId: ctx.user.id,
-          missingFields: validation.missingFields.map((f) => f.id),
-        });
+        if (!validation.valid) {
+          console.log('[agent-runs] Gate validation failed', {
+            runId: run.id,
+            userId: ctx.user.id,
+            missingFields: validation.missingFields.map((f) => f.id),
+          });
 
-        throw new TRPCError({
-          code: 'PRECONDITION_FAILED',
-          message: 'Planning document is incomplete. Please fill in all required fields before starting.',
-          cause: {
-            missingFields: validation.missingFields,
-          },
-        });
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: 'Planning document is incomplete. Please fill in all required fields before starting.',
+            cause: {
+              missingFields: validation.missingFields,
+            },
+          });
+        }
       }
 
       const estimatedCostMicros =
-        run.estimated_cost_micros ?? estimateRunCost(run.tier, run.total_steps || STAGES.length).totalMicros;
+        run.estimated_cost_micros ?? estimateRunCost(run.tier, totalSteps).totalMicros;
 
       const billing = new AgentBillingService(ctx.env.DB, new WalletService(ctx.env.DB));
       const reservation = await billing.reserveBudget({
@@ -286,7 +282,7 @@ export const agentRunsRouter = router({
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          totalSteps: run.total_steps || STAGES.length,
+          totalSteps,
           rawPrompt: run.planning_doc_json,
         }),
       });

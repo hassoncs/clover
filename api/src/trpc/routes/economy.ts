@@ -176,15 +176,21 @@ export const economyRouter = router({
     }))
     .query(async ({ ctx, input }) => {
       const game = await ctx.env.DB
-        .prepare('SELECT definition FROM games WHERE id = ? AND (user_id = ? OR is_public = 1)')
+        .prepare('SELECT r2_prefix FROM games WHERE id = ? AND (user_id = ? OR is_public = 1)')
         .bind(input.gameId, ctx.user.id)
-        .first<{ definition: string }>();
-      
+        .first<{ r2_prefix: string }>();
+
       if (!game) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
       }
-      
-      const definition = JSON.parse(game.definition);
+
+      const defKey = `${game.r2_prefix}/definition.json`;
+      const defObj = await ctx.env.ASSETS.get(defKey);
+      if (!defObj) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game definition not found' });
+      }
+
+      const definition = JSON.parse(await defObj.text());
       const estimate = estimateGameAssetCost(definition, {
         regenerateAll: input.regenerateAll,
         specificTemplates: input.specificTemplates,
