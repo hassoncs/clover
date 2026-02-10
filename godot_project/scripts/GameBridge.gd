@@ -356,15 +356,16 @@ func _build_method_map() -> void:
 		print("[GameBridge][REGISTRY] Built method map with ", _method_map.size(), " methods")
 		print("[GameBridge][REGISTRY] Auto-registered from modules, manual overrides applied")
 
-func native_dispatch(method_name: String, args_json: String) -> Variant:
-	print("[GameBridge][DISPATCH] ", method_name, " args=", args_json.substr(0, 200))
-
-	# Error: Unknown method
+func dispatch_raw(method_name: String, args: Array) -> Variant:
 	if not _method_map.has(method_name):
 		push_warning("[GameBridge] Unknown native method: " + method_name)
 		return {"error": "unknown_method", "method": method_name}
+	return _method_map[method_name].call(args)
 
-	# Parse args with error handling
+func native_dispatch(method_name: String, args_json: String) -> Variant:
+	if not _method_map.has(method_name):
+		push_warning("[GameBridge] Unknown native method: " + method_name)
+		return {"error": "unknown_method", "method": method_name}
 	var args: Array = []
 	if args_json != "[]" and args_json != "":
 		var json = JSON.new()
@@ -372,12 +373,7 @@ func native_dispatch(method_name: String, args_json: String) -> Variant:
 			push_warning("[GameBridge] Invalid JSON in args: " + args_json.substr(0, 100))
 			return {"error": "invalid_json", "message": json.get_error_message()}
 		args = json.data if json.data is Array else [json.data]
-
-	# Call method with error handling
-	var result = _method_map[method_name].call(args)
-	if method_name == "load_game_json":
-		print("[GameBridge][DISPATCH] load_game_json returned: ", result)
-	return result
+	return _method_map[method_name].call(args)
 
 func _input(event: InputEvent) -> void:
 	if not _input_router: return
@@ -406,11 +402,10 @@ func _setup_js_bridge() -> void:
 	_query_system.setup_js_bridge(_js_bridge_obj)
 	_js_callbacks.clear()
 
-	# Generate web callbacks from unified _method_map registry
 	for method_name in _method_map:
 		var js_name = _to_camel_case(method_name)
 		var cb = JavaScriptBridge.create_callback(
-			func(args): return native_dispatch(method_name, JSON.stringify(args))
+			func(args): return dispatch_raw(method_name, args)
 		)
 		_js_callbacks.append(cb)
 		_js_bridge_obj[js_name] = cb

@@ -14,6 +14,7 @@ var _seed_feedback_on_next_frame: bool = false
 var _viewport_pool: ViewportPool = null
 var _shader_warmer: ShaderWarmer = null
 var _buffer_registry: Dictionary = {}  # name -> texture
+var _injected_feedback_tex: Texture2D = null
 
 func _ready() -> void:
 	set_process(false)
@@ -89,7 +90,6 @@ func clear() -> void:
 
 	_plan = {}
 	_plan_hash = ""
-	_buffer_registry.clear()
 	_transition_to(State.IDLE)
 
 func update_params(pass_id: String, params: Dictionary) -> Dictionary:
@@ -132,8 +132,6 @@ func start() -> void:
 		# everything uniformly.
 		_seed_feedback_on_next_frame = true
 
-	# Also seed on initial start from READY — the ping-pong viewports
-	# are empty on first run too.
 	if _state == State.READY:
 		_seed_feedback_on_next_frame = true
 
@@ -290,8 +288,6 @@ func _process(delta: float) -> void:
 
 		var pass_data: Dictionary = entry.get("pass_data", {})
 
-		# Swap FIRST — the previous write viewport just rendered,
-		# so it becomes the new read source.
 		_ping_pong_manager.swap(ping_pong_buffer)
 		_ping_pong_manager.clear_draw_container(ping_pong_buffer)
 
@@ -299,22 +295,16 @@ func _process(delta: float) -> void:
 		var read_tex: Texture2D = _ping_pong_manager.get_read_texture(ping_pong_buffer)
 
 		if read_tex != null:
-			# Determine which material belongs to the NEW write viewport.
-			# Only set the feedback texture on this material to prevent
-			# a feedback loop (reading from a viewport we are writing to).
 			var write_material: ShaderMaterial = null
 			if write_vp == entry.get("viewport_a"):
 				write_material = entry.get("material_a")
 			else:
 				write_material = entry.get("material_b")
 
-			# On the first frame after reset, the read viewport is empty.
-			# Use the entity texture as feedback instead, so the shader
-			# sees current canvas content in both inputs and evolves
-			# everything — not just newly-drawn pixels.
 			var feedback_tex: Texture2D = read_tex
-			if _seed_feedback_on_next_frame:
-				# Check buffer registry for pixel buffer
+			if _injected_feedback_tex != null:
+				feedback_tex = _injected_feedback_tex
+			elif _seed_feedback_on_next_frame:
 				var pixel_buffer_tex: Texture2D = _buffer_registry.get("pixelBuffer")
 				if pixel_buffer_tex != null:
 					feedback_tex = pixel_buffer_tex
@@ -348,6 +338,8 @@ func _process(delta: float) -> void:
 
 	if _seed_feedback_on_next_frame:
 		_seed_feedback_on_next_frame = false
+	if _injected_feedback_tex != null:
+		_injected_feedback_tex = null
 
 func _build_passes(passes: Array) -> bool:
 	if not (passes is Array):

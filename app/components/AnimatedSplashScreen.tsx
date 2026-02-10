@@ -66,31 +66,34 @@ export function AnimatedSplashScreen({
     }
   }, [isAppReady, scaleAnim, opacityAnim, translateYAnim, contentOpacityAnim, onAnimationComplete]);
 
-  if (isSplashAnimationComplete) {
-    return <>{children}</>;
-  }
-
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.content, { opacity: contentOpacityAnim }]}>
+      <Animated.View
+        style={[
+          styles.content,
+          !isSplashAnimationComplete && { opacity: contentOpacityAnim },
+        ]}
+      >
         {children}
       </Animated.View>
 
-      <Animated.View
-        style={[
-          styles.splashOverlay,
-          {
-            opacity: opacityAnim,
-            transform: [{ scale: scaleAnim }, { translateY: translateYAnim }],
-          },
-        ]}
-      >
-        <Image
-          source={require("../assets/splash.jpg")}
-          style={styles.splashImage}
-          resizeMode="contain"
-        />
-      </Animated.View>
+      {!isSplashAnimationComplete && (
+        <Animated.View
+          style={[
+            styles.splashOverlay,
+            {
+              opacity: opacityAnim,
+              transform: [{ scale: scaleAnim }, { translateY: translateYAnim }],
+            },
+          ]}
+        >
+          <Image
+            source={require("../assets/splash.jpg")}
+            style={styles.splashImage}
+            resizeMode="contain"
+          />
+        </Animated.View>
+      )}
     </View>
   );
 }

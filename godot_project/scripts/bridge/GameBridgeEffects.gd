@@ -38,9 +38,6 @@ func _process(_delta: float) -> void:
 		return
 	if graph_executor._state == EffectsGraphExecutor.State.RUNNING:
 		_frames_since_start += 1
-		# Skip the first frame after start so the shader has a chance to
-		# render content before we swap the display texture — avoids a
-		# single-frame flash of the empty ping-pong buffer.
 		if _display_swap_delay > 0:
 			_display_swap_delay -= 1
 			return
@@ -630,7 +627,6 @@ func apply_plan(plan_json) -> Dictionary:
 	else:
 		return {"success": false, "error": "Invalid plan format"}
 
-	# For entity-scoped graphs, find the entity texture and register it via buffer registry
 	if str(plan_dict.get("scope", "")) == "entity":
 		var entity_tex: Texture2D = _find_entity_texture()
 		if entity_tex != null:
@@ -638,7 +634,6 @@ func apply_plan(plan_json) -> Dictionary:
 
 	var result = graph_executor.apply_plan(plan_dict)
 
-	# Store sprite reference for display swapping while the graph runs.
 	if bool(result.get("success", false)) and str(plan_dict.get("scope", "")) == "entity":
 		_store_entity_sprite_reference()
 
@@ -656,8 +651,6 @@ func update_params(pass_id: String, params: Dictionary) -> Dictionary:
 
 func start_graph() -> void:
 	if graph_executor:
-		# Wait 2 frames before swapping the display texture so the shader
-		# has rendered at least one full frame of content.
 		_display_swap_delay = 2
 		_frames_since_start = 0
 		graph_executor.start()
@@ -713,58 +706,63 @@ func draw_to_active_buffer(entity_id: String, commands_json) -> Dictionary:
 		return {"success": false, "error": "Commands must be Array or JSON string"}
 	
 	# Route based on graph state
+	_draw_to_pixel_buffer(entity_id, commands)
 	if graph_executor._state == EffectsGraphExecutor.State.RUNNING:
-		return _draw_to_ping_pong(entity_id, commands)
-	else:
-		return _draw_to_pixel_buffer(entity_id, commands)
+		return _inject_strokes_into_feedback(commands)
+	return {"success": true}
 
 func _draw_to_ping_pong(entity_id: String, commands: Array) -> Dictionary:
-	# Forward to PingPongManager for scene-graph drawing
 	if graph_executor == null or graph_executor._ping_pong_manager == null:
 		return {"success": false, "error": "PingPongManager not available"}
 	
 	var ping_pong_mgr = graph_executor._ping_pong_manager
-	
+
+	var buffer_id := ""
+	for entry in graph_executor._pass_entries:
+		var ppb: String = str(entry.get("ping_pong_buffer", ""))
+		if ppb != "":
+			buffer_id = ppb
+			break
+	if buffer_id == "":
+		return {"success": false, "error": "No active ping-pong buffer found"}
+
+
+
 	for cmd in commands:
 		if not (cmd is Dictionary):
 			continue
 		
 		var cmd_type = str(cmd.get("type", ""))
-		
+		var color_data = cmd.get("color", [1.0, 1.0, 1.0, 1.0])
+		var color := Color.WHITE
+		if color_data is Array and color_data.size() >= 3:
+			color = Color(float(color_data[0]), float(color_data[1]), float(color_data[2]),
+				float(color_data[3]) if color_data.size() > 3 else 1.0)
+		elif color_data is String:
+			color = Color(color_data)
+		var width_norm = float(cmd.get("width", 0.01))
+
 		if cmd_type == "stroke":
 			var points = cmd.get("points", [])
-			var color_data = cmd.get("color", [1.0, 1.0, 1.0, 1.0])
-			var width_norm = float(cmd.get("width", 0.01))
-			
-			# Convert color array to Color
-			var color := Color.WHITE
-			if color_data is Array and color_data.size() >= 3:
-				color = Color(color_data[0], color_data[1], color_data[2], 
-					color_data[3] if color_data.size() > 3 else 1.0)
-			
-			# Convert points array to flat array
 			var flat_points: Array = []
 			for pt in points:
 				if pt is Dictionary:
 					flat_points.append(float(pt.get("x", 0.0)))
 					flat_points.append(float(pt.get("y", 0.0)))
-			
-			if flat_points.size() >= 4:  # At least 2 points
-				ping_pong_mgr.add_stroke(entity_id, flat_points, color, width_norm)
+			if flat_points.size() >= 4:
+				ping_pong_mgr.add_stroke(buffer_id, flat_points, color, width_norm)
+
+		elif cmd_type == "line":
+			var x1 = float(cmd.get("x1", 0.0))
+			var y1 = float(cmd.get("y1", 0.0))
+			var x2 = float(cmd.get("x2", 0.0))
+			var y2 = float(cmd.get("y2", 0.0))
+			var flat_points: Array = [x1, y1, x2, y2]
+			ping_pong_mgr.add_stroke(buffer_id, flat_points, color, width_norm)
 		
 		elif cmd_type == "stamp":
-			# Stamp support (if texture available)
 			var uv_data = cmd.get("uv", {"x": 0.5, "y": 0.5})
 			var uv := Vector2(float(uv_data.get("x", 0.5)), float(uv_data.get("y", 0.5)))
-			var color_data = cmd.get("color", [1.0, 1.0, 1.0, 1.0])
-			
-			var color := Color.WHITE
-			if color_data is Array and color_data.size() >= 3:
-				color = Color(color_data[0], color_data[1], color_data[2], 
-					color_data[3] if color_data.size() > 3 else 1.0)
-			
-			# For now, skip stamp if no texture provided
-			# TODO: Support texture loading for stamps
 			push_warning("[GameBridgeEffects] Stamp command not fully implemented for ping-pong")
 	
 	return {"success": true}
@@ -780,6 +778,87 @@ func _draw_to_pixel_buffer(entity_id: String, commands: Array) -> Dictionary:
 	
 	pbm.draw_commands_normalized(entity_id, commands)
 	return {"success": true}
+
+func _inject_strokes_into_feedback(commands: Array) -> Dictionary:
+	if graph_executor == null or graph_executor._ping_pong_manager == null:
+		return {"success": false, "error": "No ping-pong manager"}
+
+	var entry: Dictionary = {}
+	var buffer_id := ""
+	for e in graph_executor._pass_entries:
+		var ppb: String = str(e.get("ping_pong_buffer", ""))
+		if ppb != "":
+			entry = e
+			buffer_id = ppb
+			break
+	if buffer_id == "":
+		return {"success": false, "error": "No active ping-pong buffer"}
+
+	var read_tex: Texture2D = graph_executor._ping_pong_manager.get_read_texture(buffer_id)
+	if read_tex == null:
+		return {"success": false, "error": "No read texture"}
+
+	var img: Image = read_tex.get_image()
+	if img == null:
+		return {"success": false, "error": "Failed to get image from read texture"}
+
+	var vp_size := img.get_size()
+
+	for cmd in commands:
+		if not (cmd is Dictionary):
+			continue
+		var cmd_type = str(cmd.get("type", ""))
+		var color_data = cmd.get("color", [1.0, 1.0, 1.0, 1.0])
+		var color := Color.WHITE
+		if color_data is Array and color_data.size() >= 3:
+			color = Color(float(color_data[0]), float(color_data[1]), float(color_data[2]),
+				float(color_data[3]) if color_data.size() > 3 else 1.0)
+		elif color_data is String:
+			color = Color(color_data)
+		var width_norm := float(cmd.get("width", 0.01))
+		var radius_px := width_norm * float(vp_size.y) * 0.5
+
+		var points: Array = []
+		if cmd_type == "line":
+			points = [
+				Vector2(float(cmd.get("x1", 0)) * vp_size.x, float(cmd.get("y1", 0)) * vp_size.y),
+				Vector2(float(cmd.get("x2", 0)) * vp_size.x, float(cmd.get("y2", 0)) * vp_size.y),
+			]
+		elif cmd_type == "stroke":
+			var pts = cmd.get("points", [])
+			for pt in pts:
+				if pt is Dictionary:
+					points.append(Vector2(float(pt.get("x", 0)) * vp_size.x, float(pt.get("y", 0)) * vp_size.y))
+
+		for i in range(points.size() - 1):
+			_draw_line_on_image(img, points[i], points[i + 1], color, radius_px)
+
+	var injected_tex := ImageTexture.create_from_image(img)
+	graph_executor._injected_feedback_tex = injected_tex
+	return {"success": true}
+
+func _draw_line_on_image(img: Image, from: Vector2, to: Vector2, color: Color, radius_px: float) -> void:
+	var r_sq := radius_px * radius_px
+	var dx := to.x - from.x
+	var dy := to.y - from.y
+	var steps := int(max(abs(dx), abs(dy))) + 1
+	if steps <= 0:
+		steps = 1
+	var half_w := int(ceil(radius_px))
+	var img_w := img.get_width()
+	var img_h := img.get_height()
+	for step in range(steps + 1):
+		var t := float(step) / float(steps)
+		var cx := from.x + dx * t
+		var cy := from.y + dy * t
+		var icx := int(cx)
+		var icy := int(cy)
+		for px in range(icx - half_w, icx + half_w + 1):
+			for py in range(icy - half_w, icy + half_w + 1):
+				if px >= 0 and px < img_w and py >= 0 and py < img_h:
+					var dist_sq := (float(px) - cx) * (float(px) - cx) + (float(py) - cy) * (float(py) - cy)
+					if dist_sq <= r_sq:
+						img.set_pixel(px, py, color)
 
 # ============================================================
 # PUBLIC API - PARTICLES
