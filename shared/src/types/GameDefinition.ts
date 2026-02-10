@@ -510,7 +510,7 @@ export interface GameDialogDefinition {
   dismissible?: boolean;
   dismissEventName?: string;
   buttons: GameButtonDefinition[];
-  showOnState?: 'won' | 'lost' | 'paused';
+  showOnState?: 'ready' | 'won' | 'lost' | 'paused';
   showWhen?: string;
   style?: GameDialogStyle;
 }

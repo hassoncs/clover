@@ -36,44 +36,4 @@ export const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 20,
   },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.7)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  overlayTitle: {
-    color: "#fff",
-    fontSize: 36,
-    fontWeight: "bold",
-    marginBottom: 12,
-  },
-  instructions: {
-    color: "#ccc",
-    fontSize: 18,
-    textAlign: "center",
-    marginBottom: 24,
-    paddingHorizontal: 30,
-    lineHeight: 24,
-  },
-  finalScore: {
-    color: "#fff",
-    fontSize: 24,
-    marginBottom: 30,
-  },
-  button: {
-    backgroundColor: "#4CAF50",
-    paddingHorizontal: 40,
-    paddingVertical: 15,
-    borderRadius: 10,
-  },
-  secondaryButton: {
-    backgroundColor: "#666",
-    marginTop: 12,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "bold",
-  },
 });

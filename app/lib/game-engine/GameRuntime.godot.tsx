@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import {
   View,
-  Text,
-  TouchableOpacity,
   Platform
 } from "react-native";
 import type {
@@ -59,6 +57,7 @@ import {
 import { cancelTweensForEntity } from "./behaviors/TweenBehaviors";
 import { GameSystemRunner } from "./systems/runner/GameSystemRunner";
 import { OverlayRenderer, evaluateExpression, buildBindingContext, ensureStateDialogs } from "./ui/overlay";
+import { handleDialogEvent } from "./ui/overlay/dialogEventRouter";
 import type { SystemContext, UpdateContext } from "./systems/runner/types";
 import { GameLoopController } from "./GameLoopController";
 import { WorldOpsImpl } from "./WorldOpsImpl";
@@ -409,19 +408,18 @@ export function GameRuntimeGodot({
     }
 
     const currentState = gameState.state;
-    if (currentState === 'won' || currentState === 'lost' || currentState === 'paused') {
+    if (
+      currentState === 'ready' ||
+      currentState === 'won' ||
+      currentState === 'lost' ||
+      currentState === 'paused'
+    ) {
       const stateDialog = dialogsConfig.dialogs.find(d => d.showOnState === currentState);
       if (stateDialog) return stateDialog;
     }
 
     return null;
   }, [dialogsConfig, activeDialogVariable, gameState.state]);
-
-  const handleDialogButtonPress = useCallback((eventName: string, data?: Record<string, unknown>) => {
-    const game = gameRef.current;
-    if (!game) return;
-    StateHelpers.triggerEvent(game.gameState, eventName, data);
-  }, []);
 
   const handleDialogDismiss = useCallback((dismissEventName?: string) => {
     const game = gameRef.current;
@@ -1451,6 +1449,25 @@ export function GameRuntimeGodot({
     }
   }, [onRequestRestart, definition, setupSubscriptions]);
 
+  const handleDialogButtonPress = useCallback((eventName: string, data?: Record<string, unknown>) => {
+    handleDialogEvent(eventName, data, {
+      onStart: handleStart,
+      onRestart: handleRestart,
+      onResume: () => {
+        const game = gameRef.current;
+        if (!game) return;
+        StateHelpers.setGameStateValue(game.gameState, 'playing', game.events);
+      },
+      onBackToMenu,
+      onPreviousLevel,
+      triggerEvent: (forwardEvent, payload) => {
+        const game = gameRef.current;
+        if (!game) return;
+        StateHelpers.triggerEvent(game.gameState, forwardEvent, payload);
+      },
+    });
+  }, [handleStart, handleRestart, onBackToMenu, onPreviousLevel]);
+
   const handleSaveProgress = useCallback(async () => {
     const game = gameRef.current;
     if (!game || !definition.persistence) return;
@@ -1610,97 +1627,6 @@ export function GameRuntimeGodot({
         />
       )}
 
-      {gameState.state === "paused" && (
-        <View style={styles.overlay}>
-          <Text style={styles.overlayTitle}>Paused</Text>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => {
-              if (gameRef.current) {
-                StateHelpers.setGameStateValue(gameRef.current.gameState, 'playing', gameRef.current.events);
-              }
-            }}
-          >
-            <Text style={styles.buttonText}>Resume</Text>
-          </TouchableOpacity>
-          {progressHook ? (
-            <>
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  { backgroundColor: "#888", marginTop: 12 },
-                ]}
-                onPress={handleRestart}
-              >
-                <Text style={styles.buttonText}>Reset Level</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  { backgroundColor: "#888", marginTop: 12 },
-                  (!onPreviousLevel || (Number(definition.variables?.currentLevel) || 1) <= 1) && {
-                    opacity: 0.5,
-                  },
-                ]}
-                disabled={!onPreviousLevel || (Number(definition.variables?.currentLevel) || 1) <= 1}
-                onPress={() => {
-                  if (onPreviousLevel) {
-                    onPreviousLevel();
-                  }
-                }}
-              >
-                <Text style={styles.buttonText}>Previous Level</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <TouchableOpacity
-              style={[
-                styles.button,
-                { backgroundColor: "#888", marginTop: 12 },
-              ]}
-              onPress={handleRestart}
-            >
-              <Text style={styles.buttonText}>Restart</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
-
-      {gameState.state === "ready" && !debugMode && (
-        <View style={styles.overlay}>
-          <Text style={styles.overlayTitle}>{definition.metadata.title}</Text>
-          {definition.metadata.instructions && (
-            <Text style={styles.instructions}>
-              {definition.metadata.instructions}
-            </Text>
-          )}
-          <TouchableOpacity style={styles.button} onPress={handleStart}>
-            <Text style={styles.buttonText}>Play</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {(gameState.state === "won" || gameState.state === "lost") && !resolveActiveDialog() && (
-        <View style={styles.overlay}>
-          <Text style={styles.overlayTitle}>
-            {gameState.state === "won" ? "🎉 You Win!" : "💀 Game Over"}
-          </Text>
-          <Text style={styles.finalScore}>Final Score: {gameState.variables['score'] ?? 0}</Text>
-          <TouchableOpacity style={styles.button} onPress={handleRestart}>
-            <Text style={styles.buttonText}>Play Again</Text>
-          </TouchableOpacity>
-          {onBackToMenu && (
-            <TouchableOpacity
-              style={[styles.button, styles.secondaryButton]}
-              onPress={onBackToMenu}
-            >
-              <Text style={styles.buttonText}>Back to Menu</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
-
       {(() => {
         const dialog = resolveActiveDialog();
         if (!dialog) return null;
@@ -1759,4 +1685,3 @@ export function GameRuntimeGodotWithDevTools(props: GameRuntimeGodotProps) {
     </DevToolsProvider>
   );
 }
-

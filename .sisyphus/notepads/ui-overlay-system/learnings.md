@@ -8,3 +8,7 @@
 - Barrel export in `index.ts` uses `export * from './module'` pattern; container is the exception with named type exports
 - `expr-eval` installed as dependency, `@types/expr-eval` as devDependency
 - tsc compiles cleanly with zero errors after all changes
+
+## Phase 4: State Dialogs
+
+- `ensureStateDialogs` now injects ready/won/lost/paused defaults, and dialog button events route through a helper to support start/resume/restart/back-to-menu/previous-level behavior.
