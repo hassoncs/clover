@@ -12,7 +12,7 @@ interface GameDefinition {
   entities: GameEntity[];                           // Required
   presentation?: PresentationConfig;
   camera?: CameraConfig;
-  ui?: UIConfig;
+  overlay?: OverlayConfig;
   background?: BackgroundConfig;
   variables?: Record<string, GameVariable>;
   joints?: GameJoint[];
@@ -293,20 +293,104 @@ winCondition: { expr: "entityCount('brick') == 0" }
 }
 ```
 
-## ui: UIConfig
+## overlay: OverlayConfig
+
+Declarative HUD system. Elements are anchored to screen edges and bound to game state.
 
 ```typescript
+overlay?: {
+  elements: OverlayElement[];
+  theme?: OverlayTheme;
+}
+```
+
+### Element Types
+
+**text** — Display text with bindings:
+```typescript
 {
-  showTimer?: boolean;
-  timerCountdown?: boolean;
-  backgroundColor?: string;
-  entityCountDisplays?: Array<{ tag: string, label: string, color?: string }>;
-  variableDisplays?: Array<{
-    name: string, label: string,
-    position?: 'top-left' | 'top-right' | 'top-center',
-    color?: string, format?: string,
-    showWhen?: 'always' | 'not_default', defaultValue?: number | string | boolean
-  }>;
+  id: string; type: 'text';
+  anchor: 'top-left' | 'top-center' | 'top-right' | 'center-left' | 'center' | 'center-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
+  offset: { x: number; y: number };
+  fontSize?: number; fontWeight?: 'normal' | 'bold'; color?: string;
+  bindings: { text: string };  // "SCORE\n{{variables.score}}"
+  visibleWhen?: string;        // "variables.multiplier != 1"
+  style?: OverlayStyle;
+}
+```
+
+**bar** — Health/progress bar:
+```typescript
+{
+  id: string; type: 'bar';
+  anchor: OverlayAnchor; offset: { x: number; y: number };
+  width?: number; height?: number; color?: string; backgroundColor?: string;
+  bindings: { value: string; max: string };
+  showLabel?: boolean; labelFormat?: string;
+}
+```
+
+**counter** — Icon + number (lives, coins):
+```typescript
+{
+  id: string; type: 'counter';
+  anchor: OverlayAnchor; offset: { x: number; y: number };
+  iconEmoji?: string; fontSize?: number; color?: string;
+  bindings: { value: string };
+}
+```
+
+**button** — Emits game events on press:
+```typescript
+{
+  id: string; type: 'button';
+  anchor: OverlayAnchor; offset: { x: number; y: number };
+  label: string; eventName: string; eventData?: Record<string, unknown>;
+  color?: string; textColor?: string; disabledWhen?: string;
+}
+```
+
+**container** — Group elements with layout:
+```typescript
+{
+  id: string; type: 'container';
+  anchor: OverlayAnchor; offset: { x: number; y: number };
+  direction?: 'horizontal' | 'vertical'; gap?: number;
+  children: OverlayElement[];
+}
+```
+
+**image** — Display an image. **spacer** — Layout spacing.
+
+### Binding Expressions
+
+- `{{variables.score}}` — Game variable
+- `{{entityCount('brick')}}` — Count entities with tag
+- `{{formatTime(elapsed)}}` — Format seconds as "M:SS"
+- `{{formatNumber(1234)}}` — "1,234"
+- `visibleWhen: "variables.health < 20"` — Conditional visibility
+
+### Anchoring
+
+Offsets are **inward** from anchor. `{ x: 16, y: 16 }` = 16px from edge. Stack elements by incrementing Y by 56.
+
+### OverlayStyle
+
+```typescript
+style?: {
+  backgroundColor?: string; borderRadius?: number;
+  padding?: number; paddingHorizontal?: number; paddingVertical?: number;
+  opacity?: number;
+}
+```
+
+### Theme
+
+```typescript
+theme?: {
+  fontPreset?: 'system' | 'pixel' | 'retro' | 'handwritten' | 'monospace';
+  pixelMode?: boolean; primaryColor?: string; textColor?: string;
+  backgroundColor?: string; fontSize?: number;
 }
 ```
 
@@ -341,7 +425,20 @@ winCondition: { expr: "entityCount('brick') == 0" }
     id: string;
     title: string;
     message?: string;
-    stats?: Array<{ label: string, variable: string, format?: string }>;
+    showOnState?: 'ready' | 'won' | 'lost' | 'paused';  // Auto-show on game state
+    showWhen?: string;              // Expression: "variables.level > 5"
+    stats?: Array<{
+      label: string;
+      variable?: string;            // Direct variable reference
+      binding?: string;             // Binding expression: "formatTime(elapsed)"
+      format?: string;
+    }>;
+    style?: {
+      backgroundColor?: string;
+      titleColor?: string;
+      backdropColor?: string;
+      borderRadius?: number;
+    };
     dismissible?: boolean;
     dismissEventName?: string;
     buttons: Array<{
@@ -351,9 +448,10 @@ winCondition: { expr: "entityCount('brick') == 0" }
       variant?: 'primary' | 'secondary'
     }>;
   }>;
-  legacyWinDialogFallback?: boolean;
 }
 ```
+
+Default dialogs are auto-injected for missing states (ready, won, lost, paused). Games can override by defining custom dialogs with matching `showOnState`.
 
 ## containers: ContainerConfig[]
 

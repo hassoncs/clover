@@ -321,15 +321,43 @@ cube: {
 },
 ```
 
-## Pattern: HUD Variable Displays
+## Pattern: HUD Overlay Elements
 
 ```typescript
-ui: {
-  showTimer: false,
-  backgroundColor: "#1a1a2e",
-  variableDisplays: [
-    { name: 'score', label: 'Score', position: 'top-center' },
-    { name: 'lives', label: 'Lives', position: 'top-right' },
+overlay: {
+  elements: [
+    {
+      id: 'var-score',
+      type: 'text',
+      anchor: 'top-center',
+      offset: { x: 0, y: 16 },
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: '#FFFFFF',
+      bindings: { text: "SCORE\n{{variables.score}}" },
+      style: {
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+      },
+    },
+    {
+      id: 'var-lives',
+      type: 'text',
+      anchor: 'top-right',
+      offset: { x: 16, y: 16 },
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: '#FFFFFF',
+      bindings: { text: "LIVES\n{{variables.lives}}" },
+      style: {
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+      },
+    },
   ],
 },
 ```
