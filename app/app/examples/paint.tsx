@@ -63,7 +63,6 @@ const INK_SPREAD_SHADER = `
 shader_type canvas_item;
 
 uniform sampler2D current_buffer : filter_linear;
-uniform sampler2D entity_input : filter_nearest;
 uniform vec2 texel_size;
 uniform float dt;
 
@@ -87,7 +86,6 @@ const MELT_SHADER = `
 shader_type canvas_item;
 
 uniform sampler2D current_buffer : filter_linear;
-uniform sampler2D entity_input : filter_nearest;
 uniform vec2 texel_size;
 uniform float dt;
 
@@ -108,7 +106,6 @@ const SWIRL_SHADER = `
 shader_type canvas_item;
 
 uniform sampler2D current_buffer : filter_linear;
-uniform sampler2D entity_input : filter_nearest;
 uniform vec2 texel_size;
 uniform float dt;
 
@@ -130,7 +127,6 @@ const RAINBOW_SHADER = `
 shader_type canvas_item;
 
 uniform sampler2D current_buffer : filter_linear;
-uniform sampler2D entity_input : filter_nearest;
 uniform vec2 texel_size;
 uniform float dt;
 
@@ -185,7 +181,6 @@ function makeSpec(id: string, shader: string): EffectGraphSpec {
     family: "filter",
     inputSlots: [
       { name: "current_buffer", dataType: "texture", connectedTo: null },
-      { name: "entity_input", dataType: "texture", connectedTo: null },
     ],
     params: {},
     outputTarget: {

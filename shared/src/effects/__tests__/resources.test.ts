@@ -385,7 +385,7 @@ describe('buildResourceGraph', () => {
     const nodeA = makeNode({
       id: 'fx',
       inputSlots: [
-        { name: 'entity_input', dataType: 'texture', connectedTo: null },
+        { name: 'custom_input', dataType: 'texture', connectedTo: null },
       ],
       outputTarget: { bufferId: 'buf-fx', format: 'rgba8', resolution: 'full' },
     });
@@ -397,7 +397,7 @@ describe('buildResourceGraph', () => {
     expect(result.success).toBe(true);
     const inputBindings = result.graph!.bindings.filter((b) => b.direction === 'input');
     expect(inputBindings.some(
-      (b) => b.passId === 'fx' && b.slotName === 'entity_input' && b.resourceId === '__entityTexture',
+      (b) => b.passId === 'fx' && b.slotName === 'custom_input' && b.resourceId === '__entityTexture',
     )).toBe(true);
   });
 
@@ -454,12 +454,11 @@ describe('buildResourceGraph', () => {
     expect(inputBindings[0].resourceId).toBe('__feedback:trail->trail');
   });
 
-  it('paint example: feedback + unconnected slots produce correct bindings', () => {
+  it('paint example: feedback binding is correct', () => {
     const nodeA = makeNode({
       id: 'fx',
       inputSlots: [
         { name: 'current_buffer', dataType: 'texture', connectedTo: null },
-        { name: 'entity_input', dataType: 'texture', connectedTo: null },
       ],
       outputTarget: { bufferId: 'canvas', format: 'rgba8', resolution: 'full' },
       flags: { stateful: true, fusible: 'never' },
@@ -489,12 +488,5 @@ describe('buildResourceGraph', () => {
     );
     expect(feedbackBinding).toBeDefined();
     expect(feedbackBinding!.resourceId).toBe('__feedback:fx->fx');
-
-    // entity_input -> implicit entity texture
-    const entityBinding = inputBindings.find(
-      (b) => b.passId === 'fx' && b.slotName === 'entity_input',
-    );
-    expect(entityBinding).toBeDefined();
-    expect(entityBinding!.resourceId).toBe('__entityTexture');
   });
 });

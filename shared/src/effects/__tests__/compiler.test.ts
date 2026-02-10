@@ -328,13 +328,13 @@ describe('compileGraph', () => {
           makeNode({
             id: 'fx',
             inputSlots: [
-              { name: 'entity_input', dataType: 'texture', connectedTo: null },
+              { name: 'custom_input', dataType: 'texture', connectedTo: null },
             ],
             flags: { stateful: false, fusible: 'conditional' },
           }),
         ],
         connections: [
-          { from: { nodeId: 'gen', output: 'gen-out' }, to: { nodeId: 'fx', input: 'entity_input' } },
+          { from: { nodeId: 'gen', output: 'gen-out' }, to: { nodeId: 'fx', input: 'custom_input' } },
         ],
         feedbackEdges: [],
       });
@@ -344,7 +344,7 @@ describe('compileGraph', () => {
 
       const fxPass = result.plan!.passes.find((p) => p.id === 'fx')!;
       const bindings = fxPass.params.inputBindings as Record<string, string>;
-      expect(bindings['entity_input']).toBe('gen:gen-out');
+      expect(bindings['custom_input']).toBe('gen:gen-out');
     });
 
     it('generates empty inputBindings for generator nodes with no inputs', () => {
@@ -361,7 +361,7 @@ describe('compileGraph', () => {
       expect(bindings).toEqual({});
     });
 
-    it('paint-like graph: feedback + entity implicit input both get correct bindings', () => {
+    it('paint-like graph: feedback binding is correct', () => {
       const graph = makeGraph({
         scope: 'entity',
         nodes: [
@@ -370,7 +370,6 @@ describe('compileGraph', () => {
             type: 'custom',
             inputSlots: [
               { name: 'current_buffer', dataType: 'texture', connectedTo: null },
-              { name: 'entity_input', dataType: 'texture', connectedTo: null },
             ],
             outputTarget: { bufferId: 'canvas', format: 'rgba8', resolution: 'full' },
             flags: { stateful: true, fusible: 'never' },
@@ -397,7 +396,6 @@ describe('compileGraph', () => {
       const fxPass = result.plan!.passes.find((p) => p.id === 'fx')!;
       const bindings = fxPass.params.inputBindings as Record<string, string>;
       expect(bindings['current_buffer']).toBe('__feedback:fx->fx');
-      expect(bindings['entity_input']).toBe('__entityTexture');
       expect(fxPass.persistence).toBe('pingPong');
     });
   });

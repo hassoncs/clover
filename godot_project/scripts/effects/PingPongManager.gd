@@ -4,11 +4,14 @@ extends RefCounted
 var _host: Node = null
 var _default_size: Vector2i = Vector2i(800, 600)
 var _buffers: Dictionary = {}
+var _viewport_pool: ViewportPool = null
 
-func configure(host: Node, default_size: Vector2i) -> void:
+func configure(host: Node, default_size: Vector2i, pool: ViewportPool = null) -> void:
 	_host = host
 	if default_size.x > 0 and default_size.y > 0:
 		_default_size = default_size
+	if pool:
+		_viewport_pool = pool
 
 func register(buffer_id: String, policy: Dictionary) -> void:
 	if buffer_id == "":
@@ -42,8 +45,17 @@ func initialize(buffer_id: String) -> void:
 	_release_entry(entry)
 
 	var size := _resolve_size(entry.get("policy", {}))
-	var viewport_a := _create_viewport("EffectsPPA_%s" % buffer_id, size)
-	var viewport_b := _create_viewport("EffectsPPB_%s" % buffer_id, size)
+	
+	# Acquire viewports from pool if available, otherwise create new ones
+	var viewport_a: SubViewport
+	var viewport_b: SubViewport
+	
+	if _viewport_pool:
+		viewport_a = _viewport_pool.acquire(buffer_id, size)
+		viewport_b = _viewport_pool.acquire(buffer_id, size)
+	else:
+		viewport_a = _create_viewport("EffectsPPA_%s" % buffer_id, size)
+		viewport_b = _create_viewport("EffectsPPB_%s" % buffer_id, size)
 
 	_host.add_child(viewport_a)
 	_host.add_child(viewport_b)
@@ -293,6 +305,7 @@ func _parse_flat_points(flat: Array, viewport_size: Vector2i) -> PackedVector2Ar
 	return result
 
 func _release_entry(entry: Dictionary) -> void:
+	# Clean up draw containers first (they are children of viewports)
 	var draw_container_a: Node2D = entry.get("draw_container_a")
 	if draw_container_a and is_instance_valid(draw_container_a):
 		if draw_container_a.get_parent():
@@ -305,12 +318,20 @@ func _release_entry(entry: Dictionary) -> void:
 			draw_container_b.get_parent().remove_child(draw_container_b)
 		draw_container_b.queue_free()
 	
+	# Release viewports back to pool or free them
 	var viewport_a: SubViewport = entry.get("viewport_a")
 	if viewport_a and is_instance_valid(viewport_a):
-		viewport_a.queue_free()
+		if _viewport_pool:
+			_viewport_pool.release(viewport_a)
+		else:
+			viewport_a.queue_free()
+	
 	var viewport_b: SubViewport = entry.get("viewport_b")
 	if viewport_b and is_instance_valid(viewport_b):
-		viewport_b.queue_free()
+		if _viewport_pool:
+			_viewport_pool.release(viewport_b)
+		else:
+			viewport_b.queue_free()
 	
 	entry["draw_container_a"] = null
 	entry["draw_container_b"] = null

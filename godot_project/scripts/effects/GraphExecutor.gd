@@ -86,9 +86,18 @@ var _pass_index: Dictionary = {}
 var _plan_hash: String = ""
 var _seed_feedback_on_next_frame: bool = false
 var _entity_texture: Texture2D = null
+var _viewport_pool: ViewportPool = null
+var _shader_warmer: ShaderWarmer = null
 
 func _ready() -> void:
 	set_process(false)
+	
+	# Create viewport pool for efficient viewport reuse
+	_viewport_pool = ViewportPool.new(10)
+	
+	# Create shader warmer and pre-compile builtin shaders
+	_shader_warmer = ShaderWarmer.new()
+	_shader_warmer.warm_builtin_shaders()
 
 func apply_plan(plan_json: Dictionary, entity_texture: Texture2D = null) -> Dictionary:
 	clear()
@@ -102,7 +111,7 @@ func apply_plan(plan_json: Dictionary, entity_texture: Texture2D = null) -> Dict
 
 	var viewport_size: Vector2i = _resolve_base_size()
 	_resource_graph = EffectsResourceGraph.new()
-	_resource_graph.configure(self, viewport_size)
+	_resource_graph.configure(self, viewport_size, _viewport_pool)
 
 	if not _resource_graph.allocate(_plan.get("resourceMap", {}), str(_plan.get("scope", "screen"))):
 		push_error("[EffectsGraphExecutor] Resource allocation failed")
@@ -114,7 +123,7 @@ func apply_plan(plan_json: Dictionary, entity_texture: Texture2D = null) -> Dict
 		_resource_graph.set_external_texture("__entityTexture", entity_texture)
 
 	_ping_pong_manager = EffectsPingPongManager.new()
-	_ping_pong_manager.configure(self, viewport_size)
+	_ping_pong_manager.configure(self, viewport_size, _viewport_pool)
 
 	if not _build_passes(_plan.get("passes", [])):
 		clear()
@@ -149,6 +158,10 @@ func clear() -> void:
 	if _resource_graph != null:
 		_resource_graph.release()
 		_resource_graph = null
+
+	# ViewportPool and ShaderWarmer are RefCounted, just null them
+	_viewport_pool = null
+	_shader_warmer = null
 
 	_plan = {}
 	_plan_hash = ""
@@ -531,9 +544,16 @@ func _resolve_shader(pass_data: Dictionary) -> Shader:
 		var shader_path: String = _resolve_builtin_shader_path(shader_name)
 		if shader_path == "":
 			return null
-		var shader = load(shader_path)
-		if shader is Shader:
-			return shader
+		
+		# Use shader warmer if available, otherwise fallback to direct load
+		if _shader_warmer != null:
+			var shader = _shader_warmer.get_warmed_shader(shader_path)
+			if shader is Shader:
+				return shader
+		else:
+			var shader = load(shader_path)
+			if shader is Shader:
+				return shader
 
 	return null
 
@@ -553,6 +573,11 @@ func _resolve_builtin_shader_path(shader_name: String) -> String:
 	return ""
 
 func _build_custom_shader(glsl: String) -> Shader:
+	# Use shader warmer if available for custom shaders (caches by hash)
+	if _shader_warmer != null:
+		return _shader_warmer.warm_custom_shader(glsl)
+	
+	# Fallback: build shader directly
 	var shader_code := glsl
 	if not shader_code.contains("shader_type"):
 		shader_code = "shader_type canvas_item;\n" + shader_code

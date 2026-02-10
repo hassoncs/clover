@@ -6,11 +6,13 @@ var _base_size: Vector2i = Vector2i(800, 600)
 var _scope: String = "screen"
 var _resources: Dictionary = {}
 var _pass_outputs: Dictionary = {}
+var _viewport_pool: ViewportPool = null
 
-func configure(host: Node, base_size: Vector2i) -> void:
+func configure(host: Node, base_size: Vector2i, viewport_pool: ViewportPool = null) -> void:
 	_host = host
 	if base_size.x > 0 and base_size.y > 0:
 		_base_size = base_size
+	_viewport_pool = viewport_pool
 
 func allocate(resource_map: Dictionary, scope: String) -> bool:
 	release()
@@ -151,7 +153,11 @@ func release() -> void:
 		var entry: Dictionary = _resources[resource_id]
 		var viewport: SubViewport = entry.get("viewport")
 		if viewport and is_instance_valid(viewport):
-			viewport.queue_free()
+			# Release to pool if available, otherwise free directly
+			if _viewport_pool != null:
+				_viewport_pool.release(viewport)
+			else:
+				viewport.queue_free()
 	_resources.clear()
 	_pass_outputs.clear()
 
@@ -174,9 +180,16 @@ func _create_resource_viewport(resource_id: String, resolution: String, resource
 	if size.x <= 0 or size.y <= 0:
 		return null
 
-	var viewport := SubViewport.new()
+	var viewport: SubViewport = null
+	
+	# Use pool if available, otherwise create new viewport
+	if _viewport_pool != null:
+		viewport = _viewport_pool.acquire(resource_id, size)
+	else:
+		viewport = SubViewport.new()
+		viewport.size = size
+	
 	viewport.name = "EffectsResource_%s" % resource_id
-	viewport.size = size
 	viewport.transparent_bg = true
 	viewport.render_target_clear_mode = SubViewport.CLEAR_MODE_ONCE
 	viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
