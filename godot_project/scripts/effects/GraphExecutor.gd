@@ -316,25 +316,12 @@ func _process(delta: float) -> void:
 					if write_material != null:
 						write_material.set_shader_parameter(str(uniform_name), feedback_tex)
 
-		# Auto-set common shader uniforms on both materials
-		var vp_a: SubViewport = _ping_pong_manager.get_viewports(ping_pong_buffer).get("a")
-		if vp_a != null:
-			var vp_size: Vector2i = vp_a.size
-			var texel := Vector2(1.0 / float(vp_size.x), 1.0 / float(vp_size.y))
-			for mat_key in ["material_a", "material_b"]:
-				var mat: ShaderMaterial = entry.get(mat_key)
-				if mat != null:
-					mat.set_shader_parameter("texel_size", texel)
-					mat.set_shader_parameter("dt", delta)
+		var write_mat: ShaderMaterial = entry.get("material_a") if write_vp == entry.get("viewport_a") else entry.get("material_b")
+		if write_mat != null:
+			write_mat.set_shader_parameter("dt", delta)
 
 		_resource_graph.register_pass_output(str(entry.get("id", "")), write_vp, pass_data.get("provides", []))
 		_update_ping_pong_write_mode(entry)
-		should_rebind_inputs = true
-
-	if should_rebind_inputs:
-		for pass_entry in _pass_entries:
-			var has_ping_pong: bool = str(pass_entry.get("ping_pong_buffer", "")) != ""
-			_rebind_entry_inputs(pass_entry, has_ping_pong)
 
 	if _seed_feedback_on_next_frame:
 		_seed_feedback_on_next_frame = false
@@ -495,6 +482,11 @@ func _setup_ping_pong_pass(entry: Dictionary, pass_data: Dictionary, shader: Sha
 	entry["rect_b"] = rect_b
 	entry["material_a"] = material_a
 	entry["material_b"] = material_b
+
+	var vp_size: Vector2i = viewport_a.size
+	var texel := Vector2(1.0 / float(vp_size.x), 1.0 / float(vp_size.y))
+	material_a.set_shader_parameter("texel_size", texel)
+	material_b.set_shader_parameter("texel_size", texel)
 
 	var write_viewport: SubViewport = _ping_pong_manager.get_write_viewport(buffer_id)
 	_resource_graph.register_pass_output(pass_id, write_viewport, pass_data.get("provides", []))

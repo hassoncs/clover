@@ -12,6 +12,8 @@ var _entity_original_texture: Texture2D = null
 var _entity_original_scale: Vector2 = Vector2.ONE
 var _display_swap_delay: int = 0
 var _frames_since_start: int = 0
+var _pending_inject_commands: Array = []
+var _brush_cache: Dictionary = {}  # "radius_color" -> Image
 
 func _ready() -> void:
 	# Create subsystems
@@ -41,6 +43,10 @@ func _process(_delta: float) -> void:
 		if _display_swap_delay > 0:
 			_display_swap_delay -= 1
 			return
+		if _pending_inject_commands.size() > 0:
+			var cmds := _pending_inject_commands.duplicate()
+			_pending_inject_commands.clear()
+			_inject_strokes_into_feedback(cmds)
 		var output_tex: Texture2D = graph_executor.get_output_texture()
 		if output_tex != null and _entity_sprite.texture != output_tex:
 			_entity_sprite.texture = output_tex
@@ -714,7 +720,7 @@ func draw_to_active_buffer(entity_id: String, commands_json) -> Dictionary:
 	# Route based on graph state
 	_draw_to_pixel_buffer(entity_id, commands)
 	if graph_executor._state == EffectsGraphExecutor.State.RUNNING:
-		return _inject_strokes_into_feedback(commands)
+		_pending_inject_commands.append_array(commands)
 	return {"success": true}
 
 func _draw_to_ping_pong(entity_id: String, commands: Array) -> Dictionary:
@@ -843,28 +849,45 @@ func _inject_strokes_into_feedback(commands: Array) -> Dictionary:
 	graph_executor._injected_feedback_tex = injected_tex
 	return {"success": true}
 
+func _get_brush_image(radius: int, color: Color) -> Image:
+	var key := "%d_%s" % [radius, color.to_html()]
+	if _brush_cache.has(key):
+		return _brush_cache[key]
+
+	var diameter := radius * 2 + 1
+	var brush := Image.create(diameter, diameter, false, Image.FORMAT_RGBA8)
+	brush.fill(Color(0, 0, 0, 0))
+	var center := float(radius)
+	var r_sq := float(radius * radius)
+	for y in range(diameter):
+		for x in range(diameter):
+			var dx := float(x) - center
+			var dy := float(y) - center
+			if dx * dx + dy * dy <= r_sq:
+				brush.set_pixel(x, y, color)
+
+	_brush_cache[key] = brush
+	return brush
+
 func _draw_line_on_image(img: Image, from: Vector2, to: Vector2, color: Color, radius_px: float) -> void:
-	var r_sq := radius_px * radius_px
+	var r := int(ceil(radius_px))
+	if r < 1:
+		r = 1
+	var brush := _get_brush_image(r, color)
+	var brush_size := brush.get_size()
+	var src_rect := Rect2i(Vector2i.ZERO, brush_size)
+
 	var dx := to.x - from.x
 	var dy := to.y - from.y
-	var steps := int(max(abs(dx), abs(dy))) + 1
-	if steps <= 0:
-		steps = 1
-	var half_w := int(ceil(radius_px))
-	var img_w := img.get_width()
-	var img_h := img.get_height()
+	var dist := sqrt(dx * dx + dy * dy)
+	var spacing := max(r * 0.5, 1.0)
+	var steps := int(dist / spacing) + 1
+
 	for step in range(steps + 1):
-		var t := float(step) / float(steps)
-		var cx := from.x + dx * t
-		var cy := from.y + dy * t
-		var icx := int(cx)
-		var icy := int(cy)
-		for px in range(icx - half_w, icx + half_w + 1):
-			for py in range(icy - half_w, icy + half_w + 1):
-				if px >= 0 and px < img_w and py >= 0 and py < img_h:
-					var dist_sq := (float(px) - cx) * (float(px) - cx) + (float(py) - cy) * (float(py) - cy)
-					if dist_sq <= r_sq:
-						img.set_pixel(px, py, color)
+		var t := float(step) / float(steps) if steps > 0 else 0.0
+		var cx := int(from.x + dx * t) - r
+		var cy := int(from.y + dy * t) - r
+		img.blend_rect(brush, src_rect, Vector2i(cx, cy))
 
 # ============================================================
 # PUBLIC API - PARTICLES

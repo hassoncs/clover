@@ -332,9 +332,7 @@ export default function PaintExample() {
   useEffect(() => {
     if (!bridge || status !== "ready") return;
 
-    console.log("[Paint] Subscribing to onInputEvent");
     const unsubscribe = bridge.onInputEvent((type, x, y) => {
-      console.log("[Paint] input:", type, x, y);
       if (type === "drag_start") {
         lastPointRef.current = { x, y };
       } else if (type === "drag_move") {
