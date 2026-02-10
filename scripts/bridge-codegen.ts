@@ -118,14 +118,19 @@ function inferCategory(method: MethodSignature, interfaceDecl: InterfaceDeclarat
 function extractMethod(method: MethodSignature, interfaceDecl: InterfaceDeclaration, source: 'GodotBridge' | 'EffectsBridge'): MethodEntry {
   const tsName = method.getName();
   const snakeName = camelToSnake(tsName);
-  const returnType = method.getReturnType().getText(method);
+  const returnTypeNode = method.getReturnTypeNode();
+  const returnType = returnTypeNode ? returnTypeNode.getText() : method.getReturnType().getText(method);
   const isAsync = returnType.startsWith('Promise<');
 
-  const params: MethodParam[] = method.getParameters().map(p => ({
-    name: p.getName(),
-    type: p.getType().getText(p),
-    optional: p.isOptional(),
-  }));
+  const params: MethodParam[] = method.getParameters().map(p => {
+    const typeNode = p.getTypeNode();
+    const typeText = typeNode ? typeNode.getText() : p.getType().getText(p);
+    return {
+      name: p.getName(),
+      type: typeText,
+      optional: p.isOptional(),
+    };
+  });
 
   const category = source === 'EffectsBridge' ? 'effects_pipeline' : inferCategory(method, interfaceDecl);
   const tsOnly = isTsOnly(tsName, returnType);
