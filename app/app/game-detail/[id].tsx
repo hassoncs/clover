@@ -5,14 +5,13 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { trpc } from "@/lib/trpc/client";
 import type { GameDefinition } from "@slopcade/shared";
-import { EMBEDDED_DEFINITIONS, EMBEDDED_METADATA } from "@/lib/offline/embedded-games-registry";
 import { GameComments } from "@/components/social/GameComments";
 import { LikeButton } from "@/components/social/LikeButton";
 import { StarRating } from "@/components/social/StarRating";
 import { ReportModal } from "@/components/social/ReportModal";
 import { useAuth } from "@/hooks/useAuth";
-
-type GameSource = "template" | "database";
+import { DownloadForOfflineButton } from "@/components/DownloadForOfflineButton";
+import { isGameDownloaded, loadLocalGameDefinition } from "@/lib/offline/download-manager";
 
 interface GameInfo {
   id: string;
@@ -21,12 +20,11 @@ interface GameInfo {
   titleHeroImageUrl?: string;
   playCount?: number;
   createdAt?: Date | string;
-  source: GameSource;
 }
 
 export default function GameDetailScreen() {
   const router = useRouter();
-  const { id, source } = useLocalSearchParams<{ id: string; source?: string }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
 
   const [gameInfo, setGameInfo] = useState<GameInfo | null>(null);
@@ -35,7 +33,7 @@ export default function GameDetailScreen() {
   const [isForking, setIsForking] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showReport, setShowReport] = useState(false);
-  const [selectedPackId, setSelectedPackId] = useState<string | null>(null);
+  const [isOffline, setIsOffline] = useState(false);
 
   const [packsData, setPacksData] = useState<{
     packs: {
@@ -50,7 +48,7 @@ export default function GameDetailScreen() {
   const [isLoadingPacks, setIsLoadingPacks] = useState(false);
 
   useEffect(() => {
-    if (gameInfo?.source === "database" && gameInfo.id) {
+    if (gameInfo?.id && !isOffline) {
       setIsLoadingPacks(true);
       trpc.assetSystem.getCompatiblePacks.query({ gameId: gameInfo.id })
         .then((data) => {
@@ -63,53 +61,44 @@ export default function GameDetailScreen() {
           setIsLoadingPacks(false);
         });
     }
-  }, [gameInfo]);
-
-  const embeddedMeta = id ? EMBEDDED_METADATA[id] as {
-    packs?: Array<{ name: string; packId: string; assetCount: number }>;
-    activePackId?: string;
-  } | undefined : undefined;
-  const embeddedPacks = embeddedMeta?.packs ?? [];
-
-  useEffect(() => {
-    if (embeddedPacks.length > 0 && !selectedPackId) {
-      setSelectedPackId(embeddedMeta?.activePackId ?? embeddedPacks[0].packId);
-    }
-  }, [embeddedPacks, selectedPackId, embeddedMeta?.activePackId]);
+  }, [gameInfo?.id, isOffline]);
 
   useEffect(() => {
     const loadGameInfo = async () => {
+      if (!id) {
+        setError("No game ID provided");
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
       setError(null);
 
       try {
-        const gameSource: GameSource = source === "database" ? "database" : "template";
+        const downloaded = await isGameDownloaded(id);
+        setIsOffline(downloaded);
 
-        if (gameSource === "template" && id) {
-          const meta = EMBEDDED_METADATA[id] as { title?: string; description?: string } | undefined;
-          if (!meta) {
-            throw new Error(`Embedded game not found: ${id}`);
+        if (downloaded) {
+          const localDef = await loadLocalGameDefinition(id);
+          if (localDef) {
+            setGameInfo({
+              id,
+              title: localDef.metadata.title,
+              description: localDef.metadata.description ?? null,
+              titleHeroImageUrl: localDef.metadata.titleHeroImageUrl,
+            });
+          } else {
+            throw new Error("Downloaded game not found locally");
           }
-          const definition = EMBEDDED_DEFINITIONS[id] as GameDefinition | undefined;
-          setGameInfo({
-            id,
-            title: meta.title ?? definition?.metadata?.title ?? id,
-            description: meta.description ?? definition?.metadata?.description ?? null,
-            titleHeroImageUrl: definition?.metadata?.titleHeroImageUrl,
-            source: "template",
-          });
-        } else if (gameSource === "database" && id) {
-          const game = await trpc.games.get.query({ id: id! });
+        } else {
+          const game = await trpc.games.get.query({ id });
           setGameInfo({
             id: game.id,
             title: game.title,
             description: game.description,
             playCount: game.playCount,
             createdAt: game.createdAt,
-            source: "database",
           });
-        } else {
-          throw new Error("Game not found");
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to load game";
@@ -119,31 +108,27 @@ export default function GameDetailScreen() {
       }
     };
 
-    if (id) loadGameInfo();
-  }, [id, source]);
+    loadGameInfo();
+  }, [id]);
 
   const handleBack = useCallback(() => router.back(), [router]);
 
   const handlePlay = useCallback(() => {
     if (!gameInfo) return;
-
-    if (gameInfo.source === "template") {
-      const params: Record<string, string> = { id: gameInfo.id };
-      if (selectedPackId) params.packId = selectedPackId;
-      router.push({ pathname: "/game/[id]", params });
-    } else {
-      router.push({ pathname: "/play/[id]", params: { id: gameInfo.id } });
-    }
-  }, [gameInfo, router, selectedPackId]);
+    router.push({ pathname: "/play/[id]", params: { id: gameInfo.id } });
+  }, [gameInfo, router]);
 
   const handleFork = useCallback(async () => {
     if (!gameInfo) return;
 
     setIsForking(true);
     try {
-      if (gameInfo.source === "template") {
-        const definition = EMBEDDED_DEFINITIONS[gameInfo.id] as GameDefinition | undefined;
-        if (!definition) throw new Error(`Embedded game not found: ${gameInfo.id}`);
+      let definition: GameDefinition;
+      
+      if (isOffline) {
+        const localDef = await loadLocalGameDefinition(gameInfo.id);
+        if (!localDef) throw new Error("Game not found locally");
+        definition = localDef;
         const result = await trpc.games.create.mutate({
           title: definition.metadata.title,
           description: definition.metadata.description,
@@ -166,7 +151,7 @@ export default function GameDetailScreen() {
       );
       setIsForking(false);
     }
-  }, [gameInfo, router]);
+  }, [gameInfo, router, isOffline]);
 
   const handleEdit = useCallback(async () => {
     if (!gameInfo) return;
@@ -175,10 +160,10 @@ export default function GameDetailScreen() {
     try {
       let definition: GameDefinition;
       
-      if (gameInfo.source === "template") {
-        const embeddedDef = EMBEDDED_DEFINITIONS[gameInfo.id] as GameDefinition | undefined;
-        if (!embeddedDef) throw new Error(`Embedded game not found: ${gameInfo.id}`);
-        definition = embeddedDef;
+      if (isOffline) {
+        const localDef = await loadLocalGameDefinition(gameInfo.id);
+        if (!localDef) throw new Error("Game not found locally");
+        definition = localDef;
       } else {
         const game = await trpc.games.get.query({ id: gameInfo.id });
         definition = JSON.parse(game.definition) as GameDefinition;
@@ -189,7 +174,7 @@ export default function GameDetailScreen() {
         params: {
           id: "ephemeral",
           definition: JSON.stringify(definition),
-          sourceType: gameInfo.source,
+          sourceType: isOffline ? "offline" : "database",
           sourceId: gameInfo.id,
         },
       });
@@ -204,9 +189,7 @@ export default function GameDetailScreen() {
     } finally {
       setIsEditing(false);
     }
-  }, [gameInfo, router]);
-
-
+  }, [gameInfo, router, isOffline]);
 
   if (isLoading) {
     return (
@@ -254,7 +237,7 @@ export default function GameDetailScreen() {
         ) : (
           <View className="w-full h-48 bg-gradient-to-br from-indigo-900 to-purple-900 items-center justify-center">
             <Text className="text-3xl font-bold text-white tracking-wider">
-              {gameInfo.source === "template" ? "TEMPLATE" : "COMMUNITY"}
+              {isOffline ? "OFFLINE" : "COMMUNITY"}
             </Text>
           </View>
         )}
@@ -265,9 +248,9 @@ export default function GameDetailScreen() {
           </Text>
 
           <View className="flex-row gap-2 mb-4">
-            {gameInfo.source === "template" && (
-              <View className="bg-indigo-900/30 px-3 py-1 rounded-full">
-                <Text className="text-indigo-300 text-sm">Template</Text>
+            {isOffline && (
+              <View className="bg-green-900/30 px-3 py-1 rounded-full">
+                <Text className="text-green-300 text-sm">Offline</Text>
               </View>
             )}
             {gameInfo.playCount !== undefined && (
@@ -325,6 +308,12 @@ export default function GameDetailScreen() {
               )}
             </Pressable>
 
+            {gameInfo && (
+              <View className="flex-1 py-2">
+                <DownloadForOfflineButton gameId={gameInfo.id} size="md" />
+              </View>
+            )}
+
             <Pressable
               className="flex-[2] py-4 bg-blue-600 rounded-xl items-center justify-center active:bg-blue-700"
               onPress={handlePlay}
@@ -332,31 +321,6 @@ export default function GameDetailScreen() {
               <Text className="text-white font-bold text-lg">Play</Text>
             </Pressable>
           </View>
-
-          {gameInfo.source === "template" && embeddedPacks.length > 1 && (
-            <View className="mb-4">
-              <Text className="text-white text-sm font-semibold mb-2">Theme</Text>
-              <View className="flex-row gap-2">
-                {embeddedPacks.map(pack => (
-                  <Pressable
-                    key={pack.packId}
-                    onPress={() => setSelectedPackId(pack.packId)}
-                    className={`py-2 px-4 rounded-lg ${
-                      selectedPackId === pack.packId
-                        ? "bg-blue-600"
-                        : "bg-gray-800 active:bg-gray-700"
-                    }`}
-                  >
-                    <Text className={`text-sm font-medium ${
-                      selectedPackId === pack.packId ? "text-white" : "text-gray-300"
-                    }`}>
-                      {pack.name}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            </View>
-          )}
 
           <View className="flex-row items-center gap-6 mb-6">
             <LikeButton
@@ -377,7 +341,7 @@ export default function GameDetailScreen() {
             />
           </View>
 
-          {gameInfo.source === "database" && (
+          {!isOffline && (
             <View>
               <Text className="text-white text-xl font-bold mb-4">Themes</Text>
               {isLoadingPacks ? (

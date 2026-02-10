@@ -47,6 +47,7 @@
     "generate:registry": "cd app && npx reggie",
     "generate:registry:watch": "cd app && npx reggie --watch",
     "generate:registry:check": "cd app && npx reggie --check",
+    "generate:bridge": "npx tsx scripts/bridge-codegen.ts",
     "build:types": "tsc -b",
     "knip": "knip"
   },

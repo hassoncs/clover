@@ -1109,7 +1109,19 @@ export function GameRuntimeGodot({
       elapsedRef.current += dt;
       frameIdRef.current += 1;
 
-      setGameState((s) => ({ ...s, time: elapsedRef.current }));
+      const g = gameRef.current;
+      if (g) {
+        const engineVars = g.gameState.vars;
+        const engineState = (engineVars.gameState as string) || 'loading';
+        setGameState((s) => ({
+          ...s,
+          time: elapsedRef.current,
+          variables: { ...engineVars },
+          state: engineState as ReactGameState['state'],
+        }));
+      } else {
+        setGameState((s) => ({ ...s, time: elapsedRef.current }));
+      }
       if (shouldLog) logger.trace("loop", `frame ${frameNum} - complete`);
 
       if (enablePerfLogging) {

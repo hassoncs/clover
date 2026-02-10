@@ -13,7 +13,6 @@ export type LoadingPhase = 'idle' | 'loading' | 'loading_godot' | 'ready' | 'ski
 
 export interface UseGamePreloaderOptions {
   resolvedPackEntries?: Record<string, ResolvedPackEntry>;
-  source?: 'template' | 'database';
 }
 
 export interface UseGamePreloaderResult {

@@ -443,7 +443,7 @@ export interface GameRuntimeRef {
 }
 
 export interface EphemeralSource {
-  type: "template" | "database";
+  type: "database" | "offline";
   id: string;
 }
 

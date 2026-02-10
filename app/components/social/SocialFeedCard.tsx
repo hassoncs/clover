@@ -106,7 +106,7 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
   };
 
   const handleGamePress = () => {
-    router.push({ pathname: "/game-detail/[id]", params: { id: game.id, source: "database" } });
+    router.push({ pathname: "/game-detail/[id]", params: { id: game.id } });
   };
 
   const handleShare = async () => {

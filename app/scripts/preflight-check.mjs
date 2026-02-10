@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 /**
- * Preflight check for native builds.
+ * Preflight check for builds and dev server startup.
  *
- * Validates that the Metro port configuration is correct before building.
- * This catches misconfigurations that would produce a binary hardcoded to
- * the wrong port (8081 instead of 8085).
+ * Validates:
+ * - Metro port configuration (8085 instead of default 8081)
+ * - Required environment variables (Supabase credentials via hush)
  *
- * Run automatically via package.json preios/preandroid/prepods hooks,
+ * Run automatically via package.json pre* hooks,
  * or manually: node scripts/preflight-check.mjs
  */
 
@@ -83,6 +83,23 @@ if (fs.existsSync(appJsonPath)) {
   }
 }
 
+// 5. Check Supabase credentials are present (injected by hush)
+if (!process.env.EXPO_PUBLIC_SUPABASE_URL) {
+  errors.push(
+    `EXPO_PUBLIC_SUPABASE_URL is not set.\n` +
+    `  Auth will fail at runtime ("Supabase client not initialized").\n` +
+    `  Fix: Start Metro via devmux ("pnpm dev") or prefix with "npx hush run -t app --".`
+  );
+}
+
+if (!process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY) {
+  errors.push(
+    `EXPO_PUBLIC_SUPABASE_ANON_KEY is not set.\n` +
+    `  Auth will fail at runtime ("Supabase client not initialized").\n` +
+    `  Fix: Start Metro via devmux ("pnpm dev") or prefix with "npx hush run -t app --".`
+  );
+}
+
 // Report
 if (warnings.length > 0) {
   console.log('\n⚠️  Preflight warnings:');
@@ -93,10 +110,10 @@ if (errors.length > 0) {
   console.error('\n❌ Preflight check FAILED:');
   for (const e of errors) console.error(`\n  ❌ ${e}`);
   console.error(
-    `\n  The native build will produce a binary that connects to the WRONG Metro port.` +
-    `\n  See docs/shared/reference/metro-port-configuration.md for details.\n`
+    `\n  Fix: Use "pnpm dev" from the repo root to start services correctly.` +
+    `\n  Never run "expo start" directly — it bypasses hush secret injection.\n`
   );
   process.exit(1);
 } else {
-  console.log(`✅ Preflight check passed (Metro port ${EXPECTED_PORT} configured correctly)`);
+  console.log(`✅ Preflight check passed (port ${EXPECTED_PORT}, credentials ✓)`);
 }

@@ -40,7 +40,7 @@ interface FeedGame {
   commentCount: number;
   createdAt: number;
   userId: string | null;
-  source: "database" | "template";
+  source: "database";
 }
 
 function formatCount(n: number): string {
@@ -152,7 +152,7 @@ function FeedItem({
   const handleGamePress = () => {
     router.push({
       pathname: "/game-detail/[id]",
-      params: { id: game.id, source: game.source },
+      params: { id: game.id },
     });
   };
 
@@ -162,8 +162,8 @@ function FeedItem({
     }
   };
 
-  const creatorName = game.userId ? "Slopcade Creator" : "Template";
-  const creatorId = game.userId ?? "template";
+  const creatorName = game.userId ? "Slopcade Creator" : "Anonymous";
+  const creatorId = game.userId ?? "anonymous";
 
   return (
     <View style={{ height: pageHeight }}>

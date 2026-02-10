@@ -13,7 +13,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc/client";
-import { TESTGAMES } from "@/lib/registry/generated/testGames";
 import type { GameDefinition } from "@slopcade/shared";
 
 interface GameItem {
@@ -132,10 +131,7 @@ export default function MakerScreen() {
     ]);
   }, []);
 
-  const handleOpenTemplate = useCallback((templateId: string) => {
-    setShowNewGameModal(false);
-    router.push({ pathname: "/game/[id]", params: { id: templateId } });
-  }, [router]);
+
 
   const renderProjects = () => (
     <ScrollView
@@ -159,7 +155,7 @@ export default function MakerScreen() {
             <Text className="text-5xl mb-4">🎮</Text>
             <Text className="text-xl font-semibold text-white text-center">No games yet</Text>
             <Text className="text-gray-400 text-center mt-2">
-              Create a new game or play a template to get started!
+              Create a new game to get started!
             </Text>
             <Pressable
               className="mt-6 py-3 px-6 bg-green-600 rounded-lg"
@@ -291,38 +287,7 @@ export default function MakerScreen() {
               )}
             </View>
 
-            {/* Templates Section */}
-            <View>
-              <Text className="text-lg font-semibold text-white mb-3">
-                Start from Template
-              </Text>
-              <Text className="text-gray-400 mb-3">
-                Choose a template to get started:
-              </Text>
 
-              {TESTGAMES.map((game) => (
-                <Pressable
-                  key={game.id}
-                  className="bg-gray-800 p-4 rounded-xl border border-gray-700 mb-3 active:bg-gray-700"
-                  onPress={() => handleOpenTemplate(game.id)}
-                >
-                  <View className="flex-row items-center">
-                    <Text className="text-2xl mr-3">🎮</Text>
-                    <View className="flex-1">
-                      <Text className="text-lg font-semibold text-white">
-                        {game.meta.title}
-                      </Text>
-                      {game.meta.description && (
-                        <Text className="text-gray-400 mt-1" numberOfLines={2}>
-                          {game.meta.description}
-                        </Text>
-                      )}
-                    </View>
-                    <Text className="text-gray-500">→</Text>
-                  </View>
-                </Pressable>
-              ))}
-            </View>
           </View>
         </ScrollView>
       </SafeAreaView>

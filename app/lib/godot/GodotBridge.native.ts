@@ -838,18 +838,26 @@ export function createNativeGodotBridge(): GodotBridge {
     },
 
     async setEntityImage(entityId: string, url: string, width: number, height: number) {
+      console.log(`[GodotBridge.native] setEntityImage called for ${entityId} with URL: ${url}`);
       try {
         const filename = `texture_${entityId}_${Date.now()}.png`;
         const localPath = `${FileSystem.cacheDirectory}${filename}`;
         
+        console.log(`[GodotBridge.native] Downloading from ${url} to ${localPath}`);
         const downloadResult = await FileSystem.downloadAsync(url, localPath);
+        console.log(`[GodotBridge.native] Download result status: ${downloadResult.status}`);
         
         if (downloadResult.status === 200) {
           // Strip file:// prefix - Godot's Image.load() expects raw filesystem paths
           const godotPath = localPath.replace(/^file:\/\//, '');
+          console.log(`[GodotBridge.native] Calling set_entity_image_from_file with path: ${godotPath}`);
           callGameBridge('set_entity_image_from_file', entityId, godotPath, width, height);
+        } else {
+          console.error(`[GodotBridge.native] Download failed with status: ${downloadResult.status}`);
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error(`[GodotBridge.native] setEntityImage error for ${entityId}:`, e);
+      }
     },
 
     async setEntityAtlasRegion(

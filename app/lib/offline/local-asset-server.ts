@@ -1,16 +1,17 @@
 /**
  * Local Asset Server for Offline Mode
- * 
+ *
  * React Native doesn't support traditional HTTP servers, so this module
  * provides a file:// URL resolver for locally stored game assets.
- * 
+ *
  * Storage structure:
  * {APP_DATA}/slopcade/games/{gameId}/{packId}/{assetId}.png
- * 
+ *
  * R2 key format: {packId}/{assetId}.png
  */
 
 import { Platform } from 'react-native';
+import * as FileSystem from 'expo-file-system/legacy';
 
 const LOCAL_SERVER_PORT = 8765;
 const LOCAL_SERVER_HOST = 'localhost';
@@ -32,7 +33,8 @@ function getBaseDirectory(): string {
   if (Platform.OS === 'web') {
     return '/slopcade/games/';
   }
-  return 'slopcade/games/';
+  // On native, use the document directory for proper file:// URLs
+  return `${FileSystem.documentDirectory}slopcade/games/`;
 }
 
 /**
@@ -121,10 +123,10 @@ export function isServerRunning(): boolean {
 
 /**
  * Get the server URL (for compatibility with HTTP-based implementations)
- * 
+ *
  * NOTE: This returns a placeholder URL. Actual asset access should use
  * getLocalAssetPath() which returns file:// URLs.
- * 
+ *
  * @returns string
  */
 export function getServerUrl(): string {
@@ -132,7 +134,8 @@ export function getServerUrl(): string {
     const { env } = require('@/lib/config/env');
     return `${env.apiUrl}/assets`;
   }
-  return `file://${getBaseDirectory()}`;
+  // On native, getBaseDirectory() already returns the full file:// URL path
+  return getBaseDirectory();
 }
 
 /**

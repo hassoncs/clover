@@ -5,7 +5,6 @@ import { getAssetUrl } from '@slopcade/shared';
 import { trpcReact } from '@/lib/trpc/react';
 import { env } from '@/lib/config/env';
 import { getServerUrl } from '@/lib/offline/local-asset-server';
-import { EMBEDDED_PACK_MANIFESTS } from '@/lib/offline/embedded-games-registry';
 
 export interface ResolvedAsset {
   assetId?: string;
@@ -63,35 +62,6 @@ function convertDbPackToEmbedded(dbPack: DatabasePack, config?: AssetUrlConfig):
     }
   }
   return { ...dbPack, assets };
-}
-
-function convertEmbeddedPackManifestsToPack(
-  gameId: string,
-  packManifests: Record<string, unknown>,
-  config?: AssetUrlConfig
-): { id: string; name: string; assets: Record<string, AssetConfig> } | null {
-  // Find the first pack (keyed by packId)
-  for (const [packId, manifest] of Object.entries(packManifests)) {
-    const m = manifest as { packId?: string; name?: string; assets?: Record<string, { file: string }> };
-    if (!m.assets) continue;
-
-    const resolvedPackId = m.packId ?? packId;
-    const assets: Record<string, AssetConfig> = {};
-    for (const [templateId, assetEntry] of Object.entries(m.assets)) {
-      const filePath = `packs/${resolvedPackId}/${assetEntry.file}`;
-      const fullUrl = getAssetUrl(filePath, env.assetCdnUrl, config);
-      assets[templateId] = {
-        imageUrl: fullUrl,
-        assetRef: filePath,
-        source: 'generated' as const,
-        scale: 1,
-        offsetX: 0,
-        offsetY: 0,
-      };
-    }
-    return { id: resolvedPackId, name: m.name ?? packId, assets };
-  }
-  return null;
 }
 
 function validatePackCoverage(
@@ -174,32 +144,16 @@ export function resolveAssetForEntity(
 
 export function useAssetResolution(
   entities: RuntimeEntity[],
-  definition: GameDefinition,
-  options?: { source?: 'template' | 'database' }
+  definition: GameDefinition
 ): Map<string, ResolvedAsset | null> {
   const activePackId = definition.assetSystem?.activePackId;
-  const source = options?.source ?? 'database';
-  const gameSlug = definition.metadata.slug ?? definition.metadata.id;
 
   const dbPackQuery = useAssetPackFromDatabase(activePackId);
-
-  // Get embedded asset manifest synchronously for template games
-  const embeddedPackData = useMemo(() => {
-    if (source !== 'template' || !gameSlug) return null;
-    const packManifests = EMBEDDED_PACK_MANIFESTS[gameSlug];
-    if (!packManifests) return null;
-    return convertEmbeddedPackManifestsToPack(gameSlug, packManifests, {
-      offlineMode: true,
-      localServerUrl: getServerUrl(),
-    });
-  }, [source, gameSlug]);
 
   return useMemo(() => {
     let mergedPacks: Record<string, any> = {};
 
-    if (source === 'template' && embeddedPackData) {
-      mergedPacks[embeddedPackData.name] = embeddedPackData;
-    } else if (dbPackQuery.data) {
+    if (dbPackQuery.data) {
       const dbPack = convertDbPackToEmbedded(dbPackQuery.data, {
         offlineMode: true,
         localServerUrl: getServerUrl(),
@@ -232,11 +186,8 @@ export function useAssetResolution(
   }, [
     entities,
     activePackId,
-    source,
-    gameSlug,
     definition.assetSystem,
     definition.templates,
-    embeddedPackData,
     dbPackQuery.data,
   ]);
 }

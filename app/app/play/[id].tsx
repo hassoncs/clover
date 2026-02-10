@@ -12,6 +12,7 @@ import { AssetLoadingScreen } from "../../components/game";
 import { useGamePreloader } from "@/lib/hooks/useGamePreloader";
 import type { ResolvedPackEntry } from "@/lib/assets";
 import { mergeAssetsIntoTemplates } from "@/lib/assets/mergeAssetsIntoTemplates";
+import { loadLocalGameDefinition, getLocalResolvedPackEntries, isGameDownloaded } from "@/lib/offline/download-manager";
 
 export default function PlayScreen() {
   const router = useRouter();
@@ -73,29 +74,46 @@ export default function PlayScreen() {
 
       setIsLoadingPack(true);
       try {
-        const result = await trpc.assetSystem.getResolvedForGame.query({
-          gameId: id,
-          packId,
-        });
-
-        const entries: Record<string, ResolvedPackEntry> = {};
-        Object.entries(result.entriesByTemplateId).forEach(([templateId, entry]) => {
-          if (entry.imageUrl) {
-            entries[templateId] = {
-              imageUrl: entry.imageUrl,
-              placement: entry.placement || undefined,
-            };
+        const isDownloaded = await isGameDownloaded(id);
+        
+        if (isDownloaded) {
+          const localEntries = await getLocalResolvedPackEntries(id, packId);
+          if (localEntries) {
+            setResolvedPackEntries(localEntries);
+            setActiveAssetPackId(packId);
+          } else {
+            console.warn(`[play] Pack ${packId} not found locally, falling back to API`);
+            await loadPackFromApi(id, packId);
           }
-        });
-
-        setResolvedPackEntries(entries);
-        setActiveAssetPackId(packId);
+        } else {
+          await loadPackFromApi(id, packId);
+        }
       } catch (err) {
         console.error("Failed to load asset pack:", err);
         setResolvedPackEntries(undefined);
       } finally {
         setIsLoadingPack(false);
       }
+    };
+
+    const loadPackFromApi = async (gameId: string, packId: string) => {
+      const result = await trpc.assetSystem.getResolvedForGame.query({
+        gameId,
+        packId,
+      });
+
+      const entries: Record<string, ResolvedPackEntry> = {};
+      Object.entries(result.entriesByTemplateId).forEach(([templateId, entry]) => {
+        if (entry.imageUrl) {
+          entries[templateId] = {
+            imageUrl: entry.imageUrl,
+            placement: entry.placement || undefined,
+          };
+        }
+      });
+
+      setResolvedPackEntries(entries);
+      setActiveAssetPackId(packId);
     };
 
     loadPack();
@@ -114,14 +132,30 @@ export default function PlayScreen() {
             setActiveAssetPackId(parsed.assetSystem?.activePackId);
           }
         } else if (id && id !== "preview") {
-          const game = await trpc.games.get.query({ id });
-          const parsed = JSON.parse(game.definition) as GameDefinition;
-          setGameDefinition(parsed);
-          if (!packId) {
-            setActiveAssetPackId(parsed.assetSystem?.activePackId);
-          }
+          const isDownloaded = await isGameDownloaded(id);
+          
+          if (isDownloaded) {
+            console.log(`[play] Loading game ${id} from local storage (offline)`);
+            const localDefinition = await loadLocalGameDefinition(id);
+            if (localDefinition) {
+              setGameDefinition(localDefinition);
+              if (!packId) {
+                setActiveAssetPackId(localDefinition.assetSystem?.activePackId);
+              }
+            } else {
+              throw new Error(`Game ${id} is marked as downloaded but definition not found`);
+            }
+          } else {
+            console.log(`[play] Loading game ${id} from API`);
+            const game = await trpc.games.get.query({ id });
+            const parsed = JSON.parse(game.definition) as GameDefinition;
+            setGameDefinition(parsed);
+            if (!packId) {
+              setActiveAssetPackId(parsed.assetSystem?.activePackId);
+            }
 
-          await trpc.games.incrementPlayCount.mutate({ id });
+            await trpc.games.incrementPlayCount.mutate({ id });
+          }
         } else {
           throw new Error("No game definition provided");
         }

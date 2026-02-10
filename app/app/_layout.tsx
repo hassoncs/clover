@@ -10,7 +10,6 @@ import * as Sentry from "@sentry/react-native";
 import { TRPCProvider } from "@/lib/trpc/react";
 import { handleNativeAuthCallback } from "@/lib/supabase/auth";
 import { AnimatedSplashScreen } from "@/components/AnimatedSplashScreen";
-import { needsInstallation, installEmbeddedGames } from "@/lib/offline/embedded-games";
 import { requestNotificationPermissions } from "@/lib/notifications";
 import "../global.css";
 
@@ -36,22 +35,6 @@ function useNotificationSetup() {
     requestNotificationPermissions().catch((error) => {
       console.warn("[Notifications] Permission request failed:", error);
     });
-  }, []);
-}
-
-function useEmbeddedGamesInstaller() {
-  useEffect(() => {
-    async function install() {
-      try {
-        if (await needsInstallation()) {
-          console.log("[EmbeddedGames] Starting installation...");
-          await installEmbeddedGames();
-        }
-      } catch (error) {
-        console.error("[EmbeddedGames] Installation failed:", error);
-      }
-    }
-    install();
   }, []);
 }
 
@@ -91,7 +74,6 @@ function useDeepLinkHandler() {
 
 function RootLayoutContent() {
   useDeepLinkHandler();
-  useEmbeddedGamesInstaller();
   useNotificationSetup();
   return (
     <Stack screenOptions={{ headerShown: false }}>

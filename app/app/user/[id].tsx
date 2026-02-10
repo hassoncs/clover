@@ -137,7 +137,7 @@ export default function UserProfileScreen() {
                   key={game.id}
                   className="bg-gray-800 rounded-lg overflow-hidden"
                   style={{ width: "48%" }}
-                  onPress={() => router.push({ pathname: "/game-detail/[id]", params: { id: game.id, source: "database" } })}
+                  onPress={() => router.push({ pathname: "/game-detail/[id]", params: { id: game.id } })}
                 >
                   {game.thumbnailUrl ? (
                     <Image

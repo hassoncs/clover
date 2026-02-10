@@ -121,11 +121,11 @@ export default function BrowseScreen() {
                     key={game.id}
                     title={game.title}
                     thumbnailUrl={game.thumbnailUrl}
-                    thumbnailEmoji={game.source === 'template' ? '🎮' : '🌟'}
-                    thumbnailBgClass={game.source === 'template' ? 'bg-indigo-900/30' : 'bg-green-900/30'}
+                    thumbnailEmoji="🌟"
+                    thumbnailBgClass="bg-green-900/30"
                     onPress={() => router.push({
                       pathname: "/game-detail/[id]",
-                      params: { id: game.id, source: game.source }
+                      params: { id: game.id }
                     })}
                   />
                 ))}

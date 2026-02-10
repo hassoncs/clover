@@ -89,7 +89,7 @@ export default function EditorScreen() {
           ephemeralSource={
             id === "ephemeral" && sourceType && sourceId
               ? {
-                  type: sourceType as "template" | "database",
+                  type: sourceType as "database" | "offline",
                   id: sourceId,
                 }
               : undefined

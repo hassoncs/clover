@@ -53,8 +53,12 @@ export default function TabLayout() {
   }, []);
 
   const goToCreateGame = useCallback(() => {
+    if (!isAuthenticated) {
+      router.push("/(tabs)/profile");
+      return;
+    }
     router.push("/create-game");
-  }, [router]);
+  }, [router, isAuthenticated]);
 
   const goToDiscover = useCallback(() => {
     router.push("/discover");
