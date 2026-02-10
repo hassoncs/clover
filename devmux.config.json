@@ -11,6 +11,10 @@
       "cwd": "packages/game-inspector-mcp",
       "command": "pnpm build && tsc --watch --preserveWatchOutput"
     },
+    "bridge-watch": {
+      "cwd": ".",
+      "command": "npx tsx scripts/watch-bridge.ts"
+    },
     "games-watcher": {
       "cwd": "api",
       "command": "pnpm watch:games"
@@ -33,13 +37,13 @@
       "cwd": "app",
       "command": "node ../scripts/export-godot.mjs --once && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true RCT_METRO_PORT=8085 npx hush run -t app -- npx expo start --dev-client --port 8085",
       "health": { "type": "port", "port": 8085 },
-      "dependsOn": ["api", "godot", "registry", "game-inspector", "game-inspector-tsc"]
+      "dependsOn": ["api", "godot", "registry", "game-inspector", "game-inspector-tsc", "bridge-watch"]
     },
     "web": {
       "cwd": "app",
       "command": "node ../scripts/export-godot.mjs --once && WITH_ROZENITE=true npx hush run -t app -- node scripts/preflight-check.mjs && WITH_ROZENITE=true npx hush run -t app -- npx expo start --web --port 8085",
       "health": { "type": "port", "port": 8085 },
-      "dependsOn": ["api", "godot", "registry", "game-inspector", "game-inspector-tsc"]
+      "dependsOn": ["api", "godot", "registry", "game-inspector", "game-inspector-tsc", "bridge-watch"]
     },
     "storybook": {
       "cwd": "apps/storybook",

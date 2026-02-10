@@ -4,6 +4,8 @@ import type {
 } from '@slopcade/shared';
 import type { CompiledPlan } from '@slopcade/shared/effects';
 
+export type { GameDefinition, PropertySyncPayload, CompiledPlan };
+
 export interface Vec2 {
   x: number;
   y: number;

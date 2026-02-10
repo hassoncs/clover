@@ -8,7 +8,8 @@ This directory contains tests for the Godot bridge functionality.
 
 - **`bridge-contracts.test.ts`** - Contract tests for GodotBridge interface
 - **`coordinateUtils.test.ts`** - Coordinate conversion utility tests
-- **`mock-godot-bridge.ts`** - Mock implementation for testing
+- **`mock-godot-bridge.ts`** - Hand-written mock implementation (legacy)
+- **`generated/MockGodotBridge.ts`** - Auto-generated mock from bridge registry (preferred)
 
 ### Manual Test Documentation
 
@@ -59,3 +60,27 @@ Create a `.test.ts` file in this directory following the existing patterns.
 ### For Godot Integration
 
 Create a `.manual.md` file documenting the test procedure using game-inspector MCP tools.
+
+## Generated Mock
+
+The `generated/MockGodotBridge.ts` file is automatically generated from the bridge registry:
+
+```bash
+# Regenerate mock (happens automatically with pnpm generate:bridge)
+pnpm generate:bridge
+```
+
+**Key features:**
+- ✅ All 121 methods from GodotBridge interface
+- ✅ Proper TypeScript types from registry
+- ✅ vi.fn() mocks for all methods
+- ✅ Read-only file (chmod 444)
+- ✅ AI protection header
+
+**Usage:**
+```typescript
+import { MockGodotBridge } from './generated/MockGodotBridge';
+
+const bridge = new MockGodotBridge();
+bridge.spawnEntity.mockReturnValue(undefined);
+```
