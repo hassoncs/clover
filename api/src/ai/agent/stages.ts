@@ -7,7 +7,7 @@ import { resolveTierConfig } from '@/ai/agent/tier-config';
 import { buildStage } from '@/ai/agent/stages/build';
 import { planningStage } from '@/ai/agent/stages/planning';
 
-function makePassThroughStage(stage: 'refine' | 'theme' | 'asset') {
+function makePassThroughStage(stage: 'refine' | 'theme' | 'asset' | 'chat') {
   return async function passThroughStage(
     context: AgentExecutionStageContext,
   ): Promise<AgentExecutionStageResult> {
@@ -41,6 +41,7 @@ function makePassThroughStage(stage: 'refine' | 'theme' | 'asset') {
 export const refineStage = makePassThroughStage('refine');
 export const themeStage = makePassThroughStage('theme');
 export const assetStage = makePassThroughStage('asset');
+export const chatStage = makePassThroughStage('chat');
 
 export {
   planningStage,

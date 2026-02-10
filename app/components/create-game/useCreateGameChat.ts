@@ -10,11 +10,13 @@ type PayloadOf<T extends AgentEventPayload['type']> = Extract<AgentEventPayload,
 const runIdAtom = atom<string | undefined>(undefined);
 const messagesAtom = atom<ChatMessage[]>([]);
 const processedSeqsAtom = atom(new Set<number>());
+const documentContentAtom = atom<string | null>(null);
 
 export function useCreateGameChat() {
   const [runId, setRunId] = useAtom(runIdAtom);
   const [messages, setMessages] = useAtom(messagesAtom);
   const [processedSeqs] = useAtom(processedSeqsAtom);
+  const [documentContent, setDocumentContent] = useAtom(documentContentAtom);
   const processedEventSeqs = useRef(processedSeqs);
   
   const { 
@@ -103,6 +105,8 @@ export function useCreateGameChat() {
               text: `Completed step ${p.stepIndex}`,
               timestamp,
             });
+            
+            setDocumentContent(`Document updated at step ${p.stepIndex}\n\n(Content fetching not implemented in POC)`);
             break;
           }
           case 'gate_values_updated': {
@@ -242,7 +246,7 @@ export function useCreateGameChat() {
       
       return hasChanges ? nextMessages : prevMessages;
     });
-  }, [events, setMessages]);
+  }, [events, setMessages, setDocumentContent]);
 
   const cancelBuild = useCallback(async () => {
     if (!runId) return;
@@ -288,6 +292,7 @@ export function useCreateGameChat() {
     questions,
     submitAnswer,
     submitUserAnswer,
-    run
+    run,
+    documentContent
   };
 }

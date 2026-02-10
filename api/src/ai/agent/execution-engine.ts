@@ -7,6 +7,7 @@ import {
   refineStage,
   themeStage,
   assetStage,
+  chatStage,
 } from '@/ai/agent/stages';
 
 type D1Database = import('@cloudflare/workers-types').D1Database;
@@ -109,6 +110,7 @@ const DEFAULT_STAGE_RUNNERS: Record<AgentStepStage, AgentStageRunner> = {
   refine: refineStage,
   theme: themeStage,
   asset: assetStage,
+  chat: chatStage,
 };
 
 function stageBasePrefix(runId: string, stepIndex: number): string {

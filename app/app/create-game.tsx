@@ -6,12 +6,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useCreateGameChat } from "@/components/create-game/useCreateGameChat";
 import { ChatTimeline } from "@/components/create-game/ChatTimeline";
 import { Composer } from "@/components/create-game/Composer";
+import { SharedDocumentPanel } from "@/components/create-game/SharedDocumentPanel";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 
 export default function CreateGameScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { messages, sendMessage, cancelBuild, resetSession, submitAnswer, submitUserAnswer, run, isRunning } = useCreateGameChat();
+  const { messages, sendMessage, cancelBuild, resetSession, submitAnswer, submitUserAnswer, run, isRunning, documentContent } = useCreateGameChat();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const hasNavigated = useRef(false);
   const lastPromptRef = useRef<string>('');
@@ -96,25 +97,33 @@ export default function CreateGameScreen() {
         </View>
       </View>
 
-      <KeyboardAvoidingView 
-        style={styles.keyboardAvoiding}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-      >
-        <ErrorBoundary>
-          <ChatTimeline 
-            messages={messages} 
-            onSubmitUserAnswer={submitUserAnswer}
-            onSubmitClarification={submitAnswer}
-            onRetry={handleRetry}
-            isRunning={isRunning}
-            hasPendingQuestion={hasPendingQuestion}
-          />
-        </ErrorBoundary>
-        <View style={{ paddingBottom: insets.bottom }}>
-          <Composer onSend={handleSend} isSubmitting={isSubmitting} />
+      <View style={styles.contentContainer}>
+        <View style={styles.chatContainer}>
+          <KeyboardAvoidingView 
+            style={styles.keyboardAvoiding}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+          >
+            <ErrorBoundary>
+              <ChatTimeline 
+                messages={messages} 
+                onSubmitUserAnswer={submitUserAnswer}
+                onSubmitClarification={submitAnswer}
+                onRetry={handleRetry}
+                isRunning={isRunning}
+                hasPendingQuestion={hasPendingQuestion}
+              />
+            </ErrorBoundary>
+            <View style={{ paddingBottom: insets.bottom }}>
+              <Composer onSend={handleSend} isSubmitting={isSubmitting} />
+            </View>
+          </KeyboardAvoidingView>
         </View>
-      </KeyboardAvoidingView>
+
+        {Platform.OS === 'web' && (
+          <SharedDocumentPanel content={documentContent} />
+        )}
+      </View>
     </View>
   );
 }
@@ -123,6 +132,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#0A0B0E",
+  },
+  contentContainer: {
+    flex: 1,
+    flexDirection: Platform.OS === 'web' ? 'row' : 'column',
+  },
+  chatContainer: {
+    flex: 1,
   },
   header: {
     flexDirection: "row",
