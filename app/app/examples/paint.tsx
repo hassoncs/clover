@@ -63,6 +63,7 @@ const INK_SPREAD_SHADER = `
 shader_type canvas_item;
 
 uniform sampler2D current_buffer : filter_linear;
+uniform sampler2D stroke_overlay : filter_nearest;
 uniform vec2 texel_size;
 uniform float dt;
 
@@ -76,9 +77,10 @@ void fragment() {
     vec4 tr = texture(current_buffer, UV + vec2( texel_size.x, -texel_size.y));
     vec4 bl = texture(current_buffer, UV + vec2(-texel_size.x,  texel_size.y));
     vec4 br = texture(current_buffer, UV + vec2( texel_size.x,  texel_size.y));
-    vec4 blurred = c * 0.25 + (l + r + u + d) * 0.125 + (tl + tr + bl + br) * 0.0625;
-    blurred.a = 1.0;
-    COLOR = blurred;
+    vec4 result = c * 0.25 + (l + r + u + d) * 0.125 + (tl + tr + bl + br) * 0.0625;
+    result.a = 1.0;
+    vec4 _overlay = texture(stroke_overlay, UV);
+    COLOR = mix(result, _overlay, _overlay.a);
 }
 `.trim();
 
@@ -86,6 +88,7 @@ const MELT_SHADER = `
 shader_type canvas_item;
 
 uniform sampler2D current_buffer : filter_linear;
+uniform sampler2D stroke_overlay : filter_nearest;
 uniform vec2 texel_size;
 uniform float dt;
 
@@ -96,9 +99,10 @@ void fragment() {
     vec4 br_s = texture(current_buffer, UV + vec2( texel_size.x, texel_size.y));
 
     float gravity = 0.15;
-    vec4 melted = mix(c, (c * 0.4 + below * 0.3 + bl_s * 0.15 + br_s * 0.15), gravity);
-    melted.a = 1.0;
-    COLOR = melted;
+    vec4 result = mix(c, (c * 0.4 + below * 0.3 + bl_s * 0.15 + br_s * 0.15), gravity);
+    result.a = 1.0;
+    vec4 _overlay = texture(stroke_overlay, UV);
+    COLOR = mix(result, _overlay, _overlay.a);
 }
 `.trim();
 
@@ -106,6 +110,7 @@ const SWIRL_SHADER = `
 shader_type canvas_item;
 
 uniform sampler2D current_buffer : filter_linear;
+uniform sampler2D stroke_overlay : filter_nearest;
 uniform vec2 texel_size;
 uniform float dt;
 
@@ -117,9 +122,10 @@ void fragment() {
     float cs = cos(angle);
     float sn = sin(angle);
     vec2 rotated = center + vec2(delta.x * cs - delta.y * sn, delta.x * sn + delta.y * cs);
-    vec4 c = texture(current_buffer, rotated);
-    c.a = 1.0;
-    COLOR = c;
+    vec4 result = texture(current_buffer, rotated);
+    result.a = 1.0;
+    vec4 _overlay = texture(stroke_overlay, UV);
+    COLOR = mix(result, _overlay, _overlay.a);
 }
 `.trim();
 
@@ -127,6 +133,7 @@ const RAINBOW_SHADER = `
 shader_type canvas_item;
 
 uniform sampler2D current_buffer : filter_linear;
+uniform sampler2D stroke_overlay : filter_nearest;
 uniform vec2 texel_size;
 uniform float dt;
 
@@ -151,18 +158,19 @@ void fragment() {
     vec4 r = texture(current_buffer, UV + vec2( texel_size.x, 0.0));
     vec4 u = texture(current_buffer, UV + vec2(0.0, -texel_size.y));
     vec4 d = texture(current_buffer, UV + vec2(0.0,  texel_size.y));
-    vec4 blurred = c * 0.5 + (l + r + u + d) * 0.125;
+    vec4 result = c * 0.5 + (l + r + u + d) * 0.125;
 
-    float brightness = (blurred.r + blurred.g + blurred.b) / 3.0;
+    float brightness = (result.r + result.g + result.b) / 3.0;
     if (brightness < 0.95) {
-        vec3 hsv = rgb2hsv(blurred.rgb);
+        vec3 hsv = rgb2hsv(result.rgb);
         hsv.x = fract(hsv.x + 0.008);
         hsv.y = min(hsv.y + 0.01, 1.0);
-        blurred.rgb = hsv2rgb(hsv);
+        result.rgb = hsv2rgb(hsv);
     }
 
-    blurred.a = 1.0;
-    COLOR = blurred;
+    result.a = 1.0;
+    vec4 _overlay = texture(stroke_overlay, UV);
+    COLOR = mix(result, _overlay, _overlay.a);
 }
 `.trim();
 

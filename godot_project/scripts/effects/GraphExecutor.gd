@@ -14,7 +14,6 @@ var _seed_feedback_on_next_frame: bool = false
 var _viewport_pool: ViewportPool = null
 var _shader_warmer: ShaderWarmer = null
 var _buffer_registry: Dictionary = {}  # name -> texture
-var _injected_feedback_tex: Texture2D = null
 
 func _ready() -> void:
 	set_process(false)
@@ -302,9 +301,7 @@ func _process(delta: float) -> void:
 				write_material = entry.get("material_b")
 
 			var feedback_tex: Texture2D = read_tex
-			if _injected_feedback_tex != null:
-				feedback_tex = _injected_feedback_tex
-			elif _seed_feedback_on_next_frame:
+			if _seed_feedback_on_next_frame:
 				var pixel_buffer_tex: Texture2D = _buffer_registry.get("pixelBuffer")
 				if pixel_buffer_tex != null:
 					feedback_tex = pixel_buffer_tex
@@ -325,8 +322,6 @@ func _process(delta: float) -> void:
 
 	if _seed_feedback_on_next_frame:
 		_seed_feedback_on_next_frame = false
-	if _injected_feedback_tex != null:
-		_injected_feedback_tex = null
 
 func _build_passes(passes: Array) -> bool:
 	if not (passes is Array):
