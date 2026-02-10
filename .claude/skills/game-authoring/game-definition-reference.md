@@ -12,7 +12,7 @@ interface GameDefinition {
   entities: GameEntity[];                           // Required
   presentation?: PresentationConfig;
   camera?: CameraConfig;
-  ui?: UIConfig;
+  overlay?: OverlayConfig;
   background?: BackgroundConfig;
   variables?: Record<string, GameVariable>;
   joints?: GameJoint[];
@@ -293,20 +293,138 @@ winCondition: { expr: "entityCount('brick') == 0" }
 }
 ```
 
-## ui: UIConfig
+## overlay: OverlayConfig
+
+The overlay system provides a declarative HUD for displaying game state. It replaces the old UIConfig system.
 
 ```typescript
+overlay?: {
+  elements: OverlayElement[];
+  theme?: OverlayTheme;
+}
+```
+
+### Element Types
+
+**Text** — Display text with bindings to game state:
+```typescript
 {
-  showTimer?: boolean;
-  timerCountdown?: boolean;
+  id: string;
+  type: 'text';
+  anchor: OverlayAnchor;  // 'top-left' | 'top-center' | 'top-right' | 'center-left' | 'center' | 'center-right' | 'bottom-left' | 'bottom-center' | 'bottom-right'
+  offset: { x: number; y: number };  // Pixels inward from anchor
+  fontSize?: number;       // Default: 16
+  fontWeight?: 'normal' | 'bold';
+  color?: string;          // Default: '#FFFFFF'
+  bindings: { text: string };  // Template: "SCORE\n{{variables.score}}"
+  visibleWhen?: string;    // Expression: "variables.multiplier != 1"
+  style?: OverlayStyle;
+}
+```
+
+**Bar** — Health bar, progress bar:
+```typescript
+{
+  id: string;
+  type: 'bar';
+  anchor: OverlayAnchor;
+  offset: { x: number; y: number };
+  width?: number;          // Default: 100
+  height?: number;         // Default: 12
+  color?: string;          // Fill color
+  backgroundColor?: string; // Track color
+  bindings: { value: string; max: string };  // "variables.health", "variables.maxHealth"
+  showLabel?: boolean;
+  labelFormat?: string;    // "{value}/{max}" or "{percent}%"
+}
+```
+
+**Counter** — Icon + number (lives, coins):
+```typescript
+{
+  id: string;
+  type: 'counter';
+  anchor: OverlayAnchor;
+  offset: { x: number; y: number };
+  iconEmoji?: string;      // "❤️", "🪙"
+  fontSize?: number;
+  color?: string;
+  bindings: { value: string };  // "variables.lives"
+}
+```
+
+**Button** — Interactive button that emits game events:
+```typescript
+{
+  id: string;
+  type: 'button';
+  anchor: OverlayAnchor;
+  offset: { x: number; y: number };
+  label: string;
+  eventName: string;       // Emits this game event on press
+  eventData?: Record<string, unknown>;
+  color?: string;
+  textColor?: string;
+  disabledWhen?: string;   // Expression
+}
+```
+
+**Container** — Group elements with layout:
+```typescript
+{
+  id: string;
+  type: 'container';
+  anchor: OverlayAnchor;
+  offset: { x: number; y: number };
+  direction?: 'horizontal' | 'vertical';
+  gap?: number;
+  children: OverlayElement[];
+}
+```
+
+**Image** and **Spacer** — For visual elements and layout spacing.
+
+### Binding Expressions
+
+Bindings connect elements to live game state:
+- `{{variables.score}}` — Game variable value
+- `{{entityCount('brick')}}` — Count entities with tag
+- `{{formatTime(elapsed)}}` — Format elapsed time as "M:SS"
+- `{{formatNumber(1234)}}` — Format with commas: "1,234"
+
+### Anchoring
+
+Elements are positioned relative to screen edges. Offsets are always **inward** from the anchor:
+- `anchor: 'top-left', offset: { x: 16, y: 16 }` → 16px from top-left corner
+- `anchor: 'top-right', offset: { x: 16, y: 16 }` → 16px from top-right corner
+
+Stack multiple elements at the same anchor by incrementing Y offset by 56px.
+
+### OverlayStyle
+
+```typescript
+style?: {
+  backgroundColor?: string;  // e.g., 'rgba(0,0,0,0.6)'
+  borderRadius?: number;
+  borderColor?: string;
+  borderWidth?: number;
+  padding?: number;
+  paddingHorizontal?: number;
+  paddingVertical?: number;
+  opacity?: number;
+}
+```
+
+### Theme
+
+```typescript
+theme?: {
+  fontPreset?: 'system' | 'pixel' | 'retro' | 'handwritten' | 'monospace';
+  pixelMode?: boolean;
+  primaryColor?: string;
+  textColor?: string;
   backgroundColor?: string;
-  entityCountDisplays?: Array<{ tag: string, label: string, color?: string }>;
-  variableDisplays?: Array<{
-    name: string, label: string,
-    position?: 'top-left' | 'top-right' | 'top-center',
-    color?: string, format?: string,
-    showWhen?: 'always' | 'not_default', defaultValue?: number | string | boolean
-  }>;
+  fontSize?: number;
 }
 ```
 
@@ -341,9 +459,22 @@ winCondition: { expr: "entityCount('brick') == 0" }
     id: string;
     title: string;
     message?: string;
-    stats?: Array<{ label: string, variable: string, format?: string }>;
+    stats?: Array<{
+      label: string,
+      variable: string,
+      format?: string,
+      binding?: string    // Support for binding expressions like "{{variables.score}}"
+    }>;
     dismissible?: boolean;
     dismissEventName?: string;
+    showOnState?: 'ready' | 'won' | 'lost' | 'paused'; // Auto-show on game state
+    showWhen?: string;                                // Expression to auto-show
+    style?: {                                         // Custom dialog styling
+      backgroundColor?: string;
+      textColor?: string;
+      borderRadius?: number;
+      padding?: number;
+    };
     buttons: Array<{
       label: string,
       eventName: string,

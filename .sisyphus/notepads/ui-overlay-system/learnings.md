@@ -19,3 +19,10 @@
 - App uses `vitest` with `globals: true` and `jsdom` environment
 - Test pattern: `import { describe, it, expect } from 'vitest'`
 - Config at `app/vitest.config.mjs`, includes `lib/**/*.test.ts`
+## Skill Documentation Update
+- Replaced `UIConfig` with `OverlayConfig` in `game-definition-reference.md`.
+- Added documentation for 7 overlay element types: text, bar, counter, button, image, container, spacer.
+- Documented binding expressions and anchoring logic for the overlay system.
+- Updated `dialogs` documentation with `showOnState`, `showWhen`, `style`, and `binding` fields.
+- Converted legacy `ui:` examples to `overlay:` in `examples.md`.
+- Verified zero legacy references to `UIConfig`, `variableDisplays`, `entityCountDisplays`, or `showTimer` in skill files.

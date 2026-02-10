@@ -3,8 +3,6 @@ import { View, Text, TextInput, Pressable, ScrollView, StyleSheet } from "react-
 import type { ExampleMeta } from "@/lib/registry/types";
 import type { GodotBridge } from "@/lib/godot/types";
 import type { GameDefinition } from "@slopcade/shared";
-import type { EffectGraphSpec } from "@slopcade/shared/effects";
-import { compileGraph } from "@slopcade/shared/effects";
 
 export const metadata: ExampleMeta = {
   title: "Shader Authoring",
@@ -89,7 +87,6 @@ export default function DynamicShaderExample() {
   const [error, setError] = useState<string | null>(null);
   const [shaderApplied, setShaderApplied] = useState(false);
   const gameLoadedRef = useRef(false);
-  const graphAppliedRef = useRef(false);
 
   useEffect(() => {
     let mounted = true;
@@ -137,193 +134,241 @@ export default function DynamicShaderExample() {
     setError(null);
     
     try {
-      // Create effect graph with custom shader node
-      const spec: EffectGraphSpec = {
-        id: 'dynamic-shader',
-        version: '1.0.0',
-        engineApiVersion: '2.0.0',
-        scope: 'entity',
-        nodes: [{
-          id: 'fx',
-          type: 'custom',
-          shader: shaderCode,
-          family: 'filter',
-          inputSlots: [{ name: 'input', dataType: 'texture', connectedTo: null }],
-          params: {},
-          outputTarget: { bufferId: 'output', format: 'rgba8', resolution: 'full' },
-          flags: { stateful: false, fusible: 'never' },
-        }],
-        connections: [],
-        feedbackEdges: [],
-        lifecycle: { autoStart: true, stopMode: 'freeze' },
-      };
-      
-      // Compile the graph
-      const compileResult = compileGraph(spec);
-      
-      if (!compileResult.success || !compileResult.plan) {
-        const errorMsg = compileResult.errors?.map(e => e.message).join(', ') || 'Compilation failed';
-        setError(errorMsg);
-        console.error('[DynamicShader] Compilation failed:', compileResult.errors);
-        return;
-      }
-      
-      // Apply the graph
-      const applyResult = await bridge.applyGraph(compileResult.plan);
-      
-      if (!applyResult.success) {
-        setError(applyResult.error?.message || 'Failed to apply graph');
-        console.error('[DynamicShader] Apply failed:', applyResult.error);
-        return;
-      }
-      
-      // Start the effect
-      if (!graphAppliedRef.current) {
-        const startResult = await bridge.start();
-        if (!startResult.success) {
-          setError(startResult.error?.message || 'Failed to start effect');
-          console.error('[DynamicShader] Start failed:', startResult.error);
-          return;
-        }
-        graphAppliedRef.current = true;
-      }
-      
+      bridge.applySpriteEffect("test-entity", "custom", { shader: shaderCode });
       setShaderApplied(true);
-      console.log('[DynamicShader] Shader applied successfully');
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
       setError(errorMsg);
-      console.error('[DynamicShader] Error:', err);
+      console.error("Failed to apply shader:", err);
     }
   }, [bridge, status, shaderCode]);
 
-  const handleClearEffect = useCallback(() => {
+  const handleClearShader = useCallback(() => {
     if (!bridge || status !== "ready") return;
-    bridge.clearSpriteEffect("test-entity");
-    setAppliedShaderId(null);
-    setLastResult(null);
+    
+    try {
+      bridge.clearSpriteEffect("test-entity");
+      setShaderApplied(false);
+      setError(null);
+    } catch (err) {
+      console.error("Failed to clear shader:", err);
+    }
   }, [bridge, status]);
 
   const handleSelectPreset = useCallback((preset: typeof PRESET_SHADERS[number]) => {
     setShaderCode(preset.code);
   }, []);
+  
+  const handleReset = useCallback(() => {
+    setShaderCode(VALID_SHADER);
+    setError(null);
+  }, []);
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#0f0f23" }}>
-      <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold", padding: 12 }}>
-        examples/dynamic_shader
-      </Text>
-      
-      <View style={{ flex: 1, flexDirection: "row" }}>
-        <View style={{ flex: 1, padding: 8 }}>
-          <View style={{ backgroundColor: "#1a1a2e", borderRadius: 8, padding: 8, marginBottom: 8 }}>
-            <Text style={{ color: "#aaa", fontSize: 12 }}>Status: {status.toUpperCase()}</Text>
-            {appliedShaderId && (
-              <Text style={{ color: "#4ECDC4", fontSize: 12 }}>Applied: {appliedShaderId}</Text>
-            )}
-          </View>
-          
-          {lastResult && (
-            <View style={{ 
-              backgroundColor: lastResult.success ? "#1a4a1a" : "#4a1a1a", 
-              borderRadius: 8, 
-              padding: 8, 
-              marginBottom: 8 
-            }}>
-              <Text style={{ color: lastResult.success ? "#4f4" : "#f44", fontWeight: "bold" }}>
-                {lastResult.success ? "✓ Shader compiled successfully" : "✗ Shader compilation failed"}
-              </Text>
-              {lastResult.error && (
-                <Text style={{ color: "#faa", fontSize: 12, marginTop: 4 }}>
-                  Error: {lastResult.error}
-                </Text>
-              )}
-            </View>
-          )}
-          
-          {GodotView && (
-            <View style={{ flex: 1, borderRadius: 8, overflow: "hidden" }}>
-              <GodotView style={{ flex: 1 }} />
-            </View>
-          )}
-        </View>
+    <View style={styles.container}>
+      <View style={styles.canvasContainer}>
+        {GodotView && <GodotView style={{ flex: 1 }} />}
         
-        <View style={{ width: 350, padding: 8 }}>
-          <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginBottom: 8 }}>
-            Shader Presets
-          </Text>
-          
-          <ScrollView style={{ maxHeight: 100, marginBottom: 8 }}>
-            {PRESET_SHADERS.map((preset) => (
-              <Pressable
-                key={preset.name}
-                onPress={() => handleSelectPreset(preset)}
-                style={({ pressed }) => ({
-                  backgroundColor: pressed ? "#333" : "#222",
-                  padding: 8,
-                  borderRadius: 4,
-                  marginBottom: 4,
-                  borderLeftWidth: 3,
-                  borderLeftColor: preset.valid ? "#4f4" : "#f44",
-                })}
-              >
-                <Text style={{ color: "#fff", fontSize: 12 }}>{preset.name}</Text>
-              </Pressable>
-            ))}
-          </ScrollView>
-          
-          <Text style={{ color: "#fff", fontSize: 14, fontWeight: "bold", marginBottom: 8 }}>
-            Shader Code
-          </Text>
-          
+        {status === "loading" && (
+          <View style={styles.loadingOverlay}>
+            <Text style={styles.loadingText}>Loading Godot...</Text>
+          </View>
+        )}
+      </View>
+      
+      <View style={styles.controlPanel}>
+        <Text style={styles.title}>Shader Authoring</Text>
+        <Text style={styles.subtitle}>Write GLSL shaders with live compilation and error reporting</Text>
+        
+        <Text style={styles.sectionTitle}>Shader Presets</Text>
+        <ScrollView style={styles.presetsContainer} nestedScrollEnabled>
+          {PRESET_SHADERS.map((preset) => (
+            <Pressable
+              key={preset.name}
+              onPress={() => handleSelectPreset(preset)}
+              style={({ pressed }) => [
+                styles.presetButton,
+                { backgroundColor: pressed ? "#333" : "#222" },
+                { borderLeftColor: preset.valid ? "#4c4" : "#d44" },
+              ]}
+            >
+              <Text style={styles.presetText}>{preset.name}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+        
+        <Text style={styles.sectionTitle}>Shader Code</Text>
+        <ScrollView style={styles.editorContainer} nestedScrollEnabled>
           <TextInput
+            style={styles.editor}
             value={shaderCode}
             onChangeText={setShaderCode}
             multiline
-            style={{
-              flex: 1,
-              backgroundColor: "#1a1a2e",
-              color: "#fff",
-              fontFamily: "monospace",
-              fontSize: 11,
-              padding: 8,
-              borderRadius: 8,
-              textAlignVertical: "top",
-            }}
+            autoCapitalize="none"
+            autoCorrect={false}
+            spellCheck={false}
+            placeholder="Enter GLSL shader code..."
+            placeholderTextColor="#666"
           />
-          
-          <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
-            <Pressable
-              onPress={handleCompileAndApply}
-              disabled={status !== "ready"}
-              style={({ pressed }) => ({
-                flex: 1,
-                backgroundColor: pressed ? "#3a8" : "#4ECDC4",
-                padding: 12,
-                borderRadius: 8,
-                alignItems: "center",
-                opacity: status === "ready" ? 1 : 0.5,
-              })}
-            >
-              <Text style={{ color: "#000", fontWeight: "bold" }}>Compile & Apply</Text>
-            </Pressable>
-            
-            <Pressable
-              onPress={handleClearEffect}
-              disabled={status !== "ready"}
-              style={({ pressed }) => ({
-                backgroundColor: pressed ? "#555" : "#666",
-                padding: 12,
-                borderRadius: 8,
-                alignItems: "center",
-                opacity: status === "ready" ? 1 : 0.5,
-              })}
-            >
-              <Text style={{ color: "#fff", fontWeight: "bold" }}>Clear</Text>
-            </Pressable>
+        </ScrollView>
+        
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
           </View>
+        )}
+        
+        <View style={styles.buttonRow}>
+          <Pressable
+            onPress={handleCompileAndApply}
+            disabled={status !== "ready"}
+            style={[styles.button, styles.applyButton, status !== "ready" && styles.buttonDisabled]}
+          >
+            <Text style={styles.buttonText}>Compile & Apply</Text>
+          </Pressable>
+          
+          {shaderApplied && (
+            <Pressable
+              onPress={handleClearShader}
+              disabled={status !== "ready"}
+              style={[styles.button, styles.clearButton, status !== "ready" && styles.buttonDisabled]}
+            >
+              <Text style={styles.buttonText}>Clear</Text>
+            </Pressable>
+          )}
+          
+          <Pressable
+            onPress={handleReset}
+            disabled={status !== "ready"}
+            style={[styles.button, styles.resetButton, status !== "ready" && styles.buttonDisabled]}
+          >
+            <Text style={styles.buttonText}>Reset</Text>
+          </Pressable>
         </View>
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#1a1a2e",
+  },
+  canvasContainer: {
+    flex: 1,
+    flexShrink: 1,
+  },
+  loadingOverlay: {
+    position: "absolute",
+    inset: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  loadingText: {
+    color: "#fff",
+    fontSize: 16,
+  },
+  controlPanel: {
+    backgroundColor: "#2a2a3e",
+    borderTopWidth: 1,
+    borderTopColor: "#444",
+    paddingTop: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    maxHeight: "50%",
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 12,
+    color: "#aaa",
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 8,
+    marginTop: 8,
+  },
+  presetsContainer: {
+    maxHeight: 100,
+    marginBottom: 8,
+  },
+  presetButton: {
+    padding: 8,
+    borderRadius: 4,
+    marginBottom: 4,
+    borderLeftWidth: 3,
+  },
+  presetText: {
+    color: "#fff",
+    fontSize: 12,
+  },
+  editorContainer: {
+    backgroundColor: "#1e1e2e",
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#444",
+    maxHeight: 200,
+    marginBottom: 12,
+  },
+  editor: {
+    fontFamily: "monospace",
+    fontSize: 12,
+    color: "#f8f8f2",
+    padding: 12,
+    minHeight: 150,
+  },
+  errorContainer: {
+    backgroundColor: "#d44",
+    borderRadius: 4,
+    padding: 8,
+    marginBottom: 12,
+  },
+  errorText: {
+    color: "#fff",
+    fontSize: 12,
+    fontFamily: "monospace",
+  },
+  buttonRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 6,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  applyButton: {
+    backgroundColor: "#4c4",
+    borderWidth: 1,
+    borderColor: "#393",
+  },
+  clearButton: {
+    backgroundColor: "#d44",
+    borderWidth: 1,
+    borderColor: "#a22",
+  },
+  resetButton: {
+    backgroundColor: "#666",
+    borderWidth: 1,
+    borderColor: "#444",
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+  buttonText: {
+    fontWeight: "bold",
+    color: "#fff",
+    fontSize: 14,
+  },
+});
