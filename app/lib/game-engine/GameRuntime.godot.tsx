@@ -58,7 +58,7 @@ import {
 } from "./debug";
 import { cancelTweensForEntity } from "./behaviors/TweenBehaviors";
 import { GameSystemRunner } from "./systems/runner/GameSystemRunner";
-import { OverlayRenderer } from "./ui/overlay";
+import { OverlayRenderer, evaluateExpression, buildBindingContext, ensureStateDialogs } from "./ui/overlay";
 import type { SystemContext, UpdateContext } from "./systems/runner/types";
 import { GameLoopController } from "./GameLoopController";
 import { WorldOpsImpl } from "./WorldOpsImpl";
@@ -390,13 +390,28 @@ export function GameRuntimeGodot({
 
   const activeDialogVariable = definition.dialogs?.activeDialogVariable ?? "activeDialog";
 
+  const dialogsConfig = useMemo(() => {
+    const enhanced = ensureStateDialogs(definition);
+    return enhanced.dialogs;
+  }, [definition]);
+
   const resolveActiveDialog = useCallback((): GameDialogDefinition | null => {
     const game = gameRef.current;
-    if (!game || !definition.dialogs?.dialogs) return null;
+    if (!game || !dialogsConfig?.dialogs) return null;
+
     const activeId = game.gameState.vars[activeDialogVariable] as string;
-    if (!activeId) return null;
-    return definition.dialogs.dialogs.find(d => d.id === activeId) ?? null;
-  }, [definition.dialogs, activeDialogVariable]);
+    if (activeId) {
+      return dialogsConfig.dialogs.find(d => d.id === activeId) ?? null;
+    }
+
+    const currentState = gameState.state;
+    if (currentState === 'won' || currentState === 'lost' || currentState === 'paused') {
+      const stateDialog = dialogsConfig.dialogs.find(d => d.showOnState === currentState);
+      if (stateDialog) return stateDialog;
+    }
+
+    return null;
+  }, [dialogsConfig, activeDialogVariable, gameState.state]);
 
   const handleDialogButtonPress = useCallback((eventName: string, data?: Record<string, unknown>) => {
     const game = gameRef.current;
@@ -1759,12 +1774,21 @@ export function GameRuntimeGodot({
             visible={true}
             title={dialog.title}
             message={dialog.message}
-            stats={dialog.stats?.map(s => ({
-              label: s.label,
-              value: s.format
-                ? s.format.replace('{value}', String(vars[s.variable] ?? ''))
-                : String(vars[s.variable] ?? ''),
-            }))}
+            stats={dialog.stats?.map(s => {
+              if (s.binding) {
+                const ctx = buildBindingContext(gameState, (tag: string) =>
+                  gameRef.current?.entityManager.getEntitiesByTag(tag).length ?? 0
+                );
+                const result = evaluateExpression(s.binding, ctx);
+                return { label: s.label, value: String(result ?? '') };
+              }
+              return {
+                label: s.label,
+                value: s.format
+                  ? s.format.replace('{value}', String(vars[s.variable] ?? ''))
+                  : String(vars[s.variable] ?? ''),
+              };
+            })}
             buttons={dialog.buttons.map(b => ({
               label: b.label,
               variant: b.variant,

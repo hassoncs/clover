@@ -513,6 +513,16 @@ export interface GameDialogStatDefinition {
   label: string;
   variable: string;
   format?: string;
+  binding?: string;
+}
+
+export interface GameDialogStyle {
+  backgroundColor?: string;
+  titleColor?: string;
+  titleFontSize?: number;
+  backdropColor?: string;
+  width?: number | string;
+  borderRadius?: number;
 }
 
 export interface GameDialogDefinition {
@@ -523,6 +533,9 @@ export interface GameDialogDefinition {
   dismissible?: boolean;
   dismissEventName?: string;
   buttons: GameButtonDefinition[];
+  showOnState?: 'won' | 'lost' | 'paused';
+  showWhen?: string;
+  style?: GameDialogStyle;
 }
 
 export interface GameDialogsConfig {

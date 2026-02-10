@@ -11,3 +11,4 @@ export {
   percent,
 } from './BindingEvaluator';
 export type { BindingContext } from './BindingEvaluator';
+export { ensureStateDialogs } from './ensureStateDialogs';
