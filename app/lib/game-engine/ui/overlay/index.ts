@@ -12,3 +12,4 @@ export {
 } from './BindingEvaluator';
 export type { BindingContext } from './BindingEvaluator';
 export { ensureStateDialogs } from './ensureStateDialogs';
+export { uiConfigToOverlay } from './uiConfigToOverlay';

@@ -58,7 +58,7 @@ import {
 } from "./debug";
 import { cancelTweensForEntity } from "./behaviors/TweenBehaviors";
 import { GameSystemRunner } from "./systems/runner/GameSystemRunner";
-import { OverlayRenderer, evaluateExpression, buildBindingContext, ensureStateDialogs } from "./ui/overlay";
+import { OverlayRenderer, evaluateExpression, buildBindingContext, ensureStateDialogs, uiConfigToOverlay } from "./ui/overlay";
 import type { SystemContext, UpdateContext } from "./systems/runner/types";
 import { GameLoopController } from "./GameLoopController";
 import { WorldOpsImpl } from "./WorldOpsImpl";
@@ -394,6 +394,14 @@ export function GameRuntimeGodot({
     const enhanced = ensureStateDialogs(definition);
     return enhanced.dialogs;
   }, [definition]);
+
+  const overlayConfig = useMemo(() => {
+    if (definition.overlay) return definition.overlay;
+    if (definition.ui?.variableDisplays || definition.ui?.entityCountDisplays || definition.ui?.showTimer) {
+      return uiConfigToOverlay(definition.ui);
+    }
+    return undefined;
+  }, [definition.overlay, definition.ui]);
 
   const resolveActiveDialog = useCallback((): GameDialogDefinition | null => {
     const game = gameRef.current;
@@ -1594,84 +1602,20 @@ export function GameRuntimeGodot({
 
       <InputDebugOverlay inputRef={inputRef} viewportRect={viewportRect} />
 
-      {definition.overlay && hasViewport && (
+      {overlayConfig && hasViewport && (
         <OverlayRenderer
-          config={definition.overlay}
+          config={overlayConfig}
           gameState={gameState}
           viewportRect={viewportRect}
           getEntityCountByTag={(tag: string) =>
             gameRef.current?.entityManager.getEntitiesByTag(tag).length ?? 0
           }
           onButtonPress={(eventName, eventData) => {
-            // Button events from overlay are custom game events, not GameEventBus events
-            // They should be handled by game scripts/behaviors
-            console.log('[GameRuntime] Overlay button pressed:', eventName, eventData);
+            if (gameRef.current) {
+              StateHelpers.triggerEvent(gameRef.current.gameState, eventName, eventData);
+            }
           }}
         />
-      )}
-
-      {showHUD && hasViewport && !definition.overlay && (
-        <View
-          style={[
-            styles.hud,
-            {
-              left: viewportRect.x + 20,
-              top: viewportRect.y + 40,
-              right:
-                screenSize.width - viewportRect.x - viewportRect.width + 20,
-            },
-          ]}
-        >
-          {definition.ui?.entityCountDisplays?.map((display) => {
-            const count =
-              gameRef.current?.entityManager.getEntitiesByTag(display.tag)
-                .length ?? 0;
-            return (
-              <Text
-                key={display.tag}
-                style={[
-                  styles.variableText,
-                  display.color ? { color: display.color } : undefined,
-                ]}
-              >
-                {display.label}: {count}
-              </Text>
-            );
-          })}
-          {definition.ui?.variableDisplays?.map((display) => {
-            const value = gameState.variables[display.name];
-            const shouldShow =
-              display.showWhen !== "not_default" ||
-              value !== display.defaultValue;
-            if (!shouldShow) return null;
-            const formattedValue = display.format
-              ? display.format.replace("{value}", String(value))
-              : String(value);
-            return (
-              <Text
-                key={display.name}
-                style={[
-                  styles.variableText,
-                  display.color ? { color: display.color } : undefined,
-                ]}
-              >
-                {display.label}: {formattedValue}
-              </Text>
-            );
-          })}
-          {gameState.state === "playing" && (
-            <TouchableOpacity
-              style={styles.pauseButton}
-              onPress={() => {
-                if (gameRef.current) {
-                  StateHelpers.setGameStateValue(gameRef.current.gameState, 'paused', gameRef.current.events);
-                }
-              }}
-            >
-              <Text style={styles.pauseButtonText}>⏸</Text>
-            </TouchableOpacity>
-          )}
-        </View>
       )}
 
       {gameState.state === "paused" && (
