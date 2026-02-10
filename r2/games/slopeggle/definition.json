@@ -34,38 +34,88 @@
     "multiplier": 1,
     "turn": 0
   },
-  "ui": {
-    "showTimer": false,
-    "backgroundColor": "#0a1628",
-    "entityCountDisplays": [
+  "overlay": {
+    "elements": [
       {
-        "tag": "orange-peg",
-        "label": "Orange Pegs",
-        "color": "#F97316"
-      }
-    ],
-    "variableDisplays": [
-      {
-        "name": "score",
-        "label": "Score",
-        "position": "top-right"
+        "id": "count-orange-peg",
+        "type": "text",
+        "anchor": "top-left",
+        "offset": { "x": 16, "y": 16 },
+        "fontSize": 18,
+        "fontWeight": "bold",
+        "color": "#F97316",
+        "bindings": { "text": "ORANGE PEGS\n{{entityCount('orange-peg')}}" },
+        "style": {
+          "backgroundColor": "rgba(0,0,0,0.6)",
+          "borderRadius": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 6
+        }
       },
       {
-        "name": "lives",
-        "label": "Balls",
-        "position": "top-right"
-      },
-      {
-        "name": "multiplier",
-        "label": "Multiplier",
+        "id": "var-multiplier",
+        "type": "text",
+        "anchor": "top-left",
+        "offset": { "x": 16, "y": 72 },
+        "fontSize": 18,
+        "fontWeight": "bold",
         "color": "#FBBF24",
-        "showWhen": "not_default",
-        "defaultValue": 1
+        "bindings": { "text": "MULTIPLIER\n{{variables.multiplier}}" },
+        "visibleWhen": "variables.multiplier != 1",
+        "style": {
+          "backgroundColor": "rgba(0,0,0,0.6)",
+          "borderRadius": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 6
+        }
       },
       {
-        "name": "turn",
-        "label": "Shot",
-        "color": "#94A3B8"
+        "id": "var-turn",
+        "type": "text",
+        "anchor": "top-left",
+        "offset": { "x": 16, "y": 128 },
+        "fontSize": 18,
+        "fontWeight": "bold",
+        "color": "#94A3B8",
+        "bindings": { "text": "SHOT\n{{variables.turn}}" },
+        "style": {
+          "backgroundColor": "rgba(0,0,0,0.6)",
+          "borderRadius": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 6
+        }
+      },
+      {
+        "id": "var-score",
+        "type": "text",
+        "anchor": "top-right",
+        "offset": { "x": 16, "y": 16 },
+        "fontSize": 18,
+        "fontWeight": "bold",
+        "color": "#FFFFFF",
+        "bindings": { "text": "SCORE\n{{variables.score}}" },
+        "style": {
+          "backgroundColor": "rgba(0,0,0,0.6)",
+          "borderRadius": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 6
+        }
+      },
+      {
+        "id": "var-lives",
+        "type": "text",
+        "anchor": "top-right",
+        "offset": { "x": 16, "y": 72 },
+        "fontSize": 18,
+        "fontWeight": "bold",
+        "color": "#FFFFFF",
+        "bindings": { "text": "BALLS\n{{variables.lives}}" },
+        "style": {
+          "backgroundColor": "rgba(0,0,0,0.6)",
+          "borderRadius": 8,
+          "paddingHorizontal": 12,
+          "paddingVertical": 6
+        }
       }
     ]
   },

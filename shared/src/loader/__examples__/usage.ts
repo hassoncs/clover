@@ -238,11 +238,28 @@ function createBaseSlopeggleGame(): GameDefinition {
       pixelsPerMeter: 50,
       bounds: { width: 12, height: 16 },
     },
-    ui: {
-      backgroundColor: '#0a1628',
-      variableDisplays: [
-        { name: 'score', label: 'Score', position: 'top-right' },
-        { name: 'lives', label: 'Balls', position: 'top-right' },
+    overlay: {
+      elements: [
+        {
+          id: 'score-display',
+          type: 'text',
+          text: 'Score: 0',
+          bindings: { text: 'score' },
+          anchor: 'top-right',
+          offset: { x: -20, y: 20 },
+          fontSize: 24,
+          color: '#FFFFFF',
+        },
+        {
+          id: 'lives-display',
+          type: 'text',
+          text: 'Balls: 10',
+          bindings: { text: 'lives' },
+          anchor: 'top-right',
+          offset: { x: -20, y: 60 },
+          fontSize: 24,
+          color: '#FFFFFF',
+        },
       ],
     },
     variables: { lives: 10 },

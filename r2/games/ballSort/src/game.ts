@@ -93,13 +93,56 @@ export function createBallSortGame(): GameDefinition {
         Array.from({ length: NUM_TUBES }, (_, i) => [`tube${i}_topColor`, -1])
       ),
     },
-    ui: {
-      showTimer: true,
-      timerCountdown: false,
-      backgroundColor: "#1a237e",
-      variableDisplays: [
-        { name: "moveCount", label: "Moves", color: "#4CAF50" },
-        { name: "currentLevel", label: "Level", color: "#FFD700" },
+    overlay: {
+      elements: [
+        {
+          id: 'timer',
+          type: 'text',
+          anchor: 'top-center',
+          offset: { x: 0, y: 16 },
+          fontSize: 20,
+          fontWeight: 'bold',
+          color: '#FFFFFF',
+          bindings: { text: '{{formatTime(elapsed)}}' },
+          style: {
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            borderRadius: 8,
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+          },
+        },
+        {
+          id: 'var-moveCount',
+          type: 'text',
+          anchor: 'top-left',
+          offset: { x: 16, y: 16 },
+          fontSize: 18,
+          fontWeight: 'bold',
+          color: '#4CAF50',
+          bindings: { text: "MOVES\n{{variables.moveCount}}" },
+          style: {
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            borderRadius: 8,
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+          },
+        },
+        {
+          id: 'var-currentLevel',
+          type: 'text',
+          anchor: 'top-left',
+          offset: { x: 16, y: 72 },
+          fontSize: 18,
+          fontWeight: 'bold',
+          color: '#FFD700',
+          bindings: { text: "LEVEL\n{{variables.currentLevel}}" },
+          style: {
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            borderRadius: 8,
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+          },
+        },
       ],
     },
     stateMachines: [

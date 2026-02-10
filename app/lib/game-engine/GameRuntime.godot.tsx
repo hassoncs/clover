@@ -58,7 +58,7 @@ import {
 } from "./debug";
 import { cancelTweensForEntity } from "./behaviors/TweenBehaviors";
 import { GameSystemRunner } from "./systems/runner/GameSystemRunner";
-import { OverlayRenderer, evaluateExpression, buildBindingContext, ensureStateDialogs, uiConfigToOverlay } from "./ui/overlay";
+import { OverlayRenderer, evaluateExpression, buildBindingContext, ensureStateDialogs } from "./ui/overlay";
 import type { SystemContext, UpdateContext } from "./systems/runner/types";
 import { GameLoopController } from "./GameLoopController";
 import { WorldOpsImpl } from "./WorldOpsImpl";
@@ -396,12 +396,8 @@ export function GameRuntimeGodot({
   }, [definition]);
 
   const overlayConfig = useMemo(() => {
-    if (definition.overlay) return definition.overlay;
-    if (definition.ui?.variableDisplays || definition.ui?.entityCountDisplays || definition.ui?.showTimer) {
-      return uiConfigToOverlay(definition.ui);
-    }
-    return undefined;
-  }, [definition.overlay, definition.ui]);
+    return definition.overlay;
+  }, [definition.overlay]);
 
   const resolveActiveDialog = useCallback((): GameDialogDefinition | null => {
     const game = gameRef.current;
@@ -560,13 +556,11 @@ export function GameRuntimeGodot({
     return new ViewportSystem(definition.world.bounds, {
       aspectRatio: presentationConfig?.aspectRatio,
       fit: presentationConfig?.fit,
-      letterboxColor:
-        presentationConfig?.letterboxColor ?? definition.ui?.backgroundColor,
+      letterboxColor: presentationConfig?.letterboxColor,
     });
   }, [
     definition.presentation,
     definition.world.bounds,
-    definition.ui?.backgroundColor,
   ]);
 
   viewportSystemRef.current = viewportSystem;
@@ -765,9 +759,7 @@ export function GameRuntimeGodot({
             worldBounds: definition.world.bounds,
             aspectRatio: presentationConfig?.aspectRatio,
             fit: presentationConfig?.fit,
-            letterboxColor:
-              presentationConfig?.letterboxColor ??
-              definition.ui?.backgroundColor,
+            letterboxColor: presentationConfig?.letterboxColor,
           })
         );
 

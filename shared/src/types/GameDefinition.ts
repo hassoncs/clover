@@ -86,29 +86,7 @@ export interface PresentationConfig {
   orientation?: 'portrait' | 'landscape' | 'any';
 }
 
-export interface EntityCountDisplay {
-  tag: string;
-  label: string;
-  color?: string;
-}
 
-export interface VariableDisplay {
-  name: string;
-  label: string;
-  position?: 'top-left' | 'top-right' | 'top-center';
-  color?: string;
-  format?: string;
-  showWhen?: 'always' | 'not_default';
-  defaultValue?: number | string | boolean;
-}
-
-export interface UIConfig {
-  showTimer?: boolean;
-  timerCountdown?: boolean;
-  backgroundColor?: string;
-  entityCountDisplays?: EntityCountDisplay[];
-  variableDisplays?: VariableDisplay[];
-}
 
 export interface GameMetadata {
   id: string;
@@ -430,7 +408,6 @@ export interface GameDefinition {
   world: WorldConfig;
   presentation?: PresentationConfig;
   camera?: CameraConfig;
-  ui?: UIConfig;
   background?: BackgroundConfig;
   variables?: Record<string, GameVariable>;
   templates: Record<string, EntityTemplate>;
@@ -553,9 +530,4 @@ export const DEFAULT_WORLD_CONFIG: WorldConfig = {
 export const DEFAULT_CAMERA_CONFIG: CameraConfig = {
   type: 'fixed',
   zoom: 1,
-};
-
-export const DEFAULT_UI_CONFIG: UIConfig = {
-  showTimer: false,
-  backgroundColor: '#87CEEB',
 };

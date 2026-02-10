@@ -444,11 +444,7 @@ export const PresentationConfigSchema = z.object({
   orientation: z.enum(['portrait', 'landscape', 'any']).optional(),
 });
 
-export const UIConfigSchema = z.object({
-  showTimer: z.boolean().optional(),
-  timerCountdown: z.boolean().optional(),
-  backgroundColor: z.string().optional(),
-});
+
 
 export const GameMetadataSchema = z.object({
   id: z.string(),
@@ -566,7 +562,6 @@ export const GameDefinitionSchema = z.object({
   world: WorldConfigSchema,
   presentation: PresentationConfigSchema.optional(),
   camera: CameraConfigSchema.optional(),
-  ui: UIConfigSchema.optional(),
   templates: z.record(z.string(), EntityTemplateSchema),
   entities: z.array(GameEntitySchema).min(1),
   rules: z.array(GameRuleSchema).optional(),

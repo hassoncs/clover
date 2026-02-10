@@ -31,9 +31,8 @@ const game: GameDefinition = {
     bounds: { width: WORLD_WIDTH, height: WORLD_HEIGHT },
   },
   camera: { type: "fixed", zoom: 1 },
-  ui: {
-    showTimer: false,
-    backgroundColor: "#0f172a",
+  overlay: {
+    elements: [],
   },
   templates: {
     cube: {

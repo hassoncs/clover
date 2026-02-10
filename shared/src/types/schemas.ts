@@ -654,29 +654,7 @@ export const PresentationConfigSchema = z.object({
   orientation: z.enum(['portrait', 'landscape', 'any']).optional(),
 });
 
-export const EntityCountDisplaySchema = z.object({
-  tag: z.string(),
-  label: z.string(),
-  color: z.string().optional(),
-});
 
-export const VariableDisplaySchema = z.object({
-  name: z.string(),
-  label: z.string(),
-  position: z.enum(['top-left', 'top-center', 'top-right']).optional(),
-  color: z.string().optional(),
-  format: z.string().optional(),
-  showWhen: z.enum(['always', 'not_default']).optional(),
-  defaultValue: z.union([z.number(), z.string(), z.boolean()]).optional(),
-});
-
-export const UIConfigSchema = z.object({
-  showTimer: z.boolean().optional(),
-  timerCountdown: z.boolean().optional(),
-  backgroundColor: z.string().optional(),
-  entityCountDisplays: z.array(EntityCountDisplaySchema).optional(),
-  variableDisplays: z.array(VariableDisplaySchema).optional(),
-});
 
 export const GameMetadataSchema = z.object({
   id: z.string(),
@@ -1006,7 +984,6 @@ export const GameDefinitionSchema = z.object({
   world: WorldConfigSchema,
   presentation: PresentationConfigSchema.optional(),
   camera: CameraConfigSchema.optional(),
-  ui: UIConfigSchema.optional(),
   variables: GameVariablesSchema.optional(),
   templates: z.record(z.string(), EntityTemplateSchema),
   entities: z.array(GameEntitySchema),

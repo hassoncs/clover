@@ -116,11 +116,24 @@ const game: GameDefinition = {
     bounds: { width: WORLD_WIDTH, height: WORLD_HEIGHT },
   },
   camera: { type: "fixed", zoom: 1 },
-  ui: {
-    showTimer: false,
-    backgroundColor: "#2c3e50",
-    variableDisplays: [
-      { name: 'moves', label: 'Moves', position: 'top-center' },
+  overlay: {
+    elements: [
+      {
+        id: 'var-moves',
+        type: 'text',
+        anchor: 'top-center',
+        offset: { x: 0, y: 16 },
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+        bindings: { text: "MOVES\n{{variables.moves}}" },
+        style: {
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          borderRadius: 8,
+          paddingHorizontal: 12,
+          paddingVertical: 6,
+        },
+      },
     ],
   },
   winCondition: {
