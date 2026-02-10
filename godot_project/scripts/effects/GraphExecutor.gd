@@ -235,6 +235,47 @@ func restore_snapshot(snapshot: Dictionary) -> Dictionary:
 
 	return {"success": true}
 
+func hot_swap_shader(pass_id: String, glsl_code: String) -> Dictionary:
+	if pass_id == "":
+		return {"success": false, "error": "pass_id is required"}
+	if glsl_code == "":
+		return {"success": false, "error": "glsl_code is required"}
+	if not _pass_index.has(pass_id):
+		return {"success": false, "error": "Unknown pass id: %s" % pass_id}
+
+	var entry: Dictionary = _pass_index[pass_id]
+	
+	# Compile new shader
+	var new_shader: Shader = _build_custom_shader(glsl_code)
+	if new_shader == null:
+		return {"success": false, "error": "Failed to compile shader"}
+	
+	# Check for shader compilation errors
+	var shader_error: String = new_shader.get_code()
+	if shader_error == "":
+		return {"success": false, "error": "Shader compilation produced empty code"}
+	
+	# Get materials from entry
+	var material: ShaderMaterial = entry.get("material")
+	var material_a: ShaderMaterial = entry.get("material_a")
+	var material_b: ShaderMaterial = entry.get("material_b")
+	
+	if material == null and material_a == null and material_b == null:
+		return {"success": false, "error": "No material found for pass"}
+	
+	# Swap shader on all materials
+	if material != null:
+		material.shader = new_shader
+		_apply_material_params(material, entry.get("params", {}))
+	if material_a != null:
+		material_a.shader = new_shader
+		_apply_material_params(material_a, entry.get("params", {}))
+	if material_b != null:
+		material_b.shader = new_shader
+		_apply_material_params(material_b, entry.get("params", {}))
+	
+	return {"success": true}
+
 func _process(delta: float) -> void:
 	if _state != State.RUNNING:
 		return

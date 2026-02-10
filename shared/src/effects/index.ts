@@ -24,8 +24,8 @@ export type {
   EffectType,
 } from './types';
 
-export type { EffectCategory, EffectParamMeta, EffectMetadata } from './metadata';
-export { EFFECT_METADATA, convertEffectParamMetaToSchema, convertEffectMetadataToSchemas } from './metadata';
+export type { EffectCategory, EffectMetadata } from './metadata';
+export { EFFECT_METADATA } from './metadata';
 
 export type {
   ParamSummary,
@@ -140,3 +140,14 @@ export {
 export { getBuiltInSeeds, registerBuiltInSeeds } from './seeds/index';
 
 export { SHADER_LIBRARY, getShaderGlsl, getShaderGlslStrict, getAvailableShaderKeys } from './shaderLibrary';
+
+export type { ShaderCategory, ShaderLibraryEntry } from './shaderRegistry';
+export {
+  SHADER_REGISTRY,
+  getShaderEntry,
+  listShadersByCategory,
+  searchShaders,
+  getCombinableShaders,
+  getAllShaderCategories,
+  getShaderCount,
+} from './shaderRegistry';

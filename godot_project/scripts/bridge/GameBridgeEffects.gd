@@ -84,6 +84,7 @@ func _build_effects_method_map() -> void:
 		"draw_to_active_buffer": _js_draw_to_active_buffer,
 		"set_external_input": _js_set_external_input,
 		"set_screen_input": _js_set_screen_input,
+		"hot_swap_shader": _js_hot_swap_shader,
 
 	}
 
@@ -172,6 +173,14 @@ func _register_query_handlers() -> void:
 			var enable = bool(args[0].get("enable", false))
 			return set_screen_input(enable)
 		return {"success": true}
+	)
+
+	qs.register_handler("effects.hotSwapShader", func(args):
+		if args.size() > 0 and args[0] is Dictionary:
+			var pass_id = str(args[0].get("passId", ""))
+			var glsl_code = str(args[0].get("glslCode", ""))
+			return hot_swap_shader(pass_id, glsl_code)
+		return {"success": false, "error": "Missing passId or glslCode"}
 	)
 
 func native_dispatch(method_name: String, args_json: String) -> Variant:
@@ -307,6 +316,10 @@ func _setup_js_effects_bridge() -> void:
 	var set_screen_input_cb = JavaScriptBridge.create_callback(_js_set_screen_input)
 	callbacks.append(set_screen_input_cb)
 	bridge["setScreenInput"] = set_screen_input_cb
+
+	var hot_swap_shader_cb = JavaScriptBridge.create_callback(_js_hot_swap_shader)
+	callbacks.append(hot_swap_shader_cb)
+	bridge["hotSwapShader"] = hot_swap_shader_cb
 
 	# Particles
 	var spawn_particle_preset_cb = JavaScriptBridge.create_callback(_js_spawn_particle_preset)
@@ -490,6 +503,15 @@ func _js_set_screen_input(args: Array) -> void:
 		return
 	var enable = bool(args[0])
 	var result = set_screen_input(enable)
+	_set_last_result(result)
+
+func _js_hot_swap_shader(args: Array) -> void:
+	if args.size() < 2:
+		_set_last_result({"success": false, "error": "Missing pass_id or glsl_code"})
+		return
+	var pass_id = str(args[0])
+	var glsl_code = str(args[1])
+	var result = hot_swap_shader(pass_id, glsl_code)
 	_set_last_result(result)
 
 func _js_spawn_particle_preset(args: Array) -> void:
@@ -1003,6 +1025,11 @@ func set_screen_input(enable: bool) -> Dictionary:
 		return {"success": false, "error": "Screen capture not implemented"}
 	else:
 		return {"success": true}
+
+func hot_swap_shader(pass_id: String, glsl_code: String) -> Dictionary:
+	if graph_executor == null:
+		return {"success": false, "error": "GraphExecutor not initialized"}
+	return graph_executor.hot_swap_shader(pass_id, glsl_code)
 
 func _load_texture_from_base64(data_uri: String) -> Texture2D:
 	var parts = data_uri.split(",")

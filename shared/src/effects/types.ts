@@ -98,7 +98,7 @@ export interface OutputTarget {
 // Param value
 // ---------------------------------------------------------------------------
 
-export type ParamValue = number | string | boolean | number[];
+export type ParamValue = number | string | boolean | number[] | Record<string, unknown>;
 
 // ---------------------------------------------------------------------------
 // Parameter schema — unified metadata for UI and compilation
