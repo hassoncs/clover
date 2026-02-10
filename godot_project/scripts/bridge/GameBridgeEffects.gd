@@ -28,8 +28,8 @@ func _ready() -> void:
 
 	_build_effects_method_map()
 	_register_query_handlers()
+	_register_methods_with_game_bridge()
 
-	# If running in web, set up JS bridge methods
 	if OS.has_feature("web"):
 		_setup_js_effects_bridge()
 
@@ -84,6 +84,12 @@ func _build_effects_method_map() -> void:
 		"hot_swap_shader": _js_hot_swap_shader,
 
 	}
+
+func _register_methods_with_game_bridge() -> void:
+	if _game_bridge == null:
+		return
+	for method_name in _method_map:
+		_game_bridge._method_map[method_name] = _method_map[method_name]
 
 func _register_query_handlers() -> void:
 	if _game_bridge == null:

@@ -233,6 +233,22 @@ func _build_method_map() -> void:
 
 	# Step 2: Apply manual overrides for methods needing custom handling
 	var overrides = {
+		# RPC dispatch to query system (used by native bridge)
+		"callRpc": func(args):
+			if args.size() == 0: return {"error": "missing_rpc_args"}
+			var rpc_data = args[0]
+			if rpc_data is String:
+				var json = JSON.new()
+				if json.parse(rpc_data) == OK:
+					rpc_data = json.data
+			if rpc_data is Dictionary:
+				var method = str(rpc_data.get("method", ""))
+				var params = rpc_data.get("params", {})
+				var query_args: Array = [params] if params != null else []
+				if _query_system and method != "":
+					return _query_system.dispatch(method, query_args)
+			return {"error": "invalid_rpc"}
+		,
 		# Core lifecycle
 		"load_game_json": func(args): return load_game_json(str(args[0])) if args.size() > 0 else false,
 		"clear_game": func(_args): clear_game(),

@@ -294,11 +294,13 @@ export default function PaintExample() {
 
     const initGame = async () => {
       try {
+        console.log("[Paint] Initializing bridge...");
         await bridge.initialize();
+        console.log("[Paint] Loading game...");
         await bridge.loadGame(GAME_DEFINITION);
         gameLoadedRef.current = true;
         setStatus("ready");
-
+        console.log("[Paint] Creating pixel buffer...");
         bridge.createPixelBuffer("canvas", 512, 512, "#FFFFFF", 24, 32);
         const defaultPlan = compileShaderPlan(SHADER_OPTIONS[selectedShaderRef.current]);
         await bridge.applyGraph(defaultPlan);
@@ -330,7 +332,9 @@ export default function PaintExample() {
   useEffect(() => {
     if (!bridge || status !== "ready") return;
 
+    console.log("[Paint] Subscribing to onInputEvent");
     const unsubscribe = bridge.onInputEvent((type, x, y) => {
+      console.log("[Paint] input:", type, x, y);
       if (type === "drag_start") {
         lastPointRef.current = { x, y };
       } else if (type === "drag_move") {
