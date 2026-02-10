@@ -6,6 +6,7 @@ import type { AssetSystemConfig, AssetSource } from './asset-system';
 import type { Value, ExpressionValueType } from '../expressions/types';
 import type { StateMachineDefinition } from '../systems/state-machine/types';
 import type { ContainerConfig } from './container';
+import type { OverlayConfig } from './overlay';
 
 /**
  * Dual-field image reference for backwards compatibility.
@@ -486,6 +487,8 @@ export interface GameDefinition {
   hoverHighlight?: HoverHighlightConfig;
 
   dialogs?: GameDialogsConfig;
+
+  overlay?: OverlayConfig;
 }
 
 export interface HoverHighlightConfig {

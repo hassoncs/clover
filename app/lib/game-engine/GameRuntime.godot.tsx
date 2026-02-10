@@ -58,6 +58,7 @@ import {
 } from "./debug";
 import { cancelTweensForEntity } from "./behaviors/TweenBehaviors";
 import { GameSystemRunner } from "./systems/runner/GameSystemRunner";
+import { OverlayRenderer } from "./ui/overlay";
 import type { SystemContext, UpdateContext } from "./systems/runner/types";
 import { GameLoopController } from "./GameLoopController";
 import { WorldOpsImpl } from "./WorldOpsImpl";
@@ -1578,7 +1579,23 @@ export function GameRuntimeGodot({
 
       <InputDebugOverlay inputRef={inputRef} viewportRect={viewportRect} />
 
-      {showHUD && hasViewport && (
+      {definition.overlay && hasViewport && (
+        <OverlayRenderer
+          config={definition.overlay}
+          gameState={gameState}
+          viewportRect={viewportRect}
+          getEntityCountByTag={(tag: string) =>
+            gameRef.current?.entityManager.getEntitiesByTag(tag).length ?? 0
+          }
+          onButtonPress={(eventName, eventData) => {
+            // Button events from overlay are custom game events, not GameEventBus events
+            // They should be handled by game scripts/behaviors
+            console.log('[GameRuntime] Overlay button pressed:', eventName, eventData);
+          }}
+        />
+      )}
+
+      {showHUD && hasViewport && !definition.overlay && (
         <View
           style={[
             styles.hud,
