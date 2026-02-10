@@ -3,15 +3,18 @@ import { DurableObject } from 'cloudflare:workers';
 import { createModelForTier, resolveTierConfig } from '@/ai/agent/tier-config';
 import { StageExecutor } from '@/agent/engine/stage-executor';
 import type { StageExecutionContext } from '@/agent/engine/tools';
+import { ChatEventStore } from '@/chat/chat-event-store';
 import type { AgentStepStage, AgentTier } from '@slopcade/shared/types/agent-run';
 import type { GameDefinition } from '@slopcade/shared/types/GameDefinition';
 
 import type { RunStepRequest, RunStepResult } from './types';
 
 type DurableObjectNamespace = import('@cloudflare/workers-types').DurableObjectNamespace;
+type D1Database = import('@cloudflare/workers-types').D1Database;
 
 interface Env {
   RUN_COORDINATOR: DurableObjectNamespace;
+  DB?: D1Database;
   OPENROUTER_API_KEY?: string;
   OPENAI_API_KEY?: string;
   ANTHROPIC_API_KEY?: string;
@@ -150,6 +153,7 @@ export class RunStepWorkerDO extends DurableObject<Env> {
         stepId: payload.stepId,
         stepIndex: payload.stepIndex,
         stage: payload.stage,
+        gameId: payload.gameId,
         userPrompt: `${payload.gameTitle ?? 'Untitled game'}: ${payload.gameDescription ?? ''}`.trim(),
         planningDoc: state.planningDoc,
         gameDefinition: state.gameDefinition,
@@ -212,6 +216,25 @@ export class RunStepWorkerDO extends DurableObject<Env> {
         };
         await this.reportResult(result);
         return Response.json({ ok: true, status: 'suspended' });
+      }
+
+      if (payload.threadId && this.env.DB && execution.status === 'succeeded') {
+        const chatStore = new ChatEventStore(this.env.DB);
+        const outputText = typeof execution.outputArtifact === 'string'
+          ? execution.outputArtifact
+          : JSON.stringify(execution.outputArtifact);
+        await chatStore.appendEvent({
+          threadId: payload.threadId,
+          eventType: 'assistant_message',
+          role: 'assistant',
+          payload: {
+            version: 1,
+            type: 'assistant_message',
+            text: outputText,
+            runId: payload.runId,
+          },
+          runId: payload.runId,
+        });
       }
 
       context.previousOutputs[payload.stage] = execution.outputArtifact;
@@ -351,6 +374,7 @@ export class RunStepWorkerDO extends DurableObject<Env> {
       stage: AgentStepStage;
       tier: AgentTier;
       answerText: string;
+      gameId?: string;
       gameTitle?: string;
       gameDescription?: string | null;
     };
@@ -375,6 +399,7 @@ export class RunStepWorkerDO extends DurableObject<Env> {
       stepId: body.stepId,
       stepIndex: body.stepIndex,
       stage: body.stage,
+      gameId: body.gameId,
       userPrompt: `${body.gameTitle ?? 'Untitled game'}: ${body.gameDescription ?? ''}`.trim(),
       planningDoc: stageContext.planningDoc,
       gameDefinition: stageContext.gameDefinition,

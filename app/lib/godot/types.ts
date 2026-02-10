@@ -1,15 +1,12 @@
 import type {
   GameDefinition,
   PropertySyncPayload,
+  Vec2 as SharedVec2,
 } from '@slopcade/shared';
 import type { CompiledPlan } from '@slopcade/shared/effects';
 
 export type { GameDefinition, PropertySyncPayload, CompiledPlan };
-
-export interface Vec2 {
-  x: number;
-  y: number;
-}
+export type Vec2 = SharedVec2;
 
 export interface EntityTransform {
   x: number;

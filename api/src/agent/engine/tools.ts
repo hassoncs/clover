@@ -262,6 +262,17 @@ export function createStageTools(context: StageExecutionContext) {
         if (!context.artifactService) {
           return { ok: false, error: 'Storage not available' };
         }
+        if (context.gameId) {
+          const result = await context.artifactService.readWorkspaceFile({
+            gameId: context.gameId,
+            filename,
+          });
+          if (!result) {
+            return { ok: true, exists: false, content: null };
+          }
+          return { ok: true, exists: true, content: result.data };
+        }
+
         const result = await context.artifactService.readStepArtifact({
           runId: context.runId,
           stepIndex: context.stepIndex,
@@ -284,6 +295,16 @@ export function createStageTools(context: StageExecutionContext) {
         if (!context.artifactService) {
           return { ok: false, error: 'Storage not available' };
         }
+        if (context.gameId) {
+          const { key } = await context.artifactService.storeWorkspaceFile({
+            gameId: context.gameId,
+            filename,
+            data: content,
+            contentType: 'text/plain',
+          });
+          return { ok: true, key, bytesWritten: content.length };
+        }
+
         const { key } = await context.artifactService.storeStepArtifact({
           runId: context.runId,
           stepIndex: context.stepIndex,

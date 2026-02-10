@@ -135,6 +135,13 @@ test_*.py
 .sisyphus/drafts/
 *.draft.md
 
+# Build cache logs
+ccache.log
+
+# Console/debug logs
+console-errors.log
+console-errors.txt
+
 # GDExtension build artifacts
 godot_project/addons/camera-texture/godot-cpp/
 godot_project/addons/camera-texture/bin/

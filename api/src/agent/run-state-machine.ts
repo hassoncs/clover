@@ -18,6 +18,7 @@ export interface RunState {
   pendingQuestionsJson: string | null;
   suspendedStepIndex: number | null;
   rawPrompt: string | null;
+  threadId: string | null;
   gateValues: Record<string, string>;
   gateLoopIteration: number;
   gateAnswers: Array<{ question: string; answer: string }>;
@@ -153,6 +154,7 @@ export function createInitialState(runId: string, totalSteps: number): RunState 
     pendingQuestionsJson: null,
     suspendedStepIndex: null,
     rawPrompt: null,
+    threadId: null,
     gateValues: {},
     gateLoopIteration: 0,
     gateAnswers: [],

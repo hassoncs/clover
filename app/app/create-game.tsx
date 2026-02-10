@@ -4,36 +4,72 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useCreateGameChat } from "@/components/create-game/useCreateGameChat";
+import { useThreads } from "@/components/create-game/useThreads";
+import { ThreadList } from "@/components/create-game/ThreadList";
 import { ChatTimeline } from "@/components/create-game/ChatTimeline";
 import { Composer } from "@/components/create-game/Composer";
 import { SharedDocumentPanel } from "@/components/create-game/SharedDocumentPanel";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
+import { trpcReact as trpc } from "@/lib/trpc/react";
+
+const MINIMAL_GAME_DEF = JSON.stringify({
+  metadata: { title: "New Game", description: "Work in progress" },
+  entities: {},
+  scenes: { main: { entities: [] } },
+  globalVariables: {},
+  rules: []
+});
 
 export default function CreateGameScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { messages, sendMessage, cancelBuild, resetSession, submitAnswer, submitUserAnswer, run, isRunning, documentContent } = useCreateGameChat();
+  
+  const { 
+    threads, 
+    activeThreadId, 
+    gameId, 
+    isLoading: isThreadsLoading, 
+    createThread, 
+    selectThread, 
+    initForGame 
+  } = useThreads();
+
+  const { 
+    messages, 
+    sendMessage, 
+    cancelBuild, 
+    resetSession, 
+    submitAnswer, 
+    submitUserAnswer, 
+    run, 
+    isRunning, 
+    documentContent,
+    pendingQuestions 
+  } = useCreateGameChat(activeThreadId, gameId);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const hasNavigated = useRef(false);
   const lastPromptRef = useRef<string>('');
 
-  const handleNewChat = useCallback(() => {
-    resetSession();
+  const createGameMutation = trpc.games.create.useMutation();
+
+  const handleNewThread = useCallback(async () => {
+    if (gameId) {
+      await createThread(gameId);
+    } else {
+      resetSession();
+    }
     hasNavigated.current = false;
     lastPromptRef.current = '';
-  }, [resetSession]);
+  }, [gameId, createThread, resetSession]);
 
-  const hasPendingQuestion = messages.some(m => m.pending === true);
+  const hasPendingQuestion = !!pendingQuestions;
 
   useEffect(() => {
     if (run?.status === 'succeeded' && run.gameId && !hasNavigated.current) {
-      hasNavigated.current = true;
-      const timer = setTimeout(() => {
-        router.replace(`/editor/${run.gameId}`);
-      }, 1500);
-      return () => clearTimeout(timer);
+      
     }
-  }, [run?.status, run?.gameId, router]);
+  }, [run?.status, run?.gameId]);
 
   const handleDismiss = useCallback(() => {
     if (router.canGoBack()) {
@@ -47,7 +83,28 @@ export default function CreateGameScreen() {
     lastPromptRef.current = text;
     setIsSubmitting(true);
     try {
-      await sendMessage(text);
+      let targetGameId = gameId;
+      let targetThreadId = activeThreadId;
+
+      if (!targetGameId) {
+        const game = await createGameMutation.mutateAsync({
+          title: "New Game",
+          definition: MINIMAL_GAME_DEF,
+          isPublic: false
+        });
+        targetGameId = game.id;
+        initForGame(targetGameId);
+      }
+
+      if (!targetThreadId && targetGameId) {
+        targetThreadId = await createThread(targetGameId);
+      }
+
+      if (targetThreadId && targetGameId) {
+        await sendMessage(text, targetThreadId, targetGameId);
+      }
+    } catch (e) {
+      console.error("Failed to send message:", e);
     } finally {
       setIsSubmitting(false);
     }
@@ -64,17 +121,6 @@ export default function CreateGameScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Create Game</Text>
         <View style={styles.headerActions}>
-          {!isRunning && messages.length > 0 && (
-            <Pressable
-              onPress={handleNewChat}
-              style={styles.newChatButton}
-              accessibilityRole="button"
-              accessibilityLabel="Start new chat"
-            >
-              <Ionicons name="add-circle-outline" size={18} color="#60A5FA" />
-              <Text style={styles.newChatButtonText}>New</Text>
-            </Pressable>
-          )}
           {isRunning && (
             <Pressable
               onPress={cancelBuild}
@@ -98,6 +144,16 @@ export default function CreateGameScreen() {
       </View>
 
       <View style={styles.contentContainer}>
+        {Platform.OS === 'web' && (
+          <ThreadList
+            threads={threads}
+            activeThreadId={activeThreadId}
+            onSelect={selectThread}
+            onCreateNew={handleNewThread}
+            isLoading={isThreadsLoading}
+          />
+        )}
+        
         <View style={styles.chatContainer}>
           <KeyboardAvoidingView 
             style={styles.keyboardAvoiding}
@@ -139,6 +195,8 @@ const styles = StyleSheet.create({
   },
   chatContainer: {
     flex: 1,
+    borderRightWidth: Platform.OS === 'web' ? 1 : 0,
+    borderRightColor: 'rgba(255,255,255,0.08)',
   },
   header: {
     flexDirection: "row",
@@ -157,27 +215,13 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
   headerActions: {
-    flexDirection: "row" as const,
-    alignItems: "center" as const,
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
-  newChatButton: {
-    flexDirection: "row" as const,
-    alignItems: "center" as const,
-    gap: 4,
-    backgroundColor: "rgba(96,165,250,0.12)",
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  newChatButtonText: {
-    color: "#60A5FA",
-    fontSize: 13,
-    fontWeight: "600" as const,
-  },
   cancelButton: {
-    flexDirection: "row" as const,
-    alignItems: "center" as const,
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
     backgroundColor: "rgba(248,113,113,0.12)",
     borderRadius: 16,
@@ -187,15 +231,15 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     color: "#F87171",
     fontSize: 13,
-    fontWeight: "600" as const,
+    fontWeight: "600",
   },
   closeButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
     backgroundColor: "rgba(255,255,255,0.08)",
-    alignItems: "center" as const,
-    justifyContent: "center" as const,
+    alignItems: "center",
+    justifyContent: "center",
   },
   keyboardAvoiding: {
     flex: 1,

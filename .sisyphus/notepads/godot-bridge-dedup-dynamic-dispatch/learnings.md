@@ -39,3 +39,7 @@ All 14 tests passing:
 - tsc errors in node_modules (vite/vitest types) are unrelated to test code
 - Test file itself is type-safe and uses proper TypeScript patterns
 - Mock bridge implements `GodotBridgeBase` interface correctly
+
+## Bridge Registry Checks
+
+- `bridge-registry.json` includes AI warning metadata fields (`_comment`, `_warning`, `_instructions`, `_howToModify`) that must be stripped during check-mode normalization to avoid false out-of-date errors.

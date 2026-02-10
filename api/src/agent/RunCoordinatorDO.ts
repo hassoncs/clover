@@ -4,6 +4,7 @@ import type { AgentEventPayload, AgentRunStatus, ClarificationQuestion } from '@
 import { logAgentEvent } from '@/agent/observability';
 import { processGates } from '@/agent/engine/gate-processor';
 import { getStageGateConfig, type StageGateConfig } from '@/agent/stage-gates';
+import { ChatEventStore } from '@/chat/chat-event-store';
 
 import type {
   AgentEvent,
@@ -197,6 +198,7 @@ export class RunCoordinatorDO extends DurableObject<Env> {
         pendingQuestionsJson: stored.pendingQuestionsJson ?? null,
         suspendedStepIndex: stored.suspendedStepIndex ?? null,
         rawPrompt: stored.rawPrompt ?? null,
+        threadId: stored.threadId ?? null,
         gateValues: stored.gateValues ?? {},
         gateLoopIteration: stored.gateLoopIteration ?? 0,
         gateAnswers: stored.gateAnswers ?? [],
@@ -222,6 +224,7 @@ export class RunCoordinatorDO extends DurableObject<Env> {
       pendingQuestionsJson: null,
       suspendedStepIndex: null,
       rawPrompt: null,
+      threadId: null,
       gateValues: {},
       gateLoopIteration: 0,
       gateAnswers: [],
@@ -296,6 +299,12 @@ export class RunCoordinatorDO extends DurableObject<Env> {
       this.state.gateValues = {};
       this.state.gateLoopIteration = 0;
       this.state.gateAnswers = [];
+
+      const threadRow = await this.env.DB
+        .prepare('SELECT thread_id FROM agent_runs WHERE id = ?')
+        .bind(this.state.runId)
+        .first<{ thread_id: string | null }>();
+      this.state.threadId = threadRow?.thread_id ?? null;
 
       this.transitionStatus('running');
       this.state.recoveryAttempts = 0;
@@ -525,6 +534,22 @@ export class RunCoordinatorDO extends DurableObject<Env> {
       provider: result.provider,
       model: result.model,
     });
+
+    if (result.status === 'succeeded' && result.stage === 'chat' && this.state.threadId) {
+      const chatStore = new ChatEventStore(this.env.DB);
+      await chatStore.appendEvent({
+        threadId: this.state.threadId,
+        eventType: 'system',
+        role: null,
+        payload: {
+          version: 1,
+          type: 'system',
+          text: `Chat step ${result.stepIndex} completed`,
+          level: 'info',
+        },
+        runId: this.state.runId,
+      });
+    }
 
     const executionContext = await this.loadRunExecutionContext();
     const stage = this.getStage(result.stepIndex);
@@ -1363,6 +1388,7 @@ export class RunCoordinatorDO extends DurableObject<Env> {
       gameTitle: executionContext.game_title,
       gameDescription: executionContext.game_description,
       planningDocJson: executionContext.planning_doc_json,
+      threadId: this.state.threadId,
     };
 
     const now = Date.now();

@@ -1,298 +1,250 @@
-import { useCallback, useEffect, useRef } from 'react';
-import { atom, useAtom } from 'jotai';
-import { useAgentRun } from '@/components/editor/AIEditor/useAgentRun';
-import { useAgentNotifications } from '@/lib/notifications';
-import type { AgentEventPayload } from '@slopcade/shared';
+import { useCallback, useEffect, useState } from 'react';
+import { trpcReact as trpc } from '@/lib/trpc/react';
+import type { ChatEventPayload } from '@slopcade/shared';
 import { ChatMessage } from './types';
 
-type PayloadOf<T extends AgentEventPayload['type']> = Extract<AgentEventPayload, { type: T }>;
+function chatEventToMessage(event: { id: string; eventType: string; payload: ChatEventPayload; createdAt: number }): ChatMessage | null {
+  const p = event.payload as any;
+  switch (event.eventType) {
+    case 'user_message':
+      if (p.type === 'user_message') {
+        return { id: event.id, role: 'user', type: 'text', text: p.text, timestamp: event.createdAt };
+      }
+      return null;
+    case 'assistant_message':
+      if (p.type === 'assistant_message') {
+        return { id: event.id, role: 'agent', type: 'text', text: p.text, timestamp: event.createdAt };
+      }
+      return null;
+    case 'system':
+      if (p.type === 'system') {
+        return { id: event.id, role: 'system', type: 'status', text: p.text, timestamp: event.createdAt };
+      }
+      return null;
+    case 'file_updated':
+      if (p.type === 'file_updated') {
+        return { id: event.id, role: 'system', type: 'status', text: `Updated ${p.filename}`, timestamp: event.createdAt };
+      }
+      return null;
+    case 'user_question':
+      if (p.type === 'user_question') {
+        return {
+          id: event.id,
+          role: 'agent',
+          type: 'user_question',
+          text: p.questions[0]?.header ?? "I have some questions...",
+          timestamp: event.createdAt,
+          payload: p,
+          pending: true,
+        };
+      }
+      return null;
+    case 'clarification_requested':
+      if (p.type === 'clarification_requested') {
+        return {
+          id: event.id,
+          role: 'agent',
+          type: 'clarification',
+          text: p.question,
+          timestamp: event.createdAt,
+          payload: p,
+          pending: true,
+        };
+      }
+      return null;
+    case 'clarification_answered':
+      if (p.type === 'clarification_answered') {
+        return {
+          id: event.id,
+          role: 'user',
+          type: 'text',
+          text: p.answer,
+          timestamp: event.createdAt,
+        };
+      }
+      return null;
+    case 'run_completed':
+      return {
+        id: event.id,
+        role: 'system',
+        type: 'completion',
+        text: "Your game is ready!",
+        timestamp: event.createdAt,
+      };
+    case 'run_failed':
+      return {
+        id: event.id,
+        role: 'system',
+        type: 'error',
+        text: "Run failed",
+        timestamp: event.createdAt,
+      };
+    case 'error':
+       if (p.type === 'error') {
+        return {
+            id: event.id,
+            role: 'system',
+            type: 'error',
+            text: p.errorMessage || "An error occurred",
+            timestamp: event.createdAt,
+        };
+       }
+       return null;
+    default:
+      return null;
+  }
+}
 
-const runIdAtom = atom<string | undefined>(undefined);
-const messagesAtom = atom<ChatMessage[]>([]);
-const processedSeqsAtom = atom(new Set<number>());
-const documentContentAtom = atom<string | null>(null);
-
-export function useCreateGameChat() {
-  const [runId, setRunId] = useAtom(runIdAtom);
-  const [messages, setMessages] = useAtom(messagesAtom);
-  const [processedSeqs] = useAtom(processedSeqsAtom);
-  const [documentContent, setDocumentContent] = useAtom(documentContentAtom);
-  const processedEventSeqs = useRef(processedSeqs);
+export function useCreateGameChat(threadId: string | null, gameId: string | null) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [runId, setRunId] = useState<string | null>(null);
   
-  const { 
-    run, 
-    events, 
-    isConnected, 
-    error, 
-    createRun, 
-    startRun,
-    cancelRun,
-    pendingQuestions,
-    questions,
-    submitAnswer,
-    submitUserAnswer
-  } = useAgentRun(runId);
+  const eventsQuery = trpc.chatThreads.getEvents.useQuery(
+    { threadId: threadId! },
+    { 
+      enabled: !!threadId,
+      refetchInterval: 1000,
+    }
+  );
 
-  useAgentNotifications(events);
+  const documentQuery = trpc.chatThreads.readWorkspaceFile.useQuery(
+    { gameId: gameId!, filename: 'document.md' },
+    { 
+      enabled: !!gameId,
+      refetchInterval: 3000,
+    }
+  );
 
-  const sendMessage = useCallback(async (text: string) => {
-    const userMsg: ChatMessage = {
-      id: crypto.randomUUID(),
+  const appendUserMessageMutation = trpc.chatThreads.appendUserMessage.useMutation();
+  const createRunMutation = trpc.agentRuns.createRun.useMutation();
+  const startRunMutation = trpc.agentRuns.startRun.useMutation();
+  const submitAnswerMutation = trpc.agentRuns.submitAnswer.useMutation();
+  const submitUserAnswerMutation = trpc.agentRuns.submitUserAnswer.useMutation();
+  const cancelRunMutation = trpc.agentRuns.cancelRun.useMutation();
+
+  useEffect(() => {
+    if (eventsQuery.data?.events) {
+      const newMessages: ChatMessage[] = [];
+      const sortedEvents = [...eventsQuery.data.events].sort((a, b) => a.seq - b.seq);
+      
+      for (const event of sortedEvents) {
+        const msg = chatEventToMessage(event);
+        if (msg) {
+          if ((event.eventType as string) === 'clarification_answered') {
+             const p = event.payload as any;
+             const qIndex = newMessages.findIndex(m => {
+                if (m.type !== 'clarification') return false;
+                const mp = m.payload as any;
+                return mp?.questionId === p.questionId;
+             });
+             if (qIndex !== -1) {
+                newMessages[qIndex] = { ...newMessages[qIndex], pending: false };
+             }
+          }
+           if ((event.eventType as string) === 'user_answer') {
+             const p = event.payload as any;
+             const uqIndex = newMessages.findIndex(m => {
+                if (m.type !== 'user_question') return false;
+                const mp = m.payload as any;
+                return mp?.batchId === p.batchId;
+             });
+             if (uqIndex !== -1) {
+                newMessages[uqIndex] = { ...newMessages[uqIndex], pending: false };
+             }
+          }
+
+          newMessages.push(msg);
+        }
+      }
+      setMessages(newMessages);
+    }
+  }, [eventsQuery.data]);
+
+  const sendMessage = useCallback(async (text: string, overrideThreadId?: string, overrideGameId?: string) => {
+    const targetThreadId = overrideThreadId ?? threadId;
+    const targetGameId = overrideGameId ?? gameId;
+
+    if (!targetThreadId || !targetGameId) return;
+
+    const tempId = crypto.randomUUID();
+    setMessages(prev => [...prev, {
+      id: tempId,
       role: 'user',
       type: 'text',
       text,
       timestamp: Date.now(),
-    };
-    setMessages(prev => [...prev, userMsg]);
+    }]);
 
     try {
-      const newRunId = await createRun({ 
-        gameId: crypto.randomUUID(), 
-        tier: 'standard', 
-        planningDocJson: JSON.stringify({ content: text }) 
+      await appendUserMessageMutation.mutateAsync({ threadId: targetThreadId, text });
+      
+      const runResult = await createRunMutation.mutateAsync({ 
+        gameId: targetGameId, 
+        threadId: targetThreadId, 
+        tier: 'standard',
+        source: 'scratch'
       });
-      setRunId(newRunId);
-      await startRun(newRunId);
+      
+      setRunId(runResult.runId);
+      await startRunMutation.mutateAsync({ runId: runResult.runId });
+      
+      eventsQuery.refetch();
     } catch (e) {
-      console.error('Failed to start run:', e);
-      const errorMsg: ChatMessage = {
+      console.error('Failed to send message:', e);
+      setMessages(prev => [...prev, {
         id: crypto.randomUUID(),
         role: 'system',
         type: 'error',
-        text: 'Failed to start game creation. Please try again.',
+        text: 'Failed to send message. Please try again.',
         timestamp: Date.now(),
-      };
-      setMessages(prev => [...prev, errorMsg]);
+      }]);
     }
-  }, [createRun, startRun, setMessages, setRunId]);
+  }, [threadId, gameId, appendUserMessageMutation, createRunMutation, startRunMutation, eventsQuery]);
 
-  useEffect(() => {
-    if (!events.length) return;
+  const submitAnswer = useCallback(async (questionId: string, answer: string) => {
+    if (!runId) return;
+    await submitAnswerMutation.mutateAsync({ runId, questionId, answer });
+  }, [runId, submitAnswerMutation]);
 
-    setMessages(prevMessages => {
-      const nextMessages = [...prevMessages];
-      const processed = processedEventSeqs.current;
-      let hasChanges = false;
-
-      const sortedEvents = [...events].sort((a, b) => a.seq - b.seq);
-
-      for (const event of sortedEvents) {
-        if (processed.has(event.seq)) continue;
-        processed.add(event.seq);
-        hasChanges = true;
-
-        const timestamp = event.timestamp;
-        const id = event.id || `evt-${event.seq}`;
-
-        switch (event.eventType) {
-          case 'step_started': {
-            const p = event.payload as PayloadOf<'step_started'>;
-            nextMessages.push({
-              id,
-              role: 'system',
-              type: 'status',
-              text: `Starting ${p.stage} phase...`,
-              timestamp,
-            });
-            break;
-          }
-          case 'step_completed': {
-            const p = event.payload as PayloadOf<'step_completed'>;
-            nextMessages.push({
-              id,
-              role: 'system',
-              type: 'status',
-              text: `Completed step ${p.stepIndex}`,
-              timestamp,
-            });
-            
-            setDocumentContent(`Document updated at step ${p.stepIndex}\n\n(Content fetching not implemented in POC)`);
-            break;
-          }
-          case 'gate_values_updated': {
-            const p = event.payload as PayloadOf<'gate_values_updated'>;
-            const satisfied = p.satisfiedFields.length;
-            if (satisfied > 0) {
-              nextMessages.push({
-                id,
-                role: 'system',
-                type: 'status',
-                text: `${satisfied} requirements met`,
-                timestamp,
-              });
-            }
-            break;
-          }
-          case 'planning_complete':
-            nextMessages.push({
-              id,
-              role: 'agent',
-              type: 'text',
-              text: "Planning complete! I have a solid plan for your game.",
-              timestamp,
-            });
-            break;
-          case 'user_question': {
-            const p = event.payload as PayloadOf<'user_question'>;
-            nextMessages.push({
-              id,
-              role: 'agent',
-              type: 'user_question',
-              text: p.questions[0]?.header ?? "I have some questions...",
-              timestamp,
-              payload: p,
-              pending: true,
-            });
-            break;
-          }
-          case 'clarification_requested': {
-            const p = event.payload as PayloadOf<'clarification_requested'>;
-            nextMessages.push({
-              id,
-              role: 'agent',
-              type: 'clarification',
-              text: p.question,
-              timestamp,
-              payload: p,
-              pending: true,
-            });
-            break;
-          }
-          case 'clarification_answered': {
-            const p = event.payload as PayloadOf<'clarification_answered'>;
-            const qIndex = nextMessages.findIndex(m => {
-              if (m.type !== 'clarification') return false;
-              const mp = m.payload as PayloadOf<'clarification_requested'> | undefined;
-              return mp?.questionId === p.questionId;
-            });
-            if (qIndex !== -1) {
-              nextMessages[qIndex] = { ...nextMessages[qIndex], pending: false };
-            }
-            nextMessages.push({
-              id: `ans-${event.seq}`,
-              role: 'user',
-              type: 'text',
-              text: p.answer,
-              timestamp,
-            });
-            break;
-          }
-          case 'user_answer': {
-            const p = event.payload as PayloadOf<'user_answer'>;
-            const uqIndex = nextMessages.findIndex(m => {
-              if (m.type !== 'user_question') return false;
-              const mp = m.payload as PayloadOf<'user_question'> | undefined;
-              return mp?.batchId === p.batchId;
-            });
-            if (uqIndex !== -1) {
-              nextMessages[uqIndex] = { ...nextMessages[uqIndex], pending: false };
-            }
-            break;
-          }
-          case 'run_completed':
-            nextMessages.push({
-              id,
-              role: 'system',
-              type: 'completion',
-              text: "Your game is ready!",
-              timestamp,
-            });
-            break;
-          case 'run_failed': {
-            const p = event.payload as PayloadOf<'run_failed'>;
-            nextMessages.push({
-              id,
-              role: 'system',
-              type: 'error',
-              text: p.errorMessage || "Run failed",
-              timestamp,
-            });
-            break;
-          }
-          case 'run_canceled':
-            nextMessages.push({
-              id,
-              role: 'system',
-              type: 'status',
-              text: "Run was canceled.",
-              timestamp,
-            });
-            break;
-          case 'error': {
-            const p = event.payload as PayloadOf<'error'>;
-            nextMessages.push({
-              id,
-              role: 'system',
-              type: 'error',
-              text: p.errorMessage || "An error occurred",
-              timestamp,
-            });
-            break;
-          }
-          case 'asset_preview': {
-            const p = event.payload as PayloadOf<'asset_preview'>;
-            nextMessages.push({
-              id,
-              role: 'agent',
-              type: 'asset_preview',
-              text: p.assetId,
-              timestamp,
-              payload: p,
-            });
-            break;
-          }
-        }
-      }
-      
-      return hasChanges ? nextMessages : prevMessages;
-    });
-  }, [events, setMessages, setDocumentContent]);
+  const submitUserAnswer = useCallback(async (batchId: string, answers: string[][]) => {
+    if (runId) {
+        await submitUserAnswerMutation.mutateAsync({ runId, batchId, answers });
+    }
+  }, [runId, submitUserAnswerMutation]);
 
   const cancelBuild = useCallback(async () => {
-    if (!runId) return;
-
-    const status = run?.status;
-    if (status === 'succeeded' || status === 'failed' || status === 'canceled') {
-      return;
+    if (runId) {
+      await cancelRunMutation.mutateAsync({ runId });
     }
-
-    try {
-      await cancelRun(runId);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      if (msg.includes('WebSocket not connected')) {
-        setMessages(prev => [...prev, {
-          id: crypto.randomUUID(),
-          role: 'system',
-          type: 'status',
-          text: 'Connection lost. The run may still be processing on the server.',
-          timestamp: Date.now(),
-        }]);
-      } else {
-        console.error('Failed to cancel run:', e);
-      }
-    }
-  }, [runId, run?.status, cancelRun, setMessages]);
+  }, [runId, cancelRunMutation]);
 
   const resetSession = useCallback(() => {
-    setRunId(undefined);
     setMessages([]);
-    processedEventSeqs.current = new Set<number>();
-  }, [setRunId, setMessages]);
+    setRunId(null);
+  }, []);
+
+  const pendingQuestions = messages.find(m => m.pending && m.type === 'user_question')?.payload as any;
+  const questions = messages.filter(m => m.pending && m.type === 'clarification').map(m => ({
+    questionId: (m.payload as any).questionId,
+    question: m.text,
+    stage: (m.payload as any).stage,
+    stepIndex: (m.payload as any).stepIndex,
+    context: (m.payload as any).context,
+  }));
 
   return {
     messages,
-    isRunning: run?.status === 'running' || run?.status === 'planning' || run?.status === 'queued',
-    isConnected,
-    error,
     sendMessage,
     cancelBuild,
     resetSession,
-    pendingQuestions,
-    questions,
     submitAnswer,
     submitUserAnswer,
-    run,
-    documentContent
+    run: runId ? { status: 'running', gameId } : null,
+    isRunning: !!runId,
+    documentContent: documentQuery.data?.content ?? null,
+    pendingQuestions,
+    questions,
+    isConnected: true,
+    error: null,
   };
 }

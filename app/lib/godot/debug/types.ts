@@ -1,3 +1,5 @@
+import type { Vec2 } from '../types';
+
 export const DEBUG_BRIDGE_VERSION = '2.0.0';
 
 export type SnapshotDetail = 'low' | 'med' | 'high';
@@ -9,10 +11,7 @@ export interface SnapshotOptions {
   maxEntities?: number;
 }
 
-export interface Vec2 {
-  x: number;
-  y: number;
-}
+export type { Vec2 };
 
 export interface AABB {
   minX: number;

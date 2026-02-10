@@ -34,6 +34,7 @@ export const agentRunsRouter = router({
       z
         .object({
           gameId: z.string().uuid(),
+          threadId: z.string().uuid().optional(),
           source: z.enum(['scratch', 'fork']),
           sourceGameId: z.string().uuid().optional(),
           tier: z.enum(['free', 'standard', 'pro']),
@@ -88,14 +89,15 @@ export const agentRunsRouter = router({
 
       await ctx.env.DB.prepare(
         `INSERT INTO agent_runs (
-          id, user_id, game_id, source, source_game_id, tier, status,
+          id, user_id, thread_id, game_id, source, source_game_id, tier, status,
           planning_doc_json, estimated_cost_micros, actual_cost_micros, reserved_micros,
           current_step_index, total_steps, error_message, created_at, started_at, finished_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, 'planning', NULL, ?, 0, 0, 0, ?, NULL, ?, NULL, NULL, ?)`
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'planning', NULL, ?, 0, 0, 0, ?, NULL, ?, NULL, NULL, ?)`
       )
         .bind(
           runId,
           ctx.user.id,
+          input.threadId ?? null,
           input.gameId,
           input.source,
           input.sourceGameId ?? null,

@@ -6,6 +6,7 @@ import { uiComponentsRouter } from './routes/ui-components'
 import { economyRouter } from './routes/economy'
 import { invitesRouter } from './routes/invites'
 import { agentRunsRouter } from './routes/agent-runs'
+import { chatThreadsRouter } from './routes/chat-threads'
 import { searchRouter } from './routes/search'
 import { socialRouter } from './routes/social'
 import { socialExtraRouter } from './routes/social-extra'
@@ -20,6 +21,7 @@ export const appRouter = router({
   economy: economyRouter,
   invites: invitesRouter,
   agentRuns: agentRunsRouter,
+  chatThreads: chatThreadsRouter,
   search: searchRouter,
   social: socialRouter,
   socialExtra: socialExtraRouter,

@@ -66,6 +66,7 @@ export interface RunStepRequest {
   gameTitle: string;
   gameDescription: string | null;
   planningDocJson: string | null;
+  threadId?: string | null;
 }
 
 export interface RunStepResult {

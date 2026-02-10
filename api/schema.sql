@@ -551,6 +551,7 @@ CREATE INDEX IF NOT EXISTS idx_ui_gen_results_deleted ON ui_gen_results(deleted_
 CREATE TABLE IF NOT EXISTS agent_runs (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id),
+  thread_id TEXT REFERENCES chat_threads(id),
   game_id TEXT NOT NULL REFERENCES games(id),
   source TEXT NOT NULL CHECK (source IN ('scratch', 'fork')),
   source_game_id TEXT,
@@ -578,7 +579,7 @@ CREATE TABLE IF NOT EXISTS agent_steps (
   id TEXT PRIMARY KEY,
   run_id TEXT NOT NULL REFERENCES agent_runs(id) ON DELETE CASCADE,
   step_index INTEGER NOT NULL,
-  stage TEXT NOT NULL CHECK (stage IN ('planning', 'build', 'refine', 'theme', 'asset')),
+  stage TEXT NOT NULL CHECK (stage IN ('planning', 'build', 'refine', 'theme', 'asset', 'chat')),
   status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'skipped')),
   input_hash TEXT,
   output_artifact_key TEXT,
@@ -634,6 +635,55 @@ CREATE TABLE IF NOT EXISTS agent_costs (
 
 CREATE INDEX IF NOT EXISTS idx_agent_costs_run ON agent_costs(run_id);
 CREATE INDEX IF NOT EXISTS idx_agent_costs_idempotency ON agent_costs(idempotency_key);
+
+-- =============================================================================
+-- CHAT SYSTEM: Threads, Events, Summaries
+-- =============================================================================
+
+-- Chat Threads - stable conversation identity
+CREATE TABLE IF NOT EXISTS chat_threads (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  game_id TEXT NOT NULL REFERENCES games(id),
+  title TEXT,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'archived')),
+  parent_thread_id TEXT REFERENCES chat_threads(id),
+  parent_event_seq INTEGER,
+  last_event_seq INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_chat_threads_user ON chat_threads(user_id);
+CREATE INDEX IF NOT EXISTS idx_chat_threads_game ON chat_threads(game_id);
+
+-- Chat Events - append-only message log
+CREATE TABLE IF NOT EXISTS chat_events (
+  id TEXT PRIMARY KEY,
+  thread_id TEXT NOT NULL REFERENCES chat_threads(id) ON DELETE CASCADE,
+  seq INTEGER NOT NULL,
+  event_type TEXT NOT NULL,
+  role TEXT,
+  content_json TEXT NOT NULL,
+  run_id TEXT REFERENCES agent_runs(id),
+  parent_event_id TEXT,
+  created_at INTEGER NOT NULL,
+  UNIQUE(thread_id, seq)
+);
+
+CREATE INDEX IF NOT EXISTS idx_chat_events_thread_seq ON chat_events(thread_id, seq);
+
+-- Chat Summaries - compaction checkpoints (empty for now)
+CREATE TABLE IF NOT EXISTS chat_summaries (
+  id TEXT PRIMARY KEY,
+  thread_id TEXT NOT NULL REFERENCES chat_threads(id) ON DELETE CASCADE,
+  covers_through_seq INTEGER NOT NULL,
+  summary_text TEXT NOT NULL,
+  token_count INTEGER,
+  created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_chat_summaries_thread ON chat_summaries(thread_id);
 
 -- =============================================================================
 -- SOCIAL SYSTEM: Comments, Reactions, Follows
