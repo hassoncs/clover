@@ -1,15 +1,29 @@
-import { useCallback, useState, useEffect, useRef } from "react";
+import { useCallback, useState, useEffect, useRef, useMemo } from "react";
 import {
   View,
   Text,
   Pressable,
   ScrollView,
+  Switch,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import Slider from "@react-native-community/slider";
 import type { ExampleMeta } from "@/lib/registry/types";
 import type { GodotBridge } from "@/lib/godot/types";
 import type { GameDefinition } from "@slopcade/shared";
+import {
+  compileGraph,
+  getShaderGlsl,
+  SHADER_REGISTRY,
+  getShaderEntry,
+} from "@slopcade/shared/effects";
+import type {
+  EffectGraphSpec,
+  CompiledPlan,
+  EffectParamSchema,
+  ParamValue,
+} from "@slopcade/shared/effects";
 import { FullScreenHeader } from "../../components/FullScreenHeader";
 
 export const metadata: ExampleMeta = {
@@ -71,23 +85,78 @@ const GAME_DEFINITION: GameDefinition = {
   rules: [],
 };
 
-const SPRITE_EFFECTS = [
-  "none", "outline", "glow", "tint", "flash", "pixelate", "posterize",
-  "silhouette", "rainbow", "dissolve", "holographic", "wave", "rim_light",
-];
-
-const POST_EFFECTS = [
-  "none", "vignette", "scanlines", "chromatic_aberration", "blur", "crt",
-  "color_grading", "glitch", "pixelate_screen", "shimmer",
-];
-
 const PARTICLE_PRESETS = [
   "fire", "smoke", "sparks", "magic", "explosion", "confetti", "dust", "stars",
 ];
 
+const SPRITE_SHADER_IDS = [
+  "silhouette", "tint", "waveDistortion", "rimLight", "rainbow",
+  "pixelate", "posterize", "outline", "innerGlow", "holographic",
+  "glow", "dropShadow", "flash", "dissolve", "colorMatrix",
+];
 
+const POST_SHADER_IDS = [
+  "underwater", "vignette", "thermalVision", "speedLines", "shockwave",
+  "shimmer", "ripple", "scanlines", "oldFilm", "pixelateScreen",
+  "motionBlur", "nightVision", "fogOfWar", "crt", "halftone",
+  "glitch", "chromaticAberration", "colorGrading", "blur", "bloom", "ascii",
+];
 
 type EffectCategory = "sprite" | "post" | "camera" | "particles";
+
+function buildEffectSpec(
+  effectName: string,
+  scope: "entity" | "screen",
+  params: Record<string, ParamValue>,
+): EffectGraphSpec {
+  return {
+    id: `${scope}-${effectName}`,
+    version: "1.0.0",
+    engineApiVersion: "2.0.0",
+    scope,
+    nodes: [{
+      id: "fx",
+      type: effectName,
+      family: "filter",
+      inputSlots: [{ name: "input", dataType: "texture", connectedTo: null }],
+      params,
+      outputTarget: { bufferId: "output", format: "rgba8", resolution: "full" },
+      flags: { stateful: false, fusible: "never" },
+    }],
+    connections: [],
+    feedbackEdges: [],
+    lifecycle: { autoStart: true, stopMode: "freeze" },
+  };
+}
+
+function compileEffectPlan(
+  effectName: string,
+  scope: "entity" | "screen",
+  params: Record<string, ParamValue>,
+): CompiledPlan | null {
+  const spec = buildEffectSpec(effectName, scope, params);
+  const result = compileGraph(spec);
+  if (!result.success || !result.plan) return null;
+
+  const glsl = getShaderGlsl(effectName);
+  return {
+    ...result.plan,
+    passes: result.plan.passes.map(p => ({
+      ...p,
+      shaderSource: glsl ? { glsl } : p.shaderSource,
+    })),
+  };
+}
+
+function getDefaultParams(effectName: string): Record<string, ParamValue> {
+  const entry = getShaderEntry(effectName);
+  if (!entry) return {};
+  const defaults: Record<string, ParamValue> = {};
+  for (const schema of entry.paramsSchema) {
+    defaults[schema.key] = schema.defaultValue;
+  }
+  return defaults;
+}
 
 export default function VFXShowcaseExample() {
   const router = useRouter();
@@ -103,6 +172,16 @@ export default function VFXShowcaseExample() {
   const [selectedPostEffect, setSelectedPostEffect] = useState("none");
   const [selectedParticle, setSelectedParticle] = useState("fire");
   const [selectedEntity, setSelectedEntity] = useState("box1");
+  const [spriteParams, setSpriteParams] = useState<Record<string, ParamValue>>({});
+  const [postParams, setPostParams] = useState<Record<string, ParamValue>>({});
+
+  const spriteEffects = useMemo(() =>
+    SPRITE_SHADER_IDS.filter(id => id in SHADER_REGISTRY),
+  []);
+
+  const postEffects = useMemo(() =>
+    POST_SHADER_IDS.filter(id => id in SHADER_REGISTRY),
+  []);
 
   useEffect(() => {
     let mounted = true;
@@ -142,53 +221,59 @@ export default function VFXShowcaseExample() {
     return () => { mounted = false; };
   }, [bridge, GodotView]);
 
-  const applySpriteEffect = useCallback((effectName: string) => {
+  const applySpriteEffect = useCallback(async (effectName: string) => {
     if (!bridge || status !== "ready") return;
     setSelectedSpriteEffect(effectName);
     
     if (effectName === "none") {
-      bridge.clearGraph();
+      await bridge.stop();
+      await bridge.clearGraph();
+      setSpriteParams({});
     } else {
-      const params: Record<string, unknown> = {};
-      if (effectName === "outline") {
-        params.outline_color = [1, 1, 0, 1];
-        params.outline_width = 3.0;
-      } else if (effectName === "glow") {
-        params.glow_color = [0, 1, 1, 1];
-        params.glow_intensity = 2.0;
-      } else if (effectName === "tint") {
-        params.tint_color = [1, 0.5, 0, 1];
-        params.tint_strength = 0.5;
-      } else if (effectName === "flash") {
-        params.flash_color = [1, 1, 1, 1];
-        params.flash_amount = 0.8;
-      } else if (effectName === "dissolve") {
-        params.dissolve_amount = 0.3;
-        params.edge_color = [1, 0.5, 0, 1];
+      const defaults = getDefaultParams(effectName);
+      setSpriteParams(defaults);
+      const plan = compileEffectPlan(effectName, "entity", defaults);
+      if (plan) {
+        await bridge.applyGraph(plan);
+        await bridge.start();
       }
     }
   }, [bridge, status]);
 
-  const applyPostEffect = useCallback((effectName: string) => {
+  const applyPostEffect = useCallback(async (effectName: string) => {
     if (!bridge || status !== "ready") return;
     setSelectedPostEffect(effectName);
     
     if (effectName === "none") {
-      bridge.clearGraph();
+      await bridge.stop();
+      await bridge.clearGraph();
+      setPostParams({});
     } else {
-      const params: Record<string, unknown> = {};
-      if (effectName === "vignette") {
-        params.vignette_intensity = 0.5;
-        params.vignette_softness = 0.5;
-      } else if (effectName === "chromatic_aberration") {
-        params.aberration_amount = 2.0;
-      } else if (effectName === "blur") {
-        params.blur_amount = 2.0;
-      } else if (effectName === "glitch") {
-        params.glitch_intensity = 0.3;
+      const defaults = getDefaultParams(effectName);
+      setPostParams(defaults);
+      const plan = compileEffectPlan(effectName, "screen", defaults);
+      if (plan) {
+        await bridge.applyGraph(plan);
+        await bridge.start();
       }
     }
   }, [bridge, status]);
+
+  const updateSpriteParam = useCallback((key: string, value: ParamValue) => {
+    setSpriteParams(prev => {
+      const next: Record<string, ParamValue> = { ...prev, [key]: value };
+      bridge?.effectsUpdateParams("fx", next as Record<string, number | boolean | string>);
+      return next;
+    });
+  }, [bridge]);
+
+  const updatePostParam = useCallback((key: string, value: ParamValue) => {
+    setPostParams(prev => {
+      const next: Record<string, ParamValue> = { ...prev, [key]: value };
+      bridge?.effectsUpdateParams("fx", next as Record<string, number | boolean | string>);
+      return next;
+    });
+  }, [bridge]);
 
   const triggerCameraEffect = useCallback((effect: "shake" | "zoom" | "flash" | "shockwave") => {
     if (!bridge || status !== "ready") return;
@@ -220,6 +305,74 @@ export default function VFXShowcaseExample() {
     return unsubscribe;
   }, [bridge, status, selectedParticle]);
 
+  const renderParamControl = (schema: EffectParamSchema, isPost: boolean) => {
+    const currentParams = isPost ? postParams : spriteParams;
+    const updateFn = isPost ? updatePostParam : updateSpriteParam;
+    const value = currentParams[schema.key] ?? schema.defaultValue;
+    const ui = schema.ui;
+
+    if (schema.type === "int" && ui?.options) {
+      return (
+        <View key={schema.key} className="mb-3">
+          <Text className="text-gray-300 text-xs mb-1">{ui.displayName ?? schema.key}</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {ui.options.map((opt, idx) => (
+              <Pressable
+                key={opt}
+                onPress={() => updateFn(schema.key, idx)}
+                className={`px-2 py-1 mr-1 rounded ${value === idx ? "bg-cyan-700" : "bg-gray-700"}`}
+              >
+                <Text className={`text-xs ${value === idx ? "text-white" : "text-gray-400"}`}>{opt}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      );
+    }
+
+    if (schema.type === "float" || schema.type === "int") {
+      const numValue = typeof value === "number" ? value : Number(value);
+      return (
+        <View key={schema.key} className="mb-3">
+          <View className="flex-row justify-between mb-1">
+            <Text className="text-gray-300 text-xs">{ui?.displayName ?? schema.key}</Text>
+            <Text className="text-cyan-400 text-xs font-mono">{numValue.toFixed(2)}</Text>
+          </View>
+          <Slider
+            style={{ width: "100%", height: 32 }}
+            minimumValue={ui?.min ?? 0}
+            maximumValue={ui?.max ?? 1}
+            step={ui?.step ?? 0.01}
+            value={numValue}
+            onValueChange={(v) => updateFn(schema.key, v)}
+            minimumTrackTintColor="#22d3ee"
+            maximumTrackTintColor="#4b5563"
+            thumbTintColor="#22d3ee"
+          />
+        </View>
+      );
+    }
+
+    if (schema.type === "bool") {
+      return (
+        <View key={schema.key} className="flex-row justify-between items-center mb-3">
+          <Text className="text-gray-300 text-xs">{ui?.displayName ?? schema.key}</Text>
+          <Switch
+            value={Boolean(value)}
+            onValueChange={(v) => updateFn(schema.key, v)}
+            trackColor={{ false: "#4b5563", true: "#0e7490" }}
+            thumbColor={value ? "#22d3ee" : "#f4f4f5"}
+          />
+        </View>
+      );
+    }
+
+    return null;
+  };
+
+  const activeEffectName = activeCategory === "sprite" ? selectedSpriteEffect : selectedPostEffect;
+  const activeEntry = activeEffectName !== "none" ? getShaderEntry(activeEffectName) : null;
+
   const renderCategoryTabs = () => (
     <View className="flex-row bg-black/60 px-2 py-1">
       {(["sprite", "post", "camera", "particles"] as EffectCategory[]).map((cat) => (
@@ -248,8 +401,14 @@ export default function VFXShowcaseExample() {
           </Pressable>
         ))}
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {SPRITE_EFFECTS.map((effect) => (
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2">
+        <Pressable
+          onPress={() => applySpriteEffect("none")}
+          className={`px-3 py-2 mr-1 rounded ${selectedSpriteEffect === "none" ? "bg-green-600" : "bg-gray-700"}`}
+        >
+          <Text className="text-white text-xs">none</Text>
+        </Pressable>
+        {spriteEffects.map((effect) => (
           <Pressable
             key={effect}
             onPress={() => applySpriteEffect(effect)}
@@ -259,21 +418,39 @@ export default function VFXShowcaseExample() {
           </Pressable>
         ))}
       </ScrollView>
+      {activeEntry && (
+        <ScrollView style={{ maxHeight: 200 }} showsVerticalScrollIndicator>
+          {activeEntry.paramsSchema.map(schema => renderParamControl(schema, false))}
+        </ScrollView>
+      )}
     </View>
   );
 
   const renderPostControls = () => (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} className="p-2">
-      {POST_EFFECTS.map((effect) => (
+    <View className="p-2">
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2">
         <Pressable
-          key={effect}
-          onPress={() => applyPostEffect(effect)}
-          className={`px-3 py-2 mr-1 rounded ${selectedPostEffect === effect ? "bg-purple-600" : "bg-gray-700"}`}
+          onPress={() => applyPostEffect("none")}
+          className={`px-3 py-2 mr-1 rounded ${selectedPostEffect === "none" ? "bg-purple-600" : "bg-gray-700"}`}
         >
-          <Text className="text-white text-xs">{effect}</Text>
+          <Text className="text-white text-xs">none</Text>
         </Pressable>
-      ))}
-    </ScrollView>
+        {postEffects.map((effect) => (
+          <Pressable
+            key={effect}
+            onPress={() => applyPostEffect(effect)}
+            className={`px-3 py-2 mr-1 rounded ${selectedPostEffect === effect ? "bg-purple-600" : "bg-gray-700"}`}
+          >
+            <Text className="text-white text-xs">{effect}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+      {activeEntry && activeCategory === "post" && (
+        <ScrollView style={{ maxHeight: 200 }} showsVerticalScrollIndicator>
+          {activeEntry.paramsSchema.map(schema => renderParamControl(schema, true))}
+        </ScrollView>
+      )}
+    </View>
   );
 
   const renderCameraControls = () => (

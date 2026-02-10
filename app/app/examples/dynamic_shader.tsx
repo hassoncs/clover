@@ -1,12 +1,14 @@
 import { useCallback, useRef, useState, useEffect } from "react";
-import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView, StyleSheet } from "react-native";
 import type { ExampleMeta } from "@/lib/registry/types";
-import type { GodotBridge, DynamicShaderResult } from "@/lib/godot/types";
+import type { GodotBridge } from "@/lib/godot/types";
 import type { GameDefinition } from "@slopcade/shared";
+import type { EffectGraphSpec } from "@slopcade/shared/effects";
+import { compileGraph } from "@slopcade/shared/effects";
 
 export const metadata: ExampleMeta = {
-  title: "Dynamic Shader",
-  description: "Test AI-generated shaders from JavaScript strings with error reporting",
+  title: "Shader Authoring",
+  description: "Write GLSL shaders with live compilation and error reporting",
 };
 
 const WORLD_BOUNDS = { width: 10, height: 10 };
@@ -84,10 +86,10 @@ export default function DynamicShaderExample() {
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [GodotView, setGodotView] = useState<React.ComponentType<{ style?: object }> | null>(null);
   const [shaderCode, setShaderCode] = useState(VALID_SHADER);
-  const [lastResult, setLastResult] = useState<DynamicShaderResult | null>(null);
-  const [appliedShaderId, setAppliedShaderId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [shaderApplied, setShaderApplied] = useState(false);
   const gameLoadedRef = useRef(false);
-  const shaderCountRef = useRef(0);
+  const graphAppliedRef = useRef(false);
 
   useEffect(() => {
     let mounted = true;
@@ -132,22 +134,66 @@ export default function DynamicShaderExample() {
   const handleCompileAndApply = useCallback(async () => {
     if (!bridge || status !== "ready") return;
     
-    shaderCountRef.current += 1;
-    const shaderId = `dynamic_shader_${shaderCountRef.current}`;
+    setError(null);
     
-    console.log(`[DynamicShader] Compiling shader: ${shaderId}`);
-    const result = await bridge.createDynamicShader(shaderId, shaderCode);
-    console.log(`[DynamicShader] Result:`, result);
-    setLastResult(result);
-    
-    if (result.success) {
-      bridge.applyDynamicShader("test-entity", shaderId, {
-        color_shift: [1, 0.5, 0, 1],
-        intensity: 0.5,
-      });
-      setAppliedShaderId(shaderId);
-    } else {
-      setAppliedShaderId(null);
+    try {
+      // Create effect graph with custom shader node
+      const spec: EffectGraphSpec = {
+        id: 'dynamic-shader',
+        version: '1.0.0',
+        engineApiVersion: '2.0.0',
+        scope: 'entity',
+        nodes: [{
+          id: 'fx',
+          type: 'custom',
+          shader: shaderCode,
+          family: 'filter',
+          inputSlots: [{ name: 'input', dataType: 'texture', connectedTo: null }],
+          params: {},
+          outputTarget: { bufferId: 'output', format: 'rgba8', resolution: 'full' },
+          flags: { stateful: false, fusible: 'never' },
+        }],
+        connections: [],
+        feedbackEdges: [],
+        lifecycle: { autoStart: true, stopMode: 'freeze' },
+      };
+      
+      // Compile the graph
+      const compileResult = compileGraph(spec);
+      
+      if (!compileResult.success || !compileResult.plan) {
+        const errorMsg = compileResult.errors?.map(e => e.message).join(', ') || 'Compilation failed';
+        setError(errorMsg);
+        console.error('[DynamicShader] Compilation failed:', compileResult.errors);
+        return;
+      }
+      
+      // Apply the graph
+      const applyResult = await bridge.applyGraph(compileResult.plan);
+      
+      if (!applyResult.success) {
+        setError(applyResult.error?.message || 'Failed to apply graph');
+        console.error('[DynamicShader] Apply failed:', applyResult.error);
+        return;
+      }
+      
+      // Start the effect
+      if (!graphAppliedRef.current) {
+        const startResult = await bridge.start();
+        if (!startResult.success) {
+          setError(startResult.error?.message || 'Failed to start effect');
+          console.error('[DynamicShader] Start failed:', startResult.error);
+          return;
+        }
+        graphAppliedRef.current = true;
+      }
+      
+      setShaderApplied(true);
+      console.log('[DynamicShader] Shader applied successfully');
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      setError(errorMsg);
+      console.error('[DynamicShader] Error:', err);
     }
   }, [bridge, status, shaderCode]);
 
