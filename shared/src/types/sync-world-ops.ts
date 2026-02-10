@@ -2,7 +2,7 @@ import type { Vec2, Bounds } from './common';
 import type {
   WorldEntityData,
   WorldEntityQuery,
-  RaycastHit,
+  WorldRaycastHit,
   SpawnOptions,
   CloneOptions,
   ReparentOptions,
@@ -62,7 +62,7 @@ export interface SyncWorldOps {
   queryEntitiesWithData(query?: WorldEntityQuery): WorldEntityData[];
   queryPoint(point: Vec2): string | null;
   queryAABB(min: Vec2, max: Vec2): string[];
-  raycast(from: Vec2, to: Vec2, opts?: RaycastOptions): RaycastHit | null;
+  raycast(from: Vec2, to: Vec2, opts?: RaycastOptions): WorldRaycastHit | null;
 
   // ═══════════════════════════════════════════════════════════════
   // Pixel Buffer

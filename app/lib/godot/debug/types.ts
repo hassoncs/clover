@@ -477,7 +477,7 @@ export interface RaycastRequest {
   maxHits?: number;
 }
 
-export interface RaycastHit {
+export interface DebugRaycastHit {
   entityId: string;
   point: Vec2;
   normal: Vec2;
@@ -486,7 +486,7 @@ export interface RaycastHit {
 }
 
 export interface RaycastResult {
-  hits: RaycastHit[];
+  hits: DebugRaycastHit[];
   error?: string;
 }
 

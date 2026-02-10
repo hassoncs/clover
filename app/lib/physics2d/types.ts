@@ -145,12 +145,8 @@ export interface WeldJointDef {
   damping?: number;
 }
 
-export interface RaycastHit {
-  entityId: string;
-  point: Vec2;
-  normal: Vec2;
-  fraction: number;
-}
+// Re-export from godot/types (identical definition)
+export type { RaycastHit } from '../godot/types';
 
 export interface CollisionEvent {
   entityA: string;

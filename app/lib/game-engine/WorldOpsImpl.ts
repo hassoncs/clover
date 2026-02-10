@@ -6,7 +6,7 @@ import type {
   WorldEntityData,
   WorldEntityQuery,
   RaycastOptions,
-  RaycastHit,
+  WorldRaycastHit,
   AnimateTarget,
   AnimateOptions,
   WaitOptions,
@@ -341,7 +341,7 @@ export class WorldOpsImpl implements WorldOps {
     from: Vec2,
     to: Vec2,
     opts?: RaycastOptions
-  ): Promise<RaycastHit | null> {
+  ): Promise<WorldRaycastHit | null> {
     const dx = to.x - from.x;
     const dy = to.y - from.y;
     const distance = Math.sqrt(dx * dx + dy * dy);

@@ -14,7 +14,7 @@ import type {
   CloneOptions,
   ReparentOptions,
   RaycastOptions,
-  RaycastHit,
+  WorldRaycastHit,
   WorldOps,
 } from '@slopcade/shared/types';
 import type { Vec2 } from '@slopcade/shared/types/common';
@@ -328,7 +328,7 @@ export class RunScriptActionExecutor implements ActionExecutor<RunScriptAction> 
       queryAABB: (min: Vec2, max: Vec2): string[] => {
         return context.physics?.queryAABB(min, max) ?? [];
       },
-      raycast: (from: Vec2, to: Vec2, _opts?: RaycastOptions): RaycastHit | null => {
+      raycast: (from: Vec2, to: Vec2, _opts?: RaycastOptions): WorldRaycastHit | null => {
         if (!context.physics) return null;
         const dx = to.x - from.x;
         const dy = to.y - from.y;

@@ -40,7 +40,7 @@ export interface RaycastOptions {
   includeSensors?: boolean;
 }
 
-export interface RaycastHit {
+export interface WorldRaycastHit {
   entityId: string;
   point: Vec2;
   normal: Vec2;
@@ -118,7 +118,7 @@ export interface WorldOps {
   queryEntitiesWithData(query?: WorldEntityQuery): Promise<WorldEntityData[]>;
   queryPoint(point: Vec2): Promise<string | null>;
   queryAABB(min: Vec2, max: Vec2): Promise<string[]>;
-  raycast(from: Vec2, to: Vec2, opts?: RaycastOptions): Promise<RaycastHit | null>;
+  raycast(from: Vec2, to: Vec2, opts?: RaycastOptions): Promise<WorldRaycastHit | null>;
 
   // --- Game State ---
   getVariable(name: string): Promise<unknown>;
