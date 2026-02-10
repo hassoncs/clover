@@ -87,7 +87,12 @@ function callGameBridge(methodName: string, ...args: unknown[]) {
       const Godot = RTNGodot.API();
       const gameBridge = Godot.Engine.get_main_loop().get_root().get_node('GameBridge');
       if (gameBridge) {
-        gameBridge.native_dispatch(methodName, argsJson);
+        const result = gameBridge.native_dispatch(methodName, argsJson);
+        if (result && typeof result === 'object' && 'error' in (result as object)) {
+          console.warn('[callGameBridge] Error for', methodName, ':', JSON.stringify(result));
+        }
+      } else {
+        console.warn('[callGameBridge] gameBridge not found for', methodName);
       }
     });
   });

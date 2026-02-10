@@ -13,7 +13,10 @@ var _entity_original_scale: Vector2 = Vector2.ONE
 var _display_swap_delay: int = 0
 var _frames_since_start: int = 0
 var _pending_inject_commands: Array = []
-var _brush_cache: Dictionary = {}  # "radius_color" -> Image
+var _brush_cache: Dictionary = {}
+var _stroke_overlay_img: Image = null
+var _stroke_overlay_tex: ImageTexture = null
+var _stroke_overlay_dirty: bool = false
 
 func _ready() -> void:
 	# Create subsystems
@@ -44,9 +47,9 @@ func _process(_delta: float) -> void:
 			_display_swap_delay -= 1
 			return
 		if _pending_inject_commands.size() > 0:
-			var cmds := _pending_inject_commands.duplicate()
-			_pending_inject_commands.clear()
-			_inject_strokes_into_feedback(cmds)
+			_render_overlay_from_pending()
+		elif _stroke_overlay_dirty:
+			_clear_stroke_overlay()
 		var output_tex: Texture2D = graph_executor.get_output_texture()
 		if output_tex != null and _entity_sprite.texture != output_tex:
 			_entity_sprite.texture = output_tex
@@ -93,9 +96,13 @@ func _build_effects_method_map() -> void:
 
 func _register_methods_with_game_bridge() -> void:
 	if _game_bridge == null:
+		print("[GBE] _register_methods: game_bridge is null!")
 		return
+	var count := 0
 	for method_name in _method_map:
 		_game_bridge._method_map[method_name] = _method_map[method_name]
+		count += 1
+	print("[GBE] Registered %d methods with GameBridge" % count)
 
 func _register_query_handlers() -> void:
 	if _game_bridge == null:
@@ -648,8 +655,84 @@ func apply_plan(plan_json) -> Dictionary:
 
 	if bool(result.get("success", false)) and str(plan_dict.get("scope", "")) == "entity":
 		_store_entity_sprite_reference()
+		_init_stroke_overlay()
 
 	return result
+
+func _render_overlay_from_pending() -> void:
+	if _stroke_overlay_img == null or _stroke_overlay_tex == null:
+		_pending_inject_commands.clear()
+		return
+
+	if _stroke_overlay_dirty:
+		_stroke_overlay_img.fill(Color(0, 0, 0, 0))
+
+	var vp_size := _stroke_overlay_img.get_size()
+	var cmds := _pending_inject_commands.duplicate()
+	_pending_inject_commands.clear()
+
+	for cmd in cmds:
+		if not (cmd is Dictionary):
+			continue
+		var cmd_type = str(cmd.get("type", ""))
+		var color_data = cmd.get("color", [1.0, 1.0, 1.0, 1.0])
+		var color := Color.WHITE
+		if color_data is Array and color_data.size() >= 3:
+			color = Color(float(color_data[0]), float(color_data[1]), float(color_data[2]),
+				float(color_data[3]) if color_data.size() > 3 else 1.0)
+		elif color_data is String:
+			color = Color(color_data)
+		var width_norm := float(cmd.get("width", 0.01))
+		var radius_px := width_norm * float(vp_size.y) * 0.5
+
+		var points: Array = []
+		if cmd_type == "line":
+			points = [
+				Vector2(float(cmd.get("x1", 0)) * vp_size.x, float(cmd.get("y1", 0)) * vp_size.y),
+				Vector2(float(cmd.get("x2", 0)) * vp_size.x, float(cmd.get("y2", 0)) * vp_size.y),
+			]
+		elif cmd_type == "stroke":
+			var pts = cmd.get("points", [])
+			for pt in pts:
+				if pt is Dictionary:
+					points.append(Vector2(float(pt.get("x", 0)) * vp_size.x, float(pt.get("y", 0)) * vp_size.y))
+
+		for i in range(points.size() - 1):
+			_draw_line_on_image(_stroke_overlay_img, points[i], points[i + 1], color, radius_px)
+
+	_stroke_overlay_tex.update(_stroke_overlay_img)
+	_set_overlay_on_materials(_stroke_overlay_tex)
+	_stroke_overlay_dirty = true
+
+func _clear_stroke_overlay() -> void:
+	if _stroke_overlay_img == null or _stroke_overlay_tex == null:
+		return
+	_stroke_overlay_img.fill(Color(0, 0, 0, 0))
+	_stroke_overlay_tex.update(_stroke_overlay_img)
+	_stroke_overlay_dirty = false
+
+func _set_overlay_on_materials(tex: Texture2D) -> void:
+	if graph_executor == null:
+		return
+	for entry in graph_executor._pass_entries:
+		for mat_key in ["material_a", "material_b"]:
+			var mat: ShaderMaterial = entry.get(mat_key)
+			if mat != null:
+				mat.set_shader_parameter("stroke_overlay", tex)
+
+func _init_stroke_overlay() -> void:
+	var size := Vector2i(512, 512)
+	for entry in graph_executor._pass_entries:
+		var ppb: String = str(entry.get("ping_pong_buffer", ""))
+		if ppb != "" and graph_executor._ping_pong_manager != null:
+			var vps = graph_executor._ping_pong_manager.get_viewports(ppb)
+			if vps.get("a") != null:
+				size = vps.get("a").size
+			break
+	_stroke_overlay_img = Image.create(size.x, size.y, false, Image.FORMAT_RGBA8)
+	_stroke_overlay_img.fill(Color(0, 0, 0, 0))
+	_stroke_overlay_tex = ImageTexture.create_from_image(_stroke_overlay_img)
+	_stroke_overlay_dirty = false
 
 func clear_plan() -> void:
 	_restore_entity_display()
@@ -665,6 +748,8 @@ func start_graph() -> void:
 	if graph_executor:
 		_display_swap_delay = 2
 		_frames_since_start = 0
+		if _stroke_overlay_tex != null:
+			_set_overlay_on_materials(_stroke_overlay_tex)
 		graph_executor.start()
 
 func pause_graph() -> void:
@@ -700,8 +785,9 @@ func restore_snapshot(snapshot: Dictionary) -> Dictionary:
 # ============================================================
 
 func draw_to_active_buffer(entity_id: String, commands_json) -> Dictionary:
-	# Route drawing commands to the appropriate backend based on graph state
+	print("[GBE] draw_to_active_buffer: entity=%s type=%s" % [entity_id, typeof(commands_json)])
 	if graph_executor == null:
+		print("[GBE] draw_to_active_buffer: NO graph_executor!")
 		return {"success": false, "error": "GraphExecutor not initialized"}
 	
 	# Parse commands
@@ -718,9 +804,11 @@ func draw_to_active_buffer(entity_id: String, commands_json) -> Dictionary:
 		return {"success": false, "error": "Commands must be Array or JSON string"}
 	
 	# Route based on graph state
-	_draw_to_pixel_buffer(entity_id, commands)
 	if graph_executor._state == EffectsGraphExecutor.State.RUNNING:
+		_draw_to_pixel_buffer(entity_id, commands)
 		_pending_inject_commands.append_array(commands)
+	else:
+		_draw_to_pixel_buffer(entity_id, commands)
 	return {"success": true}
 
 func _draw_to_ping_pong(entity_id: String, commands: Array) -> Dictionary:
@@ -754,22 +842,18 @@ func _draw_to_ping_pong(entity_id: String, commands: Array) -> Dictionary:
 			color = Color(color_data)
 		var width_norm = float(cmd.get("width", 0.01))
 
+		var flat_points: Array = []
 		if cmd_type == "stroke":
 			var points = cmd.get("points", [])
-			var flat_points: Array = []
 			for pt in points:
 				if pt is Dictionary:
 					flat_points.append(float(pt.get("x", 0.0)))
 					flat_points.append(float(pt.get("y", 0.0)))
-			if flat_points.size() >= 4:
-				ping_pong_mgr.add_stroke(buffer_id, flat_points, color, width_norm)
-
 		elif cmd_type == "line":
-			var x1 = float(cmd.get("x1", 0.0))
-			var y1 = float(cmd.get("y1", 0.0))
-			var x2 = float(cmd.get("x2", 0.0))
-			var y2 = float(cmd.get("y2", 0.0))
-			var flat_points: Array = [x1, y1, x2, y2]
+			flat_points = [float(cmd.get("x1", 0.0)), float(cmd.get("y1", 0.0)),
+				float(cmd.get("x2", 0.0)), float(cmd.get("y2", 0.0))]
+
+		if flat_points.size() >= 4:
 			ping_pong_mgr.add_stroke(buffer_id, flat_points, color, width_norm)
 		
 		elif cmd_type == "stamp":
@@ -789,64 +873,6 @@ func _draw_to_pixel_buffer(entity_id: String, commands: Array) -> Dictionary:
 		return {"success": false, "error": "PixelBufferManager not initialized"}
 	
 	pbm.draw_commands_normalized(entity_id, commands)
-	return {"success": true}
-
-func _inject_strokes_into_feedback(commands: Array) -> Dictionary:
-	if graph_executor == null or graph_executor._ping_pong_manager == null:
-		return {"success": false, "error": "No ping-pong manager"}
-
-	var entry: Dictionary = {}
-	var buffer_id := ""
-	for e in graph_executor._pass_entries:
-		var ppb: String = str(e.get("ping_pong_buffer", ""))
-		if ppb != "":
-			entry = e
-			buffer_id = ppb
-			break
-	if buffer_id == "":
-		return {"success": false, "error": "No active ping-pong buffer"}
-
-	var read_tex: Texture2D = graph_executor._ping_pong_manager.get_read_texture(buffer_id)
-	if read_tex == null:
-		return {"success": false, "error": "No read texture"}
-
-	var img: Image = read_tex.get_image()
-	if img == null:
-		return {"success": false, "error": "Failed to get image from read texture"}
-
-	var vp_size := img.get_size()
-
-	for cmd in commands:
-		if not (cmd is Dictionary):
-			continue
-		var cmd_type = str(cmd.get("type", ""))
-		var color_data = cmd.get("color", [1.0, 1.0, 1.0, 1.0])
-		var color := Color.WHITE
-		if color_data is Array and color_data.size() >= 3:
-			color = Color(float(color_data[0]), float(color_data[1]), float(color_data[2]),
-				float(color_data[3]) if color_data.size() > 3 else 1.0)
-		elif color_data is String:
-			color = Color(color_data)
-		var width_norm := float(cmd.get("width", 0.01))
-		var radius_px := width_norm * float(vp_size.y) * 0.5
-
-		var points: Array = []
-		if cmd_type == "line":
-			points = [
-				Vector2(float(cmd.get("x1", 0)) * vp_size.x, float(cmd.get("y1", 0)) * vp_size.y),
-				Vector2(float(cmd.get("x2", 0)) * vp_size.x, float(cmd.get("y2", 0)) * vp_size.y),
-			]
-		elif cmd_type == "stroke":
-			var pts = cmd.get("points", [])
-			for pt in pts:
-				if pt is Dictionary:
-					points.append(Vector2(float(pt.get("x", 0)) * vp_size.x, float(pt.get("y", 0)) * vp_size.y))
-
-		for i in range(points.size() - 1):
-			_draw_line_on_image(img, points[i], points[i + 1], color, radius_px)
-
-	var injected_tex := ImageTexture.create_from_image(img)
-	graph_executor._injected_feedback_tex = injected_tex
 	return {"success": true}
 
 func _get_brush_image(radius: int, color: Color) -> Image:
@@ -880,7 +906,7 @@ func _draw_line_on_image(img: Image, from: Vector2, to: Vector2, color: Color, r
 	var dx := to.x - from.x
 	var dy := to.y - from.y
 	var dist := sqrt(dx * dx + dy * dy)
-	var spacing := max(r * 0.5, 1.0)
+	var spacing: float = max(r * 0.5, 1.0)
 	var steps := int(dist / spacing) + 1
 
 	for step in range(steps + 1):

@@ -233,22 +233,7 @@ func _build_method_map() -> void:
 
 	# Step 2: Apply manual overrides for methods needing custom handling
 	var overrides = {
-		# RPC dispatch to query system (used by native bridge)
-		"callRpc": func(args):
-			if args.size() == 0: return {"error": "missing_rpc_args"}
-			var rpc_data = args[0]
-			if rpc_data is String:
-				var json = JSON.new()
-				if json.parse(rpc_data) == OK:
-					rpc_data = json.data
-			if rpc_data is Dictionary:
-				var method = str(rpc_data.get("method", ""))
-				var params = rpc_data.get("params", {})
-				var query_args: Array = [params] if params != null else []
-				if _query_system and method != "":
-					return _query_system.dispatch(method, query_args)
-			return {"error": "invalid_rpc"}
-		,
+		"callRpc": _handle_rpc,
 		# Core lifecycle
 		"load_game_json": func(args): return load_game_json(str(args[0])) if args.size() > 0 else false,
 		"clear_game": func(_args): clear_game(),
@@ -372,6 +357,22 @@ func _build_method_map() -> void:
 		print("[GameBridge][REGISTRY] Built method map with ", _method_map.size(), " methods")
 		print("[GameBridge][REGISTRY] Auto-registered from modules, manual overrides applied")
 
+func _handle_rpc(args: Array) -> Variant:
+	if args.size() == 0:
+		return {"error": "missing_rpc_args"}
+	var rpc_data = args[0]
+	if rpc_data is String:
+		var json := JSON.new()
+		if json.parse(rpc_data) == OK:
+			rpc_data = json.data
+	if rpc_data is Dictionary:
+		var method := str(rpc_data.get("method", ""))
+		var params = rpc_data.get("params", {})
+		var query_args: Array = [params] if params != null else []
+		if _query_system and method != "":
+			return _query_system.dispatch(method, query_args)
+	return {"error": "invalid_rpc"}
+
 func dispatch_raw(method_name: String, args: Array) -> Variant:
 	if not _method_map.has(method_name):
 		push_warning("[GameBridge] Unknown native method: " + method_name)
@@ -379,8 +380,9 @@ func dispatch_raw(method_name: String, args: Array) -> Variant:
 	return _method_map[method_name].call(args)
 
 func native_dispatch(method_name: String, args_json: String) -> Variant:
+	print("[GB] native_dispatch: %s (known=%s)" % [method_name, str(_method_map.has(method_name))])
 	if not _method_map.has(method_name):
-		push_warning("[GameBridge] Unknown native method: " + method_name)
+		print("[GB] Unknown method: %s. Known methods: %s" % [method_name, str(_method_map.keys())])
 		return {"error": "unknown_method", "method": method_name}
 	var args: Array = []
 	if args_json != "[]" and args_json != "":
