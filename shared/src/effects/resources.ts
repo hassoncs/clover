@@ -19,7 +19,7 @@ export type ScopeTarget =
 // Resource kind — what type of resource this is
 // ---------------------------------------------------------------------------
 
-export type ResourceKind = 'screenColor' | 'entityTexture' | 'intermediate' | 'feedback';
+export type ResourceKind = 'screenColor' | 'intermediate' | 'feedback' | 'external';
 
 // ---------------------------------------------------------------------------
 // Resource node — explicit resource in the graph
@@ -126,7 +126,8 @@ function makeResourceId(nodeId: string, outputName: string): string {
 }
 
 function makeImplicitInputId(scope: 'screen' | 'entity'): string {
-  return scope === 'screen' ? '__screenColor' : '__entityTexture';
+  // Entity scope now uses externalInputs instead of implicit __entityTexture
+  return '__screenColor';
 }
 
 function makeFeedbackResourceId(fromNodeId: string, toNodeId: string): string {
@@ -153,7 +154,7 @@ export function buildResourceGraph(spec: EffectGraphSpec): ResourceResolutionRes
   }
 
   const implicitInputId = makeImplicitInputId(spec.scope);
-  const implicitKind: ResourceKind = spec.scope === 'screen' ? 'screenColor' : 'entityTexture';
+  const implicitKind: ResourceKind = 'screenColor';
   resources.set(implicitInputId, {
     id: implicitInputId,
     kind: implicitKind,
@@ -162,6 +163,20 @@ export function buildResourceGraph(spec: EffectGraphSpec): ResourceResolutionRes
     providedBy: null,
     consumedBy: [],
   });
+
+  if (spec.externalInputs) {
+    for (const extInput of spec.externalInputs) {
+      const extResourceId = `__external:${extInput.name}`;
+      resources.set(extResourceId, {
+        id: extResourceId,
+        kind: 'external',
+        format: 'rgba8',
+        resolution: 'full',
+        providedBy: null,
+        consumedBy: [],
+      });
+    }
+  }
 
   const outputResourceMap = new Map<string, string>();
 
@@ -296,15 +311,30 @@ export function buildResourceGraph(spec: EffectGraphSpec): ResourceResolutionRes
         (b) => b.passId === node.id && b.direction === 'input' && b.slotName === slot.name,
       );
       if (!hasBinding) {
-        const implicitResource = resources.get(implicitInputId);
-        if (implicitResource) {
-          implicitResource.consumedBy.push(node.id);
-          bindings.push({
-            passId: node.id,
-            direction: 'input',
-            slotName: slot.name,
-            resourceId: implicitInputId,
-          });
+        const externalInput = spec.externalInputs?.find((ext) => ext.name === slot.name);
+        if (externalInput) {
+          const extResourceId = `__external:${externalInput.name}`;
+          const extResource = resources.get(extResourceId);
+          if (extResource) {
+            extResource.consumedBy.push(node.id);
+            bindings.push({
+              passId: node.id,
+              direction: 'input',
+              slotName: slot.name,
+              resourceId: extResourceId,
+            });
+          }
+        } else {
+          const implicitResource = resources.get(implicitInputId);
+          if (implicitResource) {
+            implicitResource.consumedBy.push(node.id);
+            bindings.push({
+              passId: node.id,
+              direction: 'input',
+              slotName: slot.name,
+              resourceId: implicitInputId,
+            });
+          }
         }
       }
     }

@@ -169,8 +169,6 @@ func get_resource_meta(resource_id: String) -> Dictionary:
 func _is_implicit_input(resource_id: String) -> bool:
 	if resource_id == "__screenColor":
 		return true
-	if resource_id == "__entityTexture":
-		return true
 	if resource_id.begins_with("__feedback:"):
 		return true
 	return false

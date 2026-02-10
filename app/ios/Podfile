@@ -64,5 +64,23 @@ target 'Slopcade' do
       :mac_catalyst_enabled => false,
       :ccache_enabled => ccache_enabled?(podfile_properties),
     )
+
+    # When ccache is enabled, disable Index Store to allow caching
+    if ccache_enabled?(podfile_properties)
+      Pod::UI.puts "[Ccache] Disabling Index Store for caching compatibility"
+      installer.pods_project.targets.each do |target|
+        target.build_configurations.each do |config|
+          config.build_settings["COMPILER_INDEX_STORE_ENABLE"] = "NO"
+        end
+      end
+      installer.aggregate_targets.each do |aggregate_target|
+        aggregate_target.user_project.targets.each do |target|
+          target.build_configurations.each do |config|
+            config.build_settings["COMPILER_INDEX_STORE_ENABLE"] = "NO"
+          end
+        end
+        aggregate_target.user_project.save
+      end
+    end
   end
 end

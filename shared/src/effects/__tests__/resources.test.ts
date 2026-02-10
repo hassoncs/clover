@@ -160,8 +160,7 @@ describe('buildResourceGraph', () => {
 
     expect(result.success).toBe(true);
     expect(result.graph!.scope).toEqual({ type: 'entity', entityId: '' });
-    expect(result.graph!.resources.has('__entityTexture')).toBe(true);
-    expect(result.graph!.resources.get('__entityTexture')!.kind).toBe('entityTexture');
+    expect(result.graph!.resources.has('__screenColor')).toBe(true);
   });
 
   it('builds a resource graph with feedback resource', () => {
@@ -211,16 +210,16 @@ describe('buildResourceGraph', () => {
     expect(screenRes.providedBy).toBeNull();
   });
 
-  it('creates entityTexture resource automatically for entity scope', () => {
+  it('creates screenColor resource for entity scope (no longer creates entityTexture)', () => {
     const result = buildResourceGraph(makeSpec({ scope: 'entity', nodes: [] }));
 
     expect(result.success).toBe(true);
-    expect(result.graph!.resources.has('__entityTexture')).toBe(true);
-    const entityRes = result.graph!.resources.get('__entityTexture')!;
-    expect(entityRes.kind).toBe('entityTexture');
-    expect(entityRes.format).toBe('rgba8');
-    expect(entityRes.resolution).toBe('full');
-    expect(entityRes.providedBy).toBeNull();
+    expect(result.graph!.resources.has('__screenColor')).toBe(true);
+    const screenRes = result.graph!.resources.get('__screenColor')!;
+    expect(screenRes.kind).toBe('screenColor');
+    expect(screenRes.format).toBe('rgba8');
+    expect(screenRes.resolution).toBe('full');
+    expect(screenRes.providedBy).toBeNull();
   });
 
   it('returns E_RESOURCE_UNRESOLVED when input connects to non-existent output', () => {
@@ -397,7 +396,7 @@ describe('buildResourceGraph', () => {
     expect(result.success).toBe(true);
     const inputBindings = result.graph!.bindings.filter((b) => b.direction === 'input');
     expect(inputBindings.some(
-      (b) => b.passId === 'fx' && b.slotName === 'custom_input' && b.resourceId === '__entityTexture',
+      (b) => b.passId === 'fx' && b.slotName === 'custom_input' && b.resourceId === '__screenColor',
     )).toBe(true);
   });
 
@@ -488,5 +487,56 @@ describe('buildResourceGraph', () => {
     );
     expect(feedbackBinding).toBeDefined();
     expect(feedbackBinding!.resourceId).toBe('__feedback:fx->fx');
+  });
+});
+
+describe('external inputs', () => {
+  it('binds external input to unconnected slot', () => {
+    const node = makeNode({
+      id: 'blur',
+      inputSlots: [{ name: 'pixelBuffer', dataType: 'texture', connectedTo: null }],
+    });
+
+    const spec = makeSpec({
+      scope: 'entity',
+      nodes: [node],
+      externalInputs: [
+        { name: 'pixelBuffer', dataType: 'texture', source: 'entity' }
+      ],
+    });
+
+    const result = buildResourceGraph(spec);
+    expect(result.success).toBe(true);
+    expect(result.graph?.resources.has('__external:pixelBuffer')).toBe(true);
+    
+    const binding = result.graph?.bindings.find(
+      b => b.passId === 'blur' && b.slotName === 'pixelBuffer'
+    );
+    expect(binding).toBeDefined();
+    expect(binding?.resourceId).toBe('__external:pixelBuffer');
+  });
+
+  it('prefers external input over implicit input', () => {
+    const node = makeNode({
+      id: 'effect',
+      inputSlots: [{ name: 'customInput', dataType: 'texture', connectedTo: null }],
+    });
+
+    const spec = makeSpec({
+      scope: 'screen',
+      nodes: [node],
+      externalInputs: [
+        { name: 'customInput', dataType: 'texture', source: 'camera' }
+      ],
+    });
+
+    const result = buildResourceGraph(spec);
+    expect(result.success).toBe(true);
+    
+    const binding = result.graph?.bindings.find(
+      b => b.passId === 'effect' && b.slotName === 'customInput'
+    );
+    expect(binding?.resourceId).toBe('__external:customInput');
+    expect(binding?.resourceId).not.toBe('__screenColor');
   });
 });

@@ -85,9 +85,9 @@ var _pass_entries: Array = []
 var _pass_index: Dictionary = {}
 var _plan_hash: String = ""
 var _seed_feedback_on_next_frame: bool = false
-var _entity_texture: Texture2D = null
 var _viewport_pool: ViewportPool = null
 var _shader_warmer: ShaderWarmer = null
+var _buffer_registry: Dictionary = {}  # name -> texture
 
 func _ready() -> void:
 	set_process(false)
@@ -107,7 +107,6 @@ func apply_plan(plan_json: Dictionary, entity_texture: Texture2D = null) -> Dict
 
 	_plan = plan_json.duplicate(true)
 	_plan_hash = str(_plan.get("hash", ""))
-	_entity_texture = entity_texture
 
 	var viewport_size: Vector2i = _resolve_base_size()
 	_resource_graph = EffectsResourceGraph.new()
@@ -119,8 +118,7 @@ func apply_plan(plan_json: Dictionary, entity_texture: Texture2D = null) -> Dict
 		return {"success": false, "error": "Resource allocation failed"}
 
 	_bind_implicit_inputs()
-	if entity_texture != null:
-		_resource_graph.set_external_texture("__entityTexture", entity_texture)
+	# Entity textures should be registered via set_input_buffer("pixelBuffer", texture)
 
 	_ping_pong_manager = EffectsPingPongManager.new()
 	_ping_pong_manager.configure(self, viewport_size, _viewport_pool)
@@ -165,7 +163,7 @@ func clear() -> void:
 
 	_plan = {}
 	_plan_hash = ""
-	_entity_texture = null
+	_buffer_registry.clear()
 	_transition_to(State.IDLE)
 
 func update_params(pass_id: String, params: Dictionary) -> Dictionary:
@@ -349,9 +347,10 @@ func _process(delta: float) -> void:
 			# everything — not just newly-drawn pixels.
 			var feedback_tex: Texture2D = read_tex
 			if _seed_feedback_on_next_frame:
-				var entity_tex: Texture2D = _resource_graph.get_texture("__entityTexture")
-				if entity_tex != null:
-					feedback_tex = entity_tex
+				# Check buffer registry for pixel buffer
+				var pixel_buffer_tex: Texture2D = _buffer_registry.get("pixelBuffer")
+				if pixel_buffer_tex != null:
+					feedback_tex = pixel_buffer_tex
 
 			var input_bindings: Dictionary = pass_data.get("params", {}).get("inputBindings", {})
 			for uniform_name in input_bindings.keys():
@@ -419,7 +418,42 @@ func _build_passes(passes: Array) -> bool:
 		_pass_entries.append(entry)
 		_pass_index[pass_id] = entry
 
+	_enforce_render_order()
 	return true
+
+func _enforce_render_order() -> void:
+	# Sort _pass_entries by CompiledPlan order
+	# The passes in _plan.passes should already be in topo order
+	# We just need to ensure the scene graph matches
+	
+	for i in range(_pass_entries.size()):
+		var entry: Dictionary = _pass_entries[i]
+		
+		# Handle single-pass entries
+		var color_rect: ColorRect = entry.get("rect")
+		if color_rect != null:
+			var viewport: SubViewport = entry.get("viewport")
+			if viewport != null:
+				var current_index: int = color_rect.get_index()
+				if current_index != i:
+					viewport.move_child(color_rect, i)
+		
+		# Handle ping-pong pass entries (two ColorRects)
+		var rect_a: ColorRect = entry.get("rect_a")
+		if rect_a != null:
+			var viewport_a: SubViewport = entry.get("viewport_a")
+			if viewport_a != null:
+				var current_index: int = rect_a.get_index()
+				if current_index != i:
+					viewport_a.move_child(rect_a, i)
+		
+		var rect_b: ColorRect = entry.get("rect_b")
+		if rect_b != null:
+			var viewport_b: SubViewport = entry.get("viewport_b")
+			if viewport_b != null:
+				var current_index: int = rect_b.get_index()
+				if current_index != i:
+					viewport_b.move_child(rect_b, i)
 
 func _setup_single_pass(entry: Dictionary, pass_data: Dictionary, shader: Shader) -> bool:
 	var viewport := _resolve_output_viewport(pass_data)
@@ -599,13 +633,15 @@ func _validate_plan(plan_json: Dictionary) -> bool:
 	return true
 
 func _resolve_base_size() -> Vector2i:
-	# For entity-scoped effects, match the entity texture size so the
+	# For entity-scoped effects, match the pixel buffer size so the
 	# ping-pong viewports operate at the same resolution as the pixel
 	# buffer.  This avoids a quality change when baking back on stop.
-	if str(_plan.get("scope", "screen")) == "entity" and _entity_texture != null:
-		var tex_size: Vector2i = _entity_texture.get_size()
-		if tex_size.x > 0 and tex_size.y > 0:
-			return tex_size
+	if str(_plan.get("scope", "screen")) == "entity":
+		var pixel_buffer_tex: Texture2D = _buffer_registry.get("pixelBuffer")
+		if pixel_buffer_tex != null:
+			var tex_size: Vector2i = pixel_buffer_tex.get_size()
+			if tex_size.x > 0 and tex_size.y > 0:
+				return tex_size
 	var viewport = get_viewport()
 	if viewport:
 		var size = viewport.get_visible_rect().size
@@ -621,17 +657,46 @@ func _bind_implicit_inputs() -> void:
 	if screen_tex != null:
 		_resource_graph.set_external_texture("__screenColor", screen_tex)
 
-	if str(_plan.get("scope", "screen")) == "entity":
-		# Bridge will set an explicit entity texture if available.
-		_resource_graph.set_external_texture("__entityTexture", null)
-
-func set_entity_texture(texture: Texture2D) -> void:
-	_entity_texture = texture
+func set_input_buffer(name: String, texture: Texture2D) -> void:
+	_buffer_registry[name] = texture
+	# If resource graph exists, update it
 	if _resource_graph != null:
-		_resource_graph.set_external_texture("__entityTexture", texture)
-		for entry in _pass_entries:
-			var has_ping_pong: bool = str(entry.get("ping_pong_buffer", "")) != ""
-			_rebind_entry_inputs(entry, has_ping_pong)
+		_resource_graph.set_external_texture(name, texture)
+
+func get_buffer(name: String) -> Texture2D:
+	return _buffer_registry.get(name)
+
+func set_input_buffer_from_entity(name: String, entity_id: String) -> void:
+	# Get entity node from GameBridge
+	var game_bridge = get_node_or_null("/root/GameBridge")
+	if game_bridge == null:
+		push_error("[EffectsGraphExecutor] GameBridge not found")
+		return
+	
+	var entity_node: Node2D = game_bridge.get_entity_node(entity_id)
+	if entity_node == null:
+		push_error("[EffectsGraphExecutor] Entity '%s' not found" % entity_id)
+		return
+	
+	# Find sprite in entity tree
+	var sprite: Sprite2D = _find_sprite_in_tree(entity_node, 3)
+	if sprite == null or sprite.texture == null:
+		push_error("[EffectsGraphExecutor] No sprite texture found for entity '%s'" % entity_id)
+		return
+	
+	# Register the texture as a named buffer
+	set_input_buffer(name, sprite.texture)
+
+func _find_sprite_in_tree(node: Node, max_depth: int) -> Sprite2D:
+	if max_depth <= 0:
+		return null
+	if node is Sprite2D:
+		return node as Sprite2D
+	for child in node.get_children():
+		var result = _find_sprite_in_tree(child, max_depth - 1)
+		if result != null:
+			return result
+	return null
 
 func _find_feedback_policy(pass_id: String) -> Dictionary:
 	var feedback_policies: Dictionary = _plan.get("feedbackPolicies", {})

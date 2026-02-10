@@ -587,3 +587,39 @@ describe('compileGraph', () => {
     });
   });
 });
+
+describe('external inputs', () => {
+  it('generates inputBindings for external inputs', () => {
+    const node: EffectNode = {
+      id: 'blur',
+      type: 'filter.blur',
+      family: 'filter',
+      inputSlots: [{ name: 'pixelBuffer', dataType: 'texture', connectedTo: null }],
+      params: { radius: 5 },
+      outputTarget: { bufferId: 'output', format: 'rgba8', resolution: 'full' },
+      flags: { stateful: false, fusible: 'always' },
+    };
+
+    const spec: EffectGraphSpec = {
+      id: 'test',
+      version: '1.0.0',
+      engineApiVersion: '1.0.0',
+      scope: 'entity',
+      nodes: [node],
+      connections: [],
+      feedbackEdges: [],
+      externalInputs: [
+        { name: 'pixelBuffer', dataType: 'texture', source: 'entity' }
+      ],
+      lifecycle: { autoStart: true, stopMode: 'freeze' },
+    };
+
+    const result = compileGraph(spec);
+    expect(result.success).toBe(true);
+    expect(result.plan).toBeDefined();
+    
+    const pass = result.plan!.passes[0];
+    expect(pass.params.inputBindings).toBeDefined();
+    expect((pass.params.inputBindings as Record<string, string>).pixelBuffer).toBe('__external:pixelBuffer');
+  });
+});

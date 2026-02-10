@@ -238,9 +238,15 @@ function checkDisconnectedNodes(
     connectedNodes.add(fb.to.nodeId);
   }
 
+  const externalInputNames = new Set(graph.externalInputs?.map(ext => ext.name) || []);
+
   for (const node of graph.nodes) {
     if (connectedNodes.has(node.id)) continue;
     if (node.family === 'generator') continue;
+    
+    const hasExternalInput = node.inputSlots.some(slot => externalInputNames.has(slot.name));
+    if (hasExternalInput) continue;
+    
     errors.push(
       err('E_DISCONNECTED_NODE', `Node "${node.id}" has no connections`, [node.id]),
     );

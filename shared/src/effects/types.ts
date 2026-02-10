@@ -141,6 +141,16 @@ export interface FeedbackPolicy {
 }
 
 // ---------------------------------------------------------------------------
+// External input declaration
+// ---------------------------------------------------------------------------
+
+export interface ExternalInput {
+  name: string;
+  dataType: 'texture';
+  source: 'screen' | 'camera' | 'url' | 'entity';
+}
+
+// ---------------------------------------------------------------------------
 // EffectGraphSpec — authoring-level graph definition
 // ---------------------------------------------------------------------------
 
@@ -152,6 +162,7 @@ export interface EffectGraphSpec {
   nodes: EffectNode[];
   connections: Connection[];
   feedbackEdges: FeedbackEdge[];
+  externalInputs?: ExternalInput[];
   lifecycle: {
     autoStart: boolean;
     stopMode: 'freeze' | 'clear';

@@ -268,6 +268,8 @@ declare global {
       ) => void;
       destroyThemedUIComponent: (componentId: string) => void;
       drawToActiveBuffer: (entityId: string, commandsJson: string) => void;
+      setExternalInput: (name: string, imageData: string) => void;
+      setScreenInput: (enable: boolean) => void;
 
     };
   }
@@ -1309,6 +1311,14 @@ export function createWebGodotBridge(): GodotBridge {
     setOrbitControls(enabled: boolean): void {
       const godotBridge = getGodotBridge();
       godotBridge?.set_orbit_controls?.(enabled);
+    },
+
+    setExternalInput(name: string, imageData: string) {
+      getGodotBridge()?.setExternalInput?.(name, imageData);
+    },
+
+    setScreenInput(enable: boolean) {
+      getGodotBridge()?.setScreenInput?.(enable);
     },
 
     async callRpc(method: string, params?: unknown): Promise<unknown> {

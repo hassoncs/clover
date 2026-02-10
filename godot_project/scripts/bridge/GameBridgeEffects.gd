@@ -82,6 +82,8 @@ func _build_effects_method_map() -> void:
 		"get_snapshot": _js_get_snapshot,
 		"restore_snapshot": _js_restore_snapshot,
 		"draw_to_active_buffer": _js_draw_to_active_buffer,
+		"set_external_input": _js_set_external_input,
+		"set_screen_input": _js_set_screen_input,
 
 	}
 
@@ -155,6 +157,21 @@ func _register_query_handlers() -> void:
 			var commands = args[0].get("commands", "")
 			return draw_to_active_buffer(entity_id, commands)
 		return {"success": false, "error": "Missing entityId or commands"}
+	)
+
+	qs.register_handler("effects.setExternalInput", func(args):
+		if args.size() > 0 and args[0] is Dictionary:
+			var name = str(args[0].get("name", ""))
+			var image_data = str(args[0].get("imageData", ""))
+			return set_external_input(name, image_data)
+		return {"success": false, "error": "Missing name or imageData"}
+	)
+
+	qs.register_handler("effects.setScreenInput", func(args):
+		if args.size() > 0 and args[0] is Dictionary:
+			var enable = bool(args[0].get("enable", false))
+			return set_screen_input(enable)
+		return {"success": true}
 	)
 
 func native_dispatch(method_name: String, args_json: String) -> Variant:
@@ -282,6 +299,14 @@ func _setup_js_effects_bridge() -> void:
 	var draw_to_active_buffer_cb = JavaScriptBridge.create_callback(_js_draw_to_active_buffer)
 	callbacks.append(draw_to_active_buffer_cb)
 	bridge["drawToActiveBuffer"] = draw_to_active_buffer_cb
+
+	var set_external_input_cb = JavaScriptBridge.create_callback(_js_set_external_input)
+	callbacks.append(set_external_input_cb)
+	bridge["setExternalInput"] = set_external_input_cb
+
+	var set_screen_input_cb = JavaScriptBridge.create_callback(_js_set_screen_input)
+	callbacks.append(set_screen_input_cb)
+	bridge["setScreenInput"] = set_screen_input_cb
 
 	# Particles
 	var spawn_particle_preset_cb = JavaScriptBridge.create_callback(_js_spawn_particle_preset)
@@ -450,6 +475,23 @@ func _js_draw_to_active_buffer(args: Array) -> void:
 	var result = draw_to_active_buffer(entity_id, commands_json)
 	_set_last_result(result)
 
+func _js_set_external_input(args: Array) -> void:
+	if args.size() < 2:
+		_set_last_result({"success": false, "error": "Missing name or imageData"})
+		return
+	var name = str(args[0])
+	var image_data = str(args[1])
+	var result = set_external_input(name, image_data)
+	_set_last_result(result)
+
+func _js_set_screen_input(args: Array) -> void:
+	if args.size() < 1:
+		_set_last_result({"success": false, "error": "Missing enable parameter"})
+		return
+	var enable = bool(args[0])
+	var result = set_screen_input(enable)
+	_set_last_result(result)
+
 func _js_spawn_particle_preset(args: Array) -> void:
 	if args.size() < 3:
 		return
@@ -566,17 +608,17 @@ func apply_plan(plan_json) -> Dictionary:
 	else:
 		return {"success": false, "error": "Invalid plan format"}
 
-	# For entity-scoped graphs, find the entity texture up front so it is
-	# available during bind_pass_inputs (avoids "Missing input texture" warning).
-	var entity_tex: Texture2D = null
+	# For entity-scoped graphs, find the entity texture and register it via buffer registry
 	if str(plan_dict.get("scope", "")) == "entity":
-		entity_tex = _find_entity_texture()
+		var entity_tex: Texture2D = _find_entity_texture()
+		if entity_tex != null:
+			graph_executor.set_input_buffer("pixelBuffer", entity_tex)
 
-	var result = graph_executor.apply_plan(plan_dict, entity_tex)
+	var result = graph_executor.apply_plan(plan_dict)
 
 	# Store sprite reference for display swapping while the graph runs.
 	if bool(result.get("success", false)) and str(plan_dict.get("scope", "")) == "entity":
-		_bind_entity_textures()
+		_store_entity_sprite_reference()
 
 	return result
 
@@ -838,11 +880,11 @@ func _restore_entity_display() -> void:
 		_entity_sprite.texture = _entity_original_texture
 		_entity_sprite.scale = _entity_original_scale
 
-func _bind_entity_textures() -> void:
-	if graph_executor == null or _game_bridge == null:
+func _store_entity_sprite_reference() -> void:
+	if _game_bridge == null:
 		return
 
-	# Prefer the PixelBufferManager's stored texture — it is available
+	# Prefer the PixelBufferManager's stored sprite — it is available
 	# immediately after createPixelBuffer runs, before deferred tree updates.
 	if "_pixel_buffer_manager" in _game_bridge:
 		var pbm = _game_bridge._pixel_buffer_manager
@@ -850,14 +892,12 @@ func _bind_entity_textures() -> void:
 			var buffers: Dictionary = pbm._buffers
 			for buf_id in buffers.keys():
 				var buf: Dictionary = buffers[buf_id]
+				var spr = buf.get("sprite")
 				var tex = buf.get("texture")
-				if tex is Texture2D:
-					graph_executor.set_entity_texture(tex)
-					var spr = buf.get("sprite")
-					if spr is Sprite2D:
-						_entity_sprite = spr
-						_entity_original_texture = tex
-						_entity_original_scale = spr.scale
+				if spr is Sprite2D and tex is Texture2D:
+					_entity_sprite = spr
+					_entity_original_texture = tex
+					_entity_original_scale = spr.scale
 					_entity_texture_retries = 0
 					return
 
@@ -869,7 +909,6 @@ func _bind_entity_textures() -> void:
 			continue
 		var sprite: Sprite2D = _find_sprite_in_tree(node, 3)
 		if sprite != null and sprite.texture != null:
-			graph_executor.set_entity_texture(sprite.texture)
 			_entity_sprite = sprite
 			_entity_original_texture = sprite.texture
 			_entity_original_scale = sprite.scale
@@ -879,7 +918,7 @@ func _bind_entity_textures() -> void:
 	# Sprite2D may not be ready yet (deferred creation). Retry a few times.
 	if _entity_texture_retries < 10:
 		_entity_texture_retries += 1
-		get_tree().create_timer(0.1).timeout.connect(_bind_entity_textures, CONNECT_ONE_SHOT)
+		get_tree().create_timer(0.1).timeout.connect(_store_entity_sprite_reference, CONNECT_ONE_SHOT)
 
 func _find_sprite_in_tree(node: Node, max_depth: int) -> Sprite2D:
 	if max_depth <= 0:
@@ -929,3 +968,65 @@ func _get_camera() -> Camera2D:
 			camera = viewport.get_camera_2d()
 	
 	return camera
+
+# ============================================================
+# PUBLIC API - EXTERNAL INPUT
+# ============================================================
+
+func set_external_input(name: String, image_data: String) -> Dictionary:
+	if graph_executor == null:
+		return {"success": false, "error": "GraphExecutor not initialized"}
+	
+	var texture: Texture2D = null
+	
+	if image_data.begins_with("data:image"):
+		texture = _load_texture_from_base64(image_data)
+	elif image_data.begins_with("http://") or image_data.begins_with("https://"):
+		push_warning("[GameBridgeEffects] URL loading not yet implemented for external inputs")
+		return {"success": false, "error": "URL loading not implemented"}
+	else:
+		push_warning("[GameBridgeEffects] Invalid image_data format (expected base64 or URL)")
+		return {"success": false, "error": "Invalid image_data format"}
+	
+	if texture == null:
+		return {"success": false, "error": "Failed to load texture"}
+	
+	graph_executor.set_input_buffer(name, texture)
+	return {"success": true}
+
+func set_screen_input(enable: bool) -> Dictionary:
+	if graph_executor == null:
+		return {"success": false, "error": "GraphExecutor not initialized"}
+	
+	if enable:
+		push_warning("[GameBridgeEffects] Screen capture not yet implemented")
+		return {"success": false, "error": "Screen capture not implemented"}
+	else:
+		return {"success": true}
+
+func _load_texture_from_base64(data_uri: String) -> Texture2D:
+	var parts = data_uri.split(",")
+	if parts.size() < 2:
+		return null
+	
+	var base64_data = parts[1]
+	var image_bytes = Marshalls.base64_to_raw(base64_data)
+	
+	var image = Image.new()
+	var err = OK
+	
+	if data_uri.contains("image/png"):
+		err = image.load_png_from_buffer(image_bytes)
+	elif data_uri.contains("image/jpeg") or data_uri.contains("image/jpg"):
+		err = image.load_jpg_from_buffer(image_bytes)
+	elif data_uri.contains("image/webp"):
+		err = image.load_webp_from_buffer(image_bytes)
+	else:
+		push_warning("[GameBridgeEffects] Unsupported image format in data URI")
+		return null
+	
+	if err != OK:
+		push_warning("[GameBridgeEffects] Failed to load image from base64: ", err)
+		return null
+	
+	return ImageTexture.create_from_image(image)

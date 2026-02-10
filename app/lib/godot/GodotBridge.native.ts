@@ -1124,6 +1124,14 @@ export function createNativeGodotBridge(): GodotBridge {
     setOrbitControls(enabled: boolean): void {
       callGameBridge('set_orbit_controls', enabled);
     },
+
+    setExternalInput(name: string, imageData: string) {
+      callGameBridge('set_external_input', name, imageData);
+    },
+
+    setScreenInput(enable: boolean) {
+      callGameBridge('set_screen_input', enable);
+    },
   };
 
   return bridge;

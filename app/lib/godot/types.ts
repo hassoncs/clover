@@ -469,6 +469,10 @@ export interface GodotBridge extends EffectsBridge {
   set3DCameraPosition(x: number, y: number, z: number): void;
   set3DCameraLookAt(x: number, y: number, z: number): void;
   setOrbitControls(enabled: boolean): void;
+
+  // External Input (for effect graphs)
+  setExternalInput(name: string, imageData: string): void;
+  setScreenInput(enable: boolean): void;
 }
 
 export interface GodotViewProps {

@@ -1553,7 +1553,7 @@ function uiConfigToOverlay(ui: UIConfig): OverlayConfig {
 
 > **Implementation order**: This overlay plan should be implemented **before** the [3D Game Engine Plan](./3d-game-engine-plan.md). The overlay provides the HUD/binding system that 3D games will use from day one. Since the overlay is screen-space and scene-type agnostic, it works for both 2D and 3D without modification.
 >
-> **No-legacy constraint**: Phases 1–2b build new systems alongside existing ones (temporary coexistence). Phases 3–5 delete all legacy code. The constraint is: **each milestone (not each phase) must end with deletion**. Milestone 1 = Phases 1+2+2b (build). Milestone 2 = Phases 3+4+5 (migrate+delete). No legacy code survives past Milestone 2.
+> **No-legacy constraint**: Phases 1–2b build new systems alongside existing ones (temporary coexistence). Phases 3–5 delete all legacy code. Phase 6 removes all migration scaffolding and transitional code. The constraint is: **each milestone (not each phase) must end with deletion**. Milestone 1 = Phases 1+2+2b (build). Milestone 2 = Phases 3+4+5 (migrate+delete). Milestone 3 = Phase 6 (zero technical debt). No legacy code, migration helpers, or compatibility shims survive past Milestone 3.
 >
 > **Schema freeze**: After Phase 1 is complete, the overlay schema v1 types are **frozen**. The 3D plan Phase 0 may begin only after this freeze. Additive changes (new element types like reticle) are allowed; field renames or semantic changes are not.
 
@@ -1625,6 +1625,26 @@ function uiConfigToOverlay(ui: UIConfig): OverlayConfig {
 - [ ] **Gate**: AI must generate valid overlay configs before marking this phase complete
 - **Deliverable**: AI can generate games with proper HUD overlays
 
+### Phase 6: Final Cleanup — Zero Technical Debt (MANDATORY, 1–2 days)
+
+> **Purpose**: Phases 3–5 migrate and delete the major legacy systems, but migration scaffolding, compatibility shims, and transitional code will remain. This phase eliminates ALL of it. When this phase is complete, the codebase should read as if the overlay system was always the only system — no trace of the old world.
+
+- [ ] Delete `uiConfigToOverlay()` migration helper and any migration scripts — all games are already converted, the converter is dead code
+- [ ] Delete `ensureStateDialogs()` runtime injection — all game definitions should now have explicit dialog definitions baked in (not injected at load time)
+- [ ] Remove the `legacyWinDialogFallback` field from `GameDialogsConfig` type and any code that reads it
+- [ ] Remove any `// TEMPORARY`, `// Phase 1-2`, `// TODO: remove after migration`, or `// DEPRECATED` comments left behind by earlier phases
+- [ ] Remove the `renderer` field from `OverlayConfig` if it was added as a future hook — if Godot rendering isn't implemented, don't ship the field
+- [ ] Delete Section 9 ("Godot CanvasLayer Implementation (DEFERRED)") from this plan document — it's speculative design for a path we didn't take
+- [ ] Remove any `UIConfig`-shaped type aliases, re-exports, or compatibility wrappers that might linger in barrel files (`index.ts`, `types.ts`)
+- [ ] Remove `UIManager.gd`'s `create_ui_button` / `destroy_ui_button` / `create_themed_ui_component` / `destroy_themed_ui_component` bridge methods if they are no longer called by any game or overlay element — and remove corresponding TypeScript bridge signatures from `types.ts`, `GodotBridge.web.ts`, `GodotBridge.native.ts`
+- [ ] Grep the entire codebase for: `UIConfig`, `GameHUD`, `variableDisplays`, `entityCountDisplays`, `showTimer`, `legacyWinDialogFallback`, `uiConfigToOverlay`, `ensureStateDialogs` — zero results required
+- [ ] Grep for `// TODO`, `// HACK`, `// FIXME` in any file touched during Phases 1–5 — resolve or delete each one
+- [ ] Run `tsc --noEmit` — zero errors
+- [ ] Run full test suite — all pass
+- [ ] **Test**: Load every game — HUD renders, dialogs trigger, state screens work, no console warnings about deprecated fields
+- [ ] **Test**: Read through `GameDefinition` type — no optional fields exist solely for backward compatibility
+- **Deliverable**: The codebase is clean. No migration code, no compatibility shims, no dead types, no deferred hooks. The overlay system is the only UI system, and the code reads like it always was.
+
 ---
 
 ## 18. Open Questions
@@ -1662,7 +1682,7 @@ The UI Overlay System replaces the scattered, hardcoded game UI with a single de
 3. **7 element types** (text, bar, counter, button, image, container, spacer) cover all HUD needs
 4. **Anchor-based positioning** works regardless of viewport size or aspect ratio
 5. **Works for 2D and 3D** — same overlay config on any scene type
-6. **No legacy maintenance** — UIConfig is migrated and deleted; hardcoded state screens are replaced by dialog templates
+6. **Zero technical debt** — UIConfig is migrated and deleted; hardcoded state screens are replaced by dialog templates; Phase 6 removes all migration scaffolding, compatibility shims, and transitional code
 7. **Dialog enhancements** with `showOnState` and default templates eliminate hardcoded win/lose/pause screens
 8. **React Native rendering** — one renderer, committed. No parallel Godot CanvasLayer system.
 9. **Safe expression evaluation** — simple comparison parser, no `eval()`, no injection
