@@ -156,21 +156,33 @@ export function detectDeviceTier(): DeviceTier {
   return 'low';
 }
 
-export const TEXT_EFFECT_PRESETS = {
+export interface TextEffectPreset {
+  name: string;
+  description: string;
+  tier: 'msdf' | 'subviewport';
+  params: {
+    sdfEffects?: SdfEffectConfig;
+    subViewportEffects?: SubViewportEffectConfig;
+  };
+}
+
+export const TEXT_EFFECT_PRESETS: Record<string, TextEffectPreset> = {
   neon: {
     name: 'Neon Sign',
     description: 'Bright glow with dark outline',
-    tier: 'msdf' as const,
+    tier: 'msdf',
     params: {
       sdfEffects: {
         outlineEnabled: true,
         outlineColor: '#000000',
         outlineSize: 3,
+        shadowEnabled: false,
+        shadowColor: '#00000080',
+        shadowSpread: 4,
         glowEnabled: true,
         glowColor: '#00FFFF',
         glowSpread: 12,
         glowIntensity: 2.5,
-        shadowEnabled: false,
       },
     },
   },
@@ -178,12 +190,12 @@ export const TEXT_EFFECT_PRESETS = {
   gold: {
     name: 'Gold Emboss',
     description: 'Metallic gradient with bevel',
-    tier: 'subviewport' as const,
+    tier: 'subviewport',
     params: {
       subViewportEffects: {
         gradient: {
           enabled: true,
-          type: 'linear' as const,
+          type: 'linear',
           startColor: '#FFD700',
           endColor: '#B8860B',
           angle: 90,
@@ -201,7 +213,7 @@ export const TEXT_EFFECT_PRESETS = {
   retro: {
     name: 'Retro Pixel',
     description: 'Sharp outline with drop shadow',
-    tier: 'msdf' as const,
+    tier: 'msdf',
     params: {
       sdfEffects: {
         outlineEnabled: true,
@@ -211,6 +223,9 @@ export const TEXT_EFFECT_PRESETS = {
         shadowColor: '#00000080',
         shadowSpread: 4,
         glowEnabled: false,
+        glowColor: '#FFFFFF',
+        glowSpread: 0,
+        glowIntensity: 0,
       },
     },
   },

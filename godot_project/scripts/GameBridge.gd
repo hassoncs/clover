@@ -113,23 +113,23 @@ func resume_physics() -> void: Engine.time_scale = 1.0
 func enable_debug() -> Dictionary:
 	if _debug_enabled:
 		return {"ok": true, "wasAlreadyEnabled": true, "methodsRegistered": 0}
-	
+
 	_debug_bridge = DebugBridge.new(self, _query_system)
 	_debug_enabled = true
-	
+
 	print("[GameBridge] Debug mode enabled")
 	return {"ok": true, "wasAlreadyEnabled": false, "methodsRegistered": 33}
 
 func disable_debug() -> Dictionary:
 	if not _debug_enabled:
 		return {"ok": true, "wasAlreadyEnabled": false, "methodsUnregistered": 0}
-	
+
 	if _debug_bridge:
 		_debug_bridge.unregister_handlers()
 		_debug_bridge = null
-	
+
 	_debug_enabled = false
-	
+
 	print("[GameBridge] Debug mode disabled")
 	return {"ok": true, "wasAlreadyEnabled": true, "methodsUnregistered": 33}
 
@@ -217,12 +217,11 @@ func _auto_register_bridge_methods(modules: Array) -> Dictionary:
 					push_warning("[GameBridge][AUTO-REG] COLLISION: Method '%s' found in multiple modules" % bridge_name)
 				else:
 					registry[bridge_name] = Callable(module, method_name)
-					print("[GameBridge][AUTO-REG] Registered: %s -> %s.%s" % [bridge_name, module.get_class(), method_name])
 	return registry
 
 func _build_method_map() -> void:
 	var is_dev = OS.is_debug_build()
-	
+
 	# Step 1: Auto-register bridge methods from modules with _js_ prefix
 	var modules = [
 		_entity_manager, _transform_system, _physics_controller, _joint_manager,
@@ -231,7 +230,7 @@ func _build_method_map() -> void:
 		_pixel_buffer_manager, _debug_bridge
 	]
 	_method_map = _auto_register_bridge_methods(modules)
-	
+
 	# Step 2: Apply manual overrides for methods needing custom handling
 	var overrides = {
 		# Core lifecycle
@@ -347,11 +346,11 @@ func _build_method_map() -> void:
 		# Runtime diagnostics
 		"get_bridge_methods": func(_args): return get_bridge_methods(),
 	}
-	
+
 	# Step 3: Apply overrides to method map (manual entries take precedence)
 	for method_name in overrides:
 		_method_map[method_name] = overrides[method_name]
-	
+
 	# Log registration summary
 	if is_dev:
 		print("[GameBridge][REGISTRY] Built method map with ", _method_map.size(), " methods")
@@ -359,12 +358,12 @@ func _build_method_map() -> void:
 
 func native_dispatch(method_name: String, args_json: String) -> Variant:
 	print("[GameBridge][DISPATCH] ", method_name, " args=", args_json.substr(0, 200))
-	
+
 	# Error: Unknown method
 	if not _method_map.has(method_name):
 		push_warning("[GameBridge] Unknown native method: " + method_name)
 		return {"error": "unknown_method", "method": method_name}
-	
+
 	# Parse args with error handling
 	var args: Array = []
 	if args_json != "[]" and args_json != "":
@@ -373,7 +372,7 @@ func native_dispatch(method_name: String, args_json: String) -> Variant:
 			push_warning("[GameBridge] Invalid JSON in args: " + args_json.substr(0, 100))
 			return {"error": "invalid_json", "message": json.get_error_message()}
 		args = json.data if json.data is Array else [json.data]
-	
+
 	# Call method with error handling
 	var result = _method_map[method_name].call(args)
 	if method_name == "load_game_json":
@@ -406,7 +405,7 @@ func _setup_js_bridge() -> void:
 	_js_bridge_obj = JavaScriptBridge.create_object("Object")
 	_query_system.setup_js_bridge(_js_bridge_obj)
 	_js_callbacks.clear()
-	
+
 	# Generate web callbacks from unified _method_map registry
 	for method_name in _method_map:
 		var js_name = _to_camel_case(method_name)
@@ -501,10 +500,10 @@ func _log_bridge_registry() -> void:
 	var is_dev = OS.is_debug_build()
 	if not is_dev:
 		return
-	
+
 	print("[GameBridge][REGISTRY] === BRIDGE METHOD REGISTRY ===")
 	print("[GameBridge][REGISTRY] Total methods: ", _method_map.size())
-	
+
 	# Group methods by module owner
 	var by_module = {}
 	for method_name in _method_map:
@@ -512,7 +511,7 @@ func _log_bridge_registry() -> void:
 		if not by_module.has(owner):
 			by_module[owner] = []
 		by_module[owner].append(method_name)
-	
+
 	# Print summary by module
 	for module in by_module:
 		var methods = by_module[module]
@@ -520,7 +519,7 @@ func _log_bridge_registry() -> void:
 		if methods.size() <= 5:
 			for method in methods:
 				print("[GameBridge][REGISTRY]     - ", method)
-	
+
 	print("[GameBridge][REGISTRY] === END REGISTRY ===")
 
 func _get_method_owner(method_name: String) -> String:
@@ -562,18 +561,18 @@ func get_bridge_methods() -> Dictionary:
 		"byModule": {},
 		"total": _method_map.size()
 	}
-	
+
 	for method_name in _method_map:
 		var owner = _get_method_owner(method_name)
 		result.methods.append({
 			"name": method_name,
 			"owner": owner
 		})
-		
+
 		if not result.byModule.has(owner):
 			result.byModule[owner] = []
 		result.byModule[owner].append(method_name)
-	
+
 	return result
 
 func enable_splat_map() -> void: if _splat_map_system: _splat_map_system.enable()

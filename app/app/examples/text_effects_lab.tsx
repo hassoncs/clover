@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { GameRuntimeGodot } from '@/lib/game-engine/GameRuntime.godot';
 import type { GameDefinition, EffectGraphSpec } from '@slopcade/shared';
@@ -29,7 +29,7 @@ export default function TextEffectsLab() {
   const deviceTier = detectDeviceTier();
 
   const createGameDefinition = useCallback(
-    (effectSpec?: EffectGraphSpec | null): GameDefinition => {
+    (_effectSpec?: EffectGraphSpec | null): GameDefinition => {
       const baseGame: GameDefinition = {
         metadata: {
           id: 'text-effects-lab',
@@ -130,16 +130,7 @@ export default function TextEffectsLab() {
             inputSlots: [],
             params: {
               fontUrl: selectedFont.url,
-              outlineEnabled: (preset.params as any).sdfEffects?.outlineEnabled ?? false,
-              outlineColor: (preset.params as any).sdfEffects?.outlineColor ?? '#000000',
-              outlineSize: (preset.params as any).sdfEffects?.outlineSize ?? 0,
-              glowEnabled: (preset.params as any).sdfEffects?.glowEnabled ?? false,
-              glowColor: (preset.params as any).sdfEffects?.glowColor ?? '#FFFFFF',
-              glowSpread: (preset.params as any).sdfEffects?.glowSpread ?? 0,
-              glowIntensity: (preset.params as any).sdfEffects?.glowIntensity ?? 1,
-              shadowEnabled: (preset.params as any).sdfEffects?.shadowEnabled ?? false,
-              shadowColor: (preset.params as any).sdfEffects?.shadowColor ?? '#000000',
-              shadowSpread: (preset.params as any).sdfEffects?.shadowSpread ?? 0,
+              ...(preset.params.sdfEffects ?? {}),
             },
             outputTarget: {
               bufferId: 'final',

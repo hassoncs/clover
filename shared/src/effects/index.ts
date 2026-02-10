@@ -151,3 +151,6 @@ export {
   getAllShaderCategories,
   getShaderCount,
 } from './shaderRegistry';
+
+// Text Effects
+export * from './text/index';
