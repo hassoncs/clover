@@ -232,8 +232,10 @@ function generateRegistry(): BridgeRegistry {
 
 function normalizeRegistry(registry: BridgeRegistry): BridgeRegistry {
   return {
-    ...registry,
     generatedAt: '',
+    sourceFile: registry.sourceFile,
+    methods: registry.methods,
+    stats: registry.stats,
   };
 }
 
