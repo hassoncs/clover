@@ -623,3 +623,140 @@ describe('external inputs', () => {
     expect((pass.params.inputBindings as Record<string, string>).pixelBuffer).toBe('__external:pixelBuffer');
   });
 });
+
+describe('named buffers', () => {
+  it('includes named buffer resources in resourceMap', () => {
+    const nodeA = makeNode({
+      id: 'blur',
+      inputSlots: [{ name: 'input', dataType: 'texture', connectedTo: null }],
+      outputTarget: { bufferId: 'buf-blur', format: 'rgba8', resolution: 'full' },
+      outputs: [{ name: 'output', bufferId: 'blurred' }],
+    });
+    const nodeB = makeNode({
+      id: 'vignette',
+      inputSlots: [{ name: 'input', dataType: 'texture', connectedTo: null }],
+    });
+
+    const graph = makeGraph({
+      nodes: [nodeA, nodeB],
+      connections: [
+        { from: { nodeId: 'blur', output: 'blurred' }, to: { nodeId: 'vignette', input: 'input' } },
+      ],
+    });
+
+    const result = compileGraph(graph);
+
+    expect(result.success).toBe(true);
+    expect(result.plan!.resourceMap['__named:blurred']).toBeDefined();
+    expect(result.plan!.resourceMap['__named:blurred'].type).toBe('texture');
+  });
+
+  it('generates inputBindings for named buffer connections', () => {
+    const nodeA = makeNode({
+      id: 'blur',
+      outputTarget: { bufferId: 'buf-blur', format: 'rgba8', resolution: 'full' },
+      outputs: [{ name: 'output', bufferId: 'blurred' }],
+    });
+    const nodeB = makeNode({
+      id: 'vignette',
+      inputSlots: [{ name: 'input', dataType: 'texture', connectedTo: null }],
+    });
+
+    const graph = makeGraph({
+      nodes: [nodeA, nodeB],
+      connections: [
+        { from: { nodeId: 'blur', output: 'blurred' }, to: { nodeId: 'vignette', input: 'input' } },
+      ],
+    });
+
+    const result = compileGraph(graph);
+
+    expect(result.success).toBe(true);
+    const vignettePass = result.plan!.passes.find((p) => p.id === 'vignette')!;
+    const bindings = vignettePass.params.inputBindings as Record<string, string>;
+    expect(bindings['input']).toBe('__named:blurred');
+  });
+
+  it('compiles multi-pass chain with named buffers in correct order', () => {
+    const nodeA = makeNode({
+      id: 'blur',
+      outputTarget: { bufferId: 'buf-blur', format: 'rgba8', resolution: 'full' },
+      outputs: [{ name: 'output', bufferId: 'temp' }],
+    });
+    const nodeB = makeNode({
+      id: 'vignette',
+      inputSlots: [{ name: 'input', dataType: 'texture', connectedTo: null }],
+      outputTarget: { bufferId: 'buf-vignette', format: 'rgba8', resolution: 'full' },
+      outputs: [{ name: 'output', bufferId: 'final' }],
+    });
+    const nodeC = makeNode({
+      id: 'sharpen',
+      inputSlots: [{ name: 'input', dataType: 'texture', connectedTo: null }],
+    });
+
+    const graph = makeGraph({
+      nodes: [nodeA, nodeB, nodeC],
+      connections: [
+        { from: { nodeId: 'blur', output: 'temp' }, to: { nodeId: 'vignette', input: 'input' } },
+        { from: { nodeId: 'vignette', output: 'final' }, to: { nodeId: 'sharpen', input: 'input' } },
+      ],
+    });
+
+    const result = compileGraph(graph);
+
+    expect(result.success).toBe(true);
+    const passIds = result.plan!.passes.map((p) => p.id);
+    expect(passIds).toEqual(['blur', 'vignette', 'sharpen']);
+  });
+
+  it('includes provides entries for named buffer outputs', () => {
+    const nodeA = makeNode({
+      id: 'blur',
+      inputSlots: [{ name: 'input', dataType: 'texture', connectedTo: null }],
+      outputTarget: { bufferId: 'buf-blur', format: 'rgba8', resolution: 'full' },
+      outputs: [{ name: 'output', bufferId: 'blurred' }],
+    });
+    const nodeB = makeNode({
+      id: 'vignette',
+      inputSlots: [{ name: 'input', dataType: 'texture', connectedTo: null }],
+    });
+
+    const graph = makeGraph({
+      nodes: [nodeA, nodeB],
+      connections: [
+        { from: { nodeId: 'blur', output: 'blurred' }, to: { nodeId: 'vignette', input: 'input' } },
+      ],
+    });
+
+    const result = compileGraph(graph);
+
+    expect(result.success).toBe(true);
+    const blurPass = result.plan!.passes.find((p) => p.id === 'blur')!;
+    expect(blurPass.provides.some((r) => r.id === '__named:blurred')).toBe(true);
+  });
+
+  it('includes requires entries for named buffer inputs', () => {
+    const nodeA = makeNode({
+      id: 'blur',
+      outputTarget: { bufferId: 'buf-blur', format: 'rgba8', resolution: 'full' },
+      outputs: [{ name: 'output', bufferId: 'blurred' }],
+    });
+    const nodeB = makeNode({
+      id: 'vignette',
+      inputSlots: [{ name: 'input', dataType: 'texture', connectedTo: null }],
+    });
+
+    const graph = makeGraph({
+      nodes: [nodeA, nodeB],
+      connections: [
+        { from: { nodeId: 'blur', output: 'blurred' }, to: { nodeId: 'vignette', input: 'input' } },
+      ],
+    });
+
+    const result = compileGraph(graph);
+
+    expect(result.success).toBe(true);
+    const vignettePass = result.plan!.passes.find((p) => p.id === 'vignette')!;
+    expect(vignettePass.requires.some((r) => r.id === '__named:blurred')).toBe(true);
+  });
+});

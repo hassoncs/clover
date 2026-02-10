@@ -125,6 +125,10 @@ function makeResourceId(nodeId: string, outputName: string): string {
   return `${nodeId}:${outputName}`;
 }
 
+function makeNamedBufferId(bufferId: string): string {
+  return `__named:${bufferId}`;
+}
+
 function makeImplicitInputId(scope: 'screen' | 'entity'): string {
   // Entity scope now uses externalInputs instead of implicit __entityTexture
   return '__screenColor';
@@ -179,6 +183,7 @@ export function buildResourceGraph(spec: EffectGraphSpec): ResourceResolutionRes
   }
 
   const outputResourceMap = new Map<string, string>();
+  const namedBufferMap = new Map<string, string>();
 
   for (const node of spec.nodes) {
     const resId = makeResourceId(node.id, node.outputTarget.bufferId);
@@ -213,6 +218,42 @@ export function buildResourceGraph(spec: EffectGraphSpec): ResourceResolutionRes
       slotName: node.outputTarget.bufferId,
       resourceId: resId,
     });
+
+    if (node.outputs) {
+      for (const output of node.outputs) {
+        const namedBufferId = makeNamedBufferId(output.bufferId);
+        
+        if (!resources.has(namedBufferId)) {
+          resources.set(namedBufferId, {
+            id: namedBufferId,
+            kind: 'intermediate',
+            format: node.outputTarget.format,
+            resolution: node.outputTarget.resolution,
+            customWidth: node.outputTarget.customWidth,
+            customHeight: node.outputTarget.customHeight,
+            providedBy: node.id,
+            consumedBy: [],
+          });
+        } else {
+          errors.push({
+            code: 'E_DUPLICATE_PROVIDER',
+            message: `Named buffer '${output.bufferId}' already has a provider`,
+            resourceId: namedBufferId,
+            nodeIds: [resources.get(namedBufferId)!.providedBy!, node.id],
+          });
+          continue;
+        }
+
+        namedBufferMap.set(output.bufferId, namedBufferId);
+
+        bindings.push({
+          passId: node.id,
+          direction: 'output',
+          slotName: output.name,
+          resourceId: namedBufferId,
+        });
+      }
+    }
   }
 
   for (const fb of spec.feedbackEdges) {
@@ -244,7 +285,14 @@ export function buildResourceGraph(spec: EffectGraphSpec): ResourceResolutionRes
 
   for (const conn of spec.connections) {
     const sourceKey = `${conn.from.nodeId}:${conn.from.output}`;
-    const sourceResId = outputResourceMap.get(sourceKey);
+    let sourceResId = outputResourceMap.get(sourceKey);
+
+    if (!sourceResId) {
+      const namedBufferId = makeNamedBufferId(conn.from.output);
+      if (resources.has(namedBufferId)) {
+        sourceResId = namedBufferId;
+      }
+    }
 
     if (!sourceResId) {
       errors.push({

@@ -540,3 +540,116 @@ describe('external inputs', () => {
     expect(binding?.resourceId).not.toBe('__screenColor');
   });
 });
+
+describe('named buffers', () => {
+  it('creates a named buffer resource when node has outputs', () => {
+    const nodeA = makeNode({
+      id: 'blur',
+      inputSlots: [{ name: 'input', dataType: 'texture', connectedTo: null }],
+      outputTarget: { bufferId: 'buf-blur', format: 'rgba8', resolution: 'full' },
+      outputs: [{ name: 'output', bufferId: 'blurred' }],
+    });
+
+    const result = buildResourceGraph(makeSpec({ nodes: [nodeA] }));
+
+    expect(result.success).toBe(true);
+    expect(result.graph!.resources.has('__named:blurred')).toBe(true);
+    
+    const namedBuffer = result.graph!.resources.get('__named:blurred')!;
+    expect(namedBuffer.kind).toBe('intermediate');
+    expect(namedBuffer.providedBy).toBe('blur');
+  });
+
+  it('allows multiple nodes to read from the same named buffer', () => {
+    const nodeA = makeNode({
+      id: 'blur',
+      inputSlots: [{ name: 'input', dataType: 'texture', connectedTo: null }],
+      outputTarget: { bufferId: 'buf-blur', format: 'rgba8', resolution: 'full' },
+      outputs: [{ name: 'output', bufferId: 'blurred' }],
+    });
+    const nodeB = makeNode({
+      id: 'vignette',
+      inputSlots: [{ name: 'input', dataType: 'texture', connectedTo: null }],
+      outputTarget: { bufferId: 'buf-vignette', format: 'rgba8', resolution: 'full' },
+    });
+    const nodeC = makeNode({
+      id: 'sharpen',
+      inputSlots: [{ name: 'input', dataType: 'texture', connectedTo: null }],
+      outputTarget: { bufferId: 'buf-sharpen', format: 'rgba8', resolution: 'full' },
+    });
+
+    const connections: Connection[] = [
+      { from: { nodeId: 'blur', output: 'blurred' }, to: { nodeId: 'vignette', input: 'input' } },
+      { from: { nodeId: 'blur', output: 'blurred' }, to: { nodeId: 'sharpen', input: 'input' } },
+    ];
+
+    const result = buildResourceGraph(
+      makeSpec({ nodes: [nodeA, nodeB, nodeC], connections }),
+    );
+
+    expect(result.success).toBe(true);
+    const namedBuffer = result.graph!.resources.get('__named:blurred')!;
+    expect(namedBuffer.consumedBy).toContain('vignette');
+    expect(namedBuffer.consumedBy).toContain('sharpen');
+    expect(namedBuffer.consumedBy).toHaveLength(2);
+  });
+
+  it('creates bindings for named buffer outputs', () => {
+    const nodeA = makeNode({
+      id: 'blur',
+      inputSlots: [{ name: 'input', dataType: 'texture', connectedTo: null }],
+      outputTarget: { bufferId: 'buf-blur', format: 'rgba8', resolution: 'full' },
+      outputs: [{ name: 'output', bufferId: 'blurred' }],
+    });
+
+    const result = buildResourceGraph(makeSpec({ nodes: [nodeA] }));
+
+    expect(result.success).toBe(true);
+    const outputBinding = result.graph!.bindings.find(
+      b => b.passId === 'blur' && b.direction === 'output' && b.slotName === 'output',
+    );
+    expect(outputBinding).toBeDefined();
+    expect(outputBinding!.resourceId).toBe('__named:blurred');
+  });
+
+  it('supports multi-pass chains with named buffers', () => {
+    const nodeA = makeNode({
+      id: 'blur',
+      inputSlots: [{ name: 'input', dataType: 'texture', connectedTo: null }],
+      outputTarget: { bufferId: 'buf-blur', format: 'rgba8', resolution: 'full' },
+      outputs: [{ name: 'output', bufferId: 'temp' }],
+    });
+    const nodeB = makeNode({
+      id: 'vignette',
+      inputSlots: [{ name: 'input', dataType: 'texture', connectedTo: null }],
+      outputTarget: { bufferId: 'buf-vignette', format: 'rgba8', resolution: 'full' },
+      outputs: [{ name: 'output', bufferId: 'final' }],
+    });
+    const nodeC = makeNode({
+      id: 'sharpen',
+      inputSlots: [{ name: 'input', dataType: 'texture', connectedTo: null }],
+      outputTarget: { bufferId: 'buf-sharpen', format: 'rgba8', resolution: 'full' },
+    });
+
+    const connections: Connection[] = [
+      { from: { nodeId: 'blur', output: 'temp' }, to: { nodeId: 'vignette', input: 'input' } },
+      { from: { nodeId: 'vignette', output: 'final' }, to: { nodeId: 'sharpen', input: 'input' } },
+    ];
+
+    const result = buildResourceGraph(
+      makeSpec({ nodes: [nodeA, nodeB, nodeC], connections }),
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.graph!.resources.has('__named:temp')).toBe(true);
+    expect(result.graph!.resources.has('__named:final')).toBe(true);
+    
+    const tempBuffer = result.graph!.resources.get('__named:temp')!;
+    expect(tempBuffer.providedBy).toBe('blur');
+    expect(tempBuffer.consumedBy).toContain('vignette');
+    
+    const finalBuffer = result.graph!.resources.get('__named:final')!;
+    expect(finalBuffer.providedBy).toBe('vignette');
+    expect(finalBuffer.consumedBy).toContain('sharpen');
+  });
+});

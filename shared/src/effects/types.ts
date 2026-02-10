@@ -111,6 +111,10 @@ export interface EffectNode {
   inputSlots: InputSlot[];
   params: Record<string, ParamValue>;
   outputTarget: OutputTarget;
+  outputs?: Array<{
+    name: string;
+    bufferId: string;
+  }>;
   flags: {
     stateful: boolean;
     fusible: FusibilityFlag;
