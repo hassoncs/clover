@@ -32,3 +32,4 @@ export type {
   GridContainerConfig,
   SlotContainerConfig,
 } from './container';
+export * from './overlay';

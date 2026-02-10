@@ -295,7 +295,7 @@ winCondition: { expr: "entityCount('brick') == 0" }
 
 ## overlay: OverlayConfig
 
-The overlay system provides a declarative HUD for displaying game state. It replaces the old UIConfig system.
+Declarative HUD system. Elements are anchored to screen edges and bound to game state.
 
 ```typescript
 overlay?: {
@@ -306,111 +306,80 @@ overlay?: {
 
 ### Element Types
 
-**Text** — Display text with bindings to game state:
+**text** — Display text with bindings:
 ```typescript
 {
-  id: string;
-  type: 'text';
-  anchor: OverlayAnchor;  // 'top-left' | 'top-center' | 'top-right' | 'center-left' | 'center' | 'center-right' | 'bottom-left' | 'bottom-center' | 'bottom-right'
-  offset: { x: number; y: number };  // Pixels inward from anchor
-  fontSize?: number;       // Default: 16
-  fontWeight?: 'normal' | 'bold';
-  color?: string;          // Default: '#FFFFFF'
-  bindings: { text: string };  // Template: "SCORE\n{{variables.score}}"
-  visibleWhen?: string;    // Expression: "variables.multiplier != 1"
+  id: string; type: 'text';
+  anchor: 'top-left' | 'top-center' | 'top-right' | 'center-left' | 'center' | 'center-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
+  offset: { x: number; y: number };
+  fontSize?: number; fontWeight?: 'normal' | 'bold'; color?: string;
+  bindings: { text: string };  // "SCORE\n{{variables.score}}"
+  visibleWhen?: string;        // "variables.multiplier != 1"
   style?: OverlayStyle;
 }
 ```
 
-**Bar** — Health bar, progress bar:
+**bar** — Health/progress bar:
 ```typescript
 {
-  id: string;
-  type: 'bar';
-  anchor: OverlayAnchor;
-  offset: { x: number; y: number };
-  width?: number;          // Default: 100
-  height?: number;         // Default: 12
-  color?: string;          // Fill color
-  backgroundColor?: string; // Track color
-  bindings: { value: string; max: string };  // "variables.health", "variables.maxHealth"
-  showLabel?: boolean;
-  labelFormat?: string;    // "{value}/{max}" or "{percent}%"
+  id: string; type: 'bar';
+  anchor: OverlayAnchor; offset: { x: number; y: number };
+  width?: number; height?: number; color?: string; backgroundColor?: string;
+  bindings: { value: string; max: string };
+  showLabel?: boolean; labelFormat?: string;
 }
 ```
 
-**Counter** — Icon + number (lives, coins):
+**counter** — Icon + number (lives, coins):
 ```typescript
 {
-  id: string;
-  type: 'counter';
-  anchor: OverlayAnchor;
-  offset: { x: number; y: number };
-  iconEmoji?: string;      // "❤️", "🪙"
-  fontSize?: number;
-  color?: string;
-  bindings: { value: string };  // "variables.lives"
+  id: string; type: 'counter';
+  anchor: OverlayAnchor; offset: { x: number; y: number };
+  iconEmoji?: string; fontSize?: number; color?: string;
+  bindings: { value: string };
 }
 ```
 
-**Button** — Interactive button that emits game events:
+**button** — Emits game events on press:
 ```typescript
 {
-  id: string;
-  type: 'button';
-  anchor: OverlayAnchor;
-  offset: { x: number; y: number };
-  label: string;
-  eventName: string;       // Emits this game event on press
-  eventData?: Record<string, unknown>;
-  color?: string;
-  textColor?: string;
-  disabledWhen?: string;   // Expression
+  id: string; type: 'button';
+  anchor: OverlayAnchor; offset: { x: number; y: number };
+  label: string; eventName: string; eventData?: Record<string, unknown>;
+  color?: string; textColor?: string; disabledWhen?: string;
 }
 ```
 
-**Container** — Group elements with layout:
+**container** — Group elements with layout:
 ```typescript
 {
-  id: string;
-  type: 'container';
-  anchor: OverlayAnchor;
-  offset: { x: number; y: number };
-  direction?: 'horizontal' | 'vertical';
-  gap?: number;
+  id: string; type: 'container';
+  anchor: OverlayAnchor; offset: { x: number; y: number };
+  direction?: 'horizontal' | 'vertical'; gap?: number;
   children: OverlayElement[];
 }
 ```
 
-**Image** and **Spacer** — For visual elements and layout spacing.
+**image** — Display an image. **spacer** — Layout spacing.
 
 ### Binding Expressions
 
-Bindings connect elements to live game state:
-- `{{variables.score}}` — Game variable value
+- `{{variables.score}}` — Game variable
 - `{{entityCount('brick')}}` — Count entities with tag
-- `{{formatTime(elapsed)}}` — Format elapsed time as "M:SS"
-- `{{formatNumber(1234)}}` — Format with commas: "1,234"
+- `{{formatTime(elapsed)}}` — Format seconds as "M:SS"
+- `{{formatNumber(1234)}}` — "1,234"
+- `visibleWhen: "variables.health < 20"` — Conditional visibility
 
 ### Anchoring
 
-Elements are positioned relative to screen edges. Offsets are always **inward** from the anchor:
-- `anchor: 'top-left', offset: { x: 16, y: 16 }` → 16px from top-left corner
-- `anchor: 'top-right', offset: { x: 16, y: 16 }` → 16px from top-right corner
-
-Stack multiple elements at the same anchor by incrementing Y offset by 56px.
+Offsets are **inward** from anchor. `{ x: 16, y: 16 }` = 16px from edge. Stack elements by incrementing Y by 56.
 
 ### OverlayStyle
 
 ```typescript
 style?: {
-  backgroundColor?: string;  // e.g., 'rgba(0,0,0,0.6)'
-  borderRadius?: number;
-  borderColor?: string;
-  borderWidth?: number;
-  padding?: number;
-  paddingHorizontal?: number;
-  paddingVertical?: number;
+  backgroundColor?: string; borderRadius?: number;
+  padding?: number; paddingHorizontal?: number; paddingVertical?: number;
   opacity?: number;
 }
 ```
@@ -420,11 +389,8 @@ style?: {
 ```typescript
 theme?: {
   fontPreset?: 'system' | 'pixel' | 'retro' | 'handwritten' | 'monospace';
-  pixelMode?: boolean;
-  primaryColor?: string;
-  textColor?: string;
-  backgroundColor?: string;
-  fontSize?: number;
+  pixelMode?: boolean; primaryColor?: string; textColor?: string;
+  backgroundColor?: string; fontSize?: number;
 }
 ```
 
@@ -459,22 +425,22 @@ theme?: {
     id: string;
     title: string;
     message?: string;
+    showOnState?: 'ready' | 'won' | 'lost' | 'paused';  // Auto-show on game state
+    showWhen?: string;              // Expression: "variables.level > 5"
     stats?: Array<{
-      label: string,
-      variable: string,
-      format?: string,
-      binding?: string    // Support for binding expressions like "{{variables.score}}"
+      label: string;
+      variable?: string;            // Direct variable reference
+      binding?: string;             // Binding expression: "formatTime(elapsed)"
+      format?: string;
     }>;
+    style?: {
+      backgroundColor?: string;
+      titleColor?: string;
+      backdropColor?: string;
+      borderRadius?: number;
+    };
     dismissible?: boolean;
     dismissEventName?: string;
-    showOnState?: 'ready' | 'won' | 'lost' | 'paused'; // Auto-show on game state
-    showWhen?: string;                                // Expression to auto-show
-    style?: {                                         // Custom dialog styling
-      backgroundColor?: string;
-      textColor?: string;
-      borderRadius?: number;
-      padding?: number;
-    };
     buttons: Array<{
       label: string,
       eventName: string,
@@ -482,9 +448,10 @@ theme?: {
       variant?: 'primary' | 'secondary'
     }>;
   }>;
-  legacyWinDialogFallback?: boolean;
 }
 ```
+
+Default dialogs are auto-injected for missing states (ready, won, lost, paused). Games can override by defining custom dialogs with matching `showOnState`.
 
 ## containers: ContainerConfig[]
 

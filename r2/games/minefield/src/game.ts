@@ -38,12 +38,56 @@ const game: GameDefinition = {
     bounds: { width: WORLD_WIDTH, height: WORLD_HEIGHT },
   },
   camera: { type: "fixed", zoom: 1 },
-  ui: {
-    showTimer: true,
-    backgroundColor: "#34495e",
-    variableDisplays: [
-      { name: 'flagsRemaining', label: 'Flags', position: 'top-left' },
-      { name: 'cellsRemaining', label: 'Cells', position: 'top-right' },
+  overlay: {
+    elements: [
+      {
+        id: 'var-flagsRemaining',
+        type: 'text',
+        anchor: 'top-left',
+        offset: { x: 16, y: 16 },
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+        bindings: { text: "FLAGS\n{{variables.flagsRemaining}}" },
+        style: {
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          borderRadius: 8,
+          paddingHorizontal: 12,
+          paddingVertical: 6,
+        },
+      },
+      {
+        id: 'timer',
+        type: 'text',
+        anchor: 'top-center',
+        offset: { x: 0, y: 16 },
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+        bindings: { text: '{{formatTime(elapsed)}}' },
+        style: {
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          borderRadius: 8,
+          paddingHorizontal: 12,
+          paddingVertical: 6,
+        },
+      },
+      {
+        id: 'var-cellsRemaining',
+        type: 'text',
+        anchor: 'top-right',
+        offset: { x: 16, y: 16 },
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+        bindings: { text: "CELLS\n{{variables.cellsRemaining}}" },
+        style: {
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          borderRadius: 8,
+          paddingHorizontal: 12,
+          paddingVertical: 6,
+        },
+      },
     ],
   },
   winCondition: {

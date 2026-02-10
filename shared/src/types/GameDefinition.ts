@@ -6,6 +6,7 @@ import type { AssetSystemConfig, AssetSource } from './asset-system';
 import type { Value, ExpressionValueType } from '../expressions/types';
 import type { StateMachineDefinition } from '../systems/state-machine/types';
 import type { ContainerConfig } from './container';
+import type { OverlayConfig } from './overlay';
 
 /**
  * Dual-field image reference for backwards compatibility.
@@ -85,29 +86,7 @@ export interface PresentationConfig {
   orientation?: 'portrait' | 'landscape' | 'any';
 }
 
-export interface EntityCountDisplay {
-  tag: string;
-  label: string;
-  color?: string;
-}
 
-export interface VariableDisplay {
-  name: string;
-  label: string;
-  position?: 'top-left' | 'top-right' | 'top-center';
-  color?: string;
-  format?: string;
-  showWhen?: 'always' | 'not_default';
-  defaultValue?: number | string | boolean;
-}
-
-export interface UIConfig {
-  showTimer?: boolean;
-  timerCountdown?: boolean;
-  backgroundColor?: string;
-  entityCountDisplays?: EntityCountDisplay[];
-  variableDisplays?: VariableDisplay[];
-}
 
 export interface GameMetadata {
   id: string;
@@ -429,7 +408,6 @@ export interface GameDefinition {
   world: WorldConfig;
   presentation?: PresentationConfig;
   camera?: CameraConfig;
-  ui?: UIConfig;
   background?: BackgroundConfig;
   variables?: Record<string, GameVariable>;
   templates: Record<string, EntityTemplate>;
@@ -486,6 +464,8 @@ export interface GameDefinition {
   hoverHighlight?: HoverHighlightConfig;
 
   dialogs?: GameDialogsConfig;
+
+  overlay?: OverlayConfig;
 }
 
 export interface HoverHighlightConfig {
@@ -510,6 +490,16 @@ export interface GameDialogStatDefinition {
   label: string;
   variable: string;
   format?: string;
+  binding?: string;
+}
+
+export interface GameDialogStyle {
+  backgroundColor?: string;
+  titleColor?: string;
+  titleFontSize?: number;
+  backdropColor?: string;
+  width?: number | string;
+  borderRadius?: number;
 }
 
 export interface GameDialogDefinition {
@@ -520,6 +510,9 @@ export interface GameDialogDefinition {
   dismissible?: boolean;
   dismissEventName?: string;
   buttons: GameButtonDefinition[];
+  showOnState?: 'ready' | 'won' | 'lost' | 'paused';
+  showWhen?: string;
+  style?: GameDialogStyle;
 }
 
 export interface GameDialogsConfig {
@@ -537,9 +530,4 @@ export const DEFAULT_WORLD_CONFIG: WorldConfig = {
 export const DEFAULT_CAMERA_CONFIG: CameraConfig = {
   type: 'fixed',
   zoom: 1,
-};
-
-export const DEFAULT_UI_CONFIG: UIConfig = {
-  showTimer: false,
-  backgroundColor: '#87CEEB',
 };

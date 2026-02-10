@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import {
   View,
-  Text,
-  TouchableOpacity,
   Platform
 } from "react-native";
 import type {
@@ -58,6 +56,8 @@ import {
 } from "./debug";
 import { cancelTweensForEntity } from "./behaviors/TweenBehaviors";
 import { GameSystemRunner } from "./systems/runner/GameSystemRunner";
+import { OverlayRenderer, evaluateExpression, buildBindingContext, ensureStateDialogs } from "./ui/overlay";
+import { handleDialogEvent } from "./ui/overlay/dialogEventRouter";
 import type { SystemContext, UpdateContext } from "./systems/runner/types";
 import { GameLoopController } from "./GameLoopController";
 import { WorldOpsImpl } from "./WorldOpsImpl";
@@ -389,19 +389,37 @@ export function GameRuntimeGodot({
 
   const activeDialogVariable = definition.dialogs?.activeDialogVariable ?? "activeDialog";
 
+  const dialogsConfig = useMemo(() => {
+    const enhanced = ensureStateDialogs(definition);
+    return enhanced.dialogs;
+  }, [definition]);
+
+  const overlayConfig = useMemo(() => {
+    return definition.overlay;
+  }, [definition.overlay]);
+
   const resolveActiveDialog = useCallback((): GameDialogDefinition | null => {
     const game = gameRef.current;
-    if (!game || !definition.dialogs?.dialogs) return null;
-    const activeId = game.gameState.vars[activeDialogVariable] as string;
-    if (!activeId) return null;
-    return definition.dialogs.dialogs.find(d => d.id === activeId) ?? null;
-  }, [definition.dialogs, activeDialogVariable]);
+    if (!game || !dialogsConfig?.dialogs) return null;
 
-  const handleDialogButtonPress = useCallback((eventName: string, data?: Record<string, unknown>) => {
-    const game = gameRef.current;
-    if (!game) return;
-    StateHelpers.triggerEvent(game.gameState, eventName, data);
-  }, []);
+    const activeId = game.gameState.vars[activeDialogVariable] as string;
+    if (activeId) {
+      return dialogsConfig.dialogs.find(d => d.id === activeId) ?? null;
+    }
+
+    const currentState = gameState.state;
+    if (
+      currentState === 'ready' ||
+      currentState === 'won' ||
+      currentState === 'lost' ||
+      currentState === 'paused'
+    ) {
+      const stateDialog = dialogsConfig.dialogs.find(d => d.showOnState === currentState);
+      if (stateDialog) return stateDialog;
+    }
+
+    return null;
+  }, [dialogsConfig, activeDialogVariable, gameState.state]);
 
   const handleDialogDismiss = useCallback((dismissEventName?: string) => {
     const game = gameRef.current;
@@ -536,13 +554,11 @@ export function GameRuntimeGodot({
     return new ViewportSystem(definition.world.bounds, {
       aspectRatio: presentationConfig?.aspectRatio,
       fit: presentationConfig?.fit,
-      letterboxColor:
-        presentationConfig?.letterboxColor ?? definition.ui?.backgroundColor,
+      letterboxColor: presentationConfig?.letterboxColor,
     });
   }, [
     definition.presentation,
     definition.world.bounds,
-    definition.ui?.backgroundColor,
   ]);
 
   viewportSystemRef.current = viewportSystem;
@@ -741,9 +757,7 @@ export function GameRuntimeGodot({
             worldBounds: definition.world.bounds,
             aspectRatio: presentationConfig?.aspectRatio,
             fit: presentationConfig?.fit,
-            letterboxColor:
-              presentationConfig?.letterboxColor ??
-              definition.ui?.backgroundColor,
+            letterboxColor: presentationConfig?.letterboxColor,
           })
         );
 
@@ -1435,6 +1449,25 @@ export function GameRuntimeGodot({
     }
   }, [onRequestRestart, definition, setupSubscriptions]);
 
+  const handleDialogButtonPress = useCallback((eventName: string, data?: Record<string, unknown>) => {
+    handleDialogEvent(eventName, data, {
+      onStart: handleStart,
+      onRestart: handleRestart,
+      onResume: () => {
+        const game = gameRef.current;
+        if (!game) return;
+        StateHelpers.setGameStateValue(game.gameState, 'playing', game.events);
+      },
+      onBackToMenu,
+      onPreviousLevel,
+      triggerEvent: (forwardEvent, payload) => {
+        const game = gameRef.current;
+        if (!game) return;
+        StateHelpers.triggerEvent(game.gameState, forwardEvent, payload);
+      },
+    });
+  }, [handleStart, handleRestart, onBackToMenu, onPreviousLevel]);
+
   const handleSaveProgress = useCallback(async () => {
     const game = gameRef.current;
     if (!game || !definition.persistence) return;
@@ -1578,159 +1611,20 @@ export function GameRuntimeGodot({
 
       <InputDebugOverlay inputRef={inputRef} viewportRect={viewportRect} />
 
-      {showHUD && hasViewport && (
-        <View
-          style={[
-            styles.hud,
-            {
-              left: viewportRect.x + 20,
-              top: viewportRect.y + 40,
-              right:
-                screenSize.width - viewportRect.x - viewportRect.width + 20,
-            },
-          ]}
-        >
-          {definition.ui?.entityCountDisplays?.map((display) => {
-            const count =
-              gameRef.current?.entityManager.getEntitiesByTag(display.tag)
-                .length ?? 0;
-            return (
-              <Text
-                key={display.tag}
-                style={[
-                  styles.variableText,
-                  display.color ? { color: display.color } : undefined,
-                ]}
-              >
-                {display.label}: {count}
-              </Text>
-            );
-          })}
-          {definition.ui?.variableDisplays?.map((display) => {
-            const value = gameState.variables[display.name];
-            const shouldShow =
-              display.showWhen !== "not_default" ||
-              value !== display.defaultValue;
-            if (!shouldShow) return null;
-            const formattedValue = display.format
-              ? display.format.replace("{value}", String(value))
-              : String(value);
-            return (
-              <Text
-                key={display.name}
-                style={[
-                  styles.variableText,
-                  display.color ? { color: display.color } : undefined,
-                ]}
-              >
-                {display.label}: {formattedValue}
-              </Text>
-            );
-          })}
-          {gameState.state === "playing" && (
-            <TouchableOpacity
-              style={styles.pauseButton}
-              onPress={() => {
-                if (gameRef.current) {
-                  StateHelpers.setGameStateValue(gameRef.current.gameState, 'paused', gameRef.current.events);
-                }
-              }}
-            >
-              <Text style={styles.pauseButtonText}>⏸</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
-
-      {gameState.state === "paused" && (
-        <View style={styles.overlay}>
-          <Text style={styles.overlayTitle}>Paused</Text>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => {
-              if (gameRef.current) {
-                StateHelpers.setGameStateValue(gameRef.current.gameState, 'playing', gameRef.current.events);
-              }
-            }}
-          >
-            <Text style={styles.buttonText}>Resume</Text>
-          </TouchableOpacity>
-          {progressHook ? (
-            <>
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  { backgroundColor: "#888", marginTop: 12 },
-                ]}
-                onPress={handleRestart}
-              >
-                <Text style={styles.buttonText}>Reset Level</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  { backgroundColor: "#888", marginTop: 12 },
-                  (!onPreviousLevel || (Number(definition.variables?.currentLevel) || 1) <= 1) && {
-                    opacity: 0.5,
-                  },
-                ]}
-                disabled={!onPreviousLevel || (Number(definition.variables?.currentLevel) || 1) <= 1}
-                onPress={() => {
-                  if (onPreviousLevel) {
-                    onPreviousLevel();
-                  }
-                }}
-              >
-                <Text style={styles.buttonText}>Previous Level</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <TouchableOpacity
-              style={[
-                styles.button,
-                { backgroundColor: "#888", marginTop: 12 },
-              ]}
-              onPress={handleRestart}
-            >
-              <Text style={styles.buttonText}>Restart</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
-
-      {gameState.state === "ready" && !debugMode && (
-        <View style={styles.overlay}>
-          <Text style={styles.overlayTitle}>{definition.metadata.title}</Text>
-          {definition.metadata.instructions && (
-            <Text style={styles.instructions}>
-              {definition.metadata.instructions}
-            </Text>
-          )}
-          <TouchableOpacity style={styles.button} onPress={handleStart}>
-            <Text style={styles.buttonText}>Play</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {(gameState.state === "won" || gameState.state === "lost") && !resolveActiveDialog() && (
-        <View style={styles.overlay}>
-          <Text style={styles.overlayTitle}>
-            {gameState.state === "won" ? "🎉 You Win!" : "💀 Game Over"}
-          </Text>
-          <Text style={styles.finalScore}>Final Score: {gameState.variables['score'] ?? 0}</Text>
-          <TouchableOpacity style={styles.button} onPress={handleRestart}>
-            <Text style={styles.buttonText}>Play Again</Text>
-          </TouchableOpacity>
-          {onBackToMenu && (
-            <TouchableOpacity
-              style={[styles.button, styles.secondaryButton]}
-              onPress={onBackToMenu}
-            >
-              <Text style={styles.buttonText}>Back to Menu</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+      {overlayConfig && hasViewport && (
+        <OverlayRenderer
+          config={overlayConfig}
+          gameState={gameState}
+          viewportRect={viewportRect}
+          getEntityCountByTag={(tag: string) =>
+            gameRef.current?.entityManager.getEntitiesByTag(tag).length ?? 0
+          }
+          onButtonPress={(eventName, eventData) => {
+            if (gameRef.current) {
+              StateHelpers.triggerEvent(gameRef.current.gameState, eventName, eventData);
+            }
+          }}
+        />
       )}
 
       {(() => {
@@ -1742,12 +1636,21 @@ export function GameRuntimeGodot({
             visible={true}
             title={dialog.title}
             message={dialog.message}
-            stats={dialog.stats?.map(s => ({
-              label: s.label,
-              value: s.format
-                ? s.format.replace('{value}', String(vars[s.variable] ?? ''))
-                : String(vars[s.variable] ?? ''),
-            }))}
+            stats={dialog.stats?.map(s => {
+              if (s.binding) {
+                const ctx = buildBindingContext(gameState, (tag: string) =>
+                  gameRef.current?.entityManager.getEntitiesByTag(tag).length ?? 0
+                );
+                const result = evaluateExpression(s.binding, ctx);
+                return { label: s.label, value: String(result ?? '') };
+              }
+              return {
+                label: s.label,
+                value: s.format
+                  ? s.format.replace('{value}', String(vars[s.variable] ?? ''))
+                  : String(vars[s.variable] ?? ''),
+              };
+            })}
             buttons={dialog.buttons.map(b => ({
               label: b.label,
               variant: b.variant,
@@ -1782,4 +1685,3 @@ export function GameRuntimeGodotWithDevTools(props: GameRuntimeGodotProps) {
     </DevToolsProvider>
   );
 }
-

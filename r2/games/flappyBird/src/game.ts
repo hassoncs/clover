@@ -75,11 +75,24 @@ const game: GameDefinition = {
     type: "static",
   },
   camera: { type: "fixed", zoom: 1 },
-  ui: {
-    showTimer: false,
-    backgroundColor: "#70c5ce",
-    variableDisplays: [
-      { name: 'score', label: 'Score' },
+  overlay: {
+    elements: [
+      {
+        id: 'var-score',
+        type: 'text',
+        anchor: 'top-left',
+        offset: { x: 16, y: 16 },
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+        bindings: { text: "SCORE\n{{variables.score}}" },
+        style: {
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          borderRadius: 8,
+          paddingHorizontal: 12,
+          paddingVertical: 6,
+        },
+      },
     ],
   },
   loseCondition: {

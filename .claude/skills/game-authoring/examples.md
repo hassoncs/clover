@@ -327,21 +327,38 @@ cube: {
 overlay: {
   elements: [
     {
-      id: "score",
-      type: "text",
-      anchor: "top-center",
+      id: 'var-score',
+      type: 'text',
+      anchor: 'top-center',
       offset: { x: 0, y: 16 },
-      bindings: { text: "SCORE: {{variables.score}}" }
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: '#FFFFFF',
+      bindings: { text: "SCORE\n{{variables.score}}" },
+      style: {
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+      },
     },
     {
-      id: "lives",
-      type: "counter",
-      anchor: "top-right",
+      id: 'var-lives',
+      type: 'text',
+      anchor: 'top-right',
       offset: { x: 16, y: 16 },
-      iconEmoji: "❤️",
-      bindings: { value: "variables.lives" }
-    }
-  ]
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: '#FFFFFF',
+      bindings: { text: "LIVES\n{{variables.lives}}" },
+      style: {
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+      },
+    },
+  ],
 },
 ```
 
