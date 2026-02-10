@@ -5,6 +5,7 @@ import type {
   OverlayElement,
   OverlayAnchor,
   OverlayStyle,
+  OverlayTheme,
   TextOverlayElement,
   BarOverlayElement,
   CounterOverlayElement,
@@ -19,6 +20,13 @@ import {
   resolveBinding,
 } from './BindingEvaluator';
 import type { BindingContext } from './BindingEvaluator';
+
+const DEFAULT_THEME = {
+  textColor: '#FFFFFF',
+  fontSize: 16,
+  primaryColor: '#4CAF50',
+  backgroundColor: 'rgba(0,0,0,0.6)',
+};
 
 export interface OverlayRendererProps {
   config: OverlayConfig;
@@ -40,6 +48,11 @@ export function OverlayRenderer({
     [gameState, getEntityCountByTag],
   );
 
+  const theme = useMemo(() => ({
+    ...DEFAULT_THEME,
+    ...config.theme,
+  }), [config.theme]);
+
   if (viewportRect.width === 0 || viewportRect.height === 0) return null;
 
   return (
@@ -60,6 +73,7 @@ export function OverlayRenderer({
           key={el.id}
           element={el}
           ctx={ctx}
+          theme={theme}
           zIndex={index}
           onButtonPress={onButtonPress}
         />
@@ -71,11 +85,13 @@ export function OverlayRenderer({
 function AnchoredElement({
   element,
   ctx,
+  theme,
   zIndex,
   onButtonPress,
 }: {
   element: OverlayElement;
   ctx: BindingContext;
+  theme: Required<Pick<OverlayTheme, 'textColor' | 'fontSize' | 'primaryColor' | 'backgroundColor'>>;
   zIndex: number;
   onButtonPress?: (eventName: string, eventData?: Record<string, unknown>) => void;
 }) {
@@ -93,7 +109,7 @@ function AnchoredElement({
       style={[styles.anchoredWrapper, anchorStyle, { zIndex }]}
       pointerEvents={isInteractive ? 'auto' : 'none'}
     >
-      <ElementRenderer element={element} ctx={ctx} onButtonPress={onButtonPress} />
+      <ElementRenderer element={element} ctx={ctx} theme={theme} onButtonPress={onButtonPress} />
     </View>
   );
 }
@@ -151,25 +167,27 @@ function applyOverlayStyle(style?: OverlayStyle): Record<string, unknown> | unde
 function ElementRenderer({
   element,
   ctx,
+  theme,
   onButtonPress,
 }: {
   element: OverlayElement;
   ctx: BindingContext;
+  theme: Required<Pick<OverlayTheme, 'textColor' | 'fontSize' | 'primaryColor' | 'backgroundColor'>>;
   onButtonPress?: (eventName: string, eventData?: Record<string, unknown>) => void;
 }) {
   switch (element.type) {
     case 'text':
-      return <TextElement element={element} ctx={ctx} />;
+      return <TextElement element={element} ctx={ctx} theme={theme} />;
     case 'bar':
-      return <BarElement element={element} ctx={ctx} />;
+      return <BarElement element={element} ctx={ctx} theme={theme} />;
     case 'counter':
-      return <CounterElement element={element} ctx={ctx} />;
+      return <CounterElement element={element} ctx={ctx} theme={theme} />;
     case 'button':
-      return <ButtonElement element={element} ctx={ctx} onButtonPress={onButtonPress} />;
+      return <ButtonElement element={element} ctx={ctx} theme={theme} onButtonPress={onButtonPress} />;
     case 'image':
       return <ImageElement element={element} ctx={ctx} />;
     case 'container':
-      return <ContainerElement element={element} ctx={ctx} onButtonPress={onButtonPress} />;
+      return <ContainerElement element={element} ctx={ctx} theme={theme} onButtonPress={onButtonPress} />;
     case 'spacer':
       return <SpacerElement element={element} />;
     default:
@@ -177,7 +195,15 @@ function ElementRenderer({
   }
 }
 
-function TextElement({ element, ctx }: { element: TextOverlayElement; ctx: BindingContext }) {
+function TextElement({ 
+  element, 
+  ctx, 
+  theme 
+}: { 
+  element: TextOverlayElement; 
+  ctx: BindingContext;
+  theme: Required<Pick<OverlayTheme, 'textColor' | 'fontSize' | 'primaryColor' | 'backgroundColor'>>;
+}) {
   const text = element.bindings?.text
     ? String(resolveBinding('text', element.bindings.text, ctx))
     : element.text ?? '';
@@ -186,8 +212,8 @@ function TextElement({ element, ctx }: { element: TextOverlayElement; ctx: Bindi
     <Text
       style={[
         {
-          fontSize: element.fontSize ?? 16,
-          color: element.color ?? '#FFFFFF',
+          fontSize: element.fontSize ?? theme.fontSize,
+          color: element.color ?? theme.textColor,
           fontWeight: element.fontWeight ?? 'normal',
           fontFamily: element.fontFamily,
           textAlign: element.align ?? 'left',
@@ -206,7 +232,15 @@ function TextElement({ element, ctx }: { element: TextOverlayElement; ctx: Bindi
   );
 }
 
-function BarElement({ element, ctx }: { element: BarOverlayElement; ctx: BindingContext }) {
+function BarElement({ 
+  element, 
+  ctx, 
+  theme 
+}: { 
+  element: BarOverlayElement; 
+  ctx: BindingContext;
+  theme: Required<Pick<OverlayTheme, 'textColor' | 'fontSize' | 'primaryColor' | 'backgroundColor'>>;
+}) {
   const value = element.bindings?.value
     ? Number(resolveBinding('value', element.bindings.value, ctx)) || 0
     : 0;
@@ -217,7 +251,7 @@ function BarElement({ element, ctx }: { element: BarOverlayElement; ctx: Binding
 
   const barWidth = element.width ?? 100;
   const barHeight = element.height ?? 12;
-  const fillColor = element.color ?? '#4CAF50';
+  const fillColor = element.color ?? theme.primaryColor;
   const trackColor = element.backgroundColor ?? 'rgba(0,0,0,0.5)';
   const radius = element.borderRadius ?? 0;
 
@@ -268,13 +302,21 @@ function BarElement({ element, ctx }: { element: BarOverlayElement; ctx: Binding
   );
 }
 
-function CounterElement({ element, ctx }: { element: CounterOverlayElement; ctx: BindingContext }) {
+function CounterElement({ 
+  element, 
+  ctx, 
+  theme 
+}: { 
+  element: CounterOverlayElement; 
+  ctx: BindingContext;
+  theme: Required<Pick<OverlayTheme, 'textColor' | 'fontSize' | 'primaryColor' | 'backgroundColor'>>;
+}) {
   const value = element.bindings?.value
     ? resolveBinding('value', element.bindings.value, ctx)
     : 0;
   const iconSize = element.iconSize ?? 20;
-  const fontSize = element.fontSize ?? 20;
-  const color = element.color ?? '#FFFFFF';
+  const fontSize = element.fontSize ?? (theme.fontSize + 4);
+  const color = element.color ?? theme.textColor;
   const gap = element.gap ?? 6;
   const direction = element.direction ?? 'icon-left';
 
@@ -331,10 +373,12 @@ function CounterElement({ element, ctx }: { element: CounterOverlayElement; ctx:
 function ButtonElement({
   element,
   ctx,
+  theme,
   onButtonPress,
 }: {
   element: ButtonOverlayElement;
   ctx: BindingContext;
+  theme: Required<Pick<OverlayTheme, 'textColor' | 'fontSize' | 'primaryColor' | 'backgroundColor'>>;
   onButtonPress?: (eventName: string, eventData?: Record<string, unknown>) => void;
 }) {
   const isDisabled =
@@ -355,7 +399,7 @@ function ButtonElement({
       disabled={isDisabled}
       style={[
         {
-          backgroundColor: element.color ?? '#4CAF50',
+          backgroundColor: element.color ?? theme.primaryColor,
           paddingHorizontal: 16,
           paddingVertical: 10,
           borderRadius: 8,
@@ -371,7 +415,7 @@ function ButtonElement({
       <Text
         style={{
           color: element.textColor ?? '#FFFFFF',
-          fontSize: element.fontSize ?? 16,
+          fontSize: element.fontSize ?? theme.fontSize,
           fontWeight: 'bold',
         }}
       >
@@ -404,10 +448,12 @@ function ImageElement({ element, ctx: _ctx }: { element: ImageOverlayElement; ct
 function ContainerElement({
   element,
   ctx,
+  theme,
   onButtonPress,
 }: {
   element: ContainerOverlayElement;
   ctx: BindingContext;
+  theme: Required<Pick<OverlayTheme, 'textColor' | 'fontSize' | 'primaryColor' | 'backgroundColor'>>;
   onButtonPress?: (eventName: string, eventData?: Record<string, unknown>) => void;
 }) {
   const direction = element.direction ?? 'horizontal';
@@ -434,7 +480,7 @@ function ContainerElement({
             key={child.id}
             pointerEvents={child.type === 'button' ? 'auto' : 'none'}
           >
-            <ElementRenderer element={child} ctx={ctx} onButtonPress={onButtonPress} />
+            <ElementRenderer element={child} ctx={ctx} theme={theme} onButtonPress={onButtonPress} />
           </View>
         );
       })}
