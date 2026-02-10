@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import GodotHeadlessDriver from "./GodotHeadlessDriver.js";
-import { TypedBridgeClient } from "./TypedBridgeClient.js";
+import { TypedBridgeClient } from "./generated/TypedBridgeClient.js";
 import { DebugBridgeClient } from "./DebugBridgeClient.js";
 
 const DEBUG_TEST_GAME = {
@@ -28,9 +28,9 @@ describe("Debug Bridge Tests", () => {
     await driver.start();
     bridge = new TypedBridgeClient(driver);
     debug = new DebugBridgeClient(driver);
-    await bridge.loadGameJson(JSON.stringify(DEBUG_TEST_GAME));
-    
-    const result = await bridge.enableDebug();
+    await bridge.loadGame(DEBUG_TEST_GAME);
+
+    const result = await bridge.callRpc("enable_debug");
     expect(result.ok).toBe(true);
   });
 
@@ -40,12 +40,12 @@ describe("Debug Bridge Tests", () => {
 
   describe("Debug Control", () => {
     it("isDebugEnabled returns true after enableDebug", async () => {
-      const enabled = await bridge.isDebugEnabled();
+      const enabled = await bridge.callRpc("is_debug_enabled");
       expect(enabled).toBe(true);
     });
 
     it("enableDebug returns wasAlreadyEnabled on second call", async () => {
-      const result = await bridge.enableDebug();
+      const result = await bridge.callRpc("enable_debug");
       expect(result.ok).toBe(true);
       expect(result.wasAlreadyEnabled).toBe(true);
     });
@@ -72,7 +72,11 @@ describe("Debug Bridge Tests", () => {
 
   describe("Snapshots and Inspection", () => {
     it("getSceneSnapshot returns scene data", async () => {
-      await bridge.spawnEntity("box", 0, 0, "snapshot-test-1");
+      await bridge.spawnEntity({
+        entityId: "snapshot-test-1",
+        templateId: "box",
+        position: { x: 0, y: 0 },
+      });
       const snapshot = await debug.getSceneSnapshot();
       expect(snapshot).toBeDefined();
       expect(typeof snapshot.timestamp).toBe("number");
@@ -80,7 +84,11 @@ describe("Debug Bridge Tests", () => {
     });
 
     it("getEntityDetails returns entity info", async () => {
-      await bridge.spawnEntity("box", 1, 1, "details-test");
+      await bridge.spawnEntity({
+        entityId: "details-test",
+        templateId: "box",
+        position: { x: 1, y: 1 },
+      });
       const details = await debug.getEntityDetails("details-test");
       expect(details).toBeDefined();
     });
@@ -94,9 +102,17 @@ describe("Debug Bridge Tests", () => {
 
   describe("Entity Queries", () => {
     beforeAll(async () => {
-      await bridge.loadGameJson(JSON.stringify(DEBUG_TEST_GAME));
-      await bridge.spawnEntity("box", 0, 0, "query-test-1");
-      await bridge.spawnEntity("box", 2, 2, "query-test-2");
+      await bridge.loadGame(DEBUG_TEST_GAME);
+      await bridge.spawnEntity({
+        entityId: "query-test-1",
+        templateId: "box",
+        position: { x: 0, y: 0 },
+      });
+      await bridge.spawnEntity({
+        entityId: "query-test-2",
+        templateId: "box",
+        position: { x: 2, y: 2 },
+      });
     });
 
     it("findEntities returns matching entity IDs", async () => {
@@ -125,7 +141,11 @@ describe("Debug Bridge Tests", () => {
 
   describe("Properties", () => {
     beforeAll(async () => {
-      await bridge.spawnEntity("box", 0, 0, "props-test");
+      await bridge.spawnEntity({
+        entityId: "props-test",
+        templateId: "box",
+        position: { x: 0, y: 0 },
+      });
     });
 
     it("getProps returns specific properties", async () => {
@@ -158,7 +178,11 @@ describe("Debug Bridge Tests", () => {
     });
 
     it("clone duplicates entity", async () => {
-      await bridge.spawnEntity("box", 0, 0, "clone-source");
+      await bridge.spawnEntity({
+        entityId: "clone-source",
+        templateId: "box",
+        position: { x: 0, y: 0 },
+      });
       const result = await debug.clone("clone-source", { position: { x: 1, y: 1 } });
       expect(result).toBeDefined();
     });
@@ -166,8 +190,16 @@ describe("Debug Bridge Tests", () => {
 
   describe("Physics Queries", () => {
     beforeAll(async () => {
-      await bridge.spawnEntity("staticBox", 0, 0, "physics-static");
-      await bridge.spawnEntity("box", 5, 5, "physics-dynamic");
+      await bridge.spawnEntity({
+        entityId: "physics-static",
+        templateId: "staticBox",
+        position: { x: 0, y: 0 },
+      });
+      await bridge.spawnEntity({
+        entityId: "physics-dynamic",
+        templateId: "box",
+        position: { x: 5, y: 5 },
+      });
     });
 
     it("getShapes returns collision shapes", async () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import GodotHeadlessDriver from "./GodotHeadlessDriver.js";
-import { TypedBridgeClient } from "./TypedBridgeClient.js";
+import { TypedBridgeClient } from "./generated/TypedBridgeClient.js";
 
 const TEST_GAME = {
   world: { gravity: { x: 0, y: -9.8 }, width: 10, height: 20 },
@@ -40,7 +40,7 @@ describe("Godot Bridge E2E", () => {
 
   describe("bridge registry", () => {
     it("get_bridge_methods returns the full method registry", async () => {
-      const registry = await bridge.getBridgeMethods();
+      const registry = await bridge.callRpc("get_bridge_methods");
 
       expect(registry).toBeDefined();
       expect(registry.methods).toBeDefined();
@@ -62,13 +62,16 @@ describe("Godot Bridge E2E", () => {
 
   describe("game lifecycle", () => {
     it("load_game_json loads a game definition", async () => {
-      const result = await bridge.loadGameJson(JSON.stringify(TEST_GAME));
-      expect(result).toBe(true);
+      await bridge.loadGame(TEST_GAME);
     });
 
     it("clear_game resets all state", async () => {
-      await bridge.loadGameJson(JSON.stringify(TEST_GAME));
-      await bridge.spawnEntity("box", 0, 5, "clear-test-box");
+      await bridge.loadGame(TEST_GAME);
+      await bridge.spawnEntity({
+        entityId: "clear-test-box",
+        templateId: "box",
+        position: { x: 0, y: 5 },
+      });
 
       const transformBefore = await bridge.getEntityTransform("clear-test-box");
       expect(transformBefore).toHaveProperty("x");
@@ -76,35 +79,44 @@ describe("Godot Bridge E2E", () => {
       await bridge.clearGame();
 
       const transformAfter = await bridge.getEntityTransform("clear-test-box");
-      expect(transformAfter).toEqual({});
+      expect(transformAfter).toBeNull();
     });
   });
 
   describe("entity management", () => {
     beforeAll(async () => {
-      await bridge.loadGameJson(JSON.stringify(TEST_GAME));
+      await bridge.loadGame(TEST_GAME);
     });
 
     it("spawn_entity creates an entity from a template", async () => {
-      await bridge.spawnEntity("box", 0, 5, "test-box-1");
+      await bridge.spawnEntity({
+        entityId: "test-box-1",
+        templateId: "box",
+        position: { x: 0, y: 5 },
+      });
 
       const transform = await bridge.getEntityTransform("test-box-1");
 
-      expect(transform).toHaveProperty("x");
-      expect(transform).toHaveProperty("y");
-      expect(transform).toHaveProperty("angle");
-      if ("x" in transform) {
+      expect(transform).not.toBeNull();
+      if (transform) {
+        expect(transform).toHaveProperty("x");
+        expect(transform).toHaveProperty("y");
+        expect(transform).toHaveProperty("angle");
         expect(transform.x).toBeCloseTo(0, 0);
         expect(transform.y).toBeCloseTo(5, 0);
       }
     });
 
     it("get_entity_transform returns position and angle", async () => {
-      await bridge.spawnEntity("box", 3, 7, "test-box-transform");
+      await bridge.spawnEntity({
+        entityId: "test-box-transform",
+        templateId: "box",
+        position: { x: 3, y: 7 },
+      });
 
       const transform = await bridge.getEntityTransform("test-box-transform");
 
-      if ("x" in transform) {
+      if (transform) {
         expect(typeof transform.x).toBe("number");
         expect(typeof transform.y).toBe("number");
         expect(typeof transform.angle).toBe("number");
@@ -114,40 +126,52 @@ describe("Godot Bridge E2E", () => {
     });
 
     it("destroy_entity removes an entity", async () => {
-      await bridge.spawnEntity("box", 0, 5, "test-box-destroy");
+      await bridge.spawnEntity({
+        entityId: "test-box-destroy",
+        templateId: "box",
+        position: { x: 0, y: 5 },
+      });
 
       const before = await bridge.getEntityTransform("test-box-destroy");
-      expect(before).toHaveProperty("x");
+      expect(before).not.toBeNull();
 
       await bridge.destroyEntity("test-box-destroy");
       await sleep(100);
 
       const after = await bridge.getEntityTransform("test-box-destroy");
-      expect(after).toEqual({});
+      expect(after).toBeNull();
     });
   });
 
   describe("physics", () => {
     beforeAll(async () => {
-      await bridge.loadGameJson(JSON.stringify(TEST_GAME));
+      await bridge.loadGame(TEST_GAME);
     });
 
     it("apply_impulse changes entity velocity", async () => {
-      await bridge.spawnEntity("box", 0, 5, "impulse-box");
+      await bridge.spawnEntity({
+        entityId: "impulse-box",
+        templateId: "box",
+        position: { x: 0, y: 5 },
+      });
 
       const velBefore = await bridge.getLinearVelocity("impulse-box");
       expect(velBefore).toBeDefined();
 
-      await bridge.applyImpulse("impulse-box", 10, 0);
+      await bridge.applyImpulse("impulse-box", { x: 10, y: 0 });
       await sleep(100);
 
       const velAfter = await bridge.getLinearVelocity("impulse-box");
       expect(velAfter).toBeDefined();
-      expect(velAfter!.x).toBeGreaterThan(0);
+      expect(velAfter?.x).toBeGreaterThan(0);
     });
 
     it("gravity affects dynamic bodies over time", async () => {
-      await bridge.spawnEntity("box", 0, 8, "gravity-box");
+      await bridge.spawnEntity({
+        entityId: "gravity-box",
+        templateId: "box",
+        position: { x: 0, y: 8 },
+      });
 
       const posBefore = await bridge.getEntityTransform("gravity-box");
 
@@ -155,7 +179,7 @@ describe("Godot Bridge E2E", () => {
 
       const posAfter = await bridge.getEntityTransform("gravity-box");
 
-      if ("y" in posBefore && "y" in posAfter) {
+      if (posBefore && posAfter) {
         expect(posAfter.y).toBeLessThan(posBefore.y);
       }
     });
@@ -163,19 +187,23 @@ describe("Godot Bridge E2E", () => {
 
   describe("queries", () => {
     beforeAll(async () => {
-      await bridge.loadGameJson(JSON.stringify(TEST_GAME));
+      await bridge.loadGame(TEST_GAME);
     });
 
     it("query_point finds an entity at its position", async () => {
-      await bridge.spawnEntity("box", 2, 2, "query-box");
+      await bridge.spawnEntity({
+        entityId: "query-box",
+        templateId: "box",
+        position: { x: 2, y: 2 },
+      });
       await sleep(100);
 
-      const result = await bridge.queryPoint(2, 2);
+      const result = await bridge.queryPointEntity({ x: 2, y: 2 });
       expect(result).toBe("query-box");
     });
 
     it("query_point returns null for empty space", async () => {
-      const result = await bridge.queryPoint(-100, -100);
+      const result = await bridge.queryPointEntity({ x: -100, y: -100 });
       expect(result).toBeNull();
     });
   });

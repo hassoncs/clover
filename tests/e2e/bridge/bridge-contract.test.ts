@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import GodotHeadlessDriver from "./GodotHeadlessDriver.js";
-import { TypedBridgeClient } from "./TypedBridgeClient.js";
+import { TypedBridgeClient } from "./generated/TypedBridgeClient.js";
 
 const CONTRACT_GAME = {
   world: { gravity: { x: 0, y: -9.8 }, width: 20, height: 20 },
@@ -29,7 +29,7 @@ describe("Bridge Contract Smoke Tests", () => {
     driver = new GodotHeadlessDriver({ quiet: true });
     await driver.start();
     bridge = new TypedBridgeClient(driver);
-    await bridge.loadGameJson(JSON.stringify(CONTRACT_GAME));
+    await bridge.loadGame(CONTRACT_GAME);
   });
 
   afterAll(async () => {
@@ -41,14 +41,13 @@ describe("Bridge Contract Smoke Tests", () => {
   // =========================================================================
 
   describe("lifecycle", () => {
-    it("loadGameJson", async () => {
-      const result = await bridge.loadGameJson(JSON.stringify(CONTRACT_GAME));
-      expect(result).toBe(true);
+    it("loadGame", async () => {
+      await bridge.loadGame(CONTRACT_GAME);
     });
 
     it("clearGame", async () => {
       await bridge.clearGame();
-      await bridge.loadGameJson(JSON.stringify(CONTRACT_GAME));
+      await bridge.loadGame(CONTRACT_GAME);
     });
 
     it("setInspectMode", async () => {
@@ -65,7 +64,7 @@ describe("Bridge Contract Smoke Tests", () => {
     });
 
     it("loadCustomScene", async () => {
-      const result = await bridge.loadCustomScene("res://nonexistent.tscn");
+      const result = await bridge.callRpc("load_custom_scene", ["res://nonexistent.tscn"]);
       expect(result).toBeDefined();
     });
   });
@@ -76,20 +75,29 @@ describe("Bridge Contract Smoke Tests", () => {
 
   describe("entity management", () => {
     beforeAll(async () => {
-      await bridge.loadGameJson(JSON.stringify(CONTRACT_GAME));
+      await bridge.loadGame(CONTRACT_GAME);
     });
 
     it("spawnEntity", async () => {
-      await bridge.spawnEntity("box", 0, 0, "contract-entity-1");
+      await bridge.spawnEntity({
+        entityId: "contract-entity-1",
+        templateId: "box",
+        position: { x: 0, y: 0 },
+      });
     });
 
     it("spawnEntityWithId", async () => {
-      const result = await bridge.spawnEntityWithId("box", 1, 1, "contract-entity-2");
+      const result = await bridge.callRpc("spawn_entity_with_id", [
+        "box",
+        1,
+        1,
+        "contract-entity-2",
+      ]);
       expect(result).toBeDefined();
     });
 
     it("getAllBodies", async () => {
-      const result = await bridge.getAllBodies();
+      const result = await bridge.getAllEntities();
       expect(result).toBeDefined();
     });
 
@@ -99,17 +107,31 @@ describe("Bridge Contract Smoke Tests", () => {
     });
 
     it("destroyEntity", async () => {
-      await bridge.spawnEntity("box", 0, 0, "contract-entity-destroy");
+      await bridge.spawnEntity({
+        entityId: "contract-entity-destroy",
+        templateId: "box",
+        position: { x: 0, y: 0 },
+      });
       await sleep(50);
       await bridge.destroyEntity("contract-entity-destroy");
     });
 
     it("setUserData", async () => {
-      await bridge.setUserData(0, { test: true });
+      await bridge.spawnEntity({
+        entityId: "contract-entity-user-data",
+        templateId: "box",
+        position: { x: 0, y: 0 },
+      });
+      await bridge.setUserData("contract-entity-user-data", { test: true });
     });
 
     it("getUserData", async () => {
-      const result = await bridge.getUserData(0);
+      await bridge.spawnEntity({
+        entityId: "contract-entity-user-data-get",
+        templateId: "box",
+        position: { x: 0, y: 0 },
+      });
+      const result = await bridge.getUserData("contract-entity-user-data-get");
       expect(result).toBeDefined();
     });
   });
@@ -120,8 +142,12 @@ describe("Bridge Contract Smoke Tests", () => {
 
   describe("transform", () => {
     beforeAll(async () => {
-      await bridge.loadGameJson(JSON.stringify(CONTRACT_GAME));
-      await bridge.spawnEntity("box", 0, 0, "transform-box");
+      await bridge.loadGame(CONTRACT_GAME);
+      await bridge.spawnEntity({
+        entityId: "transform-box",
+        templateId: "box",
+        position: { x: 0, y: 0 },
+      });
     });
 
     it("setTransform", async () => {
@@ -152,12 +178,16 @@ describe("Bridge Contract Smoke Tests", () => {
 
   describe("physics", () => {
     beforeAll(async () => {
-      await bridge.loadGameJson(JSON.stringify(CONTRACT_GAME));
-      await bridge.spawnEntity("box", 0, 5, "physics-box");
+      await bridge.loadGame(CONTRACT_GAME);
+      await bridge.spawnEntity({
+        entityId: "physics-box",
+        templateId: "box",
+        position: { x: 0, y: 5 },
+      });
     });
 
     it("setLinearVelocity", async () => {
-      await bridge.setLinearVelocity("physics-box", 1, 0);
+      await bridge.setLinearVelocity("physics-box", { x: 1, y: 0 });
     });
 
     it("setAngularVelocity", async () => {
@@ -175,11 +205,11 @@ describe("Bridge Contract Smoke Tests", () => {
     });
 
     it("applyImpulse", async () => {
-      await bridge.applyImpulse("physics-box", 5, 0);
+      await bridge.applyImpulse("physics-box", { x: 5, y: 0 });
     });
 
     it("applyForce", async () => {
-      await bridge.applyForce("physics-box", 10, 0);
+      await bridge.applyForce("physics-box", { x: 10, y: 0 });
     });
 
     it("applyTorque", async () => {
@@ -193,28 +223,32 @@ describe("Bridge Contract Smoke Tests", () => {
 
   describe("physics queries", () => {
     beforeAll(async () => {
-      await bridge.loadGameJson(JSON.stringify(CONTRACT_GAME));
-      await bridge.spawnEntity("staticBox", 0, 0, "query-static-box");
+      await bridge.loadGame(CONTRACT_GAME);
+      await bridge.spawnEntity({
+        entityId: "query-static-box",
+        templateId: "staticBox",
+        position: { x: 0, y: 0 },
+      });
       await sleep(100);
     });
 
     it("queryPoint", async () => {
-      const result = await bridge.queryPoint(0, 0);
+      const result = await bridge.queryPoint({ x: 0, y: 0 });
       expect(result).toBeDefined();
     });
 
     it("queryPointEntity", async () => {
-      const result = await bridge.queryPointEntity(0, 0);
+      const result = await bridge.queryPointEntity({ x: 0, y: 0 });
       expect(result).toBeDefined();
     });
 
     it("queryAabb", async () => {
-      const result = await bridge.queryAabb(-5, -5, 5, 5);
+      const result = await bridge.queryAABB({ x: -5, y: -5 }, { x: 5, y: 5 });
       expect(result).toBeDefined();
     });
 
     it("raycast", async () => {
-      const result = await bridge.raycast(0, 10, 0, -1, 20);
+      const result = await bridge.raycast({ x: 0, y: 10 }, { x: 0, y: -1 }, 20);
       expect(result !== undefined).toBe(true);
     });
 
@@ -230,110 +264,121 @@ describe("Bridge Contract Smoke Tests", () => {
 
   describe("joints", () => {
     beforeAll(async () => {
-      await bridge.loadGameJson(JSON.stringify(CONTRACT_GAME));
-      await bridge.spawnEntity("box", 0, 5, "joint-box-a");
-      await bridge.spawnEntity("box", 2, 5, "joint-box-b");
+      await bridge.loadGame(CONTRACT_GAME);
+      await bridge.spawnEntity({
+        entityId: "joint-box-a",
+        templateId: "box",
+        position: { x: 0, y: 5 },
+      });
+      await bridge.spawnEntity({
+        entityId: "joint-box-b",
+        templateId: "box",
+        position: { x: 2, y: 5 },
+      });
       await sleep(50);
     });
 
     it("createRevoluteJoint", async () => {
-      const jointId = await bridge.createRevoluteJoint(
-        "joint-box-a",
-        "joint-box-b",
-        1,
-        5,
-      );
+      const jointId = await bridge.createRevoluteJoint({
+        type: "revolute",
+        bodyA: "joint-box-a",
+        bodyB: "joint-box-b",
+        anchor: { x: 1, y: 5 },
+      });
       expect(typeof jointId).toBe("number");
     });
 
     it("createDistanceJoint", async () => {
-      const jointId = await bridge.createDistanceJoint(
-        "joint-box-a",
-        "joint-box-b",
-        0,
-        0,
-        2,
-        0,
-      );
+      const jointId = await bridge.createDistanceJoint({
+        type: "distance",
+        bodyA: "joint-box-a",
+        bodyB: "joint-box-b",
+        anchorA: { x: 0, y: 0 },
+        anchorB: { x: 2, y: 0 },
+      });
       expect(typeof jointId).toBe("number");
     });
 
     it("createPrismaticJoint", async () => {
-      const jointId = await bridge.createPrismaticJoint(
-        "joint-box-a",
-        "joint-box-b",
-        1,
-        5,
-        1,
-        0,
-      );
+      const jointId = await bridge.createPrismaticJoint({
+        type: "prismatic",
+        bodyA: "joint-box-a",
+        bodyB: "joint-box-b",
+        anchor: { x: 1, y: 5 },
+        axis: { x: 1, y: 0 },
+      });
       expect(typeof jointId).toBe("number");
     });
 
     it("createWeldJoint", async () => {
-      const jointId = await bridge.createWeldJoint(
-        "joint-box-a",
-        "joint-box-b",
-        1,
-        5,
-      );
+      const jointId = await bridge.createWeldJoint({
+        type: "weld",
+        bodyA: "joint-box-a",
+        bodyB: "joint-box-b",
+        anchor: { x: 1, y: 5 },
+      });
       expect(typeof jointId).toBe("number");
     });
 
     it("createMouseJoint", async () => {
-      const jointId = await bridge.createMouseJoint(
-        "joint-box-a",
-        0,
-        5,
-        100,
-      );
+      const jointId = await bridge.createMouseJoint({
+        type: "mouse",
+        body: "joint-box-a",
+        target: { x: 0, y: 5 },
+        maxForce: 100,
+      });
       expect(typeof jointId).toBe("number");
     });
 
     it("getLastJointId", async () => {
-      const result = await bridge.getLastJointId();
+      const result = await bridge.callRpc("get_last_joint_id");
       expect(typeof result).toBe("number");
     });
 
     it("setMotorSpeed", async () => {
-      const jointId = await bridge.createRevoluteJoint(
-        "joint-box-a",
-        "joint-box-b",
-        1,
-        5,
-        false,
-        0,
-        0,
-        true,
-        1.0,
-        10.0,
-      );
+      const jointId = await bridge.createRevoluteJoint({
+        type: "revolute",
+        bodyA: "joint-box-a",
+        bodyB: "joint-box-b",
+        anchor: { x: 1, y: 5 },
+        enableLimit: false,
+        lowerAngle: 0,
+        upperAngle: 0,
+        enableMotor: true,
+        motorSpeed: 1.0,
+        maxMotorTorque: 10.0,
+      });
       await bridge.setMotorSpeed(jointId, 2.0);
     });
 
     it("setMouseTarget", async () => {
-      const jointId = await bridge.createMouseJoint(
-        "joint-box-a",
-        0,
-        5,
-        100,
-      );
-      await bridge.setMouseTarget(jointId, 1, 6);
+      const jointId = await bridge.createMouseJoint({
+        type: "mouse",
+        body: "joint-box-a",
+        target: { x: 0, y: 5 },
+        maxForce: 100,
+      });
+      await bridge.setMouseTarget(jointId, { x: 1, y: 6 });
     });
 
     it("destroyJoint", async () => {
-      const jointId = await bridge.createWeldJoint(
-        "joint-box-a",
-        "joint-box-b",
-        1,
-        5,
-      );
+      const jointId = await bridge.createWeldJoint({
+        type: "weld",
+        bodyA: "joint-box-a",
+        bodyB: "joint-box-b",
+        anchor: { x: 1, y: 5 },
+      });
       await bridge.destroyJoint(jointId);
     });
 
     it("destroyMouseJointForEntity", async () => {
-      await bridge.createMouseJoint("joint-box-a", 0, 5, 100);
-      await bridge.destroyMouseJointForEntity("joint-box-a");
+      await bridge.createMouseJoint({
+        type: "mouse",
+        body: "joint-box-a",
+        target: { x: 0, y: 5 },
+        maxForce: 100,
+      });
+      await bridge.callRpc("destroy_mouse_joint_for_entity", ["joint-box-a"]);
     });
 
     it("destroyJoint with non-existent joint does not crash", async () => {
@@ -347,34 +392,38 @@ describe("Bridge Contract Smoke Tests", () => {
 
   describe("sync system", () => {
     beforeAll(async () => {
-      await bridge.loadGameJson(JSON.stringify(CONTRACT_GAME));
-      await bridge.spawnEntity("box", 0, 0, "sync-box");
+      await bridge.loadGame(CONTRACT_GAME);
+      await bridge.spawnEntity({
+        entityId: "sync-box",
+        templateId: "box",
+        position: { x: 0, y: 0 },
+      });
     });
 
     it("getTransform", async () => {
-      const result = await bridge.getTransform("sync-box");
+      const result = await bridge.callRpc("get_transform", ["sync-box"]);
       expect(result).toBeDefined();
     });
 
     it("getTransforms", async () => {
-      const result = await bridge.getTransforms(["sync-box"]);
+      const result = await bridge.callRpc("get_transforms", [["sync-box"]]);
       expect(result).toBeDefined();
     });
 
     it("setTrackedEntities", async () => {
-      await bridge.setTrackedEntities(["sync-box"]);
+      await bridge.callRpc("set_tracked_entities", [["sync-box"]]);
     });
 
     it("onTransformSync", async () => {
-      await bridge.onTransformSync("dummy-callback");
+      await bridge.callRpc("on_transform_sync", ["dummy-callback"]);
     });
 
     it("onPropertySync", async () => {
-      await bridge.onPropertySync("dummy-callback");
+      await bridge.callRpc("on_property_sync", ["dummy-callback"]);
     });
 
     it("setWatchConfig", async () => {
-      await bridge.setWatchConfig(JSON.stringify({ frameProperties: [] }));
+      await bridge.setWatchConfig({ frameProperties: [] });
     });
   });
 
@@ -384,7 +433,7 @@ describe("Bridge Contract Smoke Tests", () => {
 
   describe("properties", () => {
     beforeAll(async () => {
-      await bridge.loadGameJson(JSON.stringify(CONTRACT_GAME));
+      await bridge.loadGame(CONTRACT_GAME);
     });
 
     it("getAllProperties", async () => {
@@ -398,8 +447,12 @@ describe("Bridge Contract Smoke Tests", () => {
 
   describe("visual renderer", () => {
     beforeAll(async () => {
-      await bridge.loadGameJson(JSON.stringify(CONTRACT_GAME));
-      await bridge.spawnEntity("box", 0, 0, "visual-box");
+      await bridge.loadGame(CONTRACT_GAME);
+      await bridge.spawnEntity({
+        entityId: "visual-box",
+        templateId: "box",
+        position: { x: 0, y: 0 },
+      });
     });
 
     it("setEntityImage", async () => {
@@ -407,7 +460,12 @@ describe("Bridge Contract Smoke Tests", () => {
     });
 
     it("setEntityImageFromFile", async () => {
-      await bridge.setEntityImageFromFile("visual-box", "/tmp/nonexistent.png", 64, 64);
+      await bridge.callRpc("set_entity_image_from_file", [
+        "visual-box",
+        "/tmp/nonexistent.png",
+        64,
+        64,
+      ]);
     });
 
     it("setEntityAtlasRegion", async () => {
@@ -420,12 +478,16 @@ describe("Bridge Contract Smoke Tests", () => {
     });
 
     it("setEntityAtlasRegionFromFile", async () => {
-      await bridge.setEntityAtlasRegionFromFile(
+      await bridge.callRpc("set_entity_atlas_region_from_file", [
         "visual-box",
         "/tmp/nonexistent-atlas.png",
-        0, 0, 32, 32,
-        64, 64,
-      );
+        0,
+        0,
+        32,
+        32,
+        64,
+        64,
+      ]);
     });
 
     it("setOpacity", async () => {
@@ -443,7 +505,12 @@ describe("Bridge Contract Smoke Tests", () => {
     });
 
     it("setDebugSettings", async () => {
-      await bridge.setDebugSettings(JSON.stringify({ showShapes: false }));
+      await bridge.setDebugSettings({
+        showInputDebug: false,
+        showPhysicsShapes: false,
+        showZones: false,
+        showFPS: false,
+      });
     });
 
     it("clearTextureCache", async () => {
@@ -451,7 +518,7 @@ describe("Bridge Contract Smoke Tests", () => {
     });
 
     it("preloadTextures", async () => {
-      await bridge.preloadTextures(JSON.stringify(["https://example.com/img.png"]));
+      await bridge.preloadTextures(["https://example.com/img.png"]);
     });
   });
 
@@ -461,8 +528,12 @@ describe("Bridge Contract Smoke Tests", () => {
 
   describe("pixel buffer", () => {
     beforeAll(async () => {
-      await bridge.loadGameJson(JSON.stringify(CONTRACT_GAME));
-      await bridge.spawnEntity("box", 0, 0, "pixel-box");
+      await bridge.loadGame(CONTRACT_GAME);
+      await bridge.spawnEntity({
+        entityId: "pixel-box",
+        templateId: "box",
+        position: { x: 0, y: 0 },
+      });
     });
 
     it("createPixelBuffer", async () => {
@@ -470,10 +541,9 @@ describe("Bridge Contract Smoke Tests", () => {
     });
 
     it("pixelBufferDraw", async () => {
-      await bridge.pixelBufferDraw(
-        "pixel-box",
-        JSON.stringify([{ type: "rect", x: 0, y: 0, w: 10, h: 10, color: "#ff0000" }]),
-      );
+      await bridge.pixelBufferDraw("pixel-box", [
+        { type: "pixel", x: 0, y: 0, color: "#ff0000" },
+      ]);
     });
 
     it("pixelBufferClear", async () => {
@@ -491,31 +561,31 @@ describe("Bridge Contract Smoke Tests", () => {
 
   describe("input / events", () => {
     beforeAll(async () => {
-      await bridge.loadGameJson(JSON.stringify(CONTRACT_GAME));
+      await bridge.loadGame(CONTRACT_GAME);
     });
 
     it("sendInput", async () => {
-      await bridge.sendInput("tap", 0, 0);
+      await bridge.sendInput("tap", { x: 0, y: 0 });
     });
 
     it("onInputEvent", async () => {
-      await bridge.onInputEvent("dummy-callback");
+      await bridge.callRpc("on_input_event", ["dummy-callback"]);
     });
 
     it("onCollision", async () => {
-      await bridge.onCollision("dummy-callback");
+      await bridge.callRpc("on_collision", ["dummy-callback"]);
     });
 
     it("onEntityDestroyed", async () => {
-      await bridge.onEntityDestroyed("dummy-callback");
+      await bridge.callRpc("on_entity_destroyed", ["dummy-callback"]);
     });
 
     it("onSensorBegin", async () => {
-      await bridge.onSensorBegin("dummy-callback");
+      await bridge.callRpc("on_sensor_begin", ["dummy-callback"]);
     });
 
     it("onSensorEnd", async () => {
-      await bridge.onSensorEnd("dummy-callback");
+      await bridge.callRpc("on_sensor_end", ["dummy-callback"]);
     });
   });
 
@@ -525,8 +595,12 @@ describe("Bridge Contract Smoke Tests", () => {
 
   describe("camera", () => {
     beforeAll(async () => {
-      await bridge.loadGameJson(JSON.stringify(CONTRACT_GAME));
-      await bridge.spawnEntity("box", 0, 0, "camera-box");
+      await bridge.loadGame(CONTRACT_GAME);
+      await bridge.spawnEntity({
+        entityId: "camera-box",
+        templateId: "box",
+        position: { x: 0, y: 0 },
+      });
     });
 
     it("setCameraTarget", async () => {
@@ -556,11 +630,11 @@ describe("Bridge Contract Smoke Tests", () => {
 
   describe("ui", () => {
     beforeAll(async () => {
-      await bridge.loadGameJson(JSON.stringify(CONTRACT_GAME));
+      await bridge.loadGame(CONTRACT_GAME);
     });
 
     it("createUiButton", async () => {
-      await bridge.createUiButton(
+      await bridge.createUIButton(
         "test-btn",
         "https://example.com/normal.png",
         "https://example.com/pressed.png",
@@ -569,11 +643,11 @@ describe("Bridge Contract Smoke Tests", () => {
     });
 
     it("destroyUiButton", async () => {
-      await bridge.destroyUiButton("test-btn");
+      await bridge.destroyUIButton("test-btn");
     });
 
     it("onUiButtonEvent", async () => {
-      await bridge.onUiButtonEvent("dummy-callback");
+      await bridge.callRpc("on_ui_button_event", ["dummy-callback"]);
     });
 
     it("spawnParticle", async () => {
@@ -585,7 +659,7 @@ describe("Bridge Contract Smoke Tests", () => {
     });
 
     it("createThemedUiComponent", async () => {
-      await bridge.createThemedUiComponent(
+      await bridge.createThemedUIComponent(
         "test-component",
         0,
         "https://example.com/metadata.json",
@@ -594,7 +668,7 @@ describe("Bridge Contract Smoke Tests", () => {
     });
 
     it("destroyThemedUiComponent", async () => {
-      await bridge.destroyThemedUiComponent("test-component");
+      await bridge.destroyThemedUIComponent("test-component");
     });
   });
 
@@ -643,7 +717,7 @@ describe("Bridge Contract Smoke Tests", () => {
 
   describe("diagnostics", () => {
     it("getBridgeMethods", async () => {
-      const result = await bridge.getBridgeMethods();
+      const result = await bridge.callRpc("get_bridge_methods");
       expect(result).toBeDefined();
       expect(result.total).toBeGreaterThan(50);
     });
