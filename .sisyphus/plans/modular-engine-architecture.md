@@ -514,9 +514,9 @@ Wave 4 (After Wave 3 — Polish):
 - Do not require big-bang migration — document incremental path
 
 **Acceptance Criteria:**
-- [ ] Playbook covers: source format, compilation, loading, testing
-- [ ] Rollback procedure documented
-- [ ] All verification evidence collected
+- [x] Playbook covers: source format, compilation, loading, testing
+- [x] Rollback procedure documented
+- [x] All verification evidence collected
 
 **Recommended Agent Profile:**
 - **Category**: `writing`
