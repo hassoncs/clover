@@ -467,10 +467,10 @@ Wave 4 (After Wave 3 — Polish):
 - `r2/games/ballSort/src/layout.ts` — already-extracted module
 
 **Acceptance Criteria:**
-- [ ] ballSort exists as modular source directory
-- [ ] Compiles to sectioned bundle
+- [x] ballSort exists as modular source directory
+- [x] Compiles to sectioned bundle
 - [ ] Loads and plays identically to monolithic version
-- [ ] Build is deterministic
+- [x] Build is deterministic
 
 **Recommended Agent Profile:**
 - **Category**: `quick`

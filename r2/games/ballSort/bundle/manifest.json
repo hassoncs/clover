@@ -1,0 +1,62 @@
+{
+  "name": "ballSort",
+  "title": "Ball Sort",
+  "description": "Sort colored balls into tubes - each tube should contain only one color",
+  "version": "2.0.0",
+  "world": {
+    "gravity": {
+      "x": 0,
+      "y": 0
+    },
+    "pixelsPerMeter": 50,
+    "bounds": {
+      "width": 14.4,
+      "height": 25.6
+    }
+  },
+  "systems": {
+    "stateMachines": [
+      {
+        "id": "gameFlow",
+        "initialState": "idle",
+        "states": [
+          {
+            "id": "idle"
+          },
+          {
+            "id": "holding"
+          }
+        ],
+        "transitions": [
+          {
+            "id": "pickup",
+            "from": "idle",
+            "to": "holding",
+            "trigger": {
+              "type": "event",
+              "eventName": "ball_picked"
+            }
+          },
+          {
+            "id": "drop",
+            "from": "holding",
+            "to": "idle",
+            "trigger": {
+              "type": "event",
+              "eventName": "ball_dropped"
+            }
+          },
+          {
+            "id": "cancel",
+            "from": "holding",
+            "to": "idle",
+            "trigger": {
+              "type": "event",
+              "eventName": "pickup_cancelled"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

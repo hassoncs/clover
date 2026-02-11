@@ -1,0 +1,153 @@
+[
+  {
+    "id": "generate_level",
+    "name": "Generate level when game loads",
+    "trigger": {
+      "type": "game_loaded"
+    },
+    "conditions": [
+      {
+        "type": "expression",
+        "expr": "entityCount('tube') == 0"
+      }
+    ],
+    "actions": [
+      {
+        "type": "run_script",
+        "export": "generateLevel"
+      }
+    ]
+  },
+  {
+    "id": "tap_tube_idle",
+    "name": "Pick up ball from tube when in idle state",
+    "trigger": {
+      "type": "tap",
+      "target": "tube"
+    },
+    "conditions": [
+      {
+        "type": "expression",
+        "expr": "stateIs('gameFlow', 'idle')"
+      }
+    ],
+    "actions": [
+      {
+        "type": "ball_sort_pickup"
+      }
+    ]
+  },
+  {
+    "id": "tap_tube_holding",
+    "name": "Drop ball into tube when holding",
+    "trigger": {
+      "type": "tap",
+      "target": "tube"
+    },
+    "conditions": [
+      {
+        "type": "expression",
+        "expr": "stateIs('gameFlow', 'holding')"
+      }
+    ],
+    "actions": [
+      {
+        "type": "ball_sort_drop"
+      }
+    ]
+  },
+  {
+    "id": "cancel_pickup_same_tube",
+    "name": "Cancel pickup when tapping same tube",
+    "trigger": {
+      "type": "event",
+      "eventName": "pickup_cancelled"
+    },
+    "actions": [
+      {
+        "type": "event",
+        "eventName": "pickup_cancelled"
+      }
+    ]
+  },
+  {
+    "id": "check_win",
+    "name": "Check win condition after each move",
+    "trigger": {
+      "type": "event",
+      "eventName": "ball_dropped"
+    },
+    "actions": [
+      {
+        "type": "ball_sort_check_win"
+      }
+    ]
+  },
+  {
+    "id": "handle_delayed_win",
+    "name": "Show level complete dialog after animation delay",
+    "trigger": {
+      "type": "frame"
+    },
+    "conditions": [
+      {
+        "type": "expression",
+        "expr": "_winAtElapsed > 0 && elapsed() >= _winAtElapsed"
+      }
+    ],
+    "actions": [
+      {
+        "type": "set_variable",
+        "name": "_winAtElapsed",
+        "operation": "set",
+        "value": 0
+      },
+      {
+        "type": "set_variable",
+        "name": "activeDialog",
+        "operation": "set",
+        "value": "levelComplete"
+      }
+    ]
+  },
+  {
+    "id": "dialog_next_level",
+    "name": "Advance to next level when Next Level clicked",
+    "trigger": {
+      "type": "event",
+      "eventName": "dialog_next_level"
+    },
+    "actions": [
+      {
+        "type": "set_variable",
+        "name": "activeDialog",
+        "operation": "set",
+        "value": ""
+      },
+      {
+        "type": "run_script",
+        "export": "nextLevel"
+      }
+    ]
+  },
+  {
+    "id": "dialog_replay_level",
+    "name": "Replay current level when Replay clicked",
+    "trigger": {
+      "type": "event",
+      "eventName": "dialog_replay_level"
+    },
+    "actions": [
+      {
+        "type": "set_variable",
+        "name": "activeDialog",
+        "operation": "set",
+        "value": ""
+      },
+      {
+        "type": "run_script",
+        "export": "replayLevel"
+      }
+    ]
+  }
+]
