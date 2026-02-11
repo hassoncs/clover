@@ -363,6 +363,8 @@ export function GenerationModal({
                       setGuidance(Math.min(Math.max(newValue, 2), 12));
                     });
                   }}
+                  accessibilityRole="adjustable"
+                  accessibilityLabel="Guidance slider"
                 />
               </View>
             </View>
@@ -466,6 +468,8 @@ export function GenerationModal({
                         setSelectedStyle(lastGeneration.style);
                       }
                     }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Remix with previous settings"
                   >
                     <Text style={styles.remixButtonText}>Remix</Text>
                   </Pressable>
@@ -478,6 +482,9 @@ export function GenerationModal({
                   ]}
                   onPress={handleGenerate}
                   disabled={enabledCount === 0}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Generate ${enabledCount} Asset${enabledCount !== 1 ? 's' : ''}`}
+                  accessibilityState={{ disabled: enabledCount === 0 }}
                 >
                   <Text style={styles.generateButtonText}>
                     Generate {enabledCount} Asset{enabledCount !== 1 ? 's' : ''}
@@ -494,7 +501,7 @@ export function GenerationModal({
               </View>
             )}
             {phase === 'complete' && (
-              <Pressable style={styles.doneButton} onPress={onClose}>
+              <Pressable style={styles.doneButton} onPress={onClose} accessibilityRole="button" accessibilityLabel="Done">
                 <Text style={styles.doneButtonText}>Done</Text>
               </Pressable>
             )}
