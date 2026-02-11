@@ -2,6 +2,7 @@ import { useState } from "react";
 import { View, Text, Pressable, TextInput, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { trpcReact } from "@/lib/trpc/react";
+import { tokens } from "@slopcade/theme";
 
 interface CommentData {
   id: string;
@@ -148,18 +149,18 @@ export function CommentItem({ comment, currentUserId, onReplyAdded }: CommentIte
 
           <View className="flex-1">
             <View className="flex-row items-center mb-1">
-              <Text className="text-white font-semibold text-sm">
+              <Text className="text-theme-text font-semibold text-sm">
                 {comment.author.displayName ?? "Anonymous"}
               </Text>
-              <Text className="text-gray-500 text-xs ml-2">
+              <Text className="text-theme-text-secondary text-xs ml-2">
                 {timeAgo(comment.createdAt)}
               </Text>
               {comment.isEdited && (
-                <Text className="text-gray-600 text-xs ml-1">(edited)</Text>
+                <Text className="text-theme-text-tertiary text-xs ml-1">(edited)</Text>
               )}
             </View>
 
-            <Text className="text-gray-300 text-sm leading-5">
+            <Text className="text-theme-text text-sm leading-5">
               {comment.body}
             </Text>
 
@@ -175,12 +176,12 @@ export function CommentItem({ comment, currentUserId, onReplyAdded }: CommentIte
                 <Ionicons
                   name={comment.userReacted ? "heart" : "heart-outline"}
                   size={16}
-                  color={comment.userReacted ? "#EF4444" : "#9CA3AF"}
+                  color={comment.userReacted ? tokens.semantic.colors.error : tokens.semantic.colors.text.tertiary}
                 />
                 {comment.reactionCount > 0 && (
                   <Text
                     className={`text-xs ml-1 ${
-                      comment.userReacted ? "text-red-400" : "text-gray-500"
+                      comment.userReacted ? "text-theme-error" : "text-theme-text-secondary"
                     }`}
                   >
                     {comment.reactionCount}
@@ -195,8 +196,8 @@ export function CommentItem({ comment, currentUserId, onReplyAdded }: CommentIte
                   accessibilityRole="button"
                   accessibilityLabel="Reply to comment"
                 >
-                  <Ionicons name="chatbubble-outline" size={14} color="#9CA3AF" />
-                  <Text className="text-gray-500 text-xs ml-1">Reply</Text>
+                  <Ionicons name="chatbubble-outline" size={14} color={tokens.semantic.colors.text.tertiary} />
+                  <Text className="text-theme-text-secondary text-xs ml-1">Reply</Text>
                 </Pressable>
               )}
 
@@ -208,7 +209,7 @@ export function CommentItem({ comment, currentUserId, onReplyAdded }: CommentIte
                   accessibilityRole="button"
                   accessibilityLabel="Delete comment"
                 >
-                  <Ionicons name="trash-outline" size={14} color="#6B7280" />
+                  <Ionicons name="trash-outline" size={14} color={tokens.semantic.colors.text.secondary} />
                 </Pressable>
               )}
             </View>
@@ -220,7 +221,7 @@ export function CommentItem({ comment, currentUserId, onReplyAdded }: CommentIte
                 accessibilityRole="button"
                 accessibilityLabel={`View ${comment.replyCount} ${comment.replyCount === 1 ? "reply" : "replies"}`}
               >
-                <Text className="text-indigo-400 text-xs font-medium">
+                <Text className="text-theme-primary text-xs font-medium">
                   View {comment.replyCount}{" "}
                   {comment.replyCount === 1 ? "reply" : "replies"}
                 </Text>
@@ -230,9 +231,9 @@ export function CommentItem({ comment, currentUserId, onReplyAdded }: CommentIte
             {showReplyInput && currentUserId && (
               <View className="mt-3 flex-row items-center">
                 <TextInput
-                  className="flex-1 bg-gray-800 px-3 py-2 rounded-lg text-white text-sm border border-gray-700"
+                  className="flex-1 bg-theme-surface-elevated px-3 py-2 rounded-lg text-theme-text text-sm border border-theme-border"
                   placeholder="Write a reply..."
-                  placeholderTextColor="#666"
+                  placeholderTextColor={tokens.semantic.colors.text.secondary}
                   value={replyText}
                   onChangeText={setReplyText}
                   multiline
@@ -247,12 +248,12 @@ export function CommentItem({ comment, currentUserId, onReplyAdded }: CommentIte
                   accessibilityLabel="Send reply"
                 >
                   {addComment.isPending ? (
-                    <ActivityIndicator size="small" color="#818CF8" />
+                    <ActivityIndicator size="small" color={tokens.semantic.colors.primary} />
                   ) : (
                     <Ionicons
                       name="send"
                       size={18}
-                      color={replyText.trim() ? "#818CF8" : "#4B5563"}
+                      color={replyText.trim() ? tokens.semantic.colors.primary : tokens.semantic.colors.text.tertiary}
                     />
                   )}
                 </Pressable>
@@ -270,7 +271,7 @@ export function CommentItem({ comment, currentUserId, onReplyAdded }: CommentIte
                   />
                 ))}
                 {replies.isLoading && (
-                  <ActivityIndicator size="small" color="#818CF8" className="py-2" />
+                  <ActivityIndicator size="small" color={tokens.semantic.colors.primary} className="py-2" />
                 )}
               </View>
             )}

@@ -6,6 +6,7 @@ import { StageContainer } from './StageContainer';
 import { FileViewer } from './FileViewer';
 import { PreviewGate } from './PreviewGate';
 import { DiagnosticsPanel } from './DiagnosticsPanel';
+import { PreviewControls } from './PreviewControls';
 
 function shaderIdFromFilename(filename: string): string {
   return filename.replace(/\.gdshader$/, '');
@@ -113,6 +114,7 @@ export function StageArea() {
           styles.stageWrapper, 
           { display: activeView.type === 'preview' ? 'flex' : 'none' }
         ]}>
+          {activeView.type === 'preview' && <PreviewControls />}
           <PreviewGate>
             <StageContainer />
           </PreviewGate>

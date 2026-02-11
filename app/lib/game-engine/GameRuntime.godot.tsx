@@ -112,6 +112,8 @@ export interface GameRuntimeGodotProps {
   onPreviousLevel?: () => void;
   /** Skip the "ready" screen and start playing immediately */
   autoStart?: boolean;
+  /** Force paused state (overrides internal state) */
+  paused?: boolean;
   /** Called when bridge is ready, provides hotSwapShader for live shader editing */
   onBridgeReady?: (api: { hotSwapShader: (shaderId: string, source: string) => void }) => void;
 }
@@ -134,6 +136,7 @@ export function GameRuntimeGodot({
   onNextLevel,
   onPreviousLevel,
   autoStart = false,
+  paused,
   onBridgeReady,
 }: GameRuntimeGodotProps) {
   const stablePreloadTextureUrls = preloadTextureUrls ?? EMPTY_TEXTURE_URLS;
@@ -173,6 +176,15 @@ export function GameRuntimeGodot({
   const onGameEndRef = useRef(onGameEnd);
   const onScoreChangeRef = useRef(onScoreChange);
   const onBridgeReadyRef = useRef(onBridgeReady);
+
+  useEffect(() => {
+    if (paused !== undefined) {
+      setTimeControl(prev => {
+        if (prev.paused === paused) return prev;
+        return { ...prev, paused };
+      });
+    }
+  }, [paused]);
 
   useEffect(() => {
     onReadyRef.current = onReady;
@@ -352,7 +364,7 @@ export function GameRuntimeGodot({
   const [godotReady, setGodotReady] = useState(false);
   const [timeControl, setTimeControl] = useState<TimeControl>(() => ({
     mode: debugMode ? "inspect" : "normal",
-    paused: debugMode, // In inspect mode, start paused; in normal mode, start unpaused (ready state controls this)
+    paused: paused ?? debugMode,
     pendingSteps: 0,
   }));
   const [gameState, setGameState] = useState<ReactGameState>({

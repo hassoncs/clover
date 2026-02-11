@@ -1,5 +1,6 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { tokens } from '@slopcade/theme';
 
 interface Props {
   children: ReactNode;
@@ -59,31 +60,31 @@ export class ErrorBoundary extends Component<Props, State> {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0B0E',
+    backgroundColor: tokens.colors.secondary[900],
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
   },
   title: {
-    color: '#F87171',
+    color: tokens.colors.error,
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 8,
   },
   message: {
-    color: '#71717A',
+    color: tokens.colors.text.tertiary,
     fontSize: 14,
     textAlign: 'center',
     marginBottom: 24,
   },
   button: {
-    backgroundColor: '#1F2937',
+    backgroundColor: tokens.colors.secondary[800],
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: tokens.colors.text.inverse,
     fontSize: 16,
     fontWeight: '500',
   },

@@ -1,0 +1,28 @@
+Task 1 Evidence: Core Isolation Verification
+=============================================
+
+Date: 2026-02-11
+
+Verification: graph-core has NO imports from shared/src/effects/*
+
+Files in shared/src/graph-core/:
+  - types.ts       — zero imports (pure type declarations)
+  - commands.ts    — imports only from ./types
+  - validator.ts   — imports only from ./types
+  - index.ts       — re-exports from ./types, ./commands, ./validator
+
+Import analysis (grep for 'effects' in graph-core):
+  Result: 0 matches
+
+No domain-specific types in graph-core:
+  - No EffectNode, EffectType, NodeFamily, ShaderSource, etc.
+  - All types are generic: GraphNode, GraphEdge, GraphPort, GraphViewport, GraphDocument
+  - Node.data is Record<string, unknown> — domain adapters extend via data field
+  - Port.dataType is string — domain adapters define their own data types
+
+Export strategy:
+  - Sub-path export: @slopcade/shared/graph-core (avoids name collisions with effects)
+  - NOT re-exported from root index.ts (ValidationResult/ValidationError name conflicts)
+
+LSP diagnostics: 0 errors across all 4 source files
+TypeScript strict mode: enabled (from shared/tsconfig.json)

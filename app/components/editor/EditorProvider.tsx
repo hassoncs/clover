@@ -20,6 +20,7 @@ export interface ResolvedPackEntry {
 }
 
 export type EditorMode = "edit" | "playtest";
+export type TimeMode = "paused" | "playing";
 export type EditorTab = "gallery" | "assets" | "properties" | "layers" | "debug" | "chat";
 export type SheetSnapPoint = 0 | 1 | 2;
 
@@ -44,6 +45,7 @@ interface HistoryEntry {
 
 interface EditorState {
   mode: EditorMode;
+  timeMode: TimeMode;
   selectedEntityId: string | null;
   activeTab: EditorTab;
   sheetSnapPoint: SheetSnapPoint;
@@ -57,6 +59,7 @@ interface EditorState {
 
 type EditorStateAction =
   | { type: "SET_MODE"; mode: EditorMode }
+  | { type: "SET_TIME_MODE"; mode: TimeMode }
   | { type: "SELECT_ENTITY"; entityId: string | null }
   | { type: "SET_ACTIVE_TAB"; tab: EditorTab }
   | { type: "SET_SHEET_SNAP_POINT"; point: SheetSnapPoint }
@@ -82,6 +85,9 @@ function editorReducer(state: EditorState, action: EditorStateAction): EditorSta
   switch (action.type) {
     case "SET_MODE":
       return { ...state, mode: action.mode };
+
+    case "SET_TIME_MODE":
+      return { ...state, timeMode: action.mode };
 
     case "SELECT_ENTITY":
       return { ...state, selectedEntityId: action.entityId };
@@ -454,6 +460,7 @@ interface EditorContextValue {
   gameId: string;
   state: EditorState;
   mode: EditorMode;
+  timeMode: TimeMode;
   selectedEntityId: string | null;
   activeTab: EditorTab;
   sheetSnapPoint: SheetSnapPoint;
@@ -466,6 +473,7 @@ interface EditorContextValue {
   showAIRunPanel: boolean;
 
   setMode: (mode: EditorMode) => void;
+  setTimeMode: (mode: TimeMode) => void;
   toggleMode: () => void;
   toggleAIRunPanel: () => void;
   selectEntity: (id: string | null) => void;
@@ -538,6 +546,7 @@ export function EditorProvider({
 
   const initialState: EditorState = {
     mode: "edit",
+    timeMode: "paused",
     selectedEntityId: null,
     activeTab: "gallery",
     sheetSnapPoint: 0,
@@ -553,6 +562,10 @@ export function EditorProvider({
 
   const setMode = useCallback((mode: EditorMode) => {
     dispatch({ type: "SET_MODE", mode });
+  }, []);
+
+  const setTimeMode = useCallback((mode: TimeMode) => {
+    dispatch({ type: "SET_TIME_MODE", mode });
   }, []);
 
   const toggleMode = useCallback(() => {
@@ -637,6 +650,7 @@ export function EditorProvider({
       gameId,
       state,
       mode: state.mode,
+      timeMode: state.timeMode,
       selectedEntityId: state.selectedEntityId,
       activeTab: state.activeTab,
       sheetSnapPoint: state.sheetSnapPoint,
@@ -649,6 +663,7 @@ export function EditorProvider({
       showAIRunPanel,
 
       setMode,
+      setTimeMode,
       toggleMode,
       toggleAIRunPanel,
       selectEntity,
@@ -691,6 +706,7 @@ export function EditorProvider({
       gameId,
       state,
       setMode,
+      setTimeMode,
       toggleMode,
       selectEntity,
       setActiveTab,

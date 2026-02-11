@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { tokens } from "@slopcade/theme";
 
 interface AppHeaderAction {
   icon: keyof typeof Ionicons.glyphMap;
@@ -28,7 +29,7 @@ function HeaderIconButton({
       accessibilityRole="button"
       accessibilityLabel={`${icon} button`}
     >
-      <Ionicons name={icon} size={24} color="#F2F4F7" />
+      <Ionicons name={icon} size={24} color={tokens.colors.text.primary} />
     </Pressable>
   );
 }
@@ -69,11 +70,11 @@ export function AppFrameHeader({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#050608",
+    backgroundColor: tokens.colors.background,
     paddingHorizontal: 14,
     paddingBottom: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(255,255,255,0.12)",
+    borderBottomColor: tokens.colors.border,
   },
   row: {
     flexDirection: "row",
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    color: "#F4F4F5",
+    color: tokens.colors.text.primary,
     fontSize: 22,
     lineHeight: 26,
     fontWeight: "700",

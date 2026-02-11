@@ -4,12 +4,12 @@ import {
   Text,
   Pressable,
   ScrollView,
-  StyleSheet,
 } from "react-native";
 import { ChatTextArea } from "@/components/create-game/ChatTextArea";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import type { EditorTab } from "./EditorProvider";
+import { tokens } from "@slopcade/theme";
 
 const TOOL_TABS: {
   id: EditorTab;
@@ -39,10 +39,8 @@ export function EditorToolbar({
 
   return (
     <View
-      style={[
-        styles.container,
-        { paddingBottom: Math.max(insets.bottom, 16) },
-      ]}
+      className="bg-theme-background border-t border-theme-border pt-3 px-4"
+      style={{ paddingBottom: Math.max(insets.bottom, 16) }}
     >
       <ChatTextArea
         onSend={onSendMessage}
@@ -55,24 +53,21 @@ export function EditorToolbar({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.tabsContainer}
-        style={styles.tabsScrollView}
+        contentContainerClassName="flex-row gap-6 px-1 pb-1"
+        className="grow-0"
       >
         {TOOL_TABS.map((tab) => (
           <Pressable
             key={tab.id}
-            style={({ pressed }) => [
-              styles.tabItem,
-              pressed && styles.tabItemPressed,
-            ]}
+            className="items-center justify-center gap-1 min-w-[56px] active:opacity-70"
             onPress={() => onTabPress(tab.id)}
             accessibilityRole="button"
             accessibilityLabel={tab.label}
           >
-            <View style={styles.iconContainer}>
-              <Ionicons name={tab.ionicon} size={24} color="#9CA3AF" />
+            <View className="w-10 h-10 rounded-full bg-theme-surface items-center justify-center border border-theme-border">
+              <Ionicons name={tab.ionicon} size={24} color={tokens.semantic.colors.text.secondary} />
             </View>
-            <Text style={styles.tabLabel}>{tab.label}</Text>
+            <Text className="text-[11px] text-theme-text-muted text-center font-medium">{tab.label}</Text>
           </Pressable>
         ))}
       </ScrollView>
@@ -80,47 +75,3 @@ export function EditorToolbar({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "#111827",
-    borderTopWidth: 1,
-    borderTopColor: "#374151",
-    paddingTop: 12,
-    paddingHorizontal: 16,
-  },
-
-  tabsScrollView: {
-    flexGrow: 0,
-  },
-  tabsContainer: {
-    flexDirection: "row",
-    gap: 24,
-    paddingHorizontal: 4,
-    paddingBottom: 4,
-  },
-  tabItem: {
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 4,
-    minWidth: 56,
-  },
-  tabItemPressed: {
-    opacity: 0.7,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#1F2937",
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#374151",
-  },
-  tabLabel: {
-    fontSize: 11,
-    color: "#9CA3AF",
-    textAlign: "center",
-    fontWeight: "500",
-  },
-});

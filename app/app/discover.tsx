@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 import { trpcReact } from "@/lib/trpc/react";
 import { useAuth } from "@/hooks/useAuth";
 import { FollowButton } from "@/components/social/FollowButton";
+import { tokens } from "@slopcade/theme";
 
 const AVATAR_COLORS = ["bg-indigo-600", "bg-emerald-600", "bg-amber-600", "bg-rose-600", "bg-cyan-600", "bg-violet-600"];
 
@@ -39,24 +40,24 @@ function UserRow({ user, currentUserId }: { user: UserRowData; currentUserId: st
 
   return (
     <Pressable
-      className="flex-row items-center px-4 py-3 border-b border-gray-800"
+      className="flex-row items-center px-4 py-3 border-b border-theme-border"
       onPress={() => router.push({ pathname: "/user/[id]", params: { id: user.id } })}
     >
       <View className={`w-12 h-12 rounded-full items-center justify-center ${getAvatarColor(user.id)}`}>
-        <Text className="text-white font-bold text-sm">
+        <Text className="text-theme-text font-bold text-sm">
           {getInitials(user.displayName)}
         </Text>
       </View>
 
       <View className="flex-1 ml-3">
-        <Text className="text-white font-semibold text-base" numberOfLines={1}>
+        <Text className="text-theme-text font-semibold text-base" numberOfLines={1}>
           {user.displayName ?? "Anonymous"}
         </Text>
         <View className="flex-row items-center gap-3 mt-0.5">
-          <Text className="text-gray-400 text-xs">
+          <Text className="text-theme-text-secondary text-xs">
             {formatCount(user.gameCount)} {user.gameCount === 1 ? "game" : "games"}
           </Text>
-          <Text className="text-gray-400 text-xs">
+          <Text className="text-theme-text-secondary text-xs">
             {formatCount(user.followerCount)} {user.followerCount === 1 ? "follower" : "followers"}
           </Text>
         </View>
@@ -100,15 +101,15 @@ export default function DiscoverScreen() {
   ), [currentUserId]);
 
   return (
-    <View className="flex-1 bg-black" style={{ paddingTop: insets.top }}>
+    <View className="flex-1 bg-theme-background" style={{ paddingTop: insets.top }}>
       <View className="px-4 pt-2 pb-3">
-        <Text className="text-white text-2xl font-bold mb-3">Discover</Text>
-        <View className="flex-row items-center bg-gray-800 rounded-xl px-3 py-2.5">
-          <Ionicons name="search" size={20} color="#9CA3AF" />
+        <Text className="text-theme-text text-2xl font-bold mb-3">Discover</Text>
+        <View className="flex-row items-center bg-theme-surface-elevated rounded-xl px-3 py-2.5">
+          <Ionicons name="search" size={20} color={tokens.semantic.colors.text.tertiary} />
           <TextInput
-            className="flex-1 text-white text-base ml-2"
+            className="flex-1 text-theme-text text-base ml-2"
             placeholder="Search users..."
-            placeholderTextColor="#6B7280"
+            placeholderTextColor={tokens.semantic.colors.text.secondary}
             value={query}
             onChangeText={setQuery}
             autoCapitalize="none"
@@ -117,7 +118,7 @@ export default function DiscoverScreen() {
           />
           {hasQuery && (
             <Pressable onPress={() => setQuery("")}>
-              <Ionicons name="close-circle" size={20} color="#6B7280" />
+              <Ionicons name="close-circle" size={20} color={tokens.semantic.colors.text.secondary} />
             </Pressable>
           )}
         </View>
@@ -125,7 +126,7 @@ export default function DiscoverScreen() {
 
       {!hasQuery && (
         <View className="px-4 py-2">
-          <Text className="text-gray-400 text-sm font-semibold uppercase tracking-wide">
+          <Text className="text-theme-text-secondary text-sm font-semibold uppercase tracking-wide">
             Suggested Creators
           </Text>
         </View>
@@ -133,7 +134,7 @@ export default function DiscoverScreen() {
 
       {hasQuery && (
         <View className="px-4 py-2">
-          <Text className="text-gray-400 text-sm font-semibold uppercase tracking-wide">
+          <Text className="text-theme-text-secondary text-sm font-semibold uppercase tracking-wide">
             Search Results
           </Text>
         </View>
@@ -141,21 +142,21 @@ export default function DiscoverScreen() {
 
       {isLoading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#818CF8" />
+          <ActivityIndicator size="large" color={tokens.semantic.colors.primary} />
         </View>
       ) : users.length === 0 ? (
         <View className="flex-1 items-center justify-center px-8">
           {hasQuery ? (
             <>
-              <Ionicons name="search-outline" size={48} color="#4B5563" />
-              <Text className="text-gray-400 text-base mt-3 text-center">
+              <Ionicons name="search-outline" size={48} color={tokens.semantic.colors.text.tertiary} />
+              <Text className="text-theme-text-secondary text-base mt-3 text-center">
                 No users found for "{query}"
               </Text>
             </>
           ) : (
             <>
-              <Ionicons name="people-outline" size={48} color="#4B5563" />
-              <Text className="text-gray-400 text-base mt-3 text-center">
+              <Ionicons name="people-outline" size={48} color={tokens.semantic.colors.text.tertiary} />
+              <Text className="text-theme-text-secondary text-base mt-3 text-center">
                 No creators to suggest yet
               </Text>
             </>

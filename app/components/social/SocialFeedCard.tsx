@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { trpcReact } from "@/lib/trpc/react";
 import { FollowButton } from "./FollowButton";
+import { tokens } from "@slopcade/theme";
 
 interface FeedGame {
   id: string;
@@ -118,7 +119,7 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
   };
 
   return (
-    <View className="bg-gray-900 border-b border-gray-800">
+    <View className="bg-theme-surface-elevated border-b border-theme-border">
       {/* Header - Creator info */}
       <View className="flex-row items-center px-4 py-3">
         <Pressable 
@@ -128,12 +129,12 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
           accessibilityLabel={`View ${game.creator.displayName ?? "Anonymous"}'s profile`}
         >
           <View className={`w-9 h-9 rounded-full items-center justify-center ${getAvatarColor(game.creator.id ?? "anon")}`}>
-            <Text className="text-white font-bold text-xs">
+            <Text className="text-theme-text-inverse font-bold text-xs">
               {getInitials(game.creator.displayName)}
             </Text>
           </View>
           <View className="ml-3 flex-1">
-            <Text className="text-white font-semibold text-sm" numberOfLines={1}>
+            <Text className="text-theme-text font-semibold text-sm" numberOfLines={1}>
               {game.creator.displayName ?? "Anonymous"}
             </Text>
           </View>
@@ -148,7 +149,7 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
           />
         )}
 
-        <Text className="text-gray-500 text-xs ml-3">{timeAgo(game.createdAt)}</Text>
+        <Text className="text-theme-text-secondary text-xs ml-3">{timeAgo(game.createdAt)}</Text>
       </View>
 
       {/* Thumbnail / Game Preview */}
@@ -164,9 +165,9 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
             resizeMode="cover"
           />
         ) : (
-          <View className="w-full aspect-video bg-gray-800 items-center justify-center">
+          <View className="w-full aspect-video bg-theme-surface items-center justify-center">
             <Text className="text-5xl">🎮</Text>
-            <Text className="text-gray-500 text-sm mt-2">{game.title}</Text>
+            <Text className="text-theme-text-secondary text-sm mt-2">{game.title}</Text>
           </View>
         )}
       </Pressable>
@@ -185,7 +186,7 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
             <Ionicons
               name={game.isLiked ? "heart" : "heart-outline"}
               size={26}
-              color={game.isLiked ? "#EF4444" : "#E4E4E7"}
+              color={game.isLiked ? tokens.semantic.colors.error : tokens.semantic.colors.text.primary}
             />
           </Pressable>
 
@@ -195,7 +196,7 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
             accessibilityRole="button"
             accessibilityLabel="View comments"
           >
-            <Ionicons name="chatbubble-outline" size={24} color="#E4E4E7" />
+            <Ionicons name="chatbubble-outline" size={24} color={tokens.semantic.colors.text.primary} />
           </Pressable>
 
           <Pressable 
@@ -203,7 +204,7 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
             accessibilityRole="button"
             accessibilityLabel={`Play ${game.title}`}
           >
-            <Ionicons name="play-circle-outline" size={26} color="#E4E4E7" />
+            <Ionicons name="play-circle-outline" size={26} color={tokens.semantic.colors.text.primary} />
           </Pressable>
 
           <Pressable 
@@ -211,7 +212,7 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
             accessibilityRole="button"
             accessibilityLabel="Share game"
           >
-            <Ionicons name="paper-plane-outline" size={24} color="#E4E4E7" />
+            <Ionicons name="paper-plane-outline" size={24} color={tokens.semantic.colors.text.primary} />
           </Pressable>
         </View>
 
@@ -225,7 +226,7 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
           <Ionicons
             name={game.isBookmarked ? "bookmark" : "bookmark-outline"}
             size={24}
-            color={game.isBookmarked ? "#FBBF24" : "#E4E4E7"}
+            color={game.isBookmarked ? tokens.semantic.colors.warning : tokens.semantic.colors.text.primary}
           />
         </Pressable>
       </View>
@@ -233,7 +234,7 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
       {/* Counts */}
       <View className="px-4 pb-1">
         {game.likeCount > 0 && (
-          <Text className="text-white font-semibold text-sm">
+          <Text className="text-theme-text font-semibold text-sm">
             {formatCount(game.likeCount)} {game.likeCount === 1 ? "like" : "likes"}
           </Text>
         )}
@@ -241,7 +242,7 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
 
       {/* Title & Description */}
       <View className="px-4 pb-1">
-        <Text className="text-white text-sm" numberOfLines={2}>
+        <Text className="text-theme-text text-sm" numberOfLines={2}>
           <Text className="font-semibold">{game.creator.displayName ?? "Anonymous"} </Text>
           {game.title}
           {game.description ? ` - ${game.description}` : ""}
@@ -251,8 +252,8 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
       {/* Rating */}
       {game.ratingCount > 0 && (
         <View className="px-4 pb-1 flex-row items-center gap-1">
-          <Ionicons name="star" size={12} color="#FBBF24" />
-          <Text className="text-gray-400 text-xs">
+          <Ionicons name="star" size={12} color={tokens.semantic.colors.warning} />
+          <Text className="text-theme-text-secondary text-xs">
             {game.ratingAverage.toFixed(1)} ({game.ratingCount})
           </Text>
         </View>
@@ -266,7 +267,7 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
           accessibilityRole="button"
           accessibilityLabel={`View ${game.commentCount === 1 ? "1 comment" : `all ${game.commentCount} comments`}`}
         >
-          <Text className="text-gray-500 text-sm">
+          <Text className="text-theme-text-secondary text-sm">
             View {game.commentCount === 1 ? "1 comment" : `all ${game.commentCount} comments`}
           </Text>
         </Pressable>
@@ -274,7 +275,7 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
 
       {/* Play count */}
       <View className="px-4 pb-3">
-        <Text className="text-gray-600 text-xs">
+        <Text className="text-theme-text-tertiary text-xs">
           {formatCount(game.playCount)} plays
         </Text>
       </View>

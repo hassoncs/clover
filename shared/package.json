@@ -1,37 +1,38 @@
 {
-  "name": "@slopcade/shared",
-  "version": "1.0.0",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "test": "vitest run",
-    "test:watch": "vitest"
-  },
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
-  "exports": {
-    ".": "./src/index.ts",
-    "./expressions/*": "./src/expressions/*.ts",
-    "./mechanics": "./src/mechanics/index.ts",
-    "./schema": "./src/schema/index.ts",
-    "./schema/*": "./src/schema/*.ts",
-    "./types": "./src/types/index.ts",
-    "./types/*": "./src/types/*.ts",
-    "./utils/asset-url": "./src/utils/asset-url.ts",
-    "./utils/*": "./src/utils/*.ts",
-    "./validation": "./src/validation/index.ts",
-    "./validation/*": "./src/validation/*.ts",
-    "./scripting/authoring": "./src/scripting/script-authoring-types.ts"
-  },
-  "dependencies": {
-    "drizzle-orm": "^0.38.3",
-    "drizzle-zod": "^0.7.0",
-    "quickjs-emscripten": "^0.31.0",
-    "zod": "^3.25.76"
-  },
-  "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260116.0",
-    "typescript": "^5.4.5",
-    "vitest": "^2.1.9"
-  }
+	"name": "@slopcade/shared",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"test": "vitest run",
+		"test:watch": "vitest"
+	},
+	"main": "./src/index.ts",
+	"types": "./src/index.ts",
+	"exports": {
+		".": "./src/index.ts",
+		"./expressions/*": "./src/expressions/*.ts",
+		"./mechanics": "./src/mechanics/index.ts",
+		"./schema": "./src/schema/index.ts",
+		"./schema/*": "./src/schema/*.ts",
+		"./types": "./src/types/index.ts",
+		"./types/*": "./src/types/*.ts",
+		"./utils/asset-url": "./src/utils/asset-url.ts",
+		"./utils/*": "./src/utils/*.ts",
+		"./validation": "./src/validation/index.ts",
+		"./validation/*": "./src/validation/*.ts",
+		"./scripting/authoring": "./src/scripting/script-authoring-types.ts",
+		"./graph-core": "./src/graph-core/index.ts"
+	},
+	"dependencies": {
+		"drizzle-orm": "^0.38.3",
+		"drizzle-zod": "^0.7.0",
+		"quickjs-emscripten": "^0.31.0",
+		"zod": "^3.25.76"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20260116.0",
+		"typescript": "^5.4.5",
+		"vitest": "^2.1.9"
+	}
 }

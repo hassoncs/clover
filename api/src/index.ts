@@ -45,17 +45,24 @@ app.get('/ws/speech-to-text', async (c) => {
     return c.text('Authentication required', 401);
   }
 
-  if (!c.env.SUPABASE_URL || !c.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return c.text('Auth not configured', 500);
+  let userId: string;
+
+  if (__DEV__ && token === 'dev-token') {
+    userId = '00000000-0000-0000-0000-000000000000';
+  } else {
+    if (!c.env.SUPABASE_URL || !c.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return c.text('Auth not configured', 500);
+    }
+
+    const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_SERVICE_ROLE_KEY);
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) {
+      return c.text('Invalid or expired token', 401);
+    }
+    userId = user.id;
   }
 
-  const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_SERVICE_ROLE_KEY);
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-  if (error || !user) {
-    return c.text('Invalid or expired token', 401);
-  }
-
-  const id = c.env.REALTIME_RELAY.idFromName(user.id + '-' + Date.now());
+  const id = c.env.REALTIME_RELAY.idFromName(userId + '-' + Date.now());
   const stub = c.env.REALTIME_RELAY.get(id);
   return stub.fetch(c.req.raw);
 });

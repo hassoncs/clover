@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import { tokens } from "@slopcade/theme";
 
 interface SidebarPlaceholderProps {
   visible: boolean;
@@ -64,25 +65,25 @@ export function SidebarPlaceholder({ visible, onClose }: SidebarPlaceholderProps
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#000",
+    backgroundColor: tokens.colors.black,
   },
   panel: {
     width: PANEL_WIDTH,
     height: "100%",
-    backgroundColor: "#0D1015",
+    backgroundColor: tokens.colors.secondary[900],
     borderRightWidth: StyleSheet.hairlineWidth,
-    borderRightColor: "rgba(255,255,255,0.12)",
+    borderRightColor: tokens.colors.border,
     paddingTop: 72,
     paddingHorizontal: 18,
     gap: 10,
   },
   title: {
-    color: "#F4F4F5",
+    color: tokens.colors.text.primary,
     fontSize: 22,
     fontWeight: "700",
   },
   subtitle: {
-    color: "#A1A1AA",
+    color: tokens.colors.text.tertiary,
     fontSize: 14,
     lineHeight: 20,
   },

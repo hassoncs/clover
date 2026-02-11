@@ -5,7 +5,7 @@ import { WithGodot } from "@/components/WithGodot";
 import { InteractionLayer } from "./InteractionLayer";
 
 export function StageContainer() {
-  const { mode, document, registerShaderHandler } = useEditor();
+  const { mode, timeMode, document, registerShaderHandler } = useEditor();
   const [runtimeKey, setRuntimeKey] = useState(0);
 
   const handleRequestRestart = useCallback(() => {
@@ -40,6 +40,7 @@ export function StageContainer() {
               <mod.GameRuntimeGodot
                 definition={document}
                 showHUD={mode === "playtest"}
+                paused={mode === "edit" && timeMode === "paused"}
                 onRequestRestart={handleRequestRestart}
                 onBridgeReady={handleBridgeReady}
               />

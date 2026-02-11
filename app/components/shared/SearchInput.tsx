@@ -1,6 +1,7 @@
 import { useRef, useCallback } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { tokens } from "@slopcade/theme";
 
 interface SearchInputProps {
   value: string;
@@ -33,7 +34,7 @@ export function SearchInput({
 
   return (
     <View style={styles.container}>
-      <Ionicons name="search" size={20} color="#7B7F86" style={styles.icon} />
+      <Ionicons name="search" size={20} color={tokens.colors.text.secondary} style={styles.icon} />
       <TextInput
         ref={inputRef}
         style={styles.input}
@@ -41,7 +42,7 @@ export function SearchInput({
         onChangeText={onChangeText}
         onSubmitEditing={handleSubmitEditing}
         placeholder={placeholder}
-        placeholderTextColor="#7B7F86"
+        placeholderTextColor={tokens.colors.text.secondary}
         autoCapitalize="none"
         autoCorrect={false}
         autoFocus={autoFocus}
@@ -51,7 +52,7 @@ export function SearchInput({
       />
       {value.length > 0 && (
         <Pressable onPress={handleClear} style={styles.clearButton} hitSlop={8} accessibilityRole="button" accessibilityLabel="Clear search">
-          <Ionicons name="close-circle" size={18} color="#7B7F86" />
+          <Ionicons name="close-circle" size={18} color={tokens.colors.text.secondary} />
         </Pressable>
       )}
     </View>
@@ -61,7 +62,7 @@ export function SearchInput({
 const styles = StyleSheet.create({
   container: {
     height: 48,
-    backgroundColor: "#17191F",
+    backgroundColor: tokens.colors.secondary[900],
     borderRadius: 24,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: "rgba(255,255,255,0.1)",
@@ -75,7 +76,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    color: "#F2F4F7",
+    color: tokens.colors.text.inverse,
     fontSize: 16,
     lineHeight: 20,
   },

@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { tokens } from "@slopcade/theme";
 
 const ROUTE_ICON_MAP: Record<
   string,
@@ -65,7 +66,7 @@ export function FloatingTabBar({ state, descriptors, navigation, onPrimaryPress,
                 <Ionicons
                   name={isFocused ? icon.active : icon.inactive}
                   size={26}
-                  color={isFocused ? "#FFFFFF" : "#A1A1AA"}
+                  color={isFocused ? tokens.colors.text.inverse : tokens.colors.text.tertiary}
                 />
               </Pressable>
             );
@@ -78,7 +79,7 @@ export function FloatingTabBar({ state, descriptors, navigation, onPrimaryPress,
           accessibilityRole="button"
           accessibilityLabel="Create new game"
         >
-          <Ionicons name="add" size={34} color="#D4D4D8" />
+          <Ionicons name="add" size={34} color={tokens.colors.text.tertiary} />
         </Pressable>
       </View>
     </View>
@@ -102,13 +103,14 @@ const styles = StyleSheet.create({
     height: 68,
     minWidth: 278,
     borderRadius: 34,
-    backgroundColor: "rgba(28, 30, 36, 0.96)",
+    backgroundColor: tokens.colors.secondary[900],
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.16)",
+    borderColor: tokens.colors.border,
     paddingHorizontal: 14,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    opacity: 0.96,
   },
   tabButton: {
     width: 54,
@@ -121,10 +123,11 @@ const styles = StyleSheet.create({
     width: 68,
     height: 68,
     borderRadius: 34,
-    backgroundColor: "rgba(28, 30, 36, 0.96)",
+    backgroundColor: tokens.colors.secondary[900],
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.16)",
+    borderColor: tokens.colors.border,
     alignItems: "center",
     justifyContent: "center",
+    opacity: 0.96,
   },
 });

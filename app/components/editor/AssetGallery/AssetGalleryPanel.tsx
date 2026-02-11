@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator, Alert, TextInput } from 'react-native';
+import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { AssetPackSelector } from './AssetPackSelector';
 import { AssetAlignmentEditor } from '../AssetAlignment/AssetAlignmentEditor';
@@ -9,6 +9,7 @@ import { useEditor, type ResolvedPackEntry } from '../EditorProvider';
 import type { AssetPlacement, EntityTemplate } from '@slopcade/shared';
 import { STYLE_PRESET_OPTIONS } from '@slopcade/shared/types/style-presets';
 import { trpcReact } from '@/lib/trpc/react';
+import { tokens } from '@slopcade/theme';
 
 interface AssetGalleryPanelProps {
   onTemplatePress?: (templateId: string) => void;
@@ -408,11 +409,11 @@ export function AssetGalleryPanel({
 
   if (isPreviewMode) {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <View style={styles.previewModeContainer}>
-          <Text style={styles.previewModeEmoji}>💾</Text>
-          <Text style={styles.previewModeTitle}>Save Your Game First</Text>
-          <Text style={styles.previewModeText}>
+      <ScrollView className="flex-1 bg-theme-surface" contentContainerClassName="p-4">
+        <View className="items-center py-16 px-6">
+          <Text className="text-5xl mb-4">💾</Text>
+          <Text className="text-theme-text text-xl font-bold mb-3 text-center">Save Your Game First</Text>
+          <Text className="text-theme-text-muted text-base text-center leading-6">
             To generate AI assets, you need to save your game first. This allows us to store and manage your asset packs.
           </Text>
         </View>
@@ -421,10 +422,10 @@ export function AssetGalleryPanel({
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Asset Gallery</Text>
-        <Text style={styles.subtitle}>
+    <ScrollView className="flex-1 bg-theme-surface" contentContainerClassName="p-4">
+      <View className="mb-4">
+        <Text className="text-theme-text text-xl font-bold">Asset Gallery</Text>
+        <Text className="text-theme-text-muted text-sm mt-1">
           {coverage.covered}/{coverage.total} templates have assets
         </Text>
       </View>
@@ -446,42 +447,36 @@ export function AssetGalleryPanel({
             />
           ) : (
             <>
-              <View style={styles.packSelector}>
-                <View style={styles.packSelectorHeader}>
-                  <Text style={styles.sectionTitle}>ASSET PACKS</Text>
+              <View className="mb-4">
+                <View className="flex-row justify-between items-center mb-2">
+                  <Text className="text-theme-text-muted text-[11px] font-semibold tracking-widest mb-2">ASSET PACKS</Text>
                   <Pressable
-                    style={styles.managePacksButton}
+                    className="px-3 py-1 bg-theme-surface-elevated rounded-xl"
                     onPress={() => setPackSelectorVisible(true)}
                     accessibilityRole="button"
                     accessibilityLabel={packList.length > 0 ? 'Manage asset packs' : 'Create asset pack'}
                   >
-                    <Text style={styles.managePacksButtonText}>
+                    <Text className="text-theme-text-muted text-xs font-medium">
                       {packList.length > 0 ? 'Manage' : '+ Create Pack'}
                     </Text>
                   </Pressable>
                 </View>
                 {isLoadingPacks ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="small" color="#6366F1" />
+                  <View className="p-5 items-center">
+                    <ActivityIndicator size="small" color={tokens.semantic.colors.primary} />
                   </View>
                 ) : (
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.packList}>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
                     {packList.map(pack => (
                       <Pressable
                         key={pack.id}
-                        style={[
-                          styles.packChip,
-                          selectedPackId === pack.id && styles.packChipActive,
-                        ]}
+                        className={`bg-theme-surface-elevated px-3 py-2 rounded-full mr-2 flex-row items-center ${selectedPackId === pack.id ? 'bg-theme-primary' : ''}`}
                         onPress={() => setSelectedPackId(pack.id)}
                         accessibilityRole="button"
                         accessibilityLabel={`Select pack ${pack.name}`}
                         accessibilityState={{ selected: selectedPackId === pack.id }}
                       >
-                        <Text style={[
-                          styles.packChipText,
-                          selectedPackId === pack.id && styles.packChipTextActive,
-                        ]}>
+                        <Text className={`text-sm ${selectedPackId === pack.id ? 'text-theme-text-inverse' : 'text-theme-text-secondary'}`}>
                           {pack.name}
                         </Text>
                       </Pressable>
@@ -490,12 +485,9 @@ export function AssetGalleryPanel({
                 )}
               </View>
 
-              <View style={styles.actionsRow}>
+              <View className="mb-4">
                 <Pressable
-                  style={[
-                    styles.generateButton,
-                    (isGenerating || !selectedPackId) && styles.generateButtonDisabled,
-                  ]}
+                  className={`bg-theme-primary py-3 px-4 rounded-lg items-center ${(isGenerating || !selectedPackId) ? 'opacity-70' : ''}`}
                   onPress={handleGenerateAll}
                   disabled={isGenerating || !selectedPackId}
                   accessibilityRole="button"
@@ -503,14 +495,14 @@ export function AssetGalleryPanel({
                   accessibilityState={{ disabled: isGenerating || !selectedPackId }}
                 >
                   {isGenerating ? (
-                    <View style={styles.generateButtonContent}>
+                    <View className="flex-row items-center gap-2">
                       <ActivityIndicator size="small" color="#FFFFFF" />
-                      <Text style={styles.generateButtonText}>
+                      <Text className="text-theme-text-inverse text-sm font-semibold">
                         {progress.completed}/{progress.total} Generating...
                       </Text>
                     </View>
                   ) : (
-                    <Text style={styles.generateButtonText}>
+                    <Text className="text-theme-text-inverse text-sm font-semibold">
                       {selectedPackId ? 'Regenerate All Assets' : 'Select a Pack First'}
                     </Text>
                   )}
@@ -519,8 +511,8 @@ export function AssetGalleryPanel({
             </>
           )}
 
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>TEMPLATES ({templates.length})</Text>
+          <View className="mb-3">
+            <Text className="text-theme-text-muted text-[11px] font-semibold tracking-widest mb-2">TEMPLATES ({templates.length})</Text>
           </View>
 
           <TemplateGrid
@@ -557,335 +549,3 @@ export function AssetGalleryPanel({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1F2937',
-  },
-  content: {
-    padding: 16,
-  },
-  header: {
-    marginBottom: 16,
-  },
-  title: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  subtitle: {
-    color: '#9CA3AF',
-    fontSize: 14,
-    marginTop: 4,
-  },
-  previewModeContainer: {
-    alignItems: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 24,
-  },
-  previewModeEmoji: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  previewModeTitle: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  previewModeText: {
-    color: '#9CA3AF',
-    fontSize: 15,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  quickCreateContainer: {
-    backgroundColor: '#374151',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
-  },
-  quickCreateTitle: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  quickCreateSubtitle: {
-    color: '#9CA3AF',
-    fontSize: 14,
-    marginBottom: 16,
-    lineHeight: 20,
-  },
-  themeInput: {
-    backgroundColor: '#1F2937',
-    borderRadius: 12,
-    padding: 14,
-    color: '#FFFFFF',
-    fontSize: 15,
-    marginBottom: 16,
-    minHeight: 60,
-  },
-  styleRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 20,
-  },
-  styleChip: {
-    flex: 1,
-    backgroundColor: '#1F2937',
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  styleChipActive: {
-    borderColor: '#4F46E5',
-    backgroundColor: '#312E81',
-  },
-  styleChipEmoji: {
-    fontSize: 20,
-    marginBottom: 4,
-  },
-  styleChipText: {
-    color: '#9CA3AF',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  styleChipTextActive: {
-    color: '#FFFFFF',
-  },
-  bgRemoveToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    paddingVertical: 8,
-  },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: '#6B7280',
-    marginRight: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxActive: {
-    backgroundColor: '#4F46E5',
-    borderColor: '#4F46E5',
-  },
-  checkmark: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  bgRemoveLabel: {
-    color: '#D1D5DB',
-    fontSize: 14,
-  },
-  quickGenerateButton: {
-    backgroundColor: '#4F46E5',
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  quickGenerateButtonDisabled: {
-    backgroundColor: '#6366F1',
-    opacity: 0.7,
-  },
-  quickGenerateButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  packSelector: {
-    marginBottom: 16,
-  },
-  packSelectorHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  managePacksButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    backgroundColor: '#374151',
-    borderRadius: 12,
-  },
-  managePacksButtonText: {
-    color: '#9CA3AF',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  sectionTitle: {
-    color: '#9CA3AF',
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 1,
-    marginBottom: 8,
-  },
-  packList: {
-    flexDirection: 'row',
-  },
-  packChip: {
-    backgroundColor: '#374151',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  packChipActive: {
-    backgroundColor: '#4F46E5',
-  },
-  packChipText: {
-    color: '#D1D5DB',
-    fontSize: 13,
-  },
-  packChipTextActive: {
-    color: '#FFFFFF',
-  },
-  actionsRow: {
-    marginBottom: 16,
-  },
-  generateButton: {
-    backgroundColor: '#4F46E5',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  generateButtonDisabled: {
-    backgroundColor: '#6366F1',
-    opacity: 0.7,
-  },
-  generateButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  generateButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  sectionHeader: {
-    marginBottom: 12,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  loadingContainer: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  emptyStateText: {
-    color: '#9CA3AF',
-    fontSize: 16,
-  },
-  emptyStateSubtext: {
-    color: '#6B7280',
-    fontSize: 14,
-    marginTop: 4,
-  },
-  // Mode switcher styles
-  modeSwitcher: {
-    flexDirection: 'row',
-    backgroundColor: '#374151',
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 16,
-  },
-  modeTab: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 8,
-  },
-  modeTabActive: {
-    backgroundColor: '#4F46E5',
-  },
-  modeTabText: {
-    color: '#9CA3AF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  modeTabTextActive: {
-    color: '#FFFFFF',
-  },
-  // UI Components mode styles
-  uiComponentsContainer: {
-    backgroundColor: '#374151',
-    borderRadius: 16,
-    padding: 16,
-  },
-  uiSection: {
-    marginBottom: 20,
-  },
-  componentTypeList: {
-    flexDirection: 'row',
-  },
-  componentTypeChip: {
-    backgroundColor: '#1F2937',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 16,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: '#4B5563',
-  },
-  componentTypeChipActive: {
-    backgroundColor: '#4F46E5',
-    borderColor: '#4F46E5',
-  },
-  componentTypeChipText: {
-    color: '#9CA3AF',
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  componentTypeChipTextActive: {
-    color: '#FFFFFF',
-  },
-  statesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  stateChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1F2937',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#4B5563',
-  },
-  stateChipActive: {
-    backgroundColor: '#312E81',
-    borderColor: '#4F46E5',
-  },
-  stateChipText: {
-    color: '#9CA3AF',
-    fontSize: 13,
-  },
-  stateChipTextActive: {
-    color: '#FFFFFF',
-  },
-  emptyPackText: {
-    color: '#6B7280',
-    fontSize: 13,
-    fontStyle: 'italic',
-  },
-});

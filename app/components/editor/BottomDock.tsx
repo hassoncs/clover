@@ -50,7 +50,7 @@ export function BottomDock() {
 
   return (
     <View
-      className="flex-row justify-around items-center bg-gray-900 border-t border-gray-800"
+      className="flex-row justify-around items-center bg-theme-background border-t border-theme-border"
       style={{ paddingBottom: insets.bottom, height: 60 + insets.bottom }}
     >
       {DOCK_ITEMS.map((item) => {
@@ -72,7 +72,7 @@ export function BottomDock() {
             <Text className="text-2xl">{item.icon}</Text>
             <Text
               className={`text-xs mt-1 ${
-                isActive ? "text-indigo-400 font-semibold" : "text-white"
+                isActive ? "text-theme-primary font-semibold" : "text-theme-text"
               }`}
             >
               {item.label}

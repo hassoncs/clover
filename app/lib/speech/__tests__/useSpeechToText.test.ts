@@ -49,13 +49,9 @@ vi.mock('../audioCapture', () => ({
   },
 }));
 
-const mockGetSession = vi.fn();
-vi.mock('@/lib/supabase/client', () => ({
-  supabase: {
-    auth: {
-      getSession: () => mockGetSession(),
-    },
-  },
+const mockGetAuthToken = vi.fn();
+vi.mock('@/lib/auth/token', () => ({
+  getAuthToken: () => mockGetAuthToken(),
 }));
 
 vi.mock('@/lib/config/env', () => ({
@@ -81,7 +77,7 @@ class MockWebSocket {
   onopen: (() => void) | null = null;
   onmessage: ((event: { data: string }) => void) | null = null;
   onerror: (() => void) | null = null;
-  onclose: (() => void) | null = null;
+  onclose: ((event: { code: number; reason: string }) => void) | null = null;
   sentMessages: string[] = [];
   closed = false;
 
@@ -98,7 +94,7 @@ class MockWebSocket {
   close() {
     this.closed = true;
     this.readyState = MockWebSocket.CLOSED;
-    this.onclose?.();
+    this.onclose?.({ code: 1000, reason: '' });
   }
 
   static reset() {
@@ -116,15 +112,11 @@ function defaultConfig(overrides?: Partial<SpeechToTextConfig>): SpeechToTextCon
 }
 
 function setupAuthSuccess(token = 'test-token') {
-  mockGetSession.mockResolvedValue({
-    data: { session: { access_token: token } },
-  });
+  mockGetAuthToken.mockResolvedValue(token);
 }
 
 function setupAuthFailure() {
-  mockGetSession.mockResolvedValue({
-    data: { session: null },
-  });
+  mockGetAuthToken.mockResolvedValue(null);
 }
 
 describe('useSpeechToText', () => {
@@ -134,7 +126,7 @@ describe('useSpeechToText', () => {
     mockInitAudioCapture.mockClear();
     mockStartAudioCapture.mockClear();
     mockStopAudioCapture.mockClear();
-    mockGetSession.mockReset();
+    mockGetAuthToken.mockReset();
     mockBackgroundCallback = null;
     mockBackgroundUnsubscribe.mockClear();
     setupAuthSuccess();

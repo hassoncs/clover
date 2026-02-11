@@ -587,7 +587,7 @@ Critical Path: 1 -> 2 -> 4 -> 7 -> 9
     Evidence: .sisyphus/evidence/task-8-guardrail-check.txt
   ```
 
-- [ ] 9. Final verification, evidence bundle, and rollout readiness
+- [x] 9. Final verification, evidence bundle, and rollout readiness
 
   **What to do**:
   - Run complete verification commands and collect evidence artifacts.

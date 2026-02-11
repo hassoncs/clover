@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FOLLOW_SUGGESTIONS, PLAYLIST_MOCKS, type FollowSuggestion, type PlaylistCardMock } from "./mockData";
+import { tokens } from "@slopcade/theme";
 
 function FollowRow({ person }: { person: FollowSuggestion }) {
   return (
@@ -59,19 +60,19 @@ export function DiscoverMockScreen() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Ionicons name="chevron-back" size={30} color="#F5F5F5" />
+            <Ionicons name="chevron-back" size={30} color={tokens.colors.text.primary} />
           </Pressable>
           <Text style={styles.headerTitle}>Discover</Text>
           <View style={styles.headerSpacer} />
         </View>
 
         <View style={styles.searchBar}>
-          <Ionicons name="search" size={28} color="#7B7F86" />
+          <Ionicons name="search" size={28} color={tokens.colors.text.tertiary} />
           <TextInput
             value=""
             editable={false}
             placeholder="Find friends..."
-            placeholderTextColor="#7B7F86"
+            placeholderTextColor={tokens.colors.text.tertiary}
             style={styles.searchInput}
             accessibilityLabel="Search for friends"
           />
@@ -79,7 +80,7 @@ export function DiscoverMockScreen() {
 
         <View style={styles.findCard}>
           <View style={styles.findIconWrap}>
-            <Ionicons name="person-add" size={26} color="#FFFFFF" />
+            <Ionicons name="person-add" size={26} color={tokens.colors.text.inverse} />
           </View>
           <View style={styles.findMeta}>
             <Text style={styles.findTitle}>Find your friends</Text>
@@ -106,7 +107,7 @@ export function DiscoverMockScreen() {
           accessibilityLabel="View more suggestions"
         >
           <Text style={styles.viewMoreText}>View more</Text>
-          <Ionicons name="chevron-forward" size={18} color="#8B8F97" />
+          <Ionicons name="chevron-forward" size={18} color={tokens.colors.text.tertiary} />
         </Pressable>
 
         <Text style={styles.sectionTitle}>Playlists</Text>
@@ -124,7 +125,7 @@ export function DiscoverMockScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#040507",
+    backgroundColor: tokens.colors.background,
   },
   content: {
     paddingHorizontal: 18,
@@ -144,7 +145,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   headerTitle: {
-    color: "#F5F5F6",
+    color: tokens.colors.text.primary,
     fontSize: 46,
     lineHeight: 50,
     fontWeight: "700",
@@ -155,10 +156,10 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     height: 62,
-    backgroundColor: "#17191F",
+    backgroundColor: tokens.colors.secondary[900],
     borderRadius: 31,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.1)",
+    borderColor: tokens.colors.border,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 18,
@@ -167,17 +168,17 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    color: "#A5A8AF",
+    color: tokens.colors.text.tertiary,
     fontSize: 34,
     lineHeight: 40,
     fontWeight: "500",
   },
   findCard: {
-    backgroundColor: "#1A1C22",
+    backgroundColor: tokens.colors.secondary[900],
     borderRadius: 34,
     padding: 14,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(255,255,255,0.1)",
+    borderColor: tokens.colors.border,
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: "#0A9BF8",
+    backgroundColor: tokens.colors.primary[500],
     alignItems: "center",
     justifyContent: "center",
   },
@@ -195,12 +196,12 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   findTitle: {
-    color: "#FBFBFC",
+    color: tokens.colors.text.primary,
     fontSize: 19,
     fontWeight: "700",
   },
   findSubtitle: {
-    color: "#8C9099",
+    color: tokens.colors.text.tertiary,
     fontSize: 17,
     marginTop: 2,
   },
@@ -208,13 +209,13 @@ const styles = StyleSheet.create({
     height: 48,
     minWidth: 92,
     borderRadius: 24,
-    backgroundColor: "#F0F0F2",
+    backgroundColor: tokens.colors.secondary[100],
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 22,
   },
   findButtonText: {
-    color: "#0E1014",
+    color: tokens.colors.secondary[900],
     fontSize: 18,
     fontWeight: "700",
   },
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.18)",
   },
   avatarText: {
-    color: "#E7E9EE",
+    color: tokens.colors.text.inverse,
     fontSize: 23,
     fontWeight: "700",
   },
@@ -246,12 +247,12 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   followName: {
-    color: "#F6F6F7",
+    color: tokens.colors.text.primary,
     fontSize: 19,
     fontWeight: "600",
   },
   followHandle: {
-    color: "#8A8D95",
+    color: tokens.colors.text.tertiary,
     fontSize: 17,
     marginTop: 1,
   },
@@ -259,13 +260,13 @@ const styles = StyleSheet.create({
     height: 46,
     minWidth: 102,
     borderRadius: 23,
-    backgroundColor: "#F1F1F2",
+    backgroundColor: tokens.colors.secondary[100],
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 20,
   },
   followButtonText: {
-    color: "#101216",
+    color: tokens.colors.secondary[900],
     fontSize: 18,
     fontWeight: "700",
   },
@@ -278,12 +279,12 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   viewMoreText: {
-    color: "#E8E8EA",
+    color: tokens.colors.text.tertiary,
     fontSize: 18,
     fontWeight: "600",
   },
   sectionTitle: {
-    color: "#8B8E97",
+    color: tokens.colors.text.tertiary,
     fontSize: 18,
     marginBottom: 10,
   },
@@ -319,7 +320,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   playlistTitle: {
-    color: "#EBECEE",
+    color: tokens.colors.text.primary,
     fontSize: 20,
     fontWeight: "600",
     marginTop: 10,

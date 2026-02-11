@@ -32,3 +32,8 @@ export type {
   SlotContainerConfig,
 } from './container';
 export * from './overlay';
+export * from './PackageRuntime';
+export { WorkspaceManifest, TAG_GROUPS } from './PackageManifest';
+export * from './GamePackage';
+export * from './PackageBridge';
+export * from './FeatureFlags';

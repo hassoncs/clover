@@ -3,24 +3,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import type { AppRouter } from "@slopcade/api/trpc";
-import { supabase } from "../supabase/client";
 import { env } from "../config/env";
+import { getAuthToken } from '@/lib/auth/token';
 
 export const trpcReact = createTRPCReact<AppRouter>();
 
 function getApiUrl(): string {
   return env.apiUrl;
-}
-
-async function getAuthToken(): Promise<string | null> {
-  if (supabase) {
-    try {
-      const { data } = await supabase.auth.getSession();
-      if (data.session?.access_token) return data.session.access_token;
-    } catch { }
-  }
-  if (__DEV__) return 'dev-token';
-  return null;
 }
 
 export function TRPCProvider({ children }: { children: ReactNode }) {

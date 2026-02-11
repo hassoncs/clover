@@ -6,12 +6,12 @@ import {
   Pressable,
   TextInput,
   ScrollView,
-  StyleSheet,
   ActivityIndicator,
 } from 'react-native';
 import { GenerationProgressTracker } from './GenerationProgressTracker';
 import type { EntityTemplate } from '@slopcade/shared';
 import { STYLE_PRESET_OPTIONS } from '@slopcade/shared/types/style-presets';
+import { tokens } from '@slopcade/theme';
 
 type GenerationPhase = 'configure' | 'generating' | 'complete';
 
@@ -139,12 +139,12 @@ export function GenerationModal({
 
   const renderConfigurePhase = () => (
     <>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>THEME PROMPT</Text>
+      <View className="mb-6">
+        <Text className="text-theme-text-muted text-xs font-semibold tracking-widest mb-3">THEME PROMPT</Text>
         <TextInput
-          style={styles.themeInput}
+          className="bg-theme-surface-elevated rounded-lg p-3 text-theme-text text-sm min-h-[80px] text-top"
           placeholder="Describe the overall theme (e.g., 'medieval fantasy castle')"
-          placeholderTextColor="#6B7280"
+          placeholderTextColor={tokens.semantic.colors.text.tertiary}
           value={themePrompt}
           onChangeText={setThemePrompt}
           multiline
@@ -152,36 +152,27 @@ export function GenerationModal({
         />
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>ART STYLE</Text>
-        <View style={styles.styleGrid}>
+      <View className="mb-6">
+        <Text className="text-theme-text-muted text-xs font-semibold tracking-widest mb-3">ART STYLE</Text>
+        <View className="flex-row flex-wrap gap-2">
           {STYLE_PRESET_OPTIONS.map(style => (
             <Pressable
               key={style.id}
-              style={[
-                styles.styleOption,
-                selectedStyle === style.id && styles.styleOptionSelected,
-              ]}
+              className={`px-4 py-2.5 rounded-lg ${selectedStyle === style.id ? 'bg-theme-primary' : 'bg-theme-surface-elevated'}`}
               onPress={() => setSelectedStyle(style.id)}
               accessibilityRole="button"
               accessibilityLabel={`Style: ${style.label}`}
               accessibilityState={{ selected: selectedStyle === style.id }}
             >
               <Text
-                style={[
-                  styles.styleOptionText,
-                  selectedStyle === style.id && styles.styleOptionTextSelected,
-                ]}
+                className={`text-sm font-medium ${selectedStyle === style.id ? 'text-theme-text-inverse' : 'text-theme-text-muted'}`}
               >
                 {style.emoji} {style.label}
               </Text>
             </Pressable>
           ))}
           <Pressable
-            style={[
-              styles.styleOption,
-              !STYLE_PRESET_OPTIONS.some(s => s.id === selectedStyle) && styles.styleOptionSelected,
-            ]}
+            className={`px-4 py-2.5 rounded-lg ${!STYLE_PRESET_OPTIONS.some(s => s.id === selectedStyle) ? 'bg-theme-primary' : 'bg-theme-surface-elevated'}`}
             onPress={() => {
               if (STYLE_PRESET_OPTIONS.some(s => s.id === selectedStyle)) {
                 setSelectedStyle('');
@@ -192,10 +183,7 @@ export function GenerationModal({
             accessibilityState={{ selected: !STYLE_PRESET_OPTIONS.some(s => s.id === selectedStyle) }}
           >
             <Text
-              style={[
-                styles.styleOptionText,
-                !STYLE_PRESET_OPTIONS.some(s => s.id === selectedStyle) && styles.styleOptionTextSelected,
-              ]}
+              className={`text-sm font-medium ${!STYLE_PRESET_OPTIONS.some(s => s.id === selectedStyle) ? 'text-theme-text-inverse' : 'text-theme-text-muted'}`}
             >
               ✨ Custom
             </Text>
@@ -203,61 +191,58 @@ export function GenerationModal({
         </View>
         {!STYLE_PRESET_OPTIONS.some(s => s.id === selectedStyle) && (
           <TextInput
-            style={[styles.themeInput, { marginTop: 12, minHeight: 40 }]}
+            className="bg-theme-surface-elevated rounded-lg p-3 text-theme-text text-sm mt-3 min-h-[40px]"
             placeholder="Describe the art style (e.g., 'cyberpunk neon', 'oil painting')"
-            placeholderTextColor="#6B7280"
+            placeholderTextColor={tokens.semantic.colors.text.tertiary}
             value={selectedStyle}
             onChangeText={setSelectedStyle}
           />
         )}
       </View>
 
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>
+      <View className="mb-6">
+        <View className="flex-row justify-between items-center mb-3">
+          <Text className="text-theme-text-muted text-xs font-semibold tracking-widest mb-3">
             TEMPLATES ({enabledCount}/{templateConfigs.length})
           </Text>
-          <View style={styles.toggleAllButtons}>
+          <View className="flex-row gap-2">
             <Pressable
-              style={styles.toggleAllButton}
+              className="px-3 py-1 bg-theme-surface-elevated rounded"
               onPress={() => handleToggleAll(true)}
               accessibilityRole="button"
               accessibilityLabel="Select all templates"
             >
-              <Text style={styles.toggleAllButtonText}>All</Text>
+              <Text className="text-theme-text-muted text-xs">All</Text>
             </Pressable>
             <Pressable
-              style={styles.toggleAllButton}
+              className="px-3 py-1 bg-theme-surface-elevated rounded"
               onPress={() => handleToggleAll(false)}
               accessibilityRole="button"
               accessibilityLabel="Deselect all templates"
             >
-              <Text style={styles.toggleAllButtonText}>None</Text>
+              <Text className="text-theme-text-muted text-xs">None</Text>
             </Pressable>
           </View>
         </View>
 
-        <ScrollView style={styles.templateList} nestedScrollEnabled>
+        <ScrollView className="max-h-[250px]" nestedScrollEnabled>
           {templateConfigs.map(config => (
-            <View key={config.id} style={styles.templateItem}>
+            <View key={config.id} className="bg-theme-surface-elevated rounded-lg mb-2 overflow-hidden">
               <Pressable
-                style={styles.templateHeader}
+                className="flex-row items-center p-3"
                 onPress={() => handleToggleTemplate(config.id)}
                 accessibilityRole="button"
                 accessibilityLabel={`Toggle template ${config.name}`}
                 accessibilityState={{ checked: config.enabled }}
               >
                 <View
-                  style={[
-                    styles.checkbox,
-                    config.enabled && styles.checkboxChecked,
-                  ]}
+                  className={`w-5 h-5 rounded border-2 mr-3 items-center justify-center ${config.enabled ? 'bg-theme-primary border-theme-primary' : 'border-theme-text-muted'}`}
                 >
-                  {config.enabled && <Text style={styles.checkmark}>✓</Text>}
+                  {config.enabled && <Text className="text-theme-text-inverse text-xs font-bold">✓</Text>}
                 </View>
-                <Text style={styles.templateName}>{config.name}</Text>
+                <Text className="flex-1 text-theme-text text-sm">{config.name}</Text>
                 <Pressable
-                  style={styles.expandButton}
+                  className="p-1"
                   onPress={() =>
                     setExpandedTemplate(
                       expandedTemplate === config.id ? null : config.id
@@ -266,21 +251,21 @@ export function GenerationModal({
                   accessibilityRole="button"
                   accessibilityLabel={expandedTemplate === config.id ? 'Collapse' : 'Expand'}
                 >
-                  <Text style={styles.expandButtonText}>
+                  <Text className="text-theme-text-muted text-[10px]">
                     {expandedTemplate === config.id ? '▲' : '▼'}
                   </Text>
                 </Pressable>
               </Pressable>
 
               {expandedTemplate === config.id && (
-                <View style={styles.templateExpanded}>
-                  <Text style={styles.promptLabel}>Entity Prompt</Text>
+                <View className="p-3 pt-0 border-t border-theme-border">
+                  <Text className="text-theme-text-muted text-[11px] mb-1.5">Entity Prompt</Text>
                   <TextInput
-                    style={styles.promptInput}
+                    className="bg-theme-surface rounded-md p-2.5 text-theme-text text-sm"
                     value={config.entityPrompt}
                     onChangeText={text => handleUpdatePrompt(config.id, text)}
                     placeholder="Describe this entity..."
-                    placeholderTextColor="#6B7280"
+                    placeholderTextColor={tokens.semantic.colors.text.tertiary}
                   />
                 </View>
               )}
@@ -289,40 +274,39 @@ export function GenerationModal({
         </ScrollView>
       </View>
 
-      <View style={styles.section}>
+      <View className="mb-6">
         <Pressable
-          style={styles.advancedToggle}
+          className="py-2"
           onPress={() => setShowAdvanced(!showAdvanced)}
           accessibilityRole="button"
           accessibilityLabel={showAdvanced ? 'Hide advanced options' : 'Show advanced options'}
         >
-          <Text style={styles.advancedToggleText}>
+          <Text className="text-theme-text-muted text-sm">
             {showAdvanced ? '▼' : '▶'} Advanced
           </Text>
         </Pressable>
 
         {showAdvanced && (
-          <View style={styles.advancedContent}>
-            <View style={styles.sliderContainer}>
-              <View style={styles.sliderHeader}>
-                <Text style={styles.sliderLabel}>Strength</Text>
-                <Text style={styles.sliderValue}>{strength.toFixed(2)}</Text>
+          <View className="mt-4 pt-4 border-t border-theme-border">
+            <View className="mb-5">
+              <View className="flex-row justify-between items-center mb-2">
+                <Text className="text-theme-text text-sm font-medium">Strength</Text>
+                <Text className="text-theme-primary text-sm font-semibold">{strength.toFixed(2)}</Text>
               </View>
-              <View style={styles.sliderTrack}>
+              <View className="h-1.5 bg-theme-surface-elevated rounded-full overflow-hidden">
                 <View
-                  style={[
-                    styles.sliderFill,
-                    { width: `${((strength - 0.1) / 0.89) * 100}%` },
-                  ]}
+                  className="h-full bg-theme-primary rounded-full"
+                  style={{ width: `${((strength - 0.1) / 0.89) * 100}%` }}
                 />
               </View>
-              <View style={styles.sliderRangeLabels}>
-                <Text style={styles.sliderRangeText}>0.1</Text>
-                <Text style={styles.sliderRangeText}>0.99</Text>
+              <View className="flex-row justify-between mt-1">
+                <Text className="text-theme-text-muted text-[11px]">0.1</Text>
+                <Text className="text-theme-text-muted text-[11px]">0.99</Text>
               </View>
-              <View style={styles.slider}>
+              <View className="absolute left-0 right-0 -top-[7px] h-5">
                 <Pressable
-                  style={[styles.sliderThumb, { left: `${((strength - 0.1) / 0.89) * 100}%` }]}
+                  className="absolute w-5 h-5 rounded-full bg-theme-surface shadow-sm"
+                  style={{ left: `${((strength - 0.1) / 0.89) * 100}%`, transform: [{ translateX: -10 }] }}
                   onPress={(e) => {
                     const { locationX } = e.nativeEvent;
                     e.currentTarget.measure((_x, _y, width) => {
@@ -336,26 +320,25 @@ export function GenerationModal({
               </View>
             </View>
 
-            <View style={styles.sliderContainer}>
-              <View style={styles.sliderHeader}>
-                <Text style={styles.sliderLabel}>Guidance</Text>
-                <Text style={styles.sliderValue}>{guidance.toFixed(1)}</Text>
+            <View className="mb-5">
+              <View className="flex-row justify-between items-center mb-2">
+                <Text className="text-theme-text text-sm font-medium">Guidance</Text>
+                <Text className="text-theme-primary text-sm font-semibold">{guidance.toFixed(1)}</Text>
               </View>
-              <View style={styles.sliderTrack}>
+              <View className="h-1.5 bg-theme-surface-elevated rounded-full overflow-hidden">
                 <View
-                  style={[
-                    styles.sliderFill,
-                    { width: `${((guidance - 2) / 10) * 100}%` },
-                  ]}
+                  className="h-full bg-theme-primary rounded-full"
+                  style={{ width: `${((guidance - 2) / 10) * 100}%` }}
                 />
               </View>
-              <View style={styles.sliderRangeLabels}>
-                <Text style={styles.sliderRangeText}>2</Text>
-                <Text style={styles.sliderRangeText}>12</Text>
+              <View className="flex-row justify-between mt-1">
+                <Text className="text-theme-text-muted text-[11px]">2</Text>
+                <Text className="text-theme-text-muted text-[11px]">12</Text>
               </View>
-              <View style={styles.slider}>
+              <View className="absolute left-0 right-0 -top-[7px] h-5">
                 <Pressable
-                  style={[styles.sliderThumb, { left: `${((guidance - 2) / 10) * 100}%` }]}
+                  className="absolute w-5 h-5 rounded-full bg-theme-surface shadow-sm"
+                  style={{ left: `${((guidance - 2) / 10) * 100}%`, transform: [{ translateX: -10 }] }}
                   onPress={(e) => {
                     const { locationX } = e.nativeEvent;
                     e.currentTarget.measure((_x, _y, width) => {
@@ -369,14 +352,14 @@ export function GenerationModal({
               </View>
             </View>
 
-            <View style={styles.seedContainer}>
-              <Text style={styles.sliderLabel}>Seed (optional)</Text>
+            <View className="mt-4">
+              <Text className="text-theme-text text-sm font-medium">Seed (optional)</Text>
               <TextInput
-                style={styles.seedInput}
+                className="bg-theme-surface-elevated rounded-lg p-3 text-theme-text text-sm mt-2"
                 value={seed}
                 onChangeText={setSeed}
                 placeholder="Leave empty for random"
-                placeholderTextColor="#6B7280"
+                placeholderTextColor={tokens.semantic.colors.text.tertiary}
               />
             </View>
           </View>
@@ -386,7 +369,7 @@ export function GenerationModal({
   );
 
   const renderGeneratingPhase = () => (
-    <View style={styles.progressContainer}>
+    <View className="py-6">
       <GenerationProgressTracker
         total={progress.total}
         completed={progress.completed}
@@ -399,22 +382,22 @@ export function GenerationModal({
   );
 
   const renderCompletePhase = () => (
-    <View style={styles.completeContainer}>
-      <Text style={styles.completeEmoji}>
+    <View className="items-center py-12">
+      <Text className="text-5xl mb-4">
         {progress.failed === 0 ? '🎉' : '⚠️'}
       </Text>
-      <Text style={styles.completeTitle}>
+      <Text className="text-theme-text text-xl font-bold mb-2">
         {progress.failed === 0 ? 'Generation Complete!' : 'Generation Finished'}
       </Text>
-      <Text style={styles.completeStats}>
+      <Text className="text-theme-text-muted text-sm">
         {progress.completed} succeeded
         {progress.failed > 0 && `, ${progress.failed} failed`}
       </Text>
 
       {lastGeneration?.compiledPrompt && (
-        <View style={styles.lastPromptContainer}>
-          <Text style={styles.lastPromptLabel}>LAST PROMPT</Text>
-          <Text style={styles.lastPromptText}>{lastGeneration.compiledPrompt}</Text>
+        <View className="bg-theme-surface rounded-lg p-3 mt-4">
+          <Text className="text-theme-text-muted text-[11px] font-semibold tracking-widest mb-2">LAST PROMPT</Text>
+          <Text className="text-theme-text-secondary text-sm leading-5">{lastGeneration.compiledPrompt}</Text>
         </View>
       )}
     </View>
@@ -427,33 +410,33 @@ export function GenerationModal({
       transparent
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
-        <Pressable style={styles.backdrop} onPress={onClose} accessibilityRole="button" accessibilityLabel="Close" />
-        <View style={styles.sheet}>
-          <View style={styles.handle} />
+      <View className="flex-1 justify-end">
+        <Pressable className="absolute inset-0 bg-black/60" onPress={onClose} accessibilityRole="button" accessibilityLabel="Close" />
+        <View className="bg-theme-surface rounded-t-2xl max-h-[90%]">
+          <View className="w-10 h-1 bg-theme-text-muted rounded-full self-center mt-3 mb-2" />
 
-          <View style={styles.header}>
+          <View className="flex-row justify-between items-start px-6 py-3 border-b border-theme-border">
             <View>
-              <Text style={styles.title}>Generate Assets</Text>
-              {packName && <Text style={styles.subtitle}>{packName}</Text>}
+              <Text className="text-theme-text text-lg font-bold">Generate Assets</Text>
+              {packName && <Text className="text-theme-text-muted text-xs mt-0.5">{packName}</Text>}
             </View>
-            <Pressable style={styles.closeButton} onPress={onClose} accessibilityRole="button" accessibilityLabel="Close">
-              <Text style={styles.closeButtonText}>✕</Text>
+            <Pressable className="w-8 h-8 rounded-full bg-theme-surface-elevated items-center justify-center" onPress={onClose} accessibilityRole="button" accessibilityLabel="Close">
+              <Text className="text-theme-text-muted text-base">✕</Text>
             </Pressable>
           </View>
 
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <ScrollView className="px-6 pt-4" showsVerticalScrollIndicator={false}>
             {phase === 'configure' && renderConfigurePhase()}
             {phase === 'generating' && renderGeneratingPhase()}
             {phase === 'complete' && renderCompletePhase()}
           </ScrollView>
 
-          <View style={styles.footer}>
+          <View className="p-6 pb-9 border-t border-theme-border">
             {phase === 'configure' && (
-              <View style={styles.footerButtons}>
+              <View className="flex-row gap-3">
                 {lastGeneration && (
                   <Pressable
-                    style={styles.remixButton}
+                    className="bg-theme-secondary py-3.5 rounded-lg items-center flex-1"
                     onPress={() => {
                       if (lastGeneration.strength !== undefined) {
                         setStrength(lastGeneration.strength);
@@ -471,38 +454,34 @@ export function GenerationModal({
                     accessibilityRole="button"
                     accessibilityLabel="Remix with previous settings"
                   >
-                    <Text style={styles.remixButtonText}>Remix</Text>
+                    <Text className="text-theme-text-inverse text-base font-semibold">Remix</Text>
                   </Pressable>
                 )}
                 <Pressable
-                  style={[
-                    styles.generateButton,
-                    enabledCount === 0 && styles.generateButtonDisabled,
-                    lastGeneration && { flex: 1 },
-                  ]}
+                  className={`bg-theme-primary py-3.5 rounded-lg items-center ${enabledCount === 0 ? 'opacity-50' : ''} ${lastGeneration ? 'flex-1' : ''}`}
                   onPress={handleGenerate}
                   disabled={enabledCount === 0}
                   accessibilityRole="button"
                   accessibilityLabel={`Generate ${enabledCount} Asset${enabledCount !== 1 ? 's' : ''}`}
                   accessibilityState={{ disabled: enabledCount === 0 }}
                 >
-                  <Text style={styles.generateButtonText}>
+                  <Text className="text-theme-text-inverse text-base font-semibold">
                     Generate {enabledCount} Asset{enabledCount !== 1 ? 's' : ''}
                   </Text>
                 </Pressable>
               </View>
             )}
             {phase === 'generating' && (
-              <View style={styles.generatingFooter}>
-                <ActivityIndicator size="small" color="#4F46E5" />
-                <Text style={styles.generatingText}>
+              <View className="flex-row items-center justify-center gap-3">
+                <ActivityIndicator size="small" color={tokens.semantic.colors.primary} />
+                <Text className="text-theme-text-muted text-sm">
                   Generating... {progress.completed}/{progress.total}
                 </Text>
               </View>
             )}
             {phase === 'complete' && (
-              <Pressable style={styles.doneButton} onPress={onClose} accessibilityRole="button" accessibilityLabel="Done">
-                <Text style={styles.doneButtonText}>Done</Text>
+              <Pressable className="bg-theme-success py-3.5 rounded-lg items-center" onPress={onClose} accessibilityRole="button" accessibilityLabel="Done">
+                <Text className="text-theme-text-inverse text-base font-semibold">Done</Text>
               </Pressable>
             )}
           </View>
@@ -512,367 +491,3 @@ export function GenerationModal({
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-  },
-  sheet: {
-    backgroundColor: '#1F2937',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: '90%',
-  },
-  handle: {
-    width: 40,
-    height: 4,
-    backgroundColor: '#6B7280',
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginTop: 12,
-    marginBottom: 8,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#374151',
-  },
-  title: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  subtitle: {
-    color: '#9CA3AF',
-    fontSize: 13,
-    marginTop: 2,
-  },
-  closeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#374151',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  closeButtonText: {
-    color: '#9CA3AF',
-    fontSize: 16,
-  },
-  content: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
-  },
-  section: {
-    marginBottom: 24,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    color: '#9CA3AF',
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 1,
-    marginBottom: 12,
-  },
-  themeInput: {
-    backgroundColor: '#374151',
-    borderRadius: 8,
-    padding: 12,
-    color: '#FFFFFF',
-    fontSize: 14,
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-  styleGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  styleOption: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: '#374151',
-  },
-  styleOptionSelected: {
-    backgroundColor: '#4F46E5',
-  },
-  styleOptionText: {
-    color: '#9CA3AF',
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  styleOptionTextSelected: {
-    color: '#FFFFFF',
-  },
-  toggleAllButtons: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  toggleAllButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    backgroundColor: '#374151',
-    borderRadius: 4,
-  },
-  toggleAllButtonText: {
-    color: '#9CA3AF',
-    fontSize: 12,
-  },
-  templateList: {
-    maxHeight: 250,
-  },
-  templateItem: {
-    backgroundColor: '#374151',
-    borderRadius: 8,
-    marginBottom: 8,
-    overflow: 'hidden',
-  },
-  templateHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: '#6B7280',
-    marginRight: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxChecked: {
-    backgroundColor: '#4F46E5',
-    borderColor: '#4F46E5',
-  },
-  checkmark: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  templateName: {
-    flex: 1,
-    color: '#FFFFFF',
-    fontSize: 14,
-  },
-  expandButton: {
-    padding: 4,
-  },
-  expandButtonText: {
-    color: '#6B7280',
-    fontSize: 10,
-  },
-  templateExpanded: {
-    padding: 12,
-    paddingTop: 0,
-    borderTopWidth: 1,
-    borderTopColor: '#4B5563',
-  },
-  promptLabel: {
-    color: '#9CA3AF',
-    fontSize: 11,
-    marginBottom: 6,
-  },
-  promptInput: {
-    backgroundColor: '#1F2937',
-    borderRadius: 6,
-    padding: 10,
-    color: '#FFFFFF',
-    fontSize: 13,
-  },
-  progressContainer: {
-    paddingVertical: 24,
-  },
-  completeContainer: {
-    alignItems: 'center',
-    paddingVertical: 48,
-  },
-  completeEmoji: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  completeTitle: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  completeStats: {
-    color: '#9CA3AF',
-    fontSize: 14,
-  },
-  footer: {
-    padding: 24,
-    paddingBottom: 34,
-    borderTopWidth: 1,
-    borderTopColor: '#374151',
-  },
-  generateButton: {
-    backgroundColor: '#4F46E5',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  generateButtonDisabled: {
-    backgroundColor: '#6366F1',
-    opacity: 0.5,
-  },
-  generateButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  generatingFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  generatingText: {
-    color: '#9CA3AF',
-    fontSize: 14,
-  },
-  doneButton: {
-    backgroundColor: '#10B981',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  doneButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  advancedToggle: {
-    paddingVertical: 8,
-  },
-  advancedToggleText: {
-    color: '#9CA3AF',
-    fontSize: 13,
-  },
-  advancedContent: {
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#374151',
-  },
-  sliderContainer: {
-    marginBottom: 20,
-  },
-  sliderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  sliderLabel: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  sliderValue: {
-    color: '#4F46E5',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  sliderTrack: {
-    height: 6,
-    backgroundColor: '#374151',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  sliderFill: {
-    height: '100%',
-    backgroundColor: '#4F46E5',
-    borderRadius: 3,
-  },
-  sliderRangeLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 4,
-  },
-  sliderRangeText: {
-    color: '#6B7280',
-    fontSize: 11,
-  },
-  slider: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: -7,
-    height: 20,
-  },
-  sliderThumb: {
-    position: 'absolute',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-    transform: [{ translateX: -10 }],
-  },
-  seedContainer: {
-    marginTop: 16,
-  },
-  seedInput: {
-    backgroundColor: '#374151',
-    borderRadius: 8,
-    padding: 12,
-    color: '#FFFFFF',
-    fontSize: 14,
-    marginTop: 8,
-  },
-  lastPromptContainer: {
-    backgroundColor: '#1F2937',
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 16,
-  },
-  lastPromptLabel: {
-    color: '#9CA3AF',
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 1,
-    marginBottom: 8,
-  },
-  lastPromptText: {
-    color: '#E5E7EB',
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  footerButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  remixButton: {
-    backgroundColor: '#7C3AED',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    flex: 1,
-  },
-  remixButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});

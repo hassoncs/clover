@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TextInput } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { CodeEditor } from './code-editor';
+import { detectLanguage } from './code-editor/types';
 
 interface FileViewerProps {
   filename: string | null;
@@ -9,16 +11,12 @@ interface FileViewerProps {
   isSaving?: boolean;
 }
 
-const EDITABLE_EXTENSIONS = ['.gdshader', '.json', '.glsl', '.frag', '.vert'];
-
 export function FileViewer({ filename, content, isLoading, onSave, isSaving }: FileViewerProps) {
   const [localContent, setLocalContent] = useState(content ?? '');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [hasRecentEdit, setHasRecentEdit] = useState(false);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const editFlagTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const isEditable = filename ? EDITABLE_EXTENSIONS.some(ext => filename.endsWith(ext)) : false;
 
   useEffect(() => {
     if (content !== null && content !== localContent && !hasRecentEdit) {
@@ -116,28 +114,18 @@ export function FileViewer({ filename, content, isLoading, onSave, isSaving }: F
 
   return (
     <View style={styles.container} testID="file-viewer">
-      {isEditable ? (
-        <>
-          <TextInput
-            multiline
-            scrollEnabled
-            style={styles.editableText}
-            value={localContent}
-            onChangeText={handleTextChange}
-            testID="file-viewer-editor"
-          />
-          {saveStatus !== 'idle' && (
-            <View style={styles.statusBar}>
-              <Text style={styles.statusText}>
-                {saveStatus === 'saving' ? 'Saving...' : 'Saved'}
-              </Text>
-            </View>
-          )}
-        </>
-      ) : (
-        <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-          <Text testID="file-viewer-content" style={styles.documentText}>{content}</Text>
-        </ScrollView>
+      <CodeEditor
+        value={localContent}
+        onChange={handleTextChange}
+        language={detectLanguage(filename)}
+        testID="file-viewer-editor"
+      />
+      {saveStatus !== 'idle' && (
+        <View style={styles.statusBar}>
+          <Text style={styles.statusText}>
+            {saveStatus === 'saving' ? 'Saving...' : 'Saved'}
+          </Text>
+        </View>
       )}
     </View>
   );
@@ -174,27 +162,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-  content: {
-    flex: 1,
-  },
-  contentContainer: {
-    padding: 16,
-  },
-  documentText: {
-    fontSize: 14,
-    lineHeight: 22,
-    color: '#E5E7EB',
-    fontFamily: 'monospace',
-  },
-  editableText: {
-    flex: 1,
-    fontSize: 14,
-    lineHeight: 22,
-    color: '#E5E7EB',
-    fontFamily: 'monospace',
-    padding: 16,
-    textAlignVertical: 'top',
-  },
+
   statusBar: {
     height: 24,
     backgroundColor: '#111827',

@@ -19,6 +19,7 @@ import { CreditBalance } from "@/components/economy/CreditBalance";
 import { CurrencySheet } from "@/components/economy/CurrencySheet";
 import { trpcReact } from "@/lib/trpc/react";
 import { trpc } from "@/lib/trpc/client";
+import { tokens } from "@slopcade/theme";
 
 const heroImage = require("@/assets/slopcade-title-hero.jpg");
 
@@ -32,7 +33,7 @@ function initialsFromEmail(email: string | undefined): string {
 }
 
 function LoginScreen() {
-  const { signInWithGoogle, sendMagicLink } = useAuth();
+  const { signInWithGoogle, sendMagicLink, signInAsDev } = useAuth();
 
   const [loginEmail, setLoginEmail] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -89,16 +90,16 @@ function LoginScreen() {
           style={{ width: 280, height: 140, marginBottom: 24 }}
           resizeMode="contain"
         />
-        <Text className="text-gray-400 text-center mb-8">
+        <Text className="text-theme-text-secondary text-center mb-8">
           Sign in to create and save your games
         </Text>
 
         {magicLinkSent ? (
-          <View className="w-full bg-green-900/30 p-6 rounded-xl border border-green-700 mb-6">
-            <Text className="text-green-300 text-center text-lg font-semibold mb-2">
+          <View className="w-full bg-theme-success/20 p-6 rounded-xl border border-theme-success mb-6">
+            <Text className="text-theme-success text-center text-lg font-semibold mb-2">
               Check your email!
             </Text>
-            <Text className="text-green-400 text-center">
+            <Text className="text-theme-success text-center">
               We sent a magic link to {loginEmail}
             </Text>
             <Pressable
@@ -108,7 +109,7 @@ function LoginScreen() {
                 setLoginEmail("");
               }}
             >
-              <Text className="text-green-400 text-center underline">
+              <Text className="text-theme-success text-center underline">
                 Use a different email
               </Text>
             </Pressable>
@@ -117,9 +118,9 @@ function LoginScreen() {
           <>
             <View className="w-full mb-6">
               <TextInput
-                className="bg-gray-800 p-4 rounded-xl border border-gray-700 text-white text-base mb-3"
+                className="bg-theme-surface-elevated p-4 rounded-xl border border-theme-border text-theme-text text-base mb-3"
                 placeholder="Enter your email"
-                placeholderTextColor="#666"
+                placeholderTextColor={tokens.semantic.colors.text.secondary}
                 value={loginEmail}
                 onChangeText={(text) => {
                   setLoginEmail(text);
@@ -135,18 +136,18 @@ function LoginScreen() {
                 <View className="mb-3">
                   {isCheckingInvite ? (
                     <View className="flex-row items-center">
-                      <ActivityIndicator size="small" color="#666" />
-                      <Text className="text-gray-500 ml-2 text-sm">Checking invite status...</Text>
+                      <ActivityIndicator size="small" color={tokens.semantic.colors.text.secondary} />
+                      <Text className="text-theme-text-secondary ml-2 text-sm">Checking invite status...</Text>
                     </View>
                   ) : inviteStatus?.invited === false ? (
                     <View className="flex-row items-center">
-                      <Text className="text-red-400 mr-2">✕</Text>
-                      <Text className="text-red-400 text-sm">Not invited</Text>
+                      <Text className="text-theme-error mr-2">✕</Text>
+                      <Text className="text-theme-error text-sm">Not invited</Text>
                     </View>
                   ) : inviteStatus?.invited === true ? (
                     <View className="flex-row items-center">
-                      <Text className="text-green-400 mr-2">✓</Text>
-                      <Text className="text-green-400 text-sm">Invited</Text>
+                      <Text className="text-theme-success mr-2">✓</Text>
+                      <Text className="text-theme-success text-sm">Invited</Text>
                     </View>
                   ) : null}
                 </View>
@@ -155,46 +156,65 @@ function LoginScreen() {
               <Pressable
                 className={`py-4 rounded-xl items-center ${
                   isLoggingIn || (loginEmail.length > 0 && inviteStatus?.invited === false)
-                    ? "bg-gray-600"
-                    : "bg-indigo-600 active:bg-indigo-700"
+                    ? "bg-theme-surface-elevated"
+                    : "bg-theme-primary active:opacity-90"
                 }`}
                 onPress={handleMagicLink}
                 disabled={isLoggingIn || (loginEmail.length > 0 && inviteStatus?.invited === false)}
               >
-                <Text className="text-white font-semibold text-base">
+                <Text className="text-theme-text-inverse font-semibold text-base">
                   {isLoggingIn ? "Sending..." : "Send Magic Link"}
                 </Text>
               </Pressable>
             </View>
 
             <View className="flex-row items-center w-full mb-6">
-              <View className="flex-1 h-px bg-gray-700" />
-              <Text className="text-gray-500 px-4">or</Text>
-              <View className="flex-1 h-px bg-gray-700" />
+              <View className="flex-1 h-px bg-theme-border" />
+              <Text className="text-theme-text-secondary px-4">or</Text>
+              <View className="flex-1 h-px bg-theme-border" />
             </View>
 
             <Pressable
               className={`w-full py-4 rounded-xl items-center flex-row justify-center ${
-                isLoggingIn ? "bg-gray-600" : "bg-white active:bg-gray-100"
+                isLoggingIn ? "bg-theme-surface-elevated" : "bg-white active:bg-gray-100"
               }`}
               onPress={handleGoogleSignIn}
               disabled={isLoggingIn}
             >
-              <Text className="text-gray-800 font-semibold text-base">
+              <Text className="text-black font-semibold text-base">
                 Continue with Google
               </Text>
             </Pressable>
+
+            {__DEV__ && (
+              <>
+                <View className="flex-row items-center w-full my-6">
+                  <View className="flex-1 h-px bg-theme-border" />
+                  <Text className="text-theme-text-secondary px-4">dev</Text>
+                  <View className="flex-1 h-px bg-theme-border" />
+                </View>
+
+                <Pressable
+                  className="w-full py-4 rounded-xl items-center bg-theme-warning active:opacity-90"
+                  onPress={signInAsDev}
+                >
+                  <Text className="text-white font-semibold text-base">
+                    Login as Dev User
+                  </Text>
+                </Pressable>
+              </>
+            )}
           </>
         )}
 
         {loginError && (
-          <View className="w-full mt-4 p-4 bg-red-900/50 rounded-xl border border-red-700">
-            <Text className="text-red-300 text-center">{loginError}</Text>
+          <View className="w-full mt-4 p-4 bg-theme-error/20 rounded-xl border border-theme-error">
+            <Text className="text-theme-error text-center">{loginError}</Text>
           </View>
         )}
 
-        <View className="mt-8 p-4 bg-gray-800/50 rounded-xl">
-          <Text className="text-gray-400 text-center text-sm">
+        <View className="mt-8 p-4 bg-theme-surface-elevated/50 rounded-xl">
+          <Text className="text-theme-text-secondary text-center text-sm">
             You can browse and play public games without signing in.
             Sign in to create, save, and manage your own games.
           </Text>
@@ -295,23 +315,23 @@ export default function ProfileScreen() {
 
   if (isAuthLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-black items-center justify-center" edges={["bottom"]}>
-        <ActivityIndicator size="large" color="#4CAF50" />
-        <Text className="text-gray-400 mt-4">Loading...</Text>
+      <SafeAreaView className="flex-1 bg-theme-background items-center justify-center" edges={["bottom"]}>
+        <ActivityIndicator size="large" color={tokens.semantic.colors.primary} />
+        <Text className="text-theme-text-secondary mt-4">Loading...</Text>
       </SafeAreaView>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <SafeAreaView className="flex-1 bg-black" edges={["bottom"]}>
+      <SafeAreaView className="flex-1 bg-theme-background" edges={["bottom"]}>
         <LoginScreen />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black" edges={["bottom"]}>
+    <SafeAreaView className="flex-1 bg-theme-background" edges={["bottom"]}>
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 130 }}
@@ -319,32 +339,32 @@ export default function ProfileScreen() {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={handleRefresh}
-            tintColor="#4CAF50"
+            tintColor={tokens.semantic.colors.primary}
           />
         }
       >
         <View className="px-5 pt-5">
           <View className="flex-row items-center justify-between">
             <Pressable
-              className="h-10 w-10 items-center justify-center rounded-full bg-zinc-900/70"
+              className="h-10 w-10 items-center justify-center rounded-full bg-theme-surface-elevated"
               onPress={() => router.push("/notifications")}
             >
-              <Ionicons name="notifications-outline" size={20} color="#E4E4E7" />
+              <Ionicons name="notifications-outline" size={20} color={tokens.semantic.colors.text.primary} />
             </Pressable>
             <Pressable
-              className="h-10 w-10 items-center justify-center rounded-full bg-zinc-900/70"
+              className="h-10 w-10 items-center justify-center rounded-full bg-theme-surface-elevated"
               onPress={() => router.push("/discover")}
             >
-              <Ionicons name="person-add-outline" size={20} color="#E4E4E7" />
+              <Ionicons name="person-add-outline" size={20} color={tokens.semantic.colors.text.primary} />
             </Pressable>
           </View>
 
           <View className="items-center mt-6">
-            <View className="h-44 w-44 rounded-full items-center justify-center bg-zinc-800 border border-zinc-700">
-              <Text className="text-zinc-100 text-6xl font-bold">{initialsFromEmail(user?.email)}</Text>
+            <View className="h-44 w-44 rounded-full items-center justify-center bg-theme-surface-elevated border border-theme-border">
+              <Text className="text-theme-text text-6xl font-bold">{initialsFromEmail(user?.email)}</Text>
             </View>
-            <Text className="text-zinc-100 text-5xl font-bold mt-4">{displayName}</Text>
-            <Text className="text-zinc-400 text-3xl mt-1">{username}</Text>
+            <Text className="text-theme-text text-5xl font-bold mt-4">{displayName}</Text>
+            <Text className="text-theme-text-secondary text-3xl mt-1">{username}</Text>
           </View>
 
           <View className="flex-row items-center justify-around mt-8">
@@ -357,10 +377,10 @@ export default function ProfileScreen() {
                 })
               }
             >
-              <Text className="text-zinc-100 text-4xl font-semibold">
+              <Text className="text-theme-text text-4xl font-semibold">
                 {profileData?.followerCount ?? 0}
               </Text>
-              <Text className="text-zinc-500 text-2xl mt-1">followers</Text>
+              <Text className="text-theme-text-secondary text-2xl mt-1">followers</Text>
             </Pressable>
             <Pressable
               className="items-center"
@@ -371,111 +391,95 @@ export default function ProfileScreen() {
                 })
               }
             >
-              <Text className="text-zinc-100 text-4xl font-semibold">
+              <Text className="text-theme-text text-4xl font-semibold">
                 {profileData?.followingCount ?? 0}
               </Text>
-              <Text className="text-zinc-500 text-2xl mt-1">following</Text>
+              <Text className="text-theme-text-secondary text-2xl mt-1">following</Text>
             </Pressable>
           </View>
 
           <View className="flex-row mt-8 gap-3">
             <Pressable
-              className="flex-1 h-14 rounded-full bg-zinc-700 items-center justify-center"
+              className="flex-1 h-14 rounded-full bg-theme-surface-elevated items-center justify-center"
               onPress={() => router.push("/settings/edit-profile")}
             >
-              <Text className="text-zinc-100 text-2xl font-semibold">Edit</Text>
+              <Text className="text-theme-text text-2xl font-semibold">Edit</Text>
             </Pressable>
-            <Pressable className="flex-1 h-14 rounded-full bg-zinc-100 items-center justify-center">
+            <Pressable className="flex-1 h-14 rounded-full bg-white items-center justify-center">
               <Text className="text-black text-2xl font-semibold">Share</Text>
             </Pressable>
           </View>
 
-          <View className="flex-row items-center justify-around mt-8 pb-4 border-b border-zinc-800">
+          <View className="flex-row items-center justify-around mt-8 pb-4 border-b border-theme-border">
             <Pressable className="items-center">
-              <Ionicons name="grid" size={24} color="#F4F4F5" />
+              <Ionicons name="grid" size={24} color={tokens.semantic.colors.text.primary} />
             </Pressable>
             <Pressable className="items-center">
-              <Ionicons name="videocam" size={24} color="#71717A" />
+              <Ionicons name="videocam" size={24} color={tokens.semantic.colors.text.secondary} />
             </Pressable>
             <Pressable className="items-center">
-              <Ionicons name="heart-dislike-outline" size={24} color="#71717A" />
+              <Ionicons name="heart-dislike-outline" size={24} color={tokens.semantic.colors.text.secondary} />
             </Pressable>
             <Pressable className="items-center">
-              <Ionicons name="heart-dislike" size={24} color="#71717A" />
+              <Ionicons name="heart-dislike" size={24} color={tokens.semantic.colors.text.secondary} />
             </Pressable>
           </View>
 
-          <View className="mt-6 rounded-3xl bg-zinc-900 p-4 border border-zinc-800">
-            <Text className="text-zinc-100 text-2xl font-semibold mb-3">Account Actions</Text>
+          <View className="mt-6 rounded-3xl bg-theme-surface p-4 border border-theme-border">
+            <Text className="text-theme-text text-2xl font-semibold mb-3">Account Actions</Text>
             <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-zinc-400 text-base">Sparks</Text>
+              <Text className="text-theme-text-secondary text-base">Sparks</Text>
               <CreditBalance onPress={() => setShowCurrencySheet(true)} />
             </View>
             <Pressable
-              className="mb-3 bg-zinc-800 h-12 rounded-full items-center justify-center border border-zinc-700"
+              className="mb-3 bg-theme-surface-elevated h-12 rounded-full items-center justify-center border border-theme-border"
               onPress={() => router.push("/themes")}
             >
-              <Text className="text-zinc-100 text-base font-semibold">Open Themes Library</Text>
+              <Text className="text-theme-text text-base font-semibold">Open Themes Library</Text>
             </Pressable>
             <Pressable
-              className="mb-3 bg-zinc-800 h-12 rounded-full items-center justify-center border border-zinc-700"
+              className="mb-3 bg-theme-surface-elevated h-12 rounded-full items-center justify-center border border-theme-border"
               onPress={() => router.push("/settings/blocked-users")}
             >
-              <Text className="text-zinc-100 text-base font-semibold">Blocked Users</Text>
+              <Text className="text-theme-text text-base font-semibold">Blocked Users</Text>
             </Pressable>
-            {__DEV__ && (
-              <Pressable
-                className="mb-3 bg-amber-600 h-12 rounded-full items-center justify-center"
-                onPress={async () => {
-                  const { getStorageItem, setStorageItem } = await import('@/lib/utils/storage');
-                  const current = await getStorageItem('use_dev_user', false);
-                  await setStorageItem('use_dev_user', !current);
-                  Alert.alert(
-                    'Dev User',
-                    !current ? 'Now using dev user. Reload the app.' : 'Using your real account. Reload the app.',
-                  );
-                }}
-              >
-                <Text className="text-white text-base font-semibold">🔧 Toggle Dev User</Text>
-              </Pressable>
-            )}
             <View className="flex-row gap-3">
               <Pressable
-                className="flex-1 bg-emerald-600 h-12 rounded-full items-center justify-center"
+                className="flex-1 bg-theme-success h-12 rounded-full items-center justify-center"
                 onPress={() => setShowInviteModal(true)}
               >
                 <Text className="text-white text-base font-semibold">Invite</Text>
               </Pressable>
-              <Pressable className="flex-1 bg-zinc-700 h-12 rounded-full items-center justify-center" onPress={signOut}>
-                <Text className="text-zinc-100 text-base font-semibold">Sign Out</Text>
+              <Pressable className="flex-1 bg-theme-surface-elevated h-12 rounded-full items-center justify-center" onPress={signOut}>
+                <Text className="text-theme-text text-base font-semibold">Sign Out</Text>
               </Pressable>
             </View>
           </View>
 
           <View className="mt-6">
-            <Text className="text-zinc-100 text-2xl font-semibold mb-4">My Games</Text>
+            <Text className="text-theme-text text-2xl font-semibold mb-4">My Games</Text>
             {isLoadingGames ? (
               <View className="items-center py-12">
-                <ActivityIndicator size="large" color="#4CAF50" />
-                <Text className="text-zinc-500 mt-4">Loading games...</Text>
+                <ActivityIndicator size="large" color={tokens.semantic.colors.primary} />
+                <Text className="text-theme-text-secondary mt-4">Loading games...</Text>
               </View>
             ) : myGames.length === 0 ? (
-              <View className="rounded-3xl bg-zinc-950 border border-zinc-900 p-6 min-h-[200px] items-center justify-center">
+              <View className="rounded-3xl bg-theme-surface border border-theme-border p-6 min-h-[200px] items-center justify-center">
                 <Text className="text-5xl mb-4">🎮</Text>
-                <Text className="text-zinc-100 text-xl font-semibold">No games yet</Text>
-                <Text className="text-zinc-500 text-base mt-2 text-center">
+                <Text className="text-theme-text text-xl font-semibold">No games yet</Text>
+                <Text className="text-theme-text-secondary text-base mt-2 text-center">
                   Tap the + button to create your first game!
                 </Text>
               </View>
             ) : (
               <View>
-                <Text className="text-zinc-500 text-sm mb-3">
+                <Text className="text-theme-text-secondary text-sm mb-3">
                   {myGames.length} game{myGames.length !== 1 ? "s" : ""} · Long press to delete
                 </Text>
                 {myGames.map((game) => (
                   <Pressable
                     key={game.id}
-                    className="bg-zinc-900 p-4 rounded-2xl border border-zinc-800 mb-3 active:bg-zinc-800"
+                    className="bg-theme-surface p-4 rounded-2xl border border-theme-border mb-3 active:bg-theme-surface-elevated"
                     onPress={() => {
                       if (game.isPublic) {
                         router.push(`/game-detail/${game.id}`);
@@ -488,7 +492,7 @@ export default function ProfileScreen() {
                     <View className="flex-row items-center justify-between">
                       <View className="flex-1">
                         <View className="flex-row items-center gap-2 mb-1">
-                          <Text className="text-lg font-semibold text-zinc-100">{game.title}</Text>
+                          <Text className="text-lg font-semibold text-theme-text">{game.title}</Text>
                           <View
                             style={{
                               paddingHorizontal: 8,
@@ -501,7 +505,7 @@ export default function ProfileScreen() {
                               style={{
                                 fontSize: 11,
                                 fontWeight: '600',
-                                color: game.isPublic ? '#22C55E' : '#9CA3AF',
+                                color: game.isPublic ? tokens.semantic.colors.success : tokens.semantic.colors.text.tertiary,
                               }}
                             >
                               {game.isPublic ? 'Published' : 'Draft'}
@@ -509,15 +513,15 @@ export default function ProfileScreen() {
                           </View>
                         </View>
                         {game.description && (
-                          <Text className="text-zinc-400 mt-1" numberOfLines={2}>
+                          <Text className="text-theme-text-secondary mt-1" numberOfLines={2}>
                             {game.description}
                           </Text>
                         )}
-                        <Text className="text-xs text-zinc-600 mt-2">
+                        <Text className="text-xs text-theme-text-tertiary mt-2">
                           {game.playCount} plays · {new Date(game.createdAt).toLocaleDateString()}
                         </Text>
                       </View>
-                      <Ionicons name="chevron-forward" size={18} color="#52525B" />
+                      <Ionicons name="chevron-forward" size={18} color={tokens.semantic.colors.text.tertiary} />
                     </View>
                   </Pressable>
                 ))}
@@ -528,23 +532,23 @@ export default function ProfileScreen() {
       </ScrollView>
 
       <Modal animationType="slide" transparent visible={showInviteModal} onRequestClose={() => setShowInviteModal(false)}>
-        <SafeAreaView className="flex-1 bg-gray-900" edges={["bottom"]}>
+        <SafeAreaView className="flex-1 bg-theme-background" edges={["bottom"]}>
           <View className="flex-1 p-6">
             <View className="flex-row justify-between items-center mb-6">
-              <Text className="text-2xl font-bold text-white">Invite Friend</Text>
+              <Text className="text-2xl font-bold text-theme-text">Invite Friend</Text>
               <Pressable onPress={() => setShowInviteModal(false)}>
-                <Text className="text-gray-400 text-lg">✕</Text>
+                <Text className="text-theme-text-secondary text-lg">✕</Text>
               </Pressable>
             </View>
 
-            <Text className="text-gray-400 mb-4">
+            <Text className="text-theme-text-secondary mb-4">
               Invite someone to join Slopcade by email. They will be able to sign in once invited.
             </Text>
 
             <TextInput
-              className="w-full bg-gray-800 text-white p-4 rounded-xl border border-gray-700"
+              className="w-full bg-theme-surface-elevated text-theme-text p-4 rounded-xl border border-theme-border"
               placeholder="friend@example.com"
-              placeholderTextColor="#6b7280"
+              placeholderTextColor={tokens.semantic.colors.text.secondary}
               value={inviteEmail}
               onChangeText={setInviteEmail}
               autoCapitalize="none"
@@ -554,7 +558,7 @@ export default function ProfileScreen() {
 
             <Pressable
               className={`mt-4 py-4 rounded-xl items-center ${
-                isInviting || !inviteEmail.includes("@") ? "bg-gray-600" : "bg-green-600 active:bg-green-700"
+                isInviting || !inviteEmail.includes("@") ? "bg-theme-surface-elevated" : "bg-theme-success active:opacity-90"
               }`}
               onPress={async () => {
                 if (!inviteEmail.includes("@")) return;
@@ -584,8 +588,8 @@ export default function ProfileScreen() {
             </Pressable>
 
             {inviteSuccess && (
-              <View className="mt-4 p-4 bg-green-900/30 rounded-xl border border-green-700">
-                <Text className="text-green-400 text-center">{inviteSuccess}</Text>
+              <View className="mt-4 p-4 bg-theme-success/20 rounded-xl border border-theme-success">
+                <Text className="text-theme-success text-center">{inviteSuccess}</Text>
               </View>
             )}
           </View>

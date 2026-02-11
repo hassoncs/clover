@@ -8,6 +8,7 @@ import {
   getSession,
 } from "@/lib/supabase/auth";
 import { trpc } from "@/lib/trpc/client";
+import { setDevAuthenticated, DEV_USER_ID } from "@/lib/auth/token";
 
 interface AuthState {
   user: User | null;
@@ -19,12 +20,13 @@ interface AuthState {
 interface AuthContextValue extends AuthState {
   signInWithGoogle: () => Promise<void>;
   sendMagicLink: (email: string) => Promise<void>;
+  signInAsDev: () => void;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
 }
 
 const DEV_USER_STUB = {
-  id: '00000000-0000-0000-0000-000000000000',
+  id: DEV_USER_ID,
   email: 'dev@localhost',
   app_metadata: {},
   user_metadata: { full_name: 'Dev User' },
@@ -73,11 +75,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch { }
 
-    if (__DEV__) {
-      setAuthenticatedUser(DEV_USER_STUB, null);
-      return;
-    }
-
     setUnauthenticated();
   }, [setAuthenticatedUser, setUnauthenticated]);
 
@@ -88,8 +85,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const user = session?.user ?? null;
-      if (!user && __DEV__) return;
       if (user) {
+        setDevAuthenticated(false);
         setAuthenticatedUser(user, session);
       } else {
         setUnauthenticated();
@@ -99,7 +96,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => { subscription.unsubscribe(); };
   }, [refreshSession, setAuthenticatedUser, setUnauthenticated]);
 
+  const signInAsDev = useCallback(() => {
+    if (!__DEV__) return;
+    setDevAuthenticated(true);
+    setAuthenticatedUser(DEV_USER_STUB, null);
+  }, [setAuthenticatedUser]);
+
   const handleSignOut = useCallback(async () => {
+    setDevAuthenticated(false);
     await authSignOut();
     setUnauthenticated();
   }, [setUnauthenticated]);
@@ -108,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ...state,
     signInWithGoogle,
     sendMagicLink,
+    signInAsDev,
     signOut: handleSignOut,
     refreshSession,
   };

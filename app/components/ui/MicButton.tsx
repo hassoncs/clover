@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Pressable, ActivityIndicator, Animated, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { SpeechToTextError } from '@/lib/speech/types';
+import { tokens } from '@slopcade/theme';
 
 interface MicButtonProps {
   isRecording: boolean;
@@ -56,13 +57,13 @@ export function MicButton({
       testID="mic-button"
     >
       {isConnecting ? (
-        <ActivityIndicator size="small" color="#6B7280" testID="loading-indicator" />
+        <ActivityIndicator size="small" color={tokens.colors.text.secondary} testID="loading-indicator" />
       ) : (
         <Animated.View style={isRecording ? { opacity: pulseAnim } : undefined}>
           <Ionicons
             name={isRecording ? 'mic' : 'mic-outline'}
             size={24}
-            color={isRecording ? '#EF4444' : '#6B7280'}
+            color={isRecording ? tokens.colors.error : tokens.colors.text.secondary}
             testID="mic-icon"
           />
         </Animated.View>

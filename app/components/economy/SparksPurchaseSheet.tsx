@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Modal, Pressable, ActivityIndicator, ScrollView } from "react-native";
 import { trpcReact } from "@/lib/trpc/react";
+import { tokens } from "@slopcade/theme";
 
 interface SparksPurchaseSheetProps {
   visible: boolean;
@@ -30,36 +31,36 @@ export function SparksPurchaseSheet({ visible, onClose }: SparksPurchaseSheetPro
       onRequestClose={onClose}
     >
       <View className="flex-1 justify-end bg-black/80">
-        <View className="bg-gray-900 rounded-t-3xl p-6 w-full border-t border-gray-800 h-[80%]">
+        <View className="bg-theme-surface rounded-t-3xl p-6 w-full border-t border-theme-border h-[80%]">
           <View className="flex-row justify-between items-center mb-6">
             <View>
-              <Text className="text-2xl font-bold text-white">Get Sparks</Text>
-              <Text className="text-gray-400 text-sm">Power your creativity</Text>
+              <Text className="text-2xl font-bold text-theme-text">Get Sparks</Text>
+              <Text className="text-theme-text-secondary text-sm">Power your creativity</Text>
             </View>
             <Pressable
               onPress={onClose}
-              className="bg-gray-800 p-2 rounded-full w-10 h-10 items-center justify-center active:bg-gray-700"
+              className="bg-theme-surface-elevated p-2 rounded-full w-10 h-10 items-center justify-center active:opacity-80"
               accessibilityRole="button"
               accessibilityLabel="Close"
             >
-              <Text className="text-white font-bold text-lg">✕</Text>
+              <Text className="text-theme-text font-bold text-lg">✕</Text>
             </Pressable>
           </View>
 
           {isLoading ? (
             <View className="flex-1 justify-center items-center">
-              <ActivityIndicator size="large" color="#F59E0B" />
+              <ActivityIndicator size="large" color={tokens.colors.warning} />
             </View>
           ) : error ? (
             <View className="flex-1 justify-center items-center">
-              <Text className="text-red-400 mb-4">Failed to load products</Text>
+              <Text className="text-theme-error mb-4">Failed to load products</Text>
               <Pressable
-                className="bg-gray-800 px-4 py-2 rounded-lg"
+                className="bg-theme-surface-elevated px-4 py-2 rounded-lg"
                 onPress={onClose}
                 accessibilityRole="button"
                 accessibilityLabel="Close"
               >
-                <Text className="text-white">Close</Text>
+                <Text className="text-theme-text">Close</Text>
               </Pressable>
             </View>
           ) : (
@@ -74,13 +75,13 @@ export function SparksPurchaseSheet({ visible, onClose }: SparksPurchaseSheetPro
                   return (
                     <View
                       key={product.id}
-                      className={`bg-gray-800 rounded-2xl p-4 border ${
-                        isBestValue ? "border-amber-500/50" : "border-gray-700"
+                      className={`bg-theme-surface-elevated rounded-2xl p-4 border ${
+                        isBestValue ? "border-theme-warning/50" : "border-theme-border"
                       }`}
                     >
                       {isBestValue && (
-                        <View className="absolute -top-3 right-4 bg-amber-500 px-3 py-1 rounded-full">
-                          <Text className="text-black text-xs font-bold">
+                        <View className="absolute -top-3 right-4 bg-theme-warning px-3 py-1 rounded-full">
+                          <Text className="text-theme-text-inverse text-xs font-bold">
                             BEST VALUE
                           </Text>
                         </View>
@@ -88,20 +89,20 @@ export function SparksPurchaseSheet({ visible, onClose }: SparksPurchaseSheetPro
 
                       <View className="flex-row justify-between items-center mb-2">
                         <View>
-                          <Text className="text-white font-bold text-lg">
+                          <Text className="text-theme-text font-bold text-lg">
                             {product.name}
                           </Text>
                           {bonusPercent > 0 && (
-                            <Text className="text-amber-400 text-xs font-bold">
+                            <Text className="text-theme-warning text-xs font-bold">
                               +{bonusPercent}% BONUS
                             </Text>
                           )}
                         </View>
                         <View className="items-end">
-                          <Text className="text-3xl font-bold text-white">
+                          <Text className="text-3xl font-bold text-theme-text">
                             {sparks.toLocaleString()}
                           </Text>
-                          <Text className="text-amber-500 font-bold text-sm">
+                          <Text className="text-theme-warning font-bold text-sm">
                             SPARKS ⚡
                           </Text>
                         </View>
@@ -110,8 +111,8 @@ export function SparksPurchaseSheet({ visible, onClose }: SparksPurchaseSheetPro
                       <Pressable
                         className={`w-full py-3 rounded-xl items-center mt-2 ${
                           isBestValue
-                            ? "bg-amber-500 active:bg-amber-600"
-                            : "bg-gray-700 active:bg-gray-600"
+                            ? "bg-theme-warning active:opacity-90"
+                            : "bg-theme-surface active:opacity-90"
                         }`}
                         onPress={() => handlePurchase(product.id)}
                         accessibilityRole="button"
@@ -119,7 +120,7 @@ export function SparksPurchaseSheet({ visible, onClose }: SparksPurchaseSheetPro
                       >
                         <Text
                           className={`font-bold text-lg ${
-                            isBestValue ? "text-black" : "text-white"
+                            isBestValue ? "text-theme-text-inverse" : "text-theme-text"
                           }`}
                         >
                           {price}
@@ -136,7 +137,7 @@ export function SparksPurchaseSheet({ visible, onClose }: SparksPurchaseSheetPro
                 accessibilityRole="button"
                 accessibilityLabel="Restore purchases"
               >
-                <Text className="text-gray-500 text-sm underline">
+                <Text className="text-theme-text-tertiary text-sm underline">
                   Restore Purchases
                 </Text>
               </Pressable>

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { initAudioCapture, startAudioCapture, stopAudioCapture, onAppBackground } from './audioCapture';
-import { supabase } from '@/lib/supabase/client';
+import { getAuthToken } from '@/lib/auth/token';
 import { env } from '@/lib/config/env';
 import type {
   SpeechToTextConfig,
@@ -64,9 +64,8 @@ export function useSpeechToText(config: SpeechToTextConfig): SpeechToTextState {
       console.log('[Speech] Calling initAudioCapture()');
       initAudioCapture();
 
-      console.log('[Speech] Getting auth session...');
-      const session = await supabase?.auth.getSession();
-      const token = session?.data.session?.access_token;
+      console.log('[Speech] Getting auth token...');
+      const token = await getAuthToken();
       console.log('[Speech] Auth token present:', !!token);
       if (!token) {
         throw new Error('No auth token');
