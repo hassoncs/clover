@@ -492,9 +492,9 @@ Wave 4 (After Wave 3 — Polish):
 - `r2/games/*/src/game.ts` — all 10 game definitions
 
 **Acceptance Criteria:**
-- [ ] All 10 games load via sectioned bridge without errors
-- [ ] Basic interactions work for each game
-- [ ] Evidence captured in `.sisyphus/evidence/`
+- [x] All 10 games load via sectioned bridge without errors
+- [x] Basic interactions work for each game
+- [x] Evidence captured in `.sisyphus/evidence/`
 
 **Recommended Agent Profile:**
 - **Category**: `unspecified-high`
