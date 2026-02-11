@@ -67,11 +67,6 @@ export class PromoCodeService {
       throw new InvalidPromoCodeError(code, 'Code has expired');
     }
     
-    // Check usage limit
-    if (promoCode.max_uses !== null && promoCode.current_uses >= promoCode.max_uses) {
-      throw new InvalidPromoCodeError(code, 'Code has reached maximum uses');
-    }
-    
     // Check account age requirement
     if (promoCode.min_account_age_days) {
       const user = await this.db
@@ -102,7 +97,24 @@ export class PromoCodeService {
       }
     }
     
-    // Credit wallet first (so we get the transaction ID)
+    const usageUpdate = await this.db.prepare(`
+      UPDATE promo_codes
+      SET current_uses = current_uses + 1, updated_at = ?
+      WHERE code = ?
+        AND (max_uses IS NULL OR current_uses < max_uses)
+    `).bind(now, normalizedCode).run();
+
+    if (usageUpdate.meta.changes === 0) {
+      throw new InvalidPromoCodeError(code, 'Code has reached maximum uses');
+    }
+
+    await this.db.batch([
+      this.db.prepare(`
+        INSERT INTO promo_code_redemptions (id, code, user_id, grant_amount_micros, transaction_id, created_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).bind(nanoid(), normalizedCode, userId, promoCode.grant_amount_micros, null, now),
+    ]);
+
     const newBalance = await walletService.credit({
       userId,
       type: 'promo_code_grant',
@@ -112,26 +124,6 @@ export class PromoCodeService {
       idempotencyKey: `promo_${userId}_${normalizedCode}`,
       description: `Promo code: ${promoCode.name}`,
     });
-    
-    // Get the transaction ID we just created
-    const tx = await this.db
-      .prepare('SELECT id FROM credit_transactions WHERE idempotency_key = ?')
-      .bind(`promo_${userId}_${normalizedCode}`)
-      .first<any>();
-    
-    // Record redemption + increment usage
-    await this.db.batch([
-      this.db.prepare(`
-        UPDATE promo_codes 
-        SET current_uses = current_uses + 1, updated_at = ?
-        WHERE code = ?
-      `).bind(now, normalizedCode),
-      
-      this.db.prepare(`
-        INSERT INTO promo_code_redemptions (id, code, user_id, grant_amount_micros, transaction_id, created_at)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `).bind(nanoid(), normalizedCode, userId, promoCode.grant_amount_micros, tx?.id ?? null, now),
-    ]);
     
     return { 
       success: true, 

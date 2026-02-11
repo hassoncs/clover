@@ -90,6 +90,26 @@ export const assetPacksRouter = router({
   deleteAsset: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const assetRow = await ctx.env.DB.prepare(
+        'SELECT owner_game_id FROM assets WHERE id = ? AND deleted_at IS NULL'
+      ).bind(input.id).first<{ owner_game_id: string | null }>();
+
+      if (!assetRow) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Asset not found' });
+      }
+
+      if (!assetRow.owner_game_id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+      }
+
+      const game = await ctx.env.DB.prepare(
+        'SELECT user_id FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(assetRow.owner_game_id).first<{ user_id: string }>();
+
+      if (!game || game.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+      }
+
       const now = Date.now();
       await ctx.env.DB.prepare(
         'UPDATE assets SET deleted_at = ? WHERE id = ?'
@@ -223,6 +243,22 @@ export const assetPacksRouter = router({
       isComplete: z.boolean().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
+      const packRow = await ctx.env.DB.prepare(
+        'SELECT base_game_id FROM asset_packs WHERE id = ? AND deleted_at IS NULL'
+      ).bind(input.id).first<{ base_game_id: string }>();
+
+      if (!packRow) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Asset pack not found' });
+      }
+
+      const game = await ctx.env.DB.prepare(
+        'SELECT user_id FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(packRow.base_game_id).first<{ user_id: string }>();
+
+      if (!game || game.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+      }
+
       const updates: string[] = [];
       const values: (string | number | null)[] = [];
 
@@ -261,6 +297,22 @@ export const assetPacksRouter = router({
   deletePack: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const packRow = await ctx.env.DB.prepare(
+        'SELECT base_game_id FROM asset_packs WHERE id = ? AND deleted_at IS NULL'
+      ).bind(input.id).first<{ base_game_id: string }>();
+
+      if (!packRow) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Asset pack not found' });
+      }
+
+      const game = await ctx.env.DB.prepare(
+        'SELECT user_id FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(packRow.base_game_id).first<{ user_id: string }>();
+
+      if (!game || game.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+      }
+
       const now = Date.now();
       await ctx.env.DB.prepare(
         'UPDATE asset_packs SET deleted_at = ? WHERE id = ?'
@@ -276,6 +328,22 @@ export const assetPacksRouter = router({
       placement: placementSchema.optional(),
     }))
     .mutation(async ({ ctx, input }) => {
+      const packRow = await ctx.env.DB.prepare(
+        'SELECT base_game_id FROM asset_packs WHERE id = ? AND deleted_at IS NULL'
+      ).bind(input.packId).first<{ base_game_id: string }>();
+
+      if (!packRow) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Asset pack not found' });
+      }
+
+      const game = await ctx.env.DB.prepare(
+        'SELECT user_id FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(packRow.base_game_id).first<{ user_id: string }>();
+
+      if (!game || game.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+      }
+
       const id = crypto.randomUUID();
       const placementJson = input.placement ? JSON.stringify(input.placement) : null;
 
@@ -297,6 +365,22 @@ export const assetPacksRouter = router({
       placement: placementSchema,
     }))
     .mutation(async ({ ctx, input }) => {
+      const packRow = await ctx.env.DB.prepare(
+        'SELECT base_game_id FROM asset_packs WHERE id = ? AND deleted_at IS NULL'
+      ).bind(input.packId).first<{ base_game_id: string }>();
+
+      if (!packRow) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Asset pack not found' });
+      }
+
+      const game = await ctx.env.DB.prepare(
+        'SELECT user_id FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(packRow.base_game_id).first<{ user_id: string }>();
+
+      if (!game || game.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+      }
+
       await ctx.env.DB.prepare(
         `UPDATE pack_entries SET placement_json = ? WHERE pack_id = ? AND template_id = ?`
       ).bind(JSON.stringify(input.placement), input.packId, input.templateId).run();
@@ -310,6 +394,22 @@ export const assetPacksRouter = router({
       templateId: z.string(),
     }))
     .mutation(async ({ ctx, input }) => {
+      const packRow = await ctx.env.DB.prepare(
+        'SELECT base_game_id FROM asset_packs WHERE id = ? AND deleted_at IS NULL'
+      ).bind(input.packId).first<{ base_game_id: string }>();
+
+      if (!packRow) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Asset pack not found' });
+      }
+
+      const game = await ctx.env.DB.prepare(
+        'SELECT user_id FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(packRow.base_game_id).first<{ user_id: string }>();
+
+      if (!game || game.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+      }
+
       await ctx.env.DB.prepare(
         'DELETE FROM pack_entries WHERE pack_id = ? AND template_id = ?'
       ).bind(input.packId, input.templateId).run();
@@ -324,11 +424,15 @@ export const assetPacksRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const gameRow = await ctx.env.DB.prepare(
-        'SELECT definition FROM games WHERE id = ? AND deleted_at IS NULL'
-      ).bind(input.gameId).first<{ definition: string }>();
+        'SELECT definition, user_id FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(input.gameId).first<{ definition: string; user_id: string }>();
 
       if (!gameRow) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
+      }
+
+      if (gameRow.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
       }
 
       let definition: Record<string, any>;

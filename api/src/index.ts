@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { trpcServer } from "@hono/trpc-server";
+import { createClient } from '@supabase/supabase-js';
 import { appRouter } from '@/trpc/router'
 import { createContext, type Env } from '@/trpc/context'
 import revenuecatWebhookRouter from '@/routes/webhooks/revenuecat'
@@ -10,10 +11,24 @@ import { RunStepWorkerDO } from '@/agent/RunStepWorkerDO'
 
 const app = new Hono<{ Bindings: Env }>();
 
+const ALLOWED_ORIGINS = [
+  'http://localhost:8081',
+  'http://localhost:8085',
+  'http://localhost:19006',
+  'https://slopcade.app',
+  'https://www.slopcade.app',
+  'https://slopcade-api.hassoncs.workers.dev',
+];
+
 app.use(
   "*",
   cors({
-    origin: (origin) => origin,
+    origin: (origin) => {
+      if (!origin) return origin;
+      if (ALLOWED_ORIGINS.includes(origin)) return origin;
+      if (origin.endsWith('.slopcade.app')) return origin;
+      return undefined;
+    },
     credentials: true,
   }),
 );
@@ -25,6 +40,29 @@ app.get('/ws/agent-run/:runId', async (c) => {
   const upgrade = c.req.header('Upgrade');
   if (!upgrade || upgrade.toLowerCase() !== 'websocket') {
     return c.text('Expected websocket upgrade', 426);
+  }
+
+  const token = new URL(c.req.url).searchParams.get('token');
+  if (!token) {
+    return c.text('Authentication required', 401);
+  }
+
+  if (!c.env.SUPABASE_URL || !c.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return c.text('Auth not configured', 500);
+  }
+
+  const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_SERVICE_ROLE_KEY);
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+  if (error || !user) {
+    return c.text('Invalid or expired token', 401);
+  }
+
+  const run = await c.env.DB
+    .prepare('SELECT user_id FROM agent_runs WHERE id = ?')
+    .bind(runId)
+    .first<{ user_id: string }>();
+  if (!run || run.user_id !== user.id) {
+    return c.text('Access denied', 403);
   }
 
   const id = c.env.RUN_COORDINATOR.idFromName(runId);

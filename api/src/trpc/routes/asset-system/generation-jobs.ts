@@ -37,6 +37,14 @@ export const generationJobsRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Generation job not found' });
       }
 
+      const game = await ctx.env.DB.prepare(
+        'SELECT user_id FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(jobRow.game_id).first<{ user_id: string }>();
+
+      if (!game || game.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+      }
+
       const tasksResult = await ctx.env.DB.prepare(
         'SELECT * FROM generation_tasks WHERE job_id = ? ORDER BY created_at'
       ).bind(input.id).all<GenerationTaskRow>();
@@ -60,6 +68,18 @@ export const generationJobsRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const walletService = new WalletService(ctx.env.DB);
+
+      const gameRow = await ctx.env.DB.prepare(
+        'SELECT definition, user_id FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(input.gameId).first<{ definition: string; user_id: string }>();
+
+      if (!gameRow) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
+      }
+
+      if (gameRow.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+      }
 
       const allowed = await walletService.checkRateLimit(
         ctx.user.id,
@@ -95,23 +115,6 @@ export const generationJobsRouter = router({
           });
         }
         throw err;
-      }
-
-      const gameRow = await ctx.env.DB.prepare(
-        'SELECT definition FROM games WHERE id = ? AND deleted_at IS NULL'
-      ).bind(input.gameId).first<{ definition: string }>();
-
-      if (!gameRow) {
-        await walletService.credit({
-          userId: ctx.user.id,
-          type: 'generation_refund',
-          amountMicros: estimatedCostMicros,
-          referenceType: 'generation_job',
-          referenceId: jobId,
-          idempotencyKey: `gen_refund_${jobId}`,
-          description: `Refund: game not found`,
-        });
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
       }
 
       let definition: { templates?: Record<string, { physics?: { shape: string; width?: number; height?: number; radius?: number }; tags?: string[] }> };
@@ -273,6 +276,14 @@ export const generationJobsRouter = router({
 
       if (!packRow) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Asset pack not found' });
+      }
+
+      const packGame = await ctx.env.DB.prepare(
+        'SELECT user_id FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(packRow.base_game_id).first<{ user_id: string }>();
+
+      if (!packGame || packGame.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
       }
 
       const entriesResult = await ctx.env.DB.prepare(
@@ -589,6 +600,22 @@ export const generationJobsRouter = router({
   cancelJob: protectedProcedure
     .input(z.object({ jobId: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const jobRow = await ctx.env.DB.prepare(
+        'SELECT game_id FROM generation_jobs WHERE id = ?'
+      ).bind(input.jobId).first<{ game_id: string }>();
+
+      if (!jobRow) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Generation job not found' });
+      }
+
+      const game = await ctx.env.DB.prepare(
+        'SELECT user_id FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(jobRow.game_id).first<{ user_id: string }>();
+
+      if (!game || game.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+      }
+
       const now = Date.now();
       await ctx.env.DB.prepare(
         `UPDATE generation_jobs SET status = 'canceled', finished_at = ? WHERE id = ? AND status IN ('queued', 'running')`
@@ -604,6 +631,22 @@ export const generationJobsRouter = router({
   retryFailedTasks: protectedProcedure
     .input(z.object({ jobId: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const jobRow = await ctx.env.DB.prepare(
+        'SELECT game_id FROM generation_jobs WHERE id = ?'
+      ).bind(input.jobId).first<{ game_id: string }>();
+
+      if (!jobRow) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Generation job not found' });
+      }
+
+      const game = await ctx.env.DB.prepare(
+        'SELECT user_id FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(jobRow.game_id).first<{ user_id: string }>();
+
+      if (!game || game.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+      }
+
       await ctx.env.DB.prepare(
         `UPDATE generation_tasks SET status = 'queued', error_message = NULL, started_at = NULL, finished_at = NULL WHERE job_id = ? AND status = 'failed'`
       ).bind(input.jobId).run();

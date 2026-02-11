@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { trpcReact } from '@/lib/trpc/react';
 import { env } from '@/lib/config/env';
+import { supabase } from '@/lib/supabase/client';
 import type { AgentRun, AgentTier, AgentStep, AgentEventType, AgentEventPayload, ClarificationQuestion, UserQuestion } from '@slopcade/shared';
 
 export interface ClientAgentEvent {
@@ -95,11 +96,24 @@ export function useAgentRun(runId?: string): UseAgentRunResult {
       return;
     }
 
-    const connect = () => {
+    const connect = async () => {
+      let token: string | null = null;
+      if (supabase) {
+        try {
+          const { data } = await supabase.auth.getSession();
+          token = data.session?.access_token ?? null;
+        } catch { }
+      }
+      if (!token && __DEV__) token = 'dev-token';
+      if (!token) {
+        setError('Authentication required');
+        return;
+      }
+
       const apiUrl = env.apiUrl;
       const wsProtocol = apiUrl.startsWith('https') ? 'wss' : 'ws';
       const wsHost = apiUrl.replace(/^https?:\/\//, '');
-      const wsUrl = `${wsProtocol}://${wsHost}/ws/agent-run/${runId}?lastSeq=${lastSeqRef.current}`;
+      const wsUrl = `${wsProtocol}://${wsHost}/ws/agent-run/${runId}?lastSeq=${lastSeqRef.current}&token=${encodeURIComponent(token)}`;
 
       const ws = new WebSocket(wsUrl);
 

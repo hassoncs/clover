@@ -48,11 +48,15 @@ export const orchestrationRouter = router({
       }
 
       const gameRow = await ctx.env.DB.prepare(
-        'SELECT id, base_game_id FROM games WHERE id = ? AND deleted_at IS NULL'
-      ).bind(input.gameId).first<GameRowForAssets>();
+        'SELECT id, base_game_id, user_id FROM games WHERE id = ? AND deleted_at IS NULL'
+      ).bind(input.gameId).first<GameRowForAssets & { user_id: string }>();
 
       if (!gameRow) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
+      }
+
+      if (gameRow.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
       }
 
       const baseGameId = gameRow.base_game_id ?? gameRow.id;

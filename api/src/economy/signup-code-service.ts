@@ -41,11 +41,6 @@ export class SignupCodeService {
       throw new InvalidSignupCodeError(code, 'Code has expired');
     }
     
-    // Check usage limit
-    if (signupCode.max_uses !== null && signupCode.current_uses >= signupCode.max_uses) {
-      throw new InvalidSignupCodeError(code, 'Code has reached maximum uses');
-    }
-    
     return {
       valid: true,
       grantAmountMicros: signupCode.grant_amount_micros,
@@ -77,16 +72,20 @@ export class SignupCodeService {
       throw new InvalidSignupCodeError(code, 'User has already used a signup code');
     }
     
-    // Atomically: increment usage count + record redemption + credit wallet
     const upperCode = code.toUpperCase();
+
+    const usageUpdate = await this.db.prepare(`
+      UPDATE signup_codes
+      SET current_uses = current_uses + 1, updated_at = ?
+      WHERE code = ?
+        AND (max_uses IS NULL OR current_uses < max_uses)
+    `).bind(now, upperCode).run();
+
+    if (usageUpdate.meta.changes === 0) {
+      throw new InvalidSignupCodeError(code, 'Code has reached maximum uses');
+    }
+
     await this.db.batch([
-      // Increment usage count
-      this.db.prepare(`
-        UPDATE signup_codes 
-        SET current_uses = current_uses + 1, updated_at = ?
-        WHERE code = ?
-      `).bind(now, upperCode),
-      
       // Record redemption
       this.db.prepare(`
         INSERT INTO signup_code_redemptions (id, code, user_id, grant_amount_micros, created_at)

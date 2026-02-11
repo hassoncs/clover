@@ -432,11 +432,30 @@ export const gamesRouter = router({
   incrementPlayCount: publicProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.env.DB.prepare(
-        `UPDATE games SET play_count = play_count + 1 WHERE id = ? AND deleted_at IS NULL`
-      )
-        .bind(input.id)
-        .run();
+      const now = Date.now();
+      const windowMs = 60_000;
+      const maxPlaysPerWindow = 5;
+
+      const record = await ctx.env.DB
+        .prepare('SELECT window_start, count FROM rate_limits WHERE user_id = ? AND action_type = ?')
+        .bind(input.id, 'play_count')
+        .first<{ window_start: number; count: number }>();
+
+      if (record && record.window_start >= now - windowMs && record.count >= maxPlaysPerWindow) {
+        return { success: true };
+      }
+
+      await ctx.env.DB.batch([
+        ctx.env.DB.prepare(
+          `UPDATE games SET play_count = play_count + 1 WHERE id = ? AND deleted_at IS NULL`
+        ).bind(input.id),
+        ctx.env.DB.prepare(
+          `INSERT INTO rate_limits (user_id, action_type, window_start, count) VALUES (?, 'play_count', ?, 1)
+           ON CONFLICT(user_id, action_type) DO UPDATE SET
+             window_start = CASE WHEN window_start < ? THEN ? ELSE window_start END,
+             count = CASE WHEN window_start < ? THEN 1 ELSE count + 1 END`
+        ).bind(input.id, now, now - windowMs, now, now - windowMs),
+      ]);
 
       return { success: true };
     }),

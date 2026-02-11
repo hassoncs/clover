@@ -450,6 +450,17 @@ export const agentRunsRouter = router({
         });
       }
 
+      const billing = new AgentBillingService(ctx.env.DB, new WalletService(ctx.env.DB));
+      try {
+        await billing.finalizeRun({ userId: ctx.user.id, runId: input.runId });
+      } catch (error) {
+        console.error('[agent-runs] Failed to finalize run after cancel', {
+          runId: input.runId,
+          userId: ctx.user.id,
+          error,
+        });
+      }
+
       logAgentEvent({
         event: 'agent_run.canceled',
         runId: run.id,

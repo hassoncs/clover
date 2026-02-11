@@ -27,8 +27,8 @@ function verifyWebhookSignature(
   secret: string
 ): boolean {
   if (!secret) {
-    console.warn('REVENUECAT_WEBHOOK_SECRET not configured - accepting all webhooks');
-    return true;
+    console.error('REVENUECAT_WEBHOOK_SECRET not configured - rejecting webhook');
+    return false;
   }
 
   try {

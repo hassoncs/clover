@@ -159,12 +159,11 @@ export class WalletService {
     
     // Get current wallet state
     const wallet = await this.getOrCreateWallet(userId);
-    const balanceBefore = wallet.balanceMicros;
-    const balanceAfter = balanceBefore + amountMicros;
+    const projectedBalance = wallet.balanceMicros + amountMicros;
     
     // Validate balance won't go negative
-    if (balanceAfter < 0) {
-      throw new InsufficientBalanceError(userId, Math.abs(amountMicros), balanceBefore);
+    if (projectedBalance < 0) {
+      throw new InsufficientBalanceError(userId, Math.abs(amountMicros), wallet.balanceMicros);
     }
     
     // Calculate lifetime updates
@@ -188,9 +187,14 @@ export class WalletService {
         INSERT INTO credit_transactions 
         (id, user_id, type, amount_micros, balance_before_micros, balance_after_micros, 
          reference_type, reference_id, idempotency_key, description, metadata_json, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (
+          ?, ?, ?, ?,
+          (SELECT balance_micros - ? FROM user_wallets WHERE user_id = ?),
+          (SELECT balance_micros FROM user_wallets WHERE user_id = ?),
+          ?, ?, ?, ?, ?, ?
+        )
       `).bind(
-        txId, userId, type, amountMicros, balanceBefore, balanceAfter,
+        txId, userId, type, amountMicros, amountMicros, userId, userId,
         referenceType ?? null,
         referenceId ?? null,
         idempotencyKey ?? null,
@@ -200,7 +204,7 @@ export class WalletService {
       ),
     ]);
     
-    return balanceAfter;
+    return this.getBalance(userId);
   }
 
 
