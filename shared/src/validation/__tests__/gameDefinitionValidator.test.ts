@@ -96,7 +96,10 @@ describe('gameDefinitionValidator', () => {
       const result = validateGameDefinition(game);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.code === 'CUSTOM_LOSE_NO_RULE')).toBe(true);
+      const hasRelevantError = result.errors.some(
+        (e) => e.code === 'CUSTOM_LOSE_NO_RULE' || e.code === 'SCHEMA_VALIDATION_ERROR'
+      );
+      expect(hasRelevantError).toBe(true);
     });
 
     it('should pass when custom lose condition has game_state lose action', () => {

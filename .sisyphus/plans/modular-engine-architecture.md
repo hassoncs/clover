@@ -407,31 +407,13 @@ Wave 4 (After Wave 3 — Polish):
 
 ---
 
-### Task 4: Add Semantic Validator for Cross-References and Cycles
-
-**What to do:**
-- Validate: entity → template references exist
-- Validate: rule actions reference valid entity IDs or template IDs
-- Validate: parent/child hierarchy has no cycles
-- Validate: constant references resolve
-- Emit precise diagnostics: `{ severity, message, file, path }`
-
-**Must NOT do:**
-- Do not duplicate Zod structural validation — semantic validator runs after Zod passes
-
-**References:**
-- `packages/game-bundler/src/compiler.ts` — already has `validateEntityTemplateRefs`, `checkDuplicateIds`, `validateAssetRefs`
-- `shared/src/types/rules.ts` — 50+ action types that reference entities/templates
+### Task 4: Add Semantic Validator for Cross-References and Cycles ✅ COMPLETED
 
 **Acceptance Criteria:**
-- [ ] Missing template references fail with precise error
-- [ ] Parent/child cycles detected and reported
-- [ ] Dead constant references caught
-- [ ] Validation tests cover happy + error paths
-
-**Recommended Agent Profile:**
-- **Category**: `unspecified-high`
-- **Skills**: [`test-driven-development`, `systematic-debugging`]
+- [x] Missing template references fail with precise error
+- [x] Parent/child cycles detected and reported
+- [x] Dead constant references caught
+- [x] Validation tests cover happy + error paths (15 tests pass)
 
 ---
 

@@ -1,27 +1,19 @@
 import type { GameDefinition } from '../types/GameDefinition'
-import type { GameEntity, EntityTemplate } from '../types/entity'
-import type { Behavior, BehaviorType } from '../types/behavior'
-import type { GameRule } from '../types/rules'
+import { GameDefinitionSchema } from '../schemas/gameDefinition';
+import { validateSemantic } from './semantic'
+import type {
+  GameDefinitionValidationResult,
+  ValidationError,
+  ValidationWarning,
+} from './gameDefinitionTypes';
 
-export interface GameDefinitionValidationResult {
-  valid: boolean;
-  errors: ValidationError[];
-  warnings: ValidationWarning[];
-}
+export type {
+  GameDefinitionValidationResult,
+  ValidationError,
+  ValidationWarning,
+} from './gameDefinitionTypes';
 
-export interface ValidationError {
-  code: string;
-  message: string;
-  path?: string;
-}
-
-export interface ValidationWarning {
-  code: string;
-  message: string;
-  path?: string;
-}
-
-const VALID_BEHAVIOR_TYPES: BehaviorType[] = [
+const VALID_BEHAVIOR_TYPES = [
   'move',
   'rotate',
   'rotate_toward',
@@ -43,6 +35,12 @@ const VALID_BEHAVIOR_TYPES: BehaviorType[] = [
 const VALID_BODY_TYPES = ['static', 'dynamic', 'kinematic'];
 const VALID_SHAPES = ['box', 'circle', 'polygon', 'capsule'];
 const VALID_VISUAL_TYPES = ['rect', 'circle', 'polygon', 'image', 'text'];
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const getStringArray = (value: unknown): string[] =>
+  Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
 
 function validateMetadata(
   game: GameDefinition,
@@ -123,23 +121,23 @@ function validateWorld(
 }
 
 function validatePhysicsComponent(
-  physics: GameEntity['physics'],
+  physics: unknown,
   entityId: string,
   errors: ValidationError[],
   warnings: ValidationWarning[]
 ): void {
-  if (!physics) return;
-
-  if (!VALID_BODY_TYPES.includes(physics.bodyType)) {
+  if (!isRecord(physics)) return;
+  const bodyType = physics.bodyType;
+  if (typeof bodyType !== 'string' || !VALID_BODY_TYPES.includes(bodyType)) {
     errors.push({
       code: 'INVALID_BODY_TYPE',
-      message: `Entity ${entityId} has invalid bodyType: ${physics.bodyType}`,
+      message: `Entity ${entityId} has invalid bodyType: ${String(bodyType)}`,
       path: `entities.${entityId}.physics.bodyType`,
     });
   }
 
   // Validate density if provided
-  if (physics.density !== undefined) {
+  if (typeof physics.density === 'number') {
     if (physics.density < 0) {
       errors.push({
         code: 'NEGATIVE_DENSITY',
@@ -159,31 +157,32 @@ function validatePhysicsComponent(
 }
 
 function validateColliderComponent(
-  collider: GameEntity['collider'],
+  collider: unknown,
   entityId: string,
   errors: ValidationError[],
   warnings: ValidationWarning[]
 ): void {
-  if (!collider) return;
-
-  if (!VALID_SHAPES.includes(collider.shape)) {
+  if (!isRecord(collider)) return;
+  const shape = collider.shape;
+  if (typeof shape !== 'string' || !VALID_SHAPES.includes(shape)) {
     errors.push({
       code: 'INVALID_SHAPE',
-      message: `Entity ${entityId} has invalid shape: ${collider.shape}`,
+      message: `Entity ${entityId} has invalid shape: ${String(shape)}`,
       path: `entities.${entityId}.collider.shape`,
     });
   }
 
-  if (collider.shape === 'box') {
-    const box = collider as { width?: number; height?: number };
-    if (box.width === undefined || box.width <= 0) {
+  if (shape === 'box') {
+    const width = collider.width;
+    const height = collider.height;
+    if (typeof width !== 'number' || width <= 0) {
       errors.push({
         code: 'INVALID_BOX_WIDTH',
         message: `Entity ${entityId} box collider must have positive width`,
         path: `entities.${entityId}.collider.width`,
       });
     }
-    if (box.height === undefined || box.height <= 0) {
+    if (typeof height !== 'number' || height <= 0) {
       errors.push({
         code: 'INVALID_BOX_HEIGHT',
         message: `Entity ${entityId} box collider must have positive height`,
@@ -192,9 +191,9 @@ function validateColliderComponent(
     }
   }
 
-  if (collider.shape === 'circle') {
-    const circle = collider as { radius?: number };
-    if (circle.radius === undefined || circle.radius <= 0) {
+  if (shape === 'circle') {
+    const radius = collider.radius;
+    if (typeof radius !== 'number' || radius <= 0) {
       errors.push({
         code: 'INVALID_CIRCLE_RADIUS',
         message: `Entity ${entityId} circle collider must have positive radius`,
@@ -203,7 +202,7 @@ function validateColliderComponent(
     }
   }
 
-  if (collider.restitution !== undefined && collider.restitution < 0) {
+  if (typeof collider.restitution === 'number' && collider.restitution < 0) {
     errors.push({
       code: 'NEGATIVE_RESTITUTION',
       message: `Entity ${entityId} has negative restitution`,
@@ -211,7 +210,7 @@ function validateColliderComponent(
     });
   }
 
-  if (collider.friction !== undefined && (collider.friction < 0 || collider.friction > 1)) {
+  if (typeof collider.friction === 'number' && (collider.friction < 0 || collider.friction > 1)) {
     warnings.push({
       code: 'FRICTION_OUT_OF_RANGE',
       message: `Entity ${entityId} has friction out of range (0-1)`,
@@ -221,31 +220,32 @@ function validateColliderComponent(
 }
 
 function validateVisualComponent(
-  visual: GameEntity['visual'],
+  visual: unknown,
   entityId: string,
   errors: ValidationError[],
   warnings: ValidationWarning[]
 ): void {
-  if (!visual) return;
-
-  if (!VALID_VISUAL_TYPES.includes(visual.type)) {
+  if (!isRecord(visual)) return;
+  const visualType = visual.type;
+  if (typeof visualType !== 'string' || !VALID_VISUAL_TYPES.includes(visualType)) {
     errors.push({
       code: 'INVALID_VISUAL_TYPE',
-      message: `Entity ${entityId} has invalid visual type: ${visual.type}`,
+      message: `Entity ${entityId} has invalid visual type: ${String(visualType)}`,
       path: `entities.${entityId}.visual.type`,
     });
   }
 
-  if (visual.type === 'rect') {
-    const rectVisual = visual as { width?: number; height?: number };
-    if (!rectVisual.width || rectVisual.width <= 0) {
+  if (visualType === 'rect') {
+    const width = visual.width;
+    const height = visual.height;
+    if (typeof width !== 'number' || width <= 0) {
       errors.push({
         code: 'INVALID_RECT_WIDTH',
         message: `Entity ${entityId} rect visual must have positive width`,
         path: `entities.${entityId}.visual.width`,
       });
     }
-    if (!rectVisual.height || rectVisual.height <= 0) {
+    if (typeof height !== 'number' || height <= 0) {
       errors.push({
         code: 'INVALID_RECT_HEIGHT',
         message: `Entity ${entityId} rect visual must have positive height`,
@@ -254,9 +254,9 @@ function validateVisualComponent(
     }
   }
 
-  if (visual.type === 'circle') {
-    const circleVisual = visual as { radius?: number };
-    if (!circleVisual.radius || circleVisual.radius <= 0) {
+  if (visualType === 'circle') {
+    const radius = visual.radius;
+    if (typeof radius !== 'number' || radius <= 0) {
       errors.push({
         code: 'INVALID_VISUAL_RADIUS',
         message: `Entity ${entityId} circle visual must have positive radius`,
@@ -267,45 +267,37 @@ function validateVisualComponent(
 }
 
 function validateBehavior(
-  behavior: Behavior,
+  behavior: unknown,
   entityId: string,
   index: number,
-  templates: Record<string, EntityTemplate>,
   errors: ValidationError[],
   warnings: ValidationWarning[]
 ): void {
-  if (!VALID_BEHAVIOR_TYPES.includes(behavior.type)) {
+  if (!isRecord(behavior)) return;
+  const behaviorType = behavior.type;
+  if (typeof behaviorType !== 'string' || !VALID_BEHAVIOR_TYPES.includes(behaviorType)) {
     errors.push({
       code: 'INVALID_BEHAVIOR_TYPE',
-      message: `Entity ${entityId} behavior ${index} has invalid type: ${behavior.type}`,
+      message: `Entity ${entityId} behavior ${index} has invalid type: ${String(behaviorType)}`,
       path: `entities.${entityId}.behaviors[${index}].type`,
     });
     return;
   }
 
-  if (behavior.type === 'spawn_on_event') {
-    const spawnBehavior = behavior as { entityTemplate?: string };
-    if (!spawnBehavior.entityTemplate) {
-      errors.push({
-        code: 'MISSING_SPAWN_TEMPLATE',
-        message: `Entity ${entityId} spawn_on_event behavior missing entityTemplate`,
-        path: `entities.${entityId}.behaviors[${index}].entityTemplate`,
-      });
-    } else if (!templates[spawnBehavior.entityTemplate]) {
-      warnings.push({
-        code: 'UNKNOWN_SPAWN_TEMPLATE',
-        message: `Entity ${entityId} references unknown template: ${spawnBehavior.entityTemplate}`,
-        path: `entities.${entityId}.behaviors[${index}].entityTemplate`,
-      });
-    }
+  if (behaviorType === 'spawn_on_event' && typeof behavior.entityTemplate !== 'string' && !Array.isArray(behavior.entityTemplate)) {
+    errors.push({
+      code: 'MISSING_SPAWN_TEMPLATE',
+      message: `Entity ${entityId} spawn_on_event behavior missing entityTemplate`,
+      path: `entities.${entityId}.behaviors[${index}].entityTemplate`,
+    });
   }
 
-  if (behavior.type === 'destroy_on_collision' || behavior.type === 'score_on_collision') {
-    const collisionBehavior = behavior as { withTags?: string[] };
-    if (!collisionBehavior.withTags || collisionBehavior.withTags.length === 0) {
+  if (behaviorType === 'destroy_on_collision' || behaviorType === 'score_on_collision') {
+    const withTags = getStringArray(behavior.withTags);
+    if (withTags.length === 0) {
       warnings.push({
         code: 'EMPTY_COLLISION_TAGS',
-        message: `Entity ${entityId} ${behavior.type} behavior has no tags specified`,
+        message: `Entity ${entityId} ${behaviorType} behavior has no tags specified`,
         path: `entities.${entityId}.behaviors[${index}].withTags`,
       });
     }
@@ -313,12 +305,13 @@ function validateBehavior(
 }
 
 function validateEntity(
-  entity: GameEntity,
-  templates: Record<string, EntityTemplate>,
+  entity: Record<string, unknown>,
+  templates: Record<string, unknown>,
   errors: ValidationError[],
   warnings: ValidationWarning[]
 ): void {
-  if (!entity.id) {
+  const entityId = typeof entity.id === 'string' ? entity.id : 'unknown';
+  if (typeof entity.id !== 'string' || entity.id.length === 0) {
     errors.push({
       code: 'MISSING_ENTITY_ID',
       message: 'Entity must have an ID',
@@ -327,48 +320,49 @@ function validateEntity(
     return;
   }
 
-  if (!entity.transform) {
+  const transform = isRecord(entity.transform) ? entity.transform : null;
+  if (!transform) {
     errors.push({
       code: 'MISSING_TRANSFORM',
-      message: `Entity ${entity.id} must have a transform`,
-      path: `entities.${entity.id}.transform`,
+      message: `Entity ${entityId} must have a transform`,
+      path: `entities.${entityId}.transform`,
     });
   } else {
-    if (typeof entity.transform.x !== 'number' || typeof entity.transform.y !== 'number') {
+    if (typeof transform.x !== 'number' || typeof transform.y !== 'number') {
       errors.push({
         code: 'INVALID_TRANSFORM',
-        message: `Entity ${entity.id} transform must have numeric x and y`,
-        path: `entities.${entity.id}.transform`,
+        message: `Entity ${entityId} transform must have numeric x and y`,
+        path: `entities.${entityId}.transform`,
       });
     }
   }
 
-  if (entity.template && !templates[entity.template]) {
+  if (typeof entity.template === 'string' && !templates[entity.template]) {
     errors.push({
       code: 'UNKNOWN_TEMPLATE',
-      message: `Entity ${entity.id} references unknown template: ${entity.template}`,
-      path: `entities.${entity.id}.template`,
+      message: `Entity ${entityId} references unknown template: ${entity.template}`,
+      path: `entities.${entityId}.template`,
     });
   }
 
-  validatePhysicsComponent(entity.physics, entity.id, errors, warnings);
-  validateColliderComponent(entity.collider, entity.id, errors, warnings);
-  validateVisualComponent(entity.visual, entity.id, errors, warnings);
+  validatePhysicsComponent(entity.physics, entityId, errors, warnings);
+  validateColliderComponent(entity.collider, entityId, errors, warnings);
+  validateVisualComponent(entity.visual, entityId, errors, warnings);
 
-  if (entity.behaviors) {
+  if (Array.isArray(entity.behaviors)) {
     entity.behaviors.forEach((behavior, index) => {
-      validateBehavior(behavior, entity.id, index, templates, errors, warnings);
+      validateBehavior(behavior, entityId, index, errors, warnings);
     });
   }
 }
 
 function validateTemplates(
-  templates: Record<string, EntityTemplate>,
+  templates: Record<string, unknown>,
   errors: ValidationError[],
   warnings: ValidationWarning[]
 ): void {
   for (const [templateId, template] of Object.entries(templates)) {
-    if (!template.id) {
+    if (!isRecord(template) || typeof template.id !== 'string') {
       errors.push({
         code: 'MISSING_TEMPLATE_ID',
         message: `Template ${templateId} must have an ID`,
@@ -376,22 +370,24 @@ function validateTemplates(
       });
     }
 
-    if (template.physics) {
-      validatePhysicsComponent(template.physics, `template:${templateId}`, errors, warnings);
-    }
+    if (template && isRecord(template)) {
+      if (template.physics) {
+        validatePhysicsComponent(template.physics, `template:${templateId}`, errors, warnings);
+      }
 
-    if (template.collider) {
-      validateColliderComponent(template.collider, `template:${templateId}`, errors, warnings);
-    }
+      if (template.collider) {
+        validateColliderComponent(template.collider, `template:${templateId}`, errors, warnings);
+      }
 
-    if (template.visual) {
-      validateVisualComponent(template.visual, `template:${templateId}`, errors, warnings);
-    }
+      if (template.visual) {
+        validateVisualComponent(template.visual, `template:${templateId}`, errors, warnings);
+      }
 
-    if (template.behaviors) {
-      template.behaviors.forEach((behavior, index) => {
-        validateBehavior(behavior, `template:${templateId}`, index, templates, errors, warnings);
-      });
+      if (Array.isArray(template.behaviors)) {
+        template.behaviors.forEach((behavior, index) => {
+          validateBehavior(behavior, `template:${templateId}`, index, errors, warnings);
+        });
+      }
     }
   }
 }
@@ -401,7 +397,7 @@ function validateEntities(
   errors: ValidationError[],
   warnings: ValidationWarning[]
 ): void {
-  if (!game.entities || !Array.isArray(game.entities)) {
+  if (!Array.isArray(game.entities)) {
     errors.push({
       code: 'MISSING_ENTITIES',
       message: 'Game must have an entities array',
@@ -428,34 +424,49 @@ function validateEntities(
   }
 
   const entityIds = new Set<string>();
-  for (const entity of game.entities) {
-    if (entity.id && entityIds.has(entity.id)) {
+  const entities = game.entities;
+  const templates = isRecord(game.templates) ? game.templates : {};
+  for (const entity of entities) {
+    if (!isRecord(entity)) continue;
+    if (typeof entity.id === 'string' && entityIds.has(entity.id)) {
       errors.push({
         code: 'DUPLICATE_ENTITY_ID',
         message: `Duplicate entity ID: ${entity.id}`,
         path: `entities.${entity.id}`,
       });
     }
-    entityIds.add(entity.id);
+    if (typeof entity.id === 'string') {
+      entityIds.add(entity.id);
+    }
 
-    validateEntity(entity, game.templates || {}, errors, warnings);
+    validateEntity(entity, templates, errors, warnings);
   }
 
-  const hasInputRule = game.rules?.some(
-    (rule) =>
-      rule.trigger.type === 'tap' ||
-      rule.trigger.type === 'drag' ||
-      rule.trigger.type === 'tilt' ||
-      rule.trigger.type === 'button' ||
-      rule.trigger.type === 'swipe'
-  );
+  const rules = Array.isArray(game.rules) ? game.rules : [];
+  const hasInputRule = rules.some((rule) => {
+    if (!isRecord(rule) || !isRecord(rule.trigger)) return false;
+    const triggerType = rule.trigger.type;
+    return (
+      triggerType === 'tap' ||
+      triggerType === 'drag' ||
+      triggerType === 'tilt' ||
+      triggerType === 'button' ||
+      triggerType === 'swipe'
+    );
+  });
 
-  const hasLegacyDraggable = game.entities.some(
-    (entity) =>
-      entity.behaviors?.some((b) => b.type === 'draggable') ||
-      (entity.template &&
-        game.templates?.[entity.template]?.behaviors?.some((b) => b.type === 'draggable'))
-  );
+  const hasLegacyDraggable = entities.some((entity) => {
+    if (!isRecord(entity)) return false;
+    const behaviors = Array.isArray(entity.behaviors) ? entity.behaviors : [];
+    if (behaviors.some((b) => isRecord(b) && b.type === 'draggable')) return true;
+    if (typeof entity.template === 'string') {
+      const template = templates[entity.template];
+      if (isRecord(template) && Array.isArray(template.behaviors)) {
+        return template.behaviors.some((b) => isRecord(b) && b.type === 'draggable');
+      }
+    }
+    return false;
+  });
 
   if (!hasInputRule && !hasLegacyDraggable) {
     errors.push({
@@ -467,12 +478,12 @@ function validateEntities(
 }
 
 function validateRule(
-  rule: GameRule,
+  rule: Record<string, unknown>,
   game: GameDefinition,
   errors: ValidationError[],
   warnings: ValidationWarning[]
 ): void {
-  if (!rule.id) {
+  if (typeof rule.id !== 'string' || rule.id.length === 0) {
     errors.push({
       code: 'MISSING_RULE_ID',
       message: 'Rule must have an ID',
@@ -481,7 +492,7 @@ function validateRule(
     return;
   }
 
-  if (!rule.trigger) {
+  if (!isRecord(rule.trigger)) {
     errors.push({
       code: 'MISSING_RULE_TRIGGER',
       message: `Rule ${rule.id} must have a trigger`,
@@ -489,7 +500,7 @@ function validateRule(
     });
   }
 
-  if (!rule.actions || rule.actions.length === 0) {
+  if (!Array.isArray(rule.actions) || rule.actions.length === 0) {
     warnings.push({
       code: 'NO_RULE_ACTIONS',
       message: `Rule ${rule.id} has no actions`,
@@ -497,22 +508,31 @@ function validateRule(
     });
   }
 
-  if (rule.trigger?.type === 'collision') {
-    const collisionTrigger = rule.trigger as { entityATag?: string; entityBTag?: string };
+  if (isRecord(rule.trigger) && rule.trigger.type === 'collision') {
+    const collisionTrigger = rule.trigger as { entityATag?: unknown; entityBTag?: unknown };
     const allTags = new Set<string>();
 
-    game.entities?.forEach((entity) => {
-      entity.tags?.forEach((tag) => { allTags.add(tag); });
-      if (entity.template && game.templates?.[entity.template]?.tags) {
-        game.templates[entity.template].tags?.forEach((tag) => { allTags.add(tag); });
-      }
-    });
+    if (Array.isArray(game.entities)) {
+      game.entities.forEach((entity) => {
+        if (!isRecord(entity)) return;
+        getStringArray(entity.tags).forEach((tag) => { allTags.add(tag); });
+        if (typeof entity.template === 'string') {
+          const template = isRecord(game.templates) ? game.templates[entity.template] : undefined;
+          if (isRecord(template)) {
+            getStringArray(template.tags).forEach((tag) => { allTags.add(tag); });
+          }
+        }
+      });
+    }
 
-    Object.values(game.templates || {}).forEach((template) => {
-      template.tags?.forEach((tag) => { allTags.add(tag); });
-    });
+    if (isRecord(game.templates)) {
+      Object.values(game.templates).forEach((template) => {
+        if (!isRecord(template)) return;
+        getStringArray(template.tags).forEach((tag) => { allTags.add(tag); });
+      });
+    }
 
-    if (collisionTrigger.entityATag && !allTags.has(collisionTrigger.entityATag)) {
+    if (typeof collisionTrigger.entityATag === 'string' && !allTags.has(collisionTrigger.entityATag)) {
       warnings.push({
         code: 'UNKNOWN_TAG_IN_RULE',
         message: `Rule ${rule.id} references unknown tag: ${collisionTrigger.entityATag}`,
@@ -520,7 +540,7 @@ function validateRule(
       });
     }
 
-    if (collisionTrigger.entityBTag && !allTags.has(collisionTrigger.entityBTag)) {
+    if (typeof collisionTrigger.entityBTag === 'string' && !allTags.has(collisionTrigger.entityBTag)) {
       warnings.push({
         code: 'UNKNOWN_TAG_IN_RULE',
         message: `Rule ${rule.id} references unknown tag: ${collisionTrigger.entityBTag}`,
@@ -535,10 +555,12 @@ function validateRules(
   errors: ValidationError[],
   warnings: ValidationWarning[]
 ): void {
-  if (!game.rules) return;
+  if (!Array.isArray(game.rules)) return;
 
   game.rules.forEach((rule) => {
-    validateRule(rule, game, errors, warnings);
+    if (isRecord(rule)) {
+      validateRule(rule, game, errors, warnings);
+    }
   });
 }
 
@@ -677,16 +699,32 @@ export function validateGameDefinition(game: GameDefinition): GameDefinitionVali
     };
   }
 
-  validateMetadata(game, errors, warnings);
-  validateWorld(game, errors, warnings);
-
-  if (game.templates) {
-    validateTemplates(game.templates, errors, warnings);
+  const parsed = GameDefinitionSchema.safeParse(game);
+  if (!parsed.success) {
+    return {
+      valid: false,
+      errors: parsed.error.issues.map((issue) => ({
+        code: 'SCHEMA_VALIDATION_ERROR',
+        message: issue.message,
+        path: issue.path.join('.'),
+      })),
+      warnings: [],
+    };
   }
 
-  validateEntities(game, errors, warnings);
-  validateRules(game, errors, warnings);
-  validateWinLoseConditions(game, errors, warnings);
+  const parsedGame = game;
+
+  validateMetadata(parsedGame, errors, warnings);
+  validateWorld(parsedGame, errors, warnings);
+
+  if (parsedGame.templates) {
+    validateTemplates(parsedGame.templates, errors, warnings);
+  }
+
+  validateEntities(parsedGame, errors, warnings);
+  validateRules(parsedGame, errors, warnings);
+  validateWinLoseConditions(parsedGame, errors, warnings);
+  validateSemantic(parsedGame, errors, warnings);
 
   return {
     valid: errors.length === 0,

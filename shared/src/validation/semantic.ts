@@ -1,5 +1,5 @@
 import type { GameDefinition } from '../types/GameDefinition';
-import type { ValidationError, ValidationWarning } from './gameDefinitionValidator';
+import type { ValidationError, ValidationWarning } from './gameDefinitionTypes';
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -108,7 +108,7 @@ function detectTemplateCycles(
   }
 }
 
-function validateConstantRefs(
+function walkConstantRefs(
   value: unknown,
   constants: Set<string>,
   errors: ValidationError[],
@@ -116,7 +116,7 @@ function validateConstantRefs(
 ): void {
   if (Array.isArray(value)) {
     value.forEach((item, index) => {
-      validateConstantRefs(item, constants, errors, `${path}[${index}]`);
+      walkConstantRefs(item, constants, errors, `${path}[${index}]`);
     });
     return;
   }
@@ -135,7 +135,7 @@ function validateConstantRefs(
     }
 
     for (const [key, child] of Object.entries(record)) {
-      validateConstantRefs(child, constants, errors, path ? `${path}.${key}` : key);
+      walkConstantRefs(child, constants, errors, path ? `${path}.${key}` : key);
     }
   }
 }
@@ -225,6 +225,183 @@ function validateTemplateReferences(
   }
 }
 
+export function validateEntityTemplateRefs(
+  game: Partial<GameDefinition>,
+  errors: ValidationError[]
+): void {
+  const templateIds = new Set(Object.keys(game.templates ?? {}));
+
+  for (const entity of game.entities ?? []) {
+    if (!isRecord(entity)) continue;
+    const id = typeof entity.id === 'string' ? entity.id : 'unknown';
+    if (typeof entity.template === 'string' && !templateIds.has(entity.template)) {
+      errors.push({
+        code: 'UNKNOWN_TEMPLATE',
+        message: `Entity "${id}" references unknown template "${entity.template}"`,
+        path: `entities.${id}.template`,
+      });
+    }
+  }
+}
+
+function extractEntityIdFromTarget(target: unknown): string | undefined {
+  if (!isRecord(target)) return undefined;
+  if (target.type === 'by_id' && typeof target.entityId === 'string') return target.entityId;
+  if (target.type === 'at_entity' && typeof target.entityId === 'string') return target.entityId;
+  return undefined;
+}
+
+export function validateRuleEntityRefs(
+  game: Partial<GameDefinition>,
+  errors: ValidationError[]
+): void {
+  const entityIds = new Set<string>();
+  for (const entity of game.entities ?? []) {
+    if (isRecord(entity) && typeof entity.id === 'string') {
+      entityIds.add(entity.id);
+    }
+  }
+  const templateIds = new Set(Object.keys(game.templates ?? {}));
+
+  if (!Array.isArray(game.rules)) return;
+
+  for (const rule of game.rules) {
+    if (!isRecord(rule) || !Array.isArray(rule.actions)) continue;
+    const ruleId = typeof rule.id === 'string' ? rule.id : 'unknown';
+
+    for (let i = 0; i < rule.actions.length; i++) {
+      const action = rule.actions[i];
+      if (!isRecord(action)) continue;
+      const actionPath = `rules.${ruleId}.actions[${i}]`;
+
+      if (action.type === 'spawn') {
+        const posEntityId = extractEntityIdFromTarget(action.position);
+        if (posEntityId && !entityIds.has(posEntityId)) {
+          errors.push({
+            code: 'UNKNOWN_ENTITY_REF',
+            message: `Rule "${ruleId}" spawn action references unknown entity "${posEntityId}"`,
+            path: `${actionPath}.position.entityId`,
+          });
+        }
+        const templates = action.template;
+        if (typeof templates === 'string' && !templateIds.has(templates)) {
+          errors.push({
+            code: 'UNKNOWN_TEMPLATE',
+            message: `Rule "${ruleId}" spawn action references unknown template "${templates}"`,
+            path: `${actionPath}.template`,
+          });
+        }
+        if (Array.isArray(templates)) {
+          for (const t of templates) {
+            if (typeof t === 'string' && !templateIds.has(t)) {
+              errors.push({
+                code: 'UNKNOWN_TEMPLATE',
+                message: `Rule "${ruleId}" spawn action references unknown template "${t}"`,
+                path: `${actionPath}.template`,
+              });
+            }
+          }
+        }
+      }
+
+      if (action.type === 'destroy') {
+        const targetId = extractEntityIdFromTarget(action.target);
+        if (targetId && !entityIds.has(targetId)) {
+          errors.push({
+            code: 'UNKNOWN_ENTITY_REF',
+            message: `Rule "${ruleId}" destroy action references unknown entity "${targetId}"`,
+            path: `${actionPath}.target.entityId`,
+          });
+        }
+      }
+
+      if (action.type === 'modify') {
+        const targetId = extractEntityIdFromTarget(action.target);
+        if (targetId && !entityIds.has(targetId)) {
+          errors.push({
+            code: 'UNKNOWN_ENTITY_REF',
+            message: `Rule "${ruleId}" modify action references unknown entity "${targetId}"`,
+            path: `${actionPath}.target.entityId`,
+          });
+        }
+      }
+
+      for (const field of ['target', 'towardEntity']) {
+        const fieldVal = (action as Record<string, unknown>)[field];
+        if (!fieldVal) continue;
+        const targetId = extractEntityIdFromTarget(fieldVal);
+        if (targetId && !entityIds.has(targetId)) {
+          errors.push({
+            code: 'UNKNOWN_ENTITY_REF',
+            message: `Rule "${ruleId}" action references unknown entity "${targetId}"`,
+            path: `${actionPath}.${field}.entityId`,
+          });
+        }
+      }
+
+      const actionRecord = action as Record<string, unknown>;
+      if (typeof actionRecord.sourceEntityId === 'string' && !entityIds.has(actionRecord.sourceEntityId)) {
+        errors.push({
+          code: 'UNKNOWN_ENTITY_REF',
+          message: `Rule "${ruleId}" action references unknown sourceEntityId "${actionRecord.sourceEntityId}"`,
+          path: `${actionPath}.sourceEntityId`,
+        });
+      }
+    }
+  }
+}
+
+export function validateParentChildCycles(
+  game: Partial<GameDefinition>,
+  errors: ValidationError[]
+): void {
+  const templates = (game.templates ?? {}) as Record<string, unknown>;
+
+  const adjacency = new Map<string, string[]>();
+  for (const [key, template] of Object.entries(templates)) {
+    const children = isRecord(template) ? template.children : undefined;
+    adjacency.set(key, collectTemplateRefs(children));
+  }
+
+  const visiting = new Set<string>();
+  const visited = new Set<string>();
+
+  const visit = (key: string, stack: string[]) => {
+    if (visiting.has(key)) {
+      const cycle = [...stack, key].join(' -> ');
+      errors.push({
+        code: 'PARENT_CHILD_CYCLE',
+        message: `Parent/child cycle detected: ${cycle}`,
+        path: `templates.${key}`,
+      });
+      return;
+    }
+    if (visited.has(key)) return;
+    visiting.add(key);
+    for (const neighbor of adjacency.get(key) ?? []) {
+      if (adjacency.has(neighbor)) {
+        visit(neighbor, [...stack, key]);
+      }
+    }
+    visiting.delete(key);
+    visited.add(key);
+  };
+
+  for (const key of adjacency.keys()) {
+    visit(key, []);
+  }
+}
+
+export function validateConstantRefs(
+  game: Partial<GameDefinition>,
+  constants: Record<string, unknown> | undefined,
+  errors: ValidationError[]
+): void {
+  const constantNames = new Set(Object.keys(constants ?? {}));
+  if (constantNames.size === 0) return;
+  walkConstantRefs(game, constantNames, errors, '');
+}
+
 export function validateSemantic(
   game: GameDefinition,
   errors: ValidationError[],
@@ -233,8 +410,12 @@ export function validateSemantic(
   validateTemplateReferences(game, errors, warnings);
   detectTemplateCycles(game.templates ?? {}, errors);
 
+  validateEntityTemplateRefs(game, errors);
+  validateRuleEntityRefs(game, errors);
+  validateParentChildCycles(game, errors);
+
   const constants = new Set(Object.keys(game.constants ?? {}));
   if (constants.size > 0) {
-    validateConstantRefs(game, constants, errors, '');
+    walkConstantRefs(game, constants, errors, '');
   }
 }
