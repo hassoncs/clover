@@ -229,7 +229,9 @@ export function createNativeGodotBridge(): GodotBridge {
 					if (gameBridge?.poll_events) {
 						return gameBridge.poll_events();
 					}
-				} catch (e) {}
+				} catch (e) {
+					console.warn("[GodotBridge] Error polling events:", e);
+				}
 				return "[]";
 			});
 
@@ -366,7 +368,9 @@ export function createNativeGodotBridge(): GodotBridge {
 					}
 				}
 			}
-		} catch (e) {}
+		} catch (e) {
+			console.error("[GodotBridge] Fatal error in pollAndDispatchEvents:", e);
+		}
 
 		scheduleNextPoll();
 	}
@@ -539,7 +543,7 @@ export function createNativeGodotBridge(): GodotBridge {
 							gameBridge.native_dispatch("clear_game", "[]");
 						}
 					} catch (e) {
-						// Error during dispose
+						console.warn("[GodotBridge] Error during dispose:", e);
 					}
 				});
 
@@ -744,7 +748,7 @@ export function createNativeGodotBridge(): GodotBridge {
 						}
 					}
 				} catch (e) {
-					// Error getting entity transform
+					console.warn("[GodotBridge] Error getting entity transform:", e);
 				}
 				return null;
 			});
@@ -776,7 +780,9 @@ export function createNativeGodotBridge(): GodotBridge {
 						}
 						return result;
 					}
-				} catch (e) {}
+				} catch (e) {
+					console.warn("[GodotBridge] Error getting all transforms:", e);
+				}
 				return {};
 			});
 		},
@@ -985,7 +991,9 @@ export function createNativeGodotBridge(): GodotBridge {
 							return result as Vec2;
 						}
 					}
-				} catch (e) {}
+				} catch (e) {
+					console.warn("[GodotBridge] Error in screenToWorld:", e);
+				}
 				return { x: 0, y: 0 };
 			});
 		},
