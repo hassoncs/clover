@@ -11,6 +11,8 @@ import { socialRouter } from './routes/social'
 import { socialExtraRouter } from './routes/social-extra'
 import { notificationsRouter } from './routes/notifications'
 import { moderationRouter } from './routes/moderation'
+import { packageReadinessRouter } from './routes/package-readiness'
+import { packageCompilerRouter } from './routes/package-compiler'
 
 export const appRouter = router({
   games: gamesRouter,
@@ -25,6 +27,8 @@ export const appRouter = router({
   socialExtra: socialExtraRouter,
   notifications: notificationsRouter,
   moderation: moderationRouter,
+  packageReadiness: packageReadinessRouter,
+  packageCompiler: packageCompilerRouter,
 
   health: publicProcedure.query(() => ({
     status: 'ok',

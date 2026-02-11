@@ -4,6 +4,8 @@ import { useEditor } from './EditorProvider';
 import { useWorkspaceFiles } from './useWorkspaceFiles';
 import { StageContainer } from './StageContainer';
 import { FileViewer } from './FileViewer';
+import { PreviewGate } from './PreviewGate';
+import { DiagnosticsPanel } from './DiagnosticsPanel';
 
 function shaderIdFromFilename(filename: string): string {
   return filename.replace(/\.gdshader$/, '');
@@ -14,7 +16,7 @@ type ActiveView =
   | { type: 'preview' };
 
 export function StageArea() {
-  const { gameId, hotSwapShader } = useEditor();
+  const { gameId, hotSwapShader, readiness } = useEditor();
   const { 
     openTabs, 
     activeFile, 
@@ -28,12 +30,13 @@ export function StageArea() {
   const handleSave = useCallback((content: string) => {
     if (gameId && activeFile) {
       saveFile(activeFile, content);
+      readiness.triggerCompile();
 
       if (activeFile.endsWith('.gdshader')) {
         hotSwapShader(shaderIdFromFilename(activeFile), content);
       }
     }
-  }, [gameId, activeFile, saveFile, hotSwapShader]);
+  }, [gameId, activeFile, saveFile, hotSwapShader, readiness]);
 
   const [activeView, setActiveView] = useState<ActiveView>({ 
     type: 'file', 
@@ -87,7 +90,8 @@ export function StageArea() {
           testID="preview-tab"
           style={[
             styles.previewTab,
-            activeView.type === 'preview' && styles.activeTab
+            activeView.type === 'preview' && styles.activeTab,
+            readiness.errors.length > 0 && styles.errorTab
           ]}
           onPress={handlePreviewTabPress}
           accessibilityRole="tab"
@@ -96,9 +100,10 @@ export function StageArea() {
         >
           <Text style={[
             styles.tabText,
-            activeView.type === 'preview' && styles.activeTabText
+            activeView.type === 'preview' && styles.activeTabText,
+            readiness.errors.length > 0 && styles.errorTabText
           ]}>
-            ▶ Preview
+            ▶ Preview {readiness.errors.length > 0 && `(${readiness.errors.length})`}
           </Text>
         </TouchableOpacity>
       </View>
@@ -108,7 +113,9 @@ export function StageArea() {
           styles.stageWrapper, 
           { display: activeView.type === 'preview' ? 'flex' : 'none' }
         ]}>
-          <StageContainer />
+          <PreviewGate>
+            <StageContainer />
+          </PreviewGate>
         </View>
 
         {activeView.type === 'file' && (
@@ -120,6 +127,8 @@ export function StageArea() {
             isSaving={isSaving}
           />
         )}
+        
+        <DiagnosticsPanel />
       </View>
     </View>
   );
@@ -166,6 +175,12 @@ const styles = StyleSheet.create({
   },
   activeTabText: {
     color: '#FFFFFF',
+  },
+  errorTab: {
+    borderBottomColor: '#EF4444',
+  },
+  errorTabText: {
+    color: '#EF4444',
   },
   content: {
     flex: 1,

@@ -11,6 +11,8 @@ import React, {
 import type { GameDefinition, GameEntity, AssetPlacement } from "@slopcade/shared";
 import type { Physics2D } from "@/lib/physics2d";
 import type { EntityManager } from "@/lib/game-engine/EntityManager";
+import { usePackageReadiness } from './usePackageReadiness';
+import type { ValidationError, ValidationWarning } from '@slopcade/shared/validation/gameDefinitionTypes';
 
 export interface ResolvedPackEntry {
   imageUrl: string;
@@ -490,6 +492,18 @@ interface EditorContextValue {
 
   registerShaderHandler: (handler: ShaderHotSwapHandler | null) => void;
   hotSwapShader: (shaderId: string, source: string) => void;
+
+  readiness: {
+    ready: boolean;
+    errors: ValidationError[];
+    warnings: ValidationWarning[];
+    isChecking: boolean;
+    isCompiling: boolean;
+    checkNow: () => void;
+    triggerCompile: () => void;
+    lastChecked?: number;
+    buildId?: string;
+  };
 }
 
 const EditorContext = createContext<EditorContextValue | null>(null);
@@ -512,6 +526,7 @@ export function EditorProvider({
   const runtimeRef = useRef<GameRuntimeRef | null>(null);
   const shaderHandlerRef = useRef<ShaderHotSwapHandler | null>(null);
   const [showAIRunPanel, setShowAIRunPanel] = useState(false);
+  const readiness = usePackageReadiness(gameId);
 
   const registerShaderHandler = useCallback((handler: ShaderHotSwapHandler | null) => {
     shaderHandlerRef.current = handler;
@@ -660,6 +675,17 @@ export function EditorProvider({
 
       registerShaderHandler,
       hotSwapShader,
+      readiness: {
+        ready: readiness.ready,
+        errors: readiness.errors,
+        warnings: readiness.warnings,
+        isChecking: readiness.isChecking,
+        isCompiling: readiness.isCompiling,
+        checkNow: readiness.checkNow,
+        triggerCompile: readiness.triggerCompile,
+        lastChecked: readiness.lastChecked,
+        buildId: readiness.buildId,
+      },
     }),
     [
       gameId,
@@ -688,6 +714,7 @@ export function EditorProvider({
       toggleAIRunPanel,
       registerShaderHandler,
       hotSwapShader,
+      readiness,
     ]
   );
 
