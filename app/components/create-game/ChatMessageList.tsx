@@ -1,11 +1,12 @@
-import React, { useCallback, useRef, useEffect } from 'react';
-import { FlatList, StyleSheet, View, Text, NativeSyntheticEvent, NativeScrollEvent, Animated, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { useCallback, useRef, useEffect } from 'react';
+import { FlatList, StyleSheet, View, Text, NativeSyntheticEvent, NativeScrollEvent, LayoutAnimation, Platform, UIManager } from 'react-native';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 import { ChatMessage } from './ChatMessage';
 import { ChatMessage as ChatMessageModel } from './types';
+import { ShimmerText } from '@/components/ui/ShimmerText';
 
 interface Props {
   messages: ChatMessageModel[];
@@ -20,42 +21,9 @@ interface Props {
 const SCROLL_THRESHOLD = 100;
 
 function TypingIndicator() {
-  const opacity1 = useRef(new Animated.Value(0.3)).current;
-  const opacity2 = useRef(new Animated.Value(0.3)).current;
-  const opacity3 = useRef(new Animated.Value(0.3)).current;
-
-  useEffect(() => {
-    const animate = (anim: Animated.Value, delay: number) => {
-      Animated.sequence([
-        Animated.delay(delay),
-        Animated.loop(
-          Animated.sequence([
-            Animated.timing(anim, {
-              toValue: 1,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-            Animated.timing(anim, {
-              toValue: 0.3,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-          ])
-        ),
-      ]).start();
-    };
-
-    animate(opacity1, 0);
-    animate(opacity2, 200);
-    animate(opacity3, 400);
-  }, [opacity1, opacity2, opacity3]);
-
   return (
     <View style={styles.typingContainer}>
-      <Animated.View style={[styles.dot, { opacity: opacity1 }]} />
-      <Animated.View style={[styles.dot, { opacity: opacity2 }]} />
-      <Animated.View style={[styles.dot, { opacity: opacity3 }]} />
-      <Text style={styles.typingText}>Building your game...</Text>
+      <ShimmerText text="Thinking..." fontSize={14} />
     </View>
   );
 }
@@ -140,18 +108,7 @@ const styles = StyleSheet.create({
     padding: 16,
     alignSelf: 'flex-start',
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#A1A1AA',
-    marginRight: 4,
-  },
-  typingText: {
-    fontSize: 13,
-    color: '#71717A',
-    marginLeft: 8,
-  },
+
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
