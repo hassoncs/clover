@@ -42,19 +42,19 @@
 ## Work Objectives
 
 ### Definition of Done
-- [ ] `pnpm tsc --noEmit` passes
-- [ ] All tests pass
-- [ ] Edit mode: incremental hot reload via generic handlers
-- [ ] Play mode: full reload on invalidated tags
-- [ ] Prefab path matches selected rollout lane (V1 safe reload, optional V1.5 reconciler)
-- [ ] Effects/shaders through module graph → effects handler
-- [ ] Reset button works
-- [ ] V1 files load, V2 scenes don't break V1
-- [ ] Agent writes arbitrary supported workspace files
-- [ ] Supported file edits correctly trigger live update/bundle resolution behavior
-- [ ] Debug tools work on web, degrade on mobile
-- [ ] Legacy games still load via `bridge.loadGame()`
-- [ ] Feature flag / kill-switch can force legacy full reload path without data loss
+- [x] `pnpm tsc --noEmit` passes
+- [x] All tests pass
+- [x] Edit mode: incremental hot reload via generic handlers
+- [x] Play mode: full reload on invalidated tags
+- [x] Prefab path matches selected rollout lane (V1 safe reload, optional V1.5 reconciler)
+- [x] Effects/shaders through module graph → effects handler
+- [x] Reset button works
+- [x] V1 files load, V2 scenes don't break V1
+- [x] Agent writes arbitrary supported workspace files
+- [x] Supported file edits correctly trigger live update/bundle resolution behavior
+- [x] Debug tools work on web, degrade on mobile
+- [x] Legacy games still load via `bridge.loadGame()`
+- [x] Feature flag / kill-switch can force legacy full reload path without data loss
 
 ### Must NOT Have (Guardrails)
 - No breaking schema rewrite or destructive data migration
