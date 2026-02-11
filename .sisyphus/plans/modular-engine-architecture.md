@@ -434,9 +434,15 @@ Wave 4 (After Wave 3 — Polish):
 - `app/lib/godot/GodotBridgeBase.ts` — bridge interface
 
 **Acceptance Criteria:**
-- [ ] Loader detects sectioned vs flat input and routes appropriately
-- [ ] Sectioned loading calls `setupWorld` → `registerTemplates` → `loadEntities` in order
+- [x] Loader detects sectioned vs flat input and routes appropriately
+- [x] Sectioned loading calls `setupWorld` → `registerTemplates` → `loadEntities` in order
 - [ ] All 10 games work through both paths
+
+**Implementation Summary:**
+- Added `loadSectioned(definition)` method that calls bridge sectioned methods in order then does same EntityManager/physics/joints/state setup as `load()`
+- Added `swapEntities(game, newEntities)` method for incremental entity replacement via `clearEntities` + `loadEntities`
+- Existing `load()`, `unload()`, `reload()` methods unchanged
+- TypeScript compiles cleanly (`pnpm tsc --noEmit`)
 
 **Recommended Agent Profile:**
 - **Category**: `unspecified-high`

@@ -139,6 +139,52 @@ export class GameLoader {
     this.physics.destroyWorld();
   }
 
+  loadSectioned(definition: GameDefinition): LoadedGame {
+    const pixelsPerMeter = definition.world.pixelsPerMeter ?? 50;
+
+    this.physics.createWorld(definition.world.gravity);
+
+    this.bridge?.setupWorld(definition.world, definition.background);
+    this.bridge?.registerTemplates(definition.templates);
+    this.bridge?.loadEntities(definition.entities);
+
+    const entityManager = new EntityManager({
+      templates: definition.templates,
+      bridge: this.bridge,
+    });
+
+    entityManager.loadEntities(definition.entities);
+
+    const joints = new Map<string, JointId>();
+    if (definition.joints) {
+      for (const joint of definition.joints) {
+        const jointId = this.createJoint(joint, entityManager);
+        if (jointId) {
+          joints.set(joint.id, jointId);
+        }
+      }
+    }
+
+    const gameState = createGameState(definition);
+    const events = createGameEventBus();
+
+    return {
+      definition,
+      entityManager,
+      pixelsPerMeter,
+      joints,
+      gameState,
+      events,
+    };
+  }
+
+  swapEntities(game: LoadedGame, newEntities: GameEntity[]): void {
+    this.bridge?.clearEntities();
+    game.entityManager.clearAll();
+    this.bridge?.loadEntities(newEntities);
+    game.entityManager.loadEntities(newEntities);
+  }
+
   reload(game: LoadedGame): LoadedGame {
     this.unload(game);
     return this.load(game.definition);
