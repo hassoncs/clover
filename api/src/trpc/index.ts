@@ -18,7 +18,7 @@ const DEV_USER: User = {
 
 // Helper to validate and extract user from auth token
 async function validateAuthToken(ctx: Context): Promise<User> {
-  if (ctx.authToken === 'dev-token' && ctx.env.APP_URL?.includes('localhost')) {
+  if (__DEV__ && ctx.authToken === 'dev-token') {
     return DEV_USER;
   }
 

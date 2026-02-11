@@ -2731,6 +2731,8 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - RNLiveAudioStream (1.1.1):
+    - React
   - RNPurchases (9.7.6):
     - PurchasesHybridCommon (= 17.31.0)
     - React-Core
@@ -3180,6 +3182,7 @@ DEPENDENCIES:
   - "ReactCommon/turbomodule/core (from `../../node_modules/.pnpm/react-native@0.81.4_@babel+core@7.29.0_@types+react@19.1.17_react@19.1.0/node_modules/react-native/ReactCommon`)"
   - "RNCAsyncStorage (from `../../node_modules/.pnpm/@react-native-async-storage+async-storage@2.2.0_react-native@0.81.4_@babel+core@7.29.0_@types_s4x73d2vew4bbxbh4zb2wccjk4/node_modules/@react-native-async-storage/async-storage`)"
   - "RNGestureHandler (from `../../node_modules/.pnpm/react-native-gesture-handler@2.30.0_react-native@0.81.4_@babel+core@7.29.0_@types+react@19.1._ywwhj3zvibkftmqsxdmvsoyo6a/node_modules/react-native-gesture-handler`)"
+  - "RNLiveAudioStream (from `../../node_modules/.pnpm/react-native-live-audio-stream@1.1.1/node_modules/react-native-live-audio-stream`)"
   - "RNPurchases (from `../../node_modules/.pnpm/react-native-purchases@9.7.6_react-native-web@0.21.2_react-dom@19.1.0_react@19.1.0__react@19._pdaerjzarhl4dotgqtapmgkwpe/node_modules/react-native-purchases`)"
   - "RNReanimated (from `../../node_modules/.pnpm/react-native-reanimated@4.2.1_react-native-worklets@0.7.2_@babel+core@7.29.0_react-native@0.8_yjye3ky763uhbkzhtbpa4j64gq/node_modules/react-native-reanimated`)"
   - "RNScreens (from `../../node_modules/.pnpm/react-native-screens@4.16.0_react-native@0.81.4_@babel+core@7.29.0_@types+react@19.1.17_react@19.1.0__react@19.1.0/node_modules/react-native-screens`)"
@@ -3402,6 +3405,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/.pnpm/@react-native-async-storage+async-storage@2.2.0_react-native@0.81.4_@babel+core@7.29.0_@types_s4x73d2vew4bbxbh4zb2wccjk4/node_modules/@react-native-async-storage/async-storage"
   RNGestureHandler:
     :path: "../../node_modules/.pnpm/react-native-gesture-handler@2.30.0_react-native@0.81.4_@babel+core@7.29.0_@types+react@19.1._ywwhj3zvibkftmqsxdmvsoyo6a/node_modules/react-native-gesture-handler"
+  RNLiveAudioStream:
+    :path: "../../node_modules/.pnpm/react-native-live-audio-stream@1.1.1/node_modules/react-native-live-audio-stream"
   RNPurchases:
     :path: "../../node_modules/.pnpm/react-native-purchases@9.7.6_react-native-web@0.21.2_react-dom@19.1.0_react@19.1.0__react@19._pdaerjzarhl4dotgqtapmgkwpe/node_modules/react-native-purchases"
   RNReanimated:
@@ -3524,6 +3529,7 @@ SPEC CHECKSUMS:
   RevenueCat: 2d8aa56c68fa8e92c0d669e5e797c4a93e284f20
   RNCAsyncStorage: 29f0230e1a25f36c20b05f65e2eb8958d6526e82
   RNGestureHandler: e37bdb684df1ac17c7e1d8f71a3311b2793c186b
+  RNLiveAudioStream: 93ac2bb6065be9018d0b00157b220f11cebc1513
   RNPurchases: 462fb7edb0304dba1db46e3d38368a271ebe4cc2
   RNReanimated: c160d18c60aec956e8a6e180909958e08a51077f
   RNScreens: 0bbf16c074ae6bb1058a7bf2d1ae017f4306797c

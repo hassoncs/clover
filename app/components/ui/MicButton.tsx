@@ -1,5 +1,5 @@
-import React from 'react';
-import { Pressable, ActivityIndicator, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Pressable, ActivityIndicator, Animated, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { SpeechToTextError } from '@/lib/speech/types';
 
@@ -22,55 +22,61 @@ export function MicButton({
   onPressOut,
   mode,
 }: MicButtonProps) {
-  const getIconName = () => {
-    if (error) return 'mic-off';
-    if (isRecording) return 'mic';
-    return 'mic-outline';
-  };
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
-  const getIconColor = () => {
-    if (error) return '#EF4444';
-    if (isRecording) return '#EF4444';
-    if (isConnecting) return '#6B7280';
-    return '#6B7280';
-  };
+  useEffect(() => {
+    if (error) {
+      console.warn('[MicButton] Speech error:', error.code, error.message);
+    }
+  }, [error]);
 
-  const getBackgroundColor = () => {
-    if (error) return 'bg-red-100';
-    if (isRecording) return 'bg-red-100';
-    if (isConnecting) return 'bg-gray-100';
-    return 'bg-transparent';
-  };
+  useEffect(() => {
+    if (isRecording) {
+      const pulse = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 0.4, duration: 800, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+        ])
+      );
+      pulse.start();
+      return () => pulse.stop();
+    }
+    pulseAnim.setValue(1);
+  }, [isRecording, pulseAnim]);
 
   return (
     <Pressable
       onPress={mode === 'toggle' ? onPress : undefined}
       onPressIn={mode === 'hold' ? onPressIn : undefined}
       onPressOut={mode === 'hold' ? onPressOut : undefined}
-      className={`p-2 rounded-full ${getBackgroundColor()}`}
+      style={[styles.button, isRecording && styles.buttonRecording]}
       accessibilityLabel={isRecording ? 'Stop recording' : 'Start recording'}
       accessibilityRole="button"
       accessibilityState={{ selected: isRecording }}
       testID="mic-button"
     >
-      <View className="relative">
-        {isConnecting ? (
-          <ActivityIndicator size="small" color="#6B7280" testID="loading-indicator" />
-        ) : (
+      {isConnecting ? (
+        <ActivityIndicator size="small" color="#6B7280" testID="loading-indicator" />
+      ) : (
+        <Animated.View style={isRecording ? { opacity: pulseAnim } : undefined}>
           <Ionicons
-            name={getIconName()}
+            name={isRecording ? 'mic' : 'mic-outline'}
             size={24}
-            color={getIconColor()}
+            color={isRecording ? '#EF4444' : '#6B7280'}
             testID="mic-icon"
           />
-        )}
-        {isRecording && (
-          <View 
-            className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" 
-            testID="recording-indicator"
-          />
-        )}
-      </View>
+        </Animated.View>
+      )}
     </Pressable>
   );
 }
+
+const styles = StyleSheet.create({
+  button: {
+    padding: 8,
+    borderRadius: 9999,
+  },
+  buttonRecording: {
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+  },
+});

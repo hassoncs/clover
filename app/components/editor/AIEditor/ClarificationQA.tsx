@@ -1,7 +1,15 @@
 import { View, Text, TextInput, Pressable, ActivityIndicator, ScrollView } from 'react-native';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import type { ClarificationQuestion } from '@slopcade/shared';
+interface ClarificationQuestion {
+  questionId: string;
+  question: string;
+  stage: string;
+  stepIndex: number;
+  context?: string;
+  answer?: string;
+  answeredAt?: number;
+}
 
 interface ClarificationQAProps {
   questions: ClarificationQuestion[];

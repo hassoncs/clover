@@ -3,6 +3,7 @@ import { useShouldShowSidebar } from '@/lib/hooks/useDeviceType';
 import { StageArea } from './StageArea';
 import { BottomSheetHost } from './BottomSheetHost';
 import { Sidebar } from './sidebar/Sidebar';
+import { ChatSidebar } from './ChatSidebar';
 import { InspectorProvider } from './inspector/InspectorProvider';
 import { InspectOverlay } from './inspector/InspectOverlay';
 
@@ -19,6 +20,7 @@ export function ResponsiveEditorLayout() {
               <StageArea />
               <InspectOverlay />
             </View>
+            <ChatSidebar style={styles.chatSidebar} />
           </View>
         ) : (
           <View style={styles.mobileLayout}>
@@ -49,5 +51,10 @@ const styles = StyleSheet.create({
   },
   viewport: {
     flex: 1,
+  },
+  chatSidebar: {
+    width: 360,
+    borderLeftWidth: 1,
+    borderLeftColor: '#374151',
   },
 });

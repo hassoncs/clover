@@ -16,8 +16,8 @@ describe('Chat Threads Router', () => {
   });
 
   beforeEach(async () => {
-    await testEnv.DB.prepare('DELETE FROM chat_events').run();
-    await testEnv.DB.prepare('DELETE FROM chat_threads').run();
+    await testEnv.DB.prepare('DELETE FROM messages').run();
+    await testEnv.DB.prepare('DELETE FROM threads').run();
     await testEnv.DB.prepare('DELETE FROM games').run();
     await testEnv.DB.prepare('DELETE FROM users').run();
 
@@ -41,17 +41,17 @@ describe('Chat Threads Router', () => {
     expect(result.threadId).toBeDefined();
 
     const row = await testEnv.DB
-      .prepare('SELECT * FROM chat_threads WHERE id = ?')
+      .prepare('SELECT * FROM threads WHERE id = ?')
       .bind(result.threadId)
-      .first<{ user_id: string; game_id: string; title: string | null; last_event_seq: number }>();
+      .first<{ user_id: string; game_id: string; title: string | null; generation_stage: string }>();
 
     expect(row?.user_id).toBe(TEST_USER.id);
     expect(row?.game_id).toBe(gameId);
     expect(row?.title).toBe('Test Thread');
-    expect(row?.last_event_seq).toBe(0);
+    expect(row?.generation_stage).toBe('idle');
   });
 
-  it('appends user messages and reads events', async () => {
+  it('sends user messages and reads messages', async () => {
     const caller = createAuthenticatedCaller(TEST_USER);
     const now = Date.now();
     const gameId = crypto.randomUUID();
@@ -62,21 +62,21 @@ describe('Chat Threads Router', () => {
 
     const { threadId } = await caller.chatThreads.createThread({ gameId });
 
-    const event = await caller.chatThreads.appendUserMessage({
+    const sendResult = await caller.chatThreads.sendMessage({
       threadId,
+      gameId,
       text: 'Hello there',
     });
 
-    expect(event.eventType).toBe('user_message');
-    expect(event.seq).toBe(1);
+    expect(sendResult.threadId).toBe(threadId);
 
-    const eventsResult = await caller.chatThreads.getEvents({
+    const messagesResult = await caller.chatThreads.getMessages({
       threadId,
       afterSeq: 0,
     });
 
-    expect(eventsResult.events).toHaveLength(1);
-    expect(eventsResult.events[0].seq).toBe(1);
-    expect(eventsResult.events[0].payload.type).toBe('user_message');
+    expect(messagesResult.messages.length).toBeGreaterThan(0);
+    expect(messagesResult.messages[0].seq).toBe(1);
+    expect(messagesResult.messages[0].role).toBe('user');
   });
 });

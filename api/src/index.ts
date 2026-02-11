@@ -6,8 +6,6 @@ import { appRouter } from '@/trpc/router'
 import { createContext, type Env } from '@/trpc/context'
 import revenuecatWebhookRouter from '@/routes/webhooks/revenuecat'
 import textGridRouter from '@/routes/text-grid'
-import { RunCoordinatorDO } from '@/agent/RunCoordinatorDO'
-import { RunStepWorkerDO } from '@/agent/RunStepWorkerDO'
 import { RealtimeRelayDO } from '@/agent/RealtimeRelayDO'
 
 const app = new Hono<{ Bindings: Env }>();
@@ -35,41 +33,6 @@ app.use(
 );
 
 app.get("/health", (c) => c.json({ status: "ok", timestamp: Date.now() }));
-
-app.get('/ws/agent-run/:runId', async (c) => {
-  const runId = c.req.param('runId');
-  const upgrade = c.req.header('Upgrade');
-  if (!upgrade || upgrade.toLowerCase() !== 'websocket') {
-    return c.text('Expected websocket upgrade', 426);
-  }
-
-  const token = new URL(c.req.url).searchParams.get('token');
-  if (!token) {
-    return c.text('Authentication required', 401);
-  }
-
-  if (!c.env.SUPABASE_URL || !c.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return c.text('Auth not configured', 500);
-  }
-
-  const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_SERVICE_ROLE_KEY);
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-  if (error || !user) {
-    return c.text('Invalid or expired token', 401);
-  }
-
-  const run = await c.env.DB
-    .prepare('SELECT user_id FROM agent_runs WHERE id = ?')
-    .bind(runId)
-    .first<{ user_id: string }>();
-  if (!run || run.user_id !== user.id) {
-    return c.text('Access denied', 403);
-  }
-
-  const id = c.env.RUN_COORDINATOR.idFromName(runId);
-  const stub = c.env.RUN_COORDINATOR.get(id);
-  return stub.fetch(c.req.raw);
-});
 
 app.get('/ws/speech-to-text', async (c) => {
   const upgrade = c.req.header('Upgrade');
@@ -132,4 +95,4 @@ app.use(
 );
 
 export default app;
-export { RunCoordinatorDO, RunStepWorkerDO, RealtimeRelayDO };
+export { RealtimeRelayDO };

@@ -1,12 +1,7 @@
 import { useRef, useMemo, useCallback } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import BottomSheet, {
-  BottomSheetFlatList,
-  BottomSheetFooter,
-  type BottomSheetFooterProps,
-} from "@gorhom/bottom-sheet";
-import { ChatMessage as ChatMessageComponent } from "@/components/create-game/ChatMessage";
-import { Composer } from "@/components/create-game/Composer";
+import BottomSheet, { BottomSheetFlatList } from "@gorhom/bottom-sheet";
+import { ChatConversation } from "@/components/create-game/ChatConversation";
 import { Ionicons } from "@expo/vector-icons";
 import type { ChatMessage } from "@/components/create-game/types";
 
@@ -19,7 +14,7 @@ interface ChatSheetProps {
   isRunning: boolean;
   submitAnswer: (questionId: string, answer: string) => void;
   submitUserAnswer: (batchId: string, answers: string[][]) => void;
-  pendingQuestions: any;
+  pendingQuestions: unknown;
 }
 
 export function ChatSheet({
@@ -35,36 +30,6 @@ export function ChatSheet({
 }: ChatSheetProps) {
   const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["50%", "90%"], []);
-
-  const reversedMessages = useMemo(
-    () => [...messages].reverse(),
-    [messages]
-  );
-
-  const renderChatMessage = useCallback(
-    ({ item }: { item: ChatMessage }) => (
-      <View style={styles.chatMessageItem}>
-        <ChatMessageComponent
-          message={item}
-          onSubmitUserAnswer={submitUserAnswer}
-          onSubmitClarification={submitAnswer}
-          onRetry={() => {}}
-        />
-      </View>
-    ),
-    [submitUserAnswer, submitAnswer]
-  );
-
-  const renderFooter = useCallback(
-    (props: BottomSheetFooterProps) => (
-      <BottomSheetFooter {...props}>
-        <View style={styles.footerContainer}>
-          <Composer variant="sheet" onSend={onSendMessage} isSubmitting={isSending} />
-        </View>
-      </BottomSheetFooter>
-    ),
-    [onSendMessage, isSending]
-  );
 
   const renderHandle = useCallback(
     () => (
@@ -91,32 +56,36 @@ export function ChatSheet({
       snapPoints={snapPoints}
       backgroundStyle={styles.sheetBackground}
       handleComponent={renderHandle}
+      style={styles.sheetShadow}
       enablePanDownToClose
       onClose={onDismiss}
       enableDynamicSizing={false}
-      footerComponent={renderFooter}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
     >
-      <BottomSheetFlatList<ChatMessage>
-        data={reversedMessages}
-        keyExtractor={(item: ChatMessage) => item.id}
-        renderItem={renderChatMessage}
-        inverted
-        contentContainerStyle={styles.chatContentContainer}
-        ListHeaderComponent={
-          isRunning && !pendingQuestions ? (
-            <View style={styles.typingContainer}>
-              <Text style={styles.typingText}>Building your game...</Text>
-            </View>
-          ) : null
-        }
+      <ChatConversation
+        messages={messages}
+        onSendMessage={onSendMessage}
+        isSending={isSending}
+        isRunning={isRunning}
+        onSubmitClarification={submitAnswer}
+        onSubmitUserAnswer={submitUserAnswer}
+        pendingQuestions={pendingQuestions}
+        listComponent={BottomSheetFlatList}
+        textInputVariant="sheet"
       />
     </BottomSheet>
   );
 }
 
 const styles = StyleSheet.create({
+  sheetShadow: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.125,
+    shadowRadius: 12,
+    elevation: 10,
+  },
   sheetBackground: {
     backgroundColor: "#1F2937",
   },
@@ -153,26 +122,5 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 17,
     fontWeight: "600",
-  },
-  chatContentContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 12,
-  },
-  chatMessageItem: {
-    marginBottom: 4,
-  },
-  footerContainer: {
-    backgroundColor: "#1F2937",
-  },
-  typingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    alignSelf: "flex-start",
-  },
-  typingText: {
-    fontSize: 13,
-    color: "#71717A",
   },
 });

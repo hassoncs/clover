@@ -94,7 +94,20 @@ agent-browser screenshot --full result.png
 - Integration with existing Playwright test suites
 
 ## Project Context
-...
+
+The game maker uses a unified thread and message model for AI orchestration, replacing the legacy stage-based system.
+
+- **Data Model**: All interactions are stored in `threads` and `messages` tables in D1.
+- **Chat Flow**: 
+  1. User sends message via tRPC `chatThreads.sendMessage`.
+  2. Backend calls `advanceThread()` in `api/src/chat/chat-handler.ts`.
+  3. AI generates text and calls tools (readFile, writeFile, askUser) via `generateText`.
+  4. Messages and tool results are persisted to D1.
+- **Human-in-the-Loop (HITL)**: The `askUser` tool triggers a suspension. The user submits answers via `chatThreads.submitToolAnswer`, which calls `resumeThread()` to continue generation.
+- **Billing**: Settled per message turn via `AgentBillingService.settleMessage()`.
+- **Frontend**: The `useEditorChat.ts` hook manages the chat state, polling for updates and handling tool interactions.
+- **Durable Objects**: Only `RealtimeRelayDO` remains for voice/STT. Chat orchestration is handled by standard async functions in the Worker.
+
 ## Secrets Management (Hush)
 
 This project uses **`hush`** for secrets management. API keys and credentials are stored in the hush vault — never in `.env` files.

@@ -7,8 +7,6 @@ type DurableObjectNamespace = import("@cloudflare/workers-types").DurableObjectN
 export interface Env {
   DB: D1Database;
   ASSETS: R2Bucket;
-  RUN_COORDINATOR: DurableObjectNamespace;
-  RUN_STEP_WORKER: DurableObjectNamespace;
   REALTIME_RELAY: DurableObjectNamespace;
 
   SUPABASE_URL: string;

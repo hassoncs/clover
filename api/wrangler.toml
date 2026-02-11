@@ -21,14 +21,6 @@ bucket_name = "slopcade-assets"
 preview_bucket_name = "slopcade-assets-dev"
 
 [[durable_objects.bindings]]
-name = "RUN_COORDINATOR"
-class_name = "RunCoordinatorDO"
-
-[[durable_objects.bindings]]
-name = "RUN_STEP_WORKER"
-class_name = "RunStepWorkerDO"
-
-[[durable_objects.bindings]]
 name = "REALTIME_RELAY"
 class_name = "RealtimeRelayDO"
 
@@ -39,6 +31,10 @@ new_classes = ["RunCoordinatorDO", "RunStepWorkerDO"]
 [[migrations]]
 tag = "v3"
 new_classes = ["RealtimeRelayDO"]
+
+[[migrations]]
+tag = "v4"
+deleted_classes = ["RunCoordinatorDO", "RunStepWorkerDO"]
 
 # TODO: Configure custom domain
 # [[routes]]

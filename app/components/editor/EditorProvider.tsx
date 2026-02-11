@@ -441,6 +441,8 @@ export interface GameRuntimeRef {
   getEntityManager: () => EntityManager | null;
 }
 
+export type ShaderHotSwapHandler = (shaderId: string, source: string) => void;
+
 export interface EphemeralSource {
   type: "database" | "offline";
   id: string;
@@ -485,6 +487,9 @@ interface EditorContextValue {
 
   runtimeRef: React.RefObject<GameRuntimeRef | null>;
   selectedEntity: GameEntity | null;
+
+  registerShaderHandler: (handler: ShaderHotSwapHandler | null) => void;
+  hotSwapShader: (shaderId: string, source: string) => void;
 }
 
 const EditorContext = createContext<EditorContextValue | null>(null);
@@ -505,7 +510,16 @@ export function EditorProvider({
   ephemeralSource,
 }: EditorProviderProps) {
   const runtimeRef = useRef<GameRuntimeRef | null>(null);
+  const shaderHandlerRef = useRef<ShaderHotSwapHandler | null>(null);
   const [showAIRunPanel, setShowAIRunPanel] = useState(false);
+
+  const registerShaderHandler = useCallback((handler: ShaderHotSwapHandler | null) => {
+    shaderHandlerRef.current = handler;
+  }, []);
+
+  const hotSwapShader = useCallback((shaderId: string, source: string) => {
+    shaderHandlerRef.current?.(shaderId, source);
+  }, []);
 
   const initialState: EditorState = {
     mode: "edit",
@@ -643,6 +657,9 @@ export function EditorProvider({
 
       runtimeRef,
       selectedEntity,
+
+      registerShaderHandler,
+      hotSwapShader,
     }),
     [
       gameId,
@@ -669,6 +686,8 @@ export function EditorProvider({
       ephemeralSource,
       showAIRunPanel,
       toggleAIRunPanel,
+      registerShaderHandler,
+      hotSwapShader,
     ]
   );
 

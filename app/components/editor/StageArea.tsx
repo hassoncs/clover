@@ -1,16 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useEditor } from './EditorProvider';
 import { useWorkspaceFiles } from './useWorkspaceFiles';
 import { StageContainer } from './StageContainer';
 import { FileViewer } from './FileViewer';
 
+function shaderIdFromFilename(filename: string): string {
+  return filename.replace(/\.gdshader$/, '');
+}
+
 type ActiveView = 
   | { type: 'file'; filename: string }
   | { type: 'preview' };
 
 export function StageArea() {
-  const { gameId } = useEditor();
+  const { gameId, hotSwapShader } = useEditor();
   const { 
     openTabs, 
     activeFile, 
@@ -21,11 +25,15 @@ export function StageArea() {
     isSaving
   } = useWorkspaceFiles(gameId);
 
-  const handleSave = (content: string) => {
+  const handleSave = useCallback((content: string) => {
     if (gameId && activeFile) {
       saveFile(activeFile, content);
+
+      if (activeFile.endsWith('.gdshader')) {
+        hotSwapShader(shaderIdFromFilename(activeFile), content);
+      }
     }
-  };
+  }, [gameId, activeFile, saveFile, hotSwapShader]);
 
   const [activeView, setActiveView] = useState<ActiveView>({ 
     type: 'file', 

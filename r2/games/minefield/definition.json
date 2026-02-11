@@ -35,11 +35,16 @@
         "id": "var-flagsRemaining",
         "type": "text",
         "anchor": "top-left",
-        "offset": { "x": 16, "y": 16 },
+        "offset": {
+          "x": 16,
+          "y": 16
+        },
         "fontSize": 18,
         "fontWeight": "bold",
         "color": "#FFFFFF",
-        "bindings": { "text": "FLAGS\n{{variables.flagsRemaining}}" },
+        "bindings": {
+          "text": "FLAGS\n{{variables.flagsRemaining}}"
+        },
         "style": {
           "backgroundColor": "rgba(0,0,0,0.6)",
           "borderRadius": 8,
@@ -51,11 +56,16 @@
         "id": "timer",
         "type": "text",
         "anchor": "top-center",
-        "offset": { "x": 0, "y": 16 },
+        "offset": {
+          "x": 0,
+          "y": 16
+        },
         "fontSize": 20,
         "fontWeight": "bold",
         "color": "#FFFFFF",
-        "bindings": { "text": "{{formatTime(elapsed)}}" },
+        "bindings": {
+          "text": "{{formatTime(elapsed)}}"
+        },
         "style": {
           "backgroundColor": "rgba(0,0,0,0.6)",
           "borderRadius": 8,
@@ -67,11 +77,16 @@
         "id": "var-cellsRemaining",
         "type": "text",
         "anchor": "top-right",
-        "offset": { "x": 16, "y": 16 },
+        "offset": {
+          "x": 16,
+          "y": 16
+        },
         "fontSize": 18,
         "fontWeight": "bold",
         "color": "#FFFFFF",
-        "bindings": { "text": "CELLS\n{{variables.cellsRemaining}}" },
+        "bindings": {
+          "text": "CELLS\n{{variables.cellsRemaining}}"
+        },
         "style": {
           "backgroundColor": "rgba(0,0,0,0.6)",
           "borderRadius": 8,

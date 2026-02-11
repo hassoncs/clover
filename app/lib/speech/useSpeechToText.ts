@@ -47,8 +47,10 @@ export function useSpeechToText(config: SpeechToTextConfig): SpeechToTextState {
   }, [internalState, cleanup]);
 
   const startRecording = useCallback(async () => {
+    console.log('[Speech] startRecording called, internalState:', internalState);
     if (internalState !== 'idle') {
       if (configRef.current.mode === 'toggle') {
+        console.log('[Speech] Toggle mode: stopping current recording');
         cleanup();
       }
       return;
@@ -56,12 +58,16 @@ export function useSpeechToText(config: SpeechToTextConfig): SpeechToTextState {
 
     setInternalState('connecting');
     setError(null);
+    console.log('[Speech] State -> connecting');
 
     try {
+      console.log('[Speech] Calling initAudioCapture()');
       initAudioCapture();
 
+      console.log('[Speech] Getting auth session...');
       const session = await supabase?.auth.getSession();
       const token = session?.data.session?.access_token;
+      console.log('[Speech] Auth token present:', !!token);
       if (!token) {
         throw new Error('No auth token');
       }
@@ -69,10 +75,12 @@ export function useSpeechToText(config: SpeechToTextConfig): SpeechToTextState {
       const wsProtocol = env.apiUrl.startsWith('https') ? 'wss' : 'ws';
       const wsHost = env.apiUrl.replace(/^https?:\/\//, '');
       const wsUrl = `${wsProtocol}://${wsHost}/ws/speech-to-text?token=${encodeURIComponent(token)}`;
+      console.log('[Speech] Connecting WebSocket:', wsUrl);
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {
+        console.log('[Speech] WebSocket opened, state -> recording');
         setInternalState('recording');
 
         const onData = (base64Chunk: string) => {
@@ -84,6 +92,7 @@ export function useSpeechToText(config: SpeechToTextConfig): SpeechToTextState {
           }
         };
 
+        console.log('[Speech] Starting audio capture (will request mic permission)...');
         startAudioCapture(onData);
 
         ws.send(JSON.stringify({
@@ -102,27 +111,33 @@ export function useSpeechToText(config: SpeechToTextConfig): SpeechToTextState {
 
       ws.onmessage = (event) => {
         const msg: RealtimeEvent = JSON.parse(event.data);
+        console.log('[Speech] WS message:', msg.type);
 
         if (msg.type === 'conversation.item.input_audio_transcription.delta') {
           setTranscript((prev) => prev + msg.delta);
         } else if (msg.type === 'conversation.item.input_audio_transcription.completed') {
+          console.log('[Speech] Transcription complete:', msg.transcript);
           setTranscript(msg.transcript);
           configRef.current.onTranscriptComplete?.(msg.transcript);
         } else if (msg.type === 'error') {
+          console.error('[Speech] OpenAI error:', msg.error.message);
           setError({ code: 'OPENAI_ERROR', message: msg.error.message });
         }
       };
 
-      ws.onerror = () => {
+      ws.onerror = (event) => {
+        console.error('[Speech] WebSocket error:', event);
         setError({ code: 'CONNECTION_FAILED', message: 'WebSocket connection failed' });
         setInternalState('idle');
       };
 
-      ws.onclose = () => {
+      ws.onclose = (event) => {
+        console.log('[Speech] WebSocket closed, code:', event.code, 'reason:', event.reason);
         setInternalState('idle');
       };
 
     } catch (err) {
+      console.error('[Speech] startRecording error:', err);
       setError({
         code: 'PERMISSION_DENIED',
         message: err instanceof Error ? err.message : 'Failed to start recording',

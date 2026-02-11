@@ -14,6 +14,7 @@ export type TransactionType =
   | 'admin_adjustment'
   | 'agent_reservation_hold'
   | 'agent_step_settlement'
+  | 'agent_message_settlement'
   | 'agent_reservation_release';
 
 export interface TransactionParams {

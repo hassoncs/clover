@@ -229,12 +229,13 @@ export default function ProfileScreen() {
     { enabled: isAuthenticated && !!user?.id }
   );
 
+  const utils = trpcReact.useUtils();
   const [myGames, setMyGames] = useState<MyGameItem[]>([]);
   const [isLoadingGames, setIsLoadingGames] = useState(false);
-  const [isRefreshingGames, setIsRefreshingGames] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const fetchMyGames = useCallback(async (showRefresh = false) => {
-    if (showRefresh) setIsRefreshingGames(true);
+    if (showRefresh) setIsRefreshing(true);
     else setIsLoadingGames(true);
     try {
       const result = await trpc.games.list.query();
@@ -243,9 +244,19 @@ export default function ProfileScreen() {
       setMyGames([]);
     } finally {
       setIsLoadingGames(false);
-      setIsRefreshingGames(false);
+      setIsRefreshing(false);
     }
   }, []);
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await Promise.all([
+      fetchMyGames(true),
+      utils.economy.getBalance.invalidate(),
+      utils.social.getUserProfile.invalidate(),
+    ]);
+    setIsRefreshing(false);
+  }, [fetchMyGames, utils]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -306,8 +317,8 @@ export default function ProfileScreen() {
         contentContainerStyle={{ paddingBottom: 130 }}
         refreshControl={
           <RefreshControl
-            refreshing={isRefreshingGames}
-            onRefresh={() => fetchMyGames(true)}
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
             tintColor="#4CAF50"
           />
         }

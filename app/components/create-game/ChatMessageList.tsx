@@ -14,6 +14,7 @@ interface Props {
   onRetry?: () => void;
   isRunning?: boolean;
   hasPendingQuestion?: boolean;
+  listComponent?: React.ElementType;
 }
 
 const SCROLL_THRESHOLD = 100;
@@ -61,7 +62,7 @@ function TypingIndicator() {
 
 const MAINTAIN_POSITION = { minIndexForVisible: 0 };
 
-export function ChatTimeline({ messages, onSubmitUserAnswer, onSubmitClarification, onRetry, isRunning, hasPendingQuestion }: Props) {
+export function ChatMessageList({ messages, onSubmitUserAnswer, onSubmitClarification, onRetry, isRunning, hasPendingQuestion, listComponent: ListComponent = FlatList }: Props) {
   const listRef = useRef<FlatList>(null);
   const isNearBottom = useRef(true);
   const prevMessageCount = useRef(messages.length);
@@ -88,12 +89,12 @@ export function ChatTimeline({ messages, onSubmitUserAnswer, onSubmitClarificati
   }, []);
 
   return (
-    <FlatList
+    <ListComponent
       ref={listRef}
       style={styles.list}
       data={messages}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
+      keyExtractor={(item: ChatMessageModel) => item.id}
+      renderItem={({ item }: { item: ChatMessageModel }) => (
         <ChatMessage 
           message={item} 
           onSubmitUserAnswer={onSubmitUserAnswer}

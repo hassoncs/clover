@@ -68,6 +68,7 @@ export function ToolSheet({ activeTab, onDismiss }: ToolSheetProps) {
       snapPoints={snapPoints}
       backgroundStyle={styles.sheetBackground}
       handleComponent={renderHandle}
+      style={styles.sheetShadow}
       enablePanDownToClose
       onClose={onDismiss}
       enableDynamicSizing={false}
@@ -80,6 +81,13 @@ export function ToolSheet({ activeTab, onDismiss }: ToolSheetProps) {
 }
 
 const styles = StyleSheet.create({
+  sheetShadow: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.125,
+    shadowRadius: 12,
+    elevation: 10,
+  },
   sheetBackground: {
     backgroundColor: "#1F2937",
   },

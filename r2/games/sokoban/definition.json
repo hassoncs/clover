@@ -35,11 +35,16 @@
         "id": "var-moves",
         "type": "text",
         "anchor": "top-center",
-        "offset": { "x": 0, "y": 16 },
+        "offset": {
+          "x": 0,
+          "y": 16
+        },
         "fontSize": 18,
         "fontWeight": "bold",
         "color": "#FFFFFF",
-        "bindings": { "text": "MOVES\n{{variables.moves}}" },
+        "bindings": {
+          "text": "MOVES\n{{variables.moves}}"
+        },
         "style": {
           "backgroundColor": "rgba(0,0,0,0.6)",
           "borderRadius": 8,

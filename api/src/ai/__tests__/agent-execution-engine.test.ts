@@ -1,9 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import type { AgentStepStage } from '@slopcade/shared/types/agent-run';
-
 import {
   executeAgentStage,
+  type AgentStage,
   type AgentExecutionEnv,
   type AgentExecutionStageContext,
   type AgentExecutionStageResult,
@@ -101,7 +100,7 @@ describe('executeAgentStage', () => {
 describe('stage override contract', () => {
   it('accepts partial stage runner overrides', async () => {
     const env = createEnv();
-    const calls: AgentStepStage[] = [];
+    const calls: AgentStage[] = [];
 
     const planningOverride: AgentStageRunner = async () => {
       calls.push('planning');

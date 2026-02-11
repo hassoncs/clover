@@ -1,56 +1,32 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useEditor, type EditorTab } from "./EditorProvider";
 import { EditorToolbar } from "./EditorToolbar";
 import { ChatSheet } from "./ChatSheet";
 import { ToolSheet } from "./ToolSheet";
-import { useCreateGameChat } from "@/components/create-game/useCreateGameChat";
-import { useThreads } from "@/components/create-game/useThreads";
+import { useEditorChatSession } from "./useEditorChatSession";
 
 export function BottomSheetHost() {
-  const { mode, gameId } = useEditor();
-
-  const effectiveGameId = gameId !== "preview" ? gameId : null;
-  const { threads, createThread, initForGame } = useThreads();
-  const [threadId, setThreadId] = useState<string | null>(null);
+  const { mode } = useEditor();
   const [chatOpen, setChatOpen] = useState(false);
   const [activeToolTab, setActiveToolTab] = useState<EditorTab | null>(null);
 
-  useEffect(() => {
-    if (effectiveGameId) {
-      initForGame(effectiveGameId);
-    }
-  }, [effectiveGameId, initForGame]);
-
-  useEffect(() => {
-    if (!threadId && threads.length > 0) {
-      setThreadId(threads[0].id);
-    }
-  }, [threads, threadId]);
-
   const {
     messages,
-    sendMessage,
+    handleSendMessage: sendMessage,
     isRunning,
     isSending,
     submitAnswer,
     submitUserAnswer,
     pendingQuestions,
-  } = useCreateGameChat(threadId, effectiveGameId);
+  } = useEditorChatSession();
 
   const handleSendMessage = useCallback(
     async (text: string) => {
-      let tid = threadId;
-      if (!tid && effectiveGameId) {
-        tid = await createThread(effectiveGameId);
-        setThreadId(tid);
-      }
-      if (tid) {
-        sendMessage(text, tid, effectiveGameId ?? undefined);
-        setActiveToolTab(null);
-        setChatOpen(true);
-      }
+      await sendMessage(text);
+      setActiveToolTab(null);
+      setChatOpen(true);
     },
-    [threadId, effectiveGameId, createThread, sendMessage]
+    [sendMessage]
   );
 
   const handleTabPress = useCallback(

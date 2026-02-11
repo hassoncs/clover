@@ -2,7 +2,6 @@
 export * from './users';
 export * from './games';
 export * from './economy';
-export * from './agent-runs';
 export * from './social';
 export * from './notifications';
 export * from './moderation';

@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "start": "wrangler dev",
-    "release": "wrangler deploy --minify",
+    "release": "wrangler deploy --minify --define __DEV__:false",
     "db:push": "npx wrangler d1 execute slopcade-db --file=./schema.sql --local",
     "db:push:remote": "npx wrangler d1 execute slopcade-db --file=./schema.sql --remote",
     "db:reset": "rm -rf .wrangler/state/v3/d1 && pnpm db:push",

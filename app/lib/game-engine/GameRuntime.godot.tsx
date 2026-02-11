@@ -112,6 +112,8 @@ export interface GameRuntimeGodotProps {
   onPreviousLevel?: () => void;
   /** Skip the "ready" screen and start playing immediately */
   autoStart?: boolean;
+  /** Called when bridge is ready, provides hotSwapShader for live shader editing */
+  onBridgeReady?: (api: { hotSwapShader: (shaderId: string, source: string) => void }) => void;
 }
 
 const GAME_LOOP_INTERVAL = 16;
@@ -132,6 +134,7 @@ export function GameRuntimeGodot({
   onNextLevel,
   onPreviousLevel,
   autoStart = false,
+  onBridgeReady,
 }: GameRuntimeGodotProps) {
   const stablePreloadTextureUrls = preloadTextureUrls ?? EMPTY_TEXTURE_URLS;
   const progressHook = useGameProgressFromDefinition(definition);
@@ -169,13 +172,14 @@ export function GameRuntimeGodot({
   const onPreloadProgressRef = useRef(onPreloadProgress);
   const onGameEndRef = useRef(onGameEnd);
   const onScoreChangeRef = useRef(onScoreChange);
+  const onBridgeReadyRef = useRef(onBridgeReady);
 
-  // Keep refs up to date (intentionally no deps - runs every render to sync refs)
   useEffect(() => {
     onReadyRef.current = onReady;
     onPreloadProgressRef.current = onPreloadProgress;
     onGameEndRef.current = onGameEnd;
     onScoreChangeRef.current = onScoreChange;
+    onBridgeReadyRef.current = onBridgeReady;
   });
 
   const cleanupSubscriptions = useCallback(() => {
@@ -591,6 +595,12 @@ export function GameRuntimeGodot({
         await bridge.initialize();
         logger.info("bridge", "Bridge initialized");
         bridgeRef.current = bridge;
+
+        onBridgeReadyRef.current?.({
+          hotSwapShader: (shaderId: string, source: string) => {
+            bridge.hotSwapShader(shaderId, source);
+          },
+        });
 
     if (stablePreloadTextureUrls.length > 0) {
       logger.info("assets", `Preloading ${stablePreloadTextureUrls.length} textures...`);

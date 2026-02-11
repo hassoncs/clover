@@ -18,4 +18,6 @@ export interface ChatMessage {
   payload?: unknown;
   // Whether this message is still "pending" (e.g., unanswered question)
   pending?: boolean;
+  // For HITL tool calls
+  toolCallId?: string;
 }

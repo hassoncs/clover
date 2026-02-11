@@ -21,7 +21,6 @@ export * from './sync-world-ops';
 export * from './async-world-ops';
 export * from './debug-ops';
 export * from './style-presets';
-export * from './agent-run';
 export * from './user-question';
 export type {
   ContainerConfig,

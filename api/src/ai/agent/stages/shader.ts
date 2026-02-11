@@ -124,6 +124,40 @@ Generate all requested shaders now.`,
 
     const parsed = parseShaderOutput(generated.text);
 
+    if (definition.effects && Object.keys(parsed.shaders).length > 0) {
+      if (!definition.effects.shaders) {
+        definition.effects.shaders = {};
+      }
+      for (const [id, shader] of Object.entries(parsed.shaders)) {
+        definition.effects.shaders[id] = {
+          filename: shader.filename,
+          glsl: shader.glsl,
+        };
+      }
+
+      const gameId = context.context.gameId;
+      if (gameId) {
+        const definitionKey = `games/${gameId}/definition.json`;
+        await context.env.ASSETS.put(definitionKey, JSON.stringify(definition), {
+          httpMetadata: { contentType: 'application/json' },
+        });
+      }
+
+      const finalDefinitionKey = `agent-runs/${context.runId}/final/definition.json`;
+      await context.env.ASSETS.put(finalDefinitionKey, JSON.stringify(definition), {
+        httpMetadata: { contentType: 'application/json' },
+      });
+
+      if (gameId) {
+        for (const [, shader] of Object.entries(parsed.shaders)) {
+          const workspaceKey = `games/${gameId}/workspace/${shader.filename}`;
+          await context.env.ASSETS.put(workspaceKey, shader.glsl, {
+            httpMetadata: { contentType: 'text/plain; charset=utf-8' },
+          });
+        }
+      }
+    }
+
     const outputData = {
       stage: 'shader',
       mode: 'generated',

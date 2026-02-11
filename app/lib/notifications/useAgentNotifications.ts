@@ -1,7 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 import * as Notifications from 'expo-notifications';
-import type { ClientAgentEvent } from '@/components/editor/AIEditor/useAgentRun';
+
+interface ClientAgentEvent {
+  seq: number;
+  eventType: string;
+}
 
 const NOTIFICATION_EVENT_TYPES = new Set([
   'run_completed',

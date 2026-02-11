@@ -5,12 +5,18 @@ import { WithGodot } from "@/components/WithGodot";
 import { InteractionLayer } from "./InteractionLayer";
 
 export function StageContainer() {
-  const { mode, document } = useEditor();
+  const { mode, document, registerShaderHandler } = useEditor();
   const [runtimeKey, setRuntimeKey] = useState(0);
 
   const handleRequestRestart = useCallback(() => {
     setRuntimeKey((k) => k + 1);
   }, []);
+
+  const handleBridgeReady = useCallback((api: { hotSwapShader: (shaderId: string, source: string) => void }) => {
+    registerShaderHandler((shaderId, source) => {
+      api.hotSwapShader(shaderId, source);
+    });
+  }, [registerShaderHandler]);
 
   if (!document || !document.world) {
     return (
@@ -35,6 +41,7 @@ export function StageContainer() {
                 definition={document}
                 showHUD={mode === "playtest"}
                 onRequestRestart={handleRequestRestart}
+                onBridgeReady={handleBridgeReady}
               />
             ),
           }))

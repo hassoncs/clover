@@ -1,9 +1,82 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
-import { ChatEventStore } from '@/chat/chat-event-store';
+import { ArtifactService } from '@/agent/artifact-service';
+import {
+  advanceThread,
+  resumeThread,
+  type ThreadRow,
+  type MessageRow,
+  type ChatHandlerContext,
+} from '@/chat/chat-handler';
+import { createModel } from '@/ai/model-factory';
+import { WalletService } from '@/economy/wallet-service';
 
 import { protectedProcedure, router } from '../index';
+import type { Env, User } from '../context';
+
+const DEFAULT_MODEL_NAME = 'openai/gpt-4o-mini';
+
+function buildChatContext(
+  env: Env,
+  user: User,
+  gameId: string,
+): ChatHandlerContext {
+  const apiKey = env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'AI provider not configured' });
+  }
+
+  const modelName = env.AI_MODEL ?? DEFAULT_MODEL_NAME;
+  const model = createModel({ apiKey, model: modelName });
+  const artifactService = new ArtifactService(env.ASSETS, env.DB);
+  const walletService = new WalletService(env.DB);
+
+  return {
+    db: env.DB,
+    model,
+    modelName,
+    userId: user.id,
+    gameId,
+    artifactService,
+    walletService,
+  };
+}
+
+function toThread(row: ThreadRow) {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    gameId: row.game_id,
+    title: row.title,
+    status: row.status,
+    generationStage: row.generation_stage,
+    statusMessage: row.status_message,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function toMessage(row: MessageRow) {
+  return {
+    id: row.id,
+    threadId: row.thread_id,
+    role: row.role,
+    content: JSON.parse(row.content_json),
+    componentName: row.component_name,
+    componentProps: row.component_props_json ? JSON.parse(row.component_props_json) : null,
+    componentState: row.component_state_json ? JSON.parse(row.component_state_json) : null,
+    toolCallId: row.tool_call_id,
+    toolName: row.tool_name,
+    model: row.model,
+    costMicros: row.cost_micros,
+    inputTokens: row.input_tokens,
+    outputTokens: row.output_tokens,
+    error: row.error_json ? JSON.parse(row.error_json) : null,
+    createdAt: row.created_at,
+    seq: row.seq,
+  };
+}
 
 export const chatThreadsRouter = router({
   createThread: protectedProcedure
@@ -29,8 +102,8 @@ export const chatThreadsRouter = router({
 
       await ctx.env.DB
         .prepare(
-          `INSERT INTO chat_threads (id, user_id, game_id, title, status, last_event_seq, created_at, updated_at)
-           VALUES (?, ?, ?, ?, 'active', 0, ?, ?)`
+          `INSERT INTO threads (id, user_id, game_id, title, status, generation_stage, created_at, updated_at)
+           VALUES (?, ?, ?, ?, 'active', 'idle', ?, ?)`
         )
         .bind(id, ctx.user.id, input.gameId, input.title ?? null, now, now)
         .run();
@@ -47,7 +120,7 @@ export const chatThreadsRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      let query = 'SELECT * FROM chat_threads WHERE user_id = ? AND status = ?';
+      let query = 'SELECT * FROM threads WHERE user_id = ? AND status = ?';
       const values: Array<string | number> = [ctx.user.id, 'active'];
 
       if (input.gameId) {
@@ -58,32 +131,10 @@ export const chatThreadsRouter = router({
       query += ' ORDER BY updated_at DESC LIMIT ? OFFSET ?';
       values.push(input.limit, input.offset);
 
-      const result = await ctx.env.DB.prepare(query).bind(...values).all<{
-        id: string;
-        user_id: string;
-        game_id: string;
-        title: string | null;
-        status: string;
-        parent_thread_id: string | null;
-        parent_event_seq: number | null;
-        last_event_seq: number;
-        created_at: number;
-        updated_at: number;
-      }>();
+      const result = await ctx.env.DB.prepare(query).bind(...values).all<ThreadRow>();
 
       return {
-        threads: result.results.map((row) => ({
-          id: row.id,
-          userId: row.user_id,
-          gameId: row.game_id,
-          title: row.title,
-          status: row.status,
-          parentThreadId: row.parent_thread_id,
-          parentEventSeq: row.parent_event_seq,
-          lastEventSeq: row.last_event_seq,
-          createdAt: row.created_at,
-          updatedAt: row.updated_at,
-        })),
+        threads: result.results.map(toThread),
       };
     }),
 
@@ -91,60 +142,16 @@ export const chatThreadsRouter = router({
     .input(z.object({ threadId: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
       const row = await ctx.env.DB
-        .prepare('SELECT * FROM chat_threads WHERE id = ? AND user_id = ?')
+        .prepare('SELECT * FROM threads WHERE id = ? AND user_id = ?')
         .bind(input.threadId, ctx.user.id)
-        .first<{
-          id: string;
-          user_id: string;
-          game_id: string;
-          title: string | null;
-          status: string;
-          last_event_seq: number;
-          created_at: number;
-          updated_at: number;
-        }>();
+        .first<ThreadRow>();
 
       if (!row) throw new TRPCError({ code: 'NOT_FOUND', message: 'Thread not found' });
 
-      return {
-        id: row.id,
-        userId: row.user_id,
-        gameId: row.game_id,
-        title: row.title,
-        status: row.status,
-        lastEventSeq: row.last_event_seq,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-      };
+      return toThread(row);
     }),
 
-  appendUserMessage: protectedProcedure
-    .input(
-      z.object({
-        threadId: z.string().uuid(),
-        text: z.string().min(1).max(10000),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      const thread = await ctx.env.DB
-        .prepare('SELECT id, user_id FROM chat_threads WHERE id = ? AND user_id = ?')
-        .bind(input.threadId, ctx.user.id)
-        .first();
-
-      if (!thread) throw new TRPCError({ code: 'NOT_FOUND', message: 'Thread not found' });
-
-      const store = new ChatEventStore(ctx.env.DB);
-      const event = await store.appendEvent({
-        threadId: input.threadId,
-        eventType: 'user_message',
-        role: 'user',
-        payload: { version: 1, type: 'user_message', text: input.text },
-      });
-
-      return event;
-    }),
-
-  getEvents: protectedProcedure
+  getMessages: protectedProcedure
     .input(
       z.object({
         threadId: z.string().uuid(),
@@ -154,16 +161,114 @@ export const chatThreadsRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const thread = await ctx.env.DB
-        .prepare('SELECT id FROM chat_threads WHERE id = ? AND user_id = ?')
+        .prepare('SELECT id FROM threads WHERE id = ? AND user_id = ?')
         .bind(input.threadId, ctx.user.id)
         .first();
 
       if (!thread) throw new TRPCError({ code: 'NOT_FOUND', message: 'Thread not found' });
 
-      const store = new ChatEventStore(ctx.env.DB);
-      const events = await store.getEventsAfter(input.threadId, input.afterSeq, input.limit);
+      const result = await ctx.env.DB
+        .prepare(
+          'SELECT * FROM messages WHERE thread_id = ? AND seq > ? ORDER BY seq ASC LIMIT ?'
+        )
+        .bind(input.threadId, input.afterSeq, input.limit)
+        .all<MessageRow>();
 
-      return { events };
+      return { messages: result.results.map(toMessage) };
+    }),
+
+  sendMessage: protectedProcedure
+    .input(
+      z.object({
+        threadId: z.string().uuid().optional(),
+        gameId: z.string().uuid(),
+        text: z.string().min(1).max(10000),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const game = await ctx.env.DB
+        .prepare('SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL')
+        .bind(input.gameId)
+        .first<{ id: string; user_id: string }>();
+
+      if (!game) throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
+      if (game.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Not your game' });
+      }
+
+      let threadId = input.threadId;
+
+      if (!threadId) {
+        threadId = crypto.randomUUID();
+        const now = Date.now();
+        await ctx.env.DB
+          .prepare(
+            `INSERT INTO threads (id, user_id, game_id, title, status, generation_stage, created_at, updated_at)
+             VALUES (?, ?, ?, NULL, 'active', 'idle', ?, ?)`
+          )
+          .bind(threadId, ctx.user.id, input.gameId, now, now)
+          .run();
+      } else {
+        const thread = await ctx.env.DB
+          .prepare('SELECT id, user_id FROM threads WHERE id = ? AND user_id = ?')
+          .bind(threadId, ctx.user.id)
+          .first();
+
+        if (!thread) throw new TRPCError({ code: 'NOT_FOUND', message: 'Thread not found' });
+      }
+
+      const chatCtx = buildChatContext(ctx.env, ctx.user, input.gameId);
+      const result = await advanceThread(threadId, input.text, chatCtx);
+
+      return {
+        threadId,
+        status: result.status,
+        text: result.text ?? null,
+        pendingAskUser: result.pendingAskUser ?? null,
+        error: result.error ?? null,
+      };
+    }),
+
+  submitToolAnswer: protectedProcedure
+    .input(
+      z.object({
+        threadId: z.string().uuid(),
+        toolCallId: z.string().trim().min(1),
+        answer: z.string().trim().min(1),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const thread = await ctx.env.DB
+        .prepare('SELECT * FROM threads WHERE id = ? AND user_id = ?')
+        .bind(input.threadId, ctx.user.id)
+        .first<ThreadRow>();
+
+      if (!thread) throw new TRPCError({ code: 'NOT_FOUND', message: 'Thread not found' });
+
+      if (thread.generation_stage !== 'waiting_for_input') {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: 'Thread must be waiting for input to submit a tool answer',
+        });
+      }
+
+      if (!thread.game_id) {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: 'Thread has no associated game',
+        });
+      }
+
+      const chatCtx = buildChatContext(ctx.env, ctx.user, thread.game_id);
+      const result = await resumeThread(input.threadId, input.toolCallId, input.answer, chatCtx);
+
+      return {
+        threadId: input.threadId,
+        status: result.status,
+        text: result.text ?? null,
+        pendingAskUser: result.pendingAskUser ?? null,
+        error: result.error ?? null,
+      };
     }),
 
   listWorkspaceFiles: protectedProcedure
@@ -248,55 +353,21 @@ export const chatThreadsRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const thread = await ctx.env.DB
-        .prepare('SELECT id, game_id FROM chat_threads WHERE id = ? AND user_id = ?')
+        .prepare('SELECT id, game_id FROM threads WHERE id = ? AND user_id = ?')
         .bind(input.threadId, ctx.user.id)
         .first<{ id: string; game_id: string }>();
 
       if (!thread) throw new TRPCError({ code: 'NOT_FOUND', message: 'Thread not found' });
 
-      const chatEvents = await ctx.env.DB
-        .prepare('SELECT seq, event_type, role, content_json, run_id, created_at FROM chat_events WHERE thread_id = ? ORDER BY seq ASC')
+      const messages = await ctx.env.DB
+        .prepare('SELECT * FROM messages WHERE thread_id = ? ORDER BY seq ASC')
         .bind(input.threadId)
-        .all<{ seq: number; event_type: string; role: string | null; content_json: string; run_id: string | null; created_at: number }>();
-
-      const runs = await ctx.env.DB
-        .prepare('SELECT id, status, tier, error_message, current_step_index, total_steps, created_at, finished_at FROM agent_runs WHERE thread_id = ? ORDER BY created_at ASC')
-        .bind(input.threadId)
-        .all<{ id: string; status: string; tier: string; error_message: string | null; current_step_index: number; total_steps: number; created_at: number; finished_at: number | null }>();
-
-      const agentEvents = await ctx.env.DB
-        .prepare('SELECT run_id, seq, event_type, payload_json, created_at FROM agent_events WHERE run_id IN (SELECT id FROM agent_runs WHERE thread_id = ?) ORDER BY created_at ASC')
-        .bind(input.threadId)
-        .all<{ run_id: string; seq: number; event_type: string; payload_json: string; created_at: number }>();
+        .all<MessageRow>();
 
       return {
         threadId: input.threadId,
         gameId: thread.game_id,
-        chatEvents: chatEvents.results.map(e => ({
-          seq: e.seq,
-          eventType: e.event_type,
-          role: e.role,
-          payload: JSON.parse(e.content_json),
-          runId: e.run_id,
-          createdAt: e.created_at,
-        })),
-        runs: runs.results.map(r => ({
-          id: r.id,
-          status: r.status,
-          tier: r.tier,
-          errorMessage: r.error_message,
-          currentStepIndex: r.current_step_index,
-          totalSteps: r.total_steps,
-          createdAt: r.created_at,
-          finishedAt: r.finished_at,
-        })),
-        agentEvents: agentEvents.results.map(e => ({
-          runId: e.run_id,
-          seq: e.seq,
-          eventType: e.event_type,
-          payload: JSON.parse(e.payload_json),
-          createdAt: e.created_at,
-        })),
+        messages: messages.results.map(toMessage),
       };
     }),
 });

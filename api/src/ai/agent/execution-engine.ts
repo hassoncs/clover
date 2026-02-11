@@ -1,5 +1,3 @@
-import type { AgentStepStage } from '@slopcade/shared/types/agent-run';
-
 import type { AgentTier } from '@/ai/agent/tier-config';
 import {
   planningStage,
@@ -44,14 +42,16 @@ export interface AgentExecutionRunContext {
   planningDocJson?: string | null;
 }
 
+export type AgentStage = 'planning' | 'build' | 'shader' | 'refine' | 'theme' | 'asset' | 'chat';
+
 export interface AgentExecutionStageContext {
   runId: string;
   stepId: string;
   stepIndex: number;
-  stage: AgentStepStage;
+  stage: AgentStage;
   tier: AgentTier;
   env: AgentExecutionEnv;
-  previousArtifacts: Partial<Record<AgentStepStage, string>>;
+  previousArtifacts: Partial<Record<AgentStage, string>>;
   context: AgentExecutionRunContext;
   planningDoc?: string;
   gameDefinition?: import('@slopcade/shared/types/GameDefinition').GameDefinition;
@@ -89,23 +89,23 @@ export interface ExecuteAgentStageInput {
   runId: string;
   stepId: string;
   stepIndex: number;
-  stage: AgentStepStage;
+  stage: AgentStage;
   tier: AgentTier;
   env: AgentExecutionEnv;
   context: AgentExecutionRunContext;
-  previousArtifacts: Partial<Record<AgentStepStage, string>>;
+  previousArtifacts: Partial<Record<AgentStage, string>>;
   planningDoc?: string;
   gameDefinition?: import('@slopcade/shared/types/GameDefinition').GameDefinition;
   themePlan?: import('@/ai/pipeline/theme-plan').ThemePlan;
 }
 
 export interface ExecuteAgentStageOptions {
-  stageRunners?: Partial<Record<AgentStepStage, AgentStageRunner>>;
+  stageRunners?: Partial<Record<AgentStage, AgentStageRunner>>;
 }
 
-export const STAGE_ORDER: AgentStepStage[] = ['planning', 'build', 'shader', 'refine', 'theme', 'asset'];
+export const STAGE_ORDER: AgentStage[] = ['planning', 'build', 'shader', 'refine', 'theme', 'asset'];
 
-const DEFAULT_STAGE_RUNNERS: Record<AgentStepStage, AgentStageRunner> = {
+const DEFAULT_STAGE_RUNNERS: Record<AgentStage, AgentStageRunner> = {
   planning: planningStage,
   build: buildStage,
   shader: shaderStage,
@@ -119,7 +119,7 @@ function stageBasePrefix(runId: string, stepIndex: number): string {
   return `agent-runs/${runId}/steps/${stepIndex}`;
 }
 
-function checkpointKey(runId: string, stepIndex: number, stage: AgentStepStage): string {
+function checkpointKey(runId: string, stepIndex: number, stage: AgentStage): string {
   return `${stageBasePrefix(runId, stepIndex)}/${stage}/checkpoint.json`;
 }
 
@@ -145,7 +145,7 @@ async function persistCheckpoint(
   env: AgentExecutionEnv,
   runId: string,
   stepIndex: number,
-  stage: AgentStepStage,
+  stage: AgentStage,
   payload: Record<string, unknown>
 ): Promise<void> {
   const key = checkpointKey(runId, stepIndex, stage);
@@ -155,8 +155,8 @@ async function persistCheckpoint(
 }
 
 function validateStagePrerequisites(
-  stage: AgentStepStage,
-  previousArtifacts: Partial<Record<AgentStepStage, string>>
+  stage: AgentStage,
+  previousArtifacts: Partial<Record<AgentStage, string>>
 ): AgentExecutionStageResult | null {
   if (stage === 'planning') {
     return null;
@@ -199,7 +199,7 @@ export async function executeAgentStage(
     return prerequisiteFailure;
   }
 
-  const stageRunners: Record<AgentStepStage, AgentStageRunner> = {
+  const stageRunners: Record<AgentStage, AgentStageRunner> = {
     ...DEFAULT_STAGE_RUNNERS,
     ...options.stageRunners,
   };

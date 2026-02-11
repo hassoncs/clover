@@ -1,9 +1,10 @@
 {
-  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/modular-engine-architecture.md",
-  "started_at": "2026-02-11T02:08:54.801Z",
+  "active_plan": "/Users/hassoncs/Workspaces/Personal/slopcade/.sisyphus/plans/tambo-model-migration.md",
+  "started_at": "2026-02-11T17:29:37.272Z",
   "session_ids": [
-    "ses_3b5a1d9feffeX5ryjgs0C4W5vR"
+    "ses_3b2768ee6ffecyBHOOdgHq4t85",
+    "ses_3b2874492ffeQAWEiBWyRa25xL"
   ],
-  "plan_name": "modular-engine-architecture",
+  "plan_name": "tambo-model-migration",
   "agent": "atlas"
 }
