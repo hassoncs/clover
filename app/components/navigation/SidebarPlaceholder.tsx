@@ -45,7 +45,12 @@ export function SidebarPlaceholder({ visible, onClose }: SidebarPlaceholderProps
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        <Pressable 
+          style={StyleSheet.absoluteFill} 
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel="Close sidebar"
+        />
       </Animated.View>
 
       <Animated.View style={[styles.panel, { transform: [{ translateX }] }]}> 

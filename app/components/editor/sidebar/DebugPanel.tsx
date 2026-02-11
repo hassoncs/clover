@@ -25,6 +25,7 @@ export function DebugPanel() {
               value={showPhysics}
               onValueChange={setShowPhysics}
               trackColor={{ false: '#374151', true: '#6366F1' }}
+              accessibilityLabel="Show physics shapes"
             />
           </View>
           
@@ -34,6 +35,7 @@ export function DebugPanel() {
               value={showSprites}
               onValueChange={setShowSprites}
               trackColor={{ false: '#374151', true: '#6366F1' }}
+              accessibilityLabel="Show sprite bounds"
             />
           </View>
           
@@ -43,6 +45,7 @@ export function DebugPanel() {
               value={showIds}
               onValueChange={setShowIds}
               trackColor={{ false: '#374151', true: '#6366F1' }}
+              accessibilityLabel="Show entity IDs"
             />
           </View>
         </View>
@@ -56,6 +59,7 @@ export function DebugPanel() {
               value={inspectMode}
               onValueChange={toggleInspectMode}
               trackColor={{ false: '#374151', true: '#6366F1' }}
+              accessibilityLabel="Inspect mode"
             />
           </View>
           
@@ -65,6 +69,7 @@ export function DebugPanel() {
               value={pauseOnStart}
               onValueChange={setPauseOnStart}
               trackColor={{ false: '#374151', true: '#6366F1' }}
+              accessibilityLabel="Pause on start"
             />
           </View>
         </View>

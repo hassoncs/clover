@@ -70,11 +70,14 @@ export function GameComments({ gameId, currentUserId }: GameCommentsProps) {
               onChangeText={setCommentText}
               multiline
               maxLength={2000}
+              accessibilityLabel="Comment text input"
             />
             <Pressable
               className="ml-3 p-2"
               onPress={handleSubmit}
               disabled={!commentText.trim() || addComment.isPending}
+              accessibilityRole="button"
+              accessibilityLabel="Send comment"
             >
               {addComment.isPending ? (
                 <ActivityIndicator size="small" color="#818CF8" />
@@ -115,6 +118,8 @@ export function GameComments({ gameId, currentUserId }: GameCommentsProps) {
             <Pressable
               className="py-3 items-center"
               onPress={() => setCursor(data?.nextCursor ?? undefined)}
+              accessibilityRole="button"
+              accessibilityLabel="Load more comments"
             >
               <Text className="text-indigo-400 text-sm font-medium">
                 Load more comments

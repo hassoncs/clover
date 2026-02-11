@@ -61,6 +61,7 @@ export function EffectParamControl({ schema, value, onChange }: EffectParamContr
           onValueChange={onChange}
           trackColor={{ false: '#374151', true: '#a855f7' }}
           thumbColor="#fff"
+          accessibilityLabel={label}
         />
       </View>
     );
@@ -82,6 +83,7 @@ export function EffectParamControl({ schema, value, onChange }: EffectParamContr
             onChangeText={onChange}
             placeholder="#RRGGBB"
             placeholderTextColor="#6B7280"
+            accessibilityLabel={`${label} color value`}
           />
         </View>
       </View>
@@ -110,6 +112,7 @@ export function EffectParamControl({ schema, value, onChange }: EffectParamContr
                   newValues[i] = parseFloat(text) || 0;
                   onChange(newValues);
                 }}
+                accessibilityLabel={`${label} ${comp} component`}
               />
             </View>
           ))}

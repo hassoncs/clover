@@ -104,6 +104,7 @@ export function TextEffectEditor({
             className="bg-gray-800 text-white p-3 rounded-lg"
             placeholder="Enter text..."
             placeholderTextColor="#666"
+            accessibilityLabel="Text content"
           />
         </View>
 
@@ -117,6 +118,9 @@ export function TextEffectEditor({
                 className={`px-4 py-2 rounded-lg ${
                   selectedTier === tier ? 'bg-purple-600' : 'bg-gray-800'
                 }`}
+                accessibilityRole="button"
+                accessibilityLabel={`${tier} device tier`}
+                accessibilityState={{ selected: selectedTier === tier }}
               >
                 <Text className={`capitalize ${selectedTier === tier ? 'text-white' : 'text-gray-400'}`}>
                   {tier}
@@ -138,6 +142,8 @@ export function TextEffectEditor({
                 key={key}
                 onPress={() => handlePresetSelect(key as keyof typeof TEXT_EFFECT_PRESETS)}
                 className="bg-gray-800 px-3 py-2 rounded-lg"
+                accessibilityRole="button"
+                accessibilityLabel={`${preset.name} preset, ${preset.tier} tier`}
               >
                 <Text className="text-white text-sm">{preset.name}</Text>
                 <Text className="text-gray-500 text-xs">{preset.tier}</Text>
@@ -155,6 +161,7 @@ export function TextEffectEditor({
             placeholder="Describe the effect (e.g., 'Neon sign with cyan glow')..."
             placeholderTextColor="#666"
             multiline
+            accessibilityLabel="AI effect description"
           />
           <TouchableOpacity
             onPress={handleGenerate}
@@ -162,6 +169,9 @@ export function TextEffectEditor({
             className={`mt-2 p-3 rounded-lg ${
               isGenerating || !description.trim() ? 'bg-gray-700' : 'bg-purple-600'
             }`}
+            accessibilityRole="button"
+            accessibilityLabel="Generate effect"
+            accessibilityState={{ disabled: isGenerating || !description.trim() }}
           >
             {isGenerating ? (
               <ActivityIndicator color="white" />
@@ -181,6 +191,8 @@ export function TextEffectEditor({
             <TouchableOpacity
               onPress={() => onApply(generatedEffect.spec)}
               className="mt-4 bg-green-600 p-3 rounded-lg"
+              accessibilityRole="button"
+              accessibilityLabel="Apply effect to game"
             >
               <Text className="text-white text-center font-semibold">Apply to Game</Text>
             </TouchableOpacity>

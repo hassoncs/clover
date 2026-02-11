@@ -467,6 +467,22 @@ export function createNativeGodotBridge(): GodotBridge {
       callGameBridge('clear_game');
     },
 
+    setupWorld(world, background) {
+      callGameBridge('setup_world', JSON.stringify(world), JSON.stringify(background ?? {}));
+    },
+
+    registerTemplates(templates) {
+      callGameBridge('register_templates', JSON.stringify(templates));
+    },
+
+    loadEntities(entities) {
+      callGameBridge('load_entities', JSON.stringify(entities));
+    },
+
+    clearEntities() {
+      callGameBridge('clear_entities');
+    },
+
     pausePhysics() {
       callGameBridge('pause_physics');
     },

@@ -94,6 +94,7 @@ export function SignupCodeGate({ visible, onDismiss, onSuccess }: SignupCodeGate
               autoCapitalize="characters"
               autoCorrect={false}
               editable={!isValidating && !redeemMutation.isPending}
+              accessibilityLabel="Signup code input"
             />
             {error && (
               <Text className="text-red-400 text-center mt-2 text-sm">
@@ -110,6 +111,9 @@ export function SignupCodeGate({ visible, onDismiss, onSuccess }: SignupCodeGate
             }`}
             onPress={handleSubmit}
             disabled={isValidating || redeemMutation.isPending || !code.trim()}
+            accessibilityRole="button"
+            accessibilityLabel="Redeem signup code"
+            accessibilityState={{ disabled: isValidating || redeemMutation.isPending || !code.trim() }}
           >
             {isValidating || redeemMutation.isPending ? (
               <ActivityIndicator color="white" />
@@ -124,6 +128,9 @@ export function SignupCodeGate({ visible, onDismiss, onSuccess }: SignupCodeGate
             className="py-2"
             onPress={onDismiss}
             disabled={isValidating || redeemMutation.isPending}
+            accessibilityRole="button"
+            accessibilityLabel="Skip signup code"
+            accessibilityState={{ disabled: isValidating || redeemMutation.isPending }}
           >
             <Text className="text-gray-500 text-center font-medium">
               I don't have a code (Skip)

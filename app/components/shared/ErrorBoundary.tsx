@@ -45,7 +45,7 @@ export class ErrorBoundary extends Component<Props, State> {
           {this.state.error && (
             <Text style={styles.message}>{this.state.error.message}</Text>
           )}
-          <Pressable style={styles.button} onPress={this.resetError}>
+          <Pressable style={styles.button} onPress={this.resetError} accessibilityRole="button" accessibilityLabel="Try again">
             <Text style={styles.buttonText}>Try Again</Text>
           </Pressable>
         </View>

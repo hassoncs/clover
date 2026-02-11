@@ -38,6 +38,8 @@ export const ImageSearchResultCard = memo(function ImageSearchResultCard({
     <Pressable
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
       onPress={() => onPress?.(id)}
+      accessibilityRole="button"
+      accessibilityLabel={`${name}${collection ? ` from ${collection}` : ''}`}
     >
       <View style={styles.imageContainer}>
         <PreviewImage uri={previewUrl} />

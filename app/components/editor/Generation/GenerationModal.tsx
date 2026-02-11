@@ -163,6 +163,9 @@ export function GenerationModal({
                 selectedStyle === style.id && styles.styleOptionSelected,
               ]}
               onPress={() => setSelectedStyle(style.id)}
+              accessibilityRole="button"
+              accessibilityLabel={`Style: ${style.label}`}
+              accessibilityState={{ selected: selectedStyle === style.id }}
             >
               <Text
                 style={[
@@ -184,6 +187,9 @@ export function GenerationModal({
                 setSelectedStyle('');
               }
             }}
+            accessibilityRole="button"
+            accessibilityLabel="Style: Custom"
+            accessibilityState={{ selected: !STYLE_PRESET_OPTIONS.some(s => s.id === selectedStyle) }}
           >
             <Text
               style={[
@@ -215,12 +221,16 @@ export function GenerationModal({
             <Pressable
               style={styles.toggleAllButton}
               onPress={() => handleToggleAll(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Select all templates"
             >
               <Text style={styles.toggleAllButtonText}>All</Text>
             </Pressable>
             <Pressable
               style={styles.toggleAllButton}
               onPress={() => handleToggleAll(false)}
+              accessibilityRole="button"
+              accessibilityLabel="Deselect all templates"
             >
               <Text style={styles.toggleAllButtonText}>None</Text>
             </Pressable>
@@ -233,6 +243,9 @@ export function GenerationModal({
               <Pressable
                 style={styles.templateHeader}
                 onPress={() => handleToggleTemplate(config.id)}
+                accessibilityRole="button"
+                accessibilityLabel={`Toggle template ${config.name}`}
+                accessibilityState={{ checked: config.enabled }}
               >
                 <View
                   style={[
@@ -250,6 +263,8 @@ export function GenerationModal({
                       expandedTemplate === config.id ? null : config.id
                     )
                   }
+                  accessibilityRole="button"
+                  accessibilityLabel={expandedTemplate === config.id ? 'Collapse' : 'Expand'}
                 >
                   <Text style={styles.expandButtonText}>
                     {expandedTemplate === config.id ? '▲' : '▼'}
@@ -278,6 +293,8 @@ export function GenerationModal({
         <Pressable
           style={styles.advancedToggle}
           onPress={() => setShowAdvanced(!showAdvanced)}
+          accessibilityRole="button"
+          accessibilityLabel={showAdvanced ? 'Hide advanced options' : 'Show advanced options'}
         >
           <Text style={styles.advancedToggleText}>
             {showAdvanced ? '▼' : '▶'} Advanced
@@ -313,6 +330,8 @@ export function GenerationModal({
                       setStrength(Math.min(Math.max(newValue, 0.1), 0.99));
                     });
                   }}
+                  accessibilityRole="adjustable"
+                  accessibilityLabel="Strength slider"
                 />
               </View>
             </View>
@@ -407,7 +426,7 @@ export function GenerationModal({
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <Pressable style={styles.backdrop} onPress={onClose} />
+        <Pressable style={styles.backdrop} onPress={onClose} accessibilityRole="button" accessibilityLabel="Close" />
         <View style={styles.sheet}>
           <View style={styles.handle} />
 
@@ -416,7 +435,7 @@ export function GenerationModal({
               <Text style={styles.title}>Generate Assets</Text>
               {packName && <Text style={styles.subtitle}>{packName}</Text>}
             </View>
-            <Pressable style={styles.closeButton} onPress={onClose}>
+            <Pressable style={styles.closeButton} onPress={onClose} accessibilityRole="button" accessibilityLabel="Close">
               <Text style={styles.closeButtonText}>✕</Text>
             </Pressable>
           </View>

@@ -72,7 +72,12 @@ export function FloatingTabBar({ state, descriptors, navigation, onPrimaryPress,
           })}
         </View>
 
-        <Pressable style={styles.primaryButton} onPress={onPrimaryPress} accessibilityRole="button">
+        <Pressable 
+          style={styles.primaryButton} 
+          onPress={onPrimaryPress} 
+          accessibilityRole="button"
+          accessibilityLabel="Create new game"
+        >
           <Ionicons name="add" size={34} color="#D4D4D8" />
         </Pressable>
       </View>

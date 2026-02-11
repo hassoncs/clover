@@ -45,6 +45,8 @@ export function DevToolbar() {
         style={styles.header}
         onPress={toggleExpanded}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        accessibilityRole="button"
+        accessibilityLabel={`${state.isExpanded ? 'Collapse' : 'Expand'} dev tools`}
       >
         <Text style={styles.headerText}>Dev Tools</Text>
         <Text style={styles.headerIcon}>{state.isExpanded ? '−' : '+'}</Text>
@@ -61,6 +63,9 @@ export function DevToolbar() {
                   style={[styles.stepButton, isStepping && styles.stepButtonDisabled]}
                   onPress={() => handleStep(1)}
                   disabled={isStepping}
+                  accessibilityRole="button"
+                  accessibilityLabel="Step 1 frame"
+                  accessibilityState={{ disabled: isStepping }}
                 >
                   <Text style={styles.stepButtonText}>+1</Text>
                 </Pressable>
@@ -68,6 +73,9 @@ export function DevToolbar() {
                   style={[styles.stepButton, isStepping && styles.stepButtonDisabled]}
                   onPress={() => handleStep(10)}
                   disabled={isStepping}
+                  accessibilityRole="button"
+                  accessibilityLabel="Step 10 frames"
+                  accessibilityState={{ disabled: isStepping }}
                 >
                   <Text style={styles.stepButtonText}>+10</Text>
                 </Pressable>
@@ -75,6 +83,9 @@ export function DevToolbar() {
                   style={[styles.stepButton, isStepping && styles.stepButtonDisabled]}
                   onPress={() => handleStep(60)}
                   disabled={isStepping}
+                  accessibilityRole="button"
+                  accessibilityLabel="Step 60 frames"
+                  accessibilityState={{ disabled: isStepping }}
                 >
                   <Text style={styles.stepButtonText}>+60</Text>
                 </Pressable>
@@ -82,22 +93,22 @@ export function DevToolbar() {
             </View>
           )}
 
-          <Pressable style={styles.toggleRow} onPress={toggleInputDebug}>
+          <Pressable style={styles.toggleRow} onPress={toggleInputDebug} accessibilityRole="button" accessibilityLabel="Toggle input debug" accessibilityState={{ selected: state.showInputDebug }}>
             <Checkbox checked={state.showInputDebug} />
             <Text style={styles.label}>Input Debug</Text>
           </Pressable>
 
-          <Pressable style={styles.toggleRow} onPress={togglePhysicsShapes}>
+          <Pressable style={styles.toggleRow} onPress={togglePhysicsShapes} accessibilityRole="button" accessibilityLabel="Toggle physics shapes" accessibilityState={{ selected: state.showPhysicsShapes }}>
             <Checkbox checked={state.showPhysicsShapes} />
             <Text style={styles.label}>Physics Shapes</Text>
           </Pressable>
 
-          <Pressable style={styles.toggleRow} onPress={toggleZones}>
+          <Pressable style={styles.toggleRow} onPress={toggleZones} accessibilityRole="button" accessibilityLabel="Toggle zones" accessibilityState={{ selected: state.showZones }}>
             <Checkbox checked={state.showZones} />
             <Text style={styles.label}>Show Zones</Text>
           </Pressable>
 
-          <Pressable style={styles.toggleRow} onPress={toggleFPS}>
+          <Pressable style={styles.toggleRow} onPress={toggleFPS} accessibilityRole="button" accessibilityLabel="Toggle FPS display" accessibilityState={{ selected: state.showFPS }}>
             <Checkbox checked={state.showFPS} />
             <Text style={styles.label}>Show FPS</Text>
           </Pressable>

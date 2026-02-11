@@ -43,6 +43,7 @@ export function ParallaxAssetPanel({
           onValueChange={onToggleEnabled}
           trackColor={{ false: '#374151', true: '#6366f1' }}
           thumbColor={isEnabled ? '#fff' : '#9ca3af'}
+          accessibilityLabel="Enable parallax background"
         />
       </View>
       
@@ -52,6 +53,9 @@ export function ParallaxAssetPanel({
             className={`py-3 rounded-lg items-center mb-3 ${isGeneratingAny ? 'bg-gray-600' : 'bg-purple-600'}`}
             onPress={onGenerateAllLayers}
             disabled={isGeneratingAny}
+            accessibilityRole="button"
+            accessibilityLabel={`Generate all parallax layers in ${selectedStyle} style`}
+            accessibilityState={{ disabled: isGeneratingAny }}
           >
             {generatingLayer === 'all' ? (
               <View className="flex-row items-center">
@@ -100,6 +104,9 @@ export function ParallaxAssetPanel({
                     className={`p-2 rounded mr-2 ${isGeneratingThis || isGeneratingAny ? 'bg-gray-600' : 'bg-indigo-600'}`}
                     onPress={() => onGenerateLayer(depth)}
                     disabled={isGeneratingAny}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Generate ${info.label} layer`}
+                    accessibilityState={{ disabled: isGeneratingAny }}
                   >
                     {isGeneratingThis ? (
                       <ActivityIndicator color="white" size="small" />
@@ -113,6 +120,7 @@ export function ParallaxAssetPanel({
                     onValueChange={(v) => onLayerVisibilityChange(depth, v)}
                     trackColor={{ false: '#374151', true: '#22c55e' }}
                     thumbColor={layer?.visible ? '#fff' : '#9ca3af'}
+                    accessibilityLabel={`Toggle ${info.label} layer visibility`}
                   />
                 </View>
               );

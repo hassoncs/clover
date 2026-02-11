@@ -60,6 +60,9 @@ export function QuickGenerationForm({
               style === option.id && styles.styleChipActive,
             ]}
             onPress={() => onStyleChange(option.id)}
+            accessibilityRole="button"
+            accessibilityLabel={`Style: ${option.label}`}
+            accessibilityState={{ selected: style === option.id }}
           >
             <Text style={styles.styleChipEmoji}>{option.emoji}</Text>
             <Text style={[
@@ -80,6 +83,9 @@ export function QuickGenerationForm({
               onStyleChange('');
             }
           }}
+          accessibilityRole="button"
+          accessibilityLabel="Style: Custom"
+          accessibilityState={{ selected: !STYLE_PRESET_OPTIONS.some(s => s.id === style) }}
         >
           <Text style={styles.styleChipEmoji}>✨</Text>
           <Text style={[
@@ -103,6 +109,9 @@ export function QuickGenerationForm({
       <Pressable
         style={styles.bgRemoveToggle}
         onPress={onRemoveBackgroundToggle}
+        accessibilityRole="button"
+        accessibilityLabel="Remove backgrounds"
+        accessibilityState={{ checked: removeBackground }}
       >
         <View style={[styles.checkbox, removeBackground && styles.checkboxActive]}>
           {removeBackground && <Text style={styles.checkmark}>✓</Text>}
@@ -123,6 +132,9 @@ export function QuickGenerationForm({
         ]}
         onPress={onGenerate}
         disabled={isBusy}
+        accessibilityRole="button"
+        accessibilityLabel={`Generate ${templateCount} Assets`}
+        accessibilityState={{ disabled: isBusy }}
       >
         {isBusy ? (
           <View style={styles.generateButtonContent}>

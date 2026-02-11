@@ -99,6 +99,9 @@ export function AssetsPanel() {
               selectedCategory === category && styles.categoryChipActive,
             ]}
             onPress={() => setSelectedCategory(category)}
+            accessibilityRole="button"
+            accessibilityLabel={`Filter by ${category}`}
+            accessibilityState={{ selected: selectedCategory === category }}
           >
             <Text
               style={[
@@ -121,6 +124,8 @@ export function AssetsPanel() {
                 key={asset.id} 
                 style={styles.assetCard}
                 onPress={() => handleAddFromTemplate(asset.id)}
+                accessibilityRole="button"
+                accessibilityLabel={`Add ${asset.name} to scene`}
               >
                 <View style={styles.assetIcon}>
                   <Text style={styles.assetIconText}>
@@ -144,6 +149,8 @@ export function AssetsPanel() {
               key={shape.id} 
               style={styles.assetCard}
               onPress={() => handleAddBasicShape(shape)}
+              accessibilityRole="button"
+              accessibilityLabel={`Add ${shape.label} to scene`}
             >
               <View style={styles.assetIcon}>
                 <Text style={styles.assetIconText}>{shape.icon}</Text>

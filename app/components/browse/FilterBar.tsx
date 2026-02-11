@@ -62,6 +62,9 @@ function FilterChip({ label, selected, onPress, compact = false }: FilterChipPro
       className={`rounded-full mr-2 mb-2 ${compact ? "px-2.5 py-1" : "px-3 py-1.5"} ${
         selected ? "bg-indigo-600" : "bg-gray-700"
       }`}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ selected }}
     >
       <Text className={`${compact ? "text-xs" : "text-sm"} ${selected ? "text-white font-medium" : "text-gray-300"}`}>
         {label}
@@ -104,9 +107,10 @@ export function FilterBar({
             onChangeText={onSearchChange}
             autoCapitalize="none"
             autoCorrect={false}
+            accessibilityLabel="Search games"
           />
           {searchQuery.length > 0 && (
-            <Pressable onPress={() => onSearchChange("")}>
+            <Pressable onPress={() => onSearchChange("")} accessibilityRole="button" accessibilityLabel="Clear search">
               <Text className="text-gray-400 text-lg">✕</Text>
             </Pressable>
           )}
@@ -117,6 +121,8 @@ export function FilterBar({
         <Pressable
           onPress={onToggleFilters}
           className="flex-row items-center"
+          accessibilityRole="button"
+          accessibilityLabel={`${showFilters ? 'Hide' : 'Show'} filters`}
         >
           <Text className="text-indigo-400 font-medium">
             Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
@@ -125,7 +131,7 @@ export function FilterBar({
         </Pressable>
         
         {activeFilterCount > 0 && (
-          <Pressable onPress={onClearFilters}>
+          <Pressable onPress={onClearFilters} accessibilityRole="button" accessibilityLabel="Clear all filters">
             <Text className="text-gray-400 text-sm">Clear all</Text>
           </Pressable>
         )}

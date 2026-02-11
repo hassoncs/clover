@@ -46,7 +46,13 @@ export function FollowButton({ targetUserId, currentUserId, initialIsFollowing, 
 
   if (compact) {
     return (
-      <Pressable onPress={handlePress} disabled={isPending}>
+      <Pressable 
+        onPress={handlePress} 
+        disabled={isPending}
+        accessibilityRole="button"
+        accessibilityLabel={isFollowing ? "Unfollow" : "Follow"}
+        accessibilityState={{ selected: isFollowing }}
+      >
         {isPending ? (
           <ActivityIndicator size="small" color="#818CF8" />
         ) : (
@@ -65,6 +71,9 @@ export function FollowButton({ targetUserId, currentUserId, initialIsFollowing, 
       }`}
       onPress={handlePress}
       disabled={isPending}
+      accessibilityRole="button"
+      accessibilityLabel={isFollowing ? "Unfollow" : "Follow"}
+      accessibilityState={{ selected: isFollowing }}
     >
       {isPending ? (
         <ActivityIndicator size="small" color="#FFFFFF" />

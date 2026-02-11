@@ -65,6 +65,10 @@ declare global {
       query: (requestId: string, method: string, argsJson: string) => void;
       loadGameJson: (json: string) => boolean;
       clearGame: () => void;
+      setupWorld: (worldJson: string, backgroundJson: string) => void;
+      registerTemplates: (templatesJson: string) => void;
+      loadEntities: (entitiesJson: string) => number;
+      clearEntities: () => void;
       spawnEntity: (
         templateId: string,
         x: number,
@@ -582,6 +586,22 @@ export function createWebGodotBridge(): GodotBridge {
 
     clearGame() {
       getGodotBridge()?.clearGame();
+    },
+
+    setupWorld(world, background) {
+      getGodotBridge()?.setupWorld(JSON.stringify(world), JSON.stringify(background ?? {}));
+    },
+
+    registerTemplates(templates) {
+      getGodotBridge()?.registerTemplates(JSON.stringify(templates));
+    },
+
+    loadEntities(entities) {
+      getGodotBridge()?.loadEntities(JSON.stringify(entities));
+    },
+
+    clearEntities() {
+      getGodotBridge()?.clearEntities();
     },
 
     pausePhysics() {

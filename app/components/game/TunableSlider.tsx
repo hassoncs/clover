@@ -40,6 +40,8 @@ export function TunableSlider({
         minimumTrackTintColor="#a855f7"
         maximumTrackTintColor="#374151"
         thumbTintColor="#a855f7"
+        accessibilityLabel={`${label} slider`}
+        accessibilityValue={{ min, max, now: currentValue }}
       />
     </View>
   );

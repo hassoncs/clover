@@ -63,7 +63,7 @@ export function BuySparksModal({ visible, onClose }: BuySparksModalProps) {
       <SafeAreaView className="flex-1 bg-gray-900">
         <View className="flex-row justify-between items-center px-4 py-3 border-b border-gray-700">
           <Text className="text-xl font-bold text-white">Buy Sparks ⚡</Text>
-          <Pressable onPress={onClose}>
+          <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Close">
             <Text className="text-gray-400 text-lg">✕</Text>
           </Pressable>
         </View>
@@ -84,6 +84,8 @@ export function BuySparksModal({ visible, onClose }: BuySparksModalProps) {
                   pack.popular ? "border-amber-500" : "border-gray-700"
                 }`}
                 onPress={() => handlePurchasePack(pack)}
+                accessibilityRole="button"
+                accessibilityLabel={`Buy ${pack.name}, ${pack.sparks} sparks for ${pack.price}`}
               >
                 {pack.popular && (
                   <View className="absolute -top-2 left-1/2 -ml-12 bg-amber-500 px-3 py-1 rounded-full">
@@ -123,6 +125,7 @@ export function BuySparksModal({ visible, onClose }: BuySparksModalProps) {
                   }}
                   autoCapitalize="characters"
                   editable={!redeemPromoMutation.isPending}
+                  accessibilityLabel="Promo code input"
                 />
                 <TouchableOpacity
                   className={`bg-amber-500 px-4 py-3 rounded-xl justify-center items-center ${
@@ -130,6 +133,9 @@ export function BuySparksModal({ visible, onClose }: BuySparksModalProps) {
                   }`}
                   onPress={handleRedeemPromo}
                   disabled={redeemPromoMutation.isPending || !promoCode.trim()}
+                  accessibilityRole="button"
+                  accessibilityLabel="Redeem promo code"
+                  accessibilityState={{ disabled: redeemPromoMutation.isPending || !promoCode.trim() }}
                 >
                   {redeemPromoMutation.isPending ? (
                     <ActivityIndicator color="white" size="small" />

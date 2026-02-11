@@ -32,6 +32,9 @@ export function LayersPanel() {
               key={entity.id}
               style={[styles.layerRow, isSelected && styles.layerRowSelected]}
               onPress={() => selectEntity(entity.id)}
+              accessibilityRole="button"
+              accessibilityLabel={`Select entity ${displayName}`}
+              accessibilityState={{ selected: isSelected }}
             >
               <View style={styles.layerInfo}>
                 <View

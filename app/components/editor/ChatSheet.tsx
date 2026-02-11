@@ -71,7 +71,7 @@ export function ChatSheet({
       <View style={styles.handleContainer}>
         <View style={styles.handleIndicator} />
         <View style={styles.headerRow}>
-          <Pressable onPress={onDismiss} style={styles.closeButton}>
+          <Pressable onPress={onDismiss} style={styles.closeButton} accessibilityRole="button" accessibilityLabel="Close chat">
             <Ionicons name="close" size={24} color="#FFFFFF" />
           </Pressable>
           <Text style={styles.headerTitle}>Edit</Text>

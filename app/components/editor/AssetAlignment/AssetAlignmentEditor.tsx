@@ -81,7 +81,7 @@ export function AssetAlignmentEditor({
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <Pressable style={styles.backdrop} onPress={onClose} />
+        <Pressable style={styles.backdrop} onPress={onClose} accessibilityRole="button" accessibilityLabel="Close" />
         <View style={styles.sheet}>
           <View style={styles.handle} />
 
@@ -90,7 +90,7 @@ export function AssetAlignmentEditor({
               <Text style={styles.title}>Align Asset</Text>
               <Text style={styles.subtitle}>{templateId}</Text>
             </View>
-            <Pressable style={styles.closeButton} onPress={onClose}>
+            <Pressable style={styles.closeButton} onPress={onClose} accessibilityRole="button" accessibilityLabel="Close">
               <Text style={styles.closeButtonText}>✕</Text>
             </Pressable>
           </View>
@@ -121,6 +121,8 @@ export function AssetAlignmentEditor({
               minimumTrackTintColor="#4F46E5"
               maximumTrackTintColor="#374151"
               thumbTintColor="#6366F1"
+              accessibilityRole="adjustable"
+              accessibilityLabel="Scale slider"
             />
 
             <View style={styles.controlRow}>
@@ -137,6 +139,8 @@ export function AssetAlignmentEditor({
               minimumTrackTintColor="#4F46E5"
               maximumTrackTintColor="#374151"
               thumbTintColor="#6366F1"
+              accessibilityRole="adjustable"
+              accessibilityLabel="Offset X slider"
             />
 
             <View style={styles.controlRow}>
@@ -153,11 +157,16 @@ export function AssetAlignmentEditor({
               minimumTrackTintColor="#4F46E5"
               maximumTrackTintColor="#374151"
               thumbTintColor="#6366F1"
+              accessibilityRole="adjustable"
+              accessibilityLabel="Offset Y slider"
             />
 
             <Pressable
               style={styles.toggleRow}
               onPress={() => setShowPhysicsOutline(prev => !prev)}
+              accessibilityRole="button"
+              accessibilityLabel="Show Physics Outline"
+              accessibilityState={{ checked: showPhysicsOutline }}
             >
               <Text style={styles.toggleLabel}>Show Physics Outline</Text>
               <View style={[styles.toggle, showPhysicsOutline && styles.toggleActive]}>
@@ -167,10 +176,10 @@ export function AssetAlignmentEditor({
           </View>
 
           <View style={styles.actions}>
-            <Pressable style={styles.resetButton} onPress={handleReset}>
+            <Pressable style={styles.resetButton} onPress={handleReset} accessibilityRole="button" accessibilityLabel="Reset">
               <Text style={styles.resetButtonText}>Reset</Text>
             </Pressable>
-            <Pressable style={styles.saveButton} onPress={handleSave}>
+            <Pressable style={styles.saveButton} onPress={handleSave} accessibilityRole="button" accessibilityLabel="Save Alignment">
               <Text style={styles.saveButtonText}>Save Alignment</Text>
             </Pressable>
           </View>

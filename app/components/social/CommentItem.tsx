@@ -168,6 +168,9 @@ export function CommentItem({ comment, currentUserId, onReplyAdded }: CommentIte
                 className="flex-row items-center"
                 onPress={handleToggleLike}
                 disabled={!currentUserId}
+                accessibilityRole="button"
+                accessibilityLabel={comment.userReacted ? "Unlike comment" : "Like comment"}
+                accessibilityState={{ selected: comment.userReacted }}
               >
                 <Ionicons
                   name={comment.userReacted ? "heart" : "heart-outline"}
@@ -189,6 +192,8 @@ export function CommentItem({ comment, currentUserId, onReplyAdded }: CommentIte
                 <Pressable
                   className="flex-row items-center"
                   onPress={() => setShowReplyInput(!showReplyInput)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Reply to comment"
                 >
                   <Ionicons name="chatbubble-outline" size={14} color="#9CA3AF" />
                   <Text className="text-gray-500 text-xs ml-1">Reply</Text>
@@ -200,6 +205,8 @@ export function CommentItem({ comment, currentUserId, onReplyAdded }: CommentIte
                   className="flex-row items-center"
                   onPress={handleDelete}
                   disabled={deleteComment.isPending}
+                  accessibilityRole="button"
+                  accessibilityLabel="Delete comment"
                 >
                   <Ionicons name="trash-outline" size={14} color="#6B7280" />
                 </Pressable>
@@ -210,6 +217,8 @@ export function CommentItem({ comment, currentUserId, onReplyAdded }: CommentIte
               <Pressable
                 className="mt-2"
                 onPress={() => setShowReplies(true)}
+                accessibilityRole="button"
+                accessibilityLabel={`View ${comment.replyCount} ${comment.replyCount === 1 ? "reply" : "replies"}`}
               >
                 <Text className="text-indigo-400 text-xs font-medium">
                   View {comment.replyCount}{" "}
@@ -228,11 +237,14 @@ export function CommentItem({ comment, currentUserId, onReplyAdded }: CommentIte
                   onChangeText={setReplyText}
                   multiline
                   maxLength={2000}
+                  accessibilityLabel="Reply text input"
                 />
                 <Pressable
                   className="ml-2 p-2"
                   onPress={handleSubmitReply}
                   disabled={!replyText.trim() || addComment.isPending}
+                  accessibilityRole="button"
+                  accessibilityLabel="Send reply"
                 >
                   {addComment.isPending ? (
                     <ActivityIndicator size="small" color="#818CF8" />

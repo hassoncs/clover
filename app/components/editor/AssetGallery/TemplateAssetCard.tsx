@@ -52,7 +52,7 @@ export function TemplateAssetCard({
   };
 
   return (
-    <Pressable style={styles.card} onPress={onPress}>
+    <Pressable style={styles.card} onPress={onPress} accessibilityRole="button" accessibilityLabel={`Template ${templateId}`}>
       <View style={styles.previewContainer}>
         {showGeneratedView ? (
           <View style={styles.generatedImageContainer}>
@@ -98,6 +98,9 @@ export function TemplateAssetCard({
             <Pressable
               style={[styles.modeButton, viewMode === 'primitive' && styles.modeButtonActive]}
               onPress={() => setViewMode('primitive')}
+              accessibilityRole="button"
+              accessibilityLabel="View shape"
+              accessibilityState={{ selected: viewMode === 'primitive' }}
             >
               <Text style={[styles.modeButtonText, viewMode === 'primitive' && styles.modeButtonTextActive]}>
                 Shape
@@ -106,6 +109,9 @@ export function TemplateAssetCard({
             <Pressable
               style={[styles.modeButton, viewMode === 'generated' && styles.modeButtonActive]}
               onPress={() => setViewMode('generated')}
+              accessibilityRole="button"
+              accessibilityLabel="View asset"
+              accessibilityState={{ selected: viewMode === 'generated' }}
             >
               <Text style={[styles.modeButtonText, viewMode === 'generated' && styles.modeButtonTextActive]}>
                 Asset

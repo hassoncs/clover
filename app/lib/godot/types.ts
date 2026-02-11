@@ -262,6 +262,12 @@ export interface GodotBridge extends EffectsBridge {
   loadGame(definition: GameDefinition): Promise<void>;
   clearGame(): void;
 
+  // Sectioned loading — independent operations for partial game updates
+  setupWorld(world: GameDefinition['world'], background?: GameDefinition['background']): void;
+  registerTemplates(templates: GameDefinition['templates']): void;
+  loadEntities(entities: GameDefinition['entities']): void;
+  clearEntities(): void;
+
   // Physics control (for pre-game pausing)
   pausePhysics(): void;
   resumePhysics(): void;

@@ -106,7 +106,7 @@ export function ContextMenu({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <Pressable style={styles.overlay} onPress={onClose}>
+      <Pressable style={styles.overlay} onPress={onClose} accessibilityRole="button" accessibilityLabel="Close">
         <View
           style={[
             styles.menu,
@@ -134,6 +134,8 @@ export function ContextMenu({
                     { paddingLeft: 12 + entity.depth * 16 },
                   ]}
                   onPress={() => handleSelectEntity(entity.id)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Select entity ${entity.name}`}
                 >
                   <Text style={styles.entityIcon}>
                     {entity.depth === 0 ? '👆' : '└─'}
@@ -150,11 +152,11 @@ export function ContextMenu({
           <View style={styles.divider} />
 
           <View style={styles.actions}>
-            <Pressable style={styles.actionItem} onPress={handleCopyPosition}>
+            <Pressable style={styles.actionItem} onPress={handleCopyPosition} accessibilityRole="button" accessibilityLabel="Copy Position">
               <Text style={styles.actionIcon}>📋</Text>
               <Text style={styles.actionText}>Copy Position</Text>
             </Pressable>
-            <Pressable style={styles.actionItem} onPress={handleFocusCamera}>
+            <Pressable style={styles.actionItem} onPress={handleFocusCamera} accessibilityRole="button" accessibilityLabel="Focus Camera">
               <Text style={styles.actionIcon}>🎯</Text>
               <Text style={styles.actionText}>Focus Camera</Text>
             </Pressable>

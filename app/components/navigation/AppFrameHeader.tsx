@@ -21,7 +21,13 @@ function HeaderIconButton({
   onPress?: () => void;
 }) {
   return (
-    <Pressable onPress={onPress} style={styles.iconButton} hitSlop={8}>
+    <Pressable 
+      onPress={onPress} 
+      style={styles.iconButton} 
+      hitSlop={8}
+      accessibilityRole="button"
+      accessibilityLabel={`${icon} button`}
+    >
       <Ionicons name={icon} size={24} color="#F2F4F7" />
     </Pressable>
   );

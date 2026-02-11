@@ -47,9 +47,10 @@ export function SearchInput({
         autoFocus={autoFocus}
         returnKeyType="search"
         blurOnSubmit={false}
+        accessibilityLabel="Search"
       />
       {value.length > 0 && (
-        <Pressable onPress={handleClear} style={styles.clearButton} hitSlop={8}>
+        <Pressable onPress={handleClear} style={styles.clearButton} hitSlop={8} accessibilityRole="button" accessibilityLabel="Clear search">
           <Ionicons name="close-circle" size={18} color="#7B7F86" />
         </Pressable>
       )}

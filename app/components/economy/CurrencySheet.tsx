@@ -34,7 +34,7 @@ export function CurrencySheet({ visible, onClose }: CurrencySheetProps) {
         <SafeAreaView className="flex-1 bg-gray-900">
           <View className="flex-row justify-between items-center px-4 py-3 border-b border-gray-700">
             <Text className="text-xl font-bold text-white">Currency</Text>
-            <Pressable onPress={onClose}>
+            <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Close">
               <Text className="text-gray-400 text-lg">✕</Text>
             </Pressable>
           </View>
@@ -72,6 +72,8 @@ export function CurrencySheet({ visible, onClose }: CurrencySheetProps) {
                 <Pressable
                   className="flex-1 bg-purple-600 rounded-xl p-4 items-center active:bg-purple-700"
                   onPress={() => setShowGemsModal(true)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Buy Gems"
                 >
                   <Text className="text-3xl mb-1">💎</Text>
                   <Text className="text-white font-bold">Buy Gems</Text>
@@ -81,6 +83,8 @@ export function CurrencySheet({ visible, onClose }: CurrencySheetProps) {
                 <Pressable
                   className="flex-1 bg-amber-500 rounded-xl p-4 items-center active:bg-amber-600"
                   onPress={() => setShowSparksModal(true)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Buy Sparks"
                 >
                   <Text className="text-3xl mb-1">⚡</Text>
                   <Text className="text-white font-bold">Buy Sparks</Text>

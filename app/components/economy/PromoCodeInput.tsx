@@ -38,11 +38,15 @@ export function PromoCodeInput() {
           onChangeText={(text) => setCode(text.toUpperCase())}
           autoCapitalize="characters"
           editable={!redeemMutation.isPending}
+          accessibilityLabel="Promo code input"
         />
         <TouchableOpacity
           className={`bg-amber-500 px-4 py-2 rounded justify-center items-center ${redeemMutation.isPending ? 'opacity-50' : ''}`}
           onPress={handleRedeem}
           disabled={redeemMutation.isPending || !code.trim()}
+          accessibilityRole="button"
+          accessibilityLabel="Redeem promo code"
+          accessibilityState={{ disabled: redeemMutation.isPending || !code.trim() }}
         >
           {redeemMutation.isPending ? (
             <ActivityIndicator color="white" size="small" />

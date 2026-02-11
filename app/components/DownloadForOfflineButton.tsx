@@ -82,7 +82,7 @@ export function DownloadForOfflineButton({ gameId, size = 'md' }: Props) {
 
   if (status === 'downloaded') {
     return (
-      <TouchableOpacity onPress={handleDelete} className="flex-row items-center gap-1 bg-green-100 px-2 py-1 rounded-full">
+      <TouchableOpacity onPress={handleDelete} className="flex-row items-center gap-1 bg-green-100 px-2 py-1 rounded-full" accessibilityRole="button" accessibilityLabel="Remove download">
         <Ionicons name="checkmark-circle" size={iconSize} color="#34C759" />
         {size !== 'sm' && <Text className="text-green-700 text-xs font-medium">Downloaded</Text>}
       </TouchableOpacity>
@@ -90,7 +90,7 @@ export function DownloadForOfflineButton({ gameId, size = 'md' }: Props) {
   }
 
   return (
-    <TouchableOpacity onPress={handleDownload} className="flex-row items-center gap-1 bg-gray-100 px-2 py-1 rounded-full">
+    <TouchableOpacity onPress={handleDownload} className="flex-row items-center gap-1 bg-gray-100 px-2 py-1 rounded-full" accessibilityRole="button" accessibilityLabel="Download for offline">
       <Ionicons name="cloud-download-outline" size={iconSize} color="#007AFF" />
       {size !== 'sm' && <Text className="text-blue-600 text-xs font-medium">Download</Text>}
     </TouchableOpacity>

@@ -18,7 +18,12 @@ interface Props {
 export function ThreadList({ threads, activeThreadId, onSelect, onCreateNew, isLoading }: Props) {
   return (
     <View style={styles.container}>
-      <Pressable style={styles.newChatButton} onPress={onCreateNew}>
+      <Pressable 
+        style={styles.newChatButton} 
+        onPress={onCreateNew}
+        accessibilityRole="button"
+        accessibilityLabel="Create new chat"
+      >
         <Ionicons name="add" size={16} color="#FFFFFF" />
         <Text style={styles.newChatText}>New Chat</Text>
       </Pressable>
@@ -34,6 +39,9 @@ export function ThreadList({ threads, activeThreadId, onSelect, onCreateNew, isL
             <Pressable
               style={[styles.threadItem, item.id === activeThreadId && styles.threadItemActive]}
               onPress={() => onSelect(item.id)}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.title || `Chat ${threads.length - index}`}`}
+              accessibilityState={{ selected: item.id === activeThreadId }}
             >
               <Text style={[styles.threadTitle, item.id === activeThreadId && styles.threadTitleActive]} numberOfLines={1}>
                 {item.title || `Chat ${threads.length - index}`}

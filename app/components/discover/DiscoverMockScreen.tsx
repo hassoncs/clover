@@ -14,7 +14,11 @@ function FollowRow({ person }: { person: FollowSuggestion }) {
         <Text style={styles.followName}>{person.name}</Text>
         <Text style={styles.followHandle}>{person.handle}</Text>
       </View>
-      <Pressable style={styles.followButton}>
+      <Pressable 
+        style={styles.followButton}
+        accessibilityRole="button"
+        accessibilityLabel={`Follow ${person.name}`}
+      >
         <Text style={styles.followButtonText}>Follow</Text>
       </Pressable>
     </View>
@@ -23,7 +27,11 @@ function FollowRow({ person }: { person: FollowSuggestion }) {
 
 function PlaylistMockCard({ card }: { card: PlaylistCardMock }) {
   return (
-    <Pressable style={[styles.playlistCard, { backgroundColor: card.accent }]}> 
+    <Pressable 
+      style={[styles.playlistCard, { backgroundColor: card.accent }]}
+      accessibilityRole="button"
+      accessibilityLabel={`${card.title} playlist`}
+    > 
       <View style={styles.playlistInnerGrid}>
         {card.items.map((item) => (
           <View key={item.id} style={[styles.playlistTile, { backgroundColor: item.color }]}>
@@ -45,7 +53,12 @@ export function DiscoverMockScreen() {
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.headerRow}>
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <Pressable 
+            style={styles.backButton} 
+            onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
             <Ionicons name="chevron-back" size={30} color="#F5F5F5" />
           </Pressable>
           <Text style={styles.headerTitle}>Discover</Text>
@@ -60,6 +73,7 @@ export function DiscoverMockScreen() {
             placeholder="Find friends..."
             placeholderTextColor="#7B7F86"
             style={styles.searchInput}
+            accessibilityLabel="Search for friends"
           />
         </View>
 
@@ -71,7 +85,11 @@ export function DiscoverMockScreen() {
             <Text style={styles.findTitle}>Find your friends</Text>
             <Text style={styles.findSubtitle}>So they can see your slops</Text>
           </View>
-          <Pressable style={styles.findButton}>
+          <Pressable 
+            style={styles.findButton}
+            accessibilityRole="button"
+            accessibilityLabel="Find friends"
+          >
             <Text style={styles.findButtonText}>Find</Text>
           </Pressable>
         </View>
@@ -82,7 +100,11 @@ export function DiscoverMockScreen() {
           ))}
         </View>
 
-        <Pressable style={styles.viewMoreRow}>
+        <Pressable 
+          style={styles.viewMoreRow}
+          accessibilityRole="button"
+          accessibilityLabel="View more suggestions"
+        >
           <Text style={styles.viewMoreText}>View more</Text>
           <Ionicons name="chevron-forward" size={18} color="#8B8F97" />
         </Pressable>

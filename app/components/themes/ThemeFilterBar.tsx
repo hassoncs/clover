@@ -21,9 +21,14 @@ export function ThemeFilterBar({
           onChangeText={onSearchChange}
           autoCapitalize="none"
           autoCorrect={false}
+          accessibilityLabel="Search themes"
         />
         {searchQuery.length > 0 && (
-          <Pressable onPress={() => onSearchChange('')}>
+          <Pressable 
+            onPress={() => onSearchChange('')}
+            accessibilityRole="button"
+            accessibilityLabel="Clear search"
+          >
             <Text className="text-gray-400 text-lg">✕</Text>
           </Pressable>
         )}

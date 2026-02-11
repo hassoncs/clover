@@ -93,13 +93,13 @@ export function AssetPackSelector({
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <Pressable style={styles.backdrop} onPress={onClose} />
+        <Pressable style={styles.backdrop} onPress={onClose} accessibilityRole="button" accessibilityLabel="Close" />
         <View style={styles.sheet}>
           <View style={styles.handle} />
           
           <View style={styles.header}>
             <Text style={styles.title}>Asset Packs</Text>
-            <Pressable style={styles.closeButton} onPress={onClose}>
+            <Pressable style={styles.closeButton} onPress={onClose} accessibilityRole="button" accessibilityLabel="Close">
               <Text style={styles.closeButtonText}>✕</Text>
             </Pressable>
           </View>
@@ -127,6 +127,9 @@ export function AssetPackSelector({
                     onSelectPack(pack.id);
                     onClose();
                   }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Select pack ${pack.name}`}
+                  accessibilityState={{ selected: selectedPackId === pack.id }}
                 >
                   <View style={styles.packIcon}>
                     <Text style={styles.packIconText}>{getStyleEmoji(pack.promptDefaults?.styleOverride)}</Text>
@@ -153,6 +156,9 @@ export function AssetPackSelector({
                     style={styles.deleteButton}
                     onPress={() => handleDeletePack(pack)}
                     disabled={isDeleting}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Delete pack ${pack.name}`}
+                    accessibilityState={{ disabled: isDeleting }}
                   >
                     {isDeleting ? (
                       <ActivityIndicator size="small" color="#EF4444" />
@@ -185,6 +191,9 @@ export function AssetPackSelector({
                       key={style.id}
                       style={styles.styleOption}
                       onPress={() => setNewPackStyle(style.id)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Style: ${style.label}`}
+                      accessibilityState={{ selected: newPackStyle === style.id }}
                     >
                       <View style={[
                         styles.styleOptionInner,
@@ -207,6 +216,9 @@ export function AssetPackSelector({
                         setNewPackStyle('');
                       }
                     }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Style: Custom"
+                    accessibilityState={{ selected: !STYLE_PRESET_OPTIONS.some(s => s.id === newPackStyle) }}
                   >
                     <View style={[
                       styles.styleOptionInner,
@@ -254,6 +266,8 @@ export function AssetPackSelector({
                       setShowCreateForm(false);
                       setNewPackName('');
                     }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Cancel"
                   >
                     <Text style={styles.cancelButtonText}>Cancel</Text>
                   </Pressable>
@@ -264,6 +278,9 @@ export function AssetPackSelector({
                     ]}
                     onPress={handleCreatePack}
                     disabled={!newPackName.trim() || isCreating}
+                    accessibilityRole="button"
+                    accessibilityLabel="Create Pack"
+                    accessibilityState={{ disabled: !newPackName.trim() || isCreating }}
                   >
                     {isCreating ? (
                       <ActivityIndicator size="small" color="#FFFFFF" />
@@ -277,6 +294,8 @@ export function AssetPackSelector({
               <Pressable
                 style={styles.addPackButton}
                 onPress={() => setShowCreateForm(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Create New Pack"
               >
                 <Text style={styles.addPackButtonIcon}>+</Text>
                 <Text style={styles.addPackButtonText}>Create New Pack</Text>

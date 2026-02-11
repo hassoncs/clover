@@ -21,7 +21,7 @@ export function CreditBalance({ onPress }: CreditBalanceProps) {
 
   if (onPress) {
     return (
-      <Pressable onPress={onPress} className="active:opacity-80">
+      <Pressable onPress={onPress} className="active:opacity-80" accessibilityRole="button" accessibilityLabel={`Sparks balance: ${data?.balanceSparks ?? 0}`}>
         {content}
       </Pressable>
     );

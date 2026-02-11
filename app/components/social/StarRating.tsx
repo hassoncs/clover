@@ -51,6 +51,8 @@ export function StarRating({ gameId, currentUserId }: StarRatingProps) {
               onPressOut={() => setHoverScore(null)}
               disabled={!currentUserId || rateMutation.isPending}
               className="p-0.5"
+              accessibilityRole="button"
+              accessibilityLabel={`Rate ${star} star${star > 1 ? 's' : ''}`}
             >
               <Ionicons
                 name={star <= displayScore ? "star" : "star-outline"}

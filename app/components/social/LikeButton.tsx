@@ -45,6 +45,9 @@ export function LikeButton({ gameId, likeCount, currentUserId }: LikeButtonProps
       className="flex-row items-center gap-1.5"
       onPress={handlePress}
       disabled={!currentUserId || isPending}
+      accessibilityRole="button"
+      accessibilityLabel={isLiked ? "Unlike" : "Like"}
+      accessibilityState={{ selected: isLiked }}
     >
       <Ionicons
         name={isLiked ? "heart" : "heart-outline"}

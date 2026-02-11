@@ -72,6 +72,8 @@ export function GameDialog({
                 ]}
                 onPress={button.onPress}
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel={button.label}
               >
                 <Text style={styles.buttonText}>{button.label}</Text>
               </TouchableOpacity>

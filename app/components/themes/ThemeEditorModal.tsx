@@ -104,13 +104,23 @@ export function ThemeEditorModal({
     >
       <View className="flex-1 bg-gray-900">
         <View className="flex-row items-center justify-between p-4 border-b border-gray-800">
-          <Pressable onPress={onClose}>
+          <Pressable 
+            onPress={onClose}
+            accessibilityRole="button"
+            accessibilityLabel="Cancel"
+          >
             <Text className="text-gray-400 text-lg">Cancel</Text>
           </Pressable>
           <Text className="text-white text-lg font-semibold">
             {isEditing ? 'Edit Theme' : 'New Theme'}
           </Text>
-          <Pressable onPress={handleSave} disabled={isSaving}>
+          <Pressable 
+            onPress={handleSave} 
+            disabled={isSaving}
+            accessibilityRole="button"
+            accessibilityLabel="Save theme"
+            accessibilityState={{ disabled: isSaving }}
+          >
             {isSaving ? (
               <ActivityIndicator size="small" color="#818CF8" />
             ) : (
@@ -134,6 +144,7 @@ export function ThemeEditorModal({
               placeholderTextColor="#6B7280"
               value={name}
               onChangeText={setName}
+              accessibilityLabel="Theme name"
             />
           </View>
 
@@ -144,6 +155,9 @@ export function ThemeEditorModal({
                 onPress={handleEnhance} 
                 disabled={isEnhancing}
                 className="flex-row items-center"
+                accessibilityRole="button"
+                accessibilityLabel="Enhance prompt with AI"
+                accessibilityState={{ disabled: isEnhancing }}
               >
                 {isEnhancing ? (
                   <ActivityIndicator size="small" color="#818CF8" />
@@ -160,6 +174,7 @@ export function ThemeEditorModal({
               onChangeText={setPromptModifier}
               multiline
               textAlignVertical="top"
+              accessibilityLabel="Theme prompt"
             />
           </View>
 

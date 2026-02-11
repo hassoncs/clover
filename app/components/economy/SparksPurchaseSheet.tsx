@@ -39,6 +39,8 @@ export function SparksPurchaseSheet({ visible, onClose }: SparksPurchaseSheetPro
             <Pressable
               onPress={onClose}
               className="bg-gray-800 p-2 rounded-full w-10 h-10 items-center justify-center active:bg-gray-700"
+              accessibilityRole="button"
+              accessibilityLabel="Close"
             >
               <Text className="text-white font-bold text-lg">✕</Text>
             </Pressable>
@@ -54,6 +56,8 @@ export function SparksPurchaseSheet({ visible, onClose }: SparksPurchaseSheetPro
               <Pressable
                 className="bg-gray-800 px-4 py-2 rounded-lg"
                 onPress={onClose}
+                accessibilityRole="button"
+                accessibilityLabel="Close"
               >
                 <Text className="text-white">Close</Text>
               </Pressable>
@@ -110,6 +114,8 @@ export function SparksPurchaseSheet({ visible, onClose }: SparksPurchaseSheetPro
                             : "bg-gray-700 active:bg-gray-600"
                         }`}
                         onPress={() => handlePurchase(product.id)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Buy ${product.name} for ${price}`}
                       >
                         <Text
                           className={`font-bold text-lg ${
@@ -127,6 +133,8 @@ export function SparksPurchaseSheet({ visible, onClose }: SparksPurchaseSheetPro
               <Pressable
                 className="items-center py-4 mb-8"
                 onPress={handleRestore}
+                accessibilityRole="button"
+                accessibilityLabel="Restore purchases"
               >
                 <Text className="text-gray-500 text-sm underline">
                   Restore Purchases

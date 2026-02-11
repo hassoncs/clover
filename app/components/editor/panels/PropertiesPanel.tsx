@@ -75,6 +75,9 @@ function PropertySegment({
               value === option.value && styles.segmentButtonActive,
             ]}
             onPress={() => onChange(option.value)}
+            accessibilityRole="button"
+            accessibilityLabel={option.label}
+            accessibilityState={{ selected: value === option.value }}
           >
             <Text
               style={[
@@ -162,12 +165,16 @@ export function PropertiesPanel() {
           <Pressable
             style={styles.iconButton}
             onPress={() => duplicateEntity(selectedEntityId)}
+            accessibilityRole="button"
+            accessibilityLabel="Duplicate entity"
           >
             <Text style={styles.iconButtonText}>📋</Text>
           </Pressable>
           <Pressable
             style={[styles.iconButton, styles.deleteButton]}
             onPress={() => deleteEntity(selectedEntityId)}
+            accessibilityRole="button"
+            accessibilityLabel="Delete entity"
           >
             <Text style={styles.iconButtonText}>🗑️</Text>
           </Pressable>
@@ -228,6 +235,9 @@ export function PropertiesPanel() {
                   visual.color === color && styles.colorSwatchActive,
                 ]}
                 onPress={() => handleSpriteChange("color", color)}
+                accessibilityRole="button"
+                accessibilityLabel={`Select color ${color}`}
+                accessibilityState={{ selected: visual.color === color }}
               />
             ))}
           </View>

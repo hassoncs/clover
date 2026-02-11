@@ -74,7 +74,12 @@ export function ReportModal({ visible, targetType, targetId, onClose }: ReportMo
             <Text className="text-white text-lg font-bold">
               Report {TARGET_LABELS[targetType]}
             </Text>
-            <Pressable onPress={handleClose} className="p-1">
+            <Pressable 
+              onPress={handleClose} 
+              className="p-1"
+              accessibilityRole="button"
+              accessibilityLabel="Close report modal"
+            >
               <Ionicons name="close" size={24} color="#9CA3AF" />
             </Pressable>
           </View>
@@ -91,6 +96,8 @@ export function ReportModal({ visible, targetType, targetId, onClose }: ReportMo
               <Pressable
                 onPress={handleClose}
                 className="mt-6 bg-indigo-600 px-8 py-3 rounded-xl"
+                accessibilityRole="button"
+                accessibilityLabel="Done"
               >
                 <Text className="text-white font-semibold">Done</Text>
               </Pressable>
@@ -111,6 +118,9 @@ export function ReportModal({ visible, targetType, targetId, onClose }: ReportMo
                         ? "border-indigo-500 bg-indigo-500/10"
                         : "border-gray-700 bg-gray-800"
                     }`}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Report reason: ${reason.label}`}
+                    accessibilityState={{ selected: selectedReason === reason.key }}
                   >
                     <Ionicons
                       name={reason.icon}
@@ -144,6 +154,7 @@ export function ReportModal({ visible, targetType, targetId, onClose }: ReportMo
                     maxLength={500}
                     textAlignVertical="top"
                     style={{ minHeight: 80 }}
+                    accessibilityLabel="Additional details for report"
                   />
                   <Text className="text-gray-600 text-xs mt-1 text-right">
                     {description.length}/500
@@ -165,6 +176,8 @@ export function ReportModal({ visible, targetType, targetId, onClose }: ReportMo
                     ? "bg-red-600"
                     : "bg-gray-700"
                 }`}
+                accessibilityRole="button"
+                accessibilityLabel="Submit report"
               >
                 {reportMutation.isPending ? (
                   <ActivityIndicator size="small" color="#FFFFFF" />

@@ -47,6 +47,8 @@ export function FullScreenHeader({
         <Pressable
           className="py-1.5 px-3 bg-black/40 rounded-lg backdrop-blur-sm"
           onPress={handleBack}
+          accessibilityRole="button"
+          accessibilityLabel="Back"
         >
           <Text className="text-white font-medium text-sm">Back</Text>
         </Pressable>

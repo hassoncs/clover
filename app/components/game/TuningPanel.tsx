@@ -124,6 +124,8 @@ export function TuningPanel({
         className="absolute top-16 right-4 bg-purple-600 rounded-full p-3 shadow-lg z-50"
         onPress={togglePanel}
         style={{ elevation: 5 }}
+        accessibilityRole="button"
+        accessibilityLabel={`${isOpen ? 'Close' : 'Open'} tuning panel`}
       >
         <Text className="text-2xl">🎛️</Text>
       </Pressable>
@@ -165,6 +167,8 @@ export function TuningPanel({
             <Pressable
               className={`py-3 rounded-lg mb-2 ${hasUnsavedChanges ? 'bg-green-600 active:bg-green-500' : 'bg-gray-600 active:bg-gray-500'}`}
               onPress={onSave}
+              accessibilityRole="button"
+              accessibilityLabel={hasUnsavedChanges ? 'Save changes' : 'Changes saved'}
             >
               <Text className="text-white text-center font-semibold">
                 {hasUnsavedChanges ? '💾 Save Changes' : '✓ Saved'}
@@ -176,12 +180,16 @@ export function TuningPanel({
             <Pressable
               className="flex-1 py-3 bg-gray-700 rounded-lg active:bg-gray-600"
               onPress={onReset}
+              accessibilityRole="button"
+              accessibilityLabel="Reset all values"
             >
               <Text className="text-white text-center font-semibold">Reset All</Text>
             </Pressable>
             <Pressable
               className="flex-1 py-3 bg-purple-600 rounded-lg active:bg-purple-500"
               onPress={onExport}
+              accessibilityRole="button"
+              accessibilityLabel="Export JSON"
             >
               <Text className="text-white text-center font-semibold">Export JSON</Text>
             </Pressable>

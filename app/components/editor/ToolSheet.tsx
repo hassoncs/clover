@@ -31,7 +31,7 @@ export function ToolSheet({ activeTab, onDismiss }: ToolSheetProps) {
       <View style={styles.handleContainer}>
         <View style={styles.handleIndicator} />
         <View style={styles.headerRow}>
-          <Pressable onPress={onDismiss} style={styles.closeButton}>
+          <Pressable onPress={onDismiss} style={styles.closeButton} accessibilityRole="button" accessibilityLabel="Close tool sheet">
             <Ionicons name="close" size={24} color="#FFFFFF" />
           </Pressable>
           <Text style={styles.headerTitle}>{TAB_TITLES[activeTab ?? ""] ?? ""}</Text>

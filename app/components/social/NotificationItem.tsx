@@ -84,6 +84,8 @@ export function NotificationItem({ notification, onPress }: NotificationItemProp
     <Pressable
       className="flex-row items-center px-4 py-3"
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={notification.message ?? `${notification.type} notification from ${notification.actorName ?? "someone"}`}
     >
       {!notification.isRead && (
         <View className="w-2 h-2 rounded-full bg-blue-500 mr-2" />

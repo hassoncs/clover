@@ -121,7 +121,12 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
     <View className="bg-gray-900 border-b border-gray-800">
       {/* Header - Creator info */}
       <View className="flex-row items-center px-4 py-3">
-        <Pressable className="flex-row items-center flex-1" onPress={handleCreatorPress}>
+        <Pressable 
+          className="flex-row items-center flex-1" 
+          onPress={handleCreatorPress}
+          accessibilityRole="button"
+          accessibilityLabel={`View ${game.creator.displayName ?? "Anonymous"}'s profile`}
+        >
           <View className={`w-9 h-9 rounded-full items-center justify-center ${getAvatarColor(game.creator.id ?? "anon")}`}>
             <Text className="text-white font-bold text-xs">
               {getInitials(game.creator.displayName)}
@@ -147,7 +152,11 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
       </View>
 
       {/* Thumbnail / Game Preview */}
-      <Pressable onPress={handleGamePress}>
+      <Pressable 
+        onPress={handleGamePress}
+        accessibilityRole="button"
+        accessibilityLabel={`Play ${game.title}`}
+      >
         {game.thumbnailUrl ? (
           <Image
             source={{ uri: game.thumbnailUrl }}
@@ -165,7 +174,14 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
       {/* Action Bar */}
       <View className="flex-row items-center px-4 py-2.5">
         <View className="flex-row items-center flex-1 gap-5">
-          <Pressable className="flex-row items-center" onPress={handleLike} disabled={!currentUserId}>
+          <Pressable 
+            className="flex-row items-center" 
+            onPress={handleLike} 
+            disabled={!currentUserId}
+            accessibilityRole="button"
+            accessibilityLabel={game.isLiked ? "Unlike" : "Like"}
+            accessibilityState={{ selected: game.isLiked }}
+          >
             <Ionicons
               name={game.isLiked ? "heart" : "heart-outline"}
               size={26}
@@ -173,20 +189,39 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
             />
           </Pressable>
 
-          <Pressable className="flex-row items-center" onPress={() => onCommentPress(game.id)}>
+          <Pressable 
+            className="flex-row items-center" 
+            onPress={() => onCommentPress(game.id)}
+            accessibilityRole="button"
+            accessibilityLabel="View comments"
+          >
             <Ionicons name="chatbubble-outline" size={24} color="#E4E4E7" />
           </Pressable>
 
-          <Pressable onPress={handleGamePress}>
+          <Pressable 
+            onPress={handleGamePress}
+            accessibilityRole="button"
+            accessibilityLabel={`Play ${game.title}`}
+          >
             <Ionicons name="play-circle-outline" size={26} color="#E4E4E7" />
           </Pressable>
 
-          <Pressable onPress={handleShare}>
+          <Pressable 
+            onPress={handleShare}
+            accessibilityRole="button"
+            accessibilityLabel="Share game"
+          >
             <Ionicons name="paper-plane-outline" size={24} color="#E4E4E7" />
           </Pressable>
         </View>
 
-        <Pressable onPress={handleBookmark} disabled={!currentUserId}>
+        <Pressable 
+          onPress={handleBookmark} 
+          disabled={!currentUserId}
+          accessibilityRole="button"
+          accessibilityLabel={game.isBookmarked ? "Remove bookmark" : "Bookmark"}
+          accessibilityState={{ selected: game.isBookmarked }}
+        >
           <Ionicons
             name={game.isBookmarked ? "bookmark" : "bookmark-outline"}
             size={24}
@@ -225,7 +260,12 @@ export function SocialFeedCard({ game, currentUserId, onCommentPress }: SocialFe
 
       {/* Comment count link */}
       {game.commentCount > 0 && (
-        <Pressable className="px-4 pb-1" onPress={() => onCommentPress(game.id)}>
+        <Pressable 
+          className="px-4 pb-1" 
+          onPress={() => onCommentPress(game.id)}
+          accessibilityRole="button"
+          accessibilityLabel={`View ${game.commentCount === 1 ? "1 comment" : `all ${game.commentCount} comments`}`}
+        >
           <Text className="text-gray-500 text-sm">
             View {game.commentCount === 1 ? "1 comment" : `all ${game.commentCount} comments`}
           </Text>

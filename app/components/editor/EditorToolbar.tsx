@@ -65,6 +65,7 @@ export function EditorToolbar({
           onSubmitEditing={handleSend}
           returnKeyType="send"
           editable={!isSending}
+          accessibilityLabel="Chat input"
         />
         <Pressable
           testID="editor-send-button"
@@ -75,6 +76,8 @@ export function EditorToolbar({
           ]}
           onPress={handleSend}
           disabled={!inputText.trim() || isSending}
+          accessibilityRole="button"
+          accessibilityLabel="Send message"
         >
           <Ionicons
             name="arrow-forward-circle"
@@ -99,6 +102,8 @@ export function EditorToolbar({
               pressed && styles.tabItemPressed,
             ]}
             onPress={() => onTabPress(tab.id)}
+            accessibilityRole="button"
+            accessibilityLabel={tab.label}
           >
             <View style={styles.iconContainer}>
               <Ionicons name={tab.ionicon} size={24} color="#9CA3AF" />

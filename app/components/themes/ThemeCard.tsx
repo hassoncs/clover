@@ -26,6 +26,8 @@ export function ThemeCard({
     <Pressable
       className="bg-gray-800 p-4 rounded-xl border border-gray-700 mb-3 active:bg-gray-700"
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${name} theme${isPublic ? ', public' : ''}`}
     >
       <View className="flex-row items-center">
         <View className="w-16 h-16 bg-indigo-900/30 rounded-lg items-center justify-center mr-4 overflow-hidden">
@@ -68,6 +70,8 @@ export function ThemeCard({
                 onEdit();
               }}
               className="px-3 py-1.5 bg-gray-700 rounded mr-2 active:bg-gray-600"
+              accessibilityRole="button"
+              accessibilityLabel={`Edit ${name} theme`}
             >
               <Text className="text-xs text-white font-medium">Edit</Text>
             </Pressable>
@@ -80,6 +84,8 @@ export function ThemeCard({
                 onDelete();
               }}
               className="px-3 py-1.5 bg-red-900/30 rounded active:bg-red-900/50"
+              accessibilityRole="button"
+              accessibilityLabel={`Delete ${name} theme`}
             >
               <Text className="text-xs text-red-300 font-medium">Delete</Text>
             </Pressable>

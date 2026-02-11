@@ -38,6 +38,9 @@ export function FileTree({ files, activeFile, onSelectFile, isLoading }: FileTre
               activeFile === file.filename && styles.fileItemActive,
             ]}
             onPress={() => onSelectFile(file.filename)}
+            accessibilityRole="button"
+            accessibilityLabel={`Open ${file.filename}`}
+            accessibilityState={{ selected: activeFile === file.filename }}
           >
             <Text style={styles.fileIcon}>{getFileIcon(file.filename)}</Text>
             <Text

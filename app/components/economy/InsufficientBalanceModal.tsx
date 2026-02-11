@@ -57,6 +57,8 @@ export function InsufficientBalanceModal({
           <Pressable
             className="bg-amber-500 w-full py-4 rounded-xl items-center mb-3 active:bg-amber-600"
             onPress={onGetMore}
+            accessibilityRole="button"
+            accessibilityLabel="Get more sparks"
           >
             <Text className="text-black font-bold text-lg">Get More Sparks</Text>
           </Pressable>
@@ -64,6 +66,8 @@ export function InsufficientBalanceModal({
           <Pressable
             className="bg-gray-800 w-full py-4 rounded-xl items-center active:bg-gray-700"
             onPress={onClose}
+            accessibilityRole="button"
+            accessibilityLabel="Cancel"
           >
             <Text className="text-white font-semibold text-base">Cancel</Text>
           </Pressable>

@@ -22,10 +22,12 @@ export function FileTabBar({
   isSidebarOpen,
 }: FileTabBarProps) {
   return (
-    <View style={styles.container}>
+    <View style={styles.container} accessibilityRole="tablist">
       <TouchableOpacity
         style={[styles.sidebarToggle, isSidebarOpen && styles.sidebarToggleActive]}
         onPress={onToggleSidebar}
+        accessibilityRole="button"
+        accessibilityLabel="Toggle sidebar"
       >
         <Text style={styles.sidebarIcon}>📁</Text>
       </TouchableOpacity>
@@ -40,6 +42,9 @@ export function FileTabBar({
             key={tab.filename}
             style={[styles.tab, tab.isActive && styles.tabActive]}
             onPress={() => onSelectTab(tab.filename)}
+            accessibilityRole="tab"
+            accessibilityLabel={tab.filename}
+            accessibilityState={{ selected: tab.isActive }}
           >
             <Text style={[styles.tabText, tab.isActive && styles.tabTextActive]}>
               {tab.filename}
@@ -50,6 +55,8 @@ export function FileTabBar({
                 e.stopPropagation();
                 onCloseTab(tab.filename);
               }}
+              accessibilityRole="button"
+              accessibilityLabel={`Close ${tab.filename}`}
             >
               <Text style={styles.closeButtonText}>×</Text>
             </TouchableOpacity>

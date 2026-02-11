@@ -155,7 +155,12 @@ export function AssetLoadingScreen({
         </View>
 
         {canSkip && (
-          <Pressable style={styles.skipButton} onPress={onSkip}>
+          <Pressable 
+            style={styles.skipButton} 
+            onPress={onSkip}
+            accessibilityRole="button"
+            accessibilityLabel="Skip loading"
+          >
             <Text style={styles.skipButtonText}>Skip</Text>
           </Pressable>
         )}

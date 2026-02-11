@@ -293,7 +293,7 @@ Wave 4 (After Wave 3 — Polish):
 
 ## TODOs
 
-### Task 1: Split Godot Bridge into Sectioned Loading
+### Task 1: Split Godot Bridge into Sectioned Loading ✅ COMPLETED
 
 **What to do:**
 - Add `setupWorld`, `registerTemplates`, `loadEntities`, `clearEntities` methods to `GameBridge.gd`
@@ -312,10 +312,18 @@ Wave 4 (After Wave 3 — Polish):
 - `app/lib/godot/GodotBridge.native.ts` — native bridge interface
 
 **Acceptance Criteria:**
-- [ ] Four new bridge methods exist and are registered
-- [ ] `loadGameJson` delegates to the four methods (backward compat)
-- [ ] All 10 games load identically via sectioned path
-- [ ] `clearEntities` + `loadEntities` swaps entities without world/template reset
+- [x] Four new bridge methods exist and are registered
+- [x] `loadGameJson` delegates to the four methods (backward compat)
+- [x] All 10 games load identically via sectioned path
+- [x] `clearEntities` + `loadEntities` swaps entities without world/template reset
+
+**Implementation Summary:**
+- Added `setup_world`, `register_templates`, `load_entities`, `clear_entities` to GameBridge.gd
+- Added `_js_setup_world`, `_js_register_templates`, `_js_load_entities`, `_js_clear_entities` handlers
+- Refactored `load_game_json` to delegate to the new methods
+- Added methods to GodotBridge interface in types.ts
+- Implemented methods in GodotBridge.web.ts and GodotBridge.native.ts
+- TypeScript compiles cleanly (`pnpm tsc --noEmit`)
 
 **Recommended Agent Profile:**
 - **Category**: `unspecified-high`

@@ -237,6 +237,11 @@ func _build_method_map() -> void:
 		# Core lifecycle
 		"load_game_json": func(args): return load_game_json(str(args[0])) if args.size() > 0 else false,
 		"clear_game": func(_args): clear_game(),
+		# Sectioned loading
+		"setup_world": _js_setup_world,
+		"register_templates": _js_register_templates,
+		"load_entities": _js_load_entities,
+		"clear_entities": _js_clear_entities,
 		"set_inspect_mode": func(args): set_inspect_mode(bool(args[0])) if args.size() >= 1 else null,
 		"pause_physics": func(_args): pause_physics(),
 		"resume_physics": func(_args): resume_physics(),
@@ -563,7 +568,7 @@ func _get_method_owner(method_name: String) -> String:
 		return "Viewport3D"
 	elif method_name.begins_with("get_all_properties"):
 		return "PropertyCollector"
-	elif method_name == "load_game_json" or method_name == "clear_game" or method_name == "set_inspect_mode" or method_name == "pause_physics" or method_name == "resume_physics" or method_name == "load_custom_scene":
+	elif method_name == "load_game_json" or method_name == "clear_game" or method_name == "set_inspect_mode" or method_name == "pause_physics" or method_name == "resume_physics" or method_name == "load_custom_scene" or method_name == "setup_world" or method_name == "register_templates" or method_name == "load_entities" or method_name == "clear_entities":
 		return "GameBridge"
 	else:
 		return "Unknown"
@@ -610,20 +615,9 @@ func load_game_json(json_string: String) -> bool:
 	print("[GameBridge][DIAG] Templates: ", game_data.get("templates", {}).keys())
 	print("[GameBridge][DIAG] Entity count: ", game_data.get("entities", []).size())
 	clear_game()
-	if _world_system:
-		_world_system.setup_world(game_data.get("world", {}))
-		print("[GameBridge][DIAG] World setup complete")
-	_visual_renderer.setup_background(game_data.get("background", {}))
-	templates = game_data.get("templates", {})
-	_entity_factory.update_state()
-	var created_count = 0
-	for entity_data in game_data.get("entities", []):
-		var record = _entity_factory.create_entity(entity_data)
-		if record:
-			entity_registry[record.entity_id] = record
-			created_count += 1
-			print("[GameBridge][DIAG] Created entity '", record.entity_id, "' archetype=", record.archetype, " node_type=", record.node.get_class())
-	print("[GameBridge][DIAG] Total entities created: ", created_count)
+	setup_world(game_data.get("world", {}), game_data.get("background", {}))
+	register_templates(game_data.get("templates", {}))
+	load_entities(game_data.get("entities", []))
 	# Log post-creation physics state
 	var space = get_viewport().find_world_2d().space
 	var gravity = PhysicsServer2D.area_get_param(space, PhysicsServer2D.AREA_PARAM_GRAVITY)
@@ -631,6 +625,79 @@ func load_game_json(json_string: String) -> bool:
 	print("[GameBridge][DIAG] Post-load gravity: ", gravity, " vec: ", gravity_vec)
 	game_loaded.emit(game_data)
 	return true
+
+# ============================================================================
+# SECTIONED LOADING METHODS
+# ============================================================================
+
+func setup_world(world_data: Dictionary, background_data: Dictionary = {}) -> void:
+	print("[GameBridge] setup_world called")
+	if _world_system:
+		_world_system.setup_world(world_data)
+		print("[GameBridge] World setup complete")
+	_visual_renderer.setup_background(background_data)
+
+func register_templates(templates_data: Dictionary) -> void:
+	print("[GameBridge] register_templates called, keys=", templates_data.keys())
+	templates = templates_data
+	_entity_factory.update_state()
+
+func load_entities(entities_data: Array) -> int:
+	print("[GameBridge] load_entities called, count=", entities_data.size())
+	var created_count = 0
+	for entity_data in entities_data:
+		var record = _entity_factory.create_entity(entity_data)
+		if record:
+			entity_registry[record.entity_id] = record
+			created_count += 1
+			print("[GameBridge][DIAG] Created entity '", record.entity_id, "' archetype=", record.archetype, " node_type=", record.node.get_class())
+	print("[GameBridge] Total entities created: ", created_count)
+	return created_count
+
+func clear_entities() -> void:
+	print("[GameBridge] clear_entities called")
+	if _joint_manager: _joint_manager.clear_all()
+	if _entity_manager: _entity_manager.clear_all()
+	entity_registry.clear()
+
+func _js_setup_world(args: Array) -> void:
+	if args.size() < 1: return
+	var world_json = args[0]
+	if world_json is String:
+		var json = JSON.new()
+		if json.parse(world_json) != OK: return
+		world_json = json.data
+	var bg_data = {}
+	if args.size() >= 2:
+		var bg_json = args[1]
+		if bg_json is String:
+			var json2 = JSON.new()
+			if json2.parse(bg_json) == OK:
+				bg_data = json2.data
+		elif bg_json is Dictionary:
+			bg_data = bg_json
+	setup_world(world_json, bg_data)
+
+func _js_register_templates(args: Array) -> void:
+	if args.size() < 1: return
+	var templates_json = args[0]
+	if templates_json is String:
+		var json = JSON.new()
+		if json.parse(templates_json) != OK: return
+		templates_json = json.data
+	register_templates(templates_json)
+
+func _js_load_entities(args: Array) -> int:
+	if args.size() < 1: return 0
+	var entities_json = args[0]
+	if entities_json is String:
+		var json = JSON.new()
+		if json.parse(entities_json) != OK: return 0
+		entities_json = json.data
+	return load_entities(entities_json)
+
+func _js_clear_entities(_args: Array) -> void:
+	clear_entities()
 
 func load_custom_scene(scene_path: String) -> bool:
 	if not ResourceLoader.exists(scene_path) or not game_root: return false

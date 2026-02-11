@@ -68,6 +68,8 @@ export function EditorTopBar() {
         testID="editor-back-button"
         className="w-10 h-10 items-center justify-center rounded-lg active:bg-gray-700"
         onPress={handleBack}
+        accessibilityRole="button"
+        accessibilityLabel="Go back"
       >
         <Text className="text-white text-xl">←</Text>
       </Pressable>
@@ -79,6 +81,9 @@ export function EditorTopBar() {
           }`}
           onPress={undo}
           disabled={!canUndo}
+          accessibilityRole="button"
+          accessibilityLabel="Undo"
+          accessibilityState={{ disabled: !canUndo }}
         >
           <Text className="text-white text-lg">↶</Text>
         </Pressable>
@@ -88,6 +93,9 @@ export function EditorTopBar() {
           }`}
           onPress={redo}
           disabled={!canRedo}
+          accessibilityRole="button"
+          accessibilityLabel="Redo"
+          accessibilityState={{ disabled: !canRedo }}
         >
           <Text className="text-white text-lg">↷</Text>
         </Pressable>
@@ -111,6 +119,8 @@ export function EditorTopBar() {
             }`}
             onPress={handleSave}
             disabled={isSaving}
+            accessibilityRole="button"
+            accessibilityLabel="Save game"
           >
             {isSaving ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
@@ -128,6 +138,8 @@ export function EditorTopBar() {
             mode === "playtest" ? "bg-green-600" : "bg-indigo-600"
           }`}
           onPress={toggleMode}
+          accessibilityRole="button"
+          accessibilityLabel={mode === "playtest" ? "Switch to edit mode" : "Switch to play mode"}
         >
           <Text className="text-white font-bold text-sm">
             {mode === "playtest" ? "✏️ EDIT" : "▶ PLAY"}

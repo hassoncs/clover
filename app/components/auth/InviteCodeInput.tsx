@@ -83,6 +83,7 @@ export function InviteCodeInput({ onValidated }: InviteCodeInputProps) {
           autoCapitalize="characters"
           autoCorrect={false}
           editable={!isValidating}
+          accessibilityLabel="Invite code input"
         />
         {error && (
           <Text className="text-red-400 text-center mt-2 text-sm">
@@ -99,6 +100,9 @@ export function InviteCodeInput({ onValidated }: InviteCodeInputProps) {
         }`}
         onPress={handleValidate}
         disabled={isValidating || !code.trim()}
+        accessibilityRole="button"
+        accessibilityLabel="Verify invite code"
+        accessibilityState={{ disabled: isValidating || !code.trim() }}
       >
         {isValidating ? (
           <ActivityIndicator color="white" />

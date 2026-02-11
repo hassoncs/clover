@@ -42,7 +42,7 @@ export function StageArea() {
 
   return (
     <View style={styles.container} testID="stage-area">
-      <View style={styles.tabBar} testID="stage-tab-bar">
+      <View style={styles.tabBar} testID="stage-tab-bar" accessibilityRole="tablist">
         <View style={styles.fileTabs}>
           {openTabs.map(filename => (
             <TouchableOpacity
@@ -53,6 +53,9 @@ export function StageArea() {
                 activeView.type === 'file' && activeView.filename === filename && styles.activeTab
               ]}
               onPress={() => handleFileTabPress(filename)}
+              accessibilityRole="tab"
+              accessibilityLabel={filename}
+              accessibilityState={{ selected: activeView.type === 'file' && activeView.filename === filename }}
             >
               <Text style={[
                 styles.tabText,
@@ -71,6 +74,9 @@ export function StageArea() {
             activeView.type === 'preview' && styles.activeTab
           ]}
           onPress={handlePreviewTabPress}
+          accessibilityRole="tab"
+          accessibilityLabel="Preview"
+          accessibilityState={{ selected: activeView.type === 'preview' }}
         >
           <Text style={[
             styles.tabText,

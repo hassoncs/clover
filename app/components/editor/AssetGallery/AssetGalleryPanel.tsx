@@ -452,6 +452,8 @@ export function AssetGalleryPanel({
                   <Pressable
                     style={styles.managePacksButton}
                     onPress={() => setPackSelectorVisible(true)}
+                    accessibilityRole="button"
+                    accessibilityLabel={packList.length > 0 ? 'Manage asset packs' : 'Create asset pack'}
                   >
                     <Text style={styles.managePacksButtonText}>
                       {packList.length > 0 ? 'Manage' : '+ Create Pack'}
@@ -472,6 +474,9 @@ export function AssetGalleryPanel({
                           selectedPackId === pack.id && styles.packChipActive,
                         ]}
                         onPress={() => setSelectedPackId(pack.id)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Select pack ${pack.name}`}
+                        accessibilityState={{ selected: selectedPackId === pack.id }}
                       >
                         <Text style={[
                           styles.packChipText,
@@ -493,6 +498,9 @@ export function AssetGalleryPanel({
                   ]}
                   onPress={handleGenerateAll}
                   disabled={isGenerating || !selectedPackId}
+                  accessibilityRole="button"
+                  accessibilityLabel={selectedPackId ? 'Regenerate all assets' : 'Select a pack first'}
+                  accessibilityState={{ disabled: isGenerating || !selectedPackId }}
                 >
                   {isGenerating ? (
                     <View style={styles.generateButtonContent}>

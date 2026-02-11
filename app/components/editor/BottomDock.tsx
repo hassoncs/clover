@@ -65,6 +65,9 @@ export function BottomDock() {
             } ${isDisabled ? "opacity-30" : ""}`}
             onPress={() => handleDockPress(item)}
             disabled={isDisabled}
+            accessibilityRole="button"
+            accessibilityLabel={item.label}
+            accessibilityState={{ selected: isActive, disabled: isDisabled }}
           >
             <Text className="text-2xl">{item.icon}</Text>
             <Text

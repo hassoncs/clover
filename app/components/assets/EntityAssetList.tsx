@@ -72,6 +72,9 @@ export function EntityAssetList({
                 className={`p-2 rounded mr-2 ${isRegenerating ? 'bg-gray-600' : 'bg-indigo-600'}`}
                 onPress={() => onRegenerateAsset(templateId)}
                 disabled={isRegenerating}
+                accessibilityRole="button"
+                accessibilityLabel={`Regenerate ${templateId} asset`}
+                accessibilityState={{ disabled: isRegenerating }}
               >
                 {isRegenerating ? (
                   <ActivityIndicator color="white" size="small" />
@@ -84,6 +87,8 @@ export function EntityAssetList({
                 <Pressable 
                   className="p-2 bg-red-600 rounded"
                   onPress={() => onClearAsset(templateId)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Clear ${templateId} asset`}
                 >
                   <Text className="text-white text-xs">Clear</Text>
                 </Pressable>

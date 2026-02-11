@@ -26,6 +26,8 @@ export function GameGridCard({
     <Pressable
       className="w-[48%] bg-gray-800 rounded-xl border border-gray-700 overflow-hidden active:bg-gray-700 mb-3"
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`Play ${title}`}
     >
       <View className={`w-full aspect-square ${thumbnailBgClass} items-center justify-center overflow-hidden`}>
         {thumbnailUrl ? (
@@ -98,6 +100,8 @@ export function GameCard({
     <Pressable
       className="bg-gray-800 p-4 rounded-xl border border-gray-700 mb-3 active:bg-gray-700"
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`Play ${title}`}
     >
       <View className="flex-row items-center">
         <View className={`w-16 h-16 ${thumbnailBgClass} rounded-lg items-center justify-center mr-4 overflow-hidden`}>
@@ -178,6 +182,9 @@ export function Pagination({
         className={`px-4 py-2 rounded-lg mr-2 ${
           currentPage === 1 || isLoading ? "bg-gray-700 opacity-50" : "bg-gray-700 active:bg-gray-600"
         }`}
+        accessibilityRole="button"
+        accessibilityLabel="Previous page"
+        accessibilityState={{ disabled: currentPage === 1 || isLoading }}
       >
         <Text className="text-white font-medium">← Previous</Text>
       </Pressable>
@@ -194,6 +201,9 @@ export function Pagination({
         className={`px-4 py-2 rounded-lg ml-2 ${
           !hasMore || isLoading ? "bg-gray-700 opacity-50" : "bg-indigo-600 active:bg-indigo-700"
         }`}
+        accessibilityRole="button"
+        accessibilityLabel="Next page"
+        accessibilityState={{ disabled: !hasMore || isLoading }}
       >
         <Text className="text-white font-medium">
           {isLoading ? "Loading..." : "Next →"}

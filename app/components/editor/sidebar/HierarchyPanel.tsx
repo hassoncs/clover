@@ -13,6 +13,9 @@ export function HierarchyPanel() {
         <Pressable
           style={[styles.inspectButton, inspectMode && styles.inspectButtonActive]}
           onPress={toggleInspectMode}
+          accessibilityRole="button"
+          accessibilityLabel="Toggle inspect mode"
+          accessibilityState={{ selected: inspectMode }}
         >
           <Text style={styles.inspectButtonText}>
             {inspectMode ? '🔍 On' : '🔍 Off'}
@@ -26,6 +29,7 @@ export function HierarchyPanel() {
         placeholderTextColor="#6B7280"
         value={searchQuery}
         onChangeText={setSearchQuery}
+        accessibilityLabel="Search entities"
       />
       
       <View style={styles.content}>
