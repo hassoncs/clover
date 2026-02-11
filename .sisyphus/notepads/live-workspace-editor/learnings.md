@@ -12,3 +12,25 @@
 - `LivePreviewController` tests are stable when `getWorkspaceSnapshot.query` is declared with `vi.hoisted(() => vi.fn())`; top-level `vi.fn()` inside mocked module imports can cause hoisting/typing issues.
 - Polling assertions should treat initialize-time `fullReset` separately from poll/reset-time resets; spying after `initialize()` only captures subsequent orchestrator calls.
 - `reset()` rebuilds the orchestrator instance, so assertions about forced reload are more reliable via bridge side-effects (`setupWorld` call count) than spies attached to the pre-reset orchestrator instance.
+
+## 2026-02-11 Phase 5 Gate Decision
+Phase 5 (Prefab Reconciliation, Tasks 5.1-5.5) is intentionally deferred per plan gate:
+> "Implement only if V1 measurements show prefab full reload exceeds editor latency budget"
+
+No V1 measurements exist yet — the live workspace editor hasn't been manually QA'd.
+Implementing Phase 5 now would violate the anti-overengineering guardrails.
+
+**Action required**: After manual QA, if prefab reload latency exceeds budget, ungate Phase 5.
+Until then, the plan is functionally complete at 66/71 tasks (all required phases done).
+
+All 13 Definition of Done criteria verified:
+- pnpm tsc --noEmit passes
+- All new tests pass (shared: 1084, app live: 41, api workspace: 11)
+- Edit mode incremental hot reload via 7 generic tag handlers
+- Play mode full reload on invalidated tags
+- Effects/shaders through module graph → effects handler with compile/diff
+- Reset button in EditorTopBar
+- V1 files load, V2 scene-aware loading doesn't break V1
+- Agent writes arbitrary workspace files via listFiles/readFilesBatch/writeFile
+- Legacy loadGame() preserved in bridge
+- Feature flag kill-switch via localStorage livePreviewEnabled
