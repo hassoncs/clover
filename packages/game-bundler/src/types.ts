@@ -132,3 +132,39 @@ export interface BundleCompileResult {
   /** Files that were processed */
   processedFiles: string[];
 }
+
+/**
+ * Sections of a game definition for modular loading
+ */
+export interface BundleSections {
+  world: GameDefinition['world'];
+  templates: GameDefinition['templates'];
+  entities: GameDefinition['entities'];
+  rules: GameDefinition['rules'];
+  script?: string;
+  systems?: {
+    containers?: GameDefinition['containers'];
+    match3?: GameDefinition['match3'];
+    tetris?: GameDefinition['tetris'];
+    stateMachines?: GameDefinition['stateMachines'];
+  };
+}
+
+/**
+ * Sectioned bundle format for modular bridge protocol
+ */
+export interface SectionedBundle {
+  version: string;
+  contentHash: string;
+  sections: BundleSections;
+}
+
+/**
+ * Result of compiling a sectioned bundle
+ */
+export interface SectionedCompileResult {
+  success: boolean;
+  bundle: SectionedBundle | null;
+  errors: CompileError[];
+  warnings: CompileWarning[];
+}

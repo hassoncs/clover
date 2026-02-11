@@ -1,11 +1,15 @@
+import { createHash } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import type {
   BundleCompileResult,
+  BundleSections,
   CompileError,
   CompileWarning,
   EditorMetadata,
   RawBundleData,
+  SectionedBundle,
+  SectionedCompileResult,
   ConstantRef,
 } from './types';
 import type {
@@ -460,7 +464,7 @@ function buildGameDefinition(
     world,
     templates: templateRecord,
     entities: entities as unknown as GameDefinition['entities'],
-    rules,
+    rules: rules as unknown as GameDefinition['rules'],
     constants: rawConstants || undefined,
     // Include system configs if provided
     ...(systems?.match3 && { match3: systems.match3 }),
@@ -776,5 +780,62 @@ export function compileBundle(
     warnings,
     rawData,
     processedFiles,
+  };
+}
+
+export function compileSectioned(
+  bundlePath: string,
+  fileReader?: FileReader
+): SectionedCompileResult {
+  const result = compileBundle(bundlePath, { fileReader });
+
+  if (!result.success || !result.gameDefinition) {
+    return {
+      success: false,
+      bundle: null,
+      errors: result.errors,
+      warnings: result.warnings,
+    };
+  }
+
+  const gameDefinition = result.gameDefinition;
+  const systems: NonNullable<BundleSections['systems']> = {};
+
+  if (gameDefinition.containers != null) {
+    systems.containers = gameDefinition.containers;
+  }
+
+  if (gameDefinition.match3 != null) {
+    systems.match3 = gameDefinition.match3;
+  }
+
+  if (gameDefinition.tetris != null) {
+    systems.tetris = gameDefinition.tetris;
+  }
+
+  if (gameDefinition.stateMachines != null) {
+    systems.stateMachines = gameDefinition.stateMachines;
+  }
+
+  const sections: BundleSections = {
+    world: gameDefinition.world,
+    templates: gameDefinition.templates,
+    entities: gameDefinition.entities,
+    rules: gameDefinition.rules,
+    ...(gameDefinition.script != null && { script: gameDefinition.script }),
+    ...(Object.keys(systems).length > 0 && { systems }),
+  };
+
+  const bundle: SectionedBundle = {
+    version: '1.0',
+    contentHash: createHash('sha256').update(JSON.stringify(sections)).digest('hex'),
+    sections,
+  };
+
+  return {
+    success: true,
+    bundle,
+    errors: result.errors,
+    warnings: result.warnings,
   };
 }
