@@ -1,13 +1,12 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
-  TextInput,
   Pressable,
   ScrollView,
   StyleSheet,
-  Platform,
 } from "react-native";
+import { ChatTextArea } from "@/components/create-game/ChatTextArea";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import type { EditorTab } from "./EditorProvider";
@@ -37,14 +36,6 @@ export function EditorToolbar({
   isSending,
 }: EditorToolbarProps) {
   const insets = useSafeAreaInsets();
-  const [inputText, setInputText] = useState("");
-
-  const handleSend = () => {
-    if (inputText.trim()) {
-      onSendMessage(inputText.trim());
-      setInputText("");
-    }
-  };
 
   return (
     <View
@@ -53,39 +44,12 @@ export function EditorToolbar({
         { paddingBottom: Math.max(insets.bottom, 16) },
       ]}
     >
-
-      <View style={styles.composerRow}>
-        <TextInput
-          testID="editor-chat-input"
-          style={styles.input}
-          placeholder="Make an edit..."
-          placeholderTextColor="#9CA3AF"
-          value={inputText}
-          onChangeText={setInputText}
-          onSubmitEditing={handleSend}
-          returnKeyType="send"
-          editable={!isSending}
-          accessibilityLabel="Chat input"
-        />
-        <Pressable
-          testID="editor-send-button"
-          style={({ pressed }) => [
-            styles.sendButton,
-            pressed && styles.sendButtonPressed,
-            (!inputText.trim() || isSending) && styles.sendButtonDisabled,
-          ]}
-          onPress={handleSend}
-          disabled={!inputText.trim() || isSending}
-          accessibilityRole="button"
-          accessibilityLabel="Send message"
-        >
-          <Ionicons
-            name="arrow-forward-circle"
-            size={40}
-            color={!inputText.trim() || isSending ? "#4B5563" : "#FFFFFF"}
-          />
-        </Pressable>
-      </View>
+      <ChatTextArea
+        onSend={onSendMessage}
+        isSubmitting={isSending}
+        variant="toolbar"
+        enableSpeechToText
+      />
 
 
       <ScrollView
@@ -124,37 +88,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingHorizontal: 16,
   },
-  composerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-    gap: 12,
-  },
-  input: {
-    flex: 1,
-    backgroundColor: "#1F2937",
-    borderRadius: 24,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#374151",
-    height: 48,
-  },
-  sendButton: {
-    width: 40,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 20,
-  },
-  sendButtonPressed: {
-    opacity: 0.8,
-  },
-  sendButtonDisabled: {
-    opacity: 0.5,
-  },
+
   tabsScrollView: {
     flexGrow: 0,
   },
