@@ -209,6 +209,7 @@ interface MyGameItem {
   title: string;
   description: string | null;
   playCount: number;
+  isPublic: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -411,6 +412,22 @@ export default function ProfileScreen() {
             >
               <Text className="text-zinc-100 text-base font-semibold">Blocked Users</Text>
             </Pressable>
+            {__DEV__ && (
+              <Pressable
+                className="mb-3 bg-amber-600 h-12 rounded-full items-center justify-center"
+                onPress={async () => {
+                  const { getStorageItem, setStorageItem } = await import('@/lib/utils/storage');
+                  const current = await getStorageItem('use_dev_user', false);
+                  await setStorageItem('use_dev_user', !current);
+                  Alert.alert(
+                    'Dev User',
+                    !current ? 'Now using dev user. Reload the app.' : 'Using your real account. Reload the app.',
+                  );
+                }}
+              >
+                <Text className="text-white text-base font-semibold">🔧 Toggle Dev User</Text>
+              </Pressable>
+            )}
             <View className="flex-row gap-3">
               <Pressable
                 className="flex-1 bg-emerald-600 h-12 rounded-full items-center justify-center"
@@ -448,12 +465,38 @@ export default function ProfileScreen() {
                   <Pressable
                     key={game.id}
                     className="bg-zinc-900 p-4 rounded-2xl border border-zinc-800 mb-3 active:bg-zinc-800"
-                    onPress={() => router.push({ pathname: "/editor/[id]", params: { id: game.id } })}
+                    onPress={() => {
+                      if (game.isPublic) {
+                        router.push(`/game-detail/${game.id}`);
+                      } else {
+                        router.push(`/editor/${game.id}`);
+                      }
+                    }}
                     onLongPress={() => handleDeleteGame(game)}
                   >
                     <View className="flex-row items-center justify-between">
                       <View className="flex-1">
-                        <Text className="text-lg font-semibold text-zinc-100">{game.title}</Text>
+                        <View className="flex-row items-center gap-2 mb-1">
+                          <Text className="text-lg font-semibold text-zinc-100">{game.title}</Text>
+                          <View
+                            style={{
+                              paddingHorizontal: 8,
+                              paddingVertical: 2,
+                              borderRadius: 4,
+                              backgroundColor: game.isPublic ? 'rgba(34,197,94,0.15)' : 'rgba(156,163,175,0.15)',
+                            }}
+                          >
+                            <Text
+                              style={{
+                                fontSize: 11,
+                                fontWeight: '600',
+                                color: game.isPublic ? '#22C55E' : '#9CA3AF',
+                              }}
+                            >
+                              {game.isPublic ? 'Published' : 'Draft'}
+                            </Text>
+                          </View>
+                        </View>
                         {game.description && (
                           <Text className="text-zinc-400 mt-1" numberOfLines={2}>
                             {game.description}

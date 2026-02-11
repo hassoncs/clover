@@ -5,6 +5,7 @@ import { AppFrameHeader } from "@/components/navigation/AppFrameHeader";
 import { FloatingTabBar } from "@/components/navigation/FloatingTabBar";
 import { SidebarPlaceholder } from "@/components/navigation/SidebarPlaceholder";
 import { useAuth } from "@/hooks/useAuth";
+import { trpc } from "@/lib/trpc/client";
 
 const TAB_HEADER_CONFIG: Record<
   string,
@@ -43,6 +44,7 @@ export default function TabLayout() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [sidebarVisible, setSidebarVisible] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
 
   const openSidebar = useCallback(() => {
     setSidebarVisible(true);
@@ -52,13 +54,34 @@ export default function TabLayout() {
     setSidebarVisible(false);
   }, []);
 
-  const goToCreateGame = useCallback(() => {
+  const goToCreateGame = useCallback(async () => {
     if (!isAuthenticated) {
       router.push("/(tabs)/profile");
       return;
     }
-    router.push("/create-game");
-  }, [router, isAuthenticated]);
+    if (isCreating) return;
+    setIsCreating(true);
+    try {
+      const game = await trpc.games.create.mutate({
+        title: "New Game",
+        definition: JSON.stringify({
+          metadata: { title: "New Game", description: "Work in progress" },
+          world: { gravity: { x: 0, y: 9.8 }, bounds: { width: 20, height: 12 }, pixelsPerMeter: 50 },
+          entities: {},
+          templates: {},
+          scenes: { main: { entities: [] } },
+          globalVariables: {},
+          rules: [],
+        }),
+        isPublic: false,
+      });
+      router.push(`/editor/${game.id}`);
+    } catch (error) {
+      console.error("Failed to create game:", error);
+    } finally {
+      setIsCreating(false);
+    }
+  }, [router, isAuthenticated, isCreating]);
 
   const goToDiscover = useCallback(() => {
     router.push("/discover");

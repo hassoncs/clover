@@ -1,21 +1,25 @@
-import { useRef, useMemo, useCallback, useEffect } from "react";
+import { useRef, useMemo, useCallback, useEffect, useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
+import BottomSheet, {
+  BottomSheetView,
+  BottomSheetScrollView,
+  BottomSheetFlatList,
+  BottomSheetFooter,
+  type BottomSheetFooterProps,
+} from "@gorhom/bottom-sheet";
 import { useEditor, type EditorTab } from "./EditorProvider";
 import { LayersPanel } from "./panels/LayersPanel";
 import { PropertiesPanel } from "./panels/PropertiesPanel";
 import { DebugPanel } from "./panels/DebugPanel";
 import { AssetsPanel } from "./panels/AssetsPanel";
 import { AssetGalleryPanel } from "./AssetGallery/AssetGalleryPanel";
-import { ChatTimeline } from "@/components/create-game/ChatTimeline";
+import { ChatMessage as ChatMessageComponent } from "@/components/create-game/ChatMessage";
 import { Composer } from "@/components/create-game/Composer";
-import { ThreadList } from "@/components/create-game/ThreadList";
 import { useCreateGameChat } from "@/components/create-game/useCreateGameChat";
 import { useThreads } from "@/components/create-game/useThreads";
+import type { ChatMessage } from "@/components/create-game/types";
 
-
-const TABS: { id: EditorTab; label: string }[] = [
-  { id: "chat", label: "Chat" },
+const TOOL_TABS: { id: EditorTab; label: string }[] = [
   { id: "gallery", label: "Gallery" },
   { id: "assets", label: "Add" },
   { id: "properties", label: "Properties" },
@@ -32,30 +36,25 @@ export function BottomSheetHost() {
     setSheetSnapPoint,
     selectedEntityId,
     gameId,
-    threadId,
-    setThreadId,
   } = useEditor();
 
   const sheetRef = useRef<BottomSheet>(null);
 
-  const snapPoints = useMemo(() => ["12%", "50%", "90%"], []);
-
-  const handleSheetChange = useCallback(
-    (index: number) => {
-      setSheetSnapPoint(index as 0 | 1 | 2);
-    },
-    [setSheetSnapPoint]
-  );
-
   const effectiveGameId = gameId !== "preview" ? gameId : null;
-
-  const { threads, createThread, initForGame, isLoading: isThreadsLoading } = useThreads();
+  const { threads, createThread, initForGame } = useThreads();
+  const [threadId, setThreadId] = useState<string | null>(null);
 
   useEffect(() => {
     if (effectiveGameId) {
       initForGame(effectiveGameId);
     }
   }, [effectiveGameId, initForGame]);
+
+  useEffect(() => {
+    if (!threadId && threads.length > 0) {
+      setThreadId(threads[0].id);
+    }
+  }, [threads, threadId]);
 
   const {
     messages,
@@ -65,41 +64,71 @@ export function BottomSheetHost() {
     submitAnswer,
     submitUserAnswer,
     pendingQuestions,
-  } = useCreateGameChat(threadId ?? null, effectiveGameId);
+  } = useCreateGameChat(threadId, effectiveGameId);
 
-  useEffect(() => {
-    if (activeTab === "chat" && sheetSnapPoint < 2) {
-      setSheetSnapPoint(2);
-      sheetRef.current?.snapToIndex(2);
+  const isChatMode = activeTab === "chat";
+  const hasMessages = messages.length > 0;
+
+  const tabs = useMemo(() => {
+    if (hasMessages || isChatMode) {
+      return [...TOOL_TABS, { id: "chat" as EditorTab, label: "Chat" }];
     }
-  }, [activeTab, sheetSnapPoint, setSheetSnapPoint]);
+    return TOOL_TABS;
+  }, [hasMessages, isChatMode]);
 
-  const handleSendMessage = useCallback(
-    (text: string) => {
-      sendMessage(text, threadId ?? undefined, effectiveGameId ?? undefined);
+  const toolSnapPoints = useMemo(() => ["12%", "50%", "90%"], []);
+  const chatSnapPoints = useMemo(() => ["50%", "90%"], []);
+
+  const handleSheetChange = useCallback(
+    (index: number) => {
+      setSheetSnapPoint(index as 0 | 1 | 2);
     },
-    [sendMessage, threadId, effectiveGameId]
+    [setSheetSnapPoint]
   );
 
-  if (mode === "playtest") {
-    return null;
-  }
+  const handleSendMessage = useCallback(
+    async (text: string) => {
+      let tid = threadId;
+      if (!tid && effectiveGameId) {
+        tid = await createThread(effectiveGameId);
+        setThreadId(tid);
+      }
+      if (tid) {
+        sendMessage(text, tid, effectiveGameId ?? undefined);
+        if (activeTab !== "chat") {
+          setActiveTab("chat");
+        }
+        sheetRef.current?.snapToIndex(isChatMode ? 1 : 2);
+      }
+    },
+    [threadId, effectiveGameId, createThread, sendMessage, activeTab, setActiveTab, isChatMode]
+  );
 
-  return (
-    <BottomSheet
-      ref={sheetRef}
-      index={sheetSnapPoint}
-      snapPoints={snapPoints}
-      onChange={handleSheetChange}
-      backgroundStyle={styles.sheetBackground}
-      handleIndicatorStyle={styles.handleIndicator}
-      enablePanDownToClose={false}
-    >
+  const reversedMessages = useMemo(
+    () => [...messages].reverse(),
+    [messages]
+  );
+
+  const renderChatMessage = useCallback(
+    ({ item }: { item: ChatMessage }) => (
+      <View style={styles.chatMessageItem}>
+        <ChatMessageComponent
+          message={item}
+          onSubmitUserAnswer={submitUserAnswer}
+          onSubmitClarification={submitAnswer}
+          onRetry={() => {}}
+        />
+      </View>
+    ),
+    [submitUserAnswer, submitAnswer]
+  );
+
+  const renderTabBar = useCallback(
+    () => (
       <View style={styles.tabHeader}>
-        {TABS.map((tab) => {
+        {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           const isDisabled = tab.id === "properties" && !selectedEntityId;
-
           return (
             <Pressable
               key={tab.id}
@@ -124,54 +153,105 @@ export function BottomSheetHost() {
           );
         })}
       </View>
+    ),
+    [tabs, activeTab, selectedEntityId, setActiveTab]
+  );
 
-      {activeTab === "chat" ? (
-        threadId ? (
-          <View style={styles.chatContainer}>
-            <Pressable onPress={() => setThreadId(null)} style={styles.backButton}>
-              <Text style={styles.backButtonText}>All chats</Text>
-            </Pressable>
-            <ChatTimeline
-              messages={messages}
-              onSubmitUserAnswer={submitUserAnswer}
-              onSubmitClarification={submitAnswer}
-              onRetry={() => {}}
-              isRunning={isRunning}
-              hasPendingQuestion={!!pendingQuestions}
-            />
-            <Composer onSend={handleSendMessage} isSubmitting={isSending} />
-          </View>
-        ) : (
-          <View style={styles.threadListContainer}>
-            <ThreadList
-              threads={threads}
-              activeThreadId={null}
-              onSelect={(id) => setThreadId(id)}
-              onCreateNew={async () => {
-                if (effectiveGameId) {
-                  const newThreadId = await createThread(effectiveGameId);
-                  setThreadId(newThreadId);
-                }
-              }}
-              isLoading={isThreadsLoading}
-            />
-          </View>
-        )
-      ) : (
-        <BottomSheetScrollView style={styles.content}>
-          {activeTab === "gallery" && (
-            <AssetGalleryPanel
-              onTemplatePress={(templateId) => {
-                console.log("Template pressed:", templateId);
-              }}
-            />
-          )}
-          {activeTab === "assets" && <AssetsPanel />}
-          {activeTab === "properties" && <PropertiesPanel />}
-          {activeTab === "layers" && <LayersPanel />}
-          {activeTab === "debug" && <DebugPanel />}
-        </BottomSheetScrollView>
-      )}
+  const renderFooter = useCallback(
+    (props: BottomSheetFooterProps) => (
+      <BottomSheetFooter {...props}>
+        <View style={styles.footerContainer}>
+          <Composer onSend={handleSendMessage} isSubmitting={isSending} />
+          {renderTabBar()}
+        </View>
+      </BottomSheetFooter>
+    ),
+    [handleSendMessage, isSending, renderTabBar]
+  );
+
+  const renderToolContent = useCallback(() => {
+    switch (activeTab) {
+      case "gallery":
+        return (
+          <AssetGalleryPanel
+            onTemplatePress={(templateId) => {
+              console.log("Template pressed:", templateId);
+            }}
+          />
+        );
+      case "assets":
+        return <AssetsPanel />;
+      case "properties":
+        return <PropertiesPanel />;
+      case "layers":
+        return <LayersPanel />;
+      case "debug":
+        return <DebugPanel />;
+      default:
+        return null;
+    }
+  }, [activeTab]);
+
+  if (mode === "playtest") {
+    return null;
+  }
+
+  // ========== CHAT MODE ==========
+  if (isChatMode) {
+    return (
+      <BottomSheet
+        ref={sheetRef}
+        index={0}
+        snapPoints={chatSnapPoints}
+        onChange={handleSheetChange}
+        backgroundStyle={styles.sheetBackground}
+        handleIndicatorStyle={styles.handleIndicator}
+        enablePanDownToClose={false}
+        enableDynamicSizing={false}
+        footerComponent={renderFooter}
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+      >
+        <BottomSheetFlatList<ChatMessage>
+          data={reversedMessages}
+          keyExtractor={(item: ChatMessage) => item.id}
+          renderItem={renderChatMessage}
+          inverted
+          contentContainerStyle={styles.chatContentContainer}
+          ListHeaderComponent={
+            isRunning && !pendingQuestions ? (
+              <View style={styles.typingContainer}>
+                <Text style={styles.typingText}>Building your game...</Text>
+              </View>
+            ) : null
+          }
+        />
+      </BottomSheet>
+    );
+  }
+
+  // ========== TOOL MODE ==========
+  return (
+    <BottomSheet
+      ref={sheetRef}
+      index={sheetSnapPoint}
+      snapPoints={toolSnapPoints}
+      onChange={handleSheetChange}
+      backgroundStyle={styles.sheetBackground}
+      handleIndicatorStyle={styles.handleIndicator}
+      enablePanDownToClose={false}
+      enableDynamicSizing={false}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+    >
+      <BottomSheetView>
+        <Composer onSend={handleSendMessage} isSubmitting={isSending} />
+        {renderTabBar()}
+      </BottomSheetView>
+
+      <BottomSheetScrollView contentContainerStyle={styles.toolContentContainer}>
+        {renderToolContent()}
+      </BottomSheetScrollView>
     </BottomSheet>
   );
 }
@@ -186,8 +266,8 @@ const styles = StyleSheet.create({
   },
   tabHeader: {
     flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: "#374151",
+    borderTopWidth: 1,
+    borderTopColor: "#374151",
     paddingHorizontal: 8,
   },
   tabButton: {
@@ -212,24 +292,28 @@ const styles = StyleSheet.create({
   tabLabelDisabled: {
     color: "#6B7280",
   },
-  content: {
-    flex: 1,
+  chatContentContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
   },
-  chatContainer: {
-    flex: 1,
+  chatMessageItem: {
+    marginBottom: 4,
   },
-  threadListContainer: {
-    flex: 1,
+  footerContainer: {
+    backgroundColor: "#1F2937",
   },
-  backButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#374151",
+  typingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    alignSelf: "flex-start",
   },
-  backButtonText: {
-    color: "#6366F1",
+  typingText: {
     fontSize: 13,
-    fontWeight: "500",
+    color: "#71717A",
+  },
+  toolContentContainer: {
+    flexGrow: 1,
   },
 });

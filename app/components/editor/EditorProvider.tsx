@@ -9,7 +9,6 @@ import React, {
   type ReactNode,
 } from "react";
 import type { GameDefinition, GameEntity, AssetPlacement } from "@slopcade/shared";
-import type { RuntimeEntity } from "@/lib/game-engine/types";
 import type { Physics2D } from "@/lib/physics2d";
 import type { EntityManager } from "@/lib/game-engine/EntityManager";
 
@@ -19,7 +18,7 @@ export interface ResolvedPackEntry {
 }
 
 export type EditorMode = "edit" | "playtest";
-export type EditorTab = "gallery" | "assets" | "properties" | "layers" | "debug";
+export type EditorTab = "gallery" | "assets" | "properties" | "layers" | "debug" | "chat";
 export type SheetSnapPoint = 0 | 1 | 2;
 
 interface Vec2 {
@@ -506,6 +505,7 @@ export function EditorProvider({
   ephemeralSource,
 }: EditorProviderProps) {
   const runtimeRef = useRef<GameRuntimeRef | null>(null);
+  const [showAIRunPanel, setShowAIRunPanel] = useState(false);
 
   const initialState: EditorState = {
     mode: "edit",
@@ -520,7 +520,6 @@ export function EditorProvider({
     cameraZoom: initialDefinition.camera?.zoom ?? 1,
   };
 
-  const [showAIRunPanel, setShowAIRunPanel] = useState(false);
   const [state, dispatch] = useReducer(editorReducer, initialState);
 
   const setMode = useCallback((mode: EditorMode) => {
@@ -532,7 +531,7 @@ export function EditorProvider({
   }, [state.mode]);
 
   const toggleAIRunPanel = useCallback(() => {
-    setShowAIRunPanel(prev => !prev);
+    setShowAIRunPanel((prev) => !prev);
   }, []);
 
   const selectEntity = useCallback((id: string | null) => {

@@ -4,22 +4,20 @@ import {
   Text,
   Pressable,
   ScrollView,
-  TextInput,
   ActivityIndicator,
   Alert,
-  Modal,
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc/client";
-import type { GameDefinition } from "@slopcade/shared";
 
 interface GameItem {
   id: string;
   title: string;
   description: string | null;
   playCount: number;
+  isPublic: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -30,13 +28,6 @@ export default function MakerScreen() {
   const [myGames, setMyGames] = useState<GameItem[]>([]);
   const [isLoadingGames, setIsLoadingGames] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const [showNewGameModal, setShowNewGameModal] = useState(false);
-
-  const [prompt, setPrompt] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedGame, setGeneratedGame] = useState<GameDefinition | null>(null);
-  const [generateError, setGenerateError] = useState<string | null>(null);
 
   const fetchGames = useCallback(async (showRefresh = false) => {
     if (showRefresh) setIsRefreshing(true);
@@ -56,61 +47,6 @@ export default function MakerScreen() {
   useEffect(() => {
     fetchGames();
   }, [fetchGames]);
-
-  const handleGenerate = useCallback(async () => {
-    if (!prompt.trim() || prompt.length < 5) {
-      setGenerateError("Please enter a longer description (at least 5 characters)");
-      return;
-    }
-
-    setIsGenerating(true);
-    setGenerateError(null);
-    setGeneratedGame(null);
-
-    try {
-      const result = await trpc.games.generate.mutate({
-        prompt: prompt.trim(),
-        saveToLibrary: false,
-      });
-      setGeneratedGame(result.game as GameDefinition);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to generate game";
-      setGenerateError(message);
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [prompt]);
-
-  const handlePlayPreview = useCallback(() => {
-    if (!generatedGame) return;
-    setShowNewGameModal(false);
-    router.push({
-      pathname: "/play/preview",
-      params: { definition: JSON.stringify(generatedGame) },
-    });
-  }, [generatedGame, router]);
-
-  const handleSaveGame = useCallback(async () => {
-    if (!generatedGame) return;
-
-    try {
-      await trpc.games.create.mutate({
-        title: generatedGame.metadata.title,
-        description: generatedGame.metadata.description ?? prompt,
-        definition: JSON.stringify(generatedGame),
-        isPublic: false,
-      });
-
-      Alert.alert("Saved!", "Game saved to your projects");
-      setGeneratedGame(null);
-      setPrompt("");
-      setShowNewGameModal(false);
-      fetchGames();
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to save game";
-      Alert.alert("Error", message);
-    }
-  }, [generatedGame, prompt, fetchGames]);
 
   const handleDeleteGame = useCallback((game: GameItem) => {
     Alert.alert("Delete Game", `Are you sure you want to delete "${game.title}"?`, [
@@ -157,12 +93,6 @@ export default function MakerScreen() {
             <Text className="text-gray-400 text-center mt-2">
               Create a new game to get started!
             </Text>
-            <Pressable
-              className="mt-6 py-3 px-6 bg-green-600 rounded-lg"
-              onPress={() => setShowNewGameModal(true)}
-            >
-              <Text className="text-white font-semibold">Create Game</Text>
-            </Pressable>
           </View>
         ) : (
           <View>
@@ -173,12 +103,38 @@ export default function MakerScreen() {
               <Pressable
                 key={game.id}
                 className="bg-gray-800 p-4 rounded-xl border border-gray-700 mb-3 active:bg-gray-700"
-                onPress={() => router.push({ pathname: "/editor/[id]", params: { id: game.id } })}
+                onPress={() => {
+                  if (game.isPublic) {
+                    router.push(`/game-detail/${game.id}`);
+                  } else {
+                    router.push(`/editor/${game.id}`);
+                  }
+                }}
                 onLongPress={() => handleDeleteGame(game)}
               >
                 <View className="flex-row items-center justify-between">
                   <View className="flex-1">
-                    <Text className="text-lg font-semibold text-white">{game.title}</Text>
+                    <View className="flex-row items-center gap-2 mb-1">
+                      <Text className="text-lg font-semibold text-white">{game.title}</Text>
+                      <View
+                        style={{
+                          paddingHorizontal: 8,
+                          paddingVertical: 2,
+                          borderRadius: 4,
+                          backgroundColor: game.isPublic ? 'rgba(34,197,94,0.15)' : 'rgba(156,163,175,0.15)',
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 11,
+                            fontWeight: '600',
+                            color: game.isPublic ? '#22C55E' : '#9CA3AF',
+                          }}
+                        >
+                          {game.isPublic ? 'Published' : 'Draft'}
+                        </Text>
+                      </View>
+                    </View>
                     {game.description && (
                       <Text className="text-gray-400 mt-1" numberOfLines={2}>
                         {game.description}
@@ -198,102 +154,6 @@ export default function MakerScreen() {
     </ScrollView>
   );
 
-  const renderNewGameModal = () => (
-    <Modal
-      visible={showNewGameModal}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={() => setShowNewGameModal(false)}
-    >
-      <SafeAreaView className="flex-1 bg-gray-900">
-        <View className="flex-row justify-between items-center px-4 py-3 border-b border-gray-700">
-          <Text className="text-xl font-bold text-white">Create New Game</Text>
-          <Pressable onPress={() => setShowNewGameModal(false)}>
-            <Text className="text-gray-400 text-lg">✕</Text>
-          </Pressable>
-        </View>
-
-        <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
-          <View className="p-4">
-            {/* AI Generation Section */}
-            <View className="mb-8">
-              <Text className="text-lg font-semibold text-white mb-3">
-                Generate with AI
-              </Text>
-              <Text className="text-gray-400 mb-3">
-                Describe the game you want to create:
-              </Text>
-
-              <TextInput
-                className="bg-gray-800 p-4 rounded-xl border border-gray-700 text-base min-h-[100px] text-white"
-                placeholder="E.g., A game where I launch balls at towers..."
-                placeholderTextColor="#666"
-                value={prompt}
-                onChangeText={setPrompt}
-                multiline
-                textAlignVertical="top"
-                editable={!isGenerating}
-              />
-
-              <Pressable
-                className={`mt-4 py-4 rounded-xl items-center ${
-                  isGenerating ? "bg-gray-600" : "bg-green-600 active:bg-green-700"
-                }`}
-                onPress={handleGenerate}
-                disabled={isGenerating}
-              >
-                {isGenerating ? (
-                  <View className="flex-row items-center">
-                    <ActivityIndicator color="white" size="small" />
-                    <Text className="text-white font-bold text-lg ml-2">Generating...</Text>
-                  </View>
-                ) : (
-                  <Text className="text-white font-bold text-lg">Generate Game</Text>
-                )}
-              </Pressable>
-
-              {generateError && (
-                <View className="mt-4 p-4 bg-red-900/50 rounded-xl border border-red-700">
-                  <Text className="text-red-300">{generateError}</Text>
-                </View>
-              )}
-
-              {generatedGame && (
-                <View className="mt-6 bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-                  <View className="p-4 bg-green-900/30 border-b border-gray-700">
-                    <Text className="text-lg font-bold text-white">
-                      {generatedGame.metadata.title}
-                    </Text>
-                    <Text className="text-gray-300 mt-1">
-                      {generatedGame.metadata.description}
-                    </Text>
-                  </View>
-
-                  <View className="p-4 flex-row">
-                    <Pressable
-                      className="flex-1 py-3 bg-blue-600 rounded-lg items-center mr-2 active:bg-blue-700"
-                      onPress={handlePlayPreview}
-                    >
-                      <Text className="text-white font-semibold">Play</Text>
-                    </Pressable>
-                    <Pressable
-                      className="flex-1 py-3 bg-green-600 rounded-lg items-center ml-2 active:bg-green-700"
-                      onPress={handleSaveGame}
-                    >
-                      <Text className="text-white font-semibold">Save</Text>
-                    </Pressable>
-                  </View>
-                </View>
-              )}
-            </View>
-
-
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </Modal>
-  );
-
   return (
     <SafeAreaView className="flex-1 bg-gray-900" edges={["bottom"]}>
       <View className="px-4 py-3 flex-row justify-between items-center border-b border-gray-800">
@@ -301,16 +161,9 @@ export default function MakerScreen() {
           <Text className="text-white text-lg font-semibold">Maker</Text>
           <Text className="text-gray-400 text-sm">Build and manage your games</Text>
         </View>
-        <Pressable
-          className="py-2 px-4 bg-green-600 rounded-lg active:bg-green-700"
-          onPress={() => setShowNewGameModal(true)}
-        >
-          <Text className="text-white font-semibold">+ New Game</Text>
-        </Pressable>
       </View>
 
       {renderProjects()}
-      {renderNewGameModal()}
     </SafeAreaView>
   );
 }

@@ -1,6 +1,10 @@
 import React, { useState, useCallback } from 'react';
-import { View, TextInput, Pressable, StyleSheet, ActivityIndicator, Platform, type NativeSyntheticEvent, type TextInputKeyPressEventData } from 'react-native';
+import { View, Pressable, StyleSheet, ActivityIndicator, Platform, type NativeSyntheticEvent, type TextInputKeyPressEventData, type TextInputContentSizeChangeEventData } from 'react-native';
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
+
+const MIN_INPUT_HEIGHT = 40;
+const MAX_INPUT_HEIGHT = 120;
 
 interface Props {
   onSend: (text: string) => void;
@@ -9,12 +13,27 @@ interface Props {
 
 export function Composer({ onSend, isSubmitting }: Props) {
   const [text, setText] = useState('');
+  const [inputHeight, setInputHeight] = useState(MIN_INPUT_HEIGHT);
 
   const handleSend = useCallback(() => {
     if (!text.trim() || isSubmitting) return;
     onSend(text.trim());
     setText('');
+    setInputHeight(MIN_INPUT_HEIGHT);
   }, [text, isSubmitting, onSend]);
+
+  const handleContentSizeChange = useCallback(
+    (e: NativeSyntheticEvent<TextInputContentSizeChangeEventData>) => {
+      const contentHeight = e.nativeEvent.contentSize.height;
+      const clamped = Math.min(Math.max(contentHeight, MIN_INPUT_HEIGHT), MAX_INPUT_HEIGHT);
+      setInputHeight(clamped);
+    },
+    []
+  );
+
+  const handleChangeText = useCallback((newText: string) => {
+    setText(newText);
+  }, []);
 
   const handleKeyPress = useCallback((e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
     if (Platform.OS !== 'web') return;
@@ -29,15 +48,16 @@ export function Composer({ onSend, isSubmitting }: Props) {
 
   return (
     <View style={styles.container}>
-      <TextInput
-        style={styles.input}
+      <BottomSheetTextInput
+        style={[styles.input, { height: inputHeight }]}
         value={text}
-        onChangeText={setText}
-        placeholder="Describe what you'd like to create..."
+        onChangeText={handleChangeText}
+        placeholder="Make an edit..."
         placeholderTextColor="#71717A"
         multiline
         maxLength={1000}
         onKeyPress={handleKeyPress}
+        onContentSizeChange={handleContentSizeChange}
         blurOnSubmit={false}
         accessibilityLabel="Message input"
       />
@@ -75,8 +95,6 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    minHeight: 40,
-    maxHeight: 120,
     backgroundColor: 'rgba(255,255,255,0.08)',
     borderRadius: 20,
     paddingHorizontal: 16,
