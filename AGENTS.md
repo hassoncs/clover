@@ -130,6 +130,22 @@ If a command fails with "API key required" or similar, the fix is almost always 
 
 ---
 
+## Documentation & Planning
+
+### Implementation Plans
+
+**All implementation plans MUST go in `.sisyphus/plans/`.**
+
+- **Active plans**: Work-in-progress implementation plans with task checklists.
+- **Completed plans**: Delete immediately after implementation is verified and committed.
+- **Archived plans**: If a plan has historical value, move to `docs/archive/plans/` after completion.
+
+**Never create plans in `docs/plans/`.** That directory no longer exists for new work.
+
+**Plan naming convention**: Use descriptive names like `live-workspace-editor.md` or date-prefixed for small tasks like `2026-02-11-repo-hygiene-loop.md`.
+
+---
+
 ## Established Patterns
 
 ### Platform-Specific Modules
