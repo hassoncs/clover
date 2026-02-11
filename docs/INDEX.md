@@ -1,80 +1,47 @@
 # Documentation Index
 
 > **Navigation hub for all project documentation**
+>
+> ⚠️ **Note**: Some architecture and engine guides are currently being refactored and may be temporarily unavailable.
 
 ---
 
-## 🎮 Start Here: Building Games
-
-| Document | Description |
-|----------|-------------|
-| **[Game Engine Guide](./GAME-ENGINE-GUIDE.md)** | **How to build games** - entities, physics, behaviors, rules, complete examples |
-| **[Bundle System](./game-maker/reference/bundle-system.md)** | **Build & bundle format** - JSON structure, file organization, compilation |
-| **[Physics System Guide](./physics-system-guide.md)** | Deep dive into physics - body types, sensors, collisions |
-| **[Game Patterns](./game-maker/reference/game-patterns.md)** | 7 reusable patterns - Choice, Pick&Place, Physics Drop, etc. |
-
-### Architecture Reference
-| Document | Description |
-|----------|-------------|
-| [Master Architecture](./game-engine-architecture/00-MASTER-ARCHITECTURE.md) | High-level system design and principles |
-| [Entity System](./game-engine-architecture/01-core-concepts/entity-system.md) | Entity structure, components, hierarchy |
-| [Behavior System](./game-engine-architecture/01-core-concepts/behavior-system.md) | All behavior types and usage |
-| [Rules System](./game-engine-architecture/01-core-concepts/rules-system.md) | Triggers, conditions, actions |
-
----
-
-## Quick Navigation
+## 🎮 Game Maker & Engine
 
 | Component | Description | Entry Point |
 |-----------|-------------|-------------|
-| **Game Engine** | Godot 4 physics and rendering | [game-engine-architecture/](./game-engine-architecture/) |
-| **Game Maker** | AI generation, templates, validation | [game-maker/INDEX.md](game-maker/INDEX.md) |
 | **Economy** | Virtual currency, Sparks/Gems | [economy/INDEX.md](economy/INDEX.md) |
-| **Godot** | Bridge, coordinates, input | [godot/](./godot/) |
+| **Godot Bridge** | Bridge, coordinates, input | [Godot Migration Guide](godot/UNIFIED_BRIDGE_DESIGN_BRIEF.md) |
+| **Asset Pipeline** | AI Generation system | [Image Generation Architecture](IMAGE_GENERATION_ARCHITECTURE.md) |
+
+---
+
+## Godot Integration
+
+| Document | Description |
+|----------|-------------|
+| [Coordinate System Guide](godot/COORDINATE_SYSTEM_GUIDE.md) | Center-origin coordinate system |
+| [3D Rendering](godot/3d-rendering.md) | GLB model rendering in Godot |
+| [Web Input Handling](godot/WEB_INPUT_HANDLING.md) | Browser input event flow |
+| [Bridge E2E Testing](godot/BRIDGE_E2E_TESTING.md) | Testing Godot interactions |
 
 ---
 
 ## Shared Documentation
 
-Cross-cutting documentation that applies to the entire project.
-
 ### Guides
-Step-by-step instructions for common tasks.
-
 | Document | Description |
 |----------|-------------|
 | [Expo Development Guide](shared/guides/expo-development.md) | Setting up and running the Expo app |
 | [Storybook Setup](shared/guides/storybook-setup.md) | Component development with Storybook |
 
 ### Reference
-Quick-lookup documentation for tools and configurations.
-
 | Document | Description |
 |----------|-------------|
 | [Metro Port Configuration](shared/reference/metro-port-configuration.md) | Custom Metro port setup |
 | [Registry System](shared/reference/registry-system.md) | Auto-discovered lazy loading |
 | [Platform-Specific Modules](shared/reference/platform-specific-modules.md) | .native.ts/.web.ts patterns |
 
-### Plans
-Future migration and feature plans.
-
-| Document | Description |
-|----------|-------------|
-| [ComfyUI Migration Architecture](plans/comfyui-migration-architecture.md) | RunPod ComfyUI serverless migration plan |
-| [RunPod Setup Status](plans/runpod-comfyui-setup-status.md) | Deployment checklist (READY, waiting on Scenario credits) |
-
----
-
-## Godot Migration
-
-Documentation for the Godot 4 game engine integration.
-
-| Document | Description |
-|----------|-------------|
-| [Godot 4 Integration](godot/) | Godot 4 physics and rendering backend |
-| [Coordinate System Guide](godot/COORDINATE_SYSTEM_GUIDE.md) | Center-origin coordinate system |
-| [3D Rendering](godot/3d-rendering.md) | GLB model rendering in Godot |
-| [Web Input Handling](godot/WEB_INPUT_HANDLING.md) | Browser input event flow |
 
 ---
 
