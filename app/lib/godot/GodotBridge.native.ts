@@ -1024,6 +1024,10 @@ export function createNativeGodotBridge(): GodotBridge {
       callEffectsBridge('apply_dynamic_post_shader', shaderCode, JSON.stringify(params ?? {}));
     },
 
+    hotSwapShader(shaderId: string, source: string) {
+      callGameBridge('hot_swap_shader', shaderId, source);
+    },
+
     spawnParticlePreset(presetName: string, worldX: number, worldY: number, params?: Record<string, unknown>) {
       callEffectsBridge('spawn_particle_preset', presetName, worldX, worldY, JSON.stringify(params ?? {}));
     },

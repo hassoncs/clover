@@ -659,6 +659,8 @@ export function GameRuntimeGodot({
         const game = loader.load(definition);
         gameRef.current = game;
 
+        loader.applyEffects(definition);
+
         const camera = CameraSystem.fromGameConfig(
           definition.camera,
           definition.world.bounds,

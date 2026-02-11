@@ -13,7 +13,7 @@ export const AgentRunStatusSchema = z.enum([
 ]);
 export type AgentRunStatus = z.infer<typeof AgentRunStatusSchema>;
 
-export const AgentStepStageSchema = z.enum(['planning', 'build', 'refine', 'theme', 'asset', 'chat']);
+export const AgentStepStageSchema = z.enum(['planning', 'build', 'shader', 'refine', 'theme', 'asset', 'chat']);
 export type AgentStepStage = z.infer<typeof AgentStepStageSchema>;
 
 export const AgentStepStatusSchema = z.enum(['queued', 'running', 'succeeded', 'failed', 'skipped']);

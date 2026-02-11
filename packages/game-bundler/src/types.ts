@@ -142,6 +142,7 @@ export interface BundleSections {
   entities: GameDefinition['entities'];
   rules: GameDefinition['rules'];
   script?: string;
+  effects?: GameDefinition['effects'];
   systems?: {
     containers?: GameDefinition['containers'];
     match3?: GameDefinition['match3'];

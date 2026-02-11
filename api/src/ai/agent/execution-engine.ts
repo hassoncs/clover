@@ -8,6 +8,7 @@ import {
   themeStage,
   assetStage,
   chatStage,
+  shaderStage,
 } from '@/ai/agent/stages';
 
 type D1Database = import('@cloudflare/workers-types').D1Database;
@@ -102,11 +103,12 @@ export interface ExecuteAgentStageOptions {
   stageRunners?: Partial<Record<AgentStepStage, AgentStageRunner>>;
 }
 
-export const STAGE_ORDER: AgentStepStage[] = ['planning', 'build', 'refine', 'theme', 'asset'];
+export const STAGE_ORDER: AgentStepStage[] = ['planning', 'build', 'shader', 'refine', 'theme', 'asset'];
 
 const DEFAULT_STAGE_RUNNERS: Record<AgentStepStage, AgentStageRunner> = {
   planning: planningStage,
   build: buildStage,
+  shader: shaderStage,
   refine: refineStage,
   theme: themeStage,
   asset: assetStage,
@@ -167,7 +169,7 @@ function validateStagePrerequisites(
     });
   }
 
-  if (stage === 'refine' || stage === 'theme' || stage === 'asset') {
+  if (stage === 'shader' || stage === 'refine' || stage === 'theme' || stage === 'asset') {
     if (!previousArtifacts.build) {
       return deterministicFailure('MISSING_PREREQUISITE', 'build artifact missing', {
         stage,

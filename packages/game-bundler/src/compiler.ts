@@ -823,6 +823,7 @@ export function compileSectioned(
     entities: gameDefinition.entities,
     rules: gameDefinition.rules,
     ...(gameDefinition.script != null && { script: gameDefinition.script }),
+    ...(gameDefinition.effects != null && { effects: gameDefinition.effects }),
     ...(Object.keys(systems).length > 0 && { systems }),
   };
 

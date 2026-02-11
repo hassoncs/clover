@@ -185,6 +185,13 @@ export class GameLoader {
     game.entityManager.loadEntities(newEntities);
   }
 
+  applyEffects(definition: GameDefinition): void {
+    if (!definition.effects?.shaders || !this.bridge) return;
+    for (const [id, entry] of Object.entries(definition.effects.shaders)) {
+      this.bridge.hotSwapShader(id, entry.glsl);
+    }
+  }
+
   reload(game: LoadedGame): LoadedGame {
     this.unload(game);
     return this.load(game.definition);

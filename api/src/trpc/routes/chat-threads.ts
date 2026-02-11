@@ -215,6 +215,31 @@ export const chatThreadsRouter = router({
       return { exists: true, content: await obj.text() };
     }),
 
+  writeWorkspaceFile: protectedProcedure
+    .input(
+      z.object({
+        gameId: z.string().uuid(),
+        filename: z.string().min(1),
+        content: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const game = await ctx.env.DB
+        .prepare('SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL')
+        .bind(input.gameId)
+        .first<{ id: string; user_id: string }>();
+
+      if (!game || game.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
+      }
+
+      const key = `games/${input.gameId}/workspace/${input.filename}`;
+      await ctx.env.ASSETS.put(key, input.content, {
+        httpMetadata: { contentType: 'text/plain' },
+      });
+      return { success: true };
+    }),
+
   debugConversation: protectedProcedure
     .input(
       z.object({

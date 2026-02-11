@@ -418,6 +418,7 @@ export interface GodotBridge extends EffectsBridge {
   createDynamicShader(shaderId: string, shaderCode: string): Promise<DynamicShaderResult>;
   applyDynamicShader(entityId: string, shaderId: string, params?: Record<string, unknown>): void;
   applyDynamicPostShader(shaderCode: string, params?: Record<string, unknown>): void;
+  hotSwapShader(shaderId: string, source: string): void;
 
 
 

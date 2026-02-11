@@ -208,6 +208,7 @@ declare global {
         paramsJson?: string,
       ) => void;
       applyDynamicPostShader: (shaderCode: string, paramsJson?: string) => void;
+      hotSwapShader: (shaderId: string, source: string) => void;
 
       spawnParticlePreset: (
         presetName: string,
@@ -1076,6 +1077,10 @@ export function createWebGodotBridge(): GodotBridge {
           params ? JSON.stringify(params) : undefined,
         );
       }
+    },
+
+    hotSwapShader(shaderId: string, source: string) {
+      getGodotBridge()?.hotSwapShader(shaderId, source);
     },
 
     spawnParticlePreset(

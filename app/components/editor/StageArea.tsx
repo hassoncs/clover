@@ -16,8 +16,16 @@ export function StageArea() {
     activeFile, 
     activeFileContent, 
     isLoadingContent, 
-    setActiveFile 
+    setActiveFile,
+    saveFile,
+    isSaving
   } = useWorkspaceFiles(gameId);
+
+  const handleSave = (content: string) => {
+    if (gameId && activeFile) {
+      saveFile(activeFile, content);
+    }
+  };
 
   const [activeView, setActiveView] = useState<ActiveView>({ 
     type: 'file', 
@@ -99,7 +107,9 @@ export function StageArea() {
           <FileViewer 
             filename={activeFile} 
             content={activeFileContent} 
-            isLoading={isLoadingContent} 
+            isLoading={isLoadingContent}
+            onSave={handleSave}
+            isSaving={isSaving}
           />
         )}
       </View>

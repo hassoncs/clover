@@ -17,6 +17,13 @@ export function useWorkspaceFiles(gameId: string | null) {
     { enabled: !!gameId && !!activeFile, refetchInterval: 3000 }
   );
 
+  const writeMutation = chatThreads.writeWorkspaceFile.useMutation();
+
+  const saveFile = (filename: string, content: string) => {
+    if (!gameId) return;
+    writeMutation.mutate({ gameId, filename, content });
+  };
+
   const openFile = (filename: string) => {
     if (!openTabs.includes(filename)) {
       setOpenTabs(prev => [...prev, filename]);
@@ -49,5 +56,7 @@ export function useWorkspaceFiles(gameId: string | null) {
     openFile,
     closeTab,
     setActiveFile,
+    saveFile,
+    isSaving: writeMutation.isPending,
   };
 }

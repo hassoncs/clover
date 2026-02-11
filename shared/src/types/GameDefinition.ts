@@ -461,6 +461,11 @@ export interface GameDefinition {
    */
   script?: string;
 
+  effects?: {
+    graph?: unknown;
+    shaders?: Record<string, { filename: string; glsl: string }>;
+  };
+
   hoverHighlight?: HoverHighlightConfig;
 
   dialogs?: GameDialogsConfig;

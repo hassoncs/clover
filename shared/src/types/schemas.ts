@@ -1855,6 +1855,28 @@ export const PersistenceConfigSchema = z.object({
 
 export const ContainerConfigSchema = z.object({}).passthrough();
 
+// ============================================================================
+// Effects / Shader Integration
+// ============================================================================
+
+export const ShaderEntrySchema = z.object({
+  /** Filename for the shader, e.g. "paint.gdshader" */
+  filename: z.string(),
+  /** Godot Shading Language source code */
+  glsl: z.string(),
+});
+
+export type ShaderEntry = z.infer<typeof ShaderEntrySchema>;
+
+export const EffectsConfigSchema = z.object({
+  /** Effect graph specification — validated separately by the effects compiler */
+  graph: z.unknown().optional(),
+  /** Named shader sources that the AI or user can write/edit */
+  shaders: z.record(z.string(), ShaderEntrySchema).optional(),
+});
+
+export type EffectsConfig = z.infer<typeof EffectsConfigSchema>;
+
 export const GameDefinitionSchema = z.object({
   metadata: GameMetadataSchema,
   world: WorldConfigSchema,
@@ -1883,6 +1905,7 @@ export const GameDefinitionSchema = z.object({
   persistence: PersistenceConfigSchema.optional(),
   constants: z.record(z.union([z.number(), z.string(), z.boolean()])).optional(),
   script: z.string().optional(),
+  effects: EffectsConfigSchema.optional(),
   hoverHighlight: HoverHighlightConfigSchema.optional(),
   dialogs: GameDialogsConfigSchema.optional(),
   overlay: OverlayConfigSchema.optional(),
