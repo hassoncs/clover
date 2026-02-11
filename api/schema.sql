@@ -543,147 +543,49 @@ CREATE INDEX IF NOT EXISTS idx_ui_gen_results_control ON ui_gen_results(control_
 CREATE INDEX IF NOT EXISTS idx_ui_gen_results_deleted ON ui_gen_results(deleted_at);
 
 -- =============================================================================
--- AI GAME DEV LIFECYCLE ORCHESTRATION SYSTEM
--- Agent runs, steps, events, checkpoints, and cost tracking
+-- CHAT SYSTEM: Threads & Messages (Tambo-inspired)
+-- Unified thread/message model for AI orchestration
 -- =============================================================================
 
--- Agent Runs - Top-level orchestration of AI game development
-CREATE TABLE IF NOT EXISTS agent_runs (
+-- Threads - Stable conversation identity
+CREATE TABLE IF NOT EXISTS threads (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES users(id),
-  thread_id TEXT REFERENCES chat_threads(id),
-  game_id TEXT NOT NULL REFERENCES games(id),
-  source TEXT NOT NULL CHECK (source IN ('scratch', 'fork')),
-  source_game_id TEXT,
-  tier TEXT NOT NULL CHECK (tier IN ('free', 'standard', 'pro')),
-  status TEXT NOT NULL CHECK (status IN ('planning', 'queued', 'running', 'waiting_for_input', 'paused', 'succeeded', 'failed', 'canceled')),
-  planning_doc_json TEXT,
-  estimated_cost_micros INTEGER,
-  actual_cost_micros INTEGER NOT NULL DEFAULT 0,
-  reserved_micros INTEGER NOT NULL DEFAULT 0,
-  current_step_index INTEGER NOT NULL DEFAULT 0,
-  total_steps INTEGER NOT NULL DEFAULT 0,
-  error_message TEXT,
-  created_at INTEGER NOT NULL,
-  started_at INTEGER,
-  finished_at INTEGER,
-  updated_at INTEGER NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS idx_agent_runs_user ON agent_runs(user_id);
-CREATE INDEX IF NOT EXISTS idx_agent_runs_game ON agent_runs(game_id);
-CREATE INDEX IF NOT EXISTS idx_agent_runs_status ON agent_runs(status) WHERE status IN ('planning', 'queued', 'running', 'waiting_for_input', 'paused');
-
--- Agent Steps - Individual stages within a run
-CREATE TABLE IF NOT EXISTS agent_steps (
-  id TEXT PRIMARY KEY,
-  run_id TEXT NOT NULL REFERENCES agent_runs(id) ON DELETE CASCADE,
-  step_index INTEGER NOT NULL,
-  stage TEXT NOT NULL CHECK (stage IN ('planning', 'build', 'refine', 'theme', 'asset', 'chat')),
-  status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'skipped')),
-  input_hash TEXT,
-  output_artifact_key TEXT,
-  cost_micros INTEGER NOT NULL DEFAULT 0,
-  error_message TEXT,
-  created_at INTEGER NOT NULL,
-  started_at INTEGER,
-  finished_at INTEGER,
-  UNIQUE(run_id, step_index)
-);
-
-CREATE INDEX IF NOT EXISTS idx_agent_steps_run ON agent_steps(run_id);
-CREATE INDEX IF NOT EXISTS idx_agent_steps_status ON agent_steps(status) WHERE status IN ('queued', 'running');
-
--- Agent Events - Event stream for run lifecycle
-CREATE TABLE IF NOT EXISTS agent_events (
-  id TEXT PRIMARY KEY,
-  run_id TEXT NOT NULL REFERENCES agent_runs(id) ON DELETE CASCADE,
-  seq INTEGER NOT NULL,
-  event_type TEXT NOT NULL,
-  payload_json TEXT,
-  created_at INTEGER NOT NULL,
-  UNIQUE(run_id, seq)
-);
-
-CREATE INDEX IF NOT EXISTS idx_agent_events_run_seq ON agent_events(run_id, seq);
-
--- Agent Checkpoints - Resumable state snapshots
-CREATE TABLE IF NOT EXISTS agent_checkpoints (
-  id TEXT PRIMARY KEY,
-  run_id TEXT NOT NULL REFERENCES agent_runs(id) ON DELETE CASCADE,
-  step_index INTEGER NOT NULL,
-  state_json TEXT NOT NULL,
-  artifact_keys_json TEXT,
-  created_at INTEGER NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS idx_agent_checkpoints_run ON agent_checkpoints(run_id);
-
--- Agent Costs - LLM token usage and cost tracking
-CREATE TABLE IF NOT EXISTS agent_costs (
-  id TEXT PRIMARY KEY,
-  run_id TEXT NOT NULL REFERENCES agent_runs(id) ON DELETE CASCADE,
-  step_id TEXT REFERENCES agent_steps(id),
-  provider TEXT NOT NULL,
-  model TEXT NOT NULL,
-  input_tokens INTEGER NOT NULL DEFAULT 0,
-  output_tokens INTEGER NOT NULL DEFAULT 0,
-  cost_micros INTEGER NOT NULL DEFAULT 0,
-  idempotency_key TEXT UNIQUE,
-  created_at INTEGER NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS idx_agent_costs_run ON agent_costs(run_id);
-CREATE INDEX IF NOT EXISTS idx_agent_costs_idempotency ON agent_costs(idempotency_key);
-
--- =============================================================================
--- CHAT SYSTEM: Threads, Events, Summaries
--- =============================================================================
-
--- Chat Threads - stable conversation identity
-CREATE TABLE IF NOT EXISTS chat_threads (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES users(id),
-  game_id TEXT NOT NULL REFERENCES games(id),
+  user_id TEXT NOT NULL,
+  game_id TEXT,
   title TEXT,
-  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'archived')),
-  parent_thread_id TEXT REFERENCES chat_threads(id),
-  parent_event_seq INTEGER,
-  last_event_seq INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'active',
+  generation_stage TEXT DEFAULT 'idle',
+  status_message TEXT,
+  metadata_json TEXT,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_chat_threads_user ON chat_threads(user_id);
-CREATE INDEX IF NOT EXISTS idx_chat_threads_game ON chat_threads(game_id);
+CREATE INDEX IF NOT EXISTS idx_threads_user ON threads(user_id);
+CREATE INDEX IF NOT EXISTS idx_threads_game ON threads(game_id);
 
--- Chat Events - append-only message log
-CREATE TABLE IF NOT EXISTS chat_events (
+-- Messages - Append-only message log with tool calls and billing
+CREATE TABLE IF NOT EXISTS messages (
   id TEXT PRIMARY KEY,
-  thread_id TEXT NOT NULL REFERENCES chat_threads(id) ON DELETE CASCADE,
-  seq INTEGER NOT NULL,
-  event_type TEXT NOT NULL,
-  role TEXT,
+  thread_id TEXT NOT NULL REFERENCES threads(id),
+  role TEXT NOT NULL,
   content_json TEXT NOT NULL,
-  run_id TEXT REFERENCES agent_runs(id),
-  parent_event_id TEXT,
+  component_name TEXT,
+  component_props_json TEXT,
+  component_state_json TEXT,
+  tool_call_id TEXT,
+  tool_name TEXT,
+  model TEXT,
+  cost_micros INTEGER DEFAULT 0,
+  input_tokens INTEGER DEFAULT 0,
+  output_tokens INTEGER DEFAULT 0,
+  error_json TEXT,
+  metadata_json TEXT,
   created_at INTEGER NOT NULL,
-  UNIQUE(thread_id, seq)
+  seq INTEGER NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_chat_events_thread_seq ON chat_events(thread_id, seq);
-
--- Chat Summaries - compaction checkpoints (empty for now)
-CREATE TABLE IF NOT EXISTS chat_summaries (
-  id TEXT PRIMARY KEY,
-  thread_id TEXT NOT NULL REFERENCES chat_threads(id) ON DELETE CASCADE,
-  covers_through_seq INTEGER NOT NULL,
-  summary_text TEXT NOT NULL,
-  token_count INTEGER,
-  created_at INTEGER NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS idx_chat_summaries_thread ON chat_summaries(thread_id);
+CREATE INDEX IF NOT EXISTS idx_messages_thread ON messages(thread_id, seq);
 
 -- =============================================================================
 -- SOCIAL SYSTEM: Comments, Reactions, Follows

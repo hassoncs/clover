@@ -1,0 +1,20 @@
+[GET] http://localhost:8085/ => [FAILED] net::ERR_ABORTED
+[GET] http://localhost:8085/ => [FAILED] net::ERR_ABORTED
+[GET] https://www.google.com/search?q=30&oq=30&gs_lcrp=EgZjaHJvbWUyBggAEEUYOdIBBzMyMWowajSoAgCwAgA&sourceid=chrome&ie=UTF-8 => [200] 
+[GET] https://www.google.com/search?q=30&oq=30&gs_lcrp=EgZjaHJvbWUyBggAEEUYOdIBBzMyMWowajSoAgCwAgA&sourceid=chrome&ie=UTF-8&sei=GcmMadqLHsPy0PEPuezSmQ0 => [302] 
+[GET] https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3D30%26oq%3D30%26gs_lcrp%3DEgZjaHJvbWUyBggAEEUYOdIBBzMyMWowajSoAgCwAgA%26sourceid%3Dchrome%26ie%3DUTF-8%26sei%3DGcmMadqLHsPy0PEPuezSmQ0&q=EgQYF7UpGJmSs8wGIjCGZwsOs9WRazXvF62EEWBO_01SGWNAusKXV7R42DVFu5Zl243Y6m0_YQcJGOr-RYEyAVJaAUM => [429] 
+[GET] https://www.google.com/recaptcha/enterprise.js => [200] 
+[GET] https://www.gstatic.com/recaptcha/releases/vUgXt_KV952_-5BB2jjloYzl/recaptcha__en.js => [200] 
+[GET] https://www.google.com/recaptcha/enterprise/anchor?ar=1&k=6LdLLIMbAAAAAIl-KLj9p1ePhM-4LCCDbjtJLqRO&co=aHR0cHM6Ly93d3cuZ29vZ2xlLmNvbTo0NDM.&hl=en&v=vUgXt_KV952_-5BB2jjloYzl&size=normal&s=YYcZC29RxS2pUOSgOhI1ev1a5uW8FK6T5cNAi4QH_hKwh6xRwBOFpyF21t3a_YYtgNZ5zBQCXm7ZLqkBflfml1X4Nw5Gfiq-hldH-ufwU-NFM8nlrq5Ea1PQ9iuIWf3bKfb8AxO79ezXsM6s51zPJ-ksNQNyvIyUzWVzbbaL7rVeZdf_Bfy2BYkEBzmn842NvHolrSCj9jX3yHzV9qG3pCaU3lf-xnxuvYtWHrYEnNwkh-TFiisW7l5jeIDr5wmxMwieFnipll6XgH1QvSGPpHUhJ8gxNsw&anchor-ms=20000&execute-ms=30000&cb=q1hv1og1gly4 => [200] 
+[GET] https://www.gstatic.com/recaptcha/releases/vUgXt_KV952_-5BB2jjloYzl/styles__ltr.css => [200] 
+[GET] https://www.gstatic.com/recaptcha/releases/vUgXt_KV952_-5BB2jjloYzl/recaptcha__en.js => [200] 
+[GET] https://www.google.com/recaptcha/enterprise/webworker.js?hl=en&v=vUgXt_KV952_-5BB2jjloYzl => [200] 
+[GET] https://www.gstatic.com/recaptcha/api2/logo_48.png => [200] 
+[GET] https://fonts.gstatic.com/s/roboto/v48/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBHMdazQ.woff2 => [200] 
+[GET] https://www.gstatic.com/recaptcha/releases/vUgXt_KV952_-5BB2jjloYzl/recaptcha__en.js => [200] 
+[GET] https://www.google.com/recaptcha/enterprise/bframe?hl=en&v=vUgXt_KV952_-5BB2jjloYzl&k=6LdLLIMbAAAAAIl-KLj9p1ePhM-4LCCDbjtJLqRO&bft=0dAFcWeA5-e4A5mlUYLPEyIYGxKI0qqphCewKfXkhaoVszlXjMRmUGutjBmjW_tm8E2XFsUj4A9nT3-1s86JCG1v8fCOdFbyqYtQ => [200] 
+[GET] https://www.gstatic.com/recaptcha/releases/vUgXt_KV952_-5BB2jjloYzl/styles__ltr.css => [200] 
+[GET] https://www.gstatic.com/recaptcha/releases/vUgXt_KV952_-5BB2jjloYzl/recaptcha__en.js => [200] 
+[GET] https://fonts.gstatic.com/s/roboto/v48/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBHMdazQ.woff2 => [200] 
+[GET] http://localhost:8085/ => [500] Internal Server Error
+[GET] http://localhost:8085/app/.expo/static-tmp/_error.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable => [200] OK
