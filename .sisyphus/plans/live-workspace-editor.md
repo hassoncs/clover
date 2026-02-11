@@ -170,11 +170,11 @@
 **Dependencies:** Phases 0–7
 **Source:** `docs/plans/live-workspace-editor.md` Phase 8
 
-- [ ] Task 8.1: Remove legacy/deprecated editor code paths superseded by workspace snapshot + live preview
-- [ ] Task 8.2: Remove temporary compatibility shims no longer needed after parity
-- [ ] Task 8.3: Consolidate duplicated parsing/loader logic — one authoritative workspace-to-runtime path
-- [ ] Task 8.4: Verify agent can write all 7 supported file types through chat tools and preview updates correctly
-- [ ] Task 8.5: Verify legacy fallback path works behind kill-switch with documented removal criteria
-- [ ] Task 8.6: Update docs — canonical authoring/runtime contract, migration status
-- [ ] Task 8.7: Final `pnpm tsc --noEmit` + full test suite green
-- [ ] Task 8.8: Sign off readiness checklist for manual editor workflow QA
+- [x] Task 8.1: Remove legacy/deprecated editor code paths superseded by workspace snapshot + live preview
+- [x] Task 8.2: Remove temporary compatibility shims no longer needed after parity
+- [x] Task 8.3: Consolidate duplicated parsing/loader logic — one authoritative workspace-to-runtime path
+- [x] Task 8.4: Verify agent can write all 7 supported file types through chat tools and preview updates correctly
+- [x] Task 8.5: Verify legacy fallback path works behind kill-switch with documented removal criteria
+- [x] Task 8.6: Update docs — canonical authoring/runtime contract, migration status
+- [x] Task 8.7: Final `pnpm tsc --noEmit` + full test suite green
+- [x] Task 8.8: Sign off readiness checklist for manual editor workflow QA

@@ -1,172 +1,208 @@
-type R2Bucket = import('@cloudflare/workers-types').R2Bucket;
-type D1Database = import('@cloudflare/workers-types').D1Database;
+type R2Bucket = import("@cloudflare/workers-types").R2Bucket;
+type D1Database = import("@cloudflare/workers-types").D1Database;
 
 export interface StoreStepArtifactParams {
-  runId: string;
-  stepIndex: number;
-  filename: string;
-  data: string | ArrayBuffer;
-  contentType?: string;
+	runId: string;
+	stepIndex: number;
+	filename: string;
+	data: string | ArrayBuffer;
+	contentType?: string;
 }
 
 export interface ReadStepArtifactParams {
-  runId: string;
-  stepIndex: number;
-  filename: string;
+	runId: string;
+	stepIndex: number;
+	filename: string;
 }
 
 export interface PublishToActiveParams {
-  runId: string;
-  gameId: string;
-  sourceKey: string;
+	runId: string;
+	gameId: string;
+	sourceKey: string;
 }
 
 export interface StoreWorkspaceFileParams {
-  gameId: string;
-  filename: string;
-  data: string;
-  contentType?: string;
+	gameId: string;
+	filename: string;
+	data: string;
+	contentType?: string;
 }
 
 export interface ReadWorkspaceFileParams {
-  gameId: string;
-  filename: string;
+	gameId: string;
+	filename: string;
 }
 
 export interface RollbackToVersionParams {
-  gameId: string;
-  previousKey: string;
+	gameId: string;
+	previousKey: string;
 }
 
 export interface ArtifactMetadata {
-  key: string;
-  size: number;
-  uploaded: Date;
+	key: string;
+	size: number;
+	uploaded: Date;
 }
 
 export class ArtifactService {
-  constructor(
-    private readonly assets: R2Bucket,
-    private readonly db: D1Database,
-  ) {}
+	constructor(
+		private readonly assets: R2Bucket,
+		private readonly db: D1Database,
+	) {}
 
-  async storeStepArtifact(params: StoreStepArtifactParams): Promise<{ key: string }> {
-    const key = `agent-runs/${params.runId}/steps/${params.stepIndex}/${params.filename}`;
-    
-    await this.assets.put(key, params.data, {
-      httpMetadata: {
-        contentType: params.contentType ?? 'application/octet-stream',
-      },
-    });
+	async storeStepArtifact(
+		params: StoreStepArtifactParams,
+	): Promise<{ key: string }> {
+		const key = `agent-runs/${params.runId}/steps/${params.stepIndex}/${params.filename}`;
 
-    return { key };
-  }
+		await this.assets.put(key, params.data, {
+			httpMetadata: {
+				contentType: params.contentType ?? "application/octet-stream",
+			},
+		});
 
-  async readStepArtifact(params: ReadStepArtifactParams): Promise<{ data: string; key: string } | null> {
-    const key = `agent-runs/${params.runId}/steps/${params.stepIndex}/${params.filename}`;
-    const obj = await this.assets.get(key);
-    
-    if (!obj) {
-      return null;
-    }
+		return { key };
+	}
 
-    const data = await obj.text();
-    return { data, key };
-  }
+	async readStepArtifact(
+		params: ReadStepArtifactParams,
+	): Promise<{ data: string; key: string } | null> {
+		const key = `agent-runs/${params.runId}/steps/${params.stepIndex}/${params.filename}`;
+		const obj = await this.assets.get(key);
 
-  async storeWorkspaceFile(params: StoreWorkspaceFileParams): Promise<{ key: string }> {
-    const key = `games/${params.gameId}/workspace/${params.filename}`;
+		if (!obj) {
+			return null;
+		}
 
-    await this.assets.put(key, params.data, {
-      httpMetadata: {
-        contentType: params.contentType ?? 'text/plain',
-      },
-    });
+		const data = await obj.text();
+		return { data, key };
+	}
 
-    return { key };
-  }
+	async storeWorkspaceFile(
+		params: StoreWorkspaceFileParams,
+	): Promise<{ key: string }> {
+		const key = `games/${params.gameId}/workspace/${params.filename}`;
 
-  async readWorkspaceFile(params: ReadWorkspaceFileParams): Promise<{ data: string } | null> {
-    const key = `games/${params.gameId}/workspace/${params.filename}`;
-    const obj = await this.assets.get(key);
+		await this.assets.put(key, params.data, {
+			httpMetadata: {
+				contentType: params.contentType ?? "text/plain",
+			},
+		});
 
-    if (!obj) {
-      return null;
-    }
+		return { key };
+	}
 
-    return { data: await obj.text() };
-  }
+	async readWorkspaceFile(
+		params: ReadWorkspaceFileParams,
+	): Promise<{ data: string } | null> {
+		const key = `games/${params.gameId}/workspace/${params.filename}`;
+		const obj = await this.assets.get(key);
 
-  async readActiveDefinition(gameId: string): Promise<string | null> {
-    const key = `games/${gameId}/definition.json`;
-    const obj = await this.assets.get(key);
-    
-    if (!obj) {
-      return null;
-    }
+		if (!obj) {
+			return null;
+		}
 
-    return await obj.text();
-  }
+		return { data: await obj.text() };
+	}
 
-  async publishToActive(params: PublishToActiveParams): Promise<{ publishedKey: string; previousKey: string | null }> {
-    const activeKey = `games/${params.gameId}/definition.json`;
-    const backupKey = `agent-runs/${params.runId}/previous-definition.json`;
+	async readActiveDefinition(gameId: string): Promise<string | null> {
+		const key = `games/${gameId}/definition.json`;
+		const obj = await this.assets.get(key);
 
-    let previousKey: string | null = null;
+		if (!obj) {
+			return null;
+		}
 
-    const existingActive = await this.assets.get(activeKey);
-    if (existingActive) {
-      const existingData = await existingActive.arrayBuffer();
-      await this.assets.put(backupKey, existingData, {
-        httpMetadata: {
-          contentType: 'application/json',
-        },
-      });
-      previousKey = backupKey;
-    }
+		return await obj.text();
+	}
 
-    const sourceObj = await this.assets.get(params.sourceKey);
-    if (!sourceObj) {
-      throw new Error(`Source artifact not found: ${params.sourceKey}`);
-    }
+	async publishToActive(
+		params: PublishToActiveParams,
+	): Promise<{ publishedKey: string; previousKey: string | null }> {
+		const activeKey = `games/${params.gameId}/definition.json`;
+		const backupKey = `agent-runs/${params.runId}/previous-definition.json`;
 
-    const sourceData = await sourceObj.arrayBuffer();
-    await this.assets.put(activeKey, sourceData, {
-      httpMetadata: {
-        contentType: 'application/json',
-      },
-    });
+		let previousKey: string | null = null;
 
-    return {
-      publishedKey: activeKey,
-      previousKey,
-    };
-  }
+		const existingActive = await this.assets.get(activeKey);
+		if (existingActive) {
+			const existingData = await existingActive.arrayBuffer();
+			await this.assets.put(backupKey, existingData, {
+				httpMetadata: {
+					contentType: "application/json",
+				},
+			});
+			previousKey = backupKey;
+		}
 
-  async rollbackToVersion(params: RollbackToVersionParams): Promise<void> {
-    const activeKey = `games/${params.gameId}/definition.json`;
-    
-    const previousObj = await this.assets.get(params.previousKey);
-    if (!previousObj) {
-      throw new Error(`Previous version not found: ${params.previousKey}`);
-    }
+		const sourceObj = await this.assets.get(params.sourceKey);
+		if (!sourceObj) {
+			throw new Error(`Source artifact not found: ${params.sourceKey}`);
+		}
 
-    const previousData = await previousObj.arrayBuffer();
-    await this.assets.put(activeKey, previousData, {
-      httpMetadata: {
-        contentType: 'application/json',
-      },
-    });
-  }
+		const sourceData = await sourceObj.arrayBuffer();
+		await this.assets.put(activeKey, sourceData, {
+			httpMetadata: {
+				contentType: "application/json",
+			},
+		});
 
-  async listRunArtifacts(runId: string): Promise<ArtifactMetadata[]> {
-    const prefix = `agent-runs/${runId}/steps/`;
-    const listed = await this.assets.list({ prefix });
+		return {
+			publishedKey: activeKey,
+			previousKey,
+		};
+	}
 
-    return listed.objects.map(obj => ({
-      key: obj.key,
-      size: obj.size,
-      uploaded: obj.uploaded,
-    }));
-  }
+	async rollbackToVersion(params: RollbackToVersionParams): Promise<void> {
+		const activeKey = `games/${params.gameId}/definition.json`;
+
+		const previousObj = await this.assets.get(params.previousKey);
+		if (!previousObj) {
+			throw new Error(`Previous version not found: ${params.previousKey}`);
+		}
+
+		const previousData = await previousObj.arrayBuffer();
+		await this.assets.put(activeKey, previousData, {
+			httpMetadata: {
+				contentType: "application/json",
+			},
+		});
+	}
+
+	async listRunArtifacts(runId: string): Promise<ArtifactMetadata[]> {
+		const prefix = `agent-runs/${runId}/steps/`;
+		const listed = await this.assets.list({ prefix });
+
+		return listed.objects.map((obj) => ({
+			key: obj.key,
+			size: obj.size,
+			uploaded: obj.uploaded,
+		}));
+	}
+
+	async listWorkspaceFileMeta(
+		gameId: string,
+	): Promise<Array<{ filename: string; size: number; uploaded: number }>> {
+		const prefix = `games/${gameId}/workspace/`;
+		const listed = await this.assets.list({ prefix });
+		return listed.objects.map((obj) => ({
+			filename: obj.key.slice(prefix.length),
+			size: obj.size,
+			uploaded: obj.uploaded.getTime(),
+		}));
+	}
+
+	async readWorkspaceFiles(
+		gameId: string,
+		filenames: string[],
+	): Promise<Map<string, string>> {
+		const result = new Map<string, string>();
+		for (const filename of filenames) {
+			const file = await this.readWorkspaceFile({ gameId, filename });
+			if (file) {
+				result.set(filename, file.data);
+			}
+		}
+		return result;
+	}
 }

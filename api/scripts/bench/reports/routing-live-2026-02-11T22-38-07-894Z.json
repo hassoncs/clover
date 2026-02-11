@@ -1,0 +1,4886 @@
+{
+  "timestamp": 1770849487894,
+  "suiteId": "routing",
+  "mode": "live",
+  "variants": [
+    {
+      "id": "gpt4o-mini",
+      "model": "openai/gpt-4o-mini",
+      "systemPrompt": "Classify this user message into exactly one category based on what kind of AI model capability it needs.\n\nCategories:\n- SIMPLE: Quick answers, trivial edits, confirmations, factual lookups. A small fast model handles this fine.\n- CODING: Needs to write/edit code, implement features, create game mechanics. Needs a good coding model.\n- COMPLEX: Multi-step design, architecture, creative game design, system redesign. Needs a strong general model.\n- REASONING: Mathematical proofs, formal logic, algorithm analysis, optimization theory. Needs a reasoning model.\n\nRespond with ONLY the category name. Nothing else."
+    },
+    {
+      "id": "gemini-flash",
+      "model": "google/gemini-2.0-flash-001",
+      "systemPrompt": "Classify this user message into exactly one category based on what kind of AI model capability it needs.\n\nCategories:\n- SIMPLE: Quick answers, trivial edits, confirmations, factual lookups. A small fast model handles this fine.\n- CODING: Needs to write/edit code, implement features, create game mechanics. Needs a good coding model.\n- COMPLEX: Multi-step design, architecture, creative game design, system redesign. Needs a strong general model.\n- REASONING: Mathematical proofs, formal logic, algorithm analysis, optimization theory. Needs a reasoning model.\n\nRespond with ONLY the category name. Nothing else."
+    },
+    {
+      "id": "deepseek-v3",
+      "model": "deepseek/deepseek-chat",
+      "systemPrompt": "Classify this user message into exactly one category based on what kind of AI model capability it needs.\n\nCategories:\n- SIMPLE: Quick answers, trivial edits, confirmations, factual lookups. A small fast model handles this fine.\n- CODING: Needs to write/edit code, implement features, create game mechanics. Needs a good coding model.\n- COMPLEX: Multi-step design, architecture, creative game design, system redesign. Needs a strong general model.\n- REASONING: Mathematical proofs, formal logic, algorithm analysis, optimization theory. Needs a reasoning model.\n\nRespond with ONLY the category name. Nothing else."
+    }
+  ],
+  "results": [
+    {
+      "suiteId": "routing",
+      "caseId": "routing-01",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "SIMPLE",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 455,
+          "inputTokens": 140,
+          "outputTokens": 2,
+          "costUsd": 0.000022199999999999998,
+          "raw": {
+            "id": "gen-1770849488-v8ngoObBhypr684pTgXB",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849488,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "SIMPLE",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 140,
+              "completion_tokens": 2,
+              "total_tokens": 142,
+              "cost": 0.0000222,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000222,
+                "upstream_inference_prompt_cost": 0.000021,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 502,
+      "totalInputTokens": 140,
+      "totalOutputTokens": 2,
+      "totalCostUsd": 0.000022199999999999998,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "SIMPLE",
+              "actualTier": "SIMPLE",
+              "response": "SIMPLE"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-01",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "SIMPLE\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 480,
+          "inputTokens": 136,
+          "outputTokens": 2,
+          "costUsd": 0.000014400000000000001,
+          "raw": {
+            "id": "gen-1770849488-66ks8y2mEsMjazDUYRAA",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849488,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "SIMPLE\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 136,
+              "completion_tokens": 2,
+              "total_tokens": 138,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000144,
+                "upstream_inference_prompt_cost": 0.0000136,
+                "upstream_inference_completions_cost": 8e-7
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 489,
+      "totalInputTokens": 136,
+      "totalOutputTokens": 2,
+      "totalCostUsd": 0.000014400000000000001,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "SIMPLE",
+              "actualTier": "SIMPLE",
+              "response": "SIMPLE\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-01",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "SIMPLE",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 1329,
+          "inputTokens": 134,
+          "outputTokens": 3,
+          "costUsd": 0.000019600000000000002,
+          "raw": {
+            "id": "gen-1770849488-AUZLGmsyHTFE22Wwmj2i",
+            "provider": "Novita",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849488,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "SIMPLE",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "",
+            "usage": {
+              "prompt_tokens": 134,
+              "completion_tokens": 3,
+              "total_tokens": 137,
+              "cost": 0.0000575,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000575,
+                "upstream_inference_prompt_cost": 0.0000536,
+                "upstream_inference_completions_cost": 0.0000039
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 1369,
+      "totalInputTokens": 134,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.000019600000000000002,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "SIMPLE",
+              "actualTier": "SIMPLE",
+              "response": "SIMPLE"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-02",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "SIMPLE",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 296,
+          "inputTokens": 140,
+          "outputTokens": 2,
+          "costUsd": 0.000022199999999999998,
+          "raw": {
+            "id": "gen-1770849490-eqDHdhrSTkyKatcBKin8",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849490,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "SIMPLE",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 140,
+              "completion_tokens": 2,
+              "total_tokens": 142,
+              "cost": 0.0000222,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000222,
+                "upstream_inference_prompt_cost": 0.000021,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 358,
+      "totalInputTokens": 140,
+      "totalOutputTokens": 2,
+      "totalCostUsd": 0.000022199999999999998,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "SIMPLE",
+              "actualTier": "SIMPLE",
+              "response": "SIMPLE"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-02",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "SIMPLE\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 522,
+          "inputTokens": 136,
+          "outputTokens": 2,
+          "costUsd": 0.000014400000000000001,
+          "raw": {
+            "id": "gen-1770849490-Txzd6wikemqaTWOD9eSN",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849490,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "SIMPLE\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 136,
+              "completion_tokens": 2,
+              "total_tokens": 138,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000144,
+                "upstream_inference_prompt_cost": 0.0000136,
+                "upstream_inference_completions_cost": 8e-7
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 525,
+      "totalInputTokens": 136,
+      "totalOutputTokens": 2,
+      "totalCostUsd": 0.000014400000000000001,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "SIMPLE",
+              "actualTier": "SIMPLE",
+              "response": "SIMPLE\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-02",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "SIMPLE",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 125,
+          "inputTokens": 134,
+          "outputTokens": 4,
+          "costUsd": 0.000019880000000000003,
+          "raw": {
+            "id": "gen-1770849491-k22TMawqZwAUkJ0bEP29",
+            "provider": "DeepInfra",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849491,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "SIMPLE",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 134,
+              "completion_tokens": 4,
+              "total_tokens": 138,
+              "cost": 0.00004644,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00004644,
+                "upstream_inference_prompt_cost": 0.00004288,
+                "upstream_inference_completions_cost": 0.00000356
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 357,
+      "totalInputTokens": 134,
+      "totalOutputTokens": 4,
+      "totalCostUsd": 0.000019880000000000003,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "SIMPLE",
+              "actualTier": "SIMPLE",
+              "response": "SIMPLE"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-03",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "SIMPLE",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 303,
+          "inputTokens": 142,
+          "outputTokens": 2,
+          "costUsd": 0.000022499999999999998,
+          "raw": {
+            "id": "gen-1770849491-fOutuXXlnno3HClnBv32",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849491,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "SIMPLE",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 142,
+              "completion_tokens": 2,
+              "total_tokens": 144,
+              "cost": 0.0000225,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000225,
+                "upstream_inference_prompt_cost": 0.0000213,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 354,
+      "totalInputTokens": 142,
+      "totalOutputTokens": 2,
+      "totalCostUsd": 0.000022499999999999998,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "SIMPLE",
+              "actualTier": "SIMPLE",
+              "response": "SIMPLE"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-03",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "SIMPLE\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 489,
+          "inputTokens": 138,
+          "outputTokens": 2,
+          "costUsd": 0.000014599999999999999,
+          "raw": {
+            "id": "gen-1770849491-G3KOLvTi0kO175na21sk",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849491,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "SIMPLE\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 138,
+              "completion_tokens": 2,
+              "total_tokens": 140,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000146,
+                "upstream_inference_prompt_cost": 0.0000138,
+                "upstream_inference_completions_cost": 8e-7
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 490,
+      "totalInputTokens": 138,
+      "totalOutputTokens": 2,
+      "totalCostUsd": 0.000014599999999999999,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "SIMPLE",
+              "actualTier": "SIMPLE",
+              "response": "SIMPLE\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-03",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "SIMPLE",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 858,
+          "inputTokens": 136,
+          "outputTokens": 3,
+          "costUsd": 0.00001988,
+          "raw": {
+            "id": "gen-1770849492-zR7emzndmn2xt97kjg85",
+            "provider": "Novita",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849492,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "SIMPLE",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "",
+            "usage": {
+              "prompt_tokens": 136,
+              "completion_tokens": 3,
+              "total_tokens": 139,
+              "cost": 0.0000583,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000583,
+                "upstream_inference_prompt_cost": 0.0000544,
+                "upstream_inference_completions_cost": 0.0000039
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 1021,
+      "totalInputTokens": 136,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.00001988,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "SIMPLE",
+              "actualTier": "SIMPLE",
+              "response": "SIMPLE"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-04",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "SIMPLE",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 281,
+          "inputTokens": 139,
+          "outputTokens": 2,
+          "costUsd": 0.000022049999999999997,
+          "raw": {
+            "id": "gen-1770849493-LJbONv0uwMmyJpMfhGJo",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849493,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "SIMPLE",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 139,
+              "completion_tokens": 2,
+              "total_tokens": 141,
+              "cost": 0.00002205,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00002205,
+                "upstream_inference_prompt_cost": 0.00002085,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 323,
+      "totalInputTokens": 139,
+      "totalOutputTokens": 2,
+      "totalCostUsd": 0.000022049999999999997,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "SIMPLE",
+              "actualTier": "SIMPLE",
+              "response": "SIMPLE"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-04",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "SIMPLE\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 493,
+          "inputTokens": 135,
+          "outputTokens": 2,
+          "costUsd": 0.000014300000000000002,
+          "raw": {
+            "id": "gen-1770849493-Pxrz6FnWu694hSQbai5C",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849493,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "SIMPLE\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 135,
+              "completion_tokens": 2,
+              "total_tokens": 137,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000143,
+                "upstream_inference_prompt_cost": 0.0000135,
+                "upstream_inference_completions_cost": 8e-7
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 500,
+      "totalInputTokens": 135,
+      "totalOutputTokens": 2,
+      "totalCostUsd": 0.000014300000000000002,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "SIMPLE",
+              "actualTier": "SIMPLE",
+              "response": "SIMPLE\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-04",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "SIMPLE",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 1096,
+          "inputTokens": 133,
+          "outputTokens": 3,
+          "costUsd": 0.00001946,
+          "raw": {
+            "id": "gen-1770849494-nk2yOLjMuuKiTf4BbAXt",
+            "provider": "Novita",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849494,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "SIMPLE",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "",
+            "usage": {
+              "prompt_tokens": 133,
+              "completion_tokens": 3,
+              "total_tokens": 136,
+              "cost": 0.0000571,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000571,
+                "upstream_inference_prompt_cost": 0.0000532,
+                "upstream_inference_completions_cost": 0.0000039
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 1274,
+      "totalInputTokens": 133,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.00001946,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "SIMPLE",
+              "actualTier": "SIMPLE",
+              "response": "SIMPLE"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-05",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 260,
+          "inputTokens": 139,
+          "outputTokens": 2,
+          "costUsd": 0.000022049999999999997,
+          "raw": {
+            "id": "gen-1770849495-QggcEnNLUlysp4IIMIHY",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849495,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 139,
+              "completion_tokens": 2,
+              "total_tokens": 141,
+              "cost": 0.00002205,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00002205,
+                "upstream_inference_prompt_cost": 0.00002085,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 296,
+      "totalInputTokens": 139,
+      "totalOutputTokens": 2,
+      "totalCostUsd": 0.000022049999999999997,
+      "evaluation": {
+        "pass": false,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": false,
+            "message": "expected SIMPLE, got CODING",
+            "value": {
+              "expectedTier": "SIMPLE",
+              "actualTier": "CODING",
+              "response": "CODING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 0
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-05",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 578,
+          "inputTokens": 135,
+          "outputTokens": 3,
+          "costUsd": 0.000014700000000000002,
+          "raw": {
+            "id": "gen-1770849495-GdvWHYh4mT1w6pKL50cB",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849495,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 135,
+              "completion_tokens": 3,
+              "total_tokens": 138,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000147,
+                "upstream_inference_prompt_cost": 0.0000135,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 580,
+      "totalInputTokens": 135,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.000014700000000000002,
+      "evaluation": {
+        "pass": false,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": false,
+            "message": "expected SIMPLE, got CODING",
+            "value": {
+              "expectedTier": "SIMPLE",
+              "actualTier": "CODING",
+              "response": "CODING\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 0
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-05",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 1022,
+          "inputTokens": 133,
+          "outputTokens": 3,
+          "costUsd": 0.00001946,
+          "raw": {
+            "id": "gen-1770849496-RAF0dLV874yIKnYVyUor",
+            "provider": "Novita",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849496,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "",
+            "usage": {
+              "prompt_tokens": 133,
+              "completion_tokens": 3,
+              "total_tokens": 136,
+              "cost": 0.0000571,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000571,
+                "upstream_inference_prompt_cost": 0.0000532,
+                "upstream_inference_completions_cost": 0.0000039
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 1114,
+      "totalInputTokens": 133,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.00001946,
+      "evaluation": {
+        "pass": false,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": false,
+            "message": "expected SIMPLE, got CODING",
+            "value": {
+              "expectedTier": "SIMPLE",
+              "actualTier": "CODING",
+              "response": "CODING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 0
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-06",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 319,
+          "inputTokens": 144,
+          "outputTokens": 2,
+          "costUsd": 0.0000228,
+          "raw": {
+            "id": "gen-1770849497-L6Qohr28ElqnVrfKVI4g",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849497,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 144,
+              "completion_tokens": 2,
+              "total_tokens": 146,
+              "cost": 0.0000228,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000228,
+                "upstream_inference_prompt_cost": 0.0000216,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 344,
+      "totalInputTokens": 144,
+      "totalOutputTokens": 2,
+      "totalCostUsd": 0.0000228,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "CODING",
+              "actualTier": "CODING",
+              "response": "CODING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-06",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 580,
+          "inputTokens": 140,
+          "outputTokens": 3,
+          "costUsd": 0.0000152,
+          "raw": {
+            "id": "gen-1770849497-h91Hp27n9HTU8ztZPNLY",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849497,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 140,
+              "completion_tokens": 3,
+              "total_tokens": 143,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000152,
+                "upstream_inference_prompt_cost": 0.000014,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 581,
+      "totalInputTokens": 140,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.0000152,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "CODING",
+              "actualTier": "CODING",
+              "response": "CODING\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-06",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 109,
+          "inputTokens": 138,
+          "outputTokens": 3,
+          "costUsd": 0.00002016,
+          "raw": {
+            "id": "gen-1770849498-rw6SCdk7pNIZAomRiiGE",
+            "provider": "DeepInfra",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849498,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 138,
+              "completion_tokens": 3,
+              "total_tokens": 141,
+              "cost": 0.00004683,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00004683,
+                "upstream_inference_prompt_cost": 0.00004416,
+                "upstream_inference_completions_cost": 0.00000267
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 267,
+      "totalInputTokens": 138,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.00002016,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "CODING",
+              "actualTier": "CODING",
+              "response": "CODING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-07",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 270,
+          "inputTokens": 152,
+          "outputTokens": 2,
+          "costUsd": 0.000024,
+          "raw": {
+            "id": "gen-1770849498-YfesAKL9jmwrD9Dk5xqn",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849498,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 152,
+              "completion_tokens": 2,
+              "total_tokens": 154,
+              "cost": 0.000024,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.000024,
+                "upstream_inference_prompt_cost": 0.0000228,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 337,
+      "totalInputTokens": 152,
+      "totalOutputTokens": 2,
+      "totalCostUsd": 0.000024,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "CODING",
+              "actualTier": "CODING",
+              "response": "CODING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-07",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 530,
+          "inputTokens": 150,
+          "outputTokens": 3,
+          "costUsd": 0.000016199999999999997,
+          "raw": {
+            "id": "gen-1770849499-l4adOXqwIDUot4o85syy",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849499,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 150,
+              "completion_tokens": 3,
+              "total_tokens": 153,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000162,
+                "upstream_inference_prompt_cost": 0.000015,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 531,
+      "totalInputTokens": 150,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.000016199999999999997,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "CODING",
+              "actualTier": "CODING",
+              "response": "CODING\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-07",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 1577,
+          "inputTokens": 146,
+          "outputTokens": 2,
+          "costUsd": 0.000021000000000000002,
+          "raw": {
+            "id": "gen-1770849499-JEnMneoGbzWF5O8N2EIR",
+            "provider": "Novita",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849499,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "",
+            "usage": {
+              "prompt_tokens": 146,
+              "completion_tokens": 2,
+              "total_tokens": 148,
+              "cost": 0.000061,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.000061,
+                "upstream_inference_prompt_cost": 0.0000584,
+                "upstream_inference_completions_cost": 0.0000026
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 1716,
+      "totalInputTokens": 146,
+      "totalOutputTokens": 2,
+      "totalCostUsd": 0.000021000000000000002,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "CODING",
+              "actualTier": "CODING",
+              "response": "CODING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-08",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 311,
+          "inputTokens": 149,
+          "outputTokens": 2,
+          "costUsd": 0.000023549999999999996,
+          "raw": {
+            "id": "gen-1770849501-2QUqW9CqRJkDfPQG5IhS",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849501,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 149,
+              "completion_tokens": 2,
+              "total_tokens": 151,
+              "cost": 0.00002355,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00002355,
+                "upstream_inference_prompt_cost": 0.00002235,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 355,
+      "totalInputTokens": 149,
+      "totalOutputTokens": 2,
+      "totalCostUsd": 0.000023549999999999996,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "CODING",
+              "actualTier": "CODING",
+              "response": "CODING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-08",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 488,
+          "inputTokens": 145,
+          "outputTokens": 3,
+          "costUsd": 0.0000157,
+          "raw": {
+            "id": "gen-1770849501-v1ISMMmNp50Cd2TmEyER",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849501,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 145,
+              "completion_tokens": 3,
+              "total_tokens": 148,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000157,
+                "upstream_inference_prompt_cost": 0.0000145,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 488,
+      "totalInputTokens": 145,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.0000157,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "CODING",
+              "actualTier": "CODING",
+              "response": "CODING\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-08",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 920,
+          "inputTokens": 143,
+          "outputTokens": 3,
+          "costUsd": 0.00002086,
+          "raw": {
+            "id": "gen-1770849502-XT9FkxLavftwOpemgjoG",
+            "provider": "Novita",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849502,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "",
+            "usage": {
+              "prompt_tokens": 143,
+              "completion_tokens": 3,
+              "total_tokens": 146,
+              "cost": 0.0000611,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000611,
+                "upstream_inference_prompt_cost": 0.0000572,
+                "upstream_inference_completions_cost": 0.0000039
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 1125,
+      "totalInputTokens": 143,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.00002086,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "CODING",
+              "actualTier": "CODING",
+              "response": "CODING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-09",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 250,
+          "inputTokens": 148,
+          "outputTokens": 2,
+          "costUsd": 0.000023399999999999996,
+          "raw": {
+            "id": "gen-1770849503-9WNtwq2DHzial2WrOzSc",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849503,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 148,
+              "completion_tokens": 2,
+              "total_tokens": 150,
+              "cost": 0.0000234,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000234,
+                "upstream_inference_prompt_cost": 0.0000222,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 300,
+      "totalInputTokens": 148,
+      "totalOutputTokens": 2,
+      "totalCostUsd": 0.000023399999999999996,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "CODING",
+              "actualTier": "CODING",
+              "response": "CODING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-09",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 508,
+          "inputTokens": 144,
+          "outputTokens": 3,
+          "costUsd": 0.0000156,
+          "raw": {
+            "id": "gen-1770849503-gknxAfVBcZAvcJXQjLnU",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849503,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 144,
+              "completion_tokens": 3,
+              "total_tokens": 147,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000156,
+                "upstream_inference_prompt_cost": 0.0000144,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 523,
+      "totalInputTokens": 144,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.0000156,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "CODING",
+              "actualTier": "CODING",
+              "response": "CODING\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-09",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 93,
+          "inputTokens": 142,
+          "outputTokens": 3,
+          "costUsd": 0.00002072,
+          "raw": {
+            "id": "gen-1770849504-7UnGg8WSJxB8JNSznheA",
+            "provider": "DeepInfra",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849504,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 142,
+              "completion_tokens": 3,
+              "total_tokens": 145,
+              "cost": 0.00004811,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00004811,
+                "upstream_inference_prompt_cost": 0.00004544,
+                "upstream_inference_completions_cost": 0.00000267
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 503,
+      "totalInputTokens": 142,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.00002072,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "CODING",
+              "actualTier": "CODING",
+              "response": "CODING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-10",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 377,
+          "inputTokens": 152,
+          "outputTokens": 2,
+          "costUsd": 0.000024,
+          "raw": {
+            "id": "gen-1770849504-3pebTfAOrPccn1qRYwIZ",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849504,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 152,
+              "completion_tokens": 2,
+              "total_tokens": 154,
+              "cost": 0.000024,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.000024,
+                "upstream_inference_prompt_cost": 0.0000228,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 378,
+      "totalInputTokens": 152,
+      "totalOutputTokens": 2,
+      "totalCostUsd": 0.000024,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "CODING",
+              "actualTier": "CODING",
+              "response": "CODING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-10",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 522,
+          "inputTokens": 148,
+          "outputTokens": 3,
+          "costUsd": 0.000016,
+          "raw": {
+            "id": "gen-1770849504-AzEqOY1HAcIZiOY0IfW1",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849504,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 148,
+              "completion_tokens": 3,
+              "total_tokens": 151,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.000016,
+                "upstream_inference_prompt_cost": 0.0000148,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 523,
+      "totalInputTokens": 148,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.000016,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "CODING",
+              "actualTier": "CODING",
+              "response": "CODING\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-10",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 80,
+          "inputTokens": 146,
+          "outputTokens": 3,
+          "costUsd": 0.00002128,
+          "raw": {
+            "id": "gen-1770849505-aa0NFeyspIUo1gHyeSfn",
+            "provider": "DeepInfra",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849505,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 146,
+              "completion_tokens": 3,
+              "total_tokens": 149,
+              "cost": 0.00004939,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00004939,
+                "upstream_inference_prompt_cost": 0.00004672,
+                "upstream_inference_completions_cost": 0.00000267
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 377,
+      "totalInputTokens": 146,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.00002128,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "CODING",
+              "actualTier": "CODING",
+              "response": "CODING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-11",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "COMPLEX",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 297,
+          "inputTokens": 166,
+          "outputTokens": 3,
+          "costUsd": 0.0000267,
+          "raw": {
+            "id": "gen-1770849505-jxfLKBPBxHPdrnOkyU43",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849505,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "COMPLEX",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 166,
+              "completion_tokens": 3,
+              "total_tokens": 169,
+              "cost": 0.0000267,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000267,
+                "upstream_inference_prompt_cost": 0.0000249,
+                "upstream_inference_completions_cost": 0.0000018
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 359,
+      "totalInputTokens": 166,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.0000267,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "COMPLEX",
+              "actualTier": "COMPLEX",
+              "response": "COMPLEX"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-11",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "COMPLEX\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 566,
+          "inputTokens": 162,
+          "outputTokens": 3,
+          "costUsd": 0.0000174,
+          "raw": {
+            "id": "gen-1770849506-uGdXyt8Uc2KgqVwbZdaT",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849506,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "COMPLEX\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 162,
+              "completion_tokens": 3,
+              "total_tokens": 165,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000174,
+                "upstream_inference_prompt_cost": 0.0000162,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 572,
+      "totalInputTokens": 162,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.0000174,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "COMPLEX",
+              "actualTier": "COMPLEX",
+              "response": "COMPLEX\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-11",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "COMPLEX",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 96,
+          "inputTokens": 161,
+          "outputTokens": 3,
+          "costUsd": 0.000023380000000000003,
+          "raw": {
+            "id": "gen-1770849506-v0BjOKuVr2xgO26a9ua1",
+            "provider": "DeepInfra",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849506,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "COMPLEX",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 161,
+              "completion_tokens": 3,
+              "total_tokens": 164,
+              "cost": 0.00005419,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00005419,
+                "upstream_inference_prompt_cost": 0.00005152,
+                "upstream_inference_completions_cost": 0.00000267
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 417,
+      "totalInputTokens": 161,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.000023380000000000003,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "COMPLEX",
+              "actualTier": "COMPLEX",
+              "response": "COMPLEX"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-12",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "COMPLEX",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 451,
+          "inputTokens": 174,
+          "outputTokens": 3,
+          "costUsd": 0.0000279,
+          "raw": {
+            "id": "gen-1770849507-lzDRUWQKGflPumhB1I9u",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849507,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "COMPLEX",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 174,
+              "completion_tokens": 3,
+              "total_tokens": 177,
+              "cost": 0.0000279,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000279,
+                "upstream_inference_prompt_cost": 0.0000261,
+                "upstream_inference_completions_cost": 0.0000018
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 452,
+      "totalInputTokens": 174,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.0000279,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "COMPLEX",
+              "actualTier": "COMPLEX",
+              "response": "COMPLEX"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-12",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "COMPLEX\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 562,
+          "inputTokens": 171,
+          "outputTokens": 3,
+          "costUsd": 0.0000183,
+          "raw": {
+            "id": "gen-1770849507-t9mHuwScZ1qsDhKGq9g0",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849507,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "COMPLEX\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 171,
+              "completion_tokens": 3,
+              "total_tokens": 174,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000183,
+                "upstream_inference_prompt_cost": 0.0000171,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 567,
+      "totalInputTokens": 171,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.0000183,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "COMPLEX",
+              "actualTier": "COMPLEX",
+              "response": "COMPLEX\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-12",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "COMPLEX",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 88,
+          "inputTokens": 168,
+          "outputTokens": 3,
+          "costUsd": 0.00002436,
+          "raw": {
+            "id": "gen-1770849508-WT83AzshVKNjex0RHxOh",
+            "provider": "DeepInfra",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849508,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "COMPLEX",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 168,
+              "completion_tokens": 3,
+              "total_tokens": 171,
+              "cost": 0.00005643,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00005643,
+                "upstream_inference_prompt_cost": 0.00005376,
+                "upstream_inference_completions_cost": 0.00000267
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 402,
+      "totalInputTokens": 168,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.00002436,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "COMPLEX",
+              "actualTier": "COMPLEX",
+              "response": "COMPLEX"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-13",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "COMPLEX",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 570,
+          "inputTokens": 157,
+          "outputTokens": 3,
+          "costUsd": 0.00002535,
+          "raw": {
+            "id": "gen-1770849508-AMCoqJ3Hct8VEvRzFLMF",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849508,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "COMPLEX",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 157,
+              "completion_tokens": 3,
+              "total_tokens": 160,
+              "cost": 0.00002535,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00002535,
+                "upstream_inference_prompt_cost": 0.00002355,
+                "upstream_inference_completions_cost": 0.0000018
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 681,
+      "totalInputTokens": 157,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.00002535,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "COMPLEX",
+              "actualTier": "COMPLEX",
+              "response": "COMPLEX"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-13",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 452,
+          "inputTokens": 153,
+          "outputTokens": 3,
+          "costUsd": 0.0000165,
+          "raw": {
+            "id": "gen-1770849509-iYe2ijAXVKc61uZ0Nw3d",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849509,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 153,
+              "completion_tokens": 3,
+              "total_tokens": 156,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000165,
+                "upstream_inference_prompt_cost": 0.0000153,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 461,
+      "totalInputTokens": 153,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.0000165,
+      "evaluation": {
+        "pass": false,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": false,
+            "message": "expected COMPLEX, got CODING",
+            "value": {
+              "expectedTier": "COMPLEX",
+              "actualTier": "CODING",
+              "response": "CODING\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 0
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-13",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "COMPLEX",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 1271,
+          "inputTokens": 151,
+          "outputTokens": 2,
+          "costUsd": 0.000021700000000000006,
+          "raw": {
+            "id": "gen-1770849509-28bEThtCU2b7WXqfuhF0",
+            "provider": "Novita",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849509,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "COMPLEX",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "",
+            "usage": {
+              "prompt_tokens": 151,
+              "completion_tokens": 2,
+              "total_tokens": 153,
+              "cost": 0.000063,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.000063,
+                "upstream_inference_prompt_cost": 0.0000604,
+                "upstream_inference_completions_cost": 0.0000026
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 1345,
+      "totalInputTokens": 151,
+      "totalOutputTokens": 2,
+      "totalCostUsd": 0.000021700000000000006,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "COMPLEX",
+              "actualTier": "COMPLEX",
+              "response": "COMPLEX"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-14",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "COMPLEX",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 298,
+          "inputTokens": 166,
+          "outputTokens": 3,
+          "costUsd": 0.0000267,
+          "raw": {
+            "id": "gen-1770849511-OmIXiHY4GyvconDfhNyE",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849511,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "COMPLEX",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 166,
+              "completion_tokens": 3,
+              "total_tokens": 169,
+              "cost": 0.0000267,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000267,
+                "upstream_inference_prompt_cost": 0.0000249,
+                "upstream_inference_completions_cost": 0.0000018
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 396,
+      "totalInputTokens": 166,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.0000267,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "COMPLEX",
+              "actualTier": "COMPLEX",
+              "response": "COMPLEX"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-14",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "CODING\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 424,
+          "inputTokens": 162,
+          "outputTokens": 3,
+          "costUsd": 0.0000174,
+          "raw": {
+            "id": "gen-1770849511-t1PEs01GWnBZavQJEFVo",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849511,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "CODING\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 162,
+              "completion_tokens": 3,
+              "total_tokens": 165,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000174,
+                "upstream_inference_prompt_cost": 0.0000162,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 428,
+      "totalInputTokens": 162,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.0000174,
+      "evaluation": {
+        "pass": false,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": false,
+            "message": "expected COMPLEX, got CODING",
+            "value": {
+              "expectedTier": "COMPLEX",
+              "actualTier": "CODING",
+              "response": "CODING\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 0
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-14",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "COMPLEX",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 93,
+          "inputTokens": 161,
+          "outputTokens": 3,
+          "costUsd": 0.000023380000000000003,
+          "raw": {
+            "id": "gen-1770849511-pfGAcstqyQC4qVX82qzd",
+            "provider": "DeepInfra",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849511,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "COMPLEX",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 161,
+              "completion_tokens": 3,
+              "total_tokens": 164,
+              "cost": 0.00005419,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00005419,
+                "upstream_inference_prompt_cost": 0.00005152,
+                "upstream_inference_completions_cost": 0.00000267
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 229,
+      "totalInputTokens": 161,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.000023380000000000003,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "COMPLEX",
+              "actualTier": "COMPLEX",
+              "response": "COMPLEX"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-15",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "COMPLEX",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 296,
+          "inputTokens": 164,
+          "outputTokens": 3,
+          "costUsd": 0.000026399999999999998,
+          "raw": {
+            "id": "gen-1770849512-0pfcRjfWnTWYPSorTxTN",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849512,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "COMPLEX",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 164,
+              "completion_tokens": 3,
+              "total_tokens": 167,
+              "cost": 0.0000264,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000264,
+                "upstream_inference_prompt_cost": 0.0000246,
+                "upstream_inference_completions_cost": 0.0000018
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 361,
+      "totalInputTokens": 164,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.000026399999999999998,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "COMPLEX",
+              "actualTier": "COMPLEX",
+              "response": "COMPLEX"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-15",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "COMPLEX\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 467,
+          "inputTokens": 160,
+          "outputTokens": 3,
+          "costUsd": 0.0000172,
+          "raw": {
+            "id": "gen-1770849512-mBN716pc5GqlZdWxj8bg",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849512,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "COMPLEX\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 160,
+              "completion_tokens": 3,
+              "total_tokens": 163,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000172,
+                "upstream_inference_prompt_cost": 0.000016,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 482,
+      "totalInputTokens": 160,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.0000172,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "COMPLEX",
+              "actualTier": "COMPLEX",
+              "response": "COMPLEX\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-15",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "COMPLEX",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 935,
+          "inputTokens": 159,
+          "outputTokens": 3,
+          "costUsd": 0.0000231,
+          "raw": {
+            "id": "gen-1770849512-1wtgP78n7y7dFNIUPATb",
+            "provider": "Novita",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849512,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "COMPLEX",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "",
+            "usage": {
+              "prompt_tokens": 159,
+              "completion_tokens": 3,
+              "total_tokens": 162,
+              "cost": 0.0000675,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000675,
+                "upstream_inference_prompt_cost": 0.0000636,
+                "upstream_inference_completions_cost": 0.0000039
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 1079,
+      "totalInputTokens": 159,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.0000231,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "COMPLEX",
+              "actualTier": "COMPLEX",
+              "response": "COMPLEX"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-16",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "REASONING",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 301,
+          "inputTokens": 168,
+          "outputTokens": 3,
+          "costUsd": 0.000027,
+          "raw": {
+            "id": "gen-1770849514-L4bsmrJOEDdw80lrqSxm",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849514,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "REASONING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 168,
+              "completion_tokens": 3,
+              "total_tokens": 171,
+              "cost": 0.000027,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.000027,
+                "upstream_inference_prompt_cost": 0.0000252,
+                "upstream_inference_completions_cost": 0.0000018
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 353,
+      "totalInputTokens": 168,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.000027,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "REASONING",
+              "actualTier": "REASONING",
+              "response": "REASONING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-16",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "REASONING\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 476,
+          "inputTokens": 163,
+          "outputTokens": 4,
+          "costUsd": 0.0000179,
+          "raw": {
+            "id": "gen-1770849514-pZOk5A1hFWP9DNTYZms3",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849514,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "REASONING\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 163,
+              "completion_tokens": 4,
+              "total_tokens": 167,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000179,
+                "upstream_inference_prompt_cost": 0.0000163,
+                "upstream_inference_completions_cost": 0.0000016
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 477,
+      "totalInputTokens": 163,
+      "totalOutputTokens": 4,
+      "totalCostUsd": 0.0000179,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "REASONING",
+              "actualTier": "REASONING",
+              "response": "REASONING\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-16",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "REASONING",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 121,
+          "inputTokens": 162,
+          "outputTokens": 4,
+          "costUsd": 0.000023800000000000003,
+          "raw": {
+            "id": "gen-1770849514-X3bDO3hDiph49mmObzTk",
+            "provider": "DeepInfra",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849514,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "REASONING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 162,
+              "completion_tokens": 4,
+              "total_tokens": 166,
+              "cost": 0.0000554,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000554,
+                "upstream_inference_prompt_cost": 0.00005184,
+                "upstream_inference_completions_cost": 0.00000356
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 520,
+      "totalInputTokens": 162,
+      "totalOutputTokens": 4,
+      "totalCostUsd": 0.000023800000000000003,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "REASONING",
+              "actualTier": "REASONING",
+              "response": "REASONING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-17",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "REASONING",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 305,
+          "inputTokens": 170,
+          "outputTokens": 3,
+          "costUsd": 0.0000273,
+          "raw": {
+            "id": "gen-1770849515-jc5Up70mv8fdnNM3xBzq",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849515,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "REASONING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 170,
+              "completion_tokens": 3,
+              "total_tokens": 173,
+              "cost": 0.0000273,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000273,
+                "upstream_inference_prompt_cost": 0.0000255,
+                "upstream_inference_completions_cost": 0.0000018
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 345,
+      "totalInputTokens": 170,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.0000273,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "REASONING",
+              "actualTier": "REASONING",
+              "response": "REASONING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-17",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "REASONING\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 501,
+          "inputTokens": 162,
+          "outputTokens": 4,
+          "costUsd": 0.0000178,
+          "raw": {
+            "id": "gen-1770849515-kkPhd5WeQEMF5ei57ng0",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849515,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "REASONING\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 162,
+              "completion_tokens": 4,
+              "total_tokens": 166,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000178,
+                "upstream_inference_prompt_cost": 0.0000162,
+                "upstream_inference_completions_cost": 0.0000016
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 506,
+      "totalInputTokens": 162,
+      "totalOutputTokens": 4,
+      "totalCostUsd": 0.0000178,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "REASONING",
+              "actualTier": "REASONING",
+              "response": "REASONING\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-17",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "REASONING",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 83,
+          "inputTokens": 161,
+          "outputTokens": 4,
+          "costUsd": 0.000023660000000000004,
+          "raw": {
+            "id": "gen-1770849516-CqAclMzmvo5F0N8a3bQG",
+            "provider": "DeepInfra",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849516,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "REASONING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 161,
+              "completion_tokens": 4,
+              "total_tokens": 165,
+              "cost": 0.00005508,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00005508,
+                "upstream_inference_prompt_cost": 0.00005152,
+                "upstream_inference_completions_cost": 0.00000356
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 287,
+      "totalInputTokens": 161,
+      "totalOutputTokens": 4,
+      "totalCostUsd": 0.000023660000000000004,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "REASONING",
+              "actualTier": "REASONING",
+              "response": "REASONING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-18",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "REASONING",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 500,
+          "inputTokens": 165,
+          "outputTokens": 3,
+          "costUsd": 0.000026549999999999998,
+          "raw": {
+            "id": "gen-1770849516-9u89jLR0k8IoNFRsMNlk",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849516,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "REASONING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 165,
+              "completion_tokens": 3,
+              "total_tokens": 168,
+              "cost": 0.00002655,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00002655,
+                "upstream_inference_prompt_cost": 0.00002475,
+                "upstream_inference_completions_cost": 0.0000018
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 501,
+      "totalInputTokens": 165,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.000026549999999999998,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "REASONING",
+              "actualTier": "REASONING",
+              "response": "REASONING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-18",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "COMPLEX\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 481,
+          "inputTokens": 160,
+          "outputTokens": 3,
+          "costUsd": 0.0000172,
+          "raw": {
+            "id": "gen-1770849517-gOaDqaaCnA0eJXnBnNjR",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849517,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "COMPLEX\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 160,
+              "completion_tokens": 3,
+              "total_tokens": 163,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000172,
+                "upstream_inference_prompt_cost": 0.000016,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 488,
+      "totalInputTokens": 160,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.0000172,
+      "evaluation": {
+        "pass": false,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": false,
+            "message": "expected REASONING, got COMPLEX",
+            "value": {
+              "expectedTier": "REASONING",
+              "actualTier": "COMPLEX",
+              "response": "COMPLEX\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 0
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-18",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "REASONING",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 108,
+          "inputTokens": 158,
+          "outputTokens": 4,
+          "costUsd": 0.00002324,
+          "raw": {
+            "id": "gen-1770849517-bFxmWuCdG2lG3hFn4zhW",
+            "provider": "DeepInfra",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849517,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "REASONING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 158,
+              "completion_tokens": 4,
+              "total_tokens": 162,
+              "cost": 0.00005412,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00005412,
+                "upstream_inference_prompt_cost": 0.00005056,
+                "upstream_inference_completions_cost": 0.00000356
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 535,
+      "totalInputTokens": 158,
+      "totalOutputTokens": 4,
+      "totalCostUsd": 0.00002324,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "REASONING",
+              "actualTier": "REASONING",
+              "response": "REASONING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-19",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "REASONING",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 305,
+          "inputTokens": 162,
+          "outputTokens": 3,
+          "costUsd": 0.0000261,
+          "raw": {
+            "id": "gen-1770849518-zLwq2SpYGSqpd5kvNi63",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849518,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "REASONING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 162,
+              "completion_tokens": 3,
+              "total_tokens": 165,
+              "cost": 0.0000261,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000261,
+                "upstream_inference_prompt_cost": 0.0000243,
+                "upstream_inference_completions_cost": 0.0000018
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 350,
+      "totalInputTokens": 162,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.0000261,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "REASONING",
+              "actualTier": "REASONING",
+              "response": "REASONING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-19",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "REASONING\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 658,
+          "inputTokens": 157,
+          "outputTokens": 4,
+          "costUsd": 0.0000173,
+          "raw": {
+            "id": "gen-1770849518-cRTR5R7SDZhTPEcx0CbI",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849518,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "REASONING\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 157,
+              "completion_tokens": 4,
+              "total_tokens": 161,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000173,
+                "upstream_inference_prompt_cost": 0.0000157,
+                "upstream_inference_completions_cost": 0.0000016
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 659,
+      "totalInputTokens": 157,
+      "totalOutputTokens": 4,
+      "totalCostUsd": 0.0000173,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "REASONING",
+              "actualTier": "REASONING",
+              "response": "REASONING\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-19",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "REASONING",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 1875,
+          "inputTokens": 156,
+          "outputTokens": 3,
+          "costUsd": 0.00002268,
+          "raw": {
+            "id": "gen-1770849519-ccDhMY9qlDmzi1vmfmuT",
+            "provider": "Novita",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849519,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "REASONING",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "",
+            "usage": {
+              "prompt_tokens": 156,
+              "completion_tokens": 3,
+              "total_tokens": 159,
+              "cost": 0.0000663,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000663,
+                "upstream_inference_prompt_cost": 0.0000624,
+                "upstream_inference_completions_cost": 0.0000039
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 1962,
+      "totalInputTokens": 156,
+      "totalOutputTokens": 3,
+      "totalCostUsd": 0.00002268,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "REASONING",
+              "actualTier": "REASONING",
+              "response": "REASONING"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-20",
+      "variantId": "gpt4o-mini",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "SIMPLE",
+          "model": "openai/gpt-4o-mini",
+          "latencyMs": 272,
+          "inputTokens": 140,
+          "outputTokens": 2,
+          "costUsd": 0.000022199999999999998,
+          "raw": {
+            "id": "gen-1770849521-GMRcHdQLBVoNDFePUTfe",
+            "provider": "OpenAI",
+            "model": "openai/gpt-4o-mini",
+            "object": "chat.completion",
+            "created": 1770849521,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "SIMPLE",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "system_fingerprint": "fp_f4ae844694",
+            "usage": {
+              "prompt_tokens": 140,
+              "completion_tokens": 2,
+              "total_tokens": 142,
+              "cost": 0.0000222,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000222,
+                "upstream_inference_prompt_cost": 0.000021,
+                "upstream_inference_completions_cost": 0.0000012
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 312,
+      "totalInputTokens": 140,
+      "totalOutputTokens": 2,
+      "totalCostUsd": 0.000022199999999999998,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "SIMPLE",
+              "actualTier": "SIMPLE",
+              "response": "SIMPLE"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-20",
+      "variantId": "gemini-flash",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "SIMPLE\n",
+          "model": "google/gemini-2.0-flash-001",
+          "latencyMs": 507,
+          "inputTokens": 138,
+          "outputTokens": 2,
+          "costUsd": 0.000014599999999999999,
+          "raw": {
+            "id": "gen-1770849521-HNFNJAj4krokUzEfahbJ",
+            "provider": "Google AI Studio",
+            "model": "google/gemini-2.0-flash-001",
+            "object": "chat.completion",
+            "created": 1770849521,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "SIMPLE\n",
+                  "refusal": null,
+                  "reasoning": null,
+                  "annotations": []
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 138,
+              "completion_tokens": 2,
+              "total_tokens": 140,
+              "cost": 0,
+              "is_byok": true,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "cache_write_tokens": 0,
+                "audio_tokens": 0,
+                "video_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.0000146,
+                "upstream_inference_prompt_cost": 0.0000138,
+                "upstream_inference_completions_cost": 8e-7
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "image_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 508,
+      "totalInputTokens": 138,
+      "totalOutputTokens": 2,
+      "totalCostUsd": 0.000014599999999999999,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "SIMPLE",
+              "actualTier": "SIMPLE",
+              "response": "SIMPLE\n"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    },
+    {
+      "suiteId": "routing",
+      "caseId": "routing-20",
+      "variantId": "deepseek-v3",
+      "mode": "live",
+      "turns": [
+        {
+          "role": "assistant",
+          "content": "SIMPLE",
+          "model": "deepseek/deepseek-chat",
+          "latencyMs": 98,
+          "inputTokens": 135,
+          "outputTokens": 4,
+          "costUsd": 0.00002002,
+          "raw": {
+            "id": "gen-1770849521-UwpgbtvCDMe1Cxt53aXo",
+            "provider": "DeepInfra",
+            "model": "deepseek/deepseek-chat",
+            "object": "chat.completion",
+            "created": 1770849521,
+            "choices": [
+              {
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "stop",
+                "index": 0,
+                "message": {
+                  "role": "assistant",
+                  "content": "SIMPLE",
+                  "refusal": null,
+                  "reasoning": null
+                }
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 135,
+              "completion_tokens": 4,
+              "total_tokens": 139,
+              "cost": 0.00004676,
+              "is_byok": false,
+              "prompt_tokens_details": {
+                "cached_tokens": 0,
+                "audio_tokens": 0
+              },
+              "cost_details": {
+                "upstream_inference_cost": 0.00004676,
+                "upstream_inference_prompt_cost": 0.0000432,
+                "upstream_inference_completions_cost": 0.00000356
+              },
+              "completion_tokens_details": {
+                "reasoning_tokens": 0,
+                "audio_tokens": 0
+              }
+            }
+          }
+        }
+      ],
+      "latencyMs": 390,
+      "totalInputTokens": 135,
+      "totalOutputTokens": 4,
+      "totalCostUsd": 0.00002002,
+      "evaluation": {
+        "pass": true,
+        "checks": [
+          {
+            "id": "routing:tier-match",
+            "pass": true,
+            "value": {
+              "expectedTier": "SIMPLE",
+              "actualTier": "SIMPLE",
+              "response": "SIMPLE"
+            }
+          }
+        ],
+        "scores": {
+          "routing.accuracy": 1
+        }
+      }
+    }
+  ],
+  "summary": {
+    "totalCases": 20,
+    "totalRuns": 60,
+    "byVariant": {
+      "gpt4o-mini": {
+        "accuracy": 0.95,
+        "avgLatencyMs": 382.85,
+        "totalCostUsd": 0.00049095,
+        "passCount": 19,
+        "failCount": 1
+      },
+      "gemini-flash": {
+        "accuracy": 0.8,
+        "avgLatencyMs": 518.9,
+        "totalCostUsd": 0.0003227,
+        "passCount": 16,
+        "failCount": 4
+      },
+      "deepseek-v3": {
+        "accuracy": 0.95,
+        "avgLatencyMs": 814.45,
+        "totalCostUsd": 0.00043161999999999996,
+        "passCount": 19,
+        "failCount": 1
+      }
+    }
+  }
+}

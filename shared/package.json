@@ -23,7 +23,8 @@
 		"./validation/*": "./src/validation/*.ts",
 		"./scripting/authoring": "./src/scripting/script-authoring-types.ts",
 		"./graph-core": "./src/graph-core/index.ts",
-		"./graph-adapters": "./src/graph-adapters/index.ts"
+		"./graph-adapters": "./src/graph-adapters/index.ts",
+		"./effects": "./src/effects/index.ts"
 	},
 	"dependencies": {
 		"drizzle-orm": "^0.38.3",

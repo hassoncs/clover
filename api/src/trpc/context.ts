@@ -43,8 +43,10 @@ export interface Env {
 
   AI_EDITING_ENABLED?: string;
   AI_EDITING_ALLOWED_USERS?: string;
-  AI_EDITING_MAX_CONCURRENT_RUNS?: string;
-  AI_EDITING_MAX_RUNS_PER_DAY?: string;
+	AI_EDITING_MAX_CONCURRENT_RUNS?: string;
+	AI_EDITING_MAX_RUNS_PER_DAY?: string;
+
+	AI_CHAT_MODEL?: string;
 }
 
 export interface User {

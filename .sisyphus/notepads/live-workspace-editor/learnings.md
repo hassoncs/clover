@@ -1,0 +1,14 @@
+- Added `WorkspaceScaffoldService` to seed default workspace files in R2 using `games/{gameId}/workspace/{filename}` keys.
+- Used `bucket.head(key)` existence checks before `bucket.put(...)` and tracked per-file `created` vs `skipped` results.
+- Kept JSON scaffold outputs human-readable with `JSON.stringify(value, null, 2)` and explicit `httpMetadata.contentType` per file.
+- Snapshot tests for `chatThreads.getWorkspaceSnapshot` should assert the discriminated union shape (`changed: true` with `snapshot`, or exact `{ changed: false }` when short-circuited by `sinceRevision`).
+- In this test environment, deleting `users` in `beforeEach` can violate FK constraints after route-level side effects; clearing `messages`, `threads`, and `games` plus `createTestUser(TEST_USER)` keeps isolation stable.
+- Live workspace hot-reload is split into per-tag handlers with a shared `TagHotReloadHandler` contract, keeping swap policy (`canHotSwap`) isolated from orchestration.
+- V1 prefab hot-swap is safest as `registerPrefabs` plus `clearEntities`/`loadEntities([])`, then entities are repopulated by the entities tag pass.
+- `TagPayloadResolver` should tolerate wrapped (`{ rules: [...] }`) and raw array JSON payloads for `entities.json` and `rules.json` to reduce brittle file-shape assumptions.
+- `HotReloadOrchestrator` stores previous payloads and hashes so edit-mode reloads can decide hot-swap vs full reload deterministically in fixed tag order.
+- `HotReloadOrchestrator` bypasses `canHotSwap` entirely in play mode and always executes `fullReload`, even when handlers support hot swap.
+- Handler mapping contract is stable: world->`setupWorld`, prefabs->`registerPrefabs` + empty entity reset, entities->`clearEntities` + `loadEntities`, rules/scripts->runtime methods, effects->`hotSwapShader`.
+- `LivePreviewController` tests are stable when `getWorkspaceSnapshot.query` is declared with `vi.hoisted(() => vi.fn())`; top-level `vi.fn()` inside mocked module imports can cause hoisting/typing issues.
+- Polling assertions should treat initialize-time `fullReset` separately from poll/reset-time resets; spying after `initialize()` only captures subsequent orchestrator calls.
+- `reset()` rebuilds the orchestrator instance, so assertions about forced reload are more reliable via bridge side-effects (`setupWorld` call count) than spies attached to the pre-reset orchestrator instance.

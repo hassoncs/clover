@@ -1,8 +1,8 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import type { LanguageModel } from 'ai';
+import { CHAT_MODELS, DEFAULT_CHAT_TIER } from './chat-model-config';
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
-const DEFAULT_MODEL = 'openai/gpt-4o-mini';
 
 export function createModel(options: {
   apiKey: string;
@@ -12,5 +12,5 @@ export function createModel(options: {
     apiKey: options.apiKey,
     baseURL: OPENROUTER_BASE_URL,
   });
-  return openrouter.chat(options.model ?? DEFAULT_MODEL);
+  return openrouter.chat(options.model ?? CHAT_MODELS[DEFAULT_CHAT_TIER].id);
 }
