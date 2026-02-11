@@ -73,6 +73,7 @@
     "react-native-css-interop": "0.2.1",
     "react-native-gesture-handler": "^2.30.0",
     "react-native-get-random-values": "^2.0.0",
+    "react-native-live-audio-stream": "^1.1.1",
     "react-native-purchases": "^9.7.1",
     "react-native-reanimated": "^4.1.6",
     "react-native-safe-area-context": "^5.6.1",
