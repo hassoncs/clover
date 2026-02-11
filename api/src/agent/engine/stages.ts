@@ -4,6 +4,7 @@ import {
   CHAT_STAGE_PROMPT,
   PLANNING_STAGE_PROMPT,
   REFINE_STAGE_PROMPT,
+  SHADER_STAGE_PROMPT,
   THEME_STAGE_PROMPT,
 } from './prompts';
 import type { CoreTool } from './tools';
@@ -75,6 +76,15 @@ export const assetStage: StageConfig = {
   validateOutput: validateGameOutput,
 };
 
+export const shaderStage: StageConfig = {
+  stage: 'shader',
+  displayName: 'Shader',
+  systemPrompt: SHADER_STAGE_PROMPT,
+  tools: EMPTY_TOOLS,
+  maxRetries: 3,
+  validateOutput: validateGameOutput,
+};
+
 export const chatStage: StageConfig = {
   stage: 'chat',
   displayName: 'Chat',
@@ -87,6 +97,7 @@ export const chatStage: StageConfig = {
 export const STAGE_PIPELINE: StageConfig[] = [
   planningStage,
   buildStage,
+  shaderStage,
   refineStage,
   themeStage,
   assetStage,

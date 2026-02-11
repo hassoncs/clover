@@ -1413,6 +1413,8 @@ export function GameRuntimeGodot({
       bridgeRef.current.loadGame(definition);
       bridgeRef.current.pausePhysics();
 
+      loaderRef.current.applyEffects(definition);
+
       const newGame = loaderRef.current.reload(gameRef.current);
       gameRef.current = newGame;
       elapsedRef.current = 0;
