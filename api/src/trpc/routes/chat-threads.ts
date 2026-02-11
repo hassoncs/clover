@@ -166,6 +166,32 @@ export const chatThreadsRouter = router({
       return { events };
     }),
 
+  listWorkspaceFiles: protectedProcedure
+    .input(
+      z.object({
+        gameId: z.string().uuid(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const game = await ctx.env.DB
+        .prepare('SELECT id, user_id FROM games WHERE id = ? AND deleted_at IS NULL')
+        .bind(input.gameId)
+        .first<{ id: string; user_id: string }>();
+
+      if (!game || game.user_id !== ctx.user.id) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Game not found' });
+      }
+
+      const prefix = `games/${input.gameId}/workspace/`;
+      const listed = await ctx.env.ASSETS.list({ prefix });
+
+      return listed.objects.map(obj => ({
+        filename: obj.key.slice(prefix.length),
+        size: obj.size,
+        uploaded: obj.uploaded.toISOString(),
+      }));
+    }),
+
   readWorkspaceFile: protectedProcedure
     .input(
       z.object({
@@ -187,5 +213,65 @@ export const chatThreadsRouter = router({
       const obj = await ctx.env.ASSETS.get(key);
       if (!obj) return { exists: false, content: null };
       return { exists: true, content: await obj.text() };
+    }),
+
+  debugConversation: protectedProcedure
+    .input(
+      z.object({
+        threadId: z.string().uuid(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const thread = await ctx.env.DB
+        .prepare('SELECT id, game_id FROM chat_threads WHERE id = ? AND user_id = ?')
+        .bind(input.threadId, ctx.user.id)
+        .first<{ id: string; game_id: string }>();
+
+      if (!thread) throw new TRPCError({ code: 'NOT_FOUND', message: 'Thread not found' });
+
+      const chatEvents = await ctx.env.DB
+        .prepare('SELECT seq, event_type, role, content_json, run_id, created_at FROM chat_events WHERE thread_id = ? ORDER BY seq ASC')
+        .bind(input.threadId)
+        .all<{ seq: number; event_type: string; role: string | null; content_json: string; run_id: string | null; created_at: number }>();
+
+      const runs = await ctx.env.DB
+        .prepare('SELECT id, status, tier, error_message, current_step_index, total_steps, created_at, finished_at FROM agent_runs WHERE thread_id = ? ORDER BY created_at ASC')
+        .bind(input.threadId)
+        .all<{ id: string; status: string; tier: string; error_message: string | null; current_step_index: number; total_steps: number; created_at: number; finished_at: number | null }>();
+
+      const agentEvents = await ctx.env.DB
+        .prepare('SELECT run_id, seq, event_type, payload_json, created_at FROM agent_events WHERE run_id IN (SELECT id FROM agent_runs WHERE thread_id = ?) ORDER BY created_at ASC')
+        .bind(input.threadId)
+        .all<{ run_id: string; seq: number; event_type: string; payload_json: string; created_at: number }>();
+
+      return {
+        threadId: input.threadId,
+        gameId: thread.game_id,
+        chatEvents: chatEvents.results.map(e => ({
+          seq: e.seq,
+          eventType: e.event_type,
+          role: e.role,
+          payload: JSON.parse(e.content_json),
+          runId: e.run_id,
+          createdAt: e.created_at,
+        })),
+        runs: runs.results.map(r => ({
+          id: r.id,
+          status: r.status,
+          tier: r.tier,
+          errorMessage: r.error_message,
+          currentStepIndex: r.current_step_index,
+          totalSteps: r.total_steps,
+          createdAt: r.created_at,
+          finishedAt: r.finished_at,
+        })),
+        agentEvents: agentEvents.results.map(e => ({
+          runId: e.run_id,
+          seq: e.seq,
+          eventType: e.event_type,
+          payload: JSON.parse(e.payload_json),
+          createdAt: e.created_at,
+        })),
+      };
     }),
 });

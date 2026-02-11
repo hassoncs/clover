@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Pressable, StyleSheet, ActivityIndicator, Platform, type NativeSyntheticEvent, type TextInputKeyPressEventData, type TextInputContentSizeChangeEventData } from 'react-native';
+import { View, Pressable, StyleSheet, ActivityIndicator, Platform, TextInput, type NativeSyntheticEvent, type TextInputKeyPressEventData, type TextInputContentSizeChangeEventData } from 'react-native';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -9,9 +9,10 @@ const MAX_INPUT_HEIGHT = 120;
 interface Props {
   onSend: (text: string) => void;
   isSubmitting: boolean;
+  variant?: "toolbar" | "sheet";
 }
 
-export function Composer({ onSend, isSubmitting }: Props) {
+export function Composer({ onSend, isSubmitting, variant = "toolbar" }: Props) {
   const [text, setText] = useState('');
   const [inputHeight, setInputHeight] = useState(MIN_INPUT_HEIGHT);
 
@@ -46,9 +47,14 @@ export function Composer({ onSend, isSubmitting }: Props) {
 
   const isDisabled = !text.trim() || isSubmitting;
 
+  // BottomSheetTextInput crashes on web (findNodeHandle._scrollRef null during unmount)
+  // Only use it on native where it's needed for keyboard handling inside bottom sheets
+  const InputComponent = variant === "sheet" && Platform.OS !== "web" ? BottomSheetTextInput : TextInput;
+
   return (
     <View style={styles.container}>
-      <BottomSheetTextInput
+      <InputComponent
+        testID="composer-input"
         style={[styles.input, { height: inputHeight }]}
         value={text}
         onChangeText={handleChangeText}
@@ -62,6 +68,7 @@ export function Composer({ onSend, isSubmitting }: Props) {
         accessibilityLabel="Message input"
       />
       <Pressable
+        testID="composer-send-button"
         onPress={handleSend}
         disabled={isDisabled}
         style={[styles.sendButton, isDisabled && styles.sendButtonDisabled]}

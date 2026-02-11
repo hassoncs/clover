@@ -7,48 +7,7 @@ import type { GameDefinition } from "@slopcade/shared";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { EditorProvider } from "@/components/editor/EditorProvider";
 import { EditorTopBar } from "@/components/editor/EditorTopBar";
-import { BottomSheetHost } from "@/components/editor/BottomSheetHost";
-import { FileTabBar } from "@/components/editor/FileTabBar";
-import { FileTree } from "@/components/editor/FileTree";
-import { FileViewer } from "@/components/editor/FileViewer";
-import { useWorkspaceFiles } from "@/components/editor/useWorkspaceFiles";
-
-
-function WorkspacePane({ gameId }: { gameId: string }) {
-  const [showSidebar, setShowSidebar] = useState(false);
-  const {
-    files, isLoadingFiles, openTabs, activeFile, 
-    activeFileContent, isLoadingContent,
-    openFile, closeTab, setActiveFile,
-  } = useWorkspaceFiles(gameId !== 'preview' ? gameId : null);
-
-  return (
-    <View style={{ flex: 1, flexDirection: 'column' }}>
-      <FileTabBar
-        tabs={openTabs.map(f => ({ filename: f, isActive: f === activeFile }))}
-        onSelectTab={setActiveFile}
-        onCloseTab={closeTab}
-        onToggleSidebar={() => setShowSidebar(!showSidebar)}
-        isSidebarOpen={showSidebar}
-      />
-      <View style={{ flex: 1, flexDirection: 'row' }}>
-        {showSidebar && (
-          <FileTree
-            files={files}
-            activeFile={activeFile}
-            onSelectFile={openFile}
-            isLoading={isLoadingFiles}
-          />
-        )}
-        <FileViewer
-          filename={activeFile}
-          content={activeFileContent}
-          isLoading={isLoadingContent}
-        />
-      </View>
-    </View>
-  );
-}
+import { ResponsiveEditorLayout } from "@/components/editor/ResponsiveEditorLayout";
 
 export default function EditorScreen() {
   const router = useRouter();
@@ -139,8 +98,7 @@ export default function EditorScreen() {
           }
         >
           <EditorTopBar />
-          <WorkspacePane gameId={id ?? 'preview'} />
-          <BottomSheetHost />
+          <ResponsiveEditorLayout />
         </EditorProvider>
       </View>
     </GestureHandlerRootView>

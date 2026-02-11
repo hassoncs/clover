@@ -21,7 +21,6 @@ export function EditorTopBar() {
     isDirty,
     isEphemeral,
     ephemeralSource,
-    toggleAIRunPanel,
   } = useEditor();
 
   const handleBack = () => {
@@ -66,6 +65,7 @@ export function EditorTopBar() {
       style={{ paddingTop: insets.top, height: 56 + insets.top }}
     >
       <Pressable
+        testID="editor-back-button"
         className="w-10 h-10 items-center justify-center rounded-lg active:bg-gray-700"
         onPress={handleBack}
       >
@@ -104,13 +104,6 @@ export function EditorTopBar() {
       </View>
 
       <View className="flex-row gap-2">
-        <Pressable
-          className="px-4 py-2 rounded-lg active:opacity-80 bg-purple-600"
-          onPress={toggleAIRunPanel}
-        >
-          <Text className="text-white font-bold text-sm">✨ AI</Text>
-        </Pressable>
-
         {(isEphemeral || isDirty) && (
           <Pressable
             className={`px-4 py-2 rounded-lg active:opacity-80 ${
@@ -130,6 +123,7 @@ export function EditorTopBar() {
         )}
 
         <Pressable
+          testID="editor-play-button"
           className={`px-4 py-2 rounded-lg active:opacity-80 ${
             mode === "playtest" ? "bg-green-600" : "bg-indigo-600"
           }`}

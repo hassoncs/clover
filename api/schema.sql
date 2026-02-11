@@ -812,3 +812,13 @@ CREATE TABLE IF NOT EXISTS notifications (
 
 CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_notifications_actor ON notifications(actor_id);
+
+-- =============================================================================
+-- DEV SEED DATA
+-- =============================================================================
+
+INSERT OR IGNORE INTO users (id, email, display_name, created_at, updated_at)
+VALUES ('00000000-0000-0000-0000-000000000000', 'dev@localhost', 'Dev User', 1700000000000, 1700000000000);
+
+INSERT OR REPLACE INTO user_wallets (user_id, balance_micros, lifetime_earned_micros, lifetime_spent_micros, created_at, updated_at)
+VALUES ('00000000-0000-0000-0000-000000000000', 999999999, 999999999, 0, 1700000000000, 1700000000000);

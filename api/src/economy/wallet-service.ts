@@ -48,6 +48,8 @@ export class WalletService {
    */
   async getOrCreateWallet(userId: string): Promise<UserWallet> {
     const now = Date.now();
+    const DEV_USER_ID = '00000000-0000-0000-0000-000000000000';
+    const DEV_BALANCE = 1_000_000_000_000;
     
     // Try to get existing wallet
     const existing = await this.db
@@ -67,16 +69,16 @@ export class WalletService {
       };
     }
     
-    // Create new wallet with ZERO balance (credits come from signup code)
+    const initialBalance = userId === DEV_USER_ID ? DEV_BALANCE : 0;
     await this.db.prepare(`
       INSERT INTO user_wallets (user_id, balance_micros, lifetime_earned_micros, lifetime_spent_micros, created_at, updated_at)
-      VALUES (?, 0, 0, 0, ?, ?)
-    `).bind(userId, now, now).run();
+      VALUES (?, ?, ?, 0, ?, ?)
+    `).bind(userId, initialBalance, initialBalance, now, now).run();
     
     return {
       userId,
-      balanceMicros: 0,
-      lifetimeEarnedMicros: 0,
+      balanceMicros: initialBalance,
+      lifetimeEarnedMicros: initialBalance,
       lifetimeSpentMicros: 0,
       lastDailyClaimAt: null,
       createdAt: now,

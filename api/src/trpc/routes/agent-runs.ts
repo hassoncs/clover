@@ -280,7 +280,7 @@ export const agentRunsRouter = router({
 
       const coordinatorId = ctx.env.RUN_COORDINATOR.idFromName(run.id);
       const coordinator = ctx.env.RUN_COORDINATOR.get(coordinatorId);
-      const startResponse = await coordinator.fetch('https://run-coordinator/internal/start', {
+      const startResponse = await coordinator.fetch(`https://run-coordinator/internal/start?runId=${encodeURIComponent(run.id)}`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({

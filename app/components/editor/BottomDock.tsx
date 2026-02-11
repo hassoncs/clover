@@ -12,6 +12,7 @@ interface DockItem {
 }
 
 const DOCK_ITEMS: DockItem[] = [
+  { id: "chat", icon: "💬", label: "Chat", tab: "chat" },
   { id: "gallery", icon: "🎨", label: "Assets", tab: "gallery" },
   { id: "add", icon: "➕", label: "Add", tab: "assets" },
   { id: "edit", icon: "✏️", label: "Edit", tab: "properties", requiresSelection: true },

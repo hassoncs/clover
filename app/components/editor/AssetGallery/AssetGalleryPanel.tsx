@@ -62,7 +62,6 @@ export function AssetGalleryPanel({
   const { gameId, document, setActiveAssetPack } = useEditor();
   const isPreviewMode = gameId === 'preview';
   
-  const [mode, setMode] = useState<Mode>('entities');
   const [selectedPackId, setSelectedPackId] = useState<string | undefined>(
     document.assetSystem?.activePackId
   );
@@ -98,7 +97,7 @@ export function AssetGalleryPanel({
   // UI Component packs query
   const { data: uiPacks, isLoading: isLoadingUIPacks } = trpcReact.uiComponents.listUIComponentPacks.useQuery(
     { gameId },
-    { enabled: !isPreviewMode && mode === 'ui-components' }
+    { enabled: false }
   );
 
   // Generate UI component mutation
@@ -407,175 +406,6 @@ export function AssetGalleryPanel({
   const hasNoPacks = !isLoadingPacks && packList.length === 0;
   const showQuickCreate = hasNoPacks && !isPreviewMode;
 
-  // Mode switcher component
-  const renderModeSwitcher = () => (
-    <View style={styles.modeSwitcher}>
-      <Pressable
-        style={[styles.modeTab, mode === 'entities' && styles.modeTabActive]}
-        onPress={() => setMode('entities')}
-      >
-        <Text style={[styles.modeTabText, mode === 'entities' && styles.modeTabTextActive]}>
-          Entities
-        </Text>
-      </Pressable>
-      <Pressable
-        style={[styles.modeTab, mode === 'ui-components' && styles.modeTabActive]}
-        onPress={() => setMode('ui-components')}
-      >
-        <Text style={[styles.modeTabText, mode === 'ui-components' && styles.modeTabTextActive]}>
-          UI Components
-        </Text>
-      </Pressable>
-    </View>
-  );
-
-  // UI Components mode content
-  const renderUIComponentsMode = () => {
-    if (isPreviewMode) {
-      return (
-        <View style={styles.previewModeContainer}>
-          <Text style={styles.previewModeEmoji}>💾</Text>
-          <Text style={styles.previewModeTitle}>Save Your Game First</Text>
-          <Text style={styles.previewModeText}>
-            To generate UI components, you need to save your game first.
-          </Text>
-        </View>
-      );
-    }
-
-    return (
-      <View style={styles.uiComponentsContainer}>
-        <View style={styles.uiSection}>
-          <Text style={styles.sectionTitle}>UI COMPONENT PACKS</Text>
-          {isLoadingUIPacks ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="small" color="#6366F1" />
-            </View>
-          ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.packList}>
-              {uiPacks?.map(pack => (
-                <Pressable
-                  key={pack.id}
-                  style={[
-                    styles.packChip,
-                    selectedUIPackId === pack.id && styles.packChipActive,
-                  ]}
-                  onPress={() => setSelectedUIPackId(pack.id)}
-                >
-                  <Text style={[
-                    styles.packChipText,
-                    selectedUIPackId === pack.id && styles.packChipTextActive,
-                  ]}>
-                    {pack.name}
-                  </Text>
-                </Pressable>
-              ))}
-              {(!uiPacks || uiPacks.length === 0) && (
-                <Text style={styles.emptyPackText}>No UI packs yet</Text>
-              )}
-            </ScrollView>
-          )}
-        </View>
-
-        <View style={styles.uiSection}>
-          <Text style={styles.sectionTitle}>COMPONENT TYPE</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.componentTypeList}>
-            {COMPONENT_TYPES.map(type => (
-              <Pressable
-                key={type.id}
-                style={[
-                  styles.componentTypeChip,
-                  uiComponentType === type.id && styles.componentTypeChipActive,
-                ]}
-                onPress={() => setUiComponentType(type.id)}
-              >
-                <Text style={[
-                  styles.componentTypeChipText,
-                  uiComponentType === type.id && styles.componentTypeChipTextActive,
-                ]}>
-                  {type.label}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
-        </View>
-
-        <View style={styles.uiSection}>
-          <Text style={styles.sectionTitle}>STATES ({selectedStates.length} selected)</Text>
-          <View style={styles.statesGrid}>
-            {UI_STATES.map(state => (
-              <Pressable
-                key={state.id}
-                style={[
-                  styles.stateChip,
-                  selectedStates.includes(state.id) && styles.stateChipActive,
-                ]}
-                onPress={() => toggleState(state.id)}
-              >
-                <View style={[
-                  styles.checkbox,
-                  selectedStates.includes(state.id) && styles.checkboxActive,
-                ]}>
-                  {selectedStates.includes(state.id) && (
-                    <Text style={styles.checkmark}>✓</Text>
-                  )}
-                </View>
-                <Text style={[
-                  styles.stateChipText,
-                  selectedStates.includes(state.id) && styles.stateChipTextActive,
-                ]}>
-                  {state.label}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.uiSection}>
-          <Text style={styles.sectionTitle}>THEME</Text>
-          <TextInput
-            style={styles.themeInput}
-            placeholder="Describe the visual theme (e.g., 'dark sci-fi button with neon glow')"
-            placeholderTextColor="#6B7280"
-            value={uiTheme}
-            onChangeText={setUiTheme}
-            multiline
-            numberOfLines={3}
-          />
-        </View>
-
-        <Pressable
-          style={[
-            styles.generateButton,
-            (isGeneratingUI || selectedStates.length === 0 || !uiTheme.trim()) && styles.generateButtonDisabled,
-          ]}
-          onPress={handleGenerateUIComponent}
-          disabled={isGeneratingUI || selectedStates.length === 0 || !uiTheme.trim()}
-        >
-          {isGeneratingUI ? (
-            <View style={styles.generateButtonContent}>
-              <ActivityIndicator size="small" color="#FFFFFF" />
-              <Text style={styles.generateButtonText}>Generating...</Text>
-            </View>
-          ) : (
-            <Text style={styles.generateButtonText}>
-              Generate {COMPONENT_TYPES.find(c => c.id === uiComponentType)?.label} ({selectedStates.length} states)
-            </Text>
-          )}
-        </Pressable>
-      </View>
-    );
-  };
-
-  if (isPreviewMode && mode === 'ui-components') {
-    return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        {renderModeSwitcher()}
-        {renderUIComponentsMode()}
-      </ScrollView>
-    );
-  }
-
   if (isPreviewMode) {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -592,18 +422,12 @@ export function AssetGalleryPanel({
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {renderModeSwitcher()}
-
-      {mode === 'ui-components' ? (
-        renderUIComponentsMode()
-      ) : (
-        <>
-          <View style={styles.header}>
-            <Text style={styles.title}>Asset Gallery</Text>
-            <Text style={styles.subtitle}>
-              {coverage.covered}/{coverage.total} templates have assets
-            </Text>
-          </View>
+      <View style={styles.header}>
+        <Text style={styles.title}>Asset Gallery</Text>
+        <Text style={styles.subtitle}>
+          {coverage.covered}/{coverage.total} templates have assets
+        </Text>
+      </View>
 
           {showQuickCreate ? (
             <QuickGenerationForm
@@ -698,8 +522,6 @@ export function AssetGalleryPanel({
             isLoading={isLoading}
             onTemplatePress={handleTemplatePress}
           />
-        </>
-      )}
 
       <AssetPackSelector
         visible={packSelectorVisible}

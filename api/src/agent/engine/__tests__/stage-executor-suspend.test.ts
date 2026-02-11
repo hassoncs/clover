@@ -19,10 +19,6 @@ function createTestContext(overrides: Partial<StageExecutionContext> = {}): Stag
     stepId: 'test-step-id',
     stepIndex: 1,
     stage: 'planning',
-    planningDoc: 'A solid planning document with content.',
-    gameDefinition: null,
-    templates: [],
-    existingGames: [],
     previousOutputs: {},
     ...overrides,
   };
@@ -135,6 +131,7 @@ describe('StageExecutor suspend/resume', () => {
       expect(result.suspendedConversation!.pendingToolName).toBe('askUser');
       expect(result.suspendedConversation!.messagesJson).toBeTruthy();
       expect(result.suspendedConversation!.pendingQuestionsJson).toBeTruthy();
+      expect(result.responseText).toBe('');
 
       const parsedQuestions = JSON.parse(result.suspendedConversation!.pendingQuestionsJson);
       expect(parsedQuestions.questions[0].question).toBe('What theme do you want?');
@@ -186,24 +183,26 @@ describe('StageExecutor suspend/resume', () => {
       mockGenerateText.mockResolvedValue(createNormalResult() as any);
 
       const executor = createExecutor();
-      const context = createTestContext({ planningDoc: 'Non-empty planning doc' });
+      const context = createTestContext();
       const result = await executor.executeStage('planning', context);
 
       expect(result.status).toBe('succeeded');
       expect(result.stage).toBe('planning');
       expect(result.validation.valid).toBe(true);
+      expect(result.responseText).toBe('Done updating the plan.');
       expect(result.suspendedConversation).toBeUndefined();
     });
 
-    it('returns failed when validation fails', async () => {
-      mockGenerateText.mockResolvedValue(createNormalResult() as any);
+    it('returns failed when generateText throws', async () => {
+      mockGenerateText.mockRejectedValue(new Error('Generation failed'));
 
       const executor = createExecutor();
-      const context = createTestContext({ planningDoc: '' });
+      const context = createTestContext();
       const result = await executor.executeStage('planning', context);
 
       expect(result.status).toBe('failed');
       expect(result.validation.valid).toBe(false);
+      expect(result.responseText).toBe('');
       expect(result.suspendedConversation).toBeUndefined();
     });
 
@@ -245,7 +244,7 @@ describe('StageExecutor suspend/resume', () => {
       mockGenerateText.mockResolvedValue(multiStepResult as any);
 
       const executor = createExecutor();
-      const context = createTestContext({ planningDoc: 'Non-empty' });
+      const context = createTestContext();
       const result = await executor.executeStage('planning', context);
 
       expect(result.status).toBe('succeeded');
@@ -258,7 +257,7 @@ describe('StageExecutor suspend/resume', () => {
       mockGenerateText.mockResolvedValue(createNormalResult() as any);
 
       const executor = createExecutor();
-      const context = createTestContext({ planningDoc: 'Non-empty planning doc' });
+      const context = createTestContext();
       const checkpoint = {
         messagesJson: JSON.stringify([
           { role: 'assistant', content: 'I need to ask the user some questions.' },
@@ -304,7 +303,7 @@ describe('StageExecutor suspend/resume', () => {
       mockGenerateText.mockResolvedValue(createNormalResult() as any);
 
       const executor = createExecutor();
-      const context = createTestContext({ planningDoc: 'Non-empty' });
+      const context = createTestContext();
       const checkpoint = {
         messagesJson: JSON.stringify([
           { role: 'assistant', content: 'Question time.' },
@@ -324,7 +323,7 @@ describe('StageExecutor suspend/resume', () => {
       mockGenerateText.mockResolvedValue(createNormalResult() as any);
 
       const executor = createExecutor();
-      const context = createTestContext({ planningDoc: 'Non-empty' });
+      const context = createTestContext();
       const checkpoint = {
         messagesJson: JSON.stringify([
           { role: 'assistant', content: 'Asking.' },
@@ -607,7 +606,7 @@ describe('StageExecutor suspend/resume', () => {
       mockGenerateText.mockResolvedValue(createNormalResult() as any);
 
       const executor = createExecutor();
-      const result = await executor.resumeStage('planning', createTestContext({ planningDoc: 'Non-empty' }), {
+      const result = await executor.resumeStage('planning', createTestContext(), {
         messagesJson: JSON.stringify([{ role: 'assistant', content: 'Hi' }]),
         pendingToolCallId: 'tc-meta-resume',
         answerText: 'Answer',

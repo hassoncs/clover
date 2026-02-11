@@ -13,16 +13,14 @@ function getApiUrl(): string {
 }
 
 async function getAuthToken(): Promise<string | null> {
-  if (!supabase) {
-    return null;
+  if (supabase) {
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.access_token) return data.session.access_token;
+    } catch { }
   }
-
-  try {
-    const { data } = await supabase.auth.getSession();
-    return data.session?.access_token ?? null;
-  } catch {
-    return null;
-  }
+  if (__DEV__) return 'dev-token';
+  return null;
 }
 
 export function TRPCProvider({ children }: { children: ReactNode }) {

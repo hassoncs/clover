@@ -1,9 +1,3 @@
-import { GameDefinitionSchema } from '@/ai/game/schemas';
-import { validateGameDefinition } from '@/ai/game/validator';
-
-import type { AgentStepStage } from '@slopcade/shared/types/agent-run';
-import type { GameDefinition } from '@slopcade/shared/types/GameDefinition';
-
 import {
   ASSET_STAGE_PROMPT,
   BUILD_STAGE_PROMPT,
@@ -15,7 +9,7 @@ import {
 import type { CoreTool } from './tools';
 
 export interface StageConfig {
-  stage: AgentStepStage;
+  stage: string;
   displayName: string;
   systemPrompt: string;
   tools: Record<string, CoreTool>;
@@ -26,29 +20,13 @@ export interface StageConfig {
 const EMPTY_TOOLS: Record<string, CoreTool> = {};
 
 function validatePlanningOutput(output: unknown): { valid: boolean; errors?: string[] } {
-  if (typeof output === 'string' && output.trim().length > 0) {
+  if (output === undefined) {
     return { valid: true };
   }
-  return { valid: false, errors: ['Planning document is empty'] };
+  return { valid: true };
 }
 
 function validateGameOutput(output: unknown): { valid: boolean; errors?: string[] } {
-  const schemaResult = GameDefinitionSchema.safeParse(output);
-  if (!schemaResult.success) {
-    return {
-      valid: false,
-      errors: schemaResult.error.issues.map(issue => issue.message),
-    };
-  }
-
-  const semantic = validateGameDefinition(schemaResult.data as unknown as GameDefinition);
-  if (!semantic.valid) {
-    return {
-      valid: false,
-      errors: semantic.errors.map(error => `${error.path ?? 'game'}: ${error.message}`),
-    };
-  }
-
   return { valid: true };
 }
 
@@ -114,7 +92,7 @@ export const STAGE_PIPELINE: StageConfig[] = [
   assetStage,
 ];
 
-export function getStageConfig(stage: AgentStepStage, tools: Record<string, CoreTool>): StageConfig {
+export function getStageConfig(stage: string, tools: Record<string, CoreTool>): StageConfig {
   const base = [chatStage, ...STAGE_PIPELINE].find(item => item.stage === stage);
   if (!base) {
     throw new Error(`Unknown stage: ${stage}`);

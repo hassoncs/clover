@@ -122,6 +122,10 @@ export function useCreateGameChat(threadId: string | null, gameId: string | null
   const submitAnswerMutation = trpc.agentRuns.submitAnswer.useMutation();
   const submitUserAnswerMutation = trpc.agentRuns.submitUserAnswer.useMutation();
   const cancelRunMutation = trpc.agentRuns.cancelRun.useMutation();
+  
+  const balanceQuery = trpc.economy.getBalance.useQuery(undefined, {
+    refetchInterval: 5000,
+  });
 
   useEffect(() => {
     if (eventsQuery.data?.events) {
@@ -183,6 +187,18 @@ export function useCreateGameChat(threadId: string | null, gameId: string | null
 
     if (!targetThreadId || !targetGameId) return;
 
+    // Check balance before attempting to create a run
+    if (balanceQuery.data?.balanceMicros === 0) {
+      setMessages(prev => [...prev, {
+        id: crypto.randomUUID(),
+        role: 'system',
+        type: 'error',
+        text: 'Insufficient balance. Please add Sparks to continue.',
+        timestamp: Date.now(),
+      }]);
+      return;
+    }
+
     setIsSending(true);
     const tempId = crypto.randomUUID();
     setMessages(prev => [...prev, {
@@ -207,19 +223,21 @@ export function useCreateGameChat(threadId: string | null, gameId: string | null
       await startRunMutation.mutateAsync({ runId: runResult.runId });
       
       eventsQuery.refetch();
-    } catch (e) {
-      console.error('Failed to send message:', e);
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      const errorText = error instanceof Error ? error.message : 'Failed to send message. Please try again.';
       setMessages(prev => [...prev, {
         id: crypto.randomUUID(),
         role: 'system',
         type: 'error',
-        text: 'Failed to send message. Please try again.',
+        text: errorText,
         timestamp: Date.now(),
       }]);
+      setRunId(null);
     } finally {
       setIsSending(false);
     }
-  }, [threadId, gameId, appendUserMessageMutation, createRunMutation, startRunMutation, eventsQuery]);
+  }, [threadId, gameId, appendUserMessageMutation, createRunMutation, startRunMutation, eventsQuery, balanceQuery.data]);
 
   const submitAnswer = useCallback(async (questionId: string, answer: string) => {
     if (!runId) return;

@@ -48,20 +48,30 @@ export class RunBillingBridge {
   }
 
   async persistCheckpoint(result: RunStepResult): Promise<void> {
-    await this.db.prepare(
-      `INSERT OR REPLACE INTO agent_checkpoints
-       (id, run_id, step_index, state_json, artifact_keys_json, created_at)
-       VALUES (?, ?, ?, ?, ?, ?)`
-    )
-      .bind(
-        result.checkpointId,
-        result.runId,
-        result.stepIndex,
-        result.checkpointStateJson ?? JSON.stringify({ status: result.status, stepIndex: result.stepIndex }),
-        result.checkpointArtifactKeysJson ?? null,
-        result.completedAt
+    try {
+      await this.db.prepare(
+        `INSERT OR REPLACE INTO agent_checkpoints
+         (id, run_id, step_index, state_json, artifact_keys_json, created_at)
+         VALUES (?, ?, ?, ?, ?, ?)`
       )
-      .run();
+        .bind(
+          result.checkpointId,
+          result.runId,
+          result.stepIndex,
+          result.checkpointStateJson ?? JSON.stringify({ status: result.status, stepIndex: result.stepIndex }),
+          result.checkpointArtifactKeysJson ?? null,
+          result.completedAt
+        )
+        .run();
+    } catch (error) {
+      console.error('[RunBillingBridge] D1 INSERT agent_checkpoints failed', {
+        checkpointId: result.checkpointId,
+        runId: result.runId,
+        stepIndex: result.stepIndex,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
   }
 
   async updateStepStatus(result: RunStepResult): Promise<void> {

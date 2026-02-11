@@ -1,8 +1,6 @@
 import { generateText, stepCountIs } from 'ai';
 import type { LanguageModel, ModelMessage } from 'ai';
 
-import type { AgentStepStage } from '@slopcade/shared/types/agent-run';
-
 import { getStageConfig, STAGE_PIPELINE } from './stages';
 import { createStageTools, type StageExecutionContext } from './tools';
 
@@ -11,7 +9,7 @@ export interface StageProgressEvent {
   runId: string;
   stepId: string;
   stepIndex: number;
-  stage: AgentStepStage;
+  stage: string;
   attempt: number;
   message: string;
   timestamp: number;
@@ -23,10 +21,12 @@ export interface StageUsage {
 }
 
 export interface StageResult {
-  stage: AgentStepStage;
+  stage: string;
   status: 'succeeded' | 'failed' | 'suspended';
   attempts: number;
   outputArtifact: unknown;
+  responseText: string;
+  conversationMessagesJson?: string;
   validation: { valid: boolean; errors?: string[] };
   failureReason?: string;
   provider: string;
@@ -73,34 +73,11 @@ function extractUsage(usage: unknown): StageUsage {
   };
 }
 
-function getStageOutput(stage: AgentStepStage, context: StageExecutionContext): unknown {
-  if (stage === 'planning' || stage === 'chat') {
-    return context.planningDoc;
+function createPrompt(context: StageExecutionContext): string {
+  if (!context.userPrompt) {
+    return 'Continue the conversation.';
   }
-  return context.gameDefinition;
-}
-
-function createPrompt(stage: AgentStepStage, context: StageExecutionContext): string {
-  const baseContext = [
-    `runId: ${context.runId}`,
-    `stepId: ${context.stepId}`,
-    `stepIndex: ${context.stepIndex}`,
-    `stage: ${stage}`,
-    `userPrompt: ${context.userPrompt ?? 'No explicit prompt provided. Continue from planning + prior outputs.'}`,
-    `planningDoc: ${context.planningDoc || 'No planning doc yet.'}`,
-    `hasGameDefinition: ${context.gameDefinition !== null}`,
-    `previousOutputs: ${JSON.stringify(context.previousOutputs)}`,
-  ];
-
-  if (stage === 'planning') {
-    return `${baseContext.join('\n')}\n\nUpdate the planning document using tools. Return a short completion note.`;
-  }
-
-  if (stage === 'chat') {
-    return `${baseContext.join('\n')}\n\nRespond to the user and use tools as needed to read or write shared documents.`;
-  }
-
-  return `${baseContext.join('\n')}\n\nUse tools to produce a valid updated GameDefinition for this stage. Return a short completion note.`;
+  return context.userPrompt;
 }
 
 interface PendingAskUserToolCall {
@@ -154,7 +131,7 @@ export class StageExecutor {
     private readonly options: StageExecutorOptions = {},
   ) {}
 
-  async executeStage(stage: AgentStepStage, context: StageExecutionContext): Promise<StageResult> {
+  async executeStage(stage: string, context: StageExecutionContext): Promise<StageResult> {
     const tools = createStageTools(context);
     const config = getStageConfig(stage, tools);
 
@@ -181,13 +158,26 @@ export class StageExecutor {
       });
 
       try {
-        const result = await generateText({
-          model: this.model,
-          system: config.systemPrompt,
-          prompt: createPrompt(stage, context),
-          tools: config.tools,
-          stopWhen: stepCountIs(6),
-        });
+        const useMessages = !!context.conversationHistory;
+        const generateOptions = useMessages
+          ? {
+              model: this.model,
+              system: config.systemPrompt,
+              messages: context.conversationHistory!,
+              tools: config.tools,
+              stopWhen: stepCountIs(6),
+            }
+          : {
+              model: this.model,
+              system: config.systemPrompt,
+              prompt: createPrompt(context),
+              tools: config.tools,
+              stopWhen: stepCountIs(6),
+            };
+
+        const result = await generateText(generateOptions);
+        const responseText = result.text ?? '';
+        const conversationMessagesJson = JSON.stringify(result.response.messages);
 
         const usage = extractUsage(result.usage);
         totalPromptTokens += usage.promptTokens;
@@ -201,7 +191,9 @@ export class StageExecutor {
             stage,
             status: 'suspended',
             attempts: attempt,
-            outputArtifact: getStageOutput(stage, context),
+            outputArtifact: null,
+            responseText,
+            conversationMessagesJson,
             validation: { valid: false, errors: ['Suspended for user input'] },
             provider: this.provider,
             model: this.modelName,
@@ -211,7 +203,7 @@ export class StageExecutor {
             },
             costMicros: this.estimateCostMicros(totalPromptTokens, totalCompletionTokens),
             suspendedConversation: {
-              messagesJson: JSON.stringify(result.response.messages),
+              messagesJson: conversationMessagesJson,
               pendingToolCallId: pendingAskUser.toolCallId,
               pendingToolName: pendingAskUser.toolName,
               pendingQuestionsJson: JSON.stringify(pendingAskUser.args ?? pendingAskUser.input ?? null),
@@ -219,7 +211,7 @@ export class StageExecutor {
           };
         }
 
-        const output = getStageOutput(stage, context);
+        const output = null;
         const validation = config.validateOutput(output);
         lastValidation = validation;
 
@@ -237,6 +229,8 @@ export class StageExecutor {
             status: 'succeeded',
             attempts: attempt,
             outputArtifact: output,
+            responseText,
+            conversationMessagesJson,
             validation,
             provider: this.provider,
             model: this.modelName,
@@ -287,7 +281,8 @@ export class StageExecutor {
       stage,
       status: 'failed',
       attempts: config.maxRetries,
-      outputArtifact: getStageOutput(stage, context),
+      outputArtifact: null,
+      responseText: '',
       validation: lastValidation,
       failureReason,
       provider: this.provider,
@@ -301,7 +296,7 @@ export class StageExecutor {
   }
 
   async resumeStage(
-    stage: AgentStepStage,
+    stage: string,
     context: StageExecutionContext,
     checkpoint: {
       messagesJson: string;
@@ -347,6 +342,8 @@ export class StageExecutor {
         tools: config.tools,
         stopWhen: stepCountIs(6),
       });
+      const responseText = result.text ?? '';
+      const conversationMessagesJson = JSON.stringify(result.response.messages);
 
       const usage = extractUsage(result.usage);
       totalPromptTokens += usage.promptTokens;
@@ -360,7 +357,9 @@ export class StageExecutor {
           stage,
           status: 'suspended',
           attempts: 1,
-          outputArtifact: getStageOutput(stage, context),
+          outputArtifact: null,
+          responseText,
+          conversationMessagesJson,
           validation: { valid: false, errors: ['Suspended for user input'] },
           provider: this.provider,
           model: this.modelName,
@@ -370,7 +369,7 @@ export class StageExecutor {
           },
           costMicros: this.estimateCostMicros(totalPromptTokens, totalCompletionTokens),
           suspendedConversation: {
-            messagesJson: JSON.stringify(result.response.messages),
+            messagesJson: conversationMessagesJson,
             pendingToolCallId: pendingAskUser.toolCallId,
             pendingToolName: pendingAskUser.toolName,
             pendingQuestionsJson: JSON.stringify(pendingAskUser.args ?? pendingAskUser.input ?? null),
@@ -378,7 +377,7 @@ export class StageExecutor {
         };
       }
 
-      const output = getStageOutput(stage, context);
+      const output = null;
       const validation = config.validateOutput(output);
 
       return {
@@ -386,6 +385,8 @@ export class StageExecutor {
         status: validation.valid ? 'succeeded' : 'failed',
         attempts: 1,
         outputArtifact: output,
+        responseText,
+        conversationMessagesJson,
         validation,
         failureReason: validation.valid ? undefined : 'STAGE_VALIDATION_FAILED',
         provider: this.provider,
@@ -403,7 +404,8 @@ export class StageExecutor {
         stage,
         status: 'failed',
         attempts: 1,
-        outputArtifact: getStageOutput(stage, context),
+        outputArtifact: null,
+        responseText: '',
         validation: { valid: false, errors: [message] },
         failureReason: 'STAGE_GENERATION_ERROR',
         provider: this.provider,
@@ -445,7 +447,7 @@ export class StageExecutor {
   private async emit(event: {
     type: StageProgressEvent['type'];
     context: StageExecutionContext;
-    stage: AgentStepStage;
+    stage: string;
     attempt: number;
     message: string;
   }): Promise<void> {

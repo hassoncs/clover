@@ -1,4 +1,3 @@
-import { Panel, PanelGroup, PanelResizeHandle } from 'react-native-resizable-panels';
 import { View, StyleSheet, ViewStyle } from 'react-native';
 import { HierarchyPanel } from './HierarchyPanel';
 import { PropertiesPanel } from './PropertiesPanel';
@@ -11,23 +10,17 @@ interface SidebarProps {
 export function Sidebar({ style }: SidebarProps) {
   return (
     <View style={[styles.container, style]}>
-      <PanelGroup direction="vertical" autoSaveId="editor-sidebar-layout">
-        <Panel defaultSize={40} minSize={20} maxSize={60}>
-          <HierarchyPanel />
-        </Panel>
-        
-        <PanelResizeHandle style={styles.resizeHandle} />
-        
-        <Panel defaultSize={35} minSize={20}>
-          <PropertiesPanel />
-        </Panel>
-        
-        <PanelResizeHandle style={styles.resizeHandle} />
-        
-        <Panel defaultSize={25} minSize={10} collapsible>
-          <DebugPanel />
-        </Panel>
-      </PanelGroup>
+      <View style={styles.panel}>
+        <HierarchyPanel />
+      </View>
+      <View style={styles.divider} />
+      <View style={styles.panel}>
+        <PropertiesPanel />
+      </View>
+      <View style={styles.divider} />
+      <View style={styles.panelSmall}>
+        <DebugPanel />
+      </View>
     </View>
   );
 }
@@ -37,7 +30,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1F2937',
   },
-  resizeHandle: {
+  panel: {
+    flex: 2,
+  },
+  panelSmall: {
+    flex: 1,
+  },
+  divider: {
     height: 4,
     backgroundColor: '#374151',
   },

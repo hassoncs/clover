@@ -29,23 +29,34 @@ export class ChatEventStore {
 
     const seq = thread.last_event_seq;
 
-    await this.db
-      .prepare(
-        `INSERT INTO chat_events (id, thread_id, seq, event_type, role, content_json, run_id, parent_event_id, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .bind(
-        id,
-        params.threadId,
+    try {
+      await this.db
+        .prepare(
+          `INSERT INTO chat_events (id, thread_id, seq, event_type, role, content_json, run_id, parent_event_id, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        )
+        .bind(
+          id,
+          params.threadId,
+          seq,
+          params.eventType,
+          params.role,
+          JSON.stringify(params.payload),
+          params.runId ?? null,
+          params.parentEventId ?? null,
+          now
+        )
+        .run();
+    } catch (error) {
+      console.error('[ChatEventStore] D1 INSERT chat_events failed', {
+        threadId: params.threadId,
         seq,
-        params.eventType,
-        params.role,
-        JSON.stringify(params.payload),
-        params.runId ?? null,
-        params.parentEventId ?? null,
-        now
-      )
-      .run();
+        eventType: params.eventType,
+        runId: params.runId ?? null,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
 
     return {
       id,

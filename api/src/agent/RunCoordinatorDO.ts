@@ -237,13 +237,14 @@ export class RunCoordinatorDO extends DurableObject<Env> {
   }
 
   private resolveRunId(request?: Request): string {
-    if (!request) {
-      return this.ctx.id.toString();
+    if (request) {
+      const url = new URL(request.url);
+      const runIdParam = url.searchParams.get('runId');
+      if (runIdParam) {
+        return runIdParam;
+      }
     }
-    const url = new URL(request.url);
-    const parts = url.pathname.split('/').filter(Boolean);
-    const fromPath = parts[parts.length - 1];
-    return fromPath || this.ctx.id.toString();
+    return this.ctx.id.toString();
   }
 
   private async handleWebSocketUpgrade(): Promise<Response> {
@@ -890,6 +891,11 @@ export class RunCoordinatorDO extends DurableObject<Env> {
       await this.refreshLease();
 
       const executionContext = await this.loadRunExecutionContext();
+      const resumeStepRow = await this.env.DB
+        .prepare('SELECT id FROM agent_steps WHERE run_id = ? AND step_index = ?')
+        .bind(this.state.runId, stepIndex)
+        .first<{ id: string }>();
+      const resumeStepId = resumeStepRow?.id ?? `${this.state.runId}:step:${stepIndex}`;
       const workerId = this.env.RUN_STEP_WORKER.idFromName(this.state.runId);
       const worker = this.env.RUN_STEP_WORKER.get(workerId);
 
@@ -899,13 +905,14 @@ export class RunCoordinatorDO extends DurableObject<Env> {
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
             runId: this.state.runId,
-            stepId: `${this.state.runId}:step:${stepIndex}`,
+            stepId: resumeStepId,
             stepIndex,
             stage: this.getStage(stepIndex),
             tier: executionContext?.tier ?? 'free',
             answerText: formattedAnswer,
             gameTitle: executionContext?.game_title,
             gameDescription: executionContext?.game_description,
+            threadId: this.state.threadId,
           }),
         })
       );
@@ -1207,7 +1214,11 @@ export class RunCoordinatorDO extends DurableObject<Env> {
     }
 
     const planningConfig: StageGateConfig = getStageGateConfig('planning', PLANNING_STAGE_GATES_YAML);
-    const stepId = `${this.state.runId}:step:0`;
+    const stepRow = await this.env.DB
+      .prepare('SELECT id FROM agent_steps WHERE run_id = ? AND step_index = 0')
+      .bind(this.state.runId)
+      .first<{ id: string }>();
+    const stepId = stepRow?.id ?? `${this.state.runId}:step:0`;
     const now = Date.now();
 
     if (this.state.gateLoopIteration === 0) {
@@ -1248,8 +1259,6 @@ export class RunCoordinatorDO extends DurableObject<Env> {
         tier: executionContext.tier,
         env: {
           OPENROUTER_API_KEY: this.env.OPENROUTER_API_KEY,
-          OPENAI_API_KEY: this.env.OPENAI_API_KEY,
-          ANTHROPIC_API_KEY: this.env.ANTHROPIC_API_KEY,
         },
       }
     );
@@ -1350,7 +1359,6 @@ export class RunCoordinatorDO extends DurableObject<Env> {
       return;
     }
 
-    const stepId = `${this.state.runId}:step:${stepIndex}`;
     const stage: RunStepRequest['stage'] = this.getStage(stepIndex);
 
     if (stepIndex === 0 && this.state.rawPrompt !== null && stage === 'planning') {
@@ -1375,6 +1383,12 @@ export class RunCoordinatorDO extends DurableObject<Env> {
       });
       return;
     }
+
+    const stepRow = await this.env.DB
+      .prepare('SELECT id FROM agent_steps WHERE run_id = ? AND step_index = ?')
+      .bind(this.state.runId, stepIndex)
+      .first<{ id: string }>();
+    const stepId = stepRow?.id ?? `${this.state.runId}:step:${stepIndex}`;
 
     const request: RunStepRequest = {
       type: 'execute_step',

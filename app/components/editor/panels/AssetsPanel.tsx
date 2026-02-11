@@ -11,11 +11,7 @@ const BASIC_SHAPES = [
   { id: "triangle", icon: "🔺", label: "Triangle", physicsShape: "polygon" as const, spriteType: "polygon" as const },
 ];
 
-interface AssetsPanelProps {
-  onOpenAIModal?: () => void;
-}
-
-export function AssetsPanel({ onOpenAIModal }: AssetsPanelProps) {
+export function AssetsPanel() {
   const { document, addEntity, addEntityFromTemplate, setSheetSnapPoint } = useEditor();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -157,10 +153,6 @@ export function AssetsPanel({ onOpenAIModal }: AssetsPanelProps) {
           ))}
         </View>
       </View>
-
-      <Pressable style={styles.generateButton} onPress={onOpenAIModal}>
-        <Text style={styles.generateButtonText}>Generate with AI</Text>
-      </Pressable>
     </View>
   );
 }
@@ -237,17 +229,5 @@ const styles = StyleSheet.create({
     color: "#D1D5DB",
     fontSize: 11,
     textAlign: "center",
-  },
-  generateButton: {
-    backgroundColor: "#4F46E5",
-    borderRadius: 8,
-    padding: 14,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  generateButtonText: {
-    color: "#FFFFFF",
-    fontSize: 14,
-    fontWeight: "600",
   },
 });

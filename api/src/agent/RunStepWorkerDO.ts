@@ -1,20 +1,24 @@
 import { DurableObject } from 'cloudflare:workers';
+import type { ModelMessage } from 'ai';
 
 import { createModelForTier, resolveTierConfig } from '@/ai/agent/tier-config';
+import { ArtifactService } from '@/agent/artifact-service';
 import { StageExecutor } from '@/agent/engine/stage-executor';
 import type { StageExecutionContext } from '@/agent/engine/tools';
 import { ChatEventStore } from '@/chat/chat-event-store';
 import type { AgentStepStage, AgentTier } from '@slopcade/shared/types/agent-run';
-import type { GameDefinition } from '@slopcade/shared/types/GameDefinition';
 
 import type { RunStepRequest, RunStepResult } from './types';
 
 type DurableObjectNamespace = import('@cloudflare/workers-types').DurableObjectNamespace;
 type D1Database = import('@cloudflare/workers-types').D1Database;
+type R2Bucket = import('@cloudflare/workers-types').R2Bucket;
+type DurableObjectState = import('@cloudflare/workers-types').DurableObjectState;
 
 interface Env {
   RUN_COORDINATOR: DurableObjectNamespace;
   DB?: D1Database;
+  ASSETS?: R2Bucket;
   OPENROUTER_API_KEY?: string;
   OPENAI_API_KEY?: string;
   ANTHROPIC_API_KEY?: string;
@@ -38,9 +42,8 @@ interface StepCheckpoint {
 }
 
 interface WorkerExecutionState {
-  planningDoc: string;
-  gameDefinition: GameDefinition | null;
-  previousOutputs: StageExecutionContext['previousOutputs'];
+  previousOutputs: Record<string, unknown>;
+  conversationMessagesJson?: string;
 }
 
 interface ConversationCheckpoint {
@@ -71,6 +74,15 @@ function createErrorMessage(reason: string | undefined, errors: string[] | undef
 }
 
 export class RunStepWorkerDO extends DurableObject<Env> {
+  private readonly artifactService?: ArtifactService;
+
+  constructor(ctx: DurableObjectState, env: Env) {
+    super(ctx, env);
+    if (env.ASSETS && env.DB) {
+      this.artifactService = new ArtifactService(env.ASSETS, env.DB);
+    }
+  }
+
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
     if (request.method === 'POST' && url.pathname.endsWith('/internal/execute')) {
@@ -143,23 +155,37 @@ export class RunStepWorkerDO extends DurableObject<Env> {
       const tierConfig = resolveTierConfig(payload.tier ?? 'free');
       const model = createModelForTier(tierConfig, {
         OPENROUTER_API_KEY: this.env.OPENROUTER_API_KEY,
-        OPENAI_API_KEY: this.env.OPENAI_API_KEY,
-        ANTHROPIC_API_KEY: this.env.ANTHROPIC_API_KEY,
       });
 
-      const state = await this.loadState(payload);
+      const state = await this.loadState();
+
+      let conversationHistory: ModelMessage[] | undefined;
+      if (payload.stage === 'chat' && payload.threadId && this.env.DB) {
+        if (state.conversationMessagesJson) {
+          try {
+            const saved = JSON.parse(state.conversationMessagesJson) as ModelMessage[];
+            const latestUserMsg = await this.getLatestUserMessage(payload.threadId);
+            conversationHistory = latestUserMsg
+              ? [...saved, { role: 'user' as const, content: latestUserMsg }]
+              : saved;
+          } catch {
+            conversationHistory = await this.buildConversationFromChatEvents(payload.threadId);
+          }
+        } else {
+          conversationHistory = await this.buildConversationFromChatEvents(payload.threadId);
+        }
+      }
+
       const context: StageExecutionContext = {
         runId: payload.runId,
         stepId: payload.stepId,
         stepIndex: payload.stepIndex,
         stage: payload.stage,
         gameId: payload.gameId,
-        userPrompt: `${payload.gameTitle ?? 'Untitled game'}: ${payload.gameDescription ?? ''}`.trim(),
-        planningDoc: state.planningDoc,
-        gameDefinition: state.gameDefinition,
-        templates: state.gameDefinition ? Object.keys(state.gameDefinition.templates ?? {}) : [],
-        existingGames: [],
+        userPrompt: `${payload.gameTitle ?? 'Untitled'}: ${payload.gameDescription ?? ''}`.trim(),
         previousOutputs: state.previousOutputs,
+        artifactService: this.artifactService,
+        conversationHistory,
       };
 
       const executor = new StageExecutor(
@@ -174,6 +200,32 @@ export class RunStepWorkerDO extends DurableObject<Env> {
       const execution = await executor.executeStage(payload.stage, context);
 
       if (execution.status === 'suspended' && execution.suspendedConversation) {
+        if (payload.threadId && this.env.DB) {
+          const chatStore = new ChatEventStore(this.env.DB);
+          const questionsData = execution.suspendedConversation.pendingQuestionsJson;
+          let parsedQuestions: unknown;
+
+          try {
+            parsedQuestions = JSON.parse(questionsData);
+          } catch {
+            parsedQuestions = null;
+          }
+
+          await chatStore.appendEvent({
+            threadId: payload.threadId,
+            eventType: 'user_question',
+            role: 'assistant',
+            payload: {
+              version: 1,
+              type: 'user_question',
+              batchId: `${payload.runId}:q:${payload.stepIndex}`,
+              questions: parsedQuestions,
+              runId: payload.runId,
+            },
+            runId: payload.runId,
+          });
+        }
+
         const conversationKey = `conversation:${payload.stepIndex}`;
         await this.ctx.storage.put<ConversationCheckpoint>(conversationKey, {
           messagesJson: execution.suspendedConversation.messagesJson,
@@ -181,8 +233,6 @@ export class RunStepWorkerDO extends DurableObject<Env> {
           pendingToolName: execution.suspendedConversation.pendingToolName,
           pendingQuestionsJson: execution.suspendedConversation.pendingQuestionsJson,
           stageContextJson: JSON.stringify({
-            planningDoc: context.planningDoc,
-            gameDefinition: context.gameDefinition,
             previousOutputs: context.previousOutputs,
           }),
           promptTokensSoFar: execution.usage.promptTokens,
@@ -192,9 +242,8 @@ export class RunStepWorkerDO extends DurableObject<Env> {
         });
 
         await this.persistState({
-          planningDoc: context.planningDoc,
-          gameDefinition: context.gameDefinition,
           previousOutputs: context.previousOutputs,
+          conversationMessagesJson: execution.conversationMessagesJson,
         });
 
         const result: RunStepResult = {
@@ -220,9 +269,6 @@ export class RunStepWorkerDO extends DurableObject<Env> {
 
       if (payload.threadId && this.env.DB && execution.status === 'succeeded') {
         const chatStore = new ChatEventStore(this.env.DB);
-        const outputText = typeof execution.outputArtifact === 'string'
-          ? execution.outputArtifact
-          : JSON.stringify(execution.outputArtifact);
         await chatStore.appendEvent({
           threadId: payload.threadId,
           eventType: 'assistant_message',
@@ -230,7 +276,7 @@ export class RunStepWorkerDO extends DurableObject<Env> {
           payload: {
             version: 1,
             type: 'assistant_message',
-            text: outputText,
+            text: execution.responseText,
             runId: payload.runId,
           },
           runId: payload.runId,
@@ -240,9 +286,8 @@ export class RunStepWorkerDO extends DurableObject<Env> {
       context.previousOutputs[payload.stage] = execution.outputArtifact;
 
       await this.persistState({
-        planningDoc: context.planningDoc,
-        gameDefinition: context.gameDefinition,
         previousOutputs: context.previousOutputs,
+        conversationMessagesJson: execution.conversationMessagesJson,
       });
 
       const errorMessage = execution.status === 'failed'
@@ -377,6 +422,7 @@ export class RunStepWorkerDO extends DurableObject<Env> {
       gameId?: string;
       gameTitle?: string;
       gameDescription?: string | null;
+      threadId?: string | null;
     };
 
     const conversationKey = `conversation:${body.stepIndex}`;
@@ -390,9 +436,36 @@ export class RunStepWorkerDO extends DurableObject<Env> {
     const tierConfig = resolveTierConfig(body.tier ?? 'free');
     const model = createModelForTier(tierConfig, {
       OPENROUTER_API_KEY: this.env.OPENROUTER_API_KEY,
-      OPENAI_API_KEY: this.env.OPENAI_API_KEY,
-      ANTHROPIC_API_KEY: this.env.ANTHROPIC_API_KEY,
     });
+
+    let userPrompt = `${body.gameTitle ?? 'Untitled'}: ${body.gameDescription ?? ''}`.trim();
+
+    if (body.stage === 'chat' && body.threadId && this.env.DB) {
+      const chatHistory = await this.env.DB
+        .prepare('SELECT event_type, content_json FROM chat_events WHERE thread_id = ? ORDER BY seq ASC')
+        .bind(body.threadId)
+        .all<{ event_type: string; content_json: string }>();
+
+      if (chatHistory.results.length > 0) {
+        const conversationParts: string[] = [];
+        for (const row of chatHistory.results) {
+          try {
+            const content = JSON.parse(row.content_json) as { text?: string };
+            if (row.event_type === 'user_message' && content.text) {
+              conversationParts.push(`User: ${content.text}`);
+            } else if (row.event_type === 'assistant_message' && content.text) {
+              conversationParts.push(`Assistant: ${content.text}`);
+            }
+          } catch {
+            continue;
+          }
+        }
+
+        if (conversationParts.length > 0) {
+          userPrompt = conversationParts.join('\n\n');
+        }
+      }
+    }
 
     const context: StageExecutionContext = {
       runId: body.runId,
@@ -400,12 +473,9 @@ export class RunStepWorkerDO extends DurableObject<Env> {
       stepIndex: body.stepIndex,
       stage: body.stage,
       gameId: body.gameId,
-      userPrompt: `${body.gameTitle ?? 'Untitled game'}: ${body.gameDescription ?? ''}`.trim(),
-      planningDoc: stageContext.planningDoc,
-      gameDefinition: stageContext.gameDefinition,
-      templates: stageContext.gameDefinition ? Object.keys(stageContext.gameDefinition.templates ?? {}) : [],
-      existingGames: [],
+      userPrompt,
       previousOutputs: stageContext.previousOutputs,
+      artifactService: this.artifactService,
     };
 
     const executor = new StageExecutor(
@@ -428,14 +498,38 @@ export class RunStepWorkerDO extends DurableObject<Env> {
     const totalCostMicros = checkpoint.costMicrosSoFar + execution.costMicros;
 
     if (execution.status === 'suspended' && execution.suspendedConversation) {
+      if (body.threadId && this.env.DB) {
+        const chatStore = new ChatEventStore(this.env.DB);
+        const questionsData = execution.suspendedConversation.pendingQuestionsJson;
+        let parsedQuestions: unknown;
+
+        try {
+          parsedQuestions = JSON.parse(questionsData);
+        } catch {
+          parsedQuestions = null;
+        }
+
+        await chatStore.appendEvent({
+          threadId: body.threadId,
+          eventType: 'user_question',
+          role: 'assistant',
+          payload: {
+            version: 1,
+            type: 'user_question',
+            batchId: `${body.runId}:q:${body.stepIndex}`,
+            questions: parsedQuestions,
+            runId: body.runId,
+          },
+          runId: body.runId,
+        });
+      }
+
       await this.ctx.storage.put<ConversationCheckpoint>(conversationKey, {
         messagesJson: execution.suspendedConversation.messagesJson,
         pendingToolCallId: execution.suspendedConversation.pendingToolCallId,
         pendingToolName: execution.suspendedConversation.pendingToolName,
         pendingQuestionsJson: execution.suspendedConversation.pendingQuestionsJson,
         stageContextJson: JSON.stringify({
-          planningDoc: context.planningDoc,
-          gameDefinition: context.gameDefinition,
           previousOutputs: context.previousOutputs,
         }),
         promptTokensSoFar: totalPromptTokens,
@@ -445,10 +539,9 @@ export class RunStepWorkerDO extends DurableObject<Env> {
       });
 
       await this.persistState({
-        planningDoc: context.planningDoc,
-        gameDefinition: context.gameDefinition,
-        previousOutputs: context.previousOutputs,
-      });
+          previousOutputs: context.previousOutputs,
+          conversationMessagesJson: execution.conversationMessagesJson,
+        });
 
       const result: RunStepResult = {
         type: 'step_result',
@@ -471,12 +564,27 @@ export class RunStepWorkerDO extends DurableObject<Env> {
       return Response.json({ ok: true, status: 'suspended' });
     }
 
+    if (body.threadId && this.env.DB && execution.status === 'succeeded') {
+      const chatStore = new ChatEventStore(this.env.DB);
+      await chatStore.appendEvent({
+        threadId: body.threadId,
+        eventType: 'assistant_message',
+        role: 'assistant',
+        payload: {
+          version: 1,
+          type: 'assistant_message',
+          text: execution.responseText,
+          runId: body.runId,
+        },
+        runId: body.runId,
+      });
+    }
+
     context.previousOutputs[body.stage] = execution.outputArtifact;
 
     await this.persistState({
-      planningDoc: context.planningDoc,
-      gameDefinition: context.gameDefinition,
       previousOutputs: context.previousOutputs,
+      conversationMessagesJson: execution.conversationMessagesJson,
     });
 
     const completedAt = Date.now();
@@ -575,15 +683,13 @@ export class RunStepWorkerDO extends DurableObject<Env> {
     return Response.json({ checkpointId: null, stepIndex: null, stateJson: null });
   }
 
-  private async loadState(payload: WorkerRunStepRequest): Promise<WorkerExecutionState> {
+  private async loadState(): Promise<WorkerExecutionState> {
     const existing = await this.ctx.storage.get<WorkerExecutionState>(STATE_KEY);
     if (existing) {
       return existing;
     }
 
     return {
-      planningDoc: payload.planningDocJson ?? '',
-      gameDefinition: null,
       previousOutputs: {},
     };
   }
@@ -600,5 +706,42 @@ export class RunStepWorkerDO extends DurableObject<Env> {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(result),
     });
+  }
+
+  private async buildConversationFromChatEvents(threadId: string): Promise<ModelMessage[]> {
+    if (!this.env.DB) return [];
+
+    const rows = await this.env.DB
+      .prepare('SELECT event_type, content_json FROM chat_events WHERE thread_id = ? ORDER BY seq ASC')
+      .bind(threadId)
+      .all<{ event_type: string; content_json: string }>();
+
+    const messages: ModelMessage[] = [];
+    for (const row of rows.results) {
+      try {
+        const content = JSON.parse(row.content_json) as { text?: string };
+        if (row.event_type === 'user_message' && content.text) {
+          messages.push({ role: 'user', content: content.text });
+        } else if (row.event_type === 'assistant_message' && content.text) {
+          messages.push({ role: 'assistant', content: [{ type: 'text', text: content.text }] });
+        }
+      } catch { continue; }
+    }
+    return messages;
+  }
+
+  private async getLatestUserMessage(threadId: string): Promise<string | null> {
+    if (!this.env.DB) return null;
+
+    const row = await this.env.DB
+      .prepare('SELECT content_json FROM chat_events WHERE thread_id = ? AND event_type = ? ORDER BY seq DESC LIMIT 1')
+      .bind(threadId, 'user_message')
+      .first<{ content_json: string }>();
+
+    if (!row) return null;
+    try {
+      const content = JSON.parse(row.content_json) as { text?: string };
+      return content.text ?? null;
+    } catch { return null; }
   }
 }

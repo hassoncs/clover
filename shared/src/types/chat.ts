@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const ChatEventTypeSchema = z.enum([
   'user_message',
   'assistant_message',
+  'user_question',
   'tool_call',
   'tool_result',
   'file_updated',
@@ -23,6 +24,14 @@ export const AssistantMessagePayload = z.object({
   type: z.literal('assistant_message'),
   text: z.string(),
   model: z.string().optional(),
+  runId: z.string().optional(),
+});
+
+export const UserQuestionPayload = z.object({
+  version: z.literal(1),
+  type: z.literal('user_question'),
+  batchId: z.string(),
+  questions: z.unknown(),
   runId: z.string().optional(),
 });
 
@@ -74,6 +83,7 @@ export const ThreadForkedPayload = z.object({
 export const ChatEventPayloadSchema = z.discriminatedUnion('type', [
   UserMessagePayload,
   AssistantMessagePayload,
+  UserQuestionPayload,
   ToolCallPayload,
   ToolResultPayload,
   FileUpdatedPayload,

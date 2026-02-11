@@ -31,20 +31,30 @@ export class RunEventStore {
     state.updatedAt = event.timestamp;
 
     await this.storage.put(eventKey(nextSeq), event);
-    await this.db
-      .prepare(
-        `INSERT OR IGNORE INTO agent_events (id, run_id, seq, event_type, payload_json, created_at)
-         VALUES (?, ?, ?, ?, ?, ?)`
-      )
-      .bind(
-        `${state.runId}:event:${event.seq}`,
-        state.runId,
-        event.seq,
-        event.eventType,
-        JSON.stringify(event.payload),
-        event.timestamp
-      )
-      .run();
+    try {
+      await this.db
+        .prepare(
+          `INSERT OR IGNORE INTO agent_events (id, run_id, seq, event_type, payload_json, created_at)
+           VALUES (?, ?, ?, ?, ?, ?)`
+        )
+        .bind(
+          `${state.runId}:event:${event.seq}`,
+          state.runId,
+          event.seq,
+          event.eventType,
+          JSON.stringify(event.payload),
+          event.timestamp
+        )
+        .run();
+    } catch (error) {
+      console.error('[RunEventStore] D1 INSERT agent_events failed', {
+        runId: state.runId,
+        seq: event.seq,
+        eventType: event.eventType,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
 
     return event;
   }

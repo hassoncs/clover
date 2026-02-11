@@ -145,10 +145,12 @@ export function getMobileEffectLimits(tier: DeviceTier): MobileEffectLimits {
 }
 
 export function detectDeviceTier(): DeviceTier {
-  if (typeof window === 'undefined') return 'mid';
-
-  const width = window.screen.width;
-  const dpr = window.devicePixelRatio || 1;
+  const runtime = typeof globalThis !== 'undefined'
+    ? (globalThis as { window?: { screen?: { width?: number }; devicePixelRatio?: number } })
+    : null;
+  const width = runtime?.window?.screen?.width;
+  const dpr = runtime?.window?.devicePixelRatio ?? 1;
+  if (!width) return 'mid';
   const pixelCount = width * dpr;
 
   if (pixelCount > 2000) return 'high';

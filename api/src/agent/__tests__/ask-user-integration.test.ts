@@ -20,10 +20,6 @@ function createTestContext(overrides: Partial<StageExecutionContext> = {}): Stag
     stepId: 'test-step-id',
     stepIndex: 1,
     stage: 'planning',
-    planningDoc: 'A solid planning document with content.',
-    gameDefinition: null,
-    templates: [],
-    existingGames: [],
     previousOutputs: {},
     ...overrides,
   };
@@ -239,7 +235,7 @@ describe('ask-user integration', () => {
         pendingToolCallId: 'tc-1',
         pendingToolName: 'askUser',
         pendingQuestionsJson: JSON.stringify({ questions: [] }),
-        stageContextJson: JSON.stringify({ planningDoc: 'doc', gameDefinition: null, previousOutputs: {} }),
+        stageContextJson: JSON.stringify({ previousOutputs: {} }),
         promptTokensSoFar: 100,
         completionTokensSoFar: 50,
         costMicrosSoFar: 150,
@@ -262,8 +258,6 @@ describe('ask-user integration', () => {
       expect(typeof checkpoint.createdAt).toBe('number');
 
       const parsedStageContext = JSON.parse(checkpoint.stageContextJson);
-      expect(parsedStageContext).toHaveProperty('planningDoc');
-      expect(parsedStageContext).toHaveProperty('gameDefinition');
       expect(parsedStageContext).toHaveProperty('previousOutputs');
     });
   });
@@ -384,7 +378,7 @@ describe('ask-user integration', () => {
       );
 
       const executor = createExecutor(1000);
-      const context = createTestContext({ planningDoc: 'Non-empty planning doc' });
+      const context = createTestContext();
       const resumeResult = await executor.resumeStage('planning', context, {
         messagesJson: JSON.stringify([{ role: 'assistant', content: 'Asking questions.' }]),
         pendingToolCallId: 'tc-cost-resume',
@@ -571,7 +565,7 @@ describe('ask-user integration', () => {
       mockGenerateText.mockResolvedValue(createNormalResult() as any);
 
       const executor = createExecutor();
-      const context = createTestContext({ planningDoc: 'Non-empty planning doc' });
+      const context = createTestContext();
       const result = await executor.resumeStage('planning', context, {
         messagesJson: JSON.stringify([{ role: 'assistant', content: 'Second question answered.' }]),
         pendingToolCallId: 'tc-final',

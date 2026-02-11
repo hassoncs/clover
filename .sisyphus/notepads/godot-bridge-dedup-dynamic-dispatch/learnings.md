@@ -43,3 +43,9 @@ All 14 tests passing:
 ## Bridge Registry Checks
 
 - `bridge-registry.json` includes AI warning metadata fields (`_comment`, `_warning`, `_instructions`, `_howToModify`) that must be stripped during check-mode normalization to avoid false out-of-date errors.
+
+## E2E TypedBridgeClient Update
+
+- E2E tests now consume `tests/e2e/bridge/generated/TypedBridgeClient.ts` directly; legacy handwritten client removed.
+- When generated client lacks legacy methods, tests can use `callRpc` with raw method names to preserve coverage while staying on the generated client.
+- Spawn/physics/query calls now use typed `SpawnEntityRequest` and `Vec2` shapes (object params instead of positional numbers).

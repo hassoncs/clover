@@ -12,11 +12,17 @@ export function StageContainer() {
     setRuntimeKey((k) => k + 1);
   }, []);
 
+  if (!document || !document.world) {
+    return (
+      <View className="flex-1 bg-gray-800 items-center justify-center">
+        <ActivityIndicator size="large" color="#4CAF50" />
+      </View>
+    );
+  }
+
   const activePackId = document.assetSystem?.activePackId;
   const worldBounds = document.world.bounds ?? { width: 20, height: 12 };
   const pixelsPerMeter = document.world.pixelsPerMeter ?? 50;
-
-  console.log('[StageContainer] Render - activePackId:', activePackId, 'runtimeKey:', runtimeKey);
 
   return (
     <View className="flex-1 bg-gray-800">

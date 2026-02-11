@@ -60,6 +60,39 @@ Note: `--port` and `--no-bundler` are mutually exclusive. The port is communicat
 - **Binary Path**: `devmux` is available directly in the shell via `.envrc` (pointing to `node_modules/.bin`).
 - **Auto-loading**: The project uses `direnv` to automatically add project binaries to your PATH. If your shell doesn't load it on startup, ensure `eval "$(direnv export zsh)"` is in your shell config (already added to `~/.hassoncsShell/index.zsh`).
 
+## Browser Automation & Debugging
+
+When you need to debug something in the browser, verify UI behavior, scrape data, or take screenshots, **prefer `agent-browser` over Playwright MCP**.
+
+### Why agent-browser?
+- **Context-efficient**: Uses snapshot+refs pattern (returns 10-20 interactive elements vs thousands of DOM nodes)
+- **Stable references**: Element refs (`@e2`) survive UI changes better than CSS selectors
+- **Session persistence**: Maintains cookies, auth, and state across commands
+- **Better for agents**: Designed specifically for AI agent workflows
+
+### Basic workflow
+```bash
+# Navigate and capture snapshot
+agent-browser open http://localhost:8085
+agent-browser snapshot -i
+
+# Interact using refs from snapshot
+agent-browser click @e2
+agent-browser fill @e3 "some text"
+
+# Re-snapshot after interactions
+agent-browser snapshot -i
+
+# Screenshot for verification
+agent-browser screenshot --full result.png
+```
+
+### When to use Playwright MCP instead
+- Network interception/mocking needs
+- Complex element timing conditions
+- Video recording requirements
+- Integration with existing Playwright test suites
+
 ## Project Context
 ...
 ## Secrets Management (Hush)

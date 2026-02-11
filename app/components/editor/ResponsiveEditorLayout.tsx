@@ -1,6 +1,6 @@
 import { View, StyleSheet } from 'react-native';
 import { useShouldShowSidebar } from '@/lib/hooks/useDeviceType';
-import { StageContainer } from './StageContainer';
+import { StageArea } from './StageArea';
 import { BottomSheetHost } from './BottomSheetHost';
 import { Sidebar } from './sidebar/Sidebar';
 import { InspectorProvider } from './inspector/InspectorProvider';
@@ -16,13 +16,13 @@ export function ResponsiveEditorLayout() {
           <View style={styles.desktopLayout}>
             <Sidebar style={styles.sidebar} />
             <View style={styles.viewport}>
-              <StageContainer />
+              <StageArea />
               <InspectOverlay />
             </View>
           </View>
         ) : (
           <View style={styles.mobileLayout}>
-            <StageContainer />
+            <StageArea />
             <BottomSheetHost />
           </View>
         )}

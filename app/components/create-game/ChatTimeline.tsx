@@ -90,6 +90,7 @@ export function ChatTimeline({ messages, onSubmitUserAnswer, onSubmitClarificati
   return (
     <FlatList
       ref={listRef}
+      style={styles.list}
       data={messages}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
@@ -122,6 +123,10 @@ export function ChatTimeline({ messages, onSubmitUserAnswer, onSubmitClarificati
 }
 
 const styles = StyleSheet.create({
+  list: {
+    flex: 1,
+    minHeight: 0,
+  },
   content: {
     paddingHorizontal: 20,
     paddingTop: 20,

@@ -1,60 +1,19 @@
-import { createOpenAI } from '@ai-sdk/openai';
-import { createAnthropic } from '@ai-sdk/anthropic';
 import { generateObject } from 'ai';
-import type { LanguageModel } from 'ai';
 import type { GameDefinition } from '@slopcade/shared/types/GameDefinition'
 import type { GameIntent } from '@/ai/game/classifier'
 import { classifyPrompt } from '@/ai/game/classifier'
 import { validateGameDefinition, type GameDefinitionValidationResult } from '@/ai/game/validator'
 import { GameDefinitionSchema } from '@/ai/game/schemas'
+import { createModel } from '@/ai/model-factory'
 
-export type AIProvider = 'openai' | 'openrouter' | 'anthropic';
+export type AIProvider = 'openrouter';
 
 export interface AIConfig {
-  provider: AIProvider;
   apiKey: string;
   model?: string;
-  baseURL?: string;
 }
 
-const DEFAULT_MODELS: Record<AIProvider, string> = {
-  openai: 'gpt-4o',
-  openrouter: 'openai/gpt-4o',
-  anthropic: 'claude-sonnet-4-20250514',
-};
-
-function createModel(config: AIConfig): LanguageModel {
-  const model = config.model ?? DEFAULT_MODELS[config.provider];
-
-  switch (config.provider) {
-    case 'openai': {
-      const openai = createOpenAI({
-        apiKey: config.apiKey,
-        baseURL: config.baseURL,
-      });
-      return openai(model) as LanguageModel;
-    }
-
-    case 'openrouter': {
-      const openrouter = createOpenAI({
-        apiKey: config.apiKey,
-        baseURL: config.baseURL ?? 'https://openrouter.ai/api/v1',
-      });
-      return openrouter(model) as LanguageModel;
-    }
-
-    case 'anthropic': {
-      const anthropic = createAnthropic({
-        apiKey: config.apiKey,
-        baseURL: config.baseURL,
-      });
-      return anthropic(model) as LanguageModel;
-    }
-
-    default:
-      throw new Error(`Unknown provider: ${config.provider}`);
-  }
-}
+const DEFAULT_MODEL = 'openai/gpt-4o';
 
 const SYSTEM_PROMPT = `You are a game designer AI that creates 2D physics-based mobile games for children ages 6-14.
 
@@ -271,7 +230,7 @@ export async function generateGame(
     };
   }
 
-  const model = createModel(config);
+  const model = createModel({ apiKey: config.apiKey, model: config.model ?? DEFAULT_MODEL });
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
@@ -381,7 +340,7 @@ export async function refineGame(
   request: string,
   config: AIConfig
 ): Promise<RefinementResult> {
-  const model = createModel(config);
+  const model = createModel({ apiKey: config.apiKey, model: config.model ?? DEFAULT_MODEL });
 
   try {
     const userPrompt = buildRefinementPrompt(currentGame, request);
@@ -439,36 +398,21 @@ export async function refineGame(
 
 export function getAIConfigFromEnv(env: {
   AI_PROVIDER?: string;
-  OPENAI_API_KEY?: string;
   OPENROUTER_API_KEY?: string;
-  ANTHROPIC_API_KEY?: string;
   AI_MODEL?: string;
-  AI_BASE_URL?: string;
 }): AIConfig | null {
-  const provider = (env.AI_PROVIDER ?? 'openai') as AIProvider;
+  const provider = (env.AI_PROVIDER ?? 'openrouter') as AIProvider;
 
-  let apiKey: string | undefined;
-
-  switch (provider) {
-    case 'openai':
-      apiKey = env.OPENAI_API_KEY;
-      break;
-    case 'openrouter':
-      apiKey = env.OPENROUTER_API_KEY;
-      break;
-    case 'anthropic':
-      apiKey = env.ANTHROPIC_API_KEY;
-      break;
+  if (provider !== 'openrouter') {
+    return null;
   }
 
-  if (!apiKey) {
+  if (!env.OPENROUTER_API_KEY) {
     return null;
   }
 
   return {
-    provider,
-    apiKey,
+    apiKey: env.OPENROUTER_API_KEY,
     model: env.AI_MODEL,
-    baseURL: env.AI_BASE_URL,
   };
 }

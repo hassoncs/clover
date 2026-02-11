@@ -10,6 +10,7 @@ import * as Sentry from "@sentry/react-native";
 import { TRPCProvider } from "@/lib/trpc/react";
 import { handleNativeAuthCallback } from "@/lib/supabase/auth";
 import { AnimatedSplashScreen } from "@/components/AnimatedSplashScreen";
+import { AuthProvider } from "@/hooks/useAuth";
 import { requestNotificationPermissions } from "@/lib/notifications";
 import "../global.css";
 
@@ -104,12 +105,7 @@ function RootLayoutContent() {
           presentation: "fullScreenModal",
         }} 
       />
-      <Stack.Screen
-        name="create-game"
-        options={{
-          presentation: "modal",
-        }}
-      />
+
     </Stack>
   );
 }
@@ -118,11 +114,13 @@ function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }} className={Platform.OS === "web" ? "no-select" : ""}>
       <TRPCProvider>
-        <SafeAreaProvider>
-          <AnimatedSplashScreen>
-            <RootLayoutContent />
-          </AnimatedSplashScreen>
-        </SafeAreaProvider>
+        <AuthProvider>
+          <SafeAreaProvider>
+            <AnimatedSplashScreen>
+              <RootLayoutContent />
+            </AnimatedSplashScreen>
+          </SafeAreaProvider>
+        </AuthProvider>
       </TRPCProvider>
     </GestureHandlerRootView>
   );
