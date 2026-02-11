@@ -1,18 +1,13 @@
 import type { EntityPrefab } from "@slopcade/shared";
 
-export type PrefabChangeCategory =
-	| "visual"
-	| "physics"
-	| "behaviors"
-	| "children"
-	| "structural";
+export type PrefabDiffCategory = "visual" | "physics" | "structural";
 
 export interface PrefabDiffResult {
 	prefabId: string;
 	changed: boolean;
-	categories: Set<PrefabChangeCategory>;
 	isVisualOnly: boolean;
 	requiresRecreate: boolean;
+	categories: Set<PrefabDiffCategory>;
 }
 
 export function diffPrefab(
@@ -24,45 +19,26 @@ export function diffPrefab(
 		return {
 			prefabId,
 			changed: true,
-			categories: new Set(["structural"]),
+			categories: new Set<PrefabDiffCategory>(["structural"]),
 			isVisualOnly: false,
 			requiresRecreate: true,
 		};
 	}
 
-	const categories = new Set<PrefabChangeCategory>();
+	const categories = new Set<PrefabDiffCategory>();
 
 	if (JSON.stringify(oldPrefab.visual) !== JSON.stringify(newPrefab.visual)) {
 		categories.add("visual");
 	}
 
-	if (
-		JSON.stringify(oldPrefab.physics) !== JSON.stringify(newPrefab.physics) ||
-		JSON.stringify(oldPrefab.collider) !== JSON.stringify(newPrefab.collider)
-	) {
+	if (JSON.stringify(oldPrefab.physics) !== JSON.stringify(newPrefab.physics)) {
 		categories.add("physics");
 	}
 
-	if (
-		JSON.stringify(oldPrefab.behaviors) !==
-			JSON.stringify(newPrefab.behaviors) ||
-		JSON.stringify(oldPrefab.conditionalBehaviors) !==
-			JSON.stringify(newPrefab.conditionalBehaviors)
-	) {
-		categories.add("behaviors");
-	}
+	const { visual: _oldVisual, physics: _oldPhysics, ...oldCore } = oldPrefab;
+	const { visual: _newVisual, physics: _newPhysics, ...newCore } = newPrefab;
 
-	if (
-		JSON.stringify(oldPrefab.children) !== JSON.stringify(newPrefab.children)
-	) {
-		categories.add("children");
-	}
-
-	if (
-		JSON.stringify(oldPrefab.tags) !== JSON.stringify(newPrefab.tags) ||
-		oldPrefab.archetype !== newPrefab.archetype ||
-		oldPrefab.layer !== newPrefab.layer
-	) {
+	if (JSON.stringify(oldCore) !== JSON.stringify(newCore)) {
 		categories.add("structural");
 	}
 
@@ -70,9 +46,7 @@ export function diffPrefab(
 	const isVisualOnly =
 		changed && categories.size === 1 && categories.has("visual");
 	const requiresRecreate =
-		categories.has("physics") ||
-		categories.has("structural") ||
-		categories.has("children");
+		categories.has("physics") || categories.has("structural");
 
 	return { prefabId, changed, categories, isVisualOnly, requiresRecreate };
 }
@@ -89,9 +63,7 @@ export function diffAllPrefabs(
 
 	for (const id of allIds) {
 		const result = diffPrefab(id, oldPrefabs[id], newPrefabs[id]);
-		if (result.changed) {
-			results.set(id, result);
-		}
+		results.set(id, result);
 	}
 
 	return results;

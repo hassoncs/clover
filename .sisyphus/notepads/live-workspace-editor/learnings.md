@@ -34,3 +34,9 @@ All 13 Definition of Done criteria verified:
 - Agent writes arbitrary workspace files via listFiles/readFilesBatch/writeFile
 - Legacy loadGame() preserved in bridge
 - Feature flag kill-switch via localStorage livePreviewEnabled
+
+## 2026-02-11 Phase 5 Prefab Reconcile Implementation
+- `PrefabInstanceIndex` should maintain strict bidirectional consistency and clean empty prefab sets on unregister/reassignment.
+- `PrefabDiff` contract for Phase 5 uses only three categories (`visual`, `physics`, `structural`) and `diffAllPrefabs` should return entries for the full key union (not only changed prefabs).
+- Structural comparison for prefab diffs should exclude `visual` and `physics` first; otherwise visual-only edits are misclassified and break `isVisualOnly` behavior.
+- `PrefabReconciler` behavior is strategy-driven: skip when no instances, `registerPrefabs` only for visual-only updates, and recreate flow should preserve position via `getEntityTransform` then `destroyEntity` + `spawnEntity` + index refresh.

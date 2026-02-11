@@ -138,11 +138,11 @@
 **Gate:** Implement only if V1 measurements show prefab full reload exceeds editor latency budget
 **Source:** `docs/plans/live-workspace-editor.md` Phase 5
 
-- [ ] Task 5.1: Create `app/lib/game-engine/reconcile/PrefabInstanceIndex.ts`
-- [ ] Task 5.2: Create `app/lib/game-engine/reconcile/PrefabDiff.ts`
-- [ ] Task 5.3: Create `app/lib/game-engine/reconcile/PrefabReconciler.ts`
-- [ ] Task 5.4: Write tests — visual-only preserves velocity, physics recreate preserves position, child reconciliation, nested propagation
-- [ ] Task 5.5: Verify `pnpm tsc --noEmit` and tests pass
+- [x] Task 5.1: Create `app/lib/game-engine/reconcile/PrefabInstanceIndex.ts`
+- [x] Task 5.2: Create `app/lib/game-engine/reconcile/PrefabDiff.ts`
+- [x] Task 5.3: Create `app/lib/game-engine/reconcile/PrefabReconciler.ts`
+- [x] Task 5.4: Write tests — visual-only preserves velocity, physics recreate preserves position, child reconciliation, nested propagation
+- [x] Task 5.5: Verify `pnpm tsc --noEmit` and tests pass
 
 ### Phase 6: Effects Pipeline + Scene-Ready Loading
 
