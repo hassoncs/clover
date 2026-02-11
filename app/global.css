@@ -29,7 +29,6 @@ iframe,
   -webkit-touch-callout: none;
 }
 
-/* Prevent default drag behaviors on canvas/iframe */
 canvas,
 iframe {
   -webkit-user-drag: none;
@@ -39,7 +38,6 @@ iframe {
   user-drag: none;
 }
 
-/* Disable image drag on web */
 img {
   -webkit-user-drag: none;
   -khtml-user-drag: none;

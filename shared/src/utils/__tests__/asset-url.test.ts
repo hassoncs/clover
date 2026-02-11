@@ -7,7 +7,7 @@ import {
 describe('buildR2Key', () => {
   it('constructs R2 key path', () => {
     const path = buildR2Key('p1', 'a1');
-    expect(path).toBe('p1/a1.png');
+    expect(path).toBe('packs/p1/a1.png');
   });
 
   it('works with UUIDs', () => {
@@ -16,7 +16,7 @@ describe('buildR2Key', () => {
       '7c9e6679-7425-40de-944b-e07fc1f90ae7'
     );
     expect(path).toBe(
-      '6ba7b810-9dad-11d1-80b4-00c04fd430c8/7c9e6679-7425-40de-944b-e07fc1f90ae7.png'
+      'packs/6ba7b810-9dad-11d1-80b4-00c04fd430c8/7c9e6679-7425-40de-944b-e07fc1f90ae7.png'
     );
   });
 });
@@ -35,9 +35,8 @@ describe('getAssetUrl', () => {
   it('returns local URL in offline mode', () => {
     const url = getAssetUrl('p1/a1.png', 'https://cdn.com', {
       offlineMode: true,
-      gameId: 'g1',
       localServerUrl: 'http://localhost:8765',
     });
-    expect(url).toBe('http://localhost:8765/g1/p1/a1.png');
+    expect(url).toBe('http://localhost:8765/p1/a1.png');
   });
 });

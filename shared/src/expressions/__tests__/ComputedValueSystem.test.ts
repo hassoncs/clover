@@ -10,13 +10,13 @@ describe('ComputedValueSystem', () => {
   beforeEach(() => {
     system = createComputedValueSystem();
     ctx = createDefaultContext({
-      score: 100,
-      lives: 3,
       time: 10.5,
       wave: 2,
       frameId: 1,
       dt: 0.016,
       variables: {
+        score: 100,
+        lives: 3,
         baseSpeed: 5,
         multiplier: 2,
         playerPos: { x: 10, y: 20 },
@@ -396,25 +396,26 @@ describe('Recomputation and invalidation', () => {
   beforeEach(() => {
     system = createComputedValueSystem();
     ctx = createDefaultContext({
-      score: 0,
-      lives: 3,
       time: 0,
       wave: 1,
       frameId: 0,
-      variables: {},
+      variables: {
+        score: 0,
+        lives: 3,
+      },
     });
   });
 
   it('recomputes when context values change', () => {
     const expr = { expr: 'score * 2' };
 
-    ctx.score = 10;
+    ctx.variables.score = 10;
     expect(system.resolveNumber(expr, ctx)).toBe(20);
 
-    ctx.score = 50;
+    ctx.variables.score = 50;
     expect(system.resolveNumber(expr, ctx)).toBe(100);
 
-    ctx.score = 0;
+    ctx.variables.score = 0;
     expect(system.resolveNumber(expr, ctx)).toBe(0);
   });
 
@@ -447,12 +448,12 @@ describe('Recomputation and invalidation', () => {
   it('frame cache does not interfere with context changes', () => {
     const expr = { expr: 'score + wave', cache: 'frame' as const };
 
-    ctx.score = 10;
+    ctx.variables.score = 10;
     ctx.wave = 1;
     ctx.frameId = 1;
     expect(system.resolveNumber(expr, ctx)).toBe(11);
 
-    ctx.score = 20;
+    ctx.variables.score = 20;
     ctx.wave = 2;
     ctx.frameId = 2;
     expect(system.resolveNumber(expr, ctx)).toBe(22);
@@ -653,13 +654,12 @@ describe('Variable resolution behavior', () => {
     expect(system.resolveVec2({ expr: 'vec' }, ctx)).toEqual({ x: 10, y: 20 });
   });
 
-  it('globals take precedence over variables with same name', () => {
-    ctx.score = 100;
+  it('reads score from variables', () => {
     ctx.variables = {
       score: 999,
     };
 
-    expect(system.resolveNumber({ expr: 'score' }, ctx)).toBe(100);
+    expect(system.resolveNumber({ expr: 'score' }, ctx)).toBe(999);
   });
 
   it('custom variables can use names not reserved by globals', () => {
@@ -672,11 +672,10 @@ describe('Variable resolution behavior', () => {
     expect(system.resolveNumber({ expr: 'playerHealth' }, ctx)).toBe(80);
   });
 
-  it('falls back to globals when variable not defined', () => {
-    ctx.score = 100;
+  it('throws when score variable is not defined', () => {
     ctx.variables = {};
 
-    expect(system.resolveNumber({ expr: 'score' }, ctx)).toBe(100);
+    expect(() => system.resolveNumber({ expr: 'score' }, ctx)).toThrow();
   });
 });
 

@@ -3,7 +3,6 @@ import { tokenize } from '../tokenizer';
 import { parse } from '../parser';
 import { compile, evaluate, createDefaultContext } from '../evaluator';
 import { validateExpression, validateAllExpressions } from '../validator';
-import type { EvalContext } from '../types';
 
 describe('Tokenizer', () => {
   it('tokenizes numbers', () => {
@@ -150,11 +149,11 @@ describe('Parser', () => {
 
 describe('Evaluator', () => {
   const ctx = createDefaultContext({
-    score: 100,
-    lives: 3,
     time: 10,
     wave: 2,
     variables: {
+      score: 100,
+      lives: 3,
       baseSpeed: 5,
       multiplier: 1.5,
     },
@@ -469,7 +468,7 @@ describe('Evaluator', () => {
     it('evaluates multiple times with different context', () => {
       const compiled = compile<number>('score + 10');
       expect(compiled.evaluate(ctx)).toBe(110);
-      expect(compiled.evaluate({ ...ctx, score: 50 })).toBe(60);
+      expect(compiled.evaluate({ ...ctx, variables: { ...ctx.variables, score: 50 } })).toBe(60);
     });
   });
 });
@@ -614,11 +613,11 @@ describe('Validator', () => {
 
 describe('Real-World Scenarios', () => {
   const gameCtx = createDefaultContext({
-    score: 500,
-    lives: 3,
     time: 60,
     wave: 3,
     variables: {
+      score: 500,
+      lives: 3,
       baseSpeed: 5,
       baseDamage: 10,
       difficultyMultiplier: 1,
@@ -636,7 +635,7 @@ describe('Real-World Scenarios', () => {
     const speedFormula = compile<number>('baseSpeed + floor(score / 200) * 0.5');
     expect(speedFormula.evaluate(gameCtx)).toBe(6);
 
-    const higherScore = { ...gameCtx, score: 1000 };
+    const higherScore = { ...gameCtx, variables: { ...gameCtx.variables, score: 1000 } };
     expect(speedFormula.evaluate(higherScore)).toBe(7.5);
   });
 

@@ -47,8 +47,10 @@
     "generate:registry": "cd app && npx reggie",
     "generate:registry:watch": "cd app && npx reggie --watch",
     "generate:registry:check": "cd app && npx reggie --check",
+    "generate:editor-bundle": "node scripts/bundle-native-editor.mjs",
     "generate:bridge": "npx tsx scripts/bridge-codegen.ts",
     "check:bridge": "npx tsx scripts/bridge-codegen.ts --check",
+    "check:colors": "./scripts/check-hardcoded-colors.sh",
     "test:bridge": "vitest run --config tests/e2e/bridge/vitest.config.ts",
     "build:types": "tsc -b",
     "knip": "knip"

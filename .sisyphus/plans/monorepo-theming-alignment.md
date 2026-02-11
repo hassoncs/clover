@@ -142,7 +142,7 @@ Critical Path: 1 -> 2 -> 4 -> 7 -> 9
 
 ## TODOs
 
-- [ ] 1. Consolidate shared token architecture in `packages/theme`
+- [x] 1. Consolidate shared token architecture in `packages/theme`
 
   **What to do**:
   - Extend `packages/theme/src/tokens.ts` into explicit primitive + semantic + mode maps.
@@ -200,7 +200,7 @@ Critical Path: 1 -> 2 -> 4 -> 7 -> 9
     Evidence: .sisyphus/evidence/task-1-consumer-imports.txt
   ```
 
-- [ ] 2. Align Tailwind semantic mapping across app/landing/storybook
+- [x] 2. Align Tailwind semantic mapping across app/landing/storybook
 
   **What to do**:
   - Update `app/tailwind.config.js` to use semantic token names and shared preset hooks.
@@ -257,7 +257,7 @@ Critical Path: 1 -> 2 -> 4 -> 7 -> 9
     Evidence: .sisyphus/evidence/task-2-compat-window.txt
   ```
 
-- [ ] 3. Add runtime theme mode provider and root wiring
+- [x] 3. Add runtime theme mode provider and root wiring
 
   **What to do**:
   - Add `ThemeProvider` + mode context in app theme module.
@@ -316,7 +316,7 @@ Critical Path: 1 -> 2 -> 4 -> 7 -> 9
     Evidence: .sisyphus/evidence/task-3-system-mode.txt
   ```
 
-- [ ] 4. Migrate editor shell and navigation to semantic tokens (high-impact)
+- [x] 4. Migrate editor shell and navigation to semantic tokens (high-impact)
 
   **What to do**:
   - Refactor high-traffic editor shell components from hardcoded hex/gray classes to semantic classes/tokens.
@@ -373,7 +373,7 @@ Critical Path: 1 -> 2 -> 4 -> 7 -> 9
     Evidence: .sisyphus/evidence/task-4-editor-light.png
   ```
 
-- [ ] 5. Migrate social/discovery/profile surfaces to semantic tokens
+- [x] 5. Migrate social/discovery/profile surfaces to semantic tokens
 
   **What to do**:
   - Convert key social/discovery/profile routes and reusable components to semantic classes.
@@ -429,7 +429,7 @@ Critical Path: 1 -> 2 -> 4 -> 7 -> 9
     Evidence: .sisyphus/evidence/task-5-social-states.png
   ```
 
-- [ ] 6. Complete app-wide targeted migration and spacing/radius normalization
+- [x] 6. Complete app-wide targeted migration and spacing/radius normalization
 
   **What to do**:
   - Migrate remaining in-scope app UI files (excluding engine-rendered gameplay visuals).
@@ -485,7 +485,7 @@ Critical Path: 1 -> 2 -> 4 -> 7 -> 9
     Evidence: .sisyphus/evidence/task-6-verification.txt
   ```
 
-- [ ] 7. Align Storybook and Landing visual system with semantic tokens
+- [x] 7. Align Storybook and Landing visual system with semantic tokens
 
   **What to do**:
   - Update Storybook preview/background/theme selectors to semantic token model.
@@ -541,7 +541,7 @@ Critical Path: 1 -> 2 -> 4 -> 7 -> 9
     Evidence: .sisyphus/evidence/task-7-landing-build.txt
   ```
 
-- [ ] 8. Add anti-regression guardrails and CI checks
+- [x] 8. Add anti-regression guardrails and CI checks
 
   **What to do**:
   - Add scripted checks for new hardcoded hex in in-scope UI directories.

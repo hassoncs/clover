@@ -897,7 +897,7 @@ export const SetVariableActionSchema = z.object({
   type: z.literal('set_variable'),
   name: z.string(),
   operation: z.enum(['set', 'add', 'subtract', 'multiply', 'toggle']),
-  value: ExpressionValueSchema,
+  value: z.union([z.number(), z.string(), z.boolean(), ExpressionValueSchema]),
 });
 
 export const StartCooldownActionSchema = z.object({

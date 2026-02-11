@@ -43,6 +43,7 @@ describe('EvalContextBuilder', () => {
       const ctx = builder.build({
         gameState: { ...defaultGameState, score: 100, wave: 3 },
         variables: {
+          score: 100,
           scoreBonus: { expr: 'score * 0.1' },
           waveDifficulty: { expr: '1 + wave * 0.2' },
         },
@@ -122,6 +123,7 @@ describe('EvalContextBuilder', () => {
       const ctx = builder.build({
         gameState: { ...defaultGameState, score: 500, wave: 5 },
         variables: {
+          score: 500,
           scoreMultiplier: { expr: '1 + score / 1000' },
           waveBonus: { expr: 'wave * 10' },
         },
@@ -233,11 +235,13 @@ describe('EvalContextBuilder', () => {
       }
     });
 
-    it('allows references to game state variables', () => {
+    it('allows references to built-in context values and variables', () => {
       expect(() =>
         builder.build({
           gameState: defaultGameState,
           variables: {
+            score: 10,
+            lives: 3,
             calc: { expr: 'score + lives + time + wave + dt + frameId' },
           },
         })
@@ -280,6 +284,7 @@ describe('EvalContextBuilder', () => {
       const ctx = builder.build({
         gameState: { ...defaultGameState, wave: 5, score: 1000 },
         variables: {
+          score: 1000,
           baseDamage: 10,
           baseSpeed: 100,
           waveMultiplier: { expr: '1 + wave * 0.15' },

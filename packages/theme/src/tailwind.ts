@@ -27,6 +27,29 @@ export const tailwindPreset = {
         background: tokens.semantic.colors.background,
         border: tokens.semantic.colors.border,
         text: tokens.semantic.colors.text,
+        
+        // Theme namespace for semantic colors (dark mode)
+        theme: {
+          background: '#050608',
+          surface: {
+            DEFAULT: '#111827',
+            elevated: '#1F2937',
+          },
+          text: {
+            DEFAULT: '#FFFFFF',
+            primary: '#FFFFFF',
+            secondary: '#9CA3AF',
+            tertiary: '#6B7280',
+            muted: '#6B7280',
+            inverse: '#FFFFFF',
+          },
+          border: '#374151',
+          primary: '#6366F1',
+          success: '#10B981',
+          warning: '#F59E0B',
+          error: '#EF4444',
+          danger: '#EF4444',
+        },
       },
       spacing: tokens.spacing,
       fontFamily: tokens.typography.fontFamily,
