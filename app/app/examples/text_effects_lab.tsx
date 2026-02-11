@@ -42,7 +42,7 @@ export default function TextEffectsLab() {
           gravity: { x: 0, y: 0 },
           pixelsPerMeter: 50,
         },
-        templates: {
+        prefabs: {
           text: {
             id: 'text',
             visual: { type: 'rect', width: 0, height: 0, color: '#FFFFFF' },
@@ -52,7 +52,7 @@ export default function TextEffectsLab() {
           {
             id: 'title',
             name: 'Title',
-            template: 'text',
+            prefab: 'text',
             transform: { x: 0, y: 3, angle: 0, scaleX: 1, scaleY: 1 },
             visual: {
               type: 'rect',
@@ -67,7 +67,7 @@ export default function TextEffectsLab() {
           {
             id: 'subtitle',
             name: 'Subtitle',
-            template: 'text',
+            prefab: 'text',
             transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
             visual: {
               type: 'rect',
@@ -82,7 +82,7 @@ export default function TextEffectsLab() {
           {
             id: 'tier-indicator',
             name: 'Tier',
-            template: 'text',
+            prefab: 'text',
             transform: { x: 0, y: -3, angle: 0, scaleX: 1, scaleY: 1 },
             visual: {
               type: 'rect',

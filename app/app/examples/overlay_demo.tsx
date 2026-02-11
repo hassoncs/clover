@@ -32,7 +32,7 @@ const GAME_DEFINITION: GameDefinition = {
     maxHealth: 100,
     combo: 0,
   },
-  templates: {
+  prefabs: {
     ball: {
       id: "ball",
       tags: ["ball"],
@@ -66,19 +66,19 @@ const GAME_DEFINITION: GameDefinition = {
     {
       id: "ground",
       name: "Ground",
-      template: "ground",
+      prefab: "ground",
       transform: { x: 0, y: -8.5, angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "wall-left",
       name: "Wall Left",
-      template: "wallLeft",
+      prefab: "wallLeft",
       transform: { x: -7.25, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "wall-right",
       name: "Wall Right",
-      template: "wallRight",
+      prefab: "wallRight",
       transform: { x: 7.25, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
     },
   ],
@@ -153,7 +153,7 @@ const GAME_DEFINITION: GameDefinition = {
       actions: [
         {
           type: "spawn",
-          template: "ball",
+          prefab: "ball",
           position: { type: "random", bounds: { minX: -5, maxX: 5, minY: 8, maxY: 10 } },
         },
       ],

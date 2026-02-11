@@ -47,8 +47,7 @@ const GAME_DEFINITION: GameDefinition = {
     bounds: WORLD_BOUNDS,
   },
   camera: { type: "fixed", zoom: 1 },
-  ui: { backgroundColor: "#0f0f1a" },
-  templates: {
+  prefabs: {
     box: {
       id: "box",
       visual: { type: "rect", width: 2, height: 2, color: "#4ECDC4" },
@@ -75,12 +74,12 @@ const GAME_DEFINITION: GameDefinition = {
     },
   },
   entities: [
-    { id: "ground", name: "Ground", template: "ground", transform: { x: 0, y: -8.5, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "wall-left", name: "Left Wall", template: "wall", transform: { x: -6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "wall-right", name: "Right Wall", template: "wall", transform: { x: 6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "box1", name: "Box 1", template: "box", transform: { x: -2, y: -5, angle: 0.1, scaleX: 1, scaleY: 1 } },
-    { id: "box2", name: "Box 2", template: "box", transform: { x: 2, y: -5, angle: -0.1, scaleX: 1, scaleY: 1 } },
-    { id: "circle1", name: "Circle 1", template: "circle", transform: { x: 0, y: -1, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "ground", name: "Ground", prefab: "ground", transform: { x: 0, y: -8.5, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "wall-left", name: "Left Wall", prefab: "wall", transform: { x: -6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "wall-right", name: "Right Wall", prefab: "wall", transform: { x: 6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "box1", name: "Box 1", prefab: "box", transform: { x: -2, y: -5, angle: 0.1, scaleX: 1, scaleY: 1 } },
+    { id: "box2", name: "Box 2", prefab: "box", transform: { x: 2, y: -5, angle: -0.1, scaleX: 1, scaleY: 1 } },
+    { id: "circle1", name: "Circle 1", prefab: "circle", transform: { x: 0, y: -1, angle: 0, scaleX: 1, scaleY: 1 } },
   ],
   rules: [],
 };

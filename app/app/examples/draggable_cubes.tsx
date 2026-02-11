@@ -27,10 +27,7 @@ const GAME_DEFINITION: GameDefinition = {
     bounds: WORLD_BOUNDS,
   },
   camera: { type: "fixed", zoom: 1 },
-  ui: {
-    backgroundColor: "#1a1a2e",
-  },
-  templates: {
+  prefabs: {
     cube: {
       id: "cube",
       tags: ["draggable"],
@@ -82,43 +79,43 @@ const GAME_DEFINITION: GameDefinition = {
     {
       id: "ground",
       name: "Ground",
-      template: "ground",
+      prefab: "ground",
       transform: { x: 0, y: -8.5, angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "wall-left",
       name: "Left Wall",
-      template: "wall",
+      prefab: "wall",
       transform: { x: -6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "wall-right",
       name: "Right Wall",
-      template: "wall",
+      prefab: "wall",
       transform: { x: 6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "anchor1",
       name: "Anchor",
-      template: "anchor",
+      prefab: "anchor",
       transform: { x: 0, y: 7, angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "cube1",
       name: "Cube 1",
-      template: "cube",
+      prefab: "cube",
       transform: { x: 0, y: 5, angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "cube2",
       name: "Cube 2",
-      template: "cube",
+      prefab: "cube",
       transform: { x: -4, y: 5, angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "cube3",
       name: "Cube 3",
-      template: "cube",
+      prefab: "cube",
       transform: { x: 4, y: 5, angle: 0, scaleX: 1, scaleY: 1 },
     },
   ],

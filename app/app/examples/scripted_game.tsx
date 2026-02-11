@@ -63,14 +63,11 @@ const createGameDefinition = (script: string): GameDefinition => ({
     bounds: WORLD_BOUNDS,
   },
   camera: { type: "fixed", zoom: 1 },
-  ui: {
-    backgroundColor: "#1a1a2e",
-  },
   variables: {
     ballCount: 0,
     maxBalls: 10,
   },
-  templates: {
+  prefabs: {
     ball: {
       id: "ball",
       tags: ["ball", "spawnable"],
@@ -100,12 +97,12 @@ const createGameDefinition = (script: string): GameDefinition => ({
     },
   },
   entities: [
-    { id: "ground", name: "Ground", template: "ground", transform: { x: 0, y: -8.5, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "wall-left", name: "Left Wall", template: "wall", transform: { x: -6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "wall-right", name: "Right Wall", template: "wall", transform: { x: 6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
-    { id: "platform-1", name: "Platform 1", template: "platform", transform: { x: -3, y: -4, angle: -0.2, scaleX: 1, scaleY: 1 } },
-    { id: "platform-2", name: "Platform 2", template: "platform", transform: { x: 3, y: -2, angle: 0.2, scaleX: 1, scaleY: 1 } },
-    { id: "platform-3", name: "Platform 3", template: "platform", transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "ground", name: "Ground", prefab: "ground", transform: { x: 0, y: -8.5, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "wall-left", name: "Left Wall", prefab: "wall", transform: { x: -6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "wall-right", name: "Right Wall", prefab: "wall", transform: { x: 6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
+    { id: "platform-1", name: "Platform 1", prefab: "platform", transform: { x: -3, y: -4, angle: -0.2, scaleX: 1, scaleY: 1 } },
+    { id: "platform-2", name: "Platform 2", prefab: "platform", transform: { x: 3, y: -2, angle: 0.2, scaleX: 1, scaleY: 1 } },
+    { id: "platform-3", name: "Platform 3", prefab: "platform", transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 } },
   ],
   rules: [],
   script,

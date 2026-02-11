@@ -30,7 +30,7 @@ const GAME_DEFINITION: GameDefinition = {
     maxHealth: 100,
     coins: 42,
   },
-  templates: {
+  prefabs: {
     ball: {
       id: "ball",
       tags: ["ball"],
@@ -50,25 +50,25 @@ const GAME_DEFINITION: GameDefinition = {
     {
       id: "ground",
       name: "Ground",
-      template: "ground",
+      prefab: "ground",
       transform: { x: 0, y: -8.5, angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "ball-1",
       name: "Ball 1",
-      template: "ball",
+      prefab: "ball",
       transform: { x: 5, y: 12, angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "ball-2",
       name: "Ball 2",
-      template: "ball",
+      prefab: "ball",
       transform: { x: 7, y: 14, angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "ball-3",
       name: "Ball 3",
-      template: "ball",
+      prefab: "ball",
       transform: { x: 9, y: 16, angle: 0, scaleX: 1, scaleY: 1 },
     },
   ],

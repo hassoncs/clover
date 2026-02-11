@@ -25,8 +25,7 @@ const GAME_DEFINITION: GameDefinition = {
     bounds: WORLD_BOUNDS,
   },
   camera: { type: "fixed", zoom: 1 },
-  ui: { backgroundColor: "#1a1a2e" },
-  templates: {
+  prefabs: {
     testBox: {
       id: "testBox",
       visual: { type: "rect", width: 4, height: 4, color: "#4ECDC4" },
@@ -38,7 +37,7 @@ const GAME_DEFINITION: GameDefinition = {
     { 
       id: "test-entity", 
       name: "Test Entity", 
-      template: "testBox", 
+      prefab: "testBox", 
       transform: { x: 5, y: 5, angle: 0, scaleX: 1, scaleY: 1 } 
     },
   ],

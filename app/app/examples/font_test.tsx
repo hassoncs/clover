@@ -35,7 +35,7 @@ export default function FontLab() {
       gravity: { x: 0, y: -9.8 },
       pixelsPerMeter: 50,
     },
-    templates: {
+    prefabs: {
       text: {
         id: "text",
         visual: { type: "rect", width: 0, height: 0, color: "#FFFFFF" },
@@ -45,7 +45,7 @@ export default function FontLab() {
         {
           id: "title",
           name: "Title",
-          template: "text",
+          prefab: "text",
           transform: { x: 0, y: 5, angle: 0, scaleX: 1, scaleY: 1 },
           visual: {
             type: "rect",
@@ -60,7 +60,7 @@ export default function FontLab() {
         {
           id: "subtitle",
           name: "Subtitle",
-          template: "text",
+          prefab: "text",
           transform: { x: 0, y: 2, angle: 0, scaleX: 1, scaleY: 1 },
           visual: {
             type: "rect",
@@ -75,7 +75,7 @@ export default function FontLab() {
         {
           id: "status",
           name: "Status",
-          template: "text",
+          prefab: "text",
           transform: { x: 0, y: -2, angle: 0, scaleX: 1, scaleY: 1 },
           visual: {
             type: "rect",

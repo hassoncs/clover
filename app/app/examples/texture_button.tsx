@@ -66,10 +66,7 @@ const GAME_DEFINITION: GameDefinition = {
     bounds: WORLD_BOUNDS,
   },
   camera: { type: "fixed", zoom: 1 },
-  ui: {
-    backgroundColor: "#1a1a2e",
-  },
-  templates: {},
+  prefabs: {},
   entities: [],
   rules: [],
 };

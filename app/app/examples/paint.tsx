@@ -24,8 +24,7 @@ const GAME_DEFINITION: GameDefinition = {
     bounds: { width: 24, height: 32 },
   },
   camera: { type: "fixed", zoom: 1 },
-  ui: { backgroundColor: "#FFFFFF" },
-  templates: {
+  prefabs: {
     canvas: {
       id: "canvas",
       visual: { type: "rect", width: 24, height: 32, color: "#FFFFFF" },
@@ -37,7 +36,7 @@ const GAME_DEFINITION: GameDefinition = {
     {
       id: "canvas",
       name: "Canvas",
-      template: "canvas",
+      prefab: "canvas",
       transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
     },
   ],

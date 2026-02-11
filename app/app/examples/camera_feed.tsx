@@ -30,10 +30,7 @@ const GAME_DEFINITION: GameDefinition = {
     bounds: WORLD_BOUNDS,
   },
   camera: { type: "fixed", zoom: 1 },
-  ui: {
-    backgroundColor: "#1a1a2e",
-  },
-  templates: {
+  prefabs: {
     cameraTarget: {
       id: "cameraTarget",
       tags: ["camera-target"],
@@ -70,25 +67,25 @@ const GAME_DEFINITION: GameDefinition = {
     {
       id: "ground",
       name: "Ground",
-      template: "ground",
+      prefab: "ground",
       transform: { x: 0, y: -8.5, angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "wall-left",
       name: "Left Wall",
-      template: "wall",
+      prefab: "wall",
       transform: { x: -6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "wall-right",
       name: "Right Wall",
-      template: "wall",
+      prefab: "wall",
       transform: { x: 6.75, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
     },
     {
       id: "camera_sprite",
       name: "Camera Feed",
-      template: "cameraTarget",
+      prefab: "cameraTarget",
       transform: { x: 0, y: 0, angle: 0, scaleX: 1, scaleY: 1 },
     },
   ],
