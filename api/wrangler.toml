@@ -4,6 +4,9 @@ compatibility_flags = ["nodejs_compat", "enable_nodejs_fs_module"]
 main = "src/index.ts"
 workers_dev = true
 
+[define]
+__DEV__ = "true"
+
 [dev]
 port = 8789
 
@@ -25,9 +28,17 @@ class_name = "RunCoordinatorDO"
 name = "RUN_STEP_WORKER"
 class_name = "RunStepWorkerDO"
 
+[[durable_objects.bindings]]
+name = "REALTIME_RELAY"
+class_name = "RealtimeRelayDO"
+
 [[migrations]]
 tag = "v2"
 new_classes = ["RunCoordinatorDO", "RunStepWorkerDO"]
+
+[[migrations]]
+tag = "v3"
+new_classes = ["RealtimeRelayDO"]
 
 # TODO: Configure custom domain
 # [[routes]]

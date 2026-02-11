@@ -8,6 +8,7 @@ import revenuecatWebhookRouter from '@/routes/webhooks/revenuecat'
 import textGridRouter from '@/routes/text-grid'
 import { RunCoordinatorDO } from '@/agent/RunCoordinatorDO'
 import { RunStepWorkerDO } from '@/agent/RunStepWorkerDO'
+import { RealtimeRelayDO } from '@/agent/RealtimeRelayDO'
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -70,6 +71,32 @@ app.get('/ws/agent-run/:runId', async (c) => {
   return stub.fetch(c.req.raw);
 });
 
+app.get('/ws/speech-to-text', async (c) => {
+  const upgrade = c.req.header('Upgrade');
+  if (!upgrade || upgrade.toLowerCase() !== 'websocket') {
+    return c.text('Expected websocket upgrade', 426);
+  }
+
+  const token = new URL(c.req.url).searchParams.get('token');
+  if (!token) {
+    return c.text('Authentication required', 401);
+  }
+
+  if (!c.env.SUPABASE_URL || !c.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return c.text('Auth not configured', 500);
+  }
+
+  const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_SERVICE_ROLE_KEY);
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+  if (error || !user) {
+    return c.text('Invalid or expired token', 401);
+  }
+
+  const id = c.env.REALTIME_RELAY.idFromName(user.id + '-' + Date.now());
+  const stub = c.env.REALTIME_RELAY.get(id);
+  return stub.fetch(c.req.raw);
+});
+
 app.get("/assets/*", async (c) => {
   const key = c.req.path.replace("/assets/", "");
   if (!key) return c.text("Asset key required", 400);
@@ -105,4 +132,4 @@ app.use(
 );
 
 export default app;
-export { RunCoordinatorDO, RunStepWorkerDO };
+export { RunCoordinatorDO, RunStepWorkerDO, RealtimeRelayDO };

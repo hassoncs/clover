@@ -9,6 +9,7 @@ export interface Env {
   ASSETS: R2Bucket;
   RUN_COORDINATOR: DurableObjectNamespace;
   RUN_STEP_WORKER: DurableObjectNamespace;
+  REALTIME_RELAY: DurableObjectNamespace;
 
   SUPABASE_URL: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
