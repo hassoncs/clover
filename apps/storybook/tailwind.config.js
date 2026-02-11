@@ -8,7 +8,7 @@ module.exports = {
     '../../packages/physics/src/**/*.{js,jsx,ts,tsx}',
     '../../packages/theme/src/**/*.{js,jsx,ts,tsx}',
   ],
-  presets: [tailwindPreset],
+  presets: [tailwindPreset, require('nativewind/preset')],
   theme: {
     extend: {},
   },

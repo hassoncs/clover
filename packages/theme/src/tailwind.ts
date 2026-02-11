@@ -41,7 +41,6 @@ export const tailwindPreset = {
       screens: tokens.breakpoints,
     },
   },
-  presets: [require("nativewind/preset")],
   plugins: [],
 } as const;
 

@@ -29,7 +29,7 @@ export { EFFECT_METADATA } from './metadata';
 
 export type {
   ParamSummary,
-  PackageManifest,
+  PackageManifest as EffectPackageManifest,
   NodeTypeRegistration,
   SearchQuery,
   SearchResult,

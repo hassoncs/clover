@@ -1,5 +1,6 @@
 import './global.css';
 import type { Preview } from '@storybook/react';
+import { tokens } from '@slopcade/theme/tokens';
 
 const preview: Preview = {
   parameters: {
@@ -14,11 +15,11 @@ const preview: Preview = {
       values: [
         {
           name: 'light',
-          value: '#ffffff',
+          value: tokens.colors.background,
         },
         {
           name: 'dark',
-          value: '#333333',
+          value: tokens.colors.secondary[900],
         },
       ],
     },
